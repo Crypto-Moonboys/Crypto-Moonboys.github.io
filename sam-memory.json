@@ -6162,6 +6162,23 @@
         "wiki"
       ]
     },
+    "the_first_witness": {
+      "alias_candidates": [],
+      "aliases": [
+        "First Witness"
+      ],
+      "canonical_title": "The First Witness",
+      "canonical_url": "/wiki/the-first-witness.html",
+      "category": "factions",
+      "source_urls": [
+        "/wiki/the-first-witness.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "first",
+        "witness"
+      ]
+    },
     "the_gasless_ghosts": {
       "alias_candidates": [
         "gasless ghosts crypto moonboys wiki"
@@ -6891,5 +6908,5 @@
       ]
     }
   },
-  "updated_at": "2026-10-01T19:38:29Z"
+  "updated_at": "2026-10-03T02:57:44Z"
 }

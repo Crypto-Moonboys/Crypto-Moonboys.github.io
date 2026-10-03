@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-02T19:50:19.925Z",
-  "verified_at": "2026-10-02T19:50:19.925Z",
+  "generated_at": "2026-10-03T02:57:44.965Z",
+  "verified_at": "2026-10-03T02:57:44.965Z",
   "lite": true,
   "nodes": [
     {
@@ -72,7 +72,7 @@
       "title": "Block Topia",
       "url": "/wiki/block-topia.html",
       "category": "characters",
-      "rank_score": 522,
+      "rank_score": 524,
       "authority_score": 13
     },
     {
@@ -104,7 +104,7 @@
       "title": "NULL THE PROPHET",
       "url": "/wiki/null-the-prophet.html",
       "category": "characters",
-      "rank_score": 457,
+      "rank_score": 459,
       "authority_score": 17
     },
     {
@@ -232,8 +232,16 @@
       "title": "The CHAIN SCRIBES",
       "url": "/wiki/the-chain-scribes.html",
       "category": "factions",
-      "rank_score": 358,
+      "rank_score": 360,
       "authority_score": 21
+    },
+    {
+      "id": "/wiki/bitcoin.html",
+      "title": "Bitcoin (BTC)",
+      "url": "/wiki/bitcoin.html",
+      "category": "tokens",
+      "rank_score": 354,
+      "authority_score": 26
     },
     {
       "id": "/wiki/burn-to-earn.html",
@@ -242,14 +250,6 @@
       "category": "characters",
       "rank_score": 353,
       "authority_score": 19
-    },
-    {
-      "id": "/wiki/bitcoin.html",
-      "title": "Bitcoin (BTC)",
-      "url": "/wiki/bitcoin.html",
-      "category": "tokens",
-      "rank_score": 352,
-      "authority_score": 26
     },
     {
       "id": "/wiki/thorne-the-architect.html",
@@ -268,20 +268,20 @@
       "authority_score": 21
     },
     {
+      "id": "/wiki/hodl-warriors.html",
+      "title": "HODL Warriors",
+      "url": "/wiki/hodl-warriors.html",
+      "category": "characters",
+      "rank_score": 335,
+      "authority_score": 21
+    },
+    {
       "id": "/wiki/staking.html",
       "title": "Crypto Staking",
       "url": "/wiki/staking.html",
       "category": "characters",
       "rank_score": 334,
       "authority_score": 17
-    },
-    {
-      "id": "/wiki/hodl-warriors.html",
-      "title": "HODL Warriors",
-      "url": "/wiki/hodl-warriors.html",
-      "category": "characters",
-      "rank_score": 333,
-      "authority_score": 21
     },
     {
       "id": "/wiki/waxp.html",
@@ -324,6 +324,14 @@
       "authority_score": 17
     },
     {
+      "id": "/wiki/sacred-chain.html",
+      "title": "The Sacred Chain",
+      "url": "/wiki/sacred-chain.html",
+      "category": "factions",
+      "rank_score": 310,
+      "authority_score": 21
+    },
+    {
       "id": "/wiki/tokenomics.html",
       "title": "Tokenomics",
       "url": "/wiki/tokenomics.html",
@@ -353,14 +361,6 @@
       "url": "/wiki/rune-tag.html",
       "category": "characters",
       "rank_score": 303,
-      "authority_score": 21
-    },
-    {
-      "id": "/wiki/sacred-chain.html",
-      "title": "The Sacred Chain",
-      "url": "/wiki/sacred-chain.html",
-      "category": "factions",
-      "rank_score": 302,
       "authority_score": 21
     },
     {
@@ -444,6 +444,14 @@
       "authority_score": 21
     },
     {
+      "id": "/wiki/the-first-witness.html",
+      "title": "The First Witness",
+      "url": "/wiki/the-first-witness.html",
+      "category": "factions",
+      "rank_score": 295,
+      "authority_score": 25
+    },
+    {
       "id": "/wiki/quell.html",
       "title": "Quell",
       "url": "/wiki/quell.html",
@@ -488,6 +496,14 @@
       "title": "Darren Cullen (SER)",
       "url": "/wiki/darren-cullen.html",
       "category": "characters",
+      "rank_score": 292,
+      "authority_score": 21
+    },
+    {
+      "id": "/wiki/street-kingdoms.html",
+      "title": "Street Kingdoms",
+      "url": "/wiki/street-kingdoms.html",
+      "category": "factions",
       "rank_score": 292,
       "authority_score": 21
     },
@@ -556,14 +572,6 @@
       "authority_score": 23
     },
     {
-      "id": "/wiki/street-kingdoms.html",
-      "title": "Street Kingdoms",
-      "url": "/wiki/street-kingdoms.html",
-      "category": "factions",
-      "rank_score": 290,
-      "authority_score": 21
-    },
-    {
       "id": "/wiki/the-evm-punks.html",
       "title": "The EVM PUNKS",
       "url": "/wiki/the-evm-punks.html",
@@ -594,14 +602,6 @@
       "category": "characters",
       "rank_score": 288,
       "authority_score": 23
-    },
-    {
-      "id": "/wiki/forkborn-collective.html",
-      "title": "Forkborn Collective",
-      "url": "/wiki/forkborn-collective.html",
-      "category": "factions",
-      "rank_score": 286,
-      "authority_score": 21
     }
   ],
   "edges": [
@@ -678,14 +678,14 @@
       "weight": 0.95
     },
     {
-      "source": "/wiki/forkborn-collective.html",
-      "target": "/wiki/pmsl.html",
+      "source": "/wiki/hodl-warriors.html",
+      "target": "/wiki/crypto-moonboys.html",
       "score": 95,
       "weight": 0.95
     },
     {
-      "source": "/wiki/hodl-warriors.html",
-      "target": "/wiki/crypto-moonboys.html",
+      "source": "/wiki/memecoins.html",
+      "target": "/wiki/pmsl.html",
       "score": 95,
       "weight": 0.95
     },
@@ -744,12 +744,6 @@
       "weight": 0.87
     },
     {
-      "source": "/wiki/forkborn-collective.html",
-      "target": "/wiki/games4punks-telegram.html",
-      "score": 87,
-      "weight": 0.87
-    },
-    {
       "source": "/wiki/hard-fork-games.html",
       "target": "/wiki/hodl-wars.html",
       "score": 87,
@@ -764,6 +758,12 @@
     {
       "source": "/wiki/midevilpunks.html",
       "target": "/wiki/hodl-wars.html",
+      "score": 87,
+      "weight": 0.87
+    },
+    {
+      "source": "/wiki/sneakar.html",
+      "target": "/wiki/games4punks-telegram.html",
       "score": 87,
       "weight": 0.87
     },

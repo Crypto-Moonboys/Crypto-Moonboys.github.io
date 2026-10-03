@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-02T19:50:19.925Z",
-  "verified_at": "2026-10-02T19:50:19.925Z",
+  "generated_at": "2026-10-03T02:57:44.965Z",
+  "verified_at": "2026-10-03T02:57:44.965Z",
   "nodes": [
     {
       "id": "/about.html",
@@ -135,7 +135,7 @@
       "title": "Alfie 'Bitcoin Kid' Blaze",
       "url": "/wiki/alfie-bitcoin-kid-blaze.html",
       "category": "factions",
-      "rank_score": 201,
+      "rank_score": 203,
       "authority_score": 16
     },
     {
@@ -263,7 +263,7 @@
       "title": "Bitcoin (BTC)",
       "url": "/wiki/bitcoin.html",
       "category": "tokens",
-      "rank_score": 352,
+      "rank_score": 354,
       "authority_score": 26
     },
     {
@@ -279,7 +279,7 @@
       "title": "Block Topia",
       "url": "/wiki/block-topia.html",
       "category": "characters",
-      "rank_score": 522,
+      "rank_score": 524,
       "authority_score": 13
     },
     {
@@ -1807,7 +1807,7 @@
       "title": "HODL Warriors",
       "url": "/wiki/hodl-warriors.html",
       "category": "characters",
-      "rank_score": 333,
+      "rank_score": 335,
       "authority_score": 21
     },
     {
@@ -1823,7 +1823,7 @@
       "title": "HODL X Warriors",
       "url": "/wiki/hodl-x-warriors.html",
       "category": "characters",
-      "rank_score": 283,
+      "rank_score": 285,
       "authority_score": 21
     },
     {
@@ -2039,7 +2039,7 @@
       "title": "NULL THE PROPHET",
       "url": "/wiki/null-the-prophet.html",
       "category": "characters",
-      "rank_score": 457,
+      "rank_score": 459,
       "authority_score": 17
     },
     {
@@ -2175,7 +2175,7 @@
       "title": "The Sacred Chain",
       "url": "/wiki/sacred-chain.html",
       "category": "factions",
-      "rank_score": 302,
+      "rank_score": 310,
       "authority_score": 21
     },
     {
@@ -2295,7 +2295,7 @@
       "title": "Street Kingdoms",
       "url": "/wiki/street-kingdoms.html",
       "category": "factions",
-      "rank_score": 290,
+      "rank_score": 292,
       "authority_score": 21
     },
     {
@@ -2375,7 +2375,7 @@
       "title": "The CHAIN SCRIBES",
       "url": "/wiki/the-chain-scribes.html",
       "category": "factions",
-      "rank_score": 358,
+      "rank_score": 360,
       "authority_score": 21
     },
     {
@@ -2425,6 +2425,14 @@
       "category": "factions",
       "rank_score": 344,
       "authority_score": 21
+    },
+    {
+      "id": "/wiki/the-first-witness.html",
+      "title": "The First Witness",
+      "url": "/wiki/the-first-witness.html",
+      "category": "factions",
+      "rank_score": 295,
+      "authority_score": 25
     },
     {
       "id": "/wiki/the-gasless-ghosts.html",
@@ -2591,7 +2599,7 @@
       "title": "Triple Fork Event",
       "url": "/wiki/triple-fork-event.html",
       "category": "factions",
-      "rank_score": 269,
+      "rank_score": 271,
       "authority_score": 21
     },
     {
@@ -3273,8 +3281,8 @@
     {
       "source": "/wiki/bitcoin-kid-army.html",
       "target": "/wiki/alfie-bitcoin-kid-blaze.html",
-      "score": 91,
-      "weight": 0.91
+      "score": 93,
+      "weight": 0.93
     },
     {
       "source": "/wiki/bitcoin-kid-army.html",
@@ -11163,8 +11171,8 @@
     {
       "source": "/wiki/the-bitcoin-kid-army.html",
       "target": "/wiki/alfie-bitcoin-kid-blaze.html",
-      "score": 81,
-      "weight": 0.81
+      "score": 83,
+      "weight": 0.83
     },
     {
       "source": "/wiki/the-bitcoin-kid-army.html",
@@ -11453,6 +11461,36 @@
       "target": "/wiki/midevilpunks.html",
       "score": 75,
       "weight": 0.75
+    },
+    {
+      "source": "/wiki/the-first-witness.html",
+      "target": "/wiki/hodl-wars.html",
+      "score": 74,
+      "weight": 0.74
+    },
+    {
+      "source": "/wiki/the-first-witness.html",
+      "target": "/wiki/hard-fork-games.html",
+      "score": 73,
+      "weight": 0.73
+    },
+    {
+      "source": "/wiki/the-first-witness.html",
+      "target": "/wiki/pmsl.html",
+      "score": 70,
+      "weight": 0.7
+    },
+    {
+      "source": "/wiki/the-first-witness.html",
+      "target": "/wiki/midevilpunks.html",
+      "score": 69,
+      "weight": 0.69
+    },
+    {
+      "source": "/wiki/the-first-witness.html",
+      "target": "/wiki/stikfamwars.html",
+      "score": 67,
+      "weight": 0.67
     },
     {
       "source": "/wiki/the-gasless-ghosts.html",

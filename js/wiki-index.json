@@ -760,7 +760,7 @@
         "title": "block topia crypto moonboys wiki"
       }
     ],
-    "rank_score": 522,
+    "rank_score": 524,
     "rank_signals": {
       "is_canonical": true,
       "alias_count": 1,
@@ -787,9 +787,9 @@
       "word_count_points": 96,
       "keyword_bag_points": 24,
       "content_quality_points": 89,
-      "authority_points": 243,
-      "final_rank_score": 522,
-      "authority_graph_points": 230
+      "authority_points": 245,
+      "final_rank_score": 524,
+      "authority_graph_points": 232
     },
     "search_index": {
       "normalized_title": "block topia crypto moonboys wiki",
@@ -828,11 +828,11 @@
       ]
     },
     "link_score": {
-      "inbound_count": 115,
+      "inbound_count": 116,
       "outbound_count": 6,
       "existing_outbound_count": 0,
       "suggested_outbound_count": 6,
-      "authority": 230
+      "authority": 232
     },
     "brand": null
   },
@@ -1139,7 +1139,7 @@
         "title": "null prophet crypto moonboys wiki"
       }
     ],
-    "rank_score": 457,
+    "rank_score": 459,
     "rank_signals": {
       "is_canonical": true,
       "alias_count": 1,
@@ -1166,9 +1166,9 @@
       "word_count_points": 89,
       "keyword_bag_points": 23,
       "content_quality_points": 85,
-      "authority_points": 190,
-      "final_rank_score": 457,
-      "authority_graph_points": 173
+      "authority_points": 192,
+      "final_rank_score": 459,
+      "authority_graph_points": 175
     },
     "search_index": {
       "normalized_title": "null the prophet crypto moonboys wiki",
@@ -1207,11 +1207,11 @@
       ]
     },
     "link_score": {
-      "inbound_count": 85,
+      "inbound_count": 86,
       "outbound_count": 11,
       "existing_outbound_count": 6,
       "suggested_outbound_count": 5,
-      "authority": 173
+      "authority": 175
     },
     "brand": null
   },
@@ -2696,7 +2696,7 @@
         "title": "CHAIN SCRIBES"
       }
     ],
-    "rank_score": 358,
+    "rank_score": 360,
     "rank_signals": {
       "is_canonical": true,
       "alias_count": 2,
@@ -2723,9 +2723,9 @@
       "word_count_points": 70,
       "keyword_bag_points": 24,
       "content_quality_points": 108,
-      "authority_points": 91,
-      "final_rank_score": 358,
-      "authority_graph_points": 70
+      "authority_points": 93,
+      "final_rank_score": 360,
+      "authority_graph_points": 72
     },
     "search_index": {
       "normalized_title": "the chain scribes crypto moonboys wiki",
@@ -2765,11 +2765,90 @@
       ]
     },
     "link_score": {
-      "inbound_count": 32,
-      "outbound_count": 22,
+      "inbound_count": 33,
+      "outbound_count": 23,
       "existing_outbound_count": 11,
-      "suggested_outbound_count": 11,
-      "authority": 69.5
+      "suggested_outbound_count": 12,
+      "authority": 71.5
+    },
+    "brand": null
+  },
+  {
+    "title": "Bitcoin (BTC)",
+    "desc": "Bitcoin (BTC) — the world",
+    "url": "/wiki/bitcoin.html",
+    "tags": [
+      "bitcoin",
+      "btc",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "tokens",
+    "aliases": [
+      {
+        "title": "bitcoin"
+      },
+      {
+        "title": "bitcoin btc crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 354,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 2,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "tokens",
+      "category_priority": 6,
+      "has_description": true,
+      "article_word_count": 2857,
+      "keyword_bag_size": 7,
+      "heading_count": 28,
+      "list_count": 4,
+      "internal_link_count": 33,
+      "paragraph_count": 31,
+      "section_count": 3,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 70,
+      "authority_score": 26
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 30,
+      "word_count_points": 143,
+      "keyword_bag_points": 7,
+      "content_quality_points": 81,
+      "authority_points": 63,
+      "final_rank_score": 354,
+      "authority_graph_points": 37
+    },
+    "search_index": {
+      "normalized_title": "bitcoin btc crypto moonboys wiki",
+      "tokens": [
+        "bitcoin",
+        "btc",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "bitcoin",
+        "btc",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "the",
+        "world"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 14,
+      "outbound_count": 32,
+      "existing_outbound_count": 18,
+      "suggested_outbound_count": 14,
+      "authority": 37
     },
     "brand": null
   },
@@ -2861,85 +2940,6 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 4,
       "authority": 77.5
-    },
-    "brand": null
-  },
-  {
-    "title": "Bitcoin (BTC)",
-    "desc": "Bitcoin (BTC) — the world",
-    "url": "/wiki/bitcoin.html",
-    "tags": [
-      "bitcoin",
-      "btc",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "tokens",
-    "aliases": [
-      {
-        "title": "bitcoin"
-      },
-      {
-        "title": "bitcoin btc crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 352,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 2,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "tokens",
-      "category_priority": 6,
-      "has_description": true,
-      "article_word_count": 2857,
-      "keyword_bag_size": 7,
-      "heading_count": 28,
-      "list_count": 4,
-      "internal_link_count": 33,
-      "paragraph_count": 31,
-      "section_count": 3,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 70,
-      "authority_score": 26
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 30,
-      "word_count_points": 143,
-      "keyword_bag_points": 7,
-      "content_quality_points": 81,
-      "authority_points": 61,
-      "final_rank_score": 352,
-      "authority_graph_points": 35
-    },
-    "search_index": {
-      "normalized_title": "bitcoin btc crypto moonboys wiki",
-      "tokens": [
-        "bitcoin",
-        "btc",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "bitcoin",
-        "btc",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "the",
-        "world"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 13,
-      "outbound_count": 32,
-      "existing_outbound_count": 18,
-      "suggested_outbound_count": 14,
-      "authority": 35
     },
     "brand": null
   },
@@ -3116,6 +3116,105 @@
     "brand": null
   },
   {
+    "title": "HODL Warriors",
+    "desc": "HODL Warriors are both a real Crypto Moonboys community identity and the collective defence force of the Year 3008 lore.",
+    "url": "/wiki/hodl-warriors.html",
+    "tags": [
+      "hodl",
+      "warriors",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "characters",
+    "aliases": [
+      {
+        "title": "hodl warriors crypto moonboys wiki"
+      },
+      {
+        "title": "Hodl X Warriors"
+      }
+    ],
+    "rank_score": 335,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 2,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "characters",
+      "category_priority": 8,
+      "has_description": true,
+      "article_word_count": 1782,
+      "keyword_bag_size": 21,
+      "heading_count": 15,
+      "list_count": 1,
+      "internal_link_count": 8,
+      "paragraph_count": 35,
+      "section_count": 12,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 77,
+      "authority_score": 21
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 40,
+      "word_count_points": 89,
+      "keyword_bag_points": 21,
+      "content_quality_points": 88,
+      "authority_points": 67,
+      "final_rank_score": 335,
+      "authority_graph_points": 46
+    },
+    "search_index": {
+      "normalized_title": "hodl warriors crypto moonboys wiki",
+      "tokens": [
+        "hodl",
+        "warriors",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "hodl",
+        "warriors",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "are",
+        "both",
+        "a",
+        "real",
+        "community",
+        "identity",
+        "and",
+        "the",
+        "collective",
+        "defence",
+        "force",
+        "of",
+        "year",
+        "3008",
+        "lore",
+        "x"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 21,
+      "outbound_count": 13,
+      "existing_outbound_count": 8,
+      "suggested_outbound_count": 5,
+      "authority": 46
+    },
+    "brand": {
+      "brand_family": "hodl",
+      "concept_type": "faction",
+      "canonical_concept_id": "hodl:faction",
+      "canonical_slug": "hodl-warriors",
+      "parent_concept": null
+    }
+  },
+  {
     "title": "Crypto Staking",
     "desc": "A practical guide to crypto staking: how proof-of-stake rewards work, the main staking models, yield sources, lock-ups, slashing and key risks.",
     "url": "/wiki/staking.html",
@@ -3210,105 +3309,6 @@
       "authority": 49.5
     },
     "brand": null
-  },
-  {
-    "title": "HODL Warriors",
-    "desc": "HODL Warriors are both a real Crypto Moonboys community identity and the collective defence force of the Year 3008 lore.",
-    "url": "/wiki/hodl-warriors.html",
-    "tags": [
-      "hodl",
-      "warriors",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "characters",
-    "aliases": [
-      {
-        "title": "hodl warriors crypto moonboys wiki"
-      },
-      {
-        "title": "Hodl X Warriors"
-      }
-    ],
-    "rank_score": 333,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 2,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "characters",
-      "category_priority": 8,
-      "has_description": true,
-      "article_word_count": 1782,
-      "keyword_bag_size": 21,
-      "heading_count": 15,
-      "list_count": 1,
-      "internal_link_count": 8,
-      "paragraph_count": 35,
-      "section_count": 12,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 77,
-      "authority_score": 21
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 40,
-      "word_count_points": 89,
-      "keyword_bag_points": 21,
-      "content_quality_points": 88,
-      "authority_points": 65,
-      "final_rank_score": 333,
-      "authority_graph_points": 44
-    },
-    "search_index": {
-      "normalized_title": "hodl warriors crypto moonboys wiki",
-      "tokens": [
-        "hodl",
-        "warriors",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "hodl",
-        "warriors",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "are",
-        "both",
-        "a",
-        "real",
-        "community",
-        "identity",
-        "and",
-        "the",
-        "collective",
-        "defence",
-        "force",
-        "of",
-        "year",
-        "3008",
-        "lore",
-        "x"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 20,
-      "outbound_count": 13,
-      "existing_outbound_count": 8,
-      "suggested_outbound_count": 5,
-      "authority": 44
-    },
-    "brand": {
-      "brand_family": "hodl",
-      "concept_type": "faction",
-      "canonical_concept_id": "hodl:faction",
-      "canonical_slug": "hodl-warriors",
-      "parent_concept": null
-    }
   },
   {
     "title": "$WAXP",
@@ -3772,6 +3772,100 @@
     "brand": null
   },
   {
+    "title": "The Sacred Chain",
+    "desc": "The Sacred Chain is the shared record, identity system and contested memory layer at the centre of Crypto Moonboys Year 3008 lore.",
+    "url": "/wiki/sacred-chain.html",
+    "tags": [
+      "sacred",
+      "chain",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "sacred chain crypto moonboys wiki"
+      },
+      {
+        "title": "Sacred Chain"
+      }
+    ],
+    "rank_score": 310,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 2,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 1920,
+      "keyword_bag_size": 21,
+      "heading_count": 16,
+      "list_count": 1,
+      "internal_link_count": 10,
+      "paragraph_count": 38,
+      "section_count": 13,
+      "lore_paragraph_count": 2,
+      "content_quality_score": 81,
+      "authority_score": 21
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 96,
+      "keyword_bag_points": 21,
+      "content_quality_points": 92,
+      "authority_points": 36,
+      "final_rank_score": 310,
+      "authority_graph_points": 15
+    },
+    "search_index": {
+      "normalized_title": "the sacred chain crypto moonboys wiki",
+      "tokens": [
+        "the",
+        "sacred",
+        "chain",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "the",
+        "sacred",
+        "chain",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "is",
+        "shared",
+        "record",
+        "identity",
+        "system",
+        "and",
+        "contested",
+        "memory",
+        "layer",
+        "at",
+        "centre",
+        "of",
+        "year",
+        "3008",
+        "lore"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 5,
+      "outbound_count": 13,
+      "existing_outbound_count": 10,
+      "suggested_outbound_count": 3,
+      "authority": 15
+    },
+    "brand": null
+  },
+  {
     "title": "Tokenomics",
     "desc": "Tokenomics — the economic model of a cryptocurrency token including supply, distribution, utility and incentives — Crypto Moonboys Wiki",
     "url": "/wiki/tokenomics.html",
@@ -4141,100 +4235,6 @@
       "existing_outbound_count": 10,
       "suggested_outbound_count": 13,
       "authority": 7
-    },
-    "brand": null
-  },
-  {
-    "title": "The Sacred Chain",
-    "desc": "The Sacred Chain is the shared record, identity system and contested memory layer at the centre of Crypto Moonboys Year 3008 lore.",
-    "url": "/wiki/sacred-chain.html",
-    "tags": [
-      "sacred",
-      "chain",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "sacred chain crypto moonboys wiki"
-      },
-      {
-        "title": "Sacred Chain"
-      }
-    ],
-    "rank_score": 302,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 2,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 1877,
-      "keyword_bag_size": 21,
-      "heading_count": 15,
-      "list_count": 1,
-      "internal_link_count": 9,
-      "paragraph_count": 37,
-      "section_count": 12,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 77,
-      "authority_score": 21
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 94,
-      "keyword_bag_points": 21,
-      "content_quality_points": 88,
-      "authority_points": 34,
-      "final_rank_score": 302,
-      "authority_graph_points": 13
-    },
-    "search_index": {
-      "normalized_title": "the sacred chain crypto moonboys wiki",
-      "tokens": [
-        "the",
-        "sacred",
-        "chain",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "the",
-        "sacred",
-        "chain",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "is",
-        "shared",
-        "record",
-        "identity",
-        "system",
-        "and",
-        "contested",
-        "memory",
-        "layer",
-        "at",
-        "centre",
-        "of",
-        "year",
-        "3008",
-        "lore"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 4,
-      "outbound_count": 12,
-      "existing_outbound_count": 9,
-      "suggested_outbound_count": 3,
-      "authority": 12.5
     },
     "brand": null
   },
@@ -5149,6 +5149,94 @@
     "brand": null
   },
   {
+    "title": "The First Witness",
+    "desc": "The First Witness is the sacred-text hub for Crypto Moonboys lore: the 2030 Covenant, Bitcoin provenance, Sacred Chain history and Forty Paths.",
+    "url": "/wiki/the-first-witness.html",
+    "tags": [
+      "first",
+      "witness"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "First Witness"
+      }
+    ],
+    "rank_score": 295,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 2,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 1574,
+      "keyword_bag_size": 21,
+      "heading_count": 15,
+      "list_count": 1,
+      "internal_link_count": 16,
+      "paragraph_count": 29,
+      "section_count": 12,
+      "lore_paragraph_count": 26,
+      "content_quality_score": 93,
+      "authority_score": 25
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 79,
+      "keyword_bag_points": 21,
+      "content_quality_points": 98,
+      "authority_points": 32,
+      "final_rank_score": 295,
+      "authority_graph_points": 7
+    },
+    "search_index": {
+      "normalized_title": "the first witness crypto moonboys wiki",
+      "tokens": [
+        "the",
+        "first",
+        "witness",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "the",
+        "first",
+        "witness",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "is",
+        "sacred",
+        "text",
+        "hub",
+        "for",
+        "lore",
+        "2030",
+        "covenant",
+        "bitcoin",
+        "provenance",
+        "chain",
+        "history",
+        "and",
+        "forty",
+        "paths"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 1,
+      "outbound_count": 31,
+      "existing_outbound_count": 10,
+      "suggested_outbound_count": 21,
+      "authority": 7
+    },
+    "brand": null
+  },
+  {
     "title": "Quell",
     "desc": "Quell stands as a rare peacekeeper in the war-torn digital expanse of Block Topia, a singular voice of calm amid the relentless conflicts of the Crypto Moonboys",
     "url": "/wiki/quell.html",
@@ -5707,6 +5795,99 @@
       "existing_outbound_count": 6,
       "suggested_outbound_count": 12,
       "authority": 9
+    },
+    "brand": null
+  },
+  {
+    "title": "Street Kingdoms",
+    "desc": "The Street Kingdoms are a formidable rival to Block Topia’s centralized powers in the Crypto Moonboys universe, emerging as a dominant force from the shattered",
+    "url": "/wiki/street-kingdoms.html",
+    "tags": [
+      "street",
+      "kingdoms",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "street kingdoms crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 292,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 1466,
+      "keyword_bag_size": 24,
+      "heading_count": 10,
+      "list_count": 1,
+      "internal_link_count": 12,
+      "paragraph_count": 22,
+      "section_count": 7,
+      "lore_paragraph_count": 19,
+      "content_quality_score": 93,
+      "authority_score": 21
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 73,
+      "keyword_bag_points": 24,
+      "content_quality_points": 101,
+      "authority_points": 29,
+      "final_rank_score": 292,
+      "authority_graph_points": 8
+    },
+    "search_index": {
+      "normalized_title": "street kingdoms crypto moonboys wiki",
+      "tokens": [
+        "street",
+        "kingdoms",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "street",
+        "kingdoms",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "the",
+        "are",
+        "a",
+        "formidable",
+        "rival",
+        "to",
+        "block",
+        "topia",
+        "s",
+        "centralized",
+        "powers",
+        "in",
+        "universe",
+        "emerging",
+        "as",
+        "dominant",
+        "force",
+        "from",
+        "shattered"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 1,
+      "outbound_count": 20,
+      "existing_outbound_count": 11,
+      "suggested_outbound_count": 9,
+      "authority": 7.5
     },
     "brand": null
   },
@@ -6463,99 +6644,6 @@
     }
   },
   {
-    "title": "Street Kingdoms",
-    "desc": "The Street Kingdoms are a formidable rival to Block Topia’s centralized powers in the Crypto Moonboys universe, emerging as a dominant force from the shattered",
-    "url": "/wiki/street-kingdoms.html",
-    "tags": [
-      "street",
-      "kingdoms",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "street kingdoms crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 290,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 1466,
-      "keyword_bag_size": 24,
-      "heading_count": 10,
-      "list_count": 1,
-      "internal_link_count": 12,
-      "paragraph_count": 22,
-      "section_count": 7,
-      "lore_paragraph_count": 19,
-      "content_quality_score": 93,
-      "authority_score": 21
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 73,
-      "keyword_bag_points": 24,
-      "content_quality_points": 101,
-      "authority_points": 27,
-      "final_rank_score": 290,
-      "authority_graph_points": 6
-    },
-    "search_index": {
-      "normalized_title": "street kingdoms crypto moonboys wiki",
-      "tokens": [
-        "street",
-        "kingdoms",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "street",
-        "kingdoms",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "the",
-        "are",
-        "a",
-        "formidable",
-        "rival",
-        "to",
-        "block",
-        "topia",
-        "s",
-        "centralized",
-        "powers",
-        "in",
-        "universe",
-        "emerging",
-        "as",
-        "dominant",
-        "force",
-        "from",
-        "shattered"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 20,
-      "existing_outbound_count": 11,
-      "suggested_outbound_count": 9,
-      "authority": 5.5
-    },
-    "brand": null
-  },
-  {
     "title": "The EVM PUNKS",
     "desc": "The EVM PUNKS are the rogue spirits of Block Topia, a faction of fierce Ethereum Virtual Machine loyalists who live to defy any force attempting to shackle the",
     "url": "/wiki/the-evm-punks.html",
@@ -7123,6 +7211,99 @@
     "brand": null
   },
   {
+    "title": "HODL X Warriors",
+    "desc": "HODL X Warriors are the engineered battlefield champions of the Crypto Moonboys Year 3008 lore, created where Hard Fork survival meets faction warfare.",
+    "url": "/wiki/hodl-x-warriors.html",
+    "tags": [
+      "hodl",
+      "warriors",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "characters",
+    "aliases": [
+      {
+        "title": "hodl warriors crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 285,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "characters",
+      "category_priority": 8,
+      "has_description": true,
+      "article_word_count": 1606,
+      "keyword_bag_size": 23,
+      "heading_count": 15,
+      "list_count": 1,
+      "internal_link_count": 11,
+      "paragraph_count": 35,
+      "section_count": 12,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 77,
+      "authority_score": 21
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 40,
+      "word_count_points": 80,
+      "keyword_bag_points": 23,
+      "content_quality_points": 85,
+      "authority_points": 27,
+      "final_rank_score": 285,
+      "authority_graph_points": 6
+    },
+    "search_index": {
+      "normalized_title": "hodl x warriors crypto moonboys wiki",
+      "tokens": [
+        "hodl",
+        "x",
+        "warriors",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "hodl",
+        "x",
+        "warriors",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "are",
+        "the",
+        "engineered",
+        "battlefield",
+        "champions",
+        "of",
+        "year",
+        "3008",
+        "lore",
+        "created",
+        "where",
+        "hard",
+        "fork",
+        "survival",
+        "meets",
+        "faction",
+        "warfare"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 1,
+      "outbound_count": 12,
+      "existing_outbound_count": 8,
+      "suggested_outbound_count": 4,
+      "authority": 6
+    },
+    "brand": null
+  },
+  {
     "title": "WUFFI / $WUF",
     "desc": "Crypto Moonboys wiki guide to WUFFI and $WUF, a multi-chain community coin connected to WAX, Solana, Base and TON.",
     "url": "/wiki/wuffi.html",
@@ -7585,103 +7766,10 @@
     },
     "link_score": {
       "inbound_count": 3,
-      "outbound_count": 30,
+      "outbound_count": 31,
       "existing_outbound_count": 8,
-      "suggested_outbound_count": 22,
+      "suggested_outbound_count": 23,
       "authority": 10
-    },
-    "brand": null
-  },
-  {
-    "title": "HODL X Warriors",
-    "desc": "HODL X Warriors are the engineered battlefield champions of the Crypto Moonboys Year 3008 lore, created where Hard Fork survival meets faction warfare.",
-    "url": "/wiki/hodl-x-warriors.html",
-    "tags": [
-      "hodl",
-      "warriors",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "characters",
-    "aliases": [
-      {
-        "title": "hodl warriors crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 283,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "characters",
-      "category_priority": 8,
-      "has_description": true,
-      "article_word_count": 1606,
-      "keyword_bag_size": 23,
-      "heading_count": 15,
-      "list_count": 1,
-      "internal_link_count": 11,
-      "paragraph_count": 35,
-      "section_count": 12,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 77,
-      "authority_score": 21
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 40,
-      "word_count_points": 80,
-      "keyword_bag_points": 23,
-      "content_quality_points": 85,
-      "authority_points": 25,
-      "final_rank_score": 283,
-      "authority_graph_points": 4
-    },
-    "search_index": {
-      "normalized_title": "hodl x warriors crypto moonboys wiki",
-      "tokens": [
-        "hodl",
-        "x",
-        "warriors",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "hodl",
-        "x",
-        "warriors",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "are",
-        "the",
-        "engineered",
-        "battlefield",
-        "champions",
-        "of",
-        "year",
-        "3008",
-        "lore",
-        "created",
-        "where",
-        "hard",
-        "fork",
-        "survival",
-        "meets",
-        "faction",
-        "warfare"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 12,
-      "existing_outbound_count": 8,
-      "suggested_outbound_count": 4,
-      "authority": 4
     },
     "brand": null
   },
@@ -9694,6 +9782,96 @@
     "brand": null
   },
   {
+    "title": "Triple Fork Event",
+    "desc": "The Triple Fork Event is a monumental narrative milestone in the Crypto Moonboys universe, a cataclysmic blockchain fork that shattered Block Topia into three c",
+    "url": "/wiki/triple-fork-event.html",
+    "tags": [
+      "triple",
+      "fork",
+      "event",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [],
+    "rank_score": 271,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 6,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 1243,
+      "keyword_bag_size": 23,
+      "heading_count": 9,
+      "list_count": 1,
+      "internal_link_count": 14,
+      "paragraph_count": 19,
+      "section_count": 6,
+      "lore_paragraph_count": 16,
+      "content_quality_score": 85,
+      "authority_score": 21
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 62,
+      "keyword_bag_points": 23,
+      "content_quality_points": 91,
+      "authority_points": 30,
+      "final_rank_score": 271,
+      "authority_graph_points": 9
+    },
+    "search_index": {
+      "normalized_title": "triple fork event crypto moonboys wiki",
+      "tokens": [
+        "triple",
+        "fork",
+        "event",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "triple",
+        "fork",
+        "event",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "the",
+        "is",
+        "a",
+        "monumental",
+        "narrative",
+        "milestone",
+        "in",
+        "universe",
+        "cataclysmic",
+        "blockchain",
+        "that",
+        "shattered",
+        "block",
+        "topia",
+        "into",
+        "three",
+        "c"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 1,
+      "outbound_count": 28,
+      "existing_outbound_count": 13,
+      "suggested_outbound_count": 15,
+      "authority": 8.5
+    },
+    "brand": null
+  },
+  {
     "title": "Iris-7",
     "desc": "Iris-7 is a visionary scout in the Crypto Moonboys universe, her keen perception and almost prophetic insight uncovering hidden paths and encrypted truths withi",
     "url": "/wiki/iris-7.html",
@@ -9783,96 +9961,6 @@
       "existing_outbound_count": 10,
       "suggested_outbound_count": 6,
       "authority": 7
-    },
-    "brand": null
-  },
-  {
-    "title": "Triple Fork Event",
-    "desc": "The Triple Fork Event is a monumental narrative milestone in the Crypto Moonboys universe, a cataclysmic blockchain fork that shattered Block Topia into three c",
-    "url": "/wiki/triple-fork-event.html",
-    "tags": [
-      "triple",
-      "fork",
-      "event",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [],
-    "rank_score": 269,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 0,
-      "tag_count": 6,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 1243,
-      "keyword_bag_size": 23,
-      "heading_count": 9,
-      "list_count": 1,
-      "internal_link_count": 14,
-      "paragraph_count": 19,
-      "section_count": 6,
-      "lore_paragraph_count": 16,
-      "content_quality_score": 85,
-      "authority_score": 21
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 62,
-      "keyword_bag_points": 23,
-      "content_quality_points": 91,
-      "authority_points": 28,
-      "final_rank_score": 269,
-      "authority_graph_points": 7
-    },
-    "search_index": {
-      "normalized_title": "triple fork event crypto moonboys wiki",
-      "tokens": [
-        "triple",
-        "fork",
-        "event",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "triple",
-        "fork",
-        "event",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "the",
-        "is",
-        "a",
-        "monumental",
-        "narrative",
-        "milestone",
-        "in",
-        "universe",
-        "cataclysmic",
-        "blockchain",
-        "that",
-        "shattered",
-        "block",
-        "topia",
-        "into",
-        "three",
-        "c"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 28,
-      "existing_outbound_count": 13,
-      "suggested_outbound_count": 15,
-      "authority": 6.5
     },
     "brand": null
   },
@@ -21890,6 +21978,82 @@
     "brand": null
   },
   {
+    "title": "Alfie 'Bitcoin Kid' Blaze",
+    "desc": "Alfie",
+    "url": "/wiki/alfie-bitcoin-kid-blaze.html",
+    "tags": [
+      "alfie",
+      "bitcoin",
+      "kid",
+      "blaze",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [],
+    "rank_score": 203,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 7,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 667,
+      "keyword_bag_size": 7,
+      "heading_count": 11,
+      "list_count": 2,
+      "internal_link_count": 12,
+      "paragraph_count": 10,
+      "section_count": 8,
+      "lore_paragraph_count": 8,
+      "content_quality_score": 60,
+      "authority_score": 16
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 33,
+      "keyword_bag_points": 7,
+      "content_quality_points": 67,
+      "authority_points": 31,
+      "final_rank_score": 203,
+      "authority_graph_points": 15
+    },
+    "search_index": {
+      "normalized_title": "alfie bitcoin kid blaze crypto moonboys wiki",
+      "tokens": [
+        "alfie",
+        "bitcoin",
+        "kid",
+        "blaze",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "alfie",
+        "bitcoin",
+        "kid",
+        "blaze",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 5,
+      "outbound_count": 28,
+      "existing_outbound_count": 10,
+      "suggested_outbound_count": 18,
+      "authority": 15
+    },
+    "brand": null
+  },
+  {
     "title": "✨ BLOCKCHAIN FURIE INFINITE ⚡️⚡️⚡️",
     "desc": "✨ BLOCKCHAIN FURIE INFINITE ⚡️⚡️⚡️ is an NFT in the gkniftyheads WAX AtomicAssets collection.",
     "url": "/wiki/gkniftyheads-blockchain-furie-infinite-776007.html",
@@ -22157,82 +22321,6 @@
       "existing_outbound_count": 12,
       "suggested_outbound_count": 54,
       "authority": 20
-    },
-    "brand": null
-  },
-  {
-    "title": "Alfie 'Bitcoin Kid' Blaze",
-    "desc": "Alfie",
-    "url": "/wiki/alfie-bitcoin-kid-blaze.html",
-    "tags": [
-      "alfie",
-      "bitcoin",
-      "kid",
-      "blaze",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [],
-    "rank_score": 201,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 0,
-      "tag_count": 7,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 667,
-      "keyword_bag_size": 7,
-      "heading_count": 11,
-      "list_count": 2,
-      "internal_link_count": 12,
-      "paragraph_count": 10,
-      "section_count": 8,
-      "lore_paragraph_count": 8,
-      "content_quality_score": 60,
-      "authority_score": 16
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 33,
-      "keyword_bag_points": 7,
-      "content_quality_points": 67,
-      "authority_points": 29,
-      "final_rank_score": 201,
-      "authority_graph_points": 13
-    },
-    "search_index": {
-      "normalized_title": "alfie bitcoin kid blaze crypto moonboys wiki",
-      "tokens": [
-        "alfie",
-        "bitcoin",
-        "kid",
-        "blaze",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "alfie",
-        "bitcoin",
-        "kid",
-        "blaze",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 4,
-      "outbound_count": 28,
-      "existing_outbound_count": 10,
-      "suggested_outbound_count": 18,
-      "authority": 13
     },
     "brand": null
   },
