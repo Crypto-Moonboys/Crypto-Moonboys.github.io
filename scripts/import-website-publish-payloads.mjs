@@ -844,8 +844,8 @@ function ownershipFailure(code, message, payload, relPagePath = plannedPagePath(
 }
 
 export function loadWikiContentState(rootDir = ROOT) {
-  const manifestPath = path.join(rootDir, CONTENT_STATE_MANIFEST_FILE);
-  if (!fs.existsSync(manifestPath)) {
+  const manifestBytes = readWorkspaceFileNoFollow(rootDir, CONTENT_STATE_MANIFEST_FILE);
+  if (manifestBytes === null) {
     throw new ContentOwnershipError(
       'MISSING_CONTENT_STATE_MANIFEST',
       `${CONTENT_STATE_MANIFEST_FILE}: required content ownership manifest is missing`,
@@ -855,7 +855,7 @@ export function loadWikiContentState(rootDir = ROOT) {
 
   let manifest;
   try {
-    manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+    manifest = JSON.parse(manifestBytes.toString('utf8'));
   } catch (error) {
     throw new ContentOwnershipError(
       'INVALID_CONTENT_STATE_MANIFEST',
@@ -974,7 +974,15 @@ export function loadWikiContentState(rootDir = ROOT) {
     pagesBySlug.set(slug, page);
   }
 
-  return { manifest, manifestPath, pagesBySlug };
+  return {
+    manifest,
+    manifestIdentity: Object.freeze({
+      path: CONTENT_STATE_MANIFEST_FILE,
+      contentHash: sha256Content(manifestBytes),
+      bytesBase64: manifestBytes.toString('base64'),
+    }),
+    pagesBySlug,
+  };
 }
 
 function payloadToIndexEntry(payload) {
@@ -2260,8 +2268,56 @@ function releasePublishTransactionLock(lockHandle) {
   }
 }
 
-function assertLivePlanBases(rootDir, renderedPages) {
-  for (const plan of renderedPages) {
+function plannedManifestIdentity(renderedPages) {
+  if (renderedPages.length === 0) return null;
+  const expected = renderedPages[0].contentStateManifestIdentity;
+  if (!expected?.bytesBase64 || !SHA256_PATTERN.test(expected.contentHash || '')) {
+    throw new ContentOwnershipError(
+      'CONTENT_STATE_MANIFEST_IDENTITY_MISSING',
+      `${CONTENT_STATE_MANIFEST_FILE}: ownership plan is not bound to the authorizing manifest bytes`,
+      { path: CONTENT_STATE_MANIFEST_FILE }
+    );
+  }
+  for (const plan of renderedPages.slice(1)) {
+    const candidate = plan.contentStateManifestIdentity;
+    if (
+      candidate?.contentHash !== expected.contentHash ||
+      candidate?.bytesBase64 !== expected.bytesBase64
+    ) {
+      throw new ContentOwnershipError(
+        'CONTENT_STATE_MANIFEST_IDENTITY_MISMATCH',
+        `${CONTENT_STATE_MANIFEST_FILE}: article writes in one transaction must share one authorizing manifest identity`,
+        { path: CONTENT_STATE_MANIFEST_FILE }
+      );
+    }
+  }
+  return expected;
+}
+
+function staleManifestIdentity(expected, observedBytes) {
+  const observedHash = observedBytes === null ? 'missing' : sha256Content(observedBytes);
+  return new ContentOwnershipError(
+    'STALE_CONTENT_STATE',
+    `${CONTENT_STATE_MANIFEST_FILE}: authorizing manifest changed after ownership planning (${expected.contentHash} to ${observedHash})`,
+    { path: CONTENT_STATE_MANIFEST_FILE }
+  );
+}
+
+function assertLiveManifestPlanBase(rootDir, renderedPages) {
+  const expected = plannedManifestIdentity(renderedPages);
+  if (!expected) return;
+  const liveBytes = readWorkspaceFileNoFollow(rootDir, CONTENT_STATE_MANIFEST_FILE);
+  if (
+    liveBytes === null ||
+    liveBytes.toString('base64') !== expected.bytesBase64
+  ) {
+    throw staleManifestIdentity(expected, liveBytes);
+  }
+}
+
+function assertLivePlanBases(rootDir, plans) {
+  const renderedPages = plans.filter(({ action }) => action === 'write');
+  for (const plan of plans) {
     const liveBytes = readWorkspaceFileNoFollow(rootDir, plan.relPagePath);
     const pageExists = liveBytes !== null;
     if (plan.state.page_exists === false) {
@@ -2293,9 +2349,26 @@ function assertLivePlanBases(rootDir, renderedPages) {
       );
     }
   }
+  // Keep the manifest check last: this is the final authorization check before
+  // a caller proceeds to an article write, after the page base itself has also
+  // been revalidated.
+  assertLiveManifestPlanBase(rootDir, renderedPages);
 }
 
 function assertSnapshotPlanBases(snapshot, renderedPages) {
+  const expectedManifest = plannedManifestIdentity(renderedPages);
+  if (expectedManifest) {
+    const capturedManifest = snapshot.get(CONTENT_STATE_MANIFEST_FILE);
+    if (
+      !capturedManifest?.exists ||
+      Buffer.from(capturedManifest.content).toString('base64') !== expectedManifest.bytesBase64
+    ) {
+      throw staleManifestIdentity(
+        expectedManifest,
+        capturedManifest?.exists ? Buffer.from(capturedManifest.content) : null
+      );
+    }
+  }
   for (const plan of renderedPages) {
     const captured = snapshot.get(plan.relPagePath);
     if (!captured) {
@@ -3119,7 +3192,7 @@ export function planContentOwnershipUpdates(payloads, rootDir = ROOT) {
     }
     seenSlugs.add(payload.slug);
   }
-  const { pagesBySlug } = loadWikiContentState(rootDir);
+  const { manifestIdentity, pagesBySlug } = loadWikiContentState(rootDir);
 
   return payloads.map((payload) => {
     const relPagePath = plannedPagePath(payload);
@@ -3214,6 +3287,7 @@ export function planContentOwnershipUpdates(payloads, rootDir = ROOT) {
         action: 'metadata-only',
         payload,
         state,
+        contentStateManifestIdentity: manifestIdentity,
         relPagePath,
         existingHtml,
         actualContentHash,
@@ -3378,6 +3452,7 @@ export function planContentOwnershipUpdates(payloads, rootDir = ROOT) {
         reason: 'same-sam-content-hash',
         payload,
         state,
+        contentStateManifestIdentity: manifestIdentity,
         relPagePath,
         existingHtml,
         actualContentHash,
@@ -3410,6 +3485,7 @@ export function planContentOwnershipUpdates(payloads, rootDir = ROOT) {
       action: 'write',
       payload,
       state,
+      contentStateManifestIdentity: manifestIdentity,
       relPagePath,
       existingHtml,
       html,

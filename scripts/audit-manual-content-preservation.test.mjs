@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -56,6 +57,14 @@ function makePage(slug, overrides = {}) {
     audit_notes: [],
     ...overrides,
   };
+}
+
+function git(rootDir, args) {
+  return execFileSync('git', args, {
+    cwd: rootDir,
+    encoding: 'utf8',
+    stdio: ['ignore', 'pipe', 'pipe'],
+  }).trim();
 }
 
 function runFixture({
@@ -313,6 +322,106 @@ assert.ok(demotedBaselineResult.failures.some((failure) =>
 ));
 console.log('PASS existing baseline pages cannot disappear or become absent stubs after manifest regeneration');
 
+const multiCommitRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'wiki-ownership-push-range-'));
+const priorBaseSha = process.env.BASE_SHA;
+const priorGithubBaseSha = process.env.GITHUB_BASE_SHA;
+try {
+  const multiCommitWikiDir = path.join(multiCommitRoot, 'wiki');
+  const multiCommitManifestPath = path.join(multiCommitRoot, 'brand-canon', 'wiki-content-state.json');
+  fs.mkdirSync(multiCommitWikiDir, { recursive: true });
+  fs.mkdirSync(path.dirname(multiCommitManifestPath), { recursive: true });
+  const pushedRangePage = makePage('multi-commit-protected-page', {
+    automation_policy: 'canon-locked',
+  });
+  const pushedRangeReclassifiedBaseline = makePage('multi-commit-reclassified-page', {
+    automation_policy: 'metadata-only',
+    rewrite_status: 'REWRITE_FULL',
+    rewrite_cluster: 'Core cosmology / history',
+  });
+  const pushedRangeReclassifiedCurrent = {
+    ...pushedRangeReclassifiedBaseline,
+    rewrite_status: 'KEEP',
+    rewrite_cluster: 'Historical/archive pages',
+  };
+  fs.writeFileSync(
+    path.join(multiCommitWikiDir, 'multi-commit-protected-page.html'),
+    '<article><p>Protected prose at the start of the pushed range.</p></article>',
+    'utf8',
+  );
+  fs.writeFileSync(
+    path.join(multiCommitWikiDir, 'multi-commit-reclassified-page.html'),
+    '<article><p>Protected classification at the start of the pushed range.</p></article>',
+    'utf8',
+  );
+  fs.writeFileSync(multiCommitManifestPath, `${JSON.stringify({
+    summary: {
+      total_pages_audited: 2,
+      total_manifest_entries: 2,
+      absent_stub_authorizations: 0,
+    },
+    pages: [pushedRangePage, pushedRangeReclassifiedBaseline],
+  })}\n`, 'utf8');
+
+  git(multiCommitRoot, ['init', '--quiet']);
+  git(multiCommitRoot, ['config', 'user.email', 'ci-test@example.invalid']);
+  git(multiCommitRoot, ['config', 'user.name', 'CI Test']);
+  git(multiCommitRoot, ['add', '.']);
+  git(multiCommitRoot, ['commit', '--quiet', '--no-gpg-sign', '-m', 'baseline protected page']);
+  const pushBeforeSha = git(multiCommitRoot, ['rev-parse', 'HEAD']);
+
+  fs.rmSync(path.join(multiCommitWikiDir, 'multi-commit-protected-page.html'));
+  fs.writeFileSync(multiCommitManifestPath, `${JSON.stringify({
+    summary: {
+      total_pages_audited: 1,
+      total_manifest_entries: 1,
+      absent_stub_authorizations: 0,
+    },
+    pages: [pushedRangeReclassifiedCurrent],
+  })}\n`, 'utf8');
+  git(multiCommitRoot, ['add', '--all']);
+  git(multiCommitRoot, ['commit', '--quiet', '--no-gpg-sign', '-m', 'delete protected page']);
+  const destructiveCommitSha = git(multiCommitRoot, ['rev-parse', 'HEAD']);
+
+  fs.writeFileSync(path.join(multiCommitRoot, 'unrelated.txt'), 'unrelated follow-up\n', 'utf8');
+  git(multiCommitRoot, ['add', 'unrelated.txt']);
+  git(multiCommitRoot, ['commit', '--quiet', '--no-gpg-sign', '-m', 'unrelated follow-up']);
+  assert.equal(git(multiCommitRoot, ['rev-parse', 'HEAD^']), destructiveCommitSha);
+
+  process.env.BASE_SHA = pushBeforeSha;
+  delete process.env.GITHUB_BASE_SHA;
+  const fullPushRangeResult = runContentOwnershipAudit({
+    rootDir: multiCommitRoot,
+    wikiDir: multiCommitWikiDir,
+    manifestPath: multiCommitManifestPath,
+    payloadDir: path.join(multiCommitRoot, 'website-publish-payloads'),
+    currentState: {
+      summary: {
+        total_pages_audited: 1,
+        total_manifest_entries: 1,
+        absent_stub_authorizations: 0,
+      },
+      pages: [pushedRangeReclassifiedCurrent],
+    },
+    canonProseChangeApproved: false,
+  });
+  assert.ok(fullPushRangeResult.failures.some((failure) =>
+    failure.includes('existing baseline page disappeared')
+      && failure.includes('multi-commit-protected-page')
+      && failure.includes(pushBeforeSha)
+  ));
+  assert.ok(fullPushRangeResult.failures.some((failure) =>
+    failure.includes('rewrite classification changed without explicit canon prose change approval')
+      && failure.includes('multi-commit-reclassified-page')
+  ));
+  console.log('PASS multi-commit push catches commit A deletion and reclassification despite unrelated commit B');
+} finally {
+  if (priorBaseSha === undefined) delete process.env.BASE_SHA;
+  else process.env.BASE_SHA = priorBaseSha;
+  if (priorGithubBaseSha === undefined) delete process.env.GITHUB_BASE_SHA;
+  else process.env.GITHUB_BASE_SHA = priorGithubBaseSha;
+  fs.rmSync(multiCommitRoot, { recursive: true, force: true });
+}
+
 const nearDuplicatePage = makePage('near-duplicate-report', {
   likely_near_duplicate_sections: [{ first_heading: 'A', second_heading: 'B' }],
 });
@@ -343,11 +452,34 @@ const protectedEditResult = runFixture({
     revision: 'base-fixture',
     manifest: { pages: [protectedBaselinePage] },
   },
+  canonProseChangeApproved: false,
 });
 assert.ok(protectedEditResult.failures.some((failure) =>
   failure.includes('Protected article prose changed') && failure.includes('protected-direct-edit')
 ));
-console.log('PASS direct article edits to protected pages fail by default');
+console.log('PASS ordinary direct or bot push cannot approve metadata-only prose changes');
+
+const changedCanonLockedPage = makePage('canon-locked-direct-edit', {
+  automation_policy: 'canon-locked',
+  article_content_hash: `sha256:${'7'.repeat(64)}`,
+});
+const canonLockedBaselinePage = makePage('canon-locked-direct-edit', {
+  automation_policy: 'canon-locked',
+  article_content_hash: `sha256:${'8'.repeat(64)}`,
+});
+const canonLockedDirectEditResult = runFixture({
+  page: changedCanonLockedPage,
+  html: '<article><p>Unapproved canon-locked direct or bot push fixture.</p></article>',
+  baseline: {
+    revision: 'push-before-fixture',
+    manifest: { pages: [canonLockedBaselinePage] },
+  },
+  canonProseChangeApproved: false,
+});
+assert.ok(canonLockedDirectEditResult.failures.some((failure) =>
+  failure.includes('Protected article prose changed') && failure.includes('canon-locked-direct-edit')
+));
+console.log('PASS ordinary direct or bot push cannot approve canon-locked prose changes');
 
 const approvedProtectedEditResult = runFixture({
   page: changedProtectedPage,
@@ -410,6 +542,7 @@ const reclassifiedResult = runFixture({
   page: reclassifiedPage,
   html: '<article><p>Unchanged high-risk queue prose.</p></article>',
   baseline: { revision: 'base-fixture', manifest: { pages: [reclassifiedBaseline] } },
+  canonProseChangeApproved: false,
 });
 assert.ok(reclassifiedResult.failures.some((failure) =>
   failure.includes('rewrite classification changed without explicit canon prose change approval')
@@ -421,7 +554,7 @@ const approvedReclassifiedResult = runFixture({
   canonProseChangeApproved: true,
 });
 assert.deepEqual(approvedReclassifiedResult.failures, []);
-console.log('PASS rewrite status and cluster reclassification requires canon prose approval');
+console.log('PASS ordinary direct or bot push cannot approve rewrite status or cluster reclassification');
 
 const protectedToStubPage = makePage('protected-to-stub', {
   page_type: 'stub',

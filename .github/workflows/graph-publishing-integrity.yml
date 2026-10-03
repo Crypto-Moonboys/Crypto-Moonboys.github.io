@@ -81,7 +81,9 @@ jobs:
 
       - name: Validate regenerated wiki surfaces
         env:
-          CANON_PROSE_CHANGE_APPROVED: ${{ (github.event_name == 'push' || (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'canon-prose-change-approved'))) && '1' || '0' }}
+          BASE_SHA: ${{ github.event_name == 'push' && github.event.before || github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+          CANON_PROSE_CHANGE_APPROVED: ${{ github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'canon-prose-change-approved') && '1' || '0' }}
         run: npm run ci:wiki
 
       - name: Fail on stale generated publishing surfaces

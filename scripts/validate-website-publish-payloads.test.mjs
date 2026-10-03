@@ -829,6 +829,119 @@ assert.equal(fs.readFileSync(racedPagePath, 'utf8'), concurrentHtml, 'concurrent
 assert.equal(fs.existsSync(path.join(racedFixture.rootDir, PUBLISH_TRANSACTION_LOCK)), false, 'failed race preflight must release the lock');
 console.log('PASS final live-base recheck blocks a deterministic post-plan reset race');
 
+const metadataRevocationFixture = ownershipFixture();
+const metadataRevocationPagePath = path.join(
+  metadataRevocationFixture.rootDir,
+  'wiki',
+  'ownership-case.html'
+);
+const metadataRevocationManifestPath = path.join(
+  metadataRevocationFixture.rootDir,
+  CONTENT_STATE_MANIFEST_FILE
+);
+const metadataRevocationPageBefore = fs.readFileSync(metadataRevocationPagePath);
+let metadataRevocationManifestBytes = null;
+let metadataRevocationInjected = false;
+assert.throws(
+  () => runImport({
+    payloadDir: metadataRevocationFixture.payloadDir,
+    rootDir: metadataRevocationFixture.rootDir,
+    write: true,
+    logger: (line) => {
+      if (!metadataRevocationInjected && line.includes('Intended page path:')) {
+        const manifest = JSON.parse(fs.readFileSync(metadataRevocationManifestPath, 'utf8'));
+        manifest.pages[0].automation_policy = 'metadata-only';
+        writeJson(metadataRevocationManifestPath, manifest);
+        metadataRevocationManifestBytes = fs.readFileSync(metadataRevocationManifestPath);
+        metadataRevocationInjected = true;
+      }
+    },
+    refreshContentStateFn: refreshTestContentState,
+  }),
+  (error) => error instanceof ContentOwnershipError &&
+    error.code === 'STALE_CONTENT_STATE' &&
+    error.message.includes('authorizing manifest changed after ownership planning')
+);
+assert.equal(metadataRevocationInjected, true, 'fixture must revoke prose authorization after planning');
+assert.deepEqual(
+  fs.readFileSync(metadataRevocationPagePath),
+  metadataRevocationPageBefore,
+  'metadata-only revocation must fail before changing otherwise-stable page bytes'
+);
+assert.deepEqual(
+  fs.readFileSync(metadataRevocationManifestPath),
+  metadataRevocationManifestBytes,
+  'failed prose write must preserve the newer metadata-only manifest'
+);
+console.log('PASS post-plan metadata-only revocation invalidates the exact authorizing manifest');
+
+const canonRevocationFixture = ownershipFixture();
+const canonRevocationPagePath = path.join(
+  canonRevocationFixture.rootDir,
+  'wiki',
+  'ownership-case.html'
+);
+const canonRevocationManifestPath = path.join(
+  canonRevocationFixture.rootDir,
+  CONTENT_STATE_MANIFEST_FILE
+);
+const canonRevocationPageBefore = fs.readFileSync(canonRevocationPagePath);
+let canonRevocationManifestBytes = null;
+let canonRevocationManifestOpens = 0;
+let canonRevocationInjected = false;
+const openSyncBeforeCanonRevocation = fs.openSync;
+fs.openSync = function interceptCanonRevocationSnapshot(filePath, ...args) {
+  let anchoredParent = '';
+  try {
+    anchoredParent = fs.realpathSync.native(path.dirname(String(filePath)));
+  } catch {
+    // Ignore unrelated non-file-descriptor paths.
+  }
+  if (
+    path.basename(String(filePath)) === path.basename(canonRevocationManifestPath) &&
+    path.resolve(anchoredParent) === path.dirname(path.resolve(canonRevocationManifestPath))
+  ) {
+    canonRevocationManifestOpens += 1;
+    if (canonRevocationManifestOpens === 3 && !canonRevocationInjected) {
+      canonRevocationInjected = true;
+      const manifest = JSON.parse(fs.readFileSync(canonRevocationManifestPath, 'utf8'));
+      manifest.pages[0].automation_policy = 'canon-locked';
+      writeJson(canonRevocationManifestPath, manifest);
+      canonRevocationManifestBytes = fs.readFileSync(canonRevocationManifestPath);
+    }
+  }
+  return openSyncBeforeCanonRevocation.call(fs, filePath, ...args);
+};
+try {
+  assert.throws(
+    () => runImport({
+      payloadDir: canonRevocationFixture.payloadDir,
+      rootDir: canonRevocationFixture.rootDir,
+      write: true,
+      logger: () => {},
+      refreshContentStateFn: refreshTestContentState,
+    }),
+    (error) => error instanceof ContentOwnershipError &&
+      error.code === 'STALE_CONTENT_STATE' &&
+      error.message.includes('authorizing manifest changed after ownership planning')
+  );
+} finally {
+  fs.openSync = openSyncBeforeCanonRevocation;
+}
+assert.ok(canonRevocationManifestOpens >= 3, 'fixture must revoke prose authorization during manifest snapshot capture');
+assert.equal(canonRevocationInjected, true);
+assert.deepEqual(
+  fs.readFileSync(canonRevocationPagePath),
+  canonRevocationPageBefore,
+  'canon-lock revocation during snapshot must fail before changing stable page bytes'
+);
+assert.deepEqual(
+  fs.readFileSync(canonRevocationManifestPath),
+  canonRevocationManifestBytes,
+  'snapshot rejection must not adopt or roll back the newer canon-locked manifest'
+);
+console.log('PASS snapshot-time canon-lock revocation cannot become the transaction rollback base');
+
 const snapshotRaceFixture = ownershipFixture();
 const snapshotRacePagePath = path.join(snapshotRaceFixture.rootDir, 'wiki', 'ownership-case.html');
 const snapshotRaceHtml = '<article class="wiki-content"><p>CONCURRENT CHANGE DURING SNAPSHOT.</p></article>';
@@ -2328,6 +2441,50 @@ assert.throws(
 assert.deepEqual(fs.readFileSync(partialRefreshPagePath), partialRefreshPageBefore);
 assert.deepEqual(fs.readFileSync(partialRefreshManifestPath), partialRefreshManifestBefore);
 console.log('PASS partial content-state refresh failure rolls back its own output');
+
+const refreshManifestRevocationFixture = ownershipFixture();
+const refreshManifestRevocationPagePath = path.join(
+  refreshManifestRevocationFixture.rootDir,
+  'wiki',
+  'ownership-case.html'
+);
+const refreshManifestRevocationManifestPath = path.join(
+  refreshManifestRevocationFixture.rootDir,
+  CONTENT_STATE_MANIFEST_FILE
+);
+const refreshManifestRevocationPageBefore = fs.readFileSync(refreshManifestRevocationPagePath);
+let refreshManifestRevocationBytes = null;
+assert.throws(
+  () => runImport({
+    payloadDir: refreshManifestRevocationFixture.payloadDir,
+    rootDir: refreshManifestRevocationFixture.rootDir,
+    write: true,
+    logger: () => {},
+    refreshContentStateFn: (isolatedRoot) => {
+      const liveManifest = JSON.parse(
+        fs.readFileSync(refreshManifestRevocationManifestPath, 'utf8')
+      );
+      liveManifest.pages[0].automation_policy = 'canon-locked';
+      writeJson(refreshManifestRevocationManifestPath, liveManifest);
+      refreshManifestRevocationBytes = fs.readFileSync(refreshManifestRevocationManifestPath);
+      return refreshTestContentState(isolatedRoot);
+    },
+  }),
+  (error) => error instanceof ContentOwnershipError &&
+    error.code === 'PUBLISH_TRANSACTION_ROLLBACK_CONFLICT' &&
+    error.cause?.code === 'STALE_CONTENT_STATE'
+);
+assert.deepEqual(
+  fs.readFileSync(refreshManifestRevocationPagePath),
+  refreshManifestRevocationPageBefore,
+  'manifest refresh conflict must roll the planned page write back'
+);
+assert.deepEqual(
+  fs.readFileSync(refreshManifestRevocationManifestPath),
+  refreshManifestRevocationBytes,
+  'content-state refresh must preserve a concurrent canon-lock revocation'
+);
+console.log('PASS content-state refresh cannot overwrite a concurrent manifest policy revocation');
 
 const refreshConcurrentFixture = ownershipFixture();
 const refreshConcurrentPagePath = path.join(

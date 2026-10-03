@@ -38,7 +38,16 @@ def page_entry(slug, html, policy="replace-sam-block", **overrides):
         "automation_policy": policy,
     }
     entry.update(overrides)
-    return entry
+    # Most focused transaction tests construct a one-page repository manifest.
+    # Bind their plan records to the exact bytes those tests install so the
+    # production manifest-identity precondition remains mandatory everywhere.
+    manifest_bytes = json.dumps({"pages": [entry]}).encode("utf-8")
+    identity = publisher.ContentStateManifestIdentity(
+        content_bytes=manifest_bytes,
+        content_hash=publisher.sha256_bytes(manifest_bytes),
+        byte_length=len(manifest_bytes),
+    )
+    return publisher.ContentStateRecord(entry, identity)
 
 
 def write_staged_refresh_outputs(output_dir, manifest, report="refreshed report\n"):
@@ -599,6 +608,22 @@ class PublisherOwnershipTest(unittest.TestCase):
             "wiki/known-page.html",
         )
 
+    def test_loaded_manifest_policy_record_is_immutable_authorization_evidence(self):
+        manifest_path = Path(self.temp.name) / "immutable-manifest.json"
+        entry = page_entry("locked-page", None, policy="stub-allowed")
+        manifest_path.write_text(
+            json.dumps({"pages": [entry]}), encoding="utf-8"
+        )
+        loaded_entry = publisher.load_content_state_manifest(
+            str(manifest_path)
+        )["locked-page"]
+
+        with self.assertRaisesRegex(TypeError, "immutable authorization evidence"):
+            loaded_entry["automation_policy"] = "replace-sam-block"
+        with self.assertRaisesRegex(TypeError, "immutable authorization evidence"):
+            loaded_entry.update({"automation_policy": "canon-locked"})
+        self.assertEqual(loaded_entry["automation_policy"], "stub-allowed")
+
     def test_manifest_enforces_page_existence_identity_invariants(self):
         manifest_path = Path(self.temp.name) / "manifest-invariants.json"
         absent = page_entry("future-page", None, policy="stub-allowed")
@@ -681,6 +706,264 @@ class PublisherOwnershipTest(unittest.TestCase):
             repeated_item, refreshed_entry, wiki_dir=str(self.wiki_dir)
         )
         self.assertEqual(second_plan.action, "noop")
+
+    def _assert_manifest_policy_revocation_aborts_before_write(self, policy):
+        slug = f"manifest-revoked-{policy}"
+        old_html = (
+            f"<article>{publisher.SAM_CONTENT_BEGIN}<p>Old.</p>"
+            f"{publisher.SAM_CONTENT_END}</article>"
+        )
+        page_path = self.write_page(slug, old_html)
+        allowed_entry = page_entry(slug, old_html)
+        root = Path(self.temp.name)
+        manifest_path = root / f"{slug}-wiki-content-state.json"
+        report_path = root / f"{slug}-wiki-rewrite-audit.md"
+        sitemap_path = root / f"{slug}-sitemap.xml"
+        allowed_manifest = json.dumps({"pages": [allowed_entry]}).encode("utf-8")
+        manifest_path.write_bytes(allowed_manifest)
+        report_path.write_text("original report\n", encoding="utf-8")
+        sitemap_path.write_text("<urlset></urlset>\n", encoding="utf-8")
+
+        loaded_entry = publisher.load_content_state_manifest(str(manifest_path))[slug]
+        plan = publisher.plan_item_publish(
+            self.item(slug, loaded_entry, "<p>Must not be written.</p>"),
+            loaded_entry,
+            wiki_dir=str(self.wiki_dir),
+        )
+        self.assertEqual(plan.action, "replace-sam-block")
+
+        revoked_entry = {**dict(allowed_entry), "automation_policy": policy}
+        revoked_manifest = json.dumps({"pages": [revoked_entry]}).encode("utf-8")
+        refresh_executed = False
+        manifest_snapshot_count = 0
+
+        def refresh_must_not_run(_output_dir):
+            nonlocal refresh_executed
+            refresh_executed = True
+            self.fail("stale manifest authorization must fail before refresh")
+
+        real_snapshot = publisher._snapshot_anchored
+
+        def revoke_after_transaction_snapshot(target):
+            nonlocal manifest_snapshot_count
+            snapshot = real_snapshot(target)
+            if target.path == str(manifest_path):
+                manifest_snapshot_count += 1
+                if manifest_snapshot_count == 2:
+                    # Land the revocation after transaction setup and its first
+                    # authorization assertion, but before the page write loop.
+                    manifest_path.write_bytes(revoked_manifest)
+            return snapshot
+
+        with mock.patch.object(
+            publisher,
+            "_snapshot_anchored",
+            side_effect=revoke_after_transaction_snapshot,
+        ), mock.patch.object(
+            publisher,
+            "_apply_anchored_write",
+            wraps=publisher._apply_anchored_write,
+        ) as apply_write:
+            with self.assertRaisesRegex(
+                publisher.PublisherSafetyError,
+                "content-state manifest changed after planning",
+            ):
+                publisher.execute_publish_transaction(
+                    [plan],
+                    repo_root=self.temp.name,
+                    wiki_dir=str(self.wiki_dir),
+                    sitemap_path=str(sitemap_path),
+                    manifest_path=str(manifest_path),
+                    report_path=str(report_path),
+                    refresh_content_state_fn=refresh_must_not_run,
+                )
+            apply_write.assert_not_called()
+
+        self.assertFalse(refresh_executed)
+        self.assertGreaterEqual(manifest_snapshot_count, 3)
+        self.assertEqual(page_path.read_text(encoding="utf-8"), old_html)
+        self.assertEqual(manifest_path.read_bytes(), revoked_manifest)
+        self.assertEqual(report_path.read_text(encoding="utf-8"), "original report\n")
+        self.assertEqual(sitemap_path.read_text(encoding="utf-8"), "<urlset></urlset>\n")
+        self.assertFalse((root / publisher.PUBLISH_TRANSACTION_LOCK).exists())
+
+    def test_manifest_policy_revocation_to_metadata_only_aborts_before_page_write(self):
+        self._assert_manifest_policy_revocation_aborts_before_write("metadata-only")
+
+    def test_manifest_policy_revocation_to_canon_locked_aborts_before_page_write(self):
+        self._assert_manifest_policy_revocation_aborts_before_write("canon-locked")
+
+    def test_manifest_revocation_in_transaction_snapshot_aborts_before_page_write(self):
+        slug = "manifest-revoked-before-snapshot"
+        old_html = (
+            f"<article>{publisher.SAM_CONTENT_BEGIN}<p>Old.</p>"
+            f"{publisher.SAM_CONTENT_END}</article>"
+        )
+        page_path = self.write_page(slug, old_html)
+        allowed_entry = page_entry(slug, old_html)
+        root = Path(self.temp.name)
+        manifest_path = root / "wiki-content-state.json"
+        report_path = root / "wiki-rewrite-audit.md"
+        sitemap_path = root / "sitemap.xml"
+        manifest_path.write_bytes(
+            json.dumps({"pages": [allowed_entry]}).encode("utf-8")
+        )
+        report_path.write_text("original report\n", encoding="utf-8")
+        sitemap_path.write_text("<urlset></urlset>\n", encoding="utf-8")
+
+        loaded_entry = publisher.load_content_state_manifest(str(manifest_path))[slug]
+        plan = publisher.plan_item_publish(
+            self.item(slug, loaded_entry, "<p>Must not be written.</p>"),
+            loaded_entry,
+            wiki_dir=str(self.wiki_dir),
+        )
+        revoked_entry = {
+            **dict(allowed_entry),
+            "automation_policy": "metadata-only",
+        }
+        revoked_manifest = json.dumps({"pages": [revoked_entry]}).encode("utf-8")
+        manifest_path.write_bytes(revoked_manifest)
+
+        with mock.patch.object(
+            publisher,
+            "_apply_anchored_write",
+            wraps=publisher._apply_anchored_write,
+        ) as apply_write:
+            with self.assertRaisesRegex(
+                publisher.PublisherSafetyError,
+                "content-state manifest changed after planning",
+            ):
+                publisher.execute_publish_transaction(
+                    [plan],
+                    repo_root=self.temp.name,
+                    wiki_dir=str(self.wiki_dir),
+                    sitemap_path=str(sitemap_path),
+                    manifest_path=str(manifest_path),
+                    report_path=str(report_path),
+                    refresh_content_state_fn=lambda _output_dir: self.fail(
+                        "captured manifest mismatch must fail before refresh"
+                    ),
+                )
+            apply_write.assert_not_called()
+
+        self.assertEqual(page_path.read_text(encoding="utf-8"), old_html)
+        self.assertEqual(manifest_path.read_bytes(), revoked_manifest)
+        self.assertEqual(report_path.read_text(encoding="utf-8"), "original report\n")
+        self.assertFalse((root / publisher.PUBLISH_TRANSACTION_LOCK).exists())
+
+    def test_article_write_plan_without_loaded_manifest_identity_fails_closed(self):
+        slug = "unbound-manifest-plan"
+        old_html = (
+            f"<article>{publisher.SAM_CONTENT_BEGIN}<p>Old.</p>"
+            f"{publisher.SAM_CONTENT_END}</article>"
+        )
+        page_path = self.write_page(slug, old_html)
+        bound_entry = page_entry(slug, old_html)
+        plain_entry = dict(bound_entry)
+        plan = publisher.plan_item_publish(
+            self.item(slug, plain_entry, "<p>Must not be written.</p>"),
+            plain_entry,
+            wiki_dir=str(self.wiki_dir),
+        )
+        root = Path(self.temp.name)
+        manifest_path = root / "wiki-content-state.json"
+        report_path = root / "wiki-rewrite-audit.md"
+        sitemap_path = root / "sitemap.xml"
+        manifest_path.write_text(
+            json.dumps({"pages": [plain_entry]}), encoding="utf-8"
+        )
+        report_path.write_text("original report\n", encoding="utf-8")
+        sitemap_path.write_text("<urlset></urlset>\n", encoding="utf-8")
+
+        with self.assertRaisesRegex(
+            publisher.PublisherSafetyError,
+            r"plans authorized by load_content_state_manifest\(\)",
+        ):
+            publisher.execute_publish_transaction(
+                [plan],
+                repo_root=self.temp.name,
+                wiki_dir=str(self.wiki_dir),
+                sitemap_path=str(sitemap_path),
+                manifest_path=str(manifest_path),
+                report_path=str(report_path),
+                refresh_content_state_fn=lambda _output_dir: self.fail(
+                    "unbound plan must fail before refresh"
+                ),
+            )
+
+        self.assertEqual(page_path.read_text(encoding="utf-8"), old_html)
+        self.assertFalse((root / publisher.PUBLISH_TRANSACTION_LOCK).exists())
+
+    def test_manifest_revocation_during_refresh_is_preserved_without_manifest_write(self):
+        slug = "manifest-revoked-during-refresh"
+        old_html = (
+            f"<article>{publisher.SAM_CONTENT_BEGIN}<p>Old.</p>"
+            f"{publisher.SAM_CONTENT_END}</article>"
+        )
+        page_path = self.write_page(slug, old_html)
+        allowed_entry = page_entry(slug, old_html)
+        root = Path(self.temp.name)
+        manifest_path = root / "wiki-content-state.json"
+        report_path = root / "wiki-rewrite-audit.md"
+        sitemap_path = root / "sitemap.xml"
+        manifest_path.write_bytes(
+            json.dumps({"pages": [allowed_entry]}).encode("utf-8")
+        )
+        report_path.write_text("original report\n", encoding="utf-8")
+        sitemap_path.write_text("<urlset></urlset>\n", encoding="utf-8")
+
+        loaded_entry = publisher.load_content_state_manifest(str(manifest_path))[slug]
+        plan = publisher.plan_item_publish(
+            self.item(slug, loaded_entry, "<p>Planned write.</p>"),
+            loaded_entry,
+            wiki_dir=str(self.wiki_dir),
+        )
+        revoked_entry = {
+            **dict(allowed_entry),
+            "automation_policy": "canon-locked",
+        }
+        revoked_manifest = json.dumps({"pages": [revoked_entry]}).encode("utf-8")
+
+        def refresh_then_revoke(output_dir):
+            write_staged_refresh_outputs(
+                output_dir,
+                {"pages": [page_entry(slug, plan.html)]},
+            )
+            manifest_path.write_bytes(revoked_manifest)
+
+        applied_targets = []
+        real_apply = publisher._apply_anchored_write
+
+        def record_apply(target, *args, **kwargs):
+            applied_targets.append(target.path)
+            return real_apply(target, *args, **kwargs)
+
+        with mock.patch.object(
+            publisher,
+            "_apply_anchored_write",
+            side_effect=record_apply,
+        ):
+            with self.assertRaisesRegex(
+                publisher.PublisherSafetyError,
+                "publish transaction rolled back: content-state manifest changed",
+            ):
+                publisher.execute_publish_transaction(
+                    [plan],
+                    repo_root=self.temp.name,
+                    wiki_dir=str(self.wiki_dir),
+                    sitemap_path=str(sitemap_path),
+                    manifest_path=str(manifest_path),
+                    report_path=str(report_path),
+                    refresh_content_state_fn=refresh_then_revoke,
+                )
+
+        self.assertIn(str(page_path), applied_targets)
+        self.assertNotIn(str(manifest_path), applied_targets)
+        self.assertEqual(page_path.read_text(encoding="utf-8"), old_html)
+        self.assertEqual(manifest_path.read_bytes(), revoked_manifest)
+        self.assertEqual(report_path.read_text(encoding="utf-8"), "original report\n")
+        self.assertEqual(sitemap_path.read_text(encoding="utf-8"), "<urlset></urlset>\n")
+        self.assertFalse((root / publisher.PUBLISH_TRANSACTION_LOCK).exists())
 
     def test_quarantine_cleanup_failure_reports_committed_without_rollback(self):
         slug = "committed-recovery-residue-page"

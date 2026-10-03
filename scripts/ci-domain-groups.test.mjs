@@ -11,7 +11,8 @@ const preparePagesArtifact = await fs.readFile(path.join(ROOT, 'scripts/prepare-
 const changeScope = await fs.readFile(path.join(ROOT, 'scripts/ci-change-scope.mjs'), 'utf8');
 const pkg = JSON.parse(await fs.readFile(path.join(ROOT, 'package.json'), 'utf8'));
 const runner = await fs.readFile(path.join(ROOT, 'scripts/ci-domain-runner.mjs'), 'utf8');
-const canonApprovalExpression = "(github.event_name == 'push' || (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'canon-prose-change-approved'))) && '1' || '0'";
+const canonApprovalExpression = "github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'canon-prose-change-approved') && '1' || '0'";
+const ownershipBaselineExpression = "github.event_name == 'push' && github.event.before || github.event.pull_request.base.sha";
 
 const expectedJobs = ['ci-wiki', 'ci-worker-api', 'ci-arcade', 'ci-wax', 'ci-visual'];
 const expectedScripts = ['ci:wiki', 'ci:worker-api', 'ci:arcade', 'ci:wax', 'ci:visual'];
@@ -19,6 +20,12 @@ const expectedScripts = ['ci:wiki', 'ci:worker-api', 'ci:arcade', 'ci:wax', 'ci:
 function getScopeBlock(scope) {
   const match = changeScope.match(new RegExp(`\\b${scope}: \\[([\\s\\S]*?)\\n  \\]`, 'u'));
   assert.ok(match, `ci-change-scope must define ${scope} scope`);
+  return match[1];
+}
+
+function getStepBlock(workflowSource, stepName) {
+  const match = workflowSource.match(new RegExp(`\\n      - name: ${stepName}\\n([\\s\\S]*?)(?=\\n      - name:|\\n  [a-zA-Z0-9_-]+:|$)`, 'u'));
+  assert.ok(match, `workflow must define the ${stepName} step`);
   return match[1];
 }
 
@@ -218,7 +225,25 @@ for (const [name, workflowSource] of [
   );
   assert.ok(
     workflowSource.includes('CANON_PROSE_CHANGE_APPROVED:') && workflowSource.includes(canonApprovalExpression),
-    `${name} workflow must require the maintainer PR label while allowing the already-reviewed main push`,
+    `${name} workflow must require the maintainer PR label and must not approve ordinary push events`,
+  );
+  assert.ok(
+    !workflowSource.includes("github.event_name == 'push' ||"),
+    `${name} workflow must not treat every push as approved canon prose`,
+  );
+}
+
+for (const [name, stepBlock] of [
+  ['main CI', getStepBlock(workflow, 'Run wiki tests')],
+  ['graph publishing integrity', getStepBlock(graphWorkflow, 'Validate regenerated wiki surfaces')],
+]) {
+  assert.ok(
+    stepBlock.includes(`BASE_SHA: \${{ ${ownershipBaselineExpression} }}`),
+    `${name} ownership audit must compare a push against github.event.before and a PR against its base SHA`,
+  );
+  assert.ok(
+    stepBlock.includes(`CANON_PROSE_CHANGE_APPROVED: \${{ ${canonApprovalExpression} }}`),
+    `${name} ownership audit must only receive canon prose approval from the explicit PR label`,
   );
 }
 

@@ -125,6 +125,55 @@ class PublishPlan:
     message: str = ""
     creates_page: bool = False
     base_content_hash: str | None = None
+    authorization_manifest_identity: "ContentStateManifestIdentity | None" = None
+
+
+@dataclass(frozen=True)
+class ContentStateManifestIdentity:
+    """Exact repository manifest bytes used to authorize a publish plan."""
+
+    content_bytes: bytes
+    content_hash: str
+    byte_length: int
+
+
+class ContentStateRecord(dict):
+    """Immutable manifest record carrying its non-serialised source identity."""
+
+    def __init__(
+        self,
+        record: dict,
+        manifest_identity: ContentStateManifestIdentity,
+    ) -> None:
+        super().__init__(record)
+        self.manifest_identity = manifest_identity
+
+    @staticmethod
+    def _reject_mutation(*_args, **_kwargs):
+        raise TypeError(
+            "loaded content-state records are immutable authorization evidence"
+        )
+
+    __setitem__ = _reject_mutation
+    __delitem__ = _reject_mutation
+    __ior__ = _reject_mutation
+    clear = _reject_mutation
+    pop = _reject_mutation
+    popitem = _reject_mutation
+    setdefault = _reject_mutation
+    update = _reject_mutation
+
+
+class ContentStateManifest(dict):
+    """Indexed content state bound to the exact bytes it was parsed from."""
+
+    def __init__(
+        self,
+        records: dict[str, ContentStateRecord],
+        identity: ContentStateManifestIdentity,
+    ) -> None:
+        super().__init__(records)
+        self.identity = identity
 
 
 @dataclass(frozen=True)
@@ -1185,17 +1234,31 @@ def _index_content_state_manifest(raw: Any) -> dict[str, dict]:
 def _load_content_state_manifest_bytes(
     content: bytes,
     manifest_path: str,
-) -> dict[str, dict]:
+) -> ContentStateManifest:
     try:
         raw = json.loads(content.decode("utf-8"))
     except (UnicodeDecodeError, json.JSONDecodeError) as exc:
         raise PublisherSafetyError(
             f"cannot read content-state manifest {manifest_path}: {exc}"
         ) from exc
-    return _index_content_state_manifest(raw)
+    indexed = _index_content_state_manifest(raw)
+    identity = ContentStateManifestIdentity(
+        content_bytes=content,
+        content_hash=sha256_bytes(content),
+        byte_length=len(content),
+    )
+    return ContentStateManifest(
+        {
+            slug: ContentStateRecord(record, identity)
+            for slug, record in indexed.items()
+        },
+        identity,
+    )
 
 
-def load_content_state_manifest(manifest_path: str = CONTENT_STATE_MANIFEST) -> dict[str, dict]:
+def load_content_state_manifest(
+    manifest_path: str = CONTENT_STATE_MANIFEST,
+) -> ContentStateManifest:
     """Load and index the repository-owned wiki content-state manifest.
 
     The canonical shape uses a ``pages`` array. Object maps and a top-level
@@ -1690,6 +1753,24 @@ def plan_item_publish(
     policy = str(entry.get("automation_policy") or "").strip()
     out_path = os.path.join(wiki_dir, f"{slug}.html")
     prose = requested_prose(item)
+    authorization_manifest_identity = getattr(entry, "manifest_identity", None)
+
+    def publish_plan(
+        action: str,
+        html: str | None = None,
+        message: str = "",
+        creates_page: bool = False,
+        base_content_hash: str | None = None,
+    ) -> PublishPlan:
+        return PublishPlan(
+            action=action,
+            out_path=out_path,
+            html=html,
+            message=message,
+            creates_page=creates_page,
+            base_content_hash=base_content_hash,
+            authorization_manifest_identity=authorization_manifest_identity,
+        )
 
     try:
         if os.path.exists(out_path):
@@ -1736,7 +1817,7 @@ def plan_item_publish(
             raise PublisherSafetyError(
                 f"{slug}: First Witness pages must use automation_policy canon-locked"
             )
-        return PublishPlan("locked", out_path, message=f"[LOCKED] {out_path}")
+        return publish_plan("locked", message=f"[LOCKED] {out_path}")
 
     if policy in {"metadata-only", "canon-locked"}:
         if prose is not None:
@@ -1744,11 +1825,11 @@ def plan_item_publish(
                 f"{slug}: automated article-body writes are forbidden by {policy} policy"
             )
         label = "LOCKED" if policy == "canon-locked" else "METADATA"
-        return PublishPlan(policy, out_path, message=f"[{label}] {out_path}")
+        return publish_plan(policy, message=f"[{label}] {out_path}")
 
     if policy == "replace-sam-block":
         if prose is None:
-            return PublishPlan("preserve", out_path, message=f"[PRESERVE] {out_path}")
+            return publish_plan("preserve", message=f"[PRESERVE] {out_path}")
         if content is None:
             raise PublisherSafetyError(
                 f"{slug}: replace-sam-block cannot create a missing page"
@@ -1767,9 +1848,8 @@ def plan_item_publish(
 
         existing_sam = extract_marker_inner(html, SAM_CONTENT_BEGIN, SAM_CONTENT_END)
         if state.sam_blocks == 1 and sam_content_hash(existing_sam) == incoming_hash:
-            return PublishPlan(
+            return publish_plan(
                 "noop",
-                out_path,
                 message=f"[NO-OP] {out_path} (same content hash)",
                 base_content_hash=manifest_content_hash(entry),
             )
@@ -1786,9 +1866,8 @@ def plan_item_publish(
             raise PublisherSafetyError(
                 f"{slug}: planned SAM replacement changed protected manual/canonical bytes"
             )
-        return PublishPlan(
+        return publish_plan(
             "replace-sam-block",
-            out_path,
             updated,
             f"[SAM] {out_path}",
             base_content_hash=manifest_content_hash(entry),
@@ -1805,7 +1884,7 @@ def plan_item_publish(
             )
         # An existing non-stub page is always real, regardless of word count.
         if content is not None and not state.explicit_stub:
-            return PublishPlan("preserve", out_path, message=f"[PRESERVE] {out_path}")
+            return publish_plan("preserve", message=f"[PRESERVE] {out_path}")
         if state.manual_blocks or state.sam_blocks or state.canonical_blocks or manifest_legacy:
             raise PublisherSafetyError(
                 f"{slug}: owned or legacy content cannot be treated as a generated stub"
@@ -1837,16 +1916,14 @@ def plan_item_publish(
             mention_count=mention_count,
         )
         if content is not None and content.decode("utf-8") == rendered:
-            return PublishPlan(
+            return publish_plan(
                 "noop",
-                out_path,
                 message=f"[NO-OP] {out_path} (same stub bytes)",
                 base_content_hash=manifest_content_hash(entry),
             )
         verify_expected_revision(item, entry, required=content is not None)
-        return PublishPlan(
+        return publish_plan(
             "stub",
-            out_path,
             rendered,
             f"[STUB] {out_path}",
             creates_page=content is None,
@@ -3259,6 +3336,58 @@ def _execute_publish_transaction_locked(
             path: _snapshot_anchored(target) for path, target in targets.items()
         }
 
+        if write_plans:
+            authorization_identities = {
+                plan.authorization_manifest_identity for plan in write_plans
+            }
+            if None in authorization_identities:
+                raise PublisherSafetyError(
+                    "article writes require plans authorized by "
+                    "load_content_state_manifest()"
+                )
+            if len(authorization_identities) != 1:
+                raise PublisherSafetyError(
+                    "publish plans were authorized by different content-state manifests"
+                )
+            authorization_identity = next(iter(authorization_identities))
+            assert authorization_identity is not None
+            manifest_key = _transaction_absolute_path(manifest_path, repo_root)
+
+            def manifest_snapshot_identity(
+                manifest_snapshot: FileSnapshot,
+            ) -> ContentStateManifestIdentity | None:
+                return (
+                    ContentStateManifestIdentity(
+                        content_bytes=manifest_snapshot.content,
+                        content_hash=sha256_bytes(manifest_snapshot.content),
+                        byte_length=len(manifest_snapshot.content),
+                    )
+                    if manifest_snapshot.existed
+                    else None
+                )
+
+            def assert_manifest_snapshot_authorized(
+                manifest_snapshot: FileSnapshot,
+            ) -> None:
+                if manifest_snapshot_identity(manifest_snapshot) != authorization_identity:
+                    raise PublisherSafetyError(
+                        "content-state manifest changed after planning; "
+                        "article-write authorization is stale"
+                    )
+
+            def assert_manifest_authorization_current() -> None:
+                assert_manifest_snapshot_authorized(
+                    _snapshot_anchored(targets[manifest_key])
+                )
+
+            # The rollback/CAS base itself must be the authorizing manifest,
+            # never a newer manifest observed during transaction setup. Then
+            # re-check the live anchored file before every page mutation. The
+            # shared lock excludes cooperating publishers; live re-snapshots
+            # also catch uncoordinated revocations before writes.
+            assert_manifest_snapshot_authorized(snapshots[manifest_key])
+            assert_manifest_authorization_current()
+
         # Validate exactly the descriptor-anchored bytes captured for rollback.
         for plan in guarded_plans:
             plan_path = _transaction_absolute_path(plan.out_path, repo_root)
@@ -3289,6 +3418,7 @@ def _execute_publish_transaction_locked(
         cleanup_failures: list[str] = []
         try:
             for plan in write_plans:
+                assert_manifest_authorization_current()
                 plan_path = _transaction_absolute_path(plan.out_path, repo_root)
                 previous = snapshots[plan_path]
                 page_mutations[plan_path] = _apply_anchored_write(
@@ -3365,6 +3495,7 @@ def _execute_publish_transaction_locked(
 
             manifest_key = _transaction_absolute_path(manifest_path, repo_root)
             report_key = _transaction_absolute_path(report_path, repo_root)
+            assert_manifest_authorization_current()
             anchors.verify_bindings()
             if refresh_content_state_fn is None:
                 generated_manifest, generated_report = refresh_content_state_artifacts(
@@ -3375,6 +3506,10 @@ def _execute_publish_transaction_locked(
                     refresh_content_state_fn
                 )
             anchors.verify_bindings()
+            # A generator may take long enough for an uncoordinated writer to
+            # revoke policy. Abort before attempting to install refreshed
+            # artifacts, leaving those concurrent manifest bytes untouched.
+            assert_manifest_authorization_current()
             if not generated_report:
                 raise PublisherSafetyError(
                     f"content-state generator did not produce required report: {report_path}"
