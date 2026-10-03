@@ -815,4 +815,38 @@ const unbalancedResult = runFixture({
 assert.ok(unbalancedResult.failures.some((failure) => failure.includes('unbalanced SAM_CONTENT markers')));
 console.log('PASS unbalanced ownership markers fail');
 
+const revisedCanonPage = makePage('revised-canon', {
+  canonical_content_block_count: 1,
+  content_owner: 'canon',
+  canon_revision: 2,
+  canon_source_tier: 'first-witness+w81',
+  automation_policy: 'canon-locked',
+});
+const revisedCanonBaseline = { ...revisedCanonPage, canon_revision: 1, article_content_hash: `sha256:${'9'.repeat(64)}` };
+const revisedCanonHtml = `<article>${CANONICAL_CONTENT_BEGIN}<p>Revised canonical history.</p>${CANONICAL_CONTENT_END}</article>`;
+for (const revision of [undefined, 0, 1]) {
+  const result = runFixture({
+    page: { ...revisedCanonPage, canon_revision: revision },
+    html: revisedCanonHtml,
+    baseline: { revision: 'base-fixture', manifest: { pages: [revisedCanonBaseline] } },
+    canonProseChangeApproved: true,
+  });
+  assert.ok(result.failures.some(failure => /canon revision|canon_revision/.test(failure)), `revision ${revision} must not erase or reuse the prior identity`);
+}
+const approvedRevision = runFixture({
+  page: revisedCanonPage,
+  html: revisedCanonHtml,
+  baseline: { revision: 'base-fixture', manifest: { pages: [revisedCanonBaseline] } },
+  canonProseChangeApproved: true,
+});
+assert.deepEqual(approvedRevision.failures, []);
+const unapprovedRevision = runFixture({
+  page: revisedCanonPage,
+  html: revisedCanonHtml,
+  baseline: { revision: 'base-fixture', manifest: { pages: [revisedCanonBaseline] } },
+  canonProseChangeApproved: false,
+});
+assert.ok(unapprovedRevision.failures.some(failure => failure.includes('Protected article prose changed')));
+console.log('PASS canon revisions cannot be removed, decreased or reused for changed prose; incrementing still requires approval');
+
 console.log('\naudit-manual-content-preservation.test.mjs passed');

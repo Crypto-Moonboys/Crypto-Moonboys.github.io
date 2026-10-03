@@ -68,6 +68,9 @@ const MANIFEST_STATE_FIELDS = [
   'rewrite_status',
   'automation_policy',
   'rewrite_cluster',
+  'content_owner',
+  'canon_revision',
+  'canon_source_tier',
 ];
 
 function escapeRegex(value) {
@@ -314,6 +317,14 @@ function auditBaselineRatchet(currentState, baseline, failures, warnings, canonP
     }
 
     const previousExisting = previous && previous.page_exists !== false;
+    if (previousExisting && Number.isSafeInteger(previous.canon_revision)) {
+      if (!Number.isSafeInteger(page.canon_revision) || page.canon_revision < previous.canon_revision) {
+        failures.push(`${page.path}: a completed canon revision cannot be removed or decreased`);
+      } else if (page.article_content_hash !== previous.article_content_hash
+        && page.canon_revision <= previous.canon_revision) {
+        failures.push(`${page.path}: changed canonical prose must increment canon_revision`);
+      }
+    }
     const protectedExistingPolicy = previousExisting
       && ['metadata-only', 'canon-locked'].includes(previous.automation_policy);
     if (protectedExistingPolicy && page.automation_policy === 'stub-allowed') {

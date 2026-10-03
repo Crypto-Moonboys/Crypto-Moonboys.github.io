@@ -366,6 +366,13 @@ function detectCategory(filePath, html, samEntity) {
   const fileSlug = path.basename(filePath, path.extname(filePath)).toLowerCase();
   if (isFirstWitnessSlug(fileSlug)) return 'core';
 
+  // Authored metadata outranks stale SAM memory and incidental prose words.
+  // Only categories already supported by the ranking configuration are valid.
+  const categoryTag = (html.match(/<meta\b[^>]*>/gi) || [])
+    .find(tag => /\bname=["']wiki-category["']/i.test(tag));
+  const declaredCategory = categoryTag?.match(/\bcontent=["']([^"']+)["']/i)?.[1]?.toLowerCase();
+  if (APPROVED_INDEX_CATEGORIES.has(declaredCategory)) return declaredCategory;
+
   if (samEntity && samEntity.category) {
     const category = String(samEntity.category).toLowerCase();
     return APPROVED_INDEX_CATEGORIES.has(category) ? category : 'misc';

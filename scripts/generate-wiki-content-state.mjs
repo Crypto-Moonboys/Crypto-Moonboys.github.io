@@ -425,6 +425,36 @@ export function articleMarkupHash(html) {
   return sha256(Buffer.from(normalizeArticleMarkup(html), 'utf8'));
 }
 
+/**
+ * A completed canon rewrite is declared on the existing article root, not in
+ * bot memory. The declaration is protected by article-markup-v1 and the PR
+ * approval ratchet. It is valid only when one canonical block owns all prose.
+ */
+export function readCanonRevision(html, relPath = 'wiki page') {
+  const { root } = selectCanonicalContentRoot(html);
+  if (!root) return null;
+  const attributes = readHtmlAttributes(root.opening.raw);
+  const revisions = attributes.filter((attribute) => attribute.name === 'data-canon-revision');
+  const tiers = attributes.filter((attribute) => attribute.name === 'data-canon-source-tier');
+  if (!revisions.length && !tiers.length) return null;
+  const revision = revisions[0]?.value;
+  const sourceTier = tiers[0]?.value;
+  if (revisions.length !== 1 || tiers.length !== 1
+    || !/^[1-9][0-9]*$/.test(revision || '')
+    || !Number.isSafeInteger(Number(revision))
+    || sourceTier !== 'first-witness+w81') {
+    throw new Error(`${relPath}: invalid canonical revision/source declaration`);
+  }
+  assertValidWikiContentTopology(html, relPath);
+  if (countMarker(html, CANONICAL_CONTENT_BEGIN) !== 1
+    || countMarker(html, SAM_CONTENT_BEGIN) !== 0
+    || countMarker(html, MANUAL_CONTENT_BEGIN) !== 0
+    || hasLegacyUnmarkedArticleContent(html)) {
+    throw new Error(`${relPath}: a canon revision requires one complete CANONICAL_CONTENT block and no unowned or SAM/manual prose`);
+  }
+  return { revision: Number(revision), source_tier: sourceTier };
+}
+
 export function countWords(value) {
   return String(value).match(/[\p{L}\p{N}]+(?:['’.-][\p{L}\p{N}]+)*/gu)?.length || 0;
 }
@@ -963,6 +993,7 @@ export function buildWikiAudit() {
       firstWitnessPage: firstWitness,
       nftTemplateGeneratedPage: nftSpecialist || generated,
     });
+    const canonRevision = readCanonRevision(html, relPath);
     const duplicateHeadings = findDuplicateHeadings(articleHtml);
     const exactDuplicateParagraphs = findExactDuplicateParagraphs(articleHtml);
     const nearDuplicates = findLikelyNearDuplicateSections(articleHtml);
@@ -975,7 +1006,7 @@ export function buildWikiAudit() {
     const pageType = pageTypeForPage({
       slug, firstWitness, nftTemplate, nftSpecialist, stub, redirect, generated, cluster, likelyLore,
     });
-    const conflictSeverity = canonConflictSeverity({
+    const conflictSeverity = canonRevision ? 'NONE' : canonConflictSeverity({
       slug, firstWitness, nftSpecialist, generated, likelyLore, directBible, cluster,
     });
     const currentWordCount = countWords(articleText);
@@ -986,11 +1017,11 @@ export function buildWikiAudit() {
       manualBlockCount,
       canonicalBlockCount,
     });
-    const rewriteStatus = rewriteStatusForPage({
+    const rewriteStatus = canonRevision && !firstWitness ? 'KEEP' : rewriteStatusForPage({
       firstWitness, nftSpecialist, generated, stub, redirect, likelyLore, directBible,
       conflictSeverity, duplicateLevel, currentWordCount, cluster, slug,
     });
-    const automationPolicy = automationPolicyForPage({
+    const automationPolicy = canonRevision ? 'canon-locked' : automationPolicyForPage({
       firstWitness, stub, redirect, samBlockCount, legacyUnmarked,
     });
     const currentBlobOid = gitBlobOid(bytes);
@@ -1039,6 +1070,17 @@ export function buildWikiAudit() {
       }),
     };
 
+    if (canonRevision) {
+      page.content_owner = 'canon';
+      page.canon_revision = canonRevision.revision;
+      page.canon_source_tier = canonRevision.source_tier;
+      page.recommended_action = 'Preserve the completed canon revision; automated article prose is locked.';
+      page.audit_notes = [
+        `Canon revision ${canonRevision.revision} reconciled against First Witness and W81; disputed traditions remain explicitly identified.`,
+        ...page.audit_notes.filter((note) => !note.startsWith('Existing wiki prose is surviving public archive')),
+      ];
+    }
+
     if (!REWRITE_STATUSES.includes(page.rewrite_status)) throw new Error(`Invalid rewrite status for ${relPath}`);
     if (!AUTOMATION_POLICIES.includes(page.automation_policy)) throw new Error(`Invalid automation policy for ${relPath}`);
     pages.push(page);
@@ -1086,6 +1128,9 @@ export function buildWikiAudit() {
     ],
     audit_scope: 'Every top-level wiki/*.html file; nested files are source inputs only.',
     field_definitions: {
+      content_owner: 'Optional canon ownership declaration for a completed, structurally validated canonical rewrite.',
+      canon_revision: 'Optional positive integer revision of a completed canonical rewrite; changed canonical prose must increase this revision without bypassing approval.',
+      canon_source_tier: 'Optional declared reconciliation hierarchy for a completed canonical rewrite; currently first-witness+w81.',
       legacy_unmarked_content: 'True when visible article content remains outside all MANUAL_CONTENT, SAM_CONTENT, and CANONICAL_CONTENT blocks, including when an owned block also exists. First Witness ownership is established by canon lock; NFT specialist/template and structurally generated ownership is established by its dedicated workflow.',
       current_word_count: 'Word count of article-text-v1 visible article text; page shell and generated Related Wiki Paths are excluded.',
       nft_template_generated_page: 'True when the page is an NFT specialist/template surface or another structurally generated stub/redirect page.',
@@ -1173,6 +1218,7 @@ export function renderRewriteAudit(manifest) {
     '- Near-duplicate report candidates compare sections (at least 20 significant unique tokens and 15 shared tokens) and paragraphs within one section (at least 12 significant unique tokens and 10 shared tokens) at Jaccard similarity 0.72 or higher. Nothing is deleted automatically.',
     '- `legacy_unmarked_content` covers visible article prose outside every ownership block, even when a SAM/manual/canonical block also exists. First Witness ownership is established by its mandatory lock; NFT specialist/template and structurally generated pages use their dedicated ownership workflows.',
     '- First Witness pages are always `FIRST_WITNESS_LOCKED` / `canon-locked` for article prose.',
+    '- Completed rewrites declare `data-canon-revision` and `data-canon-source-tier` on the article root and own all prose through one `CANONICAL_CONTENT` block. They remain `KEEP` / `canon-locked`; the existing PR approval ratchet protects the declaration and every later prose revision.',
     '',
     '## Summary',
     '',

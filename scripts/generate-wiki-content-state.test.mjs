@@ -28,6 +28,7 @@ import {
   listTopLevelWikiHtmlFiles,
   loadAbsentStubDeclarations,
   readTopLevelWikiHtmlFile,
+  readCanonRevision,
   renderRewriteAudit,
   runCli,
   sourceTreeHashForPages,
@@ -36,6 +37,40 @@ import {
 } from './generate-wiki-content-state.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+
+test('canon revisions require complete ownership rather than a bare completion flag', () => {
+  const opening = '<article class="wiki-content" data-canon-revision="1" data-canon-source-tier="first-witness+w81">';
+  const owned = `${opening}${CANONICAL_CONTENT_BEGIN}<h1>History</h1><p>Reconciled article.</p>${CANONICAL_CONTENT_END}</article>`;
+  assert.deepEqual(readCanonRevision(owned), { revision: 1, source_tier: 'first-witness+w81' });
+  assert.equal(readCanonRevision('<article><p>Unreviewed archive.</p></article>'), null);
+  assert.equal(readCanonRevision(`<article><div data-canon-revision="1" data-canon-source-tier="first-witness+w81">Unreviewed archive.</div></article>`), null);
+  assert.throws(() => readCanonRevision(`${opening}<p>Unowned article.</p></article>`), /complete CANONICAL_CONTENT/);
+  assert.throws(() => readCanonRevision(owned.replace('</article>', '<p>Unowned addition.</p></article>')), /unowned/);
+  assert.throws(() => readCanonRevision(owned.replace('revision="1"', 'revision="0"')), /invalid canonical revision/);
+  assert.throws(() => readCanonRevision(owned.replace('revision="1"', 'revision="1" data-canon-revision="2"')), /invalid canonical revision/);
+  assert.throws(() => readCanonRevision(owned.replace('first-witness+w81', 'unreviewed-sam')), /invalid canonical revision/);
+});
+
+test('completed core-history rewrites leave the queue and retain their prose locks', () => {
+  const manifest = buildWikiAudit();
+  for (const slug of ['sacred-chain', 'triple-fork-event', 'genesis-kernel', 'graffiti-nexus', 'hard-fork-games']) {
+    const page = manifest.pages.find(page => page.slug === slug);
+    assert.equal(page.canon_revision, 1);
+    assert.equal(page.content_owner, 'canon');
+    assert.equal(page.rewrite_status, 'KEEP');
+    assert.equal(page.automation_policy, 'canon-locked');
+    assert.equal(page.legacy_unmarked_content, false);
+    assert.equal(page.canonical_content_block_count, 1);
+    assert.equal(page.sam_content_block_count, 0);
+    assert.equal(page.exact_duplicate_paragraph_count, 0);
+    assert.equal(page.duplicate_heading_count, 0);
+    assert.equal(page.likely_near_duplicate_sections.length, 0);
+    const html = fs.readFileSync(path.join(ROOT, page.path), 'utf8');
+    assert.ok(!html.includes('id="bible-content"'), `${slug} must not append legacy SAM bible records`);
+  }
+  assert.equal(manifest.pages.filter(page => page.first_witness_page).length, 82);
+  assert.ok(manifest.pages.filter(page => page.first_witness_page).every(page => page.automation_policy === 'canon-locked'));
+});
 
 test('CLI can stage generated artifacts without touching brand-canon outputs', (t) => {
   const outputDir = fs.mkdtempSync(path.join(os.tmpdir(), 'wiki-content-state-output-'));
