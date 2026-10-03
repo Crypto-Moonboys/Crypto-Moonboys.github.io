@@ -5149,6 +5149,94 @@
     "brand": null
   },
   {
+    "title": "The First Witness",
+    "desc": "The First Witness is the sacred-text hub for Crypto Moonboys lore: the 2030 Covenant, Bitcoin provenance, Sacred Chain history and Forty Paths.",
+    "url": "/wiki/the-first-witness.html",
+    "tags": [
+      "first",
+      "witness"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "First Witness"
+      }
+    ],
+    "rank_score": 295,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 2,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 1574,
+      "keyword_bag_size": 21,
+      "heading_count": 15,
+      "list_count": 1,
+      "internal_link_count": 16,
+      "paragraph_count": 29,
+      "section_count": 12,
+      "lore_paragraph_count": 26,
+      "content_quality_score": 93,
+      "authority_score": 25
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 79,
+      "keyword_bag_points": 21,
+      "content_quality_points": 98,
+      "authority_points": 32,
+      "final_rank_score": 295,
+      "authority_graph_points": 7
+    },
+    "search_index": {
+      "normalized_title": "the first witness crypto moonboys wiki",
+      "tokens": [
+        "the",
+        "first",
+        "witness",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "the",
+        "first",
+        "witness",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "is",
+        "sacred",
+        "text",
+        "hub",
+        "for",
+        "lore",
+        "2030",
+        "covenant",
+        "bitcoin",
+        "provenance",
+        "chain",
+        "history",
+        "and",
+        "forty",
+        "paths"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 1,
+      "outbound_count": 31,
+      "existing_outbound_count": 10,
+      "suggested_outbound_count": 21,
+      "authority": 7
+    },
+    "brand": null
+  },
+  {
     "title": "Quell",
     "desc": "Quell stands as a rare peacekeeper in the war-torn digital expanse of Block Topia, a singular voice of calm amid the relentless conflicts of the Crypto Moonboys",
     "url": "/wiki/quell.html",
@@ -6652,87 +6740,6 @@
       "existing_outbound_count": 11,
       "suggested_outbound_count": 9,
       "authority": 7.5
-    },
-    "brand": null
-  },
-  {
-    "title": "The First Witness",
-    "desc": "The First Witness is the sacred-text hub for Crypto Moonboys lore: the 2030 Covenant, Bitcoin provenance, Sacred Chain history and Forty Paths.",
-    "url": "/wiki/the-first-witness.html",
-    "tags": [],
-    "category": "factions",
-    "aliases": [],
-    "rank_score": 290,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 0,
-      "tag_count": 0,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 1574,
-      "keyword_bag_size": 21,
-      "heading_count": 15,
-      "list_count": 1,
-      "internal_link_count": 16,
-      "paragraph_count": 29,
-      "section_count": 12,
-      "lore_paragraph_count": 26,
-      "content_quality_score": 93,
-      "authority_score": 25
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 79,
-      "keyword_bag_points": 21,
-      "content_quality_points": 93,
-      "authority_points": 32,
-      "final_rank_score": 290,
-      "authority_graph_points": 7
-    },
-    "search_index": {
-      "normalized_title": "the first witness crypto moonboys wiki",
-      "tokens": [
-        "the",
-        "first",
-        "witness",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "the",
-        "first",
-        "witness",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "is",
-        "sacred",
-        "text",
-        "hub",
-        "for",
-        "lore",
-        "2030",
-        "covenant",
-        "bitcoin",
-        "provenance",
-        "chain",
-        "history",
-        "and",
-        "forty",
-        "paths"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 1,
-      "outbound_count": 31,
-      "existing_outbound_count": 10,
-      "suggested_outbound_count": 21,
-      "authority": 7
     },
     "brand": null
   },

@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-03T02:54:11.844Z",
-  "verified_at": "2026-10-03T02:54:11.844Z",
+  "generated_at": "2026-10-03T02:57:44.965Z",
+  "verified_at": "2026-10-03T02:57:44.965Z",
   "lite": true,
   "nodes": [
     {
@@ -444,6 +444,14 @@
       "authority_score": 21
     },
     {
+      "id": "/wiki/the-first-witness.html",
+      "title": "The First Witness",
+      "url": "/wiki/the-first-witness.html",
+      "category": "factions",
+      "rank_score": 295,
+      "authority_score": 25
+    },
+    {
       "id": "/wiki/quell.html",
       "title": "Quell",
       "url": "/wiki/quell.html",
@@ -570,14 +578,6 @@
       "category": "factions",
       "rank_score": 290,
       "authority_score": 21
-    },
-    {
-      "id": "/wiki/the-first-witness.html",
-      "title": "The First Witness",
-      "url": "/wiki/the-first-witness.html",
-      "category": "factions",
-      "rank_score": 290,
-      "authority_score": 25
     },
     {
       "id": "/wiki/wax-blockchain.html",

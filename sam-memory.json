@@ -6163,11 +6163,10 @@
       ]
     },
     "the_first_witness": {
-      "alias_candidates": [
-        "First Witness",
-        "first witness"
+      "alias_candidates": [],
+      "aliases": [
+        "First Witness"
       ],
-      "aliases": [],
       "canonical_title": "The First Witness",
       "canonical_url": "/wiki/the-first-witness.html",
       "category": "factions",
@@ -6909,5 +6908,5 @@
       ]
     }
   },
-  "updated_at": "2026-10-03T02:54:11Z"
+  "updated_at": "2026-10-03T02:57:44Z"
 }
