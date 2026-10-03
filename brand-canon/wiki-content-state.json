@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "generator": "scripts/generate-wiki-content-state.mjs",
-  "source_tree_hash": "sha256:40d408efdda4d5e23e9c731d26be557512a1baba59d7faede2486ac4c5fddc44",
+  "source_tree_hash": "sha256:1e6a4f58f1b4f21a79dcfd78e28cef782ac8507bb341333208843829dbd06bac",
   "hash_algorithm": "sha256",
   "page_count": 415,
   "manifest_entry_count": 415,
@@ -23,6 +23,9 @@
   ],
   "audit_scope": "Every top-level wiki/*.html file; nested files are source inputs only.",
   "field_definitions": {
+    "content_owner": "Optional canon ownership declaration for a completed, structurally validated canonical rewrite.",
+    "canon_revision": "Optional positive integer revision of a completed canonical rewrite; changed canonical prose or markup must increase this revision without bypassing approval.",
+    "canon_source_tier": "Optional declared reconciliation hierarchy for a completed canonical rewrite; currently first-witness+w81.",
     "legacy_unmarked_content": "True when visible article content remains outside all MANUAL_CONTENT, SAM_CONTENT, and CANONICAL_CONTENT blocks, including when an owned block also exists. First Witness ownership is established by canon lock; NFT specialist/template and structurally generated ownership is established by its dedicated workflow.",
     "current_word_count": "Word count of article-text-v1 visible article text; page shell and generated Related Wiki Paths are excluded.",
     "nft_template_generated_page": "True when the page is an NFT specialist/template surface or another structurally generated stub/redirect page.",
@@ -90,10 +93,10 @@
     "total_manifest_entries": 415,
     "absent_stub_authorizations": 0,
     "rewrite_status_counts": {
-      "KEEP": 40,
+      "KEEP": 45,
       "REWRITE_FULL": 7,
-      "RECONCILE": 31,
-      "DEDUPE": 20,
+      "RECONCILE": 28,
+      "DEDUPE": 18,
       "EXPAND": 0,
       "ARCHIVE_STYLE": 6,
       "GENERATED": 6,
@@ -102,18 +105,18 @@
       "NEEDS_HUMAN_REVIEW": 64
     },
     "automation_policy_counts": {
-      "metadata-only": 331,
+      "metadata-only": 326,
       "replace-sam-block": 0,
-      "canon-locked": 82,
+      "canon-locked": 87,
       "stub-allowed": 2
     },
     "pages_with_multiple_sam_blocks": 0,
     "pages_with_multiple_canonical_blocks": 0,
-    "pages_with_legacy_unmarked_content": 168,
+    "pages_with_legacy_unmarked_content": 163,
     "pages_with_exact_duplicate_paragraphs": 142,
     "pages_with_duplicate_headings": 1,
-    "pages_with_likely_near_duplicate_sections": 43,
-    "pages_with_legacy_sam_article_wrapper": 190
+    "pages_with_likely_near_duplicate_sections": 41,
+    "pages_with_legacy_sam_article_wrapper": 186
   },
   "pages": [
     {
@@ -6422,186 +6425,33 @@
     {
       "path": "wiki/genesis-kernel.html",
       "slug": "genesis-kernel",
-      "title": "genesis_kernel",
+      "title": "Genesis Kernel",
       "page_exists": true,
       "page_type": "lore",
-      "current_word_count": 1191,
+      "current_word_count": 795,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
-      "canonical_content_block_count": 0,
-      "legacy_sam_article_wrapper": true,
-      "legacy_unmarked_content": true,
+      "canonical_content_block_count": 1,
+      "legacy_sam_article_wrapper": false,
+      "legacy_unmarked_content": false,
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
-      "likely_near_duplicate_sections": [
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 10,
-          "second_paragraph": 14,
-          "similarity": 0.871,
-          "shared_token_count": 27
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 11,
-          "second_paragraph": 15,
-          "similarity": 0.879,
-          "shared_token_count": 29
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 11,
-          "second_paragraph": 18,
-          "similarity": 0.784,
-          "shared_token_count": 29
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 15,
-          "second_paragraph": 18,
-          "similarity": 0.833,
-          "shared_token_count": 30
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 3,
-          "second_paragraph": 5,
-          "similarity": 0.9,
-          "shared_token_count": 27
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 3,
-          "second_paragraph": 9,
-          "similarity": 0.931,
-          "shared_token_count": 27
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 3,
-          "second_paragraph": 10,
-          "similarity": 0.931,
-          "shared_token_count": 27
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 3,
-          "second_paragraph": 14,
-          "similarity": 0.931,
-          "shared_token_count": 27
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 4,
-          "second_paragraph": 6,
-          "similarity": 0.882,
-          "shared_token_count": 30
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 4,
-          "second_paragraph": 11,
-          "similarity": 0.906,
-          "shared_token_count": 29
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 4,
-          "second_paragraph": 15,
-          "similarity": 0.968,
-          "shared_token_count": 30
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 4,
-          "second_paragraph": 18,
-          "similarity": 0.857,
-          "shared_token_count": 30
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 5,
-          "second_paragraph": 9,
-          "similarity": 0.903,
-          "shared_token_count": 28
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 5,
-          "second_paragraph": 10,
-          "similarity": 0.844,
-          "shared_token_count": 27
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 5,
-          "second_paragraph": 14,
-          "similarity": 0.903,
-          "shared_token_count": 28
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 6,
-          "second_paragraph": 11,
-          "similarity": 0.806,
-          "shared_token_count": 29
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 6,
-          "second_paragraph": 15,
-          "similarity": 0.857,
-          "shared_token_count": 30
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 6,
-          "second_paragraph": 18,
-          "similarity": 0.865,
-          "shared_token_count": 32
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 9,
-          "second_paragraph": 10,
-          "similarity": 0.871,
-          "shared_token_count": 27
-        }
-      ],
-      "content_hash": "sha256:e649795e181d59af5e6723e22314930732d74c7e1c97c7637d1cd61febe95722",
-      "article_content_hash": "sha256:02362bf972e29317891485efa780fd586f5efc374fc9396c64737df945ed1832",
-      "article_markup_hash": "sha256:d338b03f595536afe3ba8218efa8cacadf7bfdc43caf9c0ce4a20eca0da78ad9",
-      "git_blob_oid": "c94d18f65f0bb86bca0e2101c16d41a726df9180",
+      "likely_near_duplicate_sections": [],
+      "content_hash": "sha256:b31e0cc1cf43589466fb1eb7fca31120098d954532aa9a137c3e753ed03d307e",
+      "article_content_hash": "sha256:73acc17b55de9d1c72f9ddac9810b5de712ffa4689d2b96fb74c2d95e4052b6e",
+      "article_markup_hash": "sha256:0ad75203c10b35f9efdbe459d0a46790eb4cce0b8b231198c3fdd847b7fcdbde",
+      "git_blob_oid": "b2ece033f58757205c232ca5b8dbe53e9d1a7126",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
       "likely_lore_page": true,
-      "rewrite_status": "DEDUPE",
-      "automation_policy": "metadata-only",
+      "rewrite_status": "KEEP",
+      "automation_policy": "canon-locked",
       "rewrite_cluster": "Core cosmology / history",
-      "duplicate_severity": "HIGH",
-      "canon_conflict_severity": "HIGH",
-      "recommended_action": "Review the reported duplication during the later canon rewrite.",
-      "suggested_priority": "P1",
+      "duplicate_severity": "NONE",
+      "canon_conflict_severity": "NONE",
+      "recommended_action": "Preserve the completed canon revision; automated article prose is locked.",
+      "suggested_priority": "P4",
       "likely_source_family": [
         "wiki/first-witness-concordance.html",
         "wiki/first-witness-master-chronology.html",
@@ -6611,11 +6461,11 @@
         "about/w81.zip (major lore/cosmology files)"
       ],
       "audit_notes": [
-        "Substantive article content has no MANUAL_CONTENT, SAM_CONTENT, or CANONICAL_CONTENT ownership markers.",
-        "Legacy SAM:BEGIN:article shell marker is provenance evidence, not a current SAM_CONTENT ownership block.",
-        "19 likely near-duplicate section pair(s) reported; no text was removed.",
-        "Existing wiki prose is surviving public archive, not automatically current canon."
-      ]
+        "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified."
+      ],
+      "content_owner": "canon",
+      "canon_revision": 1,
+      "canon_source_tier": "first-witness+w81"
     },
     {
       "path": "wiki/genesis-spray.html",
@@ -12348,66 +12198,33 @@
     {
       "path": "wiki/graffiti-nexus.html",
       "slug": "graffiti-nexus",
-      "title": "graffiti_nexus",
+      "title": "Graffiti Nexus",
       "page_exists": true,
       "page_type": "lore",
-      "current_word_count": 643,
+      "current_word_count": 630,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
-      "canonical_content_block_count": 0,
-      "legacy_sam_article_wrapper": true,
-      "legacy_unmarked_content": true,
+      "canonical_content_block_count": 1,
+      "legacy_sam_article_wrapper": false,
+      "legacy_unmarked_content": false,
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
-      "likely_near_duplicate_sections": [
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 2,
-          "second_paragraph": 4,
-          "similarity": 0.926,
-          "shared_token_count": 25
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 3,
-          "second_paragraph": 5,
-          "similarity": 0.786,
-          "shared_token_count": 22
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 3,
-          "second_paragraph": 6,
-          "similarity": 0.786,
-          "shared_token_count": 22
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 5,
-          "second_paragraph": 6,
-          "similarity": 0.931,
-          "shared_token_count": 27
-        }
-      ],
-      "content_hash": "sha256:1f2c9b977bec797cdfcef3ceae679b78e700997ae3f34c2a69707ce6bfeb9009",
-      "article_content_hash": "sha256:bfa7174d5feec2dc5ff512b6e3b8b7e19180f9208df64b9cfb26215663e2b51a",
-      "article_markup_hash": "sha256:ccb744dbadfe444920a353aedf8d8cbd560fd3e9c9878e4e1cbdd04b88e4ddb2",
-      "git_blob_oid": "ee8c2415f34f88fea8925b5e2de5f27838b65e39",
+      "likely_near_duplicate_sections": [],
+      "content_hash": "sha256:f0ebcb1f68a85f52a218abf4c51a95720d43ed2c1614ff8a516f98d6f9d25cc7",
+      "article_content_hash": "sha256:42fcd153b1df3980490c5684ca25c844797308f40b0b187a585c6e2537eaa00f",
+      "article_markup_hash": "sha256:1186e8c19f7653fb936432ecefcc4fbb78d8659035cba035b2642b1af3848b62",
+      "git_blob_oid": "1f9cb75eee8181f00f44dac644047a64806acf56",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
       "likely_lore_page": true,
-      "rewrite_status": "DEDUPE",
-      "automation_policy": "metadata-only",
+      "rewrite_status": "KEEP",
+      "automation_policy": "canon-locked",
       "rewrite_cluster": "Core cosmology / history",
-      "duplicate_severity": "HIGH",
-      "canon_conflict_severity": "MEDIUM",
-      "recommended_action": "Review the reported duplication during the later canon rewrite.",
-      "suggested_priority": "P1",
+      "duplicate_severity": "NONE",
+      "canon_conflict_severity": "NONE",
+      "recommended_action": "Preserve the completed canon revision; automated article prose is locked.",
+      "suggested_priority": "P4",
       "likely_source_family": [
         "wiki/first-witness-concordance.html",
         "wiki/first-witness-master-chronology.html",
@@ -12417,11 +12234,11 @@
         "about/w81.zip (major lore/cosmology files)"
       ],
       "audit_notes": [
-        "Substantive article content has no MANUAL_CONTENT, SAM_CONTENT, or CANONICAL_CONTENT ownership markers.",
-        "Legacy SAM:BEGIN:article shell marker is provenance evidence, not a current SAM_CONTENT ownership block.",
-        "4 likely near-duplicate section pair(s) reported; no text was removed.",
-        "Existing wiki prose is surviving public archive, not automatically current canon."
-      ]
+        "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified."
+      ],
+      "content_owner": "canon",
+      "canon_revision": 1,
+      "canon_source_tier": "first-witness+w81"
     },
     {
       "path": "wiki/graffiti-queens-in-decentraland.html",
@@ -12731,33 +12548,33 @@
     {
       "path": "wiki/hard-fork-games.html",
       "slug": "hard-fork-games",
-      "title": "HARD FORK GAMES Where every generation is divided into the future it is willing to fight for",
+      "title": "Hard Fork Games The city opens its gates on terms of its own",
       "page_exists": true,
       "page_type": "lore",
-      "current_word_count": 1706,
+      "current_word_count": 1014,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
-      "canonical_content_block_count": 0,
-      "legacy_sam_article_wrapper": true,
-      "legacy_unmarked_content": true,
+      "canonical_content_block_count": 1,
+      "legacy_sam_article_wrapper": false,
+      "legacy_unmarked_content": false,
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:08bb3ce65076ad4b35649e2945991961f28f36e37f5dafdddbf2bd8f77d0546a",
-      "article_content_hash": "sha256:a83f48a583e1c3ffa8a40949e80e8561681b01eec1fb1808e02d56fdce971647",
-      "article_markup_hash": "sha256:ed8e7171d9c501ffa545e94a0b760ec96e550ef69f44accd30ee2ecd40a09a5a",
-      "git_blob_oid": "6e4e1572ca5e7c0440d370d752e69d737ddb5e6b",
+      "content_hash": "sha256:f751ba980ede47ae370ec9edd728424ef2650cdd0f1c97967d4ea53fa882c38b",
+      "article_content_hash": "sha256:4c664602ca80dd2cde91bc28d1c42f9a27e4f49b9b973e0ee74657c5ececa404",
+      "article_markup_hash": "sha256:f7aa8734ac03d2759c5a7f5a738c27f9299593ceb5fbac748b787fb4c7f456c2",
+      "git_blob_oid": "0918cff31f8567e7a71ffd182b4452a84858e53c",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
       "likely_lore_page": true,
-      "rewrite_status": "RECONCILE",
-      "automation_policy": "metadata-only",
+      "rewrite_status": "KEEP",
+      "automation_policy": "canon-locked",
       "rewrite_cluster": "Core cosmology / history",
       "duplicate_severity": "NONE",
-      "canon_conflict_severity": "HIGH",
-      "recommended_action": "Reconcile against higher-priority sources before replacing prose.",
-      "suggested_priority": "P1",
+      "canon_conflict_severity": "NONE",
+      "recommended_action": "Preserve the completed canon revision; automated article prose is locked.",
+      "suggested_priority": "P4",
       "likely_source_family": [
         "wiki/first-witness-concordance.html",
         "wiki/first-witness-master-chronology.html",
@@ -12768,11 +12585,12 @@
         "wiki/bibles/hard-fork-games.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Substantive article content has no MANUAL_CONTENT, SAM_CONTENT, or CANONICAL_CONTENT ownership markers.",
-        "Legacy SAM:BEGIN:article shell marker is provenance evidence, not a current SAM_CONTENT ownership block.",
-        "Specialist archive record found at wiki/bibles/hard-fork-games.json; it is not automatically the unavailable Tier 4 modern bible.",
-        "Existing wiki prose is surviving public archive, not automatically current canon."
-      ]
+        "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Specialist archive record found at wiki/bibles/hard-fork-games.json; it is not automatically the unavailable Tier 4 modern bible."
+      ],
+      "content_owner": "canon",
+      "canon_revision": 1,
+      "canon_source_tier": "first-witness+w81"
     },
     {
       "path": "wiki/harrison-rift.html",
@@ -15321,33 +15139,33 @@
     {
       "path": "wiki/sacred-chain.html",
       "slug": "sacred-chain",
-      "title": "THE SACRED CHAIN The system that remembers everything — and decides what counts as real",
+      "title": "The Sacred Chain What a civilisation carries when its official record breaks",
       "page_exists": true,
       "page_type": "lore",
-      "current_word_count": 1756,
+      "current_word_count": 975,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
-      "canonical_content_block_count": 0,
-      "legacy_sam_article_wrapper": true,
-      "legacy_unmarked_content": true,
+      "canonical_content_block_count": 1,
+      "legacy_sam_article_wrapper": false,
+      "legacy_unmarked_content": false,
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:c1f10dad7daf09f2e5d00bb06ba101cc863445ad22f427df7816348d42684922",
-      "article_content_hash": "sha256:6babf2ef5a00c135932b93f9774e265d20a8ada03f23ff60bb573333c169cc6e",
-      "article_markup_hash": "sha256:69601e536da55dc9eb343bf2512c4a648caacabef1373d3edbe190d9ff47a09a",
-      "git_blob_oid": "3a42959ecdaf83e3815a1532105c5f08359c1ea9",
+      "content_hash": "sha256:5f8d3c18e088a01a5ef00c0dc9269a516a09b696175eed371a2b11f3cf6c475a",
+      "article_content_hash": "sha256:97abc3bbcab1dc65617398724b7e4a69f2c3a587986847de1c614c3d50b8bc15",
+      "article_markup_hash": "sha256:2d616342478305737fdfa0e078578fe27cc9c86373af9ecd67aad3e000f01bbf",
+      "git_blob_oid": "47f93e99d8a7475e53c1251ad09057d8674f1e6a",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
       "likely_lore_page": true,
-      "rewrite_status": "RECONCILE",
-      "automation_policy": "metadata-only",
+      "rewrite_status": "KEEP",
+      "automation_policy": "canon-locked",
       "rewrite_cluster": "Core cosmology / history",
       "duplicate_severity": "NONE",
-      "canon_conflict_severity": "HIGH",
-      "recommended_action": "Reconcile against higher-priority sources before replacing prose.",
-      "suggested_priority": "P1",
+      "canon_conflict_severity": "NONE",
+      "recommended_action": "Preserve the completed canon revision; automated article prose is locked.",
+      "suggested_priority": "P4",
       "likely_source_family": [
         "wiki/first-witness-concordance.html",
         "wiki/first-witness-master-chronology.html",
@@ -15358,11 +15176,12 @@
         "wiki/bibles/sacred-chain.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Substantive article content has no MANUAL_CONTENT, SAM_CONTENT, or CANONICAL_CONTENT ownership markers.",
-        "Legacy SAM:BEGIN:article shell marker is provenance evidence, not a current SAM_CONTENT ownership block.",
-        "Specialist archive record found at wiki/bibles/sacred-chain.json; it is not automatically the unavailable Tier 4 modern bible.",
-        "Existing wiki prose is surviving public archive, not automatically current canon."
-      ]
+        "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Specialist archive record found at wiki/bibles/sacred-chain.json; it is not automatically the unavailable Tier 4 modern bible."
+      ],
+      "content_owner": "canon",
+      "canon_revision": 1,
+      "canon_source_tier": "first-witness+w81"
     },
     {
       "path": "wiki/samaelexe.html",
@@ -18117,30 +17936,30 @@
       "title": "Triple Fork Event",
       "page_exists": true,
       "page_type": "lore",
-      "current_word_count": 947,
+      "current_word_count": 936,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
-      "canonical_content_block_count": 0,
+      "canonical_content_block_count": 1,
       "legacy_sam_article_wrapper": false,
-      "legacy_unmarked_content": true,
+      "legacy_unmarked_content": false,
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:4d09f7de4d9abc1e5f17e30265bfb9ac05cb4966d73438da1c6986c0badcfbd1",
-      "article_content_hash": "sha256:c47edcaed1717ae951853f2f19d20b9675762d9d40e16dd71f8c725a2334a878",
-      "article_markup_hash": "sha256:39acf021434b34e707bcd72b7dd816972635742dbfa355694e9012e40359be66",
-      "git_blob_oid": "a6a3b633afe0818d01de40f9d60620105e772254",
+      "content_hash": "sha256:a71415382d8e6d666fb54ab9bfca7e04f99b7c6caf8421c0b55851564f799e25",
+      "article_content_hash": "sha256:e71f143b61c7fbab072246b7246eb9ea29f4354d15719b023790f314b26de0d8",
+      "article_markup_hash": "sha256:9b0b478de7e4af1323d800eca459978de521c2f06d7520b80792e750c4dcfec6",
+      "git_blob_oid": "a49f4f77f3d066a639e0a5770f666ed05b1ef4c2",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
       "likely_lore_page": true,
-      "rewrite_status": "RECONCILE",
-      "automation_policy": "metadata-only",
+      "rewrite_status": "KEEP",
+      "automation_policy": "canon-locked",
       "rewrite_cluster": "Core cosmology / history",
       "duplicate_severity": "NONE",
-      "canon_conflict_severity": "HIGH",
-      "recommended_action": "Reconcile against higher-priority sources before replacing prose.",
-      "suggested_priority": "P1",
+      "canon_conflict_severity": "NONE",
+      "recommended_action": "Preserve the completed canon revision; automated article prose is locked.",
+      "suggested_priority": "P4",
       "likely_source_family": [
         "wiki/first-witness-concordance.html",
         "wiki/first-witness-master-chronology.html",
@@ -18151,10 +17970,12 @@
         "wiki/bibles/triple-fork-event.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Substantive article content has no MANUAL_CONTENT, SAM_CONTENT, or CANONICAL_CONTENT ownership markers.",
-        "Specialist archive record found at wiki/bibles/triple-fork-event.json; it is not automatically the unavailable Tier 4 modern bible.",
-        "Existing wiki prose is surviving public archive, not automatically current canon."
-      ]
+        "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Specialist archive record found at wiki/bibles/triple-fork-event.json; it is not automatically the unavailable Tier 4 modern bible."
+      ],
+      "content_owner": "canon",
+      "canon_revision": 1,
+      "canon_source_tier": "first-witness+w81"
     },
     {
       "path": "wiki/wagmi-prophecy.html",
