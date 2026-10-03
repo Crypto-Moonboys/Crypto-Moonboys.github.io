@@ -1356,7 +1356,8 @@
         "Bitcoin scripture",
         "Bitcoin bible",
         "Bitcoin provenance",
-        "First Witness mint"
+        "First Witness mint",
+        "Bitcoin witness"
       ]
     },
     "first_witness_block_topia_reading": {
@@ -2710,7 +2711,8 @@
         "belief system",
         "40 faction interpretations",
         "GK faction bible commentary",
-        "faction theology"
+        "faction theology",
+        "Forty Paths"
       ]
     },
     "first_witness_faction_ritual_variations": {
@@ -2911,7 +2913,8 @@
         "belief system",
         "40 factions",
         "Graffiti Kings factions",
-        "Forty Paths religion"
+        "Forty Paths religion",
+        "Forty Paths"
       ]
     },
     "first_witness_glossary": {
@@ -4403,7 +4406,9 @@
         "Sacred Chain origin",
         "Aether-Chain origin",
         "Sacred Fork",
-        "Sacred Chain scripture"
+        "Sacred Chain scripture",
+        "Sacred Chain",
+        "Aether-Chain"
       ]
     },
     "first_witness_sacred_places_walls_pilgrimage": {
@@ -4702,7 +4707,9 @@
         "Street Kingdoms religion",
         "GraffPUNKS religion",
         "Paint Path",
-        "wall memory"
+        "wall memory",
+        "Street Kingdoms",
+        "Sacred Chain"
       ]
     },
     "first_witness_symbols_marks_sacred_design": {
@@ -11004,5 +11011,5 @@
       ]
     }
   },
-  "updated_at": "2026-10-03T07:26:33Z"
+  "updated_at": "2026-10-03T07:37:36Z"
 }

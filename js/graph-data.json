@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-03T07:26:33.760Z",
-  "verified_at": "2026-10-03T07:26:33.760Z",
+  "generated_at": "2026-10-03T07:37:37.312Z",
+  "verified_at": "2026-10-03T07:37:37.312Z",
   "nodes": [
     {
       "id": "/about.html",
@@ -511,7 +511,7 @@
       "title": "The Bitcoin Witness",
       "url": "/wiki/first-witness-bitcoin-witness.html",
       "category": "core",
-      "rank_score": 318,
+      "rank_score": 319,
       "authority_score": 14
     },
     {
@@ -727,7 +727,7 @@
       "title": "Faction Commentaries on the First Witness",
       "url": "/wiki/first-witness-faction-commentaries.html",
       "category": "core",
-      "rank_score": 344,
+      "rank_score": 345,
       "authority_score": 14
     },
     {
@@ -759,7 +759,7 @@
       "title": "The Forty Paths",
       "url": "/wiki/first-witness-forty-paths.html",
       "category": "core",
-      "rank_score": 317,
+      "rank_score": 318,
       "authority_score": 14
     },
     {
@@ -999,7 +999,7 @@
       "title": "The Sacred Fork",
       "url": "/wiki/first-witness-sacred-fork.html",
       "category": "core",
-      "rank_score": 307,
+      "rank_score": 309,
       "authority_score": 14
     },
     {
@@ -1047,7 +1047,7 @@
       "title": "Street Kingdoms and the Living Reading",
       "url": "/wiki/first-witness-street-kingdoms-reading.html",
       "category": "core",
-      "rank_score": 306,
+      "rank_score": 308,
       "authority_score": 12
     },
     {
@@ -5890,6 +5890,12 @@
     },
     {
       "source": "/wiki/first-witness-forty-paths.html",
+      "target": "/wiki/first-witness-faction-commentaries.html",
+      "score": 311,
+      "weight": 1
+    },
+    {
+      "source": "/wiki/first-witness-forty-paths.html",
       "target": "/wiki/first-witness-source-register.html",
       "score": 310,
       "weight": 1
@@ -5898,12 +5904,6 @@
       "source": "/wiki/first-witness-forty-paths.html",
       "target": "/wiki/first-witness-concordance.html",
       "score": 309,
-      "weight": 1
-    },
-    {
-      "source": "/wiki/first-witness-forty-paths.html",
-      "target": "/wiki/first-witness-book-3-the-keeper.html",
-      "score": 305,
       "weight": 1
     },
     {
