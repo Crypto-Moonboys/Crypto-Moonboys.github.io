@@ -38,6 +38,22 @@ export async function readWeeklyBossVictoryEvent(db, owner, weekKey, bossId) {
     LIMIT 1`).bind(owner, weekKey, bossId).first().then(requirePetFirstReadResult);
 }
 
+// Existing backfills may retain their original recovery-time created_at.
+// Read the proven attack clock for consumers without rewriting that history.
+export async function readWeeklyBossLegacySourceTimestamp(db, event) {
+  const source = await db.prepare(`SELECT b.created_at FROM telegram_pet_events e
+    JOIN telegram_pet_weekly_boss_events b ON b.telegram_id=e.telegram_id
+      AND b.event_key=e.event_key AND b.week_key=e.week_key AND b.day_key=e.day_key
+      AND b.boss_id=json_extract(${metadata('e')},'$.boss_id')
+    WHERE e.telegram_id=? AND e.event_key=? AND e.pet_id=? AND e.season_key=?
+      AND e.status='accepted' AND e.event_type='weekly_boss' AND e.reason='weekly_boss_attempt'
+      AND json_extract(${metadata('e')},'$.source')='pet_weekly_boss_backfill'
+      AND ${weeklyBossLegacySourceProofSql()} AND julianday(b.created_at) IS NOT NULL LIMIT 1`)
+    .bind(event.telegram_id, event.event_key, event.pet_id, event.season_key)
+    .first().then(requirePetFirstReadResult);
+  return source?.created_at || null;
+}
+
 export async function ensureWeeklyBossVictoryEvent(db, owner, weekKey, bossId) {
   const existing = await readWeeklyBossVictoryEvent(db, owner, weekKey, bossId);
   if (existing) return existing;
@@ -51,14 +67,15 @@ export async function ensureWeeklyBossVictoryEvent(db, owner, weekKey, bossId) {
     JOIN telegram_pet_season_slots s ON s.pet_id=i.pet_id AND s.telegram_id=i.telegram_id AND s.season_key=i.season_key AND s.slot_number=i.slot_number
     WHERE v.telegram_id=? AND v.week_key=? AND v.boss_id=? AND v.defeated_at IS NOT NULL
       AND b.event_key<>'' AND b.event_key=trim(b.event_key) AND length(b.event_key)<=180
-      AND length(b.day_key)=10 AND date(b.day_key,'+0 days')=b.day_key LIMIT 1`)
+      AND length(b.day_key)=10 AND date(b.day_key,'+0 days')=b.day_key
+      AND julianday(b.created_at) IS NOT NULL LIMIT 1`)
     .bind(owner, weekKey, bossId).first().then(requirePetFirstReadResult);
   if (!source) return null;
   await db.prepare(`INSERT OR IGNORE INTO telegram_pet_events
-    (id,pet_id,telegram_id,event_type,event_key,xp_awarded,pet_xp_awarded,season_key,day_key,week_key,status,reason,metadata)
+    (id,pet_id,telegram_id,event_type,event_key,xp_awarded,pet_xp_awarded,season_key,day_key,week_key,status,reason,metadata,created_at)
     SELECT ?,v.pet_id,v.telegram_id,'weekly_boss',v.victory_event_key,0,0,v.season_key,b.day_key,b.week_key,
       'accepted','weekly_boss_attempt',json_object('source','pet_weekly_boss_backfill','boss_id',b.boss_id,
-        'action',b.action,'damage',b.damage,'equipment_evidence','unavailable')
+        'action',b.action,'damage',b.damage,'equipment_evidence','unavailable'),b.created_at
     FROM telegram_pet_weekly_boss_victories_by_pet v
     JOIN telegram_pet_weekly_boss_events b ON b.telegram_id=v.telegram_id AND b.week_key=v.week_key
       AND b.boss_id=v.boss_id AND b.event_key=v.victory_event_key
@@ -66,7 +83,8 @@ export async function ensureWeeklyBossVictoryEvent(db, owner, weekKey, bossId) {
     JOIN telegram_pet_season_slots s ON s.pet_id=i.pet_id AND s.telegram_id=i.telegram_id AND s.season_key=i.season_key AND s.slot_number=i.slot_number
     WHERE v.telegram_id=? AND v.week_key=? AND v.boss_id=? AND v.pet_id=? AND v.season_key=?
       AND v.victory_event_key=? AND b.event_id=? AND v.defeated_at IS NOT NULL
-      AND length(b.day_key)=10 AND date(b.day_key,'+0 days')=b.day_key`)
+      AND length(b.day_key)=10 AND date(b.day_key,'+0 days')=b.day_key
+      AND julianday(b.created_at) IS NOT NULL`)
     .bind(`${source.event_id}:pet-event`.slice(0, 180), owner, weekKey, bossId, source.pet_id,
       source.season_key, source.victory_event_key, source.event_id).run().then(requirePetMutationResult);
   const saved = await readWeeklyBossVictoryEvent(db, owner, weekKey, bossId);

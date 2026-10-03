@@ -2,6 +2,7 @@ import evolutions from './content/evolutions.json' with { type: 'json' };
 import { getPetVisibleLevelSql } from './progression-phase-2.js';
 import { reconcileLegacyPetInventory } from './inventory-cutover.js';
 import { requirePetReadResult, requirePetFirstReadResult } from './read-result.js';
+import { readWeeklyBossLegacySourceTimestamp } from './weekly-boss-evidence.js';
 
 const ID_PATTERN = /^[a-z0-9][a-z0-9_-]*$/;
 const FORBIDDEN_EVOLUTION_KEYS = /(?:^|_)(?:xp|reward)_multiplier$|cap_(?:increase|bonus)$|(?:pet|community)_xp_cap/i;
@@ -99,10 +100,17 @@ async function resolveMoonpetIdentityScope(db, telegramId, request = {}) {
 async function readMoonpetIdentitySourceEvent(db, telegramId, request = {}) {
   const sourceEventKey = sourceEventKeyFor(request);
   if (!sourceEventKey) return { ok: true, source_event_key: null, source_event: null };
-  const row = await db.prepare(`SELECT pet_id, telegram_id, season_key, event_type, status, reason, metadata, created_at, day_key
+  let row = await db.prepare(`SELECT pet_id, telegram_id, season_key, event_type, status, reason, metadata, created_at, day_key
     FROM telegram_pet_events WHERE telegram_id = ? AND event_key = ? LIMIT 1`)
     .bind(telegramId, sourceEventKey).first();
   if (!row || row.status !== 'accepted') return { ok: false, reason: 'source_event_not_accepted', source_event_key: sourceEventKey };
+  let metadata;
+  try { metadata = JSON.parse(row.metadata || '{}'); } catch { metadata = {}; }
+  if (row.event_type === 'weekly_boss' && metadata?.source === 'pet_weekly_boss_backfill') {
+    const timestamp = await readWeeklyBossLegacySourceTimestamp(db, { ...row, event_key: sourceEventKey });
+    if (!timestamp) return { ok: false, reason: 'source_event_timestamp_unavailable', source_event_key: sourceEventKey };
+    row = { ...row, created_at: timestamp };
+  }
   return { ok: true, source_event_key: sourceEventKey, source_event: row };
 }
 

@@ -98,3 +98,58 @@ for (const action of ['join', 'cpu']) {
     if(race)assert.equal(intercepted,true);
   });
 }
+
+for (const status of ['open', 'selecting']) {
+  for (const [name, delay, race, accepted] of [
+    ['before', 20*60000-1000, false, true], ['exactly at', 20*60000, false, true],
+    ['after', 20*60000+1000, false, false], ['crossing read/write', 20*60000-1000, true, false],
+  ]) test(`Kaiju ${status} category hydration: ${name}`, async t => {
+    const f=fixture('954601'),clock=clockFixture(f);
+    t.after(()=>{clock.restore();f.sql.close();});
+    const start=await httpAction(f,{action:'kaiju_start'}),id=start.body.result.match.match_id;
+    // Retained pre-category tables enter this real state-hydration path.
+    f.sql.prepare('UPDATE telegram_pet_kaiju_matches SET category_key=NULL,roll=0,status=?,mode=? WHERE match_id=?')
+      .run(status,status==='open'?'group':'solo',id);
+    const snapshot=f.sql.prepare('SELECT * FROM telegram_pet_kaiju_matches WHERE match_id=?').get(id);
+    clock.advance(delay);
+    let intercepted=false;
+    if(race)f.db.beforeRun=statement=>{
+      if(statement.query.includes('SET category_key = ?, roll = ?')){
+        intercepted=true;clock.advance(2000);f.db.beforeRun=null;
+      }
+    };
+    const hydrated=await hooks.ensurePetKaijuMatchCategory(f.db,snapshot);
+    const saved=f.sql.prepare('SELECT * FROM telegram_pet_kaiju_matches WHERE match_id=?').get(id);
+    assert.equal(Boolean(saved.category_key),accepted);
+    assert.equal(Boolean(hydrated.category_key),accepted);
+    assert.equal(saved.status,status);
+    assert.equal(paid(f),0);
+    if(accepted){
+      assert.equal(saved.roll,hooks.PET_KAIJU_CATEGORIES.find(category=>category.key===saved.category_key)?.roll);
+      assert.notEqual(saved.updated_at,snapshot.updated_at);
+      // Once saved, repeated state hydration must not keep renewing the TTL.
+      clock.advance(21*60000);
+      await hooks.ensurePetKaijuMatchCategory(f.db,hydrated);
+      assert.deepEqual(f.sql.prepare('SELECT * FROM telegram_pet_kaiju_matches WHERE match_id=?').get(id),saved);
+    }else{
+      assert.deepEqual(saved,snapshot,'late hydration cannot persist a category, roll or renewed TTL');
+    }
+    if(race)assert.equal(intercepted,true);
+  });
+}
+
+for(const fault of ['IGNORE',"ABORT,'failed_category'"])test(`Kaiju category ${fault} preserves TTL and retries without payout`,async t=>{
+  const f=fixture('954701'),clock=clockFixture(f);t.after(()=>{clock.restore();f.sql.close();});
+  const start=await httpAction(f,{action:'kaiju_start'}),id=start.body.result.match.match_id;
+  f.sql.prepare('UPDATE telegram_pet_kaiju_matches SET category_key=NULL,roll=0 WHERE match_id=?').run(id);
+  const snapshot=f.sql.prepare('SELECT * FROM telegram_pet_kaiju_matches WHERE match_id=?').get(id);
+  clock.advance(60000);
+  f.sql.exec(`CREATE TRIGGER fail_category BEFORE UPDATE OF category_key ON telegram_pet_kaiju_matches
+    WHEN NEW.category_key IS NOT NULL BEGIN SELECT RAISE(${fault}); END`);
+  if(fault==='IGNORE')assert.equal((await hooks.ensurePetKaijuMatchCategory(f.db,snapshot)).category_key,null);
+  else await assert.rejects(hooks.ensurePetKaijuMatchCategory(f.db,snapshot),/failed_category/);
+  assert.deepEqual(f.sql.prepare('SELECT * FROM telegram_pet_kaiju_matches WHERE match_id=?').get(id),snapshot);
+  f.sql.exec('DROP TRIGGER fail_category');
+  assert.ok((await hooks.ensurePetKaijuMatchCategory(f.db,snapshot)).category_key);
+  assert.equal(paid(f),0);
+});

@@ -1112,6 +1112,11 @@ backfills stay stored and cannot produce new pet-specific Journey progress.
 The same proof guards Journey reads, qualification and background recovery.
 
 A validated winning backfill is accepted by memory and bounded victory recovery.
+New backfills copy the exact account attack's `created_at`. Identity recovery
+also revalidates that attack timestamp when consuming an existing backfill,
+without rewriting its stored event history. Missing or invalid source time
+cannot fall back to the recovery clock. Earliest boss memory ordering therefore
+uses the proven victory time.
 Recovery restores its memory, achievement, base specialist progress and Crest
 using the original source/day and existing idempotency keys. Legacy account
 evidence cannot prove original equipment: recovery uses no equipment bonus and

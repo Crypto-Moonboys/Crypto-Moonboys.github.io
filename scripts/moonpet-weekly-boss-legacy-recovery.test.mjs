@@ -48,6 +48,8 @@ for(const [name,options] of [['multiple legacy attempts',{}],['only exact winner
   assert.equal(accepted.accepted,true); assert.equal(accepted.reward.accepted,true);
   const winner=f.sql.prepare("SELECT * FROM telegram_pet_events WHERE event_key='old-win'").get();
   assert.equal(winner.pet_id,petId);assert.equal(winner.season_key,sourceSeason);assert.equal(winner.day_key,'2026-10-01');
+  assert.equal(winner.created_at,'2026-10-01T12:00:00.000Z','new backfill retains the proven attack timestamp');
+  assert.equal(f.sql.prepare('SELECT first_boss_victory_at FROM telegram_pet_memories WHERE pet_id=?').get(petId).first_boss_victory_at,winner.created_at);
   assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_identity_events WHERE event_key='old-win:memory' AND applied_at IS NOT NULL").get().n,1);
   assert.equal(finishes(f).length,1);
   assert.equal(JSON.parse(finishes(f)[0].payload_json).equipment_evidence,'unavailable');
@@ -122,4 +124,59 @@ for(const invalid of ['missing-attack','wrong-key','wrong-owner','wrong-season',
     qualification_week:4,objective_id:'weekly_boss_attempt',source_event_key:'old-first'});
   assert.equal(rejected.accepted,false);
   assert.equal((await f.act({action:'delete_pet_slot',pet_id:petId,confirm_pet_id:petId,confirmed:true})).reason,'pet_delete_blocked');
+});
+
+
+test('existing exact backfill uses proven attack time and earliest memory ordering without rewriting history',async t=>{
+  const f=fixture('955501'),clock=clockFixture(f);t.after(()=>{clock.restore();f.sql.close();});
+  const {petId,boss}=legacy(f);
+  await ensureWeeklyBossVictoryEvent(f.db,f.owner,week,boss.boss_id);
+  // This retained row models the old backfill producer's recovery-time default.
+  f.sql.prepare("UPDATE telegram_pet_events SET created_at='2026-10-02 12:00:00' WHERE event_key='old-win'").run();
+  const retained=f.sql.prepare("SELECT * FROM telegram_pet_events WHERE event_key='old-win'").get();
+  f.sql.prepare(`INSERT INTO telegram_pet_memories
+    (pet_id,telegram_id,season_key,first_boss_victory_at,first_boss_id,total_bosses_defeated)
+    VALUES(?,?,?,'2026-10-01T18:00:00.000Z','later-boss',1)`).run(petId,f.owner,sourceSeason);
+  f.active('current-'+f.owner);clock.advance(7*86400000);
+  await f.state();
+  const memory=f.sql.prepare('SELECT * FROM telegram_pet_memories WHERE pet_id=?').get(petId);
+  assert.equal(memory.first_boss_victory_at,'2026-10-01T12:00:00.000Z');
+  assert.equal(memory.first_boss_id,boss.boss_id);
+  assert.equal(memory.total_bosses_defeated,2);
+  assert.equal(finishes(f).length,1);
+  assert.deepEqual(f.sql.prepare("SELECT * FROM telegram_pet_events WHERE event_key='old-win'").get(),retained);
+  const settled=ledger(f);clock.advance(1000);await f.state();await f.state();
+  assert.deepEqual(ledger(f),settled,'timestamp recovery does not replay memories or rewards');
+});
+
+for(const existing of [false,true])test(`unavailable proven attack timestamp fails closed (${existing?'existing':'new'} backfill)`,async t=>{
+  const f=fixture('9556'+Number(existing)),clock=clockFixture(f);t.after(()=>{clock.restore();f.sql.close();});
+  const {boss,petId}=legacy(f);
+  if(existing)await ensureWeeklyBossVictoryEvent(f.db,f.owner,week,boss.boss_id);
+  f.sql.prepare("UPDATE telegram_pet_weekly_boss_events SET created_at='unavailable' WHERE event_key='old-win'").run();
+  const retained=f.sql.prepare("SELECT * FROM telegram_pet_events WHERE event_key='old-win'").get();
+  await f.state();
+  assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_memories WHERE pet_id=?').get(petId).n,0);
+  assert.equal(finishes(f).length,0,'a recovery clock cannot stand in for unproven source time');
+  assert.deepEqual(f.sql.prepare("SELECT * FROM telegram_pet_events WHERE event_key='old-win'").get(),retained);
+});
+
+for(const fault of ['throw','resolved'])test(`canonical legacy timestamp ${fault} read failure stays pending and retries once`,async t=>{
+  const f=fixture('9557'+fault.length),clock=clockFixture(f);t.after(()=>{clock.restore();f.sql.close();});
+  const {boss,petId}=legacy(f);
+  f.db.beforeFirst=statement=>{
+    if(!statement.query.includes('SELECT b.created_at FROM telegram_pet_events'))return;
+    if(fault==='throw')throw new Error('timestamp_read_unavailable');
+    return {success:false,error:'timestamp_read_unavailable'};
+  };
+  const paid=await hooks.claimPetWeeklyBossReward(f.db,f.owner,{pet_id:petId,boss_id:boss.boss_id,week_key:week});
+  assert.equal(paid.accepted,true);assert.equal(paid.refresh_state,true);
+  assert.equal(finishes(f).length,0);
+  assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_memories WHERE pet_id=?').get(petId).n,0);
+  const wallet=f.sql.prepare('SELECT moon_gold FROM telegram_pet_profiles').get().moon_gold;
+  f.db.beforeFirst=null;await f.state();
+  assert.equal(f.sql.prepare('SELECT first_boss_victory_at FROM telegram_pet_memories WHERE pet_id=?').get(petId).first_boss_victory_at,'2026-10-01T12:00:00.000Z');
+  assert.equal(finishes(f).length,1);
+  assert.equal((await hooks.claimPetWeeklyBossReward(f.db,f.owner,{pet_id:petId,boss_id:boss.boss_id,week_key:week})).duplicate,true);
+  assert.equal(f.sql.prepare('SELECT moon_gold FROM telegram_pet_profiles').get().moon_gold,wallet);
 });

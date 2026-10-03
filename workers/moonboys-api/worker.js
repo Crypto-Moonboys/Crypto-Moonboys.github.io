@@ -15790,6 +15790,7 @@ export const __petMediaTestHooks = Object.freeze({
   applyPetItemActionBonuses,
   awardPetKaijuPlayerResult,
   finishPetKaijuMatch,
+  ensurePetKaijuMatchCategory,
   cmdPetKaiju,
   cmdPetArena,
   getPetHighLevelGearXpMultiplier,

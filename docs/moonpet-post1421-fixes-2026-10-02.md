@@ -61,7 +61,7 @@ retry/egg claim browser cases are part of the existing full player-loop suite.
 The Daily Moon Run SQLite fixture now loads the existing migration 048, matching
 production's account boss evidence tables used by shared Journey validation.
 
-Final validation completed on 3 October 2026: all five domains exited 0,
+Initial validation completed on 3 October 2026: all five domains exited 0,
 **193/193 registered commands passed** (Worker API 113, Arcade 24, Wiki 24,
 WAX 17, Visual 15). The three new suites passed 8 egg reward, 16 Kaiju deadline
 and 14 legacy boss recovery tests. The standalone player-loop browser command
@@ -72,6 +72,31 @@ Worker API covers action synchronization, public rankings/quests/progression, da
 weekly Journeys/bosses, combat, completion/Finale, season rewards, deletion,
 reward recovery, webhook authentication and notification settings. Visual
 includes the six-screen player loop at 390×844 and 360×640.
+
+## Review follow-up — 3 October 2026
+
+New legacy winning events copy the exact account attack's `created_at`. Memory
+recovery independently validates and reads that timestamp for existing exact
+backfills too; stored events retain their historical timestamps. An earlier
+proven victory takes its correct place before a later boss memory. Missing,
+invalid or failed timestamp reads cannot substitute recovery time or mark an
+unfinished victory complete. Committed currency remains paid and retryable.
+
+The Kaiju suite now covers category initialization for both open and selecting
+tables before, exactly at, after and across the deadline. Late writes leave
+category, roll and `updated_at` unchanged. Repeated hydration of a saved category
+does not renew its TTL. Real SQLite ignored/aborted category writes retain the
+old TTL and retry without payout. The production category guard is unchanged;
+its existing helper is exposed only through the test hook object.
+
+Follow-up validation: `npm run ci:worker-api` passed all 113 registered commands.
+`node scripts/moonpet-kaiju-deadlines.test.mjs` passed 26 tests and
+`node scripts/moonpet-weekly-boss-legacy-recovery.test.mjs` passed 19 tests.
+`node --check workers/moonboys-api/pets/moonpet-identity.js`,
+`node --check workers/moonboys-api/pets/weekly-boss-evidence.js` and
+`git diff --check` passed. The timestamp regression failed before the fix for
+both new and existing backfills; all new assertions pass afterward.
+No public asset, migration or configuration change is required by this follow-up.
 
 ## Release requirements
 
