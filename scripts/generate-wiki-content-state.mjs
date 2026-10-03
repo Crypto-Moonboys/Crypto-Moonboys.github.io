@@ -447,6 +447,7 @@ export function readCanonRevision(html, relPath = 'wiki page') {
   }
   assertValidWikiContentTopology(html, relPath);
   if (countMarker(html, CANONICAL_CONTENT_BEGIN) !== 1
+    || countCanonicalContentBlocks(html) !== 1
     || countMarker(html, SAM_CONTENT_BEGIN) !== 0
     || countMarker(html, MANUAL_CONTENT_BEGIN) !== 0
     || hasLegacyUnmarkedArticleContent(html)) {

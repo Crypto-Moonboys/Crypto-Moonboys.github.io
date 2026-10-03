@@ -20,6 +20,7 @@ import {
   assertValidStubAtRest,
   assertValidWikiContentTopology,
   buildWikiAudit,
+  countCanonicalContentBlocks,
   countWords,
   extractArticleHtml,
   hasLegacyUnmarkedArticleContent,
@@ -49,6 +50,21 @@ test('canon revisions require complete ownership rather than a bare completion f
   assert.throws(() => readCanonRevision(owned.replace('revision="1"', 'revision="0"')), /invalid canonical revision/);
   assert.throws(() => readCanonRevision(owned.replace('revision="1"', 'revision="1" data-canon-revision="2"')), /invalid canonical revision/);
   assert.throws(() => readCanonRevision(owned.replace('first-witness+w81', 'unreviewed-sam')), /invalid canonical revision/);
+});
+
+test('canon revisions reject mixed marker and attribute ownership blocks', () => {
+  const opening = '<article class="wiki-content" data-canon-revision="1" data-canon-source-tier="first-witness+w81">';
+  const owned = `${opening}${CANONICAL_CONTENT_BEGIN}<p>Reconciled history.</p>${CANONICAL_CONTENT_END}</article>`;
+  for (const attribute of ['data-canonical-content="true"', 'data-canonical-content', 'data-canonical-content="TRUE"']) {
+    const mixed = owned.replace('</article>', `<section ${attribute}><p>Separate canonical record.</p></section></article>`);
+    assert.doesNotThrow(() => assertValidWikiContentTopology(mixed));
+    assert.equal(hasLegacyUnmarkedArticleContent(mixed), false);
+    assert.equal(countCanonicalContentBlocks(mixed), 2);
+    assert.throws(() => readCanonRevision(mixed), /one complete CANONICAL_CONTENT block/);
+  }
+  const nested = owned.replace('<p>', '<p data-canonical-content="true">');
+  assert.equal(countCanonicalContentBlocks(nested), 1);
+  assert.deepEqual(readCanonRevision(nested), { revision: 1, source_tier: 'first-witness+w81' });
 });
 
 test('completed core-history rewrites leave the queue and retain their prose locks', () => {
