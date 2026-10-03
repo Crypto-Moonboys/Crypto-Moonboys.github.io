@@ -1,5 +1,5 @@
 {
-  "_generated": "2026-09-17T11:52:29.971Z",
+  "_generated": "2026-10-03T02:54:10.272Z",
   "summary": {
     "total": 334,
     "approved": 334,
@@ -260,7 +260,7 @@
       "file": "crypto-moonboy-pets.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 2848
+      "word_count": 3276
     },
     {
       "slug": "crypto-moonboys",
@@ -610,7 +610,7 @@
       "file": "gkniftyheads-bitman-784220.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 535
+      "word_count": 4350
     },
     {
       "slug": "gkniftyheads-bitman-784229",
@@ -1128,7 +1128,7 @@
       "file": "gkniftyheads-nft-collection.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT collection page metadata.",
-      "word_count": 11446
+      "word_count": 11447
     },
     {
       "slug": "gkniftyheads-nicky-the-ninja-napolitano-783385",
@@ -1576,7 +1576,7 @@
       "file": "hodlmoonboys-nft-collection.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT collection page metadata.",
-      "word_count": 12566
+      "word_count": 27555
     },
     {
       "slug": "ian-harrison",
@@ -1884,7 +1884,7 @@
       "file": "sacred-chain.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1827
+      "word_count": 1870
     },
     {
       "slug": "samaelexe",
@@ -2108,7 +2108,7 @@
       "file": "the-first-witness.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1422
+      "word_count": 1520
     },
     {
       "slug": "the-gasless-ghosts",

@@ -6259,6 +6259,25 @@
     ]
   },
   {
+    "entity_id": "the_first_witness",
+    "canonical_title": "The First Witness",
+    "canonical_url": "/wiki/the-first-witness.html",
+    "category": "factions",
+    "aliases": [],
+    "tags": [
+      "first",
+      "witness"
+    ],
+    "source_urls": [
+      "/wiki/the-first-witness.html"
+    ],
+    "brand": null,
+    "alias_candidates": [
+      "First Witness",
+      "first witness"
+    ]
+  },
+  {
     "entity_id": "the_gasless_ghosts",
     "canonical_title": "The GASLESS GHOSTS",
     "canonical_url": "/wiki/the-gasless-ghosts.html",

@@ -197,7 +197,7 @@
   },
   "/wiki/alfie-bitcoin-kid-blaze.html": {
     "outbound_count": 28,
-    "inbound_count": 4,
+    "inbound_count": 5,
     "existing_outbound": [
       "/wiki/billy-the-goat-kid.html",
       "/wiki/bitcoin-kid-army.html",
@@ -234,7 +234,8 @@
       "/wiki/alfie-blaze.html",
       "/wiki/bitcoin-kid-army.html",
       "/wiki/bitcoin.html",
-      "/wiki/graffpunks-ecosystem.html"
+      "/wiki/graffpunks-ecosystem.html",
+      "/wiki/the-first-witness.html"
     ]
   },
   "/wiki/alfie-blaze.html": {
@@ -918,7 +919,7 @@
   },
   "/wiki/bitcoin.html": {
     "outbound_count": 32,
-    "inbound_count": 13,
+    "inbound_count": 14,
     "existing_outbound": [
       "/wiki/alfie-bitcoin-kid-blaze.html",
       "/wiki/bitcoin-kid-army.html",
@@ -967,6 +968,7 @@
       "/wiki/ethereum-ecosystem.html",
       "/wiki/exchanges.html",
       "/wiki/the-bitcoin-kid-army.html",
+      "/wiki/the-first-witness.html",
       "/wiki/tokenomics.html",
       "/wiki/wallets.html"
     ]
@@ -1006,7 +1008,7 @@
   },
   "/wiki/block-topia.html": {
     "outbound_count": 6,
-    "inbound_count": 115,
+    "inbound_count": 116,
     "existing_outbound": [],
     "suggested_outbound": [
       "/wiki/block-node-defenders.html",
@@ -1112,6 +1114,7 @@
       "/wiki/the-ducky-boys.html",
       "/wiki/the-evm-punks.html",
       "/wiki/the-finance-guild.html",
+      "/wiki/the-first-witness.html",
       "/wiki/the-gasless-ghosts.html",
       "/wiki/the-hard-fork-rockers.html",
       "/wiki/the-high-hats.html",
@@ -2613,7 +2616,7 @@
     ]
   },
   "/wiki/genesis-spray.html": {
-    "outbound_count": 30,
+    "outbound_count": 31,
     "inbound_count": 3,
     "existing_outbound": [
       "/wiki/block-topia.html",
@@ -2646,6 +2649,7 @@
       "/wiki/graffpunks-collection.html",
       "/wiki/graffpunks-ecosystem.html",
       "/wiki/the-blockchain-furies.html",
+      "/wiki/the-first-witness.html",
       "/wiki/wax-blockchain.html",
       "/wiki/web3.html"
     ],
@@ -11108,7 +11112,7 @@
   },
   "/wiki/hodl-warriors.html": {
     "outbound_count": 13,
-    "inbound_count": 20,
+    "inbound_count": 21,
     "existing_outbound": [
       "/wiki/bitcoin-kids.html",
       "/wiki/block-topia.html",
@@ -11142,6 +11146,7 @@
       "/wiki/moon-mission.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/satoshi-scroll.html",
+      "/wiki/the-first-witness.html",
       "/wiki/the-great-dip.html",
       "/wiki/the-rugpull-miners.html",
       "/wiki/wagmi-prophecy.html",
@@ -11265,7 +11270,7 @@
   },
   "/wiki/hodl-x-warriors.html": {
     "outbound_count": 12,
-    "inbound_count": 0,
+    "inbound_count": 1,
     "existing_outbound": [
       "/wiki/bitcoin-x-kids.html",
       "/wiki/block-topia.html",
@@ -11282,7 +11287,9 @@
       "/wiki/the-hard-fork-rockers.html",
       "/wiki/triple-fork-event.html"
     ],
-    "inbound_from": []
+    "inbound_from": [
+      "/wiki/the-first-witness.html"
+    ]
   },
   "/wiki/hodlmoonboys-nft-collection.html": {
     "outbound_count": 13,
@@ -12298,7 +12305,7 @@
   },
   "/wiki/null-the-prophet.html": {
     "outbound_count": 11,
-    "inbound_count": 85,
+    "inbound_count": 86,
     "existing_outbound": [
       "/wiki/bitcoin-kids.html",
       "/wiki/block-topia.html",
@@ -12378,6 +12385,7 @@
       "/wiki/the-ducky-boys.html",
       "/wiki/the-evm-punks.html",
       "/wiki/the-finance-guild.html",
+      "/wiki/the-first-witness.html",
       "/wiki/the-gasless-ghosts.html",
       "/wiki/the-great-dip.html",
       "/wiki/the-hard-fork-rockers.html",
@@ -13112,8 +13120,8 @@
     "inbound_from": []
   },
   "/wiki/sacred-chain.html": {
-    "outbound_count": 12,
-    "inbound_count": 4,
+    "outbound_count": 13,
+    "inbound_count": 5,
     "existing_outbound": [
       "/wiki/bitcoin-kids.html",
       "/wiki/bitcoin-x-kids.html",
@@ -13123,7 +13131,8 @@
       "/wiki/hard-fork-games.html",
       "/wiki/hodl-wars.html",
       "/wiki/metropolis.html",
-      "/wiki/null-the-prophet.html"
+      "/wiki/null-the-prophet.html",
+      "/wiki/the-first-witness.html"
     ],
     "suggested_outbound": [
       "/wiki/genesis-kernel.html",
@@ -13134,7 +13143,8 @@
       "/wiki/blockchain.html",
       "/wiki/samaelexe.html",
       "/wiki/the-chain-scribes.html",
-      "/wiki/the-finance-guild.html"
+      "/wiki/the-finance-guild.html",
+      "/wiki/the-first-witness.html"
     ]
   },
   "/wiki/samaelexe.html": {
@@ -13619,7 +13629,7 @@
   },
   "/wiki/street-kingdoms.html": {
     "outbound_count": 20,
-    "inbound_count": 0,
+    "inbound_count": 1,
     "existing_outbound": [
       "/wiki/block-topia.html",
       "/wiki/crypto-moonboys.html",
@@ -13644,7 +13654,9 @@
       "/wiki/trevor-fung.html",
       "/wiki/triple-fork-event.html"
     ],
-    "inbound_from": []
+    "inbound_from": [
+      "/wiki/the-first-witness.html"
+    ]
   },
   "/wiki/swap-nefty.html": {
     "outbound_count": 30,
@@ -13951,8 +13963,8 @@
     "inbound_from": []
   },
   "/wiki/the-chain-scribes.html": {
-    "outbound_count": 22,
-    "inbound_count": 32,
+    "outbound_count": 23,
+    "inbound_count": 33,
     "existing_outbound": [
       "/wiki/block-topia.html",
       "/wiki/blockchain.html",
@@ -13977,6 +13989,7 @@
       "/wiki/graffpunks.html",
       "/wiki/hodl-wars.html",
       "/wiki/the-blockchain-furies.html",
+      "/wiki/the-first-witness.html",
       "/wiki/wax-blockchain.html"
     ],
     "inbound_from": [
@@ -13995,6 +14008,7 @@
       "/wiki/the-crypto-stoned-boys.html",
       "/wiki/the-ducky-boys.html",
       "/wiki/the-evm-punks.html",
+      "/wiki/the-first-witness.html",
       "/wiki/the-gasless-ghosts.html",
       "/wiki/the-great-dip.html",
       "/wiki/the-hard-fork-rockers.html",
@@ -14208,6 +14222,48 @@
       "/wiki/thorne-the-architect.html",
       "/wiki/wagmi-prophecy.html",
       "/wiki/whale-lords.html"
+    ]
+  },
+  "/wiki/the-first-witness.html": {
+    "outbound_count": 31,
+    "inbound_count": 1,
+    "existing_outbound": [
+      "/wiki/alfie-bitcoin-kid-blaze.html",
+      "/wiki/bitcoin.html",
+      "/wiki/block-topia.html",
+      "/wiki/hodl-warriors.html",
+      "/wiki/hodl-x-warriors.html",
+      "/wiki/null-the-prophet.html",
+      "/wiki/sacred-chain.html",
+      "/wiki/street-kingdoms.html",
+      "/wiki/the-chain-scribes.html",
+      "/wiki/triple-fork-event.html"
+    ],
+    "suggested_outbound": [
+      "/wiki/bitcoin-btc.html",
+      "/wiki/bitcoin-kid-army.html",
+      "/wiki/bitcoin-kids.html",
+      "/wiki/bitcoin-x-kids.html",
+      "/wiki/crypto-moonboys.html",
+      "/wiki/gkniftyheads-bitcoin-barbarian-784284.html",
+      "/wiki/gkniftyheads-bitcoin-kid-infinite-776002.html",
+      "/wiki/gkniftyheads-bitcoin-kid-infinite-776003.html",
+      "/wiki/gkniftyheads-bitcoin-kid-infinite-776005.html",
+      "/wiki/gkniftyheads-bitcoin-kid-infinite-776056.html",
+      "/wiki/gkniftyheads-bitcoin-kid-infinite-776058.html",
+      "/wiki/gkniftyheads-bitcoin-kid-infinite-776059.html",
+      "/wiki/gkniftyheads-bitcoin-kid-royale-776145.html",
+      "/wiki/gkniftyheads-bitcoin-kid-tv-heads-100-776074.html",
+      "/wiki/gkniftyheads-bitcoin-kid-x-sarah-pfly-infinite-776004.html",
+      "/wiki/gkniftyheads-bitcoin-kid-x-sarahpfly-773225.html",
+      "/wiki/gkniftyheads-bitforce-bitcoin-battler-784332.html",
+      "/wiki/gkniftyheads-matteo-bitcoin-bandit-gallo-783447.html",
+      "/wiki/hard-fork-games.html",
+      "/wiki/queen-sarah-p-fly.html",
+      "/wiki/the-bitcoin-kid-army.html"
+    ],
+    "inbound_from": [
+      "/wiki/sacred-chain.html"
     ]
   },
   "/wiki/the-gasless-ghosts.html": {
@@ -14984,7 +15040,7 @@
   },
   "/wiki/triple-fork-event.html": {
     "outbound_count": 28,
-    "inbound_count": 0,
+    "inbound_count": 1,
     "existing_outbound": [
       "/wiki/battlemech-blast.html",
       "/wiki/block-topia.html",
@@ -15017,7 +15073,9 @@
       "/wiki/trevor-fung.html",
       "/wiki/wax-blockchain.html"
     ],
-    "inbound_from": []
+    "inbound_from": [
+      "/wiki/the-first-witness.html"
+    ]
   },
   "/wiki/wagmi-prophecy.html": {
     "outbound_count": 23,

@@ -1642,6 +1642,7 @@
       "/wiki/graffpunks-collection.html",
       "/wiki/graffpunks-ecosystem.html",
       "/wiki/the-blockchain-furies.html",
+      "/wiki/the-first-witness.html",
       "/wiki/wax-blockchain.html",
       "/wiki/web3.html"
     ]
@@ -8722,7 +8723,8 @@
       "/wiki/hard-fork-games.html",
       "/wiki/hodl-wars.html",
       "/wiki/metropolis.html",
-      "/wiki/null-the-prophet.html"
+      "/wiki/null-the-prophet.html",
+      "/wiki/the-first-witness.html"
     ],
     "suggested_links": [
       "/wiki/genesis-kernel.html",
@@ -9388,6 +9390,7 @@
       "/wiki/graffpunks.html",
       "/wiki/hodl-wars.html",
       "/wiki/the-blockchain-furies.html",
+      "/wiki/the-first-witness.html",
       "/wiki/wax-blockchain.html"
     ]
   },
@@ -9525,6 +9528,43 @@
     ],
     "suggested_links": [
       "/wiki/block-node-defenders.html"
+    ]
+  },
+  "/wiki/the-first-witness.html": {
+    "existing_links": [
+      "/wiki/alfie-bitcoin-kid-blaze.html",
+      "/wiki/bitcoin.html",
+      "/wiki/block-topia.html",
+      "/wiki/hodl-warriors.html",
+      "/wiki/hodl-x-warriors.html",
+      "/wiki/null-the-prophet.html",
+      "/wiki/sacred-chain.html",
+      "/wiki/street-kingdoms.html",
+      "/wiki/the-chain-scribes.html",
+      "/wiki/triple-fork-event.html"
+    ],
+    "suggested_links": [
+      "/wiki/bitcoin-btc.html",
+      "/wiki/bitcoin-kid-army.html",
+      "/wiki/bitcoin-kids.html",
+      "/wiki/bitcoin-x-kids.html",
+      "/wiki/crypto-moonboys.html",
+      "/wiki/gkniftyheads-bitcoin-barbarian-784284.html",
+      "/wiki/gkniftyheads-bitcoin-kid-infinite-776002.html",
+      "/wiki/gkniftyheads-bitcoin-kid-infinite-776003.html",
+      "/wiki/gkniftyheads-bitcoin-kid-infinite-776005.html",
+      "/wiki/gkniftyheads-bitcoin-kid-infinite-776056.html",
+      "/wiki/gkniftyheads-bitcoin-kid-infinite-776058.html",
+      "/wiki/gkniftyheads-bitcoin-kid-infinite-776059.html",
+      "/wiki/gkniftyheads-bitcoin-kid-royale-776145.html",
+      "/wiki/gkniftyheads-bitcoin-kid-tv-heads-100-776074.html",
+      "/wiki/gkniftyheads-bitcoin-kid-x-sarah-pfly-infinite-776004.html",
+      "/wiki/gkniftyheads-bitcoin-kid-x-sarahpfly-773225.html",
+      "/wiki/gkniftyheads-bitforce-bitcoin-battler-784332.html",
+      "/wiki/gkniftyheads-matteo-bitcoin-bandit-gallo-783447.html",
+      "/wiki/hard-fork-games.html",
+      "/wiki/queen-sarah-p-fly.html",
+      "/wiki/the-bitcoin-kid-army.html"
     ]
   },
   "/wiki/the-gasless-ghosts.html": {
