@@ -140,11 +140,11 @@ for (const type of ['sleep','train','work','explore']) test(`${type} activity pa
   f.db.failRewardBatch='resolved';
   await assert.rejects(hooks.claimPetActivitySession(f.db,f.owner,{now}),/pet_state_write_unavailable/);
   const afterFailure=f.sql.prepare('SELECT hunger,happiness,cleanliness,energy FROM telegram_pet_instances WHERE pet_id=?').get(f.petId);
-  for(const key of ['hunger','happiness','cleanliness','energy']) assert.equal(afterFailure[key],before[key]);
+  for(const key of ['hunger','happiness','cleanliness','energy']) assert.ok(Math.abs(afterFailure[key]-before[key])<0.01, `${type} ${key}: decay commits while payment rolls back`);
   const result=await hooks.claimPetActivitySession(f.db,f.owner,{now}); assert.equal(result.accepted,true);
   const expected=hooks.computePetActivityRewards(type,7200).rewards;
   const after=f.sql.prepare('SELECT hunger,happiness,cleanliness,energy FROM telegram_pet_instances WHERE pet_id=?').get(f.petId);
-  for(const key of ['hunger','happiness','cleanliness','energy']) assert.equal(after[key],Math.min(100,Math.max(0,before[key]+expected[key])),`${type} ${key}`);
+  for(const key of ['hunger','happiness','cleanliness','energy']) assert.ok(Math.abs(after[key]-Math.min(100,Math.max(0,before[key]+expected[key])))<0.01, `${type} ${key}`);
   const retry=await hooks.claimPetActivitySession(f.db,f.owner,{now});
   assert.ok(!retry.accepted || retry.duplicate);
   assert.deepEqual(f.sql.prepare('SELECT hunger,happiness,cleanliness,energy FROM telegram_pet_instances WHERE pet_id=?').get(f.petId),after);
@@ -176,7 +176,7 @@ for(const mode of ['thrown','resolved']) test(`${mode} decay failure prevents st
   f.db.beforeRun=null;
   assert.equal((await award(f,'decay',{pet_xp:10},{profile_deltas:{energy:5},touch_streak:true})).accepted,true);
   const after=f.sql.prepare('SELECT hunger,energy FROM telegram_pet_instances WHERE pet_id=?').get(f.petId);
-  assert.equal(after.hunger,29); assert.equal(after.energy,81);
+  assert.ok(Math.abs(after.hunger-29)<0.01); assert.ok(Math.abs(after.energy-80.6)<0.01);
 });
 
 test('activity recovery after selection changes keeps decay, stat effects and XP with its saved pet', async () => {
@@ -193,7 +193,7 @@ test('activity recovery after selection changes keeps decay, stat effects and XP
   assert.deepEqual(f.sql.prepare('SELECT hunger,happiness,energy,pet_xp FROM telegram_pet_instances WHERE pet_id=?').get('other-source-pet'),other);
   const earned=f.sql.prepare('SELECT pet_id,pet_xp_awarded FROM telegram_pet_events WHERE event_type=?').get('activity_claim');
   assert.equal(earned.pet_id,f.petId); assert.ok(earned.pet_xp_awarded>0);
-  assert.equal(f.sql.prepare('SELECT hunger FROM telegram_pet_instances WHERE pet_id=?').get(f.petId).hunger,54);
+  assert.equal(Math.round(f.sql.prepare('SELECT hunger FROM telegram_pet_instances WHERE pet_id=?').get(f.petId).hunger),54);
 });
 
 for(const kind of ['daily_cache','care','trade_win','trade_loss']) test(`${kind} manual wallet writer records and returns the actual movement`, async () => {

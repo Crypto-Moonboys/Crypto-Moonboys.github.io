@@ -1242,3 +1242,47 @@ adds no secret. The existing webhook secret/setup checks remain mandatory.
 No ownership or historical reward data is deleted, and no production deployment
 was performed during implementation. See the
 [eleven-finding fix and deployment report](moonpet-post1420-audit-fixes-2026-10-02.md).
+
+## Post-1422 projection, care and reward acknowledgement authority
+
+Full, Missions, Core and Profile projections use one captured server clock for
+current UTC day/week and competition quarter. Guidance, checklist, rewards,
+roster, Finale, Journey, leaderboard and cooldowns must agree on that clock;
+calendar provenance is checked before publication alongside pet/achievement
+provenance. Historical claim sources and immutable ownership seasons retain
+separate identities. An action's old-period receipt can accompany a coherent
+new-period state constructed after its commit.
+
+Care persistence retains fractional hunger, happiness, cleanliness and energy
+in the existing numeric columns. Public meters round to integers; energy gates
+use that same displayed meter and exact debits clamp at zero. A short atomic
+read that does not settle decay leaves its clock anchored. Care/item settlement
+accounts for elapsed time, and ordinary reward/run writes must not discard an
+unsettled interval by moving `last_decay_at`. Preview, guarded decay, SQL care
+writes and legacy mutators preserve the same accumulation rule.
+
+Weekly Boss damage uses the public pet calculation for health and rounded
+energy, matching guidance's damage preview. Settlement keeps the exact captured
+fractional care snapshot for its guarded write and energy debit; combat input
+normalization never rounds stored care values.
+
+Weekly Boss payout and Crest attribution resolve the exact saved winning
+attempt, owner, permanent pet, source season, boss and original week before
+settlement, whether or not an accepted backfill already exists. The proven day
+controls the earning window when a later save timestamp crosses midnight.
+Reward payment is not another boss attempt: payout receipts cannot grant a new
+Journey week or block its participation challenge. Progress/qualification reads
+revalidate the source event's objective mapping. Retained wrong payout-based
+objectives remain stored for audit, while exact winning attempts recover their
+original progress. Existing awarded Crests and payment receipts are preserved.
+
+Daily Completion and Finale payment acknowledgement must prove one saved
+`claimed_at` update before clearing `reward_pending`. An ignored/failed/thrown
+acknowledgement keeps a committed payment accepted and pending for refresh;
+retry repairs its original source marker through the same receipt without
+paying again, even after pet switches or rollover.
+
+No migration or new secret is introduced, no historical ownership or reward
+data is deleted, and no production deployment was performed during this work.
+See the [four-finding audit/fix report](moonpet-post1422-audit-fixes-2026-10-03.md)
+and [audited user option matrix](moonpet-post1422-options-2026-10-03.md).

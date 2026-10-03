@@ -102,7 +102,7 @@ for (const action of ['district_mission', 'event_chain']) {
     };
     if (action === 'district_mission') {
       f.db.afterBatch = async statements => {
-        if (statements.some(s => s.query.includes('UPDATE telegram_pet_instances SET energy=energy-?'))) await switchAfterClaim();
+        if (statements.some(s => s.query.includes('UPDATE telegram_pet_instances SET energy=MAX(0,energy-?)'))) await switchAfterClaim();
       };
     } else {
       // The scoped no-cost claim commits in its guard transaction before the
@@ -204,7 +204,7 @@ test('a charged seasonal raid decision recovers once after switching before its 
     VALUES (?,?,?,?,?,?)`).run(f.source, f.owner, f.season, boss.season_instance, boss.key, boss.hp - 1);
   let switched;
   f.db.afterBatch = async statements => {
-    if (!statements.some(s => s.query.includes('UPDATE telegram_pet_instances SET energy=energy-?'))) return;
+    if (!statements.some(s => s.query.includes('UPDATE telegram_pet_instances SET energy=MAX(0,energy-?)'))) return;
     f.db.afterBatch = null;
     switched = await hooks.switchActivePetSeasonSlot(f.db, f.owner, f.other);
   };

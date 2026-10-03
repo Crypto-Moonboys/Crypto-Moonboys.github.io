@@ -105,7 +105,7 @@ assert.match(normalizeSourceWhitespace(liveSystemsSource), /const authority = aw
   'district missions must reuse the already-resolved pet authority tuple for progression state');
 assert.match(normalizeSourceWhitespace(liveSystemsSource), /INSERT OR IGNORE INTO telegram_pet_live_progression_state[\s\S]*SELECT \?, \?, \?, '\{\}', '\[\]'/,
   'live progression lazy creation must initialize empty rows instead of copying legacy account progress');
-assert.match(normalizeSourceWhitespace(liveSystemsSource), /UPDATE telegram_pet_instances SET energy=energy-\?/,
+assert.match(normalizeSourceWhitespace(liveSystemsSource), /UPDATE telegram_pet_instances SET energy=MAX\(0,energy-\?\)/,
   'pet action Energy settlement must debit the authoritative pet instance');
 assert.match(normalizeSourceWhitespace(liveSystemsSource), /telegram_pet_active_slots WHERE telegram_id=\? AND pet_id=\? AND season_key=\?/,
   'profile Energy mirror must only update when the charged pet remains active');

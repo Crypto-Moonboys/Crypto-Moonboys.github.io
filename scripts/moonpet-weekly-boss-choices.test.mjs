@@ -191,6 +191,7 @@ sqlite.prepare(`INSERT INTO telegram_pet_weekly_boss_progress (telegram_id,week_
   VALUES (?,?,?,?,3,'2026-09-20T12:00:00Z')`).run(recoveryOwner, oldWeek, oldBoss.boss_id, oldBoss.hp);
 sqlite.prepare(`INSERT INTO telegram_pet_weekly_boss_victories_by_pet (telegram_id,week_key,boss_id,pet_id,season_key,victory_event_key,defeated_at)
   VALUES (?,?,?,?,?,?,'2026-09-20T12:00:00Z')`).run(recoveryOwner, oldWeek, oldBoss.boss_id, winner.pet_id, winner.season_key, oldWeek + ':' + oldBoss.boss_id);
+sqlite.prepare(`INSERT INTO telegram_pet_weekly_boss_events (event_id,telegram_id,week_key,day_key,boss_id,event_key,action,damage,created_at) VALUES ('old-winning-attempt',?,?,'2026-09-20',?,?,'strike',?,'2026-09-20T12:00:00Z')`).run(recoveryOwner,oldWeek,oldBoss.boss_id,oldWeek+':'+oldBoss.boss_id,oldBoss.hp);
 const oldPending = (await hooks.buildPetMiniAppState(db, recoveryOwner, 'test-token')).guidance.weekly_boss.pending_rewards;
 assert.equal(oldPending[0].week_key, oldWeek);
 const careClock = sqlite.prepare('SELECT last_decay_at,last_active_day,streak_days FROM telegram_pet_instances WHERE pet_id=?').get(winner.pet_id);
@@ -199,7 +200,7 @@ assert.deepEqual(sqlite.prepare('SELECT last_decay_at,last_active_day,streak_day
   'recovering an old reward must not rewind care clocks or reset the current streak');
 const oldEvent = sqlite.prepare("SELECT week_key,day_key FROM telegram_pet_events WHERE telegram_id=? AND event_type='weekly_boss_reward' AND reason=? ORDER BY created_at DESC").all(recoveryOwner, oldBoss.boss_id).find((row) => row.day_key === '2026-09-20');
 assert.equal(oldEvent.week_key, oldWeek);
-assert.equal(sqlite.prepare('SELECT COUNT(*) n FROM telegram_pet_weekly_boss_events WHERE telegram_id=?').get(recoveryOwner).n, 1, 'recovery must not spend a fresh attack');
+assert.equal(sqlite.prepare('SELECT COUNT(*) n FROM telegram_pet_weekly_boss_events WHERE telegram_id=?').get(recoveryOwner).n, 2, 'recovery must retain the original two attacks without spending a fresh attack');
 
 for (const failure of ['acknowledgement', 'victory progression']) {
   const id = `weekly-paid-claim-${failure}`, source = await seed(id), selected = secondPet(id, source);

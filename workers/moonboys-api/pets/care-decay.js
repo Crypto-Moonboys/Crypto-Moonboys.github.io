@@ -1,7 +1,10 @@
 import { requirePetFirstReadResult, requirePetMutationResult } from './read-result.js';
 import { PET_INSTANCE_AUTHORITY_VERSION } from './wallet-reconciliation.js';
 
-const clamp = value => Math.max(0, Math.min(100, Math.round(Number(value) || 0)));
+// SQLite's existing non-STRICT numeric columns preserve fractional care. Round
+// only player-facing bars: advancing the clock must never discard elapsed care.
+export const clampPetCareValue = value => Math.max(0, Math.min(100, Number(value) || 0));
+const clamp = clampPetCareValue;
 const timestamp = value => {
   if (!value) return null;
   const raw = String(value).trim();
@@ -14,12 +17,13 @@ export const PET_CARE_SNAPSHOT_COLUMNS = Object.freeze(['pet_xp', 'hunger', 'hea
 export function applyPetCareDecay(pet, now = new Date()) {
   const last = timestamp(pet.last_decay_at || pet.updated_at || pet.created_at) ?? now.getTime();
   const elapsedHours = Math.max(0, (now.getTime() - last) / 3600000);
+  // Small intervals stay anchored until settlement; never advance their clock.
   if (elapsedHours < 0.01) return pet;
   pet.hunger = clamp(Number(pet.hunger || 0) + elapsedHours * 4.5);
   pet.happiness = clamp(Number(pet.happiness || 0) - elapsedHours * 2.8);
   pet.cleanliness = clamp(Number(pet.cleanliness || 0) - elapsedHours * 3.2);
   pet.energy = clamp(Number(pet.energy || 0) - elapsedHours * 2.2);
-  pet.health = clamp((100 - pet.hunger + pet.happiness + pet.cleanliness + pet.energy) / 4);
+  pet.health = Math.round(clamp((100 - pet.hunger + pet.happiness + pet.cleanliness + pet.energy) / 4));
   pet.last_decay_at = now.toISOString();
   return pet;
 }

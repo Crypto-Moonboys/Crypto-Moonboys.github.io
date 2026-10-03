@@ -1,0 +1,35 @@
+import assert from 'node:assert/strict';
+import test from 'node:test';
+import {fixture,clockFixture,hooks} from './moonpet-audit-regression-fixture.mjs';
+
+for(const sourceSeason of ['pet-s2026-001','pet-s2026-002','pet-s2026-003','pet-s2026-004'])for(const kind of ['daily','finale'])for(const fault of ['IGNORE','ABORT'])test(`${kind}: ${fault} acknowledgement for ${sourceSeason} stays pending after payment and retries once`,async t=>{
+ const f=fixture('97990'+(kind==='daily'?1:2)+fault.length,sourceSeason),clock=clockFixture(f);
+ t.after(()=>{clock.restore();f.sql.close();});
+ const id='current-'+f.owner,season=f.sql.prepare('SELECT season_key FROM telegram_pet_instances WHERE pet_id=?').get(id).season_key;
+ const competitionSeason=hooks.getPetSeasonInfo(new Date()).key;
+ assert.equal(season,sourceSeason);assert.equal(competitionSeason,'pet-s2026-004');
+ f.pet('second-pet','pet-s2026-003',200,2);f.pet('third-pet','pet-s2026-002',300,3);
+ if(kind==='daily')f.sql.prepare('INSERT INTO telegram_pet_daily_completion(telegram_id,utc_day,progress_bits,pet_id,season_key) VALUES(?,?,?,?,?)').run(f.owner,'2026-10-02',255,id,season);
+ else f.sql.prepare("INSERT INTO telegram_pet_season_finales(pet_id,telegram_id,season_key,competition_season_key,reward_key,status,state_json,defeated_at) VALUES(?,?,?,?,?,'won','{}','2026-10-02 11:00:00')").run(id,f.owner,season,competitionSeason,`season-finale-quarter:${id}:${competitionSeason}`);
+ const table=kind==='daily'?'telegram_pet_daily_completion':'telegram_pet_season_finales';
+ const sourceRow=kind==='daily'?`SELECT claimed_at FROM ${table} WHERE utc_day='2026-10-02'`:`SELECT claimed_at FROM ${table}`;
+ const failure=fault==='IGNORE'?'RAISE(IGNORE)':"RAISE(ABORT,'ack_interrupted')";
+ f.sql.exec(`CREATE TRIGGER fail_ack BEFORE UPDATE OF claimed_at ON ${table} BEGIN SELECT ${failure}; END`);
+ const body=kind==='daily'?{action:'daily_completion_claim',utc_day:'2026-10-02',pet_id:id}:{action:'finale_claim',pet_id:id,season_key:season,competition_season_key:competitionSeason};
+ const first=await f.act(body);
+ assert.equal(first.accepted,true,'durable payment remains accepted');assert.equal(first.reward_pending,true);assert.equal(first.refresh_state,true);
+ assert.equal(f.sql.prepare(sourceRow).get().claimed_at,null);
+ const source=kind==='daily'?'pet_daily_completion':'pet_season_finale';
+ const paid=()=>f.sql.prepare("SELECT * FROM telegram_pet_reward_claims WHERE source=? AND status='awarded'").all(source);
+ assert.equal(paid().length,1);
+ const receipts=paid(),wallet=f.sql.prepare('SELECT moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles').get();
+ const pets=f.sql.prepare('SELECT pet_id,season_key,pet_xp FROM telegram_pet_instances ORDER BY pet_id').all();
+ f.active('third-pet','pet-s2026-002');clock.advance(86400000);
+ const retry=await f.act(body);assert.equal(retry.accepted,true);assert.equal(retry.duplicate,true);assert.equal(retry.reward_pending,true);
+ f.sql.exec('DROP TRIGGER fail_ack');
+ const saved=await f.act(body);assert.equal(saved.accepted,true);assert.equal(saved.duplicate,true);assert.equal(saved.reward_pending,false);
+ assert.ok(f.sql.prepare(sourceRow).get().claimed_at);
+ assert.deepEqual(paid(),receipts);assert.deepEqual(f.sql.prepare('SELECT moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles').get(),wallet);
+ assert.deepEqual(f.sql.prepare('SELECT pet_id,season_key,pet_xp FROM telegram_pet_instances ORDER BY pet_id').all(),pets);
+ assert.equal((await f.act(body)).duplicate,true);
+});

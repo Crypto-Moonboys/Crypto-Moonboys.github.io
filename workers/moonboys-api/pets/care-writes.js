@@ -8,9 +8,9 @@ export function petCareDeltaStatements(db, { eventId, dayKey, previousDayKey, no
   const claimGuard = claimId ? "AND EXISTS (SELECT 1 FROM telegram_pet_reward_claims WHERE claim_id=? AND status='pending')" : '';
   const receipt = `SELECT * FROM telegram_pet_events WHERE id=? AND status='pending' ${claimGuard}`;
   const receiptArgs = [eventId, ...(claimId ? [claimId] : [])];
-  const clamp = expression => `MIN(100,MAX(0,ROUND(${expression})))`;
+  const clamp = expression => `MIN(100,MAX(0,${expression}))`;
   const elapsed = "MAX(0,COALESCE((julianday((SELECT now FROM clock))-julianday(last_decay_at))*24,0))";
-  const stat = (column, rate) => `${clamp(`${clamp(`${column}+CASE WHEN ${elapsed}>=0.01 THEN ${elapsed}*${rate} ELSE 0 END`)}+?`)}`;
+  const stat = (column, rate) => `${clamp(`${clamp(`${column}+${elapsed}*${rate}`)}+?`)}`;
   const columns = 'pet_xp,level,stage,hunger,happiness,cleanliness,energy,health,streak_days,last_active_day,last_decay_at';
   return [
     db.prepare(`WITH receipt AS (${receipt}), clock AS (SELECT ? AS now)
@@ -29,7 +29,7 @@ export function petCareDeltaStatements(db, { eventId, dayKey, previousDayKey, no
     db.prepare(`WITH receipt AS (${receipt}) UPDATE telegram_pet_instances SET
         level=${getPetVisibleLevelSql('pet_xp')},
         stage=CASE ${stages.slice().reverse().map(s=>`WHEN pet_xp>=${s.min_xp} THEN '${s.stage}'`).join(' ')} END,
-        health=${clamp('((100-hunger)+happiness+cleanliness+energy)/4.0')}
+        health=ROUND(${clamp('((100-hunger)+happiness+cleanliness+energy)/4.0')})
       WHERE pet_id=(SELECT pet_id FROM receipt) AND telegram_id=(SELECT telegram_id FROM receipt)`)
       .bind(...receiptArgs),
     db.prepare(`WITH receipt AS (${receipt}) UPDATE telegram_pet_profiles SET

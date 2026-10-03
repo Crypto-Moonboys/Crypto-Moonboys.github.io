@@ -112,9 +112,10 @@ export async function claimDailyCompletion(db, owner, pet, body, award) {
   const committed = { ...result, reason: result.accepted ? 'daily_completion_claimed' : 'daily_completion_pending', utc_day: date, reward_pending: true };
   if (!result.accepted) return committed;
   return projectCommittedPetResult(committed, async () => {
-    await db.prepare(`UPDATE telegram_pet_daily_completion SET claimed_at=COALESCE(claimed_at,CURRENT_TIMESTAMP)
+    const acknowledgement = await db.prepare(`UPDATE telegram_pet_daily_completion SET claimed_at=COALESCE(claimed_at,CURRENT_TIMESTAMP)
       WHERE telegram_id=? AND utc_day=? AND EXISTS (SELECT 1 FROM telegram_pet_reward_claims WHERE telegram_id=? AND source='pet_daily_completion' AND idempotency_key=? AND status='awarded')`)
       .bind(owner, date, owner, key).run().then(requireCompletionMutationResult);
+    if (acknowledgement.meta.changes !== 1) throw new Error('completion_acknowledgement_pending');
     return { ...committed, reward_pending: false };
   });
 }
@@ -164,9 +165,10 @@ async function claimFinale(db, owner, row, award) {
   const committed = { ...result, reason: result.accepted ? 'finale_reward_claimed' : 'finale_reward_pending', reward_pending: true };
   if (!result.accepted) return committed;
   return projectCommittedPetResult(committed, async () => {
-    await db.prepare(`UPDATE telegram_pet_season_finales SET claimed_at=COALESCE(claimed_at,CURRENT_TIMESTAMP)
+    const acknowledgement = await db.prepare(`UPDATE telegram_pet_season_finales SET claimed_at=COALESCE(claimed_at,CURRENT_TIMESTAMP)
       WHERE telegram_id=? AND pet_id=? AND season_key=? AND competition_season_key=? AND EXISTS (SELECT 1 FROM telegram_pet_reward_claims WHERE telegram_id=? AND source='pet_season_finale' AND idempotency_key=? AND status='awarded')`)
       .bind(owner, row.pet_id, row.season_key, row.competition_season_key, owner, key).run().then(requireCompletionMutationResult);
+    if (acknowledgement.meta.changes !== 1) throw new Error('completion_acknowledgement_pending');
     return { ...committed, reward_pending: false };
   });
 }

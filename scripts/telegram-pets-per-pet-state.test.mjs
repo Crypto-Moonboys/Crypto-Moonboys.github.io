@@ -96,7 +96,7 @@ assert.match(await readFile(new URL('../workers/moonboys-api/pets/leaderboard.js
 const weeklyBossStart = worker.indexOf('async function processPetWeeklyBoss');
 const weeklyBossEnd = worker.indexOf('async function getPetSeasonRewardState', weeklyBossStart);
 const weeklyBoss = worker.slice(weeklyBossStart, weeklyBossEnd);
-assert.match(weeklyBoss, /UPDATE telegram_pet_instances SET energy = energy - 12[\s\S]*WHERE pet_id = \? AND telegram_id = \?/,
+assert.match(weeklyBoss, /UPDATE telegram_pet_instances SET energy = MAX\(0,energy-12\)[\s\S]*WHERE pet_id = \? AND telegram_id = \?/,
   'weekly boss must debit the captured pet instance, even when active selection changes');
 assert.doesNotMatch(weeklyBoss, /mirrorPetProfileToActiveInstance|UPDATE telegram_pet_profiles SET energy/,
   'weekly boss must not route its energy debit through the mutable active profile');
@@ -119,7 +119,7 @@ assert.doesNotMatch(rosterSummarySource, /\.\.\.current/, 'roster construction m
 assert.match(rosterSummarySource, /mergePetInstanceDisplayFields\(row, applyPetDecay\(\{ \.\.\.row \}, now\)\)/, 'roster construction must merge only an in-memory decay preview through the explicit pet display allowlist');
 const miniAppStateSource = worker.slice(worker.indexOf('async function buildPetMiniAppState'), worker.indexOf('async function processPetMiniAppAction'));
 assert.ok(
-  miniAppStateSource.indexOf('await preparePetMiniAppState(db, telegramId)') < miniAppStateSource.indexOf('buildPetSeasonSlotSummary(db, telegramId)'),
+  miniAppStateSource.indexOf('await preparePetMiniAppState(db, telegramId, now)') < miniAppStateSource.indexOf('buildPetSeasonSlotSummary(db, telegramId, now)'),
   'normal Mini App state flow must bootstrap the current season before building the read-only roster projection',
 );
 const prepareMiniAppStateSource = worker.slice(worker.indexOf('async function preparePetMiniAppState'), worker.indexOf('const PET_SEASON_EXTRA_SLOT_COSTS'));
@@ -266,9 +266,9 @@ assert.deepEqual(
 assert.deepEqual(
   {
     pet_name: instance.pet_name, species: instance.species, stage: instance.stage,
-    pet_xp: instance.pet_xp, level: instance.level, hunger: instance.hunger,
-    happiness: instance.happiness, cleanliness: instance.cleanliness,
-    energy: instance.energy, health: instance.health, streak_days: instance.streak_days,
+    pet_xp: instance.pet_xp, level: instance.level, hunger: Math.round(instance.hunger),
+    happiness: Math.round(instance.happiness), cleanliness: Math.round(instance.cleanliness),
+    energy: Math.round(instance.energy), health: instance.health, streak_days: instance.streak_days,
     moon_gold: instance.moon_gold, moon_crystals: instance.moon_crystals,
     style_tokens: instance.style_tokens, equipped_food: instance.equipped_food,
     equipped_toy: instance.equipped_toy, equipped_outfit: instance.equipped_outfit,
@@ -352,7 +352,7 @@ const missingProfileWalletD1 = {
 };
 const missingWalletRead = await getPetProfile(missingProfileWalletD1, 'missing-wallet');
 assert.deepEqual(
-  { pet_id: missingWalletRead.pet_id, pet_name: missingWalletRead.pet_name, pet_xp: missingWalletRead.pet_xp, moon_gold: missingWalletRead.moon_gold, energy: missingWalletRead.energy },
+  { pet_id: missingWalletRead.pet_id, pet_name: missingWalletRead.pet_name, pet_xp: missingWalletRead.pet_xp, moon_gold: missingWalletRead.moon_gold, energy: Math.round(missingWalletRead.energy) },
   { pet_id: missingWalletPetId, pet_name: 'No Wallet Overlay', pet_xp: 321, moon_gold: 17, energy: 66 },
   'active pet reads must remain safe when the profile wallet projection is missing',
 );
@@ -364,7 +364,7 @@ db.prepare(`UPDATE telegram_pet_profiles SET pet_name='Stale Profile', pet_xp=1,
   moon_gold=2, energy=3 WHERE telegram_id='state-player'`).run();
 const runtimePet = await getPetProfile(d1, 'state-player');
 assert.deepEqual(
-  { pet_name: runtimePet.pet_name, pet_xp: runtimePet.pet_xp, level: runtimePet.level, moon_gold: runtimePet.moon_gold, energy: runtimePet.energy },
+  { pet_name: runtimePet.pet_name, pet_xp: runtimePet.pet_xp, level: runtimePet.level, moon_gold: runtimePet.moon_gold, energy: Math.round(runtimePet.energy) },
   { pet_name: 'Instance Nova', pet_xp: 104040, level: 52, moon_gold: 2, energy: 88 },
   'gameplay reads must use the active starter pet instance while showing the account wallet from the profile authority',
 );
@@ -558,7 +558,7 @@ mock.timers.enable({ apis: ['Date'], now: rosterNow.getTime() });
 const decayAwareRoster = await buildPetSeasonSlotSummary(d1, 'purchase-player', rosterNow);
 const dormantSlot = decayAwareRoster.slots[1];
 assert.deepEqual(
-  { pet_xp: dormantSlot.pet.pet_xp, hunger: dormantSlot.pet.hunger, happiness: dormantSlot.pet.happiness, cleanliness: dormantSlot.pet.cleanliness, energy: dormantSlot.pet.energy, health: dormantSlot.pet.health },
+  { pet_xp: dormantSlot.pet.pet_xp, hunger: Math.round(dormantSlot.pet.hunger), happiness: Math.round(dormantSlot.pet.happiness), cleanliness: Math.round(dormantSlot.pet.cleanliness), energy: Math.round(dormantSlot.pet.energy), health: dormantSlot.pet.health },
   { pet_xp: 345, hunger: 29, happiness: 74, cleanliness: 64, energy: 56, health: 66 },
   'roster summary must apply the canonical decay calculation to each dormant pet instance',
 );
@@ -577,8 +577,8 @@ const switchedToDormant = await switchActivePetSeasonSlot(d1, 'purchase-player',
 assert.equal(switchedToDormant.accepted, true, 'the decay-resolved dormant pet must remain switchable');
 const dormantDetail = await getPetProfile(d1, 'purchase-player');
 assert.deepEqual(
-  { pet_xp: dormantDetail.pet_xp, hunger: dormantDetail.hunger, happiness: dormantDetail.happiness, cleanliness: dormantDetail.cleanliness, energy: dormantDetail.energy, health: dormantDetail.health },
-  { pet_xp: dormantSlot.pet.pet_xp, hunger: dormantSlot.pet.hunger, happiness: dormantSlot.pet.happiness, cleanliness: dormantSlot.pet.cleanliness, energy: dormantSlot.pet.energy, health: dormantSlot.pet.health },
+  { pet_xp: dormantDetail.pet_xp, hunger: Math.round(dormantDetail.hunger), happiness: Math.round(dormantDetail.happiness), cleanliness: Math.round(dormantDetail.cleanliness), energy: Math.round(dormantDetail.energy), health: dormantDetail.health },
+  { pet_xp: dormantSlot.pet.pet_xp, hunger: Math.round(dormantSlot.pet.hunger), happiness: Math.round(dormantSlot.pet.happiness), cleanliness: Math.round(dormantSlot.pet.cleanliness), energy: Math.round(dormantSlot.pet.energy), health: dormantSlot.pet.health },
   'switching to a dormant pet must show the same authoritative stats as its roster card',
 );
 assert.deepEqual(

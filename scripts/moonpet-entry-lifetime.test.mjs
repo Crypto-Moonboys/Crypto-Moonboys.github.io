@@ -229,6 +229,7 @@ assert.deepEqual(sqlite.prepare("SELECT qualification_week FROM telegram_pet_wee
 sqlite.prepare(`INSERT INTO telegram_pet_weekly_boss_victories_by_pet
   (telegram_id,week_key,boss_id,pet_id,season_key,victory_event_key,defeated_at)
   VALUES ('late-joiner','2026-W51','neon_kaiju',?,?, 'late-boss','2026-12-15T18:00:00Z')`).run(lateSlot.pet_id, lateSlot.season_key);
+sqlite.prepare(`INSERT INTO telegram_pet_weekly_boss_events (event_id,telegram_id,week_key,day_key,boss_id,event_key,action,damage,created_at) VALUES ('late-boss','late-joiner','2026-W51','2026-12-15','neon_kaiju','late-boss','strike',100,'2026-12-15T18:00:00Z')`).run();
 assert.equal((await hooks.awardStoredWeeklyBossVictoryCrest(db, 'late-joiner', '2026-W51', 'neon_kaiju', new Date('2027-01-01'))).accepted, true);
 assert.equal(sqlite.prepare("SELECT qualification_week FROM telegram_pet_weekly_crests WHERE telegram_id='late-joiner'").get().qualification_week, 1, 'boss recovery uses the saved victory date and the same creation clock');
 

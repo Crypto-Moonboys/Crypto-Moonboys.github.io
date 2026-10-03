@@ -152,7 +152,6 @@ for (const [eventType, objectiveId] of Object.entries({
   daily_moon_run: 'weekly_run',
   weekly_boss: 'weekly_boss_attempt',
   boss_fought: 'weekly_boss_attempt',
-  weekly_boss_reward: 'weekly_boss_attempt',
   check_in: 'weekly_check_in',
   daily_check_in: 'weekly_check_in',
   weekly_check_in: 'weekly_check_in',
@@ -611,7 +610,6 @@ for (const [eventType, objectiveId] of [
   ['run_complete', 'weekly_run'],
   ['weekly_boss', 'weekly_boss_attempt'],
   ['boss_fought', 'weekly_boss_attempt'],
-  ['weekly_boss_reward', 'weekly_boss_attempt'],
   ['daily_chest', 'weekly_check_in'],
   ['daily_check_in', 'weekly_check_in'],
 ]) {
@@ -636,7 +634,7 @@ for (const [eventType, objectiveId] of [
   assert.equal(result.accepted, true, `Test 5f: ${eventType} must count toward ${objectiveId}`);
 }
 assert.equal(sourceVariantDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_weekly_journey_objectives
-  WHERE pet_id=? AND status='accepted'`).get(sourceVariantPet).count, 12,
+  WHERE pet_id=? AND status='accepted'`).get(sourceVariantPet).count, 11,
   'Test 5f: all live source variants persist one accepted weekly objective evidence row');
 
 async function assertDirectActionPreparesCurrentSeason({ action, objectiveId, telegramId }) {
