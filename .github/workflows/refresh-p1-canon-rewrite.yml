@@ -1,4 +1,5 @@
 name: Temporary P1 canon rewrite refresh
+# rerun after GraffPUNKS canonical casing fix
 
 on:
   push:

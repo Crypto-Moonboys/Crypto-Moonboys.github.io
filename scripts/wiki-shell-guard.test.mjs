@@ -126,10 +126,10 @@ if (!fs.existsSync(anchorPath)) {
   fail('/wiki/graffpunks.html - file not found');
 } else {
   const anchorHtml = fs.readFileSync(anchorPath, 'utf8');
-  if (anchorHtml.includes('Graffpunks') || anchorHtml.includes('GRAFFPUNKS')) {
-    pass('/wiki/graffpunks.html - article content preserved (Graffpunks present)');
+  if (/graffpunks/i.test(anchorHtml)) {
+    pass('/wiki/graffpunks.html - article content preserved (GraffPUNKS present)');
   } else {
-    fail('/wiki/graffpunks.html - article content missing (Graffpunks not found)');
+    fail('/wiki/graffpunks.html - article content missing (GraffPUNKS not found)');
   }
 
   const anchorMissing = REQUIRED_SCRIPTS.filter((src) => !anchorHtml.includes(src));
