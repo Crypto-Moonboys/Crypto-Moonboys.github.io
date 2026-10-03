@@ -1,0 +1,5 @@
+{
+  "schema_version": 1,
+  "_comment": "Explicit repository authorization for creating missing wiki metadata stubs. Add only reviewed canonical slugs; existing pages and First Witness slugs are rejected by the generator.",
+  "absent_stub_slugs": []
+}

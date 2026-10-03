@@ -11,6 +11,8 @@ const preparePagesArtifact = await fs.readFile(path.join(ROOT, 'scripts/prepare-
 const changeScope = await fs.readFile(path.join(ROOT, 'scripts/ci-change-scope.mjs'), 'utf8');
 const pkg = JSON.parse(await fs.readFile(path.join(ROOT, 'package.json'), 'utf8'));
 const runner = await fs.readFile(path.join(ROOT, 'scripts/ci-domain-runner.mjs'), 'utf8');
+const canonApprovalExpression = "github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'canon-prose-change-approved') && '1' || '0'";
+const ownershipBaselineExpression = "github.event_name == 'push' && github.event.before || github.event.pull_request.base.sha";
 
 const expectedJobs = ['ci-wiki', 'ci-worker-api', 'ci-arcade', 'ci-wax', 'ci-visual'];
 const expectedScripts = ['ci:wiki', 'ci:worker-api', 'ci:arcade', 'ci:wax', 'ci:visual'];
@@ -18,6 +20,12 @@ const expectedScripts = ['ci:wiki', 'ci:worker-api', 'ci:arcade', 'ci:wax', 'ci:
 function getScopeBlock(scope) {
   const match = changeScope.match(new RegExp(`\\b${scope}: \\[([\\s\\S]*?)\\n  \\]`, 'u'));
   assert.ok(match, `ci-change-scope must define ${scope} scope`);
+  return match[1];
+}
+
+function getStepBlock(workflowSource, stepName) {
+  const match = workflowSource.match(new RegExp(`\\n      - name: ${stepName}\\n([\\s\\S]*?)(?=\\n      - name:|\\n  [a-zA-Z0-9_-]+:|$)`, 'u'));
+  assert.ok(match, `workflow must define the ${stepName} step`);
   return match[1];
 }
 
@@ -121,6 +129,14 @@ assert.ok(
 );
 
 assert.ok(
+  preparePagesArtifact.includes('PRIVATE_PUBLISH_RECOVERY_DIRECTORY_PATTERN') &&
+    preparePagesArtifact.includes('(?:forward|rollback)-[A-Za-z0-9]{6}') &&
+    preparePagesArtifact.includes('publish-\\d+-\\d+-[A-Za-z0-9]{6}') &&
+    preparePagesArtifact.includes('pathSegments.some'),
+  'Pages artifact preparation must exclude private forward, artifact, and rollback recovery directories',
+);
+
+assert.ok(
   preparePagesArtifact.includes("'.git'") && preparePagesArtifact.includes("'.github'") && preparePagesArtifact.includes('isPathInside'),
   'Pages artifact preparation must reject protected repository paths before deleting the artifact target',
 );
@@ -133,6 +149,8 @@ for (const graphPath of [
   '"sitemap.xml"',
   '"index_stats.json"',
   '"sam-memory.json"',
+  '"website-publish-payloads/**"',
+  '"sam-wiki-publisher.py"',
   '"scripts/**"',
 ]) {
   assert.ok(
@@ -144,6 +162,11 @@ for (const graphPath of [
 assert.ok(
   graphWorkflow.includes('git diff --exit-code --') && graphWorkflow.includes('sam-memory.json'),
   'graph publishing integrity workflow must fail when regenerated publishing surfaces drift from committed files',
+);
+
+assert.ok(
+  graphWorkflow.includes('fetch-depth: 0'),
+  'graph publishing integrity workflow must fetch history for baseline content-state comparisons',
 );
 
 assert.ok(
@@ -182,6 +205,53 @@ for (const graphGeneratedSurface of [
   assert.ok(
     changeScope.includes(graphGeneratedSurface),
     `graph CI scope must include generated root surface ${graphGeneratedSurface}`,
+  );
+}
+
+for (const ownershipInput of [
+  "'website-publish-payloads/**'",
+  "'sam-wiki-publisher.py'",
+  "'scripts/wiki-publish-staged-fs.cjs'",
+]) {
+  assert.ok(
+    getScopeBlock('wiki').includes(ownershipInput),
+    `wiki CI scope must include ownership input ${ownershipInput}`,
+  );
+  assert.ok(
+    getScopeBlock('graph').includes(ownershipInput),
+    `graph CI scope must include ownership input ${ownershipInput}`,
+  );
+}
+
+for (const [name, workflowSource] of [
+  ['main CI', workflow],
+  ['graph publishing integrity', graphWorkflow],
+]) {
+  assert.ok(
+    workflowSource.includes('types: [opened, synchronize, reopened, labeled, unlabeled]'),
+    `${name} workflow must rerun ownership checks when canon approval labels are added or removed`,
+  );
+  assert.ok(
+    workflowSource.includes('CANON_PROSE_CHANGE_APPROVED:') && workflowSource.includes(canonApprovalExpression),
+    `${name} workflow must require the maintainer PR label and must not approve ordinary push events`,
+  );
+  assert.ok(
+    !workflowSource.includes("github.event_name == 'push' ||"),
+    `${name} workflow must not treat every push as approved canon prose`,
+  );
+}
+
+for (const [name, stepBlock] of [
+  ['main CI', getStepBlock(workflow, 'Run wiki tests')],
+  ['graph publishing integrity', getStepBlock(graphWorkflow, 'Validate regenerated wiki surfaces')],
+]) {
+  assert.ok(
+    stepBlock.includes(`BASE_SHA: \${{ ${ownershipBaselineExpression} }}`),
+    `${name} ownership audit must compare a push against github.event.before and a PR against its base SHA`,
+  );
+  assert.ok(
+    stepBlock.includes(`CANON_PROSE_CHANGE_APPROVED: \${{ ${canonApprovalExpression} }}`),
+    `${name} ownership audit must only receive canon prose approval from the explicit PR label`,
   );
 }
 

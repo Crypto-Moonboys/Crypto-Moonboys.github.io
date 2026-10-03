@@ -82,6 +82,12 @@ const FORBIDDEN_ARTIFACT_PATHS = [
   'node_modules',
 ];
 
+// Failed conditional writes can deliberately retain a detached inode beside
+// its target for manual recovery. These private transaction directories must
+// never become public merely because Pages recursively copies wiki/js/etc.
+const PRIVATE_PUBLISH_RECOVERY_DIRECTORY_PATTERN =
+  /^\..+\.(?:(?:forward|rollback)-[A-Za-z0-9]{6}|publish-\d+-\d+-[A-Za-z0-9]{6})$/u;
+
 async function exists(filePath) {
   try {
     await stat(filePath);
@@ -99,6 +105,11 @@ function shouldCopyIntoArtifact(sourcePath) {
   }
 
   const pathSegments = relativeSourcePath.split(path.sep);
+  if (pathSegments.some((segment) =>
+    PRIVATE_PUBLISH_RECOVERY_DIRECTORY_PATTERN.test(segment)
+  )) {
+    return false;
+  }
   if (pathSegments.includes('test') || pathSegments.includes('tests')) {
     return false;
   }

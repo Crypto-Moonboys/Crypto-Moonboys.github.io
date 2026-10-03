@@ -2,6 +2,7 @@ name: Graph Publishing Integrity
 
 on:
   pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
     paths:
       - "wiki/**"
       - "brand-canon/**"
@@ -16,6 +17,8 @@ on:
       - "sitemap.xml"
       - "index_stats.json"
       - "sam-memory.json"
+      - "website-publish-payloads/**"
+      - "sam-wiki-publisher.py"
       - "scripts/**"
       - ".github/workflows/graph-publishing-integrity.yml"
       - "package.json"
@@ -36,6 +39,8 @@ on:
       - "sitemap.xml"
       - "index_stats.json"
       - "sam-memory.json"
+      - "website-publish-payloads/**"
+      - "sam-wiki-publisher.py"
       - "scripts/**"
       - ".github/workflows/graph-publishing-integrity.yml"
       - "package.json"
@@ -55,6 +60,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -73,6 +80,10 @@ jobs:
         run: node scripts/graph-publishing-integrity.test.mjs
 
       - name: Validate regenerated wiki surfaces
+        env:
+          BASE_SHA: ${{ github.event_name == 'push' && github.event.before || github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+          CANON_PROSE_CHANGE_APPROVED: ${{ github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'canon-prose-change-approved') && '1' || '0' }}
         run: npm run ci:wiki
 
       - name: Fail on stale generated publishing surfaces
