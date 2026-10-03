@@ -1211,6 +1211,20 @@ function directoryIdentityMatches(stat, identity) {
   );
 }
 
+function assertAnchoredDirectoryIdentity(anchor, expectedIdentity, relativePath) {
+  const actualIdentity = directoryIdentityFromDescriptor(anchor.descriptor);
+  if (
+    actualIdentity.dev !== expectedIdentity.dev ||
+    actualIdentity.ino !== expectedIdentity.ino
+  ) {
+    throw new ContentOwnershipError(
+      'PUBLISH_TRANSACTION_ROLLBACK_CONFLICT',
+      `${relativePath}: rollback parent directory changed identity`,
+      { path: relativePath }
+    );
+  }
+}
+
 function unsafePublishPath(relativePath, message) {
   return new ContentOwnershipError(
     'UNSAFE_PUBLISH_PATH',
@@ -1741,32 +1755,64 @@ function writeWorkspaceFileConditionally(rootDir, relativePath, content, expecte
   const targetPath = ensureSafeWorkspaceParent(rootDir, relativePath);
   const anchor = openAnchoredDirectory(path.dirname(targetPath), relativePath);
   const anchoredTargetPath = path.join(anchor.anchorPath, path.basename(targetPath));
-  const stagingDir = fs.mkdtempSync(
-    path.join(anchor.anchorPath, `.${path.basename(targetPath)}.forward-`)
-  );
-  const stagedPath = path.join(stagingDir, 'staged');
-  const detachedPath = path.join(stagingDir, 'detached');
+  let writerParentIdentity;
+  let journal;
+  let normalizedRelativePath;
+  let targetMode;
+  let intendedState;
+  try {
+    writerParentIdentity = directoryIdentityFromDescriptor(anchor.descriptor);
+    journal = activeTransactionWriteJournal &&
+      path.resolve(rootDir) === activeTransactionWriteJournal.rootPath
+      ? activeTransactionWriteJournal
+      : null;
+    normalizedRelativePath = relativePath.replaceAll('\\', '/');
+    targetMode = expectedState.exists ? expectedState.mode ?? 0o644 : 0o644;
+    intendedState = {
+      exists: true,
+      content: Buffer.from(content, 'utf8'),
+      mode: targetMode,
+      rollbackParentIdentity: writerParentIdentity,
+    };
+  } catch (error) {
+    closeAnchoredDirectory(anchor);
+    throw error;
+  }
+  let stagingDir = '';
+  let stagedPath = '';
+  let detachedPath = '';
   let stagedExists = false;
   let detachedExists = false;
   let stagedDescriptor;
+  let installCommitted = false;
+  let namespaceDetachedByWriter = false;
+  let journalCheckpoint = null;
 
-  const staleForwardWrite = (message) => {
-    const error = new ContentOwnershipError(
-      'STALE_CONTENT_STATE',
-      `${relativePath}: ${message}`,
-      { path: relativePath }
-    );
-    // Every stale branch below leaves a concurrent/pre-existing live target in
-    // place and never installs this transaction's staged inode. The caller can
-    // therefore drop this pre-registered attempted mutation while still
-    // rolling back any earlier pages in the same transaction.
-    error.uncommittedMutationPath = relativePath;
-    return error;
-  };
+  const staleForwardWrite = (message) => new ContentOwnershipError(
+    'STALE_CONTENT_STATE',
+    `${relativePath}: ${message}`,
+    { path: relativePath }
+  );
 
   try {
+    if (journal) {
+      journalCheckpoint = {
+        hadMutation: journal.mutatedFiles.has(normalizedRelativePath),
+        hadPostimage: journal.postimages.has(normalizedRelativePath),
+        postimage: journal.postimages.get(normalizedRelativePath),
+        hadExpectedState: journal.expectedStates.has(normalizedRelativePath),
+        expectedState: journal.expectedStates.get(normalizedRelativePath),
+      };
+      journal.mutatedFiles.add(normalizedRelativePath);
+      journal.postimages.set(normalizedRelativePath, intendedState);
+    }
+
+    stagingDir = fs.mkdtempSync(
+      path.join(anchor.anchorPath, `.${path.basename(targetPath)}.forward-`)
+    );
+    stagedPath = path.join(stagingDir, 'staged');
+    detachedPath = path.join(stagingDir, 'detached');
     const noFollow = fs.constants.O_NOFOLLOW || 0;
-    const targetMode = expectedState.exists ? expectedState.mode ?? 0o644 : 0o644;
     stagedDescriptor = fs.openSync(
       stagedPath,
       fs.constants.O_WRONLY | fs.constants.O_CREAT | fs.constants.O_EXCL | noFollow,
@@ -1783,6 +1829,8 @@ function writeWorkspaceFileConditionally(rootDir, relativePath, content, expecte
       if (!installPreimageWithoutReplace(stagedPath, anchoredTargetPath)) {
         throw staleForwardWrite('page appeared before the conditional create commit');
       }
+      installCommitted = true;
+      if (journal) journal.expectedStates.set(normalizedRelativePath, intendedState);
       fs.unlinkSync(stagedPath);
       stagedExists = false;
       return;
@@ -1797,10 +1845,12 @@ function writeWorkspaceFileConditionally(rootDir, relativePath, content, expecte
       throw error;
     }
     detachedExists = true;
+    namespaceDetachedByWriter = true;
     const detachedState = captureDetachedFileState(detachedPath, relativePath);
     if (!workspaceFileStatesEqual(detachedState, expectedState)) {
       if (linkDetachedBackWithoutReplace(detachedPath, anchoredTargetPath)) {
         detachedExists = false;
+        namespaceDetachedByWriter = false;
         throw staleForwardWrite('page changed immediately before the conditional replace commit');
       }
       throw staleForwardWrite(
@@ -1815,22 +1865,75 @@ function writeWorkspaceFileConditionally(rootDir, relativePath, content, expecte
       detachedExists = false;
       throw staleForwardWrite('a concurrent page appeared before the conditional replace install');
     }
+    installCommitted = true;
+    if (journal) journal.expectedStates.set(normalizedRelativePath, intendedState);
     fs.unlinkSync(stagedPath);
     stagedExists = false;
     fs.unlinkSync(detachedPath);
     detachedExists = false;
-  } catch (error) {
-    if (detachedExists && !lstatIfPresent(anchoredTargetPath)) {
+  } catch (caughtError) {
+    let failure = caughtError;
+    let targetAbsent = false;
+    if (!installCommitted && detachedExists) {
+      try {
+        targetAbsent = !lstatIfPresent(anchoredTargetPath);
+      } catch (probeError) {
+        failure = probeError;
+      }
+    }
+    if (!installCommitted && detachedExists && targetAbsent) {
       try {
         if (linkDetachedBackWithoutReplace(detachedPath, anchoredTargetPath)) {
           detachedExists = false;
+          namespaceDetachedByWriter = false;
         }
       } catch {
         // Leave the detached inode in the private staging directory for
         // recovery rather than overwriting a concurrently recreated target.
       }
     }
-    throw error;
+    if (journal && !installCommitted && journalCheckpoint) {
+      if (journalCheckpoint.hadExpectedState) {
+        journal.expectedStates.set(normalizedRelativePath, journalCheckpoint.expectedState);
+      } else {
+        journal.expectedStates.delete(normalizedRelativePath);
+      }
+      if (!namespaceDetachedByWriter) {
+        if (journalCheckpoint.hadMutation) {
+          journal.mutatedFiles.add(normalizedRelativePath);
+        } else {
+          journal.mutatedFiles.delete(normalizedRelativePath);
+        }
+        if (journalCheckpoint.hadPostimage) {
+          journal.postimages.set(normalizedRelativePath, journalCheckpoint.postimage);
+        } else {
+          journal.postimages.delete(normalizedRelativePath);
+        }
+      } else {
+        // The old page left the live namespace and could not be put back.
+        // Keep a conservative rollback candidate. Absence is attributable to
+        // our detach and can safely be repaired; any live replacement belongs
+        // to a concurrent writer and must be preserved as an unattributed
+        // conflict.
+        journal.mutatedFiles.add(normalizedRelativePath);
+        journal.postimages.delete(normalizedRelativePath);
+        let anchoredAbsenceVerified = false;
+        try {
+          anchoredAbsenceVerified = !lstatIfPresent(anchoredTargetPath);
+        } catch (probeError) {
+          failure = probeError;
+        }
+        if (anchoredAbsenceVerified) {
+          journal.postimages.set(normalizedRelativePath, {
+            exists: false,
+            content: null,
+            mode: null,
+            rollbackParentIdentity: writerParentIdentity,
+          });
+        }
+      }
+    }
+    throw failure;
   } finally {
     if (stagedDescriptor !== undefined) fs.closeSync(stagedDescriptor);
     if (stagedExists) {
@@ -1840,10 +1943,12 @@ function writeWorkspaceFileConditionally(rootDir, relativePath, content, expecte
         if (error?.code !== 'ENOENT') throw error;
       }
     }
-    try {
-      fs.rmdirSync(stagingDir);
-    } catch (error) {
-      if (error?.code !== 'ENOTEMPTY' && error?.code !== 'ENOENT') throw error;
+    if (stagingDir) {
+      try {
+        fs.rmdirSync(stagingDir);
+      } catch (error) {
+        if (error?.code !== 'ENOTEMPTY' && error?.code !== 'ENOENT') throw error;
+      }
     }
     closeAnchoredDirectory(anchor);
   }
@@ -2000,16 +2105,43 @@ function restoreSnapshotEntryConditionally(rootDir, relativePath, entry, postima
   const targetPath = resolveSafeWorkspacePath(rootDir, relativePath);
   const parentPath = path.dirname(targetPath);
   const anchor = openAnchoredDirectory(parentPath, relativePath);
-  const anchoredTargetPath = path.join(anchor.anchorPath, path.basename(targetPath));
-  const quarantineDir = fs.mkdtempSync(
-    path.join(anchor.anchorPath, `.${path.basename(targetPath)}.rollback-`)
-  );
+  let anchoredTargetPath;
+  let quarantineDir;
+  try {
+    if (postimage.rollbackParentIdentity) {
+      assertAnchoredDirectoryIdentity(
+        anchor,
+        postimage.rollbackParentIdentity,
+        relativePath
+      );
+    }
+    anchoredTargetPath = path.join(anchor.anchorPath, path.basename(targetPath));
+    quarantineDir = fs.mkdtempSync(
+      path.join(anchor.anchorPath, `.${path.basename(targetPath)}.rollback-`)
+    );
+  } catch (error) {
+    closeAnchoredDirectory(anchor);
+    throw error;
+  }
   const detachedPath = path.join(quarantineDir, 'detached');
   const preimagePath = path.join(quarantineDir, 'preimage');
   const quarantineRelative = `${relativePath}.rollback-quarantine`;
   let detachedExists = false;
   let preimageExists = false;
   let preimageDescriptor;
+  const recheckSelectedParentIdentity = () => {
+    if (!postimage.rollbackParentIdentity) return;
+    const selectedParent = openAnchoredDirectory(parentPath, relativePath);
+    try {
+      assertAnchoredDirectoryIdentity(
+        selectedParent,
+        postimage.rollbackParentIdentity,
+        relativePath
+      );
+    } finally {
+      closeAnchoredDirectory(selectedParent);
+    }
+  };
 
   try {
     if (!postimage.exists) {
@@ -2038,6 +2170,7 @@ function restoreSnapshotEntryConditionally(rootDir, relativePath, entry, postima
       }
       fs.unlinkSync(preimagePath);
       preimageExists = false;
+      recheckSelectedParentIdentity();
       return;
     }
 
@@ -2070,6 +2203,7 @@ function restoreSnapshotEntryConditionally(rootDir, relativePath, entry, postima
       // detachment is never touched.
       fs.unlinkSync(detachedPath);
       detachedExists = false;
+      recheckSelectedParentIdentity();
       return;
     }
 
@@ -2103,6 +2237,7 @@ function restoreSnapshotEntryConditionally(rootDir, relativePath, entry, postima
     preimageExists = false;
     fs.unlinkSync(detachedPath);
     detachedExists = false;
+    recheckSelectedParentIdentity();
   } catch (error) {
     // If an unexpected failure occurred after detachment, make a best-effort
     // no-replace restoration. Never overwrite a path created in the interim;
@@ -3566,17 +3701,7 @@ function runImportUnlocked({
       for (const page of renderedPages) {
         assertLivePlanBases(rootDir, [page]);
         assertOwnershipMarkerStructure(page.html, page.relPagePath);
-        // Register the page before the conditional writer begins. The writer
-        // can install the target successfully and still throw while cleaning
-        // its private staging files; failure-boundary postimage capture must
-        // include that partially completed mutation so rollback can undo it.
-        mutatedFiles.add(page.relPagePath);
         const pagePreimage = snapshot.get(page.relPagePath);
-        postimages.set(page.relPagePath, {
-          exists: true,
-          content: Buffer.from(page.html, 'utf8'),
-          mode: pagePreimage.exists ? pagePreimage.mode ?? 0o644 : 0o644,
-        });
         writeWorkspaceFileConditionally(
           rootDir,
           page.relPagePath,
@@ -3622,10 +3747,6 @@ function runImportUnlocked({
       // the original root descriptor and exact postimages are still live.
       assertActiveTransactionBindingIdentity(rootDir);
     } catch (error) {
-      if (error?.uncommittedMutationPath) {
-        mutatedFiles.delete(error.uncommittedMutationPath);
-        postimages.delete(error.uncommittedMutationPath);
-      }
       if (activeTransactionRootBinding) {
         activeTransactionRootBinding.allowDetachedRoot = true;
       }

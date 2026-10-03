@@ -1032,6 +1032,299 @@ assert.equal(
 );
 console.log('PASS forward page commit atomically detaches and preserves a last-moment concurrent edit');
 
+const pagePreinstallFailureFixture = ownershipFixture();
+const pagePreinstallFailurePath = path.join(
+  pagePreinstallFailureFixture.rootDir,
+  'wiki',
+  'ownership-case.html'
+);
+const pagePreinstallFailurePreimage = fs.readFileSync(pagePreinstallFailurePath);
+const [pagePreinstallFailurePlan] = planContentOwnershipUpdates(
+  [pagePreinstallFailureFixture.payload],
+  pagePreinstallFailureFixture.rootDir
+);
+const pagePreinstallConcurrentBytes = Buffer.from(pagePreinstallFailurePlan.html, 'utf8');
+assert.notDeepEqual(
+  pagePreinstallConcurrentBytes,
+  pagePreinstallFailurePreimage,
+  'planned concurrent bytes must differ from the page snapshot for this regression'
+);
+let pagePreinstallFailureHookCount = 0;
+const mkdtempSyncBeforePagePreinstallFailure = fs.mkdtempSync;
+fs.mkdtempSync = function interceptPagePreinstallStage(prefix, ...args) {
+  const normalizedPrefix = String(prefix).replaceAll('\\', '/');
+  if (/\/\.ownership-case\.html\.forward-[^/]*$/.test(normalizedPrefix)) {
+    pagePreinstallFailureHookCount += 1;
+    fs.writeFileSync(pagePreinstallFailurePath, pagePreinstallConcurrentBytes);
+    const error = new Error('injected generic failure before page staging');
+    error.code = 'EACCES';
+    throw error;
+  }
+  return mkdtempSyncBeforePagePreinstallFailure.call(fs, prefix, ...args);
+};
+try {
+  assert.throws(
+    () => runImport({
+      payloadDir: pagePreinstallFailureFixture.payloadDir,
+      rootDir: pagePreinstallFailureFixture.rootDir,
+      write: true,
+      logger: () => {},
+      refreshContentStateFn: refreshTestContentState,
+    }),
+    (error) => error?.code === 'EACCES' &&
+      error.message.includes('injected generic failure before page staging')
+  );
+} finally {
+  fs.mkdtempSync = mkdtempSyncBeforePagePreinstallFailure;
+}
+assert.equal(pagePreinstallFailureHookCount, 1, 'pre-install page staging hook must fire exactly once');
+assert.deepEqual(
+  fs.readFileSync(pagePreinstallFailurePath),
+  pagePreinstallConcurrentBytes,
+  'generic pre-install failure must not authorize rollback of identical concurrent planned bytes'
+);
+assert.equal(
+  fs.existsSync(path.join(pagePreinstallFailureFixture.rootDir, PUBLISH_TRANSACTION_LOCK)),
+  false,
+  'generic pre-install failure must release the transaction lock'
+);
+console.log('PASS generic pre-install page failure cannot bless identical concurrent planned bytes');
+
+const detachedRecoveryFailureFixture = ownershipFixture();
+const detachedRecoveryFailurePagePath = path.join(
+  detachedRecoveryFailureFixture.rootDir,
+  'wiki',
+  'ownership-case.html'
+);
+const detachedRecoveryFailurePageBefore = fs.readFileSync(detachedRecoveryFailurePagePath);
+let detachedRecoveryInstallFailures = 0;
+let detachedRecoveryLinkFailures = 0;
+const linkSyncBeforeDetachedRecoveryFailure = fs.linkSync;
+fs.linkSync = function interceptDetachedPageRecovery(sourcePath, targetPath) {
+  const normalizedSource = String(sourcePath).replaceAll('\\', '/');
+  if (/\/\.ownership-case\.html\.forward-[^/]+\/staged$/.test(normalizedSource)) {
+    detachedRecoveryInstallFailures += 1;
+    const error = new Error('injected staged page install failure after detachment');
+    error.code = 'EACCES';
+    throw error;
+  }
+  if (/\/\.ownership-case\.html\.forward-[^/]+\/detached$/.test(normalizedSource)) {
+    detachedRecoveryLinkFailures += 1;
+    const error = new Error('injected detached page recovery failure');
+    error.code = 'EACCES';
+    throw error;
+  }
+  return linkSyncBeforeDetachedRecoveryFailure.call(fs, sourcePath, targetPath);
+};
+try {
+  assert.throws(
+    () => runImport({
+      payloadDir: detachedRecoveryFailureFixture.payloadDir,
+      rootDir: detachedRecoveryFailureFixture.rootDir,
+      write: true,
+      logger: () => {},
+      refreshContentStateFn: refreshTestContentState,
+    }),
+    (error) => error?.code === 'EACCES' &&
+      error.message.includes('injected staged page install failure after detachment')
+  );
+} finally {
+  fs.linkSync = linkSyncBeforeDetachedRecoveryFailure;
+}
+assert.equal(detachedRecoveryInstallFailures, 1, 'fixture must fail the staged page install exactly once');
+assert.equal(detachedRecoveryLinkFailures, 1, 'fixture must fail detached-page link-back exactly once');
+assert.deepEqual(
+  fs.readFileSync(detachedRecoveryFailurePagePath),
+  detachedRecoveryFailurePageBefore,
+  'rollback must reinstall the page snapshot after attributable detachment leaves the live path absent'
+);
+assert.equal(
+  fs.existsSync(path.join(detachedRecoveryFailureFixture.rootDir, PUBLISH_TRANSACTION_LOCK)),
+  false,
+  'failed detached-page recovery must release the transaction lock'
+);
+console.log('PASS failed detached-page recovery retains exact absence attribution for rollback');
+
+const detachedParentSwapFixture = ownershipFixture();
+const detachedParentSwapWikiPath = path.join(detachedParentSwapFixture.rootDir, 'wiki');
+const detachedParentSwapMovedWikiPath = path.join(
+  detachedParentSwapFixture.rootDir,
+  'wiki-detached-original'
+);
+const detachedParentSwapPagePath = path.join(detachedParentSwapWikiPath, 'ownership-case.html');
+const detachedParentSwapSentinelPath = path.join(detachedParentSwapWikiPath, 'replacement-owner.txt');
+const detachedParentSwapSentinelBytes = Buffer.from('REAL DIRECTORY REPLACEMENT MUST SURVIVE\n', 'utf8');
+let detachedParentSwapInstallFailures = 0;
+let detachedParentSwapRecoveryFailures = 0;
+const linkSyncBeforeDetachedParentSwap = fs.linkSync;
+fs.linkSync = function interceptDetachedParentSwap(sourcePath, targetPath) {
+  const normalizedSource = String(sourcePath).replaceAll('\\', '/');
+  if (/\/\.ownership-case\.html\.forward-[^/]+\/staged$/.test(normalizedSource)) {
+    detachedParentSwapInstallFailures += 1;
+    const error = new Error('injected staged install failure before parent swap');
+    error.code = 'EACCES';
+    throw error;
+  }
+  if (/\/\.ownership-case\.html\.forward-[^/]+\/detached$/.test(normalizedSource)) {
+    detachedParentSwapRecoveryFailures += 1;
+    fs.renameSync(detachedParentSwapWikiPath, detachedParentSwapMovedWikiPath);
+    fs.mkdirSync(detachedParentSwapWikiPath);
+    fs.writeFileSync(detachedParentSwapSentinelPath, detachedParentSwapSentinelBytes);
+    const error = new Error('injected detached recovery failure after real parent swap');
+    error.code = 'EACCES';
+    throw error;
+  }
+  return linkSyncBeforeDetachedParentSwap.call(fs, sourcePath, targetPath);
+};
+try {
+  assert.throws(
+    () => runImport({
+      payloadDir: detachedParentSwapFixture.payloadDir,
+      rootDir: detachedParentSwapFixture.rootDir,
+      write: true,
+      logger: () => {},
+      refreshContentStateFn: refreshTestContentState,
+    }),
+    (error) => error instanceof ContentOwnershipError &&
+      error.code === 'PUBLISH_TRANSACTION_ROLLBACK_CONFLICT' &&
+      error.cause?.message.includes('injected staged install failure before parent swap') &&
+      error.rollbackConflicts.some(
+        ({ path: conflictPath }) => conflictPath === 'wiki/ownership-case.html'
+      )
+  );
+} finally {
+  fs.linkSync = linkSyncBeforeDetachedParentSwap;
+}
+assert.equal(detachedParentSwapInstallFailures, 1);
+assert.equal(detachedParentSwapRecoveryFailures, 1);
+assert.equal(
+  fs.existsSync(detachedParentSwapPagePath),
+  false,
+  'rollback must not install the snapshot into a replacement real directory'
+);
+assert.deepEqual(
+  fs.readFileSync(detachedParentSwapSentinelPath),
+  detachedParentSwapSentinelBytes,
+  'replacement real directory contents must remain untouched'
+);
+console.log('PASS rollback parent identity blocks page restore into a swapped real directory');
+
+const detachedConcurrentWinnerFixture = ownershipFixture();
+const detachedConcurrentWinnerPagePath = path.join(
+  detachedConcurrentWinnerFixture.rootDir,
+  'wiki',
+  'ownership-case.html'
+);
+const detachedConcurrentWinnerBytes = Buffer.from(
+  '<article class="wiki-content"><p>CONCURRENT WINNER AFTER PAGE DETACH.</p></article>',
+  'utf8'
+);
+let detachedConcurrentWinnerInjected = 0;
+const linkSyncBeforeDetachedConcurrentWinner = fs.linkSync;
+fs.linkSync = function interceptDetachedConcurrentWinner(sourcePath, targetPath) {
+  const normalizedSource = String(sourcePath).replaceAll('\\', '/');
+  if (/\/\.ownership-case\.html\.forward-[^/]+\/staged$/.test(normalizedSource)) {
+    detachedConcurrentWinnerInjected += 1;
+    fs.writeFileSync(detachedConcurrentWinnerPagePath, detachedConcurrentWinnerBytes);
+  }
+  return linkSyncBeforeDetachedConcurrentWinner.call(fs, sourcePath, targetPath);
+};
+try {
+  assert.throws(
+    () => runImport({
+      payloadDir: detachedConcurrentWinnerFixture.payloadDir,
+      rootDir: detachedConcurrentWinnerFixture.rootDir,
+      write: true,
+      logger: () => {},
+      refreshContentStateFn: refreshTestContentState,
+    }),
+    (error) => error instanceof ContentOwnershipError &&
+      error.code === 'PUBLISH_TRANSACTION_ROLLBACK_CONFLICT' &&
+      error.cause?.code === 'STALE_CONTENT_STATE' &&
+      error.rollbackConflicts.some(
+        ({ path: conflictPath }) => conflictPath === 'wiki/ownership-case.html'
+      )
+  );
+} finally {
+  fs.linkSync = linkSyncBeforeDetachedConcurrentWinner;
+}
+assert.equal(detachedConcurrentWinnerInjected, 1, 'fixture must win the detached target exactly once');
+assert.deepEqual(
+  fs.readFileSync(detachedConcurrentWinnerPagePath),
+  detachedConcurrentWinnerBytes,
+  'rollback must preserve a concurrent page that wins after the old page is detached'
+);
+console.log('PASS concurrent page winning detached install remains unattributed and preserved');
+
+const detachedProbeFailureFixture = ownershipFixture();
+const detachedProbeFailurePagePath = path.join(
+  detachedProbeFailureFixture.rootDir,
+  'wiki',
+  'ownership-case.html'
+);
+const [detachedProbeFailurePlan] = planContentOwnershipUpdates(
+  [detachedProbeFailureFixture.payload],
+  detachedProbeFailureFixture.rootDir
+);
+const detachedProbeConcurrentBytes = Buffer.from(detachedProbeFailurePlan.html, 'utf8');
+let detachedProbeConcurrentInstalls = 0;
+let detachedProbeFailures = 0;
+let detachedProbeConcurrentInstalled = false;
+const linkSyncBeforeDetachedProbeFailure = fs.linkSync;
+const lstatSyncBeforeDetachedProbeFailure = fs.lstatSync;
+fs.linkSync = function interceptDetachedProbeConcurrentWinner(sourcePath, targetPath) {
+  const normalizedSource = String(sourcePath).replaceAll('\\', '/');
+  if (/\/\.ownership-case\.html\.forward-[^/]+\/staged$/.test(normalizedSource)) {
+    detachedProbeConcurrentInstalls += 1;
+    fs.writeFileSync(detachedProbeFailurePagePath, detachedProbeConcurrentBytes);
+    detachedProbeConcurrentInstalled = true;
+  }
+  return linkSyncBeforeDetachedProbeFailure.call(fs, sourcePath, targetPath);
+};
+fs.lstatSync = function interceptDetachedProbe(filePath, ...args) {
+  const normalizedPath = String(filePath).replaceAll('\\', '/');
+  if (
+    detachedProbeConcurrentInstalled &&
+    detachedProbeFailures === 0 &&
+    /\/proc\/self\/fd\/\d+\/ownership-case\.html$/.test(normalizedPath)
+  ) {
+    detachedProbeFailures += 1;
+    const error = new Error('injected anchored page probe failure');
+    error.code = 'EACCES';
+    throw error;
+  }
+  return lstatSyncBeforeDetachedProbeFailure.call(fs, filePath, ...args);
+};
+try {
+  assert.throws(
+    () => runImport({
+      payloadDir: detachedProbeFailureFixture.payloadDir,
+      rootDir: detachedProbeFailureFixture.rootDir,
+      write: true,
+      logger: () => {},
+      refreshContentStateFn: refreshTestContentState,
+    }),
+    (error) => error instanceof ContentOwnershipError &&
+      error.code === 'PUBLISH_TRANSACTION_ROLLBACK_CONFLICT' &&
+      error.cause?.code === 'EACCES' &&
+      error.cause.message.includes('injected anchored page probe failure') &&
+      error.rollbackConflicts.some(
+        ({ path: conflictPath }) => conflictPath === 'wiki/ownership-case.html'
+      )
+  );
+} finally {
+  fs.linkSync = linkSyncBeforeDetachedProbeFailure;
+  fs.lstatSync = lstatSyncBeforeDetachedProbeFailure;
+}
+assert.equal(detachedProbeConcurrentInstalls, 1);
+assert.equal(detachedProbeFailures, 1);
+assert.deepEqual(
+  fs.readFileSync(detachedProbeFailurePagePath),
+  detachedProbeConcurrentBytes,
+  'probe failure must clear planned attribution and preserve identical concurrent page bytes'
+);
+console.log('PASS failed detached-page probe cannot bless planned-identical concurrent bytes');
+
 const forwardCleanupFailureFixture = ownershipFixture();
 const forwardCleanupFailurePagePath = path.join(
   forwardCleanupFailureFixture.rootDir,
@@ -1039,8 +1332,19 @@ const forwardCleanupFailurePagePath = path.join(
   'ownership-case.html'
 );
 const forwardCleanupFailurePageBefore = fs.readFileSync(forwardCleanupFailurePagePath);
+const [forwardCleanupFailurePlan] = planContentOwnershipUpdates(
+  [forwardCleanupFailureFixture.payload],
+  forwardCleanupFailureFixture.rootDir
+);
+const forwardCleanupFailurePlannedBytes = Buffer.from(forwardCleanupFailurePlan.html, 'utf8');
+assert.notDeepEqual(
+  forwardCleanupFailurePlannedBytes,
+  forwardCleanupFailurePageBefore,
+  'cleanup regression requires a real page replacement'
+);
 const unlinkSyncBeforeForwardCleanupFailure = fs.unlinkSync;
 let forwardCleanupFailureInjected = false;
+let forwardCleanupObservedInstalledBytes = null;
 fs.unlinkSync = function interceptForwardCleanupUnlink(filePath) {
   const normalized = String(filePath).replaceAll('\\', '/');
   if (
@@ -1048,6 +1352,12 @@ fs.unlinkSync = function interceptForwardCleanupUnlink(filePath) {
     /\/\.ownership-case\.html\.forward-[^/]+\/staged$/.test(normalized)
   ) {
     forwardCleanupFailureInjected = true;
+    forwardCleanupObservedInstalledBytes = fs.readFileSync(forwardCleanupFailurePagePath);
+    assert.deepEqual(
+      forwardCleanupObservedInstalledBytes,
+      forwardCleanupFailurePlannedBytes,
+      'planned page bytes must already be live before staged-link cleanup begins'
+    );
     const error = new Error('injected forward staging cleanup failure');
     error.code = 'EACCES';
     throw error;
@@ -1069,6 +1379,7 @@ try {
   fs.unlinkSync = unlinkSyncBeforeForwardCleanupFailure;
 }
 assert.equal(forwardCleanupFailureInjected, true, 'fixture must fail after the new page inode is installed');
+assert.deepEqual(forwardCleanupObservedInstalledBytes, forwardCleanupFailurePlannedBytes);
 assert.deepEqual(
   fs.readFileSync(forwardCleanupFailurePagePath),
   forwardCleanupFailurePageBefore,
@@ -1080,6 +1391,182 @@ assert.equal(
   'post-install cleanup failure must release the transaction lock'
 );
 console.log('PASS post-install forward cleanup failures roll the page mutation back');
+
+const forwardCleanupParentSwapFixture = ownershipFixture();
+const forwardCleanupParentSwapWikiPath = path.join(
+  forwardCleanupParentSwapFixture.rootDir,
+  'wiki'
+);
+const forwardCleanupParentSwapMovedWikiPath = path.join(
+  forwardCleanupParentSwapFixture.rootDir,
+  'wiki-forward-installed-original'
+);
+const forwardCleanupParentSwapPagePath = path.join(
+  forwardCleanupParentSwapWikiPath,
+  'ownership-case.html'
+);
+const forwardCleanupParentSwapPageBefore = fs.readFileSync(
+  forwardCleanupParentSwapPagePath
+);
+const forwardCleanupParentSwapSentinelPath = path.join(
+  forwardCleanupParentSwapWikiPath,
+  'replacement-owner.txt'
+);
+const forwardCleanupParentSwapSentinelBytes = Buffer.from(
+  'POST-INSTALL REAL DIRECTORY REPLACEMENT MUST SURVIVE\n',
+  'utf8'
+);
+const [forwardCleanupParentSwapPlan] = planContentOwnershipUpdates(
+  [forwardCleanupParentSwapFixture.payload],
+  forwardCleanupParentSwapFixture.rootDir
+);
+const forwardCleanupParentSwapPlannedBytes = Buffer.from(
+  forwardCleanupParentSwapPlan.html,
+  'utf8'
+);
+assert.notDeepEqual(
+  forwardCleanupParentSwapPlannedBytes,
+  forwardCleanupParentSwapPageBefore,
+  'parent-swap regression requires planned bytes distinct from the snapshot'
+);
+let forwardCleanupParentSwapInjected = 0;
+const unlinkSyncBeforeForwardCleanupParentSwap = fs.unlinkSync;
+fs.unlinkSync = function interceptForwardCleanupParentSwap(filePath) {
+  const normalized = String(filePath).replaceAll('\\', '/');
+  if (
+    forwardCleanupParentSwapInjected === 0 &&
+    /\/\.ownership-case\.html\.forward-[^/]+\/staged$/.test(normalized)
+  ) {
+    forwardCleanupParentSwapInjected += 1;
+    assert.deepEqual(
+      fs.readFileSync(forwardCleanupParentSwapPagePath),
+      forwardCleanupParentSwapPlannedBytes,
+      'the planned page must be installed before the cleanup-time parent swap'
+    );
+    fs.renameSync(
+      forwardCleanupParentSwapWikiPath,
+      forwardCleanupParentSwapMovedWikiPath
+    );
+    fs.mkdirSync(forwardCleanupParentSwapWikiPath);
+    fs.writeFileSync(
+      forwardCleanupParentSwapPagePath,
+      forwardCleanupParentSwapPlannedBytes
+    );
+    fs.writeFileSync(
+      forwardCleanupParentSwapSentinelPath,
+      forwardCleanupParentSwapSentinelBytes
+    );
+    const error = new Error('injected cleanup failure after installed-page parent swap');
+    error.code = 'EACCES';
+    throw error;
+  }
+  return unlinkSyncBeforeForwardCleanupParentSwap.call(fs, filePath);
+};
+try {
+  assert.throws(
+    () => runImport({
+      payloadDir: forwardCleanupParentSwapFixture.payloadDir,
+      rootDir: forwardCleanupParentSwapFixture.rootDir,
+      write: true,
+      logger: () => {},
+      refreshContentStateFn: refreshTestContentState,
+    }),
+    (error) => error instanceof ContentOwnershipError &&
+      error.code === 'PUBLISH_TRANSACTION_ROLLBACK_CONFLICT' &&
+      error.cause?.code === 'EACCES' &&
+      error.cause.message.includes('injected cleanup failure after installed-page parent swap') &&
+      error.rollbackConflicts.some(
+        ({ path: conflictPath }) => conflictPath === 'wiki/ownership-case.html'
+      )
+  );
+} finally {
+  fs.unlinkSync = unlinkSyncBeforeForwardCleanupParentSwap;
+}
+assert.equal(
+  forwardCleanupParentSwapInjected,
+  1,
+  'fixture must swap the real wiki parent exactly once after page install'
+);
+assert.deepEqual(
+  fs.readFileSync(forwardCleanupParentSwapPagePath),
+  forwardCleanupParentSwapPlannedBytes,
+  'rollback must preserve planned-identical bytes owned by the replacement directory'
+);
+assert.deepEqual(
+  fs.readFileSync(forwardCleanupParentSwapSentinelPath),
+  forwardCleanupParentSwapSentinelBytes,
+  'rollback must preserve the replacement directory sentinel'
+);
+console.log('PASS post-install parent swap cannot redirect page rollback into a replacement directory');
+
+const forwardCleanupDeletionFixture = ownershipFixture();
+const forwardCleanupDeletionPagePath = path.join(
+  forwardCleanupDeletionFixture.rootDir,
+  'wiki',
+  'ownership-case.html'
+);
+const [forwardCleanupDeletionPlan] = planContentOwnershipUpdates(
+  [forwardCleanupDeletionFixture.payload],
+  forwardCleanupDeletionFixture.rootDir
+);
+const forwardCleanupDeletionPlannedBytes = Buffer.from(
+  forwardCleanupDeletionPlan.html,
+  'utf8'
+);
+let forwardCleanupDeletionInjected = 0;
+const unlinkSyncBeforeForwardCleanupDeletion = fs.unlinkSync;
+fs.unlinkSync = function interceptForwardCleanupDeletion(filePath) {
+  const normalized = String(filePath).replaceAll('\\', '/');
+  if (
+    forwardCleanupDeletionInjected === 0 &&
+    /\/\.ownership-case\.html\.forward-[^/]+\/staged$/.test(normalized)
+  ) {
+    forwardCleanupDeletionInjected += 1;
+    assert.deepEqual(
+      fs.readFileSync(forwardCleanupDeletionPagePath),
+      forwardCleanupDeletionPlannedBytes,
+      'the planned page must be installed before the cleanup-time deletion'
+    );
+    unlinkSyncBeforeForwardCleanupDeletion.call(fs, forwardCleanupDeletionPagePath);
+    const error = new Error('injected cleanup failure after concurrent installed-page deletion');
+    error.code = 'EACCES';
+    throw error;
+  }
+  return unlinkSyncBeforeForwardCleanupDeletion.call(fs, filePath);
+};
+try {
+  assert.throws(
+    () => runImport({
+      payloadDir: forwardCleanupDeletionFixture.payloadDir,
+      rootDir: forwardCleanupDeletionFixture.rootDir,
+      write: true,
+      logger: () => {},
+      refreshContentStateFn: refreshTestContentState,
+    }),
+    (error) => error instanceof ContentOwnershipError &&
+      error.code === 'PUBLISH_TRANSACTION_ROLLBACK_CONFLICT' &&
+      error.cause?.code === 'EACCES' &&
+      error.cause.message.includes(
+        'injected cleanup failure after concurrent installed-page deletion'
+      ) &&
+      error.rollbackConflicts.some(
+        ({ path: conflictPath }) => conflictPath === 'wiki/ownership-case.html'
+      )
+  );
+} finally {
+  fs.unlinkSync = unlinkSyncBeforeForwardCleanupDeletion;
+}
+assert.equal(
+  forwardCleanupDeletionInjected,
+  1,
+  'fixture must delete the installed page exactly once during cleanup'
+);
+assert.equal(
+  fs.existsSync(forwardCleanupDeletionPagePath),
+  false,
+  'post-install recovery must not resurrect a page deleted by a concurrent writer'
+);
+console.log('PASS post-install concurrent page deletion remains absent and preserves cleanup failure');
 
 const forwardPostimageRaceFixture = ownershipFixture();
 const forwardPostimageRacePagePath = path.join(
@@ -2957,6 +3444,92 @@ assert.ok(
 );
 assert.equal(fs.readFileSync(rollbackCommitRacePagePath, 'utf8'), rollbackCommitRaceHtml);
 console.log('PASS rollback commit rechecks and preserves a last-moment concurrent page change');
+
+const rollbackParentRecheckFixture = ownershipFixture();
+const rollbackParentRecheckWikiPath = path.join(
+  rollbackParentRecheckFixture.rootDir,
+  'wiki'
+);
+const rollbackParentRecheckMovedWikiPath = path.join(
+  rollbackParentRecheckFixture.rootDir,
+  'wiki-rollback-restored-original'
+);
+const rollbackParentRecheckPagePath = path.join(
+  rollbackParentRecheckWikiPath,
+  'ownership-case.html'
+);
+const rollbackParentRecheckPageBefore = fs.readFileSync(rollbackParentRecheckPagePath);
+const rollbackParentRecheckSentinelPath = path.join(
+  rollbackParentRecheckWikiPath,
+  'replacement-owner.txt'
+);
+const rollbackParentRecheckSentinelBytes = Buffer.from(
+  'MID-ROLLBACK REAL DIRECTORY REPLACEMENT MUST SURVIVE\n',
+  'utf8'
+);
+let rollbackParentRecheckInjected = 0;
+const unlinkSyncBeforeRollbackParentRecheck = fs.unlinkSync;
+fs.unlinkSync = function interceptRollbackParentRecheck(filePath) {
+  const normalized = String(filePath).replaceAll('\\', '/');
+  const result = unlinkSyncBeforeRollbackParentRecheck.call(fs, filePath);
+  if (
+    rollbackParentRecheckInjected === 0 &&
+    /\/\.ownership-case\.html\.rollback-[^/]+\/detached$/.test(normalized)
+  ) {
+    rollbackParentRecheckInjected += 1;
+    fs.renameSync(rollbackParentRecheckWikiPath, rollbackParentRecheckMovedWikiPath);
+    fs.mkdirSync(rollbackParentRecheckWikiPath);
+    fs.writeFileSync(
+      rollbackParentRecheckSentinelPath,
+      rollbackParentRecheckSentinelBytes
+    );
+  }
+  return result;
+};
+try {
+  assert.throws(
+    () => runImport({
+      payloadDir: rollbackParentRecheckFixture.payloadDir,
+      rootDir: rollbackParentRecheckFixture.rootDir,
+      write: true,
+      logger: () => {},
+      refreshContentStateFn: () => {
+        throw new Error('injected failure before rollback parent recheck');
+      },
+    }),
+    (error) => error instanceof ContentOwnershipError &&
+      error.code === 'PUBLISH_TRANSACTION_ROLLBACK_CONFLICT' &&
+      error.cause?.message.includes('injected failure before rollback parent recheck') &&
+      error.rollbackConflicts.some(
+        ({ path: conflictPath }) => conflictPath === 'wiki/ownership-case.html'
+      )
+  );
+} finally {
+  fs.unlinkSync = unlinkSyncBeforeRollbackParentRecheck;
+}
+assert.equal(
+  rollbackParentRecheckInjected,
+  1,
+  'fixture must swap the selected page parent after rollback reinstalls the preimage'
+);
+assert.equal(
+  fs.existsSync(rollbackParentRecheckPagePath),
+  false,
+  'rollback must not touch the replacement directory after its identity changes'
+);
+assert.deepEqual(
+  fs.readFileSync(rollbackParentRecheckSentinelPath),
+  rollbackParentRecheckSentinelBytes,
+  'rollback must preserve the directory that replaces the selected parent mid-commit'
+);
+assert.deepEqual(
+  fs.readFileSync(
+    path.join(rollbackParentRecheckMovedWikiPath, 'ownership-case.html')
+  ),
+  rollbackParentRecheckPageBefore,
+  'the preimage must be restored only through the original held parent descriptor'
+);
+console.log('PASS rollback rechecks parent identity after reinstalling the page preimage');
 
 const rollbackCreateConflictFixture = ownershipFixture({
   html: null,
