@@ -551,7 +551,8 @@ const graffpunksStopwordOnly = {
 }
 
 // Newly authored people and institutions must be discoverable through the real
-// search selector, including header autocomplete, without partial-token fallback.
+// search selector, including header autocomplete. Every meaningful query word
+// must match; stopwords and short words may use the existing production fallback.
 {
   const wikiIndex = JSON.parse(
     await fs.readFile(path.join(ROOT, 'js', 'wiki-index.json'), 'utf8')
@@ -584,18 +585,31 @@ const graffpunksStopwordOnly = {
       'Returned List', 'Parkour Gauntlet', 'Spray Cipher', 'Final Hardfork duel'
     ]
   };
+  const stopWords = vm.runInContext('SEARCH_TEXT_STOP_WORDS', sb);
   let checked = 0;
   for (const [slug, subjects] of Object.entries(subjectsByPage)) {
     const expectedUrl = `/wiki/${slug}.html`;
     for (const query of subjects) {
+      const meaningfulTokens = sb.tokenizeSearchQuery(query)
+        .filter(token => token.length >= 3 && !stopWords.has(token));
       for (const limit of [5, 10]) {
         const result = await selectMatches(wikiIndex, query, {
-          allowPartialFallback: false,
+          allowPartialFallback: true,
           limit
         });
-        assert.ok(result.scored.some(({ item }) => item.url === expectedUrl),
+        const match = result.scored.find(({ item }) => item.url === expectedUrl);
+        assert.ok(match,
           `New lore query "${query}" must find ${expectedUrl} in the first ${limit} results`);
-        assert.equal(result.usedPartialFallback, false);
+        assert.equal(match.meaningfulMatchedTokenCount, meaningfulTokens.length,
+          `Every meaningful subject word must match for "${query}"`);
+        if (result.usedPartialFallback) {
+          const strict = await selectMatches(wikiIndex, meaningfulTokens.join(' '), {
+            allowPartialFallback: false,
+            limit
+          });
+          assert.ok(strict.scored.some(({ item }) => item.url === expectedUrl),
+            `Meaningful subject words must find ${expectedUrl} without partial fallback`);
+        }
       }
       checked++;
     }

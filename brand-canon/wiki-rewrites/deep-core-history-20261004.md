@@ -78,13 +78,15 @@ The expanded chapters exposed an unbounded word-count contribution in the offlin
 
 ## PR #1433 review follow-up
 
-Codex identified that newly authored subjects were absent from searchable metadata. Each expanded page now declares its people, institutions and practices through `wiki-search-terms`; the offline generator adds these terms to the retrieval corpus. Subject mentions do not become page aliases or authority-bearing category tags. The browser search code remains unchanged. A regression exercises 58 queries through the real full-search and header-autocomplete selector, including all eleven new supporting people, named institutions and punctuation/case variants.
+Codex identified that newly authored subjects were absent from searchable metadata. Each expanded page now declares its people, institutions and practices through `wiki-search-terms`; the offline generator adds these terms only to `search_index.keyword_bag`. The shared `search_index.tokens` remains title-only because link-map and related-page generators treat it as relationship tags. Subject mentions do not become page aliases or authority-bearing category tags. The browser search code remains unchanged. A regression exercises 58 queries through the real full-search and header-autocomplete selector, including all eleven new supporting people, named institutions and punctuation/case variants. These checks use the production selector’s existing fallback for stopwords and short tokens; every meaningful query word must match, and fallback cases also pass strict searches with those non-subject words removed.
 
 Copilot identified three wording defects. The Nexus apprentice paragraph now says makers can improve their craft; the Games paragraph says the golden-ticket and Seeding traditions retain their HODL X Warriors attribution; Crossing House Three now “served as a meeting point.” These corrections do not change lore decisions. Revised article counts above include the three added words.
 
+Copilot’s relationship finding exposed the initial use of subject terms in the shared token field. A new regression reproduced the false link from the free-NFT programme to Sacred Chain through “block time.” The corrected index keeps all five title token lists intact, and regeneration removes that false suggestion while retaining the programme’s actual Block Topia relationship. All explicit page links are preserved.
+
 ## Validation and release
 
-Review follow-up validation passes the complete `npm run ci:wiki` group, the 58-query real-search regression, the unchanged 12-query First Witness ranking contract and graph integrity. All 419 existing rank scores remain unchanged. The full-suite result below records the initial expansion before this follow-up; the follow-up changes are confined to the wiki domain.
+Review follow-up validation passes the complete `npm run ci:wiki` group, the 58-query real-search regression, the unchanged 12-query First Witness ranking contract, all 30 index/relationship regressions and graph integrity. All 419 existing rank scores remain unchanged. The full-suite result below records the initial expansion before this follow-up; the follow-up changes are confined to the wiki domain.
 
 - Publishing surfaces regenerate successfully. Graph integrity passes: 409 indexed wiki pages, 419 total nodes, 2,041 edges and 75 mobile nodes.
 - All 12 First Witness intent queries pass; all 82 First Witness pages remain published with minimum rank 261.

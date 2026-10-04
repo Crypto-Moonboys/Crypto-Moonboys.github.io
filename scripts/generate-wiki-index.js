@@ -366,10 +366,7 @@ function buildSearchIndex(title, description, keywords, aliases = [], searchTerm
 
   return {
     normalized_title: normalizedTitle,
-    tokens: Array.from(new Set([
-      ...normalizedTitle.split(' ').filter(Boolean),
-      ...searchTerms.flatMap(tokenize)
-    ])),
+    tokens: normalizedTitle.split(' ').filter(Boolean),
     keyword_bag: keywordBag
   };
 }
