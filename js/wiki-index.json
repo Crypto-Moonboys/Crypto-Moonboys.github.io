@@ -9928,100 +9928,6 @@
     "brand": null
   },
   {
-    "title": "Blockchain Technology",
-    "desc": "A detailed guide to blockchain technology: history, blocks, consensus, wallets, smart contracts, tokens, scaling, risks and Crypto Moonboys use on WAX.",
-    "url": "/wiki/blockchain.html",
-    "tags": [
-      "blockchain",
-      "technology",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "blockchain"
-      },
-      {
-        "title": "blockchain technology crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 295,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 2,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 2479,
-      "keyword_bag_size": 22,
-      "heading_count": 33,
-      "list_count": 9,
-      "internal_link_count": 23,
-      "paragraph_count": 38,
-      "section_count": 3,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 83,
-      "authority_score": 30
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 50,
-      "keyword_bag_points": 22,
-      "content_quality_points": 94,
-      "authority_points": 64,
-      "final_rank_score": 295,
-      "authority_graph_points": 34
-    },
-    "search_index": {
-      "normalized_title": "blockchain technology crypto moonboys wiki",
-      "tokens": [
-        "blockchain",
-        "technology",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "blockchain",
-        "technology",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "a",
-        "detailed",
-        "guide",
-        "to",
-        "history",
-        "blocks",
-        "consensus",
-        "wallets",
-        "smart",
-        "contracts",
-        "tokens",
-        "scaling",
-        "risks",
-        "and",
-        "use",
-        "on",
-        "wax"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 14,
-      "outbound_count": 25,
-      "existing_outbound_count": 11,
-      "suggested_outbound_count": 14,
-      "authority": 33.5
-    },
-    "brand": null
-  },
-  {
     "title": "Burn-to-Earn",
     "desc": "Burn-to-Earn is the Crypto Moonboys concept of permanently destroying eligible NFTs to unlock rarer assets, progression or verified utility.",
     "url": "/wiki/burn-to-earn.html",
@@ -10376,6 +10282,100 @@
     "brand": null
   },
   {
+    "title": "Blockchain Technology",
+    "desc": "A detailed guide to blockchain technology: history, blocks, consensus, wallets, smart contracts, tokens, scaling, risks and Crypto Moonboys use on WAX.",
+    "url": "/wiki/blockchain.html",
+    "tags": [
+      "blockchain",
+      "technology",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "blockchain"
+      },
+      {
+        "title": "blockchain technology crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 293,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 2,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 2479,
+      "keyword_bag_size": 22,
+      "heading_count": 33,
+      "list_count": 9,
+      "internal_link_count": 23,
+      "paragraph_count": 38,
+      "section_count": 3,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 83,
+      "authority_score": 30
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 50,
+      "keyword_bag_points": 22,
+      "content_quality_points": 94,
+      "authority_points": 62,
+      "final_rank_score": 293,
+      "authority_graph_points": 32
+    },
+    "search_index": {
+      "normalized_title": "blockchain technology crypto moonboys wiki",
+      "tokens": [
+        "blockchain",
+        "technology",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "blockchain",
+        "technology",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "a",
+        "detailed",
+        "guide",
+        "to",
+        "history",
+        "blocks",
+        "consensus",
+        "wallets",
+        "smart",
+        "contracts",
+        "tokens",
+        "scaling",
+        "risks",
+        "and",
+        "use",
+        "on",
+        "wax"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 13,
+      "outbound_count": 25,
+      "existing_outbound_count": 11,
+      "suggested_outbound_count": 14,
+      "authority": 31.5
+    },
+    "brand": null
+  },
+  {
     "title": "Pride, Temptation and False Idols",
     "desc": "How later First Witness traditions describe pride, status, control and the tendency to worship tools, leaders and identities.",
     "url": "/wiki/first-witness-pride-temptation-false-idols.html",
@@ -10703,100 +10703,6 @@
       "existing_outbound_count": 4,
       "suggested_outbound_count": 64,
       "authority": 8
-    },
-    "brand": null
-  },
-  {
-    "title": "xrp kids",
-    "desc": "XRP Kids explode into the Crypto Moonboys universe as a dynamic NFT collection on the XRPL blockchain, embodying the raw, untamed spirit of youthful rebellion w",
-    "url": "/wiki/xrp-kids.html",
-    "tags": [
-      "xrp",
-      "kids",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "characters",
-    "aliases": [
-      {
-        "title": "xrp kids crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 293,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "characters",
-      "category_priority": 8,
-      "has_description": true,
-      "article_word_count": 5010,
-      "keyword_bag_size": 25,
-      "heading_count": 10,
-      "list_count": 1,
-      "internal_link_count": 9,
-      "paragraph_count": 67,
-      "section_count": 7,
-      "lore_paragraph_count": 64,
-      "content_quality_score": 105,
-      "authority_score": 24
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 40,
-      "word_count_points": 50,
-      "keyword_bag_points": 25,
-      "content_quality_points": 113,
-      "authority_points": 35,
-      "final_rank_score": 293,
-      "authority_graph_points": 11
-    },
-    "search_index": {
-      "normalized_title": "xrp kids crypto moonboys wiki",
-      "tokens": [
-        "xrp",
-        "kids",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "xrp",
-        "kids",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "explode",
-        "into",
-        "the",
-        "universe",
-        "as",
-        "a",
-        "dynamic",
-        "nft",
-        "collection",
-        "on",
-        "xrpl",
-        "blockchain",
-        "embodying",
-        "raw",
-        "untamed",
-        "spirit",
-        "of",
-        "youthful",
-        "rebellion",
-        "w"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 3,
-      "outbound_count": 34,
-      "existing_outbound_count": 9,
-      "suggested_outbound_count": 25,
-      "authority": 10.5
     },
     "brand": null
   },
@@ -12225,11 +12131,11 @@
       ]
     },
     "link_score": {
-      "inbound_count": 88,
+      "inbound_count": 87,
       "outbound_count": 41,
       "existing_outbound_count": 0,
       "suggested_outbound_count": 41,
-      "authority": 176
+      "authority": 174
     },
     "brand": null
   },
@@ -16249,97 +16155,6 @@
       "existing_outbound_count": 11,
       "suggested_outbound_count": 11,
       "authority": 7.5
-    },
-    "brand": null
-  },
-  {
-    "title": "sneakar",
-    "desc": "SNEAKAR crashes into the Crypto Moonboys universe as a revolutionary brand and game mechanic, a blazing fusion of augmented reality and wearable NFTs that trans",
-    "url": "/wiki/sneakar.html",
-    "tags": [
-      "sneakar",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "sneakar crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 282,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 4,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 2832,
-      "keyword_bag_size": 24,
-      "heading_count": 11,
-      "list_count": 2,
-      "internal_link_count": 9,
-      "paragraph_count": 46,
-      "section_count": 8,
-      "lore_paragraph_count": 43,
-      "content_quality_score": 105,
-      "authority_score": 26
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 50,
-      "keyword_bag_points": 24,
-      "content_quality_points": 112,
-      "authority_points": 31,
-      "final_rank_score": 282,
-      "authority_graph_points": 5
-    },
-    "search_index": {
-      "normalized_title": "sneakar crypto moonboys wiki",
-      "tokens": [
-        "sneakar",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "sneakar",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "crashes",
-        "into",
-        "the",
-        "universe",
-        "as",
-        "a",
-        "revolutionary",
-        "brand",
-        "and",
-        "game",
-        "mechanic",
-        "blazing",
-        "fusion",
-        "of",
-        "augmented",
-        "reality",
-        "wearable",
-        "nfts",
-        "that",
-        "trans"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 16,
-      "existing_outbound_count": 9,
-      "suggested_outbound_count": 7,
-      "authority": 4.5
     },
     "brand": null
   },
@@ -21387,99 +21202,6 @@
     "brand": null
   },
   {
-    "title": "dream sovereign",
-    "desc": "The Dream Sovereign remains a mysterious and elusive concept in the Crypto Moonboys universe, potentially a mythic entity, force, or ideal tied to the deepest l",
-    "url": "/wiki/dream-sovereign.html",
-    "tags": [
-      "dream",
-      "sovereign",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "dream sovereign crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 270,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 1552,
-      "keyword_bag_size": 24,
-      "heading_count": 10,
-      "list_count": 1,
-      "internal_link_count": 9,
-      "paragraph_count": 29,
-      "section_count": 7,
-      "lore_paragraph_count": 27,
-      "content_quality_score": 97,
-      "authority_score": 21
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 50,
-      "keyword_bag_points": 24,
-      "content_quality_points": 105,
-      "authority_points": 26,
-      "final_rank_score": 270,
-      "authority_graph_points": 5
-    },
-    "search_index": {
-      "normalized_title": "dream sovereign crypto moonboys wiki",
-      "tokens": [
-        "dream",
-        "sovereign",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "dream",
-        "sovereign",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "the",
-        "remains",
-        "a",
-        "mysterious",
-        "and",
-        "elusive",
-        "concept",
-        "in",
-        "universe",
-        "potentially",
-        "mythic",
-        "entity",
-        "force",
-        "or",
-        "ideal",
-        "tied",
-        "to",
-        "deepest",
-        "l"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 17,
-      "existing_outbound_count": 9,
-      "suggested_outbound_count": 8,
-      "authority": 4.5
-    },
-    "brand": null
-  },
-  {
     "title": "Digital Inheritance and Memory After Death",
     "desc": "How First Witness traditions handle accounts, keys, archives, AI replicas and digital property after a person",
     "url": "/wiki/first-witness-digital-inheritance-after-death.html",
@@ -26222,6 +25944,121 @@
     "brand": null
   },
   {
+    "title": "XRP Kids",
+    "desc": "XRP Kids: Charlie Buster’s archived 100-piece XRPL Genesis collection, No Ball Games identity, and fictional Playground Protocol and glitch-boot traditions.",
+    "url": "/wiki/xrp-kids.html",
+    "tags": [
+      "xrp",
+      "kids",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "nfts-digital-art",
+    "aliases": [
+      {
+        "title": "xrp kids crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 257,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "nfts-digital-art",
+      "category_priority": 4,
+      "has_description": true,
+      "article_word_count": 2694,
+      "keyword_bag_size": 25,
+      "heading_count": 20,
+      "list_count": 1,
+      "internal_link_count": 9,
+      "paragraph_count": 36,
+      "section_count": 17,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 89,
+      "authority_score": 24
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 20,
+      "word_count_points": 50,
+      "keyword_bag_points": 25,
+      "content_quality_points": 97,
+      "authority_points": 35,
+      "final_rank_score": 257,
+      "authority_graph_points": 11
+    },
+    "search_index": {
+      "normalized_title": "xrp kids crypto moonboys wiki",
+      "tokens": [
+        "xrp",
+        "kids",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "xrp",
+        "kids",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "charlie",
+        "buster",
+        "s",
+        "archived",
+        "100",
+        "piece",
+        "xrpl",
+        "genesis",
+        "collection",
+        "no",
+        "ball",
+        "games",
+        "identity",
+        "and",
+        "fictional",
+        "playground",
+        "protocol",
+        "glitch",
+        "boot",
+        "traditions",
+        "kid",
+        "nfts",
+        "stampede",
+        "dash",
+        "curse",
+        "glitchstep",
+        "first",
+        "spray",
+        "origin",
+        "tags",
+        "tag",
+        "signal",
+        "seeds",
+        "blaze",
+        "codes",
+        "forked",
+        "triad",
+        "surge",
+        "neon",
+        "breach",
+        "ciphercanvas"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 3,
+      "outbound_count": 46,
+      "existing_outbound_count": 9,
+      "suggested_outbound_count": 37,
+      "authority": 10.5
+    },
+    "brand": null
+  },
+  {
     "title": "WUFFI / $WUF",
     "desc": "Crypto Moonboys wiki guide to WUFFI and $WUF, a multi-chain community coin connected to WAX, Solana, Base and TON.",
     "url": "/wiki/wuffi.html",
@@ -27429,6 +27266,108 @@
     "brand": null
   },
   {
+    "title": "Phygital Prints",
+    "desc": "Phygital prints in Crypto Moonboys: physical art, digital provenance, edition and licence distinctions, and their separate role as memory-bearing artefacts in Year 3008 fiction.",
+    "url": "/wiki/phygital-prints.html",
+    "tags": [
+      "phygital",
+      "prints",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "nfts-digital-art",
+    "aliases": [
+      {
+        "title": "phygital prints crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 250,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "nfts-digital-art",
+      "category_priority": 4,
+      "has_description": true,
+      "article_word_count": 2520,
+      "keyword_bag_size": 24,
+      "heading_count": 19,
+      "list_count": 1,
+      "internal_link_count": 9,
+      "paragraph_count": 33,
+      "section_count": 16,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 89,
+      "authority_score": 24
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 20,
+      "word_count_points": 50,
+      "keyword_bag_points": 24,
+      "content_quality_points": 97,
+      "authority_points": 29,
+      "final_rank_score": 250,
+      "authority_graph_points": 5
+    },
+    "search_index": {
+      "normalized_title": "phygital prints crypto moonboys wiki",
+      "tokens": [
+        "phygital",
+        "prints",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "phygital",
+        "prints",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "in",
+        "physical",
+        "art",
+        "digital",
+        "provenance",
+        "edition",
+        "and",
+        "licence",
+        "distinctions",
+        "their",
+        "separate",
+        "role",
+        "as",
+        "memory",
+        "bearing",
+        "artefacts",
+        "year",
+        "3008",
+        "fiction",
+        "counterpart",
+        "print",
+        "editions",
+        "redemption",
+        "character",
+        "bleed",
+        "echo",
+        "ink",
+        "numbering"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 30,
+      "existing_outbound_count": 9,
+      "suggested_outbound_count": 21,
+      "authority": 4.5
+    },
+    "brand": null
+  },
+  {
     "title": "Playable NFT Murals",
     "desc": "Playable NFT murals are the beating heart of rebellion in the Crypto Moonboys universe, evolving static street art into dynamic blockchain assets that NFT holde",
     "url": "/wiki/playable-nft-murals.html",
@@ -28517,6 +28456,114 @@
     "brand": null
   },
   {
+    "title": "Dream Sovereign",
+    "desc": "The Dream Sovereign in Crypto Moonboys fiction: the Child of the Shard nightmare, contested origin stories, and the difference between a vision and settled history.",
+    "url": "/wiki/dream-sovereign.html",
+    "tags": [
+      "dream",
+      "sovereign",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "concepts",
+    "aliases": [
+      {
+        "title": "dream sovereign crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 246,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "concepts",
+      "category_priority": 5,
+      "has_description": true,
+      "article_word_count": 2376,
+      "keyword_bag_size": 22,
+      "heading_count": 17,
+      "list_count": 1,
+      "internal_link_count": 9,
+      "paragraph_count": 30,
+      "section_count": 14,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 85,
+      "authority_score": 21
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 25,
+      "word_count_points": 50,
+      "keyword_bag_points": 22,
+      "content_quality_points": 93,
+      "authority_points": 26,
+      "final_rank_score": 246,
+      "authority_graph_points": 5
+    },
+    "search_index": {
+      "normalized_title": "dream sovereign crypto moonboys wiki",
+      "tokens": [
+        "dream",
+        "sovereign",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "dream",
+        "sovereign",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "the",
+        "in",
+        "fiction",
+        "child",
+        "of",
+        "shard",
+        "nightmare",
+        "contested",
+        "origin",
+        "stories",
+        "and",
+        "difference",
+        "between",
+        "a",
+        "vision",
+        "settled",
+        "history",
+        "eternal",
+        "watch",
+        "elder",
+        "codex",
+        "7",
+        "anomaly",
+        "dreams",
+        "mind",
+        "rift",
+        "crown",
+        "cipher",
+        "iris",
+        "null",
+        "nodes",
+        "sealed",
+        "protocol",
+        "vault"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 36,
+      "existing_outbound_count": 9,
+      "suggested_outbound_count": 27,
+      "authority": 4.5
+    },
+    "brand": null
+  },
+  {
     "title": "Forklord You",
     "desc": "Forklord You reigns as the master of forks and splits in the Crypto Moonboys universe, a commanding enigma whose power over blockchain divergences reshapes the",
     "url": "/wiki/forklord-you.html",
@@ -29445,99 +29492,6 @@
     "brand": null
   },
   {
-    "title": "Phygital Prints",
-    "desc": "Phygital prints are a groundbreaking fusion of realms in the Crypto Moonboys universe, seamlessly blending tangible graffiti art with blockchain-verified NFT ow",
-    "url": "/wiki/phygital-prints.html",
-    "tags": [
-      "phygital",
-      "prints",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "phygital prints crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 244,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 843,
-      "keyword_bag_size": 24,
-      "heading_count": 10,
-      "list_count": 1,
-      "internal_link_count": 13,
-      "paragraph_count": 19,
-      "section_count": 7,
-      "lore_paragraph_count": 17,
-      "content_quality_score": 81,
-      "authority_score": 18
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 42,
-      "keyword_bag_points": 24,
-      "content_quality_points": 89,
-      "authority_points": 24,
-      "final_rank_score": 244,
-      "authority_graph_points": 6
-    },
-    "search_index": {
-      "normalized_title": "phygital prints crypto moonboys wiki",
-      "tokens": [
-        "phygital",
-        "prints",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "phygital",
-        "prints",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "are",
-        "a",
-        "groundbreaking",
-        "fusion",
-        "of",
-        "realms",
-        "in",
-        "the",
-        "universe",
-        "seamlessly",
-        "blending",
-        "tangible",
-        "graffiti",
-        "art",
-        "with",
-        "blockchain",
-        "verified",
-        "nft",
-        "ow"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 29,
-      "existing_outbound_count": 12,
-      "suggested_outbound_count": 17,
-      "authority": 6
-    },
-    "brand": null
-  },
-  {
     "title": "The Whale Lords",
     "desc": "The powerful market-moving entities holding thousands of BTC/ETH who shape the HODL Wars from above.",
     "url": "/wiki/whale-lords.html",
@@ -29723,6 +29677,110 @@
       "existing_outbound_count": 9,
       "suggested_outbound_count": 26,
       "authority": 6.5
+    },
+    "brand": null
+  },
+  {
+    "title": "SNEAKAR",
+    "desc": "SNEAKAR in the Crypto Moonboys reference: archived creative associations, wearable art, and the fictional Walking Billboard Effect, Neon Hack and Phantom Stride traditions.",
+    "url": "/wiki/sneakar.html",
+    "tags": [
+      "sneakar",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "nfts-digital-art",
+    "aliases": [
+      {
+        "title": "sneakar crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 243,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 4,
+      "mention_count": 0,
+      "category": "nfts-digital-art",
+      "category_priority": 4,
+      "has_description": true,
+      "article_word_count": 2485,
+      "keyword_bag_size": 22,
+      "heading_count": 18,
+      "list_count": 1,
+      "internal_link_count": 9,
+      "paragraph_count": 33,
+      "section_count": 15,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 85,
+      "authority_score": 24
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 20,
+      "word_count_points": 50,
+      "keyword_bag_points": 22,
+      "content_quality_points": 92,
+      "authority_points": 29,
+      "final_rank_score": 243,
+      "authority_graph_points": 5
+    },
+    "search_index": {
+      "normalized_title": "sneakar crypto moonboys wiki",
+      "tokens": [
+        "sneakar",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "sneakar",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "in",
+        "the",
+        "reference",
+        "archived",
+        "creative",
+        "associations",
+        "wearable",
+        "art",
+        "and",
+        "fictional",
+        "walking",
+        "billboard",
+        "effect",
+        "neon",
+        "hack",
+        "phantom",
+        "stride",
+        "traditions",
+        "bone",
+        "idol",
+        "ink",
+        "muenster",
+        "golden",
+        "coat",
+        "ghost",
+        "walk",
+        "step",
+        "rebel",
+        "zones",
+        "glitch",
+        "sole",
+        "augmented",
+        "reality"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 26,
+      "existing_outbound_count": 9,
+      "suggested_outbound_count": 17,
+      "authority": 4.5
     },
     "brand": null
   },

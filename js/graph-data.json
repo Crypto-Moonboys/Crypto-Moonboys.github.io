@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-04T13:57:39.974Z",
-  "verified_at": "2026-10-04T13:57:39.974Z",
+  "generated_at": "2026-10-04T14:01:08.568Z",
+  "verified_at": "2026-10-04T14:01:08.568Z",
   "nodes": [
     {
       "id": "/about.html",
@@ -287,7 +287,7 @@
       "title": "Blockchain Technology",
       "url": "/wiki/blockchain.html",
       "category": "factions",
-      "rank_score": 295,
+      "rank_score": 293,
       "authority_score": 30
     },
     {
@@ -396,10 +396,10 @@
     },
     {
       "id": "/wiki/dream-sovereign.html",
-      "title": "dream sovereign",
+      "title": "Dream Sovereign",
       "url": "/wiki/dream-sovereign.html",
-      "category": "factions",
-      "rank_score": 270,
+      "category": "concepts",
+      "rank_score": 246,
       "authority_score": 21
     },
     {
@@ -2710,9 +2710,9 @@
       "id": "/wiki/phygital-prints.html",
       "title": "Phygital Prints",
       "url": "/wiki/phygital-prints.html",
-      "category": "factions",
-      "rank_score": 244,
-      "authority_score": 18
+      "category": "nfts-digital-art",
+      "rank_score": 250,
+      "authority_score": 24
     },
     {
       "id": "/wiki/pixel-journey.html",
@@ -2868,11 +2868,11 @@
     },
     {
       "id": "/wiki/sneakar.html",
-      "title": "sneakar",
+      "title": "SNEAKAR",
       "url": "/wiki/sneakar.html",
-      "category": "factions",
-      "rank_score": 282,
-      "authority_score": 26
+      "category": "nfts-digital-art",
+      "rank_score": 243,
+      "authority_score": 24
     },
     {
       "id": "/wiki/snipey-d-man-sirus.html",
@@ -3340,10 +3340,10 @@
     },
     {
       "id": "/wiki/xrp-kids.html",
-      "title": "xrp kids",
+      "title": "XRP Kids",
       "url": "/wiki/xrp-kids.html",
-      "category": "characters",
-      "rank_score": 293,
+      "category": "nfts-digital-art",
+      "rank_score": 257,
       "authority_score": 24
     },
     {
@@ -3760,12 +3760,6 @@
     },
     {
       "source": "/wiki/battlemech-blast.html",
-      "target": "/wiki/sneakar.html",
-      "score": 77,
-      "weight": 0.77
-    },
-    {
-      "source": "/wiki/battlemech-blast.html",
       "target": "/wiki/spirit-borns.html",
       "score": 77,
       "weight": 0.77
@@ -3773,6 +3767,12 @@
     {
       "source": "/wiki/battlemech-blast.html",
       "target": "/wiki/moon-mission.html",
+      "score": 76,
+      "weight": 0.76
+    },
+    {
+      "source": "/wiki/battlemech-blast.html",
+      "target": "/wiki/neftyblocks.html",
       "score": 76,
       "weight": 0.76
     },
@@ -4150,12 +4150,6 @@
     },
     {
       "source": "/wiki/bone-idol-ink.html",
-      "target": "/wiki/sneakar.html",
-      "score": 74,
-      "weight": 0.74
-    },
-    {
-      "source": "/wiki/bone-idol-ink.html",
       "target": "/wiki/spirit-borns.html",
       "score": 74,
       "weight": 0.74
@@ -4163,6 +4157,12 @@
     {
       "source": "/wiki/bone-idol-ink.html",
       "target": "/wiki/atomichub.html",
+      "score": 73,
+      "weight": 0.73
+    },
+    {
+      "source": "/wiki/bone-idol-ink.html",
+      "target": "/wiki/ethereum.html",
       "score": 73,
       "weight": 0.73
     },
@@ -4210,12 +4210,6 @@
     },
     {
       "source": "/wiki/canvas-clash.html",
-      "target": "/wiki/sneakar.html",
-      "score": 77,
-      "weight": 0.77
-    },
-    {
-      "source": "/wiki/canvas-clash.html",
       "target": "/wiki/spirit-borns.html",
       "score": 77,
       "weight": 0.77
@@ -4223,6 +4217,12 @@
     {
       "source": "/wiki/canvas-clash.html",
       "target": "/wiki/moon-mission.html",
+      "score": 76,
+      "weight": 0.76
+    },
+    {
+      "source": "/wiki/canvas-clash.html",
+      "target": "/wiki/neftyblocks.html",
       "score": 76,
       "weight": 0.76
     },
@@ -4270,12 +4270,6 @@
     },
     {
       "source": "/wiki/croydon-tower-blocks.html",
-      "target": "/wiki/sneakar.html",
-      "score": 77,
-      "weight": 0.77
-    },
-    {
-      "source": "/wiki/croydon-tower-blocks.html",
       "target": "/wiki/spirit-borns.html",
       "score": 77,
       "weight": 0.77
@@ -4283,6 +4277,12 @@
     {
       "source": "/wiki/croydon-tower-blocks.html",
       "target": "/wiki/moon-mission.html",
+      "score": 76,
+      "weight": 0.76
+    },
+    {
+      "source": "/wiki/croydon-tower-blocks.html",
+      "target": "/wiki/neftyblocks.html",
       "score": 76,
       "weight": 0.76
     },
@@ -4456,15 +4456,15 @@
     },
     {
       "source": "/wiki/delicious-again-pete.html",
-      "target": "/wiki/phygital-prints.html",
+      "target": "/wiki/street-kingdoms.html",
       "score": 78,
       "weight": 0.78
     },
     {
       "source": "/wiki/delicious-again-pete.html",
-      "target": "/wiki/street-kingdoms.html",
-      "score": 78,
-      "weight": 0.78
+      "target": "/wiki/2025-metaverse-launch-party.html",
+      "score": 77,
+      "weight": 0.77
     },
     {
       "source": "/wiki/diamond-hands.html",
@@ -4528,33 +4528,27 @@
     },
     {
       "source": "/wiki/dream-sovereign.html",
+      "target": "/wiki/games4punks-telegram.html",
+      "score": 81,
+      "weight": 0.81
+    },
+    {
+      "source": "/wiki/dream-sovereign.html",
+      "target": "/wiki/head-tags.html",
+      "score": 53,
+      "weight": 0.53
+    },
+    {
+      "source": "/wiki/dream-sovereign.html",
+      "target": "/wiki/gang-signs.html",
+      "score": 50,
+      "weight": 0.5
+    },
+    {
+      "source": "/wiki/dream-sovereign.html",
       "target": "/wiki/pmsl.html",
-      "score": 91,
-      "weight": 0.91
-    },
-    {
-      "source": "/wiki/dream-sovereign.html",
-      "target": "/wiki/street-kingdoms.html",
-      "score": 78,
-      "weight": 0.78
-    },
-    {
-      "source": "/wiki/dream-sovereign.html",
-      "target": "/wiki/sneakar.html",
-      "score": 77,
-      "weight": 0.77
-    },
-    {
-      "source": "/wiki/dream-sovereign.html",
-      "target": "/wiki/spirit-borns.html",
-      "score": 77,
-      "weight": 0.77
-    },
-    {
-      "source": "/wiki/dream-sovereign.html",
-      "target": "/wiki/moon-mission.html",
-      "score": 76,
-      "weight": 0.76
+      "score": 49,
+      "weight": 0.49
     },
     {
       "source": "/wiki/elder-codex-7.html",
@@ -4690,12 +4684,6 @@
     },
     {
       "source": "/wiki/exyboy.html",
-      "target": "/wiki/sneakar.html",
-      "score": 77,
-      "weight": 0.77
-    },
-    {
-      "source": "/wiki/exyboy.html",
       "target": "/wiki/spirit-borns.html",
       "score": 77,
       "weight": 0.77
@@ -4703,6 +4691,12 @@
     {
       "source": "/wiki/exyboy.html",
       "target": "/wiki/moon-mission.html",
+      "score": 76,
+      "weight": 0.76
+    },
+    {
+      "source": "/wiki/exyboy.html",
+      "target": "/wiki/neftyblocks.html",
       "score": 76,
       "weight": 0.76
     },
@@ -7204,12 +7198,6 @@
     },
     {
       "source": "/wiki/forkborn-collective.html",
-      "target": "/wiki/phygital-prints.html",
-      "score": 81,
-      "weight": 0.81
-    },
-    {
-      "source": "/wiki/forkborn-collective.html",
       "target": "/wiki/web3.html",
       "score": 79,
       "weight": 0.79
@@ -7225,6 +7213,12 @@
       "target": "/wiki/street-kingdoms.html",
       "score": 78,
       "weight": 0.78
+    },
+    {
+      "source": "/wiki/forkborn-collective.html",
+      "target": "/wiki/gang-signs-card-game.html",
+      "score": 77,
+      "weight": 0.77
     },
     {
       "source": "/wiki/forklord-you.html",
@@ -7288,6 +7282,12 @@
     },
     {
       "source": "/wiki/games4punks-telegram.html",
+      "target": "/wiki/dream-sovereign.html",
+      "score": 72,
+      "weight": 0.72
+    },
+    {
+      "source": "/wiki/games4punks-telegram.html",
       "target": "/wiki/head-tags.html",
       "score": 53,
       "weight": 0.53
@@ -7324,12 +7324,6 @@
     },
     {
       "source": "/wiki/gang-signs-card-game.html",
-      "target": "/wiki/phygital-prints.html",
-      "score": 78,
-      "weight": 0.78
-    },
-    {
-      "source": "/wiki/gang-signs-card-game.html",
       "target": "/wiki/ethereum.html",
       "score": 76,
       "weight": 0.76
@@ -7339,6 +7333,12 @@
       "target": "/wiki/web3.html",
       "score": 76,
       "weight": 0.76
+    },
+    {
+      "source": "/wiki/gang-signs-card-game.html",
+      "target": "/wiki/delicious-again-pete.html",
+      "score": 75,
+      "weight": 0.75
     },
     {
       "source": "/wiki/gang-signs.html",
@@ -7354,6 +7354,12 @@
     },
     {
       "source": "/wiki/gang-signs.html",
+      "target": "/wiki/dream-sovereign.html",
+      "score": 50,
+      "weight": 0.5
+    },
+    {
+      "source": "/wiki/gang-signs.html",
       "target": "/wiki/graffpunks.html",
       "score": 44,
       "weight": 0.44
@@ -7361,12 +7367,6 @@
     {
       "source": "/wiki/gang-signs.html",
       "target": "/wiki/hard-fork-games.html",
-      "score": 42,
-      "weight": 0.42
-    },
-    {
-      "source": "/wiki/gang-signs.html",
-      "target": "/wiki/hodl-wars.html",
       "score": 42,
       "weight": 0.42
     },
@@ -7480,15 +7480,15 @@
     },
     {
       "source": "/wiki/gk.html",
-      "target": "/wiki/phygital-prints.html",
+      "target": "/wiki/street-kingdoms.html",
       "score": 75,
       "weight": 0.75
     },
     {
       "source": "/wiki/gk.html",
-      "target": "/wiki/street-kingdoms.html",
-      "score": 75,
-      "weight": 0.75
+      "target": "/wiki/2025-metaverse-launch-party.html",
+      "score": 74,
+      "weight": 0.74
     },
     {
       "source": "/wiki/gkniftyheads-alessandro-anonymity-advocate-amato-783445.html",
@@ -12160,15 +12160,15 @@
     },
     {
       "source": "/wiki/harrison-rift.html",
-      "target": "/wiki/sneakar.html",
+      "target": "/wiki/spirit-borns.html",
       "score": 74,
       "weight": 0.74
     },
     {
       "source": "/wiki/harrison-rift.html",
-      "target": "/wiki/spirit-borns.html",
-      "score": 74,
-      "weight": 0.74
+      "target": "/wiki/atomichub.html",
+      "score": 73,
+      "weight": 0.73
     },
     {
       "source": "/wiki/head-tags.html",
@@ -12190,15 +12190,15 @@
     },
     {
       "source": "/wiki/head-tags.html",
-      "target": "/wiki/graffpunks.html",
-      "score": 41,
-      "weight": 0.41
+      "target": "/wiki/dream-sovereign.html",
+      "score": 53,
+      "weight": 0.53
     },
     {
       "source": "/wiki/head-tags.html",
-      "target": "/wiki/gkniftyheads-mr-cheo-boom-head-776121.html",
-      "score": 40,
-      "weight": 0.4
+      "target": "/wiki/graffpunks.html",
+      "score": 41,
+      "weight": 0.41
     },
     {
       "source": "/wiki/hex-tagger-prime.html",
@@ -12400,12 +12400,6 @@
     },
     {
       "source": "/wiki/jillian-godsil.html",
-      "target": "/wiki/sneakar.html",
-      "score": 77,
-      "weight": 0.77
-    },
-    {
-      "source": "/wiki/jillian-godsil.html",
       "target": "/wiki/spirit-borns.html",
       "score": 77,
       "weight": 0.77
@@ -12413,6 +12407,12 @@
     {
       "source": "/wiki/jillian-godsil.html",
       "target": "/wiki/moon-mission.html",
+      "score": 76,
+      "weight": 0.76
+    },
+    {
+      "source": "/wiki/jillian-godsil.html",
+      "target": "/wiki/neftyblocks.html",
       "score": 76,
       "weight": 0.76
     },
@@ -12610,12 +12610,6 @@
     },
     {
       "source": "/wiki/maidstone-base.html",
-      "target": "/wiki/sneakar.html",
-      "score": 77,
-      "weight": 0.77
-    },
-    {
-      "source": "/wiki/maidstone-base.html",
       "target": "/wiki/spirit-borns.html",
       "score": 77,
       "weight": 0.77
@@ -12623,6 +12617,12 @@
     {
       "source": "/wiki/maidstone-base.html",
       "target": "/wiki/moon-mission.html",
+      "score": 76,
+      "weight": 0.76
+    },
+    {
+      "source": "/wiki/maidstone-base.html",
+      "target": "/wiki/neftyblocks.html",
       "score": 76,
       "weight": 0.76
     },
@@ -12670,12 +12670,6 @@
     },
     {
       "source": "/wiki/metaverse-battles.html",
-      "target": "/wiki/phygital-prints.html",
-      "score": 78,
-      "weight": 0.78
-    },
-    {
-      "source": "/wiki/metaverse-battles.html",
       "target": "/wiki/delicious-again-pete.html",
       "score": 75,
       "weight": 0.75
@@ -12683,6 +12677,12 @@
     {
       "source": "/wiki/metaverse-battles.html",
       "target": "/wiki/forkborn-collective.html",
+      "score": 75,
+      "weight": 0.75
+    },
+    {
+      "source": "/wiki/metaverse-battles.html",
+      "target": "/wiki/gk.html",
       "score": 75,
       "weight": 0.75
     },
@@ -12880,12 +12880,6 @@
     },
     {
       "source": "/wiki/neftyblocks.html",
-      "target": "/wiki/sneakar.html",
-      "score": 77,
-      "weight": 0.77
-    },
-    {
-      "source": "/wiki/neftyblocks.html",
       "target": "/wiki/spirit-borns.html",
       "score": 77,
       "weight": 0.77
@@ -12893,6 +12887,12 @@
     {
       "source": "/wiki/neftyblocks.html",
       "target": "/wiki/moon-mission.html",
+      "score": 76,
+      "weight": 0.76
+    },
+    {
+      "source": "/wiki/neftyblocks.html",
+      "target": "/wiki/web3.html",
       "score": 76,
       "weight": 0.76
     },
@@ -12916,15 +12916,15 @@
     },
     {
       "source": "/wiki/nfthive.html",
-      "target": "/wiki/sneakar.html",
+      "target": "/wiki/spirit-borns.html",
       "score": 77,
       "weight": 0.77
     },
     {
       "source": "/wiki/nfthive.html",
-      "target": "/wiki/spirit-borns.html",
-      "score": 77,
-      "weight": 0.77
+      "target": "/wiki/moon-mission.html",
+      "score": 76,
+      "weight": 0.76
     },
     {
       "source": "/wiki/nfts.html",
@@ -13012,7 +13012,7 @@
     },
     {
       "source": "/wiki/nifty-crowns.html",
-      "target": "/wiki/sneakar.html",
+      "target": "/wiki/spirit-borns.html",
       "score": 74,
       "weight": 0.74
     },
@@ -13168,33 +13168,33 @@
     },
     {
       "source": "/wiki/phygital-prints.html",
-      "target": "/wiki/pmsl.html",
-      "score": 91,
-      "weight": 0.91
-    },
-    {
-      "source": "/wiki/phygital-prints.html",
-      "target": "/wiki/forkborn-collective.html",
-      "score": 81,
-      "weight": 0.81
-    },
-    {
-      "source": "/wiki/phygital-prints.html",
-      "target": "/wiki/web3.html",
-      "score": 79,
-      "weight": 0.79
-    },
-    {
-      "source": "/wiki/phygital-prints.html",
-      "target": "/wiki/delicious-again-pete.html",
+      "target": "/wiki/gkniftyheads-nft-collection.html",
       "score": 78,
       "weight": 0.78
     },
     {
       "source": "/wiki/phygital-prints.html",
-      "target": "/wiki/street-kingdoms.html",
-      "score": 78,
-      "weight": 0.78
+      "target": "/wiki/sneakar.html",
+      "score": 75,
+      "weight": 0.75
+    },
+    {
+      "source": "/wiki/phygital-prints.html",
+      "target": "/wiki/gkniftyheads-louie-hay-you-guys-lupo-783389.html",
+      "score": 62,
+      "weight": 0.62
+    },
+    {
+      "source": "/wiki/phygital-prints.html",
+      "target": "/wiki/gkniftyheads-alessandro-token-titan-marini-783461.html",
+      "score": 57,
+      "weight": 0.57
+    },
+    {
+      "source": "/wiki/phygital-prints.html",
+      "target": "/wiki/gkniftyheads-matteo-cryptocurrency-connoisseur-de-angelis-783457.html",
+      "score": 57,
+      "weight": 0.57
     },
     {
       "source": "/wiki/pixel-journey.html",
@@ -13264,12 +13264,6 @@
     },
     {
       "source": "/wiki/playable-nft-murals.html",
-      "target": "/wiki/phygital-prints.html",
-      "score": 75,
-      "weight": 0.75
-    },
-    {
-      "source": "/wiki/playable-nft-murals.html",
       "target": "/wiki/midevilpunks.html",
       "score": 73,
       "weight": 0.73
@@ -13283,6 +13277,12 @@
     {
       "source": "/wiki/playable-nft-murals.html",
       "target": "/wiki/stikfamwars.html",
+      "score": 72,
+      "weight": 0.72
+    },
+    {
+      "source": "/wiki/playable-nft-murals.html",
+      "target": "/wiki/wax-nft-marketplaces.html",
       "score": 72,
       "weight": 0.72
     },
@@ -13324,12 +13324,6 @@
     },
     {
       "source": "/wiki/pmsl.html",
-      "target": "/wiki/sneakar.html",
-      "score": 74,
-      "weight": 0.74
-    },
-    {
-      "source": "/wiki/pmsl.html",
       "target": "/wiki/spirit-borns.html",
       "score": 74,
       "weight": 0.74
@@ -13343,6 +13337,12 @@
     {
       "source": "/wiki/pmsl.html",
       "target": "/wiki/neftyblocks.html",
+      "score": 73,
+      "weight": 0.73
+    },
+    {
+      "source": "/wiki/pmsl.html",
+      "target": "/wiki/web3.html",
       "score": 73,
       "weight": 0.73
     },
@@ -13570,12 +13570,6 @@
     },
     {
       "source": "/wiki/rust2riches.html",
-      "target": "/wiki/sneakar.html",
-      "score": 77,
-      "weight": 0.77
-    },
-    {
-      "source": "/wiki/rust2riches.html",
       "target": "/wiki/spirit-borns.html",
       "score": 77,
       "weight": 0.77
@@ -13583,6 +13577,12 @@
     {
       "source": "/wiki/rust2riches.html",
       "target": "/wiki/moon-mission.html",
+      "score": 76,
+      "weight": 0.76
+    },
+    {
+      "source": "/wiki/rust2riches.html",
+      "target": "/wiki/neftyblocks.html",
       "score": 76,
       "weight": 0.76
     },
@@ -13768,33 +13768,33 @@
     },
     {
       "source": "/wiki/sneakar.html",
-      "target": "/wiki/pmsl.html",
-      "score": 91,
-      "weight": 0.91
-    },
-    {
-      "source": "/wiki/sneakar.html",
-      "target": "/wiki/street-kingdoms.html",
+      "target": "/wiki/gkniftyheads-nft-collection.html",
       "score": 78,
       "weight": 0.78
     },
     {
       "source": "/wiki/sneakar.html",
-      "target": "/wiki/spirit-borns.html",
-      "score": 77,
-      "weight": 0.77
+      "target": "/wiki/phygital-prints.html",
+      "score": 75,
+      "weight": 0.75
     },
     {
       "source": "/wiki/sneakar.html",
-      "target": "/wiki/moon-mission.html",
-      "score": 76,
-      "weight": 0.76
+      "target": "/wiki/gkniftyheads-louie-hay-you-guys-lupo-783389.html",
+      "score": 62,
+      "weight": 0.62
     },
     {
       "source": "/wiki/sneakar.html",
-      "target": "/wiki/neftyblocks.html",
-      "score": 76,
-      "weight": 0.76
+      "target": "/wiki/gkniftyheads-alessandro-token-titan-marini-783461.html",
+      "score": 57,
+      "weight": 0.57
+    },
+    {
+      "source": "/wiki/sneakar.html",
+      "target": "/wiki/gkniftyheads-matteo-cryptocurrency-connoisseur-de-angelis-783457.html",
+      "score": 57,
+      "weight": 0.57
     },
     {
       "source": "/wiki/snipey-d-man-sirus.html",
@@ -13876,13 +13876,13 @@
     },
     {
       "source": "/wiki/spirit-borns.html",
-      "target": "/wiki/sneakar.html",
-      "score": 77,
-      "weight": 0.77
+      "target": "/wiki/moon-mission.html",
+      "score": 76,
+      "weight": 0.76
     },
     {
       "source": "/wiki/spirit-borns.html",
-      "target": "/wiki/moon-mission.html",
+      "target": "/wiki/neftyblocks.html",
       "score": 76,
       "weight": 0.76
     },
@@ -13942,7 +13942,7 @@
     },
     {
       "source": "/wiki/squeaky-pinks-enforcers.html",
-      "target": "/wiki/phygital-prints.html",
+      "target": "/wiki/street-kingdoms.html",
       "score": 75,
       "weight": 0.75
     },
@@ -14026,27 +14026,21 @@
     },
     {
       "source": "/wiki/storm-struggle.html",
-      "target": "/wiki/sneakar.html",
+      "target": "/wiki/spirit-borns.html",
       "score": 74,
       "weight": 0.74
     },
     {
       "source": "/wiki/storm-struggle.html",
-      "target": "/wiki/spirit-borns.html",
-      "score": 74,
-      "weight": 0.74
+      "target": "/wiki/atomichub.html",
+      "score": 73,
+      "weight": 0.73
     },
     {
       "source": "/wiki/street-kingdoms.html",
       "target": "/wiki/pmsl.html",
       "score": 91,
       "weight": 0.91
-    },
-    {
-      "source": "/wiki/street-kingdoms.html",
-      "target": "/wiki/sneakar.html",
-      "score": 77,
-      "weight": 0.77
     },
     {
       "source": "/wiki/street-kingdoms.html",
@@ -14063,6 +14057,12 @@
     {
       "source": "/wiki/street-kingdoms.html",
       "target": "/wiki/neftyblocks.html",
+      "score": 76,
+      "weight": 0.76
+    },
+    {
+      "source": "/wiki/street-kingdoms.html",
+      "target": "/wiki/web3.html",
       "score": 76,
       "weight": 0.76
     },
@@ -14110,12 +14110,6 @@
     },
     {
       "source": "/wiki/tacoswap.html",
-      "target": "/wiki/sneakar.html",
-      "score": 77,
-      "weight": 0.77
-    },
-    {
-      "source": "/wiki/tacoswap.html",
       "target": "/wiki/spirit-borns.html",
       "score": 77,
       "weight": 0.77
@@ -14123,6 +14117,12 @@
     {
       "source": "/wiki/tacoswap.html",
       "target": "/wiki/moon-mission.html",
+      "score": 76,
+      "weight": 0.76
+    },
+    {
+      "source": "/wiki/tacoswap.html",
+      "target": "/wiki/neftyblocks.html",
       "score": 76,
       "weight": 0.76
     },
@@ -14140,12 +14140,6 @@
     },
     {
       "source": "/wiki/tagzcoin.html",
-      "target": "/wiki/sneakar.html",
-      "score": 77,
-      "weight": 0.77
-    },
-    {
-      "source": "/wiki/tagzcoin.html",
       "target": "/wiki/spirit-borns.html",
       "score": 77,
       "weight": 0.77
@@ -14153,6 +14147,12 @@
     {
       "source": "/wiki/tagzcoin.html",
       "target": "/wiki/moon-mission.html",
+      "score": 76,
+      "weight": 0.76
+    },
+    {
+      "source": "/wiki/tagzcoin.html",
+      "target": "/wiki/neftyblocks.html",
       "score": 76,
       "weight": 0.76
     },
@@ -15520,12 +15520,6 @@
     },
     {
       "source": "/wiki/wuffi.html",
-      "target": "/wiki/sneakar.html",
-      "score": 77,
-      "weight": 0.77
-    },
-    {
-      "source": "/wiki/wuffi.html",
       "target": "/wiki/spirit-borns.html",
       "score": 77,
       "weight": 0.77
@@ -15537,34 +15531,40 @@
       "weight": 0.76
     },
     {
-      "source": "/wiki/xrp-kids.html",
-      "target": "/wiki/bitcoin-kids.html",
-      "score": 87,
-      "weight": 0.87
+      "source": "/wiki/wuffi.html",
+      "target": "/wiki/moon-mission.html",
+      "score": 76,
+      "weight": 0.76
     },
     {
       "source": "/wiki/xrp-kids.html",
-      "target": "/wiki/crypto-moonboys.html",
-      "score": 80,
-      "weight": 0.8
+      "target": "/wiki/gkniftyheads-nft-collection.html",
+      "score": 75,
+      "weight": 0.75
     },
     {
       "source": "/wiki/xrp-kids.html",
-      "target": "/wiki/bitcoin-x-kids.html",
-      "score": 79,
-      "weight": 0.79
+      "target": "/wiki/gkniftyheads-louie-hay-you-guys-lupo-783389.html",
+      "score": 65,
+      "weight": 0.65
     },
     {
       "source": "/wiki/xrp-kids.html",
-      "target": "/wiki/null-the-prophet.html",
-      "score": 79,
-      "weight": 0.79
+      "target": "/wiki/gkniftyheads-alessandro-token-titan-marini-783461.html",
+      "score": 60,
+      "weight": 0.6
     },
     {
       "source": "/wiki/xrp-kids.html",
-      "target": "/wiki/iris-7.html",
-      "score": 74,
-      "weight": 0.74
+      "target": "/wiki/gkniftyheads-matteo-cryptocurrency-connoisseur-de-angelis-783457.html",
+      "score": 60,
+      "weight": 0.6
+    },
+    {
+      "source": "/wiki/xrp-kids.html",
+      "target": "/wiki/gkniftyheads-alessandro-anonymity-advocate-amato-783445.html",
+      "score": 59,
+      "weight": 0.59
     },
     {
       "source": "/wiki/xrp-ledger.html",
@@ -15586,15 +15586,15 @@
     },
     {
       "source": "/wiki/xrp-ledger.html",
-      "target": "/wiki/sneakar.html",
+      "target": "/wiki/spirit-borns.html",
       "score": 74,
       "weight": 0.74
     },
     {
       "source": "/wiki/xrp-ledger.html",
-      "target": "/wiki/spirit-borns.html",
-      "score": 74,
-      "weight": 0.74
+      "target": "/wiki/atomichub.html",
+      "score": 73,
+      "weight": 0.73
     }
   ]
 }

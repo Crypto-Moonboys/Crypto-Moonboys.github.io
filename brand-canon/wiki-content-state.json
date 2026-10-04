@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "generator": "scripts/generate-wiki-content-state.mjs",
-  "source_tree_hash": "sha256:b74f6773cec4db3e0887a22752c28e22888ac9760c23ff1e525cc689a62adf89",
+  "source_tree_hash": "sha256:8661cac701066df522a4ed59795d244ee197b80377b3e27d24050f790632d301",
   "hash_algorithm": "sha256",
   "page_count": 415,
   "manifest_entry_count": 415,
@@ -93,10 +93,10 @@
     "total_manifest_entries": 415,
     "absent_stub_authorizations": 0,
     "rewrite_status_counts": {
-      "KEEP": 120,
+      "KEEP": 124,
       "REWRITE_FULL": 0,
       "RECONCILE": 16,
-      "DEDUPE": 10,
+      "DEDUPE": 6,
       "EXPAND": 0,
       "ARCHIVE_STYLE": 6,
       "GENERATED": 6,
@@ -105,17 +105,17 @@
       "NEEDS_HUMAN_REVIEW": 16
     },
     "automation_policy_counts": {
-      "metadata-only": 251,
+      "metadata-only": 247,
       "replace-sam-block": 0,
-      "canon-locked": 162,
+      "canon-locked": 166,
       "stub-allowed": 2
     },
     "pages_with_multiple_sam_blocks": 0,
     "pages_with_multiple_canonical_blocks": 0,
-    "pages_with_legacy_unmarked_content": 88,
+    "pages_with_legacy_unmarked_content": 84,
     "pages_with_exact_duplicate_paragraphs": 142,
     "pages_with_duplicate_headings": 1,
-    "pages_with_likely_near_duplicate_sections": 14,
+    "pages_with_likely_near_duplicate_sections": 10,
     "pages_with_legacy_sam_article_wrapper": 180
   },
   "pages": [
@@ -1888,266 +1888,43 @@
     {
       "path": "wiki/dream-sovereign.html",
       "slug": "dream-sovereign",
-      "title": "dream_sovereign",
+      "title": "Dream Sovereign",
       "page_exists": true,
       "page_type": "project_or_reference",
-      "current_word_count": 1258,
+      "current_word_count": 2078,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
-      "canonical_content_block_count": 0,
+      "canonical_content_block_count": 1,
       "legacy_sam_article_wrapper": true,
-      "legacy_unmarked_content": true,
+      "legacy_unmarked_content": false,
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
-      "likely_near_duplicate_sections": [
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 10,
-          "second_paragraph": 15,
-          "similarity": 0.906,
-          "shared_token_count": 29
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 14,
-          "second_paragraph": 16,
-          "similarity": 0.853,
-          "shared_token_count": 29
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 14,
-          "second_paragraph": 18,
-          "similarity": 0.765,
-          "shared_token_count": 26
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 15,
-          "second_paragraph": 21,
-          "similarity": 0.757,
-          "shared_token_count": 28
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 16,
-          "second_paragraph": 18,
-          "similarity": 0.897,
-          "shared_token_count": 26
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 2,
-          "second_paragraph": 4,
-          "similarity": 0.848,
-          "shared_token_count": 28
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 2,
-          "second_paragraph": 7,
-          "similarity": 0.933,
-          "shared_token_count": 28
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 2,
-          "second_paragraph": 9,
-          "similarity": 0.875,
-          "shared_token_count": 28
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 2,
-          "second_paragraph": 14,
-          "similarity": 0.824,
-          "shared_token_count": 28
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 2,
-          "second_paragraph": 16,
-          "similarity": 0.966,
-          "shared_token_count": 28
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 2,
-          "second_paragraph": 18,
-          "similarity": 0.862,
-          "shared_token_count": 25
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 3,
-          "second_paragraph": 5,
-          "similarity": 0.833,
-          "shared_token_count": 25
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 3,
-          "second_paragraph": 10,
-          "similarity": 0.806,
-          "shared_token_count": 25
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 3,
-          "second_paragraph": 15,
-          "similarity": 0.833,
-          "shared_token_count": 25
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 4,
-          "second_paragraph": 7,
-          "similarity": 0.853,
-          "shared_token_count": 29
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 4,
-          "second_paragraph": 9,
-          "similarity": 0.857,
-          "shared_token_count": 30
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 4,
-          "second_paragraph": 14,
-          "similarity": 0.763,
-          "shared_token_count": 29
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 4,
-          "second_paragraph": 16,
-          "similarity": 0.824,
-          "shared_token_count": 28
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 4,
-          "second_paragraph": 18,
-          "similarity": 0.735,
-          "shared_token_count": 25
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 5,
-          "second_paragraph": 10,
-          "similarity": 0.968,
-          "shared_token_count": 30
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 5,
-          "second_paragraph": 15,
-          "similarity": 0.875,
-          "shared_token_count": 28
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 7,
-          "second_paragraph": 9,
-          "similarity": 0.879,
-          "shared_token_count": 29
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 7,
-          "second_paragraph": 14,
-          "similarity": 0.829,
-          "shared_token_count": 29
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 7,
-          "second_paragraph": 16,
-          "similarity": 0.967,
-          "shared_token_count": 29
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 7,
-          "second_paragraph": 18,
-          "similarity": 0.867,
-          "shared_token_count": 26
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 9,
-          "second_paragraph": 14,
-          "similarity": 0.784,
-          "shared_token_count": 29
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 9,
-          "second_paragraph": 16,
-          "similarity": 0.848,
-          "shared_token_count": 28
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 9,
-          "second_paragraph": 18,
-          "similarity": 0.758,
-          "shared_token_count": 25
-        }
-      ],
-      "content_hash": "sha256:472a7e2f858be80726b3caaf1d9e0be6086abcffaf88405adf04d6cb490bbfa0",
-      "article_content_hash": "sha256:1b2a15ed6771529189a86f6f0b749dfc155555c9593aef2c98517944bab7ab94",
-      "article_markup_hash": "sha256:ab52069170a416ae2074de3a14c1bb21af642c7ab0c798c426e9b0d64f18be7d",
-      "git_blob_oid": "2858f6220938eeeb2d01b2404e1e25805444332e",
+      "likely_near_duplicate_sections": [],
+      "content_hash": "sha256:97c7b942d7430b1a70b1ca8443ec0605cc0bb6e73af5751ad9dbec24445fa477",
+      "article_content_hash": "sha256:1f17138533daee7b97c4c4b57df086f1a57fe4332d173962a6cd1f765fcdda40",
+      "article_markup_hash": "sha256:c9b19886e1192253670b3db906a4d8e57d632d8dff8819ddd80e1279f5671dd6",
+      "git_blob_oid": "9fb74024c3f0ef7c8f554b626a48c94cb88d6e4e",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
       "likely_lore_page": false,
-      "rewrite_status": "DEDUPE",
-      "automation_policy": "metadata-only",
+      "rewrite_status": "KEEP",
+      "automation_policy": "canon-locked",
       "rewrite_cluster": "Generated/non-lore pages",
-      "duplicate_severity": "HIGH",
-      "canon_conflict_severity": "LOW",
-      "recommended_action": "Review the reported duplication during the later canon rewrite.",
-      "suggested_priority": "P1",
+      "duplicate_severity": "NONE",
+      "canon_conflict_severity": "NONE",
+      "recommended_action": "Preserve the completed canon revision; automated article prose is locked.",
+      "suggested_priority": "P4",
       "likely_source_family": [
         "Existing public/reference source verification"
       ],
       "audit_notes": [
-        "Substantive article content has no MANUAL_CONTENT, SAM_CONTENT, or CANONICAL_CONTENT ownership markers.",
-        "Legacy SAM:BEGIN:article shell marker is provenance evidence, not a current SAM_CONTENT ownership block.",
-        "28 likely near-duplicate section pair(s) reported; no text was removed."
-      ]
+        "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "No article-ownership or duplication issue detected by the deterministic audit."
+      ],
+      "content_owner": "canon",
+      "canon_revision": 1,
+      "canon_source_tier": "first-witness+w81"
     },
     {
       "path": "wiki/elder-codex-7.html",
@@ -13649,63 +13426,40 @@
       "title": "Phygital Prints",
       "page_exists": true,
       "page_type": "project_or_reference",
-      "current_word_count": 553,
+      "current_word_count": 2227,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
-      "canonical_content_block_count": 0,
+      "canonical_content_block_count": 1,
       "legacy_sam_article_wrapper": false,
-      "legacy_unmarked_content": true,
+      "legacy_unmarked_content": false,
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
-      "likely_near_duplicate_sections": [
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 2,
-          "second_paragraph": 5,
-          "similarity": 0.923,
-          "shared_token_count": 12
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 3,
-          "second_paragraph": 6,
-          "similarity": 0.857,
-          "shared_token_count": 12
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 4,
-          "second_paragraph": 7,
-          "similarity": 0.857,
-          "shared_token_count": 12
-        }
-      ],
-      "content_hash": "sha256:e5c739eb109782555bbab0e02bd41aac29b28dc647b243df6f9cab54dc5cb08c",
-      "article_content_hash": "sha256:be5324d482580e43aaffda6519931412698a6dc3154a8973bdf9d7ab488f64ee",
-      "article_markup_hash": "sha256:6bb4afcdede66ae5d0a04a2169f13fcd167225944960db458ea69dc042a264ec",
-      "git_blob_oid": "5ecfc29c2f77f1354013701e79594122cbc0a9ac",
+      "likely_near_duplicate_sections": [],
+      "content_hash": "sha256:4f9250d739901d7a7d01c2aad21eaa3f1ce1d606f051210d167dd12ed75cfddd",
+      "article_content_hash": "sha256:b8b41e6fa69299ffce4a96a822a031ee7f21666ba87d748597e9959e479aa372",
+      "article_markup_hash": "sha256:8642dcc2759637d940584d6774a0bd1b2418c112bb5ed0c32b1d9d145f125a8d",
+      "git_blob_oid": "771afe15bd1974d2c87894c86f19d6b8dab4a02b",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
       "likely_lore_page": false,
-      "rewrite_status": "DEDUPE",
-      "automation_policy": "metadata-only",
+      "rewrite_status": "KEEP",
+      "automation_policy": "canon-locked",
       "rewrite_cluster": "Generated/non-lore pages",
-      "duplicate_severity": "HIGH",
-      "canon_conflict_severity": "LOW",
-      "recommended_action": "Review the reported duplication during the later canon rewrite.",
-      "suggested_priority": "P1",
+      "duplicate_severity": "NONE",
+      "canon_conflict_severity": "NONE",
+      "recommended_action": "Preserve the completed canon revision; automated article prose is locked.",
+      "suggested_priority": "P4",
       "likely_source_family": [
         "wiki/bibles/phygital-prints.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Substantive article content has no MANUAL_CONTENT, SAM_CONTENT, or CANONICAL_CONTENT ownership markers.",
-        "Specialist archive record found at wiki/bibles/phygital-prints.json; it is not automatically the unavailable Tier 4 modern bible.",
-        "3 likely near-duplicate section pair(s) reported; no text was removed."
-      ]
+        "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Specialist archive record found at wiki/bibles/phygital-prints.json; it is not automatically the unavailable Tier 4 modern bible."
+      ],
+      "content_owner": "canon",
+      "canon_revision": 1,
+      "canon_source_tier": "first-witness+w81"
     },
     {
       "path": "wiki/pixel-journey.html",
@@ -14531,210 +14285,43 @@
     {
       "path": "wiki/sneakar.html",
       "slug": "sneakar",
-      "title": "sneakar",
+      "title": "SNEAKAR",
       "page_exists": true,
       "page_type": "project_or_reference",
-      "current_word_count": 2540,
+      "current_word_count": 2180,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
-      "canonical_content_block_count": 0,
+      "canonical_content_block_count": 1,
       "legacy_sam_article_wrapper": true,
-      "legacy_unmarked_content": true,
+      "legacy_unmarked_content": false,
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
-      "likely_near_duplicate_sections": [
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 15,
-          "second_paragraph": 32,
-          "similarity": 0.769,
-          "shared_token_count": 30
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 16,
-          "second_paragraph": 19,
-          "similarity": 0.833,
-          "shared_token_count": 25
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 16,
-          "second_paragraph": 24,
-          "similarity": 0.926,
-          "shared_token_count": 25
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 18,
-          "second_paragraph": 22,
-          "similarity": 0.781,
-          "shared_token_count": 25
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 19,
-          "second_paragraph": 24,
-          "similarity": 0.897,
-          "shared_token_count": 26
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 20,
-          "second_paragraph": 22,
-          "similarity": 0.758,
-          "shared_token_count": 25
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 20,
-          "second_paragraph": 27,
-          "similarity": 0.781,
-          "shared_token_count": 25
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 20,
-          "second_paragraph": 29,
-          "similarity": 0.897,
-          "shared_token_count": 26
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 20,
-          "second_paragraph": 32,
-          "similarity": 0.743,
-          "shared_token_count": 26
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 20,
-          "second_paragraph": 35,
-          "similarity": 0.742,
-          "shared_token_count": 23
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 21,
-          "second_paragraph": 23,
-          "similarity": 0.727,
-          "shared_token_count": 24
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 21,
-          "second_paragraph": 36,
-          "similarity": 0.742,
-          "shared_token_count": 23
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 22,
-          "second_paragraph": 27,
-          "similarity": 0.839,
-          "shared_token_count": 26
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 22,
-          "second_paragraph": 29,
-          "similarity": 0.833,
-          "shared_token_count": 25
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 23,
-          "second_paragraph": 36,
-          "similarity": 0.9,
-          "shared_token_count": 27
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 24,
-          "second_paragraph": 34,
-          "similarity": 0.742,
-          "shared_token_count": 23
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 25,
-          "second_paragraph": 27,
-          "similarity": 0.742,
-          "shared_token_count": 23
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 25,
-          "second_paragraph": 29,
-          "similarity": 0.733,
-          "shared_token_count": 22
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 25,
-          "second_paragraph": 35,
-          "similarity": 0.821,
-          "shared_token_count": 23
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 27,
-          "second_paragraph": 29,
-          "similarity": 0.862,
-          "shared_token_count": 25
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 29,
-          "second_paragraph": 35,
-          "similarity": 0.821,
-          "shared_token_count": 23
-        }
-      ],
-      "content_hash": "sha256:ea0a7ae7a7abdc47c358738b6857d88cc0df11cb956393bf12e7e8c407e073dd",
-      "article_content_hash": "sha256:219c61a68e8f39c54bcaf361aecdc1010c016fc22f981831d9617559f8ef66ef",
-      "article_markup_hash": "sha256:c9dfa9a3961b8f2d86fa29273e52e0b186ed7f6518437875f60bc0278a6572b9",
-      "git_blob_oid": "2be6f12a60aae8353d95501d9fe855aa743ae745",
+      "likely_near_duplicate_sections": [],
+      "content_hash": "sha256:84f0cde86fc021e3a7dbb69b1e0cd068029f96e2706e4ca88a8fb039ac29f867",
+      "article_content_hash": "sha256:7a4c7bad498bfd24482088e831fba5f937b0b5d5fc549c329b685df67cd405a6",
+      "article_markup_hash": "sha256:db8d2adf1825e5d83b1d8f176c4b66f8459964debbe76946f05624bead9ba569",
+      "git_blob_oid": "60a3aa6634628655ec6c544a65babe60072b8f0d",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
       "likely_lore_page": false,
-      "rewrite_status": "DEDUPE",
-      "automation_policy": "metadata-only",
+      "rewrite_status": "KEEP",
+      "automation_policy": "canon-locked",
       "rewrite_cluster": "Generated/non-lore pages",
-      "duplicate_severity": "HIGH",
-      "canon_conflict_severity": "LOW",
-      "recommended_action": "Review the reported duplication during the later canon rewrite.",
-      "suggested_priority": "P1",
+      "duplicate_severity": "NONE",
+      "canon_conflict_severity": "NONE",
+      "recommended_action": "Preserve the completed canon revision; automated article prose is locked.",
+      "suggested_priority": "P4",
       "likely_source_family": [
         "Existing public/reference source verification"
       ],
       "audit_notes": [
-        "Substantive article content has no MANUAL_CONTENT, SAM_CONTENT, or CANONICAL_CONTENT ownership markers.",
-        "Legacy SAM:BEGIN:article shell marker is provenance evidence, not a current SAM_CONTENT ownership block.",
-        "21 likely near-duplicate section pair(s) reported; no text was removed."
-      ]
+        "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "No article-ownership or duplication issue detected by the deterministic audit."
+      ],
+      "content_owner": "canon",
+      "canon_revision": 1,
+      "canon_source_tier": "first-witness+w81"
     },
     {
       "path": "wiki/snipey-d-man-sirus.html",
@@ -17235,435 +16822,43 @@
     {
       "path": "wiki/xrp-kids.html",
       "slug": "xrp-kids",
-      "title": "xrp_kids",
+      "title": "XRP Kids",
       "page_exists": true,
       "page_type": "project_or_reference",
-      "current_word_count": 4737,
+      "current_word_count": 2377,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
-      "canonical_content_block_count": 0,
+      "canonical_content_block_count": 1,
       "legacy_sam_article_wrapper": true,
-      "legacy_unmarked_content": true,
+      "legacy_unmarked_content": false,
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
-      "likely_near_duplicate_sections": [
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 31,
-          "second_paragraph": 34,
-          "similarity": 0.75,
-          "shared_token_count": 33
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 31,
-          "second_paragraph": 37,
-          "similarity": 0.767,
-          "shared_token_count": 33
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 31,
-          "second_paragraph": 41,
-          "similarity": 0.821,
-          "shared_token_count": 32
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 31,
-          "second_paragraph": 47,
-          "similarity": 0.75,
-          "shared_token_count": 33
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 31,
-          "second_paragraph": 51,
-          "similarity": 0.829,
-          "shared_token_count": 34
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 31,
-          "second_paragraph": 56,
-          "similarity": 0.75,
-          "shared_token_count": 33
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 32,
-          "second_paragraph": 35,
-          "similarity": 0.938,
-          "shared_token_count": 30
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 32,
-          "second_paragraph": 38,
-          "similarity": 0.938,
-          "shared_token_count": 30
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 32,
-          "second_paragraph": 42,
-          "similarity": 0.839,
-          "shared_token_count": 26
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 32,
-          "second_paragraph": 46,
-          "similarity": 0.882,
-          "shared_token_count": 30
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 32,
-          "second_paragraph": 48,
-          "similarity": 0.906,
-          "shared_token_count": 29
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 32,
-          "second_paragraph": 52,
-          "similarity": 0.844,
-          "shared_token_count": 27
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 32,
-          "second_paragraph": 57,
-          "similarity": 0.829,
-          "shared_token_count": 29
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 34,
-          "second_paragraph": 37,
-          "similarity": 0.786,
-          "shared_token_count": 33
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 34,
-          "second_paragraph": 41,
-          "similarity": 0.842,
-          "shared_token_count": 32
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 34,
-          "second_paragraph": 47,
-          "similarity": 0.767,
-          "shared_token_count": 33
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 34,
-          "second_paragraph": 51,
-          "similarity": 0.805,
-          "shared_token_count": 33
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 34,
-          "second_paragraph": 56,
-          "similarity": 0.767,
-          "shared_token_count": 33
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 35,
-          "second_paragraph": 38,
-          "similarity": 0.938,
-          "shared_token_count": 30
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 35,
-          "second_paragraph": 42,
-          "similarity": 0.839,
-          "shared_token_count": 26
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 35,
-          "second_paragraph": 46,
-          "similarity": 0.882,
-          "shared_token_count": 30
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 35,
-          "second_paragraph": 48,
-          "similarity": 0.906,
-          "shared_token_count": 29
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 35,
-          "second_paragraph": 52,
-          "similarity": 0.844,
-          "shared_token_count": 27
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 35,
-          "second_paragraph": 57,
-          "similarity": 0.829,
-          "shared_token_count": 29
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 37,
-          "second_paragraph": 41,
-          "similarity": 0.865,
-          "shared_token_count": 32
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 37,
-          "second_paragraph": 47,
-          "similarity": 0.875,
-          "shared_token_count": 35
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 37,
-          "second_paragraph": 51,
-          "similarity": 0.825,
-          "shared_token_count": 33
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 37,
-          "second_paragraph": 56,
-          "similarity": 0.786,
-          "shared_token_count": 33
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 38,
-          "second_paragraph": 42,
-          "similarity": 0.839,
-          "shared_token_count": 26
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 38,
-          "second_paragraph": 46,
-          "similarity": 0.939,
-          "shared_token_count": 31
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 38,
-          "second_paragraph": 48,
-          "similarity": 0.968,
-          "shared_token_count": 30
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 38,
-          "second_paragraph": 52,
-          "similarity": 0.844,
-          "shared_token_count": 27
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 38,
-          "second_paragraph": 57,
-          "similarity": 0.882,
-          "shared_token_count": 30
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 41,
-          "second_paragraph": 47,
-          "similarity": 0.842,
-          "shared_token_count": 32
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 41,
-          "second_paragraph": 51,
-          "similarity": 0.889,
-          "shared_token_count": 32
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 41,
-          "second_paragraph": 56,
-          "similarity": 0.842,
-          "shared_token_count": 32
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 42,
-          "second_paragraph": 46,
-          "similarity": 0.788,
-          "shared_token_count": 26
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 42,
-          "second_paragraph": 48,
-          "similarity": 0.867,
-          "shared_token_count": 26
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 42,
-          "second_paragraph": 52,
-          "similarity": 0.929,
-          "shared_token_count": 26
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 42,
-          "second_paragraph": 57,
-          "similarity": 0.788,
-          "shared_token_count": 26
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 46,
-          "second_paragraph": 48,
-          "similarity": 0.909,
-          "shared_token_count": 30
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 46,
-          "second_paragraph": 52,
-          "similarity": 0.794,
-          "shared_token_count": 27
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 46,
-          "second_paragraph": 57,
-          "similarity": 0.833,
-          "shared_token_count": 30
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 47,
-          "second_paragraph": 51,
-          "similarity": 0.805,
-          "shared_token_count": 33
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 47,
-          "second_paragraph": 56,
-          "similarity": 0.767,
-          "shared_token_count": 33
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 48,
-          "second_paragraph": 52,
-          "similarity": 0.813,
-          "shared_token_count": 26
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 48,
-          "second_paragraph": 57,
-          "similarity": 0.909,
-          "shared_token_count": 30
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 51,
-          "second_paragraph": 56,
-          "similarity": 0.805,
-          "shared_token_count": 33
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 52,
-          "second_paragraph": 57,
-          "similarity": 0.743,
-          "shared_token_count": 26
-        }
-      ],
-      "content_hash": "sha256:de8d673bcfed42607158dfd62a43cb0df757623cae0c674b99e313af9ac84c59",
-      "article_content_hash": "sha256:dfeb19a413aeabebb472b65b659de2e748f1bf86f41e4e795dfc05051db2bf0a",
-      "article_markup_hash": "sha256:d8539bb263ef6609e5a447ef8ceb771148adb0f4e205def6f5f9489f26d25af8",
-      "git_blob_oid": "4abf6f5db8766511a89e116d8ecf78118bfaaa33",
+      "likely_near_duplicate_sections": [],
+      "content_hash": "sha256:c6c01e1e5eaee85210823949e2bc7fce609fa55c4137b431e32615a007eddfcb",
+      "article_content_hash": "sha256:502a8f39b85c51f25c7e9089d8ca15cd742346aa1afa8f8b41965a6021a7ab93",
+      "article_markup_hash": "sha256:5adb140a5137d8f1350f50d9ec8fa70ed992e552e20446e0809a3c972fa741bd",
+      "git_blob_oid": "c2d9c74d383f5be1afc1ab72e46a133ce24c46ba",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
       "likely_lore_page": false,
-      "rewrite_status": "DEDUPE",
-      "automation_policy": "metadata-only",
+      "rewrite_status": "KEEP",
+      "automation_policy": "canon-locked",
       "rewrite_cluster": "Generated/non-lore pages",
-      "duplicate_severity": "HIGH",
-      "canon_conflict_severity": "LOW",
-      "recommended_action": "Review the reported duplication during the later canon rewrite.",
-      "suggested_priority": "P1",
+      "duplicate_severity": "NONE",
+      "canon_conflict_severity": "NONE",
+      "recommended_action": "Preserve the completed canon revision; automated article prose is locked.",
+      "suggested_priority": "P4",
       "likely_source_family": [
         "wiki/bibles/xrp-kids.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Substantive article content has no MANUAL_CONTENT, SAM_CONTENT, or CANONICAL_CONTENT ownership markers.",
-        "Legacy SAM:BEGIN:article shell marker is provenance evidence, not a current SAM_CONTENT ownership block.",
-        "Specialist archive record found at wiki/bibles/xrp-kids.json; it is not automatically the unavailable Tier 4 modern bible.",
-        "49 likely near-duplicate section pair(s) reported; no text was removed."
-      ]
+        "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Specialist archive record found at wiki/bibles/xrp-kids.json; it is not automatically the unavailable Tier 4 modern bible."
+      ],
+      "content_owner": "canon",
+      "canon_revision": 1,
+      "canon_source_tier": "first-witness+w81"
     },
     {
       "path": "wiki/xrp-ledger.html",

@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-04T13:57:39.974Z",
-  "verified_at": "2026-10-04T13:57:39.974Z",
+  "generated_at": "2026-10-04T14:01:08.568Z",
+  "verified_at": "2026-10-04T14:01:08.568Z",
   "lite": true,
   "nodes": [
     {
@@ -564,14 +564,6 @@
       "authority_score": 28
     },
     {
-      "id": "/wiki/blockchain.html",
-      "title": "Blockchain Technology",
-      "url": "/wiki/blockchain.html",
-      "category": "factions",
-      "rank_score": 295,
-      "authority_score": 30
-    },
-    {
       "id": "/wiki/burn-to-earn.html",
       "title": "Burn-to-Earn",
       "url": "/wiki/burn-to-earn.html",
@@ -602,6 +594,14 @@
       "category": "concepts",
       "rank_score": 294,
       "authority_score": 24
+    },
+    {
+      "id": "/wiki/blockchain.html",
+      "title": "Blockchain Technology",
+      "url": "/wiki/blockchain.html",
+      "category": "factions",
+      "rank_score": 293,
+      "authority_score": 30
     }
   ],
   "edges": [
