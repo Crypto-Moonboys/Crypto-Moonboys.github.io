@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Crypto wallets — software and hardware tools for storing private keys and managing cryptocurrency — Crypto Moonboys Wiki">
+  <meta name="description" content="Crypto wallets: signing, custody, recovery, hardware devices and account permissions, with practical limits and complete-address verification.">
   <meta name="robots" content="index, follow">
   <meta property="og:title" content="Crypto Wallets — Crypto Moonboys Wiki">
-  <meta property="og:description" content="Crypto wallets — software and hardware tools for storing private keys and managing cryptocurrency — Crypto Moonboys Wiki">
+  <meta property="og:description" content="Crypto wallets: signing, custody, recovery, hardware devices and account permissions, with practical limits and complete-address verification.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://cryptomoonboys.com/wiki/wallets.html">
   <meta property="og:image" content="https://cryptomoonboys.com/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png">
@@ -14,28 +14,28 @@
   <title>Crypto Wallets — Crypto Moonboys Wiki</title>
   <link rel="stylesheet" href="/css/wiki.css">
   <link rel="stylesheet" href="/css/battle-layer.css">
-<script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "Article",
-    "headline": "Crypto Wallets",
-    "description": "Crypto wallets — software and hardware tools for storing private keys and managing cryptocurrency — Crypto Moonboys Wiki",
-    "url": "https://cryptomoonboys.com/wiki/wallets.html",
-    "author": {
-      "@type": "Organization",
-      "name": "Crypto Moonboys"
-    },
-    "publisher": {
-      "@type": "Organization",
-      "name": "Crypto Moonboys",
-      "logo": {
-        "@type": "ImageObject",
-        "url": "https://cryptomoonboys.com/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png"
-      }
+<script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "Crypto Wallets",
+  "description": "Crypto wallets: signing, custody, recovery, hardware devices and account permissions, with practical limits and complete-address verification.",
+  "url": "https://cryptomoonboys.com/wiki/wallets.html",
+  "author": {
+    "@type": "Organization",
+    "name": "Crypto Moonboys"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Crypto Moonboys",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://cryptomoonboys.com/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png"
     }
   }
-  </script>
+}</script>
   <link rel="icon" type="image/png" href="/favicon.png">
+<meta name="wiki-search-terms" content="crypto wallets, recovery phrase, Bitcoin Qt, hardware wallets, multisignature, MPC, ERC-4337, full address verification">
+<style>.article-contents{padding:1rem;margin:1.4rem 0;border:1px solid currentColor;border-radius:.5rem}.article-contents summary{cursor:pointer;font-weight:700}.article-contents ol{padding-left:1.4rem}.wiki-content h2[id],.wiki-content h3[id]{scroll-margin-top:7rem}@media(max-width:1120px){.wiki-content h2[id],.wiki-content h3[id]{scroll-margin-top:18rem}}</style>
 </head>
 <body class="page-wiki page-standard-shell">
 <main id="content" role="main">
@@ -43,99 +43,68 @@
       <aside class="infobox" aria-label="Crypto Wallets quick facts"><div class="infobox-title">Crypto Wallets</div><div class="infobox-image"><span style="font-size:5rem" aria-label="Crypto Wallets">👛</span></div></aside>
       <h1 class="page-title">Crypto Wallets</h1>
       <div class="page-title-line" aria-hidden="true"></div>
-      <div class="article-meta"><span class="article-badge">✅ Verified</span><span class="meta-item">📅 Last updated: 2024-01</span><span class="meta-item">📂 <a href="/categories/tools.html">Tools &amp; Platforms</a></span></div>
-      <nav id="toc" aria-label="Table of contents"><div class="toc-title">📋 Contents</div></nav>
-      <article class="wiki-content">
-        <p><strong>"Not your keys, not your coins."</strong> Six words that have saved — and should have saved — billions of dollars. A crypto wallet isn't just where you store your digital assets; it's the gateway to the entire <a href="/wiki/web3.html">Web3</a> world, your identity on the blockchain, and your personal Fort Knox. Whether you're stacking sats in <a href="/wiki/bitcoin.html">Bitcoin</a>, aping into <a href="/wiki/ethereum.html">Ethereum</a> DeFi, or farming yields on some chain you found at 2am — understanding wallets is <strong>non-negotiable</strong>.</p>
+      <div class="article-meta"><span class="article-badge">✅ Verified</span><span class="meta-item">📅 Last updated: October 2026</span><span class="meta-item">📂 <a href="/categories/tools.html">Tools &amp; Platforms</a></span></div>
 
-        <h2 id="history">History &amp; Origins</h2>
-        <h3 id="history-early">The Early Days (2009–2015)</h3>
-        <p>When <a href="/wiki/bitcoin.html">Bitcoin</a> launched on <strong>January 3, 2009</strong>, Satoshi Nakamoto included basic wallet functionality directly in the original Bitcoin Core client. The first external wallet — <strong>Bitcoin-Qt</strong> (later renamed Bitcoin Core) — appeared the same year as the reference implementation. These were raw, command-line tools; beautiful in their simplicity, terrifying in their UX.</p>
-        <p>In <strong>June 2012</strong>, Coinbase was founded — the first mainstream <em>custodial</em> wallet aimed at ordinary users. Technically an exchange wallet, it abstracted away private keys entirely, making crypto accessible to millions but introducing custodial risk.</p>
-        <p>The hardware wallet era kicked off in <strong>2014</strong> when SatoshiLabs founders <strong>Pavol Rusnak</strong> and <strong>Marek Palatinus</strong> shipped the <strong>Trezor Model One</strong> — the world's first hardware wallet. <strong>Ledger</strong> was founded the same year, releasing the Ledger Nano S in <strong>2016</strong>.</p>
+      <article class="wiki-content" data-canon-revision="1" data-canon-source-tier="first-witness+w81">
+<!-- CANONICAL_CONTENT:BEGIN -->
+<p><strong>A crypto wallet</strong> manages accounts and the information used to authorise activity on a blockchain. Coins and tokens remain represented in network records; they are not stored inside the wallet application. Different wallets place signing, recovery and custody responsibilities with the user, a group or a service provider.</p>
+<details id="toc" class="article-contents"><summary>Contents</summary><nav aria-label="Table of contents"><ol><li><a href="#history">History and origins</a></li><li><a href="#types">Wallet types</a></li><li><a href="#key-stats">What a wallet comparison should establish</a></li><li><a href="#why-matters">Access and responsibility</a></li><li><a href="#risks">Practical risks</a></li><li><a href="#moonboys-take">Wallets in Crypto Moonboys</a></li><li><a href="#see-also">See also</a></li></ol></nav></details>
 
-        <h3 id="history-metamask">MetaMask &amp; the Web3 Wallet Era (2016–2021)</h3>
-        <p><strong>MetaMask</strong> launched as a browser extension in <strong>October 2016</strong> by ConsenSys, turning an ordinary browser into a <a href="/wiki/web3.html">Web3</a> portal. Adoption was slow at first — then <a href="/wiki/defi.html">DeFi</a> summer 2020 hit. MetaMask hit <strong>1 million users in September 2020</strong>, <strong>10 million+ by 2021</strong>, and <strong>30 million+ monthly active users by 2022</strong>. It became the default key to the Ethereum kingdom.</p>
-        <p><strong>Phantom wallet</strong> launched in <strong>January 2021</strong> for Solana and quickly became the category-defining wallet for the Solana ecosystem — clean, fast, beautiful.</p>
-
-        <h3 id="history-modern">Self-Custody Renaissance (2022–2024)</h3>
-        <p>The <strong>FTX collapse in November 2022</strong> triggered a hardware wallet buying frenzy — over <strong>1 million new hardware wallet orders in a single week</strong>. Ledger and Trezor couldn't keep up with demand. The lesson was brutal but clear.</p>
-        <p>In <strong>March 2023</strong>, <strong>ERC-4337 (Account Abstraction)</strong> launched on Ethereum, enabling smart contract wallets with features like social recovery, spending limits, and gasless transactions. <strong>Safe (formerly Gnosis Safe)</strong> became the institutional standard, securing over <strong>$100 billion in assets</strong> across DAOs and enterprises. Passkey-based and social-recovery wallets are rapidly closing the UX gap in 2023–2024.</p>
-
-        <h2 id="types">Types &amp; Categories</h2>
-        <h3 id="types-hot">Hot Wallets (Software)</h3>
-        <ul>
-          <li><strong>Browser Extensions:</strong> MetaMask, Rabby, Phantom — always-on, fast, EVM or Solana native</li>
-          <li><strong>Mobile Wallets:</strong> Trust Wallet, Exodus, imToken, Rainbow, Coinbase Wallet — smooth UX on the go</li>
-          <li><strong>Desktop Wallets:</strong> Electrum (Bitcoin-focused), Exodus — good balance of security and convenience</li>
-        </ul>
-        <h3 id="types-cold">Cold / Hardware Wallets</h3>
-        <ul>
-          <li><strong>Trezor Model One / Model T</strong> — open-source firmware, battle-tested since 2014</li>
-          <li><strong>Ledger Nano S Plus / Nano X</strong> — 6M+ devices sold, the most widely used hardware wallet</li>
-          <li><strong>Coldcard</strong> — Bitcoin-only, air-gapped, the most hardcore security option available</li>
-        </ul>
-        <h3 id="types-multisig">Multi-sig &amp; Smart Contract Wallets</h3>
-        <ul>
-          <li><strong>Safe (Gnosis Safe)</strong> — M-of-N multi-signature, standard for DAOs and institutions</li>
-          <li><strong>Fireblocks</strong> — Institutional-grade MPC custody</li>
-          <li><strong>Argent</strong> — Smart contract wallet with social recovery and guardian system</li>
-        </ul>
-        <h3 id="types-custody">Custodial vs. Non-Custodial</h3>
-        <p><strong>Custodial wallets</strong> (Coinbase, Binance) hold your private keys for you. Convenient. Dangerous. If the exchange goes bust, your funds can vanish. <strong>Non-custodial wallets</strong> give <em>you</em> the keys — and all the responsibility. There is no "forgot my password" option.</p>
-        <h3 id="types-seed">Seed Phrases &amp; Keys Explained</h3>
-        <p>A <strong>BIP-39 seed phrase</strong> — 12 or 24 random words — mathematically encodes your entire wallet. Every private key, every account, every chain. Write it down. Store it offline. <strong>Never type it into any website or app</strong>. Your <strong>private key</strong> signs transactions. Your <strong>public key</strong> derives your wallet address — the thing you share with others to receive funds.</p>
-        <div class="notice danger"><span class="notice-icon">🚨</span><div><strong>Security Warning:</strong> Legitimate projects, exchanges, and support staff will <em>never</em> ask for your seed phrase. Any request for your seed phrase is a scam. No exceptions.</div></div>
-
-        <h2 id="key-stats">Key Stats &amp; Milestones</h2>
-        <table>
-          <thead><tr><th>Metric</th><th>Data</th><th>Notes</th></tr></thead>
-          <tbody>
-            <tr><td>MetaMask monthly active users</td><td><strong>30M+</strong></td><td>Peak 2022; most popular non-custodial wallet</td></tr>
-            <tr><td>Phantom wallet users</td><td><strong>7M+</strong></td><td>Dominant Solana wallet since 2021</td></tr>
-            <tr><td>Ledger devices sold</td><td><strong>6M+</strong></td><td>Most widely distributed hardware wallet</td></tr>
-            <tr><td>Hardware wallet market size</td><td><strong>$400M+</strong> (2023)</td><td>Surged post-FTX collapse</td></tr>
-            <tr><td>Safe (Gnosis) assets secured</td><td><strong>$100B+</strong></td><td>Multi-sig standard for DAOs &amp; institutions</td></tr>
-            <tr><td>FTX collapse — new HW orders</td><td><strong>1M+ in 1 week</strong></td><td>Nov 2022; Ledger &amp; Trezor sold out worldwide</td></tr>
-            <tr><td>Ledger 2020 data breach</td><td><strong>272,000</strong> customers</td><td>Funds NOT lost; customer data &amp; emails leaked</td></tr>
-            <tr><td>ERC-4337 (Account Abstraction)</td><td>March 2023</td><td>Enables smart contract wallets on Ethereum</td></tr>
-          </tbody>
-        </table>
-
-        <h2 id="why-matters">Why It Matters</h2>
-        <p>Owning a non-custodial wallet is the first act of <strong>financial sovereignty</strong> in crypto. Without it, you're just trusting a company with your money — the same as a bank, minus the FDIC insurance. Your wallet is your passport to <a href="/wiki/defi.html">DeFi</a> — lending, borrowing, trading without intermediaries. It's your <a href="/wiki/web3.html">Web3</a> identity — your ENS name, your NFT collection, your DAO voting power.</p>
-        <p>For <a href="/wiki/bitcoin.html">Bitcoin</a> holders, self-custody is the entire point. For <a href="/wiki/ethereum.html">Ethereum</a> users, your wallet is the key to a $300B+ DeFi ecosystem. And when it comes to <a href="/wiki/exchanges.html">exchanges</a> — always remember that CEX wallets are not your wallets. Use them to buy. Then withdraw.</p>
-
-        <h2 id="risks">Risks &amp; Controversies</h2>
-        <ul>
-          <li><strong>Lost seed phrase:</strong> Billions in Bitcoin are permanently inaccessible due to lost or forgotten seed phrases. James Howells famously lost 8,000 BTC (worth $500M+) on a landfill hard drive.</li>
-          <li><strong>Hardware wallet supply chain attacks:</strong> Receiving a tampered device can compromise funds before you even set it up. Always buy direct from manufacturers.</li>
-          <li><strong>Ledger 2020 data breach:</strong> 272,000 customer records (names, emails, addresses) leaked — funds were safe, but physical security risks increased for known crypto holders.</li>
-          <li><strong>Ledger Recover controversy (2023):</strong> Ledger announced an optional seed phrase backup service via trusted parties — the community erupted. The backlash was severe; it threatened Ledger's reputation as a security company.</li>
-          <li><strong>Clipboard malware:</strong> Malware that swaps your copied wallet address for an attacker's. Always double-check the first and last 4 characters of any address.</li>
-          <li><strong>Fake wallet apps:</strong> Millions lost to counterfeit MetaMask, Phantom, and Ledger apps on app stores. Verify URLs obsessively.</li>
-          <li><strong>SIM swap attacks:</strong> Attackers port your phone number to steal SMS-based 2FA. Use hardware security keys or authenticator apps — never SMS 2FA for anything crypto.</li>
-          <li><strong>Social engineering:</strong> Fake "support" agents, Discord DMs, and Twitter replies phishing for seed phrases are endemic in crypto communities.</li>
-        </ul>
-
-        <h2 id="moonboys-take">The Crypto Moonboys Take 🌙</h2>
-        <blockquote>
-          <p>"A hardware wallet is <a href="/wiki/diamond-hands.html">diamond hands</a> in physical form. It is the physical manifestation of conviction."</p>
-        </blockquote>
-        <p>Real <a href="/wiki/hodl-warriors.html">HODL Warriors</a> don't leave their stack on an exchange. They write their seed phrase on fireproof steel, buy a Trezor or Coldcard, and sleep soundly while others panic during bank runs. The statistics are devastating: the number of people who lost Bitcoin to exchange hacks versus those who held their own keys is not even close. Mt. Gox. Bitfinex. QuadrigaCX. FTX. Celsius. The list never stops growing.</p>
-        <p><strong>"Be your own bank"</strong> is not a meme. It's the whole point. Every person who set up a hardware wallet before FTX collapsed kept their funds. Every person who trusted SBF lost them. The lesson is there. The question is whether you act on it.</p>
-
-        <h2 id="see-also">See Also</h2>
-        <ul>
-          <li><a href="/wiki/bitcoin.html">Bitcoin (BTC)</a></li>
-          <li><a href="/wiki/ethereum.html">Ethereum (ETH)</a></li>
-          <li><a href="/wiki/defi.html">DeFi — Decentralized Finance</a></li>
-          <li><a href="/wiki/exchanges.html">Crypto Exchanges — CEX vs DEX</a></li>
-          <li><a href="/wiki/web3.html">Web3</a></li>
-          <li><a href="/wiki/diamond-hands.html">Diamond Hands</a></li>
-          <li><a href="/wiki/hodl-warriors.html">HODL Warriors</a></li>
-        </ul>
-      </article>
+<h2 id="history">History and origins</h2>
+<h3 id="history-early">Early software and hardware wallets</h3>
+<p>Satoshi Nakamoto’s original Bitcoin software included wallet functionality in 2009. Bitcoin-Qt arrived later, in 2011, and the reference software subsequently adopted the Bitcoin Core name. These are stages in that software’s development, not separate external wallets all launched in 2009.</p>
+<p>Custodial services developed alongside self-managed wallets. Hardware devices such as Trezor, released in 2014, and later Ledger models separated key storage and signing from ordinary desktop or phone software. That separation can reduce some exposure without making every use safe.</p>
+<h3 id="history-metamask">Browser and application wallets</h3>
+<p>MetaMask helped bring Ethereum accounts and contract interactions into the browser from 2016. Phantom became a prominent wallet in the Solana ecosystem after its 2021 launch. Product support can expand or change, so examples identify a history rather than a complete current compatibility list.</p>
+<p>A browser wallet can make signatures easier to request while also making misleading approval requests easier to encounter. Convenience and secure authorisation are different design problems.</p>
+<h3 id="history-modern">Recovery and account abstraction</h3>
+<p>The 2022 FTX failure renewed attention to the distinction between a custodial balance and direct key control. Changes in attention should be distinguished from measured adoption: a sales claim needs an identifiable period, seller and counting method.</p>
+<p>Smart-contract wallets and account-abstraction approaches, including ERC-4337, can support features such as configurable authorisation, recovery and sponsored fees. Availability depends on the implementation. Sponsored transactions are paid for by someone; they do not make network resources free. Multisignature and recovery designs also existed before ERC-4337.</p>
+<h2 id="types">Wallet types</h2>
+<h3 id="types-hot">Software wallets</h3>
+<p>Browser, mobile and desktop wallets can prepare transactions, display activity and manage signing keys. MetaMask, Rabby, Phantom, Electrum and Exodus illustrate different supported environments. Whether keys are exposed to an internet-connected device matters more than the form of the interface alone. A software interface can also control a separate hardware signer.</p>
+<h3 id="types-cold">Hardware and offline signing</h3>
+<p>Hardware wallets keep key operations in a dedicated device. Examples include Trezor, Ledger and Coldcard. Designs, supported networks and recovery options differ; no product is universally the best or incapable of compromise.</p>
+<p>“Cold storage” describes keeping signing authority away from ordinary online exposure. It is not a guarantee attached to every hardware purchase. A device can protect a private key while still signing a harmful transaction the user approves. The trusted display and the meaning of the authorisation remain important.</p>
+<h3 id="types-multisig">Multisignature, smart contracts and MPC</h3>
+<p>Multisignature requires a defined threshold of signatures. A smart-contract wallet can implement additional permissions, limits or recovery rules; Safe is a prominent example. These arrangements depend on both the configuration and the availability of authorised signers.</p>
+<p>Multiparty computation, or MPC, uses a different cryptographic arrangement in which parties cooperate in signing. It should not be treated as synonymous with an on-chain multisignature contract. Custodial and self-managed products can use either technique; the label alone does not reveal who ultimately controls access.</p>
+<h3 id="types-custody">Custodial and self-managed accounts</h3>
+<p>A custodian controls signing on a customer’s behalf and may offer account recovery. The customer depends on its security, solvency, withdrawal rules and legal terms. Self-custody transfers signing and recovery responsibility to the holder or their chosen arrangement.</p>
+<p>The comparison is not simply safety versus danger. Self-custody can avoid an exchange’s insolvency while introducing the possibility of lost backups, mistaken signatures and recovery failure. Some smart wallets support recovery; others cannot restore access after the required keys are lost.</p>
+<h3 id="types-seed">Recovery phrases and keys</h3>
+<p>Many wallets use a recovery phrase, often 12 or 24 words, from which keys can be derived. BIP-39 is a common scheme, but it is not universal and does not automatically encode every account on every chain. Derivation paths, optional passphrases, wallet standards and additional account configuration can affect recovery.</p>
+<p>A phrase or private key must not be disclosed to support staff or entered into a website reached through an unsolicited message. Legitimate recovery involves a deliberate process using a verified wallet or device; it is different from revealing a backup to another person. The correct backup depends on the wallet design, particularly for multisignature or smart-contract accounts.</p>
+<h2 id="key-stats">What a wallet comparison should establish</h2>
+<table><thead><tr><th>Question</th><th>Why it matters</th></tr></thead><tbody><tr><td>Who can authorise a transfer?</td><td>Identifies actual control</td></tr><tr><td>How is access recovered?</td><td>Shows which backups and parties are required</td></tr><tr><td>Which networks and assets are supported?</td><td>Avoids treating an address format as universal compatibility</td></tr><tr><td>Can permissions or software change?</td><td>Exposes upgrade and service dependencies</td></tr><tr><td>What can the user verify before signing?</td><td>Separates key protection from transaction intent</td></tr></tbody></table>
+<h2 id="why-matters">Access and responsibility</h2>
+<p>Wallets connect people to payment networks, collectibles and applications. A single approval can have consequences beyond one visible transfer, so the interface should make the destination, network, amount and permission clear. Signing proves authorisation under the system’s rules; it does not guarantee a fair deal or a trustworthy recipient.</p>
+<p>A wallet is also not a complete legal identity or licence record. Holding an NFT can be verified separately from the creator rights attached to it. Those rights come from applicable terms, not from the brand of wallet used to hold the asset.</p>
+<h2 id="risks">Practical risks</h2>
+<ul>
+<li><strong>Destination verification:</strong> compare the complete recipient address through a trusted source and, when available, on the hardware device’s own screen. Checking only the first and last four characters can miss a substituted lookalike. Confirm network and amount as well.</li>
+<li><strong>Backups:</strong> losing all required keys, recovery material or cooperating signers may make assets inaccessible. Keep the recovery method appropriate to the actual wallet design.</li>
+<li><strong>Malicious software and approvals:</strong> use verified distribution channels and inspect requested permissions. An intact hardware device cannot make every approved contract action harmless.</li>
+<li><strong>Custody and recovery services:</strong> understand who can pause access, reconstruct signing authority or change terms.</li>
+<li><strong>Privacy:</strong> leaked customer data and public transaction histories can expose identities without a theft of private keys.</li>
+<li><strong>Account protection:</strong> phishing-resistant security keys and suitable authenticator methods reduce dependence on SMS recovery where supported. No single protection removes every route to loss.</li>
+</ul>
+<h2 id="moonboys-take">Wallets in Crypto Moonboys</h2>
+<p>A supported wallet may be useful for a particular collection or published participation route. The present creator umbrella also allows someone to keep an existing creative identity without buying an NFT or choosing a faction. A wallet purchase is not a test of belonging or conviction.</p>
+<p>The HODL Warrior creator role concerns qualifying character rights under published terms. It does not require a specific wallet vendor or establish that every holder must choose the same custody model. Historical project promotions and fictional wallet legends do not replace current account and asset instructions.</p>
+<h2 id="see-also">See also</h2>
+<ul>
+<li><a href="/wiki/web3.html">Web3</a></li>
+<li><a href="/wiki/bitcoin.html">Bitcoin (BTC)</a></li>
+<li><a href="/wiki/ethereum.html">Ethereum (ETH)</a></li>
+<li><a href="/wiki/defi.html">DeFi</a></li>
+<li><a href="/wiki/exchanges.html">Crypto Exchanges</a></li>
+<li><a href="/wiki/diamond-hands.html">Diamond Hands</a></li>
+<li><a href="/wiki/hodl-warriors.html">HODL Warriors</a></li>
+</ul>
+<p class="source-note">This is an educational reference. The linked protocol documentation and current service terms govern implementation details; historical project promotion is not verification of current prices, returns or availability.</p>
+<!-- CANONICAL_CONTENT:END -->
+</article>
 <!-- RELATED_WIKI_PATHS:BEGIN -->
       <section class="wiki-section related-wiki-paths" data-related-wiki-paths="true" aria-labelledby="related-wiki-paths-title">
         <h2 id="related-wiki-paths-title">Related Wiki Paths</h2>
@@ -233,7 +202,7 @@
             <span class="cite-num">[5]</span>
             <div>
               <span class="cite-source-type cite-website">Website</span>
-              <a href="https://safe.global" target="_blank" rel="noopener noreferrer">Safe (Gnosis Safe)</a> — Multi-signature smart contract wallet platform securing $100B+ in institutional and DAO assets.
+              <a href="https://safe.global" target="_blank" rel="noopener noreferrer">Safe (Gnosis Safe)</a> — Information about multisignature smart accounts and supported account controls.
             </div>
           </li>
           <li id="cite-6">
@@ -247,7 +216,7 @@
             <span class="cite-num">[7]</span>
             <div>
               <span class="cite-source-type cite-website">Website</span>
-              <a href="https://bitcoin.org/en/secure-your-wallet" target="_blank" rel="noopener noreferrer">Bitcoin.org — Secure Your Wallet</a> — Official Bitcoin Foundation guidance on wallet security and best practices.
+              <a href="https://bitcoin.org/en/secure-your-wallet" target="_blank" rel="noopener noreferrer">Bitcoin.org — Secure Your Wallet</a> — Bitcoin.org guidance on wallet security and backup practices.
             </div>
           </li>
           <li id="cite-8">
@@ -268,7 +237,7 @@
         <div class="citation-vote-panel-actions">
           <span class="cite-vote" data-page-id="wallets" data-cite-id="citation-panel"></span>
           <span class="citation-vote-login-prompt">Connect/login to vote when citation voting is available.</span>
-          
+
         </div>
       </section>
 <!-- CITATION_VOTE_PANEL:END -->

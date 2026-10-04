@@ -1013,11 +1013,11 @@
       ]
     },
     "link_score": {
-      "inbound_count": 68,
+      "inbound_count": 71,
       "outbound_count": 73,
       "existing_outbound_count": 6,
       "suggested_outbound_count": 67,
-      "authority": 139
+      "authority": 145
     },
     "brand": null
   },
@@ -3855,6 +3855,184 @@
     "brand": null
   },
   {
+    "title": "GraffPUNKS 24/7 Radio",
+    "desc": "GraffPUNKS 24/7 Radio: the station, archived DJ lineup, site listening controls, token-reward proposals and distinct Year 3008 broadcast lore.",
+    "url": "/wiki/graffpunks-24-7-radio.html",
+    "tags": [
+      "graffpunks",
+      "24",
+      "radio",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "core",
+    "aliases": [
+      {
+        "title": "Graffpunks 247 Radio"
+      },
+      {
+        "title": "Graffpunks 24 7"
+      },
+      {
+        "title": "Graffpunks 247"
+      },
+      {
+        "title": "Graffpunks 247 Blockchain Radio Station"
+      }
+    ],
+    "rank_score": 324,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 4,
+      "tag_count": 6,
+      "mention_count": 0,
+      "category": "core",
+      "category_priority": 10,
+      "has_description": true,
+      "article_word_count": 2401,
+      "keyword_bag_size": 26,
+      "heading_count": 17,
+      "list_count": 1,
+      "internal_link_count": 11,
+      "paragraph_count": 42,
+      "section_count": 14,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 89,
+      "authority_score": 24
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 50,
+      "word_count_points": 50,
+      "keyword_bag_points": 26,
+      "content_quality_points": 107,
+      "authority_points": 61,
+      "final_rank_score": 324,
+      "authority_graph_points": 37
+    },
+    "search_index": {
+      "normalized_title": "graffpunks 24 7 radio crypto moonboys wiki",
+      "tokens": [
+        "graffpunks",
+        "24",
+        "7",
+        "radio",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "graffpunks",
+        "24",
+        "7",
+        "radio",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "the",
+        "station",
+        "archived",
+        "dj",
+        "lineup",
+        "site",
+        "listening",
+        "controls",
+        "token",
+        "reward",
+        "proposals",
+        "and",
+        "distinct",
+        "year",
+        "3008",
+        "broadcast",
+        "lore",
+        "247",
+        "blockchain",
+        "skol",
+        "tank",
+        "funk",
+        "its",
+        "friday",
+        "sum",
+        "sessions",
+        "jonny",
+        "nelson",
+        "danny",
+        "young",
+        "alan",
+        "condi",
+        "lost",
+        "in",
+        "music",
+        "garry",
+        "cosgrove",
+        "house",
+        "rules",
+        "rude",
+        "transmissions",
+        "si",
+        "moutarde",
+        "dean",
+        "slater",
+        "ali",
+        "maurice",
+        "rob",
+        "parish",
+        "manners",
+        "loyd",
+        "james",
+        "trevor",
+        "fung",
+        "version",
+        "excursion",
+        "parkes",
+        "lynda",
+        "k",
+        "george",
+        "mihaly",
+        "ray",
+        "lock",
+        "fabi",
+        "paras",
+        "steve",
+        "altman",
+        "jamie",
+        "tolley",
+        "d",
+        "a",
+        "m",
+        "o",
+        "index",
+        "rubedo",
+        "walker",
+        "kerry",
+        "waters",
+        "modir",
+        "listen2earn",
+        "rave2earn",
+        "bitcoin",
+        "kids",
+        "last"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 16,
+      "outbound_count": 60,
+      "existing_outbound_count": 9,
+      "suggested_outbound_count": 51,
+      "authority": 36.5
+    },
+    "brand": {
+      "brand_family": "graffpunks",
+      "concept_type": "radio",
+      "canonical_concept_id": "graffpunks:radio",
+      "canonical_slug": "graffpunks-24-7-radio",
+      "parent_concept": "graffpunks"
+    }
+  },
+  {
     "title": "HODL Warriors",
     "desc": "HODL Warriors in Year 3008: the Calling, emergency unity, the Quiet Muster, repair and demobilisation; distinct from HODL X Warriors and current creator-builder usage.",
     "url": "/wiki/hodl-warriors.html",
@@ -4125,184 +4303,6 @@
       "authority": 15
     },
     "brand": null
-  },
-  {
-    "title": "GraffPUNKS 24/7 Radio",
-    "desc": "GraffPUNKS 24/7 Radio: the station, archived DJ lineup, site listening controls, token-reward proposals and distinct Year 3008 broadcast lore.",
-    "url": "/wiki/graffpunks-24-7-radio.html",
-    "tags": [
-      "graffpunks",
-      "24",
-      "radio",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "core",
-    "aliases": [
-      {
-        "title": "Graffpunks 247 Radio"
-      },
-      {
-        "title": "Graffpunks 24 7"
-      },
-      {
-        "title": "Graffpunks 247"
-      },
-      {
-        "title": "Graffpunks 247 Blockchain Radio Station"
-      }
-    ],
-    "rank_score": 322,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 4,
-      "tag_count": 6,
-      "mention_count": 0,
-      "category": "core",
-      "category_priority": 10,
-      "has_description": true,
-      "article_word_count": 2401,
-      "keyword_bag_size": 26,
-      "heading_count": 17,
-      "list_count": 1,
-      "internal_link_count": 11,
-      "paragraph_count": 42,
-      "section_count": 14,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 89,
-      "authority_score": 24
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 50,
-      "word_count_points": 50,
-      "keyword_bag_points": 26,
-      "content_quality_points": 107,
-      "authority_points": 59,
-      "final_rank_score": 322,
-      "authority_graph_points": 35
-    },
-    "search_index": {
-      "normalized_title": "graffpunks 24 7 radio crypto moonboys wiki",
-      "tokens": [
-        "graffpunks",
-        "24",
-        "7",
-        "radio",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "graffpunks",
-        "24",
-        "7",
-        "radio",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "the",
-        "station",
-        "archived",
-        "dj",
-        "lineup",
-        "site",
-        "listening",
-        "controls",
-        "token",
-        "reward",
-        "proposals",
-        "and",
-        "distinct",
-        "year",
-        "3008",
-        "broadcast",
-        "lore",
-        "247",
-        "blockchain",
-        "skol",
-        "tank",
-        "funk",
-        "its",
-        "friday",
-        "sum",
-        "sessions",
-        "jonny",
-        "nelson",
-        "danny",
-        "young",
-        "alan",
-        "condi",
-        "lost",
-        "in",
-        "music",
-        "garry",
-        "cosgrove",
-        "house",
-        "rules",
-        "rude",
-        "transmissions",
-        "si",
-        "moutarde",
-        "dean",
-        "slater",
-        "ali",
-        "maurice",
-        "rob",
-        "parish",
-        "manners",
-        "loyd",
-        "james",
-        "trevor",
-        "fung",
-        "version",
-        "excursion",
-        "parkes",
-        "lynda",
-        "k",
-        "george",
-        "mihaly",
-        "ray",
-        "lock",
-        "fabi",
-        "paras",
-        "steve",
-        "altman",
-        "jamie",
-        "tolley",
-        "d",
-        "a",
-        "m",
-        "o",
-        "index",
-        "rubedo",
-        "walker",
-        "kerry",
-        "waters",
-        "modir",
-        "listen2earn",
-        "rave2earn",
-        "bitcoin",
-        "kids",
-        "last"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 15,
-      "outbound_count": 60,
-      "existing_outbound_count": 9,
-      "suggested_outbound_count": 51,
-      "authority": 34.5
-    },
-    "brand": {
-      "brand_family": "graffpunks",
-      "concept_type": "radio",
-      "canonical_concept_id": "graffpunks:radio",
-      "canonical_slug": "graffpunks-24-7-radio",
-      "parent_concept": "graffpunks"
-    }
   },
   {
     "title": "Bitcoin Kids",
@@ -10390,6 +10390,111 @@
     "brand": null
   },
   {
+    "title": "HODL X Warriors",
+    "desc": "The distinct HODL X champion tradition: Hard Fork selection, bonnets, Seeding accounts, armour repair, service obligations and unresolved relations to HODL Warriors.",
+    "url": "/wiki/hodl-x-warriors.html",
+    "tags": [
+      "hodl",
+      "warriors",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "characters",
+    "aliases": [],
+    "rank_score": 295,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "characters",
+      "category_priority": 8,
+      "has_description": true,
+      "article_word_count": 4741,
+      "keyword_bag_size": 24,
+      "heading_count": 29,
+      "list_count": 1,
+      "internal_link_count": 17,
+      "paragraph_count": 76,
+      "section_count": 26,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 89,
+      "authority_score": 28
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 40,
+      "word_count_points": 50,
+      "keyword_bag_points": 24,
+      "content_quality_points": 94,
+      "authority_points": 57,
+      "final_rank_score": 295,
+      "authority_graph_points": 29
+    },
+    "search_index": {
+      "normalized_title": "hodl x warriors crypto moonboys wiki",
+      "tokens": [
+        "hodl",
+        "x",
+        "warriors",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "hodl",
+        "x",
+        "warriors",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "the",
+        "distinct",
+        "champion",
+        "tradition",
+        "hard",
+        "fork",
+        "selection",
+        "bonnets",
+        "seeding",
+        "accounts",
+        "armour",
+        "repair",
+        "service",
+        "obligations",
+        "and",
+        "unresolved",
+        "relations",
+        "to",
+        "hester",
+        "brake",
+        "cass",
+        "nine",
+        "gallery",
+        "plate",
+        "book",
+        "north",
+        "sluice",
+        "stand",
+        "golden",
+        "ticket",
+        "bonnet",
+        "collection",
+        "debt"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 11,
+      "outbound_count": 39,
+      "existing_outbound_count": 13,
+      "suggested_outbound_count": 26,
+      "authority": 28.5
+    },
+    "brand": null
+  },
+  {
     "title": "Money, Debt and Honest Scales",
     "desc": "How First Witness traditions think about debt, pricing, reserves, honest exchange and financial power.",
     "url": "/wiki/first-witness-money-debt-honest-scales.html",
@@ -12594,111 +12699,6 @@
       "existing_outbound_count": 16,
       "suggested_outbound_count": 21,
       "authority": 18
-    },
-    "brand": null
-  },
-  {
-    "title": "HODL X Warriors",
-    "desc": "The distinct HODL X champion tradition: Hard Fork selection, bonnets, Seeding accounts, armour repair, service obligations and unresolved relations to HODL Warriors.",
-    "url": "/wiki/hodl-x-warriors.html",
-    "tags": [
-      "hodl",
-      "warriors",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "characters",
-    "aliases": [],
-    "rank_score": 291,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 0,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "characters",
-      "category_priority": 8,
-      "has_description": true,
-      "article_word_count": 4741,
-      "keyword_bag_size": 24,
-      "heading_count": 29,
-      "list_count": 1,
-      "internal_link_count": 17,
-      "paragraph_count": 76,
-      "section_count": 26,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 89,
-      "authority_score": 28
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 40,
-      "word_count_points": 50,
-      "keyword_bag_points": 24,
-      "content_quality_points": 94,
-      "authority_points": 53,
-      "final_rank_score": 291,
-      "authority_graph_points": 25
-    },
-    "search_index": {
-      "normalized_title": "hodl x warriors crypto moonboys wiki",
-      "tokens": [
-        "hodl",
-        "x",
-        "warriors",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "hodl",
-        "x",
-        "warriors",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "the",
-        "distinct",
-        "champion",
-        "tradition",
-        "hard",
-        "fork",
-        "selection",
-        "bonnets",
-        "seeding",
-        "accounts",
-        "armour",
-        "repair",
-        "service",
-        "obligations",
-        "and",
-        "unresolved",
-        "relations",
-        "to",
-        "hester",
-        "brake",
-        "cass",
-        "nine",
-        "gallery",
-        "plate",
-        "book",
-        "north",
-        "sluice",
-        "stand",
-        "golden",
-        "ticket",
-        "bonnet",
-        "collection",
-        "debt"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 9,
-      "outbound_count": 39,
-      "existing_outbound_count": 13,
-      "suggested_outbound_count": 26,
-      "authority": 24.5
     },
     "brand": null
   },
@@ -15425,6 +15425,106 @@
     "brand": null
   },
   {
+    "title": "Bitcoin (BTC)",
+    "desc": "Bitcoin: its history, proof-of-work rules, wallets, payments and practical limits, with market promotion separated from technical explanation.",
+    "url": "/wiki/bitcoin.html",
+    "tags": [
+      "bitcoin",
+      "btc",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "tokens",
+    "aliases": [
+      {
+        "title": "bitcoin"
+      },
+      {
+        "title": "bitcoin btc crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 287,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 2,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "tokens",
+      "category_priority": 6,
+      "has_description": true,
+      "article_word_count": 1998,
+      "keyword_bag_size": 23,
+      "heading_count": 28,
+      "list_count": 4,
+      "internal_link_count": 18,
+      "paragraph_count": 25,
+      "section_count": 3,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 75,
+      "authority_score": 27
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 30,
+      "word_count_points": 50,
+      "keyword_bag_points": 23,
+      "content_quality_points": 86,
+      "authority_points": 68,
+      "final_rank_score": 287,
+      "authority_graph_points": 41
+    },
+    "search_index": {
+      "normalized_title": "bitcoin btc crypto moonboys wiki",
+      "tokens": [
+        "bitcoin",
+        "btc",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "bitcoin",
+        "btc",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "its",
+        "history",
+        "proof",
+        "of",
+        "work",
+        "rules",
+        "wallets",
+        "payments",
+        "and",
+        "practical",
+        "limits",
+        "with",
+        "market",
+        "promotion",
+        "separated",
+        "from",
+        "technical",
+        "explanation",
+        "utxo",
+        "lightning",
+        "network",
+        "subsidy",
+        "halving"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 16,
+      "outbound_count": 35,
+      "existing_outbound_count": 18,
+      "suggested_outbound_count": 17,
+      "authority": 41
+    },
+    "brand": null
+  },
+  {
     "title": "Blockchain Technology",
     "desc": "A detailed guide to blockchain technology: history, blocks, consensus, wallets, smart contracts, tokens, scaling, risks and Crypto Moonboys use on WAX.",
     "url": "/wiki/blockchain.html",
@@ -16027,6 +16127,109 @@
       "existing_outbound_count": 19,
       "suggested_outbound_count": 13,
       "authority": 19.5
+    },
+    "brand": null
+  },
+  {
+    "title": "DeFi (Decentralised Finance)",
+    "desc": "DeFi: exchange, lending, collateral, rewards and infrastructure risks, distinguishing public contracts from claims of automatic safety or access.",
+    "url": "/wiki/defi.html",
+    "tags": [
+      "defi",
+      "decentralised",
+      "finance",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "defi"
+      }
+    ],
+    "rank_score": 286,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 6,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 1508,
+      "keyword_bag_size": 23,
+      "heading_count": 23,
+      "list_count": 4,
+      "internal_link_count": 18,
+      "paragraph_count": 21,
+      "section_count": 3,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 75,
+      "authority_score": 27
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 50,
+      "keyword_bag_points": 23,
+      "content_quality_points": 84,
+      "authority_points": 64,
+      "final_rank_score": 286,
+      "authority_graph_points": 37
+    },
+    "search_index": {
+      "normalized_title": "defi decentralised finance crypto moonboys wiki",
+      "tokens": [
+        "defi",
+        "decentralised",
+        "finance",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "defi",
+        "decentralised",
+        "finance",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "exchange",
+        "lending",
+        "collateral",
+        "rewards",
+        "and",
+        "infrastructure",
+        "risks",
+        "distinguishing",
+        "public",
+        "contracts",
+        "from",
+        "claims",
+        "of",
+        "automatic",
+        "safety",
+        "or",
+        "access",
+        "automated",
+        "market",
+        "makers",
+        "flash",
+        "loans",
+        "oracles",
+        "stablecoins",
+        "liquidity",
+        "mining"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 14,
+      "outbound_count": 28,
+      "existing_outbound_count": 18,
+      "suggested_outbound_count": 10,
+      "authority": 37
     },
     "brand": null
   },
@@ -16727,97 +16930,6 @@
       "existing_outbound_count": 4,
       "suggested_outbound_count": 62,
       "authority": 6
-    },
-    "brand": null
-  },
-  {
-    "title": "Ethereum (ETH)",
-    "desc": "Ethereum (ETH) — a decentralised platform for smart contracts and dApps. Learn about Vitalik Buterin, DeFi, NFTs, and Ethereum",
-    "url": "/wiki/ethereum.html",
-    "tags": [
-      "ethereum",
-      "eth",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "ethereum"
-      },
-      {
-        "title": "ethereum eth crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 285,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 2,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 2530,
-      "keyword_bag_size": 19,
-      "heading_count": 29,
-      "list_count": 5,
-      "internal_link_count": 33,
-      "paragraph_count": 27,
-      "section_count": 3,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 83,
-      "authority_score": 30
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 50,
-      "keyword_bag_points": 19,
-      "content_quality_points": 94,
-      "authority_points": 57,
-      "final_rank_score": 285,
-      "authority_graph_points": 27
-    },
-    "search_index": {
-      "normalized_title": "ethereum eth crypto moonboys wiki",
-      "tokens": [
-        "ethereum",
-        "eth",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "ethereum",
-        "eth",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "a",
-        "decentralised",
-        "platform",
-        "for",
-        "smart",
-        "contracts",
-        "and",
-        "dapps",
-        "learn",
-        "about",
-        "vitalik",
-        "buterin",
-        "defi",
-        "nfts"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 9,
-      "outbound_count": 24,
-      "existing_outbound_count": 17,
-      "suggested_outbound_count": 7,
-      "authority": 26.5
     },
     "brand": null
   },
@@ -18133,6 +18245,107 @@
       "existing_outbound_count": 11,
       "suggested_outbound_count": 17,
       "authority": 5.5
+    },
+    "brand": null
+  },
+  {
+    "title": "Ethereum (ETH)",
+    "desc": "Ethereum explained through its history, smart contracts, proof of stake, fees and rollups, with dated milestones separated from market claims.",
+    "url": "/wiki/ethereum.html",
+    "tags": [
+      "ethereum",
+      "eth",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "ethereum"
+      },
+      {
+        "title": "ethereum eth crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 283,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 2,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 1868,
+      "keyword_bag_size": 24,
+      "heading_count": 29,
+      "list_count": 4,
+      "internal_link_count": 18,
+      "paragraph_count": 28,
+      "section_count": 3,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 79,
+      "authority_score": 27
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 50,
+      "keyword_bag_points": 24,
+      "content_quality_points": 90,
+      "authority_points": 54,
+      "final_rank_score": 283,
+      "authority_graph_points": 27
+    },
+    "search_index": {
+      "normalized_title": "ethereum eth crypto moonboys wiki",
+      "tokens": [
+        "ethereum",
+        "eth",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "ethereum",
+        "eth",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "explained",
+        "through",
+        "its",
+        "history",
+        "smart",
+        "contracts",
+        "proof",
+        "of",
+        "stake",
+        "fees",
+        "and",
+        "rollups",
+        "with",
+        "dated",
+        "milestones",
+        "separated",
+        "from",
+        "market",
+        "claims",
+        "evm",
+        "eip",
+        "1559",
+        "merge",
+        "4844"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 9,
+      "outbound_count": 20,
+      "existing_outbound_count": 17,
+      "suggested_outbound_count": 3,
+      "authority": 26.5
     },
     "brand": null
   },
@@ -22807,6 +23020,103 @@
     "brand": null
   },
   {
+    "title": "Crypto Wallets",
+    "desc": "Crypto wallets: signing, custody, recovery, hardware devices and account permissions, with practical limits and complete-address verification.",
+    "url": "/wiki/wallets.html",
+    "tags": [
+      "crypto",
+      "wallets",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "characters",
+    "aliases": [
+      {
+        "title": "crypto wallets moonboys wiki"
+      },
+      {
+        "title": "wallets"
+      }
+    ],
+    "rank_score": 272,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 2,
+      "tag_count": 4,
+      "mention_count": 0,
+      "category": "characters",
+      "category_priority": 8,
+      "has_description": true,
+      "article_word_count": 1630,
+      "keyword_bag_size": 18,
+      "heading_count": 21,
+      "list_count": 4,
+      "internal_link_count": 16,
+      "paragraph_count": 23,
+      "section_count": 3,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 75,
+      "authority_score": 27
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 40,
+      "word_count_points": 50,
+      "keyword_bag_points": 18,
+      "content_quality_points": 85,
+      "authority_points": 49,
+      "final_rank_score": 272,
+      "authority_graph_points": 22
+    },
+    "search_index": {
+      "normalized_title": "crypto wallets crypto moonboys wiki",
+      "tokens": [
+        "crypto",
+        "wallets",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "crypto",
+        "wallets",
+        "moonboys",
+        "wiki",
+        "signing",
+        "custody",
+        "recovery",
+        "hardware",
+        "devices",
+        "and",
+        "account",
+        "permissions",
+        "with",
+        "practical",
+        "limits",
+        "complete",
+        "address",
+        "verification",
+        "phrase",
+        "bitcoin",
+        "qt",
+        "multisignature",
+        "mpc",
+        "erc",
+        "4337",
+        "full"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 7,
+      "outbound_count": 38,
+      "existing_outbound_count": 16,
+      "suggested_outbound_count": 22,
+      "authority": 22
+    },
+    "brand": null
+  },
+  {
     "title": "HEX-TAGGER PRIME",
     "desc": "HEX-Tagger Prime, the Marked Reaper: captured Forkborn artist, Memory Well enforcer, Mirror Chain legend and the unresolved struggle for control of his own hand.",
     "url": "/wiki/hex-tagger-prime.html",
@@ -23382,6 +23692,102 @@
       "existing_outbound_count": 4,
       "suggested_outbound_count": 61,
       "authority": 4
+    },
+    "brand": null
+  },
+  {
+    "title": "Crypto Exchanges",
+    "desc": "Crypto exchanges: custody, order books, decentralised trading, derivatives and fees, with historical failures separated from safety rankings.",
+    "url": "/wiki/exchanges.html",
+    "tags": [
+      "crypto",
+      "exchanges",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "crypto exchanges moonboys wiki"
+      },
+      {
+        "title": "exchanges"
+      }
+    ],
+    "rank_score": 271,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 2,
+      "tag_count": 4,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 1519,
+      "keyword_bag_size": 19,
+      "heading_count": 20,
+      "list_count": 4,
+      "internal_link_count": 18,
+      "paragraph_count": 23,
+      "section_count": 3,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 75,
+      "authority_score": 27
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 50,
+      "keyword_bag_points": 19,
+      "content_quality_points": 85,
+      "authority_points": 52,
+      "final_rank_score": 271,
+      "authority_graph_points": 25
+    },
+    "search_index": {
+      "normalized_title": "crypto exchanges crypto moonboys wiki",
+      "tokens": [
+        "crypto",
+        "exchanges",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "crypto",
+        "exchanges",
+        "moonboys",
+        "wiki",
+        "custody",
+        "order",
+        "books",
+        "decentralised",
+        "trading",
+        "derivatives",
+        "and",
+        "fees",
+        "with",
+        "historical",
+        "failures",
+        "separated",
+        "from",
+        "safety",
+        "rankings",
+        "amm",
+        "maker",
+        "taker",
+        "proof",
+        "of",
+        "reserves"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 8,
+      "outbound_count": 24,
+      "existing_outbound_count": 18,
+      "suggested_outbound_count": 6,
+      "authority": 25
     },
     "brand": null
   },
@@ -25260,6 +25666,103 @@
     "brand": null
   },
   {
+    "title": "Web3",
+    "desc": "Web3: blockchain applications, identity, storage and governance, explaining where user control ends and service, legal or technical dependencies remain.",
+    "url": "/wiki/web3.html",
+    "tags": [
+      "web3",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "web3 crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 268,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 4,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 1658,
+      "keyword_bag_size": 21,
+      "heading_count": 24,
+      "list_count": 4,
+      "internal_link_count": 17,
+      "paragraph_count": 27,
+      "section_count": 3,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 75,
+      "authority_score": 27
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 50,
+      "keyword_bag_points": 21,
+      "content_quality_points": 82,
+      "authority_points": 50,
+      "final_rank_score": 268,
+      "authority_graph_points": 23
+    },
+    "search_index": {
+      "normalized_title": "web3 crypto moonboys wiki",
+      "tokens": [
+        "web3",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "web3",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "blockchain",
+        "applications",
+        "identity",
+        "storage",
+        "and",
+        "governance",
+        "explaining",
+        "where",
+        "user",
+        "control",
+        "ends",
+        "service",
+        "legal",
+        "or",
+        "technical",
+        "dependencies",
+        "remain",
+        "self",
+        "sovereign",
+        "ens",
+        "ipfs",
+        "daos",
+        "content",
+        "addressing",
+        "token",
+        "ownership"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 7,
+      "outbound_count": 42,
+      "existing_outbound_count": 17,
+      "suggested_outbound_count": 25,
+      "authority": 22.5
+    },
+    "brand": null
+  },
+  {
     "title": "$WAXP",
     "desc": "Full source-cited Crypto Moonboys wiki guide to WAXP, the native token of the WAX blockchain ecosystem.",
     "url": "/wiki/waxp.html",
@@ -25339,6 +25842,101 @@
       "existing_outbound_count": 13,
       "suggested_outbound_count": 24,
       "authority": 16.5
+    },
+    "brand": null
+  },
+  {
+    "title": "Tokenomics",
+    "desc": "Tokenomics: supply, distribution, vesting, governance and reward sources, including why APY is not the same as token inflation.",
+    "url": "/wiki/tokenomics.html",
+    "tags": [
+      "tokenomics",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "tokenomics crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 267,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 4,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 1657,
+      "keyword_bag_size": 21,
+      "heading_count": 24,
+      "list_count": 5,
+      "internal_link_count": 19,
+      "paragraph_count": 21,
+      "section_count": 3,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 75,
+      "authority_score": 27
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 50,
+      "keyword_bag_points": 21,
+      "content_quality_points": 82,
+      "authority_points": 49,
+      "final_rank_score": 267,
+      "authority_graph_points": 22
+    },
+    "search_index": {
+      "normalized_title": "tokenomics crypto moonboys wiki",
+      "tokens": [
+        "tokenomics",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "tokenomics",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "supply",
+        "distribution",
+        "vesting",
+        "governance",
+        "and",
+        "reward",
+        "sources",
+        "including",
+        "why",
+        "apy",
+        "is",
+        "not",
+        "the",
+        "same",
+        "as",
+        "token",
+        "inflation",
+        "circulating",
+        "fdv",
+        "emissions",
+        "apr",
+        "protocol",
+        "owned",
+        "liquidity"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 6,
+      "outbound_count": 34,
+      "existing_outbound_count": 19,
+      "suggested_outbound_count": 15,
+      "authority": 21.5
     },
     "brand": null
   },
@@ -26528,39 +27126,40 @@
     }
   },
   {
-    "title": "Crypto Exchanges",
-    "desc": "Crypto exchanges — platforms to buy, sell and trade cryptocurrency including CEX and DEX varieties — Crypto Moonboys Wiki",
-    "url": "/wiki/exchanges.html",
+    "title": "Meme Coins",
+    "desc": "Memecoins: cultural origins, token mechanisms, valuation limits and risks, with unsupported windfall stories and trading exhortations removed.",
+    "url": "/wiki/memecoins.html",
     "tags": [
+      "meme",
+      "coins",
       "crypto",
-      "exchanges",
       "moonboys",
       "wiki"
     ],
     "category": "factions",
     "aliases": [
       {
-        "title": "crypto exchanges moonboys wiki"
+        "title": "meme coins crypto moonboys wiki"
       },
       {
-        "title": "exchanges"
+        "title": "memecoins"
       }
     ],
-    "rank_score": 263,
+    "rank_score": 264,
     "rank_signals": {
       "is_canonical": true,
       "alias_count": 2,
-      "tag_count": 4,
+      "tag_count": 5,
       "mention_count": 0,
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 1795,
-      "keyword_bag_size": 15,
-      "heading_count": 20,
-      "list_count": 3,
-      "internal_link_count": 30,
-      "paragraph_count": 21,
+      "article_word_count": 1282,
+      "keyword_bag_size": 21,
+      "heading_count": 17,
+      "list_count": 4,
+      "internal_link_count": 17,
+      "paragraph_count": 17,
       "section_count": 3,
       "lore_paragraph_count": 1,
       "content_quality_score": 71,
@@ -26571,45 +27170,161 @@
       "description_points": 10,
       "category_points": 35,
       "word_count_points": 50,
-      "keyword_bag_points": 15,
-      "content_quality_points": 81,
-      "authority_points": 52,
-      "final_rank_score": 263,
-      "authority_graph_points": 25
+      "keyword_bag_points": 21,
+      "content_quality_points": 82,
+      "authority_points": 46,
+      "final_rank_score": 264,
+      "authority_graph_points": 19
     },
     "search_index": {
-      "normalized_title": "crypto exchanges crypto moonboys wiki",
+      "normalized_title": "meme coins crypto moonboys wiki",
       "tokens": [
-        "crypto",
-        "exchanges",
+        "meme",
+        "coins",
         "crypto",
         "moonboys",
         "wiki"
       ],
       "keyword_bag": [
+        "meme",
+        "coins",
         "crypto",
-        "exchanges",
         "moonboys",
         "wiki",
-        "platforms",
-        "to",
-        "buy",
-        "sell",
+        "memecoins",
+        "cultural",
+        "origins",
+        "token",
+        "mechanisms",
+        "valuation",
+        "limits",
         "and",
-        "trade",
-        "cryptocurrency",
-        "including",
-        "cex",
-        "dex",
-        "varieties"
+        "risks",
+        "with",
+        "unsupported",
+        "windfall",
+        "stories",
+        "trading",
+        "exhortations",
+        "removed",
+        "dogecoin",
+        "shiba",
+        "inu",
+        "bonk",
+        "pepe",
+        "dogwifhat",
+        "liquidity",
+        "market",
+        "capitalisation"
       ]
     },
     "link_score": {
-      "inbound_count": 8,
-      "outbound_count": 24,
-      "existing_outbound_count": 18,
-      "suggested_outbound_count": 6,
-      "authority": 25
+      "inbound_count": 5,
+      "outbound_count": 32,
+      "existing_outbound_count": 17,
+      "suggested_outbound_count": 15,
+      "authority": 18.5
+    },
+    "brand": null
+  },
+  {
+    "title": "Solana (SOL)",
+    "desc": "Solana: its history, Proof of History, stake-weighted consensus, parallel execution and performance limits, without unsupported price or finality claims.",
+    "url": "/wiki/solana.html",
+    "tags": [
+      "solana",
+      "sol",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "solana"
+      },
+      {
+        "title": "solana sol crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 264,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 2,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 1485,
+      "keyword_bag_size": 23,
+      "heading_count": 24,
+      "list_count": 4,
+      "internal_link_count": 17,
+      "paragraph_count": 21,
+      "section_count": 3,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 75,
+      "authority_score": 27
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 50,
+      "keyword_bag_points": 23,
+      "content_quality_points": 86,
+      "authority_points": 40,
+      "final_rank_score": 264,
+      "authority_graph_points": 13
+    },
+    "search_index": {
+      "normalized_title": "solana sol crypto moonboys wiki",
+      "tokens": [
+        "solana",
+        "sol",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "solana",
+        "sol",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "its",
+        "history",
+        "proof",
+        "of",
+        "stake",
+        "weighted",
+        "consensus",
+        "parallel",
+        "execution",
+        "and",
+        "performance",
+        "limits",
+        "without",
+        "unsupported",
+        "price",
+        "or",
+        "finality",
+        "claims",
+        "tower",
+        "bft",
+        "turbine",
+        "sealevel",
+        "commitment",
+        "levels"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 2,
+      "outbound_count": 22,
+      "existing_outbound_count": 17,
+      "suggested_outbound_count": 5,
+      "authority": 12.5
     },
     "brand": null
   },
@@ -27360,354 +28075,6 @@
     "brand": null
   },
   {
-    "title": "DeFi (Decentralised Finance)",
-    "desc": "Decentralised finance ecosystem — lending, DEXs, yield farming — Crypto Moonboys Wiki",
-    "url": "/wiki/defi.html",
-    "tags": [
-      "defi",
-      "decentralised",
-      "finance",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "defi"
-      }
-    ],
-    "rank_score": 262,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 6,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 1663,
-      "keyword_bag_size": 11,
-      "heading_count": 23,
-      "list_count": 4,
-      "internal_link_count": 27,
-      "paragraph_count": 17,
-      "section_count": 3,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 67,
-      "authority_score": 23
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 50,
-      "keyword_bag_points": 11,
-      "content_quality_points": 76,
-      "authority_points": 60,
-      "final_rank_score": 262,
-      "authority_graph_points": 37
-    },
-    "search_index": {
-      "normalized_title": "defi decentralised finance crypto moonboys wiki",
-      "tokens": [
-        "defi",
-        "decentralised",
-        "finance",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "defi",
-        "decentralised",
-        "finance",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "ecosystem",
-        "lending",
-        "dexs",
-        "yield",
-        "farming"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 14,
-      "outbound_count": 27,
-      "existing_outbound_count": 18,
-      "suggested_outbound_count": 9,
-      "authority": 37
-    },
-    "brand": null
-  },
-  {
-    "title": "Meme Coins",
-    "desc": "Meme coins — community-driven crypto tokens inspired by internet culture including DOGE, SHIB, PEPE and more — Crypto Moonboys Wiki",
-    "url": "/wiki/memecoins.html",
-    "tags": [
-      "meme",
-      "coins",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "meme coins crypto moonboys wiki"
-      },
-      {
-        "title": "memecoins"
-      }
-    ],
-    "rank_score": 262,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 2,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 1578,
-      "keyword_bag_size": 19,
-      "heading_count": 17,
-      "list_count": 5,
-      "internal_link_count": 25,
-      "paragraph_count": 15,
-      "section_count": 3,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 71,
-      "authority_score": 27
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 50,
-      "keyword_bag_points": 19,
-      "content_quality_points": 82,
-      "authority_points": 46,
-      "final_rank_score": 262,
-      "authority_graph_points": 19
-    },
-    "search_index": {
-      "normalized_title": "meme coins crypto moonboys wiki",
-      "tokens": [
-        "meme",
-        "coins",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "meme",
-        "coins",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "community",
-        "driven",
-        "tokens",
-        "inspired",
-        "by",
-        "internet",
-        "culture",
-        "including",
-        "doge",
-        "shib",
-        "pepe",
-        "and",
-        "more",
-        "memecoins"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 5,
-      "outbound_count": 22,
-      "existing_outbound_count": 17,
-      "suggested_outbound_count": 5,
-      "authority": 18.5
-    },
-    "brand": null
-  },
-  {
-    "title": "Bitcoin (BTC)",
-    "desc": "Bitcoin (BTC) — the world",
-    "url": "/wiki/bitcoin.html",
-    "tags": [
-      "bitcoin",
-      "btc",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "tokens",
-    "aliases": [
-      {
-        "title": "bitcoin"
-      },
-      {
-        "title": "bitcoin btc crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 261,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 2,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "tokens",
-      "category_priority": 6,
-      "has_description": true,
-      "article_word_count": 2857,
-      "keyword_bag_size": 7,
-      "heading_count": 28,
-      "list_count": 4,
-      "internal_link_count": 33,
-      "paragraph_count": 31,
-      "section_count": 3,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 70,
-      "authority_score": 26
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 30,
-      "word_count_points": 50,
-      "keyword_bag_points": 7,
-      "content_quality_points": 81,
-      "authority_points": 63,
-      "final_rank_score": 261,
-      "authority_graph_points": 37
-    },
-    "search_index": {
-      "normalized_title": "bitcoin btc crypto moonboys wiki",
-      "tokens": [
-        "bitcoin",
-        "btc",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "bitcoin",
-        "btc",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "the",
-        "world"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 14,
-      "outbound_count": 34,
-      "existing_outbound_count": 18,
-      "suggested_outbound_count": 16,
-      "authority": 37
-    },
-    "brand": null
-  },
-  {
-    "title": "Ethereum (ETH) Ecosystem",
-    "desc": "Ethereum (ETH) — a decentralised platform for smart contracts and dApps. Learn about Vitalik Buterin, DeFi, NFTs, and Ethereum… Cluster hub for 27 related pages.",
-    "url": "/wiki/ethereum-ecosystem.html",
-    "tags": [
-      "ethereum",
-      "eth",
-      "ecosystem",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "ethereum ecosystem"
-      }
-    ],
-    "rank_score": 261,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 6,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 942,
-      "keyword_bag_size": 25,
-      "heading_count": 8,
-      "list_count": 4,
-      "internal_link_count": 42,
-      "paragraph_count": 9,
-      "section_count": 5,
-      "lore_paragraph_count": 8,
-      "content_quality_score": 75,
-      "authority_score": 24
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 47,
-      "keyword_bag_points": 25,
-      "content_quality_points": 84,
-      "authority_points": 40,
-      "final_rank_score": 261,
-      "authority_graph_points": 16
-    },
-    "search_index": {
-      "normalized_title": "ethereum eth ecosystem crypto moonboys wiki",
-      "tokens": [
-        "ethereum",
-        "eth",
-        "ecosystem",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "ethereum",
-        "eth",
-        "ecosystem",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "a",
-        "decentralised",
-        "platform",
-        "for",
-        "smart",
-        "contracts",
-        "and",
-        "dapps",
-        "learn",
-        "about",
-        "vitalik",
-        "buterin",
-        "defi",
-        "nfts",
-        "cluster",
-        "hub",
-        "27",
-        "related",
-        "pages"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 2,
-      "outbound_count": 36,
-      "existing_outbound_count": 24,
-      "suggested_outbound_count": 12,
-      "authority": 16
-    },
-    "brand": null
-  },
-  {
     "title": "Alien Worlds / TLM",
     "desc": "Crypto Moonboys wiki guide to Alien Worlds and Trilium (TLM), one of the best-known blockchain game economies connected to WAX.",
     "url": "/wiki/alien-worlds-tlm.html",
@@ -27791,175 +28158,6 @@
       "existing_outbound_count": 11,
       "suggested_outbound_count": 14,
       "authority": 13.5
-    },
-    "brand": null
-  },
-  {
-    "title": "Crypto Wallets",
-    "desc": "Crypto wallets — software and hardware tools for storing private keys and managing cryptocurrency — Crypto Moonboys Wiki",
-    "url": "/wiki/wallets.html",
-    "tags": [
-      "crypto",
-      "wallets",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "characters",
-    "aliases": [
-      {
-        "title": "crypto wallets moonboys wiki"
-      },
-      {
-        "title": "wallets"
-      }
-    ],
-    "rank_score": 260,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 2,
-      "tag_count": 4,
-      "mention_count": 0,
-      "category": "characters",
-      "category_priority": 8,
-      "has_description": true,
-      "article_word_count": 1665,
-      "keyword_bag_size": 14,
-      "heading_count": 21,
-      "list_count": 6,
-      "internal_link_count": 29,
-      "paragraph_count": 17,
-      "section_count": 3,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 67,
-      "authority_score": 27
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 40,
-      "word_count_points": 50,
-      "keyword_bag_points": 14,
-      "content_quality_points": 77,
-      "authority_points": 49,
-      "final_rank_score": 260,
-      "authority_graph_points": 22
-    },
-    "search_index": {
-      "normalized_title": "crypto wallets crypto moonboys wiki",
-      "tokens": [
-        "crypto",
-        "wallets",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "crypto",
-        "wallets",
-        "moonboys",
-        "wiki",
-        "software",
-        "and",
-        "hardware",
-        "tools",
-        "for",
-        "storing",
-        "private",
-        "keys",
-        "managing",
-        "cryptocurrency"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 7,
-      "outbound_count": 23,
-      "existing_outbound_count": 16,
-      "suggested_outbound_count": 7,
-      "authority": 22
-    },
-    "brand": null
-  },
-  {
-    "title": "Tokenomics",
-    "desc": "Tokenomics — the economic model of a cryptocurrency token including supply, distribution, utility and incentives — Crypto Moonboys Wiki",
-    "url": "/wiki/tokenomics.html",
-    "tags": [
-      "tokenomics",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "tokenomics crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 259,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 4,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 1896,
-      "keyword_bag_size": 17,
-      "heading_count": 24,
-      "list_count": 5,
-      "internal_link_count": 32,
-      "paragraph_count": 17,
-      "section_count": 3,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 71,
-      "authority_score": 27
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 50,
-      "keyword_bag_points": 17,
-      "content_quality_points": 78,
-      "authority_points": 49,
-      "final_rank_score": 259,
-      "authority_graph_points": 22
-    },
-    "search_index": {
-      "normalized_title": "tokenomics crypto moonboys wiki",
-      "tokens": [
-        "tokenomics",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "tokenomics",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "the",
-        "economic",
-        "model",
-        "of",
-        "a",
-        "cryptocurrency",
-        "token",
-        "including",
-        "supply",
-        "distribution",
-        "utility",
-        "and",
-        "incentives"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 6,
-      "outbound_count": 34,
-      "existing_outbound_count": 19,
-      "suggested_outbound_count": 15,
-      "authority": 21.5
     },
     "brand": null
   },
@@ -28154,87 +28352,6 @@
       "existing_outbound_count": 17,
       "suggested_outbound_count": 20,
       "authority": 28.5
-    },
-    "brand": null
-  },
-  {
-    "title": "Web3",
-    "desc": "Web3 — the decentralised next generation of the internet built on blockchain technology — Crypto Moonboys Wiki",
-    "url": "/wiki/web3.html",
-    "tags": [
-      "web3",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "web3 crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 257,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 4,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 1898,
-      "keyword_bag_size": 14,
-      "heading_count": 24,
-      "list_count": 4,
-      "internal_link_count": 33,
-      "paragraph_count": 25,
-      "section_count": 3,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 71,
-      "authority_score": 27
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 50,
-      "keyword_bag_points": 14,
-      "content_quality_points": 78,
-      "authority_points": 50,
-      "final_rank_score": 257,
-      "authority_graph_points": 23
-    },
-    "search_index": {
-      "normalized_title": "web3 crypto moonboys wiki",
-      "tokens": [
-        "web3",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "web3",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "the",
-        "decentralised",
-        "next",
-        "generation",
-        "of",
-        "internet",
-        "built",
-        "on",
-        "blockchain",
-        "technology"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 7,
-      "outbound_count": 30,
-      "existing_outbound_count": 17,
-      "suggested_outbound_count": 13,
-      "authority": 22.5
     },
     "brand": null
   },
@@ -28737,6 +28854,99 @@
     "brand": null
   },
   {
+    "title": "Altcoins",
+    "desc": "Altcoins: how alternative networks and tokens differ in purpose, supply, governance and risk, without deterministic market-cycle claims.",
+    "url": "/wiki/altcoins.html",
+    "tags": [
+      "altcoins",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "tokens",
+    "aliases": [
+      {
+        "title": "altcoins crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 254,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 4,
+      "mention_count": 0,
+      "category": "tokens",
+      "category_priority": 6,
+      "has_description": true,
+      "article_word_count": 1170,
+      "keyword_bag_size": 20,
+      "heading_count": 17,
+      "list_count": 5,
+      "internal_link_count": 16,
+      "paragraph_count": 14,
+      "section_count": 3,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 71,
+      "authority_score": 24
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 30,
+      "word_count_points": 50,
+      "keyword_bag_points": 20,
+      "content_quality_points": 78,
+      "authority_points": 46,
+      "final_rank_score": 254,
+      "authority_graph_points": 22
+    },
+    "search_index": {
+      "normalized_title": "altcoins crypto moonboys wiki",
+      "tokens": [
+        "altcoins",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "altcoins",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "how",
+        "alternative",
+        "networks",
+        "and",
+        "tokens",
+        "differ",
+        "in",
+        "purpose",
+        "supply",
+        "governance",
+        "risk",
+        "without",
+        "deterministic",
+        "market",
+        "cycle",
+        "claims",
+        "native",
+        "coins",
+        "circulating",
+        "capitalisation",
+        "bitcoin",
+        "dominance"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 7,
+      "outbound_count": 38,
+      "existing_outbound_count": 16,
+      "suggested_outbound_count": 22,
+      "authority": 22
+    },
+    "brand": null
+  },
+  {
     "title": "Gang Signs",
     "desc": "Gang Signs: the faction-themed card-game concept, its limited source record and the fictional Tag Dealer, Card Dens and tournament traditions.",
     "url": "/wiki/gang-signs.html",
@@ -28850,91 +29060,6 @@
       "existing_outbound_count": 12,
       "suggested_outbound_count": 24,
       "authority": 10
-    },
-    "brand": null
-  },
-  {
-    "title": "Solana (SOL)",
-    "desc": "Solana — ultra-fast blockchain for DeFi, NFTs and Web3 — Crypto Moonboys Wiki",
-    "url": "/wiki/solana.html",
-    "tags": [
-      "solana",
-      "sol",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "solana"
-      },
-      {
-        "title": "solana sol crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 253,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 2,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 2312,
-      "keyword_bag_size": 13,
-      "heading_count": 24,
-      "list_count": 6,
-      "internal_link_count": 28,
-      "paragraph_count": 26,
-      "section_count": 3,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 74,
-      "authority_score": 27
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 50,
-      "keyword_bag_points": 13,
-      "content_quality_points": 85,
-      "authority_points": 40,
-      "final_rank_score": 253,
-      "authority_graph_points": 13
-    },
-    "search_index": {
-      "normalized_title": "solana sol crypto moonboys wiki",
-      "tokens": [
-        "solana",
-        "sol",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "solana",
-        "sol",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "ultra",
-        "fast",
-        "blockchain",
-        "for",
-        "defi",
-        "nfts",
-        "and",
-        "web3"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 2,
-      "outbound_count": 34,
-      "existing_outbound_count": 17,
-      "suggested_outbound_count": 17,
-      "authority": 12.5
     },
     "brand": null
   },
@@ -29510,11 +29635,11 @@
     "brand": null
   },
   {
-    "title": "Altcoins",
-    "desc": "Altcoins — all cryptocurrencies beyond Bitcoin including Ethereum, Solana, Cardano and thousands more — Crypto Moonboys Wiki",
-    "url": "/wiki/altcoins.html",
+    "title": "EXYBOY",
+    "desc": "EXYBOY is an archived XRPL token reference in the Graffiti Kings ecosystem, with its historical mention distinguished from unverified issuer, market and utility details.",
+    "url": "/wiki/exyboy.html",
     "tags": [
-      "altcoins",
+      "exyboy",
       "crypto",
       "moonboys",
       "wiki"
@@ -29522,7 +29647,7 @@
     "category": "tokens",
     "aliases": [
       {
-        "title": "altcoins crypto moonboys wiki"
+        "title": "exyboy crypto moonboys wiki"
       }
     ],
     "rank_score": 248,
@@ -29534,60 +29659,78 @@
       "category": "tokens",
       "category_priority": 6,
       "has_description": true,
-      "article_word_count": 1259,
-      "keyword_bag_size": 15,
-      "heading_count": 17,
-      "list_count": 4,
-      "internal_link_count": 25,
-      "paragraph_count": 11,
-      "section_count": 3,
+      "article_word_count": 1017,
+      "keyword_bag_size": 27,
+      "heading_count": 11,
+      "list_count": 1,
+      "internal_link_count": 9,
+      "paragraph_count": 15,
+      "section_count": 8,
       "lore_paragraph_count": 1,
-      "content_quality_score": 67,
-      "authority_score": 27
+      "content_quality_score": 77,
+      "authority_score": 18
     },
     "rank_diagnostics": {
       "canonical_points": 20,
       "description_points": 10,
       "category_points": 30,
       "word_count_points": 50,
-      "keyword_bag_points": 15,
-      "content_quality_points": 74,
-      "authority_points": 49,
+      "keyword_bag_points": 27,
+      "content_quality_points": 84,
+      "authority_points": 27,
       "final_rank_score": 248,
-      "authority_graph_points": 22
+      "authority_graph_points": 9
     },
     "search_index": {
-      "normalized_title": "altcoins crypto moonboys wiki",
+      "normalized_title": "exyboy crypto moonboys wiki",
       "tokens": [
-        "altcoins",
+        "exyboy",
         "crypto",
         "moonboys",
         "wiki"
       ],
       "keyword_bag": [
-        "altcoins",
+        "exyboy",
         "crypto",
         "moonboys",
         "wiki",
-        "all",
-        "cryptocurrencies",
-        "beyond",
-        "bitcoin",
-        "including",
-        "ethereum",
-        "solana",
-        "cardano",
+        "is",
+        "an",
+        "archived",
+        "xrpl",
+        "token",
+        "reference",
+        "in",
+        "the",
+        "graffiti",
+        "kings",
+        "ecosystem",
+        "with",
+        "its",
+        "historical",
+        "mention",
+        "distinguished",
+        "from",
+        "unverified",
+        "issuer",
+        "market",
         "and",
-        "thousands",
-        "more"
+        "utility",
+        "details",
+        "account",
+        "currency",
+        "identifier",
+        "june",
+        "2025",
+        "overview"
       ]
     },
     "link_score": {
-      "inbound_count": 7,
-      "outbound_count": 36,
-      "existing_outbound_count": 16,
-      "suggested_outbound_count": 20,
-      "authority": 22
+      "inbound_count": 2,
+      "outbound_count": 37,
+      "existing_outbound_count": 9,
+      "suggested_outbound_count": 28,
+      "authority": 8.5
     },
     "brand": null
   },
@@ -30057,106 +30200,6 @@
       "existing_outbound_count": 9,
       "suggested_outbound_count": 27,
       "authority": 4.5
-    },
-    "brand": null
-  },
-  {
-    "title": "EXYBOY",
-    "desc": "EXYBOY is an archived XRPL token reference in the Graffiti Kings ecosystem, with its historical mention distinguished from unverified issuer, market and utility details.",
-    "url": "/wiki/exyboy.html",
-    "tags": [
-      "exyboy",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "tokens",
-    "aliases": [
-      {
-        "title": "exyboy crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 246,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 4,
-      "mention_count": 0,
-      "category": "tokens",
-      "category_priority": 6,
-      "has_description": true,
-      "article_word_count": 1017,
-      "keyword_bag_size": 27,
-      "heading_count": 11,
-      "list_count": 1,
-      "internal_link_count": 9,
-      "paragraph_count": 15,
-      "section_count": 8,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 77,
-      "authority_score": 18
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 30,
-      "word_count_points": 50,
-      "keyword_bag_points": 27,
-      "content_quality_points": 84,
-      "authority_points": 25,
-      "final_rank_score": 246,
-      "authority_graph_points": 7
-    },
-    "search_index": {
-      "normalized_title": "exyboy crypto moonboys wiki",
-      "tokens": [
-        "exyboy",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "exyboy",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "is",
-        "an",
-        "archived",
-        "xrpl",
-        "token",
-        "reference",
-        "in",
-        "the",
-        "graffiti",
-        "kings",
-        "ecosystem",
-        "with",
-        "its",
-        "historical",
-        "mention",
-        "distinguished",
-        "from",
-        "unverified",
-        "issuer",
-        "market",
-        "and",
-        "utility",
-        "details",
-        "account",
-        "currency",
-        "identifier",
-        "june",
-        "2025",
-        "overview"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 1,
-      "outbound_count": 37,
-      "existing_outbound_count": 9,
-      "suggested_outbound_count": 28,
-      "authority": 6.5
     },
     "brand": null
   },
@@ -34887,6 +34930,96 @@
     "brand": null
   },
   {
+    "title": "XRP Ledger",
+    "desc": "Crypto Moonboys wiki guide to the XRP Ledger, XRPL accounts, XRP, trust lines, issued tokens, DEX trading, NFTs and meme-token culture.",
+    "url": "/wiki/xrp-ledger.html",
+    "tags": [
+      "xrp",
+      "ledger",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "xrp ledger crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 219,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 669,
+      "keyword_bag_size": 21,
+      "heading_count": 10,
+      "list_count": 1,
+      "internal_link_count": 9,
+      "paragraph_count": 7,
+      "section_count": 7,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 61,
+      "authority_score": 18
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 33,
+      "keyword_bag_points": 21,
+      "content_quality_points": 69,
+      "authority_points": 31,
+      "final_rank_score": 219,
+      "authority_graph_points": 13
+    },
+    "search_index": {
+      "normalized_title": "xrp ledger crypto moonboys wiki",
+      "tokens": [
+        "xrp",
+        "ledger",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "xrp",
+        "ledger",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "guide",
+        "to",
+        "the",
+        "xrpl",
+        "accounts",
+        "trust",
+        "lines",
+        "issued",
+        "tokens",
+        "dex",
+        "trading",
+        "nfts",
+        "and",
+        "meme",
+        "token",
+        "culture"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 4,
+      "outbound_count": 29,
+      "existing_outbound_count": 9,
+      "suggested_outbound_count": 20,
+      "authority": 12.5
+    },
+    "brand": null
+  },
+  {
     "title": "🍒 Altcoin Avenger 💋",
     "desc": "🍒 Altcoin Avenger 💋 is an NFT in the gkniftyheads WAX AtomicAssets collection.",
     "url": "/wiki/gkniftyheads-altcoin-avenger-783406.html",
@@ -34970,6 +35103,98 @@
       "existing_outbound_count": 12,
       "suggested_outbound_count": 8,
       "authority": 46
+    },
+    "brand": null
+  },
+  {
+    "title": "TAGZcoin",
+    "desc": "TAGZcoin: its XRPL archive record, graffiti and on-chain mural proposals, and the limits of current asset identification.",
+    "url": "/wiki/tagzcoin.html",
+    "tags": [
+      "tagzcoin",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "tagzcoin crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 218,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 4,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 736,
+      "keyword_bag_size": 20,
+      "heading_count": 10,
+      "list_count": 1,
+      "internal_link_count": 13,
+      "paragraph_count": 13,
+      "section_count": 7,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 65,
+      "authority_score": 18
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 37,
+      "keyword_bag_points": 20,
+      "content_quality_points": 72,
+      "authority_points": 24,
+      "final_rank_score": 218,
+      "authority_graph_points": 6
+    },
+    "search_index": {
+      "normalized_title": "tagzcoin crypto moonboys wiki",
+      "tokens": [
+        "tagzcoin",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "tagzcoin",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "its",
+        "xrpl",
+        "archive",
+        "record",
+        "graffiti",
+        "and",
+        "on",
+        "chain",
+        "mural",
+        "proposals",
+        "the",
+        "limits",
+        "of",
+        "current",
+        "asset",
+        "identification",
+        "proposal",
+        "walls",
+        "as",
+        "wallets",
+        "murals"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 28,
+      "existing_outbound_count": 11,
+      "suggested_outbound_count": 17,
+      "authority": 5.5
     },
     "brand": null
   },
@@ -35701,96 +35926,6 @@
     "brand": null
   },
   {
-    "title": "XRP Ledger",
-    "desc": "Crypto Moonboys wiki guide to the XRP Ledger, XRPL accounts, XRP, trust lines, issued tokens, DEX trading, NFTs and meme-token culture.",
-    "url": "/wiki/xrp-ledger.html",
-    "tags": [
-      "xrp",
-      "ledger",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "xrp ledger crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 217,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 669,
-      "keyword_bag_size": 21,
-      "heading_count": 10,
-      "list_count": 1,
-      "internal_link_count": 9,
-      "paragraph_count": 7,
-      "section_count": 7,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 61,
-      "authority_score": 18
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 33,
-      "keyword_bag_points": 21,
-      "content_quality_points": 69,
-      "authority_points": 29,
-      "final_rank_score": 217,
-      "authority_graph_points": 11
-    },
-    "search_index": {
-      "normalized_title": "xrp ledger crypto moonboys wiki",
-      "tokens": [
-        "xrp",
-        "ledger",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "xrp",
-        "ledger",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "guide",
-        "to",
-        "the",
-        "xrpl",
-        "accounts",
-        "trust",
-        "lines",
-        "issued",
-        "tokens",
-        "dex",
-        "trading",
-        "nfts",
-        "and",
-        "meme",
-        "token",
-        "culture"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 3,
-      "outbound_count": 29,
-      "existing_outbound_count": 9,
-      "suggested_outbound_count": 20,
-      "authority": 10.5
-    },
-    "brand": null
-  },
-  {
     "title": "⚡️⚡️⚡️ FREE`MINDS GK BEATS GENESIS",
     "desc": "⚡️⚡️⚡️ FREE`MINDS GK BEATS GENESIS is an NFT in the gkniftyheads WAX AtomicAssets collection.",
     "url": "/wiki/gkniftyheads-free-minds-gk-beats-genesis-776049.html",
@@ -36344,6 +36479,99 @@
       "existing_outbound_count": 12,
       "suggested_outbound_count": 44,
       "authority": 32
+    },
+    "brand": null
+  },
+  {
+    "title": "Ethereum (ETH) Ecosystem",
+    "desc": "A reading guide to Ethereum, other networks, blockchain concepts and the market language used in HODL WARS.",
+    "url": "/wiki/ethereum-ecosystem.html",
+    "tags": [
+      "ethereum",
+      "eth",
+      "ecosystem",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "ethereum ecosystem"
+      }
+    ],
+    "rank_score": 213,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 6,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 511,
+      "keyword_bag_size": 22,
+      "heading_count": 8,
+      "list_count": 2,
+      "internal_link_count": 26,
+      "paragraph_count": 8,
+      "section_count": 5,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 53,
+      "authority_score": 22
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 26,
+      "keyword_bag_points": 22,
+      "content_quality_points": 62,
+      "authority_points": 38,
+      "final_rank_score": 213,
+      "authority_graph_points": 16
+    },
+    "search_index": {
+      "normalized_title": "ethereum eth ecosystem crypto moonboys wiki",
+      "tokens": [
+        "ethereum",
+        "eth",
+        "ecosystem",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "ethereum",
+        "eth",
+        "ecosystem",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "a",
+        "reading",
+        "guide",
+        "to",
+        "other",
+        "networks",
+        "blockchain",
+        "concepts",
+        "and",
+        "the",
+        "market",
+        "language",
+        "used",
+        "in",
+        "hodl",
+        "wars"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 2,
+      "outbound_count": 44,
+      "existing_outbound_count": 24,
+      "suggested_outbound_count": 20,
+      "authority": 16
     },
     "brand": null
   },
@@ -39852,95 +40080,6 @@
       "existing_outbound_count": 12,
       "suggested_outbound_count": 9,
       "authority": 20
-    },
-    "brand": null
-  },
-  {
-    "title": "TAGZcoin",
-    "desc": "Crypto Moonboys wiki guide to TAGZcoin, an XRP meme coin and XRPL community-token listing with issuer, trust-line and DEX research notes.",
-    "url": "/wiki/tagzcoin.html",
-    "tags": [
-      "tagzcoin",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "tagzcoin crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 196,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 4,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 566,
-      "keyword_bag_size": 22,
-      "heading_count": 11,
-      "list_count": 1,
-      "internal_link_count": 9,
-      "paragraph_count": 8,
-      "section_count": 8,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 53,
-      "authority_score": 16
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 28,
-      "keyword_bag_points": 22,
-      "content_quality_points": 60,
-      "authority_points": 21,
-      "final_rank_score": 196,
-      "authority_graph_points": 5
-    },
-    "search_index": {
-      "normalized_title": "tagzcoin crypto moonboys wiki",
-      "tokens": [
-        "tagzcoin",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "tagzcoin",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "guide",
-        "to",
-        "an",
-        "xrp",
-        "meme",
-        "coin",
-        "and",
-        "xrpl",
-        "community",
-        "token",
-        "listing",
-        "with",
-        "issuer",
-        "trust",
-        "line",
-        "dex",
-        "research",
-        "notes"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 28,
-      "existing_outbound_count": 9,
-      "suggested_outbound_count": 19,
-      "authority": 4.5
     },
     "brand": null
   },
@@ -46485,7 +46624,7 @@
         "title": "bitcoin btc crypto moonboys wiki"
       }
     ],
-    "rank_score": 94,
+    "rank_score": 96,
     "rank_signals": {
       "is_canonical": true,
       "alias_count": 2,
@@ -46494,12 +46633,12 @@
       "category": "tokens",
       "category_priority": 6,
       "has_description": true,
-      "article_word_count": 6,
+      "article_word_count": 17,
       "keyword_bag_size": 5,
-      "heading_count": 0,
+      "heading_count": 1,
       "list_count": 0,
-      "internal_link_count": 0,
-      "paragraph_count": 0,
+      "internal_link_count": 1,
+      "paragraph_count": 1,
       "section_count": 0,
       "lore_paragraph_count": 0,
       "content_quality_score": 10,
@@ -46509,12 +46648,12 @@
       "canonical_points": 20,
       "description_points": 10,
       "category_points": 30,
-      "word_count_points": 0,
+      "word_count_points": 1,
       "keyword_bag_points": 5,
       "content_quality_points": 21,
-      "authority_points": 8,
-      "final_rank_score": 94,
-      "authority_graph_points": 8
+      "authority_points": 9,
+      "final_rank_score": 96,
+      "authority_graph_points": 9
     },
     "search_index": {
       "normalized_title": "bitcoin btc crypto moonboys wiki",
@@ -46536,9 +46675,9 @@
     "link_score": {
       "inbound_count": 4,
       "outbound_count": 21,
-      "existing_outbound_count": 0,
-      "suggested_outbound_count": 21,
-      "authority": 8
+      "existing_outbound_count": 1,
+      "suggested_outbound_count": 20,
+      "authority": 8.5
     },
     "brand": null
   }

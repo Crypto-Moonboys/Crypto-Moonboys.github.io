@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Solana — ultra-fast blockchain for DeFi, NFTs and Web3 — Crypto Moonboys Wiki">
+  <meta name="description" content="Solana: its history, Proof of History, stake-weighted consensus, parallel execution and performance limits, without unsupported price or finality claims.">
   <meta name="robots" content="index, follow">
   <meta property="og:title" content="Solana (SOL) — Crypto Moonboys Wiki">
-  <meta property="og:description" content="Solana — ultra-fast blockchain for DeFi, NFTs and Web3 — Crypto Moonboys Wiki">
+  <meta property="og:description" content="Solana: its history, Proof of History, stake-weighted consensus, parallel execution and performance limits, without unsupported price or finality claims.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://cryptomoonboys.com/wiki/solana.html">
   <meta property="og:image" content="https://cryptomoonboys.com/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png">
@@ -14,28 +14,28 @@
   <title>Solana (SOL) — Crypto Moonboys Wiki</title>
   <link rel="stylesheet" href="/css/wiki.css">
   <link rel="stylesheet" href="/css/battle-layer.css">
-<script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "Article",
-    "headline": "Solana (SOL)",
-    "description": "Solana — ultra-fast blockchain for DeFi, NFTs and Web3 — Crypto Moonboys Wiki",
-    "url": "https://cryptomoonboys.com/wiki/solana.html",
-    "author": {
-      "@type": "Organization",
-      "name": "Crypto Moonboys"
-    },
-    "publisher": {
-      "@type": "Organization",
-      "name": "Crypto Moonboys",
-      "logo": {
-        "@type": "ImageObject",
-        "url": "https://cryptomoonboys.com/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png"
-      }
+<script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "Solana (SOL)",
+  "description": "Solana: its history, Proof of History, stake-weighted consensus, parallel execution and performance limits, without unsupported price or finality claims.",
+  "url": "https://cryptomoonboys.com/wiki/solana.html",
+  "author": {
+    "@type": "Organization",
+    "name": "Crypto Moonboys"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Crypto Moonboys",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://cryptomoonboys.com/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png"
     }
   }
-  </script>
+}</script>
   <link rel="icon" type="image/png" href="/favicon.png">
+<meta name="wiki-search-terms" content="Solana, SOL, Proof of History, Tower BFT, Turbine, Sealevel, commitment levels">
+<style>.article-contents{padding:1rem;margin:1.4rem 0;border:1px solid currentColor;border-radius:.5rem}.article-contents summary{cursor:pointer;font-weight:700}.article-contents ol{padding-left:1.4rem}.wiki-content h2[id],.wiki-content h3[id]{scroll-margin-top:7rem}@media(max-width:1120px){.wiki-content h2[id],.wiki-content h3[id]{scroll-margin-top:18rem}}</style>
 </head>
 <body class="page-wiki page-standard-shell">
 <main id="content" role="main">
@@ -43,133 +43,68 @@
       <aside class="infobox" aria-label="Solana (SOL) quick facts"><div class="infobox-title">Solana (SOL)</div><div class="infobox-image"><span style="font-size:5rem" aria-label="Solana (SOL)">◎</span></div></aside>
       <h1 class="page-title">Solana (SOL)</h1>
       <div class="page-title-line" aria-hidden="true"></div>
-      <div class="article-meta"><span class="article-badge">✅ Verified</span><span class="meta-item">📅 Last updated: 2024-01</span><span class="meta-item">📂 <a href="/categories/cryptocurrencies.html">Cryptocurrencies</a></span></div>
-      <nav id="toc" aria-label="Table of contents"><div class="toc-title">📋 Contents</div></nav>
-      <article class="wiki-content">
+      <div class="article-meta"><span class="article-badge">✅ Verified</span><span class="meta-item">📅 Last updated: October 2026</span><span class="meta-item">📂 <a href="/categories/cryptocurrencies.html">Cryptocurrencies</a></span></div>
 
-  <p><strong>Solana (SOL)</strong> showed up to the <a href="/wiki/blockchain.html">blockchain</a> party and said: <em>"Speed? We do speed."</em> While Ethereum was charging $50 gas fees during <a href="/wiki/defi.html">DeFi</a> Summer, Solana was processing transactions in <strong>400 milliseconds</strong> for fractions of a cent. Dismissed by critics as centralised, knocked down by network outages, nearly killed by the FTX collapse — Solana refused to die. Instead, it came back harder, faster, and louder, becoming <strong>THE home of <a href="/wiki/memecoins.html">memecoins</a>, high-frequency DeFi, and the next wave of consumer crypto</strong>. The comeback kid of crypto. The chain that BONK built. SOL szn is eternal.</p>
+      <article class="wiki-content" data-canon-revision="1" data-canon-source-tier="first-witness+w81">
+<!-- CANONICAL_CONTENT:BEGIN -->
+<p><strong>Solana</strong> is a programmable blockchain whose native asset, SOL, pays network fees and supports its proof-of-stake system. Its architecture emphasises rapid block production and parallel execution. Performance depends on workload, network conditions and confirmation requirements; a fast interface response is not the same as final settlement.</p>
+<details id="toc" class="article-contents"><summary>Contents</summary><nav aria-label="Table of contents"><ol><li><a href="#history">History and origins</a></li><li><a href="#how-it-works">How it works</a></li><li><a href="#key-stats">Network properties</a></li><li><a href="#why-it-matters">Applications and trade-offs</a></li><li><a href="#risks-controversies">Risks and trade-offs</a></li><li><a href="#moonboys-take">Solana in Crypto Moonboys</a></li><li><a href="#see-also">See also</a></li></ol></nav></details>
 
-  <h2 id="history">History &amp; Origins</h2>
-
-  <h3 id="whitepaper">The Whitepaper &amp; Founding (2017–2020)</h3>
-  <p><strong>Anatoly Yakovenko</strong>, a former Qualcomm engineer, published the Solana whitepaper in <strong>November 2017</strong>, introducing a novel concept called <strong>Proof of History (PoH)</strong> — a cryptographic clock that timestamps events on the blockchain before consensus, dramatically accelerating the ability to reach agreement without communication overhead. Yakovenko teamed up with <strong>Greg Fitzgerald</strong> and <strong>Eric Williams</strong>, eventually co-founding Solana Labs.</p>
-  <p>The <strong>Solana mainnet beta launched in March 2020</strong>, just as the world was locking down for COVID-19. Timing-wise, it was perfect: a new, fast blockchain ready just as DeFi was about to explode.</p>
-
-  <h3 id="ftx-backing">The FTX/Alameda Era &amp; First ATH (2021)</h3>
-  <p>The rocket fuel for Solana's first bull run came from an unexpected source: <strong>Sam Bankman-Fried</strong> and his firms <strong>FTX</strong> and <strong>Alameda Research</strong> became massive early investors and backers of the Solana ecosystem. FTX exchange promoted SOL heavily, funded Solana-based projects through its ventures arm, and was instrumental in bootstrapping the ecosystem.</p>
-  <p>The results were spectacular: SOL launched at under $1, rallied through 2021, and hit an <strong>all-time high of $260 on 6 November 2021</strong>. The Solana ecosystem saw explosive growth in <a href="/wiki/nfts.html">NFTs</a> (Degenerate Ape Academy, Okay Bears), DeFi (Serum DEX, Raydium), and gaming. <a href="/wiki/exchanges.html">Exchanges</a> listed SOL widely as the "Ethereum killer" narrative peaked.</p>
-
-  <h3 id="ftx-collapse">The FTX Collapse &amp; Near-Death Experience (2022)</h3>
-  <p>Then came November 2022. The <strong>FTX collapse</strong> — the most catastrophic fraud in crypto history — hit Solana harder than almost any other chain. When FTX went bankrupt, it became clear that <strong>Alameda Research held massive SOL positions</strong>, and the broader market panicked about what unwinding would mean for the ecosystem.</p>
-  <p>SOL crashed from ~$36 to a low of <strong>~$8</strong> — a 97% drawdown from its ATH. Developers left. Projects pivoted to other chains. Crypto Twitter wrote Solana's obituary weekly. The network's history of outages (over 17 major incidents between 2020–2022) added to the doom narrative. It looked like the end.</p>
-  <p>It wasn't.</p>
-
-  <h3 id="bonk-revival">BONK &amp; the Community Revival (December 2022)</h3>
-  <p>On <strong>25 December 2022</strong> — Christmas Day — the Solana community received an unlikely gift: the <strong>BONK airdrop</strong>. BONK, a Shiba Inu-inspired memecoin with a dog wielding a bat, airdropped 50% of its supply to Solana community members — NFT holders, developers, users. It was a community-driven move specifically designed to counter the Alameda/FTX token dominance and reinvigorate morale.</p>
-  <p>It worked beyond anyone's expectations. BONK rallied thousands of percent, brought in new users, dominated crypto Twitter, and reignited belief in Solana. The BONK airdrop is now legendary as one of the most effective community-building events in crypto history. Solana's comeback had begun. See <a href="/wiki/memecoins.html">Meme Coins</a> for the full memecoin chapter.</p>
-
-  <h3 id="comeback">The Great Comeback (2023–2024)</h3>
-  <p>2023 was Solana's proof-of-resilience year. While Ethereum dealt with L2 fragmentation and the broader market remained bearish, Solana quietly rebuilt:</p>
-  <ul>
-    <li><strong>Magic Eden</strong> became the dominant NFT marketplace, expanding multi-chain but keeping Solana as its home base</li>
-    <li><strong>Jupiter Exchange</strong> (jup.ag) emerged as the dominant DEX aggregator on Solana, processing billions in volume and becoming a top-10 DeFi protocol by usage</li>
-    <li><strong>Memecoin mania</strong> arrived in force: BONK, <strong>dogwifhat (WIF)</strong>, <strong>POPCAT</strong>, <strong>BRETT</strong>, and dozens of others launched on Solana, attracting a new generation of degens. The Pump.fun launchpad made creating memecoins accessible to anyone with $2 and a wallet</li>
-    <li>Network stability improved dramatically — the engineering team addressed the root causes of previous outages with QUIC networking, stake-weighted QoS, and fee market improvements</li>
-  </ul>
-  <p>SOL set a <strong>new all-time high of $293 in January 2025</strong>, surpassing its previous 2021 peak. The "it's dead" crowd had been decisively proven wrong.</p>
-
-  <h3 id="etf-future">Solana ETF Filings (2025)</h3>
-  <p>Following the Bitcoin and Ethereum ETF approvals, asset managers including <strong>VanEck</strong> and <strong>21Shares</strong> filed for spot Solana ETFs in the US in 2025. While approval remains pending as of mid-2025, the filings signal growing institutional interest in SOL as an investment vehicle. Solana's DeFi ecosystem has grown to over <strong>$10B+ TVL</strong> by 2025.</p>
-
-  <h2 id="how-it-works">How It Works</h2>
-
-  <h3 id="proof-of-history">Proof of History (PoH)</h3>
-  <p><strong>Proof of History</strong> is Solana's core innovation — and the hardest thing to explain at a dinner party. Think of it as a <strong>cryptographic clock</strong>. Instead of nodes having to communicate with each other to agree on <em>when</em> something happened (which is slow), Solana creates a verifiable, trustless sequence of events using a <strong>Verifiable Delay Function (VDF)</strong>. Specifically, it uses <strong>SHA-256</strong> as a sequential hash function — each hash output becomes the input of the next, creating an unforgeable historical record of the passage of time and order of events. This means validators can process transactions without waiting for network-wide agreement on timestamps, massively accelerating throughput.</p>
-
-  <h3 id="tower-bft">Tower BFT Consensus</h3>
-  <p><strong>Tower BFT</strong> is Solana's implementation of Practical Byzantine Fault Tolerance (PBFT), optimised to take advantage of the PoH clock. Because nodes share a common timestamp from PoH, the communication overhead of traditional BFT consensus is dramatically reduced. Validators vote on blocks, and votes are weighted by stake. Achieving finality (irreversible confirmation) takes approximately 32 validator votes — which, given Solana's block times, means <strong>economic finality in ~1–2 seconds</strong>.</p>
-
-  <h3 id="turbine">Turbine &amp; Gulf Stream</h3>
-  <p><strong>Turbine</strong> is Solana's block propagation protocol, inspired by BitTorrent. Instead of broadcasting full blocks to every node (which becomes a bottleneck at scale), Turbine breaks blocks into small packets and distributes them through a tree structure, dramatically reducing bandwidth requirements per validator.</p>
-  <p><strong>Gulf Stream</strong> is Solana's mempool-less transaction forwarding protocol. Instead of transactions waiting in a mempool to be picked up, validators forward transactions to the next expected leaders in the validator schedule. This means the network can handle up to <strong>100,000 transactions in memory</strong> before they even get processed, eliminating mempool congestion.</p>
-
-  <h3 id="sealevel">Sealevel: Parallel Execution</h3>
-  <p><strong>Sealevel</strong> is Solana's smart contract runtime, and it's what allows Solana to execute thousands of smart contracts <em>in parallel</em> using all available CPU and GPU cores. Unlike Ethereum's EVM, which processes transactions sequentially, Sealevel analyses which transactions access overlapping state and runs non-overlapping transactions simultaneously. This is the key architectural reason Solana can sustain much higher throughput than sequential execution chains.</p>
-
-  <h3 id="performance">Performance Numbers</h3>
-  <p>The combined effect of PoH + Tower BFT + Turbine + Gulf Stream + Sealevel is a blockchain that delivers:</p>
-  <ul>
-    <li><strong>400ms block times</strong> (versus Bitcoin's 10 minutes, Ethereum's ~12 seconds)</li>
-    <li><strong>65,000+ TPS theoretical maximum</strong> (real-world sustained: 3,000–5,000 TPS under normal conditions)</li>
-    <li><strong>Transaction fees averaging &lt;$0.001</strong> — essentially free for end users</li>
-    <li><strong>~1–2 second economic finality</strong></li>
-  </ul>
-
-  <h2 id="key-stats">Key Stats &amp; Milestones</h2>
-  <table>
-    <thead>
-      <tr><th>Metric</th><th>Value</th></tr>
-    </thead>
-    <tbody>
-      <tr><td>All-Time High Price (as of Jan 2025)</td><td>$293 (January 2025) — verify current ATH at CoinGecko</td></tr>
-      <tr><td>Previous ATH</td><td>$260 (November 2021)</td></tr>
-      <tr><td>Theoretical Max TPS</td><td>65,000+</td></tr>
-      <tr><td>Real-World Sustained TPS</td><td>3,000–5,000 TPS</td></tr>
-      <tr><td>Block Time</td><td>~400ms</td></tr>
-      <tr><td>Average Transaction Fee</td><td>&lt;$0.001</td></tr>
-      <tr><td>Validator Count</td><td>1,500+ active validators</td></tr>
-      <tr><td>Total SOL Supply</td><td>~580 million SOL</td></tr>
-      <tr><td>DeFi TVL (2025)</td><td>$10B+</td></tr>
-      <tr><td>Mainnet Beta Launch</td><td>March 2020</td></tr>
-      <tr><td>BONK Airdrop</td><td>25 December 2022</td></tr>
-      <tr><td>First ATH</td><td>$260 (6 Nov 2021)</td></tr>
-    </tbody>
-  </table>
-
-  <h2 id="why-it-matters">Why It Matters</h2>
-  <p>Solana is proving that high-performance blockchain and decentralisation don't have to be mutually exclusive (with ongoing work to improve validator decentralisation). Here's why it matters:</p>
-  <ul>
-    <li><strong>Consumer Crypto:</strong> Solana is where mainstream consumer applications are being built. <strong>Helium</strong> (decentralised wireless), <strong>Hivemapper</strong> (decentralised mapping), and <strong>Render Network</strong> (GPU computing) all migrated to or launched on Solana for its speed and cost efficiency.</li>
-    <li><strong>Payments:</strong> <strong>Visa</strong> and <strong>Shopify</strong> have both integrated Solana-based payment solutions, processing real-world commerce on the blockchain. USDC on Solana is a leading payment stablecoin.</li>
-    <li><strong>DeFi:</strong> Jupiter Exchange (<a href="/wiki/defi.html">DeFi</a>) processes billions in daily volume. Drift Protocol, MarginFi, Kamino Finance, and others form a complete DeFi ecosystem. The speed and cost of Solana make sophisticated on-chain strategies viable for retail users.</li>
-    <li><strong>NFTs:</strong> <a href="/wiki/nfts.html">NFTs</a> on Solana via Magic Eden offer near-instant settlement and fees measured in cents, not dollars. The Solana NFT ecosystem has processed billions in lifetime volume.</li>
-    <li><strong>Memecoins:</strong> Let's be honest — Solana is the memecoin capital of the world. Pump.fun has launched tens of thousands of tokens. BONK, WIF, POPCAT — these are Solana-native cultural phenomena. See <a href="/wiki/memecoins.html">Meme Coins</a>.</li>
-  </ul>
-
-  <h2 id="risks-controversies">Risks &amp; Controversies</h2>
-  <ul>
-    <li><strong>Network Outages:</strong> Solana suffered over <strong>17 major network outages or slowdowns</strong> between 2020 and 2022, often lasting hours. The root causes ranged from bot spam during NFT mints to consensus bugs. Significant engineering effort has been put into stability improvements, and 2023–2024 have been much more stable — but the reputation damage lingers, and the risk isn't fully eliminated.</li>
-    <li><strong>VC Token Distribution:</strong> Early venture capital investors received large SOL allocations at prices far below public sale. This creates overhang risk — large holders who can sell at significant profit. Critics argue Solana's token distribution is less decentralised than Bitcoin or Ethereum.</li>
-    <li><strong>The FTX Stigma:</strong> The FTX connection nearly killed Solana. While the ecosystem has demonstrably moved past it, the association with Sam Bankman-Fried remains a reputational mark that FUD-spreaders continue to deploy.</li>
-    <li><strong>Validator Concentration:</strong> While Solana has 1,500+ validators, stake is somewhat concentrated among large operators. The Nakamoto Coefficient (minimum validators needed to collude for 33% of stake) is lower than Ethereum, though improving.</li>
-    <li><strong>Solana vs. Ethereum:</strong> The competition is real. Ethereum's L2 ecosystem has dramatically closed the fee gap post-Dencun. Whether Solana maintains its performance advantages as Ethereum scales is an open question.</li>
-  </ul>
-
-  <div class="notice warning">
-    <span class="notice-icon" aria-hidden="true">⚠️</span>
-    <div><strong>Not Financial Advice</strong> — Solana's history includes extreme volatility. The FTX crash showed how systemic risk can destroy value. DYOR before any investment.</div>
-  </div>
-
-  <h2 id="moonboys-take">The Crypto Moonboys Take 🚀</h2>
-  <p>Let's talk about what it took to be a Solana holder in December 2022. SOL at $8. FTX in flames. Alameda wallets getting liquidated on-chain in real time. Every crypto outlet writing the obituary. Normal people sold. The <strong><a href="/wiki/diamond-hands.html">diamond hands</a></strong> held — and loaded more bags.</p>
-  <p>From $8 to $293. That's the Solana story in two numbers. The <a href="/wiki/moon-mission.html">Moon Mission</a> is not a metaphor for Solana — it's a documented historical event that has happened <em>twice</em>. The people who understood what Solana was building, who believed in Anatoly's vision, who held through the FTX catastrophe — they were rewarded with one of the greatest comebacks in financial history.</p>
-  <p>And the <a href="/wiki/fomo-plague.html">FOMO Plague</a> is <em>real</em> in Solana's memecoin ecosystem. BONK went from airdrop to top-50 asset. WIF — a dog in a hat — hit a $4B market cap. If you missed the BONK airdrop and didn't hold through to 2024, that FOMO is warranted. But it also means the next Solana narrative hasn't launched yet.</p>
-  <blockquote>
-    "Solana died 400 times and came back stronger every time. That's not a bug — that's a vibe." — Crypto Moonboys Community
-  </blockquote>
-  <p>SOL szn. Always has been. 🌕</p>
-
-  <h2 id="see-also">See Also</h2>
-  <ul>
-    <li><a href="/wiki/blockchain.html">Blockchain Technology</a></li>
-    <li><a href="/wiki/defi.html">DeFi</a></li>
-    <li><a href="/wiki/nfts.html">NFTs</a></li>
-    <li><a href="/wiki/exchanges.html">Exchanges</a></li>
-    <li><a href="/wiki/memecoins.html">Meme Coins</a></li>
-    <li><a href="/wiki/moon-mission.html">Moon Mission</a></li>
-    <li><a href="/wiki/fomo-plague.html">FOMO Plague</a></li>
-  </ul>
-
+<h2 id="history">History and origins</h2>
+<h3 id="whitepaper">Origins and mainnet beta</h3>
+<p>Anatoly Yakovenko’s 2017 proposal introduced Proof of History as a way to provide a verifiable sequence of events. Solana Labs developed the network with a broader engineering team, and mainnet beta launched in March 2020. The design combines that sequencing mechanism with stake-weighted consensus; Proof of History is not a substitute for agreement among validators.</p>
+<h3 id="ftx-backing">The FTX and Alameda relationship</h3>
+<p>FTX and Alameda Research invested in and promoted parts of the Solana ecosystem during its early expansion. Projects including Serum, Raydium and NFT marketplaces helped make the network visible. These relationships did not make the network identical to either company, but they created financial and reputational exposure.</p>
+<h3 id="ftx-collapse">The 2022 shock</h3>
+<p>The collapse of FTX in November 2022 contributed to severe uncertainty over investments, asset sales and applications tied to its ecosystem. SOL’s price fell sharply. Network outages and congestion were separate engineering concerns; neither a price collapse nor a subsequent recovery alone measures technical reliability.</p>
+<h3 id="bonk-revival">BONK and community activity</h3>
+<p>BONK’s December 2022 distribution became a prominent cultural event among Solana users. It is one example of how a token can attract attention and reinforce a shared identity. Claims that one airdrop single-handedly saved a network overstate causation and ignore continuing work by developers, operators and users.</p>
+<h3 id="comeback">Applications and network development</h3>
+<p>During 2023–2024, activity included trading through Jupiter and other services, NFT marketplaces, consumer applications and memecoin launches. BONK, dogwifhat and POPCAT are examples associated with Solana. BRETT is associated with Base, illustrating why similar meme themes do not identify a common network.</p>
+<p>Engineering work addressed transaction transport, congestion and prioritisation. That work should be evaluated through dated incident and performance records. An improvement does not establish that future outages are impossible or that every application has the same reliability.</p>
+<h3 id="etf-future">Investment products and changing status</h3>
+<p>Interest in exchange-traded SOL products belongs to a separate financial and regulatory history. Filings, approvals and actual trading are different events, and status differs by jurisdiction. An old report that approval is pending needs its date and jurisdiction; this reference makes no new claim about an active application or product.</p>
+<h2 id="how-it-works">How it works</h2>
+<h3 id="proof-of-history">Proof of History</h3>
+<p>Proof of History uses a sequential hash process to supply a verifiable ordering reference. Validators can check this sequence without relying only on a leader’s stated clock. It helps coordinate processing, but still requires consensus to decide which proposed history is accepted. A sequence of hashes cannot establish that off-chain claims are true.</p>
+<h3 id="tower-bft">Tower BFT and commitment levels</h3>
+<p>The established Tower BFT design uses stake-weighted voting and increasing lockouts when validators build on prior votes. Commitment levels distinguish processing from stronger confirmation and finalisation. Voting depth and lockouts concern successive decisions, not a simple count of independent validators that can be converted directly into a fixed settlement time.</p>
+<p>Block time, confirmation latency and finality are different measurements. Applications should state the commitment level they require. No fixed finality time is asserted here, and exceptional failures remain outside normal consensus assumptions.</p>
+<h3 id="turbine">Block propagation and transaction forwarding</h3>
+<p>Turbine distributes block data in smaller pieces through the network. The transaction-forwarding design commonly called Gulf Stream sends transactions toward scheduled leaders. These approaches organise transport and reduce some bottlenecks; they do not eliminate congestion, guarantee delivery or create unlimited processing capacity.</p>
+<h3 id="sealevel">Parallel execution</h3>
+<p>Solana transactions declare accounts they will access. The runtime can schedule operations touching independent state in parallel, while conflicting access must be coordinated. Parallel execution can improve throughput for suitable workloads; contention on popular accounts and resource requirements still constrain performance.</p>
+<h3 id="performance">Reading performance claims</h3>
+<p>A useful benchmark states whether it counts user transactions, validator votes or both, describes the workload and separates attempted from successful transactions. Theoretical capacity is not demonstrated sustained performance. Fees also depend on priority and activity, so neither a universal sub-cent price nor an old headline throughput figure belongs in a timeless specification.</p>
+<h2 id="key-stats">Network properties</h2>
+<table><thead><tr><th>Property</th><th>Meaning</th></tr></thead><tbody><tr><td>Native asset</td><td>SOL</td></tr><tr><td>Mainnet beta</td><td>Launched in March 2020</td></tr><tr><td>Ordering reference</td><td>Proof of History</td></tr><tr><td>Consensus</td><td>Stake-weighted validator agreement</td></tr><tr><td>Execution</td><td>Parallel scheduling where account access permits</td></tr><tr><td>Settlement</td><td>Depends on commitment level and network conditions</td></tr></tbody></table>
+<h2 id="why-it-matters">Applications and trade-offs</h2>
+<p>A shared environment with rapid processing can support payments, exchanges, collectibles and consumer services. Different applications value different trade-offs: frequent small actions may be sensitive to fees, while larger transfers require careful settlement and custody decisions.</p>
+<p>Examples such as Jupiter, Raydium and Magic Eden illustrate application categories, not a guarantee of liquidity or permanent network support. A familiar token ticker or application name must still be matched to the exact network, asset and service terms.</p>
+<h2 id="risks-controversies">Risks and trade-offs</h2>
+<ul>
+<li><strong>Availability:</strong> Solana has experienced outages and periods of degraded service. Incident counts require a defined period and category.</li>
+<li><strong>Concentration:</strong> Stake distribution, operator independence, software diversity and hardware requirements affect resilience.</li>
+<li><strong>Applications:</strong> Wallets, contracts, bridges and custody providers introduce their own failure modes.</li>
+<li><strong>Distribution:</strong> Large holders and unlock schedules can affect markets without dictating a guaranteed price response.</li>
+<li><strong>Measurement:</strong> Comparing chains requires equivalent definitions for fees, throughput, finality and decentralisation.</li>
+</ul>
+<h2 id="moonboys-take">Solana in Crypto Moonboys</h2>
+<p>The archive discusses multi-chain art and gaming ambitions, including Solana. Those historical references do not establish that every collection, reward or game currently supports it. The present creator umbrella allows both Moonboy character development and work under an existing identity.</p>
+<p>“Moon mission,” “diamond hands” and the FOMO Plague are cultural or fictional reference terms. They are not evidence that a price recovery will repeat, that selling is a personal failure or that a reader has missed a guaranteed opportunity.</p>
+<h2 id="see-also">See also</h2>
+<ul>
+<li><a href="/wiki/blockchain.html">Blockchain Technology</a></li>
+<li><a href="/wiki/defi.html">DeFi</a></li>
+<li><a href="/wiki/memecoins.html">Meme Coins</a></li>
+<li><a href="/wiki/nfts.html">NFTs</a></li>
+<li><a href="/wiki/exchanges.html">Crypto Exchanges</a></li>
+<li><a href="/wiki/diamond-hands.html">Diamond Hands</a></li>
+<li><a href="/wiki/moon-mission.html">Moon Mission</a></li>
+<li><a href="/wiki/fomo-plague.html">FOMO Plague</a></li>
+</ul>
+<p class="source-note">This is an educational reference. The linked protocol documentation and current service terms govern implementation details; historical project promotion is not verification of current prices, returns or availability.</p>
+<!-- CANONICAL_CONTENT:END -->
 </article>
 <!-- RELATED_WIKI_PATHS:BEGIN -->
       <section class="wiki-section related-wiki-paths" data-related-wiki-paths="true" aria-labelledby="related-wiki-paths-title">
@@ -247,14 +182,14 @@
       <span class="cite-num">[2]</span>
       <div>
         <span class="cite-source-type cite-website">Website</span>
-        <a href="https://defillama.com/chain/Solana" target="_blank" rel="noopener noreferrer">DeFi Llama — Solana TVL</a> — Total Value Locked across all Solana DeFi protocols, including Jupiter, Drift, and Kamino Finance.
+        <a href="https://defillama.com/chain/Solana" target="_blank" rel="noopener noreferrer">DeFi Llama — Solana TVL</a> — Protocol-level Solana DeFi measurements; coverage and classification depend on the dashboard.
       </div>
     </li>
     <li id="cite-3">
       <span class="cite-num">[3]</span>
       <div>
         <span class="cite-source-type cite-website">Website</span>
-        <a href="https://jup.ag" target="_blank" rel="noopener noreferrer">Jupiter Exchange (jup.ag)</a> — The dominant DEX aggregator on Solana, routing trades across all Solana liquidity pools with best-price execution.
+        <a href="https://jup.ag" target="_blank" rel="noopener noreferrer">Jupiter Exchange (jup.ag)</a> — Solana trade-routing service; supported routes and execution conditions depend on the current service.
       </div>
     </li>
     <li id="cite-4">
@@ -303,7 +238,7 @@
         <div class="citation-vote-panel-actions">
           <span class="cite-vote" data-page-id="solana" data-cite-id="citation-panel"></span>
           <span class="citation-vote-login-prompt">Connect/login to vote when citation voting is available.</span>
-          
+
         </div>
       </section>
 <!-- CITATION_VOTE_PANEL:END -->

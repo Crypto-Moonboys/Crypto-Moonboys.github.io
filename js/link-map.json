@@ -289,10 +289,10 @@
     ],
     "suggested_links": [
       "/wiki/alfie-bitcoin-kid-blaze.html",
+      "/wiki/bear-market-siege.html",
       "/wiki/bitcoin-kid-army.html",
       "/wiki/bitcoin-kids.html",
       "/wiki/bitcoin-x-kids.html",
-      "/wiki/ethereum-ecosystem.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/gkniftyheads-bitcoin-barbarian-784284.html",
       "/wiki/gkniftyheads-bitcoin-kid-infinite-776002.html",
@@ -307,7 +307,9 @@
       "/wiki/gkniftyheads-bitcoin-kid-x-sarahpfly-773225.html",
       "/wiki/gkniftyheads-bitforce-bitcoin-battler-784332.html",
       "/wiki/gkniftyheads-matteo-bitcoin-bandit-gallo-783447.html",
-      "/wiki/the-bitcoin-kid-army.html"
+      "/wiki/nfts.html",
+      "/wiki/the-bitcoin-kid-army.html",
+      "/wiki/xrp-ledger.html"
     ]
   },
   "/wiki/atomicassets.html": {
@@ -580,13 +582,14 @@
     ]
   },
   "/wiki/bitcoin-btc.html": {
-    "existing_links": [],
+    "existing_links": [
+      "/wiki/bitcoin.html"
+    ],
     "suggested_links": [
       "/wiki/alfie-bitcoin-kid-blaze.html",
       "/wiki/bitcoin-kid-army.html",
       "/wiki/bitcoin-kids.html",
       "/wiki/bitcoin-x-kids.html",
-      "/wiki/bitcoin.html",
       "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/gkniftyheads-bitcoin-barbarian-784284.html",
@@ -611,23 +614,18 @@
       "/wiki/bitcoin-x-kids.html",
       "/wiki/bitcoin.html",
       "/wiki/diamond-hands.html",
-      "/wiki/graffpunks-24-7.html",
-      "/wiki/graffpunks-247-radio.html",
-      "/wiki/graffpunks-nfts.html",
+      "/wiki/first-witness-concordance.html",
+      "/wiki/graffpunks-24-7-radio.html",
       "/wiki/graffpunks.html",
       "/wiki/hodl-warriors.html",
+      "/wiki/hodl-x-warriors.html",
       "/wiki/moon-mission.html",
       "/wiki/xrp-kids.html"
     ],
     "suggested_links": [
-      "/wiki/alfie-bitcoin-kid-blaze.html",
       "/wiki/bitcoin-btc.html",
       "/wiki/block-topia.html",
-      "/wiki/blockchain.html",
-      "/wiki/crypto-moonboys.html",
-      "/wiki/grit.html",
-      "/wiki/hodl-wars.html",
-      "/wiki/trevor-fung.html"
+      "/wiki/crypto-moonboys.html"
     ]
   },
   "/wiki/bitcoin-kid-army.html": {
@@ -740,8 +738,11 @@
     ]
   },
   "/wiki/bitcoin-tokens.html": {
-    "existing_links": [],
+    "existing_links": [
+      "/wiki/bitcoin.html"
+    ],
     "suggested_links": [
+      "/wiki/bitcoin-btc.html",
       "/wiki/crypto-moonboys.html"
     ]
   },
@@ -822,10 +823,11 @@
     ],
     "suggested_links": [
       "/wiki/atomicassets.html",
+      "/wiki/bear-market-siege.html",
       "/wiki/bitcoin-btc.html",
       "/wiki/block-topia.html",
       "/wiki/first-witness-bitcoin-witness.html",
-      "/wiki/first-witness-world-chain-error.html",
+      "/wiki/first-witness-work-craft-service.html",
       "/wiki/gkniftyheads-bitcoin-barbarian-784284.html",
       "/wiki/gkniftyheads-bitcoin-kid-infinite-776002.html",
       "/wiki/gkniftyheads-bitcoin-kid-infinite-776003.html",
@@ -1280,13 +1282,14 @@
     "suggested_links": [
       "/wiki/alcor-exchange.html",
       "/wiki/atomicassets.html",
+      "/wiki/bear-market-siege.html",
       "/wiki/block-topia.html",
-      "/wiki/ethereum-ecosystem.html",
+      "/wiki/first-witness-censorship-offence-public-marks.html",
       "/wiki/gkniftyheads.html",
-      "/wiki/graffpunks-ecosystem.html",
       "/wiki/graffpunks.html",
       "/wiki/tacoswap.html",
-      "/wiki/wax-blockchain.html"
+      "/wiki/wax-blockchain.html",
+      "/wiki/waxp-exchange.html"
     ]
   },
   "/wiki/delicious-again-pete.html": {
@@ -1473,9 +1476,9 @@
       "/wiki/blockchain.html",
       "/wiki/crypto-moonboys.html",
       "/wiki/defi.html",
-      "/wiki/ethereum-eth.html",
       "/wiki/ethereum.html",
       "/wiki/exchanges.html",
+      "/wiki/first-witness-concordance.html",
       "/wiki/fomo-plague.html",
       "/wiki/graffpunks-ecosystem.html",
       "/wiki/hard-fork-games.html",
@@ -1494,18 +1497,26 @@
       "/wiki/web3.html"
     ],
     "suggested_links": [
-      "/wiki/1m-free-nfts-program.html",
+      "/wiki/bear-market-siege.html",
       "/wiki/bitcoin-btc.html",
-      "/wiki/defi-mining.html",
-      "/wiki/diamond-hands.html",
-      "/wiki/gkniftyheads-defi-dame-783400.html",
-      "/wiki/gkniftyheads-defi-dame-788015.html",
+      "/wiki/block-topia.html",
+      "/wiki/first-witness-block-topia-reading.html",
+      "/wiki/first-witness-hodl-doctrine.html",
+      "/wiki/first-witness-language-translation-sacred-words.html",
+      "/wiki/first-witness-roles-keepers-witnesses-mediators.html",
+      "/wiki/first-witness-street-kingdoms-reading.html",
+      "/wiki/gkniftyheads-andrea-blockchain-buccaneer-moretti-783455.html",
+      "/wiki/gkniftyheads-blockchain-belle-783392.html",
+      "/wiki/gkniftyheads-blockchain-bombshell-783407.html",
+      "/wiki/gkniftyheads-blockchain-furie-infinite-776007.html",
+      "/wiki/gkniftyheads-blockchain-furie-infinite-776055.html",
+      "/wiki/gkniftyheads-blockchain-furie-infinite-776057.html",
       "/wiki/graffpunks.html",
-      "/wiki/grit.html",
       "/wiki/hodl-warriors.html",
-      "/wiki/nfts.html",
-      "/wiki/trevor-fung.html",
-      "/wiki/wax-dexs-defi.html"
+      "/wiki/hodl-x-warriors.html",
+      "/wiki/hodlmoonboys-nft-collection.html",
+      "/wiki/the-blockchain-furies.html",
+      "/wiki/wax-blockchain.html"
     ]
   },
   "/wiki/ethereum.html": {
@@ -1529,13 +1540,9 @@
       "/wiki/web3.html"
     ],
     "suggested_links": [
-      "/wiki/1m-free-nfts-program.html",
-      "/wiki/defi-mining.html",
-      "/wiki/gkniftyheads-defi-dame-783400.html",
-      "/wiki/gkniftyheads-defi-dame-788015.html",
+      "/wiki/bear-market-siege.html",
       "/wiki/graffpunks.html",
-      "/wiki/trevor-fung.html",
-      "/wiki/wax-dexs-defi.html"
+      "/wiki/trevor-fung.html"
     ]
   },
   "/wiki/exchanges.html": {
@@ -1562,8 +1569,8 @@
     "suggested_links": [
       "/wiki/bitcoin-btc.html",
       "/wiki/block-topia.html",
-      "/wiki/gkniftyheads-martina-cryptocurrency-crusader-lombardi-783466.html",
-      "/wiki/gkniftyheads-matteo-cryptocurrency-connoisseur-de-angelis-783457.html",
+      "/wiki/first-witness-book-5-the-chain.html",
+      "/wiki/first-witness-chain-archaeology-forensics.html",
       "/wiki/graffpunks.html",
       "/wiki/trevor-fung.html"
     ]
@@ -7623,25 +7630,20 @@
   "/wiki/games-graffpunks.html": {
     "existing_links": [
       "/wiki/diamond-hands.html",
+      "/wiki/first-witness-concordance.html",
       "/wiki/graffpunks-24-7-radio.html",
-      "/wiki/graffpunks-24-7.html",
-      "/wiki/graffpunks-247-radio.html",
-      "/wiki/graffpunks-nfts.html",
       "/wiki/graffpunks.html",
-      "/wiki/hard-fork-games-event.html",
-      "/wiki/hard-fork-games-game.html",
       "/wiki/hard-fork-games.html",
       "/wiki/hodl-warriors.html",
+      "/wiki/hodl-x-warriors.html",
       "/wiki/the-hard-fork-rockers.html"
     ],
     "suggested_links": [
       "/wiki/block-topia.html",
-      "/wiki/blockchain.html",
       "/wiki/crypto-moonboys.html",
-      "/wiki/grit.html",
-      "/wiki/hodl-wars.html",
+      "/wiki/jodie-zoom-2000.html",
       "/wiki/queen-sarah-p-fly.html",
-      "/wiki/trevor-fung.html"
+      "/wiki/thera-9.html"
     ]
   },
   "/wiki/games4punks-telegram.html": {
@@ -14490,9 +14492,19 @@
       "/wiki/tokens.html"
     ],
     "suggested_links": [
+      "/wiki/bear-market-siege.html",
       "/wiki/block-topia.html",
+      "/wiki/fgl-token.html",
+      "/wiki/gkniftyheads-alessandro-token-titan-marini-783461.html",
+      "/wiki/gkniftyheads-matteo-token-tactician-romano-783462.html",
+      "/wiki/gkniftyheads-token-temptress-783401.html",
+      "/wiki/gkniftyheads-token-tycooness-783405.html",
+      "/wiki/gkniftyheads-waxp-femme-fatale-the-token-temptress-783414.html",
       "/wiki/graffpunks.html",
-      "/wiki/nfts.html",
+      "/wiki/nbg.html",
+      "/wiki/nbgx-token.html",
+      "/wiki/pmsl-token.html",
+      "/wiki/punk-token.html",
       "/wiki/trevor-fung.html",
       "/wiki/wax-pepe.html"
     ]
@@ -15926,23 +15938,11 @@
       "/wiki/stikfamwars.html"
     ],
     "suggested_links": [
-      "/wiki/1m-free-nfts-program.html",
       "/wiki/block-topia.html",
-      "/wiki/defi-mining.html",
-      "/wiki/gkniftyheads-andrea-blockchain-buccaneer-moretti-783455.html",
-      "/wiki/gkniftyheads-blockchain-belle-783392.html",
-      "/wiki/gkniftyheads-blockchain-bombshell-783407.html",
-      "/wiki/gkniftyheads-blockchain-furie-infinite-776007.html",
-      "/wiki/gkniftyheads-blockchain-furie-infinite-776055.html",
-      "/wiki/gkniftyheads-blockchain-furie-infinite-776057.html",
-      "/wiki/gkniftyheads-defi-dame-783400.html",
-      "/wiki/gkniftyheads-defi-dame-788015.html",
+      "/wiki/croydon-tower-blocks.html",
+      "/wiki/first-witness-music-dance-performance.html",
       "/wiki/graffpunks.html",
-      "/wiki/the-blockchain-furies.html",
-      "/wiki/trevor-fung.html",
-      "/wiki/wax-blockchain.html",
-      "/wiki/wax-dexs-defi.html",
-      "/wiki/web3.html"
+      "/wiki/trevor-fung.html"
     ]
   },
   "/wiki/spirit-borns.html": {
@@ -16223,6 +16223,7 @@
   "/wiki/tagzcoin.html": {
     "existing_links": [
       "/wiki/crypto-moonboys.html",
+      "/wiki/exyboy.html",
       "/wiki/games4punks-telegram.html",
       "/wiki/hard-fork-games.html",
       "/wiki/hodl-wars.html",
@@ -16230,28 +16231,27 @@
       "/wiki/nbg-token.html",
       "/wiki/pmsl.html",
       "/wiki/rave-relics.html",
-      "/wiki/stikfamwars.html"
+      "/wiki/stikfamwars.html",
+      "/wiki/xrp-ledger.html"
     ],
     "suggested_links": [
       "/wiki/589-xrpl.html",
       "/wiki/666-xrpl.html",
       "/wiki/bear-xrpl.html",
       "/wiki/block-topia.html",
-      "/wiki/fgl-token.html",
-      "/wiki/gkniftyheads-alessandro-token-titan-marini-783461.html",
-      "/wiki/gkniftyheads-coin-conqueress-783412.html",
-      "/wiki/gkniftyheads-marco-coin-conqueror-moretti-783464.html",
-      "/wiki/gkniftyheads-matteo-token-tactician-romano-783462.html",
-      "/wiki/gkniftyheads-token-temptress-783401.html",
-      "/wiki/gkniftyheads-token-tycooness-783405.html",
-      "/wiki/gkniftyheads-waxp-femme-fatale-the-token-temptress-783414.html",
+      "/wiki/first-witness-book-5-the-chain.html",
+      "/wiki/first-witness-chain-archaeology-forensics.html",
+      "/wiki/first-witness-libraries-architecture-archive-houses.html",
+      "/wiki/first-witness-sacred-places-walls-pilgrimage.html",
+      "/wiki/first-witness-world-chain-error.html",
+      "/wiki/graffiti-kings.html",
+      "/wiki/graffiti-nexus.html",
+      "/wiki/graffiti-queens-in-decentraland.html",
       "/wiki/graffpunks.html",
-      "/wiki/memecoins.html",
-      "/wiki/nbg.html",
-      "/wiki/nbgx-token.html",
-      "/wiki/pmsl-token.html",
-      "/wiki/punk-token.html",
-      "/wiki/trevor-fung.html"
+      "/wiki/playable-nft-murals.html",
+      "/wiki/sacred-chain.html",
+      "/wiki/the-chain-scribes.html",
+      "/wiki/wallets.html"
     ]
   },
   "/wiki/the-allcity-bulls.html": {
@@ -17555,11 +17555,11 @@
       "/wiki/whale-lords.html"
     ],
     "suggested_links": [
+      "/wiki/bitcoin-btc.html",
       "/wiki/block-topia.html",
       "/wiki/fgl-token.html",
+      "/wiki/first-witness-faction-ritual-variations.html",
       "/wiki/gkniftyheads-alessandro-token-titan-marini-783461.html",
-      "/wiki/gkniftyheads-martina-cryptocurrency-crusader-lombardi-783466.html",
-      "/wiki/gkniftyheads-matteo-cryptocurrency-connoisseur-de-angelis-783457.html",
       "/wiki/gkniftyheads-matteo-token-tactician-romano-783462.html",
       "/wiki/gkniftyheads-token-temptress-783401.html",
       "/wiki/gkniftyheads-token-tycooness-783405.html",
@@ -17690,13 +17690,28 @@
       "/wiki/web3.html"
     ],
     "suggested_links": [
+      "/wiki/alfie-bitcoin-kid-blaze.html",
       "/wiki/bitcoin-btc.html",
-      "/wiki/first-witness-dual-use-tools-weapons.html",
-      "/wiki/gkniftyheads-martina-cryptocurrency-crusader-lombardi-783466.html",
-      "/wiki/gkniftyheads-matteo-cryptocurrency-connoisseur-de-angelis-783457.html",
+      "/wiki/bitcoin-kid-army.html",
+      "/wiki/bitcoin-x-kids.html",
+      "/wiki/first-witness-bitcoin-witness.html",
+      "/wiki/gkniftyheads-bitcoin-barbarian-784284.html",
+      "/wiki/gkniftyheads-bitcoin-kid-infinite-776002.html",
+      "/wiki/gkniftyheads-bitcoin-kid-infinite-776003.html",
+      "/wiki/gkniftyheads-bitcoin-kid-infinite-776005.html",
+      "/wiki/gkniftyheads-bitcoin-kid-infinite-776056.html",
+      "/wiki/gkniftyheads-bitcoin-kid-infinite-776058.html",
+      "/wiki/gkniftyheads-bitcoin-kid-infinite-776059.html",
+      "/wiki/gkniftyheads-bitcoin-kid-royale-776145.html",
+      "/wiki/gkniftyheads-bitcoin-kid-tv-heads-100-776074.html",
+      "/wiki/gkniftyheads-bitcoin-kid-x-sarah-pfly-infinite-776004.html",
+      "/wiki/gkniftyheads-bitcoin-kid-x-sarahpfly-773225.html",
+      "/wiki/gkniftyheads-bitforce-bitcoin-battler-784332.html",
+      "/wiki/gkniftyheads-matteo-bitcoin-bandit-gallo-783447.html",
       "/wiki/grit.html",
       "/wiki/metropolis.html",
-      "/wiki/nbg-token.html"
+      "/wiki/nbg-token.html",
+      "/wiki/the-bitcoin-kid-army.html"
     ]
   },
   "/wiki/wax-blockchain.html": {
@@ -17933,15 +17948,27 @@
     ],
     "suggested_links": [
       "/wiki/block-topia.html",
-      "/wiki/first-witness-ai-synthetic-minds.html",
-      "/wiki/first-witness-dual-use-tools-weapons.html",
+      "/wiki/dream-sovereign.html",
+      "/wiki/fgl-token.html",
+      "/wiki/first-witness-work-craft-service.html",
+      "/wiki/gkniftyheads-alessandro-token-titan-marini-783461.html",
       "/wiki/gkniftyheads-andrea-blockchain-buccaneer-moretti-783455.html",
       "/wiki/gkniftyheads-blockchain-belle-783392.html",
       "/wiki/gkniftyheads-blockchain-bombshell-783407.html",
       "/wiki/gkniftyheads-blockchain-furie-infinite-776007.html",
       "/wiki/gkniftyheads-blockchain-furie-infinite-776055.html",
       "/wiki/gkniftyheads-blockchain-furie-infinite-776057.html",
+      "/wiki/gkniftyheads-matteo-token-tactician-romano-783462.html",
+      "/wiki/gkniftyheads-token-temptress-783401.html",
+      "/wiki/gkniftyheads-token-tycooness-783405.html",
+      "/wiki/gkniftyheads-waxp-femme-fatale-the-token-temptress-783414.html",
+      "/wiki/graffiti-kings.html",
       "/wiki/graffpunks.html",
+      "/wiki/grit.html",
+      "/wiki/nbg.html",
+      "/wiki/nbgx-token.html",
+      "/wiki/pmsl-token.html",
+      "/wiki/punk-token.html",
       "/wiki/the-blockchain-furies.html",
       "/wiki/trevor-fung.html",
       "/wiki/wax-blockchain.html"

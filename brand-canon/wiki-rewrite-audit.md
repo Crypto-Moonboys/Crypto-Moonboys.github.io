@@ -23,19 +23,19 @@ This is an ownership and rewrite-queue audit only. It does not replace, delete, 
 |---|---:|
 | Total pages audited | 415 |
 | Absent stub authorizations | 0 |
-| KEEP | 168 |
+| KEEP | 170 |
 | REWRITE_FULL | 0 |
 | RECONCILE | 0 |
 | DEDUPE | 0 |
 | EXPAND | 0 |
 | ARCHIVE_STYLE | 0 |
-| GENERATED | 6 |
+| GENERATED | 4 |
 | NFT_SPECIALIST | 159 |
 | FIRST_WITNESS_LOCKED | 82 |
 | NEEDS_HUMAN_REVIEW | 0 |
 | Pages with multiple SAM blocks | 0 |
 | Pages with multiple canonical blocks | 0 |
-| Pages with legacy unmarked content | 34 |
+| Pages with legacy unmarked content | 22 |
 | Pages with exact duplicate paragraphs | 142 |
 | Pages with duplicate headings | 1 |
 | Pages with likely near-duplicate sections | 3 |
@@ -45,10 +45,10 @@ This is an ownership and rewrite-queue audit only. It does not replace, delete, 
 
 | Policy | Pages | Meaning |
 |---|---:|---|
-| canon-locked | 216 | Automated article-body writes are rejected. |
-| metadata-only | 197 | Search, relationship, and metadata maintenance only; article prose is preserved. |
+| canon-locked | 230 | Automated article-body writes are rejected. |
+| metadata-only | 184 | Search, relationship, and metadata maintenance only; article prose is preserved. |
 | replace-sam-block | 0 | A single existing SAM block may be replaced, never appended. |
-| stub-allowed | 2 | A stub may be created only while no real canonical page exists. |
+| stub-allowed | 1 | A stub may be created only while no real canonical page exists. |
 
 ## Rewrite queue by cluster
 
@@ -229,6 +229,8 @@ This is an ownership and rewrite-queue audit only. It does not replace, delete, 
 
 | Page | Status | Duplication | Canon conflict | Action | Priority | Likely source family |
 |---|---|---|---|---|---|---|
+| [Bitcoin & GraffPUNKS](../wiki/bitcoin-graffpunks.html) (`bitcoin-graffpunks`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Latest canon/brand vision; W81 digest; W81 raw archive: W2, W6, W8, w58, w68-w69, w74, w79-w81, w89, w92 |
+| [Games & GraffPUNKS](../wiki/games-graffpunks.html) (`games-graffpunks`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Latest canon/brand vision; W81 digest; W81 raw archive: W2, W6, W8, w58, w68-w69, w74, w79-w81, w89, w92 |
 | [GAMES4PUNKS Telegram](../wiki/games4punks-telegram.html) (`games4punks-telegram`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Specialist archive: games4punks-telegram-games |
 | [Gang Signs](../wiki/gang-signs.html) (`gang-signs`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Specialist archive: gang-signs |
 | [Gang Signs (Card Game)](../wiki/gang-signs-card-game.html) (`gang-signs-card-game`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Specialist archive: gang-signs-card-game |
@@ -478,25 +480,23 @@ This is an ownership and rewrite-queue audit only. It does not replace, delete, 
 | [Alcor Exchange](../wiki/alcor-exchange.html) (`alcor-exchange`) | KEEP | NONE | LOW | Preserve article prose; allow metadata-only maintenance. | P4 | Existing public/reference source verification |
 | [Alfie Blaze moved](../wiki/alfie-blaze.html) (`alfie-blaze`) | GENERATED | NONE | NOT_APPLICABLE | Maintain through its generator or stub/redirect workflow, not lore automation. | P4 | Generated page structure |
 | [Alien Worlds / TLM](../wiki/alien-worlds-tlm.html) (`alien-worlds-tlm`) | KEEP | NONE | LOW | Preserve article prose; allow metadata-only maintenance. | P4 | Existing public/reference source verification |
-| [Altcoins](../wiki/altcoins.html) (`altcoins`) | KEEP | NONE | LOW | Preserve article prose; allow metadata-only maintenance. | P4 | Existing public/reference source verification |
+| [Altcoins](../wiki/altcoins.html) (`altcoins`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Existing public/reference source verification |
 | [BEAR on XRPL](../wiki/bear-xrpl.html) (`bear-xrpl`) | KEEP | NONE | LOW | Preserve article prose; allow metadata-only maintenance. | P4 | Existing public/reference source verification |
-| [Bitcoin (BTC)](../wiki/bitcoin.html) (`bitcoin`) | KEEP | NONE | LOW | Preserve article prose; allow metadata-only maintenance. | P4 | Specialist archive: bitcoin |
-| [Bitcoin (BTC)](../wiki/bitcoin-btc.html) (`bitcoin-btc`) | GENERATED | NONE | NOT_APPLICABLE | Maintain through its generator or stub/redirect workflow, not lore automation. | P4 | Generated page structure |
-| [Bitcoin & GraffPUNKS](../wiki/bitcoin-graffpunks.html) (`bitcoin-graffpunks`) | GENERATED | NONE | NOT_APPLICABLE | Maintain through its generator or stub/redirect workflow, not lore automation. | P4 | Generated page structure |
-| [Bitcoin Tokens](../wiki/bitcoin-tokens.html) (`bitcoin-tokens`) | GENERATED | NONE | NOT_APPLICABLE | Maintain through its generator or stub/redirect workflow, not lore automation. | P4 | Generated page structure |
+| [Bitcoin (BTC)](../wiki/bitcoin.html) (`bitcoin`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Specialist archive: bitcoin |
+| [Bitcoin reference](../wiki/bitcoin-btc.html) (`bitcoin-btc`) | GENERATED | NONE | NOT_APPLICABLE | Maintain through its generator or stub/redirect workflow, not lore automation. | P4 | Generated page structure |
+| [Bitcoin reference](../wiki/bitcoin-tokens.html) (`bitcoin-tokens`) | GENERATED | NONE | NOT_APPLICABLE | Maintain through its generator or stub/redirect workflow, not lore automation. | P4 | Generated page structure |
 | [Blockchain Technology](../wiki/blockchain.html) (`blockchain`) | KEEP | NONE | LOW | Preserve article prose; allow metadata-only maintenance. | P4 | Existing public/reference source verification |
 | [Crypto Moonboy Pets](../wiki/crypto-moonboy-pets.html) (`crypto-moonboy-pets`) | KEEP | NONE | LOW | Preserve article prose; allow metadata-only maintenance. | P4 | Existing public/reference source verification |
-| [DeFi (Decentralised Finance)](../wiki/defi.html) (`defi`) | KEEP | NONE | LOW | Preserve article prose; allow metadata-only maintenance. | P4 | Existing public/reference source verification |
+| [DeFi (Decentralised Finance)](../wiki/defi.html) (`defi`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Existing public/reference source verification |
 | [DeFi Mining](../wiki/defi-mining.html) (`defi-mining`) | KEEP | NONE | LOW | Preserve article prose; allow metadata-only maintenance. | P4 | Existing public/reference source verification |
 | [Dream Sovereign](../wiki/dream-sovereign.html) (`dream-sovereign`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Existing public/reference source verification |
-| [Ethereum (ETH)](../wiki/ethereum.html) (`ethereum`) | KEEP | NONE | LOW | Preserve article prose; allow metadata-only maintenance. | P4 | Existing public/reference source verification |
-| [Ethereum (ETH) Ecosystem](../wiki/ethereum-ecosystem.html) (`ethereum-ecosystem`) | KEEP | NONE | LOW | Preserve article prose; allow metadata-only maintenance. | P4 | Existing public/reference source verification |
-| [Crypto Exchanges](../wiki/exchanges.html) (`exchanges`) | KEEP | NONE | LOW | Preserve article prose; allow metadata-only maintenance. | P4 | Existing public/reference source verification |
+| [Ethereum (ETH)](../wiki/ethereum.html) (`ethereum`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Existing public/reference source verification |
+| [Ethereum (ETH) Ecosystem](../wiki/ethereum-ecosystem.html) (`ethereum-ecosystem`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Existing public/reference source verification |
+| [Crypto Exchanges](../wiki/exchanges.html) (`exchanges`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Existing public/reference source verification |
 | [FGL Token](../wiki/fgl-token.html) (`fgl-token`) | KEEP | NONE | LOW | Preserve article prose; allow metadata-only maintenance. | P4 | Existing public/reference source verification |
-| [Games & GraffPUNKS](../wiki/games-graffpunks.html) (`games-graffpunks`) | GENERATED | NONE | NOT_APPLICABLE | Maintain through its generator or stub/redirect workflow, not lore automation. | P4 | Generated page structure |
 | [$GK](../wiki/gk.html) (`gk`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Specialist archive: gk |
 | [$LFGK](../wiki/lfgk.html) (`lfgk`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Specialist archive: lfgk |
-| [Meme Coins](../wiki/memecoins.html) (`memecoins`) | KEEP | NONE | LOW | Preserve article prose; allow metadata-only maintenance. | P4 | Existing public/reference source verification |
+| [Meme Coins](../wiki/memecoins.html) (`memecoins`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Existing public/reference source verification |
 | [Metaverse Battles](../wiki/metaverse-battles.html) (`metaverse-battles`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Specialist archive: metaverse-battles |
 | [$NBG The NoBallGames token built around Charlie Buster's art, graffiti mythology and connected Web3 projects](../wiki/nbg.html) (`nbg`) | KEEP | NONE | LOW | Preserve article prose; allow metadata-only maintenance. | P4 | Specialist archive: nbg |
 | [nbg_token](../wiki/nbg-token.html) (`nbg-token`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Existing public/reference source verification |
@@ -508,21 +508,21 @@ This is an ownership and rewrite-queue audit only. It does not replace, delete, 
 | [PMSL Token](../wiki/pmsl-token.html) (`pmsl-token`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Existing public/reference source verification |
 | [Seeding Rights](../wiki/seeding-rights.html) (`seeding-rights`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Specialist archive: seeding-rights |
 | [SNEAKAR](../wiki/sneakar.html) (`sneakar`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Existing public/reference source verification |
-| [Solana (SOL)](../wiki/solana.html) (`solana`) | KEEP | NONE | LOW | Preserve article prose; allow metadata-only maintenance. | P4 | Existing public/reference source verification |
+| [Solana (SOL)](../wiki/solana.html) (`solana`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Existing public/reference source verification |
 | [Spraycode & Writcode Mechanics](../wiki/spraycode-writcode-mechanics.html) (`spraycode-writcode-mechanics`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Specialist archive: spraycode-writcode-mechanics |
 | [CRYPTO STAKING How tokens help secure networks, earn protocol rewards and create new risks](../wiki/staking.html) (`staking`) | KEEP | NONE | LOW | Preserve article prose; allow metadata-only maintenance. | P4 | Existing public/reference source verification |
 | [swap.nefty](../wiki/swap-nefty.html) (`swap-nefty`) | KEEP | NONE | LOW | Preserve article prose; allow metadata-only maintenance. | P4 | Existing public/reference source verification |
 | [TacoSwap](../wiki/tacoswap.html) (`tacoswap`) | KEEP | NONE | LOW | Preserve article prose; allow metadata-only maintenance. | P4 | Existing public/reference source verification |
-| [TAGZcoin](../wiki/tagzcoin.html) (`tagzcoin`) | KEEP | NONE | LOW | Preserve article prose; allow metadata-only maintenance. | P4 | Existing public/reference source verification |
+| [TAGZcoin](../wiki/tagzcoin.html) (`tagzcoin`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Existing public/reference source verification |
 | [The CleanupCentr](../wiki/the-cleanupcentr.html) (`the-cleanupcentr`) | KEEP | NONE | LOW | Preserve article prose; allow metadata-only maintenance. | P4 | Existing public/reference source verification |
-| [Tokenomics](../wiki/tokenomics.html) (`tokenomics`) | KEEP | NONE | LOW | Preserve article prose; allow metadata-only maintenance. | P4 | Existing public/reference source verification |
-| [Crypto Wallets](../wiki/wallets.html) (`wallets`) | KEEP | NONE | LOW | Preserve article prose; allow metadata-only maintenance. | P4 | Existing public/reference source verification |
+| [Tokenomics](../wiki/tokenomics.html) (`tokenomics`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Existing public/reference source verification |
+| [Crypto Wallets](../wiki/wallets.html) (`wallets`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Existing public/reference source verification |
 | [WAX Blockchain](../wiki/wax-blockchain.html) (`wax-blockchain`) | KEEP | NONE | LOW | Preserve article prose; allow metadata-only maintenance. | P4 | Existing public/reference source verification |
 | [WAX DEXs & DeFi](../wiki/wax-dexs-defi.html) (`wax-dexs-defi`) | KEEP | NONE | LOW | Preserve article prose; allow metadata-only maintenance. | P4 | Existing public/reference source verification |
 | [WAX PEPE](../wiki/wax-pepe.html) (`wax-pepe`) | KEEP | NONE | LOW | Preserve article prose; allow metadata-only maintenance. | P4 | Existing public/reference source verification |
 | [$WAXP](../wiki/waxp.html) (`waxp`) | KEEP | NONE | LOW | Preserve article prose; allow metadata-only maintenance. | P4 | Existing public/reference source verification |
 | [WAXP Exchange](../wiki/waxp-exchange.html) (`waxp-exchange`) | KEEP | NONE | LOW | Preserve article prose; allow metadata-only maintenance. | P4 | Existing public/reference source verification |
-| [Web3](../wiki/web3.html) (`web3`) | KEEP | NONE | LOW | Preserve article prose; allow metadata-only maintenance. | P4 | Existing public/reference source verification |
+| [Web3](../wiki/web3.html) (`web3`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Existing public/reference source verification |
 | [WUFFI / $WUF](../wiki/wuffi.html) (`wuffi`) | KEEP | NONE | LOW | Preserve article prose; allow metadata-only maintenance. | P4 | Existing public/reference source verification |
 | [XRP Kids](../wiki/xrp-kids.html) (`xrp-kids`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Specialist archive: xrp-kids |
 | [XRP Ledger](../wiki/xrp-ledger.html) (`xrp-ledger`) | KEEP | NONE | LOW | Preserve article prose; allow metadata-only maintenance. | P4 | Existing public/reference source verification |
@@ -539,7 +539,7 @@ These entries come only from `brand-canon/wiki-absent-stubs.json`. They authoriz
 
 - Exact duplicate paragraphs: `gkniftyheads-alessandro-anonymity-advocate-amato-783445` (1), `gkniftyheads-alessandro-satoshi-samurai-ferrari-783442` (1), `gkniftyheads-alessandro-token-titan-marini-783461` (1), `gkniftyheads-altcoin-avenger-783406` (1), `gkniftyheads-andrea-blockchain-buccaneer-moretti-783455` (1), `gkniftyheads-antonio-ether-emperor-costa-783448` (1), `gkniftyheads-binary-blitzer-784277` (1), `gkniftyheads-bit-boss-783395` (1), `gkniftyheads-bit-brawler-the-byte-battler-783415` (1), `gkniftyheads-bit-skull-784280` (1), `gkniftyheads-bitcoin-barbarian-784284` (1), `gkniftyheads-bitcoin-kid-infinite-776002` (1), `gkniftyheads-bitcoin-kid-infinite-776003` (1), `gkniftyheads-bitcoin-kid-infinite-776005` (1), `gkniftyheads-bitcoin-kid-infinite-776056` (1), `gkniftyheads-bitcoin-kid-infinite-776058` (1), `gkniftyheads-bitcoin-kid-infinite-776059` (1), `gkniftyheads-bitcoin-kid-royale-776145` (1), `gkniftyheads-bitcoin-kid-tv-heads-100-776074` (1), `gkniftyheads-bitcoin-kid-x-sarah-pfly-infinite-776004` (1), `gkniftyheads-bitcoin-kid-x-sarahpfly-773225` (1), `gkniftyheads-bitforce-bitcoin-battler-784332` (1), `gkniftyheads-bitman-784229` (1), `gkniftyheads-blockchain-belle-783392` (1), `gkniftyheads-blockchain-bombshell-783407` (1), `gkniftyheads-blockchain-furie-infinite-776007` (1), `gkniftyheads-blockchain-furie-infinite-776055` (1), `gkniftyheads-blockchain-furie-infinite-776057` (1), `gkniftyheads-brick-burner-783282` (1), `gkniftyheads-carmine-the-conductor-cimino-783380` (1), `gkniftyheads-chroma-kid-783237` (1), `gkniftyheads-chroma-kid-783247` (1), `gkniftyheads-chromatic-crusader-783301` (1), `gkniftyheads-cipher-seraph-783413` (1), `gkniftyheads-cipherella-783408` (1), `gkniftyheads-coin-conqueress-783412` (1), `gkniftyheads-crypto-charmcaster-783411` (1), `gkniftyheads-cryptofrank-784266` (1), `gkniftyheads-cyber-shinobi-shroud-783468` (1), `gkniftyheads-cyber-shinobi-strike-783757` (1), `gkniftyheads-czen-zone-zero-zealot-783755` (1), `gkniftyheads-daring-doodle-783300` (1), `gkniftyheads-darknet-lord-784276` (1), `gkniftyheads-davide-altcoin-alchemist-marino-783454` (1), `gkniftyheads-decentralized-duchess-783399` (1), `gkniftyheads-defi-dame-783400` (1), `gkniftyheads-defi-dame-788015` (1), `gkniftyheads-deko-904071` (1), `gkniftyheads-digital-diva-783394` (1), `gkniftyheads-digital-duchess-783404` (1), `gkniftyheads-dizzy-drip-783255` (1), `gkniftyheads-doughnut-ninja-nova-783764` (1), `gkniftyheads-drift-doodle-783252` (1), `gkniftyheads-follow-darren-cullen-776123` (1), `gkniftyheads-forever-darren-cullen-776124` (1), `gkniftyheads-frankie-the-phoenix-piccioli-783374` (1), `gkniftyheads-freddie-cryptocrusader-784269` (1), `gkniftyheads-free-minds-gk-beats-genesis-776049` (1), `gkniftyheads-fume-fury-783298` (1), `gkniftyheads-giorgio-cryptochieftain-bianco-783453` (1), `gkniftyheads-giovanni-cryptocartel-ricci-783451` (1), `gkniftyheads-giovanni-gas-guzzler-giordano-783433` (1), `gkniftyheads-giulia-satoshi-sorceress-espositooo-783463` (1), `gkniftyheads-gkniftyheads-fun-coupon-782888` (1), `gkniftyheads-graphite-ghost-783307` (1), `gkniftyheads-inked-fury-783258` (1), `gkniftyheads-joey-the-juggernaut-jablonski-783383` (1), `gkniftyheads-joey-the-oracle-olivieri-783373` (1), `gkniftyheads-johnny-the-jetstream-jankovic-783384` (1), `gkniftyheads-lotus-luminary-charlie-buster-lancer-783470` (1), `gkniftyheads-louie-hay-you-guys-lupo-783389` (1), `gkniftyheads-luca-altcoin-assassin-bianchi-783444` (1), `gkniftyheads-marco-coin-conqueror-moretti-783464` (1), `gkniftyheads-marco-crypto-maestro-rossi-783432` (1), `gkniftyheads-marco-the-maestro-mancini-783378` (1), `gkniftyheads-marker-maven-783253` (1), `gkniftyheads-martina-cryptocurrency-crusader-lombardi-783466` (1), `gkniftyheads-matteo-bitcoin-bandit-gallo-783447` (1), `gkniftyheads-matteo-cryptocurrency-connoisseur-de-angelis-783457` (1), `gkniftyheads-matteo-token-tactician-romano-783462` (1), `gkniftyheads-mr-cheo-boom-head-776121` (1), `gkniftyheads-mr-cheo-bristol-776100` (1), `gkniftyheads-mr-cheo-bristol-776109` (1), `gkniftyheads-mr-cheo-lap-head-776102` (1), `gkniftyheads-mr-cheo-lap-head-776114` (1), `gkniftyheads-mr-cheo-pill-head-776118` (1), `gkniftyheads-mr-cheo-pinky-stains-776119` (1), `gkniftyheads-mr-cheo-purple-pains-776101` (1), `gkniftyheads-mr-cheo-purple-pains-776110` (1), `gkniftyheads-mr-cheo-spit-head-776103` (1), `gkniftyheads-mr-cheo-spit-head-776117` (1), `gkniftyheads-mr-cheo-tab-head-776120` (1), `gkniftyheads-mr-cheo-test-press-776099` (1), `gkniftyheads-myerscoin13-784272` (1), `gkniftyheads-neon-nova-knightmare-784413` (1), `gkniftyheads-nicky-the-ninja-napolitano-783385` (1), `gkniftyheads-nova-shadow-shredder-784419` (1), `gkniftyheads-paint-patriot-783295` (1), `gkniftyheads-raze-rebel-783250` (1), `gkniftyheads-rebel-riff-783269` (1), `gkniftyheads-richie-the-ricochet-ricci-783377` (1), `gkniftyheads-robin-ronin-rampage-783747` (1), `gkniftyheads-rocco-the-rocket-radic-783379` (1), `gkniftyheads-sarah-p2fly-784350` (1), `gkniftyheads-sarah-pfly-784349` (1), `gkniftyheads-satoshi-knight-784264` (1), `gkniftyheads-scribe-serpent-783260` (1), `gkniftyheads-shadow-streak-783245` (1), `gkniftyheads-slickshot-783235` (1), `gkniftyheads-stencil-siren-783296` (1), `gkniftyheads-stencil-storm-783291` (1), `gkniftyheads-tagger-tempest-783263` (1), `gkniftyheads-token-temptress-783401` (1), `gkniftyheads-token-tycooness-783405` (1), `gkniftyheads-tommy-the-titan-tucci-783369` (1), `gkniftyheads-tommy-the-titan-tucci-783372` (1), `gkniftyheads-tony-the-technician-toscano-783376` (1), `gkniftyheads-tsunami-btc-titan-783760` (1), `gkniftyheads-urban-oracle-783306` (1), `gkniftyheads-vandal-776147` (1), `gkniftyheads-vgiovanni-nft-ninja-rossi-783459` (1), `gkniftyheads-vin-the-vanguard-ventura-783370` (1), `gkniftyheads-vin-the-vanguard-ventura-783371` (1), `gkniftyheads-vincenzo-il-criptografo-russo-783431` (1), `gkniftyheads-vinny-the-visionary-valenti-783375` (1), `gkniftyheads-virtual-valkyrie-783403` (1), `gkniftyheads-virtual-vixen-783398` (1), `gkniftyheads-waxp-banshee-783409` (1), `gkniftyheads-waxp-banshee-783410` (1), `gkniftyheads-waxp-bobby-torm-784340` (1), `gkniftyheads-waxp-femme-fatale-the-token-temptress-783414` (1), `gkniftyheads-waxp-joke-ter-784344` (1), `gkniftyheads-waxp-sentinel-solar-savior-784274` (1), `gkniftyheads-we-are-vandals-776146` (1), `gkniftyheads-we-are-vandals-not-vanduls-775997` (1), `gkniftyheads-we-are-vandals-not-vanduls-775999` (1), `gkniftyheads-we-are-vandals-not-vanduls-776000` (1), `gkniftyheads-we-are-vandals-not-vanduls-776001` (1), `gkniftyheads-we-are-vandals-not-vanduls-776063` (1), `gkniftyheads-we-are-vandals-not-vanduls-776065` (1), `gkniftyheads-we-are-vandals-not-vanduls-776066` (1), `gkniftyheads-zenith-zephyr-zealot-783759` (1).
 - Likely near-duplicate sections: `1m-free-nfts-program` (1), `nifty-crowns` (35), `playable-nft-murals` (3).
-- Legacy unmarked articles: 34. See `brand-canon/wiki-content-state.json` for the complete machine-readable page list and notes.
+- Legacy unmarked articles: 22. See `brand-canon/wiki-content-state.json` for the complete machine-readable page list and notes.
 
 ## Handoff rule
 

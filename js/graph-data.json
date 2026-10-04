@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-04T15:32:44.914Z",
-  "verified_at": "2026-10-04T15:32:44.914Z",
+  "generated_at": "2026-10-04T15:41:51.523Z",
+  "verified_at": "2026-10-04T15:41:51.523Z",
   "nodes": [
     {
       "id": "/about.html",
@@ -151,8 +151,8 @@
       "title": "Altcoins",
       "url": "/wiki/altcoins.html",
       "category": "tokens",
-      "rank_score": 248,
-      "authority_score": 27
+      "rank_score": 254,
+      "authority_score": 24
     },
     {
       "id": "/wiki/atomicassets.html",
@@ -231,7 +231,7 @@
       "title": "Bitcoin (BTC)",
       "url": "/wiki/bitcoin-btc.html",
       "category": "tokens",
-      "rank_score": 94,
+      "rank_score": 96,
       "authority_score": 0
     },
     {
@@ -263,8 +263,8 @@
       "title": "Bitcoin (BTC)",
       "url": "/wiki/bitcoin.html",
       "category": "tokens",
-      "rank_score": 261,
-      "authority_score": 26
+      "rank_score": 287,
+      "authority_score": 27
     },
     {
       "id": "/wiki/block-node-defenders.html",
@@ -367,8 +367,8 @@
       "title": "DeFi (Decentralised Finance)",
       "url": "/wiki/defi.html",
       "category": "factions",
-      "rank_score": 262,
-      "authority_score": 23
+      "rank_score": 286,
+      "authority_score": 27
     },
     {
       "id": "/wiki/delicious-again-pete.html",
@@ -415,23 +415,23 @@
       "title": "Ethereum (ETH) Ecosystem",
       "url": "/wiki/ethereum-ecosystem.html",
       "category": "factions",
-      "rank_score": 261,
-      "authority_score": 24
+      "rank_score": 213,
+      "authority_score": 22
     },
     {
       "id": "/wiki/ethereum.html",
       "title": "Ethereum (ETH)",
       "url": "/wiki/ethereum.html",
       "category": "factions",
-      "rank_score": 285,
-      "authority_score": 30
+      "rank_score": 283,
+      "authority_score": 27
     },
     {
       "id": "/wiki/exchanges.html",
       "title": "Crypto Exchanges",
       "url": "/wiki/exchanges.html",
       "category": "factions",
-      "rank_score": 263,
+      "rank_score": 271,
       "authority_score": 27
     },
     {
@@ -439,7 +439,7 @@
       "title": "EXYBOY",
       "url": "/wiki/exyboy.html",
       "category": "tokens",
-      "rank_score": 246,
+      "rank_score": 248,
       "authority_score": 18
     },
     {
@@ -2375,7 +2375,7 @@
       "title": "GraffPUNKS 24/7 Radio",
       "url": "/wiki/graffpunks-24-7-radio.html",
       "category": "core",
-      "rank_score": 322,
+      "rank_score": 324,
       "authority_score": 24
     },
     {
@@ -2471,7 +2471,7 @@
       "title": "HODL X Warriors",
       "url": "/wiki/hodl-x-warriors.html",
       "category": "characters",
-      "rank_score": 291,
+      "rank_score": 295,
       "authority_score": 28
     },
     {
@@ -2567,7 +2567,7 @@
       "title": "Meme Coins",
       "url": "/wiki/memecoins.html",
       "category": "factions",
-      "rank_score": 262,
+      "rank_score": 264,
       "authority_score": 27
     },
     {
@@ -2887,7 +2887,7 @@
       "title": "Solana (SOL)",
       "url": "/wiki/solana.html",
       "category": "factions",
-      "rank_score": 253,
+      "rank_score": 264,
       "authority_score": 27
     },
     {
@@ -2967,8 +2967,8 @@
       "title": "TAGZcoin",
       "url": "/wiki/tagzcoin.html",
       "category": "factions",
-      "rank_score": 196,
-      "authority_score": 16
+      "rank_score": 218,
+      "authority_score": 18
     },
     {
       "id": "/wiki/the-allcity-bulls.html",
@@ -3231,7 +3231,7 @@
       "title": "Tokenomics",
       "url": "/wiki/tokenomics.html",
       "category": "factions",
-      "rank_score": 259,
+      "rank_score": 267,
       "authority_score": 27
     },
     {
@@ -3263,7 +3263,7 @@
       "title": "Crypto Wallets",
       "url": "/wiki/wallets.html",
       "category": "characters",
-      "rank_score": 260,
+      "rank_score": 272,
       "authority_score": 27
     },
     {
@@ -3319,7 +3319,7 @@
       "title": "Web3",
       "url": "/wiki/web3.html",
       "category": "factions",
-      "rank_score": 257,
+      "rank_score": 268,
       "authority_score": 27
     },
     {
@@ -3351,7 +3351,7 @@
       "title": "XRP Ledger",
       "url": "/wiki/xrp-ledger.html",
       "category": "factions",
-      "rank_score": 217,
+      "rank_score": 219,
       "authority_score": 18
     }
   ],
@@ -3904,27 +3904,27 @@
     },
     {
       "source": "/wiki/bitcoin-btc.html",
+      "target": "/wiki/altcoins.html",
+      "score": 50,
+      "weight": 0.5
+    },
+    {
+      "source": "/wiki/bitcoin-btc.html",
       "target": "/wiki/crypto-moonboy-pets.html",
       "score": 50,
       "weight": 0.5
     },
     {
       "source": "/wiki/bitcoin-btc.html",
-      "target": "/wiki/altcoins.html",
+      "target": "/wiki/589-xrpl.html",
       "score": 47,
       "weight": 0.47
     },
     {
       "source": "/wiki/bitcoin-btc.html",
-      "target": "/wiki/exyboy.html",
-      "score": 46,
-      "weight": 0.46
-    },
-    {
-      "source": "/wiki/bitcoin-btc.html",
-      "target": "/wiki/gk.html",
-      "score": 46,
-      "weight": 0.46
+      "target": "/wiki/666-xrpl.html",
+      "score": 47,
+      "weight": 0.47
     },
     {
       "source": "/wiki/bitcoin-kid-army.html",
@@ -3977,8 +3977,8 @@
     {
       "source": "/wiki/bitcoin-kids.html",
       "target": "/wiki/hodl-x-warriors.html",
-      "score": 85,
-      "weight": 0.85
+      "score": 86,
+      "weight": 0.86
     },
     {
       "source": "/wiki/bitcoin-kids.html",
@@ -4013,8 +4013,8 @@
     {
       "source": "/wiki/bitcoin-x-kids.html",
       "target": "/wiki/hodl-x-warriors.html",
-      "score": 76,
-      "weight": 0.76
+      "score": 77,
+      "weight": 0.77
     },
     {
       "source": "/wiki/bitcoin.html",
@@ -4379,8 +4379,8 @@
     {
       "source": "/wiki/defi-mining.html",
       "target": "/wiki/defi.html",
-      "score": 78,
-      "weight": 0.78
+      "score": 79,
+      "weight": 0.79
     },
     {
       "source": "/wiki/defi-mining.html",
@@ -4408,13 +4408,13 @@
     },
     {
       "source": "/wiki/defi.html",
-      "target": "/wiki/ethereum-ecosystem.html",
-      "score": 77,
-      "weight": 0.77
+      "target": "/wiki/defi-mining.html",
+      "score": 76,
+      "weight": 0.76
     },
     {
       "source": "/wiki/defi.html",
-      "target": "/wiki/defi-mining.html",
+      "target": "/wiki/ethereum-ecosystem.html",
       "score": 76,
       "weight": 0.76
     },
@@ -4426,15 +4426,15 @@
     },
     {
       "source": "/wiki/defi.html",
-      "target": "/wiki/web3.html",
+      "target": "/wiki/exchanges.html",
       "score": 73,
       "weight": 0.73
     },
     {
       "source": "/wiki/defi.html",
-      "target": "/wiki/exchanges.html",
-      "score": 72,
-      "weight": 0.72
+      "target": "/wiki/tokenomics.html",
+      "score": 73,
+      "weight": 0.73
     },
     {
       "source": "/wiki/delicious-again-pete.html",
@@ -4595,14 +4595,14 @@
     {
       "source": "/wiki/ethereum-ecosystem.html",
       "target": "/wiki/exchanges.html",
-      "score": 87,
-      "weight": 0.87
+      "score": 88,
+      "weight": 0.88
     },
     {
       "source": "/wiki/ethereum-ecosystem.html",
       "target": "/wiki/tokenomics.html",
-      "score": 87,
-      "weight": 0.87
+      "score": 88,
+      "weight": 0.88
     },
     {
       "source": "/wiki/ethereum-ecosystem.html",
@@ -4619,8 +4619,8 @@
     {
       "source": "/wiki/ethereum.html",
       "target": "/wiki/ethereum-ecosystem.html",
-      "score": 100,
-      "weight": 1
+      "score": 99,
+      "weight": 0.99
     },
     {
       "source": "/wiki/ethereum.html",
@@ -4643,14 +4643,14 @@
     {
       "source": "/wiki/ethereum.html",
       "target": "/wiki/exchanges.html",
-      "score": 78,
-      "weight": 0.78
+      "score": 79,
+      "weight": 0.79
     },
     {
       "source": "/wiki/exchanges.html",
       "target": "/wiki/tokenomics.html",
-      "score": 97,
-      "weight": 0.97
+      "score": 98,
+      "weight": 0.98
     },
     {
       "source": "/wiki/exchanges.html",
@@ -4661,8 +4661,8 @@
     {
       "source": "/wiki/exchanges.html",
       "target": "/wiki/ethereum-ecosystem.html",
-      "score": 86,
-      "weight": 0.86
+      "score": 85,
+      "weight": 0.85
     },
     {
       "source": "/wiki/exchanges.html",
@@ -4751,7 +4751,7 @@
     {
       "source": "/wiki/first-witness-addiction-intoxication-compulsion.html",
       "target": "/wiki/first-witness-concordance.html",
-      "score": 309,
+      "score": 310,
       "weight": 1
     },
     {
@@ -4781,7 +4781,7 @@
     {
       "source": "/wiki/first-witness-ageing-retirement-elderhood.html",
       "target": "/wiki/first-witness-concordance.html",
-      "score": 309,
+      "score": 310,
       "weight": 1
     },
     {
@@ -4811,7 +4811,7 @@
     {
       "source": "/wiki/first-witness-ai-synthetic-minds.html",
       "target": "/wiki/first-witness-concordance.html",
-      "score": 309,
+      "score": 310,
       "weight": 1
     },
     {
@@ -4841,7 +4841,7 @@
     {
       "source": "/wiki/first-witness-anonymity-pseudonyms-hidden-names.html",
       "target": "/wiki/first-witness-concordance.html",
-      "score": 309,
+      "score": 310,
       "weight": 1
     },
     {
@@ -4871,7 +4871,7 @@
     {
       "source": "/wiki/first-witness-apocrypha-disputed-passages.html",
       "target": "/wiki/first-witness-concordance.html",
-      "score": 309,
+      "score": 310,
       "weight": 1
     },
     {
@@ -4901,7 +4901,7 @@
     {
       "source": "/wiki/first-witness-beauty-luxury-modesty-status.html",
       "target": "/wiki/first-witness-concordance.html",
-      "score": 309,
+      "score": 310,
       "weight": 1
     },
     {
@@ -4931,7 +4931,7 @@
     {
       "source": "/wiki/first-witness-birth-naming-coming-of-age.html",
       "target": "/wiki/first-witness-concordance.html",
-      "score": 309,
+      "score": 310,
       "weight": 1
     },
     {
@@ -4985,7 +4985,7 @@
     {
       "source": "/wiki/first-witness-block-topia-reading.html",
       "target": "/wiki/first-witness-concordance.html",
-      "score": 318,
+      "score": 319,
       "weight": 1
     },
     {
@@ -5050,13 +5050,13 @@
     },
     {
       "source": "/wiki/first-witness-book-2-the-common-blood.html",
-      "target": "/wiki/first-witness-book-4-the-wall.html",
-      "score": 315,
+      "target": "/wiki/first-witness-concordance.html",
+      "score": 316,
       "weight": 1
     },
     {
       "source": "/wiki/first-witness-book-2-the-common-blood.html",
-      "target": "/wiki/first-witness-concordance.html",
+      "target": "/wiki/first-witness-book-4-the-wall.html",
       "score": 315,
       "weight": 1
     },
@@ -5080,13 +5080,13 @@
     },
     {
       "source": "/wiki/first-witness-book-3-the-keeper.html",
-      "target": "/wiki/first-witness-book-1-the-first-witness.html",
-      "score": 315,
+      "target": "/wiki/first-witness-concordance.html",
+      "score": 316,
       "weight": 1
     },
     {
       "source": "/wiki/first-witness-book-3-the-keeper.html",
-      "target": "/wiki/first-witness-concordance.html",
+      "target": "/wiki/first-witness-book-1-the-first-witness.html",
       "score": 315,
       "weight": 1
     },
@@ -5111,7 +5111,7 @@
     {
       "source": "/wiki/first-witness-book-4-the-wall.html",
       "target": "/wiki/first-witness-concordance.html",
-      "score": 315,
+      "score": 316,
       "weight": 1
     },
     {
@@ -5147,7 +5147,7 @@
     {
       "source": "/wiki/first-witness-book-5-the-chain.html",
       "target": "/wiki/first-witness-concordance.html",
-      "score": 315,
+      "score": 316,
       "weight": 1
     },
     {
@@ -5182,8 +5182,8 @@
     },
     {
       "source": "/wiki/first-witness-book-6-the-fork.html",
-      "target": "/wiki/first-witness-book-4-the-wall.html",
-      "score": 315,
+      "target": "/wiki/first-witness-concordance.html",
+      "score": 316,
       "weight": 1
     },
     {
@@ -5201,7 +5201,7 @@
     {
       "source": "/wiki/first-witness-book-7-the-hold.html",
       "target": "/wiki/first-witness-concordance.html",
-      "score": 315,
+      "score": 316,
       "weight": 1
     },
     {
@@ -5231,7 +5231,7 @@
     {
       "source": "/wiki/first-witness-book-8-the-fire.html",
       "target": "/wiki/first-witness-concordance.html",
-      "score": 315,
+      "score": 316,
       "weight": 1
     },
     {
@@ -5267,7 +5267,7 @@
     {
       "source": "/wiki/first-witness-book-9-the-unwritten-block.html",
       "target": "/wiki/first-witness-concordance.html",
-      "score": 315,
+      "score": 316,
       "weight": 1
     },
     {
@@ -5291,7 +5291,7 @@
     {
       "source": "/wiki/first-witness-calendar-feasts-remembrance.html",
       "target": "/wiki/first-witness-concordance.html",
-      "score": 309,
+      "score": 310,
       "weight": 1
     },
     {
@@ -5321,7 +5321,7 @@
     {
       "source": "/wiki/first-witness-censorship-offence-public-marks.html",
       "target": "/wiki/first-witness-concordance.html",
-      "score": 309,
+      "score": 310,
       "weight": 1
     },
     {
@@ -5351,7 +5351,7 @@
     {
       "source": "/wiki/first-witness-chain-archaeology-forensics.html",
       "target": "/wiki/first-witness-concordance.html",
-      "score": 309,
+      "score": 310,
       "weight": 1
     },
     {
@@ -5387,7 +5387,7 @@
     {
       "source": "/wiki/first-witness-charity-mutual-aid-dependence.html",
       "target": "/wiki/first-witness-concordance.html",
-      "score": 309,
+      "score": 310,
       "weight": 1
     },
     {
@@ -5405,7 +5405,7 @@
     {
       "source": "/wiki/first-witness-child-of-fire.html",
       "target": "/wiki/first-witness-concordance.html",
-      "score": 315,
+      "score": 316,
       "weight": 1
     },
     {
@@ -5501,7 +5501,7 @@
     {
       "source": "/wiki/first-witness-confession-apology-reconciliation.html",
       "target": "/wiki/first-witness-concordance.html",
-      "score": 309,
+      "score": 310,
       "weight": 1
     },
     {
@@ -5531,7 +5531,7 @@
     {
       "source": "/wiki/first-witness-counterfeit-relics-fraud.html",
       "target": "/wiki/first-witness-concordance.html",
-      "score": 309,
+      "score": 310,
       "weight": 1
     },
     {
@@ -5561,7 +5561,7 @@
     {
       "source": "/wiki/first-witness-daily-practices-rituals.html",
       "target": "/wiki/first-witness-concordance.html",
-      "score": 309,
+      "score": 310,
       "weight": 1
     },
     {
@@ -5591,7 +5591,7 @@
     {
       "source": "/wiki/first-witness-death-grief-remembrance.html",
       "target": "/wiki/first-witness-concordance.html",
-      "score": 309,
+      "score": 310,
       "weight": 1
     },
     {
@@ -5621,7 +5621,7 @@
     {
       "source": "/wiki/first-witness-digital-inheritance-after-death.html",
       "target": "/wiki/first-witness-concordance.html",
-      "score": 309,
+      "score": 310,
       "weight": 1
     },
     {
@@ -5657,7 +5657,7 @@
     {
       "source": "/wiki/first-witness-disaster-famine-mutual-aid.html",
       "target": "/wiki/first-witness-concordance.html",
-      "score": 309,
+      "score": 310,
       "weight": 1
     },
     {
@@ -5681,7 +5681,7 @@
     {
       "source": "/wiki/first-witness-dreams-omens-coincidence.html",
       "target": "/wiki/first-witness-concordance.html",
-      "score": 309,
+      "score": 310,
       "weight": 1
     },
     {
@@ -5711,7 +5711,7 @@
     {
       "source": "/wiki/first-witness-dual-use-tools-weapons.html",
       "target": "/wiki/first-witness-concordance.html",
-      "score": 309,
+      "score": 310,
       "weight": 1
     },
     {
@@ -5741,7 +5741,7 @@
     {
       "source": "/wiki/first-witness-education-schools-apprenticeship.html",
       "target": "/wiki/first-witness-concordance.html",
-      "score": 309,
+      "score": 310,
       "weight": 1
     },
     {
@@ -5801,7 +5801,7 @@
     {
       "source": "/wiki/first-witness-faction-ritual-variations.html",
       "target": "/wiki/first-witness-concordance.html",
-      "score": 309,
+      "score": 310,
       "weight": 1
     },
     {
@@ -5830,13 +5830,13 @@
     },
     {
       "source": "/wiki/first-witness-family-children-elders.html",
-      "target": "/wiki/first-witness-children-first-lessons.html",
-      "score": 309,
+      "target": "/wiki/first-witness-concordance.html",
+      "score": 310,
       "weight": 1
     },
     {
       "source": "/wiki/first-witness-family-children-elders.html",
-      "target": "/wiki/first-witness-concordance.html",
+      "target": "/wiki/first-witness-children-first-lessons.html",
       "score": 309,
       "weight": 1
     },
@@ -5861,7 +5861,7 @@
     {
       "source": "/wiki/first-witness-food-hospitality-common-table.html",
       "target": "/wiki/first-witness-concordance.html",
-      "score": 309,
+      "score": 310,
       "weight": 1
     },
     {
@@ -5891,7 +5891,7 @@
     {
       "source": "/wiki/first-witness-forty-paths.html",
       "target": "/wiki/first-witness-concordance.html",
-      "score": 315,
+      "score": 316,
       "weight": 1
     },
     {
@@ -5945,7 +5945,7 @@
     {
       "source": "/wiki/first-witness-great-concord-2030.html",
       "target": "/wiki/first-witness-concordance.html",
-      "score": 315,
+      "score": 316,
       "weight": 1
     },
     {
@@ -5981,7 +5981,7 @@
     {
       "source": "/wiki/first-witness-healing-illness-disability-care.html",
       "target": "/wiki/first-witness-concordance.html",
-      "score": 309,
+      "score": 310,
       "weight": 1
     },
     {
@@ -6011,7 +6011,7 @@
     {
       "source": "/wiki/first-witness-heresies-corruptions-abuses.html",
       "target": "/wiki/first-witness-concordance.html",
-      "score": 309,
+      "score": 310,
       "weight": 1
     },
     {
@@ -6035,7 +6035,7 @@
     {
       "source": "/wiki/first-witness-hodl-doctrine.html",
       "target": "/wiki/first-witness-concordance.html",
-      "score": 315,
+      "score": 316,
       "weight": 1
     },
     {
@@ -6071,7 +6071,7 @@
     {
       "source": "/wiki/first-witness-humour-satire-sacred-mockery.html",
       "target": "/wiki/first-witness-concordance.html",
-      "score": 309,
+      "score": 310,
       "weight": 1
     },
     {
@@ -6101,7 +6101,7 @@
     {
       "source": "/wiki/first-witness-intimacy-sexuality-privacy.html",
       "target": "/wiki/first-witness-concordance.html",
-      "score": 309,
+      "score": 310,
       "weight": 1
     },
     {
@@ -6131,7 +6131,7 @@
     {
       "source": "/wiki/first-witness-justice-mercy-restitution.html",
       "target": "/wiki/first-witness-concordance.html",
-      "score": 309,
+      "score": 310,
       "weight": 1
     },
     {
@@ -6161,7 +6161,7 @@
     {
       "source": "/wiki/first-witness-land-water-stewardship.html",
       "target": "/wiki/first-witness-concordance.html",
-      "score": 309,
+      "score": 310,
       "weight": 1
     },
     {
@@ -6191,7 +6191,7 @@
     {
       "source": "/wiki/first-witness-language-translation-sacred-words.html",
       "target": "/wiki/first-witness-concordance.html",
-      "score": 309,
+      "score": 310,
       "weight": 1
     },
     {
@@ -6221,7 +6221,7 @@
     {
       "source": "/wiki/first-witness-leadership-councils-succession.html",
       "target": "/wiki/first-witness-concordance.html",
-      "score": 309,
+      "score": 310,
       "weight": 1
     },
     {
@@ -6251,7 +6251,7 @@
     {
       "source": "/wiki/first-witness-libraries-architecture-archive-houses.html",
       "target": "/wiki/first-witness-concordance.html",
-      "score": 309,
+      "score": 310,
       "weight": 1
     },
     {
@@ -6305,7 +6305,7 @@
     {
       "source": "/wiki/first-witness-long-transmission.html",
       "target": "/wiki/first-witness-concordance.html",
-      "score": 315,
+      "score": 316,
       "weight": 1
     },
     {
@@ -6341,7 +6341,7 @@
     {
       "source": "/wiki/first-witness-marriage-partnership-adoption.html",
       "target": "/wiki/first-witness-concordance.html",
-      "score": 309,
+      "score": 310,
       "weight": 1
     },
     {
@@ -6431,7 +6431,7 @@
     {
       "source": "/wiki/first-witness-migration-refuge-exile-borders.html",
       "target": "/wiki/first-witness-concordance.html",
-      "score": 309,
+      "score": 310,
       "weight": 1
     },
     {
@@ -6461,7 +6461,7 @@
     {
       "source": "/wiki/first-witness-money-debt-honest-scales.html",
       "target": "/wiki/first-witness-concordance.html",
-      "score": 309,
+      "score": 310,
       "weight": 1
     },
     {
@@ -6491,7 +6491,7 @@
     {
       "source": "/wiki/first-witness-music-dance-performance.html",
       "target": "/wiki/first-witness-concordance.html",
-      "score": 309,
+      "score": 310,
       "weight": 1
     },
     {
@@ -6515,7 +6515,7 @@
     {
       "source": "/wiki/first-witness-null-erasure.html",
       "target": "/wiki/first-witness-concordance.html",
-      "score": 315,
+      "score": 316,
       "weight": 1
     },
     {
@@ -6551,7 +6551,7 @@
     {
       "source": "/wiki/first-witness-oaths-promises-vows.html",
       "target": "/wiki/first-witness-concordance.html",
-      "score": 309,
+      "score": 310,
       "weight": 1
     },
     {
@@ -6611,7 +6611,7 @@
     {
       "source": "/wiki/first-witness-pride-temptation-false-idols.html",
       "target": "/wiki/first-witness-concordance.html",
-      "score": 309,
+      "score": 310,
       "weight": 1
     },
     {
@@ -6641,7 +6641,7 @@
     {
       "source": "/wiki/first-witness-prisons-punishment-return.html",
       "target": "/wiki/first-witness-concordance.html",
-      "score": 309,
+      "score": 310,
       "weight": 1
     },
     {
@@ -6671,7 +6671,7 @@
     {
       "source": "/wiki/first-witness-proverbs-street-sayings.html",
       "target": "/wiki/first-witness-concordance.html",
-      "score": 309,
+      "score": 310,
       "weight": 1
     },
     {
@@ -6701,7 +6701,7 @@
     {
       "source": "/wiki/first-witness-questions-for-the-living.html",
       "target": "/wiki/first-witness-concordance.html",
-      "score": 309,
+      "score": 310,
       "weight": 1
     },
     {
@@ -6731,7 +6731,7 @@
     {
       "source": "/wiki/first-witness-relics-manuscripts-lost-editions.html",
       "target": "/wiki/first-witness-concordance.html",
-      "score": 309,
+      "score": 310,
       "weight": 1
     },
     {
@@ -6761,7 +6761,7 @@
     {
       "source": "/wiki/first-witness-roles-keepers-witnesses-mediators.html",
       "target": "/wiki/first-witness-concordance.html",
-      "score": 309,
+      "score": 310,
       "weight": 1
     },
     {
@@ -6796,14 +6796,14 @@
     },
     {
       "source": "/wiki/first-witness-sacred-fork.html",
-      "target": "/wiki/first-witness-life-readings.html",
+      "target": "/wiki/first-witness-concordance.html",
       "score": 316,
       "weight": 1
     },
     {
       "source": "/wiki/first-witness-sacred-fork.html",
-      "target": "/wiki/first-witness-concordance.html",
-      "score": 315,
+      "target": "/wiki/first-witness-life-readings.html",
+      "score": 316,
       "weight": 1
     },
     {
@@ -6821,7 +6821,7 @@
     {
       "source": "/wiki/first-witness-sacred-places-walls-pilgrimage.html",
       "target": "/wiki/first-witness-concordance.html",
-      "score": 309,
+      "score": 310,
       "weight": 1
     },
     {
@@ -6851,7 +6851,7 @@
     {
       "source": "/wiki/first-witness-sects-schools-schisms.html",
       "target": "/wiki/first-witness-concordance.html",
-      "score": 309,
+      "score": 310,
       "weight": 1
     },
     {
@@ -6881,7 +6881,7 @@
     {
       "source": "/wiki/first-witness-silence-solitude-attention.html",
       "target": "/wiki/first-witness-concordance.html",
-      "score": 309,
+      "score": 310,
       "weight": 1
     },
     {
@@ -6911,7 +6911,7 @@
     {
       "source": "/wiki/first-witness-songs-chants-responses.html",
       "target": "/wiki/first-witness-concordance.html",
-      "score": 309,
+      "score": 310,
       "weight": 1
     },
     {
@@ -6965,7 +6965,7 @@
     {
       "source": "/wiki/first-witness-street-kingdoms-reading.html",
       "target": "/wiki/first-witness-concordance.html",
-      "score": 315,
+      "score": 316,
       "weight": 1
     },
     {
@@ -7001,7 +7001,7 @@
     {
       "source": "/wiki/first-witness-symbols-marks-sacred-design.html",
       "target": "/wiki/first-witness-concordance.html",
-      "score": 309,
+      "score": 310,
       "weight": 1
     },
     {
@@ -7037,7 +7037,7 @@
     {
       "source": "/wiki/first-witness-triple-fork-chainfire.html",
       "target": "/wiki/first-witness-concordance.html",
-      "score": 315,
+      "score": 316,
       "weight": 1
     },
     {
@@ -7061,7 +7061,7 @@
     {
       "source": "/wiki/first-witness-truth-commissions-after-conflict.html",
       "target": "/wiki/first-witness-concordance.html",
-      "score": 309,
+      "score": 310,
       "weight": 1
     },
     {
@@ -7091,7 +7091,7 @@
     {
       "source": "/wiki/first-witness-war-defence-peacekeeping.html",
       "target": "/wiki/first-witness-concordance.html",
-      "score": 309,
+      "score": 310,
       "weight": 1
     },
     {
@@ -7121,7 +7121,7 @@
     {
       "source": "/wiki/first-witness-work-craft-service.html",
       "target": "/wiki/first-witness-concordance.html",
-      "score": 309,
+      "score": 310,
       "weight": 1
     },
     {
@@ -7145,7 +7145,7 @@
     {
       "source": "/wiki/first-witness-world-chain-error.html",
       "target": "/wiki/first-witness-concordance.html",
-      "score": 315,
+      "score": 316,
       "weight": 1
     },
     {
@@ -7282,9 +7282,9 @@
     },
     {
       "source": "/wiki/forksplit.html",
-      "target": "/wiki/bitcoin-kids.html",
-      "score": 78,
-      "weight": 0.78
+      "target": "/wiki/wallets.html",
+      "score": 79,
+      "weight": 0.79
     },
     {
       "source": "/wiki/games4punks-telegram.html",
@@ -12239,8 +12239,8 @@
     {
       "source": "/wiki/hodl-warriors.html",
       "target": "/wiki/hodl-x-warriors.html",
-      "score": 99,
-      "weight": 0.99
+      "score": 100,
+      "weight": 1
     },
     {
       "source": "/wiki/hodl-warriors.html",
@@ -12562,9 +12562,9 @@
     },
     {
       "source": "/wiki/lfgk.html",
-      "target": "/wiki/forkborn-collective.html",
-      "score": 78,
-      "weight": 0.78
+      "target": "/wiki/tokenomics.html",
+      "score": 79,
+      "weight": 0.79
     },
     {
       "source": "/wiki/loopfiend.html",
@@ -12671,20 +12671,20 @@
     {
       "source": "/wiki/memecoins.html",
       "target": "/wiki/tokenomics.html",
-      "score": 87,
-      "weight": 0.87
+      "score": 88,
+      "weight": 0.88
+    },
+    {
+      "source": "/wiki/memecoins.html",
+      "target": "/wiki/exchanges.html",
+      "score": 85,
+      "weight": 0.85
     },
     {
       "source": "/wiki/memecoins.html",
       "target": "/wiki/pmsl.html",
       "score": 85,
       "weight": 0.85
-    },
-    {
-      "source": "/wiki/memecoins.html",
-      "target": "/wiki/exchanges.html",
-      "score": 84,
-      "weight": 0.84
     },
     {
       "source": "/wiki/metaverse-battles.html",
@@ -12977,8 +12977,8 @@
     {
       "source": "/wiki/nfts.html",
       "target": "/wiki/wallets.html",
-      "score": 78,
-      "weight": 0.78
+      "score": 79,
+      "weight": 0.79
     },
     {
       "source": "/wiki/nfts.html",
@@ -13133,8 +13133,8 @@
     {
       "source": "/wiki/null-the-prophet.html",
       "target": "/wiki/hodl-x-warriors.html",
-      "score": 69,
-      "weight": 0.69
+      "score": 70,
+      "weight": 0.7
     },
     {
       "source": "/wiki/paper-hands.html",
@@ -13865,8 +13865,8 @@
     {
       "source": "/wiki/solana.html",
       "target": "/wiki/ethereum-ecosystem.html",
-      "score": 86,
-      "weight": 0.86
+      "score": 85,
+      "weight": 0.85
     },
     {
       "source": "/wiki/solana.html",
@@ -13876,13 +13876,13 @@
     },
     {
       "source": "/wiki/solana.html",
-      "target": "/wiki/pmsl.html",
+      "target": "/wiki/exchanges.html",
       "score": 85,
       "weight": 0.85
     },
     {
       "source": "/wiki/solana.html",
-      "target": "/wiki/rug-pull-wars.html",
+      "target": "/wiki/pmsl.html",
       "score": 85,
       "weight": 0.85
     },
@@ -14159,8 +14159,8 @@
     {
       "source": "/wiki/tagzcoin.html",
       "target": "/wiki/pmsl.html",
-      "score": 85,
-      "weight": 0.85
+      "score": 88,
+      "weight": 0.88
     },
     {
       "source": "/wiki/tagzcoin.html",
@@ -15149,8 +15149,8 @@
     {
       "source": "/wiki/tokenomics.html",
       "target": "/wiki/exchanges.html",
-      "score": 97,
-      "weight": 0.97
+      "score": 98,
+      "weight": 0.98
     },
     {
       "source": "/wiki/tokenomics.html",
@@ -15161,8 +15161,8 @@
     {
       "source": "/wiki/tokenomics.html",
       "target": "/wiki/ethereum-ecosystem.html",
-      "score": 86,
-      "weight": 0.86
+      "score": 85,
+      "weight": 0.85
     },
     {
       "source": "/wiki/tokenomics.html",
@@ -15479,8 +15479,8 @@
     {
       "source": "/wiki/web3.html",
       "target": "/wiki/exchanges.html",
-      "score": 87,
-      "weight": 0.87
+      "score": 88,
+      "weight": 0.88
     },
     {
       "source": "/wiki/web3.html",
@@ -15503,8 +15503,8 @@
     {
       "source": "/wiki/web3.html",
       "target": "/wiki/tokenomics.html",
-      "score": 84,
-      "weight": 0.84
+      "score": 85,
+      "weight": 0.85
     },
     {
       "source": "/wiki/whale-lords.html",

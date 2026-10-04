@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-04T15:32:44.914Z",
-  "verified_at": "2026-10-04T15:32:44.914Z",
+  "generated_at": "2026-10-04T15:41:51.523Z",
+  "verified_at": "2026-10-04T15:41:51.523Z",
   "lite": true,
   "nodes": [
     {
@@ -212,6 +212,14 @@
       "authority_score": 24
     },
     {
+      "id": "/wiki/graffpunks-24-7-radio.html",
+      "title": "GraffPUNKS 24/7 Radio",
+      "url": "/wiki/graffpunks-24-7-radio.html",
+      "category": "core",
+      "rank_score": 324,
+      "authority_score": 24
+    },
+    {
       "id": "/wiki/hodl-warriors.html",
       "title": "HODL Warriors",
       "url": "/wiki/hodl-warriors.html",
@@ -226,14 +234,6 @@
       "category": "core",
       "rank_score": 322,
       "authority_score": 14
-    },
-    {
-      "id": "/wiki/graffpunks-24-7-radio.html",
-      "title": "GraffPUNKS 24/7 Radio",
-      "url": "/wiki/graffpunks-24-7-radio.html",
-      "category": "core",
-      "rank_score": 322,
-      "authority_score": 24
     },
     {
       "id": "/wiki/bitcoin-kids.html",
@@ -692,7 +692,7 @@
     {
       "source": "/wiki/first-witness-block-topia-reading.html",
       "target": "/wiki/first-witness-concordance.html",
-      "score": 318,
+      "score": 319,
       "weight": 1
     },
     {
@@ -708,8 +708,20 @@
       "weight": 1
     },
     {
+      "source": "/wiki/first-witness-book-2-the-common-blood.html",
+      "target": "/wiki/first-witness-concordance.html",
+      "score": 316,
+      "weight": 1
+    },
+    {
       "source": "/wiki/first-witness-book-3-the-keeper.html",
       "target": "/wiki/first-witness-book-5-the-chain.html",
+      "score": 316,
+      "weight": 1
+    },
+    {
+      "source": "/wiki/first-witness-book-3-the-keeper.html",
+      "target": "/wiki/first-witness-concordance.html",
       "score": 316,
       "weight": 1
     },
@@ -734,18 +746,6 @@
     {
       "source": "/wiki/first-witness-book-2-the-common-blood.html",
       "target": "/wiki/first-witness-book-4-the-wall.html",
-      "score": 315,
-      "weight": 1
-    },
-    {
-      "source": "/wiki/first-witness-book-2-the-common-blood.html",
-      "target": "/wiki/first-witness-concordance.html",
-      "score": 315,
-      "weight": 1
-    },
-    {
-      "source": "/wiki/first-witness-book-3-the-keeper.html",
-      "target": "/wiki/first-witness-concordance.html",
       "score": 315,
       "weight": 1
     },
