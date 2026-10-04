@@ -620,4 +620,55 @@ const graffpunksStopwordOnly = {
   console.log(`New core-history search subjects: ${checked} queries pass`);
 }
 
+// The next batch uses the same real selector; subject metadata must never
+// become relationship tokens. Keep the earlier 58-query contract above intact.
+{
+  const wikiIndex = JSON.parse(await fs.readFile(path.join(ROOT, 'js', 'wiki-index.json'), 'utf8'));
+  const subjectsByPage = {
+    'bitcoin-kids': ['Mina Patch', 'MINA PATCH!', 'Tavi Rill', 'Borrowed Rooms', 'Backstep School', 'Three Pump stoppage', 'Grey Return', 'Mnemonic Whispers'],
+    'bitcoin-x-kids': ['Ada Wren', 'Esme Sorn', 'Len Arc', 'Glass Court', 'Measure Hall', 'Blank Bonnet day', 'Quiet Window exchange', 'encoded irises'],
+    'bitcoin-kid-army': ['Cal Vetch', 'Jalen Rusk', 'Load Table', 'Unfinished Roll', 'North Sluice Stand', 'Protocol HODL-9000'],
+    'the-bitcoin-kid-army': ['Neon Breakout', 'Genesis Shard', 'Silas Shard', 'Iris escape accounts', 'Thera escape accounts', 'disputed escape accounts'],
+    'hodl-warriors': ['Osa Flint', 'Quiet Muster', 'Release Table', 'Holdfast Depot', 'Protocol Unity', 'HODL Council'],
+    'hodl-x-warriors': ['Hester Brake', 'Cass Nine', 'CASS NINE!', 'Repair Gallery', 'Plate Book', 'service debt', 'bonnet collection'],
+    'hodl-wars': ['Beren Toll', 'Dima Voss', 'Ferry Ledger', 'Narrow Peace', 'Red Tariff Week', 'charcoal notices', 'publicity crossing']
+  };
+  const stopWords = vm.runInContext('SEARCH_TEXT_STOP_WORDS', sb);
+  let checked = 0;
+  for (const [slug, subjects] of Object.entries(subjectsByPage)) {
+    const url = `/wiki/${slug}.html`;
+    const entry = wikiIndex.find(item => item.url === url);
+    assert.ok(entry, `${slug} stays indexed, including the substantive history companion`);
+    if (['the-bitcoin-kid-army', 'hodl-wars'].includes(slug)) assert.equal(entry.category, 'core', `${slug} is a history reference, not a second faction`);
+    for (const query of subjects) {
+      const meaningful = sb.tokenizeSearchQuery(query).filter(token => token.length >= 3 && !stopWords.has(token));
+      for (const limit of [5, 10]) {
+        const result = await selectMatches(wikiIndex, query, { allowPartialFallback: true, limit });
+        const match = result.scored.find(({ item }) => item.url === url);
+        assert.ok(match, `War subject "${query}" must find ${url} in the first ${limit} results`);
+        assert.equal(match.meaningfulMatchedTokenCount, meaningful.length, `Every meaningful word matches "${query}"`);
+        if (result.usedPartialFallback) {
+          const strict = await selectMatches(wikiIndex, meaningful.join(' '), { allowPartialFallback: false, limit });
+          assert.ok(strict.scored.some(({ item }) => item.url === url), `Strict subject match required for "${query}"`);
+        }
+      }
+      checked++;
+    }
+    const rendered = await renderSearchResults(wikiIndex, subjects[0]);
+    assert.ok(rendered.html.includes(url), `Full search renders the article for ${subjects[0]}`);
+  }
+  for (const [slug, token] of [['bitcoin-kids', 'mina'], ['bitcoin-x-kids', 'esme'], ['bitcoin-kid-army', 'vetch'], ['the-bitcoin-kid-army', 'neon'], ['hodl-warriors', 'flint'], ['hodl-x-warriors', 'hester'], ['hodl-wars', 'beren']]) {
+    const entry = wikiIndex.find(item => item.url === `/wiki/${slug}.html`);
+    assert.ok(entry.search_index.keyword_bag.includes(token), `${token} is searchable`);
+    assert.ok(!entry.search_index.tokens.includes(token), `${token} must not leak into title-only relationship tokens`);
+  }
+  for (const [query, slug] of [['Iris-7', 'iris-7'], ['Thera-9', 'thera-9']]) {
+    const result = await selectMatches(wikiIndex, query, { allowPartialFallback: true, limit: 5 });
+    assert.ok(result.scored.some(({ item }) => item.url === `/wiki/${slug}.html`), `${query} retains its dedicated short-number title match`);
+  }
+  const absent = await selectMatches(wikiIndex, 'Mina Unrelatedzzzzz', { allowPartialFallback: false, limit: 10 });
+  assert.ok(!absent.scored.some(({ item }) => item.url === '/wiki/bitcoin-kids.html'), 'An unrelated meaningful query word must prevent a strict subject match');
+  console.log(`New war-spine search subjects: ${checked} queries pass`);
+}
+
 console.log('wiki-search.test: PASS');

@@ -88,6 +88,44 @@ test('completed core-history rewrites leave the queue and retain their prose loc
   assert.ok(manifest.pages.filter(page => page.first_witness_page).every(page => page.automation_policy === 'canon-locked'));
 });
 
+test('war-spine references own their prose and preserve distinct Army reading paths', () => {
+  const manifest = buildWikiAudit();
+  const slugs = ['bitcoin-kids', 'bitcoin-x-kids', 'bitcoin-kid-army', 'the-bitcoin-kid-army', 'hodl-warriors', 'hodl-x-warriors', 'hodl-wars'];
+  for (const slug of slugs) {
+    const page = manifest.pages.find(page => page.slug === slug);
+    assert.equal(page.canon_revision, 1, slug);
+    assert.equal(page.canon_source_tier, 'first-witness+w81', slug);
+    assert.equal(page.content_owner, 'canon', slug);
+    assert.equal(page.rewrite_status, 'KEEP', slug);
+    assert.equal(page.automation_policy, 'canon-locked', slug);
+    assert.equal(page.legacy_unmarked_content, false, slug);
+    assert.equal(page.canonical_content_block_count, 1, slug);
+    assert.equal(page.exact_duplicate_paragraph_count, 0, slug);
+    assert.equal(page.duplicate_heading_count, 0, slug);
+    const html = fs.readFileSync(path.join(ROOT, page.path), 'utf8');
+    assert.ok(!html.includes('id="bible-content"'), `${slug} cannot append legacy prose`);
+    const ids = [...html.matchAll(/\sid="([^"]+)"/g)].map(match => match[1]);
+    assert.equal(new Set(ids).size, ids.length, `${slug} IDs stay unique`);
+    const contents = html.match(/<details\b[^>]*class="[^"]*article-contents[\s\S]*?<\/details>/)?.[0];
+    assert.ok(contents, `${slug} has native collapsible navigation`);
+    const targets = [...contents.matchAll(/href="#([^"]+)"/g)].map(match => match[1]);
+    const headings = [...extractArticleHtml(html).matchAll(/<h2\b[^>]*id="([^"]+)"/g)].map(match => match[1]);
+    assert.deepEqual(targets, headings, `${slug} contents covers every chapter in order`);
+    assert.ok(targets.every(id => ids.includes(id)), `${slug} contents links resolve`);
+    for (const fragment of html.matchAll(/href="(\/wiki\/[^"#?]+\.html)(?:#[^"]*)?"/g)) {
+      assert.ok(fs.existsSync(path.join(ROOT, fragment[1])), `${slug} links to existing ${fragment[1]}`);
+    }
+  }
+  const army = fs.readFileSync(path.join(ROOT, 'wiki/bitcoin-kid-army.html'), 'utf8');
+  const history = fs.readFileSync(path.join(ROOT, 'wiki/the-bitcoin-kid-army.html'), 'utf8');
+  assert.match(army, /href="\/wiki\/the-bitcoin-kid-army\.html"/);
+  assert.match(history, /href="\/wiki\/bitcoin-kid-army\.html"/);
+  assert.match(history, /<title>Bitcoin Kid Army — Escape Accounts/);
+  for (const html of [army, history]) {
+    for (const id of ['faction', 'known-facts', 'lore', 'real-world-basis', 'sources']) assert.ok(html.includes(`id="${id}"`), `Legacy Army anchor ${id} survives`);
+  }
+});
+
 test('CLI can stage generated artifacts without touching brand-canon outputs', (t) => {
   const outputDir = fs.mkdtempSync(path.join(os.tmpdir(), 'wiki-content-state-output-'));
   t.after(() => fs.rmSync(outputDir, { recursive: true, force: true }));

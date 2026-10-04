@@ -8715,7 +8715,7 @@
     "entity_id": "hodl_wars",
     "canonical_title": "HODL WARS",
     "canonical_url": "/wiki/hodl-wars.html",
-    "category": "factions",
+    "category": "core",
     "aliases": [
       "hodl wars crypto moonboys wiki",
       "Hodl Wars Game"
@@ -10122,10 +10122,12 @@
   },
   {
     "entity_id": "the_bitcoin_kid_army",
-    "canonical_title": "The Bitcoin Kid Army",
+    "canonical_title": "Bitcoin Kid Army — Escape Accounts",
     "canonical_url": "/wiki/the-bitcoin-kid-army.html",
-    "category": "factions",
-    "aliases": [],
+    "category": "core",
+    "aliases": [
+      "the bitcoin kid army"
+    ],
     "tags": [
       "bitcoin",
       "kid",

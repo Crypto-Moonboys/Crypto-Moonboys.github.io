@@ -8672,7 +8672,7 @@
       ],
       "canonical_title": "HODL WARS",
       "canonical_url": "/wiki/hodl-wars.html",
-      "category": "factions",
+      "category": "core",
       "source_urls": [
         "/wiki/hodl-wars.html"
       ],
@@ -10034,10 +10034,12 @@
     },
     "the_bitcoin_kid_army": {
       "alias_candidates": [],
-      "aliases": [],
-      "canonical_title": "The Bitcoin Kid Army",
+      "aliases": [
+        "the bitcoin kid army"
+      ],
+      "canonical_title": "Bitcoin Kid Army — Escape Accounts",
       "canonical_url": "/wiki/the-bitcoin-kid-army.html",
-      "category": "factions",
+      "category": "core",
       "source_urls": [
         "/wiki/the-bitcoin-kid-army.html"
       ],
@@ -11055,5 +11057,5 @@
       ]
     }
   },
-  "updated_at": "2026-10-03T21:12:35Z"
+  "updated_at": "2026-10-04T02:30:51Z"
 }
