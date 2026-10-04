@@ -5,6 +5,7 @@ const GROUPS = {
     ['node', 'scripts/resolve-canon-prose-approval.test.mjs'],
     ['node', 'scripts/audit-related-wiki-paths.mjs'],
     ['node', 'scripts/wiki-navigation-backfill-rendering.test.mjs'],
+    ['node', 'scripts/generate-hub-pages-canonical-preservation.test.mjs'],
     ['node', 'scripts/nft-related-section-dedupe.test.mjs'],
     ['node', '--test', 'scripts/generate-wiki-content-state.test.mjs'],
     ['node', 'scripts/generate-wiki-content-state.mjs', '--check'],

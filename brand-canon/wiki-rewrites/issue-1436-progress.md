@@ -333,3 +333,9 @@ All five current chapters were read in full and compared by section purpose. The
 | `hard-fork-games` | Consolidate seven duplicated opening treatments into the detailed chapter. Restore attributed satellite summons/codenames/Tier 3 and Citadel access-prize details; no completed Ascension or merged HODL identities. | w70 summons/emissary/tier passages; w26 Citadel prize passage; w25 distinct HODL X tradition. |
 
 No newly invented incident is added. Exact old anchors, artwork, executable scripts, engagement and URLs pass preservation comparisons. Validation: publishing surfaces and inventory regenerated separately; full wiki CI, graph integrity, 165 subject queries and diff checks pass. Chromium passes ten desktop/mobile renders, 404 contents targets, five no-JavaScript pages and five real full-search/autocomplete queries. All 36 moved-anchor/viewports checks pass. Preflight corrected header overlap, a stale Nexus contents entry and the missing plural Returned Lists search term; original title-only relationship tokens remain. Screenshots inspected.
+
+### Sanity generator preservation maintenance
+
+The standalone cluster-hub generator could overwrite a reviewed hub or delete it when its graph cluster disappeared. It now consults the existing canonical-block parser before either operation and preserves owned files. Unowned supported/stale hubs retain their previous regeneration/deletion behavior. A real-generator isolated-fixture test covers all four cases and runs in the wiki CI group. This strengthens preservation; no approval policy or ownership rule is changed.
+
+Validation: full wiki CI passes with canon approval disabled against the exact current-main SHA; the new generator test demonstrates both preservation cases and both unowned maintenance cases.

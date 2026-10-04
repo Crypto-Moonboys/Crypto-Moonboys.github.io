@@ -653,7 +653,10 @@ ${membersHtml}
 
 // ── main ─────────────────────────────────────────────────────────────────────
 
-function main() {
+async function main() {
+  const { countCanonicalContentBlocks } = await import('./generate-wiki-content-state.mjs');
+  const hasCanonicalContent = (filePath) => fs.existsSync(filePath)
+    && countCanonicalContentBlocks(fs.readFileSync(filePath, 'utf8')) > 0;
   console.log('Phase 23 fix — graph-derived cluster hub page generator');
   console.log(`  Score threshold: ${SCORE_THRESHOLD}, min cluster size: ${MIN_CLUSTER_SIZE}, max hubs: ${MAX_HUBS}`);
 
@@ -708,6 +711,10 @@ function main() {
     const slug = f.replace('.html', '');
     if (!validHubSlugs.has(slug)) {
       const filePath = path.join(WIKI_DIR, f);
+      if (hasCanonicalContent(filePath)) {
+        console.log(`  SKIP (canonical content): wiki/${f}`);
+        continue;
+      }
       fs.unlinkSync(filePath);
       console.log(`  🗑  Removed stale hub: wiki/${f}`);
       removedCount++;
@@ -719,6 +726,10 @@ function main() {
   const generated = [];
   for (const meta of hubMetas) {
     const outPath = path.join(WIKI_DIR, `${meta.slug}.html`);
+    if (hasCanonicalContent(outPath)) {
+      console.log(`  SKIP (canonical content): wiki/${meta.slug}.html`);
+      continue;
+    }
     const html    = generateHubPageHtml(meta, byUrl, hubMetas);
     fs.writeFileSync(outPath, html, 'utf8');
     console.log(`  ✅ Written: wiki/${meta.slug}.html (${meta.memberCount} cluster members)`);
@@ -734,4 +745,7 @@ function main() {
   console.log('  node scripts/validate-generated-assets.js');
 }
 
-main();
+main().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});
