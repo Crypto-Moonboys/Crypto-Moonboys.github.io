@@ -828,15 +828,47 @@
   "/wiki/block-topia.html": {
     "existing_links": [],
     "suggested_links": [
+      "/wiki/alcor-exchange.html",
+      "/wiki/alfie-bitcoin-kid-blaze.html",
+      "/wiki/bitcoin-btc.html",
+      "/wiki/bitcoin-kid-army.html",
+      "/wiki/bitcoin-kids.html",
+      "/wiki/bitcoin-x-kids.html",
+      "/wiki/bitcoin.html",
       "/wiki/block-node-defenders.html",
       "/wiki/crypto-moonboys.html",
+      "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-block-topia-reading.html",
+      "/wiki/first-witness-book-6-the-fork.html",
       "/wiki/first-witness-book-9-the-unwritten-block.html",
-      "/wiki/first-witness-faction-commentaries.html",
-      "/wiki/graffpunks.html",
+      "/wiki/first-witness-sacred-fork.html",
+      "/wiki/first-witness-triple-fork-chainfire.html",
+      "/wiki/gkniftyheads-bitcoin-barbarian-784284.html",
+      "/wiki/gkniftyheads-bitcoin-kid-infinite-776002.html",
+      "/wiki/gkniftyheads-bitcoin-kid-infinite-776003.html",
+      "/wiki/gkniftyheads-bitcoin-kid-infinite-776005.html",
+      "/wiki/gkniftyheads-bitcoin-kid-infinite-776056.html",
+      "/wiki/gkniftyheads-bitcoin-kid-infinite-776058.html",
+      "/wiki/gkniftyheads-bitcoin-kid-infinite-776059.html",
+      "/wiki/gkniftyheads-bitcoin-kid-royale-776145.html",
+      "/wiki/gkniftyheads-bitcoin-kid-tv-heads-100-776074.html",
+      "/wiki/gkniftyheads-bitcoin-kid-x-sarah-pfly-infinite-776004.html",
+      "/wiki/gkniftyheads-bitcoin-kid-x-sarahpfly-773225.html",
+      "/wiki/gkniftyheads-bitforce-bitcoin-battler-784332.html",
+      "/wiki/gkniftyheads-matteo-bitcoin-bandit-gallo-783447.html",
+      "/wiki/graffiti-queens-in-decentraland.html",
       "/wiki/hard-fork-games.html",
+      "/wiki/hodl-warriors.html",
+      "/wiki/hodl-x-warriors.html",
+      "/wiki/queen-sarah-p-fly.html",
+      "/wiki/sacred-chain.html",
       "/wiki/street-kingdoms.html",
-      "/wiki/the-squeaky-pinks.html"
+      "/wiki/the-bitcoin-kid-army.html",
+      "/wiki/the-hard-fork-rockers.html",
+      "/wiki/the-squeaky-pinks.html",
+      "/wiki/triple-fork-event.html",
+      "/wiki/waxp-exchange.html",
+      "/wiki/xrp-ledger.html"
     ]
   },
   "/wiki/blockchain.html": {
@@ -985,10 +1017,8 @@
   },
   "/wiki/croydon-tower-blocks.html": {
     "existing_links": [
-      "/wiki/block-topia.html",
       "/wiki/crypto-moonboys.html",
       "/wiki/games4punks-telegram.html",
-      "/wiki/gkniftyheads.html",
       "/wiki/hard-fork-games.html",
       "/wiki/hodl-wars.html",
       "/wiki/midevilpunks.html",
@@ -998,14 +1028,22 @@
       "/wiki/stikfamwars.html"
     ],
     "suggested_links": [
-      "/wiki/first-witness-chain-archaeology-forensics.html",
-      "/wiki/first-witness-proverbs-street-sayings.html",
-      "/wiki/first-witness-street-kingdoms-reading.html",
+      "/wiki/block-topia.html",
+      "/wiki/first-witness-book-1-the-first-witness.html",
+      "/wiki/first-witness-book-2-the-common-blood.html",
+      "/wiki/first-witness-book-3-the-keeper.html",
+      "/wiki/first-witness-book-4-the-wall.html",
+      "/wiki/first-witness-book-5-the-chain.html",
+      "/wiki/first-witness-book-6-the-fork.html",
+      "/wiki/first-witness-book-7-the-hold.html",
+      "/wiki/first-witness-book-8-the-fire.html",
+      "/wiki/first-witness-book-9-the-unwritten-block.html",
+      "/wiki/first-witness-digital-inheritance-after-death.html",
+      "/wiki/first-witness-roles-keepers-witnesses-mediators.html",
+      "/wiki/first-witness-sacred-places-walls-pilgrimage.html",
+      "/wiki/genesis-kernel.html",
       "/wiki/graffiti-kings.html",
-      "/wiki/graffiti-nexus.html",
-      "/wiki/graffiti-queens-in-decentraland.html",
       "/wiki/graffpunks.html",
-      "/wiki/grit.html",
       "/wiki/street-kingdoms.html",
       "/wiki/trevor-fung.html"
     ]
@@ -14029,11 +14067,8 @@
   },
   "/wiki/maidstone-base.html": {
     "existing_links": [
-      "/wiki/1m-free-nfts.html",
-      "/wiki/block-topia.html",
       "/wiki/crypto-moonboys.html",
       "/wiki/games4punks-telegram.html",
-      "/wiki/gkniftyheads.html",
       "/wiki/hard-fork-games.html",
       "/wiki/hodl-wars.html",
       "/wiki/midevilpunks.html",
@@ -14043,13 +14078,23 @@
       "/wiki/stikfamwars.html"
     ],
     "suggested_links": [
-      "/wiki/gkniftyheads-gkniftyheads-fun-coupon-782888.html",
-      "/wiki/gkniftyheads-nft-collection.html",
+      "/wiki/block-topia.html",
+      "/wiki/first-witness-apocrypha-disputed-passages.html",
+      "/wiki/first-witness-book-1-the-first-witness.html",
+      "/wiki/first-witness-book-2-the-common-blood.html",
+      "/wiki/first-witness-book-3-the-keeper.html",
+      "/wiki/first-witness-book-4-the-wall.html",
+      "/wiki/first-witness-book-5-the-chain.html",
+      "/wiki/first-witness-book-6-the-fork.html",
+      "/wiki/first-witness-book-7-the-hold.html",
+      "/wiki/first-witness-book-8-the-fire.html",
+      "/wiki/first-witness-book-9-the-unwritten-block.html",
+      "/wiki/first-witness-digital-inheritance-after-death.html",
+      "/wiki/gkniftyheads.html",
       "/wiki/graffiti-kings.html",
       "/wiki/graffpunks.html",
-      "/wiki/metaverse-battles.html",
-      "/wiki/trevor-fung.html",
-      "/wiki/web3.html"
+      "/wiki/street-kingdoms.html",
+      "/wiki/trevor-fung.html"
     ]
   },
   "/wiki/memecoins.html": {
@@ -15462,10 +15507,8 @@
   },
   "/wiki/street-kingdoms.html": {
     "existing_links": [
-      "/wiki/block-topia.html",
       "/wiki/crypto-moonboys.html",
       "/wiki/games4punks-telegram.html",
-      "/wiki/gkniftyheads.html",
       "/wiki/hard-fork-games.html",
       "/wiki/hodl-wars.html",
       "/wiki/midevilpunks.html",
@@ -15475,19 +15518,18 @@
       "/wiki/stikfamwars.html"
     ],
     "suggested_links": [
+      "/wiki/bear-market-siege.html",
+      "/wiki/bitcoin-kids.html",
       "/wiki/block-node-defenders.html",
+      "/wiki/block-topia.html",
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-9-the-unwritten-block.html",
+      "/wiki/first-witness-land-water-stewardship.html",
       "/wiki/first-witness-proverbs-street-sayings.html",
       "/wiki/first-witness-street-kingdoms-reading.html",
+      "/wiki/first-witness-work-craft-service.html",
       "/wiki/graffpunks.html",
-      "/wiki/hodl-warriors.html",
-      "/wiki/metaverse-battles.html",
-      "/wiki/patchwork.html",
-      "/wiki/squeaky-pinks-enforcers.html",
-      "/wiki/the-gasless-ghosts.html",
-      "/wiki/trevor-fung.html",
-      "/wiki/triple-fork-event.html"
+      "/wiki/trevor-fung.html"
     ]
   },
   "/wiki/swap-nefty.html": {
