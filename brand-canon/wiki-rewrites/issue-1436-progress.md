@@ -319,3 +319,17 @@ Validation: publishing surfaces and ownership inventory regenerated separately; 
 ### Sanity validation maintenance
 
 The repository snapshot tests hard-coded the first merged core/war-spine revision numbers. They now require safe integer revisions at or above those initial values, permitting subsequent approved revisions. All ownership, source-tier, duplicate, no-legacy-injection and protected-prose assertions remain. The independent exact-baseline approval/revision ratchet is unchanged; this is a test-only maintenance commit, not an approval-policy change. Targeted inventory and preservation tests pass with canon approval disabled.
+
+### Sanity publication 2 — core-history overlap
+
+All five current chapters were read in full and compared by section purpose. They advance revision 2→3. No authored case, supporting person or settled institution is removed. Old section anchors move to the fuller treatment with scroll clearance where an entire repeated section is consolidated. The eleven people recorded in the deep-core ledger remain.
+
+| Page | Concrete correction | Evidence |
+|---|---|---|
+| `sacred-chain` | Remove the repeated protection/services/coercion setup from the later Block Topia discussion; retain its distinct complaint-versus-classification-appeal analysis. | Current two complete sections; First Witness Block Topia reading and custody rules; W81 w23/w27/w28/w30/W20. |
+| `triple-fork-event` | Consolidate duplicate dependency, three-realities, disaster terminology and chronology treatments into the fuller sections, preserving alternate three-saga reading and all reconstruction cases. | W15 opening, w70 history, current chronology and concordance. |
+| `genesis-kernel` | Consolidate four repeated origin/chronology explanations; retain rescue/ledger ambiguity, all recovery cases and the impossible 2789-after-2880 account as disputed. | W2 Kernel, w37/w61/w63/w87 relevant origin entries; concordance. |
+| `graffiti-nexus` | Consolidate duplicate Leake Street analogy; early code/relic overview retains its unique Kernel rumour and points to fuller treatments. | Whole current chapter and legacy Nexus account; W81 does not independently establish the Nexus name. |
+| `hard-fork-games` | Consolidate seven duplicated opening treatments into the detailed chapter. Restore attributed satellite summons/codenames/Tier 3 and Citadel access-prize details; no completed Ascension or merged HODL identities. | w70 summons/emissary/tier passages; w26 Citadel prize passage; w25 distinct HODL X tradition. |
+
+No newly invented incident is added. Exact old anchors, artwork, executable scripts, engagement and URLs pass preservation comparisons. Validation: publishing surfaces and inventory regenerated separately; full wiki CI, graph integrity, 165 subject queries and diff checks pass. Chromium passes ten desktop/mobile renders, 404 contents targets, five no-JavaScript pages and five real full-search/autocomplete queries. All 36 moved-anchor/viewports checks pass. Preflight corrected header overlap, a stale Nexus contents entry and the missing plural Returned Lists search term; original title-only relationship tokens remain. Screenshots inspected.

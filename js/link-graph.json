@@ -832,7 +832,7 @@
   },
   "/wiki/bitcoin-kids.html": {
     "outbound_count": 48,
-    "inbound_count": 65,
+    "inbound_count": 64,
     "existing_outbound": [
       "/wiki/alfie-bitcoin-kid-blaze.html",
       "/wiki/alfie-blaze.html",
@@ -908,7 +908,6 @@
       "/wiki/graffpunks.html",
       "/wiki/grit.html",
       "/wiki/grit42.html",
-      "/wiki/hard-fork-games.html",
       "/wiki/head-tags.html",
       "/wiki/hex-tagger-prime.html",
       "/wiki/hodl-warriors.html",
@@ -973,7 +972,7 @@
   },
   "/wiki/bitcoin-x-kids.html": {
     "outbound_count": 43,
-    "inbound_count": 33,
+    "inbound_count": 32,
     "existing_outbound": [
       "/wiki/alfie-blaze.html",
       "/wiki/bitcoin-kids.html",
@@ -1031,7 +1030,6 @@
       "/wiki/gkniftyheads.html",
       "/wiki/graffpunks-collection.html",
       "/wiki/graffpunks-ecosystem.html",
-      "/wiki/hard-fork-games.html",
       "/wiki/head-tags.html",
       "/wiki/hodl-wars.html",
       "/wiki/hodl-x-warriors.html",
@@ -8811,7 +8809,7 @@
   },
   "/wiki/first-witness-triple-fork-chainfire.html": {
     "outbound_count": 69,
-    "inbound_count": 3,
+    "inbound_count": 4,
     "existing_outbound": [
       "/wiki/first-witness-forty-paths.html",
       "/wiki/first-witness-life-readings.html",
@@ -8888,7 +8886,8 @@
     "inbound_from": [
       "/wiki/first-witness-forty-paths.html",
       "/wiki/first-witness-world-chain-error.html",
-      "/wiki/the-first-witness.html"
+      "/wiki/the-first-witness.html",
+      "/wiki/triple-fork-event.html"
     ]
   },
   "/wiki/first-witness-truth-commissions-after-conflict.html": {
@@ -9566,7 +9565,7 @@
     ]
   },
   "/wiki/genesis-kernel.html": {
-    "outbound_count": 69,
+    "outbound_count": 68,
     "inbound_count": 14,
     "existing_outbound": [
       "/wiki/block-topia.html",
@@ -9576,10 +9575,8 @@
       "/wiki/gkniftyheads.html",
       "/wiki/graffiti-nexus.html",
       "/wiki/hard-fork-games.html",
-      "/wiki/null-the-prophet.html",
       "/wiki/sacred-chain.html",
       "/wiki/street-kingdoms.html",
-      "/wiki/the-chain-scribes.html",
       "/wiki/the-first-witness.html",
       "/wiki/triple-fork-event.html"
     ],
@@ -9631,11 +9628,12 @@
       "/wiki/gkniftyheads-mr-cheo-spit-head-776117.html",
       "/wiki/gkniftyheads-mr-cheo-tab-head-776120.html",
       "/wiki/gkniftyheads-nft-collection.html",
-      "/wiki/grit.html",
       "/wiki/head-tags.html",
       "/wiki/jodie-zoom-2000.html",
       "/wiki/jonny-laurence-nelson-tag-records.html",
+      "/wiki/null-the-prophet.html",
       "/wiki/the-bitcoin-kid-army.html",
+      "/wiki/the-chain-scribes.html",
       "/wiki/the-code-alchemists.html",
       "/wiki/the-hard-fork-rockers.html",
       "/wiki/the-nomad-bears.html",
@@ -18206,8 +18204,6 @@
     "outbound_count": 63,
     "inbound_count": 87,
     "existing_outbound": [
-      "/wiki/bitcoin-kids.html",
-      "/wiki/bitcoin-x-kids.html",
       "/wiki/block-topia.html",
       "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-concordance.html",
@@ -18215,7 +18211,6 @@
       "/wiki/genesis-kernel.html",
       "/wiki/graffiti-nexus.html",
       "/wiki/hodl-warriors.html",
-      "/wiki/hodl-x-warriors.html",
       "/wiki/sacred-chain.html",
       "/wiki/street-kingdoms.html",
       "/wiki/the-first-witness.html",
@@ -18226,6 +18221,8 @@
       "/wiki/alfie-bitcoin-kid-blaze.html",
       "/wiki/bitcoin-btc.html",
       "/wiki/bitcoin-kid-army.html",
+      "/wiki/bitcoin-kids.html",
+      "/wiki/bitcoin-x-kids.html",
       "/wiki/bitcoin.html",
       "/wiki/block-node-defenders.html",
       "/wiki/crypto-moonboy-pets.html",
@@ -18262,6 +18259,7 @@
       "/wiki/gkniftyheads.html",
       "/wiki/grit.html",
       "/wiki/hodl-wars.html",
+      "/wiki/hodl-x-warriors.html",
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/jodie-zoom-2000.html",
       "/wiki/nifty-crowns.html",
@@ -18665,7 +18663,7 @@
   },
   "/wiki/hodl-x-warriors.html": {
     "outbound_count": 39,
-    "inbound_count": 10,
+    "inbound_count": 9,
     "existing_outbound": [
       "/wiki/bitcoin-x-kids.html",
       "/wiki/block-topia.html",
@@ -18716,7 +18714,6 @@
       "/wiki/block-node-defenders.html",
       "/wiki/crypto-moonboys.html",
       "/wiki/graffpunks-ecosystem.html",
-      "/wiki/hard-fork-games.html",
       "/wiki/hodl-warriors.html",
       "/wiki/seeding-rights.html",
       "/wiki/the-first-witness.html"
@@ -19850,7 +19847,7 @@
   },
   "/wiki/null-the-prophet.html": {
     "outbound_count": 41,
-    "inbound_count": 84,
+    "inbound_count": 83,
     "existing_outbound": [
       "/wiki/bitcoin-kids.html",
       "/wiki/block-topia.html",
@@ -19914,7 +19911,6 @@
       "/wiki/forklord-you.html",
       "/wiki/forksplit.html",
       "/wiki/gang-signs.html",
-      "/wiki/genesis-kernel.html",
       "/wiki/genesis-spray-drop.html",
       "/wiki/graffpunks-24-7-radio.html",
       "/wiki/graffpunks-ecosystem.html",
@@ -22025,7 +22021,7 @@
   },
   "/wiki/the-chain-scribes.html": {
     "outbound_count": 35,
-    "inbound_count": 35,
+    "inbound_count": 34,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-ai-synthetic-minds.html",
@@ -22070,7 +22066,6 @@
       "/wiki/bear-market-siege.html",
       "/wiki/billy-the-goat-kid.html",
       "/wiki/fomo-plague.html",
-      "/wiki/genesis-kernel.html",
       "/wiki/sacred-chain.html",
       "/wiki/satoshi-scroll.html",
       "/wiki/the-allcity-bulls.html",
@@ -23582,6 +23577,7 @@
       "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-concordance.html",
       "/wiki/first-witness-master-chronology.html",
+      "/wiki/first-witness-triple-fork-chainfire.html",
       "/wiki/first-witness-world-chain-error.html",
       "/wiki/genesis-kernel.html",
       "/wiki/graffiti-nexus.html",
@@ -23611,7 +23607,6 @@
       "/wiki/first-witness-sacred-fork.html",
       "/wiki/first-witness-source-register.html",
       "/wiki/first-witness-street-kingdoms-reading.html",
-      "/wiki/first-witness-triple-fork-chainfire.html",
       "/wiki/graffiti-queens-in-decentraland.html",
       "/wiki/the-chain-scribes.html",
       "/wiki/the-finance-guild.html",

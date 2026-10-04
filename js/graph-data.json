@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-04T14:55:31.359Z",
-  "verified_at": "2026-10-04T14:55:31.359Z",
+  "generated_at": "2026-10-04T15:08:22.620Z",
+  "verified_at": "2026-10-04T15:08:22.620Z",
   "nodes": [
     {
       "id": "/about.html",
@@ -1063,7 +1063,7 @@
       "title": "The Triple Fork and Chainfire",
       "url": "/wiki/first-witness-triple-fork-chainfire.html",
       "category": "core",
-      "rank_score": 310,
+      "rank_score": 312,
       "authority_score": 14
     },
     {
@@ -1159,8 +1159,8 @@
       "title": "Genesis Kernel",
       "url": "/wiki/genesis-kernel.html",
       "category": "core",
-      "rank_score": 342,
-      "authority_score": 28
+      "rank_score": 337,
+      "authority_score": 24
     },
     {
       "id": "/wiki/genesis-spray-drop.html",
@@ -2359,8 +2359,8 @@
       "title": "Graffiti Nexus",
       "url": "/wiki/graffiti-nexus.html",
       "category": "core",
-      "rank_score": 347,
-      "authority_score": 28
+      "rank_score": 343,
+      "authority_score": 24
     },
     {
       "id": "/wiki/graffiti-queens-in-decentraland.html",
@@ -2423,8 +2423,8 @@
       "title": "Hard Fork Games",
       "url": "/wiki/hard-fork-games.html",
       "category": "core",
-      "rank_score": 368,
-      "authority_score": 28
+      "rank_score": 364,
+      "authority_score": 24
     },
     {
       "id": "/wiki/harrison-rift.html",
@@ -2471,7 +2471,7 @@
       "title": "HODL X Warriors",
       "url": "/wiki/hodl-x-warriors.html",
       "category": "characters",
-      "rank_score": 293,
+      "rank_score": 291,
       "authority_score": 28
     },
     {
@@ -3247,8 +3247,8 @@
       "title": "Triple Fork Event",
       "url": "/wiki/triple-fork-event.html",
       "category": "core",
-      "rank_score": 354,
-      "authority_score": 28
+      "rank_score": 350,
+      "authority_score": 24
     },
     {
       "id": "/wiki/wagmi-prophecy.html",
@@ -3977,8 +3977,8 @@
     {
       "source": "/wiki/bitcoin-kids.html",
       "target": "/wiki/hodl-x-warriors.html",
-      "score": 86,
-      "weight": 0.86
+      "score": 85,
+      "weight": 0.85
     },
     {
       "source": "/wiki/bitcoin-kids.html",
@@ -4013,8 +4013,8 @@
     {
       "source": "/wiki/bitcoin-x-kids.html",
       "target": "/wiki/hodl-x-warriors.html",
-      "score": 77,
-      "weight": 0.77
+      "score": 76,
+      "weight": 0.76
     },
     {
       "source": "/wiki/bitcoin.html",
@@ -4048,12 +4048,6 @@
     },
     {
       "source": "/wiki/block-node-defenders.html",
-      "target": "/wiki/hard-fork-games.html",
-      "score": 87,
-      "weight": 0.87
-    },
-    {
-      "source": "/wiki/block-node-defenders.html",
       "target": "/wiki/seeding-rights.html",
       "score": 87,
       "weight": 0.87
@@ -4069,6 +4063,12 @@
       "target": "/wiki/the-first-witness.html",
       "score": 86,
       "weight": 0.86
+    },
+    {
+      "source": "/wiki/block-node-defenders.html",
+      "target": "/wiki/hard-fork-games.html",
+      "score": 84,
+      "weight": 0.84
     },
     {
       "source": "/wiki/block-node-defenders.html",
@@ -7385,26 +7385,26 @@
     {
       "source": "/wiki/genesis-kernel.html",
       "target": "/wiki/graffpunks.html",
-      "score": 96,
-      "weight": 0.96
-    },
-    {
-      "source": "/wiki/genesis-kernel.html",
-      "target": "/wiki/sacred-chain.html",
-      "score": 96,
-      "weight": 0.96
+      "score": 93,
+      "weight": 0.93
     },
     {
       "source": "/wiki/genesis-kernel.html",
       "target": "/wiki/hodl-wars.html",
-      "score": 94,
-      "weight": 0.94
+      "score": 91,
+      "weight": 0.91
     },
     {
       "source": "/wiki/genesis-kernel.html",
-      "target": "/wiki/the-first-witness.html",
-      "score": 93,
-      "weight": 0.93
+      "target": "/wiki/sacred-chain.html",
+      "score": 90,
+      "weight": 0.9
+    },
+    {
+      "source": "/wiki/genesis-kernel.html",
+      "target": "/wiki/triple-fork-event.html",
+      "score": 90,
+      "weight": 0.9
     },
     {
       "source": "/wiki/genesis-spray-drop.html",
@@ -11819,8 +11819,8 @@
     {
       "source": "/wiki/gkniftyheads.html",
       "target": "/wiki/hard-fork-games.html",
-      "score": 84,
-      "weight": 0.84
+      "score": 81,
+      "weight": 0.81
     },
     {
       "source": "/wiki/gkniftyheads.html",
@@ -12016,15 +12016,15 @@
     },
     {
       "source": "/wiki/graffpunks-ecosystem.html",
-      "target": "/wiki/hard-fork-games.html",
-      "score": 94,
-      "weight": 0.94
-    },
-    {
-      "source": "/wiki/graffpunks-ecosystem.html",
       "target": "/wiki/gkniftyheads.html",
       "score": 93,
       "weight": 0.93
+    },
+    {
+      "source": "/wiki/graffpunks-ecosystem.html",
+      "target": "/wiki/the-first-witness.html",
+      "score": 90,
+      "weight": 0.9
     },
     {
       "source": "/wiki/graffpunks.html",
@@ -12053,8 +12053,8 @@
     {
       "source": "/wiki/graffpunks.html",
       "target": "/wiki/hard-fork-games.html",
-      "score": 87,
-      "weight": 0.87
+      "score": 84,
+      "weight": 0.84
     },
     {
       "source": "/wiki/grit.html",
@@ -12124,27 +12124,27 @@
     },
     {
       "source": "/wiki/hard-fork-games.html",
-      "target": "/wiki/the-first-witness.html",
-      "score": 101,
-      "weight": 1
-    },
-    {
-      "source": "/wiki/hard-fork-games.html",
       "target": "/wiki/sacred-chain.html",
       "score": 98,
       "weight": 0.98
     },
     {
       "source": "/wiki/hard-fork-games.html",
-      "target": "/wiki/hodl-wars.html",
-      "score": 94,
-      "weight": 0.94
+      "target": "/wiki/the-first-witness.html",
+      "score": 98,
+      "weight": 0.98
     },
     {
       "source": "/wiki/hard-fork-games.html",
-      "target": "/wiki/graffpunks.html",
-      "score": 89,
-      "weight": 0.89
+      "target": "/wiki/hodl-wars.html",
+      "score": 88,
+      "weight": 0.88
+    },
+    {
+      "source": "/wiki/hard-fork-games.html",
+      "target": "/wiki/first-witness-book-6-the-fork.html",
+      "score": 86,
+      "weight": 0.86
     },
     {
       "source": "/wiki/harrison-rift.html",
@@ -12239,8 +12239,8 @@
     {
       "source": "/wiki/hodl-warriors.html",
       "target": "/wiki/hodl-x-warriors.html",
-      "score": 100,
-      "weight": 1
+      "score": 99,
+      "weight": 0.99
     },
     {
       "source": "/wiki/hodl-warriors.html",
@@ -12268,15 +12268,15 @@
     },
     {
       "source": "/wiki/hodl-wars.html",
-      "target": "/wiki/hard-fork-games.html",
-      "score": 97,
-      "weight": 0.97
-    },
-    {
-      "source": "/wiki/hodl-wars.html",
       "target": "/wiki/graffpunks.html",
       "score": 96,
       "weight": 0.96
+    },
+    {
+      "source": "/wiki/hodl-wars.html",
+      "target": "/wiki/hard-fork-games.html",
+      "score": 91,
+      "weight": 0.91
     },
     {
       "source": "/wiki/hodl-wars.html",
@@ -13133,8 +13133,8 @@
     {
       "source": "/wiki/null-the-prophet.html",
       "target": "/wiki/hodl-x-warriors.html",
-      "score": 70,
-      "weight": 0.7
+      "score": 69,
+      "weight": 0.69
     },
     {
       "source": "/wiki/paper-hands.html",
@@ -13642,7 +13642,7 @@
     },
     {
       "source": "/wiki/sacred-chain.html",
-      "target": "/wiki/genesis-kernel.html",
+      "target": "/wiki/triple-fork-event.html",
       "score": 90,
       "weight": 0.9
     },
@@ -13738,12 +13738,6 @@
     },
     {
       "source": "/wiki/seeding-rights.html",
-      "target": "/wiki/hard-fork-games.html",
-      "score": 91,
-      "weight": 0.91
-    },
-    {
-      "source": "/wiki/seeding-rights.html",
       "target": "/wiki/hodl-wars.html",
       "score": 88,
       "weight": 0.88
@@ -13765,6 +13759,12 @@
       "target": "/wiki/the-first-witness.html",
       "score": 83,
       "weight": 0.83
+    },
+    {
+      "source": "/wiki/seeding-rights.html",
+      "target": "/wiki/hard-fork-games.html",
+      "score": 81,
+      "weight": 0.81
     },
     {
       "source": "/wiki/sister-halcyon.html",
@@ -14278,12 +14278,6 @@
     },
     {
       "source": "/wiki/the-bitcoin-kid-army.html",
-      "target": "/wiki/hard-fork-games.html",
-      "score": 94,
-      "weight": 0.94
-    },
-    {
-      "source": "/wiki/the-bitcoin-kid-army.html",
       "target": "/wiki/hodl-wars.html",
       "score": 94,
       "weight": 0.94
@@ -14293,6 +14287,12 @@
       "target": "/wiki/graffpunks.html",
       "score": 93,
       "weight": 0.93
+    },
+    {
+      "source": "/wiki/the-bitcoin-kid-army.html",
+      "target": "/wiki/hard-fork-games.html",
+      "score": 87,
+      "weight": 0.87
     },
     {
       "source": "/wiki/the-bitcoin-kid-army.html",
@@ -15221,8 +15221,8 @@
     {
       "source": "/wiki/triple-fork-event.html",
       "target": "/wiki/the-first-witness.html",
-      "score": 95,
-      "weight": 0.95
+      "score": 98,
+      "weight": 0.98
     },
     {
       "source": "/wiki/triple-fork-event.html",

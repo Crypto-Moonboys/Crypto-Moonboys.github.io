@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-04T14:55:31.359Z",
-  "verified_at": "2026-10-04T14:55:31.359Z",
+  "generated_at": "2026-10-04T15:08:22.620Z",
+  "verified_at": "2026-10-04T15:08:22.620Z",
   "lite": true,
   "nodes": [
     {
@@ -32,8 +32,8 @@
       "title": "Hard Fork Games",
       "url": "/wiki/hard-fork-games.html",
       "category": "core",
-      "rank_score": 368,
-      "authority_score": 28
+      "rank_score": 364,
+      "authority_score": 24
     },
     {
       "id": "/wiki/sacred-chain.html",
@@ -41,14 +41,6 @@
       "url": "/wiki/sacred-chain.html",
       "category": "core",
       "rank_score": 360,
-      "authority_score": 28
-    },
-    {
-      "id": "/wiki/triple-fork-event.html",
-      "title": "Triple Fork Event",
-      "url": "/wiki/triple-fork-event.html",
-      "category": "core",
-      "rank_score": 354,
       "authority_score": 28
     },
     {
@@ -68,20 +60,20 @@
       "authority_score": 18
     },
     {
+      "id": "/wiki/triple-fork-event.html",
+      "title": "Triple Fork Event",
+      "url": "/wiki/triple-fork-event.html",
+      "category": "core",
+      "rank_score": 350,
+      "authority_score": 24
+    },
+    {
       "id": "/wiki/graffiti-nexus.html",
       "title": "Graffiti Nexus",
       "url": "/wiki/graffiti-nexus.html",
       "category": "core",
-      "rank_score": 347,
-      "authority_score": 28
-    },
-    {
-      "id": "/wiki/genesis-kernel.html",
-      "title": "Genesis Kernel",
-      "url": "/wiki/genesis-kernel.html",
-      "category": "core",
-      "rank_score": 342,
-      "authority_score": 28
+      "rank_score": 343,
+      "authority_score": 24
     },
     {
       "id": "/wiki/first-witness-book-3-the-keeper.html",
@@ -98,6 +90,14 @@
       "category": "core",
       "rank_score": 339,
       "authority_score": 14
+    },
+    {
+      "id": "/wiki/genesis-kernel.html",
+      "title": "Genesis Kernel",
+      "url": "/wiki/genesis-kernel.html",
+      "category": "core",
+      "rank_score": 337,
+      "authority_score": 24
     },
     {
       "id": "/wiki/crypto-moonboys.html",
@@ -348,6 +348,14 @@
       "authority_score": 12
     },
     {
+      "id": "/wiki/first-witness-triple-fork-chainfire.html",
+      "title": "The Triple Fork and Chainfire",
+      "url": "/wiki/first-witness-triple-fork-chainfire.html",
+      "category": "core",
+      "rank_score": 312,
+      "authority_score": 14
+    },
+    {
       "id": "/wiki/the-finance-guild.html",
       "title": "The Finance Guild",
       "url": "/wiki/the-finance-guild.html",
@@ -378,14 +386,6 @@
       "category": "core",
       "rank_score": 310,
       "authority_score": 12
-    },
-    {
-      "id": "/wiki/first-witness-triple-fork-chainfire.html",
-      "title": "The Triple Fork and Chainfire",
-      "url": "/wiki/first-witness-triple-fork-chainfire.html",
-      "category": "core",
-      "rank_score": 310,
-      "authority_score": 14
     },
     {
       "id": "/wiki/crypto-moonboy-pets.html",
@@ -834,18 +834,6 @@
       "weight": 0.97
     },
     {
-      "source": "/wiki/genesis-kernel.html",
-      "target": "/wiki/sacred-chain.html",
-      "score": 96,
-      "weight": 0.96
-    },
-    {
-      "source": "/wiki/genesis-kernel.html",
-      "target": "/wiki/hodl-wars.html",
-      "score": 94,
-      "weight": 0.94
-    },
-    {
       "source": "/wiki/the-bitcoin-kid-army.html",
       "target": "/wiki/hodl-wars.html",
       "score": 94,
@@ -864,6 +852,12 @@
       "weight": 0.93
     },
     {
+      "source": "/wiki/genesis-kernel.html",
+      "target": "/wiki/hodl-wars.html",
+      "score": 91,
+      "weight": 0.91
+    },
+    {
       "source": "/wiki/hodl-warriors.html",
       "target": "/wiki/bitcoin-kids.html",
       "score": 91,
@@ -872,6 +866,12 @@
     {
       "source": "/wiki/bitcoin-x-kids.html",
       "target": "/wiki/crypto-moonboys.html",
+      "score": 90,
+      "weight": 0.9
+    },
+    {
+      "source": "/wiki/genesis-kernel.html",
+      "target": "/wiki/sacred-chain.html",
       "score": 90,
       "weight": 0.9
     },
