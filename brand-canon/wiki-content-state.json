@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "generator": "scripts/generate-wiki-content-state.mjs",
-  "source_tree_hash": "sha256:b1c38fa6d531c28a8c9b7ac32c721f041512f2fe209bc887edf95341d8b32417",
+  "source_tree_hash": "sha256:90362db32f3ac9e6af88888fee8691f4203cd2250272be631d015ad2641e7e87",
   "hash_algorithm": "sha256",
   "page_count": 415,
   "manifest_entry_count": 415,
@@ -43,7 +43,7 @@
       "label": "Published First Witness convergence canon",
       "path": "wiki/{the-first-witness,first-witness-*}.html",
       "file_count": 82,
-      "content_hash": "sha256:5db6b3810d6f2cb7e6f09e820a9e380f1c0c7dfb5c202c11c366b5494eff72bd"
+      "content_hash": "sha256:6fcf6d6a096c574615b36746e0d9c8b82a924548af2d1fd3ed8c81589da2606b"
     },
     {
       "rank": 2,
@@ -15521,7 +15521,7 @@
       "title": "The First Witness",
       "page_exists": true,
       "page_type": "first_witness_canon",
-      "current_word_count": 2604,
+      "current_word_count": 2593,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 0,
@@ -15530,10 +15530,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:452aeac82cec5393a4696d1cf774103a659496bc3e1b8f49910f19938aed2491",
-      "article_content_hash": "sha256:5ca13ebc62f02b7d68fbe2daf44c6a15c5d91344b1d5ebe3d925f4d6c76bd33d",
-      "article_markup_hash": "sha256:e9e822613a4d32a5c846b54ca2528491ee10e6682f070bd48dcafe68894280c4",
-      "git_blob_oid": "11fc735e0b438989d7f270615297f05ac6082d9d",
+      "content_hash": "sha256:305e136dc11b69a61c4c4f21657548841472dc0d2dd7e3669838b4f8119b85e1",
+      "article_content_hash": "sha256:7632b73cdad47f02a406c5dec39b14efd8387add016572f4f5b5ab5fad8bd879",
+      "article_markup_hash": "sha256:f73db837617f6a6d98ec7f4133a7d030cd03820c3631f672bf0e7159bb24a675",
+      "git_blob_oid": "c6764790e0579a738f690dac423f1e4cfac36ed6",
       "wiki_stub_marker_scope": null,
       "first_witness_page": true,
       "nft_template_generated_page": false,
