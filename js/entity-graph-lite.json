@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-04T12:56:28.200Z",
-  "verified_at": "2026-10-04T12:56:28.200Z",
+  "generated_at": "2026-10-04T13:04:14.092Z",
+  "verified_at": "2026-10-04T13:04:14.092Z",
   "lite": true,
   "nodes": [
     {
@@ -16,7 +16,7 @@
       "title": "GraffPUNKS",
       "url": "/wiki/graffpunks.html",
       "category": "core",
-      "rank_score": 722,
+      "rank_score": 720,
       "authority_score": 28
     },
     {
@@ -80,7 +80,7 @@
       "title": "Block Topia",
       "url": "/wiki/block-topia.html",
       "category": "characters",
-      "rank_score": 446,
+      "rank_score": 442,
       "authority_score": 13
     },
     {
@@ -88,7 +88,7 @@
       "title": "Concordance of Broken Records",
       "url": "/wiki/first-witness-concordance.html",
       "category": "core",
-      "rank_score": 414,
+      "rank_score": 422,
       "authority_score": 14
     },
     {
@@ -112,7 +112,7 @@
       "title": "Bitcoin Kids",
       "url": "/wiki/bitcoin-kids.html",
       "category": "characters",
-      "rank_score": 394,
+      "rank_score": 396,
       "authority_score": 28
     },
     {
@@ -180,20 +180,20 @@
       "authority_score": 24
     },
     {
+      "id": "/wiki/first-witness-master-chronology.html",
+      "title": "First Witness Master Chronology",
+      "url": "/wiki/first-witness-master-chronology.html",
+      "category": "core",
+      "rank_score": 352,
+      "authority_score": 14
+    },
+    {
       "id": "/wiki/stikfamwars.html",
       "title": "STIKFAMWARS",
       "url": "/wiki/stikfamwars.html",
       "category": "factions",
       "rank_score": 350,
       "authority_score": 21
-    },
-    {
-      "id": "/wiki/first-witness-master-chronology.html",
-      "title": "First Witness Master Chronology",
-      "url": "/wiki/first-witness-master-chronology.html",
-      "category": "core",
-      "rank_score": 346,
-      "authority_score": 14
     },
     {
       "id": "/wiki/the-chain-scribes.html",
@@ -252,20 +252,20 @@
       "authority_score": 21
     },
     {
+      "id": "/wiki/hodl-warriors.html",
+      "title": "HODL Warriors",
+      "url": "/wiki/hodl-warriors.html",
+      "category": "characters",
+      "rank_score": 335,
+      "authority_score": 28
+    },
+    {
       "id": "/wiki/first-witness-book-5-the-chain.html",
       "title": "Book V — The Chain",
       "url": "/wiki/first-witness-book-5-the-chain.html",
       "category": "core",
       "rank_score": 333,
       "authority_score": 14
-    },
-    {
-      "id": "/wiki/hodl-warriors.html",
-      "title": "HODL Warriors",
-      "url": "/wiki/hodl-warriors.html",
-      "category": "characters",
-      "rank_score": 333,
-      "authority_score": 28
     },
     {
       "id": "/wiki/first-witness-book-8-the-fire.html",
@@ -372,6 +372,14 @@
       "authority_score": 12
     },
     {
+      "id": "/wiki/bitcoin-x-kids.html",
+      "title": "Bitcoin X Kids",
+      "url": "/wiki/bitcoin-x-kids.html",
+      "category": "characters",
+      "rank_score": 316,
+      "authority_score": 28
+    },
+    {
       "id": "/wiki/first-witness-book-6-the-fork.html",
       "title": "Book VI — The Fork",
       "url": "/wiki/first-witness-book-6-the-fork.html",
@@ -394,14 +402,6 @@
       "category": "factions",
       "rank_score": 315,
       "authority_score": 21
-    },
-    {
-      "id": "/wiki/bitcoin-x-kids.html",
-      "title": "Bitcoin X Kids",
-      "url": "/wiki/bitcoin-x-kids.html",
-      "category": "characters",
-      "rank_score": 314,
-      "authority_score": 28
     },
     {
       "id": "/wiki/first-witness-street-kingdoms-reading.html",
@@ -488,7 +488,7 @@
       "title": "Block Node Defenders",
       "url": "/wiki/block-node-defenders.html",
       "category": "core",
-      "rank_score": 305,
+      "rank_score": 307,
       "authority_score": 28
     },
     {
@@ -506,14 +506,6 @@
       "category": "core",
       "rank_score": 304,
       "authority_score": 28
-    },
-    {
-      "id": "/wiki/blockchain.html",
-      "title": "Blockchain Technology",
-      "url": "/wiki/blockchain.html",
-      "category": "factions",
-      "rank_score": 303,
-      "authority_score": 30
     },
     {
       "id": "/wiki/nbgx-token.html",
@@ -537,6 +529,22 @@
       "url": "/wiki/first-witness-hodl-doctrine.html",
       "category": "core",
       "rank_score": 302,
+      "authority_score": 12
+    },
+    {
+      "id": "/wiki/blockchain.html",
+      "title": "Blockchain Technology",
+      "url": "/wiki/blockchain.html",
+      "category": "factions",
+      "rank_score": 301,
+      "authority_score": 30
+    },
+    {
+      "id": "/wiki/first-witness-symbols-marks-sacred-design.html",
+      "title": "Symbols, Marks and Sacred Design",
+      "url": "/wiki/first-witness-symbols-marks-sacred-design.html",
+      "category": "core",
+      "rank_score": 300,
       "authority_score": 12
     },
     {
@@ -588,20 +596,12 @@
       "authority_score": 28
     },
     {
-      "id": "/wiki/first-witness-symbols-marks-sacred-design.html",
-      "title": "Symbols, Marks and Sacred Design",
-      "url": "/wiki/first-witness-symbols-marks-sacred-design.html",
-      "category": "core",
-      "rank_score": 296,
-      "authority_score": 12
-    },
-    {
-      "id": "/wiki/first-witness-apocrypha-disputed-passages.html",
-      "title": "Apocrypha and Disputed Passages",
-      "url": "/wiki/first-witness-apocrypha-disputed-passages.html",
-      "category": "core",
+      "id": "/wiki/billy-the-goat-kid.html",
+      "title": "Billy the Goat Kid",
+      "url": "/wiki/billy-the-goat-kid.html",
+      "category": "characters",
       "rank_score": 295,
-      "authority_score": 12
+      "authority_score": 28
     }
   ],
   "edges": [
@@ -644,13 +644,13 @@
     {
       "source": "/wiki/first-witness-source-register.html",
       "target": "/wiki/first-witness-master-chronology.html",
-      "score": 327,
+      "score": 328,
       "weight": 1
     },
     {
       "source": "/wiki/first-witness-book-1-the-first-witness.html",
       "target": "/wiki/first-witness-master-chronology.html",
-      "score": 324,
+      "score": 325,
       "weight": 1
     },
     {
@@ -770,12 +770,6 @@
     {
       "source": "/wiki/first-witness-ai-synthetic-minds.html",
       "target": "/wiki/first-witness-heresies-corruptions-abuses.html",
-      "score": 304,
-      "weight": 1
-    },
-    {
-      "source": "/wiki/first-witness-apocrypha-disputed-passages.html",
-      "target": "/wiki/first-witness-justice-mercy-restitution.html",
       "score": 304,
       "weight": 1
     },
@@ -924,6 +918,12 @@
       "weight": 0.86
     },
     {
+      "source": "/wiki/billy-the-goat-kid.html",
+      "target": "/wiki/the-whitewasher.html",
+      "score": 84,
+      "weight": 0.84
+    },
+    {
       "source": "/wiki/the-princess.html",
       "target": "/wiki/the-whitewasher.html",
       "score": 84,
@@ -990,12 +990,6 @@
       "weight": 0.79
     },
     {
-      "source": "/wiki/iris-7.html",
-      "target": "/wiki/thera-9.html",
-      "score": 77,
-      "weight": 0.77
-    },
-    {
       "source": "/wiki/rave-relics.html",
       "target": "/wiki/midevilpunks.html",
       "score": 77,
@@ -1054,12 +1048,6 @@
       "target": "/wiki/punk-token.html",
       "score": 63,
       "weight": 0.63
-    },
-    {
-      "source": "/wiki/block-topia.html",
-      "target": "/wiki/the-whitewasher.html",
-      "score": 59,
-      "weight": 0.59
     }
   ]
 }
