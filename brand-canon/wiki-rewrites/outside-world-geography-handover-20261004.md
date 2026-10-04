@@ -38,3 +38,9 @@ Do not merge or deploy without explicit GK approval. After merge, any later chan
 - `git diff --check` and syntax checks for both changed JavaScript files passed. The replacement PR description passed the repository's exact PR-template validator.
 - The full repository `npm test` was not rerun for this wiki-only repair. Existing worker/API, WAX and visual jobs had passed on the original PR head; final GitHub checks must still be assessed against the repaired head.
 - The canon prose approval label records the requested writing/fix authorization. It does not grant final merge or deployment approval; the draft and hold-merge boundary remain.
+
+## GitHub merge-checkout repair
+
+GitHub's first repaired-head run still failed the inventory check because the PR originated at `e333dd35a37d2f88881d51682725ff7739507f6e`, before the automated data-feed refresh at base `2ead2b1e5b005b5df62b0c99ec453ef58e430ebc`. Its synthetic merge checkout included the refreshed `gkniftyheads-nft-collection.html`, while the PR inventory still hashed the older page. The same checkout difference explains the original CI failure.
+
+Synchronise the PR branch with that exact base refresh and regenerate the inventory against the combined tree. This carries existing main changes through without editing their content; no refresh files are added to the PR's diff against main. Relative to GitHub's synthetic merge, only the inventory's source-tree hash and that NFT page's four content identities change. The complete wiki domain suite, graph integrity, inventory freshness and whitespace checks passed against this combined tree before delivery.
