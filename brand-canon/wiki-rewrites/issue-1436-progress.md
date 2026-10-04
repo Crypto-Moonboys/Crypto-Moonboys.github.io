@@ -315,3 +315,7 @@ These six pages were previously classified KEEP but still contained substantive 
 | `gang-signs-card-game` | Intro/Lore repeated; claimed verified Sacred Chain matches and AR advantages without support. Same concept as `gang-signs`, now a concise project/rules-status companion; no second game invented. | W8 Bone Idol Ink card-battler passage; existing specialist records and current `gang-signs` chapter. |
 
 Validation: publishing surfaces and ownership inventory regenerated separately; full wiki CI, graph integrity, 26 declared subject queries and diff checks pass. Chromium passes 12 desktop/mobile renders, 72 contents targets, six no-JavaScript pages and six real full-search/autocomplete queries with all meaningful words matched. A mobile contents/header overlap found during preflight was corrected with article-local scroll spacing; the repeated browser pass is clean. No NFT specialist page is changed.
+
+### Sanity validation maintenance
+
+The repository snapshot tests hard-coded the first merged core/war-spine revision numbers. They now require safe integer revisions at or above those initial values, permitting subsequent approved revisions. All ownership, source-tier, duplicate, no-legacy-injection and protected-prose assertions remain. The independent exact-baseline approval/revision ratchet is unchanged; this is a test-only maintenance commit, not an approval-policy change. Targeted inventory and preservation tests pass with canon approval disabled.

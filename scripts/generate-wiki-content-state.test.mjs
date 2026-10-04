@@ -71,7 +71,9 @@ test('completed core-history rewrites leave the queue and retain their prose loc
   const manifest = buildWikiAudit();
   for (const slug of ['sacred-chain', 'triple-fork-event', 'genesis-kernel', 'graffiti-nexus', 'hard-fork-games']) {
     const page = manifest.pages.find(page => page.slug === slug);
-    assert.equal(page.canon_revision, 2);
+    // Later approved prose edits advance the revision; the preservation audit
+    // separately requires an increase against the exact publication baseline.
+    assert.ok(Number.isSafeInteger(page.canon_revision) && page.canon_revision >= 2, slug);
     assert.equal(page.content_owner, 'canon');
     assert.equal(page.rewrite_status, 'KEEP');
     assert.equal(page.automation_policy, 'canon-locked');
@@ -93,7 +95,7 @@ test('war-spine references own their prose and preserve distinct Army reading pa
   const slugs = ['bitcoin-kids', 'bitcoin-x-kids', 'bitcoin-kid-army', 'the-bitcoin-kid-army', 'hodl-warriors', 'hodl-x-warriors', 'hodl-wars'];
   for (const slug of slugs) {
     const page = manifest.pages.find(page => page.slug === slug);
-    assert.equal(page.canon_revision, 1, slug);
+    assert.ok(Number.isSafeInteger(page.canon_revision) && page.canon_revision >= 1, slug);
     assert.equal(page.canon_source_tier, 'first-witness+w81', slug);
     assert.equal(page.content_owner, 'canon', slug);
     assert.equal(page.rewrite_status, 'KEEP', slug);
