@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-04T13:15:10.932Z",
-  "verified_at": "2026-10-04T13:15:10.932Z",
+  "generated_at": "2026-10-04T13:20:38.370Z",
+  "verified_at": "2026-10-04T13:20:38.370Z",
   "lite": true,
   "nodes": [
     {
@@ -28,20 +28,20 @@
       "authority_score": 28
     },
     {
+      "id": "/wiki/first-witness-faction-commentaries.html",
+      "title": "Faction Commentaries on the First Witness",
+      "url": "/wiki/first-witness-faction-commentaries.html",
+      "category": "core",
+      "rank_score": 365,
+      "authority_score": 14
+    },
+    {
       "id": "/wiki/sacred-chain.html",
       "title": "The Sacred Chain",
       "url": "/wiki/sacred-chain.html",
       "category": "core",
       "rank_score": 360,
       "authority_score": 28
-    },
-    {
-      "id": "/wiki/first-witness-faction-commentaries.html",
-      "title": "Faction Commentaries on the First Witness",
-      "url": "/wiki/first-witness-faction-commentaries.html",
-      "category": "core",
-      "rank_score": 357,
-      "authority_score": 14
     },
     {
       "id": "/wiki/triple-fork-event.html",
@@ -244,6 +244,14 @@
       "authority_score": 28
     },
     {
+      "id": "/wiki/bitcoin-x-kids.html",
+      "title": "Bitcoin X Kids",
+      "url": "/wiki/bitcoin-x-kids.html",
+      "category": "characters",
+      "rank_score": 318,
+      "authority_score": 28
+    },
+    {
       "id": "/wiki/first-witness-parables.html",
       "title": "Parables of the First Witness",
       "url": "/wiki/first-witness-parables.html",
@@ -274,14 +282,6 @@
       "category": "core",
       "rank_score": 317,
       "authority_score": 12
-    },
-    {
-      "id": "/wiki/bitcoin-x-kids.html",
-      "title": "Bitcoin X Kids",
-      "url": "/wiki/bitcoin-x-kids.html",
-      "category": "characters",
-      "rank_score": 316,
-      "authority_score": 28
     },
     {
       "id": "/wiki/first-witness-book-6-the-fork.html",
@@ -468,6 +468,14 @@
       "authority_score": 12
     },
     {
+      "id": "/wiki/the-salvagers.html",
+      "title": "The SALVAGERS",
+      "url": "/wiki/the-salvagers.html",
+      "category": "factions",
+      "rank_score": 300,
+      "authority_score": 28
+    },
+    {
       "id": "/wiki/first-witness-glossary.html",
       "title": "First Witness Glossary",
       "url": "/wiki/first-witness-glossary.html",
@@ -489,14 +497,6 @@
       "url": "/wiki/iris-7.html",
       "category": "characters",
       "rank_score": 299,
-      "authority_score": 28
-    },
-    {
-      "id": "/wiki/the-salvagers.html",
-      "title": "The SALVAGERS",
-      "url": "/wiki/the-salvagers.html",
-      "category": "factions",
-      "rank_score": 298,
       "authority_score": 28
     },
     {
@@ -572,14 +572,6 @@
       "authority_score": 12
     },
     {
-      "id": "/wiki/the-nomad-bears.html",
-      "title": "The Nomad Bears",
-      "url": "/wiki/the-nomad-bears.html",
-      "category": "factions",
-      "rank_score": 294,
-      "authority_score": 28
-    },
-    {
       "id": "/wiki/first-witness-pride-temptation-false-idols.html",
       "title": "Pride, Temptation and False Idols",
       "url": "/wiki/first-witness-pride-temptation-false-idols.html",
@@ -602,6 +594,14 @@
       "category": "characters",
       "rank_score": 292,
       "authority_score": 28
+    },
+    {
+      "id": "/wiki/gang-signs.html",
+      "title": "gang signs",
+      "url": "/wiki/gang-signs.html",
+      "category": "characters",
+      "rank_score": 292,
+      "authority_score": 26
     }
   ],
   "edges": [
@@ -684,6 +684,12 @@
       "weight": 1
     },
     {
+      "source": "/wiki/first-witness-block-topia-reading.html",
+      "target": "/wiki/first-witness-concordance.html",
+      "score": 318,
+      "weight": 1
+    },
+    {
       "source": "/wiki/first-witness-book-9-the-unwritten-block.html",
       "target": "/wiki/first-witness-block-topia-reading.html",
       "score": 318,
@@ -692,12 +698,6 @@
     {
       "source": "/wiki/first-witness-block-topia-reading.html",
       "target": "/wiki/first-witness-book-9-the-unwritten-block.html",
-      "score": 317,
-      "weight": 1
-    },
-    {
-      "source": "/wiki/first-witness-block-topia-reading.html",
-      "target": "/wiki/first-witness-concordance.html",
       "score": 317,
       "weight": 1
     },
@@ -726,8 +726,20 @@
       "weight": 1
     },
     {
+      "source": "/wiki/first-witness-bitcoin-witness.html",
+      "target": "/wiki/first-witness-concordance.html",
+      "score": 315,
+      "weight": 1
+    },
+    {
       "source": "/wiki/first-witness-book-2-the-common-blood.html",
       "target": "/wiki/first-witness-book-4-the-wall.html",
+      "score": 315,
+      "weight": 1
+    },
+    {
+      "source": "/wiki/first-witness-book-2-the-common-blood.html",
+      "target": "/wiki/first-witness-concordance.html",
       "score": 315,
       "weight": 1
     },
@@ -735,18 +747,6 @@
       "source": "/wiki/first-witness-book-9-the-unwritten-block.html",
       "target": "/wiki/first-witness-book-7-the-hold.html",
       "score": 315,
-      "weight": 1
-    },
-    {
-      "source": "/wiki/first-witness-bitcoin-witness.html",
-      "target": "/wiki/first-witness-concordance.html",
-      "score": 314,
-      "weight": 1
-    },
-    {
-      "source": "/wiki/first-witness-book-2-the-common-blood.html",
-      "target": "/wiki/first-witness-concordance.html",
-      "score": 314,
       "weight": 1
     },
     {
@@ -806,13 +806,13 @@
     {
       "source": "/wiki/hard-fork-games.html",
       "target": "/wiki/triple-fork-event.html",
-      "score": 110,
+      "score": 111,
       "weight": 1
     },
     {
       "source": "/wiki/bitcoin-x-kids.html",
       "target": "/wiki/bitcoin-kids.html",
-      "score": 107,
+      "score": 108,
       "weight": 1
     },
     {
@@ -864,22 +864,10 @@
       "weight": 0.93
     },
     {
-      "source": "/wiki/the-nomad-bears.html",
-      "target": "/wiki/the-salvagers.html",
-      "score": 93,
-      "weight": 0.93
-    },
-    {
-      "source": "/wiki/the-salvagers.html",
-      "target": "/wiki/the-nomad-bears.html",
-      "score": 93,
-      "weight": 0.93
-    },
-    {
       "source": "/wiki/hodl-warriors.html",
       "target": "/wiki/bitcoin-kids.html",
-      "score": 90,
-      "weight": 0.9
+      "score": 91,
+      "weight": 0.91
     },
     {
       "source": "/wiki/burn-to-earn.html",
@@ -948,20 +936,14 @@
       "weight": 0.84
     },
     {
-      "source": "/wiki/the-bitcoin-kid-army.html",
-      "target": "/wiki/gkniftyheads.html",
+      "source": "/wiki/bit-cap-5000.html",
+      "target": "/wiki/hodl-warriors.html",
       "score": 83,
       "weight": 0.83
     },
     {
       "source": "/wiki/bit-cap-5000.html",
       "target": "/wiki/bitcoin-x-kids.html",
-      "score": 82,
-      "weight": 0.82
-    },
-    {
-      "source": "/wiki/bit-cap-5000.html",
-      "target": "/wiki/hodl-warriors.html",
       "score": 82,
       "weight": 0.82
     },
@@ -978,16 +960,22 @@
       "weight": 0.79
     },
     {
+      "source": "/wiki/gang-signs.html",
+      "target": "/wiki/null-the-prophet.html",
+      "score": 79,
+      "weight": 0.79
+    },
+    {
       "source": "/wiki/iris-7.html",
       "target": "/wiki/null-the-prophet.html",
       "score": 79,
       "weight": 0.79
     },
     {
-      "source": "/wiki/punk-token.html",
-      "target": "/wiki/null-the-prophet.html",
-      "score": 79,
-      "weight": 0.79
+      "source": "/wiki/the-chain-scribes.html",
+      "target": "/wiki/the-salvagers.html",
+      "score": 77,
+      "weight": 0.77
     },
     {
       "source": "/wiki/midevilpunks.html",

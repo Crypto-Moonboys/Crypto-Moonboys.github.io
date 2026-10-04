@@ -525,11 +525,174 @@
       ]
     },
     "link_score": {
-      "inbound_count": 82,
+      "inbound_count": 85,
       "outbound_count": 63,
       "existing_outbound_count": 14,
       "suggested_outbound_count": 49,
-      "authority": 171
+      "authority": 177
+    },
+    "brand": null
+  },
+  {
+    "title": "Faction Commentaries on the First Witness",
+    "desc": "How the currently evidenced GK factions interpret the Covenant.",
+    "url": "/wiki/first-witness-faction-commentaries.html",
+    "tags": [
+      "faction",
+      "commentaries",
+      "first",
+      "witness",
+      "first witness",
+      "first witness bible",
+      "crypto moonboys bible",
+      "graffiti kings bible",
+      "GK bible",
+      "covenant",
+      "scripture",
+      "sacred text",
+      "bitcoin witness",
+      "bitcoin provenance",
+      "sacred chain",
+      "aether-chain",
+      "forty paths",
+      "40 GK factions",
+      "HODL WARS",
+      "Block Topia",
+      "Year 3008",
+      "2030 Concord",
+      "no single keeper",
+      "Crypto Moonboys lore",
+      "Graffiti Kings lore",
+      "religion",
+      "religious philosophy",
+      "philosophy",
+      "ethics",
+      "moral philosophy",
+      "spirituality",
+      "faith tradition",
+      "theology",
+      "belief system",
+      "40 faction interpretations",
+      "GK faction bible commentary",
+      "faction theology",
+      "Forty Paths"
+    ],
+    "category": "core",
+    "aliases": [
+      {
+        "title": "faction commentaries first witness"
+      },
+      {
+        "title": "first witness faction commentaries"
+      }
+    ],
+    "rank_score": 365,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 2,
+      "tag_count": 38,
+      "mention_count": 0,
+      "category": "core",
+      "category_priority": 10,
+      "has_description": true,
+      "article_word_count": 1077,
+      "keyword_bag_size": 54,
+      "heading_count": 35,
+      "list_count": 0,
+      "internal_link_count": 7,
+      "paragraph_count": 37,
+      "section_count": 5,
+      "lore_paragraph_count": 36,
+      "content_quality_score": 90,
+      "authority_score": 14
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 50,
+      "word_count_points": 50,
+      "keyword_bag_points": 54,
+      "content_quality_points": 134,
+      "authority_points": 47,
+      "final_rank_score": 365,
+      "authority_graph_points": 33
+    },
+    "search_index": {
+      "normalized_title": "faction commentaries on the first witness crypto moonboys wiki",
+      "tokens": [
+        "faction",
+        "commentaries",
+        "on",
+        "the",
+        "first",
+        "witness",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "faction",
+        "commentaries",
+        "on",
+        "the",
+        "first",
+        "witness",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "how",
+        "currently",
+        "evidenced",
+        "gk",
+        "factions",
+        "interpret",
+        "covenant",
+        "bible",
+        "graffiti",
+        "kings",
+        "scripture",
+        "sacred",
+        "text",
+        "bitcoin",
+        "provenance",
+        "chain",
+        "aether",
+        "forty",
+        "paths",
+        "40",
+        "hodl",
+        "wars",
+        "block",
+        "topia",
+        "year",
+        "3008",
+        "2030",
+        "concord",
+        "no",
+        "single",
+        "keeper",
+        "lore",
+        "religion",
+        "religious",
+        "philosophy",
+        "ethics",
+        "moral",
+        "spirituality",
+        "faith",
+        "tradition",
+        "theology",
+        "belief",
+        "system",
+        "interpretations",
+        "commentary"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 15,
+      "outbound_count": 66,
+      "existing_outbound_count": 6,
+      "suggested_outbound_count": 60,
+      "authority": 33
     },
     "brand": null
   },
@@ -696,169 +859,6 @@
     "brand": null
   },
   {
-    "title": "Faction Commentaries on the First Witness",
-    "desc": "How the currently evidenced GK factions interpret the Covenant.",
-    "url": "/wiki/first-witness-faction-commentaries.html",
-    "tags": [
-      "faction",
-      "commentaries",
-      "first",
-      "witness",
-      "first witness",
-      "first witness bible",
-      "crypto moonboys bible",
-      "graffiti kings bible",
-      "GK bible",
-      "covenant",
-      "scripture",
-      "sacred text",
-      "bitcoin witness",
-      "bitcoin provenance",
-      "sacred chain",
-      "aether-chain",
-      "forty paths",
-      "40 GK factions",
-      "HODL WARS",
-      "Block Topia",
-      "Year 3008",
-      "2030 Concord",
-      "no single keeper",
-      "Crypto Moonboys lore",
-      "Graffiti Kings lore",
-      "religion",
-      "religious philosophy",
-      "philosophy",
-      "ethics",
-      "moral philosophy",
-      "spirituality",
-      "faith tradition",
-      "theology",
-      "belief system",
-      "40 faction interpretations",
-      "GK faction bible commentary",
-      "faction theology",
-      "Forty Paths"
-    ],
-    "category": "core",
-    "aliases": [
-      {
-        "title": "faction commentaries first witness"
-      },
-      {
-        "title": "first witness faction commentaries"
-      }
-    ],
-    "rank_score": 357,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 2,
-      "tag_count": 38,
-      "mention_count": 0,
-      "category": "core",
-      "category_priority": 10,
-      "has_description": true,
-      "article_word_count": 1077,
-      "keyword_bag_size": 54,
-      "heading_count": 35,
-      "list_count": 0,
-      "internal_link_count": 7,
-      "paragraph_count": 37,
-      "section_count": 5,
-      "lore_paragraph_count": 36,
-      "content_quality_score": 90,
-      "authority_score": 14
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 50,
-      "word_count_points": 50,
-      "keyword_bag_points": 54,
-      "content_quality_points": 134,
-      "authority_points": 39,
-      "final_rank_score": 357,
-      "authority_graph_points": 25
-    },
-    "search_index": {
-      "normalized_title": "faction commentaries on the first witness crypto moonboys wiki",
-      "tokens": [
-        "faction",
-        "commentaries",
-        "on",
-        "the",
-        "first",
-        "witness",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "faction",
-        "commentaries",
-        "on",
-        "the",
-        "first",
-        "witness",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "how",
-        "currently",
-        "evidenced",
-        "gk",
-        "factions",
-        "interpret",
-        "covenant",
-        "bible",
-        "graffiti",
-        "kings",
-        "scripture",
-        "sacred",
-        "text",
-        "bitcoin",
-        "provenance",
-        "chain",
-        "aether",
-        "forty",
-        "paths",
-        "40",
-        "hodl",
-        "wars",
-        "block",
-        "topia",
-        "year",
-        "3008",
-        "2030",
-        "concord",
-        "no",
-        "single",
-        "keeper",
-        "lore",
-        "religion",
-        "religious",
-        "philosophy",
-        "ethics",
-        "moral",
-        "spirituality",
-        "faith",
-        "tradition",
-        "theology",
-        "belief",
-        "system",
-        "interpretations",
-        "commentary"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 11,
-      "outbound_count": 66,
-      "existing_outbound_count": 6,
-      "suggested_outbound_count": 60,
-      "authority": 25
-    },
-    "brand": null
-  },
-  {
     "title": "Triple Fork Event",
     "desc": "The World Chain fracture of 2880: Chainfire, disputed identities, broken economies, survival customs and the rise of Block Topia.",
     "url": "/wiki/triple-fork-event.html",
@@ -996,11 +996,11 @@
       ]
     },
     "link_score": {
-      "inbound_count": 37,
+      "inbound_count": 41,
       "outbound_count": 38,
       "existing_outbound_count": 11,
       "suggested_outbound_count": 27,
-      "authority": 79.5
+      "authority": 87.5
     },
     "brand": null
   },
@@ -1158,11 +1158,11 @@
       ]
     },
     "link_score": {
-      "inbound_count": 59,
+      "inbound_count": 61,
       "outbound_count": 73,
       "existing_outbound_count": 6,
       "suggested_outbound_count": 67,
-      "authority": 121
+      "authority": 125
     },
     "brand": null
   },
@@ -1635,11 +1635,11 @@
       ]
     },
     "link_score": {
-      "inbound_count": 30,
+      "inbound_count": 31,
       "outbound_count": 68,
       "existing_outbound_count": 6,
       "suggested_outbound_count": 62,
-      "authority": 63
+      "authority": 65
     },
     "brand": null
   },
@@ -2611,11 +2611,11 @@
       ]
     },
     "link_score": {
-      "inbound_count": 216,
+      "inbound_count": 215,
       "outbound_count": 39,
       "existing_outbound_count": 20,
       "suggested_outbound_count": 19,
-      "authority": 442
+      "authority": 440
     },
     "brand": {
       "brand_family": "graffpunks",
@@ -3464,11 +3464,11 @@
       ]
     },
     "link_score": {
-      "inbound_count": 58,
+      "inbound_count": 62,
       "outbound_count": 48,
       "existing_outbound_count": 17,
       "suggested_outbound_count": 31,
-      "authority": 124.5
+      "authority": 132.5
     },
     "brand": null
   },
@@ -4155,11 +4155,11 @@
       ]
     },
     "link_score": {
-      "inbound_count": 29,
+      "inbound_count": 31,
       "outbound_count": 23,
       "existing_outbound_count": 15,
       "suggested_outbound_count": 8,
-      "authority": 65.5
+      "authority": 69.5
     },
     "brand": {
       "brand_family": "hodl",
@@ -4326,6 +4326,115 @@
       "existing_outbound_count": 6,
       "suggested_outbound_count": 56,
       "authority": 9
+    },
+    "brand": null
+  },
+  {
+    "title": "Bitcoin X Kids",
+    "desc": "The distinct engineered generation inside Block Topia: Seeding, Glass Court households, education, placement, bonnet traditions and the pressures of Year 3008.",
+    "url": "/wiki/bitcoin-x-kids.html",
+    "tags": [
+      "bitcoin",
+      "kids",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "characters",
+    "aliases": [],
+    "rank_score": 318,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "characters",
+      "category_priority": 8,
+      "has_description": true,
+      "article_word_count": 4955,
+      "keyword_bag_size": 26,
+      "heading_count": 28,
+      "list_count": 1,
+      "internal_link_count": 15,
+      "paragraph_count": 73,
+      "section_count": 25,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 89,
+      "authority_score": 28
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 40,
+      "word_count_points": 50,
+      "keyword_bag_points": 26,
+      "content_quality_points": 94,
+      "authority_points": 78,
+      "final_rank_score": 318,
+      "authority_graph_points": 50
+    },
+    "search_index": {
+      "normalized_title": "bitcoin x kids crypto moonboys wiki",
+      "tokens": [
+        "bitcoin",
+        "x",
+        "kids",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "bitcoin",
+        "x",
+        "kids",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "the",
+        "distinct",
+        "engineered",
+        "generation",
+        "inside",
+        "block",
+        "topia",
+        "seeding",
+        "glass",
+        "court",
+        "households",
+        "education",
+        "placement",
+        "bonnet",
+        "traditions",
+        "and",
+        "pressures",
+        "of",
+        "year",
+        "3008",
+        "ada",
+        "wren",
+        "esme",
+        "sorn",
+        "len",
+        "arc",
+        "measure",
+        "hall",
+        "blank",
+        "day",
+        "quiet",
+        "window",
+        "exchange",
+        "encoded",
+        "irises",
+        "theta",
+        "protocols"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 25,
+      "outbound_count": 43,
+      "existing_outbound_count": 12,
+      "suggested_outbound_count": 31,
+      "authority": 56
     },
     "brand": null
   },
@@ -4916,115 +5025,6 @@
       "existing_outbound_count": 6,
       "suggested_outbound_count": 66,
       "authority": 15
-    },
-    "brand": null
-  },
-  {
-    "title": "Bitcoin X Kids",
-    "desc": "The distinct engineered generation inside Block Topia: Seeding, Glass Court households, education, placement, bonnet traditions and the pressures of Year 3008.",
-    "url": "/wiki/bitcoin-x-kids.html",
-    "tags": [
-      "bitcoin",
-      "kids",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "characters",
-    "aliases": [],
-    "rank_score": 316,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 0,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "characters",
-      "category_priority": 8,
-      "has_description": true,
-      "article_word_count": 4955,
-      "keyword_bag_size": 26,
-      "heading_count": 28,
-      "list_count": 1,
-      "internal_link_count": 15,
-      "paragraph_count": 73,
-      "section_count": 25,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 89,
-      "authority_score": 28
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 40,
-      "word_count_points": 50,
-      "keyword_bag_points": 26,
-      "content_quality_points": 94,
-      "authority_points": 76,
-      "final_rank_score": 316,
-      "authority_graph_points": 48
-    },
-    "search_index": {
-      "normalized_title": "bitcoin x kids crypto moonboys wiki",
-      "tokens": [
-        "bitcoin",
-        "x",
-        "kids",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "bitcoin",
-        "x",
-        "kids",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "the",
-        "distinct",
-        "engineered",
-        "generation",
-        "inside",
-        "block",
-        "topia",
-        "seeding",
-        "glass",
-        "court",
-        "households",
-        "education",
-        "placement",
-        "bonnet",
-        "traditions",
-        "and",
-        "pressures",
-        "of",
-        "year",
-        "3008",
-        "ada",
-        "wren",
-        "esme",
-        "sorn",
-        "len",
-        "arc",
-        "measure",
-        "hall",
-        "blank",
-        "day",
-        "quiet",
-        "window",
-        "exchange",
-        "encoded",
-        "irises",
-        "theta",
-        "protocols"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 21,
-      "outbound_count": 43,
-      "existing_outbound_count": 12,
-      "suggested_outbound_count": 31,
-      "authority": 48
     },
     "brand": null
   },
@@ -8219,6 +8219,118 @@
     "brand": null
   },
   {
+    "title": "The SALVAGERS",
+    "desc": "Year 3008 Salvagers: material recovery, power and cooling, Rattle Yard, supply contracts, Return Weight, the Cold Cart delay and the cost of maintenance.",
+    "url": "/wiki/the-salvagers.html",
+    "tags": [
+      "salvagers",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "SALVAGERS — Crypto Moonboys Wiki"
+      },
+      {
+        "title": "SALVAGERS"
+      }
+    ],
+    "rank_score": 300,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 2,
+      "tag_count": 4,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 3155,
+      "keyword_bag_size": 24,
+      "heading_count": 20,
+      "list_count": 1,
+      "internal_link_count": 16,
+      "paragraph_count": 47,
+      "section_count": 17,
+      "lore_paragraph_count": 45,
+      "content_quality_score": 105,
+      "authority_score": 28
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 50,
+      "keyword_bag_points": 24,
+      "content_quality_points": 115,
+      "authority_points": 46,
+      "final_rank_score": 300,
+      "authority_graph_points": 18
+    },
+    "search_index": {
+      "normalized_title": "the salvagers crypto moonboys wiki",
+      "tokens": [
+        "the",
+        "salvagers",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "the",
+        "salvagers",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "year",
+        "3008",
+        "material",
+        "recovery",
+        "power",
+        "and",
+        "cooling",
+        "rattle",
+        "yard",
+        "supply",
+        "contracts",
+        "return",
+        "weight",
+        "cold",
+        "cart",
+        "delay",
+        "cost",
+        "of",
+        "maintenance",
+        "suri",
+        "clamp",
+        "leda",
+        "gauge",
+        "enno",
+        "pike",
+        "unclaimed",
+        "shelf",
+        "salvage",
+        "code",
+        "ghost",
+        "mint",
+        "eternal",
+        "cache",
+        "ledger",
+        "shiver",
+        "cut"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 5,
+      "outbound_count": 34,
+      "existing_outbound_count": 16,
+      "suggested_outbound_count": 18,
+      "authority": 18
+    },
+    "brand": null
+  },
+  {
     "title": "First Witness Glossary",
     "desc": "Definitions for the core sacred and historical terms used across the First Witness.",
     "url": "/wiki/first-witness-glossary.html",
@@ -8554,118 +8666,6 @@
       "existing_outbound_count": 18,
       "suggested_outbound_count": 31,
       "authority": 13
-    },
-    "brand": null
-  },
-  {
-    "title": "The SALVAGERS",
-    "desc": "Year 3008 Salvagers: material recovery, power and cooling, Rattle Yard, supply contracts, Return Weight, the Cold Cart delay and the cost of maintenance.",
-    "url": "/wiki/the-salvagers.html",
-    "tags": [
-      "salvagers",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "SALVAGERS — Crypto Moonboys Wiki"
-      },
-      {
-        "title": "SALVAGERS"
-      }
-    ],
-    "rank_score": 298,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 2,
-      "tag_count": 4,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 3155,
-      "keyword_bag_size": 24,
-      "heading_count": 20,
-      "list_count": 1,
-      "internal_link_count": 16,
-      "paragraph_count": 47,
-      "section_count": 17,
-      "lore_paragraph_count": 45,
-      "content_quality_score": 105,
-      "authority_score": 28
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 50,
-      "keyword_bag_points": 24,
-      "content_quality_points": 115,
-      "authority_points": 44,
-      "final_rank_score": 298,
-      "authority_graph_points": 16
-    },
-    "search_index": {
-      "normalized_title": "the salvagers crypto moonboys wiki",
-      "tokens": [
-        "the",
-        "salvagers",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "the",
-        "salvagers",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "year",
-        "3008",
-        "material",
-        "recovery",
-        "power",
-        "and",
-        "cooling",
-        "rattle",
-        "yard",
-        "supply",
-        "contracts",
-        "return",
-        "weight",
-        "cold",
-        "cart",
-        "delay",
-        "cost",
-        "of",
-        "maintenance",
-        "suri",
-        "clamp",
-        "leda",
-        "gauge",
-        "enno",
-        "pike",
-        "unclaimed",
-        "shelf",
-        "salvage",
-        "code",
-        "ghost",
-        "mint",
-        "eternal",
-        "cache",
-        "ledger",
-        "shiver",
-        "cut"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 4,
-      "outbound_count": 34,
-      "existing_outbound_count": 16,
-      "suggested_outbound_count": 18,
-      "authority": 16
     },
     "brand": null
   },
@@ -9772,113 +9772,6 @@
     "brand": null
   },
   {
-    "title": "The Nomad Bears",
-    "desc": "Year 3008 Nomad Bears: solitude, glitch-scape art, route work, temporary alliances, the Rain Map and disputed resistance to NULL.",
-    "url": "/wiki/the-nomad-bears.html",
-    "tags": [
-      "nomad",
-      "bears",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "Nomad Bears — Crypto Moonboys Wiki"
-      },
-      {
-        "title": "Nomad Bears"
-      }
-    ],
-    "rank_score": 294,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 2,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 3156,
-      "keyword_bag_size": 23,
-      "heading_count": 19,
-      "list_count": 1,
-      "internal_link_count": 20,
-      "paragraph_count": 44,
-      "section_count": 16,
-      "lore_paragraph_count": 42,
-      "content_quality_score": 101,
-      "authority_score": 28
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 50,
-      "keyword_bag_points": 23,
-      "content_quality_points": 112,
-      "authority_points": 44,
-      "final_rank_score": 294,
-      "authority_graph_points": 16
-    },
-    "search_index": {
-      "normalized_title": "the nomad bears crypto moonboys wiki",
-      "tokens": [
-        "the",
-        "nomad",
-        "bears",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "the",
-        "nomad",
-        "bears",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "year",
-        "3008",
-        "solitude",
-        "glitch",
-        "scape",
-        "art",
-        "route",
-        "work",
-        "temporary",
-        "alliances",
-        "rain",
-        "map",
-        "and",
-        "disputed",
-        "resistance",
-        "to",
-        "null",
-        "kel",
-        "dusk",
-        "veya",
-        "slate",
-        "third",
-        "lantern",
-        "quiet",
-        "return",
-        "shiver",
-        "cut",
-        "scapes"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 3,
-      "outbound_count": 31,
-      "existing_outbound_count": 20,
-      "suggested_outbound_count": 11,
-      "authority": 16
-    },
-    "brand": null
-  },
-  {
     "title": "Pride, Temptation and False Idols",
     "desc": "How later First Witness traditions describe pride, status, control and the tendency to worship tools, leaders and identities.",
     "url": "/wiki/first-witness-pride-temptation-false-idols.html",
@@ -10427,6 +10320,221 @@
       "existing_outbound_count": 8,
       "suggested_outbound_count": 2,
       "authority": 108
+    },
+    "brand": null
+  },
+  {
+    "title": "The Nomad Bears",
+    "desc": "Year 3008 Nomad Bears: solitude, glitch-scape art, route work, temporary alliances, the Rain Map and disputed resistance to NULL.",
+    "url": "/wiki/the-nomad-bears.html",
+    "tags": [
+      "nomad",
+      "bears",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "Nomad Bears — Crypto Moonboys Wiki"
+      },
+      {
+        "title": "Nomad Bears"
+      }
+    ],
+    "rank_score": 292,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 2,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 3156,
+      "keyword_bag_size": 23,
+      "heading_count": 19,
+      "list_count": 1,
+      "internal_link_count": 20,
+      "paragraph_count": 44,
+      "section_count": 16,
+      "lore_paragraph_count": 42,
+      "content_quality_score": 101,
+      "authority_score": 28
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 50,
+      "keyword_bag_points": 23,
+      "content_quality_points": 112,
+      "authority_points": 42,
+      "final_rank_score": 292,
+      "authority_graph_points": 14
+    },
+    "search_index": {
+      "normalized_title": "the nomad bears crypto moonboys wiki",
+      "tokens": [
+        "the",
+        "nomad",
+        "bears",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "the",
+        "nomad",
+        "bears",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "year",
+        "3008",
+        "solitude",
+        "glitch",
+        "scape",
+        "art",
+        "route",
+        "work",
+        "temporary",
+        "alliances",
+        "rain",
+        "map",
+        "and",
+        "disputed",
+        "resistance",
+        "to",
+        "null",
+        "kel",
+        "dusk",
+        "veya",
+        "slate",
+        "third",
+        "lantern",
+        "quiet",
+        "return",
+        "shiver",
+        "cut",
+        "scapes"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 2,
+      "outbound_count": 31,
+      "existing_outbound_count": 20,
+      "suggested_outbound_count": 11,
+      "authority": 14
+    },
+    "brand": null
+  },
+  {
+    "title": "The RUGPULL MINERS",
+    "desc": "Year 3008 Rugpull Miners: betrayed trust, labour, the Empty Dividend, Bent Receipt hearing, faction conflicts and the unresolved Final Pull.",
+    "url": "/wiki/the-rugpull-miners.html",
+    "tags": [
+      "rugpull",
+      "miners",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "RUGPULL MINERS — Crypto Moonboys Wiki"
+      },
+      {
+        "title": "RUGPULL MINERS"
+      }
+    ],
+    "rank_score": 292,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 2,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 3045,
+      "keyword_bag_size": 22,
+      "heading_count": 19,
+      "list_count": 1,
+      "internal_link_count": 14,
+      "paragraph_count": 44,
+      "section_count": 16,
+      "lore_paragraph_count": 42,
+      "content_quality_score": 101,
+      "authority_score": 24
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 50,
+      "keyword_bag_points": 22,
+      "content_quality_points": 112,
+      "authority_points": 43,
+      "final_rank_score": 292,
+      "authority_graph_points": 19
+    },
+    "search_index": {
+      "normalized_title": "the rugpull miners crypto moonboys wiki",
+      "tokens": [
+        "the",
+        "rugpull",
+        "miners",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "the",
+        "rugpull",
+        "miners",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "year",
+        "3008",
+        "betrayed",
+        "trust",
+        "labour",
+        "empty",
+        "dividend",
+        "bent",
+        "receipt",
+        "hearing",
+        "faction",
+        "conflicts",
+        "and",
+        "unresolved",
+        "final",
+        "pull",
+        "nella",
+        "tarn",
+        "rafe",
+        "quill",
+        "bex",
+        "orla",
+        "winter",
+        "counter",
+        "false",
+        "bull",
+        "run",
+        "fracture",
+        "code"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 6,
+      "outbound_count": 28,
+      "existing_outbound_count": 14,
+      "suggested_outbound_count": 14,
+      "authority": 19
     },
     "brand": null
   },
@@ -11665,11 +11773,11 @@
       ]
     },
     "link_score": {
-      "inbound_count": 101,
+      "inbound_count": 100,
       "outbound_count": 41,
       "existing_outbound_count": 0,
       "suggested_outbound_count": 41,
-      "authority": 202
+      "authority": 200
     },
     "brand": null
   },
@@ -11872,114 +11980,6 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 12,
       "authority": 119.5
-    },
-    "brand": null
-  },
-  {
-    "title": "The RUGPULL MINERS",
-    "desc": "Year 3008 Rugpull Miners: betrayed trust, labour, the Empty Dividend, Bent Receipt hearing, faction conflicts and the unresolved Final Pull.",
-    "url": "/wiki/the-rugpull-miners.html",
-    "tags": [
-      "rugpull",
-      "miners",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "RUGPULL MINERS — Crypto Moonboys Wiki"
-      },
-      {
-        "title": "RUGPULL MINERS"
-      }
-    ],
-    "rank_score": 290,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 2,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 3045,
-      "keyword_bag_size": 22,
-      "heading_count": 19,
-      "list_count": 1,
-      "internal_link_count": 14,
-      "paragraph_count": 44,
-      "section_count": 16,
-      "lore_paragraph_count": 42,
-      "content_quality_score": 101,
-      "authority_score": 24
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 50,
-      "keyword_bag_points": 22,
-      "content_quality_points": 112,
-      "authority_points": 41,
-      "final_rank_score": 290,
-      "authority_graph_points": 17
-    },
-    "search_index": {
-      "normalized_title": "the rugpull miners crypto moonboys wiki",
-      "tokens": [
-        "the",
-        "rugpull",
-        "miners",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "the",
-        "rugpull",
-        "miners",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "year",
-        "3008",
-        "betrayed",
-        "trust",
-        "labour",
-        "empty",
-        "dividend",
-        "bent",
-        "receipt",
-        "hearing",
-        "faction",
-        "conflicts",
-        "and",
-        "unresolved",
-        "final",
-        "pull",
-        "nella",
-        "tarn",
-        "rafe",
-        "quill",
-        "bex",
-        "orla",
-        "winter",
-        "counter",
-        "false",
-        "bull",
-        "run",
-        "fracture",
-        "code"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 5,
-      "outbound_count": 28,
-      "existing_outbound_count": 14,
-      "suggested_outbound_count": 14,
-      "authority": 17
     },
     "brand": null
   },
@@ -13494,6 +13494,130 @@
     "brand": null
   },
   {
+    "title": "The DUCKY BOYS",
+    "desc": "The Ducky Boys in Year 3008: repair crews, mobile workshops, difficult service contracts and the unfinished search for an Anti-Antichain Protocol.",
+    "url": "/wiki/the-ducky-boys.html",
+    "tags": [
+      "ducky",
+      "boys",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "DUCKY BOYS — Crypto Moonboys Wiki"
+      },
+      {
+        "title": "DUCKY BOYS"
+      }
+    ],
+    "rank_score": 287,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 2,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 2710,
+      "keyword_bag_size": 24,
+      "heading_count": 23,
+      "list_count": 1,
+      "internal_link_count": 20,
+      "paragraph_count": 39,
+      "section_count": 20,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 89,
+      "authority_score": 28
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 50,
+      "keyword_bag_points": 24,
+      "content_quality_points": 100,
+      "authority_points": 48,
+      "final_rank_score": 287,
+      "authority_graph_points": 20
+    },
+    "search_index": {
+      "normalized_title": "the ducky boys crypto moonboys wiki",
+      "tokens": [
+        "the",
+        "ducky",
+        "boys",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "the",
+        "ducky",
+        "boys",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "in",
+        "year",
+        "3008",
+        "repair",
+        "crews",
+        "mobile",
+        "workshops",
+        "difficult",
+        "service",
+        "contracts",
+        "and",
+        "unfinished",
+        "search",
+        "for",
+        "an",
+        "anti",
+        "antichain",
+        "protocol",
+        "digital",
+        "fixers",
+        "of",
+        "grid",
+        "duct",
+        "tape",
+        "wrench",
+        "bots",
+        "bea",
+        "socket",
+        "iven",
+        "drift",
+        "patch",
+        "yard",
+        "second",
+        "shift",
+        "board",
+        "amber",
+        "ticket",
+        "two",
+        "boilers",
+        "stoppage",
+        "tool",
+        "return",
+        "evening",
+        "unfixed",
+        "shelf"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 5,
+      "outbound_count": 32,
+      "existing_outbound_count": 19,
+      "suggested_outbound_count": 13,
+      "authority": 19.5
+    },
+    "brand": null
+  },
+  {
     "title": "nifty crowns",
     "desc": "Nifty Crowns reign as an iconic NFT collection by GKniftyHEADS in the Crypto Moonboys universe, rare digital artifacts symbolizing the mantra of ‘Gettin’ Up’—a",
     "url": "/wiki/nifty-crowns.html",
@@ -14158,130 +14282,6 @@
       "existing_outbound_count": 4,
       "suggested_outbound_count": 63,
       "authority": 4
-    },
-    "brand": null
-  },
-  {
-    "title": "The DUCKY BOYS",
-    "desc": "The Ducky Boys in Year 3008: repair crews, mobile workshops, difficult service contracts and the unfinished search for an Anti-Antichain Protocol.",
-    "url": "/wiki/the-ducky-boys.html",
-    "tags": [
-      "ducky",
-      "boys",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "DUCKY BOYS — Crypto Moonboys Wiki"
-      },
-      {
-        "title": "DUCKY BOYS"
-      }
-    ],
-    "rank_score": 285,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 2,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 2710,
-      "keyword_bag_size": 24,
-      "heading_count": 23,
-      "list_count": 1,
-      "internal_link_count": 20,
-      "paragraph_count": 39,
-      "section_count": 20,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 89,
-      "authority_score": 28
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 50,
-      "keyword_bag_points": 24,
-      "content_quality_points": 100,
-      "authority_points": 46,
-      "final_rank_score": 285,
-      "authority_graph_points": 18
-    },
-    "search_index": {
-      "normalized_title": "the ducky boys crypto moonboys wiki",
-      "tokens": [
-        "the",
-        "ducky",
-        "boys",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "the",
-        "ducky",
-        "boys",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "in",
-        "year",
-        "3008",
-        "repair",
-        "crews",
-        "mobile",
-        "workshops",
-        "difficult",
-        "service",
-        "contracts",
-        "and",
-        "unfinished",
-        "search",
-        "for",
-        "an",
-        "anti",
-        "antichain",
-        "protocol",
-        "digital",
-        "fixers",
-        "of",
-        "grid",
-        "duct",
-        "tape",
-        "wrench",
-        "bots",
-        "bea",
-        "socket",
-        "iven",
-        "drift",
-        "patch",
-        "yard",
-        "second",
-        "shift",
-        "board",
-        "amber",
-        "ticket",
-        "two",
-        "boilers",
-        "stoppage",
-        "tool",
-        "return",
-        "evening",
-        "unfixed",
-        "shelf"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 4,
-      "outbound_count": 32,
-      "existing_outbound_count": 19,
-      "suggested_outbound_count": 13,
-      "authority": 17.5
     },
     "brand": null
   },
@@ -15832,103 +15832,6 @@
     }
   },
   {
-    "title": "The BLOCKCHAIN FURIES",
-    "desc": "The BLOCKCHAIN FURIES are the relentless avengers of Block Topia, a faction forged in the searing crucible of betrayal and loss within the volatile crypto realm",
-    "url": "/wiki/the-blockchain-furies.html",
-    "tags": [
-      "blockchain",
-      "furies",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "BLOCKCHAIN FURIES — Crypto Moonboys Wiki"
-      },
-      {
-        "title": "BLOCKCHAIN FURIES"
-      }
-    ],
-    "rank_score": 279,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 2,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 1192,
-      "keyword_bag_size": 24,
-      "heading_count": 9,
-      "list_count": 1,
-      "internal_link_count": 12,
-      "paragraph_count": 23,
-      "section_count": 6,
-      "lore_paragraph_count": 20,
-      "content_quality_score": 97,
-      "authority_score": 18
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 50,
-      "keyword_bag_points": 24,
-      "content_quality_points": 108,
-      "authority_points": 32,
-      "final_rank_score": 279,
-      "authority_graph_points": 14
-    },
-    "search_index": {
-      "normalized_title": "the blockchain furies crypto moonboys wiki",
-      "tokens": [
-        "the",
-        "blockchain",
-        "furies",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "the",
-        "blockchain",
-        "furies",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "are",
-        "relentless",
-        "avengers",
-        "of",
-        "block",
-        "topia",
-        "a",
-        "faction",
-        "forged",
-        "in",
-        "searing",
-        "crucible",
-        "betrayal",
-        "and",
-        "loss",
-        "within",
-        "volatile",
-        "realm"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 4,
-      "outbound_count": 24,
-      "existing_outbound_count": 11,
-      "suggested_outbound_count": 13,
-      "authority": 13.5
-    },
-    "brand": null
-  },
-  {
     "title": "Humour, Satire and Sacred Mockery",
     "desc": "Why First Witness culture permits jokes about leaders, factions and even its own rituals—and where satire becomes cruelty.",
     "url": "/wiki/first-witness-humour-satire-sacred-mockery.html",
@@ -16188,6 +16091,124 @@
       "existing_outbound_count": 10,
       "suggested_outbound_count": 16,
       "authority": 7
+    },
+    "brand": null
+  },
+  {
+    "title": "The BLOCKCHAIN FURIES",
+    "desc": "The Blockchain Furies in Year 3008: betrayed survivors, public investigations, Reversal Protocols and unresolved demands for restitution.",
+    "url": "/wiki/the-blockchain-furies.html",
+    "tags": [
+      "blockchain",
+      "furies",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "BLOCKCHAIN FURIES — Crypto Moonboys Wiki"
+      },
+      {
+        "title": "BLOCKCHAIN FURIES"
+      }
+    ],
+    "rank_score": 278,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 2,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 2659,
+      "keyword_bag_size": 20,
+      "heading_count": 24,
+      "list_count": 1,
+      "internal_link_count": 19,
+      "paragraph_count": 41,
+      "section_count": 21,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 85,
+      "authority_score": 28
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 50,
+      "keyword_bag_points": 20,
+      "content_quality_points": 96,
+      "authority_points": 47,
+      "final_rank_score": 278,
+      "authority_graph_points": 19
+    },
+    "search_index": {
+      "normalized_title": "the blockchain furies crypto moonboys wiki",
+      "tokens": [
+        "the",
+        "blockchain",
+        "furies",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "the",
+        "blockchain",
+        "furies",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "in",
+        "year",
+        "3008",
+        "betrayed",
+        "survivors",
+        "public",
+        "investigations",
+        "reversal",
+        "protocols",
+        "and",
+        "unresolved",
+        "demands",
+        "for",
+        "restitution",
+        "digital",
+        "vigilantes",
+        "of",
+        "grid",
+        "trials",
+        "final",
+        "audit",
+        "nessa",
+        "trace",
+        "omi",
+        "calder",
+        "ash",
+        "desk",
+        "second",
+        "hearing",
+        "six",
+        "windows",
+        "bench",
+        "unclosed",
+        "book",
+        "witness",
+        "supper",
+        "grief",
+        "chains",
+        "forges"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 5,
+      "outbound_count": 54,
+      "existing_outbound_count": 17,
+      "suggested_outbound_count": 37,
+      "authority": 18.5
     },
     "brand": null
   },
@@ -16792,6 +16813,123 @@
     "brand": null
   },
   {
+    "title": "The AllCity Bulls",
+    "desc": "The AllCity Bulls in Year 3008: arena competitors, Hyper-Share speculation, public rankings and the struggle to keep achievement meaningful.",
+    "url": "/wiki/the-allcity-bulls.html",
+    "tags": [
+      "allcity",
+      "bulls",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "AllCity Bulls — Crypto Moonboys Wiki"
+      },
+      {
+        "title": "AllCity Bulls"
+      }
+    ],
+    "rank_score": 276,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 2,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 2620,
+      "keyword_bag_size": 22,
+      "heading_count": 23,
+      "list_count": 1,
+      "internal_link_count": 20,
+      "paragraph_count": 39,
+      "section_count": 20,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 85,
+      "authority_score": 28
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 50,
+      "keyword_bag_points": 22,
+      "content_quality_points": 96,
+      "authority_points": 43,
+      "final_rank_score": 276,
+      "authority_graph_points": 15
+    },
+    "search_index": {
+      "normalized_title": "the allcity bulls crypto moonboys wiki",
+      "tokens": [
+        "the",
+        "allcity",
+        "bulls",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "the",
+        "allcity",
+        "bulls",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "in",
+        "year",
+        "3008",
+        "arena",
+        "competitors",
+        "hyper",
+        "share",
+        "speculation",
+        "public",
+        "rankings",
+        "and",
+        "struggle",
+        "to",
+        "keep",
+        "achievement",
+        "meaningful",
+        "all",
+        "city",
+        "competitive",
+        "marketeers",
+        "shares",
+        "long",
+        "lap",
+        "yard",
+        "jessa",
+        "pace",
+        "milo",
+        "banner",
+        "measured",
+        "mile",
+        "unranked",
+        "heat",
+        "fourth",
+        "protest",
+        "carry",
+        "medal",
+        "afterimage",
+        "board"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 3,
+      "outbound_count": 25,
+      "existing_outbound_count": 18,
+      "suggested_outbound_count": 7,
+      "authority": 15
+    },
+    "brand": null
+  },
+  {
     "title": "The Squeaky Pinks",
     "desc": "The Squeaky Pinks are a visually striking and brutally effective gang in the Crypto Moonboys universe, draped in vivid colors that belie their ruthless combat p",
     "url": "/wiki/the-squeaky-pinks.html",
@@ -17310,107 +17448,6 @@
       "existing_outbound_count": 4,
       "suggested_outbound_count": 60,
       "authority": 4
-    },
-    "brand": null
-  },
-  {
-    "title": "The AllCity Bulls",
-    "desc": "The AllCity Bulls are the iron-fisted urban enforcers of Block Topia, towering over the concrete jungles with brute strength and an unyielding grip on key terri",
-    "url": "/wiki/the-allcity-bulls.html",
-    "tags": [
-      "allcity",
-      "bulls",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "AllCity Bulls — Crypto Moonboys Wiki"
-      },
-      {
-        "title": "AllCity Bulls"
-      }
-    ],
-    "rank_score": 275,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 2,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 1135,
-      "keyword_bag_size": 28,
-      "heading_count": 9,
-      "list_count": 1,
-      "internal_link_count": 12,
-      "paragraph_count": 22,
-      "section_count": 6,
-      "lore_paragraph_count": 19,
-      "content_quality_score": 93,
-      "authority_score": 18
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 50,
-      "keyword_bag_points": 28,
-      "content_quality_points": 104,
-      "authority_points": 28,
-      "final_rank_score": 275,
-      "authority_graph_points": 10
-    },
-    "search_index": {
-      "normalized_title": "the allcity bulls crypto moonboys wiki",
-      "tokens": [
-        "the",
-        "allcity",
-        "bulls",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "the",
-        "allcity",
-        "bulls",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "are",
-        "iron",
-        "fisted",
-        "urban",
-        "enforcers",
-        "of",
-        "block",
-        "topia",
-        "towering",
-        "over",
-        "concrete",
-        "jungles",
-        "with",
-        "brute",
-        "strength",
-        "and",
-        "an",
-        "unyielding",
-        "grip",
-        "on",
-        "key",
-        "terri"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 2,
-      "outbound_count": 17,
-      "existing_outbound_count": 11,
-      "suggested_outbound_count": 6,
-      "authority": 9.5
     },
     "brand": null
   },
@@ -18303,6 +18340,107 @@
     "brand": null
   },
   {
+    "title": "The TUSKON OGS",
+    "desc": "The TUSKON OGS are the veteran street lords of Block Topia, commanding respect and fear with their deep roots in urban culture and unshakeable authority over th",
+    "url": "/wiki/the-tuskon-ogs.html",
+    "tags": [
+      "tuskon",
+      "ogs",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "TUSKON OGS — Crypto Moonboys Wiki"
+      },
+      {
+        "title": "TUSKON OGS"
+      }
+    ],
+    "rank_score": 273,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 2,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 1081,
+      "keyword_bag_size": 28,
+      "heading_count": 10,
+      "list_count": 1,
+      "internal_link_count": 13,
+      "paragraph_count": 21,
+      "section_count": 7,
+      "lore_paragraph_count": 19,
+      "content_quality_score": 93,
+      "authority_score": 18
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 50,
+      "keyword_bag_points": 28,
+      "content_quality_points": 104,
+      "authority_points": 26,
+      "final_rank_score": 273,
+      "authority_graph_points": 8
+    },
+    "search_index": {
+      "normalized_title": "the tuskon ogs crypto moonboys wiki",
+      "tokens": [
+        "the",
+        "tuskon",
+        "ogs",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "the",
+        "tuskon",
+        "ogs",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "are",
+        "veteran",
+        "street",
+        "lords",
+        "of",
+        "block",
+        "topia",
+        "commanding",
+        "respect",
+        "and",
+        "fear",
+        "with",
+        "their",
+        "deep",
+        "roots",
+        "in",
+        "urban",
+        "culture",
+        "unshakeable",
+        "authority",
+        "over",
+        "th"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 1,
+      "outbound_count": 21,
+      "existing_outbound_count": 12,
+      "suggested_outbound_count": 9,
+      "authority": 8
+    },
+    "brand": null
+  },
+  {
     "title": "HEX-TAGGER PRIME",
     "desc": "HEX-Tagger Prime, the Marked Reaper: captured Forkborn artist, Memory Well enforcer, Mirror Chain legend and the unresolved struggle for control of his own hand.",
     "url": "/wiki/hex-tagger-prime.html",
@@ -18762,6 +18900,128 @@
       "existing_outbound_count": 12,
       "suggested_outbound_count": 13,
       "authority": 8
+    },
+    "brand": null
+  },
+  {
+    "title": "The MOONLORDS",
+    "desc": "The Moonlords in Year 3008: Architects of FUD, resource controllers and a divided network that sells certainty while deepening dependence.",
+    "url": "/wiki/the-moonlords.html",
+    "tags": [
+      "moonlords",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "MOONLORDS — Crypto Moonboys Wiki"
+      },
+      {
+        "title": "MOONLORDS"
+      }
+    ],
+    "rank_score": 272,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 2,
+      "tag_count": 4,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 2824,
+      "keyword_bag_size": 23,
+      "heading_count": 24,
+      "list_count": 1,
+      "internal_link_count": 19,
+      "paragraph_count": 41,
+      "section_count": 21,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 85,
+      "authority_score": 28
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 50,
+      "keyword_bag_points": 23,
+      "content_quality_points": 95,
+      "authority_points": 39,
+      "final_rank_score": 272,
+      "authority_graph_points": 11
+    },
+    "search_index": {
+      "normalized_title": "the moonlords crypto moonboys wiki",
+      "tokens": [
+        "the",
+        "moonlords",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "the",
+        "moonlords",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "in",
+        "year",
+        "3008",
+        "architects",
+        "of",
+        "fud",
+        "resource",
+        "controllers",
+        "and",
+        "a",
+        "divided",
+        "network",
+        "that",
+        "sells",
+        "certainty",
+        "while",
+        "deepening",
+        "dependence",
+        "corruptors",
+        "discord",
+        "wars",
+        "2872",
+        "narrative",
+        "bomb",
+        "dependency",
+        "loop",
+        "antichain",
+        "defense",
+        "tokens",
+        "vela",
+        "quell",
+        "corin",
+        "static",
+        "borrowed",
+        "dawn",
+        "aftercare",
+        "exchange",
+        "seven",
+        "mornings",
+        "outage",
+        "quiet",
+        "account",
+        "restoration",
+        "dinner",
+        "unrenewed",
+        "room"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 1,
+      "outbound_count": 30,
+      "existing_outbound_count": 17,
+      "suggested_outbound_count": 13,
+      "authority": 10.5
     },
     "brand": null
   },
@@ -19393,12 +19653,12 @@
     "brand": null
   },
   {
-    "title": "The TUSKON OGS",
-    "desc": "The TUSKON OGS are the veteran street lords of Block Topia, commanding respect and fear with their deep roots in urban culture and unshakeable authority over th",
-    "url": "/wiki/the-tuskon-ogs.html",
+    "title": "The AZTEC RAIDERS",
+    "desc": "The Aztec Raiders in Year 3008: conquest, command, occupied communities and the material limits of an empire built through absorption.",
+    "url": "/wiki/the-aztec-raiders.html",
     "tags": [
-      "tuskon",
-      "ogs",
+      "aztec",
+      "raiders",
       "crypto",
       "moonboys",
       "wiki"
@@ -19406,10 +19666,10 @@
     "category": "factions",
     "aliases": [
       {
-        "title": "TUSKON OGS — Crypto Moonboys Wiki"
+        "title": "AZTEC RAIDERS — Crypto Moonboys Wiki"
       },
       {
-        "title": "TUSKON OGS"
+        "title": "AZTEC RAIDERS"
       }
     ],
     "rank_score": 271,
@@ -19421,75 +19681,95 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 1081,
-      "keyword_bag_size": 28,
-      "heading_count": 10,
+      "article_word_count": 2694,
+      "keyword_bag_size": 22,
+      "heading_count": 24,
       "list_count": 1,
-      "internal_link_count": 13,
-      "paragraph_count": 21,
-      "section_count": 7,
-      "lore_paragraph_count": 19,
-      "content_quality_score": 93,
-      "authority_score": 18
+      "internal_link_count": 19,
+      "paragraph_count": 41,
+      "section_count": 21,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 85,
+      "authority_score": 28
     },
     "rank_diagnostics": {
       "canonical_points": 20,
       "description_points": 10,
       "category_points": 35,
       "word_count_points": 50,
-      "keyword_bag_points": 28,
-      "content_quality_points": 104,
-      "authority_points": 24,
+      "keyword_bag_points": 22,
+      "content_quality_points": 96,
+      "authority_points": 38,
       "final_rank_score": 271,
-      "authority_graph_points": 6
+      "authority_graph_points": 10
     },
     "search_index": {
-      "normalized_title": "the tuskon ogs crypto moonboys wiki",
+      "normalized_title": "the aztec raiders crypto moonboys wiki",
       "tokens": [
         "the",
-        "tuskon",
-        "ogs",
+        "aztec",
+        "raiders",
         "crypto",
         "moonboys",
         "wiki"
       ],
       "keyword_bag": [
         "the",
-        "tuskon",
-        "ogs",
+        "aztec",
+        "raiders",
         "crypto",
         "moonboys",
         "wiki",
-        "are",
-        "veteran",
-        "street",
-        "lords",
-        "of",
-        "block",
-        "topia",
-        "commanding",
-        "respect",
-        "and",
-        "fear",
-        "with",
-        "their",
-        "deep",
-        "roots",
         "in",
-        "urban",
-        "culture",
-        "unshakeable",
-        "authority",
-        "over",
-        "th"
+        "year",
+        "3008",
+        "conquest",
+        "command",
+        "occupied",
+        "communities",
+        "and",
+        "material",
+        "limits",
+        "of",
+        "an",
+        "empire",
+        "built",
+        "through",
+        "absorption",
+        "digital",
+        "conquerors",
+        "grid",
+        "data",
+        "spears",
+        "battles",
+        "red",
+        "step",
+        "depot",
+        "radan",
+        "vey",
+        "luma",
+        "ashen",
+        "banner",
+        "return",
+        "lower",
+        "granary",
+        "dispute",
+        "winter",
+        "hold",
+        "burden",
+        "roll",
+        "unraised",
+        "standard",
+        "code",
+        "wail"
       ]
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 21,
-      "existing_outbound_count": 12,
-      "suggested_outbound_count": 9,
-      "authority": 6
+      "outbound_count": 29,
+      "existing_outbound_count": 19,
+      "suggested_outbound_count": 10,
+      "authority": 9.5
     },
     "brand": null
   },
@@ -20238,128 +20518,6 @@
     "brand": null
   },
   {
-    "title": "The MOONLORDS",
-    "desc": "The Moonlords in Year 3008: Architects of FUD, resource controllers and a divided network that sells certainty while deepening dependence.",
-    "url": "/wiki/the-moonlords.html",
-    "tags": [
-      "moonlords",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "MOONLORDS — Crypto Moonboys Wiki"
-      },
-      {
-        "title": "MOONLORDS"
-      }
-    ],
-    "rank_score": 270,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 2,
-      "tag_count": 4,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 2824,
-      "keyword_bag_size": 23,
-      "heading_count": 24,
-      "list_count": 1,
-      "internal_link_count": 19,
-      "paragraph_count": 41,
-      "section_count": 21,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 85,
-      "authority_score": 28
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 50,
-      "keyword_bag_points": 23,
-      "content_quality_points": 95,
-      "authority_points": 37,
-      "final_rank_score": 270,
-      "authority_graph_points": 9
-    },
-    "search_index": {
-      "normalized_title": "the moonlords crypto moonboys wiki",
-      "tokens": [
-        "the",
-        "moonlords",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "the",
-        "moonlords",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "in",
-        "year",
-        "3008",
-        "architects",
-        "of",
-        "fud",
-        "resource",
-        "controllers",
-        "and",
-        "a",
-        "divided",
-        "network",
-        "that",
-        "sells",
-        "certainty",
-        "while",
-        "deepening",
-        "dependence",
-        "corruptors",
-        "discord",
-        "wars",
-        "2872",
-        "narrative",
-        "bomb",
-        "dependency",
-        "loop",
-        "antichain",
-        "defense",
-        "tokens",
-        "vela",
-        "quell",
-        "corin",
-        "static",
-        "borrowed",
-        "dawn",
-        "aftercare",
-        "exchange",
-        "seven",
-        "mornings",
-        "outage",
-        "quiet",
-        "account",
-        "restoration",
-        "dinner",
-        "unrenewed",
-        "room"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 30,
-      "existing_outbound_count": 17,
-      "suggested_outbound_count": 13,
-      "authority": 8.5
-    },
-    "brand": null
-  },
-  {
     "title": "Forkborn Collective",
     "desc": "The Forkborn Collective is a volatile and enigmatic army within the digital realm of Block Topia, a force birthed from the raw, chaotic energy of blockchain for",
     "url": "/wiki/forkborn-collective.html",
@@ -20456,7 +20614,7 @@
   },
   {
     "title": "The BLOCKSTARS",
-    "desc": "The BLOCKSTARS are a glamorous faction in the Crypto Moonboys universe, comprised of celebrity coders whose fame and technical prowess grant them significant sw",
+    "desc": "The Blockstars in Year 3008: performers, broadcasters, celebrity culture and the disputed Blockbusters legend behind their pursuit of lasting fame.",
     "url": "/wiki/the-blockstars.html",
     "tags": [
       "blockstars",
@@ -20482,27 +20640,27 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 1225,
-      "keyword_bag_size": 24,
-      "heading_count": 10,
+      "article_word_count": 2803,
+      "keyword_bag_size": 22,
+      "heading_count": 25,
       "list_count": 1,
-      "internal_link_count": 12,
-      "paragraph_count": 22,
-      "section_count": 7,
-      "lore_paragraph_count": 19,
-      "content_quality_score": 93,
-      "authority_score": 21
+      "internal_link_count": 19,
+      "paragraph_count": 43,
+      "section_count": 22,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 85,
+      "authority_score": 28
     },
     "rank_diagnostics": {
       "canonical_points": 20,
       "description_points": 10,
       "category_points": 35,
       "word_count_points": 50,
-      "keyword_bag_points": 24,
-      "content_quality_points": 103,
-      "authority_points": 27,
+      "keyword_bag_points": 22,
+      "content_quality_points": 95,
+      "authority_points": 37,
       "final_rank_score": 269,
-      "authority_graph_points": 6
+      "authority_graph_points": 9
     },
     "search_index": {
       "normalized_title": "the blockstars crypto moonboys wiki",
@@ -20519,33 +20677,63 @@
         "crypto",
         "moonboys",
         "wiki",
-        "are",
-        "a",
-        "glamorous",
-        "faction",
         "in",
-        "universe",
-        "comprised",
-        "of",
+        "year",
+        "3008",
+        "performers",
+        "broadcasters",
         "celebrity",
-        "coders",
-        "whose",
-        "fame",
+        "culture",
         "and",
-        "technical",
-        "prowess",
-        "grant",
-        "them",
-        "significant",
-        "sw"
+        "disputed",
+        "blockbusters",
+        "legend",
+        "behind",
+        "their",
+        "pursuit",
+        "of",
+        "lasting",
+        "fame",
+        "block",
+        "stars",
+        "digital",
+        "celebrities",
+        "grid",
+        "crew",
+        "lundinea",
+        "charlam",
+        "data",
+        "glimmer",
+        "final",
+        "broadcast",
+        "lio",
+        "velvet",
+        "suri",
+        "frame",
+        "backlight",
+        "rooms",
+        "blue",
+        "curtain",
+        "transmission",
+        "second",
+        "credit",
+        "long",
+        "applause",
+        "borrowed",
+        "spotlight",
+        "fan",
+        "nodes",
+        "ledger",
+        "code",
+        "gala"
       ]
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 14,
-      "existing_outbound_count": 11,
-      "suggested_outbound_count": 3,
-      "authority": 5.5
+      "outbound_count": 32,
+      "existing_outbound_count": 17,
+      "suggested_outbound_count": 15,
+      "authority": 8.5
     },
     "brand": null
   },
@@ -22248,103 +22436,6 @@
       "existing_outbound_count": 9,
       "suggested_outbound_count": 12,
       "authority": 6.5
-    },
-    "brand": null
-  },
-  {
-    "title": "The AZTEC RAIDERS",
-    "desc": "The AZTEC RAIDERS are ancient-inspired invaders who tear through the digital wastelands of Block Topia with unrelenting ferocity, embodying the brutal spirit of",
-    "url": "/wiki/the-aztec-raiders.html",
-    "tags": [
-      "aztec",
-      "raiders",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "AZTEC RAIDERS — Crypto Moonboys Wiki"
-      },
-      {
-        "title": "AZTEC RAIDERS"
-      }
-    ],
-    "rank_score": 266,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 2,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 1130,
-      "keyword_bag_size": 24,
-      "heading_count": 9,
-      "list_count": 1,
-      "internal_link_count": 10,
-      "paragraph_count": 21,
-      "section_count": 6,
-      "lore_paragraph_count": 19,
-      "content_quality_score": 93,
-      "authority_score": 18
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 50,
-      "keyword_bag_points": 24,
-      "content_quality_points": 104,
-      "authority_points": 23,
-      "final_rank_score": 266,
-      "authority_graph_points": 5
-    },
-    "search_index": {
-      "normalized_title": "the aztec raiders crypto moonboys wiki",
-      "tokens": [
-        "the",
-        "aztec",
-        "raiders",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "the",
-        "aztec",
-        "raiders",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "are",
-        "ancient",
-        "inspired",
-        "invaders",
-        "who",
-        "tear",
-        "through",
-        "digital",
-        "wastelands",
-        "of",
-        "block",
-        "topia",
-        "with",
-        "unrelenting",
-        "ferocity",
-        "embodying",
-        "brutal",
-        "spirit"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 18,
-      "existing_outbound_count": 10,
-      "suggested_outbound_count": 8,
-      "authority": 5
     },
     "brand": null
   },
