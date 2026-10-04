@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-04T09:50:01.262Z",
-  "verified_at": "2026-10-04T09:50:01.262Z",
+  "generated_at": "2026-10-04T12:09:13.514Z",
+  "verified_at": "2026-10-04T12:09:13.514Z",
   "nodes": [
     {
       "id": "/about.html",
@@ -519,7 +519,7 @@
       "title": "Block Topia and the Controlled Reading",
       "url": "/wiki/first-witness-block-topia-reading.html",
       "category": "core",
-      "rank_score": 305,
+      "rank_score": 307,
       "authority_score": 12
     },
     {
@@ -647,7 +647,7 @@
       "title": "Concordance of Broken Records",
       "url": "/wiki/first-witness-concordance.html",
       "category": "core",
-      "rank_score": 388,
+      "rank_score": 390,
       "authority_score": 14
     },
     {
@@ -887,7 +887,7 @@
       "title": "First Witness Master Chronology",
       "url": "/wiki/first-witness-master-chronology.html",
       "category": "core",
-      "rank_score": 322,
+      "rank_score": 324,
       "authority_score": 14
     },
     {
@@ -2399,7 +2399,7 @@
       "title": "GraffPUNKS",
       "url": "/wiki/graffpunks.html",
       "category": "characters",
-      "rank_score": 699,
+      "rank_score": 697,
       "authority_score": 21
     },
     {
@@ -2775,8 +2775,8 @@
       "title": "Queen Sarah P-fly",
       "url": "/wiki/queen-sarah-p-fly.html",
       "category": "factions",
-      "rank_score": 232,
-      "authority_score": 20
+      "rank_score": 268,
+      "authority_score": 24
     },
     {
       "id": "/wiki/quell.html",
@@ -13427,20 +13427,20 @@
     {
       "source": "/wiki/queen-sarah-p-fly.html",
       "target": "/wiki/midevilpunks.html",
-      "score": 77,
-      "weight": 0.77
+      "score": 74,
+      "weight": 0.74
     },
     {
       "source": "/wiki/queen-sarah-p-fly.html",
       "target": "/wiki/stikfamwars.html",
-      "score": 76,
-      "weight": 0.76
+      "score": 73,
+      "weight": 0.73
     },
     {
       "source": "/wiki/queen-sarah-p-fly.html",
-      "target": "/wiki/rave-relics.html",
-      "score": 73,
-      "weight": 0.73
+      "target": "/wiki/metaverse-battles.html",
+      "score": 70,
+      "weight": 0.7
     },
     {
       "source": "/wiki/quell.html",

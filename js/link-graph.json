@@ -2991,7 +2991,7 @@
   },
   "/wiki/first-witness-block-topia-reading.html": {
     "outbound_count": 71,
-    "inbound_count": 3,
+    "inbound_count": 4,
     "existing_outbound": [
       "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-null-erasure.html",
@@ -3070,6 +3070,7 @@
     "inbound_from": [
       "/wiki/first-witness-null-erasure.html",
       "/wiki/first-witness-street-kingdoms-reading.html",
+      "/wiki/queen-sarah-p-fly.html",
       "/wiki/the-first-witness.html"
     ]
   },
@@ -4307,7 +4308,7 @@
   },
   "/wiki/first-witness-concordance.html": {
     "outbound_count": 73,
-    "inbound_count": 42,
+    "inbound_count": 43,
     "existing_outbound": [
       "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-master-chronology.html",
@@ -4424,6 +4425,7 @@
       "/wiki/hodl-warriors.html",
       "/wiki/hodl-wars.html",
       "/wiki/hodl-x-warriors.html",
+      "/wiki/queen-sarah-p-fly.html",
       "/wiki/sacred-chain.html",
       "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-first-witness.html",
@@ -6767,7 +6769,7 @@
   },
   "/wiki/first-witness-master-chronology.html": {
     "outbound_count": 68,
-    "inbound_count": 15,
+    "inbound_count": 16,
     "existing_outbound": [
       "/wiki/first-witness-concordance.html",
       "/wiki/first-witness-glossary.html",
@@ -6852,6 +6854,7 @@
       "/wiki/hodl-warriors.html",
       "/wiki/hodl-wars.html",
       "/wiki/hodl-x-warriors.html",
+      "/wiki/queen-sarah-p-fly.html",
       "/wiki/sacred-chain.html",
       "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-first-witness.html",
@@ -17439,7 +17442,7 @@
   },
   "/wiki/graffpunks.html": {
     "outbound_count": 27,
-    "inbound_count": 217,
+    "inbound_count": 216,
     "existing_outbound": [
       "/wiki/atomichub-graffpunks-collection.html",
       "/wiki/bitcoin-kids.html",
@@ -17664,7 +17667,6 @@
       "/wiki/pmsl-token.html",
       "/wiki/punk-token.html",
       "/wiki/pyralith.html",
-      "/wiki/queen-sarah-p-fly.html",
       "/wiki/quell.html",
       "/wiki/rave-relics.html",
       "/wiki/rune-tag.html",
@@ -19887,15 +19889,17 @@
     "inbound_from": []
   },
   "/wiki/queen-sarah-p-fly.html": {
-    "outbound_count": 19,
+    "outbound_count": 42,
     "inbound_count": 0,
     "existing_outbound": [
       "/wiki/block-topia.html",
       "/wiki/crypto-moonboys.html",
+      "/wiki/first-witness-block-topia-reading.html",
+      "/wiki/first-witness-concordance.html",
+      "/wiki/first-witness-master-chronology.html",
       "/wiki/gkniftyheads-bitcoin-kid-x-sarah-pfly-infinite-776004.html",
       "/wiki/gkniftyheads-sarah-p2fly-784350.html",
       "/wiki/gkniftyheads-sarah-pfly-784349.html",
-      "/wiki/graffpunks.html",
       "/wiki/hard-fork-games.html",
       "/wiki/hodl-wars.html",
       "/wiki/midevilpunks.html",
@@ -19904,13 +19908,34 @@
     ],
     "suggested_outbound": [
       "/wiki/atomicassets.html",
-      "/wiki/atomichub-graffpunks-collection.html",
+      "/wiki/bitcoin-kids.html",
+      "/wiki/bitcoin-x-kids.html",
+      "/wiki/block-node-defenders.html",
+      "/wiki/dream-sovereign.html",
+      "/wiki/first-witness-apocrypha-disputed-passages.html",
+      "/wiki/first-witness-book-6-the-fork.html",
+      "/wiki/first-witness-book-9-the-unwritten-block.html",
+      "/wiki/first-witness-food-hospitality-common-table.html",
+      "/wiki/first-witness-land-water-stewardship.html",
+      "/wiki/first-witness-sacred-fork.html",
+      "/wiki/first-witness-triple-fork-chainfire.html",
+      "/wiki/first-witness-truth-commissions-after-conflict.html",
       "/wiki/gkniftyheads.html",
-      "/wiki/graffpunks-24-7-radio.html",
-      "/wiki/graffpunks-collection.html",
-      "/wiki/graffpunks-ecosystem.html",
+      "/wiki/graffpunks.html",
+      "/wiki/grit.html",
+      "/wiki/hodl-warriors.html",
+      "/wiki/hodl-x-warriors.html",
+      "/wiki/jodie-zoom-2000.html",
       "/wiki/sacred-chain.html",
-      "/wiki/trevor-fung.html"
+      "/wiki/street-kingdoms.html",
+      "/wiki/the-code-alchemists.html",
+      "/wiki/the-first-witness.html",
+      "/wiki/the-hard-fork-rockers.html",
+      "/wiki/the-nomad-bears.html",
+      "/wiki/the-squeaky-pinks.html",
+      "/wiki/thera-9.html",
+      "/wiki/trevor-fung.html",
+      "/wiki/triple-fork-event.html"
     ],
     "inbound_from": []
   },

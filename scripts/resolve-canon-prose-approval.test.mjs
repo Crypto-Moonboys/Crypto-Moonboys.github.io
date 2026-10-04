@@ -40,6 +40,31 @@ assert.equal(await resolveCanonProseApproval({...args,repository:'../bad/path',r
 assert.equal(await resolveCanonProseApproval({...args,requestJson:async()=>({sha:'c'.repeat(40),parents:[{sha:before}]})}), false);
 
 const noLookup = async () => assert.fail('PR label approval requires no network lookup');
+const receipt = {schema_version:1,issue:1436,repository,commit:sha,base:before,paths:['wiki/queen-sarah-p-fly.html']};
+const tagName = `canon-direct-1436-${sha}`;
+function directLookup({approval=receipt,tagCommit=sha,files=[{filename:'wiki/queen-sarah-p-fly.html',status:'modified'}],lightweight=false}={}) {
+  return async endpoint => {
+    if (endpoint.includes('/git/commits/')) return {sha,parents:[{sha:before}]};
+    if (endpoint.includes('/pulls?')) return [];
+    if (endpoint.includes('/git/ref/tags/')) return {ref:`refs/tags/${tagName}`,object:{type:lightweight?'commit':'tag',sha:'d'.repeat(40)}};
+    if (endpoint.includes('/git/tags/')) return {tag:tagName,object:{type:'commit',sha:tagCommit},message:JSON.stringify(approval)};
+    return {sha,parents:[{sha:before}],files};
+  };
+}
+assert.equal(await resolveCanonProseApproval({...args,requestJson:directLookup()}),true,'exact annotated direct-publication receipt');
+for (const approval of [{...receipt,issue:1435},{...receipt,base:'c'.repeat(40)},{...receipt,commit:'c'.repeat(40)},
+  {...receipt,repository:'other/repo'},{...receipt,paths:[]},{...receipt,paths:[...receipt.paths,...receipt.paths]}]) {
+  assert.equal(await resolveCanonProseApproval({...args,requestJson:directLookup({approval})}),false);
+}
+assert.equal(await resolveCanonProseApproval({...args,requestJson:directLookup({tagCommit:'c'.repeat(40)})}),false);
+assert.equal(await resolveCanonProseApproval({...args,requestJson:directLookup({lightweight:true})}),false);
+for (const file of [
+  {filename:'wiki/queen-sarah-p-fly.html',status:'added'},
+  {filename:'wiki/queen-sarah-p-fly.html',status:'removed'},
+  {filename:'wiki/first-witness-master-chronology.html',status:'modified'},
+  {filename:'scripts/resolve-canon-prose-approval.mjs',status:'modified'},
+  {filename:'js/wiki.js',status:'modified'},
+]) assert.equal(await resolveCanonProseApproval({...args,requestJson:directLookup({approval:{...receipt,paths:[file.filename]},files:[file]})}),false);
 assert.equal(await resolveCanonProseApproval({...args,eventName:'pull_request',event:{pull_request:pr},requestJson:noLookup}), true);
 assert.equal(await resolveCanonProseApproval({...args,eventName:'pull_request',event:{pull_request:{...pr,labels:[]}},requestJson:noLookup}), false);
 
