@@ -1166,7 +1166,7 @@
   },
   "/wiki/block-topia.html": {
     "outbound_count": 41,
-    "inbound_count": 80,
+    "inbound_count": 76,
     "existing_outbound": [],
     "suggested_outbound": [
       "/wiki/alcor-exchange.html",
@@ -1232,7 +1232,6 @@
       "/wiki/first-witness-source-register.html",
       "/wiki/forklord-you.html",
       "/wiki/forksplit.html",
-      "/wiki/gang-signs-card-game.html",
       "/wiki/gang-signs.html",
       "/wiki/genesis-kernel.html",
       "/wiki/genesis-spray-drop.html",
@@ -1253,18 +1252,15 @@
       "/wiki/iris-7.html",
       "/wiki/jodie-zoom-2000.html",
       "/wiki/lady-ink.html",
-      "/wiki/lfgk.html",
       "/wiki/loopfiend.html",
       "/wiki/m1ntr-k1ll.html",
       "/wiki/metropolis.html",
       "/wiki/midevilpunks.html",
-      "/wiki/nbgx-token.html",
       "/wiki/nfts.html",
       "/wiki/null-the-prophet.html",
       "/wiki/patchwork.html",
       "/wiki/pixil-mini.html",
       "/wiki/playable-nft-murals.html",
-      "/wiki/pmsl-token.html",
       "/wiki/punk-token.html",
       "/wiki/pyralith.html",
       "/wiki/queen-sarah-p-fly.html",
@@ -1296,7 +1292,7 @@
   },
   "/wiki/blockchain.html": {
     "outbound_count": 25,
-    "inbound_count": 11,
+    "inbound_count": 10,
     "existing_outbound": [
       "/wiki/bitcoin.html",
       "/wiki/crypto-moonboys.html",
@@ -1331,7 +1327,6 @@
       "/wiki/defi.html",
       "/wiki/ethereum-ecosystem.html",
       "/wiki/ethereum.html",
-      "/wiki/gang-signs-card-game.html",
       "/wiki/nfts.html",
       "/wiki/playable-nft-murals.html",
       "/wiki/solana.html",
@@ -1342,7 +1337,7 @@
   },
   "/wiki/bone-idol-ink.html": {
     "outbound_count": 22,
-    "inbound_count": 1,
+    "inbound_count": 2,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-concordance.html",
@@ -1370,12 +1365,13 @@
       "/wiki/trevor-fung.html"
     ],
     "inbound_from": [
+      "/wiki/gang-signs-card-game.html",
       "/wiki/lady-ink.html"
     ]
   },
   "/wiki/burn-to-earn.html": {
     "outbound_count": 18,
-    "inbound_count": 36,
+    "inbound_count": 37,
     "existing_outbound": [
       "/wiki/block-topia.html",
       "/wiki/crypto-moonboys.html",
@@ -1419,6 +1415,7 @@
       "/wiki/iris-7.html",
       "/wiki/jodie-zoom-2000.html",
       "/wiki/lady-ink.html",
+      "/wiki/lfgk.html",
       "/wiki/loopfiend.html",
       "/wiki/m1ntr-k1ll.html",
       "/wiki/midevilpunks.html",
@@ -1470,7 +1467,7 @@
   },
   "/wiki/charlie-buster.html": {
     "outbound_count": 32,
-    "inbound_count": 1,
+    "inbound_count": 2,
     "existing_outbound": [
       "/wiki/bitcoin-kids.html",
       "/wiki/block-topia.html",
@@ -1508,7 +1505,8 @@
       "/wiki/xrp-kids.html"
     ],
     "inbound_from": [
-      "/wiki/graffpunks-ecosystem.html"
+      "/wiki/graffpunks-ecosystem.html",
+      "/wiki/nbg-token.html"
     ]
   },
   "/wiki/croydon-tower-blocks.html": {
@@ -6150,7 +6148,7 @@
   },
   "/wiki/first-witness-humour-satire-sacred-mockery.html": {
     "outbound_count": 64,
-    "inbound_count": 3,
+    "inbound_count": 4,
     "existing_outbound": [
       "/wiki/first-witness-heresies-corruptions-abuses.html",
       "/wiki/first-witness-life-readings.html",
@@ -6221,6 +6219,7 @@
     ],
     "inbound_from": [
       "/wiki/billy-the-goat-kid.html",
+      "/wiki/pmsl.html",
       "/wiki/the-crypto-stoned-boys.html",
       "/wiki/the-first-witness.html"
     ]
@@ -9493,11 +9492,10 @@
     ]
   },
   "/wiki/gang-signs-card-game.html": {
-    "outbound_count": 28,
+    "outbound_count": 15,
     "inbound_count": 1,
     "existing_outbound": [
-      "/wiki/block-topia.html",
-      "/wiki/blockchain.html",
+      "/wiki/bone-idol-ink.html",
       "/wiki/crypto-moonboys.html",
       "/wiki/games4punks-telegram.html",
       "/wiki/gang-signs.html",
@@ -9509,23 +9507,11 @@
       "/wiki/stikfamwars.html"
     ],
     "suggested_outbound": [
-      "/wiki/first-witness-proverbs-street-sayings.html",
-      "/wiki/first-witness-street-kingdoms-reading.html",
-      "/wiki/gkniftyheads-andrea-blockchain-buccaneer-moretti-783455.html",
-      "/wiki/gkniftyheads-blockchain-belle-783392.html",
-      "/wiki/gkniftyheads-blockchain-bombshell-783407.html",
-      "/wiki/gkniftyheads-blockchain-furie-infinite-776007.html",
-      "/wiki/gkniftyheads-blockchain-furie-infinite-776055.html",
-      "/wiki/gkniftyheads-blockchain-furie-infinite-776057.html",
-      "/wiki/graffiti-kings.html",
+      "/wiki/first-witness-libraries-architecture-archive-houses.html",
+      "/wiki/gkniftyheads-bit-brawler-the-byte-battler-783415.html",
+      "/wiki/gkniftyheads-bitforce-bitcoin-battler-784332.html",
       "/wiki/graffpunks.html",
-      "/wiki/grit.html",
-      "/wiki/sacred-chain.html",
-      "/wiki/spraycode-writcode-mechanics.html",
-      "/wiki/street-kingdoms.html",
-      "/wiki/the-blockchain-furies.html",
-      "/wiki/trevor-fung.html",
-      "/wiki/wax-blockchain.html"
+      "/wiki/trevor-fung.html"
     ],
     "inbound_from": [
       "/wiki/gang-signs.html"
@@ -17884,7 +17870,7 @@
   },
   "/wiki/graffpunks.html": {
     "outbound_count": 39,
-    "inbound_count": 216,
+    "inbound_count": 213,
     "existing_outbound": [
       "/wiki/atomichub-graffpunks-collection.html",
       "/wiki/bitcoin-kid-army.html",
@@ -18111,17 +18097,14 @@
       "/wiki/iris-7.html",
       "/wiki/jodie-zoom-2000.html",
       "/wiki/lady-ink.html",
-      "/wiki/lfgk.html",
       "/wiki/loopfiend.html",
       "/wiki/m1ntr-k1ll.html",
       "/wiki/metropolis.html",
       "/wiki/midevilpunks.html",
-      "/wiki/nbgx-token.html",
       "/wiki/nfts.html",
       "/wiki/null-the-prophet.html",
       "/wiki/patchwork.html",
       "/wiki/pixil-mini.html",
-      "/wiki/pmsl-token.html",
       "/wiki/punk-token.html",
       "/wiki/pyralith.html",
       "/wiki/quell.html",
@@ -19016,44 +18999,38 @@
     ]
   },
   "/wiki/lfgk.html": {
-    "outbound_count": 33,
+    "outbound_count": 27,
     "inbound_count": 0,
     "existing_outbound": [
-      "/wiki/block-topia.html",
+      "/wiki/burn-to-earn.html",
       "/wiki/crypto-moonboys.html",
       "/wiki/games4punks-telegram.html",
       "/wiki/gkniftyheads.html",
-      "/wiki/graffpunks.html",
       "/wiki/hard-fork-games.html",
       "/wiki/hodl-wars.html",
       "/wiki/midevilpunks.html",
       "/wiki/nbg-token.html",
+      "/wiki/nbg.html",
       "/wiki/pmsl.html",
       "/wiki/rave-relics.html",
+      "/wiki/staking.html",
       "/wiki/stikfamwars.html"
     ],
     "suggested_outbound": [
-      "/wiki/atomichub-graffpunks-collection.html",
+      "/wiki/2025-metaverse-launch-party.html",
+      "/wiki/block-topia.html",
       "/wiki/fgl-token.html",
-      "/wiki/first-witness-faction-commentaries.html",
       "/wiki/gkniftyheads-alessandro-token-titan-marini-783461.html",
-      "/wiki/gkniftyheads-gkniftyheads-fun-coupon-782888.html",
       "/wiki/gkniftyheads-matteo-token-tactician-romano-783462.html",
-      "/wiki/gkniftyheads-nft-collection.html",
       "/wiki/gkniftyheads-token-temptress-783401.html",
       "/wiki/gkniftyheads-token-tycooness-783405.html",
       "/wiki/gkniftyheads-waxp-femme-fatale-the-token-temptress-783414.html",
-      "/wiki/graffpunks-24-7-radio.html",
-      "/wiki/graffpunks-collection.html",
-      "/wiki/graffpunks-ecosystem.html",
-      "/wiki/nbg.html",
+      "/wiki/graffpunks.html",
       "/wiki/nbgx-token.html",
       "/wiki/pmsl-token.html",
       "/wiki/punk-token.html",
-      "/wiki/spraycode-writcode-mechanics.html",
-      "/wiki/trevor-fung.html",
-      "/wiki/triple-fork-event.html",
-      "/wiki/web3.html"
+      "/wiki/sacred-chain.html",
+      "/wiki/trevor-fung.html"
     ],
     "inbound_from": []
   },
@@ -19438,9 +19415,10 @@
     ]
   },
   "/wiki/nbg-token.html": {
-    "outbound_count": 35,
+    "outbound_count": 31,
     "inbound_count": 36,
     "existing_outbound": [
+      "/wiki/charlie-buster.html",
       "/wiki/crypto-moonboys.html",
       "/wiki/fgl-token.html",
       "/wiki/gkniftyheads-alessandro-token-titan-marini-783461.html",
@@ -19452,30 +19430,25 @@
       "/wiki/punk-token.html"
     ],
     "suggested_outbound": [
-      "/wiki/1m-free-nfts-program.html",
       "/wiki/atomicassets.html",
-      "/wiki/bitcoin-kids.html",
-      "/wiki/block-node-defenders.html",
       "/wiki/block-topia.html",
-      "/wiki/burn-to-earn.html",
-      "/wiki/first-witness-block-topia-reading.html",
-      "/wiki/first-witness-book-5-the-chain.html",
-      "/wiki/first-witness-book-9-the-unwritten-block.html",
-      "/wiki/first-witness-chain-archaeology-forensics.html",
-      "/wiki/first-witness-world-chain-error.html",
+      "/wiki/first-witness-book-6-the-fork.html",
+      "/wiki/first-witness-libraries-architecture-archive-houses.html",
+      "/wiki/first-witness-sacred-fork.html",
+      "/wiki/first-witness-triple-fork-chainfire.html",
       "/wiki/genesis-kernel.html",
+      "/wiki/gkniftyheads-nova-shadow-shredder-784419.html",
+      "/wiki/gkniftyheads-shadow-streak-783245.html",
       "/wiki/gkniftyheads-token-temptress-783401.html",
       "/wiki/gkniftyheads-token-tycooness-783405.html",
       "/wiki/gkniftyheads.html",
-      "/wiki/graffpunks-24-7-radio.html",
+      "/wiki/graffiti-kings.html",
       "/wiki/graffpunks.html",
       "/wiki/hard-fork-games.html",
-      "/wiki/hodl-wars.html",
+      "/wiki/noballgamess-nft-collection.html",
       "/wiki/pmsl.html",
-      "/wiki/sacred-chain.html",
-      "/wiki/the-chain-scribes.html",
-      "/wiki/tokenomics.html",
-      "/wiki/wax-blockchain.html",
+      "/wiki/the-hard-fork-rockers.html",
+      "/wiki/triple-fork-event.html",
       "/wiki/web3.html",
       "/wiki/xrp-kids.html"
     ],
@@ -19520,7 +19493,7 @@
   },
   "/wiki/nbg.html": {
     "outbound_count": 27,
-    "inbound_count": 1,
+    "inbound_count": 4,
     "existing_outbound": [
       "/wiki/burn-to-earn.html",
       "/wiki/crypto-moonboys.html",
@@ -19553,41 +19526,37 @@
       "/wiki/web3.html"
     ],
     "inbound_from": [
-      "/wiki/nbg-token.html"
+      "/wiki/lfgk.html",
+      "/wiki/nbg-token.html",
+      "/wiki/nbgx-token.html",
+      "/wiki/pmsl.html"
     ]
   },
   "/wiki/nbgx-token.html": {
-    "outbound_count": 27,
+    "outbound_count": 20,
     "inbound_count": 34,
     "existing_outbound": [
-      "/wiki/block-topia.html",
       "/wiki/crypto-moonboys.html",
       "/wiki/fgl-token.html",
       "/wiki/gkniftyheads-alessandro-token-titan-marini-783461.html",
       "/wiki/gkniftyheads-matteo-token-tactician-romano-783462.html",
       "/wiki/gkniftyheads-waxp-femme-fatale-the-token-temptress-783414.html",
-      "/wiki/graffpunks.html",
       "/wiki/nbg-token.html",
+      "/wiki/nbg.html",
       "/wiki/pmsl-token.html",
       "/wiki/punk-token.html"
     ],
     "suggested_outbound": [
       "/wiki/atomicassets.html",
-      "/wiki/block-node-defenders.html",
-      "/wiki/ethereum-ecosystem.html",
-      "/wiki/first-witness-block-topia-reading.html",
-      "/wiki/first-witness-book-9-the-unwritten-block.html",
-      "/wiki/gkniftyheads-martina-cryptocurrency-crusader-lombardi-783466.html",
-      "/wiki/gkniftyheads-matteo-cryptocurrency-connoisseur-de-angelis-783457.html",
+      "/wiki/block-topia.html",
+      "/wiki/first-witness-libraries-architecture-archive-houses.html",
       "/wiki/gkniftyheads-token-temptress-783401.html",
       "/wiki/gkniftyheads-token-tycooness-783405.html",
       "/wiki/gkniftyheads.html",
-      "/wiki/graffpunks-ecosystem.html",
-      "/wiki/grit.html",
+      "/wiki/graffpunks.html",
       "/wiki/hodl-wars.html",
-      "/wiki/nbg.html",
+      "/wiki/noballgamess-nft-collection.html",
       "/wiki/pmsl.html",
-      "/wiki/sacred-chain.html",
       "/wiki/web3.html"
     ],
     "inbound_from": [
@@ -20238,34 +20207,36 @@
     ]
   },
   "/wiki/pmsl-token.html": {
-    "outbound_count": 23,
+    "outbound_count": 25,
     "inbound_count": 4,
     "existing_outbound": [
-      "/wiki/block-topia.html",
       "/wiki/crypto-moonboys.html",
       "/wiki/fgl-token.html",
       "/wiki/gkniftyheads-alessandro-token-titan-marini-783461.html",
       "/wiki/gkniftyheads-matteo-token-tactician-romano-783462.html",
       "/wiki/gkniftyheads-waxp-femme-fatale-the-token-temptress-783414.html",
-      "/wiki/graffpunks.html",
       "/wiki/nbg-token.html",
       "/wiki/nbgx-token.html",
       "/wiki/pmsl.html",
-      "/wiki/punk-token.html"
+      "/wiki/punk-token.html",
+      "/wiki/xrp-ledger.html"
     ],
     "suggested_outbound": [
+      "/wiki/589-xrpl.html",
+      "/wiki/666-xrpl.html",
       "/wiki/atomicassets.html",
-      "/wiki/ethereum-ecosystem.html",
-      "/wiki/gkniftyheads-martina-cryptocurrency-crusader-lombardi-783466.html",
-      "/wiki/gkniftyheads-matteo-cryptocurrency-connoisseur-de-angelis-783457.html",
+      "/wiki/bear-xrpl.html",
+      "/wiki/block-topia.html",
+      "/wiki/exyboy.html",
       "/wiki/gkniftyheads-token-temptress-783401.html",
       "/wiki/gkniftyheads-token-tycooness-783405.html",
       "/wiki/gkniftyheads.html",
-      "/wiki/graffpunks-ecosystem.html",
+      "/wiki/graffpunks.html",
       "/wiki/hodl-wars.html",
       "/wiki/nbg.html",
-      "/wiki/sacred-chain.html",
-      "/wiki/web3.html"
+      "/wiki/tagzcoin.html",
+      "/wiki/web3.html",
+      "/wiki/xrp-kids.html"
     ],
     "inbound_from": [
       "/wiki/fgl-token.html",
@@ -20275,50 +20246,46 @@
     ]
   },
   "/wiki/pmsl.html": {
-    "outbound_count": 39,
+    "outbound_count": 35,
     "inbound_count": 62,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
+      "/wiki/first-witness-humour-satire-sacred-mockery.html",
       "/wiki/games4punks-telegram.html",
       "/wiki/hard-fork-games.html",
       "/wiki/hodl-wars.html",
       "/wiki/midevilpunks.html",
       "/wiki/nbg-token.html",
+      "/wiki/nbg.html",
       "/wiki/pmsl-token.html",
       "/wiki/rave-relics.html",
-      "/wiki/stikfamwars.html"
+      "/wiki/stikfamwars.html",
+      "/wiki/xrp-ledger.html"
     ],
     "suggested_outbound": [
-      "/wiki/atomichub-graffpunks-collection.html",
-      "/wiki/bitcoin-kids.html",
+      "/wiki/589-xrpl.html",
+      "/wiki/666-xrpl.html",
+      "/wiki/bear-xrpl.html",
       "/wiki/block-topia.html",
-      "/wiki/burn-to-earn.html",
+      "/wiki/exyboy.html",
       "/wiki/fgl-token.html",
-      "/wiki/first-witness-digital-inheritance-after-death.html",
-      "/wiki/first-witness-humour-satire-sacred-mockery.html",
-      "/wiki/genesis-kernel.html",
       "/wiki/gkniftyheads-alessandro-token-titan-marini-783461.html",
-      "/wiki/gkniftyheads-digital-diva-783394.html",
-      "/wiki/gkniftyheads-digital-duchess-783404.html",
       "/wiki/gkniftyheads-matteo-token-tactician-romano-783462.html",
       "/wiki/gkniftyheads-token-temptress-783401.html",
       "/wiki/gkniftyheads-token-tycooness-783405.html",
       "/wiki/gkniftyheads-waxp-femme-fatale-the-token-temptress-783414.html",
       "/wiki/gkniftyheads.html",
-      "/wiki/graffpunks-24-7-radio.html",
-      "/wiki/graffpunks-collection.html",
-      "/wiki/graffpunks-ecosystem.html",
-      "/wiki/graffpunks.html",
-      "/wiki/grit.html",
+      "/wiki/graffiti-kings.html",
       "/wiki/memecoins.html",
-      "/wiki/metropolis.html",
-      "/wiki/nbg.html",
       "/wiki/nbgx-token.html",
-      "/wiki/null-the-prophet.html",
+      "/wiki/noballgamess-nft-collection.html",
       "/wiki/punk-token.html",
       "/wiki/sacred-chain.html",
-      "/wiki/spirit-borns.html",
-      "/wiki/trevor-fung.html"
+      "/wiki/staking.html",
+      "/wiki/tagzcoin.html",
+      "/wiki/tokenomics.html",
+      "/wiki/trevor-fung.html",
+      "/wiki/xrp-kids.html"
     ],
     "inbound_from": [
       "/wiki/1m-free-nfts-program.html",
@@ -21423,7 +21390,7 @@
   },
   "/wiki/staking.html": {
     "outbound_count": 11,
-    "inbound_count": 24,
+    "inbound_count": 25,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
       "/wiki/defi.html",
@@ -21450,6 +21417,7 @@
       "/wiki/grit.html",
       "/wiki/grit42.html",
       "/wiki/jodie-zoom-2000.html",
+      "/wiki/lfgk.html",
       "/wiki/loopfiend.html",
       "/wiki/m1ntr-k1ll.html",
       "/wiki/nbg.html",
@@ -24247,7 +24215,7 @@
   },
   "/wiki/xrp-ledger.html": {
     "outbound_count": 29,
-    "inbound_count": 1,
+    "inbound_count": 3,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
       "/wiki/games4punks-telegram.html",
@@ -24282,6 +24250,8 @@
       "/wiki/trevor-fung.html"
     ],
     "inbound_from": [
+      "/wiki/pmsl-token.html",
+      "/wiki/pmsl.html",
       "/wiki/xrp-kids.html"
     ]
   }

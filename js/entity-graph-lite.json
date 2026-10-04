@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-04T14:27:15.522Z",
-  "verified_at": "2026-10-04T14:27:15.522Z",
+  "generated_at": "2026-10-04T14:55:31.359Z",
+  "verified_at": "2026-10-04T14:55:31.359Z",
   "lite": true,
   "nodes": [
     {
@@ -148,14 +148,6 @@
       "authority_score": 24
     },
     {
-      "id": "/wiki/nbg-token.html",
-      "title": "nbg token",
-      "url": "/wiki/nbg-token.html",
-      "category": "factions",
-      "rank_score": 329,
-      "authority_score": 26
-    },
-    {
       "id": "/wiki/first-witness-book-1-the-first-witness.html",
       "title": "Book I — The First Witness",
       "url": "/wiki/first-witness-book-1-the-first-witness.html",
@@ -186,14 +178,6 @@
       "category": "core",
       "rank_score": 327,
       "authority_score": 14
-    },
-    {
-      "id": "/wiki/pmsl.html",
-      "title": "pmsl",
-      "url": "/wiki/pmsl.html",
-      "category": "factions",
-      "rank_score": 327,
-      "authority_score": 26
     },
     {
       "id": "/wiki/first-witness-forty-paths.html",
@@ -602,6 +586,22 @@
       "category": "characters",
       "rank_score": 295,
       "authority_score": 28
+    },
+    {
+      "id": "/wiki/first-witness-apocrypha-disputed-passages.html",
+      "title": "Apocrypha and Disputed Passages",
+      "url": "/wiki/first-witness-apocrypha-disputed-passages.html",
+      "category": "core",
+      "rank_score": 295,
+      "authority_score": 12
+    },
+    {
+      "id": "/wiki/first-witness-long-transmission.html",
+      "title": "The Long Transmission",
+      "url": "/wiki/first-witness-long-transmission.html",
+      "category": "core",
+      "rank_score": 295,
+      "authority_score": 12
     }
   ],
   "edges": [
@@ -1018,12 +1018,6 @@
       "target": "/wiki/rave-relics.html",
       "score": 73,
       "weight": 0.73
-    },
-    {
-      "source": "/wiki/nbg-token.html",
-      "target": "/wiki/pmsl.html",
-      "score": 72,
-      "weight": 0.72
     },
     {
       "source": "/wiki/burn-to-earn.html",
