@@ -711,6 +711,69 @@ const graffpunksStopwordOnly = {
   for (const [slug, subjects] of Object.entries(programmeSubjects)) {
     subjectsByPage[slug] = [...(subjectsByPage[slug] || []), ...subjects];
   }
+  const adultSubjects = {
+    "the-moonlords": [
+        "Red Ledger Night",
+        "Daro Sile",
+        "Ione Vey",
+        "Perr Senn",
+        "Hala departure",
+        "Vela back room"
+    ],
+    "the-information-mercenaries": [
+        "Crimson Packet",
+        "Ula Marr",
+        "private voice",
+        "Fen refusal",
+        "Heard not owned"
+    ],
+    "the-bally-boys": [
+        "supper booking",
+        "dirty fee",
+        "Ione commission",
+        "Jex wages",
+        "Last Price party"
+    ],
+    "the-rugpull-miners": [
+        "Rafe red case",
+        "porter door killing",
+        "Jex Sable",
+        "Bex bottle",
+        "Nella lodging",
+        "Dala Sable"
+    ],
+    "the-hard-fork-rockers": [
+        "paid rebellion",
+        "Sixth Glass",
+        "Glasswake Eno",
+        "roof instalment",
+        "Red Ledger performance"
+    ],
+    "the-crypto-stoned-boys": [
+        "Low Tide afterparty",
+        "Rill Soot",
+        "Glasswake argument",
+        "empty glasses installation",
+        "Dala lamp"
+    ],
+    "the-gasless-ghosts": [
+        "Ione Rest Bell",
+        "Kett Morn",
+        "Arlo refusal",
+        "borrowed red coat",
+        "Ione next room"
+    ],
+    "the-blockchain-furies": [
+        "Jex Ash Desk",
+        "Nessa public name",
+        "Dala refusal",
+        "porter hearing",
+        "Ione notice"
+    ]
+};
+  for (const [slug, subjects] of Object.entries(adultSubjects)) {
+    subjectsByPage[slug] = [...(subjectsByPage[slug] || []), ...subjects];
+  }
   const stopWords = vm.runInContext('SEARCH_TEXT_STOP_WORDS', sb);
   let checked = 0;
   for (const [slug, subjects] of Object.entries(subjectsByPage)) {
@@ -740,7 +803,7 @@ const graffpunksStopwordOnly = {
     assert.ok(entry.search_index.keyword_bag.includes(token), `${token} is searchable`);
     assert.ok(!entry.search_index.tokens.includes(token), `${token} must not leak into title-only relationship tokens`);
   }
-  for (const [slug, token] of [['block-topia', 'shutter'], ['null-the-prophet', 'sena'], ['the-finance-guild', 'crate'], ['first-witness-faction-commentaries', 'jpeg'], ['first-witness-long-transmission', 'eda'], ['street-kingdoms', 'krail'], ['the-blockstars', 'supper'], ['the-high-hats', 'storm'], ['hard-fork-games', 'lysa'], ['block-topia', 'rack'], ['bitcoin-x-kids', 'instrument'], ['the-squeaky-pinks', 'disc']]) {
+  for (const [slug, token] of [['block-topia', 'shutter'], ['null-the-prophet', 'sena'], ['the-finance-guild', 'crate'], ['first-witness-faction-commentaries', 'jpeg'], ['first-witness-long-transmission', 'eda'], ['street-kingdoms', 'krail'], ['the-blockstars', 'supper'], ['the-high-hats', 'storm'], ['hard-fork-games', 'lysa'], ['block-topia', 'rack'], ['bitcoin-x-kids', 'instrument'], ['the-squeaky-pinks', 'disc'], ['the-moonlords', 'daro'], ['the-information-mercenaries', 'crimson'], ['the-hard-fork-rockers', 'glasswake'], ['the-gasless-ghosts', 'kett']]) {
     const entry = wikiIndex.find(item => item.url === `/wiki/${slug}.html`);
     assert.ok(entry.search_index.keyword_bag.includes(token), `${slug}: ${token} remains discoverable`);
     assert.ok(!entry.search_index.tokens.includes(token), `${slug}: search-only ${token} cannot create relationship tags`);

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "generator": "scripts/generate-wiki-content-state.mjs",
-  "source_tree_hash": "sha256:a16dff29b91c74e12d1e4f2db32592310fb67aea0959ea3f4cab78552965a083",
+  "source_tree_hash": "sha256:0667c2a85654175c7b154bd4e4af031a3820872f71bc1a8a03d3c778c50829ca",
   "hash_algorithm": "sha256",
   "page_count": 415,
   "manifest_entry_count": 415,
@@ -15011,7 +15011,7 @@
       "title": "The BALLY BOYS",
       "page_exists": true,
       "page_type": "faction",
-      "current_word_count": 2708,
+      "current_word_count": 3795,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -15020,10 +15020,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:aff5cded4693954cee00e4a54e4ab0d46b8d26fd4c53fde9f61b6f486de908fa",
-      "article_content_hash": "sha256:38bd1e62e09fc323c519cb7975dc7527d1b590657be32bf597a2e0e31e806db0",
-      "article_markup_hash": "sha256:7780d8f85985080fdd98cedd2f9df5d779a7a1af0de201bd931ce37bd928d901",
-      "git_blob_oid": "b4d8636b7e9455bd00ec4dd47bcd2b6cedfc5296",
+      "content_hash": "sha256:e5043ef67de5b362c03ca2fe1f90a9ee2f55869427bfd8e063c53d3dff165c94",
+      "article_content_hash": "sha256:6e13425f4585e5ef10cea6b852dedc1a8668c980c59decd7a6b75885f9e86d1c",
+      "article_markup_hash": "sha256:fb8722291f187ef8b97337ff9bf3ce4b82b4d102b3a2ddb11b98b46563e6f532",
+      "git_blob_oid": "d1246e4650bf43e263c677c53fbc7f0f14080eca",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -15044,12 +15044,12 @@
         "wiki/bibles/the-bally-boys.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 2 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 3 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/the-bally-boys.json; it is not automatically the unavailable Tier 4 modern bible.",
         "The requested modern Tier 4 subject bible is not separately identifiable in this checkout; canon classification remains a human-review item."
       ],
       "content_owner": "canon",
-      "canon_revision": 2,
+      "canon_revision": 3,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -15104,7 +15104,7 @@
       "title": "The BLOCKCHAIN FURIES",
       "page_exists": true,
       "page_type": "faction",
-      "current_word_count": 2713,
+      "current_word_count": 3813,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -15113,10 +15113,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:5ee45ebfc98fc79e6cf9e307715c95097510a7770b06609c5010448a04e1d8b5",
-      "article_content_hash": "sha256:e1d0d3c0e694ef07ea0cb005f23367cf42e8f22f8a1f176cda3ddc76ba2eb3f2",
-      "article_markup_hash": "sha256:4accf99b064b0a6473ee0211b7daace3808b19c1adbb51188a95cd912b777cd3",
-      "git_blob_oid": "80f8ce9ff55fe292e9b167e9bd56a8a487531df7",
+      "content_hash": "sha256:f2bfb7099ec757093ecfc52771dc3f2e178789a662197d68393258490dfdccfd",
+      "article_content_hash": "sha256:97cda52983378fca3bf8426ed3727767b9d630dad6334807417c3cbbf5e797c3",
+      "article_markup_hash": "sha256:7708d130d6786e79dd2738d99621da32153c4b9f815ec009303e741a6c51f3c1",
+      "git_blob_oid": "eedd049e5a7d8fb8d42f30316125d50bc9f0ba30",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -15137,12 +15137,12 @@
         "wiki/bibles/the-blockchain-furies.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 3 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 4 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/the-blockchain-furies.json; it is not automatically the unavailable Tier 4 modern bible.",
         "The requested modern Tier 4 subject bible is not separately identifiable in this checkout; canon classification remains a human-review item."
       ],
       "content_owner": "canon",
-      "canon_revision": 3,
+      "canon_revision": 4,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -15333,7 +15333,7 @@
       "title": "The CRYPTO STONED BOYS",
       "page_exists": true,
       "page_type": "faction",
-      "current_word_count": 3310,
+      "current_word_count": 4408,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -15342,10 +15342,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:2265b0f385f3337abf6798c8cbaf4fc17f9387483de9efa96a352222f11baab9",
-      "article_content_hash": "sha256:693627ec4f93267a8d82db2a1c0617ceac63c91bac4c169bb4a8af610adcf58c",
-      "article_markup_hash": "sha256:159f026fede03b8453726107a154e589d5c25b21a0591ab1d57b0f79c58a7cf9",
-      "git_blob_oid": "3fd5a944ed66877c3057ee42580879b9600dd715",
+      "content_hash": "sha256:121b52ec419c41e229c52e5533362ab4e16b16cd93404fe30642eac8824a1651",
+      "article_content_hash": "sha256:e84b05bcb3e56b89580ae7bdb0df9f8cbfc73ad7ad10ba87752290534e83aa64",
+      "article_markup_hash": "sha256:9bad6cbdf3ca4a22b3e3f4befcee6d147634728173393842109e0d129366d647",
+      "git_blob_oid": "8b9a85021da89198abcfe076f48115eae7c3cfbe",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -15366,12 +15366,12 @@
         "wiki/bibles/the-crypto-stoned-boys.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 3 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 4 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/the-crypto-stoned-boys.json; it is not automatically the unavailable Tier 4 modern bible.",
         "The requested modern Tier 4 subject bible is not separately identifiable in this checkout; canon classification remains a human-review item."
       ],
       "content_owner": "canon",
-      "canon_revision": 3,
+      "canon_revision": 4,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -15558,7 +15558,7 @@
       "title": "The GASLESS GHOSTS",
       "page_exists": true,
       "page_type": "faction",
-      "current_word_count": 2641,
+      "current_word_count": 3709,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -15567,10 +15567,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:0a7ba436fa2bd8be142b305140e284880779418236397b6aae22cefe5c42dd3d",
-      "article_content_hash": "sha256:3102d63fb61950572ece31674935aa920750832da852c9029f004edefd6d1588",
-      "article_markup_hash": "sha256:6eeb64a36bb05141bb4d98458f927092b6368dcdf46af6c669fed9b9191a8475",
-      "git_blob_oid": "3b2b10f4e0c6afa1f057e91070881a3d5b0a0f98",
+      "content_hash": "sha256:8050de3ea1cfb7863fa908235a810becc083757846c5f74c33d1fa3a1696b115",
+      "article_content_hash": "sha256:93796f8e1c73499673e6a25d5507092c5002c1fa154085ae81a5ccf715f5636f",
+      "article_markup_hash": "sha256:600d81c7c1083609d59d7391caf6197aa807b30dc5ce3b37aa996f668a2876d0",
+      "git_blob_oid": "529629d5a09e4355f346418fc247037156cf84c9",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -15591,12 +15591,12 @@
         "wiki/bibles/the-gasless-ghosts.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 2 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 3 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/the-gasless-ghosts.json; it is not automatically the unavailable Tier 4 modern bible.",
         "The requested modern Tier 4 subject bible is not separately identifiable in this checkout; canon classification remains a human-review item."
       ],
       "content_owner": "canon",
-      "canon_revision": 2,
+      "canon_revision": 3,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -15649,7 +15649,7 @@
       "title": "The HARD FORK ROCKERS",
       "page_exists": true,
       "page_type": "faction",
-      "current_word_count": 2587,
+      "current_word_count": 3717,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -15658,10 +15658,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:b53923f61644ded22f9663e449060f32dd0421657f7265845ec98744d30a5900",
-      "article_content_hash": "sha256:70efc03d3ab509bfe928febd00cc5ba5758a5df760477a174deea097c00010db",
-      "article_markup_hash": "sha256:09ac1e77d2606bb5111cece42ae333b2b1ed8be43f0062baa941edfc86d2d28d",
-      "git_blob_oid": "efd0115b33c2f65f1c3674153d252eb0843d245e",
+      "content_hash": "sha256:8fd3db3dd55609337cdb7aa111e22cdab25bbe749901fd39330de5e59ab64a73",
+      "article_content_hash": "sha256:058f979c460eebee7a81cd7ecf7318dcb9fadf2fe30e9864a6b8f446ebfd556a",
+      "article_markup_hash": "sha256:d4ed1595fb40b5307048030befac307f3cde5a6090cc68328320d8efef17704a",
+      "git_blob_oid": "12b80a254bcc6f8749174d319b5541fe4aebfd43",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -15682,12 +15682,12 @@
         "wiki/bibles/the-hard-fork-rockers.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 2 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 3 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/the-hard-fork-rockers.json; it is not automatically the unavailable Tier 4 modern bible.",
         "The requested modern Tier 4 subject bible is not separately identifiable in this checkout; canon classification remains a human-review item."
       ],
       "content_owner": "canon",
-      "canon_revision": 2,
+      "canon_revision": 3,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -15743,7 +15743,7 @@
       "title": "The INFORMATION MERCENARIES",
       "page_exists": true,
       "page_type": "faction",
-      "current_word_count": 2537,
+      "current_word_count": 3673,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -15752,10 +15752,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:d02ea8ceb0e354d9c8ffc0e25c76b2c44f1b97816d5d014074c926f7bd896b59",
-      "article_content_hash": "sha256:95833f1576365b0b074a83a51d75edc50d7a2c2d6d054fa375b415808fef59e3",
-      "article_markup_hash": "sha256:7bc6defa7061124dabc2aee31dbba4bba056fa2fa53a2e762afe9865939926bb",
-      "git_blob_oid": "828bd003e504cc67b2ddba3aa9c6159c28d5f735",
+      "content_hash": "sha256:3742f531ecd75dc42877977e7d7268b10439fe0214e4e4c620c61a2287e75180",
+      "article_content_hash": "sha256:521aa39e7ada57e8faf795a7cce8d5e51f30ec875f3aad5bf173a2ad3ccdc17e",
+      "article_markup_hash": "sha256:f90c6d0189b595abf21f16d417fb9ae18684440607e712226d5580809eb3e426",
+      "git_blob_oid": "d195ee78a29afc40069389c58fc09473d627acfe",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -15776,12 +15776,12 @@
         "wiki/bibles/the-information-mercenaries.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 2 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/the-information-mercenaries.json; it is not automatically the unavailable Tier 4 modern bible.",
         "The requested modern Tier 4 subject bible is not separately identifiable in this checkout; canon classification remains a human-review item."
       ],
       "content_owner": "canon",
-      "canon_revision": 1,
+      "canon_revision": 2,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -15790,7 +15790,7 @@
       "title": "The MOONLORDS",
       "page_exists": true,
       "page_type": "faction",
-      "current_word_count": 2774,
+      "current_word_count": 3987,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -15799,10 +15799,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:f8c140e9ef46b2488da9edff388a50f28c2eec4294f4d480d05fc89f3140a04e",
-      "article_content_hash": "sha256:f138855de259b9294ba6ddb558cad7064baadf8b6670858e491bc66e3e998495",
-      "article_markup_hash": "sha256:50c39571f0dc4fa0c2f424743fe202d4b3bc716b68f89aa1edf9cfb2e34f6fc9",
-      "git_blob_oid": "8d0b89643406efaf18d2bac2916b1ae9d4ef514e",
+      "content_hash": "sha256:d106f4f2108a7d0667a204a6d9c2145dbdebc0f2738813ed870ec2482bd9ceec",
+      "article_content_hash": "sha256:abc73381dfdcac835c7ae81d35928cc0497d3d869a7f485f74abf2b2b94c3253",
+      "article_markup_hash": "sha256:d7e22a6fe50f542f55952e8acf1646bd5892fe5a384c024f6e9c88a56cc70c36",
+      "git_blob_oid": "581ce55caa8d23167e182f93cbfd1827c49d36e2",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -15823,12 +15823,12 @@
         "wiki/bibles/the-moonlords.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 2 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 3 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/the-moonlords.json; it is not automatically the unavailable Tier 4 modern bible.",
         "The requested modern Tier 4 subject bible is not separately identifiable in this checkout; canon classification remains a human-review item."
       ],
       "content_owner": "canon",
-      "canon_revision": 2,
+      "canon_revision": 3,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -16022,7 +16022,7 @@
       "title": "The RUGPULL MINERS",
       "page_exists": true,
       "page_type": "faction",
-      "current_word_count": 2877,
+      "current_word_count": 3996,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -16031,10 +16031,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:3c37ace560ab4b5606135fa25b93ec632496b44d3bacd216eede5a92389014b7",
-      "article_content_hash": "sha256:a0da3d900491153065d5116cc5830923032a0a009af2f0caa6bbdd0b8136605d",
-      "article_markup_hash": "sha256:c969652ac6258453e1d4373a48d423007ca00fa2ffd00189777ab90f4f668942",
-      "git_blob_oid": "4c43496ddb8429413afa349d145e7bab404a7a3b",
+      "content_hash": "sha256:93911cbf58876e4ebca85d48e7840088f112f6bc8a0f48501eaf269f3f311f77",
+      "article_content_hash": "sha256:0e9b1c11b1a8a7fe78f8081a1fde04c50d62cfe01b6760d47a8ab5b68f21c289",
+      "article_markup_hash": "sha256:c98ed118bf5c998318d6d450fd9f279195113cb5c4777590a45b8c4021008b88",
+      "git_blob_oid": "02d5a116857760feffaa95a9f4c318ba1094c82b",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -16055,12 +16055,12 @@
         "wiki/bibles/the-rugpull-miners.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 3 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 4 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/the-rugpull-miners.json; it is not automatically the unavailable Tier 4 modern bible.",
         "The requested modern Tier 4 subject bible is not separately identifiable in this checkout; canon classification remains a human-review item."
       ],
       "content_owner": "canon",
-      "canon_revision": 3,
+      "canon_revision": 4,
       "canon_source_tier": "first-witness+w81"
     },
     {

@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-04T20:38:36.340Z",
-  "verified_at": "2026-10-04T20:38:36.340Z",
+  "generated_at": "2026-10-04T21:42:26.857Z",
+  "verified_at": "2026-10-04T21:42:26.857Z",
   "nodes": [
     {
       "id": "/about.html",
@@ -2983,7 +2983,7 @@
       "title": "The BALLY BOYS",
       "url": "/wiki/the-bally-boys.html",
       "category": "factions",
-      "rank_score": 279,
+      "rank_score": 291,
       "authority_score": 28
     },
     {
@@ -2999,7 +2999,7 @@
       "title": "The BLOCKCHAIN FURIES",
       "url": "/wiki/the-blockchain-furies.html",
       "category": "factions",
-      "rank_score": 284,
+      "rank_score": 296,
       "authority_score": 28
     },
     {
@@ -3079,7 +3079,7 @@
       "title": "The GASLESS GHOSTS",
       "url": "/wiki/the-gasless-ghosts.html",
       "category": "factions",
-      "rank_score": 272,
+      "rank_score": 284,
       "authority_score": 28
     },
     {
@@ -3095,7 +3095,7 @@
       "title": "The HARD FORK ROCKERS",
       "url": "/wiki/the-hard-fork-rockers.html",
       "category": "factions",
-      "rank_score": 282,
+      "rank_score": 294,
       "authority_score": 28
     },
     {
@@ -3111,7 +3111,7 @@
       "title": "The INFORMATION MERCENARIES",
       "url": "/wiki/the-information-mercenaries.html",
       "category": "factions",
-      "rank_score": 276,
+      "rank_score": 288,
       "authority_score": 28
     },
     {
@@ -3119,7 +3119,7 @@
       "title": "The MOONLORDS",
       "url": "/wiki/the-moonlords.html",
       "category": "factions",
-      "rank_score": 274,
+      "rank_score": 286,
       "authority_score": 28
     },
     {
@@ -3159,8 +3159,8 @@
       "title": "The RUGPULL MINERS",
       "url": "/wiki/the-rugpull-miners.html",
       "category": "factions",
-      "rank_score": 292,
-      "authority_score": 24
+      "rank_score": 296,
+      "authority_score": 28
     },
     {
       "id": "/wiki/the-salvagers.html",
@@ -7148,15 +7148,15 @@
     },
     {
       "source": "/wiki/fomo-plague.html",
-      "target": "/wiki/whale-lords.html",
+      "target": "/wiki/the-rugpull-miners.html",
       "score": 80,
       "weight": 0.8
     },
     {
       "source": "/wiki/fomo-plague.html",
-      "target": "/wiki/the-rugpull-miners.html",
-      "score": 79,
-      "weight": 0.79
+      "target": "/wiki/whale-lords.html",
+      "score": 80,
+      "weight": 0.8
     },
     {
       "source": "/wiki/forkborn-collective.html",
@@ -13670,6 +13670,12 @@
     },
     {
       "source": "/wiki/satoshi-scroll.html",
+      "target": "/wiki/the-moonlords.html",
+      "score": 86,
+      "weight": 0.86
+    },
+    {
+      "source": "/wiki/satoshi-scroll.html",
       "target": "/wiki/whale-lords.html",
       "score": 86,
       "weight": 0.86
@@ -13682,15 +13688,9 @@
     },
     {
       "source": "/wiki/satoshi-scroll.html",
-      "target": "/wiki/the-moonlords.html",
+      "target": "/wiki/the-blockchain-furies.html",
       "score": 85,
       "weight": 0.85
-    },
-    {
-      "source": "/wiki/satoshi-scroll.html",
-      "target": "/wiki/the-blockchain-furies.html",
-      "score": 84,
-      "weight": 0.84
     },
     {
       "source": "/wiki/satoshi-scroll.html",
@@ -14151,7 +14151,7 @@
     {
       "source": "/wiki/the-allcity-bulls.html",
       "target": "/wiki/the-bally-boys.html",
-      "score": 101,
+      "score": 102,
       "weight": 1
     },
     {
@@ -14168,21 +14168,27 @@
     },
     {
       "source": "/wiki/the-allcity-bulls.html",
-      "target": "/wiki/the-nomad-bears.html",
+      "target": "/wiki/the-moonlords.html",
       "score": 96,
       "weight": 0.96
     },
     {
       "source": "/wiki/the-allcity-bulls.html",
-      "target": "/wiki/the-aztec-raiders.html",
-      "score": 95,
-      "weight": 0.95
+      "target": "/wiki/the-nomad-bears.html",
+      "score": 96,
+      "weight": 0.96
     },
     {
       "source": "/wiki/the-aztec-raiders.html",
       "target": "/wiki/the-ducky-boys.html",
       "score": 100,
       "weight": 1
+    },
+    {
+      "source": "/wiki/the-aztec-raiders.html",
+      "target": "/wiki/the-bally-boys.html",
+      "score": 96,
+      "weight": 0.96
     },
     {
       "source": "/wiki/the-aztec-raiders.html",
@@ -14199,12 +14205,6 @@
     {
       "source": "/wiki/the-aztec-raiders.html",
       "target": "/wiki/the-allcity-bulls.html",
-      "score": 95,
-      "weight": 0.95
-    },
-    {
-      "source": "/wiki/the-aztec-raiders.html",
-      "target": "/wiki/the-bally-boys.html",
       "score": 95,
       "weight": 0.95
     },
@@ -14228,15 +14228,15 @@
     },
     {
       "source": "/wiki/the-bally-boys.html",
-      "target": "/wiki/the-nomad-bears.html",
+      "target": "/wiki/the-moonlords.html",
       "score": 99,
       "weight": 0.99
     },
     {
       "source": "/wiki/the-bally-boys.html",
-      "target": "/wiki/the-moonlords.html",
-      "score": 98,
-      "weight": 0.98
+      "target": "/wiki/the-nomad-bears.html",
+      "score": 99,
+      "weight": 0.99
     },
     {
       "source": "/wiki/the-bitcoin-kid-army.html",
@@ -14276,6 +14276,12 @@
     },
     {
       "source": "/wiki/the-blockchain-furies.html",
+      "target": "/wiki/the-bally-boys.html",
+      "score": 89,
+      "weight": 0.89
+    },
+    {
+      "source": "/wiki/the-blockchain-furies.html",
       "target": "/wiki/the-nomad-bears.html",
       "score": 89,
       "weight": 0.89
@@ -14288,12 +14294,6 @@
     },
     {
       "source": "/wiki/the-blockchain-furies.html",
-      "target": "/wiki/the-bally-boys.html",
-      "score": 88,
-      "weight": 0.88
-    },
-    {
-      "source": "/wiki/the-blockchain-furies.html",
       "target": "/wiki/the-ducky-boys.html",
       "score": 87,
       "weight": 0.87
@@ -14301,8 +14301,8 @@
     {
       "source": "/wiki/the-blockstars.html",
       "target": "/wiki/the-bally-boys.html",
-      "score": 98,
-      "weight": 0.98
+      "score": 99,
+      "weight": 0.99
     },
     {
       "source": "/wiki/the-blockstars.html",
@@ -14325,8 +14325,8 @@
     {
       "source": "/wiki/the-blockstars.html",
       "target": "/wiki/the-moonlords.html",
-      "score": 92,
-      "weight": 0.92
+      "score": 93,
+      "weight": 0.93
     },
     {
       "source": "/wiki/the-chain-scribes.html",
@@ -14349,8 +14349,8 @@
     {
       "source": "/wiki/the-chain-scribes.html",
       "target": "/wiki/the-rugpull-miners.html",
-      "score": 79,
-      "weight": 0.79
+      "score": 80,
+      "weight": 0.8
     },
     {
       "source": "/wiki/the-chain-scribes.html",
@@ -14373,18 +14373,18 @@
     {
       "source": "/wiki/the-cleanupcentr.html",
       "target": "/wiki/the-rugpull-miners.html",
+      "score": 80,
+      "weight": 0.8
+    },
+    {
+      "source": "/wiki/the-cleanupcentr.html",
+      "target": "/wiki/the-crypto-stoned-boys.html",
       "score": 79,
       "weight": 0.79
     },
     {
       "source": "/wiki/the-cleanupcentr.html",
       "target": "/wiki/fomo-plague.html",
-      "score": 78,
-      "weight": 0.78
-    },
-    {
-      "source": "/wiki/the-cleanupcentr.html",
-      "target": "/wiki/satoshi-scroll.html",
       "score": 78,
       "weight": 0.78
     },
@@ -14408,13 +14408,13 @@
     },
     {
       "source": "/wiki/the-code-alchemists.html",
-      "target": "/wiki/satoshi-scroll.html",
-      "score": 84,
-      "weight": 0.84
+      "target": "/wiki/the-blockchain-furies.html",
+      "score": 85,
+      "weight": 0.85
     },
     {
       "source": "/wiki/the-code-alchemists.html",
-      "target": "/wiki/the-blockchain-furies.html",
+      "target": "/wiki/satoshi-scroll.html",
       "score": 84,
       "weight": 0.84
     },
@@ -14427,8 +14427,8 @@
     {
       "source": "/wiki/the-crypto-stoned-boys.html",
       "target": "/wiki/the-bally-boys.html",
-      "score": 91,
-      "weight": 0.91
+      "score": 92,
+      "weight": 0.92
     },
     {
       "source": "/wiki/the-crypto-stoned-boys.html",
@@ -14451,7 +14451,7 @@
     {
       "source": "/wiki/the-ducky-boys.html",
       "target": "/wiki/the-bally-boys.html",
-      "score": 106,
+      "score": 107,
       "weight": 1
     },
     {
@@ -14499,14 +14499,14 @@
     {
       "source": "/wiki/the-evm-punks.html",
       "target": "/wiki/the-rugpull-miners.html",
-      "score": 82,
-      "weight": 0.82
+      "score": 83,
+      "weight": 0.83
     },
     {
       "source": "/wiki/the-evm-punks.html",
       "target": "/wiki/the-crypto-stoned-boys.html",
-      "score": 81,
-      "weight": 0.81
+      "score": 82,
+      "weight": 0.82
     },
     {
       "source": "/wiki/the-finance-guild.html",
@@ -14534,7 +14534,7 @@
     },
     {
       "source": "/wiki/the-finance-guild.html",
-      "target": "/wiki/the-blockstars.html",
+      "target": "/wiki/the-bally-boys.html",
       "score": 77,
       "weight": 0.77
     },
@@ -14582,21 +14582,21 @@
     },
     {
       "source": "/wiki/the-gasless-ghosts.html",
+      "target": "/wiki/the-bally-boys.html",
+      "score": 89,
+      "weight": 0.89
+    },
+    {
+      "source": "/wiki/the-gasless-ghosts.html",
       "target": "/wiki/the-blockstars.html",
       "score": 89,
       "weight": 0.89
     },
     {
       "source": "/wiki/the-gasless-ghosts.html",
-      "target": "/wiki/the-nomad-bears.html",
+      "target": "/wiki/the-information-mercenaries.html",
       "score": 89,
       "weight": 0.89
-    },
-    {
-      "source": "/wiki/the-gasless-ghosts.html",
-      "target": "/wiki/the-allcity-bulls.html",
-      "score": 88,
-      "weight": 0.88
     },
     {
       "source": "/wiki/the-great-dip.html",
@@ -14624,7 +14624,7 @@
     },
     {
       "source": "/wiki/the-great-dip.html",
-      "target": "/wiki/whale-lords.html",
+      "target": "/wiki/the-rugpull-miners.html",
       "score": 80,
       "weight": 0.8
     },
@@ -14637,8 +14637,8 @@
     {
       "source": "/wiki/the-hard-fork-rockers.html",
       "target": "/wiki/the-blockchain-furies.html",
-      "score": 87,
-      "weight": 0.87
+      "score": 88,
+      "weight": 0.88
     },
     {
       "source": "/wiki/the-hard-fork-rockers.html",
@@ -14654,7 +14654,7 @@
     },
     {
       "source": "/wiki/the-hard-fork-rockers.html",
-      "target": "/wiki/the-blockstars.html",
+      "target": "/wiki/the-bally-boys.html",
       "score": 86,
       "weight": 0.86
     },
@@ -14672,13 +14672,13 @@
     },
     {
       "source": "/wiki/the-high-hats.html",
-      "target": "/wiki/the-allcity-bulls.html",
-      "score": 82,
-      "weight": 0.82
+      "target": "/wiki/the-bally-boys.html",
+      "score": 83,
+      "weight": 0.83
     },
     {
       "source": "/wiki/the-high-hats.html",
-      "target": "/wiki/the-bally-boys.html",
+      "target": "/wiki/the-allcity-bulls.html",
       "score": 82,
       "weight": 0.82
     },
@@ -14696,33 +14696,33 @@
     },
     {
       "source": "/wiki/the-information-mercenaries.html",
+      "target": "/wiki/the-bally-boys.html",
+      "score": 89,
+      "weight": 0.89
+    },
+    {
+      "source": "/wiki/the-information-mercenaries.html",
       "target": "/wiki/the-blockstars.html",
       "score": 89,
       "weight": 0.89
     },
     {
       "source": "/wiki/the-information-mercenaries.html",
-      "target": "/wiki/the-allcity-bulls.html",
-      "score": 88,
-      "weight": 0.88
+      "target": "/wiki/the-gasless-ghosts.html",
+      "score": 89,
+      "weight": 0.89
     },
     {
       "source": "/wiki/the-information-mercenaries.html",
-      "target": "/wiki/the-aztec-raiders.html",
-      "score": 88,
-      "weight": 0.88
-    },
-    {
-      "source": "/wiki/the-information-mercenaries.html",
-      "target": "/wiki/the-bally-boys.html",
-      "score": 88,
-      "weight": 0.88
+      "target": "/wiki/the-moonlords.html",
+      "score": 89,
+      "weight": 0.89
     },
     {
       "source": "/wiki/the-moonlords.html",
       "target": "/wiki/the-bally-boys.html",
-      "score": 98,
-      "weight": 0.98
+      "score": 99,
+      "weight": 0.99
     },
     {
       "source": "/wiki/the-moonlords.html",
@@ -14774,7 +14774,7 @@
     },
     {
       "source": "/wiki/the-nice-easy-bois.html",
-      "target": "/wiki/the-blockstars.html",
+      "target": "/wiki/the-bally-boys.html",
       "score": 74,
       "weight": 0.74
     },
@@ -14787,8 +14787,8 @@
     {
       "source": "/wiki/the-nomad-bears.html",
       "target": "/wiki/the-bally-boys.html",
-      "score": 98,
-      "weight": 0.98
+      "score": 99,
+      "weight": 0.99
     },
     {
       "source": "/wiki/the-nomad-bears.html",
@@ -14834,9 +14834,9 @@
     },
     {
       "source": "/wiki/the-og-pixel-saints.html",
-      "target": "/wiki/the-aztec-raiders.html",
-      "score": 85,
-      "weight": 0.85
+      "target": "/wiki/the-rugpull-miners.html",
+      "score": 86,
+      "weight": 0.86
     },
     {
       "source": "/wiki/the-princess.html",
@@ -14876,7 +14876,19 @@
     },
     {
       "source": "/wiki/the-rugpull-miners.html",
+      "target": "/wiki/the-bally-boys.html",
+      "score": 86,
+      "weight": 0.86
+    },
+    {
+      "source": "/wiki/the-rugpull-miners.html",
       "target": "/wiki/the-chain-scribes.html",
+      "score": 86,
+      "weight": 0.86
+    },
+    {
+      "source": "/wiki/the-rugpull-miners.html",
+      "target": "/wiki/the-moonlords.html",
       "score": 86,
       "weight": 0.86
     },
@@ -14885,18 +14897,6 @@
       "target": "/wiki/the-nomad-bears.html",
       "score": 86,
       "weight": 0.86
-    },
-    {
-      "source": "/wiki/the-rugpull-miners.html",
-      "target": "/wiki/the-bally-boys.html",
-      "score": 85,
-      "weight": 0.85
-    },
-    {
-      "source": "/wiki/the-rugpull-miners.html",
-      "target": "/wiki/the-moonlords.html",
-      "score": 85,
-      "weight": 0.85
     },
     {
       "source": "/wiki/the-salvagers.html",
@@ -14907,8 +14907,8 @@
     {
       "source": "/wiki/the-salvagers.html",
       "target": "/wiki/the-bally-boys.html",
-      "score": 88,
-      "weight": 0.88
+      "score": 89,
+      "weight": 0.89
     },
     {
       "source": "/wiki/the-salvagers.html",
@@ -14943,14 +14943,14 @@
     {
       "source": "/wiki/the-shard-mothers-of-manhattan.html",
       "target": "/wiki/the-rugpull-miners.html",
-      "score": 82,
-      "weight": 0.82
+      "score": 83,
+      "weight": 0.83
     },
     {
       "source": "/wiki/the-shard-mothers-of-manhattan.html",
       "target": "/wiki/the-crypto-stoned-boys.html",
-      "score": 81,
-      "weight": 0.81
+      "score": 82,
+      "weight": 0.82
     },
     {
       "source": "/wiki/the-shard-mothers-of-manhattan.html",
@@ -14973,14 +14973,14 @@
     {
       "source": "/wiki/the-squeaky-pinks.html",
       "target": "/wiki/the-rugpull-miners.html",
-      "score": 82,
-      "weight": 0.82
+      "score": 83,
+      "weight": 0.83
     },
     {
       "source": "/wiki/the-squeaky-pinks.html",
       "target": "/wiki/the-crypto-stoned-boys.html",
-      "score": 81,
-      "weight": 0.81
+      "score": 82,
+      "weight": 0.82
     },
     {
       "source": "/wiki/the-squeaky-pinks.html",
@@ -14996,27 +14996,27 @@
     },
     {
       "source": "/wiki/the-tuskon-ogs.html",
+      "target": "/wiki/the-bally-boys.html",
+      "score": 83,
+      "weight": 0.83
+    },
+    {
+      "source": "/wiki/the-tuskon-ogs.html",
       "target": "/wiki/the-chain-scribes.html",
       "score": 83,
       "weight": 0.83
     },
     {
       "source": "/wiki/the-tuskon-ogs.html",
-      "target": "/wiki/the-allcity-bulls.html",
-      "score": 82,
-      "weight": 0.82
+      "target": "/wiki/the-moonlords.html",
+      "score": 83,
+      "weight": 0.83
     },
     {
       "source": "/wiki/the-tuskon-ogs.html",
-      "target": "/wiki/the-aztec-raiders.html",
-      "score": 82,
-      "weight": 0.82
-    },
-    {
-      "source": "/wiki/the-tuskon-ogs.html",
-      "target": "/wiki/the-bally-boys.html",
-      "score": 82,
-      "weight": 0.82
+      "target": "/wiki/the-rugpull-miners.html",
+      "score": 83,
+      "weight": 0.83
     },
     {
       "source": "/wiki/the-whitewasher.html",
@@ -15494,7 +15494,7 @@
     },
     {
       "source": "/wiki/whale-lords.html",
-      "target": "/wiki/the-tuskon-ogs.html",
+      "target": "/wiki/the-rugpull-miners.html",
       "score": 80,
       "weight": 0.8
     },
