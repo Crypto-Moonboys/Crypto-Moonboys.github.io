@@ -457,15 +457,13 @@
   },
   "/wiki/bear-market-siege.html": {
     "existing_links": [
-      "/wiki/altcoins.html",
       "/wiki/crypto-moonboys.html",
-      "/wiki/diamond-hands.html",
+      "/wiki/first-witness-book-7-the-hold.html",
+      "/wiki/first-witness-money-debt-honest-scales.html",
+      "/wiki/hodl-warriors.html",
       "/wiki/hodl-wars.html",
-      "/wiki/moon-mission.html",
-      "/wiki/ngmi-chronicles.html",
+      "/wiki/hodl-x-warriors.html",
       "/wiki/null-the-prophet.html",
-      "/wiki/paper-hands.html",
-      "/wiki/the-bear-market-siege.html",
       "/wiki/the-chain-scribes.html",
       "/wiki/the-finance-guild.html",
       "/wiki/the-great-dip.html",
@@ -473,18 +471,23 @@
       "/wiki/the-nice-easy-bois.html",
       "/wiki/the-princess.html",
       "/wiki/the-whitewasher.html",
-      "/wiki/thorne-the-architect.html",
-      "/wiki/whale-lords.html"
+      "/wiki/thorne-the-architect.html"
     ],
     "suggested_links": [
       "/wiki/bear-xrpl.html",
       "/wiki/block-topia.html",
+      "/wiki/first-witness-book-5-the-chain.html",
+      "/wiki/first-witness-book-6-the-fork.html",
       "/wiki/first-witness-hodl-doctrine.html",
+      "/wiki/first-witness-work-craft-service.html",
       "/wiki/graffpunks.html",
-      "/wiki/hodl-warriors.html",
-      "/wiki/hodl-x-warriors.html",
       "/wiki/hodlmoonboys-nft-collection.html",
-      "/wiki/rug-pull-wars.html"
+      "/wiki/moon-mission.html",
+      "/wiki/rug-pull-wars.html",
+      "/wiki/sacred-chain.html",
+      "/wiki/the-first-witness.html",
+      "/wiki/the-nomad-bears.html",
+      "/wiki/whale-lords.html"
     ]
   },
   "/wiki/bear-xrpl.html": {
@@ -1312,38 +1315,34 @@
   },
   "/wiki/diamond-hands.html": {
     "existing_links": [
-      "/wiki/bear-market-siege.html",
       "/wiki/bitcoin-kids.html",
       "/wiki/block-topia.html",
       "/wiki/burn-to-earn.html",
       "/wiki/crypto-moonboys.html",
-      "/wiki/fomo-plague.html",
+      "/wiki/first-witness-book-7-the-hold.html",
       "/wiki/graffpunks.html",
-      "/wiki/hodl-warriors.html",
-      "/wiki/hodl-wars.html",
       "/wiki/nbgx-token.html",
+      "/wiki/ngmi-chronicles.html",
       "/wiki/null-the-prophet.html",
       "/wiki/paper-hands.html",
-      "/wiki/punk-token.html",
-      "/wiki/satoshi-scroll.html",
-      "/wiki/the-great-dip.html"
+      "/wiki/punk-token.html"
     ],
     "suggested_links": [
-      "/wiki/first-witness-counterfeit-relics-fraud.html",
+      "/wiki/first-witness-book-4-the-wall.html",
+      "/wiki/first-witness-book-5-the-chain.html",
+      "/wiki/first-witness-book-6-the-fork.html",
       "/wiki/first-witness-hodl-doctrine.html",
-      "/wiki/first-witness-humour-satire-sacred-mockery.html",
-      "/wiki/first-witness-language-translation-sacred-words.html",
-      "/wiki/first-witness-libraries-architecture-archive-houses.html",
-      "/wiki/first-witness-sacred-fork.html",
-      "/wiki/first-witness-sacred-places-walls-pilgrimage.html",
-      "/wiki/first-witness-symbols-marks-sacred-design.html",
       "/wiki/grit.html",
+      "/wiki/hodl-warriors.html",
+      "/wiki/hodl-wars.html",
       "/wiki/hodl-x-warriors.html",
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/metropolis.html",
       "/wiki/nbg-token.html",
-      "/wiki/ngmi-chronicles.html",
-      "/wiki/sacred-chain.html"
+      "/wiki/rug-pull-wars.html",
+      "/wiki/satoshi-scroll.html",
+      "/wiki/the-first-witness.html",
+      "/wiki/whale-lords.html"
     ]
   },
   "/wiki/dragan-volkov.html": {
@@ -7487,15 +7486,13 @@
     "existing_links": [
       "/wiki/crypto-moonboys.html",
       "/wiki/diamond-hands.html",
-      "/wiki/hodl-wars.html",
+      "/wiki/first-witness-hodl-doctrine.html",
       "/wiki/ngmi-chronicles.html",
       "/wiki/null-the-prophet.html",
       "/wiki/paper-hands.html",
-      "/wiki/rug-pull-wars.html",
-      "/wiki/satoshi-scroll.html",
       "/wiki/the-chain-scribes.html",
       "/wiki/the-finance-guild.html",
-      "/wiki/the-fomo-plague.html",
+      "/wiki/the-great-dip.html",
       "/wiki/the-high-hats.html",
       "/wiki/the-nice-easy-bois.html",
       "/wiki/the-princess.html",
@@ -7504,7 +7501,20 @@
     ],
     "suggested_links": [
       "/wiki/block-topia.html",
-      "/wiki/graffpunks.html"
+      "/wiki/first-witness-book-6-the-fork.html",
+      "/wiki/first-witness-sacred-fork.html",
+      "/wiki/first-witness-triple-fork-chainfire.html",
+      "/wiki/graffpunks.html",
+      "/wiki/hard-fork-games.html",
+      "/wiki/hodl-warriors.html",
+      "/wiki/hodl-wars.html",
+      "/wiki/hodl-x-warriors.html",
+      "/wiki/hodlmoonboys-nft-collection.html",
+      "/wiki/rug-pull-wars.html",
+      "/wiki/the-first-witness.html",
+      "/wiki/the-hard-fork-rockers.html",
+      "/wiki/triple-fork-event.html",
+      "/wiki/whale-lords.html"
     ]
   },
   "/wiki/forkborn-collective.html": {
@@ -14810,6 +14820,7 @@
     "existing_links": [
       "/wiki/crypto-moonboys.html",
       "/wiki/diamond-hands.html",
+      "/wiki/first-witness-book-7-the-hold.html",
       "/wiki/fomo-plague.html",
       "/wiki/games4punks-telegram.html",
       "/wiki/hard-fork-games.html",
@@ -14819,19 +14830,21 @@
       "/wiki/paper-hands.html",
       "/wiki/pmsl.html",
       "/wiki/rave-relics.html",
-      "/wiki/rug-pull-wars.html",
-      "/wiki/stikfamwars.html",
-      "/wiki/wagmi-prophecy.html"
+      "/wiki/stikfamwars.html"
     ],
     "suggested_links": [
       "/wiki/block-topia.html",
+      "/wiki/first-witness-apocrypha-disputed-passages.html",
       "/wiki/first-witness-concordance.html",
       "/wiki/first-witness-hodl-doctrine.html",
+      "/wiki/first-witness-work-craft-service.html",
       "/wiki/graffpunks.html",
       "/wiki/hodl-warriors.html",
       "/wiki/hodl-x-warriors.html",
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/jonny-laurence-nelson-tag-records.html",
+      "/wiki/rug-pull-wars.html",
+      "/wiki/the-first-witness.html",
       "/wiki/trevor-fung.html"
     ]
   },
@@ -14961,26 +14974,28 @@
     "existing_links": [
       "/wiki/crypto-moonboys.html",
       "/wiki/diamond-hands.html",
+      "/wiki/first-witness-book-7-the-hold.html",
+      "/wiki/first-witness-hodl-doctrine.html",
       "/wiki/fomo-plague.html",
       "/wiki/games4punks-telegram.html",
       "/wiki/hard-fork-games.html",
       "/wiki/hodl-wars.html",
       "/wiki/midevilpunks.html",
-      "/wiki/moon-mission.html",
       "/wiki/ngmi-chronicles.html",
       "/wiki/pmsl.html",
       "/wiki/rave-relics.html",
-      "/wiki/rug-pull-wars.html",
-      "/wiki/satoshi-scroll.html",
       "/wiki/stikfamwars.html"
     ],
     "suggested_links": [
-      "/wiki/first-witness-hodl-doctrine.html",
+      "/wiki/first-witness-prisons-punishment-return.html",
       "/wiki/graffpunks.html",
       "/wiki/hodl-warriors.html",
       "/wiki/hodl-x-warriors.html",
       "/wiki/hodlmoonboys-nft-collection.html",
-      "/wiki/trevor-fung.html"
+      "/wiki/rug-pull-wars.html",
+      "/wiki/the-first-witness.html",
+      "/wiki/trevor-fung.html",
+      "/wiki/whale-lords.html"
     ]
   },
   "/wiki/patchwork.html": {
@@ -16870,34 +16885,38 @@
   },
   "/wiki/the-great-dip.html": {
     "existing_links": [
-      "/wiki/altcoins.html",
       "/wiki/bear-market-siege.html",
       "/wiki/crypto-moonboys.html",
-      "/wiki/diamond-hands.html",
+      "/wiki/first-witness-book-7-the-hold.html",
+      "/wiki/first-witness-money-debt-honest-scales.html",
       "/wiki/fomo-plague.html",
-      "/wiki/hodl-warriors.html",
-      "/wiki/hodl-wars.html",
-      "/wiki/moon-mission.html",
+      "/wiki/ngmi-chronicles.html",
       "/wiki/null-the-prophet.html",
-      "/wiki/paper-hands.html",
-      "/wiki/rug-pull-wars.html",
       "/wiki/the-chain-scribes.html",
       "/wiki/the-finance-guild.html",
       "/wiki/the-high-hats.html",
       "/wiki/the-nice-easy-bois.html",
       "/wiki/the-princess.html",
       "/wiki/the-whitewasher.html",
-      "/wiki/thorne-the-architect.html",
-      "/wiki/whale-lords.html"
+      "/wiki/thorne-the-architect.html"
     ],
     "suggested_links": [
       "/wiki/block-topia.html",
+      "/wiki/diamond-hands.html",
       "/wiki/first-witness-great-concord-2030.html",
       "/wiki/first-witness-hodl-doctrine.html",
-      "/wiki/gkniftyheads-mr-cheo-test-press-776099.html",
+      "/wiki/first-witness-triple-fork-chainfire.html",
+      "/wiki/gkniftyheads-darknet-lord-784276.html",
       "/wiki/graffpunks.html",
+      "/wiki/hodl-warriors.html",
+      "/wiki/hodl-wars.html",
       "/wiki/hodl-x-warriors.html",
-      "/wiki/hodlmoonboys-nft-collection.html"
+      "/wiki/hodlmoonboys-nft-collection.html",
+      "/wiki/paper-hands.html",
+      "/wiki/rug-pull-wars.html",
+      "/wiki/the-first-witness.html",
+      "/wiki/triple-fork-event.html",
+      "/wiki/whale-lords.html"
     ]
   },
   "/wiki/the-hard-fork-rockers.html": {

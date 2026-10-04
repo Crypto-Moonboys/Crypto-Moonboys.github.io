@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-04T14:07:06.539Z",
-  "verified_at": "2026-10-04T14:07:06.539Z",
+  "generated_at": "2026-10-04T14:13:19.357Z",
+  "verified_at": "2026-10-04T14:13:19.357Z",
   "lite": true,
   "nodes": [
     {
@@ -164,6 +164,14 @@
       "authority_score": 28
     },
     {
+      "id": "/wiki/first-witness-book-7-the-hold.html",
+      "title": "Book VII — The Hold",
+      "url": "/wiki/first-witness-book-7-the-hold.html",
+      "category": "core",
+      "rank_score": 327,
+      "authority_score": 14
+    },
+    {
       "id": "/wiki/pmsl.html",
       "title": "pmsl",
       "url": "/wiki/pmsl.html",
@@ -289,14 +297,6 @@
       "url": "/wiki/first-witness-parables.html",
       "category": "core",
       "rank_score": 318,
-      "authority_score": 14
-    },
-    {
-      "id": "/wiki/first-witness-book-7-the-hold.html",
-      "title": "Book VII — The Hold",
-      "url": "/wiki/first-witness-book-7-the-hold.html",
-      "category": "core",
-      "rank_score": 317,
       "authority_score": 14
     },
     {
@@ -436,6 +436,14 @@
       "authority_score": 28
     },
     {
+      "id": "/wiki/first-witness-hodl-doctrine.html",
+      "title": "The HODL Doctrine",
+      "url": "/wiki/first-witness-hodl-doctrine.html",
+      "category": "core",
+      "rank_score": 306,
+      "authority_score": 12
+    },
+    {
       "id": "/wiki/first-witness-glossary.html",
       "title": "First Witness Glossary",
       "url": "/wiki/first-witness-glossary.html",
@@ -476,12 +484,12 @@
       "authority_score": 17
     },
     {
-      "id": "/wiki/first-witness-hodl-doctrine.html",
-      "title": "The HODL Doctrine",
-      "url": "/wiki/first-witness-hodl-doctrine.html",
-      "category": "core",
+      "id": "/wiki/diamond-hands.html",
+      "title": "Diamond Hands",
+      "url": "/wiki/diamond-hands.html",
+      "category": "characters",
       "rank_score": 302,
-      "authority_score": 12
+      "authority_score": 26
     },
     {
       "id": "/wiki/the-salvagers.html",
@@ -588,19 +596,11 @@
       "authority_score": 12
     },
     {
-      "id": "/wiki/games4punks-telegram.html",
-      "title": "GAMES4PUNKS Telegram",
-      "url": "/wiki/games4punks-telegram.html",
-      "category": "concepts",
-      "rank_score": 294,
-      "authority_score": 24
-    },
-    {
-      "id": "/wiki/first-witness-pride-temptation-false-idols.html",
-      "title": "Pride, Temptation and False Idols",
-      "url": "/wiki/first-witness-pride-temptation-false-idols.html",
+      "id": "/wiki/first-witness-money-debt-honest-scales.html",
+      "title": "Money, Debt and Honest Scales",
+      "url": "/wiki/first-witness-money-debt-honest-scales.html",
       "category": "core",
-      "rank_score": 293,
+      "rank_score": 295,
       "authority_score": 12
     }
   ],
@@ -714,8 +714,14 @@
       "weight": 1
     },
     {
-      "source": "/wiki/first-witness-book-7-the-hold.html",
-      "target": "/wiki/first-witness-book-5-the-chain.html",
+      "source": "/wiki/first-witness-book-5-the-chain.html",
+      "target": "/wiki/first-witness-book-7-the-hold.html",
+      "score": 316,
+      "weight": 1
+    },
+    {
+      "source": "/wiki/first-witness-book-9-the-unwritten-block.html",
+      "target": "/wiki/first-witness-book-7-the-hold.html",
       "score": 316,
       "weight": 1
     },
@@ -734,12 +740,6 @@
     {
       "source": "/wiki/first-witness-book-3-the-keeper.html",
       "target": "/wiki/first-witness-concordance.html",
-      "score": 315,
-      "weight": 1
-    },
-    {
-      "source": "/wiki/first-witness-book-9-the-unwritten-block.html",
-      "target": "/wiki/first-witness-book-7-the-hold.html",
       "score": 315,
       "weight": 1
     },
@@ -966,6 +966,12 @@
       "weight": 0.79
     },
     {
+      "source": "/wiki/diamond-hands.html",
+      "target": "/wiki/null-the-prophet.html",
+      "score": 79,
+      "weight": 0.79
+    },
+    {
       "source": "/wiki/punk-token.html",
       "target": "/wiki/null-the-prophet.html",
       "score": 79,
@@ -1004,12 +1010,6 @@
     {
       "source": "/wiki/bitcoin-kid-army.html",
       "target": "/wiki/midevilpunks.html",
-      "score": 70,
-      "weight": 0.7
-    },
-    {
-      "source": "/wiki/staking.html",
-      "target": "/wiki/null-the-prophet.html",
       "score": 70,
       "weight": 0.7
     },

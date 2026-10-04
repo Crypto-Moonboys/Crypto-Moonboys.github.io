@@ -2352,11 +2352,11 @@
       ]
     },
     "link_score": {
-      "inbound_count": 86,
+      "inbound_count": 83,
       "outbound_count": 34,
       "existing_outbound_count": 14,
       "suggested_outbound_count": 20,
-      "authority": 179
+      "authority": 173
     },
     "brand": {
       "brand_family": "hodl",
@@ -3018,6 +3018,162 @@
       "canonical_slug": "graffpunks",
       "parent_concept": "gkniftyheads"
     }
+  },
+  {
+    "title": "Book VII — The Hold",
+    "desc": "Book VII: endurance, loyalty, sacrifice and preservation.",
+    "url": "/wiki/first-witness-book-7-the-hold.html",
+    "tags": [
+      "book",
+      "vii",
+      "hold",
+      "first witness",
+      "first witness bible",
+      "crypto moonboys bible",
+      "graffiti kings bible",
+      "GK bible",
+      "covenant",
+      "scripture",
+      "sacred text",
+      "bitcoin witness",
+      "bitcoin provenance",
+      "sacred chain",
+      "aether-chain",
+      "forty paths",
+      "40 GK factions",
+      "HODL WARS",
+      "Block Topia",
+      "Year 3008",
+      "2030 Concord",
+      "no single keeper",
+      "Crypto Moonboys lore",
+      "Graffiti Kings lore",
+      "religion",
+      "religious philosophy",
+      "philosophy",
+      "ethics",
+      "moral philosophy",
+      "spirituality",
+      "faith tradition",
+      "theology",
+      "belief system"
+    ],
+    "category": "core",
+    "aliases": [
+      {
+        "title": "book vii hold"
+      },
+      {
+        "title": "first witness book 7 the hold"
+      }
+    ],
+    "rank_score": 327,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 2,
+      "tag_count": 33,
+      "mention_count": 0,
+      "category": "core",
+      "category_priority": 10,
+      "has_description": true,
+      "article_word_count": 658,
+      "keyword_bag_size": 54,
+      "heading_count": 7,
+      "list_count": 0,
+      "internal_link_count": 7,
+      "paragraph_count": 34,
+      "section_count": 5,
+      "lore_paragraph_count": 33,
+      "content_quality_score": 82,
+      "authority_score": 14
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 50,
+      "word_count_points": 33,
+      "keyword_bag_points": 54,
+      "content_quality_points": 121,
+      "authority_points": 39,
+      "final_rank_score": 327,
+      "authority_graph_points": 25
+    },
+    "search_index": {
+      "normalized_title": "book vii the hold crypto moonboys wiki",
+      "tokens": [
+        "book",
+        "vii",
+        "the",
+        "hold",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "book",
+        "vii",
+        "the",
+        "hold",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "endurance",
+        "loyalty",
+        "sacrifice",
+        "and",
+        "preservation",
+        "first",
+        "witness",
+        "bible",
+        "graffiti",
+        "kings",
+        "gk",
+        "covenant",
+        "scripture",
+        "sacred",
+        "text",
+        "bitcoin",
+        "provenance",
+        "chain",
+        "aether",
+        "forty",
+        "paths",
+        "40",
+        "factions",
+        "hodl",
+        "wars",
+        "block",
+        "topia",
+        "year",
+        "3008",
+        "2030",
+        "concord",
+        "no",
+        "single",
+        "keeper",
+        "lore",
+        "religion",
+        "religious",
+        "philosophy",
+        "ethics",
+        "moral",
+        "spirituality",
+        "faith",
+        "tradition",
+        "theology",
+        "belief",
+        "system",
+        "7"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 11,
+      "outbound_count": 67,
+      "existing_outbound_count": 6,
+      "suggested_outbound_count": 61,
+      "authority": 25
+    },
+    "brand": null
   },
   {
     "title": "pmsl",
@@ -4598,11 +4754,11 @@
       ]
     },
     "link_score": {
-      "inbound_count": 33,
+      "inbound_count": 32,
       "outbound_count": 23,
       "existing_outbound_count": 15,
       "suggested_outbound_count": 8,
-      "authority": 73.5
+      "authority": 71.5
     },
     "brand": {
       "brand_family": "hodl",
@@ -5157,162 +5313,6 @@
       "existing_outbound_count": 4,
       "suggested_outbound_count": 61,
       "authority": 4
-    },
-    "brand": null
-  },
-  {
-    "title": "Book VII — The Hold",
-    "desc": "Book VII: endurance, loyalty, sacrifice and preservation.",
-    "url": "/wiki/first-witness-book-7-the-hold.html",
-    "tags": [
-      "book",
-      "vii",
-      "hold",
-      "first witness",
-      "first witness bible",
-      "crypto moonboys bible",
-      "graffiti kings bible",
-      "GK bible",
-      "covenant",
-      "scripture",
-      "sacred text",
-      "bitcoin witness",
-      "bitcoin provenance",
-      "sacred chain",
-      "aether-chain",
-      "forty paths",
-      "40 GK factions",
-      "HODL WARS",
-      "Block Topia",
-      "Year 3008",
-      "2030 Concord",
-      "no single keeper",
-      "Crypto Moonboys lore",
-      "Graffiti Kings lore",
-      "religion",
-      "religious philosophy",
-      "philosophy",
-      "ethics",
-      "moral philosophy",
-      "spirituality",
-      "faith tradition",
-      "theology",
-      "belief system"
-    ],
-    "category": "core",
-    "aliases": [
-      {
-        "title": "book vii hold"
-      },
-      {
-        "title": "first witness book 7 the hold"
-      }
-    ],
-    "rank_score": 317,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 2,
-      "tag_count": 33,
-      "mention_count": 0,
-      "category": "core",
-      "category_priority": 10,
-      "has_description": true,
-      "article_word_count": 658,
-      "keyword_bag_size": 54,
-      "heading_count": 7,
-      "list_count": 0,
-      "internal_link_count": 7,
-      "paragraph_count": 34,
-      "section_count": 5,
-      "lore_paragraph_count": 33,
-      "content_quality_score": 82,
-      "authority_score": 14
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 50,
-      "word_count_points": 33,
-      "keyword_bag_points": 54,
-      "content_quality_points": 121,
-      "authority_points": 29,
-      "final_rank_score": 317,
-      "authority_graph_points": 15
-    },
-    "search_index": {
-      "normalized_title": "book vii the hold crypto moonboys wiki",
-      "tokens": [
-        "book",
-        "vii",
-        "the",
-        "hold",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "book",
-        "vii",
-        "the",
-        "hold",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "endurance",
-        "loyalty",
-        "sacrifice",
-        "and",
-        "preservation",
-        "first",
-        "witness",
-        "bible",
-        "graffiti",
-        "kings",
-        "gk",
-        "covenant",
-        "scripture",
-        "sacred",
-        "text",
-        "bitcoin",
-        "provenance",
-        "chain",
-        "aether",
-        "forty",
-        "paths",
-        "40",
-        "factions",
-        "hodl",
-        "wars",
-        "block",
-        "topia",
-        "year",
-        "3008",
-        "2030",
-        "concord",
-        "no",
-        "single",
-        "keeper",
-        "lore",
-        "religion",
-        "religious",
-        "philosophy",
-        "ethics",
-        "moral",
-        "spirituality",
-        "faith",
-        "tradition",
-        "theology",
-        "belief",
-        "system",
-        "7"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 6,
-      "outbound_count": 67,
-      "existing_outbound_count": 6,
-      "suggested_outbound_count": 61,
-      "authority": 15
     },
     "brand": null
   },
@@ -7845,6 +7845,168 @@
     "brand": null
   },
   {
+    "title": "The HODL Doctrine",
+    "desc": "How Book VII became later HODL language and collective defence.",
+    "url": "/wiki/first-witness-hodl-doctrine.html",
+    "tags": [
+      "hodl",
+      "doctrine",
+      "first witness",
+      "first witness bible",
+      "crypto moonboys bible",
+      "graffiti kings bible",
+      "GK bible",
+      "covenant",
+      "scripture",
+      "sacred text",
+      "bitcoin witness",
+      "bitcoin provenance",
+      "sacred chain",
+      "aether-chain",
+      "forty paths",
+      "40 GK factions",
+      "HODL WARS",
+      "Block Topia",
+      "Year 3008",
+      "2030 Concord",
+      "no single keeper",
+      "Crypto Moonboys lore",
+      "Graffiti Kings lore",
+      "religion",
+      "religious philosophy",
+      "philosophy",
+      "ethics",
+      "moral philosophy",
+      "spirituality",
+      "faith tradition",
+      "theology",
+      "belief system",
+      "HODL Warriors",
+      "HODL X Warriors",
+      "HODL doctrine",
+      "Hold doctrine"
+    ],
+    "category": "core",
+    "aliases": [
+      {
+        "title": "HODL Doctrine"
+      },
+      {
+        "title": "first witness hodl doctrine"
+      }
+    ],
+    "rank_score": 306,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 2,
+      "tag_count": 36,
+      "mention_count": 0,
+      "category": "core",
+      "category_priority": 10,
+      "has_description": true,
+      "article_word_count": 540,
+      "keyword_bag_size": 58,
+      "heading_count": 9,
+      "list_count": 0,
+      "internal_link_count": 7,
+      "paragraph_count": 15,
+      "section_count": 7,
+      "lore_paragraph_count": 14,
+      "content_quality_score": 66,
+      "authority_score": 12
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 50,
+      "word_count_points": 27,
+      "keyword_bag_points": 58,
+      "content_quality_points": 108,
+      "authority_points": 33,
+      "final_rank_score": 306,
+      "authority_graph_points": 21
+    },
+    "search_index": {
+      "normalized_title": "the hodl doctrine crypto moonboys wiki",
+      "tokens": [
+        "the",
+        "hodl",
+        "doctrine",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "the",
+        "hodl",
+        "doctrine",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "how",
+        "book",
+        "vii",
+        "became",
+        "later",
+        "language",
+        "and",
+        "collective",
+        "defence",
+        "first",
+        "witness",
+        "bible",
+        "graffiti",
+        "kings",
+        "gk",
+        "covenant",
+        "scripture",
+        "sacred",
+        "text",
+        "bitcoin",
+        "provenance",
+        "chain",
+        "aether",
+        "forty",
+        "paths",
+        "40",
+        "factions",
+        "wars",
+        "block",
+        "topia",
+        "year",
+        "3008",
+        "2030",
+        "concord",
+        "no",
+        "single",
+        "keeper",
+        "lore",
+        "religion",
+        "religious",
+        "philosophy",
+        "ethics",
+        "moral",
+        "spirituality",
+        "faith",
+        "tradition",
+        "theology",
+        "belief",
+        "system",
+        "warriors",
+        "x",
+        "hold"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 9,
+      "outbound_count": 71,
+      "existing_outbound_count": 6,
+      "suggested_outbound_count": 65,
+      "authority": 21
+    },
+    "brand": null
+  },
+  {
     "title": "First Witness Glossary",
     "desc": "Definitions for the core sacred and historical terms used across the First Witness.",
     "url": "/wiki/first-witness-glossary.html",
@@ -8530,164 +8692,107 @@
     "brand": null
   },
   {
-    "title": "The HODL Doctrine",
-    "desc": "How Book VII became later HODL language and collective defence.",
-    "url": "/wiki/first-witness-hodl-doctrine.html",
+    "title": "Diamond Hands",
+    "desc": "Diamond Hands in HODL Wars: conviction, diamond-plate imagery, the Open Grip account and the difference between endurance and refusing to let go.",
+    "url": "/wiki/diamond-hands.html",
     "tags": [
-      "hodl",
-      "doctrine",
-      "first witness",
-      "first witness bible",
-      "crypto moonboys bible",
-      "graffiti kings bible",
-      "GK bible",
-      "covenant",
-      "scripture",
-      "sacred text",
-      "bitcoin witness",
-      "bitcoin provenance",
-      "sacred chain",
-      "aether-chain",
-      "forty paths",
-      "40 GK factions",
-      "HODL WARS",
-      "Block Topia",
-      "Year 3008",
-      "2030 Concord",
-      "no single keeper",
-      "Crypto Moonboys lore",
-      "Graffiti Kings lore",
-      "religion",
-      "religious philosophy",
-      "philosophy",
-      "ethics",
-      "moral philosophy",
-      "spirituality",
-      "faith tradition",
-      "theology",
-      "belief system",
-      "HODL Warriors",
-      "HODL X Warriors",
-      "HODL doctrine",
-      "Hold doctrine"
+      "diamond",
+      "hands",
+      "crypto",
+      "moonboys",
+      "wiki"
     ],
-    "category": "core",
+    "category": "characters",
     "aliases": [
       {
-        "title": "HODL Doctrine"
-      },
-      {
-        "title": "first witness hodl doctrine"
+        "title": "diamond hands crypto moonboys wiki"
       }
     ],
     "rank_score": 302,
     "rank_signals": {
       "is_canonical": true,
-      "alias_count": 2,
-      "tag_count": 36,
+      "alias_count": 1,
+      "tag_count": 5,
       "mention_count": 0,
-      "category": "core",
-      "category_priority": 10,
+      "category": "characters",
+      "category_priority": 8,
       "has_description": true,
-      "article_word_count": 540,
-      "keyword_bag_size": 58,
-      "heading_count": 9,
-      "list_count": 0,
-      "internal_link_count": 7,
-      "paragraph_count": 15,
-      "section_count": 7,
-      "lore_paragraph_count": 14,
-      "content_quality_score": 66,
-      "authority_score": 12
+      "article_word_count": 2462,
+      "keyword_bag_size": 23,
+      "heading_count": 15,
+      "list_count": 2,
+      "internal_link_count": 12,
+      "paragraph_count": 35,
+      "section_count": 12,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 85,
+      "authority_score": 26
     },
     "rank_diagnostics": {
       "canonical_points": 20,
       "description_points": 10,
-      "category_points": 50,
-      "word_count_points": 27,
-      "keyword_bag_points": 58,
-      "content_quality_points": 108,
-      "authority_points": 29,
+      "category_points": 40,
+      "word_count_points": 50,
+      "keyword_bag_points": 23,
+      "content_quality_points": 93,
+      "authority_points": 66,
       "final_rank_score": 302,
-      "authority_graph_points": 17
+      "authority_graph_points": 40
     },
     "search_index": {
-      "normalized_title": "the hodl doctrine crypto moonboys wiki",
+      "normalized_title": "diamond hands crypto moonboys wiki",
       "tokens": [
-        "the",
-        "hodl",
-        "doctrine",
+        "diamond",
+        "hands",
         "crypto",
         "moonboys",
         "wiki"
       ],
       "keyword_bag": [
-        "the",
-        "hodl",
-        "doctrine",
+        "diamond",
+        "hands",
         "crypto",
         "moonboys",
         "wiki",
-        "how",
-        "book",
-        "vii",
-        "became",
-        "later",
-        "language",
-        "and",
-        "collective",
-        "defence",
-        "first",
-        "witness",
-        "bible",
-        "graffiti",
-        "kings",
-        "gk",
-        "covenant",
-        "scripture",
-        "sacred",
-        "text",
-        "bitcoin",
-        "provenance",
-        "chain",
-        "aether",
-        "forty",
-        "paths",
-        "40",
-        "factions",
+        "in",
+        "hodl",
         "wars",
-        "block",
-        "topia",
-        "year",
-        "3008",
-        "2030",
-        "concord",
-        "no",
-        "single",
-        "keeper",
-        "lore",
-        "religion",
-        "religious",
-        "philosophy",
-        "ethics",
-        "moral",
-        "spirituality",
-        "faith",
-        "tradition",
-        "theology",
-        "belief",
-        "system",
-        "warriors",
-        "x",
-        "hold"
+        "conviction",
+        "plate",
+        "imagery",
+        "the",
+        "open",
+        "grip",
+        "account",
+        "and",
+        "difference",
+        "between",
+        "endurance",
+        "refusing",
+        "to",
+        "let",
+        "go",
+        "yara",
+        "knell",
+        "eren",
+        "loom",
+        "leth",
+        "quoin",
+        "credit",
+        "on",
+        "cuff",
+        "dov",
+        "renn",
+        "kept",
+        "wall"
       ]
     },
     "link_score": {
-      "inbound_count": 7,
-      "outbound_count": 71,
-      "existing_outbound_count": 6,
-      "suggested_outbound_count": 65,
-      "authority": 17
+      "inbound_count": 17,
+      "outbound_count": 26,
+      "existing_outbound_count": 11,
+      "suggested_outbound_count": 15,
+      "authority": 39.5
     },
     "brand": null
   },
@@ -10046,6 +10151,168 @@
     "brand": null
   },
   {
+    "title": "Money, Debt and Honest Scales",
+    "desc": "How First Witness traditions think about debt, pricing, reserves, honest exchange and financial power.",
+    "url": "/wiki/first-witness-money-debt-honest-scales.html",
+    "tags": [
+      "money",
+      "debt",
+      "honest",
+      "scales",
+      "first witness",
+      "first witness bible",
+      "crypto moonboys bible",
+      "graffiti kings bible",
+      "GK bible",
+      "covenant",
+      "scripture",
+      "sacred text",
+      "bitcoin witness",
+      "bitcoin provenance",
+      "sacred chain",
+      "aether-chain",
+      "forty paths",
+      "40 GK factions",
+      "HODL WARS",
+      "Block Topia",
+      "Year 3008",
+      "2030 Concord",
+      "no single keeper",
+      "Crypto Moonboys lore",
+      "Graffiti Kings lore",
+      "religion",
+      "religious philosophy",
+      "philosophy",
+      "ethics",
+      "moral philosophy",
+      "spirituality",
+      "faith tradition",
+      "theology",
+      "belief system"
+    ],
+    "category": "core",
+    "aliases": [
+      {
+        "title": "first witness money debt honest scales"
+      },
+      {
+        "title": "money debt honest scales"
+      }
+    ],
+    "rank_score": 295,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 2,
+      "tag_count": 34,
+      "mention_count": 0,
+      "category": "core",
+      "category_priority": 10,
+      "has_description": true,
+      "article_word_count": 441,
+      "keyword_bag_size": 58,
+      "heading_count": 9,
+      "list_count": 0,
+      "internal_link_count": 5,
+      "paragraph_count": 13,
+      "section_count": 7,
+      "lore_paragraph_count": 12,
+      "content_quality_score": 71,
+      "authority_score": 12
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 50,
+      "word_count_points": 22,
+      "keyword_bag_points": 58,
+      "content_quality_points": 111,
+      "authority_points": 24,
+      "final_rank_score": 295,
+      "authority_graph_points": 12
+    },
+    "search_index": {
+      "normalized_title": "money debt and honest scales crypto moonboys wiki",
+      "tokens": [
+        "money",
+        "debt",
+        "and",
+        "honest",
+        "scales",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "money",
+        "debt",
+        "and",
+        "honest",
+        "scales",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "how",
+        "first",
+        "witness",
+        "traditions",
+        "think",
+        "about",
+        "pricing",
+        "reserves",
+        "exchange",
+        "financial",
+        "power",
+        "bible",
+        "graffiti",
+        "kings",
+        "gk",
+        "covenant",
+        "scripture",
+        "sacred",
+        "text",
+        "bitcoin",
+        "provenance",
+        "chain",
+        "aether",
+        "forty",
+        "paths",
+        "40",
+        "factions",
+        "hodl",
+        "wars",
+        "block",
+        "topia",
+        "year",
+        "3008",
+        "2030",
+        "concord",
+        "no",
+        "single",
+        "keeper",
+        "lore",
+        "religion",
+        "religious",
+        "philosophy",
+        "ethics",
+        "moral",
+        "spirituality",
+        "faith",
+        "tradition",
+        "theology",
+        "belief",
+        "system"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 5,
+      "outbound_count": 66,
+      "existing_outbound_count": 4,
+      "suggested_outbound_count": 62,
+      "authority": 12
+    },
+    "brand": null
+  },
+  {
     "title": "The Long Transmission",
     "desc": "How the Covenant survived centuries of translation, censorship, commentary and wall memory.",
     "url": "/wiki/first-witness-long-transmission.html",
@@ -10305,6 +10572,111 @@
       "existing_outbound_count": 12,
       "suggested_outbound_count": 22,
       "authority": 102
+    },
+    "brand": null
+  },
+  {
+    "title": "HODL X Warriors",
+    "desc": "The distinct HODL X champion tradition: Hard Fork selection, bonnets, Seeding accounts, armour repair, service obligations and unresolved relations to HODL Warriors.",
+    "url": "/wiki/hodl-x-warriors.html",
+    "tags": [
+      "hodl",
+      "warriors",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "characters",
+    "aliases": [],
+    "rank_score": 293,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "characters",
+      "category_priority": 8,
+      "has_description": true,
+      "article_word_count": 4741,
+      "keyword_bag_size": 24,
+      "heading_count": 29,
+      "list_count": 1,
+      "internal_link_count": 17,
+      "paragraph_count": 76,
+      "section_count": 26,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 89,
+      "authority_score": 28
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 40,
+      "word_count_points": 50,
+      "keyword_bag_points": 24,
+      "content_quality_points": 94,
+      "authority_points": 55,
+      "final_rank_score": 293,
+      "authority_graph_points": 27
+    },
+    "search_index": {
+      "normalized_title": "hodl x warriors crypto moonboys wiki",
+      "tokens": [
+        "hodl",
+        "x",
+        "warriors",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "hodl",
+        "x",
+        "warriors",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "the",
+        "distinct",
+        "champion",
+        "tradition",
+        "hard",
+        "fork",
+        "selection",
+        "bonnets",
+        "seeding",
+        "accounts",
+        "armour",
+        "repair",
+        "service",
+        "obligations",
+        "and",
+        "unresolved",
+        "relations",
+        "to",
+        "hester",
+        "brake",
+        "cass",
+        "nine",
+        "gallery",
+        "plate",
+        "book",
+        "north",
+        "sluice",
+        "stand",
+        "golden",
+        "ticket",
+        "bonnet",
+        "collection",
+        "debt"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 10,
+      "outbound_count": 39,
+      "existing_outbound_count": 13,
+      "suggested_outbound_count": 26,
+      "authority": 26.5
     },
     "brand": null
   },
@@ -11455,273 +11827,6 @@
       "existing_outbound_count": 16,
       "suggested_outbound_count": 21,
       "authority": 18
-    },
-    "brand": null
-  },
-  {
-    "title": "HODL X Warriors",
-    "desc": "The distinct HODL X champion tradition: Hard Fork selection, bonnets, Seeding accounts, armour repair, service obligations and unresolved relations to HODL Warriors.",
-    "url": "/wiki/hodl-x-warriors.html",
-    "tags": [
-      "hodl",
-      "warriors",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "characters",
-    "aliases": [],
-    "rank_score": 291,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 0,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "characters",
-      "category_priority": 8,
-      "has_description": true,
-      "article_word_count": 4741,
-      "keyword_bag_size": 24,
-      "heading_count": 29,
-      "list_count": 1,
-      "internal_link_count": 17,
-      "paragraph_count": 76,
-      "section_count": 26,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 89,
-      "authority_score": 28
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 40,
-      "word_count_points": 50,
-      "keyword_bag_points": 24,
-      "content_quality_points": 94,
-      "authority_points": 53,
-      "final_rank_score": 291,
-      "authority_graph_points": 25
-    },
-    "search_index": {
-      "normalized_title": "hodl x warriors crypto moonboys wiki",
-      "tokens": [
-        "hodl",
-        "x",
-        "warriors",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "hodl",
-        "x",
-        "warriors",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "the",
-        "distinct",
-        "champion",
-        "tradition",
-        "hard",
-        "fork",
-        "selection",
-        "bonnets",
-        "seeding",
-        "accounts",
-        "armour",
-        "repair",
-        "service",
-        "obligations",
-        "and",
-        "unresolved",
-        "relations",
-        "to",
-        "hester",
-        "brake",
-        "cass",
-        "nine",
-        "gallery",
-        "plate",
-        "book",
-        "north",
-        "sluice",
-        "stand",
-        "golden",
-        "ticket",
-        "bonnet",
-        "collection",
-        "debt"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 9,
-      "outbound_count": 39,
-      "existing_outbound_count": 13,
-      "suggested_outbound_count": 26,
-      "authority": 24.5
-    },
-    "brand": null
-  },
-  {
-    "title": "Money, Debt and Honest Scales",
-    "desc": "How First Witness traditions think about debt, pricing, reserves, honest exchange and financial power.",
-    "url": "/wiki/first-witness-money-debt-honest-scales.html",
-    "tags": [
-      "money",
-      "debt",
-      "honest",
-      "scales",
-      "first witness",
-      "first witness bible",
-      "crypto moonboys bible",
-      "graffiti kings bible",
-      "GK bible",
-      "covenant",
-      "scripture",
-      "sacred text",
-      "bitcoin witness",
-      "bitcoin provenance",
-      "sacred chain",
-      "aether-chain",
-      "forty paths",
-      "40 GK factions",
-      "HODL WARS",
-      "Block Topia",
-      "Year 3008",
-      "2030 Concord",
-      "no single keeper",
-      "Crypto Moonboys lore",
-      "Graffiti Kings lore",
-      "religion",
-      "religious philosophy",
-      "philosophy",
-      "ethics",
-      "moral philosophy",
-      "spirituality",
-      "faith tradition",
-      "theology",
-      "belief system"
-    ],
-    "category": "core",
-    "aliases": [
-      {
-        "title": "first witness money debt honest scales"
-      },
-      {
-        "title": "money debt honest scales"
-      }
-    ],
-    "rank_score": 291,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 2,
-      "tag_count": 34,
-      "mention_count": 0,
-      "category": "core",
-      "category_priority": 10,
-      "has_description": true,
-      "article_word_count": 441,
-      "keyword_bag_size": 58,
-      "heading_count": 9,
-      "list_count": 0,
-      "internal_link_count": 5,
-      "paragraph_count": 13,
-      "section_count": 7,
-      "lore_paragraph_count": 12,
-      "content_quality_score": 71,
-      "authority_score": 12
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 50,
-      "word_count_points": 22,
-      "keyword_bag_points": 58,
-      "content_quality_points": 111,
-      "authority_points": 20,
-      "final_rank_score": 291,
-      "authority_graph_points": 8
-    },
-    "search_index": {
-      "normalized_title": "money debt and honest scales crypto moonboys wiki",
-      "tokens": [
-        "money",
-        "debt",
-        "and",
-        "honest",
-        "scales",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "money",
-        "debt",
-        "and",
-        "honest",
-        "scales",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "how",
-        "first",
-        "witness",
-        "traditions",
-        "think",
-        "about",
-        "pricing",
-        "reserves",
-        "exchange",
-        "financial",
-        "power",
-        "bible",
-        "graffiti",
-        "kings",
-        "gk",
-        "covenant",
-        "scripture",
-        "sacred",
-        "text",
-        "bitcoin",
-        "provenance",
-        "chain",
-        "aether",
-        "forty",
-        "paths",
-        "40",
-        "factions",
-        "hodl",
-        "wars",
-        "block",
-        "topia",
-        "year",
-        "3008",
-        "2030",
-        "concord",
-        "no",
-        "single",
-        "keeper",
-        "lore",
-        "religion",
-        "religious",
-        "philosophy",
-        "ethics",
-        "moral",
-        "spirituality",
-        "faith",
-        "tradition",
-        "theology",
-        "belief",
-        "system"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 3,
-      "outbound_count": 66,
-      "existing_outbound_count": 4,
-      "suggested_outbound_count": 62,
-      "authority": 8
     },
     "brand": null
   },
@@ -14129,6 +14234,116 @@
     "brand": null
   },
   {
+    "title": "The Bear Market Siege",
+    "desc": "The Bear Market Siege in HODL Wars: prolonged pressure on strongholds, the Silt Lantern account, shared work and endurance without promised recovery.",
+    "url": "/wiki/bear-market-siege.html",
+    "tags": [
+      "bear",
+      "market",
+      "siege",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "characters",
+    "aliases": [
+      {
+        "title": "Bear Market Siege — Crypto Moonboys Wiki"
+      },
+      {
+        "title": "bear market siege"
+      }
+    ],
+    "rank_score": 288,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 2,
+      "tag_count": 6,
+      "mention_count": 0,
+      "category": "characters",
+      "category_priority": 8,
+      "has_description": true,
+      "article_word_count": 2385,
+      "keyword_bag_size": 24,
+      "heading_count": 15,
+      "list_count": 2,
+      "internal_link_count": 15,
+      "paragraph_count": 34,
+      "section_count": 12,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 89,
+      "authority_score": 27
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 40,
+      "word_count_points": 50,
+      "keyword_bag_points": 24,
+      "content_quality_points": 101,
+      "authority_points": 43,
+      "final_rank_score": 288,
+      "authority_graph_points": 16
+    },
+    "search_index": {
+      "normalized_title": "the bear market siege crypto moonboys wiki",
+      "tokens": [
+        "the",
+        "bear",
+        "market",
+        "siege",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "the",
+        "bear",
+        "market",
+        "siege",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "in",
+        "hodl",
+        "wars",
+        "prolonged",
+        "pressure",
+        "on",
+        "strongholds",
+        "silt",
+        "lantern",
+        "account",
+        "shared",
+        "work",
+        "and",
+        "endurance",
+        "without",
+        "promised",
+        "recovery",
+        "maela",
+        "rusk",
+        "brenn",
+        "tallow",
+        "warm",
+        "pot",
+        "dispute",
+        "seli",
+        "marr",
+        "borrowed",
+        "roof"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 4,
+      "outbound_count": 29,
+      "existing_outbound_count": 15,
+      "suggested_outbound_count": 14,
+      "authority": 15.5
+    },
+    "brand": null
+  },
+  {
     "title": "Calendar, Feasts and Days of Remembrance",
     "desc": "The decentralised calendar of remembrance, release, maintenance and common meals that grew around the First Witness.",
     "url": "/wiki/first-witness-calendar-feasts-remembrance.html",
@@ -14869,6 +15084,109 @@
       "existing_outbound_count": 10,
       "suggested_outbound_count": 12,
       "authority": 7
+    },
+    "brand": null
+  },
+  {
+    "title": "NGMI Chronicles",
+    "desc": "The NGMI Chronicles: HODL Wars cautionary records, disputed exclusion, the Unstruck Name and the work of correcting a story without erasing its subject.",
+    "url": "/wiki/ngmi-chronicles.html",
+    "tags": [
+      "ngmi",
+      "chronicles",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "ngmi chronicles crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 286,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 2316,
+      "keyword_bag_size": 24,
+      "heading_count": 15,
+      "list_count": 2,
+      "internal_link_count": 13,
+      "paragraph_count": 35,
+      "section_count": 12,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 89,
+      "authority_score": 23
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 50,
+      "keyword_bag_points": 24,
+      "content_quality_points": 97,
+      "authority_points": 50,
+      "final_rank_score": 286,
+      "authority_graph_points": 27
+    },
+    "search_index": {
+      "normalized_title": "ngmi chronicles crypto moonboys wiki",
+      "tokens": [
+        "ngmi",
+        "chronicles",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "ngmi",
+        "chronicles",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "the",
+        "hodl",
+        "wars",
+        "cautionary",
+        "records",
+        "disputed",
+        "exclusion",
+        "unstruck",
+        "name",
+        "and",
+        "work",
+        "of",
+        "correcting",
+        "a",
+        "story",
+        "without",
+        "erasing",
+        "its",
+        "subject",
+        "teren",
+        "moss",
+        "nessa",
+        "vale",
+        "third",
+        "copy",
+        "eris",
+        "tallow",
+        "wrong",
+        "ending"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 10,
+      "outbound_count": 26,
+      "existing_outbound_count": 13,
+      "suggested_outbound_count": 13,
+      "authority": 26.5
     },
     "brand": null
   },
@@ -15814,6 +16132,117 @@
     "brand": null
   },
   {
+    "title": "The FOMO Plague",
+    "desc": "The FOMO Plague in HODL Wars: locust-mask imagery, contagious urgency, the Green Bell account and the limits of promised immunity.",
+    "url": "/wiki/fomo-plague.html",
+    "tags": [
+      "fomo",
+      "plague",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "FOMO Plague — Crypto Moonboys Wiki"
+      },
+      {
+        "title": "fomo plague"
+      }
+    ],
+    "rank_score": 285,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 2,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 2398,
+      "keyword_bag_size": 22,
+      "heading_count": 15,
+      "list_count": 2,
+      "internal_link_count": 14,
+      "paragraph_count": 34,
+      "section_count": 12,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 85,
+      "authority_score": 23
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 50,
+      "keyword_bag_points": 22,
+      "content_quality_points": 96,
+      "authority_points": 52,
+      "final_rank_score": 285,
+      "authority_graph_points": 29
+    },
+    "search_index": {
+      "normalized_title": "the fomo plague crypto moonboys wiki",
+      "tokens": [
+        "the",
+        "fomo",
+        "plague",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "the",
+        "fomo",
+        "plague",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "in",
+        "hodl",
+        "wars",
+        "locust",
+        "mask",
+        "imagery",
+        "contagious",
+        "urgency",
+        "green",
+        "bell",
+        "account",
+        "and",
+        "limits",
+        "of",
+        "promised",
+        "immunity",
+        "sava",
+        "pell",
+        "unmade",
+        "broadcast",
+        "olen",
+        "kest",
+        "two",
+        "queues",
+        "mara",
+        "brill",
+        "triple",
+        "crown",
+        "dip",
+        "hard",
+        "fork",
+        "shield"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 11,
+      "outbound_count": 29,
+      "existing_outbound_count": 14,
+      "suggested_outbound_count": 15,
+      "authority": 29
+    },
+    "brand": null
+  },
+  {
     "title": "How the Forty Practise the Same Covenant Differently",
     "desc": "Examples of how the same First Witness rituals change across different GK faction cultures.",
     "url": "/wiki/first-witness-faction-ritual-variations.html",
@@ -16077,6 +16506,109 @@
       "existing_outbound_count": 12,
       "suggested_outbound_count": 12,
       "authority": 14
+    },
+    "brand": null
+  },
+  {
+    "title": "Paper Hands",
+    "desc": "Paper Hands in HODL Wars: a contested accusation of failed resolve, the Folded Flag, accountable return and the difference between abandonment and release.",
+    "url": "/wiki/paper-hands.html",
+    "tags": [
+      "paper",
+      "hands",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "paper hands crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 284,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 2325,
+      "keyword_bag_size": 24,
+      "heading_count": 15,
+      "list_count": 2,
+      "internal_link_count": 15,
+      "paragraph_count": 35,
+      "section_count": 12,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 89,
+      "authority_score": 27
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 50,
+      "keyword_bag_points": 24,
+      "content_quality_points": 97,
+      "authority_points": 48,
+      "final_rank_score": 284,
+      "authority_graph_points": 21
+    },
+    "search_index": {
+      "normalized_title": "paper hands crypto moonboys wiki",
+      "tokens": [
+        "paper",
+        "hands",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "paper",
+        "hands",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "in",
+        "hodl",
+        "wars",
+        "a",
+        "contested",
+        "accusation",
+        "of",
+        "failed",
+        "resolve",
+        "the",
+        "folded",
+        "flag",
+        "accountable",
+        "return",
+        "and",
+        "difference",
+        "between",
+        "abandonment",
+        "release",
+        "rell",
+        "fen",
+        "juna",
+        "rill",
+        "without",
+        "banner",
+        "nella",
+        "voss",
+        "dry",
+        "sheet"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 7,
+      "outbound_count": 22,
+      "existing_outbound_count": 13,
+      "suggested_outbound_count": 9,
+      "authority": 20.5
     },
     "brand": null
   },
@@ -18944,6 +19476,115 @@
     "brand": null
   },
   {
+    "title": "The Great Dip",
+    "desc": "The Great Dip in HODL Wars: a sudden break in expectations, Whale Lord mythology, the Red Measure account and consequences beyond a promised recovery.",
+    "url": "/wiki/the-great-dip.html",
+    "tags": [
+      "great",
+      "dip",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "Great Dip — Crypto Moonboys Wiki"
+      },
+      {
+        "title": "Great Dip"
+      }
+    ],
+    "rank_score": 277,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 2,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 2394,
+      "keyword_bag_size": 24,
+      "heading_count": 15,
+      "list_count": 2,
+      "internal_link_count": 14,
+      "paragraph_count": 35,
+      "section_count": 12,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 89,
+      "authority_score": 23
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 50,
+      "keyword_bag_points": 24,
+      "content_quality_points": 100,
+      "authority_points": 38,
+      "final_rank_score": 277,
+      "authority_graph_points": 15
+    },
+    "search_index": {
+      "normalized_title": "the great dip crypto moonboys wiki",
+      "tokens": [
+        "the",
+        "great",
+        "dip",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "the",
+        "great",
+        "dip",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "in",
+        "hodl",
+        "wars",
+        "a",
+        "sudden",
+        "break",
+        "expectations",
+        "whale",
+        "lord",
+        "mythology",
+        "red",
+        "measure",
+        "account",
+        "and",
+        "consequences",
+        "beyond",
+        "promised",
+        "recovery",
+        "iven",
+        "quill",
+        "unpriced",
+        "basket",
+        "dessa",
+        "flint",
+        "seventh",
+        "step",
+        "kelm",
+        "orr",
+        "triple",
+        "crown"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 4,
+      "outbound_count": 30,
+      "existing_outbound_count": 14,
+      "suggested_outbound_count": 16,
+      "authority": 15
+    },
+    "brand": null
+  },
+  {
     "title": "Sister Halcyon",
     "desc": "Sister Halcyon leads the JPEG Bloodline at the First Merge: a living custody claim, sanctuary work and the unresolved Eternal Algorithm and Harmonic Seed.",
     "url": "/wiki/sister-halcyon.html",
@@ -19653,93 +20294,6 @@
       "existing_outbound_count": 4,
       "suggested_outbound_count": 59,
       "authority": 4
-    },
-    "brand": null
-  },
-  {
-    "title": "Diamond Hands",
-    "desc": "The sacred trait of holding crypto through all volatility. The mark of a true HODL Warrior.",
-    "url": "/wiki/diamond-hands.html",
-    "tags": [
-      "diamond",
-      "hands",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "characters",
-    "aliases": [
-      {
-        "title": "diamond hands crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 274,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "characters",
-      "category_priority": 8,
-      "has_description": true,
-      "article_word_count": 931,
-      "keyword_bag_size": 18,
-      "heading_count": 11,
-      "list_count": 2,
-      "internal_link_count": 22,
-      "paragraph_count": 14,
-      "section_count": 3,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 61,
-      "authority_score": 24
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 40,
-      "word_count_points": 47,
-      "keyword_bag_points": 18,
-      "content_quality_points": 69,
-      "authority_points": 70,
-      "final_rank_score": 274,
-      "authority_graph_points": 46
-    },
-    "search_index": {
-      "normalized_title": "diamond hands crypto moonboys wiki",
-      "tokens": [
-        "diamond",
-        "hands",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "diamond",
-        "hands",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "the",
-        "sacred",
-        "trait",
-        "of",
-        "holding",
-        "through",
-        "all",
-        "volatility",
-        "mark",
-        "a",
-        "true",
-        "hodl",
-        "warrior"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 19,
-      "outbound_count": 30,
-      "existing_outbound_count": 15,
-      "suggested_outbound_count": 15,
-      "authority": 45.5
     },
     "brand": null
   },
@@ -25590,102 +26144,6 @@
     "brand": null
   },
   {
-    "title": "The FOMO Plague",
-    "desc": "The epidemic of Fear Of Missing Out that spreads through social media and turns rational traders into panic buyers.",
-    "url": "/wiki/fomo-plague.html",
-    "tags": [
-      "fomo",
-      "plague",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "FOMO Plague — Crypto Moonboys Wiki"
-      },
-      {
-        "title": "fomo plague"
-      }
-    ],
-    "rank_score": 259,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 2,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 824,
-      "keyword_bag_size": 23,
-      "heading_count": 10,
-      "list_count": 3,
-      "internal_link_count": 20,
-      "paragraph_count": 10,
-      "section_count": 3,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 63,
-      "authority_score": 24
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 41,
-      "keyword_bag_points": 23,
-      "content_quality_points": 74,
-      "authority_points": 56,
-      "final_rank_score": 259,
-      "authority_graph_points": 32
-    },
-    "search_index": {
-      "normalized_title": "the fomo plague crypto moonboys wiki",
-      "tokens": [
-        "the",
-        "fomo",
-        "plague",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "the",
-        "fomo",
-        "plague",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "epidemic",
-        "of",
-        "fear",
-        "missing",
-        "out",
-        "that",
-        "spreads",
-        "through",
-        "social",
-        "media",
-        "and",
-        "turns",
-        "rational",
-        "traders",
-        "into",
-        "panic",
-        "buyers"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 12,
-      "outbound_count": 18,
-      "existing_outbound_count": 16,
-      "suggested_outbound_count": 2,
-      "authority": 32
-    },
-    "brand": null
-  },
-  {
     "title": "Tokenomics",
     "desc": "Tokenomics — the economic model of a cryptocurrency token including supply, distribution, utility and incentives — Crypto Moonboys Wiki",
     "url": "/wiki/tokenomics.html",
@@ -26744,184 +27202,6 @@
     "brand": null
   },
   {
-    "title": "The Bear Market Siege",
-    "desc": "The prolonged dark chapter of the HODL Wars — extended market downtrends where Diamond Hands warriors are tested.",
-    "url": "/wiki/bear-market-siege.html",
-    "tags": [
-      "bear",
-      "market",
-      "siege",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "characters",
-    "aliases": [
-      {
-        "title": "Bear Market Siege — Crypto Moonboys Wiki"
-      },
-      {
-        "title": "bear market siege"
-      }
-    ],
-    "rank_score": 253,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 2,
-      "tag_count": 6,
-      "mention_count": 0,
-      "category": "characters",
-      "category_priority": 8,
-      "has_description": true,
-      "article_word_count": 876,
-      "keyword_bag_size": 21,
-      "heading_count": 10,
-      "list_count": 3,
-      "internal_link_count": 23,
-      "paragraph_count": 14,
-      "section_count": 3,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 63,
-      "authority_score": 24
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 40,
-      "word_count_points": 44,
-      "keyword_bag_points": 21,
-      "content_quality_points": 75,
-      "authority_points": 43,
-      "final_rank_score": 253,
-      "authority_graph_points": 19
-    },
-    "search_index": {
-      "normalized_title": "the bear market siege crypto moonboys wiki",
-      "tokens": [
-        "the",
-        "bear",
-        "market",
-        "siege",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "the",
-        "bear",
-        "market",
-        "siege",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "prolonged",
-        "dark",
-        "chapter",
-        "of",
-        "hodl",
-        "wars",
-        "extended",
-        "downtrends",
-        "where",
-        "diamond",
-        "hands",
-        "warriors",
-        "are",
-        "tested"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 5,
-      "outbound_count": 26,
-      "existing_outbound_count": 18,
-      "suggested_outbound_count": 8,
-      "authority": 19
-    },
-    "brand": null
-  },
-  {
-    "title": "Altcoins",
-    "desc": "Altcoins — all cryptocurrencies beyond Bitcoin including Ethereum, Solana, Cardano and thousands more — Crypto Moonboys Wiki",
-    "url": "/wiki/altcoins.html",
-    "tags": [
-      "altcoins",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "tokens",
-    "aliases": [
-      {
-        "title": "altcoins crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 252,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 4,
-      "mention_count": 0,
-      "category": "tokens",
-      "category_priority": 6,
-      "has_description": true,
-      "article_word_count": 1259,
-      "keyword_bag_size": 15,
-      "heading_count": 17,
-      "list_count": 4,
-      "internal_link_count": 25,
-      "paragraph_count": 11,
-      "section_count": 3,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 67,
-      "authority_score": 27
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 30,
-      "word_count_points": 50,
-      "keyword_bag_points": 15,
-      "content_quality_points": 74,
-      "authority_points": 53,
-      "final_rank_score": 252,
-      "authority_graph_points": 26
-    },
-    "search_index": {
-      "normalized_title": "altcoins crypto moonboys wiki",
-      "tokens": [
-        "altcoins",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "altcoins",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "all",
-        "cryptocurrencies",
-        "beyond",
-        "bitcoin",
-        "including",
-        "ethereum",
-        "solana",
-        "cardano",
-        "and",
-        "thousands",
-        "more"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 9,
-      "outbound_count": 36,
-      "existing_outbound_count": 16,
-      "suggested_outbound_count": 20,
-      "authority": 26
-    },
-    "brand": null
-  },
-  {
     "title": "DeFi Mining",
     "desc": "Crypto Moonboys wiki guide to DeFi Mining, a WAX blockchain mining-simulation project with NFT rigs, DMT rewards, staking and DePIN-style mechanics.",
     "url": "/wiki/defi-mining.html",
@@ -27101,93 +27381,6 @@
       "existing_outbound_count": 11,
       "suggested_outbound_count": 11,
       "authority": 11.5
-    },
-    "brand": null
-  },
-  {
-    "title": "Moon Mission",
-    "desc": "The ultimate quest of HODL Warriors — the prophesied journey to infinite gains. When Lambo?",
-    "url": "/wiki/moon-mission.html",
-    "tags": [
-      "moon",
-      "mission",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "moon mission crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 251,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 923,
-      "keyword_bag_size": 18,
-      "heading_count": 11,
-      "list_count": 2,
-      "internal_link_count": 23,
-      "paragraph_count": 15,
-      "section_count": 3,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 61,
-      "authority_score": 24
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 46,
-      "keyword_bag_points": 18,
-      "content_quality_points": 69,
-      "authority_points": 53,
-      "final_rank_score": 251,
-      "authority_graph_points": 29
-    },
-    "search_index": {
-      "normalized_title": "moon mission crypto moonboys wiki",
-      "tokens": [
-        "moon",
-        "mission",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "moon",
-        "mission",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "the",
-        "ultimate",
-        "quest",
-        "of",
-        "hodl",
-        "warriors",
-        "prophesied",
-        "journey",
-        "to",
-        "infinite",
-        "gains",
-        "when",
-        "lambo"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 10,
-      "outbound_count": 34,
-      "existing_outbound_count": 17,
-      "suggested_outbound_count": 17,
-      "authority": 28.5
     },
     "brand": null
   },
@@ -27485,94 +27678,6 @@
     "brand": null
   },
   {
-    "title": "Rug Pull Wars",
-    "desc": "The treacherous chapter of the HODL Wars where dev teams abandon projects and flee with investor funds.",
-    "url": "/wiki/rug-pull-wars.html",
-    "tags": [
-      "rug",
-      "pull",
-      "wars",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [],
-    "rank_score": 250,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 0,
-      "tag_count": 6,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 917,
-      "keyword_bag_size": 21,
-      "heading_count": 11,
-      "list_count": 4,
-      "internal_link_count": 19,
-      "paragraph_count": 11,
-      "section_count": 3,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 63,
-      "authority_score": 24
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 46,
-      "keyword_bag_points": 21,
-      "content_quality_points": 69,
-      "authority_points": 49,
-      "final_rank_score": 250,
-      "authority_graph_points": 25
-    },
-    "search_index": {
-      "normalized_title": "rug pull wars crypto moonboys wiki",
-      "tokens": [
-        "rug",
-        "pull",
-        "wars",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "rug",
-        "pull",
-        "wars",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "the",
-        "treacherous",
-        "chapter",
-        "of",
-        "hodl",
-        "where",
-        "dev",
-        "teams",
-        "abandon",
-        "projects",
-        "and",
-        "flee",
-        "with",
-        "investor",
-        "funds"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 9,
-      "outbound_count": 20,
-      "existing_outbound_count": 14,
-      "suggested_outbound_count": 6,
-      "authority": 25
-    },
-    "brand": null
-  },
-  {
     "title": "Graffiti Queens in Decentraland",
     "desc": "Graffiti Queens in Decentraland stands as a transformative cultural milestone in the Crypto Moonboys universe, marking the largest all-female NFT exhibition eve",
     "url": "/wiki/graffiti-queens-in-decentraland.html",
@@ -27752,6 +27857,88 @@
       "existing_outbound_count": 9,
       "suggested_outbound_count": 7,
       "authority": 4.5
+    },
+    "brand": null
+  },
+  {
+    "title": "Altcoins",
+    "desc": "Altcoins — all cryptocurrencies beyond Bitcoin including Ethereum, Solana, Cardano and thousands more — Crypto Moonboys Wiki",
+    "url": "/wiki/altcoins.html",
+    "tags": [
+      "altcoins",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "tokens",
+    "aliases": [
+      {
+        "title": "altcoins crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 248,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 4,
+      "mention_count": 0,
+      "category": "tokens",
+      "category_priority": 6,
+      "has_description": true,
+      "article_word_count": 1259,
+      "keyword_bag_size": 15,
+      "heading_count": 17,
+      "list_count": 4,
+      "internal_link_count": 25,
+      "paragraph_count": 11,
+      "section_count": 3,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 67,
+      "authority_score": 27
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 30,
+      "word_count_points": 50,
+      "keyword_bag_points": 15,
+      "content_quality_points": 74,
+      "authority_points": 49,
+      "final_rank_score": 248,
+      "authority_graph_points": 22
+    },
+    "search_index": {
+      "normalized_title": "altcoins crypto moonboys wiki",
+      "tokens": [
+        "altcoins",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "altcoins",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "all",
+        "cryptocurrencies",
+        "beyond",
+        "bitcoin",
+        "including",
+        "ethereum",
+        "solana",
+        "cardano",
+        "and",
+        "thousands",
+        "more"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 7,
+      "outbound_count": 36,
+      "existing_outbound_count": 16,
+      "suggested_outbound_count": 20,
+      "authority": 22
     },
     "brand": null
   },
@@ -28297,98 +28484,6 @@
     "brand": null
   },
   {
-    "title": "The Great Dip",
-    "desc": "The recurring cataclysm of the HODL Wars — sudden market crashes that test the mettle of every warrior.",
-    "url": "/wiki/the-great-dip.html",
-    "tags": [
-      "great",
-      "dip",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "Great Dip — Crypto Moonboys Wiki"
-      },
-      {
-        "title": "Great Dip"
-      }
-    ],
-    "rank_score": 247,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 2,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 946,
-      "keyword_bag_size": 19,
-      "heading_count": 10,
-      "list_count": 3,
-      "internal_link_count": 26,
-      "paragraph_count": 10,
-      "section_count": 3,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 63,
-      "authority_score": 24
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 47,
-      "keyword_bag_points": 19,
-      "content_quality_points": 74,
-      "authority_points": 42,
-      "final_rank_score": 247,
-      "authority_graph_points": 18
-    },
-    "search_index": {
-      "normalized_title": "the great dip crypto moonboys wiki",
-      "tokens": [
-        "the",
-        "great",
-        "dip",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "the",
-        "great",
-        "dip",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "recurring",
-        "cataclysm",
-        "of",
-        "hodl",
-        "wars",
-        "sudden",
-        "market",
-        "crashes",
-        "that",
-        "test",
-        "mettle",
-        "every",
-        "warrior"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 4,
-      "outbound_count": 26,
-      "existing_outbound_count": 19,
-      "suggested_outbound_count": 7,
-      "authority": 17.5
-    },
-    "brand": null
-  },
-  {
     "title": "Dream Sovereign",
     "desc": "The Dream Sovereign in Crypto Moonboys fiction: the Child of the Shard nightmare, contested origin stories, and the difference between a vision and settled history.",
     "url": "/wiki/dream-sovereign.html",
@@ -28690,94 +28785,6 @@
     "brand": null
   },
   {
-    "title": "Paper Hands",
-    "desc": "The weakness of selling too early under pressure. The opposite of Diamond Hands in the HODL Wars lore.",
-    "url": "/wiki/paper-hands.html",
-    "tags": [
-      "paper",
-      "hands",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "paper hands crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 246,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 846,
-      "keyword_bag_size": 19,
-      "heading_count": 10,
-      "list_count": 3,
-      "internal_link_count": 21,
-      "paragraph_count": 11,
-      "section_count": 3,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 63,
-      "authority_score": 24
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 42,
-      "keyword_bag_points": 19,
-      "content_quality_points": 71,
-      "authority_points": 49,
-      "final_rank_score": 246,
-      "authority_graph_points": 25
-    },
-    "search_index": {
-      "normalized_title": "paper hands crypto moonboys wiki",
-      "tokens": [
-        "paper",
-        "hands",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "paper",
-        "hands",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "the",
-        "weakness",
-        "of",
-        "selling",
-        "too",
-        "early",
-        "under",
-        "pressure",
-        "opposite",
-        "diamond",
-        "in",
-        "hodl",
-        "wars",
-        "lore"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 9,
-      "outbound_count": 20,
-      "existing_outbound_count": 14,
-      "suggested_outbound_count": 6,
-      "authority": 25
-    },
-    "brand": null
-  },
-  {
     "title": "Maidstone Base",
     "desc": "Maidstone Base as a present-day Kent working association and a disputed place-memory in later Crypto Moonboys lore.",
     "url": "/wiki/maidstone-base.html",
@@ -28972,6 +28979,93 @@
       "existing_outbound_count": 11,
       "suggested_outbound_count": 19,
       "authority": 11.5
+    },
+    "brand": null
+  },
+  {
+    "title": "Moon Mission",
+    "desc": "The ultimate quest of HODL Warriors — the prophesied journey to infinite gains. When Lambo?",
+    "url": "/wiki/moon-mission.html",
+    "tags": [
+      "moon",
+      "mission",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "moon mission crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 245,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 923,
+      "keyword_bag_size": 18,
+      "heading_count": 11,
+      "list_count": 2,
+      "internal_link_count": 23,
+      "paragraph_count": 15,
+      "section_count": 3,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 61,
+      "authority_score": 24
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 46,
+      "keyword_bag_points": 18,
+      "content_quality_points": 69,
+      "authority_points": 47,
+      "final_rank_score": 245,
+      "authority_graph_points": 23
+    },
+    "search_index": {
+      "normalized_title": "moon mission crypto moonboys wiki",
+      "tokens": [
+        "moon",
+        "mission",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "moon",
+        "mission",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "the",
+        "ultimate",
+        "quest",
+        "of",
+        "hodl",
+        "warriors",
+        "prophesied",
+        "journey",
+        "to",
+        "infinite",
+        "gains",
+        "when",
+        "lambo"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 7,
+      "outbound_count": 34,
+      "existing_outbound_count": 17,
+      "suggested_outbound_count": 17,
+      "authority": 22.5
     },
     "brand": null
   },
@@ -29349,188 +29443,6 @@
     "brand": null
   },
   {
-    "title": "NGMI Chronicles",
-    "desc": "The cautionary records of those who fell in the HODL Wars. Not Gonna Make It.",
-    "url": "/wiki/ngmi-chronicles.html",
-    "tags": [
-      "ngmi",
-      "chronicles",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "ngmi chronicles crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 244,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 908,
-      "keyword_bag_size": 19,
-      "heading_count": 10,
-      "list_count": 3,
-      "internal_link_count": 22,
-      "paragraph_count": 11,
-      "section_count": 3,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 58,
-      "authority_score": 24
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 45,
-      "keyword_bag_points": 19,
-      "content_quality_points": 66,
-      "authority_points": 49,
-      "final_rank_score": 244,
-      "authority_graph_points": 25
-    },
-    "search_index": {
-      "normalized_title": "ngmi chronicles crypto moonboys wiki",
-      "tokens": [
-        "ngmi",
-        "chronicles",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "ngmi",
-        "chronicles",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "the",
-        "cautionary",
-        "records",
-        "of",
-        "those",
-        "who",
-        "fell",
-        "in",
-        "hodl",
-        "wars",
-        "not",
-        "gonna",
-        "make",
-        "it"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 9,
-      "outbound_count": 23,
-      "existing_outbound_count": 14,
-      "suggested_outbound_count": 9,
-      "authority": 25
-    },
-    "brand": null
-  },
-  {
-    "title": "The Whale Lords",
-    "desc": "The powerful market-moving entities holding thousands of BTC/ETH who shape the HODL Wars from above.",
-    "url": "/wiki/whale-lords.html",
-    "tags": [
-      "whale",
-      "lords",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "Whale Lords — Crypto Moonboys Wiki"
-      },
-      {
-        "title": "whale lords"
-      }
-    ],
-    "rank_score": 244,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 2,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 868,
-      "keyword_bag_size": 21,
-      "heading_count": 11,
-      "list_count": 2,
-      "internal_link_count": 20,
-      "paragraph_count": 13,
-      "section_count": 3,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 61,
-      "authority_score": 24
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 43,
-      "keyword_bag_points": 21,
-      "content_quality_points": 72,
-      "authority_points": 43,
-      "final_rank_score": 244,
-      "authority_graph_points": 19
-    },
-    "search_index": {
-      "normalized_title": "the whale lords crypto moonboys wiki",
-      "tokens": [
-        "the",
-        "whale",
-        "lords",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "the",
-        "whale",
-        "lords",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "powerful",
-        "market",
-        "moving",
-        "entities",
-        "holding",
-        "thousands",
-        "of",
-        "btc",
-        "eth",
-        "who",
-        "shape",
-        "hodl",
-        "wars",
-        "from",
-        "above"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 5,
-      "outbound_count": 23,
-      "existing_outbound_count": 17,
-      "suggested_outbound_count": 6,
-      "authority": 18.5
-    },
-    "brand": null
-  },
-  {
     "title": "SNEAKAR",
     "desc": "SNEAKAR in the Crypto Moonboys reference: archived creative associations, wearable art, and the fictional Walking Billboard Effect, Neon Hack and Phantom Stride traditions.",
     "url": "/wiki/sneakar.html",
@@ -29631,6 +29543,94 @@
       "existing_outbound_count": 9,
       "suggested_outbound_count": 17,
       "authority": 4.5
+    },
+    "brand": null
+  },
+  {
+    "title": "Rug Pull Wars",
+    "desc": "The treacherous chapter of the HODL Wars where dev teams abandon projects and flee with investor funds.",
+    "url": "/wiki/rug-pull-wars.html",
+    "tags": [
+      "rug",
+      "pull",
+      "wars",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [],
+    "rank_score": 242,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 6,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 917,
+      "keyword_bag_size": 21,
+      "heading_count": 11,
+      "list_count": 4,
+      "internal_link_count": 19,
+      "paragraph_count": 11,
+      "section_count": 3,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 63,
+      "authority_score": 24
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 46,
+      "keyword_bag_points": 21,
+      "content_quality_points": 69,
+      "authority_points": 41,
+      "final_rank_score": 242,
+      "authority_graph_points": 17
+    },
+    "search_index": {
+      "normalized_title": "rug pull wars crypto moonboys wiki",
+      "tokens": [
+        "rug",
+        "pull",
+        "wars",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "rug",
+        "pull",
+        "wars",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "the",
+        "treacherous",
+        "chapter",
+        "of",
+        "hodl",
+        "where",
+        "dev",
+        "teams",
+        "abandon",
+        "projects",
+        "and",
+        "flee",
+        "with",
+        "investor",
+        "funds"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 5,
+      "outbound_count": 20,
+      "existing_outbound_count": 14,
+      "suggested_outbound_count": 6,
+      "authority": 17
     },
     "brand": null
   },
@@ -29993,6 +29993,100 @@
       "outbound_count": 17,
       "existing_outbound_count": 9,
       "suggested_outbound_count": 8,
+      "authority": 14.5
+    },
+    "brand": null
+  },
+  {
+    "title": "The Whale Lords",
+    "desc": "The powerful market-moving entities holding thousands of BTC/ETH who shape the HODL Wars from above.",
+    "url": "/wiki/whale-lords.html",
+    "tags": [
+      "whale",
+      "lords",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "Whale Lords — Crypto Moonboys Wiki"
+      },
+      {
+        "title": "whale lords"
+      }
+    ],
+    "rank_score": 240,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 2,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 868,
+      "keyword_bag_size": 21,
+      "heading_count": 11,
+      "list_count": 2,
+      "internal_link_count": 20,
+      "paragraph_count": 13,
+      "section_count": 3,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 61,
+      "authority_score": 24
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 43,
+      "keyword_bag_points": 21,
+      "content_quality_points": 72,
+      "authority_points": 39,
+      "final_rank_score": 240,
+      "authority_graph_points": 15
+    },
+    "search_index": {
+      "normalized_title": "the whale lords crypto moonboys wiki",
+      "tokens": [
+        "the",
+        "whale",
+        "lords",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "the",
+        "whale",
+        "lords",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "powerful",
+        "market",
+        "moving",
+        "entities",
+        "holding",
+        "thousands",
+        "of",
+        "btc",
+        "eth",
+        "who",
+        "shape",
+        "hodl",
+        "wars",
+        "from",
+        "above"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 3,
+      "outbound_count": 23,
+      "existing_outbound_count": 17,
+      "suggested_outbound_count": 6,
       "authority": 14.5
     },
     "brand": null
@@ -30545,96 +30639,6 @@
       "existing_outbound_count": 11,
       "suggested_outbound_count": 5,
       "authority": 9.5
-    },
-    "brand": null
-  },
-  {
-    "title": "The Satoshi Scroll",
-    "desc": "The mythologised sacred text of the HODL Wars — the Bitcoin Whitepaper elevated to legend.",
-    "url": "/wiki/satoshi-scroll.html",
-    "tags": [
-      "satoshi",
-      "scroll",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "Satoshi Scroll — Crypto Moonboys Wiki"
-      },
-      {
-        "title": "satoshi scroll"
-      }
-    ],
-    "rank_score": 239,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 2,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 807,
-      "keyword_bag_size": 17,
-      "heading_count": 10,
-      "list_count": 2,
-      "internal_link_count": 17,
-      "paragraph_count": 11,
-      "section_count": 3,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 61,
-      "authority_score": 24
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 40,
-      "keyword_bag_points": 17,
-      "content_quality_points": 72,
-      "authority_points": 45,
-      "final_rank_score": 239,
-      "authority_graph_points": 21
-    },
-    "search_index": {
-      "normalized_title": "the satoshi scroll crypto moonboys wiki",
-      "tokens": [
-        "the",
-        "satoshi",
-        "scroll",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "the",
-        "satoshi",
-        "scroll",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "mythologised",
-        "sacred",
-        "text",
-        "of",
-        "hodl",
-        "wars",
-        "bitcoin",
-        "whitepaper",
-        "elevated",
-        "to",
-        "legend"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 7,
-      "outbound_count": 52,
-      "existing_outbound_count": 14,
-      "suggested_outbound_count": 38,
-      "authority": 21
     },
     "brand": null
   },
@@ -31406,6 +31410,96 @@
       "existing_outbound_count": 12,
       "suggested_outbound_count": 36,
       "authority": 138
+    },
+    "brand": null
+  },
+  {
+    "title": "The Satoshi Scroll",
+    "desc": "The mythologised sacred text of the HODL Wars — the Bitcoin Whitepaper elevated to legend.",
+    "url": "/wiki/satoshi-scroll.html",
+    "tags": [
+      "satoshi",
+      "scroll",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "Satoshi Scroll — Crypto Moonboys Wiki"
+      },
+      {
+        "title": "satoshi scroll"
+      }
+    ],
+    "rank_score": 233,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 2,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 807,
+      "keyword_bag_size": 17,
+      "heading_count": 10,
+      "list_count": 2,
+      "internal_link_count": 17,
+      "paragraph_count": 11,
+      "section_count": 3,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 61,
+      "authority_score": 24
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 40,
+      "keyword_bag_points": 17,
+      "content_quality_points": 72,
+      "authority_points": 39,
+      "final_rank_score": 233,
+      "authority_graph_points": 15
+    },
+    "search_index": {
+      "normalized_title": "the satoshi scroll crypto moonboys wiki",
+      "tokens": [
+        "the",
+        "satoshi",
+        "scroll",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "the",
+        "satoshi",
+        "scroll",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "mythologised",
+        "sacred",
+        "text",
+        "of",
+        "hodl",
+        "wars",
+        "bitcoin",
+        "whitepaper",
+        "elevated",
+        "to",
+        "legend"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 4,
+      "outbound_count": 52,
+      "existing_outbound_count": 14,
+      "suggested_outbound_count": 38,
+      "authority": 15
     },
     "brand": null
   },
@@ -32232,93 +32326,6 @@
     "brand": null
   },
   {
-    "title": "The WAGMI Prophecy",
-    "desc": "The ultimate declaration of optimism in the HODL Wars — We",
-    "url": "/wiki/wagmi-prophecy.html",
-    "tags": [
-      "wagmi",
-      "prophecy",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "characters",
-    "aliases": [
-      {
-        "title": "WAGMI Prophecy — Crypto Moonboys Wiki"
-      },
-      {
-        "title": "wagmi prophecy"
-      }
-    ],
-    "rank_score": 230,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 2,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "characters",
-      "category_priority": 8,
-      "has_description": true,
-      "article_word_count": 880,
-      "keyword_bag_size": 14,
-      "heading_count": 11,
-      "list_count": 2,
-      "internal_link_count": 22,
-      "paragraph_count": 12,
-      "section_count": 3,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 52,
-      "authority_score": 24
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 40,
-      "word_count_points": 44,
-      "keyword_bag_points": 14,
-      "content_quality_points": 63,
-      "authority_points": 39,
-      "final_rank_score": 230,
-      "authority_graph_points": 15
-    },
-    "search_index": {
-      "normalized_title": "the wagmi prophecy crypto moonboys wiki",
-      "tokens": [
-        "the",
-        "wagmi",
-        "prophecy",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "the",
-        "wagmi",
-        "prophecy",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "ultimate",
-        "declaration",
-        "of",
-        "optimism",
-        "in",
-        "hodl",
-        "wars",
-        "we"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 3,
-      "outbound_count": 25,
-      "existing_outbound_count": 17,
-      "suggested_outbound_count": 8,
-      "authority": 14.5
-    },
-    "brand": null
-  },
-  {
     "title": "💊 BITCOIN KiD x SARAH PFLY INFINITE ⚡️⚡️⚡️",
     "desc": "💊 BITCOIN KiD x SARAH PFLY INFINITE ⚡️⚡️⚡️ is an NFT in the gkniftyheads WAX AtomicAssets collection.",
     "url": "/wiki/gkniftyheads-bitcoin-kid-x-sarah-pfly-infinite-776004.html",
@@ -32502,6 +32509,93 @@
       "existing_outbound_count": 11,
       "suggested_outbound_count": 13,
       "authority": 7.5
+    },
+    "brand": null
+  },
+  {
+    "title": "The WAGMI Prophecy",
+    "desc": "The ultimate declaration of optimism in the HODL Wars — We",
+    "url": "/wiki/wagmi-prophecy.html",
+    "tags": [
+      "wagmi",
+      "prophecy",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "characters",
+    "aliases": [
+      {
+        "title": "WAGMI Prophecy — Crypto Moonboys Wiki"
+      },
+      {
+        "title": "wagmi prophecy"
+      }
+    ],
+    "rank_score": 228,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 2,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "characters",
+      "category_priority": 8,
+      "has_description": true,
+      "article_word_count": 880,
+      "keyword_bag_size": 14,
+      "heading_count": 11,
+      "list_count": 2,
+      "internal_link_count": 22,
+      "paragraph_count": 12,
+      "section_count": 3,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 52,
+      "authority_score": 24
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 40,
+      "word_count_points": 44,
+      "keyword_bag_points": 14,
+      "content_quality_points": 63,
+      "authority_points": 37,
+      "final_rank_score": 228,
+      "authority_graph_points": 13
+    },
+    "search_index": {
+      "normalized_title": "the wagmi prophecy crypto moonboys wiki",
+      "tokens": [
+        "the",
+        "wagmi",
+        "prophecy",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "the",
+        "wagmi",
+        "prophecy",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "ultimate",
+        "declaration",
+        "of",
+        "optimism",
+        "in",
+        "hodl",
+        "wars",
+        "we"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 2,
+      "outbound_count": 25,
+      "existing_outbound_count": 17,
+      "suggested_outbound_count": 8,
+      "authority": 12.5
     },
     "brand": null
   },

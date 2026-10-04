@@ -337,7 +337,7 @@
   },
   "/wiki/altcoins.html": {
     "outbound_count": 36,
-    "inbound_count": 9,
+    "inbound_count": 7,
     "existing_outbound": [
       "/wiki/589-xrpl.html",
       "/wiki/666-xrpl.html",
@@ -381,12 +381,10 @@
     "inbound_from": [
       "/wiki/589-xrpl.html",
       "/wiki/666-xrpl.html",
-      "/wiki/bear-market-siege.html",
       "/wiki/bear-xrpl.html",
       "/wiki/ethereum-ecosystem.html",
       "/wiki/exchanges.html",
       "/wiki/memecoins.html",
-      "/wiki/the-great-dip.html",
       "/wiki/tokenomics.html"
     ]
   },
@@ -563,18 +561,16 @@
     "inbound_from": []
   },
   "/wiki/bear-market-siege.html": {
-    "outbound_count": 26,
-    "inbound_count": 5,
+    "outbound_count": 29,
+    "inbound_count": 4,
     "existing_outbound": [
-      "/wiki/altcoins.html",
       "/wiki/crypto-moonboys.html",
-      "/wiki/diamond-hands.html",
+      "/wiki/first-witness-book-7-the-hold.html",
+      "/wiki/first-witness-money-debt-honest-scales.html",
+      "/wiki/hodl-warriors.html",
       "/wiki/hodl-wars.html",
-      "/wiki/moon-mission.html",
-      "/wiki/ngmi-chronicles.html",
+      "/wiki/hodl-x-warriors.html",
       "/wiki/null-the-prophet.html",
-      "/wiki/paper-hands.html",
-      "/wiki/the-bear-market-siege.html",
       "/wiki/the-chain-scribes.html",
       "/wiki/the-finance-guild.html",
       "/wiki/the-great-dip.html",
@@ -582,22 +578,26 @@
       "/wiki/the-nice-easy-bois.html",
       "/wiki/the-princess.html",
       "/wiki/the-whitewasher.html",
-      "/wiki/thorne-the-architect.html",
-      "/wiki/whale-lords.html"
+      "/wiki/thorne-the-architect.html"
     ],
     "suggested_outbound": [
       "/wiki/bear-xrpl.html",
       "/wiki/block-topia.html",
+      "/wiki/first-witness-book-5-the-chain.html",
+      "/wiki/first-witness-book-6-the-fork.html",
       "/wiki/first-witness-hodl-doctrine.html",
+      "/wiki/first-witness-work-craft-service.html",
       "/wiki/graffpunks.html",
-      "/wiki/hodl-warriors.html",
-      "/wiki/hodl-x-warriors.html",
       "/wiki/hodlmoonboys-nft-collection.html",
-      "/wiki/rug-pull-wars.html"
+      "/wiki/moon-mission.html",
+      "/wiki/rug-pull-wars.html",
+      "/wiki/sacred-chain.html",
+      "/wiki/the-first-witness.html",
+      "/wiki/the-nomad-bears.html",
+      "/wiki/whale-lords.html"
     ],
     "inbound_from": [
       "/wiki/bear-xrpl.html",
-      "/wiki/diamond-hands.html",
       "/wiki/the-great-dip.html",
       "/wiki/wagmi-prophecy.html",
       "/wiki/whale-lords.html"
@@ -2130,45 +2130,40 @@
     ]
   },
   "/wiki/diamond-hands.html": {
-    "outbound_count": 30,
-    "inbound_count": 19,
+    "outbound_count": 26,
+    "inbound_count": 17,
     "existing_outbound": [
-      "/wiki/bear-market-siege.html",
       "/wiki/bitcoin-kids.html",
       "/wiki/block-topia.html",
       "/wiki/burn-to-earn.html",
       "/wiki/crypto-moonboys.html",
-      "/wiki/fomo-plague.html",
+      "/wiki/first-witness-book-7-the-hold.html",
       "/wiki/graffpunks.html",
-      "/wiki/hodl-warriors.html",
-      "/wiki/hodl-wars.html",
       "/wiki/nbgx-token.html",
+      "/wiki/ngmi-chronicles.html",
       "/wiki/null-the-prophet.html",
       "/wiki/paper-hands.html",
-      "/wiki/punk-token.html",
-      "/wiki/satoshi-scroll.html",
-      "/wiki/the-great-dip.html"
+      "/wiki/punk-token.html"
     ],
     "suggested_outbound": [
-      "/wiki/first-witness-counterfeit-relics-fraud.html",
+      "/wiki/first-witness-book-4-the-wall.html",
+      "/wiki/first-witness-book-5-the-chain.html",
+      "/wiki/first-witness-book-6-the-fork.html",
       "/wiki/first-witness-hodl-doctrine.html",
-      "/wiki/first-witness-humour-satire-sacred-mockery.html",
-      "/wiki/first-witness-language-translation-sacred-words.html",
-      "/wiki/first-witness-libraries-architecture-archive-houses.html",
-      "/wiki/first-witness-sacred-fork.html",
-      "/wiki/first-witness-sacred-places-walls-pilgrimage.html",
-      "/wiki/first-witness-symbols-marks-sacred-design.html",
       "/wiki/grit.html",
+      "/wiki/hodl-warriors.html",
+      "/wiki/hodl-wars.html",
       "/wiki/hodl-x-warriors.html",
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/metropolis.html",
       "/wiki/nbg-token.html",
-      "/wiki/ngmi-chronicles.html",
-      "/wiki/sacred-chain.html"
+      "/wiki/rug-pull-wars.html",
+      "/wiki/satoshi-scroll.html",
+      "/wiki/the-first-witness.html",
+      "/wiki/whale-lords.html"
     ],
     "inbound_from": [
       "/wiki/altcoins.html",
-      "/wiki/bear-market-siege.html",
       "/wiki/bitcoin-graffpunks.html",
       "/wiki/bitcoin.html",
       "/wiki/fomo-plague.html",
@@ -2181,7 +2176,6 @@
       "/wiki/rug-pull-wars.html",
       "/wiki/satoshi-scroll.html",
       "/wiki/solana.html",
-      "/wiki/the-great-dip.html",
       "/wiki/tokenomics.html",
       "/wiki/wagmi-prophecy.html",
       "/wiki/wallets.html",
@@ -3768,7 +3762,7 @@
   },
   "/wiki/first-witness-book-7-the-hold.html": {
     "outbound_count": 67,
-    "inbound_count": 6,
+    "inbound_count": 11,
     "existing_outbound": [
       "/wiki/first-witness-book-6-the-fork.html",
       "/wiki/first-witness-book-8-the-fire.html",
@@ -3841,12 +3835,17 @@
       "/wiki/the-chain-scribes.html"
     ],
     "inbound_from": [
+      "/wiki/bear-market-siege.html",
+      "/wiki/diamond-hands.html",
       "/wiki/first-witness-book-6-the-fork.html",
       "/wiki/first-witness-book-8-the-fire.html",
       "/wiki/first-witness-life-readings.html",
       "/wiki/gkniftyheads.html",
       "/wiki/graffiti-kings.html",
-      "/wiki/the-first-witness.html"
+      "/wiki/ngmi-chronicles.html",
+      "/wiki/paper-hands.html",
+      "/wiki/the-first-witness.html",
+      "/wiki/the-great-dip.html"
     ]
   },
   "/wiki/first-witness-book-8-the-fire.html": {
@@ -6076,7 +6075,7 @@
   },
   "/wiki/first-witness-hodl-doctrine.html": {
     "outbound_count": 71,
-    "inbound_count": 7,
+    "inbound_count": 9,
     "existing_outbound": [
       "/wiki/first-witness-child-of-fire.html",
       "/wiki/first-witness-faction-commentaries.html",
@@ -6157,8 +6156,10 @@
       "/wiki/bitcoin-kid-army.html",
       "/wiki/first-witness-child-of-fire.html",
       "/wiki/first-witness-faction-commentaries.html",
+      "/wiki/fomo-plague.html",
       "/wiki/hodl-warriors.html",
       "/wiki/hodl-x-warriors.html",
+      "/wiki/paper-hands.html",
       "/wiki/the-first-witness.html"
     ]
   },
@@ -7291,7 +7292,7 @@
   },
   "/wiki/first-witness-money-debt-honest-scales.html": {
     "outbound_count": 66,
-    "inbound_count": 3,
+    "inbound_count": 5,
     "existing_outbound": [
       "/wiki/first-witness-concordance.html",
       "/wiki/first-witness-life-readings.html",
@@ -7363,9 +7364,11 @@
       "/wiki/waxp-exchange.html"
     ],
     "inbound_from": [
+      "/wiki/bear-market-siege.html",
       "/wiki/gang-signs.html",
       "/wiki/the-evm-punks.html",
-      "/wiki/the-first-witness.html"
+      "/wiki/the-first-witness.html",
+      "/wiki/the-great-dip.html"
     ]
   },
   "/wiki/first-witness-music-dance-performance.html": {
@@ -9206,20 +9209,18 @@
     ]
   },
   "/wiki/fomo-plague.html": {
-    "outbound_count": 18,
-    "inbound_count": 12,
+    "outbound_count": 29,
+    "inbound_count": 11,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
       "/wiki/diamond-hands.html",
-      "/wiki/hodl-wars.html",
+      "/wiki/first-witness-hodl-doctrine.html",
       "/wiki/ngmi-chronicles.html",
       "/wiki/null-the-prophet.html",
       "/wiki/paper-hands.html",
-      "/wiki/rug-pull-wars.html",
-      "/wiki/satoshi-scroll.html",
       "/wiki/the-chain-scribes.html",
       "/wiki/the-finance-guild.html",
-      "/wiki/the-fomo-plague.html",
+      "/wiki/the-great-dip.html",
       "/wiki/the-high-hats.html",
       "/wiki/the-nice-easy-bois.html",
       "/wiki/the-princess.html",
@@ -9228,10 +9229,22 @@
     ],
     "suggested_outbound": [
       "/wiki/block-topia.html",
-      "/wiki/graffpunks.html"
+      "/wiki/first-witness-book-6-the-fork.html",
+      "/wiki/first-witness-sacred-fork.html",
+      "/wiki/first-witness-triple-fork-chainfire.html",
+      "/wiki/graffpunks.html",
+      "/wiki/hard-fork-games.html",
+      "/wiki/hodl-warriors.html",
+      "/wiki/hodl-wars.html",
+      "/wiki/hodl-x-warriors.html",
+      "/wiki/hodlmoonboys-nft-collection.html",
+      "/wiki/rug-pull-wars.html",
+      "/wiki/the-first-witness.html",
+      "/wiki/the-hard-fork-rockers.html",
+      "/wiki/triple-fork-event.html",
+      "/wiki/whale-lords.html"
     ],
     "inbound_from": [
-      "/wiki/diamond-hands.html",
       "/wiki/ethereum-ecosystem.html",
       "/wiki/exchanges.html",
       "/wiki/memecoins.html",
@@ -18451,7 +18464,7 @@
   },
   "/wiki/hodl-warriors.html": {
     "outbound_count": 23,
-    "inbound_count": 33,
+    "inbound_count": 32,
     "existing_outbound": [
       "/wiki/bitcoin-kid-army.html",
       "/wiki/bitcoin-kids.html",
@@ -18480,6 +18493,7 @@
       "/wiki/the-first-witness.html"
     ],
     "inbound_from": [
+      "/wiki/bear-market-siege.html",
       "/wiki/bit-cap-5000.html",
       "/wiki/bitcoin-graffpunks.html",
       "/wiki/bitcoin-kid-army.html",
@@ -18488,7 +18502,6 @@
       "/wiki/bitcoin.html",
       "/wiki/block-node-defenders.html",
       "/wiki/crypto-moonboys.html",
-      "/wiki/diamond-hands.html",
       "/wiki/first-witness-source-register.html",
       "/wiki/forksplit.html",
       "/wiki/games-graffpunks.html",
@@ -18507,7 +18520,6 @@
       "/wiki/the-aztec-raiders.html",
       "/wiki/the-blockchain-furies.html",
       "/wiki/the-first-witness.html",
-      "/wiki/the-great-dip.html",
       "/wiki/the-hard-fork-rockers.html",
       "/wiki/the-tuskon-ogs.html",
       "/wiki/wagmi-prophecy.html",
@@ -18517,7 +18529,7 @@
   },
   "/wiki/hodl-wars.html": {
     "outbound_count": 34,
-    "inbound_count": 86,
+    "inbound_count": 83,
     "existing_outbound": [
       "/wiki/bitcoin-kids.html",
       "/wiki/bitcoin-x-kids.html",
@@ -18576,13 +18588,11 @@
       "/wiki/defi-mining.html",
       "/wiki/defi.html",
       "/wiki/delicious-again-pete.html",
-      "/wiki/diamond-hands.html",
       "/wiki/dream-sovereign.html",
       "/wiki/ethereum-ecosystem.html",
       "/wiki/ethereum.html",
       "/wiki/exchanges.html",
       "/wiki/exyboy.html",
-      "/wiki/fomo-plague.html",
       "/wiki/forkborn-collective.html",
       "/wiki/games4punks-telegram.html",
       "/wiki/gang-signs-card-game.html",
@@ -18633,7 +18643,6 @@
       "/wiki/street-kingdoms.html",
       "/wiki/tacoswap.html",
       "/wiki/tagzcoin.html",
-      "/wiki/the-great-dip.html",
       "/wiki/the-high-hats.html",
       "/wiki/the-nice-easy-bois.html",
       "/wiki/tokenomics.html",
@@ -18647,7 +18656,7 @@
   },
   "/wiki/hodl-x-warriors.html": {
     "outbound_count": 39,
-    "inbound_count": 9,
+    "inbound_count": 10,
     "existing_outbound": [
       "/wiki/bitcoin-x-kids.html",
       "/wiki/block-topia.html",
@@ -18692,6 +18701,7 @@
       "/wiki/triple-fork-event.html"
     ],
     "inbound_from": [
+      "/wiki/bear-market-siege.html",
       "/wiki/bit-cap-5000.html",
       "/wiki/bitcoin-x-kids.html",
       "/wiki/block-node-defenders.html",
@@ -19346,7 +19356,7 @@
   },
   "/wiki/moon-mission.html": {
     "outbound_count": 34,
-    "inbound_count": 10,
+    "inbound_count": 7,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
       "/wiki/diamond-hands.html",
@@ -19386,14 +19396,11 @@
       "/wiki/trevor-fung.html"
     ],
     "inbound_from": [
-      "/wiki/bear-market-siege.html",
       "/wiki/bitcoin-graffpunks.html",
       "/wiki/ethereum-ecosystem.html",
       "/wiki/nfts.html",
-      "/wiki/paper-hands.html",
       "/wiki/satoshi-scroll.html",
       "/wiki/solana.html",
-      "/wiki/the-great-dip.html",
       "/wiki/wagmi-prophecy.html",
       "/wiki/web3.html"
     ]
@@ -19705,11 +19712,12 @@
     ]
   },
   "/wiki/ngmi-chronicles.html": {
-    "outbound_count": 23,
-    "inbound_count": 9,
+    "outbound_count": 26,
+    "inbound_count": 10,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
       "/wiki/diamond-hands.html",
+      "/wiki/first-witness-book-7-the-hold.html",
       "/wiki/fomo-plague.html",
       "/wiki/games4punks-telegram.html",
       "/wiki/hard-fork-games.html",
@@ -19719,30 +19727,33 @@
       "/wiki/paper-hands.html",
       "/wiki/pmsl.html",
       "/wiki/rave-relics.html",
-      "/wiki/rug-pull-wars.html",
-      "/wiki/stikfamwars.html",
-      "/wiki/wagmi-prophecy.html"
+      "/wiki/stikfamwars.html"
     ],
     "suggested_outbound": [
       "/wiki/block-topia.html",
+      "/wiki/first-witness-apocrypha-disputed-passages.html",
       "/wiki/first-witness-concordance.html",
       "/wiki/first-witness-hodl-doctrine.html",
+      "/wiki/first-witness-work-craft-service.html",
       "/wiki/graffpunks.html",
       "/wiki/hodl-warriors.html",
       "/wiki/hodl-x-warriors.html",
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/jonny-laurence-nelson-tag-records.html",
+      "/wiki/rug-pull-wars.html",
+      "/wiki/the-first-witness.html",
       "/wiki/trevor-fung.html"
     ],
     "inbound_from": [
       "/wiki/altcoins.html",
-      "/wiki/bear-market-siege.html",
+      "/wiki/diamond-hands.html",
       "/wiki/fomo-plague.html",
       "/wiki/memecoins.html",
       "/wiki/moon-mission.html",
       "/wiki/nfts.html",
       "/wiki/paper-hands.html",
       "/wiki/rug-pull-wars.html",
+      "/wiki/the-great-dip.html",
       "/wiki/wagmi-prophecy.html"
     ]
   },
@@ -19972,41 +19983,41 @@
     ]
   },
   "/wiki/paper-hands.html": {
-    "outbound_count": 20,
-    "inbound_count": 9,
+    "outbound_count": 22,
+    "inbound_count": 7,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
       "/wiki/diamond-hands.html",
+      "/wiki/first-witness-book-7-the-hold.html",
+      "/wiki/first-witness-hodl-doctrine.html",
       "/wiki/fomo-plague.html",
       "/wiki/games4punks-telegram.html",
       "/wiki/hard-fork-games.html",
       "/wiki/hodl-wars.html",
       "/wiki/midevilpunks.html",
-      "/wiki/moon-mission.html",
       "/wiki/ngmi-chronicles.html",
       "/wiki/pmsl.html",
       "/wiki/rave-relics.html",
-      "/wiki/rug-pull-wars.html",
-      "/wiki/satoshi-scroll.html",
       "/wiki/stikfamwars.html"
     ],
     "suggested_outbound": [
-      "/wiki/first-witness-hodl-doctrine.html",
+      "/wiki/first-witness-prisons-punishment-return.html",
       "/wiki/graffpunks.html",
       "/wiki/hodl-warriors.html",
       "/wiki/hodl-x-warriors.html",
       "/wiki/hodlmoonboys-nft-collection.html",
-      "/wiki/trevor-fung.html"
+      "/wiki/rug-pull-wars.html",
+      "/wiki/the-first-witness.html",
+      "/wiki/trevor-fung.html",
+      "/wiki/whale-lords.html"
     ],
     "inbound_from": [
       "/wiki/altcoins.html",
-      "/wiki/bear-market-siege.html",
       "/wiki/diamond-hands.html",
       "/wiki/ethereum-ecosystem.html",
       "/wiki/fomo-plague.html",
       "/wiki/moon-mission.html",
       "/wiki/ngmi-chronicles.html",
-      "/wiki/the-great-dip.html",
       "/wiki/whale-lords.html"
     ]
   },
@@ -20660,7 +20671,7 @@
   },
   "/wiki/rug-pull-wars.html": {
     "outbound_count": 20,
-    "inbound_count": 9,
+    "inbound_count": 5,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
       "/wiki/diamond-hands.html",
@@ -20688,12 +20699,8 @@
     "inbound_from": [
       "/wiki/defi.html",
       "/wiki/ethereum-ecosystem.html",
-      "/wiki/fomo-plague.html",
       "/wiki/memecoins.html",
       "/wiki/moon-mission.html",
-      "/wiki/ngmi-chronicles.html",
-      "/wiki/paper-hands.html",
-      "/wiki/the-great-dip.html",
       "/wiki/tokenomics.html"
     ]
   },
@@ -20981,7 +20988,7 @@
   },
   "/wiki/satoshi-scroll.html": {
     "outbound_count": 52,
-    "inbound_count": 7,
+    "inbound_count": 4,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
       "/wiki/diamond-hands.html",
@@ -21040,10 +21047,7 @@
     ],
     "inbound_from": [
       "/wiki/bitcoin.html",
-      "/wiki/diamond-hands.html",
-      "/wiki/fomo-plague.html",
       "/wiki/moon-mission.html",
-      "/wiki/paper-hands.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/wagmi-prophecy.html"
     ]
@@ -22596,42 +22600,46 @@
     ]
   },
   "/wiki/the-great-dip.html": {
-    "outbound_count": 26,
+    "outbound_count": 30,
     "inbound_count": 4,
     "existing_outbound": [
-      "/wiki/altcoins.html",
       "/wiki/bear-market-siege.html",
       "/wiki/crypto-moonboys.html",
-      "/wiki/diamond-hands.html",
+      "/wiki/first-witness-book-7-the-hold.html",
+      "/wiki/first-witness-money-debt-honest-scales.html",
       "/wiki/fomo-plague.html",
-      "/wiki/hodl-warriors.html",
-      "/wiki/hodl-wars.html",
-      "/wiki/moon-mission.html",
+      "/wiki/ngmi-chronicles.html",
       "/wiki/null-the-prophet.html",
-      "/wiki/paper-hands.html",
-      "/wiki/rug-pull-wars.html",
       "/wiki/the-chain-scribes.html",
       "/wiki/the-finance-guild.html",
       "/wiki/the-high-hats.html",
       "/wiki/the-nice-easy-bois.html",
       "/wiki/the-princess.html",
       "/wiki/the-whitewasher.html",
-      "/wiki/thorne-the-architect.html",
-      "/wiki/whale-lords.html"
+      "/wiki/thorne-the-architect.html"
     ],
     "suggested_outbound": [
       "/wiki/block-topia.html",
+      "/wiki/diamond-hands.html",
       "/wiki/first-witness-great-concord-2030.html",
       "/wiki/first-witness-hodl-doctrine.html",
-      "/wiki/gkniftyheads-mr-cheo-test-press-776099.html",
+      "/wiki/first-witness-triple-fork-chainfire.html",
+      "/wiki/gkniftyheads-darknet-lord-784276.html",
       "/wiki/graffpunks.html",
+      "/wiki/hodl-warriors.html",
+      "/wiki/hodl-wars.html",
       "/wiki/hodl-x-warriors.html",
-      "/wiki/hodlmoonboys-nft-collection.html"
+      "/wiki/hodlmoonboys-nft-collection.html",
+      "/wiki/paper-hands.html",
+      "/wiki/rug-pull-wars.html",
+      "/wiki/the-first-witness.html",
+      "/wiki/triple-fork-event.html",
+      "/wiki/whale-lords.html"
     ],
     "inbound_from": [
       "/wiki/bear-market-siege.html",
-      "/wiki/diamond-hands.html",
       "/wiki/ethereum-ecosystem.html",
+      "/wiki/fomo-plague.html",
       "/wiki/whale-lords.html"
     ]
   },
@@ -23628,7 +23636,7 @@
   },
   "/wiki/wagmi-prophecy.html": {
     "outbound_count": 25,
-    "inbound_count": 3,
+    "inbound_count": 2,
     "existing_outbound": [
       "/wiki/bear-market-siege.html",
       "/wiki/crypto-moonboys.html",
@@ -23660,7 +23668,6 @@
     ],
     "inbound_from": [
       "/wiki/moon-mission.html",
-      "/wiki/ngmi-chronicles.html",
       "/wiki/web3.html"
     ]
   },
@@ -24029,7 +24036,7 @@
   },
   "/wiki/whale-lords.html": {
     "outbound_count": 23,
-    "inbound_count": 5,
+    "inbound_count": 3,
     "existing_outbound": [
       "/wiki/bear-market-siege.html",
       "/wiki/crypto-moonboys.html",
@@ -24058,10 +24065,8 @@
       "/wiki/rug-pull-wars.html"
     ],
     "inbound_from": [
-      "/wiki/bear-market-siege.html",
       "/wiki/defi.html",
       "/wiki/exchanges.html",
-      "/wiki/the-great-dip.html",
       "/wiki/tokenomics.html"
     ]
   },
