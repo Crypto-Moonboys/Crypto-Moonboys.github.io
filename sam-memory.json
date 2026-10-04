@@ -8646,8 +8646,7 @@
     "hodl_warriors": {
       "alias_candidates": [],
       "aliases": [
-        "hodl warriors crypto moonboys wiki",
-        "Hodl X Warriors"
+        "hodl warriors crypto moonboys wiki"
       ],
       "canonical_title": "HODL Warriors",
       "canonical_url": "/wiki/hodl-warriors.html",
@@ -8672,7 +8671,7 @@
       ],
       "canonical_title": "HODL WARS",
       "canonical_url": "/wiki/hodl-wars.html",
-      "category": "factions",
+      "category": "core",
       "source_urls": [
         "/wiki/hodl-wars.html"
       ],
@@ -8687,9 +8686,7 @@
     },
     "hodl_x_warriors": {
       "alias_candidates": [],
-      "aliases": [
-        "hodl warriors crypto moonboys wiki"
-      ],
+      "aliases": [],
       "canonical_title": "HODL X Warriors",
       "canonical_url": "/wiki/hodl-x-warriors.html",
       "category": "characters",
@@ -10034,10 +10031,12 @@
     },
     "the_bitcoin_kid_army": {
       "alias_candidates": [],
-      "aliases": [],
-      "canonical_title": "The Bitcoin Kid Army",
+      "aliases": [
+        "the bitcoin kid army"
+      ],
+      "canonical_title": "Bitcoin Kid Army — Escape Accounts",
       "canonical_url": "/wiki/the-bitcoin-kid-army.html",
-      "category": "factions",
+      "category": "core",
       "source_urls": [
         "/wiki/the-bitcoin-kid-army.html"
       ],
@@ -11055,5 +11054,5 @@
       ]
     }
   },
-  "updated_at": "2026-10-03T21:12:35Z"
+  "updated_at": "2026-10-04T08:25:50Z"
 }
