@@ -50,6 +50,9 @@ test('retired W81 evidence remains traceable without a live ZIP or public downlo
 
   const manifest = buildWikiAudit();
   assert.equal(manifest.canon_hierarchy.find(source => source.rank === 5).path, ledgerPath);
+  const hierarchyLine = renderRewriteAudit(manifest).split('\n').find(line => line.startsWith('- Canon hierarchy:'));
+  assert.ok(hierarchyLine.includes(manifest.canon_hierarchy.find(source => source.rank === 5).label), 'rendered and machine-readable hierarchy labels must agree');
+  assert.ok(!hierarchyLine.includes('; raw W81 archive;'), 'the generated report must not advertise the retired binary as a current source');
   for (const page of manifest.pages) {
     assert.ok((page.likely_source_family || []).every(source => !source.includes('about/w81.zip')), `${page.slug}: source inventory still depends on the ZIP`);
   }

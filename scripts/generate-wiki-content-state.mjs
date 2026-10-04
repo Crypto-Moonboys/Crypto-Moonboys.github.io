@@ -54,6 +54,7 @@ const MANIFEST_PATH = path.join(ROOT, 'brand-canon', 'wiki-content-state.json');
 const REPORT_PATH = path.join(ROOT, 'brand-canon', 'wiki-rewrite-audit.md');
 const ABSENT_STUBS_PATH = path.join(ROOT, 'brand-canon', 'wiki-absent-stubs.json');
 const W81_PROVENANCE_LEDGER = 'brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md';
+const W81_PROVENANCE_LABEL = 'Retired W81 archive provenance and migration ledger';
 export const MAX_STUB_ARTICLE_WORDS = 250;
 
 const REWRITE_STATUSES = Object.freeze([
@@ -1156,7 +1157,7 @@ export function buildWikiAudit() {
         status: 'not_identified_in_checkout',
         audit_note: 'Referenced by the First Witness source register/build plan but no separately identifiable modern bible files are present in this checkout. Existing wiki/bibles JSON is not promoted into this tier.',
       },
-      sourceDescriptor(5, 'Retired W81 archive provenance and migration ledger', W81_PROVENANCE_LEDGER),
+      sourceDescriptor(5, W81_PROVENANCE_LABEL, W81_PROVENANCE_LEDGER),
       { rank: 6, label: 'Existing wiki pages', path: 'wiki/*.html', treatment: 'surviving public archive; not automatically current truth' },
     ],
     supplemental_legacy_sources: [{
@@ -1213,7 +1214,7 @@ export function renderRewriteAudit(manifest) {
     '',
     `- Scope: all ${summary.total_pages_audited} top-level \`wiki/*.html\` pages.`,
     `- Absent-stub authorizations: ${summary.absent_stub_authorizations}. These are explicit repository declarations, not audited pages or links to pages that already exist.`,
-    '- Canon hierarchy: published First Witness convergence canon; latest canon/brand vision; W81 condensed digest; current dedicated bibles; raw W81 archive; existing wiki archive.',
+    `- Canon hierarchy: published First Witness convergence canon; latest canon/brand vision; W81 condensed digest; current dedicated bibles; ${W81_PROVENANCE_LABEL}; existing wiki archive.`,
     '- Tier 4 source gap: the modern dedicated character/faction/HODL WARS bibles referenced by the First Witness register are not separately identifiable in this checkout. Historical `wiki/bibles/*.json` SAM records remain lower-tier public archive inputs and ambiguous mappings stay review items.',
     '- `content_hash` is SHA-256 of exact file bytes and is the stale-write identity. `article_content_hash` is SHA-256 of deterministic `article-text-v1` visible article text. `article_markup_hash` protects the exact canonical content-root markup, excluding only generated Related Wiki Paths.',
     '- Exact paragraph duplicates count repeated occurrences after the first, case-folded and whitespace-normalised, with fragments shorter than 40 characters ignored.',
