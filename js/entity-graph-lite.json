@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-04T15:26:39.477Z",
-  "verified_at": "2026-10-04T15:26:39.477Z",
+  "generated_at": "2026-10-04T15:32:44.914Z",
+  "verified_at": "2026-10-04T15:32:44.914Z",
   "lite": true,
   "nodes": [
     {
@@ -140,14 +140,6 @@
       "authority_score": 24
     },
     {
-      "id": "/wiki/midevilpunks.html",
-      "title": "MiDEViL PUNKS",
-      "url": "/wiki/midevilpunks.html",
-      "category": "factions",
-      "rank_score": 331,
-      "authority_score": 24
-    },
-    {
       "id": "/wiki/first-witness-book-1-the-first-witness.html",
       "title": "Book I — The First Witness",
       "url": "/wiki/first-witness-book-1-the-first-witness.html",
@@ -170,6 +162,14 @@
       "category": "core",
       "rank_score": 328,
       "authority_score": 28
+    },
+    {
+      "id": "/wiki/midevilpunks.html",
+      "title": "MiDEViL PUNKS",
+      "url": "/wiki/midevilpunks.html",
+      "category": "factions",
+      "rank_score": 328,
+      "authority_score": 21
     },
     {
       "id": "/wiki/first-witness-book-7-the-hold.html",

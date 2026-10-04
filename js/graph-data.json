@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-04T15:26:39.477Z",
-  "verified_at": "2026-10-04T15:26:39.477Z",
+  "generated_at": "2026-10-04T15:32:44.914Z",
+  "verified_at": "2026-10-04T15:32:44.914Z",
   "nodes": [
     {
       "id": "/about.html",
@@ -95,8 +95,8 @@
       "title": "2025 Metaverse Launch Party",
       "url": "/wiki/2025-metaverse-launch-party.html",
       "category": "factions",
-      "rank_score": 248,
-      "authority_score": 23
+      "rank_score": 249,
+      "authority_score": 20
     },
     {
       "id": "/wiki/589-xrpl.html",
@@ -1119,8 +1119,8 @@
       "title": "Forklord You",
       "url": "/wiki/forklord-you.html",
       "category": "characters",
-      "rank_score": 291,
-      "authority_score": 24
+      "rank_score": 288,
+      "authority_score": 21
     },
     {
       "id": "/wiki/forksplit.html",
@@ -2487,7 +2487,7 @@
       "title": "Ian Harrison",
       "url": "/wiki/ian-harrison.html",
       "category": "characters",
-      "rank_score": 272,
+      "rank_score": 268,
       "authority_score": 21
     },
     {
@@ -2591,8 +2591,8 @@
       "title": "MiDEViL PUNKS",
       "url": "/wiki/midevilpunks.html",
       "category": "factions",
-      "rank_score": 331,
-      "authority_score": 24
+      "rank_score": 328,
+      "authority_score": 21
     },
     {
       "id": "/wiki/moon-mission.html",
@@ -2719,7 +2719,7 @@
       "title": "Pixel Journey",
       "url": "/wiki/pixel-journey.html",
       "category": "factions",
-      "rank_score": 281,
+      "rank_score": 273,
       "authority_score": 21
     },
     {
@@ -2815,8 +2815,8 @@
       "title": "Rust2Riches",
       "url": "/wiki/rust2riches.html",
       "category": "factions",
-      "rank_score": 272,
-      "authority_score": 21
+      "rank_score": 232,
+      "authority_score": 18
     },
     {
       "id": "/wiki/sacred-chain.html",
@@ -3015,7 +3015,7 @@
       "title": "The BLOCKSTARS",
       "url": "/wiki/the-blockstars.html",
       "category": "factions",
-      "rank_score": 269,
+      "rank_score": 271,
       "authority_score": 28
     },
     {
@@ -12724,6 +12724,12 @@
     },
     {
       "source": "/wiki/metropolis.html",
+      "target": "/wiki/the-high-hats.html",
+      "score": 79,
+      "weight": 0.79
+    },
+    {
+      "source": "/wiki/metropolis.html",
       "target": "/wiki/midevilpunks.html",
       "score": 76,
       "weight": 0.76
@@ -12733,12 +12739,6 @@
       "target": "/wiki/rave-relics.html",
       "score": 76,
       "weight": 0.76
-    },
-    {
-      "source": "/wiki/metropolis.html",
-      "target": "/wiki/the-high-hats.html",
-      "score": 75,
-      "weight": 0.75
     },
     {
       "source": "/wiki/metropolis.html",
@@ -14710,21 +14710,21 @@
     },
     {
       "source": "/wiki/the-high-hats.html",
-      "target": "/wiki/the-nice-easy-bois.html",
+      "target": "/wiki/the-allcity-bulls.html",
       "score": 82,
       "weight": 0.82
     },
     {
       "source": "/wiki/the-high-hats.html",
-      "target": "/wiki/midevilpunks.html",
-      "score": 79,
-      "weight": 0.79
+      "target": "/wiki/the-bally-boys.html",
+      "score": 82,
+      "weight": 0.82
     },
     {
       "source": "/wiki/the-high-hats.html",
-      "target": "/wiki/the-allcity-bulls.html",
-      "score": 79,
-      "weight": 0.79
+      "target": "/wiki/the-nice-easy-bois.html",
+      "score": 82,
+      "weight": 0.82
     },
     {
       "source": "/wiki/the-information-mercenaries.html",

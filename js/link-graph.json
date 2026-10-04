@@ -17293,7 +17293,7 @@
     ]
   },
   "/wiki/gkniftyheads.html": {
-    "outbound_count": 37,
+    "outbound_count": 39,
     "inbound_count": 165,
     "existing_outbound": [
       "/wiki/bitcoin-x-kids.html",
@@ -17320,6 +17320,8 @@
       "/wiki/first-witness-great-concord-2030.html",
       "/wiki/first-witness-sacred-fork.html",
       "/wiki/first-witness-triple-fork-chainfire.html",
+      "/wiki/gkniftyheads-digital-diva-783394.html",
+      "/wiki/gkniftyheads-digital-duchess-783404.html",
       "/wiki/gkniftyheads-drift-doodle-783252.html",
       "/wiki/gkniftyheads-gkniftyheads-fun-coupon-782888.html",
       "/wiki/graffpunks-collection.html",
@@ -18977,7 +18979,7 @@
     ]
   },
   "/wiki/lady-ink.html": {
-    "outbound_count": 25,
+    "outbound_count": 28,
     "inbound_count": 1,
     "existing_outbound": [
       "/wiki/bitcoin-kids.html",
@@ -18995,6 +18997,8 @@
       "/wiki/punk-token.html"
     ],
     "suggested_outbound": [
+      "/wiki/aleema-child-of-the-shard.html",
+      "/wiki/block-node-defenders.html",
       "/wiki/dream-sovereign.html",
       "/wiki/first-witness-digital-inheritance-after-death.html",
       "/wiki/first-witness-questions-for-the-living.html",
@@ -19006,6 +19010,7 @@
       "/wiki/metropolis.html",
       "/wiki/nbg-token.html",
       "/wiki/playable-nft-murals.html",
+      "/wiki/the-shard-mothers-of-manhattan.html",
       "/wiki/web3.html"
     ],
     "inbound_from": [
@@ -21545,7 +21550,7 @@
     ]
   },
   "/wiki/storm-struggle.html": {
-    "outbound_count": 17,
+    "outbound_count": 16,
     "inbound_count": 0,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
@@ -21561,7 +21566,6 @@
     "suggested_outbound": [
       "/wiki/atomicassets.html",
       "/wiki/atomichub.html",
-      "/wiki/block-topia.html",
       "/wiki/first-witness-symbols-marks-sacred-design.html",
       "/wiki/gang-signs-card-game.html",
       "/wiki/gkniftyheads.html",
@@ -22009,7 +22013,7 @@
   },
   "/wiki/the-blockstars.html": {
     "outbound_count": 32,
-    "inbound_count": 0,
+    "inbound_count": 1,
     "existing_outbound": [
       "/wiki/bitcoin-kids.html",
       "/wiki/bitcoin-x-kids.html",
@@ -22046,7 +22050,9 @@
       "/wiki/the-information-mercenaries.html",
       "/wiki/xrp-ledger.html"
     ],
-    "inbound_from": []
+    "inbound_from": [
+      "/wiki/the-high-hats.html"
+    ]
   },
   "/wiki/the-chain-scribes.html": {
     "outbound_count": 35,
@@ -22746,7 +22752,7 @@
     ]
   },
   "/wiki/the-high-hats.html": {
-    "outbound_count": 21,
+    "outbound_count": 24,
     "inbound_count": 33,
     "existing_outbound": [
       "/wiki/bitcoin-kids.html",
@@ -22760,7 +22766,9 @@
       "/wiki/null-the-prophet.html",
       "/wiki/the-allcity-bulls.html",
       "/wiki/the-blockchain-furies.html",
+      "/wiki/the-blockstars.html",
       "/wiki/the-finance-guild.html",
+      "/wiki/the-nice-easy-bois.html",
       "/wiki/triple-fork-event.html"
     ],
     "suggested_outbound": [
@@ -22771,7 +22779,8 @@
       "/wiki/first-witness-prisons-punishment-return.html",
       "/wiki/first-witness-work-craft-service.html",
       "/wiki/gkniftyheads-digital-diva-783394.html",
-      "/wiki/gkniftyheads-digital-duchess-783404.html"
+      "/wiki/gkniftyheads-digital-duchess-783404.html",
+      "/wiki/gkniftyheads.html"
     ],
     "inbound_from": [
       "/wiki/aleema-child-of-the-shard.html",
@@ -22890,7 +22899,7 @@
   },
   "/wiki/the-nice-easy-bois.html": {
     "outbound_count": 28,
-    "inbound_count": 38,
+    "inbound_count": 39,
     "existing_outbound": [
       "/wiki/bitcoin-kid-army.html",
       "/wiki/bitcoin-kids.html",
@@ -22947,6 +22956,7 @@
       "/wiki/the-gasless-ghosts.html",
       "/wiki/the-great-dip.html",
       "/wiki/the-hard-fork-rockers.html",
+      "/wiki/the-high-hats.html",
       "/wiki/the-information-mercenaries.html",
       "/wiki/the-moonlords.html",
       "/wiki/the-nomad-bears.html",
