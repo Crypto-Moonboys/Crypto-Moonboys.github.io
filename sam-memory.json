@@ -5097,9 +5097,9 @@
       "aliases": [
         "games4punks telegram crypto moonboys wiki"
       ],
-      "canonical_title": "games4punks telegram",
+      "canonical_title": "GAMES4PUNKS Telegram",
       "canonical_url": "/wiki/games4punks-telegram.html",
-      "category": "factions",
+      "category": "concepts",
       "source_urls": [
         "/wiki/games4punks-telegram.html"
       ],
@@ -5117,9 +5117,9 @@
       "aliases": [
         "gang signs crypto moonboys wiki"
       ],
-      "canonical_title": "gang signs",
+      "canonical_title": "Gang Signs",
       "canonical_url": "/wiki/gang-signs.html",
-      "category": "characters",
+      "category": "concepts",
       "source_urls": [
         "/wiki/gang-signs.html"
       ],
@@ -8459,7 +8459,7 @@
       ],
       "canonical_title": "GraffPUNKS 24/7 Radio",
       "canonical_url": "/wiki/graffpunks-24-7-radio.html",
-      "category": "factions",
+      "category": "core",
       "source_urls": [
         "/wiki/graffpunks-24-7-radio.html"
       ],
@@ -8500,7 +8500,7 @@
       ],
       "canonical_title": "GraffPUNKS Ecosystem",
       "canonical_url": "/wiki/graffpunks-ecosystem.html",
-      "category": "characters",
+      "category": "core",
       "source_urls": [
         "/wiki/graffpunks-ecosystem.html"
       ],
@@ -11052,5 +11052,5 @@
       ]
     }
   },
-  "updated_at": "2026-10-04T12:46:05Z"
+  "updated_at": "2026-10-04T13:51:05Z"
 }

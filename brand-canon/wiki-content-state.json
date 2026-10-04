@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "generator": "scripts/generate-wiki-content-state.mjs",
-  "source_tree_hash": "sha256:8bcc252d16c81fdce27a7b9dd2e408f646b172d5c4f99c9457cd9e85f09214c3",
+  "source_tree_hash": "sha256:e628882e8c481b1055ac97d3bee90df5370c4de745c6f9e551b84190e31a0b88",
   "hash_algorithm": "sha256",
   "page_count": 415,
   "manifest_entry_count": 415,
@@ -93,10 +93,10 @@
     "total_manifest_entries": 415,
     "absent_stub_authorizations": 0,
     "rewrite_status_counts": {
-      "KEEP": 100,
+      "KEEP": 104,
       "REWRITE_FULL": 0,
-      "RECONCILE": 18,
-      "DEDUPE": 13,
+      "RECONCILE": 16,
+      "DEDUPE": 11,
       "EXPAND": 0,
       "ARCHIVE_STYLE": 6,
       "GENERATED": 6,
@@ -105,17 +105,17 @@
       "NEEDS_HUMAN_REVIEW": 31
     },
     "automation_policy_counts": {
-      "metadata-only": 271,
+      "metadata-only": 267,
       "replace-sam-block": 0,
-      "canon-locked": 142,
+      "canon-locked": 146,
       "stub-allowed": 2
     },
     "pages_with_multiple_sam_blocks": 0,
     "pages_with_multiple_canonical_blocks": 0,
-    "pages_with_legacy_unmarked_content": 108,
+    "pages_with_legacy_unmarked_content": 104,
     "pages_with_exact_duplicate_paragraphs": 142,
     "pages_with_duplicate_headings": 1,
-    "pages_with_likely_near_duplicate_sections": 22,
+    "pages_with_likely_near_duplicate_sections": 20,
     "pages_with_legacy_sam_article_wrapper": 181
   },
   "pages": [
@@ -5590,780 +5590,84 @@
     {
       "path": "wiki/games4punks-telegram.html",
       "slug": "games4punks-telegram",
-      "title": "games4punks_telegram",
+      "title": "GAMES4PUNKS Telegram",
       "page_exists": true,
       "page_type": "project_or_reference",
-      "current_word_count": 4662,
+      "current_word_count": 2176,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
-      "canonical_content_block_count": 0,
+      "canonical_content_block_count": 1,
       "legacy_sam_article_wrapper": true,
-      "legacy_unmarked_content": true,
+      "legacy_unmarked_content": false,
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
-      "likely_near_duplicate_sections": [
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 39,
-          "second_paragraph": 42,
-          "similarity": 0.868,
-          "shared_token_count": 33
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 39,
-          "second_paragraph": 44,
-          "similarity": 0.821,
-          "shared_token_count": 32
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 39,
-          "second_paragraph": 48,
-          "similarity": 0.865,
-          "shared_token_count": 32
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 39,
-          "second_paragraph": 52,
-          "similarity": 0.85,
-          "shared_token_count": 34
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 39,
-          "second_paragraph": 54,
-          "similarity": 0.868,
-          "shared_token_count": 33
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 39,
-          "second_paragraph": 57,
-          "similarity": 0.865,
-          "shared_token_count": 32
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 39,
-          "second_paragraph": 60,
-          "similarity": 0.886,
-          "shared_token_count": 31
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 39,
-          "second_paragraph": 62,
-          "similarity": 0.846,
-          "shared_token_count": 33
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 40,
-          "second_paragraph": 45,
-          "similarity": 0.931,
-          "shared_token_count": 27
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 42,
-          "second_paragraph": 44,
-          "similarity": 0.895,
-          "shared_token_count": 34
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 42,
-          "second_paragraph": 48,
-          "similarity": 0.842,
-          "shared_token_count": 32
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 42,
-          "second_paragraph": 52,
-          "similarity": 0.875,
-          "shared_token_count": 35
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 42,
-          "second_paragraph": 54,
-          "similarity": 0.946,
-          "shared_token_count": 35
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 42,
-          "second_paragraph": 57,
-          "similarity": 0.842,
-          "shared_token_count": 32
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 42,
-          "second_paragraph": 60,
-          "similarity": 0.861,
-          "shared_token_count": 31
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 42,
-          "second_paragraph": 62,
-          "similarity": 0.921,
-          "shared_token_count": 35
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 44,
-          "second_paragraph": 48,
-          "similarity": 0.795,
-          "shared_token_count": 31
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 44,
-          "second_paragraph": 52,
-          "similarity": 0.875,
-          "shared_token_count": 35
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 44,
-          "second_paragraph": 54,
-          "similarity": 0.946,
-          "shared_token_count": 35
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 44,
-          "second_paragraph": 57,
-          "similarity": 0.795,
-          "shared_token_count": 31
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 44,
-          "second_paragraph": 60,
-          "similarity": 0.811,
-          "shared_token_count": 30
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 44,
-          "second_paragraph": 62,
-          "similarity": 0.921,
-          "shared_token_count": 35
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 45,
-          "second_paragraph": 49,
-          "similarity": 0.931,
-          "shared_token_count": 27
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 48,
-          "second_paragraph": 52,
-          "similarity": 0.825,
-          "shared_token_count": 33
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 48,
-          "second_paragraph": 54,
-          "similarity": 0.842,
-          "shared_token_count": 32
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 48,
-          "second_paragraph": 57,
-          "similarity": 0.889,
-          "shared_token_count": 32
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 48,
-          "second_paragraph": 60,
-          "similarity": 0.912,
-          "shared_token_count": 31
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 48,
-          "second_paragraph": 62,
-          "similarity": 0.821,
-          "shared_token_count": 32
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 52,
-          "second_paragraph": 54,
-          "similarity": 0.923,
-          "shared_token_count": 36
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 52,
-          "second_paragraph": 57,
-          "similarity": 0.78,
-          "shared_token_count": 32
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 52,
-          "second_paragraph": 60,
-          "similarity": 0.795,
-          "shared_token_count": 31
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 52,
-          "second_paragraph": 62,
-          "similarity": 0.9,
-          "shared_token_count": 36
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 53,
-          "second_paragraph": 61,
-          "similarity": 0.806,
-          "shared_token_count": 25
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 54,
-          "second_paragraph": 57,
-          "similarity": 0.842,
-          "shared_token_count": 32
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 54,
-          "second_paragraph": 60,
-          "similarity": 0.861,
-          "shared_token_count": 31
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 54,
-          "second_paragraph": 62,
-          "similarity": 0.973,
-          "shared_token_count": 36
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 57,
-          "second_paragraph": 60,
-          "similarity": 0.912,
-          "shared_token_count": 31
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 57,
-          "second_paragraph": 62,
-          "similarity": 0.821,
-          "shared_token_count": 32
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 60,
-          "second_paragraph": 62,
-          "similarity": 0.838,
-          "shared_token_count": 31
-        }
-      ],
-      "content_hash": "sha256:2ae9589a3fbd9f49602cc90b1a5ab95eb4bc9348b9ba31ac9bcad214a025ca0d",
-      "article_content_hash": "sha256:0da5ed9227ee89f9d10ba6aee70ec70c47c5a0d3d3857d08dcd3bd43c1091b36",
-      "article_markup_hash": "sha256:06d565e4ba3d3a84a0896cbb96067c6ca0e75f25cfec4eb60bacbb87da2d8ed0",
-      "git_blob_oid": "242fedc26bd8f7635223434b1a47669f19dc5672",
+      "likely_near_duplicate_sections": [],
+      "content_hash": "sha256:86c814acd979c0cffffeecb054aac028743fba4ef2a05510c9d5c6cc03043375",
+      "article_content_hash": "sha256:1eed4c61fa23c1acc8e874369da9b800d8dce13569d3e8bd9306fec9c08b85ab",
+      "article_markup_hash": "sha256:b0f969face948a1727cc8cd791e004a070a5b5463fd84a36b4c0c4454fa9368b",
+      "git_blob_oid": "48c67f7aadcda6ef1489f2831a88d71eb665df66",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
       "likely_lore_page": false,
-      "rewrite_status": "DEDUPE",
-      "automation_policy": "metadata-only",
+      "rewrite_status": "KEEP",
+      "automation_policy": "canon-locked",
       "rewrite_cluster": "GraffPUNKS",
-      "duplicate_severity": "HIGH",
-      "canon_conflict_severity": "MEDIUM",
-      "recommended_action": "Review the reported duplication during the later canon rewrite.",
-      "suggested_priority": "P1",
+      "duplicate_severity": "NONE",
+      "canon_conflict_severity": "NONE",
+      "recommended_action": "Preserve the completed canon revision; automated article prose is locked.",
+      "suggested_priority": "P4",
       "likely_source_family": [
         "wiki/bibles/games4punks-telegram-games.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Substantive article content has no MANUAL_CONTENT, SAM_CONTENT, or CANONICAL_CONTENT ownership markers.",
-        "Legacy SAM:BEGIN:article shell marker is provenance evidence, not a current SAM_CONTENT ownership block.",
-        "Specialist archive record found at wiki/bibles/games4punks-telegram-games.json; it is not automatically the unavailable Tier 4 modern bible.",
-        "39 likely near-duplicate section pair(s) reported; no text was removed."
-      ]
+        "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Specialist archive record found at wiki/bibles/games4punks-telegram-games.json; it is not automatically the unavailable Tier 4 modern bible."
+      ],
+      "content_owner": "canon",
+      "canon_revision": 1,
+      "canon_source_tier": "first-witness+w81"
     },
     {
       "path": "wiki/gang-signs.html",
       "slug": "gang-signs",
-      "title": "gang_signs",
+      "title": "Gang Signs",
       "page_exists": true,
       "page_type": "project_or_reference",
-      "current_word_count": 4392,
+      "current_word_count": 2335,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
-      "canonical_content_block_count": 0,
+      "canonical_content_block_count": 1,
       "legacy_sam_article_wrapper": true,
-      "legacy_unmarked_content": true,
+      "legacy_unmarked_content": false,
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
-      "likely_near_duplicate_sections": [
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 1,
-          "second_paragraph": 36,
-          "similarity": 0.939,
-          "shared_token_count": 31
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 1,
-          "second_paragraph": 38,
-          "similarity": 0.806,
-          "shared_token_count": 29
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 1,
-          "second_paragraph": 40,
-          "similarity": 0.829,
-          "shared_token_count": 29
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 1,
-          "second_paragraph": 47,
-          "similarity": 0.861,
-          "shared_token_count": 31
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 1,
-          "second_paragraph": 49,
-          "similarity": 0.829,
-          "shared_token_count": 29
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 1,
-          "second_paragraph": 55,
-          "similarity": 0.906,
-          "shared_token_count": 29
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 1,
-          "second_paragraph": 56,
-          "similarity": 0.829,
-          "shared_token_count": 29
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 2,
-          "second_paragraph": 41,
-          "similarity": 0.926,
-          "shared_token_count": 25
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 2,
-          "second_paragraph": 48,
-          "similarity": 0.765,
-          "shared_token_count": 26
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 36,
-          "second_paragraph": 38,
-          "similarity": 0.806,
-          "shared_token_count": 29
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 36,
-          "second_paragraph": 40,
-          "similarity": 0.829,
-          "shared_token_count": 29
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 36,
-          "second_paragraph": 47,
-          "similarity": 0.861,
-          "shared_token_count": 31
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 36,
-          "second_paragraph": 49,
-          "similarity": 0.829,
-          "shared_token_count": 29
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 36,
-          "second_paragraph": 55,
-          "similarity": 0.906,
-          "shared_token_count": 29
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 36,
-          "second_paragraph": 56,
-          "similarity": 0.829,
-          "shared_token_count": 29
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 37,
-          "second_paragraph": 39,
-          "similarity": 0.75,
-          "shared_token_count": 27
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 37,
-          "second_paragraph": 42,
-          "similarity": 0.8,
-          "shared_token_count": 28
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 37,
-          "second_paragraph": 45,
-          "similarity": 0.806,
-          "shared_token_count": 29
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 37,
-          "second_paragraph": 53,
-          "similarity": 0.829,
-          "shared_token_count": 29
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 37,
-          "second_paragraph": 57,
-          "similarity": 0.857,
-          "shared_token_count": 30
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 38,
-          "second_paragraph": 40,
-          "similarity": 0.806,
-          "shared_token_count": 29
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 38,
-          "second_paragraph": 47,
-          "similarity": 0.744,
-          "shared_token_count": 29
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 38,
-          "second_paragraph": 49,
-          "similarity": 0.806,
-          "shared_token_count": 29
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 38,
-          "second_paragraph": 55,
-          "similarity": 0.879,
-          "shared_token_count": 29
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 38,
-          "second_paragraph": 56,
-          "similarity": 0.806,
-          "shared_token_count": 29
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 39,
-          "second_paragraph": 42,
-          "similarity": 0.722,
-          "shared_token_count": 26
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 39,
-          "second_paragraph": 45,
-          "similarity": 0.73,
-          "shared_token_count": 27
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 39,
-          "second_paragraph": 53,
-          "similarity": 0.75,
-          "shared_token_count": 27
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 39,
-          "second_paragraph": 57,
-          "similarity": 0.73,
-          "shared_token_count": 27
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 40,
-          "second_paragraph": 47,
-          "similarity": 0.763,
-          "shared_token_count": 29
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 40,
-          "second_paragraph": 55,
-          "similarity": 0.906,
-          "shared_token_count": 29
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 40,
-          "second_paragraph": 56,
-          "similarity": 0.829,
-          "shared_token_count": 29
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 41,
-          "second_paragraph": 44,
-          "similarity": 0.926,
-          "shared_token_count": 25
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 41,
-          "second_paragraph": 52,
-          "similarity": 0.926,
-          "shared_token_count": 25
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 42,
-          "second_paragraph": 45,
-          "similarity": 0.882,
-          "shared_token_count": 30
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 42,
-          "second_paragraph": 53,
-          "similarity": 0.8,
-          "shared_token_count": 28
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 42,
-          "second_paragraph": 57,
-          "similarity": 0.939,
-          "shared_token_count": 31
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 44,
-          "second_paragraph": 48,
-          "similarity": 0.765,
-          "shared_token_count": 26
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 45,
-          "second_paragraph": 53,
-          "similarity": 0.757,
-          "shared_token_count": 28
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 45,
-          "second_paragraph": 57,
-          "similarity": 0.941,
-          "shared_token_count": 32
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 47,
-          "second_paragraph": 49,
-          "similarity": 0.763,
-          "shared_token_count": 29
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 47,
-          "second_paragraph": 55,
-          "similarity": 0.829,
-          "shared_token_count": 29
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 47,
-          "second_paragraph": 56,
-          "similarity": 0.763,
-          "shared_token_count": 29
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 48,
-          "second_paragraph": 52,
-          "similarity": 0.765,
-          "shared_token_count": 26
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 49,
-          "second_paragraph": 55,
-          "similarity": 0.906,
-          "shared_token_count": 29
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 49,
-          "second_paragraph": 56,
-          "similarity": 0.829,
-          "shared_token_count": 29
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 53,
-          "second_paragraph": 57,
-          "similarity": 0.806,
-          "shared_token_count": 29
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 55,
-          "second_paragraph": 56,
-          "similarity": 0.906,
-          "shared_token_count": 29
-        }
-      ],
-      "content_hash": "sha256:197d4beb30d860c35d5fa1ce04498241e4df5efb737ce555686c12cd31448781",
-      "article_content_hash": "sha256:ab2883be472d426d59e5696df95e517227b03a928b28b36c93c9c90bd328ec8a",
-      "article_markup_hash": "sha256:098ec0fa7614c11aa71bd8583539c71eca5eec5f5b397fa64d64a7fd56c9f09d",
-      "git_blob_oid": "930a1950cc4310c05e54b7a0ef5f837b3e6d06c3",
+      "likely_near_duplicate_sections": [],
+      "content_hash": "sha256:04e3aeaad5235d286a243244eabb4daf262b7e88c6a837c1586179070ee73b77",
+      "article_content_hash": "sha256:b323f3181a09a3f55398186539e03f9b212f3a03a74ed34b95d3aa293326f21e",
+      "article_markup_hash": "sha256:623a3d81b36b748cc2d1449cfc00e21753395dbc83bc904e590ad339cf120f5d",
+      "git_blob_oid": "fda4a098aa5984dec765ff57a1dd7ab2e528b4f4",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
       "likely_lore_page": false,
-      "rewrite_status": "DEDUPE",
-      "automation_policy": "metadata-only",
+      "rewrite_status": "KEEP",
+      "automation_policy": "canon-locked",
       "rewrite_cluster": "GraffPUNKS",
-      "duplicate_severity": "HIGH",
-      "canon_conflict_severity": "MEDIUM",
-      "recommended_action": "Review the reported duplication during the later canon rewrite.",
-      "suggested_priority": "P1",
+      "duplicate_severity": "NONE",
+      "canon_conflict_severity": "NONE",
+      "recommended_action": "Preserve the completed canon revision; automated article prose is locked.",
+      "suggested_priority": "P4",
       "likely_source_family": [
         "wiki/bibles/gang-signs.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Substantive article content has no MANUAL_CONTENT, SAM_CONTENT, or CANONICAL_CONTENT ownership markers.",
-        "Legacy SAM:BEGIN:article shell marker is provenance evidence, not a current SAM_CONTENT ownership block.",
-        "Specialist archive record found at wiki/bibles/gang-signs.json; it is not automatically the unavailable Tier 4 modern bible.",
-        "48 likely near-duplicate section pair(s) reported; no text was removed."
-      ]
+        "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Specialist archive record found at wiki/bibles/gang-signs.json; it is not automatically the unavailable Tier 4 modern bible."
+      ],
+      "content_owner": "canon",
+      "canon_revision": 1,
+      "canon_source_tier": "first-witness+w81"
     },
     {
       "path": "wiki/gang-signs-card-game.html",
@@ -12331,43 +11635,44 @@
     {
       "path": "wiki/graffpunks-24-7-radio.html",
       "slug": "graffpunks-24-7-radio",
-      "title": "GRAFFPUNKS 24/7 RADIO The sound of London street culture rebuilt as a worldwide digital station",
+      "title": "GraffPUNKS 24/7 Radio The music network and its place in the creator world",
       "page_exists": true,
       "page_type": "lore",
-      "current_word_count": 1543,
+      "current_word_count": 2222,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
-      "canonical_content_block_count": 0,
+      "canonical_content_block_count": 1,
       "legacy_sam_article_wrapper": true,
-      "legacy_unmarked_content": true,
+      "legacy_unmarked_content": false,
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:80396bbac747ae62e0960cc6bc80a8fd2f1d5e395c45a08c7ea701caa1950ce6",
-      "article_content_hash": "sha256:7515bd26bbb4d8821ee0cbd2abd2a66959cdc14a736f52541819a88319ba1352",
-      "article_markup_hash": "sha256:9580034b156f824ff4ba6d0a847171ce4e7ebc8c36060252333584f8e7cc3c41",
-      "git_blob_oid": "741638a2111ab08695dd495136f481a07c29a2fc",
+      "content_hash": "sha256:1498c506bf3bd5359285839bcfa8861b91cf35606642f6f07793c0ffda35e6e4",
+      "article_content_hash": "sha256:9af96a6fe8f2879784d6e82edec1d9d88f24517f85afd0a4f4086bc06de2ccd3",
+      "article_markup_hash": "sha256:955fe17a4b428c344a905fb94c595da2d57ad5c53db75aea54117d913d357c6b",
+      "git_blob_oid": "412fa29a1a7522b7082f975844bec707636806d8",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
       "likely_lore_page": true,
-      "rewrite_status": "RECONCILE",
-      "automation_policy": "metadata-only",
+      "rewrite_status": "KEEP",
+      "automation_policy": "canon-locked",
       "rewrite_cluster": "GraffPUNKS",
       "duplicate_severity": "NONE",
-      "canon_conflict_severity": "MEDIUM",
-      "recommended_action": "Reconcile against higher-priority sources before replacing prose.",
-      "suggested_priority": "P2",
+      "canon_conflict_severity": "NONE",
+      "recommended_action": "Preserve the completed canon revision; automated article prose is locked.",
+      "suggested_priority": "P4",
       "likely_source_family": [
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
         "about/w81.zip (W2, W6, W8, w58, w68-w69, w74, w79-w81, w89, w92)"
       ],
       "audit_notes": [
-        "Substantive article content has no MANUAL_CONTENT, SAM_CONTENT, or CANONICAL_CONTENT ownership markers.",
-        "Legacy SAM:BEGIN:article shell marker is provenance evidence, not a current SAM_CONTENT ownership block.",
-        "Existing wiki prose is surviving public archive, not automatically current canon."
-      ]
+        "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified."
+      ],
+      "content_owner": "canon",
+      "canon_revision": 1,
+      "canon_source_tier": "first-witness+w81"
     },
     {
       "path": "wiki/graffpunks-collection.html",
@@ -12412,39 +11717,41 @@
       "title": "GraffPUNKS Ecosystem",
       "page_exists": true,
       "page_type": "lore",
-      "current_word_count": 705,
+      "current_word_count": 2357,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
-      "canonical_content_block_count": 0,
+      "canonical_content_block_count": 1,
       "legacy_sam_article_wrapper": false,
-      "legacy_unmarked_content": true,
+      "legacy_unmarked_content": false,
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:9a2652dc160261490690b6af50ec4c7892023c3a19905ab06089a8c5f4e68b5a",
-      "article_content_hash": "sha256:e472bee3b4fbac487d1168f941b4c888b290b443e099f01363b92bb40bc26f98",
-      "article_markup_hash": "sha256:afba9724452f13bdb94d900f62081abde98d21720e5cce462dfe0d987f386d1a",
-      "git_blob_oid": "c9416959dbc46f5732167677ff442991d154b784",
+      "content_hash": "sha256:8b7325df3db8d4ea7c4b87c5e808b66ebe863b7ee6f8beb33f1626c5a55286d8",
+      "article_content_hash": "sha256:4eed344178523573a90e995e89b8ffcc2e306aa4a505a0304102b257aa809d96",
+      "article_markup_hash": "sha256:0f3dbe44c158bdae1cb109b68ef17008c5c21c02e45e78141a38b4c9a668133a",
+      "git_blob_oid": "8040c5a8b473e39aa0d6b1489384724dea475e9b",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
       "likely_lore_page": true,
-      "rewrite_status": "RECONCILE",
-      "automation_policy": "metadata-only",
+      "rewrite_status": "KEEP",
+      "automation_policy": "canon-locked",
       "rewrite_cluster": "GraffPUNKS",
       "duplicate_severity": "NONE",
-      "canon_conflict_severity": "MEDIUM",
-      "recommended_action": "Reconcile against higher-priority sources before replacing prose.",
-      "suggested_priority": "P2",
+      "canon_conflict_severity": "NONE",
+      "recommended_action": "Preserve the completed canon revision; automated article prose is locked.",
+      "suggested_priority": "P4",
       "likely_source_family": [
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
         "about/w81.zip (W2, W6, W8, w58, w68-w69, w74, w79-w81, w89, w92)"
       ],
       "audit_notes": [
-        "Substantive article content has no MANUAL_CONTENT, SAM_CONTENT, or CANONICAL_CONTENT ownership markers.",
-        "Existing wiki prose is surviving public archive, not automatically current canon."
-      ]
+        "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified."
+      ],
+      "content_owner": "canon",
+      "canon_revision": 1,
+      "canon_source_tier": "first-witness+w81"
     },
     {
       "path": "wiki/grit.html",

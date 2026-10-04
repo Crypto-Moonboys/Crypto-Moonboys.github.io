@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-04T13:36:50.512Z",
-  "verified_at": "2026-10-04T13:36:50.512Z",
+  "generated_at": "2026-10-04T13:51:06.267Z",
+  "verified_at": "2026-10-04T13:51:06.267Z",
   "nodes": [
     {
       "id": "/about.html",
@@ -543,7 +543,7 @@
       "title": "Book III — The Keeper",
       "url": "/wiki/first-witness-book-3-the-keeper.html",
       "category": "core",
-      "rank_score": 337,
+      "rank_score": 339,
       "authority_score": 14
     },
     {
@@ -551,7 +551,7 @@
       "title": "Book IV — The Wall",
       "url": "/wiki/first-witness-book-4-the-wall.html",
       "category": "core",
-      "rank_score": 320,
+      "rank_score": 322,
       "authority_score": 14
     },
     {
@@ -911,7 +911,7 @@
       "title": "Money, Debt and Honest Scales",
       "url": "/wiki/first-witness-money-debt-honest-scales.html",
       "category": "core",
-      "rank_score": 289,
+      "rank_score": 291,
       "authority_score": 12
     },
     {
@@ -919,7 +919,7 @@
       "title": "Music, Dance and Performance",
       "url": "/wiki/first-witness-music-dance-performance.html",
       "category": "core",
-      "rank_score": 261,
+      "rank_score": 263,
       "authority_score": 12
     },
     {
@@ -1132,11 +1132,11 @@
     },
     {
       "id": "/wiki/games4punks-telegram.html",
-      "title": "games4punks telegram",
+      "title": "GAMES4PUNKS Telegram",
       "url": "/wiki/games4punks-telegram.html",
-      "category": "factions",
-      "rank_score": 322,
-      "authority_score": 26
+      "category": "concepts",
+      "rank_score": 294,
+      "authority_score": 24
     },
     {
       "id": "/wiki/gang-signs-card-game.html",
@@ -1148,18 +1148,18 @@
     },
     {
       "id": "/wiki/gang-signs.html",
-      "title": "gang signs",
+      "title": "Gang Signs",
       "url": "/wiki/gang-signs.html",
-      "category": "characters",
-      "rank_score": 292,
-      "authority_score": 26
+      "category": "concepts",
+      "rank_score": 254,
+      "authority_score": 24
     },
     {
       "id": "/wiki/genesis-kernel.html",
       "title": "Genesis Kernel",
       "url": "/wiki/genesis-kernel.html",
       "category": "core",
-      "rank_score": 340,
+      "rank_score": 342,
       "authority_score": 28
     },
     {
@@ -2351,7 +2351,7 @@
       "title": "Graffiti Kings",
       "url": "/wiki/graffiti-kings.html",
       "category": "core",
-      "rank_score": 291,
+      "rank_score": 293,
       "authority_score": 28
     },
     {
@@ -2359,7 +2359,7 @@
       "title": "Graffiti Nexus",
       "url": "/wiki/graffiti-nexus.html",
       "category": "core",
-      "rank_score": 343,
+      "rank_score": 345,
       "authority_score": 28
     },
     {
@@ -2374,9 +2374,9 @@
       "id": "/wiki/graffpunks-24-7-radio.html",
       "title": "GraffPUNKS 24/7 Radio",
       "url": "/wiki/graffpunks-24-7-radio.html",
-      "category": "factions",
-      "rank_score": 291,
-      "authority_score": 21
+      "category": "core",
+      "rank_score": 320,
+      "authority_score": 24
     },
     {
       "id": "/wiki/graffpunks-collection.html",
@@ -2390,9 +2390,9 @@
       "id": "/wiki/graffpunks-ecosystem.html",
       "title": "GraffPUNKS Ecosystem",
       "url": "/wiki/graffpunks-ecosystem.html",
-      "category": "characters",
-      "rank_score": 266,
-      "authority_score": 24
+      "category": "core",
+      "rank_score": 300,
+      "authority_score": 30
     },
     {
       "id": "/wiki/graffpunks.html",
@@ -2439,7 +2439,7 @@
       "title": "Head Tags",
       "url": "/wiki/head-tags.html",
       "category": "concepts",
-      "rank_score": 253,
+      "rank_score": 255,
       "authority_score": 28
     },
     {
@@ -2471,7 +2471,7 @@
       "title": "HODL X Warriors",
       "url": "/wiki/hodl-x-warriors.html",
       "category": "characters",
-      "rank_score": 287,
+      "rank_score": 289,
       "authority_score": 28
     },
     {
@@ -2775,7 +2775,7 @@
       "title": "Queen Sarah P-fly",
       "url": "/wiki/queen-sarah-p-fly.html",
       "category": "factions",
-      "rank_score": 270,
+      "rank_score": 272,
       "authority_score": 24
     },
     {
@@ -2943,7 +2943,7 @@
       "title": "Street Kingdoms",
       "url": "/wiki/street-kingdoms.html",
       "category": "factions",
-      "rank_score": 273,
+      "rank_score": 275,
       "authority_score": 21
     },
     {
@@ -3364,12 +3364,6 @@
     },
     {
       "source": "/wiki/1m-free-nfts-program.html",
-      "target": "/wiki/games4punks-telegram.html",
-      "score": 82,
-      "weight": 0.82
-    },
-    {
-      "source": "/wiki/1m-free-nfts-program.html",
       "target": "/wiki/ethereum.html",
       "score": 73,
       "weight": 0.73
@@ -3387,6 +3381,12 @@
       "weight": 0.72
     },
     {
+      "source": "/wiki/1m-free-nfts-program.html",
+      "target": "/wiki/street-kingdoms.html",
+      "score": 72,
+      "weight": 0.72
+    },
+    {
       "source": "/wiki/2025-metaverse-launch-party.html",
       "target": "/wiki/metaverse-battles.html",
       "score": 92,
@@ -3400,12 +3400,6 @@
     },
     {
       "source": "/wiki/2025-metaverse-launch-party.html",
-      "target": "/wiki/games4punks-telegram.html",
-      "score": 82,
-      "weight": 0.82
-    },
-    {
-      "source": "/wiki/2025-metaverse-launch-party.html",
       "target": "/wiki/delicious-again-pete.html",
       "score": 78,
       "weight": 0.78
@@ -3415,6 +3409,12 @@
       "target": "/wiki/lfgk.html",
       "score": 77,
       "weight": 0.77
+    },
+    {
+      "source": "/wiki/2025-metaverse-launch-party.html",
+      "target": "/wiki/midevilpunks.html",
+      "score": 76,
+      "weight": 0.76
     },
     {
       "source": "/wiki/589-xrpl.html",
@@ -3484,12 +3484,6 @@
     },
     {
       "source": "/wiki/alcor-exchange.html",
-      "target": "/wiki/games4punks-telegram.html",
-      "score": 82,
-      "weight": 0.82
-    },
-    {
-      "source": "/wiki/alcor-exchange.html",
       "target": "/wiki/nfthive.html",
       "score": 77,
       "weight": 0.77
@@ -3505,6 +3499,12 @@
       "target": "/wiki/street-kingdoms.html",
       "score": 75,
       "weight": 0.75
+    },
+    {
+      "source": "/wiki/alcor-exchange.html",
+      "target": "/wiki/bone-idol-ink.html",
+      "score": 74,
+      "weight": 0.74
     },
     {
       "source": "/wiki/aleema-child-of-the-shard.html",
@@ -3562,7 +3562,7 @@
     },
     {
       "source": "/wiki/alfie-bitcoin-kid-blaze.html",
-      "target": "/wiki/games4punks-telegram.html",
+      "target": "/wiki/rave-relics.html",
       "score": 63,
       "weight": 0.63
     },
@@ -3682,21 +3682,15 @@
     },
     {
       "source": "/wiki/atomichub-graffpunks-collection.html",
-      "target": "/wiki/games4punks-telegram.html",
-      "score": 69,
-      "weight": 0.69
+      "target": "/wiki/stikfamwars.html",
+      "score": 66,
+      "weight": 0.66
     },
     {
       "source": "/wiki/atomichub.html",
       "target": "/wiki/pmsl.html",
       "score": 88,
       "weight": 0.88
-    },
-    {
-      "source": "/wiki/atomichub.html",
-      "target": "/wiki/games4punks-telegram.html",
-      "score": 82,
-      "weight": 0.82
     },
     {
       "source": "/wiki/atomichub.html",
@@ -3713,6 +3707,12 @@
     {
       "source": "/wiki/atomichub.html",
       "target": "/wiki/bone-idol-ink.html",
+      "score": 74,
+      "weight": 0.74
+    },
+    {
+      "source": "/wiki/atomichub.html",
+      "target": "/wiki/pixel-journey.html",
       "score": 74,
       "weight": 0.74
     },
@@ -3754,12 +3754,6 @@
     },
     {
       "source": "/wiki/battlemech-blast.html",
-      "target": "/wiki/games4punks-telegram.html",
-      "score": 85,
-      "weight": 0.85
-    },
-    {
-      "source": "/wiki/battlemech-blast.html",
       "target": "/wiki/street-kingdoms.html",
       "score": 78,
       "weight": 0.78
@@ -3773,6 +3767,12 @@
     {
       "source": "/wiki/battlemech-blast.html",
       "target": "/wiki/moon-mission.html",
+      "score": 76,
+      "weight": 0.76
+    },
+    {
+      "source": "/wiki/battlemech-blast.html",
+      "target": "/wiki/neftyblocks.html",
       "score": 76,
       "weight": 0.76
     },
@@ -4144,12 +4144,6 @@
     },
     {
       "source": "/wiki/bone-idol-ink.html",
-      "target": "/wiki/games4punks-telegram.html",
-      "score": 82,
-      "weight": 0.82
-    },
-    {
-      "source": "/wiki/bone-idol-ink.html",
       "target": "/wiki/street-kingdoms.html",
       "score": 75,
       "weight": 0.75
@@ -4163,6 +4157,12 @@
     {
       "source": "/wiki/bone-idol-ink.html",
       "target": "/wiki/atomichub.html",
+      "score": 73,
+      "weight": 0.73
+    },
+    {
+      "source": "/wiki/bone-idol-ink.html",
+      "target": "/wiki/ethereum.html",
       "score": 73,
       "weight": 0.73
     },
@@ -4204,12 +4204,6 @@
     },
     {
       "source": "/wiki/canvas-clash.html",
-      "target": "/wiki/games4punks-telegram.html",
-      "score": 85,
-      "weight": 0.85
-    },
-    {
-      "source": "/wiki/canvas-clash.html",
       "target": "/wiki/street-kingdoms.html",
       "score": 78,
       "weight": 0.78
@@ -4223,6 +4217,12 @@
     {
       "source": "/wiki/canvas-clash.html",
       "target": "/wiki/moon-mission.html",
+      "score": 76,
+      "weight": 0.76
+    },
+    {
+      "source": "/wiki/canvas-clash.html",
+      "target": "/wiki/neftyblocks.html",
       "score": 76,
       "weight": 0.76
     },
@@ -4246,13 +4246,13 @@
     },
     {
       "source": "/wiki/charlie-buster.html",
-      "target": "/wiki/gang-signs.html",
+      "target": "/wiki/m1ntr-k1ll.html",
       "score": 75,
       "weight": 0.75
     },
     {
       "source": "/wiki/charlie-buster.html",
-      "target": "/wiki/m1ntr-k1ll.html",
+      "target": "/wiki/pyralith.html",
       "score": 75,
       "weight": 0.75
     },
@@ -4261,12 +4261,6 @@
       "target": "/wiki/pmsl.html",
       "score": 91,
       "weight": 0.91
-    },
-    {
-      "source": "/wiki/croydon-tower-blocks.html",
-      "target": "/wiki/games4punks-telegram.html",
-      "score": 85,
-      "weight": 0.85
     },
     {
       "source": "/wiki/croydon-tower-blocks.html",
@@ -4283,6 +4277,12 @@
     {
       "source": "/wiki/croydon-tower-blocks.html",
       "target": "/wiki/moon-mission.html",
+      "score": 76,
+      "weight": 0.76
+    },
+    {
+      "source": "/wiki/croydon-tower-blocks.html",
+      "target": "/wiki/neftyblocks.html",
       "score": 76,
       "weight": 0.76
     },
@@ -4390,12 +4390,6 @@
     },
     {
       "source": "/wiki/defi-mining.html",
-      "target": "/wiki/games4punks-telegram.html",
-      "score": 75,
-      "weight": 0.75
-    },
-    {
-      "source": "/wiki/defi-mining.html",
       "target": "/wiki/midevilpunks.html",
       "score": 67,
       "weight": 0.67
@@ -4403,6 +4397,12 @@
     {
       "source": "/wiki/defi-mining.html",
       "target": "/wiki/ethereum.html",
+      "score": 66,
+      "weight": 0.66
+    },
+    {
+      "source": "/wiki/defi-mining.html",
+      "target": "/wiki/rave-relics.html",
       "score": 66,
       "weight": 0.66
     },
@@ -4444,12 +4444,6 @@
     },
     {
       "source": "/wiki/delicious-again-pete.html",
-      "target": "/wiki/games4punks-telegram.html",
-      "score": 85,
-      "weight": 0.85
-    },
-    {
-      "source": "/wiki/delicious-again-pete.html",
       "target": "/wiki/lfgk.html",
       "score": 80,
       "weight": 0.8
@@ -4463,6 +4457,12 @@
     {
       "source": "/wiki/delicious-again-pete.html",
       "target": "/wiki/phygital-prints.html",
+      "score": 78,
+      "weight": 0.78
+    },
+    {
+      "source": "/wiki/delicious-again-pete.html",
+      "target": "/wiki/spirit-borns.html",
       "score": 78,
       "weight": 0.78
     },
@@ -4486,15 +4486,15 @@
     },
     {
       "source": "/wiki/diamond-hands.html",
-      "target": "/wiki/graffpunks-ecosystem.html",
+      "target": "/wiki/hodl-warriors.html",
       "score": 76,
       "weight": 0.76
     },
     {
       "source": "/wiki/diamond-hands.html",
-      "target": "/wiki/hodl-warriors.html",
-      "score": 76,
-      "weight": 0.76
+      "target": "/wiki/m1ntr-k1ll.html",
+      "score": 75,
+      "weight": 0.75
     },
     {
       "source": "/wiki/dragan-volkov.html",
@@ -4534,12 +4534,6 @@
     },
     {
       "source": "/wiki/dream-sovereign.html",
-      "target": "/wiki/games4punks-telegram.html",
-      "score": 85,
-      "weight": 0.85
-    },
-    {
-      "source": "/wiki/dream-sovereign.html",
       "target": "/wiki/street-kingdoms.html",
       "score": 78,
       "weight": 0.78
@@ -4553,6 +4547,12 @@
     {
       "source": "/wiki/dream-sovereign.html",
       "target": "/wiki/moon-mission.html",
+      "score": 76,
+      "weight": 0.76
+    },
+    {
+      "source": "/wiki/dream-sovereign.html",
+      "target": "/wiki/neftyblocks.html",
       "score": 76,
       "weight": 0.76
     },
@@ -4642,9 +4642,9 @@
     },
     {
       "source": "/wiki/ethereum.html",
-      "target": "/wiki/games4punks-telegram.html",
-      "score": 82,
-      "weight": 0.82
+      "target": "/wiki/exchanges.html",
+      "score": 78,
+      "weight": 0.78
     },
     {
       "source": "/wiki/exchanges.html",
@@ -4672,21 +4672,15 @@
     },
     {
       "source": "/wiki/exchanges.html",
-      "target": "/wiki/games4punks-telegram.html",
-      "score": 85,
-      "weight": 0.85
+      "target": "/wiki/memecoins.html",
+      "score": 84,
+      "weight": 0.84
     },
     {
       "source": "/wiki/exyboy.html",
       "target": "/wiki/pmsl.html",
       "score": 91,
       "weight": 0.91
-    },
-    {
-      "source": "/wiki/exyboy.html",
-      "target": "/wiki/games4punks-telegram.html",
-      "score": 85,
-      "weight": 0.85
     },
     {
       "source": "/wiki/exyboy.html",
@@ -4703,6 +4697,12 @@
     {
       "source": "/wiki/exyboy.html",
       "target": "/wiki/moon-mission.html",
+      "score": 76,
+      "weight": 0.76
+    },
+    {
+      "source": "/wiki/exyboy.html",
+      "target": "/wiki/neftyblocks.html",
       "score": 76,
       "weight": 0.76
     },
@@ -4732,7 +4732,7 @@
     },
     {
       "source": "/wiki/fgl-token.html",
-      "target": "/wiki/games4punks-telegram.html",
+      "target": "/wiki/rave-relics.html",
       "score": 66,
       "weight": 0.66
     },
@@ -7204,12 +7204,6 @@
     },
     {
       "source": "/wiki/forkborn-collective.html",
-      "target": "/wiki/games4punks-telegram.html",
-      "score": 85,
-      "weight": 0.85
-    },
-    {
-      "source": "/wiki/forkborn-collective.html",
       "target": "/wiki/phygital-prints.html",
       "score": 81,
       "weight": 0.81
@@ -7223,6 +7217,12 @@
     {
       "source": "/wiki/forkborn-collective.html",
       "target": "/wiki/delicious-again-pete.html",
+      "score": 78,
+      "weight": 0.78
+    },
+    {
+      "source": "/wiki/forkborn-collective.html",
+      "target": "/wiki/spirit-borns.html",
       "score": 78,
       "weight": 0.78
     },
@@ -7246,13 +7246,13 @@
     },
     {
       "source": "/wiki/forklord-you.html",
-      "target": "/wiki/gang-signs.html",
+      "target": "/wiki/m1ntr-k1ll.html",
       "score": 75,
       "weight": 0.75
     },
     {
       "source": "/wiki/forklord-you.html",
-      "target": "/wiki/m1ntr-k1ll.html",
+      "target": "/wiki/nfts.html",
       "score": 75,
       "weight": 0.75
     },
@@ -7288,45 +7288,33 @@
     },
     {
       "source": "/wiki/games4punks-telegram.html",
+      "target": "/wiki/head-tags.html",
+      "score": 53,
+      "weight": 0.53
+    },
+    {
+      "source": "/wiki/games4punks-telegram.html",
+      "target": "/wiki/gang-signs.html",
+      "score": 50,
+      "weight": 0.5
+    },
+    {
+      "source": "/wiki/games4punks-telegram.html",
       "target": "/wiki/pmsl.html",
-      "score": 88,
-      "weight": 0.88
+      "score": 46,
+      "weight": 0.46
     },
     {
       "source": "/wiki/games4punks-telegram.html",
-      "target": "/wiki/street-kingdoms.html",
-      "score": 75,
-      "weight": 0.75
-    },
-    {
-      "source": "/wiki/games4punks-telegram.html",
-      "target": "/wiki/sneakar.html",
-      "score": 74,
-      "weight": 0.74
-    },
-    {
-      "source": "/wiki/games4punks-telegram.html",
-      "target": "/wiki/moon-mission.html",
-      "score": 73,
-      "weight": 0.73
-    },
-    {
-      "source": "/wiki/games4punks-telegram.html",
-      "target": "/wiki/neftyblocks.html",
-      "score": 73,
-      "weight": 0.73
+      "target": "/wiki/graffpunks.html",
+      "score": 44,
+      "weight": 0.44
     },
     {
       "source": "/wiki/gang-signs-card-game.html",
       "target": "/wiki/pmsl.html",
       "score": 88,
       "weight": 0.88
-    },
-    {
-      "source": "/wiki/gang-signs-card-game.html",
-      "target": "/wiki/games4punks-telegram.html",
-      "score": 82,
-      "weight": 0.82
     },
     {
       "source": "/wiki/gang-signs-card-game.html",
@@ -7347,34 +7335,40 @@
       "weight": 0.76
     },
     {
-      "source": "/wiki/gang-signs.html",
-      "target": "/wiki/crypto-moonboys.html",
-      "score": 80,
-      "weight": 0.8
+      "source": "/wiki/gang-signs-card-game.html",
+      "target": "/wiki/metaverse-battles.html",
+      "score": 76,
+      "weight": 0.76
     },
     {
       "source": "/wiki/gang-signs.html",
-      "target": "/wiki/null-the-prophet.html",
-      "score": 79,
-      "weight": 0.79
+      "target": "/wiki/games4punks-telegram.html",
+      "score": 59,
+      "weight": 0.59
     },
     {
       "source": "/wiki/gang-signs.html",
-      "target": "/wiki/bitcoin-kids.html",
-      "score": 75,
-      "weight": 0.75
+      "target": "/wiki/head-tags.html",
+      "score": 56,
+      "weight": 0.56
     },
     {
       "source": "/wiki/gang-signs.html",
-      "target": "/wiki/m1ntr-k1ll.html",
-      "score": 75,
-      "weight": 0.75
+      "target": "/wiki/graffpunks.html",
+      "score": 44,
+      "weight": 0.44
     },
     {
       "source": "/wiki/gang-signs.html",
-      "target": "/wiki/pyralith.html",
-      "score": 75,
-      "weight": 0.75
+      "target": "/wiki/hard-fork-games.html",
+      "score": 42,
+      "weight": 0.42
+    },
+    {
+      "source": "/wiki/gang-signs.html",
+      "target": "/wiki/hodl-wars.html",
+      "score": 42,
+      "weight": 0.42
     },
     {
       "source": "/wiki/genesis-kernel.html",
@@ -7474,12 +7468,6 @@
     },
     {
       "source": "/wiki/gk.html",
-      "target": "/wiki/games4punks-telegram.html",
-      "score": 82,
-      "weight": 0.82
-    },
-    {
-      "source": "/wiki/gk.html",
       "target": "/wiki/metaverse-battles.html",
       "score": 76,
       "weight": 0.76
@@ -7493,6 +7481,12 @@
     {
       "source": "/wiki/gk.html",
       "target": "/wiki/forkborn-collective.html",
+      "score": 75,
+      "weight": 0.75
+    },
+    {
+      "source": "/wiki/gk.html",
+      "target": "/wiki/phygital-prints.html",
       "score": 75,
       "weight": 0.75
     },
@@ -11842,9 +11836,9 @@
     },
     {
       "source": "/wiki/gkniftyheads.html",
-      "target": "/wiki/first-witness-life-readings.html",
-      "score": 71,
-      "weight": 0.71
+      "target": "/wiki/graffpunks-ecosystem.html",
+      "score": 72,
+      "weight": 0.72
     },
     {
       "source": "/wiki/graffiti-kings.html",
@@ -11914,12 +11908,6 @@
     },
     {
       "source": "/wiki/graffiti-queens-in-decentraland.html",
-      "target": "/wiki/games4punks-telegram.html",
-      "score": 82,
-      "weight": 0.82
-    },
-    {
-      "source": "/wiki/graffiti-queens-in-decentraland.html",
       "target": "/wiki/midevilpunks.html",
       "score": 76,
       "weight": 0.76
@@ -11937,46 +11925,46 @@
       "weight": 0.74
     },
     {
-      "source": "/wiki/graffpunks-24-7-radio.html",
-      "target": "/wiki/midevilpunks.html",
-      "score": 103,
-      "weight": 1
-    },
-    {
-      "source": "/wiki/graffpunks-24-7-radio.html",
-      "target": "/wiki/graffpunks-collection.html",
-      "score": 93,
-      "weight": 0.93
+      "source": "/wiki/graffiti-queens-in-decentraland.html",
+      "target": "/wiki/lfgk.html",
+      "score": 74,
+      "weight": 0.74
     },
     {
       "source": "/wiki/graffpunks-24-7-radio.html",
       "target": "/wiki/graffpunks.html",
-      "score": 82,
-      "weight": 0.82
+      "score": 124,
+      "weight": 1
     },
     {
       "source": "/wiki/graffpunks-24-7-radio.html",
-      "target": "/wiki/rave-relics.html",
-      "score": 78,
-      "weight": 0.78
+      "target": "/wiki/graffpunks-ecosystem.html",
+      "score": 106,
+      "weight": 1
     },
     {
       "source": "/wiki/graffpunks-24-7-radio.html",
-      "target": "/wiki/pmsl.html",
-      "score": 75,
-      "weight": 0.75
+      "target": "/wiki/hodl-wars.html",
+      "score": 81,
+      "weight": 0.81
+    },
+    {
+      "source": "/wiki/graffpunks-24-7-radio.html",
+      "target": "/wiki/gkniftyheads.html",
+      "score": 77,
+      "weight": 0.77
+    },
+    {
+      "source": "/wiki/graffpunks-24-7-radio.html",
+      "target": "/wiki/the-first-witness.html",
+      "score": 76,
+      "weight": 0.76
     },
     {
       "source": "/wiki/graffpunks-collection.html",
       "target": "/wiki/midevilpunks.html",
       "score": 99,
       "weight": 0.99
-    },
-    {
-      "source": "/wiki/graffpunks-collection.html",
-      "target": "/wiki/graffpunks-24-7-radio.html",
-      "score": 97,
-      "weight": 0.97
     },
     {
       "source": "/wiki/graffpunks-collection.html",
@@ -11997,34 +11985,52 @@
       "weight": 0.75
     },
     {
+      "source": "/wiki/graffpunks-collection.html",
+      "target": "/wiki/rave-relics.html",
+      "score": 75,
+      "weight": 0.75
+    },
+    {
       "source": "/wiki/graffpunks-ecosystem.html",
       "target": "/wiki/graffpunks.html",
-      "score": 88,
-      "weight": 0.88
+      "score": 148,
+      "weight": 1
     },
     {
       "source": "/wiki/graffpunks-ecosystem.html",
-      "target": "/wiki/crypto-moonboys.html",
-      "score": 86,
-      "weight": 0.86
+      "target": "/wiki/graffpunks-24-7-radio.html",
+      "score": 107,
+      "weight": 1
     },
     {
       "source": "/wiki/graffpunks-ecosystem.html",
-      "target": "/wiki/null-the-prophet.html",
-      "score": 82,
-      "weight": 0.82
+      "target": "/wiki/hodl-wars.html",
+      "score": 100,
+      "weight": 1
     },
     {
       "source": "/wiki/graffpunks-ecosystem.html",
-      "target": "/wiki/bitcoin-kids.html",
-      "score": 81,
-      "weight": 0.81
+      "target": "/wiki/hard-fork-games.html",
+      "score": 94,
+      "weight": 0.94
     },
     {
       "source": "/wiki/graffpunks-ecosystem.html",
-      "target": "/wiki/wallets.html",
-      "score": 78,
-      "weight": 0.78
+      "target": "/wiki/gkniftyheads.html",
+      "score": 93,
+      "weight": 0.93
+    },
+    {
+      "source": "/wiki/graffpunks.html",
+      "target": "/wiki/graffpunks-ecosystem.html",
+      "score": 127,
+      "weight": 1
+    },
+    {
+      "source": "/wiki/graffpunks.html",
+      "target": "/wiki/graffpunks-24-7-radio.html",
+      "score": 104,
+      "weight": 1
     },
     {
       "source": "/wiki/graffpunks.html",
@@ -12043,18 +12049,6 @@
       "target": "/wiki/hard-fork-games.html",
       "score": 87,
       "weight": 0.87
-    },
-    {
-      "source": "/wiki/graffpunks.html",
-      "target": "/wiki/sacred-chain.html",
-      "score": 84,
-      "weight": 0.84
-    },
-    {
-      "source": "/wiki/graffpunks.html",
-      "target": "/wiki/genesis-kernel.html",
-      "score": 81,
-      "weight": 0.81
     },
     {
       "source": "/wiki/grit.html",
@@ -12154,12 +12148,6 @@
     },
     {
       "source": "/wiki/harrison-rift.html",
-      "target": "/wiki/games4punks-telegram.html",
-      "score": 82,
-      "weight": 0.82
-    },
-    {
-      "source": "/wiki/harrison-rift.html",
       "target": "/wiki/street-kingdoms.html",
       "score": 75,
       "weight": 0.75
@@ -12177,10 +12165,28 @@
       "weight": 0.74
     },
     {
+      "source": "/wiki/harrison-rift.html",
+      "target": "/wiki/atomichub.html",
+      "score": 73,
+      "weight": 0.73
+    },
+    {
+      "source": "/wiki/head-tags.html",
+      "target": "/wiki/games4punks-telegram.html",
+      "score": 62,
+      "weight": 0.62
+    },
+    {
       "source": "/wiki/head-tags.html",
       "target": "/wiki/gkniftyheads-nft-collection.html",
       "score": 58,
       "weight": 0.58
+    },
+    {
+      "source": "/wiki/head-tags.html",
+      "target": "/wiki/gang-signs.html",
+      "score": 56,
+      "weight": 0.56
     },
     {
       "source": "/wiki/head-tags.html",
@@ -12191,18 +12197,6 @@
     {
       "source": "/wiki/head-tags.html",
       "target": "/wiki/gkniftyheads-mr-cheo-boom-head-776121.html",
-      "score": 40,
-      "weight": 0.4
-    },
-    {
-      "source": "/wiki/head-tags.html",
-      "target": "/wiki/gkniftyheads-mr-cheo-lap-head-776114.html",
-      "score": 40,
-      "weight": 0.4
-    },
-    {
-      "source": "/wiki/head-tags.html",
-      "target": "/wiki/gkniftyheads-mr-cheo-pill-head-776118.html",
       "score": 40,
       "weight": 0.4
     },
@@ -12226,13 +12220,13 @@
     },
     {
       "source": "/wiki/hex-tagger-prime.html",
-      "target": "/wiki/gang-signs.html",
+      "target": "/wiki/m1ntr-k1ll.html",
       "score": 75,
       "weight": 0.75
     },
     {
       "source": "/wiki/hex-tagger-prime.html",
-      "target": "/wiki/m1ntr-k1ll.html",
+      "target": "/wiki/pyralith.html",
       "score": 75,
       "weight": 0.75
     },
@@ -12352,13 +12346,13 @@
     },
     {
       "source": "/wiki/ian-harrison.html",
-      "target": "/wiki/gang-signs.html",
+      "target": "/wiki/m1ntr-k1ll.html",
       "score": 75,
       "weight": 0.75
     },
     {
       "source": "/wiki/ian-harrison.html",
-      "target": "/wiki/m1ntr-k1ll.html",
+      "target": "/wiki/pyralith.html",
       "score": 75,
       "weight": 0.75
     },
@@ -12400,12 +12394,6 @@
     },
     {
       "source": "/wiki/jillian-godsil.html",
-      "target": "/wiki/games4punks-telegram.html",
-      "score": 85,
-      "weight": 0.85
-    },
-    {
-      "source": "/wiki/jillian-godsil.html",
       "target": "/wiki/street-kingdoms.html",
       "score": 78,
       "weight": 0.78
@@ -12419,6 +12407,12 @@
     {
       "source": "/wiki/jillian-godsil.html",
       "target": "/wiki/moon-mission.html",
+      "score": 76,
+      "weight": 0.76
+    },
+    {
+      "source": "/wiki/jillian-godsil.html",
+      "target": "/wiki/neftyblocks.html",
       "score": 76,
       "weight": 0.76
     },
@@ -12520,12 +12514,6 @@
     },
     {
       "source": "/wiki/lfgk.html",
-      "target": "/wiki/games4punks-telegram.html",
-      "score": 85,
-      "weight": 0.85
-    },
-    {
-      "source": "/wiki/lfgk.html",
       "target": "/wiki/delicious-again-pete.html",
       "score": 81,
       "weight": 0.81
@@ -12539,6 +12527,12 @@
     {
       "source": "/wiki/lfgk.html",
       "target": "/wiki/forkborn-collective.html",
+      "score": 78,
+      "weight": 0.78
+    },
+    {
+      "source": "/wiki/lfgk.html",
+      "target": "/wiki/phygital-prints.html",
       "score": 78,
       "weight": 0.78
     },
@@ -12610,12 +12604,6 @@
     },
     {
       "source": "/wiki/maidstone-base.html",
-      "target": "/wiki/games4punks-telegram.html",
-      "score": 85,
-      "weight": 0.85
-    },
-    {
-      "source": "/wiki/maidstone-base.html",
       "target": "/wiki/street-kingdoms.html",
       "score": 78,
       "weight": 0.78
@@ -12629,6 +12617,12 @@
     {
       "source": "/wiki/maidstone-base.html",
       "target": "/wiki/moon-mission.html",
+      "score": 76,
+      "weight": 0.76
+    },
+    {
+      "source": "/wiki/maidstone-base.html",
+      "target": "/wiki/neftyblocks.html",
       "score": 76,
       "weight": 0.76
     },
@@ -12652,13 +12646,13 @@
     },
     {
       "source": "/wiki/memecoins.html",
-      "target": "/wiki/games4punks-telegram.html",
-      "score": 85,
-      "weight": 0.85
+      "target": "/wiki/exchanges.html",
+      "score": 84,
+      "weight": 0.84
     },
     {
       "source": "/wiki/memecoins.html",
-      "target": "/wiki/exchanges.html",
+      "target": "/wiki/ngmi-chronicles.html",
       "score": 84,
       "weight": 0.84
     },
@@ -12676,12 +12670,6 @@
     },
     {
       "source": "/wiki/metaverse-battles.html",
-      "target": "/wiki/games4punks-telegram.html",
-      "score": 82,
-      "weight": 0.82
-    },
-    {
-      "source": "/wiki/metaverse-battles.html",
       "target": "/wiki/phygital-prints.html",
       "score": 78,
       "weight": 0.78
@@ -12689,6 +12677,12 @@
     {
       "source": "/wiki/metaverse-battles.html",
       "target": "/wiki/delicious-again-pete.html",
+      "score": 75,
+      "weight": 0.75
+    },
+    {
+      "source": "/wiki/metaverse-battles.html",
+      "target": "/wiki/forkborn-collective.html",
       "score": 75,
       "weight": 0.75
     },
@@ -12724,12 +12718,6 @@
     },
     {
       "source": "/wiki/midevilpunks.html",
-      "target": "/wiki/graffpunks-24-7-radio.html",
-      "score": 92,
-      "weight": 0.92
-    },
-    {
-      "source": "/wiki/midevilpunks.html",
       "target": "/wiki/graffpunks-collection.html",
       "score": 84,
       "weight": 0.84
@@ -12751,6 +12739,12 @@
       "target": "/wiki/stikfamwars.html",
       "score": 75,
       "weight": 0.75
+    },
+    {
+      "source": "/wiki/midevilpunks.html",
+      "target": "/wiki/graffpunks.html",
+      "score": 71,
+      "weight": 0.71
     },
     {
       "source": "/wiki/moon-mission.html",
@@ -12880,12 +12874,6 @@
     },
     {
       "source": "/wiki/neftyblocks.html",
-      "target": "/wiki/games4punks-telegram.html",
-      "score": 85,
-      "weight": 0.85
-    },
-    {
-      "source": "/wiki/neftyblocks.html",
       "target": "/wiki/street-kingdoms.html",
       "score": 78,
       "weight": 0.78
@@ -12903,16 +12891,16 @@
       "weight": 0.76
     },
     {
+      "source": "/wiki/neftyblocks.html",
+      "target": "/wiki/web3.html",
+      "score": 76,
+      "weight": 0.76
+    },
+    {
       "source": "/wiki/nfthive.html",
       "target": "/wiki/pmsl.html",
       "score": 91,
       "weight": 0.91
-    },
-    {
-      "source": "/wiki/nfthive.html",
-      "target": "/wiki/games4punks-telegram.html",
-      "score": 85,
-      "weight": 0.85
     },
     {
       "source": "/wiki/nfthive.html",
@@ -12931,6 +12919,12 @@
       "target": "/wiki/sneakar.html",
       "score": 77,
       "weight": 0.77
+    },
+    {
+      "source": "/wiki/nfthive.html",
+      "target": "/wiki/moon-mission.html",
+      "score": 76,
+      "weight": 0.76
     },
     {
       "source": "/wiki/nfts.html",
@@ -12976,12 +12970,6 @@
     },
     {
       "source": "/wiki/ngmi-chronicles.html",
-      "target": "/wiki/games4punks-telegram.html",
-      "score": 85,
-      "weight": 0.85
-    },
-    {
-      "source": "/wiki/ngmi-chronicles.html",
       "target": "/wiki/memecoins.html",
       "score": 84,
       "weight": 0.84
@@ -12993,16 +12981,16 @@
       "weight": 0.81
     },
     {
+      "source": "/wiki/ngmi-chronicles.html",
+      "target": "/wiki/rug-pull-wars.html",
+      "score": 81,
+      "weight": 0.81
+    },
+    {
       "source": "/wiki/nifty-crowns.html",
       "target": "/wiki/pmsl.html",
       "score": 88,
       "weight": 0.88
-    },
-    {
-      "source": "/wiki/nifty-crowns.html",
-      "target": "/wiki/games4punks-telegram.html",
-      "score": 82,
-      "weight": 0.82
     },
     {
       "source": "/wiki/nifty-crowns.html",
@@ -13023,16 +13011,16 @@
       "weight": 0.74
     },
     {
+      "source": "/wiki/nifty-crowns.html",
+      "target": "/wiki/sneakar.html",
+      "score": 74,
+      "weight": 0.74
+    },
+    {
       "source": "/wiki/nifty-wizards.html",
       "target": "/wiki/pmsl.html",
       "score": 88,
       "weight": 0.88
-    },
-    {
-      "source": "/wiki/nifty-wizards.html",
-      "target": "/wiki/games4punks-telegram.html",
-      "score": 82,
-      "weight": 0.82
     },
     {
       "source": "/wiki/nifty-wizards.html",
@@ -13049,6 +13037,12 @@
     {
       "source": "/wiki/nifty-wizards.html",
       "target": "/wiki/alcor-exchange.html",
+      "score": 74,
+      "weight": 0.74
+    },
+    {
+      "source": "/wiki/nifty-wizards.html",
+      "target": "/wiki/bone-idol-ink.html",
       "score": 74,
       "weight": 0.74
     },
@@ -13138,9 +13132,9 @@
     },
     {
       "source": "/wiki/paper-hands.html",
-      "target": "/wiki/games4punks-telegram.html",
-      "score": 82,
-      "weight": 0.82
+      "target": "/wiki/ngmi-chronicles.html",
+      "score": 81,
+      "weight": 0.81
     },
     {
       "source": "/wiki/patchwork.html",
@@ -13180,12 +13174,6 @@
     },
     {
       "source": "/wiki/phygital-prints.html",
-      "target": "/wiki/games4punks-telegram.html",
-      "score": 85,
-      "weight": 0.85
-    },
-    {
-      "source": "/wiki/phygital-prints.html",
       "target": "/wiki/forkborn-collective.html",
       "score": 81,
       "weight": 0.81
@@ -13203,16 +13191,16 @@
       "weight": 0.79
     },
     {
+      "source": "/wiki/phygital-prints.html",
+      "target": "/wiki/delicious-again-pete.html",
+      "score": 78,
+      "weight": 0.78
+    },
+    {
       "source": "/wiki/pixel-journey.html",
       "target": "/wiki/pmsl.html",
       "score": 88,
       "weight": 0.88
-    },
-    {
-      "source": "/wiki/pixel-journey.html",
-      "target": "/wiki/games4punks-telegram.html",
-      "score": 82,
-      "weight": 0.82
     },
     {
       "source": "/wiki/pixel-journey.html",
@@ -13229,6 +13217,12 @@
     {
       "source": "/wiki/pixel-journey.html",
       "target": "/wiki/alcor-exchange.html",
+      "score": 74,
+      "weight": 0.74
+    },
+    {
+      "source": "/wiki/pixel-journey.html",
+      "target": "/wiki/bone-idol-ink.html",
       "score": 74,
       "weight": 0.74
     },
@@ -13270,12 +13264,6 @@
     },
     {
       "source": "/wiki/playable-nft-murals.html",
-      "target": "/wiki/games4punks-telegram.html",
-      "score": 78,
-      "weight": 0.78
-    },
-    {
-      "source": "/wiki/playable-nft-murals.html",
       "target": "/wiki/phygital-prints.html",
       "score": 75,
       "weight": 0.75
@@ -13291,6 +13279,12 @@
       "target": "/wiki/midevilpunks.html",
       "score": 73,
       "weight": 0.73
+    },
+    {
+      "source": "/wiki/playable-nft-murals.html",
+      "target": "/wiki/forkborn-collective.html",
+      "score": 72,
+      "weight": 0.72
     },
     {
       "source": "/wiki/pmsl-token.html",
@@ -13324,12 +13318,6 @@
     },
     {
       "source": "/wiki/pmsl.html",
-      "target": "/wiki/games4punks-telegram.html",
-      "score": 82,
-      "weight": 0.82
-    },
-    {
-      "source": "/wiki/pmsl.html",
       "target": "/wiki/street-kingdoms.html",
       "score": 75,
       "weight": 0.75
@@ -13349,6 +13337,12 @@
     {
       "source": "/wiki/pmsl.html",
       "target": "/wiki/neftyblocks.html",
+      "score": 73,
+      "weight": 0.73
+    },
+    {
+      "source": "/wiki/pmsl.html",
+      "target": "/wiki/web3.html",
       "score": 73,
       "weight": 0.73
     },
@@ -13420,12 +13414,6 @@
     },
     {
       "source": "/wiki/queen-sarah-p-fly.html",
-      "target": "/wiki/games4punks-telegram.html",
-      "score": 78,
-      "weight": 0.78
-    },
-    {
-      "source": "/wiki/queen-sarah-p-fly.html",
       "target": "/wiki/midevilpunks.html",
       "score": 73,
       "weight": 0.73
@@ -13441,6 +13429,12 @@
       "target": "/wiki/bone-idol-ink.html",
       "score": 71,
       "weight": 0.71
+    },
+    {
+      "source": "/wiki/queen-sarah-p-fly.html",
+      "target": "/wiki/metaverse-battles.html",
+      "score": 70,
+      "weight": 0.7
     },
     {
       "source": "/wiki/quell.html",
@@ -13492,15 +13486,15 @@
     },
     {
       "source": "/wiki/rave-relics.html",
-      "target": "/wiki/graffpunks-24-7-radio.html",
+      "target": "/wiki/the-nice-easy-bois.html",
       "score": 68,
       "weight": 0.68
     },
     {
       "source": "/wiki/rave-relics.html",
-      "target": "/wiki/the-nice-easy-bois.html",
-      "score": 68,
-      "weight": 0.68
+      "target": "/wiki/nbgx-token.html",
+      "score": 66,
+      "weight": 0.66
     },
     {
       "source": "/wiki/rug-pull-wars.html",
@@ -13516,12 +13510,6 @@
     },
     {
       "source": "/wiki/rug-pull-wars.html",
-      "target": "/wiki/games4punks-telegram.html",
-      "score": 85,
-      "weight": 0.85
-    },
-    {
-      "source": "/wiki/rug-pull-wars.html",
       "target": "/wiki/memecoins.html",
       "score": 84,
       "weight": 0.84
@@ -13531,6 +13519,12 @@
       "target": "/wiki/paper-hands.html",
       "score": 84,
       "weight": 0.84
+    },
+    {
+      "source": "/wiki/rug-pull-wars.html",
+      "target": "/wiki/ngmi-chronicles.html",
+      "score": 81,
+      "weight": 0.81
     },
     {
       "source": "/wiki/rune-tag.html",
@@ -13552,13 +13546,13 @@
     },
     {
       "source": "/wiki/rune-tag.html",
-      "target": "/wiki/gang-signs.html",
+      "target": "/wiki/m1ntr-k1ll.html",
       "score": 75,
       "weight": 0.75
     },
     {
       "source": "/wiki/rune-tag.html",
-      "target": "/wiki/m1ntr-k1ll.html",
+      "target": "/wiki/pyralith.html",
       "score": 75,
       "weight": 0.75
     },
@@ -13567,12 +13561,6 @@
       "target": "/wiki/pmsl.html",
       "score": 91,
       "weight": 0.91
-    },
-    {
-      "source": "/wiki/rust2riches.html",
-      "target": "/wiki/games4punks-telegram.html",
-      "score": 85,
-      "weight": 0.85
     },
     {
       "source": "/wiki/rust2riches.html",
@@ -13589,6 +13577,12 @@
     {
       "source": "/wiki/rust2riches.html",
       "target": "/wiki/moon-mission.html",
+      "score": 76,
+      "weight": 0.76
+    },
+    {
+      "source": "/wiki/rust2riches.html",
+      "target": "/wiki/neftyblocks.html",
       "score": 76,
       "weight": 0.76
     },
@@ -13780,12 +13774,6 @@
     },
     {
       "source": "/wiki/sneakar.html",
-      "target": "/wiki/games4punks-telegram.html",
-      "score": 85,
-      "weight": 0.85
-    },
-    {
-      "source": "/wiki/sneakar.html",
       "target": "/wiki/street-kingdoms.html",
       "score": 78,
       "weight": 0.78
@@ -13799,6 +13787,12 @@
     {
       "source": "/wiki/sneakar.html",
       "target": "/wiki/neftyblocks.html",
+      "score": 76,
+      "weight": 0.76
+    },
+    {
+      "source": "/wiki/sneakar.html",
+      "target": "/wiki/web3.html",
       "score": 76,
       "weight": 0.76
     },
@@ -13858,21 +13852,15 @@
     },
     {
       "source": "/wiki/solana.html",
-      "target": "/wiki/games4punks-telegram.html",
-      "score": 85,
-      "weight": 0.85
+      "target": "/wiki/exchanges.html",
+      "score": 84,
+      "weight": 0.84
     },
     {
       "source": "/wiki/spirit-borns.html",
       "target": "/wiki/pmsl.html",
       "score": 91,
       "weight": 0.91
-    },
-    {
-      "source": "/wiki/spirit-borns.html",
-      "target": "/wiki/games4punks-telegram.html",
-      "score": 85,
-      "weight": 0.85
     },
     {
       "source": "/wiki/spirit-borns.html",
@@ -13889,6 +13877,12 @@
     {
       "source": "/wiki/spirit-borns.html",
       "target": "/wiki/phygital-prints.html",
+      "score": 78,
+      "weight": 0.78
+    },
+    {
+      "source": "/wiki/spirit-borns.html",
+      "target": "/wiki/street-kingdoms.html",
       "score": 78,
       "weight": 0.78
     },
@@ -13930,12 +13924,6 @@
     },
     {
       "source": "/wiki/squeaky-pinks-enforcers.html",
-      "target": "/wiki/games4punks-telegram.html",
-      "score": 82,
-      "weight": 0.82
-    },
-    {
-      "source": "/wiki/squeaky-pinks-enforcers.html",
       "target": "/wiki/metaverse-battles.html",
       "score": 76,
       "weight": 0.76
@@ -13949,6 +13937,12 @@
     {
       "source": "/wiki/squeaky-pinks-enforcers.html",
       "target": "/wiki/forkborn-collective.html",
+      "score": 75,
+      "weight": 0.75
+    },
+    {
+      "source": "/wiki/squeaky-pinks-enforcers.html",
+      "target": "/wiki/gk.html",
       "score": 75,
       "weight": 0.75
     },
@@ -14020,12 +14014,6 @@
     },
     {
       "source": "/wiki/storm-struggle.html",
-      "target": "/wiki/games4punks-telegram.html",
-      "score": 82,
-      "weight": 0.82
-    },
-    {
-      "source": "/wiki/storm-struggle.html",
       "target": "/wiki/street-kingdoms.html",
       "score": 75,
       "weight": 0.75
@@ -14043,16 +14031,16 @@
       "weight": 0.74
     },
     {
+      "source": "/wiki/storm-struggle.html",
+      "target": "/wiki/atomichub.html",
+      "score": 73,
+      "weight": 0.73
+    },
+    {
       "source": "/wiki/street-kingdoms.html",
       "target": "/wiki/pmsl.html",
       "score": 91,
       "weight": 0.91
-    },
-    {
-      "source": "/wiki/street-kingdoms.html",
-      "target": "/wiki/games4punks-telegram.html",
-      "score": 85,
-      "weight": 0.85
     },
     {
       "source": "/wiki/street-kingdoms.html",
@@ -14069,6 +14057,12 @@
     {
       "source": "/wiki/street-kingdoms.html",
       "target": "/wiki/neftyblocks.html",
+      "score": 76,
+      "weight": 0.76
+    },
+    {
+      "source": "/wiki/street-kingdoms.html",
+      "target": "/wiki/web3.html",
       "score": 76,
       "weight": 0.76
     },
@@ -14110,12 +14104,6 @@
     },
     {
       "source": "/wiki/tacoswap.html",
-      "target": "/wiki/games4punks-telegram.html",
-      "score": 85,
-      "weight": 0.85
-    },
-    {
-      "source": "/wiki/tacoswap.html",
       "target": "/wiki/street-kingdoms.html",
       "score": 78,
       "weight": 0.78
@@ -14133,16 +14121,16 @@
       "weight": 0.76
     },
     {
+      "source": "/wiki/tacoswap.html",
+      "target": "/wiki/neftyblocks.html",
+      "score": 76,
+      "weight": 0.76
+    },
+    {
       "source": "/wiki/tagzcoin.html",
       "target": "/wiki/pmsl.html",
       "score": 91,
       "weight": 0.91
-    },
-    {
-      "source": "/wiki/tagzcoin.html",
-      "target": "/wiki/games4punks-telegram.html",
-      "score": 85,
-      "weight": 0.85
     },
     {
       "source": "/wiki/tagzcoin.html",
@@ -14159,6 +14147,12 @@
     {
       "source": "/wiki/tagzcoin.html",
       "target": "/wiki/moon-mission.html",
+      "score": 76,
+      "weight": 0.76
+    },
+    {
+      "source": "/wiki/tagzcoin.html",
+      "target": "/wiki/neftyblocks.html",
       "score": 76,
       "weight": 0.76
     },
@@ -15148,7 +15142,7 @@
     },
     {
       "source": "/wiki/tokenomics.html",
-      "target": "/wiki/games4punks-telegram.html",
+      "target": "/wiki/web3.html",
       "score": 85,
       "weight": 0.85
     },
@@ -15172,15 +15166,15 @@
     },
     {
       "source": "/wiki/trevor-fung.html",
-      "target": "/wiki/games4punks-telegram.html",
+      "target": "/wiki/stikfamwars.html",
       "score": 66,
       "weight": 0.66
     },
     {
       "source": "/wiki/trevor-fung.html",
-      "target": "/wiki/stikfamwars.html",
-      "score": 66,
-      "weight": 0.66
+      "target": "/wiki/the-finance-guild.html",
+      "score": 62,
+      "weight": 0.62
     },
     {
       "source": "/wiki/triple-fork-event.html",
@@ -15256,12 +15250,6 @@
     },
     {
       "source": "/wiki/wallets.html",
-      "target": "/wiki/graffpunks-ecosystem.html",
-      "score": 79,
-      "weight": 0.79
-    },
-    {
-      "source": "/wiki/wallets.html",
       "target": "/wiki/bitcoin-kids.html",
       "score": 78,
       "weight": 0.78
@@ -15269,6 +15257,12 @@
     {
       "source": "/wiki/wallets.html",
       "target": "/wiki/m1ntr-k1ll.html",
+      "score": 78,
+      "weight": 0.78
+    },
+    {
+      "source": "/wiki/wallets.html",
+      "target": "/wiki/nfts.html",
       "score": 78,
       "weight": 0.78
     },
@@ -15358,21 +15352,15 @@
     },
     {
       "source": "/wiki/wax-nft-marketplaces.html",
-      "target": "/wiki/games4punks-telegram.html",
-      "score": 69,
-      "weight": 0.69
+      "target": "/wiki/wax-blockchain.html",
+      "score": 66,
+      "weight": 0.66
     },
     {
       "source": "/wiki/wax-pepe.html",
       "target": "/wiki/pmsl.html",
       "score": 81,
       "weight": 0.81
-    },
-    {
-      "source": "/wiki/wax-pepe.html",
-      "target": "/wiki/games4punks-telegram.html",
-      "score": 78,
-      "weight": 0.78
     },
     {
       "source": "/wiki/wax-pepe.html",
@@ -15389,6 +15377,12 @@
     {
       "source": "/wiki/wax-pepe.html",
       "target": "/wiki/atomichub.html",
+      "score": 70,
+      "weight": 0.7
+    },
+    {
+      "source": "/wiki/wax-pepe.html",
+      "target": "/wiki/midevilpunks.html",
       "score": 70,
       "weight": 0.7
     },
@@ -15418,7 +15412,7 @@
     },
     {
       "source": "/wiki/waxp-exchange.html",
-      "target": "/wiki/games4punks-telegram.html",
+      "target": "/wiki/rave-relics.html",
       "score": 63,
       "weight": 0.63
     },
@@ -15442,13 +15436,13 @@
     },
     {
       "source": "/wiki/waxp.html",
-      "target": "/wiki/games4punks-telegram.html",
+      "target": "/wiki/rave-relics.html",
       "score": 66,
       "weight": 0.66
     },
     {
       "source": "/wiki/waxp.html",
-      "target": "/wiki/rave-relics.html",
+      "target": "/wiki/stikfamwars.html",
       "score": 66,
       "weight": 0.66
     },
@@ -15478,9 +15472,9 @@
     },
     {
       "source": "/wiki/web3.html",
-      "target": "/wiki/games4punks-telegram.html",
-      "score": 85,
-      "weight": 0.85
+      "target": "/wiki/tokenomics.html",
+      "score": 84,
+      "weight": 0.84
     },
     {
       "source": "/wiki/whale-lords.html",
@@ -15520,12 +15514,6 @@
     },
     {
       "source": "/wiki/wuffi.html",
-      "target": "/wiki/games4punks-telegram.html",
-      "score": 85,
-      "weight": 0.85
-    },
-    {
-      "source": "/wiki/wuffi.html",
       "target": "/wiki/street-kingdoms.html",
       "score": 78,
       "weight": 0.78
@@ -15539,6 +15527,12 @@
     {
       "source": "/wiki/wuffi.html",
       "target": "/wiki/atomichub.html",
+      "score": 76,
+      "weight": 0.76
+    },
+    {
+      "source": "/wiki/wuffi.html",
+      "target": "/wiki/moon-mission.html",
       "score": 76,
       "weight": 0.76
     },
@@ -15580,12 +15574,6 @@
     },
     {
       "source": "/wiki/xrp-ledger.html",
-      "target": "/wiki/games4punks-telegram.html",
-      "score": 82,
-      "weight": 0.82
-    },
-    {
-      "source": "/wiki/xrp-ledger.html",
       "target": "/wiki/street-kingdoms.html",
       "score": 75,
       "weight": 0.75
@@ -15601,6 +15589,12 @@
       "target": "/wiki/sneakar.html",
       "score": 74,
       "weight": 0.74
+    },
+    {
+      "source": "/wiki/xrp-ledger.html",
+      "target": "/wiki/atomichub.html",
+      "score": 73,
+      "weight": 0.73
     }
   ]
 }
