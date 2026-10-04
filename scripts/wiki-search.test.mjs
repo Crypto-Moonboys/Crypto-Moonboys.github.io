@@ -550,4 +550,60 @@ const graffpunksStopwordOnly = {
     'Invalid JSON must leave the loader in a clean failed state');
 }
 
+// Newly authored people and institutions must be discoverable through the real
+// search selector, including header autocomplete, without partial-token fallback.
+{
+  const wikiIndex = JSON.parse(
+    await fs.readFile(path.join(ROOT, 'js', 'wiki-index.json'), 'utf8')
+  );
+  const subjectsByPage = {
+    'sacred-chain': [
+      'Three-Custody Rule', 'THREE CUSTODY RULE!', 'Etta Reed', 'etta reed',
+      'Grey Pump Hearing', 'Borrowed Name Dispute', 'Open Margin Compact',
+      'Hollow Seal scandal', 'threshold table', 'carried packet'
+    ],
+    'triple-fork-event': [
+      'Pell Moss', 'Red Ledger House', 'Three Heirs case', 'Night of Open Shelves',
+      'Crossing House Three', 'provisional receipt', 'Unsettled Register',
+      'Common Kitchen agreements', 'Continuation Oath'
+    ],
+    'genesis-kernel': [
+      'Mara Venn', 'Orin Silt', 'Workshop Nine', 'Unanswered Voice',
+      'Red Thread Fragment', 'No-Second-Copy Hearing', 'NO SECOND COPY HEARING!',
+      'Deep Memory Vaults', 'Fragment Census', 'Empty Chair convention',
+      'Glassweather', 'Chorus problem', 'Anchor Card', 'response window'
+    ],
+    'graffiti-nexus': [
+      'Ivo Chalk', 'Sena Thread', 'Daro Penn', 'Receiving Room', 'Ink Hall',
+      'Repair Bench', 'Listening Room', 'Warm Shelf', 'Quiet Table',
+      'Unfinished Wall', 'False Mother Piece', 'Blue Cup Register',
+      'Copy Ledger', 'Three Empty Frames', 'Wreckwork', 'late-night print room'
+    ],
+    'hard-fork-games': [
+      'Tessa Coil', 'Rook Vale', 'Nemi Ash', 'Mira Latch', 'Withdrawal Ledger',
+      'Returned List', 'Parkour Gauntlet', 'Spray Cipher', 'Final Hardfork duel'
+    ]
+  };
+  let checked = 0;
+  for (const [slug, subjects] of Object.entries(subjectsByPage)) {
+    const expectedUrl = `/wiki/${slug}.html`;
+    for (const query of subjects) {
+      for (const limit of [5, 10]) {
+        const result = await selectMatches(wikiIndex, query, {
+          allowPartialFallback: false,
+          limit
+        });
+        assert.ok(result.scored.some(({ item }) => item.url === expectedUrl),
+          `New lore query "${query}" must find ${expectedUrl} in the first ${limit} results`);
+        assert.equal(result.usedPartialFallback, false);
+      }
+      checked++;
+    }
+  }
+  const rendered = await renderSearchResults(wikiIndex, 'Etta Reed');
+  assert.ok(rendered.html.includes('/wiki/sacred-chain.html'),
+    'The full search page must render the chapter containing Etta Reed');
+  console.log(`New core-history search subjects: ${checked} queries pass`);
+}
+
 console.log('wiki-search.test: PASS');

@@ -223,6 +223,15 @@ function extractKeywords(html) {
     .filter(Boolean);
 }
 
+// Subject mentions aid retrieval without claiming page aliases, category tags,
+// or extra authority merely because an article names more people and practices.
+function extractSearchTerms(html) {
+  const match =
+    html.match(/<meta\s+name=["']wiki-search-terms["']\s+content=["']([^"']*)["']/i) ||
+    html.match(/<meta\s+content=["']([^"']*)["']\s+name=["']wiki-search-terms["']/i);
+  return match ? match[1].split(',').map(term => term.trim()).filter(Boolean) : [];
+}
+
 function stripHtml(html) {
   return html
     .replace(/<script[\s\S]*?<\/script>/gi, ' ')
@@ -343,20 +352,24 @@ function buildLinkScore(url, linkGraph) {
   return { inbound_count, outbound_count, existing_outbound_count, suggested_outbound_count, authority };
 }
 
-function buildSearchIndex(title, description, keywords, aliases = []) {
+function buildSearchIndex(title, description, keywords, aliases = [], searchTerms = []) {
   const normalizedTitle = normalize(title);
   const keywordBag = Array.from(
     new Set([
       ...tokenize(title),
       ...tokenize(description),
       ...keywords.flatMap(tokenize),
-      ...aliases.flatMap(alias => tokenize(alias && alias.title ? alias.title : ''))
+      ...aliases.flatMap(alias => tokenize(alias && alias.title ? alias.title : '')),
+      ...searchTerms.flatMap(tokenize)
     ])
   );
 
   return {
     normalized_title: normalizedTitle,
-    tokens: normalizedTitle.split(' ').filter(Boolean),
+    tokens: Array.from(new Set([
+      ...normalizedTitle.split(' ').filter(Boolean),
+      ...searchTerms.flatMap(tokenize)
+    ])),
     keyword_bag: keywordBag
   };
 }
@@ -716,7 +729,7 @@ function processRootPagesForIndex(canonicalEntries, linkGraph) {
       const rankSignals = buildRankSignals(html, filePath, title, description, keywords, [], null);
       const rankScore = computeRankScore(rankSignals);
       const rankDiagnostics = buildRankDiagnostics(rankSignals, rankScore);
-      const searchIndex = buildSearchIndex(title, description, keywords, []);
+      const searchIndex = buildSearchIndex(title, description, keywords, [], extractSearchTerms(html));
       const linkScore = buildLinkScore(rootPageUrl, linkGraph);
       
       // Fold graph authority
@@ -826,7 +839,7 @@ function run() {
     const rankSignals = buildRankSignals(html, filePath, title, description, keywords, aliases, samEntity);
     const rankScore = computeRankScore(rankSignals);
     const rankDiagnostics = buildRankDiagnostics(rankSignals, rankScore);
-    const searchIndex = buildSearchIndex(title, description, keywords, aliases);
+    const searchIndex = buildSearchIndex(title, description, keywords, aliases, extractSearchTerms(html));
     const linkScore = buildLinkScore(canonicalUrl, linkGraph);
 
     // ── Phase 4: fold graph authority into rank_diagnostics ──────────────

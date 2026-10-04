@@ -182,9 +182,9 @@
     },
     "link_score": {
       "inbound_count": 217,
-      "outbound_count": 27,
+      "outbound_count": 28,
       "existing_outbound_count": 11,
-      "suggested_outbound_count": 16,
+      "suggested_outbound_count": 17,
       "authority": 439.5
     },
     "brand": {
@@ -273,9 +273,9 @@
     },
     "link_score": {
       "inbound_count": 153,
-      "outbound_count": 157,
+      "outbound_count": 158,
       "existing_outbound_count": 146,
-      "suggested_outbound_count": 11,
+      "suggested_outbound_count": 12,
       "authority": 379
     },
     "brand": null
@@ -459,9 +459,9 @@
     },
     "link_score": {
       "inbound_count": 86,
-      "outbound_count": 119,
+      "outbound_count": 120,
       "existing_outbound_count": 91,
-      "suggested_outbound_count": 28,
+      "suggested_outbound_count": 29,
       "authority": 217.5
     },
     "brand": null
@@ -713,9 +713,9 @@
     },
     "link_score": {
       "inbound_count": 81,
-      "outbound_count": 72,
+      "outbound_count": 74,
       "existing_outbound_count": 6,
-      "suggested_outbound_count": 66,
+      "suggested_outbound_count": 68,
       "authority": 165
     },
     "brand": null
@@ -806,9 +806,9 @@
     },
     "link_score": {
       "inbound_count": 117,
-      "outbound_count": 9,
+      "outbound_count": 10,
       "existing_outbound_count": 0,
-      "suggested_outbound_count": 9,
+      "suggested_outbound_count": 10,
       "authority": 234
     },
     "brand": null
@@ -876,7 +876,82 @@
         "games",
         "crypto",
         "moonboys",
-        "wiki"
+        "wiki",
+        "annual",
+        "summons",
+        "outside",
+        "candidate",
+        "transit",
+        "threshold",
+        "feast",
+        "kitchen",
+        "tessa",
+        "coil",
+        "concealed",
+        "evaluation",
+        "green",
+        "yellow",
+        "red",
+        "parkour",
+        "gauntlet",
+        "spray",
+        "cipher",
+        "final",
+        "hardfork",
+        "duel",
+        "resource",
+        "allocation",
+        "trials",
+        "cooperation",
+        "betrayal",
+        "visible",
+        "score",
+        "rook",
+        "vale",
+        "shared",
+        "tool",
+        "bonnets",
+        "crowns",
+        "moonboy",
+        "city",
+        "service",
+        "ascension",
+        "escape",
+        "emissary",
+        "promise",
+        "clone",
+        "harvest",
+        "jodie",
+        "zoom",
+        "2000",
+        "aleema",
+        "bitcoin",
+        "kids",
+        "golden",
+        "tickets",
+        "edited",
+        "memory",
+        "nemi",
+        "ash",
+        "disputed",
+        "result",
+        "returned",
+        "list",
+        "null",
+        "crisis",
+        "five",
+        "accounts",
+        "withdrawal",
+        "ledger",
+        "waiting",
+        "hall",
+        "companion",
+        "question",
+        "polished",
+        "failure",
+        "quarter",
+        "mira",
+        "latch"
       ],
       "keyword_bag": [
         "hard",
@@ -917,14 +992,80 @@
         "programme",
         "bitcoin",
         "kids",
-        "year"
+        "year",
+        "annual",
+        "summons",
+        "outside",
+        "candidate",
+        "transit",
+        "threshold",
+        "kitchen",
+        "tessa",
+        "coil",
+        "concealed",
+        "evaluation",
+        "green",
+        "yellow",
+        "red",
+        "parkour",
+        "gauntlet",
+        "spray",
+        "cipher",
+        "final",
+        "duel",
+        "resource",
+        "allocation",
+        "trials",
+        "cooperation",
+        "betrayal",
+        "visible",
+        "score",
+        "rook",
+        "vale",
+        "shared",
+        "tool",
+        "bonnets",
+        "crowns",
+        "moonboy",
+        "ascension",
+        "emissary",
+        "promise",
+        "jodie",
+        "zoom",
+        "2000",
+        "aleema",
+        "golden",
+        "tickets",
+        "edited",
+        "memory",
+        "nemi",
+        "ash",
+        "disputed",
+        "result",
+        "returned",
+        "list",
+        "null",
+        "crisis",
+        "five",
+        "accounts",
+        "withdrawal",
+        "ledger",
+        "waiting",
+        "hall",
+        "companion",
+        "question",
+        "polished",
+        "failure",
+        "quarter",
+        "mira",
+        "latch"
       ]
     },
     "link_score": {
       "inbound_count": 75,
-      "outbound_count": 52,
+      "outbound_count": 63,
       "existing_outbound_count": 14,
-      "suggested_outbound_count": 38,
+      "suggested_outbound_count": 49,
       "authority": 157
     },
     "brand": null
@@ -1112,9 +1253,9 @@
     },
     "link_score": {
       "inbound_count": 84,
-      "outbound_count": 13,
+      "outbound_count": 17,
       "existing_outbound_count": 6,
-      "suggested_outbound_count": 7,
+      "suggested_outbound_count": 11,
       "authority": 171
     },
     "brand": null
@@ -1278,7 +1419,65 @@
         "chain",
         "crypto",
         "moonboys",
-        "wiki"
+        "wiki",
+        "scribes",
+        "archive",
+        "houses",
+        "three",
+        "custody",
+        "rule",
+        "soultags",
+        "closed",
+        "shelf",
+        "double",
+        "reading",
+        "maintenance",
+        "economy",
+        "unfinished",
+        "file",
+        "echo",
+        "fork",
+        "mnemonic",
+        "whispers",
+        "grey",
+        "pump",
+        "hearing",
+        "borrowed",
+        "name",
+        "dispute",
+        "shared",
+        "open",
+        "margin",
+        "compact",
+        "mark",
+        "folio",
+        "bond",
+        "carried",
+        "packet",
+        "block",
+        "time",
+        "remembered",
+        "silent",
+        "record",
+        "etta",
+        "reed",
+        "patched",
+        "coat",
+        "return",
+        "rook",
+        "vale",
+        "seven",
+        "questions",
+        "hollow",
+        "seal",
+        "scandal",
+        "threshold",
+        "table",
+        "emergency",
+        "care",
+        "of",
+        "failed",
+        "efforts"
       ],
       "keyword_bag": [
         "the",
@@ -1307,14 +1506,67 @@
         "fork",
         "first",
         "witness",
-        "bitcoin"
+        "bitcoin",
+        "scribes",
+        "three",
+        "rule",
+        "closed",
+        "shelf",
+        "double",
+        "reading",
+        "maintenance",
+        "economy",
+        "unfinished",
+        "file",
+        "echo",
+        "mnemonic",
+        "whispers",
+        "grey",
+        "pump",
+        "hearing",
+        "borrowed",
+        "name",
+        "dispute",
+        "shared",
+        "open",
+        "margin",
+        "compact",
+        "mark",
+        "folio",
+        "bond",
+        "carried",
+        "packet",
+        "block",
+        "time",
+        "remembered",
+        "silent",
+        "record",
+        "etta",
+        "reed",
+        "patched",
+        "coat",
+        "return",
+        "rook",
+        "vale",
+        "seven",
+        "questions",
+        "hollow",
+        "seal",
+        "scandal",
+        "threshold",
+        "table",
+        "emergency",
+        "care",
+        "of",
+        "failed",
+        "efforts"
       ]
     },
     "link_score": {
       "inbound_count": 35,
-      "outbound_count": 63,
+      "outbound_count": 71,
       "existing_outbound_count": 14,
-      "suggested_outbound_count": 49,
+      "suggested_outbound_count": 57,
       "authority": 77
     },
     "brand": null
@@ -1512,7 +1764,7 @@
       "category": "core",
       "category_priority": 10,
       "has_description": true,
-      "article_word_count": 7551,
+      "article_word_count": 7552,
       "keyword_bag_size": 27,
       "heading_count": 49,
       "list_count": 1,
@@ -1542,7 +1794,52 @@
         "event",
         "crypto",
         "moonboys",
-        "wiki"
+        "wiki",
+        "recognition",
+        "settlement",
+        "citizenship",
+        "dependency",
+        "cascade",
+        "incompatible",
+        "histories",
+        "rival",
+        "mandates",
+        "secure",
+        "regions",
+        "queens",
+        "street",
+        "kingdoms",
+        "red",
+        "ledger",
+        "house",
+        "three",
+        "heirs",
+        "case",
+        "night",
+        "of",
+        "open",
+        "shelves",
+        "provisional",
+        "receipt",
+        "unsettled",
+        "register",
+        "crossing",
+        "pell",
+        "moss",
+        "public",
+        "memory",
+        "common",
+        "kitchen",
+        "agreements",
+        "continuation",
+        "oath",
+        "white",
+        "rooms",
+        "missing",
+        "occupations",
+        "repaired",
+        "map",
+        "remembrance"
       ],
       "keyword_bag": [
         "triple",
@@ -1571,14 +1868,58 @@
         "great",
         "unravelling",
         "2930",
-        "final"
+        "final",
+        "recognition",
+        "settlement",
+        "citizenship",
+        "dependency",
+        "cascade",
+        "incompatible",
+        "histories",
+        "rival",
+        "mandates",
+        "secure",
+        "regions",
+        "queens",
+        "street",
+        "kingdoms",
+        "red",
+        "ledger",
+        "house",
+        "three",
+        "heirs",
+        "case",
+        "night",
+        "open",
+        "shelves",
+        "provisional",
+        "receipt",
+        "unsettled",
+        "register",
+        "crossing",
+        "pell",
+        "moss",
+        "public",
+        "memory",
+        "common",
+        "kitchen",
+        "agreements",
+        "continuation",
+        "oath",
+        "white",
+        "rooms",
+        "missing",
+        "occupations",
+        "repaired",
+        "map",
+        "remembrance"
       ]
     },
     "link_score": {
       "inbound_count": 31,
-      "outbound_count": 27,
+      "outbound_count": 38,
       "existing_outbound_count": 11,
-      "suggested_outbound_count": 16,
+      "suggested_outbound_count": 27,
       "authority": 67.5
     },
     "brand": null
@@ -1918,9 +2259,9 @@
     },
     "link_score": {
       "inbound_count": 30,
-      "outbound_count": 63,
+      "outbound_count": 64,
       "existing_outbound_count": 8,
-      "suggested_outbound_count": 55,
+      "suggested_outbound_count": 56,
       "authority": 64
     },
     "brand": null
@@ -2006,9 +2347,9 @@
     },
     "link_score": {
       "inbound_count": 58,
-      "outbound_count": 19,
+      "outbound_count": 20,
       "existing_outbound_count": 7,
-      "suggested_outbound_count": 12,
+      "suggested_outbound_count": 13,
       "authority": 119.5
     },
     "brand": null
@@ -2455,9 +2796,9 @@
     },
     "link_score": {
       "inbound_count": 3,
-      "outbound_count": 66,
+      "outbound_count": 68,
       "existing_outbound_count": 6,
-      "suggested_outbound_count": 60,
+      "suggested_outbound_count": 62,
       "authority": 9
     },
     "brand": null
@@ -2657,9 +2998,9 @@
     },
     "link_score": {
       "inbound_count": 33,
-      "outbound_count": 19,
+      "outbound_count": 20,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 7,
+      "suggested_outbound_count": 8,
       "authority": 72
     },
     "brand": null
@@ -2747,9 +3088,9 @@
     },
     "link_score": {
       "inbound_count": 43,
-      "outbound_count": 24,
+      "outbound_count": 25,
       "existing_outbound_count": 8,
-      "suggested_outbound_count": 16,
+      "suggested_outbound_count": 17,
       "authority": 90
     },
     "brand": null
@@ -2842,9 +3183,9 @@
     },
     "link_score": {
       "inbound_count": 33,
-      "outbound_count": 23,
+      "outbound_count": 24,
       "existing_outbound_count": 11,
-      "suggested_outbound_count": 12,
+      "suggested_outbound_count": 13,
       "authority": 71.5
     },
     "brand": null
@@ -2998,9 +3339,9 @@
     },
     "link_score": {
       "inbound_count": 13,
-      "outbound_count": 68,
+      "outbound_count": 70,
       "existing_outbound_count": 6,
-      "suggested_outbound_count": 62,
+      "suggested_outbound_count": 64,
       "authority": 29
     },
     "brand": null
@@ -3153,9 +3494,9 @@
     },
     "link_score": {
       "inbound_count": 13,
-      "outbound_count": 72,
+      "outbound_count": 74,
       "existing_outbound_count": 6,
-      "suggested_outbound_count": 66,
+      "suggested_outbound_count": 68,
       "authority": 29
     },
     "brand": null
@@ -3195,7 +3536,7 @@
       "category": "core",
       "category_priority": 10,
       "has_description": true,
-      "article_word_count": 6886,
+      "article_word_count": 6888,
       "keyword_bag_size": 31,
       "heading_count": 46,
       "list_count": 1,
@@ -3224,7 +3565,74 @@
         "nexus",
         "crypto",
         "moonboys",
-        "wiki"
+        "wiki",
+        "receiving",
+        "room",
+        "ink",
+        "hall",
+        "second",
+        "signature",
+        "repair",
+        "bench",
+        "listening",
+        "warm",
+        "shelf",
+        "wreckwork",
+        "apprentices",
+        "quiet",
+        "table",
+        "unfinished",
+        "wall",
+        "ivo",
+        "chalk",
+        "false",
+        "mother",
+        "piece",
+        "blue",
+        "cup",
+        "register",
+        "sena",
+        "thread",
+        "jodie",
+        "zoom",
+        "2000",
+        "aleema",
+        "thera",
+        "9",
+        "trusted",
+        "leak",
+        "bitcoin",
+        "kids",
+        "x",
+        "sanctuary",
+        "punk",
+        "source",
+        "code",
+        "head",
+        "tags",
+        "rave",
+        "relics",
+        "custody",
+        "objects",
+        "evacuation",
+        "null",
+        "pressure",
+        "copy",
+        "ledger",
+        "three",
+        "empty",
+        "frames",
+        "late",
+        "night",
+        "print",
+        "daro",
+        "penn",
+        "repairs",
+        "paid",
+        "in",
+        "work",
+        "successful",
+        "disclosure"
       ],
       "keyword_bag": [
         "graffiti",
@@ -3257,14 +3665,78 @@
         "memory",
         "spraycode",
         "echo",
-        "ink"
+        "ink",
+        "receiving",
+        "room",
+        "hall",
+        "second",
+        "signature",
+        "repair",
+        "bench",
+        "listening",
+        "warm",
+        "shelf",
+        "wreckwork",
+        "apprentices",
+        "quiet",
+        "table",
+        "unfinished",
+        "wall",
+        "ivo",
+        "chalk",
+        "false",
+        "mother",
+        "piece",
+        "blue",
+        "cup",
+        "register",
+        "sena",
+        "thread",
+        "jodie",
+        "zoom",
+        "2000",
+        "aleema",
+        "thera",
+        "9",
+        "trusted",
+        "leak",
+        "bitcoin",
+        "kids",
+        "x",
+        "punk",
+        "source",
+        "code",
+        "head",
+        "tags",
+        "rave",
+        "relics",
+        "objects",
+        "evacuation",
+        "null",
+        "pressure",
+        "copy",
+        "ledger",
+        "three",
+        "empty",
+        "frames",
+        "late",
+        "night",
+        "print",
+        "daro",
+        "penn",
+        "repairs",
+        "paid",
+        "in",
+        "work",
+        "successful",
+        "disclosure"
       ]
     },
     "link_score": {
       "inbound_count": 6,
-      "outbound_count": 34,
+      "outbound_count": 74,
       "existing_outbound_count": 11,
-      "suggested_outbound_count": 23,
+      "suggested_outbound_count": 63,
       "authority": 17.5
     },
     "brand": null
@@ -3340,9 +3812,9 @@
     },
     "link_score": {
       "inbound_count": 51,
-      "outbound_count": 31,
+      "outbound_count": 33,
       "existing_outbound_count": 8,
-      "suggested_outbound_count": 23,
+      "suggested_outbound_count": 25,
       "authority": 106
     },
     "brand": null
@@ -3430,9 +3902,9 @@
     },
     "link_score": {
       "inbound_count": 32,
-      "outbound_count": 23,
+      "outbound_count": 24,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 11,
+      "suggested_outbound_count": 12,
       "authority": 70
     },
     "brand": null
@@ -3592,9 +4064,9 @@
     },
     "link_score": {
       "inbound_count": 3,
-      "outbound_count": 73,
+      "outbound_count": 74,
       "existing_outbound_count": 6,
-      "suggested_outbound_count": 67,
+      "suggested_outbound_count": 68,
       "authority": 9
     },
     "brand": null
@@ -3662,7 +4134,71 @@
         "kernel",
         "crypto",
         "moonboys",
-        "wiki"
+        "wiki",
+        "preserved",
+        "head",
+        "deep",
+        "memory",
+        "vaults",
+        "fragment",
+        "census",
+        "true",
+        "inscription",
+        "trace",
+        "interpretation",
+        "reconstruction",
+        "custody",
+        "trail",
+        "readers",
+        "soft",
+        "forking",
+        "code",
+        "alchemists",
+        "consciousness",
+        "workshop",
+        "nine",
+        "unanswered",
+        "voice",
+        "mara",
+        "venn",
+        "red",
+        "thread",
+        "no",
+        "second",
+        "copy",
+        "hearing",
+        "recovery",
+        "rooms",
+        "bitcoin",
+        "fork",
+        "eye",
+        "without",
+        "hash",
+        "mnemonic",
+        "whispers",
+        "nomad",
+        "conduits",
+        "forkborn",
+        "crown",
+        "cipher",
+        "origin",
+        "market",
+        "records",
+        "capsules",
+        "seeds",
+        "response",
+        "window",
+        "anchor",
+        "card",
+        "empty",
+        "chair",
+        "convention",
+        "glassweather",
+        "chorus",
+        "problem",
+        "orin",
+        "silt",
+        "unclaimed"
       ],
       "keyword_bag": [
         "genesis",
@@ -3692,14 +4228,72 @@
         "prophet",
         "chain",
         "scribes",
-        "gkniftyheads"
+        "gkniftyheads",
+        "preserved",
+        "head",
+        "deep",
+        "census",
+        "true",
+        "inscription",
+        "trace",
+        "interpretation",
+        "reconstruction",
+        "custody",
+        "trail",
+        "readers",
+        "soft",
+        "forking",
+        "code",
+        "alchemists",
+        "workshop",
+        "nine",
+        "unanswered",
+        "voice",
+        "mara",
+        "venn",
+        "red",
+        "thread",
+        "no",
+        "second",
+        "copy",
+        "hearing",
+        "rooms",
+        "bitcoin",
+        "eye",
+        "without",
+        "hash",
+        "mnemonic",
+        "whispers",
+        "nomad",
+        "conduits",
+        "forkborn",
+        "crown",
+        "cipher",
+        "origin",
+        "market",
+        "records",
+        "capsules",
+        "seeds",
+        "response",
+        "window",
+        "anchor",
+        "card",
+        "empty",
+        "chair",
+        "convention",
+        "glassweather",
+        "chorus",
+        "problem",
+        "orin",
+        "silt",
+        "unclaimed"
       ]
     },
     "link_score": {
       "inbound_count": 5,
-      "outbound_count": 35,
+      "outbound_count": 69,
       "existing_outbound_count": 13,
-      "suggested_outbound_count": 22,
+      "suggested_outbound_count": 56,
       "authority": 16.5
     },
     "brand": null
@@ -3765,8 +4359,6 @@
         "hay",
         "you",
         "guys",
-        "and",
-        "quot",
         "lupo",
         "crypto",
         "moonboys",
@@ -3959,9 +4551,9 @@
     },
     "link_score": {
       "inbound_count": 3,
-      "outbound_count": 70,
+      "outbound_count": 72,
       "existing_outbound_count": 6,
-      "suggested_outbound_count": 64,
+      "suggested_outbound_count": 66,
       "authority": 9
     },
     "brand": null
@@ -4209,9 +4801,9 @@
     },
     "link_score": {
       "inbound_count": 2,
-      "outbound_count": 63,
+      "outbound_count": 65,
       "existing_outbound_count": 5,
-      "suggested_outbound_count": 58,
+      "suggested_outbound_count": 60,
       "authority": 6.5
     },
     "brand": null
@@ -4366,9 +4958,9 @@
     },
     "link_score": {
       "inbound_count": 4,
-      "outbound_count": 69,
+      "outbound_count": 71,
       "existing_outbound_count": 6,
-      "suggested_outbound_count": 63,
+      "suggested_outbound_count": 65,
       "authority": 11
     },
     "brand": null
@@ -4526,9 +5118,9 @@
     },
     "link_score": {
       "inbound_count": 3,
-      "outbound_count": 62,
+      "outbound_count": 64,
       "existing_outbound_count": 6,
-      "suggested_outbound_count": 56,
+      "suggested_outbound_count": 58,
       "authority": 9
     },
     "brand": null
@@ -4687,9 +5279,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 65,
+      "outbound_count": 68,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 61,
+      "suggested_outbound_count": 64,
       "authority": 4
     },
     "brand": null
@@ -4842,9 +5434,9 @@
     },
     "link_score": {
       "inbound_count": 12,
-      "outbound_count": 65,
+      "outbound_count": 66,
       "existing_outbound_count": 6,
-      "suggested_outbound_count": 59,
+      "suggested_outbound_count": 60,
       "authority": 27
     },
     "brand": null
@@ -5000,9 +5592,9 @@
     },
     "link_score": {
       "inbound_count": 3,
-      "outbound_count": 70,
+      "outbound_count": 72,
       "existing_outbound_count": 6,
-      "suggested_outbound_count": 64,
+      "suggested_outbound_count": 66,
       "authority": 9
     },
     "brand": null
@@ -5254,9 +5846,9 @@
     },
     "link_score": {
       "inbound_count": 4,
-      "outbound_count": 67,
+      "outbound_count": 69,
       "existing_outbound_count": 6,
-      "suggested_outbound_count": 61,
+      "suggested_outbound_count": 63,
       "authority": 11
     },
     "brand": null
@@ -5411,9 +6003,9 @@
     },
     "link_score": {
       "inbound_count": 3,
-      "outbound_count": 70,
+      "outbound_count": 71,
       "existing_outbound_count": 6,
-      "suggested_outbound_count": 64,
+      "suggested_outbound_count": 65,
       "authority": 9
     },
     "brand": null
@@ -5649,9 +6241,9 @@
     },
     "link_score": {
       "inbound_count": 4,
-      "outbound_count": 67,
+      "outbound_count": 69,
       "existing_outbound_count": 6,
-      "suggested_outbound_count": 61,
+      "suggested_outbound_count": 63,
       "authority": 11
     },
     "brand": null
@@ -5825,9 +6417,9 @@
     },
     "link_score": {
       "inbound_count": 3,
-      "outbound_count": 72,
+      "outbound_count": 74,
       "existing_outbound_count": 6,
-      "suggested_outbound_count": 66,
+      "suggested_outbound_count": 68,
       "authority": 9
     },
     "brand": null
@@ -6158,9 +6750,9 @@
     },
     "link_score": {
       "inbound_count": 4,
-      "outbound_count": 76,
+      "outbound_count": 78,
       "existing_outbound_count": 6,
-      "suggested_outbound_count": 70,
+      "suggested_outbound_count": 72,
       "authority": 11
     },
     "brand": null
@@ -6324,9 +6916,9 @@
     },
     "link_score": {
       "inbound_count": 3,
-      "outbound_count": 69,
+      "outbound_count": 70,
       "existing_outbound_count": 6,
-      "suggested_outbound_count": 63,
+      "suggested_outbound_count": 64,
       "authority": 9
     },
     "brand": null
@@ -6402,7 +6994,6 @@
         "crypto",
         "moonboy",
         "pets",
-        "crypto",
         "moonboys",
         "wiki"
       ],
@@ -6476,9 +7067,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 12,
+      "outbound_count": 15,
       "existing_outbound_count": 3,
-      "suggested_outbound_count": 9,
+      "suggested_outbound_count": 12,
       "authority": 1.5
     },
     "brand": null,
@@ -6639,9 +7230,9 @@
     },
     "link_score": {
       "inbound_count": 8,
-      "outbound_count": 68,
+      "outbound_count": 69,
       "existing_outbound_count": 6,
-      "suggested_outbound_count": 62,
+      "suggested_outbound_count": 63,
       "authority": 19
     },
     "brand": null
@@ -6802,9 +7393,9 @@
     },
     "link_score": {
       "inbound_count": 9,
-      "outbound_count": 67,
+      "outbound_count": 69,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 63,
+      "suggested_outbound_count": 65,
       "authority": 20
     },
     "brand": null
@@ -6964,9 +7555,9 @@
     },
     "link_score": {
       "inbound_count": 9,
-      "outbound_count": 65,
+      "outbound_count": 68,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 61,
+      "suggested_outbound_count": 64,
       "authority": 20
     },
     "brand": null
@@ -7121,9 +7712,9 @@
     },
     "link_score": {
       "inbound_count": 4,
-      "outbound_count": 65,
+      "outbound_count": 67,
       "existing_outbound_count": 6,
-      "suggested_outbound_count": 59,
+      "suggested_outbound_count": 61,
       "authority": 11
     },
     "brand": null
@@ -7281,9 +7872,9 @@
     },
     "link_score": {
       "inbound_count": 11,
-      "outbound_count": 64,
+      "outbound_count": 66,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 60,
+      "suggested_outbound_count": 62,
       "authority": 24
     },
     "brand": null
@@ -7452,9 +8043,9 @@
     },
     "link_score": {
       "inbound_count": 3,
-      "outbound_count": 71,
+      "outbound_count": 72,
       "existing_outbound_count": 6,
-      "suggested_outbound_count": 65,
+      "suggested_outbound_count": 66,
       "authority": 9
     },
     "brand": null
@@ -7514,7 +8105,6 @@
       "tokens": [
         "crypto",
         "staking",
-        "crypto",
         "moonboys",
         "wiki"
       ],
@@ -7548,9 +8138,9 @@
     },
     "link_score": {
       "inbound_count": 23,
-      "outbound_count": 11,
+      "outbound_count": 12,
       "existing_outbound_count": 7,
-      "suggested_outbound_count": 4,
+      "suggested_outbound_count": 5,
       "authority": 49.5
     },
     "brand": null
@@ -7821,9 +8411,9 @@
     },
     "link_score": {
       "inbound_count": 4,
-      "outbound_count": 68,
+      "outbound_count": 70,
       "existing_outbound_count": 6,
-      "suggested_outbound_count": 62,
+      "suggested_outbound_count": 64,
       "authority": 11
     },
     "brand": null
@@ -8068,9 +8658,9 @@
     },
     "link_score": {
       "inbound_count": 3,
-      "outbound_count": 65,
+      "outbound_count": 67,
       "existing_outbound_count": 6,
-      "suggested_outbound_count": 59,
+      "suggested_outbound_count": 61,
       "authority": 9
     },
     "brand": null
@@ -8236,9 +8826,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 66,
+      "outbound_count": 68,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 62,
+      "suggested_outbound_count": 64,
       "authority": 4
     },
     "brand": null
@@ -8393,9 +8983,9 @@
     },
     "link_score": {
       "inbound_count": 3,
-      "outbound_count": 66,
+      "outbound_count": 68,
       "existing_outbound_count": 6,
-      "suggested_outbound_count": 60,
+      "suggested_outbound_count": 62,
       "authority": 9
     },
     "brand": null
@@ -8555,9 +9145,9 @@
     },
     "link_score": {
       "inbound_count": 3,
-      "outbound_count": 71,
+      "outbound_count": 73,
       "existing_outbound_count": 6,
-      "suggested_outbound_count": 65,
+      "suggested_outbound_count": 67,
       "authority": 9
     },
     "brand": null
@@ -8725,9 +9315,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 68,
+      "outbound_count": 71,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 64,
+      "suggested_outbound_count": 67,
       "authority": 4
     },
     "brand": null
@@ -8819,9 +9409,9 @@
     },
     "link_score": {
       "inbound_count": 3,
-      "outbound_count": 34,
+      "outbound_count": 35,
       "existing_outbound_count": 9,
-      "suggested_outbound_count": 25,
+      "suggested_outbound_count": 26,
       "authority": 10.5
     },
     "brand": null
@@ -8914,9 +9504,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 21,
+      "outbound_count": 22,
       "existing_outbound_count": 9,
-      "suggested_outbound_count": 12,
+      "suggested_outbound_count": 13,
       "authority": 6.5
     },
     "brand": null
@@ -9080,9 +9670,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 64,
+      "outbound_count": 66,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 60,
+      "suggested_outbound_count": 62,
       "authority": 4
     },
     "brand": null
@@ -9244,9 +9834,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 64,
+      "outbound_count": 66,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 60,
+      "suggested_outbound_count": 62,
       "authority": 4
     },
     "brand": null
@@ -9401,9 +9991,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 65,
+      "outbound_count": 67,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 61,
+      "suggested_outbound_count": 63,
       "authority": 4
     },
     "brand": null
@@ -9678,9 +10268,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 66,
+      "outbound_count": 68,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 62,
+      "suggested_outbound_count": 64,
       "authority": 4
     },
     "brand": null
@@ -9835,9 +10425,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 67,
+      "outbound_count": 70,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 63,
+      "suggested_outbound_count": 66,
       "authority": 4
     },
     "brand": null
@@ -9917,9 +10507,9 @@
     },
     "link_score": {
       "inbound_count": 34,
-      "outbound_count": 13,
+      "outbound_count": 14,
       "existing_outbound_count": 10,
-      "suggested_outbound_count": 3,
+      "suggested_outbound_count": 4,
       "authority": 73
     },
     "brand": null
@@ -10083,9 +10673,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 66,
+      "outbound_count": 68,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 62,
+      "suggested_outbound_count": 64,
       "authority": 4
     },
     "brand": null
@@ -10248,9 +10838,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 68,
+      "outbound_count": 70,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 64,
+      "suggested_outbound_count": 66,
       "authority": 4
     },
     "brand": null
@@ -10342,7 +10932,6 @@
         "chants",
         "and",
         "call",
-        "and",
         "response",
         "crypto",
         "moonboys",
@@ -10412,9 +11001,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 66,
+      "outbound_count": 68,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 62,
+      "suggested_outbound_count": 64,
       "authority": 4
     },
     "brand": null
@@ -10577,9 +11166,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 63,
+      "outbound_count": 65,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 59,
+      "suggested_outbound_count": 61,
       "authority": 4
     },
     "brand": null
@@ -10741,9 +11330,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 67,
+      "outbound_count": 70,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 63,
+      "suggested_outbound_count": 66,
       "authority": 4
     },
     "brand": null
@@ -10903,9 +11492,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 66,
+      "outbound_count": 68,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 62,
+      "suggested_outbound_count": 64,
       "authority": 4
     },
     "brand": null
@@ -11250,9 +11839,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 65,
+      "outbound_count": 68,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 61,
+      "suggested_outbound_count": 64,
       "authority": 4
     },
     "brand": null
@@ -11412,9 +12001,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 64,
+      "outbound_count": 66,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 60,
+      "suggested_outbound_count": 62,
       "authority": 4
     },
     "brand": null
@@ -11574,9 +12163,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 65,
+      "outbound_count": 67,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 61,
+      "suggested_outbound_count": 63,
       "authority": 4
     },
     "brand": null
@@ -11733,9 +12322,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 67,
+      "outbound_count": 69,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 63,
+      "suggested_outbound_count": 65,
       "authority": 4
     },
     "brand": null
@@ -11893,9 +12482,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 64,
+      "outbound_count": 66,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 60,
+      "suggested_outbound_count": 62,
       "authority": 4
     },
     "brand": null
@@ -11960,8 +12549,6 @@
         "quot",
         "cryptocurrency",
         "connoisseur",
-        "and",
-        "quot",
         "de",
         "angelis",
         "crypto",
@@ -12085,7 +12672,6 @@
         "the",
         "forty",
         "practise",
-        "the",
         "same",
         "covenant",
         "differently",
@@ -12157,9 +12743,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 64,
+      "outbound_count": 66,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 60,
+      "suggested_outbound_count": 62,
       "authority": 4
     },
     "brand": null
@@ -12260,9 +12846,9 @@
     },
     "link_score": {
       "inbound_count": 4,
-      "outbound_count": 24,
+      "outbound_count": 25,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 12,
+      "suggested_outbound_count": 13,
       "authority": 14
     },
     "brand": null
@@ -12419,9 +13005,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 66,
+      "outbound_count": 69,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 62,
+      "suggested_outbound_count": 65,
       "authority": 4
     },
     "brand": null
@@ -12611,9 +13197,9 @@
     },
     "link_score": {
       "inbound_count": 2,
-      "outbound_count": 30,
+      "outbound_count": 32,
       "existing_outbound_count": 13,
-      "suggested_outbound_count": 17,
+      "suggested_outbound_count": 19,
       "authority": 10.5
     },
     "brand": null
@@ -12770,9 +13356,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 64,
+      "outbound_count": 66,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 60,
+      "suggested_outbound_count": 62,
       "authority": 4
     },
     "brand": null
@@ -12928,9 +13514,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 64,
+      "outbound_count": 67,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 60,
+      "suggested_outbound_count": 63,
       "authority": 4
     },
     "brand": null
@@ -13026,9 +13612,9 @@
     },
     "link_score": {
       "inbound_count": 3,
-      "outbound_count": 26,
+      "outbound_count": 27,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 14,
+      "suggested_outbound_count": 15,
       "authority": 12
     },
     "brand": null
@@ -13186,9 +13772,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 64,
+      "outbound_count": 66,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 60,
+      "suggested_outbound_count": 62,
       "authority": 4
     },
     "brand": null
@@ -13286,9 +13872,9 @@
     },
     "link_score": {
       "inbound_count": 2,
-      "outbound_count": 17,
+      "outbound_count": 18,
       "existing_outbound_count": 10,
-      "suggested_outbound_count": 7,
+      "suggested_outbound_count": 8,
       "authority": 9
     },
     "brand": null
@@ -13384,9 +13970,9 @@
     },
     "link_score": {
       "inbound_count": 2,
-      "outbound_count": 26,
+      "outbound_count": 28,
       "existing_outbound_count": 13,
-      "suggested_outbound_count": 13,
+      "suggested_outbound_count": 15,
       "authority": 10.5
     },
     "brand": null
@@ -13477,9 +14063,9 @@
     },
     "link_score": {
       "inbound_count": 6,
-      "outbound_count": 24,
+      "outbound_count": 25,
       "existing_outbound_count": 11,
-      "suggested_outbound_count": 13,
+      "suggested_outbound_count": 14,
       "authority": 17.5
     },
     "brand": null
@@ -13577,9 +14163,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 23,
+      "outbound_count": 24,
       "existing_outbound_count": 11,
-      "suggested_outbound_count": 12,
+      "suggested_outbound_count": 13,
       "authority": 7.5
     },
     "brand": null
@@ -13676,9 +14262,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 21,
+      "outbound_count": 23,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 9,
+      "suggested_outbound_count": 11,
       "authority": 8
     },
     "brand": null
@@ -14037,9 +14623,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 64,
+      "outbound_count": 66,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 60,
+      "suggested_outbound_count": 62,
       "authority": 4
     },
     "brand": null
@@ -14139,9 +14725,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 26,
+      "outbound_count": 27,
       "existing_outbound_count": 11,
-      "suggested_outbound_count": 15,
+      "suggested_outbound_count": 16,
       "authority": 5.5
     },
     "brand": null
@@ -14304,9 +14890,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 64,
+      "outbound_count": 66,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 60,
+      "suggested_outbound_count": 62,
       "authority": 4
     },
     "brand": null
@@ -14500,9 +15086,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 55,
+      "outbound_count": 58,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 43,
+      "suggested_outbound_count": 46,
       "authority": 8
     },
     "brand": null
@@ -14663,9 +15249,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 66,
+      "outbound_count": 68,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 62,
+      "suggested_outbound_count": 64,
       "authority": 4
     },
     "brand": null
@@ -14826,9 +15412,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 64,
+      "outbound_count": 66,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 60,
+      "suggested_outbound_count": 62,
       "authority": 4
     },
     "brand": null
@@ -14927,9 +15513,9 @@
     },
     "link_score": {
       "inbound_count": 2,
-      "outbound_count": 17,
+      "outbound_count": 18,
       "existing_outbound_count": 11,
-      "suggested_outbound_count": 6,
+      "suggested_outbound_count": 7,
       "authority": 9.5
     },
     "brand": null
@@ -15082,9 +15668,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 64,
+      "outbound_count": 66,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 60,
+      "suggested_outbound_count": 62,
       "authority": 4
     },
     "brand": null
@@ -15246,9 +15832,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 63,
+      "outbound_count": 65,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 59,
+      "suggested_outbound_count": 61,
       "authority": 4
     },
     "brand": null
@@ -15333,9 +15919,9 @@
     },
     "link_score": {
       "inbound_count": 19,
-      "outbound_count": 30,
+      "outbound_count": 31,
       "existing_outbound_count": 15,
-      "suggested_outbound_count": 15,
+      "suggested_outbound_count": 16,
       "authority": 45.5
     },
     "brand": null
@@ -15401,7 +15987,6 @@
         "crypto",
         "stoned",
         "boys",
-        "crypto",
         "moonboys",
         "wiki"
       ],
@@ -15438,9 +16023,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 21,
+      "outbound_count": 22,
       "existing_outbound_count": 11,
-      "suggested_outbound_count": 10,
+      "suggested_outbound_count": 11,
       "authority": 5.5
     },
     "brand": null
@@ -15601,9 +16186,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 66,
+      "outbound_count": 68,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 62,
+      "suggested_outbound_count": 64,
       "authority": 4
     },
     "brand": null
@@ -15700,9 +16285,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 19,
+      "outbound_count": 20,
       "existing_outbound_count": 11,
-      "suggested_outbound_count": 8,
+      "suggested_outbound_count": 9,
       "authority": 5.5
     },
     "brand": null
@@ -15797,9 +16382,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 24,
+      "outbound_count": 26,
       "existing_outbound_count": 11,
-      "suggested_outbound_count": 13,
+      "suggested_outbound_count": 15,
       "authority": 7.5
     },
     "brand": null
@@ -15892,9 +16477,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 27,
+      "outbound_count": 28,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 15,
+      "suggested_outbound_count": 16,
       "authority": 6
     },
     "brand": null
@@ -15985,9 +16570,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 19,
+      "outbound_count": 20,
       "existing_outbound_count": 10,
-      "suggested_outbound_count": 9,
+      "suggested_outbound_count": 10,
       "authority": 5
     },
     "brand": null
@@ -16158,9 +16743,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 65,
+      "outbound_count": 67,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 61,
+      "suggested_outbound_count": 63,
       "authority": 4
     },
     "brand": null
@@ -16329,9 +16914,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 63,
+      "outbound_count": 65,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 59,
+      "suggested_outbound_count": 61,
       "authority": 4
     },
     "brand": null
@@ -16513,9 +17098,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 23,
+      "outbound_count": 24,
       "existing_outbound_count": 10,
-      "suggested_outbound_count": 13,
+      "suggested_outbound_count": 14,
       "authority": 5
     },
     "brand": null
@@ -16612,9 +17197,9 @@
     },
     "link_score": {
       "inbound_count": 2,
-      "outbound_count": 24,
+      "outbound_count": 25,
       "existing_outbound_count": 11,
-      "suggested_outbound_count": 13,
+      "suggested_outbound_count": 14,
       "authority": 9.5
     },
     "brand": null
@@ -16713,9 +17298,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 21,
+      "outbound_count": 24,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 9,
+      "suggested_outbound_count": 12,
       "authority": 6
     },
     "brand": null
@@ -16894,9 +17479,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 24,
+      "outbound_count": 25,
       "existing_outbound_count": 11,
-      "suggested_outbound_count": 13,
+      "suggested_outbound_count": 14,
       "authority": 7.5
     },
     "brand": null
@@ -17146,9 +17731,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 64,
+      "outbound_count": 66,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 60,
+      "suggested_outbound_count": 62,
       "authority": 4
     },
     "brand": null
@@ -17237,9 +17822,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 25,
+      "outbound_count": 26,
       "existing_outbound_count": 10,
-      "suggested_outbound_count": 15,
+      "suggested_outbound_count": 16,
       "authority": 5
     },
     "brand": null
@@ -17332,9 +17917,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 21,
+      "outbound_count": 23,
       "existing_outbound_count": 11,
-      "suggested_outbound_count": 10,
+      "suggested_outbound_count": 12,
       "authority": 5.5
     },
     "brand": null
@@ -17421,9 +18006,9 @@
     },
     "link_score": {
       "inbound_count": 6,
-      "outbound_count": 37,
+      "outbound_count": 39,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 25,
+      "suggested_outbound_count": 27,
       "authority": 18
     },
     "brand": null
@@ -17521,9 +18106,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 25,
+      "outbound_count": 28,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 13,
+      "suggested_outbound_count": 16,
       "authority": 6
     },
     "brand": null
@@ -17616,9 +18201,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 29,
+      "outbound_count": 31,
       "existing_outbound_count": 11,
-      "suggested_outbound_count": 18,
+      "suggested_outbound_count": 20,
       "authority": 5.5
     },
     "brand": null
@@ -17712,9 +18297,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 24,
+      "outbound_count": 25,
       "existing_outbound_count": 9,
-      "suggested_outbound_count": 15,
+      "suggested_outbound_count": 16,
       "authority": 6.5
     },
     "brand": null
@@ -17901,9 +18486,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 35,
+      "outbound_count": 37,
       "existing_outbound_count": 9,
-      "suggested_outbound_count": 26,
+      "suggested_outbound_count": 28,
       "authority": 4.5
     },
     "brand": null
@@ -18069,9 +18654,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 63,
+      "outbound_count": 66,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 59,
+      "suggested_outbound_count": 62,
       "authority": 4
     },
     "brand": null
@@ -18135,8 +18720,6 @@
         "quot",
         "token",
         "titan",
-        "and",
-        "quot",
         "marini",
         "crypto",
         "moonboys",
@@ -18249,9 +18832,9 @@
     },
     "link_score": {
       "inbound_count": 5,
-      "outbound_count": 37,
+      "outbound_count": 38,
       "existing_outbound_count": 13,
-      "suggested_outbound_count": 24,
+      "suggested_outbound_count": 25,
       "authority": 16.5
     },
     "brand": null
@@ -18510,9 +19093,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 67,
+      "outbound_count": 70,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 63,
+      "suggested_outbound_count": 66,
       "authority": 4
     },
     "brand": null
@@ -18666,9 +19249,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 63,
+      "outbound_count": 65,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 59,
+      "suggested_outbound_count": 61,
       "authority": 4
     },
     "brand": null
@@ -18832,9 +19415,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 66,
+      "outbound_count": 68,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 62,
+      "suggested_outbound_count": 64,
       "authority": 4
     },
     "brand": null
@@ -18997,9 +19580,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 64,
+      "outbound_count": 67,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 60,
+      "suggested_outbound_count": 63,
       "authority": 4
     },
     "brand": null
@@ -19163,9 +19746,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 64,
+      "outbound_count": 66,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 60,
+      "suggested_outbound_count": 62,
       "authority": 4
     },
     "brand": null
@@ -19255,9 +19838,9 @@
     },
     "link_score": {
       "inbound_count": 5,
-      "outbound_count": 33,
+      "outbound_count": 34,
       "existing_outbound_count": 20,
-      "suggested_outbound_count": 13,
+      "suggested_outbound_count": 14,
       "authority": 20
     },
     "brand": {
@@ -19354,9 +19937,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 21,
+      "outbound_count": 22,
       "existing_outbound_count": 9,
-      "suggested_outbound_count": 12,
+      "suggested_outbound_count": 13,
       "authority": 6.5
     },
     "brand": null
@@ -19544,9 +20127,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 18,
+      "outbound_count": 19,
       "existing_outbound_count": 10,
-      "suggested_outbound_count": 8,
+      "suggested_outbound_count": 9,
       "authority": 5
     },
     "brand": null
@@ -19610,8 +20193,6 @@
         "quot",
         "anonymity",
         "advocate",
-        "and",
-        "quot",
         "amato",
         "crypto",
         "moonboys",
@@ -19805,9 +20386,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 64,
+      "outbound_count": 67,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 60,
+      "suggested_outbound_count": 63,
       "authority": 4
     },
     "brand": null
@@ -20060,9 +20641,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 69,
+      "outbound_count": 71,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 65,
+      "suggested_outbound_count": 67,
       "authority": 4
     },
     "brand": null
@@ -20153,9 +20734,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 20,
+      "outbound_count": 21,
       "existing_outbound_count": 9,
-      "suggested_outbound_count": 11,
+      "suggested_outbound_count": 12,
       "authority": 4.5
     },
     "brand": null
@@ -20247,9 +20828,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 21,
+      "outbound_count": 22,
       "existing_outbound_count": 10,
-      "suggested_outbound_count": 11,
+      "suggested_outbound_count": 12,
       "authority": 5
     },
     "brand": null
@@ -20342,9 +20923,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 23,
+      "outbound_count": 24,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 11,
+      "suggested_outbound_count": 12,
       "authority": 6
     },
     "brand": null
@@ -20505,9 +21086,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 64,
+      "outbound_count": 66,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 60,
+      "suggested_outbound_count": 62,
       "authority": 4
     },
     "brand": null
@@ -20667,9 +21248,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 64,
+      "outbound_count": 66,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 60,
+      "suggested_outbound_count": 62,
       "authority": 4
     },
     "brand": null
@@ -20830,9 +21411,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 67,
+      "outbound_count": 69,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 63,
+      "suggested_outbound_count": 65,
       "authority": 4
     },
     "brand": null
@@ -20892,7 +21473,6 @@
       "tokens": [
         "crypto",
         "exchanges",
-        "crypto",
         "moonboys",
         "wiki"
       ],
@@ -21077,9 +21657,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 64,
+      "outbound_count": 66,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 60,
+      "suggested_outbound_count": 62,
       "authority": 4
     },
     "brand": null
@@ -21239,9 +21819,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 64,
+      "outbound_count": 66,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 60,
+      "suggested_outbound_count": 62,
       "authority": 4
     },
     "brand": null
@@ -21574,9 +22154,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 62,
+      "outbound_count": 64,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 58,
+      "suggested_outbound_count": 60,
       "authority": 4
     },
     "brand": null
@@ -21823,8 +22403,6 @@
         "quot",
         "satoshi",
         "samurai",
-        "and",
-        "quot",
         "ferrari",
         "crypto",
         "moonboys",
@@ -21933,9 +22511,9 @@
     },
     "link_score": {
       "inbound_count": 14,
-      "outbound_count": 34,
+      "outbound_count": 37,
       "existing_outbound_count": 18,
-      "suggested_outbound_count": 16,
+      "suggested_outbound_count": 19,
       "authority": 37
     },
     "brand": null
@@ -22285,9 +22863,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 62,
+      "outbound_count": 64,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 58,
+      "suggested_outbound_count": 60,
       "authority": 4
     },
     "brand": null
@@ -22445,9 +23023,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 65,
+      "outbound_count": 68,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 61,
+      "suggested_outbound_count": 64,
       "authority": 4
     },
     "brand": null
@@ -22696,9 +23274,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 66,
+      "outbound_count": 69,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 62,
+      "suggested_outbound_count": 65,
       "authority": 4
     },
     "brand": null
@@ -22845,7 +23423,6 @@
       "tokens": [
         "crypto",
         "wallets",
-        "crypto",
         "moonboys",
         "wiki"
       ],
@@ -22962,9 +23539,9 @@
     },
     "link_score": {
       "inbound_count": 2,
-      "outbound_count": 40,
+      "outbound_count": 41,
       "existing_outbound_count": 8,
-      "suggested_outbound_count": 32,
+      "suggested_outbound_count": 33,
       "authority": 8
     },
     "brand": null
@@ -23058,9 +23635,9 @@
     },
     "link_score": {
       "inbound_count": 12,
-      "outbound_count": 18,
+      "outbound_count": 19,
       "existing_outbound_count": 16,
-      "suggested_outbound_count": 2,
+      "suggested_outbound_count": 3,
       "authority": 32
     },
     "brand": null
@@ -23234,9 +23811,9 @@
     },
     "link_score": {
       "inbound_count": 11,
-      "outbound_count": 37,
+      "outbound_count": 38,
       "existing_outbound_count": 17,
-      "suggested_outbound_count": 20,
+      "suggested_outbound_count": 21,
       "authority": 30.5
     },
     "brand": null
@@ -23435,9 +24012,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 17,
+      "outbound_count": 18,
       "existing_outbound_count": 10,
-      "suggested_outbound_count": 7,
+      "suggested_outbound_count": 8,
       "authority": 7
     },
     "brand": null
@@ -23531,9 +24108,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 19,
+      "outbound_count": 20,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 7,
+      "suggested_outbound_count": 8,
       "authority": 6
     },
     "brand": null
@@ -23624,9 +24201,9 @@
     },
     "link_score": {
       "inbound_count": 2,
-      "outbound_count": 17,
+      "outbound_count": 19,
       "existing_outbound_count": 8,
-      "suggested_outbound_count": 9,
+      "suggested_outbound_count": 11,
       "authority": 8
     },
     "brand": null
@@ -23795,9 +24372,9 @@
     },
     "link_score": {
       "inbound_count": 28,
-      "outbound_count": 24,
+      "outbound_count": 26,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 12,
+      "suggested_outbound_count": 14,
       "authority": 62
     },
     "brand": null
@@ -23985,9 +24562,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 20,
+      "outbound_count": 21,
       "existing_outbound_count": 9,
-      "suggested_outbound_count": 11,
+      "suggested_outbound_count": 12,
       "authority": 6.5
     },
     "brand": {
@@ -24534,9 +25111,9 @@
     },
     "link_score": {
       "inbound_count": 5,
-      "outbound_count": 26,
+      "outbound_count": 27,
       "existing_outbound_count": 18,
-      "suggested_outbound_count": 8,
+      "suggested_outbound_count": 9,
       "authority": 19
     },
     "brand": null
@@ -24624,9 +25201,9 @@
     },
     "link_score": {
       "inbound_count": 26,
-      "outbound_count": 24,
+      "outbound_count": 26,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 12,
+      "suggested_outbound_count": 14,
       "authority": 58
     },
     "brand": null
@@ -24706,9 +25283,9 @@
     },
     "link_score": {
       "inbound_count": 9,
-      "outbound_count": 36,
+      "outbound_count": 39,
       "existing_outbound_count": 16,
-      "suggested_outbound_count": 20,
+      "suggested_outbound_count": 23,
       "authority": 26
     },
     "brand": null
@@ -24789,9 +25366,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 37,
+      "outbound_count": 38,
       "existing_outbound_count": 11,
-      "suggested_outbound_count": 26,
+      "suggested_outbound_count": 27,
       "authority": 5.5
     },
     "brand": null
@@ -24883,9 +25460,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 27,
+      "outbound_count": 30,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 15,
+      "suggested_outbound_count": 18,
       "authority": 6
     },
     "brand": null
@@ -24976,9 +25553,9 @@
     },
     "link_score": {
       "inbound_count": 2,
-      "outbound_count": 17,
+      "outbound_count": 18,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 5,
+      "suggested_outbound_count": 6,
       "authority": 10
     },
     "brand": null
@@ -25346,9 +25923,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 22,
+      "outbound_count": 23,
       "existing_outbound_count": 10,
-      "suggested_outbound_count": 12,
+      "suggested_outbound_count": 13,
       "authority": 5
     },
     "brand": null
@@ -25524,9 +26101,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 36,
+      "outbound_count": 37,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 24,
+      "suggested_outbound_count": 25,
       "authority": 8
     },
     "brand": null
@@ -25801,9 +26378,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 31,
+      "outbound_count": 32,
       "existing_outbound_count": 10,
-      "suggested_outbound_count": 21,
+      "suggested_outbound_count": 22,
       "authority": 5
     },
     "brand": null
@@ -25894,9 +26471,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 22,
+      "outbound_count": 23,
       "existing_outbound_count": 10,
-      "suggested_outbound_count": 12,
+      "suggested_outbound_count": 13,
       "authority": 5
     },
     "brand": null
@@ -25984,9 +26561,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 13,
+      "outbound_count": 14,
       "existing_outbound_count": 11,
-      "suggested_outbound_count": 2,
+      "suggested_outbound_count": 3,
       "authority": 7.5
     },
     "brand": null
@@ -26172,9 +26749,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 21,
+      "outbound_count": 23,
       "existing_outbound_count": 10,
-      "suggested_outbound_count": 11,
+      "suggested_outbound_count": 13,
       "authority": 5
     },
     "brand": null
@@ -26266,9 +26843,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 22,
+      "outbound_count": 23,
       "existing_outbound_count": 10,
-      "suggested_outbound_count": 12,
+      "suggested_outbound_count": 13,
       "authority": 5
     },
     "brand": null
@@ -26345,9 +26922,9 @@
     },
     "link_score": {
       "inbound_count": 11,
-      "outbound_count": 34,
+      "outbound_count": 37,
       "existing_outbound_count": 8,
-      "suggested_outbound_count": 26,
+      "suggested_outbound_count": 29,
       "authority": 26
     },
     "brand": null
@@ -26530,9 +27107,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 18,
+      "outbound_count": 20,
       "existing_outbound_count": 13,
-      "suggested_outbound_count": 5,
+      "suggested_outbound_count": 7,
       "authority": 6.5
     },
     "brand": null
@@ -26711,9 +27288,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 18,
+      "outbound_count": 19,
       "existing_outbound_count": 10,
-      "suggested_outbound_count": 8,
+      "suggested_outbound_count": 9,
       "authority": 5
     },
     "brand": null
@@ -26803,9 +27380,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 17,
+      "outbound_count": 18,
       "existing_outbound_count": 10,
-      "suggested_outbound_count": 7,
+      "suggested_outbound_count": 8,
       "authority": 5
     },
     "brand": null
@@ -27072,9 +27649,9 @@
     },
     "link_score": {
       "inbound_count": 4,
-      "outbound_count": 26,
+      "outbound_count": 27,
       "existing_outbound_count": 19,
-      "suggested_outbound_count": 7,
+      "suggested_outbound_count": 8,
       "authority": 17.5
     },
     "brand": null
@@ -27253,9 +27830,9 @@
     },
     "link_score": {
       "inbound_count": 9,
-      "outbound_count": 20,
+      "outbound_count": 21,
       "existing_outbound_count": 14,
-      "suggested_outbound_count": 6,
+      "suggested_outbound_count": 7,
       "authority": 25
     },
     "brand": null
@@ -27430,9 +28007,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 15,
+      "outbound_count": 18,
       "existing_outbound_count": 8,
-      "suggested_outbound_count": 7,
+      "suggested_outbound_count": 10,
       "authority": 4
     },
     "brand": null
@@ -27613,9 +28190,9 @@
     },
     "link_score": {
       "inbound_count": 22,
-      "outbound_count": 24,
+      "outbound_count": 26,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 12,
+      "suggested_outbound_count": 14,
       "authority": 50
     },
     "brand": null
@@ -27701,9 +28278,9 @@
     },
     "link_score": {
       "inbound_count": 9,
-      "outbound_count": 23,
+      "outbound_count": 24,
       "existing_outbound_count": 14,
-      "suggested_outbound_count": 9,
+      "suggested_outbound_count": 10,
       "authority": 25
     },
     "brand": null
@@ -27888,9 +28465,9 @@
     },
     "link_score": {
       "inbound_count": 5,
-      "outbound_count": 23,
+      "outbound_count": 24,
       "existing_outbound_count": 17,
-      "suggested_outbound_count": 6,
+      "suggested_outbound_count": 7,
       "authority": 18.5
     },
     "brand": null
@@ -27979,9 +28556,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 10,
+      "outbound_count": 12,
       "existing_outbound_count": 6,
-      "suggested_outbound_count": 4,
+      "suggested_outbound_count": 6,
       "authority": 3
     },
     "brand": null
@@ -28074,9 +28651,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 26,
+      "outbound_count": 27,
       "existing_outbound_count": 9,
-      "suggested_outbound_count": 17,
+      "suggested_outbound_count": 18,
       "authority": 4.5
     },
     "brand": null
@@ -28423,9 +29000,9 @@
     },
     "link_score": {
       "inbound_count": 19,
-      "outbound_count": 37,
+      "outbound_count": 40,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 25,
+      "suggested_outbound_count": 28,
       "authority": 44
     },
     "brand": null
@@ -28489,8 +29066,6 @@
         "quot",
         "ether",
         "emperor",
-        "and",
-        "quot",
         "costa",
         "crypto",
         "moonboys",
@@ -28615,9 +29190,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 28,
+      "outbound_count": 30,
       "existing_outbound_count": 11,
-      "suggested_outbound_count": 17,
+      "suggested_outbound_count": 19,
       "authority": 7.5
     },
     "brand": null
@@ -28708,9 +29283,9 @@
     },
     "link_score": {
       "inbound_count": 3,
-      "outbound_count": 28,
+      "outbound_count": 29,
       "existing_outbound_count": 11,
-      "suggested_outbound_count": 17,
+      "suggested_outbound_count": 18,
       "authority": 11.5
     },
     "brand": null
@@ -28798,9 +29373,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 16,
+      "outbound_count": 17,
       "existing_outbound_count": 10,
-      "suggested_outbound_count": 6,
+      "suggested_outbound_count": 7,
       "authority": 5
     },
     "brand": null
@@ -28888,9 +29463,9 @@
     },
     "link_score": {
       "inbound_count": 2,
-      "outbound_count": 16,
+      "outbound_count": 17,
       "existing_outbound_count": 11,
-      "suggested_outbound_count": 5,
+      "suggested_outbound_count": 6,
       "authority": 9.5
     },
     "brand": null
@@ -28978,9 +29553,9 @@
     },
     "link_score": {
       "inbound_count": 7,
-      "outbound_count": 52,
+      "outbound_count": 55,
       "existing_outbound_count": 14,
-      "suggested_outbound_count": 38,
+      "suggested_outbound_count": 41,
       "authority": 21
     },
     "brand": null
@@ -29068,9 +29643,9 @@
     },
     "link_score": {
       "inbound_count": 3,
-      "outbound_count": 25,
+      "outbound_count": 26,
       "existing_outbound_count": 13,
-      "suggested_outbound_count": 12,
+      "suggested_outbound_count": 13,
       "authority": 12.5
     },
     "brand": {
@@ -29139,7 +29714,6 @@
         "nft",
         "collection",
         "crypto",
-        "moonboys",
         "wiki"
       ],
       "keyword_bag": [
@@ -29167,9 +29741,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 15,
+      "outbound_count": 16,
       "existing_outbound_count": 2,
-      "suggested_outbound_count": 13,
+      "suggested_outbound_count": 14,
       "authority": 1
     },
     "brand": null
@@ -29349,9 +29923,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 19,
+      "outbound_count": 21,
       "existing_outbound_count": 9,
-      "suggested_outbound_count": 10,
+      "suggested_outbound_count": 12,
       "authority": 6.5
     },
     "brand": null
@@ -29702,9 +30276,9 @@
     },
     "link_score": {
       "inbound_count": 17,
-      "outbound_count": 36,
+      "outbound_count": 39,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 24,
+      "suggested_outbound_count": 27,
       "authority": 40
     },
     "brand": null
@@ -30237,9 +30811,9 @@
     },
     "link_score": {
       "inbound_count": 10,
-      "outbound_count": 41,
+      "outbound_count": 44,
       "existing_outbound_count": 14,
-      "suggested_outbound_count": 27,
+      "suggested_outbound_count": 30,
       "authority": 27
     },
     "brand": null
@@ -30416,9 +30990,9 @@
     },
     "link_score": {
       "inbound_count": 15,
-      "outbound_count": 36,
+      "outbound_count": 39,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 24,
+      "suggested_outbound_count": 27,
       "authority": 36
     },
     "brand": null
@@ -30593,9 +31167,9 @@
     },
     "link_score": {
       "inbound_count": 13,
-      "outbound_count": 24,
+      "outbound_count": 26,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 12,
+      "suggested_outbound_count": 14,
       "authority": 32
     },
     "brand": null
@@ -31006,8 +31580,6 @@
         "quot",
         "the",
         "phoenix",
-        "and",
-        "quot",
         "piccioli",
         "crypto",
         "moonboys",
@@ -31101,8 +31673,6 @@
         "quot",
         "the",
         "maestro",
-        "and",
-        "quot",
         "mancini",
         "crypto",
         "moonboys",
@@ -31308,9 +31878,9 @@
     },
     "link_score": {
       "inbound_count": 11,
-      "outbound_count": 24,
+      "outbound_count": 26,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 12,
+      "suggested_outbound_count": 14,
       "authority": 28
     },
     "brand": null
@@ -31485,9 +32055,9 @@
     },
     "link_score": {
       "inbound_count": 12,
-      "outbound_count": 36,
+      "outbound_count": 39,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 24,
+      "suggested_outbound_count": 27,
       "authority": 30
     },
     "brand": null
@@ -31642,8 +32212,6 @@
         "quot",
         "the",
         "ricochet",
-        "and",
-        "quot",
         "ricci",
         "crypto",
         "moonboys",
@@ -32095,8 +32663,6 @@
         "quot",
         "the",
         "jetstream",
-        "and",
-        "quot",
         "jankovic",
         "crypto",
         "moonboys",
@@ -32190,8 +32756,6 @@
         "quot",
         "the",
         "rocket",
-        "and",
-        "quot",
         "radic",
         "crypto",
         "moonboys",
@@ -32285,8 +32849,6 @@
         "quot",
         "the",
         "visionary",
-        "and",
-        "quot",
         "valenti",
         "crypto",
         "moonboys",
@@ -32578,9 +33140,9 @@
     },
     "link_score": {
       "inbound_count": 10,
-      "outbound_count": 36,
+      "outbound_count": 39,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 24,
+      "suggested_outbound_count": 27,
       "authority": 26
     },
     "brand": null
@@ -32644,8 +33206,6 @@
         "quot",
         "altcoin",
         "alchemist",
-        "and",
-        "quot",
         "marino",
         "crypto",
         "moonboys",
@@ -32916,8 +33476,6 @@
         "quot",
         "nft",
         "ninja",
-        "and",
-        "quot",
         "rossi",
         "crypto",
         "moonboys",
@@ -33098,8 +33656,6 @@
         "quot",
         "charlie",
         "buster",
-        "and",
-        "quot",
         "lancer",
         "crypto",
         "moonboys",
@@ -33283,8 +33839,6 @@
         "quot",
         "token",
         "tactician",
-        "and",
-        "quot",
         "romano",
         "crypto",
         "moonboys",
@@ -33404,9 +33958,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 28,
+      "outbound_count": 30,
       "existing_outbound_count": 9,
-      "suggested_outbound_count": 19,
+      "suggested_outbound_count": 21,
       "authority": 6.5
     },
     "brand": null
@@ -33734,8 +34288,6 @@
         "quot",
         "gas",
         "guzzler",
-        "and",
-        "quot",
         "giordano",
         "crypto",
         "moonboys",
@@ -33905,8 +34457,6 @@
         "quot",
         "the",
         "technician",
-        "and",
-        "quot",
         "toscano",
         "crypto",
         "moonboys",
@@ -34025,9 +34575,9 @@
     },
     "link_score": {
       "inbound_count": 5,
-      "outbound_count": 24,
+      "outbound_count": 26,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 12,
+      "suggested_outbound_count": 14,
       "authority": 16
     },
     "brand": null
@@ -34115,9 +34665,9 @@
     },
     "link_score": {
       "inbound_count": 5,
-      "outbound_count": 24,
+      "outbound_count": 26,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 12,
+      "suggested_outbound_count": 14,
       "authority": 16
     },
     "brand": null
@@ -34194,9 +34744,9 @@
     },
     "link_score": {
       "inbound_count": 8,
-      "outbound_count": 31,
+      "outbound_count": 34,
       "existing_outbound_count": 10,
-      "suggested_outbound_count": 21,
+      "suggested_outbound_count": 24,
       "authority": 21
     },
     "brand": null
@@ -34557,9 +35107,9 @@
     },
     "link_score": {
       "inbound_count": 14,
-      "outbound_count": 41,
+      "outbound_count": 44,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 29,
+      "suggested_outbound_count": 32,
       "authority": 34
     },
     "brand": null
@@ -34821,9 +35371,9 @@
     },
     "link_score": {
       "inbound_count": 5,
-      "outbound_count": 35,
+      "outbound_count": 38,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 23,
+      "suggested_outbound_count": 26,
       "authority": 16
     },
     "brand": null
@@ -34886,8 +35436,6 @@
         "quot",
         "the",
         "oracle",
-        "and",
-        "quot",
         "olivieri",
         "crypto",
         "moonboys",
@@ -35079,9 +35627,9 @@
     },
     "link_score": {
       "inbound_count": 6,
-      "outbound_count": 29,
+      "outbound_count": 31,
       "existing_outbound_count": 10,
-      "suggested_outbound_count": 19,
+      "suggested_outbound_count": 21,
       "authority": 17
     },
     "brand": null
@@ -35253,9 +35801,9 @@
     },
     "link_score": {
       "inbound_count": 4,
-      "outbound_count": 34,
+      "outbound_count": 37,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 22,
+      "suggested_outbound_count": 25,
       "authority": 14
     },
     "brand": null
@@ -35319,8 +35867,6 @@
         "quot",
         "satoshi",
         "sorceress",
-        "and",
-        "quot",
         "espositooo",
         "crypto",
         "moonboys",
@@ -35590,8 +36136,6 @@
         "quot",
         "bitcoin",
         "bandit",
-        "and",
-        "quot",
         "gallo",
         "crypto",
         "moonboys",
@@ -35621,9 +36165,9 @@
     },
     "link_score": {
       "inbound_count": 7,
-      "outbound_count": 67,
+      "outbound_count": 70,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 55,
+      "suggested_outbound_count": 58,
       "authority": 20
     },
     "brand": null
@@ -36128,10 +36672,7 @@
         "quot",
         "crypto",
         "maestro",
-        "and",
-        "quot",
         "rossi",
-        "crypto",
         "moonboys",
         "wiki"
       ],
@@ -36769,9 +37310,9 @@
     },
     "link_score": {
       "inbound_count": 12,
-      "outbound_count": 20,
+      "outbound_count": 22,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 8,
+      "suggested_outbound_count": 10,
       "authority": 30
     },
     "brand": null
@@ -36856,9 +37397,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 34,
+      "outbound_count": 37,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 22,
+      "suggested_outbound_count": 25,
       "authority": 8
     },
     "brand": null
@@ -36922,8 +37463,6 @@
         "quot",
         "coin",
         "conqueror",
-        "and",
-        "quot",
         "moretti",
         "crypto",
         "moonboys",
@@ -37018,8 +37557,6 @@
         "quot",
         "the",
         "titan",
-        "and",
-        "quot",
         "tucci",
         "crypto",
         "moonboys",
@@ -37288,8 +37825,6 @@
         "and",
         "quot",
         "cryptocartel",
-        "and",
-        "quot",
         "ricci",
         "crypto",
         "moonboys",
@@ -37384,8 +37919,6 @@
         "quot",
         "cryptocurrency",
         "crusader",
-        "and",
-        "quot",
         "lombardi",
         "crypto",
         "moonboys",
@@ -37582,9 +38115,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 21,
+      "outbound_count": 22,
       "existing_outbound_count": 11,
-      "suggested_outbound_count": 10,
+      "suggested_outbound_count": 11,
       "authority": 5.5
     },
     "brand": null
@@ -37648,8 +38181,6 @@
         "quot",
         "blockchain",
         "buccaneer",
-        "and",
-        "quot",
         "moretti",
         "crypto",
         "moonboys",
@@ -37745,8 +38276,6 @@
         "quot",
         "altcoin",
         "assassin",
-        "and",
-        "quot",
         "bianchi",
         "crypto",
         "moonboys",
@@ -37842,8 +38371,6 @@
         "quot",
         "il",
         "criptografo",
-        "and",
-        "quot",
         "russo",
         "crypto",
         "moonboys",
@@ -37938,8 +38465,6 @@
         "quot",
         "the",
         "titan",
-        "and",
-        "quot",
         "tucci",
         "crypto",
         "moonboys",
@@ -38033,8 +38558,6 @@
         "quot",
         "the",
         "vanguard",
-        "and",
-        "quot",
         "ventura",
         "crypto",
         "moonboys",
@@ -38128,8 +38651,6 @@
         "quot",
         "the",
         "vanguard",
-        "and",
-        "quot",
         "ventura",
         "crypto",
         "moonboys",
@@ -38310,8 +38831,6 @@
         "quot",
         "the",
         "ninja",
-        "and",
-        "quot",
         "napolitano",
         "crypto",
         "moonboys",
@@ -38405,8 +38924,6 @@
         "quot",
         "the",
         "juggernaut",
-        "and",
-        "quot",
         "jablonski",
         "crypto",
         "moonboys",
@@ -38499,8 +39016,6 @@
         "and",
         "quot",
         "cryptochieftain",
-        "and",
-        "quot",
         "bianco",
         "crypto",
         "moonboys",
@@ -39160,9 +39675,9 @@
     },
     "link_score": {
       "inbound_count": 3,
-      "outbound_count": 21,
+      "outbound_count": 22,
       "existing_outbound_count": 7,
-      "suggested_outbound_count": 14,
+      "suggested_outbound_count": 15,
       "authority": 9.5
     },
     "brand": null
@@ -39312,8 +39827,6 @@
         "quot",
         "the",
         "conductor",
-        "and",
-        "quot",
         "cimino",
         "crypto",
         "moonboys",
@@ -39516,9 +40029,9 @@
     },
     "link_score": {
       "inbound_count": 6,
-      "outbound_count": 39,
+      "outbound_count": 42,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 27,
+      "suggested_outbound_count": 30,
       "authority": 18
     },
     "brand": null
@@ -41578,7 +42091,6 @@
       "tokens": [
         "crypto",
         "charmcaster",
-        "crypto",
         "moonboys",
         "wiki"
       ],
@@ -41776,9 +42288,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 33,
+      "outbound_count": 36,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 21,
+      "suggested_outbound_count": 24,
       "authority": 8
     },
     "brand": null
@@ -43358,8 +43870,7 @@
         "og",
         "template",
         "crypto",
-        "moonboys",
-        "wiki"
+        "moonboys"
       ],
       "keyword_bag": [
         "wiki",
@@ -43583,7 +44094,6 @@
         "template",
         "page",
         "og",
-        "template",
         "crypto",
         "moonboys",
         "wiki"
@@ -43660,7 +44170,6 @@
         "token",
         "og",
         "template",
-        "crypto",
         "moonboys",
         "wiki"
       ],
@@ -43982,9 +44491,9 @@
     },
     "link_score": {
       "inbound_count": 4,
-      "outbound_count": 21,
+      "outbound_count": 24,
       "existing_outbound_count": 0,
-      "suggested_outbound_count": 21,
+      "suggested_outbound_count": 24,
       "authority": 8
     },
     "brand": null
