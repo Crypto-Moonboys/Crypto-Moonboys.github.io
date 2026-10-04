@@ -674,6 +674,26 @@ const graffpunksStopwordOnly = {
     'first-witness-forty-paths': ['faction classification'],
     'first-witness-faction-commentaries': ['faction register', 'thirty-four readings', 'Room Vote', 'Open Verse', 'Two Lamps']
   });
+  const institutionSubjects = {
+    'first-witness-long-transmission': ['Blue Stair', 'Eda Senn', 'Hollow Bell', 'Second Gloss', 'Dara Ilex'],
+    'first-witness-sects-schools-schisms': ['Low Bell houses', 'Keeper apprenticeship'],
+    'first-witness-leadership-councils-succession': ['Blue Stair succession', 'Low Bell custody'],
+    'street-kingdoms': ['broken hoist', 'Venn Krail', 'Ira Noll', 'Lantern recognition agreements'],
+    'first-witness-justice-mercy-restitution': ['broken hoist restitution'],
+    'first-witness-prisons-punishment-return': ['Tor Pell', 'Dry Step holding room', 'supervised return'],
+    'first-witness-mediation-witness-circles': ['Dry Step talks'],
+    'first-witness-faction-ritual-variations': ['Backlight supper'],
+    'first-witness-songs-chants-responses': ['Backlight chorus'],
+    'the-blockstars': ['Double Supper'],
+    'the-high-hats': ['storm knot', 'lean brim'],
+    // Search corpus matching deliberately excludes two-letter words such as "me".
+    'the-crypto-stoned-boys': ['Last Spoon', 'Borrow minute'],
+    'maidstone-base': ['Operation Echo comparison'],
+    'croydon-tower-blocks': ['Grey Landing reception']
+  };
+  for (const [slug, subjects] of Object.entries(institutionSubjects)) {
+    subjectsByPage[slug] = [...(subjectsByPage[slug] || []), ...subjects];
+  }
   const stopWords = vm.runInContext('SEARCH_TEXT_STOP_WORDS', sb);
   let checked = 0;
   for (const [slug, subjects] of Object.entries(subjectsByPage)) {
@@ -703,7 +723,7 @@ const graffpunksStopwordOnly = {
     assert.ok(entry.search_index.keyword_bag.includes(token), `${token} is searchable`);
     assert.ok(!entry.search_index.tokens.includes(token), `${token} must not leak into title-only relationship tokens`);
   }
-  for (const [slug, token] of [['block-topia', 'shutter'], ['null-the-prophet', 'sena'], ['the-finance-guild', 'crate'], ['first-witness-faction-commentaries', 'jpeg']]) {
+  for (const [slug, token] of [['block-topia', 'shutter'], ['null-the-prophet', 'sena'], ['the-finance-guild', 'crate'], ['first-witness-faction-commentaries', 'jpeg'], ['first-witness-long-transmission', 'eda'], ['street-kingdoms', 'krail'], ['the-blockstars', 'supper'], ['the-high-hats', 'storm']]) {
     const entry = wikiIndex.find(item => item.url === `/wiki/${slug}.html`);
     assert.ok(entry.search_index.keyword_bag.includes(token), `${slug}: ${token} remains discoverable`);
     assert.ok(!entry.search_index.tokens.includes(token), `${slug}: search-only ${token} cannot create relationship tags`);

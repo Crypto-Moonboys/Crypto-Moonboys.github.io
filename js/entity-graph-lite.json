@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-04T19:02:09.652Z",
-  "verified_at": "2026-10-04T19:02:09.652Z",
+  "generated_at": "2026-10-04T20:04:35.991Z",
+  "verified_at": "2026-10-04T20:04:35.991Z",
   "lite": true,
   "nodes": [
     {
@@ -36,6 +36,14 @@
       "authority_score": 21
     },
     {
+      "id": "/wiki/first-witness-justice-mercy-restitution.html",
+      "title": "Justice, Mercy and Restitution",
+      "url": "/wiki/first-witness-justice-mercy-restitution.html",
+      "category": "core",
+      "rank_score": 366,
+      "authority_score": 14
+    },
+    {
       "id": "/wiki/hard-fork-games.html",
       "title": "Hard Fork Games",
       "url": "/wiki/hard-fork-games.html",
@@ -50,6 +58,14 @@
       "category": "core",
       "rank_score": 360,
       "authority_score": 28
+    },
+    {
+      "id": "/wiki/first-witness-heresies-corruptions-abuses.html",
+      "title": "Heresies, Corruptions and Abuses",
+      "url": "/wiki/first-witness-heresies-corruptions-abuses.html",
+      "category": "core",
+      "rank_score": 352,
+      "authority_score": 14
     },
     {
       "id": "/wiki/first-witness-concordance.html",
@@ -76,12 +92,44 @@
       "authority_score": 24
     },
     {
+      "id": "/wiki/first-witness-long-transmission.html",
+      "title": "The Long Transmission",
+      "url": "/wiki/first-witness-long-transmission.html",
+      "category": "core",
+      "rank_score": 348,
+      "authority_score": 17
+    },
+    {
+      "id": "/wiki/first-witness-sects-schools-schisms.html",
+      "title": "Sects, Schools and Schisms",
+      "url": "/wiki/first-witness-sects-schools-schisms.html",
+      "category": "core",
+      "rank_score": 344,
+      "authority_score": 17
+    },
+    {
       "id": "/wiki/graffiti-nexus.html",
       "title": "Graffiti Nexus",
       "url": "/wiki/graffiti-nexus.html",
       "category": "core",
       "rank_score": 343,
       "authority_score": 24
+    },
+    {
+      "id": "/wiki/first-witness-faction-ritual-variations.html",
+      "title": "How the Forty Practise the Same Covenant Differently",
+      "url": "/wiki/first-witness-faction-ritual-variations.html",
+      "category": "core",
+      "rank_score": 342,
+      "authority_score": 14
+    },
+    {
+      "id": "/wiki/first-witness-leadership-councils-succession.html",
+      "title": "Leadership, Councils and Succession",
+      "url": "/wiki/first-witness-leadership-councils-succession.html",
+      "category": "core",
+      "rank_score": 341,
+      "authority_score": 14
     },
     {
       "id": "/wiki/first-witness-book-3-the-keeper.html",
@@ -97,6 +145,14 @@
       "url": "/wiki/first-witness-master-chronology.html",
       "category": "core",
       "rank_score": 339,
+      "authority_score": 14
+    },
+    {
+      "id": "/wiki/first-witness-prisons-punishment-return.html",
+      "title": "Prisons, Punishment and Return",
+      "url": "/wiki/first-witness-prisons-punishment-return.html",
+      "category": "core",
+      "rank_score": 337,
       "authority_score": 14
     },
     {
@@ -196,6 +252,22 @@
       "authority_score": 14
     },
     {
+      "id": "/wiki/first-witness-songs-chants-responses.html",
+      "title": "Songs, Chants and Call-and-Response",
+      "url": "/wiki/first-witness-songs-chants-responses.html",
+      "category": "core",
+      "rank_score": 327,
+      "authority_score": 14
+    },
+    {
+      "id": "/wiki/the-nice-easy-bois.html",
+      "title": "The NICE &amp; EASY BOIS",
+      "url": "/wiki/the-nice-easy-bois.html",
+      "category": "factions",
+      "rank_score": 327,
+      "authority_score": 24
+    },
+    {
       "id": "/wiki/the-whitewasher.html",
       "title": "The Whitewasher",
       "url": "/wiki/the-whitewasher.html",
@@ -284,12 +356,12 @@
       "authority_score": 14
     },
     {
-      "id": "/wiki/the-nice-easy-bois.html",
-      "title": "The NICE &amp; EASY BOIS",
-      "url": "/wiki/the-nice-easy-bois.html",
+      "id": "/wiki/the-high-hats.html",
+      "title": "The High Hats",
+      "url": "/wiki/the-high-hats.html",
       "category": "factions",
       "rank_score": 319,
-      "authority_score": 24
+      "authority_score": 28
     },
     {
       "id": "/wiki/bitcoin-x-kids.html",
@@ -364,20 +436,20 @@
       "authority_score": 14
     },
     {
-      "id": "/wiki/the-high-hats.html",
-      "title": "The High Hats",
-      "url": "/wiki/the-high-hats.html",
+      "id": "/wiki/street-kingdoms.html",
+      "title": "Street Kingdoms",
+      "url": "/wiki/street-kingdoms.html",
       "category": "factions",
       "rank_score": 311,
-      "authority_score": 28
+      "authority_score": 24
     },
     {
-      "id": "/wiki/first-witness-justice-mercy-restitution.html",
-      "title": "Justice, Mercy and Restitution",
-      "url": "/wiki/first-witness-justice-mercy-restitution.html",
+      "id": "/wiki/first-witness-mediation-witness-circles.html",
+      "title": "Mediation and Witness Circles",
+      "url": "/wiki/first-witness-mediation-witness-circles.html",
       "category": "core",
       "rank_score": 310,
-      "authority_score": 12
+      "authority_score": 14
     },
     {
       "id": "/wiki/the-finance-guild.html",
@@ -418,14 +490,6 @@
       "category": "core",
       "rank_score": 309,
       "authority_score": 28
-    },
-    {
-      "id": "/wiki/first-witness-heresies-corruptions-abuses.html",
-      "title": "Heresies, Corruptions and Abuses",
-      "url": "/wiki/first-witness-heresies-corruptions-abuses.html",
-      "category": "core",
-      "rank_score": 308,
-      "authority_score": 12
     },
     {
       "id": "/wiki/first-witness-hodl-doctrine.html",
@@ -538,70 +602,6 @@
       "category": "core",
       "rank_score": 301,
       "authority_score": 12
-    },
-    {
-      "id": "/wiki/wagmi-prophecy.html",
-      "title": "The WAGMI Prophecy",
-      "url": "/wiki/wagmi-prophecy.html",
-      "category": "characters",
-      "rank_score": 301,
-      "authority_score": 30
-    },
-    {
-      "id": "/wiki/diamond-hands.html",
-      "title": "Diamond Hands",
-      "url": "/wiki/diamond-hands.html",
-      "category": "characters",
-      "rank_score": 300,
-      "authority_score": 26
-    },
-    {
-      "id": "/wiki/graffpunks-ecosystem.html",
-      "title": "GraffPUNKS Ecosystem",
-      "url": "/wiki/graffpunks-ecosystem.html",
-      "category": "core",
-      "rank_score": 300,
-      "authority_score": 30
-    },
-    {
-      "id": "/wiki/gkniftyheads-nft-collection.html",
-      "title": "GKniftyHEADS NFT Collection",
-      "url": "/wiki/gkniftyheads-nft-collection.html",
-      "category": "nfts-digital-art",
-      "rank_score": 299,
-      "authority_score": 28
-    },
-    {
-      "id": "/wiki/iris-7.html",
-      "title": "Iris-7",
-      "url": "/wiki/iris-7.html",
-      "category": "characters",
-      "rank_score": 299,
-      "authority_score": 28
-    },
-    {
-      "id": "/wiki/street-kingdoms.html",
-      "title": "Street Kingdoms",
-      "url": "/wiki/street-kingdoms.html",
-      "category": "factions",
-      "rank_score": 299,
-      "authority_score": 24
-    },
-    {
-      "id": "/wiki/thera-9.html",
-      "title": "Thera-9",
-      "url": "/wiki/thera-9.html",
-      "category": "characters",
-      "rank_score": 297,
-      "authority_score": 28
-    },
-    {
-      "id": "/wiki/billy-the-goat-kid.html",
-      "title": "Billy the Goat Kid",
-      "url": "/wiki/billy-the-goat-kid.html",
-      "category": "characters",
-      "rank_score": 295,
-      "authority_score": 28
     }
   ],
   "edges": [
@@ -768,15 +768,9 @@
       "weight": 1
     },
     {
-      "source": "/wiki/graffpunks-ecosystem.html",
-      "target": "/wiki/graffpunks.html",
-      "score": 148,
-      "weight": 1
-    },
-    {
-      "source": "/wiki/graffpunks.html",
-      "target": "/wiki/graffpunks-ecosystem.html",
-      "score": 127,
+      "source": "/wiki/first-witness-faction-ritual-variations.html",
+      "target": "/wiki/first-witness-forty-paths.html",
+      "score": 307,
       "weight": 1
     },
     {
@@ -810,15 +804,15 @@
       "weight": 1
     },
     {
-      "source": "/wiki/graffpunks-ecosystem.html",
-      "target": "/wiki/graffpunks-24-7-radio.html",
-      "score": 107,
-      "weight": 1
-    },
-    {
       "source": "/wiki/sacred-chain.html",
       "target": "/wiki/hard-fork-games.html",
       "score": 105,
+      "weight": 1
+    },
+    {
+      "source": "/wiki/graffpunks.html",
+      "target": "/wiki/graffpunks-24-7-radio.html",
+      "score": 104,
       "weight": 1
     },
     {
@@ -832,6 +826,12 @@
       "target": "/wiki/crypto-moonboys.html",
       "score": 97,
       "weight": 0.97
+    },
+    {
+      "source": "/wiki/hodl-wars.html",
+      "target": "/wiki/graffpunks.html",
+      "score": 96,
+      "weight": 0.96
     },
     {
       "source": "/wiki/the-bitcoin-kid-army.html",
@@ -850,12 +850,6 @@
       "target": "/wiki/crypto-moonboys.html",
       "score": 93,
       "weight": 0.93
-    },
-    {
-      "source": "/wiki/genesis-kernel.html",
-      "target": "/wiki/hodl-wars.html",
-      "score": 92,
-      "weight": 0.92
     },
     {
       "source": "/wiki/hodl-warriors.html",
@@ -894,16 +888,16 @@
       "weight": 0.87
     },
     {
-      "source": "/wiki/the-salvagers.html",
-      "target": "/wiki/the-chain-scribes.html",
+      "source": "/wiki/the-finance-guild.html",
+      "target": "/wiki/the-high-hats.html",
       "score": 86,
       "weight": 0.86
     },
     {
-      "source": "/wiki/the-finance-guild.html",
-      "target": "/wiki/the-high-hats.html",
-      "score": 85,
-      "weight": 0.85
+      "source": "/wiki/the-salvagers.html",
+      "target": "/wiki/the-chain-scribes.html",
+      "score": 86,
+      "weight": 0.86
     },
     {
       "source": "/wiki/the-high-hats.html",
@@ -918,32 +912,20 @@
       "weight": 0.85
     },
     {
-      "source": "/wiki/billy-the-goat-kid.html",
+      "source": "/wiki/the-princess.html",
+      "target": "/wiki/the-whitewasher.html",
+      "score": 84,
+      "weight": 0.84
+    },
+    {
+      "source": "/wiki/the-princess.html",
+      "target": "/wiki/thorne-the-architect.html",
+      "score": 84,
+      "weight": 0.84
+    },
+    {
+      "source": "/wiki/the-whitewasher.html",
       "target": "/wiki/the-princess.html",
-      "score": 84,
-      "weight": 0.84
-    },
-    {
-      "source": "/wiki/billy-the-goat-kid.html",
-      "target": "/wiki/the-whitewasher.html",
-      "score": 84,
-      "weight": 0.84
-    },
-    {
-      "source": "/wiki/billy-the-goat-kid.html",
-      "target": "/wiki/thorne-the-architect.html",
-      "score": 84,
-      "weight": 0.84
-    },
-    {
-      "source": "/wiki/the-princess.html",
-      "target": "/wiki/the-whitewasher.html",
-      "score": 84,
-      "weight": 0.84
-    },
-    {
-      "source": "/wiki/the-princess.html",
-      "target": "/wiki/thorne-the-architect.html",
       "score": 84,
       "weight": 0.84
     },
@@ -973,12 +955,6 @@
     },
     {
       "source": "/wiki/burn-to-earn.html",
-      "target": "/wiki/null-the-prophet.html",
-      "score": 80,
-      "weight": 0.8
-    },
-    {
-      "source": "/wiki/diamond-hands.html",
       "target": "/wiki/null-the-prophet.html",
       "score": 80,
       "weight": 0.8
@@ -1014,14 +990,20 @@
       "weight": 0.76
     },
     {
-      "source": "/wiki/the-nice-easy-bois.html",
-      "target": "/wiki/rave-relics.html",
-      "score": 73,
-      "weight": 0.73
+      "source": "/wiki/staking.html",
+      "target": "/wiki/null-the-prophet.html",
+      "score": 71,
+      "weight": 0.71
     },
     {
       "source": "/wiki/burn-to-earn.html",
       "target": "/wiki/punk-token.html",
+      "score": 69,
+      "weight": 0.69
+    },
+    {
+      "source": "/wiki/rave-relics.html",
+      "target": "/wiki/the-nice-easy-bois.html",
       "score": 69,
       "weight": 0.69
     },

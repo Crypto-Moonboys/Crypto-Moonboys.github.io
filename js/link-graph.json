@@ -1460,7 +1460,7 @@
     ]
   },
   "/wiki/croydon-tower-blocks.html": {
-    "outbound_count": 26,
+    "outbound_count": 27,
     "inbound_count": 0,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
@@ -1474,6 +1474,7 @@
       "/wiki/stikfamwars.html"
     ],
     "suggested_outbound": [
+      "/wiki/bear-market-siege.html",
       "/wiki/block-topia.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
       "/wiki/first-witness-book-2-the-common-blood.html",
@@ -5880,7 +5881,7 @@
     ]
   },
   "/wiki/first-witness-heresies-corruptions-abuses.html": {
-    "outbound_count": 66,
+    "outbound_count": 67,
     "inbound_count": 9,
     "existing_outbound": [
       "/wiki/first-witness-concordance.html",
@@ -5908,6 +5909,7 @@
       "/wiki/first-witness-book-8-the-fire.html",
       "/wiki/first-witness-book-9-the-unwritten-block.html",
       "/wiki/first-witness-chain-archaeology-forensics.html",
+      "/wiki/first-witness-child-of-fire.html",
       "/wiki/first-witness-children-first-lessons.html",
       "/wiki/first-witness-counterfeit-relics-fraud.html",
       "/wiki/first-witness-faction-commentaries.html",
@@ -6441,7 +6443,7 @@
     ]
   },
   "/wiki/first-witness-leadership-councils-succession.html": {
-    "outbound_count": 63,
+    "outbound_count": 64,
     "inbound_count": 1,
     "existing_outbound": [
       "/wiki/first-witness-concordance.html",
@@ -6507,6 +6509,7 @@
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/sacred-chain.html",
+      "/wiki/street-kingdoms.html",
       "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html"
     ],
@@ -7029,7 +7032,7 @@
     ]
   },
   "/wiki/first-witness-mediation-witness-circles.html": {
-    "outbound_count": 61,
+    "outbound_count": 62,
     "inbound_count": 2,
     "existing_outbound": [
       "/wiki/first-witness-justice-mercy-restitution.html",
@@ -7054,6 +7057,7 @@
       "/wiki/first-witness-book-9-the-unwritten-block.html",
       "/wiki/first-witness-chain-archaeology-forensics.html",
       "/wiki/first-witness-children-first-lessons.html",
+      "/wiki/first-witness-concordance.html",
       "/wiki/first-witness-counterfeit-relics-fraud.html",
       "/wiki/first-witness-faction-commentaries.html",
       "/wiki/first-witness-faction-ritual-variations.html",
@@ -7642,7 +7646,7 @@
     ]
   },
   "/wiki/first-witness-prisons-punishment-return.html": {
-    "outbound_count": 63,
+    "outbound_count": 64,
     "inbound_count": 3,
     "existing_outbound": [
       "/wiki/first-witness-heresies-corruptions-abuses.html",
@@ -7667,6 +7671,7 @@
       "/wiki/first-witness-book-9-the-unwritten-block.html",
       "/wiki/first-witness-chain-archaeology-forensics.html",
       "/wiki/first-witness-children-first-lessons.html",
+      "/wiki/first-witness-concordance.html",
       "/wiki/first-witness-counterfeit-relics-fraud.html",
       "/wiki/first-witness-faction-commentaries.html",
       "/wiki/first-witness-faction-ritual-variations.html",
@@ -18955,7 +18960,7 @@
     ]
   },
   "/wiki/maidstone-base.html": {
-    "outbound_count": 23,
+    "outbound_count": 25,
     "inbound_count": 0,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
@@ -18971,6 +18976,7 @@
     "suggested_outbound": [
       "/wiki/block-topia.html",
       "/wiki/first-witness-apocrypha-disputed-passages.html",
+      "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
       "/wiki/first-witness-book-2-the-common-blood.html",
       "/wiki/first-witness-book-3-the-keeper.html",
@@ -18981,6 +18987,7 @@
       "/wiki/first-witness-book-8-the-fire.html",
       "/wiki/first-witness-book-9-the-unwritten-block.html",
       "/wiki/first-witness-digital-inheritance-after-death.html",
+      "/wiki/first-witness-street-kingdoms-reading.html",
       "/wiki/graffiti-kings.html",
       "/wiki/street-kingdoms.html"
     ],
@@ -21333,7 +21340,7 @@
     "inbound_from": []
   },
   "/wiki/street-kingdoms.html": {
-    "outbound_count": 25,
+    "outbound_count": 28,
     "inbound_count": 16,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
@@ -21355,8 +21362,11 @@
       "/wiki/block-topia.html",
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-9-the-unwritten-block.html",
+      "/wiki/first-witness-concordance.html",
       "/wiki/first-witness-digital-inheritance-after-death.html",
+      "/wiki/first-witness-justice-mercy-restitution.html",
       "/wiki/first-witness-land-water-stewardship.html",
+      "/wiki/first-witness-prisons-punishment-return.html",
       "/wiki/first-witness-proverbs-street-sayings.html",
       "/wiki/first-witness-street-kingdoms-reading.html",
       "/wiki/first-witness-truth-commissions-after-conflict.html",
@@ -22504,7 +22514,7 @@
     ]
   },
   "/wiki/the-high-hats.html": {
-    "outbound_count": 24,
+    "outbound_count": 26,
     "inbound_count": 33,
     "existing_outbound": [
       "/wiki/bitcoin-kids.html",
@@ -22532,7 +22542,9 @@
       "/wiki/first-witness-work-craft-service.html",
       "/wiki/gkniftyheads-digital-diva-783394.html",
       "/wiki/gkniftyheads-digital-duchess-783404.html",
-      "/wiki/gkniftyheads.html"
+      "/wiki/gkniftyheads-stencil-storm-783291.html",
+      "/wiki/gkniftyheads.html",
+      "/wiki/storm-struggle.html"
     ],
     "inbound_from": [
       "/wiki/aleema-child-of-the-shard.html",
