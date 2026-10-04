@@ -475,15 +475,18 @@
     ]
   },
   "/wiki/ava-chen.html": {
-    "outbound_count": 22,
-    "inbound_count": 0,
+    "outbound_count": 31,
+    "inbound_count": 1,
     "existing_outbound": [
       "/wiki/bitcoin-kids.html",
       "/wiki/block-topia.html",
       "/wiki/burn-to-earn.html",
       "/wiki/crypto-moonboys.html",
+      "/wiki/dragan-volkov.html",
+      "/wiki/first-witness-book-1-the-first-witness.html",
+      "/wiki/first-witness-counterfeit-relics-fraud.html",
+      "/wiki/first-witness-relics-manuscripts-lost-editions.html",
       "/wiki/graffpunks.html",
-      "/wiki/hard-fork-games.html",
       "/wiki/nbgx-token.html",
       "/wiki/null-the-prophet.html",
       "/wiki/punk-token.html",
@@ -492,18 +495,26 @@
     "suggested_outbound": [
       "/wiki/block-node-defenders.html",
       "/wiki/first-witness-block-topia-reading.html",
+      "/wiki/first-witness-book-5-the-chain.html",
       "/wiki/first-witness-book-9-the-unwritten-block.html",
-      "/wiki/first-witness-digital-inheritance-after-death.html",
-      "/wiki/gkniftyheads-cyber-shinobi-shroud-783468.html",
-      "/wiki/gkniftyheads-cyber-shinobi-strike-783757.html",
-      "/wiki/gkniftyheads-digital-diva-783394.html",
-      "/wiki/gkniftyheads-digital-duchess-783404.html",
+      "/wiki/first-witness-chain-archaeology-forensics.html",
+      "/wiki/first-witness-world-chain-error.html",
+      "/wiki/gkniftyheads-cipher-seraph-783413.html",
+      "/wiki/gkniftyheads-czen-zone-zero-zealot-783755.html",
+      "/wiki/gkniftyheads-darknet-lord-784276.html",
+      "/wiki/gkniftyheads-joey-the-oracle-olivieri-783373.html",
+      "/wiki/gkniftyheads-urban-oracle-783306.html",
       "/wiki/grit.html",
-      "/wiki/metaverse-battles.html",
+      "/wiki/hard-fork-games.html",
       "/wiki/metropolis.html",
-      "/wiki/nbg-token.html"
+      "/wiki/nbg-token.html",
+      "/wiki/sacred-chain.html",
+      "/wiki/the-chain-scribes.html",
+      "/wiki/xrp-ledger.html"
     ],
-    "inbound_from": []
+    "inbound_from": [
+      "/wiki/dragan-volkov.html"
+    ]
   },
   "/wiki/battlemech-blast.html": {
     "outbound_count": 35,
@@ -2137,15 +2148,18 @@
     ]
   },
   "/wiki/dragan-volkov.html": {
-    "outbound_count": 18,
-    "inbound_count": 0,
+    "outbound_count": 35,
+    "inbound_count": 1,
     "existing_outbound": [
+      "/wiki/ava-chen.html",
       "/wiki/bitcoin-kids.html",
       "/wiki/block-topia.html",
       "/wiki/burn-to-earn.html",
       "/wiki/crypto-moonboys.html",
+      "/wiki/first-witness-book-1-the-first-witness.html",
+      "/wiki/first-witness-concordance.html",
+      "/wiki/first-witness-pride-temptation-false-idols.html",
       "/wiki/graffpunks.html",
-      "/wiki/metaverse-battles.html",
       "/wiki/nbgx-token.html",
       "/wiki/null-the-prophet.html",
       "/wiki/punk-token.html",
@@ -2154,14 +2168,30 @@
     "suggested_outbound": [
       "/wiki/block-node-defenders.html",
       "/wiki/first-witness-block-topia-reading.html",
+      "/wiki/first-witness-book-5-the-chain.html",
       "/wiki/first-witness-book-9-the-unwritten-block.html",
-      "/wiki/gkniftyheads-matteo-token-tactician-romano-783462.html",
+      "/wiki/first-witness-chain-archaeology-forensics.html",
+      "/wiki/first-witness-digital-inheritance-after-death.html",
+      "/wiki/first-witness-world-chain-error.html",
+      "/wiki/genesis-kernel.html",
+      "/wiki/gkniftyheads-cipher-seraph-783413.html",
+      "/wiki/gkniftyheads-czen-zone-zero-zealot-783755.html",
+      "/wiki/gkniftyheads-darknet-lord-784276.html",
+      "/wiki/gkniftyheads-joey-the-oracle-olivieri-783373.html",
+      "/wiki/gkniftyheads-urban-oracle-783306.html",
+      "/wiki/gkniftyheads.html",
       "/wiki/grit.html",
+      "/wiki/hodl-warriors.html",
       "/wiki/metropolis.html",
       "/wiki/nbg-token.html",
-      "/wiki/triple-fork-event.html"
+      "/wiki/sacred-chain.html",
+      "/wiki/the-chain-scribes.html",
+      "/wiki/the-first-witness.html",
+      "/wiki/xrp-ledger.html"
     ],
-    "inbound_from": []
+    "inbound_from": [
+      "/wiki/ava-chen.html"
+    ]
   },
   "/wiki/dream-sovereign.html": {
     "outbound_count": 17,
@@ -2190,14 +2220,17 @@
     "inbound_from": []
   },
   "/wiki/elder-codex-7.html": {
-    "outbound_count": 17,
+    "outbound_count": 35,
     "inbound_count": 1,
     "existing_outbound": [
       "/wiki/bitcoin-kids.html",
       "/wiki/block-topia.html",
       "/wiki/burn-to-earn.html",
       "/wiki/crypto-moonboys.html",
-      "/wiki/gkniftyheads.html",
+      "/wiki/first-witness-ageing-retirement-elderhood.html",
+      "/wiki/first-witness-book-1-the-first-witness.html",
+      "/wiki/first-witness-libraries-architecture-archive-houses.html",
+      "/wiki/first-witness-master-chronology.html",
       "/wiki/graffpunks-24-7-radio.html",
       "/wiki/graffpunks.html",
       "/wiki/iris-7.html",
@@ -2205,13 +2238,28 @@
       "/wiki/punk-token.html"
     ],
     "suggested_outbound": [
-      "/wiki/block-node-defenders.html",
-      "/wiki/first-witness-block-topia-reading.html",
-      "/wiki/first-witness-book-3-the-keeper.html",
-      "/wiki/first-witness-book-9-the-unwritten-block.html",
+      "/wiki/bitcoin-x-kids.html",
+      "/wiki/first-witness-apocrypha-disputed-passages.html",
+      "/wiki/first-witness-book-5-the-chain.html",
+      "/wiki/first-witness-chain-archaeology-forensics.html",
+      "/wiki/first-witness-great-concord-2030.html",
+      "/wiki/first-witness-life-readings.html",
+      "/wiki/first-witness-world-chain-error.html",
+      "/wiki/genesis-kernel.html",
+      "/wiki/genesis-spray-drop.html",
+      "/wiki/genesis-spray.html",
+      "/wiki/gkniftyheads-free-minds-gk-beats-genesis-776049.html",
+      "/wiki/gkniftyheads-scribe-serpent-783260.html",
       "/wiki/grit.html",
-      "/wiki/hard-fork-games.html",
-      "/wiki/metropolis.html"
+      "/wiki/hodl-warriors.html",
+      "/wiki/hodl-x-warriors.html",
+      "/wiki/jodie-zoom-2000.html",
+      "/wiki/metropolis.html",
+      "/wiki/playable-nft-murals.html",
+      "/wiki/sacred-chain.html",
+      "/wiki/the-chain-scribes.html",
+      "/wiki/the-first-witness.html",
+      "/wiki/xrp-ledger.html"
     ],
     "inbound_from": [
       "/wiki/iris-7.html"
@@ -2500,7 +2548,7 @@
   },
   "/wiki/first-witness-ageing-retirement-elderhood.html": {
     "outbound_count": 64,
-    "inbound_count": 1,
+    "inbound_count": 2,
     "existing_outbound": [
       "/wiki/first-witness-book-3-the-keeper.html",
       "/wiki/first-witness-book-5-the-chain.html",
@@ -2570,6 +2618,7 @@
       "/wiki/the-chain-scribes.html"
     ],
     "inbound_from": [
+      "/wiki/elder-codex-7.html",
       "/wiki/the-first-witness.html"
     ]
   },
@@ -3120,7 +3169,7 @@
   },
   "/wiki/first-witness-book-1-the-first-witness.html": {
     "outbound_count": 69,
-    "inbound_count": 4,
+    "inbound_count": 7,
     "existing_outbound": [
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-book-2-the-common-blood.html",
@@ -3195,6 +3244,9 @@
       "/wiki/the-chain-scribes.html"
     ],
     "inbound_from": [
+      "/wiki/ava-chen.html",
+      "/wiki/dragan-volkov.html",
+      "/wiki/elder-codex-7.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-book-2-the-common-blood.html",
       "/wiki/first-witness-life-readings.html",
@@ -3970,7 +4022,7 @@
   },
   "/wiki/first-witness-censorship-offence-public-marks.html": {
     "outbound_count": 64,
-    "inbound_count": 1,
+    "inbound_count": 2,
     "existing_outbound": [
       "/wiki/first-witness-justice-mercy-restitution.html",
       "/wiki/first-witness-life-readings.html",
@@ -4040,6 +4092,7 @@
       "/wiki/the-chain-scribes.html"
     ],
     "inbound_from": [
+      "/wiki/hex-tagger-prime.html",
       "/wiki/the-first-witness.html"
     ]
   },
@@ -4360,7 +4413,7 @@
   },
   "/wiki/first-witness-concordance.html": {
     "outbound_count": 73,
-    "inbound_count": 54,
+    "inbound_count": 55,
     "existing_outbound": [
       "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-master-chronology.html",
@@ -4444,6 +4497,7 @@
       "/wiki/bitcoin-kids.html",
       "/wiki/bitcoin-x-kids.html",
       "/wiki/block-node-defenders.html",
+      "/wiki/dragan-volkov.html",
       "/wiki/first-witness-ai-synthetic-minds.html",
       "/wiki/first-witness-apocrypha-disputed-passages.html",
       "/wiki/first-witness-calendar-feasts-remembrance.html",
@@ -4572,7 +4626,7 @@
   },
   "/wiki/first-witness-counterfeit-relics-fraud.html": {
     "outbound_count": 67,
-    "inbound_count": 1,
+    "inbound_count": 2,
     "existing_outbound": [
       "/wiki/first-witness-justice-mercy-restitution.html",
       "/wiki/first-witness-life-readings.html",
@@ -4645,6 +4699,7 @@
       "/wiki/wagmi-prophecy.html"
     ],
     "inbound_from": [
+      "/wiki/ava-chen.html",
       "/wiki/the-first-witness.html"
     ]
   },
@@ -6149,7 +6204,7 @@
   },
   "/wiki/first-witness-justice-mercy-restitution.html": {
     "outbound_count": 64,
-    "inbound_count": 11,
+    "inbound_count": 12,
     "existing_outbound": [
       "/wiki/first-witness-concordance.html",
       "/wiki/first-witness-life-readings.html",
@@ -6229,6 +6284,7 @@
       "/wiki/first-witness-roles-keepers-witnesses-mediators.html",
       "/wiki/first-witness-silence-solitude-attention.html",
       "/wiki/first-witness-truth-commissions-after-conflict.html",
+      "/wiki/hex-tagger-prime.html",
       "/wiki/the-first-witness.html"
     ]
   },
@@ -6458,7 +6514,7 @@
   },
   "/wiki/first-witness-libraries-architecture-archive-houses.html": {
     "outbound_count": 63,
-    "inbound_count": 1,
+    "inbound_count": 2,
     "existing_outbound": [
       "/wiki/first-witness-book-3-the-keeper.html",
       "/wiki/first-witness-book-5-the-chain.html",
@@ -6527,6 +6583,7 @@
       "/wiki/the-chain-scribes.html"
     ],
     "inbound_from": [
+      "/wiki/elder-codex-7.html",
       "/wiki/the-first-witness.html"
     ]
   },
@@ -6850,7 +6907,7 @@
   },
   "/wiki/first-witness-master-chronology.html": {
     "outbound_count": 68,
-    "inbound_count": 26,
+    "inbound_count": 27,
     "existing_outbound": [
       "/wiki/first-witness-concordance.html",
       "/wiki/first-witness-glossary.html",
@@ -6928,6 +6985,7 @@
       "/wiki/bitcoin-kids.html",
       "/wiki/bitcoin-x-kids.html",
       "/wiki/block-node-defenders.html",
+      "/wiki/elder-codex-7.html",
       "/wiki/first-witness-concordance.html",
       "/wiki/first-witness-glossary.html",
       "/wiki/genesis-kernel.html",
@@ -7491,7 +7549,7 @@
   },
   "/wiki/first-witness-pride-temptation-false-idols.html": {
     "outbound_count": 66,
-    "inbound_count": 1,
+    "inbound_count": 2,
     "existing_outbound": [
       "/wiki/first-witness-concordance.html",
       "/wiki/first-witness-life-readings.html",
@@ -7563,12 +7621,13 @@
       "/wiki/the-chain-scribes.html"
     ],
     "inbound_from": [
+      "/wiki/dragan-volkov.html",
       "/wiki/the-first-witness.html"
     ]
   },
   "/wiki/first-witness-prisons-punishment-return.html": {
     "outbound_count": 64,
-    "inbound_count": 1,
+    "inbound_count": 2,
     "existing_outbound": [
       "/wiki/first-witness-heresies-corruptions-abuses.html",
       "/wiki/first-witness-life-readings.html",
@@ -7638,6 +7697,7 @@
       "/wiki/the-chain-scribes.html"
     ],
     "inbound_from": [
+      "/wiki/hex-tagger-prime.html",
       "/wiki/the-first-witness.html"
     ]
   },
@@ -7805,7 +7865,7 @@
   },
   "/wiki/first-witness-relics-manuscripts-lost-editions.html": {
     "outbound_count": 68,
-    "inbound_count": 1,
+    "inbound_count": 2,
     "existing_outbound": [
       "/wiki/first-witness-concordance.html",
       "/wiki/first-witness-life-readings.html",
@@ -7879,6 +7939,7 @@
       "/wiki/the-chain-scribes.html"
     ],
     "inbound_from": [
+      "/wiki/ava-chen.html",
       "/wiki/the-first-witness.html"
     ]
   },
@@ -17044,7 +17105,7 @@
   },
   "/wiki/gkniftyheads.html": {
     "outbound_count": 37,
-    "inbound_count": 173,
+    "inbound_count": 172,
     "existing_outbound": [
       "/wiki/bitcoin-x-kids.html",
       "/wiki/crypto-moonboys.html",
@@ -17094,7 +17155,6 @@
       "/wiki/crypto-moonboys.html",
       "/wiki/darren-cullen.html",
       "/wiki/delicious-again-pete.html",
-      "/wiki/elder-codex-7.html",
       "/wiki/genesis-kernel.html",
       "/wiki/genesis-spray.html",
       "/wiki/gkniftyheads-alessandro-anonymity-advocate-amato-783445.html",
@@ -17892,7 +17952,7 @@
   },
   "/wiki/hard-fork-games.html": {
     "outbound_count": 63,
-    "inbound_count": 83,
+    "inbound_count": 82,
     "existing_outbound": [
       "/wiki/bitcoin-kids.html",
       "/wiki/bitcoin-x-kids.html",
@@ -17966,7 +18026,6 @@
       "/wiki/alcor-exchange.html",
       "/wiki/aleema-child-of-the-shard.html",
       "/wiki/atomichub.html",
-      "/wiki/ava-chen.html",
       "/wiki/battlemech-blast.html",
       "/wiki/bitcoin-kid-army.html",
       "/wiki/bitcoin-x-kids.html",
@@ -18112,13 +18171,16 @@
     "inbound_from": []
   },
   "/wiki/hex-tagger-prime.html": {
-    "outbound_count": 29,
+    "outbound_count": 31,
     "inbound_count": 0,
     "existing_outbound": [
       "/wiki/bitcoin-kids.html",
       "/wiki/block-topia.html",
       "/wiki/burn-to-earn.html",
       "/wiki/crypto-moonboys.html",
+      "/wiki/first-witness-censorship-offence-public-marks.html",
+      "/wiki/first-witness-justice-mercy-restitution.html",
+      "/wiki/first-witness-prisons-punishment-return.html",
       "/wiki/gkniftyheads-tagger-tempest-783263.html",
       "/wiki/graffpunks.html",
       "/wiki/nbgx-token.html",
@@ -18127,25 +18189,24 @@
     ],
     "suggested_outbound": [
       "/wiki/atomicassets.html",
-      "/wiki/block-node-defenders.html",
-      "/wiki/first-witness-block-topia-reading.html",
-      "/wiki/first-witness-book-9-the-unwritten-block.html",
-      "/wiki/first-witness-censorship-offence-public-marks.html",
+      "/wiki/bitcoin-x-kids.html",
+      "/wiki/dream-sovereign.html",
+      "/wiki/first-witness-book-4-the-wall.html",
+      "/wiki/first-witness-book-5-the-chain.html",
+      "/wiki/first-witness-chain-archaeology-forensics.html",
       "/wiki/first-witness-digital-inheritance-after-death.html",
-      "/wiki/first-witness-master-chronology.html",
-      "/wiki/first-witness-symbols-marks-sacred-design.html",
-      "/wiki/gkniftyheads-digital-diva-783394.html",
-      "/wiki/gkniftyheads-digital-duchess-783404.html",
+      "/wiki/first-witness-world-chain-error.html",
+      "/wiki/forkborn-collective.html",
+      "/wiki/genesis-kernel.html",
       "/wiki/gkniftyheads.html",
-      "/wiki/graffiti-kings.html",
-      "/wiki/graffiti-nexus.html",
-      "/wiki/graffiti-queens-in-decentraland.html",
       "/wiki/grit.html",
-      "/wiki/hard-fork-games.html",
-      "/wiki/metaverse-battles.html",
       "/wiki/metropolis.html",
       "/wiki/nbg-token.html",
-      "/wiki/sacred-chain.html"
+      "/wiki/sacred-chain.html",
+      "/wiki/storm-struggle.html",
+      "/wiki/the-chain-scribes.html",
+      "/wiki/the-first-witness.html",
+      "/wiki/the-whitewasher.html"
     ],
     "inbound_from": []
   },
@@ -18853,7 +18914,7 @@
   },
   "/wiki/metaverse-battles.html": {
     "outbound_count": 30,
-    "inbound_count": 7,
+    "inbound_count": 6,
     "existing_outbound": [
       "/wiki/2025-metaverse-launch-party.html",
       "/wiki/block-topia.html",
@@ -18891,7 +18952,6 @@
     "inbound_from": [
       "/wiki/2025-metaverse-launch-party.html",
       "/wiki/billy-the-goat-kid.html",
-      "/wiki/dragan-volkov.html",
       "/wiki/grit.html",
       "/wiki/grit42.html",
       "/wiki/the-information-mercenaries.html",

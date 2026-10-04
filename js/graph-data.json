@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-04T12:46:05.657Z",
-  "verified_at": "2026-10-04T12:46:05.657Z",
+  "generated_at": "2026-10-04T12:56:28.200Z",
+  "verified_at": "2026-10-04T12:56:28.200Z",
   "nodes": [
     {
       "id": "/about.html",
@@ -183,8 +183,8 @@
       "title": "Ava Chen",
       "url": "/wiki/ava-chen.html",
       "category": "characters",
-      "rank_score": 248,
-      "authority_score": 18
+      "rank_score": 268,
+      "authority_score": 24
     },
     {
       "id": "/wiki/battlemech-blast.html",
@@ -391,8 +391,8 @@
       "title": "Dragan Volkov",
       "url": "/wiki/dragan-volkov.html",
       "category": "characters",
-      "rank_score": 247,
-      "authority_score": 18
+      "rank_score": 274,
+      "authority_score": 24
     },
     {
       "id": "/wiki/dream-sovereign.html",
@@ -407,8 +407,8 @@
       "title": "Elder Codex-7",
       "url": "/wiki/elder-codex-7.html",
       "category": "characters",
-      "rank_score": 258,
-      "authority_score": 18
+      "rank_score": 277,
+      "authority_score": 24
     },
     {
       "id": "/wiki/ethereum-ecosystem.html",
@@ -463,7 +463,7 @@
       "title": "Ageing, Retirement and Elderhood",
       "url": "/wiki/first-witness-ageing-retirement-elderhood.html",
       "category": "core",
-      "rank_score": 263,
+      "rank_score": 265,
       "authority_score": 12
     },
     {
@@ -527,7 +527,7 @@
       "title": "Book I — The First Witness",
       "url": "/wiki/first-witness-book-1-the-first-witness.html",
       "category": "core",
-      "rank_score": 320,
+      "rank_score": 326,
       "authority_score": 14
     },
     {
@@ -607,7 +607,7 @@
       "title": "Censorship, Offence and Public Marks",
       "url": "/wiki/first-witness-censorship-offence-public-marks.html",
       "category": "core",
-      "rank_score": 265,
+      "rank_score": 267,
       "authority_score": 12
     },
     {
@@ -647,7 +647,7 @@
       "title": "Concordance of Broken Records",
       "url": "/wiki/first-witness-concordance.html",
       "category": "core",
-      "rank_score": 412,
+      "rank_score": 414,
       "authority_score": 14
     },
     {
@@ -663,7 +663,7 @@
       "title": "Counterfeit Relics, Forged Hashes and Sacred Scams",
       "url": "/wiki/first-witness-counterfeit-relics-fraud.html",
       "category": "core",
-      "rank_score": 263,
+      "rank_score": 265,
       "authority_score": 12
     },
     {
@@ -823,7 +823,7 @@
       "title": "Justice, Mercy and Restitution",
       "url": "/wiki/first-witness-justice-mercy-restitution.html",
       "category": "core",
-      "rank_score": 306,
+      "rank_score": 308,
       "authority_score": 12
     },
     {
@@ -855,7 +855,7 @@
       "title": "Libraries, Archive Houses and Sacred Architecture",
       "url": "/wiki/first-witness-libraries-architecture-archive-houses.html",
       "category": "core",
-      "rank_score": 268,
+      "rank_score": 270,
       "authority_score": 12
     },
     {
@@ -887,7 +887,7 @@
       "title": "First Witness Master Chronology",
       "url": "/wiki/first-witness-master-chronology.html",
       "category": "core",
-      "rank_score": 344,
+      "rank_score": 346,
       "authority_score": 14
     },
     {
@@ -951,7 +951,7 @@
       "title": "Pride, Temptation and False Idols",
       "url": "/wiki/first-witness-pride-temptation-false-idols.html",
       "category": "core",
-      "rank_score": 291,
+      "rank_score": 293,
       "authority_score": 12
     },
     {
@@ -959,7 +959,7 @@
       "title": "Prisons, Punishment and Return",
       "url": "/wiki/first-witness-prisons-punishment-return.html",
       "category": "core",
-      "rank_score": 270,
+      "rank_score": 272,
       "authority_score": 12
     },
     {
@@ -983,7 +983,7 @@
       "title": "Relics, Manuscripts and Lost Editions",
       "url": "/wiki/first-witness-relics-manuscripts-lost-editions.html",
       "category": "core",
-      "rank_score": 289,
+      "rank_score": 291,
       "authority_score": 12
     },
     {
@@ -2343,7 +2343,7 @@
       "title": "GKniftyHEADS",
       "url": "/wiki/gkniftyheads.html",
       "category": "core",
-      "rank_score": 622,
+      "rank_score": 620,
       "authority_score": 28
     },
     {
@@ -2423,7 +2423,7 @@
       "title": "Hard Fork Games",
       "url": "/wiki/hard-fork-games.html",
       "category": "core",
-      "rank_score": 491,
+      "rank_score": 489,
       "authority_score": 28
     },
     {
@@ -2447,8 +2447,8 @@
       "title": "HEX-TAGGER PRIME",
       "url": "/wiki/hex-tagger-prime.html",
       "category": "characters",
-      "rank_score": 251,
-      "authority_score": 18
+      "rank_score": 272,
+      "authority_score": 24
     },
     {
       "id": "/wiki/hodl-warriors.html",
@@ -2575,7 +2575,7 @@
       "title": "Metaverse Battles",
       "url": "/wiki/metaverse-battles.html",
       "category": "factions",
-      "rank_score": 253,
+      "rank_score": 251,
       "authority_score": 18
     },
     {
@@ -3592,7 +3592,7 @@
     },
     {
       "source": "/wiki/alien-worlds-tlm.html",
-      "target": "/wiki/jodie-zoom-2000.html",
+      "target": "/wiki/dragan-volkov.html",
       "score": 76,
       "weight": 0.76
     },
@@ -3652,7 +3652,7 @@
     },
     {
       "source": "/wiki/atomicassets.html",
-      "target": "/wiki/jodie-zoom-2000.html",
+      "target": "/wiki/dragan-volkov.html",
       "score": 76,
       "weight": 0.76
     },
@@ -3719,8 +3719,8 @@
     {
       "source": "/wiki/ava-chen.html",
       "target": "/wiki/crypto-moonboys.html",
-      "score": 89,
-      "weight": 0.89
+      "score": 86,
+      "weight": 0.86
     },
     {
       "source": "/wiki/ava-chen.html",
@@ -3730,13 +3730,7 @@
     },
     {
       "source": "/wiki/ava-chen.html",
-      "target": "/wiki/thera-9.html",
-      "score": 80,
-      "weight": 0.8
-    },
-    {
-      "source": "/wiki/ava-chen.html",
-      "target": "/wiki/jodie-zoom-2000.html",
+      "target": "/wiki/dragan-volkov.html",
       "score": 79,
       "weight": 0.79
     },
@@ -3745,6 +3739,12 @@
       "target": "/wiki/m1ntr-k1ll.html",
       "score": 78,
       "weight": 0.78
+    },
+    {
+      "source": "/wiki/ava-chen.html",
+      "target": "/wiki/thera-9.html",
+      "score": 77,
+      "weight": 0.77
     },
     {
       "source": "/wiki/battlemech-blast.html",
@@ -4510,21 +4510,21 @@
     },
     {
       "source": "/wiki/dragan-volkov.html",
-      "target": "/wiki/m1ntr-k1ll.html",
+      "target": "/wiki/thera-9.html",
+      "score": 80,
+      "weight": 0.8
+    },
+    {
+      "source": "/wiki/dragan-volkov.html",
+      "target": "/wiki/jodie-zoom-2000.html",
+      "score": 79,
+      "weight": 0.79
+    },
+    {
+      "source": "/wiki/dragan-volkov.html",
+      "target": "/wiki/ava-chen.html",
       "score": 78,
       "weight": 0.78
-    },
-    {
-      "source": "/wiki/dragan-volkov.html",
-      "target": "/wiki/grit.html",
-      "score": 77,
-      "weight": 0.77
-    },
-    {
-      "source": "/wiki/dragan-volkov.html",
-      "target": "/wiki/grit42.html",
-      "score": 77,
-      "weight": 0.77
     },
     {
       "source": "/wiki/dream-sovereign.html",
@@ -4559,8 +4559,8 @@
     {
       "source": "/wiki/elder-codex-7.html",
       "target": "/wiki/crypto-moonboys.html",
-      "score": 92,
-      "weight": 0.92
+      "score": 89,
+      "weight": 0.89
     },
     {
       "source": "/wiki/elder-codex-7.html",
@@ -4570,21 +4570,21 @@
     },
     {
       "source": "/wiki/elder-codex-7.html",
-      "target": "/wiki/hodl-warriors.html",
-      "score": 75,
-      "weight": 0.75
-    },
-    {
-      "source": "/wiki/elder-codex-7.html",
       "target": "/wiki/bitcoin-kids.html",
-      "score": 74,
-      "weight": 0.74
+      "score": 77,
+      "weight": 0.77
     },
     {
       "source": "/wiki/elder-codex-7.html",
       "target": "/wiki/iris-7.html",
-      "score": 74,
-      "weight": 0.74
+      "score": 77,
+      "weight": 0.77
+    },
+    {
+      "source": "/wiki/elder-codex-7.html",
+      "target": "/wiki/hodl-warriors.html",
+      "score": 75,
+      "weight": 0.75
     },
     {
       "source": "/wiki/ethereum-ecosystem.html",
@@ -5080,6 +5080,12 @@
     },
     {
       "source": "/wiki/first-witness-book-3-the-keeper.html",
+      "target": "/wiki/first-witness-book-1-the-first-witness.html",
+      "score": 315,
+      "weight": 1
+    },
+    {
+      "source": "/wiki/first-witness-book-3-the-keeper.html",
       "target": "/wiki/first-witness-concordance.html",
       "score": 315,
       "weight": 1
@@ -5088,12 +5094,6 @@
       "source": "/wiki/first-witness-book-3-the-keeper.html",
       "target": "/wiki/first-witness-life-readings.html",
       "score": 315,
-      "weight": 1
-    },
-    {
-      "source": "/wiki/first-witness-book-3-the-keeper.html",
-      "target": "/wiki/first-witness-book-1-the-first-witness.html",
-      "score": 313,
       "weight": 1
     },
     {
@@ -5783,7 +5783,7 @@
     {
       "source": "/wiki/first-witness-faction-commentaries.html",
       "target": "/wiki/first-witness-book-1-the-first-witness.html",
-      "score": 318,
+      "score": 320,
       "weight": 1
     },
     {
@@ -6293,7 +6293,7 @@
     {
       "source": "/wiki/first-witness-life-readings.html",
       "target": "/wiki/first-witness-book-1-the-first-witness.html",
-      "score": 309,
+      "score": 311,
       "weight": 1
     },
     {
@@ -6383,7 +6383,7 @@
     {
       "source": "/wiki/first-witness-master-chronology.html",
       "target": "/wiki/first-witness-book-1-the-first-witness.html",
-      "score": 318,
+      "score": 320,
       "weight": 1
     },
     {
@@ -6953,7 +6953,7 @@
     {
       "source": "/wiki/first-witness-source-register.html",
       "target": "/wiki/first-witness-book-1-the-first-witness.html",
-      "score": 318,
+      "score": 320,
       "weight": 1
     },
     {
@@ -12076,13 +12076,13 @@
     },
     {
       "source": "/wiki/grit.html",
-      "target": "/wiki/dragan-volkov.html",
+      "target": "/wiki/grit42.html",
       "score": 77,
       "weight": 0.77
     },
     {
       "source": "/wiki/grit.html",
-      "target": "/wiki/grit42.html",
+      "target": "/wiki/thera-9.html",
       "score": 77,
       "weight": 0.77
     },
@@ -12106,13 +12106,13 @@
     },
     {
       "source": "/wiki/grit42.html",
-      "target": "/wiki/dragan-volkov.html",
+      "target": "/wiki/grit.html",
       "score": 77,
       "weight": 0.77
     },
     {
       "source": "/wiki/grit42.html",
-      "target": "/wiki/grit.html",
+      "target": "/wiki/thera-9.html",
       "score": 77,
       "weight": 0.77
     },
@@ -12448,7 +12448,7 @@
     },
     {
       "source": "/wiki/jodie-zoom-2000.html",
-      "target": "/wiki/hodl-warriors.html",
+      "target": "/wiki/dragan-volkov.html",
       "score": 79,
       "weight": 0.79
     },
@@ -12568,7 +12568,7 @@
     },
     {
       "source": "/wiki/loopfiend.html",
-      "target": "/wiki/jodie-zoom-2000.html",
+      "target": "/wiki/dragan-volkov.html",
       "score": 76,
       "weight": 0.76
     },
@@ -12598,9 +12598,9 @@
     },
     {
       "source": "/wiki/m1ntr-k1ll.html",
-      "target": "/wiki/gang-signs.html",
-      "score": 75,
-      "weight": 0.75
+      "target": "/wiki/dragan-volkov.html",
+      "score": 76,
+      "weight": 0.76
     },
     {
       "source": "/wiki/maidstone-base.html",
@@ -13258,7 +13258,7 @@
     },
     {
       "source": "/wiki/pixil-mini.html",
-      "target": "/wiki/jodie-zoom-2000.html",
+      "target": "/wiki/dragan-volkov.html",
       "score": 76,
       "weight": 0.76
     },
@@ -14579,7 +14579,7 @@
     {
       "source": "/wiki/the-first-witness.html",
       "target": "/wiki/first-witness-book-1-the-first-witness.html",
-      "score": 321,
+      "score": 323,
       "weight": 1
     },
     {

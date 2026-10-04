@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-04T12:46:05.657Z",
-  "verified_at": "2026-10-04T12:46:05.657Z",
+  "generated_at": "2026-10-04T12:56:28.200Z",
+  "verified_at": "2026-10-04T12:56:28.200Z",
   "lite": true,
   "nodes": [
     {
@@ -32,7 +32,7 @@
       "title": "GKniftyHEADS",
       "url": "/wiki/gkniftyheads.html",
       "category": "core",
-      "rank_score": 622,
+      "rank_score": 620,
       "authority_score": 28
     },
     {
@@ -56,7 +56,7 @@
       "title": "Hard Fork Games",
       "url": "/wiki/hard-fork-games.html",
       "category": "core",
-      "rank_score": 491,
+      "rank_score": 489,
       "authority_score": 28
     },
     {
@@ -88,7 +88,7 @@
       "title": "Concordance of Broken Records",
       "url": "/wiki/first-witness-concordance.html",
       "category": "core",
-      "rank_score": 412,
+      "rank_score": 414,
       "authority_score": 14
     },
     {
@@ -192,7 +192,7 @@
       "title": "First Witness Master Chronology",
       "url": "/wiki/first-witness-master-chronology.html",
       "category": "core",
-      "rank_score": 344,
+      "rank_score": 346,
       "authority_score": 14
     },
     {
@@ -284,6 +284,14 @@
       "authority_score": 21
     },
     {
+      "id": "/wiki/first-witness-book-1-the-first-witness.html",
+      "title": "Book I — The First Witness",
+      "url": "/wiki/first-witness-book-1-the-first-witness.html",
+      "category": "core",
+      "rank_score": 326,
+      "authority_score": 14
+    },
+    {
       "id": "/wiki/first-witness-forty-paths.html",
       "title": "The Forty Paths",
       "url": "/wiki/first-witness-forty-paths.html",
@@ -322,14 +330,6 @@
       "category": "nfts-digital-art",
       "rank_score": 321,
       "authority_score": 16
-    },
-    {
-      "id": "/wiki/first-witness-book-1-the-first-witness.html",
-      "title": "Book I — The First Witness",
-      "url": "/wiki/first-witness-book-1-the-first-witness.html",
-      "category": "core",
-      "rank_score": 320,
-      "authority_score": 14
     },
     {
       "id": "/wiki/first-witness-book-4-the-wall.html",
@@ -460,6 +460,14 @@
       "authority_score": 12
     },
     {
+      "id": "/wiki/first-witness-justice-mercy-restitution.html",
+      "title": "Justice, Mercy and Restitution",
+      "url": "/wiki/first-witness-justice-mercy-restitution.html",
+      "category": "core",
+      "rank_score": 308,
+      "authority_score": 12
+    },
+    {
       "id": "/wiki/first-witness-questions-for-the-living.html",
       "title": "Questions for the Living",
       "url": "/wiki/first-witness-questions-for-the-living.html",
@@ -474,14 +482,6 @@
       "category": "core",
       "rank_score": 308,
       "authority_score": 14
-    },
-    {
-      "id": "/wiki/first-witness-justice-mercy-restitution.html",
-      "title": "Justice, Mercy and Restitution",
-      "url": "/wiki/first-witness-justice-mercy-restitution.html",
-      "category": "core",
-      "rank_score": 306,
-      "authority_score": 12
     },
     {
       "id": "/wiki/block-node-defenders.html",
