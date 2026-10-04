@@ -292,7 +292,7 @@
     ]
   },
   "/wiki/alien-worlds-tlm.html": {
-    "outbound_count": 25,
+    "outbound_count": 24,
     "inbound_count": 4,
     "existing_outbound": [
       "/wiki/bitcoin-kids.html",
@@ -316,7 +316,6 @@
       "/wiki/gkniftyheads-blockchain-furie-infinite-776007.html",
       "/wiki/gkniftyheads-blockchain-furie-infinite-776055.html",
       "/wiki/gkniftyheads-blockchain-furie-infinite-776057.html",
-      "/wiki/gkniftyheads.html",
       "/wiki/grit.html",
       "/wiki/memecoins.html",
       "/wiki/metropolis.html",
@@ -20169,7 +20168,7 @@
     ]
   },
   "/wiki/pixil-mini.html": {
-    "outbound_count": 25,
+    "outbound_count": 24,
     "inbound_count": 0,
     "existing_outbound": [
       "/wiki/bitcoin-kids.html",
@@ -20197,8 +20196,7 @@
       "/wiki/nbg-token.html",
       "/wiki/nfthive.html",
       "/wiki/the-blockchain-furies.html",
-      "/wiki/wax-blockchain.html",
-      "/wiki/web3.html"
+      "/wiki/wax-blockchain.html"
     ],
     "inbound_from": []
   },
@@ -23873,7 +23871,7 @@
     ]
   },
   "/wiki/wax-dexs-defi.html": {
-    "outbound_count": 37,
+    "outbound_count": 36,
     "inbound_count": 10,
     "existing_outbound": [
       "/wiki/alcor-exchange.html",
@@ -23913,8 +23911,7 @@
       "/wiki/nbgx-token.html",
       "/wiki/pmsl-token.html",
       "/wiki/punk-token.html",
-      "/wiki/waxp-exchange.html",
-      "/wiki/web3.html"
+      "/wiki/waxp-exchange.html"
     ],
     "inbound_from": [
       "/wiki/defi-mining.html",
@@ -23964,7 +23961,7 @@
     ]
   },
   "/wiki/wax-pepe.html": {
-    "outbound_count": 34,
+    "outbound_count": 33,
     "inbound_count": 3,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
@@ -24001,8 +23998,7 @@
       "/wiki/punk-token.html",
       "/wiki/tacoswap.html",
       "/wiki/tokenomics.html",
-      "/wiki/trevor-fung.html",
-      "/wiki/waxp-exchange.html"
+      "/wiki/trevor-fung.html"
     ],
     "inbound_from": [
       "/wiki/wax-blockchain.html",

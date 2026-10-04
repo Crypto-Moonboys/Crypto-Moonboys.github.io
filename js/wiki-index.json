@@ -24943,94 +24943,6 @@
     "brand": null
   },
   {
-    "title": "WAX Blockchain",
-    "desc": "Crypto Moonboys wiki guide to the WAX blockchain, including WAXP, resources, NFT infrastructure, games, wallets and creator use cases.",
-    "url": "/wiki/wax-blockchain.html",
-    "tags": [
-      "wax",
-      "blockchain",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "wax blockchain crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 269,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 1377,
-      "keyword_bag_size": 19,
-      "heading_count": 13,
-      "list_count": 2,
-      "internal_link_count": 13,
-      "paragraph_count": 19,
-      "section_count": 10,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 73,
-      "authority_score": 23
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 50,
-      "keyword_bag_points": 19,
-      "content_quality_points": 81,
-      "authority_points": 54,
-      "final_rank_score": 269,
-      "authority_graph_points": 31
-    },
-    "search_index": {
-      "normalized_title": "wax blockchain crypto moonboys wiki",
-      "tokens": [
-        "wax",
-        "blockchain",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "wax",
-        "blockchain",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "guide",
-        "to",
-        "the",
-        "including",
-        "waxp",
-        "resources",
-        "nft",
-        "infrastructure",
-        "games",
-        "wallets",
-        "and",
-        "creator",
-        "use",
-        "cases"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 12,
-      "outbound_count": 34,
-      "existing_outbound_count": 13,
-      "suggested_outbound_count": 21,
-      "authority": 30.5
-    },
-    "brand": null
-  },
-  {
     "title": "Ava Chen",
     "desc": "Ava Chen, fictional investigator of the Cipher Lord: the guarded interview, Block Zero, limits of testimony and the separate future-strategist tradition.",
     "url": "/wiki/ava-chen.html",
@@ -25763,89 +25675,6 @@
     "brand": null
   },
   {
-    "title": "$WAXP",
-    "desc": "Full source-cited Crypto Moonboys wiki guide to WAXP, the native token of the WAX blockchain ecosystem.",
-    "url": "/wiki/waxp.html",
-    "tags": [
-      "waxp",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "waxp crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 267,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 4,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 2264,
-      "keyword_bag_size": 16,
-      "heading_count": 15,
-      "list_count": 2,
-      "internal_link_count": 15,
-      "paragraph_count": 28,
-      "section_count": 12,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 85,
-      "authority_score": 27
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 50,
-      "keyword_bag_points": 16,
-      "content_quality_points": 92,
-      "authority_points": 44,
-      "final_rank_score": 267,
-      "authority_graph_points": 17
-    },
-    "search_index": {
-      "normalized_title": "waxp crypto moonboys wiki",
-      "tokens": [
-        "waxp",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "waxp",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "full",
-        "source",
-        "cited",
-        "guide",
-        "to",
-        "the",
-        "native",
-        "token",
-        "of",
-        "wax",
-        "blockchain",
-        "ecosystem"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 5,
-      "outbound_count": 37,
-      "existing_outbound_count": 13,
-      "suggested_outbound_count": 24,
-      "authority": 16.5
-    },
-    "brand": null
-  },
-  {
     "title": "Tokenomics",
     "desc": "Tokenomics: supply, distribution, vesting, governance and reward sources, including why APY is not the same as token inflation.",
     "url": "/wiki/tokenomics.html",
@@ -26430,6 +26259,94 @@
       "existing_outbound_count": 4,
       "suggested_outbound_count": 58,
       "authority": 8
+    },
+    "brand": null
+  },
+  {
+    "title": "WAX Blockchain",
+    "desc": "Crypto Moonboys wiki guide to the WAX blockchain, including WAXP, resources, NFT infrastructure, games, wallets and creator use cases.",
+    "url": "/wiki/wax-blockchain.html",
+    "tags": [
+      "wax",
+      "blockchain",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "wax blockchain crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 266,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 1078,
+      "keyword_bag_size": 19,
+      "heading_count": 12,
+      "list_count": 2,
+      "internal_link_count": 13,
+      "paragraph_count": 14,
+      "section_count": 9,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 73,
+      "authority_score": 20
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 50,
+      "keyword_bag_points": 19,
+      "content_quality_points": 81,
+      "authority_points": 51,
+      "final_rank_score": 266,
+      "authority_graph_points": 31
+    },
+    "search_index": {
+      "normalized_title": "wax blockchain crypto moonboys wiki",
+      "tokens": [
+        "wax",
+        "blockchain",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "wax",
+        "blockchain",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "guide",
+        "to",
+        "the",
+        "including",
+        "waxp",
+        "resources",
+        "nft",
+        "infrastructure",
+        "games",
+        "wallets",
+        "and",
+        "creator",
+        "use",
+        "cases"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 12,
+      "outbound_count": 34,
+      "existing_outbound_count": 13,
+      "suggested_outbound_count": 21,
+      "authority": 30.5
     },
     "brand": null
   },
@@ -28075,89 +27992,85 @@
     "brand": null
   },
   {
-    "title": "Alien Worlds / TLM",
-    "desc": "Crypto Moonboys wiki guide to Alien Worlds and Trilium (TLM), one of the best-known blockchain game economies connected to WAX.",
-    "url": "/wiki/alien-worlds-tlm.html",
+    "title": "$WAXP",
+    "desc": "Full source-cited Crypto Moonboys wiki guide to WAXP, the native token of the WAX blockchain ecosystem.",
+    "url": "/wiki/waxp.html",
     "tags": [
-      "alien",
-      "worlds",
-      "tlm",
+      "waxp",
       "crypto",
       "moonboys",
       "wiki"
     ],
-    "category": "characters",
-    "aliases": [],
-    "rank_score": 260,
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "waxp crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 259,
     "rank_signals": {
       "is_canonical": true,
-      "alias_count": 0,
-      "tag_count": 6,
+      "alias_count": 1,
+      "tag_count": 4,
       "mention_count": 0,
-      "category": "characters",
-      "category_priority": 8,
+      "category": "factions",
+      "category_priority": 7,
       "has_description": true,
-      "article_word_count": 1565,
-      "keyword_bag_size": 20,
-      "heading_count": 14,
+      "article_word_count": 1781,
+      "keyword_bag_size": 16,
+      "heading_count": 15,
       "list_count": 2,
-      "internal_link_count": 11,
+      "internal_link_count": 15,
       "paragraph_count": 22,
-      "section_count": 11,
+      "section_count": 12,
       "lore_paragraph_count": 1,
       "content_quality_score": 77,
-      "authority_score": 23
+      "authority_score": 27
     },
     "rank_diagnostics": {
       "canonical_points": 20,
       "description_points": 10,
-      "category_points": 40,
+      "category_points": 35,
       "word_count_points": 50,
-      "keyword_bag_points": 20,
-      "content_quality_points": 83,
-      "authority_points": 37,
-      "final_rank_score": 260,
-      "authority_graph_points": 14
+      "keyword_bag_points": 16,
+      "content_quality_points": 84,
+      "authority_points": 44,
+      "final_rank_score": 259,
+      "authority_graph_points": 17
     },
     "search_index": {
-      "normalized_title": "alien worlds tlm crypto moonboys wiki",
+      "normalized_title": "waxp crypto moonboys wiki",
       "tokens": [
-        "alien",
-        "worlds",
-        "tlm",
+        "waxp",
         "crypto",
         "moonboys",
         "wiki"
       ],
       "keyword_bag": [
-        "alien",
-        "worlds",
-        "tlm",
+        "waxp",
         "crypto",
         "moonboys",
         "wiki",
+        "full",
+        "source",
+        "cited",
         "guide",
         "to",
-        "and",
-        "trilium",
-        "one",
-        "of",
         "the",
-        "best",
-        "known",
+        "native",
+        "token",
+        "of",
+        "wax",
         "blockchain",
-        "game",
-        "economies",
-        "connected",
-        "wax"
+        "ecosystem"
       ]
     },
     "link_score": {
-      "inbound_count": 4,
-      "outbound_count": 25,
-      "existing_outbound_count": 11,
-      "suggested_outbound_count": 14,
-      "authority": 13.5
+      "inbound_count": 5,
+      "outbound_count": 37,
+      "existing_outbound_count": 13,
+      "suggested_outbound_count": 24,
+      "authority": 16.5
     },
     "brand": null
   },
@@ -28260,98 +28173,6 @@
       "existing_outbound_count": 12,
       "suggested_outbound_count": 12,
       "authority": 8
-    },
-    "brand": null
-  },
-  {
-    "title": "WAX DEXs & DeFi",
-    "desc": "Crypto Moonboys wiki guide to WAX DEXs and DeFi tools including Alcor Exchange, TacoSwap, liquidity pools, swaps and token-market risk.",
-    "url": "/wiki/wax-dexs-defi.html",
-    "tags": [
-      "wax",
-      "dexs",
-      "defi",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "wax dexs defi"
-      }
-    ],
-    "rank_score": 257,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 6,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 900,
-      "keyword_bag_size": 20,
-      "heading_count": 12,
-      "list_count": 2,
-      "internal_link_count": 21,
-      "paragraph_count": 13,
-      "section_count": 9,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 65,
-      "authority_score": 24
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 45,
-      "keyword_bag_points": 20,
-      "content_quality_points": 74,
-      "authority_points": 53,
-      "final_rank_score": 257,
-      "authority_graph_points": 29
-    },
-    "search_index": {
-      "normalized_title": "wax dexs and defi crypto moonboys wiki",
-      "tokens": [
-        "wax",
-        "dexs",
-        "and",
-        "defi",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "wax",
-        "dexs",
-        "and",
-        "defi",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "guide",
-        "to",
-        "tools",
-        "including",
-        "alcor",
-        "exchange",
-        "tacoswap",
-        "liquidity",
-        "pools",
-        "swaps",
-        "token",
-        "market",
-        "risk"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 10,
-      "outbound_count": 37,
-      "existing_outbound_count": 17,
-      "suggested_outbound_count": 20,
-      "authority": 28.5
     },
     "brand": null
   },
@@ -28467,96 +28288,6 @@
       "existing_outbound_count": 9,
       "suggested_outbound_count": 37,
       "authority": 10.5
-    },
-    "brand": null
-  },
-  {
-    "title": "WUFFI / $WUF",
-    "desc": "Crypto Moonboys wiki guide to WUFFI and $WUF, a multi-chain community coin connected to WAX, Solana, Base and TON.",
-    "url": "/wiki/wuffi.html",
-    "tags": [
-      "wuffi",
-      "wuf",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "wuffi"
-      },
-      {
-        "title": "wuffi wuf crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 256,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 2,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 1576,
-      "keyword_bag_size": 18,
-      "heading_count": 14,
-      "list_count": 2,
-      "internal_link_count": 11,
-      "paragraph_count": 23,
-      "section_count": 11,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 77,
-      "authority_score": 23
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 50,
-      "keyword_bag_points": 18,
-      "content_quality_points": 88,
-      "authority_points": 35,
-      "final_rank_score": 256,
-      "authority_graph_points": 12
-    },
-    "search_index": {
-      "normalized_title": "wuffi wuf crypto moonboys wiki",
-      "tokens": [
-        "wuffi",
-        "wuf",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "wuffi",
-        "wuf",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "guide",
-        "to",
-        "and",
-        "a",
-        "multi",
-        "chain",
-        "community",
-        "coin",
-        "connected",
-        "wax",
-        "solana",
-        "base",
-        "ton"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 3,
-      "outbound_count": 25,
-      "existing_outbound_count": 11,
-      "suggested_outbound_count": 14,
-      "authority": 11.5
     },
     "brand": null
   },
@@ -29064,189 +28795,6 @@
     "brand": null
   },
   {
-    "title": "DeFi Mining",
-    "desc": "Crypto Moonboys wiki guide to DeFi Mining, a WAX blockchain mining-simulation project with NFT rigs, DMT rewards, staking and DePIN-style mechanics.",
-    "url": "/wiki/defi-mining.html",
-    "tags": [
-      "defi",
-      "mining",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "defi mining crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 251,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 1071,
-      "keyword_bag_size": 22,
-      "heading_count": 14,
-      "list_count": 2,
-      "internal_link_count": 9,
-      "paragraph_count": 17,
-      "section_count": 11,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 73,
-      "authority_score": 20
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 50,
-      "keyword_bag_points": 22,
-      "content_quality_points": 81,
-      "authority_points": 33,
-      "final_rank_score": 251,
-      "authority_graph_points": 13
-    },
-    "search_index": {
-      "normalized_title": "defi mining crypto moonboys wiki",
-      "tokens": [
-        "defi",
-        "mining",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "defi",
-        "mining",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "guide",
-        "to",
-        "a",
-        "wax",
-        "blockchain",
-        "simulation",
-        "project",
-        "with",
-        "nft",
-        "rigs",
-        "dmt",
-        "rewards",
-        "staking",
-        "and",
-        "depin",
-        "style",
-        "mechanics"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 4,
-      "outbound_count": 27,
-      "existing_outbound_count": 9,
-      "suggested_outbound_count": 18,
-      "authority": 12.5
-    },
-    "brand": null
-  },
-  {
-    "title": "FGL Token",
-    "desc": "Crypto Moonboys wiki guide to FGL Token, a multi-game Web3 gaming token with WAX roots, Outlaw Troopers, Cosmic Clash and wider FGL portfolio connections.",
-    "url": "/wiki/fgl-token.html",
-    "tags": [
-      "fgl",
-      "token",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "fgl token crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 251,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 1144,
-      "keyword_bag_size": 23,
-      "heading_count": 14,
-      "list_count": 2,
-      "internal_link_count": 11,
-      "paragraph_count": 17,
-      "section_count": 11,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 73,
-      "authority_score": 20
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 50,
-      "keyword_bag_points": 23,
-      "content_quality_points": 81,
-      "authority_points": 32,
-      "final_rank_score": 251,
-      "authority_graph_points": 12
-    },
-    "search_index": {
-      "normalized_title": "fgl token crypto moonboys wiki",
-      "tokens": [
-        "fgl",
-        "token",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "fgl",
-        "token",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "guide",
-        "to",
-        "a",
-        "multi",
-        "game",
-        "web3",
-        "gaming",
-        "with",
-        "wax",
-        "roots",
-        "outlaw",
-        "troopers",
-        "cosmic",
-        "clash",
-        "and",
-        "wider",
-        "portfolio",
-        "connections"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 3,
-      "outbound_count": 22,
-      "existing_outbound_count": 11,
-      "suggested_outbound_count": 11,
-      "authority": 11.5
-    },
-    "brand": null
-  },
-  {
     "title": "$GK",
     "desc": "$GK in the Crypto Moonboys archive: an ambiguous legacy reward label, its fictional economic role, and the distinction from specifically named ecosystem tokens and live Arcade XP.",
     "url": "/wiki/gk.html",
@@ -29540,6 +29088,98 @@
     "brand": null
   },
   {
+    "title": "WAX DEXs & DeFi",
+    "desc": "Crypto Moonboys wiki guide to WAX DEXs and DeFi tools including Alcor Exchange, TacoSwap, liquidity pools, swaps and token-market risk.",
+    "url": "/wiki/wax-dexs-defi.html",
+    "tags": [
+      "wax",
+      "dexs",
+      "defi",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "wax dexs defi"
+      }
+    ],
+    "rank_score": 250,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 6,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 751,
+      "keyword_bag_size": 20,
+      "heading_count": 11,
+      "list_count": 2,
+      "internal_link_count": 21,
+      "paragraph_count": 10,
+      "section_count": 8,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 65,
+      "authority_score": 24
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 38,
+      "keyword_bag_points": 20,
+      "content_quality_points": 74,
+      "authority_points": 53,
+      "final_rank_score": 250,
+      "authority_graph_points": 29
+    },
+    "search_index": {
+      "normalized_title": "wax dexs and defi crypto moonboys wiki",
+      "tokens": [
+        "wax",
+        "dexs",
+        "and",
+        "defi",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "wax",
+        "dexs",
+        "and",
+        "defi",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "guide",
+        "to",
+        "tools",
+        "including",
+        "alcor",
+        "exchange",
+        "tacoswap",
+        "liquidity",
+        "pools",
+        "swaps",
+        "token",
+        "market",
+        "risk"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 10,
+      "outbound_count": 36,
+      "existing_outbound_count": 17,
+      "suggested_outbound_count": 19,
+      "authority": 28.5
+    },
+    "brand": null
+  },
+  {
     "title": "2025 Metaverse Launch Party",
     "desc": "The archived 2025 Metaverse Launch Party announcement: community context, preserved registration links and the limits of the surviving event record.",
     "url": "/wiki/2025-metaverse-launch-party.html",
@@ -29631,6 +29271,96 @@
       "existing_outbound_count": 13,
       "suggested_outbound_count": 7,
       "authority": 8.5
+    },
+    "brand": null
+  },
+  {
+    "title": "WUFFI / $WUF",
+    "desc": "Crypto Moonboys wiki guide to WUFFI and $WUF, a multi-chain community coin connected to WAX, Solana, Base and TON.",
+    "url": "/wiki/wuffi.html",
+    "tags": [
+      "wuffi",
+      "wuf",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "wuffi"
+      },
+      {
+        "title": "wuffi wuf crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 249,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 2,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 1044,
+      "keyword_bag_size": 18,
+      "heading_count": 13,
+      "list_count": 2,
+      "internal_link_count": 11,
+      "paragraph_count": 13,
+      "section_count": 10,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 73,
+      "authority_score": 20
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 50,
+      "keyword_bag_points": 18,
+      "content_quality_points": 84,
+      "authority_points": 32,
+      "final_rank_score": 249,
+      "authority_graph_points": 12
+    },
+    "search_index": {
+      "normalized_title": "wuffi wuf crypto moonboys wiki",
+      "tokens": [
+        "wuffi",
+        "wuf",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "wuffi",
+        "wuf",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "guide",
+        "to",
+        "and",
+        "a",
+        "multi",
+        "chain",
+        "community",
+        "coin",
+        "connected",
+        "wax",
+        "solana",
+        "base",
+        "ton"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 3,
+      "outbound_count": 25,
+      "existing_outbound_count": 11,
+      "suggested_outbound_count": 14,
+      "authority": 11.5
     },
     "brand": null
   },
@@ -29731,191 +29461,6 @@
       "existing_outbound_count": 9,
       "suggested_outbound_count": 28,
       "authority": 8.5
-    },
-    "brand": null
-  },
-  {
-    "title": "Pixil Mini",
-    "desc": "Crypto Moonboys wiki guide to Pixil Mini, a WAX blockchain RPG with generated minis, stats, areas, game passes and NFT marketplace links.",
-    "url": "/wiki/pixil-mini.html",
-    "tags": [
-      "pixil",
-      "mini",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "characters",
-    "aliases": [
-      {
-        "title": "pixil mini crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 248,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "characters",
-      "category_priority": 8,
-      "has_description": true,
-      "article_word_count": 1035,
-      "keyword_bag_size": 22,
-      "heading_count": 13,
-      "list_count": 2,
-      "internal_link_count": 9,
-      "paragraph_count": 15,
-      "section_count": 10,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 73,
-      "authority_score": 20
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 40,
-      "word_count_points": 50,
-      "keyword_bag_points": 22,
-      "content_quality_points": 81,
-      "authority_points": 25,
-      "final_rank_score": 248,
-      "authority_graph_points": 5
-    },
-    "search_index": {
-      "normalized_title": "pixil mini crypto moonboys wiki",
-      "tokens": [
-        "pixil",
-        "mini",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "pixil",
-        "mini",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "guide",
-        "to",
-        "a",
-        "wax",
-        "blockchain",
-        "rpg",
-        "with",
-        "generated",
-        "minis",
-        "stats",
-        "areas",
-        "game",
-        "passes",
-        "and",
-        "nft",
-        "marketplace",
-        "links"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 25,
-      "existing_outbound_count": 9,
-      "suggested_outbound_count": 16,
-      "authority": 4.5
-    },
-    "brand": null
-  },
-  {
-    "title": "The CleanupCentr",
-    "desc": "Crypto Moonboys wiki guide to The CleanupCentr, a WAX resource economy using TRASH, CINDER, TOMATOE, NFT burning, farming, tools and circular gameplay loops.",
-    "url": "/wiki/the-cleanupcentr.html",
-    "tags": [
-      "cleanupcentr",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "CleanupCentr — Crypto Moonboys Wiki"
-      },
-      {
-        "title": "CleanupCentr"
-      }
-    ],
-    "rank_score": 248,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 2,
-      "tag_count": 4,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 1160,
-      "keyword_bag_size": 23,
-      "heading_count": 14,
-      "list_count": 2,
-      "internal_link_count": 13,
-      "paragraph_count": 18,
-      "section_count": 11,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 73,
-      "authority_score": 20
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 50,
-      "keyword_bag_points": 23,
-      "content_quality_points": 83,
-      "authority_points": 27,
-      "final_rank_score": 248,
-      "authority_graph_points": 7
-    },
-    "search_index": {
-      "normalized_title": "the cleanupcentr crypto moonboys wiki",
-      "tokens": [
-        "the",
-        "cleanupcentr",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "the",
-        "cleanupcentr",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "guide",
-        "to",
-        "a",
-        "wax",
-        "resource",
-        "economy",
-        "using",
-        "trash",
-        "cinder",
-        "tomatoe",
-        "nft",
-        "burning",
-        "farming",
-        "tools",
-        "and",
-        "circular",
-        "gameplay",
-        "loops"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 18,
-      "existing_outbound_count": 13,
-      "suggested_outbound_count": 5,
-      "authority": 6.5
     },
     "brand": null
   },
@@ -30200,6 +29745,93 @@
       "existing_outbound_count": 9,
       "suggested_outbound_count": 27,
       "authority": 4.5
+    },
+    "brand": null
+  },
+  {
+    "title": "Alien Worlds / TLM",
+    "desc": "Crypto Moonboys wiki guide to Alien Worlds and Trilium (TLM), one of the best-known blockchain game economies connected to WAX.",
+    "url": "/wiki/alien-worlds-tlm.html",
+    "tags": [
+      "alien",
+      "worlds",
+      "tlm",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "characters",
+    "aliases": [],
+    "rank_score": 245,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 6,
+      "mention_count": 0,
+      "category": "characters",
+      "category_priority": 8,
+      "has_description": true,
+      "article_word_count": 995,
+      "keyword_bag_size": 20,
+      "heading_count": 12,
+      "list_count": 2,
+      "internal_link_count": 11,
+      "paragraph_count": 12,
+      "section_count": 9,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 65,
+      "authority_score": 20
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 40,
+      "word_count_points": 50,
+      "keyword_bag_points": 20,
+      "content_quality_points": 71,
+      "authority_points": 34,
+      "final_rank_score": 245,
+      "authority_graph_points": 14
+    },
+    "search_index": {
+      "normalized_title": "alien worlds tlm crypto moonboys wiki",
+      "tokens": [
+        "alien",
+        "worlds",
+        "tlm",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "alien",
+        "worlds",
+        "tlm",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "guide",
+        "to",
+        "and",
+        "trilium",
+        "one",
+        "of",
+        "the",
+        "best",
+        "known",
+        "blockchain",
+        "game",
+        "economies",
+        "connected",
+        "wax"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 4,
+      "outbound_count": 24,
+      "existing_outbound_count": 11,
+      "suggested_outbound_count": 13,
+      "authority": 13.5
     },
     "brand": null
   },
@@ -31325,6 +30957,98 @@
     "brand": null
   },
   {
+    "title": "FGL Token",
+    "desc": "Crypto Moonboys wiki guide to FGL Token, a multi-game Web3 gaming token with WAX roots, Outlaw Troopers, Cosmic Clash and wider FGL portfolio connections.",
+    "url": "/wiki/fgl-token.html",
+    "tags": [
+      "fgl",
+      "token",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "fgl token crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 239,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 924,
+      "keyword_bag_size": 23,
+      "heading_count": 13,
+      "list_count": 2,
+      "internal_link_count": 11,
+      "paragraph_count": 13,
+      "section_count": 10,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 65,
+      "authority_score": 20
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 46,
+      "keyword_bag_points": 23,
+      "content_quality_points": 73,
+      "authority_points": 32,
+      "final_rank_score": 239,
+      "authority_graph_points": 12
+    },
+    "search_index": {
+      "normalized_title": "fgl token crypto moonboys wiki",
+      "tokens": [
+        "fgl",
+        "token",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "fgl",
+        "token",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "guide",
+        "to",
+        "a",
+        "multi",
+        "game",
+        "web3",
+        "gaming",
+        "with",
+        "wax",
+        "roots",
+        "outlaw",
+        "troopers",
+        "cosmic",
+        "clash",
+        "and",
+        "wider",
+        "portfolio",
+        "connections"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 3,
+      "outbound_count": 22,
+      "existing_outbound_count": 11,
+      "suggested_outbound_count": 11,
+      "authority": 11.5
+    },
+    "brand": null
+  },
+  {
     "title": "NFTHive",
     "desc": "Crypto Moonboys wiki guide to NFTHive, a WAX NFT marketplace with collections, market pages, analytics, creator tools, crafting, bulk tools and CPU rental links.",
     "url": "/wiki/nfthive.html",
@@ -32000,178 +31724,6 @@
     "brand": null
   },
   {
-    "title": "WAX PEPE",
-    "desc": "Crypto Moonboys wiki guide to WAX PEPE, a WAX ecosystem meme-token/project profile referenced through wax-pepe.vip.",
-    "url": "/wiki/wax-pepe.html",
-    "tags": [
-      "wax",
-      "pepe",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "wax pepe crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 233,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 960,
-      "keyword_bag_size": 16,
-      "heading_count": 13,
-      "list_count": 2,
-      "internal_link_count": 10,
-      "paragraph_count": 14,
-      "section_count": 10,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 65,
-      "authority_score": 20
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 48,
-      "keyword_bag_points": 16,
-      "content_quality_points": 73,
-      "authority_points": 31,
-      "final_rank_score": 233,
-      "authority_graph_points": 11
-    },
-    "search_index": {
-      "normalized_title": "wax pepe crypto moonboys wiki",
-      "tokens": [
-        "wax",
-        "pepe",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "wax",
-        "pepe",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "guide",
-        "to",
-        "a",
-        "ecosystem",
-        "meme",
-        "token",
-        "project",
-        "profile",
-        "referenced",
-        "through",
-        "vip"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 3,
-      "outbound_count": 34,
-      "existing_outbound_count": 10,
-      "suggested_outbound_count": 24,
-      "authority": 11
-    },
-    "brand": null
-  },
-  {
-    "title": "Alcor Exchange",
-    "desc": "Crypto Moonboys wiki guide to Alcor Exchange, a decentralized exchange and DeFi trading terminal used by WAX ecosystem traders.",
-    "url": "/wiki/alcor-exchange.html",
-    "tags": [
-      "alcor",
-      "exchange",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "alcor exchange crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 232,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 881,
-      "keyword_bag_size": 18,
-      "heading_count": 12,
-      "list_count": 2,
-      "internal_link_count": 12,
-      "paragraph_count": 12,
-      "section_count": 9,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 65,
-      "authority_score": 20
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 44,
-      "keyword_bag_points": 18,
-      "content_quality_points": 73,
-      "authority_points": 32,
-      "final_rank_score": 232,
-      "authority_graph_points": 12
-    },
-    "search_index": {
-      "normalized_title": "alcor exchange crypto moonboys wiki",
-      "tokens": [
-        "alcor",
-        "exchange",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "alcor",
-        "exchange",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "guide",
-        "to",
-        "a",
-        "decentralized",
-        "and",
-        "defi",
-        "trading",
-        "terminal",
-        "used",
-        "by",
-        "wax",
-        "ecosystem",
-        "traders"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 3,
-      "outbound_count": 24,
-      "existing_outbound_count": 12,
-      "suggested_outbound_count": 12,
-      "authority": 12
-    },
-    "brand": null
-  },
-  {
     "title": "Delicious Again Pete",
     "desc": "Delicious Again Pete, Peter Clark: resin art toys, hip-hop and pop-culture imagery, and the separate fictional gathering-host tradition in Crypto Moonboys.",
     "url": "/wiki/delicious-again-pete.html",
@@ -32365,6 +31917,100 @@
       "existing_outbound_count": 9,
       "suggested_outbound_count": 5,
       "authority": 4.5
+    },
+    "brand": null
+  },
+  {
+    "title": "The CleanupCentr",
+    "desc": "Crypto Moonboys wiki guide to The CleanupCentr, a WAX resource economy using TRASH, CINDER, TOMATOE, NFT burning, farming, tools and circular gameplay loops.",
+    "url": "/wiki/the-cleanupcentr.html",
+    "tags": [
+      "cleanupcentr",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "CleanupCentr — Crypto Moonboys Wiki"
+      },
+      {
+        "title": "CleanupCentr"
+      }
+    ],
+    "rank_score": 232,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 2,
+      "tag_count": 4,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 842,
+      "keyword_bag_size": 23,
+      "heading_count": 13,
+      "list_count": 2,
+      "internal_link_count": 13,
+      "paragraph_count": 12,
+      "section_count": 10,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 65,
+      "authority_score": 20
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 42,
+      "keyword_bag_points": 23,
+      "content_quality_points": 75,
+      "authority_points": 27,
+      "final_rank_score": 232,
+      "authority_graph_points": 7
+    },
+    "search_index": {
+      "normalized_title": "the cleanupcentr crypto moonboys wiki",
+      "tokens": [
+        "the",
+        "cleanupcentr",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "the",
+        "cleanupcentr",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "guide",
+        "to",
+        "a",
+        "wax",
+        "resource",
+        "economy",
+        "using",
+        "trash",
+        "cinder",
+        "tomatoe",
+        "nft",
+        "burning",
+        "farming",
+        "tools",
+        "and",
+        "circular",
+        "gameplay",
+        "loops"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 18,
+      "existing_outbound_count": 13,
+      "suggested_outbound_count": 5,
+      "authority": 6.5
     },
     "brand": null
   },
@@ -32927,91 +32573,6 @@
       "existing_outbound_count": 10,
       "suggested_outbound_count": 11,
       "authority": 7
-    },
-    "brand": null
-  },
-  {
-    "title": "TacoSwap",
-    "desc": "Crypto Moonboys wiki guide to TacoSwap and the Taco Crypto DeFi layer around WAX ecosystem swaps, liquidity and token trading.",
-    "url": "/wiki/tacoswap.html",
-    "tags": [
-      "tacoswap",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "tacoswap crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 229,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 4,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 890,
-      "keyword_bag_size": 18,
-      "heading_count": 12,
-      "list_count": 2,
-      "internal_link_count": 10,
-      "paragraph_count": 12,
-      "section_count": 9,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 65,
-      "authority_score": 20
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 45,
-      "keyword_bag_points": 18,
-      "content_quality_points": 72,
-      "authority_points": 29,
-      "final_rank_score": 229,
-      "authority_graph_points": 9
-    },
-    "search_index": {
-      "normalized_title": "tacoswap crypto moonboys wiki",
-      "tokens": [
-        "tacoswap",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "tacoswap",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "guide",
-        "to",
-        "and",
-        "the",
-        "taco",
-        "defi",
-        "layer",
-        "around",
-        "wax",
-        "ecosystem",
-        "swaps",
-        "liquidity",
-        "token",
-        "trading"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 2,
-      "outbound_count": 34,
-      "existing_outbound_count": 10,
-      "suggested_outbound_count": 24,
-      "authority": 9
     },
     "brand": null
   },
@@ -33741,6 +33302,97 @@
       "existing_outbound_count": 12,
       "suggested_outbound_count": 11,
       "authority": 30
+    },
+    "brand": null
+  },
+  {
+    "title": "DeFi Mining",
+    "desc": "Crypto Moonboys wiki guide to DeFi Mining, a WAX blockchain mining-simulation project with NFT rigs, DMT rewards, staking and DePIN-style mechanics.",
+    "url": "/wiki/defi-mining.html",
+    "tags": [
+      "defi",
+      "mining",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "defi mining crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 224,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 695,
+      "keyword_bag_size": 22,
+      "heading_count": 12,
+      "list_count": 2,
+      "internal_link_count": 9,
+      "paragraph_count": 9,
+      "section_count": 9,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 61,
+      "authority_score": 20
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 35,
+      "keyword_bag_points": 22,
+      "content_quality_points": 69,
+      "authority_points": 33,
+      "final_rank_score": 224,
+      "authority_graph_points": 13
+    },
+    "search_index": {
+      "normalized_title": "defi mining crypto moonboys wiki",
+      "tokens": [
+        "defi",
+        "mining",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "defi",
+        "mining",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "guide",
+        "to",
+        "a",
+        "wax",
+        "blockchain",
+        "simulation",
+        "project",
+        "with",
+        "nft",
+        "rigs",
+        "dmt",
+        "rewards",
+        "staking",
+        "and",
+        "depin",
+        "style",
+        "mechanics"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 4,
+      "outbound_count": 27,
+      "existing_outbound_count": 9,
+      "suggested_outbound_count": 18,
+      "authority": 12.5
     },
     "brand": null
   },
@@ -34564,6 +34216,93 @@
     "brand": null
   },
   {
+    "title": "Alcor Exchange",
+    "desc": "Crypto Moonboys wiki guide to Alcor Exchange, a decentralized exchange and DeFi trading terminal used by WAX ecosystem traders.",
+    "url": "/wiki/alcor-exchange.html",
+    "tags": [
+      "alcor",
+      "exchange",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "alcor exchange crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 220,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 710,
+      "keyword_bag_size": 18,
+      "heading_count": 11,
+      "list_count": 2,
+      "internal_link_count": 12,
+      "paragraph_count": 9,
+      "section_count": 8,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 61,
+      "authority_score": 20
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 36,
+      "keyword_bag_points": 18,
+      "content_quality_points": 69,
+      "authority_points": 32,
+      "final_rank_score": 220,
+      "authority_graph_points": 12
+    },
+    "search_index": {
+      "normalized_title": "alcor exchange crypto moonboys wiki",
+      "tokens": [
+        "alcor",
+        "exchange",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "alcor",
+        "exchange",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "guide",
+        "to",
+        "a",
+        "decentralized",
+        "and",
+        "defi",
+        "trading",
+        "terminal",
+        "used",
+        "by",
+        "wax",
+        "ecosystem",
+        "traders"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 3,
+      "outbound_count": 24,
+      "existing_outbound_count": 12,
+      "suggested_outbound_count": 12,
+      "authority": 12
+    },
+    "brand": null
+  },
+  {
     "title": "🌈 Richie &quot;The Ricochet&quot; Ricci⚡️⚡️⚡️",
     "desc": "🌈 Richie &quot;The Ricochet&quot; Ricci⚡️⚡️⚡️ is an NFT in the gkniftyheads WAX AtomicAssets collection.",
     "url": "/wiki/gkniftyheads-richie-the-ricochet-ricci-783377.html",
@@ -35195,6 +34934,91 @@
       "existing_outbound_count": 11,
       "suggested_outbound_count": 17,
       "authority": 5.5
+    },
+    "brand": null
+  },
+  {
+    "title": "WAX PEPE",
+    "desc": "Crypto Moonboys wiki guide to WAX PEPE, a WAX ecosystem meme-token/project profile referenced through wax-pepe.vip.",
+    "url": "/wiki/wax-pepe.html",
+    "tags": [
+      "wax",
+      "pepe",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "wax pepe crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 218,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 668,
+      "keyword_bag_size": 16,
+      "heading_count": 12,
+      "list_count": 2,
+      "internal_link_count": 10,
+      "paragraph_count": 10,
+      "section_count": 9,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 65,
+      "authority_score": 20
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 33,
+      "keyword_bag_points": 16,
+      "content_quality_points": 73,
+      "authority_points": 31,
+      "final_rank_score": 218,
+      "authority_graph_points": 11
+    },
+    "search_index": {
+      "normalized_title": "wax pepe crypto moonboys wiki",
+      "tokens": [
+        "wax",
+        "pepe",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "wax",
+        "pepe",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "guide",
+        "to",
+        "a",
+        "ecosystem",
+        "meme",
+        "token",
+        "project",
+        "profile",
+        "referenced",
+        "through",
+        "vip"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 3,
+      "outbound_count": 33,
+      "existing_outbound_count": 10,
+      "suggested_outbound_count": 23,
+      "authority": 11
     },
     "brand": null
   },
@@ -35844,88 +35668,6 @@
     "brand": null
   },
   {
-    "title": "WAXP Exchange",
-    "desc": "Crypto Moonboys wiki guide to WAXP Exchange, a WAX swap interface referenced through waxp.exchange/swap.",
-    "url": "/wiki/waxp-exchange.html",
-    "tags": [
-      "waxp",
-      "exchange",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "waxp exchange crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 217,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 801,
-      "keyword_bag_size": 13,
-      "heading_count": 12,
-      "list_count": 2,
-      "internal_link_count": 12,
-      "paragraph_count": 12,
-      "section_count": 9,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 61,
-      "authority_score": 20
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 40,
-      "keyword_bag_points": 13,
-      "content_quality_points": 69,
-      "authority_points": 30,
-      "final_rank_score": 217,
-      "authority_graph_points": 10
-    },
-    "search_index": {
-      "normalized_title": "waxp exchange crypto moonboys wiki",
-      "tokens": [
-        "waxp",
-        "exchange",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "waxp",
-        "exchange",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "guide",
-        "to",
-        "a",
-        "wax",
-        "swap",
-        "interface",
-        "referenced",
-        "through"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 2,
-      "outbound_count": 16,
-      "existing_outbound_count": 11,
-      "suggested_outbound_count": 5,
-      "authority": 9.5
-    },
-    "brand": null
-  },
-  {
     "title": "⚡️⚡️⚡️ FREE`MINDS GK BEATS GENESIS",
     "desc": "⚡️⚡️⚡️ FREE`MINDS GK BEATS GENESIS is an NFT in the gkniftyheads WAX AtomicAssets collection.",
     "url": "/wiki/gkniftyheads-free-minds-gk-beats-genesis-776049.html",
@@ -36111,6 +35853,182 @@
       "existing_outbound_count": 12,
       "suggested_outbound_count": 36,
       "authority": 36
+    },
+    "brand": null
+  },
+  {
+    "title": "Pixil Mini",
+    "desc": "Crypto Moonboys wiki guide to Pixil Mini, a WAX blockchain RPG with generated minis, stats, areas, game passes and NFT marketplace links.",
+    "url": "/wiki/pixil-mini.html",
+    "tags": [
+      "pixil",
+      "mini",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "characters",
+    "aliases": [
+      {
+        "title": "pixil mini crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 216,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "characters",
+      "category_priority": 8,
+      "has_description": true,
+      "article_word_count": 608,
+      "keyword_bag_size": 22,
+      "heading_count": 11,
+      "list_count": 2,
+      "internal_link_count": 9,
+      "paragraph_count": 7,
+      "section_count": 8,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 61,
+      "authority_score": 20
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 40,
+      "word_count_points": 30,
+      "keyword_bag_points": 22,
+      "content_quality_points": 69,
+      "authority_points": 25,
+      "final_rank_score": 216,
+      "authority_graph_points": 5
+    },
+    "search_index": {
+      "normalized_title": "pixil mini crypto moonboys wiki",
+      "tokens": [
+        "pixil",
+        "mini",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "pixil",
+        "mini",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "guide",
+        "to",
+        "a",
+        "wax",
+        "blockchain",
+        "rpg",
+        "with",
+        "generated",
+        "minis",
+        "stats",
+        "areas",
+        "game",
+        "passes",
+        "and",
+        "nft",
+        "marketplace",
+        "links"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 24,
+      "existing_outbound_count": 9,
+      "suggested_outbound_count": 15,
+      "authority": 4.5
+    },
+    "brand": null
+  },
+  {
+    "title": "TacoSwap",
+    "desc": "Crypto Moonboys wiki guide to TacoSwap and the Taco Crypto DeFi layer around WAX ecosystem swaps, liquidity and token trading.",
+    "url": "/wiki/tacoswap.html",
+    "tags": [
+      "tacoswap",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "tacoswap crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 216,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 4,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 716,
+      "keyword_bag_size": 18,
+      "heading_count": 11,
+      "list_count": 2,
+      "internal_link_count": 10,
+      "paragraph_count": 9,
+      "section_count": 8,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 61,
+      "authority_score": 20
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 36,
+      "keyword_bag_points": 18,
+      "content_quality_points": 68,
+      "authority_points": 29,
+      "final_rank_score": 216,
+      "authority_graph_points": 9
+    },
+    "search_index": {
+      "normalized_title": "tacoswap crypto moonboys wiki",
+      "tokens": [
+        "tacoswap",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "tacoswap",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "guide",
+        "to",
+        "and",
+        "the",
+        "taco",
+        "defi",
+        "layer",
+        "around",
+        "wax",
+        "ecosystem",
+        "swaps",
+        "liquidity",
+        "token",
+        "trading"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 2,
+      "outbound_count": 34,
+      "existing_outbound_count": 10,
+      "suggested_outbound_count": 24,
+      "authority": 9
     },
     "brand": null
   },
@@ -37748,6 +37666,88 @@
       "existing_outbound_count": 14,
       "suggested_outbound_count": 10,
       "authority": 37
+    },
+    "brand": null
+  },
+  {
+    "title": "WAXP Exchange",
+    "desc": "Crypto Moonboys wiki guide to WAXP Exchange, a WAX swap interface referenced through waxp.exchange/swap.",
+    "url": "/wiki/waxp-exchange.html",
+    "tags": [
+      "waxp",
+      "exchange",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "waxp exchange crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 206,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 666,
+      "keyword_bag_size": 13,
+      "heading_count": 12,
+      "list_count": 2,
+      "internal_link_count": 12,
+      "paragraph_count": 9,
+      "section_count": 9,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 57,
+      "authority_score": 20
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 33,
+      "keyword_bag_points": 13,
+      "content_quality_points": 65,
+      "authority_points": 30,
+      "final_rank_score": 206,
+      "authority_graph_points": 10
+    },
+    "search_index": {
+      "normalized_title": "waxp exchange crypto moonboys wiki",
+      "tokens": [
+        "waxp",
+        "exchange",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "waxp",
+        "exchange",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "guide",
+        "to",
+        "a",
+        "wax",
+        "swap",
+        "interface",
+        "referenced",
+        "through"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 2,
+      "outbound_count": 16,
+      "existing_outbound_count": 11,
+      "suggested_outbound_count": 5,
+      "authority": 9.5
     },
     "brand": null
   },
@@ -41328,7 +41328,7 @@
         "title": "589 xrpl crypto moonboys wiki"
       }
     ],
-    "rank_score": 191,
+    "rank_score": 190,
     "rank_signals": {
       "is_canonical": true,
       "alias_count": 2,
@@ -41337,7 +41337,7 @@
       "category": "tokens",
       "category_priority": 6,
       "has_description": true,
-      "article_word_count": 351,
+      "article_word_count": 338,
       "keyword_bag_size": 24,
       "heading_count": 10,
       "list_count": 1,
@@ -41352,11 +41352,11 @@
       "canonical_points": 20,
       "description_points": 10,
       "category_points": 30,
-      "word_count_points": 18,
+      "word_count_points": 17,
       "keyword_bag_points": 24,
       "content_quality_points": 68,
       "authority_points": 21,
-      "final_rank_score": 191,
+      "final_rank_score": 190,
       "authority_graph_points": 9
     },
     "search_index": {
@@ -41386,103 +41386,6 @@
         "with",
         "number",
         "lore",
-        "issuer",
-        "checks",
-        "trust",
-        "line",
-        "and",
-        "liquidity",
-        "research",
-        "notes"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 3,
-      "outbound_count": 18,
-      "existing_outbound_count": 6,
-      "suggested_outbound_count": 12,
-      "authority": 9
-    },
-    "brand": null
-  },
-  {
-    "title": "666 on XRPL",
-    "desc": "Crypto Moonboys wiki guide to 666 on XRPL, an XRP meme-token entry with number symbolism, issuer checks, trust-line and liquidity research notes.",
-    "url": "/wiki/666-xrpl.html",
-    "tags": [
-      "666",
-      "xrpl",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "tokens",
-    "aliases": [
-      {
-        "title": "666 xrpl"
-      },
-      {
-        "title": "666 xrpl crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 190,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 2,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "tokens",
-      "category_priority": 6,
-      "has_description": true,
-      "article_word_count": 334,
-      "keyword_bag_size": 24,
-      "heading_count": 10,
-      "list_count": 1,
-      "internal_link_count": 6,
-      "paragraph_count": 7,
-      "section_count": 7,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 57,
-      "authority_score": 12
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 30,
-      "word_count_points": 17,
-      "keyword_bag_points": 24,
-      "content_quality_points": 68,
-      "authority_points": 21,
-      "final_rank_score": 190,
-      "authority_graph_points": 9
-    },
-    "search_index": {
-      "normalized_title": "666 on xrpl crypto moonboys wiki",
-      "tokens": [
-        "666",
-        "on",
-        "xrpl",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "666",
-        "on",
-        "xrpl",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "guide",
-        "to",
-        "an",
-        "xrp",
-        "meme",
-        "token",
-        "entry",
-        "with",
-        "number",
-        "symbolism",
         "issuer",
         "checks",
         "trust",
@@ -41677,6 +41580,103 @@
     "brand": null
   },
   {
+    "title": "666 on XRPL",
+    "desc": "Crypto Moonboys wiki guide to 666 on XRPL, an XRP meme-token entry with number symbolism, issuer checks, trust-line and liquidity research notes.",
+    "url": "/wiki/666-xrpl.html",
+    "tags": [
+      "666",
+      "xrpl",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "tokens",
+    "aliases": [
+      {
+        "title": "666 xrpl"
+      },
+      {
+        "title": "666 xrpl crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 189,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 2,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "tokens",
+      "category_priority": 6,
+      "has_description": true,
+      "article_word_count": 322,
+      "keyword_bag_size": 24,
+      "heading_count": 10,
+      "list_count": 1,
+      "internal_link_count": 6,
+      "paragraph_count": 7,
+      "section_count": 7,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 57,
+      "authority_score": 12
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 30,
+      "word_count_points": 16,
+      "keyword_bag_points": 24,
+      "content_quality_points": 68,
+      "authority_points": 21,
+      "final_rank_score": 189,
+      "authority_graph_points": 9
+    },
+    "search_index": {
+      "normalized_title": "666 on xrpl crypto moonboys wiki",
+      "tokens": [
+        "666",
+        "on",
+        "xrpl",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "666",
+        "on",
+        "xrpl",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "guide",
+        "to",
+        "an",
+        "xrp",
+        "meme",
+        "token",
+        "entry",
+        "with",
+        "number",
+        "symbolism",
+        "issuer",
+        "checks",
+        "trust",
+        "line",
+        "and",
+        "liquidity",
+        "research",
+        "notes"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 3,
+      "outbound_count": 18,
+      "existing_outbound_count": 6,
+      "suggested_outbound_count": 12,
+      "authority": 9
+    },
+    "brand": null
+  },
+  {
     "title": "🍒 Token Tycooness 💋",
     "desc": "🍒 Token Tycooness 💋 is an NFT in the gkniftyheads WAX AtomicAssets collection.",
     "url": "/wiki/gkniftyheads-token-tycooness-783405.html",
@@ -41760,102 +41760,6 @@
       "existing_outbound_count": 12,
       "suggested_outbound_count": 15,
       "authority": 16
-    },
-    "brand": null
-  },
-  {
-    "title": "BEAR on XRPL",
-    "desc": "Crypto Moonboys wiki guide to BEAR on XRPL, an XRP meme-token entry with market-cycle, issuer, trust-line and DEX research notes.",
-    "url": "/wiki/bear-xrpl.html",
-    "tags": [
-      "bear",
-      "xrpl",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "tokens",
-    "aliases": [
-      {
-        "title": "bear xrpl"
-      },
-      {
-        "title": "bear xrpl crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 188,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 2,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "tokens",
-      "category_priority": 6,
-      "has_description": true,
-      "article_word_count": 380,
-      "keyword_bag_size": 23,
-      "heading_count": 10,
-      "list_count": 1,
-      "internal_link_count": 7,
-      "paragraph_count": 7,
-      "section_count": 7,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 53,
-      "authority_score": 12
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 30,
-      "word_count_points": 19,
-      "keyword_bag_points": 23,
-      "content_quality_points": 64,
-      "authority_points": 22,
-      "final_rank_score": 188,
-      "authority_graph_points": 10
-    },
-    "search_index": {
-      "normalized_title": "bear on xrpl crypto moonboys wiki",
-      "tokens": [
-        "bear",
-        "on",
-        "xrpl",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "bear",
-        "on",
-        "xrpl",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "guide",
-        "to",
-        "an",
-        "xrp",
-        "meme",
-        "token",
-        "entry",
-        "with",
-        "market",
-        "cycle",
-        "issuer",
-        "trust",
-        "line",
-        "and",
-        "dex",
-        "research",
-        "notes"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 3,
-      "outbound_count": 21,
-      "existing_outbound_count": 7,
-      "suggested_outbound_count": 14,
-      "authority": 9.5
     },
     "brand": null
   },
@@ -42038,6 +41942,102 @@
       "existing_outbound_count": 12,
       "suggested_outbound_count": 36,
       "authority": 8
+    },
+    "brand": null
+  },
+  {
+    "title": "BEAR on XRPL",
+    "desc": "Crypto Moonboys wiki guide to BEAR on XRPL, an XRP meme-token entry with market-cycle, issuer, trust-line and DEX research notes.",
+    "url": "/wiki/bear-xrpl.html",
+    "tags": [
+      "bear",
+      "xrpl",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "tokens",
+    "aliases": [
+      {
+        "title": "bear xrpl"
+      },
+      {
+        "title": "bear xrpl crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 187,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 2,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "tokens",
+      "category_priority": 6,
+      "has_description": true,
+      "article_word_count": 359,
+      "keyword_bag_size": 23,
+      "heading_count": 10,
+      "list_count": 1,
+      "internal_link_count": 7,
+      "paragraph_count": 7,
+      "section_count": 7,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 53,
+      "authority_score": 12
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 30,
+      "word_count_points": 18,
+      "keyword_bag_points": 23,
+      "content_quality_points": 64,
+      "authority_points": 22,
+      "final_rank_score": 187,
+      "authority_graph_points": 10
+    },
+    "search_index": {
+      "normalized_title": "bear on xrpl crypto moonboys wiki",
+      "tokens": [
+        "bear",
+        "on",
+        "xrpl",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "bear",
+        "on",
+        "xrpl",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "guide",
+        "to",
+        "an",
+        "xrp",
+        "meme",
+        "token",
+        "entry",
+        "with",
+        "market",
+        "cycle",
+        "issuer",
+        "trust",
+        "line",
+        "and",
+        "dex",
+        "research",
+        "notes"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 3,
+      "outbound_count": 21,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 14,
+      "authority": 9.5
     },
     "brand": null
   },

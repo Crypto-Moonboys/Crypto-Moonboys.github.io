@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-04T15:41:51.523Z",
-  "verified_at": "2026-10-04T15:41:51.523Z",
+  "generated_at": "2026-10-04T15:54:28.893Z",
+  "verified_at": "2026-10-04T15:54:28.893Z",
   "nodes": [
     {
       "id": "/about.html",
@@ -103,7 +103,7 @@
       "title": "589 on XRPL",
       "url": "/wiki/589-xrpl.html",
       "category": "tokens",
-      "rank_score": 191,
+      "rank_score": 190,
       "authority_score": 12
     },
     {
@@ -111,7 +111,7 @@
       "title": "666 on XRPL",
       "url": "/wiki/666-xrpl.html",
       "category": "tokens",
-      "rank_score": 190,
+      "rank_score": 189,
       "authority_score": 12
     },
     {
@@ -119,7 +119,7 @@
       "title": "Alcor Exchange",
       "url": "/wiki/alcor-exchange.html",
       "category": "factions",
-      "rank_score": 232,
+      "rank_score": 220,
       "authority_score": 20
     },
     {
@@ -143,8 +143,8 @@
       "title": "Alien Worlds / TLM",
       "url": "/wiki/alien-worlds-tlm.html",
       "category": "characters",
-      "rank_score": 260,
-      "authority_score": 23
+      "rank_score": 245,
+      "authority_score": 20
     },
     {
       "id": "/wiki/altcoins.html",
@@ -207,7 +207,7 @@
       "title": "BEAR on XRPL",
       "url": "/wiki/bear-xrpl.html",
       "category": "tokens",
-      "rank_score": 188,
+      "rank_score": 187,
       "authority_score": 12
     },
     {
@@ -359,7 +359,7 @@
       "title": "DeFi Mining",
       "url": "/wiki/defi-mining.html",
       "category": "factions",
-      "rank_score": 251,
+      "rank_score": 224,
       "authority_score": 20
     },
     {
@@ -447,7 +447,7 @@
       "title": "FGL Token",
       "url": "/wiki/fgl-token.html",
       "category": "factions",
-      "rank_score": 251,
+      "rank_score": 239,
       "authority_score": 20
     },
     {
@@ -2727,7 +2727,7 @@
       "title": "Pixil Mini",
       "url": "/wiki/pixil-mini.html",
       "category": "characters",
-      "rank_score": 248,
+      "rank_score": 216,
       "authority_score": 20
     },
     {
@@ -2959,7 +2959,7 @@
       "title": "TacoSwap",
       "url": "/wiki/tacoswap.html",
       "category": "factions",
-      "rank_score": 229,
+      "rank_score": 216,
       "authority_score": 20
     },
     {
@@ -3031,7 +3031,7 @@
       "title": "The CleanupCentr",
       "url": "/wiki/the-cleanupcentr.html",
       "category": "factions",
-      "rank_score": 248,
+      "rank_score": 232,
       "authority_score": 20
     },
     {
@@ -3271,15 +3271,15 @@
       "title": "WAX Blockchain",
       "url": "/wiki/wax-blockchain.html",
       "category": "factions",
-      "rank_score": 269,
-      "authority_score": 23
+      "rank_score": 266,
+      "authority_score": 20
     },
     {
       "id": "/wiki/wax-dexs-defi.html",
       "title": "WAX DEXs & DeFi",
       "url": "/wiki/wax-dexs-defi.html",
       "category": "factions",
-      "rank_score": 257,
+      "rank_score": 250,
       "authority_score": 24
     },
     {
@@ -3295,7 +3295,7 @@
       "title": "WAX PEPE",
       "url": "/wiki/wax-pepe.html",
       "category": "factions",
-      "rank_score": 233,
+      "rank_score": 218,
       "authority_score": 20
     },
     {
@@ -3303,7 +3303,7 @@
       "title": "WAXP Exchange",
       "url": "/wiki/waxp-exchange.html",
       "category": "factions",
-      "rank_score": 217,
+      "rank_score": 206,
       "authority_score": 20
     },
     {
@@ -3311,7 +3311,7 @@
       "title": "$WAXP",
       "url": "/wiki/waxp.html",
       "category": "factions",
-      "rank_score": 267,
+      "rank_score": 259,
       "authority_score": 27
     },
     {
@@ -3335,8 +3335,8 @@
       "title": "WUFFI / $WUF",
       "url": "/wiki/wuffi.html",
       "category": "factions",
-      "rank_score": 256,
-      "authority_score": 23
+      "rank_score": 249,
+      "authority_score": 20
     },
     {
       "id": "/wiki/xrp-kids.html",
@@ -15419,8 +15419,8 @@
     {
       "source": "/wiki/waxp-exchange.html",
       "target": "/wiki/waxp.html",
-      "score": 79,
-      "weight": 0.79
+      "score": 78,
+      "weight": 0.78
     },
     {
       "source": "/wiki/waxp-exchange.html",
