@@ -178,9 +178,9 @@
     },
     "link_score": {
       "inbound_count": 92,
-      "outbound_count": 119,
+      "outbound_count": 118,
       "existing_outbound_count": 91,
-      "suggested_outbound_count": 28,
+      "suggested_outbound_count": 27,
       "authority": 229.5
     },
     "brand": null
@@ -344,9 +344,9 @@
     },
     "link_score": {
       "inbound_count": 81,
-      "outbound_count": 72,
+      "outbound_count": 71,
       "existing_outbound_count": 6,
-      "suggested_outbound_count": 66,
+      "suggested_outbound_count": 65,
       "authority": 165
     },
     "brand": null
@@ -507,9 +507,9 @@
     },
     "link_score": {
       "inbound_count": 24,
-      "outbound_count": 66,
+      "outbound_count": 65,
       "existing_outbound_count": 6,
-      "suggested_outbound_count": 60,
+      "suggested_outbound_count": 59,
       "authority": 51
     },
     "brand": null
@@ -690,9 +690,9 @@
     },
     "link_score": {
       "inbound_count": 87,
-      "outbound_count": 63,
+      "outbound_count": 62,
       "existing_outbound_count": 11,
-      "suggested_outbound_count": 52,
+      "suggested_outbound_count": 51,
       "authority": 179.5
     },
     "brand": null
@@ -852,9 +852,9 @@
     },
     "link_score": {
       "inbound_count": 41,
-      "outbound_count": 71,
+      "outbound_count": 70,
       "existing_outbound_count": 14,
-      "suggested_outbound_count": 57,
+      "suggested_outbound_count": 56,
       "authority": 89
     },
     "brand": null
@@ -1014,9 +1014,9 @@
     },
     "link_score": {
       "inbound_count": 71,
-      "outbound_count": 73,
+      "outbound_count": 72,
       "existing_outbound_count": 6,
-      "suggested_outbound_count": 67,
+      "suggested_outbound_count": 66,
       "authority": 145
     },
     "brand": null
@@ -1165,9 +1165,9 @@
     },
     "link_score": {
       "inbound_count": 30,
-      "outbound_count": 63,
+      "outbound_count": 62,
       "existing_outbound_count": 8,
-      "suggested_outbound_count": 55,
+      "suggested_outbound_count": 54,
       "authority": 64
     },
     "brand": null
@@ -1484,9 +1484,9 @@
     },
     "link_score": {
       "inbound_count": 15,
-      "outbound_count": 74,
+      "outbound_count": 73,
       "existing_outbound_count": 11,
-      "suggested_outbound_count": 63,
+      "suggested_outbound_count": 62,
       "authority": 35.5
     },
     "brand": null
@@ -1640,9 +1640,9 @@
     },
     "link_score": {
       "inbound_count": 15,
-      "outbound_count": 68,
+      "outbound_count": 67,
       "existing_outbound_count": 6,
-      "suggested_outbound_count": 62,
+      "suggested_outbound_count": 61,
       "authority": 33
     },
     "brand": null
@@ -1793,9 +1793,9 @@
     },
     "link_score": {
       "inbound_count": 47,
-      "outbound_count": 68,
+      "outbound_count": 67,
       "existing_outbound_count": 6,
-      "suggested_outbound_count": 62,
+      "suggested_outbound_count": 61,
       "authority": 97
     },
     "brand": null
@@ -1956,9 +1956,9 @@
     },
     "link_score": {
       "inbound_count": 14,
-      "outbound_count": 68,
+      "outbound_count": 67,
       "existing_outbound_count": 11,
-      "suggested_outbound_count": 57,
+      "suggested_outbound_count": 56,
       "authority": 33.5
     },
     "brand": null
@@ -1990,7 +1990,7 @@
       "category": "characters",
       "category_priority": 8,
       "has_description": true,
-      "article_word_count": 3403,
+      "article_word_count": 3406,
       "keyword_bag_size": 24,
       "heading_count": 26,
       "list_count": 1,
@@ -2231,9 +2231,9 @@
     },
     "link_score": {
       "inbound_count": 13,
-      "outbound_count": 72,
+      "outbound_count": 71,
       "existing_outbound_count": 6,
-      "suggested_outbound_count": 66,
+      "suggested_outbound_count": 65,
       "authority": 29
     },
     "brand": null
@@ -2412,7 +2412,7 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 3006,
+      "article_word_count": 2995,
       "keyword_bag_size": 24,
       "heading_count": 19,
       "list_count": 1,
@@ -2767,9 +2767,9 @@
     },
     "link_score": {
       "inbound_count": 8,
-      "outbound_count": 69,
+      "outbound_count": 68,
       "existing_outbound_count": 6,
-      "suggested_outbound_count": 63,
+      "suggested_outbound_count": 62,
       "authority": 19
     },
     "brand": null
@@ -2929,9 +2929,9 @@
     },
     "link_score": {
       "inbound_count": 4,
-      "outbound_count": 73,
+      "outbound_count": 72,
       "existing_outbound_count": 6,
-      "suggested_outbound_count": 67,
+      "suggested_outbound_count": 66,
       "authority": 11
     },
     "brand": null
@@ -3319,9 +3319,9 @@
     },
     "link_score": {
       "inbound_count": 11,
-      "outbound_count": 67,
+      "outbound_count": 66,
       "existing_outbound_count": 6,
-      "suggested_outbound_count": 61,
+      "suggested_outbound_count": 60,
       "authority": 25
     },
     "brand": null
@@ -3474,9 +3474,9 @@
     },
     "link_score": {
       "inbound_count": 16,
-      "outbound_count": 65,
+      "outbound_count": 64,
       "existing_outbound_count": 6,
-      "suggested_outbound_count": 59,
+      "suggested_outbound_count": 58,
       "authority": 35
     },
     "brand": null
@@ -4019,9 +4019,9 @@
     },
     "link_score": {
       "inbound_count": 16,
-      "outbound_count": 60,
+      "outbound_count": 59,
       "existing_outbound_count": 9,
-      "suggested_outbound_count": 51,
+      "suggested_outbound_count": 50,
       "authority": 36.5
     },
     "brand": {
@@ -4297,9 +4297,9 @@
     },
     "link_score": {
       "inbound_count": 6,
-      "outbound_count": 70,
+      "outbound_count": 69,
       "existing_outbound_count": 6,
-      "suggested_outbound_count": 64,
+      "suggested_outbound_count": 63,
       "authority": 15
     },
     "brand": null
@@ -4408,9 +4408,9 @@
     },
     "link_score": {
       "inbound_count": 64,
-      "outbound_count": 48,
+      "outbound_count": 47,
       "existing_outbound_count": 17,
-      "suggested_outbound_count": 31,
+      "suggested_outbound_count": 30,
       "authority": 136.5
     },
     "brand": null
@@ -4570,9 +4570,9 @@
     },
     "link_score": {
       "inbound_count": 3,
-      "outbound_count": 70,
+      "outbound_count": 69,
       "existing_outbound_count": 6,
-      "suggested_outbound_count": 64,
+      "suggested_outbound_count": 63,
       "authority": 9
     },
     "brand": null
@@ -4836,9 +4836,9 @@
     },
     "link_score": {
       "inbound_count": 2,
-      "outbound_count": 63,
+      "outbound_count": 62,
       "existing_outbound_count": 5,
-      "suggested_outbound_count": 58,
+      "suggested_outbound_count": 57,
       "authority": 6.5
     },
     "brand": null
@@ -5099,9 +5099,9 @@
     },
     "link_score": {
       "inbound_count": 3,
-      "outbound_count": 62,
+      "outbound_count": 61,
       "existing_outbound_count": 6,
-      "suggested_outbound_count": 56,
+      "suggested_outbound_count": 55,
       "authority": 9
     },
     "brand": null
@@ -5336,9 +5336,9 @@
     },
     "link_score": {
       "inbound_count": 32,
-      "outbound_count": 48,
+      "outbound_count": 47,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 36,
+      "suggested_outbound_count": 35,
       "authority": 70
     },
     "brand": null
@@ -5497,9 +5497,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 65,
+      "outbound_count": 64,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 61,
+      "suggested_outbound_count": 60,
       "authority": 4
     },
     "brand": null
@@ -5673,9 +5673,9 @@
     },
     "link_score": {
       "inbound_count": 6,
-      "outbound_count": 72,
+      "outbound_count": 71,
       "existing_outbound_count": 6,
-      "suggested_outbound_count": 66,
+      "suggested_outbound_count": 65,
       "authority": 15
     },
     "brand": null
@@ -5833,9 +5833,9 @@
     },
     "link_score": {
       "inbound_count": 4,
-      "outbound_count": 67,
+      "outbound_count": 66,
       "existing_outbound_count": 6,
-      "suggested_outbound_count": 61,
+      "suggested_outbound_count": 60,
       "authority": 11
     },
     "brand": null
@@ -5990,9 +5990,9 @@
     },
     "link_score": {
       "inbound_count": 3,
-      "outbound_count": 70,
+      "outbound_count": 69,
       "existing_outbound_count": 6,
-      "suggested_outbound_count": 64,
+      "suggested_outbound_count": 63,
       "authority": 9
     },
     "brand": null
@@ -6276,9 +6276,9 @@
     },
     "link_score": {
       "inbound_count": 5,
-      "outbound_count": 76,
+      "outbound_count": 75,
       "existing_outbound_count": 6,
-      "suggested_outbound_count": 70,
+      "suggested_outbound_count": 69,
       "authority": 13
     },
     "brand": null
@@ -6573,9 +6573,9 @@
     },
     "link_score": {
       "inbound_count": 4,
-      "outbound_count": 69,
+      "outbound_count": 68,
       "existing_outbound_count": 6,
-      "suggested_outbound_count": 63,
+      "suggested_outbound_count": 62,
       "authority": 11
     },
     "brand": null
@@ -6609,7 +6609,7 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 2593,
+      "article_word_count": 2598,
       "keyword_bag_size": 22,
       "heading_count": 24,
       "list_count": 1,
@@ -6850,9 +6850,9 @@
     },
     "link_score": {
       "inbound_count": 4,
-      "outbound_count": 68,
+      "outbound_count": 67,
       "existing_outbound_count": 6,
-      "suggested_outbound_count": 62,
+      "suggested_outbound_count": 61,
       "authority": 11
     },
     "brand": null
@@ -7010,9 +7010,9 @@
     },
     "link_score": {
       "inbound_count": 13,
-      "outbound_count": 64,
+      "outbound_count": 63,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 60,
+      "suggested_outbound_count": 59,
       "authority": 28
     },
     "brand": null
@@ -7278,9 +7278,9 @@
     },
     "link_score": {
       "inbound_count": 5,
-      "outbound_count": 71,
+      "outbound_count": 70,
       "existing_outbound_count": 6,
-      "suggested_outbound_count": 65,
+      "suggested_outbound_count": 64,
       "authority": 13
     },
     "brand": null
@@ -7473,7 +7473,7 @@
       "category": "core",
       "category_priority": 10,
       "has_description": true,
-      "article_word_count": 2760,
+      "article_word_count": 2689,
       "keyword_bag_size": 24,
       "heading_count": 22,
       "list_count": 1,
@@ -7550,9 +7550,9 @@
     },
     "link_score": {
       "inbound_count": 2,
-      "outbound_count": 54,
+      "outbound_count": 51,
       "existing_outbound_count": 19,
-      "suggested_outbound_count": 35,
+      "suggested_outbound_count": 32,
       "authority": 13.5
     },
     "brand": null
@@ -7713,9 +7713,9 @@
     },
     "link_score": {
       "inbound_count": 9,
-      "outbound_count": 67,
+      "outbound_count": 66,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 63,
+      "suggested_outbound_count": 62,
       "authority": 20
     },
     "brand": null
@@ -7875,9 +7875,9 @@
     },
     "link_score": {
       "inbound_count": 9,
-      "outbound_count": 65,
+      "outbound_count": 64,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 61,
+      "suggested_outbound_count": 60,
       "authority": 20
     },
     "brand": null
@@ -8032,9 +8032,9 @@
     },
     "link_score": {
       "inbound_count": 4,
-      "outbound_count": 65,
+      "outbound_count": 64,
       "existing_outbound_count": 6,
-      "suggested_outbound_count": 59,
+      "suggested_outbound_count": 58,
       "authority": 11
     },
     "brand": null
@@ -8062,7 +8062,7 @@
       "category": "core",
       "category_priority": 10,
       "has_description": true,
-      "article_word_count": 2789,
+      "article_word_count": 2722,
       "keyword_bag_size": 24,
       "heading_count": 22,
       "list_count": 1,
@@ -8145,9 +8145,9 @@
     },
     "link_score": {
       "inbound_count": 3,
-      "outbound_count": 36,
+      "outbound_count": 33,
       "existing_outbound_count": 16,
-      "suggested_outbound_count": 20,
+      "suggested_outbound_count": 17,
       "authority": 14
     },
     "brand": null
@@ -8414,9 +8414,9 @@
     },
     "link_score": {
       "inbound_count": 8,
-      "outbound_count": 64,
+      "outbound_count": 63,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 60,
+      "suggested_outbound_count": 59,
       "authority": 18
     },
     "brand": null
@@ -8576,9 +8576,9 @@
     },
     "link_score": {
       "inbound_count": 9,
-      "outbound_count": 71,
+      "outbound_count": 70,
       "existing_outbound_count": 6,
-      "suggested_outbound_count": 65,
+      "suggested_outbound_count": 64,
       "authority": 21
     },
     "brand": null
@@ -8724,9 +8724,9 @@
     },
     "link_score": {
       "inbound_count": 7,
-      "outbound_count": 65,
+      "outbound_count": 64,
       "existing_outbound_count": 6,
-      "suggested_outbound_count": 59,
+      "suggested_outbound_count": 58,
       "authority": 17
     },
     "brand": null
@@ -8892,9 +8892,9 @@
     },
     "link_score": {
       "inbound_count": 5,
-      "outbound_count": 68,
+      "outbound_count": 67,
       "existing_outbound_count": 6,
-      "suggested_outbound_count": 62,
+      "suggested_outbound_count": 61,
       "authority": 13
     },
     "brand": null
@@ -8926,7 +8926,7 @@
       "category": "core",
       "category_priority": 10,
       "has_description": true,
-      "article_word_count": 3077,
+      "article_word_count": 3059,
       "keyword_bag_size": 26,
       "heading_count": 21,
       "list_count": 1,
@@ -8999,9 +8999,9 @@
     },
     "link_score": {
       "inbound_count": 7,
-      "outbound_count": 57,
+      "outbound_count": 56,
       "existing_outbound_count": 16,
-      "suggested_outbound_count": 41,
+      "suggested_outbound_count": 40,
       "authority": 22
     },
     "brand": null
@@ -9206,9 +9206,9 @@
     },
     "link_score": {
       "inbound_count": 4,
-      "outbound_count": 50,
+      "outbound_count": 49,
       "existing_outbound_count": 18,
-      "suggested_outbound_count": 32,
+      "suggested_outbound_count": 31,
       "authority": 17
     },
     "brand": null
@@ -9488,9 +9488,9 @@
     },
     "link_score": {
       "inbound_count": 5,
-      "outbound_count": 68,
+      "outbound_count": 67,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 64,
+      "suggested_outbound_count": 63,
       "authority": 12
     },
     "brand": null
@@ -9629,7 +9629,7 @@
       "category": "characters",
       "category_priority": 8,
       "has_description": true,
-      "article_word_count": 2462,
+      "article_word_count": 2435,
       "keyword_bag_size": 23,
       "heading_count": 15,
       "list_count": 2,
@@ -9701,9 +9701,9 @@
     },
     "link_score": {
       "inbound_count": 16,
-      "outbound_count": 26,
+      "outbound_count": 25,
       "existing_outbound_count": 11,
-      "suggested_outbound_count": 15,
+      "suggested_outbound_count": 14,
       "authority": 37.5
     },
     "brand": null
@@ -9734,7 +9734,7 @@
       "category": "core",
       "category_priority": 10,
       "has_description": true,
-      "article_word_count": 2566,
+      "article_word_count": 2557,
       "keyword_bag_size": 22,
       "heading_count": 19,
       "list_count": 2,
@@ -9801,9 +9801,9 @@
     },
     "link_score": {
       "inbound_count": 5,
-      "outbound_count": 43,
+      "outbound_count": 42,
       "existing_outbound_count": 30,
-      "suggested_outbound_count": 13,
+      "suggested_outbound_count": 12,
       "authority": 25
     },
     "brand": {
@@ -9924,7 +9924,7 @@
       "category": "characters",
       "category_priority": 8,
       "has_description": true,
-      "article_word_count": 2828,
+      "article_word_count": 2819,
       "keyword_bag_size": 26,
       "heading_count": 22,
       "list_count": 1,
@@ -9998,9 +9998,9 @@
     },
     "link_score": {
       "inbound_count": 2,
-      "outbound_count": 49,
+      "outbound_count": 47,
       "existing_outbound_count": 18,
-      "suggested_outbound_count": 31,
+      "suggested_outbound_count": 29,
       "authority": 13
     },
     "brand": null
@@ -10030,7 +10030,7 @@
       "category": "characters",
       "category_priority": 8,
       "has_description": true,
-      "article_word_count": 2814,
+      "article_word_count": 2774,
       "keyword_bag_size": 26,
       "heading_count": 22,
       "list_count": 1,
@@ -10107,9 +10107,9 @@
     },
     "link_score": {
       "inbound_count": 2,
-      "outbound_count": 37,
+      "outbound_count": 36,
       "existing_outbound_count": 14,
-      "suggested_outbound_count": 23,
+      "suggested_outbound_count": 22,
       "authority": 11
     },
     "brand": null
@@ -10275,9 +10275,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 66,
+      "outbound_count": 65,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 62,
+      "suggested_outbound_count": 61,
       "authority": 4
     },
     "brand": null
@@ -10649,9 +10649,9 @@
     },
     "link_score": {
       "inbound_count": 5,
-      "outbound_count": 66,
+      "outbound_count": 65,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 62,
+      "suggested_outbound_count": 61,
       "authority": 12
     },
     "brand": null
@@ -10814,9 +10814,9 @@
     },
     "link_score": {
       "inbound_count": 4,
-      "outbound_count": 68,
+      "outbound_count": 67,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 64,
+      "suggested_outbound_count": 63,
       "authority": 10
     },
     "brand": null
@@ -10971,9 +10971,9 @@
     },
     "link_score": {
       "inbound_count": 3,
-      "outbound_count": 66,
+      "outbound_count": 65,
       "existing_outbound_count": 6,
-      "suggested_outbound_count": 60,
+      "suggested_outbound_count": 59,
       "authority": 9
     },
     "brand": null
@@ -11100,112 +11100,6 @@
     "brand": null
   },
   {
-    "title": "GAMES4PUNKS Telegram",
-    "desc": "GAMES4PUNKS Telegram: the community mini-game reference, current Arcade distinctions and inherited fictional Game Keys, Phantom Tag and Chat Riot stories.",
-    "url": "/wiki/games4punks-telegram.html",
-    "tags": [
-      "games4punks",
-      "telegram",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "concepts",
-    "aliases": [
-      {
-        "title": "games4punks telegram crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 294,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "concepts",
-      "category_priority": 5,
-      "has_description": true,
-      "article_word_count": 2470,
-      "keyword_bag_size": 22,
-      "heading_count": 18,
-      "list_count": 1,
-      "internal_link_count": 13,
-      "paragraph_count": 41,
-      "section_count": 15,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 85,
-      "authority_score": 24
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 25,
-      "word_count_points": 50,
-      "keyword_bag_points": 22,
-      "content_quality_points": 93,
-      "authority_points": 74,
-      "final_rank_score": 294,
-      "authority_graph_points": 50
-    },
-    "search_index": {
-      "normalized_title": "games4punks telegram crypto moonboys wiki",
-      "tokens": [
-        "games4punks",
-        "telegram",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "games4punks",
-        "telegram",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "the",
-        "community",
-        "mini",
-        "game",
-        "reference",
-        "current",
-        "arcade",
-        "distinctions",
-        "and",
-        "inherited",
-        "fictional",
-        "keys",
-        "phantom",
-        "tag",
-        "chat",
-        "riot",
-        "stories",
-        "spray",
-        "ghost",
-        "great",
-        "blitz",
-        "storm",
-        "glitch",
-        "rebel",
-        "roster",
-        "rank",
-        "vandal",
-        "sprayer",
-        "clash",
-        "alley",
-        "ambush",
-        "drop"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 48,
-      "outbound_count": 34,
-      "existing_outbound_count": 12,
-      "suggested_outbound_count": 22,
-      "authority": 102
-    },
-    "brand": null
-  },
-  {
     "title": "Bitcoin Kid Army",
     "desc": "The organisation of Alfie Blaze’s rebel Army: recruitment, supply, local defence, the Grey Return, North Sluice Stand and limits on emergency command.",
     "url": "/wiki/bitcoin-kid-army.html",
@@ -11228,7 +11122,7 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 4484,
+      "article_word_count": 4466,
       "keyword_bag_size": 27,
       "heading_count": 27,
       "list_count": 1,
@@ -11308,9 +11202,9 @@
     },
     "link_score": {
       "inbound_count": 10,
-      "outbound_count": 43,
+      "outbound_count": 42,
       "existing_outbound_count": 16,
-      "suggested_outbound_count": 27,
+      "suggested_outbound_count": 26,
       "authority": 28
     },
     "brand": null
@@ -11474,9 +11368,9 @@
     },
     "link_score": {
       "inbound_count": 2,
-      "outbound_count": 66,
+      "outbound_count": 65,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 62,
+      "suggested_outbound_count": 61,
       "authority": 6
     },
     "brand": null
@@ -11634,9 +11528,9 @@
     },
     "link_score": {
       "inbound_count": 5,
-      "outbound_count": 64,
+      "outbound_count": 63,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 60,
+      "suggested_outbound_count": 59,
       "authority": 12
     },
     "brand": null
@@ -11664,7 +11558,7 @@
       "category": "characters",
       "category_priority": 8,
       "has_description": true,
-      "article_word_count": 2663,
+      "article_word_count": 2654,
       "keyword_bag_size": 25,
       "heading_count": 22,
       "list_count": 1,
@@ -11742,9 +11636,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 28,
+      "outbound_count": 27,
       "existing_outbound_count": 16,
-      "suggested_outbound_count": 12,
+      "suggested_outbound_count": 11,
       "authority": 8
     },
     "brand": null
@@ -11772,7 +11666,7 @@
       "category": "characters",
       "category_priority": 8,
       "has_description": true,
-      "article_word_count": 2431,
+      "article_word_count": 2411,
       "keyword_bag_size": 24,
       "heading_count": 19,
       "list_count": 1,
@@ -11845,9 +11739,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 30,
+      "outbound_count": 28,
       "existing_outbound_count": 13,
-      "suggested_outbound_count": 17,
+      "suggested_outbound_count": 15,
       "authority": 8.5
     },
     "brand": null
@@ -11877,7 +11771,7 @@
       "category": "characters",
       "category_priority": 8,
       "has_description": true,
-      "article_word_count": 2774,
+      "article_word_count": 2734,
       "keyword_bag_size": 28,
       "heading_count": 21,
       "list_count": 1,
@@ -11958,9 +11852,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 26,
+      "outbound_count": 25,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 14,
+      "suggested_outbound_count": 13,
       "authority": 8
     },
     "brand": null
@@ -11988,7 +11882,7 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 2614,
+      "article_word_count": 2543,
       "keyword_bag_size": 20,
       "heading_count": 19,
       "list_count": 2,
@@ -12055,9 +11949,9 @@
     },
     "link_score": {
       "inbound_count": 6,
-      "outbound_count": 29,
+      "outbound_count": 27,
       "existing_outbound_count": 15,
-      "suggested_outbound_count": 14,
+      "suggested_outbound_count": 12,
       "authority": 19.5
     },
     "brand": null
@@ -12438,9 +12332,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 64,
+      "outbound_count": 63,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 60,
+      "suggested_outbound_count": 59,
       "authority": 4
     },
     "brand": null
@@ -12595,10 +12489,116 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 65,
+      "outbound_count": 64,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 61,
+      "suggested_outbound_count": 60,
       "authority": 4
+    },
+    "brand": null
+  },
+  {
+    "title": "GAMES4PUNKS Telegram",
+    "desc": "GAMES4PUNKS Telegram: the community mini-game reference, current Arcade distinctions and inherited fictional Game Keys, Phantom Tag and Chat Riot stories.",
+    "url": "/wiki/games4punks-telegram.html",
+    "tags": [
+      "games4punks",
+      "telegram",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "concepts",
+    "aliases": [
+      {
+        "title": "games4punks telegram crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 291,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "concepts",
+      "category_priority": 5,
+      "has_description": true,
+      "article_word_count": 2399,
+      "keyword_bag_size": 22,
+      "heading_count": 18,
+      "list_count": 1,
+      "internal_link_count": 13,
+      "paragraph_count": 41,
+      "section_count": 15,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 85,
+      "authority_score": 21
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 25,
+      "word_count_points": 50,
+      "keyword_bag_points": 22,
+      "content_quality_points": 93,
+      "authority_points": 71,
+      "final_rank_score": 291,
+      "authority_graph_points": 50
+    },
+    "search_index": {
+      "normalized_title": "games4punks telegram crypto moonboys wiki",
+      "tokens": [
+        "games4punks",
+        "telegram",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "games4punks",
+        "telegram",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "the",
+        "community",
+        "mini",
+        "game",
+        "reference",
+        "current",
+        "arcade",
+        "distinctions",
+        "and",
+        "inherited",
+        "fictional",
+        "keys",
+        "phantom",
+        "tag",
+        "chat",
+        "riot",
+        "stories",
+        "spray",
+        "ghost",
+        "great",
+        "blitz",
+        "storm",
+        "glitch",
+        "rebel",
+        "roster",
+        "rank",
+        "vandal",
+        "sprayer",
+        "clash",
+        "alley",
+        "ambush",
+        "drop"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 48,
+      "outbound_count": 32,
+      "existing_outbound_count": 12,
+      "suggested_outbound_count": 20,
+      "authority": 102
     },
     "brand": null
   },
@@ -12628,7 +12628,7 @@
       "category": "core",
       "category_priority": 10,
       "has_description": true,
-      "article_word_count": 2716,
+      "article_word_count": 2660,
       "keyword_bag_size": 22,
       "heading_count": 18,
       "list_count": 1,
@@ -12695,9 +12695,9 @@
     },
     "link_score": {
       "inbound_count": 5,
-      "outbound_count": 37,
+      "outbound_count": 36,
       "existing_outbound_count": 16,
-      "suggested_outbound_count": 21,
+      "suggested_outbound_count": 20,
       "authority": 18
     },
     "brand": null
@@ -12852,9 +12852,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 67,
+      "outbound_count": 66,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 63,
+      "suggested_outbound_count": 62,
       "authority": 4
     },
     "brand": null
@@ -12883,7 +12883,7 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 3208,
+      "article_word_count": 3190,
       "keyword_bag_size": 29,
       "heading_count": 22,
       "list_count": 1,
@@ -12967,9 +12967,9 @@
     },
     "link_score": {
       "inbound_count": 8,
-      "outbound_count": 53,
+      "outbound_count": 52,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 41,
+      "suggested_outbound_count": 40,
       "authority": 22
     },
     "brand": null
@@ -13133,9 +13133,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 66,
+      "outbound_count": 65,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 62,
+      "suggested_outbound_count": 61,
       "authority": 4
     },
     "brand": null
@@ -13247,9 +13247,9 @@
     },
     "link_score": {
       "inbound_count": 76,
-      "outbound_count": 41,
+      "outbound_count": 40,
       "existing_outbound_count": 0,
-      "suggested_outbound_count": 41,
+      "suggested_outbound_count": 40,
       "authority": 152
     },
     "brand": null
@@ -13383,7 +13383,7 @@
       "category": "characters",
       "category_priority": 8,
       "has_description": true,
-      "article_word_count": 2932,
+      "article_word_count": 2903,
       "keyword_bag_size": 24,
       "heading_count": 23,
       "list_count": 1,
@@ -13471,9 +13471,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 28,
+      "outbound_count": 25,
       "existing_outbound_count": 13,
-      "suggested_outbound_count": 15,
+      "suggested_outbound_count": 12,
       "authority": 8.5
     },
     "brand": null
@@ -13501,7 +13501,7 @@
       "category": "characters",
       "category_priority": 8,
       "has_description": true,
-      "article_word_count": 2798,
+      "article_word_count": 2758,
       "keyword_bag_size": 24,
       "heading_count": 22,
       "list_count": 1,
@@ -13571,9 +13571,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 21,
+      "outbound_count": 20,
       "existing_outbound_count": 13,
-      "suggested_outbound_count": 8,
+      "suggested_outbound_count": 7,
       "authority": 6.5
     },
     "brand": null
@@ -13715,7 +13715,7 @@
       "category": "characters",
       "category_priority": 8,
       "has_description": true,
-      "article_word_count": 2776,
+      "article_word_count": 2736,
       "keyword_bag_size": 25,
       "heading_count": 21,
       "list_count": 1,
@@ -13795,9 +13795,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 24,
+      "outbound_count": 23,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 12,
+      "suggested_outbound_count": 11,
       "authority": 8
     },
     "brand": null
@@ -14075,9 +14075,9 @@
     },
     "link_score": {
       "inbound_count": 3,
-      "outbound_count": 64,
+      "outbound_count": 63,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 60,
+      "suggested_outbound_count": 59,
       "authority": 8
     },
     "brand": null
@@ -14108,7 +14108,7 @@
       "category": "characters",
       "category_priority": 8,
       "has_description": true,
-      "article_word_count": 3080,
+      "article_word_count": 3040,
       "keyword_bag_size": 23,
       "heading_count": 21,
       "list_count": 1,
@@ -14191,9 +14191,9 @@
     },
     "link_score": {
       "inbound_count": 3,
-      "outbound_count": 31,
+      "outbound_count": 30,
       "existing_outbound_count": 13,
-      "suggested_outbound_count": 18,
+      "suggested_outbound_count": 17,
       "authority": 12.5
     },
     "brand": null
@@ -14224,7 +14224,7 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 1091,
+      "article_word_count": 1055,
       "keyword_bag_size": 21,
       "heading_count": 12,
       "list_count": 1,
@@ -14287,9 +14287,9 @@
     },
     "link_score": {
       "inbound_count": 36,
-      "outbound_count": 31,
+      "outbound_count": 30,
       "existing_outbound_count": 10,
-      "suggested_outbound_count": 21,
+      "suggested_outbound_count": 20,
       "authority": 77
     },
     "brand": {
@@ -14570,9 +14570,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 66,
+      "outbound_count": 65,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 62,
+      "suggested_outbound_count": 61,
       "authority": 4
     },
     "brand": null
@@ -14838,7 +14838,7 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 2795,
+      "article_word_count": 2724,
       "keyword_bag_size": 24,
       "heading_count": 23,
       "list_count": 1,
@@ -14912,9 +14912,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 22,
+      "outbound_count": 21,
       "existing_outbound_count": 15,
-      "suggested_outbound_count": 7,
+      "suggested_outbound_count": 6,
       "authority": 7.5
     },
     "brand": null
@@ -14945,7 +14945,7 @@
       "category": "characters",
       "category_priority": 8,
       "has_description": true,
-      "article_word_count": 2244,
+      "article_word_count": 2221,
       "keyword_bag_size": 26,
       "heading_count": 19,
       "list_count": 1,
@@ -15022,9 +15022,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 22,
+      "outbound_count": 21,
       "existing_outbound_count": 11,
-      "suggested_outbound_count": 11,
+      "suggested_outbound_count": 10,
       "authority": 7.5
     },
     "brand": null
@@ -15054,7 +15054,7 @@
       "category": "characters",
       "category_priority": 8,
       "has_description": true,
-      "article_word_count": 3092,
+      "article_word_count": 3052,
       "keyword_bag_size": 26,
       "heading_count": 21,
       "list_count": 1,
@@ -15134,9 +15134,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 27,
+      "outbound_count": 26,
       "existing_outbound_count": 11,
-      "suggested_outbound_count": 16,
+      "suggested_outbound_count": 15,
       "authority": 5.5
     },
     "brand": null
@@ -15167,7 +15167,7 @@
       "category": "characters",
       "category_priority": 8,
       "has_description": true,
-      "article_word_count": 2946,
+      "article_word_count": 2923,
       "keyword_bag_size": 24,
       "heading_count": 21,
       "list_count": 1,
@@ -15252,9 +15252,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 33,
+      "outbound_count": 32,
       "existing_outbound_count": 9,
-      "suggested_outbound_count": 24,
+      "suggested_outbound_count": 23,
       "authority": 6.5
     },
     "brand": null
@@ -15417,9 +15417,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 63,
+      "outbound_count": 62,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 59,
+      "suggested_outbound_count": 58,
       "authority": 4
     },
     "brand": null
@@ -15453,7 +15453,7 @@
       "category": "tokens",
       "category_priority": 6,
       "has_description": true,
-      "article_word_count": 1998,
+      "article_word_count": 1980,
       "keyword_bag_size": 23,
       "heading_count": 28,
       "list_count": 4,
@@ -15517,9 +15517,9 @@
     },
     "link_score": {
       "inbound_count": 16,
-      "outbound_count": 35,
+      "outbound_count": 34,
       "existing_outbound_count": 18,
-      "suggested_outbound_count": 17,
+      "suggested_outbound_count": 16,
       "authority": 41
     },
     "brand": null
@@ -15775,9 +15775,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 67,
+      "outbound_count": 66,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 63,
+      "suggested_outbound_count": 62,
       "authority": 4
     },
     "brand": null
@@ -15805,7 +15805,7 @@
       "category": "characters",
       "category_priority": 8,
       "has_description": true,
-      "article_word_count": 3263,
+      "article_word_count": 3223,
       "keyword_bag_size": 24,
       "heading_count": 22,
       "list_count": 1,
@@ -15888,9 +15888,9 @@
     },
     "link_score": {
       "inbound_count": 6,
-      "outbound_count": 31,
+      "outbound_count": 30,
       "existing_outbound_count": 15,
-      "suggested_outbound_count": 16,
+      "suggested_outbound_count": 15,
       "authority": 19.5
     },
     "brand": null
@@ -16157,7 +16157,7 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 1508,
+      "article_word_count": 1472,
       "keyword_bag_size": 23,
       "heading_count": 23,
       "list_count": 4,
@@ -16226,9 +16226,9 @@
     },
     "link_score": {
       "inbound_count": 14,
-      "outbound_count": 28,
+      "outbound_count": 27,
       "existing_outbound_count": 18,
-      "suggested_outbound_count": 10,
+      "suggested_outbound_count": 9,
       "authority": 37
     },
     "brand": null
@@ -16259,7 +16259,7 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 3360,
+      "article_word_count": 3289,
       "keyword_bag_size": 27,
       "heading_count": 22,
       "list_count": 1,
@@ -16340,9 +16340,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 39,
+      "outbound_count": 38,
       "existing_outbound_count": 13,
-      "suggested_outbound_count": 26,
+      "suggested_outbound_count": 25,
       "authority": 6.5
     },
     "brand": null
@@ -16373,7 +16373,7 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 2955,
+      "article_word_count": 2897,
       "keyword_bag_size": 27,
       "heading_count": 21,
       "list_count": 1,
@@ -16456,9 +16456,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 22,
+      "outbound_count": 21,
       "existing_outbound_count": 10,
-      "suggested_outbound_count": 12,
+      "suggested_outbound_count": 11,
       "authority": 7
     },
     "brand": null
@@ -16489,7 +16489,7 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 2316,
+      "article_word_count": 2245,
       "keyword_bag_size": 24,
       "heading_count": 15,
       "list_count": 2,
@@ -16559,9 +16559,9 @@
     },
     "link_score": {
       "inbound_count": 10,
-      "outbound_count": 26,
+      "outbound_count": 23,
       "existing_outbound_count": 13,
-      "suggested_outbound_count": 13,
+      "suggested_outbound_count": 10,
       "authority": 26.5
     },
     "brand": null
@@ -16926,9 +16926,9 @@
     },
     "link_score": {
       "inbound_count": 2,
-      "outbound_count": 66,
+      "outbound_count": 65,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 62,
+      "suggested_outbound_count": 61,
       "authority": 6
     },
     "brand": null
@@ -17088,9 +17088,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 65,
+      "outbound_count": 64,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 61,
+      "suggested_outbound_count": 60,
       "authority": 4
     },
     "brand": null
@@ -17250,9 +17250,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 65,
+      "outbound_count": 64,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 61,
+      "suggested_outbound_count": 60,
       "authority": 4
     },
     "brand": null
@@ -17409,9 +17409,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 67,
+      "outbound_count": 66,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 63,
+      "suggested_outbound_count": 62,
       "authority": 4
     },
     "brand": null
@@ -17524,115 +17524,6 @@
       "existing_outbound_count": 14,
       "suggested_outbound_count": 15,
       "authority": 29
-    },
-    "brand": null
-  },
-  {
-    "title": "Bone Idol Ink",
-    "desc": "Bone Idol Ink’s artist references and fictional counterpart: illustration, objects, Wreckwork, living-ink traditions, attribution and the boundary between lore and real work.",
-    "url": "/wiki/bone-idol-ink.html",
-    "tags": [
-      "bone",
-      "idol",
-      "ink",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [],
-    "rank_score": 284,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 0,
-      "tag_count": 6,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 2452,
-      "keyword_bag_size": 24,
-      "heading_count": 19,
-      "list_count": 1,
-      "internal_link_count": 12,
-      "paragraph_count": 33,
-      "section_count": 16,
-      "lore_paragraph_count": 31,
-      "content_quality_score": 105,
-      "authority_score": 24
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 50,
-      "keyword_bag_points": 24,
-      "content_quality_points": 111,
-      "authority_points": 34,
-      "final_rank_score": 284,
-      "authority_graph_points": 10
-    },
-    "search_index": {
-      "normalized_title": "bone idol ink crypto moonboys wiki",
-      "tokens": [
-        "bone",
-        "idol",
-        "ink",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "bone",
-        "idol",
-        "ink",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "s",
-        "artist",
-        "references",
-        "and",
-        "fictional",
-        "counterpart",
-        "illustration",
-        "objects",
-        "wreckwork",
-        "living",
-        "traditions",
-        "attribution",
-        "the",
-        "boundary",
-        "between",
-        "lore",
-        "real",
-        "work",
-        "boneidolink",
-        "tattoo",
-        "protocol",
-        "casting",
-        "table",
-        "iona",
-        "fret",
-        "reverse",
-        "card",
-        "second",
-        "cast",
-        "dispute",
-        "unmarked",
-        "seat",
-        "visible",
-        "repair",
-        "resin",
-        "accord"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 2,
-      "outbound_count": 22,
-      "existing_outbound_count": 11,
-      "suggested_outbound_count": 11,
-      "authority": 9.5
     },
     "brand": null
   },
@@ -17793,9 +17684,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 64,
+      "outbound_count": 63,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 60,
+      "suggested_outbound_count": 59,
       "authority": 4
     },
     "brand": null
@@ -17939,7 +17830,7 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 2760,
+      "article_word_count": 2757,
       "keyword_bag_size": 20,
       "heading_count": 24,
       "list_count": 1,
@@ -18166,7 +18057,7 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 2561,
+      "article_word_count": 2490,
       "keyword_bag_size": 25,
       "heading_count": 21,
       "list_count": 1,
@@ -18241,9 +18132,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 28,
+      "outbound_count": 27,
       "existing_outbound_count": 11,
-      "suggested_outbound_count": 17,
+      "suggested_outbound_count": 16,
       "authority": 5.5
     },
     "brand": null
@@ -18277,7 +18168,7 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 1868,
+      "article_word_count": 1810,
       "keyword_bag_size": 24,
       "heading_count": 29,
       "list_count": 4,
@@ -18342,9 +18233,9 @@
     },
     "link_score": {
       "inbound_count": 9,
-      "outbound_count": 20,
+      "outbound_count": 18,
       "existing_outbound_count": 17,
-      "suggested_outbound_count": 3,
+      "suggested_outbound_count": 1,
       "authority": 26.5
     },
     "brand": null
@@ -18622,9 +18513,9 @@
     },
     "link_score": {
       "inbound_count": 4,
-      "outbound_count": 64,
+      "outbound_count": 63,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 60,
+      "suggested_outbound_count": 59,
       "authority": 10
     },
     "brand": null
@@ -18655,7 +18546,7 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 2624,
+      "article_word_count": 2555,
       "keyword_bag_size": 22,
       "heading_count": 21,
       "list_count": 1,
@@ -18728,117 +18619,10 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 38,
+      "outbound_count": 37,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 26,
+      "suggested_outbound_count": 25,
       "authority": 8
-    },
-    "brand": null
-  },
-  {
-    "title": "Moon Mission",
-    "desc": "Moon Mission in HODL WARS: exploratory hope, the four-stage tradition, Return Lantern stories and the separate Quest Maze game label.",
-    "url": "/wiki/moon-mission.html",
-    "tags": [
-      "moon",
-      "mission",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "moon mission crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 282,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 2442,
-      "keyword_bag_size": 23,
-      "heading_count": 15,
-      "list_count": 3,
-      "internal_link_count": 20,
-      "paragraph_count": 37,
-      "section_count": 3,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 83,
-      "authority_score": 30
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 50,
-      "keyword_bag_points": 23,
-      "content_quality_points": 91,
-      "authority_points": 53,
-      "final_rank_score": 282,
-      "authority_graph_points": 23
-    },
-    "search_index": {
-      "normalized_title": "moon mission crypto moonboys wiki",
-      "tokens": [
-        "moon",
-        "mission",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "moon",
-        "mission",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "in",
-        "hodl",
-        "wars",
-        "exploratory",
-        "hope",
-        "the",
-        "four",
-        "stage",
-        "tradition",
-        "return",
-        "lantern",
-        "stories",
-        "and",
-        "separate",
-        "quest",
-        "maze",
-        "game",
-        "label",
-        "missions",
-        "lunarchs",
-        "when",
-        "lambo",
-        "neri",
-        "mast",
-        "sol",
-        "venn",
-        "silver",
-        "ladder",
-        "turnback",
-        "landing",
-        "share",
-        "final",
-        "ascent"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 7,
-      "outbound_count": 31,
-      "existing_outbound_count": 17,
-      "suggested_outbound_count": 14,
-      "authority": 22.5
     },
     "brand": null
   },
@@ -18867,7 +18651,7 @@
       "category": "characters",
       "category_priority": 8,
       "has_description": true,
-      "article_word_count": 3024,
+      "article_word_count": 2984,
       "keyword_bag_size": 23,
       "heading_count": 21,
       "list_count": 1,
@@ -18956,9 +18740,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 32,
+      "outbound_count": 31,
       "existing_outbound_count": 9,
-      "suggested_outbound_count": 23,
+      "suggested_outbound_count": 22,
       "authority": 6.5
     },
     "brand": null
@@ -19083,6 +18867,115 @@
       "existing_outbound_count": 17,
       "suggested_outbound_count": 18,
       "authority": 12.5
+    },
+    "brand": null
+  },
+  {
+    "title": "Bone Idol Ink",
+    "desc": "Bone Idol Ink’s artist references and fictional counterpart: illustration, objects, Wreckwork, living-ink traditions, attribution and the boundary between lore and real work.",
+    "url": "/wiki/bone-idol-ink.html",
+    "tags": [
+      "bone",
+      "idol",
+      "ink",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [],
+    "rank_score": 281,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 6,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 2394,
+      "keyword_bag_size": 24,
+      "heading_count": 19,
+      "list_count": 1,
+      "internal_link_count": 12,
+      "paragraph_count": 33,
+      "section_count": 16,
+      "lore_paragraph_count": 31,
+      "content_quality_score": 105,
+      "authority_score": 21
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 50,
+      "keyword_bag_points": 24,
+      "content_quality_points": 111,
+      "authority_points": 31,
+      "final_rank_score": 281,
+      "authority_graph_points": 10
+    },
+    "search_index": {
+      "normalized_title": "bone idol ink crypto moonboys wiki",
+      "tokens": [
+        "bone",
+        "idol",
+        "ink",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "bone",
+        "idol",
+        "ink",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "s",
+        "artist",
+        "references",
+        "and",
+        "fictional",
+        "counterpart",
+        "illustration",
+        "objects",
+        "wreckwork",
+        "living",
+        "traditions",
+        "attribution",
+        "the",
+        "boundary",
+        "between",
+        "lore",
+        "real",
+        "work",
+        "boneidolink",
+        "tattoo",
+        "protocol",
+        "casting",
+        "table",
+        "iona",
+        "fret",
+        "reverse",
+        "card",
+        "second",
+        "cast",
+        "dispute",
+        "unmarked",
+        "seat",
+        "visible",
+        "repair",
+        "resin",
+        "accord"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 2,
+      "outbound_count": 21,
+      "existing_outbound_count": 11,
+      "suggested_outbound_count": 10,
+      "authority": 9.5
     },
     "brand": null
   },
@@ -19238,9 +19131,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 64,
+      "outbound_count": 63,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 60,
+      "suggested_outbound_count": 59,
       "authority": 4
     },
     "brand": null
@@ -19396,9 +19289,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 64,
+      "outbound_count": 63,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 60,
+      "suggested_outbound_count": 59,
       "authority": 4
     },
     "brand": null
@@ -19426,7 +19319,7 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 2689,
+      "article_word_count": 2631,
       "keyword_bag_size": 24,
       "heading_count": 19,
       "list_count": 1,
@@ -19520,9 +19413,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 27,
+      "outbound_count": 25,
       "existing_outbound_count": 9,
-      "suggested_outbound_count": 18,
+      "suggested_outbound_count": 16,
       "authority": 6.5
     },
     "brand": null
@@ -19782,9 +19675,9 @@
     },
     "link_score": {
       "inbound_count": 4,
-      "outbound_count": 64,
+      "outbound_count": 63,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 60,
+      "suggested_outbound_count": 59,
       "authority": 10
     },
     "brand": null
@@ -19942,9 +19835,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 64,
+      "outbound_count": 63,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 60,
+      "suggested_outbound_count": 59,
       "authority": 4
     },
     "brand": null
@@ -19975,7 +19868,7 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 2325,
+      "article_word_count": 2267,
       "keyword_bag_size": 24,
       "heading_count": 15,
       "list_count": 2,
@@ -20045,9 +19938,9 @@
     },
     "link_score": {
       "inbound_count": 5,
-      "outbound_count": 22,
+      "outbound_count": 20,
       "existing_outbound_count": 13,
-      "suggested_outbound_count": 9,
+      "suggested_outbound_count": 7,
       "authority": 16.5
     },
     "brand": null
@@ -20161,6 +20054,113 @@
     "brand": null
   },
   {
+    "title": "Moon Mission",
+    "desc": "Moon Mission in HODL WARS: exploratory hope, the four-stage tradition, Return Lantern stories and the separate Quest Maze game label.",
+    "url": "/wiki/moon-mission.html",
+    "tags": [
+      "moon",
+      "mission",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "moon mission crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 279,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 2371,
+      "keyword_bag_size": 23,
+      "heading_count": 15,
+      "list_count": 3,
+      "internal_link_count": 20,
+      "paragraph_count": 37,
+      "section_count": 3,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 83,
+      "authority_score": 27
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 50,
+      "keyword_bag_points": 23,
+      "content_quality_points": 91,
+      "authority_points": 50,
+      "final_rank_score": 279,
+      "authority_graph_points": 23
+    },
+    "search_index": {
+      "normalized_title": "moon mission crypto moonboys wiki",
+      "tokens": [
+        "moon",
+        "mission",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "moon",
+        "mission",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "in",
+        "hodl",
+        "wars",
+        "exploratory",
+        "hope",
+        "the",
+        "four",
+        "stage",
+        "tradition",
+        "return",
+        "lantern",
+        "stories",
+        "and",
+        "separate",
+        "quest",
+        "maze",
+        "game",
+        "label",
+        "missions",
+        "lunarchs",
+        "when",
+        "lambo",
+        "neri",
+        "mast",
+        "sol",
+        "venn",
+        "silver",
+        "ladder",
+        "turnback",
+        "landing",
+        "share",
+        "final",
+        "ascent"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 7,
+      "outbound_count": 30,
+      "existing_outbound_count": 17,
+      "suggested_outbound_count": 13,
+      "authority": 22.5
+    },
+    "brand": null
+  },
+  {
     "title": "Quell",
     "desc": "Quell, the Chain Scribe warrior and mediator: the First Merge, disputed gifts, limited truces and the difficult work of keeping an agreement.",
     "url": "/wiki/quell.html",
@@ -20185,7 +20185,7 @@
       "category": "characters",
       "category_priority": 8,
       "has_description": true,
-      "article_word_count": 2995,
+      "article_word_count": 2955,
       "keyword_bag_size": 22,
       "heading_count": 21,
       "list_count": 1,
@@ -20266,9 +20266,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 40,
+      "outbound_count": 39,
       "existing_outbound_count": 9,
-      "suggested_outbound_count": 31,
+      "suggested_outbound_count": 30,
       "authority": 4.5
     },
     "brand": null
@@ -20299,7 +20299,7 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 1507,
+      "article_word_count": 1436,
       "keyword_bag_size": 21,
       "heading_count": 22,
       "list_count": 1,
@@ -20373,9 +20373,9 @@
     },
     "link_score": {
       "inbound_count": 16,
-      "outbound_count": 21,
+      "outbound_count": 20,
       "existing_outbound_count": 9,
-      "suggested_outbound_count": 12,
+      "suggested_outbound_count": 11,
       "authority": 36.5
     },
     "brand": null
@@ -20656,9 +20656,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 64,
+      "outbound_count": 63,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 60,
+      "suggested_outbound_count": 59,
       "authority": 4
     },
     "brand": null
@@ -20819,9 +20819,9 @@
     },
     "link_score": {
       "inbound_count": 2,
-      "outbound_count": 66,
+      "outbound_count": 65,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 62,
+      "suggested_outbound_count": 61,
       "authority": 6
     },
     "brand": null
@@ -20852,7 +20852,7 @@
       "category": "characters",
       "category_priority": 8,
       "has_description": true,
-      "article_word_count": 2964,
+      "article_word_count": 2945,
       "keyword_bag_size": 27,
       "heading_count": 21,
       "list_count": 1,
@@ -20928,9 +20928,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 35,
+      "outbound_count": 34,
       "existing_outbound_count": 13,
-      "suggested_outbound_count": 22,
+      "suggested_outbound_count": 21,
       "authority": 8.5
     },
     "brand": null
@@ -21091,9 +21091,9 @@
     },
     "link_score": {
       "inbound_count": 2,
-      "outbound_count": 64,
+      "outbound_count": 63,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 60,
+      "suggested_outbound_count": 59,
       "authority": 6
     },
     "brand": null
@@ -21230,7 +21230,7 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 2984,
+      "article_word_count": 2937,
       "keyword_bag_size": 27,
       "heading_count": 20,
       "list_count": 1,
@@ -21316,9 +21316,9 @@
     },
     "link_score": {
       "inbound_count": 4,
-      "outbound_count": 42,
+      "outbound_count": 41,
       "existing_outbound_count": 13,
-      "suggested_outbound_count": 29,
+      "suggested_outbound_count": 28,
       "authority": 14.5
     },
     "brand": null
@@ -21349,7 +21349,7 @@
       "category": "characters",
       "category_priority": 8,
       "has_description": true,
-      "article_word_count": 2583,
+      "article_word_count": 2543,
       "keyword_bag_size": 24,
       "heading_count": 14,
       "list_count": 1,
@@ -21422,9 +21422,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 33,
+      "outbound_count": 32,
       "existing_outbound_count": 14,
-      "suggested_outbound_count": 19,
+      "suggested_outbound_count": 18,
       "authority": 7
     },
     "brand": null
@@ -21455,7 +21455,7 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 2712,
+      "article_word_count": 2641,
       "keyword_bag_size": 22,
       "heading_count": 21,
       "list_count": 1,
@@ -21528,9 +21528,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 22,
+      "outbound_count": 20,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 10,
+      "suggested_outbound_count": 8,
       "authority": 6
     },
     "brand": null
@@ -21865,9 +21865,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 55,
+      "outbound_count": 54,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 43,
+      "suggested_outbound_count": 42,
       "authority": 8
     },
     "brand": null
@@ -22029,9 +22029,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 63,
+      "outbound_count": 62,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 59,
+      "suggested_outbound_count": 58,
       "authority": 4
     },
     "brand": null
@@ -22062,7 +22062,7 @@
       "category": "characters",
       "category_priority": 8,
       "has_description": true,
-      "article_word_count": 2862,
+      "article_word_count": 2822,
       "keyword_bag_size": 24,
       "heading_count": 20,
       "list_count": 1,
@@ -22137,9 +22137,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 35,
+      "outbound_count": 34,
       "existing_outbound_count": 13,
-      "suggested_outbound_count": 22,
+      "suggested_outbound_count": 21,
       "authority": 8.5
     },
     "brand": null
@@ -22296,9 +22296,9 @@
     },
     "link_score": {
       "inbound_count": 3,
-      "outbound_count": 64,
+      "outbound_count": 63,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 60,
+      "suggested_outbound_count": 59,
       "authority": 8
     },
     "brand": null
@@ -22690,9 +22690,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 66,
+      "outbound_count": 65,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 62,
+      "suggested_outbound_count": 61,
       "authority": 4
     },
     "brand": null
@@ -22723,7 +22723,7 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 1858,
+      "article_word_count": 1800,
       "keyword_bag_size": 25,
       "heading_count": 15,
       "list_count": 1,
@@ -22794,107 +22794,10 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 24,
+      "outbound_count": 22,
       "existing_outbound_count": 9,
-      "suggested_outbound_count": 15,
+      "suggested_outbound_count": 13,
       "authority": 6.5
-    },
-    "brand": null
-  },
-  {
-    "title": "pmsl",
-    "desc": "PMSL: the XRPL token reference in W81, its NoBallGames reward proposal and the limits of repeated Laugh Lairs mythology.",
-    "url": "/wiki/pmsl.html",
-    "tags": [
-      "pmsl",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "pmsl crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 273,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 4,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 944,
-      "keyword_bag_size": 21,
-      "heading_count": 11,
-      "list_count": 1,
-      "internal_link_count": 13,
-      "paragraph_count": 16,
-      "section_count": 8,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 65,
-      "authority_score": 18
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 47,
-      "keyword_bag_points": 21,
-      "content_quality_points": 72,
-      "authority_points": 68,
-      "final_rank_score": 273,
-      "authority_graph_points": 50
-    },
-    "search_index": {
-      "normalized_title": "pmsl crypto moonboys wiki",
-      "tokens": [
-        "pmsl",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "pmsl",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "the",
-        "xrpl",
-        "token",
-        "reference",
-        "in",
-        "w81",
-        "its",
-        "noballgames",
-        "reward",
-        "proposal",
-        "and",
-        "limits",
-        "of",
-        "repeated",
-        "laugh",
-        "lairs",
-        "mythology",
-        "record",
-        "staking",
-        "legacy",
-        "motif",
-        "punk",
-        "meme",
-        "satire",
-        "ledger",
-        "claim"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 62,
-      "outbound_count": 35,
-      "existing_outbound_count": 12,
-      "suggested_outbound_count": 23,
-      "authority": 130
     },
     "brand": null
   },
@@ -23047,7 +22950,7 @@
       "category": "characters",
       "category_priority": 8,
       "has_description": true,
-      "article_word_count": 1630,
+      "article_word_count": 1590,
       "keyword_bag_size": 18,
       "heading_count": 21,
       "list_count": 4,
@@ -23109,9 +23012,9 @@
     },
     "link_score": {
       "inbound_count": 7,
-      "outbound_count": 38,
+      "outbound_count": 36,
       "existing_outbound_count": 16,
-      "suggested_outbound_count": 22,
+      "suggested_outbound_count": 20,
       "authority": 22
     },
     "brand": null
@@ -23139,7 +23042,7 @@
       "category": "characters",
       "category_priority": 8,
       "has_description": true,
-      "article_word_count": 2847,
+      "article_word_count": 2824,
       "keyword_bag_size": 27,
       "heading_count": 21,
       "list_count": 1,
@@ -23220,9 +23123,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 31,
+      "outbound_count": 30,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 19,
+      "suggested_outbound_count": 18,
       "authority": 6
     },
     "brand": null
@@ -23388,9 +23291,9 @@
     },
     "link_score": {
       "inbound_count": 3,
-      "outbound_count": 63,
+      "outbound_count": 62,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 59,
+      "suggested_outbound_count": 58,
       "authority": 8
     },
     "brand": null
@@ -23688,9 +23591,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 65,
+      "outbound_count": 64,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 61,
+      "suggested_outbound_count": 60,
       "authority": 4
     },
     "brand": null
@@ -23723,7 +23626,7 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 1519,
+      "article_word_count": 1448,
       "keyword_bag_size": 19,
       "heading_count": 20,
       "list_count": 4,
@@ -23784,9 +23687,9 @@
     },
     "link_score": {
       "inbound_count": 8,
-      "outbound_count": 24,
+      "outbound_count": 20,
       "existing_outbound_count": 18,
-      "suggested_outbound_count": 6,
+      "suggested_outbound_count": 2,
       "authority": 25
     },
     "brand": null
@@ -23955,9 +23858,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 63,
+      "outbound_count": 62,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 59,
+      "suggested_outbound_count": 58,
       "authority": 4
     },
     "brand": null
@@ -23987,7 +23890,7 @@
       "category": "characters",
       "category_priority": 8,
       "has_description": true,
-      "article_word_count": 2584,
+      "article_word_count": 2544,
       "keyword_bag_size": 24,
       "heading_count": 14,
       "list_count": 1,
@@ -24062,9 +23965,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 51,
+      "outbound_count": 49,
       "existing_outbound_count": 13,
-      "suggested_outbound_count": 38,
+      "suggested_outbound_count": 36,
       "authority": 6.5
     },
     "brand": null
@@ -24095,7 +23998,7 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 1314,
+      "article_word_count": 1256,
       "keyword_bag_size": 25,
       "heading_count": 12,
       "list_count": 1,
@@ -24158,9 +24061,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 16,
+      "outbound_count": 14,
       "existing_outbound_count": 9,
-      "suggested_outbound_count": 7,
+      "suggested_outbound_count": 5,
       "authority": 4.5
     },
     "brand": null
@@ -24289,6 +24192,103 @@
       "existing_outbound_count": 17,
       "suggested_outbound_count": 15,
       "authority": 10.5
+    },
+    "brand": null
+  },
+  {
+    "title": "pmsl",
+    "desc": "PMSL: the XRPL token reference in W81, its NoBallGames reward proposal and the limits of repeated Laugh Lairs mythology.",
+    "url": "/wiki/pmsl.html",
+    "tags": [
+      "pmsl",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "pmsl crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 270,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 4,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 876,
+      "keyword_bag_size": 21,
+      "heading_count": 11,
+      "list_count": 1,
+      "internal_link_count": 13,
+      "paragraph_count": 16,
+      "section_count": 8,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 65,
+      "authority_score": 18
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 44,
+      "keyword_bag_points": 21,
+      "content_quality_points": 72,
+      "authority_points": 68,
+      "final_rank_score": 270,
+      "authority_graph_points": 50
+    },
+    "search_index": {
+      "normalized_title": "pmsl crypto moonboys wiki",
+      "tokens": [
+        "pmsl",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "pmsl",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "the",
+        "xrpl",
+        "token",
+        "reference",
+        "in",
+        "w81",
+        "its",
+        "noballgames",
+        "reward",
+        "proposal",
+        "and",
+        "limits",
+        "of",
+        "repeated",
+        "laugh",
+        "lairs",
+        "mythology",
+        "record",
+        "staking",
+        "legacy",
+        "motif",
+        "punk",
+        "meme",
+        "satire",
+        "ledger",
+        "claim"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 62,
+      "outbound_count": 33,
+      "existing_outbound_count": 12,
+      "suggested_outbound_count": 21,
+      "authority": 130
     },
     "brand": null
   },
@@ -24449,9 +24449,9 @@
     },
     "link_score": {
       "inbound_count": 3,
-      "outbound_count": 64,
+      "outbound_count": 63,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 60,
+      "suggested_outbound_count": 59,
       "authority": 8
     },
     "brand": null
@@ -24612,9 +24612,9 @@
     },
     "link_score": {
       "inbound_count": 4,
-      "outbound_count": 67,
+      "outbound_count": 66,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 63,
+      "suggested_outbound_count": 62,
       "authority": 10
     },
     "brand": null
@@ -24779,9 +24779,9 @@
     },
     "link_score": {
       "inbound_count": 2,
-      "outbound_count": 67,
+      "outbound_count": 66,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 63,
+      "suggested_outbound_count": 62,
       "authority": 6
     },
     "brand": null
@@ -24935,9 +24935,9 @@
     },
     "link_score": {
       "inbound_count": 2,
-      "outbound_count": 63,
+      "outbound_count": 62,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 59,
+      "suggested_outbound_count": 58,
       "authority": 6
     },
     "brand": null
@@ -24968,7 +24968,7 @@
       "category": "characters",
       "category_priority": 8,
       "has_description": true,
-      "article_word_count": 2807,
+      "article_word_count": 2767,
       "keyword_bag_size": 22,
       "heading_count": 19,
       "list_count": 1,
@@ -25039,9 +25039,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 31,
+      "outbound_count": 30,
       "existing_outbound_count": 13,
-      "suggested_outbound_count": 18,
+      "suggested_outbound_count": 17,
       "authority": 8.5
     },
     "brand": null
@@ -25205,9 +25205,9 @@
     },
     "link_score": {
       "inbound_count": 2,
-      "outbound_count": 66,
+      "outbound_count": 65,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 62,
+      "suggested_outbound_count": 61,
       "authority": 6
     },
     "brand": null
@@ -25369,9 +25369,9 @@
     },
     "link_score": {
       "inbound_count": 3,
-      "outbound_count": 69,
+      "outbound_count": 68,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 65,
+      "suggested_outbound_count": 64,
       "authority": 8
     },
     "brand": null
@@ -25402,7 +25402,7 @@
       "category": "characters",
       "category_priority": 8,
       "has_description": true,
-      "article_word_count": 1241,
+      "article_word_count": 1218,
       "keyword_bag_size": 23,
       "heading_count": 13,
       "list_count": 1,
@@ -25469,9 +25469,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 19,
+      "outbound_count": 18,
       "existing_outbound_count": 9,
-      "suggested_outbound_count": 10,
+      "suggested_outbound_count": 9,
       "authority": 6.5
     },
     "brand": null
@@ -25501,7 +25501,7 @@
       "category": "characters",
       "category_priority": 8,
       "has_description": true,
-      "article_word_count": 2845,
+      "article_word_count": 2805,
       "keyword_bag_size": 21,
       "heading_count": 15,
       "list_count": 1,
@@ -25570,9 +25570,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 22,
+      "outbound_count": 21,
       "existing_outbound_count": 14,
-      "suggested_outbound_count": 8,
+      "suggested_outbound_count": 7,
       "authority": 7
     },
     "brand": null
@@ -25602,7 +25602,7 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 1658,
+      "article_word_count": 1587,
       "keyword_bag_size": 21,
       "heading_count": 24,
       "list_count": 4,
@@ -25667,9 +25667,9 @@
     },
     "link_score": {
       "inbound_count": 7,
-      "outbound_count": 42,
+      "outbound_count": 39,
       "existing_outbound_count": 17,
-      "suggested_outbound_count": 25,
+      "suggested_outbound_count": 22,
       "authority": 22.5
     },
     "brand": null
@@ -25699,7 +25699,7 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 1657,
+      "article_word_count": 1586,
       "keyword_bag_size": 21,
       "heading_count": 24,
       "list_count": 5,
@@ -25762,9 +25762,9 @@
     },
     "link_score": {
       "inbound_count": 6,
-      "outbound_count": 34,
+      "outbound_count": 30,
       "existing_outbound_count": 19,
-      "suggested_outbound_count": 15,
+      "suggested_outbound_count": 11,
       "authority": 21.5
     },
     "brand": null
@@ -25927,9 +25927,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 64,
+      "outbound_count": 63,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 60,
+      "suggested_outbound_count": 59,
       "authority": 4
     },
     "brand": null
@@ -26093,9 +26093,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 64,
+      "outbound_count": 63,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 60,
+      "suggested_outbound_count": 59,
       "authority": 4
     },
     "brand": null
@@ -26255,9 +26255,9 @@
     },
     "link_score": {
       "inbound_count": 3,
-      "outbound_count": 62,
+      "outbound_count": 61,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 58,
+      "suggested_outbound_count": 57,
       "authority": 8
     },
     "brand": null
@@ -26288,7 +26288,7 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 1078,
+      "article_word_count": 1075,
       "keyword_bag_size": 19,
       "heading_count": 12,
       "list_count": 2,
@@ -26506,9 +26506,9 @@
     },
     "link_score": {
       "inbound_count": 2,
-      "outbound_count": 64,
+      "outbound_count": 63,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 60,
+      "suggested_outbound_count": 59,
       "authority": 6
     },
     "brand": null
@@ -26668,9 +26668,9 @@
     },
     "link_score": {
       "inbound_count": 2,
-      "outbound_count": 64,
+      "outbound_count": 63,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 60,
+      "suggested_outbound_count": 59,
       "authority": 6
     },
     "brand": null
@@ -26829,9 +26829,9 @@
     },
     "link_score": {
       "inbound_count": 2,
-      "outbound_count": 64,
+      "outbound_count": 63,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 60,
+      "suggested_outbound_count": 59,
       "authority": 6
     },
     "brand": null
@@ -26861,7 +26861,7 @@
       "category": "characters",
       "category_priority": 8,
       "has_description": true,
-      "article_word_count": 2691,
+      "article_word_count": 2651,
       "keyword_bag_size": 23,
       "heading_count": 20,
       "list_count": 1,
@@ -26934,9 +26934,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 31,
+      "outbound_count": 30,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 19,
+      "suggested_outbound_count": 18,
       "authority": 6
     },
     "brand": null
@@ -27071,7 +27071,7 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 1282,
+      "article_word_count": 1211,
       "keyword_bag_size": 21,
       "heading_count": 17,
       "list_count": 4,
@@ -27137,9 +27137,9 @@
     },
     "link_score": {
       "inbound_count": 5,
-      "outbound_count": 32,
+      "outbound_count": 29,
       "existing_outbound_count": 17,
-      "suggested_outbound_count": 15,
+      "suggested_outbound_count": 12,
       "authority": 18.5
     },
     "brand": null
@@ -27173,7 +27173,7 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 1485,
+      "article_word_count": 1414,
       "keyword_bag_size": 23,
       "heading_count": 24,
       "list_count": 4,
@@ -27238,9 +27238,9 @@
     },
     "link_score": {
       "inbound_count": 2,
-      "outbound_count": 22,
+      "outbound_count": 19,
       "existing_outbound_count": 17,
-      "suggested_outbound_count": 5,
+      "suggested_outbound_count": 2,
       "authority": 12.5
     },
     "brand": null
@@ -27398,9 +27398,9 @@
     },
     "link_score": {
       "inbound_count": 2,
-      "outbound_count": 62,
+      "outbound_count": 61,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 58,
+      "suggested_outbound_count": 57,
       "authority": 6
     },
     "brand": null
@@ -27558,116 +27558,12 @@
     },
     "link_score": {
       "inbound_count": 2,
-      "outbound_count": 65,
+      "outbound_count": 64,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 61,
+      "suggested_outbound_count": 60,
       "authority": 6
     },
     "brand": null
-  },
-  {
-    "title": "NBGX Token",
-    "desc": "NBGX is the proposed fractional NoBallGames companion token; its archive description does not establish live conversion, supply or gameplay powers.",
-    "url": "/wiki/nbgx-token.html",
-    "tags": [
-      "nbgx",
-      "token",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "nbgx token crypto moonboys wiki"
-      },
-      {
-        "title": "Nbgx",
-        "url": "/wiki/nbgx.html"
-      }
-    ],
-    "rank_score": 263,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 2,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 613,
-      "keyword_bag_size": 23,
-      "heading_count": 10,
-      "list_count": 1,
-      "internal_link_count": 10,
-      "paragraph_count": 10,
-      "section_count": 7,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 65,
-      "authority_score": 18
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 31,
-      "keyword_bag_points": 23,
-      "content_quality_points": 76,
-      "authority_points": 68,
-      "final_rank_score": 263,
-      "authority_graph_points": 50
-    },
-    "search_index": {
-      "normalized_title": "nbgx token crypto moonboys wiki",
-      "tokens": [
-        "nbgx",
-        "token",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "nbgx",
-        "token",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "is",
-        "the",
-        "proposed",
-        "fractional",
-        "noballgames",
-        "companion",
-        "its",
-        "archive",
-        "description",
-        "does",
-        "not",
-        "establish",
-        "live",
-        "conversion",
-        "supply",
-        "or",
-        "gameplay",
-        "powers",
-        "nbg",
-        "proposal"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 34,
-      "outbound_count": 20,
-      "existing_outbound_count": 9,
-      "suggested_outbound_count": 11,
-      "authority": 72.5
-    },
-    "brand": {
-      "brand_family": "nbg",
-      "concept_type": "mechanic",
-      "canonical_concept_id": "nbg:mechanic",
-      "canonical_slug": "nbgx-token",
-      "parent_concept": null
-    }
   },
   {
     "title": "Truth Commissions After Conflict",
@@ -27822,9 +27718,9 @@
     },
     "link_score": {
       "inbound_count": 2,
-      "outbound_count": 66,
+      "outbound_count": 65,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 62,
+      "suggested_outbound_count": 61,
       "authority": 6
     },
     "brand": null
@@ -27984,9 +27880,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 64,
+      "outbound_count": 63,
       "existing_outbound_count": 4,
-      "suggested_outbound_count": 60,
+      "suggested_outbound_count": 59,
       "authority": 4
     },
     "brand": null
@@ -28016,7 +27912,7 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 1781,
+      "article_word_count": 1770,
       "keyword_bag_size": 16,
       "heading_count": 15,
       "list_count": 2,
@@ -28097,7 +27993,7 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 1750,
+      "article_word_count": 1703,
       "keyword_bag_size": 24,
       "heading_count": 12,
       "list_count": 2,
@@ -28169,9 +28065,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 24,
+      "outbound_count": 23,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 12,
+      "suggested_outbound_count": 11,
       "authority": 8
     },
     "brand": null
@@ -28202,7 +28098,7 @@
       "category": "nfts-digital-art",
       "category_priority": 4,
       "has_description": true,
-      "article_word_count": 2694,
+      "article_word_count": 2667,
       "keyword_bag_size": 25,
       "heading_count": 20,
       "list_count": 1,
@@ -28284,9 +28180,9 @@
     },
     "link_score": {
       "inbound_count": 3,
-      "outbound_count": 46,
+      "outbound_count": 45,
       "existing_outbound_count": 9,
-      "suggested_outbound_count": 37,
+      "suggested_outbound_count": 36,
       "authority": 10.5
     },
     "brand": null
@@ -28423,7 +28319,7 @@
       "category": "concepts",
       "category_priority": 5,
       "has_description": true,
-      "article_word_count": 2721,
+      "article_word_count": 2710,
       "keyword_bag_size": 20,
       "heading_count": 18,
       "list_count": 1,
@@ -28703,7 +28599,7 @@
       "category": "concepts",
       "category_priority": 5,
       "has_description": true,
-      "article_word_count": 2633,
+      "article_word_count": 2610,
       "keyword_bag_size": 22,
       "heading_count": 19,
       "list_count": 1,
@@ -28787,12 +28683,116 @@
     },
     "link_score": {
       "inbound_count": 2,
-      "outbound_count": 36,
+      "outbound_count": 35,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 24,
+      "suggested_outbound_count": 23,
       "authority": 10
     },
     "brand": null
+  },
+  {
+    "title": "NBGX Token",
+    "desc": "NBGX is the proposed fractional NoBallGames companion token; its archive description does not establish live conversion, supply or gameplay powers.",
+    "url": "/wiki/nbgx-token.html",
+    "tags": [
+      "nbgx",
+      "token",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "nbgx token crypto moonboys wiki"
+      },
+      {
+        "title": "Nbgx",
+        "url": "/wiki/nbgx.html"
+      }
+    ],
+    "rank_score": 252,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 2,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 592,
+      "keyword_bag_size": 23,
+      "heading_count": 10,
+      "list_count": 1,
+      "internal_link_count": 10,
+      "paragraph_count": 10,
+      "section_count": 7,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 57,
+      "authority_score": 16
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 30,
+      "keyword_bag_points": 23,
+      "content_quality_points": 68,
+      "authority_points": 66,
+      "final_rank_score": 252,
+      "authority_graph_points": 50
+    },
+    "search_index": {
+      "normalized_title": "nbgx token crypto moonboys wiki",
+      "tokens": [
+        "nbgx",
+        "token",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "nbgx",
+        "token",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "is",
+        "the",
+        "proposed",
+        "fractional",
+        "noballgames",
+        "companion",
+        "its",
+        "archive",
+        "description",
+        "does",
+        "not",
+        "establish",
+        "live",
+        "conversion",
+        "supply",
+        "or",
+        "gameplay",
+        "powers",
+        "nbg",
+        "proposal"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 34,
+      "outbound_count": 20,
+      "existing_outbound_count": 9,
+      "suggested_outbound_count": 11,
+      "authority": 72.5
+    },
+    "brand": {
+      "brand_family": "nbg",
+      "concept_type": "mechanic",
+      "canonical_concept_id": "nbg:mechanic",
+      "canonical_slug": "nbgx-token",
+      "parent_concept": null
+    }
   },
   {
     "title": "$GK",
@@ -28819,7 +28819,7 @@
       "category": "tokens",
       "category_priority": 6,
       "has_description": true,
-      "article_word_count": 1465,
+      "article_word_count": 1407,
       "keyword_bag_size": 26,
       "heading_count": 14,
       "list_count": 1,
@@ -28887,9 +28887,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 36,
+      "outbound_count": 35,
       "existing_outbound_count": 9,
-      "suggested_outbound_count": 27,
+      "suggested_outbound_count": 26,
       "authority": 4.5
     },
     "brand": null
@@ -28920,7 +28920,7 @@
       "category": "nfts-digital-art",
       "category_priority": 4,
       "has_description": true,
-      "article_word_count": 2520,
+      "article_word_count": 2449,
       "keyword_bag_size": 24,
       "heading_count": 19,
       "list_count": 1,
@@ -28989,9 +28989,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 30,
+      "outbound_count": 29,
       "existing_outbound_count": 9,
-      "suggested_outbound_count": 21,
+      "suggested_outbound_count": 20,
       "authority": 4.5
     },
     "brand": null
@@ -29176,291 +29176,6 @@
       "existing_outbound_count": 17,
       "suggested_outbound_count": 19,
       "authority": 28.5
-    },
-    "brand": null
-  },
-  {
-    "title": "2025 Metaverse Launch Party",
-    "desc": "The archived 2025 Metaverse Launch Party announcement: community context, preserved registration links and the limits of the surviving event record.",
-    "url": "/wiki/2025-metaverse-launch-party.html",
-    "tags": [
-      "2025",
-      "metaverse",
-      "launch",
-      "party",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [],
-    "rank_score": 249,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 0,
-      "tag_count": 7,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 1045,
-      "keyword_bag_size": 21,
-      "heading_count": 10,
-      "list_count": 2,
-      "internal_link_count": 13,
-      "paragraph_count": 13,
-      "section_count": 7,
-      "lore_paragraph_count": 2,
-      "content_quality_score": 77,
-      "authority_score": 20
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 50,
-      "keyword_bag_points": 21,
-      "content_quality_points": 84,
-      "authority_points": 29,
-      "final_rank_score": 249,
-      "authority_graph_points": 9
-    },
-    "search_index": {
-      "normalized_title": "2025 metaverse launch party crypto moonboys wiki",
-      "tokens": [
-        "2025",
-        "metaverse",
-        "launch",
-        "party",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "2025",
-        "metaverse",
-        "launch",
-        "party",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "the",
-        "archived",
-        "announcement",
-        "community",
-        "context",
-        "preserved",
-        "registration",
-        "links",
-        "and",
-        "limits",
-        "of",
-        "surviving",
-        "event",
-        "record",
-        "gkniftyheads",
-        "notice",
-        "vpc2vzvnpm3atzrs6",
-        "proposed",
-        "programme"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 1,
-      "outbound_count": 20,
-      "existing_outbound_count": 13,
-      "suggested_outbound_count": 7,
-      "authority": 8.5
-    },
-    "brand": null
-  },
-  {
-    "title": "WUFFI / $WUF",
-    "desc": "Crypto Moonboys wiki guide to WUFFI and $WUF, a multi-chain community coin connected to WAX, Solana, Base and TON.",
-    "url": "/wiki/wuffi.html",
-    "tags": [
-      "wuffi",
-      "wuf",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "wuffi"
-      },
-      {
-        "title": "wuffi wuf crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 249,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 2,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 1044,
-      "keyword_bag_size": 18,
-      "heading_count": 13,
-      "list_count": 2,
-      "internal_link_count": 11,
-      "paragraph_count": 13,
-      "section_count": 10,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 73,
-      "authority_score": 20
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 50,
-      "keyword_bag_points": 18,
-      "content_quality_points": 84,
-      "authority_points": 32,
-      "final_rank_score": 249,
-      "authority_graph_points": 12
-    },
-    "search_index": {
-      "normalized_title": "wuffi wuf crypto moonboys wiki",
-      "tokens": [
-        "wuffi",
-        "wuf",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "wuffi",
-        "wuf",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "guide",
-        "to",
-        "and",
-        "a",
-        "multi",
-        "chain",
-        "community",
-        "coin",
-        "connected",
-        "wax",
-        "solana",
-        "base",
-        "ton"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 3,
-      "outbound_count": 25,
-      "existing_outbound_count": 11,
-      "suggested_outbound_count": 14,
-      "authority": 11.5
-    },
-    "brand": null
-  },
-  {
-    "title": "EXYBOY",
-    "desc": "EXYBOY is an archived XRPL token reference in the Graffiti Kings ecosystem, with its historical mention distinguished from unverified issuer, market and utility details.",
-    "url": "/wiki/exyboy.html",
-    "tags": [
-      "exyboy",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "tokens",
-    "aliases": [
-      {
-        "title": "exyboy crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 248,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 4,
-      "mention_count": 0,
-      "category": "tokens",
-      "category_priority": 6,
-      "has_description": true,
-      "article_word_count": 1017,
-      "keyword_bag_size": 27,
-      "heading_count": 11,
-      "list_count": 1,
-      "internal_link_count": 9,
-      "paragraph_count": 15,
-      "section_count": 8,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 77,
-      "authority_score": 18
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 30,
-      "word_count_points": 50,
-      "keyword_bag_points": 27,
-      "content_quality_points": 84,
-      "authority_points": 27,
-      "final_rank_score": 248,
-      "authority_graph_points": 9
-    },
-    "search_index": {
-      "normalized_title": "exyboy crypto moonboys wiki",
-      "tokens": [
-        "exyboy",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "exyboy",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "is",
-        "an",
-        "archived",
-        "xrpl",
-        "token",
-        "reference",
-        "in",
-        "the",
-        "graffiti",
-        "kings",
-        "ecosystem",
-        "with",
-        "its",
-        "historical",
-        "mention",
-        "distinguished",
-        "from",
-        "unverified",
-        "issuer",
-        "market",
-        "and",
-        "utility",
-        "details",
-        "account",
-        "currency",
-        "identifier",
-        "june",
-        "2025",
-        "overview"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 2,
-      "outbound_count": 37,
-      "existing_outbound_count": 9,
-      "suggested_outbound_count": 28,
-      "authority": 8.5
     },
     "brand": null
   },
@@ -29666,7 +29381,7 @@
       "category": "concepts",
       "category_priority": 5,
       "has_description": true,
-      "article_word_count": 2376,
+      "article_word_count": 2305,
       "keyword_bag_size": 22,
       "heading_count": 17,
       "list_count": 1,
@@ -29741,97 +29456,10 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 36,
+      "outbound_count": 35,
       "existing_outbound_count": 9,
-      "suggested_outbound_count": 27,
+      "suggested_outbound_count": 26,
       "authority": 4.5
-    },
-    "brand": null
-  },
-  {
-    "title": "Alien Worlds / TLM",
-    "desc": "Crypto Moonboys wiki guide to Alien Worlds and Trilium (TLM), one of the best-known blockchain game economies connected to WAX.",
-    "url": "/wiki/alien-worlds-tlm.html",
-    "tags": [
-      "alien",
-      "worlds",
-      "tlm",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "characters",
-    "aliases": [],
-    "rank_score": 245,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 0,
-      "tag_count": 6,
-      "mention_count": 0,
-      "category": "characters",
-      "category_priority": 8,
-      "has_description": true,
-      "article_word_count": 995,
-      "keyword_bag_size": 20,
-      "heading_count": 12,
-      "list_count": 2,
-      "internal_link_count": 11,
-      "paragraph_count": 12,
-      "section_count": 9,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 65,
-      "authority_score": 20
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 40,
-      "word_count_points": 50,
-      "keyword_bag_points": 20,
-      "content_quality_points": 71,
-      "authority_points": 34,
-      "final_rank_score": 245,
-      "authority_graph_points": 14
-    },
-    "search_index": {
-      "normalized_title": "alien worlds tlm crypto moonboys wiki",
-      "tokens": [
-        "alien",
-        "worlds",
-        "tlm",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "alien",
-        "worlds",
-        "tlm",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "guide",
-        "to",
-        "and",
-        "trilium",
-        "one",
-        "of",
-        "the",
-        "best",
-        "known",
-        "blockchain",
-        "game",
-        "economies",
-        "connected",
-        "wax"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 4,
-      "outbound_count": 24,
-      "existing_outbound_count": 11,
-      "suggested_outbound_count": 13,
-      "authority": 13.5
     },
     "brand": null
   },
@@ -29861,7 +29489,7 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 1411,
+      "article_word_count": 1340,
       "keyword_bag_size": 19,
       "heading_count": 17,
       "list_count": 1,
@@ -29934,9 +29562,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 25,
+      "outbound_count": 23,
       "existing_outbound_count": 9,
-      "suggested_outbound_count": 16,
+      "suggested_outbound_count": 14,
       "authority": 4.5
     },
     "brand": null
@@ -30234,7 +29862,7 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 1294,
+      "article_word_count": 1223,
       "keyword_bag_size": 20,
       "heading_count": 17,
       "list_count": 1,
@@ -30307,10 +29935,97 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 27,
+      "outbound_count": 26,
       "existing_outbound_count": 9,
-      "suggested_outbound_count": 18,
+      "suggested_outbound_count": 17,
       "authority": 4.5
+    },
+    "brand": null
+  },
+  {
+    "title": "Alien Worlds / TLM",
+    "desc": "Crypto Moonboys wiki guide to Alien Worlds and Trilium (TLM), one of the best-known blockchain game economies connected to WAX.",
+    "url": "/wiki/alien-worlds-tlm.html",
+    "tags": [
+      "alien",
+      "worlds",
+      "tlm",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "characters",
+    "aliases": [],
+    "rank_score": 243,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 6,
+      "mention_count": 0,
+      "category": "characters",
+      "category_priority": 8,
+      "has_description": true,
+      "article_word_count": 955,
+      "keyword_bag_size": 20,
+      "heading_count": 12,
+      "list_count": 2,
+      "internal_link_count": 11,
+      "paragraph_count": 12,
+      "section_count": 9,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 65,
+      "authority_score": 20
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 40,
+      "word_count_points": 48,
+      "keyword_bag_points": 20,
+      "content_quality_points": 71,
+      "authority_points": 34,
+      "final_rank_score": 243,
+      "authority_graph_points": 14
+    },
+    "search_index": {
+      "normalized_title": "alien worlds tlm crypto moonboys wiki",
+      "tokens": [
+        "alien",
+        "worlds",
+        "tlm",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "alien",
+        "worlds",
+        "tlm",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "guide",
+        "to",
+        "and",
+        "trilium",
+        "one",
+        "of",
+        "the",
+        "best",
+        "known",
+        "blockchain",
+        "game",
+        "economies",
+        "connected",
+        "wax"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 4,
+      "outbound_count": 23,
+      "existing_outbound_count": 11,
+      "suggested_outbound_count": 12,
+      "authority": 13.5
     },
     "brand": null
   },
@@ -30339,7 +30054,7 @@
       "category": "nfts-digital-art",
       "category_priority": 4,
       "has_description": true,
-      "article_word_count": 2485,
+      "article_word_count": 2414,
       "keyword_bag_size": 22,
       "heading_count": 18,
       "list_count": 1,
@@ -30411,9 +30126,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 26,
+      "outbound_count": 25,
       "existing_outbound_count": 9,
-      "suggested_outbound_count": 17,
+      "suggested_outbound_count": 16,
       "authority": 4.5
     },
     "brand": null
@@ -30443,7 +30158,7 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 1117,
+      "article_word_count": 1046,
       "keyword_bag_size": 17,
       "heading_count": 12,
       "list_count": 1,
@@ -30500,9 +30215,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 27,
+      "outbound_count": 25,
       "existing_outbound_count": 13,
-      "suggested_outbound_count": 14,
+      "suggested_outbound_count": 12,
       "authority": 6.5
     },
     "brand": null
@@ -30533,7 +30248,7 @@
       "category": "misc",
       "category_priority": 3,
       "has_description": true,
-      "article_word_count": 1537,
+      "article_word_count": 1514,
       "keyword_bag_size": 27,
       "heading_count": 14,
       "list_count": 1,
@@ -30600,9 +30315,104 @@
     },
     "link_score": {
       "inbound_count": 2,
-      "outbound_count": 32,
+      "outbound_count": 31,
       "existing_outbound_count": 9,
-      "suggested_outbound_count": 23,
+      "suggested_outbound_count": 22,
+      "authority": 8.5
+    },
+    "brand": null
+  },
+  {
+    "title": "2025 Metaverse Launch Party",
+    "desc": "The archived 2025 Metaverse Launch Party announcement: community context, preserved registration links and the limits of the surviving event record.",
+    "url": "/wiki/2025-metaverse-launch-party.html",
+    "tags": [
+      "2025",
+      "metaverse",
+      "launch",
+      "party",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [],
+    "rank_score": 240,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 7,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 987,
+      "keyword_bag_size": 21,
+      "heading_count": 10,
+      "list_count": 2,
+      "internal_link_count": 13,
+      "paragraph_count": 13,
+      "section_count": 7,
+      "lore_paragraph_count": 2,
+      "content_quality_score": 69,
+      "authority_score": 20
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 49,
+      "keyword_bag_points": 21,
+      "content_quality_points": 76,
+      "authority_points": 29,
+      "final_rank_score": 240,
+      "authority_graph_points": 9
+    },
+    "search_index": {
+      "normalized_title": "2025 metaverse launch party crypto moonboys wiki",
+      "tokens": [
+        "2025",
+        "metaverse",
+        "launch",
+        "party",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "2025",
+        "metaverse",
+        "launch",
+        "party",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "the",
+        "archived",
+        "announcement",
+        "community",
+        "context",
+        "preserved",
+        "registration",
+        "links",
+        "and",
+        "limits",
+        "of",
+        "surviving",
+        "event",
+        "record",
+        "gkniftyheads",
+        "notice",
+        "vpc2vzvnpm3atzrs6",
+        "proposed",
+        "programme"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 1,
+      "outbound_count": 19,
+      "existing_outbound_count": 13,
+      "suggested_outbound_count": 6,
       "authority": 8.5
     },
     "brand": null
@@ -30864,6 +30674,96 @@
     "brand": null
   },
   {
+    "title": "WUFFI / $WUF",
+    "desc": "Crypto Moonboys wiki guide to WUFFI and $WUF, a multi-chain community coin connected to WAX, Solana, Base and TON.",
+    "url": "/wiki/wuffi.html",
+    "tags": [
+      "wuffi",
+      "wuf",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "wuffi"
+      },
+      {
+        "title": "wuffi wuf crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 240,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 2,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 973,
+      "keyword_bag_size": 18,
+      "heading_count": 13,
+      "list_count": 2,
+      "internal_link_count": 11,
+      "paragraph_count": 13,
+      "section_count": 10,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 65,
+      "authority_score": 20
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 49,
+      "keyword_bag_points": 18,
+      "content_quality_points": 76,
+      "authority_points": 32,
+      "final_rank_score": 240,
+      "authority_graph_points": 12
+    },
+    "search_index": {
+      "normalized_title": "wuffi wuf crypto moonboys wiki",
+      "tokens": [
+        "wuffi",
+        "wuf",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "wuffi",
+        "wuf",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "guide",
+        "to",
+        "and",
+        "a",
+        "multi",
+        "chain",
+        "community",
+        "coin",
+        "connected",
+        "wax",
+        "solana",
+        "base",
+        "ton"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 3,
+      "outbound_count": 23,
+      "existing_outbound_count": 11,
+      "suggested_outbound_count": 12,
+      "authority": 11.5
+    },
+    "brand": null
+  },
+  {
     "title": "👉 BITCOIN KiD TV HEADS 100 ⚡️⚡️⚡️",
     "desc": "👉 BITCOIN KiD TV HEADS 100 ⚡️⚡️⚡️ is an NFT in the gkniftyheads WAX AtomicAssets collection.",
     "url": "/wiki/gkniftyheads-bitcoin-kid-tv-heads-100-776074.html",
@@ -30949,102 +30849,10 @@
     },
     "link_score": {
       "inbound_count": 19,
-      "outbound_count": 37,
+      "outbound_count": 36,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 25,
+      "suggested_outbound_count": 24,
       "authority": 44
-    },
-    "brand": null
-  },
-  {
-    "title": "FGL Token",
-    "desc": "Crypto Moonboys wiki guide to FGL Token, a multi-game Web3 gaming token with WAX roots, Outlaw Troopers, Cosmic Clash and wider FGL portfolio connections.",
-    "url": "/wiki/fgl-token.html",
-    "tags": [
-      "fgl",
-      "token",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "fgl token crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 239,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 924,
-      "keyword_bag_size": 23,
-      "heading_count": 13,
-      "list_count": 2,
-      "internal_link_count": 11,
-      "paragraph_count": 13,
-      "section_count": 10,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 65,
-      "authority_score": 20
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 46,
-      "keyword_bag_points": 23,
-      "content_quality_points": 73,
-      "authority_points": 32,
-      "final_rank_score": 239,
-      "authority_graph_points": 12
-    },
-    "search_index": {
-      "normalized_title": "fgl token crypto moonboys wiki",
-      "tokens": [
-        "fgl",
-        "token",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "fgl",
-        "token",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "guide",
-        "to",
-        "a",
-        "multi",
-        "game",
-        "web3",
-        "gaming",
-        "with",
-        "wax",
-        "roots",
-        "outlaw",
-        "troopers",
-        "cosmic",
-        "clash",
-        "and",
-        "wider",
-        "portfolio",
-        "connections"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 3,
-      "outbound_count": 22,
-      "existing_outbound_count": 11,
-      "suggested_outbound_count": 11,
-      "authority": 11.5
     },
     "brand": null
   },
@@ -31135,6 +30943,98 @@
       "existing_outbound_count": 11,
       "suggested_outbound_count": 5,
       "authority": 9.5
+    },
+    "brand": null
+  },
+  {
+    "title": "FGL Token",
+    "desc": "Crypto Moonboys wiki guide to FGL Token, a multi-game Web3 gaming token with WAX roots, Outlaw Troopers, Cosmic Clash and wider FGL portfolio connections.",
+    "url": "/wiki/fgl-token.html",
+    "tags": [
+      "fgl",
+      "token",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "fgl token crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 238,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 890,
+      "keyword_bag_size": 23,
+      "heading_count": 13,
+      "list_count": 2,
+      "internal_link_count": 11,
+      "paragraph_count": 13,
+      "section_count": 10,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 65,
+      "authority_score": 20
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 45,
+      "keyword_bag_points": 23,
+      "content_quality_points": 73,
+      "authority_points": 32,
+      "final_rank_score": 238,
+      "authority_graph_points": 12
+    },
+    "search_index": {
+      "normalized_title": "fgl token crypto moonboys wiki",
+      "tokens": [
+        "fgl",
+        "token",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "fgl",
+        "token",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "guide",
+        "to",
+        "a",
+        "multi",
+        "game",
+        "web3",
+        "gaming",
+        "with",
+        "wax",
+        "roots",
+        "outlaw",
+        "troopers",
+        "cosmic",
+        "clash",
+        "and",
+        "wider",
+        "portfolio",
+        "connections"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 3,
+      "outbound_count": 21,
+      "existing_outbound_count": 11,
+      "suggested_outbound_count": 10,
+      "authority": 11.5
     },
     "brand": null
   },
@@ -31233,6 +31133,106 @@
       "canonical_slug": "graffpunks-collection",
       "parent_concept": "graffpunks"
     }
+  },
+  {
+    "title": "EXYBOY",
+    "desc": "EXYBOY is an archived XRPL token reference in the Graffiti Kings ecosystem, with its historical mention distinguished from unverified issuer, market and utility details.",
+    "url": "/wiki/exyboy.html",
+    "tags": [
+      "exyboy",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "tokens",
+    "aliases": [
+      {
+        "title": "exyboy crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 237,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 4,
+      "mention_count": 0,
+      "category": "tokens",
+      "category_priority": 6,
+      "has_description": true,
+      "article_word_count": 946,
+      "keyword_bag_size": 27,
+      "heading_count": 11,
+      "list_count": 1,
+      "internal_link_count": 9,
+      "paragraph_count": 15,
+      "section_count": 8,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 69,
+      "authority_score": 18
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 30,
+      "word_count_points": 47,
+      "keyword_bag_points": 27,
+      "content_quality_points": 76,
+      "authority_points": 27,
+      "final_rank_score": 237,
+      "authority_graph_points": 9
+    },
+    "search_index": {
+      "normalized_title": "exyboy crypto moonboys wiki",
+      "tokens": [
+        "exyboy",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "exyboy",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "is",
+        "an",
+        "archived",
+        "xrpl",
+        "token",
+        "reference",
+        "in",
+        "the",
+        "graffiti",
+        "kings",
+        "ecosystem",
+        "with",
+        "its",
+        "historical",
+        "mention",
+        "distinguished",
+        "from",
+        "unverified",
+        "issuer",
+        "market",
+        "and",
+        "utility",
+        "details",
+        "account",
+        "currency",
+        "identifier",
+        "june",
+        "2025",
+        "overview"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 2,
+      "outbound_count": 35,
+      "existing_outbound_count": 9,
+      "suggested_outbound_count": 26,
+      "authority": 8.5
+    },
+    "brand": null
   },
   {
     "title": "Hodl Moonboys NFT Collection",
@@ -31746,7 +31746,7 @@
       "category": "misc",
       "category_priority": 3,
       "has_description": true,
-      "article_word_count": 1581,
+      "article_word_count": 1510,
       "keyword_bag_size": 24,
       "heading_count": 14,
       "list_count": 1,
@@ -31811,104 +31811,6 @@
         "boba",
         "run",
         "jabba"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 15,
-      "existing_outbound_count": 9,
-      "suggested_outbound_count": 6,
-      "authority": 4.5
-    },
-    "brand": null
-  },
-  {
-    "title": "Rust2Riches",
-    "desc": "An archive reference for Rust2Riches at rust.chadlabs.io, preserving its recorded CHAD Labs and WAX context without asserting undocumented mechanics or current availability.",
-    "url": "/wiki/rust2riches.html",
-    "tags": [
-      "rust2riches",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "rust2riches crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 232,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 4,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 657,
-      "keyword_bag_size": 27,
-      "heading_count": 9,
-      "list_count": 1,
-      "internal_link_count": 9,
-      "paragraph_count": 11,
-      "section_count": 6,
-      "lore_paragraph_count": 8,
-      "content_quality_score": 77,
-      "authority_score": 18
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 33,
-      "keyword_bag_points": 27,
-      "content_quality_points": 84,
-      "authority_points": 23,
-      "final_rank_score": 232,
-      "authority_graph_points": 5
-    },
-    "search_index": {
-      "normalized_title": "rust2riches crypto moonboys wiki",
-      "tokens": [
-        "rust2riches",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "rust2riches",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "an",
-        "archive",
-        "reference",
-        "for",
-        "at",
-        "rust",
-        "chadlabs",
-        "io",
-        "preserving",
-        "its",
-        "recorded",
-        "chad",
-        "labs",
-        "and",
-        "wax",
-        "context",
-        "without",
-        "asserting",
-        "undocumented",
-        "mechanics",
-        "or",
-        "current",
-        "availability",
-        "app",
-        "project",
-        "endpoint",
-        "provenance"
       ]
     },
     "link_score": {
@@ -32094,9 +31996,9 @@
     },
     "link_score": {
       "inbound_count": 17,
-      "outbound_count": 36,
+      "outbound_count": 35,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 24,
+      "suggested_outbound_count": 23,
       "authority": 40
     },
     "brand": null
@@ -32664,9 +32566,9 @@
     },
     "link_score": {
       "inbound_count": 10,
-      "outbound_count": 41,
+      "outbound_count": 40,
       "existing_outbound_count": 14,
-      "suggested_outbound_count": 27,
+      "suggested_outbound_count": 26,
       "authority": 27
     },
     "brand": null
@@ -32944,9 +32846,9 @@
     },
     "link_score": {
       "inbound_count": 15,
-      "outbound_count": 36,
+      "outbound_count": 35,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 24,
+      "suggested_outbound_count": 23,
       "authority": 36
     },
     "brand": null
@@ -33302,97 +33204,6 @@
       "existing_outbound_count": 12,
       "suggested_outbound_count": 11,
       "authority": 30
-    },
-    "brand": null
-  },
-  {
-    "title": "DeFi Mining",
-    "desc": "Crypto Moonboys wiki guide to DeFi Mining, a WAX blockchain mining-simulation project with NFT rigs, DMT rewards, staking and DePIN-style mechanics.",
-    "url": "/wiki/defi-mining.html",
-    "tags": [
-      "defi",
-      "mining",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "defi mining crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 224,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 695,
-      "keyword_bag_size": 22,
-      "heading_count": 12,
-      "list_count": 2,
-      "internal_link_count": 9,
-      "paragraph_count": 9,
-      "section_count": 9,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 61,
-      "authority_score": 20
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 35,
-      "keyword_bag_points": 22,
-      "content_quality_points": 69,
-      "authority_points": 33,
-      "final_rank_score": 224,
-      "authority_graph_points": 13
-    },
-    "search_index": {
-      "normalized_title": "defi mining crypto moonboys wiki",
-      "tokens": [
-        "defi",
-        "mining",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "defi",
-        "mining",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "guide",
-        "to",
-        "a",
-        "wax",
-        "blockchain",
-        "simulation",
-        "project",
-        "with",
-        "nft",
-        "rigs",
-        "dmt",
-        "rewards",
-        "staking",
-        "and",
-        "depin",
-        "style",
-        "mechanics"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 4,
-      "outbound_count": 27,
-      "existing_outbound_count": 9,
-      "suggested_outbound_count": 18,
-      "authority": 12.5
     },
     "brand": null
   },
@@ -33854,97 +33665,6 @@
     "brand": null
   },
   {
-    "title": "PMSL Token",
-    "desc": "PMSL Token companion: issuer identity, the archived XRPL association and the difference between a proposed reward and a current entitlement.",
-    "url": "/wiki/pmsl-token.html",
-    "tags": [
-      "pmsl",
-      "token",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "pmsl token crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 222,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 656,
-      "keyword_bag_size": 20,
-      "heading_count": 10,
-      "list_count": 1,
-      "internal_link_count": 12,
-      "paragraph_count": 10,
-      "section_count": 7,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 65,
-      "authority_score": 18
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 33,
-      "keyword_bag_points": 20,
-      "content_quality_points": 73,
-      "authority_points": 31,
-      "final_rank_score": 222,
-      "authority_graph_points": 13
-    },
-    "search_index": {
-      "normalized_title": "pmsl token crypto moonboys wiki",
-      "tokens": [
-        "pmsl",
-        "token",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "pmsl",
-        "token",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "companion",
-        "issuer",
-        "identity",
-        "the",
-        "archived",
-        "xrpl",
-        "association",
-        "and",
-        "difference",
-        "between",
-        "a",
-        "proposed",
-        "reward",
-        "current",
-        "entitlement",
-        "record",
-        "proposal"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 4,
-      "outbound_count": 25,
-      "existing_outbound_count": 10,
-      "suggested_outbound_count": 15,
-      "authority": 13
-    },
-    "brand": null
-  },
-  {
     "title": "👉👑 BITCOIN KiD ROYALE ⚡️⚡️⚡️",
     "desc": "👉👑 BITCOIN KiD ROYALE ⚡️⚡️⚡️ is an NFT in the gkniftyheads WAX AtomicAssets collection.",
     "url": "/wiki/gkniftyheads-bitcoin-kid-royale-776145.html",
@@ -34024,102 +33744,101 @@
     },
     "link_score": {
       "inbound_count": 12,
-      "outbound_count": 36,
+      "outbound_count": 35,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 24,
+      "suggested_outbound_count": 23,
       "authority": 30
     },
     "brand": null
   },
   {
-    "title": "Gang Signs (Card Game)",
-    "desc": "Gang Signs Card Game: the Bone Idol Ink archive association, card-battler premise and relationship to the fuller Gang Signs lore reference.",
-    "url": "/wiki/gang-signs-card-game.html",
+    "title": "DeFi Mining",
+    "desc": "Crypto Moonboys wiki guide to DeFi Mining, a WAX blockchain mining-simulation project with NFT rigs, DMT rewards, staking and DePIN-style mechanics.",
+    "url": "/wiki/defi-mining.html",
     "tags": [
-      "gang",
-      "signs",
-      "card",
-      "game",
+      "defi",
+      "mining",
       "crypto",
       "moonboys",
       "wiki"
     ],
     "category": "factions",
-    "aliases": [],
+    "aliases": [
+      {
+        "title": "defi mining crypto moonboys wiki"
+      }
+    ],
     "rank_score": 221,
     "rank_signals": {
       "is_canonical": true,
-      "alias_count": 0,
-      "tag_count": 7,
+      "alias_count": 1,
+      "tag_count": 5,
       "mention_count": 0,
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 751,
-      "keyword_bag_size": 21,
-      "heading_count": 11,
-      "list_count": 1,
-      "internal_link_count": 12,
-      "paragraph_count": 12,
-      "section_count": 8,
+      "article_word_count": 648,
+      "keyword_bag_size": 22,
+      "heading_count": 12,
+      "list_count": 2,
+      "internal_link_count": 9,
+      "paragraph_count": 9,
+      "section_count": 9,
       "lore_paragraph_count": 1,
-      "content_quality_score": 65,
-      "authority_score": 18
+      "content_quality_score": 61,
+      "authority_score": 20
     },
     "rank_diagnostics": {
       "canonical_points": 20,
       "description_points": 10,
       "category_points": 35,
-      "word_count_points": 38,
-      "keyword_bag_points": 21,
-      "content_quality_points": 72,
-      "authority_points": 25,
+      "word_count_points": 32,
+      "keyword_bag_points": 22,
+      "content_quality_points": 69,
+      "authority_points": 33,
       "final_rank_score": 221,
-      "authority_graph_points": 7
+      "authority_graph_points": 13
     },
     "search_index": {
-      "normalized_title": "gang signs card game crypto moonboys wiki",
+      "normalized_title": "defi mining crypto moonboys wiki",
       "tokens": [
-        "gang",
-        "signs",
-        "card",
-        "game",
+        "defi",
+        "mining",
         "crypto",
         "moonboys",
         "wiki"
       ],
       "keyword_bag": [
-        "gang",
-        "signs",
-        "card",
-        "game",
+        "defi",
+        "mining",
         "crypto",
         "moonboys",
         "wiki",
-        "the",
-        "bone",
-        "idol",
-        "ink",
-        "archive",
-        "association",
-        "battler",
-        "premise",
-        "and",
-        "relationship",
+        "guide",
         "to",
-        "fuller",
-        "lore",
-        "reference",
-        "rules",
-        "concept"
+        "a",
+        "wax",
+        "blockchain",
+        "simulation",
+        "project",
+        "with",
+        "nft",
+        "rigs",
+        "dmt",
+        "rewards",
+        "staking",
+        "and",
+        "depin",
+        "style",
+        "mechanics"
       ]
     },
     "link_score": {
-      "inbound_count": 1,
-      "outbound_count": 15,
-      "existing_outbound_count": 10,
-      "suggested_outbound_count": 5,
-      "authority": 7
+      "inbound_count": 4,
+      "outbound_count": 25,
+      "existing_outbound_count": 9,
+      "suggested_outbound_count": 16,
+      "authority": 12.5
     },
     "brand": null
   },
@@ -34216,12 +33935,12 @@
     "brand": null
   },
   {
-    "title": "Alcor Exchange",
-    "desc": "Crypto Moonboys wiki guide to Alcor Exchange, a decentralized exchange and DeFi trading terminal used by WAX ecosystem traders.",
-    "url": "/wiki/alcor-exchange.html",
+    "title": "PMSL Token",
+    "desc": "PMSL Token companion: issuer identity, the archived XRPL association and the difference between a proposed reward and a current entitlement.",
+    "url": "/wiki/pmsl-token.html",
     "tags": [
-      "alcor",
-      "exchange",
+      "pmsl",
+      "token",
       "crypto",
       "moonboys",
       "wiki"
@@ -34229,7 +33948,7 @@
     "category": "factions",
     "aliases": [
       {
-        "title": "alcor exchange crypto moonboys wiki"
+        "title": "pmsl token crypto moonboys wiki"
       }
     ],
     "rank_score": 220,
@@ -34241,64 +33960,68 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 710,
-      "keyword_bag_size": 18,
-      "heading_count": 11,
-      "list_count": 2,
+      "article_word_count": 619,
+      "keyword_bag_size": 20,
+      "heading_count": 10,
+      "list_count": 1,
       "internal_link_count": 12,
-      "paragraph_count": 9,
-      "section_count": 8,
+      "paragraph_count": 10,
+      "section_count": 7,
       "lore_paragraph_count": 1,
-      "content_quality_score": 61,
-      "authority_score": 20
+      "content_quality_score": 65,
+      "authority_score": 18
     },
     "rank_diagnostics": {
       "canonical_points": 20,
       "description_points": 10,
       "category_points": 35,
-      "word_count_points": 36,
-      "keyword_bag_points": 18,
-      "content_quality_points": 69,
-      "authority_points": 32,
+      "word_count_points": 31,
+      "keyword_bag_points": 20,
+      "content_quality_points": 73,
+      "authority_points": 31,
       "final_rank_score": 220,
-      "authority_graph_points": 12
+      "authority_graph_points": 13
     },
     "search_index": {
-      "normalized_title": "alcor exchange crypto moonboys wiki",
+      "normalized_title": "pmsl token crypto moonboys wiki",
       "tokens": [
-        "alcor",
-        "exchange",
+        "pmsl",
+        "token",
         "crypto",
         "moonboys",
         "wiki"
       ],
       "keyword_bag": [
-        "alcor",
-        "exchange",
+        "pmsl",
+        "token",
         "crypto",
         "moonboys",
         "wiki",
-        "guide",
-        "to",
-        "a",
-        "decentralized",
+        "companion",
+        "issuer",
+        "identity",
+        "the",
+        "archived",
+        "xrpl",
+        "association",
         "and",
-        "defi",
-        "trading",
-        "terminal",
-        "used",
-        "by",
-        "wax",
-        "ecosystem",
-        "traders"
+        "difference",
+        "between",
+        "a",
+        "proposed",
+        "reward",
+        "current",
+        "entitlement",
+        "record",
+        "proposal"
       ]
     },
     "link_score": {
-      "inbound_count": 3,
-      "outbound_count": 24,
-      "existing_outbound_count": 12,
-      "suggested_outbound_count": 12,
-      "authority": 12
+      "inbound_count": 4,
+      "outbound_count": 25,
+      "existing_outbound_count": 10,
+      "suggested_outbound_count": 15,
+      "authority": 13
     },
     "brand": null
   },
@@ -34669,96 +34392,6 @@
     "brand": null
   },
   {
-    "title": "XRP Ledger",
-    "desc": "Crypto Moonboys wiki guide to the XRP Ledger, XRPL accounts, XRP, trust lines, issued tokens, DEX trading, NFTs and meme-token culture.",
-    "url": "/wiki/xrp-ledger.html",
-    "tags": [
-      "xrp",
-      "ledger",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "xrp ledger crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 219,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 669,
-      "keyword_bag_size": 21,
-      "heading_count": 10,
-      "list_count": 1,
-      "internal_link_count": 9,
-      "paragraph_count": 7,
-      "section_count": 7,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 61,
-      "authority_score": 18
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 33,
-      "keyword_bag_points": 21,
-      "content_quality_points": 69,
-      "authority_points": 31,
-      "final_rank_score": 219,
-      "authority_graph_points": 13
-    },
-    "search_index": {
-      "normalized_title": "xrp ledger crypto moonboys wiki",
-      "tokens": [
-        "xrp",
-        "ledger",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "xrp",
-        "ledger",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "guide",
-        "to",
-        "the",
-        "xrpl",
-        "accounts",
-        "trust",
-        "lines",
-        "issued",
-        "tokens",
-        "dex",
-        "trading",
-        "nfts",
-        "and",
-        "meme",
-        "token",
-        "culture"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 4,
-      "outbound_count": 29,
-      "existing_outbound_count": 9,
-      "suggested_outbound_count": 20,
-      "authority": 12.5
-    },
-    "brand": null
-  },
-  {
     "title": "🍒 Altcoin Avenger 💋",
     "desc": "🍒 Altcoin Avenger 💋 is an NFT in the gkniftyheads WAX AtomicAssets collection.",
     "url": "/wiki/gkniftyheads-altcoin-avenger-783406.html",
@@ -34846,11 +34479,103 @@
     "brand": null
   },
   {
-    "title": "TAGZcoin",
-    "desc": "TAGZcoin: its XRPL archive record, graffiti and on-chain mural proposals, and the limits of current asset identification.",
-    "url": "/wiki/tagzcoin.html",
+    "title": "Gang Signs (Card Game)",
+    "desc": "Gang Signs Card Game: the Bone Idol Ink archive association, card-battler premise and relationship to the fuller Gang Signs lore reference.",
+    "url": "/wiki/gang-signs-card-game.html",
     "tags": [
-      "tagzcoin",
+      "gang",
+      "signs",
+      "card",
+      "game",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [],
+    "rank_score": 218,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 7,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 693,
+      "keyword_bag_size": 21,
+      "heading_count": 11,
+      "list_count": 1,
+      "internal_link_count": 12,
+      "paragraph_count": 12,
+      "section_count": 8,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 65,
+      "authority_score": 18
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 35,
+      "keyword_bag_points": 21,
+      "content_quality_points": 72,
+      "authority_points": 25,
+      "final_rank_score": 218,
+      "authority_graph_points": 7
+    },
+    "search_index": {
+      "normalized_title": "gang signs card game crypto moonboys wiki",
+      "tokens": [
+        "gang",
+        "signs",
+        "card",
+        "game",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "gang",
+        "signs",
+        "card",
+        "game",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "the",
+        "bone",
+        "idol",
+        "ink",
+        "archive",
+        "association",
+        "battler",
+        "premise",
+        "and",
+        "relationship",
+        "to",
+        "fuller",
+        "lore",
+        "reference",
+        "rules",
+        "concept"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 1,
+      "outbound_count": 14,
+      "existing_outbound_count": 10,
+      "suggested_outbound_count": 4,
+      "authority": 7
+    },
+    "brand": null
+  },
+  {
+    "title": "Rust2Riches",
+    "desc": "An archive reference for Rust2Riches at rust.chadlabs.io, preserving its recorded CHAD Labs and WAX context without asserting undocumented mechanics or current availability.",
+    "url": "/wiki/rust2riches.html",
+    "tags": [
+      "rust2riches",
       "crypto",
       "moonboys",
       "wiki"
@@ -34858,7 +34583,7 @@
     "category": "factions",
     "aliases": [
       {
-        "title": "tagzcoin crypto moonboys wiki"
+        "title": "rust2riches crypto moonboys wiki"
       }
     ],
     "rank_score": 218,
@@ -34870,155 +34595,76 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 736,
-      "keyword_bag_size": 20,
-      "heading_count": 10,
+      "article_word_count": 586,
+      "keyword_bag_size": 27,
+      "heading_count": 9,
       "list_count": 1,
-      "internal_link_count": 13,
-      "paragraph_count": 13,
-      "section_count": 7,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 65,
-      "authority_score": 18
+      "internal_link_count": 9,
+      "paragraph_count": 11,
+      "section_count": 6,
+      "lore_paragraph_count": 8,
+      "content_quality_score": 69,
+      "authority_score": 16
     },
     "rank_diagnostics": {
       "canonical_points": 20,
       "description_points": 10,
       "category_points": 35,
-      "word_count_points": 37,
-      "keyword_bag_points": 20,
-      "content_quality_points": 72,
-      "authority_points": 24,
+      "word_count_points": 29,
+      "keyword_bag_points": 27,
+      "content_quality_points": 76,
+      "authority_points": 21,
       "final_rank_score": 218,
-      "authority_graph_points": 6
+      "authority_graph_points": 5
     },
     "search_index": {
-      "normalized_title": "tagzcoin crypto moonboys wiki",
+      "normalized_title": "rust2riches crypto moonboys wiki",
       "tokens": [
-        "tagzcoin",
+        "rust2riches",
         "crypto",
         "moonboys",
         "wiki"
       ],
       "keyword_bag": [
-        "tagzcoin",
+        "rust2riches",
         "crypto",
         "moonboys",
         "wiki",
-        "its",
-        "xrpl",
+        "an",
         "archive",
-        "record",
-        "graffiti",
+        "reference",
+        "for",
+        "at",
+        "rust",
+        "chadlabs",
+        "io",
+        "preserving",
+        "its",
+        "recorded",
+        "chad",
+        "labs",
         "and",
-        "on",
-        "chain",
-        "mural",
-        "proposals",
-        "the",
-        "limits",
-        "of",
+        "wax",
+        "context",
+        "without",
+        "asserting",
+        "undocumented",
+        "mechanics",
+        "or",
         "current",
-        "asset",
-        "identification",
-        "proposal",
-        "walls",
-        "as",
-        "wallets",
-        "murals"
+        "availability",
+        "app",
+        "project",
+        "endpoint",
+        "provenance"
       ]
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 28,
-      "existing_outbound_count": 11,
-      "suggested_outbound_count": 17,
-      "authority": 5.5
-    },
-    "brand": null
-  },
-  {
-    "title": "WAX PEPE",
-    "desc": "Crypto Moonboys wiki guide to WAX PEPE, a WAX ecosystem meme-token/project profile referenced through wax-pepe.vip.",
-    "url": "/wiki/wax-pepe.html",
-    "tags": [
-      "wax",
-      "pepe",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "wax pepe crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 218,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 668,
-      "keyword_bag_size": 16,
-      "heading_count": 12,
-      "list_count": 2,
-      "internal_link_count": 10,
-      "paragraph_count": 10,
-      "section_count": 9,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 65,
-      "authority_score": 20
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 33,
-      "keyword_bag_points": 16,
-      "content_quality_points": 73,
-      "authority_points": 31,
-      "final_rank_score": 218,
-      "authority_graph_points": 11
-    },
-    "search_index": {
-      "normalized_title": "wax pepe crypto moonboys wiki",
-      "tokens": [
-        "wax",
-        "pepe",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "wax",
-        "pepe",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "guide",
-        "to",
-        "a",
-        "ecosystem",
-        "meme",
-        "token",
-        "project",
-        "profile",
-        "referenced",
-        "through",
-        "vip"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 3,
-      "outbound_count": 33,
-      "existing_outbound_count": 10,
-      "suggested_outbound_count": 23,
-      "authority": 11
+      "outbound_count": 11,
+      "existing_outbound_count": 9,
+      "suggested_outbound_count": 2,
+      "authority": 4.5
     },
     "brand": null
   },
@@ -35563,9 +35209,9 @@
     },
     "link_score": {
       "inbound_count": 10,
-      "outbound_count": 36,
+      "outbound_count": 35,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 24,
+      "suggested_outbound_count": 23,
       "authority": 26
     },
     "brand": null
@@ -35664,6 +35310,183 @@
       "existing_outbound_count": 12,
       "suggested_outbound_count": 36,
       "authority": 36
+    },
+    "brand": null
+  },
+  {
+    "title": "Alcor Exchange",
+    "desc": "Crypto Moonboys wiki guide to Alcor Exchange, a decentralized exchange and DeFi trading terminal used by WAX ecosystem traders.",
+    "url": "/wiki/alcor-exchange.html",
+    "tags": [
+      "alcor",
+      "exchange",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "alcor exchange crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 217,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 652,
+      "keyword_bag_size": 18,
+      "heading_count": 11,
+      "list_count": 2,
+      "internal_link_count": 12,
+      "paragraph_count": 9,
+      "section_count": 8,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 61,
+      "authority_score": 20
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 33,
+      "keyword_bag_points": 18,
+      "content_quality_points": 69,
+      "authority_points": 32,
+      "final_rank_score": 217,
+      "authority_graph_points": 12
+    },
+    "search_index": {
+      "normalized_title": "alcor exchange crypto moonboys wiki",
+      "tokens": [
+        "alcor",
+        "exchange",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "alcor",
+        "exchange",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "guide",
+        "to",
+        "a",
+        "decentralized",
+        "and",
+        "defi",
+        "trading",
+        "terminal",
+        "used",
+        "by",
+        "wax",
+        "ecosystem",
+        "traders"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 3,
+      "outbound_count": 22,
+      "existing_outbound_count": 12,
+      "suggested_outbound_count": 10,
+      "authority": 12
+    },
+    "brand": null
+  },
+  {
+    "title": "XRP Ledger",
+    "desc": "Crypto Moonboys wiki guide to the XRP Ledger, XRPL accounts, XRP, trust lines, issued tokens, DEX trading, NFTs and meme-token culture.",
+    "url": "/wiki/xrp-ledger.html",
+    "tags": [
+      "xrp",
+      "ledger",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "xrp ledger crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 217,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 611,
+      "keyword_bag_size": 21,
+      "heading_count": 10,
+      "list_count": 1,
+      "internal_link_count": 9,
+      "paragraph_count": 7,
+      "section_count": 7,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 61,
+      "authority_score": 18
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 31,
+      "keyword_bag_points": 21,
+      "content_quality_points": 69,
+      "authority_points": 31,
+      "final_rank_score": 217,
+      "authority_graph_points": 13
+    },
+    "search_index": {
+      "normalized_title": "xrp ledger crypto moonboys wiki",
+      "tokens": [
+        "xrp",
+        "ledger",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "xrp",
+        "ledger",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "guide",
+        "to",
+        "the",
+        "xrpl",
+        "accounts",
+        "trust",
+        "lines",
+        "issued",
+        "tokens",
+        "dex",
+        "trading",
+        "nfts",
+        "and",
+        "meme",
+        "token",
+        "culture"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 4,
+      "outbound_count": 27,
+      "existing_outbound_count": 9,
+      "suggested_outbound_count": 18,
+      "authority": 12.5
     },
     "brand": null
   },
@@ -35857,102 +35680,11 @@
     "brand": null
   },
   {
-    "title": "Pixil Mini",
-    "desc": "Crypto Moonboys wiki guide to Pixil Mini, a WAX blockchain RPG with generated minis, stats, areas, game passes and NFT marketplace links.",
-    "url": "/wiki/pixil-mini.html",
+    "title": "TAGZcoin",
+    "desc": "TAGZcoin: its XRPL archive record, graffiti and on-chain mural proposals, and the limits of current asset identification.",
+    "url": "/wiki/tagzcoin.html",
     "tags": [
-      "pixil",
-      "mini",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "characters",
-    "aliases": [
-      {
-        "title": "pixil mini crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 216,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "characters",
-      "category_priority": 8,
-      "has_description": true,
-      "article_word_count": 608,
-      "keyword_bag_size": 22,
-      "heading_count": 11,
-      "list_count": 2,
-      "internal_link_count": 9,
-      "paragraph_count": 7,
-      "section_count": 8,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 61,
-      "authority_score": 20
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 40,
-      "word_count_points": 30,
-      "keyword_bag_points": 22,
-      "content_quality_points": 69,
-      "authority_points": 25,
-      "final_rank_score": 216,
-      "authority_graph_points": 5
-    },
-    "search_index": {
-      "normalized_title": "pixil mini crypto moonboys wiki",
-      "tokens": [
-        "pixil",
-        "mini",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "pixil",
-        "mini",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "guide",
-        "to",
-        "a",
-        "wax",
-        "blockchain",
-        "rpg",
-        "with",
-        "generated",
-        "minis",
-        "stats",
-        "areas",
-        "game",
-        "passes",
-        "and",
-        "nft",
-        "marketplace",
-        "links"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 24,
-      "existing_outbound_count": 9,
-      "suggested_outbound_count": 15,
-      "authority": 4.5
-    },
-    "brand": null
-  },
-  {
-    "title": "TacoSwap",
-    "desc": "Crypto Moonboys wiki guide to TacoSwap and the Taco Crypto DeFi layer around WAX ecosystem swaps, liquidity and token trading.",
-    "url": "/wiki/tacoswap.html",
-    "tags": [
-      "tacoswap",
+      "tagzcoin",
       "crypto",
       "moonboys",
       "wiki"
@@ -35960,7 +35692,7 @@
     "category": "factions",
     "aliases": [
       {
-        "title": "tacoswap crypto moonboys wiki"
+        "title": "tagzcoin crypto moonboys wiki"
       }
     ],
     "rank_score": 216,
@@ -35972,63 +35704,155 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 716,
-      "keyword_bag_size": 18,
-      "heading_count": 11,
+      "article_word_count": 690,
+      "keyword_bag_size": 20,
+      "heading_count": 10,
+      "list_count": 1,
+      "internal_link_count": 13,
+      "paragraph_count": 13,
+      "section_count": 7,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 65,
+      "authority_score": 18
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 35,
+      "keyword_bag_points": 20,
+      "content_quality_points": 72,
+      "authority_points": 24,
+      "final_rank_score": 216,
+      "authority_graph_points": 6
+    },
+    "search_index": {
+      "normalized_title": "tagzcoin crypto moonboys wiki",
+      "tokens": [
+        "tagzcoin",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "tagzcoin",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "its",
+        "xrpl",
+        "archive",
+        "record",
+        "graffiti",
+        "and",
+        "on",
+        "chain",
+        "mural",
+        "proposals",
+        "the",
+        "limits",
+        "of",
+        "current",
+        "asset",
+        "identification",
+        "proposal",
+        "walls",
+        "as",
+        "wallets",
+        "murals"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 26,
+      "existing_outbound_count": 11,
+      "suggested_outbound_count": 15,
+      "authority": 5.5
+    },
+    "brand": null
+  },
+  {
+    "title": "WAX PEPE",
+    "desc": "Crypto Moonboys wiki guide to WAX PEPE, a WAX ecosystem meme-token/project profile referenced through wax-pepe.vip.",
+    "url": "/wiki/wax-pepe.html",
+    "tags": [
+      "wax",
+      "pepe",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "wax pepe crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 216,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 621,
+      "keyword_bag_size": 16,
+      "heading_count": 12,
       "list_count": 2,
       "internal_link_count": 10,
-      "paragraph_count": 9,
-      "section_count": 8,
+      "paragraph_count": 10,
+      "section_count": 9,
       "lore_paragraph_count": 1,
-      "content_quality_score": 61,
+      "content_quality_score": 65,
       "authority_score": 20
     },
     "rank_diagnostics": {
       "canonical_points": 20,
       "description_points": 10,
       "category_points": 35,
-      "word_count_points": 36,
-      "keyword_bag_points": 18,
-      "content_quality_points": 68,
-      "authority_points": 29,
+      "word_count_points": 31,
+      "keyword_bag_points": 16,
+      "content_quality_points": 73,
+      "authority_points": 31,
       "final_rank_score": 216,
-      "authority_graph_points": 9
+      "authority_graph_points": 11
     },
     "search_index": {
-      "normalized_title": "tacoswap crypto moonboys wiki",
+      "normalized_title": "wax pepe crypto moonboys wiki",
       "tokens": [
-        "tacoswap",
+        "wax",
+        "pepe",
         "crypto",
         "moonboys",
         "wiki"
       ],
       "keyword_bag": [
-        "tacoswap",
+        "wax",
+        "pepe",
         "crypto",
         "moonboys",
         "wiki",
         "guide",
         "to",
-        "and",
-        "the",
-        "taco",
-        "defi",
-        "layer",
-        "around",
-        "wax",
+        "a",
         "ecosystem",
-        "swaps",
-        "liquidity",
+        "meme",
         "token",
-        "trading"
+        "project",
+        "profile",
+        "referenced",
+        "through",
+        "vip"
       ]
     },
     "link_score": {
-      "inbound_count": 2,
-      "outbound_count": 34,
+      "inbound_count": 3,
+      "outbound_count": 31,
       "existing_outbound_count": 10,
-      "suggested_outbound_count": 24,
-      "authority": 9
+      "suggested_outbound_count": 21,
+      "authority": 11
     },
     "brand": null
   },
@@ -36486,9 +36310,9 @@
     },
     "link_score": {
       "inbound_count": 2,
-      "outbound_count": 44,
+      "outbound_count": 43,
       "existing_outbound_count": 24,
-      "suggested_outbound_count": 20,
+      "suggested_outbound_count": 19,
       "authority": 16
     },
     "brand": null
@@ -36667,6 +36491,91 @@
       "existing_outbound_count": 12,
       "suggested_outbound_count": 9,
       "authority": 46
+    },
+    "brand": null
+  },
+  {
+    "title": "TacoSwap",
+    "desc": "Crypto Moonboys wiki guide to TacoSwap and the Taco Crypto DeFi layer around WAX ecosystem swaps, liquidity and token trading.",
+    "url": "/wiki/tacoswap.html",
+    "tags": [
+      "tacoswap",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "tacoswap crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 212,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 4,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 645,
+      "keyword_bag_size": 18,
+      "heading_count": 11,
+      "list_count": 2,
+      "internal_link_count": 10,
+      "paragraph_count": 9,
+      "section_count": 8,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 61,
+      "authority_score": 20
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 32,
+      "keyword_bag_points": 18,
+      "content_quality_points": 68,
+      "authority_points": 29,
+      "final_rank_score": 212,
+      "authority_graph_points": 9
+    },
+    "search_index": {
+      "normalized_title": "tacoswap crypto moonboys wiki",
+      "tokens": [
+        "tacoswap",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "tacoswap",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "guide",
+        "to",
+        "and",
+        "the",
+        "taco",
+        "defi",
+        "layer",
+        "around",
+        "wax",
+        "ecosystem",
+        "swaps",
+        "liquidity",
+        "token",
+        "trading"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 2,
+      "outbound_count": 31,
+      "existing_outbound_count": 10,
+      "suggested_outbound_count": 21,
+      "authority": 9
     },
     "brand": null
   },
@@ -37485,9 +37394,9 @@
     },
     "link_score": {
       "inbound_count": 14,
-      "outbound_count": 41,
+      "outbound_count": 40,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 29,
+      "suggested_outbound_count": 28,
       "authority": 34
     },
     "brand": null
@@ -37831,9 +37740,9 @@
     },
     "link_score": {
       "inbound_count": 5,
-      "outbound_count": 35,
+      "outbound_count": 34,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 23,
+      "suggested_outbound_count": 22,
       "authority": 16
     },
     "brand": null
@@ -38108,20 +38017,20 @@
     "brand": null
   },
   {
-    "title": "Jillian Godsil",
-    "desc": "Jillian Godsil in the Crypto Moonboys record: a blockchain reporter and writer, with that recognition separated from unsupported design or governance claims.",
-    "url": "/wiki/jillian-godsil.html",
+    "title": "Pixil Mini",
+    "desc": "Crypto Moonboys wiki guide to Pixil Mini, a WAX blockchain RPG with generated minis, stats, areas, game passes and NFT marketplace links.",
+    "url": "/wiki/pixil-mini.html",
     "tags": [
-      "jillian",
-      "godsil",
+      "pixil",
+      "mini",
       "crypto",
       "moonboys",
       "wiki"
     ],
-    "category": "misc",
+    "category": "characters",
     "aliases": [
       {
-        "title": "jillian godsil crypto moonboys wiki"
+        "title": "pixil mini crypto moonboys wiki"
       }
     ],
     "rank_score": 204,
@@ -38130,75 +38039,70 @@
       "alias_count": 1,
       "tag_count": 5,
       "mention_count": 0,
-      "category": "misc",
-      "category_priority": 3,
+      "category": "characters",
+      "category_priority": 8,
       "has_description": true,
-      "article_word_count": 806,
-      "keyword_bag_size": 23,
-      "heading_count": 10,
-      "list_count": 1,
+      "article_word_count": 568,
+      "keyword_bag_size": 22,
+      "heading_count": 11,
+      "list_count": 2,
       "internal_link_count": 9,
-      "paragraph_count": 11,
-      "section_count": 7,
+      "paragraph_count": 7,
+      "section_count": 8,
       "lore_paragraph_count": 1,
-      "content_quality_score": 65,
+      "content_quality_score": 53,
       "authority_score": 18
     },
     "rank_diagnostics": {
       "canonical_points": 20,
       "description_points": 10,
-      "category_points": 15,
-      "word_count_points": 40,
-      "keyword_bag_points": 23,
-      "content_quality_points": 73,
+      "category_points": 40,
+      "word_count_points": 28,
+      "keyword_bag_points": 22,
+      "content_quality_points": 61,
       "authority_points": 23,
       "final_rank_score": 204,
       "authority_graph_points": 5
     },
     "search_index": {
-      "normalized_title": "jillian godsil crypto moonboys wiki",
+      "normalized_title": "pixil mini crypto moonboys wiki",
       "tokens": [
-        "jillian",
-        "godsil",
+        "pixil",
+        "mini",
         "crypto",
         "moonboys",
         "wiki"
       ],
       "keyword_bag": [
-        "jillian",
-        "godsil",
+        "pixil",
+        "mini",
         "crypto",
         "moonboys",
         "wiki",
-        "in",
-        "the",
-        "record",
+        "guide",
+        "to",
         "a",
+        "wax",
         "blockchain",
-        "reporter",
-        "and",
-        "writer",
+        "rpg",
         "with",
-        "that",
-        "recognition",
-        "separated",
-        "from",
-        "unsupported",
-        "design",
-        "or",
-        "governance",
-        "claims",
-        "project",
-        "coverage",
-        "reporting",
-        "acknowledgement"
+        "generated",
+        "minis",
+        "stats",
+        "areas",
+        "game",
+        "passes",
+        "and",
+        "nft",
+        "marketplace",
+        "links"
       ]
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 27,
+      "outbound_count": 23,
       "existing_outbound_count": 9,
-      "suggested_outbound_count": 18,
+      "suggested_outbound_count": 14,
       "authority": 4.5
     },
     "brand": null
@@ -38283,9 +38187,9 @@
     },
     "link_score": {
       "inbound_count": 4,
-      "outbound_count": 34,
+      "outbound_count": 33,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 22,
+      "suggested_outbound_count": 21,
       "authority": 14
     },
     "brand": null
@@ -38651,10 +38555,106 @@
     },
     "link_score": {
       "inbound_count": 7,
-      "outbound_count": 67,
+      "outbound_count": 66,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 55,
+      "suggested_outbound_count": 54,
       "authority": 20
+    },
+    "brand": null
+  },
+  {
+    "title": "Jillian Godsil",
+    "desc": "Jillian Godsil in the Crypto Moonboys record: a blockchain reporter and writer, with that recognition separated from unsupported design or governance claims.",
+    "url": "/wiki/jillian-godsil.html",
+    "tags": [
+      "jillian",
+      "godsil",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "misc",
+    "aliases": [
+      {
+        "title": "jillian godsil crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 201,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "misc",
+      "category_priority": 3,
+      "has_description": true,
+      "article_word_count": 735,
+      "keyword_bag_size": 23,
+      "heading_count": 10,
+      "list_count": 1,
+      "internal_link_count": 9,
+      "paragraph_count": 11,
+      "section_count": 7,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 65,
+      "authority_score": 18
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 15,
+      "word_count_points": 37,
+      "keyword_bag_points": 23,
+      "content_quality_points": 73,
+      "authority_points": 23,
+      "final_rank_score": 201,
+      "authority_graph_points": 5
+    },
+    "search_index": {
+      "normalized_title": "jillian godsil crypto moonboys wiki",
+      "tokens": [
+        "jillian",
+        "godsil",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "jillian",
+        "godsil",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "in",
+        "the",
+        "record",
+        "a",
+        "blockchain",
+        "reporter",
+        "and",
+        "writer",
+        "with",
+        "that",
+        "recognition",
+        "separated",
+        "from",
+        "unsupported",
+        "design",
+        "or",
+        "governance",
+        "claims",
+        "project",
+        "coverage",
+        "reporting",
+        "acknowledgement"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 24,
+      "existing_outbound_count": 9,
+      "suggested_outbound_count": 15,
+      "authority": 4.5
     },
     "brand": null
   },
@@ -39797,9 +39797,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 34,
+      "outbound_count": 33,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 22,
+      "suggested_outbound_count": 21,
       "authority": 8
     },
     "brand": null
@@ -42208,9 +42208,9 @@
     },
     "link_score": {
       "inbound_count": 6,
-      "outbound_count": 39,
+      "outbound_count": 38,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 27,
+      "suggested_outbound_count": 26,
       "authority": 18
     },
     "brand": null
@@ -44468,9 +44468,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 33,
+      "outbound_count": 32,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 21,
+      "suggested_outbound_count": 20,
       "authority": 8
     },
     "brand": null
@@ -46601,83 +46601,6 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 0,
       "authority": 0
-    },
-    "brand": null
-  },
-  {
-    "title": "Bitcoin (BTC)",
-    "desc": "Bitcoin (BTC) — Crypto Moonboys Wiki",
-    "url": "/wiki/bitcoin-btc.html",
-    "tags": [
-      "bitcoin",
-      "btc",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "tokens",
-    "aliases": [
-      {
-        "title": "bitcoin"
-      },
-      {
-        "title": "bitcoin btc crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 96,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 2,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "tokens",
-      "category_priority": 6,
-      "has_description": true,
-      "article_word_count": 17,
-      "keyword_bag_size": 5,
-      "heading_count": 1,
-      "list_count": 0,
-      "internal_link_count": 1,
-      "paragraph_count": 1,
-      "section_count": 0,
-      "lore_paragraph_count": 0,
-      "content_quality_score": 10,
-      "authority_score": 0
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 30,
-      "word_count_points": 1,
-      "keyword_bag_points": 5,
-      "content_quality_points": 21,
-      "authority_points": 9,
-      "final_rank_score": 96,
-      "authority_graph_points": 9
-    },
-    "search_index": {
-      "normalized_title": "bitcoin btc crypto moonboys wiki",
-      "tokens": [
-        "bitcoin",
-        "btc",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "bitcoin",
-        "btc",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 4,
-      "outbound_count": 21,
-      "existing_outbound_count": 1,
-      "suggested_outbound_count": 20,
-      "authority": 8.5
     },
     "brand": null
   }

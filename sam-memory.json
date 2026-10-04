@@ -389,29 +389,6 @@
         "wiki"
       ]
     },
-    "bitcoin_btc": {
-      "alias_candidates": [
-        "bitcoin btc"
-      ],
-      "aliases": [
-        "bitcoin",
-        "bitcoin btc crypto moonboys wiki"
-      ],
-      "canonical_title": "Bitcoin (BTC)",
-      "canonical_url": "/wiki/bitcoin-btc.html",
-      "category": "tokens",
-      "source_urls": [
-        "/wiki/bitcoin-btc.html"
-      ],
-      "status": "canonical",
-      "tags": [
-        "bitcoin",
-        "btc",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ]
-    },
     "bitcoin_kid_army": {
       "alias_candidates": [],
       "aliases": [],
@@ -11052,5 +11029,5 @@
       ]
     }
   },
-  "updated_at": "2026-10-04T14:15:27Z"
+  "updated_at": "2026-10-04T16:01:34Z"
 }

@@ -399,30 +399,6 @@
     "brand": null
   },
   {
-    "entity_id": "bitcoin_btc",
-    "canonical_title": "Bitcoin (BTC)",
-    "canonical_url": "/wiki/bitcoin-btc.html",
-    "category": "tokens",
-    "aliases": [
-      "bitcoin",
-      "bitcoin btc crypto moonboys wiki"
-    ],
-    "tags": [
-      "bitcoin",
-      "btc",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "source_urls": [
-      "/wiki/bitcoin-btc.html"
-    ],
-    "brand": null,
-    "alias_candidates": [
-      "bitcoin btc"
-    ]
-  },
-  {
     "entity_id": "bitcoin_kid_army",
     "canonical_title": "Bitcoin Kid Army",
     "canonical_url": "/wiki/bitcoin-kid-army.html",
