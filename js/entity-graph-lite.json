@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-04T14:13:19.357Z",
-  "verified_at": "2026-10-04T14:13:19.357Z",
+  "generated_at": "2026-10-04T14:15:28.015Z",
+  "verified_at": "2026-10-04T14:15:28.015Z",
   "lite": true,
   "nodes": [
     {
@@ -132,6 +132,14 @@
       "authority_score": 28
     },
     {
+      "id": "/wiki/midevilpunks.html",
+      "title": "MiDEViL PUNKS",
+      "url": "/wiki/midevilpunks.html",
+      "category": "factions",
+      "rank_score": 331,
+      "authority_score": 24
+    },
+    {
       "id": "/wiki/nbg-token.html",
       "title": "nbg token",
       "url": "/wiki/nbg-token.html",
@@ -256,6 +264,14 @@
       "title": "GraffPUNKS 24/7 Radio",
       "url": "/wiki/graffpunks-24-7-radio.html",
       "category": "core",
+      "rank_score": 320,
+      "authority_score": 24
+    },
+    {
+      "id": "/wiki/stikfamwars.html",
+      "title": "STIKFAMWARS",
+      "url": "/wiki/stikfamwars.html",
+      "category": "factions",
       "rank_score": 320,
       "authority_score": 24
     },
@@ -444,6 +460,14 @@
       "authority_score": 12
     },
     {
+      "id": "/wiki/first-witness-symbols-marks-sacred-design.html",
+      "title": "Symbols, Marks and Sacred Design",
+      "url": "/wiki/first-witness-symbols-marks-sacred-design.html",
+      "category": "core",
+      "rank_score": 306,
+      "authority_score": 12
+    },
+    {
       "id": "/wiki/first-witness-glossary.html",
       "title": "First Witness Glossary",
       "url": "/wiki/first-witness-glossary.html",
@@ -457,14 +481,6 @@
       "url": "/wiki/first-witness-null-erasure.html",
       "category": "core",
       "rank_score": 305,
-      "authority_score": 12
-    },
-    {
-      "id": "/wiki/first-witness-symbols-marks-sacred-design.html",
-      "title": "Symbols, Marks and Sacred Design",
-      "url": "/wiki/first-witness-symbols-marks-sacred-design.html",
-      "category": "core",
-      "rank_score": 304,
       "authority_score": 12
     },
     {
@@ -548,14 +564,6 @@
       "authority_score": 28
     },
     {
-      "id": "/wiki/midevilpunks.html",
-      "title": "MiDEViL PUNKS",
-      "url": "/wiki/midevilpunks.html",
-      "category": "factions",
-      "rank_score": 296,
-      "authority_score": 21
-    },
-    {
       "id": "/wiki/billy-the-goat-kid.html",
       "title": "Billy the Goat Kid",
       "url": "/wiki/billy-the-goat-kid.html",
@@ -591,14 +599,6 @@
       "id": "/wiki/first-witness-long-transmission.html",
       "title": "The Long Transmission",
       "url": "/wiki/first-witness-long-transmission.html",
-      "category": "core",
-      "rank_score": 295,
-      "authority_score": 12
-    },
-    {
-      "id": "/wiki/first-witness-money-debt-honest-scales.html",
-      "title": "Money, Debt and Honest Scales",
-      "url": "/wiki/first-witness-money-debt-honest-scales.html",
       "category": "core",
       "rank_score": 295,
       "authority_score": 12
@@ -901,6 +901,12 @@
     },
     {
       "source": "/wiki/the-high-hats.html",
+      "target": "/wiki/stikfamwars.html",
+      "score": 85,
+      "weight": 0.85
+    },
+    {
+      "source": "/wiki/the-high-hats.html",
       "target": "/wiki/the-finance-guild.html",
       "score": 85,
       "weight": 0.85
@@ -942,14 +948,14 @@
       "weight": 0.82
     },
     {
-      "source": "/wiki/the-high-hats.html",
-      "target": "/wiki/the-nice-easy-bois.html",
-      "score": 82,
-      "weight": 0.82
-    },
-    {
       "source": "/wiki/billy-the-goat-kid.html",
       "target": "/wiki/the-princess.html",
+      "score": 81,
+      "weight": 0.81
+    },
+    {
+      "source": "/wiki/the-nice-easy-bois.html",
+      "target": "/wiki/stikfamwars.html",
       "score": 81,
       "weight": 0.81
     },
@@ -978,22 +984,28 @@
       "weight": 0.79
     },
     {
+      "source": "/wiki/stikfamwars.html",
+      "target": "/wiki/midevilpunks.html",
+      "score": 79,
+      "weight": 0.79
+    },
+    {
       "source": "/wiki/graffpunks-24-7-radio.html",
       "target": "/wiki/gkniftyheads.html",
       "score": 77,
       "weight": 0.77
     },
     {
+      "source": "/wiki/the-nice-easy-bois.html",
+      "target": "/wiki/midevilpunks.html",
+      "score": 76,
+      "weight": 0.76
+    },
+    {
       "source": "/wiki/midevilpunks.html",
       "target": "/wiki/pmsl.html",
       "score": 75,
       "weight": 0.75
-    },
-    {
-      "source": "/wiki/the-nice-easy-bois.html",
-      "target": "/wiki/midevilpunks.html",
-      "score": 73,
-      "weight": 0.73
     },
     {
       "source": "/wiki/bitcoin-kid-army.html",
@@ -1006,12 +1018,6 @@
       "target": "/wiki/pmsl.html",
       "score": 72,
       "weight": 0.72
-    },
-    {
-      "source": "/wiki/bitcoin-kid-army.html",
-      "target": "/wiki/midevilpunks.html",
-      "score": 70,
-      "weight": 0.7
     },
     {
       "source": "/wiki/burn-to-earn.html",

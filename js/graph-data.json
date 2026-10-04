@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-04T14:13:19.357Z",
-  "verified_at": "2026-10-04T14:13:19.357Z",
+  "generated_at": "2026-10-04T14:15:28.015Z",
+  "verified_at": "2026-10-04T14:15:28.015Z",
   "nodes": [
     {
       "id": "/about.html",
@@ -188,11 +188,11 @@
     },
     {
       "id": "/wiki/battlemech-blast.html",
-      "title": "battlemech blast",
+      "title": "Battlemech Blast",
       "url": "/wiki/battlemech-blast.html",
       "category": "factions",
-      "rank_score": 241,
-      "authority_score": 20
+      "rank_score": 283,
+      "authority_score": 24
     },
     {
       "id": "/wiki/bear-market-siege.html",
@@ -287,7 +287,7 @@
       "title": "Blockchain Technology",
       "url": "/wiki/blockchain.html",
       "category": "factions",
-      "rank_score": 291,
+      "rank_score": 289,
       "authority_score": 30
     },
     {
@@ -308,11 +308,11 @@
     },
     {
       "id": "/wiki/canvas-clash.html",
-      "title": "canvas clash",
+      "title": "Canvas Clash",
       "url": "/wiki/canvas-clash.html",
       "category": "factions",
-      "rank_score": 241,
-      "authority_score": 20
+      "rank_score": 288,
+      "authority_score": 28
     },
     {
       "id": "/wiki/charlie-buster.html",
@@ -479,7 +479,7 @@
       "title": "Anonymity, Pseudonyms and Hidden Names",
       "url": "/wiki/first-witness-anonymity-pseudonyms-hidden-names.html",
       "category": "core",
-      "rank_score": 263,
+      "rank_score": 265,
       "authority_score": 12
     },
     {
@@ -607,7 +607,7 @@
       "title": "Censorship, Offence and Public Marks",
       "url": "/wiki/first-witness-censorship-offence-public-marks.html",
       "category": "core",
-      "rank_score": 267,
+      "rank_score": 269,
       "authority_score": 12
     },
     {
@@ -663,7 +663,7 @@
       "title": "Counterfeit Relics, Forged Hashes and Sacred Scams",
       "url": "/wiki/first-witness-counterfeit-relics-fraud.html",
       "category": "core",
-      "rank_score": 267,
+      "rank_score": 269,
       "authority_score": 12
     },
     {
@@ -839,7 +839,7 @@
       "title": "Language, Translation and Sacred Words",
       "url": "/wiki/first-witness-language-translation-sacred-words.html",
       "category": "core",
-      "rank_score": 264,
+      "rank_score": 266,
       "authority_score": 12
     },
     {
@@ -983,7 +983,7 @@
       "title": "Relics, Manuscripts and Lost Editions",
       "url": "/wiki/first-witness-relics-manuscripts-lost-editions.html",
       "category": "core",
-      "rank_score": 293,
+      "rank_score": 295,
       "authority_score": 12
     },
     {
@@ -1055,7 +1055,7 @@
       "title": "Symbols, Marks and Sacred Design",
       "url": "/wiki/first-witness-symbols-marks-sacred-design.html",
       "category": "core",
-      "rank_score": 304,
+      "rank_score": 306,
       "authority_score": 12
     },
     {
@@ -1071,7 +1071,7 @@
       "title": "Truth Commissions After Conflict",
       "url": "/wiki/first-witness-truth-commissions-after-conflict.html",
       "category": "core",
-      "rank_score": 261,
+      "rank_score": 263,
       "authority_score": 12
     },
     {
@@ -1079,7 +1079,7 @@
       "title": "War, Defence and Peacekeeping",
       "url": "/wiki/first-witness-war-defence-peacekeeping.html",
       "category": "core",
-      "rank_score": 289,
+      "rank_score": 293,
       "authority_score": 12
     },
     {
@@ -1119,8 +1119,8 @@
       "title": "Forklord You",
       "url": "/wiki/forklord-you.html",
       "category": "characters",
-      "rank_score": 246,
-      "authority_score": 18
+      "rank_score": 291,
+      "authority_score": 24
     },
     {
       "id": "/wiki/forksplit.html",
@@ -1167,7 +1167,7 @@
       "title": "Genesis Spray Drop",
       "url": "/wiki/genesis-spray-drop.html",
       "category": "characters",
-      "rank_score": 290,
+      "rank_score": 292,
       "authority_score": 28
     },
     {
@@ -1175,8 +1175,8 @@
       "title": "Genesis Spray",
       "url": "/wiki/genesis-spray.html",
       "category": "factions",
-      "rank_score": 260,
-      "authority_score": 23
+      "rank_score": 290,
+      "authority_score": 28
     },
     {
       "id": "/wiki/gk.html",
@@ -2575,8 +2575,8 @@
       "title": "Metaverse Battles",
       "url": "/wiki/metaverse-battles.html",
       "category": "factions",
-      "rank_score": 245,
-      "authority_score": 18
+      "rank_score": 286,
+      "authority_score": 28
     },
     {
       "id": "/wiki/metropolis.html",
@@ -2591,8 +2591,8 @@
       "title": "MiDEViL PUNKS",
       "url": "/wiki/midevilpunks.html",
       "category": "factions",
-      "rank_score": 296,
-      "authority_score": 21
+      "rank_score": 331,
+      "authority_score": 24
     },
     {
       "id": "/wiki/moon-mission.html",
@@ -2831,7 +2831,7 @@
       "title": "Samael.exe",
       "url": "/wiki/samaelexe.html",
       "category": "characters",
-      "rank_score": 287,
+      "rank_score": 289,
       "authority_score": 24
     },
     {
@@ -2903,7 +2903,7 @@
       "title": "Spraycode &amp; Writcode Mechanics",
       "url": "/wiki/spraycode-writcode-mechanics.html",
       "category": "factions",
-      "rank_score": 283,
+      "rank_score": 287,
       "authority_score": 24
     },
     {
@@ -2927,8 +2927,8 @@
       "title": "STIKFAMWARS",
       "url": "/wiki/stikfamwars.html",
       "category": "factions",
-      "rank_score": 292,
-      "authority_score": 21
+      "rank_score": 320,
+      "authority_score": 24
     },
     {
       "id": "/wiki/storm-struggle.html",
@@ -3370,6 +3370,12 @@
     },
     {
       "source": "/wiki/1m-free-nfts-program.html",
+      "target": "/wiki/midevilpunks.html",
+      "score": 73,
+      "weight": 0.73
+    },
+    {
+      "source": "/wiki/1m-free-nfts-program.html",
       "target": "/wiki/web3.html",
       "score": 73,
       "weight": 0.73
@@ -3381,16 +3387,10 @@
       "weight": 0.72
     },
     {
-      "source": "/wiki/1m-free-nfts-program.html",
-      "target": "/wiki/harrison-rift.html",
-      "score": 72,
-      "weight": 0.72
-    },
-    {
       "source": "/wiki/2025-metaverse-launch-party.html",
       "target": "/wiki/metaverse-battles.html",
-      "score": 90,
-      "weight": 0.9
+      "score": 89,
+      "weight": 0.89
     },
     {
       "source": "/wiki/2025-metaverse-launch-party.html",
@@ -3400,21 +3400,21 @@
     },
     {
       "source": "/wiki/2025-metaverse-launch-party.html",
-      "target": "/wiki/lfgk.html",
-      "score": 77,
-      "weight": 0.77
+      "target": "/wiki/canvas-clash.html",
+      "score": 80,
+      "weight": 0.8
     },
     {
       "source": "/wiki/2025-metaverse-launch-party.html",
       "target": "/wiki/midevilpunks.html",
-      "score": 76,
-      "weight": 0.76
+      "score": 79,
+      "weight": 0.79
     },
     {
       "source": "/wiki/2025-metaverse-launch-party.html",
-      "target": "/wiki/forkborn-collective.html",
-      "score": 75,
-      "weight": 0.75
+      "target": "/wiki/lfgk.html",
+      "score": 77,
+      "weight": 0.77
     },
     {
       "source": "/wiki/589-xrpl.html",
@@ -3550,21 +3550,21 @@
     },
     {
       "source": "/wiki/alfie-bitcoin-kid-blaze.html",
+      "target": "/wiki/stikfamwars.html",
+      "score": 69,
+      "weight": 0.69
+    },
+    {
+      "source": "/wiki/alfie-bitcoin-kid-blaze.html",
       "target": "/wiki/the-nice-easy-bois.html",
       "score": 69,
       "weight": 0.69
     },
     {
       "source": "/wiki/alfie-bitcoin-kid-blaze.html",
-      "target": "/wiki/stikfamwars.html",
-      "score": 66,
-      "weight": 0.66
-    },
-    {
-      "source": "/wiki/alfie-bitcoin-kid-blaze.html",
-      "target": "/wiki/the-finance-guild.html",
-      "score": 66,
-      "weight": 0.66
+      "target": "/wiki/midevilpunks.html",
+      "score": 67,
+      "weight": 0.67
     },
     {
       "source": "/wiki/alien-worlds-tlm.html",
@@ -3664,6 +3664,12 @@
     },
     {
       "source": "/wiki/atomichub-graffpunks-collection.html",
+      "target": "/wiki/midevilpunks.html",
+      "score": 73,
+      "weight": 0.73
+    },
+    {
+      "source": "/wiki/atomichub-graffpunks-collection.html",
       "target": "/wiki/pmsl.html",
       "score": 72,
       "weight": 0.72
@@ -3676,15 +3682,9 @@
     },
     {
       "source": "/wiki/atomichub-graffpunks-collection.html",
-      "target": "/wiki/midevilpunks.html",
-      "score": 70,
-      "weight": 0.7
-    },
-    {
-      "source": "/wiki/atomichub-graffpunks-collection.html",
       "target": "/wiki/stikfamwars.html",
-      "score": 66,
-      "weight": 0.66
+      "score": 69,
+      "weight": 0.69
     },
     {
       "source": "/wiki/atomichub.html",
@@ -3755,8 +3755,14 @@
     {
       "source": "/wiki/battlemech-blast.html",
       "target": "/wiki/forkborn-collective.html",
-      "score": 78,
-      "weight": 0.78
+      "score": 81,
+      "weight": 0.81
+    },
+    {
+      "source": "/wiki/battlemech-blast.html",
+      "target": "/wiki/metaverse-battles.html",
+      "score": 80,
+      "weight": 0.8
     },
     {
       "source": "/wiki/battlemech-blast.html",
@@ -3769,12 +3775,6 @@
       "target": "/wiki/street-kingdoms.html",
       "score": 78,
       "weight": 0.78
-    },
-    {
-      "source": "/wiki/battlemech-blast.html",
-      "target": "/wiki/spirit-borns.html",
-      "score": 77,
-      "weight": 0.77
     },
     {
       "source": "/wiki/bear-market-siege.html",
@@ -3934,6 +3934,18 @@
     },
     {
       "source": "/wiki/bitcoin-kid-army.html",
+      "target": "/wiki/stikfamwars.html",
+      "score": 75,
+      "weight": 0.75
+    },
+    {
+      "source": "/wiki/bitcoin-kid-army.html",
+      "target": "/wiki/midevilpunks.html",
+      "score": 73,
+      "weight": 0.73
+    },
+    {
+      "source": "/wiki/bitcoin-kid-army.html",
       "target": "/wiki/pmsl.html",
       "score": 72,
       "weight": 0.72
@@ -3943,18 +3955,6 @@
       "target": "/wiki/the-finance-guild.html",
       "score": 72,
       "weight": 0.72
-    },
-    {
-      "source": "/wiki/bitcoin-kid-army.html",
-      "target": "/wiki/midevilpunks.html",
-      "score": 70,
-      "weight": 0.7
-    },
-    {
-      "source": "/wiki/bitcoin-kid-army.html",
-      "target": "/wiki/stikfamwars.html",
-      "score": 69,
-      "weight": 0.69
     },
     {
       "source": "/wiki/bitcoin-kids.html",
@@ -4108,15 +4108,15 @@
     },
     {
       "source": "/wiki/blockchain.html",
-      "target": "/wiki/pmsl.html",
-      "score": 69,
-      "weight": 0.69
+      "target": "/wiki/midevilpunks.html",
+      "score": 70,
+      "weight": 0.7
     },
     {
       "source": "/wiki/blockchain.html",
-      "target": "/wiki/midevilpunks.html",
-      "score": 67,
-      "weight": 0.67
+      "target": "/wiki/pmsl.html",
+      "score": 69,
+      "weight": 0.69
     },
     {
       "source": "/wiki/blockchain.html",
@@ -4132,7 +4132,7 @@
     },
     {
       "source": "/wiki/blockchain.html",
-      "target": "/wiki/the-finance-guild.html",
+      "target": "/wiki/stikfamwars.html",
       "score": 66,
       "weight": 0.66
     },
@@ -4141,6 +4141,12 @@
       "target": "/wiki/pmsl.html",
       "score": 88,
       "weight": 0.88
+    },
+    {
+      "source": "/wiki/bone-idol-ink.html",
+      "target": "/wiki/midevilpunks.html",
+      "score": 76,
+      "weight": 0.76
     },
     {
       "source": "/wiki/bone-idol-ink.html",
@@ -4157,12 +4163,6 @@
     {
       "source": "/wiki/bone-idol-ink.html",
       "target": "/wiki/ngmi-chronicles.html",
-      "score": 75,
-      "weight": 0.75
-    },
-    {
-      "source": "/wiki/bone-idol-ink.html",
-      "target": "/wiki/street-kingdoms.html",
       "score": 75,
       "weight": 0.75
     },
@@ -4204,27 +4204,27 @@
     },
     {
       "source": "/wiki/canvas-clash.html",
-      "target": "/wiki/forkborn-collective.html",
-      "score": 78,
-      "weight": 0.78
+      "target": "/wiki/lfgk.html",
+      "score": 83,
+      "weight": 0.83
     },
     {
       "source": "/wiki/canvas-clash.html",
-      "target": "/wiki/ngmi-chronicles.html",
-      "score": 78,
-      "weight": 0.78
-    },
-    {
-      "source": "/wiki/canvas-clash.html",
-      "target": "/wiki/street-kingdoms.html",
-      "score": 78,
-      "weight": 0.78
+      "target": "/wiki/midevilpunks.html",
+      "score": 82,
+      "weight": 0.82
     },
     {
       "source": "/wiki/canvas-clash.html",
       "target": "/wiki/spirit-borns.html",
-      "score": 77,
-      "weight": 0.77
+      "score": 80,
+      "weight": 0.8
+    },
+    {
+      "source": "/wiki/canvas-clash.html",
+      "target": "/wiki/forkborn-collective.html",
+      "score": 78,
+      "weight": 0.78
     },
     {
       "source": "/wiki/charlie-buster.html",
@@ -4282,7 +4282,7 @@
     },
     {
       "source": "/wiki/croydon-tower-blocks.html",
-      "target": "/wiki/spirit-borns.html",
+      "target": "/wiki/battlemech-blast.html",
       "score": 77,
       "weight": 0.77
     },
@@ -4391,18 +4391,18 @@
     {
       "source": "/wiki/defi-mining.html",
       "target": "/wiki/midevilpunks.html",
-      "score": 67,
-      "weight": 0.67
+      "score": 70,
+      "weight": 0.7
+    },
+    {
+      "source": "/wiki/defi-mining.html",
+      "target": "/wiki/stikfamwars.html",
+      "score": 69,
+      "weight": 0.69
     },
     {
       "source": "/wiki/defi-mining.html",
       "target": "/wiki/ethereum.html",
-      "score": 66,
-      "weight": 0.66
-    },
-    {
-      "source": "/wiki/defi-mining.html",
-      "target": "/wiki/rave-relics.html",
       "score": 66,
       "weight": 0.66
     },
@@ -4732,9 +4732,9 @@
     },
     {
       "source": "/wiki/fgl-token.html",
-      "target": "/wiki/rave-relics.html",
-      "score": 66,
-      "weight": 0.66
+      "target": "/wiki/midevilpunks.html",
+      "score": 67,
+      "weight": 0.67
     },
     {
       "source": "/wiki/first-witness-addiction-intoxication-compulsion.html",
@@ -7204,6 +7204,12 @@
     },
     {
       "source": "/wiki/forkborn-collective.html",
+      "target": "/wiki/battlemech-blast.html",
+      "score": 80,
+      "weight": 0.8
+    },
+    {
+      "source": "/wiki/forkborn-collective.html",
       "target": "/wiki/ngmi-chronicles.html",
       "score": 78,
       "weight": 0.78
@@ -7216,15 +7222,9 @@
     },
     {
       "source": "/wiki/forkborn-collective.html",
-      "target": "/wiki/spirit-borns.html",
+      "target": "/wiki/canvas-clash.html",
       "score": 77,
       "weight": 0.77
-    },
-    {
-      "source": "/wiki/forkborn-collective.html",
-      "target": "/wiki/neftyblocks.html",
-      "score": 76,
-      "weight": 0.76
     },
     {
       "source": "/wiki/forklord-you.html",
@@ -7235,26 +7235,26 @@
     {
       "source": "/wiki/forklord-you.html",
       "target": "/wiki/null-the-prophet.html",
-      "score": 79,
-      "weight": 0.79
-    },
-    {
-      "source": "/wiki/forklord-you.html",
-      "target": "/wiki/diamond-hands.html",
-      "score": 76,
-      "weight": 0.76
+      "score": 82,
+      "weight": 0.82
     },
     {
       "source": "/wiki/forklord-you.html",
       "target": "/wiki/bitcoin-kids.html",
-      "score": 75,
-      "weight": 0.75
+      "score": 78,
+      "weight": 0.78
     },
     {
       "source": "/wiki/forklord-you.html",
-      "target": "/wiki/forksplit.html",
-      "score": 75,
-      "weight": 0.75
+      "target": "/wiki/m1ntr-k1ll.html",
+      "score": 78,
+      "weight": 0.78
+    },
+    {
+      "source": "/wiki/forklord-you.html",
+      "target": "/wiki/lady-ink.html",
+      "score": 77,
+      "weight": 0.77
     },
     {
       "source": "/wiki/forksplit.html",
@@ -7324,7 +7324,19 @@
     },
     {
       "source": "/wiki/gang-signs-card-game.html",
+      "target": "/wiki/canvas-clash.html",
+      "score": 77,
+      "weight": 0.77
+    },
+    {
+      "source": "/wiki/gang-signs-card-game.html",
       "target": "/wiki/ethereum.html",
+      "score": 76,
+      "weight": 0.76
+    },
+    {
+      "source": "/wiki/gang-signs-card-game.html",
+      "target": "/wiki/midevilpunks.html",
       "score": 76,
       "weight": 0.76
     },
@@ -7333,18 +7345,6 @@
       "target": "/wiki/web3.html",
       "score": 76,
       "weight": 0.76
-    },
-    {
-      "source": "/wiki/gang-signs-card-game.html",
-      "target": "/wiki/forkborn-collective.html",
-      "score": 75,
-      "weight": 0.75
-    },
-    {
-      "source": "/wiki/gang-signs-card-game.html",
-      "target": "/wiki/harrison-rift.html",
-      "score": 75,
-      "weight": 0.75
     },
     {
       "source": "/wiki/gang-signs.html",
@@ -7439,8 +7439,8 @@
     {
       "source": "/wiki/genesis-spray.html",
       "target": "/wiki/midevilpunks.html",
-      "score": 79,
-      "weight": 0.79
+      "score": 82,
+      "weight": 0.82
     },
     {
       "source": "/wiki/genesis-spray.html",
@@ -7450,13 +7450,13 @@
     },
     {
       "source": "/wiki/genesis-spray.html",
-      "target": "/wiki/pmsl.html",
-      "score": 72,
-      "weight": 0.72
+      "target": "/wiki/stikfamwars.html",
+      "score": 78,
+      "weight": 0.78
     },
     {
       "source": "/wiki/genesis-spray.html",
-      "target": "/wiki/stikfamwars.html",
+      "target": "/wiki/pmsl.html",
       "score": 72,
       "weight": 0.72
     },
@@ -11915,26 +11915,26 @@
     {
       "source": "/wiki/graffiti-queens-in-decentraland.html",
       "target": "/wiki/midevilpunks.html",
-      "score": 76,
-      "weight": 0.76
+      "score": 79,
+      "weight": 0.79
+    },
+    {
+      "source": "/wiki/graffiti-queens-in-decentraland.html",
+      "target": "/wiki/canvas-clash.html",
+      "score": 77,
+      "weight": 0.77
+    },
+    {
+      "source": "/wiki/graffiti-queens-in-decentraland.html",
+      "target": "/wiki/stikfamwars.html",
+      "score": 75,
+      "weight": 0.75
     },
     {
       "source": "/wiki/graffiti-queens-in-decentraland.html",
       "target": "/wiki/2025-metaverse-launch-party.html",
       "score": 74,
       "weight": 0.74
-    },
-    {
-      "source": "/wiki/graffiti-queens-in-decentraland.html",
-      "target": "/wiki/lfgk.html",
-      "score": 74,
-      "weight": 0.74
-    },
-    {
-      "source": "/wiki/graffiti-queens-in-decentraland.html",
-      "target": "/wiki/forkborn-collective.html",
-      "score": 72,
-      "weight": 0.72
     },
     {
       "source": "/wiki/graffpunks-24-7-radio.html",
@@ -11969,8 +11969,8 @@
     {
       "source": "/wiki/graffpunks-collection.html",
       "target": "/wiki/midevilpunks.html",
-      "score": 99,
-      "weight": 0.99
+      "score": 102,
+      "weight": 1
     },
     {
       "source": "/wiki/graffpunks-collection.html",
@@ -12172,7 +12172,7 @@
     },
     {
       "source": "/wiki/harrison-rift.html",
-      "target": "/wiki/bone-idol-ink.html",
+      "target": "/wiki/battlemech-blast.html",
       "score": 74,
       "weight": 0.74
     },
@@ -12490,21 +12490,21 @@
     },
     {
       "source": "/wiki/jonny-laurence-nelson-tag-records.html",
-      "target": "/wiki/pmsl.html",
-      "score": 69,
-      "weight": 0.69
-    },
-    {
-      "source": "/wiki/jonny-laurence-nelson-tag-records.html",
       "target": "/wiki/stikfamwars.html",
-      "score": 69,
-      "weight": 0.69
+      "score": 72,
+      "weight": 0.72
     },
     {
       "source": "/wiki/jonny-laurence-nelson-tag-records.html",
       "target": "/wiki/midevilpunks.html",
-      "score": 67,
-      "weight": 0.67
+      "score": 70,
+      "weight": 0.7
+    },
+    {
+      "source": "/wiki/jonny-laurence-nelson-tag-records.html",
+      "target": "/wiki/pmsl.html",
+      "score": 69,
+      "weight": 0.69
     },
     {
       "source": "/wiki/lady-ink.html",
@@ -12544,25 +12544,25 @@
     },
     {
       "source": "/wiki/lfgk.html",
+      "target": "/wiki/canvas-clash.html",
+      "score": 86,
+      "weight": 0.86
+    },
+    {
+      "source": "/wiki/lfgk.html",
+      "target": "/wiki/midevilpunks.html",
+      "score": 82,
+      "weight": 0.82
+    },
+    {
+      "source": "/wiki/lfgk.html",
       "target": "/wiki/spirit-borns.html",
       "score": 80,
       "weight": 0.8
     },
     {
       "source": "/wiki/lfgk.html",
-      "target": "/wiki/midevilpunks.html",
-      "score": 79,
-      "weight": 0.79
-    },
-    {
-      "source": "/wiki/lfgk.html",
       "target": "/wiki/forkborn-collective.html",
-      "score": 78,
-      "weight": 0.78
-    },
-    {
-      "source": "/wiki/lfgk.html",
-      "target": "/wiki/ngmi-chronicles.html",
       "score": 78,
       "weight": 0.78
     },
@@ -12652,7 +12652,7 @@
     },
     {
       "source": "/wiki/maidstone-base.html",
-      "target": "/wiki/spirit-borns.html",
+      "target": "/wiki/battlemech-blast.html",
       "score": 77,
       "weight": 0.77
     },
@@ -12688,39 +12688,45 @@
     },
     {
       "source": "/wiki/metaverse-battles.html",
-      "target": "/wiki/2025-metaverse-launch-party.html",
-      "score": 90,
-      "weight": 0.9
-    },
-    {
-      "source": "/wiki/metaverse-battles.html",
       "target": "/wiki/pmsl.html",
       "score": 88,
       "weight": 0.88
     },
     {
       "source": "/wiki/metaverse-battles.html",
+      "target": "/wiki/2025-metaverse-launch-party.html",
+      "score": 86,
+      "weight": 0.86
+    },
+    {
+      "source": "/wiki/metaverse-battles.html",
+      "target": "/wiki/battlemech-blast.html",
+      "score": 80,
+      "weight": 0.8
+    },
+    {
+      "source": "/wiki/metaverse-battles.html",
       "target": "/wiki/forkborn-collective.html",
-      "score": 75,
-      "weight": 0.75
+      "score": 78,
+      "weight": 0.78
     },
     {
       "source": "/wiki/metaverse-battles.html",
-      "target": "/wiki/harrison-rift.html",
-      "score": 75,
-      "weight": 0.75
-    },
-    {
-      "source": "/wiki/metaverse-battles.html",
-      "target": "/wiki/ngmi-chronicles.html",
-      "score": 75,
-      "weight": 0.75
+      "target": "/wiki/canvas-clash.html",
+      "score": 77,
+      "weight": 0.77
     },
     {
       "source": "/wiki/metropolis.html",
       "target": "/wiki/stikfamwars.html",
-      "score": 78,
-      "weight": 0.78
+      "score": 85,
+      "weight": 0.85
+    },
+    {
+      "source": "/wiki/metropolis.html",
+      "target": "/wiki/midevilpunks.html",
+      "score": 76,
+      "weight": 0.76
     },
     {
       "source": "/wiki/metropolis.html",
@@ -12741,16 +12747,16 @@
       "weight": 0.75
     },
     {
-      "source": "/wiki/metropolis.html",
-      "target": "/wiki/midevilpunks.html",
-      "score": 73,
-      "weight": 0.73
-    },
-    {
       "source": "/wiki/midevilpunks.html",
       "target": "/wiki/graffpunks-collection.html",
       "score": 84,
       "weight": 0.84
+    },
+    {
+      "source": "/wiki/midevilpunks.html",
+      "target": "/wiki/stikfamwars.html",
+      "score": 78,
+      "weight": 0.78
     },
     {
       "source": "/wiki/midevilpunks.html",
@@ -12766,15 +12772,9 @@
     },
     {
       "source": "/wiki/midevilpunks.html",
-      "target": "/wiki/stikfamwars.html",
-      "score": 75,
-      "weight": 0.75
-    },
-    {
-      "source": "/wiki/midevilpunks.html",
-      "target": "/wiki/the-high-hats.html",
-      "score": 72,
-      "weight": 0.72
+      "target": "/wiki/graffpunks.html",
+      "score": 74,
+      "weight": 0.74
     },
     {
       "source": "/wiki/moon-mission.html",
@@ -12832,9 +12832,9 @@
     },
     {
       "source": "/wiki/nbg-token.html",
-      "target": "/wiki/rave-relics.html",
-      "score": 66,
-      "weight": 0.66
+      "target": "/wiki/midevilpunks.html",
+      "score": 67,
+      "weight": 0.67
     },
     {
       "source": "/wiki/nbg.html",
@@ -12892,9 +12892,9 @@
     },
     {
       "source": "/wiki/nbgx-token.html",
-      "target": "/wiki/rave-relics.html",
-      "score": 72,
-      "weight": 0.72
+      "target": "/wiki/midevilpunks.html",
+      "score": 73,
+      "weight": 0.73
     },
     {
       "source": "/wiki/neftyblocks.html",
@@ -12922,7 +12922,7 @@
     },
     {
       "source": "/wiki/neftyblocks.html",
-      "target": "/wiki/spirit-borns.html",
+      "target": "/wiki/battlemech-blast.html",
       "score": 77,
       "weight": 0.77
     },
@@ -13295,14 +13295,14 @@
     {
       "source": "/wiki/playable-nft-murals.html",
       "target": "/wiki/midevilpunks.html",
-      "score": 73,
-      "weight": 0.73
+      "score": 76,
+      "weight": 0.76
     },
     {
       "source": "/wiki/playable-nft-murals.html",
       "target": "/wiki/stikfamwars.html",
-      "score": 72,
-      "weight": 0.72
+      "score": 75,
+      "weight": 0.75
     },
     {
       "source": "/wiki/playable-nft-murals.html",
@@ -13312,7 +13312,7 @@
     },
     {
       "source": "/wiki/playable-nft-murals.html",
-      "target": "/wiki/gang-signs-card-game.html",
+      "target": "/wiki/canvas-clash.html",
       "score": 71,
       "weight": 0.71
     },
@@ -13342,9 +13342,9 @@
     },
     {
       "source": "/wiki/pmsl-token.html",
-      "target": "/wiki/rave-relics.html",
-      "score": 72,
-      "weight": 0.72
+      "target": "/wiki/midevilpunks.html",
+      "score": 73,
+      "weight": 0.73
     },
     {
       "source": "/wiki/pmsl.html",
@@ -13366,15 +13366,15 @@
     },
     {
       "source": "/wiki/pmsl.html",
-      "target": "/wiki/spirit-borns.html",
+      "target": "/wiki/battlemech-blast.html",
       "score": 74,
       "weight": 0.74
     },
     {
       "source": "/wiki/pmsl.html",
-      "target": "/wiki/neftyblocks.html",
-      "score": 73,
-      "weight": 0.73
+      "target": "/wiki/canvas-clash.html",
+      "score": 74,
+      "weight": 0.74
     },
     {
       "source": "/wiki/punk-token.html",
@@ -13444,9 +13444,15 @@
     },
     {
       "source": "/wiki/queen-sarah-p-fly.html",
+      "target": "/wiki/stikfamwars.html",
+      "score": 78,
+      "weight": 0.78
+    },
+    {
+      "source": "/wiki/queen-sarah-p-fly.html",
       "target": "/wiki/midevilpunks.html",
-      "score": 73,
-      "weight": 0.73
+      "score": 76,
+      "weight": 0.76
     },
     {
       "source": "/wiki/queen-sarah-p-fly.html",
@@ -13456,13 +13462,7 @@
     },
     {
       "source": "/wiki/queen-sarah-p-fly.html",
-      "target": "/wiki/stikfamwars.html",
-      "score": 72,
-      "weight": 0.72
-    },
-    {
-      "source": "/wiki/queen-sarah-p-fly.html",
-      "target": "/wiki/bone-idol-ink.html",
+      "target": "/wiki/battlemech-blast.html",
       "score": 71,
       "weight": 0.71
     },
@@ -13499,18 +13499,18 @@
     {
       "source": "/wiki/rave-relics.html",
       "target": "/wiki/midevilpunks.html",
-      "score": 76,
-      "weight": 0.76
-    },
-    {
-      "source": "/wiki/rave-relics.html",
-      "target": "/wiki/pmsl.html",
-      "score": 72,
-      "weight": 0.72
+      "score": 79,
+      "weight": 0.79
     },
     {
       "source": "/wiki/rave-relics.html",
       "target": "/wiki/stikfamwars.html",
+      "score": 75,
+      "weight": 0.75
+    },
+    {
+      "source": "/wiki/rave-relics.html",
+      "target": "/wiki/pmsl.html",
       "score": 72,
       "weight": 0.72
     },
@@ -13612,7 +13612,7 @@
     },
     {
       "source": "/wiki/rust2riches.html",
-      "target": "/wiki/spirit-borns.html",
+      "target": "/wiki/battlemech-blast.html",
       "score": 77,
       "weight": 0.77
     },
@@ -13894,6 +13894,12 @@
     },
     {
       "source": "/wiki/spirit-borns.html",
+      "target": "/wiki/canvas-clash.html",
+      "score": 80,
+      "weight": 0.8
+    },
+    {
+      "source": "/wiki/spirit-borns.html",
       "target": "/wiki/forkborn-collective.html",
       "score": 78,
       "weight": 0.78
@@ -13911,16 +13917,22 @@
       "weight": 0.78
     },
     {
-      "source": "/wiki/spirit-borns.html",
-      "target": "/wiki/lfgk.html",
+      "source": "/wiki/spraycode-writcode-mechanics.html",
+      "target": "/wiki/jonny-laurence-nelson-tag-records.html",
       "score": 77,
       "weight": 0.77
     },
     {
       "source": "/wiki/spraycode-writcode-mechanics.html",
-      "target": "/wiki/jonny-laurence-nelson-tag-records.html",
-      "score": 77,
-      "weight": 0.77
+      "target": "/wiki/midevilpunks.html",
+      "score": 73,
+      "weight": 0.73
+    },
+    {
+      "source": "/wiki/spraycode-writcode-mechanics.html",
+      "target": "/wiki/stikfamwars.html",
+      "score": 72,
+      "weight": 0.72
     },
     {
       "source": "/wiki/spraycode-writcode-mechanics.html",
@@ -13935,22 +13947,22 @@
       "weight": 0.69
     },
     {
-      "source": "/wiki/spraycode-writcode-mechanics.html",
-      "target": "/wiki/midevilpunks.html",
-      "score": 67,
-      "weight": 0.67
-    },
-    {
-      "source": "/wiki/spraycode-writcode-mechanics.html",
-      "target": "/wiki/rave-relics.html",
-      "score": 66,
-      "weight": 0.66
-    },
-    {
       "source": "/wiki/squeaky-pinks-enforcers.html",
       "target": "/wiki/pmsl.html",
       "score": 88,
       "weight": 0.88
+    },
+    {
+      "source": "/wiki/squeaky-pinks-enforcers.html",
+      "target": "/wiki/canvas-clash.html",
+      "score": 77,
+      "weight": 0.77
+    },
+    {
+      "source": "/wiki/squeaky-pinks-enforcers.html",
+      "target": "/wiki/midevilpunks.html",
+      "score": 76,
+      "weight": 0.76
     },
     {
       "source": "/wiki/squeaky-pinks-enforcers.html",
@@ -13961,18 +13973,6 @@
     {
       "source": "/wiki/squeaky-pinks-enforcers.html",
       "target": "/wiki/harrison-rift.html",
-      "score": 75,
-      "weight": 0.75
-    },
-    {
-      "source": "/wiki/squeaky-pinks-enforcers.html",
-      "target": "/wiki/ngmi-chronicles.html",
-      "score": 75,
-      "weight": 0.75
-    },
-    {
-      "source": "/wiki/squeaky-pinks-enforcers.html",
-      "target": "/wiki/street-kingdoms.html",
       "score": 75,
       "weight": 0.75
     },
@@ -14008,15 +14008,15 @@
     },
     {
       "source": "/wiki/stikfamwars.html",
-      "target": "/wiki/the-high-hats.html",
+      "target": "/wiki/midevilpunks.html",
       "score": 79,
       "weight": 0.79
     },
     {
       "source": "/wiki/stikfamwars.html",
-      "target": "/wiki/midevilpunks.html",
-      "score": 76,
-      "weight": 0.76
+      "target": "/wiki/the-high-hats.html",
+      "score": 79,
+      "weight": 0.79
     },
     {
       "source": "/wiki/stikfamwars.html",
@@ -14086,15 +14086,15 @@
     },
     {
       "source": "/wiki/street-kingdoms.html",
-      "target": "/wiki/spirit-borns.html",
+      "target": "/wiki/battlemech-blast.html",
       "score": 77,
       "weight": 0.77
     },
     {
       "source": "/wiki/street-kingdoms.html",
-      "target": "/wiki/neftyblocks.html",
-      "score": 76,
-      "weight": 0.76
+      "target": "/wiki/canvas-clash.html",
+      "score": 77,
+      "weight": 0.77
     },
     {
       "source": "/wiki/swap-nefty.html",
@@ -14152,7 +14152,7 @@
     },
     {
       "source": "/wiki/tacoswap.html",
-      "target": "/wiki/spirit-borns.html",
+      "target": "/wiki/battlemech-blast.html",
       "score": 77,
       "weight": 0.77
     },
@@ -14182,7 +14182,7 @@
     },
     {
       "source": "/wiki/tagzcoin.html",
-      "target": "/wiki/spirit-borns.html",
+      "target": "/wiki/battlemech-blast.html",
       "score": 77,
       "weight": 0.77
     },
@@ -14560,19 +14560,19 @@
     },
     {
       "source": "/wiki/the-finance-guild.html",
+      "target": "/wiki/stikfamwars.html",
+      "score": 81,
+      "weight": 0.81
+    },
+    {
+      "source": "/wiki/the-finance-guild.html",
       "target": "/wiki/the-ducky-boys.html",
       "score": 81,
       "weight": 0.81
     },
     {
       "source": "/wiki/the-finance-guild.html",
-      "target": "/wiki/stikfamwars.html",
-      "score": 78,
-      "weight": 0.78
-    },
-    {
-      "source": "/wiki/the-finance-guild.html",
-      "target": "/wiki/the-allcity-bulls.html",
+      "target": "/wiki/midevilpunks.html",
       "score": 76,
       "weight": 0.76
     },
@@ -14698,15 +14698,15 @@
     },
     {
       "source": "/wiki/the-high-hats.html",
-      "target": "/wiki/the-finance-guild.html",
+      "target": "/wiki/stikfamwars.html",
       "score": 85,
       "weight": 0.85
     },
     {
       "source": "/wiki/the-high-hats.html",
-      "target": "/wiki/stikfamwars.html",
-      "score": 82,
-      "weight": 0.82
+      "target": "/wiki/the-finance-guild.html",
+      "score": 85,
+      "weight": 0.85
     },
     {
       "source": "/wiki/the-high-hats.html",
@@ -14716,13 +14716,13 @@
     },
     {
       "source": "/wiki/the-high-hats.html",
-      "target": "/wiki/the-allcity-bulls.html",
+      "target": "/wiki/midevilpunks.html",
       "score": 79,
       "weight": 0.79
     },
     {
       "source": "/wiki/the-high-hats.html",
-      "target": "/wiki/the-bally-boys.html",
+      "target": "/wiki/the-allcity-bulls.html",
       "score": 79,
       "weight": 0.79
     },
@@ -14801,14 +14801,14 @@
     {
       "source": "/wiki/the-nice-easy-bois.html",
       "target": "/wiki/stikfamwars.html",
-      "score": 78,
-      "weight": 0.78
+      "score": 81,
+      "weight": 0.81
     },
     {
       "source": "/wiki/the-nice-easy-bois.html",
       "target": "/wiki/midevilpunks.html",
-      "score": 73,
-      "weight": 0.73
+      "score": 76,
+      "weight": 0.76
     },
     {
       "source": "/wiki/the-nice-easy-bois.html",
@@ -15298,15 +15298,15 @@
     },
     {
       "source": "/wiki/wax-blockchain.html",
-      "target": "/wiki/wax-dexs-defi.html",
+      "target": "/wiki/midevilpunks.html",
       "score": 73,
       "weight": 0.73
     },
     {
       "source": "/wiki/wax-blockchain.html",
-      "target": "/wiki/midevilpunks.html",
-      "score": 70,
-      "weight": 0.7
+      "target": "/wiki/wax-dexs-defi.html",
+      "score": 73,
+      "weight": 0.73
     },
     {
       "source": "/wiki/wax-blockchain.html",
@@ -15323,8 +15323,8 @@
     {
       "source": "/wiki/wax-blockchain.html",
       "target": "/wiki/stikfamwars.html",
-      "score": 66,
-      "weight": 0.66
+      "score": 69,
+      "weight": 0.69
     },
     {
       "source": "/wiki/wax-dexs-defi.html",
@@ -15346,15 +15346,15 @@
     },
     {
       "source": "/wiki/wax-dexs-defi.html",
-      "target": "/wiki/wax-pepe.html",
+      "target": "/wiki/midevilpunks.html",
       "score": 67,
       "weight": 0.67
     },
     {
       "source": "/wiki/wax-dexs-defi.html",
-      "target": "/wiki/midevilpunks.html",
-      "score": 64,
-      "weight": 0.64
+      "target": "/wiki/wax-pepe.html",
+      "score": 67,
+      "weight": 0.67
     },
     {
       "source": "/wiki/wax-nft-marketplaces.html",
@@ -15382,15 +15382,27 @@
     },
     {
       "source": "/wiki/wax-nft-marketplaces.html",
-      "target": "/wiki/wax-blockchain.html",
-      "score": 66,
-      "weight": 0.66
+      "target": "/wiki/midevilpunks.html",
+      "score": 67,
+      "weight": 0.67
     },
     {
       "source": "/wiki/wax-pepe.html",
       "target": "/wiki/pmsl.html",
       "score": 81,
       "weight": 0.81
+    },
+    {
+      "source": "/wiki/wax-pepe.html",
+      "target": "/wiki/midevilpunks.html",
+      "score": 73,
+      "weight": 0.73
+    },
+    {
+      "source": "/wiki/wax-pepe.html",
+      "target": "/wiki/stikfamwars.html",
+      "score": 72,
+      "weight": 0.72
     },
     {
       "source": "/wiki/wax-pepe.html",
@@ -15403,18 +15415,6 @@
       "target": "/wiki/pixel-journey.html",
       "score": 71,
       "weight": 0.71
-    },
-    {
-      "source": "/wiki/wax-pepe.html",
-      "target": "/wiki/atomichub.html",
-      "score": 70,
-      "weight": 0.7
-    },
-    {
-      "source": "/wiki/wax-pepe.html",
-      "target": "/wiki/midevilpunks.html",
-      "score": 70,
-      "weight": 0.7
     },
     {
       "source": "/wiki/waxp-exchange.html",
@@ -15431,20 +15431,20 @@
     {
       "source": "/wiki/waxp-exchange.html",
       "target": "/wiki/midevilpunks.html",
-      "score": 64,
-      "weight": 0.64
+      "score": 67,
+      "weight": 0.67
+    },
+    {
+      "source": "/wiki/waxp-exchange.html",
+      "target": "/wiki/stikfamwars.html",
+      "score": 66,
+      "weight": 0.66
     },
     {
       "source": "/wiki/waxp-exchange.html",
       "target": "/wiki/nbg-token.html",
       "score": 64,
       "weight": 0.64
-    },
-    {
-      "source": "/wiki/waxp-exchange.html",
-      "target": "/wiki/rave-relics.html",
-      "score": 63,
-      "weight": 0.63
     },
     {
       "source": "/wiki/waxp.html",
@@ -15454,25 +15454,25 @@
     },
     {
       "source": "/wiki/waxp.html",
+      "target": "/wiki/midevilpunks.html",
+      "score": 70,
+      "weight": 0.7
+    },
+    {
+      "source": "/wiki/waxp.html",
       "target": "/wiki/pmsl.html",
       "score": 69,
       "weight": 0.69
     },
     {
       "source": "/wiki/waxp.html",
-      "target": "/wiki/midevilpunks.html",
-      "score": 67,
-      "weight": 0.67
+      "target": "/wiki/stikfamwars.html",
+      "score": 69,
+      "weight": 0.69
     },
     {
       "source": "/wiki/waxp.html",
       "target": "/wiki/rave-relics.html",
-      "score": 66,
-      "weight": 0.66
-    },
-    {
-      "source": "/wiki/waxp.html",
-      "target": "/wiki/stikfamwars.html",
       "score": 66,
       "weight": 0.66
     },
@@ -15562,7 +15562,7 @@
     },
     {
       "source": "/wiki/wuffi.html",
-      "target": "/wiki/spirit-borns.html",
+      "target": "/wiki/battlemech-blast.html",
       "score": 77,
       "weight": 0.77
     },
