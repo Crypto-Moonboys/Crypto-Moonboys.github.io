@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-04T13:52:43.534Z",
-  "verified_at": "2026-10-04T13:52:43.534Z",
+  "generated_at": "2026-10-04T13:54:23.696Z",
+  "verified_at": "2026-10-04T13:54:23.696Z",
   "lite": true,
   "nodes": [
     {
@@ -72,7 +72,7 @@
       "title": "Graffiti Nexus",
       "url": "/wiki/graffiti-nexus.html",
       "category": "core",
-      "rank_score": 345,
+      "rank_score": 347,
       "authority_score": 28
     },
     {
@@ -436,6 +436,14 @@
       "authority_score": 12
     },
     {
+      "id": "/wiki/first-witness-symbols-marks-sacred-design.html",
+      "title": "Symbols, Marks and Sacred Design",
+      "url": "/wiki/first-witness-symbols-marks-sacred-design.html",
+      "category": "core",
+      "rank_score": 304,
+      "authority_score": 12
+    },
+    {
       "id": "/wiki/the-bitcoin-kid-army.html",
       "title": "Bitcoin Kid Army — Escape Accounts",
       "url": "/wiki/the-bitcoin-kid-army.html",
@@ -465,14 +473,6 @@
       "url": "/wiki/first-witness-ai-synthetic-minds.html",
       "category": "core",
       "rank_score": 301,
-      "authority_score": 12
-    },
-    {
-      "id": "/wiki/first-witness-symbols-marks-sacred-design.html",
-      "title": "Symbols, Marks and Sacred Design",
-      "url": "/wiki/first-witness-symbols-marks-sacred-design.html",
-      "category": "core",
-      "rank_score": 300,
       "authority_score": 12
     },
     {
@@ -596,12 +596,12 @@
       "authority_score": 12
     },
     {
-      "id": "/wiki/graffiti-kings.html",
-      "title": "Graffiti Kings",
-      "url": "/wiki/graffiti-kings.html",
+      "id": "/wiki/first-witness-relics-manuscripts-lost-editions.html",
+      "title": "Relics, Manuscripts and Lost Editions",
+      "url": "/wiki/first-witness-relics-manuscripts-lost-editions.html",
       "category": "core",
       "rank_score": 293,
-      "authority_score": 28
+      "authority_score": 12
     }
   ],
   "edges": [
@@ -910,12 +910,6 @@
       "target": "/wiki/block-node-defenders.html",
       "score": 87,
       "weight": 0.87
-    },
-    {
-      "source": "/wiki/graffiti-kings.html",
-      "target": "/wiki/gkniftyheads.html",
-      "score": 86,
-      "weight": 0.86
     },
     {
       "source": "/wiki/null-the-prophet.html",

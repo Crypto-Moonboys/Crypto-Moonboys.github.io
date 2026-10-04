@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-04T13:52:43.534Z",
-  "verified_at": "2026-10-04T13:52:43.534Z",
+  "generated_at": "2026-10-04T13:54:23.696Z",
+  "verified_at": "2026-10-04T13:54:23.696Z",
   "nodes": [
     {
       "id": "/about.html",
@@ -663,7 +663,7 @@
       "title": "Counterfeit Relics, Forged Hashes and Sacred Scams",
       "url": "/wiki/first-witness-counterfeit-relics-fraud.html",
       "category": "core",
-      "rank_score": 265,
+      "rank_score": 267,
       "authority_score": 12
     },
     {
@@ -687,7 +687,7 @@
       "title": "Digital Inheritance and Memory After Death",
       "url": "/wiki/first-witness-digital-inheritance-after-death.html",
       "category": "core",
-      "rank_score": 267,
+      "rank_score": 269,
       "authority_score": 12
     },
     {
@@ -719,7 +719,7 @@
       "title": "Education, Schools and Apprenticeship",
       "url": "/wiki/first-witness-education-schools-apprenticeship.html",
       "category": "core",
-      "rank_score": 275,
+      "rank_score": 277,
       "authority_score": 12
     },
     {
@@ -983,7 +983,7 @@
       "title": "Relics, Manuscripts and Lost Editions",
       "url": "/wiki/first-witness-relics-manuscripts-lost-editions.html",
       "category": "core",
-      "rank_score": 291,
+      "rank_score": 293,
       "authority_score": 12
     },
     {
@@ -1055,7 +1055,7 @@
       "title": "Symbols, Marks and Sacred Design",
       "url": "/wiki/first-witness-symbols-marks-sacred-design.html",
       "category": "core",
-      "rank_score": 300,
+      "rank_score": 304,
       "authority_score": 12
     },
     {
@@ -1164,11 +1164,11 @@
     },
     {
       "id": "/wiki/genesis-spray-drop.html",
-      "title": "genesis spray drop",
+      "title": "Genesis Spray Drop",
       "url": "/wiki/genesis-spray-drop.html",
       "category": "characters",
-      "rank_score": 262,
-      "authority_score": 18
+      "rank_score": 290,
+      "authority_score": 28
     },
     {
       "id": "/wiki/genesis-spray.html",
@@ -2351,7 +2351,7 @@
       "title": "Graffiti Kings",
       "url": "/wiki/graffiti-kings.html",
       "category": "core",
-      "rank_score": 293,
+      "rank_score": 291,
       "authority_score": 28
     },
     {
@@ -2359,7 +2359,7 @@
       "title": "Graffiti Nexus",
       "url": "/wiki/graffiti-nexus.html",
       "category": "core",
-      "rank_score": 345,
+      "rank_score": 347,
       "authority_score": 28
     },
     {
@@ -2511,7 +2511,7 @@
       "title": "Jodie ZOOM 2000",
       "url": "/wiki/jodie-zoom-2000.html",
       "category": "characters",
-      "rank_score": 283,
+      "rank_score": 285,
       "authority_score": 28
     },
     {
@@ -2879,8 +2879,8 @@
       "title": "Snipey 'D-Man' Sirus",
       "url": "/wiki/snipey-d-man-sirus.html",
       "category": "characters",
-      "rank_score": 211,
-      "authority_score": 14
+      "rank_score": 290,
+      "authority_score": 28
     },
     {
       "id": "/wiki/solana.html",
@@ -2895,16 +2895,16 @@
       "title": "Spirit Borns",
       "url": "/wiki/spirit-borns.html",
       "category": "factions",
-      "rank_score": 264,
-      "authority_score": 18
+      "rank_score": 276,
+      "authority_score": 24
     },
     {
       "id": "/wiki/spraycode-writcode-mechanics.html",
       "title": "Spraycode &amp; Writcode Mechanics",
       "url": "/wiki/spraycode-writcode-mechanics.html",
       "category": "factions",
-      "rank_score": 271,
-      "authority_score": 18
+      "rank_score": 283,
+      "authority_score": 24
     },
     {
       "id": "/wiki/squeaky-pinks-enforcers.html",
@@ -3580,6 +3580,12 @@
     },
     {
       "source": "/wiki/alien-worlds-tlm.html",
+      "target": "/wiki/jodie-zoom-2000.html",
+      "score": 78,
+      "weight": 0.78
+    },
+    {
+      "source": "/wiki/alien-worlds-tlm.html",
       "target": "/wiki/m1ntr-k1ll.html",
       "score": 78,
       "weight": 0.78
@@ -3587,12 +3593,6 @@
     {
       "source": "/wiki/alien-worlds-tlm.html",
       "target": "/wiki/pyralith.html",
-      "score": 78,
-      "weight": 0.78
-    },
-    {
-      "source": "/wiki/alien-worlds-tlm.html",
-      "target": "/wiki/quell.html",
       "score": 78,
       "weight": 0.78
     },
@@ -3640,6 +3640,12 @@
     },
     {
       "source": "/wiki/atomicassets.html",
+      "target": "/wiki/jodie-zoom-2000.html",
+      "score": 78,
+      "weight": 0.78
+    },
+    {
+      "source": "/wiki/atomicassets.html",
       "target": "/wiki/m1ntr-k1ll.html",
       "score": 78,
       "weight": 0.78
@@ -3647,12 +3653,6 @@
     {
       "source": "/wiki/atomicassets.html",
       "target": "/wiki/pyralith.html",
-      "score": 78,
-      "weight": 0.78
-    },
-    {
-      "source": "/wiki/atomicassets.html",
-      "target": "/wiki/quell.html",
       "score": 78,
       "weight": 0.78
     },
@@ -3736,13 +3736,13 @@
     },
     {
       "source": "/wiki/ava-chen.html",
-      "target": "/wiki/loopfiend.html",
+      "target": "/wiki/jodie-zoom-2000.html",
       "score": 78,
       "weight": 0.78
     },
     {
       "source": "/wiki/ava-chen.html",
-      "target": "/wiki/m1ntr-k1ll.html",
+      "target": "/wiki/loopfiend.html",
       "score": 78,
       "weight": 0.78
     },
@@ -3766,13 +3766,13 @@
     },
     {
       "source": "/wiki/battlemech-blast.html",
-      "target": "/wiki/moon-mission.html",
-      "score": 76,
-      "weight": 0.76
+      "target": "/wiki/spirit-borns.html",
+      "score": 77,
+      "weight": 0.77
     },
     {
       "source": "/wiki/battlemech-blast.html",
-      "target": "/wiki/neftyblocks.html",
+      "target": "/wiki/moon-mission.html",
       "score": 76,
       "weight": 0.76
     },
@@ -4156,13 +4156,13 @@
     },
     {
       "source": "/wiki/bone-idol-ink.html",
-      "target": "/wiki/atomichub.html",
-      "score": 73,
-      "weight": 0.73
+      "target": "/wiki/spirit-borns.html",
+      "score": 74,
+      "weight": 0.74
     },
     {
       "source": "/wiki/bone-idol-ink.html",
-      "target": "/wiki/ethereum.html",
+      "target": "/wiki/atomichub.html",
       "score": 73,
       "weight": 0.73
     },
@@ -4216,13 +4216,13 @@
     },
     {
       "source": "/wiki/canvas-clash.html",
-      "target": "/wiki/moon-mission.html",
-      "score": 76,
-      "weight": 0.76
+      "target": "/wiki/spirit-borns.html",
+      "score": 77,
+      "weight": 0.77
     },
     {
       "source": "/wiki/canvas-clash.html",
-      "target": "/wiki/neftyblocks.html",
+      "target": "/wiki/moon-mission.html",
       "score": 76,
       "weight": 0.76
     },
@@ -4246,13 +4246,13 @@
     },
     {
       "source": "/wiki/charlie-buster.html",
-      "target": "/wiki/m1ntr-k1ll.html",
+      "target": "/wiki/jodie-zoom-2000.html",
       "score": 75,
       "weight": 0.75
     },
     {
       "source": "/wiki/charlie-buster.html",
-      "target": "/wiki/pyralith.html",
+      "target": "/wiki/m1ntr-k1ll.html",
       "score": 75,
       "weight": 0.75
     },
@@ -4276,13 +4276,13 @@
     },
     {
       "source": "/wiki/croydon-tower-blocks.html",
-      "target": "/wiki/moon-mission.html",
-      "score": 76,
-      "weight": 0.76
+      "target": "/wiki/spirit-borns.html",
+      "score": 77,
+      "weight": 0.77
     },
     {
       "source": "/wiki/croydon-tower-blocks.html",
-      "target": "/wiki/neftyblocks.html",
+      "target": "/wiki/moon-mission.html",
       "score": 76,
       "weight": 0.76
     },
@@ -4462,7 +4462,7 @@
     },
     {
       "source": "/wiki/delicious-again-pete.html",
-      "target": "/wiki/spirit-borns.html",
+      "target": "/wiki/street-kingdoms.html",
       "score": 78,
       "weight": 0.78
     },
@@ -4492,9 +4492,15 @@
     },
     {
       "source": "/wiki/diamond-hands.html",
-      "target": "/wiki/m1ntr-k1ll.html",
+      "target": "/wiki/jodie-zoom-2000.html",
       "score": 75,
       "weight": 0.75
+    },
+    {
+      "source": "/wiki/dragan-volkov.html",
+      "target": "/wiki/jodie-zoom-2000.html",
+      "score": 81,
+      "weight": 0.81
     },
     {
       "source": "/wiki/dragan-volkov.html",
@@ -4507,12 +4513,6 @@
       "target": "/wiki/thera-9.html",
       "score": 80,
       "weight": 0.8
-    },
-    {
-      "source": "/wiki/dragan-volkov.html",
-      "target": "/wiki/jodie-zoom-2000.html",
-      "score": 79,
-      "weight": 0.79
     },
     {
       "source": "/wiki/dragan-volkov.html",
@@ -4546,13 +4546,13 @@
     },
     {
       "source": "/wiki/dream-sovereign.html",
-      "target": "/wiki/moon-mission.html",
-      "score": 76,
-      "weight": 0.76
+      "target": "/wiki/spirit-borns.html",
+      "score": 77,
+      "weight": 0.77
     },
     {
       "source": "/wiki/dream-sovereign.html",
-      "target": "/wiki/neftyblocks.html",
+      "target": "/wiki/moon-mission.html",
       "score": 76,
       "weight": 0.76
     },
@@ -4696,13 +4696,13 @@
     },
     {
       "source": "/wiki/exyboy.html",
-      "target": "/wiki/moon-mission.html",
-      "score": 76,
-      "weight": 0.76
+      "target": "/wiki/spirit-borns.html",
+      "score": 77,
+      "weight": 0.77
     },
     {
       "source": "/wiki/exyboy.html",
-      "target": "/wiki/neftyblocks.html",
+      "target": "/wiki/moon-mission.html",
       "score": 76,
       "weight": 0.76
     },
@@ -7222,7 +7222,7 @@
     },
     {
       "source": "/wiki/forkborn-collective.html",
-      "target": "/wiki/spirit-borns.html",
+      "target": "/wiki/street-kingdoms.html",
       "score": 78,
       "weight": 0.78
     },
@@ -7246,13 +7246,13 @@
     },
     {
       "source": "/wiki/forklord-you.html",
-      "target": "/wiki/m1ntr-k1ll.html",
+      "target": "/wiki/jodie-zoom-2000.html",
       "score": 75,
       "weight": 0.75
     },
     {
       "source": "/wiki/forklord-you.html",
-      "target": "/wiki/nfts.html",
+      "target": "/wiki/m1ntr-k1ll.html",
       "score": 75,
       "weight": 0.75
     },
@@ -7264,27 +7264,27 @@
     },
     {
       "source": "/wiki/forksplit.html",
+      "target": "/wiki/jodie-zoom-2000.html",
+      "score": 81,
+      "weight": 0.81
+    },
+    {
+      "source": "/wiki/forksplit.html",
+      "target": "/wiki/snipey-d-man-sirus.html",
+      "score": 80,
+      "weight": 0.8
+    },
+    {
+      "source": "/wiki/forksplit.html",
       "target": "/wiki/thera-9.html",
       "score": 80,
       "weight": 0.8
     },
     {
       "source": "/wiki/forksplit.html",
-      "target": "/wiki/jodie-zoom-2000.html",
-      "score": 79,
-      "weight": 0.79
-    },
-    {
-      "source": "/wiki/forksplit.html",
       "target": "/wiki/null-the-prophet.html",
       "score": 79,
       "weight": 0.79
-    },
-    {
-      "source": "/wiki/forksplit.html",
-      "target": "/wiki/m1ntr-k1ll.html",
-      "score": 78,
-      "weight": 0.78
     },
     {
       "source": "/wiki/games4punks-telegram.html",
@@ -7402,33 +7402,33 @@
     },
     {
       "source": "/wiki/genesis-spray-drop.html",
+      "target": "/wiki/crypto-moonboys.html",
+      "score": 83,
+      "weight": 0.83
+    },
+    {
+      "source": "/wiki/genesis-spray-drop.html",
       "target": "/wiki/null-the-prophet.html",
       "score": 82,
       "weight": 0.82
     },
     {
       "source": "/wiki/genesis-spray-drop.html",
-      "target": "/wiki/crypto-moonboys.html",
+      "target": "/wiki/bitcoin-kids.html",
+      "score": 81,
+      "weight": 0.81
+    },
+    {
+      "source": "/wiki/genesis-spray-drop.html",
+      "target": "/wiki/hodl-warriors.html",
       "score": 80,
       "weight": 0.8
     },
     {
       "source": "/wiki/genesis-spray-drop.html",
-      "target": "/wiki/bitcoin-kids.html",
-      "score": 78,
-      "weight": 0.78
-    },
-    {
-      "source": "/wiki/genesis-spray-drop.html",
-      "target": "/wiki/hodl-warriors.html",
-      "score": 73,
-      "weight": 0.73
-    },
-    {
-      "source": "/wiki/genesis-spray-drop.html",
       "target": "/wiki/bitcoin-x-kids.html",
-      "score": 72,
-      "weight": 0.72
+      "score": 75,
+      "weight": 0.75
     },
     {
       "source": "/wiki/genesis-spray.html",
@@ -12064,6 +12064,12 @@
     },
     {
       "source": "/wiki/grit.html",
+      "target": "/wiki/jodie-zoom-2000.html",
+      "score": 78,
+      "weight": 0.78
+    },
+    {
+      "source": "/wiki/grit.html",
       "target": "/wiki/m1ntr-k1ll.html",
       "score": 78,
       "weight": 0.78
@@ -12071,12 +12077,6 @@
     {
       "source": "/wiki/grit.html",
       "target": "/wiki/pyralith.html",
-      "score": 78,
-      "weight": 0.78
-    },
-    {
-      "source": "/wiki/grit.html",
-      "target": "/wiki/quell.html",
       "score": 78,
       "weight": 0.78
     },
@@ -12094,6 +12094,12 @@
     },
     {
       "source": "/wiki/grit42.html",
+      "target": "/wiki/jodie-zoom-2000.html",
+      "score": 78,
+      "weight": 0.78
+    },
+    {
+      "source": "/wiki/grit42.html",
       "target": "/wiki/m1ntr-k1ll.html",
       "score": 78,
       "weight": 0.78
@@ -12101,12 +12107,6 @@
     {
       "source": "/wiki/grit42.html",
       "target": "/wiki/pyralith.html",
-      "score": 78,
-      "weight": 0.78
-    },
-    {
-      "source": "/wiki/grit42.html",
-      "target": "/wiki/quell.html",
       "score": 78,
       "weight": 0.78
     },
@@ -12166,9 +12166,9 @@
     },
     {
       "source": "/wiki/harrison-rift.html",
-      "target": "/wiki/atomichub.html",
-      "score": 73,
-      "weight": 0.73
+      "target": "/wiki/spirit-borns.html",
+      "score": 74,
+      "weight": 0.74
     },
     {
       "source": "/wiki/head-tags.html",
@@ -12220,13 +12220,13 @@
     },
     {
       "source": "/wiki/hex-tagger-prime.html",
-      "target": "/wiki/m1ntr-k1ll.html",
+      "target": "/wiki/jodie-zoom-2000.html",
       "score": 75,
       "weight": 0.75
     },
     {
       "source": "/wiki/hex-tagger-prime.html",
-      "target": "/wiki/pyralith.html",
+      "target": "/wiki/m1ntr-k1ll.html",
       "score": 75,
       "weight": 0.75
     },
@@ -12346,13 +12346,13 @@
     },
     {
       "source": "/wiki/ian-harrison.html",
-      "target": "/wiki/m1ntr-k1ll.html",
+      "target": "/wiki/jodie-zoom-2000.html",
       "score": 75,
       "weight": 0.75
     },
     {
       "source": "/wiki/ian-harrison.html",
-      "target": "/wiki/pyralith.html",
+      "target": "/wiki/m1ntr-k1ll.html",
       "score": 75,
       "weight": 0.75
     },
@@ -12406,13 +12406,13 @@
     },
     {
       "source": "/wiki/jillian-godsil.html",
-      "target": "/wiki/moon-mission.html",
-      "score": 76,
-      "weight": 0.76
+      "target": "/wiki/spirit-borns.html",
+      "score": 77,
+      "weight": 0.77
     },
     {
       "source": "/wiki/jillian-godsil.html",
-      "target": "/wiki/neftyblocks.html",
+      "target": "/wiki/moon-mission.html",
       "score": 76,
       "weight": 0.76
     },
@@ -12442,15 +12442,15 @@
     },
     {
       "source": "/wiki/jodie-zoom-2000.html",
-      "target": "/wiki/dragan-volkov.html",
-      "score": 79,
-      "weight": 0.79
+      "target": "/wiki/snipey-d-man-sirus.html",
+      "score": 80,
+      "weight": 0.8
     },
     {
       "source": "/wiki/jonny-laurence-nelson-tag-records.html",
       "target": "/wiki/spraycode-writcode-mechanics.html",
-      "score": 80,
-      "weight": 0.8
+      "score": 79,
+      "weight": 0.79
     },
     {
       "source": "/wiki/jonny-laurence-nelson-tag-records.html",
@@ -12478,6 +12478,12 @@
     },
     {
       "source": "/wiki/lady-ink.html",
+      "target": "/wiki/snipey-d-man-sirus.html",
+      "score": 83,
+      "weight": 0.83
+    },
+    {
+      "source": "/wiki/lady-ink.html",
       "target": "/wiki/bitcoin-kids.html",
       "score": 81,
       "weight": 0.81
@@ -12501,12 +12507,6 @@
       "weight": 0.8
     },
     {
-      "source": "/wiki/lady-ink.html",
-      "target": "/wiki/iris-7.html",
-      "score": 80,
-      "weight": 0.8
-    },
-    {
       "source": "/wiki/lfgk.html",
       "target": "/wiki/pmsl.html",
       "score": 91,
@@ -12517,6 +12517,12 @@
       "target": "/wiki/delicious-again-pete.html",
       "score": 81,
       "weight": 0.81
+    },
+    {
+      "source": "/wiki/lfgk.html",
+      "target": "/wiki/spirit-borns.html",
+      "score": 80,
+      "weight": 0.8
     },
     {
       "source": "/wiki/lfgk.html",
@@ -12531,14 +12537,20 @@
       "weight": 0.78
     },
     {
-      "source": "/wiki/lfgk.html",
-      "target": "/wiki/phygital-prints.html",
-      "score": 78,
-      "weight": 0.78
+      "source": "/wiki/loopfiend.html",
+      "target": "/wiki/jodie-zoom-2000.html",
+      "score": 81,
+      "weight": 0.81
     },
     {
       "source": "/wiki/loopfiend.html",
       "target": "/wiki/crypto-moonboys.html",
+      "score": 80,
+      "weight": 0.8
+    },
+    {
+      "source": "/wiki/loopfiend.html",
+      "target": "/wiki/snipey-d-man-sirus.html",
       "score": 80,
       "weight": 0.8
     },
@@ -12555,18 +12567,6 @@
       "weight": 0.79
     },
     {
-      "source": "/wiki/loopfiend.html",
-      "target": "/wiki/jodie-zoom-2000.html",
-      "score": 79,
-      "weight": 0.79
-    },
-    {
-      "source": "/wiki/loopfiend.html",
-      "target": "/wiki/null-the-prophet.html",
-      "score": 79,
-      "weight": 0.79
-    },
-    {
       "source": "/wiki/m1ntr-k1ll.html",
       "target": "/wiki/null-the-prophet.html",
       "score": 85,
@@ -12574,15 +12574,15 @@
     },
     {
       "source": "/wiki/m1ntr-k1ll.html",
-      "target": "/wiki/crypto-moonboys.html",
-      "score": 80,
-      "weight": 0.8
+      "target": "/wiki/jodie-zoom-2000.html",
+      "score": 81,
+      "weight": 0.81
     },
     {
       "source": "/wiki/m1ntr-k1ll.html",
-      "target": "/wiki/jodie-zoom-2000.html",
-      "score": 79,
-      "weight": 0.79
+      "target": "/wiki/crypto-moonboys.html",
+      "score": 80,
+      "weight": 0.8
     },
     {
       "source": "/wiki/m1ntr-k1ll.html",
@@ -12616,13 +12616,13 @@
     },
     {
       "source": "/wiki/maidstone-base.html",
-      "target": "/wiki/moon-mission.html",
-      "score": 76,
-      "weight": 0.76
+      "target": "/wiki/spirit-borns.html",
+      "score": 77,
+      "weight": 0.77
     },
     {
       "source": "/wiki/maidstone-base.html",
-      "target": "/wiki/neftyblocks.html",
+      "target": "/wiki/moon-mission.html",
       "score": 76,
       "weight": 0.76
     },
@@ -12886,13 +12886,13 @@
     },
     {
       "source": "/wiki/neftyblocks.html",
-      "target": "/wiki/moon-mission.html",
-      "score": 76,
-      "weight": 0.76
+      "target": "/wiki/spirit-borns.html",
+      "score": 77,
+      "weight": 0.77
     },
     {
       "source": "/wiki/neftyblocks.html",
-      "target": "/wiki/web3.html",
+      "target": "/wiki/moon-mission.html",
       "score": 76,
       "weight": 0.76
     },
@@ -12922,9 +12922,9 @@
     },
     {
       "source": "/wiki/nfthive.html",
-      "target": "/wiki/moon-mission.html",
-      "score": 76,
-      "weight": 0.76
+      "target": "/wiki/spirit-borns.html",
+      "score": 77,
+      "weight": 0.77
     },
     {
       "source": "/wiki/nfts.html",
@@ -13162,7 +13162,7 @@
     },
     {
       "source": "/wiki/patchwork.html",
-      "target": "/wiki/thera-9.html",
+      "target": "/wiki/snipey-d-man-sirus.html",
       "score": 83,
       "weight": 0.83
     },
@@ -13240,6 +13240,12 @@
     },
     {
       "source": "/wiki/pixil-mini.html",
+      "target": "/wiki/jodie-zoom-2000.html",
+      "score": 78,
+      "weight": 0.78
+    },
+    {
+      "source": "/wiki/pixil-mini.html",
       "target": "/wiki/m1ntr-k1ll.html",
       "score": 78,
       "weight": 0.78
@@ -13247,12 +13253,6 @@
     {
       "source": "/wiki/pixil-mini.html",
       "target": "/wiki/pyralith.html",
-      "score": 78,
-      "weight": 0.78
-    },
-    {
-      "source": "/wiki/pixil-mini.html",
-      "target": "/wiki/quell.html",
       "score": 78,
       "weight": 0.78
     },
@@ -13330,6 +13330,12 @@
     },
     {
       "source": "/wiki/pmsl.html",
+      "target": "/wiki/spirit-borns.html",
+      "score": 74,
+      "weight": 0.74
+    },
+    {
+      "source": "/wiki/pmsl.html",
       "target": "/wiki/moon-mission.html",
       "score": 73,
       "weight": 0.73
@@ -13337,12 +13343,6 @@
     {
       "source": "/wiki/pmsl.html",
       "target": "/wiki/neftyblocks.html",
-      "score": 73,
-      "weight": 0.73
-    },
-    {
-      "source": "/wiki/pmsl.html",
-      "target": "/wiki/web3.html",
       "score": 73,
       "weight": 0.73
     },
@@ -13390,6 +13390,12 @@
     },
     {
       "source": "/wiki/pyralith.html",
+      "target": "/wiki/jodie-zoom-2000.html",
+      "score": 78,
+      "weight": 0.78
+    },
+    {
+      "source": "/wiki/pyralith.html",
       "target": "/wiki/m1ntr-k1ll.html",
       "score": 78,
       "weight": 0.78
@@ -13399,12 +13405,6 @@
       "target": "/wiki/quell.html",
       "score": 78,
       "weight": 0.78
-    },
-    {
-      "source": "/wiki/pyralith.html",
-      "target": "/wiki/thera-9.html",
-      "score": 77,
-      "weight": 0.77
     },
     {
       "source": "/wiki/queen-sarah-p-fly.html",
@@ -13450,6 +13450,12 @@
     },
     {
       "source": "/wiki/quell.html",
+      "target": "/wiki/jodie-zoom-2000.html",
+      "score": 78,
+      "weight": 0.78
+    },
+    {
+      "source": "/wiki/quell.html",
       "target": "/wiki/m1ntr-k1ll.html",
       "score": 78,
       "weight": 0.78
@@ -13459,12 +13465,6 @@
       "target": "/wiki/pyralith.html",
       "score": 78,
       "weight": 0.78
-    },
-    {
-      "source": "/wiki/quell.html",
-      "target": "/wiki/thera-9.html",
-      "score": 77,
-      "weight": 0.77
     },
     {
       "source": "/wiki/rave-relics.html",
@@ -13546,13 +13546,13 @@
     },
     {
       "source": "/wiki/rune-tag.html",
-      "target": "/wiki/m1ntr-k1ll.html",
+      "target": "/wiki/jodie-zoom-2000.html",
       "score": 75,
       "weight": 0.75
     },
     {
       "source": "/wiki/rune-tag.html",
-      "target": "/wiki/pyralith.html",
+      "target": "/wiki/m1ntr-k1ll.html",
       "score": 75,
       "weight": 0.75
     },
@@ -13576,13 +13576,13 @@
     },
     {
       "source": "/wiki/rust2riches.html",
-      "target": "/wiki/moon-mission.html",
-      "score": 76,
-      "weight": 0.76
+      "target": "/wiki/spirit-borns.html",
+      "score": 77,
+      "weight": 0.77
     },
     {
       "source": "/wiki/rust2riches.html",
-      "target": "/wiki/neftyblocks.html",
+      "target": "/wiki/moon-mission.html",
       "score": 76,
       "weight": 0.76
     },
@@ -13672,9 +13672,9 @@
     },
     {
       "source": "/wiki/satorebel.html",
-      "target": "/wiki/crypto-moonboys.html",
-      "score": 80,
-      "weight": 0.8
+      "target": "/wiki/jodie-zoom-2000.html",
+      "score": 81,
+      "weight": 0.81
     },
     {
       "source": "/wiki/satoshi-scroll.html",
@@ -13762,9 +13762,9 @@
     },
     {
       "source": "/wiki/sister-halcyon.html",
-      "target": "/wiki/crypto-moonboys.html",
-      "score": 80,
-      "weight": 0.8
+      "target": "/wiki/jodie-zoom-2000.html",
+      "score": 81,
+      "weight": 0.81
     },
     {
       "source": "/wiki/sneakar.html",
@@ -13780,6 +13780,12 @@
     },
     {
       "source": "/wiki/sneakar.html",
+      "target": "/wiki/spirit-borns.html",
+      "score": 77,
+      "weight": 0.77
+    },
+    {
+      "source": "/wiki/sneakar.html",
       "target": "/wiki/moon-mission.html",
       "score": 76,
       "weight": 0.76
@@ -13791,12 +13797,6 @@
       "weight": 0.76
     },
     {
-      "source": "/wiki/sneakar.html",
-      "target": "/wiki/web3.html",
-      "score": 76,
-      "weight": 0.76
-    },
-    {
       "source": "/wiki/snipey-d-man-sirus.html",
       "target": "/wiki/crypto-moonboys.html",
       "score": 83,
@@ -13804,27 +13804,27 @@
     },
     {
       "source": "/wiki/snipey-d-man-sirus.html",
+      "target": "/wiki/lady-ink.html",
+      "score": 83,
+      "weight": 0.83
+    },
+    {
+      "source": "/wiki/snipey-d-man-sirus.html",
       "target": "/wiki/thera-9.html",
-      "score": 80,
-      "weight": 0.8
+      "score": 83,
+      "weight": 0.83
     },
     {
       "source": "/wiki/snipey-d-man-sirus.html",
       "target": "/wiki/jodie-zoom-2000.html",
-      "score": 79,
-      "weight": 0.79
+      "score": 81,
+      "weight": 0.81
     },
     {
       "source": "/wiki/snipey-d-man-sirus.html",
-      "target": "/wiki/null-the-prophet.html",
-      "score": 79,
-      "weight": 0.79
-    },
-    {
-      "source": "/wiki/snipey-d-man-sirus.html",
-      "target": "/wiki/m1ntr-k1ll.html",
-      "score": 78,
-      "weight": 0.78
+      "target": "/wiki/patchwork.html",
+      "score": 81,
+      "weight": 0.81
     },
     {
       "source": "/wiki/solana.html",
@@ -13864,33 +13864,33 @@
     },
     {
       "source": "/wiki/spirit-borns.html",
-      "target": "/wiki/delicious-again-pete.html",
-      "score": 78,
-      "weight": 0.78
-    },
-    {
-      "source": "/wiki/spirit-borns.html",
-      "target": "/wiki/forkborn-collective.html",
-      "score": 78,
-      "weight": 0.78
-    },
-    {
-      "source": "/wiki/spirit-borns.html",
-      "target": "/wiki/phygital-prints.html",
-      "score": 78,
-      "weight": 0.78
-    },
-    {
-      "source": "/wiki/spirit-borns.html",
       "target": "/wiki/street-kingdoms.html",
       "score": 78,
       "weight": 0.78
     },
     {
+      "source": "/wiki/spirit-borns.html",
+      "target": "/wiki/lfgk.html",
+      "score": 77,
+      "weight": 0.77
+    },
+    {
+      "source": "/wiki/spirit-borns.html",
+      "target": "/wiki/sneakar.html",
+      "score": 77,
+      "weight": 0.77
+    },
+    {
+      "source": "/wiki/spirit-borns.html",
+      "target": "/wiki/moon-mission.html",
+      "score": 76,
+      "weight": 0.76
+    },
+    {
       "source": "/wiki/spraycode-writcode-mechanics.html",
       "target": "/wiki/jonny-laurence-nelson-tag-records.html",
-      "score": 80,
-      "weight": 0.8
+      "score": 77,
+      "weight": 0.77
     },
     {
       "source": "/wiki/spraycode-writcode-mechanics.html",
@@ -14032,9 +14032,9 @@
     },
     {
       "source": "/wiki/storm-struggle.html",
-      "target": "/wiki/atomichub.html",
-      "score": 73,
-      "weight": 0.73
+      "target": "/wiki/spirit-borns.html",
+      "score": 74,
+      "weight": 0.74
     },
     {
       "source": "/wiki/street-kingdoms.html",
@@ -14050,6 +14050,12 @@
     },
     {
       "source": "/wiki/street-kingdoms.html",
+      "target": "/wiki/spirit-borns.html",
+      "score": 77,
+      "weight": 0.77
+    },
+    {
+      "source": "/wiki/street-kingdoms.html",
       "target": "/wiki/moon-mission.html",
       "score": 76,
       "weight": 0.76
@@ -14057,12 +14063,6 @@
     {
       "source": "/wiki/street-kingdoms.html",
       "target": "/wiki/neftyblocks.html",
-      "score": 76,
-      "weight": 0.76
-    },
-    {
-      "source": "/wiki/street-kingdoms.html",
-      "target": "/wiki/web3.html",
       "score": 76,
       "weight": 0.76
     },
@@ -14116,13 +14116,13 @@
     },
     {
       "source": "/wiki/tacoswap.html",
-      "target": "/wiki/moon-mission.html",
-      "score": 76,
-      "weight": 0.76
+      "target": "/wiki/spirit-borns.html",
+      "score": 77,
+      "weight": 0.77
     },
     {
       "source": "/wiki/tacoswap.html",
-      "target": "/wiki/neftyblocks.html",
+      "target": "/wiki/moon-mission.html",
       "score": 76,
       "weight": 0.76
     },
@@ -14146,13 +14146,13 @@
     },
     {
       "source": "/wiki/tagzcoin.html",
-      "target": "/wiki/moon-mission.html",
-      "score": 76,
-      "weight": 0.76
+      "target": "/wiki/spirit-borns.html",
+      "score": 77,
+      "weight": 0.77
     },
     {
       "source": "/wiki/tagzcoin.html",
-      "target": "/wiki/neftyblocks.html",
+      "target": "/wiki/moon-mission.html",
       "score": 76,
       "weight": 0.76
     },
@@ -15058,6 +15058,12 @@
     },
     {
       "source": "/wiki/thera-9.html",
+      "target": "/wiki/jodie-zoom-2000.html",
+      "score": 84,
+      "weight": 0.84
+    },
+    {
+      "source": "/wiki/thera-9.html",
       "target": "/wiki/crypto-moonboys.html",
       "score": 83,
       "weight": 0.83
@@ -15070,19 +15076,13 @@
     },
     {
       "source": "/wiki/thera-9.html",
-      "target": "/wiki/jodie-zoom-2000.html",
-      "score": 82,
-      "weight": 0.82
+      "target": "/wiki/snipey-d-man-sirus.html",
+      "score": 83,
+      "weight": 0.83
     },
     {
       "source": "/wiki/thera-9.html",
       "target": "/wiki/bitcoin-kids.html",
-      "score": 81,
-      "weight": 0.81
-    },
-    {
-      "source": "/wiki/thera-9.html",
-      "target": "/wiki/patchwork.html",
       "score": 81,
       "weight": 0.81
     },
@@ -15256,13 +15256,13 @@
     },
     {
       "source": "/wiki/wallets.html",
-      "target": "/wiki/m1ntr-k1ll.html",
+      "target": "/wiki/jodie-zoom-2000.html",
       "score": 78,
       "weight": 0.78
     },
     {
       "source": "/wiki/wallets.html",
-      "target": "/wiki/nfts.html",
+      "target": "/wiki/m1ntr-k1ll.html",
       "score": 78,
       "weight": 0.78
     },
@@ -15526,13 +15526,13 @@
     },
     {
       "source": "/wiki/wuffi.html",
-      "target": "/wiki/atomichub.html",
-      "score": 76,
-      "weight": 0.76
+      "target": "/wiki/spirit-borns.html",
+      "score": 77,
+      "weight": 0.77
     },
     {
       "source": "/wiki/wuffi.html",
-      "target": "/wiki/moon-mission.html",
+      "target": "/wiki/atomichub.html",
       "score": 76,
       "weight": 0.76
     },
@@ -15592,9 +15592,9 @@
     },
     {
       "source": "/wiki/xrp-ledger.html",
-      "target": "/wiki/atomichub.html",
-      "score": 73,
-      "weight": 0.73
+      "target": "/wiki/spirit-borns.html",
+      "score": 74,
+      "weight": 0.74
     }
   ]
 }
