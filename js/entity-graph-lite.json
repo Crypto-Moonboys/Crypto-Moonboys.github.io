@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-04T13:51:06.267Z",
-  "verified_at": "2026-10-04T13:51:06.267Z",
+  "generated_at": "2026-10-04T13:52:43.534Z",
+  "verified_at": "2026-10-04T13:52:43.534Z",
   "lite": true,
   "nodes": [
     {
@@ -132,6 +132,14 @@
       "authority_score": 26
     },
     {
+      "id": "/wiki/first-witness-book-1-the-first-witness.html",
+      "title": "Book I — The First Witness",
+      "url": "/wiki/first-witness-book-1-the-first-witness.html",
+      "category": "core",
+      "rank_score": 328,
+      "authority_score": 14
+    },
+    {
       "id": "/wiki/first-witness-book-8-the-fire.html",
       "title": "Book VIII — The Fire",
       "url": "/wiki/first-witness-book-8-the-fire.html",
@@ -154,14 +162,6 @@
       "category": "factions",
       "rank_score": 327,
       "authority_score": 26
-    },
-    {
-      "id": "/wiki/first-witness-book-1-the-first-witness.html",
-      "title": "Book I — The First Witness",
-      "url": "/wiki/first-witness-book-1-the-first-witness.html",
-      "category": "core",
-      "rank_score": 326,
-      "authority_score": 14
     },
     {
       "id": "/wiki/first-witness-forty-paths.html",
@@ -420,6 +420,14 @@
       "authority_score": 21
     },
     {
+      "id": "/wiki/first-witness-glossary.html",
+      "title": "First Witness Glossary",
+      "url": "/wiki/first-witness-glossary.html",
+      "category": "core",
+      "rank_score": 305,
+      "authority_score": 14
+    },
+    {
       "id": "/wiki/first-witness-null-erasure.html",
       "title": "NULL and the Theology of Erasure",
       "url": "/wiki/first-witness-null-erasure.html",
@@ -484,14 +492,6 @@
       "authority_score": 28
     },
     {
-      "id": "/wiki/first-witness-glossary.html",
-      "title": "First Witness Glossary",
-      "url": "/wiki/first-witness-glossary.html",
-      "category": "core",
-      "rank_score": 299,
-      "authority_score": 14
-    },
-    {
       "id": "/wiki/gkniftyheads-nft-collection.html",
       "title": "GKniftyHEADS NFT Collection",
       "url": "/wiki/gkniftyheads-nft-collection.html",
@@ -506,22 +506,6 @@
       "category": "characters",
       "rank_score": 299,
       "authority_score": 28
-    },
-    {
-      "id": "/wiki/bitcoin-kid-army.html",
-      "title": "Bitcoin Kid Army",
-      "url": "/wiki/bitcoin-kid-army.html",
-      "category": "factions",
-      "rank_score": 297,
-      "authority_score": 28
-    },
-    {
-      "id": "/wiki/blockchain.html",
-      "title": "Blockchain Technology",
-      "url": "/wiki/blockchain.html",
-      "category": "factions",
-      "rank_score": 297,
-      "authority_score": 30
     },
     {
       "id": "/wiki/punk-token.html",
@@ -554,6 +538,22 @@
       "category": "characters",
       "rank_score": 295,
       "authority_score": 28
+    },
+    {
+      "id": "/wiki/bitcoin-kid-army.html",
+      "title": "Bitcoin Kid Army",
+      "url": "/wiki/bitcoin-kid-army.html",
+      "category": "factions",
+      "rank_score": 295,
+      "authority_score": 28
+    },
+    {
+      "id": "/wiki/blockchain.html",
+      "title": "Blockchain Technology",
+      "url": "/wiki/blockchain.html",
+      "category": "factions",
+      "rank_score": 295,
+      "authority_score": 30
     },
     {
       "id": "/wiki/burn-to-earn.html",

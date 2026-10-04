@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-04T13:51:06.267Z",
-  "verified_at": "2026-10-04T13:51:06.267Z",
+  "generated_at": "2026-10-04T13:52:43.534Z",
+  "verified_at": "2026-10-04T13:52:43.534Z",
   "nodes": [
     {
       "id": "/about.html",
@@ -191,7 +191,7 @@
       "title": "battlemech blast",
       "url": "/wiki/battlemech-blast.html",
       "category": "factions",
-      "rank_score": 245,
+      "rank_score": 243,
       "authority_score": 20
     },
     {
@@ -239,7 +239,7 @@
       "title": "Bitcoin Kid Army",
       "url": "/wiki/bitcoin-kid-army.html",
       "category": "factions",
-      "rank_score": 297,
+      "rank_score": 295,
       "authority_score": 28
     },
     {
@@ -287,7 +287,7 @@
       "title": "Blockchain Technology",
       "url": "/wiki/blockchain.html",
       "category": "factions",
-      "rank_score": 297,
+      "rank_score": 295,
       "authority_score": 30
     },
     {
@@ -527,7 +527,7 @@
       "title": "Book I — The First Witness",
       "url": "/wiki/first-witness-book-1-the-first-witness.html",
       "category": "core",
-      "rank_score": 326,
+      "rank_score": 328,
       "authority_score": 14
     },
     {
@@ -703,7 +703,7 @@
       "title": "Dreams, Omens, Coincidence and Prophecy Fraud",
       "url": "/wiki/first-witness-dreams-omens-coincidence.html",
       "category": "core",
-      "rank_score": 266,
+      "rank_score": 268,
       "authority_score": 12
     },
     {
@@ -767,7 +767,7 @@
       "title": "First Witness Glossary",
       "url": "/wiki/first-witness-glossary.html",
       "category": "core",
-      "rank_score": 299,
+      "rank_score": 305,
       "authority_score": 14
     },
     {
@@ -783,7 +783,7 @@
       "title": "Healing, Illness, Disability and Care",
       "url": "/wiki/first-witness-healing-illness-disability-care.html",
       "category": "core",
-      "rank_score": 275,
+      "rank_score": 277,
       "authority_score": 12
     },
     {
@@ -895,7 +895,7 @@
       "title": "Mediation and Witness Circles",
       "url": "/wiki/first-witness-mediation-witness-circles.html",
       "category": "core",
-      "rank_score": 261,
+      "rank_score": 263,
       "authority_score": 12
     },
     {
@@ -1087,7 +1087,7 @@
       "title": "Work, Craft and Service",
       "url": "/wiki/first-witness-work-craft-service.html",
       "category": "core",
-      "rank_score": 277,
+      "rank_score": 281,
       "authority_score": 12
     },
     {
@@ -2511,7 +2511,7 @@
       "title": "Jodie ZOOM 2000",
       "url": "/wiki/jodie-zoom-2000.html",
       "category": "characters",
-      "rank_score": 281,
+      "rank_score": 283,
       "authority_score": 28
     },
     {
@@ -2543,8 +2543,8 @@
       "title": "Loopfiend",
       "url": "/wiki/loopfiend.html",
       "category": "characters",
-      "rank_score": 253,
-      "authority_score": 18
+      "rank_score": 265,
+      "authority_score": 24
     },
     {
       "id": "/wiki/m1ntr-k1ll.html",
@@ -2703,8 +2703,8 @@
       "title": "Patchwork",
       "url": "/wiki/patchwork.html",
       "category": "characters",
-      "rank_score": 272,
-      "authority_score": 21
+      "rank_score": 268,
+      "authority_score": 28
     },
     {
       "id": "/wiki/phygital-prints.html",
@@ -2840,7 +2840,7 @@
       "url": "/wiki/satorebel.html",
       "category": "characters",
       "rank_score": 271,
-      "authority_score": 21
+      "authority_score": 24
     },
     {
       "id": "/wiki/satoshi-scroll.html",
@@ -2863,8 +2863,8 @@
       "title": "Sister Halcyon",
       "url": "/wiki/sister-halcyon.html",
       "category": "characters",
-      "rank_score": 270,
-      "authority_score": 21
+      "rank_score": 276,
+      "authority_score": 28
     },
     {
       "id": "/wiki/sneakar.html",
@@ -3736,13 +3736,13 @@
     },
     {
       "source": "/wiki/ava-chen.html",
-      "target": "/wiki/m1ntr-k1ll.html",
+      "target": "/wiki/loopfiend.html",
       "score": 78,
       "weight": 0.78
     },
     {
       "source": "/wiki/ava-chen.html",
-      "target": "/wiki/pyralith.html",
+      "target": "/wiki/m1ntr-k1ll.html",
       "score": 78,
       "weight": 0.78
     },
@@ -12370,6 +12370,12 @@
     },
     {
       "source": "/wiki/iris-7.html",
+      "target": "/wiki/patchwork.html",
+      "score": 81,
+      "weight": 0.81
+    },
+    {
+      "source": "/wiki/iris-7.html",
       "target": "/wiki/hodl-warriors.html",
       "score": 80,
       "weight": 0.8
@@ -12379,12 +12385,6 @@
       "target": "/wiki/lady-ink.html",
       "score": 80,
       "weight": 0.8
-    },
-    {
-      "source": "/wiki/iris-7.html",
-      "target": "/wiki/null-the-prophet.html",
-      "score": 79,
-      "weight": 0.79
     },
     {
       "source": "/wiki/jillian-godsil.html",
@@ -12484,6 +12484,12 @@
     },
     {
       "source": "/wiki/lady-ink.html",
+      "target": "/wiki/patchwork.html",
+      "score": 81,
+      "weight": 0.81
+    },
+    {
+      "source": "/wiki/lady-ink.html",
       "target": "/wiki/crypto-moonboys.html",
       "score": 80,
       "weight": 0.8
@@ -12497,12 +12503,6 @@
     {
       "source": "/wiki/lady-ink.html",
       "target": "/wiki/iris-7.html",
-      "score": 80,
-      "weight": 0.8
-    },
-    {
-      "source": "/wiki/lady-ink.html",
-      "target": "/wiki/thera-9.html",
       "score": 80,
       "weight": 0.8
     },
@@ -12544,27 +12544,27 @@
     },
     {
       "source": "/wiki/loopfiend.html",
-      "target": "/wiki/null-the-prophet.html",
+      "target": "/wiki/thera-9.html",
+      "score": 80,
+      "weight": 0.8
+    },
+    {
+      "source": "/wiki/loopfiend.html",
+      "target": "/wiki/dragan-volkov.html",
       "score": 79,
       "weight": 0.79
     },
     {
       "source": "/wiki/loopfiend.html",
-      "target": "/wiki/m1ntr-k1ll.html",
-      "score": 78,
-      "weight": 0.78
+      "target": "/wiki/jodie-zoom-2000.html",
+      "score": 79,
+      "weight": 0.79
     },
     {
       "source": "/wiki/loopfiend.html",
-      "target": "/wiki/pyralith.html",
-      "score": 78,
-      "weight": 0.78
-    },
-    {
-      "source": "/wiki/loopfiend.html",
-      "target": "/wiki/quell.html",
-      "score": 78,
-      "weight": 0.78
+      "target": "/wiki/null-the-prophet.html",
+      "score": 79,
+      "weight": 0.79
     },
     {
       "source": "/wiki/m1ntr-k1ll.html",
@@ -13138,33 +13138,33 @@
     },
     {
       "source": "/wiki/patchwork.html",
-      "target": "/wiki/crypto-moonboys.html",
+      "target": "/wiki/satorebel.html",
+      "score": 87,
+      "weight": 0.87
+    },
+    {
+      "source": "/wiki/patchwork.html",
+      "target": "/wiki/sister-halcyon.html",
+      "score": 84,
+      "weight": 0.84
+    },
+    {
+      "source": "/wiki/patchwork.html",
+      "target": "/wiki/iris-7.html",
       "score": 83,
       "weight": 0.83
     },
     {
       "source": "/wiki/patchwork.html",
-      "target": "/wiki/null-the-prophet.html",
-      "score": 79,
-      "weight": 0.79
+      "target": "/wiki/lady-ink.html",
+      "score": 83,
+      "weight": 0.83
     },
     {
       "source": "/wiki/patchwork.html",
-      "target": "/wiki/m1ntr-k1ll.html",
-      "score": 78,
-      "weight": 0.78
-    },
-    {
-      "source": "/wiki/patchwork.html",
-      "target": "/wiki/pyralith.html",
-      "score": 78,
-      "weight": 0.78
-    },
-    {
-      "source": "/wiki/patchwork.html",
-      "target": "/wiki/quell.html",
-      "score": 78,
-      "weight": 0.78
+      "target": "/wiki/thera-9.html",
+      "score": 83,
+      "weight": 0.83
     },
     {
       "source": "/wiki/phygital-prints.html",
@@ -13648,33 +13648,33 @@
     },
     {
       "source": "/wiki/satorebel.html",
-      "target": "/wiki/crypto-moonboys.html",
+      "target": "/wiki/patchwork.html",
+      "score": 87,
+      "weight": 0.87
+    },
+    {
+      "source": "/wiki/satorebel.html",
+      "target": "/wiki/sister-halcyon.html",
+      "score": 84,
+      "weight": 0.84
+    },
+    {
+      "source": "/wiki/satorebel.html",
+      "target": "/wiki/thera-9.html",
       "score": 83,
       "weight": 0.83
     },
     {
       "source": "/wiki/satorebel.html",
-      "target": "/wiki/null-the-prophet.html",
-      "score": 79,
-      "weight": 0.79
+      "target": "/wiki/bitcoin-kids.html",
+      "score": 81,
+      "weight": 0.81
     },
     {
       "source": "/wiki/satorebel.html",
-      "target": "/wiki/m1ntr-k1ll.html",
-      "score": 78,
-      "weight": 0.78
-    },
-    {
-      "source": "/wiki/satorebel.html",
-      "target": "/wiki/patchwork.html",
-      "score": 78,
-      "weight": 0.78
-    },
-    {
-      "source": "/wiki/satorebel.html",
-      "target": "/wiki/pyralith.html",
-      "score": 78,
-      "weight": 0.78
+      "target": "/wiki/crypto-moonboys.html",
+      "score": 80,
+      "weight": 0.8
     },
     {
       "source": "/wiki/satoshi-scroll.html",
@@ -13738,33 +13738,33 @@
     },
     {
       "source": "/wiki/sister-halcyon.html",
-      "target": "/wiki/crypto-moonboys.html",
-      "score": 80,
-      "weight": 0.8
+      "target": "/wiki/patchwork.html",
+      "score": 84,
+      "weight": 0.84
     },
     {
       "source": "/wiki/sister-halcyon.html",
-      "target": "/wiki/null-the-prophet.html",
-      "score": 79,
-      "weight": 0.79
+      "target": "/wiki/satorebel.html",
+      "score": 84,
+      "weight": 0.84
+    },
+    {
+      "source": "/wiki/sister-halcyon.html",
+      "target": "/wiki/thera-9.html",
+      "score": 83,
+      "weight": 0.83
     },
     {
       "source": "/wiki/sister-halcyon.html",
       "target": "/wiki/bitcoin-kids.html",
-      "score": 78,
-      "weight": 0.78
+      "score": 81,
+      "weight": 0.81
     },
     {
       "source": "/wiki/sister-halcyon.html",
-      "target": "/wiki/m1ntr-k1ll.html",
-      "score": 78,
-      "weight": 0.78
-    },
-    {
-      "source": "/wiki/sister-halcyon.html",
-      "target": "/wiki/pyralith.html",
-      "score": 78,
-      "weight": 0.78
+      "target": "/wiki/crypto-moonboys.html",
+      "score": 80,
+      "weight": 0.8
     },
     {
       "source": "/wiki/sneakar.html",
@@ -15082,9 +15082,9 @@
     },
     {
       "source": "/wiki/thera-9.html",
-      "target": "/wiki/lady-ink.html",
-      "score": 80,
-      "weight": 0.8
+      "target": "/wiki/patchwork.html",
+      "score": 81,
+      "weight": 0.81
     },
     {
       "source": "/wiki/thorne-the-architect.html",
