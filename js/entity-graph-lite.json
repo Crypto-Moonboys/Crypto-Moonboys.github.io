@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-04T12:17:14.932Z",
-  "verified_at": "2026-10-04T12:17:14.932Z",
+  "generated_at": "2026-10-04T12:26:51.089Z",
+  "verified_at": "2026-10-04T12:26:51.089Z",
   "lite": true,
   "nodes": [
     {
@@ -16,7 +16,7 @@
       "title": "GraffPUNKS",
       "url": "/wiki/graffpunks.html",
       "category": "characters",
-      "rank_score": 695,
+      "rank_score": 697,
       "authority_score": 21
     },
     {
@@ -56,16 +56,8 @@
       "title": "Hard Fork Games",
       "url": "/wiki/hard-fork-games.html",
       "category": "core",
-      "rank_score": 483,
+      "rank_score": 487,
       "authority_score": 28
-    },
-    {
-      "id": "/wiki/block-topia.html",
-      "title": "Block Topia",
-      "url": "/wiki/block-topia.html",
-      "category": "characters",
-      "rank_score": 460,
-      "authority_score": 13
     },
     {
       "id": "/wiki/hodl-wars.html",
@@ -74,6 +66,14 @@
       "category": "core",
       "rank_score": 460,
       "authority_score": 28
+    },
+    {
+      "id": "/wiki/block-topia.html",
+      "title": "Block Topia",
+      "url": "/wiki/block-topia.html",
+      "category": "characters",
+      "rank_score": 458,
+      "authority_score": 13
     },
     {
       "id": "/wiki/null-the-prophet.html",
@@ -96,7 +96,7 @@
       "title": "The Sacred Chain",
       "url": "/wiki/sacred-chain.html",
       "category": "core",
-      "rank_score": 395,
+      "rank_score": 397,
       "authority_score": 28
     },
     {
@@ -104,7 +104,7 @@
       "title": "Concordance of Broken Records",
       "url": "/wiki/first-witness-concordance.html",
       "category": "core",
-      "rank_score": 394,
+      "rank_score": 396,
       "authority_score": 14
     },
     {
@@ -112,7 +112,7 @@
       "title": "Bitcoin Kids",
       "url": "/wiki/bitcoin-kids.html",
       "category": "characters",
-      "rank_score": 382,
+      "rank_score": 388,
       "authority_score": 28
     },
     {
@@ -120,7 +120,7 @@
       "title": "Triple Fork Event",
       "url": "/wiki/triple-fork-event.html",
       "category": "core",
-      "rank_score": 376,
+      "rank_score": 384,
       "authority_score": 28
     },
     {
@@ -172,20 +172,20 @@
       "authority_score": 21
     },
     {
+      "id": "/wiki/first-witness-faction-commentaries.html",
+      "title": "Faction Commentaries on the First Witness",
+      "url": "/wiki/first-witness-faction-commentaries.html",
+      "category": "core",
+      "rank_score": 349,
+      "authority_score": 14
+    },
+    {
       "id": "/wiki/the-chain-scribes.html",
       "title": "The CHAIN SCRIBES",
       "url": "/wiki/the-chain-scribes.html",
       "category": "factions",
       "rank_score": 344,
       "authority_score": 21
-    },
-    {
-      "id": "/wiki/first-witness-faction-commentaries.html",
-      "title": "Faction Commentaries on the First Witness",
-      "url": "/wiki/first-witness-faction-commentaries.html",
-      "category": "core",
-      "rank_score": 341,
-      "authority_score": 14
     },
     {
       "id": "/wiki/graffiti-nexus.html",
@@ -272,7 +272,7 @@
       "title": "HODL Warriors",
       "url": "/wiki/hodl-warriors.html",
       "category": "characters",
-      "rank_score": 325,
+      "rank_score": 327,
       "authority_score": 28
     },
     {
@@ -280,7 +280,15 @@
       "title": "First Witness Master Chronology",
       "url": "/wiki/first-witness-master-chronology.html",
       "category": "core",
-      "rank_score": 324,
+      "rank_score": 326,
+      "authority_score": 14
+    },
+    {
+      "id": "/wiki/first-witness-forty-paths.html",
+      "title": "The Forty Paths",
+      "url": "/wiki/first-witness-forty-paths.html",
+      "category": "core",
+      "rank_score": 322,
       "authority_score": 14
     },
     {
@@ -332,14 +340,6 @@
       "authority_score": 14
     },
     {
-      "id": "/wiki/first-witness-forty-paths.html",
-      "title": "The Forty Paths",
-      "url": "/wiki/first-witness-forty-paths.html",
-      "category": "core",
-      "rank_score": 318,
-      "authority_score": 14
-    },
-    {
       "id": "/wiki/first-witness-parables.html",
       "title": "Parables of the First Witness",
       "url": "/wiki/first-witness-parables.html",
@@ -388,20 +388,20 @@
       "authority_score": 21
     },
     {
-      "id": "/wiki/blockchain.html",
-      "title": "Blockchain Technology",
-      "url": "/wiki/blockchain.html",
-      "category": "factions",
-      "rank_score": 313,
-      "authority_score": 30
-    },
-    {
       "id": "/wiki/first-witness-book-7-the-hold.html",
       "title": "Book VII — The Hold",
       "url": "/wiki/first-witness-book-7-the-hold.html",
       "category": "core",
       "rank_score": 313,
       "authority_score": 14
+    },
+    {
+      "id": "/wiki/blockchain.html",
+      "title": "Blockchain Technology",
+      "url": "/wiki/blockchain.html",
+      "category": "factions",
+      "rank_score": 311,
+      "authority_score": 30
     },
     {
       "id": "/wiki/first-witness-sacred-fork.html",
@@ -476,6 +476,14 @@
       "authority_score": 12
     },
     {
+      "id": "/wiki/bitcoin-x-kids.html",
+      "title": "Bitcoin X Kids",
+      "url": "/wiki/bitcoin-x-kids.html",
+      "category": "characters",
+      "rank_score": 304,
+      "authority_score": 28
+    },
+    {
       "id": "/wiki/the-bitcoin-kid-army.html",
       "title": "Bitcoin Kid Army — Escape Accounts",
       "url": "/wiki/the-bitcoin-kid-army.html",
@@ -516,11 +524,11 @@
       "authority_score": 12
     },
     {
-      "id": "/wiki/bitcoin-x-kids.html",
-      "title": "Bitcoin X Kids",
-      "url": "/wiki/bitcoin-x-kids.html",
-      "category": "characters",
-      "rank_score": 298,
+      "id": "/wiki/bitcoin-kid-army.html",
+      "title": "Bitcoin Kid Army",
+      "url": "/wiki/bitcoin-kid-army.html",
+      "category": "factions",
+      "rank_score": 297,
       "authority_score": 28
     },
     {
@@ -554,14 +562,6 @@
       "category": "core",
       "rank_score": 295,
       "authority_score": 12
-    },
-    {
-      "id": "/wiki/bitcoin-kid-army.html",
-      "title": "Bitcoin Kid Army",
-      "url": "/wiki/bitcoin-kid-army.html",
-      "category": "factions",
-      "rank_score": 293,
-      "authority_score": 28
     },
     {
       "id": "/wiki/xrp-kids.html",
@@ -666,27 +666,27 @@
       "weight": 1
     },
     {
+      "source": "/wiki/first-witness-glossary.html",
+      "target": "/wiki/first-witness-faction-commentaries.html",
+      "score": 321,
+      "weight": 1
+    },
+    {
+      "source": "/wiki/first-witness-master-chronology.html",
+      "target": "/wiki/first-witness-faction-commentaries.html",
+      "score": 321,
+      "weight": 1
+    },
+    {
       "source": "/wiki/first-witness-sacred-fork.html",
       "target": "/wiki/first-witness-triple-fork-chainfire.html",
       "score": 321,
       "weight": 1
     },
     {
-      "source": "/wiki/first-witness-faction-commentaries.html",
-      "target": "/wiki/first-witness-master-chronology.html",
-      "score": 320,
-      "weight": 1
-    },
-    {
       "source": "/wiki/first-witness-glossary.html",
       "target": "/wiki/first-witness-master-chronology.html",
       "score": 320,
-      "weight": 1
-    },
-    {
-      "source": "/wiki/first-witness-glossary.html",
-      "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 319,
       "weight": 1
     },
     {
@@ -828,20 +828,14 @@
       "weight": 1
     },
     {
-      "source": "/wiki/first-witness-heresies-corruptions-abuses.html",
-      "target": "/wiki/first-witness-justice-mercy-restitution.html",
-      "score": 301,
+      "source": "/wiki/triple-fork-event.html",
+      "target": "/wiki/hard-fork-games.html",
+      "score": 119,
       "weight": 1
     },
     {
       "source": "/wiki/triple-fork-event.html",
       "target": "/wiki/first-witness-triple-fork-chainfire.html",
-      "score": 118,
-      "weight": 1
-    },
-    {
-      "source": "/wiki/triple-fork-event.html",
-      "target": "/wiki/hard-fork-games.html",
       "score": 118,
       "weight": 1
     },
@@ -878,14 +872,20 @@
     {
       "source": "/wiki/sacred-chain.html",
       "target": "/wiki/hard-fork-games.html",
-      "score": 105,
+      "score": 106,
       "weight": 1
     },
     {
       "source": "/wiki/bitcoin-kids.html",
       "target": "/wiki/bitcoin-x-kids.html",
-      "score": 97,
-      "weight": 0.97
+      "score": 98,
+      "weight": 0.98
+    },
+    {
+      "source": "/wiki/genesis-kernel.html",
+      "target": "/wiki/sacred-chain.html",
+      "score": 96,
+      "weight": 0.96
     },
     {
       "source": "/wiki/burn-to-earn.html",
@@ -896,12 +896,6 @@
     {
       "source": "/wiki/genesis-kernel.html",
       "target": "/wiki/hodl-wars.html",
-      "score": 95,
-      "weight": 0.95
-    },
-    {
-      "source": "/wiki/genesis-kernel.html",
-      "target": "/wiki/sacred-chain.html",
       "score": 95,
       "weight": 0.95
     },
@@ -942,6 +936,12 @@
       "weight": 0.91
     },
     {
+      "source": "/wiki/graffiti-nexus.html",
+      "target": "/wiki/sacred-chain.html",
+      "score": 90,
+      "weight": 0.9
+    },
+    {
       "source": "/wiki/burn-to-earn.html",
       "target": "/wiki/graffpunks.html",
       "score": 89,
@@ -956,12 +956,6 @@
     {
       "source": "/wiki/gang-signs.html",
       "target": "/wiki/graffpunks.html",
-      "score": 89,
-      "weight": 0.89
-    },
-    {
-      "source": "/wiki/graffiti-nexus.html",
-      "target": "/wiki/sacred-chain.html",
       "score": 89,
       "weight": 0.89
     },
@@ -1080,14 +1074,14 @@
       "weight": 0.73
     },
     {
-      "source": "/wiki/staking.html",
-      "target": "/wiki/block-topia.html",
-      "score": 68,
-      "weight": 0.68
-    },
-    {
       "source": "/wiki/blockchain.html",
       "target": "/wiki/rave-relics.html",
+      "score": 67,
+      "weight": 0.67
+    },
+    {
+      "source": "/wiki/staking.html",
+      "target": "/wiki/block-topia.html",
       "score": 67,
       "weight": 0.67
     }

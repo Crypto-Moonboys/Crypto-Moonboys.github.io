@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-04T12:17:14.932Z",
-  "verified_at": "2026-10-04T12:17:14.932Z",
+  "generated_at": "2026-10-04T12:26:51.089Z",
+  "verified_at": "2026-10-04T12:26:51.089Z",
   "nodes": [
     {
       "id": "/about.html",
@@ -239,7 +239,7 @@
       "title": "Bitcoin Kid Army",
       "url": "/wiki/bitcoin-kid-army.html",
       "category": "factions",
-      "rank_score": 293,
+      "rank_score": 297,
       "authority_score": 28
     },
     {
@@ -247,7 +247,7 @@
       "title": "Bitcoin Kids",
       "url": "/wiki/bitcoin-kids.html",
       "category": "characters",
-      "rank_score": 382,
+      "rank_score": 388,
       "authority_score": 28
     },
     {
@@ -255,7 +255,7 @@
       "title": "Bitcoin X Kids",
       "url": "/wiki/bitcoin-x-kids.html",
       "category": "characters",
-      "rank_score": 298,
+      "rank_score": 304,
       "authority_score": 28
     },
     {
@@ -279,7 +279,7 @@
       "title": "Block Topia",
       "url": "/wiki/block-topia.html",
       "category": "characters",
-      "rank_score": 460,
+      "rank_score": 458,
       "authority_score": 13
     },
     {
@@ -287,7 +287,7 @@
       "title": "Blockchain Technology",
       "url": "/wiki/blockchain.html",
       "category": "factions",
-      "rank_score": 313,
+      "rank_score": 311,
       "authority_score": 30
     },
     {
@@ -647,7 +647,7 @@
       "title": "Concordance of Broken Records",
       "url": "/wiki/first-witness-concordance.html",
       "category": "core",
-      "rank_score": 394,
+      "rank_score": 396,
       "authority_score": 14
     },
     {
@@ -727,7 +727,7 @@
       "title": "Faction Commentaries on the First Witness",
       "url": "/wiki/first-witness-faction-commentaries.html",
       "category": "core",
-      "rank_score": 341,
+      "rank_score": 349,
       "authority_score": 14
     },
     {
@@ -759,7 +759,7 @@
       "title": "The Forty Paths",
       "url": "/wiki/first-witness-forty-paths.html",
       "category": "core",
-      "rank_score": 318,
+      "rank_score": 322,
       "authority_score": 14
     },
     {
@@ -887,7 +887,7 @@
       "title": "First Witness Master Chronology",
       "url": "/wiki/first-witness-master-chronology.html",
       "category": "core",
-      "rank_score": 324,
+      "rank_score": 326,
       "authority_score": 14
     },
     {
@@ -2399,7 +2399,7 @@
       "title": "GraffPUNKS",
       "url": "/wiki/graffpunks.html",
       "category": "characters",
-      "rank_score": 695,
+      "rank_score": 697,
       "authority_score": 21
     },
     {
@@ -2423,7 +2423,7 @@
       "title": "Hard Fork Games",
       "url": "/wiki/hard-fork-games.html",
       "category": "core",
-      "rank_score": 483,
+      "rank_score": 487,
       "authority_score": 28
     },
     {
@@ -2455,7 +2455,7 @@
       "title": "HODL Warriors",
       "url": "/wiki/hodl-warriors.html",
       "category": "characters",
-      "rank_score": 325,
+      "rank_score": 327,
       "authority_score": 28
     },
     {
@@ -2823,7 +2823,7 @@
       "title": "The Sacred Chain",
       "url": "/wiki/sacred-chain.html",
       "category": "core",
-      "rank_score": 395,
+      "rank_score": 397,
       "authority_score": 28
     },
     {
@@ -2943,7 +2943,7 @@
       "title": "Street Kingdoms",
       "url": "/wiki/street-kingdoms.html",
       "category": "factions",
-      "rank_score": 259,
+      "rank_score": 263,
       "authority_score": 21
     },
     {
@@ -2991,8 +2991,8 @@
       "title": "The BALLY BOYS",
       "url": "/wiki/the-bally-boys.html",
       "category": "factions",
-      "rank_score": 273,
-      "authority_score": 18
+      "rank_score": 277,
+      "authority_score": 28
     },
     {
       "id": "/wiki/the-bitcoin-kid-army.html",
@@ -3007,7 +3007,7 @@
       "title": "The BLOCKCHAIN FURIES",
       "url": "/wiki/the-blockchain-furies.html",
       "category": "factions",
-      "rank_score": 273,
+      "rank_score": 277,
       "authority_score": 18
     },
     {
@@ -3055,15 +3055,15 @@
       "title": "The DUCKY BOYS",
       "url": "/wiki/the-ducky-boys.html",
       "category": "factions",
-      "rank_score": 280,
-      "authority_score": 21
+      "rank_score": 283,
+      "authority_score": 28
     },
     {
       "id": "/wiki/the-evm-punks.html",
       "title": "The EVM PUNKS",
       "url": "/wiki/the-evm-punks.html",
       "category": "factions",
-      "rank_score": 279,
+      "rank_score": 277,
       "authority_score": 21
     },
     {
@@ -3103,15 +3103,15 @@
       "title": "The HARD FORK ROCKERS",
       "url": "/wiki/the-hard-fork-rockers.html",
       "category": "factions",
-      "rank_score": 282,
-      "authority_score": 21
+      "rank_score": 280,
+      "authority_score": 28
     },
     {
       "id": "/wiki/the-high-hats.html",
       "title": "The High Hats",
       "url": "/wiki/the-high-hats.html",
       "category": "factions",
-      "rank_score": 291,
+      "rank_score": 289,
       "authority_score": 17
     },
     {
@@ -3127,8 +3127,8 @@
       "title": "The MOONLORDS",
       "url": "/wiki/the-moonlords.html",
       "category": "factions",
-      "rank_score": 279,
-      "authority_score": 21
+      "rank_score": 270,
+      "authority_score": 28
     },
     {
       "id": "/wiki/the-nice-easy-bois.html",
@@ -3167,7 +3167,7 @@
       "title": "The RUGPULL MINERS",
       "url": "/wiki/the-rugpull-miners.html",
       "category": "factions",
-      "rank_score": 281,
+      "rank_score": 283,
       "authority_score": 21
     },
     {
@@ -3175,7 +3175,7 @@
       "title": "The SALVAGERS",
       "url": "/wiki/the-salvagers.html",
       "category": "factions",
-      "rank_score": 273,
+      "rank_score": 277,
       "authority_score": 21
     },
     {
@@ -3247,7 +3247,7 @@
       "title": "Triple Fork Event",
       "url": "/wiki/triple-fork-event.html",
       "category": "core",
-      "rank_score": 376,
+      "rank_score": 384,
       "authority_score": 28
     },
     {
@@ -3959,8 +3959,8 @@
     {
       "source": "/wiki/bitcoin-kids.html",
       "target": "/wiki/bitcoin-x-kids.html",
-      "score": 97,
-      "weight": 0.97
+      "score": 98,
+      "weight": 0.98
     },
     {
       "source": "/wiki/bitcoin-kids.html",
@@ -4966,14 +4966,14 @@
     },
     {
       "source": "/wiki/first-witness-bitcoin-witness.html",
-      "target": "/wiki/first-witness-master-chronology.html",
-      "score": 312,
+      "target": "/wiki/first-witness-faction-commentaries.html",
+      "score": 313,
       "weight": 1
     },
     {
       "source": "/wiki/first-witness-bitcoin-witness.html",
-      "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 311,
+      "target": "/wiki/first-witness-master-chronology.html",
+      "score": 312,
       "weight": 1
     },
     {
@@ -5026,14 +5026,14 @@
     },
     {
       "source": "/wiki/first-witness-book-1-the-first-witness.html",
-      "target": "/wiki/first-witness-master-chronology.html",
-      "score": 320,
+      "target": "/wiki/first-witness-faction-commentaries.html",
+      "score": 321,
       "weight": 1
     },
     {
       "source": "/wiki/first-witness-book-1-the-first-witness.html",
-      "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 319,
+      "target": "/wiki/first-witness-master-chronology.html",
+      "score": 320,
       "weight": 1
     },
     {
@@ -5891,7 +5891,7 @@
     {
       "source": "/wiki/first-witness-forty-paths.html",
       "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 311,
+      "score": 313,
       "weight": 1
     },
     {
@@ -5926,14 +5926,14 @@
     },
     {
       "source": "/wiki/first-witness-glossary.html",
-      "target": "/wiki/first-witness-master-chronology.html",
-      "score": 320,
+      "target": "/wiki/first-witness-faction-commentaries.html",
+      "score": 321,
       "weight": 1
     },
     {
       "source": "/wiki/first-witness-glossary.html",
-      "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 319,
+      "target": "/wiki/first-witness-master-chronology.html",
+      "score": 320,
       "weight": 1
     },
     {
@@ -6022,8 +6022,8 @@
     },
     {
       "source": "/wiki/first-witness-heresies-corruptions-abuses.html",
-      "target": "/wiki/first-witness-justice-mercy-restitution.html",
-      "score": 301,
+      "target": "/wiki/first-witness-faction-commentaries.html",
+      "score": 302,
       "weight": 1
     },
     {
@@ -6280,14 +6280,14 @@
     },
     {
       "source": "/wiki/first-witness-life-readings.html",
-      "target": "/wiki/first-witness-master-chronology.html",
-      "score": 311,
+      "target": "/wiki/first-witness-faction-commentaries.html",
+      "score": 312,
       "weight": 1
     },
     {
       "source": "/wiki/first-witness-life-readings.html",
-      "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 310,
+      "target": "/wiki/first-witness-master-chronology.html",
+      "score": 311,
       "weight": 1
     },
     {
@@ -6377,7 +6377,7 @@
     {
       "source": "/wiki/first-witness-master-chronology.html",
       "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 319,
+      "score": 321,
       "weight": 1
     },
     {
@@ -6406,14 +6406,14 @@
     },
     {
       "source": "/wiki/first-witness-mediation-witness-circles.html",
-      "target": "/wiki/first-witness-parables.html",
+      "target": "/wiki/first-witness-faction-commentaries.html",
       "score": 307,
       "weight": 1
     },
     {
       "source": "/wiki/first-witness-mediation-witness-circles.html",
-      "target": "/wiki/first-witness-master-chronology.html",
-      "score": 306,
+      "target": "/wiki/first-witness-parables.html",
+      "score": 307,
       "weight": 1
     },
     {
@@ -6593,7 +6593,7 @@
     {
       "source": "/wiki/first-witness-parables.html",
       "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 313,
+      "score": 315,
       "weight": 1
     },
     {
@@ -6947,7 +6947,7 @@
     {
       "source": "/wiki/first-witness-source-register.html",
       "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 319,
+      "score": 321,
       "weight": 1
     },
     {
@@ -7192,9 +7192,9 @@
     },
     {
       "source": "/wiki/fomo-plague.html",
-      "target": "/wiki/the-allcity-bulls.html",
-      "score": 75,
-      "weight": 0.75
+      "target": "/wiki/the-bally-boys.html",
+      "score": 76,
+      "weight": 0.76
     },
     {
       "source": "/wiki/forkborn-collective.html",
@@ -7379,18 +7379,18 @@
     {
       "source": "/wiki/genesis-kernel.html",
       "target": "/wiki/hard-fork-games.html",
-      "score": 97,
-      "weight": 0.97
-    },
-    {
-      "source": "/wiki/genesis-kernel.html",
-      "target": "/wiki/hodl-wars.html",
-      "score": 95,
-      "weight": 0.95
+      "score": 98,
+      "weight": 0.98
     },
     {
       "source": "/wiki/genesis-kernel.html",
       "target": "/wiki/sacred-chain.html",
+      "score": 96,
+      "weight": 0.96
+    },
+    {
+      "source": "/wiki/genesis-kernel.html",
+      "target": "/wiki/hodl-wars.html",
       "score": 95,
       "weight": 0.95
     },
@@ -11843,8 +11843,8 @@
     {
       "source": "/wiki/gkniftyheads.html",
       "target": "/wiki/block-topia.html",
-      "score": 68,
-      "weight": 0.68
+      "score": 67,
+      "weight": 0.67
     },
     {
       "source": "/wiki/graffiti-kings.html",
@@ -11885,8 +11885,8 @@
     {
       "source": "/wiki/graffiti-nexus.html",
       "target": "/wiki/hard-fork-games.html",
-      "score": 97,
-      "weight": 0.97
+      "score": 98,
+      "weight": 0.98
     },
     {
       "source": "/wiki/graffiti-nexus.html",
@@ -11897,8 +11897,8 @@
     {
       "source": "/wiki/graffiti-nexus.html",
       "target": "/wiki/sacred-chain.html",
-      "score": 89,
-      "weight": 0.89
+      "score": 90,
+      "weight": 0.9
     },
     {
       "source": "/wiki/graffiti-nexus.html",
@@ -12131,8 +12131,8 @@
     {
       "source": "/wiki/hard-fork-games.html",
       "target": "/wiki/sacred-chain.html",
-      "score": 97,
-      "weight": 0.97
+      "score": 98,
+      "weight": 0.98
     },
     {
       "source": "/wiki/hard-fork-games.html",
@@ -12269,8 +12269,8 @@
     {
       "source": "/wiki/hodl-wars.html",
       "target": "/wiki/hard-fork-games.html",
-      "score": 97,
-      "weight": 0.97
+      "score": 98,
+      "weight": 0.98
     },
     {
       "source": "/wiki/hodl-wars.html",
@@ -12286,13 +12286,13 @@
     },
     {
       "source": "/wiki/hodl-wars.html",
-      "target": "/wiki/genesis-kernel.html",
-      "score": 83,
-      "weight": 0.83
+      "target": "/wiki/sacred-chain.html",
+      "score": 84,
+      "weight": 0.84
     },
     {
       "source": "/wiki/hodl-wars.html",
-      "target": "/wiki/sacred-chain.html",
+      "target": "/wiki/genesis-kernel.html",
       "score": 83,
       "weight": 0.83
     },
@@ -12832,15 +12832,15 @@
     },
     {
       "source": "/wiki/nbg.html",
-      "target": "/wiki/block-topia.html",
+      "target": "/wiki/null-the-prophet.html",
       "score": 68,
       "weight": 0.68
     },
     {
       "source": "/wiki/nbg.html",
-      "target": "/wiki/null-the-prophet.html",
-      "score": 68,
-      "weight": 0.68
+      "target": "/wiki/block-topia.html",
+      "score": 67,
+      "weight": 0.67
     },
     {
       "source": "/wiki/nbgx-token.html",
@@ -13055,8 +13055,8 @@
     {
       "source": "/wiki/noballgamess-nft-collection.html",
       "target": "/wiki/hard-fork-games.html",
-      "score": 72,
-      "weight": 0.72
+      "score": 73,
+      "weight": 0.73
     },
     {
       "source": "/wiki/noballgamess-nft-collection.html",
@@ -13079,8 +13079,8 @@
     {
       "source": "/wiki/noballgamess-nft-collection.html",
       "target": "/wiki/sacred-chain.html",
-      "score": 64,
-      "weight": 0.64
+      "score": 65,
+      "weight": 0.65
     },
     {
       "source": "/wiki/null-the-prophet.html",
@@ -13595,7 +13595,7 @@
     {
       "source": "/wiki/sacred-chain.html",
       "target": "/wiki/hard-fork-games.html",
-      "score": 105,
+      "score": 106,
       "weight": 1
     },
     {
@@ -13972,15 +13972,15 @@
     },
     {
       "source": "/wiki/staking.html",
-      "target": "/wiki/block-topia.html",
+      "target": "/wiki/null-the-prophet.html",
       "score": 68,
       "weight": 0.68
     },
     {
       "source": "/wiki/staking.html",
-      "target": "/wiki/null-the-prophet.html",
-      "score": 68,
-      "weight": 0.68
+      "target": "/wiki/block-topia.html",
+      "score": 67,
+      "weight": 0.67
     },
     {
       "source": "/wiki/stikfamwars.html",
@@ -14176,21 +14176,21 @@
     },
     {
       "source": "/wiki/the-allcity-bulls.html",
-      "target": "/wiki/the-aztec-raiders.html",
-      "score": 78,
-      "weight": 0.78
-    },
-    {
-      "source": "/wiki/the-allcity-bulls.html",
       "target": "/wiki/the-bally-boys.html",
-      "score": 78,
-      "weight": 0.78
+      "score": 79,
+      "weight": 0.79
     },
     {
       "source": "/wiki/the-allcity-bulls.html",
-      "target": "/wiki/the-blockstars.html",
-      "score": 78,
-      "weight": 0.78
+      "target": "/wiki/the-ducky-boys.html",
+      "score": 79,
+      "weight": 0.79
+    },
+    {
+      "source": "/wiki/the-allcity-bulls.html",
+      "target": "/wiki/the-moonlords.html",
+      "score": 79,
+      "weight": 0.79
     },
     {
       "source": "/wiki/the-aztec-raiders.html",
@@ -14200,27 +14200,39 @@
     },
     {
       "source": "/wiki/the-aztec-raiders.html",
+      "target": "/wiki/the-bally-boys.html",
+      "score": 79,
+      "weight": 0.79
+    },
+    {
+      "source": "/wiki/the-aztec-raiders.html",
+      "target": "/wiki/the-ducky-boys.html",
+      "score": 79,
+      "weight": 0.79
+    },
+    {
+      "source": "/wiki/the-aztec-raiders.html",
+      "target": "/wiki/the-moonlords.html",
+      "score": 79,
+      "weight": 0.79
+    },
+    {
+      "source": "/wiki/the-aztec-raiders.html",
       "target": "/wiki/the-allcity-bulls.html",
       "score": 78,
       "weight": 0.78
     },
     {
-      "source": "/wiki/the-aztec-raiders.html",
-      "target": "/wiki/the-bally-boys.html",
-      "score": 78,
-      "weight": 0.78
+      "source": "/wiki/the-bally-boys.html",
+      "target": "/wiki/the-ducky-boys.html",
+      "score": 106,
+      "weight": 1
     },
     {
-      "source": "/wiki/the-aztec-raiders.html",
-      "target": "/wiki/the-blockstars.html",
-      "score": 78,
-      "weight": 0.78
-    },
-    {
-      "source": "/wiki/the-aztec-raiders.html",
-      "target": "/wiki/the-code-alchemists.html",
-      "score": 78,
-      "weight": 0.78
+      "source": "/wiki/the-bally-boys.html",
+      "target": "/wiki/the-moonlords.html",
+      "score": 98,
+      "weight": 0.98
     },
     {
       "source": "/wiki/the-bally-boys.html",
@@ -14230,9 +14242,9 @@
     },
     {
       "source": "/wiki/the-bally-boys.html",
-      "target": "/wiki/the-ducky-boys.html",
-      "score": 86,
-      "weight": 0.86
+      "target": "/wiki/the-hard-fork-rockers.html",
+      "score": 85,
+      "weight": 0.85
     },
     {
       "source": "/wiki/the-bally-boys.html",
@@ -14241,16 +14253,10 @@
       "weight": 0.84
     },
     {
-      "source": "/wiki/the-bally-boys.html",
-      "target": "/wiki/the-allcity-bulls.html",
-      "score": 78,
-      "weight": 0.78
-    },
-    {
-      "source": "/wiki/the-bally-boys.html",
-      "target": "/wiki/the-aztec-raiders.html",
-      "score": 78,
-      "weight": 0.78
+      "source": "/wiki/the-bitcoin-kid-army.html",
+      "target": "/wiki/hard-fork-games.html",
+      "score": 95,
+      "weight": 0.95
     },
     {
       "source": "/wiki/the-bitcoin-kid-army.html",
@@ -14260,21 +14266,15 @@
     },
     {
       "source": "/wiki/the-bitcoin-kid-army.html",
-      "target": "/wiki/hard-fork-games.html",
-      "score": 94,
-      "weight": 0.94
+      "target": "/wiki/sacred-chain.html",
+      "score": 84,
+      "weight": 0.84
     },
     {
       "source": "/wiki/the-bitcoin-kid-army.html",
       "target": "/wiki/the-first-witness.html",
       "score": 84,
       "weight": 0.84
-    },
-    {
-      "source": "/wiki/the-bitcoin-kid-army.html",
-      "target": "/wiki/sacred-chain.html",
-      "score": 83,
-      "weight": 0.83
     },
     {
       "source": "/wiki/the-bitcoin-kid-army.html",
@@ -14296,13 +14296,13 @@
     },
     {
       "source": "/wiki/the-blockchain-furies.html",
-      "target": "/wiki/the-code-alchemists.html",
-      "score": 78,
-      "weight": 0.78
+      "target": "/wiki/the-bally-boys.html",
+      "score": 79,
+      "weight": 0.79
     },
     {
       "source": "/wiki/the-blockchain-furies.html",
-      "target": "/wiki/the-hard-fork-rockers.html",
+      "target": "/wiki/the-code-alchemists.html",
       "score": 78,
       "weight": 0.78
     },
@@ -14344,13 +14344,13 @@
     },
     {
       "source": "/wiki/the-chain-scribes.html",
-      "target": "/wiki/the-code-alchemists.html",
-      "score": 78,
-      "weight": 0.78
+      "target": "/wiki/the-ducky-boys.html",
+      "score": 79,
+      "weight": 0.79
     },
     {
       "source": "/wiki/the-chain-scribes.html",
-      "target": "/wiki/the-hard-fork-rockers.html",
+      "target": "/wiki/the-code-alchemists.html",
       "score": 78,
       "weight": 0.78
     },
@@ -14386,21 +14386,21 @@
     },
     {
       "source": "/wiki/the-cleanupcentr.html",
-      "target": "/wiki/satoshi-scroll.html",
-      "score": 75,
-      "weight": 0.75
+      "target": "/wiki/the-bally-boys.html",
+      "score": 76,
+      "weight": 0.76
     },
     {
       "source": "/wiki/the-cleanupcentr.html",
-      "target": "/wiki/the-allcity-bulls.html",
-      "score": 75,
-      "weight": 0.75
+      "target": "/wiki/the-ducky-boys.html",
+      "score": 76,
+      "weight": 0.76
     },
     {
       "source": "/wiki/the-cleanupcentr.html",
-      "target": "/wiki/the-aztec-raiders.html",
-      "score": 75,
-      "weight": 0.75
+      "target": "/wiki/the-moonlords.html",
+      "score": 76,
+      "weight": 0.76
     },
     {
       "source": "/wiki/the-code-alchemists.html",
@@ -14422,27 +14422,27 @@
     },
     {
       "source": "/wiki/the-code-alchemists.html",
-      "target": "/wiki/the-hard-fork-rockers.html",
+      "target": "/wiki/the-information-mercenaries.html",
       "score": 81,
       "weight": 0.81
     },
     {
       "source": "/wiki/the-code-alchemists.html",
-      "target": "/wiki/the-information-mercenaries.html",
+      "target": "/wiki/the-nomad-bears.html",
       "score": 81,
       "weight": 0.81
     },
     {
       "source": "/wiki/the-crypto-stoned-boys.html",
       "target": "/wiki/the-bally-boys.html",
-      "score": 86,
-      "weight": 0.86
+      "score": 87,
+      "weight": 0.87
     },
     {
       "source": "/wiki/the-crypto-stoned-boys.html",
       "target": "/wiki/the-ducky-boys.html",
-      "score": 86,
-      "weight": 0.86
+      "score": 87,
+      "weight": 0.87
     },
     {
       "source": "/wiki/the-crypto-stoned-boys.html",
@@ -14465,8 +14465,20 @@
     {
       "source": "/wiki/the-ducky-boys.html",
       "target": "/wiki/the-bally-boys.html",
-      "score": 86,
-      "weight": 0.86
+      "score": 106,
+      "weight": 1
+    },
+    {
+      "source": "/wiki/the-ducky-boys.html",
+      "target": "/wiki/the-moonlords.html",
+      "score": 92,
+      "weight": 0.92
+    },
+    {
+      "source": "/wiki/the-ducky-boys.html",
+      "target": "/wiki/the-chain-scribes.html",
+      "score": 87,
+      "weight": 0.87
     },
     {
       "source": "/wiki/the-ducky-boys.html",
@@ -14476,49 +14488,37 @@
     },
     {
       "source": "/wiki/the-ducky-boys.html",
-      "target": "/wiki/the-chain-scribes.html",
-      "score": 84,
-      "weight": 0.84
-    },
-    {
-      "source": "/wiki/the-ducky-boys.html",
-      "target": "/wiki/the-allcity-bulls.html",
-      "score": 78,
-      "weight": 0.78
-    },
-    {
-      "source": "/wiki/the-ducky-boys.html",
-      "target": "/wiki/the-aztec-raiders.html",
-      "score": 78,
-      "weight": 0.78
+      "target": "/wiki/the-hard-fork-rockers.html",
+      "score": 85,
+      "weight": 0.85
     },
     {
       "source": "/wiki/the-evm-punks.html",
       "target": "/wiki/the-chain-scribes.html",
       "score": 84,
       "weight": 0.84
-    },
-    {
-      "source": "/wiki/the-evm-punks.html",
-      "target": "/wiki/the-allcity-bulls.html",
-      "score": 78,
-      "weight": 0.78
-    },
-    {
-      "source": "/wiki/the-evm-punks.html",
-      "target": "/wiki/the-aztec-raiders.html",
-      "score": 78,
-      "weight": 0.78
     },
     {
       "source": "/wiki/the-evm-punks.html",
       "target": "/wiki/the-bally-boys.html",
-      "score": 78,
-      "weight": 0.78
+      "score": 79,
+      "weight": 0.79
     },
     {
       "source": "/wiki/the-evm-punks.html",
-      "target": "/wiki/the-blockstars.html",
+      "target": "/wiki/the-ducky-boys.html",
+      "score": 79,
+      "weight": 0.79
+    },
+    {
+      "source": "/wiki/the-evm-punks.html",
+      "target": "/wiki/the-moonlords.html",
+      "score": 79,
+      "weight": 0.79
+    },
+    {
+      "source": "/wiki/the-evm-punks.html",
+      "target": "/wiki/the-allcity-bulls.html",
       "score": 78,
       "weight": 0.78
     },
@@ -14566,14 +14566,14 @@
     },
     {
       "source": "/wiki/the-first-witness.html",
-      "target": "/wiki/first-witness-master-chronology.html",
-      "score": 323,
+      "target": "/wiki/first-witness-faction-commentaries.html",
+      "score": 324,
       "weight": 1
     },
     {
       "source": "/wiki/the-first-witness.html",
-      "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 322,
+      "target": "/wiki/first-witness-master-chronology.html",
+      "score": 323,
       "weight": 1
     },
     {
@@ -14590,25 +14590,25 @@
     },
     {
       "source": "/wiki/the-gasless-ghosts.html",
-      "target": "/wiki/the-allcity-bulls.html",
-      "score": 78,
-      "weight": 0.78
-    },
-    {
-      "source": "/wiki/the-gasless-ghosts.html",
-      "target": "/wiki/the-aztec-raiders.html",
-      "score": 78,
-      "weight": 0.78
+      "target": "/wiki/the-moonlords.html",
+      "score": 82,
+      "weight": 0.82
     },
     {
       "source": "/wiki/the-gasless-ghosts.html",
       "target": "/wiki/the-bally-boys.html",
-      "score": 78,
-      "weight": 0.78
+      "score": 79,
+      "weight": 0.79
     },
     {
       "source": "/wiki/the-gasless-ghosts.html",
-      "target": "/wiki/the-blockstars.html",
+      "target": "/wiki/the-ducky-boys.html",
+      "score": 79,
+      "weight": 0.79
+    },
+    {
+      "source": "/wiki/the-gasless-ghosts.html",
+      "target": "/wiki/the-allcity-bulls.html",
       "score": 78,
       "weight": 0.78
     },
@@ -14644,33 +14644,33 @@
     },
     {
       "source": "/wiki/the-hard-fork-rockers.html",
+      "target": "/wiki/the-bally-boys.html",
+      "score": 85,
+      "weight": 0.85
+    },
+    {
+      "source": "/wiki/the-hard-fork-rockers.html",
+      "target": "/wiki/the-ducky-boys.html",
+      "score": 85,
+      "weight": 0.85
+    },
+    {
+      "source": "/wiki/the-hard-fork-rockers.html",
+      "target": "/wiki/the-moonlords.html",
+      "score": 82,
+      "weight": 0.82
+    },
+    {
+      "source": "/wiki/the-hard-fork-rockers.html",
       "target": "/wiki/the-chain-scribes.html",
-      "score": 87,
-      "weight": 0.87
+      "score": 78,
+      "weight": 0.78
     },
     {
       "source": "/wiki/the-hard-fork-rockers.html",
-      "target": "/wiki/the-code-alchemists.html",
-      "score": 81,
-      "weight": 0.81
-    },
-    {
-      "source": "/wiki/the-hard-fork-rockers.html",
-      "target": "/wiki/the-nomad-bears.html",
-      "score": 81,
-      "weight": 0.81
-    },
-    {
-      "source": "/wiki/the-hard-fork-rockers.html",
-      "target": "/wiki/the-rugpull-miners.html",
-      "score": 81,
-      "weight": 0.81
-    },
-    {
-      "source": "/wiki/the-hard-fork-rockers.html",
-      "target": "/wiki/the-salvagers.html",
-      "score": 81,
-      "weight": 0.81
+      "target": "/wiki/satoshi-scroll.html",
+      "score": 75,
+      "weight": 0.75
     },
     {
       "source": "/wiki/the-high-hats.html",
@@ -14734,33 +14734,33 @@
     },
     {
       "source": "/wiki/the-moonlords.html",
+      "target": "/wiki/the-bally-boys.html",
+      "score": 98,
+      "weight": 0.98
+    },
+    {
+      "source": "/wiki/the-moonlords.html",
+      "target": "/wiki/the-ducky-boys.html",
+      "score": 92,
+      "weight": 0.92
+    },
+    {
+      "source": "/wiki/the-moonlords.html",
       "target": "/wiki/the-chain-scribes.html",
       "score": 84,
       "weight": 0.84
     },
     {
       "source": "/wiki/the-moonlords.html",
-      "target": "/wiki/the-allcity-bulls.html",
-      "score": 78,
-      "weight": 0.78
+      "target": "/wiki/the-hard-fork-rockers.html",
+      "score": 82,
+      "weight": 0.82
     },
     {
       "source": "/wiki/the-moonlords.html",
-      "target": "/wiki/the-aztec-raiders.html",
-      "score": 78,
-      "weight": 0.78
-    },
-    {
-      "source": "/wiki/the-moonlords.html",
-      "target": "/wiki/the-bally-boys.html",
-      "score": 78,
-      "weight": 0.78
-    },
-    {
-      "source": "/wiki/the-moonlords.html",
-      "target": "/wiki/the-blockstars.html",
-      "score": 78,
-      "weight": 0.78
+      "target": "/wiki/the-gasless-ghosts.html",
+      "score": 81,
+      "weight": 0.81
     },
     {
       "source": "/wiki/the-nice-easy-bois.html",
@@ -14800,6 +14800,12 @@
     },
     {
       "source": "/wiki/the-nomad-bears.html",
+      "target": "/wiki/the-bally-boys.html",
+      "score": 82,
+      "weight": 0.82
+    },
+    {
+      "source": "/wiki/the-nomad-bears.html",
       "target": "/wiki/the-blockchain-furies.html",
       "score": 81,
       "weight": 0.81
@@ -14807,12 +14813,6 @@
     {
       "source": "/wiki/the-nomad-bears.html",
       "target": "/wiki/the-code-alchemists.html",
-      "score": 81,
-      "weight": 0.81
-    },
-    {
-      "source": "/wiki/the-nomad-bears.html",
-      "target": "/wiki/the-hard-fork-rockers.html",
       "score": 81,
       "weight": 0.81
     },
@@ -14896,12 +14896,6 @@
     },
     {
       "source": "/wiki/the-rugpull-miners.html",
-      "target": "/wiki/the-hard-fork-rockers.html",
-      "score": 81,
-      "weight": 0.81
-    },
-    {
-      "source": "/wiki/the-rugpull-miners.html",
       "target": "/wiki/the-nomad-bears.html",
       "score": 81,
       "weight": 0.81
@@ -14911,6 +14905,12 @@
       "target": "/wiki/the-salvagers.html",
       "score": 81,
       "weight": 0.81
+    },
+    {
+      "source": "/wiki/the-rugpull-miners.html",
+      "target": "/wiki/the-bally-boys.html",
+      "score": 79,
+      "weight": 0.79
     },
     {
       "source": "/wiki/the-salvagers.html",
@@ -14932,13 +14932,13 @@
     },
     {
       "source": "/wiki/the-salvagers.html",
-      "target": "/wiki/the-hard-fork-rockers.html",
+      "target": "/wiki/the-nomad-bears.html",
       "score": 81,
       "weight": 0.81
     },
     {
       "source": "/wiki/the-salvagers.html",
-      "target": "/wiki/the-nomad-bears.html",
+      "target": "/wiki/the-rugpull-miners.html",
       "score": 81,
       "weight": 0.81
     },
@@ -14950,27 +14950,27 @@
     },
     {
       "source": "/wiki/the-shard-mothers-of-manhattan.html",
+      "target": "/wiki/the-bally-boys.html",
+      "score": 82,
+      "weight": 0.82
+    },
+    {
+      "source": "/wiki/the-shard-mothers-of-manhattan.html",
       "target": "/wiki/the-nomad-bears.html",
       "score": 81,
       "weight": 0.81
     },
     {
       "source": "/wiki/the-shard-mothers-of-manhattan.html",
-      "target": "/wiki/the-allcity-bulls.html",
-      "score": 78,
-      "weight": 0.78
+      "target": "/wiki/the-ducky-boys.html",
+      "score": 79,
+      "weight": 0.79
     },
     {
       "source": "/wiki/the-shard-mothers-of-manhattan.html",
-      "target": "/wiki/the-aztec-raiders.html",
-      "score": 78,
-      "weight": 0.78
-    },
-    {
-      "source": "/wiki/the-shard-mothers-of-manhattan.html",
-      "target": "/wiki/the-bally-boys.html",
-      "score": 78,
-      "weight": 0.78
+      "target": "/wiki/the-moonlords.html",
+      "score": 79,
+      "weight": 0.79
     },
     {
       "source": "/wiki/the-squeaky-pinks.html",
@@ -15184,13 +15184,13 @@
     },
     {
       "source": "/wiki/triple-fork-event.html",
-      "target": "/wiki/first-witness-triple-fork-chainfire.html",
-      "score": 118,
+      "target": "/wiki/hard-fork-games.html",
+      "score": 119,
       "weight": 1
     },
     {
       "source": "/wiki/triple-fork-event.html",
-      "target": "/wiki/hard-fork-games.html",
+      "target": "/wiki/first-witness-triple-fork-chainfire.html",
       "score": 118,
       "weight": 1
     },
@@ -15208,9 +15208,9 @@
     },
     {
       "source": "/wiki/triple-fork-event.html",
-      "target": "/wiki/hodl-wars.html",
-      "score": 89,
-      "weight": 0.89
+      "target": "/wiki/sacred-chain.html",
+      "score": 90,
+      "weight": 0.9
     },
     {
       "source": "/wiki/wagmi-prophecy.html",
