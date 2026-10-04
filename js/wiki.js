@@ -635,7 +635,8 @@ function scoreResult(item, query) {
   ].join(' ').toLowerCase();
   const si            = item.search_index || {};
   const siTokenStr    = (si.tokens || []).join(' ').toLowerCase();
-  const kwBagStr      = (si.keyword_bag || []).join(' ').toLowerCase();
+  const keywordWords = new Set(tokenizeSearchQuery((si.keyword_bag || []).join(' ')));
+  const descriptionWords = new Set(tokenizeSearchQuery(descLower));
   const normTitleStr  = (si.normalized_title || '').toLowerCase();
 
   let queryScore = 0;
@@ -668,12 +669,12 @@ function scoreResult(item, query) {
       queryScore += 15;
       tokenMatched = true;
     }
-    if (canUseTextCorpusMatch && descLower.includes(token)) {
+    if (canUseTextCorpusMatch && descriptionWords.has(token)) {
       queryScore += 15;
       tokenMatched = true;
     }
     // Keyword bag (body-text proxy): only match non-stopwords >= 3 chars to avoid flood
-    if (canUseTextCorpusMatch && kwBagStr.includes(token)) {
+    if (canUseTextCorpusMatch && keywordWords.has(token)) {
       queryScore += 10;
       tokenMatched = true;
     }

@@ -736,4 +736,26 @@ const graffpunksStopwordOnly = {
   }
 }
 
+
+// A named subject must not be buried by substrings inside unrelated corpus
+// words as the reference expands. Title-prefix autocomplete stays available.
+{
+  const repairLedger = {
+    title: 'Workshop Notes', url: '/wiki/workshop-notes.html', tags: [], category: 'misc', rank_score: 999,
+    desc: 'Memory repair and the final ledger.',
+    search_index: { normalized_title: 'workshop notes', tokens: ['workshop', 'notes'], keyword_bag: ['repair', 'ledger'] }
+  };
+  const airLedger = {
+    title: 'Block Topia', url: '/wiki/block-topia.html', tags: [], category: 'core', rank_score: 100,
+    desc: 'City administration.',
+    search_index: { normalized_title: 'block topia', tokens: ['block', 'topia'], keyword_bag: ['air', 'ledger'] }
+  };
+  const matches = await selectMatches([repairLedger, airLedger], 'Air Ledger', { allowPartialFallback: true, limit: 5 });
+  assert.deepEqual(matches.scored.map(row => row.item.url), ['/wiki/block-topia.html']);
+  assert.equal(scoreResult(repairLedger, 'air ledger').matchedTokenCount, 1, 'air must not match repair');
+  assert.equal(scoreResult(repairLedger, 'repair ledger').matchedTokenCount, 2, 'whole corpus words remain searchable');
+  const prefix = await selectMatches([airLedger], 'block top', { allowPartialFallback: true, limit: 5 });
+  assert.equal(prefix.scored[0]?.item.url, airLedger.url, 'title-prefix autocomplete remains unchanged');
+}
+
 console.log('wiki-search.test: PASS');

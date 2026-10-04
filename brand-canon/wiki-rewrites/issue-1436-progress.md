@@ -117,3 +117,9 @@ All 12 First Witness intent contracts pass against the actual generator with 10,
 ### Publication 10 — athletes, Raiders, investigators and performers
 
 Previous publication: `36488be5dbd2a6c60d9c7cce47c197d6f12e7d97`.  Full wiki CI (including ownership, structure and existing search regressions), graph integrity, inventory freshness and diff checks passed. Chromium passed 8 desktop/mobile renders, 152 contents targets and 4 no-JavaScript pages; full search/autocomplete passed for Long Lap Yard, Burden Roll, Restitution Bench, Borrowed Spotlight. No overflow, script errors or obsolete bible injection.
+
+### Search maintenance before publication 11
+
+The Chain Scribes draft exposed another existing search ambiguity: the subject query “Air Ledger” matched “repair” in unrelated descriptions. Description and keyword-bag matching now uses complete normalized words; title-prefix autocomplete and the existing stopword/short-word rules remain unchanged. A high-ranked unrelated repair/ledger fixture verifies that every meaningful subject word must match. The separate First Witness scorer uses the same rule.
+
+Full wiki CI with `CANON_PROSE_CHANGE_APPROVED=0`, graph integrity and diff checks pass. Real Chromium full search and autocomplete retain all 12 First Witness intent positions and find Block Topia for Air Ledger within five results. No canonical prose, ownership contract or approval-policy code changes in this maintenance commit. The four held article drafts will be regenerated and validated separately.

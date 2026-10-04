@@ -32,7 +32,8 @@ function score(item, query) {
   const description = [item.desc || '', item.description || '', item.excerpt || '', item.summary || '', item.meta_description || ''].join(' ').toLowerCase();
   const searchIndex = item.search_index || {};
   const searchTokens = (searchIndex.tokens || []).join(' ').toLowerCase();
-  const keywordBag = (searchIndex.keyword_bag || []).join(' ').toLowerCase();
+  const keywordWords = new Set(tokenize((searchIndex.keyword_bag || []).join(' ')));
+  const descriptionWords = new Set(tokenize(description));
   const normalizedTitle = String(searchIndex.normalized_title || '').toLowerCase();
 
   let queryScore = 0;
@@ -50,8 +51,8 @@ function score(item, query) {
     if (tags.includes(token) || searchTokens.includes(token)) { queryScore += 30; hit = true; }
     if (slug.includes(token)) { queryScore += 20; hit = true; }
     if (category.includes(token)) { queryScore += 15; hit = true; }
-    if (corpusMatch && description.includes(token)) { queryScore += 15; hit = true; }
-    if (corpusMatch && keywordBag.includes(token)) { queryScore += 10; hit = true; }
+    if (corpusMatch && descriptionWords.has(token)) { queryScore += 15; hit = true; }
+    if (corpusMatch && keywordWords.has(token)) { queryScore += 10; hit = true; }
     if (hit) matched += 1;
   }
 
