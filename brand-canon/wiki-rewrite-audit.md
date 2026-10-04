@@ -8,7 +8,7 @@ This is an ownership and rewrite-queue audit only. It does not replace, delete, 
 
 - Scope: all 415 top-level `wiki/*.html` pages.
 - Absent-stub authorizations: 0. These are explicit repository declarations, not audited pages or links to pages that already exist.
-- Canon hierarchy: published First Witness convergence canon; latest canon/brand vision; W81 condensed digest; current dedicated bibles; raw W81 archive; existing wiki archive.
+- Canon hierarchy: published First Witness convergence canon; latest canon/brand vision; W81 condensed digest; current dedicated bibles; Retired W81 archive provenance and migration ledger; existing wiki archive.
 - Tier 4 source gap: the modern dedicated character/faction/HODL WARS bibles referenced by the First Witness register are not separately identifiable in this checkout. Historical `wiki/bibles/*.json` SAM records remain lower-tier public archive inputs and ambiguous mappings stay review items.
 - `content_hash` is SHA-256 of exact file bytes and is the stale-write identity. `article_content_hash` is SHA-256 of deterministic `article-text-v1` visible article text. `article_markup_hash` protects the exact canonical content-root markup, excluding only generated Related Wiki Paths.
 - Exact paragraph duplicates count repeated occurrences after the first, case-folded and whitespace-normalised, with fragments shorter than 40 characters ignored.
