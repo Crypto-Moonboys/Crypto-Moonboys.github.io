@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-04T12:26:51.089Z",
-  "verified_at": "2026-10-04T12:26:51.089Z",
+  "generated_at": "2026-10-04T12:31:19.756Z",
+  "verified_at": "2026-10-04T12:31:19.756Z",
   "nodes": [
     {
       "id": "/about.html",
@@ -239,7 +239,7 @@
       "title": "Bitcoin Kid Army",
       "url": "/wiki/bitcoin-kid-army.html",
       "category": "factions",
-      "rank_score": 297,
+      "rank_score": 295,
       "authority_score": 28
     },
     {
@@ -279,7 +279,7 @@
       "title": "Block Topia",
       "url": "/wiki/block-topia.html",
       "category": "characters",
-      "rank_score": 458,
+      "rank_score": 456,
       "authority_score": 13
     },
     {
@@ -471,7 +471,7 @@
       "title": "Technology, AI and Synthetic Minds",
       "url": "/wiki/first-witness-ai-synthetic-minds.html",
       "category": "core",
-      "rank_score": 295,
+      "rank_score": 297,
       "authority_score": 12
     },
     {
@@ -927,7 +927,7 @@
       "title": "NULL and the Theology of Erasure",
       "url": "/wiki/first-witness-null-erasure.html",
       "category": "core",
-      "rank_score": 303,
+      "rank_score": 305,
       "authority_score": 12
     },
     {
@@ -1159,7 +1159,7 @@
       "title": "Genesis Kernel",
       "url": "/wiki/genesis-kernel.html",
       "category": "core",
-      "rank_score": 332,
+      "rank_score": 334,
       "authority_score": 28
     },
     {
@@ -2343,7 +2343,7 @@
       "title": "GKniftyHEADS",
       "url": "/wiki/gkniftyheads.html",
       "category": "characters",
-      "rank_score": 592,
+      "rank_score": 590,
       "authority_score": 17
     },
     {
@@ -2455,7 +2455,7 @@
       "title": "HODL Warriors",
       "url": "/wiki/hodl-warriors.html",
       "category": "characters",
-      "rank_score": 327,
+      "rank_score": 329,
       "authority_score": 28
     },
     {
@@ -2551,8 +2551,8 @@
       "title": "M1nTr K1ll",
       "url": "/wiki/m1ntr-k1ll.html",
       "category": "characters",
-      "rank_score": 251,
-      "authority_score": 18
+      "rank_score": 289,
+      "authority_score": 24
     },
     {
       "id": "/wiki/maidstone-base.html",
@@ -2575,7 +2575,7 @@
       "title": "Metaverse Battles",
       "url": "/wiki/metaverse-battles.html",
       "category": "factions",
-      "rank_score": 255,
+      "rank_score": 253,
       "authority_score": 18
     },
     {
@@ -2687,8 +2687,8 @@
       "title": "NULL THE PROPHET",
       "url": "/wiki/null-the-prophet.html",
       "category": "characters",
-      "rank_score": 416,
-      "authority_score": 17
+      "rank_score": 449,
+      "authority_score": 24
     },
     {
       "id": "/wiki/paper-hands.html",
@@ -2775,7 +2775,7 @@
       "title": "Queen Sarah P-fly",
       "url": "/wiki/queen-sarah-p-fly.html",
       "category": "factions",
-      "rank_score": 268,
+      "rank_score": 270,
       "authority_score": 24
     },
     {
@@ -2823,7 +2823,7 @@
       "title": "The Sacred Chain",
       "url": "/wiki/sacred-chain.html",
       "category": "core",
-      "rank_score": 397,
+      "rank_score": 399,
       "authority_score": 28
     },
     {
@@ -2831,8 +2831,8 @@
       "title": "Samael.exe",
       "url": "/wiki/samaelexe.html",
       "category": "characters",
-      "rank_score": 262,
-      "authority_score": 18
+      "rank_score": 287,
+      "authority_score": 24
     },
     {
       "id": "/wiki/satorebel.html",
@@ -3207,8 +3207,8 @@
       "title": "The Whitewasher",
       "url": "/wiki/the-whitewasher.html",
       "category": "characters",
-      "rank_score": 338,
-      "authority_score": 21
+      "rank_score": 354,
+      "authority_score": 24
     },
     {
       "id": "/wiki/thera-9.html",
@@ -3508,6 +3508,12 @@
     },
     {
       "source": "/wiki/aleema-child-of-the-shard.html",
+      "target": "/wiki/the-whitewasher.html",
+      "score": 84,
+      "weight": 0.84
+    },
+    {
+      "source": "/wiki/aleema-child-of-the-shard.html",
       "target": "/wiki/crypto-moonboys.html",
       "score": 83,
       "weight": 0.83
@@ -3515,12 +3521,6 @@
     {
       "source": "/wiki/aleema-child-of-the-shard.html",
       "target": "/wiki/the-princess.html",
-      "score": 81,
-      "weight": 0.81
-    },
-    {
-      "source": "/wiki/aleema-child-of-the-shard.html",
-      "target": "/wiki/the-whitewasher.html",
       "score": 81,
       "weight": 0.81
     },
@@ -3580,21 +3580,21 @@
     },
     {
       "source": "/wiki/alien-worlds-tlm.html",
+      "target": "/wiki/null-the-prophet.html",
+      "score": 80,
+      "weight": 0.8
+    },
+    {
+      "source": "/wiki/alien-worlds-tlm.html",
       "target": "/wiki/gkniftyheads.html",
       "score": 79,
       "weight": 0.79
     },
     {
       "source": "/wiki/alien-worlds-tlm.html",
-      "target": "/wiki/null-the-prophet.html",
-      "score": 77,
-      "weight": 0.77
-    },
-    {
-      "source": "/wiki/alien-worlds-tlm.html",
-      "target": "/wiki/jodie-zoom-2000.html",
-      "score": 76,
-      "weight": 0.76
+      "target": "/wiki/m1ntr-k1ll.html",
+      "score": 78,
+      "weight": 0.78
     },
     {
       "source": "/wiki/altcoins.html",
@@ -3640,21 +3640,21 @@
     },
     {
       "source": "/wiki/atomicassets.html",
+      "target": "/wiki/null-the-prophet.html",
+      "score": 80,
+      "weight": 0.8
+    },
+    {
+      "source": "/wiki/atomicassets.html",
       "target": "/wiki/gkniftyheads.html",
       "score": 79,
       "weight": 0.79
     },
     {
       "source": "/wiki/atomicassets.html",
-      "target": "/wiki/null-the-prophet.html",
-      "score": 77,
-      "weight": 0.77
-    },
-    {
-      "source": "/wiki/atomicassets.html",
-      "target": "/wiki/jodie-zoom-2000.html",
-      "score": 76,
-      "weight": 0.76
+      "target": "/wiki/m1ntr-k1ll.html",
+      "score": 78,
+      "weight": 0.78
     },
     {
       "source": "/wiki/atomichub-graffpunks-collection.html",
@@ -3730,6 +3730,12 @@
     },
     {
       "source": "/wiki/ava-chen.html",
+      "target": "/wiki/null-the-prophet.html",
+      "score": 80,
+      "weight": 0.8
+    },
+    {
+      "source": "/wiki/ava-chen.html",
       "target": "/wiki/gkniftyheads.html",
       "score": 79,
       "weight": 0.79
@@ -3739,12 +3745,6 @@
       "target": "/wiki/jodie-zoom-2000.html",
       "score": 79,
       "weight": 0.79
-    },
-    {
-      "source": "/wiki/ava-chen.html",
-      "target": "/wiki/forksplit.html",
-      "score": 77,
-      "weight": 0.77
     },
     {
       "source": "/wiki/battlemech-blast.html",
@@ -3784,6 +3784,12 @@
     },
     {
       "source": "/wiki/bear-market-siege.html",
+      "target": "/wiki/the-whitewasher.html",
+      "score": 84,
+      "weight": 0.84
+    },
+    {
+      "source": "/wiki/bear-market-siege.html",
       "target": "/wiki/crypto-moonboys.html",
       "score": 83,
       "weight": 0.83
@@ -3797,12 +3803,6 @@
     {
       "source": "/wiki/bear-market-siege.html",
       "target": "/wiki/the-princess.html",
-      "score": 81,
-      "weight": 0.81
-    },
-    {
-      "source": "/wiki/bear-market-siege.html",
-      "target": "/wiki/the-whitewasher.html",
       "score": 81,
       "weight": 0.81
     },
@@ -3880,15 +3880,15 @@
     },
     {
       "source": "/wiki/bit-cap-5000.html",
-      "target": "/wiki/gkniftyheads.html",
-      "score": 79,
-      "weight": 0.79
+      "target": "/wiki/null-the-prophet.html",
+      "score": 80,
+      "weight": 0.8
     },
     {
       "source": "/wiki/bit-cap-5000.html",
-      "target": "/wiki/null-the-prophet.html",
-      "score": 77,
-      "weight": 0.77
+      "target": "/wiki/gkniftyheads.html",
+      "score": 79,
+      "weight": 0.79
     },
     {
       "source": "/wiki/bit-cap-5000.html",
@@ -3976,15 +3976,15 @@
     },
     {
       "source": "/wiki/bitcoin-kids.html",
-      "target": "/wiki/hodl-warriors.html",
-      "score": 85,
-      "weight": 0.85
+      "target": "/wiki/null-the-prophet.html",
+      "score": 86,
+      "weight": 0.86
     },
     {
       "source": "/wiki/bitcoin-kids.html",
-      "target": "/wiki/hodl-x-warriors.html",
-      "score": 83,
-      "weight": 0.83
+      "target": "/wiki/hodl-warriors.html",
+      "score": 85,
+      "weight": 0.85
     },
     {
       "source": "/wiki/bitcoin-x-kids.html",
@@ -4006,15 +4006,15 @@
     },
     {
       "source": "/wiki/bitcoin-x-kids.html",
-      "target": "/wiki/hodl-warriors.html",
-      "score": 82,
-      "weight": 0.82
+      "target": "/wiki/null-the-prophet.html",
+      "score": 83,
+      "weight": 0.83
     },
     {
       "source": "/wiki/bitcoin-x-kids.html",
-      "target": "/wiki/gkniftyheads.html",
-      "score": 79,
-      "weight": 0.79
+      "target": "/wiki/hodl-warriors.html",
+      "score": 82,
+      "weight": 0.82
     },
     {
       "source": "/wiki/bitcoin.html",
@@ -4097,8 +4097,8 @@
     {
       "source": "/wiki/block-topia.html",
       "target": "/wiki/null-the-prophet.html",
-      "score": 65,
-      "weight": 0.65
+      "score": 68,
+      "weight": 0.68
     },
     {
       "source": "/wiki/block-topia.html",
@@ -4187,8 +4187,8 @@
     {
       "source": "/wiki/burn-to-earn.html",
       "target": "/wiki/null-the-prophet.html",
-      "score": 77,
-      "weight": 0.77
+      "score": 80,
+      "weight": 0.8
     },
     {
       "source": "/wiki/burn-to-earn.html",
@@ -4240,15 +4240,15 @@
     },
     {
       "source": "/wiki/charlie-buster.html",
-      "target": "/wiki/gkniftyheads.html",
-      "score": 79,
-      "weight": 0.79
+      "target": "/wiki/null-the-prophet.html",
+      "score": 80,
+      "weight": 0.8
     },
     {
       "source": "/wiki/charlie-buster.html",
-      "target": "/wiki/null-the-prophet.html",
-      "score": 77,
-      "weight": 0.77
+      "target": "/wiki/gkniftyheads.html",
+      "score": 79,
+      "weight": 0.79
     },
     {
       "source": "/wiki/charlie-buster.html",
@@ -4330,13 +4330,13 @@
     },
     {
       "source": "/wiki/crypto-moonboys.html",
-      "target": "/wiki/bitcoin-kids.html",
-      "score": 77,
-      "weight": 0.77
+      "target": "/wiki/null-the-prophet.html",
+      "score": 83,
+      "weight": 0.83
     },
     {
       "source": "/wiki/crypto-moonboys.html",
-      "target": "/wiki/null-the-prophet.html",
+      "target": "/wiki/bitcoin-kids.html",
       "score": 77,
       "weight": 0.77
     },
@@ -4360,15 +4360,15 @@
     },
     {
       "source": "/wiki/darren-cullen.html",
-      "target": "/wiki/gkniftyheads.html",
-      "score": 79,
-      "weight": 0.79
+      "target": "/wiki/null-the-prophet.html",
+      "score": 80,
+      "weight": 0.8
     },
     {
       "source": "/wiki/darren-cullen.html",
-      "target": "/wiki/null-the-prophet.html",
-      "score": 77,
-      "weight": 0.77
+      "target": "/wiki/gkniftyheads.html",
+      "score": 79,
+      "weight": 0.79
     },
     {
       "source": "/wiki/darren-cullen.html",
@@ -4480,6 +4480,12 @@
     },
     {
       "source": "/wiki/diamond-hands.html",
+      "target": "/wiki/null-the-prophet.html",
+      "score": 86,
+      "weight": 0.86
+    },
+    {
+      "source": "/wiki/diamond-hands.html",
       "target": "/wiki/gkniftyheads.html",
       "score": 82,
       "weight": 0.82
@@ -4487,12 +4493,6 @@
     {
       "source": "/wiki/diamond-hands.html",
       "target": "/wiki/bitcoin-kids.html",
-      "score": 80,
-      "weight": 0.8
-    },
-    {
-      "source": "/wiki/diamond-hands.html",
-      "target": "/wiki/null-the-prophet.html",
       "score": 80,
       "weight": 0.8
     },
@@ -4510,21 +4510,21 @@
     },
     {
       "source": "/wiki/dragan-volkov.html",
+      "target": "/wiki/null-the-prophet.html",
+      "score": 80,
+      "weight": 0.8
+    },
+    {
+      "source": "/wiki/dragan-volkov.html",
       "target": "/wiki/gkniftyheads.html",
       "score": 79,
       "weight": 0.79
     },
     {
       "source": "/wiki/dragan-volkov.html",
-      "target": "/wiki/grit.html",
-      "score": 77,
-      "weight": 0.77
-    },
-    {
-      "source": "/wiki/dragan-volkov.html",
-      "target": "/wiki/grit42.html",
-      "score": 77,
-      "weight": 0.77
+      "target": "/wiki/m1ntr-k1ll.html",
+      "score": 78,
+      "weight": 0.78
     },
     {
       "source": "/wiki/dream-sovereign.html",
@@ -4570,15 +4570,15 @@
     },
     {
       "source": "/wiki/elder-codex-7.html",
-      "target": "/wiki/gkniftyheads.html",
-      "score": 79,
-      "weight": 0.79
+      "target": "/wiki/null-the-prophet.html",
+      "score": 80,
+      "weight": 0.8
     },
     {
       "source": "/wiki/elder-codex-7.html",
-      "target": "/wiki/null-the-prophet.html",
-      "score": 77,
-      "weight": 0.77
+      "target": "/wiki/gkniftyheads.html",
+      "score": 79,
+      "weight": 0.79
     },
     {
       "source": "/wiki/elder-codex-7.html",
@@ -7240,15 +7240,15 @@
     },
     {
       "source": "/wiki/forklord-you.html",
-      "target": "/wiki/gkniftyheads.html",
-      "score": 79,
-      "weight": 0.79
+      "target": "/wiki/null-the-prophet.html",
+      "score": 80,
+      "weight": 0.8
     },
     {
       "source": "/wiki/forklord-you.html",
-      "target": "/wiki/null-the-prophet.html",
-      "score": 77,
-      "weight": 0.77
+      "target": "/wiki/gkniftyheads.html",
+      "score": 79,
+      "weight": 0.79
     },
     {
       "source": "/wiki/forklord-you.html",
@@ -7270,6 +7270,12 @@
     },
     {
       "source": "/wiki/forksplit.html",
+      "target": "/wiki/null-the-prophet.html",
+      "score": 80,
+      "weight": 0.8
+    },
+    {
+      "source": "/wiki/forksplit.html",
       "target": "/wiki/gkniftyheads.html",
       "score": 79,
       "weight": 0.79
@@ -7279,12 +7285,6 @@
       "target": "/wiki/jodie-zoom-2000.html",
       "score": 79,
       "weight": 0.79
-    },
-    {
-      "source": "/wiki/forksplit.html",
-      "target": "/wiki/ava-chen.html",
-      "score": 77,
-      "weight": 0.77
     },
     {
       "source": "/wiki/games4punks-telegram.html",
@@ -7360,21 +7360,21 @@
     },
     {
       "source": "/wiki/gang-signs.html",
+      "target": "/wiki/null-the-prophet.html",
+      "score": 80,
+      "weight": 0.8
+    },
+    {
+      "source": "/wiki/gang-signs.html",
       "target": "/wiki/gkniftyheads.html",
       "score": 79,
       "weight": 0.79
     },
     {
       "source": "/wiki/gang-signs.html",
-      "target": "/wiki/null-the-prophet.html",
-      "score": 77,
-      "weight": 0.77
-    },
-    {
-      "source": "/wiki/gang-signs.html",
-      "target": "/wiki/bitcoin-kids.html",
-      "score": 74,
-      "weight": 0.74
+      "target": "/wiki/m1ntr-k1ll.html",
+      "score": 75,
+      "weight": 0.75
     },
     {
       "source": "/wiki/genesis-kernel.html",
@@ -7420,6 +7420,12 @@
     },
     {
       "source": "/wiki/genesis-spray-drop.html",
+      "target": "/wiki/null-the-prophet.html",
+      "score": 83,
+      "weight": 0.83
+    },
+    {
+      "source": "/wiki/genesis-spray-drop.html",
       "target": "/wiki/gkniftyheads.html",
       "score": 79,
       "weight": 0.79
@@ -7427,12 +7433,6 @@
     {
       "source": "/wiki/genesis-spray-drop.html",
       "target": "/wiki/bitcoin-kids.html",
-      "score": 77,
-      "weight": 0.77
-    },
-    {
-      "source": "/wiki/genesis-spray-drop.html",
-      "target": "/wiki/null-the-prophet.html",
       "score": 77,
       "weight": 0.77
     },
@@ -11830,13 +11830,13 @@
     },
     {
       "source": "/wiki/gkniftyheads.html",
-      "target": "/wiki/bitcoin-kids.html",
-      "score": 71,
-      "weight": 0.71
+      "target": "/wiki/null-the-prophet.html",
+      "score": 77,
+      "weight": 0.77
     },
     {
       "source": "/wiki/gkniftyheads.html",
-      "target": "/wiki/null-the-prophet.html",
+      "target": "/wiki/bitcoin-kids.html",
       "score": 71,
       "weight": 0.71
     },
@@ -12010,6 +12010,12 @@
     },
     {
       "source": "/wiki/graffpunks-ecosystem.html",
+      "target": "/wiki/null-the-prophet.html",
+      "score": 83,
+      "weight": 0.83
+    },
+    {
+      "source": "/wiki/graffpunks-ecosystem.html",
       "target": "/wiki/gkniftyheads.html",
       "score": 82,
       "weight": 0.82
@@ -12019,12 +12025,6 @@
       "target": "/wiki/bitcoin-kids.html",
       "score": 80,
       "weight": 0.8
-    },
-    {
-      "source": "/wiki/graffpunks-ecosystem.html",
-      "target": "/wiki/wallets.html",
-      "score": 78,
-      "weight": 0.78
     },
     {
       "source": "/wiki/graffpunks.html",
@@ -12041,8 +12041,8 @@
     {
       "source": "/wiki/graffpunks.html",
       "target": "/wiki/null-the-prophet.html",
-      "score": 77,
-      "weight": 0.77
+      "score": 80,
+      "weight": 0.8
     },
     {
       "source": "/wiki/graffpunks.html",
@@ -12070,21 +12070,21 @@
     },
     {
       "source": "/wiki/grit.html",
+      "target": "/wiki/null-the-prophet.html",
+      "score": 80,
+      "weight": 0.8
+    },
+    {
+      "source": "/wiki/grit.html",
       "target": "/wiki/gkniftyheads.html",
       "score": 79,
       "weight": 0.79
     },
     {
       "source": "/wiki/grit.html",
-      "target": "/wiki/dragan-volkov.html",
-      "score": 77,
-      "weight": 0.77
-    },
-    {
-      "source": "/wiki/grit.html",
-      "target": "/wiki/grit42.html",
-      "score": 77,
-      "weight": 0.77
+      "target": "/wiki/m1ntr-k1ll.html",
+      "score": 78,
+      "weight": 0.78
     },
     {
       "source": "/wiki/grit42.html",
@@ -12100,21 +12100,21 @@
     },
     {
       "source": "/wiki/grit42.html",
+      "target": "/wiki/null-the-prophet.html",
+      "score": 80,
+      "weight": 0.8
+    },
+    {
+      "source": "/wiki/grit42.html",
       "target": "/wiki/gkniftyheads.html",
       "score": 79,
       "weight": 0.79
     },
     {
       "source": "/wiki/grit42.html",
-      "target": "/wiki/dragan-volkov.html",
-      "score": 77,
-      "weight": 0.77
-    },
-    {
-      "source": "/wiki/grit42.html",
-      "target": "/wiki/grit.html",
-      "score": 77,
-      "weight": 0.77
+      "target": "/wiki/m1ntr-k1ll.html",
+      "score": 78,
+      "weight": 0.78
     },
     {
       "source": "/wiki/hard-fork-games.html",
@@ -12220,15 +12220,15 @@
     },
     {
       "source": "/wiki/hex-tagger-prime.html",
-      "target": "/wiki/gkniftyheads.html",
-      "score": 79,
-      "weight": 0.79
+      "target": "/wiki/null-the-prophet.html",
+      "score": 80,
+      "weight": 0.8
     },
     {
       "source": "/wiki/hex-tagger-prime.html",
-      "target": "/wiki/null-the-prophet.html",
-      "score": 77,
-      "weight": 0.77
+      "target": "/wiki/gkniftyheads.html",
+      "score": 79,
+      "weight": 0.79
     },
     {
       "source": "/wiki/hex-tagger-prime.html",
@@ -12280,6 +12280,12 @@
     },
     {
       "source": "/wiki/hodl-wars.html",
+      "target": "/wiki/genesis-kernel.html",
+      "score": 84,
+      "weight": 0.84
+    },
+    {
+      "source": "/wiki/hodl-wars.html",
       "target": "/wiki/hodl-warriors.html",
       "score": 84,
       "weight": 0.84
@@ -12289,12 +12295,6 @@
       "target": "/wiki/sacred-chain.html",
       "score": 84,
       "weight": 0.84
-    },
-    {
-      "source": "/wiki/hodl-wars.html",
-      "target": "/wiki/genesis-kernel.html",
-      "score": 83,
-      "weight": 0.83
     },
     {
       "source": "/wiki/hodl-x-warriors.html",
@@ -12322,9 +12322,9 @@
     },
     {
       "source": "/wiki/hodl-x-warriors.html",
-      "target": "/wiki/gkniftyheads.html",
-      "score": 82,
-      "weight": 0.82
+      "target": "/wiki/null-the-prophet.html",
+      "score": 86,
+      "weight": 0.86
     },
     {
       "source": "/wiki/hodlmoonboys-nft-collection.html",
@@ -12346,15 +12346,15 @@
     },
     {
       "source": "/wiki/ian-harrison.html",
-      "target": "/wiki/gkniftyheads.html",
-      "score": 79,
-      "weight": 0.79
+      "target": "/wiki/null-the-prophet.html",
+      "score": 80,
+      "weight": 0.8
     },
     {
       "source": "/wiki/ian-harrison.html",
-      "target": "/wiki/null-the-prophet.html",
-      "score": 77,
-      "weight": 0.77
+      "target": "/wiki/gkniftyheads.html",
+      "score": 79,
+      "weight": 0.79
     },
     {
       "source": "/wiki/ian-harrison.html",
@@ -12376,15 +12376,15 @@
     },
     {
       "source": "/wiki/iris-7.html",
-      "target": "/wiki/gkniftyheads.html",
-      "score": 79,
-      "weight": 0.79
+      "target": "/wiki/null-the-prophet.html",
+      "score": 80,
+      "weight": 0.8
     },
     {
       "source": "/wiki/iris-7.html",
-      "target": "/wiki/null-the-prophet.html",
-      "score": 77,
-      "weight": 0.77
+      "target": "/wiki/gkniftyheads.html",
+      "score": 79,
+      "weight": 0.79
     },
     {
       "source": "/wiki/iris-7.html",
@@ -12436,21 +12436,21 @@
     },
     {
       "source": "/wiki/jodie-zoom-2000.html",
+      "target": "/wiki/m1ntr-k1ll.html",
+      "score": 81,
+      "weight": 0.81
+    },
+    {
+      "source": "/wiki/jodie-zoom-2000.html",
+      "target": "/wiki/null-the-prophet.html",
+      "score": 80,
+      "weight": 0.8
+    },
+    {
+      "source": "/wiki/jodie-zoom-2000.html",
       "target": "/wiki/gkniftyheads.html",
       "score": 79,
       "weight": 0.79
-    },
-    {
-      "source": "/wiki/jodie-zoom-2000.html",
-      "target": "/wiki/hodl-warriors.html",
-      "score": 79,
-      "weight": 0.79
-    },
-    {
-      "source": "/wiki/jodie-zoom-2000.html",
-      "target": "/wiki/ava-chen.html",
-      "score": 77,
-      "weight": 0.77
     },
     {
       "source": "/wiki/jonny-laurence-nelson-tag-records.html",
@@ -12496,15 +12496,15 @@
     },
     {
       "source": "/wiki/lady-ink.html",
-      "target": "/wiki/gkniftyheads.html",
-      "score": 79,
-      "weight": 0.79
+      "target": "/wiki/null-the-prophet.html",
+      "score": 80,
+      "weight": 0.8
     },
     {
       "source": "/wiki/lady-ink.html",
-      "target": "/wiki/null-the-prophet.html",
-      "score": 77,
-      "weight": 0.77
+      "target": "/wiki/gkniftyheads.html",
+      "score": 79,
+      "weight": 0.79
     },
     {
       "source": "/wiki/lady-ink.html",
@@ -12556,21 +12556,21 @@
     },
     {
       "source": "/wiki/loopfiend.html",
+      "target": "/wiki/null-the-prophet.html",
+      "score": 80,
+      "weight": 0.8
+    },
+    {
+      "source": "/wiki/loopfiend.html",
       "target": "/wiki/gkniftyheads.html",
       "score": 79,
       "weight": 0.79
     },
     {
       "source": "/wiki/loopfiend.html",
-      "target": "/wiki/null-the-prophet.html",
-      "score": 77,
-      "weight": 0.77
-    },
-    {
-      "source": "/wiki/loopfiend.html",
-      "target": "/wiki/jodie-zoom-2000.html",
-      "score": 76,
-      "weight": 0.76
+      "target": "/wiki/m1ntr-k1ll.html",
+      "score": 78,
+      "weight": 0.78
     },
     {
       "source": "/wiki/m1ntr-k1ll.html",
@@ -12586,21 +12586,21 @@
     },
     {
       "source": "/wiki/m1ntr-k1ll.html",
+      "target": "/wiki/null-the-prophet.html",
+      "score": 86,
+      "weight": 0.86
+    },
+    {
+      "source": "/wiki/m1ntr-k1ll.html",
       "target": "/wiki/gkniftyheads.html",
       "score": 79,
       "weight": 0.79
     },
     {
       "source": "/wiki/m1ntr-k1ll.html",
-      "target": "/wiki/dragan-volkov.html",
-      "score": 77,
-      "weight": 0.77
-    },
-    {
-      "source": "/wiki/m1ntr-k1ll.html",
-      "target": "/wiki/grit.html",
-      "score": 77,
-      "weight": 0.77
+      "target": "/wiki/jodie-zoom-2000.html",
+      "score": 79,
+      "weight": 0.79
     },
     {
       "source": "/wiki/maidstone-base.html",
@@ -12833,8 +12833,8 @@
     {
       "source": "/wiki/nbg.html",
       "target": "/wiki/null-the-prophet.html",
-      "score": 68,
-      "weight": 0.68
+      "score": 71,
+      "weight": 0.71
     },
     {
       "source": "/wiki/nbg.html",
@@ -12946,6 +12946,12 @@
     },
     {
       "source": "/wiki/nfts.html",
+      "target": "/wiki/null-the-prophet.html",
+      "score": 80,
+      "weight": 0.8
+    },
+    {
+      "source": "/wiki/nfts.html",
       "target": "/wiki/gkniftyheads.html",
       "score": 79,
       "weight": 0.79
@@ -12955,12 +12961,6 @@
       "target": "/wiki/wallets.html",
       "score": 78,
       "weight": 0.78
-    },
-    {
-      "source": "/wiki/nfts.html",
-      "target": "/wiki/null-the-prophet.html",
-      "score": 77,
-      "weight": 0.77
     },
     {
       "source": "/wiki/ngmi-chronicles.html",
@@ -13085,8 +13085,8 @@
     {
       "source": "/wiki/null-the-prophet.html",
       "target": "/wiki/crypto-moonboys.html",
-      "score": 89,
-      "weight": 0.89
+      "score": 92,
+      "weight": 0.92
     },
     {
       "source": "/wiki/null-the-prophet.html",
@@ -13097,14 +13097,14 @@
     {
       "source": "/wiki/null-the-prophet.html",
       "target": "/wiki/gkniftyheads.html",
-      "score": 79,
-      "weight": 0.79
+      "score": 82,
+      "weight": 0.82
     },
     {
       "source": "/wiki/null-the-prophet.html",
       "target": "/wiki/bitcoin-kids.html",
-      "score": 74,
-      "weight": 0.74
+      "score": 80,
+      "weight": 0.8
     },
     {
       "source": "/wiki/null-the-prophet.html",
@@ -13156,19 +13156,19 @@
     },
     {
       "source": "/wiki/patchwork.html",
+      "target": "/wiki/null-the-prophet.html",
+      "score": 80,
+      "weight": 0.8
+    },
+    {
+      "source": "/wiki/patchwork.html",
       "target": "/wiki/gkniftyheads.html",
       "score": 79,
       "weight": 0.79
     },
     {
       "source": "/wiki/patchwork.html",
-      "target": "/wiki/pyralith.html",
-      "score": 78,
-      "weight": 0.78
-    },
-    {
-      "source": "/wiki/patchwork.html",
-      "target": "/wiki/quell.html",
+      "target": "/wiki/m1ntr-k1ll.html",
       "score": 78,
       "weight": 0.78
     },
@@ -13246,21 +13246,21 @@
     },
     {
       "source": "/wiki/pixil-mini.html",
+      "target": "/wiki/null-the-prophet.html",
+      "score": 80,
+      "weight": 0.8
+    },
+    {
+      "source": "/wiki/pixil-mini.html",
       "target": "/wiki/gkniftyheads.html",
       "score": 79,
       "weight": 0.79
     },
     {
       "source": "/wiki/pixil-mini.html",
-      "target": "/wiki/null-the-prophet.html",
-      "score": 77,
-      "weight": 0.77
-    },
-    {
-      "source": "/wiki/pixil-mini.html",
-      "target": "/wiki/jodie-zoom-2000.html",
-      "score": 76,
-      "weight": 0.76
+      "target": "/wiki/m1ntr-k1ll.html",
+      "score": 78,
+      "weight": 0.78
     },
     {
       "source": "/wiki/playable-nft-murals.html",
@@ -13366,15 +13366,15 @@
     },
     {
       "source": "/wiki/punk-token.html",
-      "target": "/wiki/gkniftyheads.html",
-      "score": 79,
-      "weight": 0.79
+      "target": "/wiki/null-the-prophet.html",
+      "score": 80,
+      "weight": 0.8
     },
     {
       "source": "/wiki/punk-token.html",
-      "target": "/wiki/null-the-prophet.html",
-      "score": 77,
-      "weight": 0.77
+      "target": "/wiki/gkniftyheads.html",
+      "score": 79,
+      "weight": 0.79
     },
     {
       "source": "/wiki/punk-token.html",
@@ -13396,19 +13396,19 @@
     },
     {
       "source": "/wiki/pyralith.html",
+      "target": "/wiki/null-the-prophet.html",
+      "score": 80,
+      "weight": 0.8
+    },
+    {
+      "source": "/wiki/pyralith.html",
       "target": "/wiki/gkniftyheads.html",
       "score": 79,
       "weight": 0.79
     },
     {
       "source": "/wiki/pyralith.html",
-      "target": "/wiki/patchwork.html",
-      "score": 78,
-      "weight": 0.78
-    },
-    {
-      "source": "/wiki/pyralith.html",
-      "target": "/wiki/quell.html",
+      "target": "/wiki/m1ntr-k1ll.html",
       "score": 78,
       "weight": 0.78
     },
@@ -13456,19 +13456,19 @@
     },
     {
       "source": "/wiki/quell.html",
+      "target": "/wiki/null-the-prophet.html",
+      "score": 80,
+      "weight": 0.8
+    },
+    {
+      "source": "/wiki/quell.html",
       "target": "/wiki/gkniftyheads.html",
       "score": 79,
       "weight": 0.79
     },
     {
       "source": "/wiki/quell.html",
-      "target": "/wiki/patchwork.html",
-      "score": 78,
-      "weight": 0.78
-    },
-    {
-      "source": "/wiki/quell.html",
-      "target": "/wiki/pyralith.html",
+      "target": "/wiki/m1ntr-k1ll.html",
       "score": 78,
       "weight": 0.78
     },
@@ -13546,15 +13546,15 @@
     },
     {
       "source": "/wiki/rune-tag.html",
-      "target": "/wiki/gkniftyheads.html",
-      "score": 79,
-      "weight": 0.79
+      "target": "/wiki/null-the-prophet.html",
+      "score": 80,
+      "weight": 0.8
     },
     {
       "source": "/wiki/rune-tag.html",
-      "target": "/wiki/null-the-prophet.html",
-      "score": 77,
-      "weight": 0.77
+      "target": "/wiki/gkniftyheads.html",
+      "score": 79,
+      "weight": 0.79
     },
     {
       "source": "/wiki/rune-tag.html",
@@ -13613,8 +13613,8 @@
     {
       "source": "/wiki/sacred-chain.html",
       "target": "/wiki/genesis-kernel.html",
-      "score": 89,
-      "weight": 0.89
+      "score": 90,
+      "weight": 0.9
     },
     {
       "source": "/wiki/sacred-chain.html",
@@ -13636,6 +13636,12 @@
     },
     {
       "source": "/wiki/samaelexe.html",
+      "target": "/wiki/null-the-prophet.html",
+      "score": 83,
+      "weight": 0.83
+    },
+    {
+      "source": "/wiki/samaelexe.html",
       "target": "/wiki/gkniftyheads.html",
       "score": 79,
       "weight": 0.79
@@ -13645,12 +13651,6 @@
       "target": "/wiki/hodl-warriors.html",
       "score": 75,
       "weight": 0.75
-    },
-    {
-      "source": "/wiki/samaelexe.html",
-      "target": "/wiki/bitcoin-kids.html",
-      "score": 74,
-      "weight": 0.74
     },
     {
       "source": "/wiki/satorebel.html",
@@ -13666,19 +13666,19 @@
     },
     {
       "source": "/wiki/satorebel.html",
+      "target": "/wiki/null-the-prophet.html",
+      "score": 80,
+      "weight": 0.8
+    },
+    {
+      "source": "/wiki/satorebel.html",
       "target": "/wiki/gkniftyheads.html",
       "score": 79,
       "weight": 0.79
     },
     {
       "source": "/wiki/satorebel.html",
-      "target": "/wiki/patchwork.html",
-      "score": 78,
-      "weight": 0.78
-    },
-    {
-      "source": "/wiki/satorebel.html",
-      "target": "/wiki/pyralith.html",
+      "target": "/wiki/m1ntr-k1ll.html",
       "score": 78,
       "weight": 0.78
     },
@@ -13756,21 +13756,21 @@
     },
     {
       "source": "/wiki/sister-halcyon.html",
+      "target": "/wiki/null-the-prophet.html",
+      "score": 80,
+      "weight": 0.8
+    },
+    {
+      "source": "/wiki/sister-halcyon.html",
       "target": "/wiki/gkniftyheads.html",
       "score": 79,
       "weight": 0.79
     },
     {
       "source": "/wiki/sister-halcyon.html",
-      "target": "/wiki/bitcoin-kids.html",
-      "score": 77,
-      "weight": 0.77
-    },
-    {
-      "source": "/wiki/sister-halcyon.html",
-      "target": "/wiki/null-the-prophet.html",
-      "score": 77,
-      "weight": 0.77
+      "target": "/wiki/m1ntr-k1ll.html",
+      "score": 78,
+      "weight": 0.78
     },
     {
       "source": "/wiki/sneakar.html",
@@ -13816,6 +13816,12 @@
     },
     {
       "source": "/wiki/snipey-d-man-sirus.html",
+      "target": "/wiki/null-the-prophet.html",
+      "score": 80,
+      "weight": 0.8
+    },
+    {
+      "source": "/wiki/snipey-d-man-sirus.html",
       "target": "/wiki/gkniftyheads.html",
       "score": 79,
       "weight": 0.79
@@ -13825,12 +13831,6 @@
       "target": "/wiki/jodie-zoom-2000.html",
       "score": 79,
       "weight": 0.79
-    },
-    {
-      "source": "/wiki/snipey-d-man-sirus.html",
-      "target": "/wiki/ava-chen.html",
-      "score": 77,
-      "weight": 0.77
     },
     {
       "source": "/wiki/solana.html",
@@ -13973,8 +13973,8 @@
     {
       "source": "/wiki/staking.html",
       "target": "/wiki/null-the-prophet.html",
-      "score": 68,
-      "weight": 0.68
+      "score": 71,
+      "weight": 0.71
     },
     {
       "source": "/wiki/staking.html",
@@ -14855,8 +14855,8 @@
     {
       "source": "/wiki/the-princess.html",
       "target": "/wiki/the-whitewasher.html",
-      "score": 87,
-      "weight": 0.87
+      "score": 84,
+      "weight": 0.84
     },
     {
       "source": "/wiki/the-princess.html",
@@ -15035,30 +15035,30 @@
     {
       "source": "/wiki/the-whitewasher.html",
       "target": "/wiki/the-princess.html",
-      "score": 87,
-      "weight": 0.87
+      "score": 81,
+      "weight": 0.81
     },
     {
       "source": "/wiki/the-whitewasher.html",
       "target": "/wiki/thorne-the-architect.html",
-      "score": 87,
-      "weight": 0.87
+      "score": 81,
+      "weight": 0.81
     },
     {
       "source": "/wiki/the-whitewasher.html",
       "target": "/wiki/crypto-moonboys.html",
-      "score": 86,
-      "weight": 0.86
+      "score": 80,
+      "weight": 0.8
     },
     {
       "source": "/wiki/the-whitewasher.html",
       "target": "/wiki/graffpunks.html",
-      "score": 86,
-      "weight": 0.86
+      "score": 80,
+      "weight": 0.8
     },
     {
       "source": "/wiki/the-whitewasher.html",
-      "target": "/wiki/bitcoin-kids.html",
+      "target": "/wiki/null-the-prophet.html",
       "score": 77,
       "weight": 0.77
     },
@@ -15073,6 +15073,12 @@
       "target": "/wiki/graffpunks.html",
       "score": 89,
       "weight": 0.89
+    },
+    {
+      "source": "/wiki/thera-9.html",
+      "target": "/wiki/null-the-prophet.html",
+      "score": 80,
+      "weight": 0.8
     },
     {
       "source": "/wiki/thera-9.html",
@@ -15085,18 +15091,6 @@
       "target": "/wiki/jodie-zoom-2000.html",
       "score": 79,
       "weight": 0.79
-    },
-    {
-      "source": "/wiki/thera-9.html",
-      "target": "/wiki/ava-chen.html",
-      "score": 77,
-      "weight": 0.77
-    },
-    {
-      "source": "/wiki/thorne-the-architect.html",
-      "target": "/wiki/the-whitewasher.html",
-      "score": 87,
-      "weight": 0.87
     },
     {
       "source": "/wiki/thorne-the-architect.html",
@@ -15118,9 +15112,15 @@
     },
     {
       "source": "/wiki/thorne-the-architect.html",
-      "target": "/wiki/gkniftyheads.html",
-      "score": 76,
-      "weight": 0.76
+      "target": "/wiki/the-whitewasher.html",
+      "score": 84,
+      "weight": 0.84
+    },
+    {
+      "source": "/wiki/thorne-the-architect.html",
+      "target": "/wiki/null-the-prophet.html",
+      "score": 77,
+      "weight": 0.77
     },
     {
       "source": "/wiki/tokenomics.html",
@@ -15226,6 +15226,12 @@
     },
     {
       "source": "/wiki/wagmi-prophecy.html",
+      "target": "/wiki/the-whitewasher.html",
+      "score": 84,
+      "weight": 0.84
+    },
+    {
+      "source": "/wiki/wagmi-prophecy.html",
       "target": "/wiki/graffpunks.html",
       "score": 83,
       "weight": 0.83
@@ -15233,12 +15239,6 @@
     {
       "source": "/wiki/wagmi-prophecy.html",
       "target": "/wiki/the-princess.html",
-      "score": 81,
-      "weight": 0.81
-    },
-    {
-      "source": "/wiki/wagmi-prophecy.html",
-      "target": "/wiki/the-whitewasher.html",
       "score": 81,
       "weight": 0.81
     },
@@ -15256,6 +15256,12 @@
     },
     {
       "source": "/wiki/wallets.html",
+      "target": "/wiki/null-the-prophet.html",
+      "score": 83,
+      "weight": 0.83
+    },
+    {
+      "source": "/wiki/wallets.html",
       "target": "/wiki/gkniftyheads.html",
       "score": 82,
       "weight": 0.82
@@ -15265,12 +15271,6 @@
       "target": "/wiki/graffpunks-ecosystem.html",
       "score": 79,
       "weight": 0.79
-    },
-    {
-      "source": "/wiki/wallets.html",
-      "target": "/wiki/nfts.html",
-      "score": 78,
-      "weight": 0.78
     },
     {
       "source": "/wiki/wax-blockchain.html",
@@ -15562,15 +15562,15 @@
     },
     {
       "source": "/wiki/xrp-kids.html",
-      "target": "/wiki/gkniftyheads.html",
-      "score": 79,
-      "weight": 0.79
+      "target": "/wiki/null-the-prophet.html",
+      "score": 80,
+      "weight": 0.8
     },
     {
       "source": "/wiki/xrp-kids.html",
-      "target": "/wiki/null-the-prophet.html",
-      "score": 77,
-      "weight": 0.77
+      "target": "/wiki/gkniftyheads.html",
+      "score": 79,
+      "weight": 0.79
     },
     {
       "source": "/wiki/xrp-ledger.html",
