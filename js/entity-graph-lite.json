@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-04T13:56:00.478Z",
-  "verified_at": "2026-10-04T13:56:00.478Z",
+  "generated_at": "2026-10-04T13:57:39.974Z",
+  "verified_at": "2026-10-04T13:57:39.974Z",
   "lite": true,
   "nodes": [
     {
@@ -24,7 +24,7 @@
       "title": "Faction Commentaries on the First Witness",
       "url": "/wiki/first-witness-faction-commentaries.html",
       "category": "core",
-      "rank_score": 377,
+      "rank_score": 382,
       "authority_score": 14
     },
     {
@@ -260,6 +260,14 @@
       "authority_score": 28
     },
     {
+      "id": "/wiki/the-nice-easy-bois.html",
+      "title": "The NICE &amp; EASY BOIS",
+      "url": "/wiki/the-nice-easy-bois.html",
+      "category": "factions",
+      "rank_score": 319,
+      "authority_score": 24
+    },
+    {
       "id": "/wiki/bitcoin-x-kids.html",
       "title": "Bitcoin X Kids",
       "url": "/wiki/bitcoin-x-kids.html",
@@ -348,6 +356,14 @@
       "authority_score": 28
     },
     {
+      "id": "/wiki/first-witness-justice-mercy-restitution.html",
+      "title": "Justice, Mercy and Restitution",
+      "url": "/wiki/first-witness-justice-mercy-restitution.html",
+      "category": "core",
+      "rank_score": 310,
+      "authority_score": 12
+    },
+    {
       "id": "/wiki/first-witness-triple-fork-chainfire.html",
       "title": "The Triple Fork and Chainfire",
       "url": "/wiki/first-witness-triple-fork-chainfire.html",
@@ -396,14 +412,6 @@
       "authority_score": 12
     },
     {
-      "id": "/wiki/first-witness-justice-mercy-restitution.html",
-      "title": "Justice, Mercy and Restitution",
-      "url": "/wiki/first-witness-justice-mercy-restitution.html",
-      "category": "core",
-      "rank_score": 308,
-      "authority_score": 12
-    },
-    {
       "id": "/wiki/first-witness-questions-for-the-living.html",
       "title": "Questions for the Living",
       "url": "/wiki/first-witness-questions-for-the-living.html",
@@ -426,14 +434,6 @@
       "category": "core",
       "rank_score": 307,
       "authority_score": 28
-    },
-    {
-      "id": "/wiki/the-nice-easy-bois.html",
-      "title": "The NICE &amp; EASY BOIS",
-      "url": "/wiki/the-nice-easy-bois.html",
-      "category": "factions",
-      "rank_score": 307,
-      "authority_score": 21
     },
     {
       "id": "/wiki/first-witness-glossary.html",
@@ -556,6 +556,14 @@
       "authority_score": 28
     },
     {
+      "id": "/wiki/bitcoin-kid-army.html",
+      "title": "Bitcoin Kid Army",
+      "url": "/wiki/bitcoin-kid-army.html",
+      "category": "factions",
+      "rank_score": 295,
+      "authority_score": 28
+    },
+    {
       "id": "/wiki/blockchain.html",
       "title": "Blockchain Technology",
       "url": "/wiki/blockchain.html",
@@ -594,14 +602,6 @@
       "category": "concepts",
       "rank_score": 294,
       "authority_score": 24
-    },
-    {
-      "id": "/wiki/bitcoin-kid-army.html",
-      "title": "Bitcoin Kid Army",
-      "url": "/wiki/bitcoin-kid-army.html",
-      "category": "factions",
-      "rank_score": 293,
-      "authority_score": 28
     }
   ],
   "edges": [
@@ -948,6 +948,18 @@
       "weight": 0.82
     },
     {
+      "source": "/wiki/the-finance-guild.html",
+      "target": "/wiki/the-nice-easy-bois.html",
+      "score": 82,
+      "weight": 0.82
+    },
+    {
+      "source": "/wiki/the-high-hats.html",
+      "target": "/wiki/the-nice-easy-bois.html",
+      "score": 82,
+      "weight": 0.82
+    },
+    {
       "source": "/wiki/billy-the-goat-kid.html",
       "target": "/wiki/the-princess.html",
       "score": 81,
@@ -974,18 +986,6 @@
     {
       "source": "/wiki/midevilpunks.html",
       "target": "/wiki/pmsl.html",
-      "score": 75,
-      "weight": 0.75
-    },
-    {
-      "source": "/wiki/the-nice-easy-bois.html",
-      "target": "/wiki/the-finance-guild.html",
-      "score": 75,
-      "weight": 0.75
-    },
-    {
-      "source": "/wiki/the-nice-easy-bois.html",
-      "target": "/wiki/the-high-hats.html",
       "score": 75,
       "weight": 0.75
     },

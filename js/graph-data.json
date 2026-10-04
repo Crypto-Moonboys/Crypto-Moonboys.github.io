@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-04T13:56:00.478Z",
-  "verified_at": "2026-10-04T13:56:00.478Z",
+  "generated_at": "2026-10-04T13:57:39.974Z",
+  "verified_at": "2026-10-04T13:57:39.974Z",
   "nodes": [
     {
       "id": "/about.html",
@@ -239,7 +239,7 @@
       "title": "Bitcoin Kid Army",
       "url": "/wiki/bitcoin-kid-army.html",
       "category": "factions",
-      "rank_score": 293,
+      "rank_score": 295,
       "authority_score": 28
     },
     {
@@ -679,7 +679,7 @@
       "title": "Death, Grief and Remembrance",
       "url": "/wiki/first-witness-death-grief-remembrance.html",
       "category": "core",
-      "rank_score": 283,
+      "rank_score": 285,
       "authority_score": 12
     },
     {
@@ -727,7 +727,7 @@
       "title": "Faction Commentaries on the First Witness",
       "url": "/wiki/first-witness-faction-commentaries.html",
       "category": "core",
-      "rank_score": 377,
+      "rank_score": 382,
       "authority_score": 14
     },
     {
@@ -743,7 +743,7 @@
       "title": "Love, Family, Children and Elders",
       "url": "/wiki/first-witness-family-children-elders.html",
       "category": "core",
-      "rank_score": 287,
+      "rank_score": 289,
       "authority_score": 12
     },
     {
@@ -823,7 +823,7 @@
       "title": "Justice, Mercy and Restitution",
       "url": "/wiki/first-witness-justice-mercy-restitution.html",
       "category": "core",
-      "rank_score": 308,
+      "rank_score": 310,
       "authority_score": 12
     },
     {
@@ -959,7 +959,7 @@
       "title": "Prisons, Punishment and Return",
       "url": "/wiki/first-witness-prisons-punishment-return.html",
       "category": "core",
-      "rank_score": 272,
+      "rank_score": 274,
       "authority_score": 12
     },
     {
@@ -2575,7 +2575,7 @@
       "title": "Metaverse Battles",
       "url": "/wiki/metaverse-battles.html",
       "category": "factions",
-      "rank_score": 247,
+      "rank_score": 245,
       "authority_score": 18
     },
     {
@@ -2775,7 +2775,7 @@
       "title": "Queen Sarah P-fly",
       "url": "/wiki/queen-sarah-p-fly.html",
       "category": "factions",
-      "rank_score": 272,
+      "rank_score": 274,
       "authority_score": 24
     },
     {
@@ -2911,7 +2911,7 @@
       "title": "Squeaky Pinks Enforcers",
       "url": "/wiki/squeaky-pinks-enforcers.html",
       "category": "factions",
-      "rank_score": 261,
+      "rank_score": 263,
       "authority_score": 21
     },
     {
@@ -2983,7 +2983,7 @@
       "title": "The AZTEC RAIDERS",
       "url": "/wiki/the-aztec-raiders.html",
       "category": "factions",
-      "rank_score": 271,
+      "rank_score": 273,
       "authority_score": 28
     },
     {
@@ -2991,7 +2991,7 @@
       "title": "The BALLY BOYS",
       "url": "/wiki/the-bally-boys.html",
       "category": "factions",
-      "rank_score": 277,
+      "rank_score": 279,
       "authority_score": 28
     },
     {
@@ -3007,7 +3007,7 @@
       "title": "The BLOCKCHAIN FURIES",
       "url": "/wiki/the-blockchain-furies.html",
       "category": "factions",
-      "rank_score": 280,
+      "rank_score": 282,
       "authority_score": 28
     },
     {
@@ -3135,8 +3135,8 @@
       "title": "The NICE &amp; EASY BOIS",
       "url": "/wiki/the-nice-easy-bois.html",
       "category": "factions",
-      "rank_score": 307,
-      "authority_score": 21
+      "rank_score": 319,
+      "authority_score": 24
     },
     {
       "id": "/wiki/the-nomad-bears.html",
@@ -3167,7 +3167,7 @@
       "title": "The RUGPULL MINERS",
       "url": "/wiki/the-rugpull-miners.html",
       "category": "factions",
-      "rank_score": 292,
+      "rank_score": 290,
       "authority_score": 24
     },
     {
@@ -3183,24 +3183,24 @@
       "title": "The SHARD MOTHERS of MANHATTAN",
       "url": "/wiki/the-shard-mothers-of-manhattan.html",
       "category": "factions",
-      "rank_score": 281,
-      "authority_score": 21
+      "rank_score": 284,
+      "authority_score": 24
     },
     {
       "id": "/wiki/the-squeaky-pinks.html",
       "title": "The Squeaky Pinks",
       "url": "/wiki/the-squeaky-pinks.html",
       "category": "factions",
-      "rank_score": 276,
-      "authority_score": 18
+      "rank_score": 284,
+      "authority_score": 24
     },
     {
       "id": "/wiki/the-tuskon-ogs.html",
       "title": "The TUSKON OGS",
       "url": "/wiki/the-tuskon-ogs.html",
       "category": "factions",
-      "rank_score": 273,
-      "authority_score": 18
+      "rank_score": 283,
+      "authority_score": 24
     },
     {
       "id": "/wiki/the-whitewasher.html",
@@ -3550,6 +3550,12 @@
     },
     {
       "source": "/wiki/alfie-bitcoin-kid-blaze.html",
+      "target": "/wiki/the-nice-easy-bois.html",
+      "score": 69,
+      "weight": 0.69
+    },
+    {
+      "source": "/wiki/alfie-bitcoin-kid-blaze.html",
       "target": "/wiki/stikfamwars.html",
       "score": 66,
       "weight": 0.66
@@ -3557,12 +3563,6 @@
     {
       "source": "/wiki/alfie-bitcoin-kid-blaze.html",
       "target": "/wiki/the-finance-guild.html",
-      "score": 66,
-      "weight": 0.66
-    },
-    {
-      "source": "/wiki/alfie-bitcoin-kid-blaze.html",
-      "target": "/wiki/the-high-hats.html",
       "score": 66,
       "weight": 0.66
     },
@@ -12455,8 +12455,8 @@
     {
       "source": "/wiki/jonny-laurence-nelson-tag-records.html",
       "target": "/wiki/the-nice-easy-bois.html",
-      "score": 73,
-      "weight": 0.73
+      "score": 74,
+      "weight": 0.74
     },
     {
       "source": "/wiki/jonny-laurence-nelson-tag-records.html",
@@ -12707,8 +12707,8 @@
     {
       "source": "/wiki/metropolis.html",
       "target": "/wiki/the-nice-easy-bois.html",
-      "score": 74,
-      "weight": 0.74
+      "score": 75,
+      "weight": 0.75
     },
     {
       "source": "/wiki/metropolis.html",
@@ -12826,15 +12826,15 @@
     },
     {
       "source": "/wiki/nbg.html",
-      "target": "/wiki/block-topia.html",
+      "target": "/wiki/hodl-warriors.html",
       "score": 64,
       "weight": 0.64
     },
     {
       "source": "/wiki/nbg.html",
-      "target": "/wiki/hodl-warriors.html",
-      "score": 64,
-      "weight": 0.64
+      "target": "/wiki/block-topia.html",
+      "score": 63,
+      "weight": 0.63
     },
     {
       "source": "/wiki/nbgx-token.html",
@@ -13493,8 +13493,8 @@
     {
       "source": "/wiki/rave-relics.html",
       "target": "/wiki/the-nice-easy-bois.html",
-      "score": 68,
-      "weight": 0.68
+      "score": 69,
+      "weight": 0.69
     },
     {
       "source": "/wiki/rug-pull-wars.html",
@@ -13895,8 +13895,8 @@
     {
       "source": "/wiki/spraycode-writcode-mechanics.html",
       "target": "/wiki/the-nice-easy-bois.html",
-      "score": 70,
-      "weight": 0.7
+      "score": 71,
+      "weight": 0.71
     },
     {
       "source": "/wiki/spraycode-writcode-mechanics.html",
@@ -13967,8 +13967,8 @@
     {
       "source": "/wiki/staking.html",
       "target": "/wiki/block-topia.html",
-      "score": 64,
-      "weight": 0.64
+      "score": 63,
+      "weight": 0.63
     },
     {
       "source": "/wiki/staking.html",
@@ -14003,8 +14003,8 @@
     {
       "source": "/wiki/stikfamwars.html",
       "target": "/wiki/the-nice-easy-bois.html",
-      "score": 74,
-      "weight": 0.74
+      "score": 75,
+      "weight": 0.75
     },
     {
       "source": "/wiki/storm-struggle.html",
@@ -14524,6 +14524,12 @@
     },
     {
       "source": "/wiki/the-finance-guild.html",
+      "target": "/wiki/the-nice-easy-bois.html",
+      "score": 82,
+      "weight": 0.82
+    },
+    {
+      "source": "/wiki/the-finance-guild.html",
       "target": "/wiki/the-ducky-boys.html",
       "score": 81,
       "weight": 0.81
@@ -14537,12 +14543,6 @@
     {
       "source": "/wiki/the-finance-guild.html",
       "target": "/wiki/the-allcity-bulls.html",
-      "score": 76,
-      "weight": 0.76
-    },
-    {
-      "source": "/wiki/the-finance-guild.html",
-      "target": "/wiki/the-aztec-raiders.html",
       "score": 76,
       "weight": 0.76
     },
@@ -14680,6 +14680,12 @@
     },
     {
       "source": "/wiki/the-high-hats.html",
+      "target": "/wiki/the-nice-easy-bois.html",
+      "score": 82,
+      "weight": 0.82
+    },
+    {
+      "source": "/wiki/the-high-hats.html",
       "target": "/wiki/the-allcity-bulls.html",
       "score": 79,
       "weight": 0.79
@@ -14689,12 +14695,6 @@
       "target": "/wiki/the-bally-boys.html",
       "score": 79,
       "weight": 0.79
-    },
-    {
-      "source": "/wiki/the-high-hats.html",
-      "target": "/wiki/the-ducky-boys.html",
-      "score": 78,
-      "weight": 0.78
     },
     {
       "source": "/wiki/the-information-mercenaries.html",
@@ -14758,21 +14758,21 @@
     },
     {
       "source": "/wiki/the-nice-easy-bois.html",
-      "target": "/wiki/stikfamwars.html",
-      "score": 78,
-      "weight": 0.78
-    },
-    {
-      "source": "/wiki/the-nice-easy-bois.html",
       "target": "/wiki/the-finance-guild.html",
-      "score": 75,
-      "weight": 0.75
+      "score": 82,
+      "weight": 0.82
     },
     {
       "source": "/wiki/the-nice-easy-bois.html",
       "target": "/wiki/the-high-hats.html",
-      "score": 75,
-      "weight": 0.75
+      "score": 82,
+      "weight": 0.82
+    },
+    {
+      "source": "/wiki/the-nice-easy-bois.html",
+      "target": "/wiki/stikfamwars.html",
+      "score": 78,
+      "weight": 0.78
     },
     {
       "source": "/wiki/the-nice-easy-bois.html",
@@ -14782,9 +14782,9 @@
     },
     {
       "source": "/wiki/the-nice-easy-bois.html",
-      "target": "/wiki/pmsl.html",
-      "score": 72,
-      "weight": 0.72
+      "target": "/wiki/the-aztec-raiders.html",
+      "score": 73,
+      "weight": 0.73
     },
     {
       "source": "/wiki/the-nomad-bears.html",
@@ -14950,81 +14950,81 @@
     },
     {
       "source": "/wiki/the-shard-mothers-of-manhattan.html",
-      "target": "/wiki/the-allcity-bulls.html",
+      "target": "/wiki/the-rugpull-miners.html",
       "score": 82,
       "weight": 0.82
     },
     {
       "source": "/wiki/the-shard-mothers-of-manhattan.html",
+      "target": "/wiki/the-crypto-stoned-boys.html",
+      "score": 81,
+      "weight": 0.81
+    },
+    {
+      "source": "/wiki/the-shard-mothers-of-manhattan.html",
+      "target": "/wiki/the-ducky-boys.html",
+      "score": 81,
+      "weight": 0.81
+    },
+    {
+      "source": "/wiki/the-squeaky-pinks.html",
+      "target": "/wiki/the-chain-scribes.html",
+      "score": 83,
+      "weight": 0.83
+    },
+    {
+      "source": "/wiki/the-squeaky-pinks.html",
+      "target": "/wiki/the-salvagers.html",
+      "score": 83,
+      "weight": 0.83
+    },
+    {
+      "source": "/wiki/the-squeaky-pinks.html",
+      "target": "/wiki/the-rugpull-miners.html",
+      "score": 82,
+      "weight": 0.82
+    },
+    {
+      "source": "/wiki/the-squeaky-pinks.html",
+      "target": "/wiki/the-crypto-stoned-boys.html",
+      "score": 81,
+      "weight": 0.81
+    },
+    {
+      "source": "/wiki/the-squeaky-pinks.html",
+      "target": "/wiki/the-ducky-boys.html",
+      "score": 81,
+      "weight": 0.81
+    },
+    {
+      "source": "/wiki/the-tuskon-ogs.html",
+      "target": "/wiki/the-chain-scribes.html",
+      "score": 83,
+      "weight": 0.83
+    },
+    {
+      "source": "/wiki/the-tuskon-ogs.html",
+      "target": "/wiki/the-allcity-bulls.html",
+      "score": 82,
+      "weight": 0.82
+    },
+    {
+      "source": "/wiki/the-tuskon-ogs.html",
+      "target": "/wiki/the-aztec-raiders.html",
+      "score": 82,
+      "weight": 0.82
+    },
+    {
+      "source": "/wiki/the-tuskon-ogs.html",
       "target": "/wiki/the-bally-boys.html",
       "score": 82,
       "weight": 0.82
     },
     {
-      "source": "/wiki/the-shard-mothers-of-manhattan.html",
-      "target": "/wiki/the-ducky-boys.html",
-      "score": 81,
-      "weight": 0.81
-    },
-    {
-      "source": "/wiki/the-squeaky-pinks.html",
-      "target": "/wiki/the-chain-scribes.html",
-      "score": 83,
-      "weight": 0.83
-    },
-    {
-      "source": "/wiki/the-squeaky-pinks.html",
-      "target": "/wiki/the-ducky-boys.html",
-      "score": 81,
-      "weight": 0.81
-    },
-    {
-      "source": "/wiki/the-squeaky-pinks.html",
-      "target": "/wiki/the-tuskon-ogs.html",
-      "score": 81,
-      "weight": 0.81
-    },
-    {
-      "source": "/wiki/the-squeaky-pinks.html",
-      "target": "/wiki/the-salvagers.html",
-      "score": 80,
-      "weight": 0.8
-    },
-    {
-      "source": "/wiki/the-squeaky-pinks.html",
-      "target": "/wiki/the-allcity-bulls.html",
-      "score": 79,
-      "weight": 0.79
-    },
-    {
       "source": "/wiki/the-tuskon-ogs.html",
-      "target": "/wiki/the-chain-scribes.html",
-      "score": 83,
-      "weight": 0.83
-    },
-    {
-      "source": "/wiki/the-tuskon-ogs.html",
-      "target": "/wiki/the-ducky-boys.html",
-      "score": 81,
-      "weight": 0.81
-    },
-    {
-      "source": "/wiki/the-tuskon-ogs.html",
-      "target": "/wiki/the-squeaky-pinks.html",
-      "score": 81,
-      "weight": 0.81
-    },
-    {
-      "source": "/wiki/the-tuskon-ogs.html",
-      "target": "/wiki/the-salvagers.html",
-      "score": 80,
-      "weight": 0.8
-    },
-    {
-      "source": "/wiki/the-tuskon-ogs.html",
-      "target": "/wiki/the-allcity-bulls.html",
-      "score": 79,
-      "weight": 0.79
+      "target": "/wiki/the-moonlords.html",
+      "score": 82,
+      "weight": 0.82
     },
     {
       "source": "/wiki/the-whitewasher.html",
