@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-04T14:15:28.015Z",
-  "verified_at": "2026-10-04T14:15:28.015Z",
+  "generated_at": "2026-10-04T14:17:46.763Z",
+  "verified_at": "2026-10-04T14:17:46.763Z",
   "nodes": [
     {
       "id": "/about.html",
@@ -95,8 +95,8 @@
       "title": "2025 Metaverse Launch Party",
       "url": "/wiki/2025-metaverse-launch-party.html",
       "category": "factions",
-      "rank_score": 228,
-      "authority_score": 18
+      "rank_score": 248,
+      "authority_score": 23
     },
     {
       "id": "/wiki/589-xrpl.html",
@@ -303,8 +303,8 @@
       "title": "Burn-to-Earn",
       "url": "/wiki/burn-to-earn.html",
       "category": "characters",
-      "rank_score": 295,
-      "authority_score": 19
+      "rank_score": 315,
+      "authority_score": 22
     },
     {
       "id": "/wiki/canvas-clash.html",
@@ -2367,8 +2367,8 @@
       "title": "Graffiti Queens in Decentraland",
       "url": "/wiki/graffiti-queens-in-decentraland.html",
       "category": "factions",
-      "rank_score": 249,
-      "authority_score": 18
+      "rank_score": 257,
+      "authority_score": 23
     },
     {
       "id": "/wiki/graffpunks-24-7-radio.html",
@@ -2599,8 +2599,8 @@
       "title": "Moon Mission",
       "url": "/wiki/moon-mission.html",
       "category": "factions",
-      "rank_score": 245,
-      "authority_score": 24
+      "rank_score": 282,
+      "authority_score": 30
     },
     {
       "id": "/wiki/nbg-token.html",
@@ -2695,7 +2695,7 @@
       "title": "Paper Hands",
       "url": "/wiki/paper-hands.html",
       "category": "factions",
-      "rank_score": 284,
+      "rank_score": 282,
       "authority_score": 27
     },
     {
@@ -2759,8 +2759,8 @@
       "title": "$PUNK Token",
       "url": "/wiki/punk-token.html",
       "category": "characters",
-      "rank_score": 297,
-      "authority_score": 21
+      "rank_score": 309,
+      "authority_score": 23
     },
     {
       "id": "/wiki/pyralith.html",
@@ -2775,7 +2775,7 @@
       "title": "Queen Sarah P-fly",
       "url": "/wiki/queen-sarah-p-fly.html",
       "category": "factions",
-      "rank_score": 274,
+      "rank_score": 276,
       "authority_score": 24
     },
     {
@@ -2791,8 +2791,8 @@
       "title": "Rave Relics",
       "url": "/wiki/rave-relics.html",
       "category": "factions",
-      "rank_score": 290,
-      "authority_score": 21
+      "rank_score": 306,
+      "authority_score": 26
     },
     {
       "id": "/wiki/rug-pull-wars.html",
@@ -3389,8 +3389,8 @@
     {
       "source": "/wiki/2025-metaverse-launch-party.html",
       "target": "/wiki/metaverse-battles.html",
-      "score": 89,
-      "weight": 0.89
+      "score": 93,
+      "weight": 0.93
     },
     {
       "source": "/wiki/2025-metaverse-launch-party.html",
@@ -3401,20 +3401,20 @@
     {
       "source": "/wiki/2025-metaverse-launch-party.html",
       "target": "/wiki/canvas-clash.html",
-      "score": 80,
-      "weight": 0.8
+      "score": 83,
+      "weight": 0.83
     },
     {
       "source": "/wiki/2025-metaverse-launch-party.html",
       "target": "/wiki/midevilpunks.html",
-      "score": 79,
-      "weight": 0.79
+      "score": 82,
+      "weight": 0.82
     },
     {
       "source": "/wiki/2025-metaverse-launch-party.html",
-      "target": "/wiki/lfgk.html",
-      "score": 77,
-      "weight": 0.77
+      "target": "/wiki/stikfamwars.html",
+      "score": 81,
+      "weight": 0.81
     },
     {
       "source": "/wiki/589-xrpl.html",
@@ -3670,13 +3670,13 @@
     },
     {
       "source": "/wiki/atomichub-graffpunks-collection.html",
-      "target": "/wiki/pmsl.html",
-      "score": 72,
-      "weight": 0.72
+      "target": "/wiki/rave-relics.html",
+      "score": 73,
+      "weight": 0.73
     },
     {
       "source": "/wiki/atomichub-graffpunks-collection.html",
-      "target": "/wiki/rave-relics.html",
+      "target": "/wiki/pmsl.html",
       "score": 72,
       "weight": 0.72
     },
@@ -3766,13 +3766,13 @@
     },
     {
       "source": "/wiki/battlemech-blast.html",
-      "target": "/wiki/ngmi-chronicles.html",
-      "score": 78,
-      "weight": 0.78
+      "target": "/wiki/moon-mission.html",
+      "score": 79,
+      "weight": 0.79
     },
     {
       "source": "/wiki/battlemech-blast.html",
-      "target": "/wiki/street-kingdoms.html",
+      "target": "/wiki/ngmi-chronicles.html",
       "score": 78,
       "weight": 0.78
     },
@@ -4120,13 +4120,13 @@
     },
     {
       "source": "/wiki/blockchain.html",
-      "target": "/wiki/ethereum.html",
-      "score": 66,
-      "weight": 0.66
+      "target": "/wiki/rave-relics.html",
+      "score": 67,
+      "weight": 0.67
     },
     {
       "source": "/wiki/blockchain.html",
-      "target": "/wiki/rave-relics.html",
+      "target": "/wiki/ethereum.html",
       "score": 66,
       "weight": 0.66
     },
@@ -4193,8 +4193,8 @@
     {
       "source": "/wiki/burn-to-earn.html",
       "target": "/wiki/punk-token.html",
-      "score": 68,
-      "weight": 0.68
+      "score": 69,
+      "weight": 0.69
     },
     {
       "source": "/wiki/canvas-clash.html",
@@ -4216,15 +4216,15 @@
     },
     {
       "source": "/wiki/canvas-clash.html",
-      "target": "/wiki/spirit-borns.html",
+      "target": "/wiki/2025-metaverse-launch-party.html",
       "score": 80,
       "weight": 0.8
     },
     {
       "source": "/wiki/canvas-clash.html",
-      "target": "/wiki/forkborn-collective.html",
-      "score": 78,
-      "weight": 0.78
+      "target": "/wiki/spirit-borns.html",
+      "score": 80,
+      "weight": 0.8
     },
     {
       "source": "/wiki/charlie-buster.html",
@@ -4336,13 +4336,13 @@
     },
     {
       "source": "/wiki/crypto-moonboys.html",
-      "target": "/wiki/bitcoin-x-kids.html",
-      "score": 73,
-      "weight": 0.73
+      "target": "/wiki/burn-to-earn.html",
+      "score": 74,
+      "weight": 0.74
     },
     {
       "source": "/wiki/crypto-moonboys.html",
-      "target": "/wiki/burn-to-earn.html",
+      "target": "/wiki/bitcoin-x-kids.html",
       "score": 73,
       "weight": 0.73
     },
@@ -4402,9 +4402,9 @@
     },
     {
       "source": "/wiki/defi-mining.html",
-      "target": "/wiki/ethereum.html",
-      "score": 66,
-      "weight": 0.66
+      "target": "/wiki/rave-relics.html",
+      "score": 67,
+      "weight": 0.67
     },
     {
       "source": "/wiki/defi.html",
@@ -7210,6 +7210,12 @@
     },
     {
       "source": "/wiki/forkborn-collective.html",
+      "target": "/wiki/moon-mission.html",
+      "score": 79,
+      "weight": 0.79
+    },
+    {
+      "source": "/wiki/forkborn-collective.html",
       "target": "/wiki/ngmi-chronicles.html",
       "score": 78,
       "weight": 0.78
@@ -7219,12 +7225,6 @@
       "target": "/wiki/street-kingdoms.html",
       "score": 78,
       "weight": 0.78
-    },
-    {
-      "source": "/wiki/forkborn-collective.html",
-      "target": "/wiki/canvas-clash.html",
-      "score": 77,
-      "weight": 0.77
     },
     {
       "source": "/wiki/forklord-you.html",
@@ -7445,8 +7445,8 @@
     {
       "source": "/wiki/genesis-spray.html",
       "target": "/wiki/rave-relics.html",
-      "score": 78,
-      "weight": 0.78
+      "score": 79,
+      "weight": 0.79
     },
     {
       "source": "/wiki/genesis-spray.html",
@@ -11915,14 +11915,8 @@
     {
       "source": "/wiki/graffiti-queens-in-decentraland.html",
       "target": "/wiki/midevilpunks.html",
-      "score": 79,
-      "weight": 0.79
-    },
-    {
-      "source": "/wiki/graffiti-queens-in-decentraland.html",
-      "target": "/wiki/canvas-clash.html",
-      "score": 77,
-      "weight": 0.77
+      "score": 76,
+      "weight": 0.76
     },
     {
       "source": "/wiki/graffiti-queens-in-decentraland.html",
@@ -11932,7 +11926,13 @@
     },
     {
       "source": "/wiki/graffiti-queens-in-decentraland.html",
-      "target": "/wiki/2025-metaverse-launch-party.html",
+      "target": "/wiki/bone-idol-ink.html",
+      "score": 74,
+      "weight": 0.74
+    },
+    {
+      "source": "/wiki/graffiti-queens-in-decentraland.html",
+      "target": "/wiki/canvas-clash.html",
       "score": 74,
       "weight": 0.74
     },
@@ -11986,13 +11986,13 @@
     },
     {
       "source": "/wiki/graffpunks-collection.html",
-      "target": "/wiki/pmsl.html",
-      "score": 75,
-      "weight": 0.75
+      "target": "/wiki/rave-relics.html",
+      "score": 76,
+      "weight": 0.76
     },
     {
       "source": "/wiki/graffpunks-collection.html",
-      "target": "/wiki/rave-relics.html",
+      "target": "/wiki/pmsl.html",
       "score": 75,
       "weight": 0.75
     },
@@ -12556,15 +12556,15 @@
     },
     {
       "source": "/wiki/lfgk.html",
-      "target": "/wiki/spirit-borns.html",
+      "target": "/wiki/2025-metaverse-launch-party.html",
       "score": 80,
       "weight": 0.8
     },
     {
       "source": "/wiki/lfgk.html",
-      "target": "/wiki/forkborn-collective.html",
-      "score": 78,
-      "weight": 0.78
+      "target": "/wiki/spirit-borns.html",
+      "score": 80,
+      "weight": 0.8
     },
     {
       "source": "/wiki/loopfiend.html",
@@ -12665,8 +12665,8 @@
     {
       "source": "/wiki/memecoins.html",
       "target": "/wiki/moon-mission.html",
-      "score": 87,
-      "weight": 0.87
+      "score": 88,
+      "weight": 0.88
     },
     {
       "source": "/wiki/memecoins.html",
@@ -12688,15 +12688,15 @@
     },
     {
       "source": "/wiki/metaverse-battles.html",
-      "target": "/wiki/pmsl.html",
-      "score": 88,
-      "weight": 0.88
+      "target": "/wiki/2025-metaverse-launch-party.html",
+      "score": 90,
+      "weight": 0.9
     },
     {
       "source": "/wiki/metaverse-battles.html",
-      "target": "/wiki/2025-metaverse-launch-party.html",
-      "score": 86,
-      "weight": 0.86
+      "target": "/wiki/pmsl.html",
+      "score": 88,
+      "weight": 0.88
     },
     {
       "source": "/wiki/metaverse-battles.html",
@@ -12731,8 +12731,8 @@
     {
       "source": "/wiki/metropolis.html",
       "target": "/wiki/rave-relics.html",
-      "score": 75,
-      "weight": 0.75
+      "score": 76,
+      "weight": 0.76
     },
     {
       "source": "/wiki/metropolis.html",
@@ -12760,13 +12760,13 @@
     },
     {
       "source": "/wiki/midevilpunks.html",
-      "target": "/wiki/pmsl.html",
-      "score": 75,
-      "weight": 0.75
+      "target": "/wiki/rave-relics.html",
+      "score": 76,
+      "weight": 0.76
     },
     {
       "source": "/wiki/midevilpunks.html",
-      "target": "/wiki/rave-relics.html",
+      "target": "/wiki/pmsl.html",
       "score": 75,
       "weight": 0.75
     },
@@ -12797,8 +12797,8 @@
     {
       "source": "/wiki/moon-mission.html",
       "target": "/wiki/ngmi-chronicles.html",
-      "score": 87,
-      "weight": 0.87
+      "score": 84,
+      "weight": 0.84
     },
     {
       "source": "/wiki/moon-mission.html",
@@ -12994,15 +12994,15 @@
     },
     {
       "source": "/wiki/ngmi-chronicles.html",
-      "target": "/wiki/moon-mission.html",
-      "score": 84,
-      "weight": 0.84
-    },
-    {
-      "source": "/wiki/ngmi-chronicles.html",
       "target": "/wiki/paper-hands.html",
       "score": 83,
       "weight": 0.83
+    },
+    {
+      "source": "/wiki/ngmi-chronicles.html",
+      "target": "/wiki/moon-mission.html",
+      "score": 82,
+      "weight": 0.82
     },
     {
       "source": "/wiki/ngmi-chronicles.html",
@@ -13150,13 +13150,13 @@
     },
     {
       "source": "/wiki/paper-hands.html",
-      "target": "/wiki/memecoins.html",
-      "score": 81,
-      "weight": 0.81
+      "target": "/wiki/moon-mission.html",
+      "score": 82,
+      "weight": 0.82
     },
     {
       "source": "/wiki/paper-hands.html",
-      "target": "/wiki/moon-mission.html",
+      "target": "/wiki/memecoins.html",
       "score": 81,
       "weight": 0.81
     },
@@ -13403,8 +13403,8 @@
     {
       "source": "/wiki/punk-token.html",
       "target": "/wiki/burn-to-earn.html",
-      "score": 67,
-      "weight": 0.67
+      "score": 68,
+      "weight": 0.68
     },
     {
       "source": "/wiki/pyralith.html",
@@ -13462,7 +13462,7 @@
     },
     {
       "source": "/wiki/queen-sarah-p-fly.html",
-      "target": "/wiki/battlemech-blast.html",
+      "target": "/wiki/2025-metaverse-launch-party.html",
       "score": 71,
       "weight": 0.71
     },
@@ -13529,8 +13529,8 @@
     {
       "source": "/wiki/rug-pull-wars.html",
       "target": "/wiki/moon-mission.html",
-      "score": 91,
-      "weight": 0.91
+      "score": 92,
+      "weight": 0.92
     },
     {
       "source": "/wiki/rug-pull-wars.html",
@@ -14003,8 +14003,8 @@
     {
       "source": "/wiki/staking.html",
       "target": "/wiki/punk-token.html",
-      "score": 62,
-      "weight": 0.62
+      "score": 63,
+      "weight": 0.63
     },
     {
       "source": "/wiki/stikfamwars.html",
@@ -14812,7 +14812,7 @@
     },
     {
       "source": "/wiki/the-nice-easy-bois.html",
-      "target": "/wiki/the-aztec-raiders.html",
+      "target": "/wiki/rave-relics.html",
       "score": 73,
       "weight": 0.73
     },
@@ -15310,13 +15310,13 @@
     },
     {
       "source": "/wiki/wax-blockchain.html",
-      "target": "/wiki/pmsl.html",
-      "score": 69,
-      "weight": 0.69
+      "target": "/wiki/rave-relics.html",
+      "score": 70,
+      "weight": 0.7
     },
     {
       "source": "/wiki/wax-blockchain.html",
-      "target": "/wiki/rave-relics.html",
+      "target": "/wiki/pmsl.html",
       "score": 69,
       "weight": 0.69
     },
@@ -15473,8 +15473,8 @@
     {
       "source": "/wiki/waxp.html",
       "target": "/wiki/rave-relics.html",
-      "score": 66,
-      "weight": 0.66
+      "score": 67,
+      "weight": 0.67
     },
     {
       "source": "/wiki/web3.html",

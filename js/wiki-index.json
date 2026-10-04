@@ -1158,11 +1158,11 @@
       ]
     },
     "link_score": {
-      "inbound_count": 67,
+      "inbound_count": 68,
       "outbound_count": 73,
       "existing_outbound_count": 6,
       "suggested_outbound_count": 67,
-      "authority": 137
+      "authority": 139
     },
     "brand": null
   },
@@ -1954,11 +1954,11 @@
       ]
     },
     "link_score": {
-      "inbound_count": 45,
+      "inbound_count": 47,
       "outbound_count": 68,
       "existing_outbound_count": 6,
       "suggested_outbound_count": 62,
-      "authority": 93
+      "authority": 97
     },
     "brand": null
   },
@@ -3122,11 +3122,11 @@
       ]
     },
     "link_score": {
-      "inbound_count": 214,
+      "inbound_count": 216,
       "outbound_count": 39,
       "existing_outbound_count": 20,
       "suggested_outbound_count": 19,
-      "authority": 438
+      "authority": 442
     },
     "brand": {
       "brand_family": "graffpunks",
@@ -4426,11 +4426,11 @@
       ]
     },
     "link_score": {
-      "inbound_count": 166,
+      "inbound_count": 165,
       "outbound_count": 37,
       "existing_outbound_count": 10,
       "suggested_outbound_count": 27,
-      "authority": 337
+      "authority": 335
     },
     "brand": null
   },
@@ -6030,6 +6030,112 @@
     "brand": null
   },
   {
+    "title": "Burn-to-Earn",
+    "desc": "Burn-to-Earn in Crypto Moonboys: historical ten-NFT routes, optional progression, irreversible inputs and the evidence needed for a supported current recipe.",
+    "url": "/wiki/burn-to-earn.html",
+    "tags": [
+      "burn",
+      "earn",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "characters",
+    "aliases": [
+      {
+        "title": "burn earn crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 315,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "characters",
+      "category_priority": 8,
+      "has_description": true,
+      "article_word_count": 2501,
+      "keyword_bag_size": 24,
+      "heading_count": 17,
+      "list_count": 3,
+      "internal_link_count": 7,
+      "paragraph_count": 42,
+      "section_count": 15,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 91,
+      "authority_score": 22
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 40,
+      "word_count_points": 50,
+      "keyword_bag_points": 24,
+      "content_quality_points": 99,
+      "authority_points": 72,
+      "final_rank_score": 315,
+      "authority_graph_points": 50
+    },
+    "search_index": {
+      "normalized_title": "burn to earn crypto moonboys wiki",
+      "tokens": [
+        "burn",
+        "to",
+        "earn",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "burn",
+        "to",
+        "earn",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "in",
+        "historical",
+        "ten",
+        "nft",
+        "routes",
+        "optional",
+        "progression",
+        "irreversible",
+        "inputs",
+        "and",
+        "the",
+        "evidence",
+        "needed",
+        "for",
+        "a",
+        "supported",
+        "current",
+        "recipe",
+        "one",
+        "lfgk",
+        "site",
+        "collection",
+        "consolidation",
+        "qualifying",
+        "of",
+        "wax",
+        "ownership",
+        "checks",
+        "game",
+        "nfts"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 36,
+      "outbound_count": 18,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 11,
+      "authority": 75.5
+    },
+    "brand": null
+  },
+  {
     "title": "The Princess",
     "desc": "The Princess reigns as a regal enigma within the Crypto Moonboys universe, a sovereign figure whose presence in Block Topia’s digital hierarchy symbolizes both",
     "url": "/wiki/the-princess.html",
@@ -7023,6 +7129,103 @@
       "existing_outbound_count": 6,
       "suggested_outbound_count": 63,
       "authority": 9
+    },
+    "brand": null
+  },
+  {
+    "title": "$PUNK Token",
+    "desc": "$PUNK’s May 2025 radio greypaper: token specifications, proposed Listen2Earn and Rave2Earn, the 97.5% allocation list and current playback evidence.",
+    "url": "/wiki/punk-token.html",
+    "tags": [
+      "punk",
+      "token",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "characters",
+    "aliases": [
+      {
+        "title": "punk token crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 309,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "characters",
+      "category_priority": 8,
+      "has_description": true,
+      "article_word_count": 2371,
+      "keyword_bag_size": 23,
+      "heading_count": 17,
+      "list_count": 2,
+      "internal_link_count": 8,
+      "paragraph_count": 40,
+      "section_count": 15,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 85,
+      "authority_score": 23
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 40,
+      "word_count_points": 50,
+      "keyword_bag_points": 23,
+      "content_quality_points": 93,
+      "authority_points": 73,
+      "final_rank_score": 309,
+      "authority_graph_points": 50
+    },
+    "search_index": {
+      "normalized_title": "punk token crypto moonboys wiki",
+      "tokens": [
+        "punk",
+        "token",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "punk",
+        "token",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "s",
+        "may",
+        "2025",
+        "radio",
+        "greypaper",
+        "specifications",
+        "proposed",
+        "listen2earn",
+        "and",
+        "rave2earn",
+        "the",
+        "97",
+        "5",
+        "allocation",
+        "list",
+        "current",
+        "playback",
+        "evidence",
+        "discrepancy",
+        "percent",
+        "mega",
+        "hours",
+        "gkniftyheads"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 43,
+      "outbound_count": 25,
+      "existing_outbound_count": 8,
+      "suggested_outbound_count": 17,
+      "authority": 90
     },
     "brand": null
   },
@@ -8065,6 +8268,109 @@
     "brand": null
   },
   {
+    "title": "Rave Relics",
+    "desc": "Rave Relics as a GraffPUNKS cultural-memory concept: rave ephemera, attributed radio connections, collection-status limits and Quiet Spindle fiction.",
+    "url": "/wiki/rave-relics.html",
+    "tags": [
+      "rave",
+      "relics",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "rave relics crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 306,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 2552,
+      "keyword_bag_size": 22,
+      "heading_count": 17,
+      "list_count": 2,
+      "internal_link_count": 10,
+      "paragraph_count": 46,
+      "section_count": 14,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 85,
+      "authority_score": 26
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 50,
+      "keyword_bag_points": 22,
+      "content_quality_points": 93,
+      "authority_points": 76,
+      "final_rank_score": 306,
+      "authority_graph_points": 50
+    },
+    "search_index": {
+      "normalized_title": "rave relics crypto moonboys wiki",
+      "tokens": [
+        "rave",
+        "relics",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "rave",
+        "relics",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "as",
+        "a",
+        "graffpunks",
+        "cultural",
+        "memory",
+        "concept",
+        "ephemera",
+        "attributed",
+        "radio",
+        "connections",
+        "collection",
+        "status",
+        "limits",
+        "and",
+        "quiet",
+        "spindle",
+        "fiction",
+        "tavi",
+        "spool",
+        "mera",
+        "tone",
+        "blue",
+        "fold",
+        "flyer",
+        "two",
+        "sided",
+        "sleeve",
+        "trevor",
+        "fung"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 58,
+      "outbound_count": 20,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 13,
+      "authority": 119.5
+    },
+    "brand": null
+  },
+  {
     "title": "Symbols, Marks and Sacred Design",
     "desc": "The visual symbols that emerged around the First Witness, their meanings and the disputes over who gets to use them.",
     "url": "/wiki/first-witness-symbols-marks-sacred-design.html",
@@ -8903,11 +9209,11 @@
       ]
     },
     "link_score": {
-      "inbound_count": 23,
+      "inbound_count": 24,
       "outbound_count": 11,
       "existing_outbound_count": 7,
       "suggested_outbound_count": 4,
-      "authority": 49.5
+      "authority": 51.5
     },
     "brand": null
   },
@@ -9596,96 +9902,6 @@
     "brand": null
   },
   {
-    "title": "$PUNK Token",
-    "desc": "$PUNK is the WAX-based GraffPUNKS community utility token designed around radio, artists, events, rewards and cultural participation.",
-    "url": "/wiki/punk-token.html",
-    "tags": [
-      "punk",
-      "token",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "characters",
-    "aliases": [
-      {
-        "title": "punk token crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 297,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "characters",
-      "category_priority": 8,
-      "has_description": true,
-      "article_word_count": 1577,
-      "keyword_bag_size": 21,
-      "heading_count": 15,
-      "list_count": 1,
-      "internal_link_count": 8,
-      "paragraph_count": 30,
-      "section_count": 13,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 77,
-      "authority_score": 21
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 40,
-      "word_count_points": 50,
-      "keyword_bag_points": 21,
-      "content_quality_points": 85,
-      "authority_points": 71,
-      "final_rank_score": 297,
-      "authority_graph_points": 50
-    },
-    "search_index": {
-      "normalized_title": "punk token crypto moonboys wiki",
-      "tokens": [
-        "punk",
-        "token",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "punk",
-        "token",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "is",
-        "the",
-        "wax",
-        "based",
-        "graffpunks",
-        "community",
-        "utility",
-        "designed",
-        "around",
-        "radio",
-        "artists",
-        "events",
-        "rewards",
-        "and",
-        "cultural",
-        "participation"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 43,
-      "outbound_count": 24,
-      "existing_outbound_count": 8,
-      "suggested_outbound_count": 16,
-      "authority": 90
-    },
-    "brand": null
-  },
-  {
     "title": "Thera-9",
     "desc": "Thera-9, the Moongirl defector linked to the Punk Net: neural-copy testimony, the Bronx encounter, disputed war accounts and the burden of being a witness.",
     "url": "/wiki/thera-9.html",
@@ -10176,97 +10392,6 @@
       "existing_outbound_count": 16,
       "suggested_outbound_count": 27,
       "authority": 30
-    },
-    "brand": null
-  },
-  {
-    "title": "Burn-to-Earn",
-    "desc": "Burn-to-Earn is the Crypto Moonboys concept of permanently destroying eligible NFTs to unlock rarer assets, progression or verified utility.",
-    "url": "/wiki/burn-to-earn.html",
-    "tags": [
-      "burn",
-      "earn",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "characters",
-    "aliases": [
-      {
-        "title": "burn earn crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 295,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "characters",
-      "category_priority": 8,
-      "has_description": true,
-      "article_word_count": 1609,
-      "keyword_bag_size": 21,
-      "heading_count": 14,
-      "list_count": 2,
-      "internal_link_count": 7,
-      "paragraph_count": 30,
-      "section_count": 12,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 77,
-      "authority_score": 19
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 40,
-      "word_count_points": 50,
-      "keyword_bag_points": 21,
-      "content_quality_points": 85,
-      "authority_points": 69,
-      "final_rank_score": 295,
-      "authority_graph_points": 50
-    },
-    "search_index": {
-      "normalized_title": "burn to earn crypto moonboys wiki",
-      "tokens": [
-        "burn",
-        "to",
-        "earn",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "burn",
-        "to",
-        "earn",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "is",
-        "the",
-        "concept",
-        "of",
-        "permanently",
-        "destroying",
-        "eligible",
-        "nfts",
-        "unlock",
-        "rarer",
-        "assets",
-        "progression",
-        "or",
-        "verified",
-        "utility"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 36,
-      "outbound_count": 11,
-      "existing_outbound_count": 7,
-      "suggested_outbound_count": 4,
-      "authority": 75.5
     },
     "brand": null
   },
@@ -12678,11 +12803,11 @@
       ]
     },
     "link_score": {
-      "inbound_count": 84,
+      "inbound_count": 83,
       "outbound_count": 41,
       "existing_outbound_count": 0,
       "suggested_outbound_count": 41,
-      "authority": 168
+      "authority": 166
     },
     "brand": null
   },
@@ -12900,94 +13025,6 @@
       "existing_outbound_count": 13,
       "suggested_outbound_count": 12,
       "authority": 8.5
-    },
-    "brand": null
-  },
-  {
-    "title": "Rave Relics",
-    "desc": "Rave Relics preserves British rave, pirate-radio and club culture through GraffPUNKS digital artefacts, music history and Crypto Moonboys lore.",
-    "url": "/wiki/rave-relics.html",
-    "tags": [
-      "rave",
-      "relics",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "rave relics crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 290,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 1615,
-      "keyword_bag_size": 19,
-      "heading_count": 14,
-      "list_count": 1,
-      "internal_link_count": 10,
-      "paragraph_count": 35,
-      "section_count": 11,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 77,
-      "authority_score": 21
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 50,
-      "keyword_bag_points": 19,
-      "content_quality_points": 85,
-      "authority_points": 71,
-      "final_rank_score": 290,
-      "authority_graph_points": 50
-    },
-    "search_index": {
-      "normalized_title": "rave relics crypto moonboys wiki",
-      "tokens": [
-        "rave",
-        "relics",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "rave",
-        "relics",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "preserves",
-        "british",
-        "pirate",
-        "radio",
-        "and",
-        "club",
-        "culture",
-        "through",
-        "graffpunks",
-        "digital",
-        "artefacts",
-        "music",
-        "history",
-        "lore"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 58,
-      "outbound_count": 19,
-      "existing_outbound_count": 7,
-      "suggested_outbound_count": 12,
-      "authority": 119.5
     },
     "brand": null
   },
@@ -17078,109 +17115,6 @@
     "brand": null
   },
   {
-    "title": "Paper Hands",
-    "desc": "Paper Hands in HODL Wars: a contested accusation of failed resolve, the Folded Flag, accountable return and the difference between abandonment and release.",
-    "url": "/wiki/paper-hands.html",
-    "tags": [
-      "paper",
-      "hands",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "paper hands crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 284,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 2325,
-      "keyword_bag_size": 24,
-      "heading_count": 15,
-      "list_count": 2,
-      "internal_link_count": 15,
-      "paragraph_count": 35,
-      "section_count": 12,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 89,
-      "authority_score": 27
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 50,
-      "keyword_bag_points": 24,
-      "content_quality_points": 97,
-      "authority_points": 48,
-      "final_rank_score": 284,
-      "authority_graph_points": 21
-    },
-    "search_index": {
-      "normalized_title": "paper hands crypto moonboys wiki",
-      "tokens": [
-        "paper",
-        "hands",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "paper",
-        "hands",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "in",
-        "hodl",
-        "wars",
-        "a",
-        "contested",
-        "accusation",
-        "of",
-        "failed",
-        "resolve",
-        "the",
-        "folded",
-        "flag",
-        "accountable",
-        "return",
-        "and",
-        "difference",
-        "between",
-        "abandonment",
-        "release",
-        "rell",
-        "fen",
-        "juna",
-        "rill",
-        "without",
-        "banner",
-        "nella",
-        "voss",
-        "dry",
-        "sheet"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 7,
-      "outbound_count": 22,
-      "existing_outbound_count": 13,
-      "suggested_outbound_count": 9,
-      "authority": 20.5
-    },
-    "brand": null
-  },
-  {
     "title": "The Squeaky Pinks",
     "desc": "Year 3008 Squeaky Pinks: Block Topia enforcement, the Porcine Protocol, Pinkline Post, Amber Queue, local accountability and the NULL crisis.",
     "url": "/wiki/the-squeaky-pinks.html",
@@ -17621,6 +17555,216 @@
       "existing_outbound_count": 11,
       "suggested_outbound_count": 11,
       "authority": 7.5
+    },
+    "brand": null
+  },
+  {
+    "title": "Moon Mission",
+    "desc": "Moon Mission in HODL WARS: exploratory hope, the four-stage tradition, Return Lantern stories and the separate Quest Maze game label.",
+    "url": "/wiki/moon-mission.html",
+    "tags": [
+      "moon",
+      "mission",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "moon mission crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 282,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 2442,
+      "keyword_bag_size": 23,
+      "heading_count": 15,
+      "list_count": 3,
+      "internal_link_count": 20,
+      "paragraph_count": 37,
+      "section_count": 3,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 83,
+      "authority_score": 30
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 50,
+      "keyword_bag_points": 23,
+      "content_quality_points": 91,
+      "authority_points": 53,
+      "final_rank_score": 282,
+      "authority_graph_points": 23
+    },
+    "search_index": {
+      "normalized_title": "moon mission crypto moonboys wiki",
+      "tokens": [
+        "moon",
+        "mission",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "moon",
+        "mission",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "in",
+        "hodl",
+        "wars",
+        "exploratory",
+        "hope",
+        "the",
+        "four",
+        "stage",
+        "tradition",
+        "return",
+        "lantern",
+        "stories",
+        "and",
+        "separate",
+        "quest",
+        "maze",
+        "game",
+        "label",
+        "missions",
+        "lunarchs",
+        "when",
+        "lambo",
+        "neri",
+        "mast",
+        "sol",
+        "venn",
+        "silver",
+        "ladder",
+        "turnback",
+        "landing",
+        "share",
+        "final",
+        "ascent"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 7,
+      "outbound_count": 31,
+      "existing_outbound_count": 17,
+      "suggested_outbound_count": 14,
+      "authority": 22.5
+    },
+    "brand": null
+  },
+  {
+    "title": "Paper Hands",
+    "desc": "Paper Hands in HODL Wars: a contested accusation of failed resolve, the Folded Flag, accountable return and the difference between abandonment and release.",
+    "url": "/wiki/paper-hands.html",
+    "tags": [
+      "paper",
+      "hands",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "paper hands crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 282,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 2325,
+      "keyword_bag_size": 24,
+      "heading_count": 15,
+      "list_count": 2,
+      "internal_link_count": 15,
+      "paragraph_count": 35,
+      "section_count": 12,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 89,
+      "authority_score": 27
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 50,
+      "keyword_bag_points": 24,
+      "content_quality_points": 97,
+      "authority_points": 46,
+      "final_rank_score": 282,
+      "authority_graph_points": 19
+    },
+    "search_index": {
+      "normalized_title": "paper hands crypto moonboys wiki",
+      "tokens": [
+        "paper",
+        "hands",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "paper",
+        "hands",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "in",
+        "hodl",
+        "wars",
+        "a",
+        "contested",
+        "accusation",
+        "of",
+        "failed",
+        "resolve",
+        "the",
+        "folded",
+        "flag",
+        "accountable",
+        "return",
+        "and",
+        "difference",
+        "between",
+        "abandonment",
+        "release",
+        "rell",
+        "fen",
+        "juna",
+        "rill",
+        "without",
+        "banner",
+        "nella",
+        "voss",
+        "dry",
+        "sheet"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 6,
+      "outbound_count": 22,
+      "existing_outbound_count": 13,
+      "suggested_outbound_count": 9,
+      "authority": 18.5
     },
     "brand": null
   },
@@ -20150,6 +20294,122 @@
     "brand": null
   },
   {
+    "title": "Queen Sarah P-fly",
+    "desc": "Queen Sarah P-fly in Year 3008: Block Topia’s ruler, disputed Data Sovereign, Games host and the conflict between effective stewardship and permanent control.",
+    "url": "/wiki/queen-sarah-p-fly.html",
+    "tags": [
+      "queen",
+      "sarah",
+      "fly",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [],
+    "rank_score": 276,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 6,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 2984,
+      "keyword_bag_size": 27,
+      "heading_count": 20,
+      "list_count": 1,
+      "internal_link_count": 14,
+      "paragraph_count": 43,
+      "section_count": 17,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 89,
+      "authority_score": 24
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 50,
+      "keyword_bag_points": 27,
+      "content_quality_points": 95,
+      "authority_points": 39,
+      "final_rank_score": 276,
+      "authority_graph_points": 15
+    },
+    "search_index": {
+      "normalized_title": "queen sarah p fly crypto moonboys wiki",
+      "tokens": [
+        "queen",
+        "sarah",
+        "p",
+        "fly",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "queen",
+        "sarah",
+        "p",
+        "fly",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "in",
+        "year",
+        "3008",
+        "block",
+        "topia",
+        "s",
+        "ruler",
+        "disputed",
+        "data",
+        "sovereign",
+        "games",
+        "host",
+        "and",
+        "the",
+        "conflict",
+        "between",
+        "effective",
+        "stewardship",
+        "permanent",
+        "control",
+        "9500",
+        "self",
+        "fork",
+        "project",
+        "petition",
+        "table",
+        "ilyra",
+        "fen",
+        "filter",
+        "pell",
+        "ardent",
+        "double",
+        "order",
+        "hearing",
+        "crown",
+        "of",
+        "code",
+        "theta",
+        "protocols",
+        "ascension",
+        "protocol"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 4,
+      "outbound_count": 42,
+      "existing_outbound_count": 13,
+      "suggested_outbound_count": 29,
+      "authority": 14.5
+    },
+    "brand": null
+  },
+  {
     "title": "Sister Halcyon",
     "desc": "Sister Halcyon leads the JPEG Bloodline at the First Merge: a living custody claim, sanctuary work and the unresolved Eternal Algorithm and Harmonic Seed.",
     "url": "/wiki/sister-halcyon.html",
@@ -21126,122 +21386,6 @@
       "existing_outbound_count": 4,
       "suggested_outbound_count": 60,
       "authority": 8
-    },
-    "brand": null
-  },
-  {
-    "title": "Queen Sarah P-fly",
-    "desc": "Queen Sarah P-fly in Year 3008: Block Topia’s ruler, disputed Data Sovereign, Games host and the conflict between effective stewardship and permanent control.",
-    "url": "/wiki/queen-sarah-p-fly.html",
-    "tags": [
-      "queen",
-      "sarah",
-      "fly",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [],
-    "rank_score": 274,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 0,
-      "tag_count": 6,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 2984,
-      "keyword_bag_size": 27,
-      "heading_count": 20,
-      "list_count": 1,
-      "internal_link_count": 14,
-      "paragraph_count": 43,
-      "section_count": 17,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 89,
-      "authority_score": 24
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 50,
-      "keyword_bag_points": 27,
-      "content_quality_points": 95,
-      "authority_points": 37,
-      "final_rank_score": 274,
-      "authority_graph_points": 13
-    },
-    "search_index": {
-      "normalized_title": "queen sarah p fly crypto moonboys wiki",
-      "tokens": [
-        "queen",
-        "sarah",
-        "p",
-        "fly",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "queen",
-        "sarah",
-        "p",
-        "fly",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "in",
-        "year",
-        "3008",
-        "block",
-        "topia",
-        "s",
-        "ruler",
-        "disputed",
-        "data",
-        "sovereign",
-        "games",
-        "host",
-        "and",
-        "the",
-        "conflict",
-        "between",
-        "effective",
-        "stewardship",
-        "permanent",
-        "control",
-        "9500",
-        "self",
-        "fork",
-        "project",
-        "petition",
-        "table",
-        "ilyra",
-        "fen",
-        "filter",
-        "pell",
-        "ardent",
-        "double",
-        "order",
-        "hearing",
-        "crown",
-        "of",
-        "code",
-        "theta",
-        "protocols",
-        "ascension",
-        "protocol"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 3,
-      "outbound_count": 42,
-      "existing_outbound_count": 13,
-      "suggested_outbound_count": 29,
-      "authority": 12.5
     },
     "brand": null
   },
@@ -26892,6 +27036,108 @@
     }
   },
   {
+    "title": "Graffiti Queens in Decentraland",
+    "desc": "Graffiti Queens in Decentraland: the archive’s 2021 exhibition references, SYNC connection, artist credit and the distinction between historical evidence and later lore.",
+    "url": "/wiki/graffiti-queens-in-decentraland.html",
+    "tags": [
+      "graffiti",
+      "queens",
+      "decentraland",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [],
+    "rank_score": 257,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 6,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 1750,
+      "keyword_bag_size": 24,
+      "heading_count": 12,
+      "list_count": 2,
+      "internal_link_count": 12,
+      "paragraph_count": 25,
+      "section_count": 9,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 81,
+      "authority_score": 23
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 50,
+      "keyword_bag_points": 24,
+      "content_quality_points": 87,
+      "authority_points": 31,
+      "final_rank_score": 257,
+      "authority_graph_points": 8
+    },
+    "search_index": {
+      "normalized_title": "graffiti queens in decentraland crypto moonboys wiki",
+      "tokens": [
+        "graffiti",
+        "queens",
+        "in",
+        "decentraland",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "graffiti",
+        "queens",
+        "in",
+        "decentraland",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "the",
+        "archive",
+        "s",
+        "2021",
+        "exhibition",
+        "references",
+        "sync",
+        "connection",
+        "artist",
+        "credit",
+        "and",
+        "distinction",
+        "between",
+        "historical",
+        "evidence",
+        "later",
+        "lore",
+        "nft",
+        "show",
+        "network",
+        "exposition",
+        "cryptobond",
+        "nfts",
+        "provenance",
+        "sarah",
+        "pu51fly",
+        "yuna"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 1,
+      "outbound_count": 24,
+      "existing_outbound_count": 12,
+      "suggested_outbound_count": 12,
+      "authority": 8
+    },
+    "brand": null
+  },
+  {
     "title": "Web3",
     "desc": "Web3 — the decentralised next generation of the internet built on blockchain technology — Crypto Moonboys Wiki",
     "url": "/wiki/web3.html",
@@ -28149,96 +28395,6 @@
     "brand": null
   },
   {
-    "title": "Graffiti Queens in Decentraland",
-    "desc": "Graffiti Queens in Decentraland stands as a transformative cultural milestone in the Crypto Moonboys universe, marking the largest all-female NFT exhibition eve",
-    "url": "/wiki/graffiti-queens-in-decentraland.html",
-    "tags": [
-      "graffiti",
-      "queens",
-      "decentraland",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [],
-    "rank_score": 249,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 0,
-      "tag_count": 6,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 904,
-      "keyword_bag_size": 22,
-      "heading_count": 10,
-      "list_count": 1,
-      "internal_link_count": 12,
-      "paragraph_count": 22,
-      "section_count": 7,
-      "lore_paragraph_count": 20,
-      "content_quality_score": 85,
-      "authority_score": 18
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 45,
-      "keyword_bag_points": 22,
-      "content_quality_points": 91,
-      "authority_points": 26,
-      "final_rank_score": 249,
-      "authority_graph_points": 8
-    },
-    "search_index": {
-      "normalized_title": "graffiti queens in decentraland crypto moonboys wiki",
-      "tokens": [
-        "graffiti",
-        "queens",
-        "in",
-        "decentraland",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "graffiti",
-        "queens",
-        "in",
-        "decentraland",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "stands",
-        "as",
-        "a",
-        "transformative",
-        "cultural",
-        "milestone",
-        "the",
-        "universe",
-        "marking",
-        "largest",
-        "all",
-        "female",
-        "nft",
-        "exhibition",
-        "eve"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 1,
-      "outbound_count": 13,
-      "existing_outbound_count": 11,
-      "suggested_outbound_count": 2,
-      "authority": 7.5
-    },
-    "brand": null
-  },
-  {
     "title": "Storm Struggle",
     "desc": "Crypto Moonboys wiki guide to Storm Struggle, a WAX-connected StruggleVerse game project with vehicles, jobs, properties, pets, racing, arena systems and partner assets.",
     "url": "/wiki/storm-struggle.html",
@@ -28328,6 +28484,101 @@
       "existing_outbound_count": 9,
       "suggested_outbound_count": 7,
       "authority": 4.5
+    },
+    "brand": null
+  },
+  {
+    "title": "2025 Metaverse Launch Party",
+    "desc": "The archived 2025 Metaverse Launch Party announcement: community context, preserved registration links and the limits of the surviving event record.",
+    "url": "/wiki/2025-metaverse-launch-party.html",
+    "tags": [
+      "2025",
+      "metaverse",
+      "launch",
+      "party",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [],
+    "rank_score": 248,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 7,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 1318,
+      "keyword_bag_size": 21,
+      "heading_count": 11,
+      "list_count": 2,
+      "internal_link_count": 14,
+      "paragraph_count": 17,
+      "section_count": 8,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 73,
+      "authority_score": 23
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 50,
+      "keyword_bag_points": 21,
+      "content_quality_points": 80,
+      "authority_points": 32,
+      "final_rank_score": 248,
+      "authority_graph_points": 9
+    },
+    "search_index": {
+      "normalized_title": "2025 metaverse launch party crypto moonboys wiki",
+      "tokens": [
+        "2025",
+        "metaverse",
+        "launch",
+        "party",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "2025",
+        "metaverse",
+        "launch",
+        "party",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "the",
+        "archived",
+        "announcement",
+        "community",
+        "context",
+        "preserved",
+        "registration",
+        "links",
+        "and",
+        "limits",
+        "of",
+        "surviving",
+        "event",
+        "record",
+        "gkniftyheads",
+        "notice",
+        "vpc2vzvnpm3atzrs6",
+        "proposed",
+        "programme"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 1,
+      "outbound_count": 20,
+      "existing_outbound_count": 13,
+      "suggested_outbound_count": 7,
+      "authority": 8.5
     },
     "brand": null
   },
@@ -29265,93 +29516,6 @@
       "existing_outbound_count": 9,
       "suggested_outbound_count": 16,
       "authority": 4.5
-    },
-    "brand": null
-  },
-  {
-    "title": "Moon Mission",
-    "desc": "The ultimate quest of HODL Warriors — the prophesied journey to infinite gains. When Lambo?",
-    "url": "/wiki/moon-mission.html",
-    "tags": [
-      "moon",
-      "mission",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "moon mission crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 245,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 923,
-      "keyword_bag_size": 18,
-      "heading_count": 11,
-      "list_count": 2,
-      "internal_link_count": 23,
-      "paragraph_count": 15,
-      "section_count": 3,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 61,
-      "authority_score": 24
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 46,
-      "keyword_bag_points": 18,
-      "content_quality_points": 69,
-      "authority_points": 47,
-      "final_rank_score": 245,
-      "authority_graph_points": 23
-    },
-    "search_index": {
-      "normalized_title": "moon mission crypto moonboys wiki",
-      "tokens": [
-        "moon",
-        "mission",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "moon",
-        "mission",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "the",
-        "ultimate",
-        "quest",
-        "of",
-        "hodl",
-        "warriors",
-        "prophesied",
-        "journey",
-        "to",
-        "infinite",
-        "gains",
-        "when",
-        "lambo"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 7,
-      "outbound_count": 34,
-      "existing_outbound_count": 17,
-      "suggested_outbound_count": 17,
-      "authority": 22.5
     },
     "brand": null
   },
@@ -32513,98 +32677,6 @@
       "existing_outbound_count": 14,
       "suggested_outbound_count": 27,
       "authority": 27
-    },
-    "brand": null
-  },
-  {
-    "title": "2025 Metaverse Launch Party",
-    "desc": "The 2025 Metaverse Launch Party is a monumental event in the Crypto Moonboys and GraffPUNKS universe, a community-wide digital celebration orchestrated by GKnif",
-    "url": "/wiki/2025-metaverse-launch-party.html",
-    "tags": [
-      "2025",
-      "metaverse",
-      "launch",
-      "party",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [],
-    "rank_score": 228,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 0,
-      "tag_count": 7,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 680,
-      "keyword_bag_size": 23,
-      "heading_count": 10,
-      "list_count": 1,
-      "internal_link_count": 12,
-      "paragraph_count": 10,
-      "section_count": 7,
-      "lore_paragraph_count": 8,
-      "content_quality_score": 73,
-      "authority_score": 18
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 34,
-      "keyword_bag_points": 23,
-      "content_quality_points": 80,
-      "authority_points": 26,
-      "final_rank_score": 228,
-      "authority_graph_points": 8
-    },
-    "search_index": {
-      "normalized_title": "2025 metaverse launch party crypto moonboys wiki",
-      "tokens": [
-        "2025",
-        "metaverse",
-        "launch",
-        "party",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "2025",
-        "metaverse",
-        "launch",
-        "party",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "the",
-        "is",
-        "a",
-        "monumental",
-        "event",
-        "in",
-        "and",
-        "graffpunks",
-        "universe",
-        "community",
-        "wide",
-        "digital",
-        "celebration",
-        "orchestrated",
-        "by",
-        "gknif"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 1,
-      "outbound_count": 24,
-      "existing_outbound_count": 11,
-      "suggested_outbound_count": 13,
-      "authority": 7.5
     },
     "brand": null
   },

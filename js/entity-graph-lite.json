@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-04T14:15:28.015Z",
-  "verified_at": "2026-10-04T14:15:28.015Z",
+  "generated_at": "2026-10-04T14:17:46.763Z",
+  "verified_at": "2026-10-04T14:17:46.763Z",
   "lite": true,
   "nodes": [
     {
@@ -324,6 +324,14 @@
       "authority_score": 12
     },
     {
+      "id": "/wiki/burn-to-earn.html",
+      "title": "Burn-to-Earn",
+      "url": "/wiki/burn-to-earn.html",
+      "category": "characters",
+      "rank_score": 315,
+      "authority_score": 22
+    },
+    {
       "id": "/wiki/first-witness-book-6-the-fork.html",
       "title": "Book VI — The Fork",
       "url": "/wiki/first-witness-book-6-the-fork.html",
@@ -412,6 +420,14 @@
       "authority_score": 12
     },
     {
+      "id": "/wiki/punk-token.html",
+      "title": "$PUNK Token",
+      "url": "/wiki/punk-token.html",
+      "category": "characters",
+      "rank_score": 309,
+      "authority_score": 23
+    },
+    {
       "id": "/wiki/seeding-rights.html",
       "title": "Seeding Rights",
       "url": "/wiki/seeding-rights.html",
@@ -466,6 +482,14 @@
       "category": "core",
       "rank_score": 306,
       "authority_score": 12
+    },
+    {
+      "id": "/wiki/rave-relics.html",
+      "title": "Rave Relics",
+      "url": "/wiki/rave-relics.html",
+      "category": "factions",
+      "rank_score": 306,
+      "authority_score": 26
     },
     {
       "id": "/wiki/first-witness-glossary.html",
@@ -548,14 +572,6 @@
       "authority_score": 28
     },
     {
-      "id": "/wiki/punk-token.html",
-      "title": "$PUNK Token",
-      "url": "/wiki/punk-token.html",
-      "category": "characters",
-      "rank_score": 297,
-      "authority_score": 21
-    },
-    {
       "id": "/wiki/thera-9.html",
       "title": "Thera-9",
       "url": "/wiki/thera-9.html",
@@ -580,25 +596,9 @@
       "authority_score": 28
     },
     {
-      "id": "/wiki/burn-to-earn.html",
-      "title": "Burn-to-Earn",
-      "url": "/wiki/burn-to-earn.html",
-      "category": "characters",
-      "rank_score": 295,
-      "authority_score": 19
-    },
-    {
       "id": "/wiki/first-witness-apocrypha-disputed-passages.html",
       "title": "Apocrypha and Disputed Passages",
       "url": "/wiki/first-witness-apocrypha-disputed-passages.html",
-      "category": "core",
-      "rank_score": 295,
-      "authority_score": 12
-    },
-    {
-      "id": "/wiki/first-witness-long-transmission.html",
-      "title": "The Long Transmission",
-      "url": "/wiki/first-witness-long-transmission.html",
       "category": "core",
       "rank_score": 295,
       "authority_score": 12
@@ -984,6 +984,12 @@
       "weight": 0.79
     },
     {
+      "source": "/wiki/rave-relics.html",
+      "target": "/wiki/midevilpunks.html",
+      "score": 79,
+      "weight": 0.79
+    },
+    {
       "source": "/wiki/stikfamwars.html",
       "target": "/wiki/midevilpunks.html",
       "score": 79,
@@ -996,16 +1002,16 @@
       "weight": 0.77
     },
     {
-      "source": "/wiki/the-nice-easy-bois.html",
-      "target": "/wiki/midevilpunks.html",
+      "source": "/wiki/midevilpunks.html",
+      "target": "/wiki/rave-relics.html",
       "score": 76,
       "weight": 0.76
     },
     {
-      "source": "/wiki/midevilpunks.html",
-      "target": "/wiki/pmsl.html",
-      "score": 75,
-      "weight": 0.75
+      "source": "/wiki/the-nice-easy-bois.html",
+      "target": "/wiki/rave-relics.html",
+      "score": 73,
+      "weight": 0.73
     },
     {
       "source": "/wiki/bitcoin-kid-army.html",
@@ -1022,14 +1028,14 @@
     {
       "source": "/wiki/burn-to-earn.html",
       "target": "/wiki/punk-token.html",
-      "score": 68,
-      "weight": 0.68
+      "score": 69,
+      "weight": 0.69
     },
     {
       "source": "/wiki/staking.html",
       "target": "/wiki/punk-token.html",
-      "score": 62,
-      "weight": 0.62
+      "score": 63,
+      "weight": 0.63
     }
   ]
 }
