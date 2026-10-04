@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-04T13:54:23.696Z",
-  "verified_at": "2026-10-04T13:54:23.696Z",
+  "generated_at": "2026-10-04T13:56:00.478Z",
+  "verified_at": "2026-10-04T13:56:00.478Z",
   "lite": true,
   "nodes": [
     {
@@ -24,7 +24,7 @@
       "title": "Faction Commentaries on the First Witness",
       "url": "/wiki/first-witness-faction-commentaries.html",
       "category": "core",
-      "rank_score": 369,
+      "rank_score": 377,
       "authority_score": 14
     },
     {
@@ -324,12 +324,28 @@
       "authority_score": 12
     },
     {
+      "id": "/wiki/the-finance-guild.html",
+      "title": "The Finance Guild",
+      "url": "/wiki/the-finance-guild.html",
+      "category": "factions",
+      "rank_score": 312,
+      "authority_score": 28
+    },
+    {
       "id": "/wiki/first-witness-sacred-fork.html",
       "title": "The Sacred Fork",
       "url": "/wiki/first-witness-sacred-fork.html",
       "category": "core",
       "rank_score": 311,
       "authority_score": 14
+    },
+    {
+      "id": "/wiki/the-high-hats.html",
+      "title": "The High Hats",
+      "url": "/wiki/the-high-hats.html",
+      "category": "factions",
+      "rank_score": 311,
+      "authority_score": 28
     },
     {
       "id": "/wiki/first-witness-triple-fork-chainfire.html",
@@ -468,6 +484,14 @@
       "authority_score": 12
     },
     {
+      "id": "/wiki/the-salvagers.html",
+      "title": "The SALVAGERS",
+      "url": "/wiki/the-salvagers.html",
+      "category": "factions",
+      "rank_score": 302,
+      "authority_score": 28
+    },
+    {
       "id": "/wiki/first-witness-ai-synthetic-minds.html",
       "title": "Technology, AI and Synthetic Minds",
       "url": "/wiki/first-witness-ai-synthetic-minds.html",
@@ -482,14 +506,6 @@
       "category": "core",
       "rank_score": 300,
       "authority_score": 30
-    },
-    {
-      "id": "/wiki/the-salvagers.html",
-      "title": "The SALVAGERS",
-      "url": "/wiki/the-salvagers.html",
-      "category": "factions",
-      "rank_score": 300,
-      "authority_score": 28
     },
     {
       "id": "/wiki/gkniftyheads-nft-collection.html",
@@ -540,14 +556,6 @@
       "authority_score": 28
     },
     {
-      "id": "/wiki/bitcoin-kid-army.html",
-      "title": "Bitcoin Kid Army",
-      "url": "/wiki/bitcoin-kid-army.html",
-      "category": "factions",
-      "rank_score": 295,
-      "authority_score": 28
-    },
-    {
       "id": "/wiki/blockchain.html",
       "title": "Blockchain Technology",
       "url": "/wiki/blockchain.html",
@@ -588,20 +596,12 @@
       "authority_score": 24
     },
     {
-      "id": "/wiki/first-witness-pride-temptation-false-idols.html",
-      "title": "Pride, Temptation and False Idols",
-      "url": "/wiki/first-witness-pride-temptation-false-idols.html",
-      "category": "core",
+      "id": "/wiki/bitcoin-kid-army.html",
+      "title": "Bitcoin Kid Army",
+      "url": "/wiki/bitcoin-kid-army.html",
+      "category": "factions",
       "rank_score": 293,
-      "authority_score": 12
-    },
-    {
-      "id": "/wiki/first-witness-relics-manuscripts-lost-editions.html",
-      "title": "Relics, Manuscripts and Lost Editions",
-      "url": "/wiki/first-witness-relics-manuscripts-lost-editions.html",
-      "category": "core",
-      "rank_score": 293,
-      "authority_score": 12
+      "authority_score": 28
     }
   ],
   "edges": [
@@ -649,14 +649,20 @@
     },
     {
       "source": "/wiki/first-witness-book-1-the-first-witness.html",
-      "target": "/wiki/first-witness-master-chronology.html",
-      "score": 325,
+      "target": "/wiki/first-witness-faction-commentaries.html",
+      "score": 326,
       "weight": 1
     },
     {
       "source": "/wiki/first-witness-glossary.html",
       "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 322,
+      "score": 326,
+      "weight": 1
+    },
+    {
+      "source": "/wiki/first-witness-glossary.html",
+      "target": "/wiki/first-witness-master-chronology.html",
+      "score": 325,
       "weight": 1
     },
     {
@@ -720,18 +726,6 @@
       "weight": 1
     },
     {
-      "source": "/wiki/first-witness-parables.html",
-      "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 316,
-      "weight": 1
-    },
-    {
-      "source": "/wiki/first-witness-bitcoin-witness.html",
-      "target": "/wiki/first-witness-concordance.html",
-      "score": 315,
-      "weight": 1
-    },
-    {
       "source": "/wiki/first-witness-book-2-the-common-blood.html",
       "target": "/wiki/first-witness-book-4-the-wall.html",
       "score": 315,
@@ -744,14 +738,20 @@
       "weight": 1
     },
     {
+      "source": "/wiki/first-witness-book-3-the-keeper.html",
+      "target": "/wiki/first-witness-concordance.html",
+      "score": 315,
+      "weight": 1
+    },
+    {
       "source": "/wiki/first-witness-book-9-the-unwritten-block.html",
       "target": "/wiki/first-witness-book-7-the-hold.html",
       "score": 315,
       "weight": 1
     },
     {
-      "source": "/wiki/first-witness-book-2-the-common-blood.html",
-      "target": "/wiki/first-witness-book-3-the-keeper.html",
+      "source": "/wiki/first-witness-book-4-the-wall.html",
+      "target": "/wiki/first-witness-book-2-the-common-blood.html",
       "score": 313,
       "weight": 1
     },
@@ -765,30 +765,6 @@
       "source": "/wiki/first-witness-questions-for-the-living.html",
       "target": "/wiki/first-witness-street-kingdoms-reading.html",
       "score": 308,
-      "weight": 1
-    },
-    {
-      "source": "/wiki/first-witness-ai-synthetic-minds.html",
-      "target": "/wiki/first-witness-heresies-corruptions-abuses.html",
-      "score": 304,
-      "weight": 1
-    },
-    {
-      "source": "/wiki/first-witness-apocrypha-disputed-passages.html",
-      "target": "/wiki/first-witness-justice-mercy-restitution.html",
-      "score": 304,
-      "weight": 1
-    },
-    {
-      "source": "/wiki/first-witness-justice-mercy-restitution.html",
-      "target": "/wiki/first-witness-questions-for-the-living.html",
-      "score": 304,
-      "weight": 1
-    },
-    {
-      "source": "/wiki/first-witness-pride-temptation-false-idols.html",
-      "target": "/wiki/first-witness-justice-mercy-restitution.html",
-      "score": 304,
       "weight": 1
     },
     {
@@ -848,7 +824,7 @@
     {
       "source": "/wiki/bitcoin-kids.html",
       "target": "/wiki/bitcoin-x-kids.html",
-      "score": 102,
+      "score": 103,
       "weight": 1
     },
     {
@@ -924,6 +900,18 @@
       "weight": 0.86
     },
     {
+      "source": "/wiki/the-finance-guild.html",
+      "target": "/wiki/the-high-hats.html",
+      "score": 85,
+      "weight": 0.85
+    },
+    {
+      "source": "/wiki/the-high-hats.html",
+      "target": "/wiki/the-finance-guild.html",
+      "score": 85,
+      "weight": 0.85
+    },
+    {
       "source": "/wiki/billy-the-goat-kid.html",
       "target": "/wiki/the-whitewasher.html",
       "score": 84,
@@ -986,6 +974,18 @@
     {
       "source": "/wiki/midevilpunks.html",
       "target": "/wiki/pmsl.html",
+      "score": 75,
+      "weight": 0.75
+    },
+    {
+      "source": "/wiki/the-nice-easy-bois.html",
+      "target": "/wiki/the-finance-guild.html",
+      "score": 75,
+      "weight": 0.75
+    },
+    {
+      "source": "/wiki/the-nice-easy-bois.html",
+      "target": "/wiki/the-high-hats.html",
       "score": 75,
       "weight": 0.75
     },
