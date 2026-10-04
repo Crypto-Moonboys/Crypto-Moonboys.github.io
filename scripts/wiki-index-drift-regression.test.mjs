@@ -153,10 +153,25 @@ function runTests() {
     const entry = index.find(item => item.url === url);
     tests.push({
       name: `Reconciled core history indexed: ${slug}`,
-      description: `${url} remains published and classified as core history`,
-      pass: approvedWikiUrls.has(url) && entry?.category === 'core'
+      description: `${url} remains published as core history with its full reference chapter measured`,
+      pass: approvedWikiUrls.has(url) && entry?.category === 'core' && entry.rank_signals?.article_word_count >= 6000
+    });
+    tests.push({
+      name: `Core history relationship tokens remain title-only: ${slug}`,
+      description: 'Search-only subject mentions must not act as target relationship tags',
+      pass: Boolean(entry) && JSON.stringify(entry.search_index?.tokens) ===
+        JSON.stringify(entry.search_index?.normalized_title?.split(' ').filter(Boolean))
     });
   }
+
+  const linkMap = JSON.parse(fs.readFileSync(path.join(ROOT, 'js', 'link-map.json'), 'utf8'));
+  tests.push({
+    name: 'Subject metadata does not invent a free-NFT to Sacred Chain relationship',
+    description: 'The phrase Block Topia must not match Sacred Chain through its block-time search subject',
+    pass: Boolean(linkMap['/wiki/1m-free-nfts-program.html']) &&
+      !linkMap['/wiki/1m-free-nfts-program.html'].suggested_links.includes('/wiki/sacred-chain.html') &&
+      linkMap['/wiki/1m-free-nfts-program.html'].suggested_links.includes('/wiki/block-topia.html')
+  });
 
   const rawUnderscoreTitle = index.find(entry => /\b[a-z0-9]+_[a-z0-9_]+\b/.test(String(entry.title || '')));
   tests.push({

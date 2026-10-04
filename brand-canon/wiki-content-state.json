@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "generator": "scripts/generate-wiki-content-state.mjs",
-  "source_tree_hash": "sha256:1e6a4f58f1b4f21a79dcfd78e28cef782ac8507bb341333208843829dbd06bac",
+  "source_tree_hash": "sha256:a1f7ee504f46757957d8d3d09940eec3dfb8d21eb4b5bb538277d6f0f0efe9b4",
   "hash_algorithm": "sha256",
   "page_count": 415,
   "manifest_entry_count": 415,
@@ -6428,7 +6428,7 @@
       "title": "Genesis Kernel",
       "page_exists": true,
       "page_type": "lore",
-      "current_word_count": 795,
+      "current_word_count": 6911,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -6437,10 +6437,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:b31e0cc1cf43589466fb1eb7fca31120098d954532aa9a137c3e753ed03d307e",
-      "article_content_hash": "sha256:73acc17b55de9d1c72f9ddac9810b5de712ffa4689d2b96fb74c2d95e4052b6e",
-      "article_markup_hash": "sha256:0ad75203c10b35f9efdbe459d0a46790eb4cce0b8b231198c3fdd847b7fcdbde",
-      "git_blob_oid": "b2ece033f58757205c232ca5b8dbe53e9d1a7126",
+      "content_hash": "sha256:f4a4e523570e2612b8b98fcfa523903f30e6536b8d68ae94882836d4f433a615",
+      "article_content_hash": "sha256:9f49b8a8cb1db551387220831bb79b6b011a5242513c613cb8e024f878b1adaf",
+      "article_markup_hash": "sha256:768550ed25fe2fc50a2ef380111e8eaf201aa8673c7399fc015e225aa2cf475c",
+      "git_blob_oid": "fe5c8f2f86676b801445502df3eef6941ff7c674",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -6461,10 +6461,10 @@
         "about/w81.zip (major lore/cosmology files)"
       ],
       "audit_notes": [
-        "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified."
+        "Canon revision 2 reconciled against First Witness and W81; disputed traditions remain explicitly identified."
       ],
       "content_owner": "canon",
-      "canon_revision": 1,
+      "canon_revision": 2,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -12201,7 +12201,7 @@
       "title": "Graffiti Nexus",
       "page_exists": true,
       "page_type": "lore",
-      "current_word_count": 630,
+      "current_word_count": 6716,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -12210,10 +12210,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:f0ebcb1f68a85f52a218abf4c51a95720d43ed2c1614ff8a516f98d6f9d25cc7",
-      "article_content_hash": "sha256:42fcd153b1df3980490c5684ca25c844797308f40b0b187a585c6e2537eaa00f",
-      "article_markup_hash": "sha256:1186e8c19f7653fb936432ecefcc4fbb78d8659035cba035b2642b1af3848b62",
-      "git_blob_oid": "1f9cb75eee8181f00f44dac644047a64806acf56",
+      "content_hash": "sha256:a50535e7953747cea973a139f0d008eec01155af262b75f02cd64ec259826e02",
+      "article_content_hash": "sha256:c4c8db4e573433ef889c744d162a2a4d89729f52502853a3f4b721018f208f10",
+      "article_markup_hash": "sha256:9bf43a37682397408ccc24594e56eddba68adb19e73ab4401d0f23495a670a7b",
+      "git_blob_oid": "d4fbb934803d36bd4999b795fa74613e28eec3d0",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -12234,10 +12234,10 @@
         "about/w81.zip (major lore/cosmology files)"
       ],
       "audit_notes": [
-        "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified."
+        "Canon revision 2 reconciled against First Witness and W81; disputed traditions remain explicitly identified."
       ],
       "content_owner": "canon",
-      "canon_revision": 1,
+      "canon_revision": 2,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -12551,7 +12551,7 @@
       "title": "Hard Fork Games The city opens its gates on terms of its own",
       "page_exists": true,
       "page_type": "lore",
-      "current_word_count": 1014,
+      "current_word_count": 8312,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -12560,10 +12560,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:f751ba980ede47ae370ec9edd728424ef2650cdd0f1c97967d4ea53fa882c38b",
-      "article_content_hash": "sha256:4c664602ca80dd2cde91bc28d1c42f9a27e4f49b9b973e0ee74657c5ececa404",
-      "article_markup_hash": "sha256:f7aa8734ac03d2759c5a7f5a738c27f9299593ceb5fbac748b787fb4c7f456c2",
-      "git_blob_oid": "0918cff31f8567e7a71ffd182b4452a84858e53c",
+      "content_hash": "sha256:8fc6d823ffc9d323ad58d999b31dbe3b5248d72aa51ac863c58417e4ffd86728",
+      "article_content_hash": "sha256:07bd591fa13b6c451dd51a23b4270dc7db2aa313c523cbb7307e8731f1bf9c90",
+      "article_markup_hash": "sha256:bf680dc592db431b5805298c461c7705c75794dddb5e4715208faee2102bc3a3",
+      "git_blob_oid": "927df6251d12ed7f02d822da20a8a867a038d784",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -12585,11 +12585,11 @@
         "wiki/bibles/hard-fork-games.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 2 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/hard-fork-games.json; it is not automatically the unavailable Tier 4 modern bible."
       ],
       "content_owner": "canon",
-      "canon_revision": 1,
+      "canon_revision": 2,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -15142,7 +15142,7 @@
       "title": "The Sacred Chain What a civilisation carries when its official record breaks",
       "page_exists": true,
       "page_type": "lore",
-      "current_word_count": 975,
+      "current_word_count": 7718,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -15151,10 +15151,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:5f8d3c18e088a01a5ef00c0dc9269a516a09b696175eed371a2b11f3cf6c475a",
-      "article_content_hash": "sha256:97abc3bbcab1dc65617398724b7e4a69f2c3a587986847de1c614c3d50b8bc15",
-      "article_markup_hash": "sha256:2d616342478305737fdfa0e078578fe27cc9c86373af9ecd67aad3e000f01bbf",
-      "git_blob_oid": "47f93e99d8a7475e53c1251ad09057d8674f1e6a",
+      "content_hash": "sha256:42c341e2ba127c3ebb33209a5e746d599d0c6691fb878973523dd71d61bbcbac",
+      "article_content_hash": "sha256:ecca7f283c03f9df5a33521b88107dd78ef47dcf81b20d7a9d3a3e01cbf4d630",
+      "article_markup_hash": "sha256:a73c76b8e9db6a19f8e55c31e6e4073ea2aafe550bc4d3a7a0565267d11f7dd2",
+      "git_blob_oid": "d9b996d6b25d2774abee13f95882a94f633ab8e2",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -15176,11 +15176,11 @@
         "wiki/bibles/sacred-chain.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 2 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/sacred-chain.json; it is not automatically the unavailable Tier 4 modern bible."
       ],
       "content_owner": "canon",
-      "canon_revision": 1,
+      "canon_revision": 2,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -17936,7 +17936,7 @@
       "title": "Triple Fork Event",
       "page_exists": true,
       "page_type": "lore",
-      "current_word_count": 936,
+      "current_word_count": 7382,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -17945,10 +17945,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:a71415382d8e6d666fb54ab9bfca7e04f99b7c6caf8421c0b55851564f799e25",
-      "article_content_hash": "sha256:e71f143b61c7fbab072246b7246eb9ea29f4354d15719b023790f314b26de0d8",
-      "article_markup_hash": "sha256:9b0b478de7e4af1323d800eca459978de521c2f06d7520b80792e750c4dcfec6",
-      "git_blob_oid": "a49f4f77f3d066a639e0a5770f666ed05b1ef4c2",
+      "content_hash": "sha256:d90a000a7220b9026fe8cbf8082f1c1c9f3ba7b725f1343f894baa8e6113e6b7",
+      "article_content_hash": "sha256:0cbdd835e8ad1fabe70b5e04e0c245d4fa12545e17349d92412bda176a608f0d",
+      "article_markup_hash": "sha256:ac78e4aff3dc4558380ba1c28e07b887e0956a2b5e1bf0b66a806402d4307f49",
+      "git_blob_oid": "b27fcac1863320448c749eeaa4fbd6988c408439",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -17970,11 +17970,11 @@
         "wiki/bibles/triple-fork-event.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 2 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/triple-fork-event.json; it is not automatically the unavailable Tier 4 modern bible."
       ],
       "content_owner": "canon",
-      "canon_revision": 1,
+      "canon_revision": 2,
       "canon_source_tier": "first-witness+w81"
     },
     {

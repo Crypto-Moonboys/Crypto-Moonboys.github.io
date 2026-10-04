@@ -18,6 +18,10 @@ const OUTPUT = path.join(ROOT, 'js', 'wiki-index.json');
 const SAM_MEMORY_PATH = path.join(ROOT, 'sam-memory.json');
 const LINK_GRAPH_PATH = path.join(ROOT, 'js', 'link-graph.json');
 
+// Long reference chapters should retain their full depth without letting
+// page length overwhelm a query's more specific source or subject match.
+const MAX_RANKED_WORD_COUNT = 1000;
+
 // Approved root/tool pages that should be in search index (non-wiki)
 const ROOT_PAGES_TO_INDEX = getRootPagePaths();
 const APPROVED_INDEX_CATEGORIES = new Set(Object.keys(CONFIG.CATEGORY_PRIORITY));
@@ -219,6 +223,15 @@ function extractKeywords(html) {
     .filter(Boolean);
 }
 
+// Subject mentions aid retrieval without claiming page aliases, category tags,
+// or extra authority merely because an article names more people and practices.
+function extractSearchTerms(html) {
+  const match =
+    html.match(/<meta\s+name=["']wiki-search-terms["']\s+content=["']([^"']*)["']/i) ||
+    html.match(/<meta\s+content=["']([^"']*)["']\s+name=["']wiki-search-terms["']/i);
+  return match ? match[1].split(',').map(term => term.trim()).filter(Boolean) : [];
+}
+
 function stripHtml(html) {
   return html
     .replace(/<script[\s\S]*?<\/script>/gi, ' ')
@@ -339,14 +352,15 @@ function buildLinkScore(url, linkGraph) {
   return { inbound_count, outbound_count, existing_outbound_count, suggested_outbound_count, authority };
 }
 
-function buildSearchIndex(title, description, keywords, aliases = []) {
+function buildSearchIndex(title, description, keywords, aliases = [], searchTerms = []) {
   const normalizedTitle = normalize(title);
   const keywordBag = Array.from(
     new Set([
       ...tokenize(title),
       ...tokenize(description),
       ...keywords.flatMap(tokenize),
-      ...aliases.flatMap(alias => tokenize(alias && alias.title ? alias.title : ''))
+      ...aliases.flatMap(alias => tokenize(alias && alias.title ? alias.title : '')),
+      ...searchTerms.flatMap(tokenize)
     ])
   );
 
@@ -621,7 +635,7 @@ function computeRankScore(signals) {
   if (signals.has_description) score += CONFIG.WEIGHTS.description;
 
   score += signals.category_priority * CONFIG.WEIGHTS.category;
-  score += signals.article_word_count * CONFIG.WEIGHTS.word_count;
+  score += Math.min(signals.article_word_count, MAX_RANKED_WORD_COUNT) * CONFIG.WEIGHTS.word_count;
   score += signals.keyword_bag_size * CONFIG.WEIGHTS.keyword_bag;
   score += signals.content_quality_score;
   score += signals.authority_score * CONFIG.WEIGHTS.authority;
@@ -636,7 +650,7 @@ function buildRankDiagnostics(signals, rankScore) {
   const canonicalPoints = signals.is_canonical ? CONFIG.WEIGHTS.canonical : 0;
   const descriptionPoints = signals.has_description ? CONFIG.WEIGHTS.description : 0;
   const categoryPoints = signals.category_priority * CONFIG.WEIGHTS.category;
-  const wordCountPoints = Math.round(signals.article_word_count * CONFIG.WEIGHTS.word_count);
+  const wordCountPoints = Math.round(Math.min(signals.article_word_count, MAX_RANKED_WORD_COUNT) * CONFIG.WEIGHTS.word_count);
   const keywordBagPoints = Math.round(signals.keyword_bag_size * CONFIG.WEIGHTS.keyword_bag);
 
   // Fold extra deterministic signals into existing required diagnostic buckets
@@ -712,7 +726,7 @@ function processRootPagesForIndex(canonicalEntries, linkGraph) {
       const rankSignals = buildRankSignals(html, filePath, title, description, keywords, [], null);
       const rankScore = computeRankScore(rankSignals);
       const rankDiagnostics = buildRankDiagnostics(rankSignals, rankScore);
-      const searchIndex = buildSearchIndex(title, description, keywords, []);
+      const searchIndex = buildSearchIndex(title, description, keywords, [], extractSearchTerms(html));
       const linkScore = buildLinkScore(rootPageUrl, linkGraph);
       
       // Fold graph authority
@@ -822,7 +836,7 @@ function run() {
     const rankSignals = buildRankSignals(html, filePath, title, description, keywords, aliases, samEntity);
     const rankScore = computeRankScore(rankSignals);
     const rankDiagnostics = buildRankDiagnostics(rankSignals, rankScore);
-    const searchIndex = buildSearchIndex(title, description, keywords, aliases);
+    const searchIndex = buildSearchIndex(title, description, keywords, aliases, extractSearchTerms(html));
     const linkScore = buildLinkScore(canonicalUrl, linkGraph);
 
     // ── Phase 4: fold graph authority into rank_diagnostics ──────────────

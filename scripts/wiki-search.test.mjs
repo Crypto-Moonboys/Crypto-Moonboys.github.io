@@ -550,4 +550,74 @@ const graffpunksStopwordOnly = {
     'Invalid JSON must leave the loader in a clean failed state');
 }
 
+// Newly authored people and institutions must be discoverable through the real
+// search selector, including header autocomplete. Every meaningful query word
+// must match; stopwords and short words may use the existing production fallback.
+{
+  const wikiIndex = JSON.parse(
+    await fs.readFile(path.join(ROOT, 'js', 'wiki-index.json'), 'utf8')
+  );
+  const subjectsByPage = {
+    'sacred-chain': [
+      'Three-Custody Rule', 'THREE CUSTODY RULE!', 'Etta Reed', 'etta reed',
+      'Grey Pump Hearing', 'Borrowed Name Dispute', 'Open Margin Compact',
+      'Hollow Seal scandal', 'threshold table', 'carried packet'
+    ],
+    'triple-fork-event': [
+      'Pell Moss', 'Red Ledger House', 'Three Heirs case', 'Night of Open Shelves',
+      'Crossing House Three', 'provisional receipt', 'Unsettled Register',
+      'Common Kitchen agreements', 'Continuation Oath'
+    ],
+    'genesis-kernel': [
+      'Mara Venn', 'Orin Silt', 'Workshop Nine', 'Unanswered Voice',
+      'Red Thread Fragment', 'No-Second-Copy Hearing', 'NO SECOND COPY HEARING!',
+      'Deep Memory Vaults', 'Fragment Census', 'Empty Chair convention',
+      'Glassweather', 'Chorus problem', 'Anchor Card', 'response window'
+    ],
+    'graffiti-nexus': [
+      'Ivo Chalk', 'Sena Thread', 'Daro Penn', 'Receiving Room', 'Ink Hall',
+      'Repair Bench', 'Listening Room', 'Warm Shelf', 'Quiet Table',
+      'Unfinished Wall', 'False Mother Piece', 'Blue Cup Register',
+      'Copy Ledger', 'Three Empty Frames', 'Wreckwork', 'late-night print room'
+    ],
+    'hard-fork-games': [
+      'Tessa Coil', 'Rook Vale', 'Nemi Ash', 'Mira Latch', 'Withdrawal Ledger',
+      'Returned List', 'Parkour Gauntlet', 'Spray Cipher', 'Final Hardfork duel'
+    ]
+  };
+  const stopWords = vm.runInContext('SEARCH_TEXT_STOP_WORDS', sb);
+  let checked = 0;
+  for (const [slug, subjects] of Object.entries(subjectsByPage)) {
+    const expectedUrl = `/wiki/${slug}.html`;
+    for (const query of subjects) {
+      const meaningfulTokens = sb.tokenizeSearchQuery(query)
+        .filter(token => token.length >= 3 && !stopWords.has(token));
+      for (const limit of [5, 10]) {
+        const result = await selectMatches(wikiIndex, query, {
+          allowPartialFallback: true,
+          limit
+        });
+        const match = result.scored.find(({ item }) => item.url === expectedUrl);
+        assert.ok(match,
+          `New lore query "${query}" must find ${expectedUrl} in the first ${limit} results`);
+        assert.equal(match.meaningfulMatchedTokenCount, meaningfulTokens.length,
+          `Every meaningful subject word must match for "${query}"`);
+        if (result.usedPartialFallback) {
+          const strict = await selectMatches(wikiIndex, meaningfulTokens.join(' '), {
+            allowPartialFallback: false,
+            limit
+          });
+          assert.ok(strict.scored.some(({ item }) => item.url === expectedUrl),
+            `Meaningful subject words must find ${expectedUrl} without partial fallback`);
+        }
+      }
+      checked++;
+    }
+  }
+  const rendered = await renderSearchResults(wikiIndex, 'Etta Reed');
+  assert.ok(rendered.html.includes('/wiki/sacred-chain.html'),
+    'The full search page must render the chapter containing Etta Reed');
+  console.log(`New core-history search subjects: ${checked} queries pass`);
+}
+
 console.log('wiki-search.test: PASS');
