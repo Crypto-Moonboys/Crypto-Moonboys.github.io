@@ -53,6 +53,7 @@ const BIBLE_DIR = path.join(WIKI_DIR, 'bibles');
 const MANIFEST_PATH = path.join(ROOT, 'brand-canon', 'wiki-content-state.json');
 const REPORT_PATH = path.join(ROOT, 'brand-canon', 'wiki-rewrite-audit.md');
 const ABSENT_STUBS_PATH = path.join(ROOT, 'brand-canon', 'wiki-absent-stubs.json');
+const W81_PROVENANCE_LEDGER = 'brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md';
 export const MAX_STUB_ARTICLE_WORDS = 250;
 
 const REWRITE_STATUSES = Object.freeze([
@@ -808,7 +809,7 @@ function likelySourceFamily({ firstWitness, likelyLore, directBible, nftSpeciali
     sources.push('about/latest-canon-and-brand-vision.md');
     sources.push('about/w81-condensed-canon-digest.md');
   }
-  if (likelyLore) sources.push(`about/w81.zip (${w81SourceBucket(cluster)})`);
+  if (likelyLore) sources.push(`${W81_PROVENANCE_LEDGER} (${w81SourceBucket(cluster)}; historical W81 sources)`);
   if (directBible) sources.push(`${directBible} (specialist public archive; not identified Tier 4 canon)`);
   if (!sources.length) sources.push('Existing public/reference source verification');
   return sources;
@@ -1155,7 +1156,7 @@ export function buildWikiAudit() {
         status: 'not_identified_in_checkout',
         audit_note: 'Referenced by the First Witness source register/build plan but no separately identifiable modern bible files are present in this checkout. Existing wiki/bibles JSON is not promoted into this tier.',
       },
-      sourceDescriptor(5, 'W81 raw archive', 'about/w81.zip'),
+      sourceDescriptor(5, 'Retired W81 archive provenance and migration ledger', W81_PROVENANCE_LEDGER),
       { rank: 6, label: 'Existing wiki pages', path: 'wiki/*.html', treatment: 'surviving public archive; not automatically current truth' },
     ],
     supplemental_legacy_sources: [{

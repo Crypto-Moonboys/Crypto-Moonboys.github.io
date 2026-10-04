@@ -1,5 +1,7 @@
 # War spine expansion — delivery handover
 
+Archive publication status (2026-10-04): the raw ZIP cited in this dated research record is retired from the current tree. See the [retirement and immutable-provenance ledger](w81-archive-retirement-20261004.md). Earlier extraction and validation statements below describe their original publication point.
+
 User authorises research, substantial new fictional authorship, implementation, validation and PR creation. No merge or deployment is authorised.
 
 ## Baseline and branches
