@@ -177,11 +177,11 @@
       ]
     },
     "link_score": {
-      "inbound_count": 86,
+      "inbound_count": 89,
       "outbound_count": 119,
       "existing_outbound_count": 91,
       "suggested_outbound_count": 28,
-      "authority": 217.5
+      "authority": 223.5
     },
     "brand": null
   },
@@ -688,11 +688,11 @@
       ]
     },
     "link_score": {
-      "inbound_count": 88,
+      "inbound_count": 87,
       "outbound_count": 63,
       "existing_outbound_count": 14,
       "suggested_outbound_count": 49,
-      "authority": 183
+      "authority": 181
     },
     "brand": null
   },
@@ -1954,11 +1954,131 @@
       ]
     },
     "link_score": {
-      "inbound_count": 38,
+      "inbound_count": 40,
       "outbound_count": 68,
       "existing_outbound_count": 6,
       "suggested_outbound_count": 62,
-      "authority": 79
+      "authority": 83
+    },
+    "brand": null
+  },
+  {
+    "title": "Crypto Moonboys — Graffiti Kings Creator Umbrella",
+    "desc": "Crypto Moonboys is the Graffiti Kings creator umbrella: two routes for building identity, shared culture, creator tools and a distinct Year 3008 story world.",
+    "url": "/wiki/crypto-moonboys.html",
+    "tags": [
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "characters",
+    "aliases": [
+      {
+        "title": "crypto moonboys wiki"
+      },
+      {
+        "title": "crypto moonboys"
+      }
+    ],
+    "rank_score": 336,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 2,
+      "tag_count": 3,
+      "mention_count": 0,
+      "category": "characters",
+      "category_priority": 8,
+      "has_description": true,
+      "article_word_count": 3403,
+      "keyword_bag_size": 24,
+      "heading_count": 26,
+      "list_count": 1,
+      "internal_link_count": 20,
+      "paragraph_count": 63,
+      "section_count": 21,
+      "lore_paragraph_count": 60,
+      "content_quality_score": 105,
+      "authority_score": 28
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 40,
+      "word_count_points": 50,
+      "keyword_bag_points": 24,
+      "content_quality_points": 114,
+      "authority_points": 78,
+      "final_rank_score": 336,
+      "authority_graph_points": 50
+    },
+    "search_index": {
+      "normalized_title": "crypto moonboys graffiti kings creator umbrella",
+      "tokens": [
+        "crypto",
+        "moonboys",
+        "graffiti",
+        "kings",
+        "creator",
+        "umbrella"
+      ],
+      "keyword_bag": [
+        "crypto",
+        "moonboys",
+        "graffiti",
+        "kings",
+        "creator",
+        "umbrella",
+        "is",
+        "the",
+        "two",
+        "routes",
+        "for",
+        "building",
+        "identity",
+        "shared",
+        "culture",
+        "tools",
+        "and",
+        "a",
+        "distinct",
+        "year",
+        "3008",
+        "story",
+        "world",
+        "wiki",
+        "paths",
+        "moonboy",
+        "existing",
+        "builder",
+        "qualifying",
+        "1",
+        "licence",
+        "royalties",
+        "sparky",
+        "memory",
+        "locks",
+        "proof",
+        "review",
+        "public",
+        "first",
+        "witness",
+        "great",
+        "concord",
+        "2030",
+        "chain",
+        "triple",
+        "fork",
+        "2880",
+        "queens",
+        "stronghold"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 323,
+      "outbound_count": 49,
+      "existing_outbound_count": 13,
+      "suggested_outbound_count": 36,
+      "authority": 652.5
     },
     "brand": null
   },
@@ -4478,11 +4598,11 @@
       ]
     },
     "link_score": {
-      "inbound_count": 32,
+      "inbound_count": 33,
       "outbound_count": 23,
       "existing_outbound_count": 15,
       "suggested_outbound_count": 8,
-      "authority": 71.5
+      "authority": 73.5
     },
     "brand": {
       "brand_family": "hodl",
@@ -7018,99 +7138,6 @@
       "random event",
       "tamagotchi"
     ]
-  },
-  {
-    "title": "Crypto Moonboys — The Original Graffiti Kings Web3 Universe",
-    "desc": "Crypto Moonboys is the original Graffiti Kings Web3 universe: characters, factions, NFTs, lore, games, creator tools and community culture.",
-    "url": "/wiki/crypto-moonboys.html",
-    "tags": [
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "characters",
-    "aliases": [
-      {
-        "title": "crypto moonboys wiki"
-      },
-      {
-        "title": "crypto moonboys"
-      }
-    ],
-    "rank_score": 309,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 2,
-      "tag_count": 3,
-      "mention_count": 0,
-      "category": "characters",
-      "category_priority": 8,
-      "has_description": true,
-      "article_word_count": 2229,
-      "keyword_bag_size": 20,
-      "heading_count": 20,
-      "list_count": 1,
-      "internal_link_count": 17,
-      "paragraph_count": 54,
-      "section_count": 15,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 85,
-      "authority_score": 25
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 40,
-      "word_count_points": 50,
-      "keyword_bag_points": 20,
-      "content_quality_points": 94,
-      "authority_points": 75,
-      "final_rank_score": 309,
-      "authority_graph_points": 50
-    },
-    "search_index": {
-      "normalized_title": "crypto moonboys the original graffiti kings web3 universe",
-      "tokens": [
-        "crypto",
-        "moonboys",
-        "the",
-        "original",
-        "graffiti",
-        "kings",
-        "web3",
-        "universe"
-      ],
-      "keyword_bag": [
-        "crypto",
-        "moonboys",
-        "the",
-        "original",
-        "graffiti",
-        "kings",
-        "web3",
-        "universe",
-        "is",
-        "characters",
-        "factions",
-        "nfts",
-        "lore",
-        "games",
-        "creator",
-        "tools",
-        "and",
-        "community",
-        "culture",
-        "wiki"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 323,
-      "outbound_count": 21,
-      "existing_outbound_count": 10,
-      "suggested_outbound_count": 11,
-      "authority": 651
-    },
-    "brand": null
   },
   {
     "title": "Seeding Rights",
@@ -10282,100 +10309,6 @@
     "brand": null
   },
   {
-    "title": "Blockchain Technology",
-    "desc": "A detailed guide to blockchain technology: history, blocks, consensus, wallets, smart contracts, tokens, scaling, risks and Crypto Moonboys use on WAX.",
-    "url": "/wiki/blockchain.html",
-    "tags": [
-      "blockchain",
-      "technology",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "blockchain"
-      },
-      {
-        "title": "blockchain technology crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 293,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 2,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 2479,
-      "keyword_bag_size": 22,
-      "heading_count": 33,
-      "list_count": 9,
-      "internal_link_count": 23,
-      "paragraph_count": 38,
-      "section_count": 3,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 83,
-      "authority_score": 30
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 50,
-      "keyword_bag_points": 22,
-      "content_quality_points": 94,
-      "authority_points": 62,
-      "final_rank_score": 293,
-      "authority_graph_points": 32
-    },
-    "search_index": {
-      "normalized_title": "blockchain technology crypto moonboys wiki",
-      "tokens": [
-        "blockchain",
-        "technology",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "blockchain",
-        "technology",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "a",
-        "detailed",
-        "guide",
-        "to",
-        "history",
-        "blocks",
-        "consensus",
-        "wallets",
-        "smart",
-        "contracts",
-        "tokens",
-        "scaling",
-        "risks",
-        "and",
-        "use",
-        "on",
-        "wax"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 13,
-      "outbound_count": 25,
-      "existing_outbound_count": 11,
-      "suggested_outbound_count": 14,
-      "authority": 31.5
-    },
-    "brand": null
-  },
-  {
     "title": "Pride, Temptation and False Idols",
     "desc": "How later First Witness traditions describe pride, status, control and the tendency to worship tools, leaders and identities.",
     "url": "/wiki/first-witness-pride-temptation-false-idols.html",
@@ -11011,6 +10944,100 @@
     "brand": null
   },
   {
+    "title": "Blockchain Technology",
+    "desc": "A detailed guide to blockchain technology: history, blocks, consensus, wallets, smart contracts, tokens, scaling, risks and Crypto Moonboys use on WAX.",
+    "url": "/wiki/blockchain.html",
+    "tags": [
+      "blockchain",
+      "technology",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "blockchain"
+      },
+      {
+        "title": "blockchain technology crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 291,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 2,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 2479,
+      "keyword_bag_size": 22,
+      "heading_count": 33,
+      "list_count": 9,
+      "internal_link_count": 23,
+      "paragraph_count": 38,
+      "section_count": 3,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 83,
+      "authority_score": 30
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 50,
+      "keyword_bag_points": 22,
+      "content_quality_points": 94,
+      "authority_points": 60,
+      "final_rank_score": 291,
+      "authority_graph_points": 30
+    },
+    "search_index": {
+      "normalized_title": "blockchain technology crypto moonboys wiki",
+      "tokens": [
+        "blockchain",
+        "technology",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "blockchain",
+        "technology",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "a",
+        "detailed",
+        "guide",
+        "to",
+        "history",
+        "blocks",
+        "consensus",
+        "wallets",
+        "smart",
+        "contracts",
+        "tokens",
+        "scaling",
+        "risks",
+        "and",
+        "use",
+        "on",
+        "wax"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 12,
+      "outbound_count": 25,
+      "existing_outbound_count": 11,
+      "suggested_outbound_count": 14,
+      "authority": 29.5
+    },
+    "brand": null
+  },
+  {
     "title": "Children and the First Lessons",
     "desc": "Teaching stories and early lessons used to introduce children to the First Witness without indoctrinating them into one faction reading.",
     "url": "/wiki/first-witness-children-first-lessons.html",
@@ -11428,6 +11455,111 @@
       "existing_outbound_count": 16,
       "suggested_outbound_count": 21,
       "authority": 18
+    },
+    "brand": null
+  },
+  {
+    "title": "HODL X Warriors",
+    "desc": "The distinct HODL X champion tradition: Hard Fork selection, bonnets, Seeding accounts, armour repair, service obligations and unresolved relations to HODL Warriors.",
+    "url": "/wiki/hodl-x-warriors.html",
+    "tags": [
+      "hodl",
+      "warriors",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "characters",
+    "aliases": [],
+    "rank_score": 291,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "characters",
+      "category_priority": 8,
+      "has_description": true,
+      "article_word_count": 4741,
+      "keyword_bag_size": 24,
+      "heading_count": 29,
+      "list_count": 1,
+      "internal_link_count": 17,
+      "paragraph_count": 76,
+      "section_count": 26,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 89,
+      "authority_score": 28
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 40,
+      "word_count_points": 50,
+      "keyword_bag_points": 24,
+      "content_quality_points": 94,
+      "authority_points": 53,
+      "final_rank_score": 291,
+      "authority_graph_points": 25
+    },
+    "search_index": {
+      "normalized_title": "hodl x warriors crypto moonboys wiki",
+      "tokens": [
+        "hodl",
+        "x",
+        "warriors",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "hodl",
+        "x",
+        "warriors",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "the",
+        "distinct",
+        "champion",
+        "tradition",
+        "hard",
+        "fork",
+        "selection",
+        "bonnets",
+        "seeding",
+        "accounts",
+        "armour",
+        "repair",
+        "service",
+        "obligations",
+        "and",
+        "unresolved",
+        "relations",
+        "to",
+        "hester",
+        "brake",
+        "cass",
+        "nine",
+        "gallery",
+        "plate",
+        "book",
+        "north",
+        "sluice",
+        "stand",
+        "golden",
+        "ticket",
+        "bonnet",
+        "collection",
+        "debt"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 9,
+      "outbound_count": 39,
+      "existing_outbound_count": 13,
+      "suggested_outbound_count": 26,
+      "authority": 24.5
     },
     "brand": null
   },
@@ -12131,11 +12263,11 @@
       ]
     },
     "link_score": {
-      "inbound_count": 87,
+      "inbound_count": 86,
       "outbound_count": 41,
       "existing_outbound_count": 0,
       "suggested_outbound_count": 41,
-      "authority": 174
+      "authority": 172
     },
     "brand": null
   },
@@ -12761,111 +12893,6 @@
       "existing_outbound_count": 14,
       "suggested_outbound_count": 14,
       "authority": 17
-    },
-    "brand": null
-  },
-  {
-    "title": "HODL X Warriors",
-    "desc": "The distinct HODL X champion tradition: Hard Fork selection, bonnets, Seeding accounts, armour repair, service obligations and unresolved relations to HODL Warriors.",
-    "url": "/wiki/hodl-x-warriors.html",
-    "tags": [
-      "hodl",
-      "warriors",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "characters",
-    "aliases": [],
-    "rank_score": 289,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 0,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "characters",
-      "category_priority": 8,
-      "has_description": true,
-      "article_word_count": 4741,
-      "keyword_bag_size": 24,
-      "heading_count": 29,
-      "list_count": 1,
-      "internal_link_count": 17,
-      "paragraph_count": 76,
-      "section_count": 26,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 89,
-      "authority_score": 28
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 40,
-      "word_count_points": 50,
-      "keyword_bag_points": 24,
-      "content_quality_points": 94,
-      "authority_points": 51,
-      "final_rank_score": 289,
-      "authority_graph_points": 23
-    },
-    "search_index": {
-      "normalized_title": "hodl x warriors crypto moonboys wiki",
-      "tokens": [
-        "hodl",
-        "x",
-        "warriors",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "hodl",
-        "x",
-        "warriors",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "the",
-        "distinct",
-        "champion",
-        "tradition",
-        "hard",
-        "fork",
-        "selection",
-        "bonnets",
-        "seeding",
-        "accounts",
-        "armour",
-        "repair",
-        "service",
-        "obligations",
-        "and",
-        "unresolved",
-        "relations",
-        "to",
-        "hester",
-        "brake",
-        "cass",
-        "nine",
-        "gallery",
-        "plate",
-        "book",
-        "north",
-        "sluice",
-        "stand",
-        "golden",
-        "ticket",
-        "bonnet",
-        "collection",
-        "debt"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 8,
-      "outbound_count": 39,
-      "existing_outbound_count": 13,
-      "suggested_outbound_count": 26,
-      "authority": 22.5
     },
     "brand": null
   },
@@ -13707,6 +13734,118 @@
     "brand": null
   },
   {
+    "title": "Forksplit",
+    "desc": "Forksplit is the rogue HODL Warrior of Echoes of the Fork: a betrayed validator commanding abandoned avatars, with rival accounts of strategy, coercion and possible return.",
+    "url": "/wiki/forksplit.html",
+    "tags": [
+      "forksplit",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "characters",
+    "aliases": [
+      {
+        "title": "forksplit crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 288,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 4,
+      "mention_count": 0,
+      "category": "characters",
+      "category_priority": 8,
+      "has_description": true,
+      "article_word_count": 3092,
+      "keyword_bag_size": 26,
+      "heading_count": 21,
+      "list_count": 1,
+      "internal_link_count": 11,
+      "paragraph_count": 52,
+      "section_count": 18,
+      "lore_paragraph_count": 49,
+      "content_quality_score": 105,
+      "authority_score": 24
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 40,
+      "word_count_points": 50,
+      "keyword_bag_points": 26,
+      "content_quality_points": 112,
+      "authority_points": 30,
+      "final_rank_score": 288,
+      "authority_graph_points": 6
+    },
+    "search_index": {
+      "normalized_title": "forksplit crypto moonboys wiki",
+      "tokens": [
+        "forksplit",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "forksplit",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "is",
+        "the",
+        "rogue",
+        "hodl",
+        "warrior",
+        "of",
+        "echoes",
+        "fork",
+        "a",
+        "betrayed",
+        "validator",
+        "commanding",
+        "abandoned",
+        "avatars",
+        "with",
+        "rival",
+        "accounts",
+        "strategy",
+        "coercion",
+        "and",
+        "possible",
+        "return",
+        "protocol",
+        "graveyard",
+        "regret",
+        "divergence",
+        "matrix",
+        "grey",
+        "muster",
+        "tella",
+        "grain",
+        "renn",
+        "sable",
+        "half",
+        "plan",
+        "noon",
+        "roster",
+        "weather",
+        "banner",
+        "unfinished",
+        "apology"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 27,
+      "existing_outbound_count": 11,
+      "suggested_outbound_count": 16,
+      "authority": 5.5
+    },
+    "brand": null
+  },
+  {
     "title": "Rune Tag",
     "desc": "Rune Tag, the GraffPUNK Elder: Cipher Vault testimony, warnings against NULL, disputed chronology and the teaching of marks that retain their context.",
     "url": "/wiki/rune-tag.html",
@@ -14154,6 +14293,119 @@
     "brand": null
   },
   {
+    "title": "Jodie ZOOM 2000",
+    "desc": "Jodie ZOOM 2000, Forkborn seer and Games survivor: the Clone Harvest refusal, Echo Mother tradition, dream-glyphs, painted doors and broadcast journals.",
+    "url": "/wiki/jodie-zoom-2000.html",
+    "tags": [
+      "jodie",
+      "zoom",
+      "2000",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "characters",
+    "aliases": [],
+    "rank_score": 287,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 6,
+      "mention_count": 0,
+      "category": "characters",
+      "category_priority": 8,
+      "has_description": true,
+      "article_word_count": 3188,
+      "keyword_bag_size": 24,
+      "heading_count": 22,
+      "list_count": 1,
+      "internal_link_count": 15,
+      "paragraph_count": 48,
+      "section_count": 19,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 89,
+      "authority_score": 28
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 40,
+      "word_count_points": 50,
+      "keyword_bag_points": 24,
+      "content_quality_points": 95,
+      "authority_points": 48,
+      "final_rank_score": 287,
+      "authority_graph_points": 20
+    },
+    "search_index": {
+      "normalized_title": "jodie zoom 2000 crypto moonboys wiki",
+      "tokens": [
+        "jodie",
+        "zoom",
+        "2000",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "jodie",
+        "zoom",
+        "2000",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "forkborn",
+        "seer",
+        "and",
+        "games",
+        "survivor",
+        "the",
+        "clone",
+        "harvest",
+        "refusal",
+        "echo",
+        "mother",
+        "tradition",
+        "dream",
+        "glyphs",
+        "painted",
+        "doors",
+        "broadcast",
+        "journals",
+        "beforebook",
+        "cera",
+        "wisp",
+        "wrong",
+        "window",
+        "quiet",
+        "reel",
+        "frequency",
+        "of",
+        "fallen",
+        "patchwork",
+        "signal",
+        "weave",
+        "chrono",
+        "code",
+        "velocity",
+        "vault",
+        "initiate",
+        "s",
+        "maze",
+        "meta",
+        "sigil"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 6,
+      "outbound_count": 31,
+      "existing_outbound_count": 15,
+      "suggested_outbound_count": 16,
+      "authority": 19.5
+    },
+    "brand": null
+  },
+  {
     "title": "Samael.exe",
     "desc": "Samael.exe, the Protocol Godseed: burned-chain origins, the Dreamchain Root Node, hostile authorship and the disputed Forklords encounter.",
     "url": "/wiki/samaelexe.html",
@@ -14391,6 +14643,236 @@
     "brand": null
   },
   {
+    "title": "Forkborn Collective",
+    "desc": "The Forkborn Collective is the Jodie-led tradition of Chain-Seers, memory workers and timeline painters whose overlapping Shard Mothers accounts preserve a contested escape.",
+    "url": "/wiki/forkborn-collective.html",
+    "tags": [
+      "forkborn",
+      "collective",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "forkborn collective crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 286,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 3360,
+      "keyword_bag_size": 27,
+      "heading_count": 22,
+      "list_count": 1,
+      "internal_link_count": 13,
+      "paragraph_count": 55,
+      "section_count": 19,
+      "lore_paragraph_count": 52,
+      "content_quality_score": 105,
+      "authority_score": 24
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 50,
+      "keyword_bag_points": 27,
+      "content_quality_points": 113,
+      "authority_points": 31,
+      "final_rank_score": 286,
+      "authority_graph_points": 7
+    },
+    "search_index": {
+      "normalized_title": "forkborn collective crypto moonboys wiki",
+      "tokens": [
+        "forkborn",
+        "collective",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "forkborn",
+        "collective",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "the",
+        "is",
+        "jodie",
+        "led",
+        "tradition",
+        "of",
+        "chain",
+        "seers",
+        "memory",
+        "workers",
+        "and",
+        "timeline",
+        "painters",
+        "whose",
+        "overlapping",
+        "shard",
+        "mothers",
+        "accounts",
+        "preserve",
+        "a",
+        "contested",
+        "escape",
+        "echo",
+        "ink",
+        "mother",
+        "crossing",
+        "bench",
+        "host",
+        "book",
+        "meva",
+        "rill",
+        "olan",
+        "splice",
+        "double",
+        "arrival",
+        "revision",
+        "refused",
+        "door",
+        "farewell",
+        "strip"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 39,
+      "existing_outbound_count": 13,
+      "suggested_outbound_count": 26,
+      "authority": 6.5
+    },
+    "brand": null
+  },
+  {
+    "title": "Harrison Rift",
+    "desc": "The Harrison Rift is a disputed GraffPUNK schism from the legacy wiki, expanded here through clearly authored fiction about shared work, competing editions and a divided crew.",
+    "url": "/wiki/harrison-rift.html",
+    "tags": [
+      "harrison",
+      "rift",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "harrison rift crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 286,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 2955,
+      "keyword_bag_size": 27,
+      "heading_count": 21,
+      "list_count": 1,
+      "internal_link_count": 11,
+      "paragraph_count": 52,
+      "section_count": 18,
+      "lore_paragraph_count": 49,
+      "content_quality_score": 105,
+      "authority_score": 24
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 50,
+      "keyword_bag_points": 27,
+      "content_quality_points": 113,
+      "authority_points": 31,
+      "final_rank_score": 286,
+      "authority_graph_points": 7
+    },
+    "search_index": {
+      "normalized_title": "harrison rift crypto moonboys wiki",
+      "tokens": [
+        "harrison",
+        "rift",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "harrison",
+        "rift",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "the",
+        "is",
+        "a",
+        "disputed",
+        "graffpunk",
+        "schism",
+        "from",
+        "legacy",
+        "expanded",
+        "here",
+        "through",
+        "clearly",
+        "authored",
+        "fiction",
+        "about",
+        "shared",
+        "work",
+        "competing",
+        "editions",
+        "and",
+        "divided",
+        "crew",
+        "press",
+        "room",
+        "eight",
+        "nessa",
+        "ferrule",
+        "arlo",
+        "kerf",
+        "second",
+        "masthead",
+        "split",
+        "edition",
+        "open",
+        "sheet",
+        "unsent",
+        "copies",
+        "carrying",
+        "price",
+        "return",
+        "of",
+        "type"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 1,
+      "outbound_count": 22,
+      "existing_outbound_count": 10,
+      "suggested_outbound_count": 12,
+      "authority": 7
+    },
+    "brand": null
+  },
+  {
     "title": "nifty crowns",
     "desc": "Nifty Crowns reign as an iconic NFT collection by GKniftyHEADS in the Crypto Moonboys universe, rare digital artifacts symbolizing the mantra of ‘Gettin’ Up’—a",
     "url": "/wiki/nifty-crowns.html",
@@ -14481,6 +14963,120 @@
       "existing_outbound_count": 9,
       "suggested_outbound_count": 15,
       "authority": 6.5
+    },
+    "brand": null
+  },
+  {
+    "title": "The SHARD MOTHERS of MANHATTAN",
+    "desc": "Year 3008 Shard Mothers of Manhattan: Jodie and the Forkborn, fragmented memory, the Hearth of Fragments, chosen care and disputed relic traditions.",
+    "url": "/wiki/the-shard-mothers-of-manhattan.html",
+    "tags": [
+      "shard",
+      "mothers",
+      "manhattan",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "SHARD MOTHERS of MANHATTAN — Crypto Moonboys Wiki"
+      },
+      {
+        "title": "SHARD MOTHERS of MANHATTAN"
+      }
+    ],
+    "rank_score": 286,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 2,
+      "tag_count": 6,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 2806,
+      "keyword_bag_size": 22,
+      "heading_count": 19,
+      "list_count": 1,
+      "internal_link_count": 12,
+      "paragraph_count": 44,
+      "section_count": 16,
+      "lore_paragraph_count": 42,
+      "content_quality_score": 101,
+      "authority_score": 24
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 50,
+      "keyword_bag_points": 22,
+      "content_quality_points": 113,
+      "authority_points": 36,
+      "final_rank_score": 286,
+      "authority_graph_points": 12
+    },
+    "search_index": {
+      "normalized_title": "the shard mothers of manhattan crypto moonboys wiki",
+      "tokens": [
+        "the",
+        "shard",
+        "mothers",
+        "of",
+        "manhattan",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "the",
+        "shard",
+        "mothers",
+        "of",
+        "manhattan",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "year",
+        "3008",
+        "jodie",
+        "and",
+        "forkborn",
+        "fragmented",
+        "memory",
+        "hearth",
+        "fragments",
+        "chosen",
+        "care",
+        "disputed",
+        "relic",
+        "traditions",
+        "bela",
+        "lumen",
+        "cori",
+        "hinge",
+        "sideways",
+        "cradle",
+        "returned",
+        "colour",
+        "genesis",
+        "splinter",
+        "primordial",
+        "core",
+        "obsidian",
+        "spire",
+        "data",
+        "eclipse"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 3,
+      "outbound_count": 31,
+      "existing_outbound_count": 12,
+      "suggested_outbound_count": 19,
+      "authority": 12
     },
     "brand": null
   },
@@ -14893,119 +15489,6 @@
       "existing_outbound_count": 4,
       "suggested_outbound_count": 61,
       "authority": 4
-    },
-    "brand": null
-  },
-  {
-    "title": "Jodie ZOOM 2000",
-    "desc": "Jodie ZOOM 2000, Forkborn seer and Games survivor: the Clone Harvest refusal, Echo Mother tradition, dream-glyphs, painted doors and broadcast journals.",
-    "url": "/wiki/jodie-zoom-2000.html",
-    "tags": [
-      "jodie",
-      "zoom",
-      "2000",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "characters",
-    "aliases": [],
-    "rank_score": 285,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 0,
-      "tag_count": 6,
-      "mention_count": 0,
-      "category": "characters",
-      "category_priority": 8,
-      "has_description": true,
-      "article_word_count": 3188,
-      "keyword_bag_size": 24,
-      "heading_count": 22,
-      "list_count": 1,
-      "internal_link_count": 15,
-      "paragraph_count": 48,
-      "section_count": 19,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 89,
-      "authority_score": 28
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 40,
-      "word_count_points": 50,
-      "keyword_bag_points": 24,
-      "content_quality_points": 95,
-      "authority_points": 46,
-      "final_rank_score": 285,
-      "authority_graph_points": 18
-    },
-    "search_index": {
-      "normalized_title": "jodie zoom 2000 crypto moonboys wiki",
-      "tokens": [
-        "jodie",
-        "zoom",
-        "2000",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "jodie",
-        "zoom",
-        "2000",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "forkborn",
-        "seer",
-        "and",
-        "games",
-        "survivor",
-        "the",
-        "clone",
-        "harvest",
-        "refusal",
-        "echo",
-        "mother",
-        "tradition",
-        "dream",
-        "glyphs",
-        "painted",
-        "doors",
-        "broadcast",
-        "journals",
-        "beforebook",
-        "cera",
-        "wisp",
-        "wrong",
-        "window",
-        "quiet",
-        "reel",
-        "frequency",
-        "of",
-        "fallen",
-        "patchwork",
-        "signal",
-        "weave",
-        "chrono",
-        "code",
-        "velocity",
-        "vault",
-        "initiate",
-        "s",
-        "maze",
-        "meta",
-        "sigil"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 5,
-      "outbound_count": 31,
-      "existing_outbound_count": 15,
-      "suggested_outbound_count": 16,
-      "authority": 17.5
     },
     "brand": null
   },
@@ -15594,120 +16077,6 @@
       "existing_outbound_count": 12,
       "suggested_outbound_count": 12,
       "authority": 14
-    },
-    "brand": null
-  },
-  {
-    "title": "The SHARD MOTHERS of MANHATTAN",
-    "desc": "Year 3008 Shard Mothers of Manhattan: Jodie and the Forkborn, fragmented memory, the Hearth of Fragments, chosen care and disputed relic traditions.",
-    "url": "/wiki/the-shard-mothers-of-manhattan.html",
-    "tags": [
-      "shard",
-      "mothers",
-      "manhattan",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "SHARD MOTHERS of MANHATTAN — Crypto Moonboys Wiki"
-      },
-      {
-        "title": "SHARD MOTHERS of MANHATTAN"
-      }
-    ],
-    "rank_score": 284,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 2,
-      "tag_count": 6,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 2806,
-      "keyword_bag_size": 22,
-      "heading_count": 19,
-      "list_count": 1,
-      "internal_link_count": 12,
-      "paragraph_count": 44,
-      "section_count": 16,
-      "lore_paragraph_count": 42,
-      "content_quality_score": 101,
-      "authority_score": 24
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 50,
-      "keyword_bag_points": 22,
-      "content_quality_points": 113,
-      "authority_points": 34,
-      "final_rank_score": 284,
-      "authority_graph_points": 10
-    },
-    "search_index": {
-      "normalized_title": "the shard mothers of manhattan crypto moonboys wiki",
-      "tokens": [
-        "the",
-        "shard",
-        "mothers",
-        "of",
-        "manhattan",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "the",
-        "shard",
-        "mothers",
-        "of",
-        "manhattan",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "year",
-        "3008",
-        "jodie",
-        "and",
-        "forkborn",
-        "fragmented",
-        "memory",
-        "hearth",
-        "fragments",
-        "chosen",
-        "care",
-        "disputed",
-        "relic",
-        "traditions",
-        "bela",
-        "lumen",
-        "cori",
-        "hinge",
-        "sideways",
-        "cradle",
-        "returned",
-        "colour",
-        "genesis",
-        "splinter",
-        "primordial",
-        "core",
-        "obsidian",
-        "spire",
-        "data",
-        "eclipse"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 2,
-      "outbound_count": 31,
-      "existing_outbound_count": 12,
-      "suggested_outbound_count": 19,
-      "authority": 10
     },
     "brand": null
   },
@@ -17530,6 +17899,114 @@
     "brand": null
   },
   {
+    "title": "Aleema (Child of the Shard)",
+    "desc": "Aleema’s Year 3008 history: Games recruit, Forkborn escapee and dual-language witness, with the Shard Song legend and separate prophetic child kept distinct.",
+    "url": "/wiki/aleema-child-of-the-shard.html",
+    "tags": [
+      "aleema",
+      "child",
+      "shard",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "characters",
+    "aliases": [],
+    "rank_score": 279,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 6,
+      "mention_count": 0,
+      "category": "characters",
+      "category_priority": 8,
+      "has_description": true,
+      "article_word_count": 2959,
+      "keyword_bag_size": 27,
+      "heading_count": 20,
+      "list_count": 1,
+      "internal_link_count": 15,
+      "paragraph_count": 44,
+      "section_count": 17,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 89,
+      "authority_score": 28
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 40,
+      "word_count_points": 50,
+      "keyword_bag_points": 27,
+      "content_quality_points": 95,
+      "authority_points": 37,
+      "final_rank_score": 279,
+      "authority_graph_points": 9
+    },
+    "search_index": {
+      "normalized_title": "aleema child of the shard crypto moonboys wiki",
+      "tokens": [
+        "aleema",
+        "child",
+        "of",
+        "the",
+        "shard",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "aleema",
+        "child",
+        "of",
+        "the",
+        "shard",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "s",
+        "year",
+        "3008",
+        "history",
+        "games",
+        "recruit",
+        "forkborn",
+        "escapee",
+        "and",
+        "dual",
+        "language",
+        "witness",
+        "with",
+        "song",
+        "legend",
+        "separate",
+        "prophetic",
+        "kept",
+        "distinct",
+        "tin",
+        "stair",
+        "countback",
+        "deni",
+        "silt",
+        "split",
+        "bowl",
+        "wrong",
+        "window",
+        "tongue",
+        "unnamed",
+        "third"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 1,
+      "outbound_count": 37,
+      "existing_outbound_count": 14,
+      "suggested_outbound_count": 23,
+      "authority": 9
+    },
+    "brand": null
+  },
+  {
     "title": "Quell",
     "desc": "Quell, the Chain Scribe warrior and mediator: the First Merge, disputed gifts, limited truces and the difficult work of keeping an agreement.",
     "url": "/wiki/quell.html",
@@ -17639,6 +18116,112 @@
       "existing_outbound_count": 9,
       "suggested_outbound_count": 31,
       "authority": 4.5
+    },
+    "brand": null
+  },
+  {
+    "title": "Street Kingdoms",
+    "desc": "The inhabited Year 3008 territories beyond Block Topia: borough networks, work, mobile law, markets and survival.",
+    "url": "/wiki/street-kingdoms.html",
+    "tags": [
+      "street",
+      "kingdoms",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "street kingdoms crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 279,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 1507,
+      "keyword_bag_size": 21,
+      "heading_count": 22,
+      "list_count": 1,
+      "internal_link_count": 9,
+      "paragraph_count": 38,
+      "section_count": 19,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 77,
+      "authority_score": 21
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 50,
+      "keyword_bag_points": 21,
+      "content_quality_points": 85,
+      "authority_points": 58,
+      "final_rank_score": 279,
+      "authority_graph_points": 37
+    },
+    "search_index": {
+      "normalized_title": "street kingdoms crypto moonboys wiki",
+      "tokens": [
+        "street",
+        "kingdoms",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "street",
+        "kingdoms",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "the",
+        "inhabited",
+        "year",
+        "3008",
+        "territories",
+        "beyond",
+        "block",
+        "topia",
+        "borough",
+        "networks",
+        "work",
+        "mobile",
+        "law",
+        "markets",
+        "and",
+        "survival",
+        "lantern",
+        "courts",
+        "thread",
+        "water",
+        "truce",
+        "slate",
+        "market",
+        "roof",
+        "census",
+        "nine",
+        "door",
+        "winter",
+        "imani",
+        "rook",
+        "sol",
+        "mercer"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 16,
+      "outbound_count": 21,
+      "existing_outbound_count": 9,
+      "suggested_outbound_count": 12,
+      "authority": 36.5
     },
     "brand": null
   },
@@ -17760,114 +18343,6 @@
       "existing_outbound_count": 20,
       "suggested_outbound_count": 12,
       "authority": 12
-    },
-    "brand": null
-  },
-  {
-    "title": "Aleema (Child of the Shard)",
-    "desc": "Aleema’s Year 3008 history: Games recruit, Forkborn escapee and dual-language witness, with the Shard Song legend and separate prophetic child kept distinct.",
-    "url": "/wiki/aleema-child-of-the-shard.html",
-    "tags": [
-      "aleema",
-      "child",
-      "shard",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "characters",
-    "aliases": [],
-    "rank_score": 277,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 0,
-      "tag_count": 6,
-      "mention_count": 0,
-      "category": "characters",
-      "category_priority": 8,
-      "has_description": true,
-      "article_word_count": 2959,
-      "keyword_bag_size": 27,
-      "heading_count": 20,
-      "list_count": 1,
-      "internal_link_count": 15,
-      "paragraph_count": 44,
-      "section_count": 17,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 89,
-      "authority_score": 28
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 40,
-      "word_count_points": 50,
-      "keyword_bag_points": 27,
-      "content_quality_points": 95,
-      "authority_points": 35,
-      "final_rank_score": 277,
-      "authority_graph_points": 7
-    },
-    "search_index": {
-      "normalized_title": "aleema child of the shard crypto moonboys wiki",
-      "tokens": [
-        "aleema",
-        "child",
-        "of",
-        "the",
-        "shard",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "aleema",
-        "child",
-        "of",
-        "the",
-        "shard",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "s",
-        "year",
-        "3008",
-        "history",
-        "games",
-        "recruit",
-        "forkborn",
-        "escapee",
-        "and",
-        "dual",
-        "language",
-        "witness",
-        "with",
-        "song",
-        "legend",
-        "separate",
-        "prophetic",
-        "kept",
-        "distinct",
-        "tin",
-        "stair",
-        "countback",
-        "deni",
-        "silt",
-        "split",
-        "bowl",
-        "wrong",
-        "window",
-        "tongue",
-        "unnamed",
-        "third"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 37,
-      "existing_outbound_count": 14,
-      "suggested_outbound_count": 23,
-      "authority": 7
     },
     "brand": null
   },
@@ -19018,112 +19493,6 @@
     "brand": null
   },
   {
-    "title": "Street Kingdoms",
-    "desc": "The inhabited Year 3008 territories beyond Block Topia: borough networks, work, mobile law, markets and survival.",
-    "url": "/wiki/street-kingdoms.html",
-    "tags": [
-      "street",
-      "kingdoms",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "street kingdoms crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 275,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 1507,
-      "keyword_bag_size": 21,
-      "heading_count": 22,
-      "list_count": 1,
-      "internal_link_count": 9,
-      "paragraph_count": 38,
-      "section_count": 19,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 77,
-      "authority_score": 21
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 50,
-      "keyword_bag_points": 21,
-      "content_quality_points": 85,
-      "authority_points": 54,
-      "final_rank_score": 275,
-      "authority_graph_points": 33
-    },
-    "search_index": {
-      "normalized_title": "street kingdoms crypto moonboys wiki",
-      "tokens": [
-        "street",
-        "kingdoms",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "street",
-        "kingdoms",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "the",
-        "inhabited",
-        "year",
-        "3008",
-        "territories",
-        "beyond",
-        "block",
-        "topia",
-        "borough",
-        "networks",
-        "work",
-        "mobile",
-        "law",
-        "markets",
-        "and",
-        "survival",
-        "lantern",
-        "courts",
-        "thread",
-        "water",
-        "truce",
-        "slate",
-        "market",
-        "roof",
-        "census",
-        "nine",
-        "door",
-        "winter",
-        "imani",
-        "rook",
-        "sol",
-        "mercer"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 14,
-      "outbound_count": 21,
-      "existing_outbound_count": 9,
-      "suggested_outbound_count": 12,
-      "authority": 32.5
-    },
-    "brand": null
-  },
-  {
     "title": "Beauty, Luxury, Modesty and Status",
     "desc": "First Witness debates about beautiful things, luxury, display, modesty and whether wealth can be ethically shown.",
     "url": "/wiki/first-witness-beauty-luxury-modesty-status.html",
@@ -19754,6 +20123,115 @@
       "existing_outbound_count": 13,
       "suggested_outbound_count": 29,
       "authority": 12.5
+    },
+    "brand": null
+  },
+  {
+    "title": "Metropolis",
+    "desc": "Metropolis describes Crypto Moonboys cities as inhabited systems of streets, memory, infrastructure and power, preserving their separate histories and disputed futures.",
+    "url": "/wiki/metropolis.html",
+    "tags": [
+      "metropolis",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "metropolis crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 273,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 4,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 3295,
+      "keyword_bag_size": 21,
+      "heading_count": 23,
+      "list_count": 1,
+      "internal_link_count": 13,
+      "paragraph_count": 61,
+      "section_count": 20,
+      "lore_paragraph_count": 58,
+      "content_quality_score": 101,
+      "authority_score": 24
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 50,
+      "keyword_bag_points": 21,
+      "content_quality_points": 108,
+      "authority_points": 29,
+      "final_rank_score": 273,
+      "authority_graph_points": 5
+    },
+    "search_index": {
+      "normalized_title": "metropolis crypto moonboys wiki",
+      "tokens": [
+        "metropolis",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "metropolis",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "describes",
+        "cities",
+        "as",
+        "inhabited",
+        "systems",
+        "of",
+        "streets",
+        "memory",
+        "infrastructure",
+        "and",
+        "power",
+        "preserving",
+        "their",
+        "separate",
+        "histories",
+        "disputed",
+        "futures",
+        "lundinea",
+        "charlam",
+        "unified",
+        "city",
+        "block",
+        "urban",
+        "dry",
+        "hours",
+        "exchange",
+        "lysa",
+        "trellis",
+        "bram",
+        "tread",
+        "roofline",
+        "map",
+        "winter",
+        "shade",
+        "common",
+        "address",
+        "late",
+        "light"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 27,
+      "existing_outbound_count": 10,
+      "suggested_outbound_count": 17,
+      "authority": 5
     },
     "brand": null
   },
@@ -21365,101 +21843,6 @@
       "existing_outbound_count": 4,
       "suggested_outbound_count": 63,
       "authority": 6
-    },
-    "brand": null
-  },
-  {
-    "title": "Forkborn Collective",
-    "desc": "The Forkborn Collective is a volatile and enigmatic army within the digital realm of Block Topia, a force birthed from the raw, chaotic energy of blockchain for",
-    "url": "/wiki/forkborn-collective.html",
-    "tags": [
-      "forkborn",
-      "collective",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "forkborn collective crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 269,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 1336,
-      "keyword_bag_size": 26,
-      "heading_count": 9,
-      "list_count": 1,
-      "internal_link_count": 11,
-      "paragraph_count": 20,
-      "section_count": 6,
-      "lore_paragraph_count": 17,
-      "content_quality_score": 93,
-      "authority_score": 21
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 50,
-      "keyword_bag_points": 26,
-      "content_quality_points": 101,
-      "authority_points": 27,
-      "final_rank_score": 269,
-      "authority_graph_points": 6
-    },
-    "search_index": {
-      "normalized_title": "forkborn collective crypto moonboys wiki",
-      "tokens": [
-        "forkborn",
-        "collective",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "forkborn",
-        "collective",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "the",
-        "is",
-        "a",
-        "volatile",
-        "and",
-        "enigmatic",
-        "army",
-        "within",
-        "digital",
-        "realm",
-        "of",
-        "block",
-        "topia",
-        "force",
-        "birthed",
-        "from",
-        "raw",
-        "chaotic",
-        "energy",
-        "blockchain",
-        "for"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 29,
-      "existing_outbound_count": 11,
-      "suggested_outbound_count": 18,
-      "authority": 5.5
     },
     "brand": null
   },
@@ -27547,99 +27930,6 @@
     "brand": null
   },
   {
-    "title": "Forksplit",
-    "desc": "Forksplit stands as a dual-natured tactician within the volatile digital realm of Block Topia, a mastermind whose very essence mirrors the chaotic splits of blo",
-    "url": "/wiki/forksplit.html",
-    "tags": [
-      "forksplit",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "characters",
-    "aliases": [
-      {
-        "title": "forksplit crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 249,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 4,
-      "mention_count": 0,
-      "category": "characters",
-      "category_priority": 8,
-      "has_description": true,
-      "article_word_count": 839,
-      "keyword_bag_size": 26,
-      "heading_count": 10,
-      "list_count": 1,
-      "internal_link_count": 13,
-      "paragraph_count": 14,
-      "section_count": 7,
-      "lore_paragraph_count": 12,
-      "content_quality_score": 81,
-      "authority_score": 18
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 40,
-      "word_count_points": 42,
-      "keyword_bag_points": 26,
-      "content_quality_points": 88,
-      "authority_points": 23,
-      "final_rank_score": 249,
-      "authority_graph_points": 5
-    },
-    "search_index": {
-      "normalized_title": "forksplit crypto moonboys wiki",
-      "tokens": [
-        "forksplit",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "forksplit",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "stands",
-        "as",
-        "a",
-        "dual",
-        "natured",
-        "tactician",
-        "within",
-        "the",
-        "volatile",
-        "digital",
-        "realm",
-        "of",
-        "block",
-        "topia",
-        "mastermind",
-        "whose",
-        "very",
-        "essence",
-        "mirrors",
-        "chaotic",
-        "splits",
-        "blo"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 22,
-      "existing_outbound_count": 10,
-      "suggested_outbound_count": 12,
-      "authority": 5
-    },
-    "brand": null
-  },
-  {
     "title": "Graffiti Queens in Decentraland",
     "desc": "Graffiti Queens in Decentraland stands as a transformative cultural milestone in the Crypto Moonboys universe, marking the largest all-female NFT exhibition eve",
     "url": "/wiki/graffiti-queens-in-decentraland.html",
@@ -28939,94 +29229,6 @@
       "existing_outbound_count": 11,
       "suggested_outbound_count": 19,
       "authority": 11.5
-    },
-    "brand": null
-  },
-  {
-    "title": "Metropolis",
-    "desc": "Metropolis is the living urban system of Crypto Moonboys lore: a city of walls, signals, factions, memory, control and creative resistance.",
-    "url": "/wiki/metropolis.html",
-    "tags": [
-      "metropolis",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "metropolis crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 245,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 4,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 1881,
-      "keyword_bag_size": 21,
-      "heading_count": 15,
-      "list_count": 1,
-      "internal_link_count": 12,
-      "paragraph_count": 36,
-      "section_count": 12,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 77,
-      "authority_score": 21
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 50,
-      "keyword_bag_points": 21,
-      "content_quality_points": 84,
-      "authority_points": 25,
-      "final_rank_score": 245,
-      "authority_graph_points": 4
-    },
-    "search_index": {
-      "normalized_title": "metropolis crypto moonboys wiki",
-      "tokens": [
-        "metropolis",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "metropolis",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "is",
-        "the",
-        "living",
-        "urban",
-        "system",
-        "of",
-        "lore",
-        "a",
-        "city",
-        "walls",
-        "signals",
-        "factions",
-        "memory",
-        "control",
-        "and",
-        "creative",
-        "resistance"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 15,
-      "existing_outbound_count": 8,
-      "suggested_outbound_count": 7,
-      "authority": 4
     },
     "brand": null
   },
@@ -30960,98 +31162,6 @@
       "existing_outbound_count": 12,
       "suggested_outbound_count": 11,
       "authority": 42
-    },
-    "brand": null
-  },
-  {
-    "title": "harrison rift",
-    "desc": "The Harrison Rift marks a seismic fracture in the Crypto Moonboys universe, a fictional hard fork event inspired by storyteller Ian Harrison, where a splinter f",
-    "url": "/wiki/harrison-rift.html",
-    "tags": [
-      "harrison",
-      "rift",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "harrison rift crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 236,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 808,
-      "keyword_bag_size": 23,
-      "heading_count": 11,
-      "list_count": 2,
-      "internal_link_count": 9,
-      "paragraph_count": 11,
-      "section_count": 8,
-      "lore_paragraph_count": 9,
-      "content_quality_score": 73,
-      "authority_score": 20
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 40,
-      "keyword_bag_points": 23,
-      "content_quality_points": 81,
-      "authority_points": 27,
-      "final_rank_score": 236,
-      "authority_graph_points": 7
-    },
-    "search_index": {
-      "normalized_title": "harrison rift crypto moonboys wiki",
-      "tokens": [
-        "harrison",
-        "rift",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "harrison",
-        "rift",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "the",
-        "marks",
-        "a",
-        "seismic",
-        "fracture",
-        "in",
-        "universe",
-        "fictional",
-        "hard",
-        "fork",
-        "event",
-        "inspired",
-        "by",
-        "storyteller",
-        "ian",
-        "where",
-        "splinter",
-        "f"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 1,
-      "outbound_count": 19,
-      "existing_outbound_count": 9,
-      "suggested_outbound_count": 10,
-      "authority": 6.5
     },
     "brand": null
   },

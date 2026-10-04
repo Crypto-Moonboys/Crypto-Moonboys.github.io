@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-04T14:01:08.568Z",
-  "verified_at": "2026-10-04T14:01:08.568Z",
+  "generated_at": "2026-10-04T14:05:16.067Z",
+  "verified_at": "2026-10-04T14:05:16.067Z",
   "lite": true,
   "nodes": [
     {
@@ -98,6 +98,14 @@
       "category": "core",
       "rank_score": 339,
       "authority_score": 14
+    },
+    {
+      "id": "/wiki/crypto-moonboys.html",
+      "title": "Crypto Moonboys — Graffiti Kings Creator Umbrella",
+      "url": "/wiki/crypto-moonboys.html",
+      "category": "characters",
+      "rank_score": 336,
+      "authority_score": 28
     },
     {
       "id": "/wiki/first-witness-book-5-the-chain.html",
@@ -380,14 +388,6 @@
       "authority_score": 22
     },
     {
-      "id": "/wiki/crypto-moonboys.html",
-      "title": "Crypto Moonboys — The Original Graffiti Kings Web3 Universe",
-      "url": "/wiki/crypto-moonboys.html",
-      "category": "characters",
-      "rank_score": 309,
-      "authority_score": 25
-    },
-    {
       "id": "/wiki/first-witness-block-topia-reading.html",
       "title": "Block Topia and the Controlled Reading",
       "url": "/wiki/first-witness-block-topia-reading.html",
@@ -596,12 +596,12 @@
       "authority_score": 24
     },
     {
-      "id": "/wiki/blockchain.html",
-      "title": "Blockchain Technology",
-      "url": "/wiki/blockchain.html",
-      "category": "factions",
+      "id": "/wiki/first-witness-pride-temptation-false-idols.html",
+      "title": "Pride, Temptation and False Idols",
+      "url": "/wiki/first-witness-pride-temptation-false-idols.html",
+      "category": "core",
       "rank_score": 293,
-      "authority_score": 30
+      "authority_score": 12
     }
   ],
   "edges": [
@@ -644,7 +644,7 @@
     {
       "source": "/wiki/first-witness-source-register.html",
       "target": "/wiki/first-witness-master-chronology.html",
-      "score": 328,
+      "score": 329,
       "weight": 1
     },
     {
@@ -654,15 +654,9 @@
       "weight": 1
     },
     {
-      "source": "/wiki/first-witness-glossary.html",
-      "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 326,
-      "weight": 1
-    },
-    {
-      "source": "/wiki/first-witness-glossary.html",
+      "source": "/wiki/first-witness-faction-commentaries.html",
       "target": "/wiki/first-witness-master-chronology.html",
-      "score": 325,
+      "score": 326,
       "weight": 1
     },
     {
@@ -828,6 +822,12 @@
       "weight": 1
     },
     {
+      "source": "/wiki/hodl-warriors.html",
+      "target": "/wiki/crypto-moonboys.html",
+      "score": 97,
+      "weight": 0.97
+    },
+    {
       "source": "/wiki/genesis-kernel.html",
       "target": "/wiki/sacred-chain.html",
       "score": 96,
@@ -846,6 +846,12 @@
       "weight": 0.94
     },
     {
+      "source": "/wiki/burn-to-earn.html",
+      "target": "/wiki/crypto-moonboys.html",
+      "score": 93,
+      "weight": 0.93
+    },
+    {
       "source": "/wiki/hodl-warriors.html",
       "target": "/wiki/hodl-wars.html",
       "score": 93,
@@ -858,22 +864,16 @@
       "weight": 0.91
     },
     {
-      "source": "/wiki/graffiti-nexus.html",
-      "target": "/wiki/sacred-chain.html",
+      "source": "/wiki/bitcoin-x-kids.html",
+      "target": "/wiki/crypto-moonboys.html",
       "score": 90,
       "weight": 0.9
     },
     {
-      "source": "/wiki/burn-to-earn.html",
-      "target": "/wiki/crypto-moonboys.html",
-      "score": 89,
-      "weight": 0.89
-    },
-    {
-      "source": "/wiki/hodl-warriors.html",
-      "target": "/wiki/crypto-moonboys.html",
-      "score": 89,
-      "weight": 0.89
+      "source": "/wiki/graffiti-nexus.html",
+      "target": "/wiki/sacred-chain.html",
+      "score": 90,
+      "weight": 0.9
     },
     {
       "source": "/wiki/block-node-defenders.html",
@@ -886,12 +886,6 @@
       "target": "/wiki/block-node-defenders.html",
       "score": 87,
       "weight": 0.87
-    },
-    {
-      "source": "/wiki/null-the-prophet.html",
-      "target": "/wiki/crypto-moonboys.html",
-      "score": 86,
-      "weight": 0.86
     },
     {
       "source": "/wiki/the-salvagers.html",
@@ -942,12 +936,6 @@
       "weight": 0.84
     },
     {
-      "source": "/wiki/bitcoin-x-kids.html",
-      "target": "/wiki/null-the-prophet.html",
-      "score": 82,
-      "weight": 0.82
-    },
-    {
       "source": "/wiki/the-finance-guild.html",
       "target": "/wiki/the-nice-easy-bois.html",
       "score": 82,
@@ -973,6 +961,12 @@
     },
     {
       "source": "/wiki/burn-to-earn.html",
+      "target": "/wiki/null-the-prophet.html",
+      "score": 79,
+      "weight": 0.79
+    },
+    {
+      "source": "/wiki/punk-token.html",
       "target": "/wiki/null-the-prophet.html",
       "score": 79,
       "weight": 0.79
@@ -1010,6 +1004,12 @@
     {
       "source": "/wiki/bitcoin-kid-army.html",
       "target": "/wiki/midevilpunks.html",
+      "score": 70,
+      "weight": 0.7
+    },
+    {
+      "source": "/wiki/staking.html",
+      "target": "/wiki/null-the-prophet.html",
       "score": 70,
       "weight": 0.7
     },
