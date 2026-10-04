@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-04T16:01:35.111Z",
-  "verified_at": "2026-10-04T16:01:35.111Z",
+  "generated_at": "2026-10-04T19:02:09.652Z",
+  "verified_at": "2026-10-04T19:02:09.652Z",
   "nodes": [
     {
       "id": "/about.html",
@@ -127,7 +127,7 @@
       "title": "Aleema (Child of the Shard)",
       "url": "/wiki/aleema-child-of-the-shard.html",
       "category": "characters",
-      "rank_score": 279,
+      "rank_score": 277,
       "authority_score": 28
     },
     {
@@ -135,7 +135,7 @@
       "title": "Alfie 'Bitcoin Kid' Blaze",
       "url": "/wiki/alfie-bitcoin-kid-blaze.html",
       "category": "factions",
-      "rank_score": 290,
+      "rank_score": 286,
       "authority_score": 28
     },
     {
@@ -271,8 +271,8 @@
       "title": "Block Topia",
       "url": "/wiki/block-topia.html",
       "category": "characters",
-      "rank_score": 290,
-      "authority_score": 13
+      "rank_score": 307,
+      "authority_score": 16
     },
     {
       "id": "/wiki/blockchain.html",
@@ -719,8 +719,8 @@
       "title": "Faction Commentaries on the First Witness",
       "url": "/wiki/first-witness-faction-commentaries.html",
       "category": "core",
-      "rank_score": 382,
-      "authority_score": 14
+      "rank_score": 417,
+      "authority_score": 20
     },
     {
       "id": "/wiki/first-witness-faction-ritual-variations.html",
@@ -751,8 +751,8 @@
       "title": "The Forty Paths",
       "url": "/wiki/first-witness-forty-paths.html",
       "category": "core",
-      "rank_score": 326,
-      "authority_score": 14
+      "rank_score": 384,
+      "authority_score": 21
     },
     {
       "id": "/wiki/first-witness-glossary.html",
@@ -791,7 +791,7 @@
       "title": "The HODL Doctrine",
       "url": "/wiki/first-witness-hodl-doctrine.html",
       "category": "core",
-      "rank_score": 306,
+      "rank_score": 308,
       "authority_score": 12
     },
     {
@@ -2679,7 +2679,7 @@
       "title": "NULL THE PROPHET",
       "url": "/wiki/null-the-prophet.html",
       "category": "characters",
-      "rank_score": 325,
+      "rank_score": 331,
       "authority_score": 24
     },
     {
@@ -2767,7 +2767,7 @@
       "title": "Queen Sarah P-fly",
       "url": "/wiki/queen-sarah-p-fly.html",
       "category": "factions",
-      "rank_score": 276,
+      "rank_score": 274,
       "authority_score": 24
     },
     {
@@ -2895,7 +2895,7 @@
       "title": "Spraycode &amp; Writcode Mechanics",
       "url": "/wiki/spraycode-writcode-mechanics.html",
       "category": "factions",
-      "rank_score": 287,
+      "rank_score": 295,
       "authority_score": 24
     },
     {
@@ -2935,8 +2935,8 @@
       "title": "Street Kingdoms",
       "url": "/wiki/street-kingdoms.html",
       "category": "factions",
-      "rank_score": 279,
-      "authority_score": 21
+      "rank_score": 299,
+      "authority_score": 24
     },
     {
       "id": "/wiki/swap-nefty.html",
@@ -3063,7 +3063,7 @@
       "title": "The Finance Guild",
       "url": "/wiki/the-finance-guild.html",
       "category": "factions",
-      "rank_score": 312,
+      "rank_score": 310,
       "authority_score": 28
     },
     {
@@ -3374,7 +3374,7 @@
     },
     {
       "source": "/wiki/1m-free-nfts-program.html",
-      "target": "/wiki/web3.html",
+      "target": "/wiki/street-kingdoms.html",
       "score": 73,
       "weight": 0.73
     },
@@ -3494,9 +3494,9 @@
     },
     {
       "source": "/wiki/alcor-exchange.html",
-      "target": "/wiki/forkborn-collective.html",
-      "score": 75,
-      "weight": 0.75
+      "target": "/wiki/street-kingdoms.html",
+      "score": 76,
+      "weight": 0.76
     },
     {
       "source": "/wiki/aleema-child-of-the-shard.html",
@@ -3567,8 +3567,8 @@
     {
       "source": "/wiki/alien-worlds-tlm.html",
       "target": "/wiki/null-the-prophet.html",
-      "score": 79,
-      "weight": 0.79
+      "score": 80,
+      "weight": 0.8
     },
     {
       "source": "/wiki/alien-worlds-tlm.html",
@@ -3627,8 +3627,8 @@
     {
       "source": "/wiki/atomicassets.html",
       "target": "/wiki/null-the-prophet.html",
-      "score": 79,
-      "weight": 0.79
+      "score": 80,
+      "weight": 0.8
     },
     {
       "source": "/wiki/atomicassets.html",
@@ -3692,6 +3692,12 @@
     },
     {
       "source": "/wiki/atomichub.html",
+      "target": "/wiki/street-kingdoms.html",
+      "score": 76,
+      "weight": 0.76
+    },
+    {
+      "source": "/wiki/atomichub.html",
       "target": "/wiki/forkborn-collective.html",
       "score": 75,
       "weight": 0.75
@@ -3703,12 +3709,6 @@
       "weight": 0.75
     },
     {
-      "source": "/wiki/atomichub.html",
-      "target": "/wiki/ngmi-chronicles.html",
-      "score": 75,
-      "weight": 0.75
-    },
-    {
       "source": "/wiki/ava-chen.html",
       "target": "/wiki/crypto-moonboys.html",
       "score": 84,
@@ -3716,13 +3716,13 @@
     },
     {
       "source": "/wiki/ava-chen.html",
-      "target": "/wiki/dragan-volkov.html",
-      "score": 79,
-      "weight": 0.79
+      "target": "/wiki/null-the-prophet.html",
+      "score": 80,
+      "weight": 0.8
     },
     {
       "source": "/wiki/ava-chen.html",
-      "target": "/wiki/null-the-prophet.html",
+      "target": "/wiki/dragan-volkov.html",
       "score": 79,
       "weight": 0.79
     },
@@ -3867,8 +3867,8 @@
     {
       "source": "/wiki/bit-cap-5000.html",
       "target": "/wiki/bitcoin-kids.html",
-      "score": 85,
-      "weight": 0.85
+      "score": 86,
+      "weight": 0.86
     },
     {
       "source": "/wiki/bit-cap-5000.html",
@@ -3885,8 +3885,8 @@
     {
       "source": "/wiki/bit-cap-5000.html",
       "target": "/wiki/null-the-prophet.html",
-      "score": 82,
-      "weight": 0.82
+      "score": 83,
+      "weight": 0.83
     },
     {
       "source": "/wiki/bitcoin-kid-army.html",
@@ -3945,13 +3945,13 @@
     {
       "source": "/wiki/bitcoin-kids.html",
       "target": "/wiki/null-the-prophet.html",
-      "score": 85,
-      "weight": 0.85
+      "score": 86,
+      "weight": 0.86
     },
     {
       "source": "/wiki/bitcoin-x-kids.html",
       "target": "/wiki/bitcoin-kids.html",
-      "score": 108,
+      "score": 109,
       "weight": 1
     },
     {
@@ -3969,8 +3969,8 @@
     {
       "source": "/wiki/bitcoin-x-kids.html",
       "target": "/wiki/null-the-prophet.html",
-      "score": 82,
-      "weight": 0.82
+      "score": 83,
+      "weight": 0.83
     },
     {
       "source": "/wiki/bitcoin-x-kids.html",
@@ -3992,6 +3992,12 @@
     },
     {
       "source": "/wiki/bitcoin.html",
+      "target": "/wiki/bitcoin-kids.html",
+      "score": 52,
+      "weight": 0.52
+    },
+    {
+      "source": "/wiki/bitcoin.html",
       "target": "/wiki/exyboy.html",
       "score": 52,
       "weight": 0.52
@@ -4001,12 +4007,6 @@
       "target": "/wiki/gk.html",
       "score": 52,
       "weight": 0.52
-    },
-    {
-      "source": "/wiki/bitcoin.html",
-      "target": "/wiki/bitcoin-kids.html",
-      "score": 51,
-      "weight": 0.51
     },
     {
       "source": "/wiki/block-node-defenders.html",
@@ -4028,13 +4028,13 @@
     },
     {
       "source": "/wiki/block-node-defenders.html",
-      "target": "/wiki/hard-fork-games.html",
-      "score": 84,
-      "weight": 0.84
+      "target": "/wiki/hodl-wars.html",
+      "score": 85,
+      "weight": 0.85
     },
     {
       "source": "/wiki/block-node-defenders.html",
-      "target": "/wiki/hodl-wars.html",
+      "target": "/wiki/hard-fork-games.html",
       "score": 84,
       "weight": 0.84
     },
@@ -4047,14 +4047,14 @@
     {
       "source": "/wiki/block-topia.html",
       "target": "/wiki/null-the-prophet.html",
-      "score": 67,
-      "weight": 0.67
+      "score": 68,
+      "weight": 0.68
     },
     {
       "source": "/wiki/block-topia.html",
       "target": "/wiki/bitcoin-kids.html",
-      "score": 63,
-      "weight": 0.63
+      "score": 64,
+      "weight": 0.64
     },
     {
       "source": "/wiki/block-topia.html",
@@ -4118,13 +4118,13 @@
     },
     {
       "source": "/wiki/bone-idol-ink.html",
-      "target": "/wiki/forkborn-collective.html",
-      "score": 75,
-      "weight": 0.75
+      "target": "/wiki/street-kingdoms.html",
+      "score": 76,
+      "weight": 0.76
     },
     {
       "source": "/wiki/bone-idol-ink.html",
-      "target": "/wiki/harrison-rift.html",
+      "target": "/wiki/forkborn-collective.html",
       "score": 75,
       "weight": 0.75
     },
@@ -4137,14 +4137,14 @@
     {
       "source": "/wiki/burn-to-earn.html",
       "target": "/wiki/null-the-prophet.html",
-      "score": 79,
-      "weight": 0.79
+      "score": 80,
+      "weight": 0.8
     },
     {
       "source": "/wiki/burn-to-earn.html",
       "target": "/wiki/bitcoin-kids.html",
-      "score": 75,
-      "weight": 0.75
+      "score": 76,
+      "weight": 0.76
     },
     {
       "source": "/wiki/burn-to-earn.html",
@@ -4232,6 +4232,12 @@
     },
     {
       "source": "/wiki/croydon-tower-blocks.html",
+      "target": "/wiki/street-kingdoms.html",
+      "score": 79,
+      "weight": 0.79
+    },
+    {
+      "source": "/wiki/croydon-tower-blocks.html",
       "target": "/wiki/forkborn-collective.html",
       "score": 78,
       "weight": 0.78
@@ -4239,12 +4245,6 @@
     {
       "source": "/wiki/croydon-tower-blocks.html",
       "target": "/wiki/ngmi-chronicles.html",
-      "score": 78,
-      "weight": 0.78
-    },
-    {
-      "source": "/wiki/croydon-tower-blocks.html",
-      "target": "/wiki/street-kingdoms.html",
       "score": 78,
       "weight": 0.78
     },
@@ -4281,8 +4281,8 @@
     {
       "source": "/wiki/crypto-moonboys.html",
       "target": "/wiki/null-the-prophet.html",
-      "score": 82,
-      "weight": 0.82
+      "score": 83,
+      "weight": 0.83
     },
     {
       "source": "/wiki/crypto-moonboys.html",
@@ -4293,8 +4293,8 @@
     {
       "source": "/wiki/crypto-moonboys.html",
       "target": "/wiki/bitcoin-kids.html",
-      "score": 78,
-      "weight": 0.78
+      "score": 79,
+      "weight": 0.79
     },
     {
       "source": "/wiki/crypto-moonboys.html",
@@ -4437,14 +4437,14 @@
     {
       "source": "/wiki/diamond-hands.html",
       "target": "/wiki/null-the-prophet.html",
-      "score": 79,
-      "weight": 0.79
+      "score": 80,
+      "weight": 0.8
     },
     {
       "source": "/wiki/diamond-hands.html",
       "target": "/wiki/bitcoin-kids.html",
-      "score": 75,
-      "weight": 0.75
+      "score": 76,
+      "weight": 0.76
     },
     {
       "source": "/wiki/diamond-hands.html",
@@ -4472,21 +4472,21 @@
     },
     {
       "source": "/wiki/dragan-volkov.html",
+      "target": "/wiki/null-the-prophet.html",
+      "score": 80,
+      "weight": 0.8
+    },
+    {
+      "source": "/wiki/dragan-volkov.html",
       "target": "/wiki/thera-9.html",
       "score": 80,
       "weight": 0.8
     },
     {
       "source": "/wiki/dragan-volkov.html",
-      "target": "/wiki/null-the-prophet.html",
+      "target": "/wiki/bitcoin-kids.html",
       "score": 79,
       "weight": 0.79
-    },
-    {
-      "source": "/wiki/dragan-volkov.html",
-      "target": "/wiki/ava-chen.html",
-      "score": 78,
-      "weight": 0.78
     },
     {
       "source": "/wiki/dream-sovereign.html",
@@ -4527,14 +4527,14 @@
     {
       "source": "/wiki/elder-codex-7.html",
       "target": "/wiki/null-the-prophet.html",
-      "score": 79,
-      "weight": 0.79
+      "score": 80,
+      "weight": 0.8
     },
     {
       "source": "/wiki/elder-codex-7.html",
       "target": "/wiki/bitcoin-kids.html",
-      "score": 78,
-      "weight": 0.78
+      "score": 79,
+      "weight": 0.79
     },
     {
       "source": "/wiki/elder-codex-7.html",
@@ -4718,13 +4718,13 @@
     },
     {
       "source": "/wiki/first-witness-addiction-intoxication-compulsion.html",
-      "target": "/wiki/first-witness-book-4-the-wall.html",
-      "score": 304,
+      "target": "/wiki/first-witness-faction-commentaries.html",
+      "score": 307,
       "weight": 1
     },
     {
       "source": "/wiki/first-witness-addiction-intoxication-compulsion.html",
-      "target": "/wiki/first-witness-faction-commentaries.html",
+      "target": "/wiki/first-witness-book-4-the-wall.html",
       "score": 304,
       "weight": 1
     },
@@ -4744,6 +4744,12 @@
       "source": "/wiki/first-witness-ageing-retirement-elderhood.html",
       "target": "/wiki/first-witness-concordance.html",
       "score": 310,
+      "weight": 1
+    },
+    {
+      "source": "/wiki/first-witness-ageing-retirement-elderhood.html",
+      "target": "/wiki/first-witness-faction-commentaries.html",
+      "score": 307,
       "weight": 1
     },
     {
@@ -4753,12 +4759,6 @@
       "weight": 1
     },
     {
-      "source": "/wiki/first-witness-ageing-retirement-elderhood.html",
-      "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 304,
-      "weight": 1
-    },
-    {
       "source": "/wiki/first-witness-ai-synthetic-minds.html",
       "target": "/wiki/the-first-witness.html",
       "score": 319,
@@ -4779,7 +4779,7 @@
     {
       "source": "/wiki/first-witness-ai-synthetic-minds.html",
       "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 307,
+      "score": 310,
       "weight": 1
     },
     {
@@ -4804,6 +4804,12 @@
       "source": "/wiki/first-witness-anonymity-pseudonyms-hidden-names.html",
       "target": "/wiki/first-witness-concordance.html",
       "score": 310,
+      "weight": 1
+    },
+    {
+      "source": "/wiki/first-witness-anonymity-pseudonyms-hidden-names.html",
+      "target": "/wiki/first-witness-faction-commentaries.html",
+      "score": 307,
       "weight": 1
     },
     {
@@ -4813,12 +4819,6 @@
       "weight": 1
     },
     {
-      "source": "/wiki/first-witness-anonymity-pseudonyms-hidden-names.html",
-      "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 304,
-      "weight": 1
-    },
-    {
       "source": "/wiki/first-witness-apocrypha-disputed-passages.html",
       "target": "/wiki/the-first-witness.html",
       "score": 319,
@@ -4834,6 +4834,12 @@
       "source": "/wiki/first-witness-apocrypha-disputed-passages.html",
       "target": "/wiki/first-witness-concordance.html",
       "score": 310,
+      "weight": 1
+    },
+    {
+      "source": "/wiki/first-witness-apocrypha-disputed-passages.html",
+      "target": "/wiki/first-witness-faction-commentaries.html",
+      "score": 307,
       "weight": 1
     },
     {
@@ -4843,12 +4849,6 @@
       "weight": 1
     },
     {
-      "source": "/wiki/first-witness-apocrypha-disputed-passages.html",
-      "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 304,
-      "weight": 1
-    },
-    {
       "source": "/wiki/first-witness-beauty-luxury-modesty-status.html",
       "target": "/wiki/the-first-witness.html",
       "score": 319,
@@ -4869,7 +4869,7 @@
     {
       "source": "/wiki/first-witness-beauty-luxury-modesty-status.html",
       "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 304,
+      "score": 307,
       "weight": 1
     },
     {
@@ -4899,7 +4899,7 @@
     {
       "source": "/wiki/first-witness-birth-naming-coming-of-age.html",
       "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 304,
+      "score": 307,
       "weight": 1
     },
     {
@@ -4923,7 +4923,7 @@
     {
       "source": "/wiki/first-witness-bitcoin-witness.html",
       "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 318,
+      "score": 321,
       "weight": 1
     },
     {
@@ -4958,14 +4958,14 @@
     },
     {
       "source": "/wiki/first-witness-block-topia-reading.html",
-      "target": "/wiki/first-witness-life-readings.html",
+      "target": "/wiki/first-witness-faction-commentaries.html",
       "score": 313,
       "weight": 1
     },
     {
       "source": "/wiki/first-witness-block-topia-reading.html",
-      "target": "/wiki/first-witness-street-kingdoms-reading.html",
-      "score": 311,
+      "target": "/wiki/first-witness-life-readings.html",
+      "score": 313,
       "weight": 1
     },
     {
@@ -4976,14 +4976,14 @@
     },
     {
       "source": "/wiki/first-witness-book-1-the-first-witness.html",
-      "target": "/wiki/first-witness-life-readings.html",
+      "target": "/wiki/first-witness-faction-commentaries.html",
       "score": 329,
       "weight": 1
     },
     {
       "source": "/wiki/first-witness-book-1-the-first-witness.html",
-      "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 326,
+      "target": "/wiki/first-witness-life-readings.html",
+      "score": 329,
       "weight": 1
     },
     {
@@ -5114,7 +5114,7 @@
     },
     {
       "source": "/wiki/first-witness-book-5-the-chain.html",
-      "target": "/wiki/first-witness-life-readings.html",
+      "target": "/wiki/first-witness-faction-commentaries.html",
       "score": 313,
       "weight": 1
     },
@@ -5264,7 +5264,7 @@
     },
     {
       "source": "/wiki/first-witness-calendar-feasts-remembrance.html",
-      "target": "/wiki/first-witness-master-chronology.html",
+      "target": "/wiki/first-witness-faction-commentaries.html",
       "score": 307,
       "weight": 1
     },
@@ -5288,14 +5288,14 @@
     },
     {
       "source": "/wiki/first-witness-censorship-offence-public-marks.html",
-      "target": "/wiki/first-witness-symbols-marks-sacred-design.html",
-      "score": 305,
+      "target": "/wiki/first-witness-faction-commentaries.html",
+      "score": 307,
       "weight": 1
     },
     {
       "source": "/wiki/first-witness-censorship-offence-public-marks.html",
-      "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 304,
+      "target": "/wiki/first-witness-symbols-marks-sacred-design.html",
+      "score": 305,
       "weight": 1
     },
     {
@@ -5325,7 +5325,7 @@
     {
       "source": "/wiki/first-witness-chain-archaeology-forensics.html",
       "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 304,
+      "score": 307,
       "weight": 1
     },
     {
@@ -5354,8 +5354,8 @@
     },
     {
       "source": "/wiki/first-witness-charity-mutual-aid-dependence.html",
-      "target": "/wiki/first-witness-book-4-the-wall.html",
-      "score": 304,
+      "target": "/wiki/first-witness-faction-commentaries.html",
+      "score": 307,
       "weight": 1
     },
     {
@@ -5373,7 +5373,7 @@
     {
       "source": "/wiki/first-witness-child-of-fire.html",
       "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 313,
+      "score": 316,
       "weight": 1
     },
     {
@@ -5402,14 +5402,14 @@
     },
     {
       "source": "/wiki/first-witness-children-first-lessons.html",
-      "target": "/wiki/first-witness-master-chronology.html",
+      "target": "/wiki/first-witness-faction-commentaries.html",
       "score": 315,
       "weight": 1
     },
     {
       "source": "/wiki/first-witness-children-first-lessons.html",
-      "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 312,
+      "target": "/wiki/first-witness-master-chronology.html",
+      "score": 315,
       "weight": 1
     },
     {
@@ -5426,14 +5426,14 @@
     },
     {
       "source": "/wiki/first-witness-concordance.html",
-      "target": "/wiki/first-witness-life-readings.html",
+      "target": "/wiki/first-witness-faction-commentaries.html",
       "score": 313,
       "weight": 1
     },
     {
       "source": "/wiki/first-witness-concordance.html",
-      "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 310,
+      "target": "/wiki/first-witness-life-readings.html",
+      "score": 313,
       "weight": 1
     },
     {
@@ -5469,7 +5469,7 @@
     {
       "source": "/wiki/first-witness-confession-apology-reconciliation.html",
       "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 304,
+      "score": 307,
       "weight": 1
     },
     {
@@ -5498,13 +5498,13 @@
     },
     {
       "source": "/wiki/first-witness-counterfeit-relics-fraud.html",
-      "target": "/wiki/first-witness-relics-manuscripts-lost-editions.html",
-      "score": 305,
+      "target": "/wiki/first-witness-faction-commentaries.html",
+      "score": 307,
       "weight": 1
     },
     {
       "source": "/wiki/first-witness-counterfeit-relics-fraud.html",
-      "target": "/wiki/first-witness-sacred-places-walls-pilgrimage.html",
+      "target": "/wiki/first-witness-relics-manuscripts-lost-editions.html",
       "score": 305,
       "weight": 1
     },
@@ -5528,14 +5528,14 @@
     },
     {
       "source": "/wiki/first-witness-daily-practices-rituals.html",
-      "target": "/wiki/first-witness-master-chronology.html",
+      "target": "/wiki/first-witness-faction-commentaries.html",
       "score": 307,
       "weight": 1
     },
     {
       "source": "/wiki/first-witness-daily-practices-rituals.html",
-      "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 304,
+      "target": "/wiki/first-witness-master-chronology.html",
+      "score": 307,
       "weight": 1
     },
     {
@@ -5564,7 +5564,7 @@
     },
     {
       "source": "/wiki/first-witness-death-grief-remembrance.html",
-      "target": "/wiki/first-witness-master-chronology.html",
+      "target": "/wiki/first-witness-faction-commentaries.html",
       "score": 307,
       "weight": 1
     },
@@ -5588,14 +5588,14 @@
     },
     {
       "source": "/wiki/first-witness-digital-inheritance-after-death.html",
-      "target": "/wiki/first-witness-truth-commissions-after-conflict.html",
+      "target": "/wiki/first-witness-faction-commentaries.html",
       "score": 307,
       "weight": 1
     },
     {
       "source": "/wiki/first-witness-digital-inheritance-after-death.html",
-      "target": "/wiki/first-witness-death-grief-remembrance.html",
-      "score": 305,
+      "target": "/wiki/first-witness-truth-commissions-after-conflict.html",
+      "score": 307,
       "weight": 1
     },
     {
@@ -5624,8 +5624,8 @@
     },
     {
       "source": "/wiki/first-witness-disaster-famine-mutual-aid.html",
-      "target": "/wiki/first-witness-book-4-the-wall.html",
-      "score": 304,
+      "target": "/wiki/first-witness-faction-commentaries.html",
+      "score": 307,
       "weight": 1
     },
     {
@@ -5649,7 +5649,7 @@
     {
       "source": "/wiki/first-witness-dreams-omens-coincidence.html",
       "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 304,
+      "score": 307,
       "weight": 1
     },
     {
@@ -5678,14 +5678,14 @@
     },
     {
       "source": "/wiki/first-witness-dual-use-tools-weapons.html",
-      "target": "/wiki/first-witness-ai-synthetic-minds.html",
-      "score": 305,
+      "target": "/wiki/first-witness-faction-commentaries.html",
+      "score": 307,
       "weight": 1
     },
     {
       "source": "/wiki/first-witness-dual-use-tools-weapons.html",
-      "target": "/wiki/first-witness-book-4-the-wall.html",
-      "score": 304,
+      "target": "/wiki/first-witness-ai-synthetic-minds.html",
+      "score": 305,
       "weight": 1
     },
     {
@@ -5709,7 +5709,7 @@
     {
       "source": "/wiki/first-witness-education-schools-apprenticeship.html",
       "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 304,
+      "score": 307,
       "weight": 1
     },
     {
@@ -5769,12 +5769,12 @@
     {
       "source": "/wiki/first-witness-faction-ritual-variations.html",
       "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 307,
+      "score": 310,
       "weight": 1
     },
     {
       "source": "/wiki/first-witness-faction-ritual-variations.html",
-      "target": "/wiki/first-witness-master-chronology.html",
+      "target": "/wiki/first-witness-forty-paths.html",
       "score": 307,
       "weight": 1
     },
@@ -5804,7 +5804,7 @@
     },
     {
       "source": "/wiki/first-witness-family-children-elders.html",
-      "target": "/wiki/first-witness-master-chronology.html",
+      "target": "/wiki/first-witness-faction-commentaries.html",
       "score": 307,
       "weight": 1
     },
@@ -5829,7 +5829,7 @@
     {
       "source": "/wiki/first-witness-food-hospitality-common-table.html",
       "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 307,
+      "score": 310,
       "weight": 1
     },
     {
@@ -5841,13 +5841,13 @@
     {
       "source": "/wiki/first-witness-forty-paths.html",
       "target": "/wiki/the-first-witness.html",
-      "score": 325,
+      "score": 328,
       "weight": 1
     },
     {
       "source": "/wiki/first-witness-forty-paths.html",
       "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 318,
+      "score": 324,
       "weight": 1
     },
     {
@@ -5876,14 +5876,14 @@
     },
     {
       "source": "/wiki/first-witness-glossary.html",
-      "target": "/wiki/first-witness-life-readings.html",
+      "target": "/wiki/first-witness-faction-commentaries.html",
       "score": 329,
       "weight": 1
     },
     {
       "source": "/wiki/first-witness-glossary.html",
-      "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 326,
+      "target": "/wiki/first-witness-life-readings.html",
+      "score": 329,
       "weight": 1
     },
     {
@@ -5912,14 +5912,14 @@
     },
     {
       "source": "/wiki/first-witness-great-concord-2030.html",
-      "target": "/wiki/first-witness-life-readings.html",
+      "target": "/wiki/first-witness-faction-commentaries.html",
       "score": 313,
       "weight": 1
     },
     {
       "source": "/wiki/first-witness-great-concord-2030.html",
-      "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 310,
+      "target": "/wiki/first-witness-life-readings.html",
+      "score": 313,
       "weight": 1
     },
     {
@@ -5948,38 +5948,38 @@
     },
     {
       "source": "/wiki/first-witness-healing-illness-disability-care.html",
-      "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 304,
-      "weight": 1
-    },
-    {
-      "source": "/wiki/first-witness-healing-illness-disability-care.html",
-      "target": "/wiki/first-witness-master-chronology.html",
-      "score": 304,
-      "weight": 1
-    },
-    {
-      "source": "/wiki/first-witness-heresies-corruptions-abuses.html",
-      "target": "/wiki/the-first-witness.html",
-      "score": 319,
-      "weight": 1
-    },
-    {
-      "source": "/wiki/first-witness-heresies-corruptions-abuses.html",
-      "target": "/wiki/first-witness-life-readings.html",
-      "score": 313,
-      "weight": 1
-    },
-    {
-      "source": "/wiki/first-witness-heresies-corruptions-abuses.html",
-      "target": "/wiki/first-witness-concordance.html",
-      "score": 310,
-      "weight": 1
-    },
-    {
-      "source": "/wiki/first-witness-heresies-corruptions-abuses.html",
       "target": "/wiki/first-witness-faction-commentaries.html",
       "score": 307,
+      "weight": 1
+    },
+    {
+      "source": "/wiki/first-witness-healing-illness-disability-care.html",
+      "target": "/wiki/first-witness-master-chronology.html",
+      "score": 304,
+      "weight": 1
+    },
+    {
+      "source": "/wiki/first-witness-heresies-corruptions-abuses.html",
+      "target": "/wiki/the-first-witness.html",
+      "score": 319,
+      "weight": 1
+    },
+    {
+      "source": "/wiki/first-witness-heresies-corruptions-abuses.html",
+      "target": "/wiki/first-witness-life-readings.html",
+      "score": 313,
+      "weight": 1
+    },
+    {
+      "source": "/wiki/first-witness-heresies-corruptions-abuses.html",
+      "target": "/wiki/first-witness-concordance.html",
+      "score": 310,
+      "weight": 1
+    },
+    {
+      "source": "/wiki/first-witness-heresies-corruptions-abuses.html",
+      "target": "/wiki/first-witness-faction-commentaries.html",
+      "score": 310,
       "weight": 1
     },
     {
@@ -6002,14 +6002,14 @@
     },
     {
       "source": "/wiki/first-witness-hodl-doctrine.html",
-      "target": "/wiki/first-witness-life-readings.html",
+      "target": "/wiki/first-witness-faction-commentaries.html",
       "score": 313,
       "weight": 1
     },
     {
       "source": "/wiki/first-witness-hodl-doctrine.html",
-      "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 310,
+      "target": "/wiki/first-witness-life-readings.html",
+      "score": 313,
       "weight": 1
     },
     {
@@ -6034,6 +6034,12 @@
       "source": "/wiki/first-witness-humour-satire-sacred-mockery.html",
       "target": "/wiki/first-witness-concordance.html",
       "score": 310,
+      "weight": 1
+    },
+    {
+      "source": "/wiki/first-witness-humour-satire-sacred-mockery.html",
+      "target": "/wiki/first-witness-faction-commentaries.html",
+      "score": 307,
       "weight": 1
     },
     {
@@ -6043,12 +6049,6 @@
       "weight": 1
     },
     {
-      "source": "/wiki/first-witness-humour-satire-sacred-mockery.html",
-      "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 304,
-      "weight": 1
-    },
-    {
       "source": "/wiki/first-witness-intimacy-sexuality-privacy.html",
       "target": "/wiki/the-first-witness.html",
       "score": 319,
@@ -6069,7 +6069,7 @@
     {
       "source": "/wiki/first-witness-intimacy-sexuality-privacy.html",
       "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 304,
+      "score": 307,
       "weight": 1
     },
     {
@@ -6098,14 +6098,14 @@
     },
     {
       "source": "/wiki/first-witness-justice-mercy-restitution.html",
-      "target": "/wiki/first-witness-master-chronology.html",
+      "target": "/wiki/first-witness-faction-commentaries.html",
       "score": 307,
       "weight": 1
     },
     {
       "source": "/wiki/first-witness-justice-mercy-restitution.html",
-      "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 304,
+      "target": "/wiki/first-witness-master-chronology.html",
+      "score": 307,
       "weight": 1
     },
     {
@@ -6129,7 +6129,7 @@
     {
       "source": "/wiki/first-witness-land-water-stewardship.html",
       "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 307,
+      "score": 310,
       "weight": 1
     },
     {
@@ -6154,6 +6154,12 @@
       "source": "/wiki/first-witness-language-translation-sacred-words.html",
       "target": "/wiki/first-witness-concordance.html",
       "score": 310,
+      "weight": 1
+    },
+    {
+      "source": "/wiki/first-witness-language-translation-sacred-words.html",
+      "target": "/wiki/first-witness-faction-commentaries.html",
+      "score": 307,
       "weight": 1
     },
     {
@@ -6163,12 +6169,6 @@
       "weight": 1
     },
     {
-      "source": "/wiki/first-witness-language-translation-sacred-words.html",
-      "target": "/wiki/first-witness-symbols-marks-sacred-design.html",
-      "score": 305,
-      "weight": 1
-    },
-    {
       "source": "/wiki/first-witness-leadership-councils-succession.html",
       "target": "/wiki/the-first-witness.html",
       "score": 319,
@@ -6189,7 +6189,7 @@
     {
       "source": "/wiki/first-witness-leadership-councils-succession.html",
       "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 307,
+      "score": 310,
       "weight": 1
     },
     {
@@ -6218,14 +6218,14 @@
     },
     {
       "source": "/wiki/first-witness-libraries-architecture-archive-houses.html",
-      "target": "/wiki/first-witness-language-translation-sacred-words.html",
+      "target": "/wiki/first-witness-faction-commentaries.html",
       "score": 307,
       "weight": 1
     },
     {
       "source": "/wiki/first-witness-libraries-architecture-archive-houses.html",
-      "target": "/wiki/first-witness-symbols-marks-sacred-design.html",
-      "score": 305,
+      "target": "/wiki/first-witness-language-translation-sacred-words.html",
+      "score": 307,
       "weight": 1
     },
     {
@@ -6237,7 +6237,7 @@
     {
       "source": "/wiki/first-witness-life-readings.html",
       "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 317,
+      "score": 320,
       "weight": 1
     },
     {
@@ -6272,14 +6272,14 @@
     },
     {
       "source": "/wiki/first-witness-long-transmission.html",
-      "target": "/wiki/first-witness-life-readings.html",
+      "target": "/wiki/first-witness-faction-commentaries.html",
       "score": 313,
       "weight": 1
     },
     {
       "source": "/wiki/first-witness-long-transmission.html",
-      "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 310,
+      "target": "/wiki/first-witness-life-readings.html",
+      "score": 313,
       "weight": 1
     },
     {
@@ -6309,7 +6309,7 @@
     {
       "source": "/wiki/first-witness-marriage-partnership-adoption.html",
       "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 307,
+      "score": 310,
       "weight": 1
     },
     {
@@ -6326,6 +6326,12 @@
     },
     {
       "source": "/wiki/first-witness-master-chronology.html",
+      "target": "/wiki/first-witness-faction-commentaries.html",
+      "score": 329,
+      "weight": 1
+    },
+    {
+      "source": "/wiki/first-witness-master-chronology.html",
       "target": "/wiki/first-witness-life-readings.html",
       "score": 329,
       "weight": 1
@@ -6334,12 +6340,6 @@
       "source": "/wiki/first-witness-master-chronology.html",
       "target": "/wiki/first-witness-source-register.html",
       "score": 329,
-      "weight": 1
-    },
-    {
-      "source": "/wiki/first-witness-master-chronology.html",
-      "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 326,
       "weight": 1
     },
     {
@@ -6363,7 +6363,7 @@
     {
       "source": "/wiki/first-witness-mediation-witness-circles.html",
       "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 312,
+      "score": 315,
       "weight": 1
     },
     {
@@ -6399,7 +6399,7 @@
     {
       "source": "/wiki/first-witness-migration-refuge-exile-borders.html",
       "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 304,
+      "score": 307,
       "weight": 1
     },
     {
@@ -6428,14 +6428,14 @@
     },
     {
       "source": "/wiki/first-witness-money-debt-honest-scales.html",
-      "target": "/wiki/first-witness-master-chronology.html",
+      "target": "/wiki/first-witness-faction-commentaries.html",
       "score": 307,
       "weight": 1
     },
     {
       "source": "/wiki/first-witness-money-debt-honest-scales.html",
-      "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 304,
+      "target": "/wiki/first-witness-master-chronology.html",
+      "score": 307,
       "weight": 1
     },
     {
@@ -6458,13 +6458,13 @@
     },
     {
       "source": "/wiki/first-witness-music-dance-performance.html",
-      "target": "/wiki/first-witness-book-4-the-wall.html",
-      "score": 304,
+      "target": "/wiki/first-witness-faction-commentaries.html",
+      "score": 307,
       "weight": 1
     },
     {
       "source": "/wiki/first-witness-music-dance-performance.html",
-      "target": "/wiki/first-witness-faction-commentaries.html",
+      "target": "/wiki/first-witness-book-4-the-wall.html",
       "score": 304,
       "weight": 1
     },
@@ -6482,14 +6482,14 @@
     },
     {
       "source": "/wiki/first-witness-null-erasure.html",
-      "target": "/wiki/first-witness-life-readings.html",
+      "target": "/wiki/first-witness-faction-commentaries.html",
       "score": 313,
       "weight": 1
     },
     {
       "source": "/wiki/first-witness-null-erasure.html",
-      "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 310,
+      "target": "/wiki/first-witness-life-readings.html",
+      "score": 313,
       "weight": 1
     },
     {
@@ -6518,14 +6518,14 @@
     },
     {
       "source": "/wiki/first-witness-oaths-promises-vows.html",
-      "target": "/wiki/first-witness-master-chronology.html",
+      "target": "/wiki/first-witness-faction-commentaries.html",
       "score": 307,
       "weight": 1
     },
     {
       "source": "/wiki/first-witness-oaths-promises-vows.html",
-      "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 304,
+      "target": "/wiki/first-witness-master-chronology.html",
+      "score": 307,
       "weight": 1
     },
     {
@@ -6542,14 +6542,14 @@
     },
     {
       "source": "/wiki/first-witness-parables.html",
-      "target": "/wiki/first-witness-master-chronology.html",
+      "target": "/wiki/first-witness-faction-commentaries.html",
       "score": 323,
       "weight": 1
     },
     {
       "source": "/wiki/first-witness-parables.html",
-      "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 320,
+      "target": "/wiki/first-witness-master-chronology.html",
+      "score": 323,
       "weight": 1
     },
     {
@@ -6578,14 +6578,14 @@
     },
     {
       "source": "/wiki/first-witness-pride-temptation-false-idols.html",
-      "target": "/wiki/first-witness-master-chronology.html",
+      "target": "/wiki/first-witness-faction-commentaries.html",
       "score": 307,
       "weight": 1
     },
     {
       "source": "/wiki/first-witness-pride-temptation-false-idols.html",
-      "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 304,
+      "target": "/wiki/first-witness-master-chronology.html",
+      "score": 307,
       "weight": 1
     },
     {
@@ -6609,7 +6609,7 @@
     {
       "source": "/wiki/first-witness-prisons-punishment-return.html",
       "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 304,
+      "score": 307,
       "weight": 1
     },
     {
@@ -6644,7 +6644,7 @@
     },
     {
       "source": "/wiki/first-witness-proverbs-street-sayings.html",
-      "target": "/wiki/first-witness-master-chronology.html",
+      "target": "/wiki/first-witness-faction-commentaries.html",
       "score": 307,
       "weight": 1
     },
@@ -6674,7 +6674,7 @@
     },
     {
       "source": "/wiki/first-witness-questions-for-the-living.html",
-      "target": "/wiki/first-witness-master-chronology.html",
+      "target": "/wiki/first-witness-faction-commentaries.html",
       "score": 307,
       "weight": 1
     },
@@ -6698,14 +6698,14 @@
     },
     {
       "source": "/wiki/first-witness-relics-manuscripts-lost-editions.html",
-      "target": "/wiki/first-witness-master-chronology.html",
+      "target": "/wiki/first-witness-faction-commentaries.html",
       "score": 307,
       "weight": 1
     },
     {
       "source": "/wiki/first-witness-relics-manuscripts-lost-editions.html",
-      "target": "/wiki/first-witness-counterfeit-relics-fraud.html",
-      "score": 305,
+      "target": "/wiki/first-witness-master-chronology.html",
+      "score": 307,
       "weight": 1
     },
     {
@@ -6729,7 +6729,7 @@
     {
       "source": "/wiki/first-witness-roles-keepers-witnesses-mediators.html",
       "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 304,
+      "score": 307,
       "weight": 1
     },
     {
@@ -6794,7 +6794,7 @@
     },
     {
       "source": "/wiki/first-witness-sacred-places-walls-pilgrimage.html",
-      "target": "/wiki/first-witness-master-chronology.html",
+      "target": "/wiki/first-witness-faction-commentaries.html",
       "score": 307,
       "weight": 1
     },
@@ -6818,14 +6818,14 @@
     },
     {
       "source": "/wiki/first-witness-sects-schools-schisms.html",
-      "target": "/wiki/first-witness-master-chronology.html",
+      "target": "/wiki/first-witness-faction-commentaries.html",
       "score": 307,
       "weight": 1
     },
     {
       "source": "/wiki/first-witness-sects-schools-schisms.html",
-      "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 304,
+      "target": "/wiki/first-witness-master-chronology.html",
+      "score": 307,
       "weight": 1
     },
     {
@@ -6849,7 +6849,7 @@
     {
       "source": "/wiki/first-witness-silence-solitude-attention.html",
       "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 304,
+      "score": 307,
       "weight": 1
     },
     {
@@ -6874,18 +6874,18 @@
       "source": "/wiki/first-witness-songs-chants-responses.html",
       "target": "/wiki/first-witness-concordance.html",
       "score": 310,
+      "weight": 1
+    },
+    {
+      "source": "/wiki/first-witness-songs-chants-responses.html",
+      "target": "/wiki/first-witness-faction-commentaries.html",
+      "score": 307,
       "weight": 1
     },
     {
       "source": "/wiki/first-witness-songs-chants-responses.html",
       "target": "/wiki/first-witness-master-chronology.html",
       "score": 307,
-      "weight": 1
-    },
-    {
-      "source": "/wiki/first-witness-songs-chants-responses.html",
-      "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 304,
       "weight": 1
     },
     {
@@ -6896,6 +6896,12 @@
     },
     {
       "source": "/wiki/first-witness-source-register.html",
+      "target": "/wiki/first-witness-faction-commentaries.html",
+      "score": 329,
+      "weight": 1
+    },
+    {
+      "source": "/wiki/first-witness-source-register.html",
       "target": "/wiki/first-witness-life-readings.html",
       "score": 329,
       "weight": 1
@@ -6904,12 +6910,6 @@
       "source": "/wiki/first-witness-source-register.html",
       "target": "/wiki/first-witness-master-chronology.html",
       "score": 329,
-      "weight": 1
-    },
-    {
-      "source": "/wiki/first-witness-source-register.html",
-      "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 326,
       "weight": 1
     },
     {
@@ -6932,6 +6932,12 @@
     },
     {
       "source": "/wiki/first-witness-street-kingdoms-reading.html",
+      "target": "/wiki/first-witness-faction-commentaries.html",
+      "score": 313,
+      "weight": 1
+    },
+    {
+      "source": "/wiki/first-witness-street-kingdoms-reading.html",
       "target": "/wiki/first-witness-life-readings.html",
       "score": 313,
       "weight": 1
@@ -6940,12 +6946,6 @@
       "source": "/wiki/first-witness-street-kingdoms-reading.html",
       "target": "/wiki/first-witness-master-chronology.html",
       "score": 313,
-      "weight": 1
-    },
-    {
-      "source": "/wiki/first-witness-street-kingdoms-reading.html",
-      "target": "/wiki/first-witness-block-topia-reading.html",
-      "score": 311,
       "weight": 1
     },
     {
@@ -6969,7 +6969,7 @@
     {
       "source": "/wiki/first-witness-symbols-marks-sacred-design.html",
       "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 307,
+      "score": 310,
       "weight": 1
     },
     {
@@ -7005,7 +7005,7 @@
     {
       "source": "/wiki/first-witness-triple-fork-chainfire.html",
       "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 313,
+      "score": 316,
       "weight": 1
     },
     {
@@ -7035,7 +7035,7 @@
     {
       "source": "/wiki/first-witness-truth-commissions-after-conflict.html",
       "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 304,
+      "score": 307,
       "weight": 1
     },
     {
@@ -7059,7 +7059,7 @@
     {
       "source": "/wiki/first-witness-war-defence-peacekeeping.html",
       "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 307,
+      "score": 310,
       "weight": 1
     },
     {
@@ -7088,14 +7088,14 @@
     },
     {
       "source": "/wiki/first-witness-work-craft-service.html",
-      "target": "/wiki/first-witness-master-chronology.html",
+      "target": "/wiki/first-witness-faction-commentaries.html",
       "score": 307,
       "weight": 1
     },
     {
       "source": "/wiki/first-witness-work-craft-service.html",
-      "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 304,
+      "target": "/wiki/first-witness-master-chronology.html",
+      "score": 307,
       "weight": 1
     },
     {
@@ -7118,14 +7118,14 @@
     },
     {
       "source": "/wiki/first-witness-world-chain-error.html",
-      "target": "/wiki/first-witness-life-readings.html",
+      "target": "/wiki/first-witness-faction-commentaries.html",
       "score": 313,
       "weight": 1
     },
     {
       "source": "/wiki/first-witness-world-chain-error.html",
-      "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 310,
+      "target": "/wiki/first-witness-life-readings.html",
+      "score": 313,
       "weight": 1
     },
     {
@@ -7143,8 +7143,8 @@
     {
       "source": "/wiki/fomo-plague.html",
       "target": "/wiki/the-salvagers.html",
-      "score": 80,
-      "weight": 0.8
+      "score": 81,
+      "weight": 0.81
     },
     {
       "source": "/wiki/fomo-plague.html",
@@ -7184,9 +7184,9 @@
     },
     {
       "source": "/wiki/forkborn-collective.html",
-      "target": "/wiki/ngmi-chronicles.html",
-      "score": 78,
-      "weight": 0.78
+      "target": "/wiki/street-kingdoms.html",
+      "score": 79,
+      "weight": 0.79
     },
     {
       "source": "/wiki/forklord-you.html",
@@ -7197,14 +7197,14 @@
     {
       "source": "/wiki/forklord-you.html",
       "target": "/wiki/null-the-prophet.html",
-      "score": 82,
-      "weight": 0.82
+      "score": 83,
+      "weight": 0.83
     },
     {
       "source": "/wiki/forklord-you.html",
       "target": "/wiki/bitcoin-kids.html",
-      "score": 78,
-      "weight": 0.78
+      "score": 79,
+      "weight": 0.79
     },
     {
       "source": "/wiki/forklord-you.html",
@@ -7227,8 +7227,8 @@
     {
       "source": "/wiki/forksplit.html",
       "target": "/wiki/null-the-prophet.html",
-      "score": 82,
-      "weight": 0.82
+      "score": 83,
+      "weight": 0.83
     },
     {
       "source": "/wiki/forksplit.html",
@@ -7244,7 +7244,7 @@
     },
     {
       "source": "/wiki/forksplit.html",
-      "target": "/wiki/wallets.html",
+      "target": "/wiki/bitcoin-kids.html",
       "score": 79,
       "weight": 0.79
     },
@@ -7292,6 +7292,12 @@
     },
     {
       "source": "/wiki/gang-signs-card-game.html",
+      "target": "/wiki/street-kingdoms.html",
+      "score": 76,
+      "weight": 0.76
+    },
+    {
+      "source": "/wiki/gang-signs-card-game.html",
       "target": "/wiki/forkborn-collective.html",
       "score": 75,
       "weight": 0.75
@@ -7299,12 +7305,6 @@
     {
       "source": "/wiki/gang-signs-card-game.html",
       "target": "/wiki/harrison-rift.html",
-      "score": 75,
-      "weight": 0.75
-    },
-    {
-      "source": "/wiki/gang-signs-card-game.html",
-      "target": "/wiki/ngmi-chronicles.html",
       "score": 75,
       "weight": 0.75
     },
@@ -7334,9 +7334,9 @@
     },
     {
       "source": "/wiki/gang-signs.html",
-      "target": "/wiki/crypto-moonboys.html",
-      "score": 42,
-      "weight": 0.42
+      "target": "/wiki/hodl-wars.html",
+      "score": 43,
+      "weight": 0.43
     },
     {
       "source": "/wiki/genesis-kernel.html",
@@ -7353,8 +7353,8 @@
     {
       "source": "/wiki/genesis-kernel.html",
       "target": "/wiki/hodl-wars.html",
-      "score": 91,
-      "weight": 0.91
+      "score": 92,
+      "weight": 0.92
     },
     {
       "source": "/wiki/genesis-kernel.html",
@@ -7377,14 +7377,14 @@
     {
       "source": "/wiki/genesis-spray-drop.html",
       "target": "/wiki/null-the-prophet.html",
-      "score": 82,
-      "weight": 0.82
+      "score": 83,
+      "weight": 0.83
     },
     {
       "source": "/wiki/genesis-spray-drop.html",
       "target": "/wiki/bitcoin-kids.html",
-      "score": 81,
-      "weight": 0.81
+      "score": 82,
+      "weight": 0.82
     },
     {
       "source": "/wiki/genesis-spray-drop.html",
@@ -11780,13 +11780,13 @@
     },
     {
       "source": "/wiki/gkniftyheads.html",
-      "target": "/wiki/hard-fork-games.html",
-      "score": 81,
-      "weight": 0.81
+      "target": "/wiki/hodl-wars.html",
+      "score": 82,
+      "weight": 0.82
     },
     {
       "source": "/wiki/gkniftyheads.html",
-      "target": "/wiki/hodl-wars.html",
+      "target": "/wiki/hard-fork-games.html",
       "score": 81,
       "weight": 0.81
     },
@@ -11817,8 +11817,8 @@
     {
       "source": "/wiki/graffiti-kings.html",
       "target": "/wiki/hodl-wars.html",
-      "score": 88,
-      "weight": 0.88
+      "score": 89,
+      "weight": 0.89
     },
     {
       "source": "/wiki/graffiti-kings.html",
@@ -11913,8 +11913,8 @@
     {
       "source": "/wiki/graffpunks-24-7-radio.html",
       "target": "/wiki/hodl-wars.html",
-      "score": 81,
-      "weight": 0.81
+      "score": 82,
+      "weight": 0.82
     },
     {
       "source": "/wiki/graffpunks-24-7-radio.html",
@@ -11973,7 +11973,7 @@
     {
       "source": "/wiki/graffpunks-ecosystem.html",
       "target": "/wiki/hodl-wars.html",
-      "score": 100,
+      "score": 101,
       "weight": 1
     },
     {
@@ -12003,8 +12003,8 @@
     {
       "source": "/wiki/graffpunks.html",
       "target": "/wiki/hodl-wars.html",
-      "score": 91,
-      "weight": 0.91
+      "score": 92,
+      "weight": 0.92
     },
     {
       "source": "/wiki/graffpunks.html",
@@ -12039,8 +12039,8 @@
     {
       "source": "/wiki/grit.html",
       "target": "/wiki/null-the-prophet.html",
-      "score": 79,
-      "weight": 0.79
+      "score": 80,
+      "weight": 0.8
     },
     {
       "source": "/wiki/grit.html",
@@ -12069,8 +12069,8 @@
     {
       "source": "/wiki/grit42.html",
       "target": "/wiki/null-the-prophet.html",
-      "score": 79,
-      "weight": 0.79
+      "score": 80,
+      "weight": 0.8
     },
     {
       "source": "/wiki/grit42.html",
@@ -12099,8 +12099,8 @@
     {
       "source": "/wiki/hard-fork-games.html",
       "target": "/wiki/hodl-wars.html",
-      "score": 88,
-      "weight": 0.88
+      "score": 89,
+      "weight": 0.89
     },
     {
       "source": "/wiki/hard-fork-games.html",
@@ -12122,6 +12122,12 @@
     },
     {
       "source": "/wiki/harrison-rift.html",
+      "target": "/wiki/street-kingdoms.html",
+      "score": 76,
+      "weight": 0.76
+    },
+    {
+      "source": "/wiki/harrison-rift.html",
       "target": "/wiki/forkborn-collective.html",
       "score": 75,
       "weight": 0.75
@@ -12129,12 +12135,6 @@
     {
       "source": "/wiki/harrison-rift.html",
       "target": "/wiki/ngmi-chronicles.html",
-      "score": 75,
-      "weight": 0.75
-    },
-    {
-      "source": "/wiki/harrison-rift.html",
-      "target": "/wiki/street-kingdoms.html",
       "score": 75,
       "weight": 0.75
     },
@@ -12177,20 +12177,20 @@
     {
       "source": "/wiki/hex-tagger-prime.html",
       "target": "/wiki/null-the-prophet.html",
-      "score": 79,
-      "weight": 0.79
+      "score": 80,
+      "weight": 0.8
+    },
+    {
+      "source": "/wiki/hex-tagger-prime.html",
+      "target": "/wiki/bitcoin-kids.html",
+      "score": 76,
+      "weight": 0.76
     },
     {
       "source": "/wiki/hex-tagger-prime.html",
       "target": "/wiki/diamond-hands.html",
       "score": 76,
       "weight": 0.76
-    },
-    {
-      "source": "/wiki/hex-tagger-prime.html",
-      "target": "/wiki/bitcoin-kids.html",
-      "score": 75,
-      "weight": 0.75
     },
     {
       "source": "/wiki/hex-tagger-prime.html",
@@ -12213,14 +12213,14 @@
     {
       "source": "/wiki/hodl-warriors.html",
       "target": "/wiki/hodl-wars.html",
-      "score": 93,
-      "weight": 0.93
+      "score": 94,
+      "weight": 0.94
     },
     {
       "source": "/wiki/hodl-warriors.html",
       "target": "/wiki/bitcoin-kids.html",
-      "score": 91,
-      "weight": 0.91
+      "score": 92,
+      "weight": 0.92
     },
     {
       "source": "/wiki/hodl-warriors.html",
@@ -12267,8 +12267,8 @@
     {
       "source": "/wiki/hodl-x-warriors.html",
       "target": "/wiki/bitcoin-kids.html",
-      "score": 97,
-      "weight": 0.97
+      "score": 98,
+      "weight": 0.98
     },
     {
       "source": "/wiki/hodl-x-warriors.html",
@@ -12279,8 +12279,8 @@
     {
       "source": "/wiki/hodl-x-warriors.html",
       "target": "/wiki/null-the-prophet.html",
-      "score": 85,
-      "weight": 0.85
+      "score": 86,
+      "weight": 0.86
     },
     {
       "source": "/wiki/hodl-x-warriors.html",
@@ -12327,20 +12327,20 @@
     {
       "source": "/wiki/ian-harrison.html",
       "target": "/wiki/null-the-prophet.html",
-      "score": 79,
-      "weight": 0.79
+      "score": 80,
+      "weight": 0.8
+    },
+    {
+      "source": "/wiki/ian-harrison.html",
+      "target": "/wiki/bitcoin-kids.html",
+      "score": 76,
+      "weight": 0.76
     },
     {
       "source": "/wiki/ian-harrison.html",
       "target": "/wiki/diamond-hands.html",
       "score": 76,
       "weight": 0.76
-    },
-    {
-      "source": "/wiki/ian-harrison.html",
-      "target": "/wiki/bitcoin-kids.html",
-      "score": 75,
-      "weight": 0.75
     },
     {
       "source": "/wiki/ian-harrison.html",
@@ -12351,8 +12351,8 @@
     {
       "source": "/wiki/iris-7.html",
       "target": "/wiki/bitcoin-kids.html",
-      "score": 91,
-      "weight": 0.91
+      "score": 92,
+      "weight": 0.92
     },
     {
       "source": "/wiki/iris-7.html",
@@ -12434,7 +12434,7 @@
     },
     {
       "source": "/wiki/jodie-zoom-2000.html",
-      "target": "/wiki/snipey-d-man-sirus.html",
+      "target": "/wiki/null-the-prophet.html",
       "score": 80,
       "weight": 0.8
     },
@@ -12483,8 +12483,8 @@
     {
       "source": "/wiki/lady-ink.html",
       "target": "/wiki/bitcoin-kids.html",
-      "score": 81,
-      "weight": 0.81
+      "score": 82,
+      "weight": 0.82
     },
     {
       "source": "/wiki/lady-ink.html",
@@ -12524,7 +12524,7 @@
     },
     {
       "source": "/wiki/lfgk.html",
-      "target": "/wiki/tokenomics.html",
+      "target": "/wiki/street-kingdoms.html",
       "score": 79,
       "weight": 0.79
     },
@@ -12542,6 +12542,12 @@
     },
     {
       "source": "/wiki/loopfiend.html",
+      "target": "/wiki/null-the-prophet.html",
+      "score": 80,
+      "weight": 0.8
+    },
+    {
+      "source": "/wiki/loopfiend.html",
       "target": "/wiki/snipey-d-man-sirus.html",
       "score": 80,
       "weight": 0.8
@@ -12553,16 +12559,10 @@
       "weight": 0.8
     },
     {
-      "source": "/wiki/loopfiend.html",
-      "target": "/wiki/dragan-volkov.html",
-      "score": 79,
-      "weight": 0.79
-    },
-    {
       "source": "/wiki/m1ntr-k1ll.html",
       "target": "/wiki/null-the-prophet.html",
-      "score": 85,
-      "weight": 0.85
+      "score": 86,
+      "weight": 0.86
     },
     {
       "source": "/wiki/m1ntr-k1ll.html",
@@ -12602,6 +12602,12 @@
     },
     {
       "source": "/wiki/maidstone-base.html",
+      "target": "/wiki/street-kingdoms.html",
+      "score": 79,
+      "weight": 0.79
+    },
+    {
+      "source": "/wiki/maidstone-base.html",
       "target": "/wiki/forkborn-collective.html",
       "score": 78,
       "weight": 0.78
@@ -12609,12 +12615,6 @@
     {
       "source": "/wiki/maidstone-base.html",
       "target": "/wiki/ngmi-chronicles.html",
-      "score": 78,
-      "weight": 0.78
-    },
-    {
-      "source": "/wiki/maidstone-base.html",
-      "target": "/wiki/street-kingdoms.html",
       "score": 78,
       "weight": 0.78
     },
@@ -12807,26 +12807,26 @@
     {
       "source": "/wiki/nbg.html",
       "target": "/wiki/null-the-prophet.html",
-      "score": 70,
-      "weight": 0.7
+      "score": 71,
+      "weight": 0.71
     },
     {
       "source": "/wiki/nbg.html",
       "target": "/wiki/bitcoin-kids.html",
-      "score": 66,
-      "weight": 0.66
+      "score": 67,
+      "weight": 0.67
+    },
+    {
+      "source": "/wiki/nbg.html",
+      "target": "/wiki/block-topia.html",
+      "score": 64,
+      "weight": 0.64
     },
     {
       "source": "/wiki/nbg.html",
       "target": "/wiki/hodl-warriors.html",
       "score": 64,
       "weight": 0.64
-    },
-    {
-      "source": "/wiki/nbg.html",
-      "target": "/wiki/punk-token.html",
-      "score": 63,
-      "weight": 0.63
     },
     {
       "source": "/wiki/nbgx-token.html",
@@ -12872,6 +12872,12 @@
     },
     {
       "source": "/wiki/neftyblocks.html",
+      "target": "/wiki/street-kingdoms.html",
+      "score": 79,
+      "weight": 0.79
+    },
+    {
+      "source": "/wiki/neftyblocks.html",
       "target": "/wiki/forkborn-collective.html",
       "score": 78,
       "weight": 0.78
@@ -12879,12 +12885,6 @@
     {
       "source": "/wiki/neftyblocks.html",
       "target": "/wiki/ngmi-chronicles.html",
-      "score": 78,
-      "weight": 0.78
-    },
-    {
-      "source": "/wiki/neftyblocks.html",
-      "target": "/wiki/street-kingdoms.html",
       "score": 78,
       "weight": 0.78
     },
@@ -12902,6 +12902,12 @@
     },
     {
       "source": "/wiki/nfthive.html",
+      "target": "/wiki/street-kingdoms.html",
+      "score": 79,
+      "weight": 0.79
+    },
+    {
+      "source": "/wiki/nfthive.html",
       "target": "/wiki/forkborn-collective.html",
       "score": 78,
       "weight": 0.78
@@ -12913,12 +12919,6 @@
       "weight": 0.78
     },
     {
-      "source": "/wiki/nfthive.html",
-      "target": "/wiki/street-kingdoms.html",
-      "score": 78,
-      "weight": 0.78
-    },
-    {
       "source": "/wiki/nfts.html",
       "target": "/wiki/crypto-moonboys.html",
       "score": 84,
@@ -12926,13 +12926,13 @@
     },
     {
       "source": "/wiki/nfts.html",
-      "target": "/wiki/diamond-hands.html",
-      "score": 79,
-      "weight": 0.79
+      "target": "/wiki/null-the-prophet.html",
+      "score": 80,
+      "weight": 0.8
     },
     {
       "source": "/wiki/nfts.html",
-      "target": "/wiki/null-the-prophet.html",
+      "target": "/wiki/diamond-hands.html",
       "score": 79,
       "weight": 0.79
     },
@@ -12945,8 +12945,8 @@
     {
       "source": "/wiki/nfts.html",
       "target": "/wiki/bitcoin-kids.html",
-      "score": 75,
-      "weight": 0.75
+      "score": 76,
+      "weight": 0.76
     },
     {
       "source": "/wiki/ngmi-chronicles.html",
@@ -12998,13 +12998,13 @@
     },
     {
       "source": "/wiki/nifty-crowns.html",
-      "target": "/wiki/forkborn-collective.html",
-      "score": 75,
-      "weight": 0.75
+      "target": "/wiki/street-kingdoms.html",
+      "score": 76,
+      "weight": 0.76
     },
     {
       "source": "/wiki/nifty-crowns.html",
-      "target": "/wiki/harrison-rift.html",
+      "target": "/wiki/forkborn-collective.html",
       "score": 75,
       "weight": 0.75
     },
@@ -13028,13 +13028,13 @@
     },
     {
       "source": "/wiki/nifty-wizards.html",
-      "target": "/wiki/forkborn-collective.html",
-      "score": 75,
-      "weight": 0.75
+      "target": "/wiki/street-kingdoms.html",
+      "score": 76,
+      "weight": 0.76
     },
     {
       "source": "/wiki/nifty-wizards.html",
-      "target": "/wiki/harrison-rift.html",
+      "target": "/wiki/forkborn-collective.html",
       "score": 75,
       "weight": 0.75
     },
@@ -13059,8 +13059,8 @@
     {
       "source": "/wiki/noballgamess-nft-collection.html",
       "target": "/wiki/hodl-wars.html",
-      "score": 69,
-      "weight": 0.69
+      "score": 70,
+      "weight": 0.7
     },
     {
       "source": "/wiki/noballgamess-nft-collection.html",
@@ -13077,8 +13077,8 @@
     {
       "source": "/wiki/null-the-prophet.html",
       "target": "/wiki/bitcoin-kids.html",
-      "score": 81,
-      "weight": 0.81
+      "score": 82,
+      "weight": 0.82
     },
     {
       "source": "/wiki/null-the-prophet.html",
@@ -13202,6 +13202,12 @@
     },
     {
       "source": "/wiki/pixel-journey.html",
+      "target": "/wiki/street-kingdoms.html",
+      "score": 76,
+      "weight": 0.76
+    },
+    {
+      "source": "/wiki/pixel-journey.html",
       "target": "/wiki/forkborn-collective.html",
       "score": 75,
       "weight": 0.75
@@ -13209,12 +13215,6 @@
     {
       "source": "/wiki/pixel-journey.html",
       "target": "/wiki/harrison-rift.html",
-      "score": 75,
-      "weight": 0.75
-    },
-    {
-      "source": "/wiki/pixel-journey.html",
-      "target": "/wiki/ngmi-chronicles.html",
       "score": 75,
       "weight": 0.75
     },
@@ -13227,8 +13227,8 @@
     {
       "source": "/wiki/pixil-mini.html",
       "target": "/wiki/null-the-prophet.html",
-      "score": 79,
-      "weight": 0.79
+      "score": 80,
+      "weight": 0.8
     },
     {
       "source": "/wiki/pixil-mini.html",
@@ -13316,6 +13316,12 @@
     },
     {
       "source": "/wiki/pmsl.html",
+      "target": "/wiki/street-kingdoms.html",
+      "score": 76,
+      "weight": 0.76
+    },
+    {
+      "source": "/wiki/pmsl.html",
       "target": "/wiki/forkborn-collective.html",
       "score": 75,
       "weight": 0.75
@@ -13323,12 +13329,6 @@
     {
       "source": "/wiki/pmsl.html",
       "target": "/wiki/ngmi-chronicles.html",
-      "score": 75,
-      "weight": 0.75
-    },
-    {
-      "source": "/wiki/pmsl.html",
-      "target": "/wiki/street-kingdoms.html",
       "score": 75,
       "weight": 0.75
     },
@@ -13347,14 +13347,14 @@
     {
       "source": "/wiki/punk-token.html",
       "target": "/wiki/null-the-prophet.html",
-      "score": 79,
-      "weight": 0.79
+      "score": 80,
+      "weight": 0.8
     },
     {
       "source": "/wiki/punk-token.html",
       "target": "/wiki/bitcoin-kids.html",
-      "score": 75,
-      "weight": 0.75
+      "score": 76,
+      "weight": 0.76
     },
     {
       "source": "/wiki/punk-token.html",
@@ -13377,8 +13377,8 @@
     {
       "source": "/wiki/pyralith.html",
       "target": "/wiki/null-the-prophet.html",
-      "score": 79,
-      "weight": 0.79
+      "score": 80,
+      "weight": 0.8
     },
     {
       "source": "/wiki/pyralith.html",
@@ -13437,8 +13437,8 @@
     {
       "source": "/wiki/quell.html",
       "target": "/wiki/null-the-prophet.html",
-      "score": 79,
-      "weight": 0.79
+      "score": 80,
+      "weight": 0.8
     },
     {
       "source": "/wiki/quell.html",
@@ -13527,20 +13527,20 @@
     {
       "source": "/wiki/rune-tag.html",
       "target": "/wiki/null-the-prophet.html",
-      "score": 79,
-      "weight": 0.79
+      "score": 80,
+      "weight": 0.8
+    },
+    {
+      "source": "/wiki/rune-tag.html",
+      "target": "/wiki/bitcoin-kids.html",
+      "score": 76,
+      "weight": 0.76
     },
     {
       "source": "/wiki/rune-tag.html",
       "target": "/wiki/diamond-hands.html",
       "score": 76,
       "weight": 0.76
-    },
-    {
-      "source": "/wiki/rune-tag.html",
-      "target": "/wiki/bitcoin-kids.html",
-      "score": 75,
-      "weight": 0.75
     },
     {
       "source": "/wiki/rune-tag.html",
@@ -13562,6 +13562,12 @@
     },
     {
       "source": "/wiki/rust2riches.html",
+      "target": "/wiki/street-kingdoms.html",
+      "score": 79,
+      "weight": 0.79
+    },
+    {
+      "source": "/wiki/rust2riches.html",
       "target": "/wiki/forkborn-collective.html",
       "score": 78,
       "weight": 0.78
@@ -13569,12 +13575,6 @@
     {
       "source": "/wiki/rust2riches.html",
       "target": "/wiki/ngmi-chronicles.html",
-      "score": 78,
-      "weight": 0.78
-    },
-    {
-      "source": "/wiki/rust2riches.html",
-      "target": "/wiki/street-kingdoms.html",
       "score": 78,
       "weight": 0.78
     },
@@ -13617,20 +13617,20 @@
     {
       "source": "/wiki/samaelexe.html",
       "target": "/wiki/null-the-prophet.html",
-      "score": 82,
-      "weight": 0.82
+      "score": 83,
+      "weight": 0.83
+    },
+    {
+      "source": "/wiki/samaelexe.html",
+      "target": "/wiki/bitcoin-kids.html",
+      "score": 76,
+      "weight": 0.76
     },
     {
       "source": "/wiki/samaelexe.html",
       "target": "/wiki/hodl-warriors.html",
       "score": 76,
       "weight": 0.76
-    },
-    {
-      "source": "/wiki/samaelexe.html",
-      "target": "/wiki/bitcoin-kids.html",
-      "score": 75,
-      "weight": 0.75
     },
     {
       "source": "/wiki/samaelexe.html",
@@ -13665,8 +13665,8 @@
     {
       "source": "/wiki/satorebel.html",
       "target": "/wiki/bitcoin-kids.html",
-      "score": 81,
-      "weight": 0.81
+      "score": 82,
+      "weight": 0.82
     },
     {
       "source": "/wiki/satoshi-scroll.html",
@@ -13701,8 +13701,8 @@
     {
       "source": "/wiki/seeding-rights.html",
       "target": "/wiki/hodl-wars.html",
-      "score": 88,
-      "weight": 0.88
+      "score": 89,
+      "weight": 0.89
     },
     {
       "source": "/wiki/seeding-rights.html",
@@ -13755,8 +13755,8 @@
     {
       "source": "/wiki/sister-halcyon.html",
       "target": "/wiki/bitcoin-kids.html",
-      "score": 81,
-      "weight": 0.81
+      "score": 82,
+      "weight": 0.82
     },
     {
       "source": "/wiki/sneakar.html",
@@ -13868,13 +13868,13 @@
     },
     {
       "source": "/wiki/spirit-borns.html",
-      "target": "/wiki/forkborn-collective.html",
-      "score": 78,
-      "weight": 0.78
+      "target": "/wiki/street-kingdoms.html",
+      "score": 79,
+      "weight": 0.79
     },
     {
       "source": "/wiki/spirit-borns.html",
-      "target": "/wiki/ngmi-chronicles.html",
+      "target": "/wiki/forkborn-collective.html",
       "score": 78,
       "weight": 0.78
     },
@@ -13922,6 +13922,12 @@
     },
     {
       "source": "/wiki/squeaky-pinks-enforcers.html",
+      "target": "/wiki/street-kingdoms.html",
+      "score": 76,
+      "weight": 0.76
+    },
+    {
+      "source": "/wiki/squeaky-pinks-enforcers.html",
       "target": "/wiki/forkborn-collective.html",
       "score": 75,
       "weight": 0.75
@@ -13929,12 +13935,6 @@
     {
       "source": "/wiki/squeaky-pinks-enforcers.html",
       "target": "/wiki/harrison-rift.html",
-      "score": 75,
-      "weight": 0.75
-    },
-    {
-      "source": "/wiki/squeaky-pinks-enforcers.html",
-      "target": "/wiki/ngmi-chronicles.html",
       "score": 75,
       "weight": 0.75
     },
@@ -13947,26 +13947,26 @@
     {
       "source": "/wiki/staking.html",
       "target": "/wiki/null-the-prophet.html",
-      "score": 70,
-      "weight": 0.7
+      "score": 71,
+      "weight": 0.71
     },
     {
       "source": "/wiki/staking.html",
       "target": "/wiki/bitcoin-kids.html",
-      "score": 66,
-      "weight": 0.66
+      "score": 67,
+      "weight": 0.67
+    },
+    {
+      "source": "/wiki/staking.html",
+      "target": "/wiki/block-topia.html",
+      "score": 64,
+      "weight": 0.64
     },
     {
       "source": "/wiki/staking.html",
       "target": "/wiki/punk-token.html",
       "score": 63,
       "weight": 0.63
-    },
-    {
-      "source": "/wiki/staking.html",
-      "target": "/wiki/block-topia.html",
-      "score": 62,
-      "weight": 0.62
     },
     {
       "source": "/wiki/stikfamwars.html",
@@ -14012,6 +14012,12 @@
     },
     {
       "source": "/wiki/storm-struggle.html",
+      "target": "/wiki/street-kingdoms.html",
+      "score": 76,
+      "weight": 0.76
+    },
+    {
+      "source": "/wiki/storm-struggle.html",
       "target": "/wiki/forkborn-collective.html",
       "score": 75,
       "weight": 0.75
@@ -14019,12 +14025,6 @@
     {
       "source": "/wiki/storm-struggle.html",
       "target": "/wiki/harrison-rift.html",
-      "score": 75,
-      "weight": 0.75
-    },
-    {
-      "source": "/wiki/storm-struggle.html",
-      "target": "/wiki/ngmi-chronicles.html",
       "score": 75,
       "weight": 0.75
     },
@@ -14102,6 +14102,12 @@
     },
     {
       "source": "/wiki/tacoswap.html",
+      "target": "/wiki/street-kingdoms.html",
+      "score": 79,
+      "weight": 0.79
+    },
+    {
+      "source": "/wiki/tacoswap.html",
       "target": "/wiki/forkborn-collective.html",
       "score": 78,
       "weight": 0.78
@@ -14109,12 +14115,6 @@
     {
       "source": "/wiki/tacoswap.html",
       "target": "/wiki/ngmi-chronicles.html",
-      "score": 78,
-      "weight": 0.78
-    },
-    {
-      "source": "/wiki/tacoswap.html",
-      "target": "/wiki/street-kingdoms.html",
       "score": 78,
       "weight": 0.78
     },
@@ -14132,6 +14132,12 @@
     },
     {
       "source": "/wiki/tagzcoin.html",
+      "target": "/wiki/street-kingdoms.html",
+      "score": 79,
+      "weight": 0.79
+    },
+    {
+      "source": "/wiki/tagzcoin.html",
       "target": "/wiki/forkborn-collective.html",
       "score": 78,
       "weight": 0.78
@@ -14139,12 +14145,6 @@
     {
       "source": "/wiki/tagzcoin.html",
       "target": "/wiki/ngmi-chronicles.html",
-      "score": 78,
-      "weight": 0.78
-    },
-    {
-      "source": "/wiki/tagzcoin.html",
-      "target": "/wiki/street-kingdoms.html",
       "score": 78,
       "weight": 0.78
     },
@@ -14241,8 +14241,8 @@
     {
       "source": "/wiki/the-bitcoin-kid-army.html",
       "target": "/wiki/hodl-wars.html",
-      "score": 94,
-      "weight": 0.94
+      "score": 95,
+      "weight": 0.95
     },
     {
       "source": "/wiki/the-bitcoin-kid-army.html",
@@ -14336,13 +14336,13 @@
     },
     {
       "source": "/wiki/the-chain-scribes.html",
-      "target": "/wiki/the-og-pixel-saints.html",
-      "score": 80,
-      "weight": 0.8
+      "target": "/wiki/the-salvagers.html",
+      "score": 81,
+      "weight": 0.81
     },
     {
       "source": "/wiki/the-chain-scribes.html",
-      "target": "/wiki/the-salvagers.html",
+      "target": "/wiki/the-og-pixel-saints.html",
       "score": 80,
       "weight": 0.8
     },
@@ -14367,8 +14367,8 @@
     {
       "source": "/wiki/the-cleanupcentr.html",
       "target": "/wiki/the-salvagers.html",
-      "score": 80,
-      "weight": 0.8
+      "score": 81,
+      "weight": 0.81
     },
     {
       "source": "/wiki/the-cleanupcentr.html",
@@ -14432,6 +14432,12 @@
     },
     {
       "source": "/wiki/the-crypto-stoned-boys.html",
+      "target": "/wiki/the-salvagers.html",
+      "score": 84,
+      "weight": 0.84
+    },
+    {
+      "source": "/wiki/the-crypto-stoned-boys.html",
       "target": "/wiki/the-chain-scribes.html",
       "score": 83,
       "weight": 0.83
@@ -14439,12 +14445,6 @@
     {
       "source": "/wiki/the-crypto-stoned-boys.html",
       "target": "/wiki/the-nomad-bears.html",
-      "score": 83,
-      "weight": 0.83
-    },
-    {
-      "source": "/wiki/the-crypto-stoned-boys.html",
-      "target": "/wiki/the-salvagers.html",
       "score": 83,
       "weight": 0.83
     },
@@ -14486,13 +14486,13 @@
     },
     {
       "source": "/wiki/the-evm-punks.html",
-      "target": "/wiki/the-og-pixel-saints.html",
-      "score": 83,
-      "weight": 0.83
+      "target": "/wiki/the-salvagers.html",
+      "score": 84,
+      "weight": 0.84
     },
     {
       "source": "/wiki/the-evm-punks.html",
-      "target": "/wiki/the-salvagers.html",
+      "target": "/wiki/the-og-pixel-saints.html",
       "score": 83,
       "weight": 0.83
     },
@@ -14553,7 +14553,7 @@
     {
       "source": "/wiki/the-first-witness.html",
       "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 329,
+      "score": 332,
       "weight": 1
     },
     {
@@ -14612,13 +14612,13 @@
     },
     {
       "source": "/wiki/the-great-dip.html",
-      "target": "/wiki/the-evm-punks.html",
-      "score": 80,
-      "weight": 0.8
+      "target": "/wiki/the-salvagers.html",
+      "score": 81,
+      "weight": 0.81
     },
     {
       "source": "/wiki/the-great-dip.html",
-      "target": "/wiki/the-salvagers.html",
+      "target": "/wiki/the-evm-punks.html",
       "score": 80,
       "weight": 0.8
     },
@@ -14648,13 +14648,13 @@
     },
     {
       "source": "/wiki/the-hard-fork-rockers.html",
-      "target": "/wiki/the-nomad-bears.html",
-      "score": 86,
-      "weight": 0.86
+      "target": "/wiki/the-salvagers.html",
+      "score": 87,
+      "weight": 0.87
     },
     {
       "source": "/wiki/the-hard-fork-rockers.html",
-      "target": "/wiki/the-salvagers.html",
+      "target": "/wiki/the-nomad-bears.html",
       "score": 86,
       "weight": 0.86
     },
@@ -14793,8 +14793,8 @@
     {
       "source": "/wiki/the-nomad-bears.html",
       "target": "/wiki/the-salvagers.html",
-      "score": 96,
-      "weight": 0.96
+      "score": 97,
+      "weight": 0.97
     },
     {
       "source": "/wiki/the-nomad-bears.html",
@@ -14810,6 +14810,12 @@
     },
     {
       "source": "/wiki/the-og-pixel-saints.html",
+      "target": "/wiki/the-salvagers.html",
+      "score": 90,
+      "weight": 0.9
+    },
+    {
+      "source": "/wiki/the-og-pixel-saints.html",
       "target": "/wiki/the-chain-scribes.html",
       "score": 89,
       "weight": 0.89
@@ -14817,12 +14823,6 @@
     {
       "source": "/wiki/the-og-pixel-saints.html",
       "target": "/wiki/the-nomad-bears.html",
-      "score": 89,
-      "weight": 0.89
-    },
-    {
-      "source": "/wiki/the-og-pixel-saints.html",
-      "target": "/wiki/the-salvagers.html",
       "score": 89,
       "weight": 0.89
     },
@@ -14870,6 +14870,12 @@
     },
     {
       "source": "/wiki/the-rugpull-miners.html",
+      "target": "/wiki/the-salvagers.html",
+      "score": 87,
+      "weight": 0.87
+    },
+    {
+      "source": "/wiki/the-rugpull-miners.html",
       "target": "/wiki/the-chain-scribes.html",
       "score": 86,
       "weight": 0.86
@@ -14877,12 +14883,6 @@
     {
       "source": "/wiki/the-rugpull-miners.html",
       "target": "/wiki/the-nomad-bears.html",
-      "score": 86,
-      "weight": 0.86
-    },
-    {
-      "source": "/wiki/the-rugpull-miners.html",
-      "target": "/wiki/the-salvagers.html",
       "score": 86,
       "weight": 0.86
     },
@@ -14930,13 +14930,13 @@
     },
     {
       "source": "/wiki/the-shard-mothers-of-manhattan.html",
-      "target": "/wiki/the-chain-scribes.html",
-      "score": 83,
-      "weight": 0.83
+      "target": "/wiki/the-salvagers.html",
+      "score": 84,
+      "weight": 0.84
     },
     {
       "source": "/wiki/the-shard-mothers-of-manhattan.html",
-      "target": "/wiki/the-salvagers.html",
+      "target": "/wiki/the-chain-scribes.html",
       "score": 83,
       "weight": 0.83
     },
@@ -14960,13 +14960,13 @@
     },
     {
       "source": "/wiki/the-squeaky-pinks.html",
-      "target": "/wiki/the-chain-scribes.html",
-      "score": 83,
-      "weight": 0.83
+      "target": "/wiki/the-salvagers.html",
+      "score": 84,
+      "weight": 0.84
     },
     {
       "source": "/wiki/the-squeaky-pinks.html",
-      "target": "/wiki/the-salvagers.html",
+      "target": "/wiki/the-chain-scribes.html",
       "score": 83,
       "weight": 0.83
     },
@@ -15039,8 +15039,8 @@
     {
       "source": "/wiki/the-whitewasher.html",
       "target": "/wiki/null-the-prophet.html",
-      "score": 76,
-      "weight": 0.76
+      "score": 77,
+      "weight": 0.77
     },
     {
       "source": "/wiki/the-whitewasher.html",
@@ -15075,8 +15075,8 @@
     {
       "source": "/wiki/thera-9.html",
       "target": "/wiki/bitcoin-kids.html",
-      "score": 81,
-      "weight": 0.81
+      "score": 82,
+      "weight": 0.82
     },
     {
       "source": "/wiki/thorne-the-architect.html",
@@ -15237,8 +15237,8 @@
     {
       "source": "/wiki/wallets.html",
       "target": "/wiki/null-the-prophet.html",
-      "score": 82,
-      "weight": 0.82
+      "score": 83,
+      "weight": 0.83
     },
     {
       "source": "/wiki/wallets.html",
@@ -15249,8 +15249,8 @@
     {
       "source": "/wiki/wallets.html",
       "target": "/wiki/bitcoin-kids.html",
-      "score": 78,
-      "weight": 0.78
+      "score": 79,
+      "weight": 0.79
     },
     {
       "source": "/wiki/wallets.html",
@@ -15489,8 +15489,8 @@
     {
       "source": "/wiki/whale-lords.html",
       "target": "/wiki/the-salvagers.html",
-      "score": 80,
-      "weight": 0.8
+      "score": 81,
+      "weight": 0.81
     },
     {
       "source": "/wiki/whale-lords.html",
@@ -15512,6 +15512,12 @@
     },
     {
       "source": "/wiki/wuffi.html",
+      "target": "/wiki/street-kingdoms.html",
+      "score": 79,
+      "weight": 0.79
+    },
+    {
+      "source": "/wiki/wuffi.html",
       "target": "/wiki/forkborn-collective.html",
       "score": 78,
       "weight": 0.78
@@ -15519,12 +15525,6 @@
     {
       "source": "/wiki/wuffi.html",
       "target": "/wiki/ngmi-chronicles.html",
-      "score": 78,
-      "weight": 0.78
-    },
-    {
-      "source": "/wiki/wuffi.html",
-      "target": "/wiki/street-kingdoms.html",
       "score": 78,
       "weight": 0.78
     },
@@ -15572,6 +15572,12 @@
     },
     {
       "source": "/wiki/xrp-ledger.html",
+      "target": "/wiki/street-kingdoms.html",
+      "score": 76,
+      "weight": 0.76
+    },
+    {
+      "source": "/wiki/xrp-ledger.html",
       "target": "/wiki/forkborn-collective.html",
       "score": 75,
       "weight": 0.75
@@ -15579,12 +15585,6 @@
     {
       "source": "/wiki/xrp-ledger.html",
       "target": "/wiki/harrison-rift.html",
-      "score": 75,
-      "weight": 0.75
-    },
-    {
-      "source": "/wiki/xrp-ledger.html",
-      "target": "/wiki/ngmi-chronicles.html",
       "score": 75,
       "weight": 0.75
     }

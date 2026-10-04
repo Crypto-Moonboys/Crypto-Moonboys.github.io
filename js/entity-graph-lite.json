@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-04T16:01:35.111Z",
-  "verified_at": "2026-10-04T16:01:35.111Z",
+  "generated_at": "2026-10-04T19:02:09.652Z",
+  "verified_at": "2026-10-04T19:02:09.652Z",
   "lite": true,
   "nodes": [
     {
@@ -12,6 +12,14 @@
       "authority_score": 28
     },
     {
+      "id": "/wiki/first-witness-faction-commentaries.html",
+      "title": "Faction Commentaries on the First Witness",
+      "url": "/wiki/first-witness-faction-commentaries.html",
+      "category": "core",
+      "rank_score": 417,
+      "authority_score": 20
+    },
+    {
       "id": "/wiki/first-witness-life-readings.html",
       "title": "Life Readings from the First Witness",
       "url": "/wiki/first-witness-life-readings.html",
@@ -20,12 +28,12 @@
       "authority_score": 17
     },
     {
-      "id": "/wiki/first-witness-faction-commentaries.html",
-      "title": "Faction Commentaries on the First Witness",
-      "url": "/wiki/first-witness-faction-commentaries.html",
+      "id": "/wiki/first-witness-forty-paths.html",
+      "title": "The Forty Paths",
+      "url": "/wiki/first-witness-forty-paths.html",
       "category": "core",
-      "rank_score": 382,
-      "authority_score": 14
+      "rank_score": 384,
+      "authority_score": 21
     },
     {
       "id": "/wiki/hard-fork-games.html",
@@ -140,6 +148,14 @@
       "authority_score": 24
     },
     {
+      "id": "/wiki/null-the-prophet.html",
+      "title": "NULL THE PROPHET",
+      "url": "/wiki/null-the-prophet.html",
+      "category": "characters",
+      "rank_score": 331,
+      "authority_score": 24
+    },
+    {
       "id": "/wiki/first-witness-book-1-the-first-witness.html",
       "title": "Book I — The First Witness",
       "url": "/wiki/first-witness-book-1-the-first-witness.html",
@@ -180,27 +196,11 @@
       "authority_score": 14
     },
     {
-      "id": "/wiki/first-witness-forty-paths.html",
-      "title": "The Forty Paths",
-      "url": "/wiki/first-witness-forty-paths.html",
-      "category": "core",
-      "rank_score": 326,
-      "authority_score": 14
-    },
-    {
       "id": "/wiki/the-whitewasher.html",
       "title": "The Whitewasher",
       "url": "/wiki/the-whitewasher.html",
       "category": "characters",
       "rank_score": 326,
-      "authority_score": 24
-    },
-    {
-      "id": "/wiki/null-the-prophet.html",
-      "title": "NULL THE PROPHET",
-      "url": "/wiki/null-the-prophet.html",
-      "category": "characters",
-      "rank_score": 325,
       "authority_score": 24
     },
     {
@@ -356,14 +356,6 @@
       "authority_score": 14
     },
     {
-      "id": "/wiki/the-finance-guild.html",
-      "title": "The Finance Guild",
-      "url": "/wiki/the-finance-guild.html",
-      "category": "factions",
-      "rank_score": 312,
-      "authority_score": 28
-    },
-    {
       "id": "/wiki/first-witness-sacred-fork.html",
       "title": "The Sacred Fork",
       "url": "/wiki/first-witness-sacred-fork.html",
@@ -386,6 +378,14 @@
       "category": "core",
       "rank_score": 310,
       "authority_score": 12
+    },
+    {
+      "id": "/wiki/the-finance-guild.html",
+      "title": "The Finance Guild",
+      "url": "/wiki/the-finance-guild.html",
+      "category": "factions",
+      "rank_score": 310,
+      "authority_score": 28
     },
     {
       "id": "/wiki/crypto-moonboy-pets.html",
@@ -428,6 +428,14 @@
       "authority_score": 12
     },
     {
+      "id": "/wiki/first-witness-hodl-doctrine.html",
+      "title": "The HODL Doctrine",
+      "url": "/wiki/first-witness-hodl-doctrine.html",
+      "category": "core",
+      "rank_score": 308,
+      "authority_score": 12
+    },
+    {
       "id": "/wiki/first-witness-questions-for-the-living.html",
       "title": "Questions for the Living",
       "url": "/wiki/first-witness-questions-for-the-living.html",
@@ -452,12 +460,12 @@
       "authority_score": 28
     },
     {
-      "id": "/wiki/first-witness-hodl-doctrine.html",
-      "title": "The HODL Doctrine",
-      "url": "/wiki/first-witness-hodl-doctrine.html",
-      "category": "core",
-      "rank_score": 306,
-      "authority_score": 12
+      "id": "/wiki/block-topia.html",
+      "title": "Block Topia",
+      "url": "/wiki/block-topia.html",
+      "category": "characters",
+      "rank_score": 307,
+      "authority_score": 16
     },
     {
       "id": "/wiki/first-witness-symbols-marks-sacred-design.html",
@@ -572,6 +580,14 @@
       "authority_score": 28
     },
     {
+      "id": "/wiki/street-kingdoms.html",
+      "title": "Street Kingdoms",
+      "url": "/wiki/street-kingdoms.html",
+      "category": "factions",
+      "rank_score": 299,
+      "authority_score": 24
+    },
+    {
       "id": "/wiki/thera-9.html",
       "title": "Thera-9",
       "url": "/wiki/thera-9.html",
@@ -586,22 +602,6 @@
       "category": "characters",
       "rank_score": 295,
       "authority_score": 28
-    },
-    {
-      "id": "/wiki/first-witness-apocrypha-disputed-passages.html",
-      "title": "Apocrypha and Disputed Passages",
-      "url": "/wiki/first-witness-apocrypha-disputed-passages.html",
-      "category": "core",
-      "rank_score": 295,
-      "authority_score": 12
-    },
-    {
-      "id": "/wiki/first-witness-long-transmission.html",
-      "title": "The Long Transmission",
-      "url": "/wiki/first-witness-long-transmission.html",
-      "category": "core",
-      "rank_score": 295,
-      "authority_score": 12
     }
   ],
   "edges": [
@@ -621,6 +621,12 @@
       "source": "/wiki/first-witness-faction-commentaries.html",
       "target": "/wiki/the-first-witness.html",
       "score": 341,
+      "weight": 1
+    },
+    {
+      "source": "/wiki/first-witness-book-1-the-first-witness.html",
+      "target": "/wiki/first-witness-faction-commentaries.html",
+      "score": 329,
       "weight": 1
     },
     {
@@ -651,12 +657,6 @@
       "source": "/wiki/first-witness-source-register.html",
       "target": "/wiki/first-witness-master-chronology.html",
       "score": 329,
-      "weight": 1
-    },
-    {
-      "source": "/wiki/first-witness-book-1-the-first-witness.html",
-      "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 326,
       "weight": 1
     },
     {
@@ -806,7 +806,7 @@
     {
       "source": "/wiki/bitcoin-x-kids.html",
       "target": "/wiki/bitcoin-kids.html",
-      "score": 108,
+      "score": 109,
       "weight": 1
     },
     {
@@ -836,6 +836,12 @@
     {
       "source": "/wiki/the-bitcoin-kid-army.html",
       "target": "/wiki/hodl-wars.html",
+      "score": 95,
+      "weight": 0.95
+    },
+    {
+      "source": "/wiki/hodl-warriors.html",
+      "target": "/wiki/hodl-wars.html",
       "score": 94,
       "weight": 0.94
     },
@@ -846,22 +852,16 @@
       "weight": 0.93
     },
     {
-      "source": "/wiki/hodl-warriors.html",
-      "target": "/wiki/hodl-wars.html",
-      "score": 93,
-      "weight": 0.93
-    },
-    {
       "source": "/wiki/genesis-kernel.html",
       "target": "/wiki/hodl-wars.html",
-      "score": 91,
-      "weight": 0.91
+      "score": 92,
+      "weight": 0.92
     },
     {
       "source": "/wiki/hodl-warriors.html",
       "target": "/wiki/bitcoin-kids.html",
-      "score": 91,
-      "weight": 0.91
+      "score": 92,
+      "weight": 0.92
     },
     {
       "source": "/wiki/bitcoin-x-kids.html",
@@ -960,34 +960,34 @@
       "weight": 0.82
     },
     {
+      "source": "/wiki/the-chain-scribes.html",
+      "target": "/wiki/the-salvagers.html",
+      "score": 81,
+      "weight": 0.81
+    },
+    {
       "source": "/wiki/the-nice-easy-bois.html",
       "target": "/wiki/stikfamwars.html",
       "score": 81,
       "weight": 0.81
     },
     {
-      "source": "/wiki/the-chain-scribes.html",
-      "target": "/wiki/the-salvagers.html",
+      "source": "/wiki/burn-to-earn.html",
+      "target": "/wiki/null-the-prophet.html",
       "score": 80,
       "weight": 0.8
     },
     {
-      "source": "/wiki/burn-to-earn.html",
-      "target": "/wiki/null-the-prophet.html",
-      "score": 79,
-      "weight": 0.79
-    },
-    {
       "source": "/wiki/diamond-hands.html",
       "target": "/wiki/null-the-prophet.html",
-      "score": 79,
-      "weight": 0.79
+      "score": 80,
+      "weight": 0.8
     },
     {
       "source": "/wiki/punk-token.html",
       "target": "/wiki/null-the-prophet.html",
-      "score": 79,
-      "weight": 0.79
+      "score": 80,
+      "weight": 0.8
     },
     {
       "source": "/wiki/rave-relics.html",
@@ -1024,6 +1024,12 @@
       "target": "/wiki/punk-token.html",
       "score": 69,
       "weight": 0.69
+    },
+    {
+      "source": "/wiki/staking.html",
+      "target": "/wiki/block-topia.html",
+      "score": 64,
+      "weight": 0.64
     },
     {
       "source": "/wiki/staking.html",

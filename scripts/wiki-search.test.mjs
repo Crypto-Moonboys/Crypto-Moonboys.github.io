@@ -666,8 +666,13 @@ const graffpunksStopwordOnly = {
   Object.assign(subjectsByPage, {
     'maidstone-base': ['Wet Wall Book', 'Orchard Relay', 'Borrowed Address dispute', 'River Sheet', 'Nia Form'],
     'croydon-tower-blocks': ['Grey Landing', 'Lift Book', 'Window Witnesses', 'Chalk Kitchen', 'Seven Stair dispute', 'Marlo Quist'],
-    'street-kingdoms': ['Lantern Courts', 'Borough Thread', 'Water Truce', 'Slate Market', 'Roof Census', 'Nine Door winter', 'Imani Rook', 'Sol Mercer'],
-    'block-topia': ['Civic Measure', 'Air Ledger', 'Glass Kitchens', 'Petition Hour', 'Borough Exchange', 'Mira Quoin', 'Tern Vale']
+    'street-kingdoms': ['Lantern Courts', 'Borough Thread', 'Water Truce', 'Slate Market', 'Roof Census', 'Nine Door winter', 'Imani Rook', 'Sol Mercer', 'successor escort'],
+    'block-topia': ['Civic Measure', 'Air Ledger', 'Glass Kitchens', 'Petition Hour', 'Borough Exchange', 'Mira Quoin', 'Tern Vale', 'White Shutter', 'ceramic valve seats'],
+    'spraycode-writcode-mechanics': ['Exchange door'],
+    'null-the-prophet': ['Sena Rill', 'Roe Fen', 'Holdfast incident'],
+    'the-finance-guild': ['Open Crate advance', 'reserved output'],
+    'first-witness-forty-paths': ['faction classification'],
+    'first-witness-faction-commentaries': ['faction register', 'thirty-four readings', 'Room Vote', 'Open Verse', 'Two Lamps']
   });
   const stopWords = vm.runInContext('SEARCH_TEXT_STOP_WORDS', sb);
   let checked = 0;
@@ -698,6 +703,11 @@ const graffpunksStopwordOnly = {
     assert.ok(entry.search_index.keyword_bag.includes(token), `${token} is searchable`);
     assert.ok(!entry.search_index.tokens.includes(token), `${token} must not leak into title-only relationship tokens`);
   }
+  for (const [slug, token] of [['block-topia', 'shutter'], ['null-the-prophet', 'sena'], ['the-finance-guild', 'crate'], ['first-witness-faction-commentaries', 'jpeg']]) {
+    const entry = wikiIndex.find(item => item.url === `/wiki/${slug}.html`);
+    assert.ok(entry.search_index.keyword_bag.includes(token), `${slug}: ${token} remains discoverable`);
+    assert.ok(!entry.search_index.tokens.includes(token), `${slug}: search-only ${token} cannot create relationship tags`);
+  }
   for (const [query, slug] of [['Iris-7', 'iris-7'], ['Thera-9', 'thera-9']]) {
     const result = await selectMatches(wikiIndex, query, { allowPartialFallback: true, limit: 5 });
     assert.ok(result.scored.some(({ item }) => item.url === `/wiki/${slug}.html`), `${query} retains its dedicated short-number title match`);
@@ -714,8 +724,8 @@ const graffpunksStopwordOnly = {
   const descriptions = {
     'maidstone-base': 'Maidstone Base as a present-day Kent working association and a disputed place-memory in later Crypto Moonboys lore.',
     'croydon-tower-blocks': 'Croydon walls as inhabited origin memory: residents, artists, contested archives and later Year 3008 interpretations.',
-    'street-kingdoms': 'The inhabited Year 3008 territories beyond Block Topia: borough networks, work, mobile law, markets and survival.',
-    'block-topia': 'The Year 3008 Queens citadel: survival systems, managed identity, the True Bitcoin Fork and the state behind the Hard Fork Games.'
+    'street-kingdoms': 'The Street Kingdoms beyond Block Topia: borough routes, household economies, the nine-day Exchange closure and an independent escort after Alfie’s coalition splits.',
+    'block-topia': 'Block Topia in Year 3008: Queens geography, life-support labour, the White Shutter closure and Sarah’s contested Open Crate Compact.'
   };
   const index = JSON.parse(await fs.readFile(path.join(ROOT, 'js', 'wiki-index.json'), 'utf8'));
   for (const [slug, description] of Object.entries(descriptions)) {
