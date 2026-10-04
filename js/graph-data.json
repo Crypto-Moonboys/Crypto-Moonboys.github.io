@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-04T21:42:26.857Z",
-  "verified_at": "2026-10-04T21:42:26.857Z",
+  "generated_at": "2026-10-04T22:07:18.726Z",
+  "verified_at": "2026-10-04T22:07:18.726Z",
   "nodes": [
     {
       "id": "/about.html",
@@ -2455,7 +2455,7 @@
       "title": "HODL WARS",
       "url": "/wiki/hodl-wars.html",
       "category": "core",
-      "rank_score": 333,
+      "rank_score": 345,
       "authority_score": 28
     },
     {
@@ -2935,7 +2935,7 @@
       "title": "Street Kingdoms",
       "url": "/wiki/street-kingdoms.html",
       "category": "factions",
-      "rank_score": 311,
+      "rank_score": 315,
       "authority_score": 24
     },
     {
@@ -2967,7 +2967,7 @@
       "title": "The AllCity Bulls",
       "url": "/wiki/the-allcity-bulls.html",
       "category": "factions",
-      "rank_score": 284,
+      "rank_score": 292,
       "authority_score": 28
     },
     {
@@ -3007,7 +3007,7 @@
       "title": "The BLOCKSTARS",
       "url": "/wiki/the-blockstars.html",
       "category": "factions",
-      "rank_score": 279,
+      "rank_score": 287,
       "authority_score": 28
     },
     {
@@ -3063,7 +3063,7 @@
       "title": "The Finance Guild",
       "url": "/wiki/the-finance-guild.html",
       "category": "factions",
-      "rank_score": 310,
+      "rank_score": 322,
       "authority_score": 28
     },
     {
@@ -3103,7 +3103,7 @@
       "title": "The High Hats",
       "url": "/wiki/the-high-hats.html",
       "category": "factions",
-      "rank_score": 319,
+      "rank_score": 327,
       "authority_score": 28
     },
     {
@@ -3357,8 +3357,8 @@
     {
       "source": "/wiki/1m-free-nfts-program.html",
       "target": "/wiki/street-kingdoms.html",
-      "score": 75,
-      "weight": 0.75
+      "score": 76,
+      "weight": 0.76
     },
     {
       "source": "/wiki/1m-free-nfts-program.html",
@@ -3477,8 +3477,8 @@
     {
       "source": "/wiki/alcor-exchange.html",
       "target": "/wiki/street-kingdoms.html",
-      "score": 78,
-      "weight": 0.78
+      "score": 79,
+      "weight": 0.79
     },
     {
       "source": "/wiki/alcor-exchange.html",
@@ -3548,15 +3548,15 @@
     },
     {
       "source": "/wiki/alfie-bitcoin-kid-blaze.html",
-      "target": "/wiki/midevilpunks.html",
-      "score": 67,
-      "weight": 0.67
+      "target": "/wiki/the-finance-guild.html",
+      "score": 68,
+      "weight": 0.68
     },
     {
       "source": "/wiki/alfie-bitcoin-kid-blaze.html",
       "target": "/wiki/the-high-hats.html",
-      "score": 67,
-      "weight": 0.67
+      "score": 68,
+      "weight": 0.68
     },
     {
       "source": "/wiki/alien-worlds-tlm.html",
@@ -3687,8 +3687,8 @@
     {
       "source": "/wiki/atomichub.html",
       "target": "/wiki/street-kingdoms.html",
-      "score": 78,
-      "weight": 0.78
+      "score": 79,
+      "weight": 0.79
     },
     {
       "source": "/wiki/atomichub.html",
@@ -3746,13 +3746,13 @@
     },
     {
       "source": "/wiki/battlemech-blast.html",
-      "target": "/wiki/forkborn-collective.html",
-      "score": 81,
-      "weight": 0.81
+      "target": "/wiki/street-kingdoms.html",
+      "score": 82,
+      "weight": 0.82
     },
     {
       "source": "/wiki/battlemech-blast.html",
-      "target": "/wiki/street-kingdoms.html",
+      "target": "/wiki/forkborn-collective.html",
       "score": 81,
       "weight": 0.81
     },
@@ -3902,21 +3902,21 @@
     },
     {
       "source": "/wiki/bitcoin-kid-army.html",
+      "target": "/wiki/the-finance-guild.html",
+      "score": 74,
+      "weight": 0.74
+    },
+    {
+      "source": "/wiki/bitcoin-kid-army.html",
       "target": "/wiki/midevilpunks.html",
       "score": 73,
       "weight": 0.73
     },
     {
       "source": "/wiki/bitcoin-kid-army.html",
-      "target": "/wiki/the-finance-guild.html",
-      "score": 72,
-      "weight": 0.72
-    },
-    {
-      "source": "/wiki/bitcoin-kid-army.html",
       "target": "/wiki/the-high-hats.html",
-      "score": 70,
-      "weight": 0.7
+      "score": 71,
+      "weight": 0.71
     },
     {
       "source": "/wiki/bitcoin-kids.html",
@@ -4022,15 +4022,15 @@
     },
     {
       "source": "/wiki/block-node-defenders.html",
-      "target": "/wiki/the-first-witness.html",
+      "target": "/wiki/hodl-wars.html",
       "score": 86,
       "weight": 0.86
     },
     {
       "source": "/wiki/block-node-defenders.html",
-      "target": "/wiki/hodl-wars.html",
-      "score": 85,
-      "weight": 0.85
+      "target": "/wiki/the-first-witness.html",
+      "score": 86,
+      "weight": 0.86
     },
     {
       "source": "/wiki/block-node-defenders.html",
@@ -4076,6 +4076,12 @@
     },
     {
       "source": "/wiki/blockchain.html",
+      "target": "/wiki/the-finance-guild.html",
+      "score": 68,
+      "weight": 0.68
+    },
+    {
+      "source": "/wiki/blockchain.html",
       "target": "/wiki/rave-relics.html",
       "score": 67,
       "weight": 0.67
@@ -4093,12 +4099,6 @@
       "weight": 0.66
     },
     {
-      "source": "/wiki/blockchain.html",
-      "target": "/wiki/the-finance-guild.html",
-      "score": 66,
-      "weight": 0.66
-    },
-    {
       "source": "/wiki/bone-idol-ink.html",
       "target": "/wiki/pmsl.html",
       "score": 82,
@@ -4107,8 +4107,8 @@
     {
       "source": "/wiki/bone-idol-ink.html",
       "target": "/wiki/street-kingdoms.html",
-      "score": 78,
-      "weight": 0.78
+      "score": 79,
+      "weight": 0.79
     },
     {
       "source": "/wiki/bone-idol-ink.html",
@@ -4173,8 +4173,8 @@
     {
       "source": "/wiki/canvas-clash.html",
       "target": "/wiki/street-kingdoms.html",
-      "score": 81,
-      "weight": 0.81
+      "score": 82,
+      "weight": 0.82
     },
     {
       "source": "/wiki/canvas-clash.html",
@@ -4227,8 +4227,8 @@
     {
       "source": "/wiki/croydon-tower-blocks.html",
       "target": "/wiki/street-kingdoms.html",
-      "score": 81,
-      "weight": 0.81
+      "score": 82,
+      "weight": 0.82
     },
     {
       "source": "/wiki/croydon-tower-blocks.html",
@@ -4365,8 +4365,8 @@
     {
       "source": "/wiki/defi-mining.html",
       "target": "/wiki/street-kingdoms.html",
-      "score": 68,
-      "weight": 0.68
+      "score": 69,
+      "weight": 0.69
     },
     {
       "source": "/wiki/defi.html",
@@ -7136,13 +7136,13 @@
     },
     {
       "source": "/wiki/fomo-plague.html",
-      "target": "/wiki/satoshi-scroll.html",
-      "score": 81,
-      "weight": 0.81
+      "target": "/wiki/the-salvagers.html",
+      "score": 82,
+      "weight": 0.82
     },
     {
       "source": "/wiki/fomo-plague.html",
-      "target": "/wiki/the-salvagers.html",
+      "target": "/wiki/satoshi-scroll.html",
       "score": 81,
       "weight": 0.81
     },
@@ -7167,8 +7167,8 @@
     {
       "source": "/wiki/forkborn-collective.html",
       "target": "/wiki/street-kingdoms.html",
-      "score": 81,
-      "weight": 0.81
+      "score": 82,
+      "weight": 0.82
     },
     {
       "source": "/wiki/forkborn-collective.html",
@@ -7287,8 +7287,8 @@
     {
       "source": "/wiki/gang-signs-card-game.html",
       "target": "/wiki/street-kingdoms.html",
-      "score": 78,
-      "weight": 0.78
+      "score": 79,
+      "weight": 0.79
     },
     {
       "source": "/wiki/gang-signs-card-game.html",
@@ -7335,8 +7335,8 @@
     {
       "source": "/wiki/gang-signs.html",
       "target": "/wiki/hodl-wars.html",
-      "score": 43,
-      "weight": 0.43
+      "score": 44,
+      "weight": 0.44
     },
     {
       "source": "/wiki/genesis-kernel.html",
@@ -7353,8 +7353,8 @@
     {
       "source": "/wiki/genesis-kernel.html",
       "target": "/wiki/hodl-wars.html",
-      "score": 92,
-      "weight": 0.92
+      "score": 93,
+      "weight": 0.93
     },
     {
       "source": "/wiki/genesis-kernel.html",
@@ -7419,8 +7419,8 @@
     {
       "source": "/wiki/genesis-spray.html",
       "target": "/wiki/the-high-hats.html",
-      "score": 70,
-      "weight": 0.7
+      "score": 71,
+      "weight": 0.71
     },
     {
       "source": "/wiki/genesis-spray.html",
@@ -11781,8 +11781,8 @@
     {
       "source": "/wiki/gkniftyheads.html",
       "target": "/wiki/hodl-wars.html",
-      "score": 82,
-      "weight": 0.82
+      "score": 83,
+      "weight": 0.83
     },
     {
       "source": "/wiki/gkniftyheads.html",
@@ -11817,8 +11817,8 @@
     {
       "source": "/wiki/graffiti-kings.html",
       "target": "/wiki/hodl-wars.html",
-      "score": 89,
-      "weight": 0.89
+      "score": 90,
+      "weight": 0.9
     },
     {
       "source": "/wiki/graffiti-kings.html",
@@ -11882,13 +11882,13 @@
     },
     {
       "source": "/wiki/graffiti-queens-in-decentraland.html",
-      "target": "/wiki/stikfamwars.html",
-      "score": 75,
-      "weight": 0.75
+      "target": "/wiki/street-kingdoms.html",
+      "score": 76,
+      "weight": 0.76
     },
     {
       "source": "/wiki/graffiti-queens-in-decentraland.html",
-      "target": "/wiki/street-kingdoms.html",
+      "target": "/wiki/stikfamwars.html",
       "score": 75,
       "weight": 0.75
     },
@@ -11913,8 +11913,8 @@
     {
       "source": "/wiki/graffpunks-24-7-radio.html",
       "target": "/wiki/hodl-wars.html",
-      "score": 82,
-      "weight": 0.82
+      "score": 83,
+      "weight": 0.83
     },
     {
       "source": "/wiki/graffpunks-24-7-radio.html",
@@ -11973,7 +11973,7 @@
     {
       "source": "/wiki/graffpunks-ecosystem.html",
       "target": "/wiki/hodl-wars.html",
-      "score": 101,
+      "score": 102,
       "weight": 1
     },
     {
@@ -12003,8 +12003,8 @@
     {
       "source": "/wiki/graffpunks.html",
       "target": "/wiki/hodl-wars.html",
-      "score": 92,
-      "weight": 0.92
+      "score": 93,
+      "weight": 0.93
     },
     {
       "source": "/wiki/graffpunks.html",
@@ -12099,8 +12099,8 @@
     {
       "source": "/wiki/hard-fork-games.html",
       "target": "/wiki/hodl-wars.html",
-      "score": 89,
-      "weight": 0.89
+      "score": 90,
+      "weight": 0.9
     },
     {
       "source": "/wiki/hard-fork-games.html",
@@ -12117,8 +12117,8 @@
     {
       "source": "/wiki/harrison-rift.html",
       "target": "/wiki/street-kingdoms.html",
-      "score": 78,
-      "weight": 0.78
+      "score": 79,
+      "weight": 0.79
     },
     {
       "source": "/wiki/harrison-rift.html",
@@ -12213,8 +12213,8 @@
     {
       "source": "/wiki/hodl-warriors.html",
       "target": "/wiki/hodl-wars.html",
-      "score": 94,
-      "weight": 0.94
+      "score": 95,
+      "weight": 0.95
     },
     {
       "source": "/wiki/hodl-warriors.html",
@@ -12507,8 +12507,8 @@
     {
       "source": "/wiki/lfgk.html",
       "target": "/wiki/street-kingdoms.html",
-      "score": 81,
-      "weight": 0.81
+      "score": 82,
+      "weight": 0.82
     },
     {
       "source": "/wiki/lfgk.html",
@@ -12597,8 +12597,8 @@
     {
       "source": "/wiki/maidstone-base.html",
       "target": "/wiki/street-kingdoms.html",
-      "score": 81,
-      "weight": 0.81
+      "score": 82,
+      "weight": 0.82
     },
     {
       "source": "/wiki/maidstone-base.html",
@@ -12668,13 +12668,13 @@
     },
     {
       "source": "/wiki/metaverse-battles.html",
-      "target": "/wiki/forkborn-collective.html",
-      "score": 78,
-      "weight": 0.78
+      "target": "/wiki/street-kingdoms.html",
+      "score": 79,
+      "weight": 0.79
     },
     {
       "source": "/wiki/metaverse-battles.html",
-      "target": "/wiki/street-kingdoms.html",
+      "target": "/wiki/forkborn-collective.html",
       "score": 78,
       "weight": 0.78
     },
@@ -12687,8 +12687,8 @@
     {
       "source": "/wiki/metropolis.html",
       "target": "/wiki/the-high-hats.html",
-      "score": 80,
-      "weight": 0.8
+      "score": 81,
+      "weight": 0.81
     },
     {
       "source": "/wiki/metropolis.html",
@@ -12735,8 +12735,8 @@
     {
       "source": "/wiki/midevilpunks.html",
       "target": "/wiki/the-high-hats.html",
-      "score": 73,
-      "weight": 0.73
+      "score": 74,
+      "weight": 0.74
     },
     {
       "source": "/wiki/moon-mission.html",
@@ -12867,8 +12867,8 @@
     {
       "source": "/wiki/neftyblocks.html",
       "target": "/wiki/street-kingdoms.html",
-      "score": 81,
-      "weight": 0.81
+      "score": 82,
+      "weight": 0.82
     },
     {
       "source": "/wiki/neftyblocks.html",
@@ -12897,8 +12897,8 @@
     {
       "source": "/wiki/nfthive.html",
       "target": "/wiki/street-kingdoms.html",
-      "score": 81,
-      "weight": 0.81
+      "score": 82,
+      "weight": 0.82
     },
     {
       "source": "/wiki/nfthive.html",
@@ -12974,9 +12974,9 @@
     },
     {
       "source": "/wiki/ngmi-chronicles.html",
-      "target": "/wiki/memecoins.html",
-      "score": 81,
-      "weight": 0.81
+      "target": "/wiki/street-kingdoms.html",
+      "score": 82,
+      "weight": 0.82
     },
     {
       "source": "/wiki/nifty-crowns.html",
@@ -12993,8 +12993,8 @@
     {
       "source": "/wiki/nifty-crowns.html",
       "target": "/wiki/street-kingdoms.html",
-      "score": 78,
-      "weight": 0.78
+      "score": 79,
+      "weight": 0.79
     },
     {
       "source": "/wiki/nifty-crowns.html",
@@ -13023,8 +13023,8 @@
     {
       "source": "/wiki/nifty-wizards.html",
       "target": "/wiki/street-kingdoms.html",
-      "score": 78,
-      "weight": 0.78
+      "score": 79,
+      "weight": 0.79
     },
     {
       "source": "/wiki/nifty-wizards.html",
@@ -13059,8 +13059,8 @@
     {
       "source": "/wiki/noballgamess-nft-collection.html",
       "target": "/wiki/hodl-wars.html",
-      "score": 70,
-      "weight": 0.7
+      "score": 71,
+      "weight": 0.71
     },
     {
       "source": "/wiki/noballgamess-nft-collection.html",
@@ -13197,8 +13197,8 @@
     {
       "source": "/wiki/pixel-journey.html",
       "target": "/wiki/street-kingdoms.html",
-      "score": 78,
-      "weight": 0.78
+      "score": 79,
+      "weight": 0.79
     },
     {
       "source": "/wiki/pixel-journey.html",
@@ -13268,15 +13268,15 @@
     },
     {
       "source": "/wiki/playable-nft-murals.html",
-      "target": "/wiki/wax-nft-marketplaces.html",
+      "target": "/wiki/street-kingdoms.html",
       "score": 72,
       "weight": 0.72
     },
     {
       "source": "/wiki/playable-nft-murals.html",
-      "target": "/wiki/canvas-clash.html",
-      "score": 71,
-      "weight": 0.71
+      "target": "/wiki/wax-nft-marketplaces.html",
+      "score": 72,
+      "weight": 0.72
     },
     {
       "source": "/wiki/pmsl-token.html",
@@ -13311,8 +13311,8 @@
     {
       "source": "/wiki/pmsl.html",
       "target": "/wiki/street-kingdoms.html",
-      "score": 78,
-      "weight": 0.78
+      "score": 79,
+      "weight": 0.79
     },
     {
       "source": "/wiki/pmsl.html",
@@ -13424,9 +13424,9 @@
     },
     {
       "source": "/wiki/queen-sarah-p-fly.html",
-      "target": "/wiki/2025-metaverse-launch-party.html",
-      "score": 71,
-      "weight": 0.71
+      "target": "/wiki/street-kingdoms.html",
+      "score": 72,
+      "weight": 0.72
     },
     {
       "source": "/wiki/quell.html",
@@ -13473,8 +13473,8 @@
     {
       "source": "/wiki/rave-relics.html",
       "target": "/wiki/the-high-hats.html",
-      "score": 70,
-      "weight": 0.7
+      "score": 71,
+      "weight": 0.71
     },
     {
       "source": "/wiki/rave-relics.html",
@@ -13484,9 +13484,9 @@
     },
     {
       "source": "/wiki/rave-relics.html",
-      "target": "/wiki/genesis-spray.html",
-      "score": 67,
-      "weight": 0.67
+      "target": "/wiki/the-finance-guild.html",
+      "score": 68,
+      "weight": 0.68
     },
     {
       "source": "/wiki/rug-pull-wars.html",
@@ -13557,8 +13557,8 @@
     {
       "source": "/wiki/rust2riches.html",
       "target": "/wiki/street-kingdoms.html",
-      "score": 81,
-      "weight": 0.81
+      "score": 82,
+      "weight": 0.82
     },
     {
       "source": "/wiki/rust2riches.html",
@@ -13604,7 +13604,7 @@
     },
     {
       "source": "/wiki/sacred-chain.html",
-      "target": "/wiki/triple-fork-event.html",
+      "target": "/wiki/hodl-wars.html",
       "score": 90,
       "weight": 0.9
     },
@@ -13694,15 +13694,15 @@
     },
     {
       "source": "/wiki/satoshi-scroll.html",
-      "target": "/wiki/the-code-alchemists.html",
+      "target": "/wiki/the-allcity-bulls.html",
       "score": 84,
       "weight": 0.84
     },
     {
       "source": "/wiki/seeding-rights.html",
       "target": "/wiki/hodl-wars.html",
-      "score": 89,
-      "weight": 0.89
+      "score": 90,
+      "weight": 0.9
     },
     {
       "source": "/wiki/seeding-rights.html",
@@ -13857,8 +13857,8 @@
     {
       "source": "/wiki/spirit-borns.html",
       "target": "/wiki/street-kingdoms.html",
-      "score": 81,
-      "weight": 0.81
+      "score": 82,
+      "weight": 0.82
     },
     {
       "source": "/wiki/spirit-borns.html",
@@ -13904,9 +13904,9 @@
     },
     {
       "source": "/wiki/spraycode-writcode-mechanics.html",
-      "target": "/wiki/rave-relics.html",
-      "score": 67,
-      "weight": 0.67
+      "target": "/wiki/the-high-hats.html",
+      "score": 68,
+      "weight": 0.68
     },
     {
       "source": "/wiki/squeaky-pinks-enforcers.html",
@@ -13917,8 +13917,8 @@
     {
       "source": "/wiki/squeaky-pinks-enforcers.html",
       "target": "/wiki/street-kingdoms.html",
-      "score": 78,
-      "weight": 0.78
+      "score": 79,
+      "weight": 0.79
     },
     {
       "source": "/wiki/squeaky-pinks-enforcers.html",
@@ -13971,8 +13971,8 @@
     {
       "source": "/wiki/stikfamwars.html",
       "target": "/wiki/the-high-hats.html",
-      "score": 80,
-      "weight": 0.8
+      "score": 81,
+      "weight": 0.81
     },
     {
       "source": "/wiki/stikfamwars.html",
@@ -13983,8 +13983,8 @@
     {
       "source": "/wiki/stikfamwars.html",
       "target": "/wiki/the-finance-guild.html",
-      "score": 75,
-      "weight": 0.75
+      "score": 77,
+      "weight": 0.77
     },
     {
       "source": "/wiki/stikfamwars.html",
@@ -14007,8 +14007,8 @@
     {
       "source": "/wiki/storm-struggle.html",
       "target": "/wiki/street-kingdoms.html",
-      "score": 78,
-      "weight": 0.78
+      "score": 79,
+      "weight": 0.79
     },
     {
       "source": "/wiki/storm-struggle.html",
@@ -14097,8 +14097,8 @@
     {
       "source": "/wiki/tacoswap.html",
       "target": "/wiki/street-kingdoms.html",
-      "score": 81,
-      "weight": 0.81
+      "score": 82,
+      "weight": 0.82
     },
     {
       "source": "/wiki/tacoswap.html",
@@ -14127,8 +14127,8 @@
     {
       "source": "/wiki/tagzcoin.html",
       "target": "/wiki/street-kingdoms.html",
-      "score": 81,
-      "weight": 0.81
+      "score": 82,
+      "weight": 0.82
     },
     {
       "source": "/wiki/tagzcoin.html",
@@ -14163,8 +14163,8 @@
     {
       "source": "/wiki/the-allcity-bulls.html",
       "target": "/wiki/the-blockstars.html",
-      "score": 96,
-      "weight": 0.96
+      "score": 97,
+      "weight": 0.97
     },
     {
       "source": "/wiki/the-allcity-bulls.html",
@@ -14186,13 +14186,19 @@
     },
     {
       "source": "/wiki/the-aztec-raiders.html",
-      "target": "/wiki/the-bally-boys.html",
-      "score": 96,
-      "weight": 0.96
+      "target": "/wiki/the-allcity-bulls.html",
+      "score": 97,
+      "weight": 0.97
     },
     {
       "source": "/wiki/the-aztec-raiders.html",
       "target": "/wiki/the-blockstars.html",
+      "score": 97,
+      "weight": 0.97
+    },
+    {
+      "source": "/wiki/the-aztec-raiders.html",
+      "target": "/wiki/the-bally-boys.html",
       "score": 96,
       "weight": 0.96
     },
@@ -14203,12 +14209,6 @@
       "weight": 0.96
     },
     {
-      "source": "/wiki/the-aztec-raiders.html",
-      "target": "/wiki/the-allcity-bulls.html",
-      "score": 95,
-      "weight": 0.95
-    },
-    {
       "source": "/wiki/the-bally-boys.html",
       "target": "/wiki/the-ducky-boys.html",
       "score": 108,
@@ -14217,14 +14217,14 @@
     {
       "source": "/wiki/the-bally-boys.html",
       "target": "/wiki/the-allcity-bulls.html",
-      "score": 101,
+      "score": 103,
       "weight": 1
     },
     {
       "source": "/wiki/the-bally-boys.html",
       "target": "/wiki/the-blockstars.html",
-      "score": 99,
-      "weight": 0.99
+      "score": 100,
+      "weight": 1
     },
     {
       "source": "/wiki/the-bally-boys.html",
@@ -14241,8 +14241,8 @@
     {
       "source": "/wiki/the-bitcoin-kid-army.html",
       "target": "/wiki/hodl-wars.html",
-      "score": 95,
-      "weight": 0.95
+      "score": 96,
+      "weight": 0.96
     },
     {
       "source": "/wiki/the-bitcoin-kid-army.html",
@@ -14276,6 +14276,12 @@
     },
     {
       "source": "/wiki/the-blockchain-furies.html",
+      "target": "/wiki/the-allcity-bulls.html",
+      "score": 90,
+      "weight": 0.9
+    },
+    {
+      "source": "/wiki/the-blockchain-furies.html",
       "target": "/wiki/the-bally-boys.html",
       "score": 89,
       "weight": 0.89
@@ -14288,15 +14294,9 @@
     },
     {
       "source": "/wiki/the-blockchain-furies.html",
-      "target": "/wiki/the-allcity-bulls.html",
+      "target": "/wiki/the-salvagers.html",
       "score": 88,
       "weight": 0.88
-    },
-    {
-      "source": "/wiki/the-blockchain-furies.html",
-      "target": "/wiki/the-ducky-boys.html",
-      "score": 87,
-      "weight": 0.87
     },
     {
       "source": "/wiki/the-blockstars.html",
@@ -14306,15 +14306,15 @@
     },
     {
       "source": "/wiki/the-blockstars.html",
-      "target": "/wiki/the-ducky-boys.html",
+      "target": "/wiki/the-allcity-bulls.html",
       "score": 97,
       "weight": 0.97
     },
     {
       "source": "/wiki/the-blockstars.html",
-      "target": "/wiki/the-allcity-bulls.html",
-      "score": 95,
-      "weight": 0.95
+      "target": "/wiki/the-ducky-boys.html",
+      "score": 97,
+      "weight": 0.97
     },
     {
       "source": "/wiki/the-blockstars.html",
@@ -14330,13 +14330,13 @@
     },
     {
       "source": "/wiki/the-chain-scribes.html",
-      "target": "/wiki/the-code-alchemists.html",
-      "score": 81,
-      "weight": 0.81
+      "target": "/wiki/the-salvagers.html",
+      "score": 82,
+      "weight": 0.82
     },
     {
       "source": "/wiki/the-chain-scribes.html",
-      "target": "/wiki/the-salvagers.html",
+      "target": "/wiki/the-code-alchemists.html",
       "score": 81,
       "weight": 0.81
     },
@@ -14367,8 +14367,8 @@
     {
       "source": "/wiki/the-cleanupcentr.html",
       "target": "/wiki/the-salvagers.html",
-      "score": 81,
-      "weight": 0.81
+      "score": 82,
+      "weight": 0.82
     },
     {
       "source": "/wiki/the-cleanupcentr.html",
@@ -14414,9 +14414,9 @@
     },
     {
       "source": "/wiki/the-code-alchemists.html",
-      "target": "/wiki/satoshi-scroll.html",
-      "score": 84,
-      "weight": 0.84
+      "target": "/wiki/the-salvagers.html",
+      "score": 85,
+      "weight": 0.85
     },
     {
       "source": "/wiki/the-crypto-stoned-boys.html",
@@ -14433,25 +14433,31 @@
     {
       "source": "/wiki/the-crypto-stoned-boys.html",
       "target": "/wiki/the-salvagers.html",
+      "score": 85,
+      "weight": 0.85
+    },
+    {
+      "source": "/wiki/the-crypto-stoned-boys.html",
+      "target": "/wiki/the-allcity-bulls.html",
       "score": 84,
       "weight": 0.84
     },
     {
       "source": "/wiki/the-crypto-stoned-boys.html",
       "target": "/wiki/the-blockstars.html",
-      "score": 83,
-      "weight": 0.83
-    },
-    {
-      "source": "/wiki/the-crypto-stoned-boys.html",
-      "target": "/wiki/the-chain-scribes.html",
-      "score": 83,
-      "weight": 0.83
+      "score": 84,
+      "weight": 0.84
     },
     {
       "source": "/wiki/the-ducky-boys.html",
       "target": "/wiki/the-bally-boys.html",
       "score": 107,
+      "weight": 1
+    },
+    {
+      "source": "/wiki/the-ducky-boys.html",
+      "target": "/wiki/the-allcity-bulls.html",
+      "score": 100,
       "weight": 1
     },
     {
@@ -14462,12 +14468,6 @@
     },
     {
       "source": "/wiki/the-ducky-boys.html",
-      "target": "/wiki/the-allcity-bulls.html",
-      "score": 98,
-      "weight": 0.98
-    },
-    {
-      "source": "/wiki/the-ducky-boys.html",
       "target": "/wiki/the-aztec-raiders.html",
       "score": 98,
       "weight": 0.98
@@ -14475,8 +14475,8 @@
     {
       "source": "/wiki/the-ducky-boys.html",
       "target": "/wiki/the-blockstars.html",
-      "score": 96,
-      "weight": 0.96
+      "score": 97,
+      "weight": 0.97
     },
     {
       "source": "/wiki/the-evm-punks.html",
@@ -14487,8 +14487,8 @@
     {
       "source": "/wiki/the-evm-punks.html",
       "target": "/wiki/the-salvagers.html",
-      "score": 84,
-      "weight": 0.84
+      "score": 85,
+      "weight": 0.85
     },
     {
       "source": "/wiki/the-evm-punks.html",
@@ -14511,8 +14511,8 @@
     {
       "source": "/wiki/the-finance-guild.html",
       "target": "/wiki/the-high-hats.html",
-      "score": 86,
-      "weight": 0.86
+      "score": 87,
+      "weight": 0.87
     },
     {
       "source": "/wiki/the-finance-guild.html",
@@ -14534,9 +14534,9 @@
     },
     {
       "source": "/wiki/the-finance-guild.html",
-      "target": "/wiki/the-bally-boys.html",
-      "score": 77,
-      "weight": 0.77
+      "target": "/wiki/the-allcity-bulls.html",
+      "score": 78,
+      "weight": 0.78
     },
     {
       "source": "/wiki/the-first-witness.html",
@@ -14582,19 +14582,19 @@
     },
     {
       "source": "/wiki/the-gasless-ghosts.html",
-      "target": "/wiki/the-bally-boys.html",
-      "score": 89,
-      "weight": 0.89
+      "target": "/wiki/the-allcity-bulls.html",
+      "score": 90,
+      "weight": 0.9
     },
     {
       "source": "/wiki/the-gasless-ghosts.html",
       "target": "/wiki/the-blockstars.html",
-      "score": 89,
-      "weight": 0.89
+      "score": 90,
+      "weight": 0.9
     },
     {
       "source": "/wiki/the-gasless-ghosts.html",
-      "target": "/wiki/the-information-mercenaries.html",
+      "target": "/wiki/the-bally-boys.html",
       "score": 89,
       "weight": 0.89
     },
@@ -14606,13 +14606,13 @@
     },
     {
       "source": "/wiki/the-great-dip.html",
-      "target": "/wiki/fomo-plague.html",
-      "score": 81,
-      "weight": 0.81
+      "target": "/wiki/the-salvagers.html",
+      "score": 82,
+      "weight": 0.82
     },
     {
       "source": "/wiki/the-great-dip.html",
-      "target": "/wiki/the-salvagers.html",
+      "target": "/wiki/fomo-plague.html",
       "score": 81,
       "weight": 0.81
     },
@@ -14642,21 +14642,27 @@
     },
     {
       "source": "/wiki/the-hard-fork-rockers.html",
+      "target": "/wiki/the-salvagers.html",
+      "score": 88,
+      "weight": 0.88
+    },
+    {
+      "source": "/wiki/the-hard-fork-rockers.html",
+      "target": "/wiki/the-blockstars.html",
+      "score": 87,
+      "weight": 0.87
+    },
+    {
+      "source": "/wiki/the-hard-fork-rockers.html",
       "target": "/wiki/the-ducky-boys.html",
       "score": 87,
       "weight": 0.87
     },
     {
-      "source": "/wiki/the-hard-fork-rockers.html",
-      "target": "/wiki/the-salvagers.html",
+      "source": "/wiki/the-high-hats.html",
+      "target": "/wiki/the-finance-guild.html",
       "score": 87,
       "weight": 0.87
-    },
-    {
-      "source": "/wiki/the-hard-fork-rockers.html",
-      "target": "/wiki/the-bally-boys.html",
-      "score": 86,
-      "weight": 0.86
     },
     {
       "source": "/wiki/the-high-hats.html",
@@ -14666,9 +14672,9 @@
     },
     {
       "source": "/wiki/the-high-hats.html",
-      "target": "/wiki/the-finance-guild.html",
-      "score": 85,
-      "weight": 0.85
+      "target": "/wiki/the-allcity-bulls.html",
+      "score": 84,
+      "weight": 0.84
     },
     {
       "source": "/wiki/the-high-hats.html",
@@ -14678,15 +14684,21 @@
     },
     {
       "source": "/wiki/the-high-hats.html",
-      "target": "/wiki/the-allcity-bulls.html",
+      "target": "/wiki/the-nice-easy-bois.html",
       "score": 82,
       "weight": 0.82
     },
     {
-      "source": "/wiki/the-high-hats.html",
-      "target": "/wiki/the-nice-easy-bois.html",
-      "score": 82,
-      "weight": 0.82
+      "source": "/wiki/the-information-mercenaries.html",
+      "target": "/wiki/the-allcity-bulls.html",
+      "score": 90,
+      "weight": 0.9
+    },
+    {
+      "source": "/wiki/the-information-mercenaries.html",
+      "target": "/wiki/the-blockstars.html",
+      "score": 90,
+      "weight": 0.9
     },
     {
       "source": "/wiki/the-information-mercenaries.html",
@@ -14702,19 +14714,7 @@
     },
     {
       "source": "/wiki/the-information-mercenaries.html",
-      "target": "/wiki/the-blockstars.html",
-      "score": 89,
-      "weight": 0.89
-    },
-    {
-      "source": "/wiki/the-information-mercenaries.html",
       "target": "/wiki/the-gasless-ghosts.html",
-      "score": 89,
-      "weight": 0.89
-    },
-    {
-      "source": "/wiki/the-information-mercenaries.html",
-      "target": "/wiki/the-moonlords.html",
       "score": 89,
       "weight": 0.89
     },
@@ -14727,8 +14727,14 @@
     {
       "source": "/wiki/the-moonlords.html",
       "target": "/wiki/the-allcity-bulls.html",
-      "score": 95,
-      "weight": 0.95
+      "score": 97,
+      "weight": 0.97
+    },
+    {
+      "source": "/wiki/the-moonlords.html",
+      "target": "/wiki/the-blockstars.html",
+      "score": 94,
+      "weight": 0.94
     },
     {
       "source": "/wiki/the-moonlords.html",
@@ -14738,27 +14744,21 @@
     },
     {
       "source": "/wiki/the-moonlords.html",
-      "target": "/wiki/the-blockstars.html",
-      "score": 93,
-      "weight": 0.93
-    },
-    {
-      "source": "/wiki/the-moonlords.html",
       "target": "/wiki/the-aztec-raiders.html",
       "score": 92,
       "weight": 0.92
     },
     {
       "source": "/wiki/the-nice-easy-bois.html",
-      "target": "/wiki/the-high-hats.html",
-      "score": 83,
-      "weight": 0.83
+      "target": "/wiki/the-finance-guild.html",
+      "score": 84,
+      "weight": 0.84
     },
     {
       "source": "/wiki/the-nice-easy-bois.html",
-      "target": "/wiki/the-finance-guild.html",
-      "score": 82,
-      "weight": 0.82
+      "target": "/wiki/the-high-hats.html",
+      "score": 84,
+      "weight": 0.84
     },
     {
       "source": "/wiki/the-nice-easy-bois.html",
@@ -14774,9 +14774,9 @@
     },
     {
       "source": "/wiki/the-nice-easy-bois.html",
-      "target": "/wiki/the-bally-boys.html",
-      "score": 74,
-      "weight": 0.74
+      "target": "/wiki/the-blockstars.html",
+      "score": 75,
+      "weight": 0.75
     },
     {
       "source": "/wiki/the-nomad-bears.html",
@@ -14793,14 +14793,14 @@
     {
       "source": "/wiki/the-nomad-bears.html",
       "target": "/wiki/the-salvagers.html",
-      "score": 97,
-      "weight": 0.97
+      "score": 98,
+      "weight": 0.98
     },
     {
       "source": "/wiki/the-nomad-bears.html",
       "target": "/wiki/the-allcity-bulls.html",
-      "score": 95,
-      "weight": 0.95
+      "score": 97,
+      "weight": 0.97
     },
     {
       "source": "/wiki/the-nomad-bears.html",
@@ -14811,8 +14811,8 @@
     {
       "source": "/wiki/the-og-pixel-saints.html",
       "target": "/wiki/the-salvagers.html",
-      "score": 90,
-      "weight": 0.9
+      "score": 91,
+      "weight": 0.91
     },
     {
       "source": "/wiki/the-og-pixel-saints.html",
@@ -14871,8 +14871,8 @@
     {
       "source": "/wiki/the-rugpull-miners.html",
       "target": "/wiki/the-salvagers.html",
-      "score": 87,
-      "weight": 0.87
+      "score": 88,
+      "weight": 0.88
     },
     {
       "source": "/wiki/the-rugpull-miners.html",
@@ -14912,6 +14912,12 @@
     },
     {
       "source": "/wiki/the-salvagers.html",
+      "target": "/wiki/the-allcity-bulls.html",
+      "score": 87,
+      "weight": 0.87
+    },
+    {
+      "source": "/wiki/the-salvagers.html",
       "target": "/wiki/the-ducky-boys.html",
       "score": 87,
       "weight": 0.87
@@ -14923,16 +14929,10 @@
       "weight": 0.86
     },
     {
-      "source": "/wiki/the-salvagers.html",
-      "target": "/wiki/the-og-pixel-saints.html",
-      "score": 86,
-      "weight": 0.86
-    },
-    {
       "source": "/wiki/the-shard-mothers-of-manhattan.html",
       "target": "/wiki/the-salvagers.html",
-      "score": 84,
-      "weight": 0.84
+      "score": 85,
+      "weight": 0.85
     },
     {
       "source": "/wiki/the-shard-mothers-of-manhattan.html",
@@ -14954,15 +14954,15 @@
     },
     {
       "source": "/wiki/the-shard-mothers-of-manhattan.html",
-      "target": "/wiki/the-ducky-boys.html",
+      "target": "/wiki/the-allcity-bulls.html",
       "score": 81,
       "weight": 0.81
     },
     {
       "source": "/wiki/the-squeaky-pinks.html",
       "target": "/wiki/the-salvagers.html",
-      "score": 84,
-      "weight": 0.84
+      "score": 85,
+      "weight": 0.85
     },
     {
       "source": "/wiki/the-squeaky-pinks.html",
@@ -14984,13 +14984,19 @@
     },
     {
       "source": "/wiki/the-squeaky-pinks.html",
-      "target": "/wiki/the-ducky-boys.html",
+      "target": "/wiki/the-allcity-bulls.html",
       "score": 81,
       "weight": 0.81
     },
     {
       "source": "/wiki/the-tuskon-ogs.html",
       "target": "/wiki/satoshi-scroll.html",
+      "score": 84,
+      "weight": 0.84
+    },
+    {
+      "source": "/wiki/the-tuskon-ogs.html",
+      "target": "/wiki/the-allcity-bulls.html",
       "score": 84,
       "weight": 0.84
     },
@@ -15009,12 +15015,6 @@
     {
       "source": "/wiki/the-tuskon-ogs.html",
       "target": "/wiki/the-moonlords.html",
-      "score": 83,
-      "weight": 0.83
-    },
-    {
-      "source": "/wiki/the-tuskon-ogs.html",
-      "target": "/wiki/the-rugpull-miners.html",
       "score": 83,
       "weight": 0.83
     },
@@ -15194,7 +15194,7 @@
     },
     {
       "source": "/wiki/triple-fork-event.html",
-      "target": "/wiki/sacred-chain.html",
+      "target": "/wiki/hodl-wars.html",
       "score": 90,
       "weight": 0.9
     },
@@ -15285,8 +15285,8 @@
     {
       "source": "/wiki/wax-blockchain.html",
       "target": "/wiki/the-high-hats.html",
-      "score": 67,
-      "weight": 0.67
+      "score": 68,
+      "weight": 0.68
     },
     {
       "source": "/wiki/wax-dexs-defi.html",
@@ -15368,15 +15368,15 @@
     },
     {
       "source": "/wiki/wax-pepe.html",
-      "target": "/wiki/wax-nft-marketplaces.html",
+      "target": "/wiki/street-kingdoms.html",
       "score": 72,
       "weight": 0.72
     },
     {
       "source": "/wiki/wax-pepe.html",
-      "target": "/wiki/street-kingdoms.html",
-      "score": 71,
-      "weight": 0.71
+      "target": "/wiki/wax-nft-marketplaces.html",
+      "score": 72,
+      "weight": 0.72
     },
     {
       "source": "/wiki/waxp-exchange.html",
@@ -15434,9 +15434,9 @@
     },
     {
       "source": "/wiki/waxp.html",
-      "target": "/wiki/the-high-hats.html",
-      "score": 64,
-      "weight": 0.64
+      "target": "/wiki/the-finance-guild.html",
+      "score": 65,
+      "weight": 0.65
     },
     {
       "source": "/wiki/web3.html",
@@ -15482,13 +15482,13 @@
     },
     {
       "source": "/wiki/whale-lords.html",
-      "target": "/wiki/fomo-plague.html",
-      "score": 81,
-      "weight": 0.81
+      "target": "/wiki/the-salvagers.html",
+      "score": 82,
+      "weight": 0.82
     },
     {
       "source": "/wiki/whale-lords.html",
-      "target": "/wiki/the-salvagers.html",
+      "target": "/wiki/fomo-plague.html",
       "score": 81,
       "weight": 0.81
     },
@@ -15507,8 +15507,8 @@
     {
       "source": "/wiki/wuffi.html",
       "target": "/wiki/street-kingdoms.html",
-      "score": 81,
-      "weight": 0.81
+      "score": 82,
+      "weight": 0.82
     },
     {
       "source": "/wiki/wuffi.html",
@@ -15567,8 +15567,8 @@
     {
       "source": "/wiki/xrp-ledger.html",
       "target": "/wiki/street-kingdoms.html",
-      "score": 78,
-      "weight": 0.78
+      "score": 79,
+      "weight": 0.79
     },
     {
       "source": "/wiki/xrp-ledger.html",

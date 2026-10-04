@@ -774,6 +774,64 @@ const graffpunksStopwordOnly = {
   for (const [slug, subjects] of Object.entries(adultSubjects)) {
     subjectsByPage[slug] = [...(subjectsByPage[slug] || []), ...subjects];
   }
+  const dividendSubjects = {
+    "hodl-wars": [
+        "Black Dividend",
+        "Night Cover",
+        "Rovan Drell",
+        "Teren Pike",
+        "Sevrin Holt",
+        "Beren withdrawal"
+    ],
+    "street-kingdoms": [
+        "Nine Rung",
+        "Etta Lorn",
+        "Sella Harn",
+        "fear rent",
+        "gate notice",
+        "injury debt"
+    ],
+    "the-finance-guild": [
+        "Night Cover account",
+        "Black Dividend column",
+        "Tala late payment",
+        "freight reserve",
+        "Meren priority"
+    ],
+    "the-salvagers": [
+        "Cinder Shed load",
+        "Borrowed Grip",
+        "Etta sorting",
+        "Rattle night money",
+        "Leda bench"
+    ],
+    "the-high-hats": [
+        "Aster Kesh",
+        "Ilar Vane",
+        "Long Window fire",
+        "cover coat refusal",
+        "last invitation"
+    ],
+    "the-allcity-bulls": [
+        "Night Heat",
+        "Vexa Row",
+        "winner debt",
+        "Neri Bask",
+        "Milo sponsorship",
+        "Glasswake runner"
+    ],
+    "the-blockstars": [
+        "Warm Picture",
+        "camera after fire",
+        "Aven Coil",
+        "Backlight dirty morning",
+        "cover correction",
+        "Sevrin interview"
+    ]
+};
+  for (const [slug, subjects] of Object.entries(dividendSubjects)) {
+    subjectsByPage[slug] = [...(subjectsByPage[slug] || []), ...subjects];
+  }
   const stopWords = vm.runInContext('SEARCH_TEXT_STOP_WORDS', sb);
   let checked = 0;
   for (const [slug, subjects] of Object.entries(subjectsByPage)) {
@@ -803,7 +861,7 @@ const graffpunksStopwordOnly = {
     assert.ok(entry.search_index.keyword_bag.includes(token), `${token} is searchable`);
     assert.ok(!entry.search_index.tokens.includes(token), `${token} must not leak into title-only relationship tokens`);
   }
-  for (const [slug, token] of [['block-topia', 'shutter'], ['null-the-prophet', 'sena'], ['the-finance-guild', 'crate'], ['first-witness-faction-commentaries', 'jpeg'], ['first-witness-long-transmission', 'eda'], ['street-kingdoms', 'krail'], ['the-blockstars', 'supper'], ['the-high-hats', 'storm'], ['hard-fork-games', 'lysa'], ['block-topia', 'rack'], ['bitcoin-x-kids', 'instrument'], ['the-squeaky-pinks', 'disc'], ['the-moonlords', 'daro'], ['the-information-mercenaries', 'crimson'], ['the-hard-fork-rockers', 'glasswake'], ['the-gasless-ghosts', 'kett']]) {
+  for (const [slug, token] of [['block-topia', 'shutter'], ['null-the-prophet', 'sena'], ['the-finance-guild', 'crate'], ['first-witness-faction-commentaries', 'jpeg'], ['first-witness-long-transmission', 'eda'], ['street-kingdoms', 'krail'], ['the-blockstars', 'supper'], ['the-high-hats', 'storm'], ['hard-fork-games', 'lysa'], ['block-topia', 'rack'], ['bitcoin-x-kids', 'instrument'], ['the-squeaky-pinks', 'disc'], ['the-moonlords', 'daro'], ['the-information-mercenaries', 'crimson'], ['the-hard-fork-rockers', 'glasswake'], ['the-gasless-ghosts', 'kett'], ['hodl-wars', 'dividend'], ['street-kingdoms', 'sella'], ['the-allcity-bulls', 'vexa'], ['the-blockstars', 'aven']]) {
     const entry = wikiIndex.find(item => item.url === `/wiki/${slug}.html`);
     assert.ok(entry.search_index.keyword_bag.includes(token), `${slug}: ${token} remains discoverable`);
     assert.ok(!entry.search_index.tokens.includes(token), `${slug}: search-only ${token} cannot create relationship tags`);

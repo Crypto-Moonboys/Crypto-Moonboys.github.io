@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-04T21:42:26.857Z",
-  "verified_at": "2026-10-04T21:42:26.857Z",
+  "generated_at": "2026-10-04T22:07:18.726Z",
+  "verified_at": "2026-10-04T22:07:18.726Z",
   "lite": true,
   "nodes": [
     {
@@ -116,6 +116,14 @@
       "authority_score": 17
     },
     {
+      "id": "/wiki/hodl-wars.html",
+      "title": "HODL WARS",
+      "url": "/wiki/hodl-wars.html",
+      "category": "core",
+      "rank_score": 345,
+      "authority_score": 28
+    },
+    {
       "id": "/wiki/first-witness-sects-schools-schisms.html",
       "title": "Sects, Schools and Schisms",
       "url": "/wiki/first-witness-sects-schools-schisms.html",
@@ -186,14 +194,6 @@
       "category": "core",
       "rank_score": 333,
       "authority_score": 14
-    },
-    {
-      "id": "/wiki/hodl-wars.html",
-      "title": "HODL WARS",
-      "url": "/wiki/hodl-wars.html",
-      "category": "core",
-      "rank_score": 333,
-      "authority_score": 28
     },
     {
       "id": "/wiki/the-chain-scribes.html",
@@ -268,6 +268,14 @@
       "authority_score": 14
     },
     {
+      "id": "/wiki/the-high-hats.html",
+      "title": "The High Hats",
+      "url": "/wiki/the-high-hats.html",
+      "category": "factions",
+      "rank_score": 327,
+      "authority_score": 28
+    },
+    {
       "id": "/wiki/the-nice-easy-bois.html",
       "title": "The NICE &amp; EASY BOIS",
       "url": "/wiki/the-nice-easy-bois.html",
@@ -324,6 +332,14 @@
       "authority_score": 14
     },
     {
+      "id": "/wiki/the-finance-guild.html",
+      "title": "The Finance Guild",
+      "url": "/wiki/the-finance-guild.html",
+      "category": "factions",
+      "rank_score": 322,
+      "authority_score": 28
+    },
+    {
       "id": "/wiki/bitcoin-kids.html",
       "title": "Bitcoin Kids",
       "url": "/wiki/bitcoin-kids.html",
@@ -370,14 +386,6 @@
       "category": "core",
       "rank_score": 319,
       "authority_score": 14
-    },
-    {
-      "id": "/wiki/the-high-hats.html",
-      "title": "The High Hats",
-      "url": "/wiki/the-high-hats.html",
-      "category": "factions",
-      "rank_score": 319,
-      "authority_score": 28
     },
     {
       "id": "/wiki/first-witness-parables.html",
@@ -428,6 +436,14 @@
       "authority_score": 14
     },
     {
+      "id": "/wiki/street-kingdoms.html",
+      "title": "Street Kingdoms",
+      "url": "/wiki/street-kingdoms.html",
+      "category": "factions",
+      "rank_score": 315,
+      "authority_score": 24
+    },
+    {
       "id": "/wiki/first-witness-street-kingdoms-reading.html",
       "title": "Street Kingdoms and the Living Reading",
       "url": "/wiki/first-witness-street-kingdoms-reading.html",
@@ -452,28 +468,12 @@
       "authority_score": 14
     },
     {
-      "id": "/wiki/street-kingdoms.html",
-      "title": "Street Kingdoms",
-      "url": "/wiki/street-kingdoms.html",
-      "category": "factions",
-      "rank_score": 311,
-      "authority_score": 24
-    },
-    {
       "id": "/wiki/first-witness-mediation-witness-circles.html",
       "title": "Mediation and Witness Circles",
       "url": "/wiki/first-witness-mediation-witness-circles.html",
       "category": "core",
       "rank_score": 310,
       "authority_score": 14
-    },
-    {
-      "id": "/wiki/the-finance-guild.html",
-      "title": "The Finance Guild",
-      "url": "/wiki/the-finance-guild.html",
-      "category": "factions",
-      "rank_score": 310,
-      "authority_score": 28
     },
     {
       "id": "/wiki/crypto-moonboy-pets.html",
@@ -842,8 +842,8 @@
     {
       "source": "/wiki/the-bitcoin-kid-army.html",
       "target": "/wiki/hodl-wars.html",
-      "score": 95,
-      "weight": 0.95
+      "score": 96,
+      "weight": 0.96
     },
     {
       "source": "/wiki/burn-to-earn.html",
@@ -854,8 +854,8 @@
     {
       "source": "/wiki/genesis-kernel.html",
       "target": "/wiki/hodl-wars.html",
-      "score": 92,
-      "weight": 0.92
+      "score": 93,
+      "weight": 0.93
     },
     {
       "source": "/wiki/bitcoin-x-kids.html",
@@ -890,8 +890,14 @@
     {
       "source": "/wiki/the-finance-guild.html",
       "target": "/wiki/the-high-hats.html",
-      "score": 86,
-      "weight": 0.86
+      "score": 87,
+      "weight": 0.87
+    },
+    {
+      "source": "/wiki/the-high-hats.html",
+      "target": "/wiki/the-finance-guild.html",
+      "score": 87,
+      "weight": 0.87
     },
     {
       "source": "/wiki/the-salvagers.html",
@@ -906,10 +912,10 @@
       "weight": 0.85
     },
     {
-      "source": "/wiki/the-high-hats.html",
+      "source": "/wiki/the-nice-easy-bois.html",
       "target": "/wiki/the-finance-guild.html",
-      "score": 85,
-      "weight": 0.85
+      "score": 84,
+      "weight": 0.84
     },
     {
       "source": "/wiki/the-princess.html",
@@ -936,16 +942,10 @@
       "weight": 0.84
     },
     {
-      "source": "/wiki/the-finance-guild.html",
-      "target": "/wiki/the-nice-easy-bois.html",
-      "score": 82,
-      "weight": 0.82
-    },
-    {
       "source": "/wiki/the-chain-scribes.html",
       "target": "/wiki/the-salvagers.html",
-      "score": 81,
-      "weight": 0.81
+      "score": 82,
+      "weight": 0.82
     },
     {
       "source": "/wiki/the-nice-easy-bois.html",

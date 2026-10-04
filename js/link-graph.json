@@ -21357,7 +21357,7 @@
     "inbound_from": []
   },
   "/wiki/street-kingdoms.html": {
-    "outbound_count": 28,
+    "outbound_count": 29,
     "inbound_count": 16,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
@@ -21383,6 +21383,7 @@
       "/wiki/first-witness-digital-inheritance-after-death.html",
       "/wiki/first-witness-justice-mercy-restitution.html",
       "/wiki/first-witness-land-water-stewardship.html",
+      "/wiki/first-witness-money-debt-honest-scales.html",
       "/wiki/first-witness-prisons-punishment-return.html",
       "/wiki/first-witness-proverbs-street-sayings.html",
       "/wiki/first-witness-street-kingdoms-reading.html",
@@ -21528,7 +21529,7 @@
     "inbound_from": []
   },
   "/wiki/the-allcity-bulls.html": {
-    "outbound_count": 26,
+    "outbound_count": 27,
     "inbound_count": 3,
     "existing_outbound": [
       "/wiki/bitcoin-kids.html",
@@ -21553,6 +21554,7 @@
     "suggested_outbound": [
       "/wiki/first-witness-censorship-offence-public-marks.html",
       "/wiki/first-witness-long-transmission.html",
+      "/wiki/first-witness-money-debt-honest-scales.html",
       "/wiki/first-witness-prisons-punishment-return.html",
       "/wiki/genesis-kernel.html",
       "/wiki/graffpunks.html",
@@ -21797,7 +21799,7 @@
     ]
   },
   "/wiki/the-blockstars.html": {
-    "outbound_count": 32,
+    "outbound_count": 35,
     "inbound_count": 1,
     "existing_outbound": [
       "/wiki/bitcoin-kids.html",
@@ -21822,9 +21824,12 @@
       "/wiki/block-node-defenders.html",
       "/wiki/first-witness-apocrypha-disputed-passages.html",
       "/wiki/first-witness-block-topia-reading.html",
+      "/wiki/first-witness-book-8-the-fire.html",
       "/wiki/first-witness-book-9-the-unwritten-block.html",
+      "/wiki/first-witness-child-of-fire.html",
       "/wiki/first-witness-digital-inheritance-after-death.html",
       "/wiki/first-witness-long-transmission.html",
+      "/wiki/first-witness-truth-commissions-after-conflict.html",
       "/wiki/gkniftyheads-digital-diva-783394.html",
       "/wiki/gkniftyheads-digital-duchess-783404.html",
       "/wiki/graffpunks.html",
@@ -22535,7 +22540,7 @@
     ]
   },
   "/wiki/the-high-hats.html": {
-    "outbound_count": 26,
+    "outbound_count": 28,
     "inbound_count": 33,
     "existing_outbound": [
       "/wiki/bitcoin-kids.html",
@@ -22557,6 +22562,8 @@
     "suggested_outbound": [
       "/wiki/block-node-defenders.html",
       "/wiki/first-witness-anonymity-pseudonyms-hidden-names.html",
+      "/wiki/first-witness-book-8-the-fire.html",
+      "/wiki/first-witness-child-of-fire.html",
       "/wiki/first-witness-digital-inheritance-after-death.html",
       "/wiki/first-witness-long-transmission.html",
       "/wiki/first-witness-prisons-punishment-return.html",
@@ -22958,7 +22965,7 @@
     ]
   },
   "/wiki/the-salvagers.html": {
-    "outbound_count": 34,
+    "outbound_count": 35,
     "inbound_count": 6,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
@@ -22985,6 +22992,7 @@
       "/wiki/first-witness-book-1-the-first-witness.html",
       "/wiki/first-witness-book-2-the-common-blood.html",
       "/wiki/first-witness-book-3-the-keeper.html",
+      "/wiki/first-witness-money-debt-honest-scales.html",
       "/wiki/first-witness-prisons-punishment-return.html",
       "/wiki/genesis-kernel.html",
       "/wiki/gkniftyheads-graphite-ghost-783307.html",
