@@ -71,7 +71,7 @@ test('completed core-history rewrites leave the queue and retain their prose loc
   const manifest = buildWikiAudit();
   for (const slug of ['sacred-chain', 'triple-fork-event', 'genesis-kernel', 'graffiti-nexus', 'hard-fork-games']) {
     const page = manifest.pages.find(page => page.slug === slug);
-    assert.equal(page.canon_revision, 1);
+    assert.equal(page.canon_revision, 2);
     assert.equal(page.content_owner, 'canon');
     assert.equal(page.rewrite_status, 'KEEP');
     assert.equal(page.automation_policy, 'canon-locked');

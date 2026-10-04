@@ -153,8 +153,8 @@ function runTests() {
     const entry = index.find(item => item.url === url);
     tests.push({
       name: `Reconciled core history indexed: ${slug}`,
-      description: `${url} remains published and classified as core history`,
-      pass: approvedWikiUrls.has(url) && entry?.category === 'core'
+      description: `${url} remains published as core history with its full reference chapter measured`,
+      pass: approvedWikiUrls.has(url) && entry?.category === 'core' && entry.rank_signals?.article_word_count >= 6000
     });
   }
 

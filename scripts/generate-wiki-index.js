@@ -18,6 +18,10 @@ const OUTPUT = path.join(ROOT, 'js', 'wiki-index.json');
 const SAM_MEMORY_PATH = path.join(ROOT, 'sam-memory.json');
 const LINK_GRAPH_PATH = path.join(ROOT, 'js', 'link-graph.json');
 
+// Long reference chapters should retain their full depth without letting
+// page length overwhelm a query's more specific source or subject match.
+const MAX_RANKED_WORD_COUNT = 1000;
+
 // Approved root/tool pages that should be in search index (non-wiki)
 const ROOT_PAGES_TO_INDEX = getRootPagePaths();
 const APPROVED_INDEX_CATEGORIES = new Set(Object.keys(CONFIG.CATEGORY_PRIORITY));
@@ -621,7 +625,7 @@ function computeRankScore(signals) {
   if (signals.has_description) score += CONFIG.WEIGHTS.description;
 
   score += signals.category_priority * CONFIG.WEIGHTS.category;
-  score += signals.article_word_count * CONFIG.WEIGHTS.word_count;
+  score += Math.min(signals.article_word_count, MAX_RANKED_WORD_COUNT) * CONFIG.WEIGHTS.word_count;
   score += signals.keyword_bag_size * CONFIG.WEIGHTS.keyword_bag;
   score += signals.content_quality_score;
   score += signals.authority_score * CONFIG.WEIGHTS.authority;
@@ -636,7 +640,7 @@ function buildRankDiagnostics(signals, rankScore) {
   const canonicalPoints = signals.is_canonical ? CONFIG.WEIGHTS.canonical : 0;
   const descriptionPoints = signals.has_description ? CONFIG.WEIGHTS.description : 0;
   const categoryPoints = signals.category_priority * CONFIG.WEIGHTS.category;
-  const wordCountPoints = Math.round(signals.article_word_count * CONFIG.WEIGHTS.word_count);
+  const wordCountPoints = Math.round(Math.min(signals.article_word_count, MAX_RANKED_WORD_COUNT) * CONFIG.WEIGHTS.word_count);
   const keywordBagPoints = Math.round(signals.keyword_bag_size * CONFIG.WEIGHTS.keyword_bag);
 
   // Fold extra deterministic signals into existing required diagnostic buckets
