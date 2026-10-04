@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-04T08:25:51.467Z",
-  "verified_at": "2026-10-04T08:25:51.467Z",
+  "generated_at": "2026-10-04T09:50:01.262Z",
+  "verified_at": "2026-10-04T09:50:01.262Z",
   "lite": true,
   "nodes": [
     {
@@ -40,7 +40,7 @@
       "title": "GKniftyHEADS",
       "url": "/wiki/gkniftyheads.html",
       "category": "characters",
-      "rank_score": 598,
+      "rank_score": 592,
       "authority_score": 17
     },
     {
@@ -64,7 +64,7 @@
       "title": "Block Topia",
       "url": "/wiki/block-topia.html",
       "category": "characters",
-      "rank_score": 476,
+      "rank_score": 464,
       "authority_score": 13
     },
     {
@@ -508,20 +508,20 @@
       "authority_score": 17
     },
     {
-      "id": "/wiki/bitcoin-x-kids.html",
-      "title": "Bitcoin X Kids",
-      "url": "/wiki/bitcoin-x-kids.html",
-      "category": "characters",
-      "rank_score": 301,
-      "authority_score": 28
-    },
-    {
       "id": "/wiki/first-witness-hodl-doctrine.html",
       "title": "The HODL Doctrine",
       "url": "/wiki/first-witness-hodl-doctrine.html",
       "category": "core",
       "rank_score": 300,
       "authority_score": 12
+    },
+    {
+      "id": "/wiki/bitcoin-x-kids.html",
+      "title": "Bitcoin X Kids",
+      "url": "/wiki/bitcoin-x-kids.html",
+      "category": "characters",
+      "rank_score": 298,
+      "authority_score": 28
     },
     {
       "id": "/wiki/first-witness-glossary.html",
@@ -884,8 +884,8 @@
     {
       "source": "/wiki/bitcoin-kids.html",
       "target": "/wiki/bitcoin-x-kids.html",
-      "score": 98,
-      "weight": 0.98
+      "score": 97,
+      "weight": 0.97
     },
     {
       "source": "/wiki/burn-to-earn.html",
@@ -1080,14 +1080,14 @@
       "weight": 0.73
     },
     {
-      "source": "/wiki/blockchain.html",
-      "target": "/wiki/rave-relics.html",
-      "score": 67,
-      "weight": 0.67
-    },
-    {
       "source": "/wiki/staking.html",
       "target": "/wiki/block-topia.html",
+      "score": 68,
+      "weight": 0.68
+    },
+    {
+      "source": "/wiki/blockchain.html",
+      "target": "/wiki/rave-relics.html",
       "score": 67,
       "weight": 0.67
     }

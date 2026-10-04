@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-04T08:25:51.467Z",
-  "verified_at": "2026-10-04T08:25:51.467Z",
+  "generated_at": "2026-10-04T09:50:01.262Z",
+  "verified_at": "2026-10-04T09:50:01.262Z",
   "nodes": [
     {
       "id": "/about.html",
@@ -255,7 +255,7 @@
       "title": "Bitcoin X Kids",
       "url": "/wiki/bitcoin-x-kids.html",
       "category": "characters",
-      "rank_score": 301,
+      "rank_score": 298,
       "authority_score": 28
     },
     {
@@ -279,7 +279,7 @@
       "title": "Block Topia",
       "url": "/wiki/block-topia.html",
       "category": "characters",
-      "rank_score": 476,
+      "rank_score": 464,
       "authority_score": 13
     },
     {
@@ -327,8 +327,8 @@
       "title": "Croydon Tower Blocks",
       "url": "/wiki/croydon-tower-blocks.html",
       "category": "factions",
-      "rank_score": 194,
-      "authority_score": 16
+      "rank_score": 244,
+      "authority_score": 21
     },
     {
       "id": "/wiki/crypto-moonboy-pets.html",
@@ -2343,7 +2343,7 @@
       "title": "GKniftyHEADS",
       "url": "/wiki/gkniftyheads.html",
       "category": "characters",
-      "rank_score": 598,
+      "rank_score": 592,
       "authority_score": 17
     },
     {
@@ -2559,8 +2559,8 @@
       "title": "Maidstone Base",
       "url": "/wiki/maidstone-base.html",
       "category": "factions",
-      "rank_score": 190,
-      "authority_score": 12
+      "rank_score": 245,
+      "authority_score": 21
     },
     {
       "id": "/wiki/memecoins.html",
@@ -2943,7 +2943,7 @@
       "title": "Street Kingdoms",
       "url": "/wiki/street-kingdoms.html",
       "category": "factions",
-      "rank_score": 279,
+      "rank_score": 259,
       "authority_score": 21
     },
     {
@@ -3406,13 +3406,13 @@
     },
     {
       "source": "/wiki/2025-metaverse-launch-party.html",
-      "target": "/wiki/street-kingdoms.html",
-      "score": 80,
-      "weight": 0.8
+      "target": "/wiki/delicious-again-pete.html",
+      "score": 78,
+      "weight": 0.78
     },
     {
       "source": "/wiki/2025-metaverse-launch-party.html",
-      "target": "/wiki/delicious-again-pete.html",
+      "target": "/wiki/seeding-rights.html",
       "score": 78,
       "weight": 0.78
     },
@@ -3959,8 +3959,8 @@
     {
       "source": "/wiki/bitcoin-kids.html",
       "target": "/wiki/bitcoin-x-kids.html",
-      "score": 98,
-      "weight": 0.98
+      "score": 97,
+      "weight": 0.97
     },
     {
       "source": "/wiki/bitcoin-kids.html",
@@ -4150,21 +4150,21 @@
     },
     {
       "source": "/wiki/bone-idol-ink.html",
-      "target": "/wiki/street-kingdoms.html",
-      "score": 77,
-      "weight": 0.77
-    },
-    {
-      "source": "/wiki/bone-idol-ink.html",
-      "target": "/wiki/maidstone-base.html",
-      "score": 76,
-      "weight": 0.76
-    },
-    {
-      "source": "/wiki/bone-idol-ink.html",
       "target": "/wiki/metaverse-battles.html",
       "score": 76,
       "weight": 0.76
+    },
+    {
+      "source": "/wiki/bone-idol-ink.html",
+      "target": "/wiki/block-node-defenders.html",
+      "score": 75,
+      "weight": 0.75
+    },
+    {
+      "source": "/wiki/bone-idol-ink.html",
+      "target": "/wiki/delicious-again-pete.html",
+      "score": 75,
+      "weight": 0.75
     },
     {
       "source": "/wiki/burn-to-earn.html",
@@ -4270,21 +4270,21 @@
     },
     {
       "source": "/wiki/croydon-tower-blocks.html",
+      "target": "/wiki/sneakar.html",
+      "score": 77,
+      "weight": 0.77
+    },
+    {
+      "source": "/wiki/croydon-tower-blocks.html",
       "target": "/wiki/street-kingdoms.html",
-      "score": 83,
-      "weight": 0.83
+      "score": 77,
+      "weight": 0.77
     },
     {
       "source": "/wiki/croydon-tower-blocks.html",
-      "target": "/wiki/delicious-again-pete.html",
-      "score": 81,
-      "weight": 0.81
-    },
-    {
-      "source": "/wiki/croydon-tower-blocks.html",
-      "target": "/wiki/seeding-rights.html",
-      "score": 81,
-      "weight": 0.81
+      "target": "/wiki/moon-mission.html",
+      "score": 76,
+      "weight": 0.76
     },
     {
       "source": "/wiki/crypto-moonboy-pets.html",
@@ -4450,12 +4450,6 @@
     },
     {
       "source": "/wiki/delicious-again-pete.html",
-      "target": "/wiki/street-kingdoms.html",
-      "score": 83,
-      "weight": 0.83
-    },
-    {
-      "source": "/wiki/delicious-again-pete.html",
       "target": "/wiki/seeding-rights.html",
       "score": 81,
       "weight": 0.81
@@ -4465,6 +4459,12 @@
       "target": "/wiki/lfgk.html",
       "score": 80,
       "weight": 0.8
+    },
+    {
+      "source": "/wiki/delicious-again-pete.html",
+      "target": "/wiki/forkborn-collective.html",
+      "score": 78,
+      "weight": 0.78
     },
     {
       "source": "/wiki/diamond-hands.html",
@@ -7216,15 +7216,15 @@
     },
     {
       "source": "/wiki/forkborn-collective.html",
-      "target": "/wiki/street-kingdoms.html",
-      "score": 80,
-      "weight": 0.8
-    },
-    {
-      "source": "/wiki/forkborn-collective.html",
       "target": "/wiki/web3.html",
       "score": 79,
       "weight": 0.79
+    },
+    {
+      "source": "/wiki/forkborn-collective.html",
+      "target": "/wiki/block-node-defenders.html",
+      "score": 78,
+      "weight": 0.78
     },
     {
       "source": "/wiki/forklord-you.html",
@@ -7480,12 +7480,6 @@
     },
     {
       "source": "/wiki/gk.html",
-      "target": "/wiki/street-kingdoms.html",
-      "score": 77,
-      "weight": 0.77
-    },
-    {
-      "source": "/wiki/gk.html",
       "target": "/wiki/metaverse-battles.html",
       "score": 76,
       "weight": 0.76
@@ -7493,6 +7487,12 @@
     {
       "source": "/wiki/gk.html",
       "target": "/wiki/block-node-defenders.html",
+      "score": 75,
+      "weight": 0.75
+    },
+    {
+      "source": "/wiki/gk.html",
+      "target": "/wiki/bone-idol-ink.html",
       "score": 75,
       "weight": 0.75
     },
@@ -11843,8 +11843,8 @@
     {
       "source": "/wiki/gkniftyheads.html",
       "target": "/wiki/block-topia.html",
-      "score": 67,
-      "weight": 0.67
+      "score": 68,
+      "weight": 0.68
     },
     {
       "source": "/wiki/graffiti-kings.html",
@@ -11932,9 +11932,9 @@
     },
     {
       "source": "/wiki/graffiti-queens-in-decentraland.html",
-      "target": "/wiki/street-kingdoms.html",
-      "score": 77,
-      "weight": 0.77
+      "target": "/wiki/delicious-again-pete.html",
+      "score": 75,
+      "weight": 0.75
     },
     {
       "source": "/wiki/graffpunks-24-7-radio.html",
@@ -12526,12 +12526,6 @@
     },
     {
       "source": "/wiki/lfgk.html",
-      "target": "/wiki/street-kingdoms.html",
-      "score": 83,
-      "weight": 0.83
-    },
-    {
-      "source": "/wiki/lfgk.html",
       "target": "/wiki/delicious-again-pete.html",
       "score": 81,
       "weight": 0.81
@@ -12541,6 +12535,12 @@
       "target": "/wiki/seeding-rights.html",
       "score": 81,
       "weight": 0.81
+    },
+    {
+      "source": "/wiki/lfgk.html",
+      "target": "/wiki/midevilpunks.html",
+      "score": 80,
+      "weight": 0.8
     },
     {
       "source": "/wiki/loopfiend.html",
@@ -12616,21 +12616,21 @@
     },
     {
       "source": "/wiki/maidstone-base.html",
+      "target": "/wiki/sneakar.html",
+      "score": 77,
+      "weight": 0.77
+    },
+    {
+      "source": "/wiki/maidstone-base.html",
       "target": "/wiki/street-kingdoms.html",
-      "score": 83,
-      "weight": 0.83
+      "score": 77,
+      "weight": 0.77
     },
     {
       "source": "/wiki/maidstone-base.html",
-      "target": "/wiki/delicious-again-pete.html",
-      "score": 81,
-      "weight": 0.81
-    },
-    {
-      "source": "/wiki/maidstone-base.html",
-      "target": "/wiki/seeding-rights.html",
-      "score": 81,
-      "weight": 0.81
+      "target": "/wiki/moon-mission.html",
+      "score": 76,
+      "weight": 0.76
     },
     {
       "source": "/wiki/memecoins.html",
@@ -12688,9 +12688,9 @@
     },
     {
       "source": "/wiki/metaverse-battles.html",
-      "target": "/wiki/street-kingdoms.html",
-      "score": 77,
-      "weight": 0.77
+      "target": "/wiki/block-node-defenders.html",
+      "score": 75,
+      "weight": 0.75
     },
     {
       "source": "/wiki/metropolis.html",
@@ -12832,15 +12832,15 @@
     },
     {
       "source": "/wiki/nbg.html",
-      "target": "/wiki/null-the-prophet.html",
+      "target": "/wiki/block-topia.html",
       "score": 68,
       "weight": 0.68
     },
     {
       "source": "/wiki/nbg.html",
-      "target": "/wiki/block-topia.html",
-      "score": 67,
-      "weight": 0.67
+      "target": "/wiki/null-the-prophet.html",
+      "score": 68,
+      "weight": 0.68
     },
     {
       "source": "/wiki/nbgx-token.html",
@@ -13192,13 +13192,13 @@
     },
     {
       "source": "/wiki/phygital-prints.html",
-      "target": "/wiki/street-kingdoms.html",
-      "score": 80,
-      "weight": 0.8
+      "target": "/wiki/metaverse-battles.html",
+      "score": 79,
+      "weight": 0.79
     },
     {
       "source": "/wiki/phygital-prints.html",
-      "target": "/wiki/metaverse-battles.html",
+      "target": "/wiki/web3.html",
       "score": 79,
       "weight": 0.79
     },
@@ -13726,12 +13726,6 @@
     },
     {
       "source": "/wiki/seeding-rights.html",
-      "target": "/wiki/street-kingdoms.html",
-      "score": 83,
-      "weight": 0.83
-    },
-    {
-      "source": "/wiki/seeding-rights.html",
       "target": "/wiki/delicious-again-pete.html",
       "score": 81,
       "weight": 0.81
@@ -13741,6 +13735,12 @@
       "target": "/wiki/lfgk.html",
       "score": 80,
       "weight": 0.8
+    },
+    {
+      "source": "/wiki/seeding-rights.html",
+      "target": "/wiki/forkborn-collective.html",
+      "score": 78,
+      "weight": 0.78
     },
     {
       "source": "/wiki/sister-halcyon.html",
@@ -13876,12 +13876,6 @@
     },
     {
       "source": "/wiki/spirit-borns.html",
-      "target": "/wiki/street-kingdoms.html",
-      "score": 80,
-      "weight": 0.8
-    },
-    {
-      "source": "/wiki/spirit-borns.html",
       "target": "/wiki/delicious-again-pete.html",
       "score": 78,
       "weight": 0.78
@@ -13889,6 +13883,12 @@
     {
       "source": "/wiki/spirit-borns.html",
       "target": "/wiki/forkborn-collective.html",
+      "score": 78,
+      "weight": 0.78
+    },
+    {
+      "source": "/wiki/spirit-borns.html",
+      "target": "/wiki/phygital-prints.html",
       "score": 78,
       "weight": 0.78
     },
@@ -13936,12 +13936,6 @@
     },
     {
       "source": "/wiki/squeaky-pinks-enforcers.html",
-      "target": "/wiki/street-kingdoms.html",
-      "score": 77,
-      "weight": 0.77
-    },
-    {
-      "source": "/wiki/squeaky-pinks-enforcers.html",
       "target": "/wiki/metaverse-battles.html",
       "score": 76,
       "weight": 0.76
@@ -13949,6 +13943,12 @@
     {
       "source": "/wiki/squeaky-pinks-enforcers.html",
       "target": "/wiki/block-node-defenders.html",
+      "score": 75,
+      "weight": 0.75
+    },
+    {
+      "source": "/wiki/squeaky-pinks-enforcers.html",
+      "target": "/wiki/bone-idol-ink.html",
       "score": 75,
       "weight": 0.75
     },
@@ -13972,15 +13972,15 @@
     },
     {
       "source": "/wiki/staking.html",
-      "target": "/wiki/null-the-prophet.html",
+      "target": "/wiki/block-topia.html",
       "score": 68,
       "weight": 0.68
     },
     {
       "source": "/wiki/staking.html",
-      "target": "/wiki/block-topia.html",
-      "score": 67,
-      "weight": 0.67
+      "target": "/wiki/null-the-prophet.html",
+      "score": 68,
+      "weight": 0.68
     },
     {
       "source": "/wiki/stikfamwars.html",
@@ -14056,21 +14056,21 @@
     },
     {
       "source": "/wiki/street-kingdoms.html",
-      "target": "/wiki/delicious-again-pete.html",
-      "score": 81,
-      "weight": 0.81
+      "target": "/wiki/sneakar.html",
+      "score": 77,
+      "weight": 0.77
     },
     {
       "source": "/wiki/street-kingdoms.html",
-      "target": "/wiki/seeding-rights.html",
-      "score": 81,
-      "weight": 0.81
+      "target": "/wiki/moon-mission.html",
+      "score": 76,
+      "weight": 0.76
     },
     {
       "source": "/wiki/street-kingdoms.html",
-      "target": "/wiki/lfgk.html",
-      "score": 80,
-      "weight": 0.8
+      "target": "/wiki/neftyblocks.html",
+      "score": 76,
+      "weight": 0.76
     },
     {
       "source": "/wiki/swap-nefty.html",

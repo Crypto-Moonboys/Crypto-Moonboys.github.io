@@ -625,21 +625,25 @@ const graffpunksStopwordOnly = {
 {
   const wikiIndex = JSON.parse(await fs.readFile(path.join(ROOT, 'js', 'wiki-index.json'), 'utf8'));
   const entities = JSON.parse(await fs.readFile(path.join(ROOT, 'js', 'entity-map.json'), 'utf8'));
+  const kids = entities.find(entity => entity.entity_id === 'bitcoin_kids');
+  const xKids = entities.find(entity => entity.entity_id === 'bitcoin_x_kids');
   const warriors = entities.find(entity => entity.entity_id === 'hodl_warriors');
   const xWarriors = entities.find(entity => entity.entity_id === 'hodl_x_warriors');
-  assert.ok(warriors && xWarriors, 'Both distinct HODL entities exist');
+  assert.ok(kids && xKids && warriors && xWarriors, 'Both distinct Kid and HODL entity pairs exist');
   const entityKey = value => sb.normalizeEntityKey(value);
-  const warriorKeys = new Set([warriors.canonical_title, ...warriors.aliases].map(entityKey));
-  const xWarriorKeys = new Set([xWarriors.canonical_title, ...xWarriors.aliases].map(entityKey));
-  assert.deepEqual([...warriorKeys].filter(key => xWarriorKeys.has(key)), [], 'HODL traditions share no canonical or alias lookup keys');
-  for (const entity of [warriors, xWarriors]) {
+  for (const [left, right, label] of [[kids, xKids, 'Bitcoin Kid'], [warriors, xWarriors, 'HODL']]) {
+    const leftKeys = new Set([left.canonical_title, ...left.aliases].map(entityKey));
+    const rightKeys = new Set([right.canonical_title, ...right.aliases].map(entityKey));
+    assert.deepEqual([...leftKeys].filter(key => rightKeys.has(key)), [], `${label} traditions share no canonical or alias lookup keys`);
+  }
+  for (const entity of [kids, xKids, warriors, xWarriors]) {
     for (const limit of [5, 10]) {
       const result = await selectMatches(wikiIndex, entity.canonical_title, { allowPartialFallback: true, limit });
       assert.equal(result.scored[0]?.item.url, entity.canonical_url,
         `${entity.canonical_title} resolves first in autocomplete and full search without changing short-word rules`);
     }
   }
-  for (const ordered of [[warriors, xWarriors], [xWarriors, warriors]]) {
+  for (const ordered of [[kids, xKids, warriors, xWarriors], [xWarriors, warriors, xKids, kids]]) {
     sb.entityFixtures = ordered;
     vm.runInContext('ENTITY_MAP = Object.fromEntries(entityFixtures.map(entity => [entity.entity_id, entity])); buildEntityLookup();', sb);
     for (const entity of ordered) {
@@ -659,6 +663,12 @@ const graffpunksStopwordOnly = {
     'hodl-x-warriors': ['Hester Brake', 'Cass Nine', 'CASS NINE!', 'Repair Gallery', 'Plate Book', 'service debt', 'bonnet collection'],
     'hodl-wars': ['Beren Toll', 'Dima Voss', 'Ferry Ledger', 'Narrow Peace', 'Red Tariff Week', 'charcoal notices', 'publicity crossing']
   };
+  Object.assign(subjectsByPage, {
+    'maidstone-base': ['Wet Wall Book', 'Orchard Relay', 'Borrowed Address dispute', 'River Sheet', 'Nia Form'],
+    'croydon-tower-blocks': ['Grey Landing', 'Lift Book', 'Window Witnesses', 'Chalk Kitchen', 'Seven Stair dispute', 'Marlo Quist'],
+    'street-kingdoms': ['Lantern Courts', 'Borough Thread', 'Water Truce', 'Slate Market', 'Roof Census', 'Nine Door winter', 'Imani Rook', 'Sol Mercer'],
+    'block-topia': ['Civic Measure', 'Air Ledger', 'Glass Kitchens', 'Petition Hour', 'Borough Exchange', 'Mira Quoin', 'Tern Vale']
+  });
   const stopWords = vm.runInContext('SEARCH_TEXT_STOP_WORDS', sb);
   let checked = 0;
   for (const [slug, subjects] of Object.entries(subjectsByPage)) {
@@ -695,6 +705,35 @@ const graffpunksStopwordOnly = {
   const absent = await selectMatches(wikiIndex, 'Mina Unrelatedzzzzz', { allowPartialFallback: false, limit: 10 });
   assert.ok(!absent.scored.some(({ item }) => item.url === '/wiki/bitcoin-kids.html'), 'An unrelated meaningful query word must prevent a strict subject match');
   console.log(`New war-spine search subjects: ${checked} queries pass`);
+}
+
+// Public snippets must reflect the same geography as the revised articles.
+// Check the actual HTML and generated search cards so obsolete claims cannot
+// survive in social previews or structured data after a prose rewrite.
+{
+  const descriptions = {
+    'maidstone-base': 'Maidstone Base as a present-day Kent working association and a disputed place-memory in later Crypto Moonboys lore.',
+    'croydon-tower-blocks': 'Croydon walls as inhabited origin memory: residents, artists, contested archives and later Year 3008 interpretations.',
+    'street-kingdoms': 'The inhabited Year 3008 territories beyond Block Topia: borough networks, work, mobile law, markets and survival.',
+    'block-topia': 'The Year 3008 Queens citadel: survival systems, managed identity, the True Bitcoin Fork and the state behind the Hard Fork Games.'
+  };
+  const index = JSON.parse(await fs.readFile(path.join(ROOT, 'js', 'wiki-index.json'), 'utf8'));
+  for (const [slug, description] of Object.entries(descriptions)) {
+    const html = await fs.readFile(path.join(ROOT, 'wiki', `${slug}.html`), 'utf8');
+    assert.equal([...html.matchAll(/<h1\b/gi)].length, 1,
+      `${slug} has one article title even without JavaScript`);
+    assert.equal(html.match(/<meta name="description" content="([^"]*)">/)?.[1], description,
+      `${slug} has an accurate public description`);
+    assert.equal(html.match(/<meta property="og:description" content="([^"]*)">/)?.[1], description,
+      `${slug} social previews agree with the article description`);
+    const articles = [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)]
+      .map(match => JSON.parse(match[1])).filter(data => data['@type'] === 'Article');
+    if (slug !== 'block-topia') assert.equal(articles.length, 1, `${slug} retains its Article structured data`);
+    for (const article of articles) assert.equal(article.description, description,
+      `${slug} structured data agrees with its public description`);
+    assert.equal(index.find(entry => entry.url === `/wiki/${slug}.html`)?.desc, description,
+      `${slug} search cards agree with its public description`);
+  }
 }
 
 console.log('wiki-search.test: PASS');

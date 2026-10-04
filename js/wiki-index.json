@@ -482,7 +482,7 @@
         "title": "gkniftyheads crypto moonboys wiki"
       }
     ],
-    "rank_score": 598,
+    "rank_score": 592,
     "rank_signals": {
       "is_canonical": true,
       "alias_count": 1,
@@ -509,9 +509,9 @@
       "word_count_points": 50,
       "keyword_bag_points": 21,
       "content_quality_points": 84,
-      "authority_points": 373,
-      "final_rank_score": 598,
-      "authority_graph_points": 356
+      "authority_points": 367,
+      "final_rank_score": 592,
+      "authority_graph_points": 350
     },
     "search_index": {
       "normalized_title": "gkniftyheads crypto moonboys wiki",
@@ -546,11 +546,11 @@
       ]
     },
     "link_score": {
-      "inbound_count": 177,
+      "inbound_count": 174,
       "outbound_count": 14,
       "existing_outbound_count": 4,
       "suggested_outbound_count": 10,
-      "authority": 356
+      "authority": 350
     },
     "brand": null
   },
@@ -904,7 +904,7 @@
   },
   {
     "title": "Block Topia",
-    "desc": "Block Topia is the fortified algorithmic city at the centre of the Crypto Moonboys Year 3008 lore: a citadel of order, surveillance, faction warfare and rebellion.",
+    "desc": "The Year 3008 Queens citadel: survival systems, managed identity, the True Bitcoin Fork and the state behind the Hard Fork Games.",
     "url": "/wiki/block-topia.html",
     "tags": [
       "block",
@@ -919,7 +919,7 @@
         "title": "block topia crypto moonboys wiki"
       }
     ],
-    "rank_score": 476,
+    "rank_score": 464,
     "rank_signals": {
       "is_canonical": true,
       "alias_count": 1,
@@ -928,15 +928,15 @@
       "category": "characters",
       "category_priority": 8,
       "has_description": true,
-      "article_word_count": 1923,
-      "keyword_bag_size": 24,
-      "heading_count": 11,
+      "article_word_count": 1302,
+      "keyword_bag_size": 22,
+      "heading_count": 20,
       "list_count": 1,
       "internal_link_count": 0,
-      "paragraph_count": 33,
-      "section_count": 10,
+      "paragraph_count": 40,
+      "section_count": 19,
       "lore_paragraph_count": 0,
-      "content_quality_score": 81,
+      "content_quality_score": 77,
       "authority_score": 13
     },
     "rank_diagnostics": {
@@ -944,11 +944,11 @@
       "description_points": 10,
       "category_points": 40,
       "word_count_points": 50,
-      "keyword_bag_points": 24,
-      "content_quality_points": 89,
-      "authority_points": 243,
-      "final_rank_score": 476,
-      "authority_graph_points": 230
+      "keyword_bag_points": 22,
+      "content_quality_points": 85,
+      "authority_points": 237,
+      "final_rank_score": 464,
+      "authority_graph_points": 224
     },
     "search_index": {
       "normalized_title": "block topia crypto moonboys wiki",
@@ -965,33 +965,48 @@
         "crypto",
         "moonboys",
         "wiki",
-        "is",
         "the",
-        "fortified",
-        "algorithmic",
-        "city",
-        "at",
-        "centre",
-        "of",
         "year",
         "3008",
-        "lore",
-        "a",
+        "queens",
         "citadel",
-        "order",
-        "surveillance",
-        "faction",
-        "warfare",
+        "survival",
+        "systems",
+        "managed",
+        "identity",
+        "true",
+        "bitcoin",
+        "fork",
         "and",
-        "rebellion"
+        "state",
+        "behind",
+        "hard",
+        "games",
+        "stronghold",
+        "civic",
+        "measure",
+        "air",
+        "ledger",
+        "lower",
+        "grid",
+        "glass",
+        "kitchens",
+        "petition",
+        "hour",
+        "borough",
+        "exchange",
+        "mira",
+        "quoin",
+        "tern",
+        "vale"
       ]
     },
     "link_score": {
-      "inbound_count": 115,
-      "outbound_count": 9,
+      "inbound_count": 112,
+      "outbound_count": 41,
       "existing_outbound_count": 0,
-      "suggested_outbound_count": 9,
-      "authority": 230
+      "suggested_outbound_count": 41,
+      "authority": 224
     },
     "brand": null
   },
@@ -8400,119 +8415,6 @@
     "brand": null
   },
   {
-    "title": "Bitcoin X Kids",
-    "desc": "The distinct engineered generation inside Block Topia: Seeding, Glass Court households, education, placement, bonnet traditions and the pressures of Year 3008.",
-    "url": "/wiki/bitcoin-x-kids.html",
-    "tags": [
-      "bitcoin",
-      "kids",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "characters",
-    "aliases": [
-      {
-        "title": "bitcoin kids crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 301,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "characters",
-      "category_priority": 8,
-      "has_description": true,
-      "article_word_count": 4955,
-      "keyword_bag_size": 26,
-      "heading_count": 28,
-      "list_count": 1,
-      "internal_link_count": 15,
-      "paragraph_count": 73,
-      "section_count": 25,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 89,
-      "authority_score": 28
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 40,
-      "word_count_points": 50,
-      "keyword_bag_points": 26,
-      "content_quality_points": 97,
-      "authority_points": 58,
-      "final_rank_score": 301,
-      "authority_graph_points": 30
-    },
-    "search_index": {
-      "normalized_title": "bitcoin x kids crypto moonboys wiki",
-      "tokens": [
-        "bitcoin",
-        "x",
-        "kids",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "bitcoin",
-        "x",
-        "kids",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "the",
-        "distinct",
-        "engineered",
-        "generation",
-        "inside",
-        "block",
-        "topia",
-        "seeding",
-        "glass",
-        "court",
-        "households",
-        "education",
-        "placement",
-        "bonnet",
-        "traditions",
-        "and",
-        "pressures",
-        "of",
-        "year",
-        "3008",
-        "ada",
-        "wren",
-        "esme",
-        "sorn",
-        "len",
-        "arc",
-        "measure",
-        "hall",
-        "blank",
-        "day",
-        "quiet",
-        "window",
-        "exchange",
-        "encoded",
-        "irises",
-        "theta",
-        "protocols"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 12,
-      "outbound_count": 43,
-      "existing_outbound_count": 12,
-      "suggested_outbound_count": 31,
-      "authority": 30
-    },
-    "brand": null
-  },
-  {
     "title": "The HODL Doctrine",
     "desc": "How Book VII became later HODL language and collective defence.",
     "url": "/wiki/first-witness-hodl-doctrine.html",
@@ -8671,6 +8573,115 @@
       "existing_outbound_count": 6,
       "suggested_outbound_count": 65,
       "authority": 15
+    },
+    "brand": null
+  },
+  {
+    "title": "Bitcoin X Kids",
+    "desc": "The distinct engineered generation inside Block Topia: Seeding, Glass Court households, education, placement, bonnet traditions and the pressures of Year 3008.",
+    "url": "/wiki/bitcoin-x-kids.html",
+    "tags": [
+      "bitcoin",
+      "kids",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "characters",
+    "aliases": [],
+    "rank_score": 298,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "characters",
+      "category_priority": 8,
+      "has_description": true,
+      "article_word_count": 4955,
+      "keyword_bag_size": 26,
+      "heading_count": 28,
+      "list_count": 1,
+      "internal_link_count": 15,
+      "paragraph_count": 73,
+      "section_count": 25,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 89,
+      "authority_score": 28
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 40,
+      "word_count_points": 50,
+      "keyword_bag_points": 26,
+      "content_quality_points": 94,
+      "authority_points": 58,
+      "final_rank_score": 298,
+      "authority_graph_points": 30
+    },
+    "search_index": {
+      "normalized_title": "bitcoin x kids crypto moonboys wiki",
+      "tokens": [
+        "bitcoin",
+        "x",
+        "kids",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "bitcoin",
+        "x",
+        "kids",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "the",
+        "distinct",
+        "engineered",
+        "generation",
+        "inside",
+        "block",
+        "topia",
+        "seeding",
+        "glass",
+        "court",
+        "households",
+        "education",
+        "placement",
+        "bonnet",
+        "traditions",
+        "and",
+        "pressures",
+        "of",
+        "year",
+        "3008",
+        "ada",
+        "wren",
+        "esme",
+        "sorn",
+        "len",
+        "arc",
+        "measure",
+        "hall",
+        "blank",
+        "day",
+        "quiet",
+        "window",
+        "exchange",
+        "encoded",
+        "irises",
+        "theta",
+        "protocols"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 12,
+      "outbound_count": 43,
+      "existing_outbound_count": 12,
+      "suggested_outbound_count": 31,
+      "authority": 30
     },
     "brand": null
   },
@@ -14188,99 +14199,6 @@
       "existing_outbound_count": 13,
       "suggested_outbound_count": 13,
       "authority": 10.5
-    },
-    "brand": null
-  },
-  {
-    "title": "Street Kingdoms",
-    "desc": "The Street Kingdoms are a formidable rival to Block Topia’s centralized powers in the Crypto Moonboys universe, emerging as a dominant force from the shattered",
-    "url": "/wiki/street-kingdoms.html",
-    "tags": [
-      "street",
-      "kingdoms",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "street kingdoms crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 279,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 1466,
-      "keyword_bag_size": 24,
-      "heading_count": 10,
-      "list_count": 1,
-      "internal_link_count": 12,
-      "paragraph_count": 22,
-      "section_count": 7,
-      "lore_paragraph_count": 19,
-      "content_quality_score": 93,
-      "authority_score": 21
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 50,
-      "keyword_bag_points": 24,
-      "content_quality_points": 101,
-      "authority_points": 39,
-      "final_rank_score": 279,
-      "authority_graph_points": 18
-    },
-    "search_index": {
-      "normalized_title": "street kingdoms crypto moonboys wiki",
-      "tokens": [
-        "street",
-        "kingdoms",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "street",
-        "kingdoms",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "the",
-        "are",
-        "a",
-        "formidable",
-        "rival",
-        "to",
-        "block",
-        "topia",
-        "s",
-        "centralized",
-        "powers",
-        "in",
-        "universe",
-        "emerging",
-        "as",
-        "dominant",
-        "force",
-        "from",
-        "shattered"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 6,
-      "outbound_count": 24,
-      "existing_outbound_count": 11,
-      "suggested_outbound_count": 13,
-      "authority": 17.5
     },
     "brand": null
   },
@@ -23681,6 +23599,112 @@
     "brand": null
   },
   {
+    "title": "Street Kingdoms",
+    "desc": "The inhabited Year 3008 territories beyond Block Topia: borough networks, work, mobile law, markets and survival.",
+    "url": "/wiki/street-kingdoms.html",
+    "tags": [
+      "street",
+      "kingdoms",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "street kingdoms crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 259,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 1507,
+      "keyword_bag_size": 21,
+      "heading_count": 22,
+      "list_count": 1,
+      "internal_link_count": 9,
+      "paragraph_count": 38,
+      "section_count": 19,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 77,
+      "authority_score": 21
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 50,
+      "keyword_bag_points": 21,
+      "content_quality_points": 85,
+      "authority_points": 38,
+      "final_rank_score": 259,
+      "authority_graph_points": 17
+    },
+    "search_index": {
+      "normalized_title": "street kingdoms crypto moonboys wiki",
+      "tokens": [
+        "street",
+        "kingdoms",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "street",
+        "kingdoms",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "the",
+        "inhabited",
+        "year",
+        "3008",
+        "territories",
+        "beyond",
+        "block",
+        "topia",
+        "borough",
+        "networks",
+        "work",
+        "mobile",
+        "law",
+        "markets",
+        "and",
+        "survival",
+        "lantern",
+        "courts",
+        "thread",
+        "water",
+        "truce",
+        "slate",
+        "market",
+        "roof",
+        "census",
+        "nine",
+        "door",
+        "winter",
+        "imani",
+        "rook",
+        "sol",
+        "mercer"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 6,
+      "outbound_count": 21,
+      "existing_outbound_count": 9,
+      "suggested_outbound_count": 12,
+      "authority": 16.5
+    },
+    "brand": null
+  },
+  {
     "title": "The FOMO Plague",
     "desc": "The epidemic of Fear Of Missing Out that spreads through social media and turns rational traders into panic buyers.",
     "url": "/wiki/fomo-plague.html",
@@ -27889,6 +27913,112 @@
     "brand": null
   },
   {
+    "title": "Maidstone Base",
+    "desc": "Maidstone Base as a present-day Kent working association and a disputed place-memory in later Crypto Moonboys lore.",
+    "url": "/wiki/maidstone-base.html",
+    "tags": [
+      "maidstone",
+      "base",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "maidstone base crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 245,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 1411,
+      "keyword_bag_size": 19,
+      "heading_count": 17,
+      "list_count": 1,
+      "internal_link_count": 9,
+      "paragraph_count": 28,
+      "section_count": 14,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 77,
+      "authority_score": 21
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 50,
+      "keyword_bag_points": 19,
+      "content_quality_points": 85,
+      "authority_points": 26,
+      "final_rank_score": 245,
+      "authority_graph_points": 5
+    },
+    "search_index": {
+      "normalized_title": "maidstone base crypto moonboys wiki",
+      "tokens": [
+        "maidstone",
+        "base",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "maidstone",
+        "base",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "as",
+        "a",
+        "present",
+        "day",
+        "kent",
+        "working",
+        "association",
+        "and",
+        "disputed",
+        "place",
+        "memory",
+        "in",
+        "later",
+        "lore",
+        "tracey",
+        "vara",
+        "wet",
+        "wall",
+        "book",
+        "orchard",
+        "relay",
+        "borrowed",
+        "address",
+        "dispute",
+        "river",
+        "sheet",
+        "nia",
+        "form",
+        "kings",
+        "walk",
+        "record",
+        "workshop"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 25,
+      "existing_outbound_count": 9,
+      "suggested_outbound_count": 16,
+      "authority": 4.5
+    },
+    "brand": null
+  },
+  {
     "title": "Metropolis",
     "desc": "Metropolis is the living urban system of Crypto Moonboys lore: a city of walls, signals, factions, memory, control and creative resistance.",
     "url": "/wiki/metropolis.html",
@@ -28156,6 +28286,109 @@
       "existing_outbound_count": 12,
       "suggested_outbound_count": 12,
       "authority": 50
+    },
+    "brand": null
+  },
+  {
+    "title": "Croydon Tower Blocks",
+    "desc": "Croydon walls as inhabited origin memory: residents, artists, contested archives and later Year 3008 interpretations.",
+    "url": "/wiki/croydon-tower-blocks.html",
+    "tags": [
+      "croydon",
+      "tower",
+      "blocks",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [],
+    "rank_score": 244,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 6,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 1209,
+      "keyword_bag_size": 20,
+      "heading_count": 17,
+      "list_count": 1,
+      "internal_link_count": 9,
+      "paragraph_count": 28,
+      "section_count": 14,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 77,
+      "authority_score": 21
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 50,
+      "keyword_bag_points": 20,
+      "content_quality_points": 83,
+      "authority_points": 26,
+      "final_rank_score": 244,
+      "authority_graph_points": 5
+    },
+    "search_index": {
+      "normalized_title": "croydon tower blocks crypto moonboys wiki",
+      "tokens": [
+        "croydon",
+        "tower",
+        "blocks",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "croydon",
+        "tower",
+        "blocks",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "walls",
+        "as",
+        "inhabited",
+        "origin",
+        "memory",
+        "residents",
+        "artists",
+        "contested",
+        "archives",
+        "and",
+        "later",
+        "year",
+        "3008",
+        "interpretations",
+        "grey",
+        "landing",
+        "lift",
+        "book",
+        "window",
+        "witnesses",
+        "chalk",
+        "kitchen",
+        "seven",
+        "stair",
+        "dispute",
+        "marlo",
+        "quist",
+        "samuel",
+        "blake",
+        "hyrosam"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 27,
+      "existing_outbound_count": 9,
+      "suggested_outbound_count": 18,
+      "authority": 4.5
     },
     "brand": null
   },
@@ -37970,86 +38203,6 @@
     "brand": null
   },
   {
-    "title": "Croydon Tower Blocks",
-    "desc": "Historical birthplace of Graffiti Kings’ street rebellion",
-    "url": "/wiki/croydon-tower-blocks.html",
-    "tags": [
-      "croydon",
-      "tower",
-      "blocks",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [],
-    "rank_score": 194,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 0,
-      "tag_count": 6,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 569,
-      "keyword_bag_size": 13,
-      "heading_count": 10,
-      "list_count": 1,
-      "internal_link_count": 12,
-      "paragraph_count": 15,
-      "section_count": 7,
-      "lore_paragraph_count": 13,
-      "content_quality_score": 60,
-      "authority_score": 16
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 28,
-      "keyword_bag_points": 13,
-      "content_quality_points": 66,
-      "authority_points": 22,
-      "final_rank_score": 194,
-      "authority_graph_points": 6
-    },
-    "search_index": {
-      "normalized_title": "croydon tower blocks crypto moonboys wiki",
-      "tokens": [
-        "croydon",
-        "tower",
-        "blocks",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "croydon",
-        "tower",
-        "blocks",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "historical",
-        "birthplace",
-        "of",
-        "graffiti",
-        "kings",
-        "street",
-        "rebellion"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 21,
-      "existing_outbound_count": 11,
-      "suggested_outbound_count": 10,
-      "authority": 5.5
-    },
-    "brand": null
-  },
-  {
     "title": "🤘 Andrea &quot;Blockchain Buccaneer&quot; Moretti 👑",
     "desc": "🤘 Andrea &quot;Blockchain Buccaneer&quot; Moretti 👑 is an NFT in the gkniftyheads WAX AtomicAssets collection.",
     "url": "/wiki/gkniftyheads-andrea-blockchain-buccaneer-moretti-783455.html",
@@ -39187,86 +39340,6 @@
       "existing_outbound_count": 6,
       "suggested_outbound_count": 12,
       "authority": 9
-    },
-    "brand": null
-  },
-  {
-    "title": "Maidstone Base",
-    "desc": "Modern operational headquarters of GKniftyHEADS’ rebellion",
-    "url": "/wiki/maidstone-base.html",
-    "tags": [
-      "maidstone",
-      "base",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "maidstone base crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 190,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 561,
-      "keyword_bag_size": 11,
-      "heading_count": 10,
-      "list_count": 1,
-      "internal_link_count": 13,
-      "paragraph_count": 15,
-      "section_count": 7,
-      "lore_paragraph_count": 13,
-      "content_quality_score": 60,
-      "authority_score": 12
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 28,
-      "keyword_bag_points": 11,
-      "content_quality_points": 68,
-      "authority_points": 18,
-      "final_rank_score": 190,
-      "authority_graph_points": 6
-    },
-    "search_index": {
-      "normalized_title": "maidstone base crypto moonboys wiki",
-      "tokens": [
-        "maidstone",
-        "base",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "maidstone",
-        "base",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "modern",
-        "operational",
-        "headquarters",
-        "of",
-        "gkniftyheads",
-        "rebellion"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 19,
-      "existing_outbound_count": 12,
-      "suggested_outbound_count": 7,
-      "authority": 6
     },
     "brand": null
   },
