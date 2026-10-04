@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-04T12:09:13.514Z",
-  "verified_at": "2026-10-04T12:09:13.514Z",
+  "generated_at": "2026-10-04T12:17:14.932Z",
+  "verified_at": "2026-10-04T12:17:14.932Z",
   "nodes": [
     {
       "id": "/about.html",
@@ -127,16 +127,16 @@
       "title": "Aleema (Child of the Shard)",
       "url": "/wiki/aleema-child-of-the-shard.html",
       "category": "characters",
-      "rank_score": 251,
-      "authority_score": 18
+      "rank_score": 277,
+      "authority_score": 28
     },
     {
       "id": "/wiki/alfie-bitcoin-kid-blaze.html",
       "title": "Alfie 'Bitcoin Kid' Blaze",
       "url": "/wiki/alfie-bitcoin-kid-blaze.html",
       "category": "factions",
-      "rank_score": 207,
-      "authority_score": 16
+      "rank_score": 288,
+      "authority_score": 28
     },
     {
       "id": "/wiki/alien-worlds-tlm.html",
@@ -279,7 +279,7 @@
       "title": "Block Topia",
       "url": "/wiki/block-topia.html",
       "category": "characters",
-      "rank_score": 464,
+      "rank_score": 460,
       "authority_score": 13
     },
     {
@@ -287,7 +287,7 @@
       "title": "Blockchain Technology",
       "url": "/wiki/blockchain.html",
       "category": "factions",
-      "rank_score": 315,
+      "rank_score": 313,
       "authority_score": 30
     },
     {
@@ -471,7 +471,7 @@
       "title": "Technology, AI and Synthetic Minds",
       "url": "/wiki/first-witness-ai-synthetic-minds.html",
       "category": "core",
-      "rank_score": 293,
+      "rank_score": 295,
       "authority_score": 12
     },
     {
@@ -583,7 +583,7 @@
       "title": "Book VIII — The Fire",
       "url": "/wiki/first-witness-book-8-the-fire.html",
       "category": "core",
-      "rank_score": 326,
+      "rank_score": 328,
       "authority_score": 14
     },
     {
@@ -631,7 +631,7 @@
       "title": "The Child of Fire Interpretation",
       "url": "/wiki/first-witness-child-of-fire.html",
       "category": "core",
-      "rank_score": 313,
+      "rank_score": 315,
       "authority_score": 12
     },
     {
@@ -647,7 +647,7 @@
       "title": "Concordance of Broken Records",
       "url": "/wiki/first-witness-concordance.html",
       "category": "core",
-      "rank_score": 390,
+      "rank_score": 394,
       "authority_score": 14
     },
     {
@@ -703,7 +703,7 @@
       "title": "Dreams, Omens, Coincidence and Prophecy Fraud",
       "url": "/wiki/first-witness-dreams-omens-coincidence.html",
       "category": "core",
-      "rank_score": 264,
+      "rank_score": 266,
       "authority_score": 12
     },
     {
@@ -799,7 +799,7 @@
       "title": "The HODL Doctrine",
       "url": "/wiki/first-witness-hodl-doctrine.html",
       "category": "core",
-      "rank_score": 300,
+      "rank_score": 302,
       "authority_score": 12
     },
     {
@@ -815,7 +815,7 @@
       "title": "Intimacy, Sexuality and Privacy",
       "url": "/wiki/first-witness-intimacy-sexuality-privacy.html",
       "category": "core",
-      "rank_score": 263,
+      "rank_score": 265,
       "authority_score": 12
     },
     {
@@ -839,7 +839,7 @@
       "title": "Language, Translation and Sacred Words",
       "url": "/wiki/first-witness-language-translation-sacred-words.html",
       "category": "core",
-      "rank_score": 262,
+      "rank_score": 264,
       "authority_score": 12
     },
     {
@@ -2399,7 +2399,7 @@
       "title": "GraffPUNKS",
       "url": "/wiki/graffpunks.html",
       "category": "characters",
-      "rank_score": 697,
+      "rank_score": 695,
       "authority_score": 21
     },
     {
@@ -2423,7 +2423,7 @@
       "title": "Hard Fork Games",
       "url": "/wiki/hard-fork-games.html",
       "category": "core",
-      "rank_score": 479,
+      "rank_score": 483,
       "authority_score": 28
     },
     {
@@ -2511,8 +2511,8 @@
       "title": "Jodie ZOOM 2000",
       "url": "/wiki/jodie-zoom-2000.html",
       "category": "characters",
-      "rank_score": 264,
-      "authority_score": 18
+      "rank_score": 277,
+      "authority_score": 28
     },
     {
       "id": "/wiki/jonny-laurence-nelson-tag-records.html",
@@ -3183,7 +3183,7 @@
       "title": "The SHARD MOTHERS of MANHATTAN",
       "url": "/wiki/the-shard-mothers-of-manhattan.html",
       "category": "factions",
-      "rank_score": 277,
+      "rank_score": 281,
       "authority_score": 21
     },
     {
@@ -3509,38 +3509,38 @@
     {
       "source": "/wiki/aleema-child-of-the-shard.html",
       "target": "/wiki/crypto-moonboys.html",
-      "score": 86,
-      "weight": 0.86
-    },
-    {
-      "source": "/wiki/aleema-child-of-the-shard.html",
-      "target": "/wiki/the-princess.html",
-      "score": 84,
-      "weight": 0.84
-    },
-    {
-      "source": "/wiki/aleema-child-of-the-shard.html",
-      "target": "/wiki/the-whitewasher.html",
-      "score": 84,
-      "weight": 0.84
-    },
-    {
-      "source": "/wiki/aleema-child-of-the-shard.html",
-      "target": "/wiki/thorne-the-architect.html",
-      "score": 84,
-      "weight": 0.84
-    },
-    {
-      "source": "/wiki/aleema-child-of-the-shard.html",
-      "target": "/wiki/graffpunks.html",
       "score": 83,
       "weight": 0.83
     },
     {
+      "source": "/wiki/aleema-child-of-the-shard.html",
+      "target": "/wiki/the-princess.html",
+      "score": 81,
+      "weight": 0.81
+    },
+    {
+      "source": "/wiki/aleema-child-of-the-shard.html",
+      "target": "/wiki/the-whitewasher.html",
+      "score": 81,
+      "weight": 0.81
+    },
+    {
+      "source": "/wiki/aleema-child-of-the-shard.html",
+      "target": "/wiki/thorne-the-architect.html",
+      "score": 81,
+      "weight": 0.81
+    },
+    {
+      "source": "/wiki/aleema-child-of-the-shard.html",
+      "target": "/wiki/graffpunks.html",
+      "score": 80,
+      "weight": 0.8
+    },
+    {
       "source": "/wiki/alfie-bitcoin-kid-blaze.html",
       "target": "/wiki/bitcoin-kid-army.html",
-      "score": 94,
-      "weight": 0.94
+      "score": 97,
+      "weight": 0.97
     },
     {
       "source": "/wiki/alfie-bitcoin-kid-blaze.html",
@@ -3551,20 +3551,20 @@
     {
       "source": "/wiki/alfie-bitcoin-kid-blaze.html",
       "target": "/wiki/stikfamwars.html",
-      "score": 70,
-      "weight": 0.7
+      "score": 67,
+      "weight": 0.67
     },
     {
       "source": "/wiki/alfie-bitcoin-kid-blaze.html",
       "target": "/wiki/midevilpunks.html",
-      "score": 68,
-      "weight": 0.68
+      "score": 65,
+      "weight": 0.65
     },
     {
       "source": "/wiki/alfie-bitcoin-kid-blaze.html",
       "target": "/wiki/rave-relics.html",
-      "score": 67,
-      "weight": 0.67
+      "score": 64,
+      "weight": 0.64
     },
     {
       "source": "/wiki/alien-worlds-tlm.html",
@@ -3592,9 +3592,9 @@
     },
     {
       "source": "/wiki/alien-worlds-tlm.html",
-      "target": "/wiki/gang-signs.html",
-      "score": 75,
-      "weight": 0.75
+      "target": "/wiki/jodie-zoom-2000.html",
+      "score": 76,
+      "weight": 0.76
     },
     {
       "source": "/wiki/altcoins.html",
@@ -3652,9 +3652,9 @@
     },
     {
       "source": "/wiki/atomicassets.html",
-      "target": "/wiki/gang-signs.html",
-      "score": 75,
-      "weight": 0.75
+      "target": "/wiki/jodie-zoom-2000.html",
+      "score": 76,
+      "weight": 0.76
     },
     {
       "source": "/wiki/atomichub-graffpunks-collection.html",
@@ -3736,13 +3736,13 @@
     },
     {
       "source": "/wiki/ava-chen.html",
-      "target": "/wiki/forksplit.html",
-      "score": 77,
-      "weight": 0.77
+      "target": "/wiki/jodie-zoom-2000.html",
+      "score": 79,
+      "weight": 0.79
     },
     {
       "source": "/wiki/ava-chen.html",
-      "target": "/wiki/null-the-prophet.html",
+      "target": "/wiki/forksplit.html",
       "score": 77,
       "weight": 0.77
     },
@@ -3929,8 +3929,8 @@
     {
       "source": "/wiki/bitcoin-kid-army.html",
       "target": "/wiki/alfie-bitcoin-kid-blaze.html",
-      "score": 90,
-      "weight": 0.9
+      "score": 95,
+      "weight": 0.95
     },
     {
       "source": "/wiki/bitcoin-kid-army.html",
@@ -7276,13 +7276,13 @@
     },
     {
       "source": "/wiki/forksplit.html",
-      "target": "/wiki/ava-chen.html",
-      "score": 77,
-      "weight": 0.77
+      "target": "/wiki/jodie-zoom-2000.html",
+      "score": 79,
+      "weight": 0.79
     },
     {
       "source": "/wiki/forksplit.html",
-      "target": "/wiki/null-the-prophet.html",
+      "target": "/wiki/ava-chen.html",
       "score": 77,
       "weight": 0.77
     },
@@ -12424,15 +12424,15 @@
     },
     {
       "source": "/wiki/jodie-zoom-2000.html",
-      "target": "/wiki/graffpunks.html",
+      "target": "/wiki/crypto-moonboys.html",
       "score": 89,
       "weight": 0.89
     },
     {
       "source": "/wiki/jodie-zoom-2000.html",
-      "target": "/wiki/crypto-moonboys.html",
-      "score": 86,
-      "weight": 0.86
+      "target": "/wiki/graffpunks.html",
+      "score": 89,
+      "weight": 0.89
     },
     {
       "source": "/wiki/jodie-zoom-2000.html",
@@ -12442,15 +12442,15 @@
     },
     {
       "source": "/wiki/jodie-zoom-2000.html",
-      "target": "/wiki/null-the-prophet.html",
-      "score": 77,
-      "weight": 0.77
+      "target": "/wiki/hodl-warriors.html",
+      "score": 79,
+      "weight": 0.79
     },
     {
       "source": "/wiki/jodie-zoom-2000.html",
-      "target": "/wiki/gang-signs.html",
-      "score": 75,
-      "weight": 0.75
+      "target": "/wiki/ava-chen.html",
+      "score": 77,
+      "weight": 0.77
     },
     {
       "source": "/wiki/jonny-laurence-nelson-tag-records.html",
@@ -12568,9 +12568,9 @@
     },
     {
       "source": "/wiki/loopfiend.html",
-      "target": "/wiki/gang-signs.html",
-      "score": 75,
-      "weight": 0.75
+      "target": "/wiki/jodie-zoom-2000.html",
+      "score": 76,
+      "weight": 0.76
     },
     {
       "source": "/wiki/m1ntr-k1ll.html",
@@ -13258,9 +13258,9 @@
     },
     {
       "source": "/wiki/pixil-mini.html",
-      "target": "/wiki/gang-signs.html",
-      "score": 75,
-      "weight": 0.75
+      "target": "/wiki/jodie-zoom-2000.html",
+      "score": 76,
+      "weight": 0.76
     },
     {
       "source": "/wiki/playable-nft-murals.html",
@@ -13822,13 +13822,13 @@
     },
     {
       "source": "/wiki/snipey-d-man-sirus.html",
-      "target": "/wiki/ava-chen.html",
-      "score": 77,
-      "weight": 0.77
+      "target": "/wiki/jodie-zoom-2000.html",
+      "score": 79,
+      "weight": 0.79
     },
     {
       "source": "/wiki/snipey-d-man-sirus.html",
-      "target": "/wiki/forksplit.html",
+      "target": "/wiki/ava-chen.html",
       "score": 77,
       "weight": 0.77
     },
@@ -15082,13 +15082,13 @@
     },
     {
       "source": "/wiki/thera-9.html",
-      "target": "/wiki/ava-chen.html",
-      "score": 77,
-      "weight": 0.77
+      "target": "/wiki/jodie-zoom-2000.html",
+      "score": 79,
+      "weight": 0.79
     },
     {
       "source": "/wiki/thera-9.html",
-      "target": "/wiki/forksplit.html",
+      "target": "/wiki/ava-chen.html",
       "score": 77,
       "weight": 0.77
     },

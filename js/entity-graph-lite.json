@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-04T12:09:13.514Z",
-  "verified_at": "2026-10-04T12:09:13.514Z",
+  "generated_at": "2026-10-04T12:17:14.932Z",
+  "verified_at": "2026-10-04T12:17:14.932Z",
   "lite": true,
   "nodes": [
     {
@@ -16,7 +16,7 @@
       "title": "GraffPUNKS",
       "url": "/wiki/graffpunks.html",
       "category": "characters",
-      "rank_score": 697,
+      "rank_score": 695,
       "authority_score": 21
     },
     {
@@ -56,7 +56,7 @@
       "title": "Hard Fork Games",
       "url": "/wiki/hard-fork-games.html",
       "category": "core",
-      "rank_score": 479,
+      "rank_score": 483,
       "authority_score": 28
     },
     {
@@ -64,7 +64,7 @@
       "title": "Block Topia",
       "url": "/wiki/block-topia.html",
       "category": "characters",
-      "rank_score": 464,
+      "rank_score": 460,
       "authority_score": 13
     },
     {
@@ -104,7 +104,7 @@
       "title": "Concordance of Broken Records",
       "url": "/wiki/first-witness-concordance.html",
       "category": "core",
-      "rank_score": 390,
+      "rank_score": 394,
       "authority_score": 14
     },
     {
@@ -252,20 +252,20 @@
       "authority_score": 28
     },
     {
+      "id": "/wiki/first-witness-book-8-the-fire.html",
+      "title": "Book VIII — The Fire",
+      "url": "/wiki/first-witness-book-8-the-fire.html",
+      "category": "core",
+      "rank_score": 328,
+      "authority_score": 14
+    },
+    {
       "id": "/wiki/thorne-the-architect.html",
       "title": "Thorne The Architect",
       "url": "/wiki/thorne-the-architect.html",
       "category": "characters",
       "rank_score": 328,
       "authority_score": 21
-    },
-    {
-      "id": "/wiki/first-witness-book-8-the-fire.html",
-      "title": "Book VIII — The Fire",
-      "url": "/wiki/first-witness-book-8-the-fire.html",
-      "category": "core",
-      "rank_score": 326,
-      "authority_score": 14
     },
     {
       "id": "/wiki/hodl-warriors.html",
@@ -356,14 +356,6 @@
       "authority_score": 14
     },
     {
-      "id": "/wiki/blockchain.html",
-      "title": "Blockchain Technology",
-      "url": "/wiki/blockchain.html",
-      "category": "factions",
-      "rank_score": 315,
-      "authority_score": 30
-    },
-    {
       "id": "/wiki/first-witness-book-6-the-fork.html",
       "title": "Book VI — The Fork",
       "url": "/wiki/first-witness-book-6-the-fork.html",
@@ -380,6 +372,14 @@
       "authority_score": 14
     },
     {
+      "id": "/wiki/first-witness-child-of-fire.html",
+      "title": "The Child of Fire Interpretation",
+      "url": "/wiki/first-witness-child-of-fire.html",
+      "category": "core",
+      "rank_score": 315,
+      "authority_score": 12
+    },
+    {
       "id": "/wiki/the-finance-guild.html",
       "title": "The Finance Guild",
       "url": "/wiki/the-finance-guild.html",
@@ -388,20 +388,20 @@
       "authority_score": 21
     },
     {
+      "id": "/wiki/blockchain.html",
+      "title": "Blockchain Technology",
+      "url": "/wiki/blockchain.html",
+      "category": "factions",
+      "rank_score": 313,
+      "authority_score": 30
+    },
+    {
       "id": "/wiki/first-witness-book-7-the-hold.html",
       "title": "Book VII — The Hold",
       "url": "/wiki/first-witness-book-7-the-hold.html",
       "category": "core",
       "rank_score": 313,
       "authority_score": 14
-    },
-    {
-      "id": "/wiki/first-witness-child-of-fire.html",
-      "title": "The Child of Fire Interpretation",
-      "url": "/wiki/first-witness-child-of-fire.html",
-      "category": "core",
-      "rank_score": 313,
-      "authority_score": 12
     },
     {
       "id": "/wiki/first-witness-sacred-fork.html",
@@ -512,7 +512,7 @@
       "title": "The HODL Doctrine",
       "url": "/wiki/first-witness-hodl-doctrine.html",
       "category": "core",
-      "rank_score": 300,
+      "rank_score": 302,
       "authority_score": 12
     },
     {
@@ -530,6 +530,14 @@
       "category": "core",
       "rank_score": 297,
       "authority_score": 14
+    },
+    {
+      "id": "/wiki/first-witness-ai-synthetic-minds.html",
+      "title": "Technology, AI and Synthetic Minds",
+      "url": "/wiki/first-witness-ai-synthetic-minds.html",
+      "category": "core",
+      "rank_score": 295,
+      "authority_score": 12
     },
     {
       "id": "/wiki/first-witness-apocrypha-disputed-passages.html",
@@ -554,14 +562,6 @@
       "category": "factions",
       "rank_score": 293,
       "authority_score": 28
-    },
-    {
-      "id": "/wiki/first-witness-ai-synthetic-minds.html",
-      "title": "Technology, AI and Synthetic Minds",
-      "url": "/wiki/first-witness-ai-synthetic-minds.html",
-      "category": "core",
-      "rank_score": 293,
-      "authority_score": 12
     },
     {
       "id": "/wiki/xrp-kids.html",
