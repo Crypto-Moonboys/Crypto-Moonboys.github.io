@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-04T13:35:14.507Z",
-  "verified_at": "2026-10-04T13:35:14.507Z",
+  "generated_at": "2026-10-04T13:36:50.512Z",
+  "verified_at": "2026-10-04T13:36:50.512Z",
   "lite": true,
   "nodes": [
     {
@@ -183,6 +183,14 @@
       "id": "/wiki/null-the-prophet.html",
       "title": "NULL THE PROPHET",
       "url": "/wiki/null-the-prophet.html",
+      "category": "characters",
+      "rank_score": 325,
+      "authority_score": 24
+    },
+    {
+      "id": "/wiki/thorne-the-architect.html",
+      "title": "Thorne The Architect",
+      "url": "/wiki/thorne-the-architect.html",
       "category": "characters",
       "rank_score": 325,
       "authority_score": 24
@@ -394,14 +402,6 @@
       "category": "core",
       "rank_score": 308,
       "authority_score": 14
-    },
-    {
-      "id": "/wiki/thorne-the-architect.html",
-      "title": "Thorne The Architect",
-      "url": "/wiki/thorne-the-architect.html",
-      "category": "characters",
-      "rank_score": 308,
-      "authority_score": 21
     },
     {
       "id": "/wiki/block-node-defenders.html",
@@ -918,6 +918,12 @@
       "weight": 0.84
     },
     {
+      "source": "/wiki/billy-the-goat-kid.html",
+      "target": "/wiki/thorne-the-architect.html",
+      "score": 84,
+      "weight": 0.84
+    },
+    {
       "source": "/wiki/the-princess.html",
       "target": "/wiki/the-whitewasher.html",
       "score": 84,
@@ -930,14 +936,8 @@
       "weight": 0.84
     },
     {
-      "source": "/wiki/thorne-the-architect.html",
-      "target": "/wiki/the-princess.html",
-      "score": 84,
-      "weight": 0.84
-    },
-    {
-      "source": "/wiki/thorne-the-architect.html",
-      "target": "/wiki/the-whitewasher.html",
+      "source": "/wiki/the-whitewasher.html",
+      "target": "/wiki/thorne-the-architect.html",
       "score": 84,
       "weight": 0.84
     },
@@ -958,6 +958,12 @@
       "target": "/wiki/games4punks-telegram.html",
       "score": 82,
       "weight": 0.82
+    },
+    {
+      "source": "/wiki/billy-the-goat-kid.html",
+      "target": "/wiki/the-princess.html",
+      "score": 81,
+      "weight": 0.81
     },
     {
       "source": "/wiki/the-chain-scribes.html",

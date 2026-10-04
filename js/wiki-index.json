@@ -3388,6 +3388,125 @@
     "brand": null
   },
   {
+    "title": "Thorne The Architect",
+    "desc": "Thorne the Architect: the Order of Man paradox survivor, the 2024 intervention tradition, competing builder legends and the politics of an altered world.",
+    "url": "/wiki/thorne-the-architect.html",
+    "tags": [
+      "thorne",
+      "architect",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "characters",
+    "aliases": [
+      {
+        "title": "thorne architect crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 325,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "characters",
+      "category_priority": 8,
+      "has_description": true,
+      "article_word_count": 3165,
+      "keyword_bag_size": 22,
+      "heading_count": 22,
+      "list_count": 1,
+      "internal_link_count": 9,
+      "paragraph_count": 53,
+      "section_count": 19,
+      "lore_paragraph_count": 50,
+      "content_quality_score": 101,
+      "authority_score": 24
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 40,
+      "word_count_points": 50,
+      "keyword_bag_points": 22,
+      "content_quality_points": 109,
+      "authority_points": 74,
+      "final_rank_score": 325,
+      "authority_graph_points": 50
+    },
+    "search_index": {
+      "normalized_title": "thorne the architect crypto moonboys wiki",
+      "tokens": [
+        "thorne",
+        "the",
+        "architect",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "thorne",
+        "the",
+        "architect",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "order",
+        "of",
+        "man",
+        "paradox",
+        "survivor",
+        "2024",
+        "intervention",
+        "tradition",
+        "competing",
+        "builder",
+        "legends",
+        "and",
+        "politics",
+        "an",
+        "altered",
+        "world",
+        "protocol",
+        "chronometer",
+        "jump",
+        "leader",
+        "joe",
+        "archivist",
+        "master",
+        "schema",
+        "core",
+        "vault",
+        "reconstruction",
+        "office",
+        "human",
+        "schedule",
+        "sile",
+        "arden",
+        "ilan",
+        "cress",
+        "absent",
+        "ancestor",
+        "case",
+        "revision",
+        "stair",
+        "unapproved",
+        "landing",
+        "second",
+        "plan"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 32,
+      "outbound_count": 18,
+      "existing_outbound_count": 9,
+      "suggested_outbound_count": 9,
+      "authority": 68.5
+    },
+    "brand": null
+  },
+  {
     "title": "games4punks telegram",
     "desc": "GAMES4PUNKS Telegram Game explodes into the Crypto Moonboys universe as a digital guerrilla outpost, a mobile gaming platform accessible via Telegram that disti",
     "url": "/wiki/games4punks-telegram.html",
@@ -3847,11 +3966,11 @@
       ]
     },
     "link_score": {
-      "inbound_count": 172,
+      "inbound_count": 168,
       "outbound_count": 37,
       "existing_outbound_count": 10,
       "suggested_outbound_count": 27,
-      "authority": 349
+      "authority": 341
     },
     "brand": null
   },
@@ -7134,96 +7253,6 @@
       "existing_outbound_count": 6,
       "suggested_outbound_count": 59,
       "authority": 11
-    },
-    "brand": null
-  },
-  {
-    "title": "Thorne The Architect",
-    "desc": "Thorne The Architect builds Block Topia structures across the Crypto Moonboys universe, shaping fortified hubs, battle terrain, and faction strategy.",
-    "url": "/wiki/thorne-the-architect.html",
-    "tags": [
-      "thorne",
-      "architect",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "characters",
-    "aliases": [
-      {
-        "title": "thorne architect crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 308,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "characters",
-      "category_priority": 8,
-      "has_description": true,
-      "article_word_count": 1461,
-      "keyword_bag_size": 20,
-      "heading_count": 10,
-      "list_count": 1,
-      "internal_link_count": 13,
-      "paragraph_count": 21,
-      "section_count": 7,
-      "lore_paragraph_count": 18,
-      "content_quality_score": 89,
-      "authority_score": 21
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 40,
-      "word_count_points": 50,
-      "keyword_bag_points": 20,
-      "content_quality_points": 97,
-      "authority_points": 71,
-      "final_rank_score": 308,
-      "authority_graph_points": 50
-    },
-    "search_index": {
-      "normalized_title": "thorne the architect crypto moonboys wiki",
-      "tokens": [
-        "thorne",
-        "the",
-        "architect",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "thorne",
-        "the",
-        "architect",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "builds",
-        "block",
-        "topia",
-        "structures",
-        "across",
-        "universe",
-        "shaping",
-        "fortified",
-        "hubs",
-        "battle",
-        "terrain",
-        "and",
-        "faction",
-        "strategy"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 32,
-      "outbound_count": 23,
-      "existing_outbound_count": 12,
-      "suggested_outbound_count": 11,
-      "authority": 70
     },
     "brand": null
   },
@@ -11793,11 +11822,11 @@
       ]
     },
     "link_score": {
-      "inbound_count": 96,
+      "inbound_count": 95,
       "outbound_count": 41,
       "existing_outbound_count": 0,
       "suggested_outbound_count": 41,
-      "authority": 192
+      "authority": 190
     },
     "brand": null
   },
@@ -12949,6 +12978,124 @@
       "existing_outbound_count": 4,
       "suggested_outbound_count": 60,
       "authority": 8
+    },
+    "brand": null
+  },
+  {
+    "title": "Rune Tag",
+    "desc": "Rune Tag, the GraffPUNK Elder: Cipher Vault testimony, warnings against NULL, disputed chronology and the teaching of marks that retain their context.",
+    "url": "/wiki/rune-tag.html",
+    "tags": [
+      "rune",
+      "tag",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "characters",
+    "aliases": [
+      {
+        "title": "rune tag crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 288,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "characters",
+      "category_priority": 8,
+      "has_description": true,
+      "article_word_count": 2946,
+      "keyword_bag_size": 24,
+      "heading_count": 21,
+      "list_count": 1,
+      "internal_link_count": 9,
+      "paragraph_count": 50,
+      "section_count": 18,
+      "lore_paragraph_count": 47,
+      "content_quality_score": 105,
+      "authority_score": 24
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 40,
+      "word_count_points": 50,
+      "keyword_bag_points": 24,
+      "content_quality_points": 113,
+      "authority_points": 31,
+      "final_rank_score": 288,
+      "authority_graph_points": 7
+    },
+    "search_index": {
+      "normalized_title": "rune tag crypto moonboys wiki",
+      "tokens": [
+        "rune",
+        "tag",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "rune",
+        "tag",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "the",
+        "graffpunk",
+        "elder",
+        "cipher",
+        "vault",
+        "testimony",
+        "warnings",
+        "against",
+        "null",
+        "disputed",
+        "chronology",
+        "and",
+        "teaching",
+        "of",
+        "marks",
+        "that",
+        "retain",
+        "their",
+        "context",
+        "7",
+        "17",
+        "47",
+        "original",
+        "memory",
+        "gk",
+        "writcode",
+        "glyph",
+        "scribes",
+        "margin",
+        "school",
+        "pella",
+        "soot",
+        "jun",
+        "wick",
+        "reading",
+        "ladder",
+        "cold",
+        "copy",
+        "false",
+        "door",
+        "mark",
+        "open",
+        "lesson",
+        "debt"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 1,
+      "outbound_count": 33,
+      "existing_outbound_count": 9,
+      "suggested_outbound_count": 24,
+      "authority": 6.5
     },
     "brand": null
   },
@@ -16354,12 +16501,11 @@
     }
   },
   {
-    "title": "Rune Tag",
-    "desc": "Rune Tag is a mystical tagger weaving ancient magic into the digital fabric of Block Topia, an enigmatic artist whose rune-bound markings protect or curse terri",
-    "url": "/wiki/rune-tag.html",
+    "title": "PYRALITH",
+    "desc": "Pyralith, the Flame that Dreams: a living painting’s last fragment, the Gallery That Sleeps, competing Burnlord origins and the cost of remembrance.",
+    "url": "/wiki/pyralith.html",
     "tags": [
-      "rune",
-      "tag",
+      "pyralith",
       "crypto",
       "moonboys",
       "wiki"
@@ -16367,87 +16513,224 @@
     "category": "characters",
     "aliases": [
       {
-        "title": "rune tag crypto moonboys wiki"
+        "title": "pyralith crypto moonboys wiki"
       }
     ],
-    "rank_score": 278,
+    "rank_score": 280,
     "rank_signals": {
       "is_canonical": true,
       "alias_count": 1,
-      "tag_count": 5,
+      "tag_count": 4,
       "mention_count": 0,
       "category": "characters",
       "category_priority": 8,
       "has_description": true,
-      "article_word_count": 1498,
-      "keyword_bag_size": 29,
-      "heading_count": 10,
+      "article_word_count": 3024,
+      "keyword_bag_size": 23,
+      "heading_count": 21,
       "list_count": 1,
-      "internal_link_count": 13,
-      "paragraph_count": 21,
-      "section_count": 7,
-      "lore_paragraph_count": 17,
-      "content_quality_score": 93,
-      "authority_score": 21
+      "internal_link_count": 9,
+      "paragraph_count": 50,
+      "section_count": 18,
+      "lore_paragraph_count": 47,
+      "content_quality_score": 101,
+      "authority_score": 24
     },
     "rank_diagnostics": {
       "canonical_points": 20,
       "description_points": 10,
       "category_points": 40,
       "word_count_points": 50,
-      "keyword_bag_points": 29,
-      "content_quality_points": 101,
-      "authority_points": 28,
-      "final_rank_score": 278,
-      "authority_graph_points": 7
+      "keyword_bag_points": 23,
+      "content_quality_points": 108,
+      "authority_points": 29,
+      "final_rank_score": 280,
+      "authority_graph_points": 5
     },
     "search_index": {
-      "normalized_title": "rune tag crypto moonboys wiki",
+      "normalized_title": "pyralith crypto moonboys wiki",
       "tokens": [
-        "rune",
-        "tag",
+        "pyralith",
         "crypto",
         "moonboys",
         "wiki"
       ],
       "keyword_bag": [
-        "rune",
-        "tag",
+        "pyralith",
         "crypto",
         "moonboys",
         "wiki",
-        "is",
-        "a",
-        "mystical",
-        "tagger",
-        "weaving",
-        "ancient",
-        "magic",
-        "into",
         "the",
-        "digital",
-        "fabric",
+        "flame",
+        "that",
+        "dreams",
+        "a",
+        "living",
+        "painting",
+        "s",
+        "last",
+        "fragment",
+        "gallery",
+        "sleeps",
+        "competing",
+        "burnlord",
+        "origins",
+        "and",
+        "cost",
         "of",
-        "block",
-        "topia",
-        "an",
-        "enigmatic",
-        "artist",
-        "whose",
-        "bound",
-        "markings",
-        "protect",
-        "or",
-        "curse",
-        "terri"
+        "remembrance",
+        "gk",
+        "sigil",
+        "echo",
+        "walker",
+        "dream",
+        "depth",
+        "404",
+        "ash",
+        "vault",
+        "burn",
+        "cycle",
+        "dreamlens",
+        "prism",
+        "frozen",
+        "tags",
+        "daughter",
+        "lullabies",
+        "ember",
+        "core",
+        "altars",
+        "miri",
+        "span",
+        "dax",
+        "umber",
+        "audience",
+        "book",
+        "unhung",
+        "room",
+        "frame",
+        "ticket",
+        "night"
       ]
     },
     "link_score": {
-      "inbound_count": 1,
-      "outbound_count": 26,
-      "existing_outbound_count": 10,
-      "suggested_outbound_count": 16,
-      "authority": 7
+      "inbound_count": 0,
+      "outbound_count": 32,
+      "existing_outbound_count": 9,
+      "suggested_outbound_count": 23,
+      "authority": 4.5
+    },
+    "brand": null
+  },
+  {
+    "title": "Quell",
+    "desc": "Quell, the Chain Scribe warrior and mediator: the First Merge, disputed gifts, limited truces and the difficult work of keeping an agreement.",
+    "url": "/wiki/quell.html",
+    "tags": [
+      "quell",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "characters",
+    "aliases": [
+      {
+        "title": "quell crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 279,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 4,
+      "mention_count": 0,
+      "category": "characters",
+      "category_priority": 8,
+      "has_description": true,
+      "article_word_count": 2995,
+      "keyword_bag_size": 22,
+      "heading_count": 21,
+      "list_count": 1,
+      "internal_link_count": 9,
+      "paragraph_count": 50,
+      "section_count": 18,
+      "lore_paragraph_count": 47,
+      "content_quality_score": 101,
+      "authority_score": 24
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 40,
+      "word_count_points": 50,
+      "keyword_bag_points": 22,
+      "content_quality_points": 108,
+      "authority_points": 29,
+      "final_rank_score": 279,
+      "authority_graph_points": 5
+    },
+    "search_index": {
+      "normalized_title": "quell crypto moonboys wiki",
+      "tokens": [
+        "quell",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "quell",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "the",
+        "chain",
+        "scribe",
+        "warrior",
+        "and",
+        "mediator",
+        "first",
+        "merge",
+        "disputed",
+        "gifts",
+        "limited",
+        "truces",
+        "difficult",
+        "work",
+        "of",
+        "keeping",
+        "an",
+        "agreement",
+        "scribes",
+        "brixton",
+        "station",
+        "ledger",
+        "dust",
+        "zones",
+        "pause",
+        "slate",
+        "platform",
+        "four",
+        "noll",
+        "brack",
+        "ida",
+        "lent",
+        "two",
+        "cargo",
+        "truce",
+        "late",
+        "wagon",
+        "incident",
+        "return",
+        "bell",
+        "unaccepted",
+        "clause"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 40,
+      "existing_outbound_count": 9,
+      "suggested_outbound_count": 31,
+      "authority": 4.5
     },
     "brand": null
   },
@@ -19590,98 +19873,6 @@
     "brand": null
   },
   {
-    "title": "PYRALITH",
-    "desc": "PYRALITH blazes as a fire-wielding entity within the volatile battlegrounds of Block Topia, a destructive force whose command of incendiary power turns metavers",
-    "url": "/wiki/pyralith.html",
-    "tags": [
-      "pyralith",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "characters",
-    "aliases": [
-      {
-        "title": "pyralith crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 271,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 4,
-      "mention_count": 0,
-      "category": "characters",
-      "category_priority": 8,
-      "has_description": true,
-      "article_word_count": 1447,
-      "keyword_bag_size": 25,
-      "heading_count": 10,
-      "list_count": 1,
-      "internal_link_count": 13,
-      "paragraph_count": 21,
-      "section_count": 7,
-      "lore_paragraph_count": 17,
-      "content_quality_score": 93,
-      "authority_score": 21
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 40,
-      "word_count_points": 50,
-      "keyword_bag_points": 25,
-      "content_quality_points": 100,
-      "authority_points": 26,
-      "final_rank_score": 271,
-      "authority_graph_points": 5
-    },
-    "search_index": {
-      "normalized_title": "pyralith crypto moonboys wiki",
-      "tokens": [
-        "pyralith",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "pyralith",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "blazes",
-        "as",
-        "a",
-        "fire",
-        "wielding",
-        "entity",
-        "within",
-        "the",
-        "volatile",
-        "battlegrounds",
-        "of",
-        "block",
-        "topia",
-        "destructive",
-        "force",
-        "whose",
-        "command",
-        "incendiary",
-        "power",
-        "turns",
-        "metavers"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 23,
-      "existing_outbound_count": 10,
-      "suggested_outbound_count": 13,
-      "authority": 5
-    },
-    "brand": null
-  },
-  {
     "title": "SatoRebel",
     "desc": "SatoRebel blazes as a charismatic revolutionary leader within the Crypto Moonboys universe, a fiery voice of defiance in Block Topia’s digital wastelands who ig",
     "url": "/wiki/satorebel.html",
@@ -20380,97 +20571,6 @@
       "existing_outbound_count": 13,
       "suggested_outbound_count": 29,
       "authority": 8.5
-    },
-    "brand": null
-  },
-  {
-    "title": "Quell",
-    "desc": "Quell stands as a rare peacekeeper in the war-torn digital expanse of Block Topia, a singular voice of calm amid the relentless conflicts of the Crypto Moonboys",
-    "url": "/wiki/quell.html",
-    "tags": [
-      "quell",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "characters",
-    "aliases": [
-      {
-        "title": "quell crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 270,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 4,
-      "mention_count": 0,
-      "category": "characters",
-      "category_priority": 8,
-      "has_description": true,
-      "article_word_count": 1473,
-      "keyword_bag_size": 24,
-      "heading_count": 10,
-      "list_count": 1,
-      "internal_link_count": 13,
-      "paragraph_count": 21,
-      "section_count": 7,
-      "lore_paragraph_count": 17,
-      "content_quality_score": 93,
-      "authority_score": 21
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 40,
-      "word_count_points": 50,
-      "keyword_bag_points": 24,
-      "content_quality_points": 100,
-      "authority_points": 26,
-      "final_rank_score": 270,
-      "authority_graph_points": 5
-    },
-    "search_index": {
-      "normalized_title": "quell crypto moonboys wiki",
-      "tokens": [
-        "quell",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "quell",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "stands",
-        "as",
-        "a",
-        "rare",
-        "peacekeeper",
-        "in",
-        "the",
-        "war",
-        "torn",
-        "digital",
-        "expanse",
-        "of",
-        "block",
-        "topia",
-        "singular",
-        "voice",
-        "calm",
-        "amid",
-        "relentless",
-        "conflicts"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 25,
-      "existing_outbound_count": 10,
-      "suggested_outbound_count": 15,
-      "authority": 5
     },
     "brand": null
   },
@@ -27665,101 +27765,6 @@
     "brand": null
   },
   {
-    "title": "battlemech blast",
-    "desc": "Battlemech Blast is a specific event within HODL WARS in the Crypto Moonboys universe, a 2D web3 shooter game on the WAX blockchain where players pilot tokenize",
-    "url": "/wiki/battlemech-blast.html",
-    "tags": [
-      "battlemech",
-      "blast",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "battlemech blast crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 247,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 791,
-      "keyword_bag_size": 26,
-      "heading_count": 11,
-      "list_count": 2,
-      "internal_link_count": 9,
-      "paragraph_count": 10,
-      "section_count": 8,
-      "lore_paragraph_count": 8,
-      "content_quality_score": 77,
-      "authority_score": 20
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 40,
-      "keyword_bag_points": 26,
-      "content_quality_points": 85,
-      "authority_points": 31,
-      "final_rank_score": 247,
-      "authority_graph_points": 11
-    },
-    "search_index": {
-      "normalized_title": "battlemech blast crypto moonboys wiki",
-      "tokens": [
-        "battlemech",
-        "blast",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "battlemech",
-        "blast",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "is",
-        "a",
-        "specific",
-        "event",
-        "within",
-        "hodl",
-        "wars",
-        "in",
-        "the",
-        "universe",
-        "2d",
-        "web3",
-        "shooter",
-        "game",
-        "on",
-        "wax",
-        "blockchain",
-        "where",
-        "players",
-        "pilot",
-        "tokenize"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 3,
-      "outbound_count": 35,
-      "existing_outbound_count": 9,
-      "suggested_outbound_count": 26,
-      "authority": 10.5
-    },
-    "brand": null
-  },
-  {
     "title": "Grit42",
     "desc": "Grit42 stands as a hardened fighter in the Crypto Moonboys universe, a relentless war machine carved from the unforgiving streets of Block Topia’s underbelly. H",
     "url": "/wiki/grit42.html",
@@ -28298,6 +28303,101 @@
       "existing_outbound_count": 14,
       "suggested_outbound_count": 6,
       "authority": 25
+    },
+    "brand": null
+  },
+  {
+    "title": "battlemech blast",
+    "desc": "Battlemech Blast is a specific event within HODL WARS in the Crypto Moonboys universe, a 2D web3 shooter game on the WAX blockchain where players pilot tokenize",
+    "url": "/wiki/battlemech-blast.html",
+    "tags": [
+      "battlemech",
+      "blast",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "battlemech blast crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 245,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 791,
+      "keyword_bag_size": 26,
+      "heading_count": 11,
+      "list_count": 2,
+      "internal_link_count": 9,
+      "paragraph_count": 10,
+      "section_count": 8,
+      "lore_paragraph_count": 8,
+      "content_quality_score": 77,
+      "authority_score": 20
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 40,
+      "keyword_bag_points": 26,
+      "content_quality_points": 85,
+      "authority_points": 29,
+      "final_rank_score": 245,
+      "authority_graph_points": 9
+    },
+    "search_index": {
+      "normalized_title": "battlemech blast crypto moonboys wiki",
+      "tokens": [
+        "battlemech",
+        "blast",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "battlemech",
+        "blast",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "is",
+        "a",
+        "specific",
+        "event",
+        "within",
+        "hodl",
+        "wars",
+        "in",
+        "the",
+        "universe",
+        "2d",
+        "web3",
+        "shooter",
+        "game",
+        "on",
+        "wax",
+        "blockchain",
+        "where",
+        "players",
+        "pilot",
+        "tokenize"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 2,
+      "outbound_count": 35,
+      "existing_outbound_count": 9,
+      "suggested_outbound_count": 26,
+      "authority": 8.5
     },
     "brand": null
   },

@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-04T13:35:14.507Z",
-  "verified_at": "2026-10-04T13:35:14.507Z",
+  "generated_at": "2026-10-04T13:36:50.512Z",
+  "verified_at": "2026-10-04T13:36:50.512Z",
   "nodes": [
     {
       "id": "/about.html",
@@ -191,7 +191,7 @@
       "title": "battlemech blast",
       "url": "/wiki/battlemech-blast.html",
       "category": "factions",
-      "rank_score": 247,
+      "rank_score": 245,
       "authority_score": 20
     },
     {
@@ -2767,8 +2767,8 @@
       "title": "PYRALITH",
       "url": "/wiki/pyralith.html",
       "category": "characters",
-      "rank_score": 271,
-      "authority_score": 21
+      "rank_score": 280,
+      "authority_score": 24
     },
     {
       "id": "/wiki/queen-sarah-p-fly.html",
@@ -2783,8 +2783,8 @@
       "title": "Quell",
       "url": "/wiki/quell.html",
       "category": "characters",
-      "rank_score": 270,
-      "authority_score": 21
+      "rank_score": 279,
+      "authority_score": 24
     },
     {
       "id": "/wiki/rave-relics.html",
@@ -2807,8 +2807,8 @@
       "title": "Rune Tag",
       "url": "/wiki/rune-tag.html",
       "category": "characters",
-      "rank_score": 278,
-      "authority_score": 21
+      "rank_score": 288,
+      "authority_score": 24
     },
     {
       "id": "/wiki/rust2riches.html",
@@ -3223,8 +3223,8 @@
       "title": "Thorne The Architect",
       "url": "/wiki/thorne-the-architect.html",
       "category": "characters",
-      "rank_score": 308,
-      "authority_score": 21
+      "rank_score": 325,
+      "authority_score": 24
     },
     {
       "id": "/wiki/tokenomics.html",
@@ -3514,13 +3514,13 @@
     },
     {
       "source": "/wiki/aleema-child-of-the-shard.html",
-      "target": "/wiki/the-princess.html",
-      "score": 81,
-      "weight": 0.81
+      "target": "/wiki/thorne-the-architect.html",
+      "score": 84,
+      "weight": 0.84
     },
     {
       "source": "/wiki/aleema-child-of-the-shard.html",
-      "target": "/wiki/thorne-the-architect.html",
+      "target": "/wiki/the-princess.html",
       "score": 81,
       "weight": 0.81
     },
@@ -3586,15 +3586,15 @@
     },
     {
       "source": "/wiki/alien-worlds-tlm.html",
-      "target": "/wiki/thera-9.html",
-      "score": 77,
-      "weight": 0.77
+      "target": "/wiki/pyralith.html",
+      "score": 78,
+      "weight": 0.78
     },
     {
       "source": "/wiki/alien-worlds-tlm.html",
-      "target": "/wiki/dragan-volkov.html",
-      "score": 76,
-      "weight": 0.76
+      "target": "/wiki/quell.html",
+      "score": 78,
+      "weight": 0.78
     },
     {
       "source": "/wiki/altcoins.html",
@@ -3646,15 +3646,15 @@
     },
     {
       "source": "/wiki/atomicassets.html",
-      "target": "/wiki/thera-9.html",
-      "score": 77,
-      "weight": 0.77
+      "target": "/wiki/pyralith.html",
+      "score": 78,
+      "weight": 0.78
     },
     {
       "source": "/wiki/atomicassets.html",
-      "target": "/wiki/dragan-volkov.html",
-      "score": 76,
-      "weight": 0.76
+      "target": "/wiki/quell.html",
+      "score": 78,
+      "weight": 0.78
     },
     {
       "source": "/wiki/atomichub-graffpunks-collection.html",
@@ -3742,9 +3742,9 @@
     },
     {
       "source": "/wiki/ava-chen.html",
-      "target": "/wiki/thera-9.html",
-      "score": 77,
-      "weight": 0.77
+      "target": "/wiki/pyralith.html",
+      "score": 78,
+      "weight": 0.78
     },
     {
       "source": "/wiki/battlemech-blast.html",
@@ -3790,13 +3790,13 @@
     },
     {
       "source": "/wiki/bear-market-siege.html",
-      "target": "/wiki/the-princess.html",
-      "score": 81,
-      "weight": 0.81
+      "target": "/wiki/thorne-the-architect.html",
+      "score": 84,
+      "weight": 0.84
     },
     {
       "source": "/wiki/bear-market-siege.html",
-      "target": "/wiki/thorne-the-architect.html",
+      "target": "/wiki/the-princess.html",
       "score": 81,
       "weight": 0.81
     },
@@ -3844,13 +3844,13 @@
     },
     {
       "source": "/wiki/billy-the-goat-kid.html",
-      "target": "/wiki/the-princess.html",
-      "score": 81,
-      "weight": 0.81
+      "target": "/wiki/thorne-the-architect.html",
+      "score": 84,
+      "weight": 0.84
     },
     {
       "source": "/wiki/billy-the-goat-kid.html",
-      "target": "/wiki/thorne-the-architect.html",
+      "target": "/wiki/the-princess.html",
       "score": 81,
       "weight": 0.81
     },
@@ -4102,9 +4102,9 @@
     },
     {
       "source": "/wiki/block-topia.html",
-      "target": "/wiki/hodl-warriors.html",
-      "score": 58,
-      "weight": 0.58
+      "target": "/wiki/thorne-the-architect.html",
+      "score": 59,
+      "weight": 0.59
     },
     {
       "source": "/wiki/blockchain.html",
@@ -7372,9 +7372,9 @@
     },
     {
       "source": "/wiki/gang-signs.html",
-      "target": "/wiki/lady-ink.html",
-      "score": 74,
-      "weight": 0.74
+      "target": "/wiki/pyralith.html",
+      "score": 75,
+      "weight": 0.75
     },
     {
       "source": "/wiki/genesis-kernel.html",
@@ -12076,15 +12076,15 @@
     },
     {
       "source": "/wiki/grit.html",
-      "target": "/wiki/grit42.html",
-      "score": 77,
-      "weight": 0.77
+      "target": "/wiki/pyralith.html",
+      "score": 78,
+      "weight": 0.78
     },
     {
       "source": "/wiki/grit.html",
-      "target": "/wiki/thera-9.html",
-      "score": 77,
-      "weight": 0.77
+      "target": "/wiki/quell.html",
+      "score": 78,
+      "weight": 0.78
     },
     {
       "source": "/wiki/grit42.html",
@@ -12106,15 +12106,15 @@
     },
     {
       "source": "/wiki/grit42.html",
-      "target": "/wiki/grit.html",
-      "score": 77,
-      "weight": 0.77
+      "target": "/wiki/pyralith.html",
+      "score": 78,
+      "weight": 0.78
     },
     {
       "source": "/wiki/grit42.html",
-      "target": "/wiki/thera-9.html",
-      "score": 77,
-      "weight": 0.77
+      "target": "/wiki/quell.html",
+      "score": 78,
+      "weight": 0.78
     },
     {
       "source": "/wiki/hard-fork-games.html",
@@ -12562,15 +12562,15 @@
     },
     {
       "source": "/wiki/loopfiend.html",
-      "target": "/wiki/thera-9.html",
-      "score": 77,
-      "weight": 0.77
+      "target": "/wiki/pyralith.html",
+      "score": 78,
+      "weight": 0.78
     },
     {
       "source": "/wiki/loopfiend.html",
-      "target": "/wiki/dragan-volkov.html",
-      "score": 76,
-      "weight": 0.76
+      "target": "/wiki/quell.html",
+      "score": 78,
+      "weight": 0.78
     },
     {
       "source": "/wiki/m1ntr-k1ll.html",
@@ -12592,15 +12592,15 @@
     },
     {
       "source": "/wiki/m1ntr-k1ll.html",
-      "target": "/wiki/thera-9.html",
-      "score": 77,
-      "weight": 0.77
+      "target": "/wiki/pyralith.html",
+      "score": 78,
+      "weight": 0.78
     },
     {
       "source": "/wiki/m1ntr-k1ll.html",
-      "target": "/wiki/dragan-volkov.html",
-      "score": 76,
-      "weight": 0.76
+      "target": "/wiki/quell.html",
+      "score": 78,
+      "weight": 0.78
     },
     {
       "source": "/wiki/maidstone-base.html",
@@ -13252,15 +13252,15 @@
     },
     {
       "source": "/wiki/pixil-mini.html",
-      "target": "/wiki/thera-9.html",
-      "score": 77,
-      "weight": 0.77
+      "target": "/wiki/pyralith.html",
+      "score": 78,
+      "weight": 0.78
     },
     {
       "source": "/wiki/pixil-mini.html",
-      "target": "/wiki/dragan-volkov.html",
-      "score": 76,
-      "weight": 0.76
+      "target": "/wiki/quell.html",
+      "score": 78,
+      "weight": 0.78
     },
     {
       "source": "/wiki/playable-nft-murals.html",
@@ -13385,8 +13385,8 @@
     {
       "source": "/wiki/pyralith.html",
       "target": "/wiki/crypto-moonboys.html",
-      "score": 83,
-      "weight": 0.83
+      "score": 80,
+      "weight": 0.8
     },
     {
       "source": "/wiki/pyralith.html",
@@ -13402,15 +13402,15 @@
     },
     {
       "source": "/wiki/pyralith.html",
-      "target": "/wiki/patchwork.html",
+      "target": "/wiki/quell.html",
       "score": 78,
       "weight": 0.78
     },
     {
       "source": "/wiki/pyralith.html",
-      "target": "/wiki/quell.html",
-      "score": 78,
-      "weight": 0.78
+      "target": "/wiki/thera-9.html",
+      "score": 77,
+      "weight": 0.77
     },
     {
       "source": "/wiki/queen-sarah-p-fly.html",
@@ -13445,8 +13445,8 @@
     {
       "source": "/wiki/quell.html",
       "target": "/wiki/crypto-moonboys.html",
-      "score": 83,
-      "weight": 0.83
+      "score": 80,
+      "weight": 0.8
     },
     {
       "source": "/wiki/quell.html",
@@ -13462,15 +13462,15 @@
     },
     {
       "source": "/wiki/quell.html",
-      "target": "/wiki/patchwork.html",
+      "target": "/wiki/pyralith.html",
       "score": 78,
       "weight": 0.78
     },
     {
       "source": "/wiki/quell.html",
-      "target": "/wiki/pyralith.html",
-      "score": 78,
-      "weight": 0.78
+      "target": "/wiki/thera-9.html",
+      "score": 77,
+      "weight": 0.77
     },
     {
       "source": "/wiki/rave-relics.html",
@@ -13535,20 +13535,14 @@
     {
       "source": "/wiki/rune-tag.html",
       "target": "/wiki/crypto-moonboys.html",
-      "score": 83,
-      "weight": 0.83
+      "score": 80,
+      "weight": 0.8
     },
     {
       "source": "/wiki/rune-tag.html",
       "target": "/wiki/null-the-prophet.html",
       "score": 79,
       "weight": 0.79
-    },
-    {
-      "source": "/wiki/rune-tag.html",
-      "target": "/wiki/hodl-warriors.html",
-      "score": 76,
-      "weight": 0.76
     },
     {
       "source": "/wiki/rune-tag.html",
@@ -13559,6 +13553,12 @@
     {
       "source": "/wiki/rune-tag.html",
       "target": "/wiki/gang-signs.html",
+      "score": 75,
+      "weight": 0.75
+    },
+    {
+      "source": "/wiki/rune-tag.html",
+      "target": "/wiki/m1ntr-k1ll.html",
       "score": 75,
       "weight": 0.75
     },
@@ -13768,9 +13768,9 @@
     },
     {
       "source": "/wiki/sister-halcyon.html",
-      "target": "/wiki/thera-9.html",
-      "score": 77,
-      "weight": 0.77
+      "target": "/wiki/pyralith.html",
+      "score": 78,
+      "weight": 0.78
     },
     {
       "source": "/wiki/sneakar.html",
@@ -15034,13 +15034,13 @@
     },
     {
       "source": "/wiki/the-whitewasher.html",
-      "target": "/wiki/the-princess.html",
-      "score": 81,
-      "weight": 0.81
+      "target": "/wiki/thorne-the-architect.html",
+      "score": 84,
+      "weight": 0.84
     },
     {
       "source": "/wiki/the-whitewasher.html",
-      "target": "/wiki/thorne-the-architect.html",
+      "target": "/wiki/the-princess.html",
       "score": 81,
       "weight": 0.81
     },
@@ -15094,33 +15094,33 @@
     },
     {
       "source": "/wiki/thorne-the-architect.html",
-      "target": "/wiki/the-princess.html",
-      "score": 84,
-      "weight": 0.84
-    },
-    {
-      "source": "/wiki/thorne-the-architect.html",
       "target": "/wiki/the-whitewasher.html",
       "score": 84,
       "weight": 0.84
     },
     {
       "source": "/wiki/thorne-the-architect.html",
+      "target": "/wiki/the-princess.html",
+      "score": 81,
+      "weight": 0.81
+    },
+    {
+      "source": "/wiki/thorne-the-architect.html",
+      "target": "/wiki/billy-the-goat-kid.html",
+      "score": 74,
+      "weight": 0.74
+    },
+    {
+      "source": "/wiki/thorne-the-architect.html",
       "target": "/wiki/crypto-moonboys.html",
-      "score": 80,
-      "weight": 0.8
+      "score": 74,
+      "weight": 0.74
     },
     {
       "source": "/wiki/thorne-the-architect.html",
-      "target": "/wiki/null-the-prophet.html",
-      "score": 76,
-      "weight": 0.76
-    },
-    {
-      "source": "/wiki/thorne-the-architect.html",
-      "target": "/wiki/bitcoin-kids.html",
-      "score": 75,
-      "weight": 0.75
+      "target": "/wiki/aleema-child-of-the-shard.html",
+      "score": 73,
+      "weight": 0.73
     },
     {
       "source": "/wiki/tokenomics.html",
@@ -15226,13 +15226,13 @@
     },
     {
       "source": "/wiki/wagmi-prophecy.html",
-      "target": "/wiki/the-princess.html",
-      "score": 81,
-      "weight": 0.81
+      "target": "/wiki/thorne-the-architect.html",
+      "score": 84,
+      "weight": 0.84
     },
     {
       "source": "/wiki/wagmi-prophecy.html",
-      "target": "/wiki/thorne-the-architect.html",
+      "target": "/wiki/the-princess.html",
       "score": 81,
       "weight": 0.81
     },
