@@ -474,7 +474,7 @@
       "aliases": [],
       "canonical_title": "Block Node Defenders",
       "canonical_url": "/wiki/block-node-defenders.html",
-      "category": "factions",
+      "category": "core",
       "source_urls": [
         "/wiki/block-node-defenders.html"
       ],
@@ -9669,7 +9669,7 @@
       ],
       "canonical_title": "Seeding Rights",
       "canonical_url": "/wiki/seeding-rights.html",
-      "category": "factions",
+      "category": "core",
       "source_urls": [
         "/wiki/seeding-rights.html"
       ],
@@ -11052,5 +11052,5 @@
       ]
     }
   },
-  "updated_at": "2026-10-04T08:25:50Z"
+  "updated_at": "2026-10-04T12:37:27Z"
 }

@@ -483,7 +483,7 @@
     "entity_id": "block_node_defenders",
     "canonical_title": "Block Node Defenders",
     "canonical_url": "/wiki/block-node-defenders.html",
-    "category": "factions",
+    "category": "core",
     "aliases": [],
     "tags": [
       "block",
@@ -9749,7 +9749,7 @@
     "entity_id": "seeding_rights",
     "canonical_title": "Seeding Rights",
     "canonical_url": "/wiki/seeding-rights.html",
-    "category": "factions",
+    "category": "core",
     "aliases": [
       "seeding rights crypto moonboys wiki"
     ],

@@ -32,13 +32,18 @@ Before every publication: refresh main, preserve concurrent changes, regenerate 
 | `m1ntr-k1ll` — 2,705 words | w73 campaign, Overlord Protocol, Codices 021/093; DAO-forged AI primary, assassin identity a competing legacy account. Fork Collapse undated; mint freeze and KiD merger remain branch stories, no live capability. | Counterweight Yard, Ena Quell, Brin Solder, component/reporting trial, Blank Shift, Work Without Issue, Return-to-Work Order. |
 | `the-whitewasher` — 2,846 words | w67 V69 drone, Nullsong and Under-Brooklyn relic; W18 handler unresolved and separate. Legacy spectral powers attributed; Queens foundation and GKniftyHEADS role preserved. Boss phases remain proposals. | Sera Dent, Tovin Marr, South Service Wall, Grey Wash Night, Layer Register, Clean Wall Hearing and Unfinished Contour; injury, lost work and compensation remain consequential. |
 
+| `iris-7` — 2,431 words | w25, W18, w70, w56, w62; inside X Kid with glyph dreams. Escape, mass defection and later school outcomes remain visionary. Eye of Ledger/Veiled Chain/Silent Block preserved as legacy legends. | Blue Margin Book, adult attendant Sella Vey, Window Slip and Unsent Map; no settled age, parents or escape. |
+| `thera-9` — 2,423 words | w70, w56, w58, w59, w34, W2, W14, w25; 2994 departure and lineage leaks attributed. No universal Moongirl origin/infertility; not the unnamed watcher or third recruit. | Grey Bowl room, Lio Marr, Three Questions, Borrowed Seal and Unanswered Names. |
+| `block-node-defenders` — 2,405 words | w70, w50, w56, w51–w52, w57, w62–w63, w65, w25; three programme tiers/Bitbone/service, institutional rank rather than extra faction. No Defender/HODL X equivalence or automatic reproductive entitlement. Legacy Hash Trial/Genesis Validator traditions retained. | Valve Watch, adult Tor Fen, Nell Dace, Handover Cloth, Amber Interval, Split Invoice and Return Bench. |
+| `seeding-rights` — 2,373 words | w70, w50, w56, w58, w62, w25, W11, W19, W18; fictional reproductive policy replaces unsupported NFT territorial-deed claims. Rank, authorisation and adult consent distinguished. Clone Harvest separate; no universal infertility or settled abolition. | Separate Chair hearing, adults Darin Holt/Vessa Noon, Ina Solt, Deferred Entry and Care Register. No invented universal rights. |
+
 Each completed page has one revision-1 canonical block, source tier `first-witness+w81`, aligned HTML/OG/Article descriptions, preserved layout/artwork/URLs/anchors/comments and native collapsible contents. Obsolete bible injection mounts and repetitive SAM verification copy are removed. Subject terms use `wiki-search-terms`; relationship tokens and search short-word/ranking rules are preserved.
 
 ## Validation and remaining work
 
 Queen publication: `node scripts/resolve-canon-prose-approval.test.mjs`, `BASE_SHA=221d7df26e50e2b9c6a9e450ee5195c8f02930ed CANON_PROSE_CHANGE_APPROVED=1 npm run ci:wiki`, `node scripts/graph-publishing-integrity.test.mjs` and `git diff --check` passed. Publishing surfaces and inventory were generated separately. Isolated Chromium passed at 1440×1000 and 390×844: 30 contents targets, settled header clearance, no overflow/script errors/bible injection, no-JavaScript navigation, and actual full search/autocomplete for Ilyra Fen and Pell Ardent. A malformed draft start-marker was caught by ownership validation and corrected before publication. Exact committed SHA and changed paths are preserved in the annotated receipt tag.
 
-Remaining after 12 completed pages: **100**. Connected character, faction and creator-reference drafts are in progress; the generated rewrite audit remains the authoritative queue. Do not recreate or rewrite the sixteen earlier completed articles without a concrete correction and revision increment.
+Remaining after 16 completed pages: **96**. Connected character, faction and creator-reference drafts are in progress; the generated rewrite audit remains the authoritative queue. Do not recreate or rewrite the sixteen earlier completed articles without a concrete correction and revision increment.
 
 ### Publication 2 — Alfie, Jodie and Aleema
 
@@ -53,3 +58,9 @@ Publication 2 reached main as `7272487f41d6d24195122308af037e24fb4c4779`. These 
 ### Publication 4 — NULL and three distinct hostile figures
 
 Previous publication: `269e018243a79614ea2da1d8f6adc8b8fe37abf2`. No identity merger, guaranteed immunity, executable attack or resolved endgame is introduced. Full wiki CI (including ownership, structure and existing search regressions), graph integrity, inventory freshness and diff checks passed. Chromium passed 8 desktop/mobile renders, 134 contents targets and 4 no-JavaScript pages; full search/autocomplete passed for Nera Fold, Leto Spur, Brin Solder, Sera Dent. No overflow, script errors or obsolete bible injection.
+
+### Publication 5 — inside lives, service and Seeding policy
+
+Previous publication: `8d6f049e37b8940b3e695870068d994e2d46a528`. Inside X Kids, adult city institutions, outside Kids and the two HODL traditions remain distinct. Full wiki CI (including ownership, structure and existing search regressions), graph integrity, inventory freshness and diff checks passed. Chromium passed 8 desktop/mobile renders, 136 contents targets and 4 no-JavaScript pages; full search/autocomplete passed for Sella Vey, Lio Marr, Nell Dace, Ina Solt. No overflow, script errors or obsolete bible injection.
+
+Additional search validation: all 201 declared subject phrases across the first sixteen rewrites find their own article using the real runtime selector, with every meaningful query word matched. Existing stopword/short-word behavior, the 58 lore queries, 12 First Witness intent contracts and false free-NFT/Sacred Chain relationship regression remain intact.
