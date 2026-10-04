@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import vm from 'node:vm';
 
 import { runGenerateRelatedWikiPaths } from './generate-related-wiki-paths.mjs';
 
@@ -215,5 +216,41 @@ assert.ok(/\.infobox-image\s+span\s*\{[\s\S]*?font-size:\s*2\.6rem/.test(css), '
 assert.ok(!/\.infobox-image\s+span\s*\{[\s\S]*?!important/.test(css), 'emoji info card sizing does not require cascade-war priority');
 assert.ok(!css.includes('.battle-engagement-deck {'), 'wiki.css no longer owns final engagement deck layout');
 assert.ok(battleCss.includes('.wiki-engagement-module .battle-deck.battle-engagement-deck'), 'battle-layer.css owns final engagement module layout');
+
+// Runtime cleanup must preserve authored disclosures using historical TOC
+// anchors, while removing legacy navigation and separate citation panels.
+{
+  const fixture = (tagName, id, classes, inside) => ({
+    tagName, id, inside, removed: false,
+    classList: { contains: value => classes.includes(value) },
+    remove() { this.removed = true; }
+  });
+  const nodes = [
+    fixture('DETAILS', 'toc', ['canon-toc'], true),
+    fixture('DETAILS', '', ['toc'], true),
+    fixture('NAV', 'toc', [], true),
+    fixture('DIV', '', ['toc'], true),
+    fixture('DETAILS', 'toc', [], false),
+    fixture('DIV', '', ['citation-vote-panel'], true),
+    fixture('DETAILS', '', ['citation-vote-panel'], true)
+  ];
+  const context = {
+    setTimeout() {},
+    window: { location: { pathname: '/wiki/fixture.html' } },
+    document: { readyState: 'loading', addEventListener() {}, querySelectorAll: () => nodes }
+  };
+  const runtime = fs.readFileSync(path.join(process.cwd(), 'js/wiki-flagship-migrator.js'), 'utf8');
+  vm.runInNewContext(runtime.replace('  function schedule() {',
+    '  window.testCleanup = removeLegacyPanels;\n  function schedule() {'), context);
+  const article = { contains: node => node.inside };
+  context.window.testCleanup(article);
+  context.window.testCleanup(article); // Mutation-observer repeat stays safe.
+  assert.deepEqual(nodes.map(node => node.removed), [false, false, true, true, true, true, true]);
+}
+
+const migrationCss = fs.readFileSync(path.join(process.cwd(), 'css/wiki-runtime-migration.css'), 'utf8');
+assert.ok(migrationCss.includes('#toc:not(details)') && migrationCss.includes('.toc:not(details)'),
+  'legacy TOC hiding excludes native details disclosures');
+assert.doesNotMatch(migrationCss, /(?:#toc|\.toc)\s*,/, 'no blanket TOC hiding can override the native disclosure');
 
 console.log('wiki-navigation-backfill-rendering.test.mjs passed');

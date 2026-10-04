@@ -141,3 +141,9 @@ Previous publication: `3623ae3056dad2cb6c15ccc9c7f4a5446896e56a`.  Full wiki CI 
 ### Publication 12 — four disputed individual histories
 
 Previous publication: `6dfd9328a83f391f6937efe3eb0f841a850a3b6b`.  Full wiki CI (including ownership, structure and existing search regressions), graph integrity, inventory freshness and diff checks passed. Chromium passed 8 desktop/mobile renders, 130 contents targets and 4 no-JavaScript pages; full search/autocomplete passed for Miri Span, Noll Brack, Pella Soot, Sile Arden. No overflow, script errors or obsolete bible injection.
+
+### Native contents compatibility before publication 13
+
+Browser checking found that the shared flagship migrator deleted the ecosystem article's native disclosure because it retained the historical `toc` anchor. Cleanup now preserves native contents disclosures inside an article while still removing obsolete navigation and separate citation panels. The corresponding legacy CSS hiding rule also excludes native disclosures. A regression covers ID/class forms, outside-article legacy navigation, citation panels and repeated observer cleanup. No canonical prose or approval-policy changes are included in this separate runtime fix.
+
+Full wiki CI with `CANON_PROSE_CHANGE_APPROVED=0`, graph integrity and diff checks pass. Chromium verifies the ecosystem draft at both desktop/mobile sizes: 30 contents targets, settled header clearance, native opening without JavaScript, no overflow or script errors. Independent review found no actionable behavioral issue. The held article batch is reinstalled and validated after this runtime commit.

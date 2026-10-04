@@ -96,8 +96,8 @@ body.wiki-runtime-flagship-shell .wiki-runtime-article > [data-related-wiki-path
 }
 
 body.wiki-runtime-flagship-shell .infobox,
-body.wiki-runtime-flagship-shell #toc,
-body.wiki-runtime-flagship-shell .toc,
+body.wiki-runtime-flagship-shell #toc:not(details),
+body.wiki-runtime-flagship-shell .toc:not(details),
 body.wiki-runtime-flagship-shell .page-title-line,
 body.wiki-runtime-flagship-shell .citation-vote-panel,
 body.wiki-runtime-flagship-shell [data-citation-vote-panel="true"] {

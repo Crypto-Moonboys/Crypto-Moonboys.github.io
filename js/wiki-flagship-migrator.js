@@ -216,6 +216,16 @@
     addScript('/js/wiki-live-contributors.js', 'data-wiki-live-contributors-runtime');
   }
 
+  function removeLegacyPanels(article) {
+    document.querySelectorAll('#toc, .toc, .citation-vote-panel, [data-citation-vote-panel="true"]').forEach(function (node) {
+      // Rewritten articles retain old contents anchors on native disclosures.
+      // They are authored navigation, not obsolete generated panels.
+      if (node.tagName === 'DETAILS' && article.contains(node) &&
+          (node.id === 'toc' || node.classList.contains('toc'))) return;
+      node.remove();
+    });
+  }
+
   function migrate() {
     var article = document.querySelector('article.wiki-content, main article');
     if (!article || isActualNftPage(article) || busy) return;
@@ -237,9 +247,7 @@
         prepareDashboard(article);
       }
 
-      document.querySelectorAll('#toc, .toc, .citation-vote-panel, [data-citation-vote-panel="true"]').forEach(function (node) {
-        node.remove();
-      });
+      removeLegacyPanels(article);
       wrapSections(article);
       ensureSourceStatus(article);
     } finally {
