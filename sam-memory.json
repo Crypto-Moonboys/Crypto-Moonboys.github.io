@@ -5247,7 +5247,7 @@
       ],
       "canonical_title": "GKniftyHEADS",
       "canonical_url": "/wiki/gkniftyheads.html",
-      "category": "characters",
+      "category": "core",
       "source_urls": [
         "/wiki/gkniftyheads.html"
       ],
@@ -8365,7 +8365,7 @@
       ],
       "canonical_title": "Graffiti Kings",
       "canonical_url": "/wiki/graffiti-kings.html",
-      "category": "factions",
+      "category": "core",
       "source_urls": [
         "/wiki/graffiti-kings.html"
       ],
@@ -8435,7 +8435,7 @@
       ],
       "canonical_title": "GraffPUNKS",
       "canonical_url": "/wiki/graffpunks.html",
-      "category": "characters",
+      "category": "core",
       "source_urls": [
         "/wiki/graffpunks.html"
       ],
@@ -8605,9 +8605,9 @@
       "aliases": [
         "head tags crypto moonboys wiki"
       ],
-      "canonical_title": "head tags",
+      "canonical_title": "Head Tags",
       "canonical_url": "/wiki/head-tags.html",
-      "category": "factions",
+      "category": "concepts",
       "source_urls": [
         "/wiki/head-tags.html"
       ],
@@ -11052,5 +11052,5 @@
       ]
     }
   },
-  "updated_at": "2026-10-04T12:37:27Z"
+  "updated_at": "2026-10-04T12:46:05Z"
 }

@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-04T12:42:16.477Z",
-  "verified_at": "2026-10-04T12:42:16.477Z",
+  "generated_at": "2026-10-04T12:46:05.657Z",
+  "verified_at": "2026-10-04T12:46:05.657Z",
   "nodes": [
     {
       "id": "/about.html",
@@ -239,7 +239,7 @@
       "title": "Bitcoin Kid Army",
       "url": "/wiki/bitcoin-kid-army.html",
       "category": "factions",
-      "rank_score": 295,
+      "rank_score": 297,
       "authority_score": 28
     },
     {
@@ -247,7 +247,7 @@
       "title": "Bitcoin Kids",
       "url": "/wiki/bitcoin-kids.html",
       "category": "characters",
-      "rank_score": 392,
+      "rank_score": 394,
       "authority_score": 28
     },
     {
@@ -255,7 +255,7 @@
       "title": "Bitcoin X Kids",
       "url": "/wiki/bitcoin-x-kids.html",
       "category": "characters",
-      "rank_score": 310,
+      "rank_score": 314,
       "authority_score": 28
     },
     {
@@ -279,7 +279,7 @@
       "title": "Block Topia",
       "url": "/wiki/block-topia.html",
       "category": "characters",
-      "rank_score": 448,
+      "rank_score": 446,
       "authority_score": 13
     },
     {
@@ -351,7 +351,7 @@
       "title": "Darren Cullen (SER)",
       "url": "/wiki/darren-cullen.html",
       "category": "characters",
-      "rank_score": 261,
+      "rank_score": 259,
       "authority_score": 21
     },
     {
@@ -543,7 +543,7 @@
       "title": "Book III — The Keeper",
       "url": "/wiki/first-witness-book-3-the-keeper.html",
       "category": "core",
-      "rank_score": 335,
+      "rank_score": 337,
       "authority_score": 14
     },
     {
@@ -551,7 +551,7 @@
       "title": "Book IV — The Wall",
       "url": "/wiki/first-witness-book-4-the-wall.html",
       "category": "core",
-      "rank_score": 316,
+      "rank_score": 320,
       "authority_score": 14
     },
     {
@@ -575,7 +575,7 @@
       "title": "Book VII — The Hold",
       "url": "/wiki/first-witness-book-7-the-hold.html",
       "category": "core",
-      "rank_score": 313,
+      "rank_score": 317,
       "authority_score": 14
     },
     {
@@ -887,7 +887,7 @@
       "title": "First Witness Master Chronology",
       "url": "/wiki/first-witness-master-chronology.html",
       "category": "core",
-      "rank_score": 338,
+      "rank_score": 344,
       "authority_score": 14
     },
     {
@@ -1047,7 +1047,7 @@
       "title": "Street Kingdoms and the Living Reading",
       "url": "/wiki/first-witness-street-kingdoms-reading.html",
       "category": "core",
-      "rank_score": 310,
+      "rank_score": 312,
       "authority_score": 12
     },
     {
@@ -1055,7 +1055,7 @@
       "title": "Symbols, Marks and Sacred Design",
       "url": "/wiki/first-witness-symbols-marks-sacred-design.html",
       "category": "core",
-      "rank_score": 292,
+      "rank_score": 296,
       "authority_score": 12
     },
     {
@@ -1159,7 +1159,7 @@
       "title": "Genesis Kernel",
       "url": "/wiki/genesis-kernel.html",
       "category": "core",
-      "rank_score": 336,
+      "rank_score": 338,
       "authority_score": 28
     },
     {
@@ -2342,24 +2342,24 @@
       "id": "/wiki/gkniftyheads.html",
       "title": "GKniftyHEADS",
       "url": "/wiki/gkniftyheads.html",
-      "category": "characters",
-      "rank_score": 586,
-      "authority_score": 17
+      "category": "core",
+      "rank_score": 622,
+      "authority_score": 28
     },
     {
       "id": "/wiki/graffiti-kings.html",
       "title": "Graffiti Kings",
       "url": "/wiki/graffiti-kings.html",
-      "category": "factions",
-      "rank_score": 239,
-      "authority_score": 18
+      "category": "core",
+      "rank_score": 291,
+      "authority_score": 28
     },
     {
       "id": "/wiki/graffiti-nexus.html",
       "title": "Graffiti Nexus",
       "url": "/wiki/graffiti-nexus.html",
       "category": "core",
-      "rank_score": 341,
+      "rank_score": 343,
       "authority_score": 28
     },
     {
@@ -2398,9 +2398,9 @@
       "id": "/wiki/graffpunks.html",
       "title": "GraffPUNKS",
       "url": "/wiki/graffpunks.html",
-      "category": "characters",
-      "rank_score": 695,
-      "authority_score": 21
+      "category": "core",
+      "rank_score": 722,
+      "authority_score": 28
     },
     {
       "id": "/wiki/grit.html",
@@ -2423,7 +2423,7 @@
       "title": "Hard Fork Games",
       "url": "/wiki/hard-fork-games.html",
       "category": "core",
-      "rank_score": 489,
+      "rank_score": 491,
       "authority_score": 28
     },
     {
@@ -2436,11 +2436,11 @@
     },
     {
       "id": "/wiki/head-tags.html",
-      "title": "head tags",
+      "title": "Head Tags",
       "url": "/wiki/head-tags.html",
-      "category": "factions",
-      "rank_score": 268,
-      "authority_score": 18
+      "category": "concepts",
+      "rank_score": 253,
+      "authority_score": 28
     },
     {
       "id": "/wiki/hex-tagger-prime.html",
@@ -2455,7 +2455,7 @@
       "title": "HODL Warriors",
       "url": "/wiki/hodl-warriors.html",
       "category": "characters",
-      "rank_score": 331,
+      "rank_score": 333,
       "authority_score": 28
     },
     {
@@ -2943,7 +2943,7 @@
       "title": "Street Kingdoms",
       "url": "/wiki/street-kingdoms.html",
       "category": "factions",
-      "rank_score": 267,
+      "rank_score": 269,
       "authority_score": 21
     },
     {
@@ -3143,7 +3143,7 @@
       "title": "The Nomad Bears",
       "url": "/wiki/the-nomad-bears.html",
       "category": "factions",
-      "rank_score": 292,
+      "rank_score": 294,
       "authority_score": 28
     },
     {
@@ -3532,9 +3532,9 @@
     },
     {
       "source": "/wiki/aleema-child-of-the-shard.html",
-      "target": "/wiki/graffpunks.html",
-      "score": 80,
-      "weight": 0.8
+      "target": "/wiki/bear-market-siege.html",
+      "score": 75,
+      "weight": 0.75
     },
     {
       "source": "/wiki/alfie-bitcoin-kid-blaze.html",
@@ -3568,12 +3568,6 @@
     },
     {
       "source": "/wiki/alien-worlds-tlm.html",
-      "target": "/wiki/graffpunks.html",
-      "score": 89,
-      "weight": 0.89
-    },
-    {
-      "source": "/wiki/alien-worlds-tlm.html",
       "target": "/wiki/crypto-moonboys.html",
       "score": 86,
       "weight": 0.86
@@ -3586,15 +3580,21 @@
     },
     {
       "source": "/wiki/alien-worlds-tlm.html",
-      "target": "/wiki/gkniftyheads.html",
-      "score": 79,
-      "weight": 0.79
-    },
-    {
-      "source": "/wiki/alien-worlds-tlm.html",
       "target": "/wiki/m1ntr-k1ll.html",
       "score": 78,
       "weight": 0.78
+    },
+    {
+      "source": "/wiki/alien-worlds-tlm.html",
+      "target": "/wiki/thera-9.html",
+      "score": 77,
+      "weight": 0.77
+    },
+    {
+      "source": "/wiki/alien-worlds-tlm.html",
+      "target": "/wiki/jodie-zoom-2000.html",
+      "score": 76,
+      "weight": 0.76
     },
     {
       "source": "/wiki/altcoins.html",
@@ -3628,12 +3628,6 @@
     },
     {
       "source": "/wiki/atomicassets.html",
-      "target": "/wiki/graffpunks.html",
-      "score": 89,
-      "weight": 0.89
-    },
-    {
-      "source": "/wiki/atomicassets.html",
       "target": "/wiki/crypto-moonboys.html",
       "score": 86,
       "weight": 0.86
@@ -3646,15 +3640,21 @@
     },
     {
       "source": "/wiki/atomicassets.html",
-      "target": "/wiki/gkniftyheads.html",
-      "score": 79,
-      "weight": 0.79
-    },
-    {
-      "source": "/wiki/atomicassets.html",
       "target": "/wiki/m1ntr-k1ll.html",
       "score": 78,
       "weight": 0.78
+    },
+    {
+      "source": "/wiki/atomicassets.html",
+      "target": "/wiki/thera-9.html",
+      "score": 77,
+      "weight": 0.77
+    },
+    {
+      "source": "/wiki/atomicassets.html",
+      "target": "/wiki/jodie-zoom-2000.html",
+      "score": 76,
+      "weight": 0.76
     },
     {
       "source": "/wiki/atomichub-graffpunks-collection.html",
@@ -3724,12 +3724,6 @@
     },
     {
       "source": "/wiki/ava-chen.html",
-      "target": "/wiki/graffpunks.html",
-      "score": 89,
-      "weight": 0.89
-    },
-    {
-      "source": "/wiki/ava-chen.html",
       "target": "/wiki/null-the-prophet.html",
       "score": 80,
       "weight": 0.8
@@ -3742,9 +3736,15 @@
     },
     {
       "source": "/wiki/ava-chen.html",
-      "target": "/wiki/gkniftyheads.html",
+      "target": "/wiki/jodie-zoom-2000.html",
       "score": 79,
       "weight": 0.79
+    },
+    {
+      "source": "/wiki/ava-chen.html",
+      "target": "/wiki/m1ntr-k1ll.html",
+      "score": 78,
+      "weight": 0.78
     },
     {
       "source": "/wiki/battlemech-blast.html",
@@ -3796,13 +3796,13 @@
     },
     {
       "source": "/wiki/bear-market-siege.html",
-      "target": "/wiki/graffpunks.html",
-      "score": 83,
-      "weight": 0.83
+      "target": "/wiki/the-princess.html",
+      "score": 81,
+      "weight": 0.81
     },
     {
       "source": "/wiki/bear-market-siege.html",
-      "target": "/wiki/the-princess.html",
+      "target": "/wiki/thorne-the-architect.html",
       "score": 81,
       "weight": 0.81
     },
@@ -3862,19 +3862,13 @@
     },
     {
       "source": "/wiki/billy-the-goat-kid.html",
-      "target": "/wiki/graffpunks.html",
-      "score": 83,
-      "weight": 0.83
+      "target": "/wiki/null-the-prophet.html",
+      "score": 80,
+      "weight": 0.8
     },
     {
       "source": "/wiki/bit-cap-5000.html",
       "target": "/wiki/crypto-moonboys.html",
-      "score": 89,
-      "weight": 0.89
-    },
-    {
-      "source": "/wiki/bit-cap-5000.html",
-      "target": "/wiki/graffpunks.html",
       "score": 89,
       "weight": 0.89
     },
@@ -3886,15 +3880,21 @@
     },
     {
       "source": "/wiki/bit-cap-5000.html",
-      "target": "/wiki/gkniftyheads.html",
-      "score": 79,
-      "weight": 0.79
-    },
-    {
-      "source": "/wiki/bit-cap-5000.html",
       "target": "/wiki/bitcoin-kids.html",
       "score": 74,
       "weight": 0.74
+    },
+    {
+      "source": "/wiki/bit-cap-5000.html",
+      "target": "/wiki/hodl-warriors.html",
+      "score": 72,
+      "weight": 0.72
+    },
+    {
+      "source": "/wiki/bit-cap-5000.html",
+      "target": "/wiki/bitcoin-x-kids.html",
+      "score": 69,
+      "weight": 0.69
     },
     {
       "source": "/wiki/bitcoin-btc.html",
@@ -3959,20 +3959,14 @@
     {
       "source": "/wiki/bitcoin-kids.html",
       "target": "/wiki/bitcoin-x-kids.html",
-      "score": 98,
-      "weight": 0.98
+      "score": 102,
+      "weight": 1
     },
     {
       "source": "/wiki/bitcoin-kids.html",
       "target": "/wiki/crypto-moonboys.html",
       "score": 92,
       "weight": 0.92
-    },
-    {
-      "source": "/wiki/bitcoin-kids.html",
-      "target": "/wiki/graffpunks.html",
-      "score": 86,
-      "weight": 0.86
     },
     {
       "source": "/wiki/bitcoin-kids.html",
@@ -3983,6 +3977,12 @@
     {
       "source": "/wiki/bitcoin-kids.html",
       "target": "/wiki/hodl-warriors.html",
+      "score": 85,
+      "weight": 0.85
+    },
+    {
+      "source": "/wiki/bitcoin-kids.html",
+      "target": "/wiki/hodl-x-warriors.html",
       "score": 85,
       "weight": 0.85
     },
@@ -4000,12 +4000,6 @@
     },
     {
       "source": "/wiki/bitcoin-x-kids.html",
-      "target": "/wiki/graffpunks.html",
-      "score": 86,
-      "weight": 0.86
-    },
-    {
-      "source": "/wiki/bitcoin-x-kids.html",
       "target": "/wiki/null-the-prophet.html",
       "score": 83,
       "weight": 0.83
@@ -4015,6 +4009,12 @@
       "target": "/wiki/hodl-warriors.html",
       "score": 82,
       "weight": 0.82
+    },
+    {
+      "source": "/wiki/bitcoin-x-kids.html",
+      "target": "/wiki/hodl-x-warriors.html",
+      "score": 76,
+      "weight": 0.76
     },
     {
       "source": "/wiki/bitcoin.html",
@@ -4048,6 +4048,12 @@
     },
     {
       "source": "/wiki/block-node-defenders.html",
+      "target": "/wiki/graffpunks.html",
+      "score": 90,
+      "weight": 0.9
+    },
+    {
+      "source": "/wiki/block-node-defenders.html",
       "target": "/wiki/hard-fork-games.html",
       "score": 88,
       "weight": 0.88
@@ -4071,28 +4077,10 @@
       "weight": 0.85
     },
     {
-      "source": "/wiki/block-node-defenders.html",
-      "target": "/wiki/sacred-chain.html",
-      "score": 77,
-      "weight": 0.77
-    },
-    {
       "source": "/wiki/block-topia.html",
       "target": "/wiki/crypto-moonboys.html",
       "score": 77,
       "weight": 0.77
-    },
-    {
-      "source": "/wiki/block-topia.html",
-      "target": "/wiki/graffpunks.html",
-      "score": 74,
-      "weight": 0.74
-    },
-    {
-      "source": "/wiki/block-topia.html",
-      "target": "/wiki/gkniftyheads.html",
-      "score": 73,
-      "weight": 0.73
     },
     {
       "source": "/wiki/block-topia.html",
@@ -4105,6 +4093,18 @@
       "target": "/wiki/bitcoin-kids.html",
       "score": 62,
       "weight": 0.62
+    },
+    {
+      "source": "/wiki/block-topia.html",
+      "target": "/wiki/the-whitewasher.html",
+      "score": 59,
+      "weight": 0.59
+    },
+    {
+      "source": "/wiki/block-topia.html",
+      "target": "/wiki/bitcoin-x-kids.html",
+      "score": 57,
+      "weight": 0.57
     },
     {
       "source": "/wiki/blockchain.html",
@@ -4174,18 +4174,6 @@
     },
     {
       "source": "/wiki/burn-to-earn.html",
-      "target": "/wiki/graffpunks.html",
-      "score": 89,
-      "weight": 0.89
-    },
-    {
-      "source": "/wiki/burn-to-earn.html",
-      "target": "/wiki/gkniftyheads.html",
-      "score": 82,
-      "weight": 0.82
-    },
-    {
-      "source": "/wiki/burn-to-earn.html",
       "target": "/wiki/null-the-prophet.html",
       "score": 80,
       "weight": 0.8
@@ -4195,6 +4183,18 @@
       "target": "/wiki/bitcoin-kids.html",
       "score": 74,
       "weight": 0.74
+    },
+    {
+      "source": "/wiki/burn-to-earn.html",
+      "target": "/wiki/hodl-warriors.html",
+      "score": 72,
+      "weight": 0.72
+    },
+    {
+      "source": "/wiki/burn-to-earn.html",
+      "target": "/wiki/punk-token.html",
+      "score": 69,
+      "weight": 0.69
     },
     {
       "source": "/wiki/canvas-clash.html",
@@ -4228,12 +4228,6 @@
     },
     {
       "source": "/wiki/charlie-buster.html",
-      "target": "/wiki/graffpunks.html",
-      "score": 89,
-      "weight": 0.89
-    },
-    {
-      "source": "/wiki/charlie-buster.html",
       "target": "/wiki/crypto-moonboys.html",
       "score": 86,
       "weight": 0.86
@@ -4246,15 +4240,21 @@
     },
     {
       "source": "/wiki/charlie-buster.html",
-      "target": "/wiki/gkniftyheads.html",
-      "score": 79,
-      "weight": 0.79
-    },
-    {
-      "source": "/wiki/charlie-buster.html",
       "target": "/wiki/gang-signs.html",
       "score": 75,
       "weight": 0.75
+    },
+    {
+      "source": "/wiki/charlie-buster.html",
+      "target": "/wiki/m1ntr-k1ll.html",
+      "score": 75,
+      "weight": 0.75
+    },
+    {
+      "source": "/wiki/charlie-buster.html",
+      "target": "/wiki/bitcoin-kids.html",
+      "score": 74,
+      "weight": 0.74
     },
     {
       "source": "/wiki/croydon-tower-blocks.html",
@@ -4318,18 +4318,6 @@
     },
     {
       "source": "/wiki/crypto-moonboys.html",
-      "target": "/wiki/graffpunks.html",
-      "score": 89,
-      "weight": 0.89
-    },
-    {
-      "source": "/wiki/crypto-moonboys.html",
-      "target": "/wiki/gkniftyheads.html",
-      "score": 85,
-      "weight": 0.85
-    },
-    {
-      "source": "/wiki/crypto-moonboys.html",
       "target": "/wiki/null-the-prophet.html",
       "score": 83,
       "weight": 0.83
@@ -4347,16 +4335,22 @@
       "weight": 0.75
     },
     {
+      "source": "/wiki/crypto-moonboys.html",
+      "target": "/wiki/burn-to-earn.html",
+      "score": 74,
+      "weight": 0.74
+    },
+    {
+      "source": "/wiki/crypto-moonboys.html",
+      "target": "/wiki/punk-token.html",
+      "score": 72,
+      "weight": 0.72
+    },
+    {
       "source": "/wiki/darren-cullen.html",
       "target": "/wiki/crypto-moonboys.html",
       "score": 95,
       "weight": 0.95
-    },
-    {
-      "source": "/wiki/darren-cullen.html",
-      "target": "/wiki/graffpunks.html",
-      "score": 89,
-      "weight": 0.89
     },
     {
       "source": "/wiki/darren-cullen.html",
@@ -4366,15 +4360,21 @@
     },
     {
       "source": "/wiki/darren-cullen.html",
-      "target": "/wiki/gkniftyheads.html",
-      "score": 79,
-      "weight": 0.79
-    },
-    {
-      "source": "/wiki/darren-cullen.html",
       "target": "/wiki/bitcoin-kids.html",
       "score": 74,
       "weight": 0.74
+    },
+    {
+      "source": "/wiki/darren-cullen.html",
+      "target": "/wiki/hodl-warriors.html",
+      "score": 72,
+      "weight": 0.72
+    },
+    {
+      "source": "/wiki/darren-cullen.html",
+      "target": "/wiki/punk-token.html",
+      "score": 72,
+      "weight": 0.72
     },
     {
       "source": "/wiki/defi-mining.html",
@@ -4474,21 +4474,9 @@
     },
     {
       "source": "/wiki/diamond-hands.html",
-      "target": "/wiki/graffpunks.html",
-      "score": 92,
-      "weight": 0.92
-    },
-    {
-      "source": "/wiki/diamond-hands.html",
       "target": "/wiki/null-the-prophet.html",
       "score": 86,
       "weight": 0.86
-    },
-    {
-      "source": "/wiki/diamond-hands.html",
-      "target": "/wiki/gkniftyheads.html",
-      "score": 82,
-      "weight": 0.82
     },
     {
       "source": "/wiki/diamond-hands.html",
@@ -4497,10 +4485,16 @@
       "weight": 0.8
     },
     {
-      "source": "/wiki/dragan-volkov.html",
-      "target": "/wiki/graffpunks.html",
-      "score": 89,
-      "weight": 0.89
+      "source": "/wiki/diamond-hands.html",
+      "target": "/wiki/graffpunks-ecosystem.html",
+      "score": 76,
+      "weight": 0.76
+    },
+    {
+      "source": "/wiki/diamond-hands.html",
+      "target": "/wiki/gang-signs.html",
+      "score": 75,
+      "weight": 0.75
     },
     {
       "source": "/wiki/dragan-volkov.html",
@@ -4516,15 +4510,21 @@
     },
     {
       "source": "/wiki/dragan-volkov.html",
-      "target": "/wiki/gkniftyheads.html",
-      "score": 79,
-      "weight": 0.79
-    },
-    {
-      "source": "/wiki/dragan-volkov.html",
       "target": "/wiki/m1ntr-k1ll.html",
       "score": 78,
       "weight": 0.78
+    },
+    {
+      "source": "/wiki/dragan-volkov.html",
+      "target": "/wiki/grit.html",
+      "score": 77,
+      "weight": 0.77
+    },
+    {
+      "source": "/wiki/dragan-volkov.html",
+      "target": "/wiki/grit42.html",
+      "score": 77,
+      "weight": 0.77
     },
     {
       "source": "/wiki/dream-sovereign.html",
@@ -4558,12 +4558,6 @@
     },
     {
       "source": "/wiki/elder-codex-7.html",
-      "target": "/wiki/graffpunks.html",
-      "score": 96,
-      "weight": 0.96
-    },
-    {
-      "source": "/wiki/elder-codex-7.html",
       "target": "/wiki/crypto-moonboys.html",
       "score": 92,
       "weight": 0.92
@@ -4576,15 +4570,21 @@
     },
     {
       "source": "/wiki/elder-codex-7.html",
-      "target": "/wiki/gkniftyheads.html",
-      "score": 79,
-      "weight": 0.79
-    },
-    {
-      "source": "/wiki/elder-codex-7.html",
       "target": "/wiki/hodl-warriors.html",
       "score": 75,
       "weight": 0.75
+    },
+    {
+      "source": "/wiki/elder-codex-7.html",
+      "target": "/wiki/bitcoin-kids.html",
+      "score": 74,
+      "weight": 0.74
+    },
+    {
+      "source": "/wiki/elder-codex-7.html",
+      "target": "/wiki/iris-7.html",
+      "score": 74,
+      "weight": 0.74
     },
     {
       "source": "/wiki/ethereum-ecosystem.html",
@@ -4756,14 +4756,14 @@
     },
     {
       "source": "/wiki/first-witness-addiction-intoxication-compulsion.html",
-      "target": "/wiki/first-witness-source-register.html",
+      "target": "/wiki/first-witness-book-4-the-wall.html",
       "score": 304,
       "weight": 1
     },
     {
       "source": "/wiki/first-witness-addiction-intoxication-compulsion.html",
-      "target": "/wiki/first-witness-book-4-the-wall.html",
-      "score": 302,
+      "target": "/wiki/first-witness-source-register.html",
+      "score": 304,
       "weight": 1
     },
     {
@@ -4786,14 +4786,14 @@
     },
     {
       "source": "/wiki/first-witness-ageing-retirement-elderhood.html",
-      "target": "/wiki/first-witness-source-register.html",
+      "target": "/wiki/first-witness-book-4-the-wall.html",
       "score": 304,
       "weight": 1
     },
     {
       "source": "/wiki/first-witness-ageing-retirement-elderhood.html",
-      "target": "/wiki/first-witness-book-4-the-wall.html",
-      "score": 302,
+      "target": "/wiki/first-witness-source-register.html",
+      "score": 304,
       "weight": 1
     },
     {
@@ -4846,14 +4846,14 @@
     },
     {
       "source": "/wiki/first-witness-anonymity-pseudonyms-hidden-names.html",
-      "target": "/wiki/first-witness-source-register.html",
+      "target": "/wiki/first-witness-book-4-the-wall.html",
       "score": 304,
       "weight": 1
     },
     {
       "source": "/wiki/first-witness-anonymity-pseudonyms-hidden-names.html",
-      "target": "/wiki/first-witness-book-4-the-wall.html",
-      "score": 302,
+      "target": "/wiki/first-witness-source-register.html",
+      "score": 304,
       "weight": 1
     },
     {
@@ -5002,8 +5002,8 @@
     },
     {
       "source": "/wiki/first-witness-block-topia-reading.html",
-      "target": "/wiki/first-witness-source-register.html",
-      "score": 310,
+      "target": "/wiki/first-witness-street-kingdoms-reading.html",
+      "score": 311,
       "weight": 1
     },
     {
@@ -5050,6 +5050,12 @@
     },
     {
       "source": "/wiki/first-witness-book-2-the-common-blood.html",
+      "target": "/wiki/first-witness-book-4-the-wall.html",
+      "score": 315,
+      "weight": 1
+    },
+    {
+      "source": "/wiki/first-witness-book-2-the-common-blood.html",
       "target": "/wiki/first-witness-concordance.html",
       "score": 315,
       "weight": 1
@@ -5057,12 +5063,6 @@
     {
       "source": "/wiki/first-witness-book-2-the-common-blood.html",
       "target": "/wiki/first-witness-book-3-the-keeper.html",
-      "score": 313,
-      "weight": 1
-    },
-    {
-      "source": "/wiki/first-witness-book-2-the-common-blood.html",
-      "target": "/wiki/first-witness-book-4-the-wall.html",
       "score": 313,
       "weight": 1
     },
@@ -5140,6 +5140,12 @@
     },
     {
       "source": "/wiki/first-witness-book-5-the-chain.html",
+      "target": "/wiki/first-witness-book-7-the-hold.html",
+      "score": 315,
+      "weight": 1
+    },
+    {
+      "source": "/wiki/first-witness-book-5-the-chain.html",
       "target": "/wiki/first-witness-concordance.html",
       "score": 315,
       "weight": 1
@@ -5148,12 +5154,6 @@
       "source": "/wiki/first-witness-book-5-the-chain.html",
       "target": "/wiki/first-witness-life-readings.html",
       "score": 315,
-      "weight": 1
-    },
-    {
-      "source": "/wiki/first-witness-book-5-the-chain.html",
-      "target": "/wiki/first-witness-book-7-the-hold.html",
-      "score": 313,
       "weight": 1
     },
     {
@@ -5182,7 +5182,7 @@
     },
     {
       "source": "/wiki/first-witness-book-6-the-fork.html",
-      "target": "/wiki/first-witness-concordance.html",
+      "target": "/wiki/first-witness-book-4-the-wall.html",
       "score": 315,
       "weight": 1
     },
@@ -5260,6 +5260,12 @@
     },
     {
       "source": "/wiki/first-witness-book-9-the-unwritten-block.html",
+      "target": "/wiki/first-witness-book-7-the-hold.html",
+      "score": 315,
+      "weight": 1
+    },
+    {
+      "source": "/wiki/first-witness-book-9-the-unwritten-block.html",
       "target": "/wiki/first-witness-concordance.html",
       "score": 315,
       "weight": 1
@@ -5268,12 +5274,6 @@
       "source": "/wiki/first-witness-book-9-the-unwritten-block.html",
       "target": "/wiki/first-witness-life-readings.html",
       "score": 315,
-      "weight": 1
-    },
-    {
-      "source": "/wiki/first-witness-book-9-the-unwritten-block.html",
-      "target": "/wiki/first-witness-book-3-the-keeper.html",
-      "score": 313,
       "weight": 1
     },
     {
@@ -5392,7 +5392,7 @@
     },
     {
       "source": "/wiki/first-witness-charity-mutual-aid-dependence.html",
-      "target": "/wiki/first-witness-source-register.html",
+      "target": "/wiki/first-witness-book-4-the-wall.html",
       "score": 304,
       "weight": 1
     },
@@ -5662,7 +5662,7 @@
     },
     {
       "source": "/wiki/first-witness-disaster-famine-mutual-aid.html",
-      "target": "/wiki/first-witness-source-register.html",
+      "target": "/wiki/first-witness-book-4-the-wall.html",
       "score": 304,
       "weight": 1
     },
@@ -5716,14 +5716,14 @@
     },
     {
       "source": "/wiki/first-witness-dual-use-tools-weapons.html",
-      "target": "/wiki/first-witness-source-register.html",
+      "target": "/wiki/first-witness-book-4-the-wall.html",
       "score": 304,
       "weight": 1
     },
     {
       "source": "/wiki/first-witness-dual-use-tools-weapons.html",
-      "target": "/wiki/first-witness-ai-synthetic-minds.html",
-      "score": 302,
+      "target": "/wiki/first-witness-source-register.html",
+      "score": 304,
       "weight": 1
     },
     {
@@ -6202,7 +6202,7 @@
     },
     {
       "source": "/wiki/first-witness-language-translation-sacred-words.html",
-      "target": "/wiki/first-witness-source-register.html",
+      "target": "/wiki/first-witness-book-4-the-wall.html",
       "score": 304,
       "weight": 1
     },
@@ -6262,7 +6262,7 @@
     },
     {
       "source": "/wiki/first-witness-libraries-architecture-archive-houses.html",
-      "target": "/wiki/first-witness-source-register.html",
+      "target": "/wiki/first-witness-book-4-the-wall.html",
       "score": 304,
       "weight": 1
     },
@@ -6496,14 +6496,14 @@
     },
     {
       "source": "/wiki/first-witness-music-dance-performance.html",
-      "target": "/wiki/first-witness-source-register.html",
+      "target": "/wiki/first-witness-book-4-the-wall.html",
       "score": 304,
       "weight": 1
     },
     {
       "source": "/wiki/first-witness-music-dance-performance.html",
-      "target": "/wiki/first-witness-book-4-the-wall.html",
-      "score": 302,
+      "target": "/wiki/first-witness-source-register.html",
+      "score": 304,
       "weight": 1
     },
     {
@@ -6677,7 +6677,7 @@
     {
       "source": "/wiki/first-witness-proverbs-street-sayings.html",
       "target": "/wiki/first-witness-street-kingdoms-reading.html",
-      "score": 306,
+      "score": 308,
       "weight": 1
     },
     {
@@ -6707,7 +6707,7 @@
     {
       "source": "/wiki/first-witness-questions-for-the-living.html",
       "target": "/wiki/first-witness-street-kingdoms-reading.html",
-      "score": 306,
+      "score": 308,
       "weight": 1
     },
     {
@@ -7228,12 +7228,6 @@
     },
     {
       "source": "/wiki/forklord-you.html",
-      "target": "/wiki/graffpunks.html",
-      "score": 89,
-      "weight": 0.89
-    },
-    {
-      "source": "/wiki/forklord-you.html",
       "target": "/wiki/crypto-moonboys.html",
       "score": 86,
       "weight": 0.86
@@ -7246,25 +7240,25 @@
     },
     {
       "source": "/wiki/forklord-you.html",
-      "target": "/wiki/gkniftyheads.html",
-      "score": 79,
-      "weight": 0.79
+      "target": "/wiki/gang-signs.html",
+      "score": 75,
+      "weight": 0.75
     },
     {
       "source": "/wiki/forklord-you.html",
-      "target": "/wiki/gang-signs.html",
+      "target": "/wiki/m1ntr-k1ll.html",
+      "score": 75,
+      "weight": 0.75
+    },
+    {
+      "source": "/wiki/forklord-you.html",
+      "target": "/wiki/nfts.html",
       "score": 75,
       "weight": 0.75
     },
     {
       "source": "/wiki/forksplit.html",
       "target": "/wiki/crypto-moonboys.html",
-      "score": 89,
-      "weight": 0.89
-    },
-    {
-      "source": "/wiki/forksplit.html",
-      "target": "/wiki/graffpunks.html",
       "score": 89,
       "weight": 0.89
     },
@@ -7282,9 +7276,15 @@
     },
     {
       "source": "/wiki/forksplit.html",
-      "target": "/wiki/gkniftyheads.html",
+      "target": "/wiki/jodie-zoom-2000.html",
       "score": 79,
       "weight": 0.79
+    },
+    {
+      "source": "/wiki/forksplit.html",
+      "target": "/wiki/m1ntr-k1ll.html",
+      "score": 78,
+      "weight": 0.78
     },
     {
       "source": "/wiki/games4punks-telegram.html",
@@ -7348,12 +7348,6 @@
     },
     {
       "source": "/wiki/gang-signs.html",
-      "target": "/wiki/graffpunks.html",
-      "score": 89,
-      "weight": 0.89
-    },
-    {
-      "source": "/wiki/gang-signs.html",
       "target": "/wiki/crypto-moonboys.html",
       "score": 86,
       "weight": 0.86
@@ -7366,15 +7360,27 @@
     },
     {
       "source": "/wiki/gang-signs.html",
-      "target": "/wiki/gkniftyheads.html",
-      "score": 79,
-      "weight": 0.79
-    },
-    {
-      "source": "/wiki/gang-signs.html",
       "target": "/wiki/m1ntr-k1ll.html",
       "score": 75,
       "weight": 0.75
+    },
+    {
+      "source": "/wiki/gang-signs.html",
+      "target": "/wiki/bitcoin-kids.html",
+      "score": 74,
+      "weight": 0.74
+    },
+    {
+      "source": "/wiki/gang-signs.html",
+      "target": "/wiki/thera-9.html",
+      "score": 74,
+      "weight": 0.74
+    },
+    {
+      "source": "/wiki/genesis-kernel.html",
+      "target": "/wiki/graffpunks.html",
+      "score": 100,
+      "weight": 1
     },
     {
       "source": "/wiki/genesis-kernel.html",
@@ -7401,18 +7407,6 @@
       "weight": 0.94
     },
     {
-      "source": "/wiki/genesis-kernel.html",
-      "target": "/wiki/triple-fork-event.html",
-      "score": 89,
-      "weight": 0.89
-    },
-    {
-      "source": "/wiki/genesis-spray-drop.html",
-      "target": "/wiki/graffpunks.html",
-      "score": 89,
-      "weight": 0.89
-    },
-    {
       "source": "/wiki/genesis-spray-drop.html",
       "target": "/wiki/crypto-moonboys.html",
       "score": 86,
@@ -7426,15 +7420,21 @@
     },
     {
       "source": "/wiki/genesis-spray-drop.html",
-      "target": "/wiki/gkniftyheads.html",
-      "score": 79,
-      "weight": 0.79
-    },
-    {
-      "source": "/wiki/genesis-spray-drop.html",
       "target": "/wiki/bitcoin-kids.html",
       "score": 77,
       "weight": 0.77
+    },
+    {
+      "source": "/wiki/genesis-spray-drop.html",
+      "target": "/wiki/bitcoin-x-kids.html",
+      "score": 72,
+      "weight": 0.72
+    },
+    {
+      "source": "/wiki/genesis-spray-drop.html",
+      "target": "/wiki/hodl-warriors.html",
+      "score": 72,
+      "weight": 0.72
     },
     {
       "source": "/wiki/genesis-spray.html",
@@ -11818,63 +11818,63 @@
     },
     {
       "source": "/wiki/gkniftyheads.html",
-      "target": "/wiki/crypto-moonboys.html",
-      "score": 89,
-      "weight": 0.89
-    },
-    {
-      "source": "/wiki/gkniftyheads.html",
-      "target": "/wiki/graffpunks.html",
-      "score": 77,
-      "weight": 0.77
-    },
-    {
-      "source": "/wiki/gkniftyheads.html",
-      "target": "/wiki/null-the-prophet.html",
-      "score": 77,
-      "weight": 0.77
-    },
-    {
-      "source": "/wiki/gkniftyheads.html",
-      "target": "/wiki/bitcoin-kids.html",
-      "score": 71,
-      "weight": 0.71
-    },
-    {
-      "source": "/wiki/gkniftyheads.html",
-      "target": "/wiki/block-topia.html",
-      "score": 67,
-      "weight": 0.67
-    },
-    {
-      "source": "/wiki/graffiti-kings.html",
-      "target": "/wiki/pmsl.html",
+      "target": "/wiki/hard-fork-games.html",
       "score": 85,
       "weight": 0.85
     },
     {
-      "source": "/wiki/graffiti-kings.html",
-      "target": "/wiki/graffiti-queens-in-decentraland.html",
-      "score": 83,
-      "weight": 0.83
+      "source": "/wiki/gkniftyheads.html",
+      "target": "/wiki/graffpunks.html",
+      "score": 84,
+      "weight": 0.84
     },
     {
-      "source": "/wiki/graffiti-kings.html",
-      "target": "/wiki/games4punks-telegram.html",
+      "source": "/wiki/gkniftyheads.html",
+      "target": "/wiki/hodl-wars.html",
       "score": 82,
       "weight": 0.82
     },
     {
-      "source": "/wiki/graffiti-kings.html",
-      "target": "/wiki/bone-idol-ink.html",
-      "score": 75,
-      "weight": 0.75
+      "source": "/wiki/gkniftyheads.html",
+      "target": "/wiki/the-first-witness.html",
+      "score": 78,
+      "weight": 0.78
+    },
+    {
+      "source": "/wiki/gkniftyheads.html",
+      "target": "/wiki/first-witness-life-readings.html",
+      "score": 73,
+      "weight": 0.73
     },
     {
       "source": "/wiki/graffiti-kings.html",
-      "target": "/wiki/midevilpunks.html",
-      "score": 74,
-      "weight": 0.74
+      "target": "/wiki/graffpunks.html",
+      "score": 97,
+      "weight": 0.97
+    },
+    {
+      "source": "/wiki/graffiti-kings.html",
+      "target": "/wiki/gkniftyheads.html",
+      "score": 89,
+      "weight": 0.89
+    },
+    {
+      "source": "/wiki/graffiti-kings.html",
+      "target": "/wiki/hodl-wars.html",
+      "score": 89,
+      "weight": 0.89
+    },
+    {
+      "source": "/wiki/graffiti-kings.html",
+      "target": "/wiki/the-first-witness.html",
+      "score": 84,
+      "weight": 0.84
+    },
+    {
+      "source": "/wiki/graffiti-kings.html",
+      "target": "/wiki/hard-fork-games.html",
+      "score": 82,
+      "weight": 0.82
     },
     {
       "source": "/wiki/graffiti-nexus.html",
@@ -11896,15 +11896,15 @@
     },
     {
       "source": "/wiki/graffiti-nexus.html",
-      "target": "/wiki/sacred-chain.html",
-      "score": 90,
-      "weight": 0.9
+      "target": "/wiki/graffpunks.html",
+      "score": 93,
+      "weight": 0.93
     },
     {
       "source": "/wiki/graffiti-nexus.html",
-      "target": "/wiki/first-witness-concordance.html",
-      "score": 85,
-      "weight": 0.85
+      "target": "/wiki/sacred-chain.html",
+      "score": 90,
+      "weight": 0.9
     },
     {
       "source": "/wiki/graffiti-queens-in-decentraland.html",
@@ -11915,12 +11915,6 @@
     {
       "source": "/wiki/graffiti-queens-in-decentraland.html",
       "target": "/wiki/games4punks-telegram.html",
-      "score": 82,
-      "weight": 0.82
-    },
-    {
-      "source": "/wiki/graffiti-queens-in-decentraland.html",
-      "target": "/wiki/graffiti-kings.html",
       "score": 82,
       "weight": 0.82
     },
@@ -11937,6 +11931,12 @@
       "weight": 0.75
     },
     {
+      "source": "/wiki/graffiti-queens-in-decentraland.html",
+      "target": "/wiki/2025-metaverse-launch-party.html",
+      "score": 74,
+      "weight": 0.74
+    },
+    {
       "source": "/wiki/graffpunks-24-7-radio.html",
       "target": "/wiki/midevilpunks.html",
       "score": 104,
@@ -11951,8 +11951,8 @@
     {
       "source": "/wiki/graffpunks-24-7-radio.html",
       "target": "/wiki/graffpunks.html",
-      "score": 85,
-      "weight": 0.85
+      "score": 86,
+      "weight": 0.86
     },
     {
       "source": "/wiki/graffpunks-24-7-radio.html",
@@ -11981,8 +11981,8 @@
     {
       "source": "/wiki/graffpunks-collection.html",
       "target": "/wiki/graffpunks.html",
-      "score": 85,
-      "weight": 0.85
+      "score": 89,
+      "weight": 0.89
     },
     {
       "source": "/wiki/graffpunks-collection.html",
@@ -11998,13 +11998,13 @@
     },
     {
       "source": "/wiki/graffpunks-ecosystem.html",
-      "target": "/wiki/graffpunks.html",
-      "score": 133,
-      "weight": 1
+      "target": "/wiki/crypto-moonboys.html",
+      "score": 92,
+      "weight": 0.92
     },
     {
       "source": "/wiki/graffpunks-ecosystem.html",
-      "target": "/wiki/crypto-moonboys.html",
+      "target": "/wiki/graffpunks.html",
       "score": 92,
       "weight": 0.92
     },
@@ -12016,51 +12016,45 @@
     },
     {
       "source": "/wiki/graffpunks-ecosystem.html",
-      "target": "/wiki/gkniftyheads.html",
-      "score": 82,
-      "weight": 0.82
-    },
-    {
-      "source": "/wiki/graffpunks-ecosystem.html",
       "target": "/wiki/bitcoin-kids.html",
       "score": 80,
       "weight": 0.8
     },
     {
-      "source": "/wiki/graffpunks.html",
-      "target": "/wiki/graffpunks-ecosystem.html",
-      "score": 107,
-      "weight": 1
+      "source": "/wiki/graffpunks-ecosystem.html",
+      "target": "/wiki/wallets.html",
+      "score": 78,
+      "weight": 0.78
     },
     {
       "source": "/wiki/graffpunks.html",
-      "target": "/wiki/crypto-moonboys.html",
+      "target": "/wiki/hodl-wars.html",
       "score": 92,
       "weight": 0.92
     },
     {
       "source": "/wiki/graffpunks.html",
-      "target": "/wiki/null-the-prophet.html",
-      "score": 80,
-      "weight": 0.8
+      "target": "/wiki/the-first-witness.html",
+      "score": 91,
+      "weight": 0.91
+    },
+    {
+      "source": "/wiki/graffpunks.html",
+      "target": "/wiki/hard-fork-games.html",
+      "score": 88,
+      "weight": 0.88
+    },
+    {
+      "source": "/wiki/graffpunks.html",
+      "target": "/wiki/sacred-chain.html",
+      "score": 84,
+      "weight": 0.84
     },
     {
       "source": "/wiki/graffpunks.html",
       "target": "/wiki/gkniftyheads.html",
-      "score": 76,
-      "weight": 0.76
-    },
-    {
-      "source": "/wiki/graffpunks.html",
-      "target": "/wiki/hodl-warriors.html",
-      "score": 75,
-      "weight": 0.75
-    },
-    {
-      "source": "/wiki/grit.html",
-      "target": "/wiki/graffpunks.html",
-      "score": 89,
-      "weight": 0.89
+      "score": 83,
+      "weight": 0.83
     },
     {
       "source": "/wiki/grit.html",
@@ -12076,21 +12070,21 @@
     },
     {
       "source": "/wiki/grit.html",
-      "target": "/wiki/gkniftyheads.html",
-      "score": 79,
-      "weight": 0.79
-    },
-    {
-      "source": "/wiki/grit.html",
       "target": "/wiki/m1ntr-k1ll.html",
       "score": 78,
       "weight": 0.78
     },
     {
-      "source": "/wiki/grit42.html",
-      "target": "/wiki/graffpunks.html",
-      "score": 89,
-      "weight": 0.89
+      "source": "/wiki/grit.html",
+      "target": "/wiki/dragan-volkov.html",
+      "score": 77,
+      "weight": 0.77
+    },
+    {
+      "source": "/wiki/grit.html",
+      "target": "/wiki/grit42.html",
+      "score": 77,
+      "weight": 0.77
     },
     {
       "source": "/wiki/grit42.html",
@@ -12106,15 +12100,21 @@
     },
     {
       "source": "/wiki/grit42.html",
-      "target": "/wiki/gkniftyheads.html",
-      "score": 79,
-      "weight": 0.79
-    },
-    {
-      "source": "/wiki/grit42.html",
       "target": "/wiki/m1ntr-k1ll.html",
       "score": 78,
       "weight": 0.78
+    },
+    {
+      "source": "/wiki/grit42.html",
+      "target": "/wiki/dragan-volkov.html",
+      "score": 77,
+      "weight": 0.77
+    },
+    {
+      "source": "/wiki/grit42.html",
+      "target": "/wiki/grit.html",
+      "score": 77,
+      "weight": 0.77
     },
     {
       "source": "/wiki/hard-fork-games.html",
@@ -12142,9 +12142,9 @@
     },
     {
       "source": "/wiki/hard-fork-games.html",
-      "target": "/wiki/first-witness-book-6-the-fork.html",
-      "score": 86,
-      "weight": 0.86
+      "target": "/wiki/graffpunks.html",
+      "score": 93,
+      "weight": 0.93
     },
     {
       "source": "/wiki/harrison-rift.html",
@@ -12178,39 +12178,33 @@
     },
     {
       "source": "/wiki/head-tags.html",
-      "target": "/wiki/pmsl.html",
-      "score": 70,
-      "weight": 0.7
+      "target": "/wiki/gkniftyheads-nft-collection.html",
+      "score": 62,
+      "weight": 0.62
     },
     {
       "source": "/wiki/head-tags.html",
-      "target": "/wiki/games4punks-telegram.html",
-      "score": 66,
-      "weight": 0.66
-    },
-    {
-      "source": "/wiki/head-tags.html",
-      "target": "/wiki/midevilpunks.html",
-      "score": 65,
-      "weight": 0.65
-    },
-    {
-      "source": "/wiki/head-tags.html",
-      "target": "/wiki/rave-relics.html",
-      "score": 64,
-      "weight": 0.64
-    },
-    {
-      "source": "/wiki/head-tags.html",
-      "target": "/wiki/stikfamwars.html",
-      "score": 64,
-      "weight": 0.64
-    },
-    {
-      "source": "/wiki/hex-tagger-prime.html",
       "target": "/wiki/graffpunks.html",
-      "score": 89,
-      "weight": 0.89
+      "score": 45,
+      "weight": 0.45
+    },
+    {
+      "source": "/wiki/head-tags.html",
+      "target": "/wiki/crypto-moonboys.html",
+      "score": 44,
+      "weight": 0.44
+    },
+    {
+      "source": "/wiki/head-tags.html",
+      "target": "/wiki/gkniftyheads.html",
+      "score": 41,
+      "weight": 0.41
+    },
+    {
+      "source": "/wiki/head-tags.html",
+      "target": "/wiki/gkniftyheads-mr-cheo-boom-head-776121.html",
+      "score": 40,
+      "weight": 0.4
     },
     {
       "source": "/wiki/hex-tagger-prime.html",
@@ -12226,15 +12220,21 @@
     },
     {
       "source": "/wiki/hex-tagger-prime.html",
-      "target": "/wiki/gkniftyheads.html",
-      "score": 79,
-      "weight": 0.79
-    },
-    {
-      "source": "/wiki/hex-tagger-prime.html",
       "target": "/wiki/gang-signs.html",
       "score": 75,
       "weight": 0.75
+    },
+    {
+      "source": "/wiki/hex-tagger-prime.html",
+      "target": "/wiki/m1ntr-k1ll.html",
+      "score": 75,
+      "weight": 0.75
+    },
+    {
+      "source": "/wiki/hex-tagger-prime.html",
+      "target": "/wiki/bitcoin-kids.html",
+      "score": 74,
+      "weight": 0.74
     },
     {
       "source": "/wiki/hodl-warriors.html",
@@ -12256,21 +12256,33 @@
     },
     {
       "source": "/wiki/hodl-warriors.html",
-      "target": "/wiki/graffpunks.html",
-      "score": 92,
-      "weight": 0.92
-    },
-    {
-      "source": "/wiki/hodl-warriors.html",
       "target": "/wiki/bitcoin-kids.html",
       "score": 90,
       "weight": 0.9
+    },
+    {
+      "source": "/wiki/hodl-warriors.html",
+      "target": "/wiki/null-the-prophet.html",
+      "score": 83,
+      "weight": 0.83
+    },
+    {
+      "source": "/wiki/hodl-wars.html",
+      "target": "/wiki/graffpunks.html",
+      "score": 100,
+      "weight": 1
     },
     {
       "source": "/wiki/hodl-wars.html",
       "target": "/wiki/hard-fork-games.html",
       "score": 98,
       "weight": 0.98
+    },
+    {
+      "source": "/wiki/hodl-wars.html",
+      "target": "/wiki/gkniftyheads.html",
+      "score": 89,
+      "weight": 0.89
     },
     {
       "source": "/wiki/hodl-wars.html",
@@ -12281,18 +12293,6 @@
     {
       "source": "/wiki/hodl-wars.html",
       "target": "/wiki/genesis-kernel.html",
-      "score": 84,
-      "weight": 0.84
-    },
-    {
-      "source": "/wiki/hodl-wars.html",
-      "target": "/wiki/hodl-warriors.html",
-      "score": 84,
-      "weight": 0.84
-    },
-    {
-      "source": "/wiki/hodl-wars.html",
-      "target": "/wiki/sacred-chain.html",
       "score": 84,
       "weight": 0.84
     },
@@ -12316,27 +12316,21 @@
     },
     {
       "source": "/wiki/hodl-x-warriors.html",
-      "target": "/wiki/graffpunks.html",
+      "target": "/wiki/null-the-prophet.html",
       "score": 86,
       "weight": 0.86
     },
     {
       "source": "/wiki/hodl-x-warriors.html",
-      "target": "/wiki/null-the-prophet.html",
-      "score": 86,
-      "weight": 0.86
+      "target": "/wiki/bitcoin-x-kids.html",
+      "score": 82,
+      "weight": 0.82
     },
     {
       "source": "/wiki/hodlmoonboys-nft-collection.html",
       "target": "/wiki/gkniftyheads-nft-collection.html",
       "score": 50,
       "weight": 0.5
-    },
-    {
-      "source": "/wiki/ian-harrison.html",
-      "target": "/wiki/graffpunks.html",
-      "score": 89,
-      "weight": 0.89
     },
     {
       "source": "/wiki/ian-harrison.html",
@@ -12352,21 +12346,21 @@
     },
     {
       "source": "/wiki/ian-harrison.html",
-      "target": "/wiki/gkniftyheads.html",
-      "score": 79,
-      "weight": 0.79
-    },
-    {
-      "source": "/wiki/ian-harrison.html",
       "target": "/wiki/gang-signs.html",
       "score": 75,
       "weight": 0.75
     },
     {
-      "source": "/wiki/iris-7.html",
-      "target": "/wiki/graffpunks.html",
-      "score": 92,
-      "weight": 0.92
+      "source": "/wiki/ian-harrison.html",
+      "target": "/wiki/m1ntr-k1ll.html",
+      "score": 75,
+      "weight": 0.75
+    },
+    {
+      "source": "/wiki/ian-harrison.html",
+      "target": "/wiki/bitcoin-kids.html",
+      "score": 74,
+      "weight": 0.74
     },
     {
       "source": "/wiki/iris-7.html",
@@ -12388,9 +12382,15 @@
     },
     {
       "source": "/wiki/iris-7.html",
-      "target": "/wiki/gkniftyheads.html",
+      "target": "/wiki/hodl-warriors.html",
       "score": 79,
       "weight": 0.79
+    },
+    {
+      "source": "/wiki/iris-7.html",
+      "target": "/wiki/thera-9.html",
+      "score": 77,
+      "weight": 0.77
     },
     {
       "source": "/wiki/jillian-godsil.html",
@@ -12430,12 +12430,6 @@
     },
     {
       "source": "/wiki/jodie-zoom-2000.html",
-      "target": "/wiki/graffpunks.html",
-      "score": 89,
-      "weight": 0.89
-    },
-    {
-      "source": "/wiki/jodie-zoom-2000.html",
       "target": "/wiki/thera-9.html",
       "score": 83,
       "weight": 0.83
@@ -12451,6 +12445,12 @@
       "target": "/wiki/null-the-prophet.html",
       "score": 80,
       "weight": 0.8
+    },
+    {
+      "source": "/wiki/jodie-zoom-2000.html",
+      "target": "/wiki/hodl-warriors.html",
+      "score": 79,
+      "weight": 0.79
     },
     {
       "source": "/wiki/jonny-laurence-nelson-tag-records.html",
@@ -12484,12 +12484,6 @@
     },
     {
       "source": "/wiki/lady-ink.html",
-      "target": "/wiki/graffpunks.html",
-      "score": 89,
-      "weight": 0.89
-    },
-    {
-      "source": "/wiki/lady-ink.html",
       "target": "/wiki/crypto-moonboys.html",
       "score": 86,
       "weight": 0.86
@@ -12502,15 +12496,21 @@
     },
     {
       "source": "/wiki/lady-ink.html",
-      "target": "/wiki/gkniftyheads.html",
-      "score": 79,
-      "weight": 0.79
-    },
-    {
-      "source": "/wiki/lady-ink.html",
       "target": "/wiki/gang-signs.html",
       "score": 75,
       "weight": 0.75
+    },
+    {
+      "source": "/wiki/lady-ink.html",
+      "target": "/wiki/m1ntr-k1ll.html",
+      "score": 75,
+      "weight": 0.75
+    },
+    {
+      "source": "/wiki/lady-ink.html",
+      "target": "/wiki/bitcoin-kids.html",
+      "score": 74,
+      "weight": 0.74
     },
     {
       "source": "/wiki/lfgk.html",
@@ -12544,12 +12544,6 @@
     },
     {
       "source": "/wiki/loopfiend.html",
-      "target": "/wiki/graffpunks.html",
-      "score": 89,
-      "weight": 0.89
-    },
-    {
-      "source": "/wiki/loopfiend.html",
       "target": "/wiki/crypto-moonboys.html",
       "score": 86,
       "weight": 0.86
@@ -12562,21 +12556,21 @@
     },
     {
       "source": "/wiki/loopfiend.html",
-      "target": "/wiki/gkniftyheads.html",
-      "score": 79,
-      "weight": 0.79
-    },
-    {
-      "source": "/wiki/loopfiend.html",
       "target": "/wiki/m1ntr-k1ll.html",
       "score": 78,
       "weight": 0.78
     },
     {
-      "source": "/wiki/m1ntr-k1ll.html",
-      "target": "/wiki/graffpunks.html",
-      "score": 89,
-      "weight": 0.89
+      "source": "/wiki/loopfiend.html",
+      "target": "/wiki/thera-9.html",
+      "score": 77,
+      "weight": 0.77
+    },
+    {
+      "source": "/wiki/loopfiend.html",
+      "target": "/wiki/jodie-zoom-2000.html",
+      "score": 76,
+      "weight": 0.76
     },
     {
       "source": "/wiki/m1ntr-k1ll.html",
@@ -12592,15 +12586,21 @@
     },
     {
       "source": "/wiki/m1ntr-k1ll.html",
-      "target": "/wiki/gkniftyheads.html",
+      "target": "/wiki/jodie-zoom-2000.html",
       "score": 79,
       "weight": 0.79
     },
     {
       "source": "/wiki/m1ntr-k1ll.html",
-      "target": "/wiki/jodie-zoom-2000.html",
-      "score": 79,
-      "weight": 0.79
+      "target": "/wiki/thera-9.html",
+      "score": 77,
+      "weight": 0.77
+    },
+    {
+      "source": "/wiki/m1ntr-k1ll.html",
+      "target": "/wiki/gang-signs.html",
+      "score": 75,
+      "weight": 0.75
     },
     {
       "source": "/wiki/maidstone-base.html",
@@ -12820,18 +12820,6 @@
     },
     {
       "source": "/wiki/nbg.html",
-      "target": "/wiki/graffpunks.html",
-      "score": 80,
-      "weight": 0.8
-    },
-    {
-      "source": "/wiki/nbg.html",
-      "target": "/wiki/gkniftyheads.html",
-      "score": 76,
-      "weight": 0.76
-    },
-    {
-      "source": "/wiki/nbg.html",
       "target": "/wiki/null-the-prophet.html",
       "score": 71,
       "weight": 0.71
@@ -12841,6 +12829,18 @@
       "target": "/wiki/block-topia.html",
       "score": 67,
       "weight": 0.67
+    },
+    {
+      "source": "/wiki/nbg.html",
+      "target": "/wiki/bitcoin-kids.html",
+      "score": 65,
+      "weight": 0.65
+    },
+    {
+      "source": "/wiki/nbg.html",
+      "target": "/wiki/hodl-warriors.html",
+      "score": 63,
+      "weight": 0.63
     },
     {
       "source": "/wiki/nbgx-token.html",
@@ -12934,12 +12934,6 @@
     },
     {
       "source": "/wiki/nfts.html",
-      "target": "/wiki/graffpunks.html",
-      "score": 89,
-      "weight": 0.89
-    },
-    {
-      "source": "/wiki/nfts.html",
       "target": "/wiki/crypto-moonboys.html",
       "score": 86,
       "weight": 0.86
@@ -12952,15 +12946,21 @@
     },
     {
       "source": "/wiki/nfts.html",
-      "target": "/wiki/gkniftyheads.html",
-      "score": 79,
-      "weight": 0.79
-    },
-    {
-      "source": "/wiki/nfts.html",
       "target": "/wiki/wallets.html",
       "score": 78,
       "weight": 0.78
+    },
+    {
+      "source": "/wiki/nfts.html",
+      "target": "/wiki/diamond-hands.html",
+      "score": 76,
+      "weight": 0.76
+    },
+    {
+      "source": "/wiki/nfts.html",
+      "target": "/wiki/gang-signs.html",
+      "score": 75,
+      "weight": 0.75
     },
     {
       "source": "/wiki/ngmi-chronicles.html",
@@ -13054,6 +13054,18 @@
     },
     {
       "source": "/wiki/noballgamess-nft-collection.html",
+      "target": "/wiki/gkniftyheads.html",
+      "score": 80,
+      "weight": 0.8
+    },
+    {
+      "source": "/wiki/noballgamess-nft-collection.html",
+      "target": "/wiki/graffpunks.html",
+      "score": 78,
+      "weight": 0.78
+    },
+    {
+      "source": "/wiki/noballgamess-nft-collection.html",
       "target": "/wiki/hard-fork-games.html",
       "score": 73,
       "weight": 0.73
@@ -13071,34 +13083,10 @@
       "weight": 0.7
     },
     {
-      "source": "/wiki/noballgamess-nft-collection.html",
-      "target": "/wiki/the-first-witness.html",
-      "score": 69,
-      "weight": 0.69
-    },
-    {
-      "source": "/wiki/noballgamess-nft-collection.html",
-      "target": "/wiki/sacred-chain.html",
-      "score": 65,
-      "weight": 0.65
-    },
-    {
       "source": "/wiki/null-the-prophet.html",
       "target": "/wiki/crypto-moonboys.html",
       "score": 92,
       "weight": 0.92
-    },
-    {
-      "source": "/wiki/null-the-prophet.html",
-      "target": "/wiki/graffpunks.html",
-      "score": 86,
-      "weight": 0.86
-    },
-    {
-      "source": "/wiki/null-the-prophet.html",
-      "target": "/wiki/gkniftyheads.html",
-      "score": 82,
-      "weight": 0.82
     },
     {
       "source": "/wiki/null-the-prophet.html",
@@ -13108,9 +13096,21 @@
     },
     {
       "source": "/wiki/null-the-prophet.html",
+      "target": "/wiki/bitcoin-x-kids.html",
+      "score": 72,
+      "weight": 0.72
+    },
+    {
+      "source": "/wiki/null-the-prophet.html",
       "target": "/wiki/hodl-warriors.html",
       "score": 72,
       "weight": 0.72
+    },
+    {
+      "source": "/wiki/null-the-prophet.html",
+      "target": "/wiki/hodl-x-warriors.html",
+      "score": 69,
+      "weight": 0.69
     },
     {
       "source": "/wiki/paper-hands.html",
@@ -13144,12 +13144,6 @@
     },
     {
       "source": "/wiki/patchwork.html",
-      "target": "/wiki/graffpunks.html",
-      "score": 92,
-      "weight": 0.92
-    },
-    {
-      "source": "/wiki/patchwork.html",
       "target": "/wiki/crypto-moonboys.html",
       "score": 89,
       "weight": 0.89
@@ -13162,13 +13156,19 @@
     },
     {
       "source": "/wiki/patchwork.html",
-      "target": "/wiki/gkniftyheads.html",
-      "score": 79,
-      "weight": 0.79
+      "target": "/wiki/m1ntr-k1ll.html",
+      "score": 78,
+      "weight": 0.78
     },
     {
       "source": "/wiki/patchwork.html",
-      "target": "/wiki/m1ntr-k1ll.html",
+      "target": "/wiki/pyralith.html",
+      "score": 78,
+      "weight": 0.78
+    },
+    {
+      "source": "/wiki/patchwork.html",
+      "target": "/wiki/quell.html",
       "score": 78,
       "weight": 0.78
     },
@@ -13234,12 +13234,6 @@
     },
     {
       "source": "/wiki/pixil-mini.html",
-      "target": "/wiki/graffpunks.html",
-      "score": 89,
-      "weight": 0.89
-    },
-    {
-      "source": "/wiki/pixil-mini.html",
       "target": "/wiki/crypto-moonboys.html",
       "score": 86,
       "weight": 0.86
@@ -13252,15 +13246,21 @@
     },
     {
       "source": "/wiki/pixil-mini.html",
-      "target": "/wiki/gkniftyheads.html",
-      "score": 79,
-      "weight": 0.79
-    },
-    {
-      "source": "/wiki/pixil-mini.html",
       "target": "/wiki/m1ntr-k1ll.html",
       "score": 78,
       "weight": 0.78
+    },
+    {
+      "source": "/wiki/pixil-mini.html",
+      "target": "/wiki/thera-9.html",
+      "score": 77,
+      "weight": 0.77
+    },
+    {
+      "source": "/wiki/pixil-mini.html",
+      "target": "/wiki/jodie-zoom-2000.html",
+      "score": 76,
+      "weight": 0.76
     },
     {
       "source": "/wiki/playable-nft-murals.html",
@@ -13360,21 +13360,9 @@
     },
     {
       "source": "/wiki/punk-token.html",
-      "target": "/wiki/graffpunks.html",
-      "score": 89,
-      "weight": 0.89
-    },
-    {
-      "source": "/wiki/punk-token.html",
       "target": "/wiki/null-the-prophet.html",
       "score": 80,
       "weight": 0.8
-    },
-    {
-      "source": "/wiki/punk-token.html",
-      "target": "/wiki/gkniftyheads.html",
-      "score": 79,
-      "weight": 0.79
     },
     {
       "source": "/wiki/punk-token.html",
@@ -13383,10 +13371,16 @@
       "weight": 0.74
     },
     {
-      "source": "/wiki/pyralith.html",
-      "target": "/wiki/graffpunks.html",
-      "score": 92,
-      "weight": 0.92
+      "source": "/wiki/punk-token.html",
+      "target": "/wiki/hodl-warriors.html",
+      "score": 69,
+      "weight": 0.69
+    },
+    {
+      "source": "/wiki/punk-token.html",
+      "target": "/wiki/burn-to-earn.html",
+      "score": 68,
+      "weight": 0.68
     },
     {
       "source": "/wiki/pyralith.html",
@@ -13402,13 +13396,19 @@
     },
     {
       "source": "/wiki/pyralith.html",
-      "target": "/wiki/gkniftyheads.html",
-      "score": 79,
-      "weight": 0.79
+      "target": "/wiki/m1ntr-k1ll.html",
+      "score": 78,
+      "weight": 0.78
     },
     {
       "source": "/wiki/pyralith.html",
-      "target": "/wiki/m1ntr-k1ll.html",
+      "target": "/wiki/patchwork.html",
+      "score": 78,
+      "weight": 0.78
+    },
+    {
+      "source": "/wiki/pyralith.html",
+      "target": "/wiki/quell.html",
       "score": 78,
       "weight": 0.78
     },
@@ -13444,12 +13444,6 @@
     },
     {
       "source": "/wiki/quell.html",
-      "target": "/wiki/graffpunks.html",
-      "score": 92,
-      "weight": 0.92
-    },
-    {
-      "source": "/wiki/quell.html",
       "target": "/wiki/crypto-moonboys.html",
       "score": 89,
       "weight": 0.89
@@ -13462,13 +13456,19 @@
     },
     {
       "source": "/wiki/quell.html",
-      "target": "/wiki/gkniftyheads.html",
-      "score": 79,
-      "weight": 0.79
+      "target": "/wiki/m1ntr-k1ll.html",
+      "score": 78,
+      "weight": 0.78
     },
     {
       "source": "/wiki/quell.html",
-      "target": "/wiki/m1ntr-k1ll.html",
+      "target": "/wiki/patchwork.html",
+      "score": 78,
+      "weight": 0.78
+    },
+    {
+      "source": "/wiki/quell.html",
+      "target": "/wiki/pyralith.html",
       "score": 78,
       "weight": 0.78
     },
@@ -13534,12 +13534,6 @@
     },
     {
       "source": "/wiki/rune-tag.html",
-      "target": "/wiki/graffpunks.html",
-      "score": 92,
-      "weight": 0.92
-    },
-    {
-      "source": "/wiki/rune-tag.html",
       "target": "/wiki/crypto-moonboys.html",
       "score": 89,
       "weight": 0.89
@@ -13552,13 +13546,19 @@
     },
     {
       "source": "/wiki/rune-tag.html",
-      "target": "/wiki/gkniftyheads.html",
-      "score": 79,
-      "weight": 0.79
+      "target": "/wiki/gang-signs.html",
+      "score": 75,
+      "weight": 0.75
     },
     {
       "source": "/wiki/rune-tag.html",
-      "target": "/wiki/gang-signs.html",
+      "target": "/wiki/hodl-warriors.html",
+      "score": 75,
+      "weight": 0.75
+    },
+    {
+      "source": "/wiki/rune-tag.html",
+      "target": "/wiki/m1ntr-k1ll.html",
       "score": 75,
       "weight": 0.75
     },
@@ -13606,6 +13606,12 @@
     },
     {
       "source": "/wiki/sacred-chain.html",
+      "target": "/wiki/graffpunks.html",
+      "score": 97,
+      "weight": 0.97
+    },
+    {
+      "source": "/wiki/sacred-chain.html",
       "target": "/wiki/first-witness-sacred-fork.html",
       "score": 95,
       "weight": 0.95
@@ -13617,22 +13623,10 @@
       "weight": 0.9
     },
     {
-      "source": "/wiki/sacred-chain.html",
-      "target": "/wiki/hodl-wars.html",
-      "score": 89,
-      "weight": 0.89
-    },
-    {
       "source": "/wiki/samaelexe.html",
       "target": "/wiki/crypto-moonboys.html",
       "score": 89,
       "weight": 0.89
-    },
-    {
-      "source": "/wiki/samaelexe.html",
-      "target": "/wiki/graffpunks.html",
-      "score": 83,
-      "weight": 0.83
     },
     {
       "source": "/wiki/samaelexe.html",
@@ -13642,21 +13636,21 @@
     },
     {
       "source": "/wiki/samaelexe.html",
-      "target": "/wiki/gkniftyheads.html",
-      "score": 79,
-      "weight": 0.79
-    },
-    {
-      "source": "/wiki/samaelexe.html",
       "target": "/wiki/hodl-warriors.html",
       "score": 75,
       "weight": 0.75
     },
     {
-      "source": "/wiki/satorebel.html",
-      "target": "/wiki/graffpunks.html",
-      "score": 92,
-      "weight": 0.92
+      "source": "/wiki/samaelexe.html",
+      "target": "/wiki/bitcoin-kids.html",
+      "score": 74,
+      "weight": 0.74
+    },
+    {
+      "source": "/wiki/samaelexe.html",
+      "target": "/wiki/bitcoin-x-kids.html",
+      "score": 69,
+      "weight": 0.69
     },
     {
       "source": "/wiki/satorebel.html",
@@ -13672,13 +13666,19 @@
     },
     {
       "source": "/wiki/satorebel.html",
-      "target": "/wiki/gkniftyheads.html",
-      "score": 79,
-      "weight": 0.79
+      "target": "/wiki/m1ntr-k1ll.html",
+      "score": 78,
+      "weight": 0.78
     },
     {
       "source": "/wiki/satorebel.html",
-      "target": "/wiki/m1ntr-k1ll.html",
+      "target": "/wiki/patchwork.html",
+      "score": 78,
+      "weight": 0.78
+    },
+    {
+      "source": "/wiki/satorebel.html",
+      "target": "/wiki/pyralith.html",
       "score": 78,
       "weight": 0.78
     },
@@ -13720,6 +13720,12 @@
     },
     {
       "source": "/wiki/seeding-rights.html",
+      "target": "/wiki/graffpunks.html",
+      "score": 90,
+      "weight": 0.9
+    },
+    {
+      "source": "/wiki/seeding-rights.html",
       "target": "/wiki/hodl-wars.html",
       "score": 89,
       "weight": 0.89
@@ -13737,18 +13743,6 @@
       "weight": 0.84
     },
     {
-      "source": "/wiki/seeding-rights.html",
-      "target": "/wiki/sacred-chain.html",
-      "score": 74,
-      "weight": 0.74
-    },
-    {
-      "source": "/wiki/sister-halcyon.html",
-      "target": "/wiki/graffpunks.html",
-      "score": 89,
-      "weight": 0.89
-    },
-    {
       "source": "/wiki/sister-halcyon.html",
       "target": "/wiki/crypto-moonboys.html",
       "score": 86,
@@ -13762,15 +13756,21 @@
     },
     {
       "source": "/wiki/sister-halcyon.html",
-      "target": "/wiki/gkniftyheads.html",
-      "score": 79,
-      "weight": 0.79
-    },
-    {
-      "source": "/wiki/sister-halcyon.html",
       "target": "/wiki/m1ntr-k1ll.html",
       "score": 78,
       "weight": 0.78
+    },
+    {
+      "source": "/wiki/sister-halcyon.html",
+      "target": "/wiki/bitcoin-kids.html",
+      "score": 77,
+      "weight": 0.77
+    },
+    {
+      "source": "/wiki/sister-halcyon.html",
+      "target": "/wiki/thera-9.html",
+      "score": 77,
+      "weight": 0.77
     },
     {
       "source": "/wiki/sneakar.html",
@@ -13810,12 +13810,6 @@
     },
     {
       "source": "/wiki/snipey-d-man-sirus.html",
-      "target": "/wiki/graffpunks.html",
-      "score": 89,
-      "weight": 0.89
-    },
-    {
-      "source": "/wiki/snipey-d-man-sirus.html",
       "target": "/wiki/null-the-prophet.html",
       "score": 80,
       "weight": 0.8
@@ -13828,9 +13822,15 @@
     },
     {
       "source": "/wiki/snipey-d-man-sirus.html",
-      "target": "/wiki/gkniftyheads.html",
+      "target": "/wiki/jodie-zoom-2000.html",
       "score": 79,
       "weight": 0.79
+    },
+    {
+      "source": "/wiki/snipey-d-man-sirus.html",
+      "target": "/wiki/m1ntr-k1ll.html",
+      "score": 78,
+      "weight": 0.78
     },
     {
       "source": "/wiki/solana.html",
@@ -13960,18 +13960,6 @@
     },
     {
       "source": "/wiki/staking.html",
-      "target": "/wiki/graffpunks.html",
-      "score": 80,
-      "weight": 0.8
-    },
-    {
-      "source": "/wiki/staking.html",
-      "target": "/wiki/gkniftyheads.html",
-      "score": 76,
-      "weight": 0.76
-    },
-    {
-      "source": "/wiki/staking.html",
       "target": "/wiki/null-the-prophet.html",
       "score": 71,
       "weight": 0.71
@@ -13981,6 +13969,18 @@
       "target": "/wiki/block-topia.html",
       "score": 67,
       "weight": 0.67
+    },
+    {
+      "source": "/wiki/staking.html",
+      "target": "/wiki/bitcoin-kids.html",
+      "score": 65,
+      "weight": 0.65
+    },
+    {
+      "source": "/wiki/staking.html",
+      "target": "/wiki/punk-token.html",
+      "score": 63,
+      "weight": 0.63
     },
     {
       "source": "/wiki/stikfamwars.html",
@@ -14254,6 +14254,12 @@
     },
     {
       "source": "/wiki/the-bitcoin-kid-army.html",
+      "target": "/wiki/graffpunks.html",
+      "score": 97,
+      "weight": 0.97
+    },
+    {
+      "source": "/wiki/the-bitcoin-kid-army.html",
       "target": "/wiki/hard-fork-games.html",
       "score": 95,
       "weight": 0.95
@@ -14266,21 +14272,15 @@
     },
     {
       "source": "/wiki/the-bitcoin-kid-army.html",
+      "target": "/wiki/gkniftyheads.html",
+      "score": 86,
+      "weight": 0.86
+    },
+    {
+      "source": "/wiki/the-bitcoin-kid-army.html",
       "target": "/wiki/sacred-chain.html",
       "score": 84,
       "weight": 0.84
-    },
-    {
-      "source": "/wiki/the-bitcoin-kid-army.html",
-      "target": "/wiki/the-first-witness.html",
-      "score": 84,
-      "weight": 0.84
-    },
-    {
-      "source": "/wiki/the-bitcoin-kid-army.html",
-      "target": "/wiki/triple-fork-event.html",
-      "score": 83,
-      "weight": 0.83
     },
     {
       "source": "/wiki/the-blockchain-furies.html",
@@ -14872,13 +14872,13 @@
     },
     {
       "source": "/wiki/the-princess.html",
-      "target": "/wiki/graffpunks.html",
-      "score": 83,
-      "weight": 0.83
+      "target": "/wiki/bitcoin-kids.html",
+      "score": 77,
+      "weight": 0.77
     },
     {
       "source": "/wiki/the-princess.html",
-      "target": "/wiki/bitcoin-kids.html",
+      "target": "/wiki/null-the-prophet.html",
       "score": 77,
       "weight": 0.77
     },
@@ -15052,25 +15052,19 @@
     },
     {
       "source": "/wiki/the-whitewasher.html",
-      "target": "/wiki/graffpunks.html",
-      "score": 80,
-      "weight": 0.8
-    },
-    {
-      "source": "/wiki/the-whitewasher.html",
       "target": "/wiki/null-the-prophet.html",
       "score": 77,
       "weight": 0.77
     },
     {
-      "source": "/wiki/thera-9.html",
-      "target": "/wiki/crypto-moonboys.html",
-      "score": 89,
-      "weight": 0.89
+      "source": "/wiki/the-whitewasher.html",
+      "target": "/wiki/aleema-child-of-the-shard.html",
+      "score": 73,
+      "weight": 0.73
     },
     {
       "source": "/wiki/thera-9.html",
-      "target": "/wiki/graffpunks.html",
+      "target": "/wiki/crypto-moonboys.html",
       "score": 89,
       "weight": 0.89
     },
@@ -15093,14 +15087,14 @@
       "weight": 0.8
     },
     {
-      "source": "/wiki/thorne-the-architect.html",
-      "target": "/wiki/crypto-moonboys.html",
-      "score": 86,
-      "weight": 0.86
+      "source": "/wiki/thera-9.html",
+      "target": "/wiki/null-the-prophet.html",
+      "score": 80,
+      "weight": 0.8
     },
     {
       "source": "/wiki/thorne-the-architect.html",
-      "target": "/wiki/graffpunks.html",
+      "target": "/wiki/crypto-moonboys.html",
       "score": 86,
       "weight": 0.86
     },
@@ -15121,6 +15115,12 @@
       "target": "/wiki/null-the-prophet.html",
       "score": 77,
       "weight": 0.77
+    },
+    {
+      "source": "/wiki/thorne-the-architect.html",
+      "target": "/wiki/billy-the-goat-kid.html",
+      "score": 74,
+      "weight": 0.74
     },
     {
       "source": "/wiki/tokenomics.html",
@@ -15202,15 +15202,15 @@
     },
     {
       "source": "/wiki/triple-fork-event.html",
-      "target": "/wiki/graffiti-nexus.html",
-      "score": 92,
-      "weight": 0.92
+      "target": "/wiki/graffpunks.html",
+      "score": 93,
+      "weight": 0.93
     },
     {
       "source": "/wiki/triple-fork-event.html",
-      "target": "/wiki/sacred-chain.html",
-      "score": 90,
-      "weight": 0.9
+      "target": "/wiki/graffiti-nexus.html",
+      "score": 92,
+      "weight": 0.92
     },
     {
       "source": "/wiki/wagmi-prophecy.html",
@@ -15232,13 +15232,13 @@
     },
     {
       "source": "/wiki/wagmi-prophecy.html",
-      "target": "/wiki/graffpunks.html",
-      "score": 83,
-      "weight": 0.83
+      "target": "/wiki/the-princess.html",
+      "score": 81,
+      "weight": 0.81
     },
     {
       "source": "/wiki/wagmi-prophecy.html",
-      "target": "/wiki/the-princess.html",
+      "target": "/wiki/thorne-the-architect.html",
       "score": 81,
       "weight": 0.81
     },
@@ -15250,27 +15250,27 @@
     },
     {
       "source": "/wiki/wallets.html",
-      "target": "/wiki/graffpunks.html",
-      "score": 89,
-      "weight": 0.89
-    },
-    {
-      "source": "/wiki/wallets.html",
       "target": "/wiki/null-the-prophet.html",
       "score": 83,
       "weight": 0.83
     },
     {
       "source": "/wiki/wallets.html",
-      "target": "/wiki/gkniftyheads.html",
-      "score": 82,
-      "weight": 0.82
-    },
-    {
-      "source": "/wiki/wallets.html",
       "target": "/wiki/graffpunks-ecosystem.html",
       "score": 79,
       "weight": 0.79
+    },
+    {
+      "source": "/wiki/wallets.html",
+      "target": "/wiki/m1ntr-k1ll.html",
+      "score": 78,
+      "weight": 0.78
+    },
+    {
+      "source": "/wiki/wallets.html",
+      "target": "/wiki/nfts.html",
+      "score": 78,
+      "weight": 0.78
     },
     {
       "source": "/wiki/wax-blockchain.html",
@@ -15544,12 +15544,6 @@
     },
     {
       "source": "/wiki/xrp-kids.html",
-      "target": "/wiki/graffpunks.html",
-      "score": 89,
-      "weight": 0.89
-    },
-    {
-      "source": "/wiki/xrp-kids.html",
       "target": "/wiki/bitcoin-kids.html",
       "score": 86,
       "weight": 0.86
@@ -15568,9 +15562,15 @@
     },
     {
       "source": "/wiki/xrp-kids.html",
-      "target": "/wiki/gkniftyheads.html",
-      "score": 79,
-      "weight": 0.79
+      "target": "/wiki/bitcoin-x-kids.html",
+      "score": 78,
+      "weight": 0.78
+    },
+    {
+      "source": "/wiki/xrp-kids.html",
+      "target": "/wiki/iris-7.html",
+      "score": 74,
+      "weight": 0.74
     },
     {
       "source": "/wiki/xrp-ledger.html",

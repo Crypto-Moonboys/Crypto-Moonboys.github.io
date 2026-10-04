@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "generator": "scripts/generate-wiki-content-state.mjs",
-  "source_tree_hash": "sha256:1eb386687981ba08eb56ce00bc5382e3f01d5b3e480d401eb53376c7feed2147",
+  "source_tree_hash": "sha256:c247b6b1010d4ae9875727b1d62b7469f11266d666c39c9ae4f81e6b70cc7f78",
   "hash_algorithm": "sha256",
   "page_count": 415,
   "manifest_entry_count": 415,
@@ -93,10 +93,10 @@
     "total_manifest_entries": 415,
     "absent_stub_authorizations": 0,
     "rewrite_status_counts": {
-      "KEEP": 76,
+      "KEEP": 80,
       "REWRITE_FULL": 0,
-      "RECONCILE": 21,
-      "DEDUPE": 14,
+      "RECONCILE": 18,
+      "DEDUPE": 13,
       "EXPAND": 0,
       "ARCHIVE_STYLE": 6,
       "GENERATED": 6,
@@ -105,17 +105,17 @@
       "NEEDS_HUMAN_REVIEW": 51
     },
     "automation_policy_counts": {
-      "metadata-only": 295,
+      "metadata-only": 291,
       "replace-sam-block": 0,
-      "canon-locked": 118,
+      "canon-locked": 122,
       "stub-allowed": 2
     },
     "pages_with_multiple_sam_blocks": 0,
     "pages_with_multiple_canonical_blocks": 0,
-    "pages_with_legacy_unmarked_content": 132,
+    "pages_with_legacy_unmarked_content": 128,
     "pages_with_exact_duplicate_paragraphs": 142,
     "pages_with_duplicate_headings": 1,
-    "pages_with_likely_near_duplicate_sections": 28,
+    "pages_with_likely_near_duplicate_sections": 27,
     "pages_with_legacy_sam_article_wrapper": 181
   },
   "pages": [
@@ -6611,33 +6611,33 @@
     {
       "path": "wiki/gkniftyheads.html",
       "slug": "gkniftyheads",
-      "title": "GKNIFTYHEADS Four decades of street culture carried into permanent digital identity",
+      "title": "GKniftyHEADS Creator identities, collection records and the Immortal Architects",
       "page_exists": true,
       "page_type": "lore",
-      "current_word_count": 1850,
+      "current_word_count": 2734,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
-      "canonical_content_block_count": 0,
+      "canonical_content_block_count": 1,
       "legacy_sam_article_wrapper": true,
-      "legacy_unmarked_content": true,
+      "legacy_unmarked_content": false,
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:ad9c712b212e3454b1eec19dcaef483fbbade1db25c21425fb4c8b8ce648730e",
-      "article_content_hash": "sha256:bcd3b13199c57dde39623afa53852224a5566bd48476b7abb37324a0118a906f",
-      "article_markup_hash": "sha256:5a5b34af7cf894d13e525b894bc4498e306930b3fe4d92ce84ef31bf9286b797",
-      "git_blob_oid": "76568335cb11519ca7f5d5eac2afc187236da7b4",
+      "content_hash": "sha256:1be9d35e8f6f7fd7466e40bd6bde86a863061286f7ec499b2fb0873aa9b8a7dd",
+      "article_content_hash": "sha256:6113b9fdec711cf8fd110441dcde2ecb9052202aae36c8eb567c7c467559e50c",
+      "article_markup_hash": "sha256:37e37903c7afb408708b74add71631f39c8c6a625ddca121c420cf9a2e7a34a3",
+      "git_blob_oid": "ddbf6caa319a339f06ce0c0e61b35fd3f19b3313",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
       "likely_lore_page": true,
-      "rewrite_status": "RECONCILE",
-      "automation_policy": "metadata-only",
+      "rewrite_status": "KEEP",
+      "automation_policy": "canon-locked",
       "rewrite_cluster": "GKniftyHEADS",
       "duplicate_severity": "NONE",
-      "canon_conflict_severity": "MEDIUM",
-      "recommended_action": "Reconcile against higher-priority sources before replacing prose.",
-      "suggested_priority": "P2",
+      "canon_conflict_severity": "NONE",
+      "recommended_action": "Preserve the completed canon revision; automated article prose is locked.",
+      "suggested_priority": "P4",
       "likely_source_family": [
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
@@ -6645,11 +6645,12 @@
         "wiki/bibles/the-gkniftyheads.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Substantive article content has no MANUAL_CONTENT, SAM_CONTENT, or CANONICAL_CONTENT ownership markers.",
-        "Legacy SAM:BEGIN:article shell marker is provenance evidence, not a current SAM_CONTENT ownership block.",
-        "Specialist archive record found at wiki/bibles/the-gkniftyheads.json; it is not automatically the unavailable Tier 4 modern bible.",
-        "Existing wiki prose is surviving public archive, not automatically current canon."
-      ]
+        "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Specialist archive record found at wiki/bibles/the-gkniftyheads.json; it is not automatically the unavailable Tier 4 modern bible."
+      ],
+      "content_owner": "canon",
+      "canon_revision": 1,
+      "canon_source_tier": "first-witness+w81"
     },
     {
       "path": "wiki/gkniftyheads-alessandro-anonymity-advocate-amato-783445.html",
@@ -12128,30 +12129,30 @@
       "title": "Graffiti Kings",
       "page_exists": true,
       "page_type": "lore",
-      "current_word_count": 413,
+      "current_word_count": 2412,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
-      "canonical_content_block_count": 0,
+      "canonical_content_block_count": 1,
       "legacy_sam_article_wrapper": false,
-      "legacy_unmarked_content": true,
+      "legacy_unmarked_content": false,
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:24722241cbef20e1c01721b3c1113b4a8e2aef4ef49efb782cab3e4342a72e82",
-      "article_content_hash": "sha256:1caf4054d49476ccc7a9a07e6e47d7f815cedb8d6d0af7a7cc5f1a178f400072",
-      "article_markup_hash": "sha256:d931d69b266e70612e71b6b8fbd8d42a3e43d115ebadf483d6277feef98cdab1",
-      "git_blob_oid": "949e268cea79103d4294e07b7e5a49a2b10ec93b",
+      "content_hash": "sha256:c24bf96abf0315f2e6fae5387cd1c8d633a87ec9002ca1230d50d0138b734211",
+      "article_content_hash": "sha256:b86469ff093e2374c99cb4bf063301b3766a09f442f082bbd006a0924f451685",
+      "article_markup_hash": "sha256:b8fec68937601c9ac6afc4511a9a5a1befa04bcbb9f95eaab7caaf7927e790e4",
+      "git_blob_oid": "c4829954337111fbe7f685aba5c6ee14891fcbb3",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
       "likely_lore_page": true,
-      "rewrite_status": "RECONCILE",
-      "automation_policy": "metadata-only",
+      "rewrite_status": "KEEP",
+      "automation_policy": "canon-locked",
       "rewrite_cluster": "GraffPUNKS",
       "duplicate_severity": "NONE",
-      "canon_conflict_severity": "HIGH",
-      "recommended_action": "Reconcile against higher-priority sources before replacing prose.",
-      "suggested_priority": "P1",
+      "canon_conflict_severity": "NONE",
+      "recommended_action": "Preserve the completed canon revision; automated article prose is locked.",
+      "suggested_priority": "P4",
       "likely_source_family": [
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
@@ -12159,10 +12160,12 @@
         "wiki/bibles/graffiti-kings.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Substantive article content has no MANUAL_CONTENT, SAM_CONTENT, or CANONICAL_CONTENT ownership markers.",
-        "Specialist archive record found at wiki/bibles/graffiti-kings.json; it is not automatically the unavailable Tier 4 modern bible.",
-        "Existing wiki prose is surviving public archive, not automatically current canon."
-      ]
+        "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Specialist archive record found at wiki/bibles/graffiti-kings.json; it is not automatically the unavailable Tier 4 modern bible."
+      ],
+      "content_owner": "canon",
+      "canon_revision": 1,
+      "canon_source_tier": "first-witness+w81"
     },
     {
       "path": "wiki/graffiti-nexus.html",
@@ -12272,33 +12275,33 @@
     {
       "path": "wiki/graffpunks.html",
       "slug": "graffpunks",
-      "title": "GRAFFPUNKS The mark, the message and the frequency behind the Crypto Moonboys movement",
+      "title": "GraffPUNKS The mark, the message and the memory carried between them",
       "page_exists": true,
       "page_type": "lore",
-      "current_word_count": 1433,
+      "current_word_count": 2464,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
-      "canonical_content_block_count": 0,
+      "canonical_content_block_count": 1,
       "legacy_sam_article_wrapper": true,
-      "legacy_unmarked_content": true,
+      "legacy_unmarked_content": false,
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:a8ef03a7262bea271f3d24179060ace8d1f847c281ba461c2c4cdbf200713f0d",
-      "article_content_hash": "sha256:c2160dba7c036017cab9597d8f2c3c520d94eeba321c8fae3f82ec96709e6c4e",
-      "article_markup_hash": "sha256:53907b413873120d883a063e6e73b2bdf8f30635aa9cded2cc1b008fbb414812",
-      "git_blob_oid": "4db41b523e0b21eccf1045ed3aa088e753a1fe39",
+      "content_hash": "sha256:1a5898c2a2ce5d7d26f696123c41288bee00d5bb352ce60fd5e5614ea435d674",
+      "article_content_hash": "sha256:1fe56e4a65252bb9561befcc2105f7b4824dd155f526aa00deb355603eb5c4d3",
+      "article_markup_hash": "sha256:6fa8dddf8444902541a2f5119a01be62e0b984c01a1e8e09b63372a115f2500a",
+      "git_blob_oid": "711bfd0e694a2d5dd9e4506fb40dfba1328ae4c4",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
       "likely_lore_page": true,
-      "rewrite_status": "RECONCILE",
-      "automation_policy": "metadata-only",
+      "rewrite_status": "KEEP",
+      "automation_policy": "canon-locked",
       "rewrite_cluster": "GraffPUNKS",
       "duplicate_severity": "NONE",
-      "canon_conflict_severity": "HIGH",
-      "recommended_action": "Reconcile against higher-priority sources before replacing prose.",
-      "suggested_priority": "P1",
+      "canon_conflict_severity": "NONE",
+      "recommended_action": "Preserve the completed canon revision; automated article prose is locked.",
+      "suggested_priority": "P4",
       "likely_source_family": [
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
@@ -12306,11 +12309,12 @@
         "wiki/bibles/graffpunks.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Substantive article content has no MANUAL_CONTENT, SAM_CONTENT, or CANONICAL_CONTENT ownership markers.",
-        "Legacy SAM:BEGIN:article shell marker is provenance evidence, not a current SAM_CONTENT ownership block.",
-        "Specialist archive record found at wiki/bibles/graffpunks.json; it is not automatically the unavailable Tier 4 modern bible.",
-        "Existing wiki prose is surviving public archive, not automatically current canon."
-      ]
+        "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Specialist archive record found at wiki/bibles/graffpunks.json; it is not automatically the unavailable Tier 4 modern bible."
+      ],
+      "content_owner": "canon",
+      "canon_revision": 1,
+      "canon_source_tier": "first-witness+w81"
     },
     {
       "path": "wiki/graffpunks-24-7-radio.html",
@@ -12608,170 +12612,43 @@
     {
       "path": "wiki/head-tags.html",
       "slug": "head-tags",
-      "title": "head_tags",
+      "title": "Head Tags",
       "page_exists": true,
       "page_type": "project_or_reference",
-      "current_word_count": 889,
+      "current_word_count": 2442,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
-      "canonical_content_block_count": 0,
+      "canonical_content_block_count": 1,
       "legacy_sam_article_wrapper": true,
-      "legacy_unmarked_content": true,
+      "legacy_unmarked_content": false,
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
-      "likely_near_duplicate_sections": [
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 12,
-          "second_paragraph": 14,
-          "similarity": 0.867,
-          "shared_token_count": 26
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 12,
-          "second_paragraph": 15,
-          "similarity": 0.813,
-          "shared_token_count": 26
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 14,
-          "second_paragraph": 15,
-          "similarity": 0.867,
-          "shared_token_count": 26
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 3,
-          "second_paragraph": 5,
-          "similarity": 0.97,
-          "shared_token_count": 32
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 4,
-          "second_paragraph": 6,
-          "similarity": 0.839,
-          "shared_token_count": 26
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 4,
-          "second_paragraph": 9,
-          "similarity": 0.839,
-          "shared_token_count": 26
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 4,
-          "second_paragraph": 12,
-          "similarity": 0.897,
-          "shared_token_count": 26
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 4,
-          "second_paragraph": 14,
-          "similarity": 0.963,
-          "shared_token_count": 26
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 4,
-          "second_paragraph": 15,
-          "similarity": 0.897,
-          "shared_token_count": 26
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 6,
-          "second_paragraph": 9,
-          "similarity": 0.722,
-          "shared_token_count": 26
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 6,
-          "second_paragraph": 12,
-          "similarity": 0.765,
-          "shared_token_count": 26
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 6,
-          "second_paragraph": 14,
-          "similarity": 0.813,
-          "shared_token_count": 26
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 6,
-          "second_paragraph": 15,
-          "similarity": 0.765,
-          "shared_token_count": 26
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 9,
-          "second_paragraph": 12,
-          "similarity": 0.765,
-          "shared_token_count": 26
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 9,
-          "second_paragraph": 14,
-          "similarity": 0.813,
-          "shared_token_count": 26
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 9,
-          "second_paragraph": 15,
-          "similarity": 0.765,
-          "shared_token_count": 26
-        }
-      ],
-      "content_hash": "sha256:819ec339efdf482a0585e8047dd4752fa44f661a7d39c3c7c9f0b52cdbf223f6",
-      "article_content_hash": "sha256:34e0f05ec70e385c57f1eb2180cc5702ebb858cd68e797572d40d447f9cf8b7b",
-      "article_markup_hash": "sha256:520a0b20345625738529e7179344b7f690c82b0a12778dea0bb32ba9b8594617",
-      "git_blob_oid": "78d145f968d27ea11f761c6b4976f0aad3393e93",
+      "likely_near_duplicate_sections": [],
+      "content_hash": "sha256:dabdcd079827259a7f512f9037fe83fdaab999c2cdab330cf46577e81434e0db",
+      "article_content_hash": "sha256:d66469d357e13dabcaa3b4bc669aad85cb39ceac581eeced72e0cda0eac2dbb9",
+      "article_markup_hash": "sha256:19ee9f0682a5003184835985329f889439f30735553135cc184a36ead4b23a22",
+      "git_blob_oid": "8b43e3735f4747bb414d0dc72ad3a226575ade43",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
       "likely_lore_page": false,
-      "rewrite_status": "DEDUPE",
-      "automation_policy": "metadata-only",
+      "rewrite_status": "KEEP",
+      "automation_policy": "canon-locked",
       "rewrite_cluster": "GKniftyHEADS",
-      "duplicate_severity": "HIGH",
-      "canon_conflict_severity": "MEDIUM",
-      "recommended_action": "Review the reported duplication during the later canon rewrite.",
-      "suggested_priority": "P1",
+      "duplicate_severity": "NONE",
+      "canon_conflict_severity": "NONE",
+      "recommended_action": "Preserve the completed canon revision; automated article prose is locked.",
+      "suggested_priority": "P4",
       "likely_source_family": [
         "Existing public/reference source verification"
       ],
       "audit_notes": [
-        "Substantive article content has no MANUAL_CONTENT, SAM_CONTENT, or CANONICAL_CONTENT ownership markers.",
-        "Legacy SAM:BEGIN:article shell marker is provenance evidence, not a current SAM_CONTENT ownership block.",
-        "16 likely near-duplicate section pair(s) reported; no text was removed."
-      ]
+        "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "No article-ownership or duplication issue detected by the deterministic audit."
+      ],
+      "content_owner": "canon",
+      "canon_revision": 1,
+      "canon_source_tier": "first-witness+w81"
     },
     {
       "path": "wiki/hex-tagger-prime.html",

@@ -5259,7 +5259,7 @@
     "entity_id": "gkniftyheads",
     "canonical_title": "GKniftyHEADS",
     "canonical_url": "/wiki/gkniftyheads.html",
-    "category": "characters",
+    "category": "core",
     "aliases": [
       "gkniftyheads crypto moonboys wiki"
     ],
@@ -8377,7 +8377,7 @@
     "entity_id": "graffiti_kings",
     "canonical_title": "Graffiti Kings",
     "canonical_url": "/wiki/graffiti-kings.html",
-    "category": "factions",
+    "category": "core",
     "aliases": [
       "graffiti kings crypto moonboys wiki"
     ],
@@ -8445,7 +8445,7 @@
     "entity_id": "graffpunks",
     "canonical_title": "GraffPUNKS",
     "canonical_url": "/wiki/graffpunks.html",
-    "category": "characters",
+    "category": "core",
     "aliases": [
       "graffpunks crypto moonboys wiki",
       "Graffpunks Network",
@@ -8642,9 +8642,9 @@
   },
   {
     "entity_id": "head_tags",
-    "canonical_title": "head tags",
+    "canonical_title": "Head Tags",
     "canonical_url": "/wiki/head-tags.html",
-    "category": "factions",
+    "category": "concepts",
     "aliases": [
       "head tags crypto moonboys wiki"
     ],
