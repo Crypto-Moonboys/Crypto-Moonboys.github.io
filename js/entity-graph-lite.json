@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-04T02:30:52.120Z",
-  "verified_at": "2026-10-04T02:30:52.120Z",
+  "generated_at": "2026-10-04T08:25:51.467Z",
+  "verified_at": "2026-10-04T08:25:51.467Z",
   "lite": true,
   "nodes": [
     {
@@ -252,14 +252,6 @@
       "authority_score": 28
     },
     {
-      "id": "/wiki/hodl-warriors.html",
-      "title": "HODL Warriors",
-      "url": "/wiki/hodl-warriors.html",
-      "category": "characters",
-      "rank_score": 328,
-      "authority_score": 28
-    },
-    {
       "id": "/wiki/thorne-the-architect.html",
       "title": "Thorne The Architect",
       "url": "/wiki/thorne-the-architect.html",
@@ -274,6 +266,14 @@
       "category": "core",
       "rank_score": 326,
       "authority_score": 14
+    },
+    {
+      "id": "/wiki/hodl-warriors.html",
+      "title": "HODL Warriors",
+      "url": "/wiki/hodl-warriors.html",
+      "category": "characters",
+      "rank_score": 325,
+      "authority_score": 28
     },
     {
       "id": "/wiki/first-witness-master-chronology.html",

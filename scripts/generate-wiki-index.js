@@ -423,6 +423,15 @@ function buildAliases(samEntity, canonicalSlug) {
   const pushAlias = (value, url = '') => {
     const title = String(value || '').trim();
     if (!title) return;
+    // Legacy SAM memory collapsed these distinct traditions, including a
+    // title-suffix alias with the X lost. Reject that stale input before it
+    // propagates back into the search index, entity map and next SAM handoff.
+    const hodlNames = {
+      'hodl warriors': 'hodl-warriors',
+      'hodl x warriors': 'hodl-x-warriors',
+    };
+    const aliasOwner = hodlNames[normalize(title).replace(/ crypto moonboys wiki$/, '')];
+    if (Object.values(hodlNames).includes(canonicalSlug) && aliasOwner && aliasOwner !== canonicalSlug) return;
     const aliasUrl = String(url || '').trim();
     const key = `${normalize(title)}|${aliasUrl.toLowerCase()}`;
     if (!key || seen.has(key)) return;

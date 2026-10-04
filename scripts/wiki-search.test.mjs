@@ -624,6 +624,32 @@ const graffpunksStopwordOnly = {
 // become relationship tokens. Keep the earlier 58-query contract above intact.
 {
   const wikiIndex = JSON.parse(await fs.readFile(path.join(ROOT, 'js', 'wiki-index.json'), 'utf8'));
+  const entities = JSON.parse(await fs.readFile(path.join(ROOT, 'js', 'entity-map.json'), 'utf8'));
+  const warriors = entities.find(entity => entity.entity_id === 'hodl_warriors');
+  const xWarriors = entities.find(entity => entity.entity_id === 'hodl_x_warriors');
+  assert.ok(warriors && xWarriors, 'Both distinct HODL entities exist');
+  const entityKey = value => sb.normalizeEntityKey(value);
+  const warriorKeys = new Set([warriors.canonical_title, ...warriors.aliases].map(entityKey));
+  const xWarriorKeys = new Set([xWarriors.canonical_title, ...xWarriors.aliases].map(entityKey));
+  assert.deepEqual([...warriorKeys].filter(key => xWarriorKeys.has(key)), [], 'HODL traditions share no canonical or alias lookup keys');
+  for (const entity of [warriors, xWarriors]) {
+    for (const limit of [5, 10]) {
+      const result = await selectMatches(wikiIndex, entity.canonical_title, { allowPartialFallback: true, limit });
+      assert.equal(result.scored[0]?.item.url, entity.canonical_url,
+        `${entity.canonical_title} resolves first in autocomplete and full search without changing short-word rules`);
+    }
+  }
+  for (const ordered of [[warriors, xWarriors], [xWarriors, warriors]]) {
+    sb.entityFixtures = ordered;
+    vm.runInContext('ENTITY_MAP = Object.fromEntries(entityFixtures.map(entity => [entity.entity_id, entity])); buildEntityLookup();', sb);
+    for (const entity of ordered) {
+      for (const name of [entity.canonical_title, ...entity.aliases]) {
+        sb.entityQuery = name;
+        assert.equal(vm.runInContext('ENTITY_LOOKUP[normalizeEntityKey(entityQuery)].canonical_url', sb), entity.canonical_url,
+          `Entity lookup resolves ${name} independently of record order`);
+      }
+    }
+  }
   const subjectsByPage = {
     'bitcoin-kids': ['Mina Patch', 'MINA PATCH!', 'Tavi Rill', 'Borrowed Rooms', 'Backstep School', 'Three Pump stoppage', 'Grey Return', 'Mnemonic Whispers'],
     'bitcoin-x-kids': ['Ada Wren', 'Esme Sorn', 'Len Arc', 'Glass Court', 'Measure Hall', 'Blank Bonnet day', 'Quiet Window exchange', 'encoded irises'],

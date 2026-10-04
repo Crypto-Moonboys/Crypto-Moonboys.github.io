@@ -8646,8 +8646,7 @@
     "hodl_warriors": {
       "alias_candidates": [],
       "aliases": [
-        "hodl warriors crypto moonboys wiki",
-        "Hodl X Warriors"
+        "hodl warriors crypto moonboys wiki"
       ],
       "canonical_title": "HODL Warriors",
       "canonical_url": "/wiki/hodl-warriors.html",
@@ -8687,9 +8686,7 @@
     },
     "hodl_x_warriors": {
       "alias_candidates": [],
-      "aliases": [
-        "hodl warriors crypto moonboys wiki"
-      ],
+      "aliases": [],
       "canonical_title": "HODL X Warriors",
       "canonical_url": "/wiki/hodl-x-warriors.html",
       "category": "characters",
@@ -11057,5 +11054,5 @@
       ]
     }
   },
-  "updated_at": "2026-10-04T02:30:51Z"
+  "updated_at": "2026-10-04T08:25:50Z"
 }
