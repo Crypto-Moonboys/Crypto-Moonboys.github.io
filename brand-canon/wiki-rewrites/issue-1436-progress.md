@@ -102,3 +102,9 @@ Publication 8 also repairs mobile GKniftyHEADS heading wrapping in its existing 
 ### Publication 9 — four distinct character and artist portraits
 
 Previous publication: `62e758fa57555bebd7715bbbdcbb5380f22e043e`.  Full wiki CI (including ownership, structure and existing search regressions), graph integrity, inventory freshness and diff checks passed. Chromium passed 8 desktop/mobile renders, 136 contents targets and 4 no-JavaScript pages; full search/autocomplete passed for Offbeat Roll, Weight Board, Casting Table, Rucksack Index. No overflow, script errors or obsolete bible injection.
+
+### Search maintenance before publication 10
+
+Four new faction crosslinks exposed an unbounded graph-authority bonus: “2880 triple fork” displaced its First Witness source. The held prose is backed up in `/tmp/issue1436-held-batch10.patch` and will be reinstalled after this separate fix. The index generator now caps graph-derived ranking influence at 50 points for wiki and root pages while retaining full inbound/outbound counts and raw authority. The existing 1,000-word ranking limit and full word measurements are unchanged; subject terms remain outside title-only relationship tokens.
+
+All 12 First Witness intent contracts pass against the actual generator with 10,000 incoming links to other pages, including zero, below-cap and rounding boundaries. Chromium verifies the required result positions in real full search and autocomplete for all 12 queries. Full wiki CI (including 58 lore queries), graph integrity and diff checks pass. Canonical prose, inventory ownership and approval-policy code are unchanged; the ownership audit passes with `CANON_PROSE_CHANGE_APPROVED=0`. This code-only maintenance commit needs no canonical prose exception. Independent review found no blocking issue; its missing lower-bound test suggestion was implemented.

@@ -21,6 +21,9 @@ const LINK_GRAPH_PATH = path.join(ROOT, 'js', 'link-graph.json');
 // Long reference chapters should retain their full depth without letting
 // page length overwhelm a query's more specific source or subject match.
 const MAX_RANKED_WORD_COUNT = 1000;
+// Crosslinks grow as the reference expands. Popularity remains a bounded
+// secondary signal; retain the uncapped counts and authority in link_score.
+const MAX_AUTHORITY_GRAPH_POINTS = 50;
 
 // Approved root/tool pages that should be in search index (non-wiki)
 const ROOT_PAGES_TO_INDEX = getRootPagePaths();
@@ -741,7 +744,7 @@ function processRootPagesForIndex(canonicalEntries, linkGraph) {
       const linkScore = buildLinkScore(rootPageUrl, linkGraph);
       
       // Fold graph authority
-      const authorityGraphPoints = Math.round(linkScore.authority);
+      const authorityGraphPoints = Math.min(MAX_AUTHORITY_GRAPH_POINTS, Math.round(linkScore.authority));
       const updatedAuthorityPoints = rankDiagnostics.authority_points + authorityGraphPoints;
       const updatedRankDiagnostics = {
         ...rankDiagnostics,
@@ -851,7 +854,7 @@ function run() {
     const linkScore = buildLinkScore(canonicalUrl, linkGraph);
 
     // ── Phase 4: fold graph authority into rank_diagnostics ──────────────
-    const authorityGraphPoints = Math.round(linkScore.authority);
+    const authorityGraphPoints = Math.min(MAX_AUTHORITY_GRAPH_POINTS, Math.round(linkScore.authority));
 
     const updatedAuthorityPoints =
       rankDiagnostics.authority_points + authorityGraphPoints;
