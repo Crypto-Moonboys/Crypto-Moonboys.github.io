@@ -15438,7 +15438,6 @@
       "/wiki/fomo-plague.html",
       "/wiki/games4punks-telegram.html",
       "/wiki/hard-fork-games.html",
-      "/wiki/hodl-warriors.html",
       "/wiki/hodl-wars.html",
       "/wiki/midevilpunks.html",
       "/wiki/nbg-token.html",
@@ -15446,14 +15445,24 @@
       "/wiki/pmsl.html",
       "/wiki/rave-relics.html",
       "/wiki/satoshi-scroll.html",
-      "/wiki/stikfamwars.html"
+      "/wiki/stikfamwars.html",
+      "/wiki/the-blockchain-furies.html",
+      "/wiki/the-rugpull-miners.html"
     ],
     "suggested_links": [
+      "/wiki/bitcoin-kids.html",
       "/wiki/block-topia.html",
+      "/wiki/first-witness-faction-ritual-variations.html",
       "/wiki/first-witness-hodl-doctrine.html",
+      "/wiki/first-witness-justice-mercy-restitution.html",
+      "/wiki/first-witness-oaths-promises-vows.html",
+      "/wiki/first-witness-work-craft-service.html",
+      "/wiki/gkniftyheads-follow-darren-cullen-776123.html",
       "/wiki/graffpunks.html",
+      "/wiki/hodl-warriors.html",
       "/wiki/hodl-x-warriors.html",
       "/wiki/hodlmoonboys-nft-collection.html",
+      "/wiki/the-first-witness.html",
       "/wiki/trevor-fung.html"
     ]
   },
@@ -15678,38 +15687,36 @@
   },
   "/wiki/satoshi-scroll.html": {
     "existing_links": [
+      "/wiki/bitcoin-kid-army.html",
+      "/wiki/bitcoin-kids.html",
+      "/wiki/bitcoin-x-kids.html",
       "/wiki/crypto-moonboys.html",
       "/wiki/diamond-hands.html",
       "/wiki/hodl-warriors.html",
       "/wiki/hodl-wars.html",
       "/wiki/moon-mission.html",
       "/wiki/null-the-prophet.html",
+      "/wiki/rug-pull-wars.html",
       "/wiki/the-chain-scribes.html",
       "/wiki/the-finance-guild.html",
       "/wiki/the-high-hats.html",
       "/wiki/the-nice-easy-bois.html",
       "/wiki/the-princess.html",
-      "/wiki/the-satoshi-scroll.html",
       "/wiki/the-whitewasher.html",
-      "/wiki/thorne-the-architect.html"
+      "/wiki/thorne-the-architect.html",
+      "/wiki/wagmi-prophecy.html"
     ],
     "suggested_links": [
       "/wiki/alfie-bitcoin-kid-blaze.html",
       "/wiki/bitcoin-btc.html",
-      "/wiki/bitcoin-kid-army.html",
-      "/wiki/bitcoin-kids.html",
-      "/wiki/bitcoin-x-kids.html",
       "/wiki/bitcoin.html",
       "/wiki/block-topia.html",
       "/wiki/first-witness-bitcoin-witness.html",
-      "/wiki/first-witness-counterfeit-relics-fraud.html",
+      "/wiki/first-witness-faction-ritual-variations.html",
+      "/wiki/first-witness-great-concord-2030.html",
       "/wiki/first-witness-hodl-doctrine.html",
-      "/wiki/first-witness-humour-satire-sacred-mockery.html",
-      "/wiki/first-witness-language-translation-sacred-words.html",
-      "/wiki/first-witness-libraries-architecture-archive-houses.html",
       "/wiki/first-witness-sacred-fork.html",
-      "/wiki/first-witness-sacred-places-walls-pilgrimage.html",
-      "/wiki/first-witness-symbols-marks-sacred-design.html",
+      "/wiki/first-witness-world-chain-error.html",
       "/wiki/gkniftyheads-alessandro-satoshi-samurai-ferrari-783442.html",
       "/wiki/gkniftyheads-bitcoin-barbarian-784284.html",
       "/wiki/gkniftyheads-bitcoin-kid-infinite-776002.html",
@@ -15729,9 +15736,9 @@
       "/wiki/graffpunks.html",
       "/wiki/hodl-x-warriors.html",
       "/wiki/hodlmoonboys-nft-collection.html",
-      "/wiki/rug-pull-wars.html",
-      "/wiki/sacred-chain.html",
-      "/wiki/the-bitcoin-kid-army.html"
+      "/wiki/street-kingdoms.html",
+      "/wiki/the-bitcoin-kid-army.html",
+      "/wiki/the-first-witness.html"
     ]
   },
   "/wiki/seeding-rights.html": {
@@ -16004,8 +16011,6 @@
   },
   "/wiki/squeaky-pinks-enforcers.html": {
     "existing_links": [
-      "/wiki/bitcoin-kid-army.html",
-      "/wiki/block-topia.html",
       "/wiki/crypto-moonboys.html",
       "/wiki/games4punks-telegram.html",
       "/wiki/hard-fork-games.html",
@@ -16017,11 +16022,16 @@
       "/wiki/the-squeaky-pinks.html"
     ],
     "suggested_links": [
-      "/wiki/first-witness-faction-commentaries.html",
+      "/wiki/bitcoin-kids.html",
+      "/wiki/bitcoin-x-kids.html",
+      "/wiki/block-node-defenders.html",
+      "/wiki/block-topia.html",
+      "/wiki/first-witness-block-topia-reading.html",
+      "/wiki/first-witness-book-2-the-common-blood.html",
+      "/wiki/first-witness-book-9-the-unwritten-block.html",
+      "/wiki/first-witness-work-craft-service.html",
       "/wiki/graffpunks.html",
-      "/wiki/street-kingdoms.html",
-      "/wiki/the-bitcoin-kid-army.html",
-      "/wiki/the-gasless-ghosts.html",
+      "/wiki/queen-sarah-p-fly.html",
       "/wiki/trevor-fung.html"
     ]
   },
@@ -16087,7 +16097,8 @@
     "suggested_links": [
       "/wiki/atomicassets.html",
       "/wiki/atomichub.html",
-      "/wiki/crypto-moonboy-pets.html",
+      "/wiki/block-topia.html",
+      "/wiki/first-witness-symbols-marks-sacred-design.html",
       "/wiki/gang-signs-card-game.html",
       "/wiki/gkniftyheads.html",
       "/wiki/graffpunks.html",
@@ -17601,7 +17612,6 @@
   },
   "/wiki/wagmi-prophecy.html": {
     "existing_links": [
-      "/wiki/bear-market-siege.html",
       "/wiki/crypto-moonboys.html",
       "/wiki/diamond-hands.html",
       "/wiki/hodl-warriors.html",
@@ -17615,18 +17625,23 @@
       "/wiki/the-high-hats.html",
       "/wiki/the-nice-easy-bois.html",
       "/wiki/the-princess.html",
-      "/wiki/the-wagmi-prophecy.html",
       "/wiki/the-whitewasher.html",
       "/wiki/thorne-the-architect.html"
     ],
     "suggested_links": [
+      "/wiki/bitcoin-kids.html",
+      "/wiki/bitcoin-x-kids.html",
       "/wiki/block-topia.html",
+      "/wiki/first-witness-apocrypha-disputed-passages.html",
       "/wiki/first-witness-dreams-omens-coincidence.html",
+      "/wiki/first-witness-healing-illness-disability-care.html",
       "/wiki/first-witness-hodl-doctrine.html",
+      "/wiki/first-witness-long-transmission.html",
+      "/wiki/first-witness-sacred-fork.html",
+      "/wiki/forkborn-collective.html",
       "/wiki/graffpunks.html",
       "/wiki/hodl-x-warriors.html",
       "/wiki/hodlmoonboys-nft-collection.html",
-      "/wiki/paper-hands.html",
       "/wiki/rug-pull-wars.html"
     ]
   },
@@ -17909,31 +17924,39 @@
   },
   "/wiki/whale-lords.html": {
     "existing_links": [
-      "/wiki/bear-market-siege.html",
       "/wiki/crypto-moonboys.html",
-      "/wiki/diamond-hands.html",
       "/wiki/fomo-plague.html",
       "/wiki/hodl-warriors.html",
       "/wiki/hodl-wars.html",
       "/wiki/null-the-prophet.html",
-      "/wiki/paper-hands.html",
       "/wiki/the-chain-scribes.html",
       "/wiki/the-finance-guild.html",
       "/wiki/the-great-dip.html",
       "/wiki/the-high-hats.html",
       "/wiki/the-nice-easy-bois.html",
       "/wiki/the-princess.html",
-      "/wiki/the-whale-lords.html",
       "/wiki/the-whitewasher.html",
-      "/wiki/thorne-the-architect.html"
+      "/wiki/thorne-the-architect.html",
+      "/wiki/wagmi-prophecy.html"
     ],
     "suggested_links": [
+      "/wiki/bitcoin-kids.html",
+      "/wiki/bitcoin-x-kids.html",
       "/wiki/block-topia.html",
+      "/wiki/first-witness-apocrypha-disputed-passages.html",
+      "/wiki/first-witness-book-5-the-chain.html",
+      "/wiki/first-witness-chain-archaeology-forensics.html",
+      "/wiki/first-witness-faction-ritual-variations.html",
       "/wiki/first-witness-hodl-doctrine.html",
+      "/wiki/first-witness-sacred-fork.html",
+      "/wiki/first-witness-world-chain-error.html",
       "/wiki/graffpunks.html",
+      "/wiki/hex-tagger-prime.html",
       "/wiki/hodl-x-warriors.html",
       "/wiki/hodlmoonboys-nft-collection.html",
-      "/wiki/rug-pull-wars.html"
+      "/wiki/rug-pull-wars.html",
+      "/wiki/sacred-chain.html",
+      "/wiki/the-first-witness.html"
     ]
   },
   "/wiki/wuffi.html": {

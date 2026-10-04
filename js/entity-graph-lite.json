@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-04T14:17:46.763Z",
-  "verified_at": "2026-10-04T14:17:46.763Z",
+  "generated_at": "2026-10-04T14:19:51.896Z",
+  "verified_at": "2026-10-04T14:19:51.896Z",
   "lite": true,
   "nodes": [
     {
@@ -516,20 +516,20 @@
       "authority_score": 28
     },
     {
+      "id": "/wiki/satoshi-scroll.html",
+      "title": "The Satoshi Scroll",
+      "url": "/wiki/satoshi-scroll.html",
+      "category": "factions",
+      "rank_score": 303,
+      "authority_score": 30
+    },
+    {
       "id": "/wiki/staking.html",
       "title": "Crypto Staking",
       "url": "/wiki/staking.html",
       "category": "characters",
       "rank_score": 303,
       "authority_score": 17
-    },
-    {
-      "id": "/wiki/diamond-hands.html",
-      "title": "Diamond Hands",
-      "url": "/wiki/diamond-hands.html",
-      "category": "characters",
-      "rank_score": 302,
-      "authority_score": 26
     },
     {
       "id": "/wiki/the-salvagers.html",
@@ -546,6 +546,22 @@
       "category": "core",
       "rank_score": 301,
       "authority_score": 12
+    },
+    {
+      "id": "/wiki/wagmi-prophecy.html",
+      "title": "The WAGMI Prophecy",
+      "url": "/wiki/wagmi-prophecy.html",
+      "category": "characters",
+      "rank_score": 301,
+      "authority_score": 30
+    },
+    {
+      "id": "/wiki/diamond-hands.html",
+      "title": "Diamond Hands",
+      "url": "/wiki/diamond-hands.html",
+      "category": "characters",
+      "rank_score": 300,
+      "authority_score": 26
     },
     {
       "id": "/wiki/graffpunks-ecosystem.html",
@@ -586,22 +602,6 @@
       "category": "characters",
       "rank_score": 295,
       "authority_score": 28
-    },
-    {
-      "id": "/wiki/bitcoin-kid-army.html",
-      "title": "Bitcoin Kid Army",
-      "url": "/wiki/bitcoin-kid-army.html",
-      "category": "factions",
-      "rank_score": 295,
-      "authority_score": 28
-    },
-    {
-      "id": "/wiki/first-witness-apocrypha-disputed-passages.html",
-      "title": "Apocrypha and Disputed Passages",
-      "url": "/wiki/first-witness-apocrypha-disputed-passages.html",
-      "category": "core",
-      "rank_score": 295,
-      "authority_score": 12
     }
   ],
   "edges": [
@@ -1012,12 +1012,6 @@
       "target": "/wiki/rave-relics.html",
       "score": 73,
       "weight": 0.73
-    },
-    {
-      "source": "/wiki/bitcoin-kid-army.html",
-      "target": "/wiki/pmsl.html",
-      "score": 72,
-      "weight": 0.72
     },
     {
       "source": "/wiki/nbg-token.html",

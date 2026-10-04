@@ -4160,11 +4160,11 @@
       ]
     },
     "link_score": {
-      "inbound_count": 65,
+      "inbound_count": 66,
       "outbound_count": 48,
       "existing_outbound_count": 17,
       "suggested_outbound_count": 31,
-      "authority": 138.5
+      "authority": 140.5
     },
     "brand": null
   },
@@ -4974,11 +4974,11 @@
       ]
     },
     "link_score": {
-      "inbound_count": 32,
+      "inbound_count": 31,
       "outbound_count": 23,
       "existing_outbound_count": 15,
       "suggested_outbound_count": 8,
-      "authority": 71.5
+      "authority": 69.5
     },
     "brand": {
       "brand_family": "hodl",
@@ -5367,11 +5367,11 @@
       ]
     },
     "link_score": {
-      "inbound_count": 32,
+      "inbound_count": 33,
       "outbound_count": 43,
       "existing_outbound_count": 12,
       "suggested_outbound_count": 31,
-      "authority": 70
+      "authority": 72
     },
     "brand": null
   },
@@ -9218,107 +9218,113 @@
     "brand": null
   },
   {
-    "title": "Diamond Hands",
-    "desc": "Diamond Hands in HODL Wars: conviction, diamond-plate imagery, the Open Grip account and the difference between endurance and refusing to let go.",
-    "url": "/wiki/diamond-hands.html",
+    "title": "The Satoshi Scroll",
+    "desc": "The Satoshi Scroll is a fictional HODL Wars text tradition inspired by the Bitcoin whitepaper, carried, repaired and debated across the Year 3008 world.",
+    "url": "/wiki/satoshi-scroll.html",
     "tags": [
-      "diamond",
-      "hands",
+      "satoshi",
+      "scroll",
       "crypto",
       "moonboys",
       "wiki"
     ],
-    "category": "characters",
+    "category": "factions",
     "aliases": [
       {
-        "title": "diamond hands crypto moonboys wiki"
+        "title": "Satoshi Scroll — Crypto Moonboys Wiki"
+      },
+      {
+        "title": "satoshi scroll"
       }
     ],
-    "rank_score": 302,
+    "rank_score": 303,
     "rank_signals": {
       "is_canonical": true,
-      "alias_count": 1,
+      "alias_count": 2,
       "tag_count": 5,
       "mention_count": 0,
-      "category": "characters",
-      "category_priority": 8,
+      "category": "factions",
+      "category_priority": 7,
       "has_description": true,
-      "article_word_count": 2462,
-      "keyword_bag_size": 23,
-      "heading_count": 15,
+      "article_word_count": 2612,
+      "keyword_bag_size": 25,
+      "heading_count": 19,
       "list_count": 2,
-      "internal_link_count": 12,
-      "paragraph_count": 35,
-      "section_count": 12,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 85,
-      "authority_score": 26
+      "internal_link_count": 18,
+      "paragraph_count": 40,
+      "section_count": 16,
+      "lore_paragraph_count": 38,
+      "content_quality_score": 105,
+      "authority_score": 30
     },
     "rank_diagnostics": {
       "canonical_points": 20,
       "description_points": 10,
-      "category_points": 40,
+      "category_points": 35,
       "word_count_points": 50,
-      "keyword_bag_points": 23,
-      "content_quality_points": 93,
-      "authority_points": 66,
-      "final_rank_score": 302,
-      "authority_graph_points": 40
+      "keyword_bag_points": 25,
+      "content_quality_points": 116,
+      "authority_points": 47,
+      "final_rank_score": 303,
+      "authority_graph_points": 17
     },
     "search_index": {
-      "normalized_title": "diamond hands crypto moonboys wiki",
+      "normalized_title": "the satoshi scroll crypto moonboys wiki",
       "tokens": [
-        "diamond",
-        "hands",
+        "the",
+        "satoshi",
+        "scroll",
         "crypto",
         "moonboys",
         "wiki"
       ],
       "keyword_bag": [
-        "diamond",
-        "hands",
+        "the",
+        "satoshi",
+        "scroll",
         "crypto",
         "moonboys",
         "wiki",
-        "in",
+        "is",
+        "a",
+        "fictional",
         "hodl",
         "wars",
-        "conviction",
-        "plate",
-        "imagery",
-        "the",
-        "open",
-        "grip",
-        "account",
+        "text",
+        "tradition",
+        "inspired",
+        "by",
+        "bitcoin",
+        "whitepaper",
+        "carried",
+        "repaired",
         "and",
-        "difference",
-        "between",
-        "endurance",
-        "refusing",
-        "to",
-        "let",
-        "go",
-        "yara",
-        "knell",
-        "eren",
-        "loom",
-        "leth",
-        "quoin",
-        "credit",
-        "on",
-        "cuff",
-        "dov",
-        "renn",
-        "kept",
-        "wall"
+        "debated",
+        "across",
+        "year",
+        "3008",
+        "world",
+        "mara",
+        "fold",
+        "ivo",
+        "parch",
+        "folded",
+        "page",
+        "two",
+        "bindings",
+        "open",
+        "hinge",
+        "anti",
+        "rug",
+        "covenant"
       ]
     },
     "link_score": {
-      "inbound_count": 17,
-      "outbound_count": 26,
-      "existing_outbound_count": 11,
-      "suggested_outbound_count": 15,
-      "authority": 39.5
+      "inbound_count": 4,
+      "outbound_count": 50,
+      "existing_outbound_count": 18,
+      "suggested_outbound_count": 32,
+      "authority": 17
     },
     "brand": null
   },
@@ -9601,6 +9607,219 @@
       "existing_outbound_count": 4,
       "suggested_outbound_count": 64,
       "authority": 12
+    },
+    "brand": null
+  },
+  {
+    "title": "The WAGMI Prophecy",
+    "desc": "The WAGMI Prophecy gives the HODL Wars a disputed promise of collective hope, tested through care, belonging and an unresolved future.",
+    "url": "/wiki/wagmi-prophecy.html",
+    "tags": [
+      "wagmi",
+      "prophecy",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "characters",
+    "aliases": [
+      {
+        "title": "WAGMI Prophecy — Crypto Moonboys Wiki"
+      },
+      {
+        "title": "wagmi prophecy"
+      }
+    ],
+    "rank_score": 301,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 2,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "characters",
+      "category_priority": 8,
+      "has_description": true,
+      "article_word_count": 2561,
+      "keyword_bag_size": 23,
+      "heading_count": 19,
+      "list_count": 2,
+      "internal_link_count": 15,
+      "paragraph_count": 40,
+      "section_count": 16,
+      "lore_paragraph_count": 38,
+      "content_quality_score": 101,
+      "authority_score": 30
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 40,
+      "word_count_points": 50,
+      "keyword_bag_points": 23,
+      "content_quality_points": 112,
+      "authority_points": 46,
+      "final_rank_score": 301,
+      "authority_graph_points": 16
+    },
+    "search_index": {
+      "normalized_title": "the wagmi prophecy crypto moonboys wiki",
+      "tokens": [
+        "the",
+        "wagmi",
+        "prophecy",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "the",
+        "wagmi",
+        "prophecy",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "gives",
+        "hodl",
+        "wars",
+        "a",
+        "disputed",
+        "promise",
+        "of",
+        "collective",
+        "hope",
+        "tested",
+        "through",
+        "care",
+        "belonging",
+        "and",
+        "an",
+        "unresolved",
+        "future",
+        "pella",
+        "dawn",
+        "ren",
+        "latchwood",
+        "lantern",
+        "recess",
+        "no",
+        "chorus",
+        "night",
+        "long",
+        "tomorrow",
+        "cloth"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 4,
+      "outbound_count": 29,
+      "existing_outbound_count": 15,
+      "suggested_outbound_count": 14,
+      "authority": 15.5
+    },
+    "brand": null
+  },
+  {
+    "title": "Diamond Hands",
+    "desc": "Diamond Hands in HODL Wars: conviction, diamond-plate imagery, the Open Grip account and the difference between endurance and refusing to let go.",
+    "url": "/wiki/diamond-hands.html",
+    "tags": [
+      "diamond",
+      "hands",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "characters",
+    "aliases": [
+      {
+        "title": "diamond hands crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 300,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "characters",
+      "category_priority": 8,
+      "has_description": true,
+      "article_word_count": 2462,
+      "keyword_bag_size": 23,
+      "heading_count": 15,
+      "list_count": 2,
+      "internal_link_count": 12,
+      "paragraph_count": 35,
+      "section_count": 12,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 85,
+      "authority_score": 26
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 40,
+      "word_count_points": 50,
+      "keyword_bag_points": 23,
+      "content_quality_points": 93,
+      "authority_points": 64,
+      "final_rank_score": 300,
+      "authority_graph_points": 38
+    },
+    "search_index": {
+      "normalized_title": "diamond hands crypto moonboys wiki",
+      "tokens": [
+        "diamond",
+        "hands",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "diamond",
+        "hands",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "in",
+        "hodl",
+        "wars",
+        "conviction",
+        "plate",
+        "imagery",
+        "the",
+        "open",
+        "grip",
+        "account",
+        "and",
+        "difference",
+        "between",
+        "endurance",
+        "refusing",
+        "to",
+        "let",
+        "go",
+        "yara",
+        "knell",
+        "eren",
+        "loom",
+        "leth",
+        "quoin",
+        "credit",
+        "on",
+        "cuff",
+        "dov",
+        "renn",
+        "kept",
+        "wall"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 16,
+      "outbound_count": 26,
+      "existing_outbound_count": 11,
+      "suggested_outbound_count": 15,
+      "authority": 37.5
     },
     "brand": null
   },
@@ -10880,6 +11099,127 @@
     "brand": null
   },
   {
+    "title": "The Whale Lords",
+    "desc": "The Whale Lords embody concentrated power in competing HODL Wars myths, from Megaptera Prime and the Deep Chain to disputed covenants and unfinished futures.",
+    "url": "/wiki/whale-lords.html",
+    "tags": [
+      "whale",
+      "lords",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "Whale Lords — Crypto Moonboys Wiki"
+      },
+      {
+        "title": "whale lords"
+      }
+    ],
+    "rank_score": 295,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 2,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 2885,
+      "keyword_bag_size": 25,
+      "heading_count": 21,
+      "list_count": 2,
+      "internal_link_count": 14,
+      "paragraph_count": 46,
+      "section_count": 18,
+      "lore_paragraph_count": 44,
+      "content_quality_score": 105,
+      "authority_score": 26
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 50,
+      "keyword_bag_points": 25,
+      "content_quality_points": 116,
+      "authority_points": 39,
+      "final_rank_score": 295,
+      "authority_graph_points": 13
+    },
+    "search_index": {
+      "normalized_title": "the whale lords crypto moonboys wiki",
+      "tokens": [
+        "the",
+        "whale",
+        "lords",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "the",
+        "whale",
+        "lords",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "embody",
+        "concentrated",
+        "power",
+        "in",
+        "competing",
+        "hodl",
+        "wars",
+        "myths",
+        "from",
+        "megaptera",
+        "prime",
+        "and",
+        "deep",
+        "chain",
+        "to",
+        "disputed",
+        "covenants",
+        "unfinished",
+        "futures",
+        "sora",
+        "wake",
+        "pell",
+        "sounding",
+        "house",
+        "unfunded",
+        "crossing",
+        "tail",
+        "mark",
+        "liquidator",
+        "origin",
+        "signal",
+        "depth",
+        "dwellers",
+        "cold",
+        "storage",
+        "covenant",
+        "golden",
+        "tide",
+        "holders",
+        "original",
+        "198",
+        "layer"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 3,
+      "outbound_count": 31,
+      "existing_outbound_count": 14,
+      "suggested_outbound_count": 17,
+      "authority": 13
+    },
+    "brand": null
+  },
+  {
     "title": "GAMES4PUNKS Telegram",
     "desc": "GAMES4PUNKS Telegram: the community mini-game reference, current Arcade distinctions and inherited fictional Game Keys, Phantom Tag and Chat Riot stories.",
     "url": "/wiki/games4punks-telegram.html",
@@ -11628,6 +11968,103 @@
     "brand": null
   },
   {
+    "title": "Rug Pull Wars",
+    "desc": "The Rug Pull Wars follow betrayed promises, drained resources and the work of restitution across the Year 3008 HODL WARS.",
+    "url": "/wiki/rug-pull-wars.html",
+    "tags": [
+      "rug",
+      "pull",
+      "wars",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [],
+    "rank_score": 292,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 6,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 2573,
+      "keyword_bag_size": 20,
+      "heading_count": 19,
+      "list_count": 2,
+      "internal_link_count": 17,
+      "paragraph_count": 38,
+      "section_count": 16,
+      "lore_paragraph_count": 36,
+      "content_quality_score": 101,
+      "authority_score": 30
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 50,
+      "keyword_bag_points": 20,
+      "content_quality_points": 107,
+      "authority_points": 50,
+      "final_rank_score": 292,
+      "authority_graph_points": 20
+    },
+    "search_index": {
+      "normalized_title": "rug pull wars crypto moonboys wiki",
+      "tokens": [
+        "rug",
+        "pull",
+        "wars",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "rug",
+        "pull",
+        "wars",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "the",
+        "follow",
+        "betrayed",
+        "promises",
+        "drained",
+        "resources",
+        "and",
+        "work",
+        "of",
+        "restitution",
+        "across",
+        "year",
+        "3008",
+        "hodl",
+        "leto",
+        "scrip",
+        "anni",
+        "rafter",
+        "unpaid",
+        "roof",
+        "three",
+        "stools",
+        "anti",
+        "covenant"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 6,
+      "outbound_count": 29,
+      "existing_outbound_count": 15,
+      "suggested_outbound_count": 14,
+      "authority": 19.5
+    },
+    "brand": null
+  },
+  {
     "title": "The Nomad Bears",
     "desc": "Year 3008 Nomad Bears: solitude, glitch-scape art, route work, temporary alliances, the Rain Map and disputed resistance to NULL.",
     "url": "/wiki/the-nomad-bears.html",
@@ -11731,6 +12168,114 @@
       "existing_outbound_count": 20,
       "suggested_outbound_count": 11,
       "authority": 14
+    },
+    "brand": null
+  },
+  {
+    "title": "The RUGPULL MINERS",
+    "desc": "Year 3008 Rugpull Miners: betrayed trust, labour, the Empty Dividend, Bent Receipt hearing, faction conflicts and the unresolved Final Pull.",
+    "url": "/wiki/the-rugpull-miners.html",
+    "tags": [
+      "rugpull",
+      "miners",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "RUGPULL MINERS — Crypto Moonboys Wiki"
+      },
+      {
+        "title": "RUGPULL MINERS"
+      }
+    ],
+    "rank_score": 292,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 2,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 3045,
+      "keyword_bag_size": 22,
+      "heading_count": 19,
+      "list_count": 1,
+      "internal_link_count": 14,
+      "paragraph_count": 44,
+      "section_count": 16,
+      "lore_paragraph_count": 42,
+      "content_quality_score": 101,
+      "authority_score": 24
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 50,
+      "keyword_bag_points": 22,
+      "content_quality_points": 112,
+      "authority_points": 43,
+      "final_rank_score": 292,
+      "authority_graph_points": 19
+    },
+    "search_index": {
+      "normalized_title": "the rugpull miners crypto moonboys wiki",
+      "tokens": [
+        "the",
+        "rugpull",
+        "miners",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "the",
+        "rugpull",
+        "miners",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "year",
+        "3008",
+        "betrayed",
+        "trust",
+        "labour",
+        "empty",
+        "dividend",
+        "bent",
+        "receipt",
+        "hearing",
+        "faction",
+        "conflicts",
+        "and",
+        "unresolved",
+        "final",
+        "pull",
+        "nella",
+        "tarn",
+        "rafe",
+        "quill",
+        "bex",
+        "orla",
+        "winter",
+        "counter",
+        "false",
+        "bull",
+        "run",
+        "fracture",
+        "code"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 6,
+      "outbound_count": 28,
+      "existing_outbound_count": 14,
+      "suggested_outbound_count": 14,
+      "authority": 19
     },
     "brand": null
   },
@@ -12803,11 +13348,11 @@
       ]
     },
     "link_score": {
-      "inbound_count": 83,
+      "inbound_count": 82,
       "outbound_count": 41,
       "existing_outbound_count": 0,
       "suggested_outbound_count": 41,
-      "authority": 166
+      "authority": 164
     },
     "brand": null
   },
@@ -13237,114 +13782,6 @@
       "existing_outbound_count": 14,
       "suggested_outbound_count": 18,
       "authority": 13
-    },
-    "brand": null
-  },
-  {
-    "title": "The RUGPULL MINERS",
-    "desc": "Year 3008 Rugpull Miners: betrayed trust, labour, the Empty Dividend, Bent Receipt hearing, faction conflicts and the unresolved Final Pull.",
-    "url": "/wiki/the-rugpull-miners.html",
-    "tags": [
-      "rugpull",
-      "miners",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "RUGPULL MINERS — Crypto Moonboys Wiki"
-      },
-      {
-        "title": "RUGPULL MINERS"
-      }
-    ],
-    "rank_score": 290,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 2,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 3045,
-      "keyword_bag_size": 22,
-      "heading_count": 19,
-      "list_count": 1,
-      "internal_link_count": 14,
-      "paragraph_count": 44,
-      "section_count": 16,
-      "lore_paragraph_count": 42,
-      "content_quality_score": 101,
-      "authority_score": 24
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 50,
-      "keyword_bag_points": 22,
-      "content_quality_points": 112,
-      "authority_points": 41,
-      "final_rank_score": 290,
-      "authority_graph_points": 17
-    },
-    "search_index": {
-      "normalized_title": "the rugpull miners crypto moonboys wiki",
-      "tokens": [
-        "the",
-        "rugpull",
-        "miners",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "the",
-        "rugpull",
-        "miners",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "year",
-        "3008",
-        "betrayed",
-        "trust",
-        "labour",
-        "empty",
-        "dividend",
-        "bent",
-        "receipt",
-        "hearing",
-        "faction",
-        "conflicts",
-        "and",
-        "unresolved",
-        "final",
-        "pull",
-        "nella",
-        "tarn",
-        "rafe",
-        "quill",
-        "bex",
-        "orla",
-        "winter",
-        "counter",
-        "false",
-        "bull",
-        "run",
-        "fracture",
-        "code"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 5,
-      "outbound_count": 28,
-      "existing_outbound_count": 14,
-      "suggested_outbound_count": 14,
-      "authority": 17
     },
     "brand": null
   },
@@ -14731,116 +15168,6 @@
       "existing_outbound_count": 4,
       "suggested_outbound_count": 59,
       "authority": 4
-    },
-    "brand": null
-  },
-  {
-    "title": "The Bear Market Siege",
-    "desc": "The Bear Market Siege in HODL Wars: prolonged pressure on strongholds, the Silt Lantern account, shared work and endurance without promised recovery.",
-    "url": "/wiki/bear-market-siege.html",
-    "tags": [
-      "bear",
-      "market",
-      "siege",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "characters",
-    "aliases": [
-      {
-        "title": "Bear Market Siege — Crypto Moonboys Wiki"
-      },
-      {
-        "title": "bear market siege"
-      }
-    ],
-    "rank_score": 288,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 2,
-      "tag_count": 6,
-      "mention_count": 0,
-      "category": "characters",
-      "category_priority": 8,
-      "has_description": true,
-      "article_word_count": 2385,
-      "keyword_bag_size": 24,
-      "heading_count": 15,
-      "list_count": 2,
-      "internal_link_count": 15,
-      "paragraph_count": 34,
-      "section_count": 12,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 89,
-      "authority_score": 27
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 40,
-      "word_count_points": 50,
-      "keyword_bag_points": 24,
-      "content_quality_points": 101,
-      "authority_points": 43,
-      "final_rank_score": 288,
-      "authority_graph_points": 16
-    },
-    "search_index": {
-      "normalized_title": "the bear market siege crypto moonboys wiki",
-      "tokens": [
-        "the",
-        "bear",
-        "market",
-        "siege",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "the",
-        "bear",
-        "market",
-        "siege",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "in",
-        "hodl",
-        "wars",
-        "prolonged",
-        "pressure",
-        "on",
-        "strongholds",
-        "silt",
-        "lantern",
-        "account",
-        "shared",
-        "work",
-        "and",
-        "endurance",
-        "without",
-        "promised",
-        "recovery",
-        "maela",
-        "rusk",
-        "brenn",
-        "tallow",
-        "warm",
-        "pot",
-        "dispute",
-        "seli",
-        "marr",
-        "borrowed",
-        "roof"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 4,
-      "outbound_count": 29,
-      "existing_outbound_count": 15,
-      "suggested_outbound_count": 14,
-      "authority": 15.5
     },
     "brand": null
   },
@@ -17115,6 +17442,234 @@
     "brand": null
   },
   {
+    "title": "The Bear Market Siege",
+    "desc": "The Bear Market Siege in HODL Wars: prolonged pressure on strongholds, the Silt Lantern account, shared work and endurance without promised recovery.",
+    "url": "/wiki/bear-market-siege.html",
+    "tags": [
+      "bear",
+      "market",
+      "siege",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "characters",
+    "aliases": [
+      {
+        "title": "Bear Market Siege — Crypto Moonboys Wiki"
+      },
+      {
+        "title": "bear market siege"
+      }
+    ],
+    "rank_score": 284,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 2,
+      "tag_count": 6,
+      "mention_count": 0,
+      "category": "characters",
+      "category_priority": 8,
+      "has_description": true,
+      "article_word_count": 2385,
+      "keyword_bag_size": 24,
+      "heading_count": 15,
+      "list_count": 2,
+      "internal_link_count": 15,
+      "paragraph_count": 34,
+      "section_count": 12,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 89,
+      "authority_score": 27
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 40,
+      "word_count_points": 50,
+      "keyword_bag_points": 24,
+      "content_quality_points": 101,
+      "authority_points": 39,
+      "final_rank_score": 284,
+      "authority_graph_points": 12
+    },
+    "search_index": {
+      "normalized_title": "the bear market siege crypto moonboys wiki",
+      "tokens": [
+        "the",
+        "bear",
+        "market",
+        "siege",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "the",
+        "bear",
+        "market",
+        "siege",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "in",
+        "hodl",
+        "wars",
+        "prolonged",
+        "pressure",
+        "on",
+        "strongholds",
+        "silt",
+        "lantern",
+        "account",
+        "shared",
+        "work",
+        "and",
+        "endurance",
+        "without",
+        "promised",
+        "recovery",
+        "maela",
+        "rusk",
+        "brenn",
+        "tallow",
+        "warm",
+        "pot",
+        "dispute",
+        "seli",
+        "marr",
+        "borrowed",
+        "roof"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 2,
+      "outbound_count": 29,
+      "existing_outbound_count": 15,
+      "suggested_outbound_count": 14,
+      "authority": 11.5
+    },
+    "brand": null
+  },
+  {
+    "title": "The BLOCKCHAIN FURIES",
+    "desc": "The Blockchain Furies in Year 3008: betrayed survivors, public investigations, Reversal Protocols and unresolved demands for restitution.",
+    "url": "/wiki/the-blockchain-furies.html",
+    "tags": [
+      "blockchain",
+      "furies",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "BLOCKCHAIN FURIES — Crypto Moonboys Wiki"
+      },
+      {
+        "title": "BLOCKCHAIN FURIES"
+      }
+    ],
+    "rank_score": 284,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 2,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 2659,
+      "keyword_bag_size": 20,
+      "heading_count": 24,
+      "list_count": 1,
+      "internal_link_count": 19,
+      "paragraph_count": 41,
+      "section_count": 21,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 85,
+      "authority_score": 28
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 50,
+      "keyword_bag_points": 20,
+      "content_quality_points": 96,
+      "authority_points": 53,
+      "final_rank_score": 284,
+      "authority_graph_points": 25
+    },
+    "search_index": {
+      "normalized_title": "the blockchain furies crypto moonboys wiki",
+      "tokens": [
+        "the",
+        "blockchain",
+        "furies",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "the",
+        "blockchain",
+        "furies",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "in",
+        "year",
+        "3008",
+        "betrayed",
+        "survivors",
+        "public",
+        "investigations",
+        "reversal",
+        "protocols",
+        "and",
+        "unresolved",
+        "demands",
+        "for",
+        "restitution",
+        "digital",
+        "vigilantes",
+        "of",
+        "grid",
+        "trials",
+        "final",
+        "audit",
+        "nessa",
+        "trace",
+        "omi",
+        "calder",
+        "ash",
+        "desk",
+        "second",
+        "hearing",
+        "six",
+        "windows",
+        "bench",
+        "unclosed",
+        "book",
+        "witness",
+        "supper",
+        "grief",
+        "chains",
+        "forges"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 8,
+      "outbound_count": 54,
+      "existing_outbound_count": 17,
+      "suggested_outbound_count": 37,
+      "authority": 24.5
+    },
+    "brand": null
+  },
+  {
     "title": "The Squeaky Pinks",
     "desc": "Year 3008 Squeaky Pinks: Block Topia enforcement, the Porcine Protocol, Pinkline Post, Amber Queue, local accountability and the NULL crisis.",
     "url": "/wiki/the-squeaky-pinks.html",
@@ -17666,227 +18221,6 @@
     "brand": null
   },
   {
-    "title": "Paper Hands",
-    "desc": "Paper Hands in HODL Wars: a contested accusation of failed resolve, the Folded Flag, accountable return and the difference between abandonment and release.",
-    "url": "/wiki/paper-hands.html",
-    "tags": [
-      "paper",
-      "hands",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "paper hands crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 282,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 2325,
-      "keyword_bag_size": 24,
-      "heading_count": 15,
-      "list_count": 2,
-      "internal_link_count": 15,
-      "paragraph_count": 35,
-      "section_count": 12,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 89,
-      "authority_score": 27
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 50,
-      "keyword_bag_points": 24,
-      "content_quality_points": 97,
-      "authority_points": 46,
-      "final_rank_score": 282,
-      "authority_graph_points": 19
-    },
-    "search_index": {
-      "normalized_title": "paper hands crypto moonboys wiki",
-      "tokens": [
-        "paper",
-        "hands",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "paper",
-        "hands",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "in",
-        "hodl",
-        "wars",
-        "a",
-        "contested",
-        "accusation",
-        "of",
-        "failed",
-        "resolve",
-        "the",
-        "folded",
-        "flag",
-        "accountable",
-        "return",
-        "and",
-        "difference",
-        "between",
-        "abandonment",
-        "release",
-        "rell",
-        "fen",
-        "juna",
-        "rill",
-        "without",
-        "banner",
-        "nella",
-        "voss",
-        "dry",
-        "sheet"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 6,
-      "outbound_count": 22,
-      "existing_outbound_count": 13,
-      "suggested_outbound_count": 9,
-      "authority": 18.5
-    },
-    "brand": null
-  },
-  {
-    "title": "The BLOCKCHAIN FURIES",
-    "desc": "The Blockchain Furies in Year 3008: betrayed survivors, public investigations, Reversal Protocols and unresolved demands for restitution.",
-    "url": "/wiki/the-blockchain-furies.html",
-    "tags": [
-      "blockchain",
-      "furies",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "BLOCKCHAIN FURIES — Crypto Moonboys Wiki"
-      },
-      {
-        "title": "BLOCKCHAIN FURIES"
-      }
-    ],
-    "rank_score": 282,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 2,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 2659,
-      "keyword_bag_size": 20,
-      "heading_count": 24,
-      "list_count": 1,
-      "internal_link_count": 19,
-      "paragraph_count": 41,
-      "section_count": 21,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 85,
-      "authority_score": 28
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 50,
-      "keyword_bag_points": 20,
-      "content_quality_points": 96,
-      "authority_points": 51,
-      "final_rank_score": 282,
-      "authority_graph_points": 23
-    },
-    "search_index": {
-      "normalized_title": "the blockchain furies crypto moonboys wiki",
-      "tokens": [
-        "the",
-        "blockchain",
-        "furies",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "the",
-        "blockchain",
-        "furies",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "in",
-        "year",
-        "3008",
-        "betrayed",
-        "survivors",
-        "public",
-        "investigations",
-        "reversal",
-        "protocols",
-        "and",
-        "unresolved",
-        "demands",
-        "for",
-        "restitution",
-        "digital",
-        "vigilantes",
-        "of",
-        "grid",
-        "trials",
-        "final",
-        "audit",
-        "nessa",
-        "trace",
-        "omi",
-        "calder",
-        "ash",
-        "desk",
-        "second",
-        "hearing",
-        "six",
-        "windows",
-        "bench",
-        "unclosed",
-        "book",
-        "witness",
-        "supper",
-        "grief",
-        "chains",
-        "forges"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 7,
-      "outbound_count": 54,
-      "existing_outbound_count": 17,
-      "suggested_outbound_count": 37,
-      "authority": 22.5
-    },
-    "brand": null
-  },
-  {
     "title": "The HARD FORK ROCKERS",
     "desc": "The Hard Fork Rockers in Year 3008: a HARD FORK Program insurgency, Mosh Pit Networks, punk culture and the contested cost of an irreversible split.",
     "url": "/wiki/the-hard-fork-rockers.html",
@@ -18323,6 +18657,116 @@
       "existing_outbound_count": 4,
       "suggested_outbound_count": 60,
       "authority": 4
+    },
+    "brand": null
+  },
+  {
+    "title": "Squeaky Pinks Enforcers",
+    "desc": "The Squeaky Pinks Enforcers carry Block Topia authority into patrols, custody and households; their service reveals the limits and costs of institutional certainty.",
+    "url": "/wiki/squeaky-pinks-enforcers.html",
+    "tags": [
+      "squeaky",
+      "pinks",
+      "enforcers",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [],
+    "rank_score": 281,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 6,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 2590,
+      "keyword_bag_size": 24,
+      "heading_count": 19,
+      "list_count": 1,
+      "internal_link_count": 10,
+      "paragraph_count": 42,
+      "section_count": 16,
+      "lore_paragraph_count": 40,
+      "content_quality_score": 105,
+      "authority_score": 24
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 50,
+      "keyword_bag_points": 24,
+      "content_quality_points": 111,
+      "authority_points": 31,
+      "final_rank_score": 281,
+      "authority_graph_points": 7
+    },
+    "search_index": {
+      "normalized_title": "squeaky pinks enforcers crypto moonboys wiki",
+      "tokens": [
+        "squeaky",
+        "pinks",
+        "enforcers",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "squeaky",
+        "pinks",
+        "enforcers",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "the",
+        "carry",
+        "block",
+        "topia",
+        "authority",
+        "into",
+        "patrols",
+        "custody",
+        "and",
+        "households",
+        "their",
+        "service",
+        "reveals",
+        "limits",
+        "costs",
+        "of",
+        "institutional",
+        "certainty",
+        "hessa",
+        "line",
+        "perin",
+        "blank",
+        "transfer",
+        "bench",
+        "folded",
+        "coat",
+        "second",
+        "signature",
+        "pink",
+        "purges",
+        "rosefall",
+        "massacre",
+        "squeal",
+        "resonator",
+        "blood",
+        "contracts",
+        "rot"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 1,
+      "outbound_count": 20,
+      "existing_outbound_count": 9,
+      "suggested_outbound_count": 11,
+      "authority": 6.5
     },
     "brand": null
   },
@@ -19017,6 +19461,109 @@
       "canonical_slug": "nbgx-token",
       "parent_concept": null
     }
+  },
+  {
+    "title": "Paper Hands",
+    "desc": "Paper Hands in HODL Wars: a contested accusation of failed resolve, the Folded Flag, accountable return and the difference between abandonment and release.",
+    "url": "/wiki/paper-hands.html",
+    "tags": [
+      "paper",
+      "hands",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "paper hands crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 280,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 2325,
+      "keyword_bag_size": 24,
+      "heading_count": 15,
+      "list_count": 2,
+      "internal_link_count": 15,
+      "paragraph_count": 35,
+      "section_count": 12,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 89,
+      "authority_score": 27
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 50,
+      "keyword_bag_points": 24,
+      "content_quality_points": 97,
+      "authority_points": 44,
+      "final_rank_score": 280,
+      "authority_graph_points": 17
+    },
+    "search_index": {
+      "normalized_title": "paper hands crypto moonboys wiki",
+      "tokens": [
+        "paper",
+        "hands",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "paper",
+        "hands",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "in",
+        "hodl",
+        "wars",
+        "a",
+        "contested",
+        "accusation",
+        "of",
+        "failed",
+        "resolve",
+        "the",
+        "folded",
+        "flag",
+        "accountable",
+        "return",
+        "and",
+        "difference",
+        "between",
+        "abandonment",
+        "release",
+        "rell",
+        "fen",
+        "juna",
+        "rill",
+        "without",
+        "banner",
+        "nella",
+        "voss",
+        "dry",
+        "sheet"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 5,
+      "outbound_count": 22,
+      "existing_outbound_count": 13,
+      "suggested_outbound_count": 9,
+      "authority": 16.5
+    },
+    "brand": null
   },
   {
     "title": "PYRALITH",
@@ -22762,6 +23309,102 @@
     "brand": null
   },
   {
+    "title": "Storm Struggle",
+    "desc": "Storm Struggle is a documented WAX-connected StruggleVerse project; this overview distinguishes its stated SS-404 design from unverified current game functionality.",
+    "url": "/wiki/storm-struggle.html",
+    "tags": [
+      "storm",
+      "struggle",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "storm struggle crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 271,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 1546,
+      "keyword_bag_size": 25,
+      "heading_count": 14,
+      "list_count": 1,
+      "internal_link_count": 9,
+      "paragraph_count": 26,
+      "section_count": 11,
+      "lore_paragraph_count": 24,
+      "content_quality_score": 97,
+      "authority_score": 21
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 50,
+      "keyword_bag_points": 25,
+      "content_quality_points": 105,
+      "authority_points": 26,
+      "final_rank_score": 271,
+      "authority_graph_points": 5
+    },
+    "search_index": {
+      "normalized_title": "storm struggle crypto moonboys wiki",
+      "tokens": [
+        "storm",
+        "struggle",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "storm",
+        "struggle",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "is",
+        "a",
+        "documented",
+        "wax",
+        "connected",
+        "struggleverse",
+        "project",
+        "this",
+        "overview",
+        "distinguishes",
+        "its",
+        "stated",
+        "ss",
+        "404",
+        "design",
+        "from",
+        "unverified",
+        "current",
+        "game",
+        "functionality",
+        "partner",
+        "assets"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 17,
+      "existing_outbound_count": 9,
+      "suggested_outbound_count": 8,
+      "authority": 4.5
+    },
+    "brand": null
+  },
+  {
     "title": "WAX Blockchain",
     "desc": "Crypto Moonboys wiki guide to the WAX blockchain, including WAXP, resources, NFT infrastructure, games, wallets and creator use cases.",
     "url": "/wiki/wax-blockchain.html",
@@ -25826,97 +26469,6 @@
     "brand": null
   },
   {
-    "title": "Squeaky Pinks Enforcers",
-    "desc": "The Squeaky Pinks enforcers are the iron fist of The Squeaky Pinks faction, a ruthless special force tasked with enforcing their masters’ will across the turbul",
-    "url": "/wiki/squeaky-pinks-enforcers.html",
-    "tags": [
-      "squeaky",
-      "pinks",
-      "enforcers",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [],
-    "rank_score": 263,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 0,
-      "tag_count": 6,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 1461,
-      "keyword_bag_size": 24,
-      "heading_count": 9,
-      "list_count": 1,
-      "internal_link_count": 12,
-      "paragraph_count": 16,
-      "section_count": 6,
-      "lore_paragraph_count": 13,
-      "content_quality_score": 89,
-      "authority_score": 21
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 50,
-      "keyword_bag_points": 24,
-      "content_quality_points": 95,
-      "authority_points": 29,
-      "final_rank_score": 263,
-      "authority_graph_points": 8
-    },
-    "search_index": {
-      "normalized_title": "squeaky pinks enforcers crypto moonboys wiki",
-      "tokens": [
-        "squeaky",
-        "pinks",
-        "enforcers",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "squeaky",
-        "pinks",
-        "enforcers",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "the",
-        "are",
-        "iron",
-        "fist",
-        "of",
-        "faction",
-        "a",
-        "ruthless",
-        "special",
-        "force",
-        "tasked",
-        "with",
-        "enforcing",
-        "their",
-        "masters",
-        "will",
-        "across",
-        "turbul"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 1,
-      "outbound_count": 17,
-      "existing_outbound_count": 11,
-      "suggested_outbound_count": 6,
-      "authority": 7.5
-    },
-    "brand": null
-  },
-  {
     "title": "Truth Commissions After Conflict",
     "desc": "How post-conflict First Witness communities rebuild shared records when every side carries incompatible histories.",
     "url": "/wiki/first-witness-truth-commissions-after-conflict.html",
@@ -28395,99 +28947,6 @@
     "brand": null
   },
   {
-    "title": "Storm Struggle",
-    "desc": "Crypto Moonboys wiki guide to Storm Struggle, a WAX-connected StruggleVerse game project with vehicles, jobs, properties, pets, racing, arena systems and partner assets.",
-    "url": "/wiki/storm-struggle.html",
-    "tags": [
-      "storm",
-      "struggle",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "storm struggle crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 249,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 1138,
-      "keyword_bag_size": 24,
-      "heading_count": 14,
-      "list_count": 2,
-      "internal_link_count": 9,
-      "paragraph_count": 17,
-      "section_count": 11,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 77,
-      "authority_score": 20
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 50,
-      "keyword_bag_points": 24,
-      "content_quality_points": 85,
-      "authority_points": 25,
-      "final_rank_score": 249,
-      "authority_graph_points": 5
-    },
-    "search_index": {
-      "normalized_title": "storm struggle crypto moonboys wiki",
-      "tokens": [
-        "storm",
-        "struggle",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "storm",
-        "struggle",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "guide",
-        "to",
-        "a",
-        "wax",
-        "connected",
-        "struggleverse",
-        "game",
-        "project",
-        "with",
-        "vehicles",
-        "jobs",
-        "properties",
-        "pets",
-        "racing",
-        "arena",
-        "systems",
-        "and",
-        "partner",
-        "assets"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 16,
-      "existing_outbound_count": 9,
-      "suggested_outbound_count": 7,
-      "authority": 4.5
-    },
-    "brand": null
-  },
-  {
     "title": "2025 Metaverse Launch Party",
     "desc": "The archived 2025 Metaverse Launch Party announcement: community context, preserved registration links and the limits of the surviving event record.",
     "url": "/wiki/2025-metaverse-launch-party.html",
@@ -29997,94 +30456,6 @@
     "brand": null
   },
   {
-    "title": "Rug Pull Wars",
-    "desc": "The treacherous chapter of the HODL Wars where dev teams abandon projects and flee with investor funds.",
-    "url": "/wiki/rug-pull-wars.html",
-    "tags": [
-      "rug",
-      "pull",
-      "wars",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [],
-    "rank_score": 242,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 0,
-      "tag_count": 6,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 917,
-      "keyword_bag_size": 21,
-      "heading_count": 11,
-      "list_count": 4,
-      "internal_link_count": 19,
-      "paragraph_count": 11,
-      "section_count": 3,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 63,
-      "authority_score": 24
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 46,
-      "keyword_bag_points": 21,
-      "content_quality_points": 69,
-      "authority_points": 41,
-      "final_rank_score": 242,
-      "authority_graph_points": 17
-    },
-    "search_index": {
-      "normalized_title": "rug pull wars crypto moonboys wiki",
-      "tokens": [
-        "rug",
-        "pull",
-        "wars",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "rug",
-        "pull",
-        "wars",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "the",
-        "treacherous",
-        "chapter",
-        "of",
-        "hodl",
-        "where",
-        "dev",
-        "teams",
-        "abandon",
-        "projects",
-        "and",
-        "flee",
-        "with",
-        "investor",
-        "funds"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 5,
-      "outbound_count": 20,
-      "existing_outbound_count": 14,
-      "suggested_outbound_count": 6,
-      "authority": 17
-    },
-    "brand": null
-  },
-  {
     "title": "AtomicHub",
     "desc": "Crypto Moonboys wiki guide to AtomicHub, a major NFT marketplace and trading venue for WAX digital collectibles, game assets and creator collections.",
     "url": "/wiki/atomichub.html",
@@ -30253,100 +30624,6 @@
       "outbound_count": 17,
       "existing_outbound_count": 9,
       "suggested_outbound_count": 8,
-      "authority": 14.5
-    },
-    "brand": null
-  },
-  {
-    "title": "The Whale Lords",
-    "desc": "The powerful market-moving entities holding thousands of BTC/ETH who shape the HODL Wars from above.",
-    "url": "/wiki/whale-lords.html",
-    "tags": [
-      "whale",
-      "lords",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "Whale Lords — Crypto Moonboys Wiki"
-      },
-      {
-        "title": "whale lords"
-      }
-    ],
-    "rank_score": 240,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 2,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 868,
-      "keyword_bag_size": 21,
-      "heading_count": 11,
-      "list_count": 2,
-      "internal_link_count": 20,
-      "paragraph_count": 13,
-      "section_count": 3,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 61,
-      "authority_score": 24
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 43,
-      "keyword_bag_points": 21,
-      "content_quality_points": 72,
-      "authority_points": 39,
-      "final_rank_score": 240,
-      "authority_graph_points": 15
-    },
-    "search_index": {
-      "normalized_title": "the whale lords crypto moonboys wiki",
-      "tokens": [
-        "the",
-        "whale",
-        "lords",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "the",
-        "whale",
-        "lords",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "powerful",
-        "market",
-        "moving",
-        "entities",
-        "holding",
-        "thousands",
-        "of",
-        "btc",
-        "eth",
-        "who",
-        "shape",
-        "hodl",
-        "wars",
-        "from",
-        "above"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 3,
-      "outbound_count": 23,
-      "existing_outbound_count": 17,
-      "suggested_outbound_count": 6,
       "authority": 14.5
     },
     "brand": null
@@ -31674,96 +31951,6 @@
     "brand": null
   },
   {
-    "title": "The Satoshi Scroll",
-    "desc": "The mythologised sacred text of the HODL Wars — the Bitcoin Whitepaper elevated to legend.",
-    "url": "/wiki/satoshi-scroll.html",
-    "tags": [
-      "satoshi",
-      "scroll",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "Satoshi Scroll — Crypto Moonboys Wiki"
-      },
-      {
-        "title": "satoshi scroll"
-      }
-    ],
-    "rank_score": 233,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 2,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 807,
-      "keyword_bag_size": 17,
-      "heading_count": 10,
-      "list_count": 2,
-      "internal_link_count": 17,
-      "paragraph_count": 11,
-      "section_count": 3,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 61,
-      "authority_score": 24
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 40,
-      "keyword_bag_points": 17,
-      "content_quality_points": 72,
-      "authority_points": 39,
-      "final_rank_score": 233,
-      "authority_graph_points": 15
-    },
-    "search_index": {
-      "normalized_title": "the satoshi scroll crypto moonboys wiki",
-      "tokens": [
-        "the",
-        "satoshi",
-        "scroll",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "the",
-        "satoshi",
-        "scroll",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "mythologised",
-        "sacred",
-        "text",
-        "of",
-        "hodl",
-        "wars",
-        "bitcoin",
-        "whitepaper",
-        "elevated",
-        "to",
-        "legend"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 4,
-      "outbound_count": 52,
-      "existing_outbound_count": 14,
-      "suggested_outbound_count": 38,
-      "authority": 15
-    },
-    "brand": null
-  },
-  {
     "title": "WAX PEPE",
     "desc": "Crypto Moonboys wiki guide to WAX PEPE, a WAX ecosystem meme-token/project profile referenced through wax-pepe.vip.",
     "url": "/wiki/wax-pepe.html",
@@ -32677,93 +32864,6 @@
       "existing_outbound_count": 14,
       "suggested_outbound_count": 27,
       "authority": 27
-    },
-    "brand": null
-  },
-  {
-    "title": "The WAGMI Prophecy",
-    "desc": "The ultimate declaration of optimism in the HODL Wars — We",
-    "url": "/wiki/wagmi-prophecy.html",
-    "tags": [
-      "wagmi",
-      "prophecy",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "characters",
-    "aliases": [
-      {
-        "title": "WAGMI Prophecy — Crypto Moonboys Wiki"
-      },
-      {
-        "title": "wagmi prophecy"
-      }
-    ],
-    "rank_score": 228,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 2,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "characters",
-      "category_priority": 8,
-      "has_description": true,
-      "article_word_count": 880,
-      "keyword_bag_size": 14,
-      "heading_count": 11,
-      "list_count": 2,
-      "internal_link_count": 22,
-      "paragraph_count": 12,
-      "section_count": 3,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 52,
-      "authority_score": 24
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 40,
-      "word_count_points": 44,
-      "keyword_bag_points": 14,
-      "content_quality_points": 63,
-      "authority_points": 37,
-      "final_rank_score": 228,
-      "authority_graph_points": 13
-    },
-    "search_index": {
-      "normalized_title": "the wagmi prophecy crypto moonboys wiki",
-      "tokens": [
-        "the",
-        "wagmi",
-        "prophecy",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "the",
-        "wagmi",
-        "prophecy",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "ultimate",
-        "declaration",
-        "of",
-        "optimism",
-        "in",
-        "hodl",
-        "wars",
-        "we"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 2,
-      "outbound_count": 25,
-      "existing_outbound_count": 17,
-      "suggested_outbound_count": 8,
-      "authority": 12.5
     },
     "brand": null
   },
