@@ -694,6 +694,23 @@ const graffpunksStopwordOnly = {
   for (const [slug, subjects] of Object.entries(institutionSubjects)) {
     subjectsByPage[slug] = [...(subjectsByPage[slug] || []), ...subjects];
   }
+  const programmeSubjects = {
+    'hard-fork-games': ['Lower Walk', 'Return Valve exercise', 'Mira placement', 'Lysa Trent', 'Ground Array Office', 'Three Lamps test', 'conditional roster'],
+    'block-topia': ['ground preparation'],
+    'queen-sarah-p-fly': ['Ascension allocation'],
+    'the-squeaky-pinks': ['Pinkline disc'],
+    'squeaky-pinks-enforcers': ['Hessa disc receipt'],
+    'bitcoin-x-kids': ['Len ground demonstration', 'instrument placement'],
+    'hodl-x-warriors': ['Cass ground assignment', 'ground service credit'],
+    'the-allcity-bulls': ['Milo placement display'],
+    'genesis-kernel': ['Workshop Nine request', 'missing assignment sheet'],
+    'sacred-chain': ['Mira Lower Walk packet'],
+    'first-witness-master-chronology': ['Lower Walk chronology'],
+    'first-witness-block-topia-reading': ['Ground Array reading']
+  };
+  for (const [slug, subjects] of Object.entries(programmeSubjects)) {
+    subjectsByPage[slug] = [...(subjectsByPage[slug] || []), ...subjects];
+  }
   const stopWords = vm.runInContext('SEARCH_TEXT_STOP_WORDS', sb);
   let checked = 0;
   for (const [slug, subjects] of Object.entries(subjectsByPage)) {
@@ -723,7 +740,7 @@ const graffpunksStopwordOnly = {
     assert.ok(entry.search_index.keyword_bag.includes(token), `${token} is searchable`);
     assert.ok(!entry.search_index.tokens.includes(token), `${token} must not leak into title-only relationship tokens`);
   }
-  for (const [slug, token] of [['block-topia', 'shutter'], ['null-the-prophet', 'sena'], ['the-finance-guild', 'crate'], ['first-witness-faction-commentaries', 'jpeg'], ['first-witness-long-transmission', 'eda'], ['street-kingdoms', 'krail'], ['the-blockstars', 'supper'], ['the-high-hats', 'storm']]) {
+  for (const [slug, token] of [['block-topia', 'shutter'], ['null-the-prophet', 'sena'], ['the-finance-guild', 'crate'], ['first-witness-faction-commentaries', 'jpeg'], ['first-witness-long-transmission', 'eda'], ['street-kingdoms', 'krail'], ['the-blockstars', 'supper'], ['the-high-hats', 'storm'], ['hard-fork-games', 'lysa'], ['block-topia', 'rack'], ['bitcoin-x-kids', 'instrument'], ['the-squeaky-pinks', 'disc']]) {
     const entry = wikiIndex.find(item => item.url === `/wiki/${slug}.html`);
     assert.ok(entry.search_index.keyword_bag.includes(token), `${slug}: ${token} remains discoverable`);
     assert.ok(!entry.search_index.tokens.includes(token), `${slug}: search-only ${token} cannot create relationship tags`);

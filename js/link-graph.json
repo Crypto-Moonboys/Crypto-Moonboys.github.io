@@ -3058,7 +3058,7 @@
     ]
   },
   "/wiki/first-witness-block-topia-reading.html": {
-    "outbound_count": 70,
+    "outbound_count": 71,
     "inbound_count": 5,
     "existing_outbound": [
       "/wiki/first-witness-life-readings.html",
@@ -3086,6 +3086,7 @@
       "/wiki/first-witness-chain-archaeology-forensics.html",
       "/wiki/first-witness-children-first-lessons.html",
       "/wiki/first-witness-counterfeit-relics-fraud.html",
+      "/wiki/first-witness-digital-inheritance-after-death.html",
       "/wiki/first-witness-faction-commentaries.html",
       "/wiki/first-witness-faction-ritual-variations.html",
       "/wiki/first-witness-forty-paths.html",
@@ -18045,7 +18046,7 @@
     ]
   },
   "/wiki/hard-fork-games.html": {
-    "outbound_count": 62,
+    "outbound_count": 64,
     "inbound_count": 87,
     "existing_outbound": [
       "/wiki/block-topia.html",
@@ -18080,6 +18081,7 @@
       "/wiki/first-witness-forty-paths.html",
       "/wiki/first-witness-hodl-doctrine.html",
       "/wiki/first-witness-null-erasure.html",
+      "/wiki/first-witness-prisons-punishment-return.html",
       "/wiki/first-witness-sacred-fork.html",
       "/wiki/first-witness-triple-fork-chainfire.html",
       "/wiki/first-witness-work-craft-service.html",
@@ -18099,6 +18101,7 @@
       "/wiki/gkniftyheads-bitforce-bitcoin-battler-784332.html",
       "/wiki/gkniftyheads-cipher-seraph-783413.html",
       "/wiki/gkniftyheads-matteo-bitcoin-bandit-gallo-783447.html",
+      "/wiki/gkniftyheads-mr-cheo-test-press-776099.html",
       "/wiki/gkniftyheads.html",
       "/wiki/grit.html",
       "/wiki/hodl-wars.html",
@@ -20305,7 +20308,7 @@
     ]
   },
   "/wiki/queen-sarah-p-fly.html": {
-    "outbound_count": 38,
+    "outbound_count": 39,
     "inbound_count": 4,
     "existing_outbound": [
       "/wiki/block-topia.html",
@@ -20330,6 +20333,7 @@
       "/wiki/dream-sovereign.html",
       "/wiki/first-witness-book-6-the-fork.html",
       "/wiki/first-witness-food-hospitality-common-table.html",
+      "/wiki/first-witness-language-translation-sacred-words.html",
       "/wiki/first-witness-sacred-fork.html",
       "/wiki/first-witness-triple-fork-chainfire.html",
       "/wiki/first-witness-work-craft-service.html",
@@ -20599,7 +20603,7 @@
     "inbound_from": []
   },
   "/wiki/sacred-chain.html": {
-    "outbound_count": 70,
+    "outbound_count": 74,
     "inbound_count": 41,
     "existing_outbound": [
       "/wiki/block-topia.html",
@@ -20640,6 +20644,7 @@
       "/wiki/first-witness-forty-paths.html",
       "/wiki/first-witness-glossary.html",
       "/wiki/first-witness-healing-illness-disability-care.html",
+      "/wiki/first-witness-hodl-doctrine.html",
       "/wiki/first-witness-humour-satire-sacred-mockery.html",
       "/wiki/first-witness-language-translation-sacred-words.html",
       "/wiki/first-witness-libraries-architecture-archive-houses.html",
@@ -20670,6 +20675,9 @@
       "/wiki/gkniftyheads-bitforce-bitcoin-battler-784332.html",
       "/wiki/gkniftyheads-matteo-bitcoin-bandit-gallo-783447.html",
       "/wiki/hodl-warriors.html",
+      "/wiki/hodl-wars.html",
+      "/wiki/hodl-x-warriors.html",
+      "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/storm-struggle.html",
       "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-hard-fork-rockers.html",
@@ -21149,7 +21157,7 @@
     ]
   },
   "/wiki/squeaky-pinks-enforcers.html": {
-    "outbound_count": 25,
+    "outbound_count": 34,
     "inbound_count": 1,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
@@ -21169,16 +21177,25 @@
       "/wiki/block-topia.html",
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-2-the-common-blood.html",
+      "/wiki/first-witness-book-6-the-fork.html",
       "/wiki/first-witness-book-9-the-unwritten-block.html",
+      "/wiki/first-witness-hodl-doctrine.html",
       "/wiki/first-witness-justice-mercy-restitution.html",
+      "/wiki/first-witness-sacred-fork.html",
+      "/wiki/first-witness-triple-fork-chainfire.html",
       "/wiki/first-witness-work-craft-service.html",
       "/wiki/gkniftyheads-neon-nova-knightmare-784413.html",
       "/wiki/gkniftyheads-vandal-776147.html",
       "/wiki/gkniftyheads-vin-the-vanguard-ventura-783370.html",
       "/wiki/gkniftyheads-vin-the-vanguard-ventura-783371.html",
+      "/wiki/hodl-warriors.html",
+      "/wiki/hodl-x-warriors.html",
+      "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/pixel-journey.html",
       "/wiki/queen-sarah-p-fly.html",
-      "/wiki/the-og-pixel-saints.html"
+      "/wiki/the-hard-fork-rockers.html",
+      "/wiki/the-og-pixel-saints.html",
+      "/wiki/triple-fork-event.html"
     ],
     "inbound_from": [
       "/wiki/the-squeaky-pinks.html"
@@ -21511,7 +21528,7 @@
     "inbound_from": []
   },
   "/wiki/the-allcity-bulls.html": {
-    "outbound_count": 25,
+    "outbound_count": 26,
     "inbound_count": 3,
     "existing_outbound": [
       "/wiki/bitcoin-kids.html",
@@ -21536,6 +21553,7 @@
     "suggested_outbound": [
       "/wiki/first-witness-censorship-offence-public-marks.html",
       "/wiki/first-witness-long-transmission.html",
+      "/wiki/first-witness-prisons-punishment-return.html",
       "/wiki/genesis-kernel.html",
       "/wiki/graffpunks.html",
       "/wiki/storm-struggle.html",
@@ -23029,7 +23047,7 @@
     ]
   },
   "/wiki/the-squeaky-pinks.html": {
-    "outbound_count": 29,
+    "outbound_count": 37,
     "inbound_count": 2,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
@@ -23052,17 +23070,25 @@
       "/wiki/block-node-defenders.html",
       "/wiki/block-topia.html",
       "/wiki/first-witness-block-topia-reading.html",
+      "/wiki/first-witness-book-6-the-fork.html",
       "/wiki/first-witness-book-9-the-unwritten-block.html",
       "/wiki/first-witness-digital-inheritance-after-death.html",
+      "/wiki/first-witness-hodl-doctrine.html",
       "/wiki/first-witness-null-erasure.html",
+      "/wiki/first-witness-sacred-fork.html",
+      "/wiki/first-witness-triple-fork-chainfire.html",
       "/wiki/gkniftyheads.html",
       "/wiki/graffpunks.html",
       "/wiki/hard-fork-games.html",
       "/wiki/hodl-warriors.html",
+      "/wiki/hodl-wars.html",
       "/wiki/hodl-x-warriors.html",
+      "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/queen-sarah-p-fly.html",
       "/wiki/the-code-alchemists.html",
-      "/wiki/the-first-witness.html"
+      "/wiki/the-first-witness.html",
+      "/wiki/the-hard-fork-rockers.html",
+      "/wiki/triple-fork-event.html"
     ],
     "inbound_from": [
       "/wiki/squeaky-pinks-enforcers.html",

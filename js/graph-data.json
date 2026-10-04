@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-04T20:04:35.991Z",
-  "verified_at": "2026-10-04T20:04:35.991Z",
+  "generated_at": "2026-10-04T20:38:36.340Z",
+  "verified_at": "2026-10-04T20:38:36.340Z",
   "nodes": [
     {
       "id": "/about.html",
@@ -247,7 +247,7 @@
       "title": "Bitcoin X Kids",
       "url": "/wiki/bitcoin-x-kids.html",
       "category": "characters",
-      "rank_score": 318,
+      "rank_score": 326,
       "authority_score": 28
     },
     {
@@ -271,7 +271,7 @@
       "title": "Block Topia",
       "url": "/wiki/block-topia.html",
       "category": "characters",
-      "rank_score": 307,
+      "rank_score": 315,
       "authority_score": 16
     },
     {
@@ -511,8 +511,8 @@
       "title": "Block Topia and the Controlled Reading",
       "url": "/wiki/first-witness-block-topia-reading.html",
       "category": "core",
-      "rank_score": 309,
-      "authority_score": 12
+      "rank_score": 351,
+      "authority_score": 18
     },
     {
       "id": "/wiki/first-witness-book-1-the-first-witness.html",
@@ -879,7 +879,7 @@
       "title": "First Witness Master Chronology",
       "url": "/wiki/first-witness-master-chronology.html",
       "category": "core",
-      "rank_score": 339,
+      "rank_score": 374,
       "authority_score": 14
     },
     {
@@ -2463,7 +2463,7 @@
       "title": "HODL X Warriors",
       "url": "/wiki/hodl-x-warriors.html",
       "category": "characters",
-      "rank_score": 295,
+      "rank_score": 303,
       "authority_score": 28
     },
     {
@@ -2767,8 +2767,8 @@
       "title": "Queen Sarah P-fly",
       "url": "/wiki/queen-sarah-p-fly.html",
       "category": "factions",
-      "rank_score": 274,
-      "authority_score": 24
+      "rank_score": 286,
+      "authority_score": 28
     },
     {
       "id": "/wiki/quell.html",
@@ -2967,7 +2967,7 @@
       "title": "The AllCity Bulls",
       "url": "/wiki/the-allcity-bulls.html",
       "category": "factions",
-      "rank_score": 276,
+      "rank_score": 284,
       "authority_score": 28
     },
     {
@@ -3873,8 +3873,8 @@
     {
       "source": "/wiki/bit-cap-5000.html",
       "target": "/wiki/bitcoin-x-kids.html",
-      "score": 83,
-      "weight": 0.83
+      "score": 84,
+      "weight": 0.84
     },
     {
       "source": "/wiki/bit-cap-5000.html",
@@ -3921,7 +3921,7 @@
     {
       "source": "/wiki/bitcoin-kids.html",
       "target": "/wiki/bitcoin-x-kids.html",
-      "score": 103,
+      "score": 104,
       "weight": 1
     },
     {
@@ -3932,13 +3932,13 @@
     },
     {
       "source": "/wiki/bitcoin-kids.html",
-      "target": "/wiki/hodl-warriors.html",
-      "score": 86,
-      "weight": 0.86
+      "target": "/wiki/hodl-x-warriors.html",
+      "score": 88,
+      "weight": 0.88
     },
     {
       "source": "/wiki/bitcoin-kids.html",
-      "target": "/wiki/hodl-x-warriors.html",
+      "target": "/wiki/hodl-warriors.html",
       "score": 86,
       "weight": 0.86
     },
@@ -3975,8 +3975,8 @@
     {
       "source": "/wiki/bitcoin-x-kids.html",
       "target": "/wiki/hodl-x-warriors.html",
-      "score": 77,
-      "weight": 0.77
+      "score": 79,
+      "weight": 0.79
     },
     {
       "source": "/wiki/bitcoin.html",
@@ -4058,13 +4058,13 @@
     },
     {
       "source": "/wiki/block-topia.html",
-      "target": "/wiki/the-princess.html",
+      "target": "/wiki/bitcoin-x-kids.html",
       "score": 59,
       "weight": 0.59
     },
     {
       "source": "/wiki/block-topia.html",
-      "target": "/wiki/the-whitewasher.html",
+      "target": "/wiki/the-princess.html",
       "score": 59,
       "weight": 0.59
     },
@@ -4298,15 +4298,15 @@
     },
     {
       "source": "/wiki/crypto-moonboys.html",
-      "target": "/wiki/burn-to-earn.html",
+      "target": "/wiki/bitcoin-x-kids.html",
       "score": 74,
       "weight": 0.74
     },
     {
       "source": "/wiki/crypto-moonboys.html",
-      "target": "/wiki/bitcoin-x-kids.html",
-      "score": 73,
-      "weight": 0.73
+      "target": "/wiki/burn-to-earn.html",
+      "score": 74,
+      "weight": 0.74
     },
     {
       "source": "/wiki/darren-cullen.html",
@@ -4724,8 +4724,8 @@
     },
     {
       "source": "/wiki/first-witness-addiction-intoxication-compulsion.html",
-      "target": "/wiki/first-witness-book-4-the-wall.html",
-      "score": 304,
+      "target": "/wiki/first-witness-master-chronology.html",
+      "score": 305,
       "weight": 1
     },
     {
@@ -4754,8 +4754,8 @@
     },
     {
       "source": "/wiki/first-witness-ageing-retirement-elderhood.html",
-      "target": "/wiki/first-witness-book-4-the-wall.html",
-      "score": 304,
+      "target": "/wiki/first-witness-master-chronology.html",
+      "score": 305,
       "weight": 1
     },
     {
@@ -4785,7 +4785,7 @@
     {
       "source": "/wiki/first-witness-ai-synthetic-minds.html",
       "target": "/wiki/first-witness-master-chronology.html",
-      "score": 307,
+      "score": 308,
       "weight": 1
     },
     {
@@ -4814,8 +4814,8 @@
     },
     {
       "source": "/wiki/first-witness-anonymity-pseudonyms-hidden-names.html",
-      "target": "/wiki/first-witness-book-4-the-wall.html",
-      "score": 304,
+      "target": "/wiki/first-witness-master-chronology.html",
+      "score": 305,
       "weight": 1
     },
     {
@@ -4838,13 +4838,13 @@
     },
     {
       "source": "/wiki/first-witness-apocrypha-disputed-passages.html",
-      "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 307,
+      "target": "/wiki/first-witness-master-chronology.html",
+      "score": 308,
       "weight": 1
     },
     {
       "source": "/wiki/first-witness-apocrypha-disputed-passages.html",
-      "target": "/wiki/first-witness-master-chronology.html",
+      "target": "/wiki/first-witness-faction-commentaries.html",
       "score": 307,
       "weight": 1
     },
@@ -4875,7 +4875,7 @@
     {
       "source": "/wiki/first-witness-beauty-luxury-modesty-status.html",
       "target": "/wiki/first-witness-master-chronology.html",
-      "score": 304,
+      "score": 305,
       "weight": 1
     },
     {
@@ -4905,7 +4905,7 @@
     {
       "source": "/wiki/first-witness-birth-naming-coming-of-age.html",
       "target": "/wiki/first-witness-master-chronology.html",
-      "score": 304,
+      "score": 305,
       "weight": 1
     },
     {
@@ -4929,7 +4929,7 @@
     {
       "source": "/wiki/first-witness-bitcoin-witness.html",
       "target": "/wiki/first-witness-master-chronology.html",
-      "score": 318,
+      "score": 319,
       "weight": 1
     },
     {
@@ -4989,7 +4989,7 @@
     {
       "source": "/wiki/first-witness-book-1-the-first-witness.html",
       "target": "/wiki/first-witness-master-chronology.html",
-      "score": 326,
+      "score": 327,
       "weight": 1
     },
     {
@@ -5217,7 +5217,7 @@
     {
       "source": "/wiki/first-witness-book-9-the-unwritten-block.html",
       "target": "/wiki/first-witness-block-topia-reading.html",
-      "score": 318,
+      "score": 319,
       "weight": 1
     },
     {
@@ -5264,8 +5264,8 @@
     },
     {
       "source": "/wiki/first-witness-calendar-feasts-remembrance.html",
-      "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 307,
+      "target": "/wiki/first-witness-master-chronology.html",
+      "score": 308,
       "weight": 1
     },
     {
@@ -5294,7 +5294,7 @@
     },
     {
       "source": "/wiki/first-witness-censorship-offence-public-marks.html",
-      "target": "/wiki/first-witness-symbols-marks-sacred-design.html",
+      "target": "/wiki/first-witness-master-chronology.html",
       "score": 305,
       "weight": 1
     },
@@ -5384,8 +5384,8 @@
     },
     {
       "source": "/wiki/first-witness-child-of-fire.html",
-      "target": "/wiki/first-witness-book-8-the-fire.html",
-      "score": 310,
+      "target": "/wiki/first-witness-master-chronology.html",
+      "score": 311,
       "weight": 1
     },
     {
@@ -5402,13 +5402,13 @@
     },
     {
       "source": "/wiki/first-witness-children-first-lessons.html",
-      "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 315,
+      "target": "/wiki/first-witness-master-chronology.html",
+      "score": 316,
       "weight": 1
     },
     {
       "source": "/wiki/first-witness-children-first-lessons.html",
-      "target": "/wiki/first-witness-master-chronology.html",
+      "target": "/wiki/first-witness-faction-commentaries.html",
       "score": 315,
       "weight": 1
     },
@@ -5439,7 +5439,7 @@
     {
       "source": "/wiki/first-witness-concordance.html",
       "target": "/wiki/first-witness-master-chronology.html",
-      "score": 310,
+      "score": 311,
       "weight": 1
     },
     {
@@ -5475,7 +5475,7 @@
     {
       "source": "/wiki/first-witness-confession-apology-reconciliation.html",
       "target": "/wiki/first-witness-master-chronology.html",
-      "score": 304,
+      "score": 305,
       "weight": 1
     },
     {
@@ -5504,7 +5504,7 @@
     },
     {
       "source": "/wiki/first-witness-counterfeit-relics-fraud.html",
-      "target": "/wiki/first-witness-relics-manuscripts-lost-editions.html",
+      "target": "/wiki/first-witness-master-chronology.html",
       "score": 305,
       "weight": 1
     },
@@ -5528,13 +5528,13 @@
     },
     {
       "source": "/wiki/first-witness-daily-practices-rituals.html",
-      "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 307,
+      "target": "/wiki/first-witness-master-chronology.html",
+      "score": 308,
       "weight": 1
     },
     {
       "source": "/wiki/first-witness-daily-practices-rituals.html",
-      "target": "/wiki/first-witness-master-chronology.html",
+      "target": "/wiki/first-witness-faction-commentaries.html",
       "score": 307,
       "weight": 1
     },
@@ -5564,8 +5564,8 @@
     },
     {
       "source": "/wiki/first-witness-death-grief-remembrance.html",
-      "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 307,
+      "target": "/wiki/first-witness-master-chronology.html",
+      "score": 308,
       "weight": 1
     },
     {
@@ -5655,7 +5655,7 @@
     {
       "source": "/wiki/first-witness-dreams-omens-coincidence.html",
       "target": "/wiki/first-witness-master-chronology.html",
-      "score": 304,
+      "score": 305,
       "weight": 1
     },
     {
@@ -5714,7 +5714,7 @@
     },
     {
       "source": "/wiki/first-witness-education-schools-apprenticeship.html",
-      "target": "/wiki/first-witness-sects-schools-schisms.html",
+      "target": "/wiki/first-witness-master-chronology.html",
       "score": 305,
       "weight": 1
     },
@@ -5733,7 +5733,7 @@
     {
       "source": "/wiki/first-witness-faction-commentaries.html",
       "target": "/wiki/first-witness-master-chronology.html",
-      "score": 326,
+      "score": 327,
       "weight": 1
     },
     {
@@ -5774,8 +5774,8 @@
     },
     {
       "source": "/wiki/first-witness-faction-ritual-variations.html",
-      "target": "/wiki/first-witness-forty-paths.html",
-      "score": 307,
+      "target": "/wiki/first-witness-master-chronology.html",
+      "score": 308,
       "weight": 1
     },
     {
@@ -5804,8 +5804,8 @@
     },
     {
       "source": "/wiki/first-witness-family-children-elders.html",
-      "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 307,
+      "target": "/wiki/first-witness-master-chronology.html",
+      "score": 308,
       "weight": 1
     },
     {
@@ -5835,7 +5835,7 @@
     {
       "source": "/wiki/first-witness-food-hospitality-common-table.html",
       "target": "/wiki/first-witness-master-chronology.html",
-      "score": 307,
+      "score": 308,
       "weight": 1
     },
     {
@@ -5865,7 +5865,7 @@
     {
       "source": "/wiki/first-witness-forty-paths.html",
       "target": "/wiki/first-witness-master-chronology.html",
-      "score": 310,
+      "score": 311,
       "weight": 1
     },
     {
@@ -5889,7 +5889,7 @@
     {
       "source": "/wiki/first-witness-glossary.html",
       "target": "/wiki/first-witness-master-chronology.html",
-      "score": 326,
+      "score": 327,
       "weight": 1
     },
     {
@@ -5925,7 +5925,7 @@
     {
       "source": "/wiki/first-witness-great-concord-2030.html",
       "target": "/wiki/first-witness-master-chronology.html",
-      "score": 310,
+      "score": 311,
       "weight": 1
     },
     {
@@ -5955,7 +5955,7 @@
     {
       "source": "/wiki/first-witness-healing-illness-disability-care.html",
       "target": "/wiki/first-witness-master-chronology.html",
-      "score": 304,
+      "score": 305,
       "weight": 1
     },
     {
@@ -5985,7 +5985,7 @@
     {
       "source": "/wiki/first-witness-heresies-corruptions-abuses.html",
       "target": "/wiki/first-witness-master-chronology.html",
-      "score": 307,
+      "score": 308,
       "weight": 1
     },
     {
@@ -6015,7 +6015,7 @@
     {
       "source": "/wiki/first-witness-hodl-doctrine.html",
       "target": "/wiki/first-witness-master-chronology.html",
-      "score": 310,
+      "score": 311,
       "weight": 1
     },
     {
@@ -6044,7 +6044,7 @@
     },
     {
       "source": "/wiki/first-witness-humour-satire-sacred-mockery.html",
-      "target": "/wiki/first-witness-symbols-marks-sacred-design.html",
+      "target": "/wiki/first-witness-master-chronology.html",
       "score": 305,
       "weight": 1
     },
@@ -6075,7 +6075,7 @@
     {
       "source": "/wiki/first-witness-intimacy-sexuality-privacy.html",
       "target": "/wiki/first-witness-master-chronology.html",
-      "score": 304,
+      "score": 305,
       "weight": 1
     },
     {
@@ -6098,13 +6098,13 @@
     },
     {
       "source": "/wiki/first-witness-justice-mercy-restitution.html",
-      "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 307,
+      "target": "/wiki/first-witness-master-chronology.html",
+      "score": 308,
       "weight": 1
     },
     {
       "source": "/wiki/first-witness-justice-mercy-restitution.html",
-      "target": "/wiki/first-witness-master-chronology.html",
+      "target": "/wiki/first-witness-faction-commentaries.html",
       "score": 307,
       "weight": 1
     },
@@ -6135,7 +6135,7 @@
     {
       "source": "/wiki/first-witness-land-water-stewardship.html",
       "target": "/wiki/first-witness-master-chronology.html",
-      "score": 307,
+      "score": 308,
       "weight": 1
     },
     {
@@ -6195,7 +6195,7 @@
     {
       "source": "/wiki/first-witness-leadership-councils-succession.html",
       "target": "/wiki/first-witness-master-chronology.html",
-      "score": 307,
+      "score": 308,
       "weight": 1
     },
     {
@@ -6243,7 +6243,7 @@
     {
       "source": "/wiki/first-witness-life-readings.html",
       "target": "/wiki/first-witness-master-chronology.html",
-      "score": 317,
+      "score": 318,
       "weight": 1
     },
     {
@@ -6285,7 +6285,7 @@
     {
       "source": "/wiki/first-witness-long-transmission.html",
       "target": "/wiki/first-witness-master-chronology.html",
-      "score": 310,
+      "score": 311,
       "weight": 1
     },
     {
@@ -6315,7 +6315,7 @@
     {
       "source": "/wiki/first-witness-marriage-partnership-adoption.html",
       "target": "/wiki/first-witness-master-chronology.html",
-      "score": 307,
+      "score": 308,
       "weight": 1
     },
     {
@@ -6369,7 +6369,7 @@
     {
       "source": "/wiki/first-witness-mediation-witness-circles.html",
       "target": "/wiki/first-witness-master-chronology.html",
-      "score": 312,
+      "score": 313,
       "weight": 1
     },
     {
@@ -6405,7 +6405,7 @@
     {
       "source": "/wiki/first-witness-migration-refuge-exile-borders.html",
       "target": "/wiki/first-witness-master-chronology.html",
-      "score": 304,
+      "score": 305,
       "weight": 1
     },
     {
@@ -6428,13 +6428,13 @@
     },
     {
       "source": "/wiki/first-witness-money-debt-honest-scales.html",
-      "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 307,
+      "target": "/wiki/first-witness-master-chronology.html",
+      "score": 308,
       "weight": 1
     },
     {
       "source": "/wiki/first-witness-money-debt-honest-scales.html",
-      "target": "/wiki/first-witness-master-chronology.html",
+      "target": "/wiki/first-witness-faction-commentaries.html",
       "score": 307,
       "weight": 1
     },
@@ -6464,8 +6464,8 @@
     },
     {
       "source": "/wiki/first-witness-music-dance-performance.html",
-      "target": "/wiki/first-witness-book-4-the-wall.html",
-      "score": 304,
+      "target": "/wiki/first-witness-master-chronology.html",
+      "score": 305,
       "weight": 1
     },
     {
@@ -6495,7 +6495,7 @@
     {
       "source": "/wiki/first-witness-null-erasure.html",
       "target": "/wiki/first-witness-master-chronology.html",
-      "score": 310,
+      "score": 311,
       "weight": 1
     },
     {
@@ -6518,13 +6518,13 @@
     },
     {
       "source": "/wiki/first-witness-oaths-promises-vows.html",
-      "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 307,
+      "target": "/wiki/first-witness-master-chronology.html",
+      "score": 308,
       "weight": 1
     },
     {
       "source": "/wiki/first-witness-oaths-promises-vows.html",
-      "target": "/wiki/first-witness-master-chronology.html",
+      "target": "/wiki/first-witness-faction-commentaries.html",
       "score": 307,
       "weight": 1
     },
@@ -6542,13 +6542,13 @@
     },
     {
       "source": "/wiki/first-witness-parables.html",
-      "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 323,
+      "target": "/wiki/first-witness-master-chronology.html",
+      "score": 324,
       "weight": 1
     },
     {
       "source": "/wiki/first-witness-parables.html",
-      "target": "/wiki/first-witness-master-chronology.html",
+      "target": "/wiki/first-witness-faction-commentaries.html",
       "score": 323,
       "weight": 1
     },
@@ -6578,13 +6578,13 @@
     },
     {
       "source": "/wiki/first-witness-pride-temptation-false-idols.html",
-      "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 307,
+      "target": "/wiki/first-witness-master-chronology.html",
+      "score": 308,
       "weight": 1
     },
     {
       "source": "/wiki/first-witness-pride-temptation-false-idols.html",
-      "target": "/wiki/first-witness-master-chronology.html",
+      "target": "/wiki/first-witness-faction-commentaries.html",
       "score": 307,
       "weight": 1
     },
@@ -6615,7 +6615,7 @@
     {
       "source": "/wiki/first-witness-prisons-punishment-return.html",
       "target": "/wiki/first-witness-master-chronology.html",
-      "score": 304,
+      "score": 305,
       "weight": 1
     },
     {
@@ -6634,6 +6634,12 @@
       "source": "/wiki/first-witness-proverbs-street-sayings.html",
       "target": "/wiki/first-witness-concordance.html",
       "score": 310,
+      "weight": 1
+    },
+    {
+      "source": "/wiki/first-witness-proverbs-street-sayings.html",
+      "target": "/wiki/first-witness-master-chronology.html",
+      "score": 308,
       "weight": 1
     },
     {
@@ -6643,12 +6649,6 @@
       "weight": 1
     },
     {
-      "source": "/wiki/first-witness-proverbs-street-sayings.html",
-      "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 307,
-      "weight": 1
-    },
-    {
       "source": "/wiki/first-witness-questions-for-the-living.html",
       "target": "/wiki/the-first-witness.html",
       "score": 319,
@@ -6664,6 +6664,12 @@
       "source": "/wiki/first-witness-questions-for-the-living.html",
       "target": "/wiki/first-witness-concordance.html",
       "score": 310,
+      "weight": 1
+    },
+    {
+      "source": "/wiki/first-witness-questions-for-the-living.html",
+      "target": "/wiki/first-witness-master-chronology.html",
+      "score": 308,
       "weight": 1
     },
     {
@@ -6673,12 +6679,6 @@
       "weight": 1
     },
     {
-      "source": "/wiki/first-witness-questions-for-the-living.html",
-      "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 307,
-      "weight": 1
-    },
-    {
       "source": "/wiki/first-witness-relics-manuscripts-lost-editions.html",
       "target": "/wiki/the-first-witness.html",
       "score": 319,
@@ -6698,13 +6698,13 @@
     },
     {
       "source": "/wiki/first-witness-relics-manuscripts-lost-editions.html",
-      "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 307,
+      "target": "/wiki/first-witness-master-chronology.html",
+      "score": 308,
       "weight": 1
     },
     {
       "source": "/wiki/first-witness-relics-manuscripts-lost-editions.html",
-      "target": "/wiki/first-witness-master-chronology.html",
+      "target": "/wiki/first-witness-faction-commentaries.html",
       "score": 307,
       "weight": 1
     },
@@ -6735,7 +6735,7 @@
     {
       "source": "/wiki/first-witness-roles-keepers-witnesses-mediators.html",
       "target": "/wiki/first-witness-master-chronology.html",
-      "score": 304,
+      "score": 305,
       "weight": 1
     },
     {
@@ -6788,14 +6788,14 @@
     },
     {
       "source": "/wiki/first-witness-sacred-places-walls-pilgrimage.html",
-      "target": "/wiki/first-witness-symbols-marks-sacred-design.html",
+      "target": "/wiki/first-witness-master-chronology.html",
       "score": 308,
       "weight": 1
     },
     {
       "source": "/wiki/first-witness-sacred-places-walls-pilgrimage.html",
-      "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 307,
+      "target": "/wiki/first-witness-symbols-marks-sacred-design.html",
+      "score": 308,
       "weight": 1
     },
     {
@@ -6818,13 +6818,13 @@
     },
     {
       "source": "/wiki/first-witness-sects-schools-schisms.html",
-      "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 307,
+      "target": "/wiki/first-witness-master-chronology.html",
+      "score": 308,
       "weight": 1
     },
     {
       "source": "/wiki/first-witness-sects-schools-schisms.html",
-      "target": "/wiki/first-witness-master-chronology.html",
+      "target": "/wiki/first-witness-faction-commentaries.html",
       "score": 307,
       "weight": 1
     },
@@ -6855,7 +6855,7 @@
     {
       "source": "/wiki/first-witness-silence-solitude-attention.html",
       "target": "/wiki/first-witness-master-chronology.html",
-      "score": 304,
+      "score": 305,
       "weight": 1
     },
     {
@@ -6878,13 +6878,13 @@
     },
     {
       "source": "/wiki/first-witness-songs-chants-responses.html",
-      "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 307,
+      "target": "/wiki/first-witness-master-chronology.html",
+      "score": 308,
       "weight": 1
     },
     {
       "source": "/wiki/first-witness-songs-chants-responses.html",
-      "target": "/wiki/first-witness-master-chronology.html",
+      "target": "/wiki/first-witness-faction-commentaries.html",
       "score": 307,
       "weight": 1
     },
@@ -6896,6 +6896,12 @@
     },
     {
       "source": "/wiki/first-witness-source-register.html",
+      "target": "/wiki/first-witness-master-chronology.html",
+      "score": 330,
+      "weight": 1
+    },
+    {
+      "source": "/wiki/first-witness-source-register.html",
       "target": "/wiki/first-witness-faction-commentaries.html",
       "score": 329,
       "weight": 1
@@ -6903,12 +6909,6 @@
     {
       "source": "/wiki/first-witness-source-register.html",
       "target": "/wiki/first-witness-life-readings.html",
-      "score": 329,
-      "weight": 1
-    },
-    {
-      "source": "/wiki/first-witness-source-register.html",
-      "target": "/wiki/first-witness-master-chronology.html",
       "score": 329,
       "weight": 1
     },
@@ -6932,6 +6932,12 @@
     },
     {
       "source": "/wiki/first-witness-street-kingdoms-reading.html",
+      "target": "/wiki/first-witness-master-chronology.html",
+      "score": 314,
+      "weight": 1
+    },
+    {
+      "source": "/wiki/first-witness-street-kingdoms-reading.html",
       "target": "/wiki/first-witness-faction-commentaries.html",
       "score": 313,
       "weight": 1
@@ -6939,12 +6945,6 @@
     {
       "source": "/wiki/first-witness-street-kingdoms-reading.html",
       "target": "/wiki/first-witness-life-readings.html",
-      "score": 313,
-      "weight": 1
-    },
-    {
-      "source": "/wiki/first-witness-street-kingdoms-reading.html",
-      "target": "/wiki/first-witness-master-chronology.html",
       "score": 313,
       "weight": 1
     },
@@ -6975,7 +6975,7 @@
     {
       "source": "/wiki/first-witness-symbols-marks-sacred-design.html",
       "target": "/wiki/first-witness-master-chronology.html",
-      "score": 307,
+      "score": 308,
       "weight": 1
     },
     {
@@ -7065,7 +7065,7 @@
     {
       "source": "/wiki/first-witness-war-defence-peacekeeping.html",
       "target": "/wiki/first-witness-master-chronology.html",
-      "score": 307,
+      "score": 308,
       "weight": 1
     },
     {
@@ -7088,13 +7088,13 @@
     },
     {
       "source": "/wiki/first-witness-work-craft-service.html",
-      "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 307,
+      "target": "/wiki/first-witness-master-chronology.html",
+      "score": 308,
       "weight": 1
     },
     {
       "source": "/wiki/first-witness-work-craft-service.html",
-      "target": "/wiki/first-witness-master-chronology.html",
+      "target": "/wiki/first-witness-faction-commentaries.html",
       "score": 307,
       "weight": 1
     },
@@ -7395,8 +7395,8 @@
     {
       "source": "/wiki/genesis-spray-drop.html",
       "target": "/wiki/bitcoin-x-kids.html",
-      "score": 76,
-      "weight": 0.76
+      "score": 77,
+      "weight": 0.77
     },
     {
       "source": "/wiki/genesis-spray.html",
@@ -12201,7 +12201,7 @@
     {
       "source": "/wiki/hodl-warriors.html",
       "target": "/wiki/hodl-x-warriors.html",
-      "score": 100,
+      "score": 102,
       "weight": 1
     },
     {
@@ -12225,8 +12225,8 @@
     {
       "source": "/wiki/hodl-warriors.html",
       "target": "/wiki/bitcoin-x-kids.html",
-      "score": 83,
-      "weight": 0.83
+      "score": 84,
+      "weight": 0.84
     },
     {
       "source": "/wiki/hodl-wars.html",
@@ -12285,8 +12285,8 @@
     {
       "source": "/wiki/hodl-x-warriors.html",
       "target": "/wiki/bitcoin-x-kids.html",
-      "score": 83,
-      "weight": 0.83
+      "score": 84,
+      "weight": 0.84
     },
     {
       "source": "/wiki/hodlmoonboys-nft-collection.html",
@@ -12819,8 +12819,8 @@
     {
       "source": "/wiki/nbg.html",
       "target": "/wiki/block-topia.html",
-      "score": 64,
-      "weight": 0.64
+      "score": 65,
+      "weight": 0.65
     },
     {
       "source": "/wiki/nbg.html",
@@ -13083,8 +13083,8 @@
     {
       "source": "/wiki/null-the-prophet.html",
       "target": "/wiki/bitcoin-x-kids.html",
-      "score": 73,
-      "weight": 0.73
+      "score": 74,
+      "weight": 0.74
     },
     {
       "source": "/wiki/null-the-prophet.html",
@@ -13095,8 +13095,8 @@
     {
       "source": "/wiki/null-the-prophet.html",
       "target": "/wiki/hodl-x-warriors.html",
-      "score": 70,
-      "weight": 0.7
+      "score": 72,
+      "weight": 0.72
     },
     {
       "source": "/wiki/paper-hands.html",
@@ -13635,8 +13635,8 @@
     {
       "source": "/wiki/samaelexe.html",
       "target": "/wiki/bitcoin-x-kids.html",
-      "score": 70,
-      "weight": 0.7
+      "score": 71,
+      "weight": 0.71
     },
     {
       "source": "/wiki/satorebel.html",
@@ -13959,8 +13959,8 @@
     {
       "source": "/wiki/staking.html",
       "target": "/wiki/block-topia.html",
-      "score": 64,
-      "weight": 0.64
+      "score": 65,
+      "weight": 0.65
     },
     {
       "source": "/wiki/staking.html",
@@ -14559,7 +14559,7 @@
     {
       "source": "/wiki/the-first-witness.html",
       "target": "/wiki/first-witness-master-chronology.html",
-      "score": 329,
+      "score": 330,
       "weight": 1
     },
     {
