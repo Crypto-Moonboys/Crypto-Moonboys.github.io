@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-04T15:08:22.620Z",
-  "verified_at": "2026-10-04T15:08:22.620Z",
+  "generated_at": "2026-10-04T15:26:39.477Z",
+  "verified_at": "2026-10-04T15:26:39.477Z",
   "lite": true,
   "nodes": [
     {
@@ -212,6 +212,14 @@
       "authority_score": 24
     },
     {
+      "id": "/wiki/hodl-warriors.html",
+      "title": "HODL Warriors",
+      "url": "/wiki/hodl-warriors.html",
+      "category": "characters",
+      "rank_score": 323,
+      "authority_score": 28
+    },
+    {
       "id": "/wiki/first-witness-book-4-the-wall.html",
       "title": "Book IV — The Wall",
       "url": "/wiki/first-witness-book-4-the-wall.html",
@@ -274,14 +282,6 @@
       "category": "core",
       "rank_score": 319,
       "authority_score": 14
-    },
-    {
-      "id": "/wiki/hodl-warriors.html",
-      "title": "HODL Warriors",
-      "url": "/wiki/hodl-warriors.html",
-      "category": "characters",
-      "rank_score": 319,
-      "authority_score": 28
     },
     {
       "id": "/wiki/the-nice-easy-bois.html",

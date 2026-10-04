@@ -767,6 +767,7 @@
       "/wiki/bitcoin-kid-army.html",
       "/wiki/bitcoin.html",
       "/wiki/block-node-defenders.html",
+      "/wiki/elder-codex-7.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-9-the-unwritten-block.html",
@@ -787,9 +788,13 @@
       "/wiki/gkniftyheads-bitforce-bitcoin-battler-784332.html",
       "/wiki/gkniftyheads-matteo-bitcoin-bandit-gallo-783447.html",
       "/wiki/hodl-wars.html",
+      "/wiki/iris-7.html",
       "/wiki/seeding-rights.html",
       "/wiki/street-kingdoms.html",
       "/wiki/the-bitcoin-kid-army.html",
+      "/wiki/the-blockstars.html",
+      "/wiki/the-high-hats.html",
+      "/wiki/the-rugpull-miners.html",
       "/wiki/waxp-exchange.html",
       "/wiki/xrp-kids.html"
     ]
@@ -13985,7 +13990,8 @@
       "/wiki/graffiti-kings.html",
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/the-bitcoin-kid-army.html",
-      "/wiki/the-first-witness.html"
+      "/wiki/the-first-witness.html",
+      "/wiki/the-hard-fork-rockers.html"
     ]
   },
   "/wiki/hodl-wars.html": {
@@ -14006,6 +14012,7 @@
       "/wiki/sacred-chain.html"
     ],
     "suggested_links": [
+      "/wiki/alcor-exchange.html",
       "/wiki/bitcoin-kid-army.html",
       "/wiki/first-witness-book-6-the-fork.html",
       "/wiki/first-witness-digital-inheritance-after-death.html",
@@ -14017,14 +14024,24 @@
       "/wiki/first-witness-sacred-fork.html",
       "/wiki/first-witness-triple-fork-chainfire.html",
       "/wiki/gang-signs-card-game.html",
+      "/wiki/gkniftyheads-alessandro-satoshi-samurai-ferrari-783442.html",
+      "/wiki/gkniftyheads-giulia-satoshi-sorceress-espositooo-783463.html",
+      "/wiki/gkniftyheads-satoshi-knight-784264.html",
       "/wiki/graffiti-kings.html",
+      "/wiki/grit.html",
+      "/wiki/grit42.html",
       "/wiki/hodl-x-warriors.html",
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/rug-pull-wars.html",
+      "/wiki/satoshi-scroll.html",
+      "/wiki/spirit-borns.html",
       "/wiki/street-kingdoms.html",
       "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-hard-fork-rockers.html",
+      "/wiki/the-moonlords.html",
       "/wiki/triple-fork-event.html",
+      "/wiki/waxp-exchange.html",
+      "/wiki/whale-lords.html",
       "/wiki/xrp-ledger.html"
     ]
   },
@@ -14931,7 +14948,9 @@
       "/wiki/dream-sovereign.html",
       "/wiki/first-witness-apocrypha-disputed-passages.html",
       "/wiki/first-witness-birth-naming-coming-of-age.html",
+      "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-6-the-fork.html",
+      "/wiki/first-witness-book-9-the-unwritten-block.html",
       "/wiki/first-witness-digital-inheritance-after-death.html",
       "/wiki/first-witness-great-concord-2030.html",
       "/wiki/first-witness-prisons-punishment-return.html",
@@ -14939,7 +14958,9 @@
       "/wiki/first-witness-triple-fork-chainfire.html",
       "/wiki/first-witness-war-defence-peacekeeping.html",
       "/wiki/gkniftyheads-cipher-seraph-783413.html",
+      "/wiki/gkniftyheads-czen-zone-zero-zealot-783755.html",
       "/wiki/gkniftyheads-drift-doodle-783252.html",
+      "/wiki/gkniftyheads-vandal-776147.html",
       "/wiki/gkniftyheads.html",
       "/wiki/hard-fork-games.html",
       "/wiki/hodl-x-warriors.html",
@@ -16009,9 +16030,16 @@
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-2-the-common-blood.html",
       "/wiki/first-witness-book-9-the-unwritten-block.html",
+      "/wiki/first-witness-justice-mercy-restitution.html",
       "/wiki/first-witness-work-craft-service.html",
+      "/wiki/gkniftyheads-neon-nova-knightmare-784413.html",
+      "/wiki/gkniftyheads-vandal-776147.html",
+      "/wiki/gkniftyheads-vin-the-vanguard-ventura-783370.html",
+      "/wiki/gkniftyheads-vin-the-vanguard-ventura-783371.html",
       "/wiki/graffpunks.html",
+      "/wiki/pixel-journey.html",
       "/wiki/queen-sarah-p-fly.html",
+      "/wiki/the-og-pixel-saints.html",
       "/wiki/trevor-fung.html"
     ]
   },
@@ -16411,6 +16439,7 @@
     ],
     "suggested_links": [
       "/wiki/bitcoin-kid-army.html",
+      "/wiki/block-node-defenders.html",
       "/wiki/block-topia.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
@@ -16884,6 +16913,7 @@
       "/wiki/the-aztec-raiders.html",
       "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-first-witness.html",
+      "/wiki/the-moonlords.html",
       "/wiki/thera-9.html",
       "/wiki/xrp-ledger.html"
     ]
@@ -16957,10 +16987,12 @@
       "/wiki/first-witness-triple-fork-chainfire.html",
       "/wiki/gkniftyheads-digital-diva-783394.html",
       "/wiki/gkniftyheads-digital-duchess-783404.html",
+      "/wiki/gkniftyheads.html",
       "/wiki/hodl-x-warriors.html",
       "/wiki/punk-token.html",
       "/wiki/queen-sarah-p-fly.html",
-      "/wiki/the-bitcoin-kid-army.html"
+      "/wiki/the-bitcoin-kid-army.html",
+      "/wiki/the-blockstars.html"
     ]
   },
   "/wiki/the-high-hats.html": {
@@ -17213,12 +17245,16 @@
       "/wiki/bitcoin-kids.html",
       "/wiki/bitcoin-x-kids.html",
       "/wiki/block-topia.html",
+      "/wiki/first-witness-digital-inheritance-after-death.html",
       "/wiki/first-witness-pride-temptation-false-idols.html",
       "/wiki/genesis-kernel.html",
+      "/wiki/gkniftyheads-digital-diva-783394.html",
+      "/wiki/gkniftyheads-digital-duchess-783404.html",
       "/wiki/graffpunks.html",
       "/wiki/hard-fork-games.html",
       "/wiki/hodl-warriors.html",
       "/wiki/hodl-x-warriors.html",
+      "/wiki/punk-token.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/the-bally-boys.html",
       "/wiki/the-code-alchemists.html",
