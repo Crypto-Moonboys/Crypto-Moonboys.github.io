@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-04T13:20:38.370Z",
-  "verified_at": "2026-10-04T13:20:38.370Z",
+  "generated_at": "2026-10-04T13:35:14.507Z",
+  "verified_at": "2026-10-04T13:35:14.507Z",
   "nodes": [
     {
       "id": "/about.html",
@@ -287,7 +287,7 @@
       "title": "Blockchain Technology",
       "url": "/wiki/blockchain.html",
       "category": "factions",
-      "rank_score": 301,
+      "rank_score": 297,
       "authority_score": 30
     },
     {
@@ -471,7 +471,7 @@
       "title": "Technology, AI and Synthetic Minds",
       "url": "/wiki/first-witness-ai-synthetic-minds.html",
       "category": "core",
-      "rank_score": 297,
+      "rank_score": 301,
       "authority_score": 12
     },
     {
@@ -615,7 +615,7 @@
       "title": "Chain Archaeology and Historical Forensics",
       "url": "/wiki/first-witness-chain-archaeology-forensics.html",
       "category": "core",
-      "rank_score": 266,
+      "rank_score": 268,
       "authority_score": 12
     },
     {
@@ -727,7 +727,7 @@
       "title": "Faction Commentaries on the First Witness",
       "url": "/wiki/first-witness-faction-commentaries.html",
       "category": "core",
-      "rank_score": 365,
+      "rank_score": 369,
       "authority_score": 14
     },
     {
@@ -807,7 +807,7 @@
       "title": "Humour, Satire and Sacred Mockery",
       "url": "/wiki/first-witness-humour-satire-sacred-mockery.html",
       "category": "core",
-      "rank_score": 278,
+      "rank_score": 280,
       "authority_score": 12
     },
     {
@@ -855,7 +855,7 @@
       "title": "Libraries, Archive Houses and Sacred Architecture",
       "url": "/wiki/first-witness-libraries-architecture-archive-houses.html",
       "category": "core",
-      "rank_score": 270,
+      "rank_score": 272,
       "authority_score": 12
     },
     {
@@ -911,7 +911,7 @@
       "title": "Money, Debt and Honest Scales",
       "url": "/wiki/first-witness-money-debt-honest-scales.html",
       "category": "core",
-      "rank_score": 287,
+      "rank_score": 289,
       "authority_score": 12
     },
     {
@@ -1023,7 +1023,7 @@
       "title": "Silence, Solitude and Attention",
       "url": "/wiki/first-witness-silence-solitude-attention.html",
       "category": "core",
-      "rank_score": 267,
+      "rank_score": 269,
       "authority_score": 12
     },
     {
@@ -1087,7 +1087,7 @@
       "title": "Work, Craft and Service",
       "url": "/wiki/first-witness-work-craft-service.html",
       "category": "core",
-      "rank_score": 275,
+      "rank_score": 277,
       "authority_score": 12
     },
     {
@@ -1159,7 +1159,7 @@
       "title": "Genesis Kernel",
       "url": "/wiki/genesis-kernel.html",
       "category": "core",
-      "rank_score": 338,
+      "rank_score": 340,
       "authority_score": 28
     },
     {
@@ -3023,8 +3023,8 @@
       "title": "The CHAIN SCRIBES",
       "url": "/wiki/the-chain-scribes.html",
       "category": "factions",
-      "rank_score": 318,
-      "authority_score": 21
+      "rank_score": 333,
+      "authority_score": 28
     },
     {
       "id": "/wiki/the-cleanupcentr.html",
@@ -3039,16 +3039,16 @@
       "title": "The CODE ALCHEMISTS",
       "url": "/wiki/the-code-alchemists.html",
       "category": "factions",
-      "rank_score": 272,
-      "authority_score": 18
+      "rank_score": 290,
+      "authority_score": 28
     },
     {
       "id": "/wiki/the-crypto-stoned-boys.html",
       "title": "The CRYPTO STONED BOYS",
       "url": "/wiki/the-crypto-stoned-boys.html",
       "category": "factions",
-      "rank_score": 274,
-      "authority_score": 18
+      "rank_score": 289,
+      "authority_score": 24
     },
     {
       "id": "/wiki/the-ducky-boys.html",
@@ -3063,8 +3063,8 @@
       "title": "The EVM PUNKS",
       "url": "/wiki/the-evm-punks.html",
       "category": "factions",
-      "rank_score": 277,
-      "authority_score": 21
+      "rank_score": 281,
+      "authority_score": 24
     },
     {
       "id": "/wiki/the-finance-guild.html",
@@ -5716,13 +5716,13 @@
     },
     {
       "source": "/wiki/first-witness-dual-use-tools-weapons.html",
-      "target": "/wiki/first-witness-book-4-the-wall.html",
-      "score": 304,
+      "target": "/wiki/first-witness-ai-synthetic-minds.html",
+      "score": 305,
       "weight": 1
     },
     {
       "source": "/wiki/first-witness-dual-use-tools-weapons.html",
-      "target": "/wiki/first-witness-source-register.html",
+      "target": "/wiki/first-witness-book-4-the-wall.html",
       "score": 304,
       "weight": 1
     },
@@ -7180,13 +7180,13 @@
     },
     {
       "source": "/wiki/fomo-plague.html",
-      "target": "/wiki/satoshi-scroll.html",
-      "score": 81,
-      "weight": 0.81
+      "target": "/wiki/the-chain-scribes.html",
+      "score": 83,
+      "weight": 0.83
     },
     {
       "source": "/wiki/fomo-plague.html",
-      "target": "/wiki/the-chain-scribes.html",
+      "target": "/wiki/satoshi-scroll.html",
       "score": 81,
       "weight": 0.81
     },
@@ -12833,8 +12833,8 @@
     {
       "source": "/wiki/nbg.html",
       "target": "/wiki/block-topia.html",
-      "score": 65,
-      "weight": 0.65
+      "score": 64,
+      "weight": 0.64
     },
     {
       "source": "/wiki/nbg.html",
@@ -13696,15 +13696,15 @@
     },
     {
       "source": "/wiki/satoshi-scroll.html",
-      "target": "/wiki/fomo-plague.html",
-      "score": 82,
-      "weight": 0.82
+      "target": "/wiki/the-chain-scribes.html",
+      "score": 83,
+      "weight": 0.83
     },
     {
       "source": "/wiki/satoshi-scroll.html",
-      "target": "/wiki/the-chain-scribes.html",
-      "score": 81,
-      "weight": 0.81
+      "target": "/wiki/fomo-plague.html",
+      "score": 82,
+      "weight": 0.82
     },
     {
       "source": "/wiki/satoshi-scroll.html",
@@ -13973,8 +13973,8 @@
     {
       "source": "/wiki/staking.html",
       "target": "/wiki/block-topia.html",
-      "score": 65,
-      "weight": 0.65
+      "score": 64,
+      "weight": 0.64
     },
     {
       "source": "/wiki/staking.html",
@@ -14344,39 +14344,39 @@
     },
     {
       "source": "/wiki/the-chain-scribes.html",
-      "target": "/wiki/the-ducky-boys.html",
+      "target": "/wiki/the-code-alchemists.html",
       "score": 81,
       "weight": 0.81
     },
     {
       "source": "/wiki/the-chain-scribes.html",
-      "target": "/wiki/the-code-alchemists.html",
-      "score": 78,
-      "weight": 0.78
+      "target": "/wiki/the-og-pixel-saints.html",
+      "score": 80,
+      "weight": 0.8
     },
     {
       "source": "/wiki/the-chain-scribes.html",
       "target": "/wiki/the-salvagers.html",
-      "score": 77,
-      "weight": 0.77
+      "score": 80,
+      "weight": 0.8
     },
     {
       "source": "/wiki/the-chain-scribes.html",
-      "target": "/wiki/the-allcity-bulls.html",
-      "score": 76,
-      "weight": 0.76
+      "target": "/wiki/the-rugpull-miners.html",
+      "score": 79,
+      "weight": 0.79
     },
     {
       "source": "/wiki/the-chain-scribes.html",
-      "target": "/wiki/the-aztec-raiders.html",
-      "score": 76,
-      "weight": 0.76
+      "target": "/wiki/the-ducky-boys.html",
+      "score": 78,
+      "weight": 0.78
     },
     {
       "source": "/wiki/the-cleanupcentr.html",
       "target": "/wiki/the-chain-scribes.html",
-      "score": 81,
-      "weight": 0.81
+      "score": 83,
+      "weight": 0.83
     },
     {
       "source": "/wiki/the-cleanupcentr.html",
@@ -14392,75 +14392,75 @@
     },
     {
       "source": "/wiki/the-cleanupcentr.html",
-      "target": "/wiki/the-ducky-boys.html",
+      "target": "/wiki/the-code-alchemists.html",
       "score": 78,
       "weight": 0.78
     },
     {
       "source": "/wiki/the-cleanupcentr.html",
-      "target": "/wiki/the-nomad-bears.html",
-      "score": 77,
-      "weight": 0.77
+      "target": "/wiki/the-crypto-stoned-boys.html",
+      "score": 78,
+      "weight": 0.78
     },
     {
       "source": "/wiki/the-code-alchemists.html",
       "target": "/wiki/the-chain-scribes.html",
-      "score": 87,
-      "weight": 0.87
-    },
-    {
-      "source": "/wiki/the-code-alchemists.html",
-      "target": "/wiki/the-crypto-stoned-boys.html",
-      "score": 81,
-      "weight": 0.81
-    },
-    {
-      "source": "/wiki/the-code-alchemists.html",
-      "target": "/wiki/the-ducky-boys.html",
-      "score": 81,
-      "weight": 0.81
-    },
-    {
-      "source": "/wiki/the-code-alchemists.html",
-      "target": "/wiki/the-information-mercenaries.html",
-      "score": 81,
-      "weight": 0.81
-    },
-    {
-      "source": "/wiki/the-code-alchemists.html",
-      "target": "/wiki/the-squeaky-pinks.html",
-      "score": 81,
-      "weight": 0.81
-    },
-    {
-      "source": "/wiki/the-crypto-stoned-boys.html",
-      "target": "/wiki/the-ducky-boys.html",
       "score": 89,
       "weight": 0.89
     },
     {
-      "source": "/wiki/the-crypto-stoned-boys.html",
-      "target": "/wiki/the-bally-boys.html",
-      "score": 87,
-      "weight": 0.87
+      "source": "/wiki/the-code-alchemists.html",
+      "target": "/wiki/the-nomad-bears.html",
+      "score": 89,
+      "weight": 0.89
     },
     {
-      "source": "/wiki/the-crypto-stoned-boys.html",
-      "target": "/wiki/the-chain-scribes.html",
+      "source": "/wiki/the-code-alchemists.html",
+      "target": "/wiki/the-aztec-raiders.html",
+      "score": 85,
+      "weight": 0.85
+    },
+    {
+      "source": "/wiki/the-code-alchemists.html",
+      "target": "/wiki/the-blockchain-furies.html",
+      "score": 84,
+      "weight": 0.84
+    },
+    {
+      "source": "/wiki/the-code-alchemists.html",
+      "target": "/wiki/the-ducky-boys.html",
       "score": 84,
       "weight": 0.84
     },
     {
       "source": "/wiki/the-crypto-stoned-boys.html",
-      "target": "/wiki/the-code-alchemists.html",
-      "score": 81,
-      "weight": 0.81
+      "target": "/wiki/the-ducky-boys.html",
+      "score": 93,
+      "weight": 0.93
     },
     {
       "source": "/wiki/the-crypto-stoned-boys.html",
-      "target": "/wiki/the-information-mercenaries.html",
-      "score": 81,
-      "weight": 0.81
+      "target": "/wiki/the-bally-boys.html",
+      "score": 91,
+      "weight": 0.91
+    },
+    {
+      "source": "/wiki/the-crypto-stoned-boys.html",
+      "target": "/wiki/the-chain-scribes.html",
+      "score": 83,
+      "weight": 0.83
+    },
+    {
+      "source": "/wiki/the-crypto-stoned-boys.html",
+      "target": "/wiki/the-nomad-bears.html",
+      "score": 83,
+      "weight": 0.83
+    },
+    {
+      "source": "/wiki/the-crypto-stoned-boys.html",
+      "target": "/wiki/the-salvagers.html",
+      "score": 83,
+      "weight": 0.83
     },
     {
       "source": "/wiki/the-ducky-boys.html",
@@ -14495,32 +14495,32 @@
     {
       "source": "/wiki/the-evm-punks.html",
       "target": "/wiki/the-chain-scribes.html",
-      "score": 84,
-      "weight": 0.84
+      "score": 86,
+      "weight": 0.86
     },
     {
       "source": "/wiki/the-evm-punks.html",
-      "target": "/wiki/the-ducky-boys.html",
-      "score": 81,
-      "weight": 0.81
+      "target": "/wiki/the-og-pixel-saints.html",
+      "score": 83,
+      "weight": 0.83
     },
     {
       "source": "/wiki/the-evm-punks.html",
       "target": "/wiki/the-salvagers.html",
-      "score": 80,
-      "weight": 0.8
+      "score": 83,
+      "weight": 0.83
     },
     {
       "source": "/wiki/the-evm-punks.html",
-      "target": "/wiki/the-allcity-bulls.html",
-      "score": 79,
-      "weight": 0.79
+      "target": "/wiki/the-rugpull-miners.html",
+      "score": 82,
+      "weight": 0.82
     },
     {
       "source": "/wiki/the-evm-punks.html",
-      "target": "/wiki/the-aztec-raiders.html",
-      "score": 79,
-      "weight": 0.79
+      "target": "/wiki/the-crypto-stoned-boys.html",
+      "score": 81,
+      "weight": 0.81
     },
     {
       "source": "/wiki/the-finance-guild.html",
@@ -14585,8 +14585,8 @@
     {
       "source": "/wiki/the-gasless-ghosts.html",
       "target": "/wiki/the-chain-scribes.html",
-      "score": 84,
-      "weight": 0.84
+      "score": 83,
+      "weight": 0.83
     },
     {
       "source": "/wiki/the-gasless-ghosts.html",
@@ -14633,8 +14633,8 @@
     {
       "source": "/wiki/the-great-dip.html",
       "target": "/wiki/the-chain-scribes.html",
-      "score": 81,
-      "weight": 0.81
+      "score": 83,
+      "weight": 0.83
     },
     {
       "source": "/wiki/the-great-dip.html",
@@ -14704,33 +14704,33 @@
     },
     {
       "source": "/wiki/the-information-mercenaries.html",
-      "target": "/wiki/the-chain-scribes.html",
-      "score": 84,
-      "weight": 0.84
-    },
-    {
-      "source": "/wiki/the-information-mercenaries.html",
       "target": "/wiki/the-tuskon-ogs.html",
       "score": 84,
       "weight": 0.84
     },
     {
       "source": "/wiki/the-information-mercenaries.html",
-      "target": "/wiki/the-code-alchemists.html",
-      "score": 81,
-      "weight": 0.81
-    },
-    {
-      "source": "/wiki/the-information-mercenaries.html",
-      "target": "/wiki/the-crypto-stoned-boys.html",
-      "score": 81,
-      "weight": 0.81
+      "target": "/wiki/the-chain-scribes.html",
+      "score": 83,
+      "weight": 0.83
     },
     {
       "source": "/wiki/the-information-mercenaries.html",
       "target": "/wiki/the-ducky-boys.html",
       "score": 81,
       "weight": 0.81
+    },
+    {
+      "source": "/wiki/the-information-mercenaries.html",
+      "target": "/wiki/the-squeaky-pinks.html",
+      "score": 81,
+      "weight": 0.81
+    },
+    {
+      "source": "/wiki/the-information-mercenaries.html",
+      "target": "/wiki/the-salvagers.html",
+      "score": 80,
+      "weight": 0.8
     },
     {
       "source": "/wiki/the-moonlords.html",
@@ -14824,6 +14824,12 @@
     },
     {
       "source": "/wiki/the-og-pixel-saints.html",
+      "target": "/wiki/the-chain-scribes.html",
+      "score": 89,
+      "weight": 0.89
+    },
+    {
+      "source": "/wiki/the-og-pixel-saints.html",
       "target": "/wiki/the-nomad-bears.html",
       "score": 89,
       "weight": 0.89
@@ -14843,12 +14849,6 @@
     {
       "source": "/wiki/the-og-pixel-saints.html",
       "target": "/wiki/the-aztec-raiders.html",
-      "score": 85,
-      "weight": 0.85
-    },
-    {
-      "source": "/wiki/the-og-pixel-saints.html",
-      "target": "/wiki/the-rugpull-miners.html",
       "score": 85,
       "weight": 0.85
     },
@@ -14884,6 +14884,12 @@
     },
     {
       "source": "/wiki/the-rugpull-miners.html",
+      "target": "/wiki/the-chain-scribes.html",
+      "score": 86,
+      "weight": 0.86
+    },
+    {
+      "source": "/wiki/the-rugpull-miners.html",
       "target": "/wiki/the-nomad-bears.html",
       "score": 86,
       "weight": 0.86
@@ -14907,12 +14913,6 @@
       "weight": 0.85
     },
     {
-      "source": "/wiki/the-rugpull-miners.html",
-      "target": "/wiki/the-blockchain-furies.html",
-      "score": 84,
-      "weight": 0.84
-    },
-    {
       "source": "/wiki/the-salvagers.html",
       "target": "/wiki/the-nomad-bears.html",
       "score": 93,
@@ -14932,21 +14932,21 @@
     },
     {
       "source": "/wiki/the-salvagers.html",
-      "target": "/wiki/the-og-pixel-saints.html",
+      "target": "/wiki/the-chain-scribes.html",
       "score": 86,
       "weight": 0.86
     },
     {
       "source": "/wiki/the-salvagers.html",
-      "target": "/wiki/the-allcity-bulls.html",
-      "score": 85,
-      "weight": 0.85
+      "target": "/wiki/the-og-pixel-saints.html",
+      "score": 86,
+      "weight": 0.86
     },
     {
       "source": "/wiki/the-shard-mothers-of-manhattan.html",
       "target": "/wiki/the-chain-scribes.html",
-      "score": 84,
-      "weight": 0.84
+      "score": 83,
+      "weight": 0.83
     },
     {
       "source": "/wiki/the-shard-mothers-of-manhattan.html",
@@ -14975,20 +14975,8 @@
     {
       "source": "/wiki/the-squeaky-pinks.html",
       "target": "/wiki/the-chain-scribes.html",
-      "score": 84,
-      "weight": 0.84
-    },
-    {
-      "source": "/wiki/the-squeaky-pinks.html",
-      "target": "/wiki/the-code-alchemists.html",
-      "score": 81,
-      "weight": 0.81
-    },
-    {
-      "source": "/wiki/the-squeaky-pinks.html",
-      "target": "/wiki/the-crypto-stoned-boys.html",
-      "score": 81,
-      "weight": 0.81
+      "score": 83,
+      "weight": 0.83
     },
     {
       "source": "/wiki/the-squeaky-pinks.html",
@@ -15001,36 +14989,48 @@
       "target": "/wiki/the-information-mercenaries.html",
       "score": 81,
       "weight": 0.81
+    },
+    {
+      "source": "/wiki/the-squeaky-pinks.html",
+      "target": "/wiki/the-tuskon-ogs.html",
+      "score": 81,
+      "weight": 0.81
+    },
+    {
+      "source": "/wiki/the-squeaky-pinks.html",
+      "target": "/wiki/the-salvagers.html",
+      "score": 80,
+      "weight": 0.8
+    },
+    {
+      "source": "/wiki/the-tuskon-ogs.html",
+      "target": "/wiki/the-information-mercenaries.html",
+      "score": 84,
+      "weight": 0.84
     },
     {
       "source": "/wiki/the-tuskon-ogs.html",
       "target": "/wiki/the-chain-scribes.html",
-      "score": 84,
-      "weight": 0.84
-    },
-    {
-      "source": "/wiki/the-tuskon-ogs.html",
-      "target": "/wiki/the-information-mercenaries.html",
-      "score": 84,
-      "weight": 0.84
-    },
-    {
-      "source": "/wiki/the-tuskon-ogs.html",
-      "target": "/wiki/the-code-alchemists.html",
-      "score": 81,
-      "weight": 0.81
-    },
-    {
-      "source": "/wiki/the-tuskon-ogs.html",
-      "target": "/wiki/the-crypto-stoned-boys.html",
-      "score": 81,
-      "weight": 0.81
+      "score": 83,
+      "weight": 0.83
     },
     {
       "source": "/wiki/the-tuskon-ogs.html",
       "target": "/wiki/the-ducky-boys.html",
       "score": 81,
       "weight": 0.81
+    },
+    {
+      "source": "/wiki/the-tuskon-ogs.html",
+      "target": "/wiki/the-squeaky-pinks.html",
+      "score": 81,
+      "weight": 0.81
+    },
+    {
+      "source": "/wiki/the-tuskon-ogs.html",
+      "target": "/wiki/the-salvagers.html",
+      "score": 80,
+      "weight": 0.8
     },
     {
       "source": "/wiki/the-whitewasher.html",
@@ -15503,8 +15503,8 @@
     {
       "source": "/wiki/whale-lords.html",
       "target": "/wiki/the-chain-scribes.html",
-      "score": 81,
-      "weight": 0.81
+      "score": 83,
+      "weight": 0.83
     },
     {
       "source": "/wiki/whale-lords.html",

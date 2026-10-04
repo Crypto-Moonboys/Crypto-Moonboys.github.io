@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-04T13:20:38.370Z",
-  "verified_at": "2026-10-04T13:20:38.370Z",
+  "generated_at": "2026-10-04T13:35:14.507Z",
+  "verified_at": "2026-10-04T13:35:14.507Z",
   "lite": true,
   "nodes": [
     {
@@ -20,20 +20,20 @@
       "authority_score": 17
     },
     {
+      "id": "/wiki/first-witness-faction-commentaries.html",
+      "title": "Faction Commentaries on the First Witness",
+      "url": "/wiki/first-witness-faction-commentaries.html",
+      "category": "core",
+      "rank_score": 369,
+      "authority_score": 14
+    },
+    {
       "id": "/wiki/hard-fork-games.html",
       "title": "Hard Fork Games",
       "url": "/wiki/hard-fork-games.html",
       "category": "core",
       "rank_score": 368,
       "authority_score": 28
-    },
-    {
-      "id": "/wiki/first-witness-faction-commentaries.html",
-      "title": "Faction Commentaries on the First Witness",
-      "url": "/wiki/first-witness-faction-commentaries.html",
-      "category": "core",
-      "rank_score": 365,
-      "authority_score": 14
     },
     {
       "id": "/wiki/sacred-chain.html",
@@ -76,20 +76,20 @@
       "authority_score": 28
     },
     {
+      "id": "/wiki/genesis-kernel.html",
+      "title": "Genesis Kernel",
+      "url": "/wiki/genesis-kernel.html",
+      "category": "core",
+      "rank_score": 340,
+      "authority_score": 28
+    },
+    {
       "id": "/wiki/first-witness-master-chronology.html",
       "title": "First Witness Master Chronology",
       "url": "/wiki/first-witness-master-chronology.html",
       "category": "core",
       "rank_score": 339,
       "authority_score": 14
-    },
-    {
-      "id": "/wiki/genesis-kernel.html",
-      "title": "Genesis Kernel",
-      "url": "/wiki/genesis-kernel.html",
-      "category": "core",
-      "rank_score": 338,
-      "authority_score": 28
     },
     {
       "id": "/wiki/first-witness-book-3-the-keeper.html",
@@ -112,6 +112,14 @@
       "title": "HODL WARS",
       "url": "/wiki/hodl-wars.html",
       "category": "core",
+      "rank_score": 333,
+      "authority_score": 28
+    },
+    {
+      "id": "/wiki/the-chain-scribes.html",
+      "title": "The CHAIN SCRIBES",
+      "url": "/wiki/the-chain-scribes.html",
+      "category": "factions",
       "rank_score": 333,
       "authority_score": 28
     },
@@ -258,14 +266,6 @@
       "category": "core",
       "rank_score": 318,
       "authority_score": 14
-    },
-    {
-      "id": "/wiki/the-chain-scribes.html",
-      "title": "The CHAIN SCRIBES",
-      "url": "/wiki/the-chain-scribes.html",
-      "category": "factions",
-      "rank_score": 318,
-      "authority_score": 21
     },
     {
       "id": "/wiki/first-witness-book-7-the-hold.html",
@@ -452,12 +452,12 @@
       "authority_score": 12
     },
     {
-      "id": "/wiki/blockchain.html",
-      "title": "Blockchain Technology",
-      "url": "/wiki/blockchain.html",
-      "category": "factions",
+      "id": "/wiki/first-witness-ai-synthetic-minds.html",
+      "title": "Technology, AI and Synthetic Minds",
+      "url": "/wiki/first-witness-ai-synthetic-minds.html",
+      "category": "core",
       "rank_score": 301,
-      "authority_score": 30
+      "authority_score": 12
     },
     {
       "id": "/wiki/first-witness-symbols-marks-sacred-design.html",
@@ -508,12 +508,12 @@
       "authority_score": 28
     },
     {
-      "id": "/wiki/first-witness-ai-synthetic-minds.html",
-      "title": "Technology, AI and Synthetic Minds",
-      "url": "/wiki/first-witness-ai-synthetic-minds.html",
-      "category": "core",
+      "id": "/wiki/blockchain.html",
+      "title": "Blockchain Technology",
+      "url": "/wiki/blockchain.html",
+      "category": "factions",
       "rank_score": 297,
-      "authority_score": 12
+      "authority_score": 30
     },
     {
       "id": "/wiki/punk-token.html",
@@ -906,6 +906,12 @@
       "weight": 0.86
     },
     {
+      "source": "/wiki/the-salvagers.html",
+      "target": "/wiki/the-chain-scribes.html",
+      "score": 86,
+      "weight": 0.86
+    },
+    {
       "source": "/wiki/billy-the-goat-kid.html",
       "target": "/wiki/the-whitewasher.html",
       "score": 84,
@@ -954,6 +960,12 @@
       "weight": 0.82
     },
     {
+      "source": "/wiki/the-chain-scribes.html",
+      "target": "/wiki/the-salvagers.html",
+      "score": 80,
+      "weight": 0.8
+    },
+    {
       "source": "/wiki/burn-to-earn.html",
       "target": "/wiki/null-the-prophet.html",
       "score": 79,
@@ -970,12 +982,6 @@
       "target": "/wiki/null-the-prophet.html",
       "score": 79,
       "weight": 0.79
-    },
-    {
-      "source": "/wiki/the-chain-scribes.html",
-      "target": "/wiki/the-salvagers.html",
-      "score": 77,
-      "weight": 0.77
     },
     {
       "source": "/wiki/midevilpunks.html",
