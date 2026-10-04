@@ -4153,11 +4153,11 @@
       ]
     },
     "link_score": {
-      "inbound_count": 166,
+      "inbound_count": 165,
       "outbound_count": 37,
       "existing_outbound_count": 10,
       "suggested_outbound_count": 27,
-      "authority": 337
+      "authority": 335
     },
     "brand": null
   },
@@ -12263,11 +12263,11 @@
       ]
     },
     "link_score": {
-      "inbound_count": 86,
+      "inbound_count": 84,
       "outbound_count": 41,
       "existing_outbound_count": 0,
       "suggested_outbound_count": 41,
-      "authority": 172
+      "authority": 168
     },
     "brand": null
   },
@@ -21587,99 +21587,6 @@
     "brand": null
   },
   {
-    "title": "Delicious Again Pete",
-    "desc": "Delicious Again Pete is a cultural juggernaut in the Crypto Moonboys universe, a co-founder of the Graffiti Kings whose real-world roots in music and street cul",
-    "url": "/wiki/delicious-again-pete.html",
-    "tags": [
-      "delicious",
-      "again",
-      "pete",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [],
-    "rank_score": 270,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 0,
-      "tag_count": 6,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 1195,
-      "keyword_bag_size": 26,
-      "heading_count": 10,
-      "list_count": 1,
-      "internal_link_count": 12,
-      "paragraph_count": 22,
-      "section_count": 7,
-      "lore_paragraph_count": 20,
-      "content_quality_score": 97,
-      "authority_score": 18
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 50,
-      "keyword_bag_points": 26,
-      "content_quality_points": 103,
-      "authority_points": 26,
-      "final_rank_score": 270,
-      "authority_graph_points": 8
-    },
-    "search_index": {
-      "normalized_title": "delicious again pete crypto moonboys wiki",
-      "tokens": [
-        "delicious",
-        "again",
-        "pete",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "delicious",
-        "again",
-        "pete",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "is",
-        "a",
-        "cultural",
-        "juggernaut",
-        "in",
-        "the",
-        "universe",
-        "co",
-        "founder",
-        "of",
-        "graffiti",
-        "kings",
-        "whose",
-        "real",
-        "world",
-        "roots",
-        "music",
-        "and",
-        "street",
-        "cul"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 1,
-      "outbound_count": 24,
-      "existing_outbound_count": 11,
-      "suggested_outbound_count": 13,
-      "authority": 7.5
-    },
-    "brand": null
-  },
-  {
     "title": "Digital Inheritance and Memory After Death",
     "desc": "How First Witness traditions handle accounts, keys, archives, AI replicas and digital property after a person",
     "url": "/wiki/first-witness-digital-inheritance-after-death.html",
@@ -22906,100 +22813,6 @@
       "existing_outbound_count": 4,
       "suggested_outbound_count": 60,
       "authority": 6
-    },
-    "brand": null
-  },
-  {
-    "title": "charlie-buster",
-    "desc": "Charlie Buster bridges the historic Graffiti Kings movement into the blockchain era as key collaborator and founder of foundational projects. He maintains stric",
-    "url": "/wiki/charlie-buster.html",
-    "tags": [
-      "charlie",
-      "buster",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "characters",
-    "aliases": [
-      {
-        "title": "charlie buster crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 267,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "characters",
-      "category_priority": 8,
-      "has_description": true,
-      "article_word_count": 1123,
-      "keyword_bag_size": 25,
-      "heading_count": 9,
-      "list_count": 1,
-      "internal_link_count": 9,
-      "paragraph_count": 14,
-      "section_count": 6,
-      "lore_paragraph_count": 12,
-      "content_quality_score": 89,
-      "authority_score": 18
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 40,
-      "word_count_points": 50,
-      "keyword_bag_points": 25,
-      "content_quality_points": 97,
-      "authority_points": 25,
-      "final_rank_score": 267,
-      "authority_graph_points": 7
-    },
-    "search_index": {
-      "normalized_title": "charlie buster crypto moonboys wiki",
-      "tokens": [
-        "charlie",
-        "buster",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "charlie",
-        "buster",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "bridges",
-        "the",
-        "historic",
-        "graffiti",
-        "kings",
-        "movement",
-        "into",
-        "blockchain",
-        "era",
-        "as",
-        "key",
-        "collaborator",
-        "and",
-        "founder",
-        "of",
-        "foundational",
-        "projects",
-        "he",
-        "maintains",
-        "stric"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 1,
-      "outbound_count": 30,
-      "existing_outbound_count": 9,
-      "suggested_outbound_count": 21,
-      "authority": 6.5
     },
     "brand": null
   },
@@ -26150,102 +25963,6 @@
     }
   },
   {
-    "title": "Darren Cullen (SER)",
-    "desc": "Darren Cullen, known as SER, is the founder of Graffiti Kings and a central real-world architect behind GKniftyHEADS, GraffPUNKS and Crypto Moonboys.",
-    "url": "/wiki/darren-cullen.html",
-    "tags": [
-      "darren",
-      "cullen",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "characters",
-    "aliases": [
-      {
-        "title": "darren cullen crypto moonboys wiki"
-      },
-      {
-        "title": "darren cullen"
-      }
-    ],
-    "rank_score": 257,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 2,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "characters",
-      "category_priority": 8,
-      "has_description": true,
-      "article_word_count": 1619,
-      "keyword_bag_size": 23,
-      "heading_count": 14,
-      "list_count": 1,
-      "internal_link_count": 8,
-      "paragraph_count": 29,
-      "section_count": 11,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 77,
-      "authority_score": 21
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 40,
-      "word_count_points": 50,
-      "keyword_bag_points": 23,
-      "content_quality_points": 88,
-      "authority_points": 26,
-      "final_rank_score": 257,
-      "authority_graph_points": 5
-    },
-    "search_index": {
-      "normalized_title": "darren cullen ser crypto moonboys wiki",
-      "tokens": [
-        "darren",
-        "cullen",
-        "ser",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "darren",
-        "cullen",
-        "ser",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "known",
-        "as",
-        "is",
-        "the",
-        "founder",
-        "of",
-        "graffiti",
-        "kings",
-        "and",
-        "a",
-        "central",
-        "real",
-        "world",
-        "architect",
-        "behind",
-        "gkniftyheads",
-        "graffpunks"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 1,
-      "outbound_count": 19,
-      "existing_outbound_count": 6,
-      "suggested_outbound_count": 13,
-      "authority": 5
-    },
-    "brand": null
-  },
-  {
     "title": "Web3",
     "desc": "Web3 — the decentralised next generation of the internet built on blockchain technology — Crypto Moonboys Wiki",
     "url": "/wiki/web3.html",
@@ -26942,97 +26659,6 @@
     "brand": null
   },
   {
-    "title": "Jillian Godsil",
-    "desc": "Jillian Godsil provides strategic oversight within the Crypto Moonboys mechanics, ensuring that real-world insight informs the long-term sustainability and ethi",
-    "url": "/wiki/jillian-godsil.html",
-    "tags": [
-      "jillian",
-      "godsil",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "jillian godsil crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 253,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 1122,
-      "keyword_bag_size": 22,
-      "heading_count": 10,
-      "list_count": 1,
-      "internal_link_count": 9,
-      "paragraph_count": 15,
-      "section_count": 7,
-      "lore_paragraph_count": 13,
-      "content_quality_score": 85,
-      "authority_score": 18
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 50,
-      "keyword_bag_points": 22,
-      "content_quality_points": 93,
-      "authority_points": 23,
-      "final_rank_score": 253,
-      "authority_graph_points": 5
-    },
-    "search_index": {
-      "normalized_title": "jillian godsil crypto moonboys wiki",
-      "tokens": [
-        "jillian",
-        "godsil",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "jillian",
-        "godsil",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "provides",
-        "strategic",
-        "oversight",
-        "within",
-        "the",
-        "mechanics",
-        "ensuring",
-        "that",
-        "real",
-        "world",
-        "insight",
-        "informs",
-        "long",
-        "term",
-        "sustainability",
-        "and",
-        "ethi"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 21,
-      "existing_outbound_count": 9,
-      "suggested_outbound_count": 12,
-      "authority": 4.5
-    },
-    "brand": null
-  },
-  {
     "title": "Solana (SOL)",
     "desc": "Solana — ultra-fast blockchain for DeFi, NFTs and Web3 — Crypto Moonboys Wiki",
     "url": "/wiki/solana.html",
@@ -27292,89 +26918,6 @@
       "existing_outbound_count": 16,
       "suggested_outbound_count": 20,
       "authority": 26
-    },
-    "brand": null
-  },
-  {
-    "title": "$GK",
-    "desc": "The $GK token powers Crypto Moonboys gameplay, staking, and battle rewards across the GraffPUNKS-connected wiki economy.",
-    "url": "/wiki/gk.html",
-    "tags": [
-      "gk",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "gk crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 251,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 4,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 1077,
-      "keyword_bag_size": 16,
-      "heading_count": 10,
-      "list_count": 1,
-      "internal_link_count": 12,
-      "paragraph_count": 22,
-      "section_count": 7,
-      "lore_paragraph_count": 19,
-      "content_quality_score": 89,
-      "authority_score": 18
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 50,
-      "keyword_bag_points": 16,
-      "content_quality_points": 96,
-      "authority_points": 24,
-      "final_rank_score": 251,
-      "authority_graph_points": 6
-    },
-    "search_index": {
-      "normalized_title": "gk crypto moonboys wiki",
-      "tokens": [
-        "gk",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "gk",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "the",
-        "token",
-        "powers",
-        "gameplay",
-        "staking",
-        "and",
-        "battle",
-        "rewards",
-        "across",
-        "graffpunks",
-        "connected",
-        "economy"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 37,
-      "existing_outbound_count": 11,
-      "suggested_outbound_count": 26,
-      "authority": 5.5
     },
     "brand": null
   },
@@ -27645,6 +27188,106 @@
       "existing_outbound_count": 17,
       "suggested_outbound_count": 17,
       "authority": 28.5
+    },
+    "brand": null
+  },
+  {
+    "title": "$GK",
+    "desc": "$GK in the Crypto Moonboys archive: an ambiguous legacy reward label, its fictional economic role, and the distinction from specifically named ecosystem tokens and live Arcade XP.",
+    "url": "/wiki/gk.html",
+    "tags": [
+      "gk",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "tokens",
+    "aliases": [
+      {
+        "title": "gk crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 250,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 4,
+      "mention_count": 0,
+      "category": "tokens",
+      "category_priority": 6,
+      "has_description": true,
+      "article_word_count": 1465,
+      "keyword_bag_size": 26,
+      "heading_count": 14,
+      "list_count": 1,
+      "internal_link_count": 9,
+      "paragraph_count": 21,
+      "section_count": 11,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 81,
+      "authority_score": 21
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 30,
+      "word_count_points": 50,
+      "keyword_bag_points": 26,
+      "content_quality_points": 88,
+      "authority_points": 26,
+      "final_rank_score": 250,
+      "authority_graph_points": 5
+    },
+    "search_index": {
+      "normalized_title": "gk crypto moonboys wiki",
+      "tokens": [
+        "gk",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "gk",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "in",
+        "the",
+        "archive",
+        "an",
+        "ambiguous",
+        "legacy",
+        "reward",
+        "label",
+        "its",
+        "fictional",
+        "economic",
+        "role",
+        "and",
+        "distinction",
+        "from",
+        "specifically",
+        "named",
+        "ecosystem",
+        "tokens",
+        "live",
+        "arcade",
+        "xp",
+        "token",
+        "forging",
+        "forked",
+        "essence",
+        "identity",
+        "honest",
+        "scales"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 36,
+      "existing_outbound_count": 9,
+      "suggested_outbound_count": 27,
+      "authority": 4.5
     },
     "brand": null
   },
@@ -28854,6 +28497,106 @@
     "brand": null
   },
   {
+    "title": "EXYBOY",
+    "desc": "EXYBOY is an archived XRPL token reference in the Graffiti Kings ecosystem, with its historical mention distinguished from unverified issuer, market and utility details.",
+    "url": "/wiki/exyboy.html",
+    "tags": [
+      "exyboy",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "tokens",
+    "aliases": [
+      {
+        "title": "exyboy crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 246,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 4,
+      "mention_count": 0,
+      "category": "tokens",
+      "category_priority": 6,
+      "has_description": true,
+      "article_word_count": 1017,
+      "keyword_bag_size": 27,
+      "heading_count": 11,
+      "list_count": 1,
+      "internal_link_count": 9,
+      "paragraph_count": 15,
+      "section_count": 8,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 77,
+      "authority_score": 18
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 30,
+      "word_count_points": 50,
+      "keyword_bag_points": 27,
+      "content_quality_points": 84,
+      "authority_points": 25,
+      "final_rank_score": 246,
+      "authority_graph_points": 7
+    },
+    "search_index": {
+      "normalized_title": "exyboy crypto moonboys wiki",
+      "tokens": [
+        "exyboy",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "exyboy",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "is",
+        "an",
+        "archived",
+        "xrpl",
+        "token",
+        "reference",
+        "in",
+        "the",
+        "graffiti",
+        "kings",
+        "ecosystem",
+        "with",
+        "its",
+        "historical",
+        "mention",
+        "distinguished",
+        "from",
+        "unverified",
+        "issuer",
+        "market",
+        "and",
+        "utility",
+        "details",
+        "account",
+        "currency",
+        "identifier",
+        "june",
+        "2025",
+        "overview"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 1,
+      "outbound_count": 37,
+      "existing_outbound_count": 9,
+      "suggested_outbound_count": 28,
+      "authority": 6.5
+    },
+    "brand": null
+  },
+  {
     "title": "Forklord You",
     "desc": "Forklord You reigns as the master of forks and splits in the Crypto Moonboys universe, a commanding enigma whose power over blockchain divergences reshapes the",
     "url": "/wiki/forklord-you.html",
@@ -29788,101 +29531,6 @@
     "brand": null
   },
   {
-    "title": "battlemech blast",
-    "desc": "Battlemech Blast is a specific event within HODL WARS in the Crypto Moonboys universe, a 2D web3 shooter game on the WAX blockchain where players pilot tokenize",
-    "url": "/wiki/battlemech-blast.html",
-    "tags": [
-      "battlemech",
-      "blast",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "battlemech blast crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 243,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 791,
-      "keyword_bag_size": 26,
-      "heading_count": 11,
-      "list_count": 2,
-      "internal_link_count": 9,
-      "paragraph_count": 10,
-      "section_count": 8,
-      "lore_paragraph_count": 8,
-      "content_quality_score": 77,
-      "authority_score": 20
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 40,
-      "keyword_bag_points": 26,
-      "content_quality_points": 85,
-      "authority_points": 27,
-      "final_rank_score": 243,
-      "authority_graph_points": 7
-    },
-    "search_index": {
-      "normalized_title": "battlemech blast crypto moonboys wiki",
-      "tokens": [
-        "battlemech",
-        "blast",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "battlemech",
-        "blast",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "is",
-        "a",
-        "specific",
-        "event",
-        "within",
-        "hodl",
-        "wars",
-        "in",
-        "the",
-        "universe",
-        "2d",
-        "web3",
-        "shooter",
-        "game",
-        "on",
-        "wax",
-        "blockchain",
-        "where",
-        "players",
-        "pilot",
-        "tokenize"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 1,
-      "outbound_count": 35,
-      "existing_outbound_count": 9,
-      "suggested_outbound_count": 26,
-      "authority": 6.5
-    },
-    "brand": null
-  },
-  {
     "title": "SNEAKAR",
     "desc": "SNEAKAR in the Crypto Moonboys reference: archived creative associations, wearable art, and the fictional Walking Billboard Effect, Neon Hack and Phantom Stride traditions.",
     "url": "/wiki/sneakar.html",
@@ -29987,12 +29635,12 @@
     "brand": null
   },
   {
-    "title": "Trevor Fung",
-    "desc": "Trevor Fung is a pioneering British Balearic and house DJ whose Ibiza work helped ignite London’s acid-house revolution.",
-    "url": "/wiki/trevor-fung.html",
+    "title": "battlemech blast",
+    "desc": "Battlemech Blast is a specific event within HODL WARS in the Crypto Moonboys universe, a 2D web3 shooter game on the WAX blockchain where players pilot tokenize",
+    "url": "/wiki/battlemech-blast.html",
     "tags": [
-      "trevor",
-      "fung",
+      "battlemech",
+      "blast",
       "crypto",
       "moonboys",
       "wiki"
@@ -30000,10 +29648,10 @@
     "category": "factions",
     "aliases": [
       {
-        "title": "trevor fung crypto moonboys wiki"
+        "title": "battlemech blast crypto moonboys wiki"
       }
     ],
-    "rank_score": 242,
+    "rank_score": 241,
     "rank_signals": {
       "is_canonical": true,
       "alias_count": 1,
@@ -30012,68 +29660,72 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 1657,
-      "keyword_bag_size": 22,
-      "heading_count": 14,
-      "list_count": 1,
-      "internal_link_count": 6,
-      "paragraph_count": 30,
-      "section_count": 11,
-      "lore_paragraph_count": 1,
+      "article_word_count": 791,
+      "keyword_bag_size": 26,
+      "heading_count": 11,
+      "list_count": 2,
+      "internal_link_count": 9,
+      "paragraph_count": 10,
+      "section_count": 8,
+      "lore_paragraph_count": 8,
       "content_quality_score": 77,
-      "authority_score": 17
+      "authority_score": 20
     },
     "rank_diagnostics": {
       "canonical_points": 20,
       "description_points": 10,
       "category_points": 35,
-      "word_count_points": 50,
-      "keyword_bag_points": 22,
+      "word_count_points": 40,
+      "keyword_bag_points": 26,
       "content_quality_points": 85,
-      "authority_points": 20,
-      "final_rank_score": 242,
-      "authority_graph_points": 3
+      "authority_points": 25,
+      "final_rank_score": 241,
+      "authority_graph_points": 5
     },
     "search_index": {
-      "normalized_title": "trevor fung crypto moonboys wiki",
+      "normalized_title": "battlemech blast crypto moonboys wiki",
       "tokens": [
-        "trevor",
-        "fung",
+        "battlemech",
+        "blast",
         "crypto",
         "moonboys",
         "wiki"
       ],
       "keyword_bag": [
-        "trevor",
-        "fung",
+        "battlemech",
+        "blast",
         "crypto",
         "moonboys",
         "wiki",
         "is",
         "a",
-        "pioneering",
-        "british",
-        "balearic",
-        "and",
-        "house",
-        "dj",
-        "whose",
-        "ibiza",
-        "work",
-        "helped",
-        "ignite",
-        "london",
-        "s",
-        "acid",
-        "revolution"
+        "specific",
+        "event",
+        "within",
+        "hodl",
+        "wars",
+        "in",
+        "the",
+        "universe",
+        "2d",
+        "web3",
+        "shooter",
+        "game",
+        "on",
+        "wax",
+        "blockchain",
+        "where",
+        "players",
+        "pilot",
+        "tokenize"
       ]
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 10,
-      "existing_outbound_count": 6,
-      "suggested_outbound_count": 4,
-      "authority": 3
+      "outbound_count": 35,
+      "existing_outbound_count": 9,
+      "suggested_outbound_count": 26,
+      "authority": 4.5
     },
     "brand": null
   },
@@ -30518,6 +30170,106 @@
       "existing_outbound_count": 12,
       "suggested_outbound_count": 25,
       "authority": 44
+    },
+    "brand": null
+  },
+  {
+    "title": "charlie-buster",
+    "desc": "Charlie Buster, also known as Buster: street art, Busterisms, No Ball Games and XRP Kids, with public work separated from fictional roles and older project proposals.",
+    "url": "/wiki/charlie-buster.html",
+    "tags": [
+      "charlie",
+      "buster",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "misc",
+    "aliases": [
+      {
+        "title": "charlie buster crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 239,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "misc",
+      "category_priority": 3,
+      "has_description": true,
+      "article_word_count": 1537,
+      "keyword_bag_size": 27,
+      "heading_count": 14,
+      "list_count": 1,
+      "internal_link_count": 9,
+      "paragraph_count": 22,
+      "section_count": 11,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 81,
+      "authority_score": 21
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 15,
+      "word_count_points": 50,
+      "keyword_bag_points": 27,
+      "content_quality_points": 89,
+      "authority_points": 28,
+      "final_rank_score": 239,
+      "authority_graph_points": 7
+    },
+    "search_index": {
+      "normalized_title": "charlie buster crypto moonboys wiki",
+      "tokens": [
+        "charlie",
+        "buster",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "charlie",
+        "buster",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "also",
+        "known",
+        "as",
+        "street",
+        "art",
+        "busterisms",
+        "no",
+        "ball",
+        "games",
+        "and",
+        "xrp",
+        "kids",
+        "with",
+        "public",
+        "work",
+        "separated",
+        "from",
+        "fictional",
+        "roles",
+        "older",
+        "project",
+        "proposals",
+        "leake",
+        "iamcharliebuster",
+        "nftbuster",
+        "treef"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 1,
+      "outbound_count": 32,
+      "existing_outbound_count": 9,
+      "suggested_outbound_count": 23,
+      "authority": 6.5
     },
     "brand": null
   },
@@ -31349,6 +31101,211 @@
       "existing_outbound_count": 12,
       "suggested_outbound_count": 12,
       "authority": 14
+    },
+    "brand": null
+  },
+  {
+    "title": "Darren Cullen (SER)",
+    "desc": "Darren Cullen, known as SER: Graffiti Kings founder, street-art identity and the GKniftyHEADS, GraffPUNKS and Crypto Moonboys creator world, separate from Year 3008 fiction.",
+    "url": "/wiki/darren-cullen.html",
+    "tags": [
+      "darren",
+      "cullen",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "misc",
+    "aliases": [
+      {
+        "title": "darren cullen crypto moonboys wiki"
+      },
+      {
+        "title": "darren cullen"
+      }
+    ],
+    "rank_score": 234,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 2,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "misc",
+      "category_priority": 3,
+      "has_description": true,
+      "article_word_count": 1315,
+      "keyword_bag_size": 25,
+      "heading_count": 12,
+      "list_count": 1,
+      "internal_link_count": 6,
+      "paragraph_count": 20,
+      "section_count": 9,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 81,
+      "authority_score": 17
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 15,
+      "word_count_points": 50,
+      "keyword_bag_points": 25,
+      "content_quality_points": 92,
+      "authority_points": 22,
+      "final_rank_score": 234,
+      "authority_graph_points": 5
+    },
+    "search_index": {
+      "normalized_title": "darren cullen ser crypto moonboys wiki",
+      "tokens": [
+        "darren",
+        "cullen",
+        "ser",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "darren",
+        "cullen",
+        "ser",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "known",
+        "as",
+        "graffiti",
+        "kings",
+        "founder",
+        "street",
+        "art",
+        "identity",
+        "and",
+        "the",
+        "gkniftyheads",
+        "graffpunks",
+        "creator",
+        "world",
+        "separate",
+        "from",
+        "year",
+        "3008",
+        "fiction",
+        "forge",
+        "master",
+        "eternal",
+        "architect",
+        "of",
+        "first",
+        "tag",
+        "legacy"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 1,
+      "outbound_count": 34,
+      "existing_outbound_count": 6,
+      "suggested_outbound_count": 28,
+      "authority": 5
+    },
+    "brand": null
+  },
+  {
+    "title": "Delicious Again Pete",
+    "desc": "Delicious Again Pete, Peter Clark: resin art toys, hip-hop and pop-culture imagery, and the separate fictional gathering-host tradition in Crypto Moonboys.",
+    "url": "/wiki/delicious-again-pete.html",
+    "tags": [
+      "delicious",
+      "again",
+      "pete",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "misc",
+    "aliases": [],
+    "rank_score": 234,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 6,
+      "mention_count": 0,
+      "category": "misc",
+      "category_priority": 3,
+      "has_description": true,
+      "article_word_count": 1581,
+      "keyword_bag_size": 24,
+      "heading_count": 14,
+      "list_count": 1,
+      "internal_link_count": 9,
+      "paragraph_count": 23,
+      "section_count": 11,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 81,
+      "authority_score": 21
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 15,
+      "word_count_points": 50,
+      "keyword_bag_points": 24,
+      "content_quality_points": 87,
+      "authority_points": 28,
+      "final_rank_score": 234,
+      "authority_graph_points": 7
+    },
+    "search_index": {
+      "normalized_title": "delicious again pete crypto moonboys wiki",
+      "tokens": [
+        "delicious",
+        "again",
+        "pete",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "delicious",
+        "again",
+        "pete",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "peter",
+        "clark",
+        "resin",
+        "art",
+        "toys",
+        "hip",
+        "hop",
+        "and",
+        "pop",
+        "culture",
+        "imagery",
+        "the",
+        "separate",
+        "fictional",
+        "gathering",
+        "host",
+        "tradition",
+        "in",
+        "designer",
+        "darth",
+        "dunks",
+        "x",
+        "ray",
+        "boba",
+        "run",
+        "jabba"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 1,
+      "outbound_count": 15,
+      "existing_outbound_count": 9,
+      "suggested_outbound_count": 6,
+      "authority": 6.5
     },
     "brand": null
   },
@@ -32545,6 +32502,108 @@
       "existing_outbound_count": 11,
       "suggested_outbound_count": 13,
       "authority": 7.5
+    },
+    "brand": null
+  },
+  {
+    "title": "Trevor Fung",
+    "desc": "Trevor Fung: British Balearic and house DJ, archived Ibiza and London club history, and his GraffPUNKS Godfather and radio role, separate from fictional lore.",
+    "url": "/wiki/trevor-fung.html",
+    "tags": [
+      "trevor",
+      "fung",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "misc",
+    "aliases": [
+      {
+        "title": "trevor fung crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 228,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "misc",
+      "category_priority": 3,
+      "has_description": true,
+      "article_word_count": 1464,
+      "keyword_bag_size": 24,
+      "heading_count": 13,
+      "list_count": 1,
+      "internal_link_count": 6,
+      "paragraph_count": 22,
+      "section_count": 10,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 81,
+      "authority_score": 17
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 15,
+      "word_count_points": 50,
+      "keyword_bag_points": 24,
+      "content_quality_points": 89,
+      "authority_points": 20,
+      "final_rank_score": 228,
+      "authority_graph_points": 3
+    },
+    "search_index": {
+      "normalized_title": "trevor fung crypto moonboys wiki",
+      "tokens": [
+        "trevor",
+        "fung",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "trevor",
+        "fung",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "british",
+        "balearic",
+        "and",
+        "house",
+        "dj",
+        "archived",
+        "ibiza",
+        "london",
+        "club",
+        "history",
+        "his",
+        "graffpunks",
+        "godfather",
+        "radio",
+        "role",
+        "separate",
+        "from",
+        "fictional",
+        "lore",
+        "version",
+        "excursion",
+        "the",
+        "funhouse",
+        "project",
+        "ian",
+        "st",
+        "paul",
+        "ambassador"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 13,
+      "existing_outbound_count": 6,
+      "suggested_outbound_count": 7,
+      "authority": 3
     },
     "brand": null
   },
@@ -37247,6 +37306,102 @@
     "brand": null
   },
   {
+    "title": "Jillian Godsil",
+    "desc": "Jillian Godsil in the Crypto Moonboys record: a blockchain reporter and writer, with that recognition separated from unsupported design or governance claims.",
+    "url": "/wiki/jillian-godsil.html",
+    "tags": [
+      "jillian",
+      "godsil",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "misc",
+    "aliases": [
+      {
+        "title": "jillian godsil crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 204,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "misc",
+      "category_priority": 3,
+      "has_description": true,
+      "article_word_count": 806,
+      "keyword_bag_size": 23,
+      "heading_count": 10,
+      "list_count": 1,
+      "internal_link_count": 9,
+      "paragraph_count": 11,
+      "section_count": 7,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 65,
+      "authority_score": 18
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 15,
+      "word_count_points": 40,
+      "keyword_bag_points": 23,
+      "content_quality_points": 73,
+      "authority_points": 23,
+      "final_rank_score": 204,
+      "authority_graph_points": 5
+    },
+    "search_index": {
+      "normalized_title": "jillian godsil crypto moonboys wiki",
+      "tokens": [
+        "jillian",
+        "godsil",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "jillian",
+        "godsil",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "in",
+        "the",
+        "record",
+        "a",
+        "blockchain",
+        "reporter",
+        "and",
+        "writer",
+        "with",
+        "that",
+        "recognition",
+        "separated",
+        "from",
+        "unsupported",
+        "design",
+        "or",
+        "governance",
+        "claims",
+        "project",
+        "coverage",
+        "reporting",
+        "acknowledgement"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 27,
+      "existing_outbound_count": 9,
+      "suggested_outbound_count": 18,
+      "authority": 4.5
+    },
+    "brand": null
+  },
+  {
     "title": "👉👑 BITCOIN KiD INFINITE ⚡️⚡️⚡️",
     "desc": "👉👑 BITCOIN KiD INFINITE ⚡️⚡️⚡️ is an NFT in the gkniftyheads WAX AtomicAssets collection.",
     "url": "/wiki/gkniftyheads-bitcoin-kid-infinite-776003.html",
@@ -38235,95 +38390,6 @@
       "existing_outbound_count": 12,
       "suggested_outbound_count": 35,
       "authority": 20
-    },
-    "brand": null
-  },
-  {
-    "title": "EXYBOY",
-    "desc": "Crypto Moonboys wiki guide to EXYBOY, an XRP / XRPL meme-token project reference with trust-line, DEX, issuer and community research notes.",
-    "url": "/wiki/exyboy.html",
-    "tags": [
-      "exyboy",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "exyboy crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 199,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 4,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 579,
-      "keyword_bag_size": 22,
-      "heading_count": 11,
-      "list_count": 1,
-      "internal_link_count": 9,
-      "paragraph_count": 8,
-      "section_count": 8,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 53,
-      "authority_score": 16
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 29,
-      "keyword_bag_points": 22,
-      "content_quality_points": 60,
-      "authority_points": 23,
-      "final_rank_score": 199,
-      "authority_graph_points": 7
-    },
-    "search_index": {
-      "normalized_title": "exyboy crypto moonboys wiki",
-      "tokens": [
-        "exyboy",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "exyboy",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "guide",
-        "to",
-        "an",
-        "xrp",
-        "xrpl",
-        "meme",
-        "token",
-        "project",
-        "reference",
-        "with",
-        "trust",
-        "line",
-        "dex",
-        "issuer",
-        "and",
-        "community",
-        "research",
-        "notes"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 1,
-      "outbound_count": 27,
-      "existing_outbound_count": 9,
-      "suggested_outbound_count": 18,
-      "authority": 6.5
     },
     "brand": null
   },

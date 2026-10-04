@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-04T14:05:16.067Z",
-  "verified_at": "2026-10-04T14:05:16.067Z",
+  "generated_at": "2026-10-04T14:07:06.539Z",
+  "verified_at": "2026-10-04T14:07:06.539Z",
   "nodes": [
     {
       "id": "/about.html",
@@ -191,7 +191,7 @@
       "title": "battlemech blast",
       "url": "/wiki/battlemech-blast.html",
       "category": "factions",
-      "rank_score": 243,
+      "rank_score": 241,
       "authority_score": 20
     },
     {
@@ -318,9 +318,9 @@
       "id": "/wiki/charlie-buster.html",
       "title": "charlie-buster",
       "url": "/wiki/charlie-buster.html",
-      "category": "characters",
-      "rank_score": 267,
-      "authority_score": 18
+      "category": "misc",
+      "rank_score": 239,
+      "authority_score": 21
     },
     {
       "id": "/wiki/croydon-tower-blocks.html",
@@ -350,9 +350,9 @@
       "id": "/wiki/darren-cullen.html",
       "title": "Darren Cullen (SER)",
       "url": "/wiki/darren-cullen.html",
-      "category": "characters",
-      "rank_score": 257,
-      "authority_score": 21
+      "category": "misc",
+      "rank_score": 234,
+      "authority_score": 17
     },
     {
       "id": "/wiki/defi-mining.html",
@@ -374,9 +374,9 @@
       "id": "/wiki/delicious-again-pete.html",
       "title": "Delicious Again Pete",
       "url": "/wiki/delicious-again-pete.html",
-      "category": "factions",
-      "rank_score": 270,
-      "authority_score": 18
+      "category": "misc",
+      "rank_score": 234,
+      "authority_score": 21
     },
     {
       "id": "/wiki/diamond-hands.html",
@@ -438,9 +438,9 @@
       "id": "/wiki/exyboy.html",
       "title": "EXYBOY",
       "url": "/wiki/exyboy.html",
-      "category": "factions",
-      "rank_score": 199,
-      "authority_score": 16
+      "category": "tokens",
+      "rank_score": 246,
+      "authority_score": 18
     },
     {
       "id": "/wiki/fgl-token.html",
@@ -1182,9 +1182,9 @@
       "id": "/wiki/gk.html",
       "title": "$GK",
       "url": "/wiki/gk.html",
-      "category": "factions",
-      "rank_score": 251,
-      "authority_score": 18
+      "category": "tokens",
+      "rank_score": 250,
+      "authority_score": 21
     },
     {
       "id": "/wiki/gkniftyheads-alessandro-anonymity-advocate-amato-783445.html",
@@ -2502,8 +2502,8 @@
       "id": "/wiki/jillian-godsil.html",
       "title": "Jillian Godsil",
       "url": "/wiki/jillian-godsil.html",
-      "category": "factions",
-      "rank_score": 253,
+      "category": "misc",
+      "rank_score": 204,
       "authority_score": 18
     },
     {
@@ -3238,8 +3238,8 @@
       "id": "/wiki/trevor-fung.html",
       "title": "Trevor Fung",
       "url": "/wiki/trevor-fung.html",
-      "category": "factions",
-      "rank_score": 242,
+      "category": "misc",
+      "rank_score": 228,
       "authority_score": 17
     },
     {
@@ -3382,7 +3382,7 @@
     },
     {
       "source": "/wiki/1m-free-nfts-program.html",
-      "target": "/wiki/gk.html",
+      "target": "/wiki/harrison-rift.html",
       "score": 72,
       "weight": 0.72
     },
@@ -3400,12 +3400,6 @@
     },
     {
       "source": "/wiki/2025-metaverse-launch-party.html",
-      "target": "/wiki/delicious-again-pete.html",
-      "score": 78,
-      "weight": 0.78
-    },
-    {
-      "source": "/wiki/2025-metaverse-launch-party.html",
       "target": "/wiki/lfgk.html",
       "score": 77,
       "weight": 0.77
@@ -3415,6 +3409,12 @@
       "target": "/wiki/midevilpunks.html",
       "score": 76,
       "weight": 0.76
+    },
+    {
+      "source": "/wiki/2025-metaverse-launch-party.html",
+      "target": "/wiki/forkborn-collective.html",
+      "score": 75,
+      "weight": 0.75
     },
     {
       "source": "/wiki/589-xrpl.html",
@@ -3916,15 +3916,15 @@
     },
     {
       "source": "/wiki/bitcoin-btc.html",
-      "target": "/wiki/589-xrpl.html",
-      "score": 44,
-      "weight": 0.44
+      "target": "/wiki/exyboy.html",
+      "score": 46,
+      "weight": 0.46
     },
     {
       "source": "/wiki/bitcoin-btc.html",
-      "target": "/wiki/666-xrpl.html",
-      "score": 44,
-      "weight": 0.44
+      "target": "/wiki/gk.html",
+      "score": 46,
+      "weight": 0.46
     },
     {
       "source": "/wiki/bitcoin-kid-army.html",
@@ -4036,15 +4036,15 @@
     },
     {
       "source": "/wiki/bitcoin.html",
-      "target": "/wiki/bitcoin-kids.html",
-      "score": 51,
-      "weight": 0.51
+      "target": "/wiki/exyboy.html",
+      "score": 52,
+      "weight": 0.52
     },
     {
       "source": "/wiki/bitcoin.html",
-      "target": "/wiki/589-xrpl.html",
-      "score": 47,
-      "weight": 0.47
+      "target": "/wiki/gk.html",
+      "score": 52,
+      "weight": 0.52
     },
     {
       "source": "/wiki/block-node-defenders.html",
@@ -4228,33 +4228,33 @@
     },
     {
       "source": "/wiki/charlie-buster.html",
-      "target": "/wiki/crypto-moonboys.html",
-      "score": 84,
-      "weight": 0.84
+      "target": "/wiki/darren-cullen.html",
+      "score": 55,
+      "weight": 0.55
     },
     {
       "source": "/wiki/charlie-buster.html",
-      "target": "/wiki/null-the-prophet.html",
-      "score": 79,
-      "weight": 0.79
+      "target": "/wiki/trevor-fung.html",
+      "score": 52,
+      "weight": 0.52
     },
     {
       "source": "/wiki/charlie-buster.html",
-      "target": "/wiki/bitcoin-kids.html",
-      "score": 75,
-      "weight": 0.75
+      "target": "/wiki/delicious-again-pete.html",
+      "score": 49,
+      "weight": 0.49
     },
     {
       "source": "/wiki/charlie-buster.html",
-      "target": "/wiki/forksplit.html",
-      "score": 75,
-      "weight": 0.75
+      "target": "/wiki/jillian-godsil.html",
+      "score": 49,
+      "weight": 0.49
     },
     {
       "source": "/wiki/charlie-buster.html",
-      "target": "/wiki/jodie-zoom-2000.html",
-      "score": 75,
-      "weight": 0.75
+      "target": "/wiki/hodlmoonboys-nft-collection.html",
+      "score": 48,
+      "weight": 0.48
     },
     {
       "source": "/wiki/croydon-tower-blocks.html",
@@ -4294,6 +4294,18 @@
     },
     {
       "source": "/wiki/crypto-moonboy-pets.html",
+      "target": "/wiki/exyboy.html",
+      "score": 52,
+      "weight": 0.52
+    },
+    {
+      "source": "/wiki/crypto-moonboy-pets.html",
+      "target": "/wiki/gk.html",
+      "score": 52,
+      "weight": 0.52
+    },
+    {
+      "source": "/wiki/crypto-moonboy-pets.html",
       "target": "/wiki/altcoins.html",
       "score": 50,
       "weight": 0.5
@@ -4301,18 +4313,6 @@
     {
       "source": "/wiki/crypto-moonboy-pets.html",
       "target": "/wiki/589-xrpl.html",
-      "score": 47,
-      "weight": 0.47
-    },
-    {
-      "source": "/wiki/crypto-moonboy-pets.html",
-      "target": "/wiki/666-xrpl.html",
-      "score": 47,
-      "weight": 0.47
-    },
-    {
-      "source": "/wiki/crypto-moonboy-pets.html",
-      "target": "/wiki/bear-xrpl.html",
       "score": 47,
       "weight": 0.47
     },
@@ -4348,33 +4348,33 @@
     },
     {
       "source": "/wiki/darren-cullen.html",
+      "target": "/wiki/charlie-buster.html",
+      "score": 55,
+      "weight": 0.55
+    },
+    {
+      "source": "/wiki/darren-cullen.html",
+      "target": "/wiki/trevor-fung.html",
+      "score": 55,
+      "weight": 0.55
+    },
+    {
+      "source": "/wiki/darren-cullen.html",
+      "target": "/wiki/delicious-again-pete.html",
+      "score": 52,
+      "weight": 0.52
+    },
+    {
+      "source": "/wiki/darren-cullen.html",
+      "target": "/wiki/jillian-godsil.html",
+      "score": 52,
+      "weight": 0.52
+    },
+    {
+      "source": "/wiki/darren-cullen.html",
       "target": "/wiki/crypto-moonboys.html",
-      "score": 93,
-      "weight": 0.93
-    },
-    {
-      "source": "/wiki/darren-cullen.html",
-      "target": "/wiki/null-the-prophet.html",
-      "score": 79,
-      "weight": 0.79
-    },
-    {
-      "source": "/wiki/darren-cullen.html",
-      "target": "/wiki/bitcoin-kids.html",
-      "score": 75,
-      "weight": 0.75
-    },
-    {
-      "source": "/wiki/darren-cullen.html",
-      "target": "/wiki/hodl-warriors.html",
-      "score": 73,
-      "weight": 0.73
-    },
-    {
-      "source": "/wiki/darren-cullen.html",
-      "target": "/wiki/punk-token.html",
-      "score": 71,
-      "weight": 0.71
+      "score": 51,
+      "weight": 0.51
     },
     {
       "source": "/wiki/defi-mining.html",
@@ -4438,33 +4438,33 @@
     },
     {
       "source": "/wiki/delicious-again-pete.html",
+      "target": "/wiki/jillian-godsil.html",
+      "score": 74,
+      "weight": 0.74
+    },
+    {
+      "source": "/wiki/delicious-again-pete.html",
+      "target": "/wiki/darren-cullen.html",
+      "score": 52,
+      "weight": 0.52
+    },
+    {
+      "source": "/wiki/delicious-again-pete.html",
+      "target": "/wiki/trevor-fung.html",
+      "score": 52,
+      "weight": 0.52
+    },
+    {
+      "source": "/wiki/delicious-again-pete.html",
+      "target": "/wiki/charlie-buster.html",
+      "score": 49,
+      "weight": 0.49
+    },
+    {
+      "source": "/wiki/delicious-again-pete.html",
       "target": "/wiki/pmsl.html",
-      "score": 91,
-      "weight": 0.91
-    },
-    {
-      "source": "/wiki/delicious-again-pete.html",
-      "target": "/wiki/lfgk.html",
-      "score": 80,
-      "weight": 0.8
-    },
-    {
-      "source": "/wiki/delicious-again-pete.html",
-      "target": "/wiki/forkborn-collective.html",
-      "score": 78,
-      "weight": 0.78
-    },
-    {
-      "source": "/wiki/delicious-again-pete.html",
-      "target": "/wiki/street-kingdoms.html",
-      "score": 78,
-      "weight": 0.78
-    },
-    {
-      "source": "/wiki/delicious-again-pete.html",
-      "target": "/wiki/2025-metaverse-launch-party.html",
-      "score": 77,
-      "weight": 0.77
+      "score": 49,
+      "weight": 0.49
     },
     {
       "source": "/wiki/diamond-hands.html",
@@ -4678,33 +4678,33 @@
     },
     {
       "source": "/wiki/exyboy.html",
+      "target": "/wiki/gk.html",
+      "score": 71,
+      "weight": 0.71
+    },
+    {
+      "source": "/wiki/exyboy.html",
+      "target": "/wiki/crypto-moonboy-pets.html",
+      "score": 56,
+      "weight": 0.56
+    },
+    {
+      "source": "/wiki/exyboy.html",
+      "target": "/wiki/bitcoin.html",
+      "score": 55,
+      "weight": 0.55
+    },
+    {
+      "source": "/wiki/exyboy.html",
+      "target": "/wiki/altcoins.html",
+      "score": 50,
+      "weight": 0.5
+    },
+    {
+      "source": "/wiki/exyboy.html",
       "target": "/wiki/pmsl.html",
-      "score": 91,
-      "weight": 0.91
-    },
-    {
-      "source": "/wiki/exyboy.html",
-      "target": "/wiki/forkborn-collective.html",
-      "score": 78,
-      "weight": 0.78
-    },
-    {
-      "source": "/wiki/exyboy.html",
-      "target": "/wiki/street-kingdoms.html",
-      "score": 78,
-      "weight": 0.78
-    },
-    {
-      "source": "/wiki/exyboy.html",
-      "target": "/wiki/spirit-borns.html",
-      "score": 77,
-      "weight": 0.77
-    },
-    {
-      "source": "/wiki/exyboy.html",
-      "target": "/wiki/moon-mission.html",
-      "score": 76,
-      "weight": 0.76
+      "score": 49,
+      "weight": 0.49
     },
     {
       "source": "/wiki/fgl-token.html",
@@ -7336,13 +7336,13 @@
     },
     {
       "source": "/wiki/gang-signs-card-game.html",
-      "target": "/wiki/delicious-again-pete.html",
+      "target": "/wiki/forkborn-collective.html",
       "score": 75,
       "weight": 0.75
     },
     {
       "source": "/wiki/gang-signs-card-game.html",
-      "target": "/wiki/forkborn-collective.html",
+      "target": "/wiki/harrison-rift.html",
       "score": 75,
       "weight": 0.75
     },
@@ -7468,33 +7468,33 @@
     },
     {
       "source": "/wiki/gk.html",
-      "target": "/wiki/pmsl.html",
-      "score": 88,
-      "weight": 0.88
+      "target": "/wiki/exyboy.html",
+      "score": 71,
+      "weight": 0.71
     },
     {
       "source": "/wiki/gk.html",
-      "target": "/wiki/delicious-again-pete.html",
-      "score": 75,
-      "weight": 0.75
+      "target": "/wiki/crypto-moonboy-pets.html",
+      "score": 56,
+      "weight": 0.56
     },
     {
       "source": "/wiki/gk.html",
-      "target": "/wiki/forkborn-collective.html",
-      "score": 75,
-      "weight": 0.75
+      "target": "/wiki/bitcoin.html",
+      "score": 55,
+      "weight": 0.55
     },
     {
       "source": "/wiki/gk.html",
-      "target": "/wiki/harrison-rift.html",
-      "score": 75,
-      "weight": 0.75
+      "target": "/wiki/altcoins.html",
+      "score": 50,
+      "weight": 0.5
     },
     {
       "source": "/wiki/gk.html",
-      "target": "/wiki/street-kingdoms.html",
-      "score": 75,
-      "weight": 0.75
+      "target": "/wiki/589-xrpl.html",
+      "score": 47,
+      "weight": 0.47
     },
     {
       "source": "/wiki/gkniftyheads-alessandro-anonymity-advocate-amato-783445.html",
@@ -11920,12 +11920,6 @@
     },
     {
       "source": "/wiki/graffiti-queens-in-decentraland.html",
-      "target": "/wiki/delicious-again-pete.html",
-      "score": 75,
-      "weight": 0.75
-    },
-    {
-      "source": "/wiki/graffiti-queens-in-decentraland.html",
       "target": "/wiki/2025-metaverse-launch-party.html",
       "score": 74,
       "weight": 0.74
@@ -11935,6 +11929,12 @@
       "target": "/wiki/lfgk.html",
       "score": 74,
       "weight": 0.74
+    },
+    {
+      "source": "/wiki/graffiti-queens-in-decentraland.html",
+      "target": "/wiki/forkborn-collective.html",
+      "score": 72,
+      "weight": 0.72
     },
     {
       "source": "/wiki/graffpunks-24-7-radio.html",
@@ -12328,7 +12328,31 @@
     },
     {
       "source": "/wiki/hodlmoonboys-nft-collection.html",
+      "target": "/wiki/charlie-buster.html",
+      "score": 46,
+      "weight": 0.46
+    },
+    {
+      "source": "/wiki/hodlmoonboys-nft-collection.html",
+      "target": "/wiki/darren-cullen.html",
+      "score": 46,
+      "weight": 0.46
+    },
+    {
+      "source": "/wiki/hodlmoonboys-nft-collection.html",
+      "target": "/wiki/delicious-again-pete.html",
+      "score": 46,
+      "weight": 0.46
+    },
+    {
+      "source": "/wiki/hodlmoonboys-nft-collection.html",
       "target": "/wiki/gkniftyheads-nft-collection.html",
+      "score": 46,
+      "weight": 0.46
+    },
+    {
+      "source": "/wiki/hodlmoonboys-nft-collection.html",
+      "target": "/wiki/jillian-godsil.html",
       "score": 46,
       "weight": 0.46
     },
@@ -12394,33 +12418,33 @@
     },
     {
       "source": "/wiki/jillian-godsil.html",
+      "target": "/wiki/delicious-again-pete.html",
+      "score": 74,
+      "weight": 0.74
+    },
+    {
+      "source": "/wiki/jillian-godsil.html",
+      "target": "/wiki/darren-cullen.html",
+      "score": 52,
+      "weight": 0.52
+    },
+    {
+      "source": "/wiki/jillian-godsil.html",
+      "target": "/wiki/trevor-fung.html",
+      "score": 52,
+      "weight": 0.52
+    },
+    {
+      "source": "/wiki/jillian-godsil.html",
+      "target": "/wiki/charlie-buster.html",
+      "score": 49,
+      "weight": 0.49
+    },
+    {
+      "source": "/wiki/jillian-godsil.html",
       "target": "/wiki/pmsl.html",
-      "score": 91,
-      "weight": 0.91
-    },
-    {
-      "source": "/wiki/jillian-godsil.html",
-      "target": "/wiki/forkborn-collective.html",
-      "score": 78,
-      "weight": 0.78
-    },
-    {
-      "source": "/wiki/jillian-godsil.html",
-      "target": "/wiki/street-kingdoms.html",
-      "score": 78,
-      "weight": 0.78
-    },
-    {
-      "source": "/wiki/jillian-godsil.html",
-      "target": "/wiki/spirit-borns.html",
-      "score": 77,
-      "weight": 0.77
-    },
-    {
-      "source": "/wiki/jillian-godsil.html",
-      "target": "/wiki/moon-mission.html",
-      "score": 76,
-      "weight": 0.76
+      "score": 49,
+      "weight": 0.49
     },
     {
       "source": "/wiki/jodie-zoom-2000.html",
@@ -12520,12 +12544,6 @@
     },
     {
       "source": "/wiki/lfgk.html",
-      "target": "/wiki/delicious-again-pete.html",
-      "score": 81,
-      "weight": 0.81
-    },
-    {
-      "source": "/wiki/lfgk.html",
       "target": "/wiki/spirit-borns.html",
       "score": 80,
       "weight": 0.8
@@ -12539,6 +12557,12 @@
     {
       "source": "/wiki/lfgk.html",
       "target": "/wiki/forkborn-collective.html",
+      "score": 78,
+      "weight": 0.78
+    },
+    {
+      "source": "/wiki/lfgk.html",
+      "target": "/wiki/street-kingdoms.html",
       "score": 78,
       "weight": 0.78
     },
@@ -12676,19 +12700,19 @@
     },
     {
       "source": "/wiki/metaverse-battles.html",
-      "target": "/wiki/delicious-again-pete.html",
-      "score": 75,
-      "weight": 0.75
-    },
-    {
-      "source": "/wiki/metaverse-battles.html",
       "target": "/wiki/forkborn-collective.html",
       "score": 75,
       "weight": 0.75
     },
     {
       "source": "/wiki/metaverse-battles.html",
-      "target": "/wiki/gk.html",
+      "target": "/wiki/harrison-rift.html",
+      "score": 75,
+      "weight": 0.75
+    },
+    {
+      "source": "/wiki/metaverse-battles.html",
+      "target": "/wiki/street-kingdoms.html",
       "score": 75,
       "weight": 0.75
     },
@@ -13930,19 +13954,7 @@
     },
     {
       "source": "/wiki/squeaky-pinks-enforcers.html",
-      "target": "/wiki/delicious-again-pete.html",
-      "score": 75,
-      "weight": 0.75
-    },
-    {
-      "source": "/wiki/squeaky-pinks-enforcers.html",
       "target": "/wiki/forkborn-collective.html",
-      "score": 75,
-      "weight": 0.75
-    },
-    {
-      "source": "/wiki/squeaky-pinks-enforcers.html",
-      "target": "/wiki/gk.html",
       "score": 75,
       "weight": 0.75
     },
@@ -13951,6 +13963,18 @@
       "target": "/wiki/harrison-rift.html",
       "score": 75,
       "weight": 0.75
+    },
+    {
+      "source": "/wiki/squeaky-pinks-enforcers.html",
+      "target": "/wiki/street-kingdoms.html",
+      "score": 75,
+      "weight": 0.75
+    },
+    {
+      "source": "/wiki/squeaky-pinks-enforcers.html",
+      "target": "/wiki/2025-metaverse-launch-party.html",
+      "score": 74,
+      "weight": 0.74
     },
     {
       "source": "/wiki/staking.html",
@@ -14092,15 +14116,15 @@
     },
     {
       "source": "/wiki/swap-nefty.html",
-      "target": "/wiki/589-xrpl.html",
-      "score": 47,
-      "weight": 0.47
+      "target": "/wiki/exyboy.html",
+      "score": 49,
+      "weight": 0.49
     },
     {
       "source": "/wiki/swap-nefty.html",
-      "target": "/wiki/666-xrpl.html",
-      "score": 47,
-      "weight": 0.47
+      "target": "/wiki/gk.html",
+      "score": 49,
+      "weight": 0.49
     },
     {
       "source": "/wiki/tacoswap.html",
@@ -15154,33 +15178,33 @@
     },
     {
       "source": "/wiki/trevor-fung.html",
-      "target": "/wiki/pmsl.html",
-      "score": 72,
-      "weight": 0.72
+      "target": "/wiki/darren-cullen.html",
+      "score": 55,
+      "weight": 0.55
     },
     {
       "source": "/wiki/trevor-fung.html",
-      "target": "/wiki/rave-relics.html",
-      "score": 69,
-      "weight": 0.69
+      "target": "/wiki/charlie-buster.html",
+      "score": 52,
+      "weight": 0.52
     },
     {
       "source": "/wiki/trevor-fung.html",
-      "target": "/wiki/midevilpunks.html",
-      "score": 67,
-      "weight": 0.67
+      "target": "/wiki/delicious-again-pete.html",
+      "score": 52,
+      "weight": 0.52
     },
     {
       "source": "/wiki/trevor-fung.html",
-      "target": "/wiki/stikfamwars.html",
-      "score": 66,
-      "weight": 0.66
+      "target": "/wiki/jillian-godsil.html",
+      "score": 52,
+      "weight": 0.52
     },
     {
       "source": "/wiki/trevor-fung.html",
-      "target": "/wiki/the-finance-guild.html",
-      "score": 63,
-      "weight": 0.63
+      "target": "/wiki/hodlmoonboys-nft-collection.html",
+      "score": 48,
+      "weight": 0.48
     },
     {
       "source": "/wiki/triple-fork-event.html",

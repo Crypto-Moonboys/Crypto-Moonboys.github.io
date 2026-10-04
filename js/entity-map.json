@@ -605,7 +605,7 @@
     "entity_id": "charlie_buster",
     "canonical_title": "charlie-buster",
     "canonical_url": "/wiki/charlie-buster.html",
-    "category": "characters",
+    "category": "misc",
     "aliases": [
       "charlie buster crypto moonboys wiki"
     ],
@@ -705,7 +705,7 @@
     "entity_id": "darren_cullen",
     "canonical_title": "Darren Cullen (SER)",
     "canonical_url": "/wiki/darren-cullen.html",
-    "category": "characters",
+    "category": "misc",
     "aliases": [
       "darren cullen crypto moonboys wiki",
       "darren cullen"
@@ -767,7 +767,7 @@
     "entity_id": "delicious_again_pete",
     "canonical_title": "Delicious Again Pete",
     "canonical_url": "/wiki/delicious-again-pete.html",
-    "category": "factions",
+    "category": "misc",
     "aliases": [],
     "tags": [
       "delicious",
@@ -931,7 +931,7 @@
     "entity_id": "exyboy",
     "canonical_title": "EXYBOY",
     "canonical_url": "/wiki/exyboy.html",
-    "category": "factions",
+    "category": "tokens",
     "aliases": [
       "exyboy crypto moonboys wiki"
     ],
@@ -5240,7 +5240,7 @@
     "entity_id": "gk",
     "canonical_title": "$GK",
     "canonical_url": "/wiki/gk.html",
-    "category": "factions",
+    "category": "tokens",
     "aliases": [
       "gk crypto moonboys wiki"
     ],
@@ -8821,7 +8821,7 @@
     "entity_id": "jillian_godsil",
     "canonical_title": "Jillian Godsil",
     "canonical_url": "/wiki/jillian-godsil.html",
-    "category": "factions",
+    "category": "misc",
     "aliases": [
       "jillian godsil crypto moonboys wiki"
     ],
@@ -10850,7 +10850,7 @@
     "entity_id": "trevor_fung",
     "canonical_title": "Trevor Fung",
     "canonical_url": "/wiki/trevor-fung.html",
-    "category": "factions",
+    "category": "misc",
     "aliases": [
       "trevor fung crypto moonboys wiki"
     ],

@@ -599,7 +599,7 @@
       ],
       "canonical_title": "charlie-buster",
       "canonical_url": "/wiki/charlie-buster.html",
-      "category": "characters",
+      "category": "misc",
       "source_urls": [
         "/wiki/charlie-buster.html"
       ],
@@ -697,7 +697,7 @@
       ],
       "canonical_title": "Darren Cullen (SER)",
       "canonical_url": "/wiki/darren-cullen.html",
-      "category": "characters",
+      "category": "misc",
       "source_urls": [
         "/wiki/darren-cullen.html"
       ],
@@ -756,7 +756,7 @@
       "aliases": [],
       "canonical_title": "Delicious Again Pete",
       "canonical_url": "/wiki/delicious-again-pete.html",
-      "category": "factions",
+      "category": "misc",
       "source_urls": [
         "/wiki/delicious-again-pete.html"
       ],
@@ -921,7 +921,7 @@
       ],
       "canonical_title": "EXYBOY",
       "canonical_url": "/wiki/exyboy.html",
-      "category": "factions",
+      "category": "tokens",
       "source_urls": [
         "/wiki/exyboy.html"
       ],
@@ -5228,7 +5228,7 @@
       ],
       "canonical_title": "$GK",
       "canonical_url": "/wiki/gk.html",
-      "category": "factions",
+      "category": "tokens",
       "source_urls": [
         "/wiki/gk.html"
       ],
@@ -8770,7 +8770,7 @@
       ],
       "canonical_title": "Jillian Godsil",
       "canonical_url": "/wiki/jillian-godsil.html",
-      "category": "factions",
+      "category": "misc",
       "source_urls": [
         "/wiki/jillian-godsil.html"
       ],
@@ -10744,7 +10744,7 @@
       ],
       "canonical_title": "Trevor Fung",
       "canonical_url": "/wiki/trevor-fung.html",
-      "category": "factions",
+      "category": "misc",
       "source_urls": [
         "/wiki/trevor-fung.html"
       ],
@@ -11052,5 +11052,5 @@
       ]
     }
   },
-  "updated_at": "2026-10-04T14:05:15Z"
+  "updated_at": "2026-10-04T14:07:05Z"
 }
