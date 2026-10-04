@@ -36,8 +36,36 @@ import {
   validateAbsentStubDeclarations,
   writeGeneratedArtifactsToDirectory,
 } from './generate-wiki-content-state.mjs';
+import { readHtmlAttribute, tokenizeActiveHtml } from './wiki-html-structure.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+
+test('retired W81 evidence remains traceable without a live ZIP or public download link', () => {
+  const ledgerPath = 'brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md';
+  assert.equal(fs.existsSync(path.join(ROOT, 'about', 'w81.zip')), false, 'the retired binary must not return to publication');
+  const ledger = fs.readFileSync(path.join(ROOT, ledgerPath), 'utf8');
+  assert.ok(ledger.includes('eb3f1902b8f5e8b8e20a16c18c925a072bf81699ca404f3abb04c4f5b9a34b96'));
+  assert.ok(ledger.includes('/blob/44f180a6da267c6bc476c6ca6b777dd297ee1e65/about/w81.zip'), 'historical archive access must use an immutable commit');
+  assert.equal([...ledger.matchAll(/^\| (?:M16|[Ww]\d+)\.txt \|/gm)].length, 94, 'all raw source identities remain recorded');
+
+  const manifest = buildWikiAudit();
+  assert.equal(manifest.canon_hierarchy.find(source => source.rank === 5).path, ledgerPath);
+  for (const page of manifest.pages) {
+    assert.ok((page.likely_source_family || []).every(source => !source.includes('about/w81.zip')), `${page.slug}: source inventory still depends on the ZIP`);
+  }
+  for (const file of listTopLevelWikiHtmlFiles(path.join(ROOT, 'wiki'))) {
+    const source = fs.readFileSync(path.join(ROOT, 'wiki', file), 'utf8');
+    for (const tag of tokenizeActiveHtml(source)) {
+      if (tag.type !== 'tag' || tag.closing) continue;
+      for (const attribute of ['href', 'src']) {
+        const value = readHtmlAttribute(tag.raw, attribute);
+        if (!value) continue;
+        const pathname = decodeURIComponent(new URL(value, 'https://cryptomoonboys.com/').pathname);
+        assert.ok(!/\/w81\.zip$/i.test(pathname), `${file}: retired archive download link ${value}`);
+      }
+    }
+  }
+});
 
 test('canon revisions require complete ownership rather than a bare completion flag', () => {
   const opening = '<article class="wiki-content" data-canon-revision="1" data-canon-source-tier="first-witness+w81">';

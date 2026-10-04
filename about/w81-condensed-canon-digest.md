@@ -8,6 +8,8 @@ This digest exists because the w81 archive is too large and mixed to use safely 
 
 Important: the archive is raw source material. It is not automatically approved official canon, live runtime truth, legal terms, or final public copy. Current README and Master Source of Truth rules still apply.
 
+Archive publication status (2026-10-04): the original ZIP has been retired after article migration. The [W81 evidence and migration ledger](../brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md) records every source checksum, the immutable historical snapshot and the published article evidence. Current publishing and content-state generation use that ledger without requiring a ZIP.
+
 ## What The Archive Really Is
 
 The attached archive is not one polished bible. It is a working lore and brand dump.

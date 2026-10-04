@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "generator": "scripts/generate-wiki-content-state.mjs",
-  "source_tree_hash": "sha256:90362db32f3ac9e6af88888fee8691f4203cd2250272be631d015ad2641e7e87",
+  "source_tree_hash": "sha256:a5478bd23529448c0001b19caf95bcee4a8f0be6df42344c6429e4e53cd5bd8f",
   "hash_algorithm": "sha256",
   "page_count": 415,
   "manifest_entry_count": 415,
@@ -55,7 +55,7 @@
       "rank": 3,
       "label": "W81 condensed canon digest",
       "path": "about/w81-condensed-canon-digest.md",
-      "content_hash": "sha256:8df04211024773f049a7821dd2ae3b9c208ecd35c48ec9ea89df1d5ef1f21909"
+      "content_hash": "sha256:06e3e0d9592b494c901c6b323f19675c3bf0fa24683e781e79365eff7af14f17"
     },
     {
       "rank": 4,
@@ -67,9 +67,9 @@
     },
     {
       "rank": 5,
-      "label": "W81 raw archive",
-      "path": "about/w81.zip",
-      "content_hash": "sha256:eb3f1902b8f5e8b8e20a16c18c925a072bf81699ca404f3abb04c4f5b9a34b96"
+      "label": "Retired W81 archive provenance and migration ledger",
+      "path": "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md",
+      "content_hash": "sha256:493da4d9f0d9bae696d20718382ad294476d54bd3b3017faa9eb9b369ba367c8"
     },
     {
       "rank": 6,
@@ -200,7 +200,7 @@
       "likely_source_family": [
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (unresolved archive bucket)"
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (unresolved archive bucket; historical W81 sources)"
       ],
       "audit_notes": [
         "Canon revision 2 reconciled against First Witness and W81; disputed traditions remain explicitly identified."
@@ -365,7 +365,7 @@
       "likely_source_family": [
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (M16, W12, W13, W18, W17, w82, w83, w85, w93)",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (M16, W12, W13, W18, W17, w82, w83, w85, w93; historical W81 sources)",
         "wiki/bibles/aleema-child-of-the-shard.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
@@ -412,7 +412,7 @@
         "wiki/first-witness-concordance.html",
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (W18, w62, w73, M16)",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (W18, w62, w73, M16; historical W81 sources)",
         "wiki/bibles/alfie-the-bitcoin-kid-blaze.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
@@ -686,7 +686,7 @@
       "likely_source_family": [
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (M16, W12, W13, W18, W17, w82, w83, w85, w93)",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (M16, W12, W13, W18, W17, w82, w83, w85, w93; historical W81 sources)",
         "wiki/bibles/ava-chen.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
@@ -731,7 +731,7 @@
       "likely_source_family": [
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (unresolved archive bucket)",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (unresolved archive bucket; historical W81 sources)",
         "wiki/bibles/battlemech-blast.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
@@ -777,7 +777,7 @@
         "wiki/first-witness-concordance.html",
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (W5, W15, w25, w63, w70, w72, w73)"
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (W5, W15, w25, w63, w70, w72, w73; historical W81 sources)"
       ],
       "audit_notes": [
         "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified."
@@ -833,7 +833,7 @@
       "title": "Billy the Goat Kid",
       "page_exists": true,
       "page_type": "character",
-      "current_word_count": 2474,
+      "current_word_count": 2478,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -842,10 +842,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:59c0935a4f9b7ecf9b84eb03e5b45e605dc990daa4e0f5ea11363926c0a03a30",
-      "article_content_hash": "sha256:52a3f8ea454fccc39a3e78c38d0af830106cd800d1ce0770ae115e8f3cbf9d6a",
-      "article_markup_hash": "sha256:5402376b2a84db31e4e54f283bedb4718fc02a6299df2e53bbb4875c72fc0559",
-      "git_blob_oid": "027b89e5d5507e5bb51d8f2723c7f8de9637a9f2",
+      "content_hash": "sha256:84bbfbd09645551855e6e01e2c06969645089eeae8be4697c608b053e8f4c0b3",
+      "article_content_hash": "sha256:e3a5609c303e0a967c9b1c324e40cb4dc8b74f442942b71e7bc9fd6a037c48a0",
+      "article_markup_hash": "sha256:803a5b096a18a526824f27e54f7e44ec2c63fc4139481aa2ff7d6bec7c58cc15",
+      "git_blob_oid": "cebb9f8014b41f5e423c122152a2088295de720e",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -860,16 +860,16 @@
       "likely_source_family": [
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (M16, W12, W13, W18, W17, w82, w83, w85, w93)",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (M16, W12, W13, W18, W17, w82, w83, w85, w93; historical W81 sources)",
         "wiki/bibles/billy-the-goat-kid.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 2 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/billy-the-goat-kid.json; it is not automatically the unavailable Tier 4 modern bible.",
         "The requested modern Tier 4 subject bible is not separately identifiable in this checkout; canon classification remains a human-review item."
       ],
       "content_owner": "canon",
-      "canon_revision": 1,
+      "canon_revision": 2,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -878,7 +878,7 @@
       "title": "Bit-Cap 5000",
       "page_exists": true,
       "page_type": "character",
-      "current_word_count": 2383,
+      "current_word_count": 2387,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -887,10 +887,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:319cdb52ef21f13b06eecc70243a32a9a449a67ae8e3df5416080b2a4e336e62",
-      "article_content_hash": "sha256:a1610e2cd94a7398cfa26f564672e9b9c2f1b48523de461cb2c8ec3f69580d87",
-      "article_markup_hash": "sha256:609c7bd6f146e068eb919ef14e158a99be2bd93fd275d76f835ac2333a81d0f0",
-      "git_blob_oid": "74ae99ef3266e6f4bbc26f252bc652e54f6caac0",
+      "content_hash": "sha256:69026153de465b0e76809c3685e441d1a040cc8bbe93af4a536eb27b0f169c74",
+      "article_content_hash": "sha256:7feee41c7aaee9469ee5ece5e4b2c8f69b116832d1295c947e92771d77027362",
+      "article_markup_hash": "sha256:a668489bb1300e88122f66b8bde18dd7b1d9e1e38cdfc2686a2a556d60e378e3",
+      "git_blob_oid": "85375dddafd439b7d82100dc230eed14b92ac17e",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -905,16 +905,16 @@
       "likely_source_family": [
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (M16, W12, W13, W18, W17, w82, w83, w85, w93)",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (M16, W12, W13, W18, W17, w82, w83, w85, w93; historical W81 sources)",
         "wiki/bibles/bit-cap-5000.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 2 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/bit-cap-5000.json; it is not automatically the unavailable Tier 4 modern bible.",
         "The requested modern Tier 4 subject bible is not separately identifiable in this checkout; canon classification remains a human-review item."
       ],
       "content_owner": "canon",
-      "canon_revision": 1,
+      "canon_revision": 2,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -1028,7 +1028,7 @@
       "likely_source_family": [
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (W2, W6, W8, w58, w68-w69, w74, w79-w81, w89, w92)"
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (W2, W6, W8, w58, w68-w69, w74, w79-w81, w89, w92; historical W81 sources)"
       ],
       "audit_notes": [
         "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified."
@@ -1043,7 +1043,7 @@
       "title": "Bitcoin Kid Army",
       "page_exists": true,
       "page_type": "lore",
-      "current_word_count": 4225,
+      "current_word_count": 4228,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -1052,10 +1052,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:db99f56467420356de1c1030917a2c36c4c25e2e40e3bf24a033012307c11160",
-      "article_content_hash": "sha256:e093b6e52fac6407420b1c78a72c97f9f968de3b117d23f4ea3d0e2bf758577b",
-      "article_markup_hash": "sha256:6511e52ba7fe9ba789bfb103f0162b0565a35c56aea076b2d4986d676ec52570",
-      "git_blob_oid": "1e4228aac9ac25e931b305fdb7035489580ecd6f",
+      "content_hash": "sha256:4bbf38be957a2189788d9cb77bedffad817ccebe97cfc8bfe4f98b7cf44d5b32",
+      "article_content_hash": "sha256:410bcce8a55c9b2d8a48a9bad8717fc23b6636234db63cd83eeda56ff4dc87ad",
+      "article_markup_hash": "sha256:7e6825de85f719728fe2384c416b689fa5d5a7159c39cb9466f908431c59fd73",
+      "git_blob_oid": "a8470e45b110987b9e92c74cc2eac95ab0ce0bce",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -1072,15 +1072,15 @@
         "wiki/first-witness-concordance.html",
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (W18, w62, w73, M16)",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (W18, w62, w73, M16; historical W81 sources)",
         "wiki/bibles/bitcoin-kid-army.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 2 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/bitcoin-kid-army.json; it is not automatically the unavailable Tier 4 modern bible."
       ],
       "content_owner": "canon",
-      "canon_revision": 1,
+      "canon_revision": 2,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -1089,7 +1089,7 @@
       "title": "Bitcoin Kids Households, work and resistance beyond Block Topia",
       "page_exists": true,
       "page_type": "lore",
-      "current_word_count": 4760,
+      "current_word_count": 4763,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -1098,10 +1098,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:1da989fb1dd3ff3e7d0e17cb01dac8023a63ddd4b0e7cec8a3d28d11043ea133",
-      "article_content_hash": "sha256:120029465b2829fb87df8ee5f9deed85e863b4e8d655fa01bea2976a14b24469",
-      "article_markup_hash": "sha256:118d31199446ec77ceda96432b39b7f70d3bce8c90de78f864438738692f3504",
-      "git_blob_oid": "ba169a189635201ee32048488d8c98063087bdd5",
+      "content_hash": "sha256:a6049814f38425f80889906e869b425f79791410bf6f748a2024fba287ca956c",
+      "article_content_hash": "sha256:681d1fcd7f218c4ad78d9e4031fc3e9408528dbc656c954a800a12839211071c",
+      "article_markup_hash": "sha256:60dc7ce6468fe0c16e101c80da7e2a0db4d4018440f5955cbd9dae477f10d424",
+      "git_blob_oid": "c112f62252008c9c4bc5ddfd59e163fa0824dac7",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -1118,15 +1118,15 @@
         "wiki/first-witness-concordance.html",
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (W18, w62, w73, M16)",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (W18, w62, w73, M16; historical W81 sources)",
         "wiki/bibles/bitcoin-kid-army.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 2 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/bitcoin-kid-army.json; it is not automatically the unavailable Tier 4 modern bible."
       ],
       "content_owner": "canon",
-      "canon_revision": 1,
+      "canon_revision": 2,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -1210,7 +1210,7 @@
       "title": "Bitcoin X Kids Growing up inside the city that has already planned your future",
       "page_exists": true,
       "page_type": "lore",
-      "current_word_count": 5141,
+      "current_word_count": 5144,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -1219,10 +1219,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:e23a0ff39c749feed80eb7ad54386c9958c46eb27ec326e4165dd68191b31097",
-      "article_content_hash": "sha256:dc92c32673a2c24f7827907a7ce7c6e624ed07c2610da07cf936714f62a90311",
-      "article_markup_hash": "sha256:b1bf071a50d76711ad00a16f5567d4c5401bf284f2f1b30ae85b361eff431170",
-      "git_blob_oid": "ea0546232188822d0aa36ceac33fbe851135bd49",
+      "content_hash": "sha256:91c1c462db3dc8d63ee6b85d758750cb44906e99a5cdfa47b76292ccc87f90ad",
+      "article_content_hash": "sha256:96752f9897daf4e6f49fe892bf4df922dd30f982fa657f8b55b46f85bb3bb7ea",
+      "article_markup_hash": "sha256:44c1334698691b77041b09466eddaebcd056df0a46117cb039bd2d097e5b7c07",
+      "git_blob_oid": "b00da9a02c86a555639874ae0033e456f7e06e04",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -1239,15 +1239,15 @@
         "wiki/first-witness-concordance.html",
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (W18, w62, w73, M16)",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (W18, w62, w73, M16; historical W81 sources)",
         "wiki/bibles/bitcoin-x-kids.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 2 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 3 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/bitcoin-x-kids.json; it is not automatically the unavailable Tier 4 modern bible."
       ],
       "content_owner": "canon",
-      "canon_revision": 2,
+      "canon_revision": 3,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -1256,7 +1256,7 @@
       "title": "Block Node Defenders",
       "page_exists": true,
       "page_type": "historical_archive",
-      "current_word_count": 2495,
+      "current_word_count": 2499,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -1265,10 +1265,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:939d09fbf41f9384166d43f45c6fc9bcd1acffdecd03c2d6e4ede6b6d5c9f549",
-      "article_content_hash": "sha256:967e0fb180961d3932bd0e70f377403571b6a305eaa3d87e4844cb6448f1449a",
-      "article_markup_hash": "sha256:f9fd3eb3544368879d54468816e48c6c8008b4acc791099608c9eab8c1afa7bb",
-      "git_blob_oid": "cccff5c91255834e19fa1bd147c1185c7b9c1cf9",
+      "content_hash": "sha256:699db7874f0960ec81f0f0dd902f319e10c2cc4b4a1d44cbb8fde7b96fa258ce",
+      "article_content_hash": "sha256:f9f6616d7be04e16c3f6acd9cd7702c7045933c93ca10308d9fc856dc33d24f1",
+      "article_markup_hash": "sha256:e713c767a2dc1e2c56ba70b00e0258d09da3a66ef5afbd5cd2c12a13dc2272d3",
+      "git_blob_oid": "b97179771defda35304529e437709350a56e11f5",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -1283,15 +1283,15 @@
       "likely_source_family": [
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (unresolved archive bucket)",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (unresolved archive bucket; historical W81 sources)",
         "wiki/bibles/block-node-defenders.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 2 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/block-node-defenders.json; it is not automatically the unavailable Tier 4 modern bible."
       ],
       "content_owner": "canon",
-      "canon_revision": 1,
+      "canon_revision": 2,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -1329,7 +1329,7 @@
         "wiki/first-witness-concordance.html",
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (W14, W15, w22-w33, w70, w72, w73)",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (W14, W15, w22-w33, w70, w72, w73; historical W81 sources)",
         "wiki/bibles/block-topia.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
@@ -1383,7 +1383,7 @@
       "title": "Bone Idol Ink",
       "page_exists": true,
       "page_type": "character",
-      "current_word_count": 2149,
+      "current_word_count": 2152,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -1392,10 +1392,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:9256cf35f4643dd19ab3e7ad9911e2f4dca201e50ce14b3ccaa85e42d52eedd0",
-      "article_content_hash": "sha256:296bf81b828db8a1fff68fe172d45195397421e36066fb9a5e46827c073c0895",
-      "article_markup_hash": "sha256:7eb9cf5147af76161d8a3fb9e5da756056ecb40943cd15b6d1596b9652373063",
-      "git_blob_oid": "b9a01e5ea488bd088c12ec8d3b5f29d2f69db48e",
+      "content_hash": "sha256:3589533a5b15063db0f931f4b7f624ffc995b3aba6745b0a337a0a398911c284",
+      "article_content_hash": "sha256:63c4158fa59929a4a81ebeacafa54ad4bb7bb8a959f3baffe51f2ae4e6c0a42d",
+      "article_markup_hash": "sha256:a171d7100964713f9f34cb154d2a43ef26929d33fef847abc7c81eb956c18c15",
+      "git_blob_oid": "3f02d78e384aa83733f898a25fa2b53671be378b",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -1410,16 +1410,16 @@
       "likely_source_family": [
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (M16, W12, W13, W18, W17, w82, w83, w85, w93)",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (M16, W12, W13, W18, W17, w82, w83, w85, w93; historical W81 sources)",
         "wiki/bibles/bone-idol-ink.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 2 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 3 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/bone-idol-ink.json; it is not automatically the unavailable Tier 4 modern bible.",
         "The requested modern Tier 4 subject bible is not separately identifiable in this checkout; canon classification remains a human-review item."
       ],
       "content_owner": "canon",
-      "canon_revision": 2,
+      "canon_revision": 3,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -1455,7 +1455,7 @@
       "likely_source_family": [
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (unresolved archive bucket)",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (unresolved archive bucket; historical W81 sources)",
         "wiki/bibles/burn-to-earn.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
@@ -1499,7 +1499,7 @@
       "likely_source_family": [
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (unresolved archive bucket)"
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (unresolved archive bucket; historical W81 sources)"
       ],
       "audit_notes": [
         "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified."
@@ -1584,7 +1584,7 @@
         "wiki/first-witness-concordance.html",
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (W14, W15, w22-w33, w70, w72, w73)",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (W14, W15, w22-w33, w70, w72, w73; historical W81 sources)",
         "wiki/bibles/croydon-tower-blocks.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
@@ -1668,7 +1668,7 @@
         "wiki/first-witness-glossary.html",
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (major lore/cosmology files)",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (major lore/cosmology files; historical W81 sources)",
         "wiki/bibles/crypto-moonboys.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
@@ -1878,7 +1878,7 @@
         "wiki/first-witness-concordance.html",
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (W5, W15, w25, w63, w70, w72, w73)"
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (W5, W15, w25, w63, w70, w72, w73; historical W81 sources)"
       ],
       "audit_notes": [
         "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified."
@@ -1920,7 +1920,7 @@
       "likely_source_family": [
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (M16, W12, W13, W18, W17, w82, w83, w85, w93)",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (M16, W12, W13, W18, W17, w82, w83, w85, w93; historical W81 sources)",
         "wiki/bibles/dragan-volkov.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
@@ -2006,7 +2006,7 @@
       "likely_source_family": [
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (M16, W12, W13, W18, W17, w82, w83, w85, w93)",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (M16, W12, W13, W18, W17, w82, w83, w85, w93; historical W81 sources)",
         "wiki/bibles/elder-codex-7.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
@@ -5255,7 +5255,7 @@
         "wiki/first-witness-concordance.html",
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (W5, W15, w25, w63, w70, w72, w73)"
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (W5, W15, w25, w63, w70, w72, w73; historical W81 sources)"
       ],
       "audit_notes": [
         "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified."
@@ -5300,7 +5300,7 @@
         "wiki/first-witness-glossary.html",
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (major lore/cosmology files)",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (major lore/cosmology files; historical W81 sources)",
         "wiki/bibles/forkborn-collective.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
@@ -5344,7 +5344,7 @@
       "likely_source_family": [
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (unresolved archive bucket)",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (unresolved archive bucket; historical W81 sources)",
         "wiki/bibles/forklord-you.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
@@ -5391,7 +5391,7 @@
         "wiki/first-witness-glossary.html",
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (major lore/cosmology files)",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (major lore/cosmology files; historical W81 sources)",
         "wiki/bibles/forksplit.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
@@ -5435,7 +5435,7 @@
       "likely_source_family": [
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (W2, W6, W8, w58, w68-w69, w74, w79-w81, w89, w92)"
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (W2, W6, W8, w58, w68-w69, w74, w79-w81, w89, w92; historical W81 sources)"
       ],
       "audit_notes": [
         "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified."
@@ -5603,7 +5603,7 @@
         "wiki/first-witness-glossary.html",
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (major lore/cosmology files)"
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (major lore/cosmology files; historical W81 sources)"
       ],
       "audit_notes": [
         "Canon revision 3 reconciled against First Witness and W81; disputed traditions remain explicitly identified."
@@ -5645,7 +5645,7 @@
       "likely_source_family": [
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (unresolved archive bucket)"
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (unresolved archive bucket; historical W81 sources)"
       ],
       "audit_notes": [
         "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified."
@@ -5687,7 +5687,7 @@
       "likely_source_family": [
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (unresolved archive bucket)"
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (unresolved archive bucket; historical W81 sources)"
       ],
       "audit_notes": [
         "Canon revision 2 reconciled against First Witness and W81; disputed traditions remain explicitly identified."
@@ -5770,7 +5770,7 @@
       "likely_source_family": [
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (W2, W6, W8, w21, w61, w68-w69, w74, w79, w85, w87, w90-w91)",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (W2, W6, W8, w21, w61, w68-w69, w74, w79, w85, w87, w90-w91; historical W81 sources)",
         "wiki/bibles/the-gkniftyheads.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
@@ -6623,7 +6623,7 @@
       "title": "⚡️⚡️⚡️ Bitman 🦇",
       "page_exists": true,
       "page_type": "nft_template",
-      "current_word_count": 4182,
+      "current_word_count": 4185,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 0,
@@ -6632,10 +6632,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:bdbdcc2c88b54e9329a58d888665c83153df7bfd679d750281656829a0fba64e",
-      "article_content_hash": "sha256:7663219a3846db4ffd3baacda7b874942d6486b873503c68657e07f4c22f7c86",
-      "article_markup_hash": "sha256:a728578b926c06f950ee92a1553c6829e216d181de57abf4299c729a362d2bdb",
-      "git_blob_oid": "bddc46f476aafd446e969c5cc93e52e04738592b",
+      "content_hash": "sha256:02d1f389dbb2d3be13be7c183fc41df7e9264d922a51cdc277d58e802889659f",
+      "article_content_hash": "sha256:01ad4cbda2cfe2328a485d71efa6a775ce74cdf89e49e95bd2c344896a084cde",
+      "article_markup_hash": "sha256:1af74cd9923b29c6e59adc018ee92671cbf037749b2d73554c99e3e6cccae340",
+      "git_blob_oid": "49d95364a8e66ff48357c1b6044c842621b0025d",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": true,
@@ -11285,7 +11285,7 @@
       "likely_source_family": [
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (W2, W6, W8, w58, w68-w69, w74, w79-w81, w89, w92)",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (W2, W6, W8, w58, w68-w69, w74, w79-w81, w89, w92; historical W81 sources)",
         "wiki/bibles/graffiti-kings.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
@@ -11332,7 +11332,7 @@
         "wiki/first-witness-glossary.html",
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (major lore/cosmology files)"
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (major lore/cosmology files; historical W81 sources)"
       ],
       "audit_notes": [
         "Canon revision 3 reconciled against First Witness and W81; disputed traditions remain explicitly identified."
@@ -11374,7 +11374,7 @@
       "likely_source_family": [
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (unresolved archive bucket)",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (unresolved archive bucket; historical W81 sources)",
         "wiki/bibles/graffiti-queens-in-decentraland.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
@@ -11418,7 +11418,7 @@
       "likely_source_family": [
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (W2, W6, W8, w58, w68-w69, w74, w79-w81, w89, w92)",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (W2, W6, W8, w58, w68-w69, w74, w79-w81, w89, w92; historical W81 sources)",
         "wiki/bibles/graffpunks.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
@@ -11462,7 +11462,7 @@
       "likely_source_family": [
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (W2, W6, W8, w58, w68-w69, w74, w79-w81, w89, w92)"
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (W2, W6, W8, w58, w68-w69, w74, w79-w81, w89, w92; historical W81 sources)"
       ],
       "audit_notes": [
         "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified."
@@ -11541,7 +11541,7 @@
       "likely_source_family": [
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (W2, W6, W8, w58, w68-w69, w74, w79-w81, w89, w92)"
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (W2, W6, W8, w58, w68-w69, w74, w79-w81, w89, w92; historical W81 sources)"
       ],
       "audit_notes": [
         "Canon revision 2 reconciled against First Witness and W81; disputed traditions remain explicitly identified."
@@ -11583,7 +11583,7 @@
       "likely_source_family": [
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (unresolved archive bucket)",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (unresolved archive bucket; historical W81 sources)",
         "wiki/bibles/grit.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
@@ -11627,7 +11627,7 @@
       "likely_source_family": [
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (unresolved archive bucket)",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (unresolved archive bucket; historical W81 sources)",
         "wiki/bibles/grit42.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
@@ -11674,7 +11674,7 @@
         "wiki/first-witness-glossary.html",
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (major lore/cosmology files)",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (major lore/cosmology files; historical W81 sources)",
         "wiki/bibles/hard-fork-games.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
@@ -11721,7 +11721,7 @@
         "wiki/first-witness-glossary.html",
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (major lore/cosmology files)"
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (major lore/cosmology files; historical W81 sources)"
       ],
       "audit_notes": [
         "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified."
@@ -11804,7 +11804,7 @@
       "likely_source_family": [
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (M16, W12, W13, W18, W17, w82, w83, w85, w93)",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (M16, W12, W13, W18, W17, w82, w83, w85, w93; historical W81 sources)",
         "wiki/bibles/hex-tagger-prime.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
@@ -11822,7 +11822,7 @@
       "title": "HODL Warriors Collective defence and the cost of giving command back",
       "page_exists": true,
       "page_type": "lore",
-      "current_word_count": 4427,
+      "current_word_count": 4430,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -11831,10 +11831,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:65e1bedb8563f0b1127ec654bb5e6a2f46b4194c7c251d4a0924ad48e997dca1",
-      "article_content_hash": "sha256:67032690650d253194b6d2bf3d569f182f91ddc821c31f77aebf238bf86f3188",
-      "article_markup_hash": "sha256:1612ec6aca7e06d571b809c569bd6b684f45e8e262e5c9359d16ec3dd048f008",
-      "git_blob_oid": "b0ef174c7fb30137911140a110858e8275db91dd",
+      "content_hash": "sha256:cdacb893a1e641f59a146919be23b1bd7af11c4ccb13288b2dbf6a49b6c58653",
+      "article_content_hash": "sha256:639493713614ab3453fdaba0bc85f333dfb2cdd699402cb0d0e239a664784825",
+      "article_markup_hash": "sha256:6b2ae2dfbbdedc8c8ced25f1c80d0b87a96e0667014ffa356a42c0767387f76b",
+      "git_blob_oid": "46a8eb1b54e1c806cf380c796e392ce69d6be413",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -11851,15 +11851,15 @@
         "wiki/first-witness-concordance.html",
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (W5, W15, w25, w63, w70, w72, w73)",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (W5, W15, w25, w63, w70, w72, w73; historical W81 sources)",
         "wiki/bibles/hodl-warriors-army.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 2 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 3 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/hodl-warriors-army.json; it is not automatically the unavailable Tier 4 modern bible."
       ],
       "content_owner": "canon",
-      "canon_revision": 2,
+      "canon_revision": 3,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -11868,7 +11868,7 @@
       "title": "HODL WARS The Year 3008 conflict as lived across roads, homes and broken systems",
       "page_exists": true,
       "page_type": "lore",
-      "current_word_count": 5421,
+      "current_word_count": 5424,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -11877,10 +11877,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:0c3b9a6fd499b5fa4625839bf5fb1a7f96dd482ad2591b071c20698cd7c0138c",
-      "article_content_hash": "sha256:95ecb487f3a7aadca7add5bfc83325fb7d805c000fbfcd272826dcbf9f133526",
-      "article_markup_hash": "sha256:8e11eedeb84d50a6c5b456e7d88fe0f7f7d15f87c5347e4a22d906e594463e1e",
-      "git_blob_oid": "26f022b0327971f045e27e9e6301cc68916f1008",
+      "content_hash": "sha256:37c536087aedf9e0b8da75a2a9919ceba2c73152aa40254a411113d4717d68ed",
+      "article_content_hash": "sha256:6e244022d536b2c0cc496af9a12e9e975ccddae5a013ccee5f53ac1ee41b6ab1",
+      "article_markup_hash": "sha256:144c6d28bf7ff8da2c0030c4ac032cce75682dc71326433e40e5003ddf96db01",
+      "git_blob_oid": "91765e2caac9ccff6fc97b818f1a2809ca1774f2",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -11897,15 +11897,15 @@
         "wiki/first-witness-concordance.html",
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (W5, W15, w25, w63, w70, w72, w73)",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (W5, W15, w25, w63, w70, w72, w73; historical W81 sources)",
         "wiki/bibles/hodl-wars.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 2 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 3 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/hodl-wars.json; it is not automatically the unavailable Tier 4 modern bible."
       ],
       "content_owner": "canon",
-      "canon_revision": 2,
+      "canon_revision": 3,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -11914,7 +11914,7 @@
       "title": "HODL X Warriors Champions, service debts and lives beyond the parade",
       "page_exists": true,
       "page_type": "lore",
-      "current_word_count": 4581,
+      "current_word_count": 4584,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -11923,10 +11923,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:d06845dc71fdb05dedeb4f978bcd1bec28cf111609c9c93ec53fb81ef21f7a8c",
-      "article_content_hash": "sha256:05e4ac5d8364ec99acfe8808b95b45756f4f55999252a58e96447f50c87cd91f",
-      "article_markup_hash": "sha256:e72f34a562824c379f73e95909c59c4ec507f200a69095e9bd8b7fe274a544cc",
-      "git_blob_oid": "be646307f97bd99696083f0e9df4656922940d5e",
+      "content_hash": "sha256:40b39aca721ba472393781c8ca9bc8ea71ec517fe63c2d94ef344e7824fb1238",
+      "article_content_hash": "sha256:6b4aa9fbadf6f218e156ac8c5d3ead2a729cc7c4acd33b3ae685364a07da17a5",
+      "article_markup_hash": "sha256:0a94104a7afa7dcf545e99ccde1bb25e895ec3d01eb278f626d8002e14d23927",
+      "git_blob_oid": "6a621588e7d1bee8ff9e34f41ac6025d82712ab0",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -11943,15 +11943,15 @@
         "wiki/first-witness-concordance.html",
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (W5, W15, w25, w63, w70, w72, w73)",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (W5, W15, w25, w63, w70, w72, w73; historical W81 sources)",
         "wiki/bibles/hodl-x-warriors.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 2 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/hodl-x-warriors.json; it is not automatically the unavailable Tier 4 modern bible."
       ],
       "content_owner": "canon",
-      "canon_revision": 1,
+      "canon_revision": 2,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -12038,7 +12038,7 @@
       "title": "Iris-7",
       "page_exists": true,
       "page_type": "character",
-      "current_word_count": 2528,
+      "current_word_count": 2530,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -12047,10 +12047,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:5b0692f4cb8fc1a8baf42845e11f5540eedf3c2a29994e9cb7dd936168e3b2fe",
-      "article_content_hash": "sha256:5a2115e083f8bd7489e9c932e836e6f2c747f5a928abedfe6fdc96a3cb9564a9",
-      "article_markup_hash": "sha256:57af95e18a028faaa44f1ba1a641d053c220c18dcad3a03babbf93f4fff4e362",
-      "git_blob_oid": "4c99ef19be042f044d8abf894948009a5551eae7",
+      "content_hash": "sha256:bf97a8f2a268c454f301b0fd392508c517e8511a705d108b6ce93e662a4a442c",
+      "article_content_hash": "sha256:8eca0cc56549f4835509feb131b0601b6bd43ae98c6e4af80e607074f4d763ba",
+      "article_markup_hash": "sha256:a93a6acbeee85768ee3cbfc5c75da95c9e4a675c5223934a3debf6e8042eb3de",
+      "git_blob_oid": "45ed4d3d61e7d44d060a7f03286d0f51946ed8f9",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -12065,16 +12065,16 @@
       "likely_source_family": [
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (M16, W12, W13, W18, W17, w82, w83, w85, w93)",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (M16, W12, W13, W18, W17, w82, w83, w85, w93; historical W81 sources)",
         "wiki/bibles/iris-7.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 2 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/iris-7.json; it is not automatically the unavailable Tier 4 modern bible.",
         "The requested modern Tier 4 subject bible is not separately identifiable in this checkout; canon classification remains a human-review item."
       ],
       "content_owner": "canon",
-      "canon_revision": 1,
+      "canon_revision": 2,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -12151,7 +12151,7 @@
       "likely_source_family": [
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (M16, W12, W13, W18, W17, w82, w83, w85, w93)",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (M16, W12, W13, W18, W17, w82, w83, w85, w93; historical W81 sources)",
         "wiki/bibles/jodie-zoom-2000.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
@@ -12210,7 +12210,7 @@
       "title": "Lady-INK",
       "page_exists": true,
       "page_type": "character",
-      "current_word_count": 2641,
+      "current_word_count": 2645,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -12219,10 +12219,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:2309ca25a163543bd868f4216cf5a296f0cc2e480c40b6da643c3f8003ab90be",
-      "article_content_hash": "sha256:b153dcb50711654bed06d03b9c1e21150bdd902605abdc0fb48d9f0a93d346ec",
-      "article_markup_hash": "sha256:1e1b06ab8f0c1ab85ded9a72b942b3aac28161262271e3f7b2570a21e3689bb1",
-      "git_blob_oid": "ad15352efef893fae51420fcaab838713c947ac4",
+      "content_hash": "sha256:b294be9ca8be95164667664f5f87afa274bc9345f63aaf2b03b0c4d5d6e63b47",
+      "article_content_hash": "sha256:2127eb61a1aa6a185b233e21c2c488cb6a4cc23d041613184a423f7e1d144bc6",
+      "article_markup_hash": "sha256:902c5ef4da85e43cfb8dd207165a947501ee8cec95c5c4ec50288964c5849bb5",
+      "git_blob_oid": "ad2d1f2d7bace26b25820f60a5548ebea9e9dfd3",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -12237,16 +12237,16 @@
       "likely_source_family": [
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (M16, W12, W13, W18, W17, w82, w83, w85, w93)",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (M16, W12, W13, W18, W17, w82, w83, w85, w93; historical W81 sources)",
         "wiki/bibles/lady-ink.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 2 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 3 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/lady-ink.json; it is not automatically the unavailable Tier 4 modern bible.",
         "The requested modern Tier 4 subject bible is not separately identifiable in this checkout; canon classification remains a human-review item."
       ],
       "content_owner": "canon",
-      "canon_revision": 2,
+      "canon_revision": 3,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -12323,7 +12323,7 @@
       "likely_source_family": [
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (M16, W12, W13, W18, W17, w82, w83, w85, w93)",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (M16, W12, W13, W18, W17, w82, w83, w85, w93; historical W81 sources)",
         "wiki/bibles/loopfiend.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
@@ -12370,7 +12370,7 @@
         "wiki/first-witness-concordance.html",
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (W1, W15, W20, w27-w28, w65, w73, w86)",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (W1, W15, W20, w27-w28, w65, w73, w86; historical W81 sources)",
         "wiki/bibles/m1ntr-k1ll.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
@@ -12416,7 +12416,7 @@
         "wiki/first-witness-concordance.html",
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (W14, W15, w22-w33, w70, w72, w73)",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (W14, W15, w22-w33, w70, w72, w73; historical W81 sources)",
         "wiki/bibles/maidstone-base.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
@@ -12545,7 +12545,7 @@
         "wiki/first-witness-glossary.html",
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (major lore/cosmology files)"
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (major lore/cosmology files; historical W81 sources)"
       ],
       "audit_notes": [
         "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified."
@@ -12587,7 +12587,7 @@
       "likely_source_family": [
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (unresolved archive bucket)"
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (unresolved archive bucket; historical W81 sources)"
       ],
       "audit_notes": [
         "Canon revision 2 reconciled against First Witness and W81; disputed traditions remain explicitly identified."
@@ -12629,7 +12629,7 @@
       "likely_source_family": [
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (unresolved archive bucket)"
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (unresolved archive bucket; historical W81 sources)"
       ],
       "audit_notes": [
         "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified."
@@ -12942,7 +12942,7 @@
         "wiki/first-witness-concordance.html",
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (W5, W15, w25, w63, w70, w72, w73)"
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (W5, W15, w25, w63, w70, w72, w73; historical W81 sources)"
       ],
       "audit_notes": [
         "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified."
@@ -13379,7 +13379,7 @@
         "wiki/first-witness-concordance.html",
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (W1, W15, W20, w27-w28, w65, w73, w86)",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (W1, W15, W20, w27-w28, w65, w73, w86; historical W81 sources)",
         "wiki/bibles/null-the-prophet.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
@@ -13425,7 +13425,7 @@
         "wiki/first-witness-concordance.html",
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (W5, W15, w25, w63, w70, w72, w73)"
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (W5, W15, w25, w63, w70, w72, w73; historical W81 sources)"
       ],
       "audit_notes": [
         "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified."
@@ -13467,7 +13467,7 @@
       "likely_source_family": [
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (M16, W12, W13, W18, W17, w82, w83, w85, w93)",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (M16, W12, W13, W18, W17, w82, w83, w85, w93; historical W81 sources)",
         "wiki/bibles/patchwork.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
@@ -13781,7 +13781,7 @@
       "likely_source_family": [
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (unresolved archive bucket)"
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (unresolved archive bucket; historical W81 sources)"
       ],
       "audit_notes": [
         "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified."
@@ -13823,7 +13823,7 @@
       "likely_source_family": [
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (M16, W12, W13, W18, W17, w82, w83, w85, w93)",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (M16, W12, W13, W18, W17, w82, w83, w85, w93; historical W81 sources)",
         "wiki/bibles/pyralith.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
@@ -13868,7 +13868,7 @@
       "likely_source_family": [
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (M16, W12, W13, W18, W17, w82, w83, w85, w93)",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (M16, W12, W13, W18, W17, w82, w83, w85, w93; historical W81 sources)",
         "wiki/bibles/queen-sarah-p-fly.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
@@ -13913,7 +13913,7 @@
       "likely_source_family": [
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (M16, W12, W13, W18, W17, w82, w83, w85, w93)",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (M16, W12, W13, W18, W17, w82, w83, w85, w93; historical W81 sources)",
         "wiki/bibles/quell.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
@@ -13958,7 +13958,7 @@
       "likely_source_family": [
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (unresolved archive bucket)"
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (unresolved archive bucket; historical W81 sources)"
       ],
       "audit_notes": [
         "Canon revision 2 reconciled against First Witness and W81; disputed traditions remain explicitly identified."
@@ -14002,7 +14002,7 @@
         "wiki/first-witness-concordance.html",
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (W5, W15, w25, w63, w70, w72, w73)"
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (W5, W15, w25, w63, w70, w72, w73; historical W81 sources)"
       ],
       "audit_notes": [
         "Canon revision 2 reconciled against First Witness and W81; disputed traditions remain explicitly identified."
@@ -14044,7 +14044,7 @@
       "likely_source_family": [
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (M16, W12, W13, W18, W17, w82, w83, w85, w93)",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (M16, W12, W13, W18, W17, w82, w83, w85, w93; historical W81 sources)",
         "wiki/bibles/rune-tag.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
@@ -14133,7 +14133,7 @@
         "wiki/first-witness-glossary.html",
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (major lore/cosmology files)",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (major lore/cosmology files; historical W81 sources)",
         "wiki/bibles/sacred-chain.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
@@ -14179,7 +14179,7 @@
         "wiki/first-witness-concordance.html",
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (W1, W15, W20, w27-w28, w65, w73, w86)",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (W1, W15, W20, w27-w28, w65, w73, w86; historical W81 sources)",
         "wiki/bibles/samael-exe.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
@@ -14223,7 +14223,7 @@
       "likely_source_family": [
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (M16, W12, W13, W18, W17, w82, w83, w85, w93)",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (M16, W12, W13, W18, W17, w82, w83, w85, w93; historical W81 sources)",
         "wiki/bibles/satorebel.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
@@ -14270,7 +14270,7 @@
         "wiki/first-witness-concordance.html",
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (W5, W15, w25, w63, w70, w72, w73)"
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (W5, W15, w25, w63, w70, w72, w73; historical W81 sources)"
       ],
       "audit_notes": [
         "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified."
@@ -14285,7 +14285,7 @@
       "title": "Seeding Rights",
       "page_exists": true,
       "page_type": "project_or_reference",
-      "current_word_count": 2469,
+      "current_word_count": 2473,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -14294,10 +14294,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:d4f523d6a1f5b43899976e87035bf652ddfab35f66680ac64b597f9efe00aee1",
-      "article_content_hash": "sha256:47f0491029a3e63e1f59626c0336085202e5e5bf26946f9a32ea96cccbf8adf6",
-      "article_markup_hash": "sha256:bd899e3b6ad41fc66a27b22739f7d3f8653e0c1ee2e4da5525e9c5452687a918",
-      "git_blob_oid": "ac7befc965ded2e4e9719f2e17c57a0752a25245",
+      "content_hash": "sha256:142369db78ffa79f0d4f7256bb992446a643aed1e33cfc0f889458cbfb647d23",
+      "article_content_hash": "sha256:7e8f6d06dd78436dc5fc2826ab3b096141dc5dabed230a53ec6ac1d476e32a42",
+      "article_markup_hash": "sha256:e66eecbfd1285e46c2b667778c294d76aa9f692fb9d053b2a38fd7db738e21e4",
+      "git_blob_oid": "55ad44c0ad1157cd163a610772ee3226021da174",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -14313,11 +14313,11 @@
         "wiki/bibles/seeding-rights.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 2 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/seeding-rights.json; it is not automatically the unavailable Tier 4 modern bible."
       ],
       "content_owner": "canon",
-      "canon_revision": 1,
+      "canon_revision": 2,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -14353,7 +14353,7 @@
       "likely_source_family": [
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (M16, W12, W13, W18, W17, w82, w83, w85, w93)",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (M16, W12, W13, W18, W17, w82, w83, w85, w93; historical W81 sources)",
         "wiki/bibles/sister-halcyon.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
@@ -14439,7 +14439,7 @@
       "likely_source_family": [
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (M16, W12, W13, W18, W17, w82, w83, w85, w93)",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (M16, W12, W13, W18, W17, w82, w83, w85, w93; historical W81 sources)",
         "wiki/bibles/snipey-d-man-sirus.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
@@ -14525,7 +14525,7 @@
       "likely_source_family": [
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (unresolved archive bucket)",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (unresolved archive bucket; historical W81 sources)",
         "wiki/bibles/spirit-borns.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
@@ -14610,7 +14610,7 @@
       "likely_source_family": [
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (unresolved archive bucket)",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (unresolved archive bucket; historical W81 sources)",
         "wiki/bibles/squeaky-pinks-enforcers.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
@@ -14692,7 +14692,7 @@
       "likely_source_family": [
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (unresolved archive bucket)"
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (unresolved archive bucket; historical W81 sources)"
       ],
       "audit_notes": [
         "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified."
@@ -14736,7 +14736,7 @@
         "wiki/first-witness-concordance.html",
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (W5, W15, w25, w63, w70, w72, w73)"
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (W5, W15, w25, w63, w70, w72, w73; historical W81 sources)"
       ],
       "audit_notes": [
         "Canon revision 2 reconciled against First Witness and W81; disputed traditions remain explicitly identified."
@@ -14781,7 +14781,7 @@
         "wiki/first-witness-glossary.html",
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (major lore/cosmology files)",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (major lore/cosmology files; historical W81 sources)",
         "wiki/bibles/street-kingdoms.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
@@ -14946,7 +14946,7 @@
         "wiki/first-witness-faction-commentaries.html",
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (w34-w63, w68, M16)",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (w34-w63, w68, M16; historical W81 sources)",
         "wiki/bibles/the-allcity-bulls.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
@@ -14993,7 +14993,7 @@
         "wiki/first-witness-faction-commentaries.html",
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (w34-w63, w68, M16)",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (w34-w63, w68, M16; historical W81 sources)",
         "wiki/bibles/the-aztec-raiders.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
@@ -15040,7 +15040,7 @@
         "wiki/first-witness-faction-commentaries.html",
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (w34-w63, w68, M16)",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (w34-w63, w68, M16; historical W81 sources)",
         "wiki/bibles/the-bally-boys.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
@@ -15058,7 +15058,7 @@
       "title": "Bitcoin Kid Army — Escape Accounts",
       "page_exists": true,
       "page_type": "lore",
-      "current_word_count": 2783,
+      "current_word_count": 2786,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -15067,10 +15067,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:af7224eb3e7abfae8d555d0a3d78a957909ad7d3f871e33a5dada4505887d2a8",
-      "article_content_hash": "sha256:e445aa90c1285e568bcb5c93a4de510dda52e6bb0ec1d3fe626cf5e5e87f8453",
-      "article_markup_hash": "sha256:d57ef66df9cd2826212b0b85a156d04c08b8d39777a63bf934e8aaffba0e5b9d",
-      "git_blob_oid": "26a2601e56e8c3d2b33acbba49c56fd164c6df55",
+      "content_hash": "sha256:76a04f1288f137c7fa9178bdaf4eef433d1f5daffc6cd697fadd9398da900e38",
+      "article_content_hash": "sha256:0459f5070ec9f43ec41ab5e5635a0662c29bed538815d3fd3e8d68251b93d80f",
+      "article_markup_hash": "sha256:4a29dcee605caf34f4cd5e90529e29aec9c65c93eb2d748abb8e9d413f407b54",
+      "git_blob_oid": "2b96dfee8115d5563df371a702c2154da8634fbe",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -15087,15 +15087,15 @@
         "wiki/first-witness-concordance.html",
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (W18, w62, w73, M16)",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (W18, w62, w73, M16; historical W81 sources)",
         "wiki/bibles/the-bitcoin-kid-army.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 2 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/the-bitcoin-kid-army.json; it is not automatically the unavailable Tier 4 modern bible."
       ],
       "content_owner": "canon",
-      "canon_revision": 1,
+      "canon_revision": 2,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -15133,7 +15133,7 @@
         "wiki/first-witness-faction-commentaries.html",
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (w34-w63, w68, M16)",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (w34-w63, w68, M16; historical W81 sources)",
         "wiki/bibles/the-blockchain-furies.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
@@ -15180,7 +15180,7 @@
         "wiki/first-witness-faction-commentaries.html",
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (w34-w63, w68, M16)",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (w34-w63, w68, M16; historical W81 sources)",
         "wiki/bibles/the-blockstars.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
@@ -15198,7 +15198,7 @@
       "title": "The CHAIN SCRIBES",
       "page_exists": true,
       "page_type": "faction",
-      "current_word_count": 2697,
+      "current_word_count": 2700,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -15207,10 +15207,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:4ed3a57dbebd6d317e4cf5945f323fb10c1de48bebafa856122034d5ca9087cf",
-      "article_content_hash": "sha256:2988b745babe536c711192194b85ab89bf0f8ce5d7997e55003027d20a9acb33",
-      "article_markup_hash": "sha256:aaf2ec4b10ad779cda168a7d407d3bda5cf0b792d862eed18f590e35766a1e97",
-      "git_blob_oid": "94798d89f48de195085a8b3826208d10fb401b54",
+      "content_hash": "sha256:d9511f52461fdf2ef6786cc8fc6b345429b1d4293ea3479c4348ed0971e50571",
+      "article_content_hash": "sha256:7077e1777afdc0a54aa78322010b83f224d74355d7c0d14546c4a34908e48c35",
+      "article_markup_hash": "sha256:c067d2c371d74100dd88a19868b464b9eef9ed90ba37ee126798dcde42e1d0e7",
+      "git_blob_oid": "9ce0ad5db5c7ec8b79fcd90051d554fd06a5ff04",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -15227,16 +15227,16 @@
         "wiki/first-witness-faction-commentaries.html",
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (w34-w63, w68, M16)",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (w34-w63, w68, M16; historical W81 sources)",
         "wiki/bibles/the-chain-scribes.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 2 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/the-chain-scribes.json; it is not automatically the unavailable Tier 4 modern bible.",
         "The requested modern Tier 4 subject bible is not separately identifiable in this checkout; canon classification remains a human-review item."
       ],
       "content_owner": "canon",
-      "canon_revision": 1,
+      "canon_revision": 2,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -15286,7 +15286,7 @@
       "title": "The CODE ALCHEMISTS",
       "page_exists": true,
       "page_type": "faction",
-      "current_word_count": 2809,
+      "current_word_count": 2812,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -15295,10 +15295,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:e1ad6deeefcf355e17fed872831d6e0ae5378a9be1dc845c3e0d6dd4bd5655cb",
-      "article_content_hash": "sha256:3caf52205fb57fa87444e825bd88e3a414cf0bd016c4efd63c5699b18a486087",
-      "article_markup_hash": "sha256:085f42a9095ae0769b55a1d15e1e080fe8531820fffd0583a5a0b8c160f73642",
-      "git_blob_oid": "0fa1e0b0a7a5e9995bb2edcbaff38c62f7d19c48",
+      "content_hash": "sha256:3f158413dad49184ecc31053a11cdf55c8dbbf1246e0a082ebb31b8963440489",
+      "article_content_hash": "sha256:09cdc2a342aa8395a8bc594048cdd5ff795db4c368bc0ac013ed72b2eed49a76",
+      "article_markup_hash": "sha256:20d1b5e5669472fa31745ffbb00fac752828aa9f7dd20ece954a6fcad1d6852d",
+      "git_blob_oid": "f10b7de86e555cd9aceebe6543bbcca162a5f5ef",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -15315,16 +15315,16 @@
         "wiki/first-witness-faction-commentaries.html",
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (w34-w63, w68, M16)",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (w34-w63, w68, M16; historical W81 sources)",
         "wiki/bibles/the-code-alchemists.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 2 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/the-code-alchemists.json; it is not automatically the unavailable Tier 4 modern bible.",
         "The requested modern Tier 4 subject bible is not separately identifiable in this checkout; canon classification remains a human-review item."
       ],
       "content_owner": "canon",
-      "canon_revision": 1,
+      "canon_revision": 2,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -15333,7 +15333,7 @@
       "title": "The CRYPTO STONED BOYS",
       "page_exists": true,
       "page_type": "faction",
-      "current_word_count": 2829,
+      "current_word_count": 2832,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -15342,10 +15342,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:979abee28353b346e6d78ce297717e085a6b93f6708a1ec72eedc813235346ab",
-      "article_content_hash": "sha256:f3b8fda89a5d1b5a321294993a6af010136031a78cd0a180e8133c46167f9b24",
-      "article_markup_hash": "sha256:760455734ef400a138a33b7da5018620fed24b5fa5d92ae82bf395aa19bcaf16",
-      "git_blob_oid": "0b84aa587efc59ecc8d2c2d1c492bb9f7fd42c7d",
+      "content_hash": "sha256:550153ebfc0aba293460f024fd072caf453c4a8a123861dbe30f2ea685fee595",
+      "article_content_hash": "sha256:e8d23615cfd0e504997c6c01239f1714d102f05cb845420ff7ef81b1209885ad",
+      "article_markup_hash": "sha256:86ba5098afdeb8396056eb00a00b172efdc86c7481abc27226021ca109091935",
+      "git_blob_oid": "27f0094db812b5391f5002783f7b89d41a9d12dd",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -15362,16 +15362,16 @@
         "wiki/first-witness-faction-commentaries.html",
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (w34-w63, w68, M16)",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (w34-w63, w68, M16; historical W81 sources)",
         "wiki/bibles/the-crypto-stoned-boys.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 2 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/the-crypto-stoned-boys.json; it is not automatically the unavailable Tier 4 modern bible.",
         "The requested modern Tier 4 subject bible is not separately identifiable in this checkout; canon classification remains a human-review item."
       ],
       "content_owner": "canon",
-      "canon_revision": 1,
+      "canon_revision": 2,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -15409,7 +15409,7 @@
         "wiki/first-witness-faction-commentaries.html",
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (w34-w63, w68, M16)",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (w34-w63, w68, M16; historical W81 sources)",
         "wiki/bibles/the-ducky-boys.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
@@ -15427,7 +15427,7 @@
       "title": "The EVM PUNKS",
       "page_exists": true,
       "page_type": "faction",
-      "current_word_count": 2760,
+      "current_word_count": 2763,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -15436,10 +15436,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:1b3c3ccae5ba455d7a0096b979b9051d3b32e6622cd2d294d54c4b61d3fcbb60",
-      "article_content_hash": "sha256:4a3287b0b94957fed53435ca43eb0fce0bd8830766d570ae8db35896a2fae74a",
-      "article_markup_hash": "sha256:3ad092c297474094b0a8cca7574c8c856495ebf2b242af7dbc93f4ea4fb43962",
-      "git_blob_oid": "bf607916b15a9c9eecf8dc454a96647121bf7a60",
+      "content_hash": "sha256:59aba7e192e5138360ae41c5dfd84a843a3a9fe9ad2fa4c9fddfa9bedad2833d",
+      "article_content_hash": "sha256:d55e80098eb14a846a37e258d9b45dc5c62cd1277a9819a2e541d1b748ff16ce",
+      "article_markup_hash": "sha256:02fdf9917d39677c1468cd18232d50105214930db3cb4922f23b50067b701468",
+      "git_blob_oid": "17fe7b6037ba15815075082ca3d4f5caed7c4707",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -15456,16 +15456,16 @@
         "wiki/first-witness-faction-commentaries.html",
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (w34-w63, w68, M16)",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (w34-w63, w68, M16; historical W81 sources)",
         "wiki/bibles/the-evm-punks.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 2 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/the-evm-punks.json; it is not automatically the unavailable Tier 4 modern bible.",
         "The requested modern Tier 4 subject bible is not separately identifiable in this checkout; canon classification remains a human-review item."
       ],
       "content_owner": "canon",
-      "canon_revision": 1,
+      "canon_revision": 2,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -15503,7 +15503,7 @@
         "wiki/first-witness-faction-commentaries.html",
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (w34-w63, w68, M16)",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (w34-w63, w68, M16; historical W81 sources)",
         "wiki/bibles/the-finance-guild.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
@@ -15587,7 +15587,7 @@
         "wiki/first-witness-faction-commentaries.html",
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (w34-w63, w68, M16)",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (w34-w63, w68, M16; historical W81 sources)",
         "wiki/bibles/the-gasless-ghosts.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
@@ -15634,7 +15634,7 @@
         "wiki/first-witness-concordance.html",
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (W5, W15, w25, w63, w70, w72, w73)"
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (W5, W15, w25, w63, w70, w72, w73; historical W81 sources)"
       ],
       "audit_notes": [
         "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified."
@@ -15678,7 +15678,7 @@
         "wiki/first-witness-faction-commentaries.html",
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (w34-w63, w68, M16)",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (w34-w63, w68, M16; historical W81 sources)",
         "wiki/bibles/the-hard-fork-rockers.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
@@ -15725,7 +15725,7 @@
         "wiki/first-witness-faction-commentaries.html",
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (w34-w63, w68, M16)",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (w34-w63, w68, M16; historical W81 sources)",
         "wiki/bibles/the-high-hats.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
@@ -15772,7 +15772,7 @@
         "wiki/first-witness-faction-commentaries.html",
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (w34-w63, w68, M16)",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (w34-w63, w68, M16; historical W81 sources)",
         "wiki/bibles/the-information-mercenaries.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
@@ -15819,7 +15819,7 @@
         "wiki/first-witness-faction-commentaries.html",
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (w34-w63, w68, M16)",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (w34-w63, w68, M16; historical W81 sources)",
         "wiki/bibles/the-moonlords.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
@@ -15837,7 +15837,7 @@
       "title": "THE NICE & EASY BOIS The work that keeps agreement possible",
       "page_exists": true,
       "page_type": "faction",
-      "current_word_count": 2750,
+      "current_word_count": 2753,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -15846,10 +15846,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:2951421de4242f32873c023b1818f0c9a0692c96b1768bc14f38516e5e87e26e",
-      "article_content_hash": "sha256:3cb25f2c3ac12d2700528907f07ebf5c6182915e13de846e40eb7541e167eb28",
-      "article_markup_hash": "sha256:c5ac17772cd25ad5cc5bffc8ac964c6282a5f2a41422a1fc12383ac3d03e6b05",
-      "git_blob_oid": "32b38875d51b64e35f086161acdda59d0832c13d",
+      "content_hash": "sha256:2df8048ef4bc9efc62fc4692f8c7df8f27a0b1a2e9d61e4b7b5d95773883210d",
+      "article_content_hash": "sha256:d8671f3b2081303e7fb60651dc6aedec1d14b6b14ddb4ba2d2b3d7a9a84eb64b",
+      "article_markup_hash": "sha256:b29c749f517eb0dd05f57efd52d42a739f80947d46bfe3b8a5b213fe180bb4d8",
+      "git_blob_oid": "f7337d65d6e878d4dbbb7c8d70b690422d980f91",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -15866,16 +15866,16 @@
         "wiki/first-witness-faction-commentaries.html",
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (w34-w63, w68, M16)",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (w34-w63, w68, M16; historical W81 sources)",
         "wiki/bibles/the-nice-easy-bois.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 2 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/the-nice-easy-bois.json; it is not automatically the unavailable Tier 4 modern bible.",
         "The requested modern Tier 4 subject bible is not separately identifiable in this checkout; canon classification remains a human-review item."
       ],
       "content_owner": "canon",
-      "canon_revision": 1,
+      "canon_revision": 2,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -15884,7 +15884,7 @@
       "title": "The Nomad Bears",
       "page_exists": true,
       "page_type": "faction",
-      "current_word_count": 2842,
+      "current_word_count": 2844,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -15893,10 +15893,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:c7ecef744cee500b5b7e43a92d29532c700a712b90f4497293048a2279999982",
-      "article_content_hash": "sha256:2a0a3317d51f86f0f81f68eef83d0327be2ae3c4efa3083d2b78196b8f43bd9f",
-      "article_markup_hash": "sha256:c8be6941b5de710e37fc64ec1bb866507821c080d37b9d02605559d095c76c9e",
-      "git_blob_oid": "560126cf7c6a5d2f110c86a83a11bca98c778684",
+      "content_hash": "sha256:58f10cd7a350721f76003d27ea4b654e163bbf5d888238bca69942afc769d806",
+      "article_content_hash": "sha256:8a45023a5002da825a05b8adbba5b0e88bb82708457556590fb268b55a8d3c56",
+      "article_markup_hash": "sha256:38d0d33b96b0cd2a08b4057b8b62c8058641a064e122f1488746ebedf6c2ed2f",
+      "git_blob_oid": "f4cb5f4148b1f6219cac463fec3333b93cc25655",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -15913,16 +15913,16 @@
         "wiki/first-witness-faction-commentaries.html",
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (w34-w63, w68, M16)",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (w34-w63, w68, M16; historical W81 sources)",
         "wiki/bibles/the-nomad-bears.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 2 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/the-nomad-bears.json; it is not automatically the unavailable Tier 4 modern bible.",
         "The requested modern Tier 4 subject bible is not separately identifiable in this checkout; canon classification remains a human-review item."
       ],
       "content_owner": "canon",
-      "canon_revision": 1,
+      "canon_revision": 2,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -15931,7 +15931,7 @@
       "title": "The OG PIXEL SAINTS",
       "page_exists": true,
       "page_type": "faction",
-      "current_word_count": 2649,
+      "current_word_count": 2652,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -15940,10 +15940,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:f69dd5847c8dbcdb8d81fa746c4437eb04586afed0d8f911f8e1eddbafad842f",
-      "article_content_hash": "sha256:ca1b9076ece84e73a4168436c42a9949815d19e245aaa2a042d0d252894e2a3b",
-      "article_markup_hash": "sha256:a61e1737f39329f2b19d4c5a99df8a36340bb7a1b6befe1eaf7f7c8150f9915c",
-      "git_blob_oid": "c8cbb85c4d51055fdf7e34e87650817f84a3b93c",
+      "content_hash": "sha256:bd516fefb1c3151a4f8066f3d7c8d12dc6295e1c20485dbe00feb0f35e50c22d",
+      "article_content_hash": "sha256:6ade9f160969a2c6736d653d12ff908152548939ca350a3f5ae64342d1c0dff6",
+      "article_markup_hash": "sha256:4f50753b163476e4c1f13f1de4112dd483d9792cc7ce5aa7225ea93b2fc1486c",
+      "git_blob_oid": "2c4d6411f4a0f6a91cf1c06097cb646fde7204df",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -15960,16 +15960,16 @@
         "wiki/first-witness-faction-commentaries.html",
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (w34-w63, w68, M16)",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (w34-w63, w68, M16; historical W81 sources)",
         "wiki/bibles/the-og-pixel-saints.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 2 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/the-og-pixel-saints.json; it is not automatically the unavailable Tier 4 modern bible.",
         "The requested modern Tier 4 subject bible is not separately identifiable in this checkout; canon classification remains a human-review item."
       ],
       "content_owner": "canon",
-      "canon_revision": 1,
+      "canon_revision": 2,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -16005,7 +16005,7 @@
       "likely_source_family": [
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (unresolved archive bucket)",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (unresolved archive bucket; historical W81 sources)",
         "wiki/bibles/the-princess.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
@@ -16022,7 +16022,7 @@
       "title": "The RUGPULL MINERS",
       "page_exists": true,
       "page_type": "faction",
-      "current_word_count": 2874,
+      "current_word_count": 2877,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -16031,10 +16031,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:189e032a582cbe39cde75708f3f28ed8e43ffa1eb5a1d537d8a1b3407d843cea",
-      "article_content_hash": "sha256:988285b81b99d3730a997d6569019beb6ffad4e605fa29ca9406aec433447996",
-      "article_markup_hash": "sha256:3eed875be0d346c92af51daccd933b8d7f8748391f507ca3e0f953b1b581253f",
-      "git_blob_oid": "ca3096321786ed38fca57bd88d2ba4797c3f138b",
+      "content_hash": "sha256:3c37ace560ab4b5606135fa25b93ec632496b44d3bacd216eede5a92389014b7",
+      "article_content_hash": "sha256:a0da3d900491153065d5116cc5830923032a0a009af2f0caa6bbdd0b8136605d",
+      "article_markup_hash": "sha256:c969652ac6258453e1d4373a48d423007ca00fa2ffd00189777ab90f4f668942",
+      "git_blob_oid": "4c43496ddb8429413afa349d145e7bab404a7a3b",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -16051,16 +16051,16 @@
         "wiki/first-witness-faction-commentaries.html",
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (w34-w63, w68, M16)",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (w34-w63, w68, M16; historical W81 sources)",
         "wiki/bibles/the-rugpull-miners.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 2 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 3 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/the-rugpull-miners.json; it is not automatically the unavailable Tier 4 modern bible.",
         "The requested modern Tier 4 subject bible is not separately identifiable in this checkout; canon classification remains a human-review item."
       ],
       "content_owner": "canon",
-      "canon_revision": 2,
+      "canon_revision": 3,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -16069,7 +16069,7 @@
       "title": "The SALVAGERS",
       "page_exists": true,
       "page_type": "faction",
-      "current_word_count": 2849,
+      "current_word_count": 2852,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -16078,10 +16078,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:e2cc40aff7364e04f5184c377533eb06246c629f066cccd0a0f50cc99b8655b7",
-      "article_content_hash": "sha256:72ae3e9117a341249a9f554deab0c016df5bed2a2eb6338e070254fd7a69e505",
-      "article_markup_hash": "sha256:8b6c969e2cfc06f2aa8d9eb4321db957d99f385a28edac02ed5f9dc89463a0ec",
-      "git_blob_oid": "c99f4b74f7f02d80931c738e92f5c2f18cc3737f",
+      "content_hash": "sha256:d90352eb4431357a96ba8217bc1084d7fd9c95ba78cf6a028cc0d0b4c5b39a74",
+      "article_content_hash": "sha256:838e68f7833154c724e8e32df1c66cd86018fcc2bd619db79cecb26588efbe19",
+      "article_markup_hash": "sha256:3bcee00f6ad518f180cf7c07e048b6183ef6c9c9b604686304a73a6fd354415f",
+      "git_blob_oid": "4075b2e5efffc2b622f05faa682eaacb54b3e843",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -16098,16 +16098,16 @@
         "wiki/first-witness-faction-commentaries.html",
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (w34-w63, w68, M16)",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (w34-w63, w68, M16; historical W81 sources)",
         "wiki/bibles/the-salvagers.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 2 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/the-salvagers.json; it is not automatically the unavailable Tier 4 modern bible.",
         "The requested modern Tier 4 subject bible is not separately identifiable in this checkout; canon classification remains a human-review item."
       ],
       "content_owner": "canon",
-      "canon_revision": 1,
+      "canon_revision": 2,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -16116,7 +16116,7 @@
       "title": "The SHARD MOTHERS of MANHATTAN",
       "page_exists": true,
       "page_type": "faction",
-      "current_word_count": 2490,
+      "current_word_count": 2493,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -16125,10 +16125,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:37882c02b20cf3a93efba8a027966038e607d3eb3efc0680157dd994b0501dd6",
-      "article_content_hash": "sha256:b06b05be5aa4c2e7acf51aa37df3efc34817a908847992db58d350d63ccefdbd",
-      "article_markup_hash": "sha256:d26c88df6f42933caadf5530a8a600640ed89b222dc63656d41cf3f43981aa55",
-      "git_blob_oid": "b65bccaa0dc757e1966b24bb41925d8203bd6b8d",
+      "content_hash": "sha256:25549313251f882252bda3943b66df173647cbd8bfc2affdf90f6009f5957f85",
+      "article_content_hash": "sha256:26631714976958b4c06567397c548463ca76a2c9ccd57ee211a25f220db68e53",
+      "article_markup_hash": "sha256:66b3e286381ac549c446913274058cdf5282b081fa7f64f96ea64ee9c05a92bf",
+      "git_blob_oid": "4c5a2b156bef2f3117ef010e681f54c5484f84ac",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -16145,16 +16145,16 @@
         "wiki/first-witness-faction-commentaries.html",
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (w34-w63, w68, M16)",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (w34-w63, w68, M16; historical W81 sources)",
         "wiki/bibles/the-shard-mothers-of-manhattan.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 2 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/the-shard-mothers-of-manhattan.json; it is not automatically the unavailable Tier 4 modern bible.",
         "The requested modern Tier 4 subject bible is not separately identifiable in this checkout; canon classification remains a human-review item."
       ],
       "content_owner": "canon",
-      "canon_revision": 1,
+      "canon_revision": 2,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -16163,7 +16163,7 @@
       "title": "The Squeaky Pinks",
       "page_exists": true,
       "page_type": "faction",
-      "current_word_count": 2462,
+      "current_word_count": 2465,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -16172,10 +16172,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:494c64949472cea8ef7f415fdf4182a14dbaedf8ee801859597fb537c4f4fb57",
-      "article_content_hash": "sha256:e08113b618ac3d1c2bc3bfeffb3aaf71fbc54f267aa82ce7ce3a3987bb33075b",
-      "article_markup_hash": "sha256:80b288a7b360cd23864c3275d985e025d01ad23f1fcbf2000916617cbe379d50",
-      "git_blob_oid": "957f2767b79af7556819ec931c196e58b58d40a0",
+      "content_hash": "sha256:974af3d7bb0023ad3daaec1ab29f1ac241b0b9c5efd3ca9c29526d9c5719d92d",
+      "article_content_hash": "sha256:3557c68e14bde205653cae7d30ee60999be731a77f324f7d2ae9aae3fee3bbef",
+      "article_markup_hash": "sha256:d92058056f67f3a74de907e17e3eddde1a52c81828d67654db8fbbba9899bd0b",
+      "git_blob_oid": "a7f0e15b6c90ad9978a0bd109b61f6cad02a89e8",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -16192,16 +16192,16 @@
         "wiki/first-witness-faction-commentaries.html",
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (w34-w63, w68, M16)",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (w34-w63, w68, M16; historical W81 sources)",
         "wiki/bibles/the-squeaky-pinks.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 2 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/the-squeaky-pinks.json; it is not automatically the unavailable Tier 4 modern bible.",
         "The requested modern Tier 4 subject bible is not separately identifiable in this checkout; canon classification remains a human-review item."
       ],
       "content_owner": "canon",
-      "canon_revision": 1,
+      "canon_revision": 2,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -16239,7 +16239,7 @@
         "wiki/first-witness-faction-commentaries.html",
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (w34-w63, w68, M16)",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (w34-w63, w68, M16; historical W81 sources)",
         "wiki/bibles/the-tuskon-ogs.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
@@ -16286,7 +16286,7 @@
         "wiki/first-witness-concordance.html",
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (W1, W15, W20, w27-w28, w65, w73, w86)",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (W1, W15, W20, w27-w28, w65, w73, w86; historical W81 sources)",
         "wiki/bibles/the-whitewasher.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
@@ -16303,7 +16303,7 @@
       "title": "Thera-9",
       "page_exists": true,
       "page_type": "character",
-      "current_word_count": 2515,
+      "current_word_count": 2519,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -16312,10 +16312,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:f9f6ac4f574ec7fed8ac5a2ebc8a9d581d67c8335c0ef52d4e0fb4ca33a698c9",
-      "article_content_hash": "sha256:3bce0d2b814aec85df9cc69f7c42172015d716c7332336a241e7dfeaccf9b6ce",
-      "article_markup_hash": "sha256:81bbe9ad81034379672e3a8fe30aae20eecad8caff24a79ccd71cd2a984559a1",
-      "git_blob_oid": "752a80a3985e1568e2a08d59f039531181b145cf",
+      "content_hash": "sha256:267e5d189aa79c12811a9589753808740639b526c85a35be62c5ba705160785f",
+      "article_content_hash": "sha256:c9cbc43292803a7c0f6175c8f065f1882aa7edf53e7922ab330e368fdd0141bb",
+      "article_markup_hash": "sha256:8d188a278ce0c6d470ac5268b44d335ae0e5b47800a73ff5562e76eaa1791ac7",
+      "git_blob_oid": "ac9d2d8b3bd1eab20ffa00504be0fd213626e700",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -16330,16 +16330,16 @@
       "likely_source_family": [
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (M16, W12, W13, W18, W17, w82, w83, w85, w93)",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (M16, W12, W13, W18, W17, w82, w83, w85, w93; historical W81 sources)",
         "wiki/bibles/thera-9.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 2 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/thera-9.json; it is not automatically the unavailable Tier 4 modern bible.",
         "The requested modern Tier 4 subject bible is not separately identifiable in this checkout; canon classification remains a human-review item."
       ],
       "content_owner": "canon",
-      "canon_revision": 1,
+      "canon_revision": 2,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -16375,7 +16375,7 @@
       "likely_source_family": [
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (M16, W12, W13, W18, W17, w82, w83, w85, w93)",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (M16, W12, W13, W18, W17, w82, w83, w85, w93; historical W81 sources)",
         "wiki/bibles/thorne-the-architect.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
@@ -16505,7 +16505,7 @@
         "wiki/first-witness-glossary.html",
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (major lore/cosmology files)",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (major lore/cosmology files; historical W81 sources)",
         "wiki/bibles/triple-fork-event.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
@@ -16551,7 +16551,7 @@
         "wiki/first-witness-concordance.html",
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (W5, W15, w25, w63, w70, w72, w73)"
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (W5, W15, w25, w63, w70, w72, w73; historical W81 sources)"
       ],
       "audit_notes": [
         "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified."
@@ -16919,7 +16919,7 @@
         "wiki/first-witness-concordance.html",
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (W5, W15, w25, w63, w70, w72, w73)"
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (W5, W15, w25, w63, w70, w72, w73; historical W81 sources)"
       ],
       "audit_notes": [
         "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified."
