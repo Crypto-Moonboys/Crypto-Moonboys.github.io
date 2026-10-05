@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-05T11:25:10.206Z",
-  "verified_at": "2026-10-05T11:25:10.206Z",
+  "generated_at": "2026-10-05T12:49:06.254Z",
+  "verified_at": "2026-10-05T12:49:06.254Z",
   "lite": true,
   "nodes": [
     {
@@ -914,26 +914,26 @@
     {
       "source": "/wiki/the-princess.html",
       "target": "/wiki/the-whitewasher.html",
-      "score": 84,
-      "weight": 0.84
+      "score": 85,
+      "weight": 0.85
     },
     {
       "source": "/wiki/the-princess.html",
       "target": "/wiki/thorne-the-architect.html",
-      "score": 84,
-      "weight": 0.84
+      "score": 85,
+      "weight": 0.85
     },
     {
       "source": "/wiki/the-whitewasher.html",
       "target": "/wiki/the-princess.html",
-      "score": 84,
-      "weight": 0.84
+      "score": 85,
+      "weight": 0.85
     },
     {
       "source": "/wiki/the-whitewasher.html",
       "target": "/wiki/thorne-the-architect.html",
-      "score": 84,
-      "weight": 0.84
+      "score": 85,
+      "weight": 0.85
     },
     {
       "source": "/wiki/seeding-rights.html",

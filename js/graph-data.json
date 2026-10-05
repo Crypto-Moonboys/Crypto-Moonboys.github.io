@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-05T11:25:10.206Z",
-  "verified_at": "2026-10-05T11:25:10.206Z",
+  "generated_at": "2026-10-05T12:49:06.254Z",
+  "verified_at": "2026-10-05T12:49:06.254Z",
   "nodes": [
     {
       "id": "/about.html",
@@ -127,7 +127,7 @@
       "title": "Aleema (Child of the Shard)",
       "url": "/wiki/aleema-child-of-the-shard.html",
       "category": "characters",
-      "rank_score": 277,
+      "rank_score": 285,
       "authority_score": 28
     },
     {
@@ -135,7 +135,7 @@
       "title": "Alfie 'Bitcoin Kid' Blaze",
       "url": "/wiki/alfie-bitcoin-kid-blaze.html",
       "category": "factions",
-      "rank_score": 286,
+      "rank_score": 294,
       "authority_score": 28
     },
     {
@@ -183,7 +183,7 @@
       "title": "Ava Chen",
       "url": "/wiki/ava-chen.html",
       "category": "characters",
-      "rank_score": 268,
+      "rank_score": 276,
       "authority_score": 24
     },
     {
@@ -383,7 +383,7 @@
       "title": "Dragan Volkov",
       "url": "/wiki/dragan-volkov.html",
       "category": "characters",
-      "rank_score": 274,
+      "rank_score": 282,
       "authority_score": 24
     },
     {
@@ -399,7 +399,7 @@
       "title": "Elder Codex-7",
       "url": "/wiki/elder-codex-7.html",
       "category": "characters",
-      "rank_score": 277,
+      "rank_score": 285,
       "authority_score": 24
     },
     {
@@ -2439,7 +2439,7 @@
       "title": "HEX-TAGGER PRIME",
       "url": "/wiki/hex-tagger-prime.html",
       "category": "characters",
-      "rank_score": 272,
+      "rank_score": 280,
       "authority_score": 24
     },
     {
@@ -2503,7 +2503,7 @@
       "title": "Jodie ZOOM 2000",
       "url": "/wiki/jodie-zoom-2000.html",
       "category": "characters",
-      "rank_score": 287,
+      "rank_score": 295,
       "authority_score": 28
     },
     {
@@ -2535,7 +2535,7 @@
       "title": "Loopfiend",
       "url": "/wiki/loopfiend.html",
       "category": "characters",
-      "rank_score": 265,
+      "rank_score": 273,
       "authority_score": 24
     },
     {
@@ -2695,7 +2695,7 @@
       "title": "Patchwork",
       "url": "/wiki/patchwork.html",
       "category": "characters",
-      "rank_score": 268,
+      "rank_score": 276,
       "authority_score": 28
     },
     {
@@ -2767,7 +2767,7 @@
       "title": "Queen Sarah P-fly",
       "url": "/wiki/queen-sarah-p-fly.html",
       "category": "factions",
-      "rank_score": 286,
+      "rank_score": 290,
       "authority_score": 28
     },
     {
@@ -2855,7 +2855,7 @@
       "title": "Sister Halcyon",
       "url": "/wiki/sister-halcyon.html",
       "category": "characters",
-      "rank_score": 284,
+      "rank_score": 288,
       "authority_score": 28
     },
     {
@@ -3501,32 +3501,32 @@
     {
       "source": "/wiki/aleema-child-of-the-shard.html",
       "target": "/wiki/the-princess.html",
-      "score": 84,
-      "weight": 0.84
+      "score": 85,
+      "weight": 0.85
     },
     {
       "source": "/wiki/aleema-child-of-the-shard.html",
       "target": "/wiki/the-whitewasher.html",
-      "score": 84,
-      "weight": 0.84
+      "score": 85,
+      "weight": 0.85
     },
     {
       "source": "/wiki/aleema-child-of-the-shard.html",
       "target": "/wiki/thorne-the-architect.html",
-      "score": 84,
-      "weight": 0.84
+      "score": 85,
+      "weight": 0.85
+    },
+    {
+      "source": "/wiki/aleema-child-of-the-shard.html",
+      "target": "/wiki/billy-the-goat-kid.html",
+      "score": 81,
+      "weight": 0.81
     },
     {
       "source": "/wiki/aleema-child-of-the-shard.html",
       "target": "/wiki/crypto-moonboys.html",
       "score": 81,
       "weight": 0.81
-    },
-    {
-      "source": "/wiki/aleema-child-of-the-shard.html",
-      "target": "/wiki/billy-the-goat-kid.html",
-      "score": 80,
-      "weight": 0.8
     },
     {
       "source": "/wiki/alfie-bitcoin-kid-blaze.html",
@@ -3572,19 +3572,19 @@
     },
     {
       "source": "/wiki/alien-worlds-tlm.html",
+      "target": "/wiki/jodie-zoom-2000.html",
+      "score": 79,
+      "weight": 0.79
+    },
+    {
+      "source": "/wiki/alien-worlds-tlm.html",
+      "target": "/wiki/m1ntr-k1ll.html",
+      "score": 79,
+      "weight": 0.79
+    },
+    {
+      "source": "/wiki/alien-worlds-tlm.html",
       "target": "/wiki/forksplit.html",
-      "score": 78,
-      "weight": 0.78
-    },
-    {
-      "source": "/wiki/alien-worlds-tlm.html",
-      "target": "/wiki/grit.html",
-      "score": 78,
-      "weight": 0.78
-    },
-    {
-      "source": "/wiki/alien-worlds-tlm.html",
-      "target": "/wiki/grit42.html",
       "score": 78,
       "weight": 0.78
     },
@@ -3632,19 +3632,19 @@
     },
     {
       "source": "/wiki/atomicassets.html",
+      "target": "/wiki/jodie-zoom-2000.html",
+      "score": 79,
+      "weight": 0.79
+    },
+    {
+      "source": "/wiki/atomicassets.html",
+      "target": "/wiki/m1ntr-k1ll.html",
+      "score": 79,
+      "weight": 0.79
+    },
+    {
+      "source": "/wiki/atomicassets.html",
       "target": "/wiki/forksplit.html",
-      "score": 78,
-      "weight": 0.78
-    },
-    {
-      "source": "/wiki/atomicassets.html",
-      "target": "/wiki/grit.html",
-      "score": 78,
-      "weight": 0.78
-    },
-    {
-      "source": "/wiki/atomicassets.html",
-      "target": "/wiki/grit42.html",
       "score": 78,
       "weight": 0.78
     },
@@ -3728,15 +3728,15 @@
     },
     {
       "source": "/wiki/ava-chen.html",
-      "target": "/wiki/forksplit.html",
-      "score": 78,
-      "weight": 0.78
+      "target": "/wiki/jodie-zoom-2000.html",
+      "score": 79,
+      "weight": 0.79
     },
     {
       "source": "/wiki/ava-chen.html",
-      "target": "/wiki/grit.html",
-      "score": 78,
-      "weight": 0.78
+      "target": "/wiki/loopfiend.html",
+      "score": 79,
+      "weight": 0.79
     },
     {
       "source": "/wiki/battlemech-blast.html",
@@ -3777,20 +3777,20 @@
     {
       "source": "/wiki/bear-market-siege.html",
       "target": "/wiki/the-princess.html",
-      "score": 84,
-      "weight": 0.84
+      "score": 85,
+      "weight": 0.85
     },
     {
       "source": "/wiki/bear-market-siege.html",
       "target": "/wiki/the-whitewasher.html",
-      "score": 84,
-      "weight": 0.84
+      "score": 85,
+      "weight": 0.85
     },
     {
       "source": "/wiki/bear-market-siege.html",
       "target": "/wiki/thorne-the-architect.html",
-      "score": 84,
-      "weight": 0.84
+      "score": 85,
+      "weight": 0.85
     },
     {
       "source": "/wiki/bear-market-siege.html",
@@ -3831,20 +3831,20 @@
     {
       "source": "/wiki/billy-the-goat-kid.html",
       "target": "/wiki/the-princess.html",
-      "score": 84,
-      "weight": 0.84
+      "score": 85,
+      "weight": 0.85
     },
     {
       "source": "/wiki/billy-the-goat-kid.html",
       "target": "/wiki/the-whitewasher.html",
-      "score": 84,
-      "weight": 0.84
+      "score": 85,
+      "weight": 0.85
     },
     {
       "source": "/wiki/billy-the-goat-kid.html",
       "target": "/wiki/thorne-the-architect.html",
-      "score": 84,
-      "weight": 0.84
+      "score": 85,
+      "weight": 0.85
     },
     {
       "source": "/wiki/billy-the-goat-kid.html",
@@ -3855,8 +3855,8 @@
     {
       "source": "/wiki/billy-the-goat-kid.html",
       "target": "/wiki/aleema-child-of-the-shard.html",
-      "score": 79,
-      "weight": 0.79
+      "score": 80,
+      "weight": 0.8
     },
     {
       "source": "/wiki/bit-cap-5000.html",
@@ -3891,8 +3891,8 @@
     {
       "source": "/wiki/bitcoin-kid-army.html",
       "target": "/wiki/alfie-bitcoin-kid-blaze.html",
-      "score": 95,
-      "weight": 0.95
+      "score": 96,
+      "weight": 0.96
     },
     {
       "source": "/wiki/bitcoin-kid-army.html",
@@ -4058,15 +4058,15 @@
     },
     {
       "source": "/wiki/block-topia.html",
-      "target": "/wiki/bitcoin-x-kids.html",
-      "score": 59,
-      "weight": 0.59
+      "target": "/wiki/the-princess.html",
+      "score": 60,
+      "weight": 0.6
     },
     {
       "source": "/wiki/block-topia.html",
-      "target": "/wiki/the-princess.html",
-      "score": 59,
-      "weight": 0.59
+      "target": "/wiki/the-whitewasher.html",
+      "score": 60,
+      "weight": 0.6
     },
     {
       "source": "/wiki/blockchain.html",
@@ -4448,15 +4448,15 @@
     },
     {
       "source": "/wiki/diamond-hands.html",
-      "target": "/wiki/forksplit.html",
-      "score": 75,
-      "weight": 0.75
+      "target": "/wiki/jodie-zoom-2000.html",
+      "score": 76,
+      "weight": 0.76
     },
     {
       "source": "/wiki/diamond-hands.html",
-      "target": "/wiki/grit.html",
-      "score": 75,
-      "weight": 0.75
+      "target": "/wiki/m1ntr-k1ll.html",
+      "score": 76,
+      "weight": 0.76
     },
     {
       "source": "/wiki/dragan-volkov.html",
@@ -4467,6 +4467,12 @@
     {
       "source": "/wiki/dragan-volkov.html",
       "target": "/wiki/jodie-zoom-2000.html",
+      "score": 82,
+      "weight": 0.82
+    },
+    {
+      "source": "/wiki/dragan-volkov.html",
+      "target": "/wiki/thera-9.html",
       "score": 81,
       "weight": 0.81
     },
@@ -4478,13 +4484,7 @@
     },
     {
       "source": "/wiki/dragan-volkov.html",
-      "target": "/wiki/thera-9.html",
-      "score": 80,
-      "weight": 0.8
-    },
-    {
-      "source": "/wiki/dragan-volkov.html",
-      "target": "/wiki/bitcoin-kids.html",
+      "target": "/wiki/ava-chen.html",
       "score": 79,
       "weight": 0.79
     },
@@ -7209,14 +7209,14 @@
     {
       "source": "/wiki/forklord-you.html",
       "target": "/wiki/m1ntr-k1ll.html",
-      "score": 78,
-      "weight": 0.78
+      "score": 79,
+      "weight": 0.79
     },
     {
       "source": "/wiki/forklord-you.html",
       "target": "/wiki/lady-ink.html",
-      "score": 77,
-      "weight": 0.77
+      "score": 78,
+      "weight": 0.78
     },
     {
       "source": "/wiki/forksplit.html",
@@ -12045,8 +12045,8 @@
     {
       "source": "/wiki/grit.html",
       "target": "/wiki/jodie-zoom-2000.html",
-      "score": 78,
-      "weight": 0.78
+      "score": 79,
+      "weight": 0.79
     },
     {
       "source": "/wiki/grit42.html",
@@ -12075,8 +12075,8 @@
     {
       "source": "/wiki/grit42.html",
       "target": "/wiki/jodie-zoom-2000.html",
-      "score": 78,
-      "weight": 0.78
+      "score": 79,
+      "weight": 0.79
     },
     {
       "source": "/wiki/hard-fork-games.html",
@@ -12194,9 +12194,9 @@
     },
     {
       "source": "/wiki/hex-tagger-prime.html",
-      "target": "/wiki/forksplit.html",
-      "score": 75,
-      "weight": 0.75
+      "target": "/wiki/jodie-zoom-2000.html",
+      "score": 76,
+      "weight": 0.76
     },
     {
       "source": "/wiki/hodl-warriors.html",
@@ -12344,9 +12344,9 @@
     },
     {
       "source": "/wiki/ian-harrison.html",
-      "target": "/wiki/forksplit.html",
-      "score": 75,
-      "weight": 0.75
+      "target": "/wiki/jodie-zoom-2000.html",
+      "score": 76,
+      "weight": 0.76
     },
     {
       "source": "/wiki/iris-7.html",
@@ -12363,18 +12363,18 @@
     {
       "source": "/wiki/iris-7.html",
       "target": "/wiki/patchwork.html",
+      "score": 82,
+      "weight": 0.82
+    },
+    {
+      "source": "/wiki/iris-7.html",
+      "target": "/wiki/lady-ink.html",
       "score": 81,
       "weight": 0.81
     },
     {
       "source": "/wiki/iris-7.html",
       "target": "/wiki/hodl-warriors.html",
-      "score": 80,
-      "weight": 0.8
-    },
-    {
-      "source": "/wiki/iris-7.html",
-      "target": "/wiki/lady-ink.html",
       "score": 80,
       "weight": 0.8
     },
@@ -12417,24 +12417,24 @@
     {
       "source": "/wiki/jodie-zoom-2000.html",
       "target": "/wiki/thera-9.html",
-      "score": 83,
-      "weight": 0.83
+      "score": 84,
+      "weight": 0.84
     },
     {
       "source": "/wiki/jodie-zoom-2000.html",
       "target": "/wiki/m1ntr-k1ll.html",
+      "score": 82,
+      "weight": 0.82
+    },
+    {
+      "source": "/wiki/jodie-zoom-2000.html",
+      "target": "/wiki/snipey-d-man-sirus.html",
       "score": 81,
       "weight": 0.81
     },
     {
       "source": "/wiki/jodie-zoom-2000.html",
       "target": "/wiki/hodl-warriors.html",
-      "score": 80,
-      "weight": 0.8
-    },
-    {
-      "source": "/wiki/jodie-zoom-2000.html",
-      "target": "/wiki/null-the-prophet.html",
       "score": 80,
       "weight": 0.8
     },
@@ -12477,8 +12477,8 @@
     {
       "source": "/wiki/lady-ink.html",
       "target": "/wiki/snipey-d-man-sirus.html",
-      "score": 83,
-      "weight": 0.83
+      "score": 84,
+      "weight": 0.84
     },
     {
       "source": "/wiki/lady-ink.html",
@@ -12489,14 +12489,14 @@
     {
       "source": "/wiki/lady-ink.html",
       "target": "/wiki/patchwork.html",
-      "score": 81,
-      "weight": 0.81
+      "score": 82,
+      "weight": 0.82
     },
     {
       "source": "/wiki/lady-ink.html",
-      "target": "/wiki/hodl-warriors.html",
-      "score": 80,
-      "weight": 0.8
+      "target": "/wiki/thera-9.html",
+      "score": 81,
+      "weight": 0.81
     },
     {
       "source": "/wiki/lfgk.html",
@@ -12537,24 +12537,24 @@
     {
       "source": "/wiki/loopfiend.html",
       "target": "/wiki/jodie-zoom-2000.html",
+      "score": 82,
+      "weight": 0.82
+    },
+    {
+      "source": "/wiki/loopfiend.html",
+      "target": "/wiki/snipey-d-man-sirus.html",
+      "score": 81,
+      "weight": 0.81
+    },
+    {
+      "source": "/wiki/loopfiend.html",
+      "target": "/wiki/thera-9.html",
       "score": 81,
       "weight": 0.81
     },
     {
       "source": "/wiki/loopfiend.html",
       "target": "/wiki/null-the-prophet.html",
-      "score": 80,
-      "weight": 0.8
-    },
-    {
-      "source": "/wiki/loopfiend.html",
-      "target": "/wiki/snipey-d-man-sirus.html",
-      "score": 80,
-      "weight": 0.8
-    },
-    {
-      "source": "/wiki/loopfiend.html",
-      "target": "/wiki/thera-9.html",
       "score": 80,
       "weight": 0.8
     },
@@ -12573,8 +12573,8 @@
     {
       "source": "/wiki/m1ntr-k1ll.html",
       "target": "/wiki/jodie-zoom-2000.html",
-      "score": 81,
-      "weight": 0.81
+      "score": 82,
+      "weight": 0.82
     },
     {
       "source": "/wiki/m1ntr-k1ll.html",
@@ -13136,27 +13136,27 @@
     },
     {
       "source": "/wiki/patchwork.html",
+      "target": "/wiki/sister-halcyon.html",
+      "score": 85,
+      "weight": 0.85
+    },
+    {
+      "source": "/wiki/patchwork.html",
       "target": "/wiki/crypto-moonboys.html",
       "score": 84,
       "weight": 0.84
     },
     {
       "source": "/wiki/patchwork.html",
-      "target": "/wiki/sister-halcyon.html",
+      "target": "/wiki/lady-ink.html",
       "score": 84,
       "weight": 0.84
     },
     {
       "source": "/wiki/patchwork.html",
-      "target": "/wiki/iris-7.html",
-      "score": 83,
-      "weight": 0.83
-    },
-    {
-      "source": "/wiki/patchwork.html",
-      "target": "/wiki/lady-ink.html",
-      "score": 83,
-      "weight": 0.83
+      "target": "/wiki/snipey-d-man-sirus.html",
+      "score": 84,
+      "weight": 0.84
     },
     {
       "source": "/wiki/phygital-prints.html",
@@ -13232,19 +13232,19 @@
     },
     {
       "source": "/wiki/pixil-mini.html",
+      "target": "/wiki/jodie-zoom-2000.html",
+      "score": 79,
+      "weight": 0.79
+    },
+    {
+      "source": "/wiki/pixil-mini.html",
+      "target": "/wiki/m1ntr-k1ll.html",
+      "score": 79,
+      "weight": 0.79
+    },
+    {
+      "source": "/wiki/pixil-mini.html",
       "target": "/wiki/forksplit.html",
-      "score": 78,
-      "weight": 0.78
-    },
-    {
-      "source": "/wiki/pixil-mini.html",
-      "target": "/wiki/grit.html",
-      "score": 78,
-      "weight": 0.78
-    },
-    {
-      "source": "/wiki/pixil-mini.html",
-      "target": "/wiki/grit42.html",
       "score": 78,
       "weight": 0.78
     },
@@ -13382,19 +13382,19 @@
     },
     {
       "source": "/wiki/pyralith.html",
+      "target": "/wiki/jodie-zoom-2000.html",
+      "score": 79,
+      "weight": 0.79
+    },
+    {
+      "source": "/wiki/pyralith.html",
+      "target": "/wiki/m1ntr-k1ll.html",
+      "score": 79,
+      "weight": 0.79
+    },
+    {
+      "source": "/wiki/pyralith.html",
       "target": "/wiki/forksplit.html",
-      "score": 78,
-      "weight": 0.78
-    },
-    {
-      "source": "/wiki/pyralith.html",
-      "target": "/wiki/grit.html",
-      "score": 78,
-      "weight": 0.78
-    },
-    {
-      "source": "/wiki/pyralith.html",
-      "target": "/wiki/grit42.html",
       "score": 78,
       "weight": 0.78
     },
@@ -13442,19 +13442,19 @@
     },
     {
       "source": "/wiki/quell.html",
+      "target": "/wiki/jodie-zoom-2000.html",
+      "score": 79,
+      "weight": 0.79
+    },
+    {
+      "source": "/wiki/quell.html",
+      "target": "/wiki/m1ntr-k1ll.html",
+      "score": 79,
+      "weight": 0.79
+    },
+    {
+      "source": "/wiki/quell.html",
       "target": "/wiki/forksplit.html",
-      "score": 78,
-      "weight": 0.78
-    },
-    {
-      "source": "/wiki/quell.html",
-      "target": "/wiki/grit.html",
-      "score": 78,
-      "weight": 0.78
-    },
-    {
-      "source": "/wiki/quell.html",
-      "target": "/wiki/grit42.html",
       "score": 78,
       "weight": 0.78
     },
@@ -13544,9 +13544,9 @@
     },
     {
       "source": "/wiki/rune-tag.html",
-      "target": "/wiki/forksplit.html",
-      "score": 75,
-      "weight": 0.75
+      "target": "/wiki/jodie-zoom-2000.html",
+      "score": 76,
+      "weight": 0.76
     },
     {
       "source": "/wiki/rust2riches.html",
@@ -13641,8 +13641,14 @@
     {
       "source": "/wiki/satorebel.html",
       "target": "/wiki/patchwork.html",
-      "score": 87,
-      "weight": 0.87
+      "score": 88,
+      "weight": 0.88
+    },
+    {
+      "source": "/wiki/satorebel.html",
+      "target": "/wiki/sister-halcyon.html",
+      "score": 85,
+      "weight": 0.85
     },
     {
       "source": "/wiki/satorebel.html",
@@ -13652,15 +13658,9 @@
     },
     {
       "source": "/wiki/satorebel.html",
-      "target": "/wiki/sister-halcyon.html",
+      "target": "/wiki/thera-9.html",
       "score": 84,
       "weight": 0.84
-    },
-    {
-      "source": "/wiki/satorebel.html",
-      "target": "/wiki/thera-9.html",
-      "score": 83,
-      "weight": 0.83
     },
     {
       "source": "/wiki/satorebel.html",
@@ -13730,13 +13730,13 @@
     },
     {
       "source": "/wiki/sister-halcyon.html",
-      "target": "/wiki/crypto-moonboys.html",
-      "score": 84,
-      "weight": 0.84
+      "target": "/wiki/patchwork.html",
+      "score": 85,
+      "weight": 0.85
     },
     {
       "source": "/wiki/sister-halcyon.html",
-      "target": "/wiki/patchwork.html",
+      "target": "/wiki/crypto-moonboys.html",
       "score": 84,
       "weight": 0.84
     },
@@ -13749,8 +13749,8 @@
     {
       "source": "/wiki/sister-halcyon.html",
       "target": "/wiki/thera-9.html",
-      "score": 83,
-      "weight": 0.83
+      "score": 84,
+      "weight": 0.84
     },
     {
       "source": "/wiki/sister-halcyon.html",
@@ -13797,26 +13797,26 @@
     {
       "source": "/wiki/snipey-d-man-sirus.html",
       "target": "/wiki/lady-ink.html",
-      "score": 83,
-      "weight": 0.83
+      "score": 84,
+      "weight": 0.84
     },
     {
       "source": "/wiki/snipey-d-man-sirus.html",
       "target": "/wiki/thera-9.html",
-      "score": 83,
-      "weight": 0.83
+      "score": 84,
+      "weight": 0.84
     },
     {
       "source": "/wiki/snipey-d-man-sirus.html",
       "target": "/wiki/jodie-zoom-2000.html",
-      "score": 81,
-      "weight": 0.81
+      "score": 82,
+      "weight": 0.82
     },
     {
       "source": "/wiki/snipey-d-man-sirus.html",
       "target": "/wiki/patchwork.html",
-      "score": 81,
-      "weight": 0.81
+      "score": 82,
+      "weight": 0.82
     },
     {
       "source": "/wiki/solana.html",
@@ -14841,14 +14841,14 @@
     {
       "source": "/wiki/the-princess.html",
       "target": "/wiki/the-whitewasher.html",
-      "score": 84,
-      "weight": 0.84
+      "score": 85,
+      "weight": 0.85
     },
     {
       "source": "/wiki/the-princess.html",
       "target": "/wiki/thorne-the-architect.html",
-      "score": 84,
-      "weight": 0.84
+      "score": 85,
+      "weight": 0.85
     },
     {
       "source": "/wiki/the-princess.html",
@@ -14858,15 +14858,15 @@
     },
     {
       "source": "/wiki/the-princess.html",
-      "target": "/wiki/wagmi-prophecy.html",
+      "target": "/wiki/billy-the-goat-kid.html",
       "score": 75,
       "weight": 0.75
     },
     {
       "source": "/wiki/the-princess.html",
-      "target": "/wiki/billy-the-goat-kid.html",
-      "score": 74,
-      "weight": 0.74
+      "target": "/wiki/wagmi-prophecy.html",
+      "score": 75,
+      "weight": 0.75
     },
     {
       "source": "/wiki/the-rugpull-miners.html",
@@ -15021,14 +15021,14 @@
     {
       "source": "/wiki/the-whitewasher.html",
       "target": "/wiki/the-princess.html",
-      "score": 84,
-      "weight": 0.84
+      "score": 85,
+      "weight": 0.85
     },
     {
       "source": "/wiki/the-whitewasher.html",
       "target": "/wiki/thorne-the-architect.html",
-      "score": 84,
-      "weight": 0.84
+      "score": 85,
+      "weight": 0.85
     },
     {
       "source": "/wiki/the-whitewasher.html",
@@ -15044,7 +15044,7 @@
     },
     {
       "source": "/wiki/the-whitewasher.html",
-      "target": "/wiki/wagmi-prophecy.html",
+      "target": "/wiki/billy-the-goat-kid.html",
       "score": 75,
       "weight": 0.75
     },
@@ -15057,18 +15057,18 @@
     {
       "source": "/wiki/thera-9.html",
       "target": "/wiki/jodie-zoom-2000.html",
+      "score": 85,
+      "weight": 0.85
+    },
+    {
+      "source": "/wiki/thera-9.html",
+      "target": "/wiki/snipey-d-man-sirus.html",
       "score": 84,
       "weight": 0.84
     },
     {
       "source": "/wiki/thera-9.html",
       "target": "/wiki/hodl-warriors.html",
-      "score": 83,
-      "weight": 0.83
-    },
-    {
-      "source": "/wiki/thera-9.html",
-      "target": "/wiki/snipey-d-man-sirus.html",
       "score": 83,
       "weight": 0.83
     },
@@ -15081,14 +15081,14 @@
     {
       "source": "/wiki/thorne-the-architect.html",
       "target": "/wiki/the-princess.html",
-      "score": 84,
-      "weight": 0.84
+      "score": 85,
+      "weight": 0.85
     },
     {
       "source": "/wiki/thorne-the-architect.html",
       "target": "/wiki/the-whitewasher.html",
-      "score": 84,
-      "weight": 0.84
+      "score": 85,
+      "weight": 0.85
     },
     {
       "source": "/wiki/thorne-the-architect.html",
@@ -15098,15 +15098,15 @@
     },
     {
       "source": "/wiki/thorne-the-architect.html",
-      "target": "/wiki/wagmi-prophecy.html",
+      "target": "/wiki/billy-the-goat-kid.html",
       "score": 75,
       "weight": 0.75
     },
     {
       "source": "/wiki/thorne-the-architect.html",
-      "target": "/wiki/billy-the-goat-kid.html",
-      "score": 74,
-      "weight": 0.74
+      "target": "/wiki/wagmi-prophecy.html",
+      "score": 75,
+      "weight": 0.75
     },
     {
       "source": "/wiki/tokenomics.html",
@@ -15200,25 +15200,25 @@
     },
     {
       "source": "/wiki/wagmi-prophecy.html",
-      "target": "/wiki/crypto-moonboys.html",
-      "score": 84,
-      "weight": 0.84
-    },
-    {
-      "source": "/wiki/wagmi-prophecy.html",
       "target": "/wiki/the-princess.html",
-      "score": 84,
-      "weight": 0.84
+      "score": 85,
+      "weight": 0.85
     },
     {
       "source": "/wiki/wagmi-prophecy.html",
       "target": "/wiki/the-whitewasher.html",
-      "score": 84,
-      "weight": 0.84
+      "score": 85,
+      "weight": 0.85
     },
     {
       "source": "/wiki/wagmi-prophecy.html",
       "target": "/wiki/thorne-the-architect.html",
+      "score": 85,
+      "weight": 0.85
+    },
+    {
+      "source": "/wiki/wagmi-prophecy.html",
+      "target": "/wiki/crypto-moonboys.html",
       "score": 84,
       "weight": 0.84
     },
@@ -15254,9 +15254,9 @@
     },
     {
       "source": "/wiki/wallets.html",
-      "target": "/wiki/grit.html",
-      "score": 78,
-      "weight": 0.78
+      "target": "/wiki/jodie-zoom-2000.html",
+      "score": 79,
+      "weight": 0.79
     },
     {
       "source": "/wiki/wax-blockchain.html",
