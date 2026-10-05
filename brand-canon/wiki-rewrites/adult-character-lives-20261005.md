@@ -69,4 +69,4 @@ Completed source checks: all original paragraphs, IDs, images, styles and script
 
 ## Publication
 
-This batch is prepared in the sandbox. Main is unchanged by this writing task. `AGENT_SANDBOX_WORKFLOW.md` requires: “GK manually approves final merge.” Publication approval for #1442 covered that earlier faction batch; it is not reused as approval for these new character stories.
+GK explicitly approved this 28-page character batch on 5 October 2026 with: “Publish this batch to main.” This fulfils `AGENT_SANDBOX_WORKFLOW.md`: “GK manually approves final merge.” Publication uses the approved sandbox and the `canon-prose-change-approved` pull-request label, with remote checks before merge and deployment/live verification afterwards. Approval for #1442 is not reused for this batch.
