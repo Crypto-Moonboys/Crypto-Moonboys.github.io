@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "generator": "scripts/generate-wiki-content-state.mjs",
-  "source_tree_hash": "sha256:a74f49e6abc5e6ab857712fde7f8d2ae1c99c49c67b1fc09397cfcf7dabbd61a",
+  "source_tree_hash": "sha256:de0fbbd737cf2312ccb532fe3e916de791f83b9e779f9f7ab819efadb515eb27",
   "hash_algorithm": "sha256",
   "page_count": 415,
   "manifest_entry_count": 415,
@@ -11868,7 +11868,7 @@
       "title": "HODL WARS The Year 3008 conflict as lived across roads, homes and broken systems",
       "page_exists": true,
       "page_type": "lore",
-      "current_word_count": 7921,
+      "current_word_count": 10572,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -11877,10 +11877,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:853e6a4d39cb3a89fb726addc12997a3dfac3d14cfc4f727dfebf5313c111c02",
-      "article_content_hash": "sha256:1891a0d2fe4b8a0726dc101883331619d816e445db4cd0d5205501b53d69d7db",
-      "article_markup_hash": "sha256:3f466c3d1a8e4d576691c2b28e10b3d51751cd71f55b1e35e2b4c49b296a2a29",
-      "git_blob_oid": "846542f9b8cd0b74835fbb7b86de655e88ae0e80",
+      "content_hash": "sha256:5e027ee0a6acb9b1e7cef9f6834a91945c412273799f6de56fe9bdd62f93fa5e",
+      "article_content_hash": "sha256:66f95a91ff1cbe89970981bb9dd77a4c30b20857e3e07ca8d129327d9aa8058e",
+      "article_markup_hash": "sha256:71906958bb52dc508edc6068a116751b28f3f9fd50ab93b4adf832f5b6ef891c",
+      "git_blob_oid": "9c9ea47b068ff83ef3a0f05dda348f7fa386e0c4",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -11901,11 +11901,11 @@
         "wiki/bibles/hodl-wars.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 5 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 6 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/hodl-wars.json; it is not automatically the unavailable Tier 4 modern bible."
       ],
       "content_owner": "canon",
-      "canon_revision": 5,
+      "canon_revision": 6,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -14751,7 +14751,7 @@
       "title": "Street Kingdoms The inhabited outside: borough networks, mobile law and survival beyond the Citadel",
       "page_exists": true,
       "page_type": "lore",
-      "current_word_count": 5186,
+      "current_word_count": 6695,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -14760,10 +14760,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:77267f2e31505d00a6350a8e9e91dc00cb0c18b46343f4c1c51c5a69d68f332a",
-      "article_content_hash": "sha256:826e2ffb6ff22ad52d9c9ddbcfedaad75fea74625733c4474372e961bc18c26a",
-      "article_markup_hash": "sha256:f712797a6ddc90d3fc1a1bcf8b1d153b142b788780562955bd08417721e170ae",
-      "git_blob_oid": "113f6f8c719e27d99cc7bd709c89330c4799e7da",
+      "content_hash": "sha256:55dc4e011766191065ab18008ed38a9210bafc5289811757c5a237eb2817dfe8",
+      "article_content_hash": "sha256:b2659a55c2f66130c872db2504b5b75f1bb3d54b290db443f48d5d2c47384c02",
+      "article_markup_hash": "sha256:236c5e5ea3bf6cf28967aa7ddd354df91d2fb095b77a4de3a9d7b64d21418cae",
+      "git_blob_oid": "5d196f582c71fa9b7b2b7fa489c98f2380093d58",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -14785,11 +14785,11 @@
         "wiki/bibles/street-kingdoms.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 6 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 7 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/street-kingdoms.json; it is not automatically the unavailable Tier 4 modern bible."
       ],
       "content_owner": "canon",
-      "canon_revision": 6,
+      "canon_revision": 7,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -15151,7 +15151,7 @@
       "title": "The BLOCKSTARS",
       "page_exists": true,
       "page_type": "faction",
-      "current_word_count": 4867,
+      "current_word_count": 5752,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -15160,10 +15160,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:50f07e09adbb04ae83b65b27387c2ff6554ff24b174999ca79f47f42b76c02c7",
-      "article_content_hash": "sha256:6696d0b325d4130df18e12dc881a0c53932a575bcc51a340b140944b2008578e",
-      "article_markup_hash": "sha256:65cf096087b917f37eb0808f01fd9173afb2044488fadcc1a3cffaf5deca163d",
-      "git_blob_oid": "076a6045e638c984334d3fa6ae4b8d0ab9c624f4",
+      "content_hash": "sha256:675b44473ba604cc4f6ec0b603ced3890a4dea787e0a198f09e1b5173a9ec719",
+      "article_content_hash": "sha256:522b526c5dcbc60dc8426069cfd93cc176d1be879d086352211ec952819832eb",
+      "article_markup_hash": "sha256:70e8601adc7e8a3c2e26e1e78d1db953d26e1ffa3bd33716951940741ad8c2a2",
+      "git_blob_oid": "eda2501e257de954be55edb5c04bba8e8411ad78",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -15184,12 +15184,12 @@
         "wiki/bibles/the-blockstars.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 6 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 7 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/the-blockstars.json; it is not automatically the unavailable Tier 4 modern bible.",
         "The requested modern Tier 4 subject bible is not separately identifiable in this checkout; canon classification remains a human-review item."
       ],
       "content_owner": "canon",
-      "canon_revision": 6,
+      "canon_revision": 7,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -15474,7 +15474,7 @@
       "title": "The Finance Guild",
       "page_exists": true,
       "page_type": "faction",
-      "current_word_count": 5078,
+      "current_word_count": 6131,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -15483,10 +15483,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:b38e7352089ad40c7dafb6a803baee2be8343263d64fee975b556b96bb5196af",
-      "article_content_hash": "sha256:ed23a5f6a32b12053f6a44005d3235f1fa87ff02fc246e8c8eadca1cd39faaf2",
-      "article_markup_hash": "sha256:13b3926eeaee71bc400bdf7b56f38b47cb05de1a1b6af395661d462c4659016c",
-      "git_blob_oid": "1173afef135b7440c879c18f97def7f0ba37d7ed",
+      "content_hash": "sha256:00e683ae64f055176ed0422bdb981f354632fcc0a64099c15092aa53abde593f",
+      "article_content_hash": "sha256:b85025fb9459910e71618d689e7f29d1b7943f21136071027b9a3bf871869eae",
+      "article_markup_hash": "sha256:4b5633debf35c1808fed5b2639108b02a42a26fb294d2b46b12d8318b3175b6e",
+      "git_blob_oid": "20e56c1827d9e68a4bfaa1516acca29c0fcc9dd8",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -15507,12 +15507,12 @@
         "wiki/bibles/the-finance-guild.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 6 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 7 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/the-finance-guild.json; it is not automatically the unavailable Tier 4 modern bible.",
         "The requested modern Tier 4 subject bible is not separately identifiable in this checkout; canon classification remains a human-review item."
       ],
       "content_owner": "canon",
-      "canon_revision": 6,
+      "canon_revision": 7,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -15696,7 +15696,7 @@
       "title": "THE HIGH HATS The faction that turned status into architecture",
       "page_exists": true,
       "page_type": "faction",
-      "current_word_count": 4637,
+      "current_word_count": 5327,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -15705,10 +15705,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:88b24b3225ce6b1e02a05c2539665a9a13073f963e891b6dde26a45c9bd5b0b4",
-      "article_content_hash": "sha256:60faf0a43ee4fb32f78d7b61c969ae4eabfc2380e82b40cf9143376ac4d5fa4e",
-      "article_markup_hash": "sha256:317e7d3e950341b61348b6e49632ddf511e68897a0505688118c7e763d2eaa41",
-      "git_blob_oid": "102ce1cd62ce3a4f76efe349e36d8bd65d5f5286",
+      "content_hash": "sha256:0258a60642e4f05a3d77010a96a2aa959ecea6af5db2e52a470cd099ec1f3381",
+      "article_content_hash": "sha256:a00fde88e374cb8bc82edb5de6c0fdf07b0a36f0450d7a9142153f638ed75758",
+      "article_markup_hash": "sha256:5236a39a7b298cba72ce6f1364bae8f7fcc8d9f7f92a1e702b36a605ec6fc498",
+      "git_blob_oid": "c7f2f285d254eb6bacb179b0973b43b339a845fd",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -15729,12 +15729,12 @@
         "wiki/bibles/the-high-hats.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 6 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 7 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/the-high-hats.json; it is not automatically the unavailable Tier 4 modern bible.",
         "The requested modern Tier 4 subject bible is not separately identifiable in this checkout; canon classification remains a human-review item."
       ],
       "content_owner": "canon",
-      "canon_revision": 6,
+      "canon_revision": 7,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -16069,7 +16069,7 @@
       "title": "The SALVAGERS",
       "page_exists": true,
       "page_type": "faction",
-      "current_word_count": 4943,
+      "current_word_count": 5975,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -16078,10 +16078,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:d2487bb984adcebd2f7c3e36a5c3225988c310e9d99e6c1c51a6d7e0b620ec45",
-      "article_content_hash": "sha256:d3006861c7533c4564eeb3be6e0936de484ad23f77b80ab4251224139d47603a",
-      "article_markup_hash": "sha256:0fa412538a119c3a75d5bdd856e3591c119eec1f074191f900677463386a488c",
-      "git_blob_oid": "b4d95e08b3001e7f977eda3f81bd93e839f96700",
+      "content_hash": "sha256:247e6ec7bde9bb6bf5d5ba87df72b113bea2048c5ff82d50d3716df0359a7bd8",
+      "article_content_hash": "sha256:3db726b9c9596fc0e47c7dfad67dd40bee7838424678f72797896362f6af1d47",
+      "article_markup_hash": "sha256:f0190febd13591dd8c9c11b13e458f29fb89b29af70e67e5f1fb9b298426f764",
+      "git_blob_oid": "6ebccd0306350e7d56e5e4ae97f3811f2da8b911",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -16102,12 +16102,12 @@
         "wiki/bibles/the-salvagers.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 6 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 7 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/the-salvagers.json; it is not automatically the unavailable Tier 4 modern bible.",
         "The requested modern Tier 4 subject bible is not separately identifiable in this checkout; canon classification remains a human-review item."
       ],
       "content_owner": "canon",
-      "canon_revision": 6,
+      "canon_revision": 7,
       "canon_source_tier": "first-witness+w81"
     },
     {

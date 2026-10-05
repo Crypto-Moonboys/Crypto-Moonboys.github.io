@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-05T12:49:06.254Z",
-  "verified_at": "2026-10-05T12:49:06.254Z",
+  "generated_at": "2026-10-05T15:45:22.069Z",
+  "verified_at": "2026-10-05T15:45:22.069Z",
   "lite": true,
   "nodes": [
     {
@@ -108,20 +108,20 @@
       "authority_score": 24
     },
     {
+      "id": "/wiki/hodl-wars.html",
+      "title": "HODL WARS",
+      "url": "/wiki/hodl-wars.html",
+      "category": "core",
+      "rank_score": 349,
+      "authority_score": 28
+    },
+    {
       "id": "/wiki/first-witness-long-transmission.html",
       "title": "The Long Transmission",
       "url": "/wiki/first-witness-long-transmission.html",
       "category": "core",
       "rank_score": 348,
       "authority_score": 17
-    },
-    {
-      "id": "/wiki/hodl-wars.html",
-      "title": "HODL WARS",
-      "url": "/wiki/hodl-wars.html",
-      "category": "core",
-      "rank_score": 345,
-      "authority_score": 28
     },
     {
       "id": "/wiki/first-witness-sects-schools-schisms.html",
@@ -836,18 +836,18 @@
     {
       "source": "/wiki/the-bitcoin-kid-army.html",
       "target": "/wiki/hodl-wars.html",
-      "score": 96,
-      "weight": 0.96
-    },
-    {
-      "source": "/wiki/burn-to-earn.html",
-      "target": "/wiki/crypto-moonboys.html",
-      "score": 93,
-      "weight": 0.93
+      "score": 97,
+      "weight": 0.97
     },
     {
       "source": "/wiki/genesis-kernel.html",
       "target": "/wiki/hodl-wars.html",
+      "score": 94,
+      "weight": 0.94
+    },
+    {
+      "source": "/wiki/burn-to-earn.html",
+      "target": "/wiki/crypto-moonboys.html",
       "score": 93,
       "weight": 0.93
     },
@@ -870,14 +870,14 @@
       "weight": 0.9
     },
     {
-      "source": "/wiki/the-finance-guild.html",
-      "target": "/wiki/the-high-hats.html",
-      "score": 88,
-      "weight": 0.88
-    },
-    {
       "source": "/wiki/the-high-hats.html",
       "target": "/wiki/the-finance-guild.html",
+      "score": 89,
+      "weight": 0.89
+    },
+    {
+      "source": "/wiki/the-finance-guild.html",
+      "target": "/wiki/the-high-hats.html",
       "score": 88,
       "weight": 0.88
     },
@@ -894,6 +894,12 @@
       "weight": 0.87
     },
     {
+      "source": "/wiki/the-nice-easy-bois.html",
+      "target": "/wiki/the-finance-guild.html",
+      "score": 86,
+      "weight": 0.86
+    },
+    {
       "source": "/wiki/the-bitcoin-kid-army.html",
       "target": "/wiki/gkniftyheads.html",
       "score": 85,
@@ -902,12 +908,6 @@
     {
       "source": "/wiki/the-high-hats.html",
       "target": "/wiki/stikfamwars.html",
-      "score": 85,
-      "weight": 0.85
-    },
-    {
-      "source": "/wiki/the-nice-easy-bois.html",
-      "target": "/wiki/the-finance-guild.html",
       "score": 85,
       "weight": 0.85
     },

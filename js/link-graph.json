@@ -18400,7 +18400,7 @@
     ]
   },
   "/wiki/hodl-wars.html": {
-    "outbound_count": 44,
+    "outbound_count": 49,
     "inbound_count": 83,
     "existing_outbound": [
       "/wiki/bitcoin-kids.html",
@@ -18422,11 +18422,16 @@
       "/wiki/alcor-exchange.html",
       "/wiki/bitcoin-kid-army.html",
       "/wiki/first-witness-book-6-the-fork.html",
+      "/wiki/first-witness-calendar-feasts-remembrance.html",
+      "/wiki/first-witness-death-grief-remembrance.html",
+      "/wiki/first-witness-digital-inheritance-after-death.html",
       "/wiki/first-witness-great-concord-2030.html",
       "/wiki/first-witness-hodl-doctrine.html",
       "/wiki/first-witness-prisons-punishment-return.html",
+      "/wiki/first-witness-relics-manuscripts-lost-editions.html",
       "/wiki/first-witness-sacred-fork.html",
       "/wiki/first-witness-triple-fork-chainfire.html",
+      "/wiki/first-witness-truth-commissions-after-conflict.html",
       "/wiki/gang-signs-card-game.html",
       "/wiki/gkniftyheads-alessandro-satoshi-samurai-ferrari-783442.html",
       "/wiki/gkniftyheads-giulia-satoshi-sorceress-espositooo-783463.html",
@@ -21828,7 +21833,7 @@
     ]
   },
   "/wiki/the-blockstars.html": {
-    "outbound_count": 37,
+    "outbound_count": 38,
     "inbound_count": 1,
     "existing_outbound": [
       "/wiki/bitcoin-kids.html",
@@ -21861,6 +21866,7 @@
       "/wiki/first-witness-money-debt-honest-scales.html",
       "/wiki/first-witness-music-dance-performance.html",
       "/wiki/first-witness-truth-commissions-after-conflict.html",
+      "/wiki/first-witness-work-craft-service.html",
       "/wiki/gkniftyheads-digital-diva-783394.html",
       "/wiki/gkniftyheads-digital-duchess-783404.html",
       "/wiki/graffpunks.html",
@@ -22155,7 +22161,7 @@
     "inbound_from": []
   },
   "/wiki/the-finance-guild.html": {
-    "outbound_count": 20,
+    "outbound_count": 21,
     "inbound_count": 36,
     "existing_outbound": [
       "/wiki/bitcoin-kids.html",
@@ -22175,6 +22181,7 @@
       "/wiki/first-witness-digital-inheritance-after-death.html",
       "/wiki/first-witness-forty-paths.html",
       "/wiki/first-witness-money-debt-honest-scales.html",
+      "/wiki/first-witness-truth-commissions-after-conflict.html",
       "/wiki/gkniftyheads-digital-diva-783394.html",
       "/wiki/gkniftyheads-digital-duchess-783404.html",
       "/wiki/the-chain-scribes.html",
