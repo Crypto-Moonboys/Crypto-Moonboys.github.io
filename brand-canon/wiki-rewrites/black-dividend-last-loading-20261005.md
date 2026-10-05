@@ -61,7 +61,9 @@ Twenty-seven new subject regressions cover the 22 chapter/reference subjects and
 
 Source checks passed for preservation of all earlier paragraphs, IDs, scripts, styles and images; 282 local links; the two contents menus; 17 protected pages; all 418 existing index routes; and unchanged title-only token arrays. The 27 new subject queries passed a focused search check. Publishing-surface generation, content-state generation/check, the 20 content-state regression tests, the full ownership audit and the separate graph integrity check passed. Graph integrity covers 408 indexed wiki pages, 418 total nodes, 2,040 edges and 75 mobile nodes.
 
-The complete wiki-domain suite is still running, including the full search regression set. Full per-page desktop/mobile visual review has not been completed: two isolated browser attempts timed out, including a contents-menu interaction. The prose reuses existing article classes, CSS and scripts. No visual pass is claimed from source checks.
+The complete wiki-domain suite passed with exit code 0: `BASE_SHA=360a7041727b4c342f1f5d3cb67c3a1b90d857c4 CANON_PROSE_CHANGE_APPROVED=1 npm run ci:wiki`. The approval flag was used for isolated validation of the authorised writing; it does not constitute final main publication approval. The suite includes 526 war/lived-world subject queries, 58 core-history subject queries, page structure, publishing gates, First Witness protections/ranking, index drift and published-page/sitemap consistency. `git diff --check` also passed.
+
+Full per-page desktop/mobile visual review has not been completed: two isolated browser attempts timed out, including a contents-menu interaction. The prose reuses existing article classes, CSS and scripts. No visual pass is claimed from source checks.
 
 ## Publication
 
