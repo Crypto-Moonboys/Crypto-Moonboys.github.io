@@ -2,7 +2,8 @@
 
 Base: `52cdc888cc232fbc54eb76d67255cdf004fd1b3b` (the five GK-approved strengthening batches). GK approved the audit's proposed writing and expressly allows substantial beta revisions, with preservation and extension preferred. This batch extends 36 existing routes. It adds no wiki route or faction slot and changes no runtime, product rights, approval policy or witnessed Book.
 
-Backup: `codex/backup-faction-icons-20261005-082800`  
+Backup: `codex/backup-faction-icons-20261005-082800`
+
 Sandbox: `codex/sandbox-faction-icons-20261005-082800`
 
 ## Editorial change
@@ -112,3 +113,7 @@ Completed checks:
 Rendering limitation: the isolated full-shell Chromium preview repeatedly timed out. A stripped application-script preview also failed to complete its native-control/screenshot checks. No successful desktop/mobile visual result is claimed for this batch. Source structure and DOM geometry checks before the preview failures did not identify overflow, but they do not replace a completed visual pass. The markup reuses existing section classes and does not change CSS, shell or application scripts. Preview failures are recorded rather than treated as passing tests.
 
 No production merge is included in the writing approval. `AGENT_SANDBOX_WORKFLOW.md` requires: “GK manually approves final merge.” This batch will be committed to the sandbox branch for concrete review, without creating another PR or changing main.
+
+## Publication approval
+
+GK explicitly approved this exact batch on 2026-10-05: “Publish this batch to main”. The existing `canon-prose-change-approved` merge handoff records that approval. The unverified desktop/mobile preview limitation above remains disclosed.
