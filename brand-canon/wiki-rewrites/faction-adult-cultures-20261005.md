@@ -71,4 +71,4 @@ Discovery metadata places new subject phrases in the keyword bag while retaining
 
 Visual limitation: full desktop/mobile rendering has not been completed for this batch. The existing local Chromium binary is incomplete, and the previous full preview attempts timed out. This continuation reuses existing section classes and preserves scripts and CSS; source and contents checks do not replace a completed visual review. No successful per-page visual pass is claimed.
 
-The user authorised writing this continuation. Publication is separate: `AGENT_SANDBOX_WORKFLOW.md` says “GK manually approves final merge.” This batch is prepared on the sandbox branch for concrete review. Main is unchanged by this writing task.
+GK explicitly approved publication on 2026-10-05: “Publish this batch to main”. This satisfies the final-merge approval required by `AGENT_SANDBOX_WORKFLOW.md`. The approved batch will pass through the repository's labelled canon-approval handoff and required release checks before merge, followed by GitHub Pages and live-content verification.
