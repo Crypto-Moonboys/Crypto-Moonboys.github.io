@@ -1049,6 +1049,150 @@ const graffpunksStopwordOnly = {
   for (const [slug, subjects] of Object.entries(livedWorldSubjects)) {
     subjectsByPage[slug] = [...(subjectsByPage[slug] || []), ...subjects];
   }
+  const adultCultureSubjects = {
+  "the-evm-punks": [
+    "Borrowed Jaw wager",
+    "Competence, exhibition and private loyalties",
+    "Sella Grip"
+  ],
+  "the-squeaky-pinks": [
+    "Pardon Ball that pardoned nobody",
+    "spotless glove and the dirty invitation",
+    "Ulda Brass"
+  ],
+  "the-aztec-raiders": [
+    "Feast of Nine Doors",
+    "Victory as taste, intimacy and inheritance"
+  ],
+  "the-code-alchemists": [
+    "Original Face salon",
+    "taste alteration",
+    "Neris Fold",
+    "Jorra Splice"
+  ],
+  "the-tuskon-ogs": [
+    "Black Salt table",
+    "Love that expects you to stay",
+    "Dovra Pan"
+  ],
+  "the-ducky-boys": [
+    "Naked Wrench evening",
+    "Craft, courtship and territorial hands"
+  ],
+  "the-nomad-bears": [
+    "Abandoned Coat vow",
+    "Lovers, hosts and the vanity of departure",
+    "Elda Soot"
+  ],
+  "the-og-pixel-saints": [
+    "Broken Continue vigil",
+    "Ecstasy, costume and the right to change"
+  ],
+  "the-chain-scribes": [
+    "Lovers’ Margin case",
+    "Ink, gossip and the power of an introduction",
+    "Pell Vellum"
+  ],
+  "the-shard-mothers-of-manhattan": [
+    "Unmothering supper",
+    "right to be wanted without being needed"
+  ],
+  "the-nice-easy-bois": [
+    "Three Clean Cups and a dirty settlement",
+    "Seduction without a raised voice"
+  ],
+  "the-bally-boys": [
+    "Kiss Before Commission story",
+    "Taste that makes a stranger useful"
+  ],
+  "the-blockstars": [
+    "Borrowed Bed tour",
+    "A personality people can wear"
+  ],
+  "the-blockchain-furies": [
+    "Scarlet Intermission",
+    "Rage does not make everybody kin",
+    "Korr Sable"
+  ],
+  "the-rugpull-miners": [
+    "Velvet Descent club",
+    "red case and the fear of going back",
+    "Ruld Ash"
+  ],
+  "the-finance-guild": [
+    "Mourning White Line",
+    "Desire for the settled account",
+    "Hesta Loom"
+  ],
+  "the-high-hats": [
+    "Uninvited Tasting",
+    "Taste as a gatekeeping language",
+    "Verren Peel"
+  ],
+  "the-moonlords": [
+    "Borrowed Honeymoon",
+    "Warm rooms and possessive generosity"
+  ],
+  "the-crypto-stoned-boys": [
+    "Four-Day Thursday",
+    "Idleness, desire and the people who clean up",
+    "Sulo Haze"
+  ],
+  "the-hard-fork-rockers": [
+    "Cut Coat wedding",
+    "terrible glamour of a clean break"
+  ],
+  "the-information-mercenaries": [
+    "Blindfold Hour and the name withheld",
+    "erotic glamour of knowing first",
+    "Lossa Cairn"
+  ],
+  "the-salvagers": [
+    "Second Funeral dance",
+    "Magnificence made from somebody else’s yesterday"
+  ],
+  "the-gasless-ghosts": [
+    "Unburial meal",
+    "appeal of being difficult to claim",
+    "Jeth Vale"
+  ],
+  "the-allcity-bulls": [
+    "Loser Crown night",
+    "body everybody wants to remember winning",
+    "Rovik Dust"
+  ],
+  "bitcoin-kid-army": [
+    "Last Civilian Dance",
+    "A borrowed command and an unborrowed life",
+    "Dessa Flint"
+  ],
+  "graffpunks": [
+    "Beautiful Vandal argument",
+    "Desire, imitation and the wall afterwards",
+    "Kiva Brash"
+  ],
+  "gkniftyheads": [
+    "Imperfect Remembrance gathering",
+    "Affection for what answers incompletely",
+    "Omra Pell"
+  ],
+  "whale-lords": [
+    "Empty Chair banquet",
+    "expensive pleasure of never being hurried",
+    "Sarren Deep"
+  ],
+  "first-witness-faction-commentaries": [
+    "Crypto Moongirls  the Last Button inspection",
+    "XRP Kids  the Zero Score evening",
+    "PU55IES  the Bad Guest table",
+    "Slam GiRL$  the Stolen Applause night",
+    "Creepto Gals  the Unlit Anniversary",
+    "JPEG Bloodline  the Bearer’s ordinary evening"
+  ]
+};
+  for (const [slug, subjects] of Object.entries(adultCultureSubjects)) {
+    subjectsByPage[slug] = [...(subjectsByPage[slug] || []), ...subjects];
+  }
   const stopWords = vm.runInContext('SEARCH_TEXT_STOP_WORDS', sb);
   let checked = 0;
   for (const [slug, subjects] of Object.entries(subjectsByPage)) {

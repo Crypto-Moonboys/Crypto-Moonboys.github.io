@@ -735,7 +735,7 @@
     "inbound_from": []
   },
   "/wiki/bitcoin-kid-army.html": {
-    "outbound_count": 42,
+    "outbound_count": 44,
     "inbound_count": 10,
     "existing_outbound": [
       "/wiki/alfie-bitcoin-kid-blaze.html",
@@ -760,6 +760,8 @@
       "/wiki/block-topia.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-food-hospitality-common-table.html",
+      "/wiki/first-witness-life-readings.html",
+      "/wiki/first-witness-music-dance-performance.html",
       "/wiki/first-witness-prisons-punishment-return.html",
       "/wiki/first-witness-war-defence-peacekeeping.html",
       "/wiki/gkniftyheads-bitcoin-barbarian-784284.html",
@@ -5228,7 +5230,7 @@
     ]
   },
   "/wiki/first-witness-faction-commentaries.html": {
-    "outbound_count": 73,
+    "outbound_count": 75,
     "inbound_count": 24,
     "existing_outbound": [
       "/wiki/first-witness-forty-paths.html",
@@ -5261,6 +5263,7 @@
       "/wiki/first-witness-counterfeit-relics-fraud.html",
       "/wiki/first-witness-daily-practices-rituals.html",
       "/wiki/first-witness-faction-ritual-variations.html",
+      "/wiki/first-witness-food-hospitality-common-table.html",
       "/wiki/first-witness-glossary.html",
       "/wiki/first-witness-great-concord-2030.html",
       "/wiki/first-witness-humour-satire-sacred-mockery.html",
@@ -5288,6 +5291,7 @@
       "/wiki/gkniftyheads-bitcoin-kid-x-sarah-pfly-infinite-776004.html",
       "/wiki/gkniftyheads-bitcoin-kid-x-sarahpfly-773225.html",
       "/wiki/gkniftyheads-bitforce-bitcoin-battler-784332.html",
+      "/wiki/gkniftyheads-czen-zone-zero-zealot-783755.html",
       "/wiki/gkniftyheads-matteo-bitcoin-bandit-gallo-783447.html",
       "/wiki/gkniftyheads-raze-rebel-783250.html",
       "/wiki/gkniftyheads.html",
@@ -17139,7 +17143,7 @@
     ]
   },
   "/wiki/gkniftyheads.html": {
-    "outbound_count": 39,
+    "outbound_count": 41,
     "inbound_count": 165,
     "existing_outbound": [
       "/wiki/bitcoin-x-kids.html",
@@ -17161,7 +17165,9 @@
       "/wiki/crypto-moonboy-pets.html",
       "/wiki/first-witness-book-5-the-chain.html",
       "/wiki/first-witness-book-6-the-fork.html",
+      "/wiki/first-witness-calendar-feasts-remembrance.html",
       "/wiki/first-witness-concordance.html",
+      "/wiki/first-witness-death-grief-remembrance.html",
       "/wiki/first-witness-digital-inheritance-after-death.html",
       "/wiki/first-witness-great-concord-2030.html",
       "/wiki/first-witness-sacred-fork.html",
@@ -17716,7 +17722,7 @@
     ]
   },
   "/wiki/graffpunks.html": {
-    "outbound_count": 40,
+    "outbound_count": 41,
     "inbound_count": 213,
     "existing_outbound": [
       "/wiki/atomichub-graffpunks-collection.html",
@@ -17754,6 +17760,7 @@
       "/wiki/gkniftyheads-digital-diva-783394.html",
       "/wiki/gkniftyheads-digital-duchess-783404.html",
       "/wiki/gkniftyheads-paint-patriot-783295.html",
+      "/wiki/gkniftyheads-vandal-776147.html",
       "/wiki/graffiti-queens-in-decentraland.html",
       "/wiki/hodl-warriors.html",
       "/wiki/jodie-zoom-2000.html",
@@ -21578,7 +21585,7 @@
     ]
   },
   "/wiki/the-aztec-raiders.html": {
-    "outbound_count": 29,
+    "outbound_count": 30,
     "inbound_count": 1,
     "existing_outbound": [
       "/wiki/bitcoin-kids.html",
@@ -21605,6 +21612,7 @@
       "/wiki/block-node-defenders.html",
       "/wiki/first-witness-book-7-the-hold.html",
       "/wiki/first-witness-digital-inheritance-after-death.html",
+      "/wiki/first-witness-intimacy-sexuality-privacy.html",
       "/wiki/first-witness-prisons-punishment-return.html",
       "/wiki/gkniftyheads-digital-diva-783394.html",
       "/wiki/gkniftyheads-digital-duchess-783404.html",
@@ -22046,7 +22054,7 @@
     "inbound_from": []
   },
   "/wiki/the-ducky-boys.html": {
-    "outbound_count": 33,
+    "outbound_count": 35,
     "inbound_count": 5,
     "existing_outbound": [
       "/wiki/bitcoin-kids.html",
@@ -22070,6 +22078,7 @@
       "/wiki/triple-fork-event.html"
     ],
     "suggested_outbound": [
+      "/wiki/diamond-hands.html",
       "/wiki/first-witness-digital-inheritance-after-death.html",
       "/wiki/first-witness-forty-paths.html",
       "/wiki/first-witness-prisons-punishment-return.html",
@@ -22078,6 +22087,7 @@
       "/wiki/gkniftyheads-digital-duchess-783404.html",
       "/wiki/gkniftyheads-drift-doodle-783252.html",
       "/wiki/graffpunks.html",
+      "/wiki/paper-hands.html",
       "/wiki/patchwork.html",
       "/wiki/queen-sarah-p-fly.html",
       "/wiki/the-bally-boys.html",
@@ -22555,7 +22565,7 @@
     ]
   },
   "/wiki/the-high-hats.html": {
-    "outbound_count": 29,
+    "outbound_count": 30,
     "inbound_count": 33,
     "existing_outbound": [
       "/wiki/bitcoin-kids.html",
@@ -22581,6 +22591,7 @@
       "/wiki/first-witness-charity-mutual-aid-dependence.html",
       "/wiki/first-witness-child-of-fire.html",
       "/wiki/first-witness-digital-inheritance-after-death.html",
+      "/wiki/first-witness-language-translation-sacred-words.html",
       "/wiki/first-witness-long-transmission.html",
       "/wiki/first-witness-prisons-punishment-return.html",
       "/wiki/first-witness-work-craft-service.html",
@@ -22627,7 +22638,7 @@
     ]
   },
   "/wiki/the-information-mercenaries.html": {
-    "outbound_count": 28,
+    "outbound_count": 36,
     "inbound_count": 1,
     "existing_outbound": [
       "/wiki/bitcoin-kids.html",
@@ -22647,9 +22658,16 @@
     ],
     "suggested_outbound": [
       "/wiki/block-topia.html",
+      "/wiki/first-witness-book-1-the-first-witness.html",
       "/wiki/first-witness-censorship-offence-public-marks.html",
+      "/wiki/first-witness-children-first-lessons.html",
       "/wiki/first-witness-concordance.html",
       "/wiki/first-witness-digital-inheritance-after-death.html",
+      "/wiki/first-witness-glossary.html",
+      "/wiki/first-witness-life-readings.html",
+      "/wiki/first-witness-master-chronology.html",
+      "/wiki/first-witness-parables.html",
+      "/wiki/first-witness-source-register.html",
       "/wiki/first-witness-truth-commissions-after-conflict.html",
       "/wiki/gkniftyheads-digital-diva-783394.html",
       "/wiki/gkniftyheads-digital-duchess-783404.html",
@@ -22659,6 +22677,7 @@
       "/wiki/grit.html",
       "/wiki/the-blockstars.html",
       "/wiki/the-code-alchemists.html",
+      "/wiki/the-first-witness.html",
       "/wiki/xrp-ledger.html"
     ],
     "inbound_from": [
@@ -22983,7 +23002,7 @@
     ]
   },
   "/wiki/the-salvagers.html": {
-    "outbound_count": 35,
+    "outbound_count": 36,
     "inbound_count": 6,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
@@ -23011,6 +23030,7 @@
       "/wiki/first-witness-book-2-the-common-blood.html",
       "/wiki/first-witness-book-3-the-keeper.html",
       "/wiki/first-witness-money-debt-honest-scales.html",
+      "/wiki/first-witness-music-dance-performance.html",
       "/wiki/first-witness-prisons-punishment-return.html",
       "/wiki/genesis-kernel.html",
       "/wiki/gkniftyheads-graphite-ghost-783307.html",
@@ -23127,7 +23147,7 @@
     ]
   },
   "/wiki/the-tuskon-ogs.html": {
-    "outbound_count": 36,
+    "outbound_count": 38,
     "inbound_count": 1,
     "existing_outbound": [
       "/wiki/bitcoin-x-kids.html",
@@ -23152,6 +23172,8 @@
       "/wiki/first-witness-book-7-the-hold.html",
       "/wiki/first-witness-children-first-lessons.html",
       "/wiki/first-witness-faction-commentaries.html",
+      "/wiki/first-witness-family-children-elders.html",
+      "/wiki/first-witness-food-hospitality-common-table.html",
       "/wiki/first-witness-glossary.html",
       "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-long-transmission.html",

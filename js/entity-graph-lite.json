@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-05T08:54:46.888Z",
-  "verified_at": "2026-10-05T08:54:46.888Z",
+  "generated_at": "2026-10-05T11:25:10.206Z",
+  "verified_at": "2026-10-05T11:25:10.206Z",
   "lite": true,
   "nodes": [
     {
@@ -156,6 +156,14 @@
       "authority_score": 14
     },
     {
+      "id": "/wiki/graffpunks.html",
+      "title": "GraffPUNKS",
+      "url": "/wiki/graffpunks.html",
+      "category": "core",
+      "rank_score": 340,
+      "authority_score": 28
+    },
+    {
       "id": "/wiki/first-witness-book-3-the-keeper.html",
       "title": "Book III — The Keeper",
       "url": "/wiki/first-witness-book-3-the-keeper.html",
@@ -188,20 +196,20 @@
       "authority_score": 28
     },
     {
-      "id": "/wiki/graffpunks.html",
-      "title": "GraffPUNKS",
-      "url": "/wiki/graffpunks.html",
-      "category": "core",
-      "rank_score": 336,
-      "authority_score": 28
-    },
-    {
       "id": "/wiki/first-witness-book-5-the-chain.html",
       "title": "Book V — The Chain",
       "url": "/wiki/first-witness-book-5-the-chain.html",
       "category": "core",
       "rank_score": 333,
       "authority_score": 14
+    },
+    {
+      "id": "/wiki/gkniftyheads.html",
+      "title": "GKniftyHEADS",
+      "url": "/wiki/gkniftyheads.html",
+      "category": "core",
+      "rank_score": 333,
+      "authority_score": 28
     },
     {
       "id": "/wiki/the-chain-scribes.html",
@@ -234,14 +242,6 @@
       "category": "factions",
       "rank_score": 331,
       "authority_score": 24
-    },
-    {
-      "id": "/wiki/gkniftyheads.html",
-      "title": "GKniftyHEADS",
-      "url": "/wiki/gkniftyheads.html",
-      "category": "core",
-      "rank_score": 329,
-      "authority_score": 28
     },
     {
       "id": "/wiki/first-witness-book-1-the-first-witness.html",
@@ -548,6 +548,14 @@
       "authority_score": 26
     },
     {
+      "id": "/wiki/bitcoin-kid-army.html",
+      "title": "Bitcoin Kid Army",
+      "url": "/wiki/bitcoin-kid-army.html",
+      "category": "factions",
+      "rank_score": 305,
+      "authority_score": 28
+    },
+    {
       "id": "/wiki/first-witness-glossary.html",
       "title": "First Witness Glossary",
       "url": "/wiki/first-witness-glossary.html",
@@ -594,14 +602,6 @@
       "category": "characters",
       "rank_score": 303,
       "authority_score": 17
-    },
-    {
-      "id": "/wiki/the-salvagers.html",
-      "title": "The SALVAGERS",
-      "url": "/wiki/the-salvagers.html",
-      "category": "factions",
-      "rank_score": 302,
-      "authority_score": 28
     }
   ],
   "edges": [
@@ -870,6 +870,18 @@
       "weight": 0.9
     },
     {
+      "source": "/wiki/the-finance-guild.html",
+      "target": "/wiki/the-high-hats.html",
+      "score": 88,
+      "weight": 0.88
+    },
+    {
+      "source": "/wiki/the-high-hats.html",
+      "target": "/wiki/the-finance-guild.html",
+      "score": 88,
+      "weight": 0.88
+    },
+    {
       "source": "/wiki/block-node-defenders.html",
       "target": "/wiki/seeding-rights.html",
       "score": 87,
@@ -882,22 +894,10 @@
       "weight": 0.87
     },
     {
-      "source": "/wiki/the-finance-guild.html",
-      "target": "/wiki/the-high-hats.html",
-      "score": 87,
-      "weight": 0.87
-    },
-    {
-      "source": "/wiki/the-high-hats.html",
-      "target": "/wiki/the-finance-guild.html",
-      "score": 87,
-      "weight": 0.87
-    },
-    {
-      "source": "/wiki/the-salvagers.html",
-      "target": "/wiki/the-chain-scribes.html",
-      "score": 87,
-      "weight": 0.87
+      "source": "/wiki/the-bitcoin-kid-army.html",
+      "target": "/wiki/gkniftyheads.html",
+      "score": 85,
+      "weight": 0.85
     },
     {
       "source": "/wiki/the-high-hats.html",
@@ -906,16 +906,10 @@
       "weight": 0.85
     },
     {
-      "source": "/wiki/the-bitcoin-kid-army.html",
-      "target": "/wiki/gkniftyheads.html",
-      "score": 84,
-      "weight": 0.84
-    },
-    {
       "source": "/wiki/the-nice-easy-bois.html",
       "target": "/wiki/the-finance-guild.html",
-      "score": 84,
-      "weight": 0.84
+      "score": 85,
+      "weight": 0.85
     },
     {
       "source": "/wiki/the-princess.html",
@@ -942,16 +936,10 @@
       "weight": 0.84
     },
     {
-      "source": "/wiki/the-chain-scribes.html",
-      "target": "/wiki/the-salvagers.html",
-      "score": 82,
-      "weight": 0.82
-    },
-    {
       "source": "/wiki/seeding-rights.html",
       "target": "/wiki/gkniftyheads.html",
-      "score": 81,
-      "weight": 0.81
+      "score": 82,
+      "weight": 0.82
     },
     {
       "source": "/wiki/the-nice-easy-bois.html",
@@ -972,6 +960,12 @@
       "weight": 0.8
     },
     {
+      "source": "/wiki/graffpunks-24-7-radio.html",
+      "target": "/wiki/gkniftyheads.html",
+      "score": 79,
+      "weight": 0.79
+    },
+    {
       "source": "/wiki/rave-relics.html",
       "target": "/wiki/midevilpunks.html",
       "score": 79,
@@ -982,12 +976,6 @@
       "target": "/wiki/midevilpunks.html",
       "score": 79,
       "weight": 0.79
-    },
-    {
-      "source": "/wiki/graffpunks-24-7-radio.html",
-      "target": "/wiki/gkniftyheads.html",
-      "score": 78,
-      "weight": 0.78
     },
     {
       "source": "/wiki/midevilpunks.html",
