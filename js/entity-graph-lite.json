@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-04T22:07:18.726Z",
-  "verified_at": "2026-10-04T22:07:18.726Z",
+  "generated_at": "2026-10-05T08:54:46.888Z",
+  "verified_at": "2026-10-05T08:54:46.888Z",
   "lite": true,
   "nodes": [
     {
@@ -16,8 +16,8 @@
       "title": "Faction Commentaries on the First Witness",
       "url": "/wiki/first-witness-faction-commentaries.html",
       "category": "core",
-      "rank_score": 417,
-      "authority_score": 20
+      "rank_score": 425,
+      "authority_score": 28
     },
     {
       "id": "/wiki/first-witness-life-readings.html",
@@ -188,6 +188,14 @@
       "authority_score": 28
     },
     {
+      "id": "/wiki/graffpunks.html",
+      "title": "GraffPUNKS",
+      "url": "/wiki/graffpunks.html",
+      "category": "core",
+      "rank_score": 336,
+      "authority_score": 28
+    },
+    {
       "id": "/wiki/first-witness-book-5-the-chain.html",
       "title": "Book V — The Chain",
       "url": "/wiki/first-witness-book-5-the-chain.html",
@@ -220,6 +228,22 @@
       "authority_score": 24
     },
     {
+      "id": "/wiki/the-nice-easy-bois.html",
+      "title": "The NICE &amp; EASY BOIS",
+      "url": "/wiki/the-nice-easy-bois.html",
+      "category": "factions",
+      "rank_score": 331,
+      "authority_score": 24
+    },
+    {
+      "id": "/wiki/gkniftyheads.html",
+      "title": "GKniftyHEADS",
+      "url": "/wiki/gkniftyheads.html",
+      "category": "core",
+      "rank_score": 329,
+      "authority_score": 28
+    },
+    {
       "id": "/wiki/first-witness-book-1-the-first-witness.html",
       "title": "Book I — The First Witness",
       "url": "/wiki/first-witness-book-1-the-first-witness.html",
@@ -234,14 +258,6 @@
       "category": "core",
       "rank_score": 328,
       "authority_score": 14
-    },
-    {
-      "id": "/wiki/graffpunks.html",
-      "title": "GraffPUNKS",
-      "url": "/wiki/graffpunks.html",
-      "category": "core",
-      "rank_score": 328,
-      "authority_score": 28
     },
     {
       "id": "/wiki/midevilpunks.html",
@@ -276,18 +292,18 @@
       "authority_score": 28
     },
     {
-      "id": "/wiki/the-nice-easy-bois.html",
-      "title": "The NICE &amp; EASY BOIS",
-      "url": "/wiki/the-nice-easy-bois.html",
-      "category": "factions",
-      "rank_score": 327,
-      "authority_score": 24
-    },
-    {
       "id": "/wiki/bitcoin-x-kids.html",
       "title": "Bitcoin X Kids",
       "url": "/wiki/bitcoin-x-kids.html",
       "category": "characters",
+      "rank_score": 326,
+      "authority_score": 28
+    },
+    {
+      "id": "/wiki/the-finance-guild.html",
+      "title": "The Finance Guild",
+      "url": "/wiki/the-finance-guild.html",
+      "category": "factions",
       "rank_score": 326,
       "authority_score": 28
     },
@@ -316,6 +332,14 @@
       "authority_score": 24
     },
     {
+      "id": "/wiki/block-topia.html",
+      "title": "Block Topia",
+      "url": "/wiki/block-topia.html",
+      "category": "characters",
+      "rank_score": 323,
+      "authority_score": 20
+    },
+    {
       "id": "/wiki/hodl-warriors.html",
       "title": "HODL Warriors",
       "url": "/wiki/hodl-warriors.html",
@@ -330,14 +354,6 @@
       "category": "core",
       "rank_score": 322,
       "authority_score": 14
-    },
-    {
-      "id": "/wiki/the-finance-guild.html",
-      "title": "The Finance Guild",
-      "url": "/wiki/the-finance-guild.html",
-      "category": "factions",
-      "rank_score": 322,
-      "authority_score": 28
     },
     {
       "id": "/wiki/bitcoin-kids.html",
@@ -362,14 +378,6 @@
       "category": "core",
       "rank_score": 321,
       "authority_score": 14
-    },
-    {
-      "id": "/wiki/gkniftyheads.html",
-      "title": "GKniftyHEADS",
-      "url": "/wiki/gkniftyheads.html",
-      "category": "core",
-      "rank_score": 321,
-      "authority_score": 28
     },
     {
       "id": "/wiki/stikfamwars.html",
@@ -402,14 +410,6 @@
       "category": "core",
       "rank_score": 317,
       "authority_score": 12
-    },
-    {
-      "id": "/wiki/block-topia.html",
-      "title": "Block Topia",
-      "url": "/wiki/block-topia.html",
-      "category": "characters",
-      "rank_score": 315,
-      "authority_score": 16
     },
     {
       "id": "/wiki/burn-to-earn.html",
@@ -624,6 +624,18 @@
       "weight": 1
     },
     {
+      "source": "/wiki/first-witness-book-1-the-first-witness.html",
+      "target": "/wiki/first-witness-faction-commentaries.html",
+      "score": 331,
+      "weight": 1
+    },
+    {
+      "source": "/wiki/first-witness-glossary.html",
+      "target": "/wiki/first-witness-faction-commentaries.html",
+      "score": 331,
+      "weight": 1
+    },
+    {
       "source": "/wiki/first-witness-source-register.html",
       "target": "/wiki/first-witness-master-chronology.html",
       "score": 330,
@@ -631,18 +643,6 @@
     },
     {
       "source": "/wiki/first-witness-book-1-the-first-witness.html",
-      "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 329,
-      "weight": 1
-    },
-    {
-      "source": "/wiki/first-witness-book-1-the-first-witness.html",
-      "target": "/wiki/first-witness-life-readings.html",
-      "score": 329,
-      "weight": 1
-    },
-    {
-      "source": "/wiki/first-witness-faction-commentaries.html",
       "target": "/wiki/first-witness-life-readings.html",
       "score": 329,
       "weight": 1
@@ -655,14 +655,14 @@
     },
     {
       "source": "/wiki/first-witness-master-chronology.html",
-      "target": "/wiki/first-witness-source-register.html",
+      "target": "/wiki/first-witness-life-readings.html",
       "score": 329,
       "weight": 1
     },
     {
-      "source": "/wiki/first-witness-glossary.html",
-      "target": "/wiki/first-witness-master-chronology.html",
-      "score": 327,
+      "source": "/wiki/first-witness-master-chronology.html",
+      "target": "/wiki/first-witness-source-register.html",
+      "score": 329,
       "weight": 1
     },
     {
@@ -756,15 +756,9 @@
       "weight": 1
     },
     {
-      "source": "/wiki/first-witness-questions-for-the-living.html",
-      "target": "/wiki/first-witness-street-kingdoms-reading.html",
-      "score": 308,
-      "weight": 1
-    },
-    {
       "source": "/wiki/graffpunks-24-7-radio.html",
       "target": "/wiki/graffpunks.html",
-      "score": 124,
+      "score": 125,
       "weight": 1
     },
     {
@@ -836,8 +830,8 @@
     {
       "source": "/wiki/hodl-wars.html",
       "target": "/wiki/graffpunks.html",
-      "score": 96,
-      "weight": 0.96
+      "score": 97,
+      "weight": 0.97
     },
     {
       "source": "/wiki/the-bitcoin-kid-army.html",
@@ -902,14 +896,20 @@
     {
       "source": "/wiki/the-salvagers.html",
       "target": "/wiki/the-chain-scribes.html",
-      "score": 86,
-      "weight": 0.86
+      "score": 87,
+      "weight": 0.87
     },
     {
       "source": "/wiki/the-high-hats.html",
       "target": "/wiki/stikfamwars.html",
       "score": 85,
       "weight": 0.85
+    },
+    {
+      "source": "/wiki/the-bitcoin-kid-army.html",
+      "target": "/wiki/gkniftyheads.html",
+      "score": 84,
+      "weight": 0.84
     },
     {
       "source": "/wiki/the-nice-easy-bois.html",
@@ -948,6 +948,12 @@
       "weight": 0.82
     },
     {
+      "source": "/wiki/seeding-rights.html",
+      "target": "/wiki/gkniftyheads.html",
+      "score": 81,
+      "weight": 0.81
+    },
+    {
       "source": "/wiki/the-nice-easy-bois.html",
       "target": "/wiki/stikfamwars.html",
       "score": 81,
@@ -980,8 +986,8 @@
     {
       "source": "/wiki/graffpunks-24-7-radio.html",
       "target": "/wiki/gkniftyheads.html",
-      "score": 77,
-      "weight": 0.77
+      "score": 78,
+      "weight": 0.78
     },
     {
       "source": "/wiki/midevilpunks.html",
@@ -996,22 +1002,22 @@
       "weight": 0.71
     },
     {
+      "source": "/wiki/rave-relics.html",
+      "target": "/wiki/the-nice-easy-bois.html",
+      "score": 70,
+      "weight": 0.7
+    },
+    {
       "source": "/wiki/burn-to-earn.html",
       "target": "/wiki/punk-token.html",
       "score": 69,
       "weight": 0.69
     },
     {
-      "source": "/wiki/rave-relics.html",
-      "target": "/wiki/the-nice-easy-bois.html",
-      "score": 69,
-      "weight": 0.69
-    },
-    {
       "source": "/wiki/staking.html",
       "target": "/wiki/block-topia.html",
-      "score": 65,
-      "weight": 0.65
+      "score": 66,
+      "weight": 0.66
     },
     {
       "source": "/wiki/staking.html",

@@ -1133,7 +1133,7 @@
     ]
   },
   "/wiki/block-topia.html": {
-    "outbound_count": 26,
+    "outbound_count": 27,
     "inbound_count": 76,
     "existing_outbound": [],
     "suggested_outbound": [
@@ -1148,6 +1148,7 @@
       "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-sacred-fork.html",
       "/wiki/first-witness-triple-fork-chainfire.html",
+      "/wiki/first-witness-work-craft-service.html",
       "/wiki/gkniftyheads-bitcoin-kid-x-sarah-pfly-infinite-776004.html",
       "/wiki/gkniftyheads-sarah-p2fly-784350.html",
       "/wiki/gkniftyheads-sarah-pfly-784349.html",
@@ -5227,7 +5228,7 @@
     ]
   },
   "/wiki/first-witness-faction-commentaries.html": {
-    "outbound_count": 72,
+    "outbound_count": 73,
     "inbound_count": 24,
     "existing_outbound": [
       "/wiki/first-witness-forty-paths.html",
@@ -5288,6 +5289,7 @@
       "/wiki/gkniftyheads-bitcoin-kid-x-sarahpfly-773225.html",
       "/wiki/gkniftyheads-bitforce-bitcoin-battler-784332.html",
       "/wiki/gkniftyheads-matteo-bitcoin-bandit-gallo-783447.html",
+      "/wiki/gkniftyheads-raze-rebel-783250.html",
       "/wiki/gkniftyheads.html",
       "/wiki/graffiti-kings.html",
       "/wiki/graffiti-nexus.html",
@@ -17714,7 +17716,7 @@
     ]
   },
   "/wiki/graffpunks.html": {
-    "outbound_count": 39,
+    "outbound_count": 40,
     "inbound_count": 213,
     "existing_outbound": [
       "/wiki/atomichub-graffpunks-collection.html",
@@ -17745,6 +17747,7 @@
       "/wiki/elder-codex-7.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
       "/wiki/first-witness-book-9-the-unwritten-block.html",
+      "/wiki/first-witness-censorship-offence-public-marks.html",
       "/wiki/first-witness-digital-inheritance-after-death.html",
       "/wiki/first-witness-music-dance-performance.html",
       "/wiki/genesis-kernel.html",
@@ -19089,7 +19092,7 @@
     ]
   },
   "/wiki/metropolis.html": {
-    "outbound_count": 27,
+    "outbound_count": 28,
     "inbound_count": 0,
     "existing_outbound": [
       "/wiki/bitcoin-kids.html",
@@ -19113,6 +19116,7 @@
       "/wiki/first-witness-book-9-the-unwritten-block.html",
       "/wiki/first-witness-digital-inheritance-after-death.html",
       "/wiki/first-witness-food-hospitality-common-table.html",
+      "/wiki/first-witness-music-dance-performance.html",
       "/wiki/gkniftyheads-urban-oracle-783306.html",
       "/wiki/graffiti-kings.html",
       "/wiki/patchwork.html",
@@ -21357,7 +21361,7 @@
     "inbound_from": []
   },
   "/wiki/street-kingdoms.html": {
-    "outbound_count": 29,
+    "outbound_count": 34,
     "inbound_count": 16,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
@@ -21373,6 +21377,7 @@
     "suggested_outbound": [
       "/wiki/alcor-exchange.html",
       "/wiki/alfie-bitcoin-kid-blaze.html",
+      "/wiki/atomichub-graffpunks-collection.html",
       "/wiki/bear-market-siege.html",
       "/wiki/bitcoin-kids.html",
       "/wiki/block-node-defenders.html",
@@ -21388,7 +21393,11 @@
       "/wiki/first-witness-proverbs-street-sayings.html",
       "/wiki/first-witness-street-kingdoms-reading.html",
       "/wiki/first-witness-truth-commissions-after-conflict.html",
+      "/wiki/gkniftyheads-nft-collection.html",
+      "/wiki/graffpunks-collection.html",
       "/wiki/graffpunks.html",
+      "/wiki/hodlmoonboys-nft-collection.html",
+      "/wiki/noballgamess-nft-collection.html",
       "/wiki/the-salvagers.html",
       "/wiki/waxp-exchange.html"
     ],
@@ -21799,7 +21808,7 @@
     ]
   },
   "/wiki/the-blockstars.html": {
-    "outbound_count": 35,
+    "outbound_count": 37,
     "inbound_count": 1,
     "existing_outbound": [
       "/wiki/bitcoin-kids.html",
@@ -21829,6 +21838,8 @@
       "/wiki/first-witness-child-of-fire.html",
       "/wiki/first-witness-digital-inheritance-after-death.html",
       "/wiki/first-witness-long-transmission.html",
+      "/wiki/first-witness-money-debt-honest-scales.html",
+      "/wiki/first-witness-music-dance-performance.html",
       "/wiki/first-witness-truth-commissions-after-conflict.html",
       "/wiki/gkniftyheads-digital-diva-783394.html",
       "/wiki/gkniftyheads-digital-duchess-783404.html",
@@ -21951,7 +21962,7 @@
     "inbound_from": []
   },
   "/wiki/the-code-alchemists.html": {
-    "outbound_count": 32,
+    "outbound_count": 33,
     "inbound_count": 3,
     "existing_outbound": [
       "/wiki/bitcoin-kids.html",
@@ -21973,6 +21984,7 @@
       "/wiki/aleema-child-of-the-shard.html",
       "/wiki/block-topia.html",
       "/wiki/elder-codex-7.html",
+      "/wiki/first-witness-death-grief-remembrance.html",
       "/wiki/first-witness-digital-inheritance-after-death.html",
       "/wiki/first-witness-education-schools-apprenticeship.html",
       "/wiki/first-witness-great-concord-2030.html",
@@ -22034,7 +22046,7 @@
     "inbound_from": []
   },
   "/wiki/the-ducky-boys.html": {
-    "outbound_count": 32,
+    "outbound_count": 33,
     "inbound_count": 5,
     "existing_outbound": [
       "/wiki/bitcoin-kids.html",
@@ -22067,6 +22079,7 @@
       "/wiki/gkniftyheads-drift-doodle-783252.html",
       "/wiki/graffpunks.html",
       "/wiki/patchwork.html",
+      "/wiki/queen-sarah-p-fly.html",
       "/wiki/the-bally-boys.html",
       "/wiki/the-blockstars.html",
       "/wiki/the-crypto-stoned-boys.html",
@@ -22081,7 +22094,7 @@
     ]
   },
   "/wiki/the-evm-punks.html": {
-    "outbound_count": 28,
+    "outbound_count": 30,
     "inbound_count": 0,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
@@ -22106,6 +22119,7 @@
       "/wiki/genesis-kernel.html",
       "/wiki/gkniftyheads-antonio-ether-emperor-costa-783448.html",
       "/wiki/graffpunks.html",
+      "/wiki/hard-fork-games.html",
       "/wiki/hodl-warriors.html",
       "/wiki/hodl-wars.html",
       "/wiki/hodl-x-warriors.html",
@@ -22113,6 +22127,7 @@
       "/wiki/rug-pull-wars.html",
       "/wiki/the-ducky-boys.html",
       "/wiki/the-first-witness.html",
+      "/wiki/the-hard-fork-rockers.html",
       "/wiki/the-rugpull-miners.html"
     ],
     "inbound_from": []
@@ -22540,7 +22555,7 @@
     ]
   },
   "/wiki/the-high-hats.html": {
-    "outbound_count": 28,
+    "outbound_count": 29,
     "inbound_count": 33,
     "existing_outbound": [
       "/wiki/bitcoin-kids.html",
@@ -22563,6 +22578,7 @@
       "/wiki/block-node-defenders.html",
       "/wiki/first-witness-anonymity-pseudonyms-hidden-names.html",
       "/wiki/first-witness-book-8-the-fire.html",
+      "/wiki/first-witness-charity-mutual-aid-dependence.html",
       "/wiki/first-witness-child-of-fire.html",
       "/wiki/first-witness-digital-inheritance-after-death.html",
       "/wiki/first-witness-long-transmission.html",
@@ -22611,7 +22627,7 @@
     ]
   },
   "/wiki/the-information-mercenaries.html": {
-    "outbound_count": 27,
+    "outbound_count": 28,
     "inbound_count": 1,
     "existing_outbound": [
       "/wiki/bitcoin-kids.html",
@@ -22631,6 +22647,7 @@
     ],
     "suggested_outbound": [
       "/wiki/block-topia.html",
+      "/wiki/first-witness-censorship-offence-public-marks.html",
       "/wiki/first-witness-concordance.html",
       "/wiki/first-witness-digital-inheritance-after-death.html",
       "/wiki/first-witness-truth-commissions-after-conflict.html",
@@ -22649,7 +22666,7 @@
     ]
   },
   "/wiki/the-moonlords.html": {
-    "outbound_count": 31,
+    "outbound_count": 32,
     "inbound_count": 2,
     "existing_outbound": [
       "/wiki/bitcoin-kid-army.html",
@@ -22672,6 +22689,7 @@
     ],
     "suggested_outbound": [
       "/wiki/alcor-exchange.html",
+      "/wiki/first-witness-censorship-offence-public-marks.html",
       "/wiki/first-witness-charity-mutual-aid-dependence.html",
       "/wiki/graffpunks.html",
       "/wiki/hodl-wars.html",
@@ -23930,7 +23948,7 @@
     ]
   },
   "/wiki/whale-lords.html": {
-    "outbound_count": 31,
+    "outbound_count": 32,
     "inbound_count": 3,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
@@ -23965,7 +23983,8 @@
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/sacred-chain.html",
-      "/wiki/the-first-witness.html"
+      "/wiki/the-first-witness.html",
+      "/wiki/the-moonlords.html"
     ],
     "inbound_from": [
       "/wiki/defi.html",

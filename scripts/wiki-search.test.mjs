@@ -832,6 +832,223 @@ const graffpunksStopwordOnly = {
   for (const [slug, subjects] of Object.entries(dividendSubjects)) {
     subjectsByPage[slug] = [...(subjectsByPage[slug] || []), ...subjects];
   }
+  const livedWorldSubjects = {
+  "block-topia": [
+    "Split Current Night",
+    "Mara Kett",
+    "Bright Mouth",
+    "cracked lamp bright teeth",
+    "service quarter households"
+  ],
+  "metropolis": [
+    "Eska Thrum",
+    "Split Current Night song",
+    "night noise dirty glamour",
+    "Bright Mouth performance"
+  ],
+  "street-kingdoms": [
+    "Sorn Rill",
+    "Split Current outside tables",
+    "Slate Market appetite",
+    "resold collection interval"
+  ],
+  "the-evm-punks": [
+    "Dax Vanta",
+    "Hard Smile",
+    "Tessa Brunt",
+    "Bright Mouth contract",
+    "gold jaw plate"
+  ],
+  "the-squeaky-pinks": [
+    "Derren Glaze",
+    "polished snout",
+    "Bright Mouth landing",
+    "Nela Hask removal"
+  ],
+  "the-aztec-raiders": [
+    "Varka Coil",
+    "Fan Teeth",
+    "occupied supper",
+    "Halen Trove",
+    "Dera Trove",
+    "Fan of Teeth procession",
+    "Dera Trove",
+    "occupied hall mourning tune"
+  ],
+  "the-code-alchemists": [
+    "Ixa Vell",
+    "Velvet Surgeon",
+    "purchased farewell",
+    "Vey Lark",
+    "Eron Silt",
+    "room of borrowed grief",
+    "dark panel recollections"
+  ],
+  "samaelexe": [
+    "Leth Orra",
+    "Bell Bride",
+    "Naro Orra",
+    "Godseed wanted lie"
+  ],
+  "the-tuskon-ogs": [
+    "Brak Sennel",
+    "Old Iron",
+    "Iska Ren",
+    "seat nobody borrows"
+  ],
+  "the-ducky-boys": [
+    "Socket Queen",
+    "stolen hour",
+    "five priority jobs",
+    "Bea Socket icon"
+  ],
+  "the-nomad-bears": [
+    "Kel Dusk coat",
+    "Varn Sedge",
+    "Reva Moss",
+    "coat full of yesterday"
+  ],
+  "the-og-pixel-saints": [
+    "Last Credit halo",
+    "Oriel Dot halo",
+    "Penn Flick",
+    "arcade relic argument"
+  ],
+  "the-chain-scribes": [
+    "Ruva Marg red thumb",
+    "red thumb marginalia",
+    "donor dry storage"
+  ],
+  "the-shard-mothers-of-manhattan": [
+    "Mended Crown",
+    "Bela Lumen crown",
+    "Hearth bed dispute"
+  ],
+  "the-nice-easy-bois": [
+    "Tavren Ease",
+    "Smiling Knife",
+    "Lesser Door freight settlement"
+  ],
+  "the-bally-boys": [
+    "Sera supper mask",
+    "mask that pays for supper",
+    "Margin House future commission"
+  ],
+  "the-blockstars": [
+    "Lio Velvet collar",
+    "borrowed face",
+    "Backlight dirty money performance"
+  ],
+  "the-blockchain-furies": [
+    "Nessa broken red stroke",
+    "name that burns back",
+    "Ash Desk slower release"
+  ],
+  "the-rugpull-miners": [
+    "Rafe red case icon",
+    "temporary belonging",
+    "Miner later gathering"
+  ],
+  "the-finance-guild": [
+    "Meren white line",
+    "Closing Room Seven cuff",
+    "completed recognition"
+  ],
+  "the-high-hats": [
+    "Aster long-window silhouette",
+    "Perrin admired dependence",
+    "Long Window later supper"
+  ],
+  "the-moonlords": [
+    "Vela second key",
+    "second key motif",
+    "gratitude public humiliation"
+  ],
+  "the-crypto-stoned-boys": [
+    "Laughing Lamp icon",
+    "Low Tide fashionable destination",
+    "counterculture customers"
+  ],
+  "the-hard-fork-rockers": [
+    "Tamsin cut coat",
+    "cut coat bright lining",
+    "Cutover return set"
+  ],
+  "the-information-mercenaries": [
+    "Idra closed eye",
+    "Third Ear bright slit",
+    "public shortage advance packet"
+  ],
+  "the-salvagers": [
+    "Leda copper hand",
+    "Rattle Yard decorative fitting",
+    "material limit faction"
+  ],
+  "the-gasless-ghosts": [
+    "Empty Hem",
+    "Arlo Hush coat",
+    "Rest Bell priority offer"
+  ],
+  "the-allcity-bulls": [
+    "Fast Crown",
+    "Vexa Row icon",
+    "champions never stop"
+  ],
+  "bitcoin-kid-army": [
+    "broken bonnet mark",
+    "Alfie name recruitment",
+    "Cal Vetch unauthorised notice"
+  ],
+  "graffpunks": [
+    "Black Mouth painter",
+    "wall that talks back",
+    "hostile public image"
+  ],
+  "gkniftyheads": [
+    "Glass Face",
+    "Rell Morrow",
+    "face dark vertical gap"
+  ],
+  "whale-lords": [
+    "Junn Cress",
+    "Quiet Weight",
+    "dark ring reserve",
+    "receiving roof refusal"
+  ],
+  "m1ntr-k1ll": [
+    "Feast Man",
+    "Varnish Dole",
+    "Orin Fer",
+    "completed-work plates"
+  ],
+  "the-whitewasher": [
+    "White Morning",
+    "Bren Pale",
+    "protected photograph",
+    "removable mourning panel"
+  ],
+  "sister-halcyon": [
+    "Halcyon unopened vessel silhouette",
+    "Ceryn Lace",
+    "Tala Reed",
+    "cloth proximity claim"
+  ],
+  "first-witness-faction-commentaries": [
+    "Unbroken Line",
+    "Sava Crest",
+    "Nix Bounce",
+    "Scarlet Door",
+    "Vessa Rook",
+    "Raze Morrow",
+    "Throatfire",
+    "Moth Vey",
+    "two unequal lamps",
+    "factions recognisable powers"
+  ]
+};
+  for (const [slug, subjects] of Object.entries(livedWorldSubjects)) {
+    subjectsByPage[slug] = [...(subjectsByPage[slug] || []), ...subjects];
+  }
   const stopWords = vm.runInContext('SEARCH_TEXT_STOP_WORDS', sb);
   let checked = 0;
   for (const [slug, subjects] of Object.entries(subjectsByPage)) {
