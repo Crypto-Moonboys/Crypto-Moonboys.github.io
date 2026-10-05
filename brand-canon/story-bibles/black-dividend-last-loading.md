@@ -1,6 +1,6 @@
 # Black Dividend — Last Loading
 
-Story development reference for the Year 3008 local continuation. Prepared 5 October 2026 from the GK-authorised sandbox batch based on `360a7041727b4c342f1f5d3cb67c3a1b90d857c4`. Publication and canon promotion still require GK's final approval. This is a development bible, not a finished novel or screenplay.
+Story development reference for the Year 3008 local continuation. Prepared 5 October 2026 from the GK-authorised sandbox batch based on `360a7041727b4c342f1f5d3cb67c3a1b90d857c4`. GK approved publication to main on 5 October 2026. This is a development bible, not a finished novel or screenplay.
 
 ## The story
 

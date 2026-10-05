@@ -8,7 +8,7 @@ Sandbox: `codex/sandbox-black-dividend-story-20261005-152012`
 
 ## Authorisation and scope
 
-GK accepted the audit recommendation to complete Black Dividend as a bounded story-ready territory and instructed: “sounds good start, keep adult tone”. The batch extends six existing articles and adds a repository story development bible. It creates no wiki route or faction slot, modifies no runtime or approval policy and leaves the nine witnessed Books untouched. Writing approval is not final publication approval.
+GK accepted the audit recommendation to complete Black Dividend as a bounded story-ready territory and instructed: “sounds good start, keep adult tone”. The batch extends six existing articles and adds a repository story development bible. It creates no wiki route or faction slot, modifies no runtime or approval policy and leaves the nine witnessed Books untouched. The initial writing instruction preceded final publication approval; GK subsequently approved this batch on 5 October 2026: “Publish this batch to main”.
 
 The six public references gain 7,744 editorial words, 22 narrative/reference sections and six short authorship sections. All earlier paragraphs and IDs are retained. Each article's canonical revision advances once. The separate 2,539-word development bible consolidates the cast, physical circuit, constraints, eighteen scene beats, local ending and future hooks. It is a development document, not a completed screenplay or novel.
 
@@ -67,4 +67,4 @@ Full per-page desktop/mobile visual review has not been completed: two isolated 
 
 ## Publication
 
-This writing batch is prepared for GK review on the sandbox branch. `AGENT_SANDBOX_WORKFLOW.md` requires: “GK manually approves final merge.” Main has not been changed by this continuation.
+`AGENT_SANDBOX_WORKFLOW.md` requires: “GK manually approves final merge.” GK granted that approval on 5 October 2026 with “Publish this batch to main”, authorising the reviewed batch at `ef15bc7ec45ee0390a9738c924be95bec0522340`. The publication handoff uses the repository's canon prose approval label and an exact-head merge. Publication adds only this approval record and the matching status in the story bible; the six reviewed articles, their revisions and generated publishing surfaces remain as validated.
