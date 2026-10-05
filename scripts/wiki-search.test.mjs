@@ -1314,6 +1314,50 @@ const graffpunksStopwordOnly = {
   for (const [slug, subjects] of Object.entries(adultCharacterSubjects)) {
     subjectsByPage[slug] = [...(subjectsByPage[slug] || []), ...subjects];
   }
+  const blackDividendStorySubjects = {
+  "hodl-wars": [
+    "Last Loading: four days left at Nine Rung",
+    "Counterprice meeting",
+    "Second Screening and the lost smaller host",
+    "Dry Supper and the dangerous ordinary load",
+    "Last Loading at the gate",
+    "An open yard with a dead man in its history",
+    "What stands after Black Dividend",
+    "Black Dividend Last Loading",
+    "Last Loading gate fight",
+    "Rovan death Nine Rung"
+  ],
+  "street-kingdoms": [
+    "Nine Rung's working circuit",
+    "Counterprice home Etta Sella",
+    "hosts at Dry Supper",
+    "room after Last Loading",
+    "Etta Sella Last Loading room"
+  ],
+  "the-finance-guild": [
+    "receiving advance at Last Loading",
+    "Tala and the person behind the white line",
+    "different debts after the last receipt",
+    "Last Loading wage offset"
+  ],
+  "the-salvagers": [
+    "Etta at the receiving bench",
+    "Rattle Yard's price at Dry Supper",
+    "Borrowed Curtain return"
+  ],
+  "the-high-hats": [
+    "Aster's Last Loading appointment",
+    "Ilar and the unpaid supper argument"
+  ],
+  "the-blockstars": [
+    "Making the Second Screening",
+    "Sevrin without a clean close-up",
+    "last picture is work"
+  ]
+};
+  for (const [slug, subjects] of Object.entries(blackDividendStorySubjects)) {
+    subjectsByPage[slug] = [...(subjectsByPage[slug] || []), ...subjects];
+  }
   const stopWords = vm.runInContext('SEARCH_TEXT_STOP_WORDS', sb);
   let checked = 0;
   for (const [slug, subjects] of Object.entries(subjectsByPage)) {
