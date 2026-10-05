@@ -1193,6 +1193,127 @@ const graffpunksStopwordOnly = {
   for (const [slug, subjects] of Object.entries(adultCultureSubjects)) {
     subjectsByPage[slug] = [...(subjectsByPage[slug] || []), ...subjects];
   }
+  const adultCharacterSubjects = {
+  "alfie-bitcoin-kid-blaze": [
+    "Orange Room night",
+    "hungry cheer",
+    "Dera Slate"
+  ],
+  "queen-sarah-p-fly": [
+    "Velvet Stair supper",
+    "Company that can answer"
+  ],
+  "jodie-zoom-2000": [
+    "Last Lamp at home",
+    "portrait she wants",
+    "Orsa Clove"
+  ],
+  "aleema-child-of-the-shard": [
+    "Two glasses and a promise",
+    "voice after Split Bowl",
+    "Neth Aster"
+  ],
+  "thera-9": [
+    "coat she kept",
+    "Ungenerous Night"
+  ],
+  "lady-ink": [
+    "Red Rucksack argument",
+    "Jealousy of the vanishing mark"
+  ],
+  "snipey-d-man-sirus": [
+    "No laugh at the back table",
+    "Fifth Empty Cup"
+  ],
+  "billy-the-goat-kid": [
+    "Sleeper Verse",
+    "Applause and the morning road"
+  ],
+  "bit-cap-5000": [
+    "Soft bed, heavy hands",
+    "Split Cup boast"
+  ],
+  "grit42": [
+    "Victory takes the other chair",
+    "Broken Toast"
+  ],
+  "rune-tag": [
+    "letter kept for style",
+    "When the Elder wants a turn"
+  ],
+  "elder-codex-7": [
+    "Last Survivor supper",
+    "Memory of the person who left"
+  ],
+  "quell": [
+    "answer he cannot mediate",
+    "Anger with good handwriting"
+  ],
+  "sister-halcyon": [
+    "person who wants her",
+    "night she wants to be bad",
+    "Vey Darn"
+  ],
+  "patchwork": [
+    "good chair he will not sell",
+    "scavenger's private shelf"
+  ],
+  "hex-tagger-prime": [
+    "fan who wants the scar",
+    "Small Ugly Choice"
+  ],
+  "the-princess": [
+    "dress after the rain",
+    "person outside the title"
+  ],
+  "null-the-prophet": [
+    "Betrayer's Holiday",
+    "A mouth for every relief"
+  ],
+  "the-whitewasher": [
+    "bedroom-facing wall",
+    "man who likes the noise"
+  ],
+  "thorne-the-architect": [
+    "room with two exits",
+    "pleasure of being needed"
+  ],
+  "forksplit": [
+    "Unannounced Couple",
+    "Rage without a battle"
+  ],
+  "m1ntr-k1ll": [
+    "Honeymoon Interval",
+    "Pleasure counted as maintenance"
+  ],
+  "samaelexe": [
+    "Sweet Voice session",
+    "Godseed wants the last word"
+  ],
+  "grit": [
+    "Red Shirt audience",
+    "anger that will not love you"
+  ],
+  "pyralith": [
+    "Gallery Lover's evening",
+    "colour that demands a sacrifice"
+  ],
+  "dragan-volkov": [
+    "letter in the cold case",
+    "Appetite after the interview"
+  ],
+  "ava-chen": [
+    "Interview Dress",
+    "private price of a scoop"
+  ],
+  "loopfiend": [
+    "Last Good Night",
+    "apology exit"
+  ]
+};
+  for (const [slug, subjects] of Object.entries(adultCharacterSubjects)) {
+    subjectsByPage[slug] = [...(subjectsByPage[slug] || []), ...subjects];
+  }
   const stopWords = vm.runInContext('SEARCH_TEXT_STOP_WORDS', sb);
   let checked = 0;
   for (const [slug, subjects] of Object.entries(subjectsByPage)) {

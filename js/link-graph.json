@@ -158,7 +158,7 @@
     ]
   },
   "/wiki/aleema-child-of-the-shard.html": {
-    "outbound_count": 29,
+    "outbound_count": 32,
     "inbound_count": 1,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
@@ -181,11 +181,14 @@
       "/wiki/bitcoin-x-kids.html",
       "/wiki/block-topia.html",
       "/wiki/first-witness-child-of-fire.html",
+      "/wiki/first-witness-digital-inheritance-after-death.html",
       "/wiki/first-witness-dual-use-tools-weapons.html",
       "/wiki/first-witness-great-concord-2030.html",
+      "/wiki/first-witness-truth-commissions-after-conflict.html",
       "/wiki/forkborn-collective.html",
       "/wiki/genesis-kernel.html",
       "/wiki/graffpunks.html",
+      "/wiki/grit.html",
       "/wiki/hodl-warriors.html",
       "/wiki/hodl-x-warriors.html",
       "/wiki/street-kingdoms.html",
@@ -661,7 +664,7 @@
     ]
   },
   "/wiki/bit-cap-5000.html": {
-    "outbound_count": 27,
+    "outbound_count": 29,
     "inbound_count": 0,
     "existing_outbound": [
       "/wiki/bitcoin-kids.html",
@@ -684,12 +687,14 @@
     "suggested_outbound": [
       "/wiki/aleema-child-of-the-shard.html",
       "/wiki/atomicassets.html",
+      "/wiki/diamond-hands.html",
       "/wiki/first-witness-apocrypha-disputed-passages.html",
       "/wiki/first-witness-work-craft-service.html",
       "/wiki/genesis-kernel.html",
       "/wiki/gkniftyheads.html",
       "/wiki/grit.html",
       "/wiki/jodie-zoom-2000.html",
+      "/wiki/paper-hands.html",
       "/wiki/quell.html",
       "/wiki/the-shard-mothers-of-manhattan.html",
       "/wiki/xrp-ledger.html"
@@ -2111,7 +2116,7 @@
     ]
   },
   "/wiki/dragan-volkov.html": {
-    "outbound_count": 34,
+    "outbound_count": 35,
     "inbound_count": 1,
     "existing_outbound": [
       "/wiki/ava-chen.html",
@@ -2135,6 +2140,7 @@
       "/wiki/first-witness-book-9-the-unwritten-block.html",
       "/wiki/first-witness-chain-archaeology-forensics.html",
       "/wiki/first-witness-digital-inheritance-after-death.html",
+      "/wiki/first-witness-truth-commissions-after-conflict.html",
       "/wiki/first-witness-world-chain-error.html",
       "/wiki/genesis-kernel.html",
       "/wiki/gkniftyheads-cipher-seraph-783413.html",
@@ -2200,7 +2206,7 @@
     "inbound_from": []
   },
   "/wiki/elder-codex-7.html": {
-    "outbound_count": 34,
+    "outbound_count": 35,
     "inbound_count": 1,
     "existing_outbound": [
       "/wiki/bitcoin-kids.html",
@@ -2222,6 +2228,7 @@
       "/wiki/first-witness-apocrypha-disputed-passages.html",
       "/wiki/first-witness-book-5-the-chain.html",
       "/wiki/first-witness-chain-archaeology-forensics.html",
+      "/wiki/first-witness-digital-inheritance-after-death.html",
       "/wiki/first-witness-great-concord-2030.html",
       "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-world-chain-error.html",
@@ -17986,7 +17993,7 @@
     ]
   },
   "/wiki/grit.html": {
-    "outbound_count": 23,
+    "outbound_count": 24,
     "inbound_count": 1,
     "existing_outbound": [
       "/wiki/bitcoin-kids.html",
@@ -18006,6 +18013,7 @@
       "/wiki/first-witness-book-8-the-fire.html",
       "/wiki/first-witness-child-of-fire.html",
       "/wiki/first-witness-digital-inheritance-after-death.html",
+      "/wiki/first-witness-family-children-elders.html",
       "/wiki/first-witness-relics-manuscripts-lost-editions.html",
       "/wiki/genesis-kernel.html",
       "/wiki/graffiti-kings.html",
@@ -18020,7 +18028,7 @@
     ]
   },
   "/wiki/grit42.html": {
-    "outbound_count": 25,
+    "outbound_count": 27,
     "inbound_count": 1,
     "existing_outbound": [
       "/wiki/bitcoin-kids.html",
@@ -18039,8 +18047,10 @@
     "suggested_outbound": [
       "/wiki/defi.html",
       "/wiki/first-witness-apocrypha-disputed-passages.html",
+      "/wiki/first-witness-concordance.html",
       "/wiki/first-witness-faction-ritual-variations.html",
       "/wiki/first-witness-forty-paths.html",
+      "/wiki/first-witness-roles-keepers-witnesses-mediators.html",
       "/wiki/genesis-kernel.html",
       "/wiki/hodl-warriors.html",
       "/wiki/hodl-x-warriors.html",
@@ -18891,7 +18901,7 @@
     "inbound_from": []
   },
   "/wiki/loopfiend.html": {
-    "outbound_count": 30,
+    "outbound_count": 31,
     "inbound_count": 0,
     "existing_outbound": [
       "/wiki/bitcoin-kids.html",
@@ -18909,6 +18919,7 @@
     ],
     "suggested_outbound": [
       "/wiki/dream-sovereign.html",
+      "/wiki/first-witness-confession-apology-reconciliation.html",
       "/wiki/first-witness-prisons-punishment-return.html",
       "/wiki/gkniftyheads-bitcoin-kid-infinite-776002.html",
       "/wiki/gkniftyheads-bitcoin-kid-infinite-776003.html",
@@ -21031,7 +21042,7 @@
     "inbound_from": []
   },
   "/wiki/snipey-d-man-sirus.html": {
-    "outbound_count": 20,
+    "outbound_count": 21,
     "inbound_count": 0,
     "existing_outbound": [
       "/wiki/bitcoin-kids.html",
@@ -21050,6 +21061,7 @@
     ],
     "suggested_outbound": [
       "/wiki/bit-cap-5000.html",
+      "/wiki/first-witness-food-hospitality-common-table.html",
       "/wiki/first-witness-music-dance-performance.html",
       "/wiki/grit.html",
       "/wiki/hodl-x-warriors.html",
@@ -22886,7 +22898,7 @@
     ]
   },
   "/wiki/the-princess.html": {
-    "outbound_count": 25,
+    "outbound_count": 27,
     "inbound_count": 33,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
@@ -22908,6 +22920,8 @@
       "/wiki/dream-sovereign.html",
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-9-the-unwritten-block.html",
+      "/wiki/first-witness-digital-inheritance-after-death.html",
+      "/wiki/first-witness-truth-commissions-after-conflict.html",
       "/wiki/forkborn-collective.html",
       "/wiki/gkniftyheads.html",
       "/wiki/graffiti-queens-in-decentraland.html",
