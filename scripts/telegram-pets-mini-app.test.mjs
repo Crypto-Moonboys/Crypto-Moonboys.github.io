@@ -1922,7 +1922,7 @@ assert.doesNotMatch(client, /createPetPalette|PET_APPEARANCE_PALETTES|PET_SPECIE
 assert.doesNotMatch(client, /function petPalette|function petPose/, 'retired procedural palette and pose helpers must stay removed');
 assert.doesNotMatch(client, /function drawMoonEgg/, 'the retired procedural egg must not remain after EGGYONE approval');
 assert.match(client, /STAGE_ZERO_BACKGROUND_URL = '\/games\/assets\/BITTY BACKGROUND\.jpg'/, 'Stage 0 must use the BITTY background');
-assert.match(client, /startHatchArtTransition\(hatchAnimationDuration\(\), responseState\)/, 'hatch must defer the Stage 1 art handoff for the complete atlas duration');
+assert.match(client, /var hatchDuration = isHatchReveal \? hatchAnimationDuration\(\) : 0/, 'hatch must use the complete atlas duration');
 assert.match(client, /MoonpetBotArtLoader\.loadMoonpetBotArt\(botArtIdentity\(nextSnapshot\)\)/, 'WTFBOI must preload while the EGGYONE hatch one-shot is visible');
 assert.match(client, /await Promise\.race\(\[hatchStageOnePreloadPromise,[\s\S]*selectBotArtForState\(state\)/, 'the renderer must wait for the Stage 1 preload or its bounded reveal deadline');
 assert.match(client, /animationUntil = Number\.POSITIVE_INFINITY/, 'the final EGGYONE hatch frame must remain visible until the Stage 1 swap');

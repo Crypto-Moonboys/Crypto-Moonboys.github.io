@@ -162,21 +162,35 @@ test('healthy art clears deadlines and reuses its loaded pack', async () => {
 });
 
 function hatchContext() {
-  const time = clock(), loads = [], selected = [], drawn = [];
+  const time = clock(), loads = [], selected = [], drawn = [], actions = [];
   const ctx = { window: { ...time.api, MoonpetBotArtLoader: { loadMoonpetBotArt() {
     const pending = deferred(); loads.push(pending); return pending.promise;
   } } }, performance: { now: time.now }, console: { info() {} },
   state: { pet: { pet_id: 'pet-a', xp: 12 }, lifecycle: { phase: 'street' } },
   hatchArtTransitionUntil: 0, hatchArtTransitionTimer: 0, hatchStageOnePreloadPromise: null, hatchArtTransitionGeneration: 0,
-  animationUntil: Infinity, animationMode: 'hatch', sleepLatched: false, reducedMotion: true,
+  animationUntil: Infinity, animationMode: 'hatch', actionSequence: 0, actionStartedAt: time.now(), reducedMotionAnimationTimer: 0,
+  sleepLatched: false, reducedMotion: true, busy: false, petActionRefreshRequired: false, authenticationFailure: false, activeScreen: 'home',
+  lifecycleCeremonyActive: () => false, shouldUseFastActionResponse: () => false, playOptionsReady: () => true,
+  crypto: { randomUUID: () => 'hatch-request' }, haptic() {}, tell() {}, words: value => value,
+  beginStateRequest: () => 1, stateRequestGate: { isCurrent: () => true },
+  post: async (path, payload) => { actions.push({ path, payload }); return ctx.actionResponse; },
+  mergeActionResultCooldown: snapshot => snapshot, setStateSnapshot(snapshot) { ctx.state = snapshot; return true; },
+  render() {}, resultMessage: () => 'accepted', showPendingNotices: async () => {},
+  planLifecycleCeremony: () => null, startLifecycleCeremony() {},
   botArtIdentity: snapshot => ({ pet_id: snapshot.pet.pet_id }), hatchAnimationDuration: () => 3200,
   selectBotArtForState: async snapshot => { selected.push(snapshot); }, drawWorld: now => drawn.push(now),
   };
   vm.createContext(ctx);
   const start = clientSource.indexOf('// TEST-EXPORT: hatchArtTransition:start');
   const end = clientSource.indexOf('// TEST-EXPORT: hatchArtTransition:end');
-  vm.runInContext(clientSource.slice(start, end), ctx);
-  return { ...time, ctx, loads, selected, drawn };
+  const animation = clientSource.slice(clientSource.indexOf('  function actionAnimationFamily('), clientSource.indexOf('  function hatchArtTransitionActive('));
+  const action = clientSource.slice(clientSource.indexOf('  async function runAction('), clientSource.indexOf('  function switchScreen('));
+  vm.runInContext(animation + clientSource.slice(start, end) + action, ctx);
+  return { ...time, ctx, loads, selected, drawn, actions, acceptedHatch: async () => {
+    ctx.state = { ...ctx.state, lifecycle: { phase: 'egg' } };
+    ctx.actionResponse = { result: { accepted: true }, state: { ...ctx.state, lifecycle: { phase: 'street' } } };
+    await ctx.runAction('hatch', {});
+  } };
 }
 
 test('a stalled hatch preload releases the visual lock after the reveal deadline', async () => {
@@ -224,3 +238,45 @@ test('a delayed hatch reveal selects the current saved pet after a switch', asyn
   assert.equal(f.selected[0], selectedPet); assert.equal(f.ctx.state.pet.xp, 900);
   assert.equal(f.ctx.hatchArtTransitionUntil, 0); assert.equal(f.timers.size, 0);
 });
+
+test('the accepted Hatch handler binds the reveal to its final animation sequence', async () => {
+  const f = hatchContext(); await f.acceptedHatch();
+  assert.equal(f.ctx.actionSequence, 2);
+  assert.equal(f.ctx.animationUntil, Infinity);
+  assert.equal(f.loads.length, 1);
+  await f.tick(3220); await f.tick(10000);
+  assert.equal(f.ctx.hatchArtTransitionUntil, 0);
+  assert.equal(f.ctx.animationUntil, 0); assert.equal(f.ctx.animationMode, 'idle');
+  assert.equal(f.selected[0], f.ctx.state);
+  assert.equal(f.ctx.state.pet.xp, 12);
+  assert.equal(f.actions.length, 1); assert.equal(f.actions[0].payload.action, 'hatch');
+  assert.equal(f.timers.size, 0);
+});
+
+for (const release of ['deadline', 'preload']) for (const [action, accepted, mode, duration] of [
+  ['dance', true, 'dance', 3600], ['feed', true, 'feed', 2800],
+  ['sleep', true, 'sleep', Infinity], ['dance', false, 'blocked', 2800],
+]) {
+  test(`hatch ${release} preserves a newer ${mode} animation`, async () => {
+    const f = hatchContext(); await f.acceptedHatch();
+    await f.tick(3220); await f.tick(9999);
+    f.ctx.sleepLatched = action === 'sleep';
+    f.ctx.animateAction(action, accepted, Number.isFinite(duration) ? duration : 2800);
+    const newer = { until: f.ctx.animationUntil, mode: f.ctx.animationMode,
+      sequence: f.ctx.actionSequence, started: f.ctx.actionStartedAt };
+    assert.equal(newer.mode, mode); assert.ok(newer.until > f.now());
+    if (release === 'deadline') await f.tick(1);
+    else { f.loads[0].resolve({ ready: true }); await flush(); }
+    assert.equal(f.ctx.hatchArtTransitionUntil, 0);
+    assert.equal(f.ctx.animationUntil, newer.until); assert.equal(f.ctx.animationMode, newer.mode);
+    assert.equal(f.ctx.actionStartedAt, newer.started); assert.equal(f.ctx.actionSequence, newer.sequence);
+    assert.equal(f.selected[0], f.ctx.state); assert.equal(f.ctx.state.pet.xp, 12);
+    assert.equal(f.actions.length, 1);
+    if (Number.isFinite(duration)) {
+      assert.ok(f.timers.has(f.ctx.reducedMotionAnimationTimer), 'the new action keeps its own completion timer');
+      await f.tick(duration); assert.equal(f.ctx.animationMode, 'idle');
+    } else assert.equal(f.ctx.animationMode, 'sleep');
+    f.loads[0].resolve({ ready: true }); await flush();
+    assert.equal(f.selected.length, 1); assert.equal(f.timers.size, 0);
+  });
+}

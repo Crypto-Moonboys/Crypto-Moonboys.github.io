@@ -17,6 +17,13 @@ The hatch deadline bounds the visual hold independently of individual art reques
 It does not guarantee that art is available during a network outage. These paths
 read or render accepted state; they do not replay mutations or award XP/rewards.
 
+The review follow-up binds each hatch transition to the action sequence captured
+after its accepted hatch animation starts. Releasing the hold always selects the
+current pet; it resets the animation only if that sequence still owns it. A newer
+Dance, Feed, Sleep or blocked animation retains its mode, start time, duration and
+completion timer when the hatch deadline or preload finishes. Regressions execute
+the real accepted Hatch handler and both release paths with all four newer modes.
+
 ## Validation and release
 
 The dedicated suites are `scripts/moonpet-refresh-audit-fixes.test.mjs` and

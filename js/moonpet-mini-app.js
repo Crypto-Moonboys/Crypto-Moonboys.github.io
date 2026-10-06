@@ -3221,6 +3221,7 @@
   function startHatchArtTransition(duration, nextSnapshot) {
     window.clearTimeout(hatchArtTransitionTimer);
     var transitionGeneration = ++hatchArtTransitionGeneration;
+    var hatchActionSequence = actionSequence;
     var transitionDuration = Math.max(1, Number(duration || hatchAnimationDuration()));
     hatchArtTransitionUntil = performance.now() + transitionDuration;
     hatchStageOnePreloadPromise = window.MoonpetBotArtLoader
@@ -3240,8 +3241,10 @@
         window.clearTimeout(releaseTimer);
         if (transitionGeneration === hatchArtTransitionGeneration) {
           hatchArtTransitionUntil = 0;
-          animationUntil = 0;
-          animationMode = sleepLatched ? 'sleep' : 'idle';
+          if (hatchActionSequence === actionSequence) {
+            animationUntil = 0;
+            animationMode = sleepLatched ? 'sleep' : 'idle';
+          }
           selectBotArtForState(state).catch(function (error) {
             console.info('[Moonpet] Stage 1 art selection failed after reveal', error);
           });
@@ -3365,11 +3368,12 @@
       var isHatchReveal = actionAccepted && beforePhase === 'egg' && afterPhase !== 'egg'
         && stateBeforeAction.pet && responseState.pet && stateBeforeAction.pet.pet_id === responseState.pet.pet_id
         && actionAnimationFamily(action, payload) === 'hatch';
-      var hatchDuration = isHatchReveal ? startHatchArtTransition(hatchAnimationDuration(), responseState) : 0;
+      var hatchDuration = isHatchReveal ? hatchAnimationDuration() : 0;
       if (!setStateSnapshot(responseState, requestGeneration, { deferBotArtSelection: isHatchReveal })) return;
       if (isHatchReveal) {
         animateAction(action, true, hatchDuration + 250, payload);
         animationUntil = Number.POSITIVE_INFINITY;
+        startHatchArtTransition(hatchDuration, responseState);
       }
       var nextState = state;
       var plannedCeremony = planLifecycleCeremony(stateBeforeAction, nextState, action, data.result);
