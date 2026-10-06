@@ -12,6 +12,7 @@ const productionAudio = gameHtml.match(/<audio id="moonpet-radio"[^>]*><\/audio>
 const preferences = client.slice(client.indexOf('  function readRadioPreference()'), client.indexOf('  // TEST-EXPORT: radioPlayback:start'));
 const controller = client.split('// TEST-EXPORT: radioPlayback:start')[1].split('// TEST-EXPORT: radioPlayback:end')[0];
 const animation = client.slice(client.indexOf('  function actionAnimationFamily('), client.indexOf('  function hatchArtTransitionActive('));
+const toolsRenderer = client.slice(client.indexOf('  function renderCanvasTools()'), client.indexOf('  function closeUtility()'));
 const listeners = client.slice(client.indexOf('  bindRadioGestureResume();'), client.indexOf('  function ensureAudio()'));
 const samples = 22050;
 const wav = Buffer.alloc(44 + samples * 2);
@@ -23,14 +24,15 @@ for (let i = 0; i < samples; i++) wav.writeInt16LE(Math.round(Math.sin(i * 440 *
 let streams = 0;
 const server = http.createServer((request, response) => {
   const url = new URL(request.url, 'http://localhost');
-  if (url.pathname === '/tone.wav') { streams++; response.writeHead(200, { 'Content-Type': 'audio/wav' }); return response.end(wav); }
+  if (url.pathname === '/tone.wav') { streams++; const send = () => { response.writeHead(200, { 'Content-Type': 'audio/wav' }); response.end(wav); }; if (url.searchParams.has('slow')) return setTimeout(send, 4500); return send(); }
   if (url.pathname === '/broken') { streams++; response.writeHead(503); return response.end('unavailable'); }
   response.setHeader('Content-Type', 'text/html');
-  response.end(`<!doctype html><button id="normal">Open section</button><button id="radio" data-utility="radio">Radio</button><button id="audio" data-utility="audio">Audio</button><button id="dance" data-action="dance">Dance</button><button id="feed">Feed</button><output id="notice"></output><audio id="stream" preload="none" loop src="${url.searchParams.has('broken') ? '/broken' : '/tone.wav'}"></audio><script>
+  response.end(`<!doctype html><button id="normal">Open section</button><nav id="canvas-tools"><button id="radio" data-utility="radio">Radio<small>RADIO</small></button><button id="audio" data-utility="audio">Audio</button></nav><button id="dance" data-action="dance">Dance</button><button id="feed">Feed</button><output id="notice"></output><audio id="stream" preload="none" loop src="${url.searchParams.has('broken') ? '/broken' : url.searchParams.has('slow') ? '/tone.wav?slow=1' : '/tone.wav'}"></audio><script>
     var state = {}, radioPlayer = document.getElementById('stream');
     var radioRequestedOn = false, radioEnabled = false, radioRequestGeneration = 0, radioRetryNeedsLoad = false, radioNeedsGesture = false;
     function syncMoonpetScore() {} function haptic() {}
-    function renderCanvasTools() { document.getElementById('radio').dataset.enabled = String(radioEnabled); }
+    var canvasTools = document.getElementById('canvas-tools'), audioEnabled = false;
+    ${toolsRenderer}
     function tell(text) { document.getElementById('notice').textContent = text; }
     ${preferences}
     ${controller}
@@ -112,6 +114,23 @@ try {
     assert.deepEqual(danceErrors, []);
     await danceContext.close();
   }
+  for (const reducedMotion of ['no-preference', 'reduce']) {
+    const cold = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, reducedMotion });
+    await cold.addInitScript(() => localStorage.setItem('moonpet-radio-preference', 'off'));
+    const page = await cold.newPage(); await page.goto(base + '?slow=1');
+    await page.locator('#dance').tap();
+    await page.waitForFunction(() => danceState().now > 3800 && danceState().until === Infinity);
+    assert.equal(await page.locator('#radio small').textContent(), 'LOADING', 'slow connection has visible feedback');
+    assert.equal(await page.locator('#radio').getAttribute('aria-busy'), 'true');
+    await page.waitForFunction(() => radioState().enabled && document.getElementById('stream').currentTime > 0);
+    assert.ok(await page.evaluate(() => danceState().until - danceState().now > 3000), 'full audible pose begins after native media is ready');
+    assert.equal(await page.locator('#radio small').textContent(), 'RADIO');
+    await page.waitForFunction(() => !radioState().requested && danceState().paused);
+    if (reducedMotion === 'reduce') await page.waitForFunction(() => danceState().mode === 'idle');
+    assert.equal(await page.evaluate(() => localStorage.getItem('moonpet-radio-preference')), 'off');
+    await cold.close();
+  }
+  console.log('Native cold-stream Dance passed: 4.5-second server setup, held pose, visible loading, full audible dance and reduced-motion completion.');
   console.log('Native Dance radio passed: mobile trusted tap, exact pose deadline, reduced motion, saved Off, interrupted pose and manual override.');
   await browser.close(); browser = null;
   // When a browser permits autoplay, audio starts with no synthetic user action.
@@ -122,6 +141,7 @@ try {
   await broken.goto(base + '?broken=1'); await broken.waitForFunction(() => radioState().error);
   await broken.locator('#radio').click();
   await broken.waitForFunction(() => document.getElementById('notice').textContent.includes('FORMAT / 4'));
+  assert.equal(await broken.locator('#radio small').textContent(), 'RETRY', 'source failure stays visible on its control');
   assert.equal(await broken.evaluate(() => radioState().gesture), false, 'source errors are distinct from permission blocks');
   console.log('Native radio passed: permitted autoplay, mobile first tap, direct icon, remembered Off, source error diagnostics.');
   await browser.close(); browser = null;
@@ -164,7 +184,7 @@ try {
       if (url === 'https://stream.radiojar.com/2qm1fc5kb') {
         return route.fulfill({ status: 302, headers: { Location: 'http://n02.radiojar.com/2qm1fc5kb?rj-tok=fixture' } });
       }
-      assert.equal(url, 'https://moonboys-api.sercullen.workers.dev/radio/stream');
+      assert.equal(url, 'https://api.cryptomoonboys.com/radio/stream');
       const response = await worker.fetch(new Request(url), {}, {});
       return route.fulfill({ status: response.status, headers: Object.fromEntries(response.headers), body: Buffer.from(await response.arrayBuffer()) });
     });
@@ -177,7 +197,7 @@ try {
     } else {
       await page.waitForFunction(() => radioState().enabled && document.getElementById('stream').currentTime > 0);
       assert.equal(await page.locator('#notice').textContent(), 'GRAFFPUNKS RADIO LIVE.');
-      assert.deepEqual(mediaRequests, ['https://moonboys-api.sercullen.workers.dev/radio/stream'], 'no Radiojar redirect reaches the mobile player');
+      assert.deepEqual(mediaRequests, ['https://api.cryptomoonboys.com/radio/stream'], 'no Radiojar redirect reaches the mobile player');
       assert.deepEqual(upstreamRequests, ['https://stream.radiojar.com/2qm1fc5kb', 'https://n02.radiojar.com/2qm1fc5kb?rj-tok=fixture']);
       await page.locator('#radio').tap();
       assert.equal(await page.evaluate(() => radioState().enabled), false);

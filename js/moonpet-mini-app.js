@@ -397,12 +397,24 @@
 
   // TEST-EXPORT: radioPlayback:start
   var danceRadioSession = null;
+  var radioConnectionTimer = 0;
+  var radioStatus = 'off';
+  var RADIO_CONNECTION_TIMEOUT_MS = 15000;
+
+  function clearRadioConnectionTimer() {
+    window.clearTimeout(radioConnectionTimer);
+    radioConnectionTimer = 0;
+  }
 
   function releaseDanceRadio() {
     var session = danceRadioSession;
     if (!session) return null;
     window.clearTimeout(session.timer);
     danceRadioSession = null;
+    // Finish a held pose normally if playback fails or the user takes over.
+    if (session.waiting && session.animationSequence === actionSequence && animationMode === 'dance') {
+      animateAction('dance', true, session.duration);
+    }
     return session;
   }
 
@@ -432,13 +444,24 @@
     if (mode !== 'dance') { stopDanceRadio(); return; }
     window.clearTimeout(session.timer);
     session.animationSequence = sequence;
+    session.duration = Math.max(1, until - performance.now());
+    session.waiting = radioRequestedOn && !radioEnabled;
+    if (session.waiting) {
+      // A cold live stream may connect after the original 3.6-second pose.
+      // Keep the pose until playback begins; connection setup is bounded below.
+      animationUntil = Number.POSITIVE_INFINITY;
+      return;
+    }
     session.timer = window.setTimeout(function () {
       if (danceRadioSession === session && session.animationSequence === sequence) stopDanceRadio();
     }, Math.max(0, until - performance.now()));
   }
 
   function radioPlaybackFailed(error, announce) {
+    clearRadioConnectionTimer();
     var temporaryDance = Boolean(releaseDanceRadio());
+    radioStatus = 'error';
+    if (radioPlayer) radioPlayer.pause();
     radioRequestedOn = false;
     radioEnabled = false;
     radioNeedsGesture = !temporaryDance && Boolean(error && error.name === 'NotAllowedError');
@@ -447,12 +470,16 @@
     renderCanvasTools();
     var code = Number(radioPlayer && radioPlayer.error && radioPlayer.error.code || error && error.code || 0);
     var reason = ({ 1: 'INTERRUPTED', 2: 'NETWORK', 3: 'DECODE', 4: 'FORMAT' })[code];
-    if (announce !== false) tell(radioNeedsGesture
+    if (announce !== false || temporaryDance) tell(error && error.name === 'TimeoutError'
+      ? 'RADIO CONNECTION TIMED OUT. TAP THE RADIO ICON TO RETRY.'
+      : error && error.name === 'NotAllowedError'
       ? 'RADIO NEEDS A TAP. TAP THE RADIO ICON TO PLAY.'
       : 'RADIO CONNECTION LOST' + (reason ? ' [' + reason + ' / ' + code + ']' : '') + '. TAP THE RADIO ICON TO RECONNECT.', 'danger');
   }
 
   async function setRadioEnabled(on, announce, persistPreference) {
+    clearRadioConnectionTimer();
+    radioStatus = on ? 'loading' : 'off';
     radioRequestedOn = Boolean(on);
     radioNeedsGesture = false;
     var requestGeneration = ++radioRequestGeneration;
@@ -473,6 +500,12 @@
       // iOS/WebViews can lose media permission across an async module load.
       if (radioRetryNeedsLoad || player.error) player.load();
       var playback = player.play();
+      radioConnectionTimer = window.setTimeout(function () {
+        if (requestGeneration !== radioRequestGeneration || !radioRequestedOn || radioEnabled) return;
+        radioRequestGeneration += 1;
+        radioPlaybackFailed({ name: 'TimeoutError' }, announce);
+      }, RADIO_CONNECTION_TIMEOUT_MS);
+      if (announce !== false) tell('GRAFFPUNKS RADIO CONNECTING... TAP RADIO TO CANCEL.');
       syncMoonpetScore();
       renderCanvasTools();
       await playback;
@@ -480,7 +513,11 @@
         if (!radioRequestedOn) player.pause();
         return false;
       }
+      clearRadioConnectionTimer();
       radioEnabled = true;
+      radioStatus = 'live';
+      if (danceRadioSession && danceRadioSession.waiting && danceRadioSession.animationSequence === actionSequence
+          && animationMode === 'dance') animateAction('dance', true, danceRadioSession.duration);
       radioRetryNeedsLoad = false;
       if (persistPreference !== false) saveRadioPreference(true);
       syncMoonpetScore();
@@ -922,7 +959,7 @@
             "care"
       ],
       "dance": [
-            "Raise happiness and play the radio for this dance. It stops with the animation; the Radio control can override it. No XP or incubation signal.",
+            "Raise happiness and play the radio for this dance. The pose waits while radio connects, then ends with the music; the Radio control can override it. No XP or incubation signal.",
             "care"
       ],
       "cuddles": [
@@ -1294,7 +1331,10 @@
     audioButton.title = audioButton.getAttribute('aria-label');
     radioButton.setAttribute('aria-pressed', String(radioRequestedOn));
     radioButton.setAttribute('aria-busy', String(radioRequestedOn && !radioEnabled));
-    radioButton.setAttribute('aria-label', radioRequestedOn ? 'Stop GraffPUNKS Radio' : 'Play GraffPUNKS Radio');
+    radioButton.setAttribute('aria-label', radioStatus === 'loading' ? 'Connecting to GraffPUNKS Radio; tap to cancel'
+      : radioRequestedOn ? 'Stop GraffPUNKS Radio' : radioStatus === 'error' ? 'Retry GraffPUNKS Radio' : 'Play GraffPUNKS Radio');
+    var radioCaption = radioButton.querySelector('small');
+    if (radioCaption) radioCaption.textContent = radioStatus === 'loading' ? 'LOADING' : radioStatus === 'error' ? 'RETRY' : 'RADIO';
     radioButton.title = radioButton.getAttribute('aria-label');
   }
 
@@ -3598,7 +3638,7 @@
       window.clearTimeout(reducedMotionAnimationTimer);
       var sequence = actionSequence;
       drawWorld(performance.now());
-      if (!(sleepLatched && animationMode === 'sleep')) {
+      if (Number.isFinite(animationUntil)) {
         reducedMotionAnimationTimer = window.setTimeout(function () {
           if (sequence !== actionSequence) return;
           animationMode = sleepLatched ? 'sleep' : 'idle';

@@ -49,7 +49,7 @@ Each row below is the actual button registry. Payload-specific effects, costs, r
 | `sleep` | care | Restore energy now so your pet can keep playing. This is separate from timed Sleep in Work. |
 | `train` | spend | Spend energy to earn training rewards and build your pet’s progression. |
 | `energy_drink` | care | Restore energy without using a bag item. This Care action awards no XP. |
-| `dance` | care | Raise happiness and play the radio for this dance. It stops with the animation; the Radio control can override it. No XP or incubation signal. |
+| `dance` | care | Raise happiness and play the radio for this dance. The pose waits while radio connects, then ends with the music; the Radio control can override it. No XP or incubation signal. |
 | `cuddles` | care | Raise happiness with affection. This Care action awards no XP or incubation signal. |
 | `daily_chest` | claim | Collect today’s Daily Cache once per account. Check the displayed rewards and XP allowance. |
 | `buy_pet_slot` | spend | Spend the displayed Arcade XP to unlock this permanent space and create its egg. |
@@ -129,3 +129,7 @@ After publishing, open the Mini App from Telegram and inspect Home, Missions, Ex
 Dance now starts temporary radio playback in the original button gesture and stops at the actual dance animation deadline, including reduced motion. Replacing the pose, a rejected action or leaving the game stops temporary playback. The Radio control cancels the automatic timer and takes ownership. Temporary playback leaves the saved manual radio preference unchanged. A pending action has a bounded fallback and late playback or stale animation timers cannot restart or stop newer playback.
 
 This follow-up uses client and Telegram launch cache key `20261006-dance-radio-v1`; the unchanged stylesheet remains `20261006-option-guidance-v1`. The Worker change only updates its Telegram launch URL; no migration is needed. Regression coverage includes the shared action handler and native mobile media playback.
+
+## Radio connection follow-up
+
+A cold stream can take longer to connect than the short Dance pose. Dance now holds its pose while playback is connecting, with a 15-second connection limit, then runs the full audible pose before stopping the radio. A replacement action, failure or manual Radio override releases the held pose. The Radio control shows LOADING or RETRY and reports connection progress or failure. The stream uses the existing first-party production API, which already serves the live MP3. Client and launch cache key: `20261006-radio-connect-v1`; stylesheet unchanged. No migration or API route change. Physical Telegram playback remains to be confirmed after release.

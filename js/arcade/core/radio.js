@@ -13,7 +13,7 @@
  */
 
 // The relay keeps Radiojar's HTTP node redirects out of mobile media players.
-export const ARCADE_RADIO_URL = 'https://moonboys-api.sercullen.workers.dev/radio/stream';
+export const ARCADE_RADIO_URL = 'https://api.cryptomoonboys.com/radio/stream';
 export const ARCADE_RADIO_STORAGE_KEY = 'arcade_radio_on';
 const RADIO_URL       = ARCADE_RADIO_URL;
 const STORAGE_KEY     = ARCADE_RADIO_STORAGE_KEY;

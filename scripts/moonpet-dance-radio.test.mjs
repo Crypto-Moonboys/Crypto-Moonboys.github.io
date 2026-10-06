@@ -12,7 +12,7 @@ const flush = async () => { for (let i = 0; i < 6; i++) await Promise.resolve();
 
 function fixture({ reducedMotion = false, fast = true, stallPlay = false, reply, pending = false } = {}) {
   let now = 0, nextId = 0, gesture = false, resolveAction;
-  const timers = new Map(), attempts = [], requests = [], saved = [], handlers = {};
+  const timers = new Map(), attempts = [], requests = [], saved = [], notices = [], handlers = {};
   const api = { setTimeout(fn, delay) { const id = ++nextId; timers.set(id, { fn, at: now + delay }); return id; },
     clearTimeout(id) { timers.delete(id); }, clearInterval() {}, addEventListener(name, fn) { handlers[name] = fn; } };
   const player = { error: null, paused: true, pauses: 0, loads: 0, play() {
@@ -33,7 +33,7 @@ function fixture({ reducedMotion = false, fast = true, stallPlay = false, reply,
     actionSequence: 0, actionStartedAt: 0, sleepLatched: false, reducedMotion,
     reducedMotionAnimationTimer: 0, scoreTimer: 0, audioEnabled: false, performanceSent: true,
     saveRadioPreference: value => saved.push(value), syncMoonpetScore() {}, renderCanvasTools() {},
-    haptic() {}, tell() {}, words: value => value, drawWorld() {},
+    haptic() {}, tell(message) { notices.push(message); }, words: value => value, drawWorld() {},
     lifecycleCeremonyActive: () => false, shouldUseFastActionResponse: () => fast, playOptionsReady: () => true,
     beginStateRequest: () => 1, stateRequestGate: { isCurrent: () => true }, crypto: { randomUUID: () => 'dance-request' },
     post(path, payload) { requests.push({ path, payload }); return mutation; },
@@ -53,15 +53,15 @@ function fixture({ reducedMotion = false, fast = true, stallPlay = false, reply,
     }
     now = end; await flush();
   };
-  return { ctx, timers, attempts, requests, saved, handlers, player, tap, tick, response, resolveAction: value => resolveAction(value || response) };
+  return { ctx, timers, attempts, requests, saved, notices, handlers, player, tap, tick, response, resolveAction: value => resolveAction(value || response) };
 }
 
 for (const reducedMotion of [false, true]) test(`Dance starts in the tap and stops at its actual pose deadline (reduced motion ${reducedMotion})`, async () => {
   const f = fixture({ reducedMotion });
   const work = f.tap();
   assert.equal(f.attempts.length, 1); assert.equal(f.attempts[0].gesture, true);
-  assert.equal(f.ctx.animationMode, 'dance'); assert.equal(f.ctx.animationUntil, 3600);
-  await work; assert.equal(f.ctx.radioEnabled, true);
+  assert.equal(f.ctx.animationMode, 'dance'); assert.equal(f.ctx.animationUntil, Infinity);
+  await work; assert.equal(f.ctx.radioEnabled, true); assert.equal(f.ctx.animationUntil, 3600);
   await f.tick(3599); assert.equal(f.player.paused, false);
   await f.tick(1); assert.equal(f.player.paused, true); assert.equal(f.ctx.radioRequestedOn, false);
   if (reducedMotion) assert.equal(f.ctx.animationMode, 'idle');
@@ -122,16 +122,58 @@ test('rejected and unconfirmed Dance responses stop temporary playback without r
   }
 });
 
-test('late media success cannot restart radio after the dance deadline', async () => {
-  const f = fixture({ stallPlay: true }); await f.tap(); await f.tick(3600);
+for (const reducedMotion of [false, true]) test(`cold stream gets a full audible dance after connection (reduced motion ${reducedMotion})`, async () => {
+  const f = fixture({ stallPlay: true, reducedMotion }); await f.tap();
+  await f.tick(5000);
+  assert.equal(f.ctx.animationMode, 'dance'); assert.equal(f.ctx.animationUntil, Infinity);
+  assert.equal(f.ctx.radioRequestedOn, true, 'the short pose deadline must not abort a slow connection');
   f.attempts[0].resolve(); await flush();
-  assert.equal(f.ctx.radioEnabled, false); assert.equal(f.player.paused, true); assert.deepEqual(f.saved, []);
+  assert.equal(f.ctx.radioEnabled, true); assert.equal(f.ctx.animationUntil, 8600);
+  await f.tick(3599); assert.equal(f.player.paused, false);
+  await f.tick(1); assert.equal(f.ctx.radioEnabled, false); assert.equal(f.player.paused, true);
+  if (reducedMotion) assert.equal(f.ctx.animationMode, 'idle');
+  assert.deepEqual(f.saved, []);
+});
+
+test('a hung stream times out visibly and cannot revive after a late success', async () => {
+  const f = fixture({ stallPlay: true, reducedMotion: true }); await f.tap();
+  await f.tick(15000);
+  assert.equal(f.ctx.radioRequestedOn, false); assert.equal(f.ctx.radioStatus, 'error');
+  assert.equal(f.player.paused, true); assert.ok(Number.isFinite(f.ctx.animationUntil));
+  assert.match(f.notices.at(-1), /TIMED OUT/);
+  f.attempts[0].resolve(); await flush(); assert.equal(f.ctx.radioEnabled, false);
+  await f.tick(3600); assert.equal(f.ctx.animationMode, 'idle'); assert.equal(f.timers.size, 0);
+});
+
+test('a manual radio connection reports loading and times out without saving Off', async () => {
+  const f = fixture({ stallPlay: true }); f.ctx.toggleRadio();
+  assert.equal(f.ctx.radioStatus, 'loading'); assert.match(f.notices.at(-1), /CONNECTING/);
+  await f.tick(15000); assert.equal(f.ctx.radioStatus, 'error'); assert.match(f.notices.at(-1), /TIMED OUT/);
+  assert.deepEqual(f.saved, []); f.attempts[0].resolve(); await flush(); assert.equal(f.ctx.radioEnabled, false);
+});
+
+test('another action during connection releases the held dance and ignores late playback', async () => {
+  const f = fixture({ stallPlay: true }); await f.tap(); await f.tick(1000);
+  f.ctx.animateAction('feed', true, 2800);
+  f.attempts[0].resolve(); await flush();
+  assert.equal(f.ctx.animationMode, 'feed'); assert.equal(f.ctx.animationUntil, 3800);
+  assert.equal(f.ctx.radioRequestedOn, false); assert.equal(f.player.paused, true);
+});
+
+test('manual override during connection cannot leave a held pose or inherit its auto-stop', async () => {
+  const f = fixture({ stallPlay: true, reducedMotion: true }); await f.tap(); await f.tick(5000);
+  await f.ctx.toggleRadio(); assert.ok(Number.isFinite(f.ctx.animationUntil));
+  const manual = f.ctx.toggleRadio(); f.attempts[1].resolve(); await manual;
+  f.attempts[0].resolve(); await flush(); await f.tick(3600);
+  assert.equal(f.ctx.radioEnabled, true); assert.equal(f.ctx.animationMode, 'idle');
+  assert.deepEqual(f.saved, [false, true]);
 });
 
 test('temporary playback failure cannot arm unrelated first-tap autoplay', async () => {
   const f = fixture({ stallPlay: true }); await f.tap();
   f.attempts[0].reject(Object.assign(new Error('blocked'), { name: 'NotAllowedError' })); await flush();
   assert.equal(f.ctx.radioNeedsGesture, false); assert.equal(f.ctx.radioRequestedOn, false);
+  assert.match(f.notices.at(-1), /RADIO NEEDS A TAP/);
   f.ctx.resumeRadioOnGesture({ type: 'click', isTrusted: true });
   assert.equal(f.attempts.length, 1); assert.equal(f.timers.size, 0); assert.deepEqual(f.saved, []);
 });
