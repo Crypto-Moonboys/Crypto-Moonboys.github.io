@@ -621,7 +621,9 @@ try {
         const summary = node.querySelector(':scope > summary');
         return summary && summary.querySelector('.panel-icon').textContent && summary.querySelector('.panel-description').textContent && node.getBoundingClientRect().right <= innerWidth;
       })), 'all sections have accessible summaries, icons, descriptions and fit mobile');
-      assert.equal(await page.locator('#screen > details[open]').count(), section === 'home' ? 1 : 0, 'only Home Recommended starts expanded');
+      const expectedOpenPanels = section === 'home' ? ['pet-spaces','recommended'] : section === 'profile' ? ['pet-spaces'] : [];
+      const openPanels = await page.locator('#screen > details[open]').evaluateAll(nodes=>nodes.map(node=>node.dataset.panel).sort());
+      assert.deepEqual(openPanels,expectedOpenPanels,'pet selection is visible while unrelated detail panels start collapsed');
       if (viewport.width === 390) await page.screenshot({ path: path.join(screenshotDirectory, `moonpet-sections-${section}.png`) });
     }
     await page.locator('[data-screen="home"]').click();
