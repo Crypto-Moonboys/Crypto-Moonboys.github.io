@@ -4,7 +4,7 @@ import worker from '../workers/moonboys-api/deployment-entry.js';
 import { handleRadioStream } from '../workers/moonboys-api/routes/radio-stream.js';
 
 const entry = 'https://stream.radiojar.com/2qm1fc5kb';
-const relay = 'https://moonboys-api.sercullen.workers.dev/radio/stream';
+const relay = 'https://api.cryptomoonboys.com/radio/stream';
 const request = (url = relay, options = {}) => new Request(url, options);
 const redirect = location => new Response(null, { status: 302, headers: { Location: location } });
 const audio = () => new Response(new Uint8Array([255, 251, 144, 100]), { headers: { 'Content-Type': 'audio/mpeg' } });
