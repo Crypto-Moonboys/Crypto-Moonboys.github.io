@@ -10,6 +10,7 @@ The deployed public Mini App JavaScript matched the base byte for byte (SHA-256 
 
 - Bare action labels made outcomes hard to predict. All 69 rendered action keys now have a visible purpose sentence, with contextual descriptions for abandoned Contracts, saved run delivery, activity recovery, wider Arena matchmaking and notification changes.
 - Claims, resource spending, committed choices and irreversible or risky actions lacked consistent emphasis. Text badges accompany color: CLAIM READY, CHECK COST, COMMIT CHOICE, REVIEW RISK and UNAVAILABLE. The current availability, costs, reward previews and payloads remain attached to the same button.
+- Screen reader descriptions now reference the actual purpose and live requirements text, including prices, rewards, changing cooldowns and disabled reasons. Legacy red styling no longer classifies reversible alerts or queue controls as risky; abandoned Contracts remain explicit forfeitures.
 - Disabled text was too faint. Disabled buttons keep a readable purpose and their server-driven lock reason; uncertain saves consistently show REFRESH REQUIRED, including egg actions.
 - Menu routes looked like gameplay actions. Routes now say OPEN [MENU] // NO COST and explain what the destination contains. The six dock tabs have short purpose labels; Audio, Radio and Refresh have visible labels beside their icons.
 - Immediate Sleep and background Sleep were easy to confuse. Immediate Sleep restores energy now; Work timers explain duration previews and returning to claim. Stat-only Energy Drink is distinguished from consuming a bag item.
@@ -110,9 +111,9 @@ Each row below is the actual button registry. Payload-specific effects, costs, r
 
 ## Validation
 
-- 69 action descriptions exercised through the real button renderer; 77 purpose, payload, availability, escaping and consequence regressions passed.
-- Full non-browser Moonpet suite: 69 test files, 1,258 passed, zero failures or skips.
-- Actual browser fixture flows passed at 390×844 and 360×640 across all six screens, including keyboard disclosure controls, saved/recovered rewards, Contracts, Daily Run, bosses, crafting, market capacity, pet spaces, busy/energy locks and combat. New checks require button purpose, badge and accessible descriptions in every screen, NO COST navigation, and wrapping within mobile buttons.
+- 69 action descriptions exercised through the real button renderer; 79 purpose, payload, availability, escaping and consequence regressions passed.
+- Full non-browser Moonpet suite: 69 test files, 1,260 passed, zero failures or skips.
+- Actual browser fixture flows passed at 390×844 and 360×640 across all six screens, including keyboard disclosure controls, saved/recovered rewards, Contracts, Daily Run, bosses, crafting, market capacity, pet spaces, busy/energy locks and combat. New checks require button purpose, badge and accessible descriptions in every screen, NO COST navigation, wrapping within mobile buttons, valid purpose/requirements description references and actual browser accessibility-tree announcements.
 - Browser art recovery now waits for its authoritative save response and replacement render before interacting; this removes a fixture race against the full refresh.
 - Domain-runner registration, JavaScript syntax and whitespace checks passed. The PR records final-head CI separately.
 

@@ -24,7 +24,7 @@ const actions = Object.keys(context().button.guidance);
 for (const action of actions) test(`${action}: real button explains the action and preserves its payload`, () => {
   const ctx = context(), payload = { source_id: 'saved&"pet', amount: 17 };
   const html = ctx.button('VISIBLE OPTION', action, payload, { detail: 'LIVE COST 17 GOLD // LIVE REWARD 4 XP' });
-  assert.match(html, /class="button-purpose">[^<]+<\/span>/);
+  assert.match(html, /class="button-purpose"[^>]*>[^<]+<\/span>/);
   assert.match(html, /aria-label="VISIBLE OPTION"/);
   assert.match(html, /aria-description="[^"<>]+"/);
   assert.match(html, /LIVE COST 17 GOLD \/\/ LIVE REWARD 4 XP/);
@@ -115,4 +115,41 @@ test('care and delayed work controls distinguish their stat and reward effects',
   assert.match(ctx.button('DRINK', 'energy_drink'), /without using a bag item/);
   assert.match(ctx.button('USE', 'use_item'), /Consume one bag item/);
   assert.match(ctx.button('HATCH', 'hatch'), /hidden until Stage 3/);
+});
+
+
+test('accessible descriptions reference purpose plus live price, reward, cooldown and lock text', () => {
+  const ctx = context();
+  const renders = [
+    ctx.button('BUY', 'market_buy', {}, { detail: '17 GOLD // REWARD 2 ITEMS' }),
+    ctx.button('TRAIN', 'train', {}, { disabled: true, detail: 'Requires 18 energy' }),
+    ctx.button('FEED', 'feed', {}, { disabled: true, cooldown: { remaining_seconds: 120 } }),
+    ctx.button('PLAY', 'play'),
+  ];
+  const seen = new Set();
+  for (const html of renders) {
+    const refs = html.match(/aria-describedby="([^"]+)"/)[1].split(' ');
+    assert.equal(refs.length, html.includes('button-requirements') ? 2 : 1);
+    for (const ref of refs) {
+      assert.ok(html.includes('id="' + ref + '"'), 'accessible description must target real text');
+      assert.ok(!seen.has(ref), 'repeated renders need unique description IDs');
+      seen.add(ref);
+    }
+    assert.ok(refs[0].endsWith('-purpose'));
+    if (refs.length === 2) assert.ok(refs[1].endsWith('-requirements'));
+  }
+  assert.match(renders[0], /id="[^"]+-requirements">Ready now \/\/ 17 GOLD \/\/ REWARD 2 ITEMS/);
+  assert.match(renders[1], /id="[^"]+-requirements">LOCKED \/\/ Requires 18 energy/);
+  assert.match(renders[2], /id="[^"]+-requirements"><span data-cooldown-expires-at/);
+});
+
+test('legacy danger styling does not turn reversible management into semantic risk', () => {
+  const ctx = context();
+  for (const action of ['notification_set', 'arena_queue_cancel', 'kaiju_queue_cancel', 'kaiju_match_cancel']) {
+    const html = ctx.button('CANCEL', action, { enabled: false }, { danger: true });
+    assert.match(html, /action-manage/);
+    assert.doesNotMatch(html, /action-risk|REVIEW RISK| danger"/);
+  }
+  assert.match(ctx.button('ABANDON', 'contract_step', { choice: 'abandon' }), /action-risk/);
+  for (const action of ['delete_pet_slot', 'arena_forfeit', 'activity_cancel', 'event_close', 'trade']) assert.match(ctx.button('OPTION', action), /REVIEW RISK/);
 });

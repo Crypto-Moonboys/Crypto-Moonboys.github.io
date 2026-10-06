@@ -682,8 +682,10 @@ try {
       const controlGuidance = await page.locator('#screen [data-action]').evaluateAll(nodes => nodes.map(node => ({
         action: node.dataset.action, purpose: node.querySelector('.button-purpose')?.textContent,
         badge: node.querySelector('.button-state')?.textContent, label: node.getAttribute('aria-label'), description: node.getAttribute('aria-description'),
+        descriptionRefsValid: String(node.getAttribute('aria-describedby') || '').split(' ').filter(Boolean).every(id => node.contains(document.getElementById(id))),
+        requirementsDescribed: !node.querySelector('.button-requirements') || String(node.getAttribute('aria-describedby') || '').split(' ').includes(node.querySelector('.button-requirements').id),
       })));
-      assert.ok(controlGuidance.every(item => item.purpose && item.purpose.length > 30 && item.badge && item.label && item.description), `${section} real action buttons explain purpose and consequence`);
+      assert.ok(controlGuidance.every(item => item.purpose && item.purpose.length > 30 && item.badge && item.label && item.description && item.descriptionRefsValid && item.requirementsDescribed), `${section} real action buttons explain purpose and consequence`);
       assert.ok(await page.locator('#screen [data-jump]').evaluateAll(nodes => nodes.every(node => node.textContent.includes('NO COST') && node.querySelector('.button-purpose'))), `${section} menu routes say they only navigate`);
       assert.equal(await page.locator('#nav small').count(), 6, 'all dock tabs have a visible purpose label');
       const expectedOpenPanels = section === 'home' ? ['pet-spaces','recommended'] : section === 'profile' ? ['pet-spaces'] : [];
@@ -695,6 +697,16 @@ try {
     const savedOpen = await page.locator('#screen > details.panel').evaluateAll(nodes => nodes.map(node => node.open));
     await page.locator('#screen > details.panel').evaluateAll(nodes => nodes.forEach(node => { node.open = true; }));
     assert.ok(await page.locator('#screen .action-button').evaluateAll(nodes => nodes.every(node => node.scrollWidth <= node.clientWidth + 1)), 'purpose and cost text stays inside real mobile buttons');
+    const descriptionSelector = '#screen [data-action][aria-describedby*="-requirements"]';
+    const descriptionText = await page.locator(descriptionSelector).first().evaluate(node => ({ purpose: node.querySelector('.button-purpose').textContent, requirements: node.querySelector('.button-requirements').textContent }));
+    const accessibilitySession = await page.context().newCDPSession(page);
+    const { root: accessibilityRoot } = await accessibilitySession.send('DOM.getDocument');
+    const { nodeId: describedButton } = await accessibilitySession.send('DOM.querySelector', { nodeId: accessibilityRoot.nodeId, selector: descriptionSelector });
+    const { nodes: accessibilityNodes } = await accessibilitySession.send('Accessibility.getPartialAXTree', { nodeId: describedButton, fetchRelatives: false });
+    const accessibleDescription = accessibilityNodes.find(node => node.role?.value === 'button')?.description?.value || '';
+    const normalizedDescription = accessibleDescription.replace(/\s+/g, ' ');
+    assert.ok(normalizedDescription.includes(descriptionText.purpose.replace(/\s+/g, ' ')) && normalizedDescription.includes(descriptionText.requirements.replace(/\s+/g, ' ')), 'browser accessibility tree announces purpose and actual live requirements');
+    await accessibilitySession.detach();
     if (viewport.width === 390 || viewport.width === 360) await page.screenshot({ path: path.join(screenshotDirectory, `moonpet-control-guidance-${viewport.width}.png`) });
     await page.locator('#screen > details.panel').evaluateAll((nodes, values) => nodes.forEach((node, index) => { node.open = values[index]; }), savedOpen);
     const careSummary = page.locator('[data-panel="care"] > summary');

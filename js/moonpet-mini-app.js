@@ -1138,8 +1138,11 @@
     var disabled = options && options.disabled;
     var help = button.guidance[action] || ['Review the displayed requirements and effect before committing this action.', 'choice'];
     var purpose = help[0];
-    var kind = options && options.danger ? 'risk' : help[1];
-    if (action === 'contract_step' && payload && payload.choice === 'abandon') purpose = 'Abandon this quest with no points or XP. Closing the app instead keeps it saved.';
+    var kind = help[1];
+    if (action === 'contract_step' && payload && payload.choice === 'abandon') {
+      purpose = 'Abandon this quest with no points or XP. Closing the app instead keeps it saved.';
+      kind = 'risk';
+    }
     if (action === 'run_extract' && state && state.guidance && state.guidance.active_run && state.guidance.active_run.settlement_pending) {
       purpose = 'Finish delivery of the saved boss result. No new room, fight or daily attempt.';
       kind = 'claim';
@@ -1154,10 +1157,12 @@
       if (activityPurpose[payload.activity_type]) purpose = activityPurpose[payload.activity_type] + '. Compare duration previews; return here to claim and end the timer.';
     }
     var badge = disabled ? 'UNAVAILABLE' : kind === 'claim' ? 'CLAIM READY' : kind === 'risk' ? 'REVIEW RISK' : kind === 'spend' ? 'CHECK COST' : kind === 'choice' ? 'COMMIT CHOICE' : 'READY';
+    var descriptionId = 'moonpet-action-description-' + (button.descriptionCount = (button.descriptionCount || 0) + 1);
     var detail = shouldShowAvailability(options)
-      ? '<small class="button-requirements">' + availabilityDetailMarkup(options) + '</small>'
+      ? '<small class="button-requirements" id="' + descriptionId + '-requirements">' + availabilityDetailMarkup(options) + '</small>'
       : '';
-    return '<button class="terminal-button action-button action-' + kind + (kind === 'risk' ? ' danger' : '') + '" type="button" data-action="' + escapeHtml(action) + '" data-payload="' + escapeHtml(JSON.stringify(payload || {})) + '" aria-label="' + escapeHtml(label) + '" aria-description="' + escapeHtml(purpose) + '"' + (disabled ? ' disabled' : '') + '>' + escapeHtml(label) + '<span class="button-state">' + badge + '</span><span class="button-purpose">' + escapeHtml(purpose) + '</span>' + detail + '</button>';
+    var describedBy = descriptionId + '-purpose' + (detail ? ' ' + descriptionId + '-requirements' : '');
+    return '<button class="terminal-button action-button action-' + kind + (kind === 'risk' ? ' danger' : '') + '" type="button" data-action="' + escapeHtml(action) + '" data-payload="' + escapeHtml(JSON.stringify(payload || {})) + '" aria-label="' + escapeHtml(label) + '" aria-description="' + escapeHtml(purpose) + '" aria-describedby="' + describedBy + '"' + (disabled ? ' disabled' : '') + '>' + escapeHtml(label) + '<span class="button-state">' + badge + '</span><span class="button-purpose" id="' + descriptionId + '-purpose">' + escapeHtml(purpose) + '</span>' + detail + '</button>';
   }
 
   var panelOpenState = Object.create(null);
