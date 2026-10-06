@@ -3768,17 +3768,20 @@ async function closeUnverifiedStreetEvent(db, owner, body) {
   const event = await db.prepare(`SELECT * FROM telegram_pet_events WHERE id=? AND telegram_id=? AND event_type='random_event'`)
     .bind(id, String(owner)).first().then(requirePetFirstReadResult);
   if (!event) return { accepted: false, reason: 'street_event_source_missing' };
-  if (event.status === 'cancelled' && event.reason === 'legacy_street_event_closed') return { accepted: true, duplicate: true, reason: event.reason };
+  if (event.status === 'cancelled' && (event.reason === 'legacy_street_event_closed'
+    || String(event.reason || '').startsWith('legacy_street_event_closed:'))) {
+    return { accepted: true, duplicate: true, reason: 'legacy_street_event_closed' };
+  }
   if (event.status !== 'pending' || readSavedStreetDecision(event)) return { accepted: false, reason: 'street_event_close_not_available' };
   // Closing is an explicit forfeiture, never a guessed reward/refund. Preserve
   // the old metadata, ordinal, XP and balances exactly; no slot is released.
   // A recorded claim of any status must instead recover through its source.
-  const result = await db.prepare(`UPDATE telegram_pet_events SET status='cancelled',reason='legacy_street_event_closed'
+  const result = await db.prepare(`UPDATE telegram_pet_events SET status='cancelled',reason='legacy_street_event_closed:' || COALESCE(reason,'')
     WHERE id=? AND telegram_id=? AND event_type='random_event' AND status='pending'
-      AND metadata IS ? AND xp_awarded=0 AND pet_xp_awarded=0
+      AND metadata IS ? AND reason IS ? AND xp_awarded=0 AND pet_xp_awarded=0
       AND NOT EXISTS (SELECT 1 FROM telegram_pet_reward_claims c WHERE c.telegram_id=telegram_pet_events.telegram_id
         AND c.source='pet_event' AND c.idempotency_key=telegram_pet_events.event_key)`)
-    .bind(id, String(owner), event.metadata).run().then(requirePetMutationResult);
+    .bind(id, String(owner), event.metadata, event.reason).run().then(requirePetMutationResult);
   if (!Number.isSafeInteger(result.meta?.changes) || result.meta.changes < 0 || result.meta.changes > 1) throw new Error('pet_state_write_unavailable');
   return result.meta.changes === 1
     ? { accepted: true, reason: 'legacy_street_event_closed', event_id: id, pet_id: event.pet_id, xp_awarded: 0, pet_xp_awarded: 0 }
@@ -10492,10 +10495,16 @@ async function buildPetMiniAppLiveState(db, telegramId, now = new Date()) {
     getActivePetActivitySession(db, telegramId, now).then(active => active || getRecoverablePetActivitySession(db, telegramId)),
   ]);
   const hydratedKaiju = await ensurePetKaijuMatchCategory(db, kaiju);
+  // Saved decisions can outlive an interrupted settlement while the match ID
+  // stays unchanged. Signal full recovery without expanding this read budget.
+  const recoveryNeeded = Boolean(arena?.status === 'active' && arena.player1_move_locked
+    && (arena.player2_move_locked || String(arena.player2_telegram_id) === 'app')
+    || hydratedKaiju?.status === 'selecting' && hydratedKaiju.player1_card_key
+      && (hydratedKaiju.mode === 'solo' ? hydratedKaiju.cpu_card_key : hydratedKaiju.player2_card_key));
   await assertPetProjectionSource(db, telegramId, selected);
   return {
     adopted: true, pet_id: selected.pet_id, season_key: selected.season_key,
-    hydration: { mode: 'live', full: false },
+    hydration: { mode: 'live', full: false }, recovery_needed: recoveryNeeded,
     arena: serializePetMiniAppArenaBattle(arena, telegramId), arena_queue: arenaQueue,
     arena_result: serializePetMiniAppArenaBattle(recentArena, telegramId),
     kaiju: {
@@ -15053,7 +15062,7 @@ export default {
 const SITE_URL = 'https://cryptomoonboys.com';
 const TELEGRAM_GAMES_MENU_URL = `${SITE_URL}/games/telegram/?v=20260903-games-shell-v8`;
 const TELEGRAM_GAMES_MENU_TEXT = 'Games';
-const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20261006-live-refresh-v1`;
+const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20261006-live-refresh-v2`;
 const PET_MEDIA_BASE_URL = `${SITE_URL}/img/pets`;
 const PET_MEDIA_MANIFEST = Object.freeze({
   feed: 'CRYPTO MOONBOYS PET FEED.jpg',

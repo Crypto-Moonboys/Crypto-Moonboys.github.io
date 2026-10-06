@@ -16,6 +16,8 @@ Any gameplay, documentation, or UI change affecting Moonpet status should refere
 
 ## Current rules and historical audits
 
+The [6 October refresh fixes](moonpet-refresh-fixes-2026-10-06.md#pr-1445-review-follow-up) coordinate care-action and passive reads. Activity disappearance, replacement or status changes require a full authoritative save before publishing care, XP or balances; readiness alone emits one notification. Live combat signals committed-but-unsettled moves/cards through `recovery_needed`, leaving full state responsible for ordered recovery. Explicit legacy-event closure preserves the original reservation reason and reward ordinal alongside the closure marker, without freeing a reward slot.
+
 The [1 October hard audit](moonpet-hard-audit-2026-10-01.md) records the live-surface cleanup, transactional deletion protections and remaining year-long pacing work.
 
 This reference and the seasonal model describe current rules. Dated audits are

@@ -49,6 +49,38 @@ test('a malformed retained outcome can be closed without rewriting its evidence'
   } finally { f.clock.restore(); f.sql.close(); }
 });
 
+for (const reason of ['repeat_reward_slot:3', 'repeat_reward_slot:3:energy_paid:4']) test(`closing a real ${reason} reservation retains its evidence and is idempotent`, async () => {
+  const f = setup('{"old_note":"original reservation has no synthetic ordinal"}');
+  try {
+    f.sql.prepare('UPDATE telegram_pet_events SET reason=? WHERE id=?').run(reason, f.event);
+    f.sql.prepare("INSERT INTO telegram_pet_repeat_reward_slots(telegram_id,day_key,mode,claimed_count) VALUES (?,'2026-10-01','event',3)").run(f.owner);
+    await f.state();
+    const original = f.sql.prepare('SELECT * FROM telegram_pet_events WHERE id=?').get(f.event), before = f.balances();
+    assert.equal((await httpAction(f, f.body)).body.result.accepted, true);
+    const closed = f.sql.prepare('SELECT * FROM telegram_pet_events WHERE id=?').get(f.event);
+    assert.equal(closed.reason, 'legacy_street_event_closed:' + reason);
+    assert.equal(closed.metadata, original.metadata); assert.equal(closed.status, 'cancelled');
+    assert.equal(f.balances(), before);
+    assert.equal((await httpAction(f, f.body)).body.result.duplicate, true);
+    assert.equal(f.sql.prepare('SELECT reason FROM telegram_pet_events WHERE id=?').get(f.event).reason, closed.reason);
+    assert.equal(f.balances(), before);
+  } finally { f.clock.restore(); f.sql.close(); }
+});
+
+test('a reservation reason changed concurrently cannot be overwritten by closure', async () => {
+  const f = setup('{}');
+  try {
+    f.sql.prepare("UPDATE telegram_pet_events SET reason='repeat_reward_slot:3' WHERE id=?").run(f.event);
+    f.db.beforeRun = s => {
+      if (s.query.includes("reason='legacy_street_event_closed:")) f.sql.prepare("UPDATE telegram_pet_events SET reason='repeat_reward_slot:4' WHERE id=?").run(f.event);
+    };
+    const result = await hooks.closeUnverifiedStreetEvent(f.db, f.owner, f.body);
+    assert.equal(result.accepted, false);
+    const saved = f.sql.prepare('SELECT status,reason FROM telegram_pet_events WHERE id=?').get(f.event);
+    assert.equal(saved.status, 'pending'); assert.equal(saved.reason, 'repeat_reward_slot:4');
+  } finally { f.clock.restore(); f.sql.close(); }
+});
+
 test('closing the unverified source releases its deletion blocker and retains the original event', async () => {
   const f = setup();
   try {
@@ -97,7 +129,7 @@ test('saved recoverable outcomes and outcomes saved concurrently cannot be close
     const f = setup(concurrent ? '{}' : saved);
     try {
       if (concurrent) f.db.beforeRun = s => {
-        if (s.query.includes("reason='legacy_street_event_closed'")) f.sql.prepare('UPDATE telegram_pet_events SET metadata=? WHERE id=?').run(saved,f.event);
+        if (s.query.includes("reason='legacy_street_event_closed:")) f.sql.prepare('UPDATE telegram_pet_events SET metadata=? WHERE id=?').run(saved,f.event);
       };
       assert.equal((await hooks.closeUnverifiedStreetEvent(f.db, f.owner, f.body)).accepted, false);
       assert.equal(f.sql.prepare('SELECT metadata FROM telegram_pet_events WHERE id=?').get(f.event).metadata, saved);

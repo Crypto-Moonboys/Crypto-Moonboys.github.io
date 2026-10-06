@@ -207,6 +207,7 @@ test('live polling preserves combat/activity projection with a small SQL budget'
   assert.ok(count <= MOONPET_D1_PERFORMANCE_BUDGETS.live_state_max_statements, `live polling executed ${count} statements`);
   assert.equal(live.pet_id, full.pet.pet_id);
   assert.equal(live.season_key, full.pet.season_key);
+  assert.equal(live.recovery_needed, false, 'ordinary live reads do not trigger full recovery');
   for (const key of ['arena', 'arena_queue', 'arena_result', 'kaiju']) assert.deepEqual(live[key], full[key]);
   assert.deepEqual(live.activity, full.guidance.activity);
   for (const key of ['pet', 'inventory', 'guidance', 'contracts', 'season_slots', 'leaderboard', 'cooldowns', 'live_systems']) {

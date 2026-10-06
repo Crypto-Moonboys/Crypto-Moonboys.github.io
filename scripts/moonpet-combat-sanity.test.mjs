@@ -346,6 +346,34 @@ test('refresh repairs a locked Arena move so the UI can offer the next round', a
   assert.equal(f.round().status,'resolved');
 });
 
+test('live polling flags an interrupted Arena settlement and full state unlocks its next round', async () => {
+  const f = await arenaFixture('arena-live-recovery');
+  try {
+    f.db.beforeRun = s => { if (s.query.includes('SET player2_move=?')) throw Error('cpu_move_unavailable'); };
+    await assert.rejects(f.move(), /cpu_move_unavailable/); f.db.beforeRun = null;
+    const live = await hooks.buildPetMiniAppLiveState(f.db, f.owner);
+    assert.equal(live.recovery_needed, true); assert.equal(live.arena.battle_id, f.id);
+    assert.equal(live.arena.own_move_locked, true); assert.equal(f.battle().current_round, 1);
+    await f.state();
+    const recovered = await hooks.buildPetMiniAppLiveState(f.db, f.owner);
+    assert.equal(recovered.recovery_needed, false); assert.equal(recovered.arena.current_round, 2);
+    assert.equal(recovered.arena.own_move_locked, false);
+    await f.state(); assert.equal(f.battle().current_round, 2);
+  } finally { f.sql.close(); }
+});
+
+test('multiplayer Arena flags recovery only after both players have saved their moves', async () => {
+  const f = await arenaFixture('arena-live-wait');
+  try {
+    f.sql.prepare("UPDATE telegram_pet_arena_battles SET player2_telegram_id='other-live-player' WHERE battle_id=?").run(f.id);
+    f.sql.prepare("UPDATE telegram_pet_arena_rounds SET player1_move='ab' WHERE battle_id=? AND round_number=1").run(f.id);
+    assert.equal((await hooks.buildPetMiniAppLiveState(f.db, f.owner)).recovery_needed, false);
+    f.sql.prepare("UPDATE telegram_pet_arena_rounds SET player2_move='ab' WHERE battle_id=? AND round_number=1").run(f.id);
+    assert.equal((await hooks.buildPetMiniAppLiveState(f.db, f.owner)).recovery_needed, true);
+    assert.equal(f.battle().current_round, 1, 'a live read signals recovery without settling combat');
+  } finally { f.sql.close(); }
+});
+
 for (const surface of ['refresh', 'start']) test(`Arena ${surface} cannot expire an unfinished saved move during an outage`, async () => {
   const f = await arenaFixture('arena-timeout-' + surface);
   f.sql.prepare('UPDATE telegram_pet_arena_battles SET max_rounds=1 WHERE battle_id=?').run(f.id);
@@ -571,6 +599,39 @@ async function kaijuFixture(owner) {
   f.match=()=>f.sql.prepare('SELECT * FROM telegram_pet_kaiju_matches WHERE match_id=?').get(f.id);
   return f;
 }
+
+test('live polling flags interrupted Kaiju settlement and full state pays it exactly once', async () => {
+  const f = await kaijuFixture('kaiju-live-recovery');
+  try {
+    f.sql.exec("CREATE TRIGGER fail_kaiju_live_ending BEFORE UPDATE OF status ON telegram_pet_kaiju_matches WHEN NEW.status='completed' BEGIN SELECT RAISE(ABORT,'ending_unavailable'); END");
+    await assert.rejects(f.card(), /ending_unavailable/);
+    f.sql.exec('DROP TRIGGER fail_kaiju_live_ending');
+    const saved = f.match(), live = await hooks.buildPetMiniAppLiveState(f.db, f.owner);
+    assert.equal(live.recovery_needed, true); assert.equal(live.kaiju.match.match_id, f.id);
+    assert.equal(live.kaiju.match.own_card_locked, true); assert.equal(f.match().status, 'selecting');
+    assert.equal(live.kaiju.match.opponent_card_key, null, 'the signal does not reveal the hidden card');
+    await f.state();
+    assert.equal(f.match().status, 'completed');
+    assert.equal(f.match().cpu_card_key, saved.cpu_card_key); assert.equal(f.match().category_key, saved.category_key);
+    const paid = f.sql.prepare("SELECT * FROM telegram_pet_reward_claims WHERE source='pet_kaiju'").all();
+    assert.equal(paid.length, 1);
+    assert.equal((await hooks.buildPetMiniAppLiveState(f.db, f.owner)).recovery_needed, false);
+    await f.state(); assert.deepEqual(f.sql.prepare("SELECT * FROM telegram_pet_reward_claims WHERE source='pet_kaiju'").all(), paid);
+  } finally { f.sql.close(); }
+});
+
+test('multiplayer Kaiju flags recovery only after both players have saved their cards', async () => {
+  const f = await kaijuFixture('kaiju-live-wait');
+  try {
+    f.sql.prepare("UPDATE telegram_pet_kaiju_matches SET mode='group',player2_telegram_id='other-live-player',cpu_card_key=NULL,player1_card_key=? WHERE match_id=?")
+      .run(hooks.PET_KAIJU_CARDS[0].id, f.id);
+    assert.equal((await hooks.buildPetMiniAppLiveState(f.db, f.owner)).recovery_needed, false);
+    f.sql.prepare('UPDATE telegram_pet_kaiju_matches SET player2_card_key=? WHERE match_id=?').run(hooks.PET_KAIJU_CARDS[1].id, f.id);
+    const live = await hooks.buildPetMiniAppLiveState(f.db, f.owner);
+    assert.equal(live.recovery_needed, true); assert.equal(live.kaiju.match.opponent_card_key, null);
+    assert.equal(f.match().status, 'selecting');
+  } finally { f.sql.close(); }
+});
 for(const recovery of ['retry','refresh']) test(`Kaiju ${recovery} finishes a saved card after the ending write failed`,async()=>{
   const f=await kaijuFixture('kaiju-locked-'+recovery);
   f.sql.exec("CREATE TRIGGER fail_kaiju_ending BEFORE UPDATE OF status ON telegram_pet_kaiju_matches WHEN NEW.status='completed' BEGIN SELECT RAISE(ABORT,'ending_unavailable'); END");

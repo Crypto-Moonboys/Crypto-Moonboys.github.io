@@ -1705,7 +1705,7 @@
 
   async function refreshExpiredCooldownState() {
     if (!state || !state.adopted || cooldownRefreshFailures >= 3) return;
-    if (busy || noticesBusy || cooldownRefreshInFlight || passiveRefreshInFlight || seasonRefreshBusy || fullStateHydrationPromise) {
+    if (busy || noticesBusy || cooldownRefreshInFlight || passiveRefreshInFlight || fastActionStateRefreshInFlight || seasonRefreshBusy || fullStateHydrationPromise) {
       scheduleCooldownRefresh(1000);
       return;
     }
@@ -1823,7 +1823,7 @@
       scheduleFastActionStateRefresh(750);
       return;
     }
-    if (busy || noticesBusy) {
+    if (busy || noticesBusy || passiveRefreshInFlight || cooldownRefreshInFlight || seasonRefreshBusy) {
       scheduleFastActionStateRefresh(500);
       return;
     }
@@ -3552,10 +3552,11 @@
     var activityActive = state && state.guidance && state.guidance.activity;
     var relevant = activeScreen === 'explore' && multiplayerActive || activeScreen === 'work' && activityActive;
     var minimumDelay = multiplayerActive && activeScreen === 'explore' ? 4500 : 14000;
-    if (busy || noticesBusy || passiveRefreshInFlight || cooldownRefreshInFlight || seasonRefreshBusy || fullStateHydrationPromise
+    if (busy || noticesBusy || passiveRefreshInFlight || fastActionStateRefreshInFlight || cooldownRefreshInFlight || seasonRefreshBusy || fullStateHydrationPromise
       || !state || !state.adopted || !relevant || Date.now() - lastPassiveRefreshAt < minimumDelay) return;
     passiveRefreshInFlight = true;
     var before = multiplayerFingerprint(state);
+    var beforeActivity = state.guidance && state.guidance.activity;
     try {
       var requestGeneration = beginStateRequest();
       var data = await post('/telegram-pets/app/state', { mode: 'live' });
@@ -3576,7 +3577,11 @@
         legacyFull = true;
       }
       if (!merged) return;
-      var terminal = Boolean(state.arena && (!merged.arena || state.arena.battle_id !== merged.arena.battle_id)
+      var nextActivity = merged.guidance && merged.guidance.activity;
+      var activityChanged = Boolean((beforeActivity || nextActivity) && (!beforeActivity || !nextActivity
+        || beforeActivity.id !== nextActivity.id || beforeActivity.status !== nextActivity.status));
+      var terminal = Boolean(data.state.recovery_needed === true || activityChanged
+        || state.arena && (!merged.arena || state.arena.battle_id !== merged.arena.battle_id)
         || merged.arena_result && (!state.arena_result || merged.arena_result.battle_id !== state.arena_result.battle_id)
         || state.arena_queue && !merged.arena_queue && !merged.arena
         || state.kaiju && state.kaiju.match && (!(merged.kaiju && merged.kaiju.match)
@@ -3586,8 +3591,8 @@
       if (legacyFull) {
         if (!setStateSnapshot(merged, requestGeneration)) return;
       } else if (terminal) {
-        // Completed combat still needs the full ordered reward recovery and
-        // economic consistency checks before publishing new wallet/XP totals.
+        // Interrupted combat and changed/claimed activities need ordered full
+        // recovery before publishing their effects on wallet, care or XP.
         data = await post('/telegram-pets/app/state', stateRefreshPayload(state, activeScreen));
         if (!setStateSnapshot(data.state, requestGeneration)) return;
       } else {
@@ -3600,7 +3605,8 @@
       if (before !== after && activeScreen === 'explore') {
         tell('MULTIPLAYER STATE UPDATED.');
         haptic('light');
-      } else if (activeScreen === 'work' && state.guidance && state.guidance.activity && state.guidance.activity.ready) {
+      } else if (activeScreen === 'work' && state.guidance && state.guidance.activity && state.guidance.activity.ready
+        && (!beforeActivity || beforeActivity.id !== state.guidance.activity.id || !beforeActivity.ready)) {
         tell('TIMED ACTIVITY REWARD READY.');
         haptic('success');
       }
@@ -3617,7 +3623,7 @@
 
   async function refreshSeasonSnapshot(force) {
     var monotonicNow = performance.now();
-    if (busy || noticesBusy || seasonRefreshBusy || passiveRefreshInFlight || cooldownRefreshInFlight || fullStateHydrationPromise || !state || !state.adopted) return;
+    if (busy || noticesBusy || seasonRefreshBusy || passiveRefreshInFlight || fastActionStateRefreshInFlight || cooldownRefreshInFlight || fullStateHydrationPromise || !state || !state.adopted) return;
     if (!force && lastSeasonServerRefreshAt > 0 && monotonicNow - lastSeasonServerRefreshAt < 300000) return;
     seasonRefreshBusy = true;
     try {
