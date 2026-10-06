@@ -18,6 +18,7 @@ function clientContext() {
     fullStateHydrationFailures: 0, fullStateHydrationRetryDelayMs: 0, fullStateHydrationRetryTimer: 0, FULL_STATE_HYDRATION_MAX_AUTO_RETRIES: 3,
     cooldownRefreshFailures: 0, cooldownRefreshTimer: 0, lastCooldownRefreshKey: '', seasonSnapshotReceivedAt: 0, lastSeasonServerRefreshAt: 0,
     serverClockOffsetMs: 0, sleepLatched: false, reducedMotion: false, renderedPetId: 'pet-a', renderedPetName: 'A', requestedFocus: '', requestedFocusScreen: 'missions', SCREEN_ORDER: ['home','missions','explore','work','profile'],
+    AbortController,
     Date: { now: () => now, parse: Date.parse }, performance: { now: () => now }, screen: { scrollTop: 0, innerHTML: '' },
     window: { clearTimeout(id) { timers.delete(id); }, setTimeout(fn, delay) { const id = ++sequence; timers.set(id, { fn, delay, at: now + delay }); return id; } },
     document: { getElementById: () => null }, panel: (title, body) => title + body, routeButton: label => label,
@@ -28,7 +29,7 @@ function clientContext() {
     lifecycleCeremonyActive: () => false, FAST_ACTION_RESPONSE_ACTIONS: new Set(['feed', 'play', 'clean']),
     mergeActionResultCooldown: snapshot => snapshot, resultMessage: () => 'accepted', planLifecycleCeremony: () => null, startLifecycleCeremony() {},
     readSleepLatch: () => false, hatchArtTransitionActive: () => false, selectBotArtForState: async () => {}, serverNowMs: () => Date.now(),
-    post: (path, body) => new Promise((resolve, reject) => requests.push({ path, body, resolve, reject })),
+    post: (path, body, options) => new Promise((resolve, reject) => requests.push({ path, body, options, resolve, reject })),
   };
   vm.createContext(ctx);
   vm.runInContext(block('stateRequestGate'), ctx);
@@ -53,7 +54,7 @@ for (const path of ['manual', 'care', 'cooldown', 'action']) for (const target o
     const f = clientContext();
     const operation = path === 'manual' ? f.ctx.syncState() : path === 'care' ? f.ctx.refreshFastActionState()
       : path === 'action' ? f.ctx.runAction('buy', { item_key: 'moon_snack' }) : f.ctx.refreshExpiredCooldownState();
-    assert.equal(f.requests[0].body.mode || f.requests[0].body.state_mode, 'missions');
+    assert.equal(f.requests[0].body.mode || f.requests[0].body.state_mode, undefined, 'a ready full save must request full state');
     f.ctx.switchScreen(target);
     f.requests[0].resolve({ state: partial(), result: { accepted: true } }); await operation;
     await f.tick(0);
@@ -71,7 +72,8 @@ for (const path of ['manual', 'care', 'cooldown', 'action']) for (const target o
 }
 
 test('remaining on Missions keeps its lightweight projection without a full read', async () => {
-  const f = clientContext(), read = f.ctx.syncState();
+  const f = clientContext(); f.ctx.state = partial();
+  const read = f.ctx.syncState();
   f.requests[0].resolve({ state: partial() }); await read; await f.tick(0);
   assert.equal(f.requests.length, 1);
   assert.equal(f.timers.size, 0);
@@ -170,4 +172,72 @@ test('a late failed care read cannot restart retries after a newer accepted snap
   assert.equal(f.ctx.fastActionStateDirty, false);
   assert.equal(f.ctx.fastActionStateRefreshFailures, 0);
   assert.equal(f.timers.size, 0);
+});
+
+for (const path of ['manual', 'care', 'cooldown', 'action']) test(`${path}: Missions keeps every previously loaded tab ready`, async () => {
+  const f = clientContext();
+  const read = path === 'manual' ? f.ctx.syncState() : path === 'care' ? f.ctx.refreshFastActionState()
+    : path === 'action' ? f.ctx.runAction('buy', { item_key: 'moon_snack' }) : f.ctx.refreshExpiredCooldownState();
+  assert.equal(f.requests[0].body.mode || f.requests[0].body.state_mode, undefined);
+  f.requests[0].resolve({ state: full(), result: { accepted: true } }); await read;
+  for (const tab of ['home', 'missions', 'explore', 'work', 'profile']) {
+    f.ctx.switchScreen(tab);
+    assert.equal(f.ctx.stateNeedsScreenHydration(f.ctx.state, tab), false);
+    assert.match(f.ctx.screen.innerHTML, /READY/);
+  }
+  assert.equal(f.requests.length, 1, 'returning to loaded tabs starts no new state read');
+});
+
+test('Home warms all tabs with one shared full read while remaining usable', async () => {
+  const f = clientContext(); f.ctx.state = partial(); f.ctx.state.hydration.modules = []; f.ctx.activeScreen = 'home'; f.ctx.fastActionStateDirty = false;
+  f.ctx.queueBackgroundStateHydration(); f.ctx.queueBackgroundStateHydration();
+  assert.equal(f.timers.size, 1); assert.equal(f.requests.length, 0);
+  await f.tick(250);
+  assert.equal(f.requests.length, 1); assert.equal(f.requests[0].body.mode, undefined);
+  f.ctx.switchScreen('missions');
+  assert.equal(f.requests.length, 1, 'a tab shares the already running full read');
+  const read = f.ctx.fullStateHydrationPromise; f.requests[0].resolve({ state: full() }); await read;
+  for (const tab of ['missions','work','explore','profile']) f.ctx.switchScreen(tab);
+  assert.equal(f.requests.length, 1); assert.match(f.ctx.screen.innerHTML, /READY/);
+});
+
+for (const guard of ['busy','noticesBusy','passiveRefreshInFlight','cooldownRefreshInFlight','seasonRefreshBusy','fastActionStateRefreshInFlight','fastActionStateDirty']) test(`tab warmup yields to ${guard}`, async () => {
+  const f = clientContext(); f.ctx.state = partial(); f.ctx.activeScreen = 'home'; f.ctx.fastActionStateDirty = false; f.ctx[guard] = true;
+  f.ctx.queueBackgroundStateHydration(); await f.tick(250);
+  assert.equal(f.requests.length, 0);
+  f.ctx[guard] = false; await f.tick(250);
+  assert.equal(f.requests.length, 1);
+  const read = f.ctx.fullStateHydrationPromise; f.requests[0].resolve({ state: full() }); await read;
+});
+
+test('a newer action cancels speculative hydration and cannot install its late save', async () => {
+  const f = clientContext(); f.ctx.state = partial(); f.ctx.activeScreen = 'home'; f.ctx.fastActionStateDirty = false;
+  const read = f.ctx.hydrateFullState('home', { background: true });
+  // The real request gate cancels the signal; an ignoring transport still cannot publish.
+  const generation = f.ctx.beginStateRequest();
+  assert.equal(f.requests[0].options.signal.aborted, true);
+  const fresh = full(); fresh.pet.pet_id = 'new-pet';
+  f.ctx.setStateSnapshot(fresh, generation);
+  f.requests[0].resolve({ state: full() }); await read;
+  assert.equal(f.ctx.state.pet.pet_id, 'new-pet');
+  assert.equal(f.ctx.fullStateHydrationFailures, 0);
+  assert.equal(f.ctx.fullStateHydrationPromise, null);
+});
+
+test('failed Home warmup does not hide care or enter an automatic polling loop', async () => {
+  const f = clientContext(); f.ctx.state = partial(); f.ctx.activeScreen = 'home'; f.ctx.fastActionStateDirty = false;
+  const read = f.ctx.hydrateFullState('home', { background: true });
+  f.requests[0].reject(Error('offline')); await read;
+  f.ctx.queueBackgroundStateHydration(); await f.tick(1000);
+  assert.match(f.ctx.screen.innerHTML, /READY/); assert.equal(f.requests.length, 1); assert.equal(f.timers.size, 0);
+  f.ctx.switchScreen('profile');
+  const retry = f.ctx.fullStateHydrationPromise; f.requests[1].resolve({ state: full() }); await retry;
+  assert.match(f.ctx.screen.innerHTML, /READY/);
+});
+
+test('background warmup stops its idle wait when the player remains busy', async () => {
+  const f = clientContext(); f.ctx.state = partial(); f.ctx.activeScreen = 'home'; f.ctx.fastActionStateDirty = false; f.ctx.busy = true;
+  f.ctx.queueBackgroundStateHydration();
+  for (let tick = 0; tick < 20; tick++) await f.tick(250);
+  assert.equal(f.requests.length, 0); assert.equal(f.timers.size, 0);
 });

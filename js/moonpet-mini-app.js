@@ -585,7 +585,7 @@
   }
 
   // TEST-EXPORT: apiRequest:start
-  async function post(path, payload) {
+  async function post(path, payload, options) {
     if (!apiBase) throw new Error('API ENDPOINT DISABLED FOR THIS CONTEXT');
     if (authenticationFailure) {
       var expiredError = new Error('TELEGRAM SESSION EXPIRED. OPEN A FRESH SESSION FROM @WIKICOMSBOT.');
@@ -597,6 +597,20 @@
     timeoutError.code = 'request_timeout';
     var timeoutMs = path === '/telegram-pets/app/state' && payload && payload.mode === 'live' ? 30000 : 60000;
     var requestTimer;
+    var cancelRequest;
+    var signal = options && options.signal;
+    var cancelled = new Promise(function (_, reject) {
+      cancelRequest = function () {
+        var error = new Error('BACKGROUND STATE REQUEST SUPERSEDED');
+        error.code = 'request_superseded';
+        reject(error);
+        controller.abort();
+      };
+      if (signal) {
+        if (signal.aborted) cancelRequest();
+        else signal.addEventListener('abort', cancelRequest, { once: true });
+      }
+    });
     var deadline = new Promise(function (_, reject) {
       requestTimer = setTimeout(function () {
         reject(timeoutError);
@@ -606,7 +620,7 @@
     try {
       // The deadline covers fetch, body reads and all read-only retries. Racing
       // it also releases callers' guards if a transport ignores cancellation.
-      return await Promise.race([deadline, (async function () {
+      return await Promise.race([deadline, cancelled, (async function () {
         // State is safe to retry after a transient D1 read failure. Mutations
         // must never replay automatically after an unconfirmed response.
         var stateAttempts = path === '/telegram-pets/app/state' ? 3 : 1;
@@ -643,6 +657,7 @@
       }())]);
     } finally {
       clearTimeout(requestTimer);
+      if (signal) signal.removeEventListener('abort', cancelRequest);
     }
   }
   // TEST-EXPORT: apiRequest:end
@@ -1587,8 +1602,15 @@
   // TEST-EXPORT: stateRequestGate:start
   function createStateRequestGate() {
     var generation = 0;
+    var backgroundRequest = null;
     return {
+      setBackgroundRequest: function (controller) { backgroundRequest = controller; },
+      clearBackgroundRequest: function (controller) {
+        if (backgroundRequest === controller) backgroundRequest = null;
+      },
       begin: function () {
+        if (backgroundRequest) backgroundRequest.abort();
+        backgroundRequest = null;
         generation += 1;
         return generation;
       },
@@ -1614,9 +1636,25 @@
   }
 
   function stateRefreshPayload(snapshot, screenKey) {
-    if (screenKey === 'missions') return { mode: 'missions' };
+    if (screenKey === 'missions' && stateNeedsFullHydration(snapshot)) return { mode: 'missions' };
     if (screenKey && screenKey !== 'home') return {};
     return stateNeedsFullHydration(snapshot) ? { mode: 'core' } : {};
+  }
+
+  // Warm every tab after core Home is usable. One full projection is shared
+  // across tabs; newer actions/reads cancel this speculative request.
+  function queueBackgroundStateHydration(attempt) {
+    if (Number(attempt || 0) >= 20 || !state || !state.adopted || !stateNeedsFullHydration(state) || authenticationFailure
+      || fullStateHydrationPromise || fullStateHydrationRetryTimer || fullStateHydrationFailures) return;
+    fullStateHydrationRetryTimer = window.setTimeout(function () {
+      fullStateHydrationRetryTimer = 0;
+      if (!stateNeedsFullHydration(state) || authenticationFailure) return;
+      if (busy || noticesBusy || passiveRefreshInFlight || cooldownRefreshInFlight || seasonRefreshBusy || fastActionStateRefreshInFlight || fastActionStateDirty) {
+        queueBackgroundStateHydration(Number(attempt || 0) + 1);
+        return;
+      }
+      hydrateFullState(activeScreen, { background: true });
+    }, 250);
   }
 
   function queueActiveScreenHydration(delayMs) {
@@ -1635,7 +1673,8 @@
   }
 
   async function hydrateFullState(reason, options) {
-    if (!stateNeedsScreenHydration(state, reason || activeScreen)) return state;
+    var background = Boolean(options && options.background);
+    if (background ? !stateNeedsFullHydration(state) : !stateNeedsScreenHydration(state, reason || activeScreen)) return state;
     if (fullStateHydrationPromise) return fullStateHydrationPromise;
     window.clearTimeout(fullStateHydrationRetryTimer);
     fullStateHydrationRetryTimer = 0;
@@ -1645,10 +1684,13 @@
       fullStateHydrationRetryDelayMs = 0;
     }
     fullStateHydrationPromise = (async function () {
-      tell('LOADING ' + words(reason || activeScreen) + ' MODULE...');
+      if (!background) tell('LOADING ' + words(reason || activeScreen) + ' MODULE...');
       var requestGeneration = beginStateRequest();
+      var warmupController = background ? new AbortController() : null;
+      if (warmupController) stateRequestGate.setBackgroundRequest(warmupController);
       try {
-        var data = await post('/telegram-pets/app/state', reason === 'missions' ? { mode: 'missions' } : {});
+        var data = await post('/telegram-pets/app/state', !background && reason === 'missions' ? { mode: 'missions' } : {},
+          warmupController ? { signal: warmupController.signal } : undefined);
         if (!setStateSnapshot(data.state, requestGeneration)) return null;
         fastActionStateDirty = false;
         fullStateHydrationFailures = 0;
@@ -1656,17 +1698,19 @@
         var scrollTop = screen.scrollTop;
         render();
         screen.scrollTop = scrollTop;
-        await showPendingNotices();
+        if (!background) await showPendingNotices();
         applyRequestedFocus();
         return state;
       } catch (error) {
+        if (background && (!stateRequestGate.isCurrent(requestGeneration) || error.code === 'request_superseded')) return null;
         fullStateHydrationFailures += 1;
         var retryAfter = Math.max(0, Number(error && error.retryAfterSeconds || 0) * 1000);
         fullStateHydrationRetryDelayMs = retryAfter || Math.min(8000, 750 * Math.pow(2, Math.max(0, fullStateHydrationFailures - 1)));
-        tell(error.message || 'MODULE STATE FAILED', 'danger');
+        if (!background || activeScreen !== 'home') tell(error.message || 'MODULE STATE FAILED', 'danger');
         render();
         return null;
       } finally {
+        if (warmupController) stateRequestGate.clearBackgroundRequest(warmupController);
         fullStateHydrationPromise = null;
         var retryableScreen = stateNeedsScreenHydration(state, activeScreen);
         if (retryableScreen && fullStateHydrationFailures < FULL_STATE_HYDRATION_MAX_AUTO_RETRIES) {
@@ -3311,7 +3355,7 @@
         displayed_pet_id: stateBeforeAction && stateBeforeAction.pet && stateBeforeAction.pet.pet_id || null
       }, payload || {});
       if (fastResponse) requestPayload.response_mode = 'result_only';
-      else if (activeScreen === 'missions') requestPayload.state_mode = 'missions';
+      else if (activeScreen === 'missions' && stateNeedsFullHydration(stateBeforeAction)) requestPayload.state_mode = 'missions';
       var data = await post('/telegram-pets/app/action', requestPayload);
       if (!data || !data.result || typeof data.result.accepted !== 'boolean') throw new Error('ACTION RESPONSE UNCONFIRMED');
       var actionAccepted = Boolean(data.result && data.result.accepted);
@@ -4095,6 +4139,7 @@
         performanceFrames = 0; performanceSlowFrames = 0; performanceStartedAt = 0; performanceLastFrameAt = 0;
         render();
       }
+      if (activeScreen === 'home') queueBackgroundStateHydration();
       if (radioRequestedOn) setRadioEnabled(true, false);
       tell(state.adopted ? 'LIVE SAVE LOADED. CHOOSE A ROUTINE.' : homeNextLine());
       await typeBoot(['SIGNATURE VERIFIED', 'PLAYER SAVE LOADED', 'MOONPET OS READY'], { speed: 8, hold: 320 });
