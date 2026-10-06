@@ -11,6 +11,7 @@ const gameHtml = await fs.readFile('moonpet-game.html', 'utf8');
 const productionAudio = gameHtml.match(/<audio id="moonpet-radio"[^>]*><\/audio>/)[0].replace('id="moonpet-radio"', 'id="stream"');
 const preferences = client.slice(client.indexOf('  function readRadioPreference()'), client.indexOf('  // TEST-EXPORT: radioPlayback:start'));
 const controller = client.split('// TEST-EXPORT: radioPlayback:start')[1].split('// TEST-EXPORT: radioPlayback:end')[0];
+const animation = client.slice(client.indexOf('  function actionAnimationFamily('), client.indexOf('  function hatchArtTransitionActive('));
 const listeners = client.slice(client.indexOf('  bindRadioGestureResume();'), client.indexOf('  function ensureAudio()'));
 const samples = 22050;
 const wav = Buffer.alloc(44 + samples * 2);
@@ -25,7 +26,7 @@ const server = http.createServer((request, response) => {
   if (url.pathname === '/tone.wav') { streams++; response.writeHead(200, { 'Content-Type': 'audio/wav' }); return response.end(wav); }
   if (url.pathname === '/broken') { streams++; response.writeHead(503); return response.end('unavailable'); }
   response.setHeader('Content-Type', 'text/html');
-  response.end(`<!doctype html><button id="normal">Open section</button><button id="radio" data-utility="radio">Radio</button><button id="audio" data-utility="audio">Audio</button><output id="notice"></output><audio id="stream" preload="none" loop src="${url.searchParams.has('broken') ? '/broken' : '/tone.wav'}"></audio><script>
+  response.end(`<!doctype html><button id="normal">Open section</button><button id="radio" data-utility="radio">Radio</button><button id="audio" data-utility="audio">Audio</button><button id="dance" data-action="dance">Dance</button><button id="feed">Feed</button><output id="notice"></output><audio id="stream" preload="none" loop src="${url.searchParams.has('broken') ? '/broken' : '/tone.wav'}"></audio><script>
     var state = {}, radioPlayer = document.getElementById('stream');
     var radioRequestedOn = false, radioEnabled = false, radioRequestGeneration = 0, radioRetryNeedsLoad = false, radioNeedsGesture = false;
     function syncMoonpetScore() {} function haptic() {}
@@ -33,7 +34,14 @@ const server = http.createServer((request, response) => {
     function tell(text) { document.getElementById('notice').textContent = text; }
     ${preferences}
     ${controller}
+    var animationMode = 'idle', animationUntil = 0, actionSequence = 0, actionStartedAt = 0, sleepLatched = false;
+    var reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches, reducedMotionAnimationTimer = 0;
+    function drawWorld() {}
+    ${animation}
     ${listeners}
+    document.getElementById('dance').addEventListener('click', function () { startDanceRadio(); animateAction('dance', true, 3600); });
+    document.getElementById('feed').addEventListener('click', function () { animateAction('feed', true, 2400); });
+    window.danceState = () => ({ mode: animationMode, until: animationUntil, now: performance.now(), paused: radioPlayer.paused });
     document.getElementById('radio').addEventListener('click', toggleRadio);
     window.radioState = () => ({ enabled:radioEnabled, requested:radioRequestedOn, gesture:radioNeedsGesture, error:radioPlayer.error && radioPlayer.error.code });
     if (readRadioPreference()) setRadioEnabled(true, false);
@@ -74,6 +82,37 @@ try {
   await directPage.goto(base); await directPage.waitForFunction(() => radioState().gesture);
   await directPage.locator('#radio').click(); await directPage.waitForFunction(() => radioState().enabled);
   await direct.close();
+  for (const reducedMotion of ['no-preference', 'reduce']) {
+    const danceContext = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, reducedMotion });
+    await danceContext.addInitScript(() => localStorage.setItem('moonpet-radio-preference', 'off'));
+    const dancePage = await danceContext.newPage();
+    const danceErrors = []; dancePage.on('pageerror', error => danceErrors.push(error.message));
+    await dancePage.goto(base);
+    await dancePage.locator('#dance').tap();
+    await dancePage.waitForFunction(() => radioState().enabled && document.getElementById('stream').currentTime > 0);
+    assert.equal(await dancePage.evaluate(() => localStorage.getItem('moonpet-radio-preference')), 'off', 'Dance playback must not save a manual On preference');
+    assert.equal(await dancePage.evaluate(() => danceState().mode), 'dance');
+    await dancePage.waitForFunction(() => !radioState().requested && danceState().paused);
+    assert.ok(await dancePage.evaluate(() => danceState().now >= danceState().until), 'native playback stops at the real animation deadline');
+    if (reducedMotion === 'reduce') await dancePage.waitForFunction(() => danceState().mode === 'idle');
+    const beforeDanceReload = streams;
+    await dancePage.reload(); await dancePage.locator('#normal').tap();
+    assert.equal(await dancePage.evaluate(() => radioState().requested), false);
+    assert.equal(streams, beforeDanceReload, 'temporary Dance audio does not restart on reload or an unrelated tap');
+    await dancePage.locator('#dance').tap();
+    await dancePage.waitForFunction(() => radioState().enabled);
+    await dancePage.locator('#feed').tap();
+    assert.equal(await dancePage.evaluate(() => danceState().paused && !radioState().requested), true, 'replacement pose stops the stream');
+    await dancePage.locator('#dance').tap();
+    await dancePage.waitForFunction(() => radioState().enabled);
+    await dancePage.locator('#radio').tap(); // explicit Off releases the automatic timer
+    await dancePage.locator('#radio').tap(); // explicit On owns playback after Dance
+    await dancePage.waitForFunction(() => danceState().now >= danceState().until && radioState().enabled && !danceState().paused);
+    assert.equal(await dancePage.evaluate(() => localStorage.getItem('moonpet-radio-preference')), 'on');
+    assert.deepEqual(danceErrors, []);
+    await danceContext.close();
+  }
+  console.log('Native Dance radio passed: mobile trusted tap, exact pose deadline, reduced motion, saved Off, interrupted pose and manual override.');
   await browser.close(); browser = null;
   // When a browser permits autoplay, audio starts with no synthetic user action.
   browser = await chromium.launch({ ...launch, args: [...launch.args, '--autoplay-policy=no-user-gesture-required'] });

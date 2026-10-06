@@ -179,6 +179,7 @@ function hatchContext() {
   render() {}, resultMessage: () => 'accepted', showPendingNotices: async () => {},
   planLifecycleCeremony: () => null, startLifecycleCeremony() {},
   botArtIdentity: snapshot => ({ pet_id: snapshot.pet.pet_id }), hatchAnimationDuration: () => 3200,
+  syncDanceRadioAnimation() {},
   selectBotArtForState: async snapshot => { selected.push(snapshot); }, drawWorld: now => drawn.push(now),
   };
   vm.createContext(ctx);

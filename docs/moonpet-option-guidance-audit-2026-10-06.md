@@ -49,7 +49,7 @@ Each row below is the actual button registry. Payload-specific effects, costs, r
 | `sleep` | care | Restore energy now so your pet can keep playing. This is separate from timed Sleep in Work. |
 | `train` | spend | Spend energy to earn training rewards and build your pet’s progression. |
 | `energy_drink` | care | Restore energy without using a bag item. This Care action awards no XP. |
-| `dance` | care | Raise happiness with a dance. This Care action awards no XP or incubation signal. |
+| `dance` | care | Raise happiness and play the radio for this dance. It stops with the animation; the Radio control can override it. No XP or incubation signal. |
 | `cuddles` | care | Raise happiness with affection. This Care action awards no XP or incubation signal. |
 | `daily_chest` | claim | Collect today’s Daily Cache once per account. Check the displayed rewards and XP allowance. |
 | `buy_pet_slot` | spend | Spend the displayed Arcade XP to unlock this permanent space and create its egg. |
@@ -123,3 +123,9 @@ Each row below is the actual button registry. Payload-specific effects, costs, r
 Client, stylesheet and Telegram launch URL cache key: `20261006-option-guidance-v1`. The existing art loader, renderer and run module versions remain unchanged. GitHub Pages publishes the frontend after merge. Deploy `workers/moonboys-api` to update the Telegram bot's launch URL only; no API routes, gameplay rewards, auth, D1 schema or VPS runtime change. No D1 migration is needed. This audit does not merge or deploy the release.
 
 After publishing, open the Mini App from Telegram and inspect Home, Missions, Explore, Work, Economy and Profile: purpose text, live costs/locks, free navigation, claim and risk badges, audio/radio/refresh labels, and the active tab should all remain clear on a narrow screen. The account's saved pets and progression should remain unchanged.
+
+## Dance radio follow-up
+
+Dance now starts temporary radio playback in the original button gesture and stops at the actual dance animation deadline, including reduced motion. Replacing the pose, a rejected action or leaving the game stops temporary playback. The Radio control cancels the automatic timer and takes ownership. Temporary playback leaves the saved manual radio preference unchanged. A pending action has a bounded fallback and late playback or stale animation timers cannot restart or stop newer playback.
+
+This follow-up uses client and Telegram launch cache key `20261006-dance-radio-v1`; the unchanged stylesheet remains `20261006-option-guidance-v1`. The Worker change only updates its Telegram launch URL; no migration is needed. Regression coverage includes the shared action handler and native mobile media playback.

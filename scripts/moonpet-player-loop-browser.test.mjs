@@ -646,9 +646,9 @@ try {
       let inRadioTap = false;
       const originalListen = EventTarget.prototype.addEventListener;
       EventTarget.prototype.addEventListener = function (type, listener, options) {
-        if (this.id === 'canvas-tools' && type === 'click') {
+        if ((this.id === 'canvas-tools' || this.id === 'screen') && type === 'click') {
           return originalListen.call(this, type, function (event) {
-            inRadioTap = Boolean(event.target.closest('[data-utility="radio"]'));
+            inRadioTap = Boolean(event.target.closest('[data-utility="radio"], [data-action="dance"]'));
             try { return listener.call(this, event); } finally { inRadioTap = false; }
           }, options);
         }
@@ -774,6 +774,13 @@ try {
     await page.locator('[data-screen="home"]').click();
     assert.ok(await page.locator('#nav button').evaluateAll((buttons) => buttons.length === 6 && buttons.every((b) => b.getBoundingClientRect().right <= innerWidth && b.getBoundingClientRect().left >= 0)), 'all six navigation buttons must fit the viewport');
     for (const action of ['energy_drink', 'dance', 'cuddles']) assert.equal(await page.locator(`[data-panel="care"] [data-action="${action}"]`).count(), 1);
+    const dancesBefore = actions.filter(action => action === 'dance').length;
+    await page.locator('[data-panel="care"] [data-action="dance"]').click();
+    await page.waitForFunction(() => document.querySelector('[data-utility="radio"]').getAttribute('aria-pressed') === 'true');
+    await page.waitForFunction(() => document.querySelector('[data-utility="radio"]').getAttribute('aria-pressed') === 'false');
+    assert.equal(actions.filter(action => action === 'dance').length, dancesBefore + 1, 'Dance audio never repeats the gameplay mutation');
+    assert.equal(await page.evaluate(() => window.radioTapChecks.at(-1)), true, 'real rendered Dance button plays inside its trusted gesture');
+    assert.equal(await page.evaluate(() => localStorage.getItem('moonpet-radio-preference')), 'off', 'completed Dance keeps manual radio Off');
     for (const screen of ['work', 'economy']) {
       await page.locator(`[data-screen="${screen}"]`).click();
       assert.equal(await page.locator('#screen [data-action]:not([disabled])').count(), 0, 'egg must not advertise actions that require hatching: ' + screen);
