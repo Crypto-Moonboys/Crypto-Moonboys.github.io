@@ -346,8 +346,13 @@ try {
       assert.equal(await page.locator('[data-panel="module-loading"]').count(), 0);
     }
     assert.deepEqual(modes, ['core','full'], 'loaded tab navigation performs no additional state reads');
+    const renderedContracts = await page.locator('[data-panel="contracts"]').elementHandle();
+    const refreshedResponse = page.waitForResponse(response => response.url().endsWith('/telegram-pets/app/state') && response.request().method() === 'POST');
     await page.locator('[data-utility="sync"]').click();
-    await page.waitForFunction(() => document.querySelector('#terminal-output').textContent.includes('LIVE SAVE REFRESHED'));
+    const response = await refreshedResponse;
+    assert.equal(response.ok(), true);
+    assert.notEqual((await response.json()).state.hydration?.full, false);
+    await page.waitForFunction(node => !node.isConnected, renderedContracts, { timeout: 10000 });
     assert.deepEqual(modes, ['core','full','full'], 'Missions Refresh retains full state instead of discarding other tabs');
     await page.locator('[data-screen="economy"]').click();
     assert.equal(await page.locator('[data-panel="equipment"]').count(), 1);
