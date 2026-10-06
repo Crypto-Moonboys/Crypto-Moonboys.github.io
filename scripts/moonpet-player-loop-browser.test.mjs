@@ -2143,7 +2143,7 @@ try {
     await page.reload(); await page.waitForSelector('[data-panel="care"]');
     await page.locator('[data-screen="profile"]').click();
     await page.waitForSelector('[data-action="delete_pet_slot"]', { state: 'attached' });
-    await page.locator('[data-panel="season-slots"]').evaluate(node => { node.open = true; });
+    await page.locator('[data-panel="pet-spaces"]').evaluate(node => { node.open = true; });
     const deleteRequests = actions.filter(action => action === 'delete_pet_slot').length;
     const cancelledDialog = new Promise(resolve => page.once('dialog', async dialog => {
       assert.equal(dialog.type(), 'confirm');
@@ -2162,7 +2162,7 @@ try {
     assert.equal(deletionData.result.deleted_pet_id, deletionPet.pet_id);
     deletionSpaces[0]=deletionData.result.replacement_pet_id;
     assert.deepEqual(deletionData.result.season_slots.slots.map(slot=>slot.pet_id),deletionSpaces,'replacement stays in PET 1 while PET 2/3 stay in place');
-    await page.waitForFunction(() => document.querySelector('[data-panel="season-slots"]').textContent.includes('DELETED PET HISTORY'));
+    await page.waitForFunction(() => document.querySelector('[data-panel="pet-spaces"]').textContent.includes('DELETED PET HISTORY'));
     assert.deepEqual(sqlite.prepare('SELECT moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles WHERE telegram_id=?').get(currentUser), deletionWallet);
     assert.equal(sqlite.prepare('SELECT status FROM telegram_pet_instances WHERE pet_id=?').get(deletionPet.pet_id).status, 'archived');
     await page.reload(); await page.waitForSelector('[data-panel="care"]');
