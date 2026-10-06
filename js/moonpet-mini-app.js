@@ -839,12 +839,288 @@
   // TEST-EXPORT: playOptionsRecovery:end
 
   function button(label, action, payload, options) {
+    // One cached, local description per live action; no additional fetch or timer.
+    if (!button.guidance) button.guidance = {
+      "adopt": [
+            "Create your first Secret Bot once Arcade entry is unlocked. Your Arcade XP is kept.",
+            "progress"
+      ],
+      "incubate": [
+            "Add the selected care signal to your egg. Mix care types to prepare its breakout.",
+            "care"
+      ],
+      "hatch": [
+            "Start EGGYONE breakout when its signal is ready. Its identity stays hidden until Stage 3.",
+            "progress"
+      ],
+      "feed": [
+            "Reduce hunger and restore some energy so your pet is ready for more activities.",
+            "care"
+      ],
+      "play": [
+            "Spend some energy to raise happiness and earn capped care rewards.",
+            "care"
+      ],
+      "clean": [
+            "Raise cleanliness to keep your pet in good condition; this uses a little energy.",
+            "care"
+      ],
+      "sleep": [
+            "Restore energy now so your pet can keep playing. This is separate from timed Sleep in Work.",
+            "care"
+      ],
+      "train": [
+            "Spend energy to earn training rewards and build your pet’s progression.",
+            "spend"
+      ],
+      "energy_drink": [
+            "Restore energy without using a bag item. This Care action awards no XP.",
+            "care"
+      ],
+      "dance": [
+            "Raise happiness with a dance. This Care action awards no XP or incubation signal.",
+            "care"
+      ],
+      "cuddles": [
+            "Raise happiness with affection. This Care action awards no XP or incubation signal.",
+            "care"
+      ],
+      "daily_chest": [
+            "Collect today’s Daily Cache once per account. Check the displayed rewards and XP allowance.",
+            "claim"
+      ],
+      "buy_pet_slot": [
+            "Spend the displayed Arcade XP to unlock this permanent space and create its egg.",
+            "spend"
+      ],
+      "switch_pet_slot": [
+            "Make this saved pet active for care and new activities. Its existing progress is kept.",
+            "manage"
+      ],
+      "delete_pet_slot": [
+            "Permanently delete this pet after confirmation. Its training is lost; the owned space and account reward history stay.",
+            "risk"
+      ],
+      "contract_start": [
+            "Start this quest using your selected build, difficulty and route length. No pet energy cost; earn Contract rank.",
+            "progress"
+      ],
+      "contract_step": [
+            "Commit this saved quest choice. Compare its effect on route health, supplies and your goal before choosing.",
+            "choice"
+      ],
+      "contract_claim": [
+            "Finish delivery of a saved Contract XP bonus to its original pet. No new quest is needed.",
+            "claim"
+      ],
+      "daily_completion_claim": [
+            "Collect a saved daily 7/7 bonus. Complete and claim the daily missions to qualify.",
+            "claim"
+      ],
+      "finale_start": [
+            "Start the finale with this build when its requirements are met. Battle health is separate from pet energy.",
+            "combat"
+      ],
+      "finale_retry": [
+            "Retry the finale with this build after a failed attempt. No pet energy cost.",
+            "combat"
+      ],
+      "finale_step": [
+            "Choose the next finale move. Compare damage, defense and kit use to survive the saved battle.",
+            "choice"
+      ],
+      "finale_claim": [
+            "Collect the reward from your saved finale victory. You do not need to fight again.",
+            "claim"
+      ],
+      "event_recover": [
+            "Finish the original saved Street Event for the pet that started it. No new choice or attempt.",
+            "claim"
+      ],
+      "event_close": [
+            "Give up this unverifiable old event after confirmation. No reward or refund; its original history is kept.",
+            "risk"
+      ],
+      "random_event": [
+            "Commit this Street Event choice. Review its costs, possible reward and setback before choosing.",
+            "choice"
+      ],
+      "adventure": [
+            "Take this adventure route. Compare the entry requirement, costs and risk before committing.",
+            "choice"
+      ],
+      "run_start": [
+            "Begin a repeatable Moon Run. Clear rooms, then extract to bank rewards before a failed room loses the bag.",
+            "spend"
+      ],
+      "daily_run_start": [
+            "Use your one official attempt for this UTC day. Cleared rooms count toward Daily Journey objectives.",
+            "spend"
+      ],
+      "run_step": [
+            "Resolve the next saved room with this choice. Compare clear chance, costs and failure damage first.",
+            "choice"
+      ],
+      "daily_run_tactic": [
+            "Choose this checkpoint tactic for the rest of your official run. Compare its bonuses and trade-offs.",
+            "choice"
+      ],
+      "run_extract": [
+            "End this saved run now. Check the displayed payout and whether this ends today’s official attempt.",
+            "risk"
+      ],
+      "arena_matchmake": [
+            "Join player matchmaking for an Arena battle. You can leave the queue before a match starts.",
+            "combat"
+      ],
+      "arena_start": [
+            "Start an Arena battle against the CRT rival. Choose one move at a time to win the battle.",
+            "combat"
+      ],
+      "arena_ready": [
+            "Confirm you are ready to start this player match. The battle begins when both players are ready.",
+            "combat"
+      ],
+      "arena_move": [
+            "Lock your move for this round. Balance damage, stamina and defense before committing.",
+            "choice"
+      ],
+      "arena_forfeit": [
+            "Concede this active Arena battle. This ends your fight instead of preserving it for later.",
+            "risk"
+      ],
+      "arena_queue_cancel": [
+            "Leave Arena matchmaking before a battle starts. Rejoin later when you want to play.",
+            "manage"
+      ],
+      "kaiju_matchmake": [
+            "Join player matchmaking for Kaiju cards. Compare your cards once the match category appears.",
+            "combat"
+      ],
+      "kaiju_start": [
+            "Start a Kaiju card match against the CRT rival. Play for the strongest active category.",
+            "combat"
+      ],
+      "kaiju_card": [
+            "Lock this card for the active category. Settlement costs 4 energy for a loss, 5 for a draw or 6 for a win. Compare ACTIVE values; your rival’s card stays hidden.",
+            "choice"
+      ],
+      "kaiju_queue_cancel": [
+            "Leave Kaiju matchmaking before a match starts. You can join again later.",
+            "manage"
+      ],
+      "kaiju_match_cancel": [
+            "Cancel this eligible solo Kaiju match instead of submitting a card.",
+            "manage"
+      ],
+      "district_mission": [
+            "Take this district approach to build mastery and earn capped rewards. Compare the cost and setback risk.",
+            "choice"
+      ],
+      "event_chain": [
+            "Save this choice in the current story. Compare its listed reward and bonus before committing.",
+            "choice"
+      ],
+      "seasonal_boss": [
+            "Make this raid attack. Review energy, damage and cooldowns to work toward the saved boss reward.",
+            "combat"
+      ],
+      "seasonal_boss_claim": [
+            "Collect a saved raid reward for its original pet. No second attack or energy payment.",
+            "claim"
+      ],
+      "weekly_boss": [
+            "Make this weekly boss attack. Compare its cost and damage to work toward the displayed victory reward.",
+            "combat"
+      ],
+      "weekly_boss_claim": [
+            "Collect the reward from a saved weekly boss victory. No second fight is needed.",
+            "claim"
+      ],
+      "work": [
+            "Do this job now for its displayed base rewards. Check level, specialist requirements and cooldown.",
+            "progress"
+      ],
+      "activity_start": [
+            "Start one background activity. It continues while you play or close the app; return here to claim it.",
+            "progress"
+      ],
+      "activity_claim": [
+            "Collect this activity’s saved reward and end its timer. Waiting longer can change rewards until the duration cap.",
+            "claim"
+      ],
+      "activity_cancel": [
+            "End this background activity without collecting its rewards. Start another activity after it closes.",
+            "risk"
+      ],
+      "bounty_claim": [
+            "Collect this completed daily bounty’s listed rewards. Progress is shared across your account.",
+            "claim"
+      ],
+      "market_buy": [
+            "Spend the displayed currency on this whole bundle. Check the contents and storage space before buying.",
+            "spend"
+      ],
+      "buy": [
+            "Buy this permanent equipment with the displayed currency. Equip it to use its bonuses.",
+            "spend"
+      ],
+      "equip": [
+            "Equip this owned item on your selected pet for its bonuses. Switching is free and keeps mastery.",
+            "manage"
+      ],
+      "use_item": [
+            "Consume one bag item now for its listed effect. Check the description before spending it.",
+            "spend"
+      ],
+      "expedition": [
+            "Spend the listed energy and one shared daily attempt for a possible find. Compare destinations first.",
+            "spend"
+      ],
+      "gear_upgrade": [
+            "Spend the quoted resources to improve this item. Its higher level strengthens its equipment bonus.",
+            "spend"
+      ],
+      "craft": [
+            "Spend the listed ingredients to make the displayed item. Check output space, then use it from your bag.",
+            "spend"
+      ],
+      "cosmetic_unlock": [
+            "Spend the displayed resources to unlock this style. Equip it in Style Lab to use its appearance.",
+            "spend"
+      ],
+      "style_equip": [
+            "Change your selected pet’s visible style for free. Owned style unlocks remain available.",
+            "manage"
+      ],
+      "trade": [
+            "Risk the displayed Moon Gold stake for a random profit or loss. A loss spends your stake.",
+            "risk"
+      ],
+      "notification_set": [
+            "Choose whether Moonpet can send you Telegram reminders. This does not change your pet’s progress.",
+            "manage"
+      ],
+      "evolve": [
+            "Advance to the next lifetime stage once the listed age and progression requirements are met.",
+            "progress"
+      ],
+      "season_claim": [
+            "Collect this unlocked competition tier’s reward. Your pet’s lifetime progress continues separately.",
+            "claim"
+      ],
+      "rare_morph": [
+            "Answer the unlocked rare signal to transform your pet. The route opens from its saved traits and history.",
+            "progress"
+      ],
+      "rename": [
+            "Save the callsign entered above for this pet. Its canonical identity and progression stay separate.",
+            "manage"
+      ]
+};
     options = careActionButtonOptions(action, actionCooldownButtonOptions(action, options));
     if (['run_start', 'daily_run_start', 'run_step', 'run_extract', 'daily_run_tactic'].includes(action) && !playOptionsReady()) {
       options = Object.assign({}, options, { disabled: true, cooldown: null, statusLabel: 'REFRESH REQUIRED', detail: 'Run controls unavailable. Tap Refresh to retry.' });
-    }
-    if (petActionRefreshRequired) {
-      options = Object.assign({}, options, { disabled: true, statusLabel: 'REFRESH REQUIRED' });
     }
     if (action === 'adopt' && !(state && state.entry_requirement && state.entry_requirement.eligible === true)) {
       options = Object.assign({}, options, { disabled: true, statusLabel: 'ARCADE XP REQUIRED' });
@@ -856,11 +1132,37 @@
     } else if (state && state.adopted === false && !accountActions.includes(action)) {
       options = Object.assign({}, options, { disabled: true, cooldown: null, statusLabel: 'ADOPT A PET FIRST' });
     }
+    if (petActionRefreshRequired) {
+      options = Object.assign({}, options, { disabled: true, statusLabel: 'REFRESH REQUIRED' });
+    }
     var disabled = options && options.disabled;
+    var help = button.guidance[action] || ['Review the displayed requirements and effect before committing this action.', 'choice'];
+    var purpose = help[0];
+    var kind = help[1];
+    if (action === 'contract_step' && payload && payload.choice === 'abandon') {
+      purpose = 'Abandon this quest with no points or XP. Closing the app instead keeps it saved.';
+      kind = 'risk';
+    }
+    if (action === 'run_extract' && state && state.guidance && state.guidance.active_run && state.guidance.active_run.settlement_pending) {
+      purpose = 'Finish delivery of the saved boss result. No new room, fight or daily attempt.';
+      kind = 'claim';
+    }
+    if (action === 'activity_claim' && state && state.guidance && state.guidance.activity && state.guidance.activity.recovery_pending) purpose = 'Finish this saved activity claim without paying twice. Its original reward stays bound to its source pet.';
+    if (action === 'arena_matchmake' && payload && payload.accept_any_rank) purpose = 'Widen matchmaking to any rank. Your next rival can be stronger than a normal rank match.';
+    if (action === 'notification_set') purpose = payload && payload.enabled
+      ? 'Allow Moonpet Telegram reminders so you can return to ready activities. Pet progress is unchanged.'
+      : 'Stop Moonpet Telegram reminders. Your saved pet and background activities keep progressing.';
+    if (action === 'activity_start' && payload) {
+      var activityPurpose = { sleep: 'Recover stats in the background', train: 'Build training rewards in the background', work: 'Earn work rewards in the background', explore: 'Gather exploration finds in the background' };
+      if (activityPurpose[payload.activity_type]) purpose = activityPurpose[payload.activity_type] + '. Compare duration previews; return here to claim and end the timer.';
+    }
+    var badge = disabled ? 'UNAVAILABLE' : kind === 'claim' ? 'CLAIM READY' : kind === 'risk' ? 'REVIEW RISK' : kind === 'spend' ? 'CHECK COST' : kind === 'choice' ? 'COMMIT CHOICE' : 'READY';
+    var descriptionId = 'moonpet-action-description-' + (button.descriptionCount = (button.descriptionCount || 0) + 1);
     var detail = shouldShowAvailability(options)
-      ? '<small>' + availabilityDetailMarkup(options) + '</small>'
+      ? '<small class="button-requirements" id="' + descriptionId + '-requirements">' + availabilityDetailMarkup(options) + '</small>'
       : '';
-    return '<button class="terminal-button' + (options && options.danger ? ' danger' : '') + '" type="button" data-action="' + escapeHtml(action) + '" data-payload="' + escapeHtml(JSON.stringify(payload || {})) + '"' + (disabled ? ' disabled' : '') + '>' + escapeHtml(label) + detail + '</button>';
+    var describedBy = descriptionId + '-purpose' + (detail ? ' ' + descriptionId + '-requirements' : '');
+    return '<button class="terminal-button action-button action-' + kind + (kind === 'risk' ? ' danger' : '') + '" type="button" data-action="' + escapeHtml(action) + '" data-payload="' + escapeHtml(JSON.stringify(payload || {})) + '" aria-label="' + escapeHtml(label) + '" aria-description="' + escapeHtml(purpose) + '" aria-describedby="' + describedBy + '"' + (disabled ? ' disabled' : '') + '>' + escapeHtml(label) + '<span class="button-state">' + badge + '</span><span class="button-purpose" id="' + descriptionId + '-purpose">' + escapeHtml(purpose) + '</span>' + detail + '</button>';
   }
 
   var panelOpenState = Object.create(null);
@@ -868,7 +1170,7 @@
     recommended: ['✦', 'Your next three routes, ranked from the current save.'],
     'play-now': ['▶', 'Browse more activities, goals and ways to play.'],
     'active-pet': ['◉', 'Your active companion, stage and growth progress.'],
-    incubation: ['◉', 'Care for your Secret Bot and reveal its identity.'],
+    incubation: ['◉', 'Build your egg’s signal for breakout. Identity reveals at Stage 3.'],
     vitals: ['♥', 'Check health, energy, hunger, fun and cleanliness.'],
     care: ['♥', 'Feed, play, rest, train and collect Daily Cache.'],
     details: ['◉', 'Companion stats, personality and equipped items.'],
@@ -877,7 +1179,7 @@
     contracts: ['↻', 'Saved quests with builds, bosses and repeatable play.'],
     'daily-journey': ['☀', 'Complete daily goals to earn a Growth Mark.'],
     'daily-objectives': ['☀', 'Track care and official Daily Run objectives.'],
-    'weekly-journey': ['▦', 'Build five weekly objectives toward a Crest.'],
+    'weekly-journey': ['▦', 'Complete the listed weekly objectives to earn a Crest.'],
     'daily-completion': ['★', 'Check and collect your daily 7/7 bonus.'],
     missions: ['☷', 'Today’s missions, progress and qualifying routes.'],
     achievements: ['★', 'View milestones and unlocked achievements.'],
@@ -891,7 +1193,7 @@
     arena: ['⚔', 'Join matchmaking or return to your Arena battle.'],
     kaiju: ['◆', 'Choose cards, join a match or manage your queue.'],
     'timed-activity': ['◷', 'Start background work; review, continue or claim it.'],
-    jobs: ['⚒', 'Compare available jobs, energy costs and rewards.'],
+    jobs: ['⚒', 'Compare job requirements, cooldowns and base rewards.'],
     equipment: ['⚒', 'Inspect mastery and choose equipment upgrades.'],
     'equipment-sets': ['◈', 'Compare gear combinations and their set bonuses.'],
     materials: ['◇', 'See your materials and where to find more.'],
@@ -989,7 +1291,7 @@
       '<div class="guide-step"><strong>DAILY RUN TACTICS</strong>New official attempts show clear chance and score for each approach. Safe routes trade score for better odds; bold routes offer more score at higher risk. After rooms 3 and 6, choose Guardian, Striker or Scavenger, or continue without an upgrade. Tactics change later odds and run score only. One official attempt per account each UTC day still applies. Reach the final room and defeat its boss to finish. Extracting ends that day’s attempt early. If a saved ending needs settlement, use FINISH SAVED DAILY RUN to recover it without spending a new attempt.</div>' +
       '<div class="guide-step"><strong>BOSSES AND SEASON FINALE</strong>EXPLORE holds the weekly boss and seasonal raid; read the current requirements, choose an approach and claim any saved victory reward. In MISSIONS, the Season Finale unlocks when your pet meets the final evolution, Growth Mark and Weekly Crest requirements shown. Pick a build, read the boss intent, then Strike, Guard or use your special options. The battle saves between turns, uses separate battle health and supplies, and allows free retries after defeat. Win and claim its reward once per pet per competition quarter. Earlier saved fights and rewards remain recoverable; lifetime progress and repeatable contracts continue.</div>' +
       '<div class="guide-step"><strong>SAVES, PETS AND RANKS</strong>Each pet keeps its own progression and loadout. Switching pets does not reset account-wide cooldowns or official daily attempts. Saved runs and rewards stay with their source pet. Use Refresh after a connection interruption. PROFILE opens daily, weekly, seasonal, all-time and run-depth leaderboards; contract rank is separate from Pet XP ranks.</div>' +
-      '<div class="button-grid one"><button type="button" class="terminal-button" data-open-full-guide>OPEN COMPLETE WEBSITE GUIDE</button></div>';
+      '<div class="button-grid one"><button type="button" class="terminal-button" data-open-full-guide>OPEN COMPLETE WEBSITE GUIDE<span class="button-purpose">Open the website guide for more detail on progression and activities.</span></button></div>';
   }
   // TEST-EXPORT: guideMarkup:end
 
@@ -1016,10 +1318,10 @@
       var tabs = ['daily', 'weekly', 'seasonal', 'all_time', 'run_depth'].map(function (key) {
         return '<button type="button" class="period-button" data-leaderboard-period="' + key + '" aria-pressed="' + (key === selected ? 'true' : 'false') + '">' + escapeHtml(words(key)) + '</button>';
       }).join('');
-      utilityContent.innerHTML = '<div class="period-tabs">' + tabs + '</div><div class="line muted">' + (selected === 'run_depth' ? 'DEEPEST ROOM RANKS' : 'PET XP RANKS') + ' // ' + escapeHtml(words(data.period || selected)) + '</div>' + leaderboardRowsMarkup(data.entries, data.self, selected);
+      utilityContent.innerHTML = '<div class="line muted">Choose a period to compare Pet XP, or Run Depth to compare the deepest rooms. Viewing ranks spends nothing.</div><div class="period-tabs">' + tabs + '</div><div class="line muted">' + (selected === 'run_depth' ? 'DEEPEST ROOM RANKS' : 'PET XP RANKS') + ' // ' + escapeHtml(words(data.period || selected)) + '</div>' + leaderboardRowsMarkup(data.entries, data.self, selected);
     } catch (error) {
       if (generation !== utilityRequestGeneration || utilityLayer.hidden || activeUtility !== 'leaderboard') return;
-      utilityContent.innerHTML = '<div class="connection-fault">RANKING LINK FAILED // ' + escapeHtml(error.message || 'CONNECTION FAILED') + '</div><div class="button-grid one"><button type="button" class="terminal-button" data-leaderboard-period="' + selected + '">RETRY LEADERBOARD</button></div>';
+      utilityContent.innerHTML = '<div class="connection-fault">RANKING LINK FAILED // ' + escapeHtml(error.message || 'CONNECTION FAILED') + '</div><div class="button-grid one"><button type="button" class="terminal-button" data-leaderboard-period="' + selected + '">RETRY LEADERBOARD<span class="button-purpose">Read competition ranks again without changing your saved pet.</span></button></div>';
     }
   }
 
@@ -1440,7 +1742,7 @@
     var phase = String(authoritativeLifecycle.phase || progressionLifecycle.phase || '').toLowerCase();
     var evolutionReady = Boolean(authoritativeLifecycle.evolution_ready || progressionLifecycle.evolution_ready);
     if (!state || !state.adopted || !state.pet) return homeNextLine();
-    if (phase === 'egg') return authoritativeLifecycle.incubation && authoritativeLifecycle.incubation.ready ? 'REVEAL BOT to wake your first companion.' : incubationTimingDetail(authoritativeLifecycle.incubation) || 'Care for your Secret Bot until the breakout signal is ready.';
+    if (phase === 'egg') return authoritativeLifecycle.incubation && authoritativeLifecycle.incubation.ready ? 'HATCH BOT to start your companion’s breakout. Identity reveals at Stage 3.' : incubationTimingDetail(authoritativeLifecycle.incubation) || 'Care for your Secret Bot until the breakout signal is ready.';
     if (seasonSlots.unavailable) return 'Season slot authority is syncing. Active Moonpet guidance will refresh when server authority is available.';
     if (!slot.pet_id) return 'Pick an active Moonpet before journey progress starts.';
     if (evolutionReady) return 'Evolve your active Moonpet when you are ready.';
@@ -1470,7 +1772,7 @@
     incubation = incubation || {};
     var timing = [incubation.age_days, incubation.earliest_hatch_days, incubation.guaranteed_hatch_days];
     if (timing.some(function (value) { return value == null || !Number.isFinite(Number(value)) || Number(value) < 0; })) return '';
-    return 'Age ' + Number(incubation.age_days) + ' days. Earliest reveal: day ' + Number(incubation.earliest_hatch_days) + ' with a full signal and at least three care types; guaranteed reveal: day ' + Number(incubation.guaranteed_hatch_days) + '.';
+    return 'Age ' + Number(incubation.age_days) + ' days. Earliest hatch: day ' + Number(incubation.earliest_hatch_days) + ' with a full signal and at least three care types; guaranteed hatch: day ' + Number(incubation.guaranteed_hatch_days) + '. Identity stays hidden until Stage 3.';
   }
 
   function homeNextLine(next) {
@@ -1478,7 +1780,7 @@
     var incubation = lifecycle.incubation || {};
     if (!state || !state.adopted) return state && state.next && state.next.detail || 'Checking your Arcade XP entry requirement.';
     if (lifecycle.phase === 'egg') {
-      return incubation.ready ? 'REVEAL BOT to wake your first companion.' : incubationTimingDetail(incubation) || 'Build care signals until the breakout signal is ready.';
+      return incubation.ready ? 'HATCH BOT to start your companion’s breakout. Identity reveals at Stage 3.' : incubationTimingDetail(incubation) || 'Build care signals until the breakout signal is ready.';
     }
     return next && next.title ? String(next.title) : 'Keep needs stable and follow the recommended route.';
   }
@@ -1488,7 +1790,7 @@
     if (firstSession === 'unadopted') return homeNextLine();
     var boss = state && state.guidance && state.guidance.weekly_boss || {};
     if ((boss.pending_rewards || []).length) return 'Recover your saved Weekly Boss reward. No energy or new attack needed.';
-    if (firstSession === 'egg') return 'Care for or REVEAL BOT before Explore actions open.';
+    if (firstSession === 'egg') return 'Care for or HATCH BOT before Explore actions open. Identity reveals at Stage 3.';
     if (state && state.run) return 'Resolve the visible Moon Run room or extract to bank rewards.';
     var weekly = state && state.weekly_journey || {};
     var objectives = Array.isArray(weekly.objectives) ? weekly.objectives : [];
@@ -1541,8 +1843,8 @@
       }
       : {
         district: 'Your Secret Bot is still forming. Care for it before district routes, bosses, Arena, Kaiju, or pet work open.',
-        run: 'Moon Run opens after REVEAL BOT creates an active companion.',
-        journey: 'Journey progress starts after the reveal, when server authority can bind objectives to the active pet.',
+        run: 'Moon Run opens after HATCH BOT creates an active companion.',
+        journey: 'Journey progress starts after hatching, when server authority can bind objectives to the active pet.',
       };
     var arenaBody = '<div class="line locked">ACTIVE HATCHED MOONPET REQUIRED.</div><div class="line muted">' + escapeHtml(copy.district) + '</div>' +
       (arenaCleanup ? '<div class="line muted">STALE ARENA STATE DETECTED. CLEANUP IS AVAILABLE.</div><div class="button-grid one">' + arenaCleanup + '</div>' : '');
@@ -1577,7 +1879,7 @@
     if (lifecycle.phase === 'egg') {
       var signals = incubation.signals || {};
       return '<div class="ticker"><span>SECRET BOT // SIGNAL ' + number(incubation.progress) + '/' + number(incubation.target) + ' // IDENTITY FORMING //</span></div>' +
-        panel('SECRET BOT CHAMBER', '<div class="line complete">THE SECRET BOT REMEMBERS HOW YOU TREAT IT.</div><div class="line muted">NEXT // ' + escapeHtml(homeNextLine()) + '</div><div class="line muted">Use at least three types of care. Your pattern shapes the reveal; no species odds are exposed.</div>' + meter('BREAKOUT SIGNAL', Number(incubation.progress || 0) / Math.max(1, Number(incubation.target || 12)) * 100) + '<div class="line">WARM ' + number(signals.warm) + ' // TALK ' + number(signals.talk) + ' // MUSIC ' + number(signals.music) + ' // REST ' + number(signals.rest) + '</div><div class="button-grid">' + button('WARM BOT', 'incubate', { care_type: 'warm' }) + button('TALK TO BOT', 'incubate', { care_type: 'talk' }) + button('PLAY A BEAT', 'incubate', { care_type: 'music' }) + button('LET IT REST', 'incubate', { care_type: 'rest' }) + '</div><div class="button-grid one">' + button('REVEAL BOT', 'hatch', {}, { disabled: !incubation.ready, statusLabel: incubation.ready ? '' : 'REVEAL NOT READY' }) + '</div><div class="line muted">DAILY SIGNALS ' + number(incubation.actions_today) + '/' + number(incubation.daily_cap) + '</div>', 'incubation') +
+        panel('SECRET BOT CHAMBER', '<div class="line complete">THE SECRET BOT REMEMBERS HOW YOU TREAT IT.</div><div class="line muted">NEXT // ' + escapeHtml(homeNextLine()) + '</div><div class="line muted">Use at least three types of care to build the breakout signal. Identity stays hidden until Stage 3.</div>' + meter('BREAKOUT SIGNAL', Number(incubation.progress || 0) / Math.max(1, Number(incubation.target || 12)) * 100) + '<div class="line">WARM ' + number(signals.warm) + ' // TALK ' + number(signals.talk) + ' // MUSIC ' + number(signals.music) + ' // REST ' + number(signals.rest) + '</div><div class="button-grid">' + button('WARM BOT', 'incubate', { care_type: 'warm' }) + button('TALK TO BOT', 'incubate', { care_type: 'talk' }) + button('PLAY A BEAT', 'incubate', { care_type: 'music' }) + button('LET IT REST', 'incubate', { care_type: 'rest' }) + '</div><div class="button-grid one">' + button('HATCH BOT', 'hatch', {}, { disabled: !incubation.ready, statusLabel: incubation.ready ? '' : 'HATCH NOT READY' }) + '</div><div class="line muted">DAILY SIGNALS ' + number(incubation.actions_today) + '/' + number(incubation.daily_cap) + '</div>', 'incubation') +
         panel('SECRET BOT ACTIONS', '<div class="button-grid">' + button('ENERGY DRINK', 'energy_drink') + button('DANCE', 'dance') + button('CUDDLES', 'cuddles') + '</div><div class="line muted">Stat-only care. Does not advance incubation or award XP.</div>', 'care') +
         renderPlayNow() + renderSeasonSlots();
     }
@@ -1593,7 +1895,7 @@
         button('FEED', 'feed') + button('PLAY', 'play') + button('CLEAN', 'clean') + button('SLEEP', 'sleep') + button('TRAIN', 'train') +
         button('ENERGY DRINK', 'energy_drink') + button('DANCE', 'dance') + button('CUDDLES', 'cuddles') +
         button('DAILY CACHE', 'daily_chest', {}, { disabled: dailyCache.available !== true, statusLabel: dailyCache.claimed ? 'CLAIMED TODAY' : dailyCache.available ? '' : 'SYNCING', cooldown: dailyCache.claimed ? dailyCache.cooldown : null,
-          detail: dailyCache.claimed ? number(dailyCache.receipt && dailyCache.receipt.pet_xp_awarded) + ' PET XP COLLECTED // One cache per account / UTC day.' : dailyCache.available ? '40 MOON GOLD + 2 STYLE // UP TO ' + number(dailyCache.available_pet_xp) + ' PET XP WITH TODAY’S CAP.' : 'Waiting for cache status.' }) + '<button class="terminal-button" type="button" data-pet-greet>SAY HELLO</button>' +
+          detail: dailyCache.claimed ? number(dailyCache.receipt && dailyCache.receipt.pet_xp_awarded) + ' PET XP COLLECTED // One cache per account / UTC day.' : dailyCache.available ? '40 MOON GOLD + 2 STYLE // UP TO ' + number(dailyCache.available_pet_xp) + ' PET XP WITH TODAY’S CAP.' : 'Waiting for cache status.' }) + '<button class="terminal-button" type="button" data-pet-greet>SAY HELLO<span class="button-purpose">Wave to your pet. This is an animation, with no XP or stat change.</span></button>' +
       '</div>' + (state.guidance && state.guidance.activity && state.guidance.activity.status === 'active' ? '<div class="button-grid one">' + routeButton('REVIEW BACKGROUND ACTIVITY', { screen: 'work', focus: 'timed-activity' }, 'Sleep and Train unlock when the activity ends. Feed, Play, Clean and Contracts remain available.') + '</div>' : '') + (dailyCache.claimed && state.contracts && state.contracts.available ? '<div class="button-grid one">' + routeButton('CONTINUE WITH CONTRACTS', { screen: 'missions', focus: 'contracts' }, 'Your cache is collected. Saved quests keep going without energy or cooldowns.') + '</div>' : ''), 'care') +
       renderSeasonSlots() +
       panel('COMPANION DETAILS', '<div class="line complete">' + escapeHtml(displayName) + ' // ' + escapeHtml(moonpetStageLabel(lifecycle, pet)) + '</div><div class="line">LEVEL ' + number(pet.level) + ' // ' + number(pet.pet_xp) + ' XP // ' + number(pet.style_tokens) + ' STYLE // ' + number(pet.streak_days) + '-DAY STREAK</div><div class="line muted">' + escapeHtml(words(lifecycle.temperament || 'forming')) + ' TEMPERAMENT // ' + escapeHtml(words(lifecycle.appearance && lifecycle.appearance.marking || 'moon mark')) + '</div>' + equipped, 'details');
@@ -2089,7 +2391,9 @@
   }
 
   function routeButton(label, route, detail) {
-    return '<button class="terminal-button" type="button" data-jump="' + escapeHtml(route.screen) + '" data-focus="' + escapeHtml(route.focus) + '">' + escapeHtml(label) + (detail ? '<small>' + escapeHtml(detail) + '</small>' : '') + '</button>';
+    var destinations = { home: 'Care for your pet, build egg signals and choose a pet.', missions: 'Play saved quests, complete goals and collect earned rewards.', explore: 'Compare routes, run rooms and battle choices before starting.', work: 'Choose jobs or background timers and collect their rewards.', economy: 'Compare gear, item effects and costs before spending resources.', profile: 'Switch pets and review lifetime progression, identity and competition rewards.' };
+    var purpose = detail || destinations[route.screen] || 'Review this activity and its requirements before starting.';
+    return '<button class="terminal-button route-button" type="button" data-jump="' + escapeHtml(route.screen) + '" data-focus="' + escapeHtml(route.focus) + '" aria-label="' + escapeHtml(label) + '" aria-description="Opens a menu without spending resources. ' + escapeHtml(purpose) + '">' + escapeHtml(label) + '<span class="button-state">OPEN ' + escapeHtml(String(route.screen || 'MENU').toUpperCase()) + ' // NO COST</span><span class="button-purpose">' + escapeHtml(purpose) + '</span></button>';
   }
 
   function objectiveRouteButton(key) {
@@ -2111,11 +2415,11 @@
   function renderRecommended() {
     if (stateNeedsFullHydration(state)) {
       var coreRoutes = [
-        { title: 'MISSIONS', screen: 'missions', focus: 'missions', detail: 'Load Daily/Weekly Journey, Contracts and achievements.' },
-        { title: 'EXPLORE', screen: 'explore', focus: 'moon-run', detail: 'Load runs, districts, bosses, Arena and Kaiju.' },
-        { title: 'WORK', screen: 'work', focus: 'timed-activity', detail: 'Load jobs and full background activity detail.' },
+        { title: 'MISSIONS', screen: 'missions', focus: 'missions', detail: 'Work on goals, play saved Contracts and collect earned mission rewards.' },
+        { title: 'EXPLORE', screen: 'explore', focus: 'moon-run', detail: 'Choose runs, district routes, boss fights or player battles.' },
+        { title: 'WORK', screen: 'work', focus: 'timed-activity', detail: 'Compare jobs or start, review and claim background activities.' },
       ];
-      return panel('RECOMMENDED NEXT', '<div class="line muted">HOME stays lightweight. Open a module only when you need its live data.</div><div class="button-grid one">' + coreRoutes.map(function (route) { return routeButton(route.title, route, route.detail); }).join('') + '</div>', 'recommended');
+      return panel('RECOMMENDED NEXT', '<div class="line muted">Choose a route below. Home care is ready while the other menus prepare.</div><div class="button-grid one">' + coreRoutes.map(function (route) { return routeButton(route.title, route, route.detail); }).join('') + '</div>', 'recommended');
     }
     if (!window.MoonpetPlayOptions || !window.MoonpetPlayOptions.recommendations) return '';
     var choices = window.MoonpetPlayOptions.recommendations(state, { crafting_goal: selectedCraftingGoal() });
@@ -2135,9 +2439,9 @@
         { title: 'EXPLORE', screen: 'explore', focus: 'moon-run' },
         { title: 'WORK', screen: 'work', focus: 'timed-activity' },
         { title: 'ECONOMY', screen: 'economy', focus: 'shop' },
-        { title: 'PROFILE', screen: 'profile', focus: 'season-slots' },
+        { title: 'PROFILE', screen: 'profile', focus: 'pet-spaces' },
       ];
-      return panel('PLAY NOW // LOAD A MODULE', '<div class="line muted">Care works from the lightweight HOME snapshot. Other systems load on demand instead of slowing every startup.</div><div class="button-grid">' + routes.map(function (route) { return routeButton(route.title, route, 'Load live ' + route.title.toLowerCase() + ' state.'); }).join('') + '</div>', 'play-now');
+      return panel('PLAY NOW // CHOOSE A MENU', '<div class="line muted">Choose what you want to do next. Opening a menu spends nothing; review its actions before starting.</div><div class="button-grid">' + routes.map(function (route) { return routeButton(route.title, route); }).join('') + '</div>', 'play-now');
     }
     if (!window.MoonpetPlayOptions) return '';
     var choices = window.MoonpetPlayOptions.options(state, { crafting_goal: selectedCraftingGoal() });
@@ -2245,7 +2549,7 @@
   }
 
   function contractSetupButton(label, record) {
-    return '<button class="terminal-button" type="button" data-contract-setup="' + escapeHtml(JSON.stringify({ build: record.build, tier: record.tier, goal: record.goal, format: record.format || 'standard' })) + '"' + (record.unlocked ? '' : ' disabled') + '>' + escapeHtml(label) + '<small>' + escapeHtml(record.title + ' // ' + record.build_title + ' // TIER ' + record.tier + ' // ' + (record.format_title || 'STANDARD ROUTE')) + '<br>' + (record.unlocked ? number(record.completed) + ' CLEARS // BEST ' + number(record.best_rank_points) + ' RANK' : 'LOCKED // COMPLETE ' + (record.tier === 2 ? '5' : '15') + ' CONTRACTS') + '</small></button>';
+    return '<button class="terminal-button" type="button" data-contract-setup="' + escapeHtml(JSON.stringify({ build: record.build, tier: record.tier, goal: record.goal, format: record.format || 'standard' })) + '"' + (record.unlocked ? '' : ' disabled') + '>' + escapeHtml(label) + '<span class="button-purpose">Choose this saved setup, then tap a quest to start. Selecting a setup spends nothing.</span><small>' + escapeHtml(record.title + ' // ' + record.build_title + ' // TIER ' + record.tier + ' // ' + (record.format_title || 'STANDARD ROUTE')) + '<br>' + (record.unlocked ? number(record.completed) + ' CLEARS // BEST ' + number(record.best_rank_points) + ' RANK' : 'LOCKED // COMPLETE ' + (record.tier === 2 ? '5' : '15') + ' CONTRACTS') + '</small></button>';
   }
 
   function renderDailyCompletion() {
@@ -2693,7 +2997,7 @@
   // TEST-EXPORT: notificationControls:end
 
   function renderProfile() {
-    var helpPanel = panel('HOW TO PLAY', '<div class="line muted">Care, daily and weekly goals, runs, bosses, rewards and the season finale.</div><div class="button-grid one"><button type="button" class="terminal-button" data-utility="guide">HOW TO PLAY</button></div>', 'how-to-play');
+    var helpPanel = panel('HOW TO PLAY', '<div class="line muted">Care, daily and weekly goals, runs, bosses, rewards and the season finale.</div><div class="button-grid one"><button type="button" class="terminal-button" data-utility="guide">HOW TO PLAY<span class="button-purpose">Read how care, quests, battles and rewards work before choosing a route.</span></button></div>', 'how-to-play');
     if (!state.pet) return helpPanel + panel('IDENTITY CORE', '<div class="line muted">INITIALISE A MOONPET TO UNLOCK THIS MODULE.</div>');
     var guidance = state.guidance || {};
     var identity = guidance.identity || {};
@@ -2764,17 +3068,17 @@
       panel('CALLSIGN', callsignPanel, 'callsign') +
       panel('SEASON FINALE', '<div class="button-grid one">' + routeButton('OPEN SEASON FINALE', { screen: 'missions', focus: 'season-finale' }, 'Check your unlocks, resume a saved fight or collect a victory reward.') + '</div>', 'finale-link') +
       panel('EVOLUTION', evoHtml, 'evolution') + panel('FACTION PERK', '<div class="line complete">' + escapeHtml(words(faction.key || 'unaligned')) + '</div><div class="line muted">' + escapeHtml(faction.bonus ? words(faction.bonus.system) + ' // ' + costText(faction.bonus.effect) : 'JOIN A FACTION TO ACTIVATE A GAMEPLAY BONUS') + '</div>', 'faction') +
-      panel('SPECIALIST TRACKS', tracks, 'tracks') + panel('UNLOCK DIRECTORY', featureRows, 'features') + panel('ALERT CONTROL', notificationPanel, 'alerts') + panel('SEASON // ' + (season.key || ''), '<div class="line">' + number(season.xp) + ' SEASON XP</div>' + tiers, 'season') + panel('TOP MOONPETS // CURRENT SEASON', (leaders || '<div class="line muted">NO RANKS LOADED.</div>') + '<div class="button-grid one"><button type="button" class="terminal-button" data-utility="leaderboard">OPEN FULL LEADERBOARD</button></div>', 'leaderboard');
+      panel('SPECIALIST TRACKS', tracks, 'tracks') + panel('UNLOCK DIRECTORY', featureRows, 'features') + panel('ALERT CONTROL', notificationPanel, 'alerts') + panel('SEASON // ' + (season.key || ''), '<div class="line">' + number(season.xp) + ' SEASON XP</div>' + tiers, 'season') + panel('TOP MOONPETS // CURRENT SEASON', (leaders || '<div class="line muted">NO RANKS LOADED.</div>') + '<div class="button-grid one"><button type="button" class="terminal-button" data-utility="leaderboard">OPEN FULL LEADERBOARD<span class="button-purpose">Compare competition scores. Viewing ranks does not change your pet.</span></button></div>', 'leaderboard');
   }
 
   var screens = { home: renderHome, missions: renderMissions, explore: renderExplore, work: renderWork, economy: renderEconomy, profile: renderProfile };
   var navItems = [
-    ['home', '⌂', 'HOME'], ['missions', '☷', 'MISSIONS'], ['explore', '⚔', 'EXPLORE'], ['work', '⚒', 'WORK'], ['economy', '◇', 'ECONOMY'], ['profile', '★', 'PROFILE'],
+    ['home', '⌂', 'HOME', 'Care'], ['missions', '☷', 'MISSIONS', 'Goals'], ['explore', '⚔', 'EXPLORE', 'Runs'], ['work', '⚒', 'WORK', 'Timers'], ['economy', '◇', 'ECONOMY', 'Gear'], ['profile', '★', 'PROFILE', 'Pets'],
   ];
 
   function renderNav() {
     nav.innerHTML = navItems.map(function (item) {
-      return '<button type="button" data-screen="' + item[0] + '" aria-current="' + (item[0] === activeScreen ? 'page' : 'false') + '"><span>' + item[1] + '</span>' + item[2] + '</button>';
+      return '<button type="button" data-screen="' + item[0] + '" aria-current="' + (item[0] === activeScreen ? 'page' : 'false') + '"><span>' + item[1] + '</span>' + item[2] + '<small>' + item[3] + '</small></button>';
     }).join('');
   }
 
@@ -2827,7 +3131,7 @@
       : waitingForModule
         ? (activeScreen === 'profile' ? renderPetSpaces(state.season_slots) : '') + panel('LOADING // ' + activeScreen.toUpperCase(),
           hydrationStopped
-            ? '<div class="line danger">MODULE STATE COULD NOT LOAD.</div><div class="line muted">Automatic retries stopped to protect the API. HOME is still available.</div><div class="button-grid"><button type="button" class="terminal-button" data-utility="module-retry">RETRY MODULE</button>' + routeButton('RETURN HOME', { screen: 'home', focus: 'care' }, 'Use lightweight care while the module is unavailable.') + '</div>'
+            ? '<div class="line danger">MODULE STATE COULD NOT LOAD.</div><div class="line muted">Automatic retries stopped to protect the API. HOME is still available.</div><div class="button-grid"><button type="button" class="terminal-button" data-utility="module-retry">RETRY MODULE<span class="button-purpose">Read your saved menu again; no previous gameplay action is repeated.</span></button>' + routeButton('RETURN HOME', { screen: 'home', focus: 'care' }, 'Use lightweight care while the module is unavailable.') + '</div>'
             : '<div class="line signal">FETCHING SERVER-AUTHORITATIVE MODULE STATE...</div><div class="line muted">HOME remains usable while this module loads.</div>',
           'module-loading')
         : renderRecommended() + screens[activeScreen]();
@@ -4120,7 +4424,7 @@
         '<div class="line">MOONPET OS READS YOUR LIVE SAVE ONLY AFTER TELEGRAM VERIFIES YOUR IDENTITY.</div>' +
         '<div class="line muted">No player data was requested in this browser. Open the signed Mini App, then initialise or resume your Moonpet.</div>' +
         '<div class="button-grid one"><a class="terminal-link-button" href="https://t.me/WIKICOMSBOT?start=moonpet" target="_blank" rel="noopener noreferrer">OPEN MOONPET OS IN TELEGRAM</a>' +
-        '<button type="button" class="terminal-button" data-utility="guide">HOW TO PLAY</button></div>', 'telegram-auth');
+        '<button type="button" class="terminal-button" data-utility="guide">HOW TO PLAY<span class="button-purpose">Read how care, quests, battles and rewards work before choosing a route.</span></button></div>', 'telegram-auth');
       await typeBoot(['AUTHENTICATION NOT FOUND', 'OPEN THE MINI APP INSIDE TELEGRAM', 'NO PLAYER DATA WAS READ'], { speed: 9, hold: 800 });
       return;
     }
@@ -4155,7 +4459,7 @@
       tell(startupFaultMessage, 'danger');
       screen.innerHTML = '<div class="connection-fault">STARTUP FAULT // ' + escapeHtml(error.message || 'API UNAVAILABLE') + '</div>' + (authenticationFailed
         ? '<div class="line muted">Close this game and reopen Moonpet OS from the bot to get a fresh signed Telegram session.</div><div class="button-grid one"><a class="terminal-link-button" href="https://t.me/WIKICOMSBOT?start=moonpet" target="_blank" rel="noopener noreferrer">OPEN FRESH TELEGRAM SESSION</a></div>'
-        : '<div class="button-grid one"><button type="button" class="terminal-button" data-utility="retry">RETRY CONNECTION</button></div>');
+        : '<div class="button-grid one"><button type="button" class="terminal-button" data-utility="retry">RETRY CONNECTION<span class="button-purpose">Reconnect and read your saved pet. No gameplay action is repeated.</span></button></div>');
       await typeBoot(['STARTUP FAULT', startupFaultMessage, authenticationFailed ? 'REOPEN MOONPET OS FROM THE BOT' : 'USE RETRY CONNECTION BELOW'], { speed: 8, hold: 900 });
     }
   }

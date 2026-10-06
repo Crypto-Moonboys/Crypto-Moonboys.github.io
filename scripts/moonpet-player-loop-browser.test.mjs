@@ -545,11 +545,16 @@ try {
     assert.ok(artRequests > 0);
     assert.equal(await page.evaluate(() => window.MoonpetBetaAppearance.isBotArtReady()), false);
     artOffline = false;
+    const artRecoverySave = page.waitForResponse(response => response.url().endsWith('/telegram-pets/app/state') && response.request().method() === 'POST');
+    const careBeforeArtRecovery = await page.locator('[data-panel="care"]').elementHandle();
     await page.locator('[data-utility="sync"]').click();
+    assert.equal((await artRecoverySave).ok(), true);
+    await page.waitForFunction(node => !node.isConnected, careBeforeArtRecovery);
     await page.waitForFunction(() => window.MoonpetBetaAppearance.isBotArtReady());
     assert.ok(artRequests >= 2, 'Refresh recovers a previously rejected art registry without reloading the game');
     await page.locator('[data-panel="care"]').evaluate(node => { node.open = true; });
     for (const action of ['feed', 'play']) {
+      await page.locator('[data-panel="care"]').evaluate(node => { node.open = true; });
       faultAction = action;
       await page.locator(`[data-action="${action}"]`).click();
       await page.waitForFunction(() => document.querySelector('#terminal-output').textContent.includes('ACTION RESPONSE UNCONFIRMED'));
@@ -674,12 +679,36 @@ try {
         const summary = node.querySelector(':scope > summary');
         return summary && summary.querySelector('.panel-icon').textContent && summary.querySelector('.panel-description').textContent && node.getBoundingClientRect().right <= innerWidth;
       })), 'all sections have accessible summaries, icons, descriptions and fit mobile');
+      const controlGuidance = await page.locator('#screen [data-action]').evaluateAll(nodes => nodes.map(node => ({
+        action: node.dataset.action, purpose: node.querySelector('.button-purpose')?.textContent,
+        badge: node.querySelector('.button-state')?.textContent, label: node.getAttribute('aria-label'), description: node.getAttribute('aria-description'),
+        descriptionRefsValid: String(node.getAttribute('aria-describedby') || '').split(' ').filter(Boolean).every(id => node.contains(document.getElementById(id))),
+        requirementsDescribed: !node.querySelector('.button-requirements') || String(node.getAttribute('aria-describedby') || '').split(' ').includes(node.querySelector('.button-requirements').id),
+      })));
+      assert.ok(controlGuidance.every(item => item.purpose && item.purpose.length > 30 && item.badge && item.label && item.description && item.descriptionRefsValid && item.requirementsDescribed), `${section} real action buttons explain purpose and consequence`);
+      assert.ok(await page.locator('#screen [data-jump]').evaluateAll(nodes => nodes.every(node => node.textContent.includes('NO COST') && node.querySelector('.button-purpose'))), `${section} menu routes say they only navigate`);
+      assert.equal(await page.locator('#nav small').count(), 6, 'all dock tabs have a visible purpose label');
       const expectedOpenPanels = section === 'home' ? ['pet-spaces','recommended'] : section === 'profile' ? ['pet-spaces'] : [];
       const openPanels = await page.locator('#screen > details[open]').evaluateAll(nodes=>nodes.map(node=>node.dataset.panel).sort());
       assert.deepEqual(openPanels,expectedOpenPanels,'pet selection is visible while unrelated detail panels start collapsed');
       if (viewport.width === 390) await page.screenshot({ path: path.join(screenshotDirectory, `moonpet-sections-${section}.png`) });
     }
     await page.locator('[data-screen="home"]').click();
+    const savedOpen = await page.locator('#screen > details.panel').evaluateAll(nodes => nodes.map(node => node.open));
+    await page.locator('#screen > details.panel').evaluateAll(nodes => nodes.forEach(node => { node.open = true; }));
+    assert.ok(await page.locator('#screen .action-button').evaluateAll(nodes => nodes.every(node => node.scrollWidth <= node.clientWidth + 1)), 'purpose and cost text stays inside real mobile buttons');
+    const descriptionSelector = '#screen [data-action][aria-describedby*="-requirements"]';
+    const descriptionText = await page.locator(descriptionSelector).first().evaluate(node => ({ purpose: node.querySelector('.button-purpose').textContent, requirements: node.querySelector('.button-requirements').textContent }));
+    const accessibilitySession = await page.context().newCDPSession(page);
+    const { root: accessibilityRoot } = await accessibilitySession.send('DOM.getDocument');
+    const { nodeId: describedButton } = await accessibilitySession.send('DOM.querySelector', { nodeId: accessibilityRoot.nodeId, selector: descriptionSelector });
+    const { nodes: accessibilityNodes } = await accessibilitySession.send('Accessibility.getPartialAXTree', { nodeId: describedButton, fetchRelatives: false });
+    const accessibleDescription = accessibilityNodes.find(node => node.role?.value === 'button')?.description?.value || '';
+    const normalizedDescription = accessibleDescription.replace(/\s+/g, ' ');
+    assert.ok(normalizedDescription.includes(descriptionText.purpose.replace(/\s+/g, ' ')) && normalizedDescription.includes(descriptionText.requirements.replace(/\s+/g, ' ')), 'browser accessibility tree announces purpose and actual live requirements');
+    await accessibilitySession.detach();
+    if (viewport.width === 390 || viewport.width === 360) await page.screenshot({ path: path.join(screenshotDirectory, `moonpet-control-guidance-${viewport.width}.png`) });
+    await page.locator('#screen > details.panel').evaluateAll((nodes, values) => nodes.forEach((node, index) => { node.open = values[index]; }), savedOpen);
     const careSummary = page.locator('[data-panel="care"] > summary');
     await careSummary.focus(); await page.keyboard.press('Enter');
     assert.equal(await page.locator('[data-panel="care"]').evaluate(node => node.open), true);
@@ -710,7 +739,7 @@ try {
     await page.locator('[data-screen="home"]').click();
     const canvasTools = page.locator('#canvas-tools');
     assert.equal(await canvasTools.locator('button').count(), 3);
-    assert.equal((await canvasTools.textContent()).trim(), '', 'canvas controls must be icons without visible text');
+    assert.equal((await canvasTools.textContent()).trim(), 'AUDIORADIOREFRESH', 'canvas controls explain their icons with visible labels');
     assert.equal(await page.locator('#screen [data-utility="audio"], #screen [data-utility="radio"], #screen [data-utility="sync"]').count(), 0);
     const layout = await canvasTools.evaluate((tools) => {
       const viewport = document.querySelector('.viewport').getBoundingClientRect();
@@ -761,8 +790,8 @@ try {
     const incubationPanel = page.locator('[data-panel="incubation"]');
     const incubationText = await incubationPanel.textContent();
     assert.ok(incubationText.includes(`Age ${hatchTiming.age_days} days.`), 'the rendered chamber explains the current hatch age');
-    assert.ok(incubationText.includes(`Earliest reveal: day ${hatchTiming.earliest_hatch_days}`), 'the rendered chamber shows the authoritative earliest hatch day');
-    assert.ok(incubationText.includes(`guaranteed reveal: day ${hatchTiming.guaranteed_hatch_days}`), 'the rendered chamber shows the authoritative guaranteed hatch day');
+    assert.ok(incubationText.includes(`Earliest hatch: day ${hatchTiming.earliest_hatch_days}`), 'the rendered chamber shows the authoritative earliest hatch day');
+    assert.ok(incubationText.includes(`guaranteed hatch: day ${hatchTiming.guaranteed_hatch_days}`), 'the rendered chamber shows the authoritative guaranteed hatch day');
     assert.equal(await incubationPanel.locator('[data-action="hatch"]').isDisabled(), true);
     for (const [ageDays, careSignals] of [[hatchTiming.earliest_hatch_days, true], [hatchTiming.guaranteed_hatch_days, false]]) {
       sqlite.prepare(`UPDATE telegram_pet_lifecycle_by_pet SET created_at=?, incubation_progress=?, incubation_json=? WHERE telegram_id=?`)
@@ -771,8 +800,28 @@ try {
       assert.equal(readyTiming.ready, true);
       await page.reload(); await page.waitForSelector('[data-panel="incubation"]');
       assert.equal(await incubationPanel.locator('[data-action="hatch"]').isDisabled(), false, 'server hatch readiness remains authoritative');
-      assert.ok((await incubationPanel.textContent()).includes('REVEAL BOT to wake your first companion.'));
+      assert.ok((await incubationPanel.textContent()).includes('HATCH BOT to start your companion’s breakout. Identity reveals at Stage 3.'));
+      assert.equal(await incubationPanel.locator('[data-action="hatch"]').getAttribute('aria-label'), 'HATCH BOT');
     }
+    currentUser = `browser-kaiju-guidance-${viewport.width}`;
+    await seed(currentUser, 'young');
+    await page.reload(); await page.waitForSelector('[data-panel="care"]');
+    await page.locator('[data-screen="explore"]').click();
+    await page.waitForSelector('[data-action="kaiju_start"]', { state: 'attached' });
+    await page.locator('[data-panel="kaiju"]').evaluate(node => { node.open = true; });
+    const kaijuStarted = page.waitForResponse(response => response.url().endsWith('/telegram-pets/app/action') && response.request().postDataJSON()?.action === 'kaiju_start');
+    await page.locator('[data-action="kaiju_start"]').click();
+    assert.equal((await (await kaijuStarted).json()).result.accepted, true);
+    await page.waitForSelector('[data-action="kaiju_card"]', { state: 'attached' });
+    await page.locator('[data-panel="kaiju"]').evaluate(node => { node.open = true; });
+    const kaijuCost = 'Settlement costs 4 energy for a loss, 5 for a draw or 6 for a win.';
+    assert.ok(await page.locator('[data-action="kaiju_card"]').evaluateAll((nodes, cost) => nodes.length > 0 && nodes.every(node => node.querySelector('.button-purpose').textContent.includes(cost) && node.getAttribute('aria-description').includes(cost) && node.scrollWidth <= node.clientWidth + 1), kaijuCost), 'all real Kaiju choices disclose outcome costs and fit mobile before commitment');
+    const kaijuAccessibility = await page.context().newCDPSession(page);
+    const { root: kaijuRoot } = await kaijuAccessibility.send('DOM.getDocument');
+    const { nodeId: kaijuButton } = await kaijuAccessibility.send('DOM.querySelector', { nodeId: kaijuRoot.nodeId, selector: '[data-action="kaiju_card"]' });
+    const { nodes: kaijuAccessibleNodes } = await kaijuAccessibility.send('Accessibility.getPartialAXTree', { nodeId: kaijuButton, fetchRelatives: false });
+    assert.ok((kaijuAccessibleNodes.find(node => node.role?.value === 'button')?.description?.value || '').includes(kaijuCost), 'screen readers receive the Kaiju energy consequence before locking a card');
+    await kaijuAccessibility.detach();
     currentUser = `browser-permanent-${viewport.width}`;
     await seed(currentUser,'egg');
     const savedPets = [['original',1,4321,'2026-07-01'],['purchased',2,9876,'2026-08-15']];
