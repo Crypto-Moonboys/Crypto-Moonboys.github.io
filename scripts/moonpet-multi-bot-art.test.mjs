@@ -111,9 +111,9 @@ assert.ok(f1EddyManifest.assets.every((asset) => asset.frame_count === 25));
 
 const html = fs.readFileSync(path.join(root, "moonpet-game.html"), "utf8");
 assert.doesNotMatch(html, /moonpet-art-resolver\.js/);
-assert.match(html, /moonpet-bot-art-loader\.js\?v=20261002-audit-recovery-v2/);
+assert.match(html, /moonpet-bot-art-loader\.js\?v=20261006-live-refresh-v5/);
 assert.match(html, /moonpet-bot-art-renderer\.js\?v=20261002-audit-recovery-v2/);
-assert.match(html, /moonpet-mini-app\.js\?v=20261006-live-refresh-v4/);
+assert.match(html, /moonpet-mini-app\.js\?v=20261006-live-refresh-v5/);
 assert.doesNotMatch(html, /moonpet-botty-front-(?:asset-loader|sprite-renderer)\.js/);
 assert.doesNotMatch(html, /moonpet-art-v2\.js/);
 

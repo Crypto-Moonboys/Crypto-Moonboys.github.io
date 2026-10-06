@@ -43,6 +43,9 @@
   var fastActionStateDirty = false;
   var fastActionStateRefreshTimer = 0;
   var fastActionStateRefreshInFlight = false;
+  var fastActionStateRefreshFailures = 0;
+  var fastActionStateRefreshRetryAt = 0;
+  var FAST_ACTION_STATE_MAX_AUTO_RETRIES = 3;
   var fullStateHydrationPromise = null;
   var fullStateHydrationFailures = 0;
   var fullStateHydrationRetryTimer = 0;
@@ -57,6 +60,7 @@
   var hatchArtTransitionUntil = 0;
   var hatchArtTransitionTimer = 0;
   var hatchStageOnePreloadPromise = null;
+  var hatchArtTransitionGeneration = 0;
   var actionStartedAt = 0;
   var sleepLatched = false;
   var SLEEP_LATCH_STORAGE_KEY = 'moonpet-botty-sleep-latch-v1';
@@ -1614,6 +1618,21 @@
     return stateNeedsFullHydration(snapshot) ? { mode: 'core' } : {};
   }
 
+  function queueActiveScreenHydration(delayMs) {
+    if (!stateNeedsScreenHydration(state, activeScreen) || fullStateHydrationPromise || fullStateHydrationRetryTimer
+      || fullStateHydrationFailures >= FULL_STATE_HYDRATION_MAX_AUTO_RETRIES) return;
+    fullStateHydrationRetryTimer = window.setTimeout(function () {
+      fullStateHydrationRetryTimer = 0;
+      if (authenticationFailure || !stateNeedsScreenHydration(state, activeScreen)) return;
+      // The installing action/read must finish before the next generation starts.
+      if (busy || noticesBusy || passiveRefreshInFlight || cooldownRefreshInFlight || seasonRefreshBusy || fastActionStateRefreshInFlight) {
+        queueActiveScreenHydration(500);
+        return;
+      }
+      hydrateFullState(activeScreen);
+    }, Math.max(0, Number(delayMs || 0)));
+  }
+
   async function hydrateFullState(reason, options) {
     if (!stateNeedsScreenHydration(state, reason || activeScreen)) return state;
     if (fullStateHydrationPromise) return fullStateHydrationPromise;
@@ -1650,10 +1669,7 @@
         fullStateHydrationPromise = null;
         var retryableScreen = stateNeedsScreenHydration(state, activeScreen);
         if (retryableScreen && fullStateHydrationFailures < FULL_STATE_HYDRATION_MAX_AUTO_RETRIES) {
-          fullStateHydrationRetryTimer = window.setTimeout(function () {
-            fullStateHydrationRetryTimer = 0;
-            hydrateFullState(activeScreen);
-          }, fullStateHydrationRetryDelayMs);
+          queueActiveScreenHydration(fullStateHydrationRetryDelayMs);
         } else if (retryableScreen) {
           // The catch rendered while this request was still in flight. Show
           // the manual retry only after that request has finished and stopped.
@@ -1672,6 +1688,9 @@
     if (Number.isFinite(serverTime)) serverClockOffsetMs = serverTime - Date.now();
     state = nextState;
     petActionRefreshRequired = false;
+    fastActionStateDirty = false;
+    fastActionStateRefreshFailures = 0;
+    fastActionStateRefreshRetryAt = 0;
     sleepLatched = readSleepLatch(state);
     if (!(options && options.deferBotArtSelection) && !hatchArtTransitionActive()) {
       selectBotArtForState(state).catch(function (error) {
@@ -1682,6 +1701,7 @@
     lastSeasonServerRefreshAt = seasonSnapshotReceivedAt;
     cooldownRefreshFailures = 0;
     scheduleCooldownRefresh();
+    if (nextState.hydration && nextState.hydration.full === false) queueActiveScreenHydration();
     return true;
   }
 
@@ -1838,13 +1858,23 @@
   function scheduleFastActionStateRefresh(delayMs) {
     fastActionStateDirty = true;
     window.clearTimeout(fastActionStateRefreshTimer);
-    fastActionStateRefreshTimer = window.setTimeout(refreshFastActionState, Math.max(0, Number(delayMs == null ? 4000 : delayMs) || 0));
+    fastActionStateRefreshTimer = 0;
+    if (fastActionStateRefreshFailures >= FAST_ACTION_STATE_MAX_AUTO_RETRIES) {
+      tell('CARE SYNC PAUSED. TAP REFRESH TO READ YOUR SAVE.', 'danger');
+      return;
+    }
+    var delay = Math.max(0, Number(delayMs == null ? 4000 : delayMs) || 0, fastActionStateRefreshRetryAt - Date.now());
+    fastActionStateRefreshTimer = window.setTimeout(refreshFastActionState, delay);
   }
 
   async function refreshFastActionState() {
     window.clearTimeout(fastActionStateRefreshTimer);
     fastActionStateRefreshTimer = 0;
-    if (!fastActionStateDirty || fastActionStateRefreshInFlight) return;
+    if (!fastActionStateDirty || fastActionStateRefreshInFlight || fastActionStateRefreshFailures >= FAST_ACTION_STATE_MAX_AUTO_RETRIES) return;
+    if (Date.now() < fastActionStateRefreshRetryAt) {
+      scheduleFastActionStateRefresh(0);
+      return;
+    }
     if (fullStateHydrationPromise) {
       scheduleFastActionStateRefresh(750);
       return;
@@ -1857,17 +1887,26 @@
     try {
       var requestGeneration = beginStateRequest();
       var data = await post('/telegram-pets/app/state', stateRefreshPayload(state, activeScreen));
+      if (!data.state) throw new Error('CARE STATE UNAVAILABLE');
       if (!setStateSnapshot(data.state, requestGeneration)) return;
       fastActionStateDirty = false;
+      fastActionStateRefreshFailures = 0;
+      fastActionStateRefreshRetryAt = 0;
       var scrollTop = screen.scrollTop;
       render();
       screen.scrollTop = scrollTop;
       if (!stateNeedsFullHydration(state)) await showPendingNotices();
-    } catch (_) {
-      scheduleFastActionStateRefresh(2000);
+    } catch (error) {
+      if (!stateRequestGate.isCurrent(requestGeneration)) return;
+      fastActionStateRefreshFailures += 1;
+      var backoff = Math.min(30000, 2000 * Math.pow(2, fastActionStateRefreshFailures - 1));
+      var retryAfter = Math.max(0, Number(error && error.retryAfterSeconds || 0) * 1000);
+      var retryDelay = Math.max(retryAfter, backoff + Math.floor(Math.random() * backoff * 0.2));
+      fastActionStateRefreshRetryAt = Date.now() + retryDelay;
+      scheduleFastActionStateRefresh(retryDelay);
     } finally {
       fastActionStateRefreshInFlight = false;
-      if (fastActionStateDirty && !fastActionStateRefreshTimer) scheduleFastActionStateRefresh(1000);
+      if (fastActionStateDirty && !fastActionStateRefreshTimer && fastActionStateRefreshFailures < FAST_ACTION_STATE_MAX_AUTO_RETRIES) scheduleFastActionStateRefresh(1000);
     }
   }
   // TEST-EXPORT: fastActionResponse:end
@@ -3178,8 +3217,10 @@
     return Math.ceil(frameCount / fps * 1000);
   }
 
+  // TEST-EXPORT: hatchArtTransition:start
   function startHatchArtTransition(duration, nextSnapshot) {
     window.clearTimeout(hatchArtTransitionTimer);
+    var transitionGeneration = ++hatchArtTransitionGeneration;
     var transitionDuration = Math.max(1, Number(duration || hatchAnimationDuration()));
     hatchArtTransitionUntil = performance.now() + transitionDuration;
     hatchStageOnePreloadPromise = window.MoonpetBotArtLoader
@@ -3188,18 +3229,29 @@
       })
       : Promise.resolve();
     hatchArtTransitionTimer = window.setTimeout(async function () {
-      hatchArtTransitionUntil = Number.POSITIVE_INFINITY;
-      await hatchStageOnePreloadPromise;
-      hatchArtTransitionUntil = 0;
-      animationUntil = 0;
-      animationMode = sleepLatched ? 'sleep' : 'idle';
-      selectBotArtForState(state).catch(function (error) {
-        console.info('[Moonpet] Stage 1 art selection failed after reveal', error);
-      });
-      if (reducedMotion) drawWorld(performance.now());
+      if (transitionGeneration !== hatchArtTransitionGeneration) return;
+      var releaseTimer;
+      try {
+        hatchArtTransitionUntil = performance.now() + 10000;
+        await Promise.race([hatchStageOnePreloadPromise, new Promise(function (resolve) {
+          releaseTimer = window.setTimeout(resolve, 10000);
+        })]);
+      } finally {
+        window.clearTimeout(releaseTimer);
+        if (transitionGeneration === hatchArtTransitionGeneration) {
+          hatchArtTransitionUntil = 0;
+          animationUntil = 0;
+          animationMode = sleepLatched ? 'sleep' : 'idle';
+          selectBotArtForState(state).catch(function (error) {
+            console.info('[Moonpet] Stage 1 art selection failed after reveal', error);
+          });
+          if (reducedMotion) drawWorld(performance.now());
+        }
+      }
     }, transitionDuration + 20);
     return transitionDuration;
   }
+  // TEST-EXPORT: hatchArtTransition:end
 
   async function runAction(action, payload, buttonElement) {
     if (busy) return;
