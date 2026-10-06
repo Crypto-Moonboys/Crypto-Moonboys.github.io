@@ -396,10 +396,52 @@
   }
 
   // TEST-EXPORT: radioPlayback:start
+  var danceRadioSession = null;
+
+  function releaseDanceRadio() {
+    var session = danceRadioSession;
+    if (!session) return null;
+    window.clearTimeout(session.timer);
+    danceRadioSession = null;
+    return session;
+  }
+
+  function stopDanceRadio() {
+    if (releaseDanceRadio()) setRadioEnabled(false, false, false);
+  }
+
+  function startDanceRadio() {
+    // A new tap owns the stream without pausing an existing dance between taps.
+    releaseDanceRadio();
+    var session = { animationSequence: 0, timer: 0 };
+    danceRadioSession = session;
+    // Bound the pending-action phase too; normal completion replaces this with
+    // the actual pose deadline. The API request itself is capped at 60 seconds.
+    session.timer = window.setTimeout(function () {
+      if (danceRadioSession === session) stopDanceRadio();
+    }, 65000);
+    // Call play in the original user gesture, before awaiting the action save.
+    // Temporary dance playback must not change the remembered Radio preference.
+    setRadioEnabled(true, false, false);
+    return session;
+  }
+
+  function syncDanceRadioAnimation(mode, until, sequence) {
+    var session = danceRadioSession;
+    if (!session) return;
+    if (mode !== 'dance') { stopDanceRadio(); return; }
+    window.clearTimeout(session.timer);
+    session.animationSequence = sequence;
+    session.timer = window.setTimeout(function () {
+      if (danceRadioSession === session && session.animationSequence === sequence) stopDanceRadio();
+    }, Math.max(0, until - performance.now()));
+  }
+
   function radioPlaybackFailed(error, announce) {
+    var temporaryDance = Boolean(releaseDanceRadio());
     radioRequestedOn = false;
     radioEnabled = false;
-    radioNeedsGesture = Boolean(error && error.name === 'NotAllowedError');
+    radioNeedsGesture = !temporaryDance && Boolean(error && error.name === 'NotAllowedError');
     radioRetryNeedsLoad = !radioNeedsGesture;
     syncMoonpetScore();
     renderCanvasTools();
@@ -410,14 +452,14 @@
       : 'RADIO CONNECTION LOST' + (reason ? ' [' + reason + ' / ' + code + ']' : '') + '. TAP THE RADIO ICON TO RECONNECT.', 'danger');
   }
 
-  async function setRadioEnabled(on, announce) {
+  async function setRadioEnabled(on, announce, persistPreference) {
     radioRequestedOn = Boolean(on);
     radioNeedsGesture = false;
     var requestGeneration = ++radioRequestGeneration;
     if (!on) {
       if (radioPlayer) radioPlayer.pause();
       radioEnabled = false;
-      saveRadioPreference(false);
+      if (persistPreference !== false) saveRadioPreference(false);
       syncMoonpetScore();
       renderCanvasTools();
       if (announce !== false) tell('GRAFFPUNKS RADIO OFFLINE.');
@@ -440,7 +482,7 @@
       }
       radioEnabled = true;
       radioRetryNeedsLoad = false;
-      saveRadioPreference(true);
+      if (persistPreference !== false) saveRadioPreference(true);
       syncMoonpetScore();
       renderCanvasTools();
       if (announce !== false) tell('GRAFFPUNKS RADIO LIVE.');
@@ -453,6 +495,8 @@
   }
 
   function toggleRadio() {
+    // An explicit Radio choice takes ownership from the automatic dance stop.
+    releaseDanceRadio();
     var playback = setRadioEnabled(!radioRequestedOn, true);
     haptic('light');
     return playback;
@@ -461,7 +505,7 @@
     if (!radioNeedsGesture || radioRequestedOn || radioEnabled || !state || document.hidden || !event.isTrusted) return;
     if (event.type === 'keydown' && (event.repeat || !['Enter', ' '].includes(event.key))) return;
     // The Radio button owns its toggle; Audio should not unexpectedly start radio.
-    if (event.target && event.target.closest && event.target.closest('[data-utility="radio"], [data-utility="audio"]')) return;
+    if (event.target && event.target.closest && event.target.closest('[data-utility="radio"], [data-utility="audio"], [data-action="dance"]')) return;
     setRadioEnabled(true, false);
   }
 
@@ -878,7 +922,7 @@
             "care"
       ],
       "dance": [
-            "Raise happiness with a dance. This Care action awards no XP or incubation signal.",
+            "Raise happiness and play the radio for this dance. It stops with the animation; the Radio control can override it. No XP or incubation signal.",
             "care"
       ],
       "cuddles": [
@@ -1285,7 +1329,7 @@
       '<div class="guide-step"><strong>4 // FOLLOW THE ROUTE</strong>HOME recommends the next move. In MISSIONS, complete the official daily objectives to earn a Growth Mark at the displayed target. Finish every Weekly Journey objective to earn a Weekly Crest. Keep claiming completed missions, achievements and the Daily Cache; the all-missions daily bonus is a separate claim. Daily resets use UTC. Each panel shows its own reset and requirements.</div>' +
       '<div class="guide-step"><strong>5 // BUILD YOUR LOADOUT</strong>ECONOMY contains equipment, materials, bounties, market offers, inventory and upgrades. Equip an item to use its bonus; eligible actions build mastery. Set a crafting goal, follow its material routes and craft or use the result. Check storage space before buying a bundle. Districts show an objective, opponent and route before you commit. ' + combatGuideCopy + ' Moon Run reaches 100 rooms—extract to bank unbanked rewards.</div>' +
       '<div class="guide-step"><strong>6 // IDENTITY AND PROGRESSION</strong>The canonical identity name is revealed when server-authoritative Stage 3 begins. PROFILE tracks evolution and season rewards. Growth Marks, Weekly Crests and the displayed pet-age requirements advance your lifetime Journey. Pet level and evolution are separate; use the live requirements shown for your selected pet.</div>' +
-      '<div class="guide-step"><strong>CANVAS CONTROLS</strong>The cyan speaker toggles game audio, the purple radio plays or stops GraffPUNKS Radio, and the amber arrows refresh your live save. They sit at the top right of the canvas. Radio starts from your tap; tap it again to stop, or retry after a connection error. Reduced-motion mode keeps the buttons steady.</div>' +
+      '<div class="guide-step"><strong>CANVAS CONTROLS</strong>The cyan speaker toggles game audio, the purple radio plays or stops GraffPUNKS Radio, and the amber arrows refresh your live save. They sit at the top right of the canvas. Dance starts the station for its animation and stops it when the pose finishes. The Radio control overrides this automatic stop; tap it to play or stop, or retry after a connection error. Reduced-motion mode keeps the buttons steady.</div>' +
       '<div class="guide-step"><strong>CURRENCIES</strong>Pet XP raises level. Moon Gold buys common upgrades. Gems unlock premium routes. Style unlocks cosmetics. Energy powers demanding actions.</div>' +
       '<div class="guide-step"><strong>CONTINUING CONTRACTS</strong>After hatching, open MISSIONS or Play Now. Pick a quest, build, difficulty and route length. Standard routes have six rooms and two upgrade drafts; long routes have ten rooms and four drafts. Later rooms get harder, and long routes have higher targets. Complete the whole route to earn rank. New quests continue without cooldowns or pet energy costs. The first three successful contracts per account each UTC day qualify for up to 20 Pet XP each, within your normal XP cap, for either length. Every choice is saved online. Contract rank is separate from pet level, Daily Journey and leaderboards.</div>' +
       '<div class="guide-step"><strong>DAILY RUN TACTICS</strong>New official attempts show clear chance and score for each approach. Safe routes trade score for better odds; bold routes offer more score at higher risk. After rooms 3 and 6, choose Guardian, Striker or Scavenger, or continue without an upgrade. Tactics change later odds and run score only. One official attempt per account each UTC day still applies. Reach the final room and defeat its boss to finish. Extracting ends that day’s attempt early. If a saved ending needs settlement, use FINISH SAVED DAILY RUN to recover it without spending a new attempt.</div>' +
@@ -3549,6 +3593,7 @@
     var animationDuration = duration || 2400;
     actionStartedAt = performance.now();
     animationUntil = sleepLatched && animationMode === 'sleep' ? Number.POSITIVE_INFINITY : actionStartedAt + animationDuration;
+    syncDanceRadioAnimation(animationMode, animationUntil, actionSequence);
     if (reducedMotion) {
       window.clearTimeout(reducedMotionAnimationTimer);
       var sequence = actionSequence;
@@ -3645,6 +3690,7 @@
     var authoritativeSleepClear = ['energy_drink', 'dance', 'cuddles'].includes(String(action || '').toLowerCase());
     var waitForAcceptedAnimation = !fastResponse && authoritativeSleepClear;
     var actionFamily = actionAnimationFamily(action, payload);
+    var danceRadioScope = actionFamily === 'dance' ? startDanceRadio() : null;
     if (sleepLatched && actionFamily !== 'sleep' && !authoritativeSleepClear) setSleepLatch(false);
     if (!waitForAcceptedAnimation) animateAction(action, true, fastResponse ? (actionFamily === 'dance' ? 3600 : 2800) : 8000, payload);
     tell(words(action) + ' in progress...');
@@ -3768,6 +3814,8 @@
       animateAction(action, actionAccepted === true, 2800, payload);
       haptic(actionAccepted ? 'success' : 'error');
     } finally {
+      if (danceRadioScope && danceRadioSession === danceRadioScope
+        && (!danceRadioScope.animationSequence || actionAccepted !== true)) stopDanceRadio();
       busy = false;
       if (buttonElement) buttonElement.classList.remove('is-active');
     }
@@ -4465,6 +4513,7 @@
   }
 
   window.addEventListener('pagehide', function () {
+    stopDanceRadio();
     window.clearInterval(scoreTimer); scoreTimer = 0;
     radioRequestGeneration += 1;
     if (radioPlayer) radioPlayer.pause();
@@ -4475,7 +4524,7 @@
     if (event.persisted) refreshSeasonSnapshot(true);
   });
   document.addEventListener('visibilitychange', function () {
-    if (document.hidden) return;
+    if (document.hidden) { stopDanceRadio(); return; }
     refreshSeasonSnapshot(true);
     if (performanceSent) return;
     performanceFrames = 0; performanceSlowFrames = 0; performanceStartedAt = 0; performanceLastFrameAt = 0;
