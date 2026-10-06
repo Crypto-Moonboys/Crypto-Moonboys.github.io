@@ -1357,3 +1357,9 @@ reward authorization and deletion blockers. SQLite AND predicates do not
 promise short-circuit evaluation. Invalid outcome/generated/analytics JSON
 cannot abort another valid source's scan, authorize payment or masquerade as a
 victory. Historical malformed records remain retained without invented proof.
+
+### Tab readiness after core startup
+
+Home renders from core state first. On a normal Home launch, one guarded background full-state read prepares all tabs while Home remains usable. Tabs share the in-flight read and subsequently render from its authoritative snapshot. A newer action or read aborts that speculative request; stale-response generation checks remain required. Warmup waits briefly for active work, stops after a bounded idle wait or failure, and leaves foreground hydration/manual retry available.
+
+Once a full snapshot is installed, Missions actions and refreshes keep requesting full state. A Missions-only projection is used only while the client is still partially hydrated. This prevents navigation from discarding already loaded inventory, work, exploration or profile details. No stored cross-session tab cache is used.

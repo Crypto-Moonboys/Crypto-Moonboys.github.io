@@ -308,6 +308,54 @@ try {
     assert.deepEqual(errors, []);
     await context.close();
   }
+  // Core Home stays interactive while one background read prepares all tabs.
+  for (const viewport of [{ width: 390, height: 844 }, { width: 360, height: 640 }]) {
+    const context = await createFixtureContext({ viewport, reducedMotion: 'reduce' });
+    const page = await context.newPage();
+    const modes = [], errors = [];
+    let releaseWarmup, warmupStarted;
+    const warmupGate = new Promise(resolve => { releaseWarmup = resolve; });
+    const startedGate = new Promise(resolve => { warmupStarted = resolve; });
+    let firstFull = true;
+    page.on('pageerror', error => errors.push(error.message));
+    await page.addInitScript(() => localStorage.setItem('moonpet-radio-preference', 'off'));
+    await page.route('**/*', async route => {
+      const url = new URL(route.request().url());
+      if (url.hostname === 'telegram.org') return route.fulfill({ contentType: 'text/javascript', body: "window.Telegram={WebApp:{initData:'fixture',ready(){},expand(){},onEvent(){},setHeaderColor(){},setBackgroundColor(){}}};" });
+      if (url.pathname.endsWith('/telegram-pets/app/state')) {
+        const body = route.request().postDataJSON(); modes.push(body.mode || 'full');
+        const state = body.mode === 'core' ? await hooks.buildPetMiniAppCoreState(db, 'browser-missions')
+          : await hooks.buildPetMiniAppState(db, 'browser-missions', token, { mode: body.mode });
+        if (!body.mode && firstFull) { firstFull = false; warmupStarted(); await warmupGate; }
+        return route.fulfill({ json: { ok: true, state } });
+      }
+      if (url.pathname.endsWith('/telegram-pets/app/performance')) return route.fulfill({ json: { ok: true } });
+      if (url.hostname === '127.0.0.1') return route.continue();
+      return route.abort();
+    });
+    await page.goto(`http://127.0.0.1:${server.address().port}/moonpet-game.html`);
+    await page.waitForSelector('[data-panel="care"]'); await startedGate;
+    assert.equal(await page.locator('[data-panel="module-loading"]').count(), 0, 'Home is usable during background projection');
+    assert.deepEqual(modes, ['core', 'full'], 'exactly one background full read begins before any tab tap');
+    releaseWarmup();
+    await page.locator('[data-screen="missions"]').click();
+    await page.waitForSelector('[data-panel="contracts"]');
+    for (const [tab, panel] of [['work','timed-activity'],['economy','equipment'],['profile','pet-spaces'],['explore','districts'],['missions','contracts']]) {
+      await page.locator(`[data-screen="${tab}"]`).click();
+      assert.equal(await page.locator(`[data-panel="${panel}"]`).count(), 1, `${tab} renders immediately from the shared projection`);
+      assert.equal(await page.locator('[data-panel="module-loading"]').count(), 0);
+    }
+    assert.deepEqual(modes, ['core','full'], 'loaded tab navigation performs no additional state reads');
+    await page.locator('[data-utility="sync"]').click();
+    await page.waitForFunction(() => document.querySelector('#terminal-output').textContent.includes('LIVE SAVE REFRESHED'));
+    assert.deepEqual(modes, ['core','full','full'], 'Missions Refresh retains full state instead of discarding other tabs');
+    await page.locator('[data-screen="economy"]').click();
+    assert.equal(await page.locator('[data-panel="equipment"]').count(), 1);
+    assert.equal(await page.locator('[data-panel="module-loading"]').count(), 0);
+    assert.deepEqual(modes, ['core','full','full']); assert.deepEqual(errors, []);
+    console.log(`Background tab readiness and Missions refresh browser flow passed at ${viewport.width}x${viewport.height}`);
+    await context.close();
+  }
   // Exercise the partial response with the real renderer, including a delayed
   // Missions deep link and subsequent navigation to a full-state screen.
   {

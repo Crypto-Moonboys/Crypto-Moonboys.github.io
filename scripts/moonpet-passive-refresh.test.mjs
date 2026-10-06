@@ -526,3 +526,16 @@ test('a scheduled full read rejects partial state even after a tab switch', asyn
   f.pending[0].resolve({ state: partial }); await read;
   assert.equal(f.ctx.state.hydration.full, true); assert.equal(f.ctx.seasonRefreshPending, true);
 });
+
+for (const phase of ['fetch', 'body']) test(`superseding tab warmup aborts stalled ${phase} without waiting for its deadline`, async () => {
+  const f = context(), net = requestRuntime(f), controller = new AbortController();
+  const read = f.ctx.post('/telegram-pets/app/state', {}, { signal: controller.signal });
+  const stalled = net.requests[0];
+  if (phase === 'body') {
+    stalled.resolve({ ok: true, status: 200, json: () => new Promise(() => {}) });
+    await net.tick(0);
+  }
+  controller.abort();
+  await assert.rejects(read, error => error.code === 'request_superseded');
+  assert.equal(stalled.signal.aborted, true); assert.equal(net.timers.size, 0);
+});
