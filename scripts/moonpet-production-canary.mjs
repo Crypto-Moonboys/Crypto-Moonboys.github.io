@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { createHmac } from 'node:crypto';
+import { createHash, createHmac } from 'node:crypto';
 import { MOONPET_D1_PERFORMANCE_BUDGETS } from './moonpet-d1-performance-budget.mjs';
 
 const COMMIT_RE = /^[0-9a-f]{40}$/i;
@@ -136,15 +136,23 @@ if (privateBoard.payload.period !== publicBoard.payload.period
 
 let actionResult = null;
 if (ACTION !== 'none') {
+  const actionRequestId = 'production-canary-' + createHash('sha256')
+    .update(JSON.stringify([EXPECTED_COMMIT, TELEGRAM_ID, stateResult.payload.state.pet.pet_id, ACTION]))
+    .digest('hex').slice(0, 48);
   actionResult = await requestJson('/telegram-pets/app/action', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ ...authBody, action: ACTION, request_id: `production-canary:${EXPECTED_COMMIT}:${ACTION}` }),
+    body: JSON.stringify({ ...authBody, action: ACTION, displayed_pet_id: stateResult.payload.state.pet.pet_id,
+      request_id: actionRequestId }),
   });
   if (![200, 409].includes(actionResult.response.status) || !actionResult.payload?.result || !actionResult.payload?.state) {
     fail(`/telegram-pets/app/action returned invalid HTTP ${actionResult.response.status}`);
   }
   assertState(actionResult.payload.state);
+  if (actionResult.response.status !== 200 || actionResult.payload.ok !== true || actionResult.payload.result.accepted !== true) {
+    fail(`/telegram-pets/app/action rejected ${ACTION}: ${actionResult.payload.result.reason || 'unknown reason'}`);
+  }
+  if (actionResult.payload.state.pet.pet_id !== stateResult.payload.state.pet.pet_id) fail('action response changed the selected pet');
 }
 
 console.log(JSON.stringify({

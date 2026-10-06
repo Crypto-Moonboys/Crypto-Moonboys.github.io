@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { createHmac } from 'node:crypto';
+import { createHash, createHmac } from 'node:crypto';
 import { spawn } from 'node:child_process';
 import { createServer } from 'node:http';
 import { readFileSync } from 'node:fs';
@@ -139,7 +139,7 @@ test('canary checks provenance before auth and guards optional gameplay actions'
   });
 });
 
-test('explicit action mode uses a commit-stable idempotency key', async () => {
+test('explicit action mode uses a commit/account/pet/action-stable idempotency key within the server limit', async () => {
   let actionBody = null;
   await withServer(async (request, response) => {
     let body = '';
@@ -159,6 +159,34 @@ test('explicit action mode uses a commit-stable idempotency key', async () => {
       MOONPET_CANARY_ACTION: 'feed', MOONPET_CANARY_ALLOW_ACTION: '1' });
     assert.equal(result.status, 0, result.stderr);
     assert.equal(actionBody.action, 'feed');
-    assert.equal(actionBody.request_id, `production-canary:${COMMIT}:feed`);
+    assert.equal(actionBody.displayed_pet_id, 'canary-pet');
+    assert.equal(actionBody.request_id, 'production-canary-' + createHash('sha256')
+      .update(JSON.stringify([COMMIT, TELEGRAM_ID, 'canary-pet', 'feed'])).digest('hex').slice(0, 48));
+    assert.ok(actionBody.request_id.length <= 72, 'request authority must not be lost by suffix truncation');
+  });
+});
+
+for (const [status, result] of [
+  [409, { accepted: false, reason: 'displayed_pet_required' }],
+  [200, { accepted: false, reason: 'cooldown' }],
+  [409, { accepted: true, duplicate: true, reason: 'duplicate' }],
+]) test(`action canary fails rejected or non-successful actions: ${status}/${result.reason}`, async () => {
+  await withServer(async (request, response) => {
+    for await (const _chunk of request) { /* drain the signed POST body */ }
+    response.setHeader('content-type', 'application/json');
+    if (request.url === '/deployment-info') return response.end(JSON.stringify({ commit: COMMIT }));
+    if (request.url === '/telegram-pets/app/state') return response.end(JSON.stringify({ ok: true, state: validState() }));
+    if (request.url.includes('leaderboard')) return response.end(JSON.stringify({ period: 'seasonal', entries: [] }));
+    if (request.url === '/telegram-pets/app/action') {
+      response.statusCode = status;
+      return response.end(JSON.stringify({ ok: status === 200, result, state: validState() }));
+    }
+    response.statusCode = 404; response.end('{}');
+  }, async baseUrl => {
+    const rejected = await runCanary({ MOONPET_CANARY_BASE_URL: baseUrl, MOONPET_CANARY_ALLOW_WRITES: '1',
+      MOONPET_CANARY_ACTION: 'feed', MOONPET_CANARY_ALLOW_ACTION: '1' });
+    assert.notEqual(rejected.status, 0);
+    assert.match(rejected.stderr, /action rejected feed/);
+    assert.doesNotMatch(rejected.stdout + rejected.stderr, /test-canary-secret|init_data/);
   });
 });

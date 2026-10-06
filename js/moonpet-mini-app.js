@@ -23,10 +23,14 @@
   var seasonSnapshotReceivedAt = 0;
   var lastSeasonServerRefreshAt = 0;
   var seasonRefreshBusy = false;
+  var seasonRefreshPending = false;
+  var seasonRefreshRetryAt = 0;
   var stateRequestGate = createStateRequestGate();
   var serverClockOffsetMs = 0;
   var cooldownRefreshTimer = 0;
   var cooldownRefreshInFlight = false;
+  var cooldownRefreshFailures = 0;
+  var passiveRefreshInFlight = false;
   var lastCooldownRefreshKey = '';
   var SCREEN_ORDER = ['home', 'missions', 'explore', 'work', 'economy', 'profile'];
   var requestedScreen = launchParameter('screen');
@@ -576,6 +580,7 @@
     } catch (_) { telegramAuth = null; }
   }
 
+  // TEST-EXPORT: apiRequest:start
   async function post(path, payload) {
     if (!apiBase) throw new Error('API ENDPOINT DISABLED FOR THIS CONTEXT');
     if (authenticationFailure) {
@@ -583,37 +588,60 @@
       expiredError.status = 401;
       throw expiredError;
     }
-    // State is read-only and safe to retry on a fresh request context. A
-    // transient D1 read must not strand the whole game on its startup screen.
-    // Never retry /action here: mutations own their idempotency and response.
-    var stateAttempts = path === '/telegram-pets/app/state' ? 3 : 1;
-    for (var attempt = 0; attempt < stateAttempts; attempt += 1) {
-      var response = await fetch(apiBase + path, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(Object.assign({}, authBody(), payload || {})),
-      });
-      var data = await response.json().catch(function () { return {}; });
-      var retryableStateFailure = response.status === 503 && data.error === 'mini_app_state_failed' && attempt + 1 < stateAttempts;
-      if (retryableStateFailure) {
-        await new Promise(function (resolve) { setTimeout(resolve, attempt ? 700 : 250); });
-        continue;
-      }
-      if (!response.ok && response.status !== 409) {
-        var requestError = new Error(data.error || 'NETWORK HANDSHAKE FAILED');
-        requestError.status = response.status;
-        requestError.retryAfterSeconds = Math.max(0, Number(data.retry_after_seconds || 0));
-        if (response.status === 401) {
-          authenticationFailure = true;
-          petActionRefreshRequired = true;
-          if (state) render();
+    var controller = new AbortController();
+    var timeoutError = new Error('REQUEST TIMED OUT. TAP REFRESH TO READ YOUR SAVE.');
+    timeoutError.code = 'request_timeout';
+    var timeoutMs = path === '/telegram-pets/app/state' && payload && payload.mode === 'live' ? 30000 : 60000;
+    var requestTimer;
+    var deadline = new Promise(function (_, reject) {
+      requestTimer = setTimeout(function () {
+        reject(timeoutError);
+        controller.abort();
+      }, timeoutMs);
+    });
+    try {
+      // The deadline covers fetch, body reads and all read-only retries. Racing
+      // it also releases callers' guards if a transport ignores cancellation.
+      return await Promise.race([deadline, (async function () {
+        // State is safe to retry after a transient D1 read failure. Mutations
+        // must never replay automatically after an unconfirmed response.
+        var stateAttempts = path === '/telegram-pets/app/state' ? 3 : 1;
+        for (var attempt = 0; attempt < stateAttempts; attempt += 1) {
+          if (controller.signal.aborted) throw timeoutError;
+          var response = await fetch(apiBase + path, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(Object.assign({}, authBody(), payload || {})),
+            signal: controller.signal,
+          });
+          if (controller.signal.aborted) throw timeoutError;
+          var data = await response.json().catch(function () { return {}; });
+          if (controller.signal.aborted) throw timeoutError;
+          var retryableStateFailure = response.status === 503 && data.error === 'mini_app_state_failed' && attempt + 1 < stateAttempts;
+          if (retryableStateFailure) {
+            await new Promise(function (resolve) { setTimeout(resolve, attempt ? 700 : 250); });
+            continue;
+          }
+          if (!response.ok && response.status !== 409) {
+            var requestError = new Error(data.error || 'NETWORK HANDSHAKE FAILED');
+            requestError.status = response.status;
+            requestError.retryAfterSeconds = Math.max(0, Number(data.retry_after_seconds || 0));
+            if (response.status === 401) {
+              authenticationFailure = true;
+              petActionRefreshRequired = true;
+              if (state) render();
+            }
+            throw requestError;
+          }
+          return data;
         }
-        throw requestError;
-      }
-      return data;
+        throw new Error('mini_app_state_failed');
+      }())]);
+    } finally {
+      clearTimeout(requestTimer);
     }
-    throw new Error('mini_app_state_failed');
   }
+  // TEST-EXPORT: apiRequest:end
 
   async function typeBoot(lines, options) {
     var token = ++typingToken;
@@ -803,7 +831,7 @@
       options = Object.assign({}, options, { disabled: true, statusLabel: 'ARCADE XP REQUIRED' });
     }
     var accountActions = ['adopt', 'guidance_ack', 'notification_set', 'season_slots', 'buy_pet_slot', 'switch_pet_slot', 'delete_pet_slot', 'arena_queue_cancel', 'arena_forfeit', 'kaiju_queue_cancel', 'kaiju_match_cancel'];
-    var eggActions = accountActions.concat(['incubate', 'hatch', 'energy_drink', 'dance', 'cuddles', 'bounty_claim', 'season_claim', 'weekly_boss_claim', 'contract_claim', 'style_equip', 'seasonal_boss_claim', 'daily_completion_claim', 'finale_start', 'finale_retry', 'finale_step', 'finale_claim']);
+    var eggActions = accountActions.concat(['incubate', 'hatch', 'energy_drink', 'dance', 'cuddles', 'bounty_claim', 'season_claim', 'weekly_boss_claim', 'contract_claim', 'style_equip', 'seasonal_boss_claim', 'daily_completion_claim', 'finale_start', 'finale_retry', 'finale_step', 'finale_claim', 'event_recover', 'event_close']);
     if (state && state.lifecycle && state.lifecycle.phase === 'egg' && !eggActions.includes(action)) {
       options = Object.assign({}, options, { disabled: true, cooldown: null, statusLabel: 'HATCH REQUIRED' });
     } else if (state && state.adopted === false && !accountActions.includes(action)) {
@@ -1652,6 +1680,7 @@
     }
     seasonSnapshotReceivedAt = performance.now();
     lastSeasonServerRefreshAt = seasonSnapshotReceivedAt;
+    cooldownRefreshFailures = 0;
     scheduleCooldownRefresh();
     return true;
   }
@@ -1691,6 +1720,7 @@
     window.clearTimeout(cooldownRefreshTimer);
     cooldownRefreshTimer = 0;
     var override = Number(delayOverrideMs);
+    if (cooldownRefreshFailures >= 3 && !(override > 0)) return;
     var delay = Number.isFinite(override) && override > 0 ? Math.ceil(override) : nextCooldownDelayMs(state);
     if (!delay) return;
     cooldownRefreshTimer = window.setTimeout(function () {
@@ -1700,8 +1730,8 @@
   }
 
   async function refreshExpiredCooldownState() {
-    if (!state || !state.adopted) return;
-    if (busy || noticesBusy || cooldownRefreshInFlight) {
+    if (!state || !state.adopted || cooldownRefreshFailures >= 3) return;
+    if (busy || noticesBusy || cooldownRefreshInFlight || passiveRefreshInFlight || fastActionStateRefreshInFlight || seasonRefreshBusy || fullStateHydrationPromise) {
       scheduleCooldownRefresh(1000);
       return;
     }
@@ -1721,9 +1751,16 @@
       screen.scrollTop = scrollTop;
       tell('COOLDOWN EXPIRED. STATE REFRESHED.');
       if (!stateNeedsFullHydration(state)) await showPendingNotices();
-    } catch (_) {
+    } catch (error) {
       if (refreshKey && refreshKey === lastCooldownRefreshKey) lastCooldownRefreshKey = '';
-      scheduleCooldownRefresh();
+      cooldownRefreshFailures += 1;
+      if (cooldownRefreshFailures < 3) {
+        var backoff = Math.min(30000, 2000 * Math.pow(2, cooldownRefreshFailures - 1));
+        var retryAfter = Math.max(0, Number(error && error.retryAfterSeconds || 0) * 1000);
+        scheduleCooldownRefresh(Math.max(retryAfter, backoff + Math.floor(Math.random() * backoff * 0.2)));
+      } else {
+        tell('COOLDOWN SYNC PAUSED. TAP REFRESH TO RETRY.', 'danger');
+      }
     } finally {
       cooldownRefreshInFlight = false;
     }
@@ -1812,7 +1849,7 @@
       scheduleFastActionStateRefresh(750);
       return;
     }
-    if (busy || noticesBusy) {
+    if (busy || noticesBusy || passiveRefreshInFlight || cooldownRefreshInFlight || seasonRefreshBusy) {
       scheduleFastActionStateRefresh(500);
       return;
     }
@@ -2205,17 +2242,20 @@
   }
 
   function renderExplore() {
+    var savedEvents = (state.pending_street_events || []).map(function (entry) {
+      return entry.recoverable ? button('RECOVER SAVED EVENT', 'event_recover', { event_id: entry.event_id }, { detail: 'Recovers the original outcome for the pet that started it.' })
+        : '<div class="line muted">SAVED EVENT NEEDS REVIEW // Its original outcome could not be verified. Your saved history is preserved.</div>'
+          + (entry.close_available ? button('CLOSE OLD EVENT', 'event_close', { event_id: entry.event_id }, { danger: true,
+            detail: 'Closes this unverified event without claiming a reward. History, balances and the old reward slot are kept.' }) : '');
+    }).join('');
     var firstSessionExplore = firstSessionExploreMarkup();
-    if (firstSessionExplore) return renderPlayNow() + firstSessionExplore;
+    if (firstSessionExplore) return renderPlayNow() + firstSessionExplore
+      + (savedEvents ? panel('SAVED STREET EVENTS', savedEvents, 'saved-street-events') : '');
     var guidance = state.guidance || {};
     var encounter = state.encounter;
     var eventButtons = encounter ? encounter.choices.map(function (choice) {
       return button(choice.label, 'random_event', { choice: choice.key, challenge_token: encounter.challenge_token }, { disabled: choice.preview && choice.preview.available === false, resourceRequired: choice.preview && choice.preview.available === false, detail: choice.preview && choice.preview.detail || '' });
     }).join('') : '';
-    var savedEvents = (state.pending_street_events || []).map(function (entry) {
-      return entry.recoverable ? button('RECOVER SAVED EVENT', 'event_recover', { event_id: entry.event_id }, { detail: 'Recovers the original outcome for the pet that started it.' })
-        : '<div class="line muted">SAVED EVENT NEEDS REVIEW // Its original outcome could not be verified. Your saved history is preserved.</div>';
-    }).join('');
     var adventure = state.adventure;
     var adventureButtons = adventure ? adventure.choices.map(function (choice) {
       return button(choice.label, 'adventure', { adventure_key: choice.key, challenge_token: adventure.challenge_token }, { disabled: adventure.available === false || choice.preview && choice.preview.available === false, resourceRequired: choice.preview && choice.preview.available === false, cooldown: adventure.cooldown, detail: (adventure.minimum_energy ? 'ENTRY REQUIRES ' + number(adventure.minimum_energy) + ' ENERGY // ' : '') + (choice.preview && choice.preview.detail || '') });
@@ -2802,6 +2842,7 @@
 
   function resultMessage(result, beforeState, afterState) {
     if (!result) return 'Response unavailable.';
+    if (result.accepted && result.reason === 'legacy_street_event_closed') return 'OLD EVENT CLOSED. History and balances kept; no reward claimed.';
     if (!result.accepted) {
       var blockedParts = ['Action unavailable'];
       var blockedReasonCopy = rejectionMessage(result.reason);
@@ -3180,6 +3221,11 @@
       if (!petToDelete || !window.confirm('Delete ' + (payload.pet_label || 'this pet') + '?\n\nThis pet cannot return to play. A fresh egg will use the same owned space at no XP cost.\n\nAccount XP, currencies, items, competition scores and reward history are kept. This pet\'s training will not transfer.')) return;
       payload = { pet_id: petToDelete, confirm_pet_id: petToDelete, confirmed: true };
     }
+    if (action === 'event_close') {
+      var eventToClose = String(payload && payload.event_id || '');
+      if (!eventToClose || !window.confirm('Close this old Street Event?\n\nIts original outcome could not be verified. Closing it gives up this event without a reward or refund.\n\nIts history, balances and old reward slot are kept. This cannot be undone in the game.')) return;
+      payload = { event_id: eventToClose, confirm_event_id: eventToClose, confirmed: true };
+    }
     busy = true;
     if (buttonElement) buttonElement.classList.add('is-active');
     haptic('medium');
@@ -3509,48 +3555,135 @@
       kaiju && kaiju.opponent_card_locked, snapshot && snapshot.kaiju && snapshot.kaiju.queue && snapshot.kaiju.queue.position].join('|');
   }
 
+  // TEST-EXPORT: passiveLiveRefresh:start
+  function seasonSnapshotRefreshDue() {
+    return seasonRefreshPending || lastSeasonServerRefreshAt <= 0
+      || performance.now() - lastSeasonServerRefreshAt >= 300000;
+  }
+
+  function mergePetLiveSnapshot(snapshot, patch) {
+    if (!snapshot || !snapshot.pet || !patch || patch.pet_id !== snapshot.pet.pet_id
+      || patch.season_key !== snapshot.pet.season_key || patch.adopted !== true) return null;
+    if (!['arena', 'arena_queue', 'arena_result', 'kaiju', 'activity', 'server_time'].every(function (key) {
+      return Object.prototype.hasOwnProperty.call(patch, key);
+    }) || !patch.kaiju || typeof patch.kaiju !== 'object') return null;
+    // Merge only this projection's fields. A live poll must never replace the
+    // hydrated shops, lifecycle, cooldowns or rewards with a partial response.
+    return Object.assign({}, snapshot, {
+      arena: patch.arena, arena_queue: patch.arena_queue, arena_result: patch.arena_result,
+      kaiju: Object.assign({}, snapshot.kaiju, patch.kaiju),
+      guidance: Object.assign({}, snapshot.guidance, { activity: patch.activity }),
+      server_time: patch.server_time,
+    });
+  }
+
   async function refreshLiveState() {
     if (stateNeedsFullHydration(state)) return;
     var multiplayerActive = state && (state.arena || state.arena_queue || state.kaiju && (state.kaiju.match || state.kaiju.queue));
     var activityActive = state && state.guidance && state.guidance.activity;
     var relevant = activeScreen === 'explore' && multiplayerActive || activeScreen === 'work' && activityActive;
     var minimumDelay = multiplayerActive && activeScreen === 'explore' ? 4500 : 14000;
-    if (busy || noticesBusy || !state || !state.adopted || !relevant || Date.now() - lastPassiveRefreshAt < minimumDelay) return;
-    lastPassiveRefreshAt = Date.now();
+    if (busy || noticesBusy || passiveRefreshInFlight || fastActionStateRefreshInFlight || cooldownRefreshInFlight || seasonRefreshBusy || fullStateHydrationPromise
+      || !state || !state.adopted || !relevant || Date.now() - lastPassiveRefreshAt < minimumDelay) return;
+    // The five-second timer can run before every aligned season tick. Service
+    // its queued/deadline read before starting another live request.
+    if (seasonSnapshotRefreshDue() && performance.now() >= seasonRefreshRetryAt) {
+      await refreshSeasonSnapshot(false);
+      return;
+    }
+    passiveRefreshInFlight = true;
     var before = multiplayerFingerprint(state);
+    var beforeActivity = state.guidance && state.guidance.activity;
     try {
       var requestGeneration = beginStateRequest();
-      var data = await post('/telegram-pets/app/state');
-      if (!data.state) return;
-      if (!setStateSnapshot(data.state, requestGeneration)) return;
+      var data = await post('/telegram-pets/app/state', { mode: 'live' });
+      if (!stateRequestGate.isCurrent(requestGeneration) || authenticationFailure) return;
+      // During a coordinated release an older Worker may still return its
+      // complete snapshot for an unknown mode. Keep play working in that gap.
+      var legacyFull = data.state && data.state.pet && (!data.state.hydration || data.state.hydration.full === true);
+      var merged = legacyFull ? data.state : mergePetLiveSnapshot(state, data.state);
+      var sourceChanged = data.state && data.state.hydration && data.state.hydration.mode === 'live'
+        && (data.state.adopted === false || data.state.adopted === true && typeof data.state.pet_id === 'string'
+          && typeof data.state.season_key === 'string' && state.pet
+          && (data.state.pet_id !== state.pet.pet_id || data.state.season_key !== state.pet.season_key));
+      if (!merged && sourceChanged) {
+        // Another device can switch/delete a pet. Its partial data cannot be
+        // merged into this pet; obtain the complete newly selected save.
+        data = await post('/telegram-pets/app/state', {});
+        if (!data.state || stateNeedsFullHydration(data.state)) return;
+        merged = data.state;
+        legacyFull = true;
+      }
+      if (!merged) return;
+      var nextActivity = merged.guidance && merged.guidance.activity;
+      var activityChanged = Boolean((beforeActivity || nextActivity) && (!beforeActivity || !nextActivity
+        || beforeActivity.id !== nextActivity.id || beforeActivity.status !== nextActivity.status));
+      var terminal = Boolean(data.state.recovery_needed === true || activityChanged
+        || state.arena && (!merged.arena || state.arena.battle_id !== merged.arena.battle_id)
+        || merged.arena_result && (!state.arena_result || merged.arena_result.battle_id !== state.arena_result.battle_id)
+        || state.arena_queue && !merged.arena_queue && !merged.arena
+        || state.kaiju && state.kaiju.match && (!(merged.kaiju && merged.kaiju.match)
+          || state.kaiju.match.match_id !== merged.kaiju.match.match_id)
+        || merged.kaiju && merged.kaiju.result && !(state.kaiju && state.kaiju.result && state.kaiju.result.match_id === merged.kaiju.result.match_id)
+        || state.kaiju && state.kaiju.queue && !(merged.kaiju && (merged.kaiju.queue || merged.kaiju.match)));
+      if (legacyFull) {
+        if (!setStateSnapshot(merged, requestGeneration)) return;
+      } else if (terminal) {
+        // Interrupted combat and changed/claimed activities need ordered full
+        // recovery before publishing their effects on wallet, care or XP.
+        data = await post('/telegram-pets/app/state', {});
+        if (!data.state || stateNeedsFullHydration(data.state)) return;
+        if (!setStateSnapshot(data.state, requestGeneration)) return;
+      } else {
+        state = merged;
+        var serverTime = Date.parse(merged.server_time || '');
+        if (Number.isFinite(serverTime)) serverClockOffsetMs = serverTime - Date.now();
+      }
       render();
       var after = multiplayerFingerprint(state);
       if (before !== after && activeScreen === 'explore') {
         tell('MULTIPLAYER STATE UPDATED.');
         haptic('light');
-      } else if (activeScreen === 'work' && state.guidance && state.guidance.activity && state.guidance.activity.ready) {
+      } else if (activeScreen === 'work' && state.guidance && state.guidance.activity && state.guidance.activity.ready
+        && (!beforeActivity || beforeActivity.id !== state.guidance.activity.id || !beforeActivity.ready)) {
         tell('TIMED ACTIVITY REWARD READY.');
         haptic('success');
       }
       await showPendingNotices();
-    } catch (_) {}
+    } catch (_) {
+      // Retain the last authoritative state and let the next serialized poll
+      // retry. This path never invents empty combat or timed-activity results.
+    } finally {
+      passiveRefreshInFlight = false;
+      lastPassiveRefreshAt = Date.now();
+    }
   }
+  // TEST-EXPORT: passiveLiveRefresh:end
 
+  // TEST-EXPORT: seasonalStateRefresh:start
   async function refreshSeasonSnapshot(force) {
     var monotonicNow = performance.now();
-    if (busy || noticesBusy || seasonRefreshBusy || fullStateHydrationPromise || !state || !state.adopted) return;
-    if (!force && lastSeasonServerRefreshAt > 0 && monotonicNow - lastSeasonServerRefreshAt < 300000) return;
+    if (!state || !state.adopted) return;
+    if (!force && !seasonSnapshotRefreshDue()) return;
+    seasonRefreshPending = true;
+    if (!force && monotonicNow < seasonRefreshRetryAt) return;
+    if (busy || noticesBusy || seasonRefreshBusy || passiveRefreshInFlight || fastActionStateRefreshInFlight || cooldownRefreshInFlight || fullStateHydrationPromise) return;
     seasonRefreshBusy = true;
     try {
       var requestGeneration = beginStateRequest();
-      var data = await post('/telegram-pets/app/state', stateRefreshPayload(state, activeScreen));
+      var data = await post('/telegram-pets/app/state', {});
+      if (!data.state || stateNeedsFullHydration(data.state)) return;
       if (!setStateSnapshot(data.state, requestGeneration)) return;
+      seasonRefreshPending = false;
+      seasonRefreshRetryAt = 0;
       var scrollTop = screen.scrollTop;
       render();
       screen.scrollTop = scrollTop;
     } catch (_) {
     } finally {
       seasonRefreshBusy = false;
+      // A failed or superseded full read stays queued, with bounded retries.
+      if (seasonRefreshPending) seasonRefreshRetryAt = performance.now() + 30000;
     }
   }
 
@@ -3563,6 +3696,7 @@
     }
     refreshSeasonSnapshot(false);
   }
+  // TEST-EXPORT: seasonalStateRefresh:end
 
   function drawPixelRect(x, y, width, height, color) {
     ctx.fillStyle = color;

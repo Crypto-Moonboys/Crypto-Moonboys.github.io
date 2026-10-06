@@ -195,6 +195,42 @@ test('core Mini App bootstrap stays below its SQL budget and omits heavy modules
   console.log(`Core-state budget: ${coreStatements}/${MOONPET_D1_PERFORMANCE_BUDGETS.core_bootstrap_max_statements} SQL statements`);
 });
 
+test('live polling preserves combat/activity projection with a small SQL budget', async () => {
+  const f = fixture('live-state-budget');
+  const full = await f.state();
+  const queries = [];
+  f.db.beforeFirst = statement => { queries.push(statement.query); };
+  f.db.beforeAll = statement => { queries.push(statement.query); };
+  f.db.statementCount = 0;
+  const live = await hooks.buildPetMiniAppLiveState(f.db, f.owner);
+  const count = f.db.statementCount;
+  assert.ok(count <= MOONPET_D1_PERFORMANCE_BUDGETS.live_state_max_statements, `live polling executed ${count} statements`);
+  assert.equal(live.pet_id, full.pet.pet_id);
+  assert.equal(live.season_key, full.pet.season_key);
+  assert.equal(live.recovery_needed, false, 'ordinary live reads do not trigger full recovery');
+  for (const key of ['arena', 'arena_queue', 'arena_result', 'kaiju']) assert.deepEqual(live[key], full[key]);
+  assert.deepEqual(live.activity, full.guidance.activity);
+  for (const key of ['pet', 'inventory', 'guidance', 'contracts', 'season_slots', 'leaderboard', 'cooldowns', 'live_systems']) {
+    assert.equal(live[key], undefined, `live polling must not publish partial ${key}`);
+  }
+  assert.ok(!queries.some(query => /telegram_pet_material_balances|telegram_pet_evolutions_by_pet|telegram_pet_reward_claims|telegram_pet_daily_completion|telegram_pet_weekly_journey/.test(query)));
+  console.log(`Live-state budget: ${count}/${MOONPET_D1_PERFORMANCE_BUDGETS.live_state_max_statements} SQL statements`);
+  f.db.beforeFirst = statement => { if (/SELECT \* FROM telegram_pet_arena_battles WHERE status='completed'/.test(statement.query)) throw Error('combat_poll_outage'); };
+  await assert.rejects(hooks.buildPetMiniAppLiveState(f.db, f.owner), /combat_poll_outage/);
+});
+
+test('live polling fails closed when the selected pet changes during a read', async () => {
+  const f = fixture('live-switch');
+  await f.state(); f.pet('live-replacement', currentSeason, 200, 2);
+  let switched = false;
+  f.db.beforeFirst = statement => {
+    if (!switched && statement.query.includes("status='completed'")) {
+      switched = true; f.active('live-replacement');
+    }
+  };
+  await assert.rejects(hooks.buildPetMiniAppLiveState(f.db, f.owner), /pet_state_source_changed/);
+});
+
 test('Missions uses less SQL, preserves its panels and never loads unrelated module projections', async () => {
   const f = fixture('missions-state-budget');
   const full = await f.state();
@@ -1576,11 +1612,16 @@ test('full Mini App actions for two equipped pets compile under the production c
     }), { DB: f.db, TELEGRAM_BOT_TOKEN: token });
     const data = await response.json();
     assert.equal(response.status, 200, JSON.stringify(data));
-    assert.ok(data.state?.pet, 'the full HTTP response includes a usable state');
+    if (body.mode === 'live') {
+      assert.ok(data.state?.pet_id, 'the live HTTP response includes its source identity');
+      assert.equal(data.state.hydration.mode, 'live');
+      assert.equal(data.state.pet, undefined, 'the live route omits the heavy full projection');
+    } else assert.ok(data.state?.pet, 'the full HTTP response includes a usable state');
     if (path === 'action') assert.equal(data.result.accepted, true);
     return data;
   }
   await request('state');
+  await request('state', { mode: 'live' });
   await request('action', { action: 'feed', request_id: 'd1-feed' });
   await request('action', { action: 'switch_pet_slot', pet_id: 'second-d1-limit', request_id: 'd1-switch' });
   const played = await request('action', { action: 'play', request_id: 'd1-play' });

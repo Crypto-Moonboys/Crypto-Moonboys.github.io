@@ -3747,7 +3747,10 @@ function readSavedStreetDecision(event) {
 }
 
 async function readPendingStreetEvents(db, owner) {
-  const rows = await db.prepare(`SELECT e.id,e.pet_id,e.season_key,e.event_key,e.metadata,s.pet_id IS NOT NULL AS source_owned FROM telegram_pet_events e
+  const rows = await db.prepare(`SELECT e.id,e.pet_id,e.season_key,e.event_key,e.metadata,e.xp_awarded,e.pet_xp_awarded,
+    s.pet_id IS NOT NULL AS source_owned,
+    EXISTS (SELECT 1 FROM telegram_pet_reward_claims c WHERE c.telegram_id=e.telegram_id
+      AND c.source='pet_event' AND c.idempotency_key=e.event_key) AS has_claim FROM telegram_pet_events e
     LEFT JOIN telegram_pet_instances i ON i.pet_id=e.pet_id AND i.telegram_id=e.telegram_id AND i.season_key=e.season_key
     LEFT JOIN telegram_pet_season_slots s ON s.pet_id=i.pet_id AND s.telegram_id=i.telegram_id AND s.season_key=i.season_key AND s.slot_number=i.slot_number
     WHERE e.telegram_id=? AND e.event_type='random_event' AND e.status='pending'
@@ -3755,7 +3758,34 @@ async function readPendingStreetEvents(db, owner) {
       e.created_at,e.id LIMIT 5`)
     .bind(String(owner)).all().then(requirePetReadResult);
   return rows.results.map(row => ({ event_id: row.id, pet_id: row.pet_id, season_key: row.season_key,
-    recoverable: Boolean(row.source_owned && readSavedStreetDecision(row)), audit_required: !row.source_owned || !readSavedStreetDecision(row) }));
+    recoverable: Boolean(row.source_owned && readSavedStreetDecision(row)), audit_required: !row.source_owned || !readSavedStreetDecision(row),
+    close_available: !readSavedStreetDecision(row) && !row.has_claim && Number(row.xp_awarded) === 0 && Number(row.pet_xp_awarded) === 0 }));
+}
+
+async function closeUnverifiedStreetEvent(db, owner, body) {
+  const id = String(body?.event_id || '').trim();
+  if (!id || body?.confirmed !== true || body?.confirm_event_id !== id) return { accepted: false, reason: 'street_event_close_confirmation_required' };
+  const event = await db.prepare(`SELECT * FROM telegram_pet_events WHERE id=? AND telegram_id=? AND event_type='random_event'`)
+    .bind(id, String(owner)).first().then(requirePetFirstReadResult);
+  if (!event) return { accepted: false, reason: 'street_event_source_missing' };
+  if (event.status === 'cancelled' && (event.reason === 'legacy_street_event_closed'
+    || String(event.reason || '').startsWith('legacy_street_event_closed:'))) {
+    return { accepted: true, duplicate: true, reason: 'legacy_street_event_closed' };
+  }
+  if (event.status !== 'pending' || readSavedStreetDecision(event)) return { accepted: false, reason: 'street_event_close_not_available' };
+  // Closing is an explicit forfeiture, never a guessed reward/refund. Preserve
+  // the old metadata, ordinal, XP and balances exactly; no slot is released.
+  // A recorded claim of any status must instead recover through its source.
+  const result = await db.prepare(`UPDATE telegram_pet_events SET status='cancelled',reason='legacy_street_event_closed:' || COALESCE(reason,'')
+    WHERE id=? AND telegram_id=? AND event_type='random_event' AND status='pending'
+      AND metadata IS ? AND reason IS ? AND xp_awarded=0 AND pet_xp_awarded=0
+      AND NOT EXISTS (SELECT 1 FROM telegram_pet_reward_claims c WHERE c.telegram_id=telegram_pet_events.telegram_id
+        AND c.source='pet_event' AND c.idempotency_key=telegram_pet_events.event_key)`)
+    .bind(id, String(owner), event.metadata, event.reason).run().then(requirePetMutationResult);
+  if (!Number.isSafeInteger(result.meta?.changes) || result.meta.changes < 0 || result.meta.changes > 1) throw new Error('pet_state_write_unavailable');
+  return result.meta.changes === 1
+    ? { accepted: true, reason: 'legacy_street_event_closed', event_id: id, pet_id: event.pet_id, xp_awarded: 0, pet_xp_awarded: 0 }
+    : { accepted: false, reason: 'street_event_close_not_available', refresh_state: true };
 }
 
 async function cancelUnaffordableStreetEvent(db, owner, reservation, costs) {
@@ -10444,6 +10474,49 @@ async function buildPetMiniAppMissionsState(db, telegramId, petRaw, now, economy
   };
 }
 
+// Passive combat/activity polling is a read projection, not a full recovery,
+// roster, economy or mission refresh. Terminal transitions request full state
+// before the client publishes any reward or wallet changes.
+async function buildPetMiniAppLiveState(db, telegramId, now = new Date()) {
+  const selected = await findActivePetSlot(db, telegramId);
+  if (!selected) return { adopted: false, pet_id: null, hydration: { mode: 'live', full: false }, server_time: now.toISOString() };
+  const [arena, arenaQueue, recentArena, kaiju, kaijuQueue, recentKaiju, activity] = await Promise.all([
+    getPetArenaBattleForPlayer(db, PET_MINI_APP_ARENA_LOBBY, telegramId)
+      .then(battle => battle || getPetArenaBattleForPlayer(db, `mini:${telegramId}`, telegramId)),
+    getPetArenaQueueState(db, PET_MINI_APP_ARENA_LOBBY, telegramId),
+    db.prepare(`SELECT * FROM telegram_pet_arena_battles WHERE status='completed'
+      AND (player1_telegram_id=? OR player2_telegram_id=?) ORDER BY completed_at DESC LIMIT 1`)
+      .bind(String(telegramId), String(telegramId)).first().then(row => requirePetCombatRow(row, PET_ARENA_READ_SHAPE)),
+    getPetKaijuMatchForPlayer(db, telegramId).then(match => match || getActivePetKaijuMatch(db, `mini:kaiju:${telegramId}`)),
+    getPetKaijuQueueState(db, telegramId),
+    db.prepare(`SELECT * FROM telegram_pet_kaiju_matches WHERE status='completed'
+      AND (player1_telegram_id=? OR player2_telegram_id=?) ORDER BY completed_at DESC LIMIT 1`)
+      .bind(String(telegramId), String(telegramId)).first().then(row => requirePetCombatRow(row, PET_KAIJU_READ_SHAPE)),
+    getActivePetActivitySession(db, telegramId, now).then(active => active || getRecoverablePetActivitySession(db, telegramId)),
+  ]);
+  const hydratedKaiju = await ensurePetKaijuMatchCategory(db, kaiju);
+  // Saved decisions can outlive an interrupted settlement while the match ID
+  // stays unchanged. Signal full recovery without expanding this read budget.
+  const recoveryNeeded = Boolean(arena?.status === 'active' && arena.player1_move_locked
+    && (arena.player2_move_locked || String(arena.player2_telegram_id) === 'app')
+    || hydratedKaiju?.status === 'selecting' && hydratedKaiju.player1_card_key
+      && (hydratedKaiju.mode === 'solo' ? hydratedKaiju.cpu_card_key : hydratedKaiju.player2_card_key));
+  await assertPetProjectionSource(db, telegramId, selected);
+  return {
+    adopted: true, pet_id: selected.pet_id, season_key: selected.season_key,
+    hydration: { mode: 'live', full: false }, recovery_needed: recoveryNeeded,
+    arena: serializePetMiniAppArenaBattle(arena, telegramId), arena_queue: arenaQueue,
+    arena_result: serializePetMiniAppArenaBattle(recentArena, telegramId),
+    kaiju: {
+      match: serializePetMiniAppKaijuMatch(hydratedKaiju, telegramId), queue: kaijuQueue,
+      result: serializePetMiniAppKaijuMatch(recentKaiju, telegramId),
+      cards: PET_KAIJU_CARDS.map(card => serializePetKaijuCardPreview(card, hydratedKaiju?.category_key)),
+      categories: PET_KAIJU_CATEGORIES,
+    },
+    activity: buildPetActivitySummary(activity, now), server_time: now.toISOString(),
+  };
+}
+
 async function buildPetMiniAppState(db, telegramId, botToken, options = {}) {
   const now = new Date();
   // State preparation owns current-season initialization. Roster projection
@@ -10859,7 +10932,7 @@ async function getPetMiniAppCombatEligibility(db, telegramId, lifecycle = null, 
 
 const PET_MINI_APP_DISPLAYED_PET_EXEMPT_ACTIONS = new Set([
   'adopt', 'season_slots', 'buy_pet_slot', 'switch_pet_slot', 'delete_pet_slot',
-  'guidance_ack', 'notification_set', 'event_recover',
+  'guidance_ack', 'notification_set', 'event_recover', 'event_close',
   ...PET_MINI_APP_COMBAT_CLEANUP_ACTIONS,
   'run_step', 'run_extract', 'daily_run_tactic', 'activity_claim', 'activity_cancel',
   'weekly_boss_claim', 'seasonal_boss_claim', 'daily_completion_claim',
@@ -10924,7 +10997,7 @@ async function dispatchPetMiniAppAction(db, telegramId, user, body, botToken) {
     if (PET_MINI_APP_COMBAT_ENTRY_ACTIONS.has(action) || PET_MINI_APP_COMBAT_CLEANUP_ACTIONS.has(action)) return null;
     throw error;
   });
-  const eggAllowedActions = ['event_recover', 'guidance_ack', 'notification_set', 'season_slots', 'buy_pet_slot', 'switch_pet_slot', 'energy_drink', 'dance', 'cuddles', 'weekly_boss_claim', 'contract_claim', 'style_equip', 'seasonal_boss_claim', 'daily_completion_claim', 'bounty_claim', 'season_claim', 'finale_start', 'finale_retry', 'finale_step', 'finale_claim'];
+  const eggAllowedActions = ['event_recover', 'event_close', 'guidance_ack', 'notification_set', 'season_slots', 'buy_pet_slot', 'switch_pet_slot', 'energy_drink', 'dance', 'cuddles', 'weekly_boss_claim', 'contract_claim', 'style_equip', 'seasonal_boss_claim', 'daily_completion_claim', 'bounty_claim', 'season_claim', 'finale_start', 'finale_retry', 'finale_step', 'finale_claim'];
   if (lifecycle?.phase === 'egg' && !eggAllowedActions.includes(action)) {
     if (PET_MINI_APP_COMBAT_CLEANUP_ACTIONS.has(action) || PET_MINI_APP_COMBAT_ENTRY_ACTIONS.has(action)) {
       // fall through; locked cleanup must remain available for stale combat state.
@@ -10981,6 +11054,7 @@ async function dispatchPetMiniAppAction(db, telegramId, user, body, botToken) {
   }
   if (action === 'event_recover' && !String(body.event_id || '').trim()) return { accepted: false, reason: 'street_event_source_missing' };
   if (action === 'event_recover') return processPetRandomEvent(db, telegramId, '', { saved_event_id: body.event_id, source });
+  if (action === 'event_close') return closeUnverifiedStreetEvent(db, telegramId, body);
   if (action === 'random_event') {
     const challenge = await verifyPetMiniAppChallenge(body.challenge_token, botToken, { type: 'event', telegram_id: telegramId });
     if (!challenge.ok) return { accepted: false, reason: challenge.reason };
@@ -11823,6 +11897,7 @@ export default {
       try {
         const state = body.mode === 'core'
           ? await buildPetMiniAppCoreState(env.DB, verified.telegramId)
+          : body.mode === 'live' ? await buildPetMiniAppLiveState(env.DB, verified.telegramId)
           : await buildPetMiniAppState(env.DB, verified.telegramId, env.TELEGRAM_BOT_TOKEN, { mode: body.mode });
         return json({ ok: true, state });
       } catch (error) {
@@ -14987,7 +15062,7 @@ export default {
 const SITE_URL = 'https://cryptomoonboys.com';
 const TELEGRAM_GAMES_MENU_URL = `${SITE_URL}/games/telegram/?v=20260903-games-shell-v8`;
 const TELEGRAM_GAMES_MENU_TEXT = 'Games';
-const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20261003-consolidated-recovery-v1`;
+const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20261006-live-refresh-v4`;
 const PET_MEDIA_BASE_URL = `${SITE_URL}/img/pets`;
 const PET_MEDIA_MANIFEST = Object.freeze({
   feed: 'CRYPTO MOONBOYS PET FEED.jpg',
@@ -15994,6 +16069,8 @@ export const __petMediaTestHooks = Object.freeze({
   buildPetMiniAppJourneySummary,
   buildPetMiniAppCapabilities,
   buildPetMiniAppCoreState,
+  buildPetMiniAppLiveState,
+  closeUnverifiedStreetEvent,
   buildPetMiniAppState,
   getPetMiniAppCombatEligibility,
   getPetGuidanceFeatures,

@@ -16,6 +16,12 @@ Any gameplay, documentation, or UI change affecting Moonpet status should refere
 
 ## Current rules and historical audits
 
+The [6 October refresh fixes](moonpet-refresh-fixes-2026-10-06.md#pr-1445-review-follow-up) coordinate care-action and passive reads. Activity disappearance, replacement or status changes require a full authoritative save before publishing care, XP or balances; readiness alone emits one notification. Live combat signals committed-but-unsettled moves/cards through `recovery_needed`, leaving full state responsible for ordered recovery. Explicit legacy-event closure preserves the original reservation reason and reward ordinal alongside the closure marker, without freeing a reward slot.
+
+The [scheduling follow-up](moonpet-refresh-fixes-2026-10-06.md#pr-1445-scheduling-follow-up) requires identity, terminal and season recovery to load a complete save regardless of tab changes. A due or forced season read stays queued behind an active request and takes priority over the next live poll, with a 30-second retry delay after failure.
+
+The [request and egg-control follow-up](moonpet-refresh-fixes-2026-10-06.md#pr-1445-request-and-egg-control-follow-up) bounds live reads to 30 seconds and other API requests to 60 seconds, including body reads and retry attempts. Abort releases background refresh guards without allowing stale state to replace a newer save. Unconfirmed actions are never replayed automatically. An egg can recover or explicitly close an older pet's saved Street Event through enabled controls; closure still requires confirmation and preserves reward history.
+
 The [1 October hard audit](moonpet-hard-audit-2026-10-01.md) records the live-surface cleanup, transactional deletion protections and remaining year-long pacing work.
 
 This reference and the seasonal model describe current rules. Dated audits are
@@ -74,6 +80,12 @@ and requests a fresh read. A missing or malformed action response likewise block
 further Mini App mutations until Refresh reads the authoritative save. Refreshing
 Missions requests its Missions projection; Explore, Work, Economy and Profile
 request the full projection so they cannot become stuck with HOME-only data.
+Passive Explore/Work polling uses the authenticated `live` projection for combat,
+queues/results and timed activities. Polls are serialized and merge only those
+fields for the same pet/ownership season. Terminal combat transitions still load
+the full ordered reward recovery and economic projection. An older Worker's full
+response remains supported during release. Cooldown outage retries back off,
+respect Retry-After and pause after three failures until a successful refresh.
 Earned account bounties remain visible in Coach and Play Now after pet replacement.
 
 Evolution checks use the requested pet instance's XP in both the preview and the
@@ -1320,6 +1332,14 @@ the next owner/day/mode reservation transaction. Later assigned ordinals and
 their paid scaling never change. Legacy null-pet cancellation follows the same
 rule and does not authorize payment against another pet. Legacy evidence without a provable outcome
 or pet remains visible for audit and cannot invent progress or a reward.
+An incomplete legacy outcome with no recorded claim or awarded XP can instead be
+explicitly closed through `event_close`. The player confirms the exact event ID;
+the server rechecks ownership, unchanged evidence and absence of any claim in
+the closing write. Closing retains the original record/metadata, balances and
+ordinal and releases no reward slot. Recoverable outcomes and recorded claims
+remain protected. This ends that event's pending deletion blocker without
+bypassing any other claim or settlement. See the
+[refresh and legacy-event fix report](moonpet-refresh-fixes-2026-10-06.md).
 
 
 Retained Daily boss proof is inspected with CASE-sanitized JSON in recovery,
