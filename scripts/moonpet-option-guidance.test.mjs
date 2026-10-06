@@ -153,3 +153,32 @@ test('legacy danger styling does not turn reversible management into semantic ri
   assert.match(ctx.button('ABANDON', 'contract_step', { choice: 'abandon' }), /action-risk/);
   for (const action of ['delete_pet_slot', 'arena_forfeit', 'activity_cancel', 'event_close', 'trade']) assert.match(ctx.button('OPTION', action), /REVIEW RISK/);
 });
+
+
+test('hatch entry prompts and timing never promise the later identity reveal', () => {
+  assert.doesNotMatch(source, /REVEAL BOT|REVEAL NOT READY|Earliest reveal:|guaranteed reveal:|Journey progress starts after the reveal/);
+  assert.match(source, /button\('HATCH BOT', 'hatch'/);
+  assert.match(source, /statusLabel: incubation.ready \? '' : 'HATCH NOT READY'/);
+  assert.match(source, /Earliest hatch: day/);
+  assert.match(source, /guaranteed hatch: day/);
+  assert.match(source, /HATCH BOT to start your companion’s breakout. Identity reveals at Stage 3./);
+});
+
+test('solo and player Kaiju card choices announce the actual Worker energy cost for every outcome', () => {
+  const rewardsSource = worker.slice(worker.indexOf('const PET_KAIJU_RESULT_REWARDS = '), worker.indexOf('async function awardPetKaijuMatchResults'));
+  const rewards = vm.runInNewContext(rewardsSource + '\nPET_KAIJU_RESULT_REWARDS;');
+  const costText = `Settlement costs ${rewards.kaiju_loss.energy_cost} energy for a loss, ${rewards.kaiju_draw.energy_cost} for a draw or ${rewards.kaiju_win.energy_cost} for a win.`;
+  for (const mode of ['solo', 'group']) {
+    const ctx = context();
+    ctx.state.kaiju = { match: { match_id: mode + '-match', mode } };
+    const html = ctx.button('CARD // 90', 'kaiju_card', { match_id: mode + '-match', card_key: 'kong' }, { detail: 'ACTIVE POWER 90 // BEST POWER 90' });
+    const purpose = html.match(/class="button-purpose"[^>]*>([^<]+)<\/span>/)[1];
+    assert.ok(purpose.includes(costText));
+    assert.ok(html.match(/aria-description="([^"]+)"/)[1].includes(costText));
+    const purposeId = html.match(/class="button-purpose" id="([^"]+)"/)[1];
+    assert.ok(html.match(/aria-describedby="([^"]+)"/)[1].split(' ').includes(purposeId));
+    assert.match(html, /COMMIT CHOICE/);
+    assert.match(html, /ACTIVE POWER 90 \/\/ BEST POWER 90/);
+    assert.match(purpose, /rival’s card stays hidden/);
+  }
+});

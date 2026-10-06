@@ -1002,7 +1002,7 @@
             "combat"
       ],
       "kaiju_card": [
-            "Lock this card for the active category. Compare ACTIVE values; your rival’s card stays hidden.",
+            "Lock this card for the active category. Settlement costs 4 energy for a loss, 5 for a draw or 6 for a win. Compare ACTIVE values; your rival’s card stays hidden.",
             "choice"
       ],
       "kaiju_queue_cancel": [
@@ -1742,7 +1742,7 @@
     var phase = String(authoritativeLifecycle.phase || progressionLifecycle.phase || '').toLowerCase();
     var evolutionReady = Boolean(authoritativeLifecycle.evolution_ready || progressionLifecycle.evolution_ready);
     if (!state || !state.adopted || !state.pet) return homeNextLine();
-    if (phase === 'egg') return authoritativeLifecycle.incubation && authoritativeLifecycle.incubation.ready ? 'REVEAL BOT to wake your first companion.' : incubationTimingDetail(authoritativeLifecycle.incubation) || 'Care for your Secret Bot until the breakout signal is ready.';
+    if (phase === 'egg') return authoritativeLifecycle.incubation && authoritativeLifecycle.incubation.ready ? 'HATCH BOT to start your companion’s breakout. Identity reveals at Stage 3.' : incubationTimingDetail(authoritativeLifecycle.incubation) || 'Care for your Secret Bot until the breakout signal is ready.';
     if (seasonSlots.unavailable) return 'Season slot authority is syncing. Active Moonpet guidance will refresh when server authority is available.';
     if (!slot.pet_id) return 'Pick an active Moonpet before journey progress starts.';
     if (evolutionReady) return 'Evolve your active Moonpet when you are ready.';
@@ -1772,7 +1772,7 @@
     incubation = incubation || {};
     var timing = [incubation.age_days, incubation.earliest_hatch_days, incubation.guaranteed_hatch_days];
     if (timing.some(function (value) { return value == null || !Number.isFinite(Number(value)) || Number(value) < 0; })) return '';
-    return 'Age ' + Number(incubation.age_days) + ' days. Earliest reveal: day ' + Number(incubation.earliest_hatch_days) + ' with a full signal and at least three care types; guaranteed reveal: day ' + Number(incubation.guaranteed_hatch_days) + '.';
+    return 'Age ' + Number(incubation.age_days) + ' days. Earliest hatch: day ' + Number(incubation.earliest_hatch_days) + ' with a full signal and at least three care types; guaranteed hatch: day ' + Number(incubation.guaranteed_hatch_days) + '. Identity stays hidden until Stage 3.';
   }
 
   function homeNextLine(next) {
@@ -1780,7 +1780,7 @@
     var incubation = lifecycle.incubation || {};
     if (!state || !state.adopted) return state && state.next && state.next.detail || 'Checking your Arcade XP entry requirement.';
     if (lifecycle.phase === 'egg') {
-      return incubation.ready ? 'REVEAL BOT to wake your first companion.' : incubationTimingDetail(incubation) || 'Build care signals until the breakout signal is ready.';
+      return incubation.ready ? 'HATCH BOT to start your companion’s breakout. Identity reveals at Stage 3.' : incubationTimingDetail(incubation) || 'Build care signals until the breakout signal is ready.';
     }
     return next && next.title ? String(next.title) : 'Keep needs stable and follow the recommended route.';
   }
@@ -1790,7 +1790,7 @@
     if (firstSession === 'unadopted') return homeNextLine();
     var boss = state && state.guidance && state.guidance.weekly_boss || {};
     if ((boss.pending_rewards || []).length) return 'Recover your saved Weekly Boss reward. No energy or new attack needed.';
-    if (firstSession === 'egg') return 'Care for or REVEAL BOT before Explore actions open.';
+    if (firstSession === 'egg') return 'Care for or HATCH BOT before Explore actions open. Identity reveals at Stage 3.';
     if (state && state.run) return 'Resolve the visible Moon Run room or extract to bank rewards.';
     var weekly = state && state.weekly_journey || {};
     var objectives = Array.isArray(weekly.objectives) ? weekly.objectives : [];
@@ -1843,8 +1843,8 @@
       }
       : {
         district: 'Your Secret Bot is still forming. Care for it before district routes, bosses, Arena, Kaiju, or pet work open.',
-        run: 'Moon Run opens after REVEAL BOT creates an active companion.',
-        journey: 'Journey progress starts after the reveal, when server authority can bind objectives to the active pet.',
+        run: 'Moon Run opens after HATCH BOT creates an active companion.',
+        journey: 'Journey progress starts after hatching, when server authority can bind objectives to the active pet.',
       };
     var arenaBody = '<div class="line locked">ACTIVE HATCHED MOONPET REQUIRED.</div><div class="line muted">' + escapeHtml(copy.district) + '</div>' +
       (arenaCleanup ? '<div class="line muted">STALE ARENA STATE DETECTED. CLEANUP IS AVAILABLE.</div><div class="button-grid one">' + arenaCleanup + '</div>' : '');
@@ -1879,7 +1879,7 @@
     if (lifecycle.phase === 'egg') {
       var signals = incubation.signals || {};
       return '<div class="ticker"><span>SECRET BOT // SIGNAL ' + number(incubation.progress) + '/' + number(incubation.target) + ' // IDENTITY FORMING //</span></div>' +
-        panel('SECRET BOT CHAMBER', '<div class="line complete">THE SECRET BOT REMEMBERS HOW YOU TREAT IT.</div><div class="line muted">NEXT // ' + escapeHtml(homeNextLine()) + '</div><div class="line muted">Use at least three types of care. Your pattern shapes the reveal; no species odds are exposed.</div>' + meter('BREAKOUT SIGNAL', Number(incubation.progress || 0) / Math.max(1, Number(incubation.target || 12)) * 100) + '<div class="line">WARM ' + number(signals.warm) + ' // TALK ' + number(signals.talk) + ' // MUSIC ' + number(signals.music) + ' // REST ' + number(signals.rest) + '</div><div class="button-grid">' + button('WARM BOT', 'incubate', { care_type: 'warm' }) + button('TALK TO BOT', 'incubate', { care_type: 'talk' }) + button('PLAY A BEAT', 'incubate', { care_type: 'music' }) + button('LET IT REST', 'incubate', { care_type: 'rest' }) + '</div><div class="button-grid one">' + button('REVEAL BOT', 'hatch', {}, { disabled: !incubation.ready, statusLabel: incubation.ready ? '' : 'REVEAL NOT READY' }) + '</div><div class="line muted">DAILY SIGNALS ' + number(incubation.actions_today) + '/' + number(incubation.daily_cap) + '</div>', 'incubation') +
+        panel('SECRET BOT CHAMBER', '<div class="line complete">THE SECRET BOT REMEMBERS HOW YOU TREAT IT.</div><div class="line muted">NEXT // ' + escapeHtml(homeNextLine()) + '</div><div class="line muted">Use at least three types of care to build the breakout signal. Identity stays hidden until Stage 3.</div>' + meter('BREAKOUT SIGNAL', Number(incubation.progress || 0) / Math.max(1, Number(incubation.target || 12)) * 100) + '<div class="line">WARM ' + number(signals.warm) + ' // TALK ' + number(signals.talk) + ' // MUSIC ' + number(signals.music) + ' // REST ' + number(signals.rest) + '</div><div class="button-grid">' + button('WARM BOT', 'incubate', { care_type: 'warm' }) + button('TALK TO BOT', 'incubate', { care_type: 'talk' }) + button('PLAY A BEAT', 'incubate', { care_type: 'music' }) + button('LET IT REST', 'incubate', { care_type: 'rest' }) + '</div><div class="button-grid one">' + button('HATCH BOT', 'hatch', {}, { disabled: !incubation.ready, statusLabel: incubation.ready ? '' : 'HATCH NOT READY' }) + '</div><div class="line muted">DAILY SIGNALS ' + number(incubation.actions_today) + '/' + number(incubation.daily_cap) + '</div>', 'incubation') +
         panel('SECRET BOT ACTIONS', '<div class="button-grid">' + button('ENERGY DRINK', 'energy_drink') + button('DANCE', 'dance') + button('CUDDLES', 'cuddles') + '</div><div class="line muted">Stat-only care. Does not advance incubation or award XP.</div>', 'care') +
         renderPlayNow() + renderSeasonSlots();
     }

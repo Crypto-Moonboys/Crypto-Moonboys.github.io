@@ -14,7 +14,8 @@ The deployed public Mini App JavaScript matched the base byte for byte (SHA-256 
 - Disabled text was too faint. Disabled buttons keep a readable purpose and their server-driven lock reason; uncertain saves consistently show REFRESH REQUIRED, including egg actions.
 - Menu routes looked like gameplay actions. Routes now say OPEN [MENU] // NO COST and explain what the destination contains. The six dock tabs have short purpose labels; Audio, Radio and Refresh have visible labels beside their icons.
 - Immediate Sleep and background Sleep were easy to confuse. Immediate Sleep restores energy now; Work timers explain duration previews and returning to claim. Stat-only Energy Drink is distinguished from consuming a bag item.
-- Incubation copy implied that hatch revealed identity; it now identifies breakout and Stage 3 reveal separately. Weekly Journey copy uses the listed objective count instead of a fixed five. Jobs copy describes the actual level, specialist and cooldown gates and base rewards rather than claiming an energy charge.
+- Kaiju card choices explicitly disclose the Worker’s outcome-dependent settlement cost: loss 4 energy, draw 5 energy, win 6 energy, in visible and accessible purpose text. A regression compares this copy to the actual Worker reward constants for both solo and player modes.
+- Incubation copy implied that hatch revealed identity; it now identifies breakout and Stage 3 reveal separately, including the HATCH BOT action label, Home/Profile/Explore prompts, hatch-age timing and locked state. Weekly Journey copy uses the listed objective count instead of a fixed five. Jobs copy describes the actual level, specialist and cooldown gates and base rewards rather than claiming an energy charge.
 - Old lightweight navigation copy described internal loading. Recommended and Play Now explain the player destination; pet routes focus the visible Pet Spaces selector.
 
 ## Navigation and non-action controls
@@ -79,7 +80,7 @@ Each row below is the actual button registry. Payload-specific effects, costs, r
 | `arena_queue_cancel` | manage | Leave Arena matchmaking before a battle starts. Rejoin later when you want to play. |
 | `kaiju_matchmake` | combat | Join player matchmaking for Kaiju cards. Compare your cards once the match category appears. |
 | `kaiju_start` | combat | Start a Kaiju card match against the CRT rival. Play for the strongest active category. |
-| `kaiju_card` | choice | Lock this card for the active category. Compare ACTIVE values; your rival’s card stays hidden. |
+| `kaiju_card` | choice | Lock this card for the active category. Settlement costs 4 energy for a loss, 5 for a draw or 6 for a win. Compare ACTIVE values; your rival’s card stays hidden. |
 | `kaiju_queue_cancel` | manage | Leave Kaiju matchmaking before a match starts. You can join again later. |
 | `kaiju_match_cancel` | manage | Cancel this eligible solo Kaiju match instead of submitting a card. |
 | `district_mission` | choice | Take this district approach to build mastery and earn capped rewards. Compare the cost and setback risk. |
@@ -111,8 +112,8 @@ Each row below is the actual button registry. Payload-specific effects, costs, r
 
 ## Validation
 
-- 69 action descriptions exercised through the real button renderer; 79 purpose, payload, availability, escaping and consequence regressions passed.
-- Full non-browser Moonpet suite: 69 test files, 1,260 passed, zero failures or skips.
+- 69 action descriptions exercised through the real button renderer; 81 purpose, payload, availability, escaping and consequence regressions passed.
+- Full non-browser Moonpet suite: 69 test files, 1,262 passed, zero failures or skips.
 - Actual browser fixture flows passed at 390×844 and 360×640 across all six screens, including keyboard disclosure controls, saved/recovered rewards, Contracts, Daily Run, bosses, crafting, market capacity, pet spaces, busy/energy locks and combat. New checks require button purpose, badge and accessible descriptions in every screen, NO COST navigation, wrapping within mobile buttons, valid purpose/requirements description references and actual browser accessibility-tree announcements.
 - Browser art recovery now waits for its authoritative save response and replacement render before interacting; this removes a fixture race against the full refresh.
 - Domain-runner registration, JavaScript syntax and whitespace checks passed. The PR records final-head CI separately.

@@ -834,14 +834,14 @@ assert.equal(nextGuidanceRuntime({
   adopted: true,
   pet: { pet_id: 'pet-a', pet_name: 'Secret Bot' },
   lifecycle: { phase: 'egg', incubation: { ready: true, progress: 12, target: 12 } },
-}).homeNextLine(), 'REVEAL BOT to wake your first companion.',
-  'hatch-ready Home guidance must point directly to REVEAL BOT');
+}).homeNextLine(), 'HATCH BOT to start your companion’s breakout. Identity reveals at Stage 3.',
+  'hatch-ready Home guidance must point directly to HATCH BOT');
 assert.equal(nextGuidanceRuntime({
   adopted: true,
   pet: { pet_id: 'pet-a', pet_name: 'Secret Bot' },
   lifecycle: { phase: 'egg', incubation: { ready: true, progress: 12, target: 12 } },
-}).profileNextLine(), 'REVEAL BOT to wake your first companion.',
-  'hatch-ready Profile NEXT guidance must point directly to REVEAL BOT');
+}).profileNextLine(), 'HATCH BOT to start your companion’s breakout. Identity reveals at Stage 3.',
+  'hatch-ready Profile NEXT guidance must point directly to HATCH BOT');
 const eggExploreRuntime = nextGuidanceRuntime({
   adopted: true,
   pet: { pet_id: 'pet-a', energy: 12 },
@@ -849,11 +849,11 @@ const eggExploreRuntime = nextGuidanceRuntime({
   weekly_journey: { objectives: [{ objective_id: 'weekly_boss_attempt', progress: 0, target: 1, completed: false }] },
   guidance: { weekly_boss: { available: true } },
 });
-assert.equal(eggExploreRuntime.exploreNextLine(), 'Care for or REVEAL BOT before Explore actions open.',
+assert.equal(eggExploreRuntime.exploreNextLine(), 'Care for or HATCH BOT before Explore actions open. Identity reveals at Stage 3.',
   'egg Explore NEXT guidance must prefer hatch/incubation over combat or Moon Run');
 const eggExploreMarkup = eggExploreRuntime.firstSessionExploreMarkup();
-assert.match(eggExploreMarkup, /Journey progress starts after the reveal, when server authority can bind objectives to the active pet/,
-  'Stage 0 Explore guidance must explain Journey progress starts after reveal');
+assert.match(eggExploreMarkup, /Journey progress starts after hatching, when server authority can bind objectives to the active pet/,
+  'Stage 0 Explore guidance must explain Journey progress starts after hatching');
 assert.doesNotMatch(eggExploreMarkup, /START MOON RUN|DAILY RUN|Complete Weekly boss attempt|Restore energy|Start a Moon Run/,
   'egg Explore guidance must not recommend Moon Run, boss, or energy actions');
 assert.doesNotMatch(eggExploreMarkup, /FIND PLAYER BATTLE|ENTER SOLO ARENA|FIND KAIJU PLAYER|START SOLO KAIJU/,

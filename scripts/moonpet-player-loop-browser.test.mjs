@@ -790,8 +790,8 @@ try {
     const incubationPanel = page.locator('[data-panel="incubation"]');
     const incubationText = await incubationPanel.textContent();
     assert.ok(incubationText.includes(`Age ${hatchTiming.age_days} days.`), 'the rendered chamber explains the current hatch age');
-    assert.ok(incubationText.includes(`Earliest reveal: day ${hatchTiming.earliest_hatch_days}`), 'the rendered chamber shows the authoritative earliest hatch day');
-    assert.ok(incubationText.includes(`guaranteed reveal: day ${hatchTiming.guaranteed_hatch_days}`), 'the rendered chamber shows the authoritative guaranteed hatch day');
+    assert.ok(incubationText.includes(`Earliest hatch: day ${hatchTiming.earliest_hatch_days}`), 'the rendered chamber shows the authoritative earliest hatch day');
+    assert.ok(incubationText.includes(`guaranteed hatch: day ${hatchTiming.guaranteed_hatch_days}`), 'the rendered chamber shows the authoritative guaranteed hatch day');
     assert.equal(await incubationPanel.locator('[data-action="hatch"]').isDisabled(), true);
     for (const [ageDays, careSignals] of [[hatchTiming.earliest_hatch_days, true], [hatchTiming.guaranteed_hatch_days, false]]) {
       sqlite.prepare(`UPDATE telegram_pet_lifecycle_by_pet SET created_at=?, incubation_progress=?, incubation_json=? WHERE telegram_id=?`)
@@ -800,8 +800,28 @@ try {
       assert.equal(readyTiming.ready, true);
       await page.reload(); await page.waitForSelector('[data-panel="incubation"]');
       assert.equal(await incubationPanel.locator('[data-action="hatch"]').isDisabled(), false, 'server hatch readiness remains authoritative');
-      assert.ok((await incubationPanel.textContent()).includes('REVEAL BOT to wake your first companion.'));
+      assert.ok((await incubationPanel.textContent()).includes('HATCH BOT to start your companion’s breakout. Identity reveals at Stage 3.'));
+      assert.equal(await incubationPanel.locator('[data-action="hatch"]').getAttribute('aria-label'), 'HATCH BOT');
     }
+    currentUser = `browser-kaiju-guidance-${viewport.width}`;
+    await seed(currentUser, 'young');
+    await page.reload(); await page.waitForSelector('[data-panel="care"]');
+    await page.locator('[data-screen="explore"]').click();
+    await page.waitForSelector('[data-action="kaiju_start"]', { state: 'attached' });
+    await page.locator('[data-panel="kaiju"]').evaluate(node => { node.open = true; });
+    const kaijuStarted = page.waitForResponse(response => response.url().endsWith('/telegram-pets/app/action') && response.request().postDataJSON()?.action === 'kaiju_start');
+    await page.locator('[data-action="kaiju_start"]').click();
+    assert.equal((await (await kaijuStarted).json()).result.accepted, true);
+    await page.waitForSelector('[data-action="kaiju_card"]', { state: 'attached' });
+    await page.locator('[data-panel="kaiju"]').evaluate(node => { node.open = true; });
+    const kaijuCost = 'Settlement costs 4 energy for a loss, 5 for a draw or 6 for a win.';
+    assert.ok(await page.locator('[data-action="kaiju_card"]').evaluateAll((nodes, cost) => nodes.length > 0 && nodes.every(node => node.querySelector('.button-purpose').textContent.includes(cost) && node.getAttribute('aria-description').includes(cost) && node.scrollWidth <= node.clientWidth + 1), kaijuCost), 'all real Kaiju choices disclose outcome costs and fit mobile before commitment');
+    const kaijuAccessibility = await page.context().newCDPSession(page);
+    const { root: kaijuRoot } = await kaijuAccessibility.send('DOM.getDocument');
+    const { nodeId: kaijuButton } = await kaijuAccessibility.send('DOM.querySelector', { nodeId: kaijuRoot.nodeId, selector: '[data-action="kaiju_card"]' });
+    const { nodes: kaijuAccessibleNodes } = await kaijuAccessibility.send('Accessibility.getPartialAXTree', { nodeId: kaijuButton, fetchRelatives: false });
+    assert.ok((kaijuAccessibleNodes.find(node => node.role?.value === 'button')?.description?.value || '').includes(kaijuCost), 'screen readers receive the Kaiju energy consequence before locking a card');
+    await kaijuAccessibility.detach();
     currentUser = `browser-permanent-${viewport.width}`;
     await seed(currentUser,'egg');
     const savedPets = [['original',1,4321,'2026-07-01'],['purchased',2,9876,'2026-08-15']];
