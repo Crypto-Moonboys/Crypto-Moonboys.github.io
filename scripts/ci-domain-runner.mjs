@@ -135,6 +135,7 @@ const GROUPS = {
     ['node', 'scripts/moonpet-player-loop.test.mjs'],
     ['node', '--test', 'scripts/moonpet-passive-refresh.test.mjs'],
     ['node', '--test', 'scripts/moonpet-refresh-audit-fixes.test.mjs'],
+    ['node', '--test', 'scripts/moonpet-pet-spaces.test.mjs'],
     ['node', '--test', 'scripts/moonpet-art-loading.test.mjs'],
     ['node', '--test', 'scripts/moonpet-legacy-event-close.test.mjs'],
     ['node', 'scripts/moonpet-activity-options.test.mjs'],

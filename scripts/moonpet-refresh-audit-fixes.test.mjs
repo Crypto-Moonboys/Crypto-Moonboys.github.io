@@ -22,7 +22,7 @@ function clientContext() {
     window: { clearTimeout(id) { timers.delete(id); }, setTimeout(fn, delay) { const id = ++sequence; timers.set(id, { fn, delay, at: now + delay }); return id; } },
     document: { getElementById: () => null }, panel: (title, body) => title + body, routeButton: label => label,
     captureEditableState: () => null, rememberPanels() {}, renderHud() {}, renderNav() {}, renderCanvasTools() {}, restoreEditableState() {},
-    renderRecommended: () => '', screens: { home: () => 'READY', explore: () => 'READY', work: () => 'READY', profile: () => 'READY', missions: () => 'READY' }, applyRequestedFocus() {}, words: s => s,
+    renderRecommended: () => '', renderPetSpaces: () => '', screens: { home: () => 'READY', explore: () => 'READY', work: () => 'READY', profile: () => 'READY', missions: () => 'READY' }, applyRequestedFocus() {}, words: s => s,
     tell(message) { messages.push(message); }, haptic() {}, showPendingNotices: async () => {}, playOptionsReady: () => true,
     crypto: { randomUUID: () => 'local-action' }, actionAnimationFamily: () => 'equip', animateAction() {},
     lifecycleCeremonyActive: () => false, FAST_ACTION_RESPONSE_ACTIONS: new Set(['feed', 'play', 'clean']),
