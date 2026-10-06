@@ -1406,7 +1406,7 @@ assert.match(worker, /const \[journeySummary, hydratedKaiju, seasonFinales\] = a
 assert.match(worker, /path === '\/telegram-pets\/app\/state'.*request\.method === 'POST'/s);
 assert.match(worker, /path === '\/telegram-pets\/app\/action'.*request\.method === 'POST'/s);
 assert.match(worker, /verifyTelegramMiniAppInitData\(body\.init_data/);
-assert.match(worker, /const MOONPET_MINI_APP_URL = `\$\{SITE_URL\}\/moonpet-game\.html\?v=20261006-live-refresh-v3`/);
+assert.match(worker, /const MOONPET_MINI_APP_URL = `\$\{SITE_URL\}\/moonpet-game\.html\?v=20261006-live-refresh-v4`/);
 assert.match(worker, /const TELEGRAM_GAMES_MENU_URL = `\$\{SITE_URL\}\/games\/telegram\/\?v=20260903-games-shell-v8`/,
   'default Telegram games menu must point at the current shell release');
 assert.match(worker, /const TELEGRAM_GAMES_MENU_TEXT = 'Games'/);
@@ -1509,7 +1509,7 @@ assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20261002-audit-recovery-v2/)
 assert.doesNotMatch(html, /moonpet-art-resolver\.js/, 'the game must not load the retired static background resolver');
 assert.match(html, /\/js\/moonpet-bot-art-loader\.js\?v=20261002-audit-recovery-v2/);
 assert.match(html, /\/js\/moonpet-bot-art-renderer\.js\?v=20261002-audit-recovery-v2/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261006-live-refresh-v3/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261006-live-refresh-v4/);
 assert.match(html, /role="button" aria-label="Interact with your animated Moonpet"/);
 assert.match(client, /data-utility="guide">HOW TO PLAY/);
 const guideMarkupSource = extractTestExport(client, 'guideMarkup');
@@ -1725,7 +1725,7 @@ function browserEntryHarness({ sdkInitData = '', inheritedInitData = '', api = {
       : { ok: await vm.runInContext('verifyTelegramAuth', authVerifierContext)(body.telegram_auth, token), reason: 'telegram_auth_invalid' };
     return { ok: verification.ok, status: verification.ok ? 200 : 401, json: async () => verification.ok ? { state: { adopted: false } } : { error: verification.reason } };
   };
-  const runtime = vm.createContext({ window, state: null, authenticationFailure: false, petActionRefreshRequired: false, Date: EntryDate, URLSearchParams, fetch, setTimeout: callback => { callback(); return 0; }, localStorage: {
+  const runtime = vm.createContext({ window, state: null, authenticationFailure: false, petActionRefreshRequired: false, Date: EntryDate, URLSearchParams, fetch, AbortController, setTimeout, clearTimeout, localStorage: {
     getItem: key => stored.get(key) || null, setItem: (key, value) => stored.set(key, String(value)), removeItem: key => stored.delete(key),
   } });
   vm.runInContext(apiConfig, runtime);
@@ -1800,7 +1800,7 @@ for (const sdkInitData of [expired, tampered, 'auth_date=invalid&hash=' + 'a'.re
   assert.equal(entry.requests.length, 3, 'Read-only startup state requests retain their transient retry policy');
 }
 assert.match(html, /\/js\/api-config\.js\?v=20260813-first-party-api/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261006-live-refresh-v3/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261006-live-refresh-v4/);
 // Season slot UI: timing, account/pet separation, unlock affordance, switching, and rejection copy.
 assert.match(client, /function renderSeasonSlots\(\)/, 'Mini App must render a focused season-slot summary');
 assert.match(client, /function render\(options\) \{\s*var editableState = options && options\.discardCallsignDraft \? null : captureEditableState\(\);[\s\S]*restoreEditableState\(editableState\);/, 'render must preserve only drafts that were not explicitly discarded');
@@ -2250,7 +2250,7 @@ assert.match(worker, /dailyReservation \? dailyReservation\.current_room : Numbe
 assert.match(worker, /if \(!pool\.length\) pool = rooms/);
 assert.match(client, /'run_depth'/);
 assert.match(html, /20261002-audit-recovery-v2/);
-assert.match(worker, /20261006-live-refresh-v3/);
+assert.match(worker, /20261006-live-refresh-v4/);
 assert.match(client, /function scoreMotif\(\)/, 'audio must include authored screen motifs');
 assert.match(client, /function syncMoonpetScore\(\)/, 'authored score must follow audio and radio state');
 assert.match(client, /renderQuality = reducedMotion/, 'canvas quality must start from device capability');

@@ -41,6 +41,132 @@ function context(overrides = {}) {
   return { ctx, calls, pending, messages, haptics, timers, at: time => { now = time; }, advance: () => ++generation };
 }
 
+function requestRuntime(f) {
+  let now = 0, sequence = 0;
+  const requests = [], timers = new Map();
+  Object.assign(f.ctx, {
+    apiBase: 'https://moonboys-api.test', AbortController, authBody: () => ({ init_data: 'fixture' }),
+    setTimeout: (fn, delay) => { const id = ++sequence; timers.set(id, { fn, at: now + delay }); return id; },
+    clearTimeout: id => timers.delete(id),
+    fetch: (url, options) => new Promise((resolve, reject) => {
+      requests.push({ url, body: JSON.parse(options.body), signal: options.signal, resolve, reject,
+        respond: (data, status = 200) => resolve({ ok: status >= 200 && status < 300, status, json: async () => data }) });
+    }),
+  });
+  vm.runInContext(block('apiRequest'), f.ctx);
+  return { requests, timers, tick: async ms => {
+    now += ms;
+    for (const [id, timer] of timers) if (timer.at <= now) { timers.delete(id); timer.fn(); }
+    await new Promise(resolve => setImmediate(resolve));
+  } };
+}
+
+for (const phase of ['fetch', 'body']) test(`a stalled live ${phase} is aborted and releases polling after manual recovery`, async () => {
+  const f = context(), net = requestRuntime(f);
+  const read = f.ctx.refreshLiveState();
+  const stalled = net.requests[0];
+  let finishBody;
+  if (phase === 'body') {
+    stalled.resolve({ ok: true, status: 200, json: () => new Promise(resolve => { finishBody = resolve; }) });
+    await net.tick(0);
+  }
+  assert.equal(f.ctx.passiveRefreshInFlight, true);
+  // Install a successful manual read while the old transport ignores abort.
+  const manualGeneration = f.ctx.beginStateRequest();
+  const manual = f.ctx.post('/telegram-pets/app/state', {});
+  const fresh = base(); fresh.pet.pet_xp = 300; fresh.arena.current_round = 8;
+  net.requests[1].respond({ state: fresh });
+  assert.equal(f.ctx.setStateSnapshot((await manual).state, manualGeneration), true);
+  f.at(40000); await net.tick(30000); await read;
+  assert.equal(stalled.signal.aborted, true);
+  assert.equal(f.ctx.passiveRefreshInFlight, false);
+  assert.equal(f.ctx.state.pet.pet_xp, 300);
+  assert.equal(net.timers.size, 0);
+  // A late old body cannot publish stale state or block subsequent requests.
+  if (phase === 'body') finishBody({ state: patch(2) }); else stalled.respond({ error: 'mini_app_auth_expired' }, 401);
+  await net.tick(0);
+  assert.equal(f.ctx.state.arena.current_round, 8);
+  assert.equal(f.ctx.authenticationFailure, false, 'an aborted late response cannot expire the recovered session');
+  f.at(45000); const next = f.ctx.refreshLiveState();
+  assert.equal(net.requests.length, 3);
+  net.requests[2].respond({ state: patch(9) }); await next;
+  assert.equal(f.ctx.state.arena.current_round, 9);
+});
+
+test('a live timeout releases queued season, cooldown and care-state refreshes', async () => {
+  const f = context({ cooldownRefreshFailures: 0, cooldownRefreshTimer: 0, lastCooldownRefreshKey: '' });
+  Object.assign(f.ctx, { serverNowMs: () => 10000, collectCooldownEntries: () => [] });
+  vm.runInContext(block('cooldownRefresh'), f.ctx);
+  vm.runInContext(block('fastActionResponse'), f.ctx);
+  const net = requestRuntime(f), read = f.ctx.refreshLiveState();
+  f.ctx.lastSeasonServerRefreshAt = 1;
+  f.at(400000); await f.ctx.refreshSeasonSnapshot(false);
+  assert.equal(f.ctx.seasonRefreshPending, true);
+  await net.tick(30000); await read;
+  const season = f.ctx.refreshSeasonSnapshot(false);
+  net.requests[1].respond({ state: base() }); await season;
+  assert.equal(f.ctx.seasonRefreshPending, false);
+  const cooldown = f.ctx.refreshExpiredCooldownState();
+  net.requests[2].respond({ state: base() }); await cooldown;
+  f.ctx.fastActionStateDirty = true;
+  const care = f.ctx.refreshFastActionState();
+  net.requests[3].respond({ state: base() }); await care;
+  assert.equal(f.ctx.fastActionStateDirty, false);
+  for (const flag of ['passiveRefreshInFlight', 'seasonRefreshBusy', 'cooldownRefreshInFlight', 'fastActionStateRefreshInFlight']) assert.equal(f.ctx[flag], false);
+});
+
+for (const kind of ['season', 'cooldown', 'care']) test(`a stalled ${kind} full body releases its guard and preserves retry work`, async () => {
+  const f = context({ cooldownRefreshFailures: 0, cooldownRefreshTimer: 0, lastCooldownRefreshKey: '', fastActionStateDirty: true });
+  Object.assign(f.ctx, { serverNowMs: () => 10000 });
+  vm.runInContext(block('cooldownRefresh'), f.ctx);
+  vm.runInContext(block('fastActionResponse'), f.ctx);
+  const net = requestRuntime(f);
+  const read = kind === 'season' ? f.ctx.refreshSeasonSnapshot(true)
+    : kind === 'cooldown' ? f.ctx.refreshExpiredCooldownState() : f.ctx.refreshFastActionState();
+  net.requests[0].resolve({ ok: true, status: 200, json: () => new Promise(() => {}) });
+  await net.tick(0);
+  await net.tick(59999);
+  assert.equal(net.requests[0].signal.aborted, false);
+  await net.tick(1); await read;
+  assert.equal(net.requests[0].signal.aborted, true);
+  const flag = kind === 'season' ? 'seasonRefreshBusy' : kind === 'cooldown' ? 'cooldownRefreshInFlight' : 'fastActionStateRefreshInFlight';
+  assert.equal(f.ctx[flag], false);
+  assert.equal(f.ctx.state.pet.pet_xp, 200);
+  if (kind === 'season') assert.equal(f.ctx.seasonRefreshPending, true);
+  if (kind === 'cooldown') assert.equal(f.ctx.cooldownRefreshFailures, 1);
+  if (kind === 'care') assert.equal(f.ctx.fastActionStateDirty, true);
+});
+
+test('the request deadline bounds the entire read-only retry sequence', async () => {
+  const f = context(), net = requestRuntime(f);
+  const read = f.ctx.post('/telegram-pets/app/state', {});
+  const rejected = assert.rejects(read, error => error.code === 'request_timeout');
+  await net.tick(59500);
+  net.requests[0].respond({ error: 'mini_app_state_failed' }, 503);
+  await net.tick(0); await net.tick(250);
+  assert.equal(net.requests.length, 2);
+  assert.equal(net.requests[0].signal, net.requests[1].signal);
+  await net.tick(250); await rejected;
+  assert.equal(net.requests[1].signal.aborted, true);
+  assert.equal(net.timers.size, 0);
+});
+
+test('timed-out mutations never replay automatically and completed requests clear their deadlines', async () => {
+  const f = context(), net = requestRuntime(f);
+  const action = f.ctx.post('/telegram-pets/app/action', { action: 'event_close', request_id: 'same-action' });
+  const rejected = assert.rejects(action, error => error.code === 'request_timeout');
+  net.requests[0].resolve({ ok: true, status: 200, json: () => new Promise(() => {}) });
+  await net.tick(60000); await rejected;
+  assert.equal(net.requests.length, 1);
+  assert.equal(net.requests[0].signal.aborted, true);
+  const completed = f.ctx.post('/telegram-pets/app/state', {});
+  net.requests[1].respond({ state: base() });
+  await completed;
+  assert.equal(net.timers.size, 0);
+  await net.tick(60000);
+  assert.equal(net.requests[1].signal.aborted, false);
+});
+
 test('a 7.5-second response renders and overlapping five-second polls start no new request', async () => {
   const f = context();
   const first = f.ctx.refreshLiveState();
@@ -107,15 +233,23 @@ test('a rapid replay from another device recovers the previous match before publ
 });
 
 test('an egg selected after another pet can still recover or close its saved Street Events', () => {
-  const ctx = { state: { pending_street_events: [{ event_id: 'original-one', recoverable: true }, { event_id: 'original-two', close_available: true }] },
+  const ctx = { state: { adopted: true, lifecycle: { phase: 'egg' }, pending_street_events: [{ event_id: 'original-one', recoverable: true }, { event_id: 'original-two', close_available: true }] },
     firstSessionExploreMarkup: () => '<egg-guide>', renderPlayNow: () => '<play>',
-    button: (label, action, payload) => action + ':' + payload.event_id,
+    petActionRefreshRequired: false, cooldownRemainingSeconds: () => 0,
+    escapeHtml: value => String(value).replaceAll('&', '&amp;').replaceAll('"', '&quot;'),
     panel: (title, body) => title + body };
   vm.createContext(ctx);
+  vm.runInContext(block('actionAvailability'), ctx);
+  vm.runInContext(client.slice(client.indexOf('  function button('), client.indexOf('  var panelOpenState')), ctx);
   vm.runInContext(client.slice(client.indexOf('  function renderExplore()'), client.indexOf('  function renderWork()')), ctx);
   const markup = ctx.renderExplore();
-  assert.match(markup, /egg-guide/); assert.match(markup, /event_recover:original-one/);
-  assert.match(markup, /event_close:original-two/);
+  assert.match(markup, /egg-guide/);
+  assert.match(markup, /data-action="event_recover" data-payload="\{&quot;event_id&quot;:&quot;original-one&quot;\}"/);
+  assert.match(markup, /data-action="event_close" data-payload="\{&quot;event_id&quot;:&quot;original-two&quot;\}"/);
+  assert.doesNotMatch(markup, / disabled|HATCH REQUIRED/);
+  assert.match(ctx.button('NEW EVENT', 'random_event', {}), / disabled/, 'new event gameplay remains hatch-gated');
+  ctx.petActionRefreshRequired = true;
+  assert.match(ctx.button('RECOVER', 'event_recover', {}), / disabled/, 'unconfirmed-save guard still applies');
 });
 
 test('an incomplete live response cannot clear authoritative activity or combat', async () => {

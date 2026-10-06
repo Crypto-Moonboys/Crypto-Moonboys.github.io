@@ -580,6 +580,7 @@
     } catch (_) { telegramAuth = null; }
   }
 
+  // TEST-EXPORT: apiRequest:start
   async function post(path, payload) {
     if (!apiBase) throw new Error('API ENDPOINT DISABLED FOR THIS CONTEXT');
     if (authenticationFailure) {
@@ -587,37 +588,60 @@
       expiredError.status = 401;
       throw expiredError;
     }
-    // State is read-only and safe to retry on a fresh request context. A
-    // transient D1 read must not strand the whole game on its startup screen.
-    // Never retry /action here: mutations own their idempotency and response.
-    var stateAttempts = path === '/telegram-pets/app/state' ? 3 : 1;
-    for (var attempt = 0; attempt < stateAttempts; attempt += 1) {
-      var response = await fetch(apiBase + path, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(Object.assign({}, authBody(), payload || {})),
-      });
-      var data = await response.json().catch(function () { return {}; });
-      var retryableStateFailure = response.status === 503 && data.error === 'mini_app_state_failed' && attempt + 1 < stateAttempts;
-      if (retryableStateFailure) {
-        await new Promise(function (resolve) { setTimeout(resolve, attempt ? 700 : 250); });
-        continue;
-      }
-      if (!response.ok && response.status !== 409) {
-        var requestError = new Error(data.error || 'NETWORK HANDSHAKE FAILED');
-        requestError.status = response.status;
-        requestError.retryAfterSeconds = Math.max(0, Number(data.retry_after_seconds || 0));
-        if (response.status === 401) {
-          authenticationFailure = true;
-          petActionRefreshRequired = true;
-          if (state) render();
+    var controller = new AbortController();
+    var timeoutError = new Error('REQUEST TIMED OUT. TAP REFRESH TO READ YOUR SAVE.');
+    timeoutError.code = 'request_timeout';
+    var timeoutMs = path === '/telegram-pets/app/state' && payload && payload.mode === 'live' ? 30000 : 60000;
+    var requestTimer;
+    var deadline = new Promise(function (_, reject) {
+      requestTimer = setTimeout(function () {
+        reject(timeoutError);
+        controller.abort();
+      }, timeoutMs);
+    });
+    try {
+      // The deadline covers fetch, body reads and all read-only retries. Racing
+      // it also releases callers' guards if a transport ignores cancellation.
+      return await Promise.race([deadline, (async function () {
+        // State is safe to retry after a transient D1 read failure. Mutations
+        // must never replay automatically after an unconfirmed response.
+        var stateAttempts = path === '/telegram-pets/app/state' ? 3 : 1;
+        for (var attempt = 0; attempt < stateAttempts; attempt += 1) {
+          if (controller.signal.aborted) throw timeoutError;
+          var response = await fetch(apiBase + path, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(Object.assign({}, authBody(), payload || {})),
+            signal: controller.signal,
+          });
+          if (controller.signal.aborted) throw timeoutError;
+          var data = await response.json().catch(function () { return {}; });
+          if (controller.signal.aborted) throw timeoutError;
+          var retryableStateFailure = response.status === 503 && data.error === 'mini_app_state_failed' && attempt + 1 < stateAttempts;
+          if (retryableStateFailure) {
+            await new Promise(function (resolve) { setTimeout(resolve, attempt ? 700 : 250); });
+            continue;
+          }
+          if (!response.ok && response.status !== 409) {
+            var requestError = new Error(data.error || 'NETWORK HANDSHAKE FAILED');
+            requestError.status = response.status;
+            requestError.retryAfterSeconds = Math.max(0, Number(data.retry_after_seconds || 0));
+            if (response.status === 401) {
+              authenticationFailure = true;
+              petActionRefreshRequired = true;
+              if (state) render();
+            }
+            throw requestError;
+          }
+          return data;
         }
-        throw requestError;
-      }
-      return data;
+        throw new Error('mini_app_state_failed');
+      }())]);
+    } finally {
+      clearTimeout(requestTimer);
     }
-    throw new Error('mini_app_state_failed');
   }
+  // TEST-EXPORT: apiRequest:end
 
   async function typeBoot(lines, options) {
     var token = ++typingToken;
@@ -807,7 +831,7 @@
       options = Object.assign({}, options, { disabled: true, statusLabel: 'ARCADE XP REQUIRED' });
     }
     var accountActions = ['adopt', 'guidance_ack', 'notification_set', 'season_slots', 'buy_pet_slot', 'switch_pet_slot', 'delete_pet_slot', 'arena_queue_cancel', 'arena_forfeit', 'kaiju_queue_cancel', 'kaiju_match_cancel'];
-    var eggActions = accountActions.concat(['incubate', 'hatch', 'energy_drink', 'dance', 'cuddles', 'bounty_claim', 'season_claim', 'weekly_boss_claim', 'contract_claim', 'style_equip', 'seasonal_boss_claim', 'daily_completion_claim', 'finale_start', 'finale_retry', 'finale_step', 'finale_claim']);
+    var eggActions = accountActions.concat(['incubate', 'hatch', 'energy_drink', 'dance', 'cuddles', 'bounty_claim', 'season_claim', 'weekly_boss_claim', 'contract_claim', 'style_equip', 'seasonal_boss_claim', 'daily_completion_claim', 'finale_start', 'finale_retry', 'finale_step', 'finale_claim', 'event_recover', 'event_close']);
     if (state && state.lifecycle && state.lifecycle.phase === 'egg' && !eggActions.includes(action)) {
       options = Object.assign({}, options, { disabled: true, cooldown: null, statusLabel: 'HATCH REQUIRED' });
     } else if (state && state.adopted === false && !accountActions.includes(action)) {

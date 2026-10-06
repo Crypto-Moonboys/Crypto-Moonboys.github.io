@@ -20,6 +20,8 @@ The [6 October refresh fixes](moonpet-refresh-fixes-2026-10-06.md#pr-1445-review
 
 The [scheduling follow-up](moonpet-refresh-fixes-2026-10-06.md#pr-1445-scheduling-follow-up) requires identity, terminal and season recovery to load a complete save regardless of tab changes. A due or forced season read stays queued behind an active request and takes priority over the next live poll, with a 30-second retry delay after failure.
 
+The [request and egg-control follow-up](moonpet-refresh-fixes-2026-10-06.md#pr-1445-request-and-egg-control-follow-up) bounds live reads to 30 seconds and other API requests to 60 seconds, including body reads and retry attempts. Abort releases background refresh guards without allowing stale state to replace a newer save. Unconfirmed actions are never replayed automatically. An egg can recover or explicitly close an older pet's saved Street Event through enabled controls; closure still requires confirmation and preserves reward history.
+
 The [1 October hard audit](moonpet-hard-audit-2026-10-01.md) records the live-surface cleanup, transactional deletion protections and remaining year-long pacing work.
 
 This reference and the seasonal model describe current rules. Dated audits are
