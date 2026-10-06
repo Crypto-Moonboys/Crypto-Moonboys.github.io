@@ -587,7 +587,8 @@ try {
     const context = await createFixtureContext({ viewport, reducedMotion: 'reduce' });
     const page = await context.newPage();
     const errors = [], actions = [], unexpected = [], failedResponses = [];
-    let currentUser = 'browser-egg';
+    let currentUser = `browser-egg-${viewport.width}`;
+    await seed(currentUser, 'egg');
     let dailyOverride = null;
     let oldExpeditionState = false;
     let startupStateFailures = 2;
