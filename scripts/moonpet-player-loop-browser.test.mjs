@@ -545,11 +545,16 @@ try {
     assert.ok(artRequests > 0);
     assert.equal(await page.evaluate(() => window.MoonpetBetaAppearance.isBotArtReady()), false);
     artOffline = false;
+    const artRecoverySave = page.waitForResponse(response => response.url().endsWith('/telegram-pets/app/state') && response.request().method() === 'POST');
+    const careBeforeArtRecovery = await page.locator('[data-panel="care"]').elementHandle();
     await page.locator('[data-utility="sync"]').click();
+    assert.equal((await artRecoverySave).ok(), true);
+    await page.waitForFunction(node => !node.isConnected, careBeforeArtRecovery);
     await page.waitForFunction(() => window.MoonpetBetaAppearance.isBotArtReady());
     assert.ok(artRequests >= 2, 'Refresh recovers a previously rejected art registry without reloading the game');
     await page.locator('[data-panel="care"]').evaluate(node => { node.open = true; });
     for (const action of ['feed', 'play']) {
+      await page.locator('[data-panel="care"]').evaluate(node => { node.open = true; });
       faultAction = action;
       await page.locator(`[data-action="${action}"]`).click();
       await page.waitForFunction(() => document.querySelector('#terminal-output').textContent.includes('ACTION RESPONSE UNCONFIRMED'));
@@ -674,12 +679,24 @@ try {
         const summary = node.querySelector(':scope > summary');
         return summary && summary.querySelector('.panel-icon').textContent && summary.querySelector('.panel-description').textContent && node.getBoundingClientRect().right <= innerWidth;
       })), 'all sections have accessible summaries, icons, descriptions and fit mobile');
+      const controlGuidance = await page.locator('#screen [data-action]').evaluateAll(nodes => nodes.map(node => ({
+        action: node.dataset.action, purpose: node.querySelector('.button-purpose')?.textContent,
+        badge: node.querySelector('.button-state')?.textContent, label: node.getAttribute('aria-label'), description: node.getAttribute('aria-description'),
+      })));
+      assert.ok(controlGuidance.every(item => item.purpose && item.purpose.length > 30 && item.badge && item.label && item.description), `${section} real action buttons explain purpose and consequence`);
+      assert.ok(await page.locator('#screen [data-jump]').evaluateAll(nodes => nodes.every(node => node.textContent.includes('NO COST') && node.querySelector('.button-purpose'))), `${section} menu routes say they only navigate`);
+      assert.equal(await page.locator('#nav small').count(), 6, 'all dock tabs have a visible purpose label');
       const expectedOpenPanels = section === 'home' ? ['pet-spaces','recommended'] : section === 'profile' ? ['pet-spaces'] : [];
       const openPanels = await page.locator('#screen > details[open]').evaluateAll(nodes=>nodes.map(node=>node.dataset.panel).sort());
       assert.deepEqual(openPanels,expectedOpenPanels,'pet selection is visible while unrelated detail panels start collapsed');
       if (viewport.width === 390) await page.screenshot({ path: path.join(screenshotDirectory, `moonpet-sections-${section}.png`) });
     }
     await page.locator('[data-screen="home"]').click();
+    const savedOpen = await page.locator('#screen > details.panel').evaluateAll(nodes => nodes.map(node => node.open));
+    await page.locator('#screen > details.panel').evaluateAll(nodes => nodes.forEach(node => { node.open = true; }));
+    assert.ok(await page.locator('#screen .action-button').evaluateAll(nodes => nodes.every(node => node.scrollWidth <= node.clientWidth + 1)), 'purpose and cost text stays inside real mobile buttons');
+    if (viewport.width === 390 || viewport.width === 360) await page.screenshot({ path: path.join(screenshotDirectory, `moonpet-control-guidance-${viewport.width}.png`) });
+    await page.locator('#screen > details.panel').evaluateAll((nodes, values) => nodes.forEach((node, index) => { node.open = values[index]; }), savedOpen);
     const careSummary = page.locator('[data-panel="care"] > summary');
     await careSummary.focus(); await page.keyboard.press('Enter');
     assert.equal(await page.locator('[data-panel="care"]').evaluate(node => node.open), true);
@@ -710,7 +727,7 @@ try {
     await page.locator('[data-screen="home"]').click();
     const canvasTools = page.locator('#canvas-tools');
     assert.equal(await canvasTools.locator('button').count(), 3);
-    assert.equal((await canvasTools.textContent()).trim(), '', 'canvas controls must be icons without visible text');
+    assert.equal((await canvasTools.textContent()).trim(), 'AUDIORADIOREFRESH', 'canvas controls explain their icons with visible labels');
     assert.equal(await page.locator('#screen [data-utility="audio"], #screen [data-utility="radio"], #screen [data-utility="sync"]').count(), 0);
     const layout = await canvasTools.evaluate((tools) => {
       const viewport = document.querySelector('.viewport').getBoundingClientRect();

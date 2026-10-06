@@ -1076,3 +1076,21 @@ button, input, select, textarea {
 .panel[open] > .panel-summary { border-bottom:1px solid rgba(var(--section-rgb),.1); }
 .panel[open] > .panel-summary .panel-chevron { transform:rotate(180deg); }
 .panel:not([open]) > .panel-body { display:none; }
+
+/* Live controls: purpose and costs stay readable on touch screens. */
+.terminal-button .button-purpose { display: block; margin-top: 6px; color: var(--ui-text-secondary); font-size: 11px; font-weight: 400; line-height: 1.45; letter-spacing: 0; text-transform: none; overflow-wrap: anywhere; }
+.terminal-button .button-state { display: block; margin-top: 5px; color: #c8d4df; font-size: 9px; font-weight: 700; letter-spacing: .045em; line-height: 1.35; }
+.action-button, .route-button { min-width: 0; text-align: left; overflow-wrap: anywhere; }
+.action-button .button-requirements { color: #d4dce4; font-size: 10px; line-height: 1.45; letter-spacing: .025em; }
+.action-button:disabled { opacity: .72; border-style: dashed; }
+.action-claim:not(:disabled) { border-color: #78cfa5; box-shadow: inset 3px 0 #78cfa5; }
+.action-claim:not(:disabled) .button-state { color: #9ae9bf; }
+.action-spend:not(:disabled) .button-state { color: #f4d294; }
+.action-risk:not(:disabled) { border-color: #da8e8e; box-shadow: inset 3px 0 #da8e8e; }
+.action-risk .button-state { color: #ffc0c0; }
+.route-button .button-state { color: #a4d5ec; }
+.dock button small { display: block; margin-top: 3px; font-size: 8px; line-height: 1.2; letter-spacing: 0; text-transform: none; }
+.dock button[aria-current="page"] { border-color: #78bcd5; background: rgba(120,188,213,.09); }
+.canvas-tool { padding: 5px; }
+.canvas-tool svg { width: 20px; height: 20px; margin: 0 auto; }
+.canvas-tool small { display: block; margin-top: 1px; font-size: 7px; line-height: 1; letter-spacing: 0; font-weight: 700; }
