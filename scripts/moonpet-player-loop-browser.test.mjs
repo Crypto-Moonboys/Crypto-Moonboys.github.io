@@ -145,7 +145,7 @@ try {
       if (url.pathname.includes('/telegram-pets/app/')) {
         const body = route.request().postDataJSON();
         const result = url.pathname.endsWith('/action') ? (actions.push(body.action), await act(body)) : undefined;
-        const state = body.mode === 'core' ? await hooks.buildPetMiniAppCoreState(db,id) : await hooks.buildPetMiniAppState(db,id,token);
+        const state = body.mode === 'core' ? await hooks.buildPetMiniAppCoreState(db,id) : body.mode === 'live' ? await hooks.buildPetMiniAppLiveState(db,id) : await hooks.buildPetMiniAppState(db,id,token);
         return route.fulfill({status:result?.accepted === false ? 409 : 200,json:{state,result}});
       }
       if (url.hostname === '127.0.0.1') return route.continue();
@@ -194,7 +194,7 @@ try {
       if(url.pathname.includes('/telegram-pets/app/')) {
         const body=route.request().postDataJSON();
         const result=url.pathname.endsWith('/action')?await dispatchRenderedPetAction(db,id,{id},body,token):undefined;
-        const state=body.mode === 'core'?await hooks.buildPetMiniAppCoreState(db,id):await hooks.buildPetMiniAppState(db,id,token);
+        const state=body.mode === 'core'?await hooks.buildPetMiniAppCoreState(db,id): body.mode === 'live' ? await hooks.buildPetMiniAppLiveState(db,id) :await hooks.buildPetMiniAppState(db,id,token);
         return route.fulfill({status:result?.accepted === false?409:200,json:{state,result}});
       }
       if(url.hostname === '127.0.0.1')return route.continue();return route.abort();
@@ -233,7 +233,7 @@ try {
           requests.push(body);
           result = await hooks.processPetMiniAppAction(db, id, { id }, body, token);
         }
-        const state = body.mode === 'core' ? await hooks.buildPetMiniAppCoreState(db, id) : await hooks.buildPetMiniAppState(db, id, token);
+        const state = body.mode === 'core' ? await hooks.buildPetMiniAppCoreState(db, id) : body.mode === 'live' ? await hooks.buildPetMiniAppLiveState(db, id) : await hooks.buildPetMiniAppState(db, id, token);
         return route.fulfill({ status: result?.accepted === false ? 409 : 200, json: { state, result } });
       }
       if (url.hostname === '127.0.0.1') return route.continue();
@@ -283,7 +283,7 @@ try {
         const result = url.pathname.endsWith('/action')
           ? await hooks.processPetMiniAppAction(db, id, { id }, body, token) : undefined;
         const state = body.mode === 'core' ? await hooks.buildPetMiniAppCoreState(db, id)
-          : await hooks.buildPetMiniAppState(db, id, token);
+          : body.mode === 'live' ? await hooks.buildPetMiniAppLiveState(db, id) : await hooks.buildPetMiniAppState(db, id, token);
         return route.fulfill({ json: { ok: true, state, result } });
       }
       if (url.hostname === '127.0.0.1') return route.continue();
@@ -330,7 +330,7 @@ try {
         if (body.mode === 'missions') await missionsGate;
         const state = body.mode === 'core'
           ? await hooks.buildPetMiniAppCoreState(db, 'browser-missions')
-          : await hooks.buildPetMiniAppState(db, 'browser-missions', token, { mode: body.mode });
+          : body.mode === 'live' ? await hooks.buildPetMiniAppLiveState(db, 'browser-missions') : await hooks.buildPetMiniAppState(db, 'browser-missions', token, { mode: body.mode });
         if (!body.mode && holdFullResponse) {
           holdFullResponse = false;
           fullRequestStarted();
@@ -422,7 +422,7 @@ try {
       if (url.pathname.includes('/telegram-pets/app/')) {
         const body = route.request().postDataJSON();
         const result = url.pathname.endsWith('/action') ? await act(id, body) : undefined;
-        const state = body.mode === 'core' ? await hooks.buildPetMiniAppCoreState(db, id) : await hooks.buildPetMiniAppState(db, id, token);
+        const state = body.mode === 'core' ? await hooks.buildPetMiniAppCoreState(db, id) : body.mode === 'live' ? await hooks.buildPetMiniAppLiveState(db, id) : await hooks.buildPetMiniAppState(db, id, token);
         return route.fulfill({ json: { state, result: result && hooks.serializePetMiniAppActionResult(result, state.guidance?.identity, id) } });
       }
       if (url.hostname === '127.0.0.1') return route.continue();
@@ -481,7 +481,7 @@ try {
             return faultAction === 'feed' ? route.abort('connectionreset') : route.fulfill({ json: {} });
           }
         }
-        const state = body.mode === 'core' ? await hooks.buildPetMiniAppCoreState(db, id) : await hooks.buildPetMiniAppState(db, id, token);
+        const state = body.mode === 'core' ? await hooks.buildPetMiniAppCoreState(db, id) : body.mode === 'live' ? await hooks.buildPetMiniAppLiveState(db, id) : await hooks.buildPetMiniAppState(db, id, token);
         return route.fulfill({ json: { state, result } });
       }
       if (url.hostname === '127.0.0.1') return route.continue();
