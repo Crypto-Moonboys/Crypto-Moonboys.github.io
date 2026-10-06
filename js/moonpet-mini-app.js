@@ -857,7 +857,8 @@
     vitals: ['♥', 'Check health, energy, hunger, fun and cleanliness.'],
     care: ['♥', 'Feed, play, rest, train and collect Daily Cache.'],
     details: ['◉', 'Companion stats, personality and equipped items.'],
-    'season-slots': ['◈', 'Manage permanent pet spaces and competition progress.'],
+    'pet-spaces': ['◈', 'Choose your active pet or unlock another permanent space.'],
+    'season-slots': ['◈', 'Track lifetime progression and calendar competition progress.'],
     contracts: ['↻', 'Saved quests with builds, bosses and repeatable play.'],
     'daily-journey': ['☀', 'Complete daily goals to earn a Growth Mark.'],
     'daily-objectives': ['☀', 'Track care and official Daily Run objectives.'],
@@ -909,7 +910,7 @@
       : /APTITUDES/.test(name) ? ['▥', 'Compare your companion’s natural strengths.']
       : /DORMANT/.test(name) ? ['◉', 'Initialise your first Secret Bot.'] : ['◈', 'Open to view details and available options.']);
     if (panelId === 'care' && state && state.lifecycle && state.lifecycle.phase === 'egg') copy = ['♥', 'Energy Drink, Dance and Cuddles; stat-only care.'];
-    var expanded = Object.prototype.hasOwnProperty.call(panelOpenState, key) ? panelOpenState[key] : panelId === 'telegram-auth' || panelId === 'recommended' && activeScreen === 'home' || /DORMANT/.test(name);
+    var expanded = Object.prototype.hasOwnProperty.call(panelOpenState, key) ? panelOpenState[key] : panelId === 'telegram-auth' || panelId === 'pet-spaces' || panelId === 'recommended' && activeScreen === 'home' || /DORMANT/.test(name);
     return '<details class="panel" data-panel-key="' + escapeHtml(key) + '"' + (panelId ? ' data-panel="' + escapeHtml(panelId) + '"' : '') + (expanded ? ' open' : '') + '><summary class="panel-summary"><span class="panel-icon" aria-hidden="true">' + copy[0] + '</span><span class="panel-caption"><span class="panel-title">' + escapeHtml(name) + '</span><span class="panel-description">' + escapeHtml(description || copy[1]) + '</span></span><span class="panel-chevron" aria-hidden="true">⌄</span></summary><div class="panel-body">' + body + '</div></details>';
   }
 
@@ -1941,7 +1942,7 @@
 
   function renderPetInstanceCard(slot) {
     var pet = slot.pet || {};
-    if (!pet.progression) return '<div class="pet-instance-card" data-pet-id="' + escapeHtml(slot.pet_id || '') + '"><div class="pet-instance-heading"><strong>' + escapeHtml(pet.display_name || 'UNKNOWN') + '</strong>' + (slot.active ? '<span>◆ ACTIVE</span>' : '<span>OWNED</span>') + '</div><div class="line muted"><strong>PROGRESSION UNAVAILABLE</strong></div></div>';
+    if (!pet.progression) return '<div class="pet-instance-card" data-pet-id="' + escapeHtml(slot.pet_id || '') + '"><div class="pet-instance-heading"><strong>' + escapeHtml(pet.display_name || 'UNKNOWN') + '</strong>' + (slot.active ? '<span>◆ ACTIVE</span>' : '<span>OWNED</span>') + '</div><div class="pet-instance-grid"><div><span>LIFECYCLE</span><strong>' + escapeHtml(moonpetStageLabel({}, pet)) + '</strong></div><div><span>LEVEL</span><strong>' + number(pet.level || 1) + '</strong></div><div><span>PET XP</span><strong>' + number(pet.pet_xp) + '</strong></div></div><div class="line muted"><strong>PROGRESSION UNAVAILABLE</strong></div></div>';
     var progression = pet.progression || {};
     var lifecycle = progression.lifecycle || {};
     var growth = progression.growth_marks || {};
@@ -1961,41 +1962,11 @@
       '<div><span>FUN</span><strong>' + number(pet.happiness) + '</strong></div><div><span>CLEAN</span><strong>' + number(pet.cleanliness) + '</strong></div></div>' + completion + '</div>';
   }
 
-  function renderSeasonSlots() {
-    var summary = state.season_slots || {};
-    var season = summary.competition_season || summary.season || {};
-    var timing = seasonTiming(season, seasonSnapshotElapsed());
-    if (summary.hydrated === false || stateNeedsFullHydration(state)) {
-      var providedCore = Array.isArray(summary.slots) ? summary.slots : [];
-      var activeCore = providedCore.find(function (slot) { return slot && slot.active; }) || {};
-      var timingCore = timing.status === 'UNAVAILABLE'
-        ? '<div class="line muted">RUNTIME SEASON TIMING UNAVAILABLE.</div>'
-        : '<div class="season-status-grid"><div><span>PHASE</span><strong>' + timing.status + '</strong></div><div><span>POSITION</span><strong>DAY ' + number(timing.day) + ' / ' + number(timing.totalDays) + '</strong></div><div><span>REMAINING</span><strong>' + countdownMarkup({ expires_at: season.end_at }, '') + '</strong></div><div><span>ACTIVE SLOT</span><strong>' + number(activeCore.slot_number || 1) + '</strong></div></div>' + meter('SEASON', timing.percent);
-      return panel('COMPETITION SEASON // CORE',
-        '<div class="season-identity"><strong>SEASON ' + number(season.season_number || 1) + ' // ' + escapeHtml(season.key || 'CURRENT') + '</strong><span>LIGHTWEIGHT HOME SNAPSHOT</span></div>' +
-        timingCore +
-        '<div class="line muted">Detailed pet progression, Growth Marks, Weekly Crests and season reward tiers load when you open Missions or Profile.</div>' +
-        '<div class="season-slot-balance"><strong>CURRENT ARCADE XP</strong><span>' + number(summary.arcade_xp_available || 0) + '</span></div>' +
-        '<div class="button-grid">' + routeButton('LOAD MISSIONS', { screen: 'missions', focus: 'daily-journey' }, 'Load Journey progress.') + routeButton('LOAD PROFILE', { screen: 'profile', focus: 'season-slots' }, 'Load full pet-slot progression.') + '</div>', 'season-slots');
-    }
-    var accountSeason = state.guidance && state.guidance.season || {};
-    var tiers = Array.isArray(accountSeason.tiers) ? accountSeason.tiers : [];
-    var unlockedTiers = tiers.filter(function (tier) { return tier.unlocked || tier.claimed_at; }).length;
+  function renderPetSpaces(summary) {
+    summary = summary || {};
     var provided = Array.isArray(summary.slots) ? summary.slots : [];
     var byNumber = {};
     provided.forEach(function (slot) { byNumber[Number(slot.slot_number)] = slot; });
-    var activeSlot = provided.find(function (slot) { return slot.active; }) || {};
-    var journey = activeSlot.pet && activeSlot.pet.progression || {};
-    var journeyLifecycle = journey.lifecycle || {};
-    var journeyGrowth = journey.growth_marks || {};
-    var journeyCrests = journey.weekly_crests || {};
-    var nextEvolution = journeyLifecycle.next_evolution || {};
-    var levelRequirement = journeyLifecycle.requirements && journeyLifecycle.requirements.pet_level || {};
-    var lifetime = activeSlot.pet && activeSlot.pet.lifetime_progression || {};
-    var journeyStatus = journey.lifetime_complete || journey.season_complete ? 'LIFETIME JOURNEY COMPLETE'
-      : journey.legendary ? 'LEGENDARY // JOURNEY STILL INCOMPLETE' : 'ROAD TO LEGENDARY';
-    var lifecycleRequirement = journeyLifecycle.next_evolution ? 'LEVEL // ' + number(levelRequirement.current) + '/' + number(levelRequirement.required) + ' // EVOLUTION READY ' + (journeyLifecycle.evolution_ready ? 'YES' : 'NO // ' + words(journeyLifecycle.authority_reason || 'requirements not met')) : 'FINAL FORM REACHED';
-    var journeyPanel = journey.pet_id ? '<div class="progression-split"><div><strong>LIFECYCLE // STAGE ' + number(journeyLifecycle.current_stage) + '/' + number(journeyLifecycle.total_stages) + '</strong><span>NEXT // ' + escapeHtml(nextEvolution.name || 'FINAL FORM REACHED') + '</span><span>' + lifecycleRequirement + '</span></div><div><strong>LIFETIME PET JOURNEY // WEEK ' + (lifetime.current_week == null ? '?' : number(lifetime.current_week)) + '</strong><span>GROWTH MARKS // ' + number(journeyGrowth.earned) + '/' + number(journeyGrowth.required) + '</span><span>WEEKLY CRESTS // ' + number(journeyCrests.earned) + '/' + number(journeyCrests.required) + '</span><span>' + journeyStatus + '</span></div></div>' : '<div class="line muted"><strong>PROGRESSION UNAVAILABLE</strong></div>';
     var available = Number(summary.arcade_xp_available != null ? summary.arcade_xp_available : (provided[0] && provided[0].arcade_xp_available != null ? provided[0].arcade_xp_available : 0));
     var rows = Array.from({ length: Math.max(3, provided.length) }, function (_, index) { return index + 1; }).map(function (slotNumber) {
       var slot = byNumber[slotNumber] || { slot_number: slotNumber, unlocked: false, purchase_enabled: false };
@@ -2019,20 +1990,58 @@
       return '<article class="season-slot ' + (active ? 'is-active' : owned ? 'is-owned' : 'is-locked') + '" data-season-slot="' + slotNumber + '">' +
         '<header><strong>PET ' + slotNumber + ' // SLOT ' + slotNumber + '</strong><span>' + status + '</span></header>' + details + '<div class="slot-control">' + control + '</div></article>';
     }).join('');
-    var timingCopy = timing.status === 'UNAVAILABLE'
-      ? '<div class="line muted">RUNTIME SEASON TIMING UNAVAILABLE.</div>'
-      : '<div class="season-status-grid"><div><span>PHASE</span><strong>' + timing.status + '</strong></div><div><span>POSITION</span><strong>DAY ' + number(timing.day) + ' / ' + number(timing.totalDays) + '</strong></div><div><span>REMAINING</span><strong>' + countdownMarkup({ expires_at: season.end_at }, '') + '</strong></div><div><span>CYCLE</span><strong>' + 'CALENDAR QUARTER' + '</strong></div></div>' + meter('SEASON', timing.percent);
-    return panel('COMPETITION SEASON // LIVE',
-      '<div class="season-identity"><strong>SEASON ' + number(season.season_number || 1) + ' // ' + escapeHtml(season.key || 'CURRENT') + '</strong><span>SERVER-AUTHORITATIVE CALENDAR</span></div>' + timingCopy +
-      journeyPanel + '<div class="progression-split"><div><strong>PET PROGRESSION</strong><span>Identity // stats // lifecycle // Pet XP stay with each pet instance.</span></div><div><strong>ACCOUNT SEASON XP</strong><span>' + number(accountSeason.xp) + ' XP across your pets for this season // ' + number(unlockedTiers) + '/' + number(tiers.length) + ' tiers // shared seasonal rank</span></div></div>' +
-      '<div class="line muted">NEXT // ' + escapeHtml(profileNextLine()) + '</div>' +
-      '<div class="line complete">PETS AND PURCHASED SPACES DO NOT RESET WITH COMPETITION SEASONS.</div>' +
+    return panel('PET SPACES',
+      '<div class="line">Switch between your saved pets. Each keeps its own XP and progression.</div>' +
       (summary.recovery_over_capacity ? '<div class="line locked">RECOVERED PETS EXCEED THREE SPACES // All saves are retained. New purchases are blocked; ownership needs review.</div>' : '') +
       '<div class="season-slot-balance"><strong>CURRENT ARCADE XP</strong><span>' + number(available) + '</span></div>' +
       '<div class="line muted">NEW PLAYER ENTRY // 1,000 LIFETIME ARCADE XP, KEPT // PET 1 IS FREE // PET 2 COSTS 500 SPENDABLE XP // PET 3 COSTS 1,000 SPENDABLE XP</div><div class="season-slot-grid">' + rows + '</div>' +
       (Array.isArray(summary.deleted_pet_history) && summary.deleted_pet_history.length ? '<div class="line muted"><strong>DELETED PET HISTORY // LATEST 20</strong><br>Account rewards stay yours. Saved pets below cannot return to play.</div>' + summary.deleted_pet_history.map(function (entry) {
         return '<div class="line muted">DELETED PET // ' + number(entry.pet_xp) + ' SAVED PET XP // ' + number(entry.awarded_receipts) + ' AWARDED REWARD RECEIPTS // ' + escapeHtml(entry.deleted_at) + '</div>';
-      }).join('') : ''), 'season-slots');
+      }).join('') : ''), 'pet-spaces');
+  }
+
+  function renderSeasonSlots() {
+    var summary = state.season_slots || {};
+    var petSpaces = renderPetSpaces(summary);
+    var season = summary.competition_season || summary.season || {};
+    var timing = seasonTiming(season, seasonSnapshotElapsed());
+    if (summary.hydrated === false || stateNeedsFullHydration(state)) {
+      var providedCore = Array.isArray(summary.slots) ? summary.slots : [];
+      var activeCore = providedCore.find(function (slot) { return slot && slot.active; }) || {};
+      var timingCore = timing.status === 'UNAVAILABLE'
+        ? '<div class="line muted">RUNTIME SEASON TIMING UNAVAILABLE.</div>'
+        : '<div class="season-status-grid"><div><span>PHASE</span><strong>' + timing.status + '</strong></div><div><span>POSITION</span><strong>DAY ' + number(timing.day) + ' / ' + number(timing.totalDays) + '</strong></div><div><span>REMAINING</span><strong>' + countdownMarkup({ expires_at: season.end_at }, '') + '</strong></div><div><span>ACTIVE SLOT</span><strong>' + number(activeCore.slot_number || 1) + '</strong></div></div>' + meter('SEASON', timing.percent);
+      return petSpaces + panel('COMPETITION SEASON // CORE',
+        '<div class="season-identity"><strong>SEASON ' + number(season.season_number || 1) + ' // ' + escapeHtml(season.key || 'CURRENT') + '</strong><span>LIGHTWEIGHT HOME SNAPSHOT</span></div>' +
+        timingCore +
+        '<div class="line muted">Detailed pet progression, Growth Marks, Weekly Crests and season reward tiers load when you open Missions or Profile.</div>' +
+        '<div class="season-slot-balance"><strong>CURRENT ARCADE XP</strong><span>' + number(summary.arcade_xp_available || 0) + '</span></div>' +
+        '<div class="button-grid">' + routeButton('LOAD MISSIONS', { screen: 'missions', focus: 'daily-journey' }, 'Load Journey progress.') + routeButton('LOAD PROFILE', { screen: 'profile', focus: 'season-slots' }, 'Load full pet-slot progression.') + '</div>', 'season-slots');
+    }
+    var accountSeason = state.guidance && state.guidance.season || {};
+    var tiers = Array.isArray(accountSeason.tiers) ? accountSeason.tiers : [];
+    var unlockedTiers = tiers.filter(function (tier) { return tier.unlocked || tier.claimed_at; }).length;
+    var provided = Array.isArray(summary.slots) ? summary.slots : [];
+    var activeSlot = provided.find(function (slot) { return slot.active; }) || {};
+    var journey = activeSlot.pet && activeSlot.pet.progression || {};
+    var journeyLifecycle = journey.lifecycle || {};
+    var journeyGrowth = journey.growth_marks || {};
+    var journeyCrests = journey.weekly_crests || {};
+    var nextEvolution = journeyLifecycle.next_evolution || {};
+    var levelRequirement = journeyLifecycle.requirements && journeyLifecycle.requirements.pet_level || {};
+    var lifetime = activeSlot.pet && activeSlot.pet.lifetime_progression || {};
+    var journeyStatus = journey.lifetime_complete || journey.season_complete ? 'LIFETIME JOURNEY COMPLETE'
+      : journey.legendary ? 'LEGENDARY // JOURNEY STILL INCOMPLETE' : 'ROAD TO LEGENDARY';
+    var lifecycleRequirement = journeyLifecycle.next_evolution ? 'LEVEL // ' + number(levelRequirement.current) + '/' + number(levelRequirement.required) + ' // EVOLUTION READY ' + (journeyLifecycle.evolution_ready ? 'YES' : 'NO // ' + words(journeyLifecycle.authority_reason || 'requirements not met')) : 'FINAL FORM REACHED';
+    var journeyPanel = journey.pet_id ? '<div class="progression-split"><div><strong>LIFECYCLE // STAGE ' + number(journeyLifecycle.current_stage) + '/' + number(journeyLifecycle.total_stages) + '</strong><span>NEXT // ' + escapeHtml(nextEvolution.name || 'FINAL FORM REACHED') + '</span><span>' + lifecycleRequirement + '</span></div><div><strong>LIFETIME PET JOURNEY // WEEK ' + (lifetime.current_week == null ? '?' : number(lifetime.current_week)) + '</strong><span>GROWTH MARKS // ' + number(journeyGrowth.earned) + '/' + number(journeyGrowth.required) + '</span><span>WEEKLY CRESTS // ' + number(journeyCrests.earned) + '/' + number(journeyCrests.required) + '</span><span>' + journeyStatus + '</span></div></div>' : '<div class="line muted"><strong>PROGRESSION UNAVAILABLE</strong></div>';
+    var timingCopy = timing.status === 'UNAVAILABLE'
+      ? '<div class="line muted">RUNTIME SEASON TIMING UNAVAILABLE.</div>'
+      : '<div class="season-status-grid"><div><span>PHASE</span><strong>' + timing.status + '</strong></div><div><span>POSITION</span><strong>DAY ' + number(timing.day) + ' / ' + number(timing.totalDays) + '</strong></div><div><span>REMAINING</span><strong>' + countdownMarkup({ expires_at: season.end_at }, '') + '</strong></div><div><span>CYCLE</span><strong>' + 'CALENDAR QUARTER' + '</strong></div></div>' + meter('SEASON', timing.percent);
+    return petSpaces + panel('COMPETITION SEASON // LIVE',
+      '<div class="season-identity"><strong>SEASON ' + number(season.season_number || 1) + ' // ' + escapeHtml(season.key || 'CURRENT') + '</strong><span>SERVER-AUTHORITATIVE CALENDAR</span></div>' + timingCopy +
+      journeyPanel + '<div class="progression-split"><div><strong>PET PROGRESSION</strong><span>Identity // stats // lifecycle // Pet XP stay with each pet instance.</span></div><div><strong>ACCOUNT SEASON XP</strong><span>' + number(accountSeason.xp) + ' XP across your pets for this season // ' + number(unlockedTiers) + '/' + number(tiers.length) + ' tiers // shared seasonal rank</span></div></div>' +
+      '<div class="line muted">NEXT // ' + escapeHtml(profileNextLine()) + '</div>' +
+      '<div class="line complete">PETS AND PURCHASED SPACES DO NOT RESET WITH COMPETITION SEASONS.</div>', 'season-slots');
   }
 
   function routeButton(label, route, detail) {
@@ -2772,7 +2781,7 @@
       ? panel('TELEGRAM SESSION EXPIRED', '<div class="line muted">Close this game and reopen Moonpet OS from the bot to get a fresh signed Telegram session. Your saved progress is kept.</div><div class="button-grid one"><a class="terminal-link-button" href="https://t.me/WIKICOMSBOT?start=moonpet" target="_blank" rel="noopener noreferrer">OPEN FRESH TELEGRAM SESSION</a></div>', 'telegram-auth')
       : !state ? ''
       : waitingForModule
-        ? panel('LOADING // ' + activeScreen.toUpperCase(),
+        ? (activeScreen === 'profile' ? renderPetSpaces(state.season_slots) : '') + panel('LOADING // ' + activeScreen.toUpperCase(),
           hydrationStopped
             ? '<div class="line danger">MODULE STATE COULD NOT LOAD.</div><div class="line muted">Automatic retries stopped to protect the API. HOME is still available.</div><div class="button-grid"><button type="button" class="terminal-button" data-utility="module-retry">RETRY MODULE</button>' + routeButton('RETURN HOME', { screen: 'home', focus: 'care' }, 'Use lightweight care while the module is unavailable.') + '</div>'
             : '<div class="line signal">FETCHING SERVER-AUTHORITATIVE MODULE STATE...</div><div class="line muted">HOME remains usable while this module loads.</div>',

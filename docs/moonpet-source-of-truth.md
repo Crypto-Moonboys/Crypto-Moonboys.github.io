@@ -35,6 +35,14 @@ for verified fixes and work still outstanding.
 
 ## Permanent pet ownership
 
+Home and Profile show an initially expanded **Pet Spaces** selector independently
+of competition details. The core roster already identifies each saved pet, its
+level, XP and selection availability, so switching does not depend on detailed
+progression hydration. Profile retains these controls during a pending or failed
+module read. Switching continues through the existing authenticated action and
+preserves each pet's original ownership, XP and lifecycle. See the
+[pet selector fix](moonpet-pet-selector-fix-2026-10-06.md).
+
 Pets and purchased spaces persist across calendar seasons. State preparation never
 creates a replacement for an owner with saved ownership. Profile lists active pets
 across all creation seasons, and switching uses the saved pet/owner/source tuple.

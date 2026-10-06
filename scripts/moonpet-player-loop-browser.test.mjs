@@ -621,7 +621,9 @@ try {
         const summary = node.querySelector(':scope > summary');
         return summary && summary.querySelector('.panel-icon').textContent && summary.querySelector('.panel-description').textContent && node.getBoundingClientRect().right <= innerWidth;
       })), 'all sections have accessible summaries, icons, descriptions and fit mobile');
-      assert.equal(await page.locator('#screen > details[open]').count(), section === 'home' ? 1 : 0, 'only Home Recommended starts expanded');
+      const expectedOpenPanels = section === 'home' ? ['pet-spaces','recommended'] : section === 'profile' ? ['pet-spaces'] : [];
+      const openPanels = await page.locator('#screen > details[open]').evaluateAll(nodes=>nodes.map(node=>node.dataset.panel).sort());
+      assert.deepEqual(openPanels,expectedOpenPanels,'pet selection is visible while unrelated detail panels start collapsed');
       if (viewport.width === 390) await page.screenshot({ path: path.join(screenshotDirectory, `moonpet-sections-${section}.png`) });
     }
     await page.locator('[data-screen="home"]').click();
@@ -730,28 +732,41 @@ try {
       sqlite.prepare(`INSERT INTO telegram_pet_lifecycle_by_pet (pet_id,telegram_id,identity_seed,phase) VALUES (?,?,?,'young')`).run(petId,currentUser,petId);
     }
     await page.reload(); await page.waitForSelector('[data-panel="incubation"]');
+    await page.waitForSelector('[data-panel="pet-spaces"][open]');
+    assert.equal(await page.locator('[data-season-slot].is-owned,[data-season-slot].is-active').count(),3,'core egg Home immediately shows all saved pets');
+    assert.equal(await page.locator('[data-season-slot="1"] [data-action="switch_pet_slot"]').isVisible(),true,'the first original pet is selectable without expanding a competition panel');
+    assert.equal(await page.locator('[data-season-slot="2"] [data-action="switch_pet_slot"]').isDisabled(),false,'the second original pet is selectable while an egg is active');
+    assert.ok((await page.locator('[data-season-slot="1"]').textContent()).includes('4,321'),'the core roster shows original XP before detailed progression hydration');
+    const originalSwitch = page.waitForResponse(r=>r.url().endsWith('/telegram-pets/app/action') && r.request().postDataJSON()?.action==='switch_pet_slot');
+    await page.locator('[data-season-slot="1"] [data-action="switch_pet_slot"]').click();
+    const originalState = await (await originalSwitch).json();
+    assert.equal(originalState.state.pet.pet_id,`${currentUser}:original`);
+    assert.equal(originalState.state.pet.pet_xp,4321,'switching from core Home loads the first original save');
     await page.locator('[data-screen="profile"]').click();
-    await page.locator('[data-panel="season-slots"] > summary').click();
+    await page.waitForSelector('[data-panel="pet-spaces"][open]');
     await page.waitForSelector('[data-season-slot="3"]');
     assert.equal(await page.locator('[data-season-slot].is-owned,[data-season-slot].is-active').count(),3,'Profile retains old pets and rollover egg');
+    await page.waitForSelector('[data-panel="season-slots"]');
     assert.ok((await page.locator('[data-panel="season-slots"]').textContent()).includes('PETS AND PURCHASED SPACES DO NOT RESET'));
     const recoveredSwitch = page.waitForResponse(r=>r.url().endsWith('/telegram-pets/app/action') && r.request().postDataJSON()?.action==='switch_pet_slot');
     await page.locator('[data-season-slot="2"] [data-action="switch_pet_slot"]').click();
     const restored = await (await recoveredSwitch).json();
     assert.equal(restored.state.pet.pet_id,`${currentUser}:purchased`);
     assert.equal(restored.state.pet.pet_xp,9876,'switching restores purchased pet progression');
-    // Panel preferences belong to each pet, so the restored pet starts collapsed.
+    // The restored pet's selector starts open even though competition details stay collapsed.
     await page.locator('[data-season-slot="2"].is-active').waitFor({ state: 'attached' });
-    await page.locator('[data-panel="season-slots"] > summary').click();
+    assert.equal(await page.locator('[data-panel="pet-spaces"]').evaluate(node=>node.open),true);
     await page.waitForSelector('[data-season-slot="2"].is-active');
     assert.equal(sqlite.prepare('SELECT COUNT(*) AS n FROM telegram_pet_season_slots WHERE telegram_id=?').get(currentUser).n,3,'Profile and switching never create replacement eggs');
+    assert.equal(sqlite.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(`${currentUser}:original`).pet_xp,4321);
+    assert.equal(sqlite.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(`${currentUser}:purchased`).pet_xp,9876);
     const missingPaidId = `${currentUser}:missing-paid`;
     sqlite.prepare(`INSERT INTO telegram_pet_season_slots
       (pet_id,telegram_id,season_key,slot_number,acquisition_type,arcade_xp_spent,created_at)
       VALUES (?,?,'pet-s2026-002',2,'arcade_xp',500,'2026-09-15')`).run(missingPaidId,currentUser);
     await page.reload(); await page.waitForSelector('[data-panel="care"]');
     await page.locator('[data-screen="profile"]').click();
-    await page.locator('[data-panel="season-slots"] > summary').click();
+    await page.waitForSelector('[data-panel="pet-spaces"][open]');
     const missingCard = page.locator('[data-season-slot="3"]');
     await missingCard.waitFor();
     assert.ok((await missingCard.textContent()).includes('OWNED SPACE PRESERVED'));
@@ -2128,7 +2143,7 @@ try {
     await page.reload(); await page.waitForSelector('[data-panel="care"]');
     await page.locator('[data-screen="profile"]').click();
     await page.waitForSelector('[data-action="delete_pet_slot"]', { state: 'attached' });
-    await page.locator('[data-panel="season-slots"]').evaluate(node => { node.open = true; });
+    await page.locator('[data-panel="pet-spaces"]').evaluate(node => { node.open = true; });
     const deleteRequests = actions.filter(action => action === 'delete_pet_slot').length;
     const cancelledDialog = new Promise(resolve => page.once('dialog', async dialog => {
       assert.equal(dialog.type(), 'confirm');
@@ -2147,7 +2162,7 @@ try {
     assert.equal(deletionData.result.deleted_pet_id, deletionPet.pet_id);
     deletionSpaces[0]=deletionData.result.replacement_pet_id;
     assert.deepEqual(deletionData.result.season_slots.slots.map(slot=>slot.pet_id),deletionSpaces,'replacement stays in PET 1 while PET 2/3 stay in place');
-    await page.waitForFunction(() => document.querySelector('[data-panel="season-slots"]').textContent.includes('DELETED PET HISTORY'));
+    await page.waitForFunction(() => document.querySelector('[data-panel="pet-spaces"]').textContent.includes('DELETED PET HISTORY'));
     assert.deepEqual(sqlite.prepare('SELECT moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles WHERE telegram_id=?').get(currentUser), deletionWallet);
     assert.equal(sqlite.prepare('SELECT status FROM telegram_pet_instances WHERE pet_id=?').get(deletionPet.pet_id).status, 'archived');
     await page.reload(); await page.waitForSelector('[data-panel="care"]');

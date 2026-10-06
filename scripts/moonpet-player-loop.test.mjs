@@ -666,7 +666,7 @@ for (const moduleScreen of ['missions', 'profile']) {
     hatchArtTransitionActive: () => false, selectBotArtForState: () => Promise.resolve(), scheduleCooldownRefresh: () => {},
     renderHud: () => {}, renderNav: () => {}, renderCanvasTools: () => {},
     captureEditableState: () => null, rememberPanels: () => {}, restoreEditableState: () => {},
-    panel: (_, body) => body, routeButton: () => '<button data-jump="home">RETURN HOME</button>', renderRecommended: () => '',
+    panel: (_, body) => body, routeButton: () => '<button data-jump="home">RETURN HOME</button>', renderRecommended: () => '', renderPetSpaces: () => '',
     showPendingNotices: async () => {}, applyRequestedFocus: () => {},
     careActionButtonOptions: (_, value) => value || {}, actionCooldownButtonOptions: (_, value) => value,
     shouldShowAvailability: value => Boolean(value.disabled), availabilityDetailMarkup: value => value.statusLabel,
