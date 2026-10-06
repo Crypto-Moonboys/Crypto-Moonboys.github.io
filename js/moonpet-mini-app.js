@@ -1963,7 +1963,7 @@
     if (lifecycle.phase === 'egg') {
       var signals = incubation.signals || {};
       return '<div class="ticker"><span>SECRET BOT // SIGNAL ' + number(incubation.progress) + '/' + number(incubation.target) + ' // IDENTITY FORMING //</span></div>' +
-        panel('SECRET BOT CHAMBER', '<div class="line complete">THE SECRET BOT REMEMBERS HOW YOU TREAT IT.</div><div class="line muted">NEXT // ' + escapeHtml(homeNextLine()) + '</div><div class="line muted">Use at least three types of care to build the breakout signal. Identity stays hidden until Stage 3.</div>' + meter('BREAKOUT SIGNAL', Number(incubation.progress || 0) / Math.max(1, Number(incubation.target || 12)) * 100) + '<div class="line">WARM ' + number(signals.warm) + ' // TALK ' + number(signals.talk) + ' // MUSIC ' + number(signals.music) + ' // REST ' + number(signals.rest) + '</div><div class="button-grid">' + button('WARM BOT', 'incubate', { care_type: 'warm' }) + button('TALK TO BOT', 'incubate', { care_type: 'talk' }) + button('PLAY A BEAT', 'incubate', { care_type: 'music' }) + button('LET IT REST', 'incubate', { care_type: 'rest' }) + '</div><div class="button-grid one">' + button('HATCH BOT', 'hatch', {}, { disabled: !incubation.ready, statusLabel: incubation.ready ? '' : 'HATCH NOT READY' }) + '</div><div class="line muted">DAILY SIGNALS ' + number(incubation.actions_today) + '/' + number(incubation.daily_cap) + '</div>', 'incubation') +
+        panel('SECRET BOT CHAMBER', '<div class="line complete">THE SECRET BOT REMEMBERS HOW YOU TREAT IT.</div><div class="line muted">NEXT // ' + escapeHtml(homeNextLine()) + '</div><div class="line muted">Use at least three types of care to build the breakout signal. Identity stays hidden until Stage 3.</div>' + meter('BREAKOUT SIGNAL', Number(incubation.progress || 0) / Math.max(1, Number(incubation.target || 12)) * 100) + '<div class="line">WARM ' + number(signals.warm) + ' // TALK ' + number(signals.talk) + ' // INSPIRATION ' + number(signals.music) + ' // REST ' + number(signals.rest) + '</div><div class="button-grid">' + button('WARM BOT', 'incubate', { care_type: 'warm' }) + button('TALK TO BOT', 'incubate', { care_type: 'talk' }) + button('INSPIRE BOT', 'incubate', { care_type: 'music' }) + button('LET IT REST', 'incubate', { care_type: 'rest' }) + '</div><div class="button-grid one">' + button('HATCH BOT', 'hatch', {}, { disabled: !incubation.ready, statusLabel: incubation.ready ? '' : 'HATCH NOT READY' }) + '</div><div class="line muted">DAILY SIGNALS ' + number(incubation.actions_today) + '/' + number(incubation.daily_cap) + '</div>', 'incubation') +
         panel('SECRET BOT ACTIONS', '<div class="button-grid">' + button('ENERGY DRINK', 'energy_drink') + button('DANCE', 'dance') + button('CUDDLES', 'cuddles') + '</div><div class="line muted">Stat-only care. Does not advance incubation or award XP.</div>', 'care') +
         renderPlayNow() + renderSeasonSlots();
     }
@@ -3515,7 +3515,7 @@
     if (actionKey === 'incubate' && after.phase === 'egg' && after.progress > before.progress) {
       return {
         kind: 'signal', title: after.progress / after.target >= 0.9 ? 'BREAKOUT' : 'SECRET BOT CARE', primary: after.progress + '/' + after.target,
-        secondary: words(result.care_type || 'care') + ' progress', detail: '',
+        secondary: words(result.care_type === 'music' ? 'inspiration' : result.care_type || 'care') + ' progress', detail: '',
         progress: after.progress, target: after.target, duration: 4200,
       };
     }
