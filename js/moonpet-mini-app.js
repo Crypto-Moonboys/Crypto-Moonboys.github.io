@@ -23,6 +23,8 @@
   var seasonSnapshotReceivedAt = 0;
   var lastSeasonServerRefreshAt = 0;
   var seasonRefreshBusy = false;
+  var seasonRefreshPending = false;
+  var seasonRefreshRetryAt = 0;
   var stateRequestGate = createStateRequestGate();
   var serverClockOffsetMs = 0;
   var cooldownRefreshTimer = 0;
@@ -3530,6 +3532,11 @@
   }
 
   // TEST-EXPORT: passiveLiveRefresh:start
+  function seasonSnapshotRefreshDue() {
+    return seasonRefreshPending || lastSeasonServerRefreshAt <= 0
+      || performance.now() - lastSeasonServerRefreshAt >= 300000;
+  }
+
   function mergePetLiveSnapshot(snapshot, patch) {
     if (!snapshot || !snapshot.pet || !patch || patch.pet_id !== snapshot.pet.pet_id
       || patch.season_key !== snapshot.pet.season_key || patch.adopted !== true) return null;
@@ -3554,6 +3561,12 @@
     var minimumDelay = multiplayerActive && activeScreen === 'explore' ? 4500 : 14000;
     if (busy || noticesBusy || passiveRefreshInFlight || fastActionStateRefreshInFlight || cooldownRefreshInFlight || seasonRefreshBusy || fullStateHydrationPromise
       || !state || !state.adopted || !relevant || Date.now() - lastPassiveRefreshAt < minimumDelay) return;
+    // The five-second timer can run before every aligned season tick. Service
+    // its queued/deadline read before starting another live request.
+    if (seasonSnapshotRefreshDue() && performance.now() >= seasonRefreshRetryAt) {
+      await refreshSeasonSnapshot(false);
+      return;
+    }
     passiveRefreshInFlight = true;
     var before = multiplayerFingerprint(state);
     var beforeActivity = state.guidance && state.guidance.activity;
@@ -3572,7 +3585,8 @@
       if (!merged && sourceChanged) {
         // Another device can switch/delete a pet. Its partial data cannot be
         // merged into this pet; obtain the complete newly selected save.
-        data = await post('/telegram-pets/app/state', stateRefreshPayload(state, activeScreen));
+        data = await post('/telegram-pets/app/state', {});
+        if (!data.state || stateNeedsFullHydration(data.state)) return;
         merged = data.state;
         legacyFull = true;
       }
@@ -3593,7 +3607,8 @@
       } else if (terminal) {
         // Interrupted combat and changed/claimed activities need ordered full
         // recovery before publishing their effects on wallet, care or XP.
-        data = await post('/telegram-pets/app/state', stateRefreshPayload(state, activeScreen));
+        data = await post('/telegram-pets/app/state', {});
+        if (!data.state || stateNeedsFullHydration(data.state)) return;
         if (!setStateSnapshot(data.state, requestGeneration)) return;
       } else {
         state = merged;
@@ -3621,21 +3636,30 @@
   }
   // TEST-EXPORT: passiveLiveRefresh:end
 
+  // TEST-EXPORT: seasonalStateRefresh:start
   async function refreshSeasonSnapshot(force) {
     var monotonicNow = performance.now();
-    if (busy || noticesBusy || seasonRefreshBusy || passiveRefreshInFlight || fastActionStateRefreshInFlight || cooldownRefreshInFlight || fullStateHydrationPromise || !state || !state.adopted) return;
-    if (!force && lastSeasonServerRefreshAt > 0 && monotonicNow - lastSeasonServerRefreshAt < 300000) return;
+    if (!state || !state.adopted) return;
+    if (!force && !seasonSnapshotRefreshDue()) return;
+    seasonRefreshPending = true;
+    if (!force && monotonicNow < seasonRefreshRetryAt) return;
+    if (busy || noticesBusy || seasonRefreshBusy || passiveRefreshInFlight || fastActionStateRefreshInFlight || cooldownRefreshInFlight || fullStateHydrationPromise) return;
     seasonRefreshBusy = true;
     try {
       var requestGeneration = beginStateRequest();
-      var data = await post('/telegram-pets/app/state', stateRefreshPayload(state, activeScreen));
+      var data = await post('/telegram-pets/app/state', {});
+      if (!data.state || stateNeedsFullHydration(data.state)) return;
       if (!setStateSnapshot(data.state, requestGeneration)) return;
+      seasonRefreshPending = false;
+      seasonRefreshRetryAt = 0;
       var scrollTop = screen.scrollTop;
       render();
       screen.scrollTop = scrollTop;
     } catch (_) {
     } finally {
       seasonRefreshBusy = false;
+      // A failed or superseded full read stays queued, with bounded retries.
+      if (seasonRefreshPending) seasonRefreshRetryAt = performance.now() + 30000;
     }
   }
 
@@ -3648,6 +3672,7 @@
     }
     refreshSeasonSnapshot(false);
   }
+  // TEST-EXPORT: seasonalStateRefresh:end
 
   function drawPixelRect(x, y, width, height, color) {
     ctx.fillStyle = color;

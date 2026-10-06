@@ -19,7 +19,7 @@ The warm fixture uses **19 SQL statements for live state versus 166 for full sta
 | Cooldown outage retries | Exponential backoff plus jitter, honoring Retry-After, followed by a visible pause after three failed reads. A successful/manual snapshot resets the retry state. |
 | Action canary false positives | Sends the displayed pet ID; requires HTTP 200, `ok: true` and `accepted: true`; checks that the selected pet did not change. Its idempotency key is stable for the commit, account, pet and action and fits the server length limit. Unexpected rejections fail the run. Read-only health does not imply action coverage. |
 | Unverified legacy Street Event has no player ending | Explore exposes **Close Old Event** only for incomplete old outcomes without awarded XP or a recorded claim. Exact player confirmation is mandatory. Saved-event recovery and closure remain visible after switching to an egg. Existing claims and recoverable saved outcomes remain protected. Metadata, ownership, balances, original ordinal and reward history stay intact. No old reward slot is released. |
-| Frontend/Worker release gap | New client accepts the older Worker's full response for the previously unknown mode. Cache-busted launch URLs use `20261006-live-refresh-v2`. |
+| Frontend/Worker release gap | New client accepts the older Worker's full response for the previously unknown mode. Cache-busted launch URLs use `20261006-live-refresh-v3`. |
 
 Closing an unverified old event is an explicit forfeiture of that unresolved event, not a guessed payout, refund or historical balance repair. The event record remains with status `cancelled` and reason `legacy_street_event_closed`. Its pending-event deletion blocker is released; any separate active claim or settlement still blocks deletion. A concurrently saved outcome or claim prevents closure.
 
@@ -58,6 +58,19 @@ The Codex and Copilot findings against published commit `5543634c802a2cac466d9b3
 The follow-up uses release version `20261006-live-refresh-v2`. No migration or secret is added, and the ordinary live fixture remains at 19 SQL statements within its existing 20-statement budget.
 
 Follow-up verification: `node --test scripts/moonpet-passive-refresh.test.mjs scripts/moonpet-legacy-event-close.test.mjs scripts/moonpet-combat-sanity.test.mjs scripts/moonpet-progression-sync.test.mjs` passed all 260 tests. `node --test scripts/moonpet-action-sync.test.mjs scripts/moonpet-combat-integrity.test.mjs scripts/moonpet-history-retention.test.mjs scripts/moonpet-production-canary.test.mjs` passed all 89 tests. Mini App, launcher and multi-bot-art checks also passed, as did JavaScript syntax and scoped whitespace checks. The original patch's mobile browser loop passed; this follow-up's local browser loop was not rerun because Chromium is absent after workspace relocation. GitHub Visual CI runs that loop and remains required.
+
+## PR 1445 scheduling follow-up
+
+Copilot confirmed the four findings from its previous review were resolved, then identified two existing refresh gaps:
+
+| Finding | Resolution |
+| --- | --- |
+| Switching to Missions during recovery installs a partial save | Identity and terminal recovery always request the full projection with an empty payload, independently of the selected tab. Unexpected partial responses are rejected, keeping the previous complete save available for another poll. |
+| Aligned live timers indefinitely skip the season read | A due or forced season read remains queued when another read is active. The next eligible live tick services that full read first. Failed or superseded reads retain the queue with a 30-second retry delay; live polling can continue during that delay. Season reads also require the full projection. |
+
+Release version `20261006-live-refresh-v3` includes these changes. Regressions cover switching to Missions and back to Explore/Work during identity recovery, terminal recovery while visiting Missions, partial-response rejection, forced visibility refreshes, failures and 126 aligned five-second ticks with a season tick every 30 seconds. The timer simulation completes two scheduled full reads without overlapping requests.
+
+Scheduling verification: `node --test scripts/moonpet-passive-refresh.test.mjs scripts/moonpet-action-sync.test.mjs scripts/moonpet-production-canary.test.mjs` passed all 87 tests. Mini App, launcher and multi-bot-art checks passed, as did JavaScript syntax and scoped whitespace checks. All GitHub workflows passed at the preceding follow-up commit `d8d0316cad33dcd7379d06664bf56ccc8fd713bd`, including the required browser validation. The scheduling follow-up requires those workflows to pass again; Chromium remains unavailable in the relocated local workspace.
 
 ## Preserved rules
 

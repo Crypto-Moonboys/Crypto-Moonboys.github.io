@@ -21,21 +21,23 @@ function context(overrides = {}) {
   let now = 10000, generation = 0;
   const calls = [], pending = [], messages = [], haptics = [], timers = [];
   const ctx = { Date: { now: () => now, parse: Date.parse }, Number, Boolean, String, Math,
+    performance: { now: () => now }, lastSeasonServerRefreshAt: now, seasonRefreshPending: false, seasonRefreshRetryAt: 0,
     state: base(), activeScreen: 'explore', busy: false, noticesBusy: false,
     lastPassiveRefreshAt: 0, passiveRefreshInFlight: false, cooldownRefreshInFlight: false, seasonRefreshBusy: false,
     fastActionStateRefreshInFlight: false, fastActionStateDirty: false, fastActionStateRefreshTimer: 0,
     window: { clearTimeout: () => {}, setTimeout: (fn, delay) => { timers.push({ fn, delay }); return timers.length; } },
     screen: { scrollTop: 0 },
     fullStateHydrationPromise: null, authenticationFailure: false, serverClockOffsetMs: 0,
-    stateNeedsFullHydration: () => false, beginStateRequest: () => ++generation,
+    stateNeedsFullHydration: s => Boolean(s && s.hydration && s.hydration.full === false), beginStateRequest: () => ++generation,
     stateRequestGate: { isCurrent: n => n === generation },
     multiplayerFingerprint: s => JSON.stringify([s.arena, s.arena_queue, s.kaiju]),
     stateRefreshPayload: () => ({}), render: () => { ctx.renders++; }, renders: 0,
     tell: value => messages.push(value), haptic: value => haptics.push(value), showPendingNotices: async () => {},
-    setStateSnapshot: (state, n) => { if (n !== generation) return false; ctx.state = state; return true; },
+    setStateSnapshot: (state, n) => { if (n !== generation) return false; ctx.state = state; ctx.lastSeasonServerRefreshAt = now; return true; },
     post: (path, body) => new Promise((resolve, reject) => { calls.push({ path, body }); pending.push({ resolve, reject }); }),
     ...overrides };
   vm.createContext(ctx); vm.runInContext(block('passiveLiveRefresh'), ctx);
+  vm.runInContext(block('seasonalStateRefresh'), ctx);
   return { ctx, calls, pending, messages, haptics, timers, at: time => { now = time; }, advance: () => ++generation };
 }
 
@@ -76,7 +78,7 @@ test('terminal combat transition performs full recovery before publishing reward
   f.pending[0].resolve({ state: terminal });
   await new Promise(resolve => setImmediate(resolve));
   assert.equal(f.calls.length, 2);
-  assert.deepEqual(f.calls[1].body, {});
+  assert.deepEqual(JSON.parse(JSON.stringify(f.calls[1].body)), {});
   assert.equal(f.ctx.state.pet.pet_xp, 200);
   const recovered = base(); recovered.arena = null; recovered.arena_result = terminal.arena_result; recovered.pet.pet_xp = 225;
   f.pending[1].resolve({ state: recovered }); await read;
@@ -279,4 +281,113 @@ for (const system of ['arena', 'kaiju']) test(`${system}: an unchanged match wit
   else full.arena_result = { battle_id: 'battle-one', status: 'completed' };
   f.pending[1].resolve({ state: full }); await read;
   assert.equal(f.ctx.state.pet.pet_xp, 260); assert.equal(f.ctx.renders, 1);
+});
+
+for (const returnScreen of ['explore', 'work']) test(`pet-switch recovery remains full after visiting Missions and returning to ${returnScreen}`, async () => {
+  const f = context(); vm.runInContext(block('coreStateHydration'), f.ctx);
+  const read = f.ctx.refreshLiveState();
+  f.ctx.activeScreen = 'missions';
+  const change = patch(8); change.pet_id = 'new-pet'; change.hydration = { mode: 'live', full: false };
+  f.pending[0].resolve({ state: change }); await new Promise(resolve => setImmediate(resolve));
+  assert.equal(f.calls.length, 2);
+  assert.deepEqual(JSON.parse(JSON.stringify(f.calls[1].body)), {}, 'recovery requests full state regardless of the current tab');
+  f.ctx.activeScreen = returnScreen;
+  const full = base(); full.pet.pet_id = 'new-pet'; full.pet.pet_xp = 500;
+  full.guidance.activity = { id: 'training-two', status: 'active', ready: false };
+  f.pending[1].resolve({ state: full }); await read;
+  assert.equal(f.ctx.state.hydration.full, true); assert.equal(f.ctx.state.pet.pet_id, 'new-pet');
+  assert.equal(f.ctx.state.inventory[0].item_key, 'keep'); assert.equal(f.ctx.stateNeedsScreenHydration(f.ctx.state, returnScreen), false);
+  f.at(30000); const next = f.ctx.refreshLiveState();
+  assert.equal(f.calls.length, 3, 'live polling resumes on the returned screen');
+  const update = patch(2); update.pet_id = 'new-pet'; update.activity = full.guidance.activity;
+  f.pending[2].resolve({ state: update }); await next;
+});
+
+test('terminal recovery also stays full when the player visits Missions during a live poll', async () => {
+  const f = context(); vm.runInContext(block('coreStateHydration'), f.ctx);
+  const read = f.ctx.refreshLiveState(); f.ctx.activeScreen = 'missions';
+  const terminal = patch(1); terminal.arena = null; terminal.arena_result = { battle_id: 'battle-one', status: 'completed' };
+  f.pending[0].resolve({ state: terminal }); await new Promise(resolve => setImmediate(resolve));
+  assert.deepEqual(JSON.parse(JSON.stringify(f.calls[1].body)), {});
+  f.ctx.activeScreen = 'explore';
+  const full = base(); full.arena = null; full.arena_result = terminal.arena_result; full.pet.pet_xp = 260;
+  f.pending[1].resolve({ state: full }); await read;
+  assert.equal(f.ctx.state.hydration.full, true); assert.equal(f.ctx.state.pet.pet_xp, 260);
+});
+
+for (const source of ['identity', 'combat']) test(`${source} recovery rejects an unexpected partial snapshot and keeps the hydrated save`, async () => {
+  const f = context(); const read = f.ctx.refreshLiveState();
+  const live = patch(1);
+  if (source === 'identity') { live.pet_id = 'new-pet'; live.hydration = { mode: 'live', full: false }; }
+  else live.recovery_needed = true;
+  f.pending[0].resolve({ state: live }); await new Promise(resolve => setImmediate(resolve));
+  const partial = base(); partial.hydration = { mode: 'missions', full: false, modules: ['missions'] }; partial.pet.pet_xp = 999;
+  f.pending[1].resolve({ state: partial }); await read;
+  assert.equal(f.ctx.state.hydration.full, true); assert.equal(f.ctx.state.pet.pet_xp, 200); assert.equal(f.ctx.renders, 0);
+});
+
+test('aligned five-second live and thirty-second season timers cannot starve five-minute full reads', async () => {
+  const f = context(); let fullReads = 0;
+  for (let step = 1; step <= 126; step++) {
+    f.at(10000 + step * 5000);
+    const before = f.calls.length, read = f.ctx.refreshLiveState();
+    if (step % 6 === 0) f.ctx.tickSeasonDisplay();
+    assert.equal(f.calls.length, before + 1, 'exactly one serialized request starts per tick');
+    if (f.calls.at(-1).body.mode === 'live') f.pending.at(-1).resolve({ state: patch(step) });
+    else {
+      fullReads++;
+      const full = base(); full.season = { key: 'fresh-' + fullReads };
+      f.pending.at(-1).resolve({ state: full });
+    }
+    await read;
+    assert.equal(f.ctx.passiveRefreshInFlight, false); assert.equal(f.ctx.seasonRefreshBusy, false);
+  }
+  assert.equal(fullReads, 2); assert.equal(f.ctx.state.season.key, 'fresh-2');
+  assert.equal(f.ctx.seasonRefreshPending, false);
+});
+
+test('a due season tick during an existing slow live read queues the full save for the next poll', async () => {
+  const f = context(); f.at(309999); const live = f.ctx.refreshLiveState();
+  f.at(310000); await f.ctx.refreshSeasonSnapshot(false);
+  assert.equal(f.ctx.seasonRefreshPending, true); assert.equal(f.calls.length, 1);
+  f.at(310001); f.pending[0].resolve({ state: patch(2) }); await live;
+  f.at(315000); const fullRead = f.ctx.refreshLiveState();
+  assert.equal(f.calls.length, 2); assert.deepEqual(JSON.parse(JSON.stringify(f.calls[1].body)), {});
+  const full = base(); full.season = { key: 'next-quarter' };
+  f.pending[1].resolve({ state: full }); await fullRead;
+  assert.equal(f.ctx.state.season.key, 'next-quarter'); assert.equal(f.ctx.seasonRefreshPending, false);
+});
+
+test('a forced visibility refresh blocked by live polling is retained until the next serialized read', async () => {
+  const f = context(); const live = f.ctx.refreshLiveState();
+  await f.ctx.refreshSeasonSnapshot(true);
+  assert.equal(f.ctx.seasonRefreshPending, true); assert.equal(f.calls.length, 1);
+  f.pending[0].resolve({ state: patch(2) }); await live;
+  f.at(20000); const forced = f.ctx.refreshLiveState();
+  assert.equal(f.calls.length, 2); assert.deepEqual(JSON.parse(JSON.stringify(f.calls[1].body)), {});
+  f.pending[1].resolve({ state: base() }); await forced;
+  assert.equal(f.ctx.seasonRefreshPending, false);
+});
+
+test('failed scheduled full reads retry after thirty seconds while lean combat polls continue', async () => {
+  const f = context(); f.at(310000); const failed = f.ctx.refreshLiveState();
+  assert.deepEqual(JSON.parse(JSON.stringify(f.calls[0].body)), {});
+  f.pending[0].reject(Error('season refresh unavailable')); await failed;
+  assert.equal(f.ctx.seasonRefreshPending, true); assert.equal(f.ctx.seasonRefreshRetryAt, 340000);
+  f.at(315000); const live = f.ctx.refreshLiveState();
+  assert.equal(f.calls[1].body.mode, 'live'); f.pending[1].resolve({ state: patch(2) }); await live;
+  f.at(340000); const retry = f.ctx.refreshLiveState();
+  assert.deepEqual(JSON.parse(JSON.stringify(f.calls[2].body)), {});
+  f.pending[2].resolve({ state: base() }); await retry;
+  assert.equal(f.ctx.seasonRefreshPending, false); assert.equal(f.ctx.seasonRefreshRetryAt, 0);
+});
+
+test('a scheduled full read rejects partial state even after a tab switch', async () => {
+  const f = context(); f.at(310000); f.ctx.activeScreen = 'missions';
+  const read = f.ctx.refreshSeasonSnapshot(false);
+  assert.deepEqual(JSON.parse(JSON.stringify(f.calls[0].body)), {});
+  f.ctx.activeScreen = 'explore';
+  const partial = base(); partial.hydration = { mode: 'missions', full: false, modules: ['missions'] };
+  f.pending[0].resolve({ state: partial }); await read;
+  assert.equal(f.ctx.state.hydration.full, true); assert.equal(f.ctx.seasonRefreshPending, true);
 });
