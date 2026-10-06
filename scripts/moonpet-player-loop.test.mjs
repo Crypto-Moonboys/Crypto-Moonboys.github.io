@@ -655,6 +655,8 @@ for (const moduleScreen of ['missions', 'profile']) {
     activeScreen: moduleScreen, screen: { scrollTop: 0, innerHTML: '' },
     fullStateHydrationPromise: null, fullStateHydrationRetryTimer: 0, fullStateHydrationFailures: 0,
     fullStateHydrationRetryDelayMs: 0, FULL_STATE_HYDRATION_MAX_AUTO_RETRIES: 3,
+    busy: false, noticesBusy: false, authenticationFailure: false, passiveRefreshInFlight: false,
+    cooldownRefreshInFlight: false, seasonRefreshBusy: false, fastActionStateRefreshInFlight: false,
     petActionRefreshRequired: true, fastActionStateDirty: true, reducedMotion: false,
     renderedPetId: 'shown-pet', renderedPetName: '', performance: { now: () => 1 },
     document: { getElementById: () => null },
@@ -722,7 +724,7 @@ const idleArt = artManifest.assets.find(asset => asset.role === artManifest.runt
 const actionArt = artManifest.assets.find(asset => asset.role !== idleArt.role && asset.atlas_path);
 for (const failedPath of ['/data/moonpet-bot-art-registry.json', artRegistry.egg_art.manifest_path, idleArt.atlas_path, idleArt.png_path, actionArt.atlas_path]) {
   let offline = true, failedRequests = 0;
-  const artContext = vm.createContext({ window: { MOONPET_USE_BOT_ART: true },
+  const artContext = vm.createContext({ window: { MOONPET_USE_BOT_ART: true }, setTimeout, clearTimeout, AbortController,
     async fetch(url) {
       const pathname = String(url).split('?')[0];
       if (pathname === failedPath) { failedRequests++; if (offline) throw Error('temporary_art_outage'); }

@@ -3,6 +3,7 @@
   const FALLBACK_CACHE_VERSION = "20260926-front-actions-v1";
   const packCache = new Map();
   let registryPromise = null;
+  const ASSET_REQUEST_TIMEOUT_MS = 15000;
 
   function cacheBustedUrl(assetPath, token) {
     if (!assetPath) return null;
@@ -10,17 +11,40 @@
   }
 
   async function fetchJson(assetPath, token) {
-    const response = await fetch(cacheBustedUrl(assetPath, token), { cache: "no-store" });
-    if (!response.ok) throw new Error(`${assetPath} returned HTTP ${response.status}`);
-    return response.json();
+    const controller = new AbortController();
+    const timeoutError = new Error(`${assetPath} timed out`);
+    let timer;
+    const deadline = new Promise((_, reject) => {
+      timer = setTimeout(() => { reject(timeoutError); controller.abort(); }, ASSET_REQUEST_TIMEOUT_MS);
+    });
+    try {
+      return await Promise.race([deadline, (async () => {
+        const response = await fetch(cacheBustedUrl(assetPath, token), { cache: "no-store", signal: controller.signal });
+        if (controller.signal.aborted) throw timeoutError;
+        if (!response.ok) throw new Error(`${assetPath} returned HTTP ${response.status}`);
+        const data = await response.json();
+        if (controller.signal.aborted) throw timeoutError;
+        return data;
+      })()]);
+    } finally { clearTimeout(timer); }
   }
 
   function loadImage(assetPath, token) {
     return new Promise((resolve) => {
       const image = new Image();
+      let settled = false;
+      const finish = (result) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        image.onload = image.onerror = null;
+        if (!result.image && typeof image.removeAttribute === "function") image.removeAttribute("src");
+        resolve(result);
+      };
+      const timer = setTimeout(() => finish({ image: null, error: `${assetPath} timed out` }), ASSET_REQUEST_TIMEOUT_MS);
       image.decoding = "async";
-      image.onload = () => resolve({ image, error: null });
-      image.onerror = () => resolve({ image: null, error: `${assetPath} failed to load` });
+      image.onload = () => finish({ image, error: null });
+      image.onerror = () => finish({ image: null, error: `${assetPath} failed to load` });
       image.src = cacheBustedUrl(assetPath, token);
     });
   }

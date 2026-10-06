@@ -146,6 +146,8 @@ var fullStateHydrationPromise = null, fullStateHydrationRetryTimer = 0;
 var fullStateHydrationFailures = 0, fullStateHydrationRetryDelayMs = 0;
 var FULL_STATE_HYDRATION_MAX_AUTO_RETRIES = 3;
 var fastActionStateDirty = false;
+var busy = false, noticesBusy = false, authenticationFailure = false;
+var passiveRefreshInFlight = false, cooldownRefreshInFlight = false, seasonRefreshBusy = false, fastActionStateRefreshInFlight = false;
 var screen = { scrollTop: 0 }, requests = [], timers = [];
 var window = { clearTimeout() {}, setTimeout(fn, delay) { timers.push({ fn, delay }); return timers.length; } };
 var failure = false;
@@ -1406,7 +1408,7 @@ assert.match(worker, /const \[journeySummary, hydratedKaiju, seasonFinales\] = a
 assert.match(worker, /path === '\/telegram-pets\/app\/state'.*request\.method === 'POST'/s);
 assert.match(worker, /path === '\/telegram-pets\/app\/action'.*request\.method === 'POST'/s);
 assert.match(worker, /verifyTelegramMiniAppInitData\(body\.init_data/);
-assert.match(worker, /const MOONPET_MINI_APP_URL = `\$\{SITE_URL\}\/moonpet-game\.html\?v=20261006-live-refresh-v4`/);
+assert.match(worker, /const MOONPET_MINI_APP_URL = `\$\{SITE_URL\}\/moonpet-game\.html\?v=20261006-live-refresh-v5`/);
 assert.match(worker, /const TELEGRAM_GAMES_MENU_URL = `\$\{SITE_URL\}\/games\/telegram\/\?v=20260903-games-shell-v8`/,
   'default Telegram games menu must point at the current shell release');
 assert.match(worker, /const TELEGRAM_GAMES_MENU_TEXT = 'Games'/);
@@ -1507,9 +1509,9 @@ assert.equal(testStatusClasses.has('is-scrolling'), true, 'overflowing updates m
 assert.match(testStatusProperties['--status-scroll-duration'], /s$/, 'overflowing updates must receive a readable duration');
 assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20261002-audit-recovery-v2/);
 assert.doesNotMatch(html, /moonpet-art-resolver\.js/, 'the game must not load the retired static background resolver');
-assert.match(html, /\/js\/moonpet-bot-art-loader\.js\?v=20261002-audit-recovery-v2/);
+assert.match(html, /\/js\/moonpet-bot-art-loader\.js\?v=20261006-live-refresh-v5/);
 assert.match(html, /\/js\/moonpet-bot-art-renderer\.js\?v=20261002-audit-recovery-v2/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261006-live-refresh-v4/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261006-live-refresh-v5/);
 assert.match(html, /role="button" aria-label="Interact with your animated Moonpet"/);
 assert.match(client, /data-utility="guide">HOW TO PLAY/);
 const guideMarkupSource = extractTestExport(client, 'guideMarkup');
@@ -1800,7 +1802,7 @@ for (const sdkInitData of [expired, tampered, 'auth_date=invalid&hash=' + 'a'.re
   assert.equal(entry.requests.length, 3, 'Read-only startup state requests retain their transient retry policy');
 }
 assert.match(html, /\/js\/api-config\.js\?v=20260813-first-party-api/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261006-live-refresh-v4/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261006-live-refresh-v5/);
 // Season slot UI: timing, account/pet separation, unlock affordance, switching, and rejection copy.
 assert.match(client, /function renderSeasonSlots\(\)/, 'Mini App must render a focused season-slot summary');
 assert.match(client, /function render\(options\) \{\s*var editableState = options && options\.discardCallsignDraft \? null : captureEditableState\(\);[\s\S]*restoreEditableState\(editableState\);/, 'render must preserve only drafts that were not explicitly discarded');
@@ -1920,9 +1922,9 @@ assert.doesNotMatch(client, /createPetPalette|PET_APPEARANCE_PALETTES|PET_SPECIE
 assert.doesNotMatch(client, /function petPalette|function petPose/, 'retired procedural palette and pose helpers must stay removed');
 assert.doesNotMatch(client, /function drawMoonEgg/, 'the retired procedural egg must not remain after EGGYONE approval');
 assert.match(client, /STAGE_ZERO_BACKGROUND_URL = '\/games\/assets\/BITTY BACKGROUND\.jpg'/, 'Stage 0 must use the BITTY background');
-assert.match(client, /startHatchArtTransition\(hatchAnimationDuration\(\), responseState\)/, 'hatch must defer the Stage 1 art handoff for the complete atlas duration');
+assert.match(client, /var hatchDuration = isHatchReveal \? hatchAnimationDuration\(\) : 0/, 'hatch must use the complete atlas duration');
 assert.match(client, /MoonpetBotArtLoader\.loadMoonpetBotArt\(botArtIdentity\(nextSnapshot\)\)/, 'WTFBOI must preload while the EGGYONE hatch one-shot is visible');
-assert.match(client, /await hatchStageOnePreloadPromise;[\s\S]*selectBotArtForState\(state\)/, 'the renderer must not switch to WTFBOI before its preload completes');
+assert.match(client, /await Promise\.race\(\[hatchStageOnePreloadPromise,[\s\S]*selectBotArtForState\(state\)/, 'the renderer must wait for the Stage 1 preload or its bounded reveal deadline');
 assert.match(client, /animationUntil = Number\.POSITIVE_INFINITY/, 'the final EGGYONE hatch frame must remain visible until the Stage 1 swap');
 assert.match(client, /lifecycle\.phase === 'egg' \? 'stage0:' \+ seasonKey/, 'Stage 0 sleep must have a stable persistence key before a pet ID exists');
 assert.match(client, /drawSelectedBotSprite\(renderTime, styledVictory \? 'victory' : animationMode, active \|\| styledVictory, x, y, 1\)/, 'hatched pets must use the selected AutoSprite pack');
@@ -2250,7 +2252,7 @@ assert.match(worker, /dailyReservation \? dailyReservation\.current_room : Numbe
 assert.match(worker, /if \(!pool\.length\) pool = rooms/);
 assert.match(client, /'run_depth'/);
 assert.match(html, /20261002-audit-recovery-v2/);
-assert.match(worker, /20261006-live-refresh-v4/);
+assert.match(worker, /20261006-live-refresh-v5/);
 assert.match(client, /function scoreMotif\(\)/, 'audio must include authored screen motifs');
 assert.match(client, /function syncMoonpetScore\(\)/, 'authored score must follow audio and radio state');
 assert.match(client, /renderQuality = reducedMotion/, 'canvas quality must start from device capability');

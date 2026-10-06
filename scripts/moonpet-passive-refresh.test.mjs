@@ -25,6 +25,7 @@ function context(overrides = {}) {
     state: base(), activeScreen: 'explore', busy: false, noticesBusy: false,
     lastPassiveRefreshAt: 0, passiveRefreshInFlight: false, cooldownRefreshInFlight: false, seasonRefreshBusy: false,
     fastActionStateRefreshInFlight: false, fastActionStateDirty: false, fastActionStateRefreshTimer: 0,
+    fastActionStateRefreshFailures: 0, fastActionStateRefreshRetryAt: 0, FAST_ACTION_STATE_MAX_AUTO_RETRIES: 3,
     window: { clearTimeout: () => {}, setTimeout: (fn, delay) => { timers.push({ fn, delay }); return timers.length; } },
     screen: { scrollTop: 0 },
     fullStateHydrationPromise: null, authenticationFailure: false, serverClockOffsetMs: 0,

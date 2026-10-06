@@ -124,6 +124,7 @@ const runtimeLoaderContext = {
     }
   },
   setTimeout,
+  clearTimeout, AbortController,
 };
 vm.runInNewContext(readText("js/moonpet-bot-art-loader.js"), runtimeLoaderContext);
 const runtimePack = await runtimeLoaderContext.window.MoonpetBotArtLoader.loadMoonpetBotArt({ speciesId: "test_species", evolutionStage: 1 });
