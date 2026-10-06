@@ -5,6 +5,7 @@ import test from 'node:test';
 
 const loaderSource = fs.readFileSync(new URL('../js/moonpet-bot-art-loader.js', import.meta.url), 'utf8');
 const clientSource = fs.readFileSync(new URL('../js/moonpet-mini-app.js', import.meta.url), 'utf8');
+const rendererSource = fs.readFileSync(new URL('../js/moonpet-bot-art-renderer.js', import.meta.url), 'utf8');
 const flush = () => new Promise(resolve => setImmediate(resolve));
 const deferred = () => {
   let resolve, reject;
@@ -191,6 +192,59 @@ function hatchContext() {
     ctx.actionResponse = { result: { accepted: true }, state: { ...ctx.state, lifecycle: { phase: 'street' } } };
     await ctx.runAction('hatch', {});
   } };
+}
+
+async function renderHeldEgg(f) {
+  const roleContext = { window: {} };
+  vm.runInNewContext(loaderSource, roleContext);
+  const frames = Array.from({ length: 25 }, (_, index) => ({ x: index * 32, y: 0, w: 32, h: 32, index }));
+  const assetsByRole = {
+    egg_hatch: { frames, image: {}, fps: 12, one_shot: true, loop: false },
+    egg_idle: { frames: [frames[0]], image: {}, fps: 12, loop: true },
+  };
+  const window = { MoonpetBotArtLoader: {
+    eggRoleForAnimationMode: roleContext.window.MoonpetBotArtLoader.eggRoleForAnimationMode,
+    loadMoonpetBotArt: async () => ({ ready: true, assetsByRole, requestedEvolution: 'stage_0',
+      resolvedEvolution: 'stage_0', resolvedBot: 'EGGYONE', errors: [], preload: Promise.resolve() }),
+  } };
+  vm.runInNewContext(rendererSource, { window, performance: f.ctx.performance });
+  const renderer = window.MoonpetBotArtRenderer;
+  await renderer.initMoonpetBotArtRenderer({ evolutionStage: 0 });
+  const canvas = { save() {}, restore() {}, drawImage() {} };
+  f.ctx.drawWorld = time => {
+    assert.equal(renderer.renderMoonpetBot(canvas, f.ctx.animationMode, 0, 0, 1, time, {
+      active: f.ctx.sleepLatched || f.ctx.animationUntil > time,
+      startedAt: f.ctx.actionStartedAt, lifecycle: f.ctx.state.lifecycle,
+    }), true);
+  };
+  return () => renderer.getMoonpetBotArtRendererState().lastRender;
+}
+
+for (const release of ['preload', 'failure', 'deadline', 'motion-enabled']) {
+  test(`${release}: accepted Hatch holds its final rendered frame past reduced-motion completion`, async () => {
+    const f = hatchContext();
+    if (release === 'motion-enabled') f.ctx.reducedMotion = false;
+    const rendered = await renderHeldEgg(f); await f.acceptedHatch();
+    await f.tick(3220); await f.tick(230);
+    f.ctx.drawWorld(f.now());
+    assert.equal(f.ctx.animationMode, 'hatch');
+    assert.equal(f.ctx.animationUntil, Infinity);
+    assert.ok(f.ctx.hatchArtTransitionUntil > f.now());
+    assert.equal(rendered().role, 'egg_hatch'); assert.equal(rendered().frameIndex, 24);
+    await f.tick(2000); f.ctx.drawWorld(f.now());
+    assert.equal(rendered().role, 'egg_hatch'); assert.equal(rendered().frameIndex, 24);
+    assert.equal(f.selected.length, 0);
+    if (release === 'deadline') await f.tick(f.ctx.hatchArtTransitionUntil - f.now());
+    else {
+      if (release === 'failure') f.loads[0].reject(Error('stage art unavailable'));
+      else f.loads[0].resolve({ ready: true });
+      await flush();
+    }
+    assert.equal(f.ctx.hatchArtTransitionUntil, 0);
+    assert.equal(f.ctx.animationUntil, 0); assert.equal(f.ctx.animationMode, 'idle');
+    assert.equal(f.selected[0], f.ctx.state); assert.equal(f.ctx.state.pet.xp, 12);
+    assert.equal(f.actions.length, 1); assert.equal(f.timers.size, 0);
+  });
 }
 
 test('a stalled hatch preload releases the visual lock after the reveal deadline', async () => {

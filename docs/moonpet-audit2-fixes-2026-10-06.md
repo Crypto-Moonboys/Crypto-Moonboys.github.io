@@ -24,6 +24,13 @@ Dance, Feed, Sleep or blocked animation retains its mode, start time, duration a
 completion timer when the hatch deadline or preload finishes. Regressions execute
 the real accepted Hatch handler and both release paths with all four newer modes.
 
+The reduced-motion follow-up cancels the accepted Hatch animation's ordinary
+completion timer when the reveal takes ownership. That timer can no longer switch
+the held hatch to idle while art is pending. Regressions run the real sprite
+renderer past the original timer and check the final `egg_hatch` frame until
+successful preload, failed preload or deadline release; normal motion remains a
+control. Later actions retain their own completion timers.
+
 ## Validation and release
 
 The dedicated suites are `scripts/moonpet-refresh-audit-fixes.test.mjs` and

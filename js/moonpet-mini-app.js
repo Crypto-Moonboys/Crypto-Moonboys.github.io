@@ -3373,6 +3373,9 @@
       if (isHatchReveal) {
         animateAction(action, true, hatchDuration + 250, payload);
         animationUntil = Number.POSITIVE_INFINITY;
+        // The reveal owns completion while the final hatch frame is held.
+        window.clearTimeout(reducedMotionAnimationTimer);
+        reducedMotionAnimationTimer = 0;
         startHatchArtTransition(hatchDuration, responseState);
       }
       var nextState = state;
