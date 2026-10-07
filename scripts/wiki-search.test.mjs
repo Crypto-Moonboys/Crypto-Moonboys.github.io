@@ -1358,6 +1358,37 @@ const graffpunksStopwordOnly = {
   for (const [slug, subjects] of Object.entries(blackDividendStorySubjects)) {
     subjectsByPage[slug] = [...(subjectsByPage[slug] || []), ...subjects];
   }
+  const necessaryMonstersSubjects = {
+    'queen-sarah-p-fly': [
+      'Sarah need chosen', 'appointment becomes order',
+      'Bellwether Court refused proof', 'Necessary Transfer',
+      'Hesta Dorn', 'Venn Silt', 'Olan Reef',
+      'Queen Night Bench', 'Empty Place smaller jurisdiction',
+      'Sarah Second Morning'
+    ],
+    'alfie-bitcoin-kid-blaze': [
+      'Freedom nobody calls', 'Bram Rooke withheld complaint',
+      'Tessa Brine', 'Noll Ferrin', 'second assault',
+      'speech Tessa', 'severed pledge', 'orange sleeve crowd',
+      'bargain neither clean'
+    ],
+    'jodie-zoom-2000': [
+      'Jodie appetite missing piece', 'dream borrows Tessa face',
+      'Witness Supper borrowed voice', 'Aleema comforting account',
+      'wall painter answer', 'Not Your Dream', 'Orsa evening ordinary'
+    ],
+    'null-the-prophet': [
+      'Unburdening Room', 'Ulen Nacre', 'Aro Kest',
+      'Three mercies coexist', 'names door', 'fear own voice'
+    ],
+    'satorebel': [
+      'Fork refusal meeting', 'Author Supper',
+      'maker name somebody decision', 'replica after Bellwether'
+    ]
+  };
+  for (const [slug, subjects] of Object.entries(necessaryMonstersSubjects)) {
+    subjectsByPage[slug] = [...(subjectsByPage[slug] || []), ...subjects];
+  }
   const stopWords = vm.runInContext('SEARCH_TEXT_STOP_WORDS', sb);
   let checked = 0;
   for (const [slug, subjects] of Object.entries(subjectsByPage)) {
@@ -1395,6 +1426,11 @@ const graffpunksStopwordOnly = {
   for (const [query, slug] of [['Iris-7', 'iris-7'], ['Thera-9', 'thera-9']]) {
     const result = await selectMatches(wikiIndex, query, { allowPartialFallback: true, limit: 5 });
     assert.ok(result.scored.some(({ item }) => item.url === `/wiki/${slug}.html`), `${query} retains its dedicated short-number title match`);
+  }
+  for (const slug of Object.keys(necessaryMonstersSubjects)) {
+    const entry = wikiIndex.find(item => item.url === `/wiki/${slug}.html`);
+    assert.ok(entry.search_index.keyword_bag.includes('bellwether'), `${slug}: new shared story stays searchable`);
+    assert.ok(!entry.search_index.tokens.includes('bellwether'), `${slug}: shared story subject cannot create relationship tags`);
   }
   const absent = await selectMatches(wikiIndex, 'Mina Unrelatedzzzzz', { allowPartialFallback: false, limit: 10 });
   assert.ok(!absent.scored.some(({ item }) => item.url === '/wiki/bitcoin-kids.html'), 'An unrelated meaningful query word must prevent a strict subject match');
