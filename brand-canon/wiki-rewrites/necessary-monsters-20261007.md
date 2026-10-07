@@ -6,7 +6,7 @@ Backup: `codex/backup-necessary-monsters-20261007-063637`.
 
 Sandbox: `codex/sandbox-necessary-monsters-20261007-063637`.
 
-GK approved the delivered Sarah/Alfie/Jodie/NULL/SatoRebel depth proposal and instructed: “PERFECT, ADD MORE AND ADD TO CANNON AND WIKI PAGES.” This authorises development of the new fiction and changes to the existing articles. The completed expanded batch is prepared for final publication review under `AGENT_SANDBOX_WORKFLOW.md` and `AGENT_EDITING_RULES.md`; it does not reuse an earlier batch's merge approval.
+GK approved the delivered Sarah/Alfie/Jodie/NULL/SatoRebel depth proposal and instructed: “PERFECT, ADD MORE AND ADD TO CANNON AND WIKI PAGES.” This authorised development of the new fiction and changes to the existing articles. On 7 October 2026, GK separately approved publication of the completed, review-corrected PR #1455 with “APPROVED,” against head `02c402023736746d14e31bc5f55f660137f00e13`. This fulfils final publication approval under `AGENT_SANDBOX_WORKFLOW.md` and `AGENT_EDITING_RULES.md`; it does not reuse an earlier batch's merge approval.
 
 ## Scope and source distinction
 
@@ -69,7 +69,7 @@ Chronology remains 2030 Covenant/Bitcoin witness, later undated Sacred Fork, 288
 
 ## Validation and publication status
 
-An isolated `CANON_PROSE_CHANGE_APPROVED=1` validation input reflects authorised sandbox editing, not final merge approval. No automatic push to main or production deployment is performed. GK final approval remains required for this completed batch, after the changed files and validation are reviewable.
+The isolated `CANON_PROSE_CHANGE_APPROVED=1` validation input reflected authorised sandbox editing. GK's separate final approval on 7 October 2026 now authorises publication of the reviewed batch. The `canon-prose-change-approved` PR label records that approval for the protected-prose checks; publication proceeds through the PR after required checks pass. Approval recording changes only this ledger and the story bible's publication status, with no further narrative, article or generated-surface changes. Full desktop/mobile visual rendering remains unverified, as disclosed in the approved review.
 
 Completed validation:
 

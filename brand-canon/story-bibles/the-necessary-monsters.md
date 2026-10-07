@@ -1,6 +1,6 @@
 # The Necessary Monsters
 
-Year 3008 character story and adaptation reference. Developed from current main `9b867c1f4fde54ffbfbc0d3a43c8ecc693de1ab7` on 7 October 2026 following GK's approval of the character-depth proposal and instruction to add more to canon and the existing wiki pages. This is newly authored fiction, not recovered archive testimony. Final publication approval is pending for the completed batch.
+Year 3008 character story and adaptation reference. Developed from current main `9b867c1f4fde54ffbfbc0d3a43c8ecc693de1ab7` on 7 October 2026 following GK's approval of the character-depth proposal and instruction to add more to canon and the existing wiki pages. This is newly authored fiction, not recovered archive testimony. GK approved publication of the completed, review-corrected batch in PR #1455 on 7 October 2026 with “APPROVED,” against head `02c402023736746d14e31bc5f55f660137f00e13`. The development ledger records validation and the remaining desktop/mobile visual-verification limitation.
 
 ## The story and its ending
 
