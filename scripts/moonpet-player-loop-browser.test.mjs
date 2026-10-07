@@ -768,7 +768,11 @@ try {
     await page.locator('[data-screen="profile"]').click();
     await page.locator('[data-panel="how-to-play"] [data-utility="guide"]').click();
     const help = await page.locator('#utility-content').textContent();
-    for (const topic of ['HOME', 'MISSIONS', 'EXPLORE', 'WORK', 'ECONOMY', 'PROFILE', 'Daily Journey', 'Weekly Journey', 'Season Finale', 'CONTINUING CONTRACTS', 'CANVAS CONTROLS']) assert.ok(help.includes(topic), topic);
+    for (const topic of ['HOME', 'MISSIONS', 'EXPLORE', 'WORK', 'ECONOMY', 'PROFILE', 'Daily Journey', 'Weekly Journey', 'Season Finale', 'Continuing Contracts', 'Canvas Controls']) assert.ok(help.includes(topic), topic);
+    await page.locator('#utility-content [data-utility="about"]').click();
+    assert.equal(await page.locator('#utility-title').textContent(), 'ABOUT MOONPET OS');
+    assert.match(await page.locator('#utility-content').textContent(), /no automatic seasonal reset, replacement or retirement/);
+    await page.locator('#utility-content [data-utility="guide"]').click();
     await page.locator('[data-utility-close]').click();
     assert.equal(await page.locator('[data-panel="how-to-play"] [data-utility="guide"]').evaluate(b => b === document.activeElement), true, 'closing help returns focus to Profile');
     if (process.env.MOONPET_BROWSER_SCREENSHOT) await page.screenshot({ path: process.env.MOONPET_BROWSER_SCREENSHOT.replace('.png', `-canvas-tools-${viewport.width}.png`) });

@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-05T15:45:22.069Z",
-  "verified_at": "2026-10-06T12:23:06.488Z",
+  "generated_at": "2026-10-07T05:52:03.649Z",
+  "verified_at": "2026-10-07T05:52:03.649Z",
   "lite": true,
   "nodes": [
     {
@@ -476,14 +476,6 @@
       "authority_score": 14
     },
     {
-      "id": "/wiki/crypto-moonboy-pets.html",
-      "title": "Crypto Moonboy Pets",
-      "url": "/wiki/crypto-moonboy-pets.html",
-      "category": "tokens",
-      "rank_score": 309,
-      "authority_score": 22
-    },
-    {
       "id": "/wiki/punk-token.html",
       "title": "$PUNK Token",
       "url": "/wiki/punk-token.html",
@@ -602,6 +594,14 @@
       "category": "characters",
       "rank_score": 303,
       "authority_score": 17
+    },
+    {
+      "id": "/wiki/the-salvagers.html",
+      "title": "The SALVAGERS",
+      "url": "/wiki/the-salvagers.html",
+      "category": "factions",
+      "rank_score": 302,
+      "authority_score": 28
     }
   ],
   "edges": [
@@ -934,6 +934,12 @@
       "target": "/wiki/thorne-the-architect.html",
       "score": 85,
       "weight": 0.85
+    },
+    {
+      "source": "/wiki/the-chain-scribes.html",
+      "target": "/wiki/the-salvagers.html",
+      "score": 83,
+      "weight": 0.83
     },
     {
       "source": "/wiki/seeding-rights.html",

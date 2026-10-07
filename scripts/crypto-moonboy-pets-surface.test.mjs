@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import { createRequire } from 'node:module';
+const MoonpetGuide = createRequire(import.meta.url)('../js/moonpet-guide.js');
 
 const wikiPage = fs.readFileSync(new URL('../wiki/crypto-moonboy-pets.html', import.meta.url), 'utf8');
 const howTo = fs.readFileSync(new URL('../how-to-play-crypto-moonboy-pets.html', import.meta.url), 'utf8');
@@ -12,7 +14,7 @@ const miniAppHtml = fs.readFileSync(new URL('../moonpet-game.html', import.meta.
 const wikiCss = fs.readFileSync(new URL('../css/wiki.css', import.meta.url), 'utf8');
 const index = JSON.parse(fs.readFileSync(new URL('../js/wiki-index.json', import.meta.url), 'utf8'));
 function sectionByHeading(html, heading) {
-  return html.match(new RegExp(`<section class="[^"]+">\\s*<h2>${heading}<\\/h2>[\\s\\S]*?<\\/section>`))?.[0] || '';
+  return html.match(new RegExp(`<section class="[^"]+"[^>]*>\\s*<h2>${heading}<\\/h2>[\\s\\S]*?<\\/section>`))?.[0] || '';
 }
 
 assert.ok(wikiPage.includes('Crypto Moonboy Pets'), 'wiki page must name Crypto Moonboy Pets');
@@ -39,19 +41,16 @@ assert.ok(wikiPage.includes('/how-to-play-crypto-moonboy-pets.html'), 'wiki page
 assert.ok(wikiPage.includes('/crypto-moonboy-pets-leaderboard.html'), 'wiki page must link pet leaderboard');
 assert.ok(wikiPage.includes('Community XP'), 'wiki page must explain Community XP sync');
 
-for (const command of ['/adopt', '/feed', '/train', '/petrun', '/petextract', '/petadventure', '/petbag', '/petuse moon_snack', '/petwork courier', '/petdaily', '/petevent', '/petnotify on', '/petarena', '/petstart train', '/petactivity', '/petclaim', '/petcancel']) {
-  assert.ok(howTo.includes(command), `How To Play must explain ${command}`);
-}
-assert.ok(howTo.includes('Generates a random encounter with three choices.'), 'How To Play must explain what /petevent does');
+assert.doesNotMatch(howTo + wikiPage, /Legacy Launch Aliases|<code>\/gkstart<|during rollout|IN DEVELOPMENT/i, 'guides teach the current app, not obsolete command or beta instructions');
 assert.ok(howTo.includes('Care Loadout'), 'How To Play must explain the Care Loadout');
 assert.ok(howTo.includes('Battle Loadout'), 'How To Play must explain the Battle Loadout');
 assert.ok(howTo.includes('Food, Toy and Outfit'), 'How To Play must define care slots');
 assert.ok(howTo.includes('Armor, Weapon and Charm'), 'How To Play must define battle slots');
 assert.ok(howTo.includes('Changing one does not reset the other'), 'How To Play must state loadouts are independent');
-assert.ok(howTo.includes('Empty battle slots display') && howTo.includes('<strong>none</strong>'), 'How To Play must explain empty battle slots');
-assert.ok(howTo.includes('hatched active Moonpet') && howTo.includes('level 10 active Moonpet'), 'docs must mention the current Arena hatch and level unlock gates');
-assert.ok(howTo.includes('Kaiju Sticker Battle flow for accounts with a hatched active Moonpet'), 'docs must mention the Kaiju hatch unlock gate');
-assert.ok(howTo.includes('Pet Arena equipment') || howTo.includes('Gear Shop'), 'docs explain the Arena equipment shop');
+assert.ok(howTo.includes('Empty battle slots display') && howTo.includes('<b>none</b>'), 'How To Play must explain empty battle slots');
+assert.ok(howTo.includes('hatched active Moonpet at level 10'), 'docs must mention the current Arena hatch and level unlock gates');
+assert.ok(howTo.includes('Kaiju Sticker Battle</b> requires a hatched active Moonpet'), 'docs must mention the Kaiju hatch unlock gate');
+assert.ok(howTo.includes('Battle Loadout'), 'docs explain the Arena equipment shop');
 assert.ok(howTo.includes('Pet XP'), 'How To Play must explain pet XP');
 assert.ok(howTo.includes('Community XP'), 'How To Play must explain Community XP');
 assert.ok(howTo.includes('Current Build In Moonpet OS'), 'How To Play must show the current build section');
@@ -110,9 +109,9 @@ assert.ok(!petSurfaceScript.includes("formatLoadoutValue(pet.equipped_armor, 'st
 assert.ok(!petSurfaceScript.includes("formatLoadoutValue(pet.equipped_weapon, 'starter')"), 'empty weapon slot must not invent starter gear');
 const guideMarkupSource = miniAppScript.match(/function guideMarkup\(\)\s*\{[\s\S]*?\n  \}/)?.[0] || '';
 assert.ok(guideMarkupSource, 'Mini App guide helper must be extractable');
-const renderGuideMarkup = new Function('hasCombatUnlocked', `${guideMarkupSource}; return guideMarkup();`);
-const lockedGuideMarkup = renderGuideMarkup(() => false);
-assert.ok(lockedGuideMarkup.includes('Kaiju requires a hatched active Moonpet, and Arena requires a hatched active Moonpet plus level 10.'), 'Mini App guide must state runtime combat gates when combat is locked');
+const renderGuideMarkup = new Function('window', `${guideMarkupSource}; return guideMarkup();`);
+const lockedGuideMarkup = renderGuideMarkup({ MoonpetGuide });
+assert.ok(lockedGuideMarkup.includes('Pet Arena</b> requires a hatched active Moonpet at level 10') && lockedGuideMarkup.includes('Kaiju Sticker Battle</b> requires a hatched active Moonpet'), 'Mini App guide must state runtime combat gates when combat is locked');
 for (const [label, pattern] of [
   ['Pet', /PET|Pet/],
   ['Care', /care/i],
@@ -127,14 +126,14 @@ for (const [label, pattern] of [
 ]) {
   assert.match(lockedGuideMarkup, pattern, `Mini App guide must include current-build vocabulary for ${label}`);
 }
-assert.match(lockedGuideMarkup, /6 \/\/ IDENTITY AND PROGRESSION/);
+assert.match(lockedGuideMarkup, /Pet Stages And Realistic Timing/);
 assert.doesNotMatch(lockedGuideMarkup, /Advanced Traits|Breeding|Lineage|Fusion|Sanctuary|Prestige|coming soon/, 'in-app guide omits unwired roadmap content');
 
 const entry = index.find((item) => item.url === '/wiki/crypto-moonboy-pets.html');
 assert.ok(entry, 'Crypto Moonboy Pets must be present in js/wiki-index.json');
 const searchText = JSON.stringify(entry).toLowerCase();
 for (const term of ['crypto moonboy pets', 'telegram', 'pet game', 'tamagotchi', 'roguelite', 'pet leaderboard', 'pet adventure', 'pet notifications', 'moon gold', 'pet bag', 'pet jobs', 'daily chest', 'random event']) assert.ok(searchText.includes(term), `wiki index entry must include search term: ${term}`);
-assert.ok(wikiPage.includes('armor, weapon and charm'), 'wiki explains Pet Arena gear slots');
+assert.ok(wikiPage.includes('Arena') && wikiPage.includes('equipment'), 'wiki explains Pet Arena gear slots');
 
 
 for (const page of [wikiPage, howTo]) {

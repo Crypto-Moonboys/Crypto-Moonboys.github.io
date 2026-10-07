@@ -31,6 +31,8 @@ const GROUPS = {
     ['node', 'scripts/wiki-shell-guard.test.mjs'],
     ['node', 'scripts/wiki-html-hygiene.test.mjs'],
     ['node', 'scripts/crypto-moonboy-pets-surface.test.mjs'],
+    ['node', '--test', 'scripts/moonpet-guide.test.mjs'],
+    ['node', 'scripts/sync-moonpet-guide.mjs', '--check'],
     ['npm', 'run', 'test:wiki-structure'],
     ['node', 'scripts/wiki-index-drift-regression.test.mjs'],
     ['node', 'scripts/first-witness-publishing-search.test.mjs'],
@@ -38,6 +40,7 @@ const GROUPS = {
     ['node', 'scripts/audit-published-vs-index.js'],
   ],
   'worker-api': [
+    ['node', '--test', 'scripts/moonpet-guide.test.mjs'],
     ['node', 'scripts/moonpet-retained-proof-slots.test.mjs'],
     ['node', 'scripts/moonpet-consolidated-atomicity.test.mjs'],
     ['node', 'scripts/moonpet-consolidated-endings.test.mjs'],
@@ -214,6 +217,7 @@ const GROUPS = {
     ['node', 'scripts/wax-collection-page-fallback.test.mjs'],
   ],
   visual: [
+    ['node', 'scripts/moonpet-guide-browser.test.mjs'],
     ['node', 'scripts/moonpet-radio-browser.test.mjs'],
     ['node', 'scripts/moonpet-player-loop-browser.test.mjs'],
     ['node', 'scripts/moonpet-public-sync-browser.test.mjs'],
