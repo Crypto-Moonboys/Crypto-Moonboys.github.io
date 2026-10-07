@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-07T05:52:03.649Z",
-  "verified_at": "2026-10-07T05:52:03.649Z",
+  "generated_at": "2026-10-07T06:52:01.617Z",
+  "verified_at": "2026-10-07T06:52:01.617Z",
   "lite": true,
   "nodes": [
     {
@@ -188,6 +188,14 @@
       "authority_score": 24
     },
     {
+      "id": "/wiki/null-the-prophet.html",
+      "title": "NULL THE PROPHET",
+      "url": "/wiki/null-the-prophet.html",
+      "category": "characters",
+      "rank_score": 337,
+      "authority_score": 30
+    },
+    {
       "id": "/wiki/crypto-moonboys.html",
       "title": "Crypto Moonboys — Graffiti Kings Creator Umbrella",
       "url": "/wiki/crypto-moonboys.html",
@@ -225,14 +233,6 @@
       "url": "/wiki/the-princess.html",
       "category": "characters",
       "rank_score": 333,
-      "authority_score": 24
-    },
-    {
-      "id": "/wiki/null-the-prophet.html",
-      "title": "NULL THE PROPHET",
-      "url": "/wiki/null-the-prophet.html",
-      "category": "characters",
-      "rank_score": 331,
       "authority_score": 24
     },
     {
@@ -948,22 +948,22 @@
       "weight": 0.82
     },
     {
-      "source": "/wiki/the-nice-easy-bois.html",
-      "target": "/wiki/stikfamwars.html",
+      "source": "/wiki/burn-to-earn.html",
+      "target": "/wiki/null-the-prophet.html",
       "score": 81,
       "weight": 0.81
     },
     {
-      "source": "/wiki/burn-to-earn.html",
-      "target": "/wiki/null-the-prophet.html",
-      "score": 80,
-      "weight": 0.8
-    },
-    {
       "source": "/wiki/punk-token.html",
       "target": "/wiki/null-the-prophet.html",
-      "score": 80,
-      "weight": 0.8
+      "score": 81,
+      "weight": 0.81
+    },
+    {
+      "source": "/wiki/the-nice-easy-bois.html",
+      "target": "/wiki/stikfamwars.html",
+      "score": 81,
+      "weight": 0.81
     },
     {
       "source": "/wiki/graffpunks-24-7-radio.html",
@@ -990,10 +990,10 @@
       "weight": 0.76
     },
     {
-      "source": "/wiki/staking.html",
+      "source": "/wiki/thorne-the-architect.html",
       "target": "/wiki/null-the-prophet.html",
-      "score": 71,
-      "weight": 0.71
+      "score": 75,
+      "weight": 0.75
     },
     {
       "source": "/wiki/rave-relics.html",

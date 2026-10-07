@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-07T05:52:03.649Z",
-  "verified_at": "2026-10-07T05:52:03.649Z",
+  "generated_at": "2026-10-07T06:52:01.617Z",
+  "verified_at": "2026-10-07T06:52:01.617Z",
   "nodes": [
     {
       "id": "/about.html",
@@ -135,7 +135,7 @@
       "title": "Alfie 'Bitcoin Kid' Blaze",
       "url": "/wiki/alfie-bitcoin-kid-blaze.html",
       "category": "factions",
-      "rank_score": 294,
+      "rank_score": 297,
       "authority_score": 28
     },
     {
@@ -2503,7 +2503,7 @@
       "title": "Jodie ZOOM 2000",
       "url": "/wiki/jodie-zoom-2000.html",
       "category": "characters",
-      "rank_score": 295,
+      "rank_score": 297,
       "authority_score": 28
     },
     {
@@ -2679,8 +2679,8 @@
       "title": "NULL THE PROPHET",
       "url": "/wiki/null-the-prophet.html",
       "category": "characters",
-      "rank_score": 331,
-      "authority_score": 24
+      "rank_score": 337,
+      "authority_score": 30
     },
     {
       "id": "/wiki/paper-hands.html",
@@ -2767,7 +2767,7 @@
       "title": "Queen Sarah P-fly",
       "url": "/wiki/queen-sarah-p-fly.html",
       "category": "factions",
-      "rank_score": 290,
+      "rank_score": 294,
       "authority_score": 28
     },
     {
@@ -2831,8 +2831,8 @@
       "title": "SatoRebel",
       "url": "/wiki/satorebel.html",
       "category": "characters",
-      "rank_score": 271,
-      "authority_score": 24
+      "rank_score": 279,
+      "authority_score": 28
     },
     {
       "id": "/wiki/satoshi-scroll.html",
@@ -3567,14 +3567,14 @@
     {
       "source": "/wiki/alien-worlds-tlm.html",
       "target": "/wiki/null-the-prophet.html",
-      "score": 80,
-      "weight": 0.8
+      "score": 81,
+      "weight": 0.81
     },
     {
       "source": "/wiki/alien-worlds-tlm.html",
       "target": "/wiki/jodie-zoom-2000.html",
-      "score": 79,
-      "weight": 0.79
+      "score": 80,
+      "weight": 0.8
     },
     {
       "source": "/wiki/alien-worlds-tlm.html",
@@ -3627,14 +3627,14 @@
     {
       "source": "/wiki/atomicassets.html",
       "target": "/wiki/null-the-prophet.html",
-      "score": 80,
-      "weight": 0.8
+      "score": 81,
+      "weight": 0.81
     },
     {
       "source": "/wiki/atomicassets.html",
       "target": "/wiki/jodie-zoom-2000.html",
-      "score": 79,
-      "weight": 0.79
+      "score": 80,
+      "weight": 0.8
     },
     {
       "source": "/wiki/atomicassets.html",
@@ -3717,18 +3717,18 @@
     {
       "source": "/wiki/ava-chen.html",
       "target": "/wiki/null-the-prophet.html",
+      "score": 81,
+      "weight": 0.81
+    },
+    {
+      "source": "/wiki/ava-chen.html",
+      "target": "/wiki/jodie-zoom-2000.html",
       "score": 80,
       "weight": 0.8
     },
     {
       "source": "/wiki/ava-chen.html",
       "target": "/wiki/dragan-volkov.html",
-      "score": 79,
-      "weight": 0.79
-    },
-    {
-      "source": "/wiki/ava-chen.html",
-      "target": "/wiki/jodie-zoom-2000.html",
       "score": 79,
       "weight": 0.79
     },
@@ -3878,21 +3878,21 @@
     },
     {
       "source": "/wiki/bit-cap-5000.html",
-      "target": "/wiki/hodl-warriors.html",
-      "score": 83,
-      "weight": 0.83
+      "target": "/wiki/null-the-prophet.html",
+      "score": 84,
+      "weight": 0.84
     },
     {
       "source": "/wiki/bit-cap-5000.html",
-      "target": "/wiki/null-the-prophet.html",
+      "target": "/wiki/hodl-warriors.html",
       "score": 83,
       "weight": 0.83
     },
     {
       "source": "/wiki/bitcoin-kid-army.html",
       "target": "/wiki/alfie-bitcoin-kid-blaze.html",
-      "score": 96,
-      "weight": 0.96
+      "score": 97,
+      "weight": 0.97
     },
     {
       "source": "/wiki/bitcoin-kid-army.html",
@@ -3938,13 +3938,13 @@
     },
     {
       "source": "/wiki/bitcoin-kids.html",
-      "target": "/wiki/hodl-warriors.html",
-      "score": 86,
-      "weight": 0.86
+      "target": "/wiki/null-the-prophet.html",
+      "score": 87,
+      "weight": 0.87
     },
     {
       "source": "/wiki/bitcoin-kids.html",
-      "target": "/wiki/null-the-prophet.html",
+      "target": "/wiki/hodl-warriors.html",
       "score": 86,
       "weight": 0.86
     },
@@ -3962,13 +3962,13 @@
     },
     {
       "source": "/wiki/bitcoin-x-kids.html",
-      "target": "/wiki/hodl-warriors.html",
-      "score": 83,
-      "weight": 0.83
+      "target": "/wiki/null-the-prophet.html",
+      "score": 84,
+      "weight": 0.84
     },
     {
       "source": "/wiki/bitcoin-x-kids.html",
-      "target": "/wiki/null-the-prophet.html",
+      "target": "/wiki/hodl-warriors.html",
       "score": 83,
       "weight": 0.83
     },
@@ -4047,8 +4047,8 @@
     {
       "source": "/wiki/block-topia.html",
       "target": "/wiki/null-the-prophet.html",
-      "score": 68,
-      "weight": 0.68
+      "score": 69,
+      "weight": 0.69
     },
     {
       "source": "/wiki/block-topia.html",
@@ -4137,8 +4137,8 @@
     {
       "source": "/wiki/burn-to-earn.html",
       "target": "/wiki/null-the-prophet.html",
-      "score": 80,
-      "weight": 0.8
+      "score": 81,
+      "weight": 0.81
     },
     {
       "source": "/wiki/burn-to-earn.html",
@@ -4281,8 +4281,8 @@
     {
       "source": "/wiki/crypto-moonboys.html",
       "target": "/wiki/null-the-prophet.html",
-      "score": 83,
-      "weight": 0.83
+      "score": 84,
+      "weight": 0.84
     },
     {
       "source": "/wiki/crypto-moonboys.html",
@@ -4437,18 +4437,18 @@
     {
       "source": "/wiki/diamond-hands.html",
       "target": "/wiki/null-the-prophet.html",
-      "score": 80,
-      "weight": 0.8
-    },
-    {
-      "source": "/wiki/diamond-hands.html",
-      "target": "/wiki/bitcoin-kids.html",
-      "score": 76,
-      "weight": 0.76
+      "score": 81,
+      "weight": 0.81
     },
     {
       "source": "/wiki/diamond-hands.html",
       "target": "/wiki/jodie-zoom-2000.html",
+      "score": 77,
+      "weight": 0.77
+    },
+    {
+      "source": "/wiki/diamond-hands.html",
+      "target": "/wiki/bitcoin-kids.html",
       "score": 76,
       "weight": 0.76
     },
@@ -4467,20 +4467,20 @@
     {
       "source": "/wiki/dragan-volkov.html",
       "target": "/wiki/jodie-zoom-2000.html",
-      "score": 82,
-      "weight": 0.82
+      "score": 83,
+      "weight": 0.83
+    },
+    {
+      "source": "/wiki/dragan-volkov.html",
+      "target": "/wiki/null-the-prophet.html",
+      "score": 81,
+      "weight": 0.81
     },
     {
       "source": "/wiki/dragan-volkov.html",
       "target": "/wiki/thera-9.html",
       "score": 81,
       "weight": 0.81
-    },
-    {
-      "source": "/wiki/dragan-volkov.html",
-      "target": "/wiki/null-the-prophet.html",
-      "score": 80,
-      "weight": 0.8
     },
     {
       "source": "/wiki/dragan-volkov.html",
@@ -4527,8 +4527,8 @@
     {
       "source": "/wiki/elder-codex-7.html",
       "target": "/wiki/null-the-prophet.html",
-      "score": 80,
-      "weight": 0.8
+      "score": 81,
+      "weight": 0.81
     },
     {
       "source": "/wiki/elder-codex-7.html",
@@ -7197,8 +7197,8 @@
     {
       "source": "/wiki/forklord-you.html",
       "target": "/wiki/null-the-prophet.html",
-      "score": 83,
-      "weight": 0.83
+      "score": 84,
+      "weight": 0.84
     },
     {
       "source": "/wiki/forklord-you.html",
@@ -7227,8 +7227,8 @@
     {
       "source": "/wiki/forksplit.html",
       "target": "/wiki/null-the-prophet.html",
-      "score": 83,
-      "weight": 0.83
+      "score": 84,
+      "weight": 0.84
     },
     {
       "source": "/wiki/forksplit.html",
@@ -7244,9 +7244,9 @@
     },
     {
       "source": "/wiki/forksplit.html",
-      "target": "/wiki/bitcoin-kids.html",
-      "score": 79,
-      "weight": 0.79
+      "target": "/wiki/jodie-zoom-2000.html",
+      "score": 80,
+      "weight": 0.8
     },
     {
       "source": "/wiki/games4punks-telegram.html",
@@ -7377,8 +7377,8 @@
     {
       "source": "/wiki/genesis-spray-drop.html",
       "target": "/wiki/null-the-prophet.html",
-      "score": 83,
-      "weight": 0.83
+      "score": 84,
+      "weight": 0.84
     },
     {
       "source": "/wiki/genesis-spray-drop.html",
@@ -12039,14 +12039,14 @@
     {
       "source": "/wiki/grit.html",
       "target": "/wiki/null-the-prophet.html",
-      "score": 80,
-      "weight": 0.8
+      "score": 81,
+      "weight": 0.81
     },
     {
       "source": "/wiki/grit.html",
       "target": "/wiki/jodie-zoom-2000.html",
-      "score": 79,
-      "weight": 0.79
+      "score": 80,
+      "weight": 0.8
     },
     {
       "source": "/wiki/grit42.html",
@@ -12069,14 +12069,14 @@
     {
       "source": "/wiki/grit42.html",
       "target": "/wiki/null-the-prophet.html",
-      "score": 80,
-      "weight": 0.8
+      "score": 81,
+      "weight": 0.81
     },
     {
       "source": "/wiki/grit42.html",
       "target": "/wiki/jodie-zoom-2000.html",
-      "score": 79,
-      "weight": 0.79
+      "score": 80,
+      "weight": 0.8
     },
     {
       "source": "/wiki/hard-fork-games.html",
@@ -12177,8 +12177,14 @@
     {
       "source": "/wiki/hex-tagger-prime.html",
       "target": "/wiki/null-the-prophet.html",
-      "score": 80,
-      "weight": 0.8
+      "score": 81,
+      "weight": 0.81
+    },
+    {
+      "source": "/wiki/hex-tagger-prime.html",
+      "target": "/wiki/jodie-zoom-2000.html",
+      "score": 77,
+      "weight": 0.77
     },
     {
       "source": "/wiki/hex-tagger-prime.html",
@@ -12189,12 +12195,6 @@
     {
       "source": "/wiki/hex-tagger-prime.html",
       "target": "/wiki/diamond-hands.html",
-      "score": 76,
-      "weight": 0.76
-    },
-    {
-      "source": "/wiki/hex-tagger-prime.html",
-      "target": "/wiki/jodie-zoom-2000.html",
       "score": 76,
       "weight": 0.76
     },
@@ -12279,8 +12279,8 @@
     {
       "source": "/wiki/hodl-x-warriors.html",
       "target": "/wiki/null-the-prophet.html",
-      "score": 86,
-      "weight": 0.86
+      "score": 87,
+      "weight": 0.87
     },
     {
       "source": "/wiki/hodl-x-warriors.html",
@@ -12327,8 +12327,14 @@
     {
       "source": "/wiki/ian-harrison.html",
       "target": "/wiki/null-the-prophet.html",
-      "score": 80,
-      "weight": 0.8
+      "score": 81,
+      "weight": 0.81
+    },
+    {
+      "source": "/wiki/ian-harrison.html",
+      "target": "/wiki/jodie-zoom-2000.html",
+      "score": 77,
+      "weight": 0.77
     },
     {
       "source": "/wiki/ian-harrison.html",
@@ -12339,12 +12345,6 @@
     {
       "source": "/wiki/ian-harrison.html",
       "target": "/wiki/diamond-hands.html",
-      "score": 76,
-      "weight": 0.76
-    },
-    {
-      "source": "/wiki/ian-harrison.html",
-      "target": "/wiki/jodie-zoom-2000.html",
       "score": 76,
       "weight": 0.76
     },
@@ -12374,9 +12374,9 @@
     },
     {
       "source": "/wiki/iris-7.html",
-      "target": "/wiki/hodl-warriors.html",
-      "score": 80,
-      "weight": 0.8
+      "target": "/wiki/null-the-prophet.html",
+      "score": 81,
+      "weight": 0.81
     },
     {
       "source": "/wiki/jillian-godsil.html",
@@ -12428,15 +12428,15 @@
     },
     {
       "source": "/wiki/jodie-zoom-2000.html",
-      "target": "/wiki/snipey-d-man-sirus.html",
+      "target": "/wiki/null-the-prophet.html",
       "score": 81,
       "weight": 0.81
     },
     {
       "source": "/wiki/jodie-zoom-2000.html",
-      "target": "/wiki/hodl-warriors.html",
-      "score": 80,
-      "weight": 0.8
+      "target": "/wiki/snipey-d-man-sirus.html",
+      "score": 81,
+      "weight": 0.81
     },
     {
       "source": "/wiki/jonny-laurence-nelson-tag-records.html",
@@ -12494,7 +12494,7 @@
     },
     {
       "source": "/wiki/lady-ink.html",
-      "target": "/wiki/thera-9.html",
+      "target": "/wiki/null-the-prophet.html",
       "score": 81,
       "weight": 0.81
     },
@@ -12537,8 +12537,14 @@
     {
       "source": "/wiki/loopfiend.html",
       "target": "/wiki/jodie-zoom-2000.html",
-      "score": 82,
-      "weight": 0.82
+      "score": 83,
+      "weight": 0.83
+    },
+    {
+      "source": "/wiki/loopfiend.html",
+      "target": "/wiki/null-the-prophet.html",
+      "score": 81,
+      "weight": 0.81
     },
     {
       "source": "/wiki/loopfiend.html",
@@ -12553,16 +12559,10 @@
       "weight": 0.81
     },
     {
-      "source": "/wiki/loopfiend.html",
-      "target": "/wiki/null-the-prophet.html",
-      "score": 80,
-      "weight": 0.8
-    },
-    {
       "source": "/wiki/m1ntr-k1ll.html",
       "target": "/wiki/null-the-prophet.html",
-      "score": 86,
-      "weight": 0.86
+      "score": 87,
+      "weight": 0.87
     },
     {
       "source": "/wiki/m1ntr-k1ll.html",
@@ -12573,8 +12573,8 @@
     {
       "source": "/wiki/m1ntr-k1ll.html",
       "target": "/wiki/jodie-zoom-2000.html",
-      "score": 82,
-      "weight": 0.82
+      "score": 83,
+      "weight": 0.83
     },
     {
       "source": "/wiki/m1ntr-k1ll.html",
@@ -12807,8 +12807,8 @@
     {
       "source": "/wiki/nbg.html",
       "target": "/wiki/null-the-prophet.html",
-      "score": 71,
-      "weight": 0.71
+      "score": 72,
+      "weight": 0.72
     },
     {
       "source": "/wiki/nbg.html",
@@ -12927,8 +12927,8 @@
     {
       "source": "/wiki/nfts.html",
       "target": "/wiki/null-the-prophet.html",
-      "score": 80,
-      "weight": 0.8
+      "score": 81,
+      "weight": 0.81
     },
     {
       "source": "/wiki/nfts.html",
@@ -12944,9 +12944,9 @@
     },
     {
       "source": "/wiki/nfts.html",
-      "target": "/wiki/bitcoin-kids.html",
-      "score": 76,
-      "weight": 0.76
+      "target": "/wiki/jodie-zoom-2000.html",
+      "score": 77,
+      "weight": 0.77
     },
     {
       "source": "/wiki/ngmi-chronicles.html",
@@ -13131,8 +13131,8 @@
     {
       "source": "/wiki/patchwork.html",
       "target": "/wiki/satorebel.html",
-      "score": 87,
-      "weight": 0.87
+      "score": 88,
+      "weight": 0.88
     },
     {
       "source": "/wiki/patchwork.html",
@@ -13227,14 +13227,14 @@
     {
       "source": "/wiki/pixil-mini.html",
       "target": "/wiki/null-the-prophet.html",
-      "score": 80,
-      "weight": 0.8
+      "score": 81,
+      "weight": 0.81
     },
     {
       "source": "/wiki/pixil-mini.html",
       "target": "/wiki/jodie-zoom-2000.html",
-      "score": 79,
-      "weight": 0.79
+      "score": 80,
+      "weight": 0.8
     },
     {
       "source": "/wiki/pixil-mini.html",
@@ -13274,9 +13274,9 @@
     },
     {
       "source": "/wiki/playable-nft-murals.html",
-      "target": "/wiki/the-high-hats.html",
-      "score": 72,
-      "weight": 0.72
+      "target": "/wiki/queen-sarah-p-fly.html",
+      "score": 73,
+      "weight": 0.73
     },
     {
       "source": "/wiki/pmsl-token.html",
@@ -13347,8 +13347,8 @@
     {
       "source": "/wiki/punk-token.html",
       "target": "/wiki/null-the-prophet.html",
-      "score": 80,
-      "weight": 0.8
+      "score": 81,
+      "weight": 0.81
     },
     {
       "source": "/wiki/punk-token.html",
@@ -13377,14 +13377,14 @@
     {
       "source": "/wiki/pyralith.html",
       "target": "/wiki/null-the-prophet.html",
-      "score": 80,
-      "weight": 0.8
+      "score": 81,
+      "weight": 0.81
     },
     {
       "source": "/wiki/pyralith.html",
       "target": "/wiki/jodie-zoom-2000.html",
-      "score": 79,
-      "weight": 0.79
+      "score": 80,
+      "weight": 0.8
     },
     {
       "source": "/wiki/pyralith.html",
@@ -13437,14 +13437,14 @@
     {
       "source": "/wiki/quell.html",
       "target": "/wiki/null-the-prophet.html",
-      "score": 80,
-      "weight": 0.8
+      "score": 81,
+      "weight": 0.81
     },
     {
       "source": "/wiki/quell.html",
       "target": "/wiki/jodie-zoom-2000.html",
-      "score": 79,
-      "weight": 0.79
+      "score": 80,
+      "weight": 0.8
     },
     {
       "source": "/wiki/quell.html",
@@ -13527,8 +13527,14 @@
     {
       "source": "/wiki/rune-tag.html",
       "target": "/wiki/null-the-prophet.html",
-      "score": 80,
-      "weight": 0.8
+      "score": 81,
+      "weight": 0.81
+    },
+    {
+      "source": "/wiki/rune-tag.html",
+      "target": "/wiki/jodie-zoom-2000.html",
+      "score": 77,
+      "weight": 0.77
     },
     {
       "source": "/wiki/rune-tag.html",
@@ -13539,12 +13545,6 @@
     {
       "source": "/wiki/rune-tag.html",
       "target": "/wiki/diamond-hands.html",
-      "score": 76,
-      "weight": 0.76
-    },
-    {
-      "source": "/wiki/rune-tag.html",
-      "target": "/wiki/jodie-zoom-2000.html",
       "score": 76,
       "weight": 0.76
     },
@@ -13617,8 +13617,8 @@
     {
       "source": "/wiki/samaelexe.html",
       "target": "/wiki/null-the-prophet.html",
-      "score": 83,
-      "weight": 0.83
+      "score": 84,
+      "weight": 0.84
     },
     {
       "source": "/wiki/samaelexe.html",
@@ -13664,9 +13664,9 @@
     },
     {
       "source": "/wiki/satorebel.html",
-      "target": "/wiki/bitcoin-kids.html",
-      "score": 82,
-      "weight": 0.82
+      "target": "/wiki/jodie-zoom-2000.html",
+      "score": 83,
+      "weight": 0.83
     },
     {
       "source": "/wiki/satoshi-scroll.html",
@@ -13736,13 +13736,13 @@
     },
     {
       "source": "/wiki/sister-halcyon.html",
-      "target": "/wiki/crypto-moonboys.html",
-      "score": 84,
-      "weight": 0.84
+      "target": "/wiki/satorebel.html",
+      "score": 85,
+      "weight": 0.85
     },
     {
       "source": "/wiki/sister-halcyon.html",
-      "target": "/wiki/satorebel.html",
+      "target": "/wiki/crypto-moonboys.html",
       "score": 84,
       "weight": 0.84
     },
@@ -13754,9 +13754,9 @@
     },
     {
       "source": "/wiki/sister-halcyon.html",
-      "target": "/wiki/bitcoin-kids.html",
-      "score": 82,
-      "weight": 0.82
+      "target": "/wiki/jodie-zoom-2000.html",
+      "score": 83,
+      "weight": 0.83
     },
     {
       "source": "/wiki/sneakar.html",
@@ -13809,8 +13809,8 @@
     {
       "source": "/wiki/snipey-d-man-sirus.html",
       "target": "/wiki/jodie-zoom-2000.html",
-      "score": 82,
-      "weight": 0.82
+      "score": 83,
+      "weight": 0.83
     },
     {
       "source": "/wiki/snipey-d-man-sirus.html",
@@ -13947,8 +13947,8 @@
     {
       "source": "/wiki/staking.html",
       "target": "/wiki/null-the-prophet.html",
-      "score": 71,
-      "weight": 0.71
+      "score": 72,
+      "weight": 0.72
     },
     {
       "source": "/wiki/staking.html",
@@ -14864,7 +14864,7 @@
     },
     {
       "source": "/wiki/the-princess.html",
-      "target": "/wiki/wagmi-prophecy.html",
+      "target": "/wiki/null-the-prophet.html",
       "score": 75,
       "weight": 0.75
     },
@@ -15039,8 +15039,8 @@
     {
       "source": "/wiki/the-whitewasher.html",
       "target": "/wiki/null-the-prophet.html",
-      "score": 77,
-      "weight": 0.77
+      "score": 78,
+      "weight": 0.78
     },
     {
       "source": "/wiki/the-whitewasher.html",
@@ -15057,8 +15057,8 @@
     {
       "source": "/wiki/thera-9.html",
       "target": "/wiki/jodie-zoom-2000.html",
-      "score": 85,
-      "weight": 0.85
+      "score": 86,
+      "weight": 0.86
     },
     {
       "source": "/wiki/thera-9.html",
@@ -15104,7 +15104,7 @@
     },
     {
       "source": "/wiki/thorne-the-architect.html",
-      "target": "/wiki/wagmi-prophecy.html",
+      "target": "/wiki/null-the-prophet.html",
       "score": 75,
       "weight": 0.75
     },
@@ -15237,8 +15237,8 @@
     {
       "source": "/wiki/wallets.html",
       "target": "/wiki/null-the-prophet.html",
-      "score": 83,
-      "weight": 0.83
+      "score": 84,
+      "weight": 0.84
     },
     {
       "source": "/wiki/wallets.html",
@@ -15248,13 +15248,13 @@
     },
     {
       "source": "/wiki/wallets.html",
-      "target": "/wiki/bitcoin-kids.html",
-      "score": 79,
-      "weight": 0.79
+      "target": "/wiki/jodie-zoom-2000.html",
+      "score": 80,
+      "weight": 0.8
     },
     {
       "source": "/wiki/wallets.html",
-      "target": "/wiki/jodie-zoom-2000.html",
+      "target": "/wiki/bitcoin-kids.html",
       "score": 79,
       "weight": 0.79
     },

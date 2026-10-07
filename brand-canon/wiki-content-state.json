@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "generator": "scripts/generate-wiki-content-state.mjs",
-  "source_tree_hash": "sha256:27e62f02c9640f9b1a62517288c5a729e54b37e0cd185f68705194baf8bedb48",
+  "source_tree_hash": "sha256:9aef942540c8d6a3c874d6348c9ff9f7846036196894099fd7908433be42f830",
   "hash_algorithm": "sha256",
   "page_count": 415,
   "manifest_entry_count": 415,
@@ -383,7 +383,7 @@
       "title": "Alfie 'Bitcoin Kid' Blaze",
       "page_exists": true,
       "page_type": "lore",
-      "current_word_count": 4236,
+      "current_word_count": 6558,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -392,10 +392,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:b45fa2df3d3c81f6f96af22a5ac9cc44471dcda2ce7ff73b354cbe564d8ebd19",
-      "article_content_hash": "sha256:77bbdccb1d108795969e743b7ff58e6a8d0167f5de6d9989e0cf698cf0ff20c1",
-      "article_markup_hash": "sha256:20541feca136e19c1c22bdc0e7d1f14389b52827138bab83c1d27f4b566983dc",
-      "git_blob_oid": "a34e86cdd1799face1bf0c9c712853ddb430d8cf",
+      "content_hash": "sha256:0e24d17274a4e413600a7e8820ff2644be4371c5ef7cd80e8aeac7057e77e446",
+      "article_content_hash": "sha256:667e19f94fea94ea8114ddd81c1986fa893aabfdb0ec238fc7de991ce0d1609a",
+      "article_markup_hash": "sha256:070d95af8e53ce352970641a5c6f6aa762814e331a69dc9808d894c61807cb65",
+      "git_blob_oid": "dced21a3ca07dec3d56edf2411e129728c24e49d",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -416,11 +416,11 @@
         "wiki/bibles/alfie-the-bitcoin-kid-blaze.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 3 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 4 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/alfie-the-bitcoin-kid-blaze.json; it is not automatically the unavailable Tier 4 modern bible."
       ],
       "content_owner": "canon",
-      "canon_revision": 3,
+      "canon_revision": 4,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -12124,7 +12124,7 @@
       "title": "Jodie ZOOM 2000",
       "page_exists": true,
       "page_type": "character",
-      "current_word_count": 4202,
+      "current_word_count": 5984,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -12133,10 +12133,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:6ad2db0d4894f264b66df6b47b9bb9d37d0436d6e63fa354b5b7f8d77f1c96ea",
-      "article_content_hash": "sha256:b4fb77de0874807f7572a185092d0591c72136b65bc44b8985eb240795b2bc21",
-      "article_markup_hash": "sha256:345bbfd3b8e659bd34783a216b86cd5fca6630400639353d99552ebdbae1372e",
-      "git_blob_oid": "491d2fab8d86a123e9aa95421285f1638159d871",
+      "content_hash": "sha256:e502a9da82ffa5c57b310ccdf279ad6e4e0eba0358ed3b14a4a81f0336188935",
+      "article_content_hash": "sha256:15d0c80bd431fb6357e907e3a342c717210f74c9dbe6960f7bfa2f1baceb3895",
+      "article_markup_hash": "sha256:5af116a43ae370e1e6df157ac577a0bdee001cd5f3ed0192dc1f0bbe6e5fe354",
+      "git_blob_oid": "d89611ddd9fb356841f061a1cc9cc35805221c0e",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -12155,12 +12155,12 @@
         "wiki/bibles/jodie-zoom-2000.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 4 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 5 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/jodie-zoom-2000.json; it is not automatically the unavailable Tier 4 modern bible.",
         "The requested modern Tier 4 subject bible is not separately identifiable in this checkout; canon classification remains a human-review item."
       ],
       "content_owner": "canon",
-      "canon_revision": 4,
+      "canon_revision": 5,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -13350,7 +13350,7 @@
       "title": "NULL THE PROPHET When a surviving record can no longer tell anyone what happened",
       "page_exists": true,
       "page_type": "character",
-      "current_word_count": 5027,
+      "current_word_count": 6370,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -13359,10 +13359,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:a458212b1b64cbc64a66e83a01e25380d5aac23f9834401890fb77b24cc1565c",
-      "article_content_hash": "sha256:4002ea1e8bb05074ca7b6c77c8b32233ff8c15635ea9acfe65e2de9f814c93ec",
-      "article_markup_hash": "sha256:077e3068f3c17c7a2c757d3f7c27bfc53ffbb91142a4a4bfbcbc23ec4610b34a",
-      "git_blob_oid": "9bce27960a058e19db5dad84d7653e21dc66a362",
+      "content_hash": "sha256:f31964790964497bd81e08a6a49d252a63f81bf15babc183f4a83e8e19e5fdb7",
+      "article_content_hash": "sha256:ccf2e90b31f99e9532c58d507445f7c5ec31623c96cce09c45de9feee1b42451",
+      "article_markup_hash": "sha256:4c361b90a5576d625a0ccd7869d4166b80f0c054d97449d0d2756e04625ca604",
+      "git_blob_oid": "ab8be94ba2c0a6d06ae1e40810c58bcbb9ada99f",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -13383,11 +13383,11 @@
         "wiki/bibles/null-the-prophet.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 4 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 5 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/null-the-prophet.json; it is not automatically the unavailable Tier 4 modern bible."
       ],
       "content_owner": "canon",
-      "canon_revision": 4,
+      "canon_revision": 5,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -13841,7 +13841,7 @@
       "title": "Queen Sarah P-fly",
       "page_exists": true,
       "page_type": "character",
-      "current_word_count": 4336,
+      "current_word_count": 6534,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -13850,10 +13850,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:05280c1380c7185b27604ec7f71a359ee9fc990025b05d41fc5506d9170c3156",
-      "article_content_hash": "sha256:647c2b81fcd1fd26169c9d6747844ad6a97b5e46dbe96d727ebeffa84ff10490",
-      "article_markup_hash": "sha256:b295e26c625ea8e1f3508afb123684482d388d7ea3beeca43f780b29a3f61937",
-      "git_blob_oid": "d43a8a3cb5f55bbf0e015961e2c37e4acf56ef47",
+      "content_hash": "sha256:344809cb06b62ba7078d64d76a16f36714d4cee3b6edfd9d7fbd7fcb8caf21fe",
+      "article_content_hash": "sha256:bda01286076a4652d1d69afff2c575ef5d0bf7a4aab999be3b127559f9ba8e25",
+      "article_markup_hash": "sha256:65166cccded2888bd06bbeb988f1387761de577dcee775e2493030019e9922f5",
+      "git_blob_oid": "857e60c712adfb2d814cac9c8aaa6c81b460e848",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -13872,12 +13872,12 @@
         "wiki/bibles/queen-sarah-p-fly.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 4 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 5 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/queen-sarah-p-fly.json; it is not automatically the unavailable Tier 4 modern bible.",
         "The requested modern Tier 4 subject bible is not separately identifiable in this checkout; canon classification remains a human-review item."
       ],
       "content_owner": "canon",
-      "canon_revision": 4,
+      "canon_revision": 5,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -14196,7 +14196,7 @@
       "title": "SatoRebel",
       "page_exists": true,
       "page_type": "character",
-      "current_word_count": 2286,
+      "current_word_count": 3343,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -14205,10 +14205,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:b49724797e59f2aeaae735be3fd668e9d25f139a22417c0d0cde90cc9733b1c2",
-      "article_content_hash": "sha256:7ea75ebfc36f2c2308a837771bdae92402fbb239f186dc22448d89e1fba99055",
-      "article_markup_hash": "sha256:e3d91504efbf2cc51b7d310b25f2dabb3f05be1e9facd7a72837f967b7742bc9",
-      "git_blob_oid": "4572362c17934d1742d2fbbd3e4a1bfcf773fb1f",
+      "content_hash": "sha256:a98dc1801ccac51334e9378c3d3f0a9099b4182111d7701f31b5d82769cc6757",
+      "article_content_hash": "sha256:9a6c83c8c7c72b7dbd899426ee6a1db97ddcee4503fbf102ee7a425252ac9063",
+      "article_markup_hash": "sha256:08aec6179912b2ad9da19dc83832e832915a9575f08921ecb1670e0d1cdc1a95",
+      "git_blob_oid": "e48bd1391fbcdfbf664b5a075c1ebbe4e975bf26",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -14227,12 +14227,12 @@
         "wiki/bibles/satorebel.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 2 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/satorebel.json; it is not automatically the unavailable Tier 4 modern bible.",
         "The requested modern Tier 4 subject bible is not separately identifiable in this checkout; canon classification remains a human-review item."
       ],
       "content_owner": "canon",
-      "canon_revision": 1,
+      "canon_revision": 2,
       "canon_source_tier": "first-witness+w81"
     },
     {
