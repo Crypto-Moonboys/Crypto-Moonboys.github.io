@@ -10,7 +10,7 @@ GK approved the delivered Sarah/Alfie/Jodie/NULL/SatoRebel depth proposal and in
 
 ## Scope and source distinction
 
-Five existing character routes are extended. All earlier paragraphs, heading IDs, artwork, script order, engagement mounts and useful lore are retained. Existing contents menus are completed and extended; NULL receives native contents for its long article. Each canonical article advances its revision once. Search-only subject metadata, descriptions, ownership inventory and publishing surfaces are regenerated without changing the generator or relationship-token contract.
+Five existing character routes are extended. All earlier paragraphs, heading IDs, artwork, script order, engagement mounts and useful lore are retained. Existing contents menus are completed and extended, including NULL's historical `character-contents` disclosure after its hero. Each canonical article advances its revision once. Search-only subject metadata, descriptions, ownership inventory and publishing surfaces are regenerated without changing the generator or relationship-token contract.
 
 The new story develops the current main biographies, published canon-foundation decisions, adult-character-lives ledger and Black Dividend — Last Loading continuity. The supplied Watchmen analysis motivates sustained contradiction, consequences and independent supporting perspectives. It supplies no Moonboys event or borrowed character identity. The current fiction is original development, not recovered W81 material or real-person biography. The retired ZIP remains retired. The nine witnessed Books are unchanged.
 
@@ -97,3 +97,13 @@ Final article word deltas exclude contents and strip markup equally on base and 
 | Total | 19,638 | 28,006 | 8,368 |
 
 The five 88-word authorship notes account for the difference between the narrative-section total and the actual added article text. Existing lore is extended rather than replaced. The separate story bible adds 2,747 development words.
+
+## Review follow-up — one contents menu per character
+
+Codex review of `c1de14815eaf3d82608e6fc72fdf6f07f28257eb` identified a duplicate contents menu on NULL. The initial insertion looked only for `wiki-contents`, missed the existing `character-contents` disclosure and split the hero after its kicker. The initial source audit likewise checked the new menu without counting both disclosure styles. Its completeness claim did not establish uniqueness.
+
+The correction removes the inserted menu and extends the original styled disclosure after the complete hero. It preserves the original header byte for byte and all narrative paragraphs. The sole contents menu now covers all 29 headings, including the adult and Necessary Monsters sections, in article order. The authored revision remains 5 within this unmerged batch; the ownership inventory and discovery outputs are regenerated for the corrected markup.
+
+`scripts/wiki-navigation-backfill-rendering.test.mjs` now checks the five actual character articles for exactly one contents disclosure and one labelled navigation landmark, all heading targets in order, and placement after the complete hero where present. The regression fails on the reviewed version with two NULL disclosures, then passes with the correction. It does not depend on one particular contents class. The source audit also checks uniqueness across disclosure styles and exact preservation of NULL's hero.
+
+After correction, the complete isolated wiki domain again exits 0 with 562 developed-subject and 58 core-history queries passing. The graph integrity, source preservation, syntax and whitespace checks also pass. The article word totals above remain unchanged because they exclude contents navigation. Full desktop/mobile visual rendering remains unverified; this correction does not claim a successful browser preview.

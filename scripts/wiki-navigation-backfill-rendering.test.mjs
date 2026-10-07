@@ -253,4 +253,26 @@ assert.ok(migrationCss.includes('#toc:not(details)') && migrationCss.includes('.
   'legacy TOC hiding excludes native details disclosures');
 assert.doesNotMatch(migrationCss, /(?:#toc|\.toc)\s*,/, 'no blanket TOC hiding can override the native disclosure');
 
+// Expanded biographies must expose one complete authored contents landmark.
+// Inspect all disclosure styles, including NULL's historical character menu.
+for (const slug of ['queen-sarah-p-fly', 'alfie-bitcoin-kid-blaze', 'jodie-zoom-2000', 'null-the-prophet', 'satorebel']) {
+  const html = fs.readFileSync(path.join(process.cwd(), 'wiki', `${slug}.html`), 'utf8');
+  const article = html.match(/<!-- CANONICAL_CONTENT:BEGIN -->([\s\S]*?)<!-- CANONICAL_CONTENT:END -->/)?.[1];
+  assert.ok(article, `${slug}: canonical article exists`);
+  const disclosures = [...article.matchAll(/<details\b[^>]*>[\s\S]*?<\/details>/gi)];
+  const menus = disclosures.filter(match => /<nav\b[^>]*\baria-label=["']Article contents["']/i.test(match[0]));
+  assert.equal(menus.length, 1, `${slug}: exactly one article contents disclosure`);
+  assert.equal((article.match(/<nav\b[^>]*\baria-label=["']Article contents["']/gi) || []).length, 1,
+    `${slug}: contents navigation landmark is not duplicated`);
+  const headings = [...article.matchAll(/<h2\b[^>]*\bid=["']([^"']+)["']/gi)].map(match => match[1]);
+  assert.deepEqual(hrefs(menus[0][0]), headings.map(id => `#${id}`),
+    `${slug}: contents cover every section in article order`);
+  const hero = article.match(/<header\b[^>]*>[\s\S]*?<\/header>/i);
+  if (hero) {
+    assert.ok(menus[0].index >= hero.index + hero[0].length,
+      `${slug}: contents follow the completed hero, including its title and introduction`);
+    assert.doesNotMatch(hero[0], /<details\b/i, `${slug}: no contents disclosure splits the hero`);
+  }
+}
+
 console.log('wiki-navigation-backfill-rendering.test.mjs passed');
