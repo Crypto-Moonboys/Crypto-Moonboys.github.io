@@ -17,7 +17,8 @@ GitHub main and the local fetched main both resolved to `bcd71915d464df3195464cd
 | In-game guide → website / About → website / guide ↔ About | Existing complete-guide action retained; About links to the wiki overview. All destinations remain public read-only routes. |
 | `/crypto-moonboy-pets-leaderboard.html` | Corrected seasonal score provenance to the earning competition quarter, including retained pets. Kept the factual historical-score reconciliation limitation while removing the obsolete beta label. |
 | `/games/telegram/index.html` and Worker `MOONPET_MINI_APP_URL` | Versioned game launch updated to `20261007-guidance-v1`. |
-| `/games/index.html`, `/community.html`, `js/crypto-moonboy-pets.js`, wiki search/index and relationship graphs | Existing Moonpet entry/guide/wiki/leaderboard links and live summary hooks inspected; targets remain valid. No gameplay instructions needed changing in those links. Unrelated game/beta copy is outside scope. |
+| `/games/index.html`, `/community.html`, `js/crypto-moonboy-pets.js` | Existing Moonpet entry/guide/wiki/leaderboard links and live summary hooks inspected; targets remain valid. No gameplay instructions needed changing in those links. Unrelated game/beta copy is outside scope. |
+| Wiki search/index and relationship graphs | Regenerated the search index plus dependent link and full/mobile graph artifacts with `node scripts/generate-publishing-surfaces.mjs`. Moonpet's indexed signals now reflect the rewritten article: 1,338 words, 16 headings, rank 292 (previously 3,345 / 46 / 309). Other index entries retain their content. Related graph ordering changes follow the corrected rank. |
 
 `js/moonpet-guide.js` is the common source for website and in-game How to Play/About. `node scripts/sync-moonpet-guide.mjs` pre-renders public HTML for indexing and JavaScript-free reading; `--check` detects copy drift. Both the wiki and Worker CI domains run the numerical/copy contracts; visual CI runs the new help browser test. The wiki content inventory was regenerated; the rewrite-audit report was unchanged.
 
@@ -52,6 +53,7 @@ Validation results are also recorded in the PR. Browser checks use the real clie
 | --- | --- |
 | Shared guidance contracts | All seven tests pass: website/game parity, entry/slots/incubation, every evolution gate, care effects/limits, objectives/caps/tier rewards, activity/combat values and excluded promises. |
 | Generated content and syntax | Shared-copy `--check`, wiki content-state `--check`, JavaScript syntax checks and `git diff --check` pass. |
+| Search and publishing artifacts | Full publishing generator passes; graph publishing integrity, Moonpet surface contracts, index drift regression and wiki search tests pass against regenerated artifacts. A repeat generation leaves the artifacts unchanged. |
 | Website and in-game help browser | Pass at 360, 390 and 1280 pixels: sections, anchors, modal cross-navigation, scrolling, keyboard topics, focus trap/return, no overflow or JavaScript errors, and no player-state requests from signed-out help. |
 | Signed-in Mini App browser | Both mobile sizes pass the real SQLite-backed player loop, including guide/About navigation, care, seven-mission claims, objectives, saved rewards, Contracts, raids, Finale, spaces and deletion. |
 | Native radio / public surfaces | Dance/radio browser checks and public Moonpet synchronization pass; Community XP chart checks also pass. |
@@ -63,12 +65,14 @@ The shell parity audit initially counted the pre-existing ignored `public-site/w
 
 The repository marks this wiki article as protected prose. `scripts/audit-manual-content-preservation.mjs:435` states: “A maintainer must apply the canon-prose-change-approved PR label; automated/default writes remain rejected.” Accordingly, `npm run ci:wiki` is blocked at that governance gate until maintainer review applies the label. No approval environment variable or self-applied approval label was used. Remaining wiki checks were run individually and passed.
 
+The initial PR's remote `CI / ci-wiki` and `Graph Publishing Integrity / verify` logs both confirm that same protected-prose gate. Graph/index parity passed before the latter reached the gate. Automated review also identified the omitted search-index regeneration; the follow-up commits all six affected generated publishing files. The PR body was corrected to the repository's required template and checked with the exact workflow validator, including explicit deployment fields and Hold merge.
+
 Production deployment provenance and a real Telegram session were not revalidated remotely; this is a current-main implementation audit with browser/Worker fixtures. No merge, deployment, production reward claim or database change was performed.
 
 ## Exact deployment requirements after review and merge
 
 1. A maintainer reviews the protected wiki prose, applies `canon-prose-change-approved`, and reruns the wiki checks. Merge only through the normal reviewed process.
-2. The main-branch `.github/workflows/pages.yml` pipeline publishes the website. Its `prepare-pages-artifact.mjs` includes root HTML, `wiki/`, `games/`, `js/` and `css/`: publish the changed pages, `js/moonpet-guide.js`, the Mini App runtime and CSS together. The CSS, guide JS, client JS, Telegram launcher and Worker launch URL all use `20261007-guidance-v1`. Do not publish a new HTML shell without its guide module.
+2. The main-branch `.github/workflows/pages.yml` pipeline publishes the website. Its `prepare-pages-artifact.mjs` includes root HTML, `wiki/`, `games/`, `js/` and `css/`: publish the changed pages, `js/moonpet-guide.js`, the Mini App runtime, CSS and regenerated search/link/graph artifacts together. The CSS, guide JS, client JS, Telegram launcher and Worker launch URL all use `20261007-guidance-v1`. Do not publish a new HTML shell without its guide module.
 3. Redeploy **only `moonboys-api`** from the clean merged main checkout using the approved provenance wrapper:
 
    ```sh
