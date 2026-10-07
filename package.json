@@ -59,8 +59,6 @@
     "express-rate-limit": "^8.5.1"
   },
   "overrides": {
-    "miniflare": {
-      "sharp": "$sharp"
-    }
+    "sharp": "$sharp"
   }
 }
