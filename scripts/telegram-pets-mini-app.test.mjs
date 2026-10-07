@@ -1,3 +1,5 @@
+import { createRequire } from 'node:module';
+const MoonpetGuide = createRequire(import.meta.url)('../js/moonpet-guide.js');
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
@@ -1408,7 +1410,7 @@ assert.match(worker, /const \[journeySummary, hydratedKaiju, seasonFinales\] = a
 assert.match(worker, /path === '\/telegram-pets\/app\/state'.*request\.method === 'POST'/s);
 assert.match(worker, /path === '\/telegram-pets\/app\/action'.*request\.method === 'POST'/s);
 assert.match(worker, /verifyTelegramMiniAppInitData\(body\.init_data/);
-assert.match(worker, /const MOONPET_MINI_APP_URL = `\$\{SITE_URL\}\/moonpet-game\.html\?v=20261006-radio-connect-v1`/);
+assert.match(worker, /const MOONPET_MINI_APP_URL = `\$\{SITE_URL\}\/moonpet-game\.html\?v=20261007-guidance-v1`/);
 assert.match(worker, /const TELEGRAM_GAMES_MENU_URL = `\$\{SITE_URL\}\/games\/telegram\/\?v=20260903-games-shell-v8`/,
   'default Telegram games menu must point at the current shell release');
 assert.match(worker, /const TELEGRAM_GAMES_MENU_TEXT = 'Games'/);
@@ -1507,22 +1509,21 @@ statusFrames.shift()();
 assert.equal(testStatusOutput.dataset.tone, 'danger');
 assert.equal(testStatusClasses.has('is-scrolling'), true, 'overflowing updates must activate the scrolling text track');
 assert.match(testStatusProperties['--status-scroll-duration'], /s$/, 'overflowing updates must receive a readable duration');
-assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20261006-option-guidance-v1/);
+assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20261007-guidance-v1/);
 assert.doesNotMatch(html, /moonpet-art-resolver\.js/, 'the game must not load the retired static background resolver');
 assert.match(html, /\/js\/moonpet-bot-art-loader\.js\?v=20261006-live-refresh-v5/);
 assert.match(html, /\/js\/moonpet-bot-art-renderer\.js\?v=20261002-audit-recovery-v2/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261006-inspiration-v1/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261007-guidance-v1/);
 assert.match(html, /role="button" aria-label="Interact with your animated Moonpet"/);
 assert.match(client, /data-utility="guide">HOW TO PLAY/);
 const guideMarkupSource = extractTestExport(client, 'guideMarkup');
 assert.ok(guideMarkupSource, 'guideMarkup helper must be extractable');
-const renderGuideMarkup = new Function('hasCombatUnlocked', `${guideMarkupSource}; return guideMarkup();`);
-const unlockedGuideMarkup = renderGuideMarkup(() => true);
-const lockedGuideMarkup = renderGuideMarkup(() => false);
-assert.match(unlockedGuideMarkup, /Arena and Kaiju are part of the current build\. Arena still needs a level 10 active Moonpet\./,
-  'the in-app guide must describe unlocked Arena/Kaiju copy according to shared combat capability');
-assert.match(lockedGuideMarkup, /Arena and Kaiju are current-build systems\. Kaiju requires a hatched active Moonpet, and Arena requires a hatched active Moonpet plus level 10\./,
-  'the in-app guide must describe locked Arena/Kaiju copy according to shared combat capability');
+const renderGuideMarkup = new Function('window', `${guideMarkupSource}; return guideMarkup();`);
+const unlockedGuideMarkup = renderGuideMarkup({ MoonpetGuide });
+const lockedGuideMarkup = renderGuideMarkup({ MoonpetGuide });
+assert.equal(unlockedGuideMarkup, lockedGuideMarkup, 'help documents requirements consistently for every unlock state');
+assert.match(lockedGuideMarkup, /Pet Arena<\/b> requires a hatched active Moonpet at level 10/);
+assert.match(lockedGuideMarkup, /Kaiju Sticker Battle<\/b> requires a hatched active Moonpet/);
 for (const [label, pattern] of [
   ['Pet', /PET|Pet/],
   ['Care', /care/i],
@@ -1535,12 +1536,12 @@ for (const [label, pattern] of [
   ['Kaiju', /Kaiju/],
   ['Progression', /evolution and season rewards|progression/i],
   ['Current navigation', /HOME[\s\S]*MISSIONS[\s\S]*EXPLORE[\s\S]*WORK[\s\S]*ECONOMY[\s\S]*PROFILE/],
-  ['Season Finale', /SEASON FINALE/],
+  ['Season Finale', /Season Finale/],
   ['Growth Mark and Weekly Crest', /Growth Mark[\s\S]*Weekly Crest/],
 ]) {
   assert.match(lockedGuideMarkup, pattern, `guideMarkup must include current-build vocabulary for ${label}`);
 }
-assert.match(lockedGuideMarkup, /6 \/\/ IDENTITY AND PROGRESSION/);
+assert.match(lockedGuideMarkup, /Pet Stages And Realistic Timing/);
 assert.doesNotMatch(lockedGuideMarkup, /Advanced Traits|Breeding|Lineage|Fusion|Sanctuary|Prestige|coming soon/, 'the in-app guide covers playable systems only');
 assert.match(client, /data-utility="leaderboard">OPEN FULL LEADERBOARD/);
 assert.match(html, /id="canvas-tools"[\s\S]*data-utility="audio"[\s\S]*data-utility="radio"[\s\S]*data-utility="sync"/);
@@ -1803,7 +1804,7 @@ for (const sdkInitData of [expired, tampered, 'auth_date=invalid&hash=' + 'a'.re
   assert.equal(entry.requests.length, 3, 'Read-only startup state requests retain their transient retry policy');
 }
 assert.match(html, /\/js\/api-config\.js\?v=20260813-first-party-api/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261006-inspiration-v1/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261007-guidance-v1/);
 // Season slot UI: timing, account/pet separation, unlock affordance, switching, and rejection copy.
 assert.match(client, /function renderSeasonSlots\(\)/, 'Mini App must render a focused season-slot summary');
 assert.match(client, /function render\(options\) \{\s*var editableState = options && options\.discardCallsignDraft \? null : captureEditableState\(\);[\s\S]*restoreEditableState\(editableState\);/, 'render must preserve only drafts that were not explicitly discarded');
@@ -2144,9 +2145,9 @@ assert.doesNotMatch(drawWorldSource, /drawLifecycleCeremony/);
 assert.match(client, /await showPendingNotices\(\);[\s\S]*?var actionAccepted = Boolean\(data\.result && data\.result\.accepted\);[\s\S]*?startLifecycleCeremony\(plannedCeremony\);/);
 assert.doesNotMatch(client, /TRANSMITTING|EXEC |STATE CACHE REFRESHED|FAULT DETECTED/,
   'normal action flow must not expose debug or engine language');
-assert.match(client, /if \(lifecycleCeremonyActive\(\)\) \{\s*tell\('LIFECYCLE REVEAL IN PROGRESS\.'/s);
-assert.match(client, /screen\.addEventListener\('click'[\s\S]*?if \(lifecycleCeremonyActive\(\)\)[\s\S]*?LIFECYCLE REVEAL IN PROGRESS/s);
-assert.match(client, /nav\.addEventListener\('click'[\s\S]*?if \(lifecycleCeremonyActive\(\)\)[\s\S]*?LIFECYCLE REVEAL IN PROGRESS/s);
+assert.match(client, /if \(lifecycleCeremonyActive\(\)\) \{\s*tell\('LIFECYCLE ANIMATION IN PROGRESS\.'/s);
+assert.match(client, /screen\.addEventListener\('click'[\s\S]*?if \(lifecycleCeremonyActive\(\)\)[\s\S]*?LIFECYCLE ANIMATION IN PROGRESS/s);
+assert.match(client, /nav\.addEventListener\('click'[\s\S]*?if \(lifecycleCeremonyActive\(\)\)[\s\S]*?LIFECYCLE ANIMATION IN PROGRESS/s);
 assert.match(client, /companionCombatActive\(state, activeScreen\) \|\| lifecycleCeremonyActive\(now\)/);
 assert.doesNotMatch(client, /Math\.random\(\)[^\n]*(?:ceremony|lifecycle)|(?:ceremony|lifecycle)[^\n]*Math\.random\(\)/i, 'Phase 6 lifecycle presentation must remain deterministic');
 
@@ -2253,7 +2254,7 @@ assert.match(worker, /dailyReservation \? dailyReservation\.current_room : Numbe
 assert.match(worker, /if \(!pool\.length\) pool = rooms/);
 assert.match(client, /'run_depth'/);
 assert.match(html, /20261002-audit-recovery-v2/);
-assert.match(worker, /20261006-radio-connect-v1/);
+assert.match(worker, /20261007-guidance-v1/);
 assert.match(client, /function scoreMotif\(\)/, 'audio must include authored screen motifs');
 assert.match(client, /function syncMoonpetScore\(\)/, 'authored score must follow audio and radio state');
 assert.match(client, /renderQuality = reducedMotion/, 'canvas quality must start from device capability');
@@ -2298,10 +2299,10 @@ assert.match(client, /story-decisions/, 'Story Chains need a branching surface')
 assert.match(client, /mission\.objective/, 'District Missions must render objectives');
 assert.match(client, /scene\.objective/, 'Story Chains must render objectives');
 assert.match(css, /\.district-mission/, 'District briefs need responsive styling');
-assert.match(client, /Districts show an objective/, 'the in-app guide must explain new district decisions');
-assert.match(guide, /18 authored encounters/, 'the complete guide must document district content');
-assert.match(guide, /12 authored scenes/, 'the complete guide must document story content');
-assert.match(guide, /100-room Standard Moon Run/, 'the complete guide must describe the current Moon Run');
+assert.match(lockedGuideMarkup, /District missions cost/, 'the in-app guide must explain new district decisions');
+assert.match(guide, /District missions cost/, 'the complete guide must document district decisions and costs');
+assert.match(guide, /Stories allow one rewarded step per chain per UTC day/, 'the complete guide must document story limits');
+assert.match(guide, /Standard Moon Run<\/b> in EXPLORE has 100 rooms/, 'the complete guide must describe the current Moon Run');
 assert.doesNotMatch(guide, /five-step/i, 'the complete guide must not describe the retired five-step run');
 
 assert.match(worker, /const PET_ARENA_MOVE_GUIDE/, 'Arena must expose one server-owned tactical move guide');
@@ -2320,8 +2321,8 @@ assert.match(worker, /serializePetKaijuCardPreview\(card, hydratedKaiju\?\.categ
 assert.match(client, /BATTLE CATEGORY/, 'Kaiju must state what the current duel values');
 assert.match(client, /ACTIVE ' \+ active/, 'Kaiju cards must emphasize their active score');
 assert.match(css, /\.combat-intent/, 'combat intelligence panels need responsive styling');
-assert.match(guide, /Player-vs-player intent always stays hidden/, 'the complete guide must document Arena fairness');
-assert.match(guide, /before either card locks/, 'the complete guide must explain informed Kaiju drafting');
+assert.match(guide, /player intent stays hidden until both lock/, 'the complete guide must document Arena fairness');
+assert.match(guide, /before cards lock/, 'the complete guide must explain informed Kaiju drafting');
 console.log('telegram-pets-mini-app.test.mjs passed');
 
 const eggSavedBossMarkup = nextGuidanceRuntime({ adopted: true, pet: {}, lifecycle: { phase: 'egg' },

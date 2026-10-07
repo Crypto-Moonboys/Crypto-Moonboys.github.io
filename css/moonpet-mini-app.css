@@ -838,6 +838,21 @@ button, input, select, textarea {
   letter-spacing: .14em;
 }
 
+.guide-step { margin-bottom: 8px; min-width: 0; overflow-wrap: anywhere; }
+.guide-step > summary {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  color: var(--ui-text);
+  font-weight: 600;
+}
+.guide-step > summary::before { content: '+'; margin-right: 8px; }
+.guide-step[open] > summary::before { content: '−'; }
+.guide-step p, .guide-step li { line-height: 1.65; }
+.guide-step li { margin-block: 8px; }
+.guide-step ul { padding-left: 20px; }
+
 .period-tabs {
   display: grid;
   grid-template-columns: repeat(4, minmax(0,1fr));

@@ -1360,22 +1360,8 @@
 
   // TEST-EXPORT: guideMarkup:start
   function guideMarkup() {
-    var combatGuideCopy = hasCombatUnlocked()
-      ? 'Arena and Kaiju are part of the current build. Arena still needs a level 10 active Moonpet.'
-      : 'Arena and Kaiju are current-build systems. Kaiju requires a hatched active Moonpet, and Arena requires a hatched active Moonpet plus level 10.';
-    return '<div class="guide-step"><strong>1 // WAKE THE SECRET BOT</strong>Initialise EGGYONE, then use at least three kinds of care. Its assigned identity remains UNKNOWN through Stages 0, 1 and 2.</div>' +
-      '<div class="guide-step"><strong>2 // PLAY THE CURRENT BUILD</strong>HOME handles care and Play Now. MISSIONS holds contracts, Daily Journey, Weekly Journey and the Season Finale. EXPLORE contains runs, districts and combat. WORK handles jobs and timers; ECONOMY holds gear and crafting; PROFILE holds identity, season rewards, ranks and this guide.</div>' +
-      '<div class="guide-step"><strong>3 // KEEP NEEDS STABLE</strong>Feed, play, clean and rest. Check energy, hunger and cooldowns before training or starting a demanding route. A timed activity can lock some actions until you claim or cancel it. Care and daily routines build Pet XP, specialist XP, personality, aptitudes and equipment mastery. Use Play Now to find an available route while care cools down.</div>' +
-      '<div class="guide-step"><strong>4 // FOLLOW THE ROUTE</strong>HOME recommends the next move. In MISSIONS, complete the official daily objectives to earn a Growth Mark at the displayed target. Finish every Weekly Journey objective to earn a Weekly Crest. Keep claiming completed missions, achievements and the Daily Cache; the all-missions daily bonus is a separate claim. Daily resets use UTC. Each panel shows its own reset and requirements.</div>' +
-      '<div class="guide-step"><strong>5 // BUILD YOUR LOADOUT</strong>ECONOMY contains equipment, materials, bounties, market offers, inventory and upgrades. Equip an item to use its bonus; eligible actions build mastery. Set a crafting goal, follow its material routes and craft or use the result. Check storage space before buying a bundle. Districts show an objective, opponent and route before you commit. ' + combatGuideCopy + ' Moon Run reaches 100 rooms—extract to bank unbanked rewards.</div>' +
-      '<div class="guide-step"><strong>6 // IDENTITY AND PROGRESSION</strong>The canonical identity name is revealed when server-authoritative Stage 3 begins. PROFILE tracks evolution and season rewards. Growth Marks, Weekly Crests and the displayed pet-age requirements advance your lifetime Journey. Pet level and evolution are separate; use the live requirements shown for your selected pet.</div>' +
-      '<div class="guide-step"><strong>CANVAS CONTROLS</strong>The cyan speaker toggles game audio, the purple radio plays or stops GraffPUNKS Radio, and the amber arrows refresh your live save. They sit at the top right of the canvas. Dance starts the station for its animation and stops it when the pose finishes. The Radio control overrides this automatic stop; tap it to play or stop, or retry after a connection error. Reduced-motion mode keeps the buttons steady.</div>' +
-      '<div class="guide-step"><strong>CURRENCIES</strong>Pet XP raises level. Moon Gold buys common upgrades. Gems unlock premium routes. Style unlocks cosmetics. Energy powers demanding actions.</div>' +
-      '<div class="guide-step"><strong>CONTINUING CONTRACTS</strong>After hatching, open MISSIONS or Play Now. Pick a quest, build, difficulty and route length. Standard routes have six rooms and two upgrade drafts; long routes have ten rooms and four drafts. Later rooms get harder, and long routes have higher targets. Complete the whole route to earn rank. New quests continue without cooldowns or pet energy costs. The first three successful contracts per account each UTC day qualify for up to 20 Pet XP each, within your normal XP cap, for either length. Every choice is saved online. Contract rank is separate from pet level, Daily Journey and leaderboards.</div>' +
-      '<div class="guide-step"><strong>DAILY RUN TACTICS</strong>New official attempts show clear chance and score for each approach. Safe routes trade score for better odds; bold routes offer more score at higher risk. After rooms 3 and 6, choose Guardian, Striker or Scavenger, or continue without an upgrade. Tactics change later odds and run score only. One official attempt per account each UTC day still applies. Reach the final room and defeat its boss to finish. Extracting ends that day’s attempt early. If a saved ending needs settlement, use FINISH SAVED DAILY RUN to recover it without spending a new attempt.</div>' +
-      '<div class="guide-step"><strong>BOSSES AND SEASON FINALE</strong>EXPLORE holds the weekly boss and seasonal raid; read the current requirements, choose an approach and claim any saved victory reward. In MISSIONS, the Season Finale unlocks when your pet meets the final evolution, Growth Mark and Weekly Crest requirements shown. Pick a build, read the boss intent, then Strike, Guard or use your special options. The battle saves between turns, uses separate battle health and supplies, and allows free retries after defeat. Win and claim its reward once per pet per competition quarter. Earlier saved fights and rewards remain recoverable; lifetime progress and repeatable contracts continue.</div>' +
-      '<div class="guide-step"><strong>SAVES, PETS AND RANKS</strong>Each pet keeps its own progression and loadout. Switching pets does not reset account-wide cooldowns or official daily attempts. Saved runs and rewards stay with their source pet. Use Refresh after a connection interruption. PROFILE opens daily, weekly, seasonal, all-time and run-depth leaderboards; contract rank is separate from Pet XP ranks.</div>' +
-      '<div class="button-grid one"><button type="button" class="terminal-button" data-open-full-guide>OPEN COMPLETE WEBSITE GUIDE<span class="button-purpose">Open the website guide for more detail on progression and activities.</span></button></div>';
+    return window.MoonpetGuide.game(window.MoonpetGuide.sections) +
+      '<div class="button-grid one"><button type="button" class="terminal-button" data-open-full-guide>OPEN COMPLETE WEBSITE GUIDE<span class="button-purpose">Read the same rules on the website.</span></button><button type="button" class="terminal-button" data-utility="about">ABOUT MOONPET OS<span class="button-purpose">Learn about persistent companions and competition.</span></button></div>';
   }
   // TEST-EXPORT: guideMarkup:end
 
@@ -1417,9 +1403,13 @@
     if (kind === 'guide') {
       utilityTitle.textContent = 'HOW TO PLAY MOONPET OS';
       utilityContent.innerHTML = guideMarkup();
+    } else if (kind === 'about') {
+      utilityTitle.textContent = 'ABOUT MOONPET OS';
+      utilityContent.innerHTML = window.MoonpetGuide.game(window.MoonpetGuide.about) + '<div class="button-grid one"><button type="button" class="terminal-button" data-utility="guide">HOW TO PLAY<span class="button-purpose">Read exact requirements, actions and save recovery.</span></button><a class="terminal-button" href="https://cryptomoonboys.com/wiki/crypto-moonboy-pets.html#moonpet-about" target="_blank" rel="noopener noreferrer">WEBSITE ABOUT<span class="button-purpose">Open the public Moonpet overview.</span></a></div>';
     } else {
       loadLeaderboard('seasonal');
     }
+    utilityContent.scrollTop = 0;
     var close = utilityLayer.querySelector('[data-utility-close]');
     if (close) close.focus({ preventScroll: true });
   }
@@ -3081,7 +3071,7 @@
   // TEST-EXPORT: notificationControls:end
 
   function renderProfile() {
-    var helpPanel = panel('HOW TO PLAY', '<div class="line muted">Care, daily and weekly goals, runs, bosses, rewards and the season finale.</div><div class="button-grid one"><button type="button" class="terminal-button" data-utility="guide">HOW TO PLAY<span class="button-purpose">Read how care, quests, battles and rewards work before choosing a route.</span></button></div>', 'how-to-play');
+    var helpPanel = panel('HOW TO PLAY', '<div class="line muted">Care, daily and weekly goals, runs, bosses, rewards and the season finale.</div><div class="button-grid one"><button type="button" class="terminal-button" data-utility="guide">HOW TO PLAY<span class="button-purpose">Read how care, quests, battles and rewards work before choosing a route.</span></button><button type="button" class="terminal-button" data-utility="about">ABOUT MOONPET OS<span class="button-purpose">Learn about persistent companions and competition.</span></button></div>', 'how-to-play');
     if (!state.pet) return helpPanel + panel('IDENTITY CORE', '<div class="line muted">INITIALISE A MOONPET TO UNLOCK THIS MODULE.</div>');
     var guidance = state.guidance || {};
     var identity = guidance.identity || {};
@@ -3482,7 +3472,7 @@
     var after = lifecycleStateSnapshot(afterState);
     var actionKey = String(action || '').toLowerCase();
     if (actionKey === 'adopt' && !before.adopted && after.phase === 'egg') {
-      return { kind: 'egg', title: 'SECRET BOT', primary: 'Ready for care', secondary: 'Your choices shape the reveal', detail: '', duration: 5200 };
+      return { kind: 'egg', title: 'SECRET BOT', primary: 'Ready for care', secondary: 'Build signal; identity unlocks at Stage 3', detail: '', duration: 5200 };
     }
     if (before.phase === 'egg' && after.phase === 'young' && after.speciesId) {
       return {
@@ -3709,7 +3699,7 @@
       return;
     }
     if (lifecycleCeremonyActive()) {
-      tell('LIFECYCLE REVEAL IN PROGRESS.');
+      tell('LIFECYCLE ANIMATION IN PROGRESS.');
       haptic('light');
       return;
     }
@@ -3894,7 +3884,7 @@
   screen.addEventListener('click', function (event) {
     var utility = event.target.closest('[data-utility]');
     if (utility) {
-      if (utility.dataset.utility === 'guide' || utility.dataset.utility === 'leaderboard') openUtility(utility.dataset.utility);
+      if (utility.dataset.utility === 'guide' || utility.dataset.utility === 'about' || utility.dataset.utility === 'leaderboard') openUtility(utility.dataset.utility);
       else if (utility.dataset.utility === 'retry') window.location.reload();
       else if (utility.dataset.utility === 'module-retry') hydrateFullState(activeScreen, { manual: true });
       return;
@@ -3902,7 +3892,7 @@
     var petGreeting = event.target.closest('[data-pet-greet]');
     if (petGreeting) { canvas.dispatchEvent(new CustomEvent('moonpet:greet')); return; }
     if (lifecycleCeremonyActive()) {
-      tell('LIFECYCLE REVEAL IN PROGRESS.');
+      tell('LIFECYCLE ANIMATION IN PROGRESS.');
       haptic('light');
       return;
     }
@@ -4014,6 +4004,11 @@
       closeUtility();
       return;
     }
+    var utility = event.target.closest('[data-utility]');
+    if (utility && ['guide', 'about'].includes(utility.dataset.utility)) {
+      openUtility(utility.dataset.utility);
+      return;
+    }
     var period = event.target.closest('[data-leaderboard-period]');
     if (period) { loadLeaderboard(period.dataset.leaderboardPeriod); return; }
     if (event.target.closest('[data-open-full-guide]')) openExternalGuide();
@@ -4023,7 +4018,7 @@
     if (utilityLayer.hidden) return;
     if (event.key === 'Escape') { closeUtility(); return; }
     if (event.key !== 'Tab') return;
-    var focusable = Array.from(utilityLayer.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+    var focusable = Array.from(utilityLayer.querySelectorAll('summary, a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])')).filter(function (entry) { return entry.getClientRects().length > 0; });
     if (!focusable.length) { event.preventDefault(); return; }
     var first = focusable[0];
     var last = focusable[focusable.length - 1];
@@ -4041,7 +4036,7 @@
     var target = event.target.closest('[data-screen]');
     if (!target || busy) return;
     if (lifecycleCeremonyActive()) {
-      tell('LIFECYCLE REVEAL IN PROGRESS.');
+      tell('LIFECYCLE ANIMATION IN PROGRESS.');
       haptic('light');
       return;
     }
@@ -4512,7 +4507,7 @@
         '<div class="line">MOONPET OS READS YOUR LIVE SAVE ONLY AFTER TELEGRAM VERIFIES YOUR IDENTITY.</div>' +
         '<div class="line muted">No player data was requested in this browser. Open the signed Mini App, then initialise or resume your Moonpet.</div>' +
         '<div class="button-grid one"><a class="terminal-link-button" href="https://t.me/WIKICOMSBOT?start=moonpet" target="_blank" rel="noopener noreferrer">OPEN MOONPET OS IN TELEGRAM</a>' +
-        '<button type="button" class="terminal-button" data-utility="guide">HOW TO PLAY<span class="button-purpose">Read how care, quests, battles and rewards work before choosing a route.</span></button></div>', 'telegram-auth');
+        '<button type="button" class="terminal-button" data-utility="guide">HOW TO PLAY<span class="button-purpose">Read how care, quests, battles and rewards work before choosing a route.</span></button><button type="button" class="terminal-button" data-utility="about">ABOUT MOONPET OS<span class="button-purpose">Learn about persistent companions and competition.</span></button></div>', 'telegram-auth');
       await typeBoot(['AUTHENTICATION NOT FOUND', 'OPEN THE MINI APP INSIDE TELEGRAM', 'NO PLAYER DATA WAS READ'], { speed: 9, hold: 800 });
       return;
     }
