@@ -8,6 +8,7 @@ import { PET_WEEKLY_JOURNEY_OBJECTIVES } from '../workers/moonboys-api/pets/week
 import { PET_DAILY_CHALLENGES } from '../workers/moonboys-api/pets/daily-moon-run.js';
 import { PET_ARENA_MIN_LEVEL, PET_WEEKLY_BOSS_MIN_LEVEL } from '../workers/moonboys-api/pets/combat-eligibility.js';
 import { PET_JOB_COOLDOWN_SECONDS, PET_ADVENTURE_COOLDOWN_SECONDS } from '../workers/moonboys-api/pets/roguelite-foundation.js';
+import { readDailyCompletion } from '../workers/moonboys-api/pets/completion-features.js';
 
 const guide = createRequire(import.meta.url)('../js/moonpet-guide.js');
 const read = file => fs.readFileSync(new URL('../' + file, import.meta.url), 'utf8');
@@ -22,6 +23,8 @@ test('website guide and About blocks are exactly the shared in-game copy', () =>
   const wiki = read('wiki/crypto-moonboy-pets.html');
   assert.ok(howTo.includes(guide.website(guide.sections, 'section')));
   assert.ok(wiki.includes(guide.website(guide.about, 'wiki-section')));
+  const unsharedWiki = wiki.replace(/<!-- MOONPET_(?:ABOUT|START):BEGIN -->[\s\S]*?<!-- MOONPET_(?:ABOUT|START):END -->/g, '');
+  assert.doesNotMatch(unsharedWiki, /choose Delete|Deletion archives|Delete And Start A New Pet/i, 'deletion instructions must stay in the shared guide block');
   const client = read('js/moonpet-mini-app.js');
   const helper = client.split('// TEST-EXPORT: guideMarkup:start')[1].split('// TEST-EXPORT: guideMarkup:end')[0];
   const markup = new Function('window', helper + '; return guideMarkup();')({ MoonpetGuide: guide });
@@ -78,6 +81,37 @@ test('care effects, rewards and account cooldowns match the Worker', () => {
   assert.deepEqual(['energy_drink', 'dance', 'cuddles'].map(k => [worker.PET_ACTIONS[k].energy, worker.PET_ACTIONS[k].happiness]), [[28, 0], [0, 18], [0, 8]]);
   for (const k of ['energy_drink', 'dance', 'cuddles']) for (const field of ['pet_xp', 'community_xp', 'gold', 'crystals', 'style_tokens']) assert.equal(worker.PET_ACTIONS[k][field], 0);
   assert.match(plain(section('audio')), /Inspire Bot is the silent incubation option.*adds 2 inspiration signal and rhythm affinity/);
+  assert.match(lifecycle, /temperament: TEMPERAMENTS\[bytes\[11\] % TEMPERAMENTS\.length\]/);
+  assert.match(plain(section('audio')), /Temperament is assigned separately and does not change with these choices/);
+  assert.doesNotMatch(plain(section('audio')), /choices influence.*identity and temperament/);
+});
+
+test('mission advice matches accepted-action goals and the retained 50-Gold balance target', async () => {
+  const day = '2026-10-07';
+  async function completion(counts, gold) {
+    let bits = 0;
+    const db = { prepare(sql) { return {
+      bind(...args) { this.args = args; return this; },
+      async run() {
+        assert.match(sql, /INSERT INTO telegram_pet_daily_completion/);
+        bits |= this.args[2];
+        return { success: true, meta: { changes: 1 } };
+      },
+      async all() { return { success: true, results: [{ utc_day: day, progress_bits: bits }] }; }
+    }; } };
+    return readDailyCompletion(db, 'guide-player', day, counts, 0, gold);
+  }
+  const base = { feed: 1, play: 1, clean: 1, train: 1, trade: 1, buy: 1 };
+  for (const route of ['adventure', 'run_extract', 'run_complete', 'daily_moon_run', 'district_mission', 'event_chain', 'seasonal_boss']) {
+    assert.equal((await completion({ ...base, [route]: 1 }, 50)).ready, true, route);
+  }
+  assert.equal((await completion({ ...base, adventure: 1 }, 49)).ready, false);
+  const { train, ...withoutInstantTrain } = base;
+  assert.equal((await completion({ ...withoutInstantTrain, activity_claim: 1, adventure: 1 }, 50)).ready, false, 'timed activity does not tick instant Train');
+  assert.equal((await completion({ ...base, contract_complete: 1 }, 50)).ready, false, 'Contracts do not tick adventure');
+  assert.match(plain(section('missions')), /One Feed also counts toward the Feed \+ Play \+ Clean goal/);
+  assert.match(plain(section('missions')), /Timed Train does not complete the instant Train mission/);
+  assert.match(plain(section('missions')), /Gold carried over from an earlier day counts.*do not need to earn 50 new Gold/);
 });
 
 test('Journey thresholds, objectives, XP caps and tier rewards match code', () => {
