@@ -25,10 +25,10 @@
     "w51.txt",
     "w52.txt"
   ],
-  "existing_wiki_pages_sectionally_reviewed": 7,
+  "existing_wiki_pages_sectionally_reviewed": 3,
   "existing_wiki_pages_updated": 50,
   "new_wiki_articles": 9,
-  "source_level_conflicts_interpreted": 3,
+  "source_level_conflicts_interpreted": 4,
   "major_historical_retcons_published": 0,
   "new_characters": 4,
   "faction_cultures_expanded": [
@@ -62,7 +62,7 @@
     "content_state_parity": "passed",
     "graph_publishing_integrity": "passed",
     "browser": "passed",
-    "github_pages_artifact": "final ascension-null artifact built successfully; no deployment",
+    "github_pages_artifact": "final games-origin artifact built successfully; no deployment",
     "git_diff_check": "passed",
     "full_npm_test": "Aggregate attempt passed Arcade, Worker API, Wiki and WAX; stopped in Visual on missing bundled browser. All 16 Visual commands subsequently passed in ci:visual after installed Chromium setup and moving the generated preview outside the source tree. No successful single aggregate npm test invocation is claimed.",
     "ci_domains": {
@@ -175,9 +175,16 @@
       "ascension_null_graph": "/tmp/gk1459/ascension-null-graph.log",
       "ascension_null_preservation": "/tmp/gk1459/ascension-null-preservation.log",
       "ascension_null_all_wiki_preservation": "/tmp/gk1459/ascension-null-all-wiki-preservation.log",
-      "ascension_null_build": "/tmp/gk1459/ascension-null-pages-build.log"
+      "ascension_null_build": "/tmp/gk1459/ascension-null-pages-build.log",
+      "games_origin_wiki": "/tmp/gk1459/games-origin-final-ci-wiki.log",
+      "games_origin_browser": "/tmp/gk1459/games-origin-browser.log",
+      "games_origin_graph": "/tmp/gk1459/games-origin-graph.log",
+      "games_origin_preservation": "/tmp/gk1459/games-origin-preservation.log",
+      "games_origin_all_wiki_preservation": "/tmp/gk1459/games-origin-all-wiki-preservation.log",
+      "games_origin_build": "/tmp/gk1459/games-origin-pages-build.log",
+      "games_origin_canon": "/tmp/gk1459/games-origin-final-canon.log"
     },
-    "github_pages_artifact_path": "/workspace/gk1459-previews/ascension-null-public-site",
+    "github_pages_artifact_path": "/workspace/gk1459-previews/games-origin-public-site",
     "scoped_related_paths": "passed: unrelated NFT/curated pages unchanged; invalid scope fails before writes",
     "visual_current_batch": "passed: all 16 ci:visual commands, exit 0",
     "wiki_ci_latest_base": "passed, exit 0, final W5 prose and restored curated navigation; BASE_SHA=b865fd991a63d3b74c7076acec703a9b5b0647d8 and task-authorised local prose flag",
@@ -233,11 +240,15 @@
     "client_exclusion_preservation_and_links": "passed3647 original substantial paragraphs/14 earlier exact references across50 changed existing articles;1985 canonical links across those and3 new biographies resolve",
     "ascension_null_wiki_ci": "passed exit0; current-main baseline and task-authorised local prose flag",
     "ascension_null_browser": "Ten changed owning articles pass20 desktop/mobile views,10 noJS readings,10 search/autocomplete queries",
-    "ascension_null_preservation_and_links": "passed3647 original substantial paragraphs/14 earlier exact references across50 changed existing articles;1994 canonical links across those and3 new biographies resolve"
+    "ascension_null_preservation_and_links": "passed3647 original substantial paragraphs/14 earlier exact references across50 changed existing articles;1994 canonical links across those and3 new biographies resolve",
+    "games_origin_browser": "Four changed owning articles pass8 desktop/mobile views,4 noJS readings and4 search/autocomplete queries",
+    "games_origin_preservation_and_links": "passed3647 original substantial paragraphs/14 earlier exact references across50 changed existing articles;1999 canonical links across those and3 new biographies resolve",
+    "games_origin_wiki_ci": "passed exit0; BASE_SHA=b865fd991a63d3b74c7076acec703a9b5b0647d8 with task-authorised local prose flag",
+    "games_origin_final_canon": "passed exit0; original archive hashes, corruption probes and eight regression groups;424 pages94 source identities37 decisions"
   },
   "limitations": [
     "Byte verification and static lint do not constitute full semantic reconciliation.",
-    "55 original sources remain without full semantic comparison; ten additional completely read originals retain pending serial/roster/character/Games/origin comparison.",
+    "51 original sources remain without full semantic comparison; seven additional completely read originals retain pending serial/roster/character/operational comparison. Broader reconciliation paused at user request to finish current edits for merge review.",
     "All nine current First Witness Books have complete article reading and serial comparison; supporting chapters, transmission history and further source dependencies remain open.",
     "Five major canon proposals await full dependency audit and specific GK approval.",
     "Final merge and prose approval label require GK/maintainer review."
@@ -249,12 +260,12 @@
     "issue_update_posted": true,
     "blocked_actions": [],
     "approval_review_reason": "Both latest push and Issue #1458 progress comment succeeded under explicit continuation authorisation. Earlier rejection remains historical; no current delivery block.",
-    "reviewable_pr_body": "/workspace/scratch/issue-1458-draft-pr.md",
-    "reviewable_issue_update": "/workspace/scratch/issue-1458-issue-update.md",
+    "reviewable_pr_body": "/workspace/scratch/issue-1459-current-pr.md",
+    "reviewable_issue_update": "/workspace/scratch/issue-1459-current-issue.md",
     "pull_request_draft": true,
     "github_ci": "Checked exact head 6da75973f827b7161ce349a403ca4af723d8c00e: Wiki Structure, production truth, worker provenance, Arcade, Worker API, WAX and Visual passed. CI/Wiki and Graph Publishing stopped at protected-prose maintainer-label gate. No canon-prose-change-approved label has been self-applied.",
     "issue_progress_comment_id": 6059157565,
-    "latest_implementation_commit_uploaded": "3609a0d519efb51d041e3387bd40b6e408331e37",
+    "latest_implementation_commit_uploaded": "2ca5291db870acc4a6e730c657855eb83685b4f4",
     "github_ci_latest_batch": "Exact head a1d5273cd534654e28bab701aecb7736f184695b: Wiki Structure, production truth, worker provenance, Arcade, Worker API, WAX and Visual passed. Wiki and Graph regeneration/manifest/graph checks pass and then stop at the existing maintainer canon-prose-change-approved label gate. No label self-applied.",
     "serial_batch_ci": "Exact head2d758b5ed: WikiStructure,productiontruth,workerprovenance,Arcade,WorkerAPI,WAX,Visual all pass. Wiki/Graph logs show only existing maintainer prose-label gate after manifest/graph parity. No label self-applied.",
     "w5_batch_ci": "Exact 153d20831e8c4cb645a82dadfa593e70b125a49b: Wiki Structure, production truth, worker provenance, Arcade, Worker API, WAX and Visual pass. Inspected Wiki/Graph logs show successful guards/manifest/graph checks then only existing maintainer prose-label gate; no label self-applied.",
@@ -270,7 +281,13 @@
     "secrecy_market_batch_ci": "Exact42723fa5a6840be9fe6cd1808f3a0a680c4d3bfc: Structure,productiontruth,workerprovenance,Arcade,WorkerAPI,WAX,Visual pass. Wiki/Graph inspected logs show only maintainer prose-label gate after guards/regeneration/parity. No label applied.",
     "dependency_power_batch_ci": "Exactfeec4406182157455b8225f87cd6c395502a2ce5: Structure,productiontruth,workerprovenance,Arcade,WorkerAPI,WAX,Visual pass. Inspected Wiki/Graph logs show only maintainer prose-label gate after guards/regeneration/parity. No label applied.",
     "memory_arsenal_batch_ci": "Exact9dde74663f7fd5b4b6163c385de0384c5bc72128: Structure,productiontruth,workerprovenance,Arcade,WorkerAPI,WAX,Visual pass. Inspected Wiki/Graph logs show only maintainer prose-label gate after guards/regeneration/parity. No label applied.",
-    "client_exclusion_batch_ci": "Exact3609a0d519efb51d041e3387bd40b6e408331e37: Structure,productiontruth,workerprovenance,Arcade,WorkerAPI,WAX,Visual pass. Inspected Wiki/Graph logs show only maintainer prose-label gate after guards/regeneration/parity. No label applied."
+    "client_exclusion_batch_ci": "Exact3609a0d519efb51d041e3387bd40b6e408331e37: Structure,productiontruth,workerprovenance,Arcade,WorkerAPI,WAX,Visual pass. Inspected Wiki/Graph logs show only maintainer prose-label gate after guards/regeneration/parity. No label applied.",
+    "ascension_null_batch_ci": "Exact2ca5291db870acc4a6e730c657855eb83685b4f4: Structure,productiontruth,workerprovenance,Arcade,WorkerAPI,WAX,Visual pass. Inspected Wiki/Graph logs show only maintainer prose-label gate after guards/regeneration/parity. No label applied.",
+    "checkpoint_scope_instruction": {
+      "date": "2026-10-08",
+      "quote": "finish up where you at so ready to merge with current edits.",
+      "interpretation": "Finish and validate current edits; prepare existing PR for merge review. Full reconciliation remains open. No merge or approval of proposed major canon changes inferred."
+    }
   },
   "initial_tranche_verification": {
     "source_texts_completely_read_this_tranche": [
@@ -326,21 +343,18 @@
       "visual_current_batch": "running; previous tranche Visual result remains scoped to prior checkpoint"
     }
   },
-  "source_texts_fully_reviewed_cumulative": 39,
+  "source_texts_fully_reviewed_cumulative": 43,
   "source_texts_completely_read_but_comparison_pending": [
     "W19.txt",
     "W15.txt",
     "w25.txt",
     "M16.txt",
-    "w68.txt",
     "W5.txt",
     "w69.txt",
-    "w70.txt",
-    "w93.txt",
-    "w92.txt"
+    "W18.txt"
   ],
-  "existing_wiki_pages_fully_reviewed": 68,
-  "existing_wiki_pages_reviewed_distinct": 73,
+  "existing_wiki_pages_fully_reviewed": 73,
+  "existing_wiki_pages_reviewed_distinct": 76,
   "preserved_unique_narrative_paragraphs_at_least_40_chars_in_8_updated_pages": 664,
   "preserved_original_paragraphs_in_updated_pages_scope": "632 in the first seven pages verified in initial tranche; latest batch additionally checks 664 unique substantial narrative paragraphs across all eight against original base.",
   "source_reading_pending_comparison": [
@@ -348,14 +362,11 @@
     "W15.txt",
     "w25.txt",
     "M16.txt",
-    "w68.txt",
     "W5.txt",
     "w69.txt",
-    "w70.txt",
-    "w93.txt",
-    "w92.txt"
+    "W18.txt"
   ],
-  "existing_wiki_pages_reviewed_total": 73,
+  "existing_wiki_pages_reviewed_total": 76,
   "preserved_original_paragraphs_scope": "35 changed existing pages;2630 substantial original paragraphs including13 exact prior Tavi references; no additional narrative revisions",
   "internal_links_scope": "canonical blocks of35 changed existing and3 new character articles",
   "current_w5_batch": {
@@ -664,5 +675,59 @@
       "search_queries": 10,
       "external_requests_blocked": true
     }
+  },
+  "games_origin_batch": {
+    "status": "implemented and validated",
+    "sources_completely_compared": [
+      "w70.txt",
+      "w93.txt",
+      "w92.txt"
+    ],
+    "existing_owning_pages_changed": 4,
+    "newly_changed_existing_pages": 0,
+    "full_audits_upgraded_from_focused": 2,
+    "new_full_existing_audits": 3,
+    "already_fully_represented_owning_pages": [
+      "rune-tag",
+      "spraycode-writcode-mechanics",
+      "snipey-d-man-sirus",
+      "bit-cap-5000",
+      "block-node-defenders"
+    ],
+    "source_agency_conflict_interpreted": "Single w70 Jodie-harvest goal rejected against w70 refusal and explicit w39/w58 Sarah owner; accepted identity unchanged.",
+    "original_paragraph_revisions": 0,
+    "new_characters": 0,
+    "new_original_stories": 0,
+    "major_retcons_adopted": 0,
+    "browser": {
+      "desktop_mobile_views": 8,
+      "no_javascript_pages": 4,
+      "search_autocomplete_queries": 4,
+      "scope": "only four changed owning articles; no full cumulative rerun claimed"
+    },
+    "preservation": {
+      "baseline": "2ca5291db870acc4a6e730c657855eb83685b4f4",
+      "all_wiki_pages": 424,
+      "original_substantial_paragraphs": 9863,
+      "original_active_ids": 5294,
+      "new_paragraph_revisions": 0,
+      "failures": []
+    },
+    "cumulative_changed_article_preservation": {
+      "existing_pages": 50,
+      "new_character_pages": 3,
+      "original_substantial_paragraphs": 3647,
+      "earlier_exact_reference_corrections": 14,
+      "canonical_links": 1999,
+      "failures": []
+    },
+    "preview_path": "/workspace/gk1459-previews/games-origin-public-site"
+  },
+  "source_level_conflicts_interpreted_scope": "Initial three (insideKids label/sect universality/NULL rank) plus one w70 harvest-owner conflict; source-scoped variants and exact modern references recorded separately.",
+  "directory_comparison": {
+    "source": "w68.txt",
+    "status": "complete source reading and all28 owning profile/modern history comparisons",
+    "new_owning_prose_required": false,
+    "reason": "All relevant doctrine, partial28-of40/6functional blocs/HODL boundaries and aspirational product claims already represented; no duplicated source article."
   }
 }

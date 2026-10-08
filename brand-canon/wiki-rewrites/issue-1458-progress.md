@@ -1,6 +1,6 @@
 # Issue #1458 — implementation progress and restart ledger
 
-Updated 8 October 2026. **Status: source recovery and modern-story preservation continue on draft PR #1459; full mission open.**
+Updated 8 October 2026. **Status: current edits complete for merge review on PR #1459; wider reconciliation paused and full mission open.**
 W81 is foundational truth. This is a checkpoint of completed implementation,
 not a claim that the whole universe is reconciled. Preserve the adult tone.
 
@@ -12,9 +12,9 @@ No direct push to main, merge, issue closure or production deployment.
 
 ## Current cumulative state
 
-39 of 94 original sources have full claim/scene comparison; 55 remain open.
-Ten further originals are completely read with comparisons pending. Existing
-wiki audits cover 73 distinct articles: 68 full and five focused. Nine new
+43 of 94 original sources have full claim/scene comparison; 51 remain open.
+Seven further originals are completely read with comparisons pending. Existing
+wiki audits cover 76 distinct articles: 73 full and three focused. Nine new
 articles and 50 expanded/corrected existing articles are implemented, with
 five original adult connecting stories. This is an implementation checkpoint,
 not a claim that every source or current wiki page is reconciled.
@@ -29,15 +29,15 @@ proposed; no final ending, new Forty slot or historical retcon is adopted.
 
 - **94** original archive files verified against archive SHA-256, CSV and the
   independent immutable ledger; **93** unique contents, **2,334,149** bytes.
-- **39** complete original texts read and compared cumulatively: W1, w32, w33,
-  w56, W12 (all eight parts), W13 (all seven parts and repeated extracts), W7, w50, w63, w60, w44, w47, w48, w54, w59, w42, w55, w43, w51 and w52 (those two are one repeated witness), w57, w46, w62, w45, w49, w53, w58, w34, w41, w38, w40, w35, w39, w36, w37, w61, w64, w65 and w84.
-  **55** remain without full semantic comparison. W19 is fully read but its
+- **43** complete original texts read and compared cumulatively: W1, w32, w33,
+  w56, W12 (all eight parts), W13 (all seven parts and repeated extracts), W7, w50, w63, w60, w44, w47, w48, w54, w59, w42, w55, w43, w51 and w52 (those two are one repeated witness), w57, w46, w62, w45, w49, w53, w58, w34, w41, w38, w40, w35, w39, w36, w37, w61, w64, w65, w84, w70, w93, w92 and w68.
+  **51** remain without full semantic comparison. W19 is fully read but its
   remaining embedded-character comparisons are pending, so it is not counted.
-- **73 distinct existing pages** reviewed: sixty-eight full canonical articles
+- **76 distinct existing pages** reviewed: seventy-three full canonical articles
   (Princess, Croydon, master chronology, concordance, synthetic minds,
   Crypto Moonboys, Great Consensus, Elder Codex-7, Iris-7, Aleema, Dream Sovereign,
-  all nine First Witness Books, HODL Warriors, GraffPUNKS, GKniftyHEADS, Whale Lords, XRP Kids, Forty Paths, faction Commentaries, Sarah, Jodie, Alfie, NULL, Block Topia, HODL doctrine, Hard Fork Rockers, Genesis Kernel, Nomad Bears, Blockstars, Crypto Stoned Boys, Rugpull Miners, Block Node Defenders both Army articles, Bitcoin X Kids, Chain Scribes the humour/attention supporting chapters, Thera, Charlie, Nice & Easy, AllCity Bulls Blockchain Furies, Finance Guild, Ducky Boys full Code Alchemists Bally Boys, High Hats, Aztec Raiders, Bitcoin Kids and Tuskon OGS and both Pinks articles and Gasless Ghosts and Information Mercenaries, Moonlords, Salvagers and Forkborn Collective and Pixel Saints and EVM Punks) and five focused section reviews
-  (Rune, Games, HODL Wars, Sacred Chain and Rave Relics). Exact scopes are in `issue-1458-audit.json`.
+  all nine First Witness Books, HODL Warriors, GraffPUNKS, GKniftyHEADS, Whale Lords, XRP Kids, Forty Paths, faction Commentaries, Sarah, Jodie, Alfie, NULL, Block Topia, HODL doctrine, Hard Fork Rockers, Genesis Kernel, Nomad Bears, Blockstars, Crypto Stoned Boys, Rugpull Miners, Block Node Defenders both Army articles, Bitcoin X Kids, Chain Scribes the humour/attention supporting chapters, Thera, Charlie, Nice & Easy, AllCity Bulls Blockchain Furies, Finance Guild, Ducky Boys full Code Alchemists Bally Boys, High Hats, Aztec Raiders, Bitcoin Kids and Tuskon OGS and both Pinks articles and Gasless Ghosts and Information Mercenaries, Moonlords, Salvagers and Forkborn Collective and Pixel Saints and EVM Punks and Games, Rune, Writcode mechanics, Snipey and Bit-Cap) and three focused section reviews
+  (HODL Wars, Sacred Chain and Rave Relics). Exact scopes are in `issue-1458-audit.json`.
 - **424** top-level wiki pages pass automated targeted canon lint and content
   inventory checks. That number is a static scan, not a human semantic count.
 
@@ -1060,3 +1060,63 @@ Actions pass seven other groups; inspected Wiki/Graph logs show only maintainer
 prose-label gate after guards/regeneration/parity. No label applied.
 Next full Games/Rune/paint-mechanics dependency reading and w70/w93/w92 recovery,
 then remaining original/serial/roster work. Full mission open.
+
+
+## Games diary, harvest agency and the lost origin
+
+w70/w93/w92 complete comparisons restore the source’s compelling threat,
+diary labels/physical damage, arrival violation, fourth internal formation,
+OMNI-CORE/i-Fork account and three-decade city construction. Reject one Jodie
+harvest-owner line against its own refusal and w39/w58 Sarah-owned programme;
+this restores current causal coherence without changing accepted identity.
+Games/Rune upgraded to full; Writcode/Snipey/Bit-Cap newly full read. Current
+42/94 comparisons,52 open; seven further originals read pending;76 existing
+audits73 full/three focused;50 existing articles changed, nine new, five original
+adult stories. Four owning pages expanded; no original paragraph rewritten.
+All modern Mira/Rune/Snipey/Bit-Cap/Jodie/paint/city consequences retained.
+Date proposal receives full-read evidence; no new date, Forty slot or final
+ending adopted. Final validation pending. Full mission open.
+
+
+### Directory comparison completed without filler
+
+w68’s complete original reread and all28 current owning histories compared.
+The partial28of40 register, sixfunctional roles, unnumberedNULL and emergency
+HODL limits already have complete coverage. Phygital/wallet/value promises do
+not prove delivered features or broader creator rights. No redundant page or
+section added. Current43/94 comparisons,51 open; six further originals read
+pending;76 existing audits73 full/three focused;50 changed existing articles,
+nine new, five original adult stories. Games/origin final validation pending.
+
+
+### Games/origin final verification
+
+Full final wiki CI and canon tests pass with captured exit0. Graph, preservation,
+links and Pages build pass. Four changed owning articles separately pass8 desktop/
+mobile views,4 noJS readings and4 search/autocomplete queries. All424 prior pages,
+9863 original substantial paragraphs and5294 IDs remain against2ca5291db870acc4a6e730c657855eb83685b4f4;
+zero new paragraph revisions. Across50 changed existing articles,3647 original
+paragraphs remain with14 earlier exact references;1999 canonical links resolve
+across those and three new biographies. Preview
+`/workspace/gk1459-previews/games-origin-public-site`; no deployment.
+Exact2ca5291db870acc4a6e730c657855eb83685b4f4 remote checks pass seven other groups;
+Wiki/Graph logs show only existing maintainer prose-label gate after successful
+guards/regeneration/parity. No label applied. Current43/94 complete comparisons,
+51 open; six further originals read pending;76 existing audits73 full/three
+focused;50 existing pages changed, nine new, five original adult stories.
+Next remaining serial/character/operational source comparisons. Full mission open.
+
+
+## User-requested merge-review checkpoint
+
+GK's latest steering: “finish up where you at so ready to merge with current
+edits.” Finish this implementation scope, upload to the existing branch, update
+PR1459/Issue1458 and prepare the PR for review. Do not infer permission to merge,
+approve major canon proposals or claim the whole94-source mission completed.
+W18's full original and current Alfie article were read before this steering;
+its missing dossier specifics remain comparison/recovery work, with no additional
+fiction added. Current43/94 compared,51 open; seven more fully read originals
+pending:W19,W15,w25,M16,W5,w69,W18. Keep Issue1458 open. Future work starts there
+and at the remaining unread source/register dependencies; retain every approved
+modern adult story and current validated implementation. No new research or
+fiction batch is required to finish this requested checkpoint.

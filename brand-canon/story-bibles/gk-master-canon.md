@@ -617,3 +617,38 @@ not dissolve zealous patrols, and Raider victory does not restore Halen/Osa/Dera
 Tavren’s open road still leaves wages unpaid. The High Hats’ private separations
 and losses do not become a fleet’s redeemable collateral. Specific labour,
 consent and grief remain beside the source’s grand emergencies.
+
+
+### The diary’s body and the lost origin’s formation
+
+Full w70/w93 comparison restores Jodie’s poetry request answered with protein
+paste, missing mirrors, neck wires, robe notes and diary’s cracked fingers,
+shaking legs and lost sleep. Its hostile maze/battlefield and threatened zone
+punishment remain distinct from Mira’s Lower Walk and permitted return. The
+diary’s Bear/Bull/HODL tier names do not merge cultures; the explicit numeric
+programme/Defender/inside X-generation account retains the accepted distinctions.
+One w70 line assigning the harvest to Jodie contradicts its own escape and
+w39/w58 Sarah owner. Sarah’s programme is the coherent current account, while
+Jodie’s later private-dream abuse remains her own separate fault.
+
+Full w92 comparison recovers Ghost Writers/CHAINFIRE, four internal formations,
+Tag Epochs and the OMNI-CORE/i-Fork origin. Its2588 rupture competes with2880;
+no second identical catastrophe or early faction ancestry is invented. W70’s
+2930 body contradicts its2765 headline, and its three construction decades do
+not supply an approved foundation year. All named legends and Writcode effects
+already have owning coverage; no redundant new character page is needed.
+
+Modern Games/Rune/paint/scout/augmented lives remain. Mira’s refused memory,
+Rack Three’s failed and limited successful test, the lost Exchange pack and
+Sena’s ceased response survive. Rune’s private letter continues under his name;
+Snipey’s corrected joke does not restore the lover’s invitation; Bit-Cap’s cup
+injures an adult and costs work even after he pays treatment. Source legend
+does not make those harms reversible or those adults innocent.
+
+
+The complete w68 directory now has claim-level comparison across all28 named
+owning histories. Its “some of40” list and role-based sixpillars do not complete
+or replace the modern Forty. NULL is a threat, HODL an emergency protocol, and
+phygital value claims an aspiration subject to current creator terms. All current
+adult faction histories remain; a directory’s final unity slogan does not erase
+their actual costs or permanent disagreements.

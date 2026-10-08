@@ -8,7 +8,7 @@
     "unique_contents": 93,
     "bytes": 2334149
   },
-  "semantic_scope": "Thirty-nine completely compared sources; ten additional originals completely read with comparison pending. Sixty-eight full existing article audits and five focused comparisons; nine new articles separately authored. Full mission open.",
+  "semantic_scope": "Forty-three completely compared sources; seven additional originals completely read with comparison pending. Seventy-three full existing article audits and three focused comparisons; nine new articles separately authored. Broader mission remains open; user requested finishing current edits for merge review.",
   "sources": [
     {
       "file": "M16.txt",
@@ -211,8 +211,17 @@
       "bytes": 9648,
       "sha256": "089d29e9a81bdac7f7294666a4d758c432ce8ededde1e261c99dbd1ee7dde311",
       "byte_verified": true,
-      "semantic_review": "pending complete semantic reading",
-      "prior_disposition": "COVERED"
+      "semantic_review": "complete original source reading; owning-page comparison/recovery pending",
+      "prior_disposition": "COVERED",
+      "read_progress": {
+        "method": "entire verified UTF-8 original printed and read without truncation; current Alfie article reread in bounded chunks",
+        "complete_source_comparison": false
+      },
+      "review_findings": [
+        "Dossier 2789 breach/Defender chronology conflicts with later city, 1973 real-creator dissolution/family DNA is not verified biography; current Alfie retains separate 2140 SatoRebel origin.",
+        "Specific rooftop/fishing/DJ/poetry habits and equipment/refuges need owning-page recovery; source numerical biometrics, future immortality/armistice and lost daughter are unverified claims, not accepted later-history facts.",
+        "Sarah mentor/lover claim and 3006 NULL merger require connected source comparison; current adult Dera refusal, Bram assaults and Necessary Monsters consequences remain. No new owning prose implemented for this source before requested checkpoint."
+      ]
     },
     {
       "file": "W19.txt",
@@ -1149,17 +1158,14 @@
       "bytes": 14492,
       "sha256": "d64580312718324c787dbb71a127a122c0bee8e5b01da9edeed6abaa859775c9",
       "byte_verified": true,
-      "semantic_review": "complete source reading; roster and connected-page comparison pending",
+      "semantic_review": "complete source reading and connected claim/scene comparison",
       "prior_disposition": "CONFLICT",
       "read_progress": {
         "method": "entire verified UTF-8 original printed and read without truncation",
-        "complete_source_comparison": false
+        "complete_source_comparison": true
       },
-      "partial_findings": [
-        "Full September2025 directory explicitly calls list some of40 and current28active, with HODL protocol outside numbered1-28. Source does not claim28is complete civilization census.",
-        "All28 enumerated cultures match first28 current commentary names (Army throughGaslessGhosts); remainder six modern named readings and six pendingslots require their independent source chains. NULL appears as a cosmic threat, not numbered28.",
-        "Sixfunctional pillars agree with w32 doctrinal structure; survival40 temporarilybecomingHODLdefense conflicts with treating HODL as permanent newcountedculture. BookVIII limits emergencymobilisation.",
-        "Its phygital portals/wallets, collectible claims and factionartists promotion cannot prove current rights. Current product hub/README authority and all faction biographies remain in source-to-page comparison."
+      "findings": [
+        "Full September directory original and all28 named owning faction histories now compared, including final full EVM/Scribe/Saint/Ghost/Forkborn readings and full modern contract/labour/private stories. Numbered1-28 are explicitly someof40; NULL remains unnumberedthreat and HODL collective protocol precedes numberedlist, not a41stculture. Six functional blocs place EVM among Fighters and Alchemists among Specialists; these are roles, not fixed ancestry/culture slots. EmergingForkborn door/survivingreality and final40mobilisation are source hopes, not settledending. Phygitalportal/wallet/NFTimmortality/value language is promotional aspiration, checked against current creator hub/README/GKniftyHEAD terms and cannot establish delivered mechanisms/rights/returns. All source doctrine already represented; no filler owning prose added."
       ]
     },
     {
@@ -1223,7 +1229,7 @@
       "bytes": 28108,
       "sha256": "783217e96e078a911ea97a27d2e1cab7df2130b95464c5e7cdf7fee9cd3e5998",
       "byte_verified": true,
-      "semantic_review": "complete source reading; connected comparison pending",
+      "semantic_review": "complete source reading and connected claim/scene comparison",
       "prior_disposition": "COVERED",
       "read_progress": {
         "paragraphs_read_in_full": [
@@ -1233,10 +1239,10 @@
           ]
         ],
         "next_unread_paragraph": null,
-        "complete_source_comparison": false
+        "complete_source_comparison": true
       },
-      "partial_findings": [
-        "Complete original read: contradictory headline2765/body2930,2880/2900 collapse; FinalForkCouncil/three-decadeQueens build, Sarah2066 SelfFork, three numeric programme tiers/Defender/insideXchildren, fivePaintPath disciplines/Snipey/BitCap,480selection/FeastWeek/JodieArrival/missingmirrors/wires/notes/CloneHarvest. One line wrongly assigns syntheticcaste goal to Jodie despite forcedescape and w39/w58 Sarah owner; compare explicitly. Thera2994/AGNES2876 origins and22percent desertion are source claims. Full Games/dependent character comparison pending."
+      "findings": [
+        "Full201paragraph origin/chronology/city/Queen/programme/outside/Games/Jodie/secretalliance/NULL/3008/promotional compilation compared. 2765headline contradicts2930body;2880catastrophe/three-decadeQueensbuild/FinalForkCouncil retained with no invented opening year. All three numeric tiers,Bitbone,0.01percent/Seeding/insideXgeneration already in fullDefender35. FullSnipey42/BitCap43 legends and all linked histories read; no Moongirl/exiledbuilder origin inferred from rumours. Recover poetry/protein/wires/robe and buildduration. Reject single Jodie-harvest-goal line against its own refusal and explicit w39/w58 Sarah owner. Thera2994/AGNES2876/22percent and metaphysical guarantees remain attributed. No product launch/reward inferred from promotions."
       ]
     },
     {
@@ -1441,7 +1447,7 @@
       "bytes": 8107,
       "sha256": "7ec5c1322accab707b8035d7470310e37c521f89b510ccb63a19508472e3917b",
       "byte_verified": true,
-      "semantic_review": "complete source reading; connected comparison pending",
+      "semantic_review": "complete source reading and connected claim/scene comparison",
       "prior_disposition": "HISTORICAL",
       "read_progress": {
         "paragraphs_read_in_full": [
@@ -1451,10 +1457,10 @@
           ]
         ],
         "next_unread_paragraph": null,
-        "complete_source_comparison": false
+        "complete_source_comparison": true
       },
-      "partial_findings": [
-        "Complete seven Taglogs/legacy read:2150-2600 origin,DataFamine2191/PaintWars2200-2300/TagLords/BurnCrews/GhostWriters/StencilWitches,CHAINFIRE rebelAI distinctcatastrophe,SignalCleave2588/OMNICORE/iFork as TripleFork version;Jodie joiningmemorykeepers. Full Rune/Graff/Writcode/currenthistory comparison pending; do not invent secondcatastrophe or accepted earlydate."
+      "findings": [
+        "Complete60paragraph sevenTaglogs/legacy and fullRune65/Graff/Writcode43/chronology/connectedcast comparisons. Recover four formations with GhostWriters/CHAINFIRE AI distinction, TagEpochs, OMNICORE/lunarrelay/iFork and precise SignalCleave2588 as rival TripleFork origin. DataFamine2191/PaintWars2200-2300/fullcivilisationorigin language remains attributed, not secondidenticalcatastrophe or all40culture ancestry. Writcode frequencies/moods/intent/machinearchive effects and distributedrelics already fullyrepresented; Rune quote/vault/unknownage alreadyowning. No filler section on those complete owning pages; modern institutionalwork/loss/privateletters retained."
       ]
     },
     {
@@ -1462,7 +1468,7 @@
       "bytes": 11393,
       "sha256": "fbcc1fe0d13e8e2f7e44db3183366209a9ca531d731c352a4081dbcdc9c09e5d",
       "byte_verified": true,
-      "semantic_review": "complete source reading; connected comparison pending",
+      "semantic_review": "complete source reading and connected claim/scene comparison",
       "prior_disposition": "COVERED",
       "read_progress": {
         "paragraphs_read_in_full": [
@@ -1472,21 +1478,22 @@
           ]
         ],
         "next_unread_paragraph": null,
-        "complete_source_comparison": false
+        "complete_source_comparison": true
       },
-      "partial_findings": [
-        "Complete Jodie diary read: compelled summons and alleged zone erasure, Nomad/Bull/HODL tierlabels/seeding/insideKids terminology conflict with current distinctions, FeastWeek surveillance/GreenYellowRed/arena reversal, named InitiatesMaze/blinking sensor, battlefield refusal/run/crackedfingers/no settledend. Full current Games/related character comparison pending; do not merge cultures or erase diary injury."
+      "findings": [
+        "Complete88paragraph diary and fullGames179/Jodie/Defender/Kids/Sarah/Aleema comparison. Restore compelledsummons/zonepunishment allegation, Nomad/Bull/HODL stage labels and wronginsideKids wording as diary terminology, not accepted culture merger. InitiatesMaze sensor/laterminesfog/refusal/blindplaces/crackedfingers/shakinglegs/lostsleep/unfinishedfight recovered. Diary firstperson does not namehelper/eraseAleema/thirdrecruit; hostile arena differs Mira localoptimisation and permittedreturn. No healedinjury/new finaloutcome."
       ]
     }
   ],
   "wiki_section_reviews": [
     {
       "path": "wiki/rune-tag.html",
+      "scope": "full canonical article",
       "sections": [
-        "fifth-carbon-rune",
-        "fifth-carbon-cipher-school"
+        "all canonical sections"
       ],
-      "scope": "targeted sections, not whole-article semantic audit"
+      "reading_verification": "All65 pre-batch canonical paragraphs match fully read88-line cache; Games/Rune remaining nonparagraph text also parsed/read. New batch paragraphs separately authored/read.",
+      "findings": "All sourcequotations/chronology/cipherrole/MarginSchool/ColdCopy/CopyDebt/Pella/Jun/lettermisuse/elderadmiration/FifthCarbon/WhisperCodex paragraphs fully read. Formeradult partner\u2019s refusal, continuedcopies and incompletecourier work retained; age/vault date/AI distinct."
     },
     {
       "path": "wiki/squeaky-pinks-enforcers.html",
@@ -1499,11 +1506,12 @@
     },
     {
       "path": "wiki/hard-fork-games.html",
+      "scope": "full canonical article",
       "sections": [
-        "fifth-carbon-six-pillars",
-        "fifth-carbon-weapon-language"
+        "all canonical sections"
       ],
-      "scope": "targeted sections, not whole-article semantic audit"
+      "reading_verification": "All179 pre-batch canonical paragraphs match fully read235-line cache; Games/Rune remaining nonparagraph text also parsed/read. New batch paragraphs separately authored/read.",
+      "findings": "All institution/trial/placement/return/NULL/LowerWalk/Mira/Tessa/Rook/Nemi/Lysa/RackThree/GroundArray/FifthCarbon/SixPillars paragraphs fully read. Distinct accepted/refused memories, testfailure and limited groundsuccess preserved; no Jodie retroactive permittedexit."
     },
     {
       "path": "wiki/the-princess.html",
@@ -2055,6 +2063,33 @@
       ],
       "reading_verification": "All61 paragraphs match fully read81-line cache.",
       "findings": "Full GasWars/mercenary/arsenal/patrons/NULL source and every Vera/Noll/SecondShift/UnpaidHour/ExitBell/Handrail/Dax/Tessa/Sella/BrightMouth/BorrowedJaw adult scene read. Protected allocation extends darkness/spoiled food, more clients, fee/pride and affair remain. Exact source buyer/target/network-specification pairs remain next comparison."
+    },
+    {
+      "path": "wiki/spraycode-writcode-mechanics.html",
+      "scope": "full canonical article",
+      "sections": [
+        "all canonical sections"
+      ],
+      "reading_verification": "All43 pre-batch canonical paragraphs match fully read61-line cache; Games/Rune remaining nonparagraph text also parsed/read. New batch paragraphs separately authored/read.",
+      "findings": "All five disciplines/Writcode relation/sourceconditionalreading/relics/DryMark/TwoReadings/CopyEdge/Exchange door loadlimits/Aleema refusal/lostpack/Holdfast Sena ceasedresponse fully read. Source machine/archive effects alreadycovered; no recoveredSena/universal recipe or newfaction."
+    },
+    {
+      "path": "wiki/snipey-d-man-sirus.html",
+      "scope": "full canonical article",
+      "sections": [
+        "all canonical sections"
+      ],
+      "reading_verification": "All42 pre-batch canonical paragraphs match fully read62-line cache; Games/Rune remaining nonparagraph text also parsed/read. New batch paragraphs separately authored/read.",
+      "findings": "All DMan/GMan/sourceGraff scout/dance/Tagtalk/Jodie murals/Silas discovery/orangeglyph/legacyrifle/twovignettes/NoLaugh/FifthEmptyCup fully read. Adultlover publicridicule/lostinvitation, corrections/missedpaidinterval/repaircost preserved. Rumoured Moongirl or exiledbuilder origin notaccepted."
+    },
+    {
+      "path": "wiki/bit-cap-5000.html",
+      "scope": "full canonical article",
+      "sections": [
+        "all canonical sections"
+      ],
+      "reading_verification": "All43 pre-batch canonical paragraphs match fully read63-line cache; Games/Rune remaining nonparagraph text also parsed/read. New batch paragraphs separately authored/read.",
+      "findings": "All namedGrafflegend/legacyaugmentation/HashHammer/Overclock/WeightBoard/Toma/ShortLift/OpenGlove/LastBolt/SpareHand/fatigue/collapsingsector/SoftBed/SplitCup fully read. Adultpartner leaves and guardedreturn, onlooker cut/missedpaidwork/cost/trophyselfadmiration retained; no newbirthdate/Defender role/resurrection."
     }
   ]
 }

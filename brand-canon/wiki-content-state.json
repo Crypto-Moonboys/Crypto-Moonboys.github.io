@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "generator": "scripts/generate-wiki-content-state.mjs",
-  "source_tree_hash": "sha256:405377ea7c2625201e6eafa3e0d86e8667b143569efa2ddfd884bd2761f60784",
+  "source_tree_hash": "sha256:84810cb4928a522d7dd1c095f5da062ab63ecddd24218cac6429c80b88480279",
   "hash_algorithm": "sha256",
   "page_count": 424,
   "manifest_entry_count": 424,
@@ -1342,7 +1342,7 @@
       "title": "Block Topia The Queens citadel: survival infrastructure, managed identity and the state behind the Games",
       "page_exists": true,
       "page_type": "lore",
-      "current_word_count": 5007,
+      "current_word_count": 5118,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -1351,10 +1351,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:a527d8f0ca2cee1b3ef48b5d397797516df174037df99d95792aaa07fb9ced90",
-      "article_content_hash": "sha256:622bcae618db23b506b0bcaaf835cc1dd15e7e84ad79f87ec5f928102ead9161",
-      "article_markup_hash": "sha256:0d02f2d24c526c99c7f5c7411c3e63792f6fb44ef97368f05c610f9f9851d670",
-      "git_blob_oid": "1ccc7e4819120c24601336ad6d001ee6f3cbced8",
+      "content_hash": "sha256:3875f57e85c3cab667daa2b3e52b9e995eea904820d1708e57fd15fe8ac6011e",
+      "article_content_hash": "sha256:2f76114b6bd8e222eb96c11457a59409bc955b5325d6070cd5e17c9fe9f97b8a",
+      "article_markup_hash": "sha256:61802ca7c71dea3aa3de0cfa0fc7341f94f94c3fd984f62d8a5fd302a712d13f",
+      "git_blob_oid": "8902affbe268da012ac48da0a80b32080115612c",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -1375,11 +1375,11 @@
         "wiki/bibles/block-topia.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 8 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 9 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/block-topia.json; it is not automatically the unavailable Tier 4 modern bible."
       ],
       "content_owner": "canon",
-      "canon_revision": 8,
+      "canon_revision": 9,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -11433,7 +11433,7 @@
       "title": "GraffPUNKS The mark, the message and the memory carried between them",
       "page_exists": true,
       "page_type": "lore",
-      "current_word_count": 4317,
+      "current_word_count": 4570,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -11442,10 +11442,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:3e5a0b0b7b873f0e5c81f3315a69a07e639aba27972c06d03cb1c2ad0633b99a",
-      "article_content_hash": "sha256:f67a294996fc6fcfff70453b749da3f880ecff26542b462890caaabc7776d851",
-      "article_markup_hash": "sha256:8be11dfb9e6e14fb5d121510f5450ab725f8f90e361e20ad15dbd49fcc021c66",
-      "git_blob_oid": "d3f48266045a7a3d95080242c03be7a6481e563c",
+      "content_hash": "sha256:36b5450314d38e0cd4612c26b50f4ab28237b85dd858d59ec3839a0db3bc1e94",
+      "article_content_hash": "sha256:471020f3ca70e72970aa312b221703d1793adf8e337b968d14ad751151a9aa96",
+      "article_markup_hash": "sha256:a791426a4a89edb9f499dd66ce2fd2c922262725e5850a9693b2dadd6778ea6f",
+      "git_blob_oid": "70cf9d604a625df65d20176939f994c9fe29f840",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -11464,11 +11464,11 @@
         "wiki/bibles/graffpunks.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 5 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 6 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/graffpunks.json; it is not automatically the unavailable Tier 4 modern bible."
       ],
       "content_owner": "canon",
-      "canon_revision": 5,
+      "canon_revision": 6,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -11728,7 +11728,7 @@
       "title": "Hard Fork Games The city opens its gates on terms of its own",
       "page_exists": true,
       "page_type": "lore",
-      "current_word_count": 10356,
+      "current_word_count": 10606,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -11737,10 +11737,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:52152ee7b0a3bb3b42c4db083c899e1c04d229210e2e2a63c093768267261a4f",
-      "article_content_hash": "sha256:3d0998493c835d88cfe7e24b9132f753205d44001d853d52648bfd6013cd4b98",
-      "article_markup_hash": "sha256:8b82d60f872323269f9639c90e2b7db29042dcc2fd7bc4d9dd22ed1f20c3dc28",
-      "git_blob_oid": "4006a8e4cac2fa1ff48ee24b627e61967cb722f3",
+      "content_hash": "sha256:fa201ae7174e2fb6c2dd6c29fddae565ce0b2cd392e917ce3ea58dcd015bb4de",
+      "article_content_hash": "sha256:a3cab4b200988d8da5d110329710abe750a94952038ce2dc5b3a4036c69b73eb",
+      "article_markup_hash": "sha256:af4e1f7aefdc570de613bcd14b9056ad88cdc72601e9f22dc328903b462a3647",
+      "git_blob_oid": "62bbb36cdaa34453dd8496ca79291dedecd5071f",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -11762,11 +11762,11 @@
         "wiki/bibles/hard-fork-games.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 6 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 7 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/hard-fork-games.json; it is not automatically the unavailable Tier 4 modern bible."
       ],
       "content_owner": "canon",
-      "canon_revision": 6,
+      "canon_revision": 7,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -12250,7 +12250,7 @@
       "title": "Jodie ZOOM 2000",
       "page_exists": true,
       "page_type": "character",
-      "current_word_count": 7100,
+      "current_word_count": 7372,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -12259,10 +12259,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:a5de2203406b5b1320349a47d79158384e1d1ed08b9d2f1676c5e7e6584d335f",
-      "article_content_hash": "sha256:640fb83a76d17e2893fd467025588599512352095410217b5a16610eda8f7225",
-      "article_markup_hash": "sha256:b8b0b9dc90a7e34ff147b3fe5c10ade2bdb5f478c51acfc72eac017ce4b5889c",
-      "git_blob_oid": "5e368c1fbebe6c347668999099f3312f08647983",
+      "content_hash": "sha256:e075212bf5e098efb2850313e05c9d4d5c38258f72d98ce0911f6467c2be707d",
+      "article_content_hash": "sha256:08c32258c6aca8bf0ad5d0f8d7072fbff6964e2ece4afed5aa11c78d7bd5f8be",
+      "article_markup_hash": "sha256:819e9c57dee90f9dee9879ad874f0e61eb49763d63de23ba3f394ee735c93c90",
+      "git_blob_oid": "bd94e558cc27a163b9436a56cf753b34eb9f1299",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -12281,12 +12281,12 @@
         "wiki/bibles/jodie-zoom-2000.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 9 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 10 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/jodie-zoom-2000.json; it is not automatically the unavailable Tier 4 modern bible.",
         "The requested modern Tier 4 subject bible is not separately identifiable in this checkout; canon classification remains a human-review item."
       ],
       "content_owner": "canon",
-      "canon_revision": 9,
+      "canon_revision": 10,
       "canon_source_tier": "first-witness+w81"
     },
     {

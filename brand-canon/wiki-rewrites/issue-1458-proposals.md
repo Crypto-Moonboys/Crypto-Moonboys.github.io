@@ -21,6 +21,17 @@ secure regions. A 2765 condition cannot be caused by a 2880 event. Investigate
 whether its source actually describes an independent earlier contraction before
 giving it one. A date alone is insufficient evidence for a second collapse.
 
+### Full w70/w92 evidence now read
+
+w70’s complete body explicitly places the Triple Fork in2880 and the loss of
+secure regions by2930; its introductory2765 line contradicts that sequence.
+w92’s complete Signal Cleave account explicitly makes OMNI-CORE’s lunar defeat
+and i-Fork the2588 World Chain rupture. It is a rival origin, not source proof
+of a separate identical catastrophe. These readings strengthen the current
+2880/by2930 recommendation without approving it as a definitive GK correction.
+The three-decade city-building claim supplies no reliable inauguration year.
+Other dated sources and supporting lifespan/chronology dependencies remain open.
+
 ## Agent SAM: complete eight-part decision
 
 `GK-1458-SAM-ORDER` now follows complete W12 and W13 readings. The earlier

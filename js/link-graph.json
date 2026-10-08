@@ -1192,7 +1192,7 @@
     ]
   },
   "/wiki/block-topia.html": {
-    "outbound_count": 37,
+    "outbound_count": 38,
     "inbound_count": 78,
     "existing_outbound": [
       "/wiki/hodl-wars.html",
@@ -1217,6 +1217,7 @@
       "/wiki/first-witness-justice-mercy-restitution.html",
       "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-sacred-fork.html",
+      "/wiki/first-witness-source-register.html",
       "/wiki/first-witness-triple-fork-chainfire.html",
       "/wiki/first-witness-work-craft-service.html",
       "/wiki/gkniftyheads-bitcoin-kid-x-sarah-pfly-infinite-776004.html",
@@ -17902,7 +17903,7 @@
     ]
   },
   "/wiki/graffpunks.html": {
-    "outbound_count": 47,
+    "outbound_count": 56,
     "inbound_count": 211,
     "existing_outbound": [
       "/wiki/atomichub-graffpunks-collection.html",
@@ -17933,15 +17934,22 @@
       "/wiki/burn-to-earn.html",
       "/wiki/elder-codex-7.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
+      "/wiki/first-witness-book-6-the-fork.html",
       "/wiki/first-witness-book-9-the-unwritten-block.html",
       "/wiki/first-witness-censorship-offence-public-marks.html",
       "/wiki/first-witness-digital-inheritance-after-death.html",
+      "/wiki/first-witness-disaster-famine-mutual-aid.html",
       "/wiki/first-witness-music-dance-performance.html",
       "/wiki/first-witness-null-erasure.html",
+      "/wiki/first-witness-sacred-fork.html",
+      "/wiki/first-witness-triple-fork-chainfire.html",
       "/wiki/genesis-kernel.html",
       "/wiki/gkniftyheads-digital-diva-783394.html",
       "/wiki/gkniftyheads-digital-duchess-783404.html",
+      "/wiki/gkniftyheads-graphite-ghost-783307.html",
       "/wiki/gkniftyheads-paint-patriot-783295.html",
+      "/wiki/gkniftyheads-raze-rebel-783250.html",
+      "/wiki/gkniftyheads-rebel-riff-783269.html",
       "/wiki/gkniftyheads-stencil-siren-783296.html",
       "/wiki/gkniftyheads-stencil-storm-783291.html",
       "/wiki/gkniftyheads-vandal-776147.html",
@@ -17951,7 +17959,9 @@
       "/wiki/spraycode-writcode-mechanics.html",
       "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-first-witness.html",
+      "/wiki/the-hard-fork-rockers.html",
       "/wiki/thera-9.html",
+      "/wiki/triple-fork-event.html",
       "/wiki/whale-lords.html",
       "/wiki/whisper-codex.html"
     ],
@@ -18274,7 +18284,7 @@
     ]
   },
   "/wiki/hard-fork-games.html": {
-    "outbound_count": 68,
+    "outbound_count": 69,
     "inbound_count": 86,
     "existing_outbound": [
       "/wiki/block-topia.html",
@@ -18345,6 +18355,7 @@
       "/wiki/six-pillars.html",
       "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-hard-fork-rockers.html",
+      "/wiki/the-nomad-bears.html",
       "/wiki/xrp-kids.html",
       "/wiki/xrp-ledger.html"
     ],

@@ -67,6 +67,11 @@ try {
     await page.close();
   }
   const queries = [
+  ["Jodie diary compelled summons", "hard-fork-games"],
+  ["poetry request protein paste", "jodie-zoom-2000"],
+  ["Ghost Writers CHAINFIRE rebel AI", "graffpunks"],
+  ["three decade construction source", "block-topia"],
+
   ["Ascension Tag and Leash", "the-finance-guild"],
   ["High Hats Absolute Transparency manifesto", "the-high-hats"],
   ["Nomad genetic firewall capture", "the-crypto-moongirls"],
