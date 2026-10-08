@@ -8,7 +8,7 @@
     "unique_contents": 93,
     "bytes": 2334149
   },
-  "semantic_scope": "Twenty-nine completely compared sources; nine additional originals completely read with comparison pending. Sixty-six full existing article audits and five focused comparisons; nine new articles separately authored. Full mission open.",
+  "semantic_scope": "Thirty-one completely compared sources; nine additional originals completely read with comparison pending. Sixty-seven full existing article audits and five focused comparisons; nine new articles separately authored. Full mission open.",
   "sources": [
     {
       "file": "M16.txt",
@@ -422,8 +422,21 @@
       "bytes": 6254,
       "sha256": "7c8efadbecc9ff4df7a9c99e60d7dcb5a14835eb15e79d4edfd22c6db2195c3b",
       "byte_verified": true,
-      "semantic_review": "pending complete semantic reading",
-      "prior_disposition": "COVERED"
+      "semantic_review": "complete source reading; specific owning recovery and comparison pending",
+      "prior_disposition": "COVERED",
+      "read_progress": {
+        "paragraphs_read_in_full": [
+          [
+            1,
+            20
+          ]
+        ],
+        "next_unread_paragraph": null,
+        "complete_source_comparison": false
+      },
+      "partial_findings": [
+        "Full original printed/read without truncation. Specific Saints arsenal names/cultural-strike particulars pending; all54 owningparagraphs read."
+      ]
     },
     {
       "file": "w36.txt",
@@ -446,7 +459,7 @@
       "bytes": 5722,
       "sha256": "fe80c6972d5dd8624b2a963d35451417a881fca8b4b11856a1112e77d1d64c69",
       "byte_verified": true,
-      "semantic_review": "complete source reading; specific owning recovery and comparison pending",
+      "semantic_review": "complete source reading and connected claim/scene comparison",
       "prior_disposition": "COVERED",
       "read_progress": {
         "paragraphs_read_in_full": [
@@ -456,10 +469,10 @@
           ]
         ],
         "next_unread_paragraph": null,
-        "complete_source_comparison": false
+        "complete_source_comparison": true
       },
-      "partial_findings": [
-        "Full Moonlord original read: DiscordWars2872, DependencyLoop, fabricated Alfiebetrayal, falsecredit LiquidityLocks/CreditScorchers, predictive Fury distractions, Blockstar amplification, worthless DefenseToken buyers and FinalGrift. Specific intentional-dependency/falsecredit buyer details need owning recovery; current68paras fully read."
+      "findings": [
+        "Full origin/nihilism/DependencyLoop/fakeAlfiebetrayal/falsecredit Guildlocks/Furydecoys/Blockstar amplification/NULLtokenbuyers/FinalGrift claims compared across owning and full connected faction histories. Exact deliberate trap, credit effects and HighHat/Bull buyers restored; no proven SevenMornings sabotage or changed VelaQuell/Perr/Hala/Ione/Daro outcomes."
       ]
     },
     {
@@ -467,8 +480,21 @@
       "bytes": 7034,
       "sha256": "5387c54e8cd2806024ebf8379fc7c7c3648931e2cbb27010683a7aa023941150",
       "byte_verified": true,
-      "semantic_review": "pending complete semantic reading",
-      "prior_disposition": "COVERED"
+      "semantic_review": "complete source reading; specific owning recovery and comparison pending",
+      "prior_disposition": "COVERED",
+      "read_progress": {
+        "paragraphs_read_in_full": [
+          [
+            1,
+            20
+          ]
+        ],
+        "next_unread_paragraph": null,
+        "complete_source_comparison": false
+      },
+      "partial_findings": [
+        "Full original printed/read without truncation. All source Jodie/CloneHarvest/80helper/3escape/EchoMother/metasigil/door/captors/rebel/sigil claims already represented in full53paragraphs; specific remembering/remix/reroute credo and philosophical questions need owning recovery."
+      ]
     },
     {
       "file": "W4.txt",
@@ -483,7 +509,7 @@
       "bytes": 6334,
       "sha256": "4a2dc57f36ba94bbf57e2da57ec1f4496ed83b59de1e0446bb3ffa306e42bd97",
       "byte_verified": true,
-      "semantic_review": "complete source reading; specific owning recovery and comparison pending",
+      "semantic_review": "complete source reading and connected claim/scene comparison",
       "prior_disposition": "COVERED",
       "read_progress": {
         "paragraphs_read_in_full": [
@@ -493,10 +519,10 @@
           ]
         ],
         "next_unread_paragraph": null,
-        "complete_source_comparison": false
+        "complete_source_comparison": true
       },
-      "partial_findings": [
-        "Full Salvager original read: finitephysicalextract/refine/transport, specificmaterials/equipment, orbitalcoolant/shielding/elite taps contracts, Tuskon/Mercenary protection, Fury tracking, Ducky shieldednodes, physicalfailure interpretation, resource reserve and rebelpowercut threat. Specific orbital contract and conditionalcut threat need attributed recovery; current86paras fully read."
+      "findings": [
+        "Full physicalorigins/materials/code/equipment/cityorbitalcontract/elite shielding/protection/Miners/Fury/Rockers/NULLphysicalfailure/Ducky/stockpile/Kidpowerthreat claims compared. Exact materials/orbitalcontract/conditionalpowercut restored with attribution; no completed orbitaltransfer, universal monopoly, healed Etta/Sella, recovereddestroyedload or fixedFinalFork."
       ]
     },
     {
@@ -1894,6 +1920,15 @@
       ],
       "reading_verification": "All53 canonical paragraphs match fully read cache.",
       "findings": "Full Forkborn53paras: attributed preGamesShardMothers/laterescapedorder/syntheticEchoMother, no new41slot; Meva/Olan/HostBook/DoubleArrival/HostRevision/lostwork/RefusedDoor/FarewellStrip, Aleema/Jodie independentprivacy; distinct helper/thirdescapee stay unnamed and WrongWindow failedpassage unresolved."
+    },
+    {
+      "path": "wiki/the-og-pixel-saints.html",
+      "scope": "full canonical article",
+      "sections": [
+        "all canonical sections"
+      ],
+      "reading_verification": "All54 canonical paragraphs match fully read72-line cache.",
+      "findings": "Full Oriel/Juno/LastCredit/HalfSun/BlankTile/DimHour/BorrowedScreen/partialunpaidcommission, Callingcorruptednostalgia, FinalBoss/HighScore sourceclaims, PennFlick relicscandal, fanaticbreaksJuno art/keepsfollowers, BrokenContinue/consensualadult costumeplay. Exact NostalgiaBomb/AntiAbstract/MemeMagic names pending source recovery; no universal lightimmunity or compulsivejoy accepted."
     }
   ]
 }

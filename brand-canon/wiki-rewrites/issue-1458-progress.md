@@ -12,10 +12,10 @@ No direct push to main, merge, issue closure or production deployment.
 
 ## Current cumulative state
 
-29 of 94 original sources have full claim/scene comparison; 65 remain open.
+31 of 94 original sources have full claim/scene comparison; 63 remain open.
 Nine further originals are completely read with comparisons pending. Existing
-wiki audits cover 71 distinct articles: 66 full and five focused. Nine new
-articles and 44 expanded/corrected existing articles are implemented, with
+wiki audits cover 72 distinct articles: 67 full and five focused. Nine new
+articles and 46 expanded/corrected existing articles are implemented, with
 five original adult connecting stories. This is an implementation checkpoint,
 not a claim that every source or current wiki page is reconciled.
 
@@ -29,14 +29,14 @@ proposed; no final ending, new Forty slot or historical retcon is adopted.
 
 - **94** original archive files verified against archive SHA-256, CSV and the
   independent immutable ledger; **93** unique contents, **2,334,149** bytes.
-- **29** complete original texts read and compared cumulatively: W1, w32, w33,
-  w56, W12 (all eight parts), W13 (all seven parts and repeated extracts), W7, w50, w63, w60, w44, w47, w48, w54, w59, w42, w55, w43, w51 and w52 (those two are one repeated witness), w57, w46, w62, w45, w49, w53, w58, w34 and w41.
-  **65** remain without full semantic comparison. W19 is fully read but its
+- **31** complete original texts read and compared cumulatively: W1, w32, w33,
+  w56, W12 (all eight parts), W13 (all seven parts and repeated extracts), W7, w50, w63, w60, w44, w47, w48, w54, w59, w42, w55, w43, w51 and w52 (those two are one repeated witness), w57, w46, w62, w45, w49, w53, w58, w34, w41, w38 and w40.
+  **63** remain without full semantic comparison. W19 is fully read but its
   remaining embedded-character comparisons are pending, so it is not counted.
-- **71 distinct existing pages** reviewed: sixty-six full canonical articles
+- **72 distinct existing pages** reviewed: sixty-seven full canonical articles
   (Princess, Croydon, master chronology, concordance, synthetic minds,
   Crypto Moonboys, Great Consensus, Elder Codex-7, Iris-7, Aleema, Dream Sovereign,
-  all nine First Witness Books, HODL Warriors, GraffPUNKS, GKniftyHEADS, Whale Lords, XRP Kids, Forty Paths, faction Commentaries, Sarah, Jodie, Alfie, NULL, Block Topia, HODL doctrine, Hard Fork Rockers, Genesis Kernel, Nomad Bears, Blockstars, Crypto Stoned Boys, Rugpull Miners, Block Node Defenders both Army articles, Bitcoin X Kids, Chain Scribes the humour/attention supporting chapters, Thera, Charlie, Nice & Easy, AllCity Bulls Blockchain Furies, Finance Guild, Ducky Boys full Code Alchemists Bally Boys, High Hats, Aztec Raiders, Bitcoin Kids and Tuskon OGS and both Pinks articles and Gasless Ghosts and Information Mercenaries, Moonlords, Salvagers and Forkborn Collective) and five focused section reviews
+  all nine First Witness Books, HODL Warriors, GraffPUNKS, GKniftyHEADS, Whale Lords, XRP Kids, Forty Paths, faction Commentaries, Sarah, Jodie, Alfie, NULL, Block Topia, HODL doctrine, Hard Fork Rockers, Genesis Kernel, Nomad Bears, Blockstars, Crypto Stoned Boys, Rugpull Miners, Block Node Defenders both Army articles, Bitcoin X Kids, Chain Scribes the humour/attention supporting chapters, Thera, Charlie, Nice & Easy, AllCity Bulls Blockchain Furies, Finance Guild, Ducky Boys full Code Alchemists Bally Boys, High Hats, Aztec Raiders, Bitcoin Kids and Tuskon OGS and both Pinks articles and Gasless Ghosts and Information Mercenaries, Moonlords, Salvagers and Forkborn Collective and Pixel Saints) and five focused section reviews
   (Rune, Games, HODL Wars, Sacred Chain and Rave Relics). Exact scopes are in `issue-1458-audit.json`.
 - **424** top-level wiki pages pass automated targeted canon lint and content
   inventory checks. That number is a static scan, not a human semantic count.
@@ -90,7 +90,7 @@ Single authority policy: `../CANON_POLICY.md`. Entry/onboarding: root `AGENTS.md
 PR template now requires source, ripple, adult-story, discovery and approval
 checks. `../canon-locks.json` contains anchors, identity boundaries, 34/6 and
 nine-runtime distinction, 94 source identities and targeted claim rules.
-`../reconciliation-decisions.json` holds twenty-seven implemented and five proposed
+`../reconciliation-decisions.json` holds twenty-eight implemented and five proposed
 old/new decisions with rationale and affected paths.
 
 `canon-integrity-check.mjs` runs in wiki CI and checks explicit chronology,
@@ -919,3 +919,33 @@ prose-label gate after guards/regeneration/parity. No label applied.
 Next Moonlord intentional dependency and falsecredit/tokenbuyer specificity,
 Salvager orbitalcontract and conditionalpowercut source particulars, then
 remaining source/serial/roster dependencies. Full mission open.
+
+
+## Deliberate dependency and a supplier’s power threat
+
+w38/w40 full comparisons restore intentional DependencyLoop/falsecredit/token
+buyers, physical materials/attributed orbitalcontracts and conditional power
+cut warnings to outside rebels. No accepted orbitalsalvation, proven outage
+sabotage or repairedinjury invented. Two owning articles expanded; every
+modern paragraph retained. Current31/94,63 open; seven further originals read
+pending;71 audits66 full/five focused;46 changed existing articles, nine new,
+five original adult stories. Final validation pending.
+
+
+### Dependency/power final verification
+
+Full wiki CI, graph, preservation, links and Pages build pass. Two changed
+owning pages separately pass4 desktop/mobile views,2 noJS readings and2
+search/autocomplete queries; no new full cumulative browser run claimed.
+All424 prior pages,9822 original substantial paragraphs and5278 IDs remain
+against42723fa5a6840be9fe6cd1808f3a0a680c4d3bfc, with zero additional paragraph
+revisions. Across46 changed existing articles,3415 original substantial
+paragraphs remain with14 earlier exact reference receipts;1875 links resolve.
+Preview `/workspace/gk1459-previews/dependency-power-public-site`; no deployment.
+Full54paragraph Saints reading cache-verified; full w35/w39 originals read
+with source-specific arsenal/credo recovery pending. Current31/94 comparisons,
+63 open; nine further originals read pending;72 audits67 full/five focused;
+46 changed existing articles, nine new, five original adult stories.
+Exact42723fa5a6840be9fe6cd1808f3a0a680c4d3bfc passes seven other groups;
+Wiki/Graph inspected logs show only maintainer prose gate after guards/parity/
+regeneration. No label applied. Full mission open.

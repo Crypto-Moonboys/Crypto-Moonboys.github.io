@@ -531,3 +531,20 @@ or turn the RefusedDoor’s unknown destination into a successful crossing.
 The earlier3person escape remains Jodie/Aleema/unnamedreject, with the file
 helper separately unnamed. Source secrecy and local competence do not grant
 these institutions ownership of the people they helped or harmed.
+
+
+### Deliberate dependency and the finite supply
+
+Full w38/w40 comparisons restore the Moonlord’s deliberate DependencyLoop,
+falsecredit harm through Guild locks and elite buyers of useless defence
+tokens; Salvager materials, attributed orbitalcoolant contracts and threats
+to cut rebel power under survival pressure. Source physicalfailure and
+monopoly rhetoric do not certify a completed orbital programme or FinalFork.
+
+SevenMornings sabotage remains unproved. VelaQuell’s useful care and retained
+Daro money, Perr’s false wage mark, Hala’s departure and Ione’s private choices
+remain. Etta’s limited paid task, relief worker’s completion of that task,
+Sella’s separate hours and injury, another displaced worker’s grievance and
+purchased hours of household help remain. Their new attractive curtain was
+bought, not a miraculous salvage cure. A faction called honest still has
+priorities other workers may rightly hate.

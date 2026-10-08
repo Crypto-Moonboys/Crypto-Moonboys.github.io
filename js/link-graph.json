@@ -23219,7 +23219,7 @@
     ]
   },
   "/wiki/the-moonlords.html": {
-    "outbound_count": 32,
+    "outbound_count": 44,
     "inbound_count": 2,
     "existing_outbound": [
       "/wiki/bitcoin-kid-army.html",
@@ -23242,11 +23242,23 @@
     ],
     "suggested_outbound": [
       "/wiki/alcor-exchange.html",
+      "/wiki/fgl-token.html",
       "/wiki/first-witness-censorship-offence-public-marks.html",
       "/wiki/first-witness-charity-mutual-aid-dependence.html",
+      "/wiki/first-witness-pride-temptation-false-idols.html",
+      "/wiki/gkniftyheads-alessandro-token-titan-marini-783461.html",
+      "/wiki/gkniftyheads-matteo-token-tactician-romano-783462.html",
+      "/wiki/gkniftyheads-token-temptress-783401.html",
+      "/wiki/gkniftyheads-token-tycooness-783405.html",
+      "/wiki/gkniftyheads-waxp-femme-fatale-the-token-temptress-783414.html",
       "/wiki/graffpunks.html",
       "/wiki/hodl-wars.html",
+      "/wiki/nbg-token.html",
+      "/wiki/nbg.html",
+      "/wiki/nbgx-token.html",
       "/wiki/nfts.html",
+      "/wiki/pmsl-token.html",
+      "/wiki/punk-token.html",
       "/wiki/queen-sarah-p-fly.html",
       "/wiki/quell.html",
       "/wiki/rug-pull-wars.html",
@@ -23556,7 +23568,7 @@
     ]
   },
   "/wiki/the-salvagers.html": {
-    "outbound_count": 37,
+    "outbound_count": 40,
     "inbound_count": 6,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
@@ -23586,8 +23598,11 @@
       "/wiki/first-witness-money-debt-honest-scales.html",
       "/wiki/first-witness-music-dance-performance.html",
       "/wiki/first-witness-prisons-punishment-return.html",
+      "/wiki/first-witness-source-register.html",
       "/wiki/genesis-kernel.html",
       "/wiki/gkniftyheads-graphite-ghost-783307.html",
+      "/wiki/gkniftyheads-raze-rebel-783250.html",
+      "/wiki/gkniftyheads-rebel-riff-783269.html",
       "/wiki/graffpunks.html",
       "/wiki/hodl-warriors.html",
       "/wiki/hodl-x-warriors.html",

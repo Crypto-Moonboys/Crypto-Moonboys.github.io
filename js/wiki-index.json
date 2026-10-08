@@ -12261,13 +12261,13 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 6286,
+      "article_word_count": 6586,
       "keyword_bag_size": 24,
-      "heading_count": 33,
+      "heading_count": 34,
       "list_count": 1,
       "internal_link_count": 17,
-      "paragraph_count": 88,
-      "section_count": 30,
+      "paragraph_count": 92,
+      "section_count": 31,
       "lore_paragraph_count": 82,
       "content_quality_score": 105,
       "authority_score": 28
@@ -12366,14 +12366,24 @@
         "price",
         "dry",
         "supper",
-        "curtain"
+        "curtain",
+        "conditional",
+        "rebel",
+        "threat",
+        "source",
+        "orbital",
+        "coolant",
+        "contract",
+        "elite",
+        "geothermal",
+        "shielding"
       ]
     },
     "link_score": {
       "inbound_count": 6,
-      "outbound_count": 37,
+      "outbound_count": 40,
       "existing_outbound_count": 16,
-      "suggested_outbound_count": 21,
+      "suggested_outbound_count": 24,
       "authority": 20
     },
     "brand": null
@@ -17357,13 +17367,13 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 5031,
+      "article_word_count": 5259,
       "keyword_bag_size": 23,
-      "heading_count": 33,
+      "heading_count": 34,
       "list_count": 1,
       "internal_link_count": 21,
-      "paragraph_count": 70,
-      "section_count": 30,
+      "paragraph_count": 73,
+      "section_count": 31,
       "lore_paragraph_count": 26,
       "content_quality_score": 101,
       "authority_score": 28
@@ -17462,14 +17472,22 @@
         "warm",
         "rooms",
         "possessive",
-        "generosity"
+        "generosity",
+        "intentional",
+        "false",
+        "credit",
+        "liquidity",
+        "locks",
+        "token",
+        "elite",
+        "buyers"
       ]
     },
     "link_score": {
       "inbound_count": 2,
-      "outbound_count": 32,
+      "outbound_count": 44,
       "existing_outbound_count": 17,
-      "suggested_outbound_count": 15,
+      "suggested_outbound_count": 27,
       "authority": 12.5
     },
     "brand": null

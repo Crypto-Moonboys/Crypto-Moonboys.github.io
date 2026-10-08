@@ -667,6 +667,22 @@
         "wiki/the-gasless-ghosts.html",
         "wiki/the-information-mercenaries.html"
       ]
+    },
+    {
+      "id": "GK-1458-W38-W40-DEPENDENCY-POWER",
+      "status": "implemented",
+      "sources": [
+        "w38.txt,w40.txt complete originals and connected claim/scene comparisons",
+        "Full Moonlord68/Salvager86 owning articles, connected RedLedger/BlackDividend/LastLoading/city/elite/faction histories and attributed orbital programme limits"
+      ],
+      "old": "Intentional DependencyLoop/falsecredit/tokenbuyer and specific orbitalcontract/rebelpowercut claims compressed.",
+      "new": "Recover exact source traps, customers, materials and conditional power threat, retaining all modern livelihoods, intimate choices, disabled work, paid care and unresolved hearings.",
+      "reason": "Practical help and a useful service do not erase a faction’s coercive leverage; source installation or monopoly claims do not establish a completed universal system.",
+      "major": false,
+      "affected_paths": [
+        "wiki/the-moonlords.html",
+        "wiki/the-salvagers.html"
+      ]
     }
   ]
 }

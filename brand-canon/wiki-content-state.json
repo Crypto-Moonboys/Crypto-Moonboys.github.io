@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "generator": "scripts/generate-wiki-content-state.mjs",
-  "source_tree_hash": "sha256:be0ca9df11f1cff9b9e33d5c3adbaacd8a65bb52b9b88f22224267c631021fb6",
+  "source_tree_hash": "sha256:631ff0e3d5884d2c03fac5b04b7bf54908e3aba2cdd9701317134e5f4216c3d0",
   "hash_algorithm": "sha256",
   "page_count": 424,
   "manifest_entry_count": 424,
@@ -16086,7 +16086,7 @@
       "title": "The MOONLORDS",
       "page_exists": true,
       "page_type": "faction",
-      "current_word_count": 4708,
+      "current_word_count": 4936,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -16095,10 +16095,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:423c4348592b1ae9802c27eecb9b37e7dce71175c6d53416772a9bd19c9569fb",
-      "article_content_hash": "sha256:d8d2c5ee825ad68f07604ac5e4ae82d90546f5334de20866b1aaa84bd12fe01c",
-      "article_markup_hash": "sha256:b0b6dad7e5341d823b1e978c9ad323038512cbc492d11c74146cabb0562b3e8f",
-      "git_blob_oid": "44bc0366017f763ee264656d039e0742e7fe2fce",
+      "content_hash": "sha256:c21974ecc20c69349cbb736132b145e7382ce94bf9a1eb2cc5de7082f3f59ebb",
+      "article_content_hash": "sha256:02cc49263d66cac3ef717e87e476ca465dbf0074f1eeb9f204ec89c13233c08d",
+      "article_markup_hash": "sha256:7fd48e489c20325d7b0bec0e36f73714081e1d214a684dc892b9d4397e2a0d12",
+      "git_blob_oid": "ce919059c93725b04c47b3d505a83a8b25a3fa39",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -16119,12 +16119,12 @@
         "wiki/bibles/the-moonlords.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 5 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 6 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/the-moonlords.json; it is not automatically the unavailable Tier 4 modern bible.",
         "The requested modern Tier 4 subject bible is not separately identifiable in this checkout; canon classification remains a human-review item."
       ],
       "content_owner": "canon",
-      "canon_revision": 5,
+      "canon_revision": 6,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -16365,7 +16365,7 @@
       "title": "The SALVAGERS",
       "page_exists": true,
       "page_type": "faction",
-      "current_word_count": 5975,
+      "current_word_count": 6275,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -16374,10 +16374,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:247e6ec7bde9bb6bf5d5ba87df72b113bea2048c5ff82d50d3716df0359a7bd8",
-      "article_content_hash": "sha256:3db726b9c9596fc0e47c7dfad67dd40bee7838424678f72797896362f6af1d47",
-      "article_markup_hash": "sha256:f0190febd13591dd8c9c11b13e458f29fb89b29af70e67e5f1fb9b298426f764",
-      "git_blob_oid": "6ebccd0306350e7d56e5e4ae97f3811f2da8b911",
+      "content_hash": "sha256:95e60cb61d4262e6cb710e2fd5c41ff65da6ccd1342b07874eb23f1a7c9dce1c",
+      "article_content_hash": "sha256:847c35fd40e22bbd56587534f329c036887d72f0a8e93a709415b00340e72625",
+      "article_markup_hash": "sha256:a71fda2663c1106eeb9c9f3ed6ff9228fc2edc59799f35f9322a6a21d25c9b57",
+      "git_blob_oid": "1de0fc3dbae37369d640980929a984f7049fbfdb",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -16398,12 +16398,12 @@
         "wiki/bibles/the-salvagers.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 7 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 8 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/the-salvagers.json; it is not automatically the unavailable Tier 4 modern bible.",
         "The requested modern Tier 4 subject bible is not separately identifiable in this checkout; canon classification remains a human-review item."
       ],
       "content_owner": "canon",
-      "canon_revision": 7,
+      "canon_revision": 8,
       "canon_source_tier": "first-witness+w81"
     },
     {

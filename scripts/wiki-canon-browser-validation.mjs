@@ -9,7 +9,7 @@ import { chromium } from 'playwright';
 const root = path.resolve(import.meta.dirname, '..');
 const output = '/tmp/gk1458-browser';
 const created = ['whisper-codex', 'six-pillars', 'great-consensus', 'the-crypto-moongirls', 'agent-sam', 'house-of-rackinsats', 'kael-voss', 'sylas-the-unbroken', 'veyra-nyx'];
-const updated = ['rune-tag', 'squeaky-pinks-enforcers', 'hard-fork-games', 'block-topia', 'queen-sarah-p-fly', 'the-princess', 'the-code-alchemists', 'croydon-tower-blocks', 'elder-codex-7', 'iris-7', 'aleema-child-of-the-shard', 'dream-sovereign', 'graffpunks', 'gkniftyheads', 'hodl-warriors', 'whale-lords', 'first-witness-forty-paths', 'first-witness-faction-commentaries', 'alfie-bitcoin-kid-blaze', 'jodie-zoom-2000', 'null-the-prophet', 'bitcoin-kids', 'genesis-kernel', 'hodl-wars', 'sacred-chain', 'the-hard-fork-rockers', 'the-nomad-bears', 'the-crypto-stoned-boys', 'charlie-buster', 'thera-9', 'the-nice-easy-bois', 'the-rugpull-miners', 'the-allcity-bulls', 'the-finance-guild', 'the-ducky-boys', 'the-high-hats', 'the-bally-boys', 'the-aztec-raiders', 'bitcoin-kid-army', 'the-tuskon-ogs', 'the-blockstars', 'the-squeaky-pinks', 'the-gasless-ghosts', 'the-information-mercenaries'];
+const updated = ['rune-tag', 'squeaky-pinks-enforcers', 'hard-fork-games', 'block-topia', 'queen-sarah-p-fly', 'the-princess', 'the-code-alchemists', 'croydon-tower-blocks', 'elder-codex-7', 'iris-7', 'aleema-child-of-the-shard', 'dream-sovereign', 'graffpunks', 'gkniftyheads', 'hodl-warriors', 'whale-lords', 'first-witness-forty-paths', 'first-witness-faction-commentaries', 'alfie-bitcoin-kid-blaze', 'jodie-zoom-2000', 'null-the-prophet', 'bitcoin-kids', 'genesis-kernel', 'hodl-wars', 'sacred-chain', 'the-hard-fork-rockers', 'the-nomad-bears', 'the-crypto-stoned-boys', 'charlie-buster', 'thera-9', 'the-nice-easy-bois', 'the-rugpull-miners', 'the-allcity-bulls', 'the-finance-guild', 'the-ducky-boys', 'the-high-hats', 'the-bally-boys', 'the-aztec-raiders', 'bitcoin-kid-army', 'the-tuskon-ogs', 'the-blockstars', 'the-squeaky-pinks', 'the-gasless-ghosts', 'the-information-mercenaries', 'the-moonlords', 'the-salvagers'];
 const types = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.svg': 'image/svg+xml' };
 const server = http.createServer(async (req, res) => {
   try {
@@ -67,6 +67,7 @@ try {
     await page.close();
   }
   const queries = [
+  ['intentional Dependency Loop', 'the-moonlords'], ['conditional rebel power-cut threat', 'the-salvagers'],
   ['Theta engineer assassination targets', 'the-gasless-ghosts'], ['AGNES-7 broker source claim', 'the-information-mercenaries'],
   ['Thera bioweapon sterilisation leak', 'graffpunks'], ['satellite-unerased Sigel', 'jodie-zoom-2000'],
   ['exclusive next-conquest spoils contracts', 'the-tuskon-ogs'], ['Blockbusters ensemble', 'the-blockstars'], ['de-fragmentation memory arrest', 'the-squeaky-pinks'],
