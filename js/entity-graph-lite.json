@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-08T15:18:52.421Z",
-  "verified_at": "2026-10-08T15:18:52.421Z",
+  "generated_at": "2026-10-08T16:13:37.183Z",
+  "verified_at": "2026-10-08T16:13:37.183Z",
   "lite": true,
   "nodes": [
     {
@@ -776,7 +776,7 @@
     {
       "source": "/wiki/hodl-x-warriors.html",
       "target": "/wiki/hodl-warriors.html",
-      "score": 110,
+      "score": 111,
       "weight": 1
     },
     {
