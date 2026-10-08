@@ -12,10 +12,10 @@ No direct push to main, merge, issue closure or production deployment.
 
 ## Current cumulative state
 
-27 of 94 original sources have full claim/scene comparison; 67 remain open.
+29 of 94 original sources have full claim/scene comparison; 65 remain open.
 Nine further originals are completely read with comparisons pending. Existing
-wiki audits cover 68 distinct articles: 63 full and five focused. Nine new
-articles and 42 expanded/corrected existing articles are implemented, with
+wiki audits cover 71 distinct articles: 66 full and five focused. Nine new
+articles and 44 expanded/corrected existing articles are implemented, with
 five original adult connecting stories. This is an implementation checkpoint,
 not a claim that every source or current wiki page is reconciled.
 
@@ -29,14 +29,14 @@ proposed; no final ending, new Forty slot or historical retcon is adopted.
 
 - **94** original archive files verified against archive SHA-256, CSV and the
   independent immutable ledger; **93** unique contents, **2,334,149** bytes.
-- **27** complete original texts read and compared cumulatively: W1, w32, w33,
-  w56, W12 (all eight parts), W13 (all seven parts and repeated extracts), W7, w50, w63, w60, w44, w47, w48, w54, w59, w42, w55, w43, w51 and w52 (those two are one repeated witness), w57, w46, w62, w45, w49, w53 and w58.
-  **67** remain without full semantic comparison. W19 is fully read but its
+- **29** complete original texts read and compared cumulatively: W1, w32, w33,
+  w56, W12 (all eight parts), W13 (all seven parts and repeated extracts), W7, w50, w63, w60, w44, w47, w48, w54, w59, w42, w55, w43, w51 and w52 (those two are one repeated witness), w57, w46, w62, w45, w49, w53, w58, w34 and w41.
+  **65** remain without full semantic comparison. W19 is fully read but its
   remaining embedded-character comparisons are pending, so it is not counted.
-- **68 distinct existing pages** reviewed: sixty-three full canonical articles
+- **71 distinct existing pages** reviewed: sixty-six full canonical articles
   (Princess, Croydon, master chronology, concordance, synthetic minds,
   Crypto Moonboys, Great Consensus, Elder Codex-7, Iris-7, Aleema, Dream Sovereign,
-  all nine First Witness Books, HODL Warriors, GraffPUNKS, GKniftyHEADS, Whale Lords, XRP Kids, Forty Paths, faction Commentaries, Sarah, Jodie, Alfie, NULL, Block Topia, HODL doctrine, Hard Fork Rockers, Genesis Kernel, Nomad Bears, Blockstars, Crypto Stoned Boys, Rugpull Miners, Block Node Defenders both Army articles, Bitcoin X Kids, Chain Scribes the humour/attention supporting chapters, Thera, Charlie, Nice & Easy, AllCity Bulls Blockchain Furies, Finance Guild, Ducky Boys full Code Alchemists Bally Boys, High Hats, Aztec Raiders, Bitcoin Kids and Tuskon OGS and both Pinks articles and Gasless Ghosts and Information Mercenaries) and five focused section reviews
+  all nine First Witness Books, HODL Warriors, GraffPUNKS, GKniftyHEADS, Whale Lords, XRP Kids, Forty Paths, faction Commentaries, Sarah, Jodie, Alfie, NULL, Block Topia, HODL doctrine, Hard Fork Rockers, Genesis Kernel, Nomad Bears, Blockstars, Crypto Stoned Boys, Rugpull Miners, Block Node Defenders both Army articles, Bitcoin X Kids, Chain Scribes the humour/attention supporting chapters, Thera, Charlie, Nice & Easy, AllCity Bulls Blockchain Furies, Finance Guild, Ducky Boys full Code Alchemists Bally Boys, High Hats, Aztec Raiders, Bitcoin Kids and Tuskon OGS and both Pinks articles and Gasless Ghosts and Information Mercenaries, Moonlords, Salvagers and Forkborn Collective) and five focused section reviews
   (Rune, Games, HODL Wars, Sacred Chain and Rave Relics). Exact scopes are in `issue-1458-audit.json`.
 - **424** top-level wiki pages pass automated targeted canon lint and content
   inventory checks. That number is a static scan, not a human semantic count.
@@ -90,7 +90,7 @@ Single authority policy: `../CANON_POLICY.md`. Entry/onboarding: root `AGENTS.md
 PR template now requires source, ripple, adult-story, discovery and approval
 checks. `../canon-locks.json` contains anchors, identity boundaries, 34/6 and
 nine-runtime distinction, 94 source identities and targeted claim rules.
-`../reconciliation-decisions.json` holds twenty-six implemented and five proposed
+`../reconciliation-decisions.json` holds twenty-seven implemented and five proposed
 old/new decisions with rationale and affected paths.
 
 `canon-integrity-check.mjs` runs in wiki CI and checks explicit chronology,
@@ -879,3 +879,43 @@ Exact83adba5250ae7c174d80eb2286959375686f81e6 Actions pass seven other groups;
 Wiki/Graph logs show only maintainer prose gate after guards/regeneration/parity.
 No label applied. Next Ghost/Mercenary exact contracts and victim specificity,
 then remaining source/serial/roster dependencies. Full mission open.
+
+
+## Secrecy’s targets and the second buyer
+
+w34/w41 complete comparisons restore Theta engineer/Defender general targets,
+competing concealment guarantees, exact double-sided customerpairs, Nomad
+dropwatch and disputed AGNES7brokerclaim. Full current Moonlord68/Salvager86/
+Forkborn53 paragraphs read/cache-verified, with all RedLedger/BlackDividend/
+LastLoading injuries, killings, affairs, wages and refusal intact. Two owning
+articles expanded; no originalparagraph revision, new character/story/date/
+Fortyslot or finalending. Current29/94 comparisons,65 open; seven further
+originals completely read pending;71 audits66 full/five focused;44 changed
+existing articles, nine new, five original adult stories. Final validation pending.
+
+
+Full w38/w40 originals read; specific dependency/falsecredit/tokenbuyer and
+orbitalcontract/conditionalpowercut source details remain next owning recovery.
+Both modern owning pages already fully read, with all adult RedLedger and
+BlackDividend/LastLoading lives preserved. Current29 comparisons and nine
+additional originals fully read pending; no completedcomparison inflated.
+
+
+### Secrecy-market final verification
+
+Full wiki CI, graph, preservation, links and Pages build pass. Two changed
+articles separately pass4 desktop/mobile views,2 noJS readings and2
+search/autocomplete queries; no new full cumulative browser run claimed.
+All424 prior pages,9813 original substantial paragraphs and5276 IDs remain
+against6a6360e7c9762fddb042d3016a6f30d9236ac2e2, with zero additional paragraph
+revisions. Across44 changed existing articles,3261 original substantial
+paragraphs remain with14 earlier exact reference receipts;1786 links resolve.
+Preview `/workspace/gk1459-previews/secrecy-market-public-site`; no deployment.
+Current29/94 source comparisons,65 open; nine further originals read pending;
+71 distinct existing audits66 full/five focused;44 changed existing articles,
+nine new, five original adult stories. Exact6a6360e7c9762fddb042d3016a6f30d9236ac2e2
+Actions pass seven other groups; inspected Wiki/Graph logs show only maintainer
+prose-label gate after guards/regeneration/parity. No label applied.
+Next Moonlord intentional dependency and falsecredit/tokenbuyer specificity,
+Salvager orbitalcontract and conditionalpowercut source particulars, then
+remaining source/serial/roster dependencies. Full mission open.

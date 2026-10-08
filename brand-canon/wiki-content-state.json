@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "generator": "scripts/generate-wiki-content-state.mjs",
-  "source_tree_hash": "sha256:067920b9198b14b085c03ae8a477909c7997c6c3f5d71b29efbf9aaa521812af",
+  "source_tree_hash": "sha256:be0ca9df11f1cff9b9e33d5c3adbaacd8a65bb52b9b88f22224267c631021fb6",
   "hash_algorithm": "sha256",
   "page_count": 424,
   "manifest_entry_count": 424,
@@ -15854,7 +15854,7 @@
       "title": "The GASLESS GHOSTS",
       "page_exists": true,
       "page_type": "faction",
-      "current_word_count": 4429,
+      "current_word_count": 4736,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -15863,10 +15863,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:7bfb4fa329889e749bb8eb6f1187c2b22384084e9d23a8e076e6e21e67eebcb3",
-      "article_content_hash": "sha256:0263d09928199ec0dcba6c9fd50684148695c8f3b45ad695561584d653957e78",
-      "article_markup_hash": "sha256:094543a70cb9779abcbc6d15afb33a463672b223ec97884a23cef3bd22ee13fa",
-      "git_blob_oid": "0fc1c3fab820ffa480e3ab06f8ccc77141e1dc8b",
+      "content_hash": "sha256:4d02cb1c9d491dd29ef63db16f7cd46abc6e2dc6e6376a71e048c037e7e885ea",
+      "article_content_hash": "sha256:ef96e175eaf8c32228a512d4f556715ef35ff3058665cbba04c2a73b6e29ce23",
+      "article_markup_hash": "sha256:41e9d5747907a78f53fe01d6fd60e165b03379c66e9503bb3619de2ad3e317b5",
+      "git_blob_oid": "8a7cb60b5678ab8ee442a14883537e8d876ceb14",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -15887,12 +15887,12 @@
         "wiki/bibles/the-gasless-ghosts.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 5 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 6 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/the-gasless-ghosts.json; it is not automatically the unavailable Tier 4 modern bible.",
         "The requested modern Tier 4 subject bible is not separately identifiable in this checkout; canon classification remains a human-review item."
       ],
       "content_owner": "canon",
-      "canon_revision": 5,
+      "canon_revision": 6,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -16039,7 +16039,7 @@
       "title": "The INFORMATION MERCENARIES",
       "page_exists": true,
       "page_type": "faction",
-      "current_word_count": 4410,
+      "current_word_count": 4830,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -16048,10 +16048,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:2000e01d849270228142125455695d4902934db5a065a5a12ad0e7a84c79bff2",
-      "article_content_hash": "sha256:e17bfe5343fc85c0b13805846f1a014574ad0953a618f693f2b7859ca2d6a441",
-      "article_markup_hash": "sha256:87ceada752ca782b45c36c46b2f826065d558419bb9f705771be15e64e90bd60",
-      "git_blob_oid": "37375f264b966168dbf268988b9e80dd6dcd54b8",
+      "content_hash": "sha256:56689b1a346c1eb08838512b89b8cf1f802fedad932153ad79935a4201a44fd9",
+      "article_content_hash": "sha256:067590b11d0adad962b27b6372c79906f314aadd067145d3392fcde38a1897de",
+      "article_markup_hash": "sha256:9db956905061d87e8267f8efaa11de45befa714b63556893f6c391f35942943f",
+      "git_blob_oid": "5ef6b08addb2ef2872abf93d5268532550982bf0",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -16072,12 +16072,12 @@
         "wiki/bibles/the-information-mercenaries.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 4 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 5 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/the-information-mercenaries.json; it is not automatically the unavailable Tier 4 modern bible.",
         "The requested modern Tier 4 subject bible is not separately identifiable in this checkout; canon classification remains a human-review item."
       ],
       "content_owner": "canon",
-      "canon_revision": 4,
+      "canon_revision": 5,
       "canon_source_tier": "first-witness+w81"
     },
     {

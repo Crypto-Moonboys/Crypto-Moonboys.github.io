@@ -510,3 +510,24 @@ become permitted testimony because an old narrator calls her unique. Tessa’s
 ended listening arrangement, Vela’s broken wrist, Aleema’s refused appearance,
 Orsa’s separate room and the later NotYourDream work remain. Affection and
 source triumph do not cancel those private limits.
+
+
+### Targets, second buyers and the private life a packet sells
+
+Full w34/w41 comparisons restore Theta maintenance engineers/Defendergenerals
+as source targets, conflicting Ghost/Pink concealment guarantees, paired
+information sales, Nomad data-drop scrutiny and the broker’s AGNES7 claim.
+The satellite identification remains disputed; no settled NULLorigin is adopted.
+Arlo’s refusedrevenge, Sel’s bedlimit, Ione’s missed Perr/endedaffair/lostbookings,
+Fen’s wages and Idra’s accurate cruelty remain. Lossa’s refused masquerade
+invitation is not consent supplied through the hostess’s safety publicity.
+
+VelaQuell’s useful heat and retained patron money do not absolve Perr’s false
+wage mark. Hala’s separate departure remains. VelaQuell and injured VelaDint
+are distinct. SuriClamp/Leda/Enno retain RattleYard’s limits; Etta’s hand and
+Sella’s injury remain alongside paid adaptedwork and care with limited hours.
+Meva/Olan’s Forkborn HostBook cannot recover a displaced workshop’s shift
+or turn the RefusedDoor’s unknown destination into a successful crossing.
+The earlier3person escape remains Jodie/Aleema/unnamedreject, with the file
+helper separately unnamed. Source secrecy and local competence do not grant
+these institutions ownership of the people they helped or harmed.

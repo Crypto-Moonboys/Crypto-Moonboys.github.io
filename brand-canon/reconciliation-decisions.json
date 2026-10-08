@@ -651,6 +651,22 @@
         "wiki/graffpunks.html",
         "wiki/jodie-zoom-2000.html"
       ]
+    },
+    {
+      "id": "GK-1458-W34-W41-SECRECY-MARKET",
+      "status": "implemented",
+      "sources": [
+        "w34.txt,w41.txt complete originals and connected claim/scene comparisons",
+        "Full GaslessGhost70/Mercenary68 articles and all source-named core faction histories; current NULL origins and separate stealth claims"
+      ],
+      "old": "Engineer/general assassination targets, deceptive-memory/Mercenary disappearance, precise double-sided sales and AGNES7 broker claim compressed.",
+      "new": "Restore exact source target/customer pairs and disputed satellite claim on two owning pages, retaining all RedLedger/RestBell private lives and conflicting source guarantees.",
+      "reason": "A current refusal or careful invoice cannot repeal the source’s lethal or predatory market; no alleged satellite identification becomes accepted ontology.",
+      "major": false,
+      "affected_paths": [
+        "wiki/the-gasless-ghosts.html",
+        "wiki/the-information-mercenaries.html"
+      ]
     }
   ]
 }

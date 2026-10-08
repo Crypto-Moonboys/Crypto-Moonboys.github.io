@@ -22956,7 +22956,7 @@
     ]
   },
   "/wiki/the-gasless-ghosts.html": {
-    "outbound_count": 32,
+    "outbound_count": 35,
     "inbound_count": 1,
     "existing_outbound": [
       "/wiki/bitcoin-kids.html",
@@ -22977,12 +22977,15 @@
       "/wiki/triple-fork-event.html"
     ],
     "suggested_outbound": [
+      "/wiki/block-node-defenders.html",
       "/wiki/block-topia.html",
       "/wiki/first-witness-anonymity-pseudonyms-hidden-names.html",
       "/wiki/first-witness-apocrypha-disputed-passages.html",
       "/wiki/first-witness-hodl-doctrine.html",
       "/wiki/first-witness-prisons-punishment-return.html",
+      "/wiki/first-witness-source-register.html",
       "/wiki/first-witness-work-craft-service.html",
+      "/wiki/gkniftyheads-graphite-ghost-783307.html",
       "/wiki/gkniftyheads-nova-shadow-shredder-784419.html",
       "/wiki/gkniftyheads-shadow-streak-783245.html",
       "/wiki/gkniftyheads.html",
@@ -23168,7 +23171,7 @@
     ]
   },
   "/wiki/the-information-mercenaries.html": {
-    "outbound_count": 36,
+    "outbound_count": 37,
     "inbound_count": 1,
     "existing_outbound": [
       "/wiki/bitcoin-kids.html",
@@ -23208,6 +23211,7 @@
       "/wiki/the-blockstars.html",
       "/wiki/the-code-alchemists.html",
       "/wiki/the-first-witness.html",
+      "/wiki/the-hard-fork-rockers.html",
       "/wiki/xrp-ledger.html"
     ],
     "inbound_from": [

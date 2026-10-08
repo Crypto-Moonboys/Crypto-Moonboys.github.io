@@ -16031,13 +16031,13 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 4725,
+      "article_word_count": 5145,
       "keyword_bag_size": 24,
-      "heading_count": 34,
+      "heading_count": 35,
       "list_count": 1,
       "internal_link_count": 18,
-      "paragraph_count": 70,
-      "section_count": 31,
+      "paragraph_count": 75,
+      "section_count": 32,
       "lore_paragraph_count": 26,
       "content_quality_score": 105,
       "authority_score": 28
@@ -16139,14 +16139,27 @@
         "knowing",
         "first",
         "lossa",
-        "cairn"
+        "cairn",
+        "double",
+        "sided",
+        "intelligence",
+        "sales",
+        "agnes",
+        "7",
+        "broker",
+        "source",
+        "claim",
+        "paid",
+        "inside",
+        "anomaly",
+        "reports"
       ]
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 36,
+      "outbound_count": 37,
       "existing_outbound_count": 14,
-      "suggested_outbound_count": 22,
+      "suggested_outbound_count": 23,
       "authority": 9
     },
     "brand": null
@@ -19766,13 +19779,13 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 4752,
+      "article_word_count": 5059,
       "keyword_bag_size": 23,
-      "heading_count": 34,
+      "heading_count": 35,
       "list_count": 1,
       "internal_link_count": 18,
-      "paragraph_count": 72,
-      "section_count": 31,
+      "paragraph_count": 76,
+      "section_count": 32,
       "lore_paragraph_count": 26,
       "content_quality_score": 101,
       "authority_score": 28
@@ -19874,14 +19887,23 @@
         "to",
         "claim",
         "jeth",
-        "vale"
+        "vale",
+        "theta",
+        "engineer",
+        "targets",
+        "defender",
+        "general",
+        "ghost",
+        "source",
+        "concealment",
+        "contradiction"
       ]
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 32,
+      "outbound_count": 35,
       "existing_outbound_count": 16,
-      "suggested_outbound_count": 16,
+      "suggested_outbound_count": 19,
       "authority": 10
     },
     "brand": null

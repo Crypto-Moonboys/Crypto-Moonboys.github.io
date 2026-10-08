@@ -8,7 +8,7 @@
     "unique_contents": 93,
     "bytes": 2334149
   },
-  "semantic_scope": "Twenty-seven completely compared sources; nine additional originals completely read with comparison pending. Sixty-three full existing article audits and five focused comparisons; nine new articles separately authored. Full mission open.",
+  "semantic_scope": "Twenty-nine completely compared sources; nine additional originals completely read with comparison pending. Sixty-six full existing article audits and five focused comparisons; nine new articles separately authored. Full mission open.",
   "sources": [
     {
       "file": "M16.txt",
@@ -401,7 +401,7 @@
       "bytes": 6107,
       "sha256": "bc69ba6e421d8f6891ff7f1fdb55d1339a6e08eaf3573699af198a754836b029",
       "byte_verified": true,
-      "semantic_review": "complete source reading; specific owning recovery and connected comparison pending",
+      "semantic_review": "complete source reading and connected claim/scene comparison",
       "prior_disposition": "COVERED",
       "read_progress": {
         "paragraphs_read_in_full": [
@@ -411,10 +411,10 @@
           ]
         ],
         "next_unread_paragraph": null,
-        "complete_source_comparison": false
+        "complete_source_comparison": true
       },
-      "partial_findings": [
-        "Full original printed/read without truncation. Specific Pinks-loop/Mercenarydisappearance/Thetaengineer-and-Defendergeneral target claims and sourceconcealment/supply/rebel/NULL roles pending recovery; all current Ghost70paragraphs read."
+      "findings": [
+        "Full original and all named faction/scene relationships compared: Layer2/Mempool concealment guarantees, Pinksloops/deceptivememory/Mercenarydisappearances, Thetaengineer/Defendergeneral targets, defectoraudit/Rockerrestraint/Salvagers/Moonlords/rebelcover/NULLmapping. Exact target/customer/contradiction claims restored; RestBell private lives/refusedrevenge/affairended/bedlimits retained; no guaranteed stealth or acceptedassassinationjustice."
       ]
     },
     {
@@ -446,8 +446,21 @@
       "bytes": 5722,
       "sha256": "fe80c6972d5dd8624b2a963d35451417a881fca8b4b11856a1112e77d1d64c69",
       "byte_verified": true,
-      "semantic_review": "pending complete semantic reading",
-      "prior_disposition": "COVERED"
+      "semantic_review": "complete source reading; specific owning recovery and comparison pending",
+      "prior_disposition": "COVERED",
+      "read_progress": {
+        "paragraphs_read_in_full": [
+          [
+            1,
+            19
+          ]
+        ],
+        "next_unread_paragraph": null,
+        "complete_source_comparison": false
+      },
+      "partial_findings": [
+        "Full Moonlord original read: DiscordWars2872, DependencyLoop, fabricated Alfiebetrayal, falsecredit LiquidityLocks/CreditScorchers, predictive Fury distractions, Blockstar amplification, worthless DefenseToken buyers and FinalGrift. Specific intentional-dependency/falsecredit buyer details need owning recovery; current68paras fully read."
+      ]
     },
     {
       "file": "w39.txt",
@@ -470,15 +483,28 @@
       "bytes": 6334,
       "sha256": "4a2dc57f36ba94bbf57e2da57ec1f4496ed83b59de1e0446bb3ffa306e42bd97",
       "byte_verified": true,
-      "semantic_review": "pending complete semantic reading",
-      "prior_disposition": "COVERED"
+      "semantic_review": "complete source reading; specific owning recovery and comparison pending",
+      "prior_disposition": "COVERED",
+      "read_progress": {
+        "paragraphs_read_in_full": [
+          [
+            1,
+            22
+          ]
+        ],
+        "next_unread_paragraph": null,
+        "complete_source_comparison": false
+      },
+      "partial_findings": [
+        "Full Salvager original read: finitephysicalextract/refine/transport, specificmaterials/equipment, orbitalcoolant/shielding/elite taps contracts, Tuskon/Mercenary protection, Fury tracking, Ducky shieldednodes, physicalfailure interpretation, resource reserve and rebelpowercut threat. Specific orbital contract and conditionalcut threat need attributed recovery; current86paras fully read."
+      ]
     },
     {
       "file": "w41.txt",
       "bytes": 5929,
       "sha256": "9a1530ff42ee59372c0e3d2d68ba8903553df0bd5199cc9b436f79b98aad64fa",
       "byte_verified": true,
-      "semantic_review": "complete source reading; specific owning recovery and connected comparison pending",
+      "semantic_review": "complete source reading and connected claim/scene comparison",
       "prior_disposition": "COVERED",
       "read_progress": {
         "paragraphs_read_in_full": [
@@ -488,10 +514,10 @@
           ]
         ],
         "next_unread_paragraph": null,
-        "complete_source_comparison": false
+        "complete_source_comparison": true
       },
-      "partial_findings": [
-        "Full original printed/read without truncation. Specific double-sided sales, insideanomaly reports, eliteAuditTower data and AGNES7 sourceclaim pending recovery; current68paragraphs fully read and modernintimacy/privatevoice damage preserved."
+      "findings": [
+        "Full original and all named faction/scene relationships compared: eliteAuditTower/default/manipulation sales, bot customers, Raiderreports/cityblindspots, Minerhideouts/Fury-patrol resales, Architect/Nomad dropwatch, Pinks anomaly price, source AGNES7location claim, rebelprediction/Rockerblindspots and insideBlockstar publicity. Specificpairs restored; CrimsonPacket privacy/refunds/wages/limitedcorrection/Lossa refusal retained; AGNES7 not adopted as settled NULLorigin."
       ]
     },
     {
@@ -1841,6 +1867,33 @@
       ],
       "reading_verification": "All68 canonical paragraphs match fully read97-line cache.",
       "findings": "Full Idra/Fen/ThirdEar/BrokenClock/ReleasePrice/UnboughtWarning/ListeningDay; RedLedger CrimsonPacket/Ula/Rafe/Daro/Ione/Perr threat, partialrefund/no guaranteecopies, privatevoice refusal, Fen return/unrelatedwages/Jexdeath; BlindfoldHour/Lossa denied safety and adult secretglamour. w41 explicit double-side sales/AGNES7 broker claim and w34 engineer target/employment specificity pending source recovery."
+    },
+    {
+      "path": "wiki/the-moonlords.html",
+      "scope": "full canonical article",
+      "sections": [
+        "all canonical sections"
+      ],
+      "reading_verification": "All68 canonical paragraphs match fully read cache.",
+      "findings": "Full Moonlord68paras: VelaQuell/Corin/BorrowedDawn/Exchange/Sena silence/escort split, RedLedger Daro/Perr/Ione affair/privacy/falsewage marks/Hala separate departure, patron retains money after porter death; BorrowedHoneymoon gratitude/display obligation and private possessive warmth. VelaQuell remains distinct from VelaDint."
+    },
+    {
+      "path": "wiki/the-salvagers.html",
+      "scope": "full canonical article",
+      "sections": [
+        "all canonical sections"
+      ],
+      "reading_verification": "All86 canonical paragraphs match fully read cache.",
+      "findings": "Full Salvager86paras: SuriClamp/Leda/Enno/RattleYard/ReturnWeight/ColdCart/UnclaimedShelf, all CinderShed/BlackDividend Etta injury/theft/adaptation/paidwork/Sella wages and lostinterval; SecondFuneral ownershipreturn; LastLoading work/refusal/assault/limitedcare/BorrowedCurtain. No healedhands or recovered destroyedload."
+    },
+    {
+      "path": "wiki/forkborn-collective.html",
+      "scope": "full canonical article",
+      "sections": [
+        "all canonical sections"
+      ],
+      "reading_verification": "All53 canonical paragraphs match fully read cache.",
+      "findings": "Full Forkborn53paras: attributed preGamesShardMothers/laterescapedorder/syntheticEchoMother, no new41slot; Meva/Olan/HostBook/DoubleArrival/HostRevision/lostwork/RefusedDoor/FarewellStrip, Aleema/Jodie independentprivacy; distinct helper/thirdescapee stay unnamed and WrongWindow failedpassage unresolved."
     }
   ]
 }

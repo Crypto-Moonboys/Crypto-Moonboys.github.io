@@ -26,7 +26,7 @@
     "w52.txt"
   ],
   "existing_wiki_pages_sectionally_reviewed": 7,
-  "existing_wiki_pages_updated": 42,
+  "existing_wiki_pages_updated": 44,
   "new_wiki_articles": 9,
   "source_level_conflicts_interpreted": 3,
   "major_historical_retcons_published": 0,
@@ -62,7 +62,7 @@
     "content_state_parity": "passed",
     "graph_publishing_integrity": "passed",
     "browser": "passed",
-    "github_pages_artifact": "final paint/harvest artifact built successfully; no deployment",
+    "github_pages_artifact": "final secrecy-market artifact built successfully; no deployment",
     "git_diff_check": "passed",
     "full_npm_test": "Aggregate attempt passed Arcade, Worker API, Wiki and WAX; stopped in Visual on missing bundled browser. All 16 Visual commands subsequently passed in ci:visual after installed Chromium setup and moving the generated preview outside the source tree. No successful single aggregate npm test invocation is claimed.",
     "ci_domains": {
@@ -145,9 +145,15 @@
       "paint_harvest_graph": "/tmp/gk1459/paint-harvest-graph.log",
       "paint_harvest_preservation": "/tmp/gk1459/paint-harvest-preservation.log",
       "paint_harvest_all_wiki_preservation": "/tmp/gk1459/paint-harvest-all-wiki-preservation.log",
-      "paint_harvest_build": "/tmp/gk1459/paint-harvest-pages-build.log"
+      "paint_harvest_build": "/tmp/gk1459/paint-harvest-pages-build.log",
+      "secrecy_market_wiki": "/tmp/gk1459/secrecy-market-ci-wiki.log",
+      "secrecy_market_browser": "/tmp/gk1459/secrecy-market-browser.log",
+      "secrecy_market_graph": "/tmp/gk1459/secrecy-market-graph.log",
+      "secrecy_market_preservation": "/tmp/gk1459/secrecy-market-preservation.log",
+      "secrecy_market_all_wiki_preservation": "/tmp/gk1459/secrecy-market-all-wiki-preservation.log",
+      "secrecy_market_build": "/tmp/gk1459/secrecy-market-pages-build.log"
     },
-    "github_pages_artifact_path": "/workspace/gk1459-previews/paint-harvest-public-site",
+    "github_pages_artifact_path": "/workspace/gk1459-previews/secrecy-market-public-site",
     "scoped_related_paths": "passed: unrelated NFT/curated pages unchanged; invalid scope fails before writes",
     "visual_current_batch": "passed: all 16 ci:visual commands, exit 0",
     "wiki_ci_latest_base": "passed, exit 0, final W5 prose and restored curated navigation; BASE_SHA=b865fd991a63d3b74c7076acec703a9b5b0647d8 and task-authorised local prose flag",
@@ -158,7 +164,7 @@
     "serial_browser": "passed, exit0:36 desktop/mobile views,18 no-JavaScript readings,9 full-search/autocomplete queries, no overflow/script errors",
     "w5_browser": "passed, exit 0: 48 desktop/mobile views, 24 no-JavaScript articles, 16 full-search/autocomplete queries",
     "w5_preservation_and_links": "passed: 1,237 original substantial paragraphs and all original active IDs across 18 expanded pages; 623 canonical article links resolve",
-    "all_wiki_preservation": "passed against83adba5250ae7c174d80eb2286959375686f81e6: all424 pages,9807 original substantial paragraphs,5274IDs;zero new paragraph revisions",
+    "all_wiki_preservation": "passed against6a6360e7c9762fddb042d3016a6f30d9236ac2e2: all424 pages,9813 original substantial paragraphs,5276IDs;zero new paragraph revisions",
     "triad_wiki_ci": "passed, exit 0, final prose/curated paths and current-main baseline; task-authorised local prose flag",
     "triad_browser": "passed: 60 desktop/mobile views, 30 no-JavaScript readings, 20 search/autocomplete queries",
     "triad_preservation_and_links": "passed: 1,535 original substantial paragraphs across 21 expanded existing pages; all original IDs retained; 829 canonical links across those and three new character pages resolve",
@@ -188,7 +194,10 @@
     "ensemble_story_safeguards": "3 passed: exact Nela receipt accepted; injury erasure and reference reversal rejected",
     "paint_harvest_wiki_ci": "passed exit0; current-main baseline and task-authorised local prose flag",
     "paint_harvest_browser": "scoped2 changed articles pass4 desktop/mobile views,2 noJS pages,2 search/autocomplete queries",
-    "paint_harvest_preservation_and_links": "passed3123 original substantial paragraphs/14 earlier exact references across42 changed existing articles;1702 canonical links across those and3 new biographies resolve"
+    "paint_harvest_preservation_and_links": "passed3123 original substantial paragraphs/14 earlier exact references across42 changed existing articles;1702 canonical links across those and3 new biographies resolve",
+    "secrecy_market_wiki_ci": "passed exit0; current-main baseline and task-authorised local prose flag",
+    "secrecy_market_browser": "scoped2 changed articles pass4 desktop/mobile views,2 noJS readings,2 search/autocomplete queries",
+    "secrecy_market_preservation_and_links": "passed3261 original substantial paragraphs/14 earlier exact references across44 changed existing articles;1786 canonical links across those and3 new biographies resolve"
   },
   "limitations": [
     "Byte verification and static lint do not constitute full semantic reconciliation.",
@@ -209,7 +218,7 @@
     "pull_request_draft": true,
     "github_ci": "Checked exact head 6da75973f827b7161ce349a403ca4af723d8c00e: Wiki Structure, production truth, worker provenance, Arcade, Worker API, WAX and Visual passed. CI/Wiki and Graph Publishing stopped at protected-prose maintainer-label gate. No canon-prose-change-approved label has been self-applied.",
     "issue_progress_comment_id": 6059157565,
-    "latest_implementation_commit_uploaded": "83adba5250ae7c174d80eb2286959375686f81e6",
+    "latest_implementation_commit_uploaded": "6a6360e7c9762fddb042d3016a6f30d9236ac2e2",
     "github_ci_latest_batch": "Exact head a1d5273cd534654e28bab701aecb7736f184695b: Wiki Structure, production truth, worker provenance, Arcade, Worker API, WAX and Visual passed. Wiki and Graph regeneration/manifest/graph checks pass and then stop at the existing maintainer canon-prose-change-approved label gate. No label self-applied.",
     "serial_batch_ci": "Exact head2d758b5ed: WikiStructure,productiontruth,workerprovenance,Arcade,WorkerAPI,WAX,Visual all pass. Wiki/Graph logs show only existing maintainer prose-label gate after manifest/graph parity. No label self-applied.",
     "w5_batch_ci": "Exact 153d20831e8c4cb645a82dadfa593e70b125a49b: Wiki Structure, production truth, worker provenance, Arcade, Worker API, WAX and Visual pass. Inspected Wiki/Graph logs show successful guards/manifest/graph checks then only existing maintainer prose-label gate; no label self-applied.",
@@ -220,7 +229,8 @@
     "maintenance_batch_ci": "Exactacb1616db1bf310b24b02efa2600c0f2a54696e2: WikiStructure,productiontruth,workerprovenance,Arcade,WorkerAPI,WAX,Visual pass. Inspected Wiki/Graph logs show only maintainer prose-label gate after successful regeneration/guards/parity; no label applied.",
     "elite_batch_ci": "Exact9263e343ac367c80d92cc1cdfdf84223cb540b3e: Structure,productiontruth,workerprovenance,Arcade,WorkerAPI,WAX,Visual pass. Inspected Wiki/Graph logs: only maintainer prose-label gate after guards/regeneration/parity. No label applied.",
     "bargains_batch_ci": "Exactd33ae06a0422266510bdb06564c4840753a2d587: Structure,productiontruth,workerprovenance,Arcade,WorkerAPI,WAX,Visual pass. Wiki/Graph inspected logs show only maintainer prose-label gate after regeneration/guards/parity. No label applied.",
-    "ensemble_batch_ci": "Exact83adba5250ae7c174d80eb2286959375686f81e6: Structure,productiontruth,workerprovenance,Arcade,WorkerAPI,WAX,Visual pass. Wiki/Graph inspected logs show only maintainer prose-label gate after guards/regeneration/parity. No label applied."
+    "ensemble_batch_ci": "Exact83adba5250ae7c174d80eb2286959375686f81e6: Structure,productiontruth,workerprovenance,Arcade,WorkerAPI,WAX,Visual pass. Wiki/Graph inspected logs show only maintainer prose-label gate after guards/regeneration/parity. No label applied.",
+    "paint_harvest_batch_ci": "Exact6a6360e7c9762fddb042d3016a6f30d9236ac2e2: Structure,productiontruth,workerprovenance,Arcade,WorkerAPI,WAX,Visual pass. Wiki/Graph inspected logs show only maintainer prose-label gate after guards/regeneration/parity. No label applied."
   },
   "initial_tranche_verification": {
     "source_texts_completely_read_this_tranche": [
@@ -276,7 +286,7 @@
       "visual_current_batch": "running; previous tranche Visual result remains scoped to prior checkpoint"
     }
   },
-  "source_texts_fully_reviewed_cumulative": 27,
+  "source_texts_fully_reviewed_cumulative": 29,
   "source_texts_completely_read_but_comparison_pending": [
     "W19.txt",
     "W15.txt",
@@ -285,11 +295,11 @@
     "w68.txt",
     "W5.txt",
     "w69.txt",
-    "w34.txt",
-    "w41.txt"
+    "w38.txt",
+    "w40.txt"
   ],
-  "existing_wiki_pages_fully_reviewed": 63,
-  "existing_wiki_pages_reviewed_distinct": 68,
+  "existing_wiki_pages_fully_reviewed": 66,
+  "existing_wiki_pages_reviewed_distinct": 71,
   "preserved_unique_narrative_paragraphs_at_least_40_chars_in_8_updated_pages": 664,
   "preserved_original_paragraphs_in_updated_pages_scope": "632 in the first seven pages verified in initial tranche; latest batch additionally checks 664 unique substantial narrative paragraphs across all eight against original base.",
   "source_reading_pending_comparison": [
@@ -300,8 +310,8 @@
     "w68.txt",
     "W5.txt",
     "w69.txt",
-    "w34.txt",
-    "w41.txt"
+    "w38.txt",
+    "w40.txt"
   ],
   "existing_wiki_pages_reviewed_total": 64,
   "preserved_original_paragraphs_scope": "35 changed existing pages;2630 substantial original paragraphs including13 exact prior Tavi references; no additional narrative revisions",
@@ -469,6 +479,32 @@
     "previous_checkpoint_substantial_paragraphs": 9807,
     "previous_checkpoint_ids": 5274,
     "preview_path": "/workspace/gk1459-previews/paint-harvest-public-site",
+    "browser": {
+      "scope": "Only two changed owning pages; no new full cumulative run claimed.",
+      "desktop_mobile_views": 4,
+      "no_javascript_pages": 2,
+      "search_queries": 2,
+      "external_requests_blocked": true
+    }
+  },
+  "secrecy_market_batch": {
+    "status": "implemented; full wiki/graph/preservation/link/build and scoped browser checks passed",
+    "sources_completely_compared": [
+      "w34.txt",
+      "w41.txt"
+    ],
+    "existing_owning_pages_changed": 2,
+    "newly_changed_existing_pages": 2,
+    "original_paragraph_revisions": 0,
+    "new_characters": 0,
+    "new_original_stories": 0,
+    "major_retcons_adopted": 0,
+    "original_substantial_paragraphs_preserved": 3261,
+    "canonical_links_checked": 1786,
+    "all_existing_pages_preserved": 424,
+    "previous_checkpoint_substantial_paragraphs": 9813,
+    "previous_checkpoint_ids": 5276,
+    "preview_path": "/workspace/gk1459-previews/secrecy-market-public-site",
     "browser": {
       "scope": "Only two changed owning pages; no new full cumulative run claimed.",
       "desktop_mobile_views": 4,
