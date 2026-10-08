@@ -350,6 +350,85 @@ source, authority, affected paths, rationale and approval when required. This
 bible is the working convergence entry point; pending items must remain visible
 until they are actually researched and implemented.
 
+### Phase 2: dossier, Chronometer and the loss of warmth
+
+Phase 2 starts from merged main `cc856157f5bd23e1b7ae3ed032af44c6b725c524`,
+whose tree exactly matches PR #1459's corrected head. Eighteen further sources
+have complete section/claim comparison: W18, w85, w28, w29, w83, w88, W9,
+w74, w75, w76, w77, w79, w89, w81, w90, w91, W11 and W16. The cumulative
+count is **61/94**, with **33 comparisons still open**. W19/W15/w25/M16/W5/
+w69/W20 retain full reading receipts with connected comparisons incomplete.
+
+W18's Alfie portrait now retains Kid Blaze 3008's rooftop runs, Thames wallet
+fishing, poetry, banned murals, named can and gun, and reported refuges. Its
+2789 breach precedes the end of its own 2789–2791 loyal service, before the
+larger city-chronology conflict is even considered. The claimed Sarah affair,
+3006 NULL merger, lost daughter, rescue totals and immortal futures remain
+disputed. The source's refusal to name inside children is recovered without
+absorbing Jodie's leadership, Dera's private refusal or the independent X Kids.
+Bram's assaults, Alfie's known delay, Tessa and Vela's injuries, and Sena's
+ceased response remain the existing modern history.
+
+w85's seven-chapter Crypto Protocol is already owned by Thorne's article;
+GKniftyHEADS now carries the matching Chronometer mission, Jump Leader Joe,
+unnamed Archivist, failed utopian return and concealed final blueprint. Its
+keepers fade in a branch they helped create. The last flicker cannot supply a
+new resurrection law or erase Rell and Omra's current lives. No source bridge
+merges Thorne's branch identity with every later city-builder legend.
+
+w28's radical Flesh Fade is a materially different rescue account: financial
+failure, Machine-administered deprivation, toxic bodily injury, Minting Stations
+and Arch-Scribe Vex's grief over lost warmth. Its universal ghost-world conclusion
+remains an unapproved ontology. w61's damaged heads, W5's voluntary ceremony and
+the inherited Sacred Fork are not one established event merely because their
+language overlaps. Sacred Chain's physical houses, paid custody, funerary care,
+failed restoration and Holdfast consequences retain their existing history.
+
+w29's Pinks equipment doctrine now retains the claimed sixty-second Digital
+Statue, ten-block Theta-Shield and Know-Your-Hash anonymity offence. The source
+calls its patrol executioners, then denies the role while assigning final
+destruction to NULL. Capture and delivery are still its alleged acts. The
+competing w65 account supplies an uncontrolled threat, not a second confirmation
+of an obedient disposal service. The Enforcers' existing custody allegations
+remain attributed. Glaze's bonus, Nela's injury and lost work, the unfinished
+hearing, Ressa's refusal and Hessa/Bex's Fifth Carbon consequences survive.
+
+w83's Holly Citadel account is a separate Kent migration fable, not proof that
+Maidstone lies at its stated coordinates or that crossing Greenwich changes
+political jurisdiction. Its named faction tasks are preserved beside Nia's
+ordinary place-record work. A WAX inventory and a promised melt-up establish
+neither a current valuation nor an intact command post in 3008.
+
+W11's full ten-chapter Chronicle supplies a Cold Storage cult of privileged
+visions and a 1983 Covenant demanding mural labour for each patron move. Its
+promised complete covenant text is absent. Sarah's Silent Auction title,
+Depth Guardian, is preserved as the tale's patronage legend; no accepted new
+warrior, Forty-first culture or Hard Fork immunity benefit follows. The source's
+real artist commissions, donations and airdrops are unverified. Sounding House,
+the Unfunded Crossing, Junn's lost rooms and Sarren's refusal remain material
+consequences in the current world.
+
+W9's proposed autonomous LOREWARS publisher cannot replace human canon decisions
+or make $BLAZE rewards live. W16's three-repository architecture remains dated
+software design and metaphor, not Agent SAM's biography or NULL's origin.
+Current static readers and preservation-first publishing can continue without
+certifying external intelligence servers. w91's numbered but unnamed examples
+01/13/28/40 do not establish missing cultures; its demand that every faction
+want one destruction is an ideological voice, not a world census.
+
+Complete w74/w75/w76/w77/w79/w81/w88/w89/w90 comparisons verify existing
+coverage of business history, greypapers, channels, Buster's style and public
+culture. The PUNK page preserves its source's missing2.5% allocation; LFGK
+preserves circulation/escrow and community-release arithmetic tensions. STAKE
+plans are not consensus staking. No new biography, market guarantee, company
+role, token mechanism or blanket creator rights are derived from these texts.
+Strong cultural details remain; repeated marketing does not require duplicate
+paragraphs in an already adequate article.
+
+No new original fiction, accepted historical anchor, scripture, identity merger
+or Forty assignment is added in this checkpoint. Exact section dispositions
+and source-level decisions are in the existing audit and decision registers.
+
 
 ### Complete Rocker/HODL witnesses and a repaired name reference
 

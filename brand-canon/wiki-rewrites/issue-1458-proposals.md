@@ -4,6 +4,49 @@
 and downstream auditing remain incomplete where stated. Durable decision IDs,
 old/new accounts and affected paths are in `../reconciliation-decisions.json`.
 
+### Phase 2 evidence added; approvals still pending
+
+Complete W18 comparison exposes a further internal order conflict: its 2789
+breach is called the betrayal ending service otherwise dated 2789–2791. Its
+3002–3005 Sarah alliance, 3006 NULL merger and already completed 3008 armistice
+cannot supply the missing chronology or a Final Fork ending. Its lost daughter
+and Sarah mentor/lover title require independent relationship evidence; they
+do not change the accepted biographies. The new dossier sections on Alfie and
+Sarah preserve the exact source boundary for any future approved decision.
+
+w28's complete three-phase Flesh Fade supplies another universal-upload
+interpretation, with explicit server infrastructure, a less-than-thirty-day
+bodily deadline and Vex's loss of warmth. It conflicts with both w61's failed
+rescue and W5's voluntary ceremony. The recommended materially continuing
+world retains its social memory of deprivation and rescue without accepting
+its assertion that every present body is already dead. A literal ghost-world
+alternative still requires an explicit ontology decision affecting Sacred
+Chain, GKniftyHEADS, Genesis Kernel, NULL, all bodily character histories and
+the Final Fork. No Sacred Fork date, Bitcoin provenance or original Book text
+is replaced by this source's claim to be the unredacted truth.
+
+w85's fading guardians are confined to its Chronometer branch; they do not
+resolve the SAM calendar, identify every Architect with HyroSAM or erase the
+main world. w29's executioner-to-handoff contradiction remains an institutional
+variant, not a new locked NULL identity. Complete source comparison can record
+those limits while the broader five major decisions remain proposed. None is
+approved by the ordinary authorisation to research and expand these pages.
+
+W11 explicitly calls its Depth Dwellers an unofficial41st faction, despite
+already identifying them as the Whale Lords' own crew. They cannot replace
+an unnamed35th–40th independent culture. w91's01/13/28/40 examples have no
+names, histories or enduring membership, so its apparent40/40 certainty is
+not stronger roster evidence. Its universal hostile will conflicts with the
+current distinct faction lives. Both sources are now fully compared; the
+complete source-based roster recommendation still needs the remaining26
+originals and seven pending connected comparisons.
+
+W9/W16 software allegories add no evidence for a SAM calendar, a bodily world
+reset or a final outcome. w83's market migration cannot establish a new secure
+region or an outside geography surviving the catastrophe. These precise
+exclusions narrow the approval problem without silently approving any of the
+five major decisions. Exact source claims and affected paths remain traceable.
+
 ## Dates: retain 2880 and by 2930, with a reason
 
 `GK-1458-TRIPLE-FORK`: M16's 2198 and w92's 2588 compete with the current 2880

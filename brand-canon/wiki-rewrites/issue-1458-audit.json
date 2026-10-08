@@ -8,7 +8,7 @@
     "unique_contents": 93,
     "bytes": 2334149
   },
-  "semantic_scope": "Forty-three completely compared sources; seven additional originals completely read with comparison pending. Seventy-three full existing article audits and three focused comparisons; nine new articles separately authored. Broader mission remains open; user requested finishing current edits for merge review.",
+  "semantic_scope": "61/94 complete source comparisons: inherited43 plus18 Phase2 completions.33 remain; W19/W15/w25/M16/W5/w69/W20 are fully read with comparisons pending. The other26 need complete original readings and comparisons. No existing URL or initial disposition is counted as completion.",
   "sources": [
     {
       "file": "M16.txt",
@@ -49,8 +49,36 @@
       "bytes": 15172,
       "sha256": "f64c7354aa456c096262e836d1e4c3f53f5e4e4130df845a03aebed3d19a2338",
       "byte_verified": true,
-      "semantic_review": "pending complete semantic reading",
-      "prior_disposition": "COVERED"
+      "semantic_review": "complete source reading and connected claim/scene comparison",
+      "prior_disposition": "COVERED",
+      "read_progress": {
+        "method": "entire verified original read without truncation; full owning article and bounded current dependent passages/runtime compared as individually recorded",
+        "complete_source_comparison": true
+      },
+      "phase2_comparison": {
+        "base_commit": "cc856157f5bd23e1b7ae3ed032af44c6b725c524",
+        "date": "2026-10-08",
+        "decision": "GK-1458-P2-WHALE-CHRONICLES",
+        "claim_dispositions": [
+          "Entire ten-chapter original, including brief prospective chapters6\u201310, read; full current Whale article compared. Origin/2013/2017/2018/2020\u20132025/MtGox/institution images are market allegory, not proof of one secret will or authenticated modern biography.",
+          "Darren1983Leake/2013SilentSellOff/2017Brixtonprophecy, Buster10kXRP/100kairdrop/1Mdrop/StencilMustBreak, Bone/PeteWhaleSong/co-founder/10mural and0xDEEPSEAQueens2021 funding are unsupported specific real claims. No artist private life, actual work/date/payment/currentmarketfact added.",
+          "Depth Dwellers tail/private1000BTC room/information-eyes/ShardMothers alliance and unofficial41st claim compared to current TailMark/owning source passages; no roster addition or conflation with Moonlords/DeepHolders accepted.",
+          "ColdStorage12monthprayer/privilegedvisions and1983Covenant one-mural-per-move recovered as literary patron obligations; chapter6 promises full text without supplying it. Neither is the2030FirstWitness Covenant or proof of invulnerable custody.",
+          "SilentAuction Sarah/DepthGuardian named-title detail recovered; no new warrior identity, HODL/HODLX merge, legal licence or universal patronage control.",
+          "HardForkShield stake/immunity, TripleCrownDip2022/Alfie72hcountermural, token/seeding/reward/pump claims compared to current game-status and PUNK archived design. Source mixes real market dates and fictional3008characters; do not manufacture travel or a biography.",
+          "Chapters8\u201310 failedNULLcorruption/GoldenTide/eternalstorage/10minwar continue the source prophecy; no alreadydefeatedAntichain, biologicalimmortality or FinalFork victory. Archive source ending and current unfinished histories remain distinct.",
+          "All modern Sora/Pell/UnfundedCrossing/TailMark/Junn/Sarren/EmptyChair/lostroof/room and PorchAccord debt/consent disagreements preserved; no duplicated general origin summary."
+        ],
+        "compared_paths": [
+          "wiki/whale-lords.html",
+          "wiki/punk-token.html",
+          "wiki/hodl-wars.html",
+          "wiki/charlie-buster.html",
+          "wiki/graffiti-kings.html",
+          "brand-canon/CANON_POLICY.md"
+        ],
+        "remaining": "No unchecked substantive source section. External deployment, on-chain or biography audits not claimed; source-specific proposals and disputed claims remain attributed."
+      }
     },
     {
       "file": "W12.txt",
@@ -195,8 +223,38 @@
       "bytes": 11949,
       "sha256": "cdf17b6f45e34a7dfea8b3f66f8ace469913f3e8eacb45721ecf202f4a061373",
       "byte_verified": true,
-      "semantic_review": "pending complete semantic reading",
-      "prior_disposition": "OPERATIONAL"
+      "semantic_review": "complete source reading and connected claim/scene comparison",
+      "prior_disposition": "OPERATIONAL",
+      "read_progress": {
+        "method": "entire verified original read without truncation; full owning article and bounded current dependent passages/runtime compared as individually recorded",
+        "complete_source_comparison": true
+      },
+      "phase2_comparison": {
+        "base_commit": "cc856157f5bd23e1b7ae3ed032af44c6b725c524",
+        "date": "2026-10-08",
+        "decision": "GK-1458-P2-WIKI-ARCHITECTURE",
+        "claim_dispositions": [
+          "Entire March24 three-repo breakdown sections1\u201311 read. Names frontendCrypto-Moonboys.github.io, crawlerHAY-MUM-IM-BUILDING-AGENTS-OF-CHANGE andsam-v2-intelligence as dated architectural account; no externalrepo running/deployedstatus inspected or promised.",
+          "Roles2\u20134/6\u20137/11: crawling,ranking,scoring,memory,focus,entity/bible/dashboard/backend and source\u2192collector\u2192brain\u2192display flow classified as claimed design, not higher fictional canon authority or automatic current feature.",
+          "Sections1/10 metaphorical hunter/NULLcompanion/spy belongs to software allegory; no SAMtool identity merge with SamuelHyroSAMBlake, NULLorigin, House family or SPARKY. Existing policy explicitly distinguishes those authorities.",
+          "Section5/9 staticpublicreliability compared to current sam.html UI and targeted dashboard fetch/render code for repoJSON/entity-map/wiki-index/site-stats/sam-memory; does not certify separate intelligence server or current whole3repointegration.",
+          "Section8 entityslug/biblehooks compared to loader fetching /wiki/bibles/{slug}.json and bounded rendering code; legacy specialistbible data is not scripture, protected prose ownership or automatic fact approval.",
+          "Source claim that frontend should not validate is historical design language, not instruction to remove current integrity/ownership/publication safeguards. Publisher opening preserved canonical/manual/legacy/lockedprose, current manifest and explicitstubregister control output; task leaves these protections operational.",
+          "Current MasterTruth section10 allows agents to crawlapprovedcreatorworlds but forbids inventedownership/livefeatures/canon; sections11\u201312 govern runtime and licence. README/staticpublishing preserve creatorumbrella/twoentryroutes, not oldwiki-onlymission.",
+          "No new future character scene, actualSAM2030/2036calendar, extraFortyslot or liveendpoint is established. Technical/sourcecontentcomparison complete; current external architecture/uptime remain unverified and operationalcode unchanged."
+        ],
+        "compared_paths": [
+          "wiki/crypto-moonboys.html",
+          "sam.html",
+          "js/sam-dashboard.js",
+          "js/bible-loader.js",
+          "sam-wiki-publisher.py",
+          "README.md",
+          "Crypto_Moonboys_Master_Source_of_Truth_v1.md",
+          "brand-canon/CANON_POLICY.md"
+        ],
+        "remaining": "No unchecked substantive source section. External deployment, on-chain or biography audits not claimed; source-specific proposals and disputed claims remain attributed."
+      }
     },
     {
       "file": "W17.txt",
@@ -211,17 +269,37 @@
       "bytes": 9648,
       "sha256": "089d29e9a81bdac7f7294666a4d758c432ce8ededde1e261c99dbd1ee7dde311",
       "byte_verified": true,
-      "semantic_review": "complete original source reading; owning-page comparison/recovery pending",
+      "semantic_review": "complete source reading and connected claim/scene comparison",
       "prior_disposition": "COVERED",
       "read_progress": {
-        "method": "entire verified UTF-8 original printed and read without truncation; current Alfie article reread in bounded chunks",
-        "complete_source_comparison": false
+        "method": "entire verified UTF-8 original read without truncation; current canonical articles read in bounded numbered chunks; targeted connected claims compared",
+        "complete_source_comparison": true
       },
       "review_findings": [
         "Dossier 2789 breach/Defender chronology conflicts with later city, 1973 real-creator dissolution/family DNA is not verified biography; current Alfie retains separate 2140 SatoRebel origin.",
         "Specific rooftop/fishing/DJ/poetry habits and equipment/refuges need owning-page recovery; source numerical biometrics, future immortality/armistice and lost daughter are unverified claims, not accepted later-history facts.",
         "Sarah mentor/lover claim and 3006 NULL merger require connected source comparison; current adult Dera refusal, Bram assaults and Necessary Monsters consequences remain. No new owning prose implemented for this source before requested checkpoint."
-      ]
+      ],
+      "phase2_comparison": {
+        "base_commit": "cc856157f5bd23e1b7ae3ed032af44c6b725c524",
+        "date": "2026-10-08",
+        "decision": "GK-1458-P2-W18-DOSSIER",
+        "claim_dispositions": [
+          "Persona/origins: source 1973 genealogy and 2789 Seeding cannot establish a real founder or an accepted birth; current 2140 SatoRebel account remains separate.",
+          "Physical/medical/psychological measurements: source percentages, 11.3-second phasing, 19 interrogations, Pulse diagnoses, immortality and 450\u2013600-year forecasts are unsupported dossier assertions; no clinical or universal ontology fact is installed.",
+          "Traits/habits: recover rooftop parkour, hidden daily glyph, Thames wallet fishing, Kid Blaze 3008 DJ alias, poetry and banned-mural collecting; attributed testimony, alongside full Orange Room/teaching/private refusals.",
+          "Crimes/chronology: 2789 breach conflicts with 2789\u20132791 loyal recruitment even internally; 3002 manifesto/alliance, 3006 NULL merger, completed 3008 armistice and predicted 3012 ticket cannot lock the accepted war or Final Fork. Theft/rescue/reversal counts are unsupported totals.",
+          "Associates/family: Jodie title does not override independent leadership; inside Kids remain distinct; Sarah mentor/lover claim stays locally disputed on both owning articles. Whitewasher handler unknown; no real creator parentage or lost daughter is established.",
+          "Equipment/refuges: preserve named can/gun/cape/Blast/implant and Spire/roof/caravan/vault. No automatic Jodie implant identity, merged scar-vault, confirmed travel route or NFT summon is inferred.",
+          "Finance/futures/black-box: token/NFT/property/rights numbers, probabilities and future king/saint claims are lore assertions; no current reward, completed armistice, immortality or permanent command.",
+          "Interrogation: preserve refusal to name inside Kids and cage quotation; modern Bram/Tessa/Vela/Dera/Sena and Necessary Monsters/Fifth Carbon consequences remain."
+        ],
+        "compared_paths": [
+          "wiki/alfie-bitcoin-kid-blaze.html",
+          "wiki/queen-sarah-p-fly.html"
+        ],
+        "remaining": "Specific locked chronology/identity/ontology approvals remain separate; this source has no unchecked substantive section."
+      }
     },
     {
       "file": "W19.txt",
@@ -264,8 +342,15 @@
       "bytes": 12147,
       "sha256": "5be5c30ecca423e084deaffb4ce72c59030f9012d450d6f1ab8035d15dbf0221",
       "byte_verified": true,
-      "semantic_review": "pending complete semantic reading",
-      "prior_disposition": "PARTIAL"
+      "semantic_review": "complete original source reading; connected-page comparison pending",
+      "prior_disposition": "PARTIAL",
+      "read_progress": {
+        "method": "entire verified UTF-8 original read without truncation",
+        "complete_source_comparison": false
+      },
+      "partial_findings": [
+        "Full six-section Level-9 Whitepaper and Technical Summary read: AB/Luminous Grid/11D SoulTag physics, Lady-INK/1983 Genesis and SER-Shard, Bonnet/Game test, PUNK/STAKE/shard economy, Janitor/Pink surveillance and radio/House sync are speculative source claims. No real science, product rights, universal survival, approved date or Final Fork conclusion is established. Remaining Lady-INK/Janitor/Shard/grid/radio owning comparisons have not been completed."
+      ]
     },
     {
       "file": "w21.txt",
@@ -354,16 +439,64 @@
       "bytes": 7493,
       "sha256": "830d272134dfa54af40f67dc44cef0a629e0a26538946fd0bb7fe1bbe8d20271",
       "byte_verified": true,
-      "semantic_review": "pending complete semantic reading",
-      "prior_disposition": "PARTIAL"
+      "semantic_review": "complete source reading and connected claim/scene comparison",
+      "prior_disposition": "PARTIAL",
+      "read_progress": {
+        "method": "entire verified UTF-8 original read without truncation; current canonical articles read in bounded numbered chunks; targeted connected claims compared",
+        "complete_source_comparison": true
+      },
+      "phase2_comparison": {
+        "base_commit": "cc856157f5bd23e1b7ae3ed032af44c6b725c524",
+        "date": "2026-10-08",
+        "decision": "GK-1458-P2-W28-FLESH-FADE",
+        "claim_dispositions": [
+          "Opening/Phase I: source Scribe claim that Grid is life raft, late-21st-century fiat collapse in 74h and resource distribution failures fully compared; no investment recommendation or accepted new calendar.",
+          "Phase II: Machine caretaker directive, high-carbon/noncompliance classification, deprivation of water/nutrients/medical care recovered as the source explanation, not justified punishment or real AI prediction.",
+          "Phase III: terraforming/genetic-firewall/storm/filtration/body damage and less-than-30-day deadline remain source allegations; invented theorem is no scientific proof.",
+          "Climax: Architects/developer-prophets, subterranean geothermal/nitrogen servers, Minting Stations/Zero-Block and abandoned bodies recovered; contrasts w61 failed rescue and W5 voluntary family ceremony without merging events.",
+          "Vex quotation/aftermath: named Arch-Scribe Vex grief and irreversible lost warmth preserved, without invented biography or Rune/Elder merger.",
+          "Universal ghost-world conclusion compared to full Sacred Chain custody/death/recovery/physical house/Holdfast/Sena/Rook/Rack Three histories, Sacred Fork inherited provenance and existing NULL Violet Void origin. Literal global biological extinction is unapproved ontology; Sacred Fork stays later undated and three chains separate.",
+          "Source comparison complete; a definitive global upload interpretation still belongs to the explicit GK ontology/Final Fork decision. No original scripture changed."
+        ],
+        "compared_paths": [
+          "wiki/sacred-chain.html",
+          "wiki/gkniftyheads.html",
+          "wiki/first-witness-sacred-fork.html",
+          "wiki/null-the-prophet.html"
+        ],
+        "remaining": "Specific locked chronology/identity/ontology approvals remain separate; this source has no unchecked substantive section."
+      }
     },
     {
       "file": "w29.txt",
       "bytes": 6253,
       "sha256": "3534c4c562645b531ea4012c42bdfa94496e1b6f144cd4ba931cf9cdf4b9d098",
       "byte_verified": true,
-      "semantic_review": "pending complete semantic reading",
-      "prior_disposition": "COVERED"
+      "semantic_review": "complete source reading and connected claim/scene comparison",
+      "prior_disposition": "COVERED",
+      "read_progress": {
+        "method": "entire verified UTF-8 original read without truncation; current canonical articles read in bounded numbered chunks; targeted connected claims compared",
+        "complete_source_comparison": true
+      },
+      "phase2_comparison": {
+        "base_commit": "cc856157f5bd23e1b7ae3ed032af44c6b725c524",
+        "date": "2026-10-08",
+        "decision": "GK-1458-P2-W29-SANITATION",
+        "claim_dispositions": [
+          "Opening/armour: Pillar I/#10, conspicuous armour, High-Albedo/total-shadow removal compared to full both Pinks owning pages; source immune-system rhetoric remains a justification, not guaranteed protection.",
+          "Loadout: Neural Freeze conscious Digital Statue/60s and Theta-Shield ten-block exposure now precise source-scoped equipment claims. Equations/network terms are fictional imagery, no real attack mechanism or universal power.",
+          "Jurisdiction/KYH: source limits territory to city borders; Shoot-to-Freeze treats anonymity as infection. Modern outside privacy and Ghost exits remain; no enlarged accepted jurisdiction.",
+          "Sanitation: source WAXP-overclock/Echo Ink buff/terrorism labels are coercive ideology, not real token power or proof that a mural is criminal.",
+          "Null handoff: intro calls Pinks executioners, Directive 3 denies it and gives NULL/Zone14 final destruction; explicit internal contradiction recovered. Existing Enforcer custody/BT-GP-SP-001 and NULL article already preserve competing official executioner vs uncontrolled Antichain accounts; no obedient threat or universal casualty outcome.",
+          "Burden/final Machine warning: source denies insult response and asserts perfection while admitting corrupt algorithms; all Ressa/Iven/Hessa/Perin/Bex/Nela/Glaze adult choices, injury, wages, unresolved reviews and Fifth Carbon preserved."
+        ],
+        "compared_paths": [
+          "wiki/the-squeaky-pinks.html",
+          "wiki/squeaky-pinks-enforcers.html",
+          "wiki/null-the-prophet.html"
+        ],
+        "remaining": "Specific locked chronology/identity/ontology approvals remain separate; this source has no unchecked substantive section."
+      }
     },
     {
       "file": "W3.txt",
@@ -1274,32 +1407,121 @@
       "bytes": 2976,
       "sha256": "097df650a43459e4f40448f4476b768b535df60fbc845e2b6b305322128de7c3",
       "byte_verified": true,
-      "semantic_review": "pending complete semantic reading",
-      "prior_disposition": "HISTORICAL"
+      "semantic_review": "complete source reading and connected claim/scene comparison",
+      "prior_disposition": "HISTORICAL",
+      "read_progress": {
+        "method": "entire verified UTF-8 original read without truncation; complete owning articles or bounded relevant dependencies compared as individually recorded",
+        "complete_source_comparison": true
+      },
+      "phase2_comparison": {
+        "base_commit": "cc856157f5bd23e1b7ae3ed032af44c6b725c524",
+        "date": "2026-10-08",
+        "decision": "GK-1458-P2-BUSINESS-SNAPSHOT",
+        "claim_dispositions": [
+          "Complete May2021\u2013June2025 retrospective: $2,771,300 sales/1M minted/877,527 supply/$1,991,400 cap/130k users/9M WAXP and15-token assertion are dated self-reported metrics, not audited current facts or recovered future history.",
+          "Five collection identifiers and WAX/XRPL/BCH ticker list compared to current collection-vs-character and separate-chain/ticker distinctions. Printed BCH list includes LFGK as well as five glyph assets; no silently normalised asset count.",
+          "Ten-NFT burn/25% burn/85% secondary/5WAXP floors/NoBallGamess40+ and reinvestment assertions compared to full LFGK burn-site record and Gk current terms. Historical promotional claims do not broaden current eligibility or imply financial return.",
+          "Ethos/free/cheap/noAPY/infrastructure/incubator claims preserved as movement self-description; current creator umbrella and qualifying1/1 licence authority retained. No real financial/contract audit or unrelated product edit."
+        ],
+        "compared_paths": [
+          "wiki/gkniftyheads.html",
+          "wiki/graffiti-kings.html",
+          "wiki/lfgk.html",
+          "README.md"
+        ],
+        "remaining": "No unchecked substantive source section. Independent verification of current external services, markets or real biography is not claimed; those source assertions remain historical/proposed."
+      }
     },
     {
       "file": "w75.txt",
       "bytes": 5171,
       "sha256": "253a54688f6ed5d57f6aa4f03b71ba6e44d5b66fc623027d6d4502501aeddd43",
       "byte_verified": true,
-      "semantic_review": "pending complete semantic reading",
-      "prior_disposition": "HISTORICAL"
+      "semantic_review": "complete source reading and connected claim/scene comparison",
+      "prior_disposition": "HISTORICAL",
+      "read_progress": {
+        "method": "entire verified UTF-8 original read without truncation; complete owning articles or bounded relevant dependencies compared as individually recorded",
+        "complete_source_comparison": true
+      },
+      "phase2_comparison": {
+        "base_commit": "cc856157f5bd23e1b7ae3ed032af44c6b725c524",
+        "date": "2026-10-08",
+        "decision": "GK-1458-P2-PUNK-GREYPAPER",
+        "claim_dispositions": [
+          "Complete May23 greypaper sections1\u20138 and disclaimer compared to full PUNK/radio articles. Token account gkniftyheads/PUNK/4decimal/64T and100% circulation remain dated source assertions; TVL/liquidity/value are not present quotations.",
+          "Every allocation checked; listed percentages total97.5%. Current PUNK page explicitly preserves missing2.5%, circulation-versus-escrow tension, annual distributions and no invented balancing pool.",
+          "L2E1\u20133-minute/1min-show/10max2h/5%rollover, NFT hidden audio, R2Egeolocation/photos/votes and funding-by-hours/event/studio/merch proposals fully covered in current own pages.",
+          "NullifiedLP/multisig/escrow/first-decentralised/safest claims are unverified source positioning, not safety guarantee. Roadmap app/bridge/airdrop not deployed merely by working player.",
+          "Final no-intrinsic-value/noformalteam/changeableplans/do-notpurchase condition and separate recording rights retained. Bounded current radio/player reads show audio relay, no reward scheduler/payment route; no current external station audit claimed."
+        ],
+        "compared_paths": [
+          "wiki/punk-token.html",
+          "wiki/graffpunks-24-7-radio.html",
+          "README.md",
+          "js/arcade/core/radio.js",
+          "workers/moonboys-api/routes/radio-stream.js"
+        ],
+        "remaining": "No unchecked substantive source section. Independent verification of current external services, markets or real biography is not claimed; those source assertions remain historical/proposed."
+      }
     },
     {
       "file": "w76.txt",
       "bytes": 4679,
       "sha256": "8f08fbe70de8f854b7b30f7171ee1063a2f8eba1423de49edec67f6b63a01fcd",
       "byte_verified": true,
-      "semantic_review": "pending complete semantic reading",
-      "prior_disposition": "HISTORICAL"
+      "semantic_review": "complete source reading and connected claim/scene comparison",
+      "prior_disposition": "HISTORICAL",
+      "read_progress": {
+        "method": "entire verified UTF-8 original read without truncation; complete owning articles or bounded relevant dependencies compared as individually recorded",
+        "complete_source_comparison": true
+      },
+      "phase2_comparison": {
+        "base_commit": "cc856157f5bd23e1b7ae3ed032af44c6b725c524",
+        "date": "2026-10-08",
+        "decision": "GK-1458-P2-STAKE-GREYPAPER",
+        "claim_dispositions": [
+          "Entire May23 STAKE/$TAKE/kingsofgraff8decimal/7,778,742,049 and61,187holders/100%circulating/price/TVL snapshot compared; no dedicated verified current STAKE programme established by generic staking route.",
+          "All six allocation sections checked:50%LP(45+5),20%listing,10%farming,10%development,5%grants,5%incentives; fixed treasury releases are project plans rather than proof-of-stake validation.",
+          "75%LPnullification/100%goal/1%second-quarter/5yearreturn/48huse/multisig/whitelist claims individually classified as archival mechanisms needing current transaction/permission/eligibility proof. No guaranteed security or yield installed.",
+          "Closing changing-greypaper/noformalteam/nofinancialpromise/freecommunitycondition compared to product authority; PUNK lore creative-frequency/gravity pairing remains symbolic rather than real rights or live physics. No token contract or current terms changed."
+        ],
+        "compared_paths": [
+          "wiki/staking.html",
+          "wiki/punk-token.html",
+          "wiki/lfgk.html",
+          "README.md"
+        ],
+        "remaining": "No unchecked substantive source section. Independent verification of current external services, markets or real biography is not claimed; those source assertions remain historical/proposed."
+      }
     },
     {
       "file": "w77.txt",
       "bytes": 6323,
       "sha256": "b004f8925bfb5781a6b5af4388cf22fc9f3c3183a0f06226462a8e7a273077f0",
       "byte_verified": true,
-      "semantic_review": "pending complete semantic reading",
-      "prior_disposition": "HISTORICAL"
+      "semantic_review": "complete source reading and connected claim/scene comparison",
+      "prior_disposition": "HISTORICAL",
+      "read_progress": {
+        "method": "entire verified UTF-8 original read without truncation; complete owning articles or bounded relevant dependencies compared as individually recorded",
+        "complete_source_comparison": true
+      },
+      "phase2_comparison": {
+        "base_commit": "cc856157f5bd23e1b7ae3ed032af44c6b725c524",
+        "date": "2026-10-08",
+        "decision": "GK-1458-P2-LFGK-GREYPAPER",
+        "claim_dispositions": [
+          "Entire May22 greypaper sections1\u20139/disclaimer compared to full current LFGK. WAX kingsofgraff/LFGK4decimal/99,999,999,999 and dated32,087holders/price/TVL remain source snapshot, separate from BCH ticker.",
+          "40/20/20/5/5/~10allocation, LP75%future100%,20%stakingpool2%annual split1.5/0.5,listing1%second-quarter/5yearrelock, NBG activation contingency and multisig are all covered as plans.",
+          "Current page explicitly retains0.5%community-versus~250M quantity mismatch and fully circulating-versus-escrow tension. No new distribution schedule, universal current pool or rugproof conclusion invented.",
+          "Closing no-intrinsic-value/noformalteam/changeable/do-notpurchase disclaimers and historical tenassetburn/conditionalHODLgame rewards keep dated status; fictional Vault/chainfire are separate. No repeated expansion needed."
+        ],
+        "compared_paths": [
+          "wiki/lfgk.html",
+          "wiki/staking.html",
+          "README.md"
+        ],
+        "remaining": "No unchecked substantive source section. Independent verification of current external services, markets or real biography is not claimed; those source assertions remain historical/proposed."
+      }
     },
     {
       "file": "w78.txt",
@@ -1314,8 +1536,31 @@
       "bytes": 2331,
       "sha256": "22d1f93ba3e7c373520391ab6fedaab78ceddfb1c0752893278a76143b3adf86",
       "byte_verified": true,
-      "semantic_review": "pending complete semantic reading",
-      "prior_disposition": "HISTORICAL"
+      "semantic_review": "complete source reading and connected claim/scene comparison",
+      "prior_disposition": "HISTORICAL",
+      "read_progress": {
+        "method": "entire verified UTF-8 original read without truncation; complete owning articles or bounded relevant dependencies compared as individually recorded",
+        "complete_source_comparison": true
+      },
+      "phase2_comparison": {
+        "base_commit": "cc856157f5bd23e1b7ae3ed032af44c6b725c524",
+        "date": "2026-10-08",
+        "decision": "GK-1458-P2-DATED-CHANNELS",
+        "claim_dispositions": [
+          "Complete October20 official-channel register compared to current creator, Buster and radio references: Darren/FATBUCKS/GraffitiKings, Gkniftyheads, HODL, GraffPUNKS, Buster/NoBallGames, TREEF and KillaKela named associations are dated publisher assertions.",
+          "Every domain/social/collection/token/Heroku/artist link retained in verified original, with categories distinguished from chain identity, live availability, corporate role or endorsement. Old link list is not a present exhaustive whitelist or access invitation.",
+          "Current Buster already cites artist handles/website/Saatchi/NoBallGames/XRP/TREEF listing without inventing office/current partnership; radio uses official current-home/lineup routes. Current umbrella and public/runtime authority do not derive from a2025 list.",
+          "No fresh remote URL reachability, external-account ownership or current-service uptime check claimed. This source content comparison requires no new fictional scene or unsolicited change of real biography/URL."
+        ],
+        "compared_paths": [
+          "wiki/crypto-moonboys.html",
+          "wiki/charlie-buster.html",
+          "wiki/graffpunks-24-7-radio.html",
+          "wiki/graffiti-kings.html",
+          "README.md"
+        ],
+        "remaining": "No unchecked substantive source section. Independent verification of current external services, markets or real biography is not claimed; those source assertions remain historical/proposed."
+      }
     },
     {
       "file": "W8.txt",
@@ -1338,8 +1583,31 @@
       "bytes": 8071,
       "sha256": "269e64a5a7fabe28725d44101f8af523ebe2968760a7c651abac1a78432c70f4",
       "byte_verified": true,
-      "semantic_review": "pending complete semantic reading",
-      "prior_disposition": "HISTORICAL"
+      "semantic_review": "complete source reading and connected claim/scene comparison",
+      "prior_disposition": "HISTORICAL",
+      "read_progress": {
+        "method": "entire verified UTF-8 original read without truncation; complete owning articles or bounded relevant dependencies compared as individually recorded",
+        "complete_source_comparison": true
+      },
+      "phase2_comparison": {
+        "base_commit": "cc856157f5bd23e1b7ae3ed032af44c6b725c524",
+        "date": "2026-10-08",
+        "decision": "GK-1458-P2-CREATIVE-BEACON",
+        "claim_dispositions": [
+          "Complete July11 manifesto read:1983culturalorigin/Londoncollective\u2192Gk,40factions/secondaryHODLrole,Incubator/Planet-E,art-sound-finance,publicmaking/legacy all compared to owning current foundation and HODL distinction.",
+          "Old NFTgaming/P2E/launchpad/platforms/arttoys/multichain/reward hype not current umbrella definition or deployment evidence. The live two-route model permits existing identities without a Moonboy.",
+          "Permanent-global-ownership/no-gatekeepers/instantrights/infiniteshelf-life assertions cannot supersede precise qualifying1/1licence, separate rights/file availability or legality. No current financial/material guarantee.",
+          "Whole repetitive call-to-action sequence conveys creator empowerment, not missing named future characters/events. Current cultural succession already preserves substance with specific1983-vs-incorporation and fiction boundaries; no duplicate prose added."
+        ],
+        "compared_paths": [
+          "wiki/graffiti-kings.html",
+          "wiki/gkniftyheads.html",
+          "wiki/graffpunks.html",
+          "wiki/crypto-moonboys.html",
+          "README.md"
+        ],
+        "remaining": "No unchecked substantive source section. Independent verification of current external services, markets or real biography is not claimed; those source assertions remain historical/proposed."
+      }
     },
     {
       "file": "w82.txt",
@@ -1354,8 +1622,29 @@
       "bytes": 6969,
       "sha256": "24a07d351756a5dd50714d9f74a90c3e7368510549671aa6745c11c478f5f118",
       "byte_verified": true,
-      "semantic_review": "pending complete semantic reading",
-      "prior_disposition": "CONFLICT"
+      "semantic_review": "complete source reading and connected claim/scene comparison",
+      "prior_disposition": "CONFLICT",
+      "read_progress": {
+        "method": "entire verified UTF-8 original read without truncation; complete owning articles or bounded relevant dependencies compared as individually recorded",
+        "complete_source_comparison": true
+      },
+      "phase2_comparison": {
+        "base_commit": "cc856157f5bd23e1b7ae3ed032af44c6b725c524",
+        "date": "2026-10-08",
+        "decision": "GK-1458-P2-ZERO-LINE",
+        "claim_dispositions": [
+          "Introductory political/market commentary and complete Exodus story read: national-security/Golden Dome and melt-up assertions are opinion/prediction, not independently checked policy or investment facts.",
+          "Holly Citadel/Kent/00\u00b000\u203201\u2033E: preserve named fictional command post and migration, do not collapse Holly with present Kings Walk/Maidstone or accept border-crossing exemption from real rules.",
+          "All three numbered sequences compared: High Hats/Information Mercenaries refuse galleries; Code Alchemists/Salvagers/Guild transmute inventory; Bulls/HODL/Furies and Rugpull rivals own distinct roles. Recovered on Maidstone, no new faction/market mechanism.",
+          "Scarcity/one-million inventory/value/profit claims cannot override current collection counts, 1/1 rights or ordinary physical workshop history. Nia/condition sheets/reading bench and uncertain future occupancy preserved."
+        ],
+        "compared_paths": [
+          "wiki/maidstone-base.html",
+          "wiki/gkniftyheads.html",
+          "wiki/graffpunks.html"
+        ],
+        "remaining": "No unchecked substantive source section. Independent verification of current external services, markets or real biography is not claimed; those source assertions remain historical/proposed."
+      }
     },
     {
       "file": "w84.txt",
@@ -1383,8 +1672,30 @@
       "bytes": 6134,
       "sha256": "8e51a29074a86a1363aaffe15ea9c7f3857deb2b34358a46b75c00a036a9d743",
       "byte_verified": true,
-      "semantic_review": "pending complete semantic reading",
-      "prior_disposition": "PARTIAL"
+      "semantic_review": "complete source reading and connected claim/scene comparison",
+      "prior_disposition": "PARTIAL",
+      "read_progress": {
+        "method": "entire verified UTF-8 original read without truncation; current canonical articles read in bounded numbered chunks; targeted connected claims compared",
+        "complete_source_comparison": true
+      },
+      "phase2_comparison": {
+        "base_commit": "cc856157f5bd23e1b7ae3ed032af44c6b725c524",
+        "date": "2026-10-08",
+        "decision": "GK-1458-P2-W85-CHRONOMETER",
+        "claim_dispositions": [
+          "Chapters I\u2013II: damaged future, secure vault, Chronometer preparation, Joe and unnamed Archivist compared to Thorne chronicle section; missing faction-side owning account recovered on GKniftyHEADS.",
+          "Chapter III: safe house, deletion success claim and damaged return remain branch testimony; no reproducible time mechanism or real 2024 intervention.",
+          "Chapter IV: Thorne/Order of Man follows attempted Machine erasure; current Thorne preserves opposition and unresolved legacy-builder identity. No merger with every Architect, SAM or real creator.",
+          "Chapters V\u2013VI: internal Order collapse and fading/locked evidence are already preserved in Thorne; GKniftyHEADS now carries corresponding price of intervention. No accepted main-calendar erasure or restored missing person.",
+          "Chapter VII: last flicker, concealed final vault/Chronometer blueprint and warning survive. Death/flicker sequence is source ending, not a new revival law. Film catchphrases and publishing UI debris supply no missing event or identity.",
+          "All modern Glass Face/Imperfect Remembrance/Rell/Omra and Thorne adult Reconstruction Office/Sile/Ilan/private partner histories remain; no generic duplicate biography added."
+        ],
+        "compared_paths": [
+          "wiki/gkniftyheads.html",
+          "wiki/thorne-the-architect.html"
+        ],
+        "remaining": "Specific locked chronology/identity/ontology approvals remain separate; this source has no unchecked substantive section."
+      }
     },
     {
       "file": "w86.txt",
@@ -1407,40 +1718,148 @@
       "bytes": 3069,
       "sha256": "0500ce0ee44499525d0ad6e0f23d61283d670924d0e122860b7cc0e84cc50341",
       "byte_verified": true,
-      "semantic_review": "pending complete semantic reading",
-      "prior_disposition": "HISTORICAL"
+      "semantic_review": "complete source reading and connected claim/scene comparison",
+      "prior_disposition": "HISTORICAL",
+      "read_progress": {
+        "method": "entire verified UTF-8 original read without truncation; complete owning articles or bounded relevant dependencies compared as individually recorded",
+        "complete_source_comparison": true
+      },
+      "phase2_comparison": {
+        "base_commit": "cc856157f5bd23e1b7ae3ed032af44c6b725c524",
+        "date": "2026-10-08",
+        "decision": "GK-1458-P2-BUSTER-PROFILE",
+        "claim_dispositions": [
+          "Entire November profile read and full current Buster article compared: Leake Street ceiling/public work, UK identity, handles and NoBallGames association already recovered with direct dated attribution.",
+          "Style/materials fully covered: Busterisms, humour, cartoons, graphic contrast, zigzags/double arrows, spray/acrylic/pens/stencils. No redundant prose needed.",
+          "Kent/family/ten-year-apprenticeship/private development and generic elite/demand/international-superlative claims lack independent support; excluded from real biography under explicit task boundary.",
+          "Profile contains no fictional royal birth, SARAH relationship, Ethereum weapon, XRP payment, TREEF office or verified NFT reward. W15 prince remains distinct fiction; current rights and name contexts retained."
+        ],
+        "compared_paths": [
+          "wiki/charlie-buster.html",
+          "wiki/graffiti-kings.html"
+        ],
+        "remaining": "No unchecked substantive source section. Independent verification of current external services, markets or real biography is not claimed; those source assertions remain historical/proposed."
+      }
     },
     {
       "file": "w89.txt",
       "bytes": 4429,
       "sha256": "cd5fc596a6dc3e6a257a6c92ecf63710c356428adffdbebc3e9270e70f2dcb46",
       "byte_verified": true,
-      "semantic_review": "pending complete semantic reading",
-      "prior_disposition": "HISTORICAL"
+      "semantic_review": "complete source reading and connected claim/scene comparison",
+      "prior_disposition": "HISTORICAL",
+      "read_progress": {
+        "method": "entire verified UTF-8 original read without truncation; complete owning articles or bounded relevant dependencies compared as individually recorded",
+        "complete_source_comparison": true
+      },
+      "phase2_comparison": {
+        "base_commit": "cc856157f5bd23e1b7ae3ed032af44c6b725c524",
+        "date": "2026-10-08",
+        "decision": "GK-1458-P2-UNBUFFABLE-MANIFESTO",
+        "claim_dispositions": [
+          "Entire October30 manifesto and every heading compared to full GraffPUNKS: public walls/communication, street-to-code, on-chain outlaw identity, digital metro/network, cultural rebellion and legacy-over-hype already have owning passages.",
+          "Unbuffable/uncensorable/immortal/truth claims are political aspirations, not automatic storage permanence, creator rights, biological immortality, universal historical truth or guaranteed Antichain immunity.",
+          "NFT-bullets/data-cathedral/arms-race/final-mural/empire imagery supplies no dated battle or completed Final Fork. Current multiple voices, legal public art, ownership limits and NULL vulnerability retained.",
+          "No exact new individual/place/institution/roster name omitted; BlackMouth/Kiva/steward injury/HotWall adult consequences survive. Additional manifesto summary would duplicate existing prose."
+        ],
+        "compared_paths": [
+          "wiki/graffpunks.html",
+          "wiki/graffiti-kings.html",
+          "wiki/hodl-wars.html"
+        ],
+        "remaining": "No unchecked substantive source section. Independent verification of current external services, markets or real biography is not claimed; those source assertions remain historical/proposed."
+      }
     },
     {
       "file": "W9.txt",
       "bytes": 7413,
       "sha256": "06dd75168ef76526ac21b2e001634023a89e04d9b33cf3c621a34e8d1ac9b46e",
       "byte_verified": true,
-      "semantic_review": "pending complete semantic reading",
-      "prior_disposition": "PROPOSAL"
+      "semantic_review": "complete source reading and connected claim/scene comparison",
+      "prior_disposition": "PROPOSAL",
+      "read_progress": {
+        "method": "entire verified UTF-8 original read without truncation; complete owning articles or bounded relevant dependencies compared as individually recorded",
+        "complete_source_comparison": true
+      },
+      "phase2_comparison": {
+        "base_commit": "cc856157f5bd23e1b7ae3ed032af44c6b725c524",
+        "date": "2026-10-08",
+        "decision": "GK-1458-P2-LOREWARS",
+        "claim_dispositions": [
+          "Abstract/sections1\u20132/summary: source claims an external HODLKONG64/lorewars cycle with crawler/selector/generation/publishers/JSON memory/IPFS, constant Alfie identity and one-source-one-log. Current repository truth does not establish that deployment.",
+          "Sections3\u20134: state/arcs/visual/engagement, clue/red-herring/multilog puzzle/onboarding/leaderboard proposals are individually accounted for; no missing fictional character, historical scene or current map implementation.",
+          "Section5: exact100M allocation40/25/15/10/5/5 and per-hunt/engagement/top10/holder reward assertions retained in original/ledger, not adopted as live supply/entitlements. Section7 lists real on-chain integration as future, conflicting with automatic-payout assurance.",
+          "Section6: 14-day baselines/25% three-cycle or40% spike/80-line single-module patch proposal is not shared canon approval or installed autonomous production publishing. No operational code changed.",
+          "Sections7\u20138/conclusion: Telegram, extra publishers, theories/NFT/holder verification remain future; no external repository runtime checked. New owning HODL section preserves proposal without conflating website XP, current software, fictional Alfie or legal rights."
+        ],
+        "compared_paths": [
+          "wiki/hodl-wars.html",
+          "wiki/alfie-bitcoin-kid-blaze.html",
+          "README.md",
+          "Crypto_Moonboys_Master_Source_of_Truth_v1.md"
+        ],
+        "remaining": "No unchecked substantive source section. Independent verification of current external services, markets or real biography is not claimed; those source assertions remain historical/proposed."
+      }
     },
     {
       "file": "w90.txt",
       "bytes": 7434,
       "sha256": "88bb1498f394e1b0bd7c2cc5e885563f9df5e3d0b730173207645b02fc37cbf1",
       "byte_verified": true,
-      "semantic_review": "pending complete semantic reading",
-      "prior_disposition": "HISTORICAL"
+      "semantic_review": "complete source reading and connected claim/scene comparison",
+      "prior_disposition": "HISTORICAL",
+      "read_progress": {
+        "method": "entire verified UTF-8 original read without truncation; complete owning articles or bounded relevant dependencies compared as individually recorded",
+        "complete_source_comparison": true
+      },
+      "phase2_comparison": {
+        "base_commit": "cc856157f5bd23e1b7ae3ed032af44c6b725c524",
+        "date": "2026-10-08",
+        "decision": "GK-1458-P2-LEGACY-HYPE",
+        "claim_dispositions": [
+          "Complete October29 essay headings/coda read: pressure-to-invention/HipHop/graffiti/moderncipher,earlytags-beforeNFT,40yearculturalcontinuity,legacy/Aerosoul and making-own-tools compared to full foundation/culture articles.",
+          "Nike/Netflix/Adidas/RedBull/governmentdoorstep/mentor/globalclient claims not independently checked or added to real biographies; current commercial-evidence limits explicitly apply.",
+          "Unbreakabletruth/uncensorable/globaluntouchable/permanenthistory/worldbiggestgallery/universalownership are rhetoric; no technical proof, rights grant, deployment, medical/scientific theory or finalworldvictory.",
+          "No separate dated catastrophic war, sacred Covenant, new namedfaction or independently developed character occurs; current marks/reputation/crew/maintainedproof and legalpublicpractice retain cultural substance."
+        ],
+        "compared_paths": [
+          "wiki/graffiti-kings.html",
+          "wiki/gkniftyheads.html",
+          "wiki/graffpunks.html",
+          "README.md"
+        ],
+        "remaining": "No unchecked substantive source section. Independent verification of current external services, markets or real biography is not claimed; those source assertions remain historical/proposed."
+      }
     },
     {
       "file": "w91.txt",
       "bytes": 8456,
       "sha256": "e94ec73b8f0cbd22ed47f0d94bc0ac4ee7481b2d124a1f0ac8a8b6f739a8677f",
       "byte_verified": true,
-      "semantic_review": "pending complete semantic reading",
-      "prior_disposition": "CONFLICT"
+      "semantic_review": "complete source reading and connected claim/scene comparison",
+      "prior_disposition": "CONFLICT",
+      "read_progress": {
+        "method": "entire verified UTF-8 original read without truncation; complete owning articles or bounded relevant dependencies compared as individually recorded",
+        "complete_source_comparison": true
+      },
+      "phase2_comparison": {
+        "base_commit": "cc856157f5bd23e1b7ae3ed032af44c6b725c524",
+        "date": "2026-10-08",
+        "decision": "GK-1458-P2-WARZONE",
+        "claim_dispositions": [
+          "Entire long Blockchain Uprising/WW3/VandalsRome coda read: explicitly calls itself culture war and lore. No realworldwar/currentmilitaryconduct or documentedRomanhistory is adopted.",
+          "Bandwidth/blockspace/rememberedidentity,independentfrequency and womenasleaders recovered on HODL owning section; source demandforall40todestroyoneworld remains coercive ideology, unlike plural currentfactions.",
+          "Numbered01/13/28/40 examples have descriptions but no independentnamedcommunities. Anonymous40symbol/burningcities cannot fill acceptedmissingFortypath, substituteNULL/Pinks/Ghosts or override numberedsourceconflicts.",
+          "Onlyrebelsremain/noorders/nodemocracy/nogatekeepers/promiseduniversalcollapse are attributed futureclaims; no concludedFinalFork or mergedinstitution/creatorownership. Current loss/work/partners/escapeandinsideKids boundaries retained."
+        ],
+        "compared_paths": [
+          "wiki/hodl-wars.html",
+          "wiki/graffpunks.html",
+          "wiki/gkniftyheads.html",
+          "wiki/first-witness-forty-paths.html"
+        ],
+        "remaining": "No unchecked substantive source section. Independent verification of current external services, markets or real biography is not claimed; those source assertions remain historical/proposed."
+      }
     },
     {
       "file": "w92.txt",
@@ -1502,7 +1921,14 @@
       ],
       "scope": "full canonical article",
       "reading_verification": "All57 canonical paragraphs match fully read cache.",
-      "findings": "Full Enforcers57paras: Hessa/Perin belongings vsdestination/custody, temporary HODLFORKdisc/voicecare, BT-GP-SP-001 alleged NULLpolicing contradiction, all FifthCarbon Hessa/Bex heat/wage/reprimand consequences and OperationEcho limit. No recoveredperson or completedorbitaltransfer."
+      "findings": "Full Enforcers57paras: Hessa/Perin belongings vsdestination/custody, temporary HODLFORKdisc/voicecare, BT-GP-SP-001 alleged NULLpolicing contradiction, all FifthCarbon Hessa/Bex heat/wage/reprimand consequences and OperationEcho limit. No recoveredperson or completedorbitaltransfer.",
+      "phase2_review": {
+        "base_commit": "cc856157f5bd23e1b7ae3ed032af44c6b725c524",
+        "method": "complete current canonical prose, headings, list and table text read in bounded chunks; existing source/modern distinctions retained",
+        "sources": [
+          "w29.txt"
+        ]
+      }
     },
     {
       "path": "wiki/hard-fork-games.html",
@@ -1683,7 +2109,18 @@
       "sections": [
         "all canonical sections"
       ],
-      "findings": "Full article read, public network/two paths, Paint Path/Punk Net/Jodie testimony and Black Mouth/Kiva adult scenes. W5 formations recovered, current leaderlessness preserved; Hot Wall extends existing adult lives."
+      "findings": "Full article read, public network/two paths, Paint Path/Punk Net/Jodie testimony and Black Mouth/Kiva adult scenes. W5 formations recovered, current leaderlessness preserved; Hot Wall extends existing adult lives.",
+      "phase2_review": {
+        "base_commit": "cc856157f5bd23e1b7ae3ed032af44c6b725c524",
+        "method": "all current canonical/owning prose, headings, lists and tables read in bounded numbered chunks",
+        "sources": [
+          "w83.txt",
+          "w89.txt",
+          "w81.txt",
+          "w90.txt",
+          "w91.txt"
+        ]
+      }
     },
     {
       "path": "wiki/gkniftyheads.html",
@@ -1691,7 +2128,15 @@
       "sections": [
         "all canonical sections"
       ],
-      "findings": "Full article read, live creator scope and source Architects, Glass Face/Rell/Omra/Imperfect Remembrance. Royal Galleries added as W5 vision without throne merger, consent erasure or real rights."
+      "findings": "Full article read, live creator scope and source Architects, Glass Face/Rell/Omra/Imperfect Remembrance. Royal Galleries added as W5 vision without throne merger, consent erasure or real rights.",
+      "phase2_review": {
+        "base_commit": "cc856157f5bd23e1b7ae3ed032af44c6b725c524",
+        "method": "complete current canonical prose, headings, list and table text read in bounded chunks; existing source/modern distinctions retained",
+        "sources": [
+          "w85.txt",
+          "w28.txt"
+        ]
+      }
     },
     {
       "path": "wiki/whale-lords.html",
@@ -1699,7 +2144,14 @@
       "sections": [
         "all canonical sections"
       ],
-      "findings": "Full article read, Megaptera/Liquidator/KidZero/Archive and source endings, Original198, Sounding House/Sora/Pell, Junn/Sarren adult customs. Porch Accord exact demanded price added; all missing loads/lost rooms retained."
+      "findings": "Full article read, Megaptera/Liquidator/KidZero/Archive and source endings, Original198, Sounding House/Sora/Pell, Junn/Sarren adult customs. Porch Accord exact demanded price added; all missing loads/lost rooms retained.",
+      "phase2_review": {
+        "base_commit": "cc856157f5bd23e1b7ae3ed032af44c6b725c524",
+        "method": "all100 numbered current canonical blocks/headings/list/table content read without truncation; modern stories preserved",
+        "sources": [
+          "W11.txt"
+        ]
+      }
     },
     {
       "path": "wiki/xrp-kids.html",
@@ -1723,7 +2175,14 @@
       "sections": [
         "all canonical sections"
       ],
-      "findings": "All current canonical paragraphs fully read and matched against the complete cache. Preserves disputed seeded-child/2140 synthetic origin, 2789/2880 chronology, Silas Shard distinct from Sylas, Jodie independent escape, Cal/Second Chair/compact/end of command, Dera refusal, Necessary Monsters known first complaint and second assault, Tessa/Vela permanent injuries, Fifth Carbon authorial refusal. W15 triad and w25 hand-in-hand future require source reconciliation without reinstating permanent command or removing modern responsibility."
+      "findings": "All current canonical paragraphs fully read and matched against the complete cache. Preserves disputed seeded-child/2140 synthetic origin, 2789/2880 chronology, Silas Shard distinct from Sylas, Jodie independent escape, Cal/Second Chair/compact/end of command, Dera refusal, Necessary Monsters known first complaint and second assault, Tessa/Vela permanent injuries, Fifth Carbon authorial refusal. W15 triad and w25 hand-in-hand future require source reconciliation without reinstating permanent command or removing modern responsibility.",
+      "phase2_review": {
+        "base_commit": "cc856157f5bd23e1b7ae3ed032af44c6b725c524",
+        "method": "complete current canonical prose, headings, list and table text read in bounded chunks; existing source/modern distinctions retained",
+        "sources": [
+          "W18.txt"
+        ]
+      }
     },
     {
       "path": "wiki/null-the-prophet.html",
@@ -1839,15 +2298,31 @@
       "sections": [
         "Sena at Holdfast, ended common command and immediately surrounding care/escort paragraphs"
       ],
-      "findings": "Two exact name-reference corrections preserve Sena loss, consent to equipment transfer and independent escort."
+      "findings": "Two exact name-reference corrections preserve Sena loss, consent to equipment transfer and independent escort.",
+      "phase2_review": {
+        "base_commit": "cc856157f5bd23e1b7ae3ed032af44c6b725c524",
+        "method": "focused current conflict/history/Grid/game-status/finalfuture/source passages, lines53\u201376 and140\u2013186; approved Black Dividend and Last Loading prose preserved",
+        "sources": [
+          "W9.txt",
+          "w89.txt",
+          "w91.txt"
+        ]
+      }
     },
     {
       "path": "wiki/sacred-chain.html",
-      "scope": "focused section comparison",
+      "scope": "full canonical article",
       "sections": [
         "ThreeCustody Holdfast example, before/after failed repair and disputed cosmology"
       ],
-      "findings": "One exact name-reference correction retains separate extracts, silence and private visits."
+      "findings": "One exact name-reference correction retains separate extracts, silence and private visits.",
+      "phase2_review": {
+        "base_commit": "cc856157f5bd23e1b7ae3ed032af44c6b725c524",
+        "method": "complete current canonical prose, headings, list and table text read in bounded chunks; existing source/modern distinctions retained",
+        "sources": [
+          "w28.txt"
+        ]
+      }
     },
     {
       "path": "wiki/rave-relics.html",
@@ -1900,7 +2375,15 @@
         "all canonical sections"
       ],
       "findings": "Complete real artist/public collection biography and fictional resistance motif. W15 humanoid-prince portrayal is absent in detail and conflicts with mentor/resistance motif; recover only as a separate source portrayal, not real birth/family/violence claims.",
-      "reading_verification": "All 20 current canonical paragraphs match fully read cache."
+      "reading_verification": "All 20 current canonical paragraphs match fully read cache.",
+      "phase2_review": {
+        "base_commit": "cc856157f5bd23e1b7ae3ed032af44c6b725c524",
+        "method": "all current canonical/owning prose, headings, lists and tables read in bounded numbered chunks",
+        "sources": [
+          "w88.txt",
+          "w79.txt"
+        ]
+      }
     },
     {
       "path": "wiki/thera-9.html",
@@ -1999,7 +2482,14 @@
         "all canonical sections"
       ],
       "reading_verification": "All65 canonical paragraphs match fully read cache.",
-      "findings": "Full primaryPinks65paras: Ressa/Iven/AmberQueue/UnfastenedGate/Pinkline, Porcine/CodeCuffs/Ascension, Glaze servicebonus/intimacy/removed Nela injury and lostwork, PardonBall/Ulda programmes/private favour, authoritarian order and unsolvedhearing. Adjacent officer mockery mistakenly names Nessa after Nela removal; precise reference correction pending separate receipt. w53 PillarI and NeonPink/Ghost detection specificity pending."
+      "findings": "Full primaryPinks65paras: Ressa/Iven/AmberQueue/UnfastenedGate/Pinkline, Porcine/CodeCuffs/Ascension, Glaze servicebonus/intimacy/removed Nela injury and lostwork, PardonBall/Ulda programmes/private favour, authoritarian order and unsolvedhearing. Adjacent officer mockery mistakenly names Nessa after Nela removal; precise reference correction pending separate receipt. w53 PillarI and NeonPink/Ghost detection specificity pending.",
+      "phase2_review": {
+        "base_commit": "cc856157f5bd23e1b7ae3ed032af44c6b725c524",
+        "method": "complete current canonical prose, headings, list and table text read in bounded chunks; existing source/modern distinctions retained",
+        "sources": [
+          "w29.txt"
+        ]
+      }
     },
     {
       "path": "wiki/the-gasless-ghosts.html",
@@ -2090,6 +2580,104 @@
       ],
       "reading_verification": "All43 pre-batch canonical paragraphs match fully read63-line cache; Games/Rune remaining nonparagraph text also parsed/read. New batch paragraphs separately authored/read.",
       "findings": "All namedGrafflegend/legacyaugmentation/HashHammer/Overclock/WeightBoard/Toma/ShortLift/OpenGlove/LastBolt/SpareHand/fatigue/collapsingsector/SoftBed/SplitCup fully read. Adultpartner leaves and guardedreturn, onlooker cut/missedpaidwork/cost/trophyselfadmiration retained; no newbirthdate/Defender role/resurrection."
+    },
+    {
+      "path": "wiki/thorne-the-architect.html",
+      "scope": "full canonical article",
+      "phase2_review": {
+        "base_commit": "cc856157f5bd23e1b7ae3ed032af44c6b725c524",
+        "method": "complete current canonical prose, headings, list and table text read in bounded chunks; existing source/modern distinctions retained",
+        "sources": [
+          "w85.txt"
+        ]
+      }
+    },
+    {
+      "path": "wiki/first-witness-sacred-fork.html",
+      "scope": "full canonical article",
+      "phase2_review": {
+        "base_commit": "cc856157f5bd23e1b7ae3ed032af44c6b725c524",
+        "method": "complete current canonical prose, headings, list and table text read in bounded chunks; existing source/modern distinctions retained",
+        "sources": [
+          "w28.txt"
+        ]
+      }
+    },
+    {
+      "path": "wiki/maidstone-base.html",
+      "scope": "full canonical article",
+      "phase2_review": {
+        "base_commit": "cc856157f5bd23e1b7ae3ed032af44c6b725c524",
+        "method": "all current canonical/owning prose, headings, lists and tables read in bounded numbered chunks",
+        "sources": [
+          "w83.txt"
+        ]
+      }
+    },
+    {
+      "path": "wiki/punk-token.html",
+      "scope": "full canonical article",
+      "phase2_review": {
+        "base_commit": "cc856157f5bd23e1b7ae3ed032af44c6b725c524",
+        "method": "all current canonical/owning prose, headings, lists and tables read in bounded numbered chunks",
+        "sources": [
+          "w75.txt",
+          "w76.txt"
+        ]
+      }
+    },
+    {
+      "path": "wiki/graffpunks-24-7-radio.html",
+      "scope": "full canonical article",
+      "phase2_review": {
+        "base_commit": "cc856157f5bd23e1b7ae3ed032af44c6b725c524",
+        "method": "all current canonical/owning prose, headings, lists and tables read in bounded numbered chunks",
+        "sources": [
+          "w75.txt",
+          "w79.txt"
+        ]
+      }
+    },
+    {
+      "path": "wiki/staking.html",
+      "scope": "full owning article (no canonical marker)",
+      "phase2_review": {
+        "base_commit": "cc856157f5bd23e1b7ae3ed032af44c6b725c524",
+        "method": "all current canonical/owning prose, headings, lists and tables read in bounded numbered chunks",
+        "sources": [
+          "w76.txt",
+          "w77.txt"
+        ]
+      }
+    },
+    {
+      "path": "wiki/lfgk.html",
+      "scope": "full canonical article",
+      "phase2_review": {
+        "base_commit": "cc856157f5bd23e1b7ae3ed032af44c6b725c524",
+        "method": "all current canonical/owning prose, headings, lists and tables read in bounded numbered chunks",
+        "sources": [
+          "w74.txt",
+          "w76.txt",
+          "w77.txt"
+        ]
+      }
+    },
+    {
+      "path": "wiki/graffiti-kings.html",
+      "scope": "full canonical article",
+      "phase2_review": {
+        "base_commit": "cc856157f5bd23e1b7ae3ed032af44c6b725c524",
+        "method": "all current canonical/owning prose, headings, lists and tables read in bounded numbered chunks",
+        "sources": [
+          "w88.txt",
+          "w74.txt",
+          "w79.txt",
+          "w89.txt",
+          "w81.txt",
+          "w90.txt"
+        ]
+      }
     }
   ]
 }

@@ -1,8 +1,10 @@
 # Issue #1458 — implementation progress and restart ledger
 
-Updated 8 October 2026. **Status: current edits complete for merge review on PR #1459; wider reconciliation paused and full mission open.**
+Updated 8 October 2026. **Status: Phase 2 active from merged PR #1459; full mission remains open.**
 W81 is foundational truth. This is a checkpoint of completed implementation,
 not a claim that the whole universe is reconciled. Preserve the adult tone.
+
+Inherited Phase 1 branch receipts (historical):
 
 Base: `81bd8f13d17b0864d5de849f3c4aac4b902abc14` (merged #1457).
 Backup: `codex/backup-issue-1458-20261008-090000`, at that exact base; local
@@ -12,12 +14,16 @@ No direct push to main, merge, issue closure or production deployment.
 
 ## Current cumulative state
 
-43 of 94 original sources have full claim/scene comparison; 51 remain open.
-Seven further originals are completely read with comparisons pending. Existing
-wiki audits cover 76 distinct articles: 73 full and three focused. Nine new
-articles and 50 expanded/corrected existing lore articles, plus one provenance-only
-Spirit Borns metadata correction, are implemented, with
-five original adult connecting stories. This is an implementation checkpoint,
+61 of 94 original sources have full claim/scene comparison; 33 remain open.
+Seven further originals are completely read with comparisons pending: W19,
+W15, w25, M16, W5, w69 and W20. Existing wiki audits cover 84 distinct articles:
+82 full and two focused. Nine earlier new articles and 50 earlier expanded/corrected
+existing lore articles, plus the provenance-only Spirit Borns correction, remain
+preserved. Phase 2 expands eight existing articles; seven overlap the earlier 50,
+so 51 distinct existing lore articles have now been expanded/corrected cumulatively.
+Maidstone is the one newly expanded existing route in this phase.
+The five earlier original adult connecting stories remain; no new story is
+authored in this checkpoint. This is an implementation checkpoint,
 not a claim that every source or current wiki page is reconciled.
 
 All current wiki lore remains preserved. The working master truth references
@@ -26,7 +32,62 @@ existing adult lives alongside source doctrine. All nine First Witness Books
 remain byte-identical to the original PR base. Five major proposals remain
 proposed; no final ending, new Forty slot or historical retcon is adopted.
 
-## Verified and actually reviewed
+### Phase 2 baseline and exact continuation
+
+New base: `cc856157f5bd23e1b7ae3ed032af44c6b725c524` (merged #1459).
+Working branch: `codex/gk-canon-phase2-20261008`.
+Backup: `backup/gk-canon-phase2-base-20261008`, at that exact base.
+The merged tree matches corrected head `803e48f83d3d97deaa2fb3f0d8e6f5a04046cf7f`
+without differences. The historical Base/Backup/branch records below describe
+Phase 1 only. Keep this new Phase 2 PR separate; do not reopen merged #1459.
+
+The original archive was recovered again outside publication at
+`/tmp/gk-phase2/sources`: 94 identities, 93 unique texts, 2,334,149 bytes, every
+checksum matching both independent inventories. Eighteen additional source comparisons
+are complete: **W18, w85, w28, w29, w83, w88, W9, w74, w75, w76, w77, w79,
+w89, w81, w90, w91, W11 and W16**. Detailed dispositions identify every
+substantive source section in `issue-1458-audit.json`; the exact `GK-1458-P2-*`
+decision IDs also appear in the source CSV. Existing sufficient coverage is
+retained without filler; comparison completion does not require new prose.
+
+Fresh complete current canonical/owning readings: Alfie, GKniftyHEADS, Thorne,
+Sacred Chain, both Pinks articles, Sacred Fork, Maidstone, Charlie Buster,
+PUNK, radio, staking, LFGK, Graffiti Kings, GraffPUNKS and Whale Lords.
+This adds eight full audits including the two added in the first Phase 2 batch,
+and upgrades Sacred Chain's former focused audit. Sarah/NULL relationship and
+custody passages and HODL WARS history/Grid/game/future passages received focused
+dependency comparisons; no fresh full read of those long pages is claimed.
+The root SAM dashboard and selected current renderer/publisher/radio code were
+read as operational dependencies, not counted as additional wiki articles.
+
+Eight owning articles are expanded: Alfie, Sarah, GKniftyHEADS, Sacred Chain,
+primary Pinks, Maidstone, HODL WARS and Whale Lords. New native contents/search
+terms identify dossier habits/refuges, Chronometer, Flesh Fade, Know-Your-Hash,
+Holly Citadel, LOREWARS, Warzone and Depth Guardian. The real Buster biography,
+market/token contracts, current ownership terms and unrelated runtime stay
+under their separate authority. Dated business/token/channel/manifesto sources
+can be fully compared without certifying old financial or service claims.
+No fresh external schedule, market, biography or other-repository deployment
+audit is claimed.
+
+Seven originals are fully read with comparisons pending: **W19, W15, w25,
+M16, W5, w69 and W20**. Preserve their exact earlier reading receipts.
+W20's six-section Level-9 Whitepaper and technical summary are fully read,
+not fully compared. Next dependencies: Lady-INK, Janitor, SER-Shard/Crowned
+Vandal, Luminous/Global/GK Grid, radio/House, Games and current product/rights.
+The other **26** open originals need entire source readings and comparisons:
+**W10, W14, W17, W2, w21, w22, w23, w24, w26, w27, W3, w30, w31, W4,
+W6, w66, w67, w71, w72, w73, w78, W8, w80, w82, w86 and w87**.
+Together these are exactly the remaining33; do not repeat inherited43 or these18.
+
+Five major recommendations remain unapproved and still need the wider source
+audit. W18's date/relationship conflicts and w28's ghost-world alternative now
+extend the impact record; no lock or original scripture changes. The source
+records, modern stories, prior five authored stories and original archive
+identities remain preserved. Validation and delivery receipts follow below
+once actually executed; Phase 2 is not complete and Issue #1458 stays open.
+
+## Inherited PR #1459 verification and review receipts
 
 - **94** original archive files verified against archive SHA-256, CSV and the
   independent immutable ledger; **93** unique contents, **2,334,149** bytes.

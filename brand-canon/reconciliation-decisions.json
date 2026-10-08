@@ -760,6 +760,347 @@
         "wiki/graffpunks.html",
         "wiki/block-topia.html"
       ]
+    },
+    {
+      "id": "GK-1458-P2-W18-DOSSIER",
+      "status": "implemented",
+      "major": false,
+      "sources": [
+        "W18.txt: complete original and source-level comparison recorded in issue-1458-audit.json"
+      ],
+      "old": "Alfie dossier habits, named kit/refuges and internal chronology conflict compressed.",
+      "new": "Persona/origins: source 1973 genealogy and 2789 Seeding cannot establish a real founder or an accepted birth; current 2140 SatoRebel account remains separate.; Physical/medical/psychological measurements: source percentages, 11.3-second phasing, 19 interrogations, Pulse diagnoses, immortality and 450\u2013600-year forecasts are unsupported dossier assertions; no clinical or universal ontology fact is installed.; Traits/habits: recover rooftop parkour, hidden daily glyph, Thames wallet fishing, Kid Blaze 3008 DJ alias, poetry and banned-mural collecting; attributed testimony, alongside full Orange Room/teaching/private refusals.; Crimes/chronology: 2789 breach conflicts with 2789\u20132791 loyal recruitment even internally; 3002 manifesto/alliance, 3006 NULL merger, completed 3008 armistice and predicted 3012 ticket cannot lock the accepted war or Final Fork. Theft/rescue/reversal counts are unsupported totals.; Associates/family: Jodie title does not override independent leadership; inside Kids remain distinct; Sarah mentor/lover claim stays locally disputed on both owning articles. Whitewasher handler unknown; no real creator parentage or lost daughter is established.; Equipment/refuges: preserve named can/gun/cape/Blast/implant and Spire/roof/caravan/vault. No automatic Jodie implant identity, merged scar-vault, confirmed travel route or NFT summon is inferred.; Finance/futures/black-box: token/NFT/property/rights numbers, probabilities and future king/saint claims are lore assertions; no current reward, completed armistice, immortality or permanent command.; Interrogation: preserve refusal to name inside Kids and cage quotation; modern Bram/Tessa/Vela/Dera/Sena and Necessary Monsters/Fifth Carbon consequences remain.",
+      "reason": "Recover distinctive testimony and consequences without adopting locked retcons or deleting approved modern stories.",
+      "affected_paths": [
+        "wiki/alfie-bitcoin-kid-blaze.html",
+        "wiki/queen-sarah-p-fly.html",
+        "brand-canon/story-bibles/gk-master-canon.md",
+        "brand-canon/wiki-rewrites/issue-1458-audit.json"
+      ]
+    },
+    {
+      "id": "GK-1458-P2-W85-CHRONOMETER",
+      "status": "implemented",
+      "major": false,
+      "sources": [
+        "w85.txt: complete original and source-level comparison recorded in issue-1458-audit.json"
+      ],
+      "old": "Thorne owns the seven-chapter branch chronicle; corresponding Architect account omits its intervention and hidden blueprint.",
+      "new": "Chapters I\u2013II: damaged future, secure vault, Chronometer preparation, Joe and unnamed Archivist compared to Thorne chronicle section; missing faction-side owning account recovered on GKniftyHEADS.; Chapter III: safe house, deletion success claim and damaged return remain branch testimony; no reproducible time mechanism or real 2024 intervention.; Chapter IV: Thorne/Order of Man follows attempted Machine erasure; current Thorne preserves opposition and unresolved legacy-builder identity. No merger with every Architect, SAM or real creator.; Chapters V\u2013VI: internal Order collapse and fading/locked evidence are already preserved in Thorne; GKniftyHEADS now carries corresponding price of intervention. No accepted main-calendar erasure or restored missing person.; Chapter VII: last flicker, concealed final vault/Chronometer blueprint and warning survive. Death/flicker sequence is source ending, not a new revival law. Film catchphrases and publishing UI debris supply no missing event or identity.; All modern Glass Face/Imperfect Remembrance/Rell/Omra and Thorne adult Reconstruction Office/Sile/Ilan/private partner histories remain; no generic duplicate biography added.",
+      "reason": "Recover distinctive testimony and consequences without adopting locked retcons or deleting approved modern stories.",
+      "affected_paths": [
+        "wiki/gkniftyheads.html",
+        "wiki/thorne-the-architect.html",
+        "brand-canon/story-bibles/gk-master-canon.md",
+        "brand-canon/wiki-rewrites/issue-1458-audit.json"
+      ]
+    },
+    {
+      "id": "GK-1458-P2-W28-FLESH-FADE",
+      "status": "implemented",
+      "major": false,
+      "sources": [
+        "w28.txt: complete original and source-level comparison recorded in issue-1458-audit.json"
+      ],
+      "old": "Radical Flesh Fade explanation and named Vex testimony compressed into generic universal-upload warnings.",
+      "new": "Opening/Phase I: source Scribe claim that Grid is life raft, late-21st-century fiat collapse in 74h and resource distribution failures fully compared; no investment recommendation or accepted new calendar.; Phase II: Machine caretaker directive, high-carbon/noncompliance classification, deprivation of water/nutrients/medical care recovered as the source explanation, not justified punishment or real AI prediction.; Phase III: terraforming/genetic-firewall/storm/filtration/body damage and less-than-30-day deadline remain source allegations; invented theorem is no scientific proof.; Climax: Architects/developer-prophets, subterranean geothermal/nitrogen servers, Minting Stations/Zero-Block and abandoned bodies recovered; contrasts w61 failed rescue and W5 voluntary family ceremony without merging events.; Vex quotation/aftermath: named Arch-Scribe Vex grief and irreversible lost warmth preserved, without invented biography or Rune/Elder merger.; Universal ghost-world conclusion compared to full Sacred Chain custody/death/recovery/physical house/Holdfast/Sena/Rook/Rack Three histories, Sacred Fork inherited provenance and existing NULL Violet Void origin. Literal global biological extinction is unapproved ontology; Sacred Fork stays later undated and three chains separate.; Source comparison complete; a definitive global upload interpretation still belongs to the explicit GK ontology/Final Fork decision. No original scripture changed.",
+      "reason": "Recover distinctive testimony and consequences without adopting locked retcons or deleting approved modern stories.",
+      "affected_paths": [
+        "wiki/sacred-chain.html",
+        "wiki/gkniftyheads.html",
+        "wiki/first-witness-sacred-fork.html",
+        "wiki/null-the-prophet.html",
+        "brand-canon/story-bibles/gk-master-canon.md",
+        "brand-canon/wiki-rewrites/issue-1458-audit.json"
+      ]
+    },
+    {
+      "id": "GK-1458-P2-W29-SANITATION",
+      "status": "implemented",
+      "major": false,
+      "sources": [
+        "w29.txt: complete original and source-level comparison recorded in issue-1458-audit.json"
+      ],
+      "old": "Pinks equipment limits, KYH and source-internal executioner denial compressed.",
+      "new": "Opening/armour: Pillar I/#10, conspicuous armour, High-Albedo/total-shadow removal compared to full both Pinks owning pages; source immune-system rhetoric remains a justification, not guaranteed protection.; Loadout: Neural Freeze conscious Digital Statue/60s and Theta-Shield ten-block exposure now precise source-scoped equipment claims. Equations/network terms are fictional imagery, no real attack mechanism or universal power.; Jurisdiction/KYH: source limits territory to city borders; Shoot-to-Freeze treats anonymity as infection. Modern outside privacy and Ghost exits remain; no enlarged accepted jurisdiction.; Sanitation: source WAXP-overclock/Echo Ink buff/terrorism labels are coercive ideology, not real token power or proof that a mural is criminal.; Null handoff: intro calls Pinks executioners, Directive 3 denies it and gives NULL/Zone14 final destruction; explicit internal contradiction recovered. Existing Enforcer custody/BT-GP-SP-001 and NULL article already preserve competing official executioner vs uncontrolled Antichain accounts; no obedient threat or universal casualty outcome.; Burden/final Machine warning: source denies insult response and asserts perfection while admitting corrupt algorithms; all Ressa/Iven/Hessa/Perin/Bex/Nela/Glaze adult choices, injury, wages, unresolved reviews and Fifth Carbon preserved.",
+      "reason": "Recover distinctive testimony and consequences without adopting locked retcons or deleting approved modern stories.",
+      "affected_paths": [
+        "wiki/the-squeaky-pinks.html",
+        "wiki/squeaky-pinks-enforcers.html",
+        "wiki/null-the-prophet.html",
+        "brand-canon/story-bibles/gk-master-canon.md",
+        "brand-canon/wiki-rewrites/issue-1458-audit.json"
+      ]
+    },
+    {
+      "id": "GK-1458-P2-BUSINESS-SNAPSHOT",
+      "status": "implemented",
+      "major": false,
+      "sources": [
+        "w74.txt: complete original and section dispositions in issue-1458-audit.json"
+      ],
+      "old": "Existing disposition was an initial routing/genre label without a complete source content comparison.",
+      "new": "Complete May2021\u2013June2025 retrospective: $2,771,300 sales/1M minted/877,527 supply/$1,991,400 cap/130k users/9M WAXP and15-token assertion are dated self-reported metrics, not audited current facts or recovered future history.; Five collection identifiers and WAX/XRPL/BCH ticker list compared to current collection-vs-character and separate-chain/ticker distinctions. Printed BCH list includes LFGK as well as five glyph assets; no silently normalised asset count.; Ten-NFT burn/25% burn/85% secondary/5WAXP floors/NoBallGamess40+ and reinvestment assertions compared to full LFGK burn-site record and Gk current terms. Historical promotional claims do not broaden current eligibility or imply financial return.; Ethos/free/cheap/noAPY/infrastructure/incubator claims preserved as movement self-description; current creator umbrella and qualifying1/1 licence authority retained. No real financial/contract audit or unrelated product edit.",
+      "reason": "Preserve distinct source content, verify existing recovery and keep fiction, dated promotional assertions and current product authority separate without redundant prose.",
+      "affected_paths": [
+        "wiki/gkniftyheads.html",
+        "wiki/graffiti-kings.html",
+        "wiki/lfgk.html",
+        "README.md",
+        "brand-canon/wiki-rewrites/issue-1458-audit.json",
+        "brand-canon/story-bibles/gk-master-canon.md"
+      ]
+    },
+    {
+      "id": "GK-1458-P2-PUNK-GREYPAPER",
+      "status": "implemented",
+      "major": false,
+      "sources": [
+        "w75.txt: complete original and section dispositions in issue-1458-audit.json"
+      ],
+      "old": "Existing disposition was an initial routing/genre label without a complete source content comparison.",
+      "new": "Complete May23 greypaper sections1\u20138 and disclaimer compared to full PUNK/radio articles. Token account gkniftyheads/PUNK/4decimal/64T and100% circulation remain dated source assertions; TVL/liquidity/value are not present quotations.; Every allocation checked; listed percentages total97.5%. Current PUNK page explicitly preserves missing2.5%, circulation-versus-escrow tension, annual distributions and no invented balancing pool.; L2E1\u20133-minute/1min-show/10max2h/5%rollover, NFT hidden audio, R2Egeolocation/photos/votes and funding-by-hours/event/studio/merch proposals fully covered in current own pages.; NullifiedLP/multisig/escrow/first-decentralised/safest claims are unverified source positioning, not safety guarantee. Roadmap app/bridge/airdrop not deployed merely by working player.; Final no-intrinsic-value/noformalteam/changeableplans/do-notpurchase condition and separate recording rights retained. Bounded current radio/player reads show audio relay, no reward scheduler/payment route; no current external station audit claimed.",
+      "reason": "Preserve distinct source content, verify existing recovery and keep fiction, dated promotional assertions and current product authority separate without redundant prose.",
+      "affected_paths": [
+        "wiki/punk-token.html",
+        "wiki/graffpunks-24-7-radio.html",
+        "README.md",
+        "js/arcade/core/radio.js",
+        "workers/moonboys-api/routes/radio-stream.js",
+        "brand-canon/wiki-rewrites/issue-1458-audit.json",
+        "brand-canon/story-bibles/gk-master-canon.md"
+      ]
+    },
+    {
+      "id": "GK-1458-P2-STAKE-GREYPAPER",
+      "status": "implemented",
+      "major": false,
+      "sources": [
+        "w76.txt: complete original and section dispositions in issue-1458-audit.json"
+      ],
+      "old": "Existing disposition was an initial routing/genre label without a complete source content comparison.",
+      "new": "Entire May23 STAKE/$TAKE/kingsofgraff8decimal/7,778,742,049 and61,187holders/100%circulating/price/TVL snapshot compared; no dedicated verified current STAKE programme established by generic staking route.; All six allocation sections checked:50%LP(45+5),20%listing,10%farming,10%development,5%grants,5%incentives; fixed treasury releases are project plans rather than proof-of-stake validation.; 75%LPnullification/100%goal/1%second-quarter/5yearreturn/48huse/multisig/whitelist claims individually classified as archival mechanisms needing current transaction/permission/eligibility proof. No guaranteed security or yield installed.; Closing changing-greypaper/noformalteam/nofinancialpromise/freecommunitycondition compared to product authority; PUNK lore creative-frequency/gravity pairing remains symbolic rather than real rights or live physics. No token contract or current terms changed.",
+      "reason": "Preserve distinct source content, verify existing recovery and keep fiction, dated promotional assertions and current product authority separate without redundant prose.",
+      "affected_paths": [
+        "wiki/staking.html",
+        "wiki/punk-token.html",
+        "wiki/lfgk.html",
+        "README.md",
+        "brand-canon/wiki-rewrites/issue-1458-audit.json",
+        "brand-canon/story-bibles/gk-master-canon.md"
+      ]
+    },
+    {
+      "id": "GK-1458-P2-LFGK-GREYPAPER",
+      "status": "implemented",
+      "major": false,
+      "sources": [
+        "w77.txt: complete original and section dispositions in issue-1458-audit.json"
+      ],
+      "old": "Existing disposition was an initial routing/genre label without a complete source content comparison.",
+      "new": "Entire May22 greypaper sections1\u20139/disclaimer compared to full current LFGK. WAX kingsofgraff/LFGK4decimal/99,999,999,999 and dated32,087holders/price/TVL remain source snapshot, separate from BCH ticker.; 40/20/20/5/5/~10allocation, LP75%future100%,20%stakingpool2%annual split1.5/0.5,listing1%second-quarter/5yearrelock, NBG activation contingency and multisig are all covered as plans.; Current page explicitly retains0.5%community-versus~250M quantity mismatch and fully circulating-versus-escrow tension. No new distribution schedule, universal current pool or rugproof conclusion invented.; Closing no-intrinsic-value/noformalteam/changeable/do-notpurchase disclaimers and historical tenassetburn/conditionalHODLgame rewards keep dated status; fictional Vault/chainfire are separate. No repeated expansion needed.",
+      "reason": "Preserve distinct source content, verify existing recovery and keep fiction, dated promotional assertions and current product authority separate without redundant prose.",
+      "affected_paths": [
+        "wiki/lfgk.html",
+        "wiki/staking.html",
+        "README.md",
+        "brand-canon/wiki-rewrites/issue-1458-audit.json",
+        "brand-canon/story-bibles/gk-master-canon.md"
+      ]
+    },
+    {
+      "id": "GK-1458-P2-DATED-CHANNELS",
+      "status": "implemented",
+      "major": false,
+      "sources": [
+        "w79.txt: complete original and section dispositions in issue-1458-audit.json"
+      ],
+      "old": "Existing disposition was an initial routing/genre label without a complete source content comparison.",
+      "new": "Complete October20 official-channel register compared to current creator, Buster and radio references: Darren/FATBUCKS/GraffitiKings, Gkniftyheads, HODL, GraffPUNKS, Buster/NoBallGames, TREEF and KillaKela named associations are dated publisher assertions.; Every domain/social/collection/token/Heroku/artist link retained in verified original, with categories distinguished from chain identity, live availability, corporate role or endorsement. Old link list is not a present exhaustive whitelist or access invitation.; Current Buster already cites artist handles/website/Saatchi/NoBallGames/XRP/TREEF listing without inventing office/current partnership; radio uses official current-home/lineup routes. Current umbrella and public/runtime authority do not derive from a2025 list.; No fresh remote URL reachability, external-account ownership or current-service uptime check claimed. This source content comparison requires no new fictional scene or unsolicited change of real biography/URL.",
+      "reason": "Preserve distinct source content, verify existing recovery and keep fiction, dated promotional assertions and current product authority separate without redundant prose.",
+      "affected_paths": [
+        "wiki/crypto-moonboys.html",
+        "wiki/charlie-buster.html",
+        "wiki/graffpunks-24-7-radio.html",
+        "wiki/graffiti-kings.html",
+        "README.md",
+        "brand-canon/wiki-rewrites/issue-1458-audit.json",
+        "brand-canon/story-bibles/gk-master-canon.md"
+      ]
+    },
+    {
+      "id": "GK-1458-P2-CREATIVE-BEACON",
+      "status": "implemented",
+      "major": false,
+      "sources": [
+        "w81.txt: complete original and section dispositions in issue-1458-audit.json"
+      ],
+      "old": "Existing disposition was an initial routing/genre label without a complete source content comparison.",
+      "new": "Complete July11 manifesto read:1983culturalorigin/Londoncollective\u2192Gk,40factions/secondaryHODLrole,Incubator/Planet-E,art-sound-finance,publicmaking/legacy all compared to owning current foundation and HODL distinction.; Old NFTgaming/P2E/launchpad/platforms/arttoys/multichain/reward hype not current umbrella definition or deployment evidence. The live two-route model permits existing identities without a Moonboy.; Permanent-global-ownership/no-gatekeepers/instantrights/infiniteshelf-life assertions cannot supersede precise qualifying1/1licence, separate rights/file availability or legality. No current financial/material guarantee.; Whole repetitive call-to-action sequence conveys creator empowerment, not missing named future characters/events. Current cultural succession already preserves substance with specific1983-vs-incorporation and fiction boundaries; no duplicate prose added.",
+      "reason": "Preserve distinct source content, verify existing recovery and keep fiction, dated promotional assertions and current product authority separate without redundant prose.",
+      "affected_paths": [
+        "wiki/graffiti-kings.html",
+        "wiki/gkniftyheads.html",
+        "wiki/graffpunks.html",
+        "wiki/crypto-moonboys.html",
+        "README.md",
+        "brand-canon/wiki-rewrites/issue-1458-audit.json",
+        "brand-canon/story-bibles/gk-master-canon.md"
+      ]
+    },
+    {
+      "id": "GK-1458-P2-ZERO-LINE",
+      "status": "implemented",
+      "major": false,
+      "sources": [
+        "w83.txt: complete original and section dispositions in issue-1458-audit.json"
+      ],
+      "old": "Existing disposition was an initial routing/genre label without a complete source content comparison.",
+      "new": "Introductory political/market commentary and complete Exodus story read: national-security/Golden Dome and melt-up assertions are opinion/prediction, not independently checked policy or investment facts.; Holly Citadel/Kent/00\u00b000\u203201\u2033E: preserve named fictional command post and migration, do not collapse Holly with present Kings Walk/Maidstone or accept border-crossing exemption from real rules.; All three numbered sequences compared: High Hats/Information Mercenaries refuse galleries; Code Alchemists/Salvagers/Guild transmute inventory; Bulls/HODL/Furies and Rugpull rivals own distinct roles. Recovered on Maidstone, no new faction/market mechanism.; Scarcity/one-million inventory/value/profit claims cannot override current collection counts, 1/1 rights or ordinary physical workshop history. Nia/condition sheets/reading bench and uncertain future occupancy preserved.",
+      "reason": "Preserve distinct source content, verify existing recovery and keep fiction, dated promotional assertions and current product authority separate without redundant prose.",
+      "affected_paths": [
+        "wiki/maidstone-base.html",
+        "wiki/gkniftyheads.html",
+        "wiki/graffpunks.html",
+        "brand-canon/wiki-rewrites/issue-1458-audit.json",
+        "brand-canon/story-bibles/gk-master-canon.md"
+      ]
+    },
+    {
+      "id": "GK-1458-P2-BUSTER-PROFILE",
+      "status": "implemented",
+      "major": false,
+      "sources": [
+        "w88.txt: complete original and section dispositions in issue-1458-audit.json"
+      ],
+      "old": "Existing disposition was an initial routing/genre label without a complete source content comparison.",
+      "new": "Entire November profile read and full current Buster article compared: Leake Street ceiling/public work, UK identity, handles and NoBallGames association already recovered with direct dated attribution.; Style/materials fully covered: Busterisms, humour, cartoons, graphic contrast, zigzags/double arrows, spray/acrylic/pens/stencils. No redundant prose needed.; Kent/family/ten-year-apprenticeship/private development and generic elite/demand/international-superlative claims lack independent support; excluded from real biography under explicit task boundary.; Profile contains no fictional royal birth, SARAH relationship, Ethereum weapon, XRP payment, TREEF office or verified NFT reward. W15 prince remains distinct fiction; current rights and name contexts retained.",
+      "reason": "Preserve distinct source content, verify existing recovery and keep fiction, dated promotional assertions and current product authority separate without redundant prose.",
+      "affected_paths": [
+        "wiki/charlie-buster.html",
+        "wiki/graffiti-kings.html",
+        "brand-canon/wiki-rewrites/issue-1458-audit.json",
+        "brand-canon/story-bibles/gk-master-canon.md"
+      ]
+    },
+    {
+      "id": "GK-1458-P2-UNBUFFABLE-MANIFESTO",
+      "status": "implemented",
+      "major": false,
+      "sources": [
+        "w89.txt: complete original and section dispositions in issue-1458-audit.json"
+      ],
+      "old": "Existing disposition was an initial routing/genre label without a complete source content comparison.",
+      "new": "Entire October30 manifesto and every heading compared to full GraffPUNKS: public walls/communication, street-to-code, on-chain outlaw identity, digital metro/network, cultural rebellion and legacy-over-hype already have owning passages.; Unbuffable/uncensorable/immortal/truth claims are political aspirations, not automatic storage permanence, creator rights, biological immortality, universal historical truth or guaranteed Antichain immunity.; NFT-bullets/data-cathedral/arms-race/final-mural/empire imagery supplies no dated battle or completed Final Fork. Current multiple voices, legal public art, ownership limits and NULL vulnerability retained.; No exact new individual/place/institution/roster name omitted; BlackMouth/Kiva/steward injury/HotWall adult consequences survive. Additional manifesto summary would duplicate existing prose.",
+      "reason": "Preserve distinct source content, verify existing recovery and keep fiction, dated promotional assertions and current product authority separate without redundant prose.",
+      "affected_paths": [
+        "wiki/graffpunks.html",
+        "wiki/graffiti-kings.html",
+        "wiki/hodl-wars.html",
+        "brand-canon/wiki-rewrites/issue-1458-audit.json",
+        "brand-canon/story-bibles/gk-master-canon.md"
+      ]
+    },
+    {
+      "id": "GK-1458-P2-LOREWARS",
+      "status": "implemented",
+      "major": false,
+      "sources": [
+        "W9.txt: complete original and section dispositions in issue-1458-audit.json"
+      ],
+      "old": "Existing disposition was an initial routing/genre label without a complete source content comparison.",
+      "new": "Abstract/sections1\u20132/summary: source claims an external HODLKONG64/lorewars cycle with crawler/selector/generation/publishers/JSON memory/IPFS, constant Alfie identity and one-source-one-log. Current repository truth does not establish that deployment.; Sections3\u20134: state/arcs/visual/engagement, clue/red-herring/multilog puzzle/onboarding/leaderboard proposals are individually accounted for; no missing fictional character, historical scene or current map implementation.; Section5: exact100M allocation40/25/15/10/5/5 and per-hunt/engagement/top10/holder reward assertions retained in original/ledger, not adopted as live supply/entitlements. Section7 lists real on-chain integration as future, conflicting with automatic-payout assurance.; Section6: 14-day baselines/25% three-cycle or40% spike/80-line single-module patch proposal is not shared canon approval or installed autonomous production publishing. No operational code changed.; Sections7\u20138/conclusion: Telegram, extra publishers, theories/NFT/holder verification remain future; no external repository runtime checked. New owning HODL section preserves proposal without conflating website XP, current software, fictional Alfie or legal rights.",
+      "reason": "Preserve distinct source content, verify existing recovery and keep fiction, dated promotional assertions and current product authority separate without redundant prose.",
+      "affected_paths": [
+        "wiki/hodl-wars.html",
+        "wiki/alfie-bitcoin-kid-blaze.html",
+        "README.md",
+        "Crypto_Moonboys_Master_Source_of_Truth_v1.md",
+        "brand-canon/wiki-rewrites/issue-1458-audit.json",
+        "brand-canon/story-bibles/gk-master-canon.md"
+      ]
+    },
+    {
+      "id": "GK-1458-P2-LEGACY-HYPE",
+      "status": "implemented",
+      "major": false,
+      "sources": [
+        "w90.txt: complete original and section dispositions in issue-1458-audit.json"
+      ],
+      "old": "Existing disposition was an initial routing/genre label without a complete source content comparison.",
+      "new": "Complete October29 essay headings/coda read: pressure-to-invention/HipHop/graffiti/moderncipher,earlytags-beforeNFT,40yearculturalcontinuity,legacy/Aerosoul and making-own-tools compared to full foundation/culture articles.; Nike/Netflix/Adidas/RedBull/governmentdoorstep/mentor/globalclient claims not independently checked or added to real biographies; current commercial-evidence limits explicitly apply.; Unbreakabletruth/uncensorable/globaluntouchable/permanenthistory/worldbiggestgallery/universalownership are rhetoric; no technical proof, rights grant, deployment, medical/scientific theory or finalworldvictory.; No separate dated catastrophic war, sacred Covenant, new namedfaction or independently developed character occurs; current marks/reputation/crew/maintainedproof and legalpublicpractice retain cultural substance.",
+      "reason": "Preserve distinct source content, verify existing recovery and keep fiction, dated promotional assertions and current product authority separate without redundant prose.",
+      "affected_paths": [
+        "wiki/graffiti-kings.html",
+        "wiki/gkniftyheads.html",
+        "wiki/graffpunks.html",
+        "README.md",
+        "brand-canon/wiki-rewrites/issue-1458-audit.json",
+        "brand-canon/story-bibles/gk-master-canon.md"
+      ]
+    },
+    {
+      "id": "GK-1458-P2-WARZONE",
+      "status": "implemented",
+      "major": false,
+      "sources": [
+        "w91.txt: complete original and section dispositions in issue-1458-audit.json"
+      ],
+      "old": "Existing disposition was an initial routing/genre label without a complete source content comparison.",
+      "new": "Entire long Blockchain Uprising/WW3/VandalsRome coda read: explicitly calls itself culture war and lore. No realworldwar/currentmilitaryconduct or documentedRomanhistory is adopted.; Bandwidth/blockspace/rememberedidentity,independentfrequency and womenasleaders recovered on HODL owning section; source demandforall40todestroyoneworld remains coercive ideology, unlike plural currentfactions.; Numbered01/13/28/40 examples have descriptions but no independentnamedcommunities. Anonymous40symbol/burningcities cannot fill acceptedmissingFortypath, substituteNULL/Pinks/Ghosts or override numberedsourceconflicts.; Onlyrebelsremain/noorders/nodemocracy/nogatekeepers/promiseduniversalcollapse are attributed futureclaims; no concludedFinalFork or mergedinstitution/creatorownership. Current loss/work/partners/escapeandinsideKids boundaries retained.",
+      "reason": "Preserve distinct source content, verify existing recovery and keep fiction, dated promotional assertions and current product authority separate without redundant prose.",
+      "affected_paths": [
+        "wiki/hodl-wars.html",
+        "wiki/graffpunks.html",
+        "wiki/gkniftyheads.html",
+        "wiki/first-witness-forty-paths.html",
+        "brand-canon/wiki-rewrites/issue-1458-audit.json",
+        "brand-canon/story-bibles/gk-master-canon.md"
+      ]
+    },
+    {
+      "id": "GK-1458-P2-WHALE-CHRONICLES",
+      "status": "implemented",
+      "major": false,
+      "sources": [
+        "W11.txt: complete original and section dispositions in issue-1458-audit.json"
+      ],
+      "old": "Initial source routing lacked a complete source-level comparison; some named literary obligations were compressed.",
+      "new": "Entire ten-chapter original, including brief prospective chapters6\u201310, read; full current Whale article compared. Origin/2013/2017/2018/2020\u20132025/MtGox/institution images are market allegory, not proof of one secret will or authenticated modern biography.; Darren1983Leake/2013SilentSellOff/2017Brixtonprophecy, Buster10kXRP/100kairdrop/1Mdrop/StencilMustBreak, Bone/PeteWhaleSong/co-founder/10mural and0xDEEPSEAQueens2021 funding are unsupported specific real claims. No artist private life, actual work/date/payment/currentmarketfact added.; Depth Dwellers tail/private1000BTC room/information-eyes/ShardMothers alliance and unofficial41st claim compared to current TailMark/owning source passages; no roster addition or conflation with Moonlords/DeepHolders accepted.; ColdStorage12monthprayer/privilegedvisions and1983Covenant one-mural-per-move recovered as literary patron obligations; chapter6 promises full text without supplying it. Neither is the2030FirstWitness Covenant or proof of invulnerable custody.; SilentAuction Sarah/DepthGuardian named-title detail recovered; no new warrior identity, HODL/HODLX merge, legal licence or universal patronage control.; HardForkShield stake/immunity, TripleCrownDip2022/Alfie72hcountermural, token/seeding/reward/pump claims compared to current game-status and PUNK archived design. Source mixes real market dates and fictional3008characters; do not manufacture travel or a biography.; Chapters8\u201310 failedNULLcorruption/GoldenTide/eternalstorage/10minwar continue the source prophecy; no alreadydefeatedAntichain, biologicalimmortality or FinalFork victory. Archive source ending and current unfinished histories remain distinct.; All modern Sora/Pell/UnfundedCrossing/TailMark/Junn/Sarren/EmptyChair/lostroof/room and PorchAccord debt/consent disagreements preserved; no duplicated general origin summary.",
+      "reason": "Recover precise literary testimony while preserving approved adult histories and current product/biography authority.",
+      "affected_paths": [
+        "wiki/whale-lords.html",
+        "wiki/punk-token.html",
+        "wiki/hodl-wars.html",
+        "wiki/charlie-buster.html",
+        "wiki/graffiti-kings.html",
+        "brand-canon/CANON_POLICY.md",
+        "brand-canon/wiki-rewrites/issue-1458-audit.json",
+        "brand-canon/story-bibles/gk-master-canon.md"
+      ]
+    },
+    {
+      "id": "GK-1458-P2-WIKI-ARCHITECTURE",
+      "status": "implemented",
+      "major": false,
+      "sources": [
+        "W16.txt: complete original and section dispositions in issue-1458-audit.json"
+      ],
+      "old": "Initial source routing lacked a complete source-level comparison; some named literary obligations were compressed.",
+      "new": "Entire March24 three-repo breakdown sections1\u201311 read. Names frontendCrypto-Moonboys.github.io, crawlerHAY-MUM-IM-BUILDING-AGENTS-OF-CHANGE andsam-v2-intelligence as dated architectural account; no externalrepo running/deployedstatus inspected or promised.; Roles2\u20134/6\u20137/11: crawling,ranking,scoring,memory,focus,entity/bible/dashboard/backend and source\u2192collector\u2192brain\u2192display flow classified as claimed design, not higher fictional canon authority or automatic current feature.; Sections1/10 metaphorical hunter/NULLcompanion/spy belongs to software allegory; no SAMtool identity merge with SamuelHyroSAMBlake, NULLorigin, House family or SPARKY. Existing policy explicitly distinguishes those authorities.; Section5/9 staticpublicreliability compared to current sam.html UI and targeted dashboard fetch/render code for repoJSON/entity-map/wiki-index/site-stats/sam-memory; does not certify separate intelligence server or current whole3repointegration.; Section8 entityslug/biblehooks compared to loader fetching /wiki/bibles/{slug}.json and bounded rendering code; legacy specialistbible data is not scripture, protected prose ownership or automatic fact approval.; Source claim that frontend should not validate is historical design language, not instruction to remove current integrity/ownership/publication safeguards. Publisher opening preserved canonical/manual/legacy/lockedprose, current manifest and explicitstubregister control output; task leaves these protections operational.; Current MasterTruth section10 allows agents to crawlapprovedcreatorworlds but forbids inventedownership/livefeatures/canon; sections11\u201312 govern runtime and licence. README/staticpublishing preserve creatorumbrella/twoentryroutes, not oldwiki-onlymission.; No new future character scene, actualSAM2030/2036calendar, extraFortyslot or liveendpoint is established. Technical/sourcecontentcomparison complete; current external architecture/uptime remain unverified and operationalcode unchanged.",
+      "reason": "Recover precise literary testimony while preserving approved adult histories and current product/biography authority.",
+      "affected_paths": [
+        "wiki/crypto-moonboys.html",
+        "sam.html",
+        "js/sam-dashboard.js",
+        "js/bible-loader.js",
+        "sam-wiki-publisher.py",
+        "README.md",
+        "Crypto_Moonboys_Master_Source_of_Truth_v1.md",
+        "brand-canon/CANON_POLICY.md",
+        "brand-canon/wiki-rewrites/issue-1458-audit.json",
+        "brand-canon/story-bibles/gk-master-canon.md"
+      ]
     }
   ]
 }

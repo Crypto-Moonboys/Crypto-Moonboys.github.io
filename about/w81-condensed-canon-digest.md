@@ -4,6 +4,16 @@
 
 Status: condensed source digest
 
+Phase 2 checkpoint: **61/94** complete source comparisons; **33 remain**.
+Eighteen new comparisons recover distinctive dossier, Chronometer, Flesh Fade,
+Pinks, Kent and Whale testimony, and check the remaining short business,
+token/channel, manifesto and operational accounts against their owning pages.
+Incompatible history, ontology and live-product claims retain exact attribution.
+Seven fully read originals still need connected comparisons, including W20.
+Use the current [progress ledger](../brand-canon/wiki-rewrites/issue-1458-progress.md)
+and [source audit](../brand-canon/wiki-rewrites/issue-1458-audit.json) for exact
+scopes; the older orientation and first-tranche descriptions below are historical.
+
 Updated: 2026-10-08 (source reconciliation; original September summary retained)
 
 Source archive: the historical W81 set of 94 source files; the uploaded `RAW CANNON.zip` repackages the same 94 uncompressed source bytes

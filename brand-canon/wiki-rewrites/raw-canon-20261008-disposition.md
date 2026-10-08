@@ -11,6 +11,14 @@
 
 ## Scope limits
 
+**Phase 2 semantic checkpoint:**61/94 comparisons complete,33 outstanding.
+Eighteen new source comparisons have full section-level receipts in
+`issue-1458-audit.json` and corresponding `GK-1458-P2-*` decisions. Seven
+fully read originals still have comparisons pending;26 need full readings.
+The genre/status table below is historical routing evidence, not a completion
+counter or promotion to accepted canon/live products. Original names, sizes
+and hashes remain unchanged. The current CSV adds precise decision/route links.
+
 These statuses describe whether a **subject** appears in existing wiki material, whether it is historical/opinion/planning, or whether it requires adjudication. **COVERED does not mean every source sentence was line-matched or published.** An existing wiki URL is not a claim of full scene transfer; a missing standalone URL is not proof that the topic is absent from ensemble articles. This is not a replacement for a source-to-page paragraph-level diff. The 2026 migration published substantially revised existing pages, so adding every old subplot would undo reconciliations.
 
 Do **not** fill the six currently unassigned Forty Paths positions from old alternative lists. Do **not** collapse HODL Warriors / HODL X Warriors, Bitcoin Kids / Bitcoin X Kids, Sacred/Aether Chain / World Chain / True Bitcoin Fork, or in-universe Agent SAM / deployed SAM and SPARKY tools. Do **not** assert live games, mints, rights, economics, historical clients or releases from these texts. The current accepted Year 3008 timeline is the 2030 Great Concord, later undated Sacred Fork, 2880 World Chain Triple Fork, by-2930 secure regions, and an open Final Fork.

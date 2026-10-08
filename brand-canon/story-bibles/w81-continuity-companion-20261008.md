@@ -10,6 +10,23 @@
 
 **Fictional canon owners:** [First Witness hub](../../wiki/the-first-witness.html), [master chronology](../../wiki/first-witness-master-chronology.html), [Concordance](../../wiki/first-witness-concordance.html), [Forty Paths](../../wiki/first-witness-forty-paths.html), [source register](../../wiki/first-witness-source-register.html).
 
+## Phase 2 continuation receipt
+
+Merged #1459 is the baseline. Current comparison count:61/94;33 still open.
+The master bible/progress/audit record18 additional complete source comparisons
+and distinguish seven fully read but unfinished connected comparisons.
+W18's dates/relationship and w28's literal ghost-world claims remain disputed;
+w85's Chronometer belongs to its branch; w29 contradicts itself on who executes.
+Maidstone's w83 Holly Citadel is a migration fable, not a verified address or
+future fortress. W11's Depth Guardian title and two covenants are patronage
+legends; its unofficial41st faction changes no roster. W9/W16 describe proposals
+and software metaphors, not a current reward or fictional SAM identity.
+The short token/business/channel/artist/manifesto originals are fully compared
+with their existing owners, keeping dated claims and arithmetic faults visible.
+No original scripture, accepted anchor, Forty slot, final outcome or real artist
+biography is revised. Necessary Monsters, Fifth Carbon, Black Dividend,
+Last Loading and all five #1459 connecting stories remain preserved.
+
 ## What this document can and cannot decide
 
 This companion preserves source material **without silently promoting it into settled truth**. In this archive, a witness can be wrong, a character can lie, a proposed game can be cancelled and two documents can describe incompatible endings. The published First Witness provides the convergence account; old posts remain evidence of what different writers or factions believed.
