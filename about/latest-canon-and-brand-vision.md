@@ -1,7 +1,9 @@
 # Crypto Moonboys Latest Canon And Brand Vision
 
-Status: working public canon and brand vision brief  
-Updated: 2026-10-08 (October lore reconciliation cross-reference; brand model unchanged)  
+Status: working public canon and brand vision brief
+
+Updated: 2026-10-08 (October lore reconciliation cross-reference; brand model unchanged)
+
 Sources: current repository README, Master Source of Truth, current SWARMSY positioning, protected First Witness corpus and historical W81 source provenance
 
 This file condenses the current brand direction into one practical source for writers, agents, developers and community builders.
