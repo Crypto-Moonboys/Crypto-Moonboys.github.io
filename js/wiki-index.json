@@ -3420,13 +3420,13 @@
       "category": "core",
       "category_priority": 10,
       "has_description": true,
-      "article_word_count": 4269,
+      "article_word_count": 4503,
       "keyword_bag_size": 22,
-      "heading_count": 25,
+      "heading_count": 26,
       "list_count": 1,
       "internal_link_count": 23,
-      "paragraph_count": 65,
-      "section_count": 21,
+      "paragraph_count": 68,
+      "section_count": 22,
       "lore_paragraph_count": 13,
       "content_quality_score": 97,
       "authority_score": 28
@@ -3516,14 +3516,23 @@
         "taggers",
         "porch",
         "poets",
-        "hot"
+        "hot",
+        "bioweapon",
+        "sterilisation",
+        "leak",
+        "artificial",
+        "bloodline",
+        "allegation",
+        "null",
+        "priests",
+        "survival"
       ]
     },
     "link_score": {
       "inbound_count": 211,
-      "outbound_count": 46,
+      "outbound_count": 47,
       "existing_outbound_count": 20,
-      "suggested_outbound_count": 26,
+      "suggested_outbound_count": 27,
       "authority": 432
     },
     "brand": {
@@ -11774,13 +11783,13 @@
       "category": "characters",
       "category_priority": 8,
       "has_description": true,
-      "article_word_count": 7121,
+      "article_word_count": 7371,
       "keyword_bag_size": 26,
-      "heading_count": 38,
+      "heading_count": 39,
       "list_count": 1,
       "internal_link_count": 19,
-      "paragraph_count": 103,
-      "section_count": 35,
+      "paragraph_count": 106,
+      "section_count": 36,
       "lore_paragraph_count": 17,
       "content_quality_score": 101,
       "authority_score": 28
@@ -11921,7 +11930,17 @@
         "core",
         "lattice",
         "paid",
-        "exit"
+        "exit",
+        "w58",
+        "eighty",
+        "woman",
+        "harvest",
+        "virus",
+        "immunity",
+        "claim",
+        "satellite",
+        "unerased",
+        "sigel"
       ]
     },
     "link_score": {

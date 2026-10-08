@@ -17901,7 +17901,7 @@
     ]
   },
   "/wiki/graffpunks.html": {
-    "outbound_count": 46,
+    "outbound_count": 47,
     "inbound_count": 211,
     "existing_outbound": [
       "/wiki/atomichub-graffpunks-collection.html",
@@ -17936,6 +17936,7 @@
       "/wiki/first-witness-censorship-offence-public-marks.html",
       "/wiki/first-witness-digital-inheritance-after-death.html",
       "/wiki/first-witness-music-dance-performance.html",
+      "/wiki/first-witness-null-erasure.html",
       "/wiki/genesis-kernel.html",
       "/wiki/gkniftyheads-digital-diva-783394.html",
       "/wiki/gkniftyheads-digital-duchess-783404.html",

@@ -635,6 +635,22 @@
         "wiki/the-blockstars.html",
         "wiki/the-squeaky-pinks.html"
       ]
+    },
+    {
+      "id": "GK-1458-W58-PAINT-HARVEST",
+      "status": "implemented",
+      "sources": [
+        "w58.txt complete Graff/Forkborn original and connected claim/scene comparison",
+        "Full Graff/Jodie/Thera/Sarah/Aleema/Kids/Army/Moongirl/Raider/HighHat/Alchemist/Kernel/NULL/Forty histories and relevant source-specific Games comparisons"
+      ],
+      "old": "Bioweapon/artificialbirth leak, NullPriest survival exchange and exact eighty-woman/DreamVirus/physicalSigel outcome compressed.",
+      "new": "Restore source particulars with narrator scope; retain HotWall injuries/profit and NotYourDream private consent/refusals/Orsa separate room, source helper and third recruit remain unnamed.",
+      "reason": "A faction’s testimony and spectacular source triumph do not erase its contemporary exploitation or a seer’s misuse of private testimony.",
+      "major": false,
+      "affected_paths": [
+        "wiki/graffpunks.html",
+        "wiki/jodie-zoom-2000.html"
+      ]
     }
   ]
 }

@@ -8,7 +8,7 @@
     "unique_contents": 93,
     "bytes": 2334149
   },
-  "semantic_scope": "Twenty-six completely compared sources; eight additional originals completely read with comparison pending. Sixty-two full existing article audits and five focused comparisons; nine new articles separately authored. Full mission open.",
+  "semantic_scope": "Twenty-seven completely compared sources; nine additional originals completely read with comparison pending. Sixty-three full existing article audits and five focused comparisons; nine new articles separately authored. Full mission open.",
   "sources": [
     {
       "file": "M16.txt",
@@ -401,8 +401,21 @@
       "bytes": 6107,
       "sha256": "bc69ba6e421d8f6891ff7f1fdb55d1339a6e08eaf3573699af198a754836b029",
       "byte_verified": true,
-      "semantic_review": "pending complete semantic reading",
-      "prior_disposition": "COVERED"
+      "semantic_review": "complete source reading; specific owning recovery and connected comparison pending",
+      "prior_disposition": "COVERED",
+      "read_progress": {
+        "paragraphs_read_in_full": [
+          [
+            1,
+            19
+          ]
+        ],
+        "next_unread_paragraph": null,
+        "complete_source_comparison": false
+      },
+      "partial_findings": [
+        "Full original printed/read without truncation. Specific Pinks-loop/Mercenarydisappearance/Thetaengineer-and-Defendergeneral target claims and sourceconcealment/supply/rebel/NULL roles pending recovery; all current Ghost70paragraphs read."
+      ]
     },
     {
       "file": "w35.txt",
@@ -465,8 +478,21 @@
       "bytes": 5929,
       "sha256": "9a1530ff42ee59372c0e3d2d68ba8903553df0bd5199cc9b436f79b98aad64fa",
       "byte_verified": true,
-      "semantic_review": "pending complete semantic reading",
-      "prior_disposition": "COVERED"
+      "semantic_review": "complete source reading; specific owning recovery and connected comparison pending",
+      "prior_disposition": "COVERED",
+      "read_progress": {
+        "paragraphs_read_in_full": [
+          [
+            1,
+            20
+          ]
+        ],
+        "next_unread_paragraph": null,
+        "complete_source_comparison": false
+      },
+      "partial_findings": [
+        "Full original printed/read without truncation. Specific double-sided sales, insideanomaly reports, eliteAuditTower data and AGNES7 sourceclaim pending recovery; current68paragraphs fully read and modernintimacy/privatevoice damage preserved."
+      ]
     },
     {
       "file": "w42.txt",
@@ -847,7 +873,7 @@
       "bytes": 11312,
       "sha256": "4a8b2c51e63da03717b177dd7a4ea0c377ba7383c31972afde8c06b65629cce2",
       "byte_verified": true,
-      "semantic_review": "complete source reading; connected claim/scene comparison pending",
+      "semantic_review": "complete source reading and connected claim/scene comparison",
       "prior_disposition": "COVERED",
       "read_progress": {
         "paragraphs_read_in_full": [
@@ -857,10 +883,11 @@
           ]
         ],
         "next_unread_paragraph": null,
-        "complete_source_comparison": false
+        "complete_source_comparison": true
       },
-      "partial_findings": [
-        "Full Graff/Jodie/Forkborn two-part original: exact five PaintPath disciplines, Thera/PunkNet leaks, servertruth, insidecontempt; Jodie dreamvirus/80femalecloning/EchoMother/metasigil/timeline door, escape Aleema+unnamedreject, satellites-proofSigel claims. Full connected detail/ripple comparison pending; no universal immunity or settledending adopted."
+      "findings": [
+        "Both Graff and Jodie/Forkborn original halves fully compared: origin/boroughs/five disciplines/anarchy/Jodie+BitCap/TheraPunkNet/defector survival/Antichainserver/Kid prejudice; DreamVirus/80harvest/EchoMother/metasigil/timeline door/captors/refusedresync/Aleema+unnamedthird/physicalsatellite-resistantSigel.",
+        "Exact artificialbirth/bioweapon leak, NullPriests exchange and harvest/sigil particulars restored on two owning pages. All HotWall and NotYourDream modern adult injuries, profit, violated permission, refusals, ended arrangements and Orsa separate room retained. No universal immunity, new named helper/recruit, completed FinalFork or replacement Forty count."
       ]
     },
     {
@@ -1805,6 +1832,15 @@
       ],
       "reading_verification": "All70 canonical paragraphs match fully read99-line cache.",
       "findings": "Full RestBell/Arlo/Sel/Ione/Perr/Hala/Kett/Jex/RedLedger adult work/desire/affairended/refusedrevengekilling/wages/shortage/UnburialJeth formerpartner debt; source stealth/NULL rumors/assassination and Calling3yearrefusal/symbolicidentitydeath individually attributed. No universalinvisibility or returnedprivatehousehold invented."
+    },
+    {
+      "path": "wiki/the-information-mercenaries.html",
+      "scope": "full canonical article",
+      "sections": [
+        "all canonical sections"
+      ],
+      "reading_verification": "All68 canonical paragraphs match fully read97-line cache.",
+      "findings": "Full Idra/Fen/ThirdEar/BrokenClock/ReleasePrice/UnboughtWarning/ListeningDay; RedLedger CrimsonPacket/Ula/Rafe/Daro/Ione/Perr threat, partialrefund/no guaranteecopies, privatevoice refusal, Fen return/unrelatedwages/Jexdeath; BlindfoldHour/Lossa denied safety and adult secretglamour. w41 explicit double-side sales/AGNES7 broker claim and w34 engineer target/employment specificity pending source recovery."
     }
   ]
 }

@@ -493,3 +493,20 @@ Hala’s separate departure, Arlo’s rejected murder request and Sel’s bed li
 remain. Jeth’s Unburial does not repay his former partner’s debt or restore
 the private household he abandoned. These adult consequences coexist with
 faction secrecy and coercion, without cleaning up either for a victory tale.
+
+
+### A leaked body programme and an unerased source mark
+
+Full w58 comparison restores Thera’s allegations of artificial births,
+bioweapon sterilisation and the compromised TrueBitcoinFork; underground
+exchanges supply warnings about warlords and NullPriest cults. Its Forkborn
+narrator’s eighty-woman harvest, DreamVirus immunity and physical Sigel
+resistant to satellite erasure retain source scope. The helper and third
+escapee stay unnamed; no universal power or finished FinalFork is adopted.
+
+BlackMouth’s profit and ignored pause, Kiva’s cut work and the steward’s
+badly healed burn/lost work remain. Jodie’s borrowed private dream does not
+become permitted testimony because an old narrator calls her unique. Tessa’s
+ended listening arrangement, Vela’s broken wrist, Aleema’s refused appearance,
+Orsa’s separate room and the later NotYourDream work remain. Affection and
+source triumph do not cancel those private limits.

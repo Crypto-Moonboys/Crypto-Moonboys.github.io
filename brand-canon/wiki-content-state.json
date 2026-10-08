@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "generator": "scripts/generate-wiki-content-state.mjs",
-  "source_tree_hash": "sha256:04e5adf700f0af43a26ede8c1d87375a2b5b88d92b084cacfcdd0052f51c6de1",
+  "source_tree_hash": "sha256:067920b9198b14b085c03ae8a477909c7997c6c3f5d71b29efbf9aaa521812af",
   "hash_algorithm": "sha256",
   "page_count": 424,
   "manifest_entry_count": 424,
@@ -11433,7 +11433,7 @@
       "title": "GraffPUNKS The mark, the message and the memory carried between them",
       "page_exists": true,
       "page_type": "lore",
-      "current_word_count": 4083,
+      "current_word_count": 4317,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -11442,10 +11442,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:670c097ba38aa69e245ec54b77a24f9adaecc25d5f847fd496bd58abd9894266",
-      "article_content_hash": "sha256:01d075693ecfde8a6c09df6f049a5db40e6ac21f4ba0997b707abcb4e35b902d",
-      "article_markup_hash": "sha256:da946821b66eae585c1b9fcb434c7b5d2fe4500e793971d7bd3f518f175840fa",
-      "git_blob_oid": "b2289a342fe84b37f8c8f34603f34afd9b3f486f",
+      "content_hash": "sha256:3e5a0b0b7b873f0e5c81f3315a69a07e639aba27972c06d03cb1c2ad0633b99a",
+      "article_content_hash": "sha256:f67a294996fc6fcfff70453b749da3f880ecff26542b462890caaabc7776d851",
+      "article_markup_hash": "sha256:8be11dfb9e6e14fb5d121510f5450ab725f8f90e361e20ad15dbd49fcc021c66",
+      "git_blob_oid": "d3f48266045a7a3d95080242c03be7a6481e563c",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -11464,11 +11464,11 @@
         "wiki/bibles/graffpunks.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 4 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 5 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/graffpunks.json; it is not automatically the unavailable Tier 4 modern bible."
       ],
       "content_owner": "canon",
-      "canon_revision": 4,
+      "canon_revision": 5,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -12250,7 +12250,7 @@
       "title": "Jodie ZOOM 2000",
       "page_exists": true,
       "page_type": "character",
-      "current_word_count": 6850,
+      "current_word_count": 7100,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -12259,10 +12259,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:9264acbe99d37a5b8d30c209a9b0b14f6d58f2d8eb4dcb691498391bfef21247",
-      "article_content_hash": "sha256:85447208b1cbf3a36f66d2c1731e8a02dce1641d082b581c3044f5edea0a17c3",
-      "article_markup_hash": "sha256:531056c8a294fb502df84c41b135b6596a390c0c42b1460bdc1cb4a5fef4cd9e",
-      "git_blob_oid": "8d39bf809d930ffdc78cc880fa75a124721bd6a2",
+      "content_hash": "sha256:a5de2203406b5b1320349a47d79158384e1d1ed08b9d2f1676c5e7e6584d335f",
+      "article_content_hash": "sha256:640fb83a76d17e2893fd467025588599512352095410217b5a16610eda8f7225",
+      "article_markup_hash": "sha256:b8b0b9dc90a7e34ff147b3fe5c10ade2bdb5f478c51acfc72eac017ce4b5889c",
+      "git_blob_oid": "5e368c1fbebe6c347668999099f3312f08647983",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -12281,12 +12281,12 @@
         "wiki/bibles/jodie-zoom-2000.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 8 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 9 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/jodie-zoom-2000.json; it is not automatically the unavailable Tier 4 modern bible.",
         "The requested modern Tier 4 subject bible is not separately identifiable in this checkout; canon classification remains a human-review item."
       ],
       "content_owner": "canon",
-      "canon_revision": 8,
+      "canon_revision": 9,
       "canon_source_tier": "first-witness+w81"
     },
     {
