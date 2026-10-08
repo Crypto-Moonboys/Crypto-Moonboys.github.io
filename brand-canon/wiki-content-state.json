@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "generator": "scripts/generate-wiki-content-state.mjs",
-  "source_tree_hash": "sha256:db4918e032b0ab92ae33d3b6d6ddda3978a2e95ea92be7bc03a66b42d0442a22",
+  "source_tree_hash": "sha256:eef1b94c25d92ed1671d6569cb661fe135edfa7451fbc75648d792a507a1aab2",
   "hash_algorithm": "sha256",
   "page_count": 424,
   "manifest_entry_count": 424,
@@ -1085,7 +1085,7 @@
       "title": "Bitcoin Kid Army",
       "page_exists": true,
       "page_type": "lore",
-      "current_word_count": 5368,
+      "current_word_count": 5629,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -1094,10 +1094,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:eb63e0804cdff300553e0af124d1dfccfc45864255f51f5a58cc33d21d529e5c",
-      "article_content_hash": "sha256:d480dcfa666e81e41054663b597a5cc52f44c9d6eda3b48f456c974c443071c4",
-      "article_markup_hash": "sha256:ded753421a0e17b6b23d44239e0beb9429b34d7471d53085452cf060577b40c0",
-      "git_blob_oid": "b7a70ebaf094934757e656c87f75f5bfff37cc88",
+      "content_hash": "sha256:b888fdb980a00495274668cff34889b0d81bda5689e266bc064ed23e55e9a250",
+      "article_content_hash": "sha256:e69ca22417a5f9f804f72d6278f479dea3844826c86a242637cdb1b2d5ad5aff",
+      "article_markup_hash": "sha256:4059cb5b26b68c6f68a3f61e266a10e933d92a70226c83e0771c08a47f28134a",
+      "git_blob_oid": "1318f0e96392a3ac483ca9e475871e87532aa3f6",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -1118,11 +1118,11 @@
         "wiki/bibles/bitcoin-kid-army.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 5 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 6 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/bitcoin-kid-army.json; it is not automatically the unavailable Tier 4 modern bible."
       ],
       "content_owner": "canon",
-      "canon_revision": 5,
+      "canon_revision": 6,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -15216,7 +15216,7 @@
       "title": "The AZTEC RAIDERS",
       "page_exists": true,
       "page_type": "faction",
-      "current_word_count": 3740,
+      "current_word_count": 3990,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -15225,10 +15225,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:70dd09f94f24a73a3ce88405c421e7713706299c50b7286723e6c909c3696570",
-      "article_content_hash": "sha256:36be65a2df1045123030faff4cd6a82402f18b60442f17d76eff78c8e150261d",
-      "article_markup_hash": "sha256:755e98f7abb1840dff51696aa0cb2f65b39621a27076943aacb58240d7af2fe7",
-      "git_blob_oid": "d5762baa3c6260f5f63dfa65b578623a8c240ea5",
+      "content_hash": "sha256:4351f1e9f29d59a980050c95bf0e5582b8564c03179fe95a64550d088cac649c",
+      "article_content_hash": "sha256:6d16e4183af7ea919c6f873c0a7ae9dd90187557a8da414b66d56c071d7cb3ff",
+      "article_markup_hash": "sha256:c4179c22ba63bd2df65181f1829b828d111ae4430b070fde7845df317038c2b5",
+      "git_blob_oid": "49d99e5111dfcd524f88d82cbf6b82f9357f2231",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -15249,12 +15249,12 @@
         "wiki/bibles/the-aztec-raiders.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 3 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 4 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/the-aztec-raiders.json; it is not automatically the unavailable Tier 4 modern bible.",
         "The requested modern Tier 4 subject bible is not separately identifiable in this checkout; canon classification remains a human-review item."
       ],
       "content_owner": "canon",
-      "canon_revision": 3,
+      "canon_revision": 4,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -15263,7 +15263,7 @@
       "title": "The BALLY BOYS",
       "page_exists": true,
       "page_type": "faction",
-      "current_word_count": 4570,
+      "current_word_count": 4881,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -15272,10 +15272,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:1761e4d9355e42b15c8201ca27d442efd18f80bc6e38fbdffaa72843e529e9eb",
-      "article_content_hash": "sha256:6da93a52be52cdc7d8431e4c7de1dcd3172f94765a5cf416a0f6029ade1a8ee0",
-      "article_markup_hash": "sha256:bc1d089c5a0e31fc0fb02ec5ac1c3343fdf18c8d82cfd3355848a1e99f852643",
-      "git_blob_oid": "963f26dbb29f5dc2824137af136d2c1c5e7df0dc",
+      "content_hash": "sha256:ab52be981502aa1f6b24f1f875c365e61f5b638c0235cfcf5bdc274066ac4112",
+      "article_content_hash": "sha256:2ba7cba17611355181897bcf846b76b04197e1a8f854edbd423333adfc398f5a",
+      "article_markup_hash": "sha256:0f2b2d85bc93d16b35be5b623088fb28581129fbd36a12e1be34ab96d0953824",
+      "git_blob_oid": "78a133a1bcc8488ba0919da99e1f46a8536595b7",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -15296,12 +15296,12 @@
         "wiki/bibles/the-bally-boys.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 5 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 6 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/the-bally-boys.json; it is not automatically the unavailable Tier 4 modern bible.",
         "The requested modern Tier 4 subject bible is not separately identifiable in this checkout; canon classification remains a human-review item."
       ],
       "content_owner": "canon",
-      "canon_revision": 5,
+      "canon_revision": 6,
       "canon_source_tier": "first-witness+w81"
     },
     {

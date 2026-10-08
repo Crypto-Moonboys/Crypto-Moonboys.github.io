@@ -12,10 +12,10 @@ No direct push to main, merge, issue closure or production deployment.
 
 ## Current cumulative state
 
-20 of 94 original sources have full claim/scene comparison; 74 remain open.
-Ten further originals are completely read with comparisons pending. Existing
-wiki audits cover 64 distinct articles: 58 full and six focused. Nine new
-articles and 36 expanded/corrected existing articles are implemented, with
+23 of 94 original sources have full claim/scene comparison; 71 remain open.
+Eleven further originals are completely read with comparisons pending. Existing
+wiki audits cover 66 distinct articles: 61 full and five focused. Nine new
+articles and 39 expanded/corrected existing articles are implemented, with
 five original adult connecting stories. This is an implementation checkpoint,
 not a claim that every source or current wiki page is reconciled.
 
@@ -29,15 +29,15 @@ proposed; no final ending, new Forty slot or historical retcon is adopted.
 
 - **94** original archive files verified against archive SHA-256, CSV and the
   independent immutable ledger; **93** unique contents, **2,334,149** bytes.
-- **20** complete original texts read and compared cumulatively: W1, w32, w33,
-  w56, W12 (all eight parts), W13 (all seven parts and repeated extracts), W7, w50, w63, w60, w44, w47, w48, w54, w59, w42, w55, w43, w51 and w52 (the last two are one repeated witness).
-  **74** remain without full semantic comparison. W19 is fully read but its
+- **23** complete original texts read and compared cumulatively: W1, w32, w33,
+  w56, W12 (all eight parts), W13 (all seven parts and repeated extracts), W7, w50, w63, w60, w44, w47, w48, w54, w59, w42, w55, w43, w51 and w52 (those two are one repeated witness), w57, w46 and w62.
+  **71** remain without full semantic comparison. W19 is fully read but its
   remaining embedded-character comparisons are pending, so it is not counted.
-- **64 distinct existing pages** reviewed: fifty-eight full canonical articles
+- **66 distinct existing pages** reviewed: sixty-one full canonical articles
   (Princess, Croydon, master chronology, concordance, synthetic minds,
   Crypto Moonboys, Great Consensus, Elder Codex-7, Iris-7, Aleema, Dream Sovereign,
-  all nine First Witness Books, HODL Warriors, GraffPUNKS, GKniftyHEADS, Whale Lords, XRP Kids, Forty Paths, faction Commentaries, Sarah, Jodie, Alfie, NULL, Block Topia, HODL doctrine, Hard Fork Rockers, Genesis Kernel, Nomad Bears, Blockstars, Crypto Stoned Boys, Rugpull Miners, Block Node Defenders both Army articles, Bitcoin X Kids, Chain Scribes the humour/attention supporting chapters, Thera, Charlie, Nice & Easy, AllCity Bulls Blockchain Furies, Finance Guild, Ducky Boys full Code Alchemists Bally Boys, High Hats, Aztec Raiders and Bitcoin Kids) and six focused section reviews
-  (Rune, Pinks, Games, HODL Wars, Sacred Chain and Rave Relics). Exact scopes are in `issue-1458-audit.json`.
+  all nine First Witness Books, HODL Warriors, GraffPUNKS, GKniftyHEADS, Whale Lords, XRP Kids, Forty Paths, faction Commentaries, Sarah, Jodie, Alfie, NULL, Block Topia, HODL doctrine, Hard Fork Rockers, Genesis Kernel, Nomad Bears, Blockstars, Crypto Stoned Boys, Rugpull Miners, Block Node Defenders both Army articles, Bitcoin X Kids, Chain Scribes the humour/attention supporting chapters, Thera, Charlie, Nice & Easy, AllCity Bulls Blockchain Furies, Finance Guild, Ducky Boys full Code Alchemists Bally Boys, High Hats, Aztec Raiders, Bitcoin Kids and Tuskon OGS and both Pinks articles) and five focused section reviews
+  (Rune, Games, HODL Wars, Sacred Chain and Rave Relics). Exact scopes are in `issue-1458-audit.json`.
 - **424** top-level wiki pages pass automated targeted canon lint and content
   inventory checks. That number is a static scan, not a human semantic count.
 
@@ -90,7 +90,7 @@ Single authority policy: `../CANON_POLICY.md`. Entry/onboarding: root `AGENTS.md
 PR template now requires source, ripple, adult-story, discovery and approval
 checks. `../canon-locks.json` contains anchors, identity boundaries, 34/6 and
 nine-runtime distinction, 94 source identities and targeted claim rules.
-`../reconciliation-decisions.json` holds twenty-two implemented and five proposed
+`../reconciliation-decisions.json` holds twenty-three implemented and five proposed
 old/new decisions with rationale and affected paths.
 
 `canon-integrity-check.mjs` runs in wiki CI and checks explicit chronology,
@@ -766,3 +766,48 @@ silence. w57/w46 originals fully read with comparisons pending. Current scope:
 20/94 sources compared,74 open; ten further originals fully read pending;
 64 distinct existing audits,58 full/six focused;36 changed existing pages,
 nine new articles and five original adult connecting stories. Full mission open.
+
+
+## Debt, intelligence and the predatory survival bargain
+
+w57/w46/w62 complete comparisons restore double anonymity premiums and
+collateral seizure after candidate death, champion debt bought for defensive
+intelligence, Bull-loss/Rug-scam asset absorption and rebel asset information
+sold to Miners for survival. Three owning articles expanded; no original
+paragraph revised. All current adult histories and inside/outside distinctions
+remain. No new character, original story, dated retcon, Forty slot or ending.
+Current scope23/94,71 open, seven fully read pending;64 audits58 full/six
+focused,39 existing pages expanded/corrected, nine new and five original adult
+stories. Final validation pending. Continue remaining source/serial dependencies.
+
+
+Full Tuskon54-paragraph audit and refreshed full85-paragraph Blockstar reading
+are cache-verified, including all LastLoading killings, assault, refusal,
+intimacy, fees and local closure. w45/w49 originals completely read pending
+comparison. Current65 distinct audits59 full/six focused;23 compared originals
+and nine fully read pending. Exact9263e343ac367c80d92cc1cdfdf84223cb540b3e
+Actions pass seven other groups; Wiki/Graph logs show only maintainer prose
+gate after successful guards/parity/regeneration. No label applied.
+
+
+Full w53 Pinks and w58 Graff/Jodie/Forkborn originals printed/read; detailed
+connected comparisons pending. Source total remains23/94 compared,71 open;
+eleven additional originals fully read. Raw archive identities untouched.
+
+
+### Predatory bargains final verification
+
+Local full wiki CI, graph, preservation, links and Pages build pass. Browser:
+96 desktop/mobile views,48 no-JavaScript articles,37 search/autocomplete queries.
+All424 prior pages,9786 original substantial paragraphs and5268 IDs remain
+against9263e343ac367c80d92cc1cdfdf84223cb540b3e, with zero new paragraph revisions.
+Across39 changed existing pages,2919 original substantial paragraphs remain,
+with only the earlier13 exact Tavi references;1588 canonical links resolve.
+Final preview `/workspace/gk1459-previews/bargains-public-site`; no deployment.
+Full Pinks57/65-paragraph companion/primary readings are cache-verified,
+including all current adult coercion, injury, custody, private lives and
+FifthCarbon aftermath. Sourcew53 specific doctrine/equipment and the accidental
+Nessa/Nela reference remain next recovery work, not adopted changes here.
+Current audit66 distinct,61 full/five focused;23/94 sources compared,71 open,
+eleven further originals read pending.39 existing articles expanded/corrected,
+nine new articles, five original adult stories. Full mission remains open.

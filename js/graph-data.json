@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-08T14:17:02.694Z",
-  "verified_at": "2026-10-08T14:17:02.694Z",
+  "generated_at": "2026-10-08T14:37:23.885Z",
+  "verified_at": "2026-10-08T14:37:23.885Z",
   "nodes": [
     {
       "id": "/about.html",
@@ -13856,6 +13856,12 @@
     },
     {
       "source": "/wiki/satoshi-scroll.html",
+      "target": "/wiki/the-aztec-raiders.html",
+      "score": 87,
+      "weight": 0.87
+    },
+    {
+      "source": "/wiki/satoshi-scroll.html",
       "target": "/wiki/the-blockchain-furies.html",
       "score": 87,
       "weight": 0.87
@@ -13865,12 +13871,6 @@
       "target": "/wiki/the-moonlords.html",
       "score": 87,
       "weight": 0.87
-    },
-    {
-      "source": "/wiki/satoshi-scroll.html",
-      "target": "/wiki/the-aztec-raiders.html",
-      "score": 86,
-      "weight": 0.86
     },
     {
       "source": "/wiki/satoshi-scroll.html",
@@ -14408,13 +14408,13 @@
     },
     {
       "source": "/wiki/the-allcity-bulls.html",
-      "target": "/wiki/the-moonlords.html",
+      "target": "/wiki/the-aztec-raiders.html",
       "score": 97,
       "weight": 0.97
     },
     {
       "source": "/wiki/the-allcity-bulls.html",
-      "target": "/wiki/the-nomad-bears.html",
+      "target": "/wiki/the-moonlords.html",
       "score": 97,
       "weight": 0.97
     },
@@ -14511,8 +14511,8 @@
     {
       "source": "/wiki/the-blockchain-furies.html",
       "target": "/wiki/the-aztec-raiders.html",
-      "score": 93,
-      "weight": 0.93
+      "score": 94,
+      "weight": 0.94
     },
     {
       "source": "/wiki/the-blockchain-furies.html",
@@ -14559,8 +14559,8 @@
     {
       "source": "/wiki/the-blockstars.html",
       "target": "/wiki/the-aztec-raiders.html",
-      "score": 96,
-      "weight": 0.96
+      "score": 97,
+      "weight": 0.97
     },
     {
       "source": "/wiki/the-blockstars.html",
@@ -14642,15 +14642,15 @@
     },
     {
       "source": "/wiki/the-code-alchemists.html",
-      "target": "/wiki/the-blockchain-furies.html",
+      "target": "/wiki/the-aztec-raiders.html",
       "score": 87,
       "weight": 0.87
     },
     {
       "source": "/wiki/the-code-alchemists.html",
-      "target": "/wiki/the-aztec-raiders.html",
-      "score": 86,
-      "weight": 0.86
+      "target": "/wiki/the-blockchain-furies.html",
+      "score": 87,
+      "weight": 0.87
     },
     {
       "source": "/wiki/the-code-alchemists.html",
@@ -14732,15 +14732,15 @@
     },
     {
       "source": "/wiki/the-ducky-boys.html",
-      "target": "/wiki/the-nomad-bears.html",
+      "target": "/wiki/the-aztec-raiders.html",
       "score": 100,
       "weight": 1
     },
     {
       "source": "/wiki/the-ducky-boys.html",
-      "target": "/wiki/the-aztec-raiders.html",
-      "score": 99,
-      "weight": 0.99
+      "target": "/wiki/the-nomad-bears.html",
+      "score": 100,
+      "weight": 1
     },
     {
       "source": "/wiki/the-ducky-boys.html",
@@ -14847,8 +14847,8 @@
     {
       "source": "/wiki/the-gasless-ghosts.html",
       "target": "/wiki/the-aztec-raiders.html",
-      "score": 93,
-      "weight": 0.93
+      "score": 94,
+      "weight": 0.94
     },
     {
       "source": "/wiki/the-gasless-ghosts.html",
@@ -14901,8 +14901,8 @@
     {
       "source": "/wiki/the-hard-fork-rockers.html",
       "target": "/wiki/the-aztec-raiders.html",
-      "score": 93,
-      "weight": 0.93
+      "score": 94,
+      "weight": 0.94
     },
     {
       "source": "/wiki/the-hard-fork-rockers.html",
@@ -14978,13 +14978,13 @@
     },
     {
       "source": "/wiki/the-information-mercenaries.html",
-      "target": "/wiki/the-bally-boys.html",
+      "target": "/wiki/the-aztec-raiders.html",
       "score": 90,
       "weight": 0.9
     },
     {
       "source": "/wiki/the-information-mercenaries.html",
-      "target": "/wiki/the-blockchain-furies.html",
+      "target": "/wiki/the-bally-boys.html",
       "score": 90,
       "weight": 0.9
     },
@@ -15015,8 +15015,8 @@
     {
       "source": "/wiki/the-moonlords.html",
       "target": "/wiki/the-aztec-raiders.html",
-      "score": 93,
-      "weight": 0.93
+      "score": 94,
+      "weight": 0.94
     },
     {
       "source": "/wiki/the-nice-easy-bois.html",
@@ -15075,8 +15075,8 @@
     {
       "source": "/wiki/the-nomad-bears.html",
       "target": "/wiki/the-aztec-raiders.html",
-      "score": 96,
-      "weight": 0.96
+      "score": 97,
+      "weight": 0.97
     },
     {
       "source": "/wiki/the-og-pixel-saints.html",
@@ -15104,7 +15104,7 @@
     },
     {
       "source": "/wiki/the-og-pixel-saints.html",
-      "target": "/wiki/the-rugpull-miners.html",
+      "target": "/wiki/the-aztec-raiders.html",
       "score": 87,
       "weight": 0.87
     },
@@ -15278,13 +15278,13 @@
     },
     {
       "source": "/wiki/the-tuskon-ogs.html",
-      "target": "/wiki/the-bally-boys.html",
+      "target": "/wiki/the-aztec-raiders.html",
       "score": 84,
       "weight": 0.84
     },
     {
       "source": "/wiki/the-tuskon-ogs.html",
-      "target": "/wiki/the-blockchain-furies.html",
+      "target": "/wiki/the-bally-boys.html",
       "score": 84,
       "weight": 0.84
     },
@@ -15794,7 +15794,7 @@
     },
     {
       "source": "/wiki/whale-lords.html",
-      "target": "/wiki/the-blockchain-furies.html",
+      "target": "/wiki/the-aztec-raiders.html",
       "score": 81,
       "weight": 0.81
     },

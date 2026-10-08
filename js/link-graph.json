@@ -790,7 +790,7 @@
     "inbound_from": []
   },
   "/wiki/bitcoin-kid-army.html": {
-    "outbound_count": 44,
+    "outbound_count": 45,
     "inbound_count": 10,
     "existing_outbound": [
       "/wiki/alfie-bitcoin-kid-blaze.html",
@@ -838,7 +838,8 @@
       "/wiki/hodl-wars.html",
       "/wiki/hodl-x-warriors.html",
       "/wiki/hodlmoonboys-nft-collection.html",
-      "/wiki/street-kingdoms.html"
+      "/wiki/street-kingdoms.html",
+      "/wiki/the-rugpull-miners.html"
     ],
     "inbound_from": [
       "/wiki/alfie-bitcoin-kid-blaze.html",
@@ -22046,7 +22047,7 @@
     ]
   },
   "/wiki/the-aztec-raiders.html": {
-    "outbound_count": 31,
+    "outbound_count": 32,
     "inbound_count": 1,
     "existing_outbound": [
       "/wiki/bitcoin-kids.html",
@@ -22074,6 +22075,7 @@
       "/wiki/first-witness-book-7-the-hold.html",
       "/wiki/first-witness-digital-inheritance-after-death.html",
       "/wiki/first-witness-intimacy-sexuality-privacy.html",
+      "/wiki/first-witness-money-debt-honest-scales.html",
       "/wiki/first-witness-prisons-punishment-return.html",
       "/wiki/gkniftyheads-digital-diva-783394.html",
       "/wiki/gkniftyheads-digital-duchess-783404.html",
@@ -22088,7 +22090,7 @@
     ]
   },
   "/wiki/the-bally-boys.html": {
-    "outbound_count": 34,
+    "outbound_count": 37,
     "inbound_count": 1,
     "existing_outbound": [
       "/wiki/bitcoin-kids.html",
@@ -22115,9 +22117,12 @@
     "suggested_outbound": [
       "/wiki/2025-metaverse-launch-party.html",
       "/wiki/bear-market-siege.html",
+      "/wiki/first-witness-anonymity-pseudonyms-hidden-names.html",
+      "/wiki/first-witness-death-grief-remembrance.html",
       "/wiki/first-witness-digital-inheritance-after-death.html",
       "/wiki/first-witness-great-concord-2030.html",
       "/wiki/genesis-kernel.html",
+      "/wiki/gkniftyheads-alessandro-anonymity-advocate-amato-783445.html",
       "/wiki/gkniftyheads-digital-diva-783394.html",
       "/wiki/gkniftyheads-digital-duchess-783404.html",
       "/wiki/graffpunks.html",

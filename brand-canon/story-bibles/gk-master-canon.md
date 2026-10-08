@@ -454,3 +454,22 @@ Uninvited Tasting remain. Ixa's cruel purchased farewell remains opposed by
 Vey/Asha's surviving accounts; Orris/Tali's craft refusal remains another
 choice, not an automatic end to the monopoly. New source sections preserve
 these adult histories and add no accepted universal hierarchy or Final Fork.
+
+
+### Debt and the information sold to survive
+
+Full w57/w46/w62 comparisons restore bargains the present faction summaries
+compressed. Bally brokers charge both parties for anonymity and seize
+collateral after candidate failure or death. Raiders offer relief from Bally
+loans for city defence information and absorb Bull assets after losses or
+Miner scams. The outside Army source sells asset information to those same
+Miners to obtain survival resources. These are attributed source practices,
+not a new named seller, completed city breach or proved invincibility.
+
+Modern Sera/Oren/Ione/Jex intimacy, stolen private record, lost bookings,
+partly retained commission and earned wages remain. Varka keeps trophy doors;
+Halen remains dead, Dera’s receiving house occupied and Osa’s music appropriated.
+Radan’s restraint cannot repay them. Tavi’s refusals, Sena’s ceased response,
+Cal’s unauthorised notice and escort-split households remain independent of
+the undated brokerage account. The source testbed/overwrite and inside
+sterile-immunity theories do not erase these lives or settle the Final Fork.

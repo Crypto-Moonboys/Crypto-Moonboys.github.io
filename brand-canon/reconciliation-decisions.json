@@ -577,6 +577,23 @@
         "wiki/the-high-hats.html",
         "wiki/the-code-alchemists.html"
       ]
+    },
+    {
+      "id": "GK-1458-W46-W57-W62-PREDATORY-BARGAINS",
+      "status": "implemented",
+      "sources": [
+        "w46.txt,w57.txt,w62.txt complete original readings and claim/scene comparisons",
+        "Full existing Bally/Aztec/both Army/Kids/XKids and all directly named faction histories; focused Games/Pinks comparisons"
+      ],
+      "old": "Double anonymity premium and collateral seizure after death, debt-for-defence intelligence, Bull-loss asset absorption and rebel Rugpull survival brokerage compressed.",
+      "new": "Restore precise source bargains on three owning pages; retain all modern lives, military limits, independent households, ceased Sena response and competing Antichain theories.",
+      "reason": "Survival and debt do not make these factions innocent; specific current refusals and relationships do not rewrite source-wide doctrines.",
+      "major": false,
+      "affected_paths": [
+        "wiki/the-bally-boys.html",
+        "wiki/the-aztec-raiders.html",
+        "wiki/bitcoin-kid-army.html"
+      ]
     }
   ]
 }

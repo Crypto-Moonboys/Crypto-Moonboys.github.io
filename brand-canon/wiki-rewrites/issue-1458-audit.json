@@ -8,7 +8,7 @@
     "unique_contents": 93,
     "bytes": 2334149
   },
-  "semantic_scope": "Twenty completely compared sources; ten additional originals completely read with comparison pending. Fifty-eight full existing article audits and six focused comparisons; nine new articles separately authored. Full mission open.",
+  "semantic_scope": "Twenty-three completely compared sources; eleven additional originals completely read with comparison pending. Sixty-one full existing article audits and five focused comparisons; nine new articles separately authored. Full mission open.",
   "sources": [
     {
       "file": "M16.txt",
@@ -539,15 +539,28 @@
       "bytes": 6549,
       "sha256": "c4784832f6610991df74f7cb85adcffc7b7c96a62345ad66da957a81cc2a1fda",
       "byte_verified": true,
-      "semantic_review": "pending complete semantic reading",
-      "prior_disposition": "COVERED"
+      "semantic_review": "complete source reading; connected owning recovery and comparison pending",
+      "prior_disposition": "COVERED",
+      "read_progress": {
+        "paragraphs_read_in_full": [
+          [
+            1,
+            21
+          ]
+        ],
+        "next_unread_paragraph": null,
+        "complete_source_comparison": false
+      },
+      "partial_findings": [
+        "Full original printed/read without truncation. Explicit exclusive next-conquest spoils contract and continuity with all Tuskon adult lives pending."
+      ]
     },
     {
       "file": "w46.txt",
       "bytes": 6908,
       "sha256": "74fb4bca119bc7241594db59f0829c04f51756320a7864d5e985a678d1262877",
       "byte_verified": true,
-      "semantic_review": "complete source reading; specific owning recovery and final comparison pending",
+      "semantic_review": "complete source reading and connected claim/scene comparison",
       "prior_disposition": "COVERED",
       "read_progress": {
         "paragraphs_read_in_full": [
@@ -557,10 +570,10 @@
           ]
         ],
         "next_unread_paragraph": null,
-        "complete_source_comparison": false
+        "complete_source_comparison": true
       },
-      "partial_findings": [
-        "Full original read without truncation. Remaining Bally exact double anonymity premium/collateral after candidate death, or Raider Bull-loss asset absorption and debt-for-citydefence intelligence, recorded for next owning recovery."
+      "findings": [
+        "All conquest/hierarchy/weapon/memory/economic/Pinks/city/HODL/Games/Bulls/NULL/Kid-schism claims compared. Exact Bally-debt-for-defence intelligence and Bull-loss/Rug-scam asset absorption restored; no new city conquest, universal invincibility, 39-culture census or changed Varka/Radan/Luma/Halen/Dera/Osa outcomes."
       ]
     },
     {
@@ -612,8 +625,21 @@
       "bytes": 9525,
       "sha256": "3b645d0c384ee38032422c1ac021ec1cf7a6002588eb7982bed158d85bdb60de",
       "byte_verified": true,
-      "semantic_review": "pending complete semantic reading",
-      "prior_disposition": "COVERED"
+      "semantic_review": "complete source reading; connected owning recovery and comparison pending",
+      "prior_disposition": "COVERED",
+      "read_progress": {
+        "paragraphs_read_in_full": [
+          [
+            1,
+            20
+          ]
+        ],
+        "next_unread_paragraph": null,
+        "complete_source_comparison": false
+      },
+      "partial_findings": [
+        "Full original printed/read without truncation. Full6part origin cycle and named ensemble read; sourcechronology/ownership conflicting claims stay attributed; named crew restoration pending."
+      ]
     },
     {
       "file": "W5.txt",
@@ -727,8 +753,21 @@
       "bytes": 8578,
       "sha256": "77dbc4368530a0329abc5fcf4f2de1f10a612e8f6bc0da76e669919e54dcff03",
       "byte_verified": true,
-      "semantic_review": "pending complete semantic reading",
-      "prior_disposition": "COVERED"
+      "semantic_review": "complete source reading; connected claim/scene comparison pending",
+      "prior_disposition": "COVERED",
+      "read_progress": {
+        "paragraphs_read_in_full": [
+          [
+            1,
+            29
+          ]
+        ],
+        "next_unread_paragraph": null,
+        "complete_source_comparison": false
+      },
+      "partial_findings": [
+        "Full Pinks original with PorcineProtocol, PillarI, NeonPink stealth boast, CodeCuffs, defragmentation, PigKids label, enclave audits, juriscamgap, NiceEasy unauthorizedtruces and Ascension/HODLFORK/RecordCrates migration claims. Full current Pinks comparison and space-program dependencies pending; no real product or acceptedfinalmigration."
+      ]
     },
     {
       "file": "w54.txt",
@@ -787,7 +826,7 @@
       "bytes": 6364,
       "sha256": "05ad085604d17c41709bcde652bd7ed8c19c74b0613095378abb866072b4d51c",
       "byte_verified": true,
-      "semantic_review": "complete source reading; specific owning recovery and final comparison pending",
+      "semantic_review": "complete source reading and connected claim/scene comparison",
       "prior_disposition": "COVERED",
       "read_progress": {
         "paragraphs_read_in_full": [
@@ -797,10 +836,10 @@
           ]
         ],
         "next_unread_paragraph": null,
-        "complete_source_comparison": false
+        "complete_source_comparison": true
       },
-      "partial_findings": [
-        "Full original read without truncation. Remaining Bally exact double anonymity premium/collateral after candidate death, or Raider Bull-loss asset absorption and debt-for-citydefence intelligence, recorded for next owning recovery."
+      "findings": [
+        "All arbitrage/influence/anonymity/arms/champion-loan/Fury/Miners/Kid-schism/Final-Arbitrage claims compared against full Bally and named histories. Two-side secrecy premium and immediate collateral seizure after failure/death recovered; modern Sera/Oren/Ione/Jex hires, wages, intimate humour and losses intact."
       ]
     },
     {
@@ -808,8 +847,21 @@
       "bytes": 11312,
       "sha256": "4a8b2c51e63da03717b177dd7a4ea0c377ba7383c31972afde8c06b65629cce2",
       "byte_verified": true,
-      "semantic_review": "pending complete semantic reading",
-      "prior_disposition": "COVERED"
+      "semantic_review": "complete source reading; connected claim/scene comparison pending",
+      "prior_disposition": "COVERED",
+      "read_progress": {
+        "paragraphs_read_in_full": [
+          [
+            1,
+            38
+          ]
+        ],
+        "next_unread_paragraph": null,
+        "complete_source_comparison": false
+      },
+      "partial_findings": [
+        "Full Graff/Jodie/Forkborn two-part original: exact five PaintPath disciplines, Thera/PunkNet leaks, servertruth, insidecontempt; Jodie dreamvirus/80femalecloning/EchoMother/metasigil/timeline door, escape Aleema+unnamedreject, satellites-proofSigel claims. Full connected detail/ripple comparison pending; no universal immunity or settledending adopted."
+      ]
     },
     {
       "file": "w59.txt",
@@ -876,7 +928,7 @@
       "bytes": 12748,
       "sha256": "6899cb18d3824c4f199a2e5eedbc9b19d16a9dab136eb56d1a803ac2858ae57d",
       "byte_verified": true,
-      "semantic_review": "complete source reading; connected owning-page comparison pending",
+      "semantic_review": "complete source reading and connected claim/scene comparison",
       "prior_disposition": "COVERED",
       "read_progress": {
         "paragraphs_read_in_full": [
@@ -886,10 +938,10 @@
           ]
         ],
         "next_unread_paragraph": null,
-        "complete_source_comparison": false
+        "complete_source_comparison": true
       },
-      "partial_findings": [
-        "Full two-population account: outside broker and HODL9000 caller versus inside ModelLineage99%, eugenic/UBI/surveillance/fear and sterility claims. HighHats/Finance/Aztec and economy dependencies remain to compare; no alias merge or universal psychological verdict adopted."
+      "findings": [
+        "Both outside1% and inside99% halves compared with both Army/Kids/XKids and all named faction claims. Outside asset information sold to Rugpull Miners for survival restored. Data-slip/music bargains, inoculation testbed, HODLoverwrite and compliant exhibition/surveillance/financial/sterile-immunity/Architect dismissal retain attribution and contradictory current households; no universal passionlessness, alias merge or new Forty count."
       ]
     },
     {
@@ -1243,10 +1295,11 @@
     {
       "path": "wiki/squeaky-pinks-enforcers.html",
       "sections": [
-        "fifth-carbon-pinks",
-        "fifth-carbon-bex"
+        "all canonical sections"
       ],
-      "scope": "targeted sections, not whole-article semantic audit"
+      "scope": "full canonical article",
+      "reading_verification": "All57 canonical paragraphs match fully read cache.",
+      "findings": "Full Enforcers57paras: Hessa/Perin belongings vsdestination/custody, temporary HODLFORKdisc/voicecare, BT-GP-SP-001 alleged NULLpolicing contradiction, all FifthCarbon Hessa/Bex heat/wage/reprimand consequences and OperationEcho limit. No recoveredperson or completedorbitaltransfer."
     },
     {
       "path": "wiki/hard-fork-games.html",
@@ -1519,8 +1572,8 @@
       "sections": [
         "all canonical sections"
       ],
-      "findings": "Entire current article: Blockbusters disputed contemporary dates and names, all Backlight/DataGlimmer/SecondCredit/FinalBroadcast mechanics, DoubleSupper/idiom, complete WarmPicture/BlackDividend/LastLoading and private adult histories. One truncated interval recovered in full at lines117\u2013130. w50 criticism remains distinct from all performers.",
-      "reading_verification": "All 85 canonical paragraphs matched fully read cache before changes."
+      "findings": "Full Blockstars85paragraphs including every BlackDividend/WarmPicture/LastLoading paragraph: Lio/Aven consensual intimacy, Suri retainedfee/corrections, Etta refusal, Sevrin priorintimidation and deliberate restrainedRovan killing, Sella assault, completed load, earnedhours and limited release. w49 named Blockbusters ensemble missing and pending recovery; competing2020\u20132030 origin is attributed, not adopted chronology.",
+      "reading_verification": "All85 current canonical paragraphs match fully read cache."
     },
     {
       "path": "wiki/the-crypto-stoned-boys.html",
@@ -1725,6 +1778,24 @@
       ],
       "findings": "Full57-paragraph Raider article: Varka/Radan/Luma/RedStep/LowerGranary/Burden/Banner/WinterHold/Tuskon/DataSpear/Games/NULL, all occupied-supper/Halen death/Osa/Dera/FanOfTeeth/mourning-tune/NineDoors and adult military desire/rank. w46 specific Bull-loss asset absorption and debt-for-city-defence intelligence require source recovery; no reclaimedhouse or universalimmunity invented.",
       "reading_verification": "All 57 current canonical paragraphs match fully read cache."
+    },
+    {
+      "path": "wiki/the-tuskon-ogs.html",
+      "scope": "full canonical article",
+      "sections": [
+        "all canonical sections"
+      ],
+      "reading_verification": "All54 current canonical paragraphs match fully read cache.",
+      "findings": "Full Tuskon54paragraphs: Toma/Senn/LongStep/BorrowedBanner/LateWatch; Brak/Iska/Dovra BlackSalt coercive belonging and private love; w45 exclusive next-spoils collateral and repairedsource specificity pending."
+    },
+    {
+      "path": "wiki/the-squeaky-pinks.html",
+      "scope": "full canonical article",
+      "sections": [
+        "all canonical sections"
+      ],
+      "reading_verification": "All65 canonical paragraphs match fully read cache.",
+      "findings": "Full primaryPinks65paras: Ressa/Iven/AmberQueue/UnfastenedGate/Pinkline, Porcine/CodeCuffs/Ascension, Glaze servicebonus/intimacy/removed Nela injury and lostwork, PardonBall/Ulda programmes/private favour, authoritarian order and unsolvedhearing. Adjacent officer mockery mistakenly names Nessa after Nela removal; precise reference correction pending separate receipt. w53 PillarI and NeonPink/Ghost detection specificity pending."
     }
   ]
 }

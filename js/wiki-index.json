@@ -10774,13 +10774,13 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 5613,
+      "article_word_count": 5874,
       "keyword_bag_size": 27,
-      "heading_count": 32,
+      "heading_count": 33,
       "list_count": 1,
       "internal_link_count": 20,
-      "paragraph_count": 82,
-      "section_count": 29,
+      "paragraph_count": 85,
+      "section_count": 30,
       "lore_paragraph_count": 13,
       "content_quality_score": 101,
       "authority_score": 28
@@ -10865,14 +10865,23 @@
         "unborrowed",
         "life",
         "dessa",
-        "flint"
+        "flint",
+        "rugpull",
+        "survival",
+        "resources",
+        "data",
+        "slip",
+        "safe",
+        "passage",
+        "intelligence",
+        "brokerage"
       ]
     },
     "link_score": {
       "inbound_count": 10,
-      "outbound_count": 44,
+      "outbound_count": 45,
       "existing_outbound_count": 16,
-      "suggested_outbound_count": 28,
+      "suggested_outbound_count": 29,
       "authority": 28
     },
     "brand": null
@@ -14474,13 +14483,13 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 4895,
+      "article_word_count": 5206,
       "keyword_bag_size": 24,
-      "heading_count": 32,
+      "heading_count": 33,
       "list_count": 1,
       "internal_link_count": 23,
-      "paragraph_count": 68,
-      "section_count": 29,
+      "paragraph_count": 72,
+      "section_count": 30,
       "lore_paragraph_count": 26,
       "content_quality_score": 105,
       "authority_score": 28
@@ -14575,14 +14584,23 @@
         "makes",
         "a",
         "stranger",
-        "useful"
+        "useful",
+        "double",
+        "anonymity",
+        "premium",
+        "candidate",
+        "death",
+        "collateral",
+        "predatory",
+        "champion",
+        "loans"
       ]
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 34,
+      "outbound_count": 37,
       "existing_outbound_count": 20,
-      "suggested_outbound_count": 14,
+      "suggested_outbound_count": 17,
       "authority": 12
     },
     "brand": null
@@ -21330,13 +21348,13 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 4060,
+      "article_word_count": 4310,
       "keyword_bag_size": 22,
-      "heading_count": 30,
+      "heading_count": 31,
       "list_count": 1,
       "internal_link_count": 19,
-      "paragraph_count": 59,
-      "section_count": 27,
+      "paragraph_count": 62,
+      "section_count": 28,
       "lore_paragraph_count": 19,
       "content_quality_score": 97,
       "authority_score": 28
@@ -21430,14 +21448,23 @@
         "as",
         "taste",
         "intimacy",
-        "inheritance"
+        "inheritance",
+        "champion",
+        "debt",
+        "intelligence",
+        "bargain",
+        "bull",
+        "loss",
+        "asset",
+        "speculative",
+        "assets"
       ]
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 31,
+      "outbound_count": 32,
       "existing_outbound_count": 19,
-      "suggested_outbound_count": 12,
+      "suggested_outbound_count": 13,
       "authority": 11.5
     },
     "brand": null
