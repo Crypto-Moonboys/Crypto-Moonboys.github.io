@@ -182,7 +182,7 @@
       "games_origin_preservation": "/tmp/gk1459/games-origin-preservation.log",
       "games_origin_all_wiki_preservation": "/tmp/gk1459/games-origin-all-wiki-preservation.log",
       "games_origin_build": "/tmp/gk1459/games-origin-pages-build.log",
-      "games_origin_canon": "/tmp/gk1459/games-origin-final-canon.log"
+      "games_origin_canon": "/tmp/gk1459/games-origin-checkpoint-canon.log"
     },
     "github_pages_artifact_path": "/workspace/gk1459-previews/games-origin-public-site",
     "scoped_related_paths": "passed: unrelated NFT/curated pages unchanged; invalid scope fails before writes",
@@ -244,7 +244,7 @@
     "games_origin_browser": "Four changed owning articles pass8 desktop/mobile views,4 noJS readings and4 search/autocomplete queries",
     "games_origin_preservation_and_links": "passed3647 original substantial paragraphs/14 earlier exact references across50 changed existing articles;1999 canonical links across those and3 new biographies resolve",
     "games_origin_wiki_ci": "passed exit0; BASE_SHA=b865fd991a63d3b74c7076acec703a9b5b0647d8 with task-authorised local prose flag",
-    "games_origin_final_canon": "passed exit0; original archive hashes, corruption probes and eight regression groups;424 pages94 source identities37 decisions"
+    "games_origin_final_canon": "Final checkpoint passed exit0;94 archive identities, corruption probes, eight regression groups,424 pages and37 decisions; scripts/wiki-canon-browser-validation.mjs syntax and git diff --check passed."
   },
   "limitations": [
     "Byte verification and static lint do not constitute full semantic reconciliation.",
@@ -262,10 +262,10 @@
     "approval_review_reason": "Both latest push and Issue #1458 progress comment succeeded under explicit continuation authorisation. Earlier rejection remains historical; no current delivery block.",
     "reviewable_pr_body": "/workspace/scratch/issue-1459-current-pr.md",
     "reviewable_issue_update": "/workspace/scratch/issue-1459-current-issue.md",
-    "pull_request_draft": true,
+    "pull_request_draft": false,
     "github_ci": "Checked exact head 6da75973f827b7161ce349a403ca4af723d8c00e: Wiki Structure, production truth, worker provenance, Arcade, Worker API, WAX and Visual passed. CI/Wiki and Graph Publishing stopped at protected-prose maintainer-label gate. No canon-prose-change-approved label has been self-applied.",
     "issue_progress_comment_id": 6059157565,
-    "latest_implementation_commit_uploaded": "2ca5291db870acc4a6e730c657855eb83685b4f4",
+    "latest_implementation_commit_uploaded": "2c7eac154c89346ad30c6ec15d7d098ec443f26c",
     "github_ci_latest_batch": "Exact head a1d5273cd534654e28bab701aecb7736f184695b: Wiki Structure, production truth, worker provenance, Arcade, Worker API, WAX and Visual passed. Wiki and Graph regeneration/manifest/graph checks pass and then stop at the existing maintainer canon-prose-change-approved label gate. No label self-applied.",
     "serial_batch_ci": "Exact head2d758b5ed: WikiStructure,productiontruth,workerprovenance,Arcade,WorkerAPI,WAX,Visual all pass. Wiki/Graph logs show only existing maintainer prose-label gate after manifest/graph parity. No label self-applied.",
     "w5_batch_ci": "Exact 153d20831e8c4cb645a82dadfa593e70b125a49b: Wiki Structure, production truth, worker provenance, Arcade, Worker API, WAX and Visual pass. Inspected Wiki/Graph logs show successful guards/manifest/graph checks then only existing maintainer prose-label gate; no label self-applied.",
@@ -287,7 +287,11 @@
       "date": "2026-10-08",
       "quote": "finish up where you at so ready to merge with current edits.",
       "interpretation": "Finish and validate current edits; prepare existing PR for merge review. Full reconciliation remains open. No merge or approval of proposed major canon changes inferred."
-    }
+    },
+    "pull_request_ready_for_review": true,
+    "current_checkpoint_ci": "Exact implementation head2c7eac154c89346ad30c6ec15d7d098ec443f26c: Structure,productiontruth,workerprovenance,Arcade,WAX passed. Wiki/Graph logs inspected: guards/regeneration/parity passed then existing maintainer prose-label gate; no label applied. WorkerAPI/Visual pending at this record. Ready-for-review transition confirmed; PR template evidence-line formatting corrected and rerunning.",
+    "merge_blocker": "Maintainer canon-prose-change-approved label; final GitHub checks must complete. No proposed major canon decision is inferred as approved.",
+    "merge_conflicts": "No conflict: git merge-tree --write-tree HEAD origin/main succeeded against fetchedmain b865fd991a63d3b74c7076acec703a9b5b0647d8; GitHub mergeable=true."
   },
   "initial_tranche_verification": {
     "source_texts_completely_read_this_tranche": [

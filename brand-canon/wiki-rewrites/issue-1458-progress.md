@@ -1120,3 +1120,20 @@ pending:W19,W15,w25,M16,W5,w69,W18. Keep Issue1458 open. Future work starts ther
 and at the remaining unread source/register dependencies; retain every approved
 modern adult story and current validated implementation. No new research or
 fiction batch is required to finish this requested checkpoint.
+
+
+### Current checkpoint delivery
+
+Implemented Games/origin/directory checkpoint uploaded as
+`2c7eac154c89346ad30c6ec15d7d098ec443f26c`. PR1459 marked ready for review
+(successfully out of draft), following the latest current-scope instruction.
+GitHub confirms mergeable=true; fetched-main merge simulation also passes.
+Current head Structure/productiontruth/workerprovenance/Arcade/WAX checks pass;
+Wiki/Graph logs show successful guard/regeneration/parity then only the
+maintainer canon-prose-change-approved gate. WorkerAPI/Visual still running
+when this receipt was recorded. PR-template formatting of the aggregate test
+attempt line corrected; its rerun is pending. No prose label self-applied.
+The current implementation is complete for review; merge remains held for
+maintainer approval/check completion. No merge/deployment or issue closure.
+Final remote results will be reported in the existing PR and issue comment;
+this record does not misrepresent pending runs as successful.
