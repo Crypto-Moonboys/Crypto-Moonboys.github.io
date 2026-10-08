@@ -47,7 +47,19 @@
     "browser": "passed",
     "github_pages_artifact": "built successfully; no deployment",
     "git_diff_check": "passed",
-    "full_npm_test": "running; final result recorded in progress ledger before delivery"
+    "full_npm_test": "Aggregate attempt passed Arcade, Worker API, Wiki and WAX; stopped in Visual on missing bundled browser. All 16 Visual commands subsequently passed in ci:visual after installed Chromium setup and moving the generated preview outside the source tree. No successful single aggregate npm test invocation is claimed.",
+    "ci_domains": {
+      "arcade": "passed in aggregate attempt",
+      "worker_api": "passed in aggregate attempt",
+      "wiki": "passed in aggregate attempt",
+      "wax": "passed in aggregate attempt",
+      "visual": "passed in complete subsequent ci:visual run, exit 0"
+    },
+    "log_paths": {
+      "aggregate": "/tmp/gk1458/full-verified-test.log",
+      "visual": "/tmp/gk1458/visual-clean-test.log"
+    },
+    "github_pages_artifact_path": "/tmp/gk1458/public-site"
   },
   "limitations": [
     "Byte verification and static lint do not constitute full semantic reconciliation.",
@@ -55,5 +67,18 @@
     "All First Witness books and supporting chapters still need full scene/claim audit.",
     "Four major canon proposals await full dependency audit and specific GK approval.",
     "Final merge and prose approval label require GK/maintainer review."
-  ]
+  ],
+  "delivery": {
+    "backup_branch_uploaded": true,
+    "implementation_branch_uploaded": false,
+    "pull_request_url": null,
+    "issue_update_posted": false,
+    "blocked_actions": [
+      "push implementation branch",
+      "post issue progress update"
+    ],
+    "approval_review_reason": "Specific implementation/report payload export to GitHub requires explicit user approval.",
+    "reviewable_pr_body": "/workspace/scratch/issue-1458-draft-pr.md",
+    "reviewable_issue_update": "/workspace/scratch/issue-1458-issue-update.md"
+  }
 }

@@ -95,11 +95,25 @@ canon review and the existing maintainer prose-approval gate still apply.
 - `node scripts/prepare-pages-artifact.mjs public-site` — Pages artifact built successfully; no deployment.
 - `git diff --check` and changed-script syntax — passed.
 
-Full `npm test` final result will be recorded before delivery. Initial attempts
-failed on sandbox process/network restrictions and a missing declared
-`smol-toml` dependency. `npm ci --ignore-scripts --cache /tmp/gk1458-npm-cache`
-restored the locked dependencies without changing the lockfile; the full suite
-was restarted with the explicit baseline and task-authorised prose flag.
+The aggregate `npm test` run passed Arcade, Worker API, Wiki and WAX, then
+stopped in Visual because the avatar browser expected a bundled Playwright
+executable. The avatar checks subsequently passed using a task-local browser
+cache pointing to installed Chromium. The next Visual run reached shell parity;
+its sole failure came from scanning the generated `public-site/wiki/components`
+partial as source content. The successful Pages build artifact was moved to
+`/tmp/gk1458/public-site`, outside the source tree; Visual was restarted.
+**Final result: all 16 Visual commands passed, exit 0**, including shell parity
+with zero failures and zero warnings. Thus all five CI domains passed across
+the aggregate attempt and complete Visual rerun; a single successful aggregate
+`npm test` invocation is not claimed. Logs: `/tmp/gk1458/full-verified-test.log`
+and `/tmp/gk1458/visual-clean-test.log`. The receipt records the same scope.
+
+Earlier attempts also encountered sandbox process/network restrictions and a
+missing declared `smol-toml` dependency. `npm ci --ignore-scripts --cache
+/tmp/gk1458-npm-cache` restored locked dependencies without changing the
+lockfile. Verification used the explicit baseline and task-authorised prose
+flag. No source shell or existing runtime code was changed to repair these
+environment/artifact failures.
 
 The default preservation gate correctly rejects a changed protected article
 without the maintainer's `canon-prose-change-approved` PR label. Do not weaken
@@ -142,3 +156,7 @@ inventory debt remains separately recorded; this tranche preserves NFT pages.
 PR link and final CI status will be appended below when available. Draft status
 is required while the repository-wide reconciliation and specific canon
 approvals above remain incomplete.
+
+### Local delivery block
+
+The backup branch upload succeeded after task/target/commit verification. Automatic approval review separately rejected pushing the actual implementation commits and posting the prepared issue update, requiring explicit authorisation for those exact payloads and destination. Neither was bypassed. No PR exists and Issue #1458 has not been updated. The exact draft PR file (including all 55 payload paths) and issue update are prepared at `/workspace/scratch/issue-1458-draft-pr.md` and `/workspace/scratch/issue-1458-issue-update.md`. Specific user approval has been requested; keep merge held and the issue open.
