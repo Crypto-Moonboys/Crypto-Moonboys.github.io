@@ -45,6 +45,28 @@ The duplicate is useful anyway. A later Block Topia service identity can be susp
 9. **The Princess**: Great Consensus as a particular faction/sect reading that may be coercive and can be refused.
 10. **Rune Tag**: Whisper Codex reading disciplines and failure of miraculous simplification.
 11. **Alfie Blaze**: the hundred-scroll market and why a public hero refuses somebody else's certainties.
+12. **Jodie ZOOM 2000**: disputed witness voices, the ethics of copied memory and a refusal to turn an anomalous dream door into legal proof.
+
+## Delivered sandbox page expansion
+
+The working article wave added **36 editorial sections across 12 existing wiki pages**. Approximately **9,165 words** were added to the narrative sections, measured from their HTML bodies. The old approved pages and their related-story chapters remain in place. All changed articles increase `data-canon-revision` once; each new section appears in its article contents menu. Search terms and generated publishing surfaces were refreshed from the revised HTML.
+
+| Existing page | Canon revision | New sections | Narrative role |
+|---|---:|---:|---|
+| `croydon-tower-blocks` | 4 | 3 | Two-date Agent SAM source and the original Fifth Carbon |
+| `the-chain-scribes` | 5 | 3 | Comparison folio and limits of certification |
+| `squeaky-pinks-enforcers` | 4 | 3 | Contested Whisper Codex seizure and real custody limits |
+| `block-topia` | 6 | 3 | Moongirls service work and mistaken personhood classification |
+| `queen-sarah-p-fly` | 6 | 3 | Bounded royal correction and dissent inside Moongirls |
+| `hard-fork-games` | 5 | 3 | Six Pillars source taxonomy versus costs excluded from scoring |
+| `hodl-wars` | 7 | 3 | Kael Voss / Great Blackout as competing future broadsheets |
+| `hodl-warriors` | 5 | 3 | Five archival Calling names as practical service, not live quests |
+| `the-princess` | 3 | 3 | Great Consensus sect and the right to refuse its ritual |
+| `rune-tag` | 3 | 3 | Whisper Codex provenance and the copied-scar lesson |
+| `alfie-bitcoin-kid-blaze` | 5 | 3 | Hundred-scroll proposal and rejection of a forced final ending |
+| `jodie-zoom-2000` | 6 | 3 | Witness uncertainty, autonomy and copied voices |
+
+This ledger is a record of the author's newly created Fifth Carbon events, **not** a claim that they were contained in the W81 ZIP. The older `w25` and `W15` variants remain attributed. The story has no universal healing powers, no new First Witness scripture and no legal/live mechanics.
 
 ## Editorial and publication boundary
 
