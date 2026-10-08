@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-08T09:28:52.635Z",
-  "verified_at": "2026-10-08T09:28:52.635Z",
+  "generated_at": "2026-10-08T10:53:20.658Z",
+  "verified_at": "2026-10-08T10:53:20.658Z",
   "nodes": [
     {
       "id": "/about.html",
@@ -113,6 +113,14 @@
       "category": "tokens",
       "rank_score": 189,
       "authority_score": 12
+    },
+    {
+      "id": "/wiki/agent-sam.html",
+      "title": "Agent SAM",
+      "url": "/wiki/agent-sam.html",
+      "category": "factions",
+      "rank_score": 260,
+      "authority_score": 27
     },
     {
       "id": "/wiki/alcor-exchange.html",
@@ -319,7 +327,7 @@
       "title": "Croydon Tower Blocks",
       "url": "/wiki/croydon-tower-blocks.html",
       "category": "factions",
-      "rank_score": 267,
+      "rank_score": 270,
       "authority_score": 24
     },
     {
@@ -463,7 +471,7 @@
       "title": "Technology, AI and Synthetic Minds",
       "url": "/wiki/first-witness-ai-synthetic-minds.html",
       "category": "core",
-      "rank_score": 301,
+      "rank_score": 303,
       "authority_score": 12
     },
     {
@@ -495,7 +503,7 @@
       "title": "Birth, Naming and Coming of Age",
       "url": "/wiki/first-witness-birth-naming-coming-of-age.html",
       "category": "core",
-      "rank_score": 290,
+      "rank_score": 292,
       "authority_score": 12
     },
     {
@@ -591,7 +599,7 @@
       "title": "Calendar, Feasts and Days of Remembrance",
       "url": "/wiki/first-witness-calendar-feasts-remembrance.html",
       "category": "core",
-      "rank_score": 287,
+      "rank_score": 289,
       "authority_score": 12
     },
     {
@@ -623,7 +631,7 @@
       "title": "The Child of Fire Interpretation",
       "url": "/wiki/first-witness-child-of-fire.html",
       "category": "core",
-      "rank_score": 317,
+      "rank_score": 319,
       "authority_score": 12
     },
     {
@@ -767,7 +775,7 @@
       "title": "The Great Concord of 2030",
       "url": "/wiki/first-witness-great-concord-2030.html",
       "category": "core",
-      "rank_score": 325,
+      "rank_score": 327,
       "authority_score": 14
     },
     {
@@ -919,7 +927,7 @@
       "title": "NULL and the Theology of Erasure",
       "url": "/wiki/first-witness-null-erasure.html",
       "category": "core",
-      "rank_score": 305,
+      "rank_score": 307,
       "authority_score": 12
     },
     {
@@ -935,7 +943,7 @@
       "title": "Parables of the First Witness",
       "url": "/wiki/first-witness-parables.html",
       "category": "core",
-      "rank_score": 318,
+      "rank_score": 320,
       "authority_score": 14
     },
     {
@@ -2399,8 +2407,8 @@
       "title": "The Great Consensus",
       "url": "/wiki/great-consensus.html",
       "category": "factions",
-      "rank_score": 250,
-      "authority_score": 16
+      "rank_score": 255,
+      "authority_score": 20
     },
     {
       "id": "/wiki/grit.html",
@@ -2481,6 +2489,14 @@
       "category": "misc",
       "rank_score": 237,
       "authority_score": 20
+    },
+    {
+      "id": "/wiki/house-of-rackinsats.html",
+      "title": "House of Rackinsats",
+      "url": "/wiki/house-of-rackinsats.html",
+      "category": "factions",
+      "rank_score": 258,
+      "authority_score": 27
     },
     {
       "id": "/wiki/ian-harrison.html",
@@ -2951,7 +2967,7 @@
       "title": "Street Kingdoms",
       "url": "/wiki/street-kingdoms.html",
       "category": "factions",
-      "rank_score": 315,
+      "rank_score": 317,
       "authority_score": 24
     },
     {
@@ -3199,7 +3215,7 @@
       "title": "The SHARD MOTHERS of MANHATTAN",
       "url": "/wiki/the-shard-mothers-of-manhattan.html",
       "category": "factions",
-      "rank_score": 286,
+      "rank_score": 288,
       "authority_score": 24
     },
     {
@@ -3501,6 +3517,36 @@
       "weight": 0.49
     },
     {
+      "source": "/wiki/agent-sam.html",
+      "target": "/wiki/the-salvagers.html",
+      "score": 83,
+      "weight": 0.83
+    },
+    {
+      "source": "/wiki/agent-sam.html",
+      "target": "/wiki/the-chain-scribes.html",
+      "score": 82,
+      "weight": 0.82
+    },
+    {
+      "source": "/wiki/agent-sam.html",
+      "target": "/wiki/the-nomad-bears.html",
+      "score": 78,
+      "weight": 0.78
+    },
+    {
+      "source": "/wiki/agent-sam.html",
+      "target": "/wiki/the-code-alchemists.html",
+      "score": 76,
+      "weight": 0.76
+    },
+    {
+      "source": "/wiki/agent-sam.html",
+      "target": "/wiki/the-ducky-boys.html",
+      "score": 76,
+      "weight": 0.76
+    },
+    {
       "source": "/wiki/alcor-exchange.html",
       "target": "/wiki/pmsl.html",
       "score": 82,
@@ -3568,13 +3614,13 @@
     },
     {
       "source": "/wiki/alfie-bitcoin-kid-blaze.html",
-      "target": "/wiki/the-finance-guild.html",
-      "score": 70,
-      "weight": 0.7
+      "target": "/wiki/the-nice-easy-bois.html",
+      "score": 71,
+      "weight": 0.71
     },
     {
       "source": "/wiki/alfie-bitcoin-kid-blaze.html",
-      "target": "/wiki/the-nice-easy-bois.html",
+      "target": "/wiki/the-finance-guild.html",
       "score": 70,
       "weight": 0.7
     },
@@ -7456,9 +7502,9 @@
     },
     {
       "source": "/wiki/genesis-spray.html",
-      "target": "/wiki/the-finance-guild.html",
-      "score": 70,
-      "weight": 0.7
+      "target": "/wiki/the-nice-easy-bois.html",
+      "score": 71,
+      "weight": 0.71
     },
     {
       "source": "/wiki/gk.html",
@@ -12070,13 +12116,13 @@
     },
     {
       "source": "/wiki/great-consensus.html",
-      "target": "/wiki/queen-sarah-p-fly.html",
-      "score": 64,
-      "weight": 0.64
+      "target": "/wiki/the-nice-easy-bois.html",
+      "score": 65,
+      "weight": 0.65
     },
     {
       "source": "/wiki/great-consensus.html",
-      "target": "/wiki/rave-relics.html",
+      "target": "/wiki/queen-sarah-p-fly.html",
       "score": 64,
       "weight": 0.64
     },
@@ -12381,6 +12427,36 @@
       "weight": 0.46
     },
     {
+      "source": "/wiki/house-of-rackinsats.html",
+      "target": "/wiki/stikfamwars.html",
+      "score": 69,
+      "weight": 0.69
+    },
+    {
+      "source": "/wiki/house-of-rackinsats.html",
+      "target": "/wiki/the-chain-scribes.html",
+      "score": 69,
+      "weight": 0.69
+    },
+    {
+      "source": "/wiki/house-of-rackinsats.html",
+      "target": "/wiki/midevilpunks.html",
+      "score": 67,
+      "weight": 0.67
+    },
+    {
+      "source": "/wiki/house-of-rackinsats.html",
+      "target": "/wiki/the-salvagers.html",
+      "score": 67,
+      "weight": 0.67
+    },
+    {
+      "source": "/wiki/house-of-rackinsats.html",
+      "target": "/wiki/the-nice-easy-bois.html",
+      "score": 65,
+      "weight": 0.65
+    },
+    {
       "source": "/wiki/ian-harrison.html",
       "target": "/wiki/crypto-moonboys.html",
       "score": 84,
@@ -12509,8 +12585,8 @@
     {
       "source": "/wiki/jonny-laurence-nelson-tag-records.html",
       "target": "/wiki/the-nice-easy-bois.html",
-      "score": 69,
-      "weight": 0.69
+      "score": 70,
+      "weight": 0.7
     },
     {
       "source": "/wiki/jonny-laurence-nelson-tag-records.html",
@@ -12754,6 +12830,12 @@
     },
     {
       "source": "/wiki/metropolis.html",
+      "target": "/wiki/the-nice-easy-bois.html",
+      "score": 77,
+      "weight": 0.77
+    },
+    {
+      "source": "/wiki/metropolis.html",
       "target": "/wiki/midevilpunks.html",
       "score": 76,
       "weight": 0.76
@@ -12761,12 +12843,6 @@
     {
       "source": "/wiki/metropolis.html",
       "target": "/wiki/rave-relics.html",
-      "score": 76,
-      "weight": 0.76
-    },
-    {
-      "source": "/wiki/metropolis.html",
-      "target": "/wiki/the-finance-guild.html",
       "score": 76,
       "weight": 0.76
     },
@@ -13540,13 +13616,13 @@
     },
     {
       "source": "/wiki/rave-relics.html",
-      "target": "/wiki/the-finance-guild.html",
-      "score": 70,
-      "weight": 0.7
+      "target": "/wiki/the-nice-easy-bois.html",
+      "score": 71,
+      "weight": 0.71
     },
     {
       "source": "/wiki/rave-relics.html",
-      "target": "/wiki/the-nice-easy-bois.html",
+      "target": "/wiki/the-finance-guild.html",
       "score": 70,
       "weight": 0.7
     },
@@ -13840,13 +13916,13 @@
     },
     {
       "source": "/wiki/six-pillars.html",
-      "target": "/wiki/queen-sarah-p-fly.html",
-      "score": 64,
-      "weight": 0.64
+      "target": "/wiki/the-nice-easy-bois.html",
+      "score": 65,
+      "weight": 0.65
     },
     {
       "source": "/wiki/six-pillars.html",
-      "target": "/wiki/rave-relics.html",
+      "target": "/wiki/queen-sarah-p-fly.html",
       "score": 64,
       "weight": 0.64
     },
@@ -13984,13 +14060,13 @@
     },
     {
       "source": "/wiki/spraycode-writcode-mechanics.html",
-      "target": "/wiki/stikfamwars.html",
-      "score": 72,
-      "weight": 0.72
+      "target": "/wiki/the-nice-easy-bois.html",
+      "score": 73,
+      "weight": 0.73
     },
     {
       "source": "/wiki/spraycode-writcode-mechanics.html",
-      "target": "/wiki/the-nice-easy-bois.html",
+      "target": "/wiki/stikfamwars.html",
       "score": 72,
       "weight": 0.72
     },
@@ -14081,8 +14157,8 @@
     {
       "source": "/wiki/stikfamwars.html",
       "target": "/wiki/the-nice-easy-bois.html",
-      "score": 76,
-      "weight": 0.76
+      "score": 77,
+      "weight": 0.77
     },
     {
       "source": "/wiki/stikfamwars.html",
@@ -14513,8 +14589,8 @@
     {
       "source": "/wiki/the-crypto-moongirls.html",
       "target": "/wiki/the-nice-easy-bois.html",
-      "score": 73,
-      "weight": 0.73
+      "score": 74,
+      "weight": 0.74
     },
     {
       "source": "/wiki/the-crypto-moongirls.html",
@@ -14639,8 +14715,8 @@
     {
       "source": "/wiki/the-finance-guild.html",
       "target": "/wiki/the-nice-easy-bois.html",
-      "score": 83,
-      "weight": 0.83
+      "score": 84,
+      "weight": 0.84
     },
     {
       "source": "/wiki/the-finance-guild.html",
@@ -14806,9 +14882,9 @@
     },
     {
       "source": "/wiki/the-high-hats.html",
-      "target": "/wiki/the-blockstars.html",
-      "score": 83,
-      "weight": 0.83
+      "target": "/wiki/the-nice-easy-bois.html",
+      "score": 84,
+      "weight": 0.84
     },
     {
       "source": "/wiki/the-information-mercenaries.html",
@@ -15640,13 +15716,13 @@
     },
     {
       "source": "/wiki/whisper-codex.html",
-      "target": "/wiki/queen-sarah-p-fly.html",
-      "score": 64,
-      "weight": 0.64
+      "target": "/wiki/the-nice-easy-bois.html",
+      "score": 65,
+      "weight": 0.65
     },
     {
       "source": "/wiki/whisper-codex.html",
-      "target": "/wiki/rave-relics.html",
+      "target": "/wiki/queen-sarah-p-fly.html",
       "score": 64,
       "weight": 0.64
     },

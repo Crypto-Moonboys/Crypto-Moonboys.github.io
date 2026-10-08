@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-08T09:28:52.635Z",
-  "verified_at": "2026-10-08T09:28:52.635Z",
+  "generated_at": "2026-10-08T10:53:20.658Z",
+  "verified_at": "2026-10-08T10:53:20.658Z",
   "lite": true,
   "nodes": [
     {
@@ -292,6 +292,14 @@
       "authority_score": 14
     },
     {
+      "id": "/wiki/first-witness-great-concord-2030.html",
+      "title": "The Great Concord of 2030",
+      "url": "/wiki/first-witness-great-concord-2030.html",
+      "category": "core",
+      "rank_score": 327,
+      "authority_score": 14
+    },
+    {
       "id": "/wiki/first-witness-songs-chants-responses.html",
       "title": "Songs, Chants and Call-and-Response",
       "url": "/wiki/first-witness-songs-chants-responses.html",
@@ -330,14 +338,6 @@
       "category": "characters",
       "rank_score": 326,
       "authority_score": 24
-    },
-    {
-      "id": "/wiki/first-witness-great-concord-2030.html",
-      "title": "The Great Concord of 2030",
-      "url": "/wiki/first-witness-great-concord-2030.html",
-      "category": "core",
-      "rank_score": 325,
-      "authority_score": 14
     },
     {
       "id": "/wiki/thorne-the-architect.html",
@@ -380,6 +380,14 @@
       "authority_score": 14
     },
     {
+      "id": "/wiki/first-witness-parables.html",
+      "title": "Parables of the First Witness",
+      "url": "/wiki/first-witness-parables.html",
+      "category": "core",
+      "rank_score": 320,
+      "authority_score": 14
+    },
+    {
       "id": "/wiki/stikfamwars.html",
       "title": "STIKFAMWARS",
       "url": "/wiki/stikfamwars.html",
@@ -396,20 +404,20 @@
       "authority_score": 14
     },
     {
-      "id": "/wiki/first-witness-parables.html",
-      "title": "Parables of the First Witness",
-      "url": "/wiki/first-witness-parables.html",
-      "category": "core",
-      "rank_score": 318,
-      "authority_score": 14
-    },
-    {
       "id": "/wiki/first-witness-child-of-fire.html",
       "title": "The Child of Fire Interpretation",
       "url": "/wiki/first-witness-child-of-fire.html",
       "category": "core",
-      "rank_score": 317,
+      "rank_score": 319,
       "authority_score": 12
+    },
+    {
+      "id": "/wiki/street-kingdoms.html",
+      "title": "Street Kingdoms",
+      "url": "/wiki/street-kingdoms.html",
+      "category": "factions",
+      "rank_score": 317,
+      "authority_score": 24
     },
     {
       "id": "/wiki/burn-to-earn.html",
@@ -434,14 +442,6 @@
       "category": "core",
       "rank_score": 315,
       "authority_score": 14
-    },
-    {
-      "id": "/wiki/street-kingdoms.html",
-      "title": "Street Kingdoms",
-      "url": "/wiki/street-kingdoms.html",
-      "category": "factions",
-      "rank_score": 315,
-      "authority_score": 24
     },
     {
       "id": "/wiki/first-witness-street-kingdoms-reading.html",
@@ -524,6 +524,14 @@
       "authority_score": 28
     },
     {
+      "id": "/wiki/first-witness-null-erasure.html",
+      "title": "NULL and the Theology of Erasure",
+      "url": "/wiki/first-witness-null-erasure.html",
+      "category": "core",
+      "rank_score": 307,
+      "authority_score": 12
+    },
+    {
       "id": "/wiki/first-witness-symbols-marks-sacred-design.html",
       "title": "Symbols, Marks and Sacred Design",
       "url": "/wiki/first-witness-symbols-marks-sacred-design.html",
@@ -556,14 +564,6 @@
       "authority_score": 14
     },
     {
-      "id": "/wiki/first-witness-null-erasure.html",
-      "title": "NULL and the Theology of Erasure",
-      "url": "/wiki/first-witness-null-erasure.html",
-      "category": "core",
-      "rank_score": 305,
-      "authority_score": 12
-    },
-    {
       "id": "/wiki/hodl-x-warriors.html",
       "title": "HODL X Warriors",
       "url": "/wiki/hodl-x-warriors.html",
@@ -580,6 +580,14 @@
       "authority_score": 28
     },
     {
+      "id": "/wiki/first-witness-ai-synthetic-minds.html",
+      "title": "Technology, AI and Synthetic Minds",
+      "url": "/wiki/first-witness-ai-synthetic-minds.html",
+      "category": "core",
+      "rank_score": 303,
+      "authority_score": 12
+    },
+    {
       "id": "/wiki/jodie-zoom-2000.html",
       "title": "Jodie ZOOM 2000",
       "url": "/wiki/jodie-zoom-2000.html",
@@ -594,14 +602,6 @@
       "category": "factions",
       "rank_score": 303,
       "authority_score": 30
-    },
-    {
-      "id": "/wiki/staking.html",
-      "title": "Crypto Staking",
-      "url": "/wiki/staking.html",
-      "category": "characters",
-      "rank_score": 303,
-      "authority_score": 17
     }
   ],
   "edges": [
@@ -984,6 +984,12 @@
       "weight": 0.76
     },
     {
+      "source": "/wiki/rave-relics.html",
+      "target": "/wiki/the-nice-easy-bois.html",
+      "score": 71,
+      "weight": 0.71
+    },
+    {
       "source": "/wiki/burn-to-earn.html",
       "target": "/wiki/block-topia.html",
       "score": 70,
@@ -994,18 +1000,6 @@
       "target": "/wiki/block-topia.html",
       "score": 70,
       "weight": 0.7
-    },
-    {
-      "source": "/wiki/rave-relics.html",
-      "target": "/wiki/the-nice-easy-bois.html",
-      "score": 70,
-      "weight": 0.7
-    },
-    {
-      "source": "/wiki/staking.html",
-      "target": "/wiki/block-topia.html",
-      "score": 67,
-      "weight": 0.67
     }
   ]
 }

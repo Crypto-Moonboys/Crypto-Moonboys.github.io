@@ -85,6 +85,14 @@ lint, not a semantic oracle: human research still handles paraphrases, every
 supporting relationship and faction arithmetic. False positives need a local,
 exact, source-linked attribution, not a blanket file exemption.
 
+The reviewed-story baseline in `canon-locks.json` also protects completed
+stories on the open reconciliation PR, including the Cut Ledger and Fifth
+Carbon. The guard checks existing narrative paragraphs against that commit
+and the PR base. A changed paragraph requires an implemented, sourced decision
+with `paragraph_changes` identifying the old hash, an actual replacement hash
+and the reason. Changing a recorded baseline requires a matching GK approval
+receipt. This protects preservation; it does not establish narrative truth.
+
 After prose changes increment revisions, preserve canonical ownership blocks,
 extend native contents and related links, approve requested legitimate new
 routes in the publish register, and run:
@@ -96,6 +104,11 @@ node scripts/generate-wiki-content-state.mjs
 node scripts/graph-publishing-integrity.test.mjs
 npm run ci:wiki
 ```
+
+For a limited batch, repeat `--page slug` on the related-path generator to
+write only the requested pages while retaining full-site relationship context.
+Unknown pages fail before writing. This preserves unrelated curated links,
+including NFT collection groups.
 
 Verify new terms in search/entity graphs, internal links and fragments, category
 navigation and sitemap; check desktop/mobile and no-JavaScript reading. Run

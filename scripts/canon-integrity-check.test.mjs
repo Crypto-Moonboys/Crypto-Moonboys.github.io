@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { test } from 'node:test';
-import { checkPage, checkRegister, checkLockChanges } from './canon-integrity-check.mjs';
+import { checkPage, checkRegister, checkLockChanges, narrativeParagraphs, checkNarrativePreservation } from './canon-integrity-check.mjs';
 
 const locks = JSON.parse(fs.readFileSync(new URL('../brand-canon/canon-locks.json', import.meta.url)));
 const decisions = JSON.parse(fs.readFileSync(new URL('../brand-canon/reconciliation-decisions.json', import.meta.url)));
@@ -47,4 +47,23 @@ test('specific approved old/new receipt is required for a lock change', () => {
   assert.deepEqual(checkLockChanges(locks, after, approved), []);
   approved.decisions.at(-1).new.world_chain_triple_fork = 2588;
   assert.equal(checkLockChanges(locks, after, approved).length, 1);
+});
+
+test('a genuine story consequence cannot disappear behind otherwise valid canon vocabulary', () => {
+  const before = '<article><p>The victim refused the invitation to thank the court; the suspended unit kept operating under another signature.</p></article>';
+  const after = '<article><p>The victim thanked the court; the suspended unit kept operating under another signature.</p></article>';
+  assert.deepEqual(checkPage(after, locks, decisions), []);
+  assert.equal(checkNarrativePreservation(before, after, decisions, 'wiki/queen-sarah-p-fly.html').length, 1);
+  assert.equal(checkNarrativePreservation(before, '<article><!-- the victim refused the invitation to thank the court --></article>', decisions, 'wiki/queen-sarah-p-fly.html').length, 1);
+});
+test('markup and additions preserve a scene; a sourced exact replacement remains deliberate', () => {
+  const old = 'The cook refused the commander another portion because the receiving kitchen had no fuel left for the night.';
+  const next = 'The cook refused the commander another portion because the receiving kitchen had no food left for the night.';
+  const wrap = p => `<article><p>${p}</p></article>`;
+  assert.deepEqual(checkNarrativePreservation(wrap(old), wrap(old.replace('cook', '<strong>cook</strong>')) + '<p>A new scene follows.</p>', decisions, 'wiki/agent-sam.html'), []);
+  const receipt = { decisions: [{ status: 'implemented', sources: ['W12.txt'], reason: 'Correct the specific copied resource', affected_paths: ['wiki/agent-sam.html'], paragraph_changes: [{ old_sha256: [...narrativeParagraphs(wrap(old)).keys()][0], new_sha256: [...narrativeParagraphs(wrap(next)).keys()][0], reason: 'Exact source comparison supports the replacement' }] }] };
+  assert.deepEqual(checkNarrativePreservation(wrap(old), wrap(next), receipt, 'wiki/agent-sam.html'), []);
+  assert.equal(checkNarrativePreservation(wrap(old), wrap(next), receipt, 'wiki/house-of-rackinsats.html').length, 1);
+  receipt.decisions[0].paragraph_changes[0].new_sha256 = 'sha256:invented';
+  assert.equal(checkNarrativePreservation(wrap(old), wrap(next), receipt, 'wiki/agent-sam.html').length, 1);
 });

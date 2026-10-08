@@ -8,7 +8,7 @@
     "unique_contents": 93,
     "bytes": 2334149
   },
-  "semantic_scope": "Four complete original source texts and focused sections of connected articles; no claim of full-repository semantic completion.",
+  "semantic_scope": "Seven complete source readings with owning-page comparisons. W19 fully read but remaining embedded-character cross-page comparisons pending. Full mission remains open.",
   "sources": [
     {
       "file": "M16.txt",
@@ -47,16 +47,82 @@
       "bytes": 90855,
       "sha256": "a5e54ec2a0170fe62ea8a321f29dbd89f9f23e698aa5d84edf283dd81def28bf",
       "byte_verified": true,
-      "semantic_review": "pending complete semantic reading",
-      "prior_disposition": "PENDING_EDITORIAL"
+      "semantic_review": "complete source reading and owning-page comparison",
+      "prior_disposition": "PENDING_EDITORIAL",
+      "review_findings": {
+        "parts_read": "All eight parts, every paragraph, lines 1\u2013258",
+        "scene_sequence": [
+          "Adopted Samuel Blake, 19, 2036 Croydon",
+          "Neural Rack train run and taser; body down, SAM v0.1 responds",
+          "Digital raids and kitchen/household support",
+          "Preparatory council late 2029 and coercive 2030 Reset",
+          "2031 bridge and explicit channels across time",
+          "Early-2032 capture of Denise/Tracey/Forge; others escape",
+          "Warmth Ledger becomes War Ledger; retaliation",
+          "2035 climax explicitly three years after capture; final bridge into 3008"
+        ],
+        "relationships": [
+          "Denise and Tracey adopt Samuel into House language",
+          "Forge is Denise husband and SAM code-dad; not Etherstan III",
+          "Jaz/Brush/Maeve/Leon perform distinct surviving labour"
+        ],
+        "contradictions": [
+          "2036 upload before 2029\u20132035 causally dependent events; simple flashback insufficient",
+          "Teenage rescue compressed into W13 2007\u20132009 war",
+          "Part1 empty roof vs Part2 recovery of motionless body",
+          "Part7 no leaked footage vs detailed raid video used in attacks",
+          "Future family memorial does not supply missing-person recovery"
+        ],
+        "owning_routes": [
+          "wiki/agent-sam.html",
+          "wiki/house-of-rackinsats.html"
+        ],
+        "decisions": [
+          "GK-1458-SAM-HOUSE-RECOVERY",
+          "GK-1458-SAM-ORDER",
+          "GK-1458-HOUSE-RELATIONS"
+        ],
+        "remaining": "Specific calendar and bridge ontology require GK; full serial/global chronology dependency audit continues"
+      }
     },
     {
       "file": "W13.txt",
       "bytes": 15490,
       "sha256": "d8f420bd935ac7cd51404eb846afa3d7536ab26b41a43d91b8f9f50e86e5feed",
       "byte_verified": true,
-      "semantic_review": "pending complete semantic reading",
-      "prior_disposition": "PARTIAL"
+      "semantic_review": "complete source reading and owning-page comparison",
+      "prior_disposition": "PARTIAL",
+      "review_findings": {
+        "parts_read": "All seven parts and all repeated Parts2\u20137 extracts, lines1\u2013186",
+        "relationships": [
+          "Papa Des father of sisters Denise (source birth1972) and Tracey (source birth1980)",
+          "House formed after attributed 2007\u20132009 Street War",
+          "Jaz speaker; Brush painter; Maeve cook; Leon peacekeeper"
+        ],
+        "scene_sequence": [
+          "1980s workshop and family rules",
+          "Denise organising food, youth and eviction resistance",
+          "Tracey murals and generator parties",
+          "Marches, barricades and failed resistance to Divide",
+          "Papa Des dies; sisters study Bitcoin/blockchain",
+          "Trusted crews establish House after fighting"
+        ],
+        "contradictions": [
+          "House sister relation differs from w33 Divine Lineage",
+          "Repeated sections are one witness",
+          "Real-life title does not verify modern private biographies"
+        ],
+        "owning_routes": [
+          "wiki/house-of-rackinsats.html",
+          "wiki/croydon-tower-blocks.html",
+          "wiki/the-princess.html",
+          "wiki/great-consensus.html"
+        ],
+        "decisions": [
+          "GK-1458-HOUSE-RELATIONS",
+          "GK-1458-SAM-HOUSE-RECOVERY"
+        ]
+      }
     },
     {
       "file": "W14.txt",
@@ -103,8 +169,28 @@
       "bytes": 41743,
       "sha256": "34093e882c6e6834c923258fe611fb2665b2e28601aab174bfb7f28efaec7ad2",
       "byte_verified": true,
-      "semantic_review": "pending complete semantic reading",
-      "prior_disposition": "OPERATIONAL"
+      "semantic_review": "complete source reading; remaining named-character cross-page comparison pending",
+      "prior_disposition": "OPERATIONAL",
+      "review_findings": {
+        "parts_read": "Complete March2026 GK BRAIN paper, all24sections; clipped epoch/character portion recovered in second read",
+        "kind": "Operational publishing proposal with embedded fictional roster",
+        "comparison_completed": [
+          "current README and Master Source of Truth Wiki/SAM sections",
+          "full current Crypto Moonboys overview",
+          "Six Pillars/Consensus/SAM identity boundaries"
+        ],
+        "conflicts_found": [
+          "2198 collapse vs current2880",
+          "3030 Final Fork prophecy vs unresolved ending",
+          "Gasless Ghosts/NULL merger",
+          "HODL emergency calling counted as faction1",
+          "15/15/15 court-generation limits are proposal numbers, not current census",
+          "Immediate scrap of agent-made material would delete approved modern stories",
+          "Publishing two messages every2hours conflicts with three-post fame runs; awake/sleep Thursday22:00/23:00 disagreement",
+          "Old prototype specification is not proof of currently deployed GK BRAIN"
+        ],
+        "remaining": "Fully compare embedded Jodie/Codex-7/royal/champion/Kids named profiles, Games and live operational claims before counting this source fully reviewed."
+      }
     },
     {
       "file": "W2.txt",
@@ -551,8 +637,28 @@
       "bytes": 10415,
       "sha256": "eec291c0cbb6dfd4df8e5e990e727b5d961105d85f9bb728a480bc1fbead51e3",
       "byte_verified": true,
-      "semantic_review": "pending complete semantic reading",
-      "prior_disposition": "OPERATIONAL"
+      "semantic_review": "complete source reading and owning-page comparison",
+      "prior_disposition": "OPERATIONAL",
+      "review_findings": {
+        "parts_read": "Complete architecture post, including all ten stages and future ideas",
+        "kind": "Operational source; no fictional scenes to recover",
+        "comparison": [
+          "README Wiki/SAM public memory vs SPARKY private work",
+          "Master Source of Truth10 forbids invented rights/features/canon",
+          "All nine named JSON outputs inspected for local existence; existence is not deployment proof",
+          "sam-wiki-publisher.py ownership gate and canon-locked/metadata-only policies inspected"
+        ],
+        "contradictions": [
+          "Historical fully autonomous self-writing claim cannot override current manual ownership",
+          "Prior auto-growth roadmap does not grant new publishing authority",
+          "Wiki SAM is separate from fictional Samuel Blake and SPARKY"
+        ],
+        "owning_routes": [
+          "wiki/crypto-moonboys.html",
+          "wiki/agent-sam.html"
+        ],
+        "remaining": "No live feature or deployment claim added; older promises remain historical evidence"
+      }
     },
     {
       "file": "w70.txt",
@@ -791,11 +897,9 @@
     {
       "path": "wiki/the-princess.html",
       "sections": [
-        "tracey-tradition",
-        "fifth-carbon-consensus",
-        "fifth-carbon-knee"
+        "all canonical sections"
       ],
-      "scope": "targeted sections, not whole-article semantic audit"
+      "scope": "full canonical article read and source comparison"
     },
     {
       "path": "wiki/the-code-alchemists.html",
@@ -816,10 +920,9 @@
     {
       "path": "wiki/croydon-tower-blocks.html",
       "sections": [
-        "samuel",
-        "fifth-carbon-croydon"
+        "all canonical sections"
       ],
-      "scope": "targeted sections, not whole-article semantic audit"
+      "scope": "full canonical article read and source comparison"
     },
     {
       "path": "wiki/block-topia.html",
@@ -838,9 +941,9 @@
     {
       "path": "wiki/first-witness-master-chronology.html",
       "sections": [
-        "reading-reconciled-timeline"
+        "all canonical sections"
       ],
-      "scope": "targeted sections, not whole-article semantic audit"
+      "scope": "full canonical article read and source comparison"
     },
     {
       "path": "wiki/first-witness-faction-commentaries.html",
@@ -849,6 +952,34 @@
         "reading-the-unnamed-remainder"
       ],
       "scope": "targeted sections, not whole-article semantic audit"
+    },
+    {
+      "path": "wiki/crypto-moonboys.html",
+      "sections": [
+        "all canonical sections"
+      ],
+      "scope": "full canonical article read and source comparison"
+    },
+    {
+      "path": "wiki/first-witness-ai-synthetic-minds.html",
+      "sections": [
+        "all canonical sections"
+      ],
+      "scope": "full canonical article read and source comparison"
+    },
+    {
+      "path": "wiki/first-witness-concordance.html",
+      "sections": [
+        "all canonical sections"
+      ],
+      "scope": "full canonical article read and source comparison"
+    },
+    {
+      "path": "wiki/great-consensus.html",
+      "sections": [
+        "all canonical sections"
+      ],
+      "scope": "full canonical article read and source comparison"
     }
   ]
 }

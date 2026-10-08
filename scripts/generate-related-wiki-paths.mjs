@@ -823,11 +823,22 @@ function groupsForPage(context, currentUrl, html, kind) {
   return [...hintGroups, ...dedupedFallback];
 }
 
-export function runGenerateRelatedWikiPaths(root = ROOT) {
+export function runGenerateRelatedWikiPaths(root = ROOT, { pages = null } = {}) {
   const context = buildContext(root);
+  let selected = null;
+  if (pages !== null) {
+    if (!Array.isArray(pages) || !pages.length) throw new Error('A scoped rebuild needs at least one page');
+    selected = new Set(pages.map(slug => {
+      if (!/^[a-z0-9][a-z0-9-]*$/u.test(slug)) throw new Error(`Invalid wiki page slug: ${slug}`);
+      const url = `/wiki/${slug}.html`;
+      if (!context.htmlByUrl.has(url)) throw new Error(`Unknown wiki page: ${slug}`);
+      return url;
+    }));
+  }
   let written = 0;
 
   for (const [url, html] of context.htmlByUrl.entries()) {
+    if (selected && !selected.has(url)) continue;
     const kind = context.pageKinds.get(url);
     if (!isContentPage(html)) {
       const nextHtml = removeCitationVotePanel(removeMarkedSection(html));
@@ -855,7 +866,19 @@ export function runGenerateRelatedWikiPaths(root = ROOT) {
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
-  const root = process.argv[2] ? path.resolve(process.argv[2]) : ROOT;
-  const result = runGenerateRelatedWikiPaths(root);
+  let root = ROOT;
+  let hasRoot = false;
+  const pages = [];
+  const args = process.argv.slice(2);
+  for (let i = 0; i < args.length; i++) {
+    if (args[i] === '--page') {
+      if (!args[i + 1] || args[i + 1].startsWith('--')) throw new Error('--page requires a wiki slug');
+      pages.push(args[++i]);
+    } else if (!args[i].startsWith('--') && !hasRoot) {
+      root = path.resolve(args[i]);
+      hasRoot = true;
+    } else throw new Error(`Unknown argument: ${args[i]}`);
+  }
+  const result = runGenerateRelatedWikiPaths(root, { pages: pages.length ? pages : null });
   console.log(`Related Wiki Paths generated for ${result.written} wiki page(s).`);
 }

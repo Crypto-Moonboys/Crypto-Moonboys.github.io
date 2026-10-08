@@ -98,6 +98,30 @@
       "/wiki/punk-token.html"
     ]
   },
+  "/wiki/agent-sam.html": {
+    "existing_links": [
+      "/wiki/crypto-moonboys.html",
+      "/wiki/first-witness-ai-synthetic-minds.html",
+      "/wiki/first-witness-concordance.html",
+      "/wiki/first-witness-master-chronology.html",
+      "/wiki/hodl-wars.html",
+      "/wiki/house-of-rackinsats.html",
+      "/wiki/midevilpunks.html",
+      "/wiki/stikfamwars.html",
+      "/wiki/street-kingdoms.html",
+      "/wiki/the-chain-scribes.html",
+      "/wiki/the-finance-guild.html",
+      "/wiki/the-high-hats.html",
+      "/wiki/the-nice-easy-bois.html",
+      "/wiki/the-princess.html"
+    ],
+    "suggested_links": [
+      "/wiki/block-topia.html",
+      "/wiki/first-witness-family-children-elders.html",
+      "/wiki/first-witness-great-concord-2030.html",
+      "/wiki/xrp-ledger.html"
+    ]
+  },
   "/wiki/alcor-exchange.html": {
     "existing_links": [
       "/wiki/atomichub.html",
@@ -221,6 +245,7 @@
       "/wiki/hodl-wars.html",
       "/wiki/hodl-x-warriors.html",
       "/wiki/hodlmoonboys-nft-collection.html",
+      "/wiki/house-of-rackinsats.html",
       "/wiki/jodie-zoom-2000.html",
       "/wiki/queen-sarah-p-fly.html",
       "/wiki/sacred-chain.html",
@@ -955,7 +980,8 @@
       "/wiki/gang-signs-card-game.html",
       "/wiki/genesis-kernel.html",
       "/wiki/graffiti-kings.html",
-      "/wiki/graffpunks.html"
+      "/wiki/graffpunks.html",
+      "/wiki/house-of-rackinsats.html"
     ]
   },
   "/wiki/burn-to-earn.html": {
@@ -1048,11 +1074,13 @@
   },
   "/wiki/croydon-tower-blocks.html": {
     "existing_links": [
+      "/wiki/agent-sam.html",
       "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-master-chronology.html",
       "/wiki/games4punks-telegram.html",
       "/wiki/hard-fork-games.html",
       "/wiki/hodl-wars.html",
+      "/wiki/house-of-rackinsats.html",
       "/wiki/midevilpunks.html",
       "/wiki/nbg-token.html",
       "/wiki/pmsl.html",
@@ -13486,6 +13514,7 @@
       "/wiki/graffpunks-ecosystem.html",
       "/wiki/hodl-warriors.html",
       "/wiki/hodl-x-warriors.html",
+      "/wiki/house-of-rackinsats.html",
       "/wiki/jonny-laurence-nelson-tag-records.html",
       "/wiki/nbg-token.html",
       "/wiki/nbg.html",
@@ -13631,7 +13660,8 @@
       "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-concordance.html",
       "/wiki/first-witness-great-concord-2030.html",
-      "/wiki/first-witness-master-chronology.html"
+      "/wiki/first-witness-master-chronology.html",
+      "/wiki/house-of-rackinsats.html"
     ],
     "suggested_links": [
       "/wiki/block-node-defenders.html",
@@ -13901,6 +13931,7 @@
       "/wiki/sacred-chain.html"
     ],
     "suggested_links": [
+      "/wiki/agent-sam.html",
       "/wiki/first-witness-anonymity-pseudonyms-hidden-names.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
       "/wiki/first-witness-book-5-the-chain.html",
@@ -13939,6 +13970,7 @@
       "/wiki/sacred-chain.html"
     ],
     "suggested_links": [
+      "/wiki/agent-sam.html",
       "/wiki/alcor-exchange.html",
       "/wiki/bear-market-siege.html",
       "/wiki/bitcoin-kid-army.html",
@@ -14055,6 +14087,33 @@
       "/wiki/hodl-warriors.html",
       "/wiki/hodl-wars.html",
       "/wiki/hodl-x-warriors.html"
+    ]
+  },
+  "/wiki/house-of-rackinsats.html": {
+    "existing_links": [
+      "/wiki/croydon-tower-blocks.html",
+      "/wiki/crypto-moonboys.html",
+      "/wiki/first-witness-birth-naming-coming-of-age.html",
+      "/wiki/first-witness-calendar-feasts-remembrance.html",
+      "/wiki/first-witness-child-of-fire.html",
+      "/wiki/first-witness-concordance.html",
+      "/wiki/first-witness-great-concord-2030.html",
+      "/wiki/first-witness-master-chronology.html",
+      "/wiki/first-witness-null-erasure.html",
+      "/wiki/first-witness-parables.html",
+      "/wiki/the-princess.html",
+      "/wiki/the-shard-mothers-of-manhattan.html"
+    ],
+    "suggested_links": [
+      "/wiki/agent-sam.html",
+      "/wiki/first-witness-book-5-the-chain.html",
+      "/wiki/first-witness-book-6-the-fork.html",
+      "/wiki/first-witness-book-7-the-hold.html",
+      "/wiki/first-witness-book-8-the-fire.html",
+      "/wiki/first-witness-oaths-promises-vows.html",
+      "/wiki/gkniftyheads.html",
+      "/wiki/graffpunks.html",
+      "/wiki/the-first-witness.html"
     ]
   },
   "/wiki/ian-harrison.html": {
@@ -14183,6 +14242,7 @@
       "/wiki/the-shard-mothers-of-manhattan.html"
     ],
     "suggested_links": [
+      "/wiki/agent-sam.html",
       "/wiki/alcor-exchange.html",
       "/wiki/aleema-child-of-the-shard.html",
       "/wiki/bitcoin-kid-army.html",
@@ -14278,6 +14338,7 @@
       "/wiki/genesis-kernel.html",
       "/wiki/great-consensus.html",
       "/wiki/grit.html",
+      "/wiki/house-of-rackinsats.html",
       "/wiki/nbg-token.html",
       "/wiki/playable-nft-murals.html",
       "/wiki/the-shard-mothers-of-manhattan.html"
@@ -15277,6 +15338,7 @@
       "/wiki/rave-relics.html"
     ],
     "suggested_links": [
+      "/wiki/agent-sam.html",
       "/wiki/atomicassets.html",
       "/wiki/bitcoin-kids.html",
       "/wiki/bitcoin-x-kids.html",
@@ -15425,6 +15487,7 @@
       "/wiki/whisper-codex.html"
     ],
     "suggested_links": [
+      "/wiki/agent-sam.html",
       "/wiki/bitcoin-x-kids.html",
       "/wiki/elder-codex-7.html",
       "/wiki/first-witness-apocrypha-disputed-passages.html",
@@ -15622,6 +15685,7 @@
       "/wiki/grit.html",
       "/wiki/hard-fork-games.html",
       "/wiki/hodl-warriors.html",
+      "/wiki/house-of-rackinsats.html",
       "/wiki/nbg-token.html",
       "/wiki/queen-sarah-p-fly.html",
       "/wiki/the-bitcoin-kid-army.html",
@@ -16323,6 +16387,7 @@
       "/wiki/gkniftyheads-digital-diva-783394.html",
       "/wiki/gkniftyheads-digital-duchess-783404.html",
       "/wiki/graffpunks.html",
+      "/wiki/house-of-rackinsats.html",
       "/wiki/sacred-chain.html",
       "/wiki/the-aztec-raiders.html",
       "/wiki/the-crypto-stoned-boys.html",
@@ -16515,6 +16580,7 @@
       "/wiki/thorne-the-architect.html"
     ],
     "suggested_links": [
+      "/wiki/agent-sam.html",
       "/wiki/bitcoin-kids.html",
       "/wiki/bitcoin-x-kids.html",
       "/wiki/block-topia.html",
@@ -17057,6 +17123,7 @@
       "/wiki/gkniftyheads-digital-duchess-783404.html",
       "/wiki/gkniftyheads-stencil-storm-783291.html",
       "/wiki/gkniftyheads.html",
+      "/wiki/house-of-rackinsats.html",
       "/wiki/storm-struggle.html"
     ]
   },
@@ -17274,6 +17341,7 @@
       "/wiki/gkniftyheads.html",
       "/wiki/graffiti-queens-in-decentraland.html",
       "/wiki/graffpunks.html",
+      "/wiki/house-of-rackinsats.html",
       "/wiki/jodie-zoom-2000.html",
       "/wiki/patchwork.html",
       "/wiki/queen-sarah-p-fly.html",
@@ -17648,7 +17716,8 @@
       "/wiki/gkniftyheads.html",
       "/wiki/graffiti-kings.html",
       "/wiki/graffpunks-collection.html",
-      "/wiki/graffpunks-ecosystem.html"
+      "/wiki/graffpunks-ecosystem.html",
+      "/wiki/house-of-rackinsats.html"
     ]
   },
   "/wiki/triple-fork-event.html": {
@@ -17689,6 +17758,7 @@
       "/wiki/first-witness-street-kingdoms-reading.html",
       "/wiki/graffiti-queens-in-decentraland.html",
       "/wiki/great-consensus.html",
+      "/wiki/house-of-rackinsats.html",
       "/wiki/the-chain-scribes.html",
       "/wiki/the-finance-guild.html",
       "/wiki/the-great-dip.html",
@@ -18058,6 +18128,7 @@
       "/wiki/hex-tagger-prime.html",
       "/wiki/hodl-x-warriors.html",
       "/wiki/hodlmoonboys-nft-collection.html",
+      "/wiki/house-of-rackinsats.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/sacred-chain.html",
       "/wiki/the-first-witness.html",

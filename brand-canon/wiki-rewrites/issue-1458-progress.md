@@ -1,6 +1,6 @@
 # Issue #1458 — implementation progress and restart ledger
 
-Updated 8 October 2026. **Status: first implemented tranche; full mission open.**
+Updated 8 October 2026. **Status: SAM/House batch implemented; full mission open.**
 W81 is foundational truth. This is a checkpoint of completed implementation,
 not a claim that the whole universe is reconciled. Preserve the adult tone.
 
@@ -14,28 +14,33 @@ No direct push to main, merge, issue closure or production deployment.
 
 - **94** original archive files verified against archive SHA-256, CSV and the
   independent immutable ledger; **93** unique contents, **2,334,149** bytes.
-- **4** complete original texts read and compared this tranche: W1, w32, w33,
-  w56. Do not relabel the remaining 90 as semantically complete.
-- **11 existing pages** received focused section review: Rune, Pinks enforcement,
-  Games, Princess, Code Alchemists, Sarah, Croydon, Block Topia, Forty Paths,
-  master chronology and faction Commentaries. This is not a whole-page audit
-  of every paragraph. Section targets are in `issue-1458-audit.json`.
-- **419** top-level wiki pages pass automated targeted canon lint and content
+- **7** complete original texts read and compared cumulatively: W1, w32, w33,
+  w56, W12 (all eight parts), W13 (all seven parts and repeated extracts), W7.
+  **87** remain without full semantic comparison. W19 is fully read but its
+  remaining embedded-character comparisons are pending, so it is not counted.
+- **15 distinct existing pages** reviewed: seven full canonical articles
+  (Princess, Croydon, master chronology, concordance, synthetic minds,
+  Crypto Moonboys, Great Consensus) and eight focused section reviews
+  (Rune, Pinks, Games, Code Alchemists, Sarah, Block Topia, Forty Paths,
+  faction Commentaries). Exact scopes are in `issue-1458-audit.json`.
+- **421** top-level wiki pages pass automated targeted canon lint and content
   inventory checks. That number is a static scan, not a human semantic count.
 
 ## Implemented content
 
-**Four new encyclopedia articles:** Whisper Codex (808 words), Six Pillars
+**Six new encyclopedia articles:** Agent SAM (1,952 words), House of
+Rackinsats (1,423), and the four initial articles: Whisper Codex (808 words), Six Pillars
 (870), Great Consensus (1,036), Crypto Moongirls (1,064), counted inside their
 canonical content blocks including source notes/navigation. They preserve
 source doctrine with explicit attribution and carry real metadata, native
 contents, citations, comments, category links, search and entity/graph/sitemap
 entries. New routes were explicitly authorised by the complete task.
 
-**Seven existing articles expanded:** Rune Tag, Squeaky Pinks Enforcers, Hard
-Fork Games, Block Topia, Queen Sarah, Princess, Code Alchemists. All **632**
-previous paragraphs and original IDs in those articles remain intact; canonical
-revisions increase once. No First Witness or NFT prose is changed.
+**Eight existing articles expanded:** Croydon plus Rune Tag, Squeaky Pinks Enforcers, Hard
+Fork Games, Block Topia, Queen Sarah, Princess, Code Alchemists. The initial seven retain their **632** original paragraphs. The cumulative
+check confirms **664** unique narrative paragraphs of at least 40 characters
+and every original ID across all eight against the original base. Canonical
+revisions increase with each substantive batch. No First Witness or NFT prose is changed.
 
 **Three source-level interpretive conflicts handled:** w56's inside population
 label is aligned to Bitcoin X Kids rather than collapsing it into Alfie's
@@ -43,7 +48,8 @@ outside Kids; w33's universal religion claim is located in its sect rather than
 rewriting the 2030 Covenant; w33's NULL #28 label does not merge the Prophet
 with the Gasless Ghosts. **Zero major dated historical retcons published.**
 
-**Two new adult characters:** Dara Venn, 38, and Lysa Rook, 44. The Cut Ledger
+**Four new adult characters:** Dara Venn, 38, Lysa Rook, 44, Nessa Vale, 42,
+and Davit Cole, 51. The Cut Ledger
 story carries assault, falsified injury reports, institutional corruption,
 violent defection, broken fingers, theft, a lost bed and a victim who refuses
 both sides' victory story. It has limited local consequences, no new scripture,
@@ -65,7 +71,7 @@ Single authority policy: `../CANON_POLICY.md`. Entry/onboarding: root `AGENTS.md
 PR template now requires source, ripple, adult-story, discovery and approval
 checks. `../canon-locks.json` contains anchors, identity boundaries, 34/6 and
 nine-runtime distinction, 94 source identities and targeted claim rules.
-`../reconciliation-decisions.json` holds seven implemented and four proposed
+`../reconciliation-decisions.json` holds ten implemented and four proposed
 old/new decisions with rationale and affected paths.
 
 `canon-integrity-check.mjs` runs in wiki CI and checks explicit chronology,
@@ -125,9 +131,10 @@ inventory debt remains separately recorded; this tranche preserves NFT pages.
 1. Recover verified originals with the checked verifier if `/tmp/gk1458` is gone.
    Skip completed full readings W1/w32/w33/w56; inspect their exact decision
    records when using them. Source checksums alone do not complete any other file.
-2. Complete W12's eight parts and W13 household chronology/relationships. Draft
-   full SAM biography and an exact proposed solution to 2036/2030 before GK
-   approval; do not invent a replacement year or merge software/personhood.
+2. W12/W13/W7 complete readings and SAM/House articles are implemented.
+   Keep the concrete SAM proposal pending GK: preserve 2036 origin, displace
+   subsequent 2029–2035 civil events by ten years, retain source intervals.
+   No replacement date or universal upload physics is accepted yet.
 3. Complete W15 and w25 serial comparison. Map Kael, Sylas, Veyra, Council,
    Blackout, Layer Eight, Crimson Protocol and every competing Eternal Pulse
    ending; retain clear source voices and prepare a coherent final proposal.
@@ -146,21 +153,23 @@ inventory debt remains separately recorded; this tranche preserves NFT pages.
    prose. Scope related-path generation so it preserves existing curated NFT
    collection groups and narrative links. The default all-page generator
    rewrote unrelated collections during this tranche; those changes were
-   restored before final builds. Its canonical generator remains unchanged.
+   restored before final builds. Repeated `--page` scoping is now implemented and regression-tested.
 8. Run the required checks for subsequent changes, maintain this ledger, update
    the same PR and Issue #1458, and obtain GK's final approval before merge.
    Keep the issue open until all eight phases and acceptance criteria are done.
 
 ## Delivery
 
-Draft PR: [#1459](https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/pull/1459). GitHub CI is not yet
-verified; local results above remain the verification evidence. Draft status
+Draft PR: [#1459](https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/pull/1459). GitHub CI at the prior exact
+head is inspected in the batch receipt below; local results remain separately
+scoped evidence. Draft status
 is required while the repository-wide reconciliation and specific canon
 approvals above remain incomplete.
 
 ### Local delivery block
 
-The backup branch upload succeeded after task/target/commit verification. Automatic approval review separately rejected pushing the actual implementation commits and posting the prepared issue update, requiring explicit authorisation for those exact payloads and destination. Neither was bypassed. No PR exists and Issue #1458 has not been updated. The exact draft PR file (including all 55 payload paths) and issue update are prepared at `/workspace/scratch/issue-1458-draft-pr.md` and `/workspace/scratch/issue-1458-issue-update.md`. Specific user approval has been requested; keep merge held and the issue open.
+The backup branch upload succeeded after task/target/commit verification. Automatic approval review separately rejected pushing the actual implementation commits and posting the prepared issue update, requiring explicit authorisation for those exact payloads and destination. Neither was bypassed at that point. The later draft delivery receipt records
+resolution of the push/PR block. The exact draft PR file (including all 55 payload paths) and issue update are prepared at `/workspace/scratch/issue-1458-draft-pr.md` and `/workspace/scratch/issue-1458-issue-update.md`. Specific user approval has been requested; keep merge held and the issue open.
 
 ### Draft delivery receipt
 
@@ -170,3 +179,53 @@ was created and attached to the chat. This resolves the implementation upload
 block described above. Main is unchanged by this delivery; no merge or deployment
 occurred. Issue #1458 stays open. Its separately rejected progress-comment export
 has not been retried. Continue source reconciliation on this same PR.
+
+## SAM/House batch receipt — 8 October 2026
+
+W12 is now read in all eight parts; W13 in all seven parts including its
+repeated extracts; W7 in full and compared with current SAM tooling and product
+authority. The new SAM/House pages recover the Neural Rack, six-drone chase,
+body recovery ambiguity, named household labour, Forge marriage/capture,
+missing sisters, guardian-to-vengeance transformation and explicit time bridge.
+Source disagreements remain attributed pending the concrete GK calendar choice.
+The old simple-flashback suggestion was withdrawn after the complete reading.
+Denise and Tracey are sisters in the household witness; Forge is Denise's
+husband. This is distinct from the Divine Lineage theology, with no identity
+merge or new Forty position.
+
+Overdrawn Relay is substantial new adult fiction owned by Agent SAM and
+propagated to House/Croydon, with a dedicated story bible. Nessa's compromised
+delay, a collector's assault on Davit, unpaid wages, debt and lasting injury
+remain consequences. No memorial copy is declared a resurrection. All earlier
+Fifth Carbon, Cut Ledger and modern narrative paragraphs are preserved.
+
+The preservation guard now compares narrative paragraphs against both the PR
+base and the reviewed completed-story checkpoint. Real scene regressions test
+a refusal being replaced by gratitude, inert-comment concealment, exact
+sourced replacements and markup-only preservation. Baseline changes require
+a matching approval receipt. Related-path generation now scopes writes while
+reading full-site context; tests preserve unrelated NFT/curated groups and
+reject bad scopes before writes.
+
+Actual latest checks: eight direct canon regression groups; targeted canon
+guard across 421 pages; scoped related paths; content-state generation/parity;
+full wiki CI with explicit original base and task-authorised local prose flag
+(exit 0); graph parity (414 indexed, 424 nodes, 2,070 edges, 75 mobile);
+28 desktop/mobile views, six no-JavaScript readings, six search/autocomplete
+queries; 608 internal links/fragments, zero broken; original IDs and 664
+substantial unique narrative paragraphs preserved across eight existing pages.
+Screenshots inspected for SAM and House. Logs: `/tmp/gk1459/sam-*`. Current
+Visual rerun is underway; previous full-domain results above remain historical.
+
+GitHub Actions were checked at exact prior head
+`6da75973f827b7161ce349a403ca4af723d8c00e`. Wiki Structure Enforcement, production
+truth, worker provenance, Arcade, Worker API, WAX and Visual passed. CI/Wiki
+and Graph Publishing stop at the maintainer `canon-prose-change-approved` label
+gate. This is an approval gate, not graph-parity failure; it remains intact.
+No label, merge or deployment is self-authorised. The continuation directive
+now explicitly authorises this same PR and Issue progress synchronization.
+
+Next semantic work: W15/w25 full serial comparison. W19 has complete source
+reading recorded but needs the remaining named-character cross-page comparison
+before it can count as fully reviewed. Preserve the exact scopes; 87 sources
+remain without full semantic reconciliation.

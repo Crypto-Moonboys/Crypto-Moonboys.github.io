@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
   "generator": "scripts/generate-wiki-content-state.mjs",
-  "source_tree_hash": "sha256:2df3823244d057b77e301ce8b0d8d6f9beca6b3936939f7c16b6134bf5a2ea46",
+  "source_tree_hash": "sha256:d777627c00b86957d15e4913c6f6641c389e0e93d5ad91e8390fb7ee8f5b46e3",
   "hash_algorithm": "sha256",
-  "page_count": 419,
-  "manifest_entry_count": 419,
+  "page_count": 421,
+  "manifest_entry_count": 421,
   "absent_stub_authorization_source": {
     "path": "brand-canon/wiki-absent-stubs.json",
     "content_hash": "sha256:b8874d0ede0983258101755e0706517d067dd8d85aa8a081742c497bbac2b663"
@@ -89,11 +89,11 @@
     }
   ],
   "summary": {
-    "total_pages_audited": 419,
-    "total_manifest_entries": 419,
+    "total_pages_audited": 421,
+    "total_manifest_entries": 421,
     "absent_stub_authorizations": 0,
     "rewrite_status_counts": {
-      "KEEP": 174,
+      "KEEP": 176,
       "REWRITE_FULL": 0,
       "RECONCILE": 0,
       "DEDUPE": 0,
@@ -107,7 +107,7 @@
     "automation_policy_counts": {
       "metadata-only": 168,
       "replace-sam-block": 0,
-      "canon-locked": 250,
+      "canon-locked": 252,
       "stub-allowed": 1
     },
     "pages_with_multiple_sam_blocks": 0,
@@ -286,6 +286,48 @@
       "audit_notes": [
         "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "No article-ownership or duplication issue detected by the deterministic audit."
+      ],
+      "content_owner": "canon",
+      "canon_revision": 1,
+      "canon_source_tier": "first-witness+w81"
+    },
+    {
+      "path": "wiki/agent-sam.html",
+      "slug": "agent-sam",
+      "title": "Agent SAM",
+      "page_exists": true,
+      "page_type": "historical_archive",
+      "current_word_count": 1944,
+      "manual_content_block_count": 0,
+      "sam_content_block_count": 0,
+      "canonical_content_block_count": 1,
+      "legacy_sam_article_wrapper": false,
+      "legacy_unmarked_content": false,
+      "duplicate_heading_count": 0,
+      "exact_duplicate_paragraph_count": 0,
+      "likely_near_duplicate_sections": [],
+      "content_hash": "sha256:82cd7f6323de4b0b8c36f9f179ea645cd1896019d56674aa6d138976ac097a60",
+      "article_content_hash": "sha256:4efa42deae266225eac0db76db58e3822ebea21965c7a67a6cc1729bc03a17a9",
+      "article_markup_hash": "sha256:8b7ce51cfc5c04c41dbfac34fea451bf2be278773a1778713ad5b8f0c6df30ac",
+      "git_blob_oid": "ceafe76751957444914bb3cea9e07ae65cde516c",
+      "wiki_stub_marker_scope": null,
+      "first_witness_page": false,
+      "nft_template_generated_page": false,
+      "likely_lore_page": true,
+      "rewrite_status": "KEEP",
+      "automation_policy": "canon-locked",
+      "rewrite_cluster": "Historical/archive pages",
+      "duplicate_severity": "NONE",
+      "canon_conflict_severity": "NONE",
+      "recommended_action": "Preserve the completed canon revision; automated article prose is locked.",
+      "suggested_priority": "P4",
+      "likely_source_family": [
+        "about/latest-canon-and-brand-vision.md",
+        "about/w81-condensed-canon-digest.md",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (unresolved archive bucket; historical W81 sources)"
+      ],
+      "audit_notes": [
+        "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified."
       ],
       "content_owner": "canon",
       "canon_revision": 1,
@@ -1555,7 +1597,7 @@
       "title": "Croydon Tower Blocks Origin memory, lived buildings and the danger of turning a borough into a symbol",
       "page_exists": true,
       "page_type": "lore",
-      "current_word_count": 2258,
+      "current_word_count": 2453,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -1564,10 +1606,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:8351b26a133f3e3aafb5cc53e44aabe2b4a24ae801eea2db2e31a9999ff179f0",
-      "article_content_hash": "sha256:a52f5f46e23f828e4cc7fb5dba150aea081657853e46c5d39b3c8ef79d411b8d",
-      "article_markup_hash": "sha256:c6e1c0b4ae60c6973cac3fd42d59e919a086de82475b5c88d509a96eb2b5d1dd",
-      "git_blob_oid": "8214579675259ad5a1861de7f4b2904db4c162f2",
+      "content_hash": "sha256:6b57ef8ddf3c272d595009eb6106ccaeafe1c48acfa02330199fedc5c8af4d7c",
+      "article_content_hash": "sha256:27a9efd6bba57fc4d927b79e1ede2c62a5c621c5894e3ccc92b05f9cda540b9d",
+      "article_markup_hash": "sha256:a2df1ae92be7368aaea28bea9d3b8b7cfd04eff75fd5e858a0300990d1f829f0",
+      "git_blob_oid": "98231702281a43cecee7e7ffe8ba284418f45efb",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -1588,11 +1630,11 @@
         "wiki/bibles/croydon-tower-blocks.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 4 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 5 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/croydon-tower-blocks.json; it is not automatically the unavailable Tier 4 modern bible."
       ],
       "content_owner": "canon",
-      "canon_revision": 4,
+      "canon_revision": 5,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -11556,7 +11598,7 @@
       "title": "The Great Consensus",
       "page_exists": true,
       "page_type": "historical_archive",
-      "current_word_count": 1030,
+      "current_word_count": 1115,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -11565,10 +11607,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:98145d966fc404037a3f228ed5f89723445feec1a2d24ac2b17b265338b6ae99",
-      "article_content_hash": "sha256:b245f783b1bc1628a9ca182e2a15c3dadfe18999554bdac45c1f81d71607250e",
-      "article_markup_hash": "sha256:b8502a03e3e436dbd7c7a324271b24473569d34000614002556bf11e2c65033d",
-      "git_blob_oid": "b208299bd6c47fc2d91f5beff68479e0b4031cd3",
+      "content_hash": "sha256:19a6ef1e643f7e33ba2a24a3ecaa2e79e35aaf19c47f1ab089c2a092d106fd35",
+      "article_content_hash": "sha256:47adf2891293edcaa194621855c01fa001d1183db3e0a9fe734ccddb8b4bc10e",
+      "article_markup_hash": "sha256:dd307b4318173632a2a07dca5c1e1cd93cfc2e0cad9230ea108c8a62c27cbf6b",
+      "git_blob_oid": "40bc471c87336183203fc856b57894eb4f772836",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -11586,10 +11628,10 @@
         "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (unresolved archive bucket; historical W81 sources)"
       ],
       "audit_notes": [
-        "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified."
+        "Canon revision 2 reconciled against First Witness and W81; disputed traditions remain explicitly identified."
       ],
       "content_owner": "canon",
-      "canon_revision": 1,
+      "canon_revision": 2,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -12032,6 +12074,48 @@
       "audit_notes": [
         "NFT-focused page; route substantive maintenance to the NFT specialist workflow."
       ]
+    },
+    {
+      "path": "wiki/house-of-rackinsats.html",
+      "slug": "house-of-rackinsats",
+      "title": "House of Rackinsats",
+      "page_exists": true,
+      "page_type": "historical_archive",
+      "current_word_count": 1417,
+      "manual_content_block_count": 0,
+      "sam_content_block_count": 0,
+      "canonical_content_block_count": 1,
+      "legacy_sam_article_wrapper": false,
+      "legacy_unmarked_content": false,
+      "duplicate_heading_count": 0,
+      "exact_duplicate_paragraph_count": 0,
+      "likely_near_duplicate_sections": [],
+      "content_hash": "sha256:89dadb4453fe0484aeda54ade527ad8c31c8581747a0341192c76b905d37f6b5",
+      "article_content_hash": "sha256:be48667b0265be97084d200fd878cf7feea28687062f7dba419c9416f9260735",
+      "article_markup_hash": "sha256:eefa3392150a052c0dcc7d040aa58422400257cdd3d65faca8b24a3af104c1bb",
+      "git_blob_oid": "c6e7da7fe0b74b5d20075c4a78f3d703be8fe207",
+      "wiki_stub_marker_scope": null,
+      "first_witness_page": false,
+      "nft_template_generated_page": false,
+      "likely_lore_page": true,
+      "rewrite_status": "KEEP",
+      "automation_policy": "canon-locked",
+      "rewrite_cluster": "Historical/archive pages",
+      "duplicate_severity": "NONE",
+      "canon_conflict_severity": "NONE",
+      "recommended_action": "Preserve the completed canon revision; automated article prose is locked.",
+      "suggested_priority": "P4",
+      "likely_source_family": [
+        "about/latest-canon-and-brand-vision.md",
+        "about/w81-condensed-canon-digest.md",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (unresolved archive bucket; historical W81 sources)"
+      ],
+      "audit_notes": [
+        "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified."
+      ],
+      "content_owner": "canon",
+      "canon_revision": 1,
+      "canon_source_tier": "first-witness+w81"
     },
     {
       "path": "wiki/ian-harrison.html",
@@ -16106,7 +16190,7 @@
       "title": "The Princess",
       "page_exists": true,
       "page_type": "historical_archive",
-      "current_word_count": 4083,
+      "current_word_count": 4204,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -16115,10 +16199,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:9b408faa2061f3e5d61c468d5038a14bb659c8be6d299223e59e2fd536a97e51",
-      "article_content_hash": "sha256:8ed6e8370543ac93ee64d43768d1dfeb1fb2e190dafe2f2a2b39d9043bd46e6b",
-      "article_markup_hash": "sha256:bc475d7ed8e119f112f035a07ae6e6a5ed44e24677c9807c78201a7aa408e39c",
-      "git_blob_oid": "f24c83c5b41e5fcb4dab133eb4499213a4203190",
+      "content_hash": "sha256:0bb7b5950ffa99476b2d1c3b2c5de04fff26e108b7cb77d202c945c9fa47fb1f",
+      "article_content_hash": "sha256:f4c9a1dae7fa978a5a6fc0c81b4b7934a39abd7fddabe30f4120aa3f3a65a7c6",
+      "article_markup_hash": "sha256:f2f81aa6af23abbcc5f5fe29cad90847920337eacff2b9a2a03e0e27a0e3a92c",
+      "git_blob_oid": "774865912a13332ecb812088aef9a6feb8a57cfc",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -16137,11 +16221,11 @@
         "wiki/bibles/the-princess.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 4 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 5 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/the-princess.json; it is not automatically the unavailable Tier 4 modern bible."
       ],
       "content_owner": "canon",
-      "canon_revision": 4,
+      "canon_revision": 5,
       "canon_source_tier": "first-witness+w81"
     },
     {

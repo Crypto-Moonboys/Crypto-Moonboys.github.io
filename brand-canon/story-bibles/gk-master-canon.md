@@ -143,14 +143,28 @@ does not erase the assault she concealed; Lysa's belief does not erase her
 corruption. Both keep lasting consequences. A local receiving house is not a
 new numbered culture.
 
-Samuel HyroSAM Blake has a nineteen-year-old 2036 origin in W12 and an unresolved
-later 2030 Reset heading. Full eight-part order, W13 household voices and capture
-history remain work, not a completed biography. Kael Voss, Sylas the Unbroken,
-Veyra Nyx and Final Fork Council belong to W15's competing serial witnesses;
-Layer Eight, Crimson Protocol and Great Blackout are research targets. They are
-not merged with similarly named modern characters. The Princess, Tracey, Rya-B
-and Sarah remain distinct references. Full major/supporting character census
-and every relationship are pending the semantic audit ledger.
+[Samuel HyroSAM Blake](../../wiki/agent-sam.html) now has a complete eight-part
+source reading and an owning account. The adopted nineteen-year-old painter's
+Neural Rack episode produces the family-recognised SAM speaker; household
+support becomes retaliation after Denise, Tracey and Denise's husband Forge vanish.
+The [House of Rackinsats](../../wiki/house-of-rackinsats.html) preserves W13's
+Papa Des and sister relationship, with distinct work for Jaz, Brush, Maeve and
+Leon. Its literal household genealogy is not the Great Consensus's theology.
+The source's explicit bridge across time is retained as its claim; the proposed
+calendar repair is specific and awaits GK. A simple flashback is no longer
+presented as sufficient. The missing family remains missing.
+
+Nessa Vale, 42, and Davit Cole, 51, are new adults in [Overdrawn Relay](the-overdrawn-relay.md).
+The copied guardian promise drains a kitchen's reserve; Nessa's compromised
+delay and the collector's assault leave debt, missed wages and lasting injury.
+No resurrected SAM or biological descent is inferred. The SAM/House articles
+preserve Fifth Carbon, Cut Ledger and all earlier modern consequences.
+
+Kael Voss, Sylas the Unbroken, Veyra Nyx and Final Fork Council still require
+W15's complete serial comparison. Layer Eight, Crimson Protocol and Great
+Blackout remain research targets, not aliases for similarly named modern cast.
+The Princess, Tracey, Rya-B and Sarah retain distinct source identities. The
+complete character census remains tracked in the semantic audit.
 
 ## 9. Games, generations and HODL WARS
 

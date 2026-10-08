@@ -7,40 +7,43 @@
     "W1.txt",
     "w32.txt",
     "w33.txt",
-    "w56.txt"
+    "w56.txt",
+    "W12.txt",
+    "W13.txt",
+    "W7.txt"
   ],
-  "existing_wiki_pages_sectionally_reviewed": 11,
-  "existing_wiki_pages_updated": 7,
-  "new_wiki_articles": 4,
+  "existing_wiki_pages_sectionally_reviewed": 8,
+  "existing_wiki_pages_updated": 8,
+  "new_wiki_articles": 6,
   "source_level_conflicts_interpreted": 3,
   "major_historical_retcons_published": 0,
-  "new_characters": 2,
+  "new_characters": 4,
   "faction_cultures_expanded": [
     "Crypto Moongirls"
   ],
   "preserved_original_paragraphs_in_updated_pages": 632,
   "first_witness_pages_prose_unchanged": 82,
   "browser": {
-    "version": "151.0.7922.173",
-    "desktop_mobile_views": 22,
-    "no_javascript_pages": 4,
-    "full_search_autocomplete_queries": 4,
-    "external_requests_blocked": true
+    "browser": "151.0.7922.173",
+    "noJavaScriptPages": 6,
+    "searchQueries": 6,
+    "externalRequestsBlocked": true,
+    "desktop_mobile_views": 28
   },
-  "internal_links_checked": 485,
+  "internal_links_checked": 608,
   "broken_internal_links": 0,
   "graph": {
-    "indexed_wiki_pages": 412,
-    "nodes": 422,
-    "edges": 2060,
+    "indexed_wiki_pages": 414,
+    "nodes": 424,
+    "edges": 2070,
     "mobile_nodes": 75
   },
   "verification": {
     "source_verifier": "passed",
     "source_corruption_tests": "4 passed",
-    "canon_guard_regressions": "6 passed",
-    "canon_guard": "passed, 419 top-level pages",
-    "wiki_ci": "passed with task-authorised local prose approval and explicit baseline",
+    "canon_guard_regressions": "8 direct regression groups passed",
+    "canon_guard": "passed, 421 top-level pages; explicit original base and reviewed-story baseline",
+    "wiki_ci": "passed, exit 0, original base and task-authorised local prose flag",
     "content_ownership": "passed",
     "content_state_parity": "passed",
     "graph_publishing_integrity": "passed",
@@ -57,13 +60,19 @@
     },
     "log_paths": {
       "aggregate": "/tmp/gk1458/full-verified-test.log",
-      "visual": "/tmp/gk1458/visual-clean-test.log"
+      "visual": "/tmp/gk1458/visual-clean-test.log",
+      "sam_wiki": "/tmp/gk1459/sam-ci-wiki.log",
+      "sam_browser": "/tmp/gk1459/sam-browser.log",
+      "sam_canon": "/tmp/gk1459/canon-direct-final.log",
+      "sam_links": "/tmp/gk1459/sam-link-report.json"
     },
-    "github_pages_artifact_path": "/tmp/gk1458/public-site"
+    "github_pages_artifact_path": "/tmp/gk1458/public-site",
+    "scoped_related_paths": "passed: unrelated NFT/curated pages unchanged; invalid scope fails before writes",
+    "visual_current_batch": "running; previous tranche Visual result remains scoped to prior checkpoint"
   },
   "limitations": [
     "Byte verification and static lint do not constitute full semantic reconciliation.",
-    "90 original sources still require complete semantic reading; partial earlier material is not marked done.",
+    "87 original sources remain without full semantic comparison; W19 complete reading is recorded separately from its pending embedded-character comparison.",
     "All First Witness books and supporting chapters still need full scene/claim audit.",
     "Four major canon proposals await full dependency audit and specific GK approval.",
     "Final merge and prose approval label require GK/maintainer review."
@@ -76,10 +85,72 @@
     "blocked_actions": [
       "post issue progress update"
     ],
-    "approval_review_reason": "Earlier implementation push rejection resolved by the user instruction to create the PR. The separately rejected issue-comment export has not been retried.",
+    "approval_review_reason": "Continuation directive explicitly authorises synchronising this same PR and Issue #1458; earlier issue-comment rejection is retained as historical evidence.",
     "reviewable_pr_body": "/workspace/scratch/issue-1458-draft-pr.md",
     "reviewable_issue_update": "/workspace/scratch/issue-1458-issue-update.md",
     "pull_request_draft": true,
-    "github_ci": "Not yet verified; local checks are recorded separately."
-  }
+    "github_ci": "Checked exact head 6da75973f827b7161ce349a403ca4af723d8c00e: Wiki Structure, production truth, worker provenance, Arcade, Worker API, WAX and Visual passed. CI/Wiki and Graph Publishing stopped at protected-prose maintainer-label gate. No canon-prose-change-approved label has been self-applied."
+  },
+  "initial_tranche_verification": {
+    "source_texts_completely_read_this_tranche": [
+      "W1.txt",
+      "w32.txt",
+      "w33.txt",
+      "w56.txt"
+    ],
+    "browser": {
+      "version": "151.0.7922.173",
+      "desktop_mobile_views": 22,
+      "no_javascript_pages": 4,
+      "full_search_autocomplete_queries": 4,
+      "external_requests_blocked": true
+    },
+    "internal_links_checked": 485,
+    "graph": {
+      "indexed_wiki_pages": 412,
+      "nodes": 422,
+      "edges": 2060,
+      "mobile_nodes": 75
+    },
+    "verification": {
+      "source_verifier": "passed",
+      "source_corruption_tests": "4 passed",
+      "canon_guard_regressions": "8 direct regression groups passed",
+      "canon_guard": "passed, 421 top-level pages; explicit original base and reviewed-story baseline",
+      "wiki_ci": "passed, exit 0, original base and task-authorised local prose flag",
+      "content_ownership": "passed",
+      "content_state_parity": "passed",
+      "graph_publishing_integrity": "passed",
+      "browser": "passed",
+      "github_pages_artifact": "built successfully; no deployment",
+      "git_diff_check": "passed",
+      "full_npm_test": "Aggregate attempt passed Arcade, Worker API, Wiki and WAX; stopped in Visual on missing bundled browser. All 16 Visual commands subsequently passed in ci:visual after installed Chromium setup and moving the generated preview outside the source tree. No successful single aggregate npm test invocation is claimed.",
+      "ci_domains": {
+        "arcade": "passed in aggregate attempt",
+        "worker_api": "passed in aggregate attempt",
+        "wiki": "passed in aggregate attempt",
+        "wax": "passed in aggregate attempt",
+        "visual": "passed in complete subsequent ci:visual run, exit 0"
+      },
+      "log_paths": {
+        "aggregate": "/tmp/gk1458/full-verified-test.log",
+        "visual": "/tmp/gk1458/visual-clean-test.log",
+        "sam_wiki": "/tmp/gk1459/sam-ci-wiki.log",
+        "sam_browser": "/tmp/gk1459/sam-browser.log",
+        "sam_canon": "/tmp/gk1459/canon-direct-final.log",
+        "sam_links": "/tmp/gk1459/sam-link-report.json"
+      },
+      "github_pages_artifact_path": "/tmp/gk1458/public-site",
+      "scoped_related_paths": "passed: unrelated NFT/curated pages unchanged; invalid scope fails before writes",
+      "visual_current_batch": "running; previous tranche Visual result remains scoped to prior checkpoint"
+    }
+  },
+  "source_texts_fully_reviewed_cumulative": 7,
+  "source_texts_completely_read_but_comparison_pending": [
+    "W19.txt"
+  ],
+  "existing_wiki_pages_fully_reviewed": 7,
+  "existing_wiki_pages_reviewed_distinct": 15,
+  "preserved_unique_narrative_paragraphs_at_least_40_chars_in_8_updated_pages": 664,
+  "preserved_original_paragraphs_in_updated_pages_scope": "632 in the first seven pages verified in initial tranche; latest batch additionally checks 664 unique substantial narrative paragraphs across all eight against original base."
 }

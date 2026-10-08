@@ -8,8 +8,8 @@ import { chromium } from 'playwright';
 
 const root = path.resolve(import.meta.dirname, '..');
 const output = '/tmp/gk1458-browser';
-const created = ['whisper-codex', 'six-pillars', 'great-consensus', 'the-crypto-moongirls'];
-const updated = ['rune-tag', 'squeaky-pinks-enforcers', 'hard-fork-games', 'block-topia', 'queen-sarah-p-fly', 'the-princess', 'the-code-alchemists'];
+const created = ['whisper-codex', 'six-pillars', 'great-consensus', 'the-crypto-moongirls', 'agent-sam', 'house-of-rackinsats'];
+const updated = ['rune-tag', 'squeaky-pinks-enforcers', 'hard-fork-games', 'block-topia', 'queen-sarah-p-fly', 'the-princess', 'the-code-alchemists', 'croydon-tower-blocks'];
 const types = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.svg': 'image/svg+xml' };
 const server = http.createServer(async (req, res) => {
   try {
@@ -65,7 +65,7 @@ try {
     assert.equal(await page.locator('details.article-contents').getAttribute('open'), '');
     await page.close();
   }
-  const queries = [['Omega Hash', 'whisper-codex'], ['Memory-Sigils', 'six-pillars'], ['Lysa Rook', 'great-consensus'], ['Dara Venn', 'the-crypto-moongirls']];
+  const queries = [['Omega Hash', 'whisper-codex'], ['Memory-Sigils', 'six-pillars'], ['Lysa Rook', 'great-consensus'], ['Dara Venn', 'the-crypto-moongirls'], ['Neural Rack', 'agent-sam'], ['Papa Des', 'house-of-rackinsats']];
   const page = await browser.newPage();
   await page.route('**/*', route => new URL(route.request().url()).origin === origin ? route.continue() : route.abort());
   for (const [query, slug] of queries) {

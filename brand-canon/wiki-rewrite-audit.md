@@ -6,7 +6,7 @@ This is an ownership and rewrite-queue audit only. It does not replace, delete, 
 
 ## Audit contract
 
-- Scope: all 419 top-level `wiki/*.html` pages.
+- Scope: all 421 top-level `wiki/*.html` pages.
 - Absent-stub authorizations: 0. These are explicit repository declarations, not audited pages or links to pages that already exist.
 - Canon hierarchy: published First Witness convergence canon; latest canon/brand vision; W81 condensed digest; current dedicated bibles; Retired W81 archive provenance and migration ledger; existing wiki archive.
 - Tier 4 source gap: the modern dedicated character/faction/HODL WARS bibles referenced by the First Witness register are not separately identifiable in this checkout. Historical `wiki/bibles/*.json` SAM records remain lower-tier public archive inputs and ambiguous mappings stay review items.
@@ -21,9 +21,9 @@ This is an ownership and rewrite-queue audit only. It does not replace, delete, 
 
 | Measure | Count |
 |---|---:|
-| Total pages audited | 419 |
+| Total pages audited | 421 |
 | Absent stub authorizations | 0 |
-| KEEP | 174 |
+| KEEP | 176 |
 | REWRITE_FULL | 0 |
 | RECONCILE | 0 |
 | DEDUPE | 0 |
@@ -45,7 +45,7 @@ This is an ownership and rewrite-queue audit only. It does not replace, delete, 
 
 | Policy | Pages | Meaning |
 |---|---:|---|
-| canon-locked | 250 | Automated article-body writes are rejected. |
+| canon-locked | 252 | Automated article-body writes are rejected. |
 | metadata-only | 168 | Search, relationship, and metadata maintenance only; article prose is preserved. |
 | replace-sam-block | 0 | A single existing SAM block may be replaced, never appended. |
 | stub-allowed | 1 | A stub may be created only while no real canonical page exists. |
@@ -278,6 +278,7 @@ This is an ownership and rewrite-queue audit only. It does not replace, delete, 
 | Page | Status | Duplication | Canon conflict | Action | Priority | Likely source family |
 |---|---|---|---|---|---|---|
 | [2025 Metaverse Launch Party](../wiki/2025-metaverse-launch-party.html) (`2025-metaverse-launch-party`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Latest canon/brand vision; W81 digest; brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (unresolved archive bucket; historical W81 sources) |
+| [Agent SAM](../wiki/agent-sam.html) (`agent-sam`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Latest canon/brand vision; W81 digest; brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (unresolved archive bucket; historical W81 sources) |
 | [Battlemech Blast](../wiki/battlemech-blast.html) (`battlemech-blast`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Latest canon/brand vision; W81 digest; brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (unresolved archive bucket; historical W81 sources); Specialist archive: battlemech-blast |
 | [Block Node Defenders](../wiki/block-node-defenders.html) (`block-node-defenders`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Latest canon/brand vision; W81 digest; brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (unresolved archive bucket; historical W81 sources); Specialist archive: block-node-defenders |
 | [BURN-TO-EARN Destroy the old asset only when a verified route creates something more useful](../wiki/burn-to-earn.html) (`burn-to-earn`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Latest canon/brand vision; W81 digest; brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (unresolved archive bucket; historical W81 sources); Specialist archive: burn-to-earn |
@@ -293,6 +294,7 @@ This is an ownership and rewrite-queue audit only. It does not replace, delete, 
 | [The Great Consensus](../wiki/great-consensus.html) (`great-consensus`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Latest canon/brand vision; W81 digest; brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (unresolved archive bucket; historical W81 sources) |
 | [GRIT](../wiki/grit.html) (`grit`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Latest canon/brand vision; W81 digest; brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (unresolved archive bucket; historical W81 sources); Specialist archive: grit |
 | [Grit42](../wiki/grit42.html) (`grit42`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Latest canon/brand vision; W81 digest; brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (unresolved archive bucket; historical W81 sources); Specialist archive: grit42 |
+| [House of Rackinsats](../wiki/house-of-rackinsats.html) (`house-of-rackinsats`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Latest canon/brand vision; W81 digest; brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (unresolved archive bucket; historical W81 sources) |
 | [Ian Harrison](../wiki/ian-harrison.html) (`ian-harrison`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Existing public/reference source verification |
 | [Jillian Godsil](../wiki/jillian-godsil.html) (`jillian-godsil`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Existing public/reference source verification |
 | [Jonny & Laurence Nelson (TAG Records)](../wiki/jonny-laurence-nelson-tag-records.html) (`jonny-laurence-nelson-tag-records`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Specialist archive: jonny-laurence-nelson-tag-records |

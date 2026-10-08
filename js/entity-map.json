@@ -91,6 +91,21 @@
     "brand": null
   },
   {
+    "entity_id": "agent_sam",
+    "canonical_title": "Agent SAM",
+    "canonical_url": "/wiki/agent-sam.html",
+    "category": "factions",
+    "aliases": [],
+    "tags": [
+      "agent",
+      "sam"
+    ],
+    "source_urls": [
+      "/wiki/agent-sam.html"
+    ],
+    "brand": null
+  },
+  {
     "entity_id": "alcor_exchange",
     "canonical_title": "Alcor Exchange",
     "canonical_url": "/wiki/alcor-exchange.html",
@@ -8765,6 +8780,23 @@
     ],
     "source_urls": [
       "/wiki/hodlmoonboys-nft-collection.html"
+    ],
+    "brand": null
+  },
+  {
+    "entity_id": "house_of_rackinsats",
+    "canonical_title": "House of Rackinsats",
+    "canonical_url": "/wiki/house-of-rackinsats.html",
+    "category": "factions",
+    "aliases": [
+      "house rackinsats"
+    ],
+    "tags": [
+      "house",
+      "rackinsats"
+    ],
+    "source_urls": [
+      "/wiki/house-of-rackinsats.html"
     ],
     "brand": null
   },

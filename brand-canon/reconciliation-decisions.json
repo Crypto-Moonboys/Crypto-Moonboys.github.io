@@ -151,16 +151,24 @@
       "id": "GK-1458-SAM-ORDER",
       "status": "proposed",
       "sources": [
-        "W12.txt Parts 1 and 4",
-        "W13.txt",
-        "Fifth Carbon"
+        "W12.txt Parts 1-8, fully read: 2036 origin; late 2029 council; 2030 Reset; 2031 bridge; 2032 capture; 2035 climax",
+        "W13.txt Parts 1-7 and repeated household extracts, fully read",
+        "merged Fifth Carbon and current Croydon/Princess/First Witness chronology"
       ],
-      "old": "2036 opening with subsequent 2030 Reset.",
-      "new": "Propose editorial displacement/flashback reading; full eight-part semantic audit still required before setting any corrected reset year.",
-      "reason": "A time-travel mechanism or arbitrary 2040 date would add complexity unsupported by source continuity.",
+      "old": "A nineteen-year-old 2036 upload precedes late-2029 preparations, the 2030 Reset, a 2031 bridge, the 2032 vanishing and a 2035 climax. A teenage adoption is also compressed into the 2007-2009 Street War.",
+      "new": "Recommend retaining the repeated 2036 origin and moving the subsequent civil sequence ten years forward: late 2039 council, 2040 Stabilisation, 2041 bridge work, 2042 vanishing, 2045 climax. Keep adoption later than the original Street War. Preserve the explicit across-time bridge as an attributed source claim; do not mistake ordinary flashback for a complete repair.",
+      "reason": "Full reading shows explicit causal dependencies and an explicit across-time bridge. The fixed ten-year displacement preserves the source one-year preparation and three-year capture-to-climax intervals while placing the later civil events after the 2036 upload. These replacement dates require specific GK approval; no corrected date is yet published as accepted history.",
       "affected_paths": [
+        "wiki/agent-sam.html",
+        "wiki/house-of-rackinsats.html",
         "wiki/croydon-tower-blocks.html",
-        "brand-canon/story-bibles/w81-continuity-companion-20261008.md"
+        "wiki/the-princess.html",
+        "wiki/great-consensus.html",
+        "wiki/first-witness-master-chronology.html",
+        "wiki/first-witness-concordance.html",
+        "brand-canon/story-bibles/gk-master-canon.md",
+        "brand-canon/story-bibles/w81-continuity-companion-20261008.md",
+        "brand-canon/wiki-rewrites/issue-1458-proposals.md"
       ]
     },
     {
@@ -180,6 +188,61 @@
         "wiki/first-witness-forty-paths.html",
         "wiki/first-witness-faction-commentaries.html",
         "brand-canon/wiki-rewrites/issue-1458-proposals.md"
+      ]
+    },
+    {
+      "id": "GK-1458-SAM-HOUSE-RECOVERY",
+      "status": "implemented",
+      "sources": [
+        "W12.txt Parts 1-8, fully read",
+        "W13.txt Parts 1-7 and repeated extracts, fully read",
+        "current Croydon, Princess, Great Consensus, synthetic-minds chapter, chronology and concordance"
+      ],
+      "old": "SAM remains two origin paragraphs and a modern copy dispute; the House lacks an owning article and its complete named relationships/capture sequence.",
+      "new": "Dedicated SAM and House accounts recover the eight-part guardian-to-vengeance arc and the household labour, with explicit missing-person and source-sequence limits; incoming Croydon, Princess and Consensus sections are expanded.",
+      "reason": "Restores substantive scenes and relationships without changing locked history, promoting a theology to civil genealogy, or deleting approved modern stories.",
+      "affected_paths": [
+        "wiki/agent-sam.html",
+        "wiki/house-of-rackinsats.html",
+        "wiki/croydon-tower-blocks.html",
+        "wiki/the-princess.html",
+        "wiki/great-consensus.html"
+      ]
+    },
+    {
+      "id": "GK-1458-HOUSE-RELATIONS",
+      "status": "implemented",
+      "sources": [
+        "W13.txt Part 1: Papa Des daughters Denise and Tracey; Parts 2-7 repeated extracts",
+        "W12.txt Part 6: Denise husband Jermaine Forge Harrington",
+        "w33.txt Divine Lineage, already reviewed"
+      ],
+      "old": "House relationships are generic references; sect family imagery can be mistaken for literal parentage or Forge/Etherstan identity.",
+      "new": "Keep Denise and Tracey as sisters and Forge as Denise husband within the House source cycle; record the Divine Lineage as a distinct theology and resist an unsupported Forge/Etherstan merge.",
+      "reason": "The fully read witnesses do not support one ordinary genealogy combining all these claims. Source-specific family relationships clarify already-separated identities without assigning a new universal dynasty.",
+      "affected_paths": [
+        "wiki/house-of-rackinsats.html",
+        "wiki/agent-sam.html",
+        "wiki/the-princess.html",
+        "wiki/great-consensus.html"
+      ]
+    },
+    {
+      "id": "GK-1458-OVERDRAWN-RELAY",
+      "status": "implemented",
+      "sources": [
+        "GK continuation task: substantial adult connecting fiction authorised",
+        "W12.txt kitchen support, Eternal Warmth Ledger and guardian promise",
+        "approved Fifth Carbon copy/instruction distinction"
+      ],
+      "old": "No Overdrawn Relay, Nessa Vale or Davit Cole episode.",
+      "new": "New adult Year 3008 receiving-kitchen story: memorial promise, coerced payout, Nessa delayed intervention, collector assault, wages and lasting impairment; label all authorship and retain household debt.",
+      "reason": "Connects inherited guardian promises to living resources and compromised agency without declaring a resurrected SAM, biological descendants or a new faction.",
+      "affected_paths": [
+        "wiki/agent-sam.html",
+        "wiki/house-of-rackinsats.html",
+        "wiki/croydon-tower-blocks.html",
+        "brand-canon/story-bibles/the-overdrawn-relay.md"
       ]
     }
   ]

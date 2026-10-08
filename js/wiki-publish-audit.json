@@ -1,8 +1,8 @@
 {
-  "_generated": "2026-10-08T09:27:40.920Z",
+  "_generated": "2026-10-08T10:42:14.013Z",
   "summary": {
-    "total": 419,
-    "approved": 419,
+    "total": 421,
+    "approved": 421,
     "blocked": 0,
     "needs_review": 0,
     "blocked_synthetic_slug": 0,
@@ -37,6 +37,13 @@
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 308
+    },
+    {
+      "slug": "agent-sam",
+      "file": "agent-sam.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 1932
     },
     {
       "slug": "alcor-exchange",
@@ -253,7 +260,7 @@
       "file": "croydon-tower-blocks.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 2360
+      "word_count": 2544
     },
     {
       "slug": "crypto-moonboy-pets",
@@ -2080,7 +2087,7 @@
       "file": "great-consensus.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1045
+      "word_count": 1126
     },
     {
       "slug": "grit",
@@ -2151,6 +2158,13 @@
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT collection page metadata.",
       "word_count": 27555
+    },
+    {
+      "slug": "house-of-rackinsats",
+      "file": "house-of-rackinsats.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 1411
     },
     {
       "slug": "ian-harrison",
@@ -2766,7 +2780,7 @@
       "file": "the-princess.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 4214
+      "word_count": 4331
     },
     {
       "slug": "the-rugpull-miners",

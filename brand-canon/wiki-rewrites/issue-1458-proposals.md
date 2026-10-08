@@ -21,16 +21,69 @@ secure regions. A 2765 condition cannot be caused by a 2880 event. Investigate
 whether its source actually describes an independent earlier contraction before
 giving it one. A date alone is insufficient evidence for a second collapse.
 
-## Agent SAM: resolve editorial order before ontology
+## Agent SAM: complete eight-part decision
 
-`GK-1458-SAM-ORDER`: the nineteen-year-old Samuel HyroSAM Blake origin opens in
-2036; Part 4 later names a 2030 Reset. Recommend an editorial displacement or
-flashback reading rather than an invented time-travel machine or arbitrary
-replacement year. Do not equate the Reset with the Great Concord. Pending: full
-eight-part scene and household chronology, W13 relationships, capture/raid
-sequence and the final tag. Prepare the complete biography with source-specific
-identities before asking GK to approve the corrected sequence. No completed
-eight-part audit or new canon origin is claimed in this tranche.
+`GK-1458-SAM-ORDER` now follows complete W12 and W13 readings. The earlier
+simple-flashback recommendation is withdrawn: Parts 5 and 8 explicitly describe
+an across-time bridge, while Parts 3–8 repeatedly depend on the uploaded SAM.
+The bridge is source material, not an invention made to repair a heading.
+
+**Recommended calendar, awaiting specific GK approval:** keep the repeated
+nineteen-year-old **2036** origin; displace the later civil sequence by one
+decade while preserving its intervals:
+
+| Event | Original W12 location/date | Proposed canonical date |
+| --- | --- | --- |
+| Adoption into the surviving House | Parts 1/4/5 compress a teenage rescue into Street War memory | After the 2007–2009 fighting; exact year open |
+| Upload and first digital raids | Parts 1–3, 2036 | 2036 |
+| Preparatory family council | Part 4, late 2029 | Late 2039 |
+| Coercive Stabilisation / Reset | Parts 3–6, 2030 | 2040 |
+| First bridge work | Part 5, 2031; work grows through 2031–2035 | 2041; growth through 2041–2045 |
+| Denise, Tracey and Forge taken | Part 6, early 2032 | Early 2042 |
+| Final local strike and bridge | Part 8, 2035, three years after capture | 2045 |
+
+This is a deliberate editorial correction, **not a newly discovered date**.
+The one-decade displacement preserves the 2036 origin found repeatedly in the
+first three parts and later callbacks, the council-before-Reset relation, the
+following bridge work and the three-year vanishing-to-climax interval. It also
+avoids making SAM a teenager before a birth implied by nineteen in 2036. W13's
+1972/1980 sister births leave living adult household members at the proposed
+capture. Adoption must be later than the original Street War, not a participation
+in it. Exact birth month, adoption day and an older supernatural lifespan are
+not inferred.
+
+A competing economical edit is to move the upload to **2026** and retain the
+2029–2035 later calendar. That changes the repeatedly stated origin and all
+2036 callbacks; it still needs the adoption repair. It is an explicit alternative
+for GK, not a second accepted timeline. A literal retrocausal reading would
+require accepting the source's time-spanning personhood and causal loops as
+world mechanics; the existing common chronology does not approve that merely
+because a bridge is described. No replacement year is currently public canon.
+
+**Separate ontology decision:** retain the extraordinary bridge as a source
+claim and retain the family's recognition of the returned SAM speaker. Do not
+publish a universal soul-upload law, guaranteed immortality or restoration of
+the three missing people. A personal guardian and an inherited memorial can
+matter without certifying every assertion made about the machine. W12 Part 1's
+empty roof competes with Part 2's bodily recovery; the body-down reading retains
+the concrete taser consequence. Part 7's missing footage competes with its
+broadcast of detailed footage: an image of an accusation is not independent
+camera evidence. These limits are implemented in the owning articles.
+
+**Family decision already clarified by source scope:** W13 names Denise and
+Tracey as sisters, Papa Des as their father; W12 names Forge as Denise's husband.
+w33 supplies a different divine genealogy. Keep that sect theology distinct;
+no Forge/Etherstan merge or literal mother/daughter correction is approved.
+This source-specific clarification does not identify the unnamed Princess.
+
+**Ripple map if GK approves the calendar:** update the dated narrator sequence
+in Agent SAM and House of Rackinsats; add the accepted event sequence to the
+master chronology and concordance; update the SAM decision, master bible and
+continuity companion; update incoming Croydon/Princess/Consensus descriptions
+of its status; regenerate indexes, graphs and sitemap. Preserve Fifth Carbon's
+actual damaged **2036/2030** copy and its consequences: an approved catalogue
+correction must not rewrite what Marlo, Bex or the household received. Preserve
+all eight original W12 parts byte-for-byte outside publication.
 
 ## The six remaining Forty positions
 

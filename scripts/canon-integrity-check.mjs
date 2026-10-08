@@ -4,11 +4,43 @@ import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { tokenizeActiveHtml, readHtmlAttribute } from './wiki-html-structure.mjs';
-import { htmlToVisibleText } from './generate-wiki-content-state.mjs';
+import { htmlToVisibleText, extractArticleHtml, sha256 } from './generate-wiki-content-state.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const LOCK_PATH = 'brand-canon/canon-locks.json';
 const DECISIONS_PATH = 'brand-canon/reconciliation-decisions.json';
+
+export function narrativeParagraphs(html) {
+  const article = extractArticleHtml(html);
+  const paragraphs = new Map();
+  let start = null;
+  for (const token of tokenizeActiveHtml(article)) {
+    if (token.type !== 'tag' || token.name !== 'p') continue;
+    if (!token.closing) start = token.end;
+    else if (start !== null) {
+      const text = htmlToVisibleText(article.slice(start, token.start)).replace(/\s+/gu, ' ').trim();
+      if (text.length >= 40) paragraphs.set(sha256(text), text);
+      start = null;
+    }
+  }
+  return paragraphs;
+}
+
+// A prose-approval label alone cannot authorise silently losing a scene or its
+// consequence. Revisions must identify the exact old and replacement evidence.
+export function checkNarrativePreservation(beforeHtml, afterHtml, decisions, filename) {
+  const before = narrativeParagraphs(beforeHtml), after = narrativeParagraphs(afterHtml);
+  const errors = [];
+  for (const [hash, text] of before) {
+    if (after.has(hash)) continue;
+    const receipt = decisions.decisions.find(d => d.affected_paths?.includes(filename)
+      && ['implemented', 'approved'].includes(d.status) && d.sources?.length && d.reason
+      && d.paragraph_changes?.some(change => change.old_sha256 === hash
+        && change.new_sha256 && after.has(change.new_sha256) && change.reason));
+    if (!receipt) errors.push(`${filename}: missing preserved narrative ${hash}: ${text.slice(0, 110)}; record the exact sourced replacement decision`);
+  }
+  return errors;
+}
 
 // Targeted explicit-claim guard. This deliberately does not pretend to solve
 // arbitrary narrative contradictions. The source/decision audit remains human.
@@ -69,12 +101,15 @@ export function checkRegister(locks, decisions) {
     try { new RegExp(rule.pattern, 'iu'); new RegExp(rule.denial || '(?!)', 'iu'); }
     catch { errors.push(`Invalid claim rule ${rule.id}`); }
   }
+  for (const receipt of locks.reviewed_story_baselines || []) {
+    if (!/^[a-f0-9]{40}$/u.test(receipt.commit || '') || !receipt.source || !receipt.quote) errors.push('Invalid reviewed-story preservation baseline');
+  }
   return errors;
 }
 
 export function checkLockChanges(before, after, decisions) {
   const errors = [];
-  for (const field of ['anchors', 'forty', 'identity_boundaries']) {
+  for (const field of ['anchors', 'forty', 'identity_boundaries', 'reviewed_story_baselines']) {
     if (JSON.stringify(before[field]) === JSON.stringify(after[field])) continue;
     const d = decisions.decisions.find(d => d.status === 'approved' && d.lock_field === field
       && JSON.stringify(d.old) === JSON.stringify(before[field]) && JSON.stringify(d.new) === JSON.stringify(after[field])
@@ -118,6 +153,22 @@ export function run(root = ROOT) {
     if (!name.endsWith('.html')) continue;
     pages++;
     failures.push(...checkPage(fs.readFileSync(path.join(root, 'wiki', name), 'utf8'), locks, decisions, `wiki/${name}`));
+  }
+  const baselines = new Set([base, ...(locks.reviewed_story_baselines || []).map(b => b.commit)].filter(Boolean));
+  for (const baseline of baselines) {
+    try {
+      const manifest = JSON.parse(execFileSync('git', ['show', `${baseline}:brand-canon/wiki-content-state.json`], { cwd: root, encoding: 'utf8', maxBuffer: 16 * 1024 * 1024, stdio: ['ignore', 'pipe', 'pipe'] }));
+      for (const page of manifest.pages) {
+        if (!page.page_exists || page.nft_template_generated_page || page.page_type === 'nft_specialist'
+          || !(page.first_witness_page || page.likely_lore_page || page.canonical_content_block_count)) continue;
+        const filename = page.path;
+        if (!/^wiki\/[a-z0-9][a-z0-9-]*\.html$/u.test(filename)) { failures.push('Invalid preservation page path'); continue; }
+        const currentPath = path.join(root, filename);
+        if (!fs.existsSync(currentPath)) { failures.push(`${filename}: reviewed narrative page removed`); continue; }
+        const before = execFileSync('git', ['show', `${baseline}:${filename}`], { cwd: root, encoding: 'utf8', maxBuffer: 4 * 1024 * 1024, stdio: ['ignore', 'pipe', 'pipe'] });
+        failures.push(...checkNarrativePreservation(before, fs.readFileSync(currentPath, 'utf8'), decisions, filename));
+      }
+    } catch (error) { failures.push(`Reviewed-story baseline unavailable or invalid: ${baseline}: ${error.message}`); }
   }
   for (const d of decisions.decisions) for (const filename of d.affected_paths) {
     if (!fs.existsSync(path.join(root, filename))) failures.push(`Decision ${d.id}: missing dependency ${filename}`);

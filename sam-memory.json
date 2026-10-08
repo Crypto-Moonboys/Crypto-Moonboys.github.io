@@ -85,6 +85,21 @@
         "wiki"
       ]
     },
+    "agent_sam": {
+      "alias_candidates": [],
+      "aliases": [],
+      "canonical_title": "Agent SAM",
+      "canonical_url": "/wiki/agent-sam.html",
+      "category": "factions",
+      "source_urls": [
+        "/wiki/agent-sam.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "agent",
+        "sam"
+      ]
+    },
     "alcor_exchange": {
       "alias_candidates": [],
       "aliases": [
@@ -8716,6 +8731,23 @@
         "wiki"
       ]
     },
+    "house_of_rackinsats": {
+      "alias_candidates": [],
+      "aliases": [
+        "house rackinsats"
+      ],
+      "canonical_title": "House of Rackinsats",
+      "canonical_url": "/wiki/house-of-rackinsats.html",
+      "category": "factions",
+      "source_urls": [
+        "/wiki/house-of-rackinsats.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "house",
+        "rackinsats"
+      ]
+    },
     "ian_harrison": {
       "alias_candidates": [],
       "aliases": [
@@ -11097,5 +11129,5 @@
       ]
     }
   },
-  "updated_at": "2026-10-08T09:28:52Z"
+  "updated_at": "2026-10-08T10:53:19Z"
 }

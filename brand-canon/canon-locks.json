@@ -236,5 +236,12 @@
       "id": "early-regional-collapse",
       "pattern": "\\bBy\\s+2765\\s+(?:fewer|less)\\s+than\\s+(?:a\\s+)?dozen\\s+secure\\s+regions\\s+remained\\b"
     }
+  ],
+  "reviewed_story_baselines": [
+    {
+      "commit": "6da75973f827b7161ce349a403ca4af723d8c00e",
+      "source": "GK continuation directive for PR1459, 8 October2026",
+      "quote": "Preserve all completed work, including the Cut Ledger, Fifth Carbon and previously approved modern fiction."
+    }
   ]
 }
