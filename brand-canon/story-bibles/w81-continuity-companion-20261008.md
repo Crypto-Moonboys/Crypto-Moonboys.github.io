@@ -1,8 +1,11 @@
 # W81 / RAW CANON — continuity companion (8 October 2026)
 
-**Status:** research and editorial reference; **not** a new First Witness book, a new approved ending, a revised faction register, or live product documentation.  
-**Scope:** the 94 original W81 text entries represented by the uploaded `RAW CANNON.zip`. Original entry bytes match the [retirement inventory](../wiki-rewrites/w81-archive-retirement-20261004.md); repackaging the ZIP does not change their historical identities.  
-**Companion documents:** [updated W81 digest](../../about/w81-condensed-canon-digest.md), [source-by-source disposition register](../wiki-rewrites/raw-canon-20261008-disposition.md), [October 2026 brand/canon vision](../../about/latest-canon-and-brand-vision.md).  
+**Status:** research and editorial reference; **not** a new First Witness book, a new approved ending, a revised faction register, or live product documentation.
+
+**Scope:** the 94 original W81 text entries represented by the uploaded `RAW CANNON.zip`. Original entry bytes match the [retirement inventory](../wiki-rewrites/w81-archive-retirement-20261004.md); repackaging the ZIP does not change their historical identities.
+
+**Companion documents:** [updated W81 digest](../../about/w81-condensed-canon-digest.md), [source-by-source disposition register](../wiki-rewrites/raw-canon-20261008-disposition.md), [October 2026 brand/canon vision](../../about/latest-canon-and-brand-vision.md).
+
 **Fictional canon owners:** [First Witness hub](../../wiki/the-first-witness.html), [master chronology](../../wiki/first-witness-master-chronology.html), [Concordance](../../wiki/first-witness-concordance.html), [Forty Paths](../../wiki/first-witness-forty-paths.html), [source register](../../wiki/first-witness-source-register.html).
 
 ## What this document can and cannot decide
