@@ -181,7 +181,7 @@ The retired 94-source W81 archive is **evidence**, not final canon, and the uplo
 - **Fictional Samuel “HyroSAM” Blake / Agent SAM** is not identical to actual SAM automation or SWARMSY's SPARKY. The eight-part `W12.txt` source includes a **2036/2030** chronological conflict that still needs an editorial decision.
 - `w67.txt`, `w72.txt` and `w73.txt` are **game, mission and collectible-codex proposals**. They do not establish live tokens, NFT mint commitments, reward eligibility, playable release dates or current public ownership rights.
 
-Missing standalone wiki routes (notably **Agent SAM** and **Crypto Moongirls**) require an authorised editorial/new-page decision and normal publishing checks. These are **documentation corrections only**; public HTML, First Witness scripture, site shell, live Worker/game logic and legal terms remain outside the scope of this pass.
+**Agent SAM** has no identified dedicated wiki biography and needs an approved editorial/new-page decision. **Crypto Moongirls already has a [live Battle Chamber faction page](../battle-chamber/factions/crypto-moongirls.html)** and [faction directory entry](../battle-chamber/factions/index.html), with supporting profile and live faction data; it is not missing from the website. If a deeper wiki encyclopedia page is wanted, first reconcile that existing chamber and the `w56` source before proposing an additional route. The nine selectable Battle Chamber factions and the 34 named First Witness readings are separate registries. No public wiki HTML, First Witness books, game runtime or legal terms are changed in this documentation phase.
 
 ## Core Canon Spine
 
