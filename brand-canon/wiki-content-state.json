@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "generator": "scripts/generate-wiki-content-state.mjs",
-  "source_tree_hash": "sha256:2c8ff733ca6ebfacbcd55e015c3ee512a05e331952167e99943767b3fec87d22",
+  "source_tree_hash": "sha256:574896d166b836e9fd8919cb84b75d2a9edc5fe0c6b55feead6fe2a2ebd5da81",
   "hash_algorithm": "sha256",
   "page_count": 424,
   "manifest_entry_count": 424,
@@ -15676,7 +15676,7 @@
       "title": "The DUCKY BOYS",
       "page_exists": true,
       "page_type": "faction",
-      "current_word_count": 3254,
+      "current_word_count": 3515,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -15685,10 +15685,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:bc98ef53ff355cd5b0cc399047f34238aa16ecca24753d6da582f9e39d5927b0",
-      "article_content_hash": "sha256:f3e15f1d3fecd7542d2c0ba6c5378f20c9e33a0f51f7f3884ea935f89cb1390d",
-      "article_markup_hash": "sha256:c635693fd47b388731df1651497b361153d45830bc510880f0ef1b984311717b",
-      "git_blob_oid": "c1083bd3d775fd47acddb423c6cb7bad809c181e",
+      "content_hash": "sha256:29e0e02e8e087a3af5e0ab23a1a4efed55e661db825c05a754b468052e4968a5",
+      "article_content_hash": "sha256:20be04edd33b32b30ab8676ef1ab175a70a08334892d4abcdf3b734958ed2922",
+      "article_markup_hash": "sha256:80c70cbe6d9874d6c7aab313d0cf031bd149e1aabd31df127297f0e892c1eacb",
+      "git_blob_oid": "eecd4de6536a94ba9658fa21a07a164aaa67ded5",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -15709,12 +15709,12 @@
         "wiki/bibles/the-ducky-boys.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 3 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 4 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/the-ducky-boys.json; it is not automatically the unavailable Tier 4 modern bible.",
         "The requested modern Tier 4 subject bible is not separately identifiable in this checkout; canon classification remains a human-review item."
       ],
       "content_owner": "canon",
-      "canon_revision": 3,
+      "canon_revision": 4,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -15770,7 +15770,7 @@
       "title": "The Finance Guild",
       "page_exists": true,
       "page_type": "faction",
-      "current_word_count": 6131,
+      "current_word_count": 6385,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -15779,10 +15779,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:00e683ae64f055176ed0422bdb981f354632fcc0a64099c15092aa53abde593f",
-      "article_content_hash": "sha256:b85025fb9459910e71618d689e7f29d1b7943f21136071027b9a3bf871869eae",
-      "article_markup_hash": "sha256:4b5633debf35c1808fed5b2639108b02a42a26fb294d2b46b12d8318b3175b6e",
-      "git_blob_oid": "20e56c1827d9e68a4bfaa1516acca29c0fcc9dd8",
+      "content_hash": "sha256:f2dfeb0b672f4d3557a5712c0a46a5d4032af34e9a16d663de984f154bbf7311",
+      "article_content_hash": "sha256:d537a59384aedc195ff2ca08a4b17ecc0fd7673a682d3dd2b2bdb55d09ca5957",
+      "article_markup_hash": "sha256:0e9e51649a19c38de4d0f8dd2bb9962a3c19a38cbdeb4b4215cdf1a47b7272f3",
+      "git_blob_oid": "a79f11fa83935cf59672c6e7d70e00cbe86dfd1f",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -15803,12 +15803,12 @@
         "wiki/bibles/the-finance-guild.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 7 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 8 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/the-finance-guild.json; it is not automatically the unavailable Tier 4 modern bible.",
         "The requested modern Tier 4 subject bible is not separately identifiable in this checkout; canon classification remains a human-review item."
       ],
       "content_owner": "canon",
-      "canon_revision": 7,
+      "canon_revision": 8,
       "canon_source_tier": "first-witness+w81"
     },
     {

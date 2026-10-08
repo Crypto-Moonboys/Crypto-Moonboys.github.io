@@ -6638,13 +6638,13 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 6346,
+      "article_word_count": 6600,
       "keyword_bag_size": 21,
-      "heading_count": 40,
+      "heading_count": 41,
       "list_count": 1,
-      "internal_link_count": 19,
-      "paragraph_count": 91,
-      "section_count": 37,
+      "internal_link_count": 21,
+      "paragraph_count": 94,
+      "section_count": 38,
       "lore_paragraph_count": 38,
       "content_quality_score": 101,
       "authority_score": 28
@@ -6762,7 +6762,14 @@
         "debts",
         "after",
         "receipt",
-        "offset"
+        "offset",
+        "preventive",
+        "ubi",
+        "genetic",
+        "financial",
+        "instability",
+        "price",
+        "rebellion"
       ]
     },
     "link_score": {
@@ -12911,13 +12918,13 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 3575,
+      "article_word_count": 3836,
       "keyword_bag_size": 24,
-      "heading_count": 27,
+      "heading_count": 28,
       "list_count": 1,
       "internal_link_count": 20,
-      "paragraph_count": 51,
-      "section_count": 24,
+      "paragraph_count": 54,
+      "section_count": 25,
       "lore_paragraph_count": 13,
       "content_quality_score": 101,
       "authority_score": 28
@@ -13006,7 +13013,15 @@
         "craft",
         "courtship",
         "territorial",
-        "hands"
+        "hands",
+        "innocent",
+        "victim",
+        "reversal",
+        "inside",
+        "anomaly",
+        "suppression",
+        "surveillance",
+        "maintenance"
       ]
     },
     "link_score": {

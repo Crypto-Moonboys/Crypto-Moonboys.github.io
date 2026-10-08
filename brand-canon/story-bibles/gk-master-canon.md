@@ -420,3 +420,20 @@ and the Bulls' explicit appetite for unequal distribution and speculation
 on manipulation or another faction's failure. Source universality stays
 attributed. The existing Lesser Door and Long Lap practices remain particular
 responses, with no promise that their better intentions settle every debt.
+
+
+### Maintenance, advance control and the adults who still need paying
+
+w42/w55 full comparison restores preventive biometric future-UBI locks,
+Ducky surveillance tuning and inside anomaly suppression, plus paid repairs
+for innocent people harmed by Fury reversals. The source calls these useful
+services. Their usefulness cannot settle their purpose or erase another
+person's loss. Finance/Ducky owning articles now retain the specific roles.
+
+Meren's precise entries and expensive supper, Tala's supported wage work,
+Hesta's sold funeral belongings, Kesh's profits and Etta's remaining injury
+remain. Bea/Iven's Patch Yard, sold-priority conflict, Two Boilers, tool
+vanity, adult courtship and Naked Wrench keep their existing authored lives.
+Sera/Oren's commissions, Ione's work limits, Jex's wages and the Kiss Before
+Commission remain the Bally account. Ordinary repair and accurate arithmetic
+do not make any of these adults the sole heroes of the people they serve.

@@ -8,7 +8,7 @@
     "unique_contents": 93,
     "bytes": 2334149
   },
-  "semantic_scope": "Fifteen completely compared sources; ten additional originals completely read with comparison pending. Fifty-four full existing article audits and seven focused comparisons; nine new articles separately authored. Full mission open.",
+  "semantic_scope": "Seventeen completely compared sources; eleven additional originals completely read with comparison pending. Fifty-six full existing article audits and seven focused comparisons; nine new articles separately authored. Full mission open.",
   "sources": [
     {
       "file": "M16.txt",
@@ -473,7 +473,7 @@
       "bytes": 6352,
       "sha256": "c0f74672e69b1363367f86eb65ca84af57840b33f25b065a9f61bdd441c96334",
       "byte_verified": true,
-      "semantic_review": "complete source reading; remaining Guild dependency and specific preventive-lock comparison pending",
+      "semantic_review": "complete source reading and connected claim/scene comparison",
       "prior_disposition": "COVERED",
       "read_progress": {
         "paragraphs_read_in_full": [
@@ -483,10 +483,11 @@
           ]
         ],
         "next_unread_paragraph": null,
-        "complete_source_comparison": false
+        "complete_source_comparison": true
       },
-      "partial_findings": [
-        "Full original regulators/sole-debt origin, AuditTowers/solvency dialect, LiquidityLocks/CreditScorchers, UBI/Pinks, Bulls/Blockstar/Fury/Miner/Bally conflict, NULL/ChronoStabilizer and biometric preventive UBI restrictions read. Full modern Guild article now read; CodeAlchemist/Bally relevant comparisons and explicit preventive-lock recovery remain pending."
+      "findings": [
+        "Entire original fully read; full owning article and all source-named relationships/cosmology/chronology/Forty/FirstWitness and modern consequences compared.",
+        "w42 debt-only origin, AuditTowers/dialect/locks/scorchers, shadowUBI/Pinks, Bulls/Blockstar taxes, Furyfunding/Miner ledgerhatred, Ballyarbitrage audits, NULL/ChronoStabilizer and rebeltransaction boast retained. Missing preventive biometric futureUBIlocks restored; no valid inherited risk science, global financecontrol or cancelled modern injury/debt adopted."
       ]
     },
     {
@@ -494,8 +495,21 @@
       "bytes": 3629,
       "sha256": "ba0b96add840366b64e39631f3f8e861a2026e7d2e1e16d00fa48614c5f174df",
       "byte_verified": true,
-      "semantic_review": "pending complete semantic reading",
-      "prior_disposition": "COVERED"
+      "semantic_review": "complete source reading; remaining HighHat service/neutral-monopoly comparison pending",
+      "prior_disposition": "COVERED",
+      "read_progress": {
+        "paragraphs_read_in_full": [
+          [
+            1,
+            12
+          ]
+        ],
+        "next_unread_paragraph": null,
+        "complete_source_comparison": false
+      },
+      "partial_findings": [
+        "All original Alchemist paragraphs read; complete owning biography read. Portfolio purification and elite digitalbodyguards/absolute-neutrality monopoly require final peer relationship recovery/comparison; inversecreation and predatory rebelinterest remain attributed."
+      ]
     },
     {
       "file": "w44.txt",
@@ -655,16 +669,42 @@
       "bytes": 6814,
       "sha256": "bda710f3eb9f6fd779dd9a388465ad82f3e339568c23bfb0a8a3ed8b9133a478",
       "byte_verified": true,
-      "semantic_review": "pending complete semantic reading",
-      "prior_disposition": "COVERED"
+      "semantic_review": "complete original reading; remaining specific HighHat owning recovery pending",
+      "prior_disposition": "COVERED",
+      "read_progress": {
+        "paragraphs_read_in_full": [
+          [
+            1,
+            19
+          ]
+        ],
+        "next_unread_paragraph": null,
+        "complete_source_comparison": false
+      },
+      "partial_findings": [
+        "Entire original printed and read without truncation. w51/w52 byte-identical (cmp passed); repeated witness, not independent corroboration. Full modern owning article read; strategicMiner interference, leaseddefenders, rebelintel resale and fundinganyNULL outcome remain recovery gaps."
+      ]
     },
     {
       "file": "w52.txt",
       "bytes": 6814,
       "sha256": "bda710f3eb9f6fd779dd9a388465ad82f3e339568c23bfb0a8a3ed8b9133a478",
       "byte_verified": true,
-      "semantic_review": "pending complete semantic reading",
-      "prior_disposition": "DUPLICATE"
+      "semantic_review": "complete original reading; remaining specific HighHat owning recovery pending",
+      "prior_disposition": "DUPLICATE",
+      "read_progress": {
+        "paragraphs_read_in_full": [
+          [
+            1,
+            19
+          ]
+        ],
+        "next_unread_paragraph": null,
+        "complete_source_comparison": false
+      },
+      "partial_findings": [
+        "Entire original printed and read without truncation. w51/w52 byte-identical (cmp passed); repeated witness, not independent corroboration. Full modern owning article read; strategicMiner interference, leaseddefenders, rebelintel resale and fundinganyNULL outcome remain recovery gaps."
+      ]
     },
     {
       "file": "w53.txt",
@@ -701,7 +741,7 @@
       "bytes": 6631,
       "sha256": "42c8200a24a66e9d3c5786778d9e6ec37f8ad7545cce9c3bf86904599f2ef3e4",
       "byte_verified": true,
-      "semantic_review": "complete source reading; specific Ducky owning-page recovery and final comparison pending",
+      "semantic_review": "complete source reading and connected claim/scene comparison",
       "prior_disposition": "COVERED",
       "read_progress": {
         "paragraphs_read_in_full": [
@@ -711,10 +751,11 @@
           ]
         ],
         "next_unread_paragraph": null,
-        "complete_source_comparison": false
+        "complete_source_comparison": true
       },
-      "partial_findings": [
-        "All original paragraphs read. Full current Ducky owning article compared; explicit source paid reversal of Furies errors and inside anomaly-suppression/UBI treatment need recovery; no literal always-holds tape or universal Antichain patch adopted."
+      "findings": [
+        "Entire original fully read; full owning article and all source-named relationships/cosmology/chronology/Forty/FirstWitness and modern consequences compared.",
+        "w55 mechanic-origin/codeutility/DuctTape/WrenchBots/creed, city life-support/satellites, PaintPath/arena/Sacred recovery, Furies innocent-reversal work/Rug threats, Gameshubs/reports/rushpremiums, NULLAntiAntichain/Stoned exchanges and insideoutside service retained. Missing satellite surveillance, early anomaly suppression and innocent victims paidrepair restored; Bea/Iven/paidpriority/NakedWrench and limitedfixes stay intact."
       ]
     },
     {
@@ -1627,6 +1668,24 @@
       ],
       "findings": "Full49-paragraph article: Bea/Iven/PatchYard, paidpriority, AmberTicket/TwoBoilers/SecondShift/Games/insideoutside/ToolReturn/UnfixedShelf, NakedWrench, adult craftcourtship and vanity. w55 specific Furies innocent-victim reversal and inside anomaly suppression require owning-page recovery; no next-batch implementation claimed yet.",
       "reading_verification": "All 49 current canonical paragraphs match fully read cache."
+    },
+    {
+      "path": "wiki/the-bally-boys.html",
+      "scope": "full canonical article",
+      "sections": [
+        "all canonical sections"
+      ],
+      "findings": "Entire66-paragraph Bally article: Sera/Oren/MarginHouse/SplitTill/ThreeReceipts, masked trading, candidate loans/ColdComponent/OpenCrate, Furies/Guild/Ducky/Kids relationships, full RedLedger/Ione/Jex commission and dirtyfee aftermath, KissBeforeCommission and adult dependence. Guild market-use/audit relation fully compared; no all-Bally Ducky feud or bodyserviceownership accepted.",
+      "reading_verification": "All 66 current canonical paragraphs match fully read cache."
+    },
+    {
+      "path": "wiki/the-high-hats.html",
+      "scope": "full canonical article",
+      "sections": [
+        "all canonical sections"
+      ],
+      "findings": "Full86-paragraph HighHat article: CloudPalace/statusDNA ideology, Aster/Ilar/Perrin/LongWindow/BorrowedSeat/InvitationReturn/lining/balcony/succession/finance/Games/Hedge, full Kesh sexualaffair/endedintimacy/earlierretainedbenefit and LastLoading endorsement refusal, UninvitedTasting/Verren/privateculture. Missing w51 strategicMiner failure, defence leasing and willingness to fundNULL compared separately as source doctrine, not yet recovered.",
+      "reading_verification": "All 86 current canonical paragraphs match fully read cache."
     }
   ]
 }

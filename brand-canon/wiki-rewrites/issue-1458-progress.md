@@ -12,10 +12,10 @@ No direct push to main, merge, issue closure or production deployment.
 
 ## Current cumulative state
 
-15 of 94 original sources have full claim/scene comparison; 79 remain open.
-Ten further originals are completely read with comparisons pending. Existing
-wiki audits cover 61 distinct articles: 54 full and seven focused. Nine new
-articles and 33 expanded/corrected existing articles are implemented, with
+17 of 94 original sources have full claim/scene comparison; 77 remain open.
+Eleven further originals are completely read with comparisons pending. Existing
+wiki audits cover 63 distinct articles: 56 full and seven focused. Nine new
+articles and 35 expanded/corrected existing articles are implemented, with
 five original adult connecting stories. This is an implementation checkpoint,
 not a claim that every source or current wiki page is reconciled.
 
@@ -29,14 +29,14 @@ proposed; no final ending, new Forty slot or historical retcon is adopted.
 
 - **94** original archive files verified against archive SHA-256, CSV and the
   independent immutable ledger; **93** unique contents, **2,334,149** bytes.
-- **15** complete original texts read and compared cumulatively: W1, w32, w33,
-  w56, W12 (all eight parts), W13 (all seven parts and repeated extracts), W7, w50, w63, w60, w44, w47, w48, w54 and w59.
-  **79** remain without full semantic comparison. W19 is fully read but its
+- **17** complete original texts read and compared cumulatively: W1, w32, w33,
+  w56, W12 (all eight parts), W13 (all seven parts and repeated extracts), W7, w50, w63, w60, w44, w47, w48, w54, w59, w42 and w55.
+  **77** remain without full semantic comparison. W19 is fully read but its
   remaining embedded-character comparisons are pending, so it is not counted.
-- **61 distinct existing pages** reviewed: fifty-four full canonical articles
+- **63 distinct existing pages** reviewed: fifty-six full canonical articles
   (Princess, Croydon, master chronology, concordance, synthetic minds,
   Crypto Moonboys, Great Consensus, Elder Codex-7, Iris-7, Aleema, Dream Sovereign,
-  all nine First Witness Books, HODL Warriors, GraffPUNKS, GKniftyHEADS, Whale Lords, XRP Kids, Forty Paths, faction Commentaries, Sarah, Jodie, Alfie, NULL, Block Topia, HODL doctrine, Hard Fork Rockers, Genesis Kernel, Nomad Bears, Blockstars, Crypto Stoned Boys, Rugpull Miners, Block Node Defenders both Army articles, Bitcoin X Kids, Chain Scribes the humour/attention supporting chapters, Thera, Charlie, Nice & Easy, AllCity Bulls Blockchain Furies, Finance Guild, Ducky Boys and full Code Alchemists) and seven focused section reviews
+  all nine First Witness Books, HODL Warriors, GraffPUNKS, GKniftyHEADS, Whale Lords, XRP Kids, Forty Paths, faction Commentaries, Sarah, Jodie, Alfie, NULL, Block Topia, HODL doctrine, Hard Fork Rockers, Genesis Kernel, Nomad Bears, Blockstars, Crypto Stoned Boys, Rugpull Miners, Block Node Defenders both Army articles, Bitcoin X Kids, Chain Scribes the humour/attention supporting chapters, Thera, Charlie, Nice & Easy, AllCity Bulls Blockchain Furies, Finance Guild, Ducky Boys full Code Alchemists Bally Boys and High Hats) and seven focused section reviews
   (Rune, Pinks, Games, Bitcoin Kids, HODL Wars, Sacred Chain and Rave Relics). Exact scopes are in `issue-1458-audit.json`.
 - **424** top-level wiki pages pass automated targeted canon lint and content
   inventory checks. That number is a static scan, not a human semantic count.
@@ -90,7 +90,7 @@ Single authority policy: `../CANON_POLICY.md`. Entry/onboarding: root `AGENTS.md
 PR template now requires source, ripple, adult-story, discovery and approval
 checks. `../canon-locks.json` contains anchors, identity boundaries, 34/6 and
 nine-runtime distinction, 94 source identities and targeted claim rules.
-`../reconciliation-decisions.json` holds twenty implemented and five proposed
+`../reconciliation-decisions.json` holds twenty-one implemented and five proposed
 old/new decisions with rationale and affected paths.
 
 `canon-integrity-check.mjs` runs in wiki CI and checks explicit chronology,
@@ -683,3 +683,49 @@ Forty assignment or final ending adopted. Next: Ducky innocent reversal and
 anomaly-suppression source recovery; Guild preventive locks and remaining
 Bally dependencies; High Hats/Aztec and complete w62 comparison; further
 original profiles and serial dependencies.
+
+
+## Finance/Ducky maintenance and advance-control recovery
+
+w42/w55 full comparisons are implemented on two owning pages. Explicit future
+UBI preventive locks, city surveillance/anomaly suppression and paid repair of
+innocent Fury victims retain source attribution and all modern adult lives.
+Full Bally reading is cache-verified at 66 paragraphs. Current audit62 distinct,
+55 full/seven focused;17/94 source comparisons,77 open, nine fully read pending
+originals;35 existing articles expanded/corrected. w43 original is now fully
+read, with HighHat service/monopoly comparison pending. No extra named
+character, story, historical retcon, Forty member or ending in this batch.
+Final validation pending; continue HighHats and remaining source profiles.
+
+
+The complete High Hats article is now cache-verified at 86 canonical paragraphs,
+including Aster/Kesh's consensual adult affair, ended intimacy, Ilar/Perrin
+conflicts and Last Loading's refusal without surrendered privilege. w51/w52
+are each fully printed/read and byte-identical; their two archive identities
+are one repeated text witness. Specific strategic-Miner/defender-leasing/rebel-
+intel/NULL-funding source gaps remain pending. Current audit63 distinct:
+56 full/seven focused; eleven completely read originals have pending comparison.
+Source count remains17/94. Exact916b7f1d9 Actions now pass the seven other
+workflow/domains; inspected Wiki/Graph logs show only the maintainer prose-label
+gate after successful regeneration, guards and parity. No label applied.
+
+
+### Maintenance/control final verification
+
+Final wiki CI, browser, graph, article preservation/links and Pages build pass.
+Browser:88 desktop/mobile views,44 no-JavaScript readings,32 search/autocomplete
+queries. Graph:417 indexed,427 nodes,2,083 edges,75 mobile. All2,630 original
+substantial paragraphs across35 changed existing articles remain, including
+the earlier13 exact Tavi references;1,405 canonical links across those and
+three new biographies resolve. All424 earlier pages,9,773 paragraphs and
+5,264 IDs remain against916b7f1d9a4c82be49eccbf04400557de853aabf, with zero
+additional original-paragraph revisions. Artifact built and moved to
+`/tmp/gk1459/maintenance-public-site`; no deployment.
+
+Current source comparisons17/94;77 open and eleven fully read pending
+originals. Article audit63 distinct:56 full/seven focused.35 changed existing
+articles, nine new articles, five original adult connecting stories. The
+next concrete recovery is prepared for HighHat strategic-Miner/cheap-defender/
+rebel-intel/NULL-financing positions and Alchemist neutral monopoly/elite
+services; w51/w52 are one repeated witness. It is not counted as implemented
+until the next actual owning-page changes and validation occur.
