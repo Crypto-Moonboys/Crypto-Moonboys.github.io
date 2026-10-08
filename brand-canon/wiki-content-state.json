@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
   "generator": "scripts/generate-wiki-content-state.mjs",
-  "source_tree_hash": "sha256:49848086e529bdf865c5c126f4c8843a2fc4b36a7f2bd4a3d81bc9fa5e945d11",
+  "source_tree_hash": "sha256:4324ae97a20737d603355bb6852c0e06e86a8282638e82924ae78b1b7aadf23c",
   "hash_algorithm": "sha256",
-  "page_count": 421,
-  "manifest_entry_count": 421,
+  "page_count": 424,
+  "manifest_entry_count": 424,
   "absent_stub_authorization_source": {
     "path": "brand-canon/wiki-absent-stubs.json",
     "content_hash": "sha256:b8874d0ede0983258101755e0706517d067dd8d85aa8a081742c497bbac2b663"
@@ -89,11 +89,11 @@
     }
   ],
   "summary": {
-    "total_pages_audited": 421,
-    "total_manifest_entries": 421,
+    "total_pages_audited": 424,
+    "total_manifest_entries": 424,
     "absent_stub_authorizations": 0,
     "rewrite_status_counts": {
-      "KEEP": 176,
+      "KEEP": 179,
       "REWRITE_FULL": 0,
       "RECONCILE": 0,
       "DEDUPE": 0,
@@ -107,7 +107,7 @@
     "automation_policy_counts": {
       "metadata-only": 168,
       "replace-sam-block": 0,
-      "canon-locked": 252,
+      "canon-locked": 255,
       "stub-allowed": 1
     },
     "pages_with_multiple_sam_blocks": 0,
@@ -425,7 +425,7 @@
       "title": "Alfie 'Bitcoin Kid' Blaze",
       "page_exists": true,
       "page_type": "lore",
-      "current_word_count": 7372,
+      "current_word_count": 7572,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -434,10 +434,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:ec102ecdc82d4abf8ae162ab7b45f2c0467a746591677ff84ff52b077ea14d91",
-      "article_content_hash": "sha256:d45c0d6f3a4adc2da65d58cfadf0f5fdb83856d37ef986459eacc08eacd30888",
-      "article_markup_hash": "sha256:1b13c98ced466dd12eddfabcf67bcb9834281a88f5aa897bdf7c7b612ba20ff7",
-      "git_blob_oid": "ae93c8c43c9a128576877e1132c0f36938369485",
+      "content_hash": "sha256:c63bd82470ce4b7215a7537cbfa711ca8e7ffa5f44f74d6ce418ca52afb7db14",
+      "article_content_hash": "sha256:945741019418ed9cd38ee8fa61116876b7fcd35221d3c9a791ac056fde51cc50",
+      "article_markup_hash": "sha256:75557a8aa783ff516f43991271792fff05e81f881702d66a4a76bea46712a62d",
+      "git_blob_oid": "0b2a645bacfb44eca213a6604f15e8c06b3fc87b",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -458,11 +458,11 @@
         "wiki/bibles/alfie-the-bitcoin-kid-blaze.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 5 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 6 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/alfie-the-bitcoin-kid-blaze.json; it is not automatically the unavailable Tier 4 modern bible."
       ],
       "content_owner": "canon",
-      "canon_revision": 5,
+      "canon_revision": 6,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -1342,7 +1342,7 @@
       "title": "Block Topia The Queens citadel: survival infrastructure, managed identity and the state behind the Games",
       "page_exists": true,
       "page_type": "lore",
-      "current_word_count": 4817,
+      "current_word_count": 5007,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -1351,10 +1351,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:0a41d65972e5364a0888855e5862d8fe56d44442adc7f57019bc2a7d1ae76317",
-      "article_content_hash": "sha256:89bb6a5ab8773bf06fd100f6939d2a05c46a28b1a53890ddfbc0d0bff1f35968",
-      "article_markup_hash": "sha256:bb09e8515b074ebbb1f76ec534762ceafc2f9df483946c36a6a1aa61aee8f00b",
-      "git_blob_oid": "a04149ccb5d4b1bcfea106f9db5cda5064153c7e",
+      "content_hash": "sha256:a527d8f0ca2cee1b3ef48b5d397797516df174037df99d95792aaa07fb9ced90",
+      "article_content_hash": "sha256:622bcae618db23b506b0bcaaf835cc1dd15e7e84ad79f87ec5f928102ead9161",
+      "article_markup_hash": "sha256:0d02f2d24c526c99c7f5c7411c3e63792f6fb44ef97368f05c610f9f9851d670",
+      "git_blob_oid": "1ccc7e4819120c24601336ad6d001ee6f3cbced8",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -1375,11 +1375,11 @@
         "wiki/bibles/block-topia.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 7 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 8 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/block-topia.json; it is not automatically the unavailable Tier 4 modern bible."
       ],
       "content_owner": "canon",
-      "canon_revision": 7,
+      "canon_revision": 8,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -11906,7 +11906,7 @@
       "title": "HODL Warriors Collective defence and the cost of giving command back",
       "page_exists": true,
       "page_type": "lore",
-      "current_word_count": 5645,
+      "current_word_count": 5794,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -11915,10 +11915,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:0711379488cc7c3d5a9ea82872df359ba3dc5922ea0a7d5b52c89a3f00f97d67",
-      "article_content_hash": "sha256:f82863b7df200a44c9154cd8b0684bb43423183b24ca0d6be07ca34fb20b8b12",
-      "article_markup_hash": "sha256:1826bbd2128f83f699e6376a50a3541669e9548a513125c44c2b607ce961fda6",
-      "git_blob_oid": "e7eda5ced60e86d21acae5d2a92621c82bf7f905",
+      "content_hash": "sha256:016875cff3ca63f094c240e99f64e5945bf43b09343ba27a9703cab1ecb14c4f",
+      "article_content_hash": "sha256:f4534a6bb01c492a5ad7382f70d72abee693b26b6a9299382dc9a3a87582a0a0",
+      "article_markup_hash": "sha256:038cf59dcf6895d6868928a696e11d51e53eeaaee017f0b80dd5d05078870678",
+      "git_blob_oid": "6b225b87bd79021d77b3a0d9be245fa42585f403",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -11939,11 +11939,11 @@
         "wiki/bibles/hodl-warriors-army.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 6 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 7 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/hodl-warriors-army.json; it is not automatically the unavailable Tier 4 modern bible."
       ],
       "content_owner": "canon",
-      "canon_revision": 6,
+      "canon_revision": 7,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -12250,7 +12250,7 @@
       "title": "Jodie ZOOM 2000",
       "page_exists": true,
       "page_type": "character",
-      "current_word_count": 6669,
+      "current_word_count": 6850,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -12259,10 +12259,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:e1b278e133864715c3ed7c3d4816706505bae5330bd6876fe81340624cfb2ca5",
-      "article_content_hash": "sha256:65b6a606fb70061c1455eae91ab20736c58c45478005a83efcc2317e4ace42a8",
-      "article_markup_hash": "sha256:9c72e6d68af671175a132a14f559e80843f5d3a6b9c7106d197eca73f5219080",
-      "git_blob_oid": "86d4fbbf584329739d0dcfd0e697e1024149234e",
+      "content_hash": "sha256:a51b65761d2aed4dca7379752f9b1b97d904f03447f264c4e0669b6454e70c3f",
+      "article_content_hash": "sha256:835d892a3562ce68b231493786c8c6387824133366a2ab6b3222f8a284047f9b",
+      "article_markup_hash": "sha256:74ada2cf615544239a5f6a49b46f6371ad20d0473bd232ded43ec027828f7dc1",
+      "git_blob_oid": "187cf6c836ce3aef66e91b8907dc6e84d6de65d8",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -12281,12 +12281,12 @@
         "wiki/bibles/jodie-zoom-2000.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 6 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 7 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/jodie-zoom-2000.json; it is not automatically the unavailable Tier 4 modern bible.",
         "The requested modern Tier 4 subject bible is not separately identifiable in this checkout; canon classification remains a human-review item."
       ],
       "content_owner": "canon",
-      "canon_revision": 6,
+      "canon_revision": 7,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -12328,6 +12328,48 @@
       ],
       "content_owner": "canon",
       "canon_revision": 2,
+      "canon_source_tier": "first-witness+w81"
+    },
+    {
+      "path": "wiki/kael-voss.html",
+      "slug": "kael-voss",
+      "title": "Kael Voss",
+      "page_exists": true,
+      "page_type": "historical_archive",
+      "current_word_count": 1378,
+      "manual_content_block_count": 0,
+      "sam_content_block_count": 0,
+      "canonical_content_block_count": 1,
+      "legacy_sam_article_wrapper": false,
+      "legacy_unmarked_content": false,
+      "duplicate_heading_count": 0,
+      "exact_duplicate_paragraph_count": 0,
+      "likely_near_duplicate_sections": [],
+      "content_hash": "sha256:07be8b989b82f6e22ec9d42874de4aca1c39f6a455a823fbdd59fa12f70ccce7",
+      "article_content_hash": "sha256:a064baa6fb07eff3a2132a91737a8b4365ccf8a801876058f7b09b69ddbfe9e5",
+      "article_markup_hash": "sha256:059ef74ade49d43c8579d0d76009be0df6ebcd6575b55686c0632cb35274af1a",
+      "git_blob_oid": "1c1857fe49501a0929a6a33db76635a6b038b733",
+      "wiki_stub_marker_scope": null,
+      "first_witness_page": false,
+      "nft_template_generated_page": false,
+      "likely_lore_page": true,
+      "rewrite_status": "KEEP",
+      "automation_policy": "canon-locked",
+      "rewrite_cluster": "Historical/archive pages",
+      "duplicate_severity": "NONE",
+      "canon_conflict_severity": "NONE",
+      "recommended_action": "Preserve the completed canon revision; automated article prose is locked.",
+      "suggested_priority": "P4",
+      "likely_source_family": [
+        "about/latest-canon-and-brand-vision.md",
+        "about/w81-condensed-canon-digest.md",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (unresolved archive bucket; historical W81 sources)"
+      ],
+      "audit_notes": [
+        "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified."
+      ],
+      "content_owner": "canon",
+      "canon_revision": 1,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -13476,7 +13518,7 @@
       "title": "NULL THE PROPHET When a surviving record can no longer tell anyone what happened",
       "page_exists": true,
       "page_type": "character",
-      "current_word_count": 6252,
+      "current_word_count": 6410,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -13485,10 +13527,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:1d072809e8fb16cd91013c95b615ec2097f461435001ba83642a2c835c80abe8",
-      "article_content_hash": "sha256:7a4543655e34ca4709fdf1248be383613641fbb34ee0937af4ed752f2a8a2ed2",
-      "article_markup_hash": "sha256:ebdbdcff0a30eacc27f195c1d9b70bdc7be8699d663ecff4156fd018a34cca3b",
-      "git_blob_oid": "42e20620f7200766fd97efd9f1bd564dd2298f47",
+      "content_hash": "sha256:38163c833587924febf99c64b68d5a93bea2a5e8dc2736b2935ec8bf8e9de7c9",
+      "article_content_hash": "sha256:247b0e2a7da0b7f85dfb5705950da5f2112987fcea18413cb2af9ba3baac4e0f",
+      "article_markup_hash": "sha256:6c1e40e219fe460c0979b1135a06aeec402029a9d99695119bb3bf9099e83818",
+      "git_blob_oid": "c4c4121e87246323893d00659b74dd2c419dc29e",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -13509,11 +13551,11 @@
         "wiki/bibles/null-the-prophet.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 5 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 6 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/null-the-prophet.json; it is not automatically the unavailable Tier 4 modern bible."
       ],
       "content_owner": "canon",
-      "canon_revision": 5,
+      "canon_revision": 6,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -13967,7 +14009,7 @@
       "title": "Queen Sarah P-fly",
       "page_exists": true,
       "page_type": "character",
-      "current_word_count": 7465,
+      "current_word_count": 7665,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -13976,10 +14018,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:1bf3e172c66feaf3e849861e26f207dacac01a163676a642632b14028fce7166",
-      "article_content_hash": "sha256:99d31e9a4f936dc74266b1b8cc8f3b064bfd172ff4449ba434177e75eb46328d",
-      "article_markup_hash": "sha256:02fa89dd483b34fb966fd1424669a8deb5ad7d91d75597944ed33cbc38ec8962",
-      "git_blob_oid": "d9cce7b2c23b54a1f8ead40b94de540167e3a37b",
+      "content_hash": "sha256:0d6911e4a9f413a31ff0732eda78a6bbe2767557c88d19e8caa434cdfeb7dc36",
+      "article_content_hash": "sha256:3f60f624dca817139d9c5164ab782e4c673bfaaee85644ced94004bac16c0f55",
+      "article_markup_hash": "sha256:416323feebc813b67e8fc8a7d3c12653051f1c29578fb44088ade23ea1eb4f7c",
+      "git_blob_oid": "b097caf28e59d9544a600e8fb6c89f8bff938635",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -13998,12 +14040,12 @@
         "wiki/bibles/queen-sarah-p-fly.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 7 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 8 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/queen-sarah-p-fly.json; it is not automatically the unavailable Tier 4 modern bible.",
         "The requested modern Tier 4 subject bible is not separately identifiable in this checkout; canon classification remains a human-review item."
       ],
       "content_owner": "canon",
-      "canon_revision": 7,
+      "canon_revision": 8,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -14996,6 +15038,48 @@
       "audit_notes": [
         "Substantive article content has no MANUAL_CONTENT, SAM_CONTENT, or CANONICAL_CONTENT ownership markers."
       ]
+    },
+    {
+      "path": "wiki/sylas-the-unbroken.html",
+      "slug": "sylas-the-unbroken",
+      "title": "Sylas the Unbroken",
+      "page_exists": true,
+      "page_type": "historical_archive",
+      "current_word_count": 818,
+      "manual_content_block_count": 0,
+      "sam_content_block_count": 0,
+      "canonical_content_block_count": 1,
+      "legacy_sam_article_wrapper": false,
+      "legacy_unmarked_content": false,
+      "duplicate_heading_count": 0,
+      "exact_duplicate_paragraph_count": 0,
+      "likely_near_duplicate_sections": [],
+      "content_hash": "sha256:7b6683c7e462ba711e5aebe35e15b9ebaa164df27922af830e79dff708538987",
+      "article_content_hash": "sha256:7f1936b1c1a7d52836d66f83f6fbfa92d64d1e743b310de25989aea8713955cd",
+      "article_markup_hash": "sha256:342de38de8fb46fcec64ea25ccc67310997deedb45e45ad16ae4d8ed9d9ab939",
+      "git_blob_oid": "5cee2570459bb2a8a25db567f9ae3878b3850b37",
+      "wiki_stub_marker_scope": null,
+      "first_witness_page": false,
+      "nft_template_generated_page": false,
+      "likely_lore_page": true,
+      "rewrite_status": "KEEP",
+      "automation_policy": "canon-locked",
+      "rewrite_cluster": "Historical/archive pages",
+      "duplicate_severity": "NONE",
+      "canon_conflict_severity": "NONE",
+      "recommended_action": "Preserve the completed canon revision; automated article prose is locked.",
+      "suggested_priority": "P4",
+      "likely_source_family": [
+        "about/latest-canon-and-brand-vision.md",
+        "about/w81-condensed-canon-digest.md",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (unresolved archive bucket; historical W81 sources)"
+      ],
+      "audit_notes": [
+        "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified."
+      ],
+      "content_owner": "canon",
+      "canon_revision": 1,
+      "canon_source_tier": "first-witness+w81"
     },
     {
       "path": "wiki/tacoswap.html",
@@ -16726,6 +16810,48 @@
       ],
       "content_owner": "canon",
       "canon_revision": 3,
+      "canon_source_tier": "first-witness+w81"
+    },
+    {
+      "path": "wiki/veyra-nyx.html",
+      "slug": "veyra-nyx",
+      "title": "Veyra Nyx",
+      "page_exists": true,
+      "page_type": "historical_archive",
+      "current_word_count": 753,
+      "manual_content_block_count": 0,
+      "sam_content_block_count": 0,
+      "canonical_content_block_count": 1,
+      "legacy_sam_article_wrapper": false,
+      "legacy_unmarked_content": false,
+      "duplicate_heading_count": 0,
+      "exact_duplicate_paragraph_count": 0,
+      "likely_near_duplicate_sections": [],
+      "content_hash": "sha256:e0c85b946077625393e7de85485f8fb25e8a892a3f7053eb86787c8747464b6a",
+      "article_content_hash": "sha256:32da8e4b1fc38ad33f976165f51ba3e083951d0c0b4e4c4cede0ab3b9874cc06",
+      "article_markup_hash": "sha256:202dc712f7a61dc619acf7e2632459703ddc93b7f6870d3746c2abc506b52e51",
+      "git_blob_oid": "3e72d3daf8823c5ce7dcf42d61fc8adc251a5c37",
+      "wiki_stub_marker_scope": null,
+      "first_witness_page": false,
+      "nft_template_generated_page": false,
+      "likely_lore_page": true,
+      "rewrite_status": "KEEP",
+      "automation_policy": "canon-locked",
+      "rewrite_cluster": "Historical/archive pages",
+      "duplicate_severity": "NONE",
+      "canon_conflict_severity": "NONE",
+      "recommended_action": "Preserve the completed canon revision; automated article prose is locked.",
+      "suggested_priority": "P4",
+      "likely_source_family": [
+        "about/latest-canon-and-brand-vision.md",
+        "about/w81-condensed-canon-digest.md",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (unresolved archive bucket; historical W81 sources)"
+      ],
+      "audit_notes": [
+        "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified."
+      ],
+      "content_owner": "canon",
+      "canon_revision": 1,
       "canon_source_tier": "first-witness+w81"
     },
     {

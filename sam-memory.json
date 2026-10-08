@@ -8852,6 +8852,21 @@
         "wiki"
       ]
     },
+    "kael_voss": {
+      "alias_candidates": [],
+      "aliases": [],
+      "canonical_title": "Kael Voss",
+      "canonical_url": "/wiki/kael-voss.html",
+      "category": "characters",
+      "source_urls": [
+        "/wiki/kael-voss.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "kael",
+        "voss"
+      ]
+    },
     "lady_ink": {
       "alias_candidates": [
         "lady ink"
@@ -9963,6 +9978,23 @@
         "nefty"
       ]
     },
+    "sylas_the_unbroken": {
+      "alias_candidates": [
+        "sylas unbroken"
+      ],
+      "aliases": [],
+      "canonical_title": "Sylas the Unbroken",
+      "canonical_url": "/wiki/sylas-the-unbroken.html",
+      "category": "characters",
+      "source_urls": [
+        "/wiki/sylas-the-unbroken.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "sylas",
+        "unbroken"
+      ]
+    },
     "tacoswap": {
       "alias_candidates": [],
       "aliases": [
@@ -10844,6 +10876,21 @@
         "wiki"
       ]
     },
+    "veyra_nyx": {
+      "alias_candidates": [],
+      "aliases": [],
+      "canonical_title": "Veyra Nyx",
+      "canonical_url": "/wiki/veyra-nyx.html",
+      "category": "characters",
+      "source_urls": [
+        "/wiki/veyra-nyx.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "veyra",
+        "nyx"
+      ]
+    },
     "wagmi_prophecy": {
       "alias_candidates": [
         "wagmi prophecy crypto moonboys wiki"
@@ -11129,5 +11176,5 @@
       ]
     }
   },
-  "updated_at": "2026-10-08T10:53:19Z"
+  "updated_at": "2026-10-08T12:52:12Z"
 }

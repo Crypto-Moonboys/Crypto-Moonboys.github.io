@@ -245,3 +245,23 @@ The roster arithmetic and recovered institutions are now owned by actual wiki
 pages; the six-slot proposal separates source evidence from new connecting
 fiction. Resume current Sarah/Jodie/Alfie/NULL and remaining original faction
 profiles. No approved slot, source identity or original paragraph is changed.
+
+
+### Serial cast and relationship consequences now mapped
+
+The three W15 biographies and six connected owning articles are implemented
+with local source attribution. Kael's service to Sarah and Veyra's HODL
+membership are recovered; Sylas's lifespan and the Council's continuous
+identity remain unverified. Their original Paid Exit adds bounded adult
+character work, not a conclusion to the cosmic sequence. A future approved
+ending must preserve the porter's injury and lost work, Veyra's refusal and
+Kael's retained former credential, just as it preserves modern losses.
+
+Specific relationship decisions still to resolve: W5's Sarah/SAM companionship
+cannot be installed alongside a missing household without a timed, causal
+bridge; its Jodie selection must preserve her Games refusal; w25's distant
+Alfie/Jodie union needs an actual passage from Orsa's and Dera's independent
+lives. W15's knowing Queen/messiah terminal scene cannot make their present
+choices remote performance. None is a source licence to remove an adult
+partner or claim that bodily survivors consented to restart. The remaining
+Thera/Charlie/Army/faction comparisons must support the eventual proposals.

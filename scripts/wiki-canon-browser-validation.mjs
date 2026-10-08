@@ -8,8 +8,8 @@ import { chromium } from 'playwright';
 
 const root = path.resolve(import.meta.dirname, '..');
 const output = '/tmp/gk1458-browser';
-const created = ['whisper-codex', 'six-pillars', 'great-consensus', 'the-crypto-moongirls', 'agent-sam', 'house-of-rackinsats'];
-const updated = ['rune-tag', 'squeaky-pinks-enforcers', 'hard-fork-games', 'block-topia', 'queen-sarah-p-fly', 'the-princess', 'the-code-alchemists', 'croydon-tower-blocks', 'elder-codex-7', 'iris-7', 'aleema-child-of-the-shard', 'dream-sovereign', 'graffpunks', 'gkniftyheads', 'hodl-warriors', 'whale-lords', 'first-witness-forty-paths', 'first-witness-faction-commentaries'];
+const created = ['whisper-codex', 'six-pillars', 'great-consensus', 'the-crypto-moongirls', 'agent-sam', 'house-of-rackinsats', 'kael-voss', 'sylas-the-unbroken', 'veyra-nyx'];
+const updated = ['rune-tag', 'squeaky-pinks-enforcers', 'hard-fork-games', 'block-topia', 'queen-sarah-p-fly', 'the-princess', 'the-code-alchemists', 'croydon-tower-blocks', 'elder-codex-7', 'iris-7', 'aleema-child-of-the-shard', 'dream-sovereign', 'graffpunks', 'gkniftyheads', 'hodl-warriors', 'whale-lords', 'first-witness-forty-paths', 'first-witness-faction-commentaries', 'alfie-bitcoin-kid-blaze', 'jodie-zoom-2000', 'null-the-prophet'];
 const types = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.svg': 'image/svg+xml' };
 const server = http.createServer(async (req, res) => {
   try {
@@ -66,7 +66,7 @@ try {
     assert.equal(await page.locator('details:has(nav[aria-label="Article contents"])').getAttribute('open'), '');
     await page.close();
   }
-  const queries = [['Omega Hash', 'whisper-codex'], ['Memory-Sigils', 'six-pillars'], ['Lysa Rook', 'great-consensus'], ['Dara Venn', 'the-crypto-moongirls'], ['Neural Rack', 'agent-sam'], ['Papa Des', 'house-of-rackinsats'], ['Red Wax Payment', 'elder-codex-7'], ['Codex Schools', 'iris-7'], ['Future Sovereign', 'dream-sovereign'], ['Hot Wall', 'graffpunks'], ['Stencil Witches', 'graffpunks'], ['Royal Galleries', 'gkniftyheads'], ['Flesh Fade', 'agent-sam'], ['Eternal Porch', 'house-of-rackinsats'], ['Porch Accord', 'whale-lords'], ['HODL Layer Sentinels', 'hodl-warriors']];
+  const queries = [['Omega Hash', 'whisper-codex'], ['Memory-Sigils', 'six-pillars'], ['Lysa Rook', 'great-consensus'], ['Dara Venn', 'the-crypto-moongirls'], ['Neural Rack', 'agent-sam'], ['Papa Des', 'house-of-rackinsats'], ['Red Wax Payment', 'elder-codex-7'], ['Codex Schools', 'iris-7'], ['Future Sovereign', 'dream-sovereign'], ['Hot Wall', 'graffpunks'], ['Stencil Witches', 'graffpunks'], ['Royal Galleries', 'gkniftyheads'], ['Flesh Fade', 'agent-sam'], ['Eternal Porch', 'house-of-rackinsats'], ['Porch Accord', 'whale-lords'], ['HODL Layer Sentinels', 'hodl-warriors'], ['Kael Voss', 'kael-voss'], ['Sylas the Unbroken', 'sylas-the-unbroken'], ['Veyra Nyx', 'veyra-nyx'], ['Paid Exit', 'kael-voss']];
   const page = await browser.newPage();
   await page.route('**/*', route => new URL(route.request().url()).origin === origin ? route.continue() : route.abort());
   for (const [query, slug] of queries) {

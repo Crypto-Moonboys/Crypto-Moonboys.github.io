@@ -6,7 +6,7 @@ This is an ownership and rewrite-queue audit only. It does not replace, delete, 
 
 ## Audit contract
 
-- Scope: all 421 top-level `wiki/*.html` pages.
+- Scope: all 424 top-level `wiki/*.html` pages.
 - Absent-stub authorizations: 0. These are explicit repository declarations, not audited pages or links to pages that already exist.
 - Canon hierarchy: published First Witness convergence canon; latest canon/brand vision; W81 condensed digest; current dedicated bibles; Retired W81 archive provenance and migration ledger; existing wiki archive.
 - Tier 4 source gap: the modern dedicated character/faction/HODL WARS bibles referenced by the First Witness register are not separately identifiable in this checkout. Historical `wiki/bibles/*.json` SAM records remain lower-tier public archive inputs and ambiguous mappings stay review items.
@@ -21,9 +21,9 @@ This is an ownership and rewrite-queue audit only. It does not replace, delete, 
 
 | Measure | Count |
 |---|---:|
-| Total pages audited | 421 |
+| Total pages audited | 424 |
 | Absent stub authorizations | 0 |
-| KEEP | 176 |
+| KEEP | 179 |
 | REWRITE_FULL | 0 |
 | RECONCILE | 0 |
 | DEDUPE | 0 |
@@ -45,7 +45,7 @@ This is an ownership and rewrite-queue audit only. It does not replace, delete, 
 
 | Policy | Pages | Meaning |
 |---|---:|---|
-| canon-locked | 252 | Automated article-body writes are rejected. |
+| canon-locked | 255 | Automated article-body writes are rejected. |
 | metadata-only | 168 | Search, relationship, and metadata maintenance only; article prose is preserved. |
 | replace-sam-block | 0 | A single existing SAM block may be replaced, never appended. |
 | stub-allowed | 1 | A stub may be created only while no real canonical page exists. |
@@ -298,6 +298,7 @@ This is an ownership and rewrite-queue audit only. It does not replace, delete, 
 | [Ian Harrison](../wiki/ian-harrison.html) (`ian-harrison`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Existing public/reference source verification |
 | [Jillian Godsil](../wiki/jillian-godsil.html) (`jillian-godsil`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Existing public/reference source verification |
 | [Jonny & Laurence Nelson (TAG Records)](../wiki/jonny-laurence-nelson-tag-records.html) (`jonny-laurence-nelson-tag-records`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Specialist archive: jonny-laurence-nelson-tag-records |
+| [Kael Voss](../wiki/kael-voss.html) (`kael-voss`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Latest canon/brand vision; W81 digest; brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (unresolved archive bucket; historical W81 sources) |
 | [MiDEViL PUNKS Where medieval brutality meets graffiti rebellion inside the Crypto Moonboys universe](../wiki/midevilpunks.html) (`midevilpunks`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Latest canon/brand vision; W81 digest; brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (unresolved archive bucket; historical W81 sources) |
 | [Moon Mission](../wiki/moon-mission.html) (`moon-mission`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Latest canon/brand vision; W81 digest; brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (unresolved archive bucket; historical W81 sources) |
 | [Pixel Journey](../wiki/pixel-journey.html) (`pixel-journey`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Existing public/reference source verification |
@@ -308,9 +309,11 @@ This is an ownership and rewrite-queue audit only. It does not replace, delete, 
 | [Spirit Borns](../wiki/spirit-borns.html) (`spirit-borns`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Latest canon/brand vision; W81 digest; brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (unresolved archive bucket; historical W81 sources); Specialist archive: spirit-borns |
 | [Squeaky Pinks Enforcers](../wiki/squeaky-pinks-enforcers.html) (`squeaky-pinks-enforcers`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Latest canon/brand vision; W81 digest; brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (unresolved archive bucket; historical W81 sources); Specialist archive: squeaky-pinks-enforcers |
 | [STIKFAMWARS The war that begins when the simplest figures can see beyond the Grid](../wiki/stikfamwars.html) (`stikfamwars`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Latest canon/brand vision; W81 digest; brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (unresolved archive bucket; historical W81 sources) |
+| [Sylas the Unbroken](../wiki/sylas-the-unbroken.html) (`sylas-the-unbroken`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Latest canon/brand vision; W81 digest; brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (unresolved archive bucket; historical W81 sources) |
 | [The Crypto Moongirls](../wiki/the-crypto-moongirls.html) (`the-crypto-moongirls`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Latest canon/brand vision; W81 digest; brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (unresolved archive bucket; historical W81 sources); Specialist archive: the-crypto-moongirls |
 | [The Princess](../wiki/the-princess.html) (`the-princess`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Latest canon/brand vision; W81 digest; brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (unresolved archive bucket; historical W81 sources); Specialist archive: the-princess |
 | [TREVOR FUNG The London DJ who carried Ibiza’s open-minded sound into Britain’s acid-house revolution](../wiki/trevor-fung.html) (`trevor-fung`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Specialist archive: trevor-fung |
+| [Veyra Nyx](../wiki/veyra-nyx.html) (`veyra-nyx`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Latest canon/brand vision; W81 digest; brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (unresolved archive bucket; historical W81 sources) |
 | [The Whisper Codex](../wiki/whisper-codex.html) (`whisper-codex`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Latest canon/brand vision; W81 digest; brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (unresolved archive bucket; historical W81 sources) |
 
 ### NFT specialist pages

@@ -18,11 +18,11 @@ No direct push to main, merge, issue closure or production deployment.
   w56, W12 (all eight parts), W13 (all seven parts and repeated extracts), W7.
   **87** remain without full semantic comparison. W19 is fully read but its
   remaining embedded-character comparisons are pending, so it is not counted.
-- **35 distinct existing pages** reviewed: thirty full canonical articles
+- **39 distinct existing pages** reviewed: thirty-five full canonical articles
   (Princess, Croydon, master chronology, concordance, synthetic minds,
   Crypto Moonboys, Great Consensus, Elder Codex-7, Iris-7, Aleema, Dream Sovereign,
-  all nine First Witness Books, HODL Warriors, GraffPUNKS, GKniftyHEADS, Whale Lords, XRP Kids, Forty Paths, faction Commentaries, Sarah, Jodie and Alfie) and five focused section reviews
-  (Rune, Pinks, Games, Code Alchemists and Block Topia). Exact scopes are in `issue-1458-audit.json`.
+  all nine First Witness Books, HODL Warriors, GraffPUNKS, GKniftyHEADS, Whale Lords, XRP Kids, Forty Paths, faction Commentaries, Sarah, Jodie, Alfie, NULL, Block Topia, HODL doctrine, Hard Fork Rockers and Genesis Kernel) and four focused section reviews
+  (Rune, Pinks, Games and Code Alchemists). Exact scopes are in `issue-1458-audit.json`.
 - **421** top-level wiki pages pass automated targeted canon lint and content
   inventory checks. That number is a static scan, not a human semantic count.
 
@@ -456,3 +456,58 @@ relationship and chronology proposals without deleting modern lives.
 Final W5 Pages artifact built successfully and moved outside the source tree
 to `/tmp/gk1459/w5-final-public-site`; no deployment. Final logs are listed
 in the verification receipt.
+
+
+## W15 triad and complete owning-character comparison batch
+
+Three significant missing source characters now have dedicated biographies:
+Kael Voss, Sylas the Unbroken and Veyra Nyx. Six connected existing articles
+are expanded: Sarah, Alfie, Jodie, NULL, Block Topia and HODL Warriors. The
+new Paid Exit develops adult intimacy, dangerous confidence, former privilege,
+a porter's lasting injury, lost pay and a gallery profiting from the damaged
+painting. No new named supporting character or major canon outcome is added.
+
+The full current NULL and Block Topia readings were compared paragraph-for-
+paragraph with cached canonical extracts before additions. Current scope:
+36 distinct existing articles audited (32 full, four focused); 21 existing
+articles expanded, nine new articles, five original adult connecting stories.
+Source comparison remains seven; seven other originals are completely read
+but still require all connected comparisons. Do not inflate that count.
+
+W5 recovery checkpoint 153d20831e8c4cb645a82dadfa593e70b125a49b was uploaded;
+PR and Issue updated. Its remote Actions pass Wiki Structure, production truth,
+worker provenance, Arcade, Worker API, WAX and Visual. Wiki/Graph job logs are
+being inspected separately before stating the cause of their failures.
+
+This triad batch's final publishing/browser/preservation checks are pending.
+Next semantic dependency: Thera, Charlie's fictional role versus artist
+biography, Bitcoin Kid Army, Nice & Easy Bois and supporting source factions;
+then complete the source dispositions and precise relationship decisions.
+
+
+### Triad final validation and continuation receipt
+
+Final local wiki CI passes; browser validation passes 60 desktop/mobile views,
+30 no-JavaScript readings and 20 search/autocomplete queries. Graph: 417 indexed
+wiki pages, 427 nodes, 2,083 edges, 75 mobile nodes. All 1,535 substantial
+original paragraphs and active IDs across 21 expanded existing pages remain;
+829 canonical links across those and the three new biographies resolve.
+The complete pre-existing 421-page comparison against 153d20831 retains 9,673
+substantial paragraphs and 5,227 active IDs with zero lost pages/paragraphs/IDs.
+Final Pages artifact builds at `/tmp/gk1459/triad-public-site`; no deployment.
+
+Additional complete current readings: HODL doctrine, Hard Fork Rockers and
+Genesis Kernel, including every modern episode. Exact cached paragraph checks
+are in the audit. Current scope: 39 distinct existing audits, 35 full/four
+focused; 21 existing pages expanded, nine new articles, five original adult
+stories. w50 and w63 originals are completely read but still need remaining
+named faction dependencies before counting as fully reconciled. Nine read
+sources have pending comparison; source count stays seven.
+
+Actual W5 head Actions inspected at 153d20831: Wiki Structure, production truth,
+worker provenance, Arcade, Worker API, WAX, Visual pass. Both Wiki and Graph
+logs show successful regeneration/guards/parity followed by the maintainer
+prose-label gate. No other failure observed, and no label applied.
+Next: Nomad/Bloockstars and explicit territorial-sacrifice source comparison
+for w50; Army/Defenders/Rugpull/Stoned named dependencies for w63; Thera and
+Charlie fictional-versus-real biography for the complete serial comparison.

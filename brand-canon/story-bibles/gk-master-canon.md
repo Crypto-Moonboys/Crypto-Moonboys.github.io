@@ -208,9 +208,29 @@ earlier origin. Its late Architect-as-SAM revelation is source-specific, not an
 identity merger with all Architects or an actual artist. The SAM proposal retains
 the concrete W12 recommendation while mapping these newly read alternatives.
 
-Kael Voss, Sylas the Unbroken, Veyra Nyx and Final Fork Council still require
-W15's complete serial comparison. Layer Eight, Crimson Protocol and Great
-Blackout remain research targets, not aliases for similarly named modern cast.
+[Kael Voss](/wiki/kael-voss.html), [Sylas the Unbroken](/wiki/sylas-the-unbroken.html)
+and [Veyra Nyx](/wiki/veyra-nyx.html) now have dedicated source biographies.
+Kael serves Sarah as a Reclaimer before the Crimson Protocol; Sylas spends
+memory to open paths; Veyra supplies fighting skill and an independent adult
+life. The source's loving triad does not specify a marriage. Its nine nested
+layers, Prime Core, impossible memory continuity and mercy-cycle ending remain
+locally attributed while the full chronology/ontology decision is pending.
+Dima Voss and Silas Shard remain different people; the Council's founding and
+underground titles do not establish a continuous membership roll.
+
+[The Paid Exit](the-paid-exit.md) is new adult connecting fiction. Kael and
+Veyra's private night precedes an escort commission; an unchecked route and
+borrowed status leave a porter injured and a painting torn. The gallery sells
+the damage as art, the porter loses work, and Veyra refuses another night.
+Sylas checks future routes without recovering every missing memory. Kael keeps
+the coat he intended to discard. No cosmic reset clears the bad morning.
+
+The Sarah, Alfie, Jodie, NULL, HODL and Block Topia articles now recover their
+specific serial relationships and contradictions alongside all modern scenes.
+W5's SAM/Sarah companionship and selected Echo Mother, w25's hand-in-hand
+Alfie/Jodie future, and W15's knowing loop participants still require a timed
+relationship choice. Great Blackout, Charlie's family role and the remaining
+faction/cast comparisons remain open; W15 and w25 are not counted reconciled.
 The Princess, Tracey, Rya-B and Sarah retain distinct source identities. The
 complete character census remains tracked in the semantic audit.
 

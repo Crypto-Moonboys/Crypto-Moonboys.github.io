@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-08T12:25:57.568Z",
-  "verified_at": "2026-10-08T12:25:57.568Z",
+  "generated_at": "2026-10-08T12:52:13.230Z",
+  "verified_at": "2026-10-08T12:52:13.230Z",
   "nodes": [
     {
       "id": "/about.html",
@@ -143,7 +143,7 @@
       "title": "Alfie 'Bitcoin Kid' Blaze",
       "url": "/wiki/alfie-bitcoin-kid-blaze.html",
       "category": "factions",
-      "rank_score": 301,
+      "rank_score": 303,
       "authority_score": 28
     },
     {
@@ -279,8 +279,8 @@
       "title": "Block Topia",
       "url": "/wiki/block-topia.html",
       "category": "characters",
-      "rank_score": 327,
-      "authority_score": 20
+      "rank_score": 331,
+      "authority_score": 24
     },
     {
       "id": "/wiki/blockchain.html",
@@ -567,7 +567,7 @@
       "title": "Book VI — The Fork",
       "url": "/wiki/first-witness-book-6-the-fork.html",
       "category": "core",
-      "rank_score": 315,
+      "rank_score": 317,
       "authority_score": 14
     },
     {
@@ -591,7 +591,7 @@
       "title": "Book IX — The Unwritten Block",
       "url": "/wiki/first-witness-book-9-the-unwritten-block.html",
       "category": "core",
-      "rank_score": 315,
+      "rank_score": 317,
       "authority_score": 14
     },
     {
@@ -2539,6 +2539,14 @@
       "authority_score": 21
     },
     {
+      "id": "/wiki/kael-voss.html",
+      "title": "Kael Voss",
+      "url": "/wiki/kael-voss.html",
+      "category": "characters",
+      "rank_score": 250,
+      "authority_score": 17
+    },
+    {
       "id": "/wiki/lady-ink.html",
       "title": "Lady-INK",
       "url": "/wiki/lady-ink.html",
@@ -2791,7 +2799,7 @@
       "title": "Queen Sarah P-fly",
       "url": "/wiki/queen-sarah-p-fly.html",
       "category": "factions",
-      "rank_score": 302,
+      "rank_score": 304,
       "authority_score": 28
     },
     {
@@ -2976,6 +2984,14 @@
       "url": "/wiki/swap-nefty.html",
       "category": "tokens",
       "rank_score": 183,
+      "authority_score": 14
+    },
+    {
+      "id": "/wiki/sylas-the-unbroken.html",
+      "title": "Sylas the Unbroken",
+      "url": "/wiki/sylas-the-unbroken.html",
+      "category": "characters",
+      "rank_score": 226,
       "authority_score": 14
     },
     {
@@ -3281,6 +3297,14 @@
       "category": "core",
       "rank_score": 350,
       "authority_score": 24
+    },
+    {
+      "id": "/wiki/veyra-nyx.html",
+      "title": "Veyra Nyx",
+      "url": "/wiki/veyra-nyx.html",
+      "category": "characters",
+      "rank_score": 233,
+      "authority_score": 14
     },
     {
       "id": "/wiki/wagmi-prophecy.html",
@@ -4118,15 +4142,15 @@
     },
     {
       "source": "/wiki/block-topia.html",
-      "target": "/wiki/crypto-moonboys.html",
-      "score": 78,
-      "weight": 0.78
+      "target": "/wiki/null-the-prophet.html",
+      "score": 84,
+      "weight": 0.84
     },
     {
       "source": "/wiki/block-topia.html",
-      "target": "/wiki/null-the-prophet.html",
-      "score": 75,
-      "weight": 0.75
+      "target": "/wiki/crypto-moonboys.html",
+      "score": 78,
+      "weight": 0.78
     },
     {
       "source": "/wiki/block-topia.html",
@@ -4137,8 +4161,8 @@
     {
       "source": "/wiki/block-topia.html",
       "target": "/wiki/hodl-warriors.html",
-      "score": 62,
-      "weight": 0.62
+      "score": 65,
+      "weight": 0.65
     },
     {
       "source": "/wiki/block-topia.html",
@@ -5012,14 +5036,14 @@
     },
     {
       "source": "/wiki/first-witness-block-topia-reading.html",
-      "target": "/wiki/first-witness-concordance.html",
+      "target": "/wiki/first-witness-book-9-the-unwritten-block.html",
       "score": 319,
       "weight": 1
     },
     {
       "source": "/wiki/first-witness-block-topia-reading.html",
-      "target": "/wiki/first-witness-book-9-the-unwritten-block.html",
-      "score": 317,
+      "target": "/wiki/first-witness-concordance.html",
+      "score": 319,
       "weight": 1
     },
     {
@@ -5234,13 +5258,13 @@
     },
     {
       "source": "/wiki/first-witness-book-7-the-hold.html",
-      "target": "/wiki/first-witness-faction-commentaries.html",
+      "target": "/wiki/first-witness-book-9-the-unwritten-block.html",
       "score": 315,
       "weight": 1
     },
     {
       "source": "/wiki/first-witness-book-7-the-hold.html",
-      "target": "/wiki/first-witness-master-chronology.html",
+      "target": "/wiki/first-witness-faction-commentaries.html",
       "score": 315,
       "weight": 1
     },
@@ -12320,9 +12344,9 @@
     },
     {
       "source": "/wiki/hodl-warriors.html",
-      "target": "/wiki/bitcoin-x-kids.html",
-      "score": 84,
-      "weight": 0.84
+      "target": "/wiki/null-the-prophet.html",
+      "score": 87,
+      "weight": 0.87
     },
     {
       "source": "/wiki/hodl-wars.html",
@@ -12593,6 +12617,36 @@
       "target": "/wiki/stikfamwars.html",
       "score": 66,
       "weight": 0.66
+    },
+    {
+      "source": "/wiki/kael-voss.html",
+      "target": "/wiki/null-the-prophet.html",
+      "score": 84,
+      "weight": 0.84
+    },
+    {
+      "source": "/wiki/kael-voss.html",
+      "target": "/wiki/crypto-moonboys.html",
+      "score": 81,
+      "weight": 0.81
+    },
+    {
+      "source": "/wiki/kael-voss.html",
+      "target": "/wiki/block-topia.html",
+      "score": 76,
+      "weight": 0.76
+    },
+    {
+      "source": "/wiki/kael-voss.html",
+      "target": "/wiki/bitcoin-kids.html",
+      "score": 70,
+      "weight": 0.7
+    },
+    {
+      "source": "/wiki/kael-voss.html",
+      "target": "/wiki/hodl-warriors.html",
+      "score": 68,
+      "weight": 0.68
     },
     {
       "source": "/wiki/lady-ink.html",
@@ -13208,21 +13262,21 @@
     },
     {
       "source": "/wiki/null-the-prophet.html",
-      "target": "/wiki/bitcoin-x-kids.html",
-      "score": 74,
-      "weight": 0.74
+      "target": "/wiki/block-topia.html",
+      "score": 82,
+      "weight": 0.82
     },
     {
       "source": "/wiki/null-the-prophet.html",
       "target": "/wiki/hodl-warriors.html",
-      "score": 74,
-      "weight": 0.74
+      "score": 77,
+      "weight": 0.77
     },
     {
       "source": "/wiki/null-the-prophet.html",
-      "target": "/wiki/block-topia.html",
-      "score": 73,
-      "weight": 0.73
+      "target": "/wiki/bitcoin-x-kids.html",
+      "score": 74,
+      "weight": 0.74
     },
     {
       "source": "/wiki/paper-hands.html",
@@ -14243,6 +14297,36 @@
       "target": "/wiki/gk.html",
       "score": 49,
       "weight": 0.49
+    },
+    {
+      "source": "/wiki/sylas-the-unbroken.html",
+      "target": "/wiki/crypto-moonboys.html",
+      "score": 78,
+      "weight": 0.78
+    },
+    {
+      "source": "/wiki/sylas-the-unbroken.html",
+      "target": "/wiki/null-the-prophet.html",
+      "score": 78,
+      "weight": 0.78
+    },
+    {
+      "source": "/wiki/sylas-the-unbroken.html",
+      "target": "/wiki/bitcoin-kids.html",
+      "score": 73,
+      "weight": 0.73
+    },
+    {
+      "source": "/wiki/sylas-the-unbroken.html",
+      "target": "/wiki/block-topia.html",
+      "score": 73,
+      "weight": 0.73
+    },
+    {
+      "source": "/wiki/sylas-the-unbroken.html",
+      "target": "/wiki/hodl-warriors.html",
+      "score": 71,
+      "weight": 0.71
     },
     {
       "source": "/wiki/tacoswap.html",
@@ -15383,6 +15467,36 @@
       "target": "/wiki/graffpunks.html",
       "score": 91,
       "weight": 0.91
+    },
+    {
+      "source": "/wiki/veyra-nyx.html",
+      "target": "/wiki/crypto-moonboys.html",
+      "score": 84,
+      "weight": 0.84
+    },
+    {
+      "source": "/wiki/veyra-nyx.html",
+      "target": "/wiki/null-the-prophet.html",
+      "score": 84,
+      "weight": 0.84
+    },
+    {
+      "source": "/wiki/veyra-nyx.html",
+      "target": "/wiki/bitcoin-kids.html",
+      "score": 73,
+      "weight": 0.73
+    },
+    {
+      "source": "/wiki/veyra-nyx.html",
+      "target": "/wiki/block-topia.html",
+      "score": 73,
+      "weight": 0.73
+    },
+    {
+      "source": "/wiki/veyra-nyx.html",
+      "target": "/wiki/bitcoin-x-kids.html",
+      "score": 68,
+      "weight": 0.68
     },
     {
       "source": "/wiki/wagmi-prophecy.html",

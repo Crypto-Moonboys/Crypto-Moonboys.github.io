@@ -236,7 +236,7 @@
     ]
   },
   "/wiki/alfie-bitcoin-kid-blaze.html": {
-    "outbound_count": 68,
+    "outbound_count": 73,
     "inbound_count": 8,
     "existing_outbound": [
       "/wiki/billy-the-goat-kid.html",
@@ -250,7 +250,10 @@
       "/wiki/first-witness-hodl-doctrine.html",
       "/wiki/gkniftyheads-bitcoin-kid-tv-heads-100-776074.html",
       "/wiki/gkniftyheads-bitcoin-kid-x-sarah-pfly-infinite-776004.html",
-      "/wiki/the-bitcoin-kid-army.html"
+      "/wiki/kael-voss.html",
+      "/wiki/sylas-the-unbroken.html",
+      "/wiki/the-bitcoin-kid-army.html",
+      "/wiki/veyra-nyx.html"
     ],
     "suggested_outbound": [
       "/wiki/aleema-child-of-the-shard.html",
@@ -268,6 +271,7 @@
       "/wiki/first-witness-censorship-offence-public-marks.html",
       "/wiki/first-witness-chain-archaeology-forensics.html",
       "/wiki/first-witness-great-concord-2030.html",
+      "/wiki/first-witness-justice-mercy-restitution.html",
       "/wiki/first-witness-leadership-councils-succession.html",
       "/wiki/first-witness-libraries-architecture-archive-houses.html",
       "/wiki/first-witness-relics-manuscripts-lost-editions.html",
@@ -290,6 +294,7 @@
       "/wiki/gkniftyheads-sarah-pfly-784349.html",
       "/wiki/gkniftyheads.html",
       "/wiki/graffpunks.html",
+      "/wiki/hex-tagger-prime.html",
       "/wiki/hodl-warriors.html",
       "/wiki/hodl-wars.html",
       "/wiki/hodl-x-warriors.html",
@@ -1186,12 +1191,15 @@
     ]
   },
   "/wiki/block-topia.html": {
-    "outbound_count": 32,
-    "inbound_count": 76,
+    "outbound_count": 37,
+    "inbound_count": 78,
     "existing_outbound": [
       "/wiki/hodl-wars.html",
+      "/wiki/kael-voss.html",
       "/wiki/queen-sarah-p-fly.html",
-      "/wiki/the-crypto-moongirls.html"
+      "/wiki/sylas-the-unbroken.html",
+      "/wiki/the-crypto-moongirls.html",
+      "/wiki/veyra-nyx.html"
     ],
     "suggested_outbound": [
       "/wiki/alcor-exchange.html",
@@ -1205,6 +1213,7 @@
       "/wiki/first-witness-book-9-the-unwritten-block.html",
       "/wiki/first-witness-forty-paths.html",
       "/wiki/first-witness-great-concord-2030.html",
+      "/wiki/first-witness-justice-mercy-restitution.html",
       "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-sacred-fork.html",
       "/wiki/first-witness-triple-fork-chainfire.html",
@@ -1214,6 +1223,7 @@
       "/wiki/gkniftyheads-sarah-pfly-784349.html",
       "/wiki/graffiti-queens-in-decentraland.html",
       "/wiki/hard-fork-games.html",
+      "/wiki/hex-tagger-prime.html",
       "/wiki/hodl-warriors.html",
       "/wiki/hodl-x-warriors.html",
       "/wiki/sacred-chain.html",
@@ -1264,6 +1274,7 @@
       "/wiki/ian-harrison.html",
       "/wiki/iris-7.html",
       "/wiki/jodie-zoom-2000.html",
+      "/wiki/kael-voss.html",
       "/wiki/lady-ink.html",
       "/wiki/loopfiend.html",
       "/wiki/m1ntr-k1ll.html",
@@ -1299,6 +1310,7 @@
       "/wiki/the-nice-easy-bois.html",
       "/wiki/thera-9.html",
       "/wiki/triple-fork-event.html",
+      "/wiki/veyra-nyx.html",
       "/wiki/wallets.html",
       "/wiki/xrp-kids.html"
     ]
@@ -1593,7 +1605,7 @@
   },
   "/wiki/crypto-moonboys.html": {
     "outbound_count": 50,
-    "inbound_count": 329,
+    "inbound_count": 332,
     "existing_outbound": [
       "/wiki/block-topia.html",
       "/wiki/gkniftyheads-binary-blitzer-784277.html",
@@ -1872,6 +1884,7 @@
       "/wiki/jillian-godsil.html",
       "/wiki/jodie-zoom-2000.html",
       "/wiki/jonny-laurence-nelson-tag-records.html",
+      "/wiki/kael-voss.html",
       "/wiki/lady-ink.html",
       "/wiki/lfgk.html",
       "/wiki/loopfiend.html",
@@ -1927,6 +1940,7 @@
       "/wiki/storm-struggle.html",
       "/wiki/street-kingdoms.html",
       "/wiki/swap-nefty.html",
+      "/wiki/sylas-the-unbroken.html",
       "/wiki/tacoswap.html",
       "/wiki/tagzcoin.html",
       "/wiki/the-allcity-bulls.html",
@@ -1964,6 +1978,7 @@
       "/wiki/tokenomics.html",
       "/wiki/trevor-fung.html",
       "/wiki/triple-fork-event.html",
+      "/wiki/veyra-nyx.html",
       "/wiki/wagmi-prophecy.html",
       "/wiki/wallets.html",
       "/wiki/wax-blockchain.html",
@@ -3689,7 +3704,7 @@
   },
   "/wiki/first-witness-book-6-the-fork.html": {
     "outbound_count": 69,
-    "inbound_count": 3,
+    "inbound_count": 4,
     "existing_outbound": [
       "/wiki/first-witness-book-5-the-chain.html",
       "/wiki/first-witness-book-7-the-hold.html",
@@ -3766,6 +3781,7 @@
     "inbound_from": [
       "/wiki/first-witness-book-5-the-chain.html",
       "/wiki/first-witness-book-7-the-hold.html",
+      "/wiki/sylas-the-unbroken.html",
       "/wiki/the-first-witness.html"
     ]
   },
@@ -3944,7 +3960,7 @@
   },
   "/wiki/first-witness-book-9-the-unwritten-block.html": {
     "outbound_count": 66,
-    "inbound_count": 4,
+    "inbound_count": 5,
     "existing_outbound": [
       "/wiki/first-witness-book-8-the-fire.html",
       "/wiki/first-witness-life-readings.html",
@@ -4019,7 +4035,8 @@
       "/wiki/first-witness-book-8-the-fire.html",
       "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-sacred-fork.html",
-      "/wiki/the-first-witness.html"
+      "/wiki/the-first-witness.html",
+      "/wiki/veyra-nyx.html"
     ]
   },
   "/wiki/first-witness-calendar-feasts-remembrance.html": {
@@ -5340,7 +5357,7 @@
     ]
   },
   "/wiki/first-witness-faction-commentaries.html": {
-    "outbound_count": 80,
+    "outbound_count": 81,
     "inbound_count": 25,
     "existing_outbound": [
       "/wiki/first-witness-forty-paths.html",
@@ -5419,6 +5436,7 @@
       "/wiki/noballgamess-nft-collection.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/sister-halcyon.html",
+      "/wiki/sylas-the-unbroken.html",
       "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html",
       "/wiki/the-crypto-moongirls.html",
@@ -7044,7 +7062,7 @@
   },
   "/wiki/first-witness-master-chronology.html": {
     "outbound_count": 67,
-    "inbound_count": 54,
+    "inbound_count": 55,
     "existing_outbound": [
       "/wiki/first-witness-concordance.html",
       "/wiki/first-witness-glossary.html",
@@ -7160,6 +7178,7 @@
       "/wiki/snipey-d-man-sirus.html",
       "/wiki/spraycode-writcode-mechanics.html",
       "/wiki/stikfamwars.html",
+      "/wiki/sylas-the-unbroken.html",
       "/wiki/the-allcity-bulls.html",
       "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-crypto-moongirls.html",
@@ -18524,8 +18543,8 @@
     "inbound_from": []
   },
   "/wiki/hodl-warriors.html": {
-    "outbound_count": 35,
-    "inbound_count": 33,
+    "outbound_count": 40,
+    "inbound_count": 34,
     "existing_outbound": [
       "/wiki/bitcoin-kid-army.html",
       "/wiki/bitcoin-kids.html",
@@ -18541,7 +18560,8 @@
       "/wiki/hodl-wars.html",
       "/wiki/hodl-x-warriors.html",
       "/wiki/null-the-prophet.html",
-      "/wiki/sacred-chain.html"
+      "/wiki/sacred-chain.html",
+      "/wiki/veyra-nyx.html"
     ],
     "suggested_outbound": [
       "/wiki/agent-sam.html",
@@ -18554,12 +18574,16 @@
       "/wiki/first-witness-faction-commentaries.html",
       "/wiki/first-witness-food-hospitality-common-table.html",
       "/wiki/first-witness-glossary.html",
+      "/wiki/first-witness-justice-mercy-restitution.html",
       "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-parables.html",
       "/wiki/first-witness-source-register.html",
       "/wiki/graffiti-kings.html",
+      "/wiki/hex-tagger-prime.html",
       "/wiki/hodlmoonboys-nft-collection.html",
+      "/wiki/kael-voss.html",
       "/wiki/moon-mission.html",
+      "/wiki/sylas-the-unbroken.html",
       "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-first-witness.html",
       "/wiki/the-hard-fork-rockers.html",
@@ -18596,13 +18620,14 @@
       "/wiki/the-first-witness.html",
       "/wiki/the-hard-fork-rockers.html",
       "/wiki/the-tuskon-ogs.html",
+      "/wiki/veyra-nyx.html",
       "/wiki/wagmi-prophecy.html",
       "/wiki/wallets.html",
       "/wiki/whale-lords.html"
     ]
   },
   "/wiki/hodl-wars.html": {
-    "outbound_count": 65,
+    "outbound_count": 66,
     "inbound_count": 84,
     "existing_outbound": [
       "/wiki/bitcoin-kids.html",
@@ -18655,6 +18680,7 @@
       "/wiki/grit42.html",
       "/wiki/hodl-x-warriors.html",
       "/wiki/hodlmoonboys-nft-collection.html",
+      "/wiki/kael-voss.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/satoshi-scroll.html",
       "/wiki/spirit-borns.html",
@@ -19009,7 +19035,7 @@
     "inbound_from": []
   },
   "/wiki/jodie-zoom-2000.html": {
-    "outbound_count": 48,
+    "outbound_count": 53,
     "inbound_count": 7,
     "existing_outbound": [
       "/wiki/bitcoin-kids.html",
@@ -19041,6 +19067,7 @@
       "/wiki/first-witness-book-4-the-wall.html",
       "/wiki/first-witness-faction-commentaries.html",
       "/wiki/first-witness-glossary.html",
+      "/wiki/first-witness-justice-mercy-restitution.html",
       "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-master-chronology.html",
       "/wiki/first-witness-mediation-witness-circles.html",
@@ -19048,12 +19075,15 @@
       "/wiki/first-witness-source-register.html",
       "/wiki/forkborn-collective.html",
       "/wiki/grit.html",
+      "/wiki/hex-tagger-prime.html",
       "/wiki/hodl-warriors.html",
+      "/wiki/kael-voss.html",
       "/wiki/nbg-token.html",
       "/wiki/patchwork.html",
       "/wiki/rune-tag.html",
       "/wiki/sacred-chain.html",
       "/wiki/satorebel.html",
+      "/wiki/sylas-the-unbroken.html",
       "/wiki/the-aztec-raiders.html",
       "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html",
@@ -19061,6 +19091,7 @@
       "/wiki/the-first-witness.html",
       "/wiki/the-high-hats.html",
       "/wiki/thera-9.html",
+      "/wiki/veyra-nyx.html",
       "/wiki/waxp-exchange.html"
     ],
     "inbound_from": [
@@ -19113,6 +19144,32 @@
       "/wiki/spraycode-writcode-mechanics.html",
       "/wiki/trevor-fung.html",
       "/wiki/wax-dexs-defi.html"
+    ]
+  },
+  "/wiki/kael-voss.html": {
+    "outbound_count": 10,
+    "inbound_count": 6,
+    "existing_outbound": [
+      "/wiki/block-topia.html",
+      "/wiki/crypto-moonboys.html",
+      "/wiki/queen-sarah-p-fly.html",
+      "/wiki/sylas-the-unbroken.html",
+      "/wiki/veyra-nyx.html"
+    ],
+    "suggested_outbound": [
+      "/wiki/gkniftyheads-bitcoin-kid-x-sarah-pfly-infinite-776004.html",
+      "/wiki/gkniftyheads-sarah-p2fly-784350.html",
+      "/wiki/gkniftyheads-sarah-pfly-784349.html",
+      "/wiki/hex-tagger-prime.html",
+      "/wiki/hodl-warriors.html"
+    ],
+    "inbound_from": [
+      "/wiki/alfie-bitcoin-kid-blaze.html",
+      "/wiki/block-topia.html",
+      "/wiki/null-the-prophet.html",
+      "/wiki/queen-sarah-p-fly.html",
+      "/wiki/sylas-the-unbroken.html",
+      "/wiki/veyra-nyx.html"
     ]
   },
   "/wiki/lady-ink.html": {
@@ -20002,8 +20059,8 @@
     ]
   },
   "/wiki/null-the-prophet.html": {
-    "outbound_count": 47,
-    "inbound_count": 82,
+    "outbound_count": 52,
+    "inbound_count": 83,
     "existing_outbound": [
       "/wiki/bitcoin-kids.html",
       "/wiki/block-topia.html",
@@ -20013,10 +20070,13 @@
       "/wiki/graffpunks.html",
       "/wiki/hodl-warriors.html",
       "/wiki/hodl-wars.html",
+      "/wiki/kael-voss.html",
       "/wiki/m1ntr-k1ll.html",
       "/wiki/queen-sarah-p-fly.html",
       "/wiki/samaelexe.html",
-      "/wiki/the-whitewasher.html"
+      "/wiki/sylas-the-unbroken.html",
+      "/wiki/the-whitewasher.html",
+      "/wiki/veyra-nyx.html"
     ],
     "suggested_outbound": [
       "/wiki/bear-market-siege.html",
@@ -20029,6 +20089,7 @@
       "/wiki/first-witness-book-6-the-fork.html",
       "/wiki/first-witness-book-9-the-unwritten-block.html",
       "/wiki/first-witness-great-concord-2030.html",
+      "/wiki/first-witness-justice-mercy-restitution.html",
       "/wiki/first-witness-oaths-promises-vows.html",
       "/wiki/first-witness-prisons-punishment-return.html",
       "/wiki/first-witness-relics-manuscripts-lost-editions.html",
@@ -20041,6 +20102,7 @@
       "/wiki/gkniftyheads.html",
       "/wiki/great-consensus.html",
       "/wiki/hard-fork-games.html",
+      "/wiki/hex-tagger-prime.html",
       "/wiki/hodl-x-warriors.html",
       "/wiki/jodie-zoom-2000.html",
       "/wiki/lady-ink.html",
@@ -20102,6 +20164,7 @@
       "/wiki/sister-halcyon.html",
       "/wiki/snipey-d-man-sirus.html",
       "/wiki/stikfamwars.html",
+      "/wiki/sylas-the-unbroken.html",
       "/wiki/the-allcity-bulls.html",
       "/wiki/the-aztec-raiders.html",
       "/wiki/the-bally-boys.html",
@@ -20141,7 +20204,7 @@
     ]
   },
   "/wiki/paper-hands.html": {
-    "outbound_count": 20,
+    "outbound_count": 21,
     "inbound_count": 5,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
@@ -20163,6 +20226,7 @@
       "/wiki/hodl-warriors.html",
       "/wiki/hodl-x-warriors.html",
       "/wiki/hodlmoonboys-nft-collection.html",
+      "/wiki/kael-voss.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/the-first-witness.html",
       "/wiki/whale-lords.html"
@@ -20617,8 +20681,8 @@
     ]
   },
   "/wiki/queen-sarah-p-fly.html": {
-    "outbound_count": 42,
-    "inbound_count": 6,
+    "outbound_count": 47,
+    "inbound_count": 7,
     "existing_outbound": [
       "/wiki/block-topia.html",
       "/wiki/crypto-moonboys.html",
@@ -20630,6 +20694,7 @@
       "/wiki/gkniftyheads-sarah-pfly-784349.html",
       "/wiki/hard-fork-games.html",
       "/wiki/hodl-wars.html",
+      "/wiki/kael-voss.html",
       "/wiki/midevilpunks.html",
       "/wiki/pmsl.html",
       "/wiki/rave-relics.html"
@@ -20643,6 +20708,7 @@
       "/wiki/dream-sovereign.html",
       "/wiki/first-witness-book-6-the-fork.html",
       "/wiki/first-witness-food-hospitality-common-table.html",
+      "/wiki/first-witness-justice-mercy-restitution.html",
       "/wiki/first-witness-land-water-stewardship.html",
       "/wiki/first-witness-language-translation-sacred-words.html",
       "/wiki/first-witness-sacred-fork.html",
@@ -20650,12 +20716,14 @@
       "/wiki/gkniftyheads.html",
       "/wiki/graffpunks.html",
       "/wiki/grit.html",
+      "/wiki/hex-tagger-prime.html",
       "/wiki/hodl-warriors.html",
       "/wiki/hodl-x-warriors.html",
       "/wiki/jodie-zoom-2000.html",
       "/wiki/sacred-chain.html",
       "/wiki/satorebel.html",
       "/wiki/street-kingdoms.html",
+      "/wiki/sylas-the-unbroken.html",
       "/wiki/the-code-alchemists.html",
       "/wiki/the-crypto-moongirls.html",
       "/wiki/the-first-witness.html",
@@ -20663,12 +20731,14 @@
       "/wiki/the-nomad-bears.html",
       "/wiki/the-squeaky-pinks.html",
       "/wiki/thera-9.html",
-      "/wiki/triple-fork-event.html"
+      "/wiki/triple-fork-event.html",
+      "/wiki/veyra-nyx.html"
     ],
     "inbound_from": [
       "/wiki/block-topia.html",
       "/wiki/graffiti-queens-in-decentraland.html",
       "/wiki/graffpunks-ecosystem.html",
+      "/wiki/kael-voss.html",
       "/wiki/null-the-prophet.html",
       "/wiki/the-crypto-moongirls.html",
       "/wiki/the-nice-easy-bois.html"
@@ -21820,6 +21890,35 @@
     ],
     "inbound_from": []
   },
+  "/wiki/sylas-the-unbroken.html": {
+    "outbound_count": 14,
+    "inbound_count": 5,
+    "existing_outbound": [
+      "/wiki/crypto-moonboys.html",
+      "/wiki/first-witness-book-6-the-fork.html",
+      "/wiki/first-witness-master-chronology.html",
+      "/wiki/kael-voss.html",
+      "/wiki/null-the-prophet.html",
+      "/wiki/veyra-nyx.html"
+    ],
+    "suggested_outbound": [
+      "/wiki/bitcoin-x-kids.html",
+      "/wiki/elder-codex-7.html",
+      "/wiki/first-witness-digital-inheritance-after-death.html",
+      "/wiki/first-witness-sacred-fork.html",
+      "/wiki/first-witness-triple-fork-chainfire.html",
+      "/wiki/hard-fork-games.html",
+      "/wiki/the-hard-fork-rockers.html",
+      "/wiki/triple-fork-event.html"
+    ],
+    "inbound_from": [
+      "/wiki/alfie-bitcoin-kid-blaze.html",
+      "/wiki/block-topia.html",
+      "/wiki/kael-voss.html",
+      "/wiki/null-the-prophet.html",
+      "/wiki/veyra-nyx.html"
+    ]
+  },
   "/wiki/tacoswap.html": {
     "outbound_count": 31,
     "inbound_count": 2,
@@ -22026,7 +22125,7 @@
     ]
   },
   "/wiki/the-bitcoin-kid-army.html": {
-    "outbound_count": 56,
+    "outbound_count": 57,
     "inbound_count": 7,
     "existing_outbound": [
       "/wiki/bitcoin-kid-army.html",
@@ -22083,6 +22182,7 @@
       "/wiki/hodl-wars.html",
       "/wiki/iris-7.html",
       "/wiki/jodie-zoom-2000.html",
+      "/wiki/sylas-the-unbroken.html",
       "/wiki/the-chain-scribes.html",
       "/wiki/the-first-witness.html",
       "/wiki/the-shard-mothers-of-manhattan.html",
@@ -22221,7 +22321,7 @@
     ]
   },
   "/wiki/the-chain-scribes.html": {
-    "outbound_count": 46,
+    "outbound_count": 47,
     "inbound_count": 34,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
@@ -22267,6 +22367,7 @@
       "/wiki/hodl-warriors.html",
       "/wiki/hodl-wars.html",
       "/wiki/hodl-x-warriors.html",
+      "/wiki/kael-voss.html",
       "/wiki/quell.html",
       "/wiki/the-crypto-stoned-boys.html",
       "/wiki/the-first-witness.html",
@@ -23970,6 +24071,35 @@
       "/wiki/the-high-hats.html",
       "/wiki/the-information-mercenaries.html",
       "/wiki/the-moonlords.html"
+    ]
+  },
+  "/wiki/veyra-nyx.html": {
+    "outbound_count": 13,
+    "inbound_count": 6,
+    "existing_outbound": [
+      "/wiki/block-topia.html",
+      "/wiki/crypto-moonboys.html",
+      "/wiki/first-witness-book-9-the-unwritten-block.html",
+      "/wiki/hodl-warriors.html",
+      "/wiki/kael-voss.html",
+      "/wiki/sylas-the-unbroken.html"
+    ],
+    "suggested_outbound": [
+      "/wiki/first-witness-hodl-doctrine.html",
+      "/wiki/first-witness-justice-mercy-restitution.html",
+      "/wiki/first-witness-work-craft-service.html",
+      "/wiki/hex-tagger-prime.html",
+      "/wiki/hodl-wars.html",
+      "/wiki/hodl-x-warriors.html",
+      "/wiki/hodlmoonboys-nft-collection.html"
+    ],
+    "inbound_from": [
+      "/wiki/alfie-bitcoin-kid-blaze.html",
+      "/wiki/block-topia.html",
+      "/wiki/hodl-warriors.html",
+      "/wiki/kael-voss.html",
+      "/wiki/null-the-prophet.html",
+      "/wiki/sylas-the-unbroken.html"
     ]
   },
   "/wiki/wagmi-prophecy.html": {

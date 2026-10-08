@@ -8,7 +8,7 @@
     "unique_contents": 93,
     "bytes": 2334149
   },
-  "semantic_scope": "Seven complete source readings with owning-page comparisons. W19 fully read but remaining embedded-character cross-page comparisons pending. Full mission remains open.",
+  "semantic_scope": "Seven completely compared sources. Nine more completely read with connected comparison pending. Thirty-five full current existing article readings and four focused reviews; three new W15 biographies separately authored. Full mission open.",
   "sources": [
     {
       "file": "M16.txt",
@@ -175,7 +175,19 @@
         "Complete original now read through fourteen-million / Volume18 terminal reset; no final escape, rescue or death-cancellation scene is recovered in W15. Every terminal sequence restarts.",
         "Ten-million/Volume14 introduces Great Blackout as cause of Block City time-warp loop and four-year market-cycle scripture; eleven-million/Volume15 elaborates contemporary investment rhetoric. These are source propaganda, not accepted First Witness scripture or real investment guarantees.",
         "Thirteen-million/Volume17 and fourteen-million/Volume18 add Killa Kela Glitch Events/podcast loops, surviving Grok agents from2026, factory escape and homage. Their fiction does not confer current autonomous-publishing authority or verify real biographical events.",
-        "Serial jumps Next/Volume2 heading to Volume3; later no separate full Volume7,13,16 narrative in this file. Do not infer absent chapters or claim cycles were independently attested."
+        "Serial jumps Next/Volume2 heading to Volume3; later no separate full Volume7,13,16 narrative in this file. Do not infer absent chapters or claim cycles were independently attested.",
+        "Dedicated Kael/Sylas/Veyra biographies now recover exact introductions, relationship wording, memory sacrifice, Prime Core, terminal revelation and repeated awakenings. Full Sarah/Alfie/NULL/BlockTopia/HODL article comparisons completed; Charlie, remaining source factions and Blackout dependencies remain pending, so source is not counted reconciled."
+      ],
+      "affected_routes": [
+        "wiki/alfie-bitcoin-kid-blaze.html",
+        "wiki/block-topia.html",
+        "wiki/hodl-warriors.html",
+        "wiki/jodie-zoom-2000.html",
+        "wiki/kael-voss.html",
+        "wiki/null-the-prophet.html",
+        "wiki/queen-sarah-p-fly.html",
+        "wiki/sylas-the-unbroken.html",
+        "wiki/veyra-nyx.html"
       ]
     },
     {
@@ -308,7 +320,8 @@
         "Parts51-75 extend to centuries, millennia and eons of universal peace: Iris Codex Schools, Child as guardian, Thera/Aleema cosmic gardens, Alfie/Jodie hand-in-hand then spirits, all factions permanently benevolent. These are narrated future claims, not current 3008 institutions or a new universal lifespan law.",
         "Explicit THE END recurs at Parts50,55,60,65,70,75; after first Part75, Parts66-75 recur with altered social-media prompts. Duplicated continuations are not independent corroborating witnesses.",
         "NULL last shard displayed in Part52 after prior total dissolutions; Elder fades then continues watching/carving. Source contradictions remain recorded, not repaired with unapproved resurrection or reset mechanics.",
-        "Current full Elder, Iris, Aleema and Dream Sovereign articles already preserve attribution and modern local stories. Missing precision includes complete 3038-3058 sequence, duplicated66-75, and school/garden futures. Other owning pages and First Witness comparisons remain pending."
+        "Current full Elder, Iris, Aleema and Dream Sovereign articles already preserve attribution and modern local stories. Missing precision includes complete 3038-3058 sequence, duplicated66-75, and school/garden futures. Other owning pages and First Witness comparisons remain pending.",
+        "Sarah sacrifice, Alfie captured/rescued and Jodie far-future hand/spirits now recovered on owning articles. Full current Sarah/Alfie/Jodie/NULL articles read; Orsa/Dera/Tessa/Vela/Sena and dead Bellwether workers remain. Thera, other faction roles and remaining dependencies pending."
       ]
     },
     {
@@ -564,8 +577,21 @@
       "bytes": 5666,
       "sha256": "8eeec73013092866fd695f8d186e4c8b143c7bedd0a205ec2a518cff8a7685d9",
       "byte_verified": true,
-      "semantic_review": "pending complete semantic reading",
-      "prior_disposition": "COVERED"
+      "semantic_review": "complete source reading; remaining connected faction comparison pending",
+      "prior_disposition": "COVERED",
+      "read_progress": {
+        "paragraphs_read_in_full": [
+          [
+            1,
+            17
+          ]
+        ],
+        "next_unread_paragraph": null,
+        "complete_source_comparison": false
+      },
+      "partial_findings": [
+        "Entire original read. Current full Rocker biography preserves Program betrayal/Bitbone/0.01% as claim, eugenic reward, MoshPit/Theta alternative, Games RedLayer rescue, AntiLogic risk, HODL opposition vs w65 cooperation, GraffPUNK/GKniftyHEAD critique, FinalFork unresolved. Source territorial-sacrifice emphasis and comparisons with Nomad/Bloockstars remaining. Modern RedLedger/CutCoat stories remain unchanged."
+      ]
     },
     {
       "file": "w51.txt",
@@ -676,8 +702,21 @@
       "bytes": 6072,
       "sha256": "185d05f34cacb92abe64095680902621b72c83befb8aacc01ca80201ebbb8050",
       "byte_verified": true,
-      "semantic_review": "pending complete semantic reading",
-      "prior_disposition": "COVERED"
+      "semantic_review": "complete source reading; remaining connected faction comparison pending",
+      "prior_disposition": "COVERED",
+      "read_progress": {
+        "paragraphs_read_in_full": [
+          [
+            1,
+            20
+          ]
+        ],
+        "next_unread_paragraph": null,
+        "complete_source_comparison": false
+      },
+      "partial_findings": [
+        "Entire original read. Full HODL/NULL/BlockTopia/Sarah/Alfie/Forty/Commentaries/doctrine/Kernel/Rocker comparisons recover divine Kernel zealotry, top3of40Council, HODL9000 identity suppression, matriarchy enforcement, compulsory purges and controlled memory after deactivation. Remaining named faction/Army/Defender dependencies pending; no universal emergency forced consent adopted."
+      ]
     },
     {
       "file": "w64.txt",
@@ -1053,9 +1092,11 @@
     {
       "path": "wiki/block-topia.html",
       "sections": [
-        "identity"
+        "all canonical sections"
       ],
-      "scope": "targeted sections, not whole-article semantic audit"
+      "scope": "full canonical article",
+      "findings": "Full current article read: city/council origins, all physical service routes/travel estimates/material dependencies, Exchange closure/reopening, ground orbital prototype, after-shift households, Split Current Night, Fifth Carbon/Bex and Moongirl culture. W15 Reclaimer/Lattice/underground Council recovered without merging foundation, accepted universal simulation or a new physical route.",
+      "reading_verification": "All 84 current canonical paragraphs matched full cached reading before additions."
     },
     {
       "path": "wiki/first-witness-forty-paths.html",
@@ -1228,6 +1269,42 @@
         "all canonical sections"
       ],
       "findings": "All current canonical paragraphs fully read and matched against the complete cache. Preserves disputed seeded-child/2140 synthetic origin, 2789/2880 chronology, Silas Shard distinct from Sylas, Jodie independent escape, Cal/Second Chair/compact/end of command, Dera refusal, Necessary Monsters known first complaint and second assault, Tessa/Vela permanent injuries, Fifth Carbon authorial refusal. W15 triad and w25 hand-in-hand future require source reconciliation without reinstating permanent command or removing modern responsibility."
+    },
+    {
+      "path": "wiki/null-the-prophet.html",
+      "scope": "full canonical article",
+      "sections": [
+        "all canonical sections"
+      ],
+      "findings": "Full current article read, including AGNES/EchoFork/VioletVoid, institutional executioner conflict, Absence Desk/Second Naming, Holdfast/Sena failed response, Roe release, Betrayers Holiday and Unburdening Room/Necessary Monsters. W15 Machine God not named NULL; w25 residual shard after total defeat remains source conflict. No source ending cancels observed local loss.",
+      "reading_verification": "All 95 current canonical paragraphs matched full cached reading before additions."
+    },
+    {
+      "path": "wiki/first-witness-hodl-doctrine.html",
+      "scope": "full canonical article",
+      "sections": [
+        "all canonical sections"
+      ],
+      "findings": "Full doctrine reading: slang vs Book VII, emergency collective state, separate HODL X, deactivation, no permanent command, suffering not proof, real creator usage distinct. All canonical paragraph text matched cache; ancillary related-navigation sentence read separately.",
+      "reading_verification": "14 canonical paragraphs fully read; cache matched to current article."
+    },
+    {
+      "path": "wiki/the-hard-fork-rockers.html",
+      "scope": "full canonical article",
+      "sections": [
+        "all canonical sections"
+      ],
+      "findings": "Full current Rocker article read: Program/Bitbone/RedLayer origin, all founder and cultural claims, local Cutover/ReturnSet/FifthDoor, HODL opposition vs cooperation, Antichain risk, entire adult RedLedgerNight/SixthGlass/roof/Jex aftermath, CutCoat wedding and customs. All canonical paragraphs matched full cache.",
+      "reading_verification": "65 canonical paragraphs fully read; cache matched to current article."
+    },
+    {
+      "path": "wiki/genesis-kernel.html",
+      "scope": "full canonical article",
+      "sections": [
+        "all canonical sections"
+      ],
+      "findings": "Full current Kernel article read: every origin/custody/repair/personhood/NULL/SelfFork claim, all WorkshopNine/RedThread/Orin/AnchorCard/Chorus/Glassweather developments, Holdfast nonrestoration, GroundArray transfer refused and practical next investigation. All canonical paragraphs matched full cache.",
+      "reading_verification": "125 canonical paragraphs fully read; cache matched to current article."
     }
   ]
 }

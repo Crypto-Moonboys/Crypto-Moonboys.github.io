@@ -356,6 +356,31 @@
         "brand-canon/story-bibles/the-hot-wall.md",
         "brand-canon/story-bibles/gk-master-canon.md"
       ]
+    },
+    {
+      "id": "GK-1458-W15-TRIAD-RECOVERY",
+      "status": "implemented",
+      "sources": [
+        "W15.txt all 192 paragraphs fully read; exact opening 5\u201318 and awakenings 25\u201338",
+        "Full current Sarah, Alfie, Jodie, NULL, Block Topia and HODL Warriors articles",
+        "GK continuation permits dedicated missing characters and adult connecting fiction"
+      ],
+      "old": "Central W15 triad has no dedicated biography; mercy-cycle Reclaimer/Protocol/costly memory/Prime Core and competing companion futures are missing or compressed on owning pages.",
+      "new": "Create Kael Voss, Sylas the Unbroken and Veyra Nyx biographies; expand six connected existing articles. Preserve source voice for cosmic claims and published modern lives. Add original Paid Exit with injury, lost work, rejected intimacy and uncorrected memory.",
+      "reason": "Recovers three significant source characters without invented family merges, universal reset, final ending or changed calendar anchor. No new named supporting character or numbered culture.",
+      "affected_paths": [
+        "wiki/kael-voss.html",
+        "wiki/sylas-the-unbroken.html",
+        "wiki/veyra-nyx.html",
+        "wiki/block-topia.html",
+        "wiki/queen-sarah-p-fly.html",
+        "wiki/alfie-bitcoin-kid-blaze.html",
+        "wiki/jodie-zoom-2000.html",
+        "wiki/null-the-prophet.html",
+        "wiki/hodl-warriors.html",
+        "brand-canon/story-bibles/the-paid-exit.md",
+        "brand-canon/story-bibles/gk-master-canon.md"
+      ]
     }
   ]
 }

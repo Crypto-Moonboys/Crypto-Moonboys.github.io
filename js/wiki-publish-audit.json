@@ -1,8 +1,8 @@
 {
-  "_generated": "2026-10-08T10:42:14.013Z",
+  "_generated": "2026-10-08T12:51:42.587Z",
   "summary": {
-    "total": 421,
-    "approved": 421,
+    "total": 424,
+    "approved": 424,
     "blocked": 0,
     "needs_review": 0,
     "blocked_synthetic_slug": 0,
@@ -43,7 +43,7 @@
       "file": "agent-sam.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1932
+      "word_count": 2441
     },
     {
       "slug": "alcor-exchange",
@@ -57,14 +57,14 @@
       "file": "aleema-child-of-the-shard.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 3937
+      "word_count": 4088
     },
     {
       "slug": "alfie-bitcoin-kid-blaze",
       "file": "alfie-bitcoin-kid-blaze.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 7355
+      "word_count": 7551
     },
     {
       "slug": "alfie-blaze",
@@ -218,7 +218,7 @@
       "file": "block-topia.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 4646
+      "word_count": 4831
     },
     {
       "slug": "blockchain",
@@ -323,14 +323,14 @@
       "file": "dream-sovereign.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 2215
+      "word_count": 2384
     },
     {
       "slug": "elder-codex-7",
       "file": "elder-codex-7.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 3279
+      "word_count": 4114
     },
     {
       "slug": "ethereum",
@@ -610,7 +610,7 @@
       "file": "first-witness-faction-commentaries.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 6885
+      "word_count": 7090
     },
     {
       "slug": "first-witness-faction-ritual-variations",
@@ -638,7 +638,7 @@
       "file": "first-witness-forty-paths.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1233
+      "word_count": 1442
     },
     {
       "slug": "first-witness-glossary",
@@ -1023,7 +1023,7 @@
       "file": "gkniftyheads.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 3657
+      "word_count": 3875
     },
     {
       "slug": "gkniftyheads-alessandro-anonymity-advocate-amato-783445",
@@ -2059,7 +2059,7 @@
       "file": "graffpunks.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 3383
+      "word_count": 4094
     },
     {
       "slug": "graffpunks-24-7-radio",
@@ -2136,7 +2136,7 @@
       "file": "hodl-warriors.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 5305
+      "word_count": 5662
     },
     {
       "slug": "hodl-wars",
@@ -2164,7 +2164,7 @@
       "file": "house-of-rackinsats.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1411
+      "word_count": 1853
     },
     {
       "slug": "ian-harrison",
@@ -2178,7 +2178,7 @@
       "file": "iris-7.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 2691
+      "word_count": 2917
     },
     {
       "slug": "jillian-godsil",
@@ -2192,7 +2192,7 @@
       "file": "jodie-zoom-2000.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 6687
+      "word_count": 6862
     },
     {
       "slug": "jonny-laurence-nelson-tag-records",
@@ -2200,6 +2200,13 @@
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 1481
+    },
+    {
+      "slug": "kael-voss",
+      "file": "kael-voss.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 1347
     },
     {
       "slug": "lady-ink",
@@ -2353,7 +2360,7 @@
       "file": "null-the-prophet.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 6129
+      "word_count": 6279
     },
     {
       "slug": "paper-hands",
@@ -2430,7 +2437,7 @@
       "file": "queen-sarah-p-fly.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 7431
+      "word_count": 7621
     },
     {
       "slug": "quell",
@@ -2592,6 +2599,13 @@
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 509
+    },
+    {
+      "slug": "sylas-the-unbroken",
+      "file": "sylas-the-unbroken.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 802
     },
     {
       "slug": "tacoswap",
@@ -2860,6 +2874,13 @@
       "word_count": 6588
     },
     {
+      "slug": "veyra-nyx",
+      "file": "veyra-nyx.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 737
+    },
+    {
       "slug": "wagmi-prophecy",
       "file": "wagmi-prophecy.html",
       "status": "APPROVED_CANON_PAGE",
@@ -2927,7 +2948,7 @@
       "file": "whale-lords.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 3517
+      "word_count": 3713
     },
     {
       "slug": "whisper-codex",

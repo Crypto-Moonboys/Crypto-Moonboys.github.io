@@ -8906,6 +8906,21 @@
     "brand": null
   },
   {
+    "entity_id": "kael_voss",
+    "canonical_title": "Kael Voss",
+    "canonical_url": "/wiki/kael-voss.html",
+    "category": "characters",
+    "aliases": [],
+    "tags": [
+      "kael",
+      "voss"
+    ],
+    "source_urls": [
+      "/wiki/kael-voss.html"
+    ],
+    "brand": null
+  },
+  {
     "entity_id": "lady_ink",
     "canonical_title": "Lady-INK",
     "canonical_url": "/wiki/lady-ink.html",
@@ -10048,6 +10063,24 @@
     ]
   },
   {
+    "entity_id": "sylas_the_unbroken",
+    "canonical_title": "Sylas the Unbroken",
+    "canonical_url": "/wiki/sylas-the-unbroken.html",
+    "category": "characters",
+    "aliases": [],
+    "tags": [
+      "sylas",
+      "unbroken"
+    ],
+    "source_urls": [
+      "/wiki/sylas-the-unbroken.html"
+    ],
+    "brand": null,
+    "alias_candidates": [
+      "sylas unbroken"
+    ]
+  },
+  {
     "entity_id": "tacoswap",
     "canonical_title": "TacoSwap",
     "canonical_url": "/wiki/tacoswap.html",
@@ -10949,6 +10982,21 @@
     ],
     "source_urls": [
       "/wiki/triple-fork-event.html"
+    ],
+    "brand": null
+  },
+  {
+    "entity_id": "veyra_nyx",
+    "canonical_title": "Veyra Nyx",
+    "canonical_url": "/wiki/veyra-nyx.html",
+    "category": "characters",
+    "aliases": [],
+    "tags": [
+      "veyra",
+      "nyx"
+    ],
+    "source_urls": [
+      "/wiki/veyra-nyx.html"
     ],
     "brand": null
   },
