@@ -1,8 +1,8 @@
 # Crypto Moonboys Latest Canon And Brand Vision
 
 Status: working public canon and brand vision brief  
-Updated: 2026-09-19  
-Sources: current repository README, Master Source of Truth, attached w81 archive, and current SWARMSY positioning
+Updated: 2026-10-08 (October lore reconciliation cross-reference; brand model unchanged)  
+Sources: current repository README, Master Source of Truth, current SWARMSY positioning, protected First Witness corpus and historical W81 source provenance
 
 This file condenses the current brand direction into one practical source for writers, agents, developers and community builders.
 
@@ -161,6 +161,25 @@ Do not imply:
 The public rule is:
 
 **Your character. Your licence. Your royalties. Official canon is community-governed.**
+
+## October 2026 canon provenance clarification
+
+This **public brand brief** continues to define the umbrella, two valid paths, creator/IP rules and live-vs-planned messaging. It is **not** the scriptural authority for Year 3008 continuity. For that subject use the [First Witness source register](../wiki/first-witness-source-register.html), [master chronology](../wiki/first-witness-master-chronology.html), [Concordance](../wiki/first-witness-concordance.html), [Forty Paths](../wiki/first-witness-forty-paths.html) and later GK-approved expansions.
+
+The retired 94-source W81 archive is **evidence**, not final canon, and the upload `RAW CANNON.zip` contains the same 94 individual historical texts. The [updated W81 condensed digest](w81-condensed-canon-digest.md), [94-file dispositions](../brand-canon/wiki-rewrites/raw-canon-20261008-disposition.md) and [continuity companion](../brand-canon/story-bibles/w81-continuity-companion-20261008.md) give the dated extraction and known conflicts. A new companion or status note does **not** amend the original witnessed books.
+
+**Non-negotiable distinctions for lore copy:**
+
+- **2030 Great Concord** and the Bitcoin-witnessed common Covenant are not the same as the later sectarian **Great Consensus** of raw `w33.txt`.
+- The **Sacred/Aether-Chain** memory tradition has an **undated** Sacred Fork. The **World Chain** is separate and suffers its **2880** Triple Fork. Block Topia later governs via a distinct **True Bitcoin Fork**. By **2930** fewer than twelve secure regions remain; the main future conflict is **3008**.
+- The **Forty Paths** framework currently has **34 named readings and six unassigned positions**; old lists marked “28 active” or “40 complete” are archive evidence, not replacements.
+- Today's **HODL Warriors** creator-builder status for qualifying 1/1 holders, Year 3008 **HODL Warriors** extraordinary defence, and **HODL X Warriors** Games champion/service tradition are contextually distinct.
+- Escaped/outside **Bitcoin Kids** (Alfie line) and inside-city **Bitcoin X Kids** are not synonyms.
+- **NULL's origins, immortality/soul upload claims and the Final Fork's outcome** remain contested. Serial victories and later time loops in `w25.txt` / `W15.txt` are alternative narratives, not silently adopted endings.
+- **Fictional Samuel “HyroSAM” Blake / Agent SAM** is not identical to actual SAM automation or SWARMSY's SPARKY. The eight-part `W12.txt` source includes an **2036/2030** chronological conflict that still needs an editorial decision.
+- `w67.txt`, `w72.txt` and `w73.txt` are **game, mission and collectible-codex proposals**. They do not establish live tokens, NFT mint commitments, reward eligibility, playable release dates or current public ownership rights.
+
+Missing standalone wiki routes (notably **Agent SAM** and **Crypto Moongirls**) require an authorised editorial/new-page decision and normal publishing checks. These are **documentation corrections only**; public HTML, First Witness scripture, site shell, live Worker/game logic and legal terms remain outside the scope of this pass.
 
 ## Core Canon Spine
 
