@@ -1,0 +1,346 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-08",
+  "phase": 2,
+  "issue": 1458,
+  "pull_request": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/pull/1460",
+  "status": "clean research checkpoint; Phase2 incomplete; hold merge",
+  "base_commit": "cc856157f5bd23e1b7ae3ed032af44c6b725c524",
+  "tested_source_and_publishing_commit": "8a028d4e9c8f69c8e221c9e6145b3e18148d9c04",
+  "branch": "codex/gk-canon-phase2-20261008",
+  "backup_branch": "backup/gk-canon-phase2-base-20261008",
+  "backup_remote_verified": true,
+  "archive": {
+    "verified_original_identities": 94,
+    "unique_texts": 93,
+    "uncompressed_bytes": 2334149,
+    "archive_sha256": "eb3f1902b8f5e8b8e20a16c18c925a072bf81699ca404f3abb04c4f5b9a34b96",
+    "historical_commit": "44f180a6da267c6bc476c6ca6b777dd297ee1e65",
+    "recovery_path": "/tmp/gk-phase2/sources",
+    "publication": "original ZIP/texts remain outside public tree; byte verification is not semantic completion"
+  },
+  "comparisons": {
+    "inherited_complete": 43,
+    "additional_complete": 18,
+    "additional_sources": [
+      "W18.txt",
+      "w85.txt",
+      "w28.txt",
+      "w29.txt",
+      "w83.txt",
+      "w88.txt",
+      "W9.txt",
+      "w74.txt",
+      "w75.txt",
+      "w76.txt",
+      "w77.txt",
+      "w79.txt",
+      "w89.txt",
+      "w81.txt",
+      "w90.txt",
+      "w91.txt",
+      "W11.txt",
+      "W16.txt"
+    ],
+    "cumulative_complete": 61,
+    "remaining": 33,
+    "fully_read_comparison_pending": [
+      "W19.txt",
+      "W15.txt",
+      "w25.txt",
+      "M16.txt",
+      "W5.txt",
+      "w69.txt",
+      "W20.txt"
+    ],
+    "remaining_entire_readings_required": 26,
+    "source_identity_bytes_hashes_disposition_preserved": 94,
+    "completion_evidence": "complete per-source section/claim dispositions in issue-1458-audit.json; no completion inferred from COVERED, route or checksum"
+  },
+  "wiki": {
+    "audited_distinct": 84,
+    "full_audits": 82,
+    "focused_audits": 2,
+    "existing_articles_expanded_this_checkpoint": 8,
+    "changed_paths": [
+      "wiki/alfie-bitcoin-kid-blaze.html",
+      "wiki/gkniftyheads.html",
+      "wiki/hodl-wars.html",
+      "wiki/maidstone-base.html",
+      "wiki/queen-sarah-p-fly.html",
+      "wiki/sacred-chain.html",
+      "wiki/the-squeaky-pinks.html",
+      "wiki/whale-lords.html"
+    ],
+    "cumulative_distinct_existing_lore_articles_expanded": 51,
+    "inherited_new_articles": 9,
+    "new_articles_this_checkpoint": 0,
+    "new_original_stories_this_checkpoint": 0,
+    "scope": "source-specific character/faction/operational findings; complete remaining sources and website-wide character/faction/religious audit still open"
+  },
+  "preservation": {
+    "base": "cc856157f5bd23e1b7ae3ed032af44c6b725c524",
+    "changed_articles": 8,
+    "preserved_paragraphs": 741,
+    "preserved_canonical_ids": 242,
+    "internal_links_checked": 501,
+    "broken": [],
+    "per_page": [
+      {
+        "path": "wiki/alfie-bitcoin-kid-blaze.html",
+        "preserved_paragraphs": 108,
+        "preserved_canonical_ids": 34
+      },
+      {
+        "path": "wiki/gkniftyheads.html",
+        "preserved_paragraphs": 64,
+        "preserved_canonical_ids": 20
+      },
+      {
+        "path": "wiki/hodl-wars.html",
+        "preserved_paragraphs": 155,
+        "preserved_canonical_ids": 47
+      },
+      {
+        "path": "wiki/maidstone-base.html",
+        "preserved_paragraphs": 31,
+        "preserved_canonical_ids": 13
+      },
+      {
+        "path": "wiki/queen-sarah-p-fly.html",
+        "preserved_paragraphs": 112,
+        "preserved_canonical_ids": 37
+      },
+      {
+        "path": "wiki/sacred-chain.html",
+        "preserved_paragraphs": 141,
+        "preserved_canonical_ids": 46
+      },
+      {
+        "path": "wiki/the-squeaky-pinks.html",
+        "preserved_paragraphs": 71,
+        "preserved_canonical_ids": 24
+      },
+      {
+        "path": "wiki/whale-lords.html",
+        "preserved_paragraphs": 59,
+        "preserved_canonical_ids": 21
+      }
+    ],
+    "protected_scripture_locks_and_story_bibles_unchanged": true
+  },
+  "canon_changes": {
+    "specific_minor_source_decisions_added": 18,
+    "major_historical_retcons_published": 0,
+    "scripture_changes": 0,
+    "identity_merges": 0,
+    "forty_slots_assigned": 0,
+    "final_fork_outcome_adopted": false,
+    "major_decisions_awaiting_specific_GK_approval": [
+      "Triple Fork date",
+      "regional collapse",
+      "Agent SAM calendar",
+      "complete Forty roster",
+      "Final Fork continuity/ontology"
+    ],
+    "approved_adult_stories": "Necessary Monsters, Fifth Carbon, Black Dividend, Last Loading and all five prior connecting stories preserved"
+  },
+  "browser": {
+    "browser": "151.0.7922.173",
+    "pages": [
+      {
+        "slug": "alfie-bitcoin-kid-blaze",
+        "width": 1440,
+        "contentsTargets": 36,
+        "scriptErrors": 0,
+        "overflow": false
+      },
+      {
+        "slug": "queen-sarah-p-fly",
+        "width": 1440,
+        "contentsTargets": 38,
+        "scriptErrors": 0,
+        "overflow": false
+      },
+      {
+        "slug": "gkniftyheads",
+        "width": 1440,
+        "contentsTargets": 22,
+        "scriptErrors": 0,
+        "overflow": false
+      },
+      {
+        "slug": "sacred-chain",
+        "width": 1440,
+        "contentsTargets": 47,
+        "scriptErrors": 0,
+        "overflow": false
+      },
+      {
+        "slug": "the-squeaky-pinks",
+        "width": 1440,
+        "contentsTargets": 25,
+        "scriptErrors": 0,
+        "overflow": false
+      },
+      {
+        "slug": "maidstone-base",
+        "width": 1440,
+        "contentsTargets": 14,
+        "scriptErrors": 0,
+        "overflow": false
+      },
+      {
+        "slug": "hodl-wars",
+        "width": 1440,
+        "contentsTargets": 49,
+        "scriptErrors": 0,
+        "overflow": false
+      },
+      {
+        "slug": "whale-lords",
+        "width": 1440,
+        "contentsTargets": 21,
+        "scriptErrors": 0,
+        "overflow": false
+      },
+      {
+        "slug": "alfie-bitcoin-kid-blaze",
+        "width": 390,
+        "contentsTargets": 36,
+        "scriptErrors": 0,
+        "overflow": false
+      },
+      {
+        "slug": "queen-sarah-p-fly",
+        "width": 390,
+        "contentsTargets": 38,
+        "scriptErrors": 0,
+        "overflow": false
+      },
+      {
+        "slug": "gkniftyheads",
+        "width": 390,
+        "contentsTargets": 22,
+        "scriptErrors": 0,
+        "overflow": false
+      },
+      {
+        "slug": "sacred-chain",
+        "width": 390,
+        "contentsTargets": 47,
+        "scriptErrors": 0,
+        "overflow": false
+      },
+      {
+        "slug": "the-squeaky-pinks",
+        "width": 390,
+        "contentsTargets": 25,
+        "scriptErrors": 0,
+        "overflow": false
+      },
+      {
+        "slug": "maidstone-base",
+        "width": 390,
+        "contentsTargets": 14,
+        "scriptErrors": 0,
+        "overflow": false
+      },
+      {
+        "slug": "hodl-wars",
+        "width": 390,
+        "contentsTargets": 49,
+        "scriptErrors": 0,
+        "overflow": false
+      },
+      {
+        "slug": "whale-lords",
+        "width": 390,
+        "contentsTargets": 21,
+        "scriptErrors": 0,
+        "overflow": false
+      }
+    ],
+    "noJavaScriptPages": 8,
+    "searchQueries": 9,
+    "externalRequestsBlocked": true
+  },
+  "browser_acceptance": {
+    "command": "CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium node /tmp/gk-phase2/browser-validation.mjs",
+    "scope": "adapted existing acceptance script to all8 changed pages and9 new-term queries; every new heading appears in native contents;16 desktop/mobile views and8 no-JavaScript pages",
+    "additional_section_screenshots": 16,
+    "screenshots": "/tmp/gk-phase2/browser",
+    "external_requests_blocked": true,
+    "mobile_screenshots_visually_inspected": [
+      "sacred-chain-addition-390.png",
+      "maidstone-base-addition-390.png"
+    ]
+  },
+  "publishing": {
+    "related_paths": "scoped to8 changed articles",
+    "index_entities_links_graph_sitemap_statistics": "regenerated; second generation leaves tracked outputs unchanged",
+    "indexed_wiki_pages": 417,
+    "graph_nodes": 427,
+    "graph_edges": 2083,
+    "mobile_nodes": 75,
+    "entity_map_categories_sitemap_statistics": "checked; tracked output unchanged because no newURL",
+    "content_state_parity": "passed for424 pages",
+    "source_register_and_decisions": "updated; original94 identities/sizes/hashes/dispositions unchanged"
+  },
+  "validation": {
+    "aggregate_command": "BASE_SHA=cc856157f5bd23e1b7ae3ed032af44c6b725c524 CANON_PROSE_CHANGE_APPROVED=1 CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium PLAYWRIGHT_BROWSERS_PATH=/tmp/gk-phase2/pw-browsers npm test",
+    "aggregate_result": "exit1 after Arcade/WorkerAPI/Wiki/WAX success; sole Visual failure was a pre-existing ignored public-site/wiki/components/header.html copied partial, dated2026-10-02, being scanned as a standalone sourcepage",
+    "environment_fix": "Preserved pre-existing public-site at /tmp/gk-phase2/preexisting-public-site; no source/validator changes. Full Visual suite then rerun.",
+    "visual_rerun_command": "BASE_SHA=cc856157f5bd23e1b7ae3ed032af44c6b725c524 CANON_PROSE_CHANGE_APPROVED=1 CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium PLAYWRIGHT_BROWSERS_PATH=/tmp/gk-phase2/pw-browsers npm run ci:visual",
+    "visual_rerun_result": "passed all16 commands, exit0; all5 repository domains have successful complete runs. No successful single aggregate invocation claimed.",
+    "browser_provisioning": "task-local Playwright executable cache points to installed Chromium151.0.7922.173; tests and assertions unchanged",
+    "local_prose_flag": "explicit task ordinary-prose authorization; does not apply GitHub maintainer label or approve major canon/release",
+    "mandatory_canon": "passed through complete Wiki suite: original Python archive verifier94 identities,4 corruption/integrity tests,14 Node guard/command regressions and424-page guard;55 traceable decisions",
+    "guard_coverage": "unsupported dates/identity merges/final endings/live archival claims; all h1\u2013h6 and prose; generic/lookalike/inert/unrelated attribution; duplicate roster; approval receipt; preserved narrative and exact sourced deliberate replacement; Python failure propagation",
+    "graph_integrity_command": "node scripts/graph-publishing-integrity.test.mjs",
+    "graph_integrity_result": "passed417 indexed wiki pages/427 nodes/2083 edges/75 mobile nodes",
+    "content_state_command": "node scripts/generate-wiki-content-state.mjs --check",
+    "content_state_result": "passed424 pages",
+    "internal_links_and_preservation": "passed501 links/fragments,0 broken;741 old paragraphs and242 canonical IDs in8 changed pages retained",
+    "protected_files": "all FirstWitness pages, canon-locks and protected story bibles unchanged from merged baseline",
+    "pages_command": "node scripts/prepare-pages-artifact.mjs public-site",
+    "pages_result": "passed; artifact moved to /tmp/gk-phase2/pages-artifact; all8 changed HTML byte-identical to source; no original W81/Worker/scripts/node_modules/.git publication; no deployment",
+    "git_diff_check": "passed",
+    "logs": {
+      "aggregate": "/tmp/gk-phase2/npm-test.log",
+      "visual": "/tmp/gk-phase2/visual-clean.log",
+      "browser": "/tmp/gk-phase2/browser.log",
+      "preservation_links": "/tmp/gk-phase2/link-preservation-report.json",
+      "counts": "/tmp/gk-phase2/count-report.json",
+      "publishing_parity": "/tmp/gk-phase2/publishing-parity.log",
+      "pages": "/tmp/gk-phase2/pages-build.log"
+    }
+  },
+  "github_review": {
+    "checked_commit": "8a028d4e9c8f69c8e221c9e6145b3e18148d9c04",
+    "comments": "fetched; no comments/reviews at checkpoint",
+    "ci_run": 37830750837,
+    "graph_run": 37830750782,
+    "wiki_structure_run": 37830750758,
+    "results": "Arcade/WorkerAPI/WAX/Visual, WikiStructure, WorkerDeploymentProvenance and ProductionDeploymentTruth passed; template check skipped for draft. Wiki and Graph blocked solely by maintainer prose label. Graph/index parity and canon guards passed before gate.",
+    "approval_gate": "canon-prose-change-approved not self-applied; both failed job logs identify the same8 protected article edits and demand maintainer label",
+    "wiki_gate_job": 113495146011,
+    "graph_gate_job": 113495142715,
+    "new_documentation_commit_checks": "fetch final-head runs after push; do not assume earlier runs cover new head"
+  },
+  "delivery": {
+    "new_PR_created": true,
+    "draft": true,
+    "issue_remains_open": true,
+    "merge_performed": false,
+    "deployment_performed": false,
+    "direct_main_push": false,
+    "final_source_checkpoint_is_not_94_of_94": true
+  },
+  "limitations": [
+    "33 comparisons and subsequent website-wide semantic audit unfinished; exact backlog in progress/audit.",
+    "Specific GK decisions for5 major proposals remain pending.",
+    "Fresh external markets, token transactions, artist biographies, schedules, link reachability and separate repository deployment not claimed.",
+    "Static canon checks do not prove all scene/relationship consistency; human semantic review remains necessary."
+  ]
+}

@@ -36,9 +36,11 @@ proposed; no final ending, new Forty slot or historical retcon is adopted.
 
 New base: `cc856157f5bd23e1b7ae3ed032af44c6b725c524` (merged #1459).
 Working branch: `codex/gk-canon-phase2-20261008`.
-Backup: `backup/gk-canon-phase2-base-20261008`, at that exact base.
+Backup: `backup/gk-canon-phase2-base-20261008`, at that exact base; remote verified.
+Draft PR: https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/pull/1460.
+Source checkpoint: `2900e8448`; generated publishing checkpoint: `8a028d4e9`.
 The merged tree matches corrected head `803e48f83d3d97deaa2fb3f0d8e6f5a04046cf7f`
-without differences. The historical Base/Backup/branch records below describe
+without differences. The historical Base/Backup/branch records above describe
 Phase 1 only. Keep this new Phase 2 PR separate; do not reopen merged #1459.
 
 The original archive was recovered again outside publication at
@@ -84,8 +86,54 @@ Five major recommendations remain unapproved and still need the wider source
 audit. W18's date/relationship conflicts and w28's ghost-world alternative now
 extend the impact record; no lock or original scripture changes. The source
 records, modern stories, prior five authored stories and original archive
-identities remain preserved. Validation and delivery receipts follow below
-once actually executed; Phase 2 is not complete and Issue #1458 stays open.
+identities remain preserved. Validation and delivery receipts are recorded below; Phase 2 is not complete
+and Issue #1458 stays open.
+
+### Phase 2 actual validation and delivery
+
+Current machine-readable receipt: `issue-1458-phase2-verification.json`.
+The older verification file explicitly points here and preserves Phase1 evidence.
+
+- Original archive verifier passes94 identities/93 texts/2,334,149 bytes; all
+  original CSV identities/byte/hash/disposition fields match merged main.
+- Full `npm test` passed Arcade, WorkerAPI, Wiki and WAX, then hit one Visual
+  shell-parity failure from a pre-existing ignored `public-site` copied partial.
+  The artifact dated2October was preserved outside the source tree at
+  `/tmp/gk-phase2/preexisting-public-site`; no validator or source changed.
+  Complete `npm run ci:visual` then passed all16 commands, exit0. All five
+  repository domains have successful full runs; no single successful aggregate
+  invocation is claimed. The task-local browser cache uses installed Chromium.
+- Mandatory Wiki runs `test:canon`:94 originals, four Python corruption tests,
+  fourteen Node guard/command regressions,424-page guard and55 decisions.
+  Heading/prose, generic-attribution, identity/date/ending, roster, approval and
+  preserved-scene/deliberate-replacement safeguards remain operational.
+- Graph passes417 indexed wiki pages,427 nodes,2,083 edges and75 mobile nodes.
+  Repeated publishing regeneration produces no tracked output changes.
+  Content-state parity passes424 pages; category/sitemap/entity URLs stay valid.
+- Browser acceptance passes16 desktop/mobile views, eight no-JavaScript pages,
+  nine full-search/autocomplete queries and all new native contents entries.
+  External requests are blocked; no errors or horizontal overflow. Sixteen
+  additional screenshots capture the new sections; two mobile views inspected.
+- All741 old paragraphs and242 canonical IDs across eight changed articles
+  remain.501 internal links/fragments resolve, zero broken. FirstWitness pages,
+  locks and all protected adult stories/bibles remain unchanged from this base.
+- A fresh Pages artifact builds successfully; all eight changed HTML match.
+  It is preserved at `/tmp/gk-phase2/pages-artifact`, outside source scans.
+  Original W81, Worker code and private development files are excluded.
+  No deployment occurred.
+- GitHub source-head checks at `8a028d4e9`:Arcade/WorkerAPI/WAX/Visual,
+  WikiStructure, WorkerDeploymentProvenance and ProductionDeploymentTruth pass.
+  Template check is skipped for the draft. Wiki/Graph fail solely at the existing
+  maintainer `canon-prose-change-approved` gate; both logs name these eight edits.
+  Their canon guard and graph/index parity passed. No self-applied label or
+  weakened gate. Current PR comments were fetched; none present at this receipt.
+
+Local checks use `BASE_SHA=cc856157f5bd23e1b7ae3ed032af44c6b725c524` and
+`CANON_PROSE_CHANGE_APPROVED=1` for the explicitly authorised ordinary prose.
+That flag does not approve a major lock change, add a GitHub label, merge or
+release. Complete source/publishing changes are separated from this verification
+checkpoint; final documentation-head Actions must still be fetched after push.
+Keep PR1460 draft and Issue1458 open. Resume the exact33-source backlog above.
 
 ## Inherited PR #1459 verification and review receipts
 

@@ -1,4 +1,6 @@
 {
+  "record_scope": "Inherited merged PR1459 verification; use active_checkpoint_record for current Phase2 counts and results.",
+  "active_checkpoint_record": "issue-1458-phase2-verification.json",
   "date": "2026-10-08",
   "issue": 1458,
   "base_commit": "81bd8f13d17b0864d5de849f3c4aac4b902abc14",
