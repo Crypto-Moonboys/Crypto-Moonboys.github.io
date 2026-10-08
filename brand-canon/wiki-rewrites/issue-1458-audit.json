@@ -156,7 +156,7 @@
         "Kael Voss Reclaimer serves Sarah, accepts Crimson Protocol from Sylas The Unbroken; Veyra Nyx HODL Warrior forms loved tragic triad. No evidence yet merges them with other Kael/Sylas identities.",
         "2880 Triple Fork, 2900 loss of >75% major cities, 2930 Queens Council and three-decade construction differ from existing high-risk historical anchors.",
         "Layer Eight mercy setting and nine nested layers; universe dead outside; universal voluntary upload; three Originals never forget yet wake with no memory require a full-series ontology choice.",
-        "No source is marked complete and no new date/Final Fork outcome is accepted after this partial reading.",
+        "Complete reading does not yet complete the cross-page comparison; no new date/Final Fork outcome is accepted.",
         "One-million cycle repeats same reset; two-million / Volume 6 adds Amsterdam WAXP Humunoid crash and bodily merging/firewalls/sacrificial living bombs. It is a fictional ledger collapse, not evidence of actual WAX product failure.",
         "Four-million / Volume 8 adds THE BITCOIN CASH KID and Rapid Cash Army already in mid-conflict (no complete Volume 7 introduction appears in these paragraphs). Sarah has a source-fiction humanoid son Charlie No Ball Games Buster forged of code/flesh; ETH Disruptor storms suppress play and kill citizens. This role must remain distinct from real artist biography.",
         "Five-million beginning adds maternal conflict, tyranny against playful children and expanding internal family civil war; still no terminal resolution accepted.",
@@ -273,8 +273,33 @@
       "bytes": 188060,
       "sha256": "74b365771aa1840d17b83760348037a7fc2abf423e194cf8b3f5942e4c2f8929",
       "byte_verified": true,
-      "semantic_review": "pending complete semantic reading",
-      "prior_disposition": "CONFLICT"
+      "semantic_review": "complete source reading; connected-page comparison in progress",
+      "prior_disposition": "CONFLICT",
+      "read_progress": {
+        "method": "Original UTF-8 text split on blank lines; all printed paragraphs read in full",
+        "paragraphs_total": 623,
+        "paragraphs_read_in_full": [
+          [
+            1,
+            623
+          ]
+        ],
+        "next_unread_paragraph": null,
+        "complete_source_comparison": false
+      },
+      "partial_findings": [
+        "Parts1-10 Elder Codex-7 narrator: 2789 Datapocalypse and claimed prior Triple Fork; Alfie/Jodie/Thera9/Aleema/Iris7 ensemble, Seeding/Theta/Bitbone, both sides compromised by NULL; Sarah sacrifice and walls destroyed; victory followed by 3018 prophecy. No Kael/Sylas/Veyra triad in this opening.",
+        "Iris7 inside-born hybrid makes choice to leave; first escaped Bitcoin Kids retain separate history. TrueBloodline rhetoric is character claim, not authority to erase inside-born generation or survivor refusals.",
+        "Parts11-20 HybridSovereign -> 3018rift -> falseAlfie -> Newborn -> MirrorNewborns -> TrueSovereign; Alfie captured/rescued; another victory ends with 3028shadow.",
+        "Parts21-30 Neo/Ultimate Sovereign -> 3028 Citadel -> 2789 AGNES7 origin -> 3028 planetshadow -> blackshard dormant until3038 -> EternalWatch/ChildoftheShard; same30parts repeatedly call final victory while next horror persists.",
+        "Repeated all28factions coalition lists and SixPillars battlefield roles are local mobilisation; they do not replace Forty roster. NICE&EASY surviving after vaporisation and repeated last-sacrifice claims require deliberate accounting.",
+        "Parts31-35 unborn Child dreams Dream Sovereign; the company enters its mind, helps it answer and return born. Aleema and Child appear together: the epithet does not merge them.",
+        "Parts36-50 proceed through 3038 Future Sovereign, 3048 Eternal Sovereign and 3058 Infinite Sovereign; repeated Alfie capture/rescue, shared dream and collective-freedom endings. The successive universal victories contradict treating any preceding ending as definitive.",
+        "Parts51-75 extend to centuries, millennia and eons of universal peace: Iris Codex Schools, Child as guardian, Thera/Aleema cosmic gardens, Alfie/Jodie hand-in-hand then spirits, all factions permanently benevolent. These are narrated future claims, not current 3008 institutions or a new universal lifespan law.",
+        "Explicit THE END recurs at Parts50,55,60,65,70,75; after first Part75, Parts66-75 recur with altered social-media prompts. Duplicated continuations are not independent corroborating witnesses.",
+        "NULL last shard displayed in Part52 after prior total dissolutions; Elder fades then continues watching/carving. Source contradictions remain recorded, not repaired with unapproved resurrection or reset mechanics.",
+        "Current full Elder, Iris, Aleema and Dream Sovereign articles already preserve attribution and modern local stories. Missing precision includes complete 3038-3058 sequence, duplicated66-75, and school/garden futures. Other owning pages and First Witness comparisons remain pending."
+      ]
     },
     {
       "file": "w26.txt",
@@ -1008,6 +1033,26 @@
         "all canonical sections"
       ],
       "scope": "full canonical article read and source comparison"
+    },
+    {
+      "path": "wiki/elder-codex-7.html",
+      "scope": "full canonical article",
+      "findings": "Full canonical article, including Open Last Line, Tarn Kes, Two Readings, Last Survivor supper and departed adult companion, compared with complete w25. Existing private histories preserved; dates/immortality/last-Scribe remain attributed."
+    },
+    {
+      "path": "wiki/iris-7.html",
+      "scope": "full canonical article",
+      "findings": "Full canonical article compared with complete w25, including Blue Margin Book, Window Slip, Sella Vey and Unsent Map. Child identity retained; later Codex Schools remain narrated futures."
+    },
+    {
+      "path": "wiki/aleema-child-of-the-shard.html",
+      "scope": "full canonical article",
+      "findings": "Full canonical article compared with complete w25, including Tin Stair, Countback, Split Bowl, White Shutter/Holdfast, Neth Aster and private jokes. Aleema appears beside prophetic Child; no identity/parentage merge."
+    },
+    {
+      "path": "wiki/dream-sovereign.html",
+      "scope": "full canonical article",
+      "findings": "Full canonical article compared with complete w25 Parts30-35 and later sovereign cycles. Dream Sovereign, Future, Eternal and Infinite names are source-specific stages; no present-day global final outcome adopted."
     }
   ]
 }

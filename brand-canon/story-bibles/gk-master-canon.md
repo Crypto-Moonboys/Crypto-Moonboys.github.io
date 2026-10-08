@@ -166,6 +166,31 @@ Blackout remain research targets, not aliases for similarly named modern cast.
 The Princess, Tracey, Rya-B and Sarah retain distinct source identities. The
 complete character census remains tracked in the semantic audit.
 
+### Approved modern lives remain canon evidence
+
+The [adult character development register](../wiki-rewrites/adult-character-lives-20261005.md)
+already records 56 private-history chapters across 28 fictional character
+pages. Those chapters are part of the current authored world, not missing
+archive evidence. Read the register and each owning scene before revising its
+character; this working bible is an entry point, not a replacement for them.
+Its 5 October publication approval does not approve a later historical retcon.
+
+Codex-7's Last Survivor supper preserves his enjoyment of a flattering false
+image; his departed adult companion does not return because he improves a
+public reading. Tarn Kes can challenge the Elder's own approval of a guessed
+date. Aleema's relationship with Neth Aster preserves the cancelled journey,
+lost payment and damaged trust; her private ridicule still costs a working
+relationship. Her receiving duties retain White Shutter and Holdfast's
+shortages and Sena Rill's unrestored fragment. No serial declaration of eternal
+peace cancels these events or their consequences.
+
+Iris's Blue Margin Book, Window Slip, Sella Vey and Unsent Map remain her
+existing childhood stories. The later Codex Schools are a narrated future,
+not permission to age her into the adult relationship register. Aleema remains
+distinct from the prophetic Child whom she and Thera address in the same scene.
+Modern lore can deepen a source character without inheriting every future
+claim made by an unreliable narrator.
+
 ## 9. Games, generations and HODL WARS
 
 [Hard Fork Games](../../wiki/hard-fork-games.html) includes selection, hospitality,

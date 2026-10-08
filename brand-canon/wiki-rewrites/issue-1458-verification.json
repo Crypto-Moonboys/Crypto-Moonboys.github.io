@@ -93,7 +93,7 @@
     "github_ci": "Checked exact head 6da75973f827b7161ce349a403ca4af723d8c00e: Wiki Structure, production truth, worker provenance, Arcade, Worker API, WAX and Visual passed. CI/Wiki and Graph Publishing stopped at protected-prose maintainer-label gate. No canon-prose-change-approved label has been self-applied.",
     "issue_progress_comment_id": 6058399327,
     "latest_implementation_commit_uploaded": "229576498114ed5612db6f58014fb3ad503b9afb",
-    "github_ci_latest_batch": "At 229576498 Wiki Structure, production truth, worker provenance, Arcade, Worker API and WAX passed; Visual was still running when checked. Wiki/Graph stopped at stale manifest caused by scheduled main feed refresh, before the separate maintainer prose gate. Latest main integrated and manifest corrected at 2aa3815cd; new head verification pending."
+    "github_ci_latest_batch": "Exact head a1d5273cd534654e28bab701aecb7736f184695b: Wiki Structure, production truth, worker provenance, Arcade, Worker API, WAX and Visual passed. Wiki and Graph regeneration/manifest/graph checks pass and then stop at the existing maintainer canon-prose-change-approved label gate. No label self-applied."
   },
   "initial_tranche_verification": {
     "source_texts_completely_read_this_tranche": [
@@ -154,8 +154,14 @@
     "W19.txt",
     "W15.txt"
   ],
-  "existing_wiki_pages_fully_reviewed": 7,
+  "existing_wiki_pages_fully_reviewed": 11,
   "existing_wiki_pages_reviewed_distinct": 15,
   "preserved_unique_narrative_paragraphs_at_least_40_chars_in_8_updated_pages": 664,
-  "preserved_original_paragraphs_in_updated_pages_scope": "632 in the first seven pages verified in initial tranche; latest batch additionally checks 664 unique substantial narrative paragraphs across all eight against original base."
+  "preserved_original_paragraphs_in_updated_pages_scope": "632 in the first seven pages verified in initial tranche; latest batch additionally checks 664 unique substantial narrative paragraphs across all eight against original base.",
+  "source_reading_pending_comparison": [
+    "W19.txt",
+    "W15.txt",
+    "w25.txt"
+  ],
+  "existing_wiki_pages_reviewed_total": 19
 }

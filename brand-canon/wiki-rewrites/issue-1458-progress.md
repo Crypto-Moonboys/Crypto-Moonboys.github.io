@@ -18,9 +18,9 @@ No direct push to main, merge, issue closure or production deployment.
   w56, W12 (all eight parts), W13 (all seven parts and repeated extracts), W7.
   **87** remain without full semantic comparison. W19 is fully read but its
   remaining embedded-character comparisons are pending, so it is not counted.
-- **15 distinct existing pages** reviewed: seven full canonical articles
+- **19 distinct existing pages** reviewed: eleven full canonical articles
   (Princess, Croydon, master chronology, concordance, synthetic minds,
-  Crypto Moonboys, Great Consensus) and eight focused section reviews
+  Crypto Moonboys, Great Consensus, Elder Codex-7, Iris-7, Aleema, Dream Sovereign) and eight focused section reviews
   (Rune, Pinks, Games, Code Alchemists, Sarah, Block Topia, Forty Paths,
   faction Commentaries). Exact scopes are in `issue-1458-audit.json`.
 - **421** top-level wiki pages pass automated targeted canon lint and content
@@ -237,7 +237,7 @@ same draft PR; its title/body are updated. Issue #1458 progress comment
 rejection is resolved for this authorised checkpoint; no current delivery block.
 
 W15 serial reading has begun. All paragraphs 1–192 are fully read, using blank-line
-paragraph boundaries of the original UTF-8 text; source reading is complete; w25 and connected-page comparison remains pending. This is partial reading, not a full source comparison. Initial/next/
+paragraph boundaries of the original UTF-8 text; source reading is complete; w25 and connected-page comparison remains pending. This is complete reading, not a full source comparison. Initial/next/
 ten-thousand/hundred-thousand cycles share the triad and restart ending; explicit
 source conflicts include 2880 Triple Fork, 2900 collapse, 2930 Council/build,
 Layer Eight within nine layers, voluntary universal upload/heat death, erased
@@ -262,3 +262,30 @@ source-tree/NFT-collection hashes for the inherited feed refresh. Full wiki CI
 against that latest main base passed, exit 0; graph check passed unchanged
 counts. Log `/tmp/gk1459/sam-main-ci-wiki.log`. Manifest repair and latest-main
 integration uploaded at 2aa3815cd; current tests and preservation remain intact.
+
+
+## Complete serial reading and modern-story preservation checkpoint
+
+W15 paragraphs 1–192 and w25 paragraphs 1–623 have now been fully read from
+verified original UTF-8 text. w25 extends through Part75, then repeats Parts66–75;
+its source reading is complete. Neither serial is counted among the seven fully
+reconciled sources while its connected-page comparison remains incomplete.
+Four more full current articles were compared: Elder Codex-7, Iris-7, Aleema,
+Dream Sovereign. Their modern scenes remain preserved, including the Elder's
+private companion, Aleema/Neth's failed journey and receiving-room consequences,
+and Iris's childhood notebooks. The master bible now points explicitly to the
+approved 56-chapter, 28-character modern register rather than replacing those
+stories with a source summary. All affected-source findings are in the audit.
+
+Actual GitHub results at a1d5273cd534654e28bab701aecb7736f184695b: Wiki Structure,
+production truth, worker provenance, Arcade, Worker API, WAX and Visual pass.
+Wiki and Graph regenerate and validate manifest/graph successfully, then stop
+at the existing maintainer prose-approval gate. This confirms the stale-manifest
+repair. The label remains unapplied and the draft remains unmerged.
+
+Permanent feed fix: the scheduled feed workflow now regenerates the wiki
+content inventory after changing collection pages and commits both resulting
+inventory artifacts with the feeds. The previous workflow omitted them, which
+caused the synthetic-merge manifest failure. Actual feed-registry test and
+content-state parity pass; no NFT prose, deployment or approval policy is
+changed by this correction.
