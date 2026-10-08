@@ -48,7 +48,7 @@
     "content_state_parity": "passed",
     "graph_publishing_integrity": "passed",
     "browser": "passed",
-    "github_pages_artifact": "built successfully; no deployment",
+    "github_pages_artifact": "latest batch built successfully; no deployment",
     "git_diff_check": "passed",
     "full_npm_test": "Aggregate attempt passed Arcade, Worker API, Wiki and WAX; stopped in Visual on missing bundled browser. All 16 Visual commands subsequently passed in ci:visual after installed Chromium setup and moving the generated preview outside the source tree. No successful single aggregate npm test invocation is claimed.",
     "ci_domains": {
@@ -64,11 +64,12 @@
       "sam_wiki": "/tmp/gk1459/sam-ci-wiki.log",
       "sam_browser": "/tmp/gk1459/sam-browser.log",
       "sam_canon": "/tmp/gk1459/canon-direct-final.log",
-      "sam_links": "/tmp/gk1459/sam-link-report.json"
+      "sam_links": "/tmp/gk1459/sam-link-report.json",
+      "sam_visual": "/tmp/gk1459/sam-ci-visual.log"
     },
-    "github_pages_artifact_path": "/tmp/gk1458/public-site",
+    "github_pages_artifact_path": "/tmp/gk1459/public-site",
     "scoped_related_paths": "passed: unrelated NFT/curated pages unchanged; invalid scope fails before writes",
-    "visual_current_batch": "running; previous tranche Visual result remains scoped to prior checkpoint"
+    "visual_current_batch": "passed: all 16 ci:visual commands, exit 0"
   },
   "limitations": [
     "Byte verification and static lint do not constitute full semantic reconciliation.",
@@ -81,15 +82,15 @@
     "backup_branch_uploaded": true,
     "implementation_branch_uploaded": true,
     "pull_request_url": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/pull/1459",
-    "issue_update_posted": false,
-    "blocked_actions": [
-      "post issue progress update"
-    ],
-    "approval_review_reason": "Continuation directive explicitly authorises synchronising this same PR and Issue #1458; earlier issue-comment rejection is retained as historical evidence.",
+    "issue_update_posted": true,
+    "blocked_actions": [],
+    "approval_review_reason": "Both latest push and Issue #1458 progress comment succeeded under explicit continuation authorisation. Earlier rejection remains historical; no current delivery block.",
     "reviewable_pr_body": "/workspace/scratch/issue-1458-draft-pr.md",
     "reviewable_issue_update": "/workspace/scratch/issue-1458-issue-update.md",
     "pull_request_draft": true,
-    "github_ci": "Checked exact head 6da75973f827b7161ce349a403ca4af723d8c00e: Wiki Structure, production truth, worker provenance, Arcade, Worker API, WAX and Visual passed. CI/Wiki and Graph Publishing stopped at protected-prose maintainer-label gate. No canon-prose-change-approved label has been self-applied."
+    "github_ci": "Checked exact head 6da75973f827b7161ce349a403ca4af723d8c00e: Wiki Structure, production truth, worker provenance, Arcade, Worker API, WAX and Visual passed. CI/Wiki and Graph Publishing stopped at protected-prose maintainer-label gate. No canon-prose-change-approved label has been self-applied.",
+    "issue_progress_comment_id": 6058399327,
+    "latest_implementation_commit_uploaded": "229576498114ed5612db6f58014fb3ad503b9afb"
   },
   "initial_tranche_verification": {
     "source_texts_completely_read_this_tranche": [

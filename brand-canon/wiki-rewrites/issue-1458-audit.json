@@ -138,7 +138,32 @@
       "sha256": "c1292efd91ba68119c6f9e8a6a8e192b7d37342f2391876d80eb678eff8112cd",
       "byte_verified": true,
       "semantic_review": "pending complete semantic reading",
-      "prior_disposition": "CONFLICT"
+      "prior_disposition": "CONFLICT",
+      "semantic_status": "partial_reading",
+      "read_progress": {
+        "method": "Original UTF-8 text split on blank lines; every printed paragraph read in full",
+        "paragraphs_total": 192,
+        "paragraphs_read_in_full": [
+          [
+            1,
+            148
+          ]
+        ],
+        "next_unread_paragraph": 149,
+        "complete_source_comparison": false
+      },
+      "partial_findings": [
+        "Initial seven-message loop ends with heat-death/voluntary-upload revelation and triad restarting; next cycle and ten-thousand/hundred-thousand resets repeat it.",
+        "Kael Voss Reclaimer serves Sarah, accepts Crimson Protocol from Sylas The Unbroken; Veyra Nyx HODL Warrior forms loved tragic triad. No evidence yet merges them with other Kael/Sylas identities.",
+        "2880 Triple Fork, 2900 loss of >75% major cities, 2930 Queens Council and three-decade construction differ from existing high-risk historical anchors.",
+        "Layer Eight mercy setting and nine nested layers; universe dead outside; universal voluntary upload; three Originals never forget yet wake with no memory require a full-series ontology choice.",
+        "No source is marked complete and no new date/Final Fork outcome is accepted after this partial reading.",
+        "One-million cycle repeats same reset; two-million / Volume 6 adds Amsterdam WAXP Humunoid crash and bodily merging/firewalls/sacrificial living bombs. It is a fictional ledger collapse, not evidence of actual WAX product failure.",
+        "Four-million / Volume 8 adds THE BITCOIN CASH KID and Rapid Cash Army already in mid-conflict (no complete Volume 7 introduction appears in these paragraphs). Sarah has a source-fiction humanoid son Charlie No Ball Games Buster forged of code/flesh; ETH Disruptor storms suppress play and kill citizens. This role must remain distinct from real artist biography.",
+        "Five-million beginning adds maternal conflict, tyranny against playful children and expanding internal family civil war; still no terminal resolution accepted.",
+        "Six-million/Volume10 open mother-son war: Charlie overrides Sarah, attacks her loyalists/throne; HODL cells defend Sarah and Moongirls defect to her. Sarah remains an accountable tyrant, not automatically absolved by opposing her son.",
+        "Seven-million/Volume11 adds all-space-ships AI Agent Armies offering STARTR4CK4 Mafia of4 GiggaSystems alliance; Sarah refuses, armies leave hostile wallet-stealing X-Drones. Eight-million/Volume12 repeats this layer and reset. The fiction contains no operational hacking procedure."
+      ]
     },
     {
       "file": "W16.txt",

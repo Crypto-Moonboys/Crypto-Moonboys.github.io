@@ -215,7 +215,8 @@ full wiki CI with explicit original base and task-authorised local prose flag
 queries; 608 internal links/fragments, zero broken; original IDs and 664
 substantial unique narrative paragraphs preserved across eight existing pages.
 Screenshots inspected for SAM and House. Logs: `/tmp/gk1459/sam-*`. Current
-Visual rerun is underway; previous full-domain results above remain historical.
+Visual rerun completed all 16 commands, exit 0 (`sam-ci-visual.log`); previous
+full-domain results above remain historical.
 
 GitHub Actions were checked at exact prior head
 `6da75973f827b7161ce349a403ca4af723d8c00e`. Wiki Structure Enforcement, production
@@ -229,3 +230,28 @@ Next semantic work: W15/w25 full serial comparison. W19 has complete source
 reading recorded but needs the remaining named-character cross-page comparison
 before it can count as fully reviewed. Preserve the exact scopes; 87 sources
 remain without full semantic reconciliation.
+
+Delivery: SAM batch `229576498114ed5612db6f58014fb3ad503b9afb` uploaded to the
+same draft PR; its title/body are updated. Issue #1458 progress comment
+`6058399327` succeeded under the continuation directive. Earlier issue export
+rejection is resolved for this authorised checkpoint; no current delivery block.
+
+W15 serial reading has begun. Paragraphs 1–148 are fully read, using blank-line
+paragraph boundaries of the original UTF-8 text; next unread paragraph is 149
+of 192. This is partial reading, not a full source comparison. Initial/next/
+ten-thousand/hundred-thousand cycles share the triad and restart ending; explicit
+source conflicts include 2880 Triple Fork, 2900 collapse, 2930 Council/build,
+Layer Eight within nine layers, voluntary universal upload/heat death, erased
+memories versus three Originals remembering, and a seven-hundred-year mentor
+versus expanding cycle counts. Preserve these as evidence pending the complete
+serial, w25 and owning-page comparison.
+
+Latest Pages artifact built successfully and moved to `/tmp/gk1459/public-site`; no deployment.
+
+Latest remote head 229576498 passed canon guard; Wiki/Graph CI found a stale
+manifest in GitHub's synthetic merge checkout. Clean head checkout passes
+manifest parity on both Node 24 and the CI Node 22. Investigation found remote
+main advanced to b865fd991a63d3b74c7076acec703a9b5b0647d8; GitHub tests merge
+3bf3ee6543abf12c157c6190ddc8185fb74638f6, not the unchanged base snapshot.
+Inspecting and integrating latest main on the sandbox branch to regenerate
+against its complete source tree. This is separate from the maintainer prose gate.
