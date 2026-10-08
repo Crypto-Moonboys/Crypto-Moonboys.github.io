@@ -1,5 +1,7 @@
 # 8 October 2026 RAW CANON / W81 — source dispositions
 
+> **Current authority, Issue #1458 (8 October 2026): W81 is foundational truth.** Older language below freezing convergence or treating raw canon as secondary is retained as dated audit evidence and is superseded by `brand-canon/CANON_POLICY.md`. Retcons and Forty-slot proposals must be researched and traced; significant changes require specific GK approval. See `brand-canon/story-bibles/gk-master-canon.md` and `brand-canon/wiki-rewrites/issue-1458-progress.md`.
+
 **Scope:** all **94** uncompressed source entries of `RAW CANNON.zip`, which match the historical W81 inventory, including original filenames, sizes and SHA-256 hashes. Original archive preservation is intentional; do not rewrite source documents to look correct.
 
 **Authority:** this is an **editorial mapping, not a canon promotion or live-feature approval**. Use [First Witness chronology](../../wiki/first-witness-master-chronology.html), [concordance](../../wiki/first-witness-concordance.html), [source register](../../wiki/first-witness-source-register.html), [Forty Paths](../../wiki/first-witness-forty-paths.html), `README.md` and the current Master Source of Truth ahead of the historical archive.
@@ -21,8 +23,8 @@ Do **not** fill the six currently unassigned Forty Paths positions from old alte
 - **HISTORICAL**: 18 entries
 - **NEAR_DUPLICATE**: 1 entry
 - **OPERATIONAL**: 5 entries
-- **PARTIAL**: 8 entries
-- **PENDING_EDITORIAL**: 2 entries
+- **PARTIAL**: 9 entries
+- **PENDING_EDITORIAL**: 1 entry
 - **PROPOSAL**: 4 entries
 - **STRATEGY**: 3 entries
 
@@ -87,7 +89,7 @@ Do **not** fill the six currently unassigned Forty Paths positions from old alte
 | [`w53.txt`](w81-archive-retirement-20261004.md#raw-source-inventory) | 8,578 | COVERED | [`the-squeaky-pinks`](../../wiki/the-squeaky-pinks.html) | Named Squeaky Pinks profile present; this does not mean every paragraph from source was imported |
 | [`w54.txt`](w81-archive-retirement-20261004.md#raw-source-inventory) | 6,192 | COVERED | [`the-nice-easy-bois`](../../wiki/the-nice-easy-bois.html) | Named Nice & Easy Bois profile present; this does not mean every paragraph from source was imported |
 | [`w55.txt`](w81-archive-retirement-20261004.md#raw-source-inventory) | 6,631 | COVERED | [`the-ducky-boys`](../../wiki/the-ducky-boys.html) | Named Ducky Boys profile present; this does not mean every paragraph from source was imported |
-| [`w56.txt`](w81-archive-retirement-20261004.md#raw-source-inventory) | 5,278 | PENDING_EDITORIAL | [Crypto Moongirls faction chamber](../../battle-chamber/factions/crypto-moongirls.html), [`queen-sarah-p-fly`](../../wiki/queen-sarah-p-fly.html) | An existing selectable faction chamber and profile already cover Crypto Moongirls. Reconcile `w56` with them; any separate encyclopedia page or 34/6 register change needs explicit approval, not a duplicate chamber. |
+| [`w56.txt`](w81-archive-retirement-20261004.md#raw-source-inventory) | 5,278 | PARTIAL | [Crypto Moongirls faction chamber](../../battle-chamber/factions/crypto-moongirls.html), [`queen-sarah-p-fly`](../../wiki/queen-sarah-p-fly.html) | An existing selectable faction chamber and profile already cover Crypto Moongirls. Reconcile `w56` with them; any separate encyclopedia page or 34/6 register change needs explicit approval, not a duplicate chamber. |
 | [`w57.txt`](w81-archive-retirement-20261004.md#raw-source-inventory) | 6,364 | COVERED | [`the-bally-boys`](../../wiki/the-bally-boys.html) | Named Bally Boys profile present; this does not mean every paragraph from source was imported |
 | [`w58.txt`](w81-archive-retirement-20261004.md#raw-source-inventory) | 11,312 | COVERED | [`graffpunks`](../../wiki/graffpunks.html) | Named GraffPUNKS profile present; this does not mean every paragraph from source was imported |
 | [`w59.txt`](w81-archive-retirement-20261004.md#raw-source-inventory) | 5,814 | COVERED | [`the-allcity-bulls`](../../wiki/the-allcity-bulls.html) | Named AllCity Bulls profile present; this does not mean every paragraph from source was imported |
@@ -145,3 +147,7 @@ Do **not** fill the six currently unassigned Forty Paths positions from old alte
 ## Future web-edit gate (none done here)
 
 After human decisions, any website change requires the separate site policy: authorised new routes where necessary; no undeclared copy from W81; coherent canonical revisions; locked First Witness intact unless separately authorised; generated contents/search/graph/site maps regenerated and tested; historical/fiction/legal/live claims separated. No public wiki HTML, NFT source, site shell, or runtime file is changed by the documentation phase.
+
+## Issue #1458 first implementation tranche
+
+Merged #1457 already supplies Fifth Carbon across 12 articles. This tranche adds `wiki/whisper-codex.html` (W1), `wiki/six-pillars.html` (w32), `wiki/great-consensus.html` (w33), and `wiki/the-crypto-moongirls.html` (w56), with source attribution and connected existing-page additions. Cut Ledger is newly authored adult fiction, not W81 recovery. A source’s entire claim/scene transfer is not inferred from these routes. Full SAM, serial-ending, forty-roster and repository-wide semantic reconciliation remain pending.

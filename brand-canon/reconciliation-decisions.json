@@ -1,0 +1,186 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-08",
+  "issue": 1458,
+  "decisions": [
+    {
+      "id": "GK-1458-AUTHORITY",
+      "status": "implemented",
+      "sources": [
+        "GK Issue #1458 clarification 2026-10-08",
+        "user master task 2026-10-08"
+      ],
+      "old": "Older policy automatically privileges published convergence over W81 and forbids filling six slots.",
+      "new": "W81 is foundational truth; supported retcons and slot proposals are developed, traced and approved when significant.",
+      "reason": "Makes GK latest instructions persist across agent resets without discarding product truth or modern fiction.",
+      "affected_paths": [
+        "AGENTS.md",
+        "AGENT_EDITING_RULES.md",
+        ".copilot-instructions.md",
+        "brand-canon/CANON_POLICY.md"
+      ]
+    },
+    {
+      "id": "GK-1458-CODEX",
+      "status": "implemented",
+      "sources": [
+        "W1.txt: Tales of the Darkside; Operation Echo phases 1\u20133; Physical Manifestation"
+      ],
+      "old": "Codex scattered across enforcement/Rune references; no dedicated account of its phases or CMB endpoint.",
+      "new": "Dedicated disputed-manuscript article distinguishes the listening posts, mural calibration, Omega Hash, Pulse and next-universe prediction from established mechanics.",
+      "reason": "Preserves ambitious cosmic lore and its social stakes without quietly treating an impossible reversible hash as verified technology.",
+      "affected_paths": [
+        "wiki/whisper-codex.html",
+        "wiki/rune-tag.html",
+        "wiki/squeaky-pinks-enforcers.html"
+      ]
+    },
+    {
+      "id": "GK-1458-PILLARS",
+      "status": "implemented",
+      "sources": [
+        "w32.txt: Sociological Framework I\u2013VI; Tactical Arsenal I\u2013VI"
+      ],
+      "old": "Brief mentions omit the complete six-bloc, twelve-tool classification.",
+      "new": "Full attributed historical doctrine, including Memory-Sigils and Null-Cipher, separated from Forty and live game mechanics.",
+      "reason": "Restores distinctive doctrine and shows how classification hides labour and enables predation.",
+      "affected_paths": [
+        "wiki/six-pillars.html",
+        "wiki/hard-fork-games.html"
+      ]
+    },
+    {
+      "id": "GK-1458-CONSENSUS",
+      "status": "implemented",
+      "sources": [
+        "w33.txt: Philosophy; Layer-4; Year 3030; Divine Lineage; Laws of the Ledger; three cycles"
+      ],
+      "old": "Universalising source calls every faction a believer and tags NULL as faction #28.",
+      "new": "Source manifesto is a particular sect; five laws, three stages and royal theology preserved as its doctrine; Gasless Ghosts/NULL and Concord/Consensus kept distinct.",
+      "reason": "A sect can sincerely claim universal truth without the narrator making its coerced membership or prophecy true.",
+      "affected_paths": [
+        "wiki/great-consensus.html",
+        "wiki/the-code-alchemists.html",
+        "wiki/the-princess.html"
+      ]
+    },
+    {
+      "id": "GK-1458-MOONGIRLS",
+      "status": "implemented",
+      "sources": [
+        "w56.txt: Self-Fork; Bitcoin Bloodline; Feast Week; Antichain",
+        "merged PR #1457 Fifth Carbon",
+        "first-witness-faction-commentaries.html: Sava Crest"
+      ],
+      "old": "No encyclopedia route; archive calls compliant children Bitcoin Kids and declares literal 99/1 and 22% figures.",
+      "new": "Dedicated culture article preserves lunar/female-colony and coercive-programme accounts; inside generation identified as Bitcoin X Kids; figures treated as source assertions rather than census.",
+      "reason": "Connects faction identity, internal disagreement, political incentives and existing modern episodes without duplicating a live chamber or changing Forty.",
+      "affected_paths": [
+        "wiki/the-crypto-moongirls.html",
+        "wiki/block-topia.html",
+        "wiki/queen-sarah-p-fly.html"
+      ]
+    },
+    {
+      "id": "GK-1458-MODERN-MERGES",
+      "status": "implemented",
+      "sources": [
+        "merged PR #1457 commit 81bd8f13d17b0864d5de849f3c4aac4b902abc14",
+        "merged PR #1455"
+      ],
+      "old": "Source companion/digest and Fifth Carbon status can imply the delivered stories remain unpublished or absent.",
+      "new": "Add merged publication evidence and precise additional routes while preserving historic ledgers.",
+      "reason": "Prevents rediscovering or overwriting approved contemporary adult scenes.",
+      "affected_paths": [
+        "about/w81-condensed-canon-digest.md",
+        "brand-canon/story-bibles/w81-continuity-companion-20261008.md",
+        "brand-canon/wiki-rewrites/fifth-carbon-canon-20261008.md"
+      ]
+    },
+    {
+      "id": "GK-1458-CUT-LEDGER",
+      "status": "implemented",
+      "sources": [
+        "GK master task authorisation for connecting original fiction; adult-tone steering 2026-10-08"
+      ],
+      "old": "No Cut Ledger or Dara Venn episodes.",
+      "new": "New local adult Moongirls/Consensus conflict featuring Dara Venn, 38, and Lysa Rook, 44; labelled original fiction, limited consequences.",
+      "reason": "Develops coercion, venality, revenge and agency within existing institutions; no new cosmic law, scripture or numbered faction.",
+      "affected_paths": [
+        "wiki/the-crypto-moongirls.html",
+        "wiki/great-consensus.html",
+        "wiki/queen-sarah-p-fly.html",
+        "brand-canon/story-bibles/the-cut-ledger.md"
+      ]
+    },
+    {
+      "id": "GK-1458-TRIPLE-FORK",
+      "status": "proposed",
+      "sources": [
+        "M16.txt",
+        "W15.txt opening",
+        "w92.txt chronology",
+        "current First Witness chronology"
+      ],
+      "old": "2198 / 2588 / 2880 claim one catastrophic Triple Fork.",
+      "new": "Recommend 2880 for World Chain catastrophe; investigate early failures without inventing named events to rescue unsupported numbers.",
+      "reason": "2880 supports post-catastrophe by-2930 collapse and 3008 narrative; new distinct early catastrophes need independent scene evidence.",
+      "affected_paths": [
+        "wiki/first-witness-master-chronology.html",
+        "wiki/triple-fork-event.html",
+        "wiki/rune-tag.html"
+      ]
+    },
+    {
+      "id": "GK-1458-REGIONAL-COLLAPSE",
+      "status": "proposed",
+      "sources": [
+        "W15.txt opening",
+        "disposition conflict 2765",
+        "First Witness chronology"
+      ],
+      "old": "2765 secure-region collapse precedes current 2880 catastrophe.",
+      "new": "Recommend by 2930 for catastrophe-linked regional collapse; keep 2765 attributed until original causal sequence is fully audited.",
+      "reason": "Avoids collapse being caused by an event 115 years later.",
+      "affected_paths": [
+        "wiki/first-witness-master-chronology.html",
+        "wiki/block-topia.html"
+      ]
+    },
+    {
+      "id": "GK-1458-SAM-ORDER",
+      "status": "proposed",
+      "sources": [
+        "W12.txt Parts 1 and 4",
+        "W13.txt",
+        "Fifth Carbon"
+      ],
+      "old": "2036 opening with subsequent 2030 Reset.",
+      "new": "Propose editorial displacement/flashback reading; full eight-part semantic audit still required before setting any corrected reset year.",
+      "reason": "A time-travel mechanism or arbitrary 2040 date would add complexity unsupported by source continuity.",
+      "affected_paths": [
+        "wiki/croydon-tower-blocks.html",
+        "brand-canon/story-bibles/w81-continuity-companion-20261008.md"
+      ]
+    },
+    {
+      "id": "GK-1458-FORTY",
+      "status": "proposed",
+      "sources": [
+        "W5.txt",
+        "M16.txt",
+        "w68.txt",
+        "w69.txt",
+        "W1.txt"
+      ],
+      "old": "34 named readings and six unassigned; competing raw lists mix factions and institutions.",
+      "new": "Investigate NoBallGames Legion and Stencil Witches as potential independent cultures; Burn Crews, Tag Lords and $DUST Protocol are not automatically independent; no fabricated sixth name.",
+      "reason": "The original sources must establish independent membership and institutions before arithmetic becomes a new identity.",
+      "affected_paths": [
+        "wiki/first-witness-forty-paths.html",
+        "wiki/first-witness-faction-commentaries.html",
+        "brand-canon/wiki-rewrites/issue-1458-proposals.md"
+      ]
+    }
+  ]
+}

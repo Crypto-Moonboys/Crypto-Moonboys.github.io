@@ -1,0 +1,854 @@
+{
+  "schema_version": 1,
+  "base_commit": "81bd8f13d17b0864d5de849f3c4aac4b902abc14",
+  "archive": {
+    "sha256": "eb3f1902b8f5e8b8e20a16c18c925a072bf81699ca404f3abb04c4f5b9a34b96",
+    "historical_commit": "44f180a6da267c6bc476c6ca6b777dd297ee1e65",
+    "files_verified": 94,
+    "unique_contents": 93,
+    "bytes": 2334149
+  },
+  "semantic_scope": "Four complete original source texts and focused sections of connected articles; no claim of full-repository semantic completion.",
+  "sources": [
+    {
+      "file": "M16.txt",
+      "bytes": 10202,
+      "sha256": "9653208dc10e8365efe2dc983df86cd73351d2379950b7b1ba52c04baac965f2",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "CONFLICT"
+    },
+    {
+      "file": "W1.txt",
+      "bytes": 22071,
+      "sha256": "5cd124064d90797e6f924c1b77aade5c1d4063d6e02e339eb2827dff76511a30",
+      "byte_verified": true,
+      "semantic_review": "complete focused source reading",
+      "prior_disposition": "PARTIAL"
+    },
+    {
+      "file": "W10.txt",
+      "bytes": 47211,
+      "sha256": "7f9a2047dd889a6c2ce7a1c53a20f80a84a070416d3147d4aca0468a3bddf3df",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "COVERED"
+    },
+    {
+      "file": "W11.txt",
+      "bytes": 15172,
+      "sha256": "f64c7354aa456c096262e836d1e4c3f53f5e4e4130df845a03aebed3d19a2338",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "COVERED"
+    },
+    {
+      "file": "W12.txt",
+      "bytes": 90855,
+      "sha256": "a5e54ec2a0170fe62ea8a321f29dbd89f9f23e698aa5d84edf283dd81def28bf",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "PENDING_EDITORIAL"
+    },
+    {
+      "file": "W13.txt",
+      "bytes": 15490,
+      "sha256": "d8f420bd935ac7cd51404eb846afa3d7536ab26b41a43d91b8f9f50e86e5feed",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "PARTIAL"
+    },
+    {
+      "file": "W14.txt",
+      "bytes": 52670,
+      "sha256": "dcacde83743e17ea72af9646768fbb944f642baea3b2e17e50874c0e310d290a",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "COVERED"
+    },
+    {
+      "file": "W15.txt",
+      "bytes": 371179,
+      "sha256": "c1292efd91ba68119c6f9e8a6a8e192b7d37342f2391876d80eb678eff8112cd",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "CONFLICT"
+    },
+    {
+      "file": "W16.txt",
+      "bytes": 11949,
+      "sha256": "cdf17b6f45e34a7dfea8b3f66f8ace469913f3e8eacb45721ecf202f4a061373",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "OPERATIONAL"
+    },
+    {
+      "file": "W17.txt",
+      "bytes": 49792,
+      "sha256": "94d3b61649415568f06b95b8e7701f8ae99caf033d1a257061080b0c2cb90d69",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "OPERATIONAL"
+    },
+    {
+      "file": "W18.txt",
+      "bytes": 9648,
+      "sha256": "089d29e9a81bdac7f7294666a4d758c432ce8ededde1e261c99dbd1ee7dde311",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "COVERED"
+    },
+    {
+      "file": "W19.txt",
+      "bytes": 41743,
+      "sha256": "34093e882c6e6834c923258fe611fb2665b2e28601aab174bfb7f28efaec7ad2",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "OPERATIONAL"
+    },
+    {
+      "file": "W2.txt",
+      "bytes": 25335,
+      "sha256": "92fc2527427f9d7a549f5181f7d01f283cdc48244d84d286e9510d62d55800de",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "HISTORICAL"
+    },
+    {
+      "file": "W20.txt",
+      "bytes": 12147,
+      "sha256": "5be5c30ecca423e084deaffb4ce72c59030f9012d450d6f1ab8035d15dbf0221",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "PARTIAL"
+    },
+    {
+      "file": "w21.txt",
+      "bytes": 32510,
+      "sha256": "73795855f25d9985bb7e33252aaa2aad4bbc9aa177e5b20da37932d3169dedfb",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "STRATEGY"
+    },
+    {
+      "file": "w22.txt",
+      "bytes": 15020,
+      "sha256": "a1a78a3f3ebfebbe41c786a58d131cf5f4fd8099092bf68426b65c7a962ce4d4",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "COVERED"
+    },
+    {
+      "file": "w23.txt",
+      "bytes": 20514,
+      "sha256": "21e039eb884659195eb37b0d687d18db4f9ef9debdfa39fa824fa0914907ac4c",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "COVERED"
+    },
+    {
+      "file": "w24.txt",
+      "bytes": 18635,
+      "sha256": "29fee688a776eb6d9a71da0c3110c7988497e2ad608174f8789a7b9fb57ef767",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "PARTIAL"
+    },
+    {
+      "file": "w25.txt",
+      "bytes": 188060,
+      "sha256": "74b365771aa1840d17b83760348037a7fc2abf423e194cf8b3f5942e4c2f8929",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "CONFLICT"
+    },
+    {
+      "file": "w26.txt",
+      "bytes": 22854,
+      "sha256": "91c930a63db61879feabe93c45099a0f04911a4c07baa4588486c3f847510188",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "COVERED"
+    },
+    {
+      "file": "w27.txt",
+      "bytes": 11823,
+      "sha256": "9e76d3941cebcc381c98be6a031db1b0a9a9716fba57ae7c0e75af6d45220824",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "PARTIAL"
+    },
+    {
+      "file": "w28.txt",
+      "bytes": 7493,
+      "sha256": "830d272134dfa54af40f67dc44cef0a629e0a26538946fd0bb7fe1bbe8d20271",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "PARTIAL"
+    },
+    {
+      "file": "w29.txt",
+      "bytes": 6253,
+      "sha256": "3534c4c562645b531ea4012c42bdfa94496e1b6f144cd4ba931cf9cdf4b9d098",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "COVERED"
+    },
+    {
+      "file": "W3.txt",
+      "bytes": 12599,
+      "sha256": "31d1edd7c851b67502744e64095b254df87d7c06a12ce8a87afd99292e0bf877",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "STRATEGY"
+    },
+    {
+      "file": "w30.txt",
+      "bytes": 16818,
+      "sha256": "4e5d164d85e2caa20f5f1b526b90c7d802bb6f4dee73ba6fffd0abea6bc3a372",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "COVERED"
+    },
+    {
+      "file": "w31.txt",
+      "bytes": 9139,
+      "sha256": "0162c35f68f070a1500b3cd3f5306eb8909d61fc61b7e554750b6e72c33530c1",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "COVERED"
+    },
+    {
+      "file": "w32.txt",
+      "bytes": 8571,
+      "sha256": "269a0e9efbf97f86999413d6b0fa69c901509818afc100464f32044a5ce97ec4",
+      "byte_verified": true,
+      "semantic_review": "complete focused source reading",
+      "prior_disposition": "PARTIAL"
+    },
+    {
+      "file": "w33.txt",
+      "bytes": 32430,
+      "sha256": "43947211fb9774a57a16219cbe628741fae1b7582055353cdbf121bae036d6dc",
+      "byte_verified": true,
+      "semantic_review": "complete focused source reading",
+      "prior_disposition": "CONFLICT"
+    },
+    {
+      "file": "w34.txt",
+      "bytes": 6107,
+      "sha256": "bc69ba6e421d8f6891ff7f1fdb55d1339a6e08eaf3573699af198a754836b029",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "COVERED"
+    },
+    {
+      "file": "w35.txt",
+      "bytes": 6254,
+      "sha256": "7c8efadbecc9ff4df7a9c99e60d7dcb5a14835eb15e79d4edfd22c6db2195c3b",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "COVERED"
+    },
+    {
+      "file": "w36.txt",
+      "bytes": 6718,
+      "sha256": "199bacfe6af7e5d87385c2cbd47507b36b28e3caee93471b5a2f6dfaccb42492",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "COVERED"
+    },
+    {
+      "file": "w37.txt",
+      "bytes": 6244,
+      "sha256": "e19e796d30609d0003c3e889a84684e06f056454a56916b502ae96f4c2c0a46a",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "COVERED"
+    },
+    {
+      "file": "w38.txt",
+      "bytes": 5722,
+      "sha256": "fe80c6972d5dd8624b2a963d35451417a881fca8b4b11856a1112e77d1d64c69",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "COVERED"
+    },
+    {
+      "file": "w39.txt",
+      "bytes": 7034,
+      "sha256": "5387c54e8cd2806024ebf8379fc7c7c3648931e2cbb27010683a7aa023941150",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "COVERED"
+    },
+    {
+      "file": "W4.txt",
+      "bytes": 60045,
+      "sha256": "97750e7a63374f089bc7ad59943ac9eabbe90378d08faba976bf63cd3f8f0268",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "OPERATIONAL"
+    },
+    {
+      "file": "w40.txt",
+      "bytes": 6334,
+      "sha256": "4a2dc57f36ba94bbf57e2da57ec1f4496ed83b59de1e0446bb3ffa306e42bd97",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "COVERED"
+    },
+    {
+      "file": "w41.txt",
+      "bytes": 5929,
+      "sha256": "9a1530ff42ee59372c0e3d2d68ba8903553df0bd5199cc9b436f79b98aad64fa",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "COVERED"
+    },
+    {
+      "file": "w42.txt",
+      "bytes": 6352,
+      "sha256": "c0f74672e69b1363367f86eb65ca84af57840b33f25b065a9f61bdd441c96334",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "COVERED"
+    },
+    {
+      "file": "w43.txt",
+      "bytes": 3629,
+      "sha256": "ba0b96add840366b64e39631f3f8e861a2026e7d2e1e16d00fa48614c5f174df",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "COVERED"
+    },
+    {
+      "file": "w44.txt",
+      "bytes": 6010,
+      "sha256": "2da1bd98e13d5592e96f045071924d7930b786d854bdb6519ff0e120fa90e72a",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "COVERED"
+    },
+    {
+      "file": "w45.txt",
+      "bytes": 6549,
+      "sha256": "c4784832f6610991df74f7cb85adcffc7b7c96a62345ad66da957a81cc2a1fda",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "COVERED"
+    },
+    {
+      "file": "w46.txt",
+      "bytes": 6908,
+      "sha256": "74fb4bca119bc7241594db59f0829c04f51756320a7864d5e985a678d1262877",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "COVERED"
+    },
+    {
+      "file": "w47.txt",
+      "bytes": 5936,
+      "sha256": "cfefc3950437eebb80b889efe754d3963fe97d941d48ec803a2f61e916bcab01",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "COVERED"
+    },
+    {
+      "file": "w48.txt",
+      "bytes": 6280,
+      "sha256": "0b141ce2e445f7c91b3d7d5a2024a6f21a3ab893727a90ae239c1d8c577258f1",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "COVERED"
+    },
+    {
+      "file": "w49.txt",
+      "bytes": 9525,
+      "sha256": "3b645d0c384ee38032422c1ac021ec1cf7a6002588eb7982bed158d85bdb60de",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "COVERED"
+    },
+    {
+      "file": "W5.txt",
+      "bytes": 221593,
+      "sha256": "e54f1518083323a872827ffc4e636832c821e48e64200e2adbd42012038d6292",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "CONFLICT"
+    },
+    {
+      "file": "w50.txt",
+      "bytes": 5666,
+      "sha256": "8eeec73013092866fd695f8d186e4c8b143c7bedd0a205ec2a518cff8a7685d9",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "COVERED"
+    },
+    {
+      "file": "w51.txt",
+      "bytes": 6814,
+      "sha256": "bda710f3eb9f6fd779dd9a388465ad82f3e339568c23bfb0a8a3ed8b9133a478",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "COVERED"
+    },
+    {
+      "file": "w52.txt",
+      "bytes": 6814,
+      "sha256": "bda710f3eb9f6fd779dd9a388465ad82f3e339568c23bfb0a8a3ed8b9133a478",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "DUPLICATE"
+    },
+    {
+      "file": "w53.txt",
+      "bytes": 8578,
+      "sha256": "77dbc4368530a0329abc5fcf4f2de1f10a612e8f6bc0da76e669919e54dcff03",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "COVERED"
+    },
+    {
+      "file": "w54.txt",
+      "bytes": 6192,
+      "sha256": "99feb27962378932bba803e93a00ab9c34cb73c44a7f65cb2dd5b5655c76706b",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "COVERED"
+    },
+    {
+      "file": "w55.txt",
+      "bytes": 6631,
+      "sha256": "42c8200a24a66e9d3c5786778d9e6ec37f8ad7545cce9c3bf86904599f2ef3e4",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "COVERED"
+    },
+    {
+      "file": "w56.txt",
+      "bytes": 5278,
+      "sha256": "0391b5cd2105e2d61a7509aa0eaff4e34deb06857618d64133a64441896dbf27",
+      "byte_verified": true,
+      "semantic_review": "complete focused source reading",
+      "prior_disposition": "PENDING_EDITORIAL"
+    },
+    {
+      "file": "w57.txt",
+      "bytes": 6364,
+      "sha256": "05ad085604d17c41709bcde652bd7ed8c19c74b0613095378abb866072b4d51c",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "COVERED"
+    },
+    {
+      "file": "w58.txt",
+      "bytes": 11312,
+      "sha256": "4a8b2c51e63da03717b177dd7a4ea0c377ba7383c31972afde8c06b65629cce2",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "COVERED"
+    },
+    {
+      "file": "w59.txt",
+      "bytes": 5814,
+      "sha256": "0ddb56789f53cfc46cd932458766c2c88a7e3b2772252fc8593b17951cfc70d7",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "COVERED"
+    },
+    {
+      "file": "W6.txt",
+      "bytes": 13963,
+      "sha256": "e5f11c57852a28f5d46a721ce5cc892def40d0be324ca2641d7ac054f7e02428",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "HISTORICAL"
+    },
+    {
+      "file": "w60.txt",
+      "bytes": 5678,
+      "sha256": "f28d688c472b43a9d10fc373e6a7d09b9784bdcbd8d8fd0c9c4b66c8b7f9eecb",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "COVERED"
+    },
+    {
+      "file": "w61.txt",
+      "bytes": 6860,
+      "sha256": "b13b26abec65202ca47c47dabaa58974aa0e0c48ae519710cacecf8fa1f011cc",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "COVERED"
+    },
+    {
+      "file": "w62.txt",
+      "bytes": 12748,
+      "sha256": "6899cb18d3824c4f199a2e5eedbc9b19d16a9dab136eb56d1a803ac2858ae57d",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "COVERED"
+    },
+    {
+      "file": "w63.txt",
+      "bytes": 6072,
+      "sha256": "185d05f34cacb92abe64095680902621b72c83befb8aacc01ca80201ebbb8050",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "COVERED"
+    },
+    {
+      "file": "w64.txt",
+      "bytes": 3808,
+      "sha256": "39d8e53665044ae04fb688a6f77a082cf6b82ca75f8ed8bc4c4098e0ed170d34",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "COVERED"
+    },
+    {
+      "file": "w65.txt",
+      "bytes": 16940,
+      "sha256": "6898376b373f9a6f8fc318fe4c167a43afbef4678da1e495e2eba4ac9fe22e7b",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "COVERED"
+    },
+    {
+      "file": "w66.txt",
+      "bytes": 20513,
+      "sha256": "fb08b6a8a63cc8be88b7ef9854639f112a6768b05330451e441497f4aaed1891",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "HISTORICAL"
+    },
+    {
+      "file": "w67.txt",
+      "bytes": 57190,
+      "sha256": "10b472a5af923cdb826e1b9936edef146f5cac617e329d9f41305b9924ea4050",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "PROPOSAL"
+    },
+    {
+      "file": "w68.txt",
+      "bytes": 14492,
+      "sha256": "d64580312718324c787dbb71a127a122c0bee8e5b01da9edeed6abaa859775c9",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "CONFLICT"
+    },
+    {
+      "file": "w69.txt",
+      "bytes": 66793,
+      "sha256": "191d36153a178c720dbd01bd5c076cae99538c388b1b3a4306019a35f85bb5b3",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "HISTORICAL"
+    },
+    {
+      "file": "W7.txt",
+      "bytes": 10415,
+      "sha256": "eec291c0cbb6dfd4df8e5e990e727b5d961105d85f9bb728a480bc1fbead51e3",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "OPERATIONAL"
+    },
+    {
+      "file": "w70.txt",
+      "bytes": 28108,
+      "sha256": "783217e96e078a911ea97a27d2e1cab7df2130b95464c5e7cdf7fee9cd3e5998",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "COVERED"
+    },
+    {
+      "file": "w71.txt",
+      "bytes": 7367,
+      "sha256": "69694529851663dfe3554908f086221afc227caf59cb9fd4c635e6d3a3b8ebc4",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "HISTORICAL"
+    },
+    {
+      "file": "w72.txt",
+      "bytes": 80405,
+      "sha256": "a81d828c407e73058b3716cfa38ad6388fbf20a448f0b03b236d2eadbee4ab85",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "PROPOSAL"
+    },
+    {
+      "file": "w73.txt",
+      "bytes": 65807,
+      "sha256": "839db5cde16d3b352efe54c23a25a9209e7c102545b84594a363cb36d8e82de3",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "PROPOSAL"
+    },
+    {
+      "file": "w74.txt",
+      "bytes": 2976,
+      "sha256": "097df650a43459e4f40448f4476b768b535df60fbc845e2b6b305322128de7c3",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "HISTORICAL"
+    },
+    {
+      "file": "w75.txt",
+      "bytes": 5171,
+      "sha256": "253a54688f6ed5d57f6aa4f03b71ba6e44d5b66fc623027d6d4502501aeddd43",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "HISTORICAL"
+    },
+    {
+      "file": "w76.txt",
+      "bytes": 4679,
+      "sha256": "8f08fbe70de8f854b7b30f7171ee1063a2f8eba1423de49edec67f6b63a01fcd",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "HISTORICAL"
+    },
+    {
+      "file": "w77.txt",
+      "bytes": 6323,
+      "sha256": "b004f8925bfb5781a6b5af4388cf22fc9f3c3183a0f06226462a8e7a273077f0",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "HISTORICAL"
+    },
+    {
+      "file": "w78.txt",
+      "bytes": 17239,
+      "sha256": "ecbfcd52a62bcd3badd8dfd14c0bb54b02a3acd395e715a2c3a744b452a98215",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "HISTORICAL"
+    },
+    {
+      "file": "w79.txt",
+      "bytes": 2331,
+      "sha256": "22d1f93ba3e7c373520391ab6fedaab78ceddfb1c0752893278a76143b3adf86",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "HISTORICAL"
+    },
+    {
+      "file": "W8.txt",
+      "bytes": 41372,
+      "sha256": "8fa75bd1bee126073ce0cc74129e57de2d0064f59b426b00fd300b1e6df205d6",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "STRATEGY"
+    },
+    {
+      "file": "w80.txt",
+      "bytes": 21064,
+      "sha256": "c5948c00b5750ff95d7fa165fdeb1f584c26fb5969439da6494448b3b6dfab0c",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "NEAR_DUPLICATE"
+    },
+    {
+      "file": "w81.txt",
+      "bytes": 8071,
+      "sha256": "269e64a5a7fabe28725d44101f8af523ebe2968760a7c651abac1a78432c70f4",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "HISTORICAL"
+    },
+    {
+      "file": "w82.txt",
+      "bytes": 47392,
+      "sha256": "0b47e37c8b73085fb6123a7091effb611fcfe24dd5b10c9a1644fead3768e255",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "COVERED"
+    },
+    {
+      "file": "w83.txt",
+      "bytes": 6969,
+      "sha256": "24a07d351756a5dd50714d9f74a90c3e7368510549671aa6745c11c478f5f118",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "CONFLICT"
+    },
+    {
+      "file": "w84.txt",
+      "bytes": 4363,
+      "sha256": "a00b76bd2bf760b2be6e660dfacb3b3b555446f8bdc9edc0cde93493d3066704",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "HISTORICAL"
+    },
+    {
+      "file": "w85.txt",
+      "bytes": 6134,
+      "sha256": "8e51a29074a86a1363aaffe15ea9c7f3857deb2b34358a46b75c00a036a9d743",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "PARTIAL"
+    },
+    {
+      "file": "w86.txt",
+      "bytes": 42310,
+      "sha256": "834d5d25d686f8f98e751a2b7390483e50323e0be01c2407ec9e111bcc4dc7f3",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "COVERED"
+    },
+    {
+      "file": "w87.txt",
+      "bytes": 19480,
+      "sha256": "0a2ecd5a0c1a843126c0fd4b662326268604208aedb54074813951c543950c27",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "HISTORICAL"
+    },
+    {
+      "file": "w88.txt",
+      "bytes": 3069,
+      "sha256": "0500ce0ee44499525d0ad6e0f23d61283d670924d0e122860b7cc0e84cc50341",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "HISTORICAL"
+    },
+    {
+      "file": "w89.txt",
+      "bytes": 4429,
+      "sha256": "cd5fc596a6dc3e6a257a6c92ecf63710c356428adffdbebc3e9270e70f2dcb46",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "HISTORICAL"
+    },
+    {
+      "file": "W9.txt",
+      "bytes": 7413,
+      "sha256": "06dd75168ef76526ac21b2e001634023a89e04d9b33cf3c621a34e8d1ac9b46e",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "PROPOSAL"
+    },
+    {
+      "file": "w90.txt",
+      "bytes": 7434,
+      "sha256": "88bb1498f394e1b0bd7c2cc5e885563f9df5e3d0b730173207645b02fc37cbf1",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "HISTORICAL"
+    },
+    {
+      "file": "w91.txt",
+      "bytes": 8456,
+      "sha256": "e94ec73b8f0cbd22ed47f0d94bc0ac4ee7481b2d124a1f0ac8a8b6f739a8677f",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "CONFLICT"
+    },
+    {
+      "file": "w92.txt",
+      "bytes": 8107,
+      "sha256": "7ec5c1322accab707b8035d7470310e37c521f89b510ccb63a19508472e3917b",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "HISTORICAL"
+    },
+    {
+      "file": "w93.txt",
+      "bytes": 11393,
+      "sha256": "fbcc1fe0d13e8e2f7e44db3183366209a9ca531d731c352a4081dbcdc9c09e5d",
+      "byte_verified": true,
+      "semantic_review": "pending complete semantic reading",
+      "prior_disposition": "COVERED"
+    }
+  ],
+  "wiki_section_reviews": [
+    {
+      "path": "wiki/rune-tag.html",
+      "sections": [
+        "fifth-carbon-rune",
+        "fifth-carbon-cipher-school"
+      ],
+      "scope": "targeted sections, not whole-article semantic audit"
+    },
+    {
+      "path": "wiki/squeaky-pinks-enforcers.html",
+      "sections": [
+        "fifth-carbon-pinks",
+        "fifth-carbon-bex"
+      ],
+      "scope": "targeted sections, not whole-article semantic audit"
+    },
+    {
+      "path": "wiki/hard-fork-games.html",
+      "sections": [
+        "fifth-carbon-six-pillars",
+        "fifth-carbon-weapon-language"
+      ],
+      "scope": "targeted sections, not whole-article semantic audit"
+    },
+    {
+      "path": "wiki/the-princess.html",
+      "sections": [
+        "tracey-tradition",
+        "fifth-carbon-consensus",
+        "fifth-carbon-knee"
+      ],
+      "scope": "targeted sections, not whole-article semantic audit"
+    },
+    {
+      "path": "wiki/the-code-alchemists.html",
+      "sections": [
+        "cosmology",
+        "velvet-surgeon",
+        "sources"
+      ],
+      "scope": "targeted sections, not whole-article semantic audit"
+    },
+    {
+      "path": "wiki/queen-sarah-p-fly.html",
+      "sections": [
+        "fifth-carbon-moongirls"
+      ],
+      "scope": "targeted sections, not whole-article semantic audit"
+    },
+    {
+      "path": "wiki/croydon-tower-blocks.html",
+      "sections": [
+        "samuel",
+        "fifth-carbon-croydon"
+      ],
+      "scope": "targeted sections, not whole-article semantic audit"
+    },
+    {
+      "path": "wiki/block-topia.html",
+      "sections": [
+        "identity"
+      ],
+      "scope": "targeted sections, not whole-article semantic audit"
+    },
+    {
+      "path": "wiki/first-witness-forty-paths.html",
+      "sections": [
+        "reading-what-belongs-in-the-forty-path-register"
+      ],
+      "scope": "targeted sections, not whole-article semantic audit"
+    },
+    {
+      "path": "wiki/first-witness-master-chronology.html",
+      "sections": [
+        "reading-reconciled-timeline"
+      ],
+      "scope": "targeted sections, not whole-article semantic audit"
+    },
+    {
+      "path": "wiki/first-witness-faction-commentaries.html",
+      "sections": [
+        "reading-current-evidenced-readings",
+        "reading-the-unnamed-remainder"
+      ],
+      "scope": "targeted sections, not whole-article semantic audit"
+    }
+  ]
+}

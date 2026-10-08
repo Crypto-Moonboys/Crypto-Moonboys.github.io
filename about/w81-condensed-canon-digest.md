@@ -1,5 +1,7 @@
 # W81 Condensed Canon Digest
 
+> **Current authority, Issue #1458 (8 October 2026): W81 is foundational truth.** Older language below freezing convergence or treating raw canon as secondary is retained as dated audit evidence and is superseded by `brand-canon/CANON_POLICY.md`. Retcons and Forty-slot proposals must be researched and traced; significant changes require specific GK approval. See `brand-canon/story-bibles/gk-master-canon.md` and `brand-canon/wiki-rewrites/issue-1458-progress.md`.
+
 Status: condensed source digest
 
 Updated: 2026-10-08 (source reconciliation; original September summary retained)
@@ -272,3 +274,7 @@ The best version of Crypto Moonboys uses both:
 - the current brand vision gives users a clear reason to care, a route to act, and a way to build their own identity inside or alongside the universe.
 
 The archive should feed the movement. It should not bury the user under lore before they know what they can do.
+
+## Issue #1458 first implementation tranche
+
+Merged #1457 already supplies Fifth Carbon across 12 articles. This tranche adds `wiki/whisper-codex.html` (W1), `wiki/six-pillars.html` (w32), `wiki/great-consensus.html` (w33), and `wiki/the-crypto-moongirls.html` (w56), with source attribution and connected existing-page additions. Cut Ledger is newly authored adult fiction, not W81 recovery. A source’s entire claim/scene transfer is not inferred from these routes. Full SAM, serial-ending, forty-roster and repository-wide semantic reconciliation remain pending.

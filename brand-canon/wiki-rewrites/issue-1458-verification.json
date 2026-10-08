@@ -1,0 +1,59 @@
+{
+  "date": "2026-10-08",
+  "issue": 1458,
+  "base_commit": "81bd8f13d17b0864d5de849f3c4aac4b902abc14",
+  "source_files_byte_verified": 94,
+  "source_texts_completely_read_this_tranche": [
+    "W1.txt",
+    "w32.txt",
+    "w33.txt",
+    "w56.txt"
+  ],
+  "existing_wiki_pages_sectionally_reviewed": 11,
+  "existing_wiki_pages_updated": 7,
+  "new_wiki_articles": 4,
+  "source_level_conflicts_interpreted": 3,
+  "major_historical_retcons_published": 0,
+  "new_characters": 2,
+  "faction_cultures_expanded": [
+    "Crypto Moongirls"
+  ],
+  "preserved_original_paragraphs_in_updated_pages": 632,
+  "first_witness_pages_prose_unchanged": 82,
+  "browser": {
+    "version": "151.0.7922.173",
+    "desktop_mobile_views": 22,
+    "no_javascript_pages": 4,
+    "full_search_autocomplete_queries": 4,
+    "external_requests_blocked": true
+  },
+  "internal_links_checked": 485,
+  "broken_internal_links": 0,
+  "graph": {
+    "indexed_wiki_pages": 412,
+    "nodes": 422,
+    "edges": 2060,
+    "mobile_nodes": 75
+  },
+  "verification": {
+    "source_verifier": "passed",
+    "source_corruption_tests": "4 passed",
+    "canon_guard_regressions": "6 passed",
+    "canon_guard": "passed, 419 top-level pages",
+    "wiki_ci": "passed with task-authorised local prose approval and explicit baseline",
+    "content_ownership": "passed",
+    "content_state_parity": "passed",
+    "graph_publishing_integrity": "passed",
+    "browser": "passed",
+    "github_pages_artifact": "built successfully; no deployment",
+    "git_diff_check": "passed",
+    "full_npm_test": "running; final result recorded in progress ledger before delivery"
+  },
+  "limitations": [
+    "Byte verification and static lint do not constitute full semantic reconciliation.",
+    "90 original sources still require complete semantic reading; partial earlier material is not marked done.",
+    "All First Witness books and supporting chapters still need full scene/claim audit.",
+    "Four major canon proposals await full dependency audit and specific GK approval.",
+    "Final merge and prose approval label require GK/maintainer review."
+  ]
+}
