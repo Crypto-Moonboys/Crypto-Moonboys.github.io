@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "generator": "scripts/generate-wiki-content-state.mjs",
-  "source_tree_hash": "sha256:12759998ab0d2d21c5a14c8018382844b8b37a49f14a8a322904135aa7d17391",
+  "source_tree_hash": "sha256:efb7b176ad7600c6800a48a52b51b5cdb3e38b51e9fe904809becc93a890589b",
   "hash_algorithm": "sha256",
   "page_count": 415,
   "manifest_entry_count": 415,
@@ -49,13 +49,13 @@
       "rank": 2,
       "label": "Latest canon and brand vision",
       "path": "about/latest-canon-and-brand-vision.md",
-      "content_hash": "sha256:03b68ea46a76d85a2d66830f5d45f519e478ce96076add3ba6ed29de3c014b08"
+      "content_hash": "sha256:5373fbdd1edcefa291fb1a9ebff78901fe1e35903dbd00c07ea35843aa82ac06"
     },
     {
       "rank": 3,
       "label": "W81 condensed canon digest",
       "path": "about/w81-condensed-canon-digest.md",
-      "content_hash": "sha256:06e3e0d9592b494c901c6b323f19675c3bf0fa24683e781e79365eff7af14f17"
+      "content_hash": "sha256:9b1aa06fa945e4e9c8ee45587d951a32855ff9f4c20d8702984412095c3a2ced"
     },
     {
       "rank": 4,
@@ -9443,10 +9443,10 @@
       "duplicate_heading_count": 8,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:9289b7c2df6c0ed6d5ad9476eb1b91b8eb7470bdb9809c8ea8c49ac7e8f4bcac",
-      "article_content_hash": "sha256:a1ffa6d6dca33855f47a62bf77990bee2c30d5c436a620fe46d4f767b82152bf",
-      "article_markup_hash": "sha256:8e8d7bdcba2da0108f3525e893d588186e8d5364b720254cdafa90160dab611e",
-      "git_blob_oid": "e6f165d5d0f201be859a29d8ed653e4cc5f92354",
+      "content_hash": "sha256:f1344f2f70d93e627c8a73f4089607d123b4ba39bb8ff5a6e05c217f17f0a71e",
+      "article_content_hash": "sha256:de5d2bf4cd70b90fdeb9d49f319cafed036d0789b8abbb5f0ceee8dcf0991016",
+      "article_markup_hash": "sha256:5fac5847992b087f441d53ae5a5b0dfed2b9d58aff8fab772f5b1b9c827b70e9",
+      "git_blob_oid": "03f724ec99856eb713f402f2f922b3ae3c6ed1d4",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": true,

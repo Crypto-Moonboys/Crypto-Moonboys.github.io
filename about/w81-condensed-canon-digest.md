@@ -1,14 +1,60 @@
 # W81 Condensed Canon Digest
 
-Status: condensed source digest  
-Updated: 2026-09-19  
-Source archive: `w81(1).zip`, 94 text files copied from Crypto Moonboys / GraffPUNKS / GKniftyHEADS articles and posts
+Status: condensed source digest
+
+Updated: 2026-10-08 (source reconciliation; original September summary retained)
+
+Source archive: the historical W81 set of 94 source files; the uploaded `RAW CANNON.zip` repackages the same 94 uncompressed source bytes
 
 This digest exists because the w81 archive is too large and mixed to use safely as one direct source. It contains brand manifestos, lore arcs, faction entries, game ideas, token notes, SAM/wiki system notes, biographies, audits, and old public copy. Future agents and writers should use this digest to understand the archive before pulling from the raw files.
 
 Important: the archive is raw source material. It is not automatically approved official canon, live runtime truth, legal terms, or final public copy. Current README and Master Source of Truth rules still apply.
 
 Archive publication status (2026-10-04): the original ZIP has been retired after article migration. The [W81 evidence and migration ledger](../brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md) records every source checksum, the immutable historical snapshot and the published article evidence. Current publishing and content-state generation use that ledger without requiring a ZIP.
+
+## Canon authority and raw-source reconciliation (8 October 2026)
+
+This is an orientation digest, **not** the final scripture, a complete forty-name roster, or proof that every source passage has been published. A byte-level inventory verified **94 archive entries (93 unique byte texts)** against the [2026 W81 provenance ledger](../brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md). `w51.txt` and `w52.txt` are the same text; `w66.txt` and `w80.txt` are strongly overlapping promotional versions. The uploaded ZIP's container hash differs from the retired ZIP, but its 94 individual source files match.
+
+**Read the following before any website edit:**
+
+- [Disposition and context for all 94 source files](../brand-canon/wiki-rewrites/raw-canon-20261008-disposition.md), plus the [machine-readable 94-row register](../brand-canon/wiki-rewrites/raw-canon-20261008-source-register.csv).
+- [Detailed W81 continuity companion](../brand-canon/story-bibles/w81-continuity-companion-20261008.md) with eight-part Agent SAM, Moongirls, contested manuscript/character traditions, six pillars and concept/game proposals.
+- [First Witness source register](../wiki/first-witness-source-register.html), [master chronology](../wiki/first-witness-master-chronology.html), [Concordance](../wiki/first-witness-concordance.html) and [Forty Paths](../wiki/first-witness-forty-paths.html) for approved fictional continuity.
+- `README.md`, `Crypto_Moonboys_Master_Source_of_Truth_v1.md`, published legal terms and implemented runtime for **real-world claims and live features**.
+
+### Resolved dates and distinct chains
+
+| Anchor | Current canon treatment | Source conflict / open boundary |
+|---|---|---|
+| **2030** | The Great Concord produces the common Covenant, witnessed in its original Bitcoin provenance. Older religions and philosophies survive. | “2030 Reset” in a fictional character source is not automatically the Great Concord. |
+| **Later, undated** | The Sacred Fork and later Sacred/Aether-Chain transmission preserve the witness as a memory/proof tradition. | Exact timing and supposed uploaded-person ontology remain disputed. |
+| **Before 2880** | The World Chain becomes civilisation-scale infrastructure distinct from the Sacred Chain and the later True Bitcoin Fork inside Block Topia. | An archive may conflate three different chains; current canon does not. |
+| **2880** | The World Chain's Triple Fork catastrophe leads into Chainfire and the Great Unravelling. | The alternative **2198** date in `M16.txt` is not the convergence date. |
+| **By 2930** | Fewer than twelve secure regions remain; the Queens region supplies Block Topia's basis. | The older **2765** region-count version is displaced. |
+| **3008** | The main saga: controlled Block Topia, outside Street Kingdoms, GK Grid, Games, rebel Kids and inside X Kids, NULL threat and HODL emergency defence. | A final victory / the Final Fork is **not** yet settled. |
+
+### Forty Paths does not mean forty approved names
+
+The current [Forty Paths](../wiki/first-witness-forty-paths.html) and [Faction Commentaries](../wiki/first-witness-faction-commentaries.html) recognise **34 named readings plus six unassigned positions**. The six source-named readings introduced above the former 28 were JPEG Bloodline, Whale Lords, XRP Kids, PU55IES, Slam GiRL$ and Creepto Gals. Their recent rituals and incidents include **new authorised fiction**, not necessarily verbatim W81 evidence.
+
+`W5.txt` offers an alternate “forty” taxonomy, `M16.txt` has a partial forty-slot skeleton, and `w68.txt` uses an older **28-active** framework. None is the official complete modern roll. The **nine live selectable Battle Chamber factions** (including Crypto Moongirls) are an operational subset, not a replacement for the 34 named First Witness readings or proof that the other six historical slots are settled. Do not count a shared ideology, a location, an entire security protocol, or a duplicate faction twice merely to reach forty. HODL Warriors are the **current** qualifying-1/1 creator-builders, while in **Year 3008** they are also an exceptional collective defence; HODL X Warriors are the **distinct** champions/service branch. The generations of Bitcoin Kids and Bitcoin X Kids are also not interchangeable.
+
+### Detailed source material missing from this short digest
+
+| Sources | What the raw text adds | What should happen |
+|---|---|---|
+| `W12`, `W13` | Eight fictional Agent SAM / Samuel “HyroSAM” Blake parts: 2036 Croydon railway scene, Neural Rack, House of Rackinsats, upload, underground warfare and the Reset Core; related Denise and Tracey traditions. | An **Agent SAM** standalone wiki route is absent, but this is a **candidate**, not automatic canon. Resolve the internal **2036 versus “2030 Reset”** sequencing first; do not confuse fictional SAM with site software or SPARKY. |
+| `w56` | The **Crypto Moongirls** as Block Topia elite, contested space-colony and lunar Self-Fork origin stories, Queen Sarah, Theta rule and coercion during the Games. | An existing [Crypto Moongirls faction chamber](../battle-chamber/factions/crypto-moongirls.html) is already in the [live Battle Chamber directory](../battle-chamber/factions/index.html) and faction systems. Sarah / Games / Jodie wiki pages also cover the source tradition. No separate **wiki encyclopedia article** is identified; reconcile the existing chamber before considering one. Sarah's origin account remains disputed. |
+| `W1` | **Whisper Codex** and the supposed **Conformal Plan**, attributed to NULL or a SAM intelligence core. | A disputed relic and cosmological belief, **not** proven astrophysics, official First Witness scripture or a known downloadable artefact. |
+| `W15` | **Kael Voss**, Sylas, **Final Fork Council**, **Layer Eight**, **Great Blackout**, recursive loops and variant futures. | Keep conflicting serial outcomes attributed; the Final Fork remains open. Do not collapse these roles into existing central biographies. |
+| `w25` | The Eternal Pulse has **83 numbered PART headings but only 74 distinct numbers** (repeats 66–74), with mutually incompatible final outcomes. | Preserve as alternative records, not a single historical ending. |
+| `w32` | **Six Pillars** and named source-specific tactical tools such as Theta-Shield, Grid-Patch, FUD-Grenade, Data-Spear, Echo Ink and Zero-Trace. | An old **28-faction** functional classification. Do not advertise these as implemented combat code or a new faction roll. |
+| `w33` | **Great Consensus**, Divine Lineage, The Sync, Ritual of the Knee, Goddess Denise, Princess Tracey, Etherstan III, Year 3030 prophecy. | A particular **sect's claims**; distinct from the **2030 Great Concord**. Avoid merging unrelated Princess/Tracey/Sarah identities. |
+| `w67`, `w72`, `w73` | **BLOCKFRONT / DREAMWARS / FORKLORDS** proposals, five mission concepts from **Wake the Warrior** to **Echoes of the First Mint**, Echo Wars, and a planned 10-volume/100-scroll codex. | **Story/game proposals**, not operational game, token, quest, DAO, mint, rewards or release claims. |
+| `W10`, `W11`, `w65`, `w82`, `w86` | Whale Lords, NULL, Jodie and Cipher Lord / Ava Chen details. | Substantially covered on existing dedicated wiki pages; do **not** duplicate them because the digest is shorter. |
+
+The 94-row register is **subject-by-subject disposition**, not a claim that 357,000+ archive words have been paragraph-matched to every wiki article. History/source attribution and provenance must remain visible in future canon changes. Do not restore the retired ZIP to the publishing tree or bypass First Witness protections.
 
 ## What The Archive Really Is
 
@@ -126,7 +172,7 @@ The archive gives a usable lore spine:
 - Block Topia is a controlled, optimised city/grid system.
 - Street Kingdoms are the outside rebel territories.
 - GK Grid is the tactical/cultural layer connecting factions.
-- Aether-Chain / Sacred Chain is the memory/proof layer.
+- Sacred/Aether-Chain is the later memory/proof tradition; it is distinct from the World Chain and Block Topia's True Bitcoin Fork.
 - Triple Fork and Final Fork are the major rupture/convergence events.
 - NULL / Antichain represent erasure, forgetting and anti-memory.
 - Alfie Blaze, Lady-INK, Queen P-fly, Squeaky Pinks, Moonlords, Whale Lords and the 40 factions create the main conflict engine.
@@ -141,7 +187,7 @@ Use the lore as a worldbuilding layer, not as the first thing a new user must un
 | Brand canon vs raw archive | Raw archive is source material. Current README/Master Source rules govern public truth. |
 | Live vs planned | Old posts may describe planned drops, burns, games, tokens or rewards as if real. Verify runtime before public claims. |
 | Bitcoin X Kids vs Bitcoin Kids | Bitcoin X Kids belong inside Block Topia walls. Bitcoin Kids / Alfie Blaze rebels are outside/escaped lineage. |
-| HODL Warriors vs HODL X Warriors | Do not merge them by convenience. Use current public definition unless canon explicitly approves a merge. |
+| HODL Warriors vs HODL X Warriors | HODL Warriors: qualifying 1/1 creator-builders today and extraordinary Year 3008 collective defence in lore. HODL X Warriors: separate Games champion/service tradition. Never merge by convenience. |
 | Creator-owned lore vs official canon | Users can create lore around their character. Official canon requires approval. |
 | User IP vs parent brand IP | Users can build with assigned/approved characters under terms. They do not own the whole Crypto Moonboys or Graffiti Kings brand. |
 | Path 1 vs Path 2 | Moonboy route is optional. Existing artists/businesses can use SWARMSY without NFTs or lore. |
@@ -187,7 +233,7 @@ A user can join by building a Moonboy identity or keeping the identity they alre
 
 ### Lore World
 
-In 3008, memory, identity and proof are contested. Block Topia represents optimisation, order and control. The Street Kingdoms represent messy human culture, graffiti memory and rebellion. The GK Grid lets factions coordinate. The Aether-Chain / Sacred Chain preserves what erasure systems try to destroy. The 40 factions fight, collaborate and evolve through HODL Wars and Final Fork events.
+In 3008, memory, identity and proof are contested. Block Topia represents optimisation, order and control. The Street Kingdoms represent messy human culture, graffiti memory and rebellion. The GK Grid lets factions coordinate. The Aether-Chain / Sacred Chain preserves what erasure systems try to destroy. The Forty Paths civilisation model currently has 34 named readings and six unassigned positions. Its cultures fight and collaborate through HODL Wars; the ultimate Final Fork outcome remains unresolved.
 
 ### IP World
 

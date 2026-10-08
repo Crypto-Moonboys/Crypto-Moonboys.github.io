@@ -33,7 +33,14 @@
         "faction": "hodl-warriors",
         "game": "hodl-wars"
       },
-      "note": "HODL Warriors faction is NOT the same as HODL Wars game."
+      "note": "Legacy concept_types.faction is a URL/classifier key, NOT a selectable ordinary Forty Paths faction slot; HODL Warriors are distinct from HODL Wars game and HODL X Warriors.",
+      "fictional_context": "Year 3008 extraordinary collective defence and Calling under shared HODL protocol, not an ordinary selectable faction slot.",
+      "present_day_context": "Active creator-builders holding qualifying 1/1 Moonboy identities under current published terms.",
+      "distinct_from": [
+        "hodl-x-warriors",
+        "hodl-wars",
+        "bitcoin-kid-army"
+      ]
     },
     {
       "id": "bitcoin-kids",
