@@ -1,8 +1,11 @@
 # 8 October 2026 RAW CANON / W81 — source dispositions
 
-**Scope:** all **94** uncompressed source entries of `RAW CANNON.zip`, which match the historical W81 inventory, including original filenames, sizes and SHA-256 hashes. Original archive preservation is intentional; do not rewrite source documents to look correct.  
-**Authority:** this is an **editorial mapping, not a canon promotion or live-feature approval**. Use [First Witness chronology](../../wiki/first-witness-master-chronology.html), [concordance](../../wiki/first-witness-concordance.html), [source register](../../wiki/first-witness-source-register.html), [Forty Paths](../../wiki/first-witness-forty-paths.html), `README.md` and the current Master Source of Truth ahead of the historical archive.  
-**Companions:** [continuity reference](../story-bibles/w81-continuity-companion-20261008.md), [digest](../../about/w81-condensed-canon-digest.md), [CSV disposition index](raw-canon-20261008-source-register.csv), [immutable 94-hash ledger](w81-archive-retirement-20261004.md).  
+**Scope:** all **94** uncompressed source entries of `RAW CANNON.zip`, which match the historical W81 inventory, including original filenames, sizes and SHA-256 hashes. Original archive preservation is intentional; do not rewrite source documents to look correct.
+
+**Authority:** this is an **editorial mapping, not a canon promotion or live-feature approval**. Use [First Witness chronology](../../wiki/first-witness-master-chronology.html), [concordance](../../wiki/first-witness-concordance.html), [source register](../../wiki/first-witness-source-register.html), [Forty Paths](../../wiki/first-witness-forty-paths.html), `README.md` and the current Master Source of Truth ahead of the historical archive.
+
+**Companions:** [continuity reference](../story-bibles/w81-continuity-companion-20261008.md), [digest](../../about/w81-condensed-canon-digest.md), [CSV disposition index](raw-canon-20261008-source-register.csv), [immutable 94-hash ledger](w81-archive-retirement-20261004.md).
+
 
 ## Scope limits
 
