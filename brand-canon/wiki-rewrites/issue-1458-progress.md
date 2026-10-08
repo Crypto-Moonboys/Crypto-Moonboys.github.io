@@ -236,9 +236,8 @@ same draft PR; its title/body are updated. Issue #1458 progress comment
 `6058399327` succeeded under the continuation directive. Earlier issue export
 rejection is resolved for this authorised checkpoint; no current delivery block.
 
-W15 serial reading has begun. Paragraphs 1–148 are fully read, using blank-line
-paragraph boundaries of the original UTF-8 text; next unread paragraph is 149
-of 192. This is partial reading, not a full source comparison. Initial/next/
+W15 serial reading has begun. All paragraphs 1–192 are fully read, using blank-line
+paragraph boundaries of the original UTF-8 text; source reading is complete; w25 and connected-page comparison remains pending. This is partial reading, not a full source comparison. Initial/next/
 ten-thousand/hundred-thousand cycles share the triad and restart ending; explicit
 source conflicts include 2880 Triple Fork, 2900 collapse, 2930 Council/build,
 Layer Eight within nine layers, voluntary universal upload/heat death, erased
@@ -255,3 +254,11 @@ main advanced to b865fd991a63d3b74c7076acec703a9b5b0647d8; GitHub tests merge
 3bf3ee6543abf12c157c6190ddc8185fb74638f6, not the unchanged base snapshot.
 Inspecting and integrating latest main on the sandbox branch to regenerate
 against its complete source tree. This is separate from the maintainer prose gate.
+
+Base reconciliation completed without conflicts: sandbox includes scheduled
+feed commit b865fd991a63d3b74c7076acec703a9b5b0647d8. Publishing regeneration
+produced no additional discovery drift; manifest regeneration changes only
+source-tree/NFT-collection hashes for the inherited feed refresh. Full wiki CI
+against that latest main base passed, exit 0; graph check passed unchanged
+counts. Log `/tmp/gk1459/sam-main-ci-wiki.log`. Manifest repair and latest-main
+integration uploaded at 2aa3815cd; current tests and preservation remain intact.

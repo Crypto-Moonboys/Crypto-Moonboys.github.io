@@ -137,19 +137,18 @@
       "bytes": 371179,
       "sha256": "c1292efd91ba68119c6f9e8a6a8e192b7d37342f2391876d80eb678eff8112cd",
       "byte_verified": true,
-      "semantic_review": "pending complete semantic reading",
+      "semantic_review": "complete source reading; w25 and connected-page comparison pending",
       "prior_disposition": "CONFLICT",
-      "semantic_status": "partial_reading",
       "read_progress": {
         "method": "Original UTF-8 text split on blank lines; every printed paragraph read in full",
         "paragraphs_total": 192,
         "paragraphs_read_in_full": [
           [
             1,
-            148
+            192
           ]
         ],
-        "next_unread_paragraph": 149,
+        "next_unread_paragraph": null,
         "complete_source_comparison": false
       },
       "partial_findings": [
@@ -162,7 +161,11 @@
         "Four-million / Volume 8 adds THE BITCOIN CASH KID and Rapid Cash Army already in mid-conflict (no complete Volume 7 introduction appears in these paragraphs). Sarah has a source-fiction humanoid son Charlie No Ball Games Buster forged of code/flesh; ETH Disruptor storms suppress play and kill citizens. This role must remain distinct from real artist biography.",
         "Five-million beginning adds maternal conflict, tyranny against playful children and expanding internal family civil war; still no terminal resolution accepted.",
         "Six-million/Volume10 open mother-son war: Charlie overrides Sarah, attacks her loyalists/throne; HODL cells defend Sarah and Moongirls defect to her. Sarah remains an accountable tyrant, not automatically absolved by opposing her son.",
-        "Seven-million/Volume11 adds all-space-ships AI Agent Armies offering STARTR4CK4 Mafia of4 GiggaSystems alliance; Sarah refuses, armies leave hostile wallet-stealing X-Drones. Eight-million/Volume12 repeats this layer and reset. The fiction contains no operational hacking procedure."
+        "Seven-million/Volume11 adds all-space-ships AI Agent Armies offering STARTR4CK4 Mafia of4 GiggaSystems alliance; Sarah refuses, armies leave hostile wallet-stealing X-Drones. Eight-million/Volume12 repeats this layer and reset. The fiction contains no operational hacking procedure.",
+        "Complete original now read through fourteen-million / Volume18 terminal reset; no final escape, rescue or death-cancellation scene is recovered in W15. Every terminal sequence restarts.",
+        "Ten-million/Volume14 introduces Great Blackout as cause of Block City time-warp loop and four-year market-cycle scripture; eleven-million/Volume15 elaborates contemporary investment rhetoric. These are source propaganda, not accepted First Witness scripture or real investment guarantees.",
+        "Thirteen-million/Volume17 and fourteen-million/Volume18 add Killa Kela Glitch Events/podcast loops, surviving Grok agents from2026, factory escape and homage. Their fiction does not confer current autonomous-publishing authority or verify real biographical events.",
+        "Serial jumps Next/Volume2 heading to Volume3; later no separate full Volume7,13,16 narrative in this file. Do not infer absent chapters or claim cycles were independently attested."
       ]
     },
     {
