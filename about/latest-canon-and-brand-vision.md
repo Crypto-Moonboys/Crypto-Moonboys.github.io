@@ -176,7 +176,7 @@ The retired 94-source W81 archive is **evidence**, not final canon, and the uplo
 - Today's **HODL Warriors** creator-builder status for qualifying 1/1 holders, Year 3008 **HODL Warriors** extraordinary defence, and **HODL X Warriors** Games champion/service tradition are contextually distinct.
 - Escaped/outside **Bitcoin Kids** (Alfie line) and inside-city **Bitcoin X Kids** are not synonyms.
 - **NULL's origins, immortality/soul upload claims and the Final Fork's outcome** remain contested. Serial victories and later time loops in `w25.txt` / `W15.txt` are alternative narratives, not silently adopted endings.
-- **Fictional Samuel “HyroSAM” Blake / Agent SAM** is not identical to actual SAM automation or SWARMSY's SPARKY. The eight-part `W12.txt` source includes an **2036/2030** chronological conflict that still needs an editorial decision.
+- **Fictional Samuel “HyroSAM” Blake / Agent SAM** is not identical to actual SAM automation or SWARMSY's SPARKY. The eight-part `W12.txt` source includes a **2036/2030** chronological conflict that still needs an editorial decision.
 - `w67.txt`, `w72.txt` and `w73.txt` are **game, mission and collectible-codex proposals**. They do not establish live tokens, NFT mint commitments, reward eligibility, playable release dates or current public ownership rights.
 
 Missing standalone wiki routes (notably **Agent SAM** and **Crypto Moongirls**) require an authorised editorial/new-page decision and normal publishing checks. These are **documentation corrections only**; public HTML, First Witness scripture, site shell, live Worker/game logic and legal terms remain outside the scope of this pass.
