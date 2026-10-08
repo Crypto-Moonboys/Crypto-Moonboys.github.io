@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-08T12:52:13.230Z",
-  "verified_at": "2026-10-08T12:52:13.230Z",
+  "generated_at": "2026-10-08T13:18:16.602Z",
+  "verified_at": "2026-10-08T13:18:16.602Z",
   "nodes": [
     {
       "id": "/about.html",
@@ -1159,7 +1159,7 @@
       "title": "Genesis Kernel",
       "url": "/wiki/genesis-kernel.html",
       "category": "core",
-      "rank_score": 337,
+      "rank_score": 339,
       "authority_score": 24
     },
     {
@@ -2543,7 +2543,7 @@
       "title": "Kael Voss",
       "url": "/wiki/kael-voss.html",
       "category": "characters",
-      "rank_score": 250,
+      "rank_score": 252,
       "authority_score": 17
     },
     {
@@ -2991,7 +2991,7 @@
       "title": "Sylas the Unbroken",
       "url": "/wiki/sylas-the-unbroken.html",
       "category": "characters",
-      "rank_score": 226,
+      "rank_score": 231,
       "authority_score": 14
     },
     {
@@ -3055,7 +3055,7 @@
       "title": "The BLOCKSTARS",
       "url": "/wiki/the-blockstars.html",
       "category": "factions",
-      "rank_score": 287,
+      "rank_score": 289,
       "authority_score": 28
     },
     {
@@ -3151,7 +3151,7 @@
       "title": "The HARD FORK ROCKERS",
       "url": "/wiki/the-hard-fork-rockers.html",
       "category": "factions",
-      "rank_score": 298,
+      "rank_score": 299,
       "authority_score": 28
     },
     {
@@ -3191,7 +3191,7 @@
       "title": "The Nomad Bears",
       "url": "/wiki/the-nomad-bears.html",
       "category": "factions",
-      "rank_score": 292,
+      "rank_score": 294,
       "authority_score": 28
     },
     {
@@ -3303,7 +3303,7 @@
       "title": "Veyra Nyx",
       "url": "/wiki/veyra-nyx.html",
       "category": "characters",
-      "rank_score": 233,
+      "rank_score": 235,
       "authority_score": 14
     },
     {
@@ -4034,15 +4034,15 @@
     },
     {
       "source": "/wiki/bitcoin-kids.html",
-      "target": "/wiki/hodl-x-warriors.html",
-      "score": 88,
-      "weight": 0.88
+      "target": "/wiki/hodl-warriors.html",
+      "score": 90,
+      "weight": 0.9
     },
     {
       "source": "/wiki/bitcoin-kids.html",
-      "target": "/wiki/hodl-warriors.html",
-      "score": 87,
-      "weight": 0.87
+      "target": "/wiki/hodl-x-warriors.html",
+      "score": 88,
+      "weight": 0.88
     },
     {
       "source": "/wiki/bitcoin-kids.html",
@@ -4065,8 +4065,8 @@
     {
       "source": "/wiki/bitcoin-x-kids.html",
       "target": "/wiki/hodl-warriors.html",
-      "score": 84,
-      "weight": 0.84
+      "score": 87,
+      "weight": 0.87
     },
     {
       "source": "/wiki/bitcoin-x-kids.html",
@@ -7466,6 +7466,12 @@
     },
     {
       "source": "/wiki/genesis-spray-drop.html",
+      "target": "/wiki/hodl-warriors.html",
+      "score": 84,
+      "weight": 0.84
+    },
+    {
+      "source": "/wiki/genesis-spray-drop.html",
       "target": "/wiki/null-the-prophet.html",
       "score": 84,
       "weight": 0.84
@@ -7475,12 +7481,6 @@
       "target": "/wiki/bitcoin-kids.html",
       "score": 82,
       "weight": 0.82
-    },
-    {
-      "source": "/wiki/genesis-spray-drop.html",
-      "target": "/wiki/hodl-warriors.html",
-      "score": 81,
-      "weight": 0.81
     },
     {
       "source": "/wiki/genesis-spray-drop.html",
@@ -12321,7 +12321,7 @@
     {
       "source": "/wiki/hodl-warriors.html",
       "target": "/wiki/hodl-x-warriors.html",
-      "score": 102,
+      "score": 105,
       "weight": 1
     },
     {
@@ -12339,14 +12339,14 @@
     {
       "source": "/wiki/hodl-warriors.html",
       "target": "/wiki/bitcoin-kids.html",
-      "score": 92,
-      "weight": 0.92
+      "score": 95,
+      "weight": 0.95
     },
     {
       "source": "/wiki/hodl-warriors.html",
       "target": "/wiki/null-the-prophet.html",
-      "score": 87,
-      "weight": 0.87
+      "score": 91,
+      "weight": 0.91
     },
     {
       "source": "/wiki/hodl-wars.html",
@@ -12381,7 +12381,7 @@
     {
       "source": "/wiki/hodl-x-warriors.html",
       "target": "/wiki/hodl-warriors.html",
-      "score": 107,
+      "score": 110,
       "weight": 1
     },
     {
@@ -13269,8 +13269,8 @@
     {
       "source": "/wiki/null-the-prophet.html",
       "target": "/wiki/hodl-warriors.html",
-      "score": 77,
-      "weight": 0.77
+      "score": 81,
+      "weight": 0.81
     },
     {
       "source": "/wiki/null-the-prophet.html",
@@ -14906,6 +14906,12 @@
     },
     {
       "source": "/wiki/the-hard-fork-rockers.html",
+      "target": "/wiki/the-salvagers.html",
+      "score": 92,
+      "weight": 0.92
+    },
+    {
+      "source": "/wiki/the-hard-fork-rockers.html",
       "target": "/wiki/the-blockchain-furies.html",
       "score": 90,
       "weight": 0.9
@@ -14913,12 +14919,6 @@
     {
       "source": "/wiki/the-hard-fork-rockers.html",
       "target": "/wiki/the-blockstars.html",
-      "score": 89,
-      "weight": 0.89
-    },
-    {
-      "source": "/wiki/the-hard-fork-rockers.html",
-      "target": "/wiki/the-salvagers.html",
       "score": 89,
       "weight": 0.89
     },

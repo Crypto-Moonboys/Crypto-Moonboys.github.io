@@ -10067,7 +10067,9 @@
     "canonical_title": "Sylas the Unbroken",
     "canonical_url": "/wiki/sylas-the-unbroken.html",
     "category": "characters",
-    "aliases": [],
+    "aliases": [
+      "sylas unbroken"
+    ],
     "tags": [
       "sylas",
       "unbroken"
@@ -10075,10 +10077,7 @@
     "source_urls": [
       "/wiki/sylas-the-unbroken.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "sylas unbroken"
-    ]
+    "brand": null
   },
   {
     "entity_id": "tacoswap",

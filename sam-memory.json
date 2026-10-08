@@ -9979,10 +9979,10 @@
       ]
     },
     "sylas_the_unbroken": {
-      "alias_candidates": [
+      "alias_candidates": [],
+      "aliases": [
         "sylas unbroken"
       ],
-      "aliases": [],
       "canonical_title": "Sylas the Unbroken",
       "canonical_url": "/wiki/sylas-the-unbroken.html",
       "category": "characters",
@@ -11176,5 +11176,5 @@
       ]
     }
   },
-  "updated_at": "2026-10-08T12:52:12Z"
+  "updated_at": "2026-10-08T13:18:16Z"
 }

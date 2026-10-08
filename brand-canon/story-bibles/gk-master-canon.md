@@ -349,3 +349,19 @@ rediscovering merged modern stories. Every substantive new decision needs exact
 source, authority, affected paths, rationale and approval when required. This
 bible is the working convergence entry point; pending items must remain visible
 until they are actually researched and implemented.
+
+
+### Complete Rocker/HODL witnesses and a repaired name reference
+
+w50 and w63 now have complete original and connected claim/scene comparison.
+The Rocker owning article recovers willingness to sacrifice Punk Net territory
+and A-B Testing Anarchy; HODL recovers the Post-HODL Fallback's specific
+withheld tactical memories and remaining traumatic knowledge. Neither doctrine
+automatically overrides the existing adult cultures, limited command or wages.
+
+Tavi Rill's early Army accounts establish she/her; later Holdfast/kinship pages
+accidentally switched to masculine references. Thirteen exact paragraph
+receipts now use Tavi or Tavi's in those later clauses while preserving every
+event and every other person's pronouns. Tavi's mother Sena remains silent.
+Tavi Spool, Quiet Spindle's playback repairer, is a different person and keeps
+that account's established references. No shared-first-name merger is adopted.

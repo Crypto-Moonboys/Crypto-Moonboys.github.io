@@ -24,7 +24,7 @@
       "id": "GK-1458-CODEX",
       "status": "implemented",
       "sources": [
-        "W1.txt: Tales of the Darkside; Operation Echo phases 1\u20133; Physical Manifestation"
+        "W1.txt: Tales of the Darkside; Operation Echo phases 1–3; Physical Manifestation"
       ],
       "old": "Codex scattered across enforcement/Rune references; no dedicated account of its phases or CMB endpoint.",
       "new": "Dedicated disputed-manuscript article distinguishes the listening posts, mural calibration, Omega Hash, Pulse and next-universe prediction from established mechanics.",
@@ -39,7 +39,7 @@
       "id": "GK-1458-PILLARS",
       "status": "implemented",
       "sources": [
-        "w32.txt: Sociological Framework I\u2013VI; Tactical Arsenal I\u2013VI"
+        "w32.txt: Sociological Framework I–VI; Tactical Arsenal I–VI"
       ],
       "old": "Brief mentions omit the complete six-bloc, twelve-tool classification.",
       "new": "Full attributed historical doctrine, including Memory-Sigils and Null-Cipher, separated from Forty and live game mechanics.",
@@ -154,7 +154,7 @@
         "W12.txt Parts 1-8, fully read: 2036 origin; late 2029 council; 2030 Reset; 2031 bridge; 2032 capture; 2035 climax",
         "W13.txt Parts 1-7 and repeated household extracts, fully read",
         "merged Fifth Carbon and current Croydon/Princess/First Witness chronology",
-        "W5.txt all20tomes/paragraphs1\u20131335 fully read; alternative steel-slab origin and terminal Soul/Wing Fork worlds compared"
+        "W5.txt all20tomes/paragraphs1–1335 fully read; alternative steel-slab origin and terminal Soul/Wing Fork worlds compared"
       ],
       "old": "A nineteen-year-old 2036 upload precedes late-2029 preparations, the 2030 Reset, a 2031 bridge, the 2032 vanishing and a 2035 climax. A teenage adoption is also compressed into the 2007-2009 Street War.",
       "new": "Recommend retaining the repeated 2036 origin and moving the subsequent civil sequence ten years forward: late 2039 council, 2040 Stabilisation, 2041 bridge work, 2042 vanishing, 2045 climax. Keep adoption later than the original Street War. Preserve the explicit across-time bridge as an attributed source claim; do not mistake ordinary flashback for a complete repair.",
@@ -291,7 +291,7 @@
         "M16.txt prospective3030 timeline, fully read",
         "current First Witness BooksI-IX, all scripture and commentary read",
         "approved modern lore and exact current Elder/Iris/Aleema/Dream stories",
-        "W5.txt all20tomes/paragraphs1\u20131335 fully read; alternative steel-slab origin and terminal Soul/Wing Fork worlds compared"
+        "W5.txt all20tomes/paragraphs1–1335 fully read; alternative steel-slab origin and terminal Soul/Wing Fork worlds compared"
       ],
       "old": "W15 universal upload/heat death/restarts and w25 universal liberation/peace compete as incompatible terminal histories; M16 predicts3030 without a completed scene. W5 further ends with universal Bonnet choice, flight, fused layers and Architect retirement.",
       "new": "Recommend a single materially continuous world: retain complete serial visions, reject their universal terminal explanations as automatic world history; future Final Fork ends a particular existential threat without undoing loss or assigning one sovereign ownership of every future mind. Exact date/fates remain pending full source audit and GK.",
@@ -319,7 +319,7 @@
       "id": "GK-1458-W5-OWNING-RECOVERY",
       "status": "implemented",
       "sources": [
-        "W5.txt all20tomes, paragraphs1\u20131335 fully read",
+        "W5.txt all20tomes, paragraphs1–1335 fully read",
         "w68.txt full directory",
         "w69.txt all373paragraphs",
         "M16.txt full compilation",
@@ -361,7 +361,7 @@
       "id": "GK-1458-W15-TRIAD-RECOVERY",
       "status": "implemented",
       "sources": [
-        "W15.txt all 192 paragraphs fully read; exact opening 5\u201318 and awakenings 25\u201338",
+        "W15.txt all 192 paragraphs fully read; exact opening 5–18 and awakenings 25–38",
         "Full current Sarah, Alfie, Jodie, NULL, Block Topia and HODL Warriors articles",
         "GK continuation permits dedicated missing characters and adult connecting fiction"
       ],
@@ -380,6 +380,123 @@
         "wiki/hodl-warriors.html",
         "brand-canon/story-bibles/the-paid-exit.md",
         "brand-canon/story-bibles/gk-master-canon.md"
+      ]
+    },
+    {
+      "id": "GK-1458-TAVI-REFERENCE-CONTINUITY",
+      "status": "implemented",
+      "sources": [
+        "Current bitcoin-kid-army.html training and Grey Return: established Tavi Rill she/her",
+        "Current the-bitcoin-kid-army.html retelling: Tavi Rill her paid appearances",
+        "Current canon-foundation-20261004.md shared Holdfast/escort sequence; same Tavi Rill",
+        "Read all affected Tavi paragraphs and their surrounding events; separately identify Tavi Spool in rave-relics"
+      ],
+      "old": "Later linked Holdfast/kinship accounts switch Tavi Rill to masculine pronouns without a distinct character or authored identity event.",
+      "new": "Use Tavi or Tavi’s in exactly thirteen later paragraphs; retain earlier established she/her, all scenes and every other character’s pronouns. Tavi Spool remains a separate playback repairer.",
+      "reason": "Repairs accidental referential drift without defining a new gender, biological history, family link, origin or plot event. No modern story is removed or absolved.",
+      "affected_paths": [
+        "wiki/alfie-bitcoin-kid-blaze.html",
+        "wiki/bitcoin-kids.html",
+        "wiki/genesis-kernel.html",
+        "wiki/hodl-wars.html",
+        "wiki/jodie-zoom-2000.html",
+        "wiki/null-the-prophet.html",
+        "wiki/sacred-chain.html"
+      ],
+      "paragraph_changes": [
+        {
+          "path": "wiki/alfie-bitcoin-kid-blaze.html",
+          "old_sha256": "sha256:3971a52902726c7d77dde85b0521d3d28f3a961d328d0ab110e625daa319e425",
+          "new_sha256": "sha256:5a62a64329bc6d2f9cfba7a8e91b57a3a0730fc0e0c34b24f9ae621fb98b4447",
+          "reason": "Correct only the later masculine reference to the established Tavi Rill by using the name; retain every event, other person’s pronoun, family relationship and irreversible consequence."
+        },
+        {
+          "path": "wiki/bitcoin-kids.html",
+          "old_sha256": "sha256:16efe0e98a25e16ae565a9262816bd472e020fe9eca5737c4368e6dfa16c71dd",
+          "new_sha256": "sha256:ae3351543b9cb99735d7591e6d604f047ead731860cb48bda3bc167bf34e1512",
+          "reason": "Correct only the later masculine reference to the established Tavi Rill by using the name; retain every event, other person’s pronoun, family relationship and irreversible consequence."
+        },
+        {
+          "path": "wiki/bitcoin-kids.html",
+          "old_sha256": "sha256:5035a5ded7012cb8381bd97f87f68001d03b31b65932d15478709e2f2bcac0af",
+          "new_sha256": "sha256:d7eb48a0ad109642204831774ff7eecc9d1aaef98a1d0c81ac4b436e9d48bbe6",
+          "reason": "Correct only the later masculine reference to the established Tavi Rill by using the name; retain every event, other person’s pronoun, family relationship and irreversible consequence."
+        },
+        {
+          "path": "wiki/bitcoin-kids.html",
+          "old_sha256": "sha256:42b5c40ac5b4b5f489438f2bc6228ba2a710cacf4fdc47ea5d969dae692c39b3",
+          "new_sha256": "sha256:cf023dbbed1201adf576f6cb3270bb650f15fa12eb9f8fb7bf0cb8d053a0b5c9",
+          "reason": "Correct only the later masculine reference to the established Tavi Rill by using the name; retain every event, other person’s pronoun, family relationship and irreversible consequence."
+        },
+        {
+          "path": "wiki/genesis-kernel.html",
+          "old_sha256": "sha256:e4fe040c53c5bfba52ffcc00ea3d2de9f90200ef31b8b00e81be6ac59c445700",
+          "new_sha256": "sha256:ac56cb3a64cd9b56ffb304e012ea8e1baec22faa71697c777dd1ab7444afb059",
+          "reason": "Correct only the later masculine reference to the established Tavi Rill by using the name; retain every event, other person’s pronoun, family relationship and irreversible consequence."
+        },
+        {
+          "path": "wiki/hodl-wars.html",
+          "old_sha256": "sha256:4b6491e8c0ae7dddb671f1871a459c4961ddfc739223475646bf4950567bad42",
+          "new_sha256": "sha256:8735362c497b03d1eea0cf9f44b698d9fdd60a550655a75a8cf7cd8be25094ab",
+          "reason": "Correct only the later masculine reference to the established Tavi Rill by using the name; retain every event, other person’s pronoun, family relationship and irreversible consequence."
+        },
+        {
+          "path": "wiki/hodl-wars.html",
+          "old_sha256": "sha256:b6d85b079e95cfd2889755894e1eddbf22c9d63a5dc613dbb1bc870ac229ea83",
+          "new_sha256": "sha256:ccd682b403a3ec639c8100c73773dcdd3ee741fd0fbaae63a6392db990140cfe",
+          "reason": "Correct only the later masculine reference to the established Tavi Rill by using the name; retain every event, other person’s pronoun, family relationship and irreversible consequence."
+        },
+        {
+          "path": "wiki/jodie-zoom-2000.html",
+          "old_sha256": "sha256:02e734f88fffd16dd95b30e2eb7cd2932a4fb7a1bbb75844523bdba6945858e4",
+          "new_sha256": "sha256:76daea92aee115225b301e723d3b40043c861d5591a651b685a8ac5bcc6e6582",
+          "reason": "Correct only the later masculine reference to the established Tavi Rill by using the name; retain every event, other person’s pronoun, family relationship and irreversible consequence."
+        },
+        {
+          "path": "wiki/jodie-zoom-2000.html",
+          "old_sha256": "sha256:ea06acc4bb448cbce9c80a30048b57eadc5af9bc9765269f7fc276cb6607a47d",
+          "new_sha256": "sha256:f98a7107d5def27d83223f7b5b9ba4970d28d950a4e3ef705144abde86b34e78",
+          "reason": "Correct only the later masculine reference to the established Tavi Rill by using the name; retain every event, other person’s pronoun, family relationship and irreversible consequence."
+        },
+        {
+          "path": "wiki/null-the-prophet.html",
+          "old_sha256": "sha256:6cf4692ea946d372c5ec31d7eb42fc5274f76e8b7d6f1bd6c2a86c6ab0946e74",
+          "new_sha256": "sha256:971a29991bcae696006b8b3c6d066b61fe3d038632871c3df65adf66d34d13ad",
+          "reason": "Correct only the later masculine reference to the established Tavi Rill by using the name; retain every event, other person’s pronoun, family relationship and irreversible consequence."
+        },
+        {
+          "path": "wiki/null-the-prophet.html",
+          "old_sha256": "sha256:a829539e93ccddf8a306359439771d28eca4fc357d5115f13cb106beec22f7f5",
+          "new_sha256": "sha256:616e47e3f2202d42b9156fe51db44ff370b0d1a9028f8b52bc54e6870078ac45",
+          "reason": "Correct only the later masculine reference to the established Tavi Rill by using the name; retain every event, other person’s pronoun, family relationship and irreversible consequence."
+        },
+        {
+          "path": "wiki/null-the-prophet.html",
+          "old_sha256": "sha256:c3aac360c12fc1eeaffaab7162626d73256bd5755c09af1df1126a42036fa2bc",
+          "new_sha256": "sha256:f15a0c7061d4889b08b3e8d64708029f10b99603dfdd82923548db40901af8b8",
+          "reason": "Correct only the later masculine reference to the established Tavi Rill by using the name; retain every event, other person’s pronoun, family relationship and irreversible consequence."
+        },
+        {
+          "path": "wiki/sacred-chain.html",
+          "old_sha256": "sha256:dc952769dc73a7f4d3250a0567349c8c9d7478c8bdb492571f063f1d290f34e0",
+          "new_sha256": "sha256:ee7d57da3bc567f591629c4f2122f9f9fe575aa72008d9b6c0c4501f97f94ecf",
+          "reason": "Correct only the later masculine reference to the established Tavi Rill by using the name; retain every event, other person’s pronoun, family relationship and irreversible consequence."
+        }
+      ]
+    },
+    {
+      "id": "GK-1458-W50-W63-RECOVERY",
+      "status": "implemented",
+      "sources": [
+        "w50.txt and w63.txt fully read",
+        "Full Rocker/HODL/Nomad/Bloockstars/Rugpull/Stoned/Defender/Army biographies, current chronology/concordance/Forty commentaries/Kernel and BookVI/VII/VIII/IX comparisons"
+      ],
+      "old": "Source territorial-sacrifice doctrine and the specific tactical memory exclusions of Post-HODL Fallback are compressed.",
+      "new": "Recover the sacrificed Punk Net territory, A-B Testing Anarchy and planned exclusions of Rugpull vulnerabilities/GraffPUNK Moongirl code on owning articles, with source attribution and all adult histories preserved.",
+      "reason": "Keeps coercion and radical risk visible without a new faction, forced accepted worldwide memory physics, historical retcon or completed Final Fork.",
+      "affected_paths": [
+        "wiki/hodl-warriors.html",
+        "wiki/the-hard-fork-rockers.html"
       ]
     }
   ]

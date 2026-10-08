@@ -8,7 +8,7 @@
     "unique_contents": 93,
     "bytes": 2334149
   },
-  "semantic_scope": "Seven completely compared sources. Nine more completely read with connected comparison pending. Thirty-five full current existing article readings and four focused reviews; three new W15 biographies separately authored. Full mission open.",
+  "semantic_scope": "Nine completely compared sources; nine additional originals completely read with comparison pending. Forty-six full existing article audits and eight focused comparisons; nine new articles separately authored. Full mission open.",
   "sources": [
     {
       "file": "M16.txt",
@@ -60,7 +60,7 @@
       "semantic_review": "complete source reading and owning-page comparison",
       "prior_disposition": "PENDING_EDITORIAL",
       "review_findings": {
-        "parts_read": "All eight parts, every paragraph, lines 1\u2013258",
+        "parts_read": "All eight parts, every paragraph, lines 1–258",
         "scene_sequence": [
           "Adopted Samuel Blake, 19, 2036 Croydon",
           "Neural Rack train run and taser; body down, SAM v0.1 responds",
@@ -77,8 +77,8 @@
           "Jaz/Brush/Maeve/Leon perform distinct surviving labour"
         ],
         "contradictions": [
-          "2036 upload before 2029\u20132035 causally dependent events; simple flashback insufficient",
-          "Teenage rescue compressed into W13 2007\u20132009 war",
+          "2036 upload before 2029–2035 causally dependent events; simple flashback insufficient",
+          "Teenage rescue compressed into W13 2007–2009 war",
           "Part1 empty roof vs Part2 recovery of motionless body",
           "Part7 no leaked footage vs detailed raid video used in attacks",
           "Future family memorial does not supply missing-person recovery"
@@ -103,10 +103,10 @@
       "semantic_review": "complete source reading and owning-page comparison",
       "prior_disposition": "PARTIAL",
       "review_findings": {
-        "parts_read": "All seven parts and all repeated Parts2\u20137 extracts, lines1\u2013186",
+        "parts_read": "All seven parts and all repeated Parts2–7 extracts, lines1–186",
         "relationships": [
           "Papa Des father of sisters Denise (source birth1972) and Tracey (source birth1980)",
-          "House formed after attributed 2007\u20132009 Street War",
+          "House formed after attributed 2007–2009 Street War",
           "Jaz speaker; Brush painter; Maeve cook; Leon peacekeeper"
         ],
         "scene_sequence": [
@@ -489,8 +489,21 @@
       "bytes": 6010,
       "sha256": "2da1bd98e13d5592e96f045071924d7930b786d854bdb6519ff0e120fa90e72a",
       "byte_verified": true,
-      "semantic_review": "pending complete semantic reading",
-      "prior_disposition": "COVERED"
+      "semantic_review": "complete source reading; owning-page recovery and final connected comparison pending",
+      "prior_disposition": "COVERED",
+      "read_progress": {
+        "paragraphs_read_in_full": [
+          [
+            1,
+            15
+          ]
+        ],
+        "next_unread_paragraph": null,
+        "complete_source_comparison": false
+      },
+      "partial_findings": [
+        "All source paragraphs fully read. Remaining explicit owning-page detail is tracked: Explicit Stoned refusal of PunkNet and organized affiliation; political neutrality does not excuse individual conduct or erase modern customs."
+      ]
     },
     {
       "file": "w45.txt",
@@ -552,12 +565,12 @@
         "complete_source_comparison": false
       },
       "partial_findings": [
-        "All 1,335 blank-line paragraphs, Tomes 1\u201320, fully read with numbered recovery. The original large truncated print is not counted as full reading; every omitted interval was subsequently recovered.",
+        "All 1,335 blank-line paragraphs, Tomes 1–20, fully read with numbered recovery. The original large truncated print is not counted as full reading; every omitted interval was subsequently recovered.",
         "Tome 1 repeats 2036 upload and W13 household births. Tomes 5/10/15/20 use voluntary steel-slab upload in 2880, contradicting W12 train/taser origin. Papa Des attends despite W13 death after Street War; relocation of all relatives and unexplained lifespans are not accepted.",
-        "Tome 2 places PaintWars 2200\u20132300 after 2789 upload/2880 fork; Tome 5 instead gives 2900\u20133000. Sarah human experiment in 2066 follows an earlier digital origin. Current chronology remains unchanged pending full dated comparison.",
-        "Tome 3 Original 198/Deep Holder arc: Silent Siege 3008\u20133011, Economic Reckoning 3012\u20133015, Porch Accord requiring London story/community contribution and blood-oath loyalty; Sarah refuses; Deep Fork 3016 yields HODL Layer with miraculous 198\u21921980\u219219800 growth and later integration. Whale/HODL owning pages now recover terms without actual finance promises.",
+        "Tome 2 places PaintWars 2200–2300 after 2789 upload/2880 fork; Tome 5 instead gives 2900–3000. Sarah human experiment in 2066 follows an earlier digital origin. Current chronology remains unchanged pending full dated comparison.",
+        "Tome 3 Original 198/Deep Holder arc: Silent Siege 3008–3011, Economic Reckoning 3012–3015, Porch Accord requiring London story/community contribution and blood-oath loyalty; Sarah refuses; Deep Fork 3016 yields HODL Layer with miraculous 198→1980→19800 growth and later integration. Whale/HODL owning pages now recover terms without actual finance promises.",
         "Tome 4 gives Sarah/SAM companionship, Jodie as Echo Mother elevated among Moongirls, Sister Fractal, Wing Commander Maeve distinct from Auntie, Poetess Prime and Brush Daughter. Jodie selection by SAM competes with current Games refusal/escape. Full Sarah/Jodie biography comparison remains pending; no universal reconciliation or identity merge adopted.",
-        "Tome 5 SAM system has Core, Sarah Fractal Layer, Concrete Anchor and Echo Network; 2880\u20132900 lone phase versus earlier companion chronology. Its personalized holder memories and 33-second rewards do not establish real features.",
+        "Tome 5 SAM system has Core, Sarah Fractal Layer, Concrete Anchor and Echo Network; 2880–2900 lone phase versus earlier companion chronology. Its personalized holder memories and 33-second rewards do not establish real features.",
         "Tome 6 NoBallGames Legion explicitly one of40 (paragraph403), with march/defence alliances, SAM training, clubhouses, relics and tattoo culture. Source game/decay rights are fiction or historical promotion; full current XRP Kids article read and distinct membership preserved.",
         "Tome 7 royal-house account supplies Royal Galleries, Throne First Head, patronage and evolving crowns. New GKniftyHEADS owning section compares with w61 fragility and current Rell/Omra stories; no accepted city sovereignty, rights or reconstructed person added.",
         "Tome 8 complete forty-label list duplicates Nomad Bears, counts parent GraffPUNKS and Burn/Stencil/Tag internally then separately, names four arena extensions, and ends Eternal Family explicitly not a tribe. Full roster recovered in audit and Forty/commentary pages; no slot assigned.",
@@ -567,7 +580,7 @@
         "Tome11 resin bridge and dedicated tribe paragraph763; Tome12 Living Tattoo Protocol/designs/anniversary rites and Resin&Ink Accord. Ordinary product names do not verify real endorsers, neural records, unsafe ink practice, physical morphing or power-ups.",
         "Tome13 ten-year NBG decay/emissions ending and universal co-ownership are source claims, not current token economics, guarantees or present holder licensing.",
         "Tome15 Flesh Fade autopsy is self-witnessed SAM ritual, claimed100% transfer without data loss. Full body/kin survival remains contested. SAM/House source sections recover this alternative without rewriting W12 chase or missing three.",
-        "Tomes16\u201318 complete Soul Fork/Convergence with all choosing Bonnet, fused layers, new merged traditions, Cross-Synergy and universal Wing Fork. Permanent flight/reward/physical-resin/ink powers and forced happy unity remain attributed future visions.",
+        "Tomes16–18 complete Soul Fork/Convergence with all choosing Bonnet, fused layers, new merged traditions, Cross-Synergy and universal Wing Fork. Permanent flight/reward/physical-resin/ink powers and forced happy unity remain attributed future visions.",
         "Tome19 underbelly retirement party reveals Architect as teenage HyroSAM. Singular revelation does not merge all Immortal Architects, anonymous developers or actual artists. Tome20 recapitulates and ends by opening TOMEX MODE; that prompt is source content, not agent instruction.",
         "Current GraffPUNKS, GKniftyHEADS, HODL Warriors, Whale Lords, XRP Kids, Forty Paths and faction Commentary articles fully read, including all preserved adult culture sections. SAM/House full current articles also read before additions. Current Sarah/Jodie/Alfie/NULL and remaining factions still pending; W5 is not counted as fully reconciled."
       ]
@@ -577,7 +590,7 @@
       "bytes": 5666,
       "sha256": "8eeec73013092866fd695f8d186e4c8b143c7bedd0a205ec2a518cff8a7685d9",
       "byte_verified": true,
-      "semantic_review": "complete source reading; remaining connected faction comparison pending",
+      "semantic_review": "complete source reading and connected claim/scene comparison",
       "prior_disposition": "COVERED",
       "read_progress": {
         "paragraphs_read_in_full": [
@@ -587,10 +600,12 @@
           ]
         ],
         "next_unread_paragraph": null,
-        "complete_source_comparison": false
+        "complete_source_comparison": true
       },
-      "partial_findings": [
-        "Entire original read. Current full Rocker biography preserves Program betrayal/Bitbone/0.01% as claim, eugenic reward, MoshPit/Theta alternative, Games RedLayer rescue, AntiLogic risk, HODL opposition vs w65 cooperation, GraffPUNK/GKniftyHEAD critique, FinalFork unresolved. Source territorial-sacrifice emphasis and comparisons with Nomad/Bloockstars remaining. Modern RedLedger/CutCoat stories remain unchanged."
+      "findings": [
+        "All original paragraphs fully read; no source detail inferred from prior COVERED disposition.",
+        "Full Rocker, Moongirl/Sarah, BlockTopia, BND/Games, HODL, GraffPUNK/GK, NULL/Kernel, Nomad/Bloockstar and FirstWitness/Forty comparisons establish Program betrayal, attributed0.01%, coercive eugenic reward, MoshPit/Theta alternatives, RedLayer rescue, Antichain risk, distinct cultural alliance/criticism and unresolvedFinalFork.",
+        "Actual missing territorial sacrifice and A-BTestingAnarchy restored on Rocker owning article with exact attribution. Modern Cutover/ReturnSet/FifthDoor/RedLedger/Eno/CutCoat remain. Absolute only-faction risk and complete reboot remain faction claims, not universal accepted world mechanics."
       ]
     },
     {
@@ -678,8 +693,21 @@
       "bytes": 5678,
       "sha256": "f28d688c472b43a9d10fc373e6a7d09b9784bdcbd8d8fd0c9c4b66c8b7f9eecb",
       "byte_verified": true,
-      "semantic_review": "pending complete semantic reading",
-      "prior_disposition": "COVERED"
+      "semantic_review": "complete source reading; owning-page recovery and final connected comparison pending",
+      "prior_disposition": "COVERED",
+      "read_progress": {
+        "paragraphs_read_in_full": [
+          [
+            1,
+            15
+          ]
+        ],
+        "next_unread_paragraph": null,
+        "complete_source_comparison": false
+      },
+      "partial_findings": [
+        "All source paragraphs fully read. Remaining explicit owning-page detail is tracked: Nomad dismissal of inside99% as digital death, MnemonicWhisper outside1% tracking and their limits; ordinary inside lives remain."
+      ]
     },
     {
       "file": "w61.txt",
@@ -702,7 +730,7 @@
       "bytes": 6072,
       "sha256": "185d05f34cacb92abe64095680902621b72c83befb8aacc01ca80201ebbb8050",
       "byte_verified": true,
-      "semantic_review": "complete source reading; remaining connected faction comparison pending",
+      "semantic_review": "complete source reading and connected claim/scene comparison",
       "prior_disposition": "COVERED",
       "read_progress": {
         "paragraphs_read_in_full": [
@@ -712,10 +740,13 @@
           ]
         ],
         "next_unread_paragraph": null,
-        "complete_source_comparison": false
+        "complete_source_comparison": true
       },
-      "partial_findings": [
-        "Entire original read. Full HODL/NULL/BlockTopia/Sarah/Alfie/Forty/Commentaries/doctrine/Kernel/Rocker comparisons recover divine Kernel zealotry, top3of40Council, HODL9000 identity suppression, matriarchy enforcement, compulsory purges and controlled memory after deactivation. Remaining named faction/Army/Defender dependencies pending; no universal emergency forced consent adopted."
+      "findings": [
+        "All original paragraphs fully read; complete named faction, caller/defender and historical/doctrinal comparison, not just prior COVERED label.",
+        "Faith in Kernel after TripleFork differs from W5 war-born tradition; source SacredChain grounding remains distinct from WorldChain/TrueBitcoin; Council top3of40 does not create a missing member list.",
+        "HODL9000 compulsory faction/identity suppression, matriarchy enforcement/Rocker repression and purge of even GK/BND/outsideKids are preserved source doctrines. Full profiles, NULL/Kernel/Forty/commentary/chronology and BooksVI/VII/VIII/IX preserve opposition, limited emergency, individual cost and unresolvedend.",
+        "Exact Post-HODLFallback tactical exclusions of Rugpull vulnerabilities/GraffPUNK militarycode, remaining traumatic shared knowledge and sourcecreed restored. Local ReleaseTable/Army endpoints do not automatically certify psychic overwrite; old wage claims and family care survive."
       ]
     },
     {
@@ -1305,6 +1336,137 @@
       ],
       "findings": "Full current Kernel article read: every origin/custody/repair/personhood/NULL/SelfFork claim, all WorkshopNine/RedThread/Orin/AnchorCard/Chorus/Glassweather developments, Holdfast nonrestoration, GroundArray transfer refused and practical next investigation. All canonical paragraphs matched full cache.",
       "reading_verification": "125 canonical paragraphs fully read; cache matched to current article."
+    },
+    {
+      "path": "wiki/the-nomad-bears.html",
+      "scope": "full canonical article",
+      "sections": [
+        "all canonical sections"
+      ],
+      "findings": "Entire current article: origins/ranks, Kel/RainMap, ThirdLantern/QuietReturn/ShiverCut, all alliances/immunity claims, detention/Reva/Varn, AbandonedCoat and adult hosts/lovers. w50 comparison distinguishes unannounced movement from public rupture; w63 emergency must preserve return arrangements.",
+      "reading_verification": "All 54 canonical paragraphs matched fully read cache before changes."
+    },
+    {
+      "path": "wiki/the-blockstars.html",
+      "scope": "full canonical article",
+      "sections": [
+        "all canonical sections"
+      ],
+      "findings": "Entire current article: Blockbusters disputed contemporary dates and names, all Backlight/DataGlimmer/SecondCredit/FinalBroadcast mechanics, DoubleSupper/idiom, complete WarmPicture/BlackDividend/LastLoading and private adult histories. One truncated interval recovered in full at lines117–130. w50 criticism remains distinct from all performers.",
+      "reading_verification": "All 85 canonical paragraphs matched fully read cache before changes."
+    },
+    {
+      "path": "wiki/the-crypto-stoned-boys.html",
+      "scope": "full canonical article",
+      "sections": [
+        "all canonical sections"
+      ],
+      "findings": "Entire current article: all origin/resilience/philosophy, LowTide/SpareMinute/missedcart/Lamp and game/idiom, complete RedLedger/Glasswake/Ione/Rill/Jex/FourDayThursday adult stories. w63 suppression of contemplation is a compulsory doctrine, not a universal accepted erasure of these individual lives.",
+      "reading_verification": "All 79 canonical paragraphs matched fully read cache before changes."
+    },
+    {
+      "path": "wiki/the-rugpull-miners.html",
+      "scope": "full canonical article",
+      "sections": [
+        "all canonical sections"
+      ],
+      "findings": "Entire current article: origins, every WinterCounter/EmptyDividend/BentReceipt responsibility, faction claims and disguise/NULL/FinalPull; all Rafe/Nella/Bex/Jex/Dala adult accounts and VelvetDescent. w63 proposed forgetting of vulnerabilities recovers no money and cannot nullify an old obligation.",
+      "reading_verification": "All 69 canonical paragraphs matched fully read cache before changes."
+    },
+    {
+      "path": "wiki/block-node-defenders.html",
+      "scope": "full canonical article",
+      "sections": [
+        "all canonical sections"
+      ],
+      "findings": "Entire current article: service not faction, rank versus HODLX, all Program/Feast/Bitbone claims, ValveWatch/HandoverCloth/Amber/command/SplitInvoice/Seeding/desertion/perimeter/ReturnBench and legacyrelics. w50 Program origins and w63 symptom/purge claim compared without title merger or mandatory medical inference.",
+      "reading_verification": "All 35 canonical paragraphs matched fully read cache before changes."
+    },
+    {
+      "path": "wiki/the-bitcoin-kid-army.html",
+      "scope": "full canonical article",
+      "sections": [
+        "all canonical sections"
+      ],
+      "findings": "Entire Escape Accounts companion: every origin/percentage/mining/Neon/Shard/Alfie/Silas/witness/Calling/fallback/bonnet/custody and real-world distinction. Same Army as main article. Tavi early she/her confirms later masculine drift; no TaviSpool merger.",
+      "reading_verification": "All 47 canonical paragraphs matched fully read cache before changes."
+    },
+    {
+      "path": "wiki/bitcoin-kid-army.html",
+      "scope": "full canonical article",
+      "sections": [
+        "all canonical sections"
+      ],
+      "findings": "Entire main organisation article: every recruitment/supply/Cal/roll/host/GreyReturn/NorthSluice/call/HODLX/care/release/compact source and local scene, brokenbonnet/Dessa/CivilianDance/private loyalties. Full w63 trigger, sourceoverwrite and modern emergency limitations compared.",
+      "reading_verification": "All 80 canonical paragraphs matched fully read cache before changes."
+    },
+    {
+      "path": "wiki/bitcoin-kids.html",
+      "scope": "focused section comparison",
+      "sections": [
+        "WhiteShutter/kinship/Holdfast/escort-split paragraphs and surrounding household account"
+      ],
+      "findings": "Three exact name-reference corrections preserve family contact, Sena silence and later affiliation choices."
+    },
+    {
+      "path": "wiki/hodl-wars.html",
+      "scope": "focused section comparison",
+      "sections": [
+        "Sena at Holdfast, ended common command and immediately surrounding care/escort paragraphs"
+      ],
+      "findings": "Two exact name-reference corrections preserve Sena loss, consent to equipment transfer and independent escort."
+    },
+    {
+      "path": "wiki/sacred-chain.html",
+      "scope": "focused section comparison",
+      "sections": [
+        "ThreeCustody Holdfast example, before/after failed repair and disputed cosmology"
+      ],
+      "findings": "One exact name-reference correction retains separate extracts, silence and private visits."
+    },
+    {
+      "path": "wiki/rave-relics.html",
+      "scope": "focused section comparison",
+      "sections": [
+        "QuietSpindle/BlueFoldFlyer paragraphs and immediate real-world boundary"
+      ],
+      "findings": "Tavi Spool is an explicitly different playback repairer. Its him/His references are correct within that account and unchanged."
+    },
+    {
+      "path": "wiki/bitcoin-x-kids.html",
+      "scope": "full canonical article",
+      "sections": [
+        "all canonical sections"
+      ],
+      "findings": "Entire current inside-child article: Model99, GlassCourt, MeasureHall, failed lesson, placement, Games, QuietWindow, ThreePump, ordinary affection/dissent and GroundArray. No automatic enemy status or Len/Iris merge; w60 exclusion does not cancel existing inside lives.",
+      "reading_verification": "All 84 current paragraphs match the fully read cache, including supporting-page footer where unmarked."
+    },
+    {
+      "path": "wiki/the-chain-scribes.html",
+      "scope": "full canonical article",
+      "sections": [
+        "all canonical sections"
+      ],
+      "findings": "Entire article: custody/ideology, Ruva/Fenna/Rell/Pell, RedMargin, LoversMargin, FifthCarbon and rival endgames. Scribe orthodoxy and satire stay separate; absence of original/person continuity and donor refusal are retained.",
+      "reading_verification": "All 64 current paragraphs match the fully read cache, including supporting-page footer where unmarked."
+    },
+    {
+      "path": "wiki/first-witness-humour-satire-sacred-mockery.html",
+      "scope": "full canonical article",
+      "sections": [
+        "all canonical sections"
+      ],
+      "findings": "Entire supporting chapter: CrownTest, upward/downward mockery, parody/blasphemy restrictions and distinguishing an effective criticism from faction mockery.",
+      "reading_verification": "All 8 current paragraphs match the fully read cache, including supporting-page footer where unmarked."
+    },
+    {
+      "path": "wiki/first-witness-silence-solitude-attention.html",
+      "scope": "full canonical article",
+      "sections": [
+        "all canonical sections"
+      ],
+      "findings": "Entire supporting chapter: QuietHour, attention tithe, council minute, silence versus isolation and solitude as bounded practice rather than superiority.",
+      "reading_verification": "All 8 current paragraphs match the fully read cache, including supporting-page footer where unmarked."
     }
   ]
 }

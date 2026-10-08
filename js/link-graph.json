@@ -9598,7 +9598,7 @@
   },
   "/wiki/genesis-kernel.html": {
     "outbound_count": 67,
-    "inbound_count": 14,
+    "inbound_count": 15,
     "existing_outbound": [
       "/wiki/block-topia.html",
       "/wiki/crypto-moonboys.html",
@@ -9678,6 +9678,7 @@
       "/wiki/gkniftyheads.html",
       "/wiki/graffiti-nexus.html",
       "/wiki/hard-fork-games.html",
+      "/wiki/hodl-warriors.html",
       "/wiki/hodl-x-warriors.html",
       "/wiki/null-the-prophet.html",
       "/wiki/sacred-chain.html",
@@ -18543,7 +18544,7 @@
     "inbound_from": []
   },
   "/wiki/hodl-warriors.html": {
-    "outbound_count": 40,
+    "outbound_count": 44,
     "inbound_count": 34,
     "existing_outbound": [
       "/wiki/bitcoin-kid-army.html",
@@ -18553,6 +18554,7 @@
       "/wiki/first-witness-concordance.html",
       "/wiki/first-witness-hodl-doctrine.html",
       "/wiki/first-witness-master-chronology.html",
+      "/wiki/genesis-kernel.html",
       "/wiki/gkniftyheads.html",
       "/wiki/graffiti-nexus.html",
       "/wiki/graffpunks.html",
@@ -18566,6 +18568,7 @@
     "suggested_outbound": [
       "/wiki/agent-sam.html",
       "/wiki/first-witness-anonymity-pseudonyms-hidden-names.html",
+      "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
       "/wiki/first-witness-book-5-the-chain.html",
       "/wiki/first-witness-book-6-the-fork.html",
@@ -18578,6 +18581,7 @@
       "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-parables.html",
       "/wiki/first-witness-source-register.html",
+      "/wiki/forkborn-collective.html",
       "/wiki/graffiti-kings.html",
       "/wiki/hex-tagger-prime.html",
       "/wiki/hodlmoonboys-nft-collection.html",
@@ -18587,6 +18591,7 @@
       "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-first-witness.html",
       "/wiki/the-hard-fork-rockers.html",
+      "/wiki/the-rugpull-miners.html",
       "/wiki/whale-lords.html"
     ],
     "inbound_from": [
@@ -22273,7 +22278,7 @@
   },
   "/wiki/the-blockstars.html": {
     "outbound_count": 38,
-    "inbound_count": 1,
+    "inbound_count": 2,
     "existing_outbound": [
       "/wiki/bitcoin-kids.html",
       "/wiki/bitcoin-x-kids.html",
@@ -22317,6 +22322,7 @@
       "/wiki/xrp-ledger.html"
     ],
     "inbound_from": [
+      "/wiki/the-hard-fork-rockers.html",
       "/wiki/the-high-hats.html"
     ]
   },
@@ -23025,7 +23031,7 @@
     ]
   },
   "/wiki/the-hard-fork-rockers.html": {
-    "outbound_count": 37,
+    "outbound_count": 38,
     "inbound_count": 2,
     "existing_outbound": [
       "/wiki/bitcoin-kid-army.html",
@@ -23036,10 +23042,12 @@
       "/wiki/hard-fork-games.html",
       "/wiki/hodl-warriors.html",
       "/wiki/null-the-prophet.html",
+      "/wiki/the-blockstars.html",
       "/wiki/the-chain-scribes.html",
       "/wiki/the-ducky-boys.html",
       "/wiki/the-finance-guild.html",
       "/wiki/the-nice-easy-bois.html",
+      "/wiki/the-nomad-bears.html",
       "/wiki/the-princess.html",
       "/wiki/the-salvagers.html",
       "/wiki/the-whitewasher.html",
@@ -23065,7 +23073,6 @@
       "/wiki/punk-token.html",
       "/wiki/queen-sarah-p-fly.html",
       "/wiki/the-bitcoin-kid-army.html",
-      "/wiki/the-blockstars.html",
       "/wiki/xrp-ledger.html"
     ],
     "inbound_from": [
@@ -23317,7 +23324,7 @@
   },
   "/wiki/the-nomad-bears.html": {
     "outbound_count": 31,
-    "inbound_count": 2,
+    "inbound_count": 3,
     "existing_outbound": [
       "/wiki/bitcoin-kids.html",
       "/wiki/bitcoin-x-kids.html",
@@ -23355,6 +23362,7 @@
     ],
     "inbound_from": [
       "/wiki/gkniftyheads.html",
+      "/wiki/the-hard-fork-rockers.html",
       "/wiki/the-salvagers.html"
     ]
   },

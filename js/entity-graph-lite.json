@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-08T12:52:13.230Z",
-  "verified_at": "2026-10-08T12:52:13.230Z",
+  "generated_at": "2026-10-08T13:18:16.602Z",
+  "verified_at": "2026-10-08T13:18:16.602Z",
   "lite": true,
   "nodes": [
     {
@@ -172,20 +172,20 @@
       "authority_score": 14
     },
     {
+      "id": "/wiki/genesis-kernel.html",
+      "title": "Genesis Kernel",
+      "url": "/wiki/genesis-kernel.html",
+      "category": "core",
+      "rank_score": 339,
+      "authority_score": 24
+    },
+    {
       "id": "/wiki/first-witness-prisons-punishment-return.html",
       "title": "Prisons, Punishment and Return",
       "url": "/wiki/first-witness-prisons-punishment-return.html",
       "category": "core",
       "rank_score": 337,
       "authority_score": 14
-    },
-    {
-      "id": "/wiki/genesis-kernel.html",
-      "title": "Genesis Kernel",
-      "url": "/wiki/genesis-kernel.html",
-      "category": "core",
-      "rank_score": 337,
-      "authority_score": 24
     },
     {
       "id": "/wiki/crypto-moonboys.html",
@@ -774,15 +774,21 @@
       "weight": 1
     },
     {
+      "source": "/wiki/hodl-x-warriors.html",
+      "target": "/wiki/hodl-warriors.html",
+      "score": 110,
+      "weight": 1
+    },
+    {
       "source": "/wiki/bitcoin-x-kids.html",
       "target": "/wiki/bitcoin-kids.html",
       "score": 109,
       "weight": 1
     },
     {
-      "source": "/wiki/hodl-x-warriors.html",
-      "target": "/wiki/hodl-warriors.html",
-      "score": 107,
+      "source": "/wiki/hodl-warriors.html",
+      "target": "/wiki/hodl-x-warriors.html",
+      "score": 105,
       "weight": 1
     },
     {
@@ -801,12 +807,6 @@
       "source": "/wiki/graffpunks.html",
       "target": "/wiki/graffpunks-24-7-radio.html",
       "score": 104,
-      "weight": 1
-    },
-    {
-      "source": "/wiki/hodl-warriors.html",
-      "target": "/wiki/hodl-x-warriors.html",
-      "score": 102,
       "weight": 1
     },
     {

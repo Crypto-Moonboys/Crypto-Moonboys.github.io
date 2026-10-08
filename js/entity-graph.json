@@ -14903,6 +14903,44 @@
         }
       },
       {
+        "target_url": "/wiki/hodl-warriors.html",
+        "score": 87,
+        "base_score": 70,
+        "reasons": [
+          "same_category:characters",
+          "link_overlap:10",
+          "rank_score_boost:3",
+          "authority_score_boost:3",
+          "graph_centrality_boost:5",
+          "content_depth_boost:6"
+        ],
+        "rank_score_boost": 3,
+        "authority_score_boost": 3,
+        "graph_centrality_boost": 5,
+        "content_depth_boost": 6,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 3,
+        "decay_penalty": 0,
+        "recency_balance": 3,
+        "final_score": 90,
+        "score_breakdown": {
+          "base_score": 70,
+          "rank_score_boost": 3,
+          "authority_score_boost": 3,
+          "graph_centrality_boost": 5,
+          "content_depth_boost": 6,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 3,
+          "decay_penalty": 0,
+          "recency_balance": 3,
+          "final_score": 90
+        }
+      },
+      {
         "target_url": "/wiki/hodl-x-warriors.html",
         "score": 85,
         "base_score": 73,
@@ -14938,44 +14976,6 @@
           "decay_penalty": 0,
           "recency_balance": 3,
           "final_score": 88
-        }
-      },
-      {
-        "target_url": "/wiki/hodl-warriors.html",
-        "score": 84,
-        "base_score": 67,
-        "reasons": [
-          "same_category:characters",
-          "link_overlap:9",
-          "rank_score_boost:3",
-          "authority_score_boost:3",
-          "graph_centrality_boost:5",
-          "content_depth_boost:6"
-        ],
-        "rank_score_boost": 3,
-        "authority_score_boost": 3,
-        "graph_centrality_boost": 5,
-        "content_depth_boost": 6,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 3,
-        "decay_penalty": 0,
-        "recency_balance": 3,
-        "final_score": 87,
-        "score_breakdown": {
-          "base_score": 67,
-          "rank_score_boost": 3,
-          "authority_score_boost": 3,
-          "graph_centrality_boost": 5,
-          "content_depth_boost": 6,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 3,
-          "decay_penalty": 0,
-          "recency_balance": 3,
-          "final_score": 87
         }
       },
       {
@@ -15653,11 +15653,11 @@
       },
       {
         "target_url": "/wiki/hodl-warriors.html",
-        "score": 81,
-        "base_score": 64,
+        "score": 84,
+        "base_score": 67,
         "reasons": [
           "same_category:characters",
-          "link_overlap:8",
+          "link_overlap:9",
           "rank_score_boost:3",
           "authority_score_boost:3",
           "graph_centrality_boost:5",
@@ -15673,9 +15673,9 @@
         "freshness_boost": 3,
         "decay_penalty": 0,
         "recency_balance": 3,
-        "final_score": 84,
+        "final_score": 87,
         "score_breakdown": {
-          "base_score": 64,
+          "base_score": 67,
           "rank_score_boost": 3,
           "authority_score_boost": 3,
           "graph_centrality_boost": 5,
@@ -15686,7 +15686,7 @@
           "freshness_boost": 3,
           "decay_penalty": 0,
           "recency_balance": 3,
-          "final_score": 84
+          "final_score": 87
         }
       },
       {
@@ -148533,6 +148533,43 @@
         }
       },
       {
+        "target_url": "/wiki/hodl-warriors.html",
+        "score": 35,
+        "base_score": 18,
+        "reasons": [
+          "link_overlap:6",
+          "rank_score_boost:3",
+          "authority_score_boost:3",
+          "graph_centrality_boost:5",
+          "content_depth_boost:6"
+        ],
+        "rank_score_boost": 3,
+        "authority_score_boost": 3,
+        "graph_centrality_boost": 5,
+        "content_depth_boost": 6,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 0,
+        "decay_penalty": 0,
+        "recency_balance": 0,
+        "final_score": 35,
+        "score_breakdown": {
+          "base_score": 18,
+          "rank_score_boost": 3,
+          "authority_score_boost": 3,
+          "graph_centrality_boost": 5,
+          "content_depth_boost": 6,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 0,
+          "decay_penalty": 0,
+          "recency_balance": 0,
+          "final_score": 35
+        }
+      },
+      {
         "target_url": "/wiki/sacred-chain.html",
         "score": 35,
         "base_score": 15,
@@ -148638,43 +148675,6 @@
           "freshness_boost": 1,
           "decay_penalty": 0,
           "recency_balance": 1,
-          "final_score": 34
-        }
-      },
-      {
-        "target_url": "/wiki/midevilpunks.html",
-        "score": 34,
-        "base_score": 12,
-        "reasons": [
-          "link_overlap:4",
-          "rank_score_boost:3",
-          "authority_score_boost:6",
-          "graph_centrality_boost:8",
-          "content_depth_boost:5"
-        ],
-        "rank_score_boost": 3,
-        "authority_score_boost": 6,
-        "graph_centrality_boost": 8,
-        "content_depth_boost": 5,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 0,
-        "decay_penalty": 0,
-        "recency_balance": 0,
-        "final_score": 34,
-        "score_breakdown": {
-          "base_score": 12,
-          "rank_score_boost": 3,
-          "authority_score_boost": 6,
-          "graph_centrality_boost": 8,
-          "content_depth_boost": 5,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 0,
-          "decay_penalty": 0,
-          "recency_balance": 0,
           "final_score": 34
         }
       }
@@ -149477,6 +149477,44 @@
         }
       },
       {
+        "target_url": "/wiki/hodl-warriors.html",
+        "score": 81,
+        "base_score": 64,
+        "reasons": [
+          "same_category:characters",
+          "link_overlap:8",
+          "rank_score_boost:3",
+          "authority_score_boost:3",
+          "graph_centrality_boost:5",
+          "content_depth_boost:6"
+        ],
+        "rank_score_boost": 3,
+        "authority_score_boost": 3,
+        "graph_centrality_boost": 5,
+        "content_depth_boost": 6,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 3,
+        "decay_penalty": 0,
+        "recency_balance": 3,
+        "final_score": 84,
+        "score_breakdown": {
+          "base_score": 64,
+          "rank_score_boost": 3,
+          "authority_score_boost": 3,
+          "graph_centrality_boost": 5,
+          "content_depth_boost": 6,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 3,
+          "decay_penalty": 0,
+          "recency_balance": 3,
+          "final_score": 84
+        }
+      },
+      {
         "target_url": "/wiki/null-the-prophet.html",
         "score": 82,
         "base_score": 55,
@@ -149550,44 +149588,6 @@
           "decay_penalty": 0,
           "recency_balance": 2,
           "final_score": 82
-        }
-      },
-      {
-        "target_url": "/wiki/hodl-warriors.html",
-        "score": 78,
-        "base_score": 61,
-        "reasons": [
-          "same_category:characters",
-          "link_overlap:7",
-          "rank_score_boost:3",
-          "authority_score_boost:3",
-          "graph_centrality_boost:5",
-          "content_depth_boost:6"
-        ],
-        "rank_score_boost": 3,
-        "authority_score_boost": 3,
-        "graph_centrality_boost": 5,
-        "content_depth_boost": 6,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 3,
-        "decay_penalty": 0,
-        "recency_balance": 3,
-        "final_score": 81,
-        "score_breakdown": {
-          "base_score": 61,
-          "rank_score_boost": 3,
-          "authority_score_boost": 3,
-          "graph_centrality_boost": 5,
-          "content_depth_boost": 6,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 3,
-          "decay_penalty": 0,
-          "recency_balance": 3,
-          "final_score": 81
         }
       },
       {
@@ -272822,13 +272822,13 @@
     "related_pages": [
       {
         "target_url": "/wiki/hodl-x-warriors.html",
-        "score": 98,
-        "base_score": 86,
+        "score": 101,
+        "base_score": 89,
         "reasons": [
           "same_category:characters",
           "shared_tag:hodl",
           "shared_tag:warriors",
-          "link_overlap:10",
+          "link_overlap:11",
           "rank_score_boost:3",
           "authority_score_boost:1",
           "graph_centrality_boost:2",
@@ -272844,9 +272844,9 @@
         "freshness_boost": 4,
         "decay_penalty": 0,
         "recency_balance": 4,
-        "final_score": 102,
+        "final_score": 105,
         "score_breakdown": {
-          "base_score": 86,
+          "base_score": 89,
           "rank_score_boost": 3,
           "authority_score_boost": 1,
           "graph_centrality_boost": 2,
@@ -272857,7 +272857,7 @@
           "freshness_boost": 4,
           "decay_penalty": 0,
           "recency_balance": 4,
-          "final_score": 102
+          "final_score": 105
         }
       },
       {
@@ -272939,11 +272939,11 @@
       },
       {
         "target_url": "/wiki/bitcoin-kids.html",
-        "score": 89,
-        "base_score": 67,
+        "score": 92,
+        "base_score": 70,
         "reasons": [
           "same_category:characters",
-          "link_overlap:9",
+          "link_overlap:10",
           "rank_score_boost:3",
           "authority_score_boost:6",
           "graph_centrality_boost:8",
@@ -272959,9 +272959,9 @@
         "freshness_boost": 3,
         "decay_penalty": 0,
         "recency_balance": 3,
-        "final_score": 92,
+        "final_score": 95,
         "score_breakdown": {
-          "base_score": 67,
+          "base_score": 70,
           "rank_score_boost": 3,
           "authority_score_boost": 6,
           "graph_centrality_boost": 8,
@@ -272972,16 +272972,16 @@
           "freshness_boost": 3,
           "decay_penalty": 0,
           "recency_balance": 3,
-          "final_score": 92
+          "final_score": 95
         }
       },
       {
         "target_url": "/wiki/null-the-prophet.html",
-        "score": 85,
-        "base_score": 58,
+        "score": 88,
+        "base_score": 61,
         "reasons": [
           "same_category:characters",
-          "link_overlap:6",
+          "link_overlap:7",
           "rank_score_boost:3",
           "authority_score_boost:8",
           "graph_centrality_boost:8",
@@ -272994,12 +272994,12 @@
         "reinforcement_boost": 0,
         "cluster_support_boost": 0,
         "co_citation_boost": 0,
-        "freshness_boost": 2,
+        "freshness_boost": 3,
         "decay_penalty": 0,
-        "recency_balance": 2,
-        "final_score": 87,
+        "recency_balance": 3,
+        "final_score": 91,
         "score_breakdown": {
-          "base_score": 58,
+          "base_score": 61,
           "rank_score_boost": 3,
           "authority_score_boost": 8,
           "graph_centrality_boost": 8,
@@ -273007,19 +273007,19 @@
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
-          "freshness_boost": 2,
+          "freshness_boost": 3,
           "decay_penalty": 0,
-          "recency_balance": 2,
-          "final_score": 87
+          "recency_balance": 3,
+          "final_score": 91
         }
       },
       {
         "target_url": "/wiki/bitcoin-x-kids.html",
-        "score": 81,
-        "base_score": 64,
+        "score": 84,
+        "base_score": 67,
         "reasons": [
           "same_category:characters",
-          "link_overlap:8",
+          "link_overlap:9",
           "rank_score_boost:3",
           "authority_score_boost:3",
           "graph_centrality_boost:5",
@@ -273035,9 +273035,9 @@
         "freshness_boost": 3,
         "decay_penalty": 0,
         "recency_balance": 3,
-        "final_score": 84,
+        "final_score": 87,
         "score_breakdown": {
-          "base_score": 64,
+          "base_score": 67,
           "rank_score_boost": 3,
           "authority_score_boost": 3,
           "graph_centrality_boost": 5,
@@ -273048,7 +273048,7 @@
           "freshness_boost": 3,
           "decay_penalty": 0,
           "recency_balance": 3,
-          "final_score": 84
+          "final_score": 87
         }
       },
       {
@@ -273199,6 +273199,42 @@
         }
       },
       {
+        "target_url": "/wiki/genesis-spray-drop.html",
+        "score": 70,
+        "base_score": 64,
+        "reasons": [
+          "same_category:characters",
+          "link_overlap:8",
+          "rank_score_boost:2",
+          "content_depth_boost:4"
+        ],
+        "rank_score_boost": 2,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 0,
+        "content_depth_boost": 4,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 3,
+        "decay_penalty": 0,
+        "recency_balance": 3,
+        "final_score": 73,
+        "score_breakdown": {
+          "base_score": 64,
+          "rank_score_boost": 2,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 0,
+          "content_depth_boost": 4,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 3,
+          "decay_penalty": 0,
+          "recency_balance": 3,
+          "final_score": 73
+        }
+      },
+      {
         "target_url": "/wiki/lady-ink.html",
         "score": 69,
         "base_score": 61,
@@ -273306,42 +273342,6 @@
           "decay_penalty": 0,
           "recency_balance": 2,
           "final_score": 71
-        }
-      },
-      {
-        "target_url": "/wiki/genesis-spray-drop.html",
-        "score": 67,
-        "base_score": 61,
-        "reasons": [
-          "same_category:characters",
-          "link_overlap:7",
-          "rank_score_boost:2",
-          "content_depth_boost:4"
-        ],
-        "rank_score_boost": 2,
-        "authority_score_boost": 0,
-        "graph_centrality_boost": 0,
-        "content_depth_boost": 4,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 3,
-        "decay_penalty": 0,
-        "recency_balance": 3,
-        "final_score": 70,
-        "score_breakdown": {
-          "base_score": 61,
-          "rank_score_boost": 2,
-          "authority_score_boost": 0,
-          "graph_centrality_boost": 0,
-          "content_depth_boost": 4,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 3,
-          "decay_penalty": 0,
-          "recency_balance": 3,
-          "final_score": 70
         }
       },
       {
@@ -274325,13 +274325,13 @@
     "related_pages": [
       {
         "target_url": "/wiki/hodl-warriors.html",
-        "score": 103,
-        "base_score": 86,
+        "score": 106,
+        "base_score": 89,
         "reasons": [
           "same_category:characters",
           "shared_tag:hodl",
           "shared_tag:warriors",
-          "link_overlap:10",
+          "link_overlap:11",
           "rank_score_boost:3",
           "authority_score_boost:3",
           "graph_centrality_boost:5",
@@ -274347,9 +274347,9 @@
         "freshness_boost": 4,
         "decay_penalty": 0,
         "recency_balance": 4,
-        "final_score": 107,
+        "final_score": 110,
         "score_breakdown": {
-          "base_score": 86,
+          "base_score": 89,
           "rank_score_boost": 3,
           "authority_score_boost": 3,
           "graph_centrality_boost": 5,
@@ -274360,7 +274360,7 @@
           "freshness_boost": 4,
           "decay_penalty": 0,
           "recency_balance": 4,
-          "final_score": 107
+          "final_score": 110
         }
       },
       {
@@ -295937,11 +295937,11 @@
       },
       {
         "target_url": "/wiki/hodl-warriors.html",
-        "score": 75,
-        "base_score": 58,
+        "score": 78,
+        "base_score": 61,
         "reasons": [
           "same_category:characters",
-          "link_overlap:6",
+          "link_overlap:7",
           "rank_score_boost:3",
           "authority_score_boost:3",
           "graph_centrality_boost:5",
@@ -295954,12 +295954,12 @@
         "reinforcement_boost": 0,
         "cluster_support_boost": 0,
         "co_citation_boost": 0,
-        "freshness_boost": 2,
+        "freshness_boost": 3,
         "decay_penalty": 0,
-        "recency_balance": 2,
-        "final_score": 77,
+        "recency_balance": 3,
+        "final_score": 81,
         "score_breakdown": {
-          "base_score": 58,
+          "base_score": 61,
           "rank_score_boost": 3,
           "authority_score_boost": 3,
           "graph_centrality_boost": 5,
@@ -295967,10 +295967,10 @@
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
-          "freshness_boost": 2,
+          "freshness_boost": 3,
           "decay_penalty": 0,
-          "recency_balance": 2,
-          "final_score": 77
+          "recency_balance": 3,
+          "final_score": 81
         }
       },
       {
@@ -337243,6 +337243,43 @@
         }
       },
       {
+        "target_url": "/wiki/the-salvagers.html",
+        "score": 89,
+        "base_score": 76,
+        "reasons": [
+          "same_category:factions",
+          "link_overlap:12",
+          "rank_score_boost:3",
+          "graph_centrality_boost:2",
+          "content_depth_boost:8"
+        ],
+        "rank_score_boost": 3,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 2,
+        "content_depth_boost": 8,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 3,
+        "decay_penalty": 0,
+        "recency_balance": 3,
+        "final_score": 92,
+        "score_breakdown": {
+          "base_score": 76,
+          "rank_score_boost": 3,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 2,
+          "content_depth_boost": 8,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 3,
+          "decay_penalty": 0,
+          "recency_balance": 3,
+          "final_score": 92
+        }
+      },
+      {
         "target_url": "/wiki/the-blockchain-furies.html",
         "score": 87,
         "base_score": 76,
@@ -337316,43 +337353,6 @@
         }
       },
       {
-        "target_url": "/wiki/the-salvagers.html",
-        "score": 86,
-        "base_score": 73,
-        "reasons": [
-          "same_category:factions",
-          "link_overlap:11",
-          "rank_score_boost:3",
-          "graph_centrality_boost:2",
-          "content_depth_boost:8"
-        ],
-        "rank_score_boost": 3,
-        "authority_score_boost": 0,
-        "graph_centrality_boost": 2,
-        "content_depth_boost": 8,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 3,
-        "decay_penalty": 0,
-        "recency_balance": 3,
-        "final_score": 89,
-        "score_breakdown": {
-          "base_score": 73,
-          "rank_score_boost": 3,
-          "authority_score_boost": 0,
-          "graph_centrality_boost": 2,
-          "content_depth_boost": 8,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 3,
-          "decay_penalty": 0,
-          "recency_balance": 3,
-          "final_score": 89
-        }
-      },
-      {
         "target_url": "/wiki/the-ducky-boys.html",
         "score": 85,
         "base_score": 76,
@@ -337380,6 +337380,44 @@
           "authority_score_boost": 0,
           "graph_centrality_boost": 2,
           "content_depth_boost": 5,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 3,
+          "decay_penalty": 0,
+          "recency_balance": 3,
+          "final_score": 88
+        }
+      },
+      {
+        "target_url": "/wiki/the-high-hats.html",
+        "score": 85,
+        "base_score": 67,
+        "reasons": [
+          "same_category:factions",
+          "link_overlap:9",
+          "rank_score_boost:3",
+          "authority_score_boost:3",
+          "graph_centrality_boost:5",
+          "content_depth_boost:7"
+        ],
+        "rank_score_boost": 3,
+        "authority_score_boost": 3,
+        "graph_centrality_boost": 5,
+        "content_depth_boost": 7,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 3,
+        "decay_penalty": 0,
+        "recency_balance": 3,
+        "final_score": 88,
+        "score_breakdown": {
+          "base_score": 67,
+          "rank_score_boost": 3,
+          "authority_score_boost": 3,
+          "graph_centrality_boost": 5,
+          "content_depth_boost": 7,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
@@ -337535,44 +337573,6 @@
       },
       {
         "target_url": "/wiki/the-chain-scribes.html",
-        "score": 82,
-        "base_score": 64,
-        "reasons": [
-          "same_category:factions",
-          "link_overlap:8",
-          "rank_score_boost:3",
-          "authority_score_boost:3",
-          "graph_centrality_boost:5",
-          "content_depth_boost:7"
-        ],
-        "rank_score_boost": 3,
-        "authority_score_boost": 3,
-        "graph_centrality_boost": 5,
-        "content_depth_boost": 7,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 3,
-        "decay_penalty": 0,
-        "recency_balance": 3,
-        "final_score": 85,
-        "score_breakdown": {
-          "base_score": 64,
-          "rank_score_boost": 3,
-          "authority_score_boost": 3,
-          "graph_centrality_boost": 5,
-          "content_depth_boost": 7,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 3,
-          "decay_penalty": 0,
-          "recency_balance": 3,
-          "final_score": 85
-        }
-      },
-      {
-        "target_url": "/wiki/the-high-hats.html",
         "score": 82,
         "base_score": 64,
         "reasons": [
@@ -338384,11 +338384,11 @@
       },
       {
         "target_url": "/wiki/the-hard-fork-rockers.html",
-        "score": 72,
-        "base_score": 64,
+        "score": 75,
+        "base_score": 67,
         "reasons": [
           "same_category:factions",
-          "link_overlap:8",
+          "link_overlap:9",
           "rank_score_boost:2",
           "content_depth_boost:6"
         ],
@@ -338402,9 +338402,9 @@
         "freshness_boost": 3,
         "decay_penalty": 0,
         "recency_balance": 3,
-        "final_score": 75,
+        "final_score": 78,
         "score_breakdown": {
-          "base_score": 64,
+          "base_score": 67,
           "rank_score_boost": 2,
           "authority_score_boost": 0,
           "graph_centrality_boost": 0,
@@ -338415,7 +338415,7 @@
           "freshness_boost": 3,
           "decay_penalty": 0,
           "recency_balance": 3,
-          "final_score": 75
+          "final_score": 78
         }
       },
       {
@@ -344050,6 +344050,42 @@
         }
       },
       {
+        "target_url": "/wiki/the-hard-fork-rockers.html",
+        "score": 84,
+        "base_score": 76,
+        "reasons": [
+          "same_category:factions",
+          "link_overlap:12",
+          "rank_score_boost:2",
+          "content_depth_boost:6"
+        ],
+        "rank_score_boost": 2,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 0,
+        "content_depth_boost": 6,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 3,
+        "decay_penalty": 0,
+        "recency_balance": 3,
+        "final_score": 87,
+        "score_breakdown": {
+          "base_score": 76,
+          "rank_score_boost": 2,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 0,
+          "content_depth_boost": 6,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 3,
+          "decay_penalty": 0,
+          "recency_balance": 3,
+          "final_score": 87
+        }
+      },
+      {
         "target_url": "/wiki/the-og-pixel-saints.html",
         "score": 84,
         "base_score": 76,
@@ -344156,42 +344192,6 @@
           "decay_penalty": 0,
           "recency_balance": 3,
           "final_score": 86
-        }
-      },
-      {
-        "target_url": "/wiki/the-hard-fork-rockers.html",
-        "score": 81,
-        "base_score": 73,
-        "reasons": [
-          "same_category:factions",
-          "link_overlap:11",
-          "rank_score_boost:2",
-          "content_depth_boost:6"
-        ],
-        "rank_score_boost": 2,
-        "authority_score_boost": 0,
-        "graph_centrality_boost": 0,
-        "content_depth_boost": 6,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 3,
-        "decay_penalty": 0,
-        "recency_balance": 3,
-        "final_score": 84,
-        "score_breakdown": {
-          "base_score": 73,
-          "rank_score_boost": 2,
-          "authority_score_boost": 0,
-          "graph_centrality_boost": 0,
-          "content_depth_boost": 6,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 3,
-          "decay_penalty": 0,
-          "recency_balance": 3,
-          "final_score": 84
         }
       },
       {

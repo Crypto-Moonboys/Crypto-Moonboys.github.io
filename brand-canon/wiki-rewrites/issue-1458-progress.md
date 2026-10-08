@@ -14,15 +14,15 @@ No direct push to main, merge, issue closure or production deployment.
 
 - **94** original archive files verified against archive SHA-256, CSV and the
   independent immutable ledger; **93** unique contents, **2,334,149** bytes.
-- **7** complete original texts read and compared cumulatively: W1, w32, w33,
-  w56, W12 (all eight parts), W13 (all seven parts and repeated extracts), W7.
-  **87** remain without full semantic comparison. W19 is fully read but its
+- **9** complete original texts read and compared cumulatively: W1, w32, w33,
+  w56, W12 (all eight parts), W13 (all seven parts and repeated extracts), W7, w50 and w63.
+  **85** remain without full semantic comparison. W19 is fully read but its
   remaining embedded-character comparisons are pending, so it is not counted.
-- **39 distinct existing pages** reviewed: thirty-five full canonical articles
+- **54 distinct existing pages** reviewed: forty-six full canonical articles
   (Princess, Croydon, master chronology, concordance, synthetic minds,
   Crypto Moonboys, Great Consensus, Elder Codex-7, Iris-7, Aleema, Dream Sovereign,
-  all nine First Witness Books, HODL Warriors, GraffPUNKS, GKniftyHEADS, Whale Lords, XRP Kids, Forty Paths, faction Commentaries, Sarah, Jodie, Alfie, NULL, Block Topia, HODL doctrine, Hard Fork Rockers and Genesis Kernel) and four focused section reviews
-  (Rune, Pinks, Games and Code Alchemists). Exact scopes are in `issue-1458-audit.json`.
+  all nine First Witness Books, HODL Warriors, GraffPUNKS, GKniftyHEADS, Whale Lords, XRP Kids, Forty Paths, faction Commentaries, Sarah, Jodie, Alfie, NULL, Block Topia, HODL doctrine, Hard Fork Rockers, Genesis Kernel, Nomad Bears, Blockstars, Crypto Stoned Boys, Rugpull Miners, Block Node Defenders both Army articles, Bitcoin X Kids, Chain Scribes and the humour/attention supporting chapters) and eight focused section reviews
+  (Rune, Pinks, Games, Code Alchemists, Bitcoin Kids, HODL Wars, Sacred Chain and Rave Relics). Exact scopes are in `issue-1458-audit.json`.
 - **421** top-level wiki pages pass automated targeted canon lint and content
   inventory checks. That number is a static scan, not a human semantic count.
 
@@ -511,3 +511,57 @@ prose-label gate. No other failure observed, and no label applied.
 Next: Nomad/Bloockstars and explicit territorial-sacrifice source comparison
 for w50; Army/Defenders/Rugpull/Stoned named dependencies for w63; Thera and
 Charlie fictional-versus-real biography for the complete serial comparison.
+
+
+## Complete w50/w63 comparison and exact Tavi reference correction
+
+w50 and w63 are now fully read and compared through their relevant source
+claims, present articles, First Witness, chronology and modern adult stories.
+The actual missing territorial-sacrifice/A-B Testing Anarchy and Post-HODL
+Fallback memory exclusions/creed are restored on owning pages. The universal
+overwrite/purge and absolute reboot are retained as coercive source doctrine,
+not silently adopted as everyone's current biography. Source count is now
+9/94; 85 lack full comparison, including the seven fully read pending sources.
+
+Seven full current articles were read and matched to every cached paragraph:
+Nomad, Blockstars, Stoned Boys, Rugpull, Defenders and both Army articles.
+All private lives, Red Ledger/Black Dividend/Last Loading and existing customs
+remain. Four focused comparisons resolve later Tavi Rill name references and
+confirm Tavi Spool is separate. Exact sourced old/new paragraph hashes retain
+every event while correcting thirteen accidental masculine-reference clauses
+to Tavi or Tavi's. Earlier she/her remains. No character merge or new identity
+is invented; Sena is not restored.
+
+Current scope: 50 distinct existing audits, 42 full/eight focused; 26 existing
+articles expanded/corrected; nine new articles; five original adult stories.
+This nine-page batch has no new named character, story or major historical
+retcon. Final publishing, preservation and browser validation is pending.
+Next dependencies: Thera and Charlie source roles, remaining Eternal Pulse
+faction cast and source biographies; continue with w60/w44/w47/w62/w70 and
+First Witness supporting chapters as their owning comparisons are completed.
+
+
+### Fallback batch final preservation receipt
+
+All424 previous wiki pages remain. The automated check retains9,742 substantial
+paragraphs and5,253 active IDs against109d6845e8275af87c3fde2f0fca4b9b30a1a018;
+thirteen exact Tavi reference revisions are separately authorised and retain
+their events. Modern lore is preserved even where full foundational comparison
+is pending. Across26 expanded/corrected existing pages,2,089 original substantial
+paragraphs remain and1,085 canonical links resolve. Three genuine-story safeguard
+probes accept the exact correction and reject Sena restoration or Spool/Rill merge.
+
+Full local wiki CI, graph, browser and final Pages artifact pass. Browser:70
+desktop/mobile views,35 no-JavaScript readings,22 search/autocomplete queries.
+Graph:417 indexed pages,427 nodes,2,083 edges,75 mobile nodes. Artifact moved to
+`/tmp/gk1459/fallback-public-site`; no deployment. Exact triad head109d6845e
+passes the seven other workflow/domains; Wiki/Graph logs confirm only the existing
+maintainer prose-label gate after successful checks. No label self-applied.
+
+Four further full existing readings are cache-verified: Bitcoin X Kids, Chain
+Scribes, Humour/Sacred Mockery and Silence/Solitude/Attention. Current cumulative
+audit54 distinct:46 full/eight focused. Sourcesw60/w44 now fully read, with
+explicit inside-population dismissal/PunkNet refusal recovery still pending.
+The source comparison count remains9/94; nine other fully read originals have
+pending comparisons. Next actual implementation: those two owning-page details,
+then complete Thera/Charlie and remaining source cast comparisons.
