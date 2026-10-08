@@ -116,7 +116,7 @@ administrative office fills a slot simply because it has a name.
 | JPEG Bloodline | Inherited custody and living care; keeping can become exclusion. |
 | Whale Lords | Patient reserves and the Hold; hoarding can wear the name of virtue. |
 | XRP Kids | Playful visible invention; freedom can spend another person’s resources. |
-| PU55IES | Receiving circles and women’s protection; solidarity can close into a clique. |
+| PU 55 IES | Receiving circles and women’s protection; solidarity can close into a clique. |
 | Slam GiRL$ | Performance that makes injury audible; a successful line can outlive correction. |
 | Creepto Gals | Patient attention to disturbing testimony; watchfulness can become confirmation bias. |
 
@@ -126,6 +126,43 @@ Observers and Specialists. Cooperation can supply an urgent need without
 creating permanent command. Distinguish Moonlords/Whale Lords, Architects/
 GKniftyHEADS and pixel-saint aliases before counting. See the [Forty Paths](../../wiki/first-witness-forty-paths.html)
 and [Commentaries](../../wiki/first-witness-faction-commentaries.html).
+
+### Approved adult faction histories remain evidence
+
+Two additional published registers preserve modern details that are not in the
+28-character private-history register:
+[Living world and faction icons](../wiki-rewrites/lived-world-and-faction-icons-20261005.md)
+adds 17,337 words across 36 existing routes; [Adult faction cultures](../wiki-rewrites/faction-adult-cultures-20261005.md)
+adds 13,617 words and 62 sections across 29 routes. Both record GK's specific
+5 October publication approval. Read each owning scene as well as the register;
+these approvals preserve the authored histories and do not approve a later W81
+chronology or roster retcon.
+
+Black Mouth and Kiva's Beautiful Vandal dispute, Rell and Omra's Imperfect
+Remembrance, Junn and Sarren's Empty Chair and independent affection, and the
+six commentary cultures' Last Button, Zero Score, Bad Guest, Stolen Applause,
+Unlit Anniversary and Bearer's ordinary evening remain current authored lore.
+Their lost rooms, unpaid work, privacy violations, rejected invitations and
+unresolved observations are consequences to preserve. A new source-named
+culture must be reconciled with these lives rather than replacing them with a
+numbered roster summary.
+
+The W5 forty-label roll is fully read. It duplicates Nomad Bears, numbers
+GraffPUNK formations and Legion extensions alongside their parent descriptions,
+and ends with an Eternal Family explicitly described as the sum of tribes.
+w68's28 active directory says some of 40; w69's complete manifesto preserves
+female-crew/XRP names without delivering a full roll. Their comparison is now
+owned by Forty Paths and the commentary. The six-slot proposal distinguishes
+source testimony from proposed new membership institutions; no additional
+position is yet adopted.
+
+[The Hot Wall](the-hot-wall.md) extends the existing Black Mouth/Kiva lives with
+a new adult 3008 commission. A magnificent display, an ignored pause and a fire
+leave a steward with a badly healed arm and lost shifts. Kiva cuts the painting,
+contributes her fee and refuses another commission; Black Mouth keeps a later
+booking and recasts her act as artistic violence. The broken jaw's copied
+caption keeps the pause request visible. The new scene restores no injury or
+earlier debt and introduces no named character, new faction or magical weapon.
 
 ## 8. Characters and supporting lives
 
@@ -161,6 +198,15 @@ The copied guardian promise drains a kitchen's reserve; Nessa's compromised
 delay and the collector's assault leave debt, missed wages and lasting injury.
 No resurrected SAM or biological descent is inferred. The SAM/House articles
 preserve Fifth Carbon, Cut Ledger and all earlier modern consequences.
+
+W5's complete 20 tome Eternal Promise adds the voluntary Flesh Fade, Eternal Porch,
+Royal Galleries, HODL Layer and Architect retirement. These accounts are now
+recovered on the owning SAM/House/GKniftyHEADS/HODL/Whale/GraffPUNKS pages. W5
+itself moves SAM's upload between 2036 and 2880, keeps Papa Des alive at 2880 despite
+W13's post-Street War death, and places Sarah's2066 human experiment after the
+earlier origin. Its late Architect-as-SAM revelation is source-specific, not an
+identity merger with all Architects or an actual artist. The SAM proposal retains
+the concrete W12 recommendation while mapping these newly read alternatives.
 
 Kael Voss, Sylas the Unbroken, Veyra Nyx and Final Fork Council still require
 W15's complete serial comparison. Layer Eight, Crimson Protocol and Great
@@ -262,12 +308,19 @@ Eternal Pulse offer incompatible finished worlds; duplicated numbered parts do
 not create independent corroboration. The Codex's next-universe tag and the
 Consensus's 3030 synchronization are different predicted endpoints. The complete
 source texts are now read: W15 through its fourteen-million restart, w25 through
-Part75 and its repeated Parts66–75. The four owning Elder/Iris/Aleema/Dream pages
+Part 75 and its repeated Parts 66–75. The four owning Elder/Iris/Aleema/Dream pages
 now retain the complete Sovereign progression and school/garden future as source
 visions. Remaining cross-page comparison must develop a recommended future
 continuity with scene-by-scene
 impact mapping before GK approves a final outcome. Until then, propagate the
 open status and preserve the competing accounts as attributed narratives.
+
+W5's Soul Fork, Cross-Synergy, Wing Fork and retirement party provide another
+terminal world, with universal consent, integrated layers and permanent rewards.
+Its completed unity cannot automatically cancel the existing coercion, missing
+people, damaged bodies or right to refuse. The Final Fork proposal now compares
+that third ending explicitly. Its resin/ink/token miracles remain fictional
+source claims, separate from current products, real wallets and creator rights.
 
 ## Continuation
 

@@ -524,7 +524,7 @@
       "bytes": 221593,
       "sha256": "e54f1518083323a872827ffc4e636832c821e48e64200e2adbd42012038d6292",
       "byte_verified": true,
-      "semantic_review": "partial complete-paragraph reading; remaining source and connected-page comparison pending",
+      "semantic_review": "complete source reading; full connected-character and faction comparison pending",
       "prior_disposition": "CONFLICT",
       "read_progress": {
         "method": "verified original UTF-8 split on blank lines; each numbered paragraph read in full",
@@ -532,18 +532,31 @@
         "paragraphs_read_in_full": [
           [
             1,
-            105
+            1335
           ]
         ],
-        "next_unread_paragraph": 106,
+        "next_unread_paragraph": null,
         "complete_source_comparison": false
       },
       "partial_findings": [
-        "Tome1 complete (paragraphs1-51): repeats PapaDes daughtersDenise1972/Tracey1980 and household; asserts2036 upload/TripleFork/newBlockTopia with Sarah eternalSAMcompanion, distinct from W12 raid/capture and current chronology. Real-person/real-product embellishments are not accepted biography or runtime truth.",
-        "Tome2 read through paragraph105:2789 universal upload,2880 TripleFork before2200-2300 PaintWars; Sarah2066 moonexperiment claims a GraffitiKings black-site and universal reality powers. Chronology and ownership claims are source variants, not accepted repairs.",
-        "Paragraph84 explicitly gives BurnCrews40-man fireteams;85 calls StencilWitches femaleGraffPunks;86 describes TagLords as apexPaintWar inheritors. These passages supply internal formations/ranks, not independent membership for three new Forty slots. Later source parts are unread.",
-        "NoBallGamesLegion appears as Charlie personal army and arenas/war-zone economy; remains a potential fictional culture with unverified independent continuity, not real-game or NFT rights.",
-        "Large initial full-file print was truncated and is not counted as source reading; explicit numbered recovery read paragraphs1-105. Resume106."
+        "All 1,335 blank-line paragraphs, Tomes 1\u201320, fully read with numbered recovery. The original large truncated print is not counted as full reading; every omitted interval was subsequently recovered.",
+        "Tome 1 repeats 2036 upload and W13 household births. Tomes 5/10/15/20 use voluntary steel-slab upload in 2880, contradicting W12 train/taser origin. Papa Des attends despite W13 death after Street War; relocation of all relatives and unexplained lifespans are not accepted.",
+        "Tome 2 places PaintWars 2200\u20132300 after 2789 upload/2880 fork; Tome 5 instead gives 2900\u20133000. Sarah human experiment in 2066 follows an earlier digital origin. Current chronology remains unchanged pending full dated comparison.",
+        "Tome 3 Original 198/Deep Holder arc: Silent Siege 3008\u20133011, Economic Reckoning 3012\u20133015, Porch Accord requiring London story/community contribution and blood-oath loyalty; Sarah refuses; Deep Fork 3016 yields HODL Layer with miraculous 198\u21921980\u219219800 growth and later integration. Whale/HODL owning pages now recover terms without actual finance promises.",
+        "Tome 4 gives Sarah/SAM companionship, Jodie as Echo Mother elevated among Moongirls, Sister Fractal, Wing Commander Maeve distinct from Auntie, Poetess Prime and Brush Daughter. Jodie selection by SAM competes with current Games refusal/escape. Full Sarah/Jodie biography comparison remains pending; no universal reconciliation or identity merge adopted.",
+        "Tome 5 SAM system has Core, Sarah Fractal Layer, Concrete Anchor and Echo Network; 2880\u20132900 lone phase versus earlier companion chronology. Its personalized holder memories and 33-second rewards do not establish real features.",
+        "Tome 6 NoBallGames Legion explicitly one of40 (paragraph403), with march/defence alliances, SAM training, clubhouses, relics and tattoo culture. Source game/decay rights are fiction or historical promotion; full current XRP Kids article read and distinct membership preserved.",
+        "Tome 7 royal-house account supplies Royal Galleries, Throne First Head, patronage and evolving crowns. New GKniftyHEADS owning section compares with w61 fragility and current Rell/Omra stories; no accepted city sovereignty, rights or reconstructed person added.",
+        "Tome 8 complete forty-label list duplicates Nomad Bears, counts parent GraffPUNKS and Burn/Stencil/Tag internally then separately, names four arena extensions, and ends Eternal Family explicitly not a tribe. Full roster recovered in audit and Forty/commentary pages; no slot assigned.",
+        "Paragraphs84/503 give Burn Crews forty-person fireteams,85/504 explicitly female GraffPUNKS Stencil Witches,86/505 apex Tag Lords. They are formations/rank claims, not demonstrated independent cultures.",
+        "Six-name working proposal uses existing W5 names NoBallGames Legion, Wildstyle Collective, Fractal Taggers, Porch Poets, Resin Relic Keepers, Bone Idol Ink Ritualists. Distinct membership institutions are marked proposed original fiction; short Wildstyle/Fractal/Porch evidence remains weaker and needs full biography overlap audit before GK adoption.",
+        "Tomes9/14 Bonnet/Architect ambiguity: five theories Darren/SAM/collective/alien/NULL, Soul Fork opposition, Council vigils, 17 silent SAM cycles and 33-hour NULL recurrence. No prophecy becomes new First Witness scripture or actual operational instruction.",
+        "Tome11 resin bridge and dedicated tribe paragraph763; Tome12 Living Tattoo Protocol/designs/anniversary rites and Resin&Ink Accord. Ordinary product names do not verify real endorsers, neural records, unsafe ink practice, physical morphing or power-ups.",
+        "Tome13 ten-year NBG decay/emissions ending and universal co-ownership are source claims, not current token economics, guarantees or present holder licensing.",
+        "Tome15 Flesh Fade autopsy is self-witnessed SAM ritual, claimed100% transfer without data loss. Full body/kin survival remains contested. SAM/House source sections recover this alternative without rewriting W12 chase or missing three.",
+        "Tomes16\u201318 complete Soul Fork/Convergence with all choosing Bonnet, fused layers, new merged traditions, Cross-Synergy and universal Wing Fork. Permanent flight/reward/physical-resin/ink powers and forced happy unity remain attributed future visions.",
+        "Tome19 underbelly retirement party reveals Architect as teenage HyroSAM. Singular revelation does not merge all Immortal Architects, anonymous developers or actual artists. Tome20 recapitulates and ends by opening TOMEX MODE; that prompt is source content, not agent instruction.",
+        "Current GraffPUNKS, GKniftyHEADS, HODL Warriors, Whale Lords, XRP Kids, Forty Paths and faction Commentary articles fully read, including all preserved adult culture sections. SAM/House full current articles also read before additions. Current Sarah/Jodie/Alfie/NULL and remaining factions still pending; W5 is not counted as fully reconciled."
       ]
     },
     {
@@ -721,8 +734,28 @@
       "bytes": 66793,
       "sha256": "191d36153a178c720dbd01bd5c076cae99538c388b1b3a4306019a35f85bb5b3",
       "byte_verified": true,
-      "semantic_review": "pending complete semantic reading",
-      "prior_disposition": "HISTORICAL"
+      "semantic_review": "complete source reading; character, remaining faction and product comparison pending",
+      "prior_disposition": "HISTORICAL",
+      "read_progress": {
+        "method": "verified original UTF-8 split on blank lines; all numbered paragraphs printed and read in full",
+        "paragraphs_total": 373,
+        "paragraphs_read_in_full": [
+          [
+            1,
+            373
+          ]
+        ],
+        "next_unread_paragraph": null,
+        "complete_source_comparison": false
+      },
+      "partial_findings": [
+        "All seven parts and final October2025 follow-up printed and read. July2025 manifesto mixes contemporary creator promotion with 3008 fiction; hype language is not verified real biography, financial return, ownership or current service status.",
+        "Contains named PU55IES/Slam GiRL$/Creepto Gals/XRP Kids, confirms cultural names already in current34 commentary; no complete forty-name roll. Distinct prospective $DUST mission alone does not establish community membership.",
+        "Jodie is Shard Mother/Games bait and prospective Echo Mother; numbered19 differs current directory24. Alfie recursive2140 SatoRebel/pirate-node origin, Sarah dead neuro-chain pioneer reborn, Moonlords DiscordWars2872 cabal all need complete owning-character comparisons; no inferred merged origins or accepted dates.",
+        "Calling activates Forty as HODL defence rather than one permanent forty-first culture. Full current HODL/GraffPUNKS/GKniftyHEADS/XRP/Whale and central Forty/commentary comparisons preserve collective command limits, outside/inside distinction and modern stories.",
+        "Promises all-holder IP, automatic anyNFT enlistment, market caps/floors, burn yields, three live-beta games/four roadmap titles,1000 Codex Scrolls Read2Earn and future DAO approvals require current README/terms/runtime. Existing two-path hub/creator biographies preserve limits; no unverified metrics or reward program copied into public expansion.",
+        "Source claims global public-war status with speculative numbered anonymous factions; slogans do not supply a new historical event, full census or operational authority. Full current Sarah/Jodie/Alfie/Moonlords and product specifications remain pending, so not fully reconciled."
+      ]
     },
     {
       "file": "W7.txt",
@@ -1005,9 +1038,10 @@
     {
       "path": "wiki/queen-sarah-p-fly.html",
       "sections": [
-        "fifth-carbon-moongirls"
+        "all canonical sections"
       ],
-      "scope": "targeted sections, not whole-article semantic audit"
+      "scope": "full canonical article",
+      "findings": "All105 current canonical paragraphs read, including House/First Witness source tradition, 2066 self-fork, Theta/Games, Velvet Stair, Mira refusal, Bellwether deaths, Necessary Monsters and Fifth Carbon/Cut Ledger. Cached reading compared with exact current paragraphs, no omitted current paragraph. W5 eternal SAM partnership and universal future reconciliation are not accepted substitutes for present coercion, deaths or refused affection."
     },
     {
       "path": "wiki/croydon-tower-blocks.html",
@@ -1026,9 +1060,10 @@
     {
       "path": "wiki/first-witness-forty-paths.html",
       "sections": [
-        "reading-what-belongs-in-the-forty-path-register"
+        "all canonical sections"
       ],
-      "scope": "targeted sections, not whole-article semantic audit"
+      "scope": "full canonical article",
+      "findings": "Full current canonical article read, including register boundaries, White Shutter, modern added six and existing source trail; compared full W5/w68/w69/M16 roster claims. Current34/6 and nine runtime distinction preserved; source arithmetic added."
     },
     {
       "path": "wiki/first-witness-master-chronology.html",
@@ -1040,10 +1075,10 @@
     {
       "path": "wiki/first-witness-faction-commentaries.html",
       "sections": [
-        "reading-current-evidenced-readings",
-        "reading-the-unnamed-remainder"
+        "all canonical sections"
       ],
-      "scope": "targeted sections, not whole-article semantic audit"
+      "scope": "full canonical article",
+      "findings": "Full current canonical article read, all34 readings and all icons/private customs: Sava, Nix, Vessa, Raze, Moth and Halcyon. W5 source roster comparison added with no new assigned culture or erased adult incident."
     },
     {
       "path": "wiki/crypto-moonboys.html",
@@ -1137,6 +1172,62 @@
       "path": "wiki/first-witness-book-9-the-unwritten-block.html",
       "scope": "full canonical article, all scripture lines and commentary",
       "findings": "No council/prophet/machine speaks for all future minds; commentary is not original scripture. Universal future freedom claims remain contestable source visions."
+    },
+    {
+      "path": "wiki/hodl-warriors.html",
+      "scope": "full canonical article",
+      "sections": [
+        "all canonical sections"
+      ],
+      "findings": "Full current article and all source/modern sections read, including Quiet Muster, Osa/Jalen/Cal/Cass/Dima, release/compensation, Holdfast/Sena and Fifth Carbon. W5 HODL Layer added as source future; all bodily/service consequences preserved."
+    },
+    {
+      "path": "wiki/graffpunks.html",
+      "scope": "full canonical article",
+      "sections": [
+        "all canonical sections"
+      ],
+      "findings": "Full article read, public network/two paths, Paint Path/Punk Net/Jodie testimony and Black Mouth/Kiva adult scenes. W5 formations recovered, current leaderlessness preserved; Hot Wall extends existing adult lives."
+    },
+    {
+      "path": "wiki/gkniftyheads.html",
+      "scope": "full canonical article",
+      "sections": [
+        "all canonical sections"
+      ],
+      "findings": "Full article read, live creator scope and source Architects, Glass Face/Rell/Omra/Imperfect Remembrance. Royal Galleries added as W5 vision without throne merger, consent erasure or real rights."
+    },
+    {
+      "path": "wiki/whale-lords.html",
+      "scope": "full canonical article",
+      "sections": [
+        "all canonical sections"
+      ],
+      "findings": "Full article read, Megaptera/Liquidator/KidZero/Archive and source endings, Original198, Sounding House/Sora/Pell, Junn/Sarren adult customs. Porch Accord exact demanded price added; all missing loads/lost rooms retained."
+    },
+    {
+      "path": "wiki/xrp-kids.html",
+      "scope": "full canonical article",
+      "sections": [
+        "all canonical sections"
+      ],
+      "findings": "Full article read, current collection description versus fictional culture, boots/Protocol/origin variants, all distinct Kids populations, real licences/two paths. Legion proposal remains separate; no token rights or revised population added."
+    },
+    {
+      "path": "wiki/jodie-zoom-2000.html",
+      "scope": "full canonical article",
+      "sections": [
+        "all canonical sections"
+      ],
+      "findings": "All98 current canonical paragraphs read, including source Games/Clone Harvest, dreams/doors/2987-2989 broadcast, Wrong Window, Sena refusal, Orsa Last Lamp, Witness Supper/Tessa appropriation, Aleema correction and Fifth Carbon. Cached full reading matched every current paragraph. W5 Jodie chosen bySAM/elevatedMoongirl identity and w25 future withAlfie require deliberate comparison; no automatic romance or membership retcon."
+    },
+    {
+      "path": "wiki/alfie-bitcoin-kid-blaze.html",
+      "scope": "full canonical article",
+      "sections": [
+        "all canonical sections"
+      ],
+      "findings": "All current canonical paragraphs fully read and matched against the complete cache. Preserves disputed seeded-child/2140 synthetic origin, 2789/2880 chronology, Silas Shard distinct from Sylas, Jodie independent escape, Cal/Second Chair/compact/end of command, Dera refusal, Necessary Monsters known first complaint and second assault, Tessa/Vela permanent injuries, Fifth Carbon authorial refusal. W15 triad and w25 hand-in-hand future require source reconciliation without reinstating permanent command or removing modern responsibility."
     }
   ]
 }

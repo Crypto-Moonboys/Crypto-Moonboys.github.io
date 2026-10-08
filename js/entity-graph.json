@@ -1851,6 +1851,43 @@
         }
       },
       {
+        "target_url": "/wiki/graffpunks.html",
+        "score": 34,
+        "base_score": 3,
+        "reasons": [
+          "link_overlap:1",
+          "rank_score_boost:3",
+          "authority_score_boost:15",
+          "graph_centrality_boost:8",
+          "content_depth_boost:5"
+        ],
+        "rank_score_boost": 3,
+        "authority_score_boost": 15,
+        "graph_centrality_boost": 8,
+        "content_depth_boost": 5,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 0,
+        "decay_penalty": 0,
+        "recency_balance": 0,
+        "final_score": 34,
+        "score_breakdown": {
+          "base_score": 3,
+          "rank_score_boost": 3,
+          "authority_score_boost": 15,
+          "graph_centrality_boost": 8,
+          "content_depth_boost": 5,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 0,
+          "decay_penalty": 0,
+          "recency_balance": 0,
+          "final_score": 34
+        }
+      },
+      {
         "target_url": "/wiki/gkniftyheads-nft-collection.html",
         "score": 33,
         "base_score": 3,
@@ -1878,43 +1915,6 @@
           "authority_score_boost": 15,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 0,
-          "decay_penalty": 0,
-          "recency_balance": 0,
-          "final_score": 33
-        }
-      },
-      {
-        "target_url": "/wiki/graffpunks.html",
-        "score": 33,
-        "base_score": 3,
-        "reasons": [
-          "link_overlap:1",
-          "rank_score_boost:3",
-          "authority_score_boost:15",
-          "graph_centrality_boost:8",
-          "content_depth_boost:4"
-        ],
-        "rank_score_boost": 3,
-        "authority_score_boost": 15,
-        "graph_centrality_boost": 8,
-        "content_depth_boost": 4,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 0,
-        "decay_penalty": 0,
-        "recency_balance": 0,
-        "final_score": 33,
-        "score_breakdown": {
-          "base_score": 3,
-          "rank_score_boost": 3,
-          "authority_score_boost": 15,
-          "graph_centrality_boost": 8,
-          "content_depth_boost": 4,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
@@ -2592,6 +2592,43 @@
         }
       },
       {
+        "target_url": "/wiki/graffpunks.html",
+        "score": 34,
+        "base_score": 3,
+        "reasons": [
+          "link_overlap:1",
+          "rank_score_boost:3",
+          "authority_score_boost:15",
+          "graph_centrality_boost:8",
+          "content_depth_boost:5"
+        ],
+        "rank_score_boost": 3,
+        "authority_score_boost": 15,
+        "graph_centrality_boost": 8,
+        "content_depth_boost": 5,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 0,
+        "decay_penalty": 0,
+        "recency_balance": 0,
+        "final_score": 34,
+        "score_breakdown": {
+          "base_score": 3,
+          "rank_score_boost": 3,
+          "authority_score_boost": 15,
+          "graph_centrality_boost": 8,
+          "content_depth_boost": 5,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 0,
+          "decay_penalty": 0,
+          "recency_balance": 0,
+          "final_score": 34
+        }
+      },
+      {
         "target_url": "/wiki/gkniftyheads-nft-collection.html",
         "score": 33,
         "base_score": 3,
@@ -2619,43 +2656,6 @@
           "authority_score_boost": 15,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 0,
-          "decay_penalty": 0,
-          "recency_balance": 0,
-          "final_score": 33
-        }
-      },
-      {
-        "target_url": "/wiki/graffpunks.html",
-        "score": 33,
-        "base_score": 3,
-        "reasons": [
-          "link_overlap:1",
-          "rank_score_boost:3",
-          "authority_score_boost:15",
-          "graph_centrality_boost:8",
-          "content_depth_boost:4"
-        ],
-        "rank_score_boost": 3,
-        "authority_score_boost": 15,
-        "graph_centrality_boost": 8,
-        "content_depth_boost": 4,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 0,
-        "decay_penalty": 0,
-        "recency_balance": 0,
-        "final_score": 33,
-        "score_breakdown": {
-          "base_score": 3,
-          "rank_score_boost": 3,
-          "authority_score_boost": 15,
-          "graph_centrality_boost": 8,
-          "content_depth_boost": 4,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
@@ -7036,6 +7036,43 @@
         }
       },
       {
+        "target_url": "/wiki/graffpunks.html",
+        "score": 34,
+        "base_score": 3,
+        "reasons": [
+          "link_overlap:1",
+          "rank_score_boost:3",
+          "authority_score_boost:15",
+          "graph_centrality_boost:8",
+          "content_depth_boost:5"
+        ],
+        "rank_score_boost": 3,
+        "authority_score_boost": 15,
+        "graph_centrality_boost": 8,
+        "content_depth_boost": 5,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 0,
+        "decay_penalty": 0,
+        "recency_balance": 0,
+        "final_score": 34,
+        "score_breakdown": {
+          "base_score": 3,
+          "rank_score_boost": 3,
+          "authority_score_boost": 15,
+          "graph_centrality_boost": 8,
+          "content_depth_boost": 5,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 0,
+          "decay_penalty": 0,
+          "recency_balance": 0,
+          "final_score": 34
+        }
+      },
+      {
         "target_url": "/wiki/gkniftyheads-nft-collection.html",
         "score": 33,
         "base_score": 3,
@@ -7063,43 +7100,6 @@
           "authority_score_boost": 15,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 0,
-          "decay_penalty": 0,
-          "recency_balance": 0,
-          "final_score": 33
-        }
-      },
-      {
-        "target_url": "/wiki/graffpunks.html",
-        "score": 33,
-        "base_score": 3,
-        "reasons": [
-          "link_overlap:1",
-          "rank_score_boost:3",
-          "authority_score_boost:15",
-          "graph_centrality_boost:8",
-          "content_depth_boost:4"
-        ],
-        "rank_score_boost": 3,
-        "authority_score_boost": 15,
-        "graph_centrality_boost": 8,
-        "content_depth_boost": 4,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 0,
-        "decay_penalty": 0,
-        "recency_balance": 0,
-        "final_score": 33,
-        "score_breakdown": {
-          "base_score": 3,
-          "rank_score_boost": 3,
-          "authority_score_boost": 15,
-          "graph_centrality_boost": 8,
-          "content_depth_boost": 4,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
@@ -12218,6 +12218,43 @@
         }
       },
       {
+        "target_url": "/wiki/graffpunks.html",
+        "score": 34,
+        "base_score": 3,
+        "reasons": [
+          "link_overlap:1",
+          "rank_score_boost:3",
+          "authority_score_boost:15",
+          "graph_centrality_boost:8",
+          "content_depth_boost:5"
+        ],
+        "rank_score_boost": 3,
+        "authority_score_boost": 15,
+        "graph_centrality_boost": 8,
+        "content_depth_boost": 5,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 0,
+        "decay_penalty": 0,
+        "recency_balance": 0,
+        "final_score": 34,
+        "score_breakdown": {
+          "base_score": 3,
+          "rank_score_boost": 3,
+          "authority_score_boost": 15,
+          "graph_centrality_boost": 8,
+          "content_depth_boost": 5,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 0,
+          "decay_penalty": 0,
+          "recency_balance": 0,
+          "final_score": 34
+        }
+      },
+      {
         "target_url": "/wiki/gkniftyheads-nft-collection.html",
         "score": 33,
         "base_score": 3,
@@ -12245,43 +12282,6 @@
           "authority_score_boost": 15,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 0,
-          "decay_penalty": 0,
-          "recency_balance": 0,
-          "final_score": 33
-        }
-      },
-      {
-        "target_url": "/wiki/graffpunks.html",
-        "score": 33,
-        "base_score": 3,
-        "reasons": [
-          "link_overlap:1",
-          "rank_score_boost:3",
-          "authority_score_boost:15",
-          "graph_centrality_boost:8",
-          "content_depth_boost:4"
-        ],
-        "rank_score_boost": 3,
-        "authority_score_boost": 15,
-        "graph_centrality_boost": 8,
-        "content_depth_boost": 4,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 0,
-        "decay_penalty": 0,
-        "recency_balance": 0,
-        "final_score": 33,
-        "score_breakdown": {
-          "base_score": 3,
-          "rank_score_boost": 3,
-          "authority_score_boost": 15,
-          "graph_centrality_boost": 8,
-          "content_depth_boost": 4,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
@@ -16720,6 +16720,43 @@
         }
       },
       {
+        "target_url": "/wiki/graffpunks.html",
+        "score": 43,
+        "base_score": 12,
+        "reasons": [
+          "link_overlap:4",
+          "rank_score_boost:3",
+          "authority_score_boost:15",
+          "graph_centrality_boost:8",
+          "content_depth_boost:5"
+        ],
+        "rank_score_boost": 3,
+        "authority_score_boost": 15,
+        "graph_centrality_boost": 8,
+        "content_depth_boost": 5,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 0,
+        "decay_penalty": 0,
+        "recency_balance": 0,
+        "final_score": 43,
+        "score_breakdown": {
+          "base_score": 12,
+          "rank_score_boost": 3,
+          "authority_score_boost": 15,
+          "graph_centrality_boost": 8,
+          "content_depth_boost": 5,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 0,
+          "decay_penalty": 0,
+          "recency_balance": 0,
+          "final_score": 43
+        }
+      },
+      {
         "target_url": "/wiki/alfie-bitcoin-kid-blaze.html",
         "score": 41,
         "base_score": 29,
@@ -16784,43 +16821,6 @@
           "authority_score_boost": 15,
           "graph_centrality_boost": 8,
           "content_depth_boost": 7,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 0,
-          "decay_penalty": 0,
-          "recency_balance": 0,
-          "final_score": 42
-        }
-      },
-      {
-        "target_url": "/wiki/graffpunks.html",
-        "score": 42,
-        "base_score": 12,
-        "reasons": [
-          "link_overlap:4",
-          "rank_score_boost:3",
-          "authority_score_boost:15",
-          "graph_centrality_boost:8",
-          "content_depth_boost:4"
-        ],
-        "rank_score_boost": 3,
-        "authority_score_boost": 15,
-        "graph_centrality_boost": 8,
-        "content_depth_boost": 4,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 0,
-        "decay_penalty": 0,
-        "recency_balance": 0,
-        "final_score": 42,
-        "score_breakdown": {
-          "base_score": 12,
-          "rank_score_boost": 3,
-          "authority_score_boost": 15,
-          "graph_centrality_boost": 8,
-          "content_depth_boost": 4,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
@@ -17059,7 +17059,7 @@
     "related_pages": [
       {
         "target_url": "/wiki/graffpunks.html",
-        "score": 85,
+        "score": 86,
         "base_score": 55,
         "reasons": [
           "same_category:core",
@@ -17067,32 +17067,32 @@
           "rank_score_boost:3",
           "authority_score_boost:15",
           "graph_centrality_boost:8",
-          "content_depth_boost:4"
+          "content_depth_boost:5"
         ],
         "rank_score_boost": 3,
         "authority_score_boost": 15,
         "graph_centrality_boost": 8,
-        "content_depth_boost": 4,
+        "content_depth_boost": 5,
         "reinforcement_boost": 0,
         "cluster_support_boost": 0,
         "co_citation_boost": 0,
         "freshness_boost": 2,
         "decay_penalty": 0,
         "recency_balance": 2,
-        "final_score": 87,
+        "final_score": 88,
         "score_breakdown": {
           "base_score": 55,
           "rank_score_boost": 3,
           "authority_score_boost": 15,
           "graph_centrality_boost": 8,
-          "content_depth_boost": 4,
+          "content_depth_boost": 5,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
           "freshness_boost": 2,
           "decay_penalty": 0,
           "recency_balance": 2,
-          "final_score": 87
+          "final_score": 88
         }
       },
       {
@@ -21721,39 +21721,39 @@
       },
       {
         "target_url": "/wiki/graffpunks.html",
-        "score": 45,
+        "score": 46,
         "base_score": 15,
         "reasons": [
           "link_overlap:5",
           "rank_score_boost:3",
           "authority_score_boost:15",
           "graph_centrality_boost:8",
-          "content_depth_boost:4"
+          "content_depth_boost:5"
         ],
         "rank_score_boost": 3,
         "authority_score_boost": 15,
         "graph_centrality_boost": 8,
-        "content_depth_boost": 4,
+        "content_depth_boost": 5,
         "reinforcement_boost": 0,
         "cluster_support_boost": 0,
         "co_citation_boost": 0,
         "freshness_boost": 0,
         "decay_penalty": 0,
         "recency_balance": 0,
-        "final_score": 45,
+        "final_score": 46,
         "score_breakdown": {
           "base_score": 15,
           "rank_score_boost": 3,
           "authority_score_boost": 15,
           "graph_centrality_boost": 8,
-          "content_depth_boost": 4,
+          "content_depth_boost": 5,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
           "freshness_boost": 0,
           "decay_penalty": 0,
           "recency_balance": 0,
-          "final_score": 45
+          "final_score": 46
         }
       },
       {
@@ -23341,39 +23341,39 @@
       },
       {
         "target_url": "/wiki/graffpunks.html",
-        "score": 39,
+        "score": 40,
         "base_score": 9,
         "reasons": [
           "link_overlap:3",
           "rank_score_boost:3",
           "authority_score_boost:15",
           "graph_centrality_boost:8",
-          "content_depth_boost:4"
+          "content_depth_boost:5"
         ],
         "rank_score_boost": 3,
         "authority_score_boost": 15,
         "graph_centrality_boost": 8,
-        "content_depth_boost": 4,
+        "content_depth_boost": 5,
         "reinforcement_boost": 0,
         "cluster_support_boost": 0,
         "co_citation_boost": 0,
         "freshness_boost": 0,
         "decay_penalty": 0,
         "recency_balance": 0,
-        "final_score": 39,
+        "final_score": 40,
         "score_breakdown": {
           "base_score": 9,
           "rank_score_boost": 3,
           "authority_score_boost": 15,
           "graph_centrality_boost": 8,
-          "content_depth_boost": 4,
+          "content_depth_boost": 5,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
           "freshness_boost": 0,
           "decay_penalty": 0,
           "recency_balance": 0,
-          "final_score": 39
+          "final_score": 40
         }
       },
       {
@@ -24716,39 +24716,39 @@
       },
       {
         "target_url": "/wiki/graffpunks.html",
-        "score": 45,
+        "score": 46,
         "base_score": 15,
         "reasons": [
           "link_overlap:5",
           "rank_score_boost:3",
           "authority_score_boost:15",
           "graph_centrality_boost:8",
-          "content_depth_boost:4"
+          "content_depth_boost:5"
         ],
         "rank_score_boost": 3,
         "authority_score_boost": 15,
         "graph_centrality_boost": 8,
-        "content_depth_boost": 4,
+        "content_depth_boost": 5,
         "reinforcement_boost": 0,
         "cluster_support_boost": 0,
         "co_citation_boost": 0,
         "freshness_boost": 0,
         "decay_penalty": 0,
         "recency_balance": 0,
-        "final_score": 45,
+        "final_score": 46,
         "score_breakdown": {
           "base_score": 15,
           "rank_score_boost": 3,
           "authority_score_boost": 15,
           "graph_centrality_boost": 8,
-          "content_depth_boost": 4,
+          "content_depth_boost": 5,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
           "freshness_boost": 0,
           "decay_penalty": 0,
           "recency_balance": 0,
-          "final_score": 45
+          "final_score": 46
         }
       },
       {
@@ -27030,6 +27030,43 @@
         }
       },
       {
+        "target_url": "/wiki/graffpunks.html",
+        "score": 40,
+        "base_score": 9,
+        "reasons": [
+          "link_overlap:3",
+          "rank_score_boost:3",
+          "authority_score_boost:15",
+          "graph_centrality_boost:8",
+          "content_depth_boost:5"
+        ],
+        "rank_score_boost": 3,
+        "authority_score_boost": 15,
+        "graph_centrality_boost": 8,
+        "content_depth_boost": 5,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 0,
+        "decay_penalty": 0,
+        "recency_balance": 0,
+        "final_score": 40,
+        "score_breakdown": {
+          "base_score": 9,
+          "rank_score_boost": 3,
+          "authority_score_boost": 15,
+          "graph_centrality_boost": 8,
+          "content_depth_boost": 5,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 0,
+          "decay_penalty": 0,
+          "recency_balance": 0,
+          "final_score": 40
+        }
+      },
+      {
         "target_url": "/wiki/games4punks-telegram.html",
         "score": 38,
         "base_score": 24,
@@ -27063,43 +27100,6 @@
           "freshness_boost": 1,
           "decay_penalty": 0,
           "recency_balance": 1,
-          "final_score": 39
-        }
-      },
-      {
-        "target_url": "/wiki/graffpunks.html",
-        "score": 39,
-        "base_score": 9,
-        "reasons": [
-          "link_overlap:3",
-          "rank_score_boost:3",
-          "authority_score_boost:15",
-          "graph_centrality_boost:8",
-          "content_depth_boost:4"
-        ],
-        "rank_score_boost": 3,
-        "authority_score_boost": 15,
-        "graph_centrality_boost": 8,
-        "content_depth_boost": 4,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 0,
-        "decay_penalty": 0,
-        "recency_balance": 0,
-        "final_score": 39,
-        "score_breakdown": {
-          "base_score": 9,
-          "rank_score_boost": 3,
-          "authority_score_boost": 15,
-          "graph_centrality_boost": 8,
-          "content_depth_boost": 4,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 0,
-          "decay_penalty": 0,
-          "recency_balance": 0,
           "final_score": 39
         }
       },
@@ -29117,6 +29117,43 @@
         }
       },
       {
+        "target_url": "/wiki/graffpunks.html",
+        "score": 34,
+        "base_score": 3,
+        "reasons": [
+          "link_overlap:1",
+          "rank_score_boost:3",
+          "authority_score_boost:15",
+          "graph_centrality_boost:8",
+          "content_depth_boost:5"
+        ],
+        "rank_score_boost": 3,
+        "authority_score_boost": 15,
+        "graph_centrality_boost": 8,
+        "content_depth_boost": 5,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 0,
+        "decay_penalty": 0,
+        "recency_balance": 0,
+        "final_score": 34,
+        "score_breakdown": {
+          "base_score": 3,
+          "rank_score_boost": 3,
+          "authority_score_boost": 15,
+          "graph_centrality_boost": 8,
+          "content_depth_boost": 5,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 0,
+          "decay_penalty": 0,
+          "recency_balance": 0,
+          "final_score": 34
+        }
+      },
+      {
         "target_url": "/wiki/gkniftyheads-nft-collection.html",
         "score": 33,
         "base_score": 3,
@@ -29144,43 +29181,6 @@
           "authority_score_boost": 15,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 0,
-          "decay_penalty": 0,
-          "recency_balance": 0,
-          "final_score": 33
-        }
-      },
-      {
-        "target_url": "/wiki/graffpunks.html",
-        "score": 33,
-        "base_score": 3,
-        "reasons": [
-          "link_overlap:1",
-          "rank_score_boost:3",
-          "authority_score_boost:15",
-          "graph_centrality_boost:8",
-          "content_depth_boost:4"
-        ],
-        "rank_score_boost": 3,
-        "authority_score_boost": 15,
-        "graph_centrality_boost": 8,
-        "content_depth_boost": 4,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 0,
-        "decay_penalty": 0,
-        "recency_balance": 0,
-        "final_score": 33,
-        "score_breakdown": {
-          "base_score": 3,
-          "rank_score_boost": 3,
-          "authority_score_boost": 15,
-          "graph_centrality_boost": 8,
-          "content_depth_boost": 4,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
@@ -33051,6 +33051,43 @@
         }
       },
       {
+        "target_url": "/wiki/graffpunks.html",
+        "score": 40,
+        "base_score": 9,
+        "reasons": [
+          "link_overlap:3",
+          "rank_score_boost:3",
+          "authority_score_boost:15",
+          "graph_centrality_boost:8",
+          "content_depth_boost:5"
+        ],
+        "rank_score_boost": 3,
+        "authority_score_boost": 15,
+        "graph_centrality_boost": 8,
+        "content_depth_boost": 5,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 0,
+        "decay_penalty": 0,
+        "recency_balance": 0,
+        "final_score": 40,
+        "score_breakdown": {
+          "base_score": 9,
+          "rank_score_boost": 3,
+          "authority_score_boost": 15,
+          "graph_centrality_boost": 8,
+          "content_depth_boost": 5,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 0,
+          "decay_penalty": 0,
+          "recency_balance": 0,
+          "final_score": 40
+        }
+      },
+      {
         "target_url": "/wiki/games4punks-telegram.html",
         "score": 38,
         "base_score": 24,
@@ -33084,43 +33121,6 @@
           "freshness_boost": 1,
           "decay_penalty": 0,
           "recency_balance": 1,
-          "final_score": 39
-        }
-      },
-      {
-        "target_url": "/wiki/graffpunks.html",
-        "score": 39,
-        "base_score": 9,
-        "reasons": [
-          "link_overlap:3",
-          "rank_score_boost:3",
-          "authority_score_boost:15",
-          "graph_centrality_boost:8",
-          "content_depth_boost:4"
-        ],
-        "rank_score_boost": 3,
-        "authority_score_boost": 15,
-        "graph_centrality_boost": 8,
-        "content_depth_boost": 4,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 0,
-        "decay_penalty": 0,
-        "recency_balance": 0,
-        "final_score": 39,
-        "score_breakdown": {
-          "base_score": 9,
-          "rank_score_boost": 3,
-          "authority_score_boost": 15,
-          "graph_centrality_boost": 8,
-          "content_depth_boost": 4,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 0,
-          "decay_penalty": 0,
-          "recency_balance": 0,
           "final_score": 39
         }
       },
@@ -146563,39 +146563,39 @@
       },
       {
         "target_url": "/wiki/graffpunks.html",
-        "score": 45,
+        "score": 46,
         "base_score": 15,
         "reasons": [
           "link_overlap:5",
           "rank_score_boost:3",
           "authority_score_boost:15",
           "graph_centrality_boost:8",
-          "content_depth_boost:4"
+          "content_depth_boost:5"
         ],
         "rank_score_boost": 3,
         "authority_score_boost": 15,
         "graph_centrality_boost": 8,
-        "content_depth_boost": 4,
+        "content_depth_boost": 5,
         "reinforcement_boost": 0,
         "cluster_support_boost": 0,
         "co_citation_boost": 0,
         "freshness_boost": 0,
         "decay_penalty": 0,
         "recency_balance": 0,
-        "final_score": 45,
+        "final_score": 46,
         "score_breakdown": {
           "base_score": 15,
           "rank_score_boost": 3,
           "authority_score_boost": 15,
           "graph_centrality_boost": 8,
-          "content_depth_boost": 4,
+          "content_depth_boost": 5,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
           "freshness_boost": 0,
           "decay_penalty": 0,
           "recency_balance": 0,
-          "final_score": 45
+          "final_score": 46
         }
       },
       {
@@ -148033,39 +148033,39 @@
       },
       {
         "target_url": "/wiki/graffpunks.html",
-        "score": 45,
+        "score": 46,
         "base_score": 15,
         "reasons": [
           "link_overlap:5",
           "rank_score_boost:3",
           "authority_score_boost:15",
           "graph_centrality_boost:8",
-          "content_depth_boost:4"
+          "content_depth_boost:5"
         ],
         "rank_score_boost": 3,
         "authority_score_boost": 15,
         "graph_centrality_boost": 8,
-        "content_depth_boost": 4,
+        "content_depth_boost": 5,
         "reinforcement_boost": 0,
         "cluster_support_boost": 0,
         "co_citation_boost": 0,
         "freshness_boost": 0,
         "decay_penalty": 0,
         "recency_balance": 0,
-        "final_score": 45,
+        "final_score": 46,
         "score_breakdown": {
           "base_score": 15,
           "rank_score_boost": 3,
           "authority_score_boost": 15,
           "graph_centrality_boost": 8,
-          "content_depth_boost": 4,
+          "content_depth_boost": 5,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
           "freshness_boost": 0,
           "decay_penalty": 0,
           "recency_balance": 0,
-          "final_score": 45
+          "final_score": 46
         }
       },
       {
@@ -148701,7 +148701,7 @@
       },
       {
         "target_url": "/wiki/graffpunks.html",
-        "score": 91,
+        "score": 92,
         "base_score": 61,
         "reasons": [
           "same_category:core",
@@ -148709,32 +148709,32 @@
           "rank_score_boost:3",
           "authority_score_boost:15",
           "graph_centrality_boost:8",
-          "content_depth_boost:4"
+          "content_depth_boost:5"
         ],
         "rank_score_boost": 3,
         "authority_score_boost": 15,
         "graph_centrality_boost": 8,
-        "content_depth_boost": 4,
+        "content_depth_boost": 5,
         "reinforcement_boost": 0,
         "cluster_support_boost": 0,
         "co_citation_boost": 0,
         "freshness_boost": 3,
         "decay_penalty": 0,
         "recency_balance": 3,
-        "final_score": 94,
+        "final_score": 95,
         "score_breakdown": {
           "base_score": 61,
           "rank_score_boost": 3,
           "authority_score_boost": 15,
           "graph_centrality_boost": 8,
-          "content_depth_boost": 4,
+          "content_depth_boost": 5,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
           "freshness_boost": 3,
           "decay_penalty": 0,
           "recency_balance": 3,
-          "final_score": 94
+          "final_score": 95
         }
       },
       {
@@ -151234,6 +151234,43 @@
         }
       },
       {
+        "target_url": "/wiki/graffpunks.html",
+        "score": 40,
+        "base_score": 9,
+        "reasons": [
+          "link_overlap:3",
+          "rank_score_boost:3",
+          "authority_score_boost:15",
+          "graph_centrality_boost:8",
+          "content_depth_boost:5"
+        ],
+        "rank_score_boost": 3,
+        "authority_score_boost": 15,
+        "graph_centrality_boost": 8,
+        "content_depth_boost": 5,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 0,
+        "decay_penalty": 0,
+        "recency_balance": 0,
+        "final_score": 40,
+        "score_breakdown": {
+          "base_score": 9,
+          "rank_score_boost": 3,
+          "authority_score_boost": 15,
+          "graph_centrality_boost": 8,
+          "content_depth_boost": 5,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 0,
+          "decay_penalty": 0,
+          "recency_balance": 0,
+          "final_score": 40
+        }
+      },
+      {
         "target_url": "/wiki/pmsl.html",
         "score": 39,
         "base_score": 21,
@@ -151298,43 +151335,6 @@
           "authority_score_boost": 15,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 0,
-          "decay_penalty": 0,
-          "recency_balance": 0,
-          "final_score": 39
-        }
-      },
-      {
-        "target_url": "/wiki/graffpunks.html",
-        "score": 39,
-        "base_score": 9,
-        "reasons": [
-          "link_overlap:3",
-          "rank_score_boost:3",
-          "authority_score_boost:15",
-          "graph_centrality_boost:8",
-          "content_depth_boost:4"
-        ],
-        "rank_score_boost": 3,
-        "authority_score_boost": 15,
-        "graph_centrality_boost": 8,
-        "content_depth_boost": 4,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 0,
-        "decay_penalty": 0,
-        "recency_balance": 0,
-        "final_score": 39,
-        "score_breakdown": {
-          "base_score": 9,
-          "rank_score_boost": 3,
-          "authority_score_boost": 15,
-          "graph_centrality_boost": 8,
-          "content_depth_boost": 4,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
@@ -261576,7 +261576,7 @@
       },
       {
         "target_url": "/wiki/graffpunks.html",
-        "score": 79,
+        "score": 80,
         "base_score": 49,
         "reasons": [
           "same_category:core",
@@ -261584,32 +261584,32 @@
           "rank_score_boost:3",
           "authority_score_boost:15",
           "graph_centrality_boost:8",
-          "content_depth_boost:4"
+          "content_depth_boost:5"
         ],
         "rank_score_boost": 3,
         "authority_score_boost": 15,
         "graph_centrality_boost": 8,
-        "content_depth_boost": 4,
+        "content_depth_boost": 5,
         "reinforcement_boost": 0,
         "cluster_support_boost": 0,
         "co_citation_boost": 0,
         "freshness_boost": 2,
         "decay_penalty": 0,
         "recency_balance": 2,
-        "final_score": 81,
+        "final_score": 82,
         "score_breakdown": {
           "base_score": 49,
           "rank_score_boost": 3,
           "authority_score_boost": 15,
           "graph_centrality_boost": 8,
-          "content_depth_boost": 4,
+          "content_depth_boost": 5,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
           "freshness_boost": 2,
           "decay_penalty": 0,
           "recency_balance": 2,
-          "final_score": 81
+          "final_score": 82
         }
       },
       {
@@ -262292,7 +262292,7 @@
     "related_pages": [
       {
         "target_url": "/wiki/graffpunks.html",
-        "score": 91,
+        "score": 92,
         "base_score": 61,
         "reasons": [
           "same_category:core",
@@ -262300,32 +262300,32 @@
           "rank_score_boost:3",
           "authority_score_boost:15",
           "graph_centrality_boost:8",
-          "content_depth_boost:4"
+          "content_depth_boost:5"
         ],
         "rank_score_boost": 3,
         "authority_score_boost": 15,
         "graph_centrality_boost": 8,
-        "content_depth_boost": 4,
+        "content_depth_boost": 5,
         "reinforcement_boost": 0,
         "cluster_support_boost": 0,
         "co_citation_boost": 0,
         "freshness_boost": 3,
         "decay_penalty": 0,
         "recency_balance": 3,
-        "final_score": 94,
+        "final_score": 95,
         "score_breakdown": {
           "base_score": 61,
           "rank_score_boost": 3,
           "authority_score_boost": 15,
           "graph_centrality_boost": 8,
-          "content_depth_boost": 4,
+          "content_depth_boost": 5,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
           "freshness_boost": 3,
           "decay_penalty": 0,
           "recency_balance": 3,
-          "final_score": 94
+          "final_score": 95
         }
       },
       {
@@ -263165,7 +263165,7 @@
       },
       {
         "target_url": "/wiki/graffpunks.html",
-        "score": 88,
+        "score": 89,
         "base_score": 58,
         "reasons": [
           "same_category:core",
@@ -263173,32 +263173,32 @@
           "rank_score_boost:3",
           "authority_score_boost:15",
           "graph_centrality_boost:8",
-          "content_depth_boost:4"
+          "content_depth_boost:5"
         ],
         "rank_score_boost": 3,
         "authority_score_boost": 15,
         "graph_centrality_boost": 8,
-        "content_depth_boost": 4,
+        "content_depth_boost": 5,
         "reinforcement_boost": 0,
         "cluster_support_boost": 0,
         "co_citation_boost": 0,
         "freshness_boost": 2,
         "decay_penalty": 0,
         "recency_balance": 2,
-        "final_score": 90,
+        "final_score": 91,
         "score_breakdown": {
           "base_score": 58,
           "rank_score_boost": 3,
           "authority_score_boost": 15,
           "graph_centrality_boost": 8,
-          "content_depth_boost": 4,
+          "content_depth_boost": 5,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
           "freshness_boost": 2,
           "decay_penalty": 0,
           "recency_balance": 2,
-          "final_score": 90
+          "final_score": 91
         }
       },
       {
@@ -264565,7 +264565,7 @@
     "related_pages": [
       {
         "target_url": "/wiki/graffpunks.html",
-        "score": 121,
+        "score": 122,
         "base_score": 91,
         "reasons": [
           "same_category:core",
@@ -264575,32 +264575,32 @@
           "rank_score_boost:3",
           "authority_score_boost:15",
           "graph_centrality_boost:8",
-          "content_depth_boost:4"
+          "content_depth_boost:5"
         ],
         "rank_score_boost": 3,
         "authority_score_boost": 15,
         "graph_centrality_boost": 8,
-        "content_depth_boost": 4,
+        "content_depth_boost": 5,
         "reinforcement_boost": 0,
         "cluster_support_boost": 0,
         "co_citation_boost": 0,
         "freshness_boost": 4,
         "decay_penalty": 0,
         "recency_balance": 4,
-        "final_score": 125,
+        "final_score": 126,
         "score_breakdown": {
           "base_score": 91,
           "rank_score_boost": 3,
           "authority_score_boost": 15,
           "graph_centrality_boost": 8,
-          "content_depth_boost": 4,
+          "content_depth_boost": 5,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
           "freshness_boost": 4,
           "decay_penalty": 0,
           "recency_balance": 4,
-          "final_score": 125
+          "final_score": 126
         }
       },
       {
@@ -265361,7 +265361,7 @@
       },
       {
         "target_url": "/wiki/graffpunks.html",
-        "score": 84,
+        "score": 85,
         "base_score": 54,
         "reasons": [
           "shared_tag:graffpunks",
@@ -265370,32 +265370,32 @@
           "rank_score_boost:3",
           "authority_score_boost:15",
           "graph_centrality_boost:8",
-          "content_depth_boost:4"
+          "content_depth_boost:5"
         ],
         "rank_score_boost": 3,
         "authority_score_boost": 15,
         "graph_centrality_boost": 8,
-        "content_depth_boost": 4,
+        "content_depth_boost": 5,
         "reinforcement_boost": 0,
         "cluster_support_boost": 0,
         "co_citation_boost": 0,
         "freshness_boost": 2,
         "decay_penalty": 0,
         "recency_balance": 2,
-        "final_score": 86,
+        "final_score": 87,
         "score_breakdown": {
           "base_score": 54,
           "rank_score_boost": 3,
           "authority_score_boost": 15,
           "graph_centrality_boost": 8,
-          "content_depth_boost": 4,
+          "content_depth_boost": 5,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
           "freshness_boost": 2,
           "decay_penalty": 0,
           "recency_balance": 2,
-          "final_score": 86
+          "final_score": 87
         }
       },
       {
@@ -266072,7 +266072,7 @@
     "related_pages": [
       {
         "target_url": "/wiki/graffpunks.html",
-        "score": 145,
+        "score": 146,
         "base_score": 115,
         "reasons": [
           "same_category:core",
@@ -266082,32 +266082,32 @@
           "rank_score_boost:3",
           "authority_score_boost:15",
           "graph_centrality_boost:8",
-          "content_depth_boost:4"
+          "content_depth_boost:5"
         ],
         "rank_score_boost": 3,
         "authority_score_boost": 15,
         "graph_centrality_boost": 8,
-        "content_depth_boost": 4,
+        "content_depth_boost": 5,
         "reinforcement_boost": 0,
         "cluster_support_boost": 0,
         "co_citation_boost": 0,
         "freshness_boost": 4,
         "decay_penalty": 0,
         "recency_balance": 4,
-        "final_score": 149,
+        "final_score": 150,
         "score_breakdown": {
           "base_score": 115,
           "rank_score_boost": 3,
           "authority_score_boost": 15,
           "graph_centrality_boost": 8,
-          "content_depth_boost": 4,
+          "content_depth_boost": 5,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
           "freshness_boost": 4,
           "decay_penalty": 0,
           "recency_balance": 4,
-          "final_score": 149
+          "final_score": 150
         }
       },
       {
@@ -269961,7 +269961,7 @@
       },
       {
         "target_url": "/wiki/graffpunks.html",
-        "score": 85,
+        "score": 86,
         "base_score": 55,
         "reasons": [
           "same_category:core",
@@ -269969,32 +269969,32 @@
           "rank_score_boost:3",
           "authority_score_boost:15",
           "graph_centrality_boost:8",
-          "content_depth_boost:4"
+          "content_depth_boost:5"
         ],
         "rank_score_boost": 3,
         "authority_score_boost": 15,
         "graph_centrality_boost": 8,
-        "content_depth_boost": 4,
+        "content_depth_boost": 5,
         "reinforcement_boost": 0,
         "cluster_support_boost": 0,
         "co_citation_boost": 0,
         "freshness_boost": 2,
         "decay_penalty": 0,
         "recency_balance": 2,
-        "final_score": 87,
+        "final_score": 88,
         "score_breakdown": {
           "base_score": 55,
           "rank_score_boost": 3,
           "authority_score_boost": 15,
           "graph_centrality_boost": 8,
-          "content_depth_boost": 4,
+          "content_depth_boost": 5,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
           "freshness_boost": 2,
           "decay_penalty": 0,
           "recency_balance": 2,
-          "final_score": 87
+          "final_score": 88
         }
       },
       {
@@ -271464,6 +271464,43 @@
         }
       },
       {
+        "target_url": "/wiki/graffpunks.html",
+        "score": 43,
+        "base_score": 12,
+        "reasons": [
+          "link_overlap:4",
+          "rank_score_boost:3",
+          "authority_score_boost:15",
+          "graph_centrality_boost:8",
+          "content_depth_boost:5"
+        ],
+        "rank_score_boost": 3,
+        "authority_score_boost": 15,
+        "graph_centrality_boost": 8,
+        "content_depth_boost": 5,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 0,
+        "decay_penalty": 0,
+        "recency_balance": 0,
+        "final_score": 43,
+        "score_breakdown": {
+          "base_score": 12,
+          "rank_score_boost": 3,
+          "authority_score_boost": 15,
+          "graph_centrality_boost": 8,
+          "content_depth_boost": 5,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 0,
+          "decay_penalty": 0,
+          "recency_balance": 0,
+          "final_score": 43
+        }
+      },
+      {
         "target_url": "/wiki/crypto-moonboys.html",
         "score": 42,
         "base_score": 9,
@@ -271491,43 +271528,6 @@
           "authority_score_boost": 15,
           "graph_centrality_boost": 8,
           "content_depth_boost": 7,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 0,
-          "decay_penalty": 0,
-          "recency_balance": 0,
-          "final_score": 42
-        }
-      },
-      {
-        "target_url": "/wiki/graffpunks.html",
-        "score": 42,
-        "base_score": 12,
-        "reasons": [
-          "link_overlap:4",
-          "rank_score_boost:3",
-          "authority_score_boost:15",
-          "graph_centrality_boost:8",
-          "content_depth_boost:4"
-        ],
-        "rank_score_boost": 3,
-        "authority_score_boost": 15,
-        "graph_centrality_boost": 8,
-        "content_depth_boost": 4,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 0,
-        "decay_penalty": 0,
-        "recency_balance": 0,
-        "final_score": 42,
-        "score_breakdown": {
-          "base_score": 12,
-          "rank_score_boost": 3,
-          "authority_score_boost": 15,
-          "graph_centrality_boost": 8,
-          "content_depth_boost": 4,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
@@ -273547,7 +273547,7 @@
     "related_pages": [
       {
         "target_url": "/wiki/graffpunks.html",
-        "score": 94,
+        "score": 95,
         "base_score": 64,
         "reasons": [
           "same_category:core",
@@ -273555,32 +273555,32 @@
           "rank_score_boost:3",
           "authority_score_boost:15",
           "graph_centrality_boost:8",
-          "content_depth_boost:4"
+          "content_depth_boost:5"
         ],
         "rank_score_boost": 3,
         "authority_score_boost": 15,
         "graph_centrality_boost": 8,
-        "content_depth_boost": 4,
+        "content_depth_boost": 5,
         "reinforcement_boost": 0,
         "cluster_support_boost": 0,
         "co_citation_boost": 0,
         "freshness_boost": 3,
         "decay_penalty": 0,
         "recency_balance": 3,
-        "final_score": 97,
+        "final_score": 98,
         "score_breakdown": {
           "base_score": 64,
           "rank_score_boost": 3,
           "authority_score_boost": 15,
           "graph_centrality_boost": 8,
-          "content_depth_boost": 4,
+          "content_depth_boost": 5,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
           "freshness_boost": 3,
           "decay_penalty": 0,
           "recency_balance": 3,
-          "final_score": 97
+          "final_score": 98
         }
       },
       {
@@ -278305,6 +278305,43 @@
         }
       },
       {
+        "target_url": "/wiki/graffpunks.html",
+        "score": 40,
+        "base_score": 9,
+        "reasons": [
+          "link_overlap:3",
+          "rank_score_boost:3",
+          "authority_score_boost:15",
+          "graph_centrality_boost:8",
+          "content_depth_boost:5"
+        ],
+        "rank_score_boost": 3,
+        "authority_score_boost": 15,
+        "graph_centrality_boost": 8,
+        "content_depth_boost": 5,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 0,
+        "decay_penalty": 0,
+        "recency_balance": 0,
+        "final_score": 40,
+        "score_breakdown": {
+          "base_score": 9,
+          "rank_score_boost": 3,
+          "authority_score_boost": 15,
+          "graph_centrality_boost": 8,
+          "content_depth_boost": 5,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 0,
+          "decay_penalty": 0,
+          "recency_balance": 0,
+          "final_score": 40
+        }
+      },
+      {
         "target_url": "/wiki/games4punks-telegram.html",
         "score": 38,
         "base_score": 24,
@@ -278338,43 +278375,6 @@
           "freshness_boost": 1,
           "decay_penalty": 0,
           "recency_balance": 1,
-          "final_score": 39
-        }
-      },
-      {
-        "target_url": "/wiki/graffpunks.html",
-        "score": 39,
-        "base_score": 9,
-        "reasons": [
-          "link_overlap:3",
-          "rank_score_boost:3",
-          "authority_score_boost:15",
-          "graph_centrality_boost:8",
-          "content_depth_boost:4"
-        ],
-        "rank_score_boost": 3,
-        "authority_score_boost": 15,
-        "graph_centrality_boost": 8,
-        "content_depth_boost": 4,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 0,
-        "decay_penalty": 0,
-        "recency_balance": 0,
-        "final_score": 39,
-        "score_breakdown": {
-          "base_score": 9,
-          "rank_score_boost": 3,
-          "authority_score_boost": 15,
-          "graph_centrality_boost": 8,
-          "content_depth_boost": 4,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 0,
-          "decay_penalty": 0,
-          "recency_balance": 0,
           "final_score": 39
         }
       },
@@ -286207,6 +286207,44 @@
         }
       },
       {
+        "target_url": "/wiki/graffpunks.html",
+        "score": 74,
+        "base_score": 43,
+        "reasons": [
+          "link_overlap:6",
+          "same_brand_concept:graffpunks",
+          "rank_score_boost:3",
+          "authority_score_boost:15",
+          "graph_centrality_boost:8",
+          "content_depth_boost:5"
+        ],
+        "rank_score_boost": 3,
+        "authority_score_boost": 15,
+        "graph_centrality_boost": 8,
+        "content_depth_boost": 5,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 2,
+        "decay_penalty": 0,
+        "recency_balance": 2,
+        "final_score": 76,
+        "score_breakdown": {
+          "base_score": 43,
+          "rank_score_boost": 3,
+          "authority_score_boost": 15,
+          "graph_centrality_boost": 8,
+          "content_depth_boost": 5,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 2,
+          "decay_penalty": 0,
+          "recency_balance": 2,
+          "final_score": 76
+        }
+      },
+      {
         "target_url": "/wiki/rave-relics.html",
         "score": 74,
         "base_score": 55,
@@ -286242,44 +286280,6 @@
           "decay_penalty": 0,
           "recency_balance": 2,
           "final_score": 76
-        }
-      },
-      {
-        "target_url": "/wiki/graffpunks.html",
-        "score": 73,
-        "base_score": 43,
-        "reasons": [
-          "link_overlap:6",
-          "same_brand_concept:graffpunks",
-          "rank_score_boost:3",
-          "authority_score_boost:15",
-          "graph_centrality_boost:8",
-          "content_depth_boost:4"
-        ],
-        "rank_score_boost": 3,
-        "authority_score_boost": 15,
-        "graph_centrality_boost": 8,
-        "content_depth_boost": 4,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 2,
-        "decay_penalty": 0,
-        "recency_balance": 2,
-        "final_score": 75,
-        "score_breakdown": {
-          "base_score": 43,
-          "rank_score_boost": 3,
-          "authority_score_boost": 15,
-          "graph_centrality_boost": 8,
-          "content_depth_boost": 4,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 2,
-          "decay_penalty": 0,
-          "recency_balance": 2,
-          "final_score": 75
         }
       },
       {
@@ -294335,7 +294335,7 @@
       },
       {
         "target_url": "/wiki/graffpunks.html",
-        "score": 73,
+        "score": 74,
         "base_score": 43,
         "reasons": [
           "same_category:core",
@@ -294343,32 +294343,32 @@
           "rank_score_boost:3",
           "authority_score_boost:15",
           "graph_centrality_boost:8",
-          "content_depth_boost:4"
+          "content_depth_boost:5"
         ],
         "rank_score_boost": 3,
         "authority_score_boost": 15,
         "graph_centrality_boost": 8,
-        "content_depth_boost": 4,
+        "content_depth_boost": 5,
         "reinforcement_boost": 0,
         "cluster_support_boost": 0,
         "co_citation_boost": 0,
         "freshness_boost": 2,
         "decay_penalty": 0,
         "recency_balance": 2,
-        "final_score": 75,
+        "final_score": 76,
         "score_breakdown": {
           "base_score": 43,
           "rank_score_boost": 3,
           "authority_score_boost": 15,
           "graph_centrality_boost": 8,
-          "content_depth_boost": 4,
+          "content_depth_boost": 5,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
           "freshness_boost": 2,
           "decay_penalty": 0,
           "recency_balance": 2,
-          "final_score": 75
+          "final_score": 76
         }
       },
       {
@@ -307773,7 +307773,7 @@
       },
       {
         "target_url": "/wiki/graffpunks.html",
-        "score": 91,
+        "score": 92,
         "base_score": 61,
         "reasons": [
           "same_category:core",
@@ -307781,32 +307781,32 @@
           "rank_score_boost:3",
           "authority_score_boost:15",
           "graph_centrality_boost:8",
-          "content_depth_boost:4"
+          "content_depth_boost:5"
         ],
         "rank_score_boost": 3,
         "authority_score_boost": 15,
         "graph_centrality_boost": 8,
-        "content_depth_boost": 4,
+        "content_depth_boost": 5,
         "reinforcement_boost": 0,
         "cluster_support_boost": 0,
         "co_citation_boost": 0,
         "freshness_boost": 3,
         "decay_penalty": 0,
         "recency_balance": 3,
-        "final_score": 94,
+        "final_score": 95,
         "score_breakdown": {
           "base_score": 61,
           "rank_score_boost": 3,
           "authority_score_boost": 15,
           "graph_centrality_boost": 8,
-          "content_depth_boost": 4,
+          "content_depth_boost": 5,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
           "freshness_boost": 3,
           "decay_penalty": 0,
           "recency_balance": 3,
-          "final_score": 94
+          "final_score": 95
         }
       },
       {
@@ -310687,6 +310687,44 @@
         }
       },
       {
+        "target_url": "/wiki/graffpunks.html",
+        "score": 86,
+        "base_score": 55,
+        "reasons": [
+          "same_category:core",
+          "link_overlap:5",
+          "rank_score_boost:3",
+          "authority_score_boost:15",
+          "graph_centrality_boost:8",
+          "content_depth_boost:5"
+        ],
+        "rank_score_boost": 3,
+        "authority_score_boost": 15,
+        "graph_centrality_boost": 8,
+        "content_depth_boost": 5,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 2,
+        "decay_penalty": 0,
+        "recency_balance": 2,
+        "final_score": 88,
+        "score_breakdown": {
+          "base_score": 55,
+          "rank_score_boost": 3,
+          "authority_score_boost": 15,
+          "graph_centrality_boost": 8,
+          "content_depth_boost": 5,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 2,
+          "decay_penalty": 0,
+          "recency_balance": 2,
+          "final_score": 88
+        }
+      },
+      {
         "target_url": "/wiki/block-node-defenders.html",
         "score": 84,
         "base_score": 76,
@@ -310719,44 +310757,6 @@
           "freshness_boost": 3,
           "decay_penalty": 0,
           "recency_balance": 3,
-          "final_score": 87
-        }
-      },
-      {
-        "target_url": "/wiki/graffpunks.html",
-        "score": 85,
-        "base_score": 55,
-        "reasons": [
-          "same_category:core",
-          "link_overlap:5",
-          "rank_score_boost:3",
-          "authority_score_boost:15",
-          "graph_centrality_boost:8",
-          "content_depth_boost:4"
-        ],
-        "rank_score_boost": 3,
-        "authority_score_boost": 15,
-        "graph_centrality_boost": 8,
-        "content_depth_boost": 4,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 2,
-        "decay_penalty": 0,
-        "recency_balance": 2,
-        "final_score": 87,
-        "score_breakdown": {
-          "base_score": 55,
-          "rank_score_boost": 3,
-          "authority_score_boost": 15,
-          "graph_centrality_boost": 8,
-          "content_depth_boost": 4,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 2,
-          "decay_penalty": 0,
-          "recency_balance": 2,
           "final_score": 87
         }
       },
@@ -320690,6 +320690,43 @@
         }
       },
       {
+        "target_url": "/wiki/graffpunks.html",
+        "score": 34,
+        "base_score": 3,
+        "reasons": [
+          "link_overlap:1",
+          "rank_score_boost:3",
+          "authority_score_boost:15",
+          "graph_centrality_boost:8",
+          "content_depth_boost:5"
+        ],
+        "rank_score_boost": 3,
+        "authority_score_boost": 15,
+        "graph_centrality_boost": 8,
+        "content_depth_boost": 5,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 0,
+        "decay_penalty": 0,
+        "recency_balance": 0,
+        "final_score": 34,
+        "score_breakdown": {
+          "base_score": 3,
+          "rank_score_boost": 3,
+          "authority_score_boost": 15,
+          "graph_centrality_boost": 8,
+          "content_depth_boost": 5,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 0,
+          "decay_penalty": 0,
+          "recency_balance": 0,
+          "final_score": 34
+        }
+      },
+      {
         "target_url": "/wiki/gkniftyheads-nft-collection.html",
         "score": 33,
         "base_score": 3,
@@ -320717,43 +320754,6 @@
           "authority_score_boost": 15,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 0,
-          "decay_penalty": 0,
-          "recency_balance": 0,
-          "final_score": 33
-        }
-      },
-      {
-        "target_url": "/wiki/graffpunks.html",
-        "score": 33,
-        "base_score": 3,
-        "reasons": [
-          "link_overlap:1",
-          "rank_score_boost:3",
-          "authority_score_boost:15",
-          "graph_centrality_boost:8",
-          "content_depth_boost:4"
-        ],
-        "rank_score_boost": 3,
-        "authority_score_boost": 15,
-        "graph_centrality_boost": 8,
-        "content_depth_boost": 4,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 0,
-        "decay_penalty": 0,
-        "recency_balance": 0,
-        "final_score": 33,
-        "score_breakdown": {
-          "base_score": 3,
-          "rank_score_boost": 3,
-          "authority_score_boost": 15,
-          "graph_centrality_boost": 8,
-          "content_depth_boost": 4,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
@@ -324785,7 +324785,7 @@
       },
       {
         "target_url": "/wiki/graffpunks.html",
-        "score": 91,
+        "score": 92,
         "base_score": 61,
         "reasons": [
           "same_category:core",
@@ -324793,32 +324793,32 @@
           "rank_score_boost:3",
           "authority_score_boost:15",
           "graph_centrality_boost:8",
-          "content_depth_boost:4"
+          "content_depth_boost:5"
         ],
         "rank_score_boost": 3,
         "authority_score_boost": 15,
         "graph_centrality_boost": 8,
-        "content_depth_boost": 4,
+        "content_depth_boost": 5,
         "reinforcement_boost": 0,
         "cluster_support_boost": 0,
         "co_citation_boost": 0,
         "freshness_boost": 3,
         "decay_penalty": 0,
         "recency_balance": 3,
-        "final_score": 94,
+        "final_score": 95,
         "score_breakdown": {
           "base_score": 61,
           "rank_score_boost": 3,
           "authority_score_boost": 15,
           "graph_centrality_boost": 8,
-          "content_depth_boost": 4,
+          "content_depth_boost": 5,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
           "freshness_boost": 3,
           "decay_penalty": 0,
           "recency_balance": 3,
-          "final_score": 94
+          "final_score": 95
         }
       },
       {
@@ -348453,39 +348453,39 @@
       },
       {
         "target_url": "/wiki/graffpunks.html",
-        "score": 36,
+        "score": 37,
         "base_score": 6,
         "reasons": [
           "link_overlap:2",
           "rank_score_boost:3",
           "authority_score_boost:15",
           "graph_centrality_boost:8",
-          "content_depth_boost:4"
+          "content_depth_boost:5"
         ],
         "rank_score_boost": 3,
         "authority_score_boost": 15,
         "graph_centrality_boost": 8,
-        "content_depth_boost": 4,
+        "content_depth_boost": 5,
         "reinforcement_boost": 0,
         "cluster_support_boost": 0,
         "co_citation_boost": 0,
         "freshness_boost": 0,
         "decay_penalty": 0,
         "recency_balance": 0,
-        "final_score": 36,
+        "final_score": 37,
         "score_breakdown": {
           "base_score": 6,
           "rank_score_boost": 3,
           "authority_score_boost": 15,
           "graph_centrality_boost": 8,
-          "content_depth_boost": 4,
+          "content_depth_boost": 5,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
           "freshness_boost": 0,
           "decay_penalty": 0,
           "recency_balance": 0,
-          "final_score": 36
+          "final_score": 37
         }
       },
       {
@@ -349096,6 +349096,44 @@
         }
       },
       {
+        "target_url": "/wiki/graffpunks.html",
+        "score": 89,
+        "base_score": 58,
+        "reasons": [
+          "same_category:core",
+          "link_overlap:6",
+          "rank_score_boost:3",
+          "authority_score_boost:15",
+          "graph_centrality_boost:8",
+          "content_depth_boost:5"
+        ],
+        "rank_score_boost": 3,
+        "authority_score_boost": 15,
+        "graph_centrality_boost": 8,
+        "content_depth_boost": 5,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 2,
+        "decay_penalty": 0,
+        "recency_balance": 2,
+        "final_score": 91,
+        "score_breakdown": {
+          "base_score": 58,
+          "rank_score_boost": 3,
+          "authority_score_boost": 15,
+          "graph_centrality_boost": 8,
+          "content_depth_boost": 5,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 2,
+          "decay_penalty": 0,
+          "recency_balance": 2,
+          "final_score": 91
+        }
+      },
+      {
         "target_url": "/wiki/hodl-wars.html",
         "score": 88,
         "base_score": 61,
@@ -349131,44 +349169,6 @@
           "decay_penalty": 0,
           "recency_balance": 3,
           "final_score": 91
-        }
-      },
-      {
-        "target_url": "/wiki/graffpunks.html",
-        "score": 88,
-        "base_score": 58,
-        "reasons": [
-          "same_category:core",
-          "link_overlap:6",
-          "rank_score_boost:3",
-          "authority_score_boost:15",
-          "graph_centrality_boost:8",
-          "content_depth_boost:4"
-        ],
-        "rank_score_boost": 3,
-        "authority_score_boost": 15,
-        "graph_centrality_boost": 8,
-        "content_depth_boost": 4,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 2,
-        "decay_penalty": 0,
-        "recency_balance": 2,
-        "final_score": 90,
-        "score_breakdown": {
-          "base_score": 58,
-          "rank_score_boost": 3,
-          "authority_score_boost": 15,
-          "graph_centrality_boost": 8,
-          "content_depth_boost": 4,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 2,
-          "decay_penalty": 0,
-          "recency_balance": 2,
-          "final_score": 90
         }
       },
       {

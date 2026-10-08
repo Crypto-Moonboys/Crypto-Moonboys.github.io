@@ -153,11 +153,12 @@
       "sources": [
         "W12.txt Parts 1-8, fully read: 2036 origin; late 2029 council; 2030 Reset; 2031 bridge; 2032 capture; 2035 climax",
         "W13.txt Parts 1-7 and repeated household extracts, fully read",
-        "merged Fifth Carbon and current Croydon/Princess/First Witness chronology"
+        "merged Fifth Carbon and current Croydon/Princess/First Witness chronology",
+        "W5.txt all20tomes/paragraphs1\u20131335 fully read; alternative steel-slab origin and terminal Soul/Wing Fork worlds compared"
       ],
       "old": "A nineteen-year-old 2036 upload precedes late-2029 preparations, the 2030 Reset, a 2031 bridge, the 2032 vanishing and a 2035 climax. A teenage adoption is also compressed into the 2007-2009 Street War.",
       "new": "Recommend retaining the repeated 2036 origin and moving the subsequent civil sequence ten years forward: late 2039 council, 2040 Stabilisation, 2041 bridge work, 2042 vanishing, 2045 climax. Keep adoption later than the original Street War. Preserve the explicit across-time bridge as an attributed source claim; do not mistake ordinary flashback for a complete repair.",
-      "reason": "Full reading shows explicit causal dependencies and an explicit across-time bridge. The fixed ten-year displacement preserves the source one-year preparation and three-year capture-to-climax intervals while placing the later civil events after the 2036 upload. These replacement dates require specific GK approval; no corrected date is yet published as accepted history.",
+      "reason": "Full reading shows explicit causal dependencies and an explicit across-time bridge. The fixed ten-year displacement preserves the source one-year preparation and three-year capture-to-climax intervals while placing the later civil events after the 2036 upload. These replacement dates require specific GK approval; no corrected date is yet published as accepted history. W5 itself alternates2036/2880 and resurrects PapaDes without a lifespan account; retaining W12 origin is the proposed editorial choice, not a second verified upload. Singular retiring SAM Architect does not identify every GKniftyHEADS member.",
       "affected_paths": [
         "wiki/agent-sam.html",
         "wiki/house-of-rackinsats.html",
@@ -182,8 +183,8 @@
         "W1.txt"
       ],
       "old": "34 named readings and six unassigned; competing raw lists mix factions and institutions.",
-      "new": "Investigate NoBallGames Legion and Stencil Witches as potential independent cultures; Burn Crews, Tag Lords and $DUST Protocol are not automatically independent; no fabricated sixth name.",
-      "reason": "The original sources must establish independent membership and institutions before arithmetic becomes a new identity.",
+      "new": "Concrete six-name working proposal: NoBallGames Legion, Wildstyle Collective, Fractal Taggers, Porch Poets, Resin Relic Keepers, Bone Idol Ink Ritualists. Exact W5 testimony separated from proposed membership institutions; full biography/source overlap audit and specific GK approval pending; no new position adopted.",
+      "reason": "Full W5 list double-counts Nomad Bears, parent formations and arena extensions; w68/w69 are incomplete directories, M16 has TBD positions. A coherent completion needs enduring belonging; current34 modern cultures and all adult stories remain preserved.",
       "affected_paths": [
         "wiki/first-witness-forty-paths.html",
         "wiki/first-witness-faction-commentaries.html",
@@ -289,9 +290,10 @@
         "w25.txt Parts1-75 and repeated66-75, fully read",
         "M16.txt prospective3030 timeline, fully read",
         "current First Witness BooksI-IX, all scripture and commentary read",
-        "approved modern lore and exact current Elder/Iris/Aleema/Dream stories"
+        "approved modern lore and exact current Elder/Iris/Aleema/Dream stories",
+        "W5.txt all20tomes/paragraphs1\u20131335 fully read; alternative steel-slab origin and terminal Soul/Wing Fork worlds compared"
       ],
-      "old": "W15 universal upload/heat death/restarts and w25 universal liberation/peace compete as incompatible terminal histories; M16 predicts3030 without a completed scene.",
+      "old": "W15 universal upload/heat death/restarts and w25 universal liberation/peace compete as incompatible terminal histories; M16 predicts3030 without a completed scene. W5 further ends with universal Bonnet choice, flight, fused layers and Architect retirement.",
       "new": "Recommend a single materially continuous world: retain complete serial visions, reject their universal terminal explanations as automatic world history; future Final Fork ends a particular existential threat without undoing loss or assigning one sovereign ownership of every future mind. Exact date/fates remain pending full source audit and GK.",
       "reason": "The repeated endings and conflicting memory/shard accounts cannot all be physical final histories. BookVI preserves graves/debts, BookVIII temporary alliance and BookIX future choice; modern bodily consequences remain meaningful. A literal universal-upload choice would need a separate comprehensive ontology retcon.",
       "affected_paths": [
@@ -311,6 +313,48 @@
         "wiki/dream-sovereign.html",
         "wiki/hodl-warriors.html",
         "wiki/hodl-wars.html"
+      ]
+    },
+    {
+      "id": "GK-1458-W5-OWNING-RECOVERY",
+      "status": "implemented",
+      "sources": [
+        "W5.txt all20tomes, paragraphs1\u20131335 fully read",
+        "w68.txt full directory",
+        "w69.txt all373paragraphs",
+        "M16.txt full compilation",
+        "full current owning articles and published faction-icon/adult-culture registers"
+      ],
+      "old": "Flesh Fade/retirement, Royal Galleries, exact PaintWar formations and Porch Accord price are compressed or absent; incomplete roster headings conceal duplicate membership.",
+      "new": "Expand eight owning articles with exact locally attributed source institutions, alternate scenes and roster comparison; preserve all existing paragraphs/IDs and authored adult cultures.",
+      "reason": "Recovers material scenes and distinct responsibilities without a chronology retcon, accepted new slot, universal cure, new real biography or product promise.",
+      "affected_paths": [
+        "wiki/agent-sam.html",
+        "wiki/house-of-rackinsats.html",
+        "wiki/graffpunks.html",
+        "wiki/gkniftyheads.html",
+        "wiki/hodl-warriors.html",
+        "wiki/whale-lords.html",
+        "wiki/first-witness-forty-paths.html",
+        "wiki/first-witness-faction-commentaries.html",
+        "brand-canon/story-bibles/gk-master-canon.md"
+      ]
+    },
+    {
+      "id": "GK-1458-HOT-WALL",
+      "status": "implemented",
+      "sources": [
+        "GK continuation authorizes substantial adult connecting fiction",
+        "W5.txt PaintWar formation imagery",
+        "published existing Black Mouth38/Kiva Brash37 stories and 5October culture registers"
+      ],
+      "old": "No Hot Wall commission or steward burn account.",
+      "new": "Add original local3008 adult display story: ignored pause, ordinary fire, Kiva cuts canvas, steward burn heals badly, lost work and later paid appropriation persist; no new named person or faction.",
+      "reason": "Extends existing appetite, rivalry and performance consequences without replacing Beautiful Vandal, healing earlier losses or granting magical paint powers.",
+      "affected_paths": [
+        "wiki/graffpunks.html",
+        "brand-canon/story-bibles/the-hot-wall.md",
+        "brand-canon/story-bibles/gk-master-canon.md"
       ]
     }
   ]

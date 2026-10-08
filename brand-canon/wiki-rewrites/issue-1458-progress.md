@@ -1,6 +1,6 @@
 # Issue #1458 — implementation progress and restart ledger
 
-Updated 8 October 2026. **Status: SAM/House and first serial recovery batches implemented; full mission open.**
+Updated 8 October 2026. **Status: SAM/House, serial and W5 owning-page recovery implemented; full mission open.**
 W81 is foundational truth. This is a checkpoint of completed implementation,
 not a claim that the whole universe is reconciled. Preserve the adult tone.
 
@@ -18,12 +18,11 @@ No direct push to main, merge, issue closure or production deployment.
   w56, W12 (all eight parts), W13 (all seven parts and repeated extracts), W7.
   **87** remain without full semantic comparison. W19 is fully read but its
   remaining embedded-character comparisons are pending, so it is not counted.
-- **28 distinct existing pages** reviewed: twenty full canonical articles
+- **35 distinct existing pages** reviewed: thirty full canonical articles
   (Princess, Croydon, master chronology, concordance, synthetic minds,
   Crypto Moonboys, Great Consensus, Elder Codex-7, Iris-7, Aleema, Dream Sovereign,
-  and all nine First Witness Books) and eight focused section reviews
-  (Rune, Pinks, Games, Code Alchemists, Sarah, Block Topia, Forty Paths,
-  faction Commentaries). Exact scopes are in `issue-1458-audit.json`.
+  all nine First Witness Books, HODL Warriors, GraffPUNKS, GKniftyHEADS, Whale Lords, XRP Kids, Forty Paths, faction Commentaries, Sarah, Jodie and Alfie) and five focused section reviews
+  (Rune, Pinks, Games, Code Alchemists and Block Topia). Exact scopes are in `issue-1458-audit.json`.
 - **421** top-level wiki pages pass automated targeted canon lint and content
   inventory checks. That number is a static scan, not a human semantic count.
 
@@ -37,9 +36,9 @@ source doctrine with explicit attribution and carry real metadata, native
 contents, citations, comments, category links, search and entity/graph/sitemap
 entries. New routes were explicitly authorised by the complete task.
 
-**Twelve existing articles expanded:** Croydon, Rune Tag, Squeaky Pinks Enforcers, Hard
+**Eighteen existing articles expanded:** Croydon, Rune Tag, Squeaky Pinks Enforcers, Hard
 Fork Games, Block Topia, Queen Sarah, Princess, Code Alchemists, Elder Codex-7,
-Iris-7, Aleema and Dream Sovereign. The initial seven retain their **632** original paragraphs. The cumulative
+Iris-7, Aleema, Dream Sovereign, HODL Warriors, GraffPUNKS, GKniftyHEADS, Whale Lords, Forty Paths and faction Commentaries. The initial seven retain their **632** original paragraphs. The cumulative
 check confirms **664** unique narrative paragraphs of at least 40 characters
 and every original ID across all eight against the original base. Canonical
 revisions increase with each substantive batch. No First Witness or NFT prose is changed.
@@ -73,7 +72,7 @@ Single authority policy: `../CANON_POLICY.md`. Entry/onboarding: root `AGENTS.md
 PR template now requires source, ripple, adult-story, discovery and approval
 checks. `../canon-locks.json` contains anchors, identity boundaries, 34/6 and
 nine-runtime distinction, 94 source identities and targeted claim rules.
-`../reconciliation-decisions.json` holds twelve implemented and five proposed
+`../reconciliation-decisions.json` holds fourteen implemented and five proposed
 old/new decisions with rationale and affected paths.
 
 `canon-integrity-check.mjs` runs in wiki CI and checks explicit chronology,
@@ -362,3 +361,98 @@ Worker API and Visual subsequently completed successfully. All seven other
 workflow/domain results pass. Remote Wiki/Graph remain at the intentional label
 gate; their results are distinct from successful authorised local wiki checks. Issue progress comment6059157565
 and PR description were successfully synchronized; no merge or deployment.
+
+
+## W5 owning-page and adult-faction batch
+
+All W5 paragraphs 1–1,335 (twenty tomes) and w69 paragraphs 1–373 (all seven
+manifesto parts and final follow-up) are fully read. w68 and M16 full readings
+remain recorded. These are full source readings, not full connected-character
+reconciliation: the cumulative fully compared count stays **7/94**, with87
+comparisons open. W5 SAM/Sarah/Jodie origins, chronology, roster and terminal
+visions are explicitly recorded; there is no unseen W5 interval left to recover.
+
+Seven more existing article audits are completed or upgraded: Forty Paths and
+faction Commentaries move from focused to full; HODL Warriors, GraffPUNKS,
+GKniftyHEADS, Whale Lords and XRP Kids receive full article reading. Cumulative
+scope: **33 distinct existing articles, 27 full and six focused**. SAM and House
+new articles are also read in full before their W5 expansion. These scopes
+do not claim every non-NFT article or faction biography is finished.
+
+Eight owning pages gain 2,393 words, including alternate Flesh Fade and retiring
+Architect, Eternal Porch, Royal Galleries, exact PaintWar formations, HODL
+Layer and Porch Accord price, plus central roster comparison. Six of these are
+newly expanded existing pages, bringing the cumulative total to **18 existing
+articles expanded and six new articles**. The two First Witness commentary
+pages retain their existing protected ownership policy; all nine Book texts
+stay untouched. Native contents and discovery metadata are extended.
+
+The master bible explicitly links both published 5 October faction registers:
+17,337 added words across36 routes and13,617 across29 routes/62sections. Existing
+Black Mouth/Kiva, Rell/Omra, Junn/Sarren and all six commentary customs remain.
+**The Hot Wall** is the fourth substantial original adult story in this PR. It
+uses two existing fictional adults, adds no named character, leaves a steward
+with a badly healed forearm and lost work, and makes a successful image into a
+further paid appropriation. Kiva cuts the canvas and refuses the next commission;
+Black Mouth keeps it. Its dedicated bible preserves the physical consequences.
+
+The six-position proposal now names NoBallGames Legion, Wildstyle Collective,
+Fractal Taggers, Porch Poets, Resin Relic Keepers and Bone Idol Ink Ritualists,
+with exact source evidence distinguished from proposed new membership history.
+The short Wildstyle/Fractal/Porch descriptions remain weaker evidence and require
+remaining biography overlap checks. No slot is assigned. W5 alternatives now
+feed the concrete SAM and Final Fork proposals instead of being ignored.
+
+Next: full current Sarah/Jodie/Alfie/NULL and remaining faction articles; complete
+W15/w25/W5/M16/w68/w69/W19 connected comparisons, then the other original sources.
+Do not resume W5 at105 or count it as fully reconciled simply because it is read.
+Current validation for this batch is in progress; historical receipts above
+remain scoped to their recorded commits. No merge or deployment.
+
+
+Full current Sarah and Jodie readings now completed:105 and98 canonical
+paragraphs respectively, with all cached narrative paragraphs compared to the
+exact current HTML (zero omitted current paragraphs). Sarah upgrades from
+focused to full; Jodie is an additional full article. Current audit scope is
+**34 distinct existing articles:29 full, five focused**. Their Necessary Monsters,
+Last Lamp/Orsa, Witness Supper/Tessa and modern refusals remain intact. Resume
+Alfie/NULL and remaining factions; source comparison count still7.
+
+Initial W5 checks pass: full wiki CI exit0; browser48desktop/mobile,24noJS and
+16search/autocomplete queries; graph414/424/2068/75;1237 original substantial
+paragraphs across18 existing expansions and623 article links, zero failures.
+Wider automated preservation at84efc509d checks all421 top-level wiki pages,
+9641 substantial paragraphs and5218 active IDs: zero deletion or loss. This is
+preservation evidence, not an additional semantic audit. Archive hashes remain
+94/93/2334149. Pages artifact built and moved outside the publication source.
+Curated original related-path groups onGraffPUNKS/GKniftyHEADS/HODL/Whales are
+retained after scoped generation, along with original citation panels. Final
+regeneration/validation of that preserved navigation is in progress.
+
+
+### W5 final preservation and validation receipt
+
+Final local wiki CI, graph integrity and browser validation pass after restoring
+all four pre-existing curated faction navigation groups and citation panels.
+Browser: 48 desktop/mobile views, 24 no-JavaScript pages, 16 search/autocomplete
+queries. Graph: 414 indexed wiki pages, 424 nodes, 2,068 edges, 75 mobile nodes.
+All 1,237 substantial original paragraphs and active IDs across the eighteen
+expanded existing pages remain; all 623 canonical article links resolve.
+The complete 421-page preservation comparison against checkpoint 84efc509d
+retains all 9,641 substantial paragraphs and 5,218 active IDs, with no deleted
+page. This is automated preservation evidence, not a claim of full semantic
+review of every page.
+
+Sarah, Jodie and Alfie have now been fully read, including the modern Necessary
+Monsters and Fifth Carbon consequences. Exact cached readings were compared
+with all current canonical paragraphs before recording full audits. Current
+cumulative scope: 35 distinct existing articles, 30 full and five focused;
+18 expanded existing articles, six new articles, four original adult stories.
+The source comparison count remains seven; all seven completely read but
+unreconciled sources remain explicitly pending. Next: full NULL/Block Topia
+comparison and the Kael/Sylas/Veyra serial cast, then propagate the coherent
+relationship and chronology proposals without deleting modern lives.
+
+Final W5 Pages artifact built successfully and moved outside the source tree
+to `/tmp/gk1459/w5-final-public-site`; no deployment. Final logs are listed
+in the verification receipt.

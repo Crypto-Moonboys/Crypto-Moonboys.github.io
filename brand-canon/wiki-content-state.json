@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "generator": "scripts/generate-wiki-content-state.mjs",
-  "source_tree_hash": "sha256:61def118ba89f16df353f20832801ecfe67e27eaa44dbd3b39167612dc0ca577",
+  "source_tree_hash": "sha256:49848086e529bdf865c5c126f4c8843a2fc4b36a7f2bd4a3d81bc9fa5e945d11",
   "hash_algorithm": "sha256",
   "page_count": 421,
   "manifest_entry_count": 421,
@@ -43,7 +43,7 @@
       "label": "Published First Witness convergence canon",
       "path": "wiki/{the-first-witness,first-witness-*}.html",
       "file_count": 82,
-      "content_hash": "sha256:ab390ab241fb12f45ce7f1e236e173080cdfa28c1ab014aa8eb7ac4e932545f6"
+      "content_hash": "sha256:47fe572001a09730a57dc8c5233dfc928446ff369a9637e405e77175ee056f13"
     },
     {
       "rank": 2,
@@ -297,7 +297,7 @@
       "title": "Agent SAM",
       "page_exists": true,
       "page_type": "historical_archive",
-      "current_word_count": 1944,
+      "current_word_count": 2277,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -306,10 +306,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:82cd7f6323de4b0b8c36f9f179ea645cd1896019d56674aa6d138976ac097a60",
-      "article_content_hash": "sha256:4efa42deae266225eac0db76db58e3822ebea21965c7a67a6cc1729bc03a17a9",
-      "article_markup_hash": "sha256:8b7ce51cfc5c04c41dbfac34fea451bf2be278773a1778713ad5b8f0c6df30ac",
-      "git_blob_oid": "ceafe76751957444914bb3cea9e07ae65cde516c",
+      "content_hash": "sha256:44bb7bef3d5af49319fbc2ac53ee6d4702de7060d0138fd7e56b00ba8d8f79a5",
+      "article_content_hash": "sha256:d6021bf0cbdcb60c79111dfd69b0f746bc4c3879dedf17f5666f4131ec9e30e0",
+      "article_markup_hash": "sha256:821a75396296b373dd62c478d6ea4b47ee0fb1878465728c1733d020ca69a55d",
+      "git_blob_oid": "91f6b3a11b0877daa9fac37cd87099cb650ec8b3",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -327,10 +327,10 @@
         "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (unresolved archive bucket; historical W81 sources)"
       ],
       "audit_notes": [
-        "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified."
+        "Canon revision 2 reconciled against First Witness and W81; disputed traditions remain explicitly identified."
       ],
       "content_owner": "canon",
-      "canon_revision": 1,
+      "canon_revision": 2,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -3529,7 +3529,7 @@
       "title": "Faction Commentaries on the First Witness",
       "page_exists": true,
       "page_type": "first_witness_canon",
-      "current_word_count": 7082,
+      "current_word_count": 7293,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 0,
@@ -3538,10 +3538,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:2b1417d2879235bfbc1323169c465b7dd99459637cb6004ff2882b8b4f5e908b",
-      "article_content_hash": "sha256:6d54d433d4791e5dbba43f11410ea5e4489691dd9695d23afb121acd438d9882",
-      "article_markup_hash": "sha256:0ff2f22eb4be534430d032d915a9a8b5956309fcb5941fff33c06f5e0b727d95",
-      "git_blob_oid": "2c3e59124b82e00ae455c85bcaf90abe3e1b1726",
+      "content_hash": "sha256:87e92dd6e2501f4f6fdae27132187978a3b53ee51c519458fd7c04d9e75f1dfe",
+      "article_content_hash": "sha256:16d9023e22a4c34fa69cd2cf354868f0466eb1319ac8e52ae2edda2efe6242b8",
+      "article_markup_hash": "sha256:63abc22b59b642967ca2e476a5280bc056112d932bad956b212419c3d404b83e",
+      "git_blob_oid": "9268cd2c5a5512e067b81a98021a82d93bc7e78e",
       "wiki_stub_marker_scope": null,
       "first_witness_page": true,
       "nft_template_generated_page": false,
@@ -3677,7 +3677,7 @@
       "title": "The Forty Paths",
       "page_exists": true,
       "page_type": "first_witness_canon",
-      "current_word_count": 1185,
+      "current_word_count": 1403,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 0,
@@ -3686,10 +3686,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:acdafbfca350b3b1bca555cba10d75b0f286335f7e5bca3f3794b070e08f21cc",
-      "article_content_hash": "sha256:86861f15a4da61f66ddd70fe5f8429b3a5949f2d14d5808199122182fa72e831",
-      "article_markup_hash": "sha256:9b02d2e7856e48a780b5d700ce23753126649d9affe996a5930637f2adc3a4f9",
-      "git_blob_oid": "640c63ce489ebf527042bd7dd32e374accccb37e",
+      "content_hash": "sha256:00b2311880802748737003d8ae4d3b27b1cba38c2b93db01547444d22a48003f",
+      "article_content_hash": "sha256:030034dd0e61938d89130f765fd2257023830bc896ecf00f3ffb0218f48118bc",
+      "article_markup_hash": "sha256:ff7a3ac2439b581c62bc8799bdd222e62f4e3393620b82ecb5a7f852bc02e838",
+      "git_blob_oid": "be091637d3845d55af2917e547d352578ddb9272",
       "wiki_stub_marker_scope": null,
       "first_witness_page": true,
       "nft_template_generated_page": false,
@@ -5785,7 +5785,7 @@
       "title": "GKniftyHEADS Creator identities, collection records and the Immortal Architects",
       "page_exists": true,
       "page_type": "lore",
-      "current_word_count": 3659,
+      "current_word_count": 3887,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -5794,10 +5794,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:cbf6cf891c31b6c5ab55b2741c6849a092ae94ac94a4ca57fa40857eb2378790",
-      "article_content_hash": "sha256:c0888e52e329ad6dd2eb10f63e621291116a4880999221da40c00463978f7b9e",
-      "article_markup_hash": "sha256:01cf58dd4882f06ee2a9ec80094141274af687ed059eded3c6f9c6c6ccbf8395",
-      "git_blob_oid": "24de02aa44ad3c19c99f44bdcf9cd2263ffdd789",
+      "content_hash": "sha256:20b648da247ecafecd30f68dc0fe418e833571ebef481acd032c2400ea39441b",
+      "article_content_hash": "sha256:0466d12619a0db10f45338c9d6d5ad3be9448ff76d3110619a024c003e1769da",
+      "article_markup_hash": "sha256:a5c9645d268c0a27d1866c6f75b1b7b924c06c067db52fff64d9cd4b52f0af65",
+      "git_blob_oid": "0c4c48a11c00a24e8092364333e43b4e33f910e9",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -5816,11 +5816,11 @@
         "wiki/bibles/the-gkniftyheads.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 4 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 5 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/the-gkniftyheads.json; it is not automatically the unavailable Tier 4 modern bible."
       ],
       "content_owner": "canon",
-      "canon_revision": 4,
+      "canon_revision": 5,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -11433,7 +11433,7 @@
       "title": "GraffPUNKS The mark, the message and the memory carried between them",
       "page_exists": true,
       "page_type": "lore",
-      "current_word_count": 3339,
+      "current_word_count": 4083,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -11442,10 +11442,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:a9bd7fefc84373dde6c28bfde9d627e248e9506822e8af3a62efbdd30296f96c",
-      "article_content_hash": "sha256:0dbe5b112e66d1a015b0a0dc8609f957e1f3f38281034b51c35a7200a9a87c00",
-      "article_markup_hash": "sha256:8402f366f3c074982489d0b54e508af98e001d8c68ae826ed50e7b0f094c79a3",
-      "git_blob_oid": "425d586b79791d3e476b3d07c1512524985e800e",
+      "content_hash": "sha256:670c097ba38aa69e245ec54b77a24f9adaecc25d5f847fd496bd58abd9894266",
+      "article_content_hash": "sha256:01d075693ecfde8a6c09df6f049a5db40e6ac21f4ba0997b707abcb4e35b902d",
+      "article_markup_hash": "sha256:da946821b66eae585c1b9fcb434c7b5d2fe4500e793971d7bd3f518f175840fa",
+      "git_blob_oid": "b2289a342fe84b37f8c8f34603f34afd9b3f486f",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -11464,11 +11464,11 @@
         "wiki/bibles/graffpunks.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 3 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 4 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/graffpunks.json; it is not automatically the unavailable Tier 4 modern bible."
       ],
       "content_owner": "canon",
-      "canon_revision": 3,
+      "canon_revision": 4,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -11906,7 +11906,7 @@
       "title": "HODL Warriors Collective defence and the cost of giving command back",
       "page_exists": true,
       "page_type": "lore",
-      "current_word_count": 5423,
+      "current_word_count": 5645,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -11915,10 +11915,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:6ac5d44ace609e22f82c9d1fd2e32d41e99cd5819cba56c8f5952531bb2d5079",
-      "article_content_hash": "sha256:5bf1934a8821dd2f4487e4048bc5a9e132cdb573a6468fda741bccefdfc93232",
-      "article_markup_hash": "sha256:1314466856b3ed6db5c85cf1fdcb8102bc222b833f0f997e4a0a99a1abff601d",
-      "git_blob_oid": "5dc2350f8e8c985e22ff9158a8bc5d57d7d836d4",
+      "content_hash": "sha256:0711379488cc7c3d5a9ea82872df359ba3dc5922ea0a7d5b52c89a3f00f97d67",
+      "article_content_hash": "sha256:f82863b7df200a44c9154cd8b0684bb43423183b24ca0d6be07ca34fb20b8b12",
+      "article_markup_hash": "sha256:1826bbd2128f83f699e6376a50a3541669e9548a513125c44c2b607ce961fda6",
+      "git_blob_oid": "e7eda5ced60e86d21acae5d2a92621c82bf7f905",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -11939,11 +11939,11 @@
         "wiki/bibles/hodl-warriors-army.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 5 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 6 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/hodl-warriors-army.json; it is not automatically the unavailable Tier 4 modern bible."
       ],
       "content_owner": "canon",
-      "canon_revision": 5,
+      "canon_revision": 6,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -12081,7 +12081,7 @@
       "title": "House of Rackinsats",
       "page_exists": true,
       "page_type": "historical_archive",
-      "current_word_count": 1417,
+      "current_word_count": 1706,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -12090,10 +12090,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:89dadb4453fe0484aeda54ade527ad8c31c8581747a0341192c76b905d37f6b5",
-      "article_content_hash": "sha256:be48667b0265be97084d200fd878cf7feea28687062f7dba419c9416f9260735",
-      "article_markup_hash": "sha256:eefa3392150a052c0dcc7d040aa58422400257cdd3d65faca8b24a3af104c1bb",
-      "git_blob_oid": "c6e7da7fe0b74b5d20075c4a78f3d703be8fe207",
+      "content_hash": "sha256:1bc65fe04ce835e1eb7c19f81201aca2273e56dc7fd70294685b245ace9e58fe",
+      "article_content_hash": "sha256:3a663eb7a5a87a41cb992bcc7a9c3aaf81674df2c76ed28da90729cc7c44bd58",
+      "article_markup_hash": "sha256:f6635a4ee2f07c3613cf6d1a98e6a709546a70f2844bad219e7c53c04456a202",
+      "git_blob_oid": "a17e30289b82e9bbe173a1ffe15e68fd52baed0d",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -12111,10 +12111,10 @@
         "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (unresolved archive bucket; historical W81 sources)"
       ],
       "audit_notes": [
-        "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified."
+        "Canon revision 2 reconciled against First Witness and W81; disputed traditions remain explicitly identified."
       ],
       "content_owner": "canon",
-      "canon_revision": 1,
+      "canon_revision": 2,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -17102,7 +17102,7 @@
       "title": "The Whale Lords",
       "page_exists": true,
       "page_type": "lore",
-      "current_word_count": 3315,
+      "current_word_count": 3521,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -17111,10 +17111,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:d2205e7086e01964242e1b02bcd7b625947642675df68f5fb066a52e2d281ca0",
-      "article_content_hash": "sha256:219302f2d9ae3e5e4300d1ccc09e8ca4cfc42d2231b3eccfc8f52e7e6416b358",
-      "article_markup_hash": "sha256:189283d69c09aa0909f3b6241cfa71a6b5c38e3267211bc5efbfcd48985cc3a5",
-      "git_blob_oid": "64dd0b3c0281b1742224c7a3118f3f7f53406172",
+      "content_hash": "sha256:8469bf021aed1d66b9ae817472e2c06b5001e4fe9dc51a9cdc65af01c3239875",
+      "article_content_hash": "sha256:6148223fb6a50851ea56e0c4a50fa69a2c6c09d2e8078e311d52a13a273adfc0",
+      "article_markup_hash": "sha256:329c8d796cce7a9b08e985a59915e128ac2f9d35ce1f825cf548deb675543172",
+      "git_blob_oid": "49a0a33b87800d03c375b8f5f65b592bee10bf77",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -17134,10 +17134,10 @@
         "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (W5, W15, w25, w63, w70, w72, w73; historical W81 sources)"
       ],
       "audit_notes": [
-        "Canon revision 3 reconciled against First Witness and W81; disputed traditions remain explicitly identified."
+        "Canon revision 4 reconciled against First Witness and W81; disputed traditions remain explicitly identified."
       ],
       "content_owner": "canon",
-      "canon_revision": 3,
+      "canon_revision": 4,
       "canon_source_tier": "first-witness+w81"
     },
     {

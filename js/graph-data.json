@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-08T11:31:08.758Z",
-  "verified_at": "2026-10-08T11:31:08.758Z",
+  "generated_at": "2026-10-08T12:25:57.568Z",
+  "verified_at": "2026-10-08T12:25:57.568Z",
   "nodes": [
     {
       "id": "/about.html",
@@ -119,8 +119,8 @@
       "title": "Agent SAM",
       "url": "/wiki/agent-sam.html",
       "category": "factions",
-      "rank_score": 260,
-      "authority_score": 27
+      "rank_score": 263,
+      "authority_score": 30
     },
     {
       "id": "/wiki/alcor-exchange.html",
@@ -4089,8 +4089,8 @@
     {
       "source": "/wiki/block-node-defenders.html",
       "target": "/wiki/graffpunks.html",
-      "score": 87,
-      "weight": 0.87
+      "score": 88,
+      "weight": 0.88
     },
     {
       "source": "/wiki/block-node-defenders.html",
@@ -7335,8 +7335,8 @@
     {
       "source": "/wiki/games4punks-telegram.html",
       "target": "/wiki/graffpunks.html",
-      "score": 45,
-      "weight": 0.45
+      "score": 46,
+      "weight": 0.46
     },
     {
       "source": "/wiki/games4punks-telegram.html",
@@ -7395,8 +7395,8 @@
     {
       "source": "/wiki/gang-signs.html",
       "target": "/wiki/graffpunks.html",
-      "score": 45,
-      "weight": 0.45
+      "score": 46,
+      "weight": 0.46
     },
     {
       "source": "/wiki/gang-signs.html",
@@ -7413,8 +7413,8 @@
     {
       "source": "/wiki/genesis-kernel.html",
       "target": "/wiki/graffpunks.html",
-      "score": 94,
-      "weight": 0.94
+      "score": 95,
+      "weight": 0.95
     },
     {
       "source": "/wiki/genesis-kernel.html",
@@ -11853,8 +11853,8 @@
     {
       "source": "/wiki/gkniftyheads.html",
       "target": "/wiki/graffpunks.html",
-      "score": 81,
-      "weight": 0.81
+      "score": 82,
+      "weight": 0.82
     },
     {
       "source": "/wiki/gkniftyheads.html",
@@ -11877,8 +11877,8 @@
     {
       "source": "/wiki/graffiti-kings.html",
       "target": "/wiki/graffpunks.html",
-      "score": 94,
-      "weight": 0.94
+      "score": 95,
+      "weight": 0.95
     },
     {
       "source": "/wiki/graffiti-kings.html",
@@ -11925,8 +11925,8 @@
     {
       "source": "/wiki/graffiti-nexus.html",
       "target": "/wiki/graffpunks.html",
-      "score": 90,
-      "weight": 0.9
+      "score": 91,
+      "weight": 0.91
     },
     {
       "source": "/wiki/graffiti-nexus.html",
@@ -11967,7 +11967,7 @@
     {
       "source": "/wiki/graffpunks-24-7-radio.html",
       "target": "/wiki/graffpunks.html",
-      "score": 125,
+      "score": 126,
       "weight": 1
     },
     {
@@ -12003,8 +12003,8 @@
     {
       "source": "/wiki/graffpunks-collection.html",
       "target": "/wiki/graffpunks.html",
-      "score": 86,
-      "weight": 0.86
+      "score": 87,
+      "weight": 0.87
     },
     {
       "source": "/wiki/graffpunks-collection.html",
@@ -12027,7 +12027,7 @@
     {
       "source": "/wiki/graffpunks-ecosystem.html",
       "target": "/wiki/graffpunks.html",
-      "score": 149,
+      "score": 150,
       "weight": 1
     },
     {
@@ -12201,8 +12201,8 @@
     {
       "source": "/wiki/hard-fork-games.html",
       "target": "/wiki/graffpunks.html",
-      "score": 87,
-      "weight": 0.87
+      "score": 88,
+      "weight": 0.88
     },
     {
       "source": "/wiki/harrison-rift.html",
@@ -12260,9 +12260,9 @@
     },
     {
       "source": "/wiki/head-tags.html",
-      "target": "/wiki/crypto-moonboys.html",
-      "score": 42,
-      "weight": 0.42
+      "target": "/wiki/graffpunks.html",
+      "score": 43,
+      "weight": 0.43
     },
     {
       "source": "/wiki/hex-tagger-prime.html",
@@ -12327,8 +12327,8 @@
     {
       "source": "/wiki/hodl-wars.html",
       "target": "/wiki/graffpunks.html",
-      "score": 97,
-      "weight": 0.97
+      "score": 98,
+      "weight": 0.98
     },
     {
       "source": "/wiki/hodl-wars.html",
@@ -12848,15 +12848,15 @@
     },
     {
       "source": "/wiki/midevilpunks.html",
-      "target": "/wiki/rave-relics.html",
+      "target": "/wiki/graffpunks.html",
       "score": 76,
       "weight": 0.76
     },
     {
       "source": "/wiki/midevilpunks.html",
-      "target": "/wiki/graffpunks.html",
-      "score": 75,
-      "weight": 0.75
+      "target": "/wiki/rave-relics.html",
+      "score": 76,
+      "weight": 0.76
     },
     {
       "source": "/wiki/midevilpunks.html",
@@ -13173,8 +13173,8 @@
     {
       "source": "/wiki/noballgamess-nft-collection.html",
       "target": "/wiki/graffpunks.html",
-      "score": 75,
-      "weight": 0.75
+      "score": 76,
+      "weight": 0.76
     },
     {
       "source": "/wiki/noballgamess-nft-collection.html",
@@ -13725,8 +13725,8 @@
     {
       "source": "/wiki/sacred-chain.html",
       "target": "/wiki/graffpunks.html",
-      "score": 94,
-      "weight": 0.94
+      "score": 95,
+      "weight": 0.95
     },
     {
       "source": "/wiki/sacred-chain.html",
@@ -13832,13 +13832,13 @@
     },
     {
       "source": "/wiki/seeding-rights.html",
-      "target": "/wiki/block-node-defenders.html",
-      "score": 87,
-      "weight": 0.87
+      "target": "/wiki/graffpunks.html",
+      "score": 88,
+      "weight": 0.88
     },
     {
       "source": "/wiki/seeding-rights.html",
-      "target": "/wiki/graffpunks.html",
+      "target": "/wiki/block-node-defenders.html",
       "score": 87,
       "weight": 0.87
     },
@@ -14403,8 +14403,8 @@
     {
       "source": "/wiki/the-bitcoin-kid-army.html",
       "target": "/wiki/graffpunks.html",
-      "score": 94,
-      "weight": 0.94
+      "score": 95,
+      "weight": 0.95
     },
     {
       "source": "/wiki/the-bitcoin-kid-army.html",
@@ -15380,7 +15380,7 @@
     },
     {
       "source": "/wiki/triple-fork-event.html",
-      "target": "/wiki/hodl-wars.html",
+      "target": "/wiki/graffpunks.html",
       "score": 91,
       "weight": 0.91
     },

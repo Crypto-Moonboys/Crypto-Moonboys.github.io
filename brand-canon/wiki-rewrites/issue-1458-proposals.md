@@ -76,6 +76,33 @@ w33 supplies a different divine genealogy. Keep that sect theology distinct;
 no Forge/Etherstan merge or literal mother/daughter correction is approved.
 This source-specific clarification does not identify the unnamed Princess.
 
+### The newly read W5 alternatives
+
+All 1,335 W5 paragraphs and 20 tomes are now read. Tome 1 repeats 2036; Tome 5 and
+Tomes 10/15/20 place a nineteen-year-old SAM on a voluntary steel slab in 2880.
+Tome 15 brings Papa Des to that ceremony despite W13's post-Street War death.
+Sarah's2066 human experiment also follows the supposed earlier digital origin.
+Tome 5's2900–3000 PaintWars contradict its 2200–2300 war passages. Accepting the
+2880 SAM origin would therefore require relocating the entire twentieth-century
+household, defining their lifespans and replacing the Neural Rack chase with a
+different death scene. Moving one number cannot reconcile that version.
+
+**Recommendation remains 2036 for the specific W12 guardian origin.** Keep the
+Flesh Fade as a disputed anniversary telling and W5's2880 household ceremony as
+its imagined re-founding, without inventing a second verified upload or the
+physical survival of all original relatives. This is an editorial interpretation
+proposed to GK, not a recovered narrator explanation. It preserves the concrete
+W12 chronology repair while retaining W5's pain, family presence and cultural
+inheritance. The existing source-attributed sections now contain both accounts.
+
+W5 Tome 19 reveals its retiring Architect as HyroSAM. Keep that singular
+revelation within the telling; **do not identify every GKniftyHEADS Architect with
+Samuel Blake**. W5's Forge Master echo of Darren Cullen does not establish that
+W12's Jermaine Forge Harrington is the real artist or the same fictional person.
+W5's Sarah/SAM partnership and Jodie-as-Moongirl Echo Mother must still be compared
+with their complete modern biographies before a shared relationship is chosen.
+Neither these names nor the final party certifies rescue of W12's missing three.
+
 **Ripple map if GK approves the calendar:** update the dated narrator sequence
 in Agent SAM and House of Rackinsats; add the accepted event sequence to the
 master chronology and concordance; update the SAM decision, master bible and
@@ -112,7 +139,7 @@ fate and named victors remain open until the remaining scenes support them.
 **Evidence:** W15 repeatedly returns its triad to the opening after claiming
 liberation; its three Originals simultaneously remember and wake without
 memory. w25 declares final victory repeatedly through 3018–3058, then ends at
-Parts50/55/60/65/70/75 and repeats66–75. Its last NULL shard remains after
+Parts 50/55/60/65/70/75 and repeats 66–75. Its last NULL shard remains after
 earlier total dissolutions. These conflicts do not supply independent physical
 epochs. M16's 3030 ending is an editorial prospective timeline, not a narrated
 completed scene. Book I requires competing accounts and visible correction;
@@ -126,6 +153,16 @@ account of how bodily outside life, missing persons, unrestored fragments and
 the two incompatible terminal worlds survive it. It cannot be inferred from
 ordinary prose approval or resolved by deleting the modern scenes.
 
+**Third ending now compared:** W5 Tomes 16–20 complete a Soul Fork/Convergence,
+Cross-Synergy, universal Wing Fork and Architect retirement. HODL/Optimisation
+layers fuse, everyone becomes family and token/resin/ink powers become permanent.
+Tome 19 identifies its Architect as SAM; its universal welcome removes dissent
+that the present world has not resolved. Retain this rich festival/flight future
+as a source vision. The recommendation does not turn its promotional miracles
+into physical world law, compel every survivor's consent or override either
+serial's contradictory ending. Full Sarah/Jodie/Alfie/NULL comparisons remain
+necessary before any fate is called settled.
+
 **Downstream approval map:** master bible and continuity companion; chronology
 and concordance; Block Topia, Sarah, NULL, Alfie and Jodie; Elder, Iris, Aleema,
 Dream Sovereign and the later dedicated W15 cast recovery; HODL/War histories
@@ -137,28 +174,61 @@ required before this recommendation is called implemented.
 
 ## The six remaining Forty positions — source-supported membership
 
-`GK-1458-FORTY`: all 34 current names are copied into the lock register once.
-The current evidence does not justify six finished independent cultures.
+`GK-1458-FORTY`: all 34 current named readings stay in the published register.
+Full W5/w68/w69/M16 readings now support a **concrete six-name working proposal**,
+subject to the remaining source/biography comparison and specific GK approval.
+This is a proposed continuation of culture, not a recovered uncontested roll.
 
-| Candidate | Evidence and relationship to investigate | Current decision |
+| Proposed additional culture | Exact source evidence | Proposed connecting fiction, not recovered history |
 | --- | --- | --- |
-| NoBallGames Legion | W1 treats the Legion as a distinct participant focused on arenas. Compare W5/W68 and XRP Kids' No Ball Games cultural inheritance. | Potential independent culture; membership and continuity still unverified. |
-| Stencil Witches | W5 paragraph85 explicitly calls them female GraffPUNKS; later tomes are still unread. | Evidence currently supports an internal formation; independent membership needs additional source evidence before any slot proposal. |
-| Burn Crews | W1 calls them Operation Echo crews; W5 paragraph84 describes40-man fireteams. | Evidence currently supports a formation within a culture; do not count twice. |
-| Tag Lords | W5 paragraph86 gives apexPaintWar inheritors; later tomes are unread. | Evidence currently supports rank/archetype; independent belonging remains unverified. |
-| $DUST Protocol | Existing digest flags a protocol candidate. | A protocol is insufficient; independent community evidence required. |
-| Remaining position(s) | Compare all alternative rosters and aliases, including Bitcoin Kid Army/Kids and Architect/GKniftyHEADS pairs. | Do not fabricate a name to complete arithmetic. |
+| NoBallGames Legion | W5 Tome 6 paragraphs 403–406 names one of 40, marching/defence alliances, SAM training, clubhouses and arena tattoos; Tome 8 paragraph 497 owns tournaments/arenas;520–524 calls four game groups direct extensions. W1 also names the Legion. | Enduring clubhouse membership across players, grounds workers, retired members and households; local match hosts bargain over common pitches. A person belongs by joining a club's continuing responsibilities, not by buying a real NFT. Arena labour and refusals survive the final whistle. |
+| Wildstyle Collective | W5 Tome 8 paragraph 508 gives named artists who refuse governance and paint what the Grid needs in the moment. This supplies a source-named collective, not a proved constitution independent of GraffPUNKS. | A deliberately ephemeral painting culture, with voluntary shared materials and chosen return gatherings, whose members can remove their own work rather than promise eternal custody. Its conflict is that short-lived beauty can leave bystanders with damage after the artists depart. Distinction fromGraffPUNKS' public-memory practice needs the remaining faction audit. |
+| Fractal Taggers | W5 Tome 8 paragraph 509 explicitly names Moongirl defectors blending fractal and street styles. | A continuing chosen community open to descendants and later adherents, rather than a list of all defectors. Members preserve trained craft while rejecting royal certification as the measure of belonging. Shared workrooms and disputed access to city tools make independence costly; defecting alone never enrolls a person automatically. |
+| Porch Poets | W5 Tome 8 paragraph 510 names Papa Des's spoken-word heirs; the rest ofW 5 repeatedly gives the Porch a gathering and poetic tradition. Its automatic-contract claim remains disputed. | Mobile spoken-word households and teaching circles, where an heir is a chosen learner rather than a presumed biological descendant. Their resource is a living repertoire and the people who host it. Revising an inherited verse can protect a witness and split a circle. A spoken performance does not become a Chain Scribe record or new 2030 scripture. |
+| Resin Relic Keepers | W5 Tome 8 paragraph 529 and Tome 11 paragraph 763 explicitly name a dedicated tribe protecting, maintaining and extending the physical/digital bridge;757–762 show circulation among other cultures. | A keeper/learner lineage that belongs beyond one repair commission, with shared storage and exchanges of contested objects. Its central dispute is whether an image's digital custody licenses alteration or sale of the physical object. No real Peter Clark endorsement, animated real resin, token benefit or generalSalvager merger is inferred. |
+| Bone Idol Ink Ritualists | W5 Tome 8 paragraph 530 names the marking faction; Tome 12 develops designs, repeated rites and their relationship to resin. | A self-governing marking tradition with adult practitioners, consenting recipients, apprentices and people who leave marks unrenewed. Kinship belongs to choices and responsibility, not a compulsory tattoo. Refusal, removal and an artist's pressure for an impressive public display produce internal conflict. No actual medical claim, power-up or real company authority is asserted. |
 
-For each viable culture the next tranche must establish origins, belonging,
-doctrine, territory or mobile practice, resources, rivals, internal disagreement
-and one consequential relationship. Propose carefully labelled new connecting
-fiction only after independent identity is established. GK approves the final
-named roll, with Forty Paths, Commentaries, Games, bibles, entity data and any
-dependent references updated together. Live Battle Chamber keys remain separate.
+These six would bring 34 to 40 **only after GK approval and full ripple completion**.
+Their institutions and membership rules above are explicit authored proposals.
+W5 provides uneven foundations: NoBallGames/Resin/Bone have substantial dedicated
+traditions; Wildstyle/Fractal/Porch have short roster descriptions. The proposal
+must not claim the latter's independence is already demonstrated by a sentence.
+Continue the remaining original sources and current biographies; revise a weak
+candidate if that comparison shows duplication. No proposed name is published
+as the accepted 35th–40th path in this batch.
+
+**Do not count the following as convenient replacements:** Burn Crews are
+40-person fireteams; Stencil Witches are explicitly femaleGraffPUNKS; Tag Lords are
+prestigious inheritors, all repeated inside and outside the parent description.
+NoBallGames' four arena entries are explicitly Legion extensions. Nomad Bears
+Expanded repeats the existing culture. Deep Holders/Whale Lords, Architects/
+GKniftyHEADS and Pixel Saint aliases require their existing identity boundaries.
+House/Porch Keepers/Eternal Family describe household, maintenance and universal
+belonging; the last says it is not a tribe. $DUST remains a protocol candidate
+without established independent community; w69's prospective mission cannot
+supply the missing history. Hip-Hop Gods Collective and Hybrid Wingborn remain
+alternatives needing more than genre custody or mercenary work to establish
+independent belonging.
+
+**Consequential relationship map:** Legion withXRP play, HODL mobilisation and
+Moongirl venue labour; Wildstyle with GraffPUNK hosts andPixel Saint preservation;
+Fractal Taggers with Moongirls, Thera andGraffPUNK receiving circles; Porch Poets with
+House/Scribes/Slam performance; Resin Keepers with Salvagers/Architects/Whales;
+Ink Ritualists withResin/Porch and consent/custody teachings. Existing modern
+figures, injured workers, lovers and refusals remain evidence in every comparison.
+None receives a universal conversion into the proposed new culture.
+
+**Approval ripple:** update both Forty pages, lock register, master bible and
+continuity companion; create or expand the genuinely owning culture references,
+propagate each membership boundary to the linked factions and relevant Games
+history; update citations, entity/link graphs, search, categories and sitemap.
+The nine current witnessed Books stay unchanged. Today's nine Battle Chamber
+keys and real creator licences stay under product authority. GK approval needs
+the final six names and their specific histories, not just permission to reach 40.
 
 ## Eternal Pulse and Kael's serial worlds
 
-Pending complete W15/w25 reading. Do not resolve the Final Fork by importing one
+Full W15/w25 reading is complete; connected-page comparison remains pending. Do not resolve the Final Fork by importing one
 of their incompatible completed endings. Preserve Kael, Sylas, Veyra Nyx,
 Council, Layer Eight, Crimson Protocol, Great Blackout and Codex-7 as source
 research targets; they are not interchangeable with the modern supporting cast.
@@ -168,11 +238,10 @@ a complete future outcome as already canonical.
 
 ### Source roster checkpoint
 
-w68 is fully read: its September2025 directory calls these **some of40** and
-**28active**, enumeratesArmy throughGaslessGhosts and places HODL collective
-defence outside the numbered list. It does not supply the missing six. W5
-paragraphs1–105 are fully read, including Tome1 and the beginning ofTome2;
-resume106 of1335. They identify Stencil Witches as femaleGraffPUNKS and Burn
-Crews as40-man fireteams. These actual membership claims narrow the candidates;
-a repeated word in a faction list is insufficient to overrule them. Complete
-W5/w69 and current faction biographies before settling the six-slot proposal.
+W5 paragraphs 1–1335 and all 20 tomes, w68's entire directory, and w69 paragraphs 1–373
+are fully read. All remain outside the seven fully compared sources while
+connected biographies and remaining product/evidence comparisons are unfinished.
+The roster arithmetic and recovered institutions are now owned by actual wiki
+pages; the six-slot proposal separates source evidence from new connecting
+fiction. Resume current Sarah/Jodie/Alfie/NULL and remaining original faction
+profiles. No approved slot, source identity or original paragraph is changed.
