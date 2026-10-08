@@ -56,7 +56,7 @@ The raw **eight-part** narrative runs from a 2036 South Croydon rail-yard scene 
 
 ### Crypto Moongirls — `w56.txt`
 
-The source portrays a female-led Block Topia power structure, Queen Sarah P-fly, Theta-Protocol surveillance, returned failed-colony survivors and lunar **Self-Fork** mythology. It also narrates the deception around female Games entrants, surveillance and memory extraction. Current [Queen Sarah](../../wiki/queen-sarah-p-fly.html), [Jodie](../../wiki/jodie-zoom-2000.html) and [Hard Fork Games](../../wiki/hard-fork-games.html) accounts already treat parts of this material. There is **no dedicated `the-crypto-moongirls.html`** in the audited main-branch snapshot. Such a new article should distinguish how the leadership itself tells its origin from what witnesses can prove; not every Moongirl is party to every abuse, and Sarah's purported half-code nature is a claim within disputed origin accounts.
+The source portrays a female-led Block Topia power structure, Queen Sarah P-fly, Theta-Protocol surveillance, returned failed-colony survivors and lunar **Self-Fork** mythology. It also narrates the deception around female Games entrants, surveillance and memory extraction. The [existing Crypto Moongirls Battle Chamber page](../../battle-chamber/factions/crypto-moongirls.html) is linked from the [live faction directory](../../battle-chamber/factions/index.html), and is registered in `js/faction-profile-data.js`, `js/faction-alignment.js` and the Worker faction keys. [Queen Sarah](../../wiki/queen-sarah-p-fly.html), [Jodie](../../wiki/jodie-zoom-2000.html) and [Hard Fork Games](../../wiki/hard-fork-games.html) cover further lore. The missing item is only a distinct `wiki/the-crypto-moongirls.html` **encyclopedia page**, not a website faction page or a live selectable faction. First reconcile the chamber and `w56`; any extra wiki page requires explicit approval, and the nine live selectable factions must not be conflated with the 34 named First Witness readings. Sarah's half-code origin is disputed, not an established fact.
 
 ### Kael Voss and competing cycles — `W15.txt`
 
@@ -111,7 +111,7 @@ The research-first sequence is:
 
 1. Keep the 2030/2880/2930/3008/Final Fork anchors and 34/6 roster fixed unless GK explicitly revises them.
 2. Decide whether an Agent SAM biography is a distinct canonical individual and fix the 2036/2030 inconsistency visibly before publishing.
-3. Decide how the Crypto Moongirls grouping relates to the Queens regime and the 34-path register before creating an ordinary numbered-faction page.
+3. Reconcile the **existing** Crypto Moongirls Battle Chamber faction page, live selector and `w56` with the Queens regime and the 34/6 First Witness register **before** proposing an additional wiki encyclopedia page or changing the numbered roster.
 4. Preserve Whisper Codex, the Six Pillars, Kael Voss, and Great Consensus as **attributed** material where appropriate rather than silently importing universal rules.
 5. Record rejected/parallel endings in a source-variant ledger, not a rewrite of locked First Witness.
 6. Once GK approves specific targets, use the separate canon sandbox workflow, required new-page approval, owning-block edits, navigation/search/graph regeneration and full publishing gates. No wiki HTML, NFT entries, runtime, Worker or First Witness scripture was edited as part of this **source-document** pass.
