@@ -386,3 +386,37 @@ remain. Daro's rejected commission still leaves room expenses. The
 lives, the refused alliance and competing limited cooperation traditions.
 These story details retain their existing 5 October evidence-register
 authorship; they are recorded here for continuity, not invented again.
+
+
+### Additional serial cast and preserved adult aftermath
+
+W15's Charlie “No Ball Games” Buster is an explicit fictional prince portrayal:
+Sarah's code/flesh son in that account, a ban on play enforced by executions,
+the $ETH Disruptor and later mother-son civil war. The source's mercy revelation
+and reset remain disputed. The real UK creator's biography and existing mentor
+motif remain distinct; no accepted royal kinship is added to current history.
+The Charlie and Sarah owning pages now preserve the specific source role.
+
+w25 gives Thera cruiser/blade leadership, neural-link attacks, future Moongirl
+reunions, counter-songs and shard lullabies. W15 does not name her. Her coat,
+former lover, Open Crate complicity, cruel Ungenerous Night remark and refused
+reconciliation remain the modern Thera account. No lost relative is restored.
+The Nice & Easy serial alternates vaporisation, a few survivors, further
+sacrifice and returning support/mediation. It establishes no single universal
+extinction or resurrection; Lesser Door, Dry Step and Tavren's compromised
+Three Clean Cups remain. Their owning articles retain both source voices.
+
+w47 and w48 are fully compared. Rugpull false protection takes resources and
+leaves false data; Furies propose irreversible destruction in reply. Existing
+Rafe/Nella/Bex obligations, Jex's death, Dala's refusal, Ione's exposure, Nessa's
+limited correction and Korr's damaged hand remain distinct consequences.
+AllCity Bulls' Vexa keeps her genuine win, injured leg, debt and adult bond
+with Neri; the Fast/Loser Crown imagery cannot repay Rovik's lost work.
+These preserved modern lives retain their existing evidence-ledger authorship.
+
+
+w54/w59 complete comparison also restores the Bois' mandatory peace dividend
+and the Bulls' explicit appetite for unequal distribution and speculation
+on manipulation or another faction's failure. Source universality stays
+attributed. The existing Lesser Door and Long Lap practices remain particular
+responses, with no promise that their better intentions settle every debt.

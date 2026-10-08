@@ -513,6 +513,40 @@
         "wiki/the-nomad-bears.html",
         "wiki/the-crypto-stoned-boys.html"
       ]
+    },
+    {
+      "id": "GK-1458-SERIAL-CAST-AND-W47-W48",
+      "status": "implemented",
+      "sources": [
+        "W15 all cycles previously read; Charlie first explicit portrayal paragraph94/Volume8 and later mother-son conflict; no Thera match",
+        "w25 all parts previously read; Thera full role and NiceEasy first destruction/remainingfew/sacrifice/return compared",
+        "w47 and w48 complete originals; full Rugpull/Furies/Bulls and named related biographies compared"
+      ],
+      "old": "Specific W15 prince, w25 Thera counter-songs and Bois repeated losses/returns, and w47 false-memory defence are compressed.",
+      "new": "Recover all four source portrayals on five owning pages with explicit attributions and connected Sarah link. Preserve the real creator biography, modern adult stories, source ideological cruelty and incomplete outcomes.",
+      "reason": "Retains the adult source material without silently adopting royal kinship, resurrection, universal memory physics, completed FinalFork or a new faction count.",
+      "affected_paths": [
+        "wiki/charlie-buster.html",
+        "wiki/queen-sarah-p-fly.html",
+        "wiki/thera-9.html",
+        "wiki/the-nice-easy-bois.html",
+        "wiki/the-rugpull-miners.html"
+      ]
+    },
+    {
+      "id": "GK-1458-W54-W59-STATUS-ECONOMY",
+      "status": "implemented",
+      "sources": [
+        "w54.txt and w59.txt full originals",
+        "Complete current NiceEasy/Bulls biographies and all relevant named relationship sections of HODL/Graff/Rug/Furies/Rocker/Moongirl/Blockstar/Kids/Defender/Kernel/NULL/FirstWitness; Ducky disputed-hardware relationship compared within Bois source and owning account"
+      ],
+      "old": "Specific mandatory peace dividend, UBI inequality critique and speculation on manipulation/faction failures compressed.",
+      "new": "Restore compulsory mediation fee and harsh Bull hierarchy/economy positions with exact source attribution; retain all modern local practices and adult consequences.",
+      "reason": "Keeps commercial coercion and appetite for inequality visible without universalising source ideology, creating real token economics or replacing later adult histories.",
+      "affected_paths": [
+        "wiki/the-allcity-bulls.html",
+        "wiki/the-nice-easy-bois.html"
+      ]
     }
   ]
 }

@@ -1,6 +1,6 @@
 # Issue #1458 — implementation progress and restart ledger
 
-Updated 8 October 2026. **Status: SAM/House, serial and W5 owning-page recovery implemented; full mission open.**
+Updated 8 October 2026. **Status: source recovery and modern-story preservation continue on draft PR #1459; full mission open.**
 W81 is foundational truth. This is a checkpoint of completed implementation,
 not a claim that the whole universe is reconciled. Preserve the adult tone.
 
@@ -10,23 +10,41 @@ snapshot created before changes and remote backup verified.
 Working branch: `codex/sandbox-issue-1458-20261008-090000`.
 No direct push to main, merge, issue closure or production deployment.
 
+## Current cumulative state
+
+15 of 94 original sources have full claim/scene comparison; 79 remain open.
+Ten further originals are completely read with comparisons pending. Existing
+wiki audits cover 61 distinct articles: 54 full and seven focused. Nine new
+articles and 33 expanded/corrected existing articles are implemented, with
+five original adult connecting stories. This is an implementation checkpoint,
+not a claim that every source or current wiki page is reconciled.
+
+All current wiki lore remains preserved. The working master truth references
+the approved modern character/faction/culture registers and records specific
+existing adult lives alongside source doctrine. All nine First Witness Books
+remain byte-identical to the original PR base. Five major proposals remain
+proposed; no final ending, new Forty slot or historical retcon is adopted.
+
 ## Verified and actually reviewed
 
 - **94** original archive files verified against archive SHA-256, CSV and the
   independent immutable ledger; **93** unique contents, **2,334,149** bytes.
-- **11** complete original texts read and compared cumulatively: W1, w32, w33,
-  w56, W12 (all eight parts), W13 (all seven parts and repeated extracts), W7, w50, w63, w60 and w44.
-  **83** remain without full semantic comparison. W19 is fully read but its
+- **15** complete original texts read and compared cumulatively: W1, w32, w33,
+  w56, W12 (all eight parts), W13 (all seven parts and repeated extracts), W7, w50, w63, w60, w44, w47, w48, w54 and w59.
+  **79** remain without full semantic comparison. W19 is fully read but its
   remaining embedded-character comparisons are pending, so it is not counted.
-- **58 distinct existing pages** reviewed: fifty full canonical articles
+- **61 distinct existing pages** reviewed: fifty-four full canonical articles
   (Princess, Croydon, master chronology, concordance, synthetic minds,
   Crypto Moonboys, Great Consensus, Elder Codex-7, Iris-7, Aleema, Dream Sovereign,
-  all nine First Witness Books, HODL Warriors, GraffPUNKS, GKniftyHEADS, Whale Lords, XRP Kids, Forty Paths, faction Commentaries, Sarah, Jodie, Alfie, NULL, Block Topia, HODL doctrine, Hard Fork Rockers, Genesis Kernel, Nomad Bears, Blockstars, Crypto Stoned Boys, Rugpull Miners, Block Node Defenders both Army articles, Bitcoin X Kids, Chain Scribes the humour/attention supporting chapters, Thera, Charlie, Nice & Easy and AllCity Bulls) and eight focused section reviews
-  (Rune, Pinks, Games, Code Alchemists, Bitcoin Kids, HODL Wars, Sacred Chain and Rave Relics). Exact scopes are in `issue-1458-audit.json`.
-- **421** top-level wiki pages pass automated targeted canon lint and content
+  all nine First Witness Books, HODL Warriors, GraffPUNKS, GKniftyHEADS, Whale Lords, XRP Kids, Forty Paths, faction Commentaries, Sarah, Jodie, Alfie, NULL, Block Topia, HODL doctrine, Hard Fork Rockers, Genesis Kernel, Nomad Bears, Blockstars, Crypto Stoned Boys, Rugpull Miners, Block Node Defenders both Army articles, Bitcoin X Kids, Chain Scribes the humour/attention supporting chapters, Thera, Charlie, Nice & Easy, AllCity Bulls Blockchain Furies, Finance Guild, Ducky Boys and full Code Alchemists) and seven focused section reviews
+  (Rune, Pinks, Games, Bitcoin Kids, HODL Wars, Sacred Chain and Rave Relics). Exact scopes are in `issue-1458-audit.json`.
+- **424** top-level wiki pages pass automated targeted canon lint and content
   inventory checks. That number is a static scan, not a human semantic count.
 
-## Implemented content
+## Earlier implementation record
+
+The following records the initial recovery. Current cumulative counts are
+above; subsequent source, story and validation receipts follow below.
 
 **Six new encyclopedia articles:** Agent SAM (1,952 words), House of
 Rackinsats (1,423), and the four initial articles: Whisper Codex (808 words), Six Pillars
@@ -72,7 +90,7 @@ Single authority policy: `../CANON_POLICY.md`. Entry/onboarding: root `AGENTS.md
 PR template now requires source, ripple, adult-story, discovery and approval
 checks. `../canon-locks.json` contains anchors, identity boundaries, 34/6 and
 nine-runtime distinction, 94 source identities and targeted claim rules.
-`../reconciliation-decisions.json` holds fourteen implemented and five proposed
+`../reconciliation-decisions.json` holds twenty implemented and five proposed
 old/new decisions with rationale and affected paths.
 
 `canon-integrity-check.mjs` runs in wiki CI and checks explicit chronology,
@@ -607,3 +625,61 @@ At exact head 34bb64ffc85814bf6f1106921720528b79ef94d0, Wiki Structure, producti
 truth, worker provenance, Arcade, Worker API, WAX and Visual pass. Inspected
 Wiki/Graph logs confirm only the maintainer prose-label gate after successful
 regeneration, guard and parity checks. No approval label applied.
+
+
+## Specific serial cast and complete Rugpull/Furies comparison
+
+Five owning pages recover W15's fictional Charlie prince and Sarah civil war,
+w25's detailed Thera counter-songs and repeated Bois losses/returns, and w47's
+false-defence donation/false-data injury. None of the existing modern prose is
+removed. Charlie gains native contents without replacing the artist biography.
+Full Furies current reading matches all 70 canonical paragraphs to the cache.
+w47/w48 complete comparisons now bring the source count to 13/94, with 81 open
+and eight fully read pending originals. Audit: 59 distinct existing articles,
+51 full/eight focused. 32 existing pages expanded/corrected, nine new articles,
+five original adult stories. Final validation pending. No new named character,
+accepted royal relationship, historical date, Forty slot or completed ending.
+
+
+The same uncommitted cast batch also completes w54/w59 original and connected
+comparison. Mandatory peace dividends, Bulls' contempt for UBI's removal of
+unequal distribution and Hyper-Shares pricing manipulation/faction failure
+are recovered. Scope is now 15/94 complete source comparisons, 79 open
+including eight fully read pending originals; 33 changed existing articles.
+Six owning pages are changed in this batch; all original prose remains.
+No full Ducky article audit is claimed: its disputed-hardware relationship
+is compared within the fully read source and the full Bois owning account.
+
+
+Full current Finance Guild, Ducky Boys and Code Alchemists readings are now
+cache-verified (89, 49 and 65 canonical paragraphs). Code Alchemists upgrades
+its earlier focused audit. Current existing audit scope is 61 distinct:
+54 full/seven focused. All Black Dividend/Last Loading, Mourning White Line,
+Naked Wrench and purchased-farewell adult stories remain intact. w42 and w55
+originals are completely read but still need preventive-lock/innocent-reversal/
+anomaly-suppression owning recovery and remaining dependency checks. Ten fully
+read originals now have pending comparison; source count stays 15/94.
+
+
+### Serial cast/economy final verification
+
+Final local wiki CI passes with current-main baseline and the task-authorised
+local prose flag. Browser passes 84 desktop/mobile views, 42 no-JavaScript
+readings and 30 search/autocomplete queries. Graph remains 417 indexed pages,
+427 nodes, 2,083 edges and 75 mobile nodes. All 2,492 substantial original
+paragraphs across 33 changed existing articles remain, including the earlier
+13 exact Tavi references. 1,315 canonical links across those and the three new
+biographies resolve with zero failures. All 424 earlier pages, 9,755 paragraphs
+and 5,257 active IDs remain against a563cf84dc86bb6a1dd2c6577e30e7e331787ac6;
+this batch makes no further original-paragraph revision. Pages artifact builds
+at `/tmp/gk1459/serial-cast-public-site`; no deployment.
+
+Current scope: 15 sources compared, 79 open; ten other originals completely
+read with comparison pending. 61 distinct existing audits, 54 full/seven
+focused; nine new articles, 33 changed existing articles and five original
+adult connecting stories. Twenty implemented recoveries/interpretations and
+five major proposals are traceable. No new historical date, royal kinship,
+Forty assignment or final ending adopted. Next: Ducky innocent reversal and
+anomaly-suppression source recovery; Guild preventive locks and remaining
+Bally dependencies; High Hats/Aztec and complete w62 comparison; further
+original profiles and serial dependencies.

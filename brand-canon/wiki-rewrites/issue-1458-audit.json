@@ -8,7 +8,7 @@
     "unique_contents": 93,
     "bytes": 2334149
   },
-  "semantic_scope": "Eleven completely compared sources; ten additional originals completely read with comparison pending. Fifty full existing article audits and eight focused comparisons; nine new articles separately authored. Full mission open.",
+  "semantic_scope": "Fifteen completely compared sources; ten additional originals completely read with comparison pending. Fifty-four full existing article audits and seven focused comparisons; nine new articles separately authored. Full mission open.",
   "sources": [
     {
       "file": "M16.txt",
@@ -473,8 +473,21 @@
       "bytes": 6352,
       "sha256": "c0f74672e69b1363367f86eb65ca84af57840b33f25b065a9f61bdd441c96334",
       "byte_verified": true,
-      "semantic_review": "pending complete semantic reading",
-      "prior_disposition": "COVERED"
+      "semantic_review": "complete source reading; remaining Guild dependency and specific preventive-lock comparison pending",
+      "prior_disposition": "COVERED",
+      "read_progress": {
+        "paragraphs_read_in_full": [
+          [
+            1,
+            20
+          ]
+        ],
+        "next_unread_paragraph": null,
+        "complete_source_comparison": false
+      },
+      "partial_findings": [
+        "Full original regulators/sole-debt origin, AuditTowers/solvency dialect, LiquidityLocks/CreditScorchers, UBI/Pinks, Bulls/Blockstar/Fury/Miner/Bally conflict, NULL/ChronoStabilizer and biometric preventive UBI restrictions read. Full modern Guild article now read; CodeAlchemist/Bally relevant comparisons and explicit preventive-lock recovery remain pending."
+      ]
     },
     {
       "file": "w43.txt",
@@ -527,7 +540,7 @@
       "bytes": 5936,
       "sha256": "cfefc3950437eebb80b889efe754d3963fe97d941d48ec803a2f61e916bcab01",
       "byte_verified": true,
-      "semantic_review": "complete source reading; connected owning-page comparison pending",
+      "semantic_review": "complete source reading and connected claim/scene comparison",
       "prior_disposition": "COVERED",
       "read_progress": {
         "paragraphs_read_in_full": [
@@ -537,10 +550,11 @@
           ]
         ],
         "next_unread_paragraph": null,
-        "complete_source_comparison": false
+        "complete_source_comparison": true
       },
-      "partial_findings": [
-        "w47 is Rugpull Miners, not BlockNodeDefenders. Bait networks, corruptedSpraycode, fear-basedFalseDefence and FinalPull need full partner comparison; no operational exploitation instructions derived."
+      "findings": [
+        "Every original paragraph fully read and all named faction, chronology/Kernel/NULL/Forty/Games/FirstWitness and modern adult dependencies compared.",
+        "BaitNetwork/DigitalDisguise, Bulls riggedraces, Kids gamearchives, Nomad pristinecaches, Furies conflict, ChampionPillage/PunkNet compromisedSpraycode and FinalPull already preserved. Missing processing/memorycore donation and false-data injury restored to owning article. Current Rafe/Nella/Bex/Jex/Ione/EmptyDividend and redcase hypocrisy stay intact."
       ]
     },
     {
@@ -548,7 +562,7 @@
       "bytes": 6280,
       "sha256": "0b141ce2e445f7c91b3d7d5a2024a6f21a3ab893727a90ae239c1d8c577258f1",
       "byte_verified": true,
-      "semantic_review": "complete source reading; remaining Furies owning-article comparison pending",
+      "semantic_review": "complete source reading and connected claim/scene comparison",
       "prior_disposition": "COVERED",
       "read_progress": {
         "paragraphs_read_in_full": [
@@ -558,10 +572,11 @@
           ]
         ],
         "next_unread_paragraph": null,
-        "complete_source_comparison": false
+        "complete_source_comparison": true
       },
-      "partial_findings": [
-        "Complete original vigilante profile read. Current AshDesk/RedLedger witness and remaining named dependencies still being compared; no global irrefutable audit, universal Reversal power or faction extinction adopted."
+      "findings": [
+        "Every original paragraph fully read and all named faction, chronology/Kernel/NULL/Forty/Games/FirstWitness and modern adult dependencies compared.",
+        "Original victim-origin, proportionatepunishment versus permanent consciousness-destruction, forensics/Reversal/DigitalTrials, Miner/Bull/Moongirl conflict, NULL activeaudit, YellowLayer intervention and Army indifference/observation all retained. Complete current article already carries all source details; no duplicative new section needed. AshDesk errors, Ione namingharm, Dala refusal, incomplete restitution and Korr injury remain."
       ]
     },
     {
@@ -664,16 +679,43 @@
       "bytes": 6192,
       "sha256": "99feb27962378932bba803e93a00ab9c34cb73c44a7f65cb2dd5b5655c76706b",
       "byte_verified": true,
-      "semantic_review": "pending complete semantic reading",
-      "prior_disposition": "COVERED"
+      "semantic_review": "complete source reading and connected claim/scene comparison",
+      "prior_disposition": "COVERED",
+      "read_progress": {
+        "paragraphs_read_in_full": [
+          [
+            1,
+            18
+          ]
+        ],
+        "next_unread_paragraph": null,
+        "complete_source_comparison": true
+      },
+      "findings": [
+        "Every original paragraph fully read. Full owning article and relevant named relationship/cosmology/chronology/Forty/FirstWitness and modern consequences compared.",
+        "w54: Harmony-origin/gentlecommunication/PeaceProtocols/minimumtruce/psychicmediation/mandatoryPeaceDividend, BullsRug/Duckyhardware/Moongirl exchanges, Furies/Rocker nonnegotiables, NULL and nonconfrontationalKernel proposal, rebel harm/insidepity retained. Mandatory fees and actual HODL/Graff sharedspace recovered. Ducky relationship compared within source and owning Bois account; no full Ducky biography reading claimed."
+      ]
     },
     {
       "file": "w55.txt",
       "bytes": 6631,
       "sha256": "42c8200a24a66e9d3c5786778d9e6ec37f8ad7545cce9c3bf86904599f2ef3e4",
       "byte_verified": true,
-      "semantic_review": "pending complete semantic reading",
-      "prior_disposition": "COVERED"
+      "semantic_review": "complete source reading; specific Ducky owning-page recovery and final comparison pending",
+      "prior_disposition": "COVERED",
+      "read_progress": {
+        "paragraphs_read_in_full": [
+          [
+            1,
+            22
+          ]
+        ],
+        "next_unread_paragraph": null,
+        "complete_source_comparison": false
+      },
+      "partial_findings": [
+        "All original paragraphs read. Full current Ducky owning article compared; explicit source paid reversal of Furies errors and inside anomaly-suppression/UBI treatment need recovery; no literal always-holds tape or universal Antichain patch adopted."
+      ]
     },
     {
       "file": "w56.txt",
@@ -704,8 +746,22 @@
       "bytes": 5814,
       "sha256": "0ddb56789f53cfc46cd932458766c2c88a7e3b2772252fc8593b17951cfc70d7",
       "byte_verified": true,
-      "semantic_review": "pending complete semantic reading",
-      "prior_disposition": "COVERED"
+      "semantic_review": "complete source reading and connected claim/scene comparison",
+      "prior_disposition": "COVERED",
+      "read_progress": {
+        "paragraphs_read_in_full": [
+          [
+            1,
+            17
+          ]
+        ],
+        "next_unread_paragraph": null,
+        "complete_source_comparison": true
+      },
+      "findings": [
+        "Every original paragraph fully read. Full owning article and relevant named relationship/cosmology/chronology/Forty/FirstWitness and modern consequences compared.",
+        "w59: statuscollapse/Kernel, artificialhierarchy and UBI unequal-distribution contempt, HyperShare speculation in manipulation/factionfailure/microforks, FeastWeek nonlethalduels/biometrics, Minerhonour/Furyreversals, NULL vulnerability, Therahunt and Kids transactionaltracking retained. Missing specific UBIcritique and factionfailure pricing recovered; Vexa/Neri/Jessa/Milo/FastCrown/Rovik all remain."
+      ]
     },
     {
       "file": "W6.txt",
@@ -1140,11 +1196,11 @@
     {
       "path": "wiki/the-code-alchemists.html",
       "sections": [
-        "cosmology",
-        "velvet-surgeon",
-        "sources"
+        "all canonical sections"
       ],
-      "scope": "targeted sections, not whole-article semantic audit"
+      "scope": "full canonical article",
+      "findings": "Full65-paragraph article: FourVersions/Interval/OrrisTali, origins/tools/QuantumChrono, softfork/Kernel/consent, Scribe/Saint/Ducky/EVM/Forkborn/NULL/Consensus relationships, Ixa/Eron/Vey/Asha purchasedfarewell and salon/cruel rivalry. Guild ChronoStabilizer relation fully compared; predatory purpose remains distinct from ordinary repair.",
+      "reading_verification": "All 65 current canonical paragraphs match fully read cache."
     },
     {
       "path": "wiki/queen-sarah-p-fly.html",
@@ -1544,6 +1600,33 @@
       ],
       "findings": "Full arena/HyperShare/LongLap/MeasuredMile/JessaMilo/CarryMedal/Afterimage/Games/GroundArray and complete Vexa/Neri/NightHeat/BlackDividend/FastCrown/LoserCrown accounts. w47 bait-race targeting already present; sponsorship, injury, debt, partner separation and Rovik refusal remain.",
       "reading_verification": "All 69 current canonical paragraphs match fully read cache."
+    },
+    {
+      "path": "wiki/the-blockchain-furies.html",
+      "scope": "full canonical article",
+      "sections": [
+        "all canonical sections"
+      ],
+      "findings": "Entire70-paragraph article: origins, forensics, permanentMiner-destruction sourceclaim, Army indifference/observation, AshDesk/SixWindows/SecondHearing/Restitution/WhiteShutter/FinalAudit and complete Jex/Bex/Dala/Ione/Nessa/Omi/Korr/ScarletIntermission adult histories. No unreviewable evidence, resurrection, blanket guilt or completedrepair adopted.",
+      "reading_verification": "All 70 current canonical paragraphs match fully read cache."
+    },
+    {
+      "path": "wiki/the-finance-guild.html",
+      "scope": "full canonical article",
+      "sections": [
+        "all canonical sections"
+      ],
+      "findings": "Full89-paragraph Guild account: AuditTowers/ClosingRoom/MerenTala/PumpBond/PauseColumn/WageWindow/HighHats/ChronoStabilizer/Ascension/OpenCrate, entire BlackDividend and LastLoading/NineRung continuation, MourningWhiteLine/Hesta and sensual private culture. Earnedwages/closurepayment, Keshprofit/Ettahand/Sevrinkilling, Merenexpensivesupper and incomplete authority remain.",
+      "reading_verification": "All 89 current canonical paragraphs match fully read cache."
+    },
+    {
+      "path": "wiki/the-ducky-boys.html",
+      "scope": "full canonical article",
+      "sections": [
+        "all canonical sections"
+      ],
+      "findings": "Full49-paragraph article: Bea/Iven/PatchYard, paidpriority, AmberTicket/TwoBoilers/SecondShift/Games/insideoutside/ToolReturn/UnfixedShelf, NakedWrench, adult craftcourtship and vanity. w55 specific Furies innocent-victim reversal and inside anomaly suppression require owning-page recovery; no next-batch implementation claimed yet.",
+      "reading_verification": "All 49 current canonical paragraphs match fully read cache."
     }
   ]
 }

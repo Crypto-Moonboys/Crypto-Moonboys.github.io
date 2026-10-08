@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-08T13:18:16.602Z",
-  "verified_at": "2026-10-08T13:18:16.602Z",
+  "generated_at": "2026-10-08T13:48:06.243Z",
+  "verified_at": "2026-10-08T13:48:06.243Z",
   "nodes": [
     {
       "id": "/about.html",
@@ -4413,8 +4413,8 @@
     {
       "source": "/wiki/darren-cullen.html",
       "target": "/wiki/charlie-buster.html",
-      "score": 55,
-      "weight": 0.55
+      "score": 56,
+      "weight": 0.56
     },
     {
       "source": "/wiki/darren-cullen.html",
@@ -4521,8 +4521,8 @@
     {
       "source": "/wiki/delicious-again-pete.html",
       "target": "/wiki/charlie-buster.html",
-      "score": 49,
-      "weight": 0.49
+      "score": 50,
+      "weight": 0.5
     },
     {
       "source": "/wiki/delicious-again-pete.html",
@@ -12411,8 +12411,8 @@
     {
       "source": "/wiki/hodlmoonboys-nft-collection.html",
       "target": "/wiki/charlie-buster.html",
-      "score": 46,
-      "weight": 0.46
+      "score": 47,
+      "weight": 0.47
     },
     {
       "source": "/wiki/hodlmoonboys-nft-collection.html",
@@ -12549,8 +12549,8 @@
     {
       "source": "/wiki/jillian-godsil.html",
       "target": "/wiki/charlie-buster.html",
-      "score": 49,
-      "weight": 0.49
+      "score": 50,
+      "weight": 0.5
     },
     {
       "source": "/wiki/jillian-godsil.html",
@@ -15417,8 +15417,8 @@
     {
       "source": "/wiki/trevor-fung.html",
       "target": "/wiki/charlie-buster.html",
-      "score": 52,
-      "weight": 0.52
+      "score": 53,
+      "weight": 0.53
     },
     {
       "source": "/wiki/trevor-fung.html",

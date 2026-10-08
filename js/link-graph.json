@@ -20686,7 +20686,7 @@
     ]
   },
   "/wiki/queen-sarah-p-fly.html": {
-    "outbound_count": 47,
+    "outbound_count": 49,
     "inbound_count": 7,
     "existing_outbound": [
       "/wiki/block-topia.html",
@@ -20710,6 +20710,7 @@
       "/wiki/bitcoin-kids.html",
       "/wiki/bitcoin-x-kids.html",
       "/wiki/block-node-defenders.html",
+      "/wiki/charlie-buster.html",
       "/wiki/dream-sovereign.html",
       "/wiki/first-witness-book-6-the-fork.html",
       "/wiki/first-witness-food-hospitality-common-table.html",
@@ -20718,6 +20719,7 @@
       "/wiki/first-witness-language-translation-sacred-words.html",
       "/wiki/first-witness-sacred-fork.html",
       "/wiki/first-witness-triple-fork-chainfire.html",
+      "/wiki/first-witness-truth-commissions-after-conflict.html",
       "/wiki/gkniftyheads.html",
       "/wiki/graffpunks.html",
       "/wiki/grit.html",
@@ -22003,7 +22005,7 @@
     "inbound_from": []
   },
   "/wiki/the-allcity-bulls.html": {
-    "outbound_count": 27,
+    "outbound_count": 28,
     "inbound_count": 3,
     "existing_outbound": [
       "/wiki/bitcoin-kids.html",
@@ -22033,6 +22035,7 @@
       "/wiki/genesis-kernel.html",
       "/wiki/graffpunks.html",
       "/wiki/storm-struggle.html",
+      "/wiki/street-kingdoms.html",
       "/wiki/the-nomad-bears.html",
       "/wiki/thera-9.html"
     ],
@@ -23247,7 +23250,7 @@
     ]
   },
   "/wiki/the-nice-easy-bois.html": {
-    "outbound_count": 28,
+    "outbound_count": 30,
     "inbound_count": 39,
     "existing_outbound": [
       "/wiki/bitcoin-kid-army.html",
@@ -23268,10 +23271,12 @@
     "suggested_outbound": [
       "/wiki/alcor-exchange.html",
       "/wiki/first-witness-great-concord-2030.html",
+      "/wiki/first-witness-hodl-doctrine.html",
       "/wiki/first-witness-mediation-witness-circles.html",
       "/wiki/genesis-kernel.html",
       "/wiki/hodl-warriors.html",
       "/wiki/hodl-x-warriors.html",
+      "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/punk-token.html",
       "/wiki/street-kingdoms.html",
       "/wiki/the-bitcoin-kid-army.html",
@@ -23489,7 +23494,7 @@
     ]
   },
   "/wiki/the-rugpull-miners.html": {
-    "outbound_count": 32,
+    "outbound_count": 33,
     "inbound_count": 6,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
@@ -23513,6 +23518,7 @@
       "/wiki/block-topia.html",
       "/wiki/first-witness-digital-inheritance-after-death.html",
       "/wiki/first-witness-pride-temptation-false-idols.html",
+      "/wiki/first-witness-war-defence-peacekeeping.html",
       "/wiki/genesis-kernel.html",
       "/wiki/gkniftyheads-digital-diva-783394.html",
       "/wiki/gkniftyheads-digital-duchess-783404.html",
@@ -23815,7 +23821,7 @@
     ]
   },
   "/wiki/thera-9.html": {
-    "outbound_count": 36,
+    "outbound_count": 38,
     "inbound_count": 2,
     "existing_outbound": [
       "/wiki/bitcoin-kids.html",
@@ -23842,10 +23848,12 @@
       "/wiki/first-witness-glossary.html",
       "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-mediation-witness-circles.html",
+      "/wiki/first-witness-music-dance-performance.html",
       "/wiki/first-witness-parables.html",
       "/wiki/first-witness-questions-for-the-living.html",
       "/wiki/first-witness-source-register.html",
       "/wiki/genesis-kernel.html",
+      "/wiki/gkniftyheads-czen-zone-zero-zealot-783755.html",
       "/wiki/grit.html",
       "/wiki/hodl-warriors.html",
       "/wiki/jodie-zoom-2000.html",

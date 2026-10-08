@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "generator": "scripts/generate-wiki-content-state.mjs",
-  "source_tree_hash": "sha256:84f8ad6e56284e2896ed76834c58ad431daf1e72f6913f5f9e8c846f7a981d11",
+  "source_tree_hash": "sha256:2c8ff733ca6ebfacbcd55e015c3ee512a05e331952167e99943767b3fec87d22",
   "hash_algorithm": "sha256",
   "page_count": 424,
   "manifest_entry_count": 424,
@@ -1556,7 +1556,7 @@
       "title": "charlie-buster",
       "page_exists": true,
       "page_type": "historical_archive",
-      "current_word_count": 1238,
+      "current_word_count": 1495,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -1565,10 +1565,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:39a4415840e4327f8e949c9f3e0f4a0f08e4cbd7c5f7a94735ccd6b65cb6828d",
-      "article_content_hash": "sha256:4c2a4c5491431e08fad2be1e2144671ec1b2cf5c3bb4ca3b9799c9a6b0cbce2b",
-      "article_markup_hash": "sha256:777ddc7dd29701d35a93f19331bb960ed2e39870c8495003d5ecae3d12d648bb",
-      "git_blob_oid": "c69133fd184f6fa3955849c71aa7ca5751b26d22",
+      "content_hash": "sha256:b22f80edd484cde0d7ee92a7de92d839e59f11613f0767c9be6006520ca73214",
+      "article_content_hash": "sha256:fa10c358a2dc7e92e39514d9ca3eddf674531b588cba664e2242a3f172d2319e",
+      "article_markup_hash": "sha256:f222343499e41e210f7b5a8a412c929c6950b91ac7b2572d7b21202bc3a9d221",
+      "git_blob_oid": "299b8debdf81e72905e9c646c5843293c6bca5bb",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -1584,11 +1584,11 @@
         "wiki/bibles/charlie-buster.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 2 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/charlie-buster.json; it is not automatically the unavailable Tier 4 modern bible."
       ],
       "content_owner": "canon",
-      "canon_revision": 1,
+      "canon_revision": 2,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -14009,7 +14009,7 @@
       "title": "Queen Sarah P-fly",
       "page_exists": true,
       "page_type": "character",
-      "current_word_count": 7665,
+      "current_word_count": 7823,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -14018,10 +14018,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:0d6911e4a9f413a31ff0732eda78a6bbe2767557c88d19e8caa434cdfeb7dc36",
-      "article_content_hash": "sha256:3f60f624dca817139d9c5164ab782e4c673bfaaee85644ced94004bac16c0f55",
-      "article_markup_hash": "sha256:416323feebc813b67e8fc8a7d3c12653051f1c29578fb44088ade23ea1eb4f7c",
-      "git_blob_oid": "b097caf28e59d9544a600e8fb6c89f8bff938635",
+      "content_hash": "sha256:4cb99665948a57a021086f93c29ad49ca83db321bc7c34f87e2230c9bf861272",
+      "article_content_hash": "sha256:094abfd7ba48b742fed68ebbc4e4f0387c8fbf7591d0299baa4586ed2769428c",
+      "article_markup_hash": "sha256:78044f40ab58964b568a45c7b50c54c1c4ce6d140ff9f9cc9db8206638768157",
+      "git_blob_oid": "df453110169815cc2153959131e9acbc70b1c31a",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -14040,12 +14040,12 @@
         "wiki/bibles/queen-sarah-p-fly.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 8 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 9 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/queen-sarah-p-fly.json; it is not automatically the unavailable Tier 4 modern bible.",
         "The requested modern Tier 4 subject bible is not separately identifiable in this checkout; canon classification remains a human-review item."
       ],
       "content_owner": "canon",
-      "canon_revision": 8,
+      "canon_revision": 9,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -15169,7 +15169,7 @@
       "title": "The AllCity Bulls",
       "page_exists": true,
       "page_type": "faction",
-      "current_word_count": 4512,
+      "current_word_count": 4746,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -15178,10 +15178,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:5a6966028d3b785f6beac9530f9a33172f14455a9656d65dbbf5488b49638f40",
-      "article_content_hash": "sha256:a3b601da496138494ec8a2bddf79260b6658d98ddf34f47469541addc4bf53b2",
-      "article_markup_hash": "sha256:edb2fc8c5f3d6300064568d97c616f3fd0de1ca6684b2a3767ee36c2645f308b",
-      "git_blob_oid": "796ecfe4564850c3dedd083253f4b45fccd7b6ad",
+      "content_hash": "sha256:b54c3cbf07f1a64008c3655513a955fc56ecb734d80c8c40012b2a298055960a",
+      "article_content_hash": "sha256:4efcc1b8dd8ac34479552176597681687fd61da74c5497381d81249f1ebbd582",
+      "article_markup_hash": "sha256:20ed280ae9a7f31b8aba463fcb027e34c1a542a4e4d906a37c834ecfb896fedc",
+      "git_blob_oid": "973f184100c1429fa570fe91fabca1ac58f34716",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -15202,12 +15202,12 @@
         "wiki/bibles/the-allcity-bulls.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 5 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 6 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/the-allcity-bulls.json; it is not automatically the unavailable Tier 4 modern bible.",
         "The requested modern Tier 4 subject bible is not separately identifiable in this checkout; canon classification remains a human-review item."
       ],
       "content_owner": "canon",
-      "canon_revision": 5,
+      "canon_revision": 6,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -16133,7 +16133,7 @@
       "title": "THE NICE & EASY BOIS The work that keeps agreement possible",
       "page_exists": true,
       "page_type": "faction",
-      "current_word_count": 3862,
+      "current_word_count": 4272,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -16142,10 +16142,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:ec5f8389f88ae0cffc37e5eea6fbbf833bce95ab97f18ff3a90ed4ed35db60ad",
-      "article_content_hash": "sha256:e88f3deddf2f661bd74d1c9e68ccea46a894bbbdb521d621c812471b602222d0",
-      "article_markup_hash": "sha256:f44ad2ab6af26eb7a87748bf61a1d9cc423031fab733be5ea8e84a9ecfc62fe0",
-      "git_blob_oid": "f26fc66733839f91da6b6ad94b69711946a10366",
+      "content_hash": "sha256:973a3b601e8f26f2c6fb8ebd7cf9435035c9c443f29bed4dedee05666672b5a7",
+      "article_content_hash": "sha256:baa4afec782c3e49fd3a01a04c3adc129dd91227e20cc7a67eb963f3390354fb",
+      "article_markup_hash": "sha256:950a59386101ffe0cd5325c1d86fd062b927b78f65ddb0657bb9af93d2c560fd",
+      "git_blob_oid": "7ec7c3077c7beb19dea8e2728de57561cbd8f2be",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -16166,12 +16166,12 @@
         "wiki/bibles/the-nice-easy-bois.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 5 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 6 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/the-nice-easy-bois.json; it is not automatically the unavailable Tier 4 modern bible.",
         "The requested modern Tier 4 subject bible is not separately identifiable in this checkout; canon classification remains a human-review item."
       ],
       "content_owner": "canon",
-      "canon_revision": 5,
+      "canon_revision": 6,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -16318,7 +16318,7 @@
       "title": "The RUGPULL MINERS",
       "page_exists": true,
       "page_type": "faction",
-      "current_word_count": 4726,
+      "current_word_count": 4904,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -16327,10 +16327,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:28066d9b0c869dc43310fd22e6bee9dbac8b00aba2fe4ec4c45ae31ca2b6c22c",
-      "article_content_hash": "sha256:a86286a9705becfa88e6e2f31901221804c385ab789e99c606a802f01051e318",
-      "article_markup_hash": "sha256:11e2c2235038775db8ec0d0044dc984f6c1070ccdfe55788a6058161c8c42e6a",
-      "git_blob_oid": "fd76137e3608058a6ed518505204137278d20466",
+      "content_hash": "sha256:c65197e87f88e7687bf466766bee775893f5f8f4d3b0ca6c2c0b243291f7234a",
+      "article_content_hash": "sha256:a6ca3687d6c3e6330e39f4c607d3ae6c18e302f01f8a2d2c56f37618b20cddb3",
+      "article_markup_hash": "sha256:ca5b3af86c5966a932dafbe637b9f253e8c371f0e3ad81b19eed2d7c61600f2d",
+      "git_blob_oid": "ee1c8d3ce05947ea45724f48d47d336f9fe75ece",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -16351,12 +16351,12 @@
         "wiki/bibles/the-rugpull-miners.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 6 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 7 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/the-rugpull-miners.json; it is not automatically the unavailable Tier 4 modern bible.",
         "The requested modern Tier 4 subject bible is not separately identifiable in this checkout; canon classification remains a human-review item."
       ],
       "content_owner": "canon",
-      "canon_revision": 6,
+      "canon_revision": 7,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -16599,7 +16599,7 @@
       "title": "Thera-9",
       "page_exists": true,
       "page_type": "character",
-      "current_word_count": 3298,
+      "current_word_count": 3517,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -16608,10 +16608,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:cceffbed479b9b64ec6613245cda67c01bafe1f8a09513804a9f243e6e09ed81",
-      "article_content_hash": "sha256:eee2f6cbd36af0c1604df29ecf31f73788caa0fd7b55c5ec80ee0b70f0ffc9ca",
-      "article_markup_hash": "sha256:0a8f49f3ab76b754ca983e2078098e2059ac2dae271d22f9593cde7d619d5503",
-      "git_blob_oid": "1c56df2efa4bdd187b9773d4b4250499238220ab",
+      "content_hash": "sha256:4a126727d1686de8e733714a0b38d0015571d72c1bfad23d48e0bf875f03b63a",
+      "article_content_hash": "sha256:a6b9aaf23b956afeca7d58519e47fb50b2c756201b04ad581ed13323a9aa111e",
+      "article_markup_hash": "sha256:ddcdd38b1185c90b79163698466aa6efbb274a60516b379c9a0676d2f044f1a7",
+      "git_blob_oid": "2361c3bc95dbd8c021451c606cd26237988de87f",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -16630,12 +16630,12 @@
         "wiki/bibles/thera-9.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 4 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 5 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/thera-9.json; it is not automatically the unavailable Tier 4 modern bible.",
         "The requested modern Tier 4 subject bible is not separately identifiable in this checkout; canon classification remains a human-review item."
       ],
       "content_owner": "canon",
-      "canon_revision": 4,
+      "canon_revision": 5,
       "canon_source_tier": "first-witness+w81"
     },
     {

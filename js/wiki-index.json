@@ -5283,13 +5283,13 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 4046,
+      "article_word_count": 4457,
       "keyword_bag_size": 25,
-      "heading_count": 24,
+      "heading_count": 26,
       "list_count": 1,
       "internal_link_count": 14,
-      "paragraph_count": 67,
-      "section_count": 21,
+      "paragraph_count": 72,
+      "section_count": 23,
       "lore_paragraph_count": 16,
       "content_quality_score": 101,
       "authority_score": 24
@@ -5379,14 +5379,26 @@
         "seduction",
         "without",
         "raised",
-        "voice"
+        "voice",
+        "eternal",
+        "pulse",
+        "peacekeepers",
+        "vaporised",
+        "losses",
+        "returns",
+        "mandatory",
+        "amoral",
+        "hodl",
+        "graffpunk",
+        "shared",
+        "space"
       ]
     },
     "link_score": {
       "inbound_count": 39,
-      "outbound_count": 28,
+      "outbound_count": 30,
       "existing_outbound_count": 14,
-      "suggested_outbound_count": 14,
+      "suggested_outbound_count": 16,
       "authority": 85
     },
     "brand": null
@@ -11240,13 +11252,13 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 7918,
+      "article_word_count": 8076,
       "keyword_bag_size": 29,
-      "heading_count": 40,
+      "heading_count": 41,
       "list_count": 1,
-      "internal_link_count": 21,
-      "paragraph_count": 110,
-      "section_count": 37,
+      "internal_link_count": 22,
+      "paragraph_count": 112,
+      "section_count": 38,
       "lore_paragraph_count": 25,
       "content_quality_score": 105,
       "authority_score": 28
@@ -11402,14 +11414,23 @@
         "core",
         "lattice",
         "paid",
-        "exit"
+        "exit",
+        "eternal",
+        "royal",
+        "conflict",
+        "fictional",
+        "prince",
+        "no",
+        "ball",
+        "games",
+        "decree"
       ]
     },
     "link_score": {
       "inbound_count": 7,
-      "outbound_count": 47,
+      "outbound_count": 49,
       "existing_outbound_count": 14,
-      "suggested_outbound_count": 33,
+      "suggested_outbound_count": 35,
       "authority": 21
     },
     "brand": null
@@ -13429,13 +13450,13 @@
       "category": "characters",
       "category_priority": 8,
       "has_description": true,
-      "article_word_count": 3559,
+      "article_word_count": 3778,
       "keyword_bag_size": 26,
-      "heading_count": 26,
+      "heading_count": 27,
       "list_count": 1,
       "internal_link_count": 16,
-      "paragraph_count": 48,
-      "section_count": 23,
+      "paragraph_count": 51,
+      "section_count": 24,
       "lore_paragraph_count": 42,
       "content_quality_score": 105,
       "authority_score": 28
@@ -13506,14 +13527,24 @@
         "she",
         "kept",
         "ungenerous",
-        "night"
+        "night",
+        "eternal",
+        "pulse",
+        "counter",
+        "song",
+        "zero",
+        "g",
+        "blade",
+        "dance",
+        "future",
+        "reunions"
       ]
     },
     "link_score": {
       "inbound_count": 2,
-      "outbound_count": 36,
+      "outbound_count": 38,
       "existing_outbound_count": 14,
-      "suggested_outbound_count": 22,
+      "suggested_outbound_count": 24,
       "authority": 11
     },
     "brand": null
@@ -13547,13 +13578,13 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 5041,
+      "article_word_count": 5219,
       "keyword_bag_size": 22,
-      "heading_count": 28,
+      "heading_count": 29,
       "list_count": 1,
       "internal_link_count": 15,
-      "paragraph_count": 71,
-      "section_count": 25,
+      "paragraph_count": 73,
+      "section_count": 26,
       "lore_paragraph_count": 67,
       "content_quality_score": 101,
       "authority_score": 28
@@ -13643,14 +13674,20 @@
         "going",
         "back",
         "ruld",
-        "ash"
+        "ash",
+        "inverted",
+        "defence",
+        "scam",
+        "donated",
+        "memory",
+        "cores"
       ]
     },
     "link_score": {
       "inbound_count": 6,
-      "outbound_count": 32,
+      "outbound_count": 33,
       "existing_outbound_count": 14,
-      "suggested_outbound_count": 18,
+      "suggested_outbound_count": 19,
       "authority": 19
     },
     "brand": null
@@ -15776,13 +15813,13 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 4840,
+      "article_word_count": 5074,
       "keyword_bag_size": 22,
-      "heading_count": 33,
+      "heading_count": 34,
       "list_count": 1,
       "internal_link_count": 22,
-      "paragraph_count": 71,
-      "section_count": 30,
+      "paragraph_count": 74,
+      "section_count": 31,
       "lore_paragraph_count": 33,
       "content_quality_score": 101,
       "authority_score": 28
@@ -15885,14 +15922,22 @@
         "remember",
         "winning",
         "rovik",
-        "dust"
+        "dust",
+        "thrill",
+        "of",
+        "unequal",
+        "distribution",
+        "faction",
+        "failure",
+        "artificial",
+        "hierarchy"
       ]
     },
     "link_score": {
       "inbound_count": 3,
-      "outbound_count": 27,
+      "outbound_count": 28,
       "existing_outbound_count": 18,
-      "suggested_outbound_count": 9,
+      "suggested_outbound_count": 10,
       "authority": 15
     },
     "brand": null
@@ -32799,13 +32844,13 @@
       "category": "misc",
       "category_priority": 3,
       "has_description": true,
-      "article_word_count": 1514,
+      "article_word_count": 1771,
       "keyword_bag_size": 27,
-      "heading_count": 14,
+      "heading_count": 15,
       "list_count": 1,
       "internal_link_count": 9,
-      "paragraph_count": 22,
-      "section_count": 11,
+      "paragraph_count": 25,
+      "section_count": 12,
       "lore_paragraph_count": 1,
       "content_quality_score": 81,
       "authority_score": 21
@@ -32861,7 +32906,12 @@
         "leake",
         "iamcharliebuster",
         "nftbuster",
-        "treef"
+        "treef",
+        "eternal",
+        "cycle",
+        "prince",
+        "eth",
+        "disruptor"
       ]
     },
     "link_score": {
