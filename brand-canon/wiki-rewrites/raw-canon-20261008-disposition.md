@@ -29,7 +29,7 @@ Do **not** fill the six currently unassigned Forty Paths positions from old alte
 - **94** listed entries, **93** unique byte contents (`w51.txt` and `w52.txt` are identical), total **2,334,149** uncompressed bytes.
 - A second promotional pair (`w66.txt` and `w80.txt`) is a strong **near-duplicate**, not two independent witness accounts.
 - Exact archival source checksums belong to the immutable retirement inventory; this register repeats them for convenient verification.
-- Existing wiki paths below were verified from the current main wiki route listing before this register was written.
+- The source-to-route mapping includes top-level wiki articles and the already-existing Crypto Moongirls Battle Chamber route. A live faction chamber is not identical to a separate `wiki/*.html` encyclopedia article; nine live selectable factions and the 34 named First Witness readings serve different purposes.
 
 ## Every file, status and disposition
 
@@ -87,7 +87,7 @@ Do **not** fill the six currently unassigned Forty Paths positions from old alte
 | [`w53.txt`](w81-archive-retirement-20261004.md#raw-source-inventory) | 8,578 | COVERED | [`the-squeaky-pinks`](../../wiki/the-squeaky-pinks.html) | Named Squeaky Pinks profile present; this does not mean every paragraph from source was imported |
 | [`w54.txt`](w81-archive-retirement-20261004.md#raw-source-inventory) | 6,192 | COVERED | [`the-nice-easy-bois`](../../wiki/the-nice-easy-bois.html) | Named Nice & Easy Bois profile present; this does not mean every paragraph from source was imported |
 | [`w55.txt`](w81-archive-retirement-20261004.md#raw-source-inventory) | 6,631 | COVERED | [`the-ducky-boys`](../../wiki/the-ducky-boys.html) | Named Ducky Boys profile present; this does not mean every paragraph from source was imported |
-| [`w56.txt`](w81-archive-retirement-20261004.md#raw-source-inventory) | 5,278 | PENDING_EDITORIAL | [`queen-sarah-p-fly`](../../wiki/queen-sarah-p-fly.html) | No separate Crypto Moongirls HTML route; review before giving a numbered Forty-Paths position |
+| [`w56.txt`](w81-archive-retirement-20261004.md#raw-source-inventory) | 5,278 | PENDING_EDITORIAL | [Crypto Moongirls faction chamber](../../battle-chamber/factions/crypto-moongirls.html), [`queen-sarah-p-fly`](../../wiki/queen-sarah-p-fly.html) | An existing selectable faction chamber and profile already cover Crypto Moongirls. Reconcile `w56` with them; any separate encyclopedia page or 34/6 register change needs explicit approval, not a duplicate chamber. |
 | [`w57.txt`](w81-archive-retirement-20261004.md#raw-source-inventory) | 6,364 | COVERED | [`the-bally-boys`](../../wiki/the-bally-boys.html) | Named Bally Boys profile present; this does not mean every paragraph from source was imported |
 | [`w58.txt`](w81-archive-retirement-20261004.md#raw-source-inventory) | 11,312 | COVERED | [`graffpunks`](../../wiki/graffpunks.html) | Named GraffPUNKS profile present; this does not mean every paragraph from source was imported |
 | [`w59.txt`](w81-archive-retirement-20261004.md#raw-source-inventory) | 5,814 | COVERED | [`the-allcity-bulls`](../../wiki/the-allcity-bulls.html) | Named AllCity Bulls profile present; this does not mean every paragraph from source was imported |
@@ -135,7 +135,7 @@ Do **not** fill the six currently unassigned Forty Paths positions from old alte
 | Decision | Source evidence | Publication boundary |
 |---|---|---|
 | Distinct Agent SAM biography / 2036 vs 2030 | `W12`, `W13` | Authorise a canonical fictional-person route first; do not rewrite 2030 scripture or the living SAM software identity |
-| The Crypto Moongirls and thirty-four named Forty Paths | `w56`, `W5`, `w68` | Decide their relationship to the Queens/Block Topia polity before creating an HTML faction page or changing an existing slot |
+| Crypto Moongirls live faction vs First Witness readings | `w56`, `W5`, `w68` | Review the [existing Crypto Moongirls chamber](../../battle-chamber/factions/crypto-moongirls.html) and selector alongside Queens/Block Topia and the 34/6 First Witness register. Do not duplicate its route or silently create a numbered position. |
 | Kael Voss, Sylas and loop endgames | `W15`, `w25` | Preserve as alternatives; do not resolve the Final Fork automatically |
 | Whisper Codex cosmology / NULL or SAM authorship | `W1` | Source-attributed relic tradition; no universal cosmic physics or finished scripture |
 | Six Pillars and named weapons | `w32` | Source taxonomy/props only; do not announce live combat or wallet operations |
