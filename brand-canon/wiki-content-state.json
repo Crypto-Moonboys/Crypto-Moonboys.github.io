@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "generator": "scripts/generate-wiki-content-state.mjs",
-  "source_tree_hash": "sha256:84810cb4928a522d7dd1c095f5da062ab63ecddd24218cac6429c80b88480279",
+  "source_tree_hash": "sha256:c75d1cc882dc4beea1e3777e8c7f1d18c1ef8516346da14f464ed9824318dea5",
   "hash_algorithm": "sha256",
   "page_count": 424,
   "manifest_entry_count": 424,
@@ -14717,10 +14717,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:d62a0ef38680972f588f413134a93542cf7b90e129ae56b918305633ae6b0c2b",
+      "content_hash": "sha256:ef5eb077e12e0be4897dcaab80ae8cd06037733df6456461a3b8144fedbedf57",
       "article_content_hash": "sha256:9313616a070ced7005fa4cd4c542119bb4d32065f0413989ccd9a036ff1f43e9",
-      "article_markup_hash": "sha256:2cddd941626d6597c7c0226627edc794891fbb20525cd0cf824d96eae2a0b439",
-      "git_blob_oid": "bc5e8e24b9b1d619d069c51cf55cd12e8d39ac84",
+      "article_markup_hash": "sha256:035ab42a8932c95db3b11ad3c61f958e9fd2e6606b7c0c980a585dc25256aebb",
+      "git_blob_oid": "eeac696007ac80f30dac192195fb1bbcded52365",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -14739,11 +14739,11 @@
         "wiki/bibles/spirit-borns.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 2 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 3 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/spirit-borns.json; it is not automatically the unavailable Tier 4 modern bible."
       ],
       "content_owner": "canon",
-      "canon_revision": 2,
+      "canon_revision": 3,
       "canon_source_tier": "first-witness+w81"
     },
     {

@@ -18,10 +18,41 @@ test('explicit chronology, ending, identity and live-game drift fail', () => {
 });
 test('attributed alternatives and negative statements remain valid', () => {
   assert.deepEqual(scan('M16 places the Triple Fork in 2198.'), []);
-  assert.deepEqual(scan('The archive claims the Final Fork has concluded.'), []);
+  assert.deepEqual(scan('W15.txt claims the Final Fork has concluded.'), []);
+  assert.deepEqual(scan('decision:GK-1458-FINAL-FORK-CONTINUITY describes the Final Fork has concluded.'), []);
   assert.deepEqual(scan('The Final Fork is not resolved.'), []);
   assert.deepEqual(scan('The Triple Fork occurred in 2880.'), []);
   assert.deepEqual(checkPage('<section data-canon-status="archive-variant" data-canon-source="M16.txt"><p>The Triple Fork occurred in 2198.</p></section>', locks, decisions), []);
+});
+test('all six visible heading levels reject locked claims and retain exact attribution', () => {
+  for (let level = 1; level <= 6; level++) {
+    const heading = `h${level}`;
+    for (const claim of ['The Final Fork has concluded.', 'The Triple Fork occurred in 2198.',
+      'Bitcoin Kids are the same as Bitcoin X Kids.', 'DREAMWARS is now live.']) {
+      assert.equal(checkPage(`<article><${heading}>${claim}</${heading}></article>`, locks, decisions).length, 1, `${heading}: ${claim}`);
+      assert.deepEqual(checkPage(`<section data-canon-status="disputed" data-canon-source="W15.txt"><${heading}>${claim}</${heading}></section>`, locks, decisions), []);
+    }
+    assert.deepEqual(checkPage(`<${heading}>The Triple Fork occurred in 2880.</${heading}>`, locks, decisions), []);
+  }
+  assert.equal(checkPage('<H2>The Final <em>Fork</em> has concluded.</H2>', locks, decisions).length, 1);
+  assert.deepEqual(checkPage('<template><h2>The Final Fork has concluded.</h2></template><!-- <h3>The Final Fork has concluded.</h3> -->', locks, decisions), []);
+});
+test('generic, invented and lookalike sources cannot attribute alternative canon', () => {
+  for (const source of ['The archive', 'The source', 'A witness', 'The tradition', 'The prophecy',
+    'The manifesto', 'The broadsheet', 'W999.txt', 'M17', 'W15.txt.bak',
+    'decision:GK-1458-NOT-RECORDED', 'decision:GK-1458-FINAL-FORK-CONTINUITY-FAKE']) {
+    assert.equal(scan(`${source} claims the Final Fork has concluded.`).length, 1, source);
+  }
+  assert.deepEqual(scan('w15 claims the Final Fork has concluded.'), []);
+  assert.equal(scan('W15.txt describes a mural. The archive claims the Final Fork has concluded.').length, 1);
+  assert.equal(checkPage('<section data-canon-status="disputed" data-canon-source="decision:invented"><h2>The Final Fork has concluded.</h2></section>', locks, decisions).length, 2);
+});
+test('an existing discussion of disputed source endings requires its local source receipt', () => {
+  const warning = 'Source passages using earlier incompatible dates or speaking as though the Final Fork has already resolved every conflict cannot reset that frame.';
+  assert.equal(scan(warning).length, 1);
+  const sourced = `<p data-canon-status="disputed" data-canon-source="w23.txt">${warning}</p>`;
+  assert.deepEqual(checkPage(sourced, locks, decisions), []);
+  assert.equal(checkPage(`${sourced}<h2>The Final Fork has concluded.</h2>`, locks, decisions).length, 1);
 });
 test('unrelated attribution and inert markers cannot hide a new assertion', () => {
   assert.equal(scan('The archive is uncertain. The Final Fork has concluded.').length, 1);

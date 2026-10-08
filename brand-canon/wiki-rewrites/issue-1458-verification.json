@@ -26,7 +26,7 @@
     "w52.txt"
   ],
   "existing_wiki_pages_sectionally_reviewed": 3,
-  "existing_wiki_pages_updated": 50,
+  "existing_wiki_pages_updated": 51,
   "new_wiki_articles": 9,
   "source_level_conflicts_interpreted": 4,
   "major_historical_retcons_published": 0,
@@ -54,23 +54,23 @@
   },
   "verification": {
     "source_verifier": "passed",
-    "source_corruption_tests": "4 passed",
-    "canon_guard_regressions": "8 direct regression groups passed",
+    "source_corruption_tests": "4 original Python verifier tests passed through mandatory test:canon: pristine archive and three corruption cases",
+    "canon_guard_regressions": "14 Node test groups passed, including three executed npm-command integration regressions; all h1-h6 and registered-source attribution cases pass",
     "canon_guard": "passed, 424 top-level pages; original PR base and reviewed-story baseline with exact Tavi receipts",
     "wiki_ci": "passed, exit0; current-main baseline and task-authorised local prose flag",
     "content_ownership": "passed",
     "content_state_parity": "passed",
     "graph_publishing_integrity": "passed",
     "browser": "passed",
-    "github_pages_artifact": "final games-origin artifact built successfully; no deployment",
+    "github_pages_artifact": "P2 corrected artifact built successfully; no deployment",
     "git_diff_check": "passed",
-    "full_npm_test": "Aggregate attempt passed Arcade, Worker API, Wiki and WAX; stopped in Visual on missing bundled browser. All 16 Visual commands subsequently passed in ci:visual after installed Chromium setup and moving the generated preview outside the source tree. No successful single aggregate npm test invocation is claimed.",
+    "full_npm_test": "Current P2 aggregate attempt passed Arcade, Worker API, Wiki and WAX, then stopped in Visual because avatar tests required missing bundled Playwright Chromium. After configuring a task-local cache to launch actual system Chromium151, a complete ci:visual run passed all16 commands, exit0. Final complete ci:wiki also passed exit0 after the CI file-matching fix. No successful single aggregate invocation is claimed.",
     "ci_domains": {
-      "arcade": "passed in aggregate attempt",
-      "worker_api": "passed in aggregate attempt",
-      "wiki": "passed in aggregate attempt",
-      "wax": "passed in aggregate attempt",
-      "visual": "passed in complete subsequent ci:visual run, exit 0"
+      "arcade": "passed in current P2 aggregate attempt",
+      "worker_api": "passed in current P2 aggregate attempt",
+      "wiki": "passed in current aggregate and final complete ci:wiki, exit0",
+      "wax": "passed in current P2 aggregate attempt",
+      "visual": "passed all16 commands in complete subsequent ci:visual, exit0"
     },
     "log_paths": {
       "aggregate": "/tmp/gk1458/full-verified-test.log",
@@ -182,9 +182,19 @@
       "games_origin_preservation": "/tmp/gk1459/games-origin-preservation.log",
       "games_origin_all_wiki_preservation": "/tmp/gk1459/games-origin-all-wiki-preservation.log",
       "games_origin_build": "/tmp/gk1459/games-origin-pages-build.log",
-      "games_origin_canon": "/tmp/gk1459/games-origin-checkpoint-canon.log"
+      "games_origin_canon": "/tmp/gk1459/games-origin-checkpoint-canon.log",
+      "p2_canon": "/tmp/gk1459/p2-fixed-canon.log",
+      "p2_aggregate": "/tmp/gk1459/p2-full-npm-test.log",
+      "p2_wiki": "/tmp/gk1459/p2-final-ci-wiki.log",
+      "p2_visual": "/tmp/gk1459/p2-ci-visual.log",
+      "p2_graph": "/tmp/gk1459/p2-graph.log",
+      "p2_preservation": "/tmp/gk1459/p2-all-wiki-preservation.json",
+      "p2_browser": "/tmp/gk1459/p2-browser.log",
+      "p2_ci_grouping": "/tmp/gk1459/p2-ci-grouping.log",
+      "p2_build": "/tmp/gk1459/p2-pages-build.log",
+      "p2_before_fix_regressions": "/tmp/gk1459/p2-before-fix-regressions.log"
     },
-    "github_pages_artifact_path": "/workspace/gk1459-previews/games-origin-public-site",
+    "github_pages_artifact_path": "/workspace/gk1459-previews/p2-review-public-site",
     "scoped_related_paths": "passed: unrelated NFT/curated pages unchanged; invalid scope fails before writes",
     "visual_current_batch": "passed: all 16 ci:visual commands, exit 0",
     "wiki_ci_latest_base": "passed, exit 0, final W5 prose and restored curated navigation; BASE_SHA=b865fd991a63d3b74c7076acec703a9b5b0647d8 and task-authorised local prose flag",
@@ -733,5 +743,52 @@
     "status": "complete source reading and all28 owning profile/modern history comparisons",
     "new_owning_prose_required": false,
     "reason": "All relevant doctrine, partial28-of40/6functional blocs/HODL boundaries and aspirational product claims already represented; no duplicated source article."
+  },
+  "existing_wiki_pages_updated_scope": "50 prior expanded/corrected lore articles plus one provenance-only Spirit Borns metadata correction; its visible article text is unchanged.",
+  "p2_review": {
+    "date": "2026-10-08",
+    "authorization": "GK review: fix all three P2 defects before merge; current43-source batch approved in principle; preserve research and adult stories; keep Issue1458 open.",
+    "archive_verification": "test:canon invokes the original Python verifier and original four-test suite before Node checks. Mandatory wiki CI invokes test:canon. Python-only verifier/test and npm-command regression changes trigger wiki checks.",
+    "heading_coverage": [
+      "h1",
+      "h2",
+      "h3",
+      "h4",
+      "h5",
+      "h6"
+    ],
+    "attribution": "Generic archive/source/witness/tradition/prophecy/manifesto/broadsheet wording no longer exempts a claim. Inline IDs must match registered W81 filenames or recorded decision IDs; structured source attributes remain scoped and registered.",
+    "regression_evidence": {
+      "before_fix": "New regression run against the old implementation failed6 of13 groups",
+      "after_fix": "All14 Node groups plus4 original Python verifier tests pass",
+      "mandatory_file_matching": "Verifier, corruption tests, npm-command integration tests and both guard files each independently select wiki CI"
+    },
+    "provenance_only_page": "wiki/spirit-borns.html: disputed-ending paragraph now names its already-cited w23.txt (Transmission10 ending); revision3. No wording changed. No additional source counted complete.",
+    "source_research_preservation": "Audit, source CSV, reconciliation decisions, locks and working master truth remain byte-identical to pre-review head9580bac657a7570213847d6b3acc98242eae7231. 43 complete comparisons and51 open remain.",
+    "story_preservation": {
+      "baseline": "9580bac657a7570213847d6b3acc98242eae7231",
+      "pages": 424,
+      "unique_substantial_paragraphs_per_page": 9873,
+      "original_active_ids": 5298,
+      "exact_authorized_paragraph_revisions": 0,
+      "failures": [],
+      "scope": "automated preservation comparison of every top-level wiki page; not a semantic audit"
+    },
+    "visible_text_preservation": "All424 current wiki articles have identical visible article text to pre-review head9580bac657a7570213847d6b3acc98242eae7231; zero revised paragraphs.",
+    "scoped_browser": {
+      "desktop_mobile_views": 2,
+      "no_javascript_pages": 1,
+      "search_autocomplete_queries": 1,
+      "scope": "Spirit Borns only"
+    },
+    "visual_environment": "Playwright CDN returned403 Domain forbidden. Network policy remained enforced and unchanged. Task-local browser cache launchers point to installed /usr/bin/chromium (151.0.7922.173); actual rendering tests ran, no browser checks skipped.",
+    "review_threads": [
+      "PRRT_kwDORsNNC86qd-sa",
+      "PRRT_kwDORsNNC86qd-sh",
+      "PRRT_kwDORsNNC86qd-sm"
+    ],
+    "baseline_github_failures": "Exact9580bac657a7570213847d6b3acc98242eae7231: ci-wiki113434362245 and Graph113434362080 passed canon guards/regeneration/parity, then failed only because maintainer canon-prose-change-approved label was absent. Logs inspected.",
+    "corrected_head_github_checks": "Pending upload; final exact-head results will be recorded on existing PR1459 and Issue1458 progress comment.",
+    "merge_status": "Hold merge until corrected PR required checks and maintainer approval. No label self-applied, no merge/deployment."
   }
 }

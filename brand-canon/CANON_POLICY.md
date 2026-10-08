@@ -56,6 +56,9 @@ locally (named speaker/source, reported belief or `data-canon-status` and
 `data-canon-source` on a section). Quotes cannot silently become the narrator's
 physics. Do not invent retrospective 2030 scripture, guaranteed resurrection,
 universal upload or a concluded Final Fork without an explicit canon decision.
+For claims covered by the guard, the local attribution must identify a registered
+W81 filename or recorded `decision:` ID. Generic “the archive claims” language
+does not establish provenance or exempt a claim.
 
 ## Adult writing
 
@@ -79,7 +82,10 @@ the exact historical commit in the retirement ledger and verify archive and all
 94 text hashes with `scripts/verify-w81-archive.py --output-dir /tmp/...`.
 The verifier checks both the CSV and the independent historical checksum ledger.
 
-Run `npm run test:canon`. The guard covers explicit high-risk chronology,
+Run `npm run test:canon`. It recovers and verifies the original archive and runs
+the Python corruption tests before the JavaScript regressions and guard; mandatory
+wiki CI calls the same command. The guard scans paragraphs, lists, table cells
+and all six heading levels for explicit high-risk chronology,
 identity mergers, final outcomes and archival product claims. It is a targeted
 lint, not a semantic oracle: human research still handles paraphrases, every
 supporting relationship and faction arithmetic. False positives need a local,

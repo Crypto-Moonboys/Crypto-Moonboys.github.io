@@ -9,6 +9,18 @@ import { htmlToVisibleText, extractArticleHtml, sha256 } from './generate-wiki-c
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const LOCK_PATH = 'brand-canon/canon-locks.json';
 const DECISIONS_PATH = 'brand-canon/reconciliation-decisions.json';
+const CLAIM_ELEMENTS = new Set(['p', 'td', 'th', 'li', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6']);
+
+function hasRegisteredAttribution(sentence, registeredSources) {
+  const references = sentence.matchAll(/\b((?:W\d+|M\d+)(?:\.txt)?|decision:[A-Za-z0-9-]+)\b(?![A-Za-z0-9_-]|\.[A-Za-z0-9])/giu);
+  for (const reference of references) {
+    const source = /^(?:W|M)\d+$/iu.test(reference[1]) ? `${reference[1]}.txt` : reference[1];
+    if (!registeredSources.has(source.toLowerCase())) continue;
+    const following = sentence.slice(reference.index + reference[0].length);
+    if (/^[^.!?;]{0,110}\b(?:claims?|places?|dates?|gives?|says?|describes?|predicts?|promises?|asserts?|portrays?|offers?|reports?)\b/iu.test(following)) return true;
+  }
+  return false;
+}
 
 export function narrativeParagraphs(html) {
   const article = extractArticleHtml(html);
@@ -48,6 +60,7 @@ export function checkPage(html, locks, decisions, filename = '<fixture>') {
   const failures = [], stack = [];
   const allowed = new Set(locks.attributed_statuses);
   const sources = new Set([...locks.source_files, ...decisions.decisions.map(d => `decision:${d.id}`)]);
+  const inlineSources = new Set([...sources].map(source => source.toLowerCase()));
   for (const token of tokenizeActiveHtml(html)) {
     if (token.type !== 'tag') continue;
     if (!token.closing) {
@@ -63,7 +76,7 @@ export function checkPage(html, locks, decisions, filename = '<fixture>') {
       const i = stack.findLastIndex(item => item.name === token.name);
       if (i < 0) continue;
       const node = stack[i];
-      if (['p', 'td', 'li'].includes(token.name)) {
+      if (CLAIM_ELEMENTS.has(token.name)) {
         const text = htmlToVisibleText(html.slice(node.start, token.start));
         // Attribution cannot excuse unrelated assertions elsewhere in a paragraph.
         for (const sentence of text.split(/(?<=[.!?])\s+/u)) {
@@ -72,7 +85,7 @@ export function checkPage(html, locks, decisions, filename = '<fixture>') {
             if (!match) continue;
             if (rule.locked_anchor && Number(match.groups?.year) === locks.anchors[rule.locked_anchor]) continue;
             const attributed = stack.some(item => item.attributed)
-              || /(?:\b(?:W\d+|M16)(?:\.txt)?\b|\b(?:archive|source|witness|tradition|prophecy|manifesto|broadsheet)\b).{0,110}\b(?:claims?|places?|dates?|gives?|says?|describes?|predicts?|promises?|asserts?|portrays?|offers?|reports?)\b/iu.test(sentence);
+              || hasRegisteredAttribution(sentence, inlineSources);
             const denied = new RegExp(rule.denial || '(?!)', 'iu').test(sentence);
             if (!attributed && !denied) failures.push(`${filename}: ${rule.id}: ${sentence}`);
           }

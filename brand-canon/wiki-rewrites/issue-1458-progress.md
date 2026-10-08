@@ -15,7 +15,8 @@ No direct push to main, merge, issue closure or production deployment.
 43 of 94 original sources have full claim/scene comparison; 51 remain open.
 Seven further originals are completely read with comparisons pending. Existing
 wiki audits cover 76 distinct articles: 73 full and three focused. Nine new
-articles and 50 expanded/corrected existing articles are implemented, with
+articles and 50 expanded/corrected existing lore articles, plus one provenance-only
+Spirit Borns metadata correction, are implemented, with
 five original adult connecting stories. This is an implementation checkpoint,
 not a claim that every source or current wiki page is reconciled.
 
@@ -1137,3 +1138,49 @@ The current implementation is complete for review; merge remains held for
 maintainer approval/check completion. No merge/deployment or issue closure.
 Final remote results will be reported in the existing PR and issue comment;
 this record does not misrepresent pending runs as successful.
+
+
+## PR1459 P2 review fixes before merge
+
+The current43-source batch is approved in principle; GK requires three defects
+fixed before merge. No reconciliation restart, source-count increase or new
+fiction was undertaken. Mandatory test:canon now invokes the original Python
+archive verifier and original four-test suite, then14 Node regression groups
+and the guard. Wiki CI calls the complete command; verifier/test-only changes
+now select mandatory wiki checks. Executed npm-command regressions reject a
+changed archive checksum, missing retirement commit and failing Python tests.
+
+The explicit claim guard scans h1-h6 (and table headers) alongside paragraphs,
+lists and cells. Generic archive/source/witness/tradition/prophecy/manifesto/
+broadsheet attribution is removed; exact registered W81 or recorded decision
+IDs are required. Tests cover all six heading levels, four prohibited claim
+kinds, nested/uppercase markup, inert content, unknown/lookalike IDs and valid
+scoped attributions. New tests failed6 of13 groups against old code; all14
+current Node groups and4 Python verifier tests now pass.
+
+Spirit Borns' existing disputed-ending warning now carries its already-cited
+w23.txt provenance, with revision3 and regenerated content inventory. The
+paragraph's wording is unchanged. All424 wiki articles retain identical visible
+text;9873 original substantial paragraphs and5298 IDs remain against the
+pre-review9580bac657a7570213847d6b3acc98242eae7231 checkpoint, zero revisions.
+Audit/source CSV/decisions/locks/master truth are byte-identical to that head.
+All research and approved adult fiction are preserved;43 comparisons complete,
+51 open. No major proposals adopted. Keep Issue1458 open.
+
+Current aggregate npm test passed Arcade, WorkerAPI, Wiki and WAX, then stopped
+at avatar browser setup (missing bundled Chromium). Playwright CDN was denied
+by enforced domain policy. A task-local cache points to actual installed
+Chromium151; no policy or repository test code was changed for that workaround.
+Complete subsequent ci:visual passes all16 commands, exit0. Final complete wiki
+CI also passes exit0 after the file-matching fix. Canon, graph and preservation
+checks pass; scoped SpiritBorns browser passes2 desktop/mobile views,1 noJS and
+1 full-search/autocomplete query. Changed scripts pass syntax checks. No successful
+single aggregate invocation is claimed. Pages artifact built at
+`/workspace/gk1459-previews/p2-review-public-site`; no deployment.
+
+Prior9580bac657a7570213847d6b3acc98242eae7231 Wiki/Graph failure logs inspected:
+guards/regeneration/parity pass, then only the maintainer prose-label gate.
+Push corrected code on the existing branch, reply to and resolve the three
+existing P2 threads, and record final exact-head Actions results in PR1459 and
+the existing Issue1458 comment. Hold merge until required checks and maintainer
+approval; do not self-apply the prose label or merge/deploy.

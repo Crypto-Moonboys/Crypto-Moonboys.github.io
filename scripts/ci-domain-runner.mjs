@@ -2,8 +2,7 @@ import { spawnSync } from 'node:child_process';
 
 const GROUPS = {
   wiki: [
-    ['node', '--test', 'scripts/canon-integrity-check.test.mjs'],
-    ['node', 'scripts/canon-integrity-check.mjs'],
+    ['npm', 'run', 'test:canon'],
     ['node', 'scripts/resolve-canon-prose-approval.test.mjs'],
     ['node', 'scripts/audit-related-wiki-paths.mjs'],
     ['node', 'scripts/wiki-navigation-backfill-rendering.test.mjs'],
