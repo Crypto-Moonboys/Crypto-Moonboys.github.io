@@ -153,10 +153,20 @@ inventory debt remains separately recorded; this tranche preserves NFT pages.
 
 ## Delivery
 
-PR link and final CI status will be appended below when available. Draft status
+Draft PR: [#1459](https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/pull/1459). GitHub CI is not yet
+verified; local results above remain the verification evidence. Draft status
 is required while the repository-wide reconciliation and specific canon
 approvals above remain incomplete.
 
 ### Local delivery block
 
 The backup branch upload succeeded after task/target/commit verification. Automatic approval review separately rejected pushing the actual implementation commits and posting the prepared issue update, requiring explicit authorisation for those exact payloads and destination. Neither was bypassed. No PR exists and Issue #1458 has not been updated. The exact draft PR file (including all 55 payload paths) and issue update are prepared at `/workspace/scratch/issue-1458-draft-pr.md` and `/workspace/scratch/issue-1458-issue-update.md`. Specific user approval has been requested; keep merge held and the issue open.
+
+### Draft delivery receipt
+
+The user subsequently instructed **create pr**. The five implementation/checkpoint
+commits were uploaded on the working branch, and draft PR [#1459](https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/pull/1459)
+was created and attached to the chat. This resolves the implementation upload
+block described above. Main is unchanged by this delivery; no merge or deployment
+occurred. Issue #1458 stays open. Its separately rejected progress-comment export
+has not been retried. Continue source reconciliation on this same PR.

@@ -70,15 +70,16 @@
   ],
   "delivery": {
     "backup_branch_uploaded": true,
-    "implementation_branch_uploaded": false,
-    "pull_request_url": null,
+    "implementation_branch_uploaded": true,
+    "pull_request_url": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/pull/1459",
     "issue_update_posted": false,
     "blocked_actions": [
-      "push implementation branch",
       "post issue progress update"
     ],
-    "approval_review_reason": "Specific implementation/report payload export to GitHub requires explicit user approval.",
+    "approval_review_reason": "Earlier implementation push rejection resolved by the user instruction to create the PR. The separately rejected issue-comment export has not been retried.",
     "reviewable_pr_body": "/workspace/scratch/issue-1458-draft-pr.md",
-    "reviewable_issue_update": "/workspace/scratch/issue-1458-issue-update.md"
+    "reviewable_issue_update": "/workspace/scratch/issue-1458-issue-update.md",
+    "pull_request_draft": true,
+    "github_ci": "Not yet verified; local checks are recorded separately."
   }
 }
