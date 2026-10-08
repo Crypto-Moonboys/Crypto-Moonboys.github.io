@@ -1392,26 +1392,6 @@ function readAnchoredGeneratedFile(anchor, fileName) {
 function checkGeneratedFile(anchor, fileName, displayPath, expected) {
   const actual = readAnchoredGeneratedFile(anchor, fileName);
   if (actual === null) return `${path.relative(ROOT, displayPath)} is missing`;
-  if (actual !== expected && fileName === 'wiki-content-state.json') {
-    try {
-      const old = JSON.parse(actual);
-      const generated = JSON.parse(expected);
-      const changed = Object.keys(generated).filter((key) => JSON.stringify(old[key]) !== JSON.stringify(generated[key]));
-      console.error('TEMP DIAGNOSTIC: changed manifest sections: ' + changed.join(', '));
-      for (const key of changed) {
-        if (key === 'pages') {
-          const diff = generated.pages
-            .map((page, i) => ({ old: old.pages[i], next: page, index: i }))
-            .filter(({ old, next }) => JSON.stringify(old) !== JSON.stringify(next));
-          console.error('TEMP DIAGNOSTIC: changed page count ' + diff.length + '; first ' + JSON.stringify(diff.slice(0, 2)));
-        } else {
-          console.error('TEMP DIAGNOSTIC: field ' + key + ' old=' + JSON.stringify(old[key]).slice(0, 1000) + ' new=' + JSON.stringify(generated[key]).slice(0, 1000));
-        }
-      }
-    } catch (error) {
-      console.error('TEMP DIAGNOSTIC error ' + error.message);
-    }
-  }
   return actual === expected ? null : `${path.relative(ROOT, displayPath)} is stale`;
 }
 
