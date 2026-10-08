@@ -524,8 +524,27 @@
       "bytes": 221593,
       "sha256": "e54f1518083323a872827ffc4e636832c821e48e64200e2adbd42012038d6292",
       "byte_verified": true,
-      "semantic_review": "pending complete semantic reading",
-      "prior_disposition": "CONFLICT"
+      "semantic_review": "partial complete-paragraph reading; remaining source and connected-page comparison pending",
+      "prior_disposition": "CONFLICT",
+      "read_progress": {
+        "method": "verified original UTF-8 split on blank lines; each numbered paragraph read in full",
+        "paragraphs_total": 1335,
+        "paragraphs_read_in_full": [
+          [
+            1,
+            105
+          ]
+        ],
+        "next_unread_paragraph": 106,
+        "complete_source_comparison": false
+      },
+      "partial_findings": [
+        "Tome1 complete (paragraphs1-51): repeats PapaDes daughtersDenise1972/Tracey1980 and household; asserts2036 upload/TripleFork/newBlockTopia with Sarah eternalSAMcompanion, distinct from W12 raid/capture and current chronology. Real-person/real-product embellishments are not accepted biography or runtime truth.",
+        "Tome2 read through paragraph105:2789 universal upload,2880 TripleFork before2200-2300 PaintWars; Sarah2066 moonexperiment claims a GraffitiKings black-site and universal reality powers. Chronology and ownership claims are source variants, not accepted repairs.",
+        "Paragraph84 explicitly gives BurnCrews40-man fireteams;85 calls StencilWitches femaleGraffPunks;86 describes TagLords as apexPaintWar inheritors. These passages supply internal formations/ranks, not independent membership for three new Forty slots. Later source parts are unread.",
+        "NoBallGamesLegion appears as Charlie personal army and arenas/war-zone economy; remains a potential fictional culture with unverified independent continuity, not real-game or NFT rights.",
+        "Large initial full-file print was truncated and is not counted as source reading; explicit numbered recovery read paragraphs1-105. Resume106."
+      ]
     },
     {
       "file": "w50.txt",
@@ -684,8 +703,18 @@
       "bytes": 14492,
       "sha256": "d64580312718324c787dbb71a127a122c0bee8e5b01da9edeed6abaa859775c9",
       "byte_verified": true,
-      "semantic_review": "pending complete semantic reading",
-      "prior_disposition": "CONFLICT"
+      "semantic_review": "complete source reading; roster and connected-page comparison pending",
+      "prior_disposition": "CONFLICT",
+      "read_progress": {
+        "method": "entire verified UTF-8 original printed and read without truncation",
+        "complete_source_comparison": false
+      },
+      "partial_findings": [
+        "Full September2025 directory explicitly calls list some of40 and current28active, with HODL protocol outside numbered1-28. Source does not claim28is complete civilization census.",
+        "All28 enumerated cultures match first28 current commentary names (Army throughGaslessGhosts); remainder six modern named readings and six pendingslots require their independent source chains. NULL appears as a cosmic threat, not numbered28.",
+        "Sixfunctional pillars agree with w32 doctrinal structure; survival40 temporarilybecomingHODLdefense conflicts with treating HODL as permanent newcountedculture. BookVIII limits emergencymobilisation.",
+        "Its phygital portals/wallets, collectible claims and factionartists promotion cannot prove current rights. Current product hub/README authority and all faction biographies remain in source-to-page comparison."
+      ]
     },
     {
       "file": "w69.txt",

@@ -345,3 +345,20 @@ pass after final metadata changes. Pages artifact built and moved to
 `/tmp/gk1459/serial-public-site`; no deployment. W81 CSV remains CONFLICT for
 W15/w25/M16 but now records exact recovered routes, full readings and remaining
 comparison. Source names, byte sizes and SHA-256 values remain unchanged.
+
+
+After serial delivery, W5 numbered paragraphs1–105 are fully read; next106 of
+1335, verified221593-byte original. No fullW5 reading is claimed. Tome1 repeats
+2036 upload, while Tome2 mixes2789upload/2880fork with2200–2300PaintWars, Sarah
+2066experiment and artist/product embellishments. Those claims are not adopted.
+w68 is now fully read but comparison remains pending: its28active list is
+explicitly someof40, and HODL collective defence sits outside the numbered list.
+Proposal membership evidence is updated; no new Forty slot is assigned.
+
+Actual Actions at serial head2d758b5ed: Wiki Structure, production truth, worker
+provenance, Arcade and WAX pass. Wiki and Graph regeneration/parity pass, then
+stop at the existing maintainer prose-approval label gate (both logs inspected).
+Worker API and Visual subsequently completed successfully. All seven other
+workflow/domain results pass. Remote Wiki/Graph remain at the intentional label
+gate; their results are distinct from successful authorised local wiki checks. Issue progress comment6059157565
+and PR description were successfully synchronized; no merge or deployment.

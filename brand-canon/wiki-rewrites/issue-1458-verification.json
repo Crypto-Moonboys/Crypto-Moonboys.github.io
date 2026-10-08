@@ -101,10 +101,10 @@
     "reviewable_issue_update": "/workspace/scratch/issue-1458-issue-update.md",
     "pull_request_draft": true,
     "github_ci": "Checked exact head 6da75973f827b7161ce349a403ca4af723d8c00e: Wiki Structure, production truth, worker provenance, Arcade, Worker API, WAX and Visual passed. CI/Wiki and Graph Publishing stopped at protected-prose maintainer-label gate. No canon-prose-change-approved label has been self-applied.",
-    "issue_progress_comment_id": 6058399327,
-    "latest_implementation_commit_uploaded": "229576498114ed5612db6f58014fb3ad503b9afb",
+    "issue_progress_comment_id": 6059157565,
+    "latest_implementation_commit_uploaded": "2d758b5ed3df6d2a306739a3b228334c98d2c0fa",
     "github_ci_latest_batch": "Exact head a1d5273cd534654e28bab701aecb7736f184695b: Wiki Structure, production truth, worker provenance, Arcade, Worker API, WAX and Visual passed. Wiki and Graph regeneration/manifest/graph checks pass and then stop at the existing maintainer canon-prose-change-approved label gate. No label self-applied.",
-    "serial_batch_ci": "local validation complete; exact uploaded head Actions inspection pending after commit"
+    "serial_batch_ci": "Exact head2d758b5ed: WikiStructure,productiontruth,workerprovenance,Arcade,WorkerAPI,WAX,Visual all pass. Wiki/Graph logs show only existing maintainer prose-label gate after manifest/graph parity. No label self-applied."
   },
   "initial_tranche_verification": {
     "source_texts_completely_read_this_tranche": [
@@ -173,7 +173,8 @@
     "W19.txt",
     "W15.txt",
     "w25.txt",
-    "M16.txt"
+    "M16.txt",
+    "w68.txt"
   ],
   "existing_wiki_pages_reviewed_total": 28,
   "preserved_original_paragraphs_scope": "12 expanded pages, unique canonical narrative paragraphs >=40 characters per owning page, compared with original base; all original active IDs also retained",

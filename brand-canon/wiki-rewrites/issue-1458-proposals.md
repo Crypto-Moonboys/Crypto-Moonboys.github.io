@@ -143,9 +143,9 @@ The current evidence does not justify six finished independent cultures.
 | Candidate | Evidence and relationship to investigate | Current decision |
 | --- | --- | --- |
 | NoBallGames Legion | W1 treats the Legion as a distinct participant focused on arenas. Compare W5/W68 and XRP Kids' No Ball Games cultural inheritance. | Potential independent culture; membership and continuity still unverified. |
-| Stencil Witches | Existing digest/companion identify an archive candidate. Locate the exact foundational roster and substantive culture passages. | Research candidate; no invented source claim or slot assignment. |
-| Burn Crews | W1 calls them crews executing GraffPUNK Operation Echo. | Current evidence points to a function within a culture; do not count twice. |
-| Tag Lords | Archive candidate named by existing digest. Needs independent belonging rather than rank/title. | Research pending; not a numbered path. |
+| Stencil Witches | W5 paragraph85 explicitly calls them female GraffPUNKS; later tomes are still unread. | Evidence currently supports an internal formation; independent membership needs additional source evidence before any slot proposal. |
+| Burn Crews | W1 calls them Operation Echo crews; W5 paragraph84 describes40-man fireteams. | Evidence currently supports a formation within a culture; do not count twice. |
+| Tag Lords | W5 paragraph86 gives apexPaintWar inheritors; later tomes are unread. | Evidence currently supports rank/archetype; independent belonging remains unverified. |
 | $DUST Protocol | Existing digest flags a protocol candidate. | A protocol is insufficient; independent community evidence required. |
 | Remaining position(s) | Compare all alternative rosters and aliases, including Bitcoin Kid Army/Kids and Architect/GKniftyHEADS pairs. | Do not fabricate a name to complete arithmetic. |
 
@@ -164,3 +164,15 @@ Council, Layer Eight, Crimson Protocol, Great Blackout and Codex-7 as source
 research targets; they are not interchangeable with the modern supporting cast.
 The new master bible links their unresolved disposition rather than presenting
 a complete future outcome as already canonical.
+
+
+### Source roster checkpoint
+
+w68 is fully read: its September2025 directory calls these **some of40** and
+**28active**, enumeratesArmy throughGaslessGhosts and places HODL collective
+defence outside the numbered list. It does not supply the missing six. W5
+paragraphs1–105 are fully read, including Tome1 and the beginning ofTome2;
+resume106 of1335. They identify Stencil Witches as femaleGraffPUNKS and Burn
+Crews as40-man fireteams. These actual membership claims narrow the candidates;
+a repeated word in a faction list is insufficient to overrule them. Complete
+W5/w69 and current faction biographies before settling the six-slot proposal.
