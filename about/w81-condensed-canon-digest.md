@@ -1,7 +1,9 @@
 # W81 Condensed Canon Digest
 
-Status: condensed source digest  
-Updated: 2026-10-08 (source reconciliation; original September summary retained)  
+Status: condensed source digest
+
+Updated: 2026-10-08 (source reconciliation; original September summary retained)
+
 Source archive: the historical W81 set of 94 source files; the uploaded `RAW CANNON.zip` repackages the same 94 uncompressed source bytes
 
 This digest exists because the w81 archive is too large and mixed to use safely as one direct source. It contains brand manifestos, lore arcs, faction entries, game ideas, token notes, SAM/wiki system notes, biographies, audits, and old public copy. Future agents and writers should use this digest to understand the archive before pulling from the raw files.
