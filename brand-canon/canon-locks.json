@@ -1,0 +1,240 @@
+{
+  "schema_version": 1,
+  "policy": "brand-canon/CANON_POLICY.md",
+  "authority": "GK directive, Issue #1458, 8 October 2026; W81 is foundational truth",
+  "anchors": {
+    "great_concord": 2030,
+    "sacred_fork": "later, undated",
+    "world_chain_triple_fork": 2880,
+    "secure_regions": "by 2930",
+    "main_saga": 3008,
+    "final_fork": "unresolved"
+  },
+  "forty": {
+    "named_readings": [
+      "Bitcoin Kid Army",
+      "GKniftyHEADS",
+      "Nomad Bears",
+      "AllCity Bulls",
+      "GraffPUNKS",
+      "Bally Boys",
+      "Crypto Moongirls",
+      "Ducky Boys",
+      "Nice & Easy Bois",
+      "Squeaky Pinks",
+      "High Hats",
+      "Hard Fork Rockers",
+      "Blockstars",
+      "Blockchain Furies",
+      "Rugpull Miners",
+      "Aztec Raiders",
+      "Tuskon OGs",
+      "Crypto Stoned Boys",
+      "Code Alchemists",
+      "Finance Guild",
+      "Information Mercenaries",
+      "Salvagers",
+      "Moonlords",
+      "Shard Mothers of Manhattan",
+      "Chain Scribes",
+      "EVM Punks",
+      "OG Pixel Saints",
+      "Gasless Ghosts",
+      "JPEG Bloodline",
+      "Whale Lords",
+      "XRP Kids",
+      "PU55IES",
+      "Slam GiRL$",
+      "Creepto Gals"
+    ],
+    "unassigned": 6,
+    "runtime_roster_size": 9,
+    "source": "wiki/first-witness-faction-commentaries.html"
+  },
+  "identity_boundaries": [
+    [
+      "Bitcoin Kids",
+      "Bitcoin X Kids"
+    ],
+    [
+      "HODL Warriors",
+      "HODL X Warriors"
+    ],
+    [
+      "Sacred/Aether-Chain",
+      "World Chain",
+      "True Bitcoin Fork"
+    ],
+    [
+      "Samuel HyroSAM Blake",
+      "deployed SAM",
+      "SWARMSY SPARKY"
+    ],
+    [
+      "Princess Tracey Vara",
+      "unnamed Princess",
+      "Rya-B",
+      "Queen Sarah P-fly"
+    ],
+    [
+      "Moonlords",
+      "Whale Lords"
+    ],
+    [
+      "Chainfire catastrophe",
+      "CHAINFIRE rebel AI"
+    ]
+  ],
+  "source_files": [
+    "M16.txt",
+    "W1.txt",
+    "W10.txt",
+    "W11.txt",
+    "W12.txt",
+    "W13.txt",
+    "W14.txt",
+    "W15.txt",
+    "W16.txt",
+    "W17.txt",
+    "W18.txt",
+    "W19.txt",
+    "W2.txt",
+    "W20.txt",
+    "w21.txt",
+    "w22.txt",
+    "w23.txt",
+    "w24.txt",
+    "w25.txt",
+    "w26.txt",
+    "w27.txt",
+    "w28.txt",
+    "w29.txt",
+    "W3.txt",
+    "w30.txt",
+    "w31.txt",
+    "w32.txt",
+    "w33.txt",
+    "w34.txt",
+    "w35.txt",
+    "w36.txt",
+    "w37.txt",
+    "w38.txt",
+    "w39.txt",
+    "W4.txt",
+    "w40.txt",
+    "w41.txt",
+    "w42.txt",
+    "w43.txt",
+    "w44.txt",
+    "w45.txt",
+    "w46.txt",
+    "w47.txt",
+    "w48.txt",
+    "w49.txt",
+    "W5.txt",
+    "w50.txt",
+    "w51.txt",
+    "w52.txt",
+    "w53.txt",
+    "w54.txt",
+    "w55.txt",
+    "w56.txt",
+    "w57.txt",
+    "w58.txt",
+    "w59.txt",
+    "W6.txt",
+    "w60.txt",
+    "w61.txt",
+    "w62.txt",
+    "w63.txt",
+    "w64.txt",
+    "w65.txt",
+    "w66.txt",
+    "w67.txt",
+    "w68.txt",
+    "w69.txt",
+    "W7.txt",
+    "w70.txt",
+    "w71.txt",
+    "w72.txt",
+    "w73.txt",
+    "w74.txt",
+    "w75.txt",
+    "w76.txt",
+    "w77.txt",
+    "w78.txt",
+    "w79.txt",
+    "W8.txt",
+    "w80.txt",
+    "w81.txt",
+    "w82.txt",
+    "w83.txt",
+    "w84.txt",
+    "w85.txt",
+    "w86.txt",
+    "w87.txt",
+    "w88.txt",
+    "w89.txt",
+    "W9.txt",
+    "w90.txt",
+    "w91.txt",
+    "w92.txt",
+    "w93.txt"
+  ],
+  "attributed_statuses": [
+    "archive-variant",
+    "sect-claim",
+    "disputed",
+    "proposal"
+  ],
+  "claim_rules": [
+    {
+      "id": "triple-fork-date",
+      "pattern": "\\b(?:Triple Fork|Chainfire)\\b(?:(?!\\d{4}|[,;]).){0,85}?\\b(?:occurred|happened|began|erupted|event was|dates? to|in the year|in)\\s+(?<year>\\d{4})\\b",
+      "denial": "\\b(?:not|never)\\b.{0,45}\\b(?:2198|2588)\\b",
+      "locked_anchor": "world_chain_triple_fork"
+    },
+    {
+      "id": "early-triple-fork",
+      "pattern": "\\b(?:In|Year)\\s+(?<year>\\d{4})\\b.{0,65}\\b(?:Triple Fork|Chainfire)\\b.{0,35}\\b(?:occurred|happened|began|erupted|destroyed|fractured)\\b",
+      "locked_anchor": "world_chain_triple_fork"
+    },
+    {
+      "id": "closed-final-fork",
+      "pattern": "\\bFinal Fork\\b\\s+(?:has\\s+|is\\s+|was\\s+|had\\s+)?(?:already\\s+)?(?:concluded|completed|resolved|won|ended|settled)\\b",
+      "denial": "\\bFinal Fork\\b\\s+(?:has\\s+|is\\s+|was\\s+)?(?:not|never)\\b"
+    },
+    {
+      "id": "kids-identity-merge",
+      "pattern": "\\bBitcoin (?:X )?Kids\\b\\s+(?:are|is)\\s+(?:the same (?:as|people as)|(?:also )?(?:known as|identical to|another name for))\\s+(?:the\\s+)?Bitcoin (?:X )?Kids\\b"
+    },
+    {
+      "id": "hodl-identity-merge",
+      "pattern": "\\bHODL (?:X )?Warriors\\b\\s+(?:are|is)\\s+(?:the same (?:as|people as)|(?:also )?(?:known as|identical to|another name for))\\s+(?:the\\s+)?HODL (?:X )?Warriors\\b"
+    },
+    {
+      "id": "chain-identity-merge",
+      "pattern": "\\b(?:Sacred(?:/Aether)?[- ]Chain|Aether[- ]Chain)\\b\\s+(?:is|was)\\s+(?:(?:also )?(?:known as|identical to|another name for)|the same as)\\s+(?:the\\s+)?(?:World Chain|True Bitcoin Fork)\\b"
+    },
+    {
+      "id": "archival-game-live-claim",
+      "pattern": "\\b(?:BLOCKFRONT|DREAMWARS|FORKLORDS)\\b\\s+(?:is|are|has)\\s+(?:now\\s+)?(?:live|launched|available to play|paying|released)\\b"
+    },
+    {
+      "id": "concord-reset-merge",
+      "pattern": "\\bGreat Concord\\b\\s+(?:of 2030\\s+|in 2030\\s+)?(?:is|was)\\s+(?:the\\s+)?(?:2030\\s+)?Reset\\b"
+    },
+    {
+      "id": "sam-runtime-merge",
+      "pattern": "\\b(?:Samuel (?:[\u201c\"]?HyroSAM[\u201d\"]? )?Blake|HyroSAM Blake)\\b\\s+(?:is|was)\\s+(?:the\\s+)?(?:deployed SAM|SWARMSY SPARKY)\\b"
+    },
+    {
+      "id": "sacred-fork-open-date",
+      "pattern": "\\bSacred Fork\\b\\s+(?:occurred|happened|began)\\s+in\\s+\\d{4}\\b"
+    },
+    {
+      "id": "early-regional-collapse",
+      "pattern": "\\bBy\\s+2765\\s+(?:fewer|less)\\s+than\\s+(?:a\\s+)?dozen\\s+secure\\s+regions\\s+remained\\b"
+    }
+  ]
+}

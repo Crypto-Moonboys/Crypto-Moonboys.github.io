@@ -6,6 +6,12 @@ Production only changes after GK says yes.
 
 ## Mission truth
 
+Fictional canon has its own authority: [GK canon policy](brand-canon/CANON_POLICY.md).
+W81 is foundational truth. Read current connected stories, reconcile conflicts
+deliberately, preserve approved adult fiction, and propagate supported changes.
+The hierarchy below controls real-world/product truth. It does not automatically
+privilege a newer fictional page or ban a justified, GK-approved retcon.
+
 Before editing public copy, agents must understand the hierarchy:
 
 - Crypto Moonboys is the Graffiti Kings creator umbrella, not a game.

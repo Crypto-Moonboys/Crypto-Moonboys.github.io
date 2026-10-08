@@ -4,6 +4,12 @@ import { appendFileSync } from 'node:fs';
 
 const SCOPES = {
   wiki: [
+    'AGENTS.md',
+    'AGENT_EDITING_RULES.md',
+    '.copilot-instructions.md',
+    '.github/copilot-instructions.md',
+    'scripts/canon-integrity-check*.mjs',
+    'scripts/verify-w81-archive.py',
     'scripts/resolve-canon-prose-approval*.mjs',
     '**/*.html',
     'about/**',
