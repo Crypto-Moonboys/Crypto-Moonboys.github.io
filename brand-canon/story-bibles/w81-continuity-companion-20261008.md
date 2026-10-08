@@ -1,5 +1,7 @@
 # W81 / RAW CANON — continuity companion (8 October 2026)
 
+> **Current authority, Issue #1458 (8 October 2026): W81 is foundational truth.** Older language below freezing convergence or treating raw canon as secondary is retained as dated audit evidence and is superseded by `brand-canon/CANON_POLICY.md`. Retcons and Forty-slot proposals must be researched and traced; significant changes require specific GK approval. See `brand-canon/story-bibles/gk-master-canon.md` and `brand-canon/wiki-rewrites/issue-1458-progress.md`.
+
 **Status:** research and editorial reference; **not** a new First Witness book, a new approved ending, a revised faction register, or live product documentation.
 
 **Scope:** the 94 original W81 text entries represented by the uploaded `RAW CANNON.zip`. Original entry bytes match the [retirement inventory](../wiki-rewrites/w81-archive-retirement-20261004.md); repackaging the ZIP does not change their historical identities.
@@ -117,3 +119,7 @@ The research-first sequence is:
 6. Once GK approves specific targets, use the separate canon sandbox workflow, required new-page approval, owning-block edits, navigation/search/graph regeneration and full publishing gates. No wiki HTML, NFT entries, runtime, Worker or First Witness scripture was edited as part of this **source-document** pass.
 
 **Source recovery and verification:** [94-entry W81 retirement ledger](../wiki-rewrites/w81-archive-retirement-20261004.md). For per-file use and status see the [disposition register](../wiki-rewrites/raw-canon-20261008-disposition.md).
+
+## Issue #1458 first implementation tranche
+
+Merged #1457 already supplies Fifth Carbon across 12 articles. This tranche adds `wiki/whisper-codex.html` (W1), `wiki/six-pillars.html` (w32), `wiki/great-consensus.html` (w33), and `wiki/the-crypto-moongirls.html` (w56), with source attribution and connected existing-page additions. Cut Ledger is newly authored adult fiction, not W81 recovery. A source’s entire claim/scene transfer is not inferred from these routes. Full SAM, serial-ending, forty-roster and repository-wide semantic reconciliation remain pending.

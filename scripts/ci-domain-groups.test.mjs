@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { execFileSync } from 'node:child_process';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const workflow = await fs.readFile(path.join(ROOT, '.github/workflows/ci.yml'), 'utf8');
@@ -57,6 +58,20 @@ assert.equal(
 for (const group of ['wiki', 'worker-api', 'arcade', 'wax', 'visual']) {
   const keyPattern = new RegExp(`['"]?${group}['"]?:\\s*\\[`);
   assert.ok(keyPattern.test(runner), `ci-domain-runner must define ${group} group`);
+}
+
+assert.match(
+  runner,
+  /wiki:\s*\[\s*\['npm', 'run', 'test:canon'\]/u,
+  'mandatory wiki CI must run the complete canon command, including archive recovery and corruption tests',
+);
+
+for (const filename of ['scripts/verify-w81-archive.py', 'scripts/verify-w81-archive.test.py',
+  'scripts/canon-test-command.test.mjs', 'scripts/canon-integrity-check.mjs', 'scripts/canon-integrity-check.test.mjs']) {
+  const env = { ...process.env, CHANGED_FILES: filename };
+  delete env.GITHUB_OUTPUT;
+  const output = execFileSync(process.execPath, [path.join(ROOT, 'scripts/ci-change-scope.mjs'), 'wiki'], { cwd: ROOT, env, encoding: 'utf8' });
+  assert.match(output, /should_run=true/u, `${filename} alone must trigger mandatory wiki canon checks`);
 }
 
 assert.ok(

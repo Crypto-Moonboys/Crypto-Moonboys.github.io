@@ -38,7 +38,8 @@
     "moonpet:extract:test": "node scripts/generate-moonpet-assets-extraction.test.js",
     "moonpet:autosprite:discover": "node scripts/discover-autosprite-character.js",
     "moonpet:front:generate": "node scripts/generate-botty-front-animations.js",
-    "moonpet:front:download": "node scripts/download-botty-front-animations.js"
+    "moonpet:front:download": "node scripts/download-botty-front-animations.js",
+    "test:canon": "python3 -B scripts/verify-w81-archive.py && python3 -B scripts/verify-w81-archive.test.py && node --test scripts/canon-integrity-check.test.mjs scripts/canon-test-command.test.mjs && node scripts/canon-integrity-check.mjs"
   },
   "keywords": [],
   "author": "",

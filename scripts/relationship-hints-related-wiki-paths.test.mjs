@@ -166,4 +166,18 @@ for (const expected of [
   assert.ok(nftSection.includes(`href="${expected}"`), `NFT hinted link renders: ${expected}`);
 }
 
+// A scoped lore update must preserve curated groups on unrelated NFT pages
+// and other articles. Invalid selections must fail before any mutation.
+const untouched = new Map(['crypto-moonboys', 'gkniftyheads-nova-shadow-shredder-784419'].map(slug => [slug, fs.readFileSync(path.join(root, 'wiki', `${slug}.html`), 'utf8')]));
+write('wiki/fallback-only.html', article('Fallback Only', 'A newly edited lore article.'));
+const scoped = runGenerateRelatedWikiPaths(root, { pages: ['fallback-only'] });
+assert.equal(scoped.written, 1);
+assert.ok(relatedSection(fs.readFileSync(path.join(root, 'wiki/fallback-only.html'), 'utf8')));
+for (const [slug, html] of untouched) assert.equal(fs.readFileSync(path.join(root, 'wiki', `${slug}.html`), 'utf8'), html, `scoped update preserves ${slug}`);
+const beforeInvalid = fs.readFileSync(path.join(root, 'wiki/fallback-only.html'), 'utf8');
+assert.throws(() => runGenerateRelatedWikiPaths(root, { pages: ['fallback-only', 'missing-page'] }));
+assert.throws(() => runGenerateRelatedWikiPaths(root, { pages: [] }));
+assert.throws(() => runGenerateRelatedWikiPaths(root, { pages: ['../fallback-only'] }));
+assert.equal(fs.readFileSync(path.join(root, 'wiki/fallback-only.html'), 'utf8'), beforeInvalid, 'invalid selections fail before writing');
+
 console.log('relationship-hints-related-wiki-paths.test.mjs passed');

@@ -49,3 +49,11 @@ List the exact page and visible behavior to check after merge.
 Check exactly one:
 - [ ] Ready to merge
 - [ ] Hold merge
+
+# Canon reconciliation (when lore changes)
+- [ ] Read original W81 witnesses and current dependent pages; record exact sources and old/new decisions.
+- [ ] Preserve approved modern stories and adult tone; label newly authored fiction.
+- [ ] Keep Kids/X Kids, HODL/HODL X, the three chains and fictional/runtime SAM distinct.
+- [ ] Map every affected article, bible and discovery surface; increment canonical revisions.
+- [ ] Record specific GK approval for scripture, historical anchors, major identity or Forty-slot changes, or keep proposals unpublished.
+- [ ] Run canon, preservation, publishing and appropriate desktop/mobile checks; report exact results and unfinished research.

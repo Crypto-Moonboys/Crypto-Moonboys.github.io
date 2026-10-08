@@ -1,5 +1,7 @@
 # W81 archive retirement and provenance ledger
 
+> **Current authority, Issue #1458 (8 October 2026): W81 is foundational truth.** Older language below freezing convergence or treating raw canon as secondary is retained as dated audit evidence and is superseded by `brand-canon/CANON_POLICY.md`. Retcons and Forty-slot proposals must be researched and traced; significant changes require specific GK approval. See `brand-canon/story-bibles/gk-master-canon.md` and `brand-canon/wiki-rewrites/issue-1458-progress.md`.
+
 Archive retirement date: 2026-10-04. This ledger is the durable evidence target for former public archive download links. The raw ZIP is retired from the current publication tree; it remains recoverable from immutable Git history. It is not replaced by an empty ZIP, a fake download or another public binary copy.
 
 ## Migration and source authority

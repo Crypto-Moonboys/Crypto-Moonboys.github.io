@@ -1,8 +1,8 @@
 {
-  "_generated": "2026-10-03T07:37:34.306Z",
+  "_generated": "2026-10-08T12:51:42.587Z",
   "summary": {
-    "total": 415,
-    "approved": 415,
+    "total": 424,
+    "approved": 424,
     "blocked": 0,
     "needs_review": 0,
     "blocked_synthetic_slug": 0,
@@ -22,42 +22,49 @@
       "file": "2025-metaverse-launch-party.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 642
+      "word_count": 937
     },
     {
       "slug": "589-xrpl",
       "file": "589-xrpl.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 338
+      "word_count": 325
     },
     {
       "slug": "666-xrpl",
       "file": "666-xrpl.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 320
+      "word_count": 308
+    },
+    {
+      "slug": "agent-sam",
+      "file": "agent-sam.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 2441
     },
     {
       "slug": "alcor-exchange",
       "file": "alcor-exchange.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 839
+      "word_count": 624
     },
     {
       "slug": "aleema-child-of-the-shard",
       "file": "aleema-child-of-the-shard.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 865
+      "word_count": 4088
     },
     {
       "slug": "alfie-bitcoin-kid-blaze",
       "file": "alfie-bitcoin-kid-blaze.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 635
+      "word_count": 7551
     },
     {
       "slug": "alfie-blaze",
@@ -71,14 +78,14 @@
       "file": "alien-worlds-tlm.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1497
+      "word_count": 916
     },
     {
       "slug": "altcoins",
       "file": "altcoins.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1162
+      "word_count": 1106
     },
     {
       "slug": "atomicassets",
@@ -106,77 +113,77 @@
       "file": "ava-chen.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 782
+      "word_count": 3113
     },
     {
       "slug": "battlemech-blast",
       "file": "battlemech-blast.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 756
+      "word_count": 2366
     },
     {
       "slug": "bear-market-siege",
       "file": "bear-market-siege.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 837
+      "word_count": 2285
     },
     {
       "slug": "bear-xrpl",
       "file": "bear-xrpl.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 364
+      "word_count": 343
     },
     {
       "slug": "billy-the-goat-kid",
       "file": "billy-the-goat-kid.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 779
+      "word_count": 3106
     },
     {
       "slug": "bit-cap-5000",
       "file": "bit-cap-5000.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 788
+      "word_count": 3032
     },
     {
       "slug": "bitcoin",
       "file": "bitcoin.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 2695
+      "word_count": 1903
     },
     {
       "slug": "bitcoin-btc",
       "file": "bitcoin-btc.html",
-      "status": "APPROVED_CANON_PAGE",
-      "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 5
+      "status": "APPROVED_ALIAS_REDIRECT",
+      "reason": "http-equiv refresh or data-wiki-stub redirect page.",
+      "word_count": 0
     },
     {
       "slug": "bitcoin-graffpunks",
       "file": "bitcoin-graffpunks.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1084
+      "word_count": 343
     },
     {
       "slug": "bitcoin-kid-army",
       "file": "bitcoin-kid-army.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 527
+      "word_count": 5327
     },
     {
       "slug": "bitcoin-kids",
       "file": "bitcoin-kids.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1778
+      "word_count": 4888
     },
     {
       "slug": "bitcoin-nfts",
@@ -197,21 +204,21 @@
       "file": "bitcoin-x-kids.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1824
+      "word_count": 5448
     },
     {
       "slug": "block-node-defenders",
       "file": "block-node-defenders.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1277
+      "word_count": 2607
     },
     {
       "slug": "block-topia",
       "file": "block-topia.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1868
+      "word_count": 4831
     },
     {
       "slug": "blockchain",
@@ -225,140 +232,140 @@
       "file": "bone-idol-ink.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 767
+      "word_count": 2278
     },
     {
       "slug": "burn-to-earn",
       "file": "burn-to-earn.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1552
+      "word_count": 2407
     },
     {
       "slug": "canvas-clash",
       "file": "canvas-clash.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 751
+      "word_count": 2588
     },
     {
       "slug": "charlie-buster",
       "file": "charlie-buster.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1102
+      "word_count": 1455
     },
     {
       "slug": "croydon-tower-blocks",
       "file": "croydon-tower-blocks.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 542
+      "word_count": 2544
     },
     {
       "slug": "crypto-moonboy-pets",
       "file": "crypto-moonboy-pets.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 3276
+      "word_count": 1241
     },
     {
       "slug": "crypto-moonboys",
       "file": "crypto-moonboys.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 2166
+      "word_count": 3260
     },
     {
       "slug": "darren-cullen",
       "file": "darren-cullen.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1562
+      "word_count": 1260
     },
     {
       "slug": "defi",
       "file": "defi.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1555
+      "word_count": 1408
     },
     {
       "slug": "defi-mining",
       "file": "defi-mining.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1029
+      "word_count": 630
     },
     {
       "slug": "delicious-again-pete",
       "file": "delicious-again-pete.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1148
+      "word_count": 1442
     },
     {
       "slug": "diamond-hands",
       "file": "diamond-hands.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 882
+      "word_count": 2330
     },
     {
       "slug": "dragan-volkov",
       "file": "dragan-volkov.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 756
+      "word_count": 3190
     },
     {
       "slug": "dream-sovereign",
       "file": "dream-sovereign.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1510
+      "word_count": 2384
     },
     {
       "slug": "elder-codex-7",
       "file": "elder-codex-7.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 830
+      "word_count": 4114
     },
     {
       "slug": "ethereum",
       "file": "ethereum.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 2380
+      "word_count": 1733
     },
     {
       "slug": "ethereum-ecosystem",
       "file": "ethereum-ecosystem.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 867
+      "word_count": 495
     },
     {
       "slug": "exchanges",
       "file": "exchanges.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1686
+      "word_count": 1385
     },
     {
       "slug": "exyboy",
       "file": "exyboy.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 551
+      "word_count": 906
     },
     {
       "slug": "fgl-token",
       "file": "fgl-token.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1110
+      "word_count": 868
     },
     {
       "slug": "first-witness-addiction-intoxication-compulsion",
@@ -421,7 +428,7 @@
       "file": "first-witness-block-topia-reading.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 518
+      "word_count": 886
     },
     {
       "slug": "first-witness-book-1-the-first-witness",
@@ -603,14 +610,14 @@
       "file": "first-witness-faction-commentaries.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1057
+      "word_count": 7090
     },
     {
       "slug": "first-witness-faction-ritual-variations",
       "file": "first-witness-faction-ritual-variations.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 387
+      "word_count": 979
     },
     {
       "slug": "first-witness-family-children-elders",
@@ -631,7 +638,7 @@
       "file": "first-witness-forty-paths.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 577
+      "word_count": 1442
     },
     {
       "slug": "first-witness-glossary",
@@ -659,7 +666,7 @@
       "file": "first-witness-heresies-corruptions-abuses.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 487
+      "word_count": 939
     },
     {
       "slug": "first-witness-hodl-doctrine",
@@ -687,7 +694,7 @@
       "file": "first-witness-justice-mercy-restitution.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 433
+      "word_count": 1032
     },
     {
       "slug": "first-witness-land-water-stewardship",
@@ -708,7 +715,7 @@
       "file": "first-witness-leadership-councils-succession.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 342
+      "word_count": 1056
     },
     {
       "slug": "first-witness-libraries-architecture-archive-houses",
@@ -729,7 +736,7 @@
       "file": "first-witness-long-transmission.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 543
+      "word_count": 1651
     },
     {
       "slug": "first-witness-marriage-partnership-adoption",
@@ -743,14 +750,14 @@
       "file": "first-witness-master-chronology.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 631
+      "word_count": 999
     },
     {
       "slug": "first-witness-mediation-witness-circles",
       "file": "first-witness-mediation-witness-circles.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 249
+      "word_count": 611
     },
     {
       "slug": "first-witness-migration-refuge-exile-borders",
@@ -806,7 +813,7 @@
       "file": "first-witness-prisons-punishment-return.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 297
+      "word_count": 988
     },
     {
       "slug": "first-witness-proverbs-street-sayings",
@@ -855,7 +862,7 @@
       "file": "first-witness-sects-schools-schisms.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 432
+      "word_count": 1286
     },
     {
       "slug": "first-witness-silence-solitude-attention",
@@ -869,7 +876,7 @@
       "file": "first-witness-songs-chants-responses.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 297
+      "word_count": 782
     },
     {
       "slug": "first-witness-source-register",
@@ -932,91 +939,91 @@
       "file": "fomo-plague.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 782
+      "word_count": 2274
     },
     {
       "slug": "forkborn-collective",
       "file": "forkborn-collective.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1260
+      "word_count": 3145
     },
     {
       "slug": "forklord-you",
       "file": "forklord-you.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 764
+      "word_count": 2118
     },
     {
       "slug": "forksplit",
       "file": "forksplit.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 795
+      "word_count": 3352
     },
     {
       "slug": "games-graffpunks",
       "file": "games-graffpunks.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 995
+      "word_count": 349
     },
     {
       "slug": "games4punks-telegram",
       "file": "games4punks-telegram.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 4730
+      "word_count": 2284
     },
     {
       "slug": "gang-signs",
       "file": "gang-signs.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 4471
+      "word_count": 2487
     },
     {
       "slug": "gang-signs-card-game",
       "file": "gang-signs-card-game.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 694
+      "word_count": 659
     },
     {
       "slug": "genesis-kernel",
       "file": "genesis-kernel.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1445
+      "word_count": 7001
     },
     {
       "slug": "genesis-spray",
       "file": "genesis-spray.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1363
+      "word_count": 2439
     },
     {
       "slug": "genesis-spray-drop",
       "file": "genesis-spray-drop.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1103
+      "word_count": 2294
     },
     {
       "slug": "gk",
       "file": "gk.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1034
+      "word_count": 1352
     },
     {
       "slug": "gkniftyheads",
       "file": "gkniftyheads.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1905
+      "word_count": 3875
     },
     {
       "slug": "gkniftyheads-alessandro-anonymity-advocate-amato-783445",
@@ -1177,7 +1184,7 @@
       "file": "gkniftyheads-bitman-784220.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 4350
+      "word_count": 4354
     },
     {
       "slug": "gkniftyheads-bitman-784229",
@@ -2031,35 +2038,35 @@
       "file": "graffiti-kings.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 674
+      "word_count": 2537
     },
     {
       "slug": "graffiti-nexus",
       "file": "graffiti-nexus.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 907
+      "word_count": 6348
     },
     {
       "slug": "graffiti-queens-in-decentraland",
       "file": "graffiti-queens-in-decentraland.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 862
+      "word_count": 1617
     },
     {
       "slug": "graffpunks",
       "file": "graffpunks.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1585
+      "word_count": 4094
     },
     {
       "slug": "graffpunks-24-7-radio",
       "file": "graffpunks-24-7-radio.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1646
+      "word_count": 2272
     },
     {
       "slug": "graffpunks-collection",
@@ -2073,70 +2080,77 @@
       "file": "graffpunks-ecosystem.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 930
+      "word_count": 2424
+    },
+    {
+      "slug": "great-consensus",
+      "file": "great-consensus.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 1126
     },
     {
       "slug": "grit",
       "file": "grit.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 748
+      "word_count": 3127
     },
     {
       "slug": "grit42",
       "file": "grit42.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 778
+      "word_count": 3066
     },
     {
       "slug": "hard-fork-games",
       "file": "hard-fork-games.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1809
+      "word_count": 10042
     },
     {
       "slug": "harrison-rift",
       "file": "harrison-rift.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 769
+      "word_count": 2789
     },
     {
       "slug": "head-tags",
       "file": "head-tags.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1143
+      "word_count": 2570
     },
     {
       "slug": "hex-tagger-prime",
       "file": "hex-tagger-prime.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 854
+      "word_count": 3145
     },
     {
       "slug": "hodl-warriors",
       "file": "hodl-warriors.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1740
+      "word_count": 5662
     },
     {
       "slug": "hodl-wars",
       "file": "hodl-wars.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1834
+      "word_count": 11058
     },
     {
       "slug": "hodl-x-warriors",
       "file": "hodl-x-warriors.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1526
+      "word_count": 5203
     },
     {
       "slug": "hodlmoonboys-nft-collection",
@@ -2146,109 +2160,123 @@
       "word_count": 27555
     },
     {
+      "slug": "house-of-rackinsats",
+      "file": "house-of-rackinsats.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 1853
+    },
+    {
       "slug": "ian-harrison",
       "file": "ian-harrison.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1068
+      "word_count": 1164
     },
     {
       "slug": "iris-7",
       "file": "iris-7.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1005
+      "word_count": 2917
     },
     {
       "slug": "jillian-godsil",
       "file": "jillian-godsil.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1094
+      "word_count": 708
     },
     {
       "slug": "jodie-zoom-2000",
       "file": "jodie-zoom-2000.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1039
+      "word_count": 6862
     },
     {
       "slug": "jonny-laurence-nelson-tag-records",
       "file": "jonny-laurence-nelson-tag-records.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1267
+      "word_count": 1481
+    },
+    {
+      "slug": "kael-voss",
+      "file": "kael-voss.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 1347
     },
     {
       "slug": "lady-ink",
       "file": "lady-ink.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1019
+      "word_count": 3258
     },
     {
       "slug": "lfgk",
       "file": "lfgk.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 655
+      "word_count": 1000
     },
     {
       "slug": "loopfiend",
       "file": "loopfiend.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 858
+      "word_count": 2976
     },
     {
       "slug": "m1ntr-k1ll",
       "file": "m1ntr-k1ll.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 840
+      "word_count": 3893
     },
     {
       "slug": "maidstone-base",
       "file": "maidstone-base.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 535
+      "word_count": 1605
     },
     {
       "slug": "memecoins",
       "file": "memecoins.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1474
+      "word_count": 1155
     },
     {
       "slug": "metaverse-battles",
       "file": "metaverse-battles.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 817
+      "word_count": 2405
     },
     {
       "slug": "metropolis",
       "file": "metropolis.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1812
+      "word_count": 3959
     },
     {
       "slug": "midevilpunks",
       "file": "midevilpunks.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1613
+      "word_count": 2282
     },
     {
       "slug": "moon-mission",
       "file": "moon-mission.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 870
+      "word_count": 2235
     },
     {
       "slug": "nbg",
@@ -2262,7 +2290,7 @@
       "file": "nbg-token.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 4410
+      "word_count": 1018
     },
     {
       "slug": "nbgx",
@@ -2276,7 +2304,7 @@
       "file": "nbgx-token.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 645
+      "word_count": 576
     },
     {
       "slug": "neftyblocks",
@@ -2304,7 +2332,7 @@
       "file": "ngmi-chronicles.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 863
+      "word_count": 2161
     },
     {
       "slug": "nifty-crowns",
@@ -2332,42 +2360,42 @@
       "file": "null-the-prophet.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1724
+      "word_count": 6279
     },
     {
       "slug": "paper-hands",
       "file": "paper-hands.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 805
+      "word_count": 2163
     },
     {
       "slug": "patchwork",
       "file": "patchwork.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1433
+      "word_count": 3122
     },
     {
       "slug": "phygital-prints",
       "file": "phygital-prints.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 817
+      "word_count": 2315
     },
     {
       "slug": "pixel-journey",
       "file": "pixel-journey.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1152
+      "word_count": 1724
     },
     {
       "slug": "pixil-mini",
       "file": "pixil-mini.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 981
+      "word_count": 541
     },
     {
       "slug": "playable-nft-murals",
@@ -2381,154 +2409,161 @@
       "file": "pmsl.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 7161
+      "word_count": 832
     },
     {
       "slug": "pmsl-token",
       "file": "pmsl-token.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 672
+      "word_count": 596
     },
     {
       "slug": "punk-token",
       "file": "punk-token.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1523
+      "word_count": 2274
     },
     {
       "slug": "pyralith",
       "file": "pyralith.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1381
+      "word_count": 3316
     },
     {
       "slug": "queen-sarah-p-fly",
       "file": "queen-sarah-p-fly.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 676
+      "word_count": 7621
     },
     {
       "slug": "quell",
       "file": "quell.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1408
+      "word_count": 3273
     },
     {
       "slug": "rave-relics",
       "file": "rave-relics.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1562
+      "word_count": 2429
     },
     {
       "slug": "rug-pull-wars",
       "file": "rug-pull-wars.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 858
+      "word_count": 2439
     },
     {
       "slug": "rune-tag",
       "file": "rune-tag.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1443
+      "word_count": 4071
     },
     {
       "slug": "rust2riches",
       "file": "rust2riches.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 859
+      "word_count": 566
     },
     {
       "slug": "sacred-chain",
       "file": "sacred-chain.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1870
+      "word_count": 8039
     },
     {
       "slug": "samaelexe",
       "file": "samaelexe.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1136
+      "word_count": 4066
     },
     {
       "slug": "satorebel",
       "file": "satorebel.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1446
+      "word_count": 3441
     },
     {
       "slug": "satoshi-scroll",
       "file": "satoshi-scroll.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 761
+      "word_count": 2473
     },
     {
       "slug": "seeding-rights",
       "file": "seeding-rights.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 820
+      "word_count": 2566
     },
     {
       "slug": "sister-halcyon",
       "file": "sister-halcyon.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1434
+      "word_count": 3327
+    },
+    {
+      "slug": "six-pillars",
+      "file": "six-pillars.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 884
     },
     {
       "slug": "sneakar",
       "file": "sneakar.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 2713
+      "word_count": 2287
     },
     {
       "slug": "snipey-d-man-sirus",
       "file": "snipey-d-man-sirus.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 857
+      "word_count": 3114
     },
     {
       "slug": "solana",
       "file": "solana.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 2181
+      "word_count": 1355
     },
     {
       "slug": "spirit-borns",
       "file": "spirit-borns.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1123
+      "word_count": 2511
     },
     {
       "slug": "spraycode-writcode-mechanics",
       "file": "spraycode-writcode-mechanics.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 980
+      "word_count": 3310
     },
     {
       "slug": "squeaky-pinks-enforcers",
       "file": "squeaky-pinks-enforcers.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1394
+      "word_count": 3621
     },
     {
       "slug": "staking",
@@ -2542,21 +2577,21 @@
       "file": "stikfamwars.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1515
+      "word_count": 2287
     },
     {
       "slug": "storm-struggle",
       "file": "storm-struggle.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1093
+      "word_count": 1191
     },
     {
       "slug": "street-kingdoms",
       "file": "street-kingdoms.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1395
+      "word_count": 6644
     },
     {
       "slug": "swap-nefty",
@@ -2566,291 +2601,312 @@
       "word_count": 509
     },
     {
+      "slug": "sylas-the-unbroken",
+      "file": "sylas-the-unbroken.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 802
+    },
+    {
       "slug": "tacoswap",
       "file": "tacoswap.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 852
+      "word_count": 623
     },
     {
       "slug": "tagzcoin",
       "file": "tagzcoin.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 541
+      "word_count": 660
     },
     {
       "slug": "the-allcity-bulls",
       "file": "the-allcity-bulls.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1099
+      "word_count": 4635
     },
     {
       "slug": "the-aztec-raiders",
       "file": "the-aztec-raiders.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1088
+      "word_count": 3905
     },
     {
       "slug": "the-bally-boys",
       "file": "the-bally-boys.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1098
+      "word_count": 4675
     },
     {
       "slug": "the-bitcoin-kid-army",
       "file": "the-bitcoin-kid-army.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1376
+      "word_count": 2922
     },
     {
       "slug": "the-blockchain-furies",
       "file": "the-blockchain-furies.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1150
+      "word_count": 4702
     },
     {
       "slug": "the-blockstars",
       "file": "the-blockstars.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1176
+      "word_count": 5812
     },
     {
       "slug": "the-chain-scribes",
       "file": "the-chain-scribes.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1356
+      "word_count": 4372
     },
     {
       "slug": "the-cleanupcentr",
       "file": "the-cleanupcentr.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1115
+      "word_count": 809
     },
     {
       "slug": "the-code-alchemists",
       "file": "the-code-alchemists.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1131
+      "word_count": 4373
+    },
+    {
+      "slug": "the-crypto-moongirls",
+      "file": "the-crypto-moongirls.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 1069
     },
     {
       "slug": "the-crypto-stoned-boys",
       "file": "the-crypto-stoned-boys.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1108
+      "word_count": 5250
     },
     {
       "slug": "the-ducky-boys",
       "file": "the-ducky-boys.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1215
+      "word_count": 3408
     },
     {
       "slug": "the-evm-punks",
       "file": "the-evm-punks.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1180
+      "word_count": 4152
     },
     {
       "slug": "the-finance-guild",
       "file": "the-finance-guild.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1544
+      "word_count": 6128
     },
     {
       "slug": "the-first-witness",
       "file": "the-first-witness.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 2743
+      "word_count": 2733
     },
     {
       "slug": "the-gasless-ghosts",
       "file": "the-gasless-ghosts.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1355
+      "word_count": 4569
     },
     {
       "slug": "the-great-dip",
       "file": "the-great-dip.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 891
+      "word_count": 2284
     },
     {
       "slug": "the-hard-fork-rockers",
       "file": "the-hard-fork-rockers.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1218
+      "word_count": 4569
     },
     {
       "slug": "the-high-hats",
       "file": "the-high-hats.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1436
+      "word_count": 5305
     },
     {
       "slug": "the-information-mercenaries",
       "file": "the-information-mercenaries.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 984
+      "word_count": 4511
     },
     {
       "slug": "the-moonlords",
       "file": "the-moonlords.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1217
+      "word_count": 4831
     },
     {
       "slug": "the-nice-easy-bois",
       "file": "the-nice-easy-bois.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1737
+      "word_count": 3864
     },
     {
       "slug": "the-nomad-bears",
       "file": "the-nomad-bears.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1211
+      "word_count": 3861
     },
     {
       "slug": "the-og-pixel-saints",
       "file": "the-og-pixel-saints.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1235
+      "word_count": 3635
     },
     {
       "slug": "the-princess",
       "file": "the-princess.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1448
+      "word_count": 4331
     },
     {
       "slug": "the-rugpull-miners",
       "file": "the-rugpull-miners.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1209
+      "word_count": 4840
     },
     {
       "slug": "the-salvagers",
       "file": "the-salvagers.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1217
+      "word_count": 6037
     },
     {
       "slug": "the-shard-mothers-of-manhattan",
       "file": "the-shard-mothers-of-manhattan.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1203
+      "word_count": 3496
     },
     {
       "slug": "the-squeaky-pinks",
       "file": "the-squeaky-pinks.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 957
+      "word_count": 4170
     },
     {
       "slug": "the-tuskon-ogs",
       "file": "the-tuskon-ogs.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1039
+      "word_count": 3588
     },
     {
       "slug": "the-whitewasher",
       "file": "the-whitewasher.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1409
+      "word_count": 3915
     },
     {
       "slug": "thera-9",
       "file": "thera-9.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 778
+      "word_count": 3420
     },
     {
       "slug": "thorne-the-architect",
       "file": "thorne-the-architect.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1409
+      "word_count": 3473
     },
     {
       "slug": "tokenomics",
       "file": "tokenomics.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1776
+      "word_count": 1516
     },
     {
       "slug": "trevor-fung",
       "file": "trevor-fung.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1612
+      "word_count": 1405
     },
     {
       "slug": "triple-fork-event",
       "file": "triple-fork-event.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1194
+      "word_count": 6588
+    },
+    {
+      "slug": "veyra-nyx",
+      "file": "veyra-nyx.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 737
     },
     {
       "slug": "wagmi-prophecy",
       "file": "wagmi-prophecy.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 830
+      "word_count": 2436
     },
     {
       "slug": "wallets",
       "file": "wallets.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1549
+      "word_count": 1514
     },
     {
       "slug": "wax-blockchain",
       "file": "wax-blockchain.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1316
+      "word_count": 1024
     },
     {
       "slug": "wax-dexs-defi",
       "file": "wax-dexs-defi.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 862
+      "word_count": 717
     },
     {
       "slug": "wax-nft-marketplaces",
@@ -2864,56 +2920,63 @@
       "file": "wax-pepe.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 932
+      "word_count": 600
     },
     {
       "slug": "waxp",
       "file": "waxp.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 2183
+      "word_count": 1707
     },
     {
       "slug": "waxp-exchange",
       "file": "waxp-exchange.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 768
+      "word_count": 638
     },
     {
       "slug": "web3",
       "file": "web3.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1777
+      "word_count": 1520
     },
     {
       "slug": "whale-lords",
       "file": "whale-lords.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 833
+      "word_count": 3713
+    },
+    {
+      "slug": "whisper-codex",
+      "file": "whisper-codex.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 831
     },
     {
       "slug": "wuffi",
       "file": "wuffi.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1502
+      "word_count": 928
     },
     {
       "slug": "xrp-kids",
       "file": "xrp-kids.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 4824
+      "word_count": 2574
     },
     {
       "slug": "xrp-ledger",
       "file": "xrp-ledger.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 638
+      "word_count": 587
     }
   ],
   "blocked": [],

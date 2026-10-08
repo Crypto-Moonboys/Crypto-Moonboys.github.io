@@ -67,6 +67,9 @@ jobs:
           node scripts/audit-nft-pages-and-feed-sync.mjs
           node scripts/audit-related-wiki-paths.mjs
 
+      - name: Refresh wiki inventory after collection updates
+        run: node scripts/generate-wiki-content-state.mjs
+
       - name: Commit changed feed data
         shell: bash
         run: |
@@ -77,6 +80,8 @@ jobs:
             data/feed-status.json
             wiki/gkniftyheads-nft-collection.html
             wiki/noballgamess-nft-collection.html
+            brand-canon/wiki-content-state.json
+            brand-canon/wiki-rewrite-audit.md
             img/gkniftyheads/thumbs/
             img/gkniftyheads/thumbs/manifest.json
           )

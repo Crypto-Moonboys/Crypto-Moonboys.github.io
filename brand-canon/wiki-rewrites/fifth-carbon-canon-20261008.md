@@ -1,5 +1,7 @@
 # The Fifth Carbon — Year 3008 reconciliation and original-fiction ledger
 
+**Publication evidence:** merged PR #1457, commit `81bd8f13d17b0864d5de849f3c4aac4b902abc14`, published this 12-page expansion. Earlier sandbox status below is historical provenance. Preserve these delivered stories during #1458.
+
 **Status:** GK-authorised original fiction and selective W81 recovery proposed on a protected sandbox branch, **not** a revision of the First Witness's Nine Books, a settlement of the Final Fork, a real-world biography, a live game feature or an official 40-name roster.  
 **Request:** on 8 October 2026 GK authorised expansion of the public wiki with missing W81 details and new fiction that improves the current world. Preserve already-published newer material even where it does not appear in the old raw archive.  
 **Canon base:** main at `d072c01f27104ac0dad08b6682306231b139d98f` (source repair PR #1456 merged). **Editing policy:** backup branch + sandbox branch + separate PR; no direct push to main; no First Witness chapter edits; preserve existing narrative, scripts, artwork and URLs; increment revisions and regenerate publishing metadata.

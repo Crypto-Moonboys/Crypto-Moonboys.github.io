@@ -1,0 +1,765 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-08",
+  "issue": 1458,
+  "decisions": [
+    {
+      "id": "GK-1458-AUTHORITY",
+      "status": "implemented",
+      "sources": [
+        "GK Issue #1458 clarification 2026-10-08",
+        "user master task 2026-10-08"
+      ],
+      "old": "Older policy automatically privileges published convergence over W81 and forbids filling six slots.",
+      "new": "W81 is foundational truth; supported retcons and slot proposals are developed, traced and approved when significant.",
+      "reason": "Makes GK latest instructions persist across agent resets without discarding product truth or modern fiction.",
+      "affected_paths": [
+        "AGENTS.md",
+        "AGENT_EDITING_RULES.md",
+        ".copilot-instructions.md",
+        "brand-canon/CANON_POLICY.md"
+      ]
+    },
+    {
+      "id": "GK-1458-CODEX",
+      "status": "implemented",
+      "sources": [
+        "W1.txt: Tales of the Darkside; Operation Echo phases 1\u20133; Physical Manifestation"
+      ],
+      "old": "Codex scattered across enforcement/Rune references; no dedicated account of its phases or CMB endpoint.",
+      "new": "Dedicated disputed-manuscript article distinguishes the listening posts, mural calibration, Omega Hash, Pulse and next-universe prediction from established mechanics.",
+      "reason": "Preserves ambitious cosmic lore and its social stakes without quietly treating an impossible reversible hash as verified technology.",
+      "affected_paths": [
+        "wiki/whisper-codex.html",
+        "wiki/rune-tag.html",
+        "wiki/squeaky-pinks-enforcers.html"
+      ]
+    },
+    {
+      "id": "GK-1458-PILLARS",
+      "status": "implemented",
+      "sources": [
+        "w32.txt: Sociological Framework I\u2013VI; Tactical Arsenal I\u2013VI"
+      ],
+      "old": "Brief mentions omit the complete six-bloc, twelve-tool classification.",
+      "new": "Full attributed historical doctrine, including Memory-Sigils and Null-Cipher, separated from Forty and live game mechanics.",
+      "reason": "Restores distinctive doctrine and shows how classification hides labour and enables predation.",
+      "affected_paths": [
+        "wiki/six-pillars.html",
+        "wiki/hard-fork-games.html"
+      ]
+    },
+    {
+      "id": "GK-1458-CONSENSUS",
+      "status": "implemented",
+      "sources": [
+        "w33.txt: Philosophy; Layer-4; Year 3030; Divine Lineage; Laws of the Ledger; three cycles"
+      ],
+      "old": "Universalising source calls every faction a believer and tags NULL as faction #28.",
+      "new": "Source manifesto is a particular sect; five laws, three stages and royal theology preserved as its doctrine; Gasless Ghosts/NULL and Concord/Consensus kept distinct.",
+      "reason": "A sect can sincerely claim universal truth without the narrator making its coerced membership or prophecy true.",
+      "affected_paths": [
+        "wiki/great-consensus.html",
+        "wiki/the-code-alchemists.html",
+        "wiki/the-princess.html"
+      ]
+    },
+    {
+      "id": "GK-1458-MOONGIRLS",
+      "status": "implemented",
+      "sources": [
+        "w56.txt: Self-Fork; Bitcoin Bloodline; Feast Week; Antichain",
+        "merged PR #1457 Fifth Carbon",
+        "first-witness-faction-commentaries.html: Sava Crest"
+      ],
+      "old": "No encyclopedia route; archive calls compliant children Bitcoin Kids and declares literal 99/1 and 22% figures.",
+      "new": "Dedicated culture article preserves lunar/female-colony and coercive-programme accounts; inside generation identified as Bitcoin X Kids; figures treated as source assertions rather than census.",
+      "reason": "Connects faction identity, internal disagreement, political incentives and existing modern episodes without duplicating a live chamber or changing Forty.",
+      "affected_paths": [
+        "wiki/the-crypto-moongirls.html",
+        "wiki/block-topia.html",
+        "wiki/queen-sarah-p-fly.html"
+      ]
+    },
+    {
+      "id": "GK-1458-MODERN-MERGES",
+      "status": "implemented",
+      "sources": [
+        "merged PR #1457 commit 81bd8f13d17b0864d5de849f3c4aac4b902abc14",
+        "merged PR #1455"
+      ],
+      "old": "Source companion/digest and Fifth Carbon status can imply the delivered stories remain unpublished or absent.",
+      "new": "Add merged publication evidence and precise additional routes while preserving historic ledgers.",
+      "reason": "Prevents rediscovering or overwriting approved contemporary adult scenes.",
+      "affected_paths": [
+        "about/w81-condensed-canon-digest.md",
+        "brand-canon/story-bibles/w81-continuity-companion-20261008.md",
+        "brand-canon/wiki-rewrites/fifth-carbon-canon-20261008.md"
+      ]
+    },
+    {
+      "id": "GK-1458-CUT-LEDGER",
+      "status": "implemented",
+      "sources": [
+        "GK master task authorisation for connecting original fiction; adult-tone steering 2026-10-08"
+      ],
+      "old": "No Cut Ledger or Dara Venn episodes.",
+      "new": "New local adult Moongirls/Consensus conflict featuring Dara Venn, 38, and Lysa Rook, 44; labelled original fiction, limited consequences.",
+      "reason": "Develops coercion, venality, revenge and agency within existing institutions; no new cosmic law, scripture or numbered faction.",
+      "affected_paths": [
+        "wiki/the-crypto-moongirls.html",
+        "wiki/great-consensus.html",
+        "wiki/queen-sarah-p-fly.html",
+        "brand-canon/story-bibles/the-cut-ledger.md"
+      ]
+    },
+    {
+      "id": "GK-1458-TRIPLE-FORK",
+      "status": "proposed",
+      "sources": [
+        "M16.txt",
+        "W15.txt opening",
+        "w92.txt chronology",
+        "current First Witness chronology",
+        "Full w70 body:2880/2930 contradicts2765headline; full w92 SignalCleave2588/OMNICORE/iFork is rival rupture; no source-proof secondidentical catastrophe. Specific GK decision pending."
+      ],
+      "old": "2198 / 2588 / 2880 claim one catastrophic Triple Fork.",
+      "new": "Recommend 2880 for World Chain catastrophe; investigate early failures without inventing named events to rescue unsupported numbers.",
+      "reason": "2880 supports post-catastrophe by-2930 collapse and 3008 narrative; new distinct early catastrophes need independent scene evidence.",
+      "affected_paths": [
+        "wiki/first-witness-master-chronology.html",
+        "wiki/triple-fork-event.html",
+        "wiki/rune-tag.html"
+      ]
+    },
+    {
+      "id": "GK-1458-REGIONAL-COLLAPSE",
+      "status": "proposed",
+      "sources": [
+        "W15.txt opening",
+        "disposition conflict 2765",
+        "First Witness chronology",
+        "Full w70 body:2880/2930 contradicts2765headline; full w92 SignalCleave2588/OMNICORE/iFork is rival rupture; no source-proof secondidentical catastrophe. Specific GK decision pending."
+      ],
+      "old": "2765 secure-region collapse precedes current 2880 catastrophe.",
+      "new": "Recommend by 2930 for catastrophe-linked regional collapse; keep 2765 attributed until original causal sequence is fully audited.",
+      "reason": "Avoids collapse being caused by an event 115 years later.",
+      "affected_paths": [
+        "wiki/first-witness-master-chronology.html",
+        "wiki/block-topia.html"
+      ]
+    },
+    {
+      "id": "GK-1458-SAM-ORDER",
+      "status": "proposed",
+      "sources": [
+        "W12.txt Parts 1-8, fully read: 2036 origin; late 2029 council; 2030 Reset; 2031 bridge; 2032 capture; 2035 climax",
+        "W13.txt Parts 1-7 and repeated household extracts, fully read",
+        "merged Fifth Carbon and current Croydon/Princess/First Witness chronology",
+        "W5.txt all20tomes/paragraphs1\u20131335 fully read; alternative steel-slab origin and terminal Soul/Wing Fork worlds compared"
+      ],
+      "old": "A nineteen-year-old 2036 upload precedes late-2029 preparations, the 2030 Reset, a 2031 bridge, the 2032 vanishing and a 2035 climax. A teenage adoption is also compressed into the 2007-2009 Street War.",
+      "new": "Recommend retaining the repeated 2036 origin and moving the subsequent civil sequence ten years forward: late 2039 council, 2040 Stabilisation, 2041 bridge work, 2042 vanishing, 2045 climax. Keep adoption later than the original Street War. Preserve the explicit across-time bridge as an attributed source claim; do not mistake ordinary flashback for a complete repair.",
+      "reason": "Full reading shows explicit causal dependencies and an explicit across-time bridge. The fixed ten-year displacement preserves the source one-year preparation and three-year capture-to-climax intervals while placing the later civil events after the 2036 upload. These replacement dates require specific GK approval; no corrected date is yet published as accepted history. W5 itself alternates2036/2880 and resurrects PapaDes without a lifespan account; retaining W12 origin is the proposed editorial choice, not a second verified upload. Singular retiring SAM Architect does not identify every GKniftyHEADS member.",
+      "affected_paths": [
+        "wiki/agent-sam.html",
+        "wiki/house-of-rackinsats.html",
+        "wiki/croydon-tower-blocks.html",
+        "wiki/the-princess.html",
+        "wiki/great-consensus.html",
+        "wiki/first-witness-master-chronology.html",
+        "wiki/first-witness-concordance.html",
+        "brand-canon/story-bibles/gk-master-canon.md",
+        "brand-canon/story-bibles/w81-continuity-companion-20261008.md",
+        "brand-canon/wiki-rewrites/issue-1458-proposals.md"
+      ]
+    },
+    {
+      "id": "GK-1458-FORTY",
+      "status": "proposed",
+      "sources": [
+        "W5.txt",
+        "M16.txt",
+        "w68.txt",
+        "w69.txt",
+        "W1.txt"
+      ],
+      "old": "34 named readings and six unassigned; competing raw lists mix factions and institutions.",
+      "new": "Concrete six-name working proposal: NoBallGames Legion, Wildstyle Collective, Fractal Taggers, Porch Poets, Resin Relic Keepers, Bone Idol Ink Ritualists. Exact W5 testimony separated from proposed membership institutions; full biography/source overlap audit and specific GK approval pending; no new position adopted.",
+      "reason": "Full W5 list double-counts Nomad Bears, parent formations and arena extensions; w68/w69 are incomplete directories, M16 has TBD positions. A coherent completion needs enduring belonging; current34 modern cultures and all adult stories remain preserved.",
+      "affected_paths": [
+        "wiki/first-witness-forty-paths.html",
+        "wiki/first-witness-faction-commentaries.html",
+        "brand-canon/wiki-rewrites/issue-1458-proposals.md"
+      ]
+    },
+    {
+      "id": "GK-1458-SAM-HOUSE-RECOVERY",
+      "status": "implemented",
+      "sources": [
+        "W12.txt Parts 1-8, fully read",
+        "W13.txt Parts 1-7 and repeated extracts, fully read",
+        "current Croydon, Princess, Great Consensus, synthetic-minds chapter, chronology and concordance"
+      ],
+      "old": "SAM remains two origin paragraphs and a modern copy dispute; the House lacks an owning article and its complete named relationships/capture sequence.",
+      "new": "Dedicated SAM and House accounts recover the eight-part guardian-to-vengeance arc and the household labour, with explicit missing-person and source-sequence limits; incoming Croydon, Princess and Consensus sections are expanded.",
+      "reason": "Restores substantive scenes and relationships without changing locked history, promoting a theology to civil genealogy, or deleting approved modern stories.",
+      "affected_paths": [
+        "wiki/agent-sam.html",
+        "wiki/house-of-rackinsats.html",
+        "wiki/croydon-tower-blocks.html",
+        "wiki/the-princess.html",
+        "wiki/great-consensus.html"
+      ]
+    },
+    {
+      "id": "GK-1458-HOUSE-RELATIONS",
+      "status": "implemented",
+      "sources": [
+        "W13.txt Part 1: Papa Des daughters Denise and Tracey; Parts 2-7 repeated extracts",
+        "W12.txt Part 6: Denise husband Jermaine Forge Harrington",
+        "w33.txt Divine Lineage, already reviewed"
+      ],
+      "old": "House relationships are generic references; sect family imagery can be mistaken for literal parentage or Forge/Etherstan identity.",
+      "new": "Keep Denise and Tracey as sisters and Forge as Denise husband within the House source cycle; record the Divine Lineage as a distinct theology and resist an unsupported Forge/Etherstan merge.",
+      "reason": "The fully read witnesses do not support one ordinary genealogy combining all these claims. Source-specific family relationships clarify already-separated identities without assigning a new universal dynasty.",
+      "affected_paths": [
+        "wiki/house-of-rackinsats.html",
+        "wiki/agent-sam.html",
+        "wiki/the-princess.html",
+        "wiki/great-consensus.html"
+      ]
+    },
+    {
+      "id": "GK-1458-OVERDRAWN-RELAY",
+      "status": "implemented",
+      "sources": [
+        "GK continuation task: substantial adult connecting fiction authorised",
+        "W12.txt kitchen support, Eternal Warmth Ledger and guardian promise",
+        "approved Fifth Carbon copy/instruction distinction"
+      ],
+      "old": "No Overdrawn Relay, Nessa Vale or Davit Cole episode.",
+      "new": "New adult Year 3008 receiving-kitchen story: memorial promise, coerced payout, Nessa delayed intervention, collector assault, wages and lasting impairment; label all authorship and retain household debt.",
+      "reason": "Connects inherited guardian promises to living resources and compromised agency without declaring a resurrected SAM, biological descendants or a new faction.",
+      "affected_paths": [
+        "wiki/agent-sam.html",
+        "wiki/house-of-rackinsats.html",
+        "wiki/croydon-tower-blocks.html",
+        "brand-canon/story-bibles/the-overdrawn-relay.md"
+      ]
+    },
+    {
+      "id": "GK-1458-PULSE-SERIAL-RECOVERY",
+      "status": "implemented",
+      "sources": [
+        "w25.txt complete Parts1-75 plus repeated Parts66-75, paragraphs1-623 fully read",
+        "current complete Elder Codex-7, Iris-7, Aleema and Dream Sovereign articles",
+        "approved adult-character-lives-20261005 register"
+      ],
+      "old": "Current pages preserve major visionary encounters but compress 3038-3058 stages, school/garden futures and repeated final headings.",
+      "new": "Extend the existing four articles with complete Sovereign sequence, source-only Codex Schools/gardens and explicit duplicated66-75 evidence; retain modern scenes and child/adult identity boundaries.",
+      "reason": "Restores meaningful serial detail without using narrated universal peace to delete modern stories, merge Aleema with the prophetic Child, or publish a concluded Final Fork.",
+      "affected_paths": [
+        "wiki/elder-codex-7.html",
+        "wiki/iris-7.html",
+        "wiki/aleema-child-of-the-shard.html",
+        "wiki/dream-sovereign.html",
+        "brand-canon/story-bibles/gk-master-canon.md"
+      ]
+    },
+    {
+      "id": "GK-1458-RED-WAX-PAYMENT",
+      "status": "implemented",
+      "sources": [
+        "GK continuation authorises substantial adult connecting fiction",
+        "w25.txt repeated universal victory endings",
+        "existing Codex-7 Last Survivor supper, departed companion and Tarn correction scenes"
+      ],
+      "old": "No Red Wax Payment episode; the costs of circulating a flattering final account lack a local carrier scene.",
+      "new": "Add a Year3008 paid-reading story: Elder signs a clean account, host withholds carrier fee, carrier refuses private restitution, lost shifts and missing worker remain; Elder records his own signature and uncovered correction costs.",
+      "reason": "Connects the Elder's appetite and authority to practical harm without replacing existing private stories, manufacturing a world law or granting the correction automatic forgiveness.",
+      "affected_paths": [
+        "wiki/elder-codex-7.html",
+        "brand-canon/story-bibles/the-red-wax-payment.md",
+        "brand-canon/story-bibles/gk-master-canon.md"
+      ]
+    },
+    {
+      "id": "GK-1458-FINAL-FORK-CONTINUITY",
+      "status": "proposed",
+      "sources": [
+        "W15.txt full serial throughVolume18/fourteen-million restart",
+        "w25.txt Parts1-75 and repeated66-75, fully read",
+        "M16.txt prospective3030 timeline, fully read",
+        "current First Witness BooksI-IX, all scripture and commentary read",
+        "approved modern lore and exact current Elder/Iris/Aleema/Dream stories",
+        "W5.txt all20tomes/paragraphs1\u20131335 fully read; alternative steel-slab origin and terminal Soul/Wing Fork worlds compared"
+      ],
+      "old": "W15 universal upload/heat death/restarts and w25 universal liberation/peace compete as incompatible terminal histories; M16 predicts3030 without a completed scene. W5 further ends with universal Bonnet choice, flight, fused layers and Architect retirement.",
+      "new": "Recommend a single materially continuous world: retain complete serial visions, reject their universal terminal explanations as automatic world history; future Final Fork ends a particular existential threat without undoing loss or assigning one sovereign ownership of every future mind. Exact date/fates remain pending full source audit and GK.",
+      "reason": "The repeated endings and conflicting memory/shard accounts cannot all be physical final histories. BookVI preserves graves/debts, BookVIII temporary alliance and BookIX future choice; modern bodily consequences remain meaningful. A literal universal-upload choice would need a separate comprehensive ontology retcon.",
+      "affected_paths": [
+        "brand-canon/story-bibles/gk-master-canon.md",
+        "brand-canon/story-bibles/w81-continuity-companion-20261008.md",
+        "brand-canon/wiki-rewrites/issue-1458-proposals.md",
+        "wiki/first-witness-master-chronology.html",
+        "wiki/first-witness-concordance.html",
+        "wiki/block-topia.html",
+        "wiki/queen-sarah-p-fly.html",
+        "wiki/null-the-prophet.html",
+        "wiki/alfie-bitcoin-kid-blaze.html",
+        "wiki/jodie-zoom-2000.html",
+        "wiki/elder-codex-7.html",
+        "wiki/iris-7.html",
+        "wiki/aleema-child-of-the-shard.html",
+        "wiki/dream-sovereign.html",
+        "wiki/hodl-warriors.html",
+        "wiki/hodl-wars.html"
+      ]
+    },
+    {
+      "id": "GK-1458-W5-OWNING-RECOVERY",
+      "status": "implemented",
+      "sources": [
+        "W5.txt all20tomes, paragraphs1\u20131335 fully read",
+        "w68.txt full directory",
+        "w69.txt all373paragraphs",
+        "M16.txt full compilation",
+        "full current owning articles and published faction-icon/adult-culture registers"
+      ],
+      "old": "Flesh Fade/retirement, Royal Galleries, exact PaintWar formations and Porch Accord price are compressed or absent; incomplete roster headings conceal duplicate membership.",
+      "new": "Expand eight owning articles with exact locally attributed source institutions, alternate scenes and roster comparison; preserve all existing paragraphs/IDs and authored adult cultures.",
+      "reason": "Recovers material scenes and distinct responsibilities without a chronology retcon, accepted new slot, universal cure, new real biography or product promise.",
+      "affected_paths": [
+        "wiki/agent-sam.html",
+        "wiki/house-of-rackinsats.html",
+        "wiki/graffpunks.html",
+        "wiki/gkniftyheads.html",
+        "wiki/hodl-warriors.html",
+        "wiki/whale-lords.html",
+        "wiki/first-witness-forty-paths.html",
+        "wiki/first-witness-faction-commentaries.html",
+        "brand-canon/story-bibles/gk-master-canon.md"
+      ]
+    },
+    {
+      "id": "GK-1458-HOT-WALL",
+      "status": "implemented",
+      "sources": [
+        "GK continuation authorizes substantial adult connecting fiction",
+        "W5.txt PaintWar formation imagery",
+        "published existing Black Mouth38/Kiva Brash37 stories and 5October culture registers"
+      ],
+      "old": "No Hot Wall commission or steward burn account.",
+      "new": "Add original local3008 adult display story: ignored pause, ordinary fire, Kiva cuts canvas, steward burn heals badly, lost work and later paid appropriation persist; no new named person or faction.",
+      "reason": "Extends existing appetite, rivalry and performance consequences without replacing Beautiful Vandal, healing earlier losses or granting magical paint powers.",
+      "affected_paths": [
+        "wiki/graffpunks.html",
+        "brand-canon/story-bibles/the-hot-wall.md",
+        "brand-canon/story-bibles/gk-master-canon.md"
+      ]
+    },
+    {
+      "id": "GK-1458-W15-TRIAD-RECOVERY",
+      "status": "implemented",
+      "sources": [
+        "W15.txt all 192 paragraphs fully read; exact opening 5\u201318 and awakenings 25\u201338",
+        "Full current Sarah, Alfie, Jodie, NULL, Block Topia and HODL Warriors articles",
+        "GK continuation permits dedicated missing characters and adult connecting fiction"
+      ],
+      "old": "Central W15 triad has no dedicated biography; mercy-cycle Reclaimer/Protocol/costly memory/Prime Core and competing companion futures are missing or compressed on owning pages.",
+      "new": "Create Kael Voss, Sylas the Unbroken and Veyra Nyx biographies; expand six connected existing articles. Preserve source voice for cosmic claims and published modern lives. Add original Paid Exit with injury, lost work, rejected intimacy and uncorrected memory.",
+      "reason": "Recovers three significant source characters without invented family merges, universal reset, final ending or changed calendar anchor. No new named supporting character or numbered culture.",
+      "affected_paths": [
+        "wiki/kael-voss.html",
+        "wiki/sylas-the-unbroken.html",
+        "wiki/veyra-nyx.html",
+        "wiki/block-topia.html",
+        "wiki/queen-sarah-p-fly.html",
+        "wiki/alfie-bitcoin-kid-blaze.html",
+        "wiki/jodie-zoom-2000.html",
+        "wiki/null-the-prophet.html",
+        "wiki/hodl-warriors.html",
+        "brand-canon/story-bibles/the-paid-exit.md",
+        "brand-canon/story-bibles/gk-master-canon.md"
+      ]
+    },
+    {
+      "id": "GK-1458-TAVI-REFERENCE-CONTINUITY",
+      "status": "implemented",
+      "sources": [
+        "Current bitcoin-kid-army.html training and Grey Return: established Tavi Rill she/her",
+        "Current the-bitcoin-kid-army.html retelling: Tavi Rill her paid appearances",
+        "Current canon-foundation-20261004.md shared Holdfast/escort sequence; same Tavi Rill",
+        "Read all affected Tavi paragraphs and their surrounding events; separately identify Tavi Spool in rave-relics"
+      ],
+      "old": "Later linked Holdfast/kinship accounts switch Tavi Rill to masculine pronouns without a distinct character or authored identity event.",
+      "new": "Use Tavi or Tavi\u2019s in exactly thirteen later paragraphs; retain earlier established she/her, all scenes and every other character\u2019s pronouns. Tavi Spool remains a separate playback repairer.",
+      "reason": "Repairs accidental referential drift without defining a new gender, biological history, family link, origin or plot event. No modern story is removed or absolved.",
+      "affected_paths": [
+        "wiki/alfie-bitcoin-kid-blaze.html",
+        "wiki/bitcoin-kids.html",
+        "wiki/genesis-kernel.html",
+        "wiki/hodl-wars.html",
+        "wiki/jodie-zoom-2000.html",
+        "wiki/null-the-prophet.html",
+        "wiki/sacred-chain.html"
+      ],
+      "paragraph_changes": [
+        {
+          "path": "wiki/alfie-bitcoin-kid-blaze.html",
+          "old_sha256": "sha256:3971a52902726c7d77dde85b0521d3d28f3a961d328d0ab110e625daa319e425",
+          "new_sha256": "sha256:5a62a64329bc6d2f9cfba7a8e91b57a3a0730fc0e0c34b24f9ae621fb98b4447",
+          "reason": "Correct only the later masculine reference to the established Tavi Rill by using the name; retain every event, other person\u2019s pronoun, family relationship and irreversible consequence."
+        },
+        {
+          "path": "wiki/bitcoin-kids.html",
+          "old_sha256": "sha256:16efe0e98a25e16ae565a9262816bd472e020fe9eca5737c4368e6dfa16c71dd",
+          "new_sha256": "sha256:ae3351543b9cb99735d7591e6d604f047ead731860cb48bda3bc167bf34e1512",
+          "reason": "Correct only the later masculine reference to the established Tavi Rill by using the name; retain every event, other person\u2019s pronoun, family relationship and irreversible consequence."
+        },
+        {
+          "path": "wiki/bitcoin-kids.html",
+          "old_sha256": "sha256:5035a5ded7012cb8381bd97f87f68001d03b31b65932d15478709e2f2bcac0af",
+          "new_sha256": "sha256:d7eb48a0ad109642204831774ff7eecc9d1aaef98a1d0c81ac4b436e9d48bbe6",
+          "reason": "Correct only the later masculine reference to the established Tavi Rill by using the name; retain every event, other person\u2019s pronoun, family relationship and irreversible consequence."
+        },
+        {
+          "path": "wiki/bitcoin-kids.html",
+          "old_sha256": "sha256:42b5c40ac5b4b5f489438f2bc6228ba2a710cacf4fdc47ea5d969dae692c39b3",
+          "new_sha256": "sha256:cf023dbbed1201adf576f6cb3270bb650f15fa12eb9f8fb7bf0cb8d053a0b5c9",
+          "reason": "Correct only the later masculine reference to the established Tavi Rill by using the name; retain every event, other person\u2019s pronoun, family relationship and irreversible consequence."
+        },
+        {
+          "path": "wiki/genesis-kernel.html",
+          "old_sha256": "sha256:e4fe040c53c5bfba52ffcc00ea3d2de9f90200ef31b8b00e81be6ac59c445700",
+          "new_sha256": "sha256:ac56cb3a64cd9b56ffb304e012ea8e1baec22faa71697c777dd1ab7444afb059",
+          "reason": "Correct only the later masculine reference to the established Tavi Rill by using the name; retain every event, other person\u2019s pronoun, family relationship and irreversible consequence."
+        },
+        {
+          "path": "wiki/hodl-wars.html",
+          "old_sha256": "sha256:4b6491e8c0ae7dddb671f1871a459c4961ddfc739223475646bf4950567bad42",
+          "new_sha256": "sha256:8735362c497b03d1eea0cf9f44b698d9fdd60a550655a75a8cf7cd8be25094ab",
+          "reason": "Correct only the later masculine reference to the established Tavi Rill by using the name; retain every event, other person\u2019s pronoun, family relationship and irreversible consequence."
+        },
+        {
+          "path": "wiki/hodl-wars.html",
+          "old_sha256": "sha256:b6d85b079e95cfd2889755894e1eddbf22c9d63a5dc613dbb1bc870ac229ea83",
+          "new_sha256": "sha256:ccd682b403a3ec639c8100c73773dcdd3ee741fd0fbaae63a6392db990140cfe",
+          "reason": "Correct only the later masculine reference to the established Tavi Rill by using the name; retain every event, other person\u2019s pronoun, family relationship and irreversible consequence."
+        },
+        {
+          "path": "wiki/jodie-zoom-2000.html",
+          "old_sha256": "sha256:02e734f88fffd16dd95b30e2eb7cd2932a4fb7a1bbb75844523bdba6945858e4",
+          "new_sha256": "sha256:76daea92aee115225b301e723d3b40043c861d5591a651b685a8ac5bcc6e6582",
+          "reason": "Correct only the later masculine reference to the established Tavi Rill by using the name; retain every event, other person\u2019s pronoun, family relationship and irreversible consequence."
+        },
+        {
+          "path": "wiki/jodie-zoom-2000.html",
+          "old_sha256": "sha256:ea06acc4bb448cbce9c80a30048b57eadc5af9bc9765269f7fc276cb6607a47d",
+          "new_sha256": "sha256:f98a7107d5def27d83223f7b5b9ba4970d28d950a4e3ef705144abde86b34e78",
+          "reason": "Correct only the later masculine reference to the established Tavi Rill by using the name; retain every event, other person\u2019s pronoun, family relationship and irreversible consequence."
+        },
+        {
+          "path": "wiki/null-the-prophet.html",
+          "old_sha256": "sha256:6cf4692ea946d372c5ec31d7eb42fc5274f76e8b7d6f1bd6c2a86c6ab0946e74",
+          "new_sha256": "sha256:971a29991bcae696006b8b3c6d066b61fe3d038632871c3df65adf66d34d13ad",
+          "reason": "Correct only the later masculine reference to the established Tavi Rill by using the name; retain every event, other person\u2019s pronoun, family relationship and irreversible consequence."
+        },
+        {
+          "path": "wiki/null-the-prophet.html",
+          "old_sha256": "sha256:a829539e93ccddf8a306359439771d28eca4fc357d5115f13cb106beec22f7f5",
+          "new_sha256": "sha256:616e47e3f2202d42b9156fe51db44ff370b0d1a9028f8b52bc54e6870078ac45",
+          "reason": "Correct only the later masculine reference to the established Tavi Rill by using the name; retain every event, other person\u2019s pronoun, family relationship and irreversible consequence."
+        },
+        {
+          "path": "wiki/null-the-prophet.html",
+          "old_sha256": "sha256:c3aac360c12fc1eeaffaab7162626d73256bd5755c09af1df1126a42036fa2bc",
+          "new_sha256": "sha256:f15a0c7061d4889b08b3e8d64708029f10b99603dfdd82923548db40901af8b8",
+          "reason": "Correct only the later masculine reference to the established Tavi Rill by using the name; retain every event, other person\u2019s pronoun, family relationship and irreversible consequence."
+        },
+        {
+          "path": "wiki/sacred-chain.html",
+          "old_sha256": "sha256:dc952769dc73a7f4d3250a0567349c8c9d7478c8bdb492571f063f1d290f34e0",
+          "new_sha256": "sha256:ee7d57da3bc567f591629c4f2122f9f9fe575aa72008d9b6c0c4501f97f94ecf",
+          "reason": "Correct only the later masculine reference to the established Tavi Rill by using the name; retain every event, other person\u2019s pronoun, family relationship and irreversible consequence."
+        }
+      ]
+    },
+    {
+      "id": "GK-1458-W50-W63-RECOVERY",
+      "status": "implemented",
+      "sources": [
+        "w50.txt and w63.txt fully read",
+        "Full Rocker/HODL/Nomad/Bloockstars/Rugpull/Stoned/Defender/Army biographies, current chronology/concordance/Forty commentaries/Kernel and BookVI/VII/VIII/IX comparisons"
+      ],
+      "old": "Source territorial-sacrifice doctrine and the specific tactical memory exclusions of Post-HODL Fallback are compressed.",
+      "new": "Recover the sacrificed Punk Net territory, A-B Testing Anarchy and planned exclusions of Rugpull vulnerabilities/GraffPUNK Moongirl code on owning articles, with source attribution and all adult histories preserved.",
+      "reason": "Keeps coercion and radical risk visible without a new faction, forced accepted worldwide memory physics, historical retcon or completed Final Fork.",
+      "affected_paths": [
+        "wiki/hodl-warriors.html",
+        "wiki/the-hard-fork-rockers.html"
+      ]
+    },
+    {
+      "id": "GK-1458-W60-W44-WITHDRAWAL",
+      "status": "implemented",
+      "sources": [
+        "w60.txt and w44.txt: complete originals and connected claim/scene comparisons",
+        "Complete current Nomad/Stoned/Sarah/Kernel/HODL/Rugpull/Defender/Army/BitcoinXKids/ChainScribes/Rocker/Blockstar histories; chronology, nineBooks and relevant supporting chapters"
+      ],
+      "old": "Nomad inside-population contempt and explicit Stoned PunkNet refusal compressed into gentler descriptions of independence.",
+      "new": "Restore source digital-death dismissal of the inside99% and selective outside1% tracking; explicitly retain Stoned refusal of PunkNet and organised allegiance. Preserve all modern adult lives and unresolved historical/physics claims.",
+      "reason": "Recover uncomfortable faction positions without making source prejudice a universal fact or deleting later intimacy, debt, coercion, detention, injury, work or grief.",
+      "affected_paths": [
+        "wiki/the-nomad-bears.html",
+        "wiki/the-crypto-stoned-boys.html"
+      ]
+    },
+    {
+      "id": "GK-1458-SERIAL-CAST-AND-W47-W48",
+      "status": "implemented",
+      "sources": [
+        "W15 all cycles previously read; Charlie first explicit portrayal paragraph94/Volume8 and later mother-son conflict; no Thera match",
+        "w25 all parts previously read; Thera full role and NiceEasy first destruction/remainingfew/sacrifice/return compared",
+        "w47 and w48 complete originals; full Rugpull/Furies/Bulls and named related biographies compared"
+      ],
+      "old": "Specific W15 prince, w25 Thera counter-songs and Bois repeated losses/returns, and w47 false-memory defence are compressed.",
+      "new": "Recover all four source portrayals on five owning pages with explicit attributions and connected Sarah link. Preserve the real creator biography, modern adult stories, source ideological cruelty and incomplete outcomes.",
+      "reason": "Retains the adult source material without silently adopting royal kinship, resurrection, universal memory physics, completed FinalFork or a new faction count.",
+      "affected_paths": [
+        "wiki/charlie-buster.html",
+        "wiki/queen-sarah-p-fly.html",
+        "wiki/thera-9.html",
+        "wiki/the-nice-easy-bois.html",
+        "wiki/the-rugpull-miners.html"
+      ]
+    },
+    {
+      "id": "GK-1458-W54-W59-STATUS-ECONOMY",
+      "status": "implemented",
+      "sources": [
+        "w54.txt and w59.txt full originals",
+        "Complete current NiceEasy/Bulls biographies and all relevant named relationship sections of HODL/Graff/Rug/Furies/Rocker/Moongirl/Blockstar/Kids/Defender/Kernel/NULL/FirstWitness; Ducky disputed-hardware relationship compared within Bois source and owning account"
+      ],
+      "old": "Specific mandatory peace dividend, UBI inequality critique and speculation on manipulation/faction failures compressed.",
+      "new": "Restore compulsory mediation fee and harsh Bull hierarchy/economy positions with exact source attribution; retain all modern local practices and adult consequences.",
+      "reason": "Keeps commercial coercion and appetite for inequality visible without universalising source ideology, creating real token economics or replacing later adult histories.",
+      "affected_paths": [
+        "wiki/the-allcity-bulls.html",
+        "wiki/the-nice-easy-bois.html"
+      ]
+    },
+    {
+      "id": "GK-1458-W42-W55-MAINTENANCE-CONTROL",
+      "status": "implemented",
+      "sources": [
+        "w42.txt and w55.txt complete originals and claim/scene comparisons",
+        "Full current Finance/Ducky/Bally/CodeAlchemist/Bull/Fury/Blockstar/HODL/Graff/Kernel/Sarah/Kids/Army/Stoned histories and relevant chronology/Forty/FirstWitness accounts"
+      ],
+      "old": "Preventive biometric UBI locks, satellite-surveillance tuning, inside anomaly suppression and repair of innocent Reversal victims compressed.",
+      "new": "Recover specific finance/control and paid-maintenance roles on two owning pages; retain source rhetoric and all modern adult labour, desire, debt, coercion and grief.",
+      "reason": "Repairs missing source consequences without creating actual surveillance tools, valid genetic risk science, worldwide transaction control, resurrection, new faction or finished FinalFork.",
+      "affected_paths": [
+        "wiki/the-finance-guild.html",
+        "wiki/the-ducky-boys.html"
+      ]
+    },
+    {
+      "id": "GK-1458-W43-W51-W52-ELITE-MONOPOLY",
+      "status": "implemented",
+      "sources": [
+        "w43,w51,w52 complete originals and connected claims; cmp confirmsw51/w52 identical repeated witness",
+        "Full current HighHat/CodeAlchemist/Finance/Ducky/Bally/Bull/Fury/Blockstar/Rug/HODL/Graff/Sarah/Kernel/Kids/Defender histories and relevant FirstWitness/Forty/chronology"
+      ],
+      "old": "Strategic Miner obstruction, cheap defender leasing/rebel-intelligence resale, backing any NULL outcome and neutral Alchemist monopoly/elite guards compressed.",
+      "new": "Recover exact source commercial cruelty and specialist services on owning pages; retain both duplicate identities as one text witness and every modern adult consequence.",
+      "reason": "Restores source positions without accepting global monopoly/transaction control, real developer capabilities, universal leasing, inherent superiority, completed FinalFork or cancelled adult lives.",
+      "affected_paths": [
+        "wiki/the-high-hats.html",
+        "wiki/the-code-alchemists.html"
+      ]
+    },
+    {
+      "id": "GK-1458-W46-W57-W62-PREDATORY-BARGAINS",
+      "status": "implemented",
+      "sources": [
+        "w46.txt,w57.txt,w62.txt complete original readings and claim/scene comparisons",
+        "Full existing Bally/Aztec/both Army/Kids/XKids and all directly named faction histories; focused Games/Pinks comparisons"
+      ],
+      "old": "Double anonymity premium and collateral seizure after death, debt-for-defence intelligence, Bull-loss asset absorption and rebel Rugpull survival brokerage compressed.",
+      "new": "Restore precise source bargains on three owning pages; retain all modern lives, military limits, independent households, ceased Sena response and competing Antichain theories.",
+      "reason": "Survival and debt do not make these factions innocent; specific current refusals and relationships do not rewrite source-wide doctrines.",
+      "major": false,
+      "affected_paths": [
+        "wiki/the-bally-boys.html",
+        "wiki/the-aztec-raiders.html",
+        "wiki/bitcoin-kid-army.html"
+      ]
+    },
+    {
+      "id": "GK-1458-NELA-REFERENCE-CONTINUITY",
+      "status": "implemented",
+      "sources": [
+        "Current primary Pinks adjacent SplitCurrentNight removal: NelaHask31, injury/lostcarryingwork",
+        "Approved lived-world-and-faction-icons-20261005.md namesNelaHask31; NessaVale42 is separate earlier OverdrawnRelay adult",
+        "All65 primaryPinks and57 Enforcer canonical paragraphs fully read"
+      ],
+      "old": "Officer mockery incorrectly calls the just-removed Nela Hask Nessa.",
+      "new": "Replace only that one reference with Nela; preserve injury, mockery, Glaze bonus, Ressa refusal and unfinished hearing.",
+      "reason": "Exact referential continuity correction; no new identity, event, absolution or invented kinship.",
+      "major": false,
+      "affected_paths": [
+        "wiki/the-squeaky-pinks.html"
+      ],
+      "paragraph_changes": [
+        {
+          "path": "wiki/the-squeaky-pinks.html",
+          "old_sha256": "sha256:2d250b32749e6dc1af63964fee736db1ac87e3d7a85d69b9fd8951a085e7c5f5",
+          "new_sha256": "sha256:72066cf126bb2c7c0532fd0d7295b62eb27fc1d152394221a3f32200f85fc4f6",
+          "reason": "One reference Nessa to Nela; every other word and consequence preserved."
+        }
+      ]
+    },
+    {
+      "id": "GK-1458-W45-W49-W53-SERVICE-ENSEMBLE",
+      "status": "implemented",
+      "sources": [
+        "w45.txt,w49.txt,w53.txt full originals and connected claim/scene comparisons",
+        "Full Tuskon/Blockstar/bothPinks/GaslessGhost and all source-named core faction histories; SixPillars taxonomy and chronology read"
+      ],
+      "old": "Exclusive spoils supply contract, named Blockbusters crew and precise Authority/NeonPink/de-fragmentation doctrine compressed.",
+      "new": "Restore the exact commercial terms, source-era ensemble and coercive enforcement doctrine, retaining source scope and every modern adult life.",
+      "reason": "Current local humane choices and intimate lives do not repeal a faction source\u2019s larger bargains or cruelty. Crossover/date claims remain attributed fiction.",
+      "major": false,
+      "affected_paths": [
+        "wiki/the-tuskon-ogs.html",
+        "wiki/the-blockstars.html",
+        "wiki/the-squeaky-pinks.html"
+      ]
+    },
+    {
+      "id": "GK-1458-W58-PAINT-HARVEST",
+      "status": "implemented",
+      "sources": [
+        "w58.txt complete Graff/Forkborn original and connected claim/scene comparison",
+        "Full Graff/Jodie/Thera/Sarah/Aleema/Kids/Army/Moongirl/Raider/HighHat/Alchemist/Kernel/NULL/Forty histories and relevant source-specific Games comparisons"
+      ],
+      "old": "Bioweapon/artificialbirth leak, NullPriest survival exchange and exact eighty-woman/DreamVirus/physicalSigel outcome compressed.",
+      "new": "Restore source particulars with narrator scope; retain HotWall injuries/profit and NotYourDream private consent/refusals/Orsa separate room, source helper and third recruit remain unnamed.",
+      "reason": "A faction\u2019s testimony and spectacular source triumph do not erase its contemporary exploitation or a seer\u2019s misuse of private testimony.",
+      "major": false,
+      "affected_paths": [
+        "wiki/graffpunks.html",
+        "wiki/jodie-zoom-2000.html"
+      ]
+    },
+    {
+      "id": "GK-1458-W34-W41-SECRECY-MARKET",
+      "status": "implemented",
+      "sources": [
+        "w34.txt,w41.txt complete originals and connected claim/scene comparisons",
+        "Full GaslessGhost70/Mercenary68 articles and all source-named core faction histories; current NULL origins and separate stealth claims"
+      ],
+      "old": "Engineer/general assassination targets, deceptive-memory/Mercenary disappearance, precise double-sided sales and AGNES7 broker claim compressed.",
+      "new": "Restore exact source target/customer pairs and disputed satellite claim on two owning pages, retaining all RedLedger/RestBell private lives and conflicting source guarantees.",
+      "reason": "A current refusal or careful invoice cannot repeal the source\u2019s lethal or predatory market; no alleged satellite identification becomes accepted ontology.",
+      "major": false,
+      "affected_paths": [
+        "wiki/the-gasless-ghosts.html",
+        "wiki/the-information-mercenaries.html"
+      ]
+    },
+    {
+      "id": "GK-1458-W38-W40-DEPENDENCY-POWER",
+      "status": "implemented",
+      "sources": [
+        "w38.txt,w40.txt complete originals and connected claim/scene comparisons",
+        "Full Moonlord68/Salvager86 owning articles, connected RedLedger/BlackDividend/LastLoading/city/elite/faction histories and attributed orbital programme limits"
+      ],
+      "old": "Intentional DependencyLoop/falsecredit/tokenbuyer and specific orbitalcontract/rebelpowercut claims compressed.",
+      "new": "Recover exact source traps, customers, materials and conditional power threat, retaining all modern livelihoods, intimate choices, disabled work, paid care and unresolved hearings.",
+      "reason": "Practical help and a useful service do not erase a faction\u2019s coercive leverage; source installation or monopoly claims do not establish a completed universal system.",
+      "major": false,
+      "affected_paths": [
+        "wiki/the-moonlords.html",
+        "wiki/the-salvagers.html"
+      ]
+    },
+    {
+      "id": "GK-1458-W35-W39-MEMORY-ARSENAL",
+      "status": "implemented",
+      "sources": [
+        "w35.txt,w39.txt complete originals and connected claim/scene comparisons",
+        "Full current Saints54/Forkborn53 canonical paragraphs and source-named Graff/Pinks/Moonlord/Alchemist/Army/Jodie/Aleema/Moongirl/elite/NULL histories; current chronology and First Witness"
+      ],
+      "old": "Named Saints attacks and the precise Forkborn credo/questions compressed.",
+      "new": "Recover three distinct cultural weapons, source tactical contrast and remembering/remix/reroute refusal with the three philosophical questions, preserving every modern adult life.",
+      "reason": "Source joy and freedom claims do not erase coercive taste, private grief, unpaid work, displaced shifts, disputed routes or the households still angry with their helpers.",
+      "major": false,
+      "affected_paths": [
+        "wiki/the-og-pixel-saints.html",
+        "wiki/forkborn-collective.html"
+      ]
+    },
+    {
+      "id": "GK-1458-W36-W37-CLIENT-EXCLUSION",
+      "status": "implemented",
+      "sources": [
+        "w36.txt,w37.txt complete originals and connected claim/scene comparisons",
+        "Full EVM61/Scribe64 owning paragraphs and source-named city/HighHat/Bull/Finance/Aztec/Rocker/Graff/Ghost/Kids/Alchemist/Jodie/Stoned/HODL/Kernel/NULL histories"
+      ],
+      "old": "Specific mercenary buyer-target pairs, sale of rebel specifications and purist Kid exclusion/contaminated server expedition compressed.",
+      "new": "Recover exact customer and victim relationships, final-market ambition and Scribe exclusion/expedition/Purge doctrine, preserving every current adult scene.",
+      "reason": "Neutral contracting and careful modern custody do not erase the source factions\u2019 predatory or lethal choices; no real offensive instruction, universal survival, recovered first inscription or completed FinalFork is introduced.",
+      "major": false,
+      "affected_paths": [
+        "wiki/the-evm-punks.html",
+        "wiki/the-chain-scribes.html"
+      ]
+    },
+    {
+      "id": "GK-1458-W64-W65-W84-ASCENSION-NULL",
+      "status": "implemented",
+      "sources": [
+        "w64.txt,w65.txt,w84.txt complete originals and connected claim/scene comparisons",
+        "Full current Finance/HighHat/Moongirl/Sarah/HODL/Raider/Pink/Stoned/Bois and all named related histories, distinct chains/current chronology/First Witness"
+      ],
+      "old": "Distinct ascension financiers, Tag/Leash/Soulbound control metaphors and five-part NULL military response with Vengeful Oath compressed.",
+      "new": "Recover exact source partners, financial permission/expansion claims, capture/purge/conquest/petty enforcement/satire and coercive exchange oath on eight owning pages. Preserve all modern adult consequences.",
+      "reason": "Security, collective survival and attractive peace claims do not erase consent, paid labour, guilt, abuse or coercion; no completed fleet, universal immunity, settled satellite origin or finished FinalFork is introduced.",
+      "major": false,
+      "affected_paths": [
+        "wiki/the-finance-guild.html",
+        "wiki/the-high-hats.html",
+        "wiki/the-crypto-moongirls.html",
+        "wiki/hodl-warriors.html",
+        "wiki/the-aztec-raiders.html",
+        "wiki/the-squeaky-pinks.html",
+        "wiki/the-crypto-stoned-boys.html",
+        "wiki/the-nice-easy-bois.html",
+        "wiki/queen-sarah-p-fly.html",
+        "wiki/the-tuskon-ogs.html"
+      ]
+    },
+    {
+      "id": "GK-1458-W70-W92-W93-GAMES-ORIGIN",
+      "status": "implemented",
+      "sources": [
+        "w70.txt,w92.txt,w93.txt complete originals and connected claim/scene comparisons",
+        "Full Games179/Rune65/Writcode43/Snipey42/BitCap43/Defender35 and all connected Jodie/Aleema/Sarah/city/Graff/insideOutsideKids/chronology/Forty histories",
+        "w39/w58 explicitly assign CloneHarvest to Sarah; w70 surrounding coercion/refusal contradicts one Jodie-goal line"
+      ],
+      "old": "Specific diary threat/role labels, arrival details/injury and fourth Graff formation/OMNICORE origin compressed; one source sentence reverses harvest agency.",
+      "new": "Recover exact diary/arrival/formation/build-duration particulars; retain source date and identity variants, and explicitly reject the contradictory Jodie-harvest assignment in favour of Sarah-owned programme.",
+      "reason": "Preserve first-person fear, damaged hands and private violation without deleting modern adult histories, merging cultures, inventing an extra catastrophe, accepting new foundation dates or concluding the FinalFork.",
+      "major": false,
+      "affected_paths": [
+        "wiki/hard-fork-games.html",
+        "wiki/jodie-zoom-2000.html",
+        "wiki/graffpunks.html",
+        "wiki/block-topia.html"
+      ]
+    }
+  ]
+}
