@@ -8,7 +8,7 @@
     "unique_contents": 93,
     "bytes": 2334149
   },
-  "semantic_scope": "Thirty-three completely compared sources; ten additional originals completely read with comparison pending. Sixty-eight full existing article audits and five focused comparisons; nine new articles separately authored. Full mission open.",
+  "semantic_scope": "Thirty-six completely compared sources; ten additional originals completely read with comparison pending. Sixty-eight full existing article audits and five focused comparisons; nine new articles separately authored. Full mission open.",
   "sources": [
     {
       "file": "M16.txt",
@@ -443,7 +443,7 @@
       "bytes": 6718,
       "sha256": "199bacfe6af7e5d87385c2cbd47507b36b28e3caee93471b5a2f6dfaccb42492",
       "byte_verified": true,
-      "semantic_review": "complete source reading; connected comparison pending",
+      "semantic_review": "complete source reading and connected claim/scene comparison",
       "prior_disposition": "COVERED",
       "read_progress": {
         "paragraphs_read_in_full": [
@@ -453,10 +453,10 @@
           ]
         ],
         "next_unread_paragraph": null,
-        "complete_source_comparison": false
+        "complete_source_comparison": true
       },
-      "partial_findings": [
-        "Complete original read without truncation; all current owning paragraphs read/cache-verified. Specific customer/target or doctrinal/chronology comparison remains next batch."
+      "findings": [
+        "Complete GasWars/origin/hashscars/amoralpayment/ContractStorms/ForkBombs/Alchemist rivalry/HighHat Bull and Guilddebtor targets/Moongirl rebel targets/Ghost clash/Rug contempt/NULL paymentmarket/Moonlordbuyer/inside dismissal/outside specification sale and distraction claims compared. Exact buyer-target pairs and rebel network specification bargain restored; no actual offensive technique or guaranteed paid survival. Dax/Tessa protected BrightMouth supply, spoiled dinners, reward/client growth, Vera refusal and Sella independent work/affair/jacket history remain."
       ]
     },
     {
@@ -464,7 +464,7 @@
       "bytes": 6244,
       "sha256": "e19e796d30609d0003c3e889a84684e06f056454a56916b502ae96f4c2c0a46a",
       "byte_verified": true,
-      "semantic_review": "complete source reading; connected comparison pending",
+      "semantic_review": "complete source reading and connected claim/scene comparison",
       "prior_disposition": "COVERED",
       "read_progress": {
         "paragraphs_read_in_full": [
@@ -474,10 +474,10 @@
           ]
         ],
         "next_unread_paragraph": null,
-        "complete_source_comparison": false
+        "complete_source_comparison": true
       },
-      "partial_findings": [
-        "Complete original read without truncation; all current owning paragraphs read/cache-verified. Specific customer/target or doctrinal/chronology comparison remains next batch."
+      "findings": [
+        "Complete scholarlyorigins/Kernel scripture/prayerhashes/Seal/preForkbackups/artifacts/Architect suspicion/Alchemist QuantumPatcher damnation/Forkborn heresy/Guild locks/HODL ideologicalclaim/NULL contaminatedserver TrueInscription/ReverseScribe/Purge/Kid exclusions/Stoned contempt compared. Exact Kid spiritual/economic refusal, expedition and destructive doctrine restored. One house storage classification and Ruva LoversMargin gossip remain distinct; all Annex/Rell/Fenna/Pell/Codex7/Quell/Vex/FifthCarbon privacy, missing persons and unsettled endings preserved."
       ]
     },
     {
@@ -1025,7 +1025,7 @@
       "bytes": 6860,
       "sha256": "b13b26abec65202ca47c47dabaa58974aa0e0c48ae519710cacecf8fa1f011cc",
       "byte_verified": true,
-      "semantic_review": "complete source reading; connected comparison pending",
+      "semantic_review": "complete source reading and connected claim/scene comparison",
       "prior_disposition": "COVERED",
       "read_progress": {
         "paragraphs_read_in_full": [
@@ -1035,10 +1035,10 @@
           ]
         ],
         "next_unread_paragraph": null,
-        "complete_source_comparison": false
+        "complete_source_comparison": true
       },
-      "partial_findings": [
-        "Complete original read without truncation; all current owning paragraphs read/cache-verified. Specific customer/target or doctrinal/chronology comparison remains next batch."
+      "findings": [
+        "Complete SelfFork/headfailure/uncorruptedmemory/Sarah stability versus Bloodline determinism/Nomad conduits/MnemonicWhisper/selectiveinsidewithholding/Rocker selfseverance/PunkNet EyeWithoutHash/DeepVault census/Purge wipe-and-rebuild claims compared against all64 current GKniftyHEAD canonical paragraphs and connected complete histories. All already represented with attribution; no additional owning prose necessary. The explicit2789 subsequent-to2880 contradiction is retained as impossible, not repaired by invented event/date. W5 royal Galleries/singularSAMArchitect remain competing tradition. Rell/Omra/GlassFace uncertain response, withheld laughter, denied access and retained household withdrawal remain; real creator rights unchanged."
       ]
     },
     {
@@ -1091,16 +1091,42 @@
       "bytes": 3808,
       "sha256": "39d8e53665044ae04fb688a6f77a082cf6b82ca75f8ed8bc4c4098e0ed170d34",
       "byte_verified": true,
-      "semantic_review": "pending complete semantic reading",
-      "prior_disposition": "COVERED"
+      "semantic_review": "complete source reading; connected comparison pending",
+      "prior_disposition": "COVERED",
+      "read_progress": {
+        "paragraphs_read_in_full": [
+          [
+            1,
+            21
+          ]
+        ],
+        "next_unread_paragraph": null,
+        "complete_source_comparison": false
+      },
+      "partial_findings": [
+        "Complete original read without truncation. Specific source ascension roles/claims or five-part NULL military response and coercive Bois disclosure oath need owning comparison/recovery."
+      ]
     },
     {
       "file": "w65.txt",
       "bytes": 16940,
       "sha256": "6898376b373f9a6f8fc318fe4c167a43afbef4678da1e495e2eba4ac9fe22e7b",
       "byte_verified": true,
-      "semantic_review": "pending complete semantic reading",
-      "prior_disposition": "COVERED"
+      "semantic_review": "complete source reading; connected comparison pending",
+      "prior_disposition": "COVERED",
+      "read_progress": {
+        "paragraphs_read_in_full": [
+          [
+            1,
+            52
+          ]
+        ],
+        "next_unread_paragraph": null,
+        "complete_source_comparison": false
+      },
+      "partial_findings": [
+        "Complete original read without truncation. Specific source ascension roles/claims or five-part NULL military response and coercive Bois disclosure oath need owning comparison/recovery."
+      ]
     },
     {
       "file": "w66.txt",
@@ -1317,8 +1343,21 @@
       "bytes": 4363,
       "sha256": "a00b76bd2bf760b2be6e660dfacb3b3b555446f8bdc9edc0cde93493d3066704",
       "byte_verified": true,
-      "semantic_review": "pending complete semantic reading",
-      "prior_disposition": "HISTORICAL"
+      "semantic_review": "complete source reading; connected comparison pending",
+      "prior_disposition": "HISTORICAL",
+      "read_progress": {
+        "paragraphs_read_in_full": [
+          [
+            1,
+            12
+          ]
+        ],
+        "next_unread_paragraph": null,
+        "complete_source_comparison": false
+      },
+      "partial_findings": [
+        "Complete original read without truncation. Specific source ascension roles/claims or five-part NULL military response and coercive Bois disclosure oath need owning comparison/recovery."
+      ]
     },
     {
       "file": "w85.txt",

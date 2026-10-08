@@ -566,3 +566,28 @@ work remains paid with finite rooms; Meva/Olan’s displaced workshop, delayed
 partition, angry Refused Door household and withdrawn Farewell Strip survive
 the source’s anti-commercial ideal. The third escapee and buried-file helper
 remain separately unnamed; no final crossing or lost person is restored.
+
+
+### Paid targets, rejected witnesses and the memory keeper’s cost
+
+Full w36/w37 comparisons restore EVM client/target pairs and sale of rebel
+network descriptions, plus Scribe spiritual/economic Kid exclusion, dangerous
+first-inscription expeditions and the Archive Purge’s destruction. Contracts
+and sacred necessity are these schools’ justifications, not proof of innocence
+or a finished defence against NULL. One Scribe house’s storage bargain remains
+separate from Ruva’s insinuating public introduction of private letters.
+
+Hard Smile’s kept supply, spoiled neighbours’ food, Tessa’s knowingly accepted
+fee/pride and Dax’s larger client list remain. Sella’s independent work and
+consensual affair do not suppress her unflattering jacket history. Vera/Noll’s
+Second Shift obligations and Ruva/Fenna/Rell/Pell’s private custody conflicts
+remain current adult lives beside the source’s market and purist schools.
+
+All w61 claims already have owning coverage, including its impossible2789
+Datapocalypse described as subsequent to2880. No replacement date or second
+catastrophe is invented. The source’s failed rescue, selective whispers,
+quarantine and destroyed/rebuilt identity remain; a rebuilt copy is not quietly
+declared the erased person. Glass Face uncertainty, Rell’s gatekeeping, Omra’s
+withheld laughter and household fragment remain. W5’s crowned house does not
+acquire these keepers’ consent through a shared name. No real creator right,
+new Forty position or final ending changes.

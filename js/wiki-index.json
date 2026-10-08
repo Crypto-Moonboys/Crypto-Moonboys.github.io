@@ -4665,13 +4665,13 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 4598,
+      "article_word_count": 4870,
       "keyword_bag_size": 24,
-      "heading_count": 26,
+      "heading_count": 27,
       "list_count": 1,
       "internal_link_count": 16,
-      "paragraph_count": 66,
-      "section_count": 23,
+      "paragraph_count": 69,
+      "section_count": 24,
       "lore_paragraph_count": 64,
       "content_quality_score": 105,
       "authority_score": 28
@@ -4772,14 +4772,25 @@
         "agent",
         "sam",
         "record",
-        "costs"
+        "costs",
+        "passive",
+        "heretics",
+        "rebel",
+        "hooligans",
+        "memecoin",
+        "legitimacy",
+        "refusal",
+        "contaminated",
+        "server",
+        "true",
+        "inscription"
       ]
     },
     "link_score": {
       "inbound_count": 34,
-      "outbound_count": 47,
+      "outbound_count": 49,
       "existing_outbound_count": 14,
-      "suggested_outbound_count": 33,
+      "suggested_outbound_count": 35,
       "authority": 75
     },
     "brand": null
@@ -23228,13 +23239,13 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 4320,
+      "article_word_count": 4600,
       "keyword_bag_size": 23,
-      "heading_count": 25,
+      "heading_count": 26,
       "list_count": 1,
       "internal_link_count": 13,
-      "paragraph_count": 63,
-      "section_count": 22,
+      "paragraph_count": 66,
+      "section_count": 23,
       "lore_paragraph_count": 61,
       "content_quality_score": 101,
       "authority_score": 24
@@ -23313,14 +23324,25 @@
         "private",
         "loyalties",
         "sella",
-        "grip"
+        "grip",
+        "high",
+        "hat",
+        "rival",
+        "market",
+        "contracts",
+        "rebel",
+        "memecoin",
+        "specifications",
+        "sold",
+        "payment",
+        "mercenary"
       ]
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 30,
+      "outbound_count": 33,
       "existing_outbound_count": 13,
-      "suggested_outbound_count": 17,
+      "suggested_outbound_count": 20,
       "authority": 6.5
     },
     "brand": null

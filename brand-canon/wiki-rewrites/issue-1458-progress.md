@@ -12,10 +12,10 @@ No direct push to main, merge, issue closure or production deployment.
 
 ## Current cumulative state
 
-33 of 94 original sources have full claim/scene comparison; 61 remain open.
+36 of 94 original sources have full claim/scene comparison; 58 remain open.
 Ten further originals are completely read with comparisons pending. Existing
 wiki audits cover 73 distinct articles: 68 full and five focused. Nine new
-articles and 48 expanded/corrected existing articles are implemented, with
+articles and 50 expanded/corrected existing articles are implemented, with
 five original adult connecting stories. This is an implementation checkpoint,
 not a claim that every source or current wiki page is reconciled.
 
@@ -29,9 +29,9 @@ proposed; no final ending, new Forty slot or historical retcon is adopted.
 
 - **94** original archive files verified against archive SHA-256, CSV and the
   independent immutable ledger; **93** unique contents, **2,334,149** bytes.
-- **33** complete original texts read and compared cumulatively: W1, w32, w33,
-  w56, W12 (all eight parts), W13 (all seven parts and repeated extracts), W7, w50, w63, w60, w44, w47, w48, w54, w59, w42, w55, w43, w51 and w52 (those two are one repeated witness), w57, w46, w62, w45, w49, w53, w58, w34, w41, w38, w40, w35 and w39.
-  **61** remain without full semantic comparison. W19 is fully read but its
+- **36** complete original texts read and compared cumulatively: W1, w32, w33,
+  w56, W12 (all eight parts), W13 (all seven parts and repeated extracts), W7, w50, w63, w60, w44, w47, w48, w54, w59, w42, w55, w43, w51 and w52 (those two are one repeated witness), w57, w46, w62, w45, w49, w53, w58, w34, w41, w38, w40, w35, w39, w36, w37 and w61.
+  **58** remain without full semantic comparison. W19 is fully read but its
   remaining embedded-character comparisons are pending, so it is not counted.
 - **73 distinct existing pages** reviewed: sixty-eight full canonical articles
   (Princess, Croydon, master chronology, concordance, synthetic minds,
@@ -987,3 +987,40 @@ seven other Actions groups; inspected Wiki/Graph logs show only maintainer
 prose-label gate after guards/regeneration/parity. No label applied.
 Next w36/w37/w61 specifics, then remaining source/serial/roster dependencies.
 Full mission open.
+
+
+## Mercenary client/targets and the witness purists reject
+
+w36/w37 full comparisons restore exact EVM customer-target pairs, rebel
+network-description sales, Scribe Kid spiritual/economic exclusion, contaminated
+server expeditions and destructive Purge doctrine. All w61 source claims are
+already represented on its fully read owning article; no filler section or
+new fictional event added. Its impossible2789-after2880 sequence remains
+explicitly disputed. Adult Bright Mouth reward/ruined dinners/fees/affair,
+Annex storage and gossip, Fifth Carbon and Architect Gatekeeping histories
+remain. Current36/94 comparisons,58 open; seven further originals read pending;
+73 audits68 full/five focused;50 existing articles expanded/corrected, nine
+new, five original adult stories. Final validation pending. No major chronology,
+identity, Forty slot or final outcome adopted. Full mission open.
+
+
+### Client/exclusion final verification and next source witnesses
+
+Full wiki CI, graph, preservation, links and Pages build pass. Two changed
+articles separately pass4 desktop/mobile views,2 noJS readings and2 search/
+autocomplete queries; no new full cumulative run claimed. All424 prior pages,
+9835 original substantial paragraphs and5282 IDs remain against
+9dde74663f7fd5b4b6163c385de0384c5bc72128, with zero new paragraph revisions.
+Across50 changed existing articles,3647 original substantial paragraphs remain
+with14 earlier exact references;1985 canonical links resolve. Preview
+`/workspace/gk1459-previews/client-exclusion-public-site`; no deployment.
+
+Full w64/w65/w84 originals read: distinct ascension manifestos and all five
+military/philosophical responses, including the Bois’ coercive disclosure oath.
+Comparison/recovery remains next. Current36/94 complete comparisons,58 open;
+ten more originals read pending;73 audits68 full/five focused;50 changed existing
+articles, nine new, five original adult stories. Exact9dde74663f7fd5b4b6163c385de0384c5bc72128
+Actions pass seven other groups; inspected Wiki/Graph logs show only maintainer
+prose-label gate after guards/regeneration/parity. No label applied.
+Next ascension financiers, full military NULL-response specifics and Bois’
+coercive alliance, then remaining source/serial/roster work. Full mission open.

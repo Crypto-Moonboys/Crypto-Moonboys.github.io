@@ -22338,7 +22338,7 @@
     ]
   },
   "/wiki/the-chain-scribes.html": {
-    "outbound_count": 47,
+    "outbound_count": 49,
     "inbound_count": 34,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
@@ -22379,6 +22379,8 @@
       "/wiki/first-witness-work-craft-service.html",
       "/wiki/first-witness-world-chain-error.html",
       "/wiki/genesis-kernel.html",
+      "/wiki/gkniftyheads-raze-rebel-783250.html",
+      "/wiki/gkniftyheads-rebel-riff-783269.html",
       "/wiki/gkniftyheads-scribe-serpent-783260.html",
       "/wiki/graffpunks.html",
       "/wiki/hodl-warriors.html",
@@ -22629,7 +22631,7 @@
     ]
   },
   "/wiki/the-evm-punks.html": {
-    "outbound_count": 30,
+    "outbound_count": 33,
     "inbound_count": 0,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
@@ -22647,12 +22649,15 @@
       "/wiki/thorne-the-architect.html"
     ],
     "suggested_outbound": [
+      "/wiki/bear-market-siege.html",
       "/wiki/bitcoin-kids.html",
       "/wiki/bitcoin-x-kids.html",
       "/wiki/block-topia.html",
       "/wiki/first-witness-concordance.html",
       "/wiki/genesis-kernel.html",
       "/wiki/gkniftyheads-antonio-ether-emperor-costa-783448.html",
+      "/wiki/gkniftyheads-raze-rebel-783250.html",
+      "/wiki/gkniftyheads-rebel-riff-783269.html",
       "/wiki/graffpunks.html",
       "/wiki/hard-fork-games.html",
       "/wiki/hodl-warriors.html",

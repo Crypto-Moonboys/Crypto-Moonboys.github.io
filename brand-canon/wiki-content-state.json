@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "generator": "scripts/generate-wiki-content-state.mjs",
-  "source_tree_hash": "sha256:2c167e0c0e17965bc26f038c87ca18c86345ed85272cb70d080445f4f917c9e2",
+  "source_tree_hash": "sha256:4d71e0c92b7edf5cb7c9f85d00c6264442f5b765199b6f27f6afd3d54fac28a5",
   "hash_algorithm": "sha256",
   "page_count": 424,
   "manifest_entry_count": 424,
@@ -15450,7 +15450,7 @@
       "title": "The CHAIN SCRIBES",
       "page_exists": true,
       "page_type": "faction",
-      "current_word_count": 4297,
+      "current_word_count": 4569,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -15459,10 +15459,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:241c25803d59ad62ea54c9322ef52c860d2a6ed526c8563982b02d6f610c0ce3",
-      "article_content_hash": "sha256:a47a9bff1b72e33c51c01ffc97e9ce86c3c6c792fe6921f23ccc28a2e7cf9ce8",
-      "article_markup_hash": "sha256:ae554d5475812d301251f3763bbdd41598d22a8ab7dd2fbdc20a47a77a9ab1c2",
-      "git_blob_oid": "13196a3efacbbd32fb12cdf607b673d86dde8d21",
+      "content_hash": "sha256:3961ffdeaa21111a7658ebc387eb7f045d84b0a2c3f4be1297130414561f7d98",
+      "article_content_hash": "sha256:e36c4941d83ec1774733667dc7b2e226a1792705c2f6920076b5dce18ae61a55",
+      "article_markup_hash": "sha256:7f7a80f84be619ee4127fa3245b76a3786c7f3e3f80637a9fcdf23bb5db91839",
+      "git_blob_oid": "e52634edc0d87c9d028b5c769ca6f203c653a8ed",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -15483,12 +15483,12 @@
         "wiki/bibles/the-chain-scribes.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 5 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 6 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/the-chain-scribes.json; it is not automatically the unavailable Tier 4 modern bible.",
         "The requested modern Tier 4 subject bible is not separately identifiable in this checkout; canon classification remains a human-review item."
       ],
       "content_owner": "canon",
-      "canon_revision": 5,
+      "canon_revision": 6,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -15723,7 +15723,7 @@
       "title": "The EVM PUNKS",
       "page_exists": true,
       "page_type": "faction",
-      "current_word_count": 4007,
+      "current_word_count": 4287,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -15732,10 +15732,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:407c1882a49f54b25f0064b4f7a191e3a152f2a74cc5afc972e7c5af73d5d052",
-      "article_content_hash": "sha256:cb711978fda04847e1f375e5e90acb62793082d37aaa73f178d7a4efadcab2fc",
-      "article_markup_hash": "sha256:3ef017ffb5f49b45e2d70ab9d4c490f9875e21a96457d90d8fd2c0d2c1a679b7",
-      "git_blob_oid": "d50a27793487d611a2fae4534d5811ee148b9c71",
+      "content_hash": "sha256:236766eccf6cc0eb9b2cc4af02e368c0d7c7f419047aceb2530d87b1bdc057dd",
+      "article_content_hash": "sha256:6bec3dac48563d26f66f48d2e2a0a6c2b34d413269b7cc9c77b36984b1653e44",
+      "article_markup_hash": "sha256:f9e4ccfa5f9bb7f53e21de00c8bc81ba8bc284b601669e0ceeaeca0305d4e1ce",
+      "git_blob_oid": "761aa8a5c1bbccdee512b9273b87bebc9fef4ecb",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -15756,12 +15756,12 @@
         "wiki/bibles/the-evm-punks.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 4 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 5 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/the-evm-punks.json; it is not automatically the unavailable Tier 4 modern bible.",
         "The requested modern Tier 4 subject bible is not separately identifiable in this checkout; canon classification remains a human-review item."
       ],
       "content_owner": "canon",
-      "canon_revision": 4,
+      "canon_revision": 5,
       "canon_source_tier": "first-witness+w81"
     },
     {
