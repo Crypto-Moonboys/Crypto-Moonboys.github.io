@@ -1,4 +1,4 @@
-source_file,source_bytes,sha256,disposition,existing_wiki_routes,editorial_action
+source_file,source_bytes,sha256,disposition,existing_site_routes,editorial_action
 M16.txt,10202,9653208dc10e8365efe2dc983df86cd73351d2379950b7b1ba52c04baac965f2,CONFLICT,wiki/first-witness-concordance.html;wiki/first-witness-forty-paths.html,2198 Triple Fork and claimed complete forty slots conflict with the current 2880 date and 34/6 register
 W1.txt,22071,5cd124064d90797e6f924c1b77aade5c1d4063d6e02e339eb2827dff76511a30,PARTIAL,wiki/squeaky-pinks-enforcers.html;wiki/first-witness-apocrypha-disputed-passages.html,Keep Whisper Codex and Conformal Reset as disputed apocryphal cosmology not verified cosmic physics
 W10.txt,47211,7f9a2047dd889a6c2ce7a1c53a20f80a84a070416d3147d4aca0468a3bddf3df,COVERED,wiki/whale-lords.html,Megaptera Prime Liquidator Kid Zero and Deep Holder claims already receive substantial attribution
@@ -51,7 +51,7 @@ w52.txt,6814,bda710f3eb9f6fd779dd9a388465ad82f3e339568c23bfb0a8a3ed8b9133a478,DU
 w53.txt,8578,77dbc4368530a0329abc5fcf4f2de1f10a612e8f6bc0da76e669919e54dcff03,COVERED,wiki/the-squeaky-pinks.html,Named Squeaky Pinks profile present; this does not mean every paragraph from source was imported
 w54.txt,6192,99feb27962378932bba803e93a00ab9c34cb73c44a7f65cb2dd5b5655c76706b,COVERED,wiki/the-nice-easy-bois.html,Named Nice & Easy Bois profile present; this does not mean every paragraph from source was imported
 w55.txt,6631,42c8200a24a66e9d3c5786778d9e6ec37f8ad7545cce9c3bf86904599f2ef3e4,COVERED,wiki/the-ducky-boys.html,Named Ducky Boys profile present; this does not mean every paragraph from source was imported
-w56.txt,5278,0391b5cd2105e2d61a7509aa0eaff4e34deb06857618d64133a64441896dbf27,PENDING_EDITORIAL,wiki/queen-sarah-p-fly.html,No separate Crypto Moongirls HTML route; review before giving a numbered Forty-Paths position
+w56.txt,5278,0391b5cd2105e2d61a7509aa0eaff4e34deb06857618d64133a64441896dbf27,PENDING_EDITORIAL,battle-chamber/factions/crypto-moongirls.html;wiki/queen-sarah-p-fly.html,Existing Crypto Moongirls Battle Chamber faction page and live selector are present; reconcile w56 against these and the First Witness 34/6 register before considering a separate encyclopedia article
 w57.txt,6364,05ad085604d17c41709bcde652bd7ed8c19c74b0613095378abb866072b4d51c,COVERED,wiki/the-bally-boys.html,Named Bally Boys profile present; this does not mean every paragraph from source was imported
 w58.txt,11312,4a8b2c51e63da03717b177dd7a4ea0c377ba7383c31972afde8c06b65629cce2,COVERED,wiki/graffpunks.html,Named GraffPUNKS profile present; this does not mean every paragraph from source was imported
 w59.txt,5814,0ddb56789f53cfc46cd932458766c2c88a7e3b2772252fc8593b17951cfc70d7,COVERED,wiki/the-allcity-bulls.html,Named AllCity Bulls profile present; this does not mean every paragraph from source was imported
