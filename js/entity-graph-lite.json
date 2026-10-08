@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-08T13:48:06.243Z",
-  "verified_at": "2026-10-08T13:48:06.243Z",
+  "generated_at": "2026-10-08T14:17:02.694Z",
+  "verified_at": "2026-10-08T14:17:02.694Z",
   "lite": true,
   "nodes": [
     {
@@ -876,16 +876,16 @@
       "weight": 0.9
     },
     {
-      "source": "/wiki/the-high-hats.html",
-      "target": "/wiki/the-finance-guild.html",
+      "source": "/wiki/the-finance-guild.html",
+      "target": "/wiki/the-high-hats.html",
       "score": 89,
       "weight": 0.89
     },
     {
-      "source": "/wiki/the-finance-guild.html",
-      "target": "/wiki/the-high-hats.html",
-      "score": 88,
-      "weight": 0.88
+      "source": "/wiki/the-high-hats.html",
+      "target": "/wiki/the-finance-guild.html",
+      "score": 89,
+      "weight": 0.89
     },
     {
       "source": "/wiki/block-node-defenders.html",
@@ -906,6 +906,12 @@
       "weight": 0.86
     },
     {
+      "source": "/wiki/the-nice-easy-bois.html",
+      "target": "/wiki/the-high-hats.html",
+      "score": 86,
+      "weight": 0.86
+    },
+    {
       "source": "/wiki/the-whitewasher.html",
       "target": "/wiki/the-princess.html",
       "score": 86,
@@ -920,12 +926,6 @@
     {
       "source": "/wiki/the-bitcoin-kid-army.html",
       "target": "/wiki/gkniftyheads.html",
-      "score": 85,
-      "weight": 0.85
-    },
-    {
-      "source": "/wiki/the-high-hats.html",
-      "target": "/wiki/stikfamwars.html",
       "score": 85,
       "weight": 0.85
     },
@@ -991,21 +991,15 @@
     },
     {
       "source": "/wiki/midevilpunks.html",
-      "target": "/wiki/rave-relics.html",
-      "score": 76,
-      "weight": 0.76
+      "target": "/wiki/stikfamwars.html",
+      "score": 78,
+      "weight": 0.78
     },
     {
       "source": "/wiki/queen-sarah-p-fly.html",
       "target": "/wiki/street-kingdoms.html",
       "score": 74,
       "weight": 0.74
-    },
-    {
-      "source": "/wiki/alfie-bitcoin-kid-blaze.html",
-      "target": "/wiki/the-nice-easy-bois.html",
-      "score": 70,
-      "weight": 0.7
     },
     {
       "source": "/wiki/burn-to-earn.html",

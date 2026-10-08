@@ -12,10 +12,10 @@ No direct push to main, merge, issue closure or production deployment.
 
 ## Current cumulative state
 
-17 of 94 original sources have full claim/scene comparison; 77 remain open.
-Eleven further originals are completely read with comparisons pending. Existing
-wiki audits cover 63 distinct articles: 56 full and seven focused. Nine new
-articles and 35 expanded/corrected existing articles are implemented, with
+20 of 94 original sources have full claim/scene comparison; 74 remain open.
+Ten further originals are completely read with comparisons pending. Existing
+wiki audits cover 64 distinct articles: 58 full and six focused. Nine new
+articles and 36 expanded/corrected existing articles are implemented, with
 five original adult connecting stories. This is an implementation checkpoint,
 not a claim that every source or current wiki page is reconciled.
 
@@ -29,15 +29,15 @@ proposed; no final ending, new Forty slot or historical retcon is adopted.
 
 - **94** original archive files verified against archive SHA-256, CSV and the
   independent immutable ledger; **93** unique contents, **2,334,149** bytes.
-- **17** complete original texts read and compared cumulatively: W1, w32, w33,
-  w56, W12 (all eight parts), W13 (all seven parts and repeated extracts), W7, w50, w63, w60, w44, w47, w48, w54, w59, w42 and w55.
-  **77** remain without full semantic comparison. W19 is fully read but its
+- **20** complete original texts read and compared cumulatively: W1, w32, w33,
+  w56, W12 (all eight parts), W13 (all seven parts and repeated extracts), W7, w50, w63, w60, w44, w47, w48, w54, w59, w42, w55, w43, w51 and w52 (the last two are one repeated witness).
+  **74** remain without full semantic comparison. W19 is fully read but its
   remaining embedded-character comparisons are pending, so it is not counted.
-- **63 distinct existing pages** reviewed: fifty-six full canonical articles
+- **64 distinct existing pages** reviewed: fifty-eight full canonical articles
   (Princess, Croydon, master chronology, concordance, synthetic minds,
   Crypto Moonboys, Great Consensus, Elder Codex-7, Iris-7, Aleema, Dream Sovereign,
-  all nine First Witness Books, HODL Warriors, GraffPUNKS, GKniftyHEADS, Whale Lords, XRP Kids, Forty Paths, faction Commentaries, Sarah, Jodie, Alfie, NULL, Block Topia, HODL doctrine, Hard Fork Rockers, Genesis Kernel, Nomad Bears, Blockstars, Crypto Stoned Boys, Rugpull Miners, Block Node Defenders both Army articles, Bitcoin X Kids, Chain Scribes the humour/attention supporting chapters, Thera, Charlie, Nice & Easy, AllCity Bulls Blockchain Furies, Finance Guild, Ducky Boys full Code Alchemists Bally Boys and High Hats) and seven focused section reviews
-  (Rune, Pinks, Games, Bitcoin Kids, HODL Wars, Sacred Chain and Rave Relics). Exact scopes are in `issue-1458-audit.json`.
+  all nine First Witness Books, HODL Warriors, GraffPUNKS, GKniftyHEADS, Whale Lords, XRP Kids, Forty Paths, faction Commentaries, Sarah, Jodie, Alfie, NULL, Block Topia, HODL doctrine, Hard Fork Rockers, Genesis Kernel, Nomad Bears, Blockstars, Crypto Stoned Boys, Rugpull Miners, Block Node Defenders both Army articles, Bitcoin X Kids, Chain Scribes the humour/attention supporting chapters, Thera, Charlie, Nice & Easy, AllCity Bulls Blockchain Furies, Finance Guild, Ducky Boys full Code Alchemists Bally Boys, High Hats, Aztec Raiders and Bitcoin Kids) and six focused section reviews
+  (Rune, Pinks, Games, HODL Wars, Sacred Chain and Rave Relics). Exact scopes are in `issue-1458-audit.json`.
 - **424** top-level wiki pages pass automated targeted canon lint and content
   inventory checks. That number is a static scan, not a human semantic count.
 
@@ -90,7 +90,7 @@ Single authority policy: `../CANON_POLICY.md`. Entry/onboarding: root `AGENTS.md
 PR template now requires source, ripple, adult-story, discovery and approval
 checks. `../canon-locks.json` contains anchors, identity boundaries, 34/6 and
 nine-runtime distinction, 94 source identities and targeted claim rules.
-`../reconciliation-decisions.json` holds twenty-one implemented and five proposed
+`../reconciliation-decisions.json` holds twenty-two implemented and five proposed
 old/new decisions with rationale and affected paths.
 
 `canon-integrity-check.mjs` runs in wiki CI and checks explicit chronology,
@@ -729,3 +729,40 @@ next concrete recovery is prepared for HighHat strategic-Miner/cheap-defender/
 rebel-intel/NULL-financing positions and Alchemist neutral monopoly/elite
 services; w51/w52 are one repeated witness. It is not counted as implemented
 until the next actual owning-page changes and validation occur.
+
+
+## HighHat/Alchemist elite service and monopoly recovery
+
+w43/w51/w52 full comparisons are implemented on two owning pages. The source
+retains paid elite guards/neutral monopoly, selective Miner failure, cheap
+Defender leasing, rebel-intelligence resale and willingness to fund an
+Antichain takeover. All current adult histories remain. No new named
+character, original story, historical date, accepted universal hierarchy or
+final outcome. w51/w52 remain distinct archive identities of one repeated text.
+
+Current source count20/94;74 open, with eight other originals completely
+read and comparison pending. Audit63 distinct existing articles:56 full/seven
+focused.36 existing articles expanded/corrected; nine new articles, five
+original adult connecting stories. Final validation pending. Next: Aztec/w62,
+Bally source, the remaining faction profiles and full serial/roster proposals.
+
+
+### Elite recovery final verification
+
+Full local wiki CI, browser, graph, preservation, links and Pages build pass.
+Browser:90 desktop/mobile views,45 no-JavaScript readings,34 search/autocomplete
+queries. Graph:417 indexed,427 nodes,2083 edges,75 mobile. Across36 changed
+existing articles,2716 original substantial paragraphs remain, with only the
+earlier13 exact Tavi references;1459 canonical links resolve. All424 prior
+articles,9779 paragraphs and5266 IDs remain againstacb1616db1bf310b24b02efa2600c0f2a54696e2,
+with zero additional paragraph revisions. Final preview:
+`/workspace/gk1459-previews/elite-public-site`; no deployment. Older task-owned
+disposable preview copies removed to recover temporary disk space; sources,
+reading caches, receipts and logs retained.
+
+Full57-paragraph Aztec and70-paragraph Bitcoin Kids readings are cache-verified,
+including every modern adult life, household/kinship consequence and Sena
+silence. w57/w46 originals fully read with comparisons pending. Current scope:
+20/94 sources compared,74 open; ten further originals fully read pending;
+64 distinct existing audits,58 full/six focused;36 changed existing pages,
+nine new articles and five original adult connecting stories. Full mission open.

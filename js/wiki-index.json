@@ -6358,13 +6358,13 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 5508,
+      "article_word_count": 5850,
       "keyword_bag_size": 22,
-      "heading_count": 37,
+      "heading_count": 38,
       "list_count": 1,
       "internal_link_count": 23,
-      "paragraph_count": 87,
-      "section_count": 34,
+      "paragraph_count": 91,
+      "section_count": 35,
       "lore_paragraph_count": 40,
       "content_quality_score": 101,
       "authority_score": 28
@@ -6470,7 +6470,15 @@
         "loading",
         "appointment",
         "unpaid",
-        "argument"
+        "argument",
+        "strategic",
+        "miner",
+        "failures",
+        "leased",
+        "defenders",
+        "antichain",
+        "financial",
+        "backing"
       ]
     },
     "link_score": {
@@ -17157,13 +17165,13 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 4583,
+      "article_word_count": 4813,
       "keyword_bag_size": 22,
-      "heading_count": 28,
+      "heading_count": 29,
       "list_count": 1,
       "internal_link_count": 16,
-      "paragraph_count": 67,
-      "section_count": 25,
+      "paragraph_count": 70,
+      "section_count": 26,
       "lore_paragraph_count": 65,
       "content_quality_score": 101,
       "authority_score": 28
@@ -17252,14 +17260,21 @@
         "alteration",
         "neris",
         "fold",
-        "jorra"
+        "jorra",
+        "neutral",
+        "monopoly",
+        "elite",
+        "digital",
+        "bodyguards",
+        "portfolio",
+        "purification"
       ]
     },
     "link_score": {
       "inbound_count": 3,
-      "outbound_count": 35,
+      "outbound_count": 37,
       "existing_outbound_count": 14,
-      "suggested_outbound_count": 21,
+      "suggested_outbound_count": 23,
       "authority": 13
     },
     "brand": null

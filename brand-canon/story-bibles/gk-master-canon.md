@@ -437,3 +437,20 @@ vanity, adult courtship and Naked Wrench keep their existing authored lives.
 Sera/Oren's commissions, Ione's work limits, Jex's wages and the Kiss Before
 Commission remain the Bally account. Ordinary repair and accurate arithmetic
 do not make any of these adults the sole heroes of the people they serve.
+
+
+### Elite finance and the neutral monopoly
+
+w43/w51/w52 are fully compared. The Alchemists' claimed absolute neutrality
+protects a specialist monopoly that sells portfolio purification and elite
+guards. High Hats' source houses selectively obstruct Miner schemes, lease
+Defenders, resell rebel information and would back even a NULL takeover to
+profit. These specific positions now appear on owning articles. w51/w52 are
+byte-identical copies: two archive names, one repeated witness.
+
+Aster still desired Kesh and ended their consensual affair without surrendering
+her comfortable house. Ilar's argument, Perrin's paid hours and Verren's
+Uninvited Tasting remain. Ixa's cruel purchased farewell remains opposed by
+Vey/Asha's surviving accounts; Orris/Tali's craft refusal remains another
+choice, not an automatic end to the monopoly. New source sections preserve
+these adult histories and add no accepted universal hierarchy or Final Fork.

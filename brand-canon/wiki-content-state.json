@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "generator": "scripts/generate-wiki-content-state.mjs",
-  "source_tree_hash": "sha256:574896d166b836e9fd8919cb84b75d2a9edc5fe0c6b55feead6fe2a2ebd5da81",
+  "source_tree_hash": "sha256:db4918e032b0ab92ae33d3b6d6ddda3978a2e95ea92be7bc03a66b42d0442a22",
   "hash_algorithm": "sha256",
   "page_count": 424,
   "manifest_entry_count": 424,
@@ -15538,7 +15538,7 @@
       "title": "The CODE ALCHEMISTS",
       "page_exists": true,
       "page_type": "faction",
-      "current_word_count": 4270,
+      "current_word_count": 4500,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -15547,10 +15547,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:32bdbead1a4dba6934787e75dee466f445a5476ef8a95521c2ae569c55ca36a8",
-      "article_content_hash": "sha256:cd14ab70132347201d86bd17c51e8d120ec490c68cc7e50b72e84af19436646c",
-      "article_markup_hash": "sha256:c7b512bc77c3c443e86d198595ac28af81e427947b0b2698d74a0f287d28ef8f",
-      "git_blob_oid": "5f6966a1f22d90d1d2f6b8e2978b92f8dd697330",
+      "content_hash": "sha256:39c9fa136c5b6a877dfb8412a1c3265a48c905d59c97cce69ff2290ff4de825d",
+      "article_content_hash": "sha256:a05b28da0b0fd547b38f5a95e844a545c467d2957b6401fe71c17d6bd2c72ca3",
+      "article_markup_hash": "sha256:ba9deb3f6d4e717712fee8da9e08df28d5330869625d9f52b8c95604b36c0a54",
+      "git_blob_oid": "322fb9d2730109d34ac5f96421671042ecc9cfe2",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -15571,12 +15571,12 @@
         "wiki/bibles/the-code-alchemists.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 5 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 6 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/the-code-alchemists.json; it is not automatically the unavailable Tier 4 modern bible.",
         "The requested modern Tier 4 subject bible is not separately identifiable in this checkout; canon classification remains a human-review item."
       ],
       "content_owner": "canon",
-      "canon_revision": 5,
+      "canon_revision": 6,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -15992,7 +15992,7 @@
       "title": "THE HIGH HATS The faction that turned status into architecture",
       "page_exists": true,
       "page_type": "faction",
-      "current_word_count": 5327,
+      "current_word_count": 5669,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -16001,10 +16001,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:0258a60642e4f05a3d77010a96a2aa959ecea6af5db2e52a470cd099ec1f3381",
-      "article_content_hash": "sha256:a00fde88e374cb8bc82edb5de6c0fdf07b0a36f0450d7a9142153f638ed75758",
-      "article_markup_hash": "sha256:5236a39a7b298cba72ce6f1364bae8f7fcc8d9f7f92a1e702b36a605ec6fc498",
-      "git_blob_oid": "c7f2f285d254eb6bacb179b0973b43b339a845fd",
+      "content_hash": "sha256:5d6ad8f884964262d8cc2c715f52ad679684e33ca561453f051dd1cf5c98520d",
+      "article_content_hash": "sha256:1e04ac52c5e669729cf82f9ac3472d91701a8ed8e356b90fabc42dafbf88ea23",
+      "article_markup_hash": "sha256:79cda01dfa69b27af2980498a4a945d97ac2f6e1079fb967ca312a7f070bb570",
+      "git_blob_oid": "b7c0ab53455496a77705060689702c16e7789045",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -16025,12 +16025,12 @@
         "wiki/bibles/the-high-hats.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 7 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 8 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/the-high-hats.json; it is not automatically the unavailable Tier 4 modern bible.",
         "The requested modern Tier 4 subject bible is not separately identifiable in this checkout; canon classification remains a human-review item."
       ],
       "content_owner": "canon",
-      "canon_revision": 7,
+      "canon_revision": 8,
       "canon_source_tier": "first-witness+w81"
     },
     {

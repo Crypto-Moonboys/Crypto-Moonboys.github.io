@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-08T13:48:06.243Z",
-  "verified_at": "2026-10-08T13:48:06.243Z",
+  "generated_at": "2026-10-08T14:17:02.694Z",
+  "verified_at": "2026-10-08T14:17:02.694Z",
   "nodes": [
     {
       "id": "/about.html",
@@ -3644,6 +3644,12 @@
     },
     {
       "source": "/wiki/alfie-bitcoin-kid-blaze.html",
+      "target": "/wiki/the-high-hats.html",
+      "score": 70,
+      "weight": 0.7
+    },
+    {
+      "source": "/wiki/alfie-bitcoin-kid-blaze.html",
       "target": "/wiki/the-nice-easy-bois.html",
       "score": 70,
       "weight": 0.7
@@ -3651,12 +3657,6 @@
     {
       "source": "/wiki/alfie-bitcoin-kid-blaze.html",
       "target": "/wiki/stikfamwars.html",
-      "score": 69,
-      "weight": 0.69
-    },
-    {
-      "source": "/wiki/alfie-bitcoin-kid-blaze.html",
-      "target": "/wiki/the-high-hats.html",
       "score": 69,
       "weight": 0.69
     },
@@ -4017,8 +4017,8 @@
     {
       "source": "/wiki/bitcoin-kid-army.html",
       "target": "/wiki/the-high-hats.html",
-      "score": 72,
-      "weight": 0.72
+      "score": 73,
+      "weight": 0.73
     },
     {
       "source": "/wiki/bitcoin-kids.html",
@@ -7509,8 +7509,8 @@
     {
       "source": "/wiki/genesis-spray.html",
       "target": "/wiki/the-high-hats.html",
-      "score": 72,
-      "weight": 0.72
+      "score": 73,
+      "weight": 0.73
     },
     {
       "source": "/wiki/genesis-spray.html",
@@ -12044,9 +12044,9 @@
     },
     {
       "source": "/wiki/graffpunks-collection.html",
-      "target": "/wiki/stikfamwars.html",
-      "score": 75,
-      "weight": 0.75
+      "target": "/wiki/the-high-hats.html",
+      "score": 76,
+      "weight": 0.76
     },
     {
       "source": "/wiki/graffpunks-ecosystem.html",
@@ -12614,9 +12614,9 @@
     },
     {
       "source": "/wiki/jonny-laurence-nelson-tag-records.html",
-      "target": "/wiki/stikfamwars.html",
-      "score": 66,
-      "weight": 0.66
+      "target": "/wiki/the-high-hats.html",
+      "score": 67,
+      "weight": 0.67
     },
     {
       "source": "/wiki/kael-voss.html",
@@ -12867,8 +12867,8 @@
     {
       "source": "/wiki/metropolis.html",
       "target": "/wiki/the-high-hats.html",
-      "score": 82,
-      "weight": 0.82
+      "score": 83,
+      "weight": 0.83
     },
     {
       "source": "/wiki/metropolis.html",
@@ -12915,8 +12915,8 @@
     {
       "source": "/wiki/midevilpunks.html",
       "target": "/wiki/the-high-hats.html",
-      "score": 75,
-      "weight": 0.75
+      "score": 76,
+      "weight": 0.76
     },
     {
       "source": "/wiki/moon-mission.html",
@@ -13604,9 +13604,9 @@
     },
     {
       "source": "/wiki/queen-sarah-p-fly.html",
-      "target": "/wiki/forkborn-collective.html",
-      "score": 72,
-      "weight": 0.72
+      "target": "/wiki/the-high-hats.html",
+      "score": 73,
+      "weight": 0.73
     },
     {
       "source": "/wiki/quell.html",
@@ -13653,8 +13653,8 @@
     {
       "source": "/wiki/rave-relics.html",
       "target": "/wiki/the-high-hats.html",
-      "score": 72,
-      "weight": 0.72
+      "score": 73,
+      "weight": 0.73
     },
     {
       "source": "/wiki/rave-relics.html",
@@ -14115,8 +14115,8 @@
     {
       "source": "/wiki/spraycode-writcode-mechanics.html",
       "target": "/wiki/the-high-hats.html",
-      "score": 69,
-      "weight": 0.69
+      "score": 70,
+      "weight": 0.7
     },
     {
       "source": "/wiki/squeaky-pinks-enforcers.html",
@@ -14181,8 +14181,8 @@
     {
       "source": "/wiki/stikfamwars.html",
       "target": "/wiki/the-high-hats.html",
-      "score": 82,
-      "weight": 0.82
+      "score": 83,
+      "weight": 0.83
     },
     {
       "source": "/wiki/stikfamwars.html",
@@ -14678,13 +14678,13 @@
     },
     {
       "source": "/wiki/the-crypto-moongirls.html",
-      "target": "/wiki/bitcoin-kid-army.html",
-      "score": 69,
-      "weight": 0.69
+      "target": "/wiki/the-high-hats.html",
+      "score": 70,
+      "weight": 0.7
     },
     {
       "source": "/wiki/the-crypto-moongirls.html",
-      "target": "/wiki/the-high-hats.html",
+      "target": "/wiki/bitcoin-kid-army.html",
       "score": 69,
       "weight": 0.69
     },
@@ -14781,8 +14781,8 @@
     {
       "source": "/wiki/the-finance-guild.html",
       "target": "/wiki/the-high-hats.html",
-      "score": 88,
-      "weight": 0.88
+      "score": 89,
+      "weight": 0.89
     },
     {
       "source": "/wiki/the-finance-guild.html",
@@ -14924,9 +14924,9 @@
     },
     {
       "source": "/wiki/the-hard-fork-rockers.html",
-      "target": "/wiki/the-ducky-boys.html",
-      "score": 88,
-      "weight": 0.88
+      "target": "/wiki/the-high-hats.html",
+      "score": 89,
+      "weight": 0.89
     },
     {
       "source": "/wiki/the-high-hats.html",
@@ -15027,8 +15027,8 @@
     {
       "source": "/wiki/the-nice-easy-bois.html",
       "target": "/wiki/the-high-hats.html",
-      "score": 85,
-      "weight": 0.85
+      "score": 86,
+      "weight": 0.86
     },
     {
       "source": "/wiki/the-nice-easy-bois.html",
@@ -15578,13 +15578,13 @@
     },
     {
       "source": "/wiki/wax-blockchain.html",
-      "target": "/wiki/stikfamwars.html",
-      "score": 69,
-      "weight": 0.69
+      "target": "/wiki/the-high-hats.html",
+      "score": 70,
+      "weight": 0.7
     },
     {
       "source": "/wiki/wax-blockchain.html",
-      "target": "/wiki/the-high-hats.html",
+      "target": "/wiki/stikfamwars.html",
       "score": 69,
       "weight": 0.69
     },
@@ -15614,7 +15614,7 @@
     },
     {
       "source": "/wiki/wax-dexs-defi.html",
-      "target": "/wiki/wax-pepe.html",
+      "target": "/wiki/the-high-hats.html",
       "score": 67,
       "weight": 0.67
     },
