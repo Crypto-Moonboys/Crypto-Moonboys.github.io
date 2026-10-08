@@ -18775,13 +18775,13 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 3792,
+      "article_word_count": 4042,
       "keyword_bag_size": 24,
-      "heading_count": 23,
+      "heading_count": 24,
       "list_count": 1,
       "internal_link_count": 14,
-      "paragraph_count": 56,
-      "section_count": 20,
+      "paragraph_count": 59,
+      "section_count": 21,
       "lore_paragraph_count": 54,
       "content_quality_score": 105,
       "authority_score": 24
@@ -18863,14 +18863,22 @@
         "costume",
         "right",
         "to",
-        "change"
+        "change",
+        "nostalgia",
+        "bombs",
+        "anti",
+        "abstract",
+        "attack",
+        "meme",
+        "magic",
+        "protocols"
       ]
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 26,
+      "outbound_count": 27,
       "existing_outbound_count": 14,
-      "suggested_outbound_count": 12,
+      "suggested_outbound_count": 13,
       "authority": 9
     },
     "brand": null
@@ -20376,13 +20384,13 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 3289,
+      "article_word_count": 3551,
       "keyword_bag_size": 27,
-      "heading_count": 22,
+      "heading_count": 23,
       "list_count": 1,
       "internal_link_count": 13,
-      "paragraph_count": 55,
-      "section_count": 19,
+      "paragraph_count": 58,
+      "section_count": 20,
       "lore_paragraph_count": 52,
       "content_quality_score": 105,
       "authority_score": 24
@@ -20452,14 +20460,24 @@
         "refused",
         "door",
         "farewell",
-        "strip"
+        "strip",
+        "remember",
+        "remix",
+        "reroute",
+        "power",
+        "never",
+        "for",
+        "sale",
+        "who",
+        "rewrites",
+        "story"
       ]
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 38,
+      "outbound_count": 39,
       "existing_outbound_count": 13,
-      "suggested_outbound_count": 25,
+      "suggested_outbound_count": 26,
       "authority": 6.5
     },
     "brand": null

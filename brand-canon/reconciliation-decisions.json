@@ -683,6 +683,22 @@
         "wiki/the-moonlords.html",
         "wiki/the-salvagers.html"
       ]
+    },
+    {
+      "id": "GK-1458-W35-W39-MEMORY-ARSENAL",
+      "status": "implemented",
+      "sources": [
+        "w35.txt,w39.txt complete originals and connected claim/scene comparisons",
+        "Full current Saints54/Forkborn53 canonical paragraphs and source-named Graff/Pinks/Moonlord/Alchemist/Army/Jodie/Aleema/Moongirl/elite/NULL histories; current chronology and First Witness"
+      ],
+      "old": "Named Saints attacks and the precise Forkborn credo/questions compressed.",
+      "new": "Recover three distinct cultural weapons, source tactical contrast and remembering/remix/reroute refusal with the three philosophical questions, preserving every modern adult life.",
+      "reason": "Source joy and freedom claims do not erase coercive taste, private grief, unpaid work, displaced shifts, disputed routes or the households still angry with their helpers.",
+      "major": false,
+      "affected_paths": [
+        "wiki/the-og-pixel-saints.html",
+        "wiki/forkborn-collective.html"
+      ]
     }
   ]
 }

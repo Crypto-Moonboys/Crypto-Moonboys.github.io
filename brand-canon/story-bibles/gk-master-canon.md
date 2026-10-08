@@ -548,3 +548,21 @@ Sella’s separate hours and injury, another displaced worker’s grievance and
 purchased hours of household help remain. Their new attractive curtain was
 bought, not a miraculous salvage cure. A faction called honest still has
 priorities other workers may rightly hate.
+
+
+### Remembered play and power refused
+
+Full w35/w39 comparisons recover the Saints’ three distinct attacks and the
+Forkborn’s remember/remix/reroute purpose, never-for-sale refusal and three
+questions about writing, painting and leadership. Source temporary effects,
+absolute boasts and unproved survival remain attributed; the tactical contrast
+does not relocate Alfie’s outside Army or create an additional faction.
+
+Oriel’s Half-Sun uncertainty and withdrawn collector payment, Juno’s partly
+unpaid commission and broken artwork, Penn’s copy trade, Dim Hour and the
+Borrowed Screen’s memorial/work entrance remain modern adult history. Saints’
+hope does not settle debt or make coercive devotion harmless. Forkborn receiving
+work remains paid with finite rooms; Meva/Olan’s displaced workshop, delayed
+partition, angry Refused Door household and withdrawn Farewell Strip survive
+the source’s anti-commercial ideal. The third escapee and buried-file helper
+remain separately unnamed; no final crossing or lost person is restored.

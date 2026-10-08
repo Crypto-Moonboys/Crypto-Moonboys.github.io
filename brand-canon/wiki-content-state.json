@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "generator": "scripts/generate-wiki-content-state.mjs",
-  "source_tree_hash": "sha256:631ff0e3d5884d2c03fac5b04b7bf54908e3aba2cdd9701317134e5f4216c3d0",
+  "source_tree_hash": "sha256:2c167e0c0e17965bc26f038c87ca18c86345ed85272cb70d080445f4f917c9e2",
   "hash_algorithm": "sha256",
   "page_count": 424,
   "manifest_entry_count": 424,
@@ -5312,7 +5312,7 @@
       "title": "Forkborn Collective",
       "page_exists": true,
       "page_type": "lore",
-      "current_word_count": 3070,
+      "current_word_count": 3335,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -5321,10 +5321,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:76ba446ff8f2e03505cee645ff09d72403b5b3aa8e3e67c68683b77ce05207fa",
-      "article_content_hash": "sha256:70c1dc20196ff6fd640bd1448d3324ad037b9f47a3e7969e0a8c13ae742bffc7",
-      "article_markup_hash": "sha256:061106c9c615dd72fa679a23a35cadb4f9731a1c67177dac0c6a4dc65ed87121",
-      "git_blob_oid": "c529aa17e1540743c97787de4c1711a82f9e2aa3",
+      "content_hash": "sha256:edd0db8b2ed71597240a4f36f260a4b1cd43bea23f117330b814b045cc7c8174",
+      "article_content_hash": "sha256:3901ff6b400fecbaf06882999b141bdccdc35dde13bb5751622b276d600ebbdf",
+      "article_markup_hash": "sha256:a7b167fedb00c644529e845a6941db4757abcd7470db3d6f8b3773c048f6047e",
+      "git_blob_oid": "9fecdd41f14e21c2f6c3af66f07b738c6d97698e",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -5346,11 +5346,11 @@
         "wiki/bibles/forkborn-collective.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 2 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/forkborn-collective.json; it is not automatically the unavailable Tier 4 modern bible."
       ],
       "content_owner": "canon",
-      "canon_revision": 1,
+      "canon_revision": 2,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -16227,7 +16227,7 @@
       "title": "The OG PIXEL SAINTS",
       "page_exists": true,
       "page_type": "faction",
-      "current_word_count": 3475,
+      "current_word_count": 3725,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -16236,10 +16236,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:81d5a43c2d83a1c65c8eaffa2a8ca5db4d6405a006718e9fa84412b5592db079",
-      "article_content_hash": "sha256:39e2cc71d3b9df1a804fcb1b9a052ced083c6fec6836ec509a69c62a6286bda7",
-      "article_markup_hash": "sha256:aad5c35753748a2a37a83b7d8fede85a09d8186861d500c5490393edc274c6a6",
-      "git_blob_oid": "1e8ab97b6e1c74dd14d43bea7c8ed9f28d349402",
+      "content_hash": "sha256:d3ce11aded4f9371add3551ee88ebf5433788579b03c8897398dfc175b410d13",
+      "article_content_hash": "sha256:3bfadbe6fa8e7efd79df19ff613ee7112d74fafaac77044245ee5b6be6f94b97",
+      "article_markup_hash": "sha256:590697d6e7bbe9c5f0a95c8cd755a637e89cbc9c2889e95d0ce8a1f25bf34c20",
+      "git_blob_oid": "e8e47f47308b53a9fbcfb2bddd64dc36d97380e6",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -16260,12 +16260,12 @@
         "wiki/bibles/the-og-pixel-saints.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 4 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 5 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/the-og-pixel-saints.json; it is not automatically the unavailable Tier 4 modern bible.",
         "The requested modern Tier 4 subject bible is not separately identifiable in this checkout; canon classification remains a human-review item."
       ],
       "content_owner": "canon",
-      "canon_revision": 4,
+      "canon_revision": 5,
       "canon_source_tier": "first-witness+w81"
     },
     {

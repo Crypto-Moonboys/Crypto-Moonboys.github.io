@@ -9298,7 +9298,7 @@
     ]
   },
   "/wiki/forkborn-collective.html": {
-    "outbound_count": 38,
+    "outbound_count": 39,
     "inbound_count": 0,
     "existing_outbound": [
       "/wiki/aleema-child-of-the-shard.html",
@@ -9340,6 +9340,7 @@
       "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html",
       "/wiki/the-first-witness.html",
+      "/wiki/the-high-hats.html",
       "/wiki/thera-9.html"
     ],
     "inbound_from": []
@@ -23402,7 +23403,7 @@
     ]
   },
   "/wiki/the-og-pixel-saints.html": {
-    "outbound_count": 26,
+    "outbound_count": 27,
     "inbound_count": 1,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
@@ -23428,6 +23429,7 @@
       "/wiki/graffpunks.html",
       "/wiki/hodl-warriors.html",
       "/wiki/hodl-x-warriors.html",
+      "/wiki/memecoins.html",
       "/wiki/pixel-journey.html",
       "/wiki/street-kingdoms.html",
       "/wiki/the-first-witness.html",
