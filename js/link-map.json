@@ -233,7 +233,8 @@
       "/wiki/the-nomad-bears.html",
       "/wiki/the-salvagers.html",
       "/wiki/the-shard-mothers-of-manhattan.html",
-      "/wiki/thera-9.html"
+      "/wiki/thera-9.html",
+      "/wiki/whisper-codex.html"
     ]
   },
   "/wiki/alfie-blaze.html": {
@@ -852,6 +853,7 @@
       "/wiki/genesis-spray-drop.html",
       "/wiki/genesis-spray.html",
       "/wiki/gkniftyheads-free-minds-gk-beats-genesis-776049.html",
+      "/wiki/great-consensus.html",
       "/wiki/queen-sarah-p-fly.html",
       "/wiki/the-aztec-raiders.html",
       "/wiki/the-first-witness.html",
@@ -862,7 +864,8 @@
   "/wiki/block-topia.html": {
     "existing_links": [
       "/wiki/hodl-wars.html",
-      "/wiki/queen-sarah-p-fly.html"
+      "/wiki/queen-sarah-p-fly.html",
+      "/wiki/the-crypto-moongirls.html"
     ],
     "suggested_links": [
       "/wiki/alcor-exchange.html",
@@ -924,6 +927,7 @@
       "/wiki/gkniftyheads-blockchain-furie-infinite-776057.html",
       "/wiki/graffiti-kings.html",
       "/wiki/graffpunks.html",
+      "/wiki/great-consensus.html",
       "/wiki/the-blockchain-furies.html"
     ]
   },
@@ -1150,6 +1154,7 @@
       "/wiki/graffiti-kings.html",
       "/wiki/graffiti-nexus.html",
       "/wiki/graffiti-queens-in-decentraland.html",
+      "/wiki/great-consensus.html",
       "/wiki/queen-sarah-p-fly.html",
       "/wiki/sacred-chain.html",
       "/wiki/the-chain-scribes.html",
@@ -1394,7 +1399,8 @@
       "/wiki/the-first-witness.html",
       "/wiki/the-shard-mothers-of-manhattan.html",
       "/wiki/thera-9.html",
-      "/wiki/whale-lords.html"
+      "/wiki/whale-lords.html",
+      "/wiki/whisper-codex.html"
     ]
   },
   "/wiki/elder-codex-7.html": {
@@ -1435,6 +1441,7 @@
       "/wiki/sacred-chain.html",
       "/wiki/the-chain-scribes.html",
       "/wiki/the-first-witness.html",
+      "/wiki/whisper-codex.html",
       "/wiki/xrp-ledger.html"
     ]
   },
@@ -2236,6 +2243,7 @@
       "/wiki/street-kingdoms.html",
       "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html",
+      "/wiki/the-crypto-moongirls.html",
       "/wiki/the-hard-fork-rockers.html"
     ]
   },
@@ -4129,6 +4137,7 @@
       "/wiki/sister-halcyon.html",
       "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html",
+      "/wiki/the-crypto-moongirls.html",
       "/wiki/the-moonlords.html",
       "/wiki/whale-lords.html",
       "/wiki/xrp-kids.html"
@@ -4544,6 +4553,7 @@
       "/wiki/graffiti-kings.html",
       "/wiki/graffiti-nexus.html",
       "/wiki/graffiti-queens-in-decentraland.html",
+      "/wiki/great-consensus.html",
       "/wiki/hodl-warriors.html",
       "/wiki/hodl-wars.html",
       "/wiki/hodl-x-warriors.html",
@@ -7092,6 +7102,7 @@
       "/wiki/graffiti-kings.html",
       "/wiki/graffiti-nexus.html",
       "/wiki/graffiti-queens-in-decentraland.html",
+      "/wiki/great-consensus.html",
       "/wiki/hard-fork-games.html",
       "/wiki/hodl-warriors.html",
       "/wiki/hodl-wars.html",
@@ -7571,6 +7582,7 @@
       "/wiki/gkniftyheads.html",
       "/wiki/graffiti-kings.html",
       "/wiki/graffpunks.html",
+      "/wiki/great-consensus.html",
       "/wiki/hodl-warriors.html",
       "/wiki/pixil-mini.html",
       "/wiki/storm-struggle.html",
@@ -13267,7 +13279,8 @@
       "/wiki/the-chain-scribes.html",
       "/wiki/the-first-witness.html",
       "/wiki/the-hard-fork-rockers.html",
-      "/wiki/triple-fork-event.html"
+      "/wiki/triple-fork-event.html",
+      "/wiki/whisper-codex.html"
     ]
   },
   "/wiki/graffiti-kings.html": {
@@ -13416,6 +13429,7 @@
       "/wiki/gkniftyheads-sarah-pfly-784349.html",
       "/wiki/gkniftyheads.html",
       "/wiki/nfts.html",
+      "/wiki/the-crypto-moongirls.html",
       "/wiki/the-first-witness.html",
       "/wiki/whale-lords.html"
     ]
@@ -13608,7 +13622,32 @@
       "/wiki/spraycode-writcode-mechanics.html",
       "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-first-witness.html",
-      "/wiki/thera-9.html"
+      "/wiki/thera-9.html",
+      "/wiki/whisper-codex.html"
+    ]
+  },
+  "/wiki/great-consensus.html": {
+    "existing_links": [
+      "/wiki/crypto-moonboys.html",
+      "/wiki/first-witness-concordance.html",
+      "/wiki/first-witness-great-concord-2030.html",
+      "/wiki/first-witness-master-chronology.html"
+    ],
+    "suggested_links": [
+      "/wiki/block-node-defenders.html",
+      "/wiki/block-topia.html",
+      "/wiki/first-witness-block-topia-reading.html",
+      "/wiki/first-witness-book-2-the-common-blood.html",
+      "/wiki/first-witness-book-9-the-unwritten-block.html",
+      "/wiki/first-witness-dreams-omens-coincidence.html",
+      "/wiki/first-witness-faction-ritual-variations.html",
+      "/wiki/first-witness-food-hospitality-common-table.html",
+      "/wiki/first-witness-questions-for-the-living.html",
+      "/wiki/first-witness-street-kingdoms-reading.html",
+      "/wiki/the-great-dip.html",
+      "/wiki/the-princess.html",
+      "/wiki/wagmi-prophecy.html",
+      "/wiki/xrp-ledger.html"
     ]
   },
   "/wiki/grit.html": {
@@ -13741,6 +13780,7 @@
       "/wiki/nifty-crowns.html",
       "/wiki/null-the-prophet.html",
       "/wiki/seeding-rights.html",
+      "/wiki/six-pillars.html",
       "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-hard-fork-rockers.html",
       "/wiki/xrp-kids.html",
@@ -13927,6 +13967,7 @@
       "/wiki/gkniftyheads-giulia-satoshi-sorceress-espositooo-783463.html",
       "/wiki/gkniftyheads-satoshi-knight-784264.html",
       "/wiki/graffiti-kings.html",
+      "/wiki/great-consensus.html",
       "/wiki/grit.html",
       "/wiki/grit42.html",
       "/wiki/hodl-x-warriors.html",
@@ -14235,6 +14276,7 @@
       "/wiki/first-witness-sacred-places-walls-pilgrimage.html",
       "/wiki/first-witness-street-kingdoms-reading.html",
       "/wiki/genesis-kernel.html",
+      "/wiki/great-consensus.html",
       "/wiki/grit.html",
       "/wiki/nbg-token.html",
       "/wiki/playable-nft-murals.html",
@@ -14876,6 +14918,7 @@
       "/wiki/gkniftyheads-drift-doodle-783252.html",
       "/wiki/gkniftyheads-vandal-776147.html",
       "/wiki/gkniftyheads.html",
+      "/wiki/great-consensus.html",
       "/wiki/hard-fork-games.html",
       "/wiki/hodl-x-warriors.html",
       "/wiki/jodie-zoom-2000.html",
@@ -15255,6 +15298,7 @@
       "/wiki/satorebel.html",
       "/wiki/street-kingdoms.html",
       "/wiki/the-code-alchemists.html",
+      "/wiki/the-crypto-moongirls.html",
       "/wiki/the-first-witness.html",
       "/wiki/the-hard-fork-rockers.html",
       "/wiki/the-nomad-bears.html",
@@ -15377,7 +15421,8 @@
       "/wiki/jonny-laurence-nelson-tag-records.html",
       "/wiki/nbgx-token.html",
       "/wiki/null-the-prophet.html",
-      "/wiki/punk-token.html"
+      "/wiki/punk-token.html",
+      "/wiki/whisper-codex.html"
     ],
     "suggested_links": [
       "/wiki/bitcoin-x-kids.html",
@@ -15396,6 +15441,7 @@
       "/wiki/gkniftyheads-cipher-seraph-783413.html",
       "/wiki/gkniftyheads.html",
       "/wiki/graffiti-kings.html",
+      "/wiki/great-consensus.html",
       "/wiki/grit.html",
       "/wiki/jodie-zoom-2000.html",
       "/wiki/nbg-token.html",
@@ -15572,6 +15618,7 @@
       "/wiki/gkniftyheads-raze-rebel-783250.html",
       "/wiki/gkniftyheads-rebel-riff-783269.html",
       "/wiki/gkniftyheads.html",
+      "/wiki/great-consensus.html",
       "/wiki/grit.html",
       "/wiki/hard-fork-games.html",
       "/wiki/hodl-warriors.html",
@@ -15692,6 +15739,7 @@
       "/wiki/sacred-chain.html",
       "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html",
+      "/wiki/the-crypto-moongirls.html",
       "/wiki/the-hard-fork-rockers.html",
       "/wiki/whale-lords.html"
     ]
@@ -15731,6 +15779,38 @@
       "/wiki/quell.html",
       "/wiki/the-chain-scribes.html",
       "/wiki/the-first-witness.html",
+      "/wiki/the-moonlords.html"
+    ]
+  },
+  "/wiki/six-pillars.html": {
+    "existing_links": [
+      "/wiki/crypto-moonboys.html",
+      "/wiki/first-witness-concordance.html",
+      "/wiki/first-witness-forty-paths.html",
+      "/wiki/first-witness-master-chronology.html",
+      "/wiki/whale-lords.html"
+    ],
+    "suggested_links": [
+      "/wiki/bitcoin-kids.html",
+      "/wiki/bitcoin-x-kids.html",
+      "/wiki/first-witness-anonymity-pseudonyms-hidden-names.html",
+      "/wiki/first-witness-book-5-the-chain.html",
+      "/wiki/first-witness-chain-archaeology-forensics.html",
+      "/wiki/first-witness-digital-inheritance-after-death.html",
+      "/wiki/first-witness-dual-use-tools-weapons.html",
+      "/wiki/first-witness-faction-commentaries.html",
+      "/wiki/first-witness-faction-ritual-variations.html",
+      "/wiki/first-witness-null-erasure.html",
+      "/wiki/first-witness-world-chain-error.html",
+      "/wiki/gkniftyheads-cipher-seraph-783413.html",
+      "/wiki/gkniftyheads-czen-zone-zero-zealot-783755.html",
+      "/wiki/gkniftyheads.html",
+      "/wiki/graffpunks.html",
+      "/wiki/hodl-warriors.html",
+      "/wiki/null-the-prophet.html",
+      "/wiki/sacred-chain.html",
+      "/wiki/the-chain-scribes.html",
+      "/wiki/the-gasless-ghosts.html",
       "/wiki/the-moonlords.html"
     ]
   },
@@ -15814,7 +15894,8 @@
     ],
     "suggested_links": [
       "/wiki/croydon-tower-blocks.html",
-      "/wiki/first-witness-music-dance-performance.html"
+      "/wiki/first-witness-music-dance-performance.html",
+      "/wiki/great-consensus.html"
     ]
   },
   "/wiki/spirit-borns.html": {
@@ -15924,7 +16005,8 @@
       "/wiki/the-chain-scribes.html",
       "/wiki/the-hard-fork-rockers.html",
       "/wiki/the-og-pixel-saints.html",
-      "/wiki/triple-fork-event.html"
+      "/wiki/triple-fork-event.html",
+      "/wiki/whisper-codex.html"
     ]
   },
   "/wiki/staking.html": {
@@ -16205,7 +16287,8 @@
       "/wiki/graffpunks.html",
       "/wiki/hodl-x-warriors.html",
       "/wiki/metaverse-battles.html",
-      "/wiki/the-code-alchemists.html"
+      "/wiki/the-code-alchemists.html",
+      "/wiki/the-crypto-moongirls.html"
     ]
   },
   "/wiki/the-bally-boys.html": {
@@ -16461,6 +16544,7 @@
       "/wiki/quell.html",
       "/wiki/the-crypto-stoned-boys.html",
       "/wiki/the-first-witness.html",
+      "/wiki/whisper-codex.html",
       "/wiki/xrp-ledger.html"
     ]
   },
@@ -16517,6 +16601,7 @@
       "/wiki/gkniftyheads-antonio-ether-emperor-costa-783448.html",
       "/wiki/gkniftyheads.html",
       "/wiki/graffpunks.html",
+      "/wiki/great-consensus.html",
       "/wiki/jodie-zoom-2000.html",
       "/wiki/the-ducky-boys.html",
       "/wiki/the-evm-punks.html",
@@ -16524,7 +16609,37 @@
       "/wiki/the-great-dip.html",
       "/wiki/the-og-pixel-saints.html",
       "/wiki/the-salvagers.html",
-      "/wiki/the-shard-mothers-of-manhattan.html"
+      "/wiki/the-shard-mothers-of-manhattan.html",
+      "/wiki/whisper-codex.html"
+    ]
+  },
+  "/wiki/the-crypto-moongirls.html": {
+    "existing_links": [
+      "/wiki/bitcoin-kids.html",
+      "/wiki/bitcoin-x-kids.html",
+      "/wiki/crypto-moonboys.html",
+      "/wiki/first-witness-concordance.html",
+      "/wiki/first-witness-master-chronology.html",
+      "/wiki/hodl-x-warriors.html",
+      "/wiki/jodie-zoom-2000.html",
+      "/wiki/queen-sarah-p-fly.html"
+    ],
+    "suggested_links": [
+      "/wiki/block-topia.html",
+      "/wiki/first-witness-book-6-the-fork.html",
+      "/wiki/first-witness-questions-for-the-living.html",
+      "/wiki/first-witness-sacred-fork.html",
+      "/wiki/first-witness-street-kingdoms-reading.html",
+      "/wiki/first-witness-triple-fork-chainfire.html",
+      "/wiki/gkniftyheads-bitcoin-kid-x-sarah-pfly-infinite-776004.html",
+      "/wiki/gkniftyheads-sarah-p2fly-784350.html",
+      "/wiki/gkniftyheads-sarah-pfly-784349.html",
+      "/wiki/hard-fork-games.html",
+      "/wiki/hodl-warriors.html",
+      "/wiki/the-hard-fork-rockers.html",
+      "/wiki/thera-9.html",
+      "/wiki/triple-fork-event.html",
+      "/wiki/xrp-ledger.html"
     ]
   },
   "/wiki/the-crypto-stoned-boys.html": {
@@ -16662,6 +16777,7 @@
       "/wiki/gkniftyheads-digital-diva-783394.html",
       "/wiki/gkniftyheads-digital-duchess-783404.html",
       "/wiki/the-chain-scribes.html",
+      "/wiki/the-crypto-moongirls.html",
       "/wiki/whale-lords.html",
       "/wiki/xrp-ledger.html"
     ]
@@ -16853,6 +16969,7 @@
       "/wiki/first-witness-triple-fork-chainfire.html",
       "/wiki/gkniftyheads-darknet-lord-784276.html",
       "/wiki/graffpunks.html",
+      "/wiki/great-consensus.html",
       "/wiki/hodl-warriors.html",
       "/wiki/hodl-wars.html",
       "/wiki/hodl-x-warriors.html",
@@ -17130,6 +17247,7 @@
     "existing_links": [
       "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-great-concord-2030.html",
+      "/wiki/great-consensus.html",
       "/wiki/null-the-prophet.html",
       "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html",
@@ -17239,6 +17357,7 @@
       "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-blockchain-furies.html",
       "/wiki/the-code-alchemists.html",
+      "/wiki/the-crypto-moongirls.html",
       "/wiki/the-first-witness.html",
       "/wiki/the-hard-fork-rockers.html",
       "/wiki/xrp-ledger.html"
@@ -17362,6 +17481,7 @@
       "/wiki/graffpunks.html",
       "/wiki/hard-fork-games.html",
       "/wiki/hodl-x-warriors.html",
+      "/wiki/the-crypto-moongirls.html",
       "/wiki/the-first-witness.html",
       "/wiki/the-nomad-bears.html",
       "/wiki/the-salvagers.html",
@@ -17568,6 +17688,7 @@
       "/wiki/first-witness-source-register.html",
       "/wiki/first-witness-street-kingdoms-reading.html",
       "/wiki/graffiti-queens-in-decentraland.html",
+      "/wiki/great-consensus.html",
       "/wiki/the-chain-scribes.html",
       "/wiki/the-finance-guild.html",
       "/wiki/the-great-dip.html",
@@ -17941,6 +18062,18 @@
       "/wiki/sacred-chain.html",
       "/wiki/the-first-witness.html",
       "/wiki/the-moonlords.html"
+    ]
+  },
+  "/wiki/whisper-codex.html": {
+    "existing_links": [
+      "/wiki/crypto-moonboys.html",
+      "/wiki/first-witness-concordance.html",
+      "/wiki/first-witness-master-chronology.html",
+      "/wiki/great-consensus.html"
+    ],
+    "suggested_links": [
+      "/wiki/elder-codex-7.html",
+      "/wiki/first-witness-apocrypha-disputed-passages.html"
     ]
   },
   "/wiki/wuffi.html": {

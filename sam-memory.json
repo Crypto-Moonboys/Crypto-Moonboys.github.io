@@ -8490,6 +8490,23 @@
         "wiki"
       ]
     },
+    "great_consensus": {
+      "alias_candidates": [],
+      "aliases": [
+        "Great Consensus"
+      ],
+      "canonical_title": "The Great Consensus",
+      "canonical_url": "/wiki/great-consensus.html",
+      "category": "factions",
+      "source_urls": [
+        "/wiki/great-consensus.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "great",
+        "consensus"
+      ]
+    },
     "grit": {
       "alias_candidates": [],
       "aliases": [
@@ -9679,6 +9696,23 @@
         "wiki"
       ]
     },
+    "six_pillars": {
+      "alias_candidates": [],
+      "aliases": [
+        "Six Pillars"
+      ],
+      "canonical_title": "The Six Pillars",
+      "canonical_url": "/wiki/six-pillars.html",
+      "category": "factions",
+      "source_urls": [
+        "/wiki/six-pillars.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "six",
+        "pillars"
+      ]
+    },
     "sneakar": {
       "alias_candidates": [],
       "aliases": [
@@ -10136,6 +10170,23 @@
         "crypto",
         "moonboys",
         "wiki"
+      ]
+    },
+    "the_crypto_moongirls": {
+      "alias_candidates": [],
+      "aliases": [
+        "Crypto Moongirls"
+      ],
+      "canonical_title": "The Crypto Moongirls",
+      "canonical_url": "/wiki/the-crypto-moongirls.html",
+      "category": "factions",
+      "source_urls": [
+        "/wiki/the-crypto-moongirls.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "crypto",
+        "moongirls"
       ]
     },
     "the_crypto_stoned_boys": {
@@ -10967,6 +11018,23 @@
         "wiki"
       ]
     },
+    "whisper_codex": {
+      "alias_candidates": [],
+      "aliases": [
+        "Whisper Codex"
+      ],
+      "canonical_title": "The Whisper Codex",
+      "canonical_url": "/wiki/whisper-codex.html",
+      "category": "factions",
+      "source_urls": [
+        "/wiki/whisper-codex.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "whisper",
+        "codex"
+      ]
+    },
     "wuffi": {
       "alias_candidates": [],
       "aliases": [
@@ -11029,5 +11097,5 @@
       ]
     }
   },
-  "updated_at": "2026-10-04T16:01:34Z"
+  "updated_at": "2026-10-08T09:28:52Z"
 }

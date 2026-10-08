@@ -8530,6 +8530,23 @@
     }
   },
   {
+    "entity_id": "great_consensus",
+    "canonical_title": "The Great Consensus",
+    "canonical_url": "/wiki/great-consensus.html",
+    "category": "factions",
+    "aliases": [
+      "Great Consensus"
+    ],
+    "tags": [
+      "great",
+      "consensus"
+    ],
+    "source_urls": [
+      "/wiki/great-consensus.html"
+    ],
+    "brand": null
+  },
+  {
     "entity_id": "grit",
     "canonical_title": "GRIT",
     "canonical_url": "/wiki/grit.html",
@@ -9762,6 +9779,23 @@
     "brand": null
   },
   {
+    "entity_id": "six_pillars",
+    "canonical_title": "The Six Pillars",
+    "canonical_url": "/wiki/six-pillars.html",
+    "category": "factions",
+    "aliases": [
+      "Six Pillars"
+    ],
+    "tags": [
+      "six",
+      "pillars"
+    ],
+    "source_urls": [
+      "/wiki/six-pillars.html"
+    ],
+    "brand": null
+  },
+  {
     "entity_id": "sneakar",
     "canonical_title": "SNEAKAR",
     "canonical_url": "/wiki/sneakar.html",
@@ -10229,6 +10263,23 @@
     "alias_candidates": [
       "code alchemists crypto moonboys wiki"
     ]
+  },
+  {
+    "entity_id": "the_crypto_moongirls",
+    "canonical_title": "The Crypto Moongirls",
+    "canonical_url": "/wiki/the-crypto-moongirls.html",
+    "category": "factions",
+    "aliases": [
+      "Crypto Moongirls"
+    ],
+    "tags": [
+      "crypto",
+      "moongirls"
+    ],
+    "source_urls": [
+      "/wiki/the-crypto-moongirls.html"
+    ],
+    "brand": null
   },
   {
     "entity_id": "the_crypto_stoned_boys",
@@ -11077,6 +11128,23 @@
     "alias_candidates": [
       "whale lords crypto moonboys wiki"
     ]
+  },
+  {
+    "entity_id": "whisper_codex",
+    "canonical_title": "The Whisper Codex",
+    "canonical_url": "/wiki/whisper-codex.html",
+    "category": "factions",
+    "aliases": [
+      "Whisper Codex"
+    ],
+    "tags": [
+      "whisper",
+      "codex"
+    ],
+    "source_urls": [
+      "/wiki/whisper-codex.html"
+    ],
+    "brand": null
   },
   {
     "entity_id": "wuffi",

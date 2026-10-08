@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-08T06:44:14.226Z",
-  "verified_at": "2026-10-08T06:44:14.226Z",
+  "generated_at": "2026-10-08T09:28:52.635Z",
+  "verified_at": "2026-10-08T09:28:52.635Z",
   "lite": true,
   "nodes": [
     {
@@ -32,7 +32,7 @@
       "title": "The Forty Paths",
       "url": "/wiki/first-witness-forty-paths.html",
       "category": "core",
-      "rank_score": 384,
+      "rank_score": 386,
       "authority_score": 21
     },
     {
@@ -332,6 +332,14 @@
       "authority_score": 24
     },
     {
+      "id": "/wiki/first-witness-great-concord-2030.html",
+      "title": "The Great Concord of 2030",
+      "url": "/wiki/first-witness-great-concord-2030.html",
+      "category": "core",
+      "rank_score": 325,
+      "authority_score": 14
+    },
+    {
       "id": "/wiki/thorne-the-architect.html",
       "title": "Thorne The Architect",
       "url": "/wiki/thorne-the-architect.html",
@@ -346,14 +354,6 @@
       "category": "core",
       "rank_score": 324,
       "authority_score": 24
-    },
-    {
-      "id": "/wiki/first-witness-great-concord-2030.html",
-      "title": "The Great Concord of 2030",
-      "url": "/wiki/first-witness-great-concord-2030.html",
-      "category": "core",
-      "rank_score": 323,
-      "authority_score": 14
     },
     {
       "id": "/wiki/first-witness-book-4-the-wall.html",
@@ -564,6 +564,14 @@
       "authority_score": 12
     },
     {
+      "id": "/wiki/hodl-x-warriors.html",
+      "title": "HODL X Warriors",
+      "url": "/wiki/hodl-x-warriors.html",
+      "category": "characters",
+      "rank_score": 305,
+      "authority_score": 28
+    },
+    {
       "id": "/wiki/the-bitcoin-kid-army.html",
       "title": "Bitcoin Kid Army — Escape Accounts",
       "url": "/wiki/the-bitcoin-kid-army.html",
@@ -572,9 +580,9 @@
       "authority_score": 28
     },
     {
-      "id": "/wiki/hodl-x-warriors.html",
-      "title": "HODL X Warriors",
-      "url": "/wiki/hodl-x-warriors.html",
+      "id": "/wiki/jodie-zoom-2000.html",
+      "title": "Jodie ZOOM 2000",
+      "url": "/wiki/jodie-zoom-2000.html",
       "category": "characters",
       "rank_score": 303,
       "authority_score": 28
@@ -594,14 +602,6 @@
       "category": "characters",
       "rank_score": 303,
       "authority_score": 17
-    },
-    {
-      "id": "/wiki/the-salvagers.html",
-      "title": "The SALVAGERS",
-      "url": "/wiki/the-salvagers.html",
-      "category": "factions",
-      "rank_score": 302,
-      "authority_score": 28
     }
   ],
   "edges": [
@@ -624,44 +624,44 @@
       "weight": 1
     },
     {
+      "source": "/wiki/first-witness-source-register.html",
+      "target": "/wiki/first-witness-master-chronology.html",
+      "score": 334,
+      "weight": 1
+    },
+    {
       "source": "/wiki/first-witness-book-1-the-first-witness.html",
       "target": "/wiki/first-witness-faction-commentaries.html",
       "score": 331,
       "weight": 1
     },
     {
-      "source": "/wiki/first-witness-glossary.html",
-      "target": "/wiki/first-witness-faction-commentaries.html",
+      "source": "/wiki/first-witness-book-1-the-first-witness.html",
+      "target": "/wiki/first-witness-master-chronology.html",
       "score": 331,
+      "weight": 1
+    },
+    {
+      "source": "/wiki/first-witness-faction-commentaries.html",
+      "target": "/wiki/first-witness-master-chronology.html",
+      "score": 331,
+      "weight": 1
+    },
+    {
+      "source": "/wiki/first-witness-glossary.html",
+      "target": "/wiki/first-witness-life-readings.html",
+      "score": 329,
+      "weight": 1
+    },
+    {
+      "source": "/wiki/first-witness-parables.html",
+      "target": "/wiki/first-witness-life-readings.html",
+      "score": 329,
       "weight": 1
     },
     {
       "source": "/wiki/first-witness-source-register.html",
-      "target": "/wiki/first-witness-master-chronology.html",
-      "score": 330,
-      "weight": 1
-    },
-    {
-      "source": "/wiki/first-witness-book-1-the-first-witness.html",
       "target": "/wiki/first-witness-life-readings.html",
-      "score": 329,
-      "weight": 1
-    },
-    {
-      "source": "/wiki/first-witness-glossary.html",
-      "target": "/wiki/first-witness-life-readings.html",
-      "score": 329,
-      "weight": 1
-    },
-    {
-      "source": "/wiki/first-witness-master-chronology.html",
-      "target": "/wiki/first-witness-life-readings.html",
-      "score": 329,
-      "weight": 1
-    },
-    {
-      "source": "/wiki/first-witness-master-chronology.html",
-      "target": "/wiki/first-witness-source-register.html",
       "score": 329,
       "weight": 1
     },
@@ -747,12 +747,6 @@
       "source": "/wiki/first-witness-book-2-the-common-blood.html",
       "target": "/wiki/first-witness-book-4-the-wall.html",
       "score": 315,
-      "weight": 1
-    },
-    {
-      "source": "/wiki/first-witness-book-4-the-wall.html",
-      "target": "/wiki/first-witness-book-2-the-common-blood.html",
-      "score": 313,
       "weight": 1
     },
     {
@@ -882,12 +876,6 @@
       "weight": 0.88
     },
     {
-      "source": "/wiki/the-salvagers.html",
-      "target": "/wiki/the-chain-scribes.html",
-      "score": 88,
-      "weight": 0.88
-    },
-    {
       "source": "/wiki/block-node-defenders.html",
       "target": "/wiki/seeding-rights.html",
       "score": 87,
@@ -942,12 +930,6 @@
       "weight": 0.85
     },
     {
-      "source": "/wiki/the-chain-scribes.html",
-      "target": "/wiki/the-salvagers.html",
-      "score": 83,
-      "weight": 0.83
-    },
-    {
       "source": "/wiki/seeding-rights.html",
       "target": "/wiki/gkniftyheads.html",
       "score": 82,
@@ -955,6 +937,12 @@
     },
     {
       "source": "/wiki/burn-to-earn.html",
+      "target": "/wiki/null-the-prophet.html",
+      "score": 81,
+      "weight": 0.81
+    },
+    {
+      "source": "/wiki/jodie-zoom-2000.html",
       "target": "/wiki/null-the-prophet.html",
       "score": 81,
       "weight": 0.81
@@ -996,12 +984,6 @@
       "weight": 0.76
     },
     {
-      "source": "/wiki/block-topia.html",
-      "target": "/wiki/null-the-prophet.html",
-      "score": 75,
-      "weight": 0.75
-    },
-    {
       "source": "/wiki/burn-to-earn.html",
       "target": "/wiki/block-topia.html",
       "score": 70,
@@ -1018,6 +1000,12 @@
       "target": "/wiki/the-nice-easy-bois.html",
       "score": 70,
       "weight": 0.7
+    },
+    {
+      "source": "/wiki/staking.html",
+      "target": "/wiki/block-topia.html",
+      "score": 67,
+      "weight": 0.67
     }
   ]
 }
