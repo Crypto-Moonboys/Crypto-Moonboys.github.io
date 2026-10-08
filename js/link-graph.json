@@ -22527,7 +22527,7 @@
     ]
   },
   "/wiki/the-crypto-stoned-boys.html": {
-    "outbound_count": 29,
+    "outbound_count": 30,
     "inbound_count": 0,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
@@ -22555,6 +22555,7 @@
       "/wiki/graffpunks.html",
       "/wiki/hodl-warriors.html",
       "/wiki/hodl-x-warriors.html",
+      "/wiki/punk-token.html",
       "/wiki/the-bally-boys.html",
       "/wiki/the-ducky-boys.html",
       "/wiki/the-first-witness.html",
@@ -23323,7 +23324,7 @@
     ]
   },
   "/wiki/the-nomad-bears.html": {
-    "outbound_count": 31,
+    "outbound_count": 35,
     "inbound_count": 3,
     "existing_outbound": [
       "/wiki/bitcoin-kids.html",
@@ -23350,10 +23351,14 @@
     "suggested_outbound": [
       "/wiki/block-topia.html",
       "/wiki/first-witness-apocrypha-disputed-passages.html",
+      "/wiki/first-witness-death-grief-remembrance.html",
+      "/wiki/first-witness-digital-inheritance-after-death.html",
       "/wiki/first-witness-null-erasure.html",
       "/wiki/first-witness-prisons-punishment-return.html",
       "/wiki/first-witness-silence-solitude-attention.html",
       "/wiki/first-witness-work-craft-service.html",
+      "/wiki/gkniftyheads-digital-diva-783394.html",
+      "/wiki/gkniftyheads-digital-duchess-783404.html",
       "/wiki/gkniftyheads.html",
       "/wiki/graffpunks.html",
       "/wiki/queen-sarah-p-fly.html",

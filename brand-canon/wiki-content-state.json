@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "generator": "scripts/generate-wiki-content-state.mjs",
-  "source_tree_hash": "sha256:65d7e32f53f82a273c3b965a5cd2394a104c3b5d2aa30f02e9472368757919f0",
+  "source_tree_hash": "sha256:84f8ad6e56284e2896ed76834c58ad431daf1e72f6913f5f9e8c846f7a981d11",
   "hash_algorithm": "sha256",
   "page_count": 424,
   "manifest_entry_count": 424,
@@ -15629,7 +15629,7 @@
       "title": "The CRYPTO STONED BOYS",
       "page_exists": true,
       "page_type": "faction",
-      "current_word_count": 5166,
+      "current_word_count": 5440,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -15638,10 +15638,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:d64d6ea551f2fcc082b312156259778da60e3272518506b10af1d14180711bdc",
-      "article_content_hash": "sha256:7e6fa5ecee96b876d78bb92943ade06669cdc469f1413358c7b52c95234c557e",
-      "article_markup_hash": "sha256:7614a89c17841725f55a7ce445b86e697d59b0e7ca4b141cd6869a89ce53d238",
-      "git_blob_oid": "74c13bf673aa8b07c7168dd90f902f25d64138c6",
+      "content_hash": "sha256:f2b8006918ce334a298d0a10c2a7b0c5d6c398457dabd748cae60998f6168880",
+      "article_content_hash": "sha256:10c40e8f12125db4638ba39545fcb48190d385fd10ca8c7fc54a0e0ef8c0758f",
+      "article_markup_hash": "sha256:77b8a080228b133e6a51810db80bedc64a2b2eff7052c1ad5b30c3b61caa18ad",
+      "git_blob_oid": "193f166fd917ad5383caff3e45db54666b2e9487",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -15662,12 +15662,12 @@
         "wiki/bibles/the-crypto-stoned-boys.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 6 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 7 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/the-crypto-stoned-boys.json; it is not automatically the unavailable Tier 4 modern bible.",
         "The requested modern Tier 4 subject bible is not separately identifiable in this checkout; canon classification remains a human-review item."
       ],
       "content_owner": "canon",
-      "canon_revision": 6,
+      "canon_revision": 7,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -16180,7 +16180,7 @@
       "title": "The Nomad Bears",
       "page_exists": true,
       "page_type": "faction",
-      "current_word_count": 3737,
+      "current_word_count": 4007,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -16189,10 +16189,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:17e14caa977a9f989bd4e13a0373824bf4abdcf692392fecf8e2351d2c7e1551",
-      "article_content_hash": "sha256:25626764ead01ccfb77f33bde04fb69f08d530bc7c42877c8004195d3ae4e678",
-      "article_markup_hash": "sha256:272bb0b344bbfe0df6a852ece623a848618d200b579f8a2c431883494cdf67c1",
-      "git_blob_oid": "511121d55c5a78705b49a6d0294dc2777103e3c7",
+      "content_hash": "sha256:a65bdec7b96d04b1c06915b407b5f9c0598b4b6652abfab57b17965b3e39d5be",
+      "article_content_hash": "sha256:3fdc0fe73d27edb4a132192a1e827e86ae7dcf09d22a900e61eace3a8117faf0",
+      "article_markup_hash": "sha256:91dbaecf1857bb356c83c26d54bf4442336066b8db0870585503e7e4ea5a035a",
+      "git_blob_oid": "08b872064a17a9701da658fa17637e372d7f8fea",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -16213,12 +16213,12 @@
         "wiki/bibles/the-nomad-bears.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 4 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 5 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/the-nomad-bears.json; it is not automatically the unavailable Tier 4 modern bible.",
         "The requested modern Tier 4 subject bible is not separately identifiable in this checkout; canon classification remains a human-review item."
       ],
       "content_owner": "canon",
-      "canon_revision": 4,
+      "canon_revision": 5,
       "canon_source_tier": "first-witness+w81"
     },
     {

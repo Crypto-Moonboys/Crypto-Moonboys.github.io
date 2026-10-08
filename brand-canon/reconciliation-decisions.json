@@ -498,6 +498,21 @@
         "wiki/hodl-warriors.html",
         "wiki/the-hard-fork-rockers.html"
       ]
+    },
+    {
+      "id": "GK-1458-W60-W44-WITHDRAWAL",
+      "status": "implemented",
+      "sources": [
+        "w60.txt and w44.txt: complete originals and connected claim/scene comparisons",
+        "Complete current Nomad/Stoned/Sarah/Kernel/HODL/Rugpull/Defender/Army/BitcoinXKids/ChainScribes/Rocker/Blockstar histories; chronology, nineBooks and relevant supporting chapters"
+      ],
+      "old": "Nomad inside-population contempt and explicit Stoned PunkNet refusal compressed into gentler descriptions of independence.",
+      "new": "Restore source digital-death dismissal of the inside99% and selective outside1% tracking; explicitly retain Stoned refusal of PunkNet and organised allegiance. Preserve all modern adult lives and unresolved historical/physics claims.",
+      "reason": "Recover uncomfortable faction positions without making source prejudice a universal fact or deleting later intimacy, debt, coercion, detention, injury, work or grief.",
+      "affected_paths": [
+        "wiki/the-nomad-bears.html",
+        "wiki/the-crypto-stoned-boys.html"
+      ]
     }
   ]
 }

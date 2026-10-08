@@ -8,7 +8,7 @@
     "unique_contents": 93,
     "bytes": 2334149
   },
-  "semantic_scope": "Nine completely compared sources; nine additional originals completely read with comparison pending. Forty-six full existing article audits and eight focused comparisons; nine new articles separately authored. Full mission open.",
+  "semantic_scope": "Eleven completely compared sources; ten additional originals completely read with comparison pending. Fifty full existing article audits and eight focused comparisons; nine new articles separately authored. Full mission open.",
   "sources": [
     {
       "file": "M16.txt",
@@ -489,7 +489,7 @@
       "bytes": 6010,
       "sha256": "2da1bd98e13d5592e96f045071924d7930b786d854bdb6519ff0e120fa90e72a",
       "byte_verified": true,
-      "semantic_review": "complete source reading; owning-page recovery and final connected comparison pending",
+      "semantic_review": "complete source reading and connected claim/scene comparison",
       "prior_disposition": "COVERED",
       "read_progress": {
         "paragraphs_read_in_full": [
@@ -499,10 +499,11 @@
           ]
         ],
         "next_unread_paragraph": null,
-        "complete_source_comparison": false
+        "complete_source_comparison": true
       },
-      "partial_findings": [
-        "All source paragraphs fully read. Remaining explicit owning-page detail is tracked: Explicit Stoned refusal of PunkNet and organized affiliation; political neutrality does not excuse individual conduct or erase modern customs."
+      "findings": [
+        "All original paragraphs fully read and compared through complete current Stoned/Kernel/Bulls/Rugpull/HODL/Moongirls/Sarah/Rockers/Graff/Nomad/Scribes/Games/NULL/Forty/FirstWitness accounts and the full satire/attention supporting chapters. Origin/resilience, aura/stellar communication, glitchsatire, FinalPuff, critique and FeastWeek empathy preserve their source voices and open outcome.",
+        "The explicit refusal of PunkNet/all organised allegiance is recovered, compared with temporary HODL and Ducky exchange traditions. Deni/Hush/Rill/Ione/Glasswake/Jex/Dala/Sulo and LowTide/FourDayThursday all retain their existing adult events; source neutrality does not cancel payment/work failures or certify philosophical immunity."
       ]
     },
     {
@@ -526,16 +527,42 @@
       "bytes": 5936,
       "sha256": "cfefc3950437eebb80b889efe754d3963fe97d941d48ec803a2f61e916bcab01",
       "byte_verified": true,
-      "semantic_review": "pending complete semantic reading",
-      "prior_disposition": "COVERED"
+      "semantic_review": "complete source reading; connected owning-page comparison pending",
+      "prior_disposition": "COVERED",
+      "read_progress": {
+        "paragraphs_read_in_full": [
+          [
+            1,
+            17
+          ]
+        ],
+        "next_unread_paragraph": null,
+        "complete_source_comparison": false
+      },
+      "partial_findings": [
+        "w47 is Rugpull Miners, not BlockNodeDefenders. Bait networks, corruptedSpraycode, fear-basedFalseDefence and FinalPull need full partner comparison; no operational exploitation instructions derived."
+      ]
     },
     {
       "file": "w48.txt",
       "bytes": 6280,
       "sha256": "0b141ce2e445f7c91b3d7d5a2024a6f21a3ab893727a90ae239c1d8c577258f1",
       "byte_verified": true,
-      "semantic_review": "pending complete semantic reading",
-      "prior_disposition": "COVERED"
+      "semantic_review": "complete source reading; remaining Furies owning-article comparison pending",
+      "prior_disposition": "COVERED",
+      "read_progress": {
+        "paragraphs_read_in_full": [
+          [
+            1,
+            18
+          ]
+        ],
+        "next_unread_paragraph": null,
+        "complete_source_comparison": false
+      },
+      "partial_findings": [
+        "Complete original vigilante profile read. Current AshDesk/RedLedger witness and remaining named dependencies still being compared; no global irrefutable audit, universal Reversal power or faction extinction adopted."
+      ]
     },
     {
       "file": "w49.txt",
@@ -693,7 +720,7 @@
       "bytes": 5678,
       "sha256": "f28d688c472b43a9d10fc373e6a7d09b9784bdcbd8d8fd0c9c4b66c8b7f9eecb",
       "byte_verified": true,
-      "semantic_review": "complete source reading; owning-page recovery and final connected comparison pending",
+      "semantic_review": "complete source reading and connected claim/scene comparison",
       "prior_disposition": "COVERED",
       "read_progress": {
         "paragraphs_read_in_full": [
@@ -703,10 +730,11 @@
           ]
         ],
         "next_unread_paragraph": null,
-        "complete_source_comparison": false
+        "complete_source_comparison": true
       },
-      "partial_findings": [
-        "All source paragraphs fully read. Remaining explicit owning-page detail is tracked: Nomad dismissal of inside99% as digital death, MnemonicWhisper outside1% tracking and their limits; ordinary inside lives remain."
+      "findings": [
+        "All original paragraphs fully read and compared through complete current Nomad/Kernel/Sarah/Rugpull/Army/Defender/GK/Graff/HODL/Games/Forty/FirstWitness/BitcoinXKids accounts. Minimal-footprint rescue, glitchscape aesthetics, both city/street refusal, underground Queens vaults, surveillance/cure claims, satellite FeastWeek/RedLayer observation and unresolved FinalFork retain source scope.",
+        "Missing explicit digital-death judgement of the inside99% is recovered beside selective outside1% MnemonicWhisper location tracking. It does not erase existing inside livelihoods or convert stealth/immunity into universal fact. Kel/Varn/Reva/ThirdLantern/QuietReturn/ShiverCut/AbandonedCoat remain."
       ]
     },
     {
@@ -722,8 +750,21 @@
       "bytes": 12748,
       "sha256": "6899cb18d3824c4f199a2e5eedbc9b19d16a9dab136eb56d1a803ac2858ae57d",
       "byte_verified": true,
-      "semantic_review": "pending complete semantic reading",
-      "prior_disposition": "COVERED"
+      "semantic_review": "complete source reading; connected owning-page comparison pending",
+      "prior_disposition": "COVERED",
+      "read_progress": {
+        "paragraphs_read_in_full": [
+          [
+            1,
+            37
+          ]
+        ],
+        "next_unread_paragraph": null,
+        "complete_source_comparison": false
+      },
+      "partial_findings": [
+        "Full two-population account: outside broker and HODL9000 caller versus inside ModelLineage99%, eugenic/UBI/surveillance/fear and sterility claims. HighHats/Finance/Aztec and economy dependencies remain to compare; no alias merge or universal psychological verdict adopted."
+      ]
     },
     {
       "file": "w63.txt",
@@ -1467,6 +1508,42 @@
       ],
       "findings": "Entire supporting chapter: QuietHour, attention tithe, council minute, silence versus isolation and solitude as bounded practice rather than superiority.",
       "reading_verification": "All 8 current paragraphs match the fully read cache, including supporting-page footer where unmarked."
+    },
+    {
+      "path": "wiki/charlie-buster.html",
+      "scope": "full canonical article",
+      "sections": [
+        "all canonical sections"
+      ],
+      "findings": "Complete real artist/public collection biography and fictional resistance motif. W15 humanoid-prince portrayal is absent in detail and conflicts with mentor/resistance motif; recover only as a separate source portrayal, not real birth/family/violence claims.",
+      "reading_verification": "All 20 current canonical paragraphs match fully read cache."
+    },
+    {
+      "path": "wiki/thera-9.html",
+      "scope": "full canonical article",
+      "sections": [
+        "all canonical sections"
+      ],
+      "findings": "Complete defection/healer/GreyBowl/ThreeQuestions/BorrowedSeal/UnansweredNames/OpenCrate/coat/formerlover/UngenerousNight histories. W15 never names Thera; w25 preserves repeated countercode, blade dance, future reunions and cosmic counter-songs, not a merged origin or healedmissingrelative.",
+      "reading_verification": "All 46 current canonical paragraphs match fully read cache."
+    },
+    {
+      "path": "wiki/the-nice-easy-bois.html",
+      "scope": "full canonical article",
+      "sections": [
+        "all canonical sections"
+      ],
+      "findings": "Complete LesserDoor/TwoMeasures/Aftertalk/PeaceDividend/CodeHandshake/firewall/DryStep/Tavren/ThreeCups and romantic separation. w25 firstcrossfire death conflicts with later mediation/time-protection; not universal faction extinction.",
+      "reading_verification": "All 66 current canonical paragraphs match fully read cache."
+    },
+    {
+      "path": "wiki/the-allcity-bulls.html",
+      "scope": "full canonical article",
+      "sections": [
+        "all canonical sections"
+      ],
+      "findings": "Full arena/HyperShare/LongLap/MeasuredMile/JessaMilo/CarryMedal/Afterimage/Games/GroundArray and complete Vexa/Neri/NightHeat/BlackDividend/FastCrown/LoserCrown accounts. w47 bait-race targeting already present; sponsorship, injury, debt, partner separation and Rovik refusal remain.",
+      "reading_verification": "All 69 current canonical paragraphs match fully read cache."
     }
   ]
 }

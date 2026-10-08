@@ -365,3 +365,24 @@ receipts now use Tavi or Tavi's in those later clauses while preserving every
 event and every other person's pronouns. Tavi's mother Sena remains silent.
 Tavi Spool, Quiet Spindle's playback repairer, is a different person and keeps
 that account's established references. No shared-first-name merger is adopted.
+
+
+### Withdrawal, prejudice and the preserved modern lives
+
+w60's full comparison now retains the Nomad account's dismissal of inside
+compliance as digital death and its selective tracking of the outside rebels.
+That attitude belongs to the source faction; it does not cancel the Double
+Entry, Measure Hall, Len Arc or other inside lives. Kel's coat and Rain Map,
+Varn's paid betrayal, Reva's detention and lost work/possessions, Quiet Return,
+Shiver Cut and the Abandoned Coat remain the existing authored Nomad history.
+The [owning article](../../wiki/the-nomad-bears.html) preserves both.
+
+w44's full comparison restores the Stoned Boys' explicit refusal of Punk Net
+and organised allegiance. Their political detachment does not make their
+conduct spotless. Deni and Hush's Low Tide, Rill and Ione's attraction, Eno's
+Glasswake aftermath, Jex's death, Dala's grief and Sulo's friend's lost booking
+remain. Daro's rejected commission still leaves room expenses. The
+[owning article](../../wiki/the-crypto-stoned-boys.html) retains those adult
+lives, the refused alliance and competing limited cooperation traditions.
+These story details retain their existing 5 October evidence-register
+authorship; they are recorded here for continuity, not invented again.

@@ -14556,13 +14556,13 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 4054,
+      "article_word_count": 4324,
       "keyword_bag_size": 23,
-      "heading_count": 23,
+      "heading_count": 24,
       "list_count": 1,
-      "internal_link_count": 20,
-      "paragraph_count": 56,
-      "section_count": 20,
+      "internal_link_count": 21,
+      "paragraph_count": 59,
+      "section_count": 21,
       "lore_paragraph_count": 54,
       "content_quality_score": 101,
       "authority_score": 28
@@ -14638,14 +14638,24 @@
         "vanity",
         "departure",
         "elda",
-        "soot"
+        "soot",
+        "digital",
+        "death",
+        "ignored",
+        "ninety",
+        "nine",
+        "per",
+        "cent",
+        "inside",
+        "population",
+        "judgement"
       ]
     },
     "link_score": {
       "inbound_count": 3,
-      "outbound_count": 31,
+      "outbound_count": 35,
       "existing_outbound_count": 20,
-      "suggested_outbound_count": 11,
+      "suggested_outbound_count": 15,
       "authority": 16
     },
     "brand": null
@@ -18458,13 +18468,13 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 5484,
+      "article_word_count": 5758,
       "keyword_bag_size": 24,
-      "heading_count": 31,
+      "heading_count": 32,
       "list_count": 1,
       "internal_link_count": 14,
-      "paragraph_count": 81,
-      "section_count": 28,
+      "paragraph_count": 84,
+      "section_count": 29,
       "lore_paragraph_count": 78,
       "content_quality_score": 105,
       "authority_score": 24
@@ -18564,14 +18574,23 @@
         "who",
         "clean",
         "up",
-        "sulo"
+        "sulo",
+        "punk",
+        "net",
+        "refusal",
+        "political",
+        "detachment",
+        "organized",
+        "structure",
+        "moral",
+        "critique"
       ]
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 29,
+      "outbound_count": 30,
       "existing_outbound_count": 13,
-      "suggested_outbound_count": 16,
+      "suggested_outbound_count": 17,
       "authority": 6.5
     },
     "brand": null

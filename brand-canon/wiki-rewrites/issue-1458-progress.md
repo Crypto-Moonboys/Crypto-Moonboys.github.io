@@ -14,14 +14,14 @@ No direct push to main, merge, issue closure or production deployment.
 
 - **94** original archive files verified against archive SHA-256, CSV and the
   independent immutable ledger; **93** unique contents, **2,334,149** bytes.
-- **9** complete original texts read and compared cumulatively: W1, w32, w33,
-  w56, W12 (all eight parts), W13 (all seven parts and repeated extracts), W7, w50 and w63.
-  **85** remain without full semantic comparison. W19 is fully read but its
+- **11** complete original texts read and compared cumulatively: W1, w32, w33,
+  w56, W12 (all eight parts), W13 (all seven parts and repeated extracts), W7, w50, w63, w60 and w44.
+  **83** remain without full semantic comparison. W19 is fully read but its
   remaining embedded-character comparisons are pending, so it is not counted.
-- **54 distinct existing pages** reviewed: forty-six full canonical articles
+- **58 distinct existing pages** reviewed: fifty full canonical articles
   (Princess, Croydon, master chronology, concordance, synthetic minds,
   Crypto Moonboys, Great Consensus, Elder Codex-7, Iris-7, Aleema, Dream Sovereign,
-  all nine First Witness Books, HODL Warriors, GraffPUNKS, GKniftyHEADS, Whale Lords, XRP Kids, Forty Paths, faction Commentaries, Sarah, Jodie, Alfie, NULL, Block Topia, HODL doctrine, Hard Fork Rockers, Genesis Kernel, Nomad Bears, Blockstars, Crypto Stoned Boys, Rugpull Miners, Block Node Defenders both Army articles, Bitcoin X Kids, Chain Scribes and the humour/attention supporting chapters) and eight focused section reviews
+  all nine First Witness Books, HODL Warriors, GraffPUNKS, GKniftyHEADS, Whale Lords, XRP Kids, Forty Paths, faction Commentaries, Sarah, Jodie, Alfie, NULL, Block Topia, HODL doctrine, Hard Fork Rockers, Genesis Kernel, Nomad Bears, Blockstars, Crypto Stoned Boys, Rugpull Miners, Block Node Defenders both Army articles, Bitcoin X Kids, Chain Scribes the humour/attention supporting chapters, Thera, Charlie, Nice & Easy and AllCity Bulls) and eight focused section reviews
   (Rune, Pinks, Games, Code Alchemists, Bitcoin Kids, HODL Wars, Sacred Chain and Rave Relics). Exact scopes are in `issue-1458-audit.json`.
 - **421** top-level wiki pages pass automated targeted canon lint and content
   inventory checks. That number is a static scan, not a human semantic count.
@@ -565,3 +565,45 @@ explicit inside-population dismissal/PunkNet refusal recovery still pending.
 The source comparison count remains9/94; nine other fully read originals have
 pending comparisons. Next actual implementation: those two owning-page details,
 then complete Thera/Charlie and remaining source cast comparisons.
+
+
+## Nomad/Stoned owning-page recovery
+
+w60 and w44 are fully read and compared through their named dependencies and
+modern stories. Two owning articles restore the source's unpleasant inside
+population judgement and explicit Punk Net refusal. No existing paragraph,
+scene or life is replaced. The master truth now records particular preserved
+Kel/Reva/Varn and Low Tide/Red Ledger consequences alongside the source doctrine.
+
+Current cumulative scope: 11/94 sources compared; 83 comparisons open,
+including seven other completely read originals. 54 distinct existing audits
+(46 full/eight focused), 28 expanded/corrected existing articles, nine new
+articles, five original adult connecting stories. No new character or major
+retcon in this batch. Final verification pending. Continue Thera/Charlie,
+remaining serial dependencies and the original faction profiles.
+
+
+### Withdrawal batch final verification
+
+Final wiki CI, browser, graph, article preservation, links and Pages build pass.
+Browser: 74 desktop/mobile views, 37 no-JavaScript pages, 24 full-search and
+autocomplete queries. Across 28 changed existing articles, 2,222 substantial
+original paragraphs remain, including the earlier 13 exact Tavi references;
+1,156 canonical links across those and three new biographies resolve.
+All 424 previous pages, 9,749 paragraphs and 5,255 IDs remain against
+34bb64ffc85814bf6f1106921720528b79ef94d0, with zero additional paragraph revisions.
+Artifact: `/tmp/gk1459/withdrawal-public-site`; no deployment.
+
+Full current Thera, Charlie, Nice & Easy and AllCity Bulls readings were matched
+to every cached paragraph. Cumulative existing audit: 58 distinct, 50 full and
+eight focused. Three further originals (w47 Rugpull, w62 two-population Army,
+w48 Furies) are fully read but remain pending connected comparison; there are
+ten fully read pending originals in total. Full source comparison stays 11/94.
+The explicit next recovery is Charlie's W15 fictional prince portrayal,
+Thera's detailed w25 role and the Bois' contradictory serial losses/returns;
+complete remaining Furies reading and w47/w48 comparisons.
+
+At exact head 34bb64ffc85814bf6f1106921720528b79ef94d0, Wiki Structure, production
+truth, worker provenance, Arcade, Worker API, WAX and Visual pass. Inspected
+Wiki/Graph logs confirm only the maintainer prose-label gate after successful
+regeneration, guard and parity checks. No approval label applied.
