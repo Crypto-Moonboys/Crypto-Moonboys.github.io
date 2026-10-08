@@ -67,6 +67,17 @@ try {
     await page.close();
   }
   const queries = [
+  ["Ascension Tag and Leash", "the-finance-guild"],
+  ["High Hats Absolute Transparency manifesto", "the-high-hats"],
+  ["Nomad genetic firewall capture", "the-crypto-moongirls"],
+  ["HODL purge guilt memory leakage", "hodl-warriors"],
+  ["infection zone conquest", "the-aztec-raiders"],
+  ["anomaly purges petty UBI fraud vagrancy", "the-squeaky-pinks"],
+  ["NULL Final Joke satire", "the-crypto-stoned-boys"],
+  ["Vengeful Oath Total Transparency", "the-nice-easy-bois"],
+  ["covert Nomad cure hunt", "queen-sarah-p-fly"],
+  ["Tuskon infected conquest purges", "the-tuskon-ogs"],
+
   ['rebel MemeCoin specifications sold', 'the-evm-punks'], ['contaminated server True Inscription', 'the-chain-scribes'],
   ['Nostalgia Bombs', 'the-og-pixel-saints'], ['remember remix reroute', 'forkborn-collective'],
   ['intentional Dependency Loop', 'the-moonlords'], ['conditional rebel power-cut threat', 'the-salvagers'],

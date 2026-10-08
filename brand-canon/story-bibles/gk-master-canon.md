@@ -591,3 +591,29 @@ declared the erased person. Glass Face uncertainty, Rell’s gatekeeping, Omra�
 withheld laughter and household fragment remain. W5’s crowned house does not
 acquire these keepers’ consent through a shared name. No real creator right,
 new Forty position or final ending changes.
+
+
+### Ascension’s permission and the oath behind a secret peace
+
+Full w64/w84 comparison distinguishes Guild/HighHat and Guild/Architect
+partners. The Tag/Leash and Soulbound human-proof rhetoric, pre-emptive spending
+control, closed-loop mission funds and Type II departure remain their political
+programme. Claimed no leakage, thirty-percent losses and identity-as-nerves /
+currency-as-blood are not demonstrated history. Neither manifesto completes
+the fleet or acquires the consent of w61’s detached memory keepers.
+
+Full w65 recovery records each military/philosophical response: expensive
+Bloodline purges and Nomad data capture; HODL contradictory orders, allied
+cleansing, guilt and reliance on Architects/Rockers; Raider infection conquest
+and Tuskon asset purges; Pink punishment of petty offences/anomalies; Stoned
+satire/claimed resilience; and Bois’ stripped exchanges, unlike dividends and
+threatened Total Transparency. The alleged AGNES-7 source remains disputed.
+The Vengeful Oath’s promised destruction is coercion, not a witnessed ending.
+
+Modern consequences remain: Sarah’s reserves can outwait outside clinics;
+Bex refuses the false signature; Dara’s wound lie and victim’s refused thanks
+survive. Nela remains injured with an unfinished hearing, Ressa’s refusal does
+not dissolve zealous patrols, and Raider victory does not restore Halen/Osa/Dera.
+Tavren’s open road still leaves wages unpaid. The High Hats’ private separations
+and losses do not become a fleet’s redeemable collateral. Specific labour,
+consent and grief remain beside the source’s grand emergencies.

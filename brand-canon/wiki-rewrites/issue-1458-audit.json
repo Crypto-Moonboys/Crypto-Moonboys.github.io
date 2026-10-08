@@ -8,7 +8,7 @@
     "unique_contents": 93,
     "bytes": 2334149
   },
-  "semantic_scope": "Thirty-six completely compared sources; ten additional originals completely read with comparison pending. Sixty-eight full existing article audits and five focused comparisons; nine new articles separately authored. Full mission open.",
+  "semantic_scope": "Thirty-nine completely compared sources; ten additional originals completely read with comparison pending. Sixty-eight full existing article audits and five focused comparisons; nine new articles separately authored. Full mission open.",
   "sources": [
     {
       "file": "M16.txt",
@@ -1091,7 +1091,7 @@
       "bytes": 3808,
       "sha256": "39d8e53665044ae04fb688a6f77a082cf6b82ca75f8ed8bc4c4098e0ed170d34",
       "byte_verified": true,
-      "semantic_review": "complete source reading; connected comparison pending",
+      "semantic_review": "complete source reading and connected claim/scene comparison",
       "prior_disposition": "COVERED",
       "read_progress": {
         "paragraphs_read_in_full": [
@@ -1101,10 +1101,10 @@
           ]
         ],
         "next_unread_paragraph": null,
-        "complete_source_comparison": false
+        "complete_source_comparison": true
       },
-      "partial_findings": [
-        "Complete original read without truncation. Specific source ascension roles/claims or five-part NULL military response and coercive Bois disclosure oath need owning comparison/recovery."
+      "findings": [
+        "Complete two-imperative manifesto compared: Guild/HighHat partners, roguewealth/technology argument, Mercenary Tag/Guild Leash/Pink freeze, abolished spending anonymity, resource leakage claim/closedloop, Moongirl departure, Alchemist programming, Blockstar/Bally investment and Salvager everybolt promise. Exact source partnership and control/expansion claims restored on Finance/HighHat with prospect attribution. Contrasting w84 Architects partnership and w61 detached keepers remain; no actual worldwide controls/completed fleet/real product established."
       ]
     },
     {
@@ -1112,7 +1112,7 @@
       "bytes": 16940,
       "sha256": "6898376b373f9a6f8fc318fe4c167a43afbef4678da1e495e2eba4ac9fe22e7b",
       "byte_verified": true,
-      "semantic_review": "complete source reading; connected comparison pending",
+      "semantic_review": "complete source reading and connected claim/scene comparison",
       "prior_disposition": "COVERED",
       "read_progress": {
         "paragraphs_read_in_full": [
@@ -1122,10 +1122,10 @@
           ]
         ],
         "next_unread_paragraph": null,
-        "complete_source_comparison": false
+        "complete_source_comparison": true
       },
-      "partial_findings": [
-        "Complete original read without truncation. Specific source ascension roles/claims or five-part NULL military response and coercive Bois disclosure oath need owning comparison/recovery."
+      "findings": [
+        "All five military/philosophical response sections and detailed Bois sequel compared. Restore Theta/drone/TrueFork stalls, infectedDefender/inside seizures and purge energy, Nomad capture/psychic harvest and tolerated Army surveillance on Moongirl/Sarah; HODL contradictoryorders/violentcorrection/alliedpurges/guilt/remuster fragility/ArchitectPriests/Rocker collaboration; Raider infectionzone conquest/Tuskon purge/AGNES7assimilate/wallprobe on Raider/Tuskon; Pink pettyfraud/vagrancy/Graff targeting and anomaly purges; Stoned satire/claimedimmunity and narrowequipmenttrade; Bois strippedcontext/pairdividends/Stonedexchange/VengefulOath disclosure mutualdestruction threat. All already read connected lives and source-bound contradictions retained; no settled NULLorigin, universal immunity, proven cure or completed FinalFork."
       ]
     },
     {
@@ -1223,8 +1223,21 @@
       "bytes": 28108,
       "sha256": "783217e96e078a911ea97a27d2e1cab7df2130b95464c5e7cdf7fee9cd3e5998",
       "byte_verified": true,
-      "semantic_review": "pending complete semantic reading",
-      "prior_disposition": "COVERED"
+      "semantic_review": "complete source reading; connected comparison pending",
+      "prior_disposition": "COVERED",
+      "read_progress": {
+        "paragraphs_read_in_full": [
+          [
+            1,
+            201
+          ]
+        ],
+        "next_unread_paragraph": null,
+        "complete_source_comparison": false
+      },
+      "partial_findings": [
+        "Complete original read: contradictory headline2765/body2930,2880/2900 collapse; FinalForkCouncil/three-decadeQueens build, Sarah2066 SelfFork, three numeric programme tiers/Defender/insideXchildren, fivePaintPath disciplines/Snipey/BitCap,480selection/FeastWeek/JodieArrival/missingmirrors/wires/notes/CloneHarvest. One line wrongly assigns syntheticcaste goal to Jodie despite forcedescape and w39/w58 Sarah owner; compare explicitly. Thera2994/AGNES2876 origins and22percent desertion are source claims. Full Games/dependent character comparison pending."
+      ]
     },
     {
       "file": "w71.txt",
@@ -1343,7 +1356,7 @@
       "bytes": 4363,
       "sha256": "a00b76bd2bf760b2be6e660dfacb3b3b555446f8bdc9edc0cde93493d3066704",
       "byte_verified": true,
-      "semantic_review": "complete source reading; connected comparison pending",
+      "semantic_review": "complete source reading and connected claim/scene comparison",
       "prior_disposition": "HISTORICAL",
       "read_progress": {
         "paragraphs_read_in_full": [
@@ -1353,10 +1366,10 @@
           ]
         ],
         "next_unread_paragraph": null,
-        "complete_source_comparison": false
+        "complete_source_comparison": true
       },
-      "partial_findings": [
-        "Complete original read without truncation. Specific source ascension roles/claims or five-part NULL military response and coercive Bois disclosure oath need owning comparison/recovery."
+      "findings": [
+        "Complete twelve-paragraph manifesto compared: jointArchitect/Guild voice, TypeII/civilisational exodus, individualempowerment threat, Soulbound humanproof/reputation and Mercenary profiling, inert funding/fuse doctrine, claimed30percent loss, restricted missionmoney, supplychain identities, BallyTokyo/TuskonArizona borderless trade and oneorganism metaphor. Exact humanproof/TypeII/ark/terraform/elevator/Dysonsphere and nervoussystem/blood claims restored on Finance with source scope; existing GKniftyHEAD political distinction retained. No complete departure or verified economic statistic adopted."
       ]
     },
     {
@@ -1428,16 +1441,42 @@
       "bytes": 8107,
       "sha256": "7ec5c1322accab707b8035d7470310e37c521f89b510ccb63a19508472e3917b",
       "byte_verified": true,
-      "semantic_review": "pending complete semantic reading",
-      "prior_disposition": "HISTORICAL"
+      "semantic_review": "complete source reading; connected comparison pending",
+      "prior_disposition": "HISTORICAL",
+      "read_progress": {
+        "paragraphs_read_in_full": [
+          [
+            1,
+            60
+          ]
+        ],
+        "next_unread_paragraph": null,
+        "complete_source_comparison": false
+      },
+      "partial_findings": [
+        "Complete seven Taglogs/legacy read:2150-2600 origin,DataFamine2191/PaintWars2200-2300/TagLords/BurnCrews/GhostWriters/StencilWitches,CHAINFIRE rebelAI distinctcatastrophe,SignalCleave2588/OMNICORE/iFork as TripleFork version;Jodie joiningmemorykeepers. Full Rune/Graff/Writcode/currenthistory comparison pending; do not invent secondcatastrophe or accepted earlydate."
+      ]
     },
     {
       "file": "w93.txt",
       "bytes": 11393,
       "sha256": "fbcc1fe0d13e8e2f7e44db3183366209a9ca531d731c352a4081dbcdc9c09e5d",
       "byte_verified": true,
-      "semantic_review": "pending complete semantic reading",
-      "prior_disposition": "COVERED"
+      "semantic_review": "complete source reading; connected comparison pending",
+      "prior_disposition": "COVERED",
+      "read_progress": {
+        "paragraphs_read_in_full": [
+          [
+            1,
+            88
+          ]
+        ],
+        "next_unread_paragraph": null,
+        "complete_source_comparison": false
+      },
+      "partial_findings": [
+        "Complete Jodie diary read: compelled summons and alleged zone erasure, Nomad/Bull/HODL tierlabels/seeding/insideKids terminology conflict with current distinctions, FeastWeek surveillance/GreenYellowRed/arena reversal, named InitiatesMaze/blinking sensor, battlefield refusal/run/crackedfingers/no settledend. Full current Games/related character comparison pending; do not merge cultures or erase diary injury."
+      ]
     }
   ],
   "wiki_section_reviews": [

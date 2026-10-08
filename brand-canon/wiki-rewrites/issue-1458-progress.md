@@ -12,7 +12,7 @@ No direct push to main, merge, issue closure or production deployment.
 
 ## Current cumulative state
 
-36 of 94 original sources have full claim/scene comparison; 58 remain open.
+39 of 94 original sources have full claim/scene comparison; 55 remain open.
 Ten further originals are completely read with comparisons pending. Existing
 wiki audits cover 73 distinct articles: 68 full and five focused. Nine new
 articles and 50 expanded/corrected existing articles are implemented, with
@@ -29,9 +29,9 @@ proposed; no final ending, new Forty slot or historical retcon is adopted.
 
 - **94** original archive files verified against archive SHA-256, CSV and the
   independent immutable ledger; **93** unique contents, **2,334,149** bytes.
-- **36** complete original texts read and compared cumulatively: W1, w32, w33,
-  w56, W12 (all eight parts), W13 (all seven parts and repeated extracts), W7, w50, w63, w60, w44, w47, w48, w54, w59, w42, w55, w43, w51 and w52 (those two are one repeated witness), w57, w46, w62, w45, w49, w53, w58, w34, w41, w38, w40, w35, w39, w36, w37 and w61.
-  **58** remain without full semantic comparison. W19 is fully read but its
+- **39** complete original texts read and compared cumulatively: W1, w32, w33,
+  w56, W12 (all eight parts), W13 (all seven parts and repeated extracts), W7, w50, w63, w60, w44, w47, w48, w54, w59, w42, w55, w43, w51 and w52 (those two are one repeated witness), w57, w46, w62, w45, w49, w53, w58, w34, w41, w38, w40, w35, w39, w36, w37, w61, w64, w65 and w84.
+  **55** remain without full semantic comparison. W19 is fully read but its
   remaining embedded-character comparisons are pending, so it is not counted.
 - **73 distinct existing pages** reviewed: sixty-eight full canonical articles
   (Princess, Croydon, master chronology, concordance, synthetic minds,
@@ -1024,3 +1024,39 @@ Actions pass seven other groups; inspected Wiki/Graph logs show only maintainer
 prose-label gate after guards/regeneration/parity. No label applied.
 Next ascension financiers, full military NULL-response specifics and Bois’
 coercive alliance, then remaining source/serial/roster work. Full mission open.
+
+
+## Ascension’s control and the full military NULL response
+
+w64/w65/w84 complete comparisons restore distinct financier partnerships,
+Tag/Leash/Soulbound human-proof and expansion metaphors, and all five military /
+philosophical response strands. Nine existing owning articles and the previously
+created Moongirl encyclopedia expanded; Sarah and Tuskon dependent roles included.
+The Bois’ Vengeful Oath remains a threat of mutual leadership destruction, not
+a completed event. Current39/94 source comparisons,55 open; seven further
+originals read pending;73 audits68 full/five focused;50 existing articles changed,
+nine new, five original adult stories. Every prior paragraph retained. No major
+chronology/identity retcon, new Forty slot, proven cure or final ending adopted.
+Final validation pending. Full mission open.
+
+
+### Ascension/NULL final verification and next originals
+
+Full wiki CI, graph, preservation, links and Pages build pass. Ten changed
+owning articles separately pass20 desktop/mobile views,10 noJS readings and10
+search/autocomplete queries; no new full cumulative run claimed. All424 prior
+pages,9841 original substantial paragraphs and5284 IDs remain against
+3609a0d519efb51d041e3387bd40b6e408331e37, with zero new paragraph revisions.
+Across50 changed existing articles,3647 original substantial paragraphs remain
+with14 earlier exact references;1994 canonical links resolve. Preview
+`/workspace/gk1459-previews/ascension-null-public-site`; no deployment.
+
+Complete w70/w93/w92 originals read. Games/diary contradictions, initiation
+labels, CloneHarvest attribution slip, source dates and Graff origin mechanics
+remain next comparisons. Current39/94,55 open; ten more originals fully read
+pending;73 existing audits68 full/five focused;50 existing pages changed, nine
+new, five original adult stories. Exact3609a0d519efb51d041e3387bd40b6e408331e37
+Actions pass seven other groups; inspected Wiki/Graph logs show only maintainer
+prose-label gate after guards/regeneration/parity. No label applied.
+Next full Games/Rune/paint-mechanics dependency reading and w70/w93/w92 recovery,
+then remaining original/serial/roster work. Full mission open.

@@ -18547,7 +18547,7 @@
     "inbound_from": []
   },
   "/wiki/hodl-warriors.html": {
-    "outbound_count": 44,
+    "outbound_count": 46,
     "inbound_count": 34,
     "existing_outbound": [
       "/wiki/bitcoin-kid-army.html",
@@ -18577,6 +18577,7 @@
       "/wiki/first-witness-book-6-the-fork.html",
       "/wiki/first-witness-book-7-the-hold.html",
       "/wiki/first-witness-children-first-lessons.html",
+      "/wiki/first-witness-digital-inheritance-after-death.html",
       "/wiki/first-witness-faction-commentaries.html",
       "/wiki/first-witness-food-hospitality-common-table.html",
       "/wiki/first-witness-glossary.html",
@@ -18595,6 +18596,7 @@
       "/wiki/the-first-witness.html",
       "/wiki/the-hard-fork-rockers.html",
       "/wiki/the-rugpull-miners.html",
+      "/wiki/thorne-the-architect.html",
       "/wiki/whale-lords.html"
     ],
     "inbound_from": [
@@ -20689,7 +20691,7 @@
     ]
   },
   "/wiki/queen-sarah-p-fly.html": {
-    "outbound_count": 49,
+    "outbound_count": 51,
     "inbound_count": 7,
     "existing_outbound": [
       "/wiki/block-topia.html",
@@ -20720,6 +20722,7 @@
       "/wiki/first-witness-justice-mercy-restitution.html",
       "/wiki/first-witness-land-water-stewardship.html",
       "/wiki/first-witness-language-translation-sacred-words.html",
+      "/wiki/first-witness-null-erasure.html",
       "/wiki/first-witness-sacred-fork.html",
       "/wiki/first-witness-triple-fork-chainfire.html",
       "/wiki/first-witness-truth-commissions-after-conflict.html",
@@ -20730,6 +20733,7 @@
       "/wiki/hodl-warriors.html",
       "/wiki/hodl-x-warriors.html",
       "/wiki/jodie-zoom-2000.html",
+      "/wiki/null-the-prophet.html",
       "/wiki/sacred-chain.html",
       "/wiki/satorebel.html",
       "/wiki/street-kingdoms.html",
@@ -22049,7 +22053,7 @@
     ]
   },
   "/wiki/the-aztec-raiders.html": {
-    "outbound_count": 32,
+    "outbound_count": 33,
     "inbound_count": 1,
     "existing_outbound": [
       "/wiki/bitcoin-kids.html",
@@ -22079,6 +22083,7 @@
       "/wiki/first-witness-intimacy-sexuality-privacy.html",
       "/wiki/first-witness-money-debt-honest-scales.html",
       "/wiki/first-witness-prisons-punishment-return.html",
+      "/wiki/gkniftyheads-czen-zone-zero-zealot-783755.html",
       "/wiki/gkniftyheads-digital-diva-783394.html",
       "/wiki/gkniftyheads-digital-duchess-783404.html",
       "/wiki/graffpunks.html",
@@ -22508,7 +22513,7 @@
     ]
   },
   "/wiki/the-crypto-moongirls.html": {
-    "outbound_count": 23,
+    "outbound_count": 30,
     "inbound_count": 1,
     "existing_outbound": [
       "/wiki/bitcoin-kids.html",
@@ -22521,18 +22526,25 @@
       "/wiki/queen-sarah-p-fly.html"
     ],
     "suggested_outbound": [
+      "/wiki/block-node-defenders.html",
       "/wiki/block-topia.html",
       "/wiki/first-witness-book-6-the-fork.html",
       "/wiki/first-witness-questions-for-the-living.html",
       "/wiki/first-witness-sacred-fork.html",
       "/wiki/first-witness-street-kingdoms-reading.html",
       "/wiki/first-witness-triple-fork-chainfire.html",
+      "/wiki/first-witness-war-defence-peacekeeping.html",
       "/wiki/gkniftyheads-bitcoin-kid-x-sarah-pfly-infinite-776004.html",
+      "/wiki/gkniftyheads-drift-doodle-783252.html",
+      "/wiki/gkniftyheads-raze-rebel-783250.html",
+      "/wiki/gkniftyheads-rebel-riff-783269.html",
       "/wiki/gkniftyheads-sarah-p2fly-784350.html",
       "/wiki/gkniftyheads-sarah-pfly-784349.html",
+      "/wiki/grit.html",
       "/wiki/hard-fork-games.html",
       "/wiki/hodl-warriors.html",
       "/wiki/the-hard-fork-rockers.html",
+      "/wiki/the-nomad-bears.html",
       "/wiki/thera-9.html",
       "/wiki/triple-fork-event.html",
       "/wiki/xrp-ledger.html"
@@ -22542,7 +22554,7 @@
     ]
   },
   "/wiki/the-crypto-stoned-boys.html": {
-    "outbound_count": 30,
+    "outbound_count": 32,
     "inbound_count": 0,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
@@ -22564,9 +22576,11 @@
       "/wiki/bitcoin-x-kids.html",
       "/wiki/block-topia.html",
       "/wiki/first-witness-apocrypha-disputed-passages.html",
+      "/wiki/first-witness-music-dance-performance.html",
       "/wiki/first-witness-null-erasure.html",
       "/wiki/genesis-kernel.html",
       "/wiki/gkniftyheads-drift-doodle-783252.html",
+      "/wiki/gkniftyheads-waxp-joke-ter-784344.html",
       "/wiki/graffpunks.html",
       "/wiki/hodl-warriors.html",
       "/wiki/hodl-x-warriors.html",
@@ -23676,7 +23690,7 @@
     ]
   },
   "/wiki/the-squeaky-pinks.html": {
-    "outbound_count": 40,
+    "outbound_count": 41,
     "inbound_count": 2,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
@@ -23702,6 +23716,7 @@
       "/wiki/first-witness-book-6-the-fork.html",
       "/wiki/first-witness-book-9-the-unwritten-block.html",
       "/wiki/first-witness-digital-inheritance-after-death.html",
+      "/wiki/first-witness-dreams-omens-coincidence.html",
       "/wiki/first-witness-hodl-doctrine.html",
       "/wiki/first-witness-null-erasure.html",
       "/wiki/first-witness-sacred-fork.html",
