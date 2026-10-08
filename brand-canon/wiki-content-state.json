@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "generator": "scripts/generate-wiki-content-state.mjs",
-  "source_tree_hash": "sha256:eef1b94c25d92ed1671d6569cb661fe135edfa7451fbc75648d792a507a1aab2",
+  "source_tree_hash": "sha256:04e5adf700f0af43a26ede8c1d87375a2b5b88d92b084cacfcdd0052f51c6de1",
   "hash_algorithm": "sha256",
   "page_count": 424,
   "manifest_entry_count": 424,
@@ -15403,7 +15403,7 @@
       "title": "The BLOCKSTARS",
       "page_exists": true,
       "page_type": "faction",
-      "current_word_count": 5752,
+      "current_word_count": 6115,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -15412,10 +15412,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:675b44473ba604cc4f6ec0b603ced3890a4dea787e0a198f09e1b5173a9ec719",
-      "article_content_hash": "sha256:522b526c5dcbc60dc8426069cfd93cc176d1be879d086352211ec952819832eb",
-      "article_markup_hash": "sha256:70e8601adc7e8a3c2e26e1e78d1db953d26e1ffa3bd33716951940741ad8c2a2",
-      "git_blob_oid": "eda2501e257de954be55edb5c04bba8e8411ad78",
+      "content_hash": "sha256:1311a963b1ae9c8d6e650b3afa2a1633617d8ef8b0c22ff89ace6baf2bc9f6e0",
+      "article_content_hash": "sha256:a650c03fd8eb67f431a7c2d16dfea991a47fd635a2b5c45d37b94d7c031b9b6c",
+      "article_markup_hash": "sha256:15ee4adfc6829ef7e27ca9920e5ee982276f06567d2a3f3b33fae9bb5a0357bc",
+      "git_blob_oid": "04860a59588bf3a5613f7bfdf67f46702b38a953",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -15436,12 +15436,12 @@
         "wiki/bibles/the-blockstars.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 7 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 8 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/the-blockstars.json; it is not automatically the unavailable Tier 4 modern bible.",
         "The requested modern Tier 4 subject bible is not separately identifiable in this checkout; canon classification remains a human-review item."
       ],
       "content_owner": "canon",
-      "canon_revision": 7,
+      "canon_revision": 8,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -16459,7 +16459,7 @@
       "title": "The Squeaky Pinks",
       "page_exists": true,
       "page_type": "faction",
-      "current_word_count": 4032,
+      "current_word_count": 4338,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -16468,10 +16468,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:f30098933216990e51b2654a9ec1492c713af3527a58e93980035b52e5e4431c",
-      "article_content_hash": "sha256:d1a245d64716e4ad59485c1cd6f91a03b57d80c5ad8538682a85c719fbaa2625",
-      "article_markup_hash": "sha256:feaaf290f188a990febd8f9817024ecf293c0de1940ab5c4b890414fdc6d8adf",
-      "git_blob_oid": "d2eb0f6dd4cc4534338a6bdf0f102347668dd384",
+      "content_hash": "sha256:a28f64850bfe983f3b4dedc80fe398a6b76ad437fedcea8708b2ae4049176277",
+      "article_content_hash": "sha256:4c7ca07da2cc775953714140f07bd8cd4c61efaaed28eb8a6383aa7f6276ba2a",
+      "article_markup_hash": "sha256:2bc9664ea0528951f1891bbe802e0bcece0f6e441f638e5d622cfb94bb76c186",
+      "git_blob_oid": "8dad1ebc9c6f84d595a9f9ec3311f6a8bd84c9fb",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -16492,12 +16492,12 @@
         "wiki/bibles/the-squeaky-pinks.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 5 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 6 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/the-squeaky-pinks.json; it is not automatically the unavailable Tier 4 modern bible.",
         "The requested modern Tier 4 subject bible is not separately identifiable in this checkout; canon classification remains a human-review item."
       ],
       "content_owner": "canon",
-      "canon_revision": 5,
+      "canon_revision": 6,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -16506,7 +16506,7 @@
       "title": "The TUSKON OGS",
       "page_exists": true,
       "page_type": "faction",
-      "current_word_count": 3414,
+      "current_word_count": 3655,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -16515,10 +16515,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:2bd0e9655da2d49bfd4e3fb28df8f47e3ecf65bb5922fe69a74f4bb4f5d166b0",
-      "article_content_hash": "sha256:0b332c63351849812327d2cdcc96a04beb5f38558b02e122d2fb9f6cf7d04b92",
-      "article_markup_hash": "sha256:c238720f6bfd4b4f648b5d1cb92538c1854863f9fa3395d729c1d1e9d3fe64e2",
-      "git_blob_oid": "23dbc0302716eb6b9e66b2baed017b9269d905a3",
+      "content_hash": "sha256:f25c3a25c8b16f3fad9a7ecfa961dd7c9ae6a64b75f31374b18827fbceab77c3",
+      "article_content_hash": "sha256:c4c0b2237c8270fead3e65db28c62a834c92b9f61e1a2a35e75a564066fc7aab",
+      "article_markup_hash": "sha256:636a2e13107a2f2702e041831aa7bc248260d21c6a7854845609b49b48c63dcd",
+      "git_blob_oid": "4ff3838fd4fe2e8604b9d88420218d2b08ac709e",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -16539,12 +16539,12 @@
         "wiki/bibles/the-tuskon-ogs.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 3 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 4 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/the-tuskon-ogs.json; it is not automatically the unavailable Tier 4 modern bible.",
         "The requested modern Tier 4 subject bible is not separately identifiable in this checkout; canon classification remains a human-review item."
       ],
       "content_owner": "canon",
-      "canon_revision": 3,
+      "canon_revision": 4,
       "canon_source_tier": "first-witness+w81"
     },
     {

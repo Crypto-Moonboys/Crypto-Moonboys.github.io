@@ -22285,7 +22285,7 @@
     ]
   },
   "/wiki/the-blockstars.html": {
-    "outbound_count": 38,
+    "outbound_count": 39,
     "inbound_count": 2,
     "existing_outbound": [
       "/wiki/bitcoin-kids.html",
@@ -22308,6 +22308,7 @@
     ],
     "suggested_outbound": [
       "/wiki/block-node-defenders.html",
+      "/wiki/defi-mining.html",
       "/wiki/first-witness-apocrypha-disputed-passages.html",
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-8-the-fire.html",
@@ -23648,7 +23649,7 @@
     ]
   },
   "/wiki/the-squeaky-pinks.html": {
-    "outbound_count": 37,
+    "outbound_count": 40,
     "inbound_count": 2,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
@@ -23678,6 +23679,8 @@
       "/wiki/first-witness-null-erasure.html",
       "/wiki/first-witness-sacred-fork.html",
       "/wiki/first-witness-triple-fork-chainfire.html",
+      "/wiki/genesis-kernel.html",
+      "/wiki/gkniftyheads-neon-nova-knightmare-784413.html",
       "/wiki/gkniftyheads.html",
       "/wiki/graffpunks.html",
       "/wiki/hard-fork-games.html",
@@ -23686,6 +23689,7 @@
       "/wiki/hodl-x-warriors.html",
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/queen-sarah-p-fly.html",
+      "/wiki/six-pillars.html",
       "/wiki/the-code-alchemists.html",
       "/wiki/the-first-witness.html",
       "/wiki/the-hard-fork-rockers.html",
@@ -23697,7 +23701,7 @@
     ]
   },
   "/wiki/the-tuskon-ogs.html": {
-    "outbound_count": 39,
+    "outbound_count": 41,
     "inbound_count": 1,
     "existing_outbound": [
       "/wiki/bitcoin-x-kids.html",
@@ -23728,6 +23732,7 @@
       "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-long-transmission.html",
       "/wiki/first-witness-master-chronology.html",
+      "/wiki/first-witness-money-debt-honest-scales.html",
       "/wiki/first-witness-parables.html",
       "/wiki/first-witness-sacred-fork.html",
       "/wiki/first-witness-source-register.html",
@@ -23739,6 +23744,7 @@
       "/wiki/the-crypto-moongirls.html",
       "/wiki/the-first-witness.html",
       "/wiki/the-nomad-bears.html",
+      "/wiki/the-rugpull-miners.html",
       "/wiki/the-salvagers.html",
       "/wiki/the-squeaky-pinks.html"
     ],

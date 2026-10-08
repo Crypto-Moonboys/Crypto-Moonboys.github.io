@@ -8,7 +8,7 @@
     "unique_contents": 93,
     "bytes": 2334149
   },
-  "semantic_scope": "Twenty-three completely compared sources; eleven additional originals completely read with comparison pending. Sixty-one full existing article audits and five focused comparisons; nine new articles separately authored. Full mission open.",
+  "semantic_scope": "Twenty-six completely compared sources; eight additional originals completely read with comparison pending. Sixty-two full existing article audits and five focused comparisons; nine new articles separately authored. Full mission open.",
   "sources": [
     {
       "file": "M16.txt",
@@ -539,7 +539,7 @@
       "bytes": 6549,
       "sha256": "c4784832f6610991df74f7cb85adcffc7b7c96a62345ad66da957a81cc2a1fda",
       "byte_verified": true,
-      "semantic_review": "complete source reading; connected owning recovery and comparison pending",
+      "semantic_review": "complete source reading and connected claim/scene comparison",
       "prior_disposition": "COVERED",
       "read_progress": {
         "paragraphs_read_in_full": [
@@ -549,10 +549,10 @@
           ]
         ],
         "next_unread_paragraph": null,
-        "complete_source_comparison": false
+        "complete_source_comparison": true
       },
-      "partial_findings": [
-        "Full original printed/read without truncation. Explicit exclusive next-conquest spoils contract and continuity with all Tuskon adult lives pending."
+      "findings": [
+        "All loyalist origins/directcommand/plainforms/DataClub/holdings/Fury-audit suppression/Miner/Bally/Pinks/city/HODL/simpleimmunity/Kid-schism claims compared; explicit exclusive next-conquest spoils contract restored. Brak/Iska/Dovra/Toma/Senn and all modern burdens preserved."
       ]
     },
     {
@@ -625,7 +625,7 @@
       "bytes": 9525,
       "sha256": "3b645d0c384ee38032422c1ac021ec1cf7a6002588eb7982bed158d85bdb60de",
       "byte_verified": true,
-      "semantic_review": "complete source reading; connected owning recovery and comparison pending",
+      "semantic_review": "complete source reading and connected claim/scene comparison",
       "prior_disposition": "COVERED",
       "read_progress": {
         "paragraphs_read_in_full": [
@@ -635,10 +635,10 @@
           ]
         ],
         "next_unread_paragraph": null,
-        "complete_source_comparison": false
+        "complete_source_comparison": true
       },
-      "partial_findings": [
-        "Full original printed/read without truncation. Full6part origin cycle and named ensemble read; sourcechronology/ownership conflicting claims stay attributed; named crew restoration pending."
+      "findings": [
+        "All six-part Blockbusters chronology and named ensemble compared; every named source role restored on owning article. 2020collapse/2025NBG/2027ownership/2029crowns/2030Charlam remain attributed conflicting origin fiction, not current dates or real biographies. No separate non-NFT wiki routes for the source ensemble. All85 modern Blockstar paragraphs and LastLoading outcomes preserved."
       ]
     },
     {
@@ -753,7 +753,7 @@
       "bytes": 8578,
       "sha256": "77dbc4368530a0329abc5fcf4f2de1f10a612e8f6bc0da76e669919e54dcff03",
       "byte_verified": true,
-      "semantic_review": "complete source reading; connected claim/scene comparison pending",
+      "semantic_review": "complete source reading and connected claim/scene comparison",
       "prior_disposition": "COVERED",
       "read_progress": {
         "paragraphs_read_in_full": [
@@ -763,10 +763,10 @@
           ]
         ],
         "next_unread_paragraph": null,
-        "complete_source_comparison": false
+        "complete_source_comparison": true
       },
-      "partial_findings": [
-        "Full Pinks original with PorcineProtocol, PillarI, NeonPink stealth boast, CodeCuffs, defragmentation, PigKids label, enclave audits, juriscamgap, NiceEasy unauthorizedtruces and Ascension/HODLFORK/RecordCrates migration claims. Full current Pinks comparison and space-program dependencies pending; no real product or acceptedfinalmigration."
+      "findings": [
+        "Full dedicated Pinks origin/Authority/Porcine/equipment/Kid monitoring/recapture/graffiti/Bear/enclave/Game/jurisdiction/NULL/truce/Ascension claims compared against both full Pinks articles/Ghost/SixPillars and named histories. Exact PillarI/NeonPink/defragmentation memory-erasure specific doctrine recovered with attribution; no absolute detection or orbitaltransfer accepted."
       ]
     },
     {
@@ -1796,6 +1796,15 @@
       ],
       "reading_verification": "All65 canonical paragraphs match fully read cache.",
       "findings": "Full primaryPinks65paras: Ressa/Iven/AmberQueue/UnfastenedGate/Pinkline, Porcine/CodeCuffs/Ascension, Glaze servicebonus/intimacy/removed Nela injury and lostwork, PardonBall/Ulda programmes/private favour, authoritarian order and unsolvedhearing. Adjacent officer mockery mistakenly names Nessa after Nela removal; precise reference correction pending separate receipt. w53 PillarI and NeonPink/Ghost detection specificity pending."
+    },
+    {
+      "path": "wiki/the-gasless-ghosts.html",
+      "scope": "full canonical article",
+      "sections": [
+        "all canonical sections"
+      ],
+      "reading_verification": "All70 canonical paragraphs match fully read99-line cache.",
+      "findings": "Full RestBell/Arlo/Sel/Ione/Perr/Hala/Kett/Jex/RedLedger adult work/desire/affairended/refusedrevengekilling/wages/shortage/UnburialJeth formerpartner debt; source stealth/NULL rumors/assassination and Calling3yearrefusal/symbolicidentitydeath individually attributed. No universalinvisibility or returnedprivatehousehold invented."
     }
   ]
 }

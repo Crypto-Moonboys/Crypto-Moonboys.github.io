@@ -473,3 +473,23 @@ Radan’s restraint cannot repay them. Tavi’s refusals, Sena’s ceased respon
 Cal’s unauthorised notice and escort-split households remain independent of
 the undated brokerage account. The source testbed/overwrite and inside
 sterile-immunity theories do not erase these lives or settle the Final Fork.
+
+
+### Supply loyalty, the origin ensemble and a coercive peace
+
+Full w45/w49/w53 comparisons add the Tuskon exclusive next-conquest spoils
+contract, Blockbusters crew’s named work and Pinks Authority/NeonPink/memory
+erasure doctrine. Their absolutes remain source claims; the early Charlam
+chronology and collection ownership remain attributed origin fiction.
+Toma/Senn’s work, Brak’s exclusion of Iska, Dovra’s joke and intrusive loyalty
+remain. Lio/Aven/Suri and every LastLoading injury, deliberate killing,
+refused image and limited completed delivery remain modern authored lives.
+
+NelaHask31 is the injured Pinks landing worker. One accidental Nessa reference
+in the adjacent mockery is corrected to Nela; NessaVale42 remains distinct.
+Glaze keeps the bonus, hearing stays unfinished, Ressa’s refusal survives.
+Ione’s RestBell stay, lost bookings, missed Perr and refused renewed affair,
+Hala’s separate departure, Arlo’s rejected murder request and Sel’s bed limits
+remain. Jeth’s Unburial does not repay his former partner’s debt or restore
+the private household he abandoned. These adult consequences coexist with
+faction secrecy and coercion, without cleaning up either for a victory tale.

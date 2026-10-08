@@ -18392,13 +18392,13 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 6069,
+      "article_word_count": 6432,
       "keyword_bag_size": 22,
-      "heading_count": 39,
+      "heading_count": 40,
       "list_count": 1,
       "internal_link_count": 20,
-      "paragraph_count": 87,
-      "section_count": 36,
+      "paragraph_count": 91,
+      "section_count": 37,
       "lore_paragraph_count": 44,
       "content_quality_score": 101,
       "authority_score": 28
@@ -18517,14 +18517,21 @@
         "up",
         "last",
         "is",
-        "work"
+        "work",
+        "ensemble",
+        "origin",
+        "cycle",
+        "eos",
+        "mining",
+        "implant",
+        "bargain"
       ]
     },
     "link_score": {
       "inbound_count": 2,
-      "outbound_count": 38,
+      "outbound_count": 39,
       "existing_outbound_count": 17,
-      "suggested_outbound_count": 21,
+      "suggested_outbound_count": 22,
       "authority": 12.5
     },
     "brand": null
@@ -21719,13 +21726,13 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 4352,
+      "article_word_count": 4658,
       "keyword_bag_size": 22,
-      "heading_count": 27,
+      "heading_count": 28,
       "list_count": 1,
       "internal_link_count": 14,
-      "paragraph_count": 67,
-      "section_count": 24,
+      "paragraph_count": 71,
+      "section_count": 25,
       "lore_paragraph_count": 65,
       "content_quality_score": 101,
       "authority_score": 24
@@ -21820,14 +21827,22 @@
         "dirty",
         "invitation",
         "ulda",
-        "brass"
+        "brass",
+        "pillar",
+        "i",
+        "authority",
+        "neon",
+        "pink",
+        "de",
+        "fragmentation",
+        "arrest"
       ]
     },
     "link_score": {
       "inbound_count": 2,
-      "outbound_count": 37,
+      "outbound_count": 40,
       "existing_outbound_count": 13,
-      "suggested_outbound_count": 24,
+      "suggested_outbound_count": 27,
       "authority": 10.5
     },
     "brand": null
@@ -22070,13 +22085,13 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 3726,
+      "article_word_count": 3967,
       "keyword_bag_size": 23,
-      "heading_count": 25,
+      "heading_count": 26,
       "list_count": 1,
       "internal_link_count": 14,
-      "paragraph_count": 56,
-      "section_count": 22,
+      "paragraph_count": 59,
+      "section_count": 23,
       "lore_paragraph_count": 54,
       "content_quality_score": 101,
       "authority_score": 24
@@ -22164,14 +22179,21 @@
         "to",
         "stay",
         "dovra",
-        "pan"
+        "pan",
+        "exclusive",
+        "next",
+        "conquest",
+        "spoils",
+        "contracts",
+        "supply",
+        "debt"
       ]
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 39,
+      "outbound_count": 41,
       "existing_outbound_count": 14,
-      "suggested_outbound_count": 25,
+      "suggested_outbound_count": 27,
       "authority": 9
     },
     "brand": null

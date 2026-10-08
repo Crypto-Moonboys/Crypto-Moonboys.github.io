@@ -26,7 +26,7 @@
     "w52.txt"
   ],
   "existing_wiki_pages_sectionally_reviewed": 7,
-  "existing_wiki_pages_updated": 39,
+  "existing_wiki_pages_updated": 42,
   "new_wiki_articles": 9,
   "source_level_conflicts_interpreted": 3,
   "major_historical_retcons_published": 0,
@@ -41,7 +41,8 @@
     "noJavaScriptPages": 48,
     "searchQueries": 37,
     "externalRequestsBlocked": true,
-    "desktop_mobile_views": 96
+    "desktop_mobile_views": 96,
+    "scope": "Last full cumulative run at d33ae06a0 before service/ensemble batch:96 views/48pages/37queries. Subsequent three changed pages separately checked6/3/3."
   },
   "internal_links_checked": 1405,
   "broken_internal_links": 0,
@@ -61,7 +62,7 @@
     "content_state_parity": "passed",
     "graph_publishing_integrity": "passed",
     "browser": "passed",
-    "github_pages_artifact": "final predatory bargains artifact built successfully; no deployment",
+    "github_pages_artifact": "final service/ensemble Pages artifact built successfully; no deployment",
     "git_diff_check": "passed",
     "full_npm_test": "Aggregate attempt passed Arcade, Worker API, Wiki and WAX; stopped in Visual on missing bundled browser. All 16 Visual commands subsequently passed in ci:visual after installed Chromium setup and moving the generated preview outside the source tree. No successful single aggregate npm test invocation is claimed.",
     "ci_domains": {
@@ -132,9 +133,15 @@
       "bargains_graph": "/tmp/gk1459/bargains-graph.log",
       "bargains_preservation": "/tmp/gk1459/bargains-preservation.log",
       "bargains_all_wiki_preservation": "/tmp/gk1459/bargains-all-wiki-preservation.log",
-      "bargains_build": "/tmp/gk1459/bargains-pages-build.log"
+      "bargains_build": "/tmp/gk1459/bargains-pages-build.log",
+      "ensemble_wiki": "/tmp/gk1459/ensemble-ci-wiki.log",
+      "ensemble_browser": "/tmp/gk1459/ensemble-browser.log",
+      "ensemble_graph": "/tmp/gk1459/ensemble-graph.log",
+      "ensemble_preservation": "/tmp/gk1459/ensemble-preservation.log",
+      "ensemble_all_wiki_preservation": "/tmp/gk1459/ensemble-all-wiki-preservation.log",
+      "ensemble_build": "/tmp/gk1459/ensemble-pages-build.log"
     },
-    "github_pages_artifact_path": "/workspace/gk1459-previews/bargains-public-site",
+    "github_pages_artifact_path": "/workspace/gk1459-previews/ensemble-public-site",
     "scoped_related_paths": "passed: unrelated NFT/curated pages unchanged; invalid scope fails before writes",
     "visual_current_batch": "passed: all 16 ci:visual commands, exit 0",
     "wiki_ci_latest_base": "passed, exit 0, final W5 prose and restored curated navigation; BASE_SHA=b865fd991a63d3b74c7076acec703a9b5b0647d8 and task-authorised local prose flag",
@@ -145,7 +152,7 @@
     "serial_browser": "passed, exit0:36 desktop/mobile views,18 no-JavaScript readings,9 full-search/autocomplete queries, no overflow/script errors",
     "w5_browser": "passed, exit 0: 48 desktop/mobile views, 24 no-JavaScript articles, 16 full-search/autocomplete queries",
     "w5_preservation_and_links": "passed: 1,237 original substantial paragraphs and all original active IDs across 18 expanded pages; 623 canonical article links resolve",
-    "all_wiki_preservation": "passed against9263e343ac367c80d92cc1cdfdf84223cb540b3e: all424 pages,9786 original substantial paragraphs,5268IDs;zero new paragraph revisions",
+    "all_wiki_preservation": "passed againstd33ae06a0422266510bdb06564c4840753a2d587: all424 pages,9796 original substantial paragraphs,5271IDs;1 exact Nela reference revised, every event retained",
     "triad_wiki_ci": "passed, exit 0, final prose/curated paths and current-main baseline; task-authorised local prose flag",
     "triad_browser": "passed: 60 desktop/mobile views, 30 no-JavaScript readings, 20 search/autocomplete queries",
     "triad_preservation_and_links": "passed: 1,535 original substantial paragraphs across 21 expanded existing pages; all original IDs retained; 829 canonical links across those and three new character pages resolve",
@@ -168,7 +175,11 @@
     "preview_cleanup": "Removed older task-owned disposable preview copies after temporary filesystem filled; source originals, reading caches, receipts and logs retained. Final elite artifact lives on workspace filesystem.",
     "bargains_wiki_ci": "passed exit0; current-main baseline and task-authorised local prose flag",
     "bargains_browser": "passed96desktop/mobile48noJS37search/autocomplete",
-    "bargains_preservation_and_links": "passed2919 original substantial paragraphs/13 earlier exact Tavi references across39 changed existing articles;1588 canonical links across those and3 new biographies resolve"
+    "bargains_preservation_and_links": "passed2919 original substantial paragraphs/13 earlier exact Tavi references across39 changed existing articles;1588 canonical links across those and3 new biographies resolve",
+    "ensemble_wiki_ci": "passed exit0; current-main baseline and task-authorised local prose flag",
+    "ensemble_browser": "scoped3 changed articles pass6 desktop/mobile views,3 noJS pages,3 search/autocomplete queries; no new full102-view run claimed",
+    "ensemble_preservation_and_links": "passed3123 original substantial paragraphs/14 exact references(13 earlierTavi+1Nela) across42 changed existing articles;1700 canonical links across those and3 new biographies resolve",
+    "ensemble_story_safeguards": "3 passed: exact Nela receipt accepted; injury erasure and reference reversal rejected"
   },
   "limitations": [
     "Byte verification and static lint do not constitute full semantic reconciliation.",
@@ -189,7 +200,7 @@
     "pull_request_draft": true,
     "github_ci": "Checked exact head 6da75973f827b7161ce349a403ca4af723d8c00e: Wiki Structure, production truth, worker provenance, Arcade, Worker API, WAX and Visual passed. CI/Wiki and Graph Publishing stopped at protected-prose maintainer-label gate. No canon-prose-change-approved label has been self-applied.",
     "issue_progress_comment_id": 6059157565,
-    "latest_implementation_commit_uploaded": "9263e343ac367c80d92cc1cdfdf84223cb540b3e",
+    "latest_implementation_commit_uploaded": "d33ae06a0422266510bdb06564c4840753a2d587",
     "github_ci_latest_batch": "Exact head a1d5273cd534654e28bab701aecb7736f184695b: Wiki Structure, production truth, worker provenance, Arcade, Worker API, WAX and Visual passed. Wiki and Graph regeneration/manifest/graph checks pass and then stop at the existing maintainer canon-prose-change-approved label gate. No label self-applied.",
     "serial_batch_ci": "Exact head2d758b5ed: WikiStructure,productiontruth,workerprovenance,Arcade,WorkerAPI,WAX,Visual all pass. Wiki/Graph logs show only existing maintainer prose-label gate after manifest/graph parity. No label self-applied.",
     "w5_batch_ci": "Exact 153d20831e8c4cb645a82dadfa593e70b125a49b: Wiki Structure, production truth, worker provenance, Arcade, Worker API, WAX and Visual pass. Inspected Wiki/Graph logs show successful guards/manifest/graph checks then only existing maintainer prose-label gate; no label self-applied.",
@@ -198,7 +209,8 @@
     "withdrawal_batch_ci": "Exacta563cf84dc86bb6a1dd2c6577e30e7e331787ac6: WikiStructure,productiontruth,workerprovenance,Arcade,WorkerAPI,WAX,Visual pass. Inspected Wiki/Graph logs show successful regeneration/guards/parity then only maintainer prose-label gate; no label applied.",
     "serial_cast_batch_ci": "Exact916b7f1d9a4c82be49eccbf04400557de853aabf: WikiStructure,productiontruth,workerprovenance,Arcade,WorkerAPI,WAX,Visual pass. Inspected Wiki/Graph logs show only maintainer prose-label gate after successful regeneration/guards/parity; no label applied.",
     "maintenance_batch_ci": "Exactacb1616db1bf310b24b02efa2600c0f2a54696e2: WikiStructure,productiontruth,workerprovenance,Arcade,WorkerAPI,WAX,Visual pass. Inspected Wiki/Graph logs show only maintainer prose-label gate after successful regeneration/guards/parity; no label applied.",
-    "elite_batch_ci": "Exact9263e343ac367c80d92cc1cdfdf84223cb540b3e: Structure,productiontruth,workerprovenance,Arcade,WorkerAPI,WAX,Visual pass. Inspected Wiki/Graph logs: only maintainer prose-label gate after guards/regeneration/parity. No label applied."
+    "elite_batch_ci": "Exact9263e343ac367c80d92cc1cdfdf84223cb540b3e: Structure,productiontruth,workerprovenance,Arcade,WorkerAPI,WAX,Visual pass. Inspected Wiki/Graph logs: only maintainer prose-label gate after guards/regeneration/parity. No label applied.",
+    "bargains_batch_ci": "Exactd33ae06a0422266510bdb06564c4840753a2d587: Structure,productiontruth,workerprovenance,Arcade,WorkerAPI,WAX,Visual pass. Wiki/Graph inspected logs show only maintainer prose-label gate after regeneration/guards/parity. No label applied."
   },
   "initial_tranche_verification": {
     "source_texts_completely_read_this_tranche": [
@@ -254,7 +266,7 @@
       "visual_current_batch": "running; previous tranche Visual result remains scoped to prior checkpoint"
     }
   },
-  "source_texts_fully_reviewed_cumulative": 23,
+  "source_texts_fully_reviewed_cumulative": 26,
   "source_texts_completely_read_but_comparison_pending": [
     "W19.txt",
     "W15.txt",
@@ -263,13 +275,10 @@
     "w68.txt",
     "W5.txt",
     "w69.txt",
-    "w45.txt",
-    "w49.txt",
-    "w53.txt",
     "w58.txt"
   ],
-  "existing_wiki_pages_fully_reviewed": 61,
-  "existing_wiki_pages_reviewed_distinct": 66,
+  "existing_wiki_pages_fully_reviewed": 62,
+  "existing_wiki_pages_reviewed_distinct": 67,
   "preserved_unique_narrative_paragraphs_at_least_40_chars_in_8_updated_pages": 664,
   "preserved_original_paragraphs_in_updated_pages_scope": "632 in the first seven pages verified in initial tranche; latest batch additionally checks 664 unique substantial narrative paragraphs across all eight against original base.",
   "source_reading_pending_comparison": [
@@ -280,9 +289,6 @@
     "w68.txt",
     "W5.txt",
     "w69.txt",
-    "w45.txt",
-    "w49.txt",
-    "w53.txt",
     "w58.txt"
   ],
   "existing_wiki_pages_reviewed_total": 64,
@@ -403,5 +409,35 @@
     "previous_checkpoint_substantial_paragraphs": 9786,
     "previous_checkpoint_ids": 5268,
     "preview_path": "/workspace/gk1459-previews/bargains-public-site"
+  },
+  "service_ensemble_batch": {
+    "status": "implemented; full wiki/graph/preservation/link/build and scoped browser checks passed",
+    "sources_completely_compared": [
+      "w45.txt",
+      "w49.txt",
+      "w53.txt"
+    ],
+    "existing_owning_pages_changed": 3,
+    "newly_changed_existing_pages": 3,
+    "original_paragraph_revisions": 1,
+    "revision_scope": "One exact Nessa-to-Nela reference; all other words/events retained. Earlier13 Tavi references unchanged.",
+    "new_characters": 0,
+    "new_original_stories": 0,
+    "major_retcons_adopted": 0,
+    "original_substantial_paragraphs_preserved": 3123,
+    "exact_authorized_paragraph_revisions_cumulative": 14,
+    "canonical_links_checked": 1700,
+    "all_existing_pages_preserved": 424,
+    "previous_checkpoint_substantial_paragraphs": 9796,
+    "previous_checkpoint_ids": 5271,
+    "preview_path": "/workspace/gk1459-previews/ensemble-public-site",
+    "browser": {
+      "scope": "Only three changed owning pages; earlier full96/48/37 run remains in predatory-bargains receipt. No new cumulative102-view run claimed.",
+      "desktop_mobile_views": 6,
+      "no_javascript_pages": 3,
+      "search_queries": 3,
+      "external_requests_blocked": true
+    },
+    "story_safeguard_probes": "3 pass: exact Nela receipt accepted; injury erasure and reference reversal rejected"
   }
 }

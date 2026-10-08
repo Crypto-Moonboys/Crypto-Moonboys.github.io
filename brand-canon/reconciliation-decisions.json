@@ -594,6 +594,47 @@
         "wiki/the-aztec-raiders.html",
         "wiki/bitcoin-kid-army.html"
       ]
+    },
+    {
+      "id": "GK-1458-NELA-REFERENCE-CONTINUITY",
+      "status": "implemented",
+      "sources": [
+        "Current primary Pinks adjacent SplitCurrentNight removal: NelaHask31, injury/lostcarryingwork",
+        "Approved lived-world-and-faction-icons-20261005.md namesNelaHask31; NessaVale42 is separate earlier OverdrawnRelay adult",
+        "All65 primaryPinks and57 Enforcer canonical paragraphs fully read"
+      ],
+      "old": "Officer mockery incorrectly calls the just-removed Nela Hask Nessa.",
+      "new": "Replace only that one reference with Nela; preserve injury, mockery, Glaze bonus, Ressa refusal and unfinished hearing.",
+      "reason": "Exact referential continuity correction; no new identity, event, absolution or invented kinship.",
+      "major": false,
+      "affected_paths": [
+        "wiki/the-squeaky-pinks.html"
+      ],
+      "paragraph_changes": [
+        {
+          "path": "wiki/the-squeaky-pinks.html",
+          "old_sha256": "sha256:2d250b32749e6dc1af63964fee736db1ac87e3d7a85d69b9fd8951a085e7c5f5",
+          "new_sha256": "sha256:72066cf126bb2c7c0532fd0d7295b62eb27fc1d152394221a3f32200f85fc4f6",
+          "reason": "One reference Nessa to Nela; every other word and consequence preserved."
+        }
+      ]
+    },
+    {
+      "id": "GK-1458-W45-W49-W53-SERVICE-ENSEMBLE",
+      "status": "implemented",
+      "sources": [
+        "w45.txt,w49.txt,w53.txt full originals and connected claim/scene comparisons",
+        "Full Tuskon/Blockstar/bothPinks/GaslessGhost and all source-named core faction histories; SixPillars taxonomy and chronology read"
+      ],
+      "old": "Exclusive spoils supply contract, named Blockbusters crew and precise Authority/NeonPink/de-fragmentation doctrine compressed.",
+      "new": "Restore the exact commercial terms, source-era ensemble and coercive enforcement doctrine, retaining source scope and every modern adult life.",
+      "reason": "Current local humane choices and intimate lives do not repeal a faction source’s larger bargains or cruelty. Crossover/date claims remain attributed fiction.",
+      "major": false,
+      "affected_paths": [
+        "wiki/the-tuskon-ogs.html",
+        "wiki/the-blockstars.html",
+        "wiki/the-squeaky-pinks.html"
+      ]
     }
   ]
 }
