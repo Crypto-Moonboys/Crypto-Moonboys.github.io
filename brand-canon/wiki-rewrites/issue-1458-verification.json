@@ -13,7 +13,7 @@
     "W7.txt"
   ],
   "existing_wiki_pages_sectionally_reviewed": 8,
-  "existing_wiki_pages_updated": 8,
+  "existing_wiki_pages_updated": 12,
   "new_wiki_articles": 6,
   "source_level_conflicts_interpreted": 3,
   "major_historical_retcons_published": 0,
@@ -21,21 +21,21 @@
   "faction_cultures_expanded": [
     "Crypto Moongirls"
   ],
-  "preserved_original_paragraphs_in_updated_pages": 632,
+  "preserved_original_paragraphs_in_updated_pages": 836,
   "first_witness_pages_prose_unchanged": 82,
   "browser": {
     "browser": "151.0.7922.173",
-    "noJavaScriptPages": 6,
-    "searchQueries": 6,
+    "noJavaScriptPages": 18,
+    "searchQueries": 9,
     "externalRequestsBlocked": true,
-    "desktop_mobile_views": 28
+    "desktop_mobile_views": 36
   },
-  "internal_links_checked": 608,
+  "internal_links_checked": 400,
   "broken_internal_links": 0,
   "graph": {
     "indexed_wiki_pages": 414,
     "nodes": 424,
-    "edges": 2070,
+    "edges": 2068,
     "mobile_nodes": 75
   },
   "verification": {
@@ -48,7 +48,7 @@
     "content_state_parity": "passed",
     "graph_publishing_integrity": "passed",
     "browser": "passed",
-    "github_pages_artifact": "latest batch built successfully; no deployment",
+    "github_pages_artifact": "serial batch artifact built successfully; no deployment",
     "git_diff_check": "passed",
     "full_npm_test": "Aggregate attempt passed Arcade, Worker API, Wiki and WAX; stopped in Visual on missing bundled browser. All 16 Visual commands subsequently passed in ci:visual after installed Chromium setup and moving the generated preview outside the source tree. No successful single aggregate npm test invocation is claimed.",
     "ci_domains": {
@@ -66,18 +66,28 @@
       "sam_canon": "/tmp/gk1459/canon-direct-final.log",
       "sam_links": "/tmp/gk1459/sam-link-report.json",
       "sam_visual": "/tmp/gk1459/sam-ci-visual.log",
-      "latest_base_wiki": "/tmp/gk1459/sam-main-ci-wiki.log"
+      "latest_base_wiki": "/tmp/gk1459/sam-main-ci-wiki.log",
+      "serial_wiki": "/tmp/gk1459/serial-final-ci-wiki.log",
+      "serial_browser": "/tmp/gk1459/serial-final-browser.log",
+      "serial_search": "/tmp/gk1459/serial-search.log",
+      "serial_preservation_links": "/tmp/gk1459/serial-preservation-links.json",
+      "serial_build": "/tmp/gk1459/serial-pages-build.log"
     },
-    "github_pages_artifact_path": "/tmp/gk1459/public-site",
+    "github_pages_artifact_path": "/tmp/gk1459/serial-public-site",
     "scoped_related_paths": "passed: unrelated NFT/curated pages unchanged; invalid scope fails before writes",
     "visual_current_batch": "passed: all 16 ci:visual commands, exit 0",
-    "wiki_ci_latest_base": "passed, exit 0, b865fd991a63d3b74c7076acec703a9b5b0647d8 and task-authorised local prose flag"
+    "wiki_ci_latest_base": "passed, exit 0, b865fd991a63d3b74c7076acec703a9b5b0647d8 and task-authorised local prose flag",
+    "source_search_after_serial_metadata": "passed, exit0; wiki-search.test includes562 developed war-spine queries",
+    "serial_wiki_ci": "passed, exit0 on serial prose and restored citation panels; BASE_SHA=b865fd991a63d3b74c7076acec703a9b5b0647d8 and task-authorised local prose flag; subsequent metadata checked separately",
+    "serial_preservation_and_links": "passed:836 original substantial unique narrative paragraphs and all original active IDs retained across12 expanded pages;400 canonical-article links resolve",
+    "first_witness_nine_book_preservation": "passed: all nine Book page bytes identical to original base",
+    "serial_browser": "passed, exit0:36 desktop/mobile views,18 no-JavaScript readings,9 full-search/autocomplete queries, no overflow/script errors"
   },
   "limitations": [
     "Byte verification and static lint do not constitute full semantic reconciliation.",
     "87 original sources remain without full semantic comparison; W19 complete reading is recorded separately from its pending embedded-character comparison.",
-    "All First Witness books and supporting chapters still need full scene/claim audit.",
-    "Four major canon proposals await full dependency audit and specific GK approval.",
+    "All nine current First Witness Books have complete article reading and serial comparison; supporting chapters, transmission history and further source dependencies remain open.",
+    "Five major canon proposals await full dependency audit and specific GK approval.",
     "Final merge and prose approval label require GK/maintainer review."
   ],
   "delivery": {
@@ -93,7 +103,8 @@
     "github_ci": "Checked exact head 6da75973f827b7161ce349a403ca4af723d8c00e: Wiki Structure, production truth, worker provenance, Arcade, Worker API, WAX and Visual passed. CI/Wiki and Graph Publishing stopped at protected-prose maintainer-label gate. No canon-prose-change-approved label has been self-applied.",
     "issue_progress_comment_id": 6058399327,
     "latest_implementation_commit_uploaded": "229576498114ed5612db6f58014fb3ad503b9afb",
-    "github_ci_latest_batch": "Exact head a1d5273cd534654e28bab701aecb7736f184695b: Wiki Structure, production truth, worker provenance, Arcade, Worker API, WAX and Visual passed. Wiki and Graph regeneration/manifest/graph checks pass and then stop at the existing maintainer canon-prose-change-approved label gate. No label self-applied."
+    "github_ci_latest_batch": "Exact head a1d5273cd534654e28bab701aecb7736f184695b: Wiki Structure, production truth, worker provenance, Arcade, Worker API, WAX and Visual passed. Wiki and Graph regeneration/manifest/graph checks pass and then stop at the existing maintainer canon-prose-change-approved label gate. No label self-applied.",
+    "serial_batch_ci": "local validation complete; exact uploaded head Actions inspection pending after commit"
   },
   "initial_tranche_verification": {
     "source_texts_completely_read_this_tranche": [
@@ -154,14 +165,17 @@
     "W19.txt",
     "W15.txt"
   ],
-  "existing_wiki_pages_fully_reviewed": 11,
+  "existing_wiki_pages_fully_reviewed": 20,
   "existing_wiki_pages_reviewed_distinct": 15,
   "preserved_unique_narrative_paragraphs_at_least_40_chars_in_8_updated_pages": 664,
   "preserved_original_paragraphs_in_updated_pages_scope": "632 in the first seven pages verified in initial tranche; latest batch additionally checks 664 unique substantial narrative paragraphs across all eight against original base.",
   "source_reading_pending_comparison": [
     "W19.txt",
     "W15.txt",
-    "w25.txt"
+    "w25.txt",
+    "M16.txt"
   ],
-  "existing_wiki_pages_reviewed_total": 19
+  "existing_wiki_pages_reviewed_total": 28,
+  "preserved_original_paragraphs_scope": "12 expanded pages, unique canonical narrative paragraphs >=40 characters per owning page, compared with original base; all original active IDs also retained",
+  "internal_links_scope": "canonical blocks of12 expanded existing articles, excluding generated related-path groups; previous608-link SAM check has its own scope"
 }

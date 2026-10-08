@@ -1,6 +1,6 @@
 # Issue #1458 — implementation progress and restart ledger
 
-Updated 8 October 2026. **Status: SAM/House batch implemented; full mission open.**
+Updated 8 October 2026. **Status: SAM/House and first serial recovery batches implemented; full mission open.**
 W81 is foundational truth. This is a checkpoint of completed implementation,
 not a claim that the whole universe is reconciled. Preserve the adult tone.
 
@@ -18,9 +18,10 @@ No direct push to main, merge, issue closure or production deployment.
   w56, W12 (all eight parts), W13 (all seven parts and repeated extracts), W7.
   **87** remain without full semantic comparison. W19 is fully read but its
   remaining embedded-character comparisons are pending, so it is not counted.
-- **19 distinct existing pages** reviewed: eleven full canonical articles
+- **28 distinct existing pages** reviewed: twenty full canonical articles
   (Princess, Croydon, master chronology, concordance, synthetic minds,
-  Crypto Moonboys, Great Consensus, Elder Codex-7, Iris-7, Aleema, Dream Sovereign) and eight focused section reviews
+  Crypto Moonboys, Great Consensus, Elder Codex-7, Iris-7, Aleema, Dream Sovereign,
+  and all nine First Witness Books) and eight focused section reviews
   (Rune, Pinks, Games, Code Alchemists, Sarah, Block Topia, Forty Paths,
   faction Commentaries). Exact scopes are in `issue-1458-audit.json`.
 - **421** top-level wiki pages pass automated targeted canon lint and content
@@ -36,8 +37,9 @@ source doctrine with explicit attribution and carry real metadata, native
 contents, citations, comments, category links, search and entity/graph/sitemap
 entries. New routes were explicitly authorised by the complete task.
 
-**Eight existing articles expanded:** Croydon plus Rune Tag, Squeaky Pinks Enforcers, Hard
-Fork Games, Block Topia, Queen Sarah, Princess, Code Alchemists. The initial seven retain their **632** original paragraphs. The cumulative
+**Twelve existing articles expanded:** Croydon, Rune Tag, Squeaky Pinks Enforcers, Hard
+Fork Games, Block Topia, Queen Sarah, Princess, Code Alchemists, Elder Codex-7,
+Iris-7, Aleema and Dream Sovereign. The initial seven retain their **632** original paragraphs. The cumulative
 check confirms **664** unique narrative paragraphs of at least 40 characters
 and every original ID across all eight against the original base. Canonical
 revisions increase with each substantive batch. No First Witness or NFT prose is changed.
@@ -71,7 +73,7 @@ Single authority policy: `../CANON_POLICY.md`. Entry/onboarding: root `AGENTS.md
 PR template now requires source, ripple, adult-story, discovery and approval
 checks. `../canon-locks.json` contains anchors, identity boundaries, 34/6 and
 nine-runtime distinction, 94 source identities and targeted claim rules.
-`../reconciliation-decisions.json` holds ten implemented and four proposed
+`../reconciliation-decisions.json` holds twelve implemented and five proposed
 old/new decisions with rationale and affected paths.
 
 `canon-integrity-check.mjs` runs in wiki CI and checks explicit chronology,
@@ -142,8 +144,8 @@ inventory debt remains separately recorded; this tranche preserves NFT pages.
    biography. Establish independent membership/institutions for each candidate
    in `issue-1458-proposals.md`; develop a complete six-slot proposal rather
    than filling arithmetic with offices, duplicate generations or aliases.
-5. Fully read the nine First Witness Books, all supporting chapters and current
-   bibles. Audit chronology/character ages/geography/economics and all 90 other
+5. The nine First Witness Books and their commentary are fully read; continue
+   the supporting chapters, transmission history and current bibles. Audit chronology/character ages/geography/economics and all 87 remaining
    original texts by substantial claim/scene. Update the audit state after each
    actual reading; do not call this master bible definitive yet.
 6. Implement approved historical/identity/scripture/roster decisions across
@@ -289,3 +291,57 @@ inventory artifacts with the feeds. The previous workflow omitted them, which
 caused the synthetic-merge manifest failure. Actual feed-registry test and
 content-state parity pass; no NFT prose, deployment or approval policy is
 changed by this correction.
+
+
+## Serial recovery batch — source visions and continuing adult lives
+
+Four existing articles are expanded, each with a monotonic canonical revision
+and complete native contents. Elder gains the full Sovereign horizons and the
+new Red Wax Payment; Iris gains the specific Codex Schools future and unresolved
+Seeding-rights tension; Aleema gains the cosmic-garden/separate-child account;
+Dream Sovereign gains the 3038/3048/3058 progression. Their prior private histories,
+childhood, receiving-room failures and refusals remain untouched. Red Wax Payment
+is owned by the Elder page, recorded in its story bible and the working master,
+and linked as original adult fiction. No named character or faction is added.
+
+All nine current First Witness Book texts, every scripture line and each
+article's commentary are fully read and compared to the serial claims. No Book
+prose is changed. Full M16 source reading is recorded, but its full product,
+roster and character comparison remains pending. The source comparison count
+stays **7/94**: W19, W15, w25 and M16 have completed reading but unfinished
+connected-page audits. **28 existing articles audited (20 full, 8 focused),
+12 expanded, six new articles.**
+
+The fifth specific GK proposal recommends one materially continuing world,
+with source visions retained but no universal restart, retroactive loss removal
+or compulsory future consent accepted. The Final Fork's exact date/fates remain
+open. The proposal maps the known dependent pages and its remaining audit;
+it is not a published outcome or a GK approval receipt.
+
+Preservation/link check after the serial additions: all **836** original unique
+canonical narrative paragraphs of at least40 characters across twelve expanded
+pages and all original active IDs remain; **400 canonical-article links** resolve,
+zero failures. This is a different scope from the earlier608 links including
+related paths. Existing citation panels were restored after scoped related-path
+regeneration; Dream Sovereign retains its prior static layout without a comment
+mount. Search metadata now includes the newly recovered subject names and Red
+Wax Payment. Public discovery regenerated; graph414 indexed/424nodes/2068edges,
+75mobile. Complete local wiki CI passed on the final prose and citation-panel
+state; subsequent metadata/search changes are being verified separately.
+
+Current next unread work: source readings W5/w68/w69 and remaining foundational
+roster files; finish W15/w25/M16/W19 owning-page comparisons, including complete
+Block Topia, Sarah, Jodie, Alfie, NULL and relevant modern faction biographies.
+Do not re-read the two serials or nine Book texts as if this checkpoint had
+only scanned headings. Recover exact actual scopes from the audit and continue
+implementation on PR1459; all87 remaining full source comparisons stay open.
+
+
+Serial batch final validation: wiki CI exit0; final search test exit0 with562
+existing developed-story queries; browser exit0 with36 desktop/mobile views,
+18 no-JavaScript readings and9 search/autocomplete queries, no overflow/script
+errors. Guard, inventory parity, graph and twelve-page preservation/link checks
+pass after final metadata changes. Pages artifact built and moved to
+`/tmp/gk1459/serial-public-site`; no deployment. W81 CSV remains CONFLICT for
+W15/w25/M16 but now records exact recovered routes, full readings and remaining
+comparison. Source names, byte sizes and SHA-256 values remain unchanged.

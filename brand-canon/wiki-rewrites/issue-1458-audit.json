@@ -15,8 +15,18 @@
       "bytes": 10202,
       "sha256": "9653208dc10e8365efe2dc983df86cd73351d2379950b7b1ba52c04baac965f2",
       "byte_verified": true,
-      "semantic_review": "pending complete semantic reading",
-      "prior_disposition": "CONFLICT"
+      "semantic_review": "complete source reading; connected-page comparison pending",
+      "prior_disposition": "CONFLICT",
+      "read_progress": {
+        "method": "entire verified UTF-8 original printed and read without truncation",
+        "complete_source_comparison": false
+      },
+      "partial_findings": [
+        "Compilation calls roster complete but leaves most numbered factions TBD; GraffPUNKS appears under multiple pillars and Gasless Ghosts/NULL are joined. No additional six independent cultures are established.",
+        "2198 catastrophe and3030 Final Fork compete with present2880/unresolved-future chronology and W15/w25 serials. Do not accept renamed events or a final outcome to reconcile numbers without evidence.",
+        "Household hierarchy counts15Royal/15HODLX/15X/10OG/40wannabe are editorial roster counts, not a census; three BitcoinX paths require full w70 source compare.",
+        "Claims about real artists, founding1984, Treef, platform publication and percentages are March2026 proposals, not authority over current README/runtime/verified real history. Remaining biographies, sourceW5/W68/W69 and master-product cross-comparison pending."
+      ]
     },
     {
       "file": "W1.txt",
@@ -1053,6 +1063,51 @@
       "path": "wiki/dream-sovereign.html",
       "scope": "full canonical article",
       "findings": "Full canonical article compared with complete w25 Parts30-35 and later sovereign cycles. Dream Sovereign, Future, Eternal and Infinite names are source-specific stages; no present-day global final outcome adopted."
+    },
+    {
+      "path": "wiki/first-witness-book-1-the-first-witness.html",
+      "scope": "full canonical article, all scripture lines and commentary",
+      "findings": "Evidence, competing witnesses and preserved corrections: the Elder's final voice and W15 global revelation cannot authenticate themselves. Red Wax follows an actual signed account and preserved refusal."
+    },
+    {
+      "path": "wiki/first-witness-book-2-the-common-blood.html",
+      "scope": "full canonical article, all scripture lines and commentary",
+      "findings": "No inherited consent for unborn children; preserve Iris personhood and modern survivors, reject universal faction purity/amnesty as a new moral fact."
+    },
+    {
+      "path": "wiki/first-witness-book-3-the-keeper.html",
+      "scope": "full canonical article, all scripture lines and commentary",
+      "findings": "Maintenance/reserves and finite emergency powers: later common prosperity does not cancel present debt, wages, food or succession obligations."
+    },
+    {
+      "path": "wiki/first-witness-book-4-the-wall.html",
+      "scope": "full canonical article, all scripture lines and commentary",
+      "findings": "Art is not proof; preserve erased-record arguments, authorship and the public cost of a clean wall."
+    },
+    {
+      "path": "wiki/first-witness-book-5-the-chain.html",
+      "scope": "full canonical article, all scripture lines and commentary",
+      "findings": "World/Sacred/True Bitcoin systems and distributed memory remain distinct; universal upload/reset assertions do not supply new verified mechanics."
+    },
+    {
+      "path": "wiki/first-witness-book-6-the-fork.html",
+      "scope": "full canonical article, all scripture lines and commentary",
+      "findings": "Fork must preserve history, both sides' evidence, food, graves and debts; utopian endings cannot rewrite prior communities to make departure inevitable."
+    },
+    {
+      "path": "wiki/first-witness-book-7-the-hold.html",
+      "scope": "full canonical article, all scripture lines and commentary",
+      "findings": "HODL is principled endurance with release of fraud/harm, not W15 market-cycle investment scripture. Eternal peace does not erase irreversible modern loss."
+    },
+    {
+      "path": "wiki/first-witness-book-8-the-fire.html",
+      "scope": "full canonical article, all scripture lines and commentary",
+      "findings": "Chainfire prophecy describes records/agreements failing with cities standing, temporary forty-fire alliance, no crowned saviour; source global unity is not permanent command."
+    },
+    {
+      "path": "wiki/first-witness-book-9-the-unwritten-block.html",
+      "scope": "full canonical article, all scripture lines and commentary",
+      "findings": "No council/prophet/machine speaks for all future minds; commentary is not original scripture. Universal future freedom claims remain contestable source visions."
     }
   ]
 }

@@ -244,6 +244,74 @@
         "wiki/croydon-tower-blocks.html",
         "brand-canon/story-bibles/the-overdrawn-relay.md"
       ]
+    },
+    {
+      "id": "GK-1458-PULSE-SERIAL-RECOVERY",
+      "status": "implemented",
+      "sources": [
+        "w25.txt complete Parts1-75 plus repeated Parts66-75, paragraphs1-623 fully read",
+        "current complete Elder Codex-7, Iris-7, Aleema and Dream Sovereign articles",
+        "approved adult-character-lives-20261005 register"
+      ],
+      "old": "Current pages preserve major visionary encounters but compress 3038-3058 stages, school/garden futures and repeated final headings.",
+      "new": "Extend the existing four articles with complete Sovereign sequence, source-only Codex Schools/gardens and explicit duplicated66-75 evidence; retain modern scenes and child/adult identity boundaries.",
+      "reason": "Restores meaningful serial detail without using narrated universal peace to delete modern stories, merge Aleema with the prophetic Child, or publish a concluded Final Fork.",
+      "affected_paths": [
+        "wiki/elder-codex-7.html",
+        "wiki/iris-7.html",
+        "wiki/aleema-child-of-the-shard.html",
+        "wiki/dream-sovereign.html",
+        "brand-canon/story-bibles/gk-master-canon.md"
+      ]
+    },
+    {
+      "id": "GK-1458-RED-WAX-PAYMENT",
+      "status": "implemented",
+      "sources": [
+        "GK continuation authorises substantial adult connecting fiction",
+        "w25.txt repeated universal victory endings",
+        "existing Codex-7 Last Survivor supper, departed companion and Tarn correction scenes"
+      ],
+      "old": "No Red Wax Payment episode; the costs of circulating a flattering final account lack a local carrier scene.",
+      "new": "Add a Year3008 paid-reading story: Elder signs a clean account, host withholds carrier fee, carrier refuses private restitution, lost shifts and missing worker remain; Elder records his own signature and uncovered correction costs.",
+      "reason": "Connects the Elder's appetite and authority to practical harm without replacing existing private stories, manufacturing a world law or granting the correction automatic forgiveness.",
+      "affected_paths": [
+        "wiki/elder-codex-7.html",
+        "brand-canon/story-bibles/the-red-wax-payment.md",
+        "brand-canon/story-bibles/gk-master-canon.md"
+      ]
+    },
+    {
+      "id": "GK-1458-FINAL-FORK-CONTINUITY",
+      "status": "proposed",
+      "sources": [
+        "W15.txt full serial throughVolume18/fourteen-million restart",
+        "w25.txt Parts1-75 and repeated66-75, fully read",
+        "M16.txt prospective3030 timeline, fully read",
+        "current First Witness BooksI-IX, all scripture and commentary read",
+        "approved modern lore and exact current Elder/Iris/Aleema/Dream stories"
+      ],
+      "old": "W15 universal upload/heat death/restarts and w25 universal liberation/peace compete as incompatible terminal histories; M16 predicts3030 without a completed scene.",
+      "new": "Recommend a single materially continuous world: retain complete serial visions, reject their universal terminal explanations as automatic world history; future Final Fork ends a particular existential threat without undoing loss or assigning one sovereign ownership of every future mind. Exact date/fates remain pending full source audit and GK.",
+      "reason": "The repeated endings and conflicting memory/shard accounts cannot all be physical final histories. BookVI preserves graves/debts, BookVIII temporary alliance and BookIX future choice; modern bodily consequences remain meaningful. A literal universal-upload choice would need a separate comprehensive ontology retcon.",
+      "affected_paths": [
+        "brand-canon/story-bibles/gk-master-canon.md",
+        "brand-canon/story-bibles/w81-continuity-companion-20261008.md",
+        "brand-canon/wiki-rewrites/issue-1458-proposals.md",
+        "wiki/first-witness-master-chronology.html",
+        "wiki/first-witness-concordance.html",
+        "wiki/block-topia.html",
+        "wiki/queen-sarah-p-fly.html",
+        "wiki/null-the-prophet.html",
+        "wiki/alfie-bitcoin-kid-blaze.html",
+        "wiki/jodie-zoom-2000.html",
+        "wiki/elder-codex-7.html",
+        "wiki/iris-7.html",
+        "wiki/aleema-child-of-the-shard.html",
+        "wiki/dream-sovereign.html",
+        "wiki/hodl-warriors.html",
+        "wiki/hodl-wars.html"
+      ]
     }
   ]
 }

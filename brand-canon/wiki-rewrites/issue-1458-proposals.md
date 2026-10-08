@@ -85,7 +85,57 @@ actual damaged **2036/2030** copy and its consequences: an approved catalogue
 correction must not rewrite what Marlo, Bex or the household received. Preserve
 all eight original W12 parts byte-for-byte outside publication.
 
-## The six remaining Forty positions
+## Final Fork: one continuing world, specific recommendation
+
+`GK-1458-FINAL-FORK-CONTINUITY` follows full W15, w25 and M16 source reading,
+and full reading of all nine current First Witness Books. Remaining character,
+faction and supporting-chapter comparison is still open. This is a specific
+recommended world rule for GK review, not an implemented final battle.
+
+**Recommend one materially continuous world:** the current 3008 conflict and
+its existing personal histories remain real within the fiction. Do not adopt
+W15's heat-dead external universe, universal voluntary upload and fourteen
+million restarts as the actual history of every person. Do not adopt w25's
+universal escape, permanent benevolence and centuries of total peace as an
+already completed future. Retain their extraordinary encounters and personal
+choices as narrated visions whose universal explanations can be contested.
+Do not invent an additional cosmic reset to make both literal endings true.
+
+The eventual Final Fork should resolve a particular existential threat and
+redistribute the capacity to preserve witness; it should not undo death,
+restoration failure, injury, debt, abuse or refusal. Children must retain a
+right to answer differently from a liberator. Emergency alliance must permit
+separation afterward. No final sovereign inherits the authority to decide
+every future person's memory or consent. Its exact date, casualties, Sarah's
+fate and named victors remain open until the remaining scenes support them.
+
+**Evidence:** W15 repeatedly returns its triad to the opening after claiming
+liberation; its three Originals simultaneously remember and wake without
+memory. w25 declares final victory repeatedly through 3018–3058, then ends at
+Parts50/55/60/65/70/75 and repeats66–75. Its last NULL shard remains after
+earlier total dissolutions. These conflicts do not supply independent physical
+epochs. M16's 3030 ending is an editorial prospective timeline, not a narrated
+completed scene. Book I requires competing accounts and visible correction;
+Book VI requires graves, debts and history to survive a fork; Book VIII limits
+emergency unity; Book IX denies a final word for unborn minds. Approved modern
+stories supply concrete continuing people and irreversible consequences.
+
+**Alternative:** accept literal universal upload/reset as actual physics.
+That would require a separate, explicit world-ontology retcon and a complete
+account of how bodily outside life, missing persons, unrestored fragments and
+the two incompatible terminal worlds survive it. It cannot be inferred from
+ordinary prose approval or resolved by deleting the modern scenes.
+
+**Downstream approval map:** master bible and continuity companion; chronology
+and concordance; Block Topia, Sarah, NULL, Alfie and Jodie; Elder, Iris, Aleema,
+Dream Sovereign and the later dedicated W15 cast recovery; HODL/War histories
+and all future-ending references discovered in remaining sources. Keep the
+nine Book texts unchanged. Reclassify any contradictory narrator assertions
+with exact receipts, preserve their source wording and dramatic stakes, and
+regenerate all affected discovery surfaces together. Full downstream audit is
+required before this recommendation is called implemented.
+
+## The six remaining Forty positions — source-supported membership
 
 `GK-1458-FORTY`: all 34 current names are copied into the lock register once.
 The current evidence does not justify six finished independent cultures.

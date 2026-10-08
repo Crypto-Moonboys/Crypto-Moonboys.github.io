@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-08T10:53:20.658Z",
-  "verified_at": "2026-10-08T10:53:20.658Z",
+  "generated_at": "2026-10-08T11:31:08.758Z",
+  "verified_at": "2026-10-08T11:31:08.758Z",
   "nodes": [
     {
       "id": "/about.html",
@@ -399,16 +399,16 @@
       "title": "Dream Sovereign",
       "url": "/wiki/dream-sovereign.html",
       "category": "concepts",
-      "rank_score": 246,
-      "authority_score": 21
+      "rank_score": 242,
+      "authority_score": 20
     },
     {
       "id": "/wiki/elder-codex-7.html",
       "title": "Elder Codex-7",
       "url": "/wiki/elder-codex-7.html",
       "category": "characters",
-      "rank_score": 285,
-      "authority_score": 24
+      "rank_score": 288,
+      "authority_score": 28
     },
     {
       "id": "/wiki/ethereum-ecosystem.html",
@@ -519,7 +519,7 @@
       "title": "Block Topia and the Controlled Reading",
       "url": "/wiki/first-witness-block-topia-reading.html",
       "category": "core",
-      "rank_score": 351,
+      "rank_score": 353,
       "authority_score": 18
     },
     {
@@ -759,7 +759,7 @@
       "title": "The Forty Paths",
       "url": "/wiki/first-witness-forty-paths.html",
       "category": "core",
-      "rank_score": 386,
+      "rank_score": 388,
       "authority_score": 21
     },
     {
@@ -871,7 +871,7 @@
       "title": "The Long Transmission",
       "url": "/wiki/first-witness-long-transmission.html",
       "category": "core",
-      "rank_score": 348,
+      "rank_score": 350,
       "authority_score": 17
     },
     {
@@ -1151,7 +1151,7 @@
       "title": "Gang Signs",
       "url": "/wiki/gang-signs.html",
       "category": "concepts",
-      "rank_score": 254,
+      "rank_score": 256,
       "authority_score": 24
     },
     {
@@ -2447,7 +2447,7 @@
       "title": "Head Tags",
       "url": "/wiki/head-tags.html",
       "category": "concepts",
-      "rank_score": 255,
+      "rank_score": 257,
       "authority_score": 28
     },
     {
@@ -2511,7 +2511,7 @@
       "title": "Iris-7",
       "url": "/wiki/iris-7.html",
       "category": "characters",
-      "rank_score": 299,
+      "rank_score": 298,
       "authority_score": 28
     },
     {
@@ -3367,7 +3367,7 @@
       "title": "The Whisper Codex",
       "url": "/wiki/whisper-codex.html",
       "category": "factions",
-      "rank_score": 231,
+      "rank_score": 233,
       "authority_score": 16
     },
     {
@@ -3578,33 +3578,33 @@
     },
     {
       "source": "/wiki/aleema-child-of-the-shard.html",
-      "target": "/wiki/the-princess.html",
-      "score": 86,
-      "weight": 0.86
-    },
-    {
-      "source": "/wiki/aleema-child-of-the-shard.html",
-      "target": "/wiki/the-whitewasher.html",
-      "score": 85,
-      "weight": 0.85
-    },
-    {
-      "source": "/wiki/aleema-child-of-the-shard.html",
-      "target": "/wiki/thorne-the-architect.html",
-      "score": 85,
-      "weight": 0.85
-    },
-    {
-      "source": "/wiki/aleema-child-of-the-shard.html",
-      "target": "/wiki/billy-the-goat-kid.html",
-      "score": 81,
-      "weight": 0.81
-    },
-    {
-      "source": "/wiki/aleema-child-of-the-shard.html",
       "target": "/wiki/crypto-moonboys.html",
-      "score": 81,
-      "weight": 0.81
+      "score": 84,
+      "weight": 0.84
+    },
+    {
+      "source": "/wiki/aleema-child-of-the-shard.html",
+      "target": "/wiki/null-the-prophet.html",
+      "score": 72,
+      "weight": 0.72
+    },
+    {
+      "source": "/wiki/aleema-child-of-the-shard.html",
+      "target": "/wiki/hodl-warriors.html",
+      "score": 71,
+      "weight": 0.71
+    },
+    {
+      "source": "/wiki/aleema-child-of-the-shard.html",
+      "target": "/wiki/bitcoin-kids.html",
+      "score": 70,
+      "weight": 0.7
+    },
+    {
+      "source": "/wiki/aleema-child-of-the-shard.html",
+      "target": "/wiki/bitcoin-x-kids.html",
+      "score": 68,
+      "weight": 0.68
     },
     {
       "source": "/wiki/alfie-bitcoin-kid-blaze.html",
@@ -3614,13 +3614,13 @@
     },
     {
       "source": "/wiki/alfie-bitcoin-kid-blaze.html",
-      "target": "/wiki/the-nice-easy-bois.html",
-      "score": 71,
-      "weight": 0.71
+      "target": "/wiki/the-finance-guild.html",
+      "score": 70,
+      "weight": 0.7
     },
     {
       "source": "/wiki/alfie-bitcoin-kid-blaze.html",
-      "target": "/wiki/the-finance-guild.html",
+      "target": "/wiki/the-nice-easy-bois.html",
       "score": 70,
       "weight": 0.7
     },
@@ -3932,9 +3932,9 @@
     },
     {
       "source": "/wiki/billy-the-goat-kid.html",
-      "target": "/wiki/aleema-child-of-the-shard.html",
-      "score": 80,
-      "weight": 0.8
+      "target": "/wiki/bitcoin-kids.html",
+      "score": 79,
+      "weight": 0.79
     },
     {
       "source": "/wiki/bit-cap-5000.html",
@@ -4569,14 +4569,8 @@
     {
       "source": "/wiki/dream-sovereign.html",
       "target": "/wiki/games4punks-telegram.html",
-      "score": 81,
-      "weight": 0.81
-    },
-    {
-      "source": "/wiki/dream-sovereign.html",
-      "target": "/wiki/head-tags.html",
-      "score": 53,
-      "weight": 0.53
+      "score": 59,
+      "weight": 0.59
     },
     {
       "source": "/wiki/dream-sovereign.html",
@@ -4586,15 +4580,9 @@
     },
     {
       "source": "/wiki/dream-sovereign.html",
-      "target": "/wiki/pmsl.html",
-      "score": 43,
-      "weight": 0.43
-    },
-    {
-      "source": "/wiki/dream-sovereign.html",
-      "target": "/wiki/crypto-moonboys.html",
-      "score": 42,
-      "weight": 0.42
+      "target": "/wiki/head-tags.html",
+      "score": 50,
+      "weight": 0.5
     },
     {
       "source": "/wiki/elder-codex-7.html",
@@ -4604,27 +4592,27 @@
     },
     {
       "source": "/wiki/elder-codex-7.html",
-      "target": "/wiki/null-the-prophet.html",
-      "score": 81,
-      "weight": 0.81
-    },
-    {
-      "source": "/wiki/elder-codex-7.html",
       "target": "/wiki/bitcoin-kids.html",
       "score": 79,
       "weight": 0.79
     },
     {
       "source": "/wiki/elder-codex-7.html",
-      "target": "/wiki/hodl-warriors.html",
-      "score": 77,
-      "weight": 0.77
+      "target": "/wiki/null-the-prophet.html",
+      "score": 78,
+      "weight": 0.78
     },
     {
       "source": "/wiki/elder-codex-7.html",
-      "target": "/wiki/iris-7.html",
-      "score": 77,
-      "weight": 0.77
+      "target": "/wiki/bitcoin-x-kids.html",
+      "score": 74,
+      "weight": 0.74
+    },
+    {
+      "source": "/wiki/elder-codex-7.html",
+      "target": "/wiki/hodl-warriors.html",
+      "score": 71,
+      "weight": 0.71
     },
     {
       "source": "/wiki/ethereum-ecosystem.html",
@@ -7328,15 +7316,15 @@
     },
     {
       "source": "/wiki/games4punks-telegram.html",
-      "target": "/wiki/dream-sovereign.html",
-      "score": 72,
-      "weight": 0.72
-    },
-    {
-      "source": "/wiki/games4punks-telegram.html",
       "target": "/wiki/head-tags.html",
       "score": 53,
       "weight": 0.53
+    },
+    {
+      "source": "/wiki/games4punks-telegram.html",
+      "target": "/wiki/dream-sovereign.html",
+      "score": 50,
+      "weight": 0.5
     },
     {
       "source": "/wiki/games4punks-telegram.html",
@@ -7502,9 +7490,9 @@
     },
     {
       "source": "/wiki/genesis-spray.html",
-      "target": "/wiki/the-nice-easy-bois.html",
-      "score": 71,
-      "weight": 0.71
+      "target": "/wiki/the-finance-guild.html",
+      "score": 70,
+      "weight": 0.7
     },
     {
       "source": "/wiki/gk.html",
@@ -12116,13 +12104,13 @@
     },
     {
       "source": "/wiki/great-consensus.html",
-      "target": "/wiki/the-nice-easy-bois.html",
-      "score": 65,
-      "weight": 0.65
+      "target": "/wiki/queen-sarah-p-fly.html",
+      "score": 64,
+      "weight": 0.64
     },
     {
       "source": "/wiki/great-consensus.html",
-      "target": "/wiki/queen-sarah-p-fly.html",
+      "target": "/wiki/rave-relics.html",
       "score": 64,
       "weight": 0.64
     },
@@ -12267,8 +12255,8 @@
     {
       "source": "/wiki/head-tags.html",
       "target": "/wiki/dream-sovereign.html",
-      "score": 53,
-      "weight": 0.53
+      "score": 50,
+      "weight": 0.5
     },
     {
       "source": "/wiki/head-tags.html",
@@ -12452,9 +12440,9 @@
     },
     {
       "source": "/wiki/house-of-rackinsats.html",
-      "target": "/wiki/the-nice-easy-bois.html",
-      "score": 65,
-      "weight": 0.65
+      "target": "/wiki/queen-sarah-p-fly.html",
+      "score": 64,
+      "weight": 0.64
     },
     {
       "source": "/wiki/ian-harrison.html",
@@ -12500,21 +12488,21 @@
     },
     {
       "source": "/wiki/iris-7.html",
-      "target": "/wiki/patchwork.html",
-      "score": 82,
-      "weight": 0.82
+      "target": "/wiki/null-the-prophet.html",
+      "score": 78,
+      "weight": 0.78
     },
     {
       "source": "/wiki/iris-7.html",
-      "target": "/wiki/hodl-warriors.html",
-      "score": 81,
-      "weight": 0.81
+      "target": "/wiki/bitcoin-x-kids.html",
+      "score": 77,
+      "weight": 0.77
     },
     {
       "source": "/wiki/iris-7.html",
-      "target": "/wiki/lady-ink.html",
-      "score": 81,
-      "weight": 0.81
+      "target": "/wiki/hodl-x-warriors.html",
+      "score": 76,
+      "weight": 0.76
     },
     {
       "source": "/wiki/jillian-godsil.html",
@@ -12585,8 +12573,8 @@
     {
       "source": "/wiki/jonny-laurence-nelson-tag-records.html",
       "target": "/wiki/the-nice-easy-bois.html",
-      "score": 70,
-      "weight": 0.7
+      "score": 69,
+      "weight": 0.69
     },
     {
       "source": "/wiki/jonny-laurence-nelson-tag-records.html",
@@ -12830,12 +12818,6 @@
     },
     {
       "source": "/wiki/metropolis.html",
-      "target": "/wiki/the-nice-easy-bois.html",
-      "score": 77,
-      "weight": 0.77
-    },
-    {
-      "source": "/wiki/metropolis.html",
       "target": "/wiki/midevilpunks.html",
       "score": 76,
       "weight": 0.76
@@ -12843,6 +12825,12 @@
     {
       "source": "/wiki/metropolis.html",
       "target": "/wiki/rave-relics.html",
+      "score": 76,
+      "weight": 0.76
+    },
+    {
+      "source": "/wiki/metropolis.html",
+      "target": "/wiki/the-finance-guild.html",
       "score": 76,
       "weight": 0.76
     },
@@ -13616,13 +13604,13 @@
     },
     {
       "source": "/wiki/rave-relics.html",
-      "target": "/wiki/the-nice-easy-bois.html",
-      "score": 71,
-      "weight": 0.71
+      "target": "/wiki/the-finance-guild.html",
+      "score": 70,
+      "weight": 0.7
     },
     {
       "source": "/wiki/rave-relics.html",
-      "target": "/wiki/the-finance-guild.html",
+      "target": "/wiki/the-nice-easy-bois.html",
       "score": 70,
       "weight": 0.7
     },
@@ -13916,13 +13904,13 @@
     },
     {
       "source": "/wiki/six-pillars.html",
-      "target": "/wiki/the-nice-easy-bois.html",
-      "score": 65,
-      "weight": 0.65
+      "target": "/wiki/queen-sarah-p-fly.html",
+      "score": 64,
+      "weight": 0.64
     },
     {
       "source": "/wiki/six-pillars.html",
-      "target": "/wiki/queen-sarah-p-fly.html",
+      "target": "/wiki/rave-relics.html",
       "score": 64,
       "weight": 0.64
     },
@@ -14060,13 +14048,13 @@
     },
     {
       "source": "/wiki/spraycode-writcode-mechanics.html",
-      "target": "/wiki/the-nice-easy-bois.html",
-      "score": 73,
-      "weight": 0.73
+      "target": "/wiki/stikfamwars.html",
+      "score": 72,
+      "weight": 0.72
     },
     {
       "source": "/wiki/spraycode-writcode-mechanics.html",
-      "target": "/wiki/stikfamwars.html",
+      "target": "/wiki/the-nice-easy-bois.html",
       "score": 72,
       "weight": 0.72
     },
@@ -14157,8 +14145,8 @@
     {
       "source": "/wiki/stikfamwars.html",
       "target": "/wiki/the-nice-easy-bois.html",
-      "score": 77,
-      "weight": 0.77
+      "score": 76,
+      "weight": 0.76
     },
     {
       "source": "/wiki/stikfamwars.html",
@@ -14589,8 +14577,8 @@
     {
       "source": "/wiki/the-crypto-moongirls.html",
       "target": "/wiki/the-nice-easy-bois.html",
-      "score": 74,
-      "weight": 0.74
+      "score": 73,
+      "weight": 0.73
     },
     {
       "source": "/wiki/the-crypto-moongirls.html",
@@ -14715,8 +14703,8 @@
     {
       "source": "/wiki/the-finance-guild.html",
       "target": "/wiki/the-nice-easy-bois.html",
-      "score": 84,
-      "weight": 0.84
+      "score": 83,
+      "weight": 0.83
     },
     {
       "source": "/wiki/the-finance-guild.html",
@@ -14882,9 +14870,9 @@
     },
     {
       "source": "/wiki/the-high-hats.html",
-      "target": "/wiki/the-nice-easy-bois.html",
-      "score": 84,
-      "weight": 0.84
+      "target": "/wiki/the-blockstars.html",
+      "score": 83,
+      "weight": 0.83
     },
     {
       "source": "/wiki/the-information-mercenaries.html",
@@ -15716,13 +15704,13 @@
     },
     {
       "source": "/wiki/whisper-codex.html",
-      "target": "/wiki/the-nice-easy-bois.html",
-      "score": 65,
-      "weight": 0.65
+      "target": "/wiki/queen-sarah-p-fly.html",
+      "score": 64,
+      "weight": 0.64
     },
     {
       "source": "/wiki/whisper-codex.html",
-      "target": "/wiki/queen-sarah-p-fly.html",
+      "target": "/wiki/rave-relics.html",
       "score": 64,
       "weight": 0.64
     },

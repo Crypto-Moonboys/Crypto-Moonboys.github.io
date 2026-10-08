@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "generator": "scripts/generate-wiki-content-state.mjs",
-  "source_tree_hash": "sha256:f1b571803aca925b1a09bd2a1d4de6f3f786a64c595569659a5d6fbed43fa122",
+  "source_tree_hash": "sha256:61def118ba89f16df353f20832801ecfe67e27eaa44dbd3b39167612dc0ca577",
   "hash_algorithm": "sha256",
   "page_count": 421,
   "manifest_entry_count": 421,
@@ -380,7 +380,7 @@
       "title": "Aleema (Child of the Shard)",
       "page_exists": true,
       "page_type": "character",
-      "current_word_count": 3795,
+      "current_word_count": 3984,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -389,10 +389,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:8a2d4eddd9905c787e207f626381aa72e114f2b1892eaa378e1a1ab3f73c352a",
-      "article_content_hash": "sha256:24462b24d028fc20c24a74fabfddf7e2020eddc0cce0c9a9d7974e3191842ea7",
-      "article_markup_hash": "sha256:e6268a377e48acecf83959a34b4a54f1307efa64981b497728e0a70adcdaa0d2",
-      "git_blob_oid": "1469f8652b020e42c28fa4c82a1086c0bbb78cfe",
+      "content_hash": "sha256:1de7e42c4e1c04ed07b5d9fb5dc38d2fe2f7c554aa7807d9b57fe8d2a38556d7",
+      "article_content_hash": "sha256:d1edbd9f9d24f76b4654348f173d101afda9febd0283b96de8b49adc3056bf90",
+      "article_markup_hash": "sha256:4b35e0c1fcc9b61d5709e2063644d78c19153716633d57fead14d00a91b4fd5d",
+      "git_blob_oid": "bf8cce1b773e193eed58ccab0f616f7bcbd1c0e9",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -411,12 +411,12 @@
         "wiki/bibles/aleema-child-of-the-shard.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 3 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 4 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/aleema-child-of-the-shard.json; it is not automatically the unavailable Tier 4 modern bible.",
         "The requested modern Tier 4 subject bible is not separately identifiable in this checkout; canon classification remains a human-review item."
       ],
       "content_owner": "canon",
-      "canon_revision": 3,
+      "canon_revision": 4,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -1980,7 +1980,7 @@
       "title": "Dream Sovereign",
       "page_exists": true,
       "page_type": "project_or_reference",
-      "current_word_count": 2078,
+      "current_word_count": 2305,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -1989,10 +1989,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:76bc991fb08fba2f2da83f8f67db4ce260d81815415d7072783792592bc41505",
-      "article_content_hash": "sha256:1f17138533daee7b97c4c4b57df086f1a57fe4332d173962a6cd1f765fcdda40",
-      "article_markup_hash": "sha256:c9b19886e1192253670b3db906a4d8e57d632d8dff8819ddd80e1279f5671dd6",
-      "git_blob_oid": "c6e49b22405c33f23d4dc6353ed27b00173f30f8",
+      "content_hash": "sha256:9ff160a5d8a9f9f08969066ec159b18925073daaaa8ca074aaa62dc31ffe92e5",
+      "article_content_hash": "sha256:26328b7ef998916f6ea6dfa2629f354ee6e1c243b382e94903151c558a9d8f3c",
+      "article_markup_hash": "sha256:6f645a114c5da4e2351b699ba5332a4c624c9ab990f037b1d89c1131c27bc142",
+      "git_blob_oid": "5b53b501b2d90a9a085364c83f91496a65306625",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -2008,11 +2008,11 @@
         "Existing public/reference source verification"
       ],
       "audit_notes": [
-        "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 2 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "No article-ownership or duplication issue detected by the deterministic audit."
       ],
       "content_owner": "canon",
-      "canon_revision": 1,
+      "canon_revision": 2,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -2021,7 +2021,7 @@
       "title": "Elder Codex-7",
       "page_exists": true,
       "page_type": "character",
-      "current_word_count": 3139,
+      "current_word_count": 3989,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -2030,10 +2030,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:0e7008d51b8ed5342dda6f8863d9113a6de4ff6f37e798c925fd05d7be292e7a",
-      "article_content_hash": "sha256:de0bd49ae6c4ea9cc3f46adf6e4287beed4de3b58c5e3c68a9b3b9554c222990",
-      "article_markup_hash": "sha256:4b2bb0a24a1b95d52a8446bd9635ab94c18de963d3e8ab1024b71d703cf3992d",
-      "git_blob_oid": "a08689d06764ade4ab8f14d0622831a85ffff58b",
+      "content_hash": "sha256:391dc6daef55604a9467105436c6cae3aa0f3088faa2c23378d2e37442c8beb1",
+      "article_content_hash": "sha256:33cdba7314468df516d982e94aca3eb8fdb82f56abc2baffeffeb4dc689eadbd",
+      "article_markup_hash": "sha256:9648023b2a4c0c99cb501880ef57a159c77554f800512ddc282f642c3c3c9b3b",
+      "git_blob_oid": "c66d9ee65380c3a14a7427ea3e846fda635bd93a",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -2052,12 +2052,12 @@
         "wiki/bibles/elder-codex-7.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 2 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 3 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/elder-codex-7.json; it is not automatically the unavailable Tier 4 modern bible.",
         "The requested modern Tier 4 subject bible is not separately identifiable in this checkout; canon classification remains a human-review item."
       ],
       "content_owner": "canon",
-      "canon_revision": 2,
+      "canon_revision": 3,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -12164,7 +12164,7 @@
       "title": "Iris-7",
       "page_exists": true,
       "page_type": "character",
-      "current_word_count": 2530,
+      "current_word_count": 2766,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -12173,10 +12173,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:bf97a8f2a268c454f301b0fd392508c517e8511a705d108b6ce93e662a4a442c",
-      "article_content_hash": "sha256:8eca0cc56549f4835509feb131b0601b6bd43ae98c6e4af80e607074f4d763ba",
-      "article_markup_hash": "sha256:a93a6acbeee85768ee3cbfc5c75da95c9e4a675c5223934a3debf6e8042eb3de",
-      "git_blob_oid": "45ed4d3d61e7d44d060a7f03286d0f51946ed8f9",
+      "content_hash": "sha256:e7c8f9cf1097e01c472e025e3f0724d5b39fc2acf1017c60cd89ae3aa495c8e6",
+      "article_content_hash": "sha256:76a62a1c928f0bc8aa80e9b7c020011b8957dd2e7e6ae582b3104235576aeb00",
+      "article_markup_hash": "sha256:6faf5662da536d042ecc3efecee42eb5a8e976b97b54a9c7819b757fbec69b52",
+      "git_blob_oid": "4b80ca539f9574bb9dd401b1f16c2f46226ca5a6",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -12195,12 +12195,12 @@
         "wiki/bibles/iris-7.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 2 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 3 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/iris-7.json; it is not automatically the unavailable Tier 4 modern bible.",
         "The requested modern Tier 4 subject bible is not separately identifiable in this checkout; canon classification remains a human-review item."
       ],
       "content_owner": "canon",
-      "canon_revision": 2,
+      "canon_revision": 3,
       "canon_source_tier": "first-witness+w81"
     },
     {

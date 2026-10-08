@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-08T10:53:20.658Z",
-  "verified_at": "2026-10-08T10:53:20.658Z",
+  "generated_at": "2026-10-08T11:31:08.758Z",
+  "verified_at": "2026-10-08T11:31:08.758Z",
   "lite": true,
   "nodes": [
     {
@@ -32,7 +32,7 @@
       "title": "The Forty Paths",
       "url": "/wiki/first-witness-forty-paths.html",
       "category": "core",
-      "rank_score": 386,
+      "rank_score": 388,
       "authority_score": 21
     },
     {
@@ -68,20 +68,20 @@
       "authority_score": 28
     },
     {
+      "id": "/wiki/first-witness-block-topia-reading.html",
+      "title": "Block Topia and the Controlled Reading",
+      "url": "/wiki/first-witness-block-topia-reading.html",
+      "category": "core",
+      "rank_score": 353,
+      "authority_score": 18
+    },
+    {
       "id": "/wiki/first-witness-heresies-corruptions-abuses.html",
       "title": "Heresies, Corruptions and Abuses",
       "url": "/wiki/first-witness-heresies-corruptions-abuses.html",
       "category": "core",
       "rank_score": 352,
       "authority_score": 14
-    },
-    {
-      "id": "/wiki/first-witness-block-topia-reading.html",
-      "title": "Block Topia and the Controlled Reading",
-      "url": "/wiki/first-witness-block-topia-reading.html",
-      "category": "core",
-      "rank_score": 351,
-      "authority_score": 18
     },
     {
       "id": "/wiki/first-witness-concordance.html",
@@ -100,6 +100,14 @@
       "authority_score": 18
     },
     {
+      "id": "/wiki/first-witness-long-transmission.html",
+      "title": "The Long Transmission",
+      "url": "/wiki/first-witness-long-transmission.html",
+      "category": "core",
+      "rank_score": 350,
+      "authority_score": 17
+    },
+    {
       "id": "/wiki/triple-fork-event.html",
       "title": "Triple Fork Event",
       "url": "/wiki/triple-fork-event.html",
@@ -114,14 +122,6 @@
       "category": "core",
       "rank_score": 349,
       "authority_score": 28
-    },
-    {
-      "id": "/wiki/first-witness-long-transmission.html",
-      "title": "The Long Transmission",
-      "url": "/wiki/first-witness-long-transmission.html",
-      "category": "core",
-      "rank_score": 348,
-      "authority_score": 17
     },
     {
       "id": "/wiki/first-witness-sects-schools-schisms.html",
@@ -984,12 +984,6 @@
       "weight": 0.76
     },
     {
-      "source": "/wiki/rave-relics.html",
-      "target": "/wiki/the-nice-easy-bois.html",
-      "score": 71,
-      "weight": 0.71
-    },
-    {
       "source": "/wiki/burn-to-earn.html",
       "target": "/wiki/block-topia.html",
       "score": 70,
@@ -998,6 +992,12 @@
     {
       "source": "/wiki/punk-token.html",
       "target": "/wiki/block-topia.html",
+      "score": 70,
+      "weight": 0.7
+    },
+    {
+      "source": "/wiki/rave-relics.html",
+      "target": "/wiki/the-nice-easy-bois.html",
       "score": 70,
       "weight": 0.7
     }

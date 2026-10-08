@@ -16,7 +16,9 @@ Unwritten Block. It develops a shared text that can produce different cultural
 readings. The Concord does not abolish earlier religions or retroactively name
 every 3008 faction. Read [the hub](../../wiki/the-first-witness.html), its nine
 Books and [Great Concord](../../wiki/first-witness-great-concord-2030.html).
-The full scripture/supporting-chapter audit remains a recorded next tranche.
+All nine current Book texts and their article commentary have now been fully
+read and compared with the serials; the supporting-chapter and historical
+transmission audit remains open.
 
 ## 2. Bitcoin witness and the Sacred Fork
 
@@ -191,6 +193,13 @@ distinct from the prophetic Child whom she and Thera address in the same scene.
 Modern lore can deepen a source character without inheriting every future
 claim made by an unreliable narrator.
 
+[Red Wax Payment](the-red-wax-payment.md) is a new local Year 3008 scene, owned
+by Codex-7's article. A paid performance, desired private invitation and signed
+clean account help a host withhold a carrier's fee. The carrier refuses his
+private offer; lost work remains lost, and the correction travels more slowly
+than the flattering ending. No copy, fee or apology resolves the missing
+worker's fate. This addition preserves the Elder's earlier private history.
+
 ## 9. Games, generations and HODL WARS
 
 [Hard Fork Games](../../wiki/hard-fork-games.html) includes selection, hospitality,
@@ -251,8 +260,12 @@ abstract battle map.
 The Final Fork is unresolved in current 3008 convergence. W15 cycles and w25
 Eternal Pulse offer incompatible finished worlds; duplicated numbered parts do
 not create independent corroboration. The Codex's next-universe tag and the
-Consensus's 3030 synchronization are different predicted endpoints. The full
-serial audit must develop a recommended future continuity with scene-by-scene
+Consensus's 3030 synchronization are different predicted endpoints. The complete
+source texts are now read: W15 through its fourteen-million restart, w25 through
+Part75 and its repeated Parts66–75. The four owning Elder/Iris/Aleema/Dream pages
+now retain the complete Sovereign progression and school/garden future as source
+visions. Remaining cross-page comparison must develop a recommended future
+continuity with scene-by-scene
 impact mapping before GK approves a final outcome. Until then, propagate the
 open status and preserve the competing accounts as attributed narratives.
 

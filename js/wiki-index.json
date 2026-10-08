@@ -177,11 +177,11 @@
       ]
     },
     "link_score": {
-      "inbound_count": 92,
+      "inbound_count": 93,
       "outbound_count": 118,
       "existing_outbound_count": 91,
       "suggested_outbound_count": 27,
-      "authority": 229.5
+      "authority": 231.5
     },
     "brand": null
   },
@@ -410,11 +410,11 @@
       ]
     },
     "link_score": {
-      "inbound_count": 24,
+      "inbound_count": 25,
       "outbound_count": 76,
       "existing_outbound_count": 6,
       "suggested_outbound_count": 70,
-      "authority": 51
+      "authority": 53
     },
     "brand": null
   },
@@ -576,11 +576,11 @@
       ]
     },
     "link_score": {
-      "inbound_count": 81,
+      "inbound_count": 82,
       "outbound_count": 71,
       "existing_outbound_count": 6,
       "suggested_outbound_count": 65,
-      "authority": 165
+      "authority": 167
     },
     "brand": null
   },
@@ -635,7 +635,7 @@
         "title": "first witness forty paths"
       }
     ],
-    "rank_score": 386,
+    "rank_score": 388,
     "rank_signals": {
       "is_canonical": true,
       "alias_count": 2,
@@ -662,9 +662,9 @@
       "word_count_points": 50,
       "keyword_bag_points": 62,
       "content_quality_points": 135,
-      "authority_points": 59,
-      "final_rank_score": 386,
-      "authority_graph_points": 38
+      "authority_points": 61,
+      "final_rank_score": 388,
+      "authority_graph_points": 40
     },
     "search_index": {
       "normalized_title": "the forty paths crypto moonboys wiki",
@@ -749,11 +749,11 @@
       ]
     },
     "link_score": {
-      "inbound_count": 17,
+      "inbound_count": 18,
       "outbound_count": 68,
       "existing_outbound_count": 7,
       "suggested_outbound_count": 61,
-      "authority": 37.5
+      "authority": 39.5
     },
     "brand": null
   },
@@ -1298,11 +1298,11 @@
       ]
     },
     "link_score": {
-      "inbound_count": 87,
+      "inbound_count": 86,
       "outbound_count": 68,
       "existing_outbound_count": 11,
       "suggested_outbound_count": 57,
-      "authority": 179.5
+      "authority": 177.5
     },
     "brand": null
   },
@@ -1469,11 +1469,191 @@
       ]
     },
     "link_score": {
-      "inbound_count": 41,
+      "inbound_count": 42,
       "outbound_count": 74,
       "existing_outbound_count": 14,
       "suggested_outbound_count": 60,
-      "authority": 89
+      "authority": 91
+    },
+    "brand": null
+  },
+  {
+    "title": "Block Topia and the Controlled Reading",
+    "desc": "How Block Topia uses the Covenant to justify verified order and disciplined survival.",
+    "url": "/wiki/first-witness-block-topia-reading.html",
+    "tags": [
+      "block",
+      "topia",
+      "controlled",
+      "reading",
+      "first witness",
+      "first witness bible",
+      "crypto moonboys bible",
+      "graffiti kings bible",
+      "GK bible",
+      "covenant",
+      "scripture",
+      "sacred text",
+      "bitcoin witness",
+      "bitcoin provenance",
+      "sacred chain",
+      "aether-chain",
+      "forty paths",
+      "40 GK factions",
+      "HODL WARS",
+      "Block Topia",
+      "Year 3008",
+      "2030 Concord",
+      "no single keeper",
+      "Crypto Moonboys lore",
+      "Graffiti Kings lore",
+      "religion",
+      "religious philosophy",
+      "philosophy",
+      "ethics",
+      "moral philosophy",
+      "spirituality",
+      "faith tradition",
+      "theology",
+      "belief system",
+      "Block Topia religion",
+      "Block Topia theology",
+      "Queen Sarah P-fly",
+      "True Bitcoin Fork religion"
+    ],
+    "category": "core",
+    "aliases": [
+      {
+        "title": "block topia controlled reading"
+      },
+      {
+        "title": "first witness block topia reading"
+      }
+    ],
+    "rank_score": 353,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 2,
+      "tag_count": 38,
+      "mention_count": 0,
+      "category": "core",
+      "category_priority": 10,
+      "has_description": true,
+      "article_word_count": 907,
+      "keyword_bag_size": 62,
+      "heading_count": 11,
+      "list_count": 1,
+      "internal_link_count": 8,
+      "paragraph_count": 21,
+      "section_count": 9,
+      "lore_paragraph_count": 20,
+      "content_quality_score": 89,
+      "authority_score": 18
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 50,
+      "word_count_points": 45,
+      "keyword_bag_points": 62,
+      "content_quality_points": 133,
+      "authority_points": 33,
+      "final_rank_score": 353,
+      "authority_graph_points": 15
+    },
+    "search_index": {
+      "normalized_title": "block topia and the controlled reading crypto moonboys wiki",
+      "tokens": [
+        "block",
+        "topia",
+        "and",
+        "the",
+        "controlled",
+        "reading",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "block",
+        "topia",
+        "and",
+        "the",
+        "controlled",
+        "reading",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "how",
+        "uses",
+        "covenant",
+        "to",
+        "justify",
+        "verified",
+        "order",
+        "disciplined",
+        "survival",
+        "first",
+        "witness",
+        "bible",
+        "graffiti",
+        "kings",
+        "gk",
+        "scripture",
+        "sacred",
+        "text",
+        "bitcoin",
+        "provenance",
+        "chain",
+        "aether",
+        "forty",
+        "paths",
+        "40",
+        "factions",
+        "hodl",
+        "wars",
+        "year",
+        "3008",
+        "2030",
+        "concord",
+        "no",
+        "single",
+        "keeper",
+        "lore",
+        "religion",
+        "religious",
+        "philosophy",
+        "ethics",
+        "moral",
+        "spirituality",
+        "faith",
+        "tradition",
+        "theology",
+        "belief",
+        "system",
+        "queen",
+        "sarah",
+        "p",
+        "fly",
+        "true",
+        "fork",
+        "ground",
+        "array",
+        "mira",
+        "memory",
+        "permission",
+        "cass",
+        "duty",
+        "ascension",
+        "caption"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 6,
+      "outbound_count": 72,
+      "existing_outbound_count": 6,
+      "suggested_outbound_count": 66,
+      "authority": 15
     },
     "brand": null
   },
@@ -1646,186 +1826,6 @@
       "existing_outbound_count": 4,
       "suggested_outbound_count": 63,
       "authority": 20
-    },
-    "brand": null
-  },
-  {
-    "title": "Block Topia and the Controlled Reading",
-    "desc": "How Block Topia uses the Covenant to justify verified order and disciplined survival.",
-    "url": "/wiki/first-witness-block-topia-reading.html",
-    "tags": [
-      "block",
-      "topia",
-      "controlled",
-      "reading",
-      "first witness",
-      "first witness bible",
-      "crypto moonboys bible",
-      "graffiti kings bible",
-      "GK bible",
-      "covenant",
-      "scripture",
-      "sacred text",
-      "bitcoin witness",
-      "bitcoin provenance",
-      "sacred chain",
-      "aether-chain",
-      "forty paths",
-      "40 GK factions",
-      "HODL WARS",
-      "Block Topia",
-      "Year 3008",
-      "2030 Concord",
-      "no single keeper",
-      "Crypto Moonboys lore",
-      "Graffiti Kings lore",
-      "religion",
-      "religious philosophy",
-      "philosophy",
-      "ethics",
-      "moral philosophy",
-      "spirituality",
-      "faith tradition",
-      "theology",
-      "belief system",
-      "Block Topia religion",
-      "Block Topia theology",
-      "Queen Sarah P-fly",
-      "True Bitcoin Fork religion"
-    ],
-    "category": "core",
-    "aliases": [
-      {
-        "title": "block topia controlled reading"
-      },
-      {
-        "title": "first witness block topia reading"
-      }
-    ],
-    "rank_score": 351,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 2,
-      "tag_count": 38,
-      "mention_count": 0,
-      "category": "core",
-      "category_priority": 10,
-      "has_description": true,
-      "article_word_count": 907,
-      "keyword_bag_size": 62,
-      "heading_count": 11,
-      "list_count": 1,
-      "internal_link_count": 8,
-      "paragraph_count": 21,
-      "section_count": 9,
-      "lore_paragraph_count": 20,
-      "content_quality_score": 89,
-      "authority_score": 18
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 50,
-      "word_count_points": 45,
-      "keyword_bag_points": 62,
-      "content_quality_points": 133,
-      "authority_points": 31,
-      "final_rank_score": 351,
-      "authority_graph_points": 13
-    },
-    "search_index": {
-      "normalized_title": "block topia and the controlled reading crypto moonboys wiki",
-      "tokens": [
-        "block",
-        "topia",
-        "and",
-        "the",
-        "controlled",
-        "reading",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "block",
-        "topia",
-        "and",
-        "the",
-        "controlled",
-        "reading",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "how",
-        "uses",
-        "covenant",
-        "to",
-        "justify",
-        "verified",
-        "order",
-        "disciplined",
-        "survival",
-        "first",
-        "witness",
-        "bible",
-        "graffiti",
-        "kings",
-        "gk",
-        "scripture",
-        "sacred",
-        "text",
-        "bitcoin",
-        "provenance",
-        "chain",
-        "aether",
-        "forty",
-        "paths",
-        "40",
-        "factions",
-        "hodl",
-        "wars",
-        "year",
-        "3008",
-        "2030",
-        "concord",
-        "no",
-        "single",
-        "keeper",
-        "lore",
-        "religion",
-        "religious",
-        "philosophy",
-        "ethics",
-        "moral",
-        "spirituality",
-        "faith",
-        "tradition",
-        "theology",
-        "belief",
-        "system",
-        "queen",
-        "sarah",
-        "p",
-        "fly",
-        "true",
-        "fork",
-        "ground",
-        "array",
-        "mira",
-        "memory",
-        "permission",
-        "cass",
-        "duty",
-        "ascension",
-        "caption"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 5,
-      "outbound_count": 72,
-      "existing_outbound_count": 6,
-      "suggested_outbound_count": 66,
-      "authority": 13
     },
     "brand": null
   },
@@ -2139,6 +2139,181 @@
       "existing_outbound_count": 8,
       "suggested_outbound_count": 54,
       "authority": 64
+    },
+    "brand": null
+  },
+  {
+    "title": "The Long Transmission",
+    "desc": "How the Covenant survived centuries of translation, censorship, commentary and wall memory.",
+    "url": "/wiki/first-witness-long-transmission.html",
+    "tags": [
+      "long",
+      "transmission",
+      "first witness",
+      "first witness bible",
+      "crypto moonboys bible",
+      "graffiti kings bible",
+      "GK bible",
+      "covenant",
+      "scripture",
+      "sacred text",
+      "bitcoin witness",
+      "bitcoin provenance",
+      "sacred chain",
+      "aether-chain",
+      "forty paths",
+      "40 GK factions",
+      "HODL WARS",
+      "Block Topia",
+      "Year 3008",
+      "2030 Concord",
+      "no single keeper",
+      "Crypto Moonboys lore",
+      "Graffiti Kings lore",
+      "religion",
+      "religious philosophy",
+      "philosophy",
+      "ethics",
+      "moral philosophy",
+      "spirituality",
+      "faith tradition",
+      "theology",
+      "belief system"
+    ],
+    "category": "core",
+    "aliases": [
+      {
+        "title": "Long Transmission"
+      },
+      {
+        "title": "first witness long transmission"
+      }
+    ],
+    "rank_score": 350,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 2,
+      "tag_count": 32,
+      "mention_count": 0,
+      "category": "core",
+      "category_priority": 10,
+      "has_description": true,
+      "article_word_count": 1718,
+      "keyword_bag_size": 57,
+      "heading_count": 13,
+      "list_count": 1,
+      "internal_link_count": 7,
+      "paragraph_count": 29,
+      "section_count": 11,
+      "lore_paragraph_count": 28,
+      "content_quality_score": 97,
+      "authority_score": 17
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 50,
+      "word_count_points": 50,
+      "keyword_bag_points": 57,
+      "content_quality_points": 135,
+      "authority_points": 28,
+      "final_rank_score": 350,
+      "authority_graph_points": 11
+    },
+    "search_index": {
+      "normalized_title": "the long transmission crypto moonboys wiki",
+      "tokens": [
+        "the",
+        "long",
+        "transmission",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "the",
+        "long",
+        "transmission",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "how",
+        "covenant",
+        "survived",
+        "centuries",
+        "of",
+        "translation",
+        "censorship",
+        "commentary",
+        "and",
+        "wall",
+        "memory",
+        "first",
+        "witness",
+        "bible",
+        "graffiti",
+        "kings",
+        "gk",
+        "scripture",
+        "sacred",
+        "text",
+        "bitcoin",
+        "provenance",
+        "chain",
+        "aether",
+        "forty",
+        "paths",
+        "40",
+        "factions",
+        "hodl",
+        "wars",
+        "block",
+        "topia",
+        "year",
+        "3008",
+        "2030",
+        "concord",
+        "no",
+        "single",
+        "keeper",
+        "lore",
+        "religion",
+        "religious",
+        "philosophy",
+        "ethics",
+        "moral",
+        "spirituality",
+        "faith",
+        "tradition",
+        "theology",
+        "belief",
+        "system",
+        "blue",
+        "stair",
+        "eda",
+        "senn",
+        "leth",
+        "orr",
+        "hollow",
+        "bell",
+        "low",
+        "houses",
+        "rell",
+        "aven",
+        "siv",
+        "marr",
+        "second",
+        "gloss",
+        "dara",
+        "ilex"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 4,
+      "outbound_count": 65,
+      "existing_outbound_count": 6,
+      "suggested_outbound_count": 59,
+      "authority": 11
     },
     "brand": null
   },
@@ -2493,11 +2668,11 @@
       ]
     },
     "link_score": {
-      "inbound_count": 85,
+      "inbound_count": 84,
       "outbound_count": 65,
       "existing_outbound_count": 14,
       "suggested_outbound_count": 51,
-      "authority": 177
+      "authority": 175
     },
     "brand": {
       "brand_family": "hodl",
@@ -2506,181 +2681,6 @@
       "canonical_slug": "hodl-wars",
       "parent_concept": null
     }
-  },
-  {
-    "title": "The Long Transmission",
-    "desc": "How the Covenant survived centuries of translation, censorship, commentary and wall memory.",
-    "url": "/wiki/first-witness-long-transmission.html",
-    "tags": [
-      "long",
-      "transmission",
-      "first witness",
-      "first witness bible",
-      "crypto moonboys bible",
-      "graffiti kings bible",
-      "GK bible",
-      "covenant",
-      "scripture",
-      "sacred text",
-      "bitcoin witness",
-      "bitcoin provenance",
-      "sacred chain",
-      "aether-chain",
-      "forty paths",
-      "40 GK factions",
-      "HODL WARS",
-      "Block Topia",
-      "Year 3008",
-      "2030 Concord",
-      "no single keeper",
-      "Crypto Moonboys lore",
-      "Graffiti Kings lore",
-      "religion",
-      "religious philosophy",
-      "philosophy",
-      "ethics",
-      "moral philosophy",
-      "spirituality",
-      "faith tradition",
-      "theology",
-      "belief system"
-    ],
-    "category": "core",
-    "aliases": [
-      {
-        "title": "Long Transmission"
-      },
-      {
-        "title": "first witness long transmission"
-      }
-    ],
-    "rank_score": 348,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 2,
-      "tag_count": 32,
-      "mention_count": 0,
-      "category": "core",
-      "category_priority": 10,
-      "has_description": true,
-      "article_word_count": 1718,
-      "keyword_bag_size": 57,
-      "heading_count": 13,
-      "list_count": 1,
-      "internal_link_count": 7,
-      "paragraph_count": 29,
-      "section_count": 11,
-      "lore_paragraph_count": 28,
-      "content_quality_score": 97,
-      "authority_score": 17
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 50,
-      "word_count_points": 50,
-      "keyword_bag_points": 57,
-      "content_quality_points": 135,
-      "authority_points": 26,
-      "final_rank_score": 348,
-      "authority_graph_points": 9
-    },
-    "search_index": {
-      "normalized_title": "the long transmission crypto moonboys wiki",
-      "tokens": [
-        "the",
-        "long",
-        "transmission",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "the",
-        "long",
-        "transmission",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "how",
-        "covenant",
-        "survived",
-        "centuries",
-        "of",
-        "translation",
-        "censorship",
-        "commentary",
-        "and",
-        "wall",
-        "memory",
-        "first",
-        "witness",
-        "bible",
-        "graffiti",
-        "kings",
-        "gk",
-        "scripture",
-        "sacred",
-        "text",
-        "bitcoin",
-        "provenance",
-        "chain",
-        "aether",
-        "forty",
-        "paths",
-        "40",
-        "factions",
-        "hodl",
-        "wars",
-        "block",
-        "topia",
-        "year",
-        "3008",
-        "2030",
-        "concord",
-        "no",
-        "single",
-        "keeper",
-        "lore",
-        "religion",
-        "religious",
-        "philosophy",
-        "ethics",
-        "moral",
-        "spirituality",
-        "faith",
-        "tradition",
-        "theology",
-        "belief",
-        "system",
-        "blue",
-        "stair",
-        "eda",
-        "senn",
-        "leth",
-        "orr",
-        "hollow",
-        "bell",
-        "low",
-        "houses",
-        "rell",
-        "aven",
-        "siv",
-        "marr",
-        "second",
-        "gloss",
-        "dara",
-        "ilex"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 3,
-      "outbound_count": 65,
-      "existing_outbound_count": 6,
-      "suggested_outbound_count": 59,
-      "authority": 9
-    },
-    "brand": null
   },
   {
     "title": "Sects, Schools and Schisms",
@@ -3487,11 +3487,11 @@
       ]
     },
     "link_score": {
-      "inbound_count": 213,
+      "inbound_count": 211,
       "outbound_count": 42,
       "existing_outbound_count": 20,
       "suggested_outbound_count": 22,
-      "authority": 436
+      "authority": 432
     },
     "brand": {
       "brand_family": "graffpunks",
@@ -4287,11 +4287,11 @@
       ]
     },
     "link_score": {
-      "inbound_count": 83,
+      "inbound_count": 82,
       "outbound_count": 47,
       "existing_outbound_count": 12,
       "suggested_outbound_count": 35,
-      "authority": 172
+      "authority": 170
     },
     "brand": null
   },
@@ -4714,11 +4714,11 @@
       ]
     },
     "link_score": {
-      "inbound_count": 35,
+      "inbound_count": 34,
       "outbound_count": 46,
       "existing_outbound_count": 14,
       "suggested_outbound_count": 32,
-      "authority": 77
+      "authority": 75
     },
     "brand": null
   },
@@ -4855,11 +4855,11 @@
       ]
     },
     "link_score": {
-      "inbound_count": 35,
+      "inbound_count": 36,
       "outbound_count": 34,
       "existing_outbound_count": 12,
       "suggested_outbound_count": 22,
-      "authority": 76
+      "authority": 78
     },
     "brand": null
   },
@@ -4981,11 +4981,11 @@
       ]
     },
     "link_score": {
-      "inbound_count": 31,
+      "inbound_count": 33,
       "outbound_count": 34,
       "existing_outbound_count": 15,
       "suggested_outbound_count": 19,
-      "authority": 69.5
+      "authority": 73.5
     },
     "brand": {
       "brand_family": "hodl",
@@ -5129,11 +5129,11 @@
       ]
     },
     "link_score": {
-      "inbound_count": 40,
+      "inbound_count": 39,
       "outbound_count": 28,
       "existing_outbound_count": 14,
       "suggested_outbound_count": 14,
-      "authority": 87
+      "authority": 85
     },
     "brand": null
   },
@@ -5559,11 +5559,11 @@
       ]
     },
     "link_score": {
-      "inbound_count": 61,
+      "inbound_count": 60,
       "outbound_count": 22,
       "existing_outbound_count": 10,
       "suggested_outbound_count": 12,
-      "authority": 127
+      "authority": 125
     },
     "brand": {
       "brand_family": "graffpunks",
@@ -6372,11 +6372,11 @@
       ]
     },
     "link_score": {
-      "inbound_count": 34,
+      "inbound_count": 33,
       "outbound_count": 31,
       "existing_outbound_count": 15,
       "suggested_outbound_count": 16,
-      "authority": 75.5
+      "authority": 73.5
     },
     "brand": null
   },
@@ -6664,11 +6664,11 @@
       ]
     },
     "link_score": {
-      "inbound_count": 37,
+      "inbound_count": 36,
       "outbound_count": 22,
       "existing_outbound_count": 12,
       "suggested_outbound_count": 10,
-      "authority": 80
+      "authority": 78
     },
     "brand": null
   },
@@ -6796,11 +6796,11 @@
       ]
     },
     "link_score": {
-      "inbound_count": 36,
+      "inbound_count": 35,
       "outbound_count": 36,
       "existing_outbound_count": 11,
       "suggested_outbound_count": 25,
-      "authority": 77.5
+      "authority": 75.5
     },
     "brand": null
   },
@@ -6922,11 +6922,11 @@
       ]
     },
     "link_score": {
-      "inbound_count": 32,
+      "inbound_count": 31,
       "outbound_count": 18,
       "existing_outbound_count": 9,
       "suggested_outbound_count": 9,
-      "authority": 68.5
+      "authority": 66.5
     },
     "brand": null
   },
@@ -7369,11 +7369,11 @@
       ]
     },
     "link_score": {
-      "inbound_count": 65,
+      "inbound_count": 63,
       "outbound_count": 47,
       "existing_outbound_count": 17,
       "suggested_outbound_count": 30,
-      "authority": 138.5
+      "authority": 134.5
     },
     "brand": null
   },
@@ -7795,11 +7795,11 @@
       ]
     },
     "link_score": {
-      "inbound_count": 53,
+      "inbound_count": 52,
       "outbound_count": 24,
       "existing_outbound_count": 11,
       "suggested_outbound_count": 13,
-      "authority": 111.5
+      "authority": 109.5
     },
     "brand": null
   },
@@ -8720,11 +8720,11 @@
       ]
     },
     "link_score": {
-      "inbound_count": 37,
+      "inbound_count": 35,
       "outbound_count": 18,
       "existing_outbound_count": 7,
       "suggested_outbound_count": 11,
-      "authority": 77.5
+      "authority": 73.5
     },
     "brand": null
   },
@@ -9485,11 +9485,11 @@
       ]
     },
     "link_score": {
-      "inbound_count": 43,
+      "inbound_count": 41,
       "outbound_count": 25,
       "existing_outbound_count": 8,
       "suggested_outbound_count": 17,
-      "authority": 90
+      "authority": 86
     },
     "brand": null
   },
@@ -10460,11 +10460,11 @@
       ]
     },
     "link_score": {
-      "inbound_count": 58,
+      "inbound_count": 57,
       "outbound_count": 20,
       "existing_outbound_count": 7,
       "suggested_outbound_count": 13,
-      "authority": 119.5
+      "authority": 117.5
     },
     "brand": null
   },
@@ -12733,112 +12733,6 @@
     "brand": null
   },
   {
-    "title": "Iris-7",
-    "desc": "Iris-7, the inside Bitcoin X Kid of the Eternal Pulse tradition: forbidden dreams, drawings, contested escape accounts and the right to an unassigned future.",
-    "url": "/wiki/iris-7.html",
-    "tags": [
-      "iris",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "characters",
-    "aliases": [
-      {
-        "title": "iris crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 299,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 4,
-      "mention_count": 0,
-      "category": "characters",
-      "category_priority": 8,
-      "has_description": true,
-      "article_word_count": 2821,
-      "keyword_bag_size": 26,
-      "heading_count": 22,
-      "list_count": 1,
-      "internal_link_count": 20,
-      "paragraph_count": 37,
-      "section_count": 19,
-      "lore_paragraph_count": 35,
-      "content_quality_score": 105,
-      "authority_score": 28
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 40,
-      "word_count_points": 50,
-      "keyword_bag_points": 26,
-      "content_quality_points": 112,
-      "authority_points": 41,
-      "final_rank_score": 299,
-      "authority_graph_points": 13
-    },
-    "search_index": {
-      "normalized_title": "iris 7 crypto moonboys wiki",
-      "tokens": [
-        "iris",
-        "7",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "iris",
-        "7",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "the",
-        "inside",
-        "bitcoin",
-        "x",
-        "kid",
-        "of",
-        "eternal",
-        "pulse",
-        "tradition",
-        "forbidden",
-        "dreams",
-        "drawings",
-        "contested",
-        "escape",
-        "accounts",
-        "and",
-        "right",
-        "to",
-        "an",
-        "unassigned",
-        "future",
-        "iris7",
-        "blue",
-        "margin",
-        "book",
-        "sella",
-        "vey",
-        "window",
-        "slip",
-        "unsent",
-        "map",
-        "glyphs",
-        "generation"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 2,
-      "outbound_count": 47,
-      "existing_outbound_count": 18,
-      "suggested_outbound_count": 29,
-      "authority": 13
-    },
-    "brand": null
-  },
-  {
     "title": "The DUCKY BOYS",
     "desc": "The Ducky Boys in Year 3008: repair crews, mobile workshops, difficult service contracts and the unfinished search for an Anti-Antichain Protocol.",
     "url": "/wiki/the-ducky-boys.html",
@@ -12971,6 +12865,120 @@
       "existing_outbound_count": 19,
       "suggested_outbound_count": 16,
       "authority": 19.5
+    },
+    "brand": null
+  },
+  {
+    "title": "Iris-7",
+    "desc": "Iris-7, the inside Bitcoin X Kid of the Eternal Pulse tradition: forbidden dreams, drawings, contested escape accounts and the right to an unassigned future.",
+    "url": "/wiki/iris-7.html",
+    "tags": [
+      "iris",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "characters",
+    "aliases": [
+      {
+        "title": "iris crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 298,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 4,
+      "mention_count": 0,
+      "category": "characters",
+      "category_priority": 8,
+      "has_description": true,
+      "article_word_count": 3053,
+      "keyword_bag_size": 26,
+      "heading_count": 23,
+      "list_count": 1,
+      "internal_link_count": 20,
+      "paragraph_count": 40,
+      "section_count": 20,
+      "lore_paragraph_count": 35,
+      "content_quality_score": 105,
+      "authority_score": 28
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 40,
+      "word_count_points": 50,
+      "keyword_bag_points": 26,
+      "content_quality_points": 112,
+      "authority_points": 40,
+      "final_rank_score": 298,
+      "authority_graph_points": 12
+    },
+    "search_index": {
+      "normalized_title": "iris 7 crypto moonboys wiki",
+      "tokens": [
+        "iris",
+        "7",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "iris",
+        "7",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "the",
+        "inside",
+        "bitcoin",
+        "x",
+        "kid",
+        "of",
+        "eternal",
+        "pulse",
+        "tradition",
+        "forbidden",
+        "dreams",
+        "drawings",
+        "contested",
+        "escape",
+        "accounts",
+        "and",
+        "right",
+        "to",
+        "an",
+        "unassigned",
+        "future",
+        "iris7",
+        "blue",
+        "margin",
+        "book",
+        "sella",
+        "vey",
+        "window",
+        "slip",
+        "unsent",
+        "map",
+        "glyphs",
+        "generation",
+        "codex",
+        "schools",
+        "elder",
+        "teacher",
+        "seeding",
+        "rights",
+        "golden",
+        "ticket"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 2,
+      "outbound_count": 52,
+      "existing_outbound_count": 16,
+      "suggested_outbound_count": 36,
+      "authority": 12
     },
     "brand": null
   },
@@ -17974,11 +17982,11 @@
       ]
     },
     "link_score": {
-      "inbound_count": 36,
+      "inbound_count": 35,
       "outbound_count": 30,
       "existing_outbound_count": 10,
       "suggested_outbound_count": 20,
-      "authority": 77
+      "authority": 75
     },
     "brand": {
       "brand_family": "nbg",
@@ -18497,6 +18505,135 @@
       "existing_outbound_count": 15,
       "suggested_outbound_count": 6,
       "authority": 7.5
+    },
+    "brand": null
+  },
+  {
+    "title": "Elder Codex-7",
+    "desc": "Elder Codex-7, Chain Scribe and Eternal Pulse narrator: Grid Archives, Echo Ink, disputed chronology, endangered murals and the duty to leave a correctable record.",
+    "url": "/wiki/elder-codex-7.html",
+    "tags": [
+      "elder",
+      "codex",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "characters",
+    "aliases": [
+      {
+        "title": "elder codex crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 288,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "characters",
+      "category_priority": 8,
+      "has_description": true,
+      "article_word_count": 4277,
+      "keyword_bag_size": 27,
+      "heading_count": 26,
+      "list_count": 1,
+      "internal_link_count": 16,
+      "paragraph_count": 64,
+      "section_count": 23,
+      "lore_paragraph_count": 8,
+      "content_quality_score": 97,
+      "authority_score": 28
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 40,
+      "word_count_points": 50,
+      "keyword_bag_points": 27,
+      "content_quality_points": 105,
+      "authority_points": 36,
+      "final_rank_score": 288,
+      "authority_graph_points": 8
+    },
+    "search_index": {
+      "normalized_title": "elder codex 7 crypto moonboys wiki",
+      "tokens": [
+        "elder",
+        "codex",
+        "7",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "elder",
+        "codex",
+        "7",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "chain",
+        "scribe",
+        "and",
+        "eternal",
+        "pulse",
+        "narrator",
+        "grid",
+        "archives",
+        "echo",
+        "ink",
+        "disputed",
+        "chronology",
+        "endangered",
+        "murals",
+        "the",
+        "duty",
+        "to",
+        "leave",
+        "a",
+        "correctable",
+        "record",
+        "open",
+        "last",
+        "line",
+        "tarn",
+        "kes",
+        "two",
+        "readings",
+        "reverse",
+        "uncorrupted",
+        "seal",
+        "genesis",
+        "ledger",
+        "survivor",
+        "supper",
+        "memory",
+        "of",
+        "person",
+        "who",
+        "left",
+        "red",
+        "wax",
+        "payment",
+        "serial",
+        "horizons",
+        "hybrid",
+        "sovereign",
+        "neo",
+        "ultimate",
+        "repeated",
+        "final",
+        "endings",
+        "infinite"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 1,
+      "outbound_count": 46,
+      "existing_outbound_count": 12,
+      "suggested_outbound_count": 34,
+      "authority": 8
     },
     "brand": null
   },
@@ -20345,13 +20482,13 @@
       "category": "characters",
       "category_priority": 8,
       "has_description": true,
-      "article_word_count": 4112,
+      "article_word_count": 4259,
       "keyword_bag_size": 25,
-      "heading_count": 25,
+      "heading_count": 26,
       "list_count": 1,
       "internal_link_count": 15,
-      "paragraph_count": 60,
-      "section_count": 22,
+      "paragraph_count": 62,
+      "section_count": 23,
       "lore_paragraph_count": 9,
       "content_quality_score": 97,
       "authority_score": 28
@@ -20431,15 +20568,19 @@
         "voice",
         "after",
         "neth",
-        "aster"
+        "aster",
+        "cosmic",
+        "gardens",
+        "lullaby",
+        "separate"
       ]
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 32,
-      "existing_outbound_count": 14,
-      "suggested_outbound_count": 18,
-      "authority": 9
+      "outbound_count": 30,
+      "existing_outbound_count": 13,
+      "suggested_outbound_count": 17,
+      "authority": 8.5
     },
     "brand": null
   },
@@ -20599,122 +20740,6 @@
       "existing_outbound_count": 4,
       "suggested_outbound_count": 61,
       "authority": 6
-    },
-    "brand": null
-  },
-  {
-    "title": "Elder Codex-7",
-    "desc": "Elder Codex-7, Chain Scribe and Eternal Pulse narrator: Grid Archives, Echo Ink, disputed chronology, endangered murals and the duty to leave a correctable record.",
-    "url": "/wiki/elder-codex-7.html",
-    "tags": [
-      "elder",
-      "codex",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "characters",
-    "aliases": [
-      {
-        "title": "elder codex crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 285,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "characters",
-      "category_priority": 8,
-      "has_description": true,
-      "article_word_count": 3419,
-      "keyword_bag_size": 27,
-      "heading_count": 24,
-      "list_count": 1,
-      "internal_link_count": 13,
-      "paragraph_count": 53,
-      "section_count": 21,
-      "lore_paragraph_count": 8,
-      "content_quality_score": 97,
-      "authority_score": 24
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 40,
-      "word_count_points": 50,
-      "keyword_bag_points": 27,
-      "content_quality_points": 105,
-      "authority_points": 33,
-      "final_rank_score": 285,
-      "authority_graph_points": 9
-    },
-    "search_index": {
-      "normalized_title": "elder codex 7 crypto moonboys wiki",
-      "tokens": [
-        "elder",
-        "codex",
-        "7",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "elder",
-        "codex",
-        "7",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "chain",
-        "scribe",
-        "and",
-        "eternal",
-        "pulse",
-        "narrator",
-        "grid",
-        "archives",
-        "echo",
-        "ink",
-        "disputed",
-        "chronology",
-        "endangered",
-        "murals",
-        "the",
-        "duty",
-        "to",
-        "leave",
-        "a",
-        "correctable",
-        "record",
-        "open",
-        "last",
-        "line",
-        "tarn",
-        "kes",
-        "two",
-        "readings",
-        "reverse",
-        "uncorrupted",
-        "seal",
-        "genesis",
-        "ledger",
-        "survivor",
-        "supper",
-        "memory",
-        "of",
-        "person",
-        "who",
-        "left"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 1,
-      "outbound_count": 36,
-      "existing_outbound_count": 13,
-      "suggested_outbound_count": 23,
-      "authority": 8.5
     },
     "brand": null
   },
@@ -26535,11 +26560,11 @@
       ]
     },
     "link_score": {
-      "inbound_count": 62,
+      "inbound_count": 61,
       "outbound_count": 33,
       "existing_outbound_count": 12,
       "suggested_outbound_count": 21,
-      "authority": 130
+      "authority": 128
     },
     "brand": null
   },
@@ -30175,6 +30200,108 @@
     "brand": null
   },
   {
+    "title": "Head Tags",
+    "desc": "Head Tags: fictional identity artefacts, maker attribution, carried memory and disputed powers in the Crypto Moonboys Year 3008 world.",
+    "url": "/wiki/head-tags.html",
+    "tags": [
+      "head",
+      "tags",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "concepts",
+    "aliases": [
+      {
+        "title": "head tags crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 257,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "concepts",
+      "category_priority": 5,
+      "has_description": true,
+      "article_word_count": 2710,
+      "keyword_bag_size": 20,
+      "heading_count": 18,
+      "list_count": 1,
+      "internal_link_count": 16,
+      "paragraph_count": 43,
+      "section_count": 15,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 85,
+      "authority_score": 28
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 25,
+      "word_count_points": 50,
+      "keyword_bag_points": 20,
+      "content_quality_points": 93,
+      "authority_points": 39,
+      "final_rank_score": 257,
+      "authority_graph_points": 11
+    },
+    "search_index": {
+      "normalized_title": "head tags crypto moonboys wiki",
+      "tokens": [
+        "head",
+        "tags",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "head",
+        "tags",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "fictional",
+        "identity",
+        "artefacts",
+        "maker",
+        "attribution",
+        "carried",
+        "memory",
+        "and",
+        "disputed",
+        "powers",
+        "in",
+        "the",
+        "year",
+        "3008",
+        "world",
+        "face",
+        "ledger",
+        "iria",
+        "notch",
+        "borrowed",
+        "crest",
+        "hearing",
+        "blank",
+        "rim",
+        "carry",
+        "mark",
+        "tag",
+        "overload"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 2,
+      "outbound_count": 26,
+      "existing_outbound_count": 14,
+      "suggested_outbound_count": 12,
+      "authority": 11
+    },
+    "brand": null
+  },
+  {
     "title": "XRP Kids",
     "desc": "XRP Kids: Charlie Buster’s archived 100-piece XRPL Genesis collection, No Ball Games identity, and fictional Playground Protocol and glitch-boot traditions.",
     "url": "/wiki/xrp-kids.html",
@@ -30290,6 +30417,123 @@
     "brand": null
   },
   {
+    "title": "Gang Signs",
+    "desc": "Gang Signs: the faction-themed card-game concept, its limited source record and the fictional Tag Dealer, Card Dens and tournament traditions.",
+    "url": "/wiki/gang-signs.html",
+    "tags": [
+      "gang",
+      "signs",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "concepts",
+    "aliases": [
+      {
+        "title": "gang signs crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 256,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "concepts",
+      "category_priority": 5,
+      "has_description": true,
+      "article_word_count": 2610,
+      "keyword_bag_size": 22,
+      "heading_count": 19,
+      "list_count": 1,
+      "internal_link_count": 14,
+      "paragraph_count": 43,
+      "section_count": 16,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 85,
+      "authority_score": 24
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 25,
+      "word_count_points": 50,
+      "keyword_bag_points": 22,
+      "content_quality_points": 93,
+      "authority_points": 36,
+      "final_rank_score": 256,
+      "authority_graph_points": 12
+    },
+    "search_index": {
+      "normalized_title": "gang signs crypto moonboys wiki",
+      "tokens": [
+        "gang",
+        "signs",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "gang",
+        "signs",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "the",
+        "faction",
+        "themed",
+        "card",
+        "game",
+        "concept",
+        "its",
+        "limited",
+        "source",
+        "record",
+        "and",
+        "fictional",
+        "tag",
+        "dealer",
+        "dens",
+        "tournament",
+        "traditions",
+        "graffiti",
+        "cards",
+        "betrayal",
+        "deck",
+        "dealers",
+        "gambit",
+        "street",
+        "echo",
+        "echoes",
+        "resonance",
+        "flare",
+        "ups",
+        "glitch",
+        "rebel",
+        "surge",
+        "black",
+        "incident",
+        "shattered",
+        "wraiths",
+        "midnight",
+        "clash",
+        "master",
+        "final",
+        "hand",
+        "crown",
+        "battler"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 3,
+      "outbound_count": 35,
+      "existing_outbound_count": 12,
+      "suggested_outbound_count": 23,
+      "authority": 12
+    },
+    "brand": null
+  },
+  {
     "title": "1m free nfts program",
     "desc": "The 1M Free NFTs Programme is a massive initiative in the Crypto Moonboys universe, distributing one million free NFTs to players and collectors in Block Topia",
     "url": "/wiki/1m-free-nfts-program.html",
@@ -30394,108 +30638,6 @@
       "canonical_slug": "1m-free-nfts-program",
       "parent_concept": null
     }
-  },
-  {
-    "title": "Head Tags",
-    "desc": "Head Tags: fictional identity artefacts, maker attribution, carried memory and disputed powers in the Crypto Moonboys Year 3008 world.",
-    "url": "/wiki/head-tags.html",
-    "tags": [
-      "head",
-      "tags",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "concepts",
-    "aliases": [
-      {
-        "title": "head tags crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 255,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "concepts",
-      "category_priority": 5,
-      "has_description": true,
-      "article_word_count": 2710,
-      "keyword_bag_size": 20,
-      "heading_count": 18,
-      "list_count": 1,
-      "internal_link_count": 16,
-      "paragraph_count": 43,
-      "section_count": 15,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 85,
-      "authority_score": 28
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 25,
-      "word_count_points": 50,
-      "keyword_bag_points": 20,
-      "content_quality_points": 93,
-      "authority_points": 37,
-      "final_rank_score": 255,
-      "authority_graph_points": 9
-    },
-    "search_index": {
-      "normalized_title": "head tags crypto moonboys wiki",
-      "tokens": [
-        "head",
-        "tags",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "head",
-        "tags",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "fictional",
-        "identity",
-        "artefacts",
-        "maker",
-        "attribution",
-        "carried",
-        "memory",
-        "and",
-        "disputed",
-        "powers",
-        "in",
-        "the",
-        "year",
-        "3008",
-        "world",
-        "face",
-        "ledger",
-        "iria",
-        "notch",
-        "borrowed",
-        "crest",
-        "hearing",
-        "blank",
-        "rim",
-        "carry",
-        "mark",
-        "tag",
-        "overload"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 1,
-      "outbound_count": 26,
-      "existing_outbound_count": 14,
-      "suggested_outbound_count": 12,
-      "authority": 9
-    },
-    "brand": null
   },
   {
     "title": "NFTs (Non-Fungible Tokens)",
@@ -30795,123 +30937,6 @@
       "existing_outbound_count": 16,
       "suggested_outbound_count": 22,
       "authority": 22
-    },
-    "brand": null
-  },
-  {
-    "title": "Gang Signs",
-    "desc": "Gang Signs: the faction-themed card-game concept, its limited source record and the fictional Tag Dealer, Card Dens and tournament traditions.",
-    "url": "/wiki/gang-signs.html",
-    "tags": [
-      "gang",
-      "signs",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "concepts",
-    "aliases": [
-      {
-        "title": "gang signs crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 254,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "concepts",
-      "category_priority": 5,
-      "has_description": true,
-      "article_word_count": 2610,
-      "keyword_bag_size": 22,
-      "heading_count": 19,
-      "list_count": 1,
-      "internal_link_count": 14,
-      "paragraph_count": 43,
-      "section_count": 16,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 85,
-      "authority_score": 24
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 25,
-      "word_count_points": 50,
-      "keyword_bag_points": 22,
-      "content_quality_points": 93,
-      "authority_points": 34,
-      "final_rank_score": 254,
-      "authority_graph_points": 10
-    },
-    "search_index": {
-      "normalized_title": "gang signs crypto moonboys wiki",
-      "tokens": [
-        "gang",
-        "signs",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "gang",
-        "signs",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "the",
-        "faction",
-        "themed",
-        "card",
-        "game",
-        "concept",
-        "its",
-        "limited",
-        "source",
-        "record",
-        "and",
-        "fictional",
-        "tag",
-        "dealer",
-        "dens",
-        "tournament",
-        "traditions",
-        "graffiti",
-        "cards",
-        "betrayal",
-        "deck",
-        "dealers",
-        "gambit",
-        "street",
-        "echo",
-        "echoes",
-        "resonance",
-        "flare",
-        "ups",
-        "glitch",
-        "rebel",
-        "surge",
-        "black",
-        "incident",
-        "shattered",
-        "wraiths",
-        "midnight",
-        "clash",
-        "master",
-        "final",
-        "hand",
-        "crown",
-        "battler"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 2,
-      "outbound_count": 35,
-      "existing_outbound_count": 12,
-      "suggested_outbound_count": 23,
-      "authority": 10
     },
     "brand": null
   },
@@ -31697,114 +31722,6 @@
     "brand": null
   },
   {
-    "title": "Dream Sovereign",
-    "desc": "The Dream Sovereign in Crypto Moonboys fiction: the Child of the Shard nightmare, contested origin stories, and the difference between a vision and settled history.",
-    "url": "/wiki/dream-sovereign.html",
-    "tags": [
-      "dream",
-      "sovereign",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "concepts",
-    "aliases": [
-      {
-        "title": "dream sovereign crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 246,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "concepts",
-      "category_priority": 5,
-      "has_description": true,
-      "article_word_count": 2305,
-      "keyword_bag_size": 22,
-      "heading_count": 17,
-      "list_count": 1,
-      "internal_link_count": 9,
-      "paragraph_count": 30,
-      "section_count": 14,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 85,
-      "authority_score": 21
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 25,
-      "word_count_points": 50,
-      "keyword_bag_points": 22,
-      "content_quality_points": 93,
-      "authority_points": 26,
-      "final_rank_score": 246,
-      "authority_graph_points": 5
-    },
-    "search_index": {
-      "normalized_title": "dream sovereign crypto moonboys wiki",
-      "tokens": [
-        "dream",
-        "sovereign",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "dream",
-        "sovereign",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "the",
-        "in",
-        "fiction",
-        "child",
-        "of",
-        "shard",
-        "nightmare",
-        "contested",
-        "origin",
-        "stories",
-        "and",
-        "difference",
-        "between",
-        "a",
-        "vision",
-        "settled",
-        "history",
-        "eternal",
-        "watch",
-        "elder",
-        "codex",
-        "7",
-        "anomaly",
-        "dreams",
-        "mind",
-        "rift",
-        "crown",
-        "cipher",
-        "iris",
-        "null",
-        "nodes",
-        "sealed",
-        "protocol",
-        "vault"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 36,
-      "existing_outbound_count": 9,
-      "suggested_outbound_count": 27,
-      "authority": 4.5
-    },
-    "brand": null
-  },
-  {
     "title": "👉 MR CHEO $LAP HEAD ⚡️⚡️⚡️",
     "desc": "👉 MR CHEO $LAP HEAD ⚡️⚡️⚡️ is an NFT in the gkniftyheads WAX AtomicAssets collection.",
     "url": "/wiki/gkniftyheads-mr-cheo-lap-head-776114.html",
@@ -32394,6 +32311,118 @@
       "existing_outbound_count": 9,
       "suggested_outbound_count": 16,
       "authority": 4.5
+    },
+    "brand": null
+  },
+  {
+    "title": "Dream Sovereign",
+    "desc": "The Dream Sovereign in Crypto Moonboys fiction: the Child of the Shard nightmare, contested origin stories, and the difference between a vision and settled history.",
+    "url": "/wiki/dream-sovereign.html",
+    "tags": [
+      "dream",
+      "sovereign",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "concepts",
+    "aliases": [
+      {
+        "title": "dream sovereign crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 242,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "concepts",
+      "category_priority": 5,
+      "has_description": true,
+      "article_word_count": 2474,
+      "keyword_bag_size": 22,
+      "heading_count": 19,
+      "list_count": 1,
+      "internal_link_count": 5,
+      "paragraph_count": 33,
+      "section_count": 15,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 85,
+      "authority_score": 20
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 25,
+      "word_count_points": 50,
+      "keyword_bag_points": 22,
+      "content_quality_points": 93,
+      "authority_points": 22,
+      "final_rank_score": 242,
+      "authority_graph_points": 2
+    },
+    "search_index": {
+      "normalized_title": "dream sovereign crypto moonboys wiki",
+      "tokens": [
+        "dream",
+        "sovereign",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "dream",
+        "sovereign",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "the",
+        "in",
+        "fiction",
+        "child",
+        "of",
+        "shard",
+        "nightmare",
+        "contested",
+        "origin",
+        "stories",
+        "and",
+        "difference",
+        "between",
+        "a",
+        "vision",
+        "settled",
+        "history",
+        "eternal",
+        "watch",
+        "elder",
+        "codex",
+        "7",
+        "anomaly",
+        "dreams",
+        "mind",
+        "rift",
+        "crown",
+        "cipher",
+        "iris",
+        "null",
+        "nodes",
+        "sealed",
+        "protocol",
+        "vault",
+        "future",
+        "infinite",
+        "later",
+        "cycles"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 41,
+      "existing_outbound_count": 4,
+      "suggested_outbound_count": 37,
+      "authority": 2
     },
     "brand": null
   },
@@ -33988,6 +34017,122 @@
     "brand": null
   },
   {
+    "title": "The Whisper Codex",
+    "desc": "The disputed Whisper Codex: Operation Echo, the Omega Hash, the Conformal Plan and the price of preserving a culture beyond time.",
+    "url": "/wiki/whisper-codex.html",
+    "tags": [
+      "whisper",
+      "codex"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "Whisper Codex"
+      }
+    ],
+    "rank_score": 233,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 2,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 864,
+      "keyword_bag_size": 21,
+      "heading_count": 8,
+      "list_count": 2,
+      "internal_link_count": 6,
+      "paragraph_count": 14,
+      "section_count": 6,
+      "lore_paragraph_count": 11,
+      "content_quality_score": 77,
+      "authority_score": 16
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 43,
+      "keyword_bag_points": 21,
+      "content_quality_points": 82,
+      "authority_points": 22,
+      "final_rank_score": 233,
+      "authority_graph_points": 6
+    },
+    "search_index": {
+      "normalized_title": "the whisper codex crypto moonboys wiki",
+      "tokens": [
+        "the",
+        "whisper",
+        "codex",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "the",
+        "whisper",
+        "codex",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "disputed",
+        "operation",
+        "echo",
+        "omega",
+        "hash",
+        "conformal",
+        "plan",
+        "and",
+        "price",
+        "of",
+        "preserving",
+        "a",
+        "culture",
+        "beyond",
+        "time",
+        "darkside",
+        "listening",
+        "posts",
+        "trigger",
+        "tracey",
+        "vara",
+        "cosmic",
+        "microwave",
+        "background",
+        "buffing",
+        "van",
+        "three",
+        "phases",
+        "an",
+        "impossible",
+        "ambition",
+        "what",
+        "next",
+        "universe",
+        "is",
+        "promised",
+        "battery",
+        "somebody",
+        "needs",
+        "tonight",
+        "w81",
+        "w1",
+        "txt"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 2,
+      "outbound_count": 6,
+      "existing_outbound_count": 4,
+      "suggested_outbound_count": 2,
+      "authority": 6
+    },
+    "brand": null
+  },
+  {
     "title": "Delicious Again Pete",
     "desc": "Delicious Again Pete, Peter Clark: resin art toys, hip-hop and pop-culture imagery, and the separate fictional gathering-host tradition in Crypto Moonboys.",
     "url": "/wiki/delicious-again-pete.html",
@@ -34739,122 +34884,6 @@
       "existing_outbound_count": 10,
       "suggested_outbound_count": 11,
       "authority": 7
-    },
-    "brand": null
-  },
-  {
-    "title": "The Whisper Codex",
-    "desc": "The disputed Whisper Codex: Operation Echo, the Omega Hash, the Conformal Plan and the price of preserving a culture beyond time.",
-    "url": "/wiki/whisper-codex.html",
-    "tags": [
-      "whisper",
-      "codex"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "Whisper Codex"
-      }
-    ],
-    "rank_score": 231,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 2,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 864,
-      "keyword_bag_size": 21,
-      "heading_count": 8,
-      "list_count": 2,
-      "internal_link_count": 6,
-      "paragraph_count": 14,
-      "section_count": 6,
-      "lore_paragraph_count": 11,
-      "content_quality_score": 77,
-      "authority_score": 16
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 43,
-      "keyword_bag_points": 21,
-      "content_quality_points": 82,
-      "authority_points": 20,
-      "final_rank_score": 231,
-      "authority_graph_points": 4
-    },
-    "search_index": {
-      "normalized_title": "the whisper codex crypto moonboys wiki",
-      "tokens": [
-        "the",
-        "whisper",
-        "codex",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "the",
-        "whisper",
-        "codex",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "disputed",
-        "operation",
-        "echo",
-        "omega",
-        "hash",
-        "conformal",
-        "plan",
-        "and",
-        "price",
-        "of",
-        "preserving",
-        "a",
-        "culture",
-        "beyond",
-        "time",
-        "darkside",
-        "listening",
-        "posts",
-        "trigger",
-        "tracey",
-        "vara",
-        "cosmic",
-        "microwave",
-        "background",
-        "buffing",
-        "van",
-        "three",
-        "phases",
-        "an",
-        "impossible",
-        "ambition",
-        "what",
-        "next",
-        "universe",
-        "is",
-        "promised",
-        "battery",
-        "somebody",
-        "needs",
-        "tonight",
-        "w81",
-        "w1",
-        "txt"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 1,
-      "outbound_count": 6,
-      "existing_outbound_count": 4,
-      "suggested_outbound_count": 2,
-      "authority": 4
     },
     "brand": null
   },
