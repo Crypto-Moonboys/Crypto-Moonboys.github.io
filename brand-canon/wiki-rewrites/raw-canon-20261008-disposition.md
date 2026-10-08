@@ -17,9 +17,9 @@ Do **not** fill the six currently unassigned Forty Paths positions from old alte
 
 - **CONFLICT**: 8 entries
 - **COVERED**: 44 entries
-- **DUPLICATE**: 1 entries
+- **DUPLICATE**: 1 entry
 - **HISTORICAL**: 18 entries
-- **NEAR_DUPLICATE**: 1 entries
+- **NEAR_DUPLICATE**: 1 entry
 - **OPERATIONAL**: 5 entries
 - **PARTIAL**: 8 entries
 - **PENDING_EDITORIAL**: 2 entries
