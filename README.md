@@ -8,6 +8,8 @@ Crypto Moonboys is **not a game, NFT project, wiki, token project or chatbot**. 
 
 > **The user provides the spark. SPARKY carries the real score. Intelligence expands the possibilities. Memory protects the direction. Community helps turn it into culture.**
 
+Telegram website login uses verified OIDC identity and revocable sessions to restore existing accounts without a bot command. Mini App `initData` and `/gklink` remain supported. The implementation is disabled until the approved rollout in [the authentication audit and deployment guide](docs/telegram-website-login.md) is complete.
+
 ## Read This First
 
 This README is the top-level repository truth for the public Crypto Moonboys website and its relationship with SWARMSY.

@@ -37,7 +37,7 @@
 
   // Resolved text constants — fall back to literals so no type="module" is needed.
   var COPY = window.UI_STATUS_COPY || {
-    UNLINKED:            'Telegram not linked \u2014 run /gklink',
+    UNLINKED:            'Telegram login required',
     FEATURE_UNAVAILABLE: 'Feature unavailable',
     API_UNAVAILABLE:     'Core API unavailable',
   };
@@ -130,10 +130,10 @@
         tgStatus.textContent = 'Telegram linked: ' + (linked.name || linked.telegram_username || 'connected') + '. Email optional — Telegram identity will be used.';
         tgStatus.className = 'cm-tg-status cm-success';
       } else if (hasTelegramId) {
-        tgStatus.textContent = 'Run /gklink to activate rewards.';
+        tgStatus.textContent = 'Log in with Telegram to access eligible rewards.';
         tgStatus.className = 'cm-tg-status cm-warning';
       } else {
-        tgStatus.textContent = 'Optional for comments. Required for rewards. Telegram quick-fill unavailable. Link through the Incubator Hub /gklink flow.';
+        tgStatus.textContent = 'Optional for comments. Required for rewards. Telegram quick-fill unavailable. Log in through the Incubator Hub; /gklink remains a fallback.';
         tgStatus.className = 'cm-tg-status';
       }
     }
@@ -476,7 +476,7 @@
 
   // Telegram identity state. The comment form avoids embedding the Telegram
   // Login Widget because domain errors can leak a broken widget message into
-  // the page. Rewards still use the shared /gklink identity-gate path.
+  // the page. Rewards use the shared verified Telegram identity gate.
 
   function injectTelegramWidget(container) {
     var widgetSlot = container.querySelector('.cm-tg-login');
@@ -496,8 +496,8 @@
       var gate = getIdentityGate();
       var hasTelegramId = !!(gate && typeof gate.getTelegramId === 'function' && gate.getTelegramId());
       statusEl.textContent = hasTelegramId
-        ? 'Run /gklink to activate rewards.'
-        : 'Telegram quick-fill unavailable. Link through the Incubator Hub /gklink flow.';
+        ? 'Log in with Telegram to access eligible rewards.'
+        : 'Telegram quick-fill unavailable. Log in through the Incubator Hub; /gklink remains a fallback.';
       statusEl.className = hasTelegramId ? 'cm-tg-status cm-warning' : 'cm-tg-status';
     }
     widgetSlot.innerHTML = '';

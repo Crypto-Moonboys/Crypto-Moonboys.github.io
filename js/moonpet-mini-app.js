@@ -668,6 +668,9 @@
   // TEST-EXPORT: apiRequest:start
   async function post(path, payload, options) {
     if (!apiBase) throw new Error('API ENDPOINT DISABLED FOR THIS CONTEXT');
+    if (!initData && window.MOONBOYS_IDENTITY && typeof window.MOONBOYS_IDENTITY.getFreshTelegramAuth === 'function') {
+      telegramAuth = await window.MOONBOYS_IDENTITY.getFreshTelegramAuth();
+    }
     if (authenticationFailure) {
       var expiredError = new Error('TELEGRAM SESSION EXPIRED. OPEN A FRESH SESSION FROM @WIKICOMSBOT.');
       expiredError.status = 401;
@@ -4502,10 +4505,11 @@
     await restoreBrowserAuth();
     if (!initData && !telegramAuth) {
       await startupBoot;
-      tell('OPEN THIS GAME FROM @WIKICOMSBOT.', 'danger');
+      tell('LOG IN WITH TELEGRAM OR OPEN THIS GAME FROM @WIKICOMSBOT.', 'danger');
       screen.innerHTML = panel('TELEGRAM SIGNATURE REQUIRED',
         '<div class="line">MOONPET OS READS YOUR LIVE SAVE ONLY AFTER TELEGRAM VERIFIES YOUR IDENTITY.</div>' +
-        '<div class="line muted">No player data was requested in this browser. Open the signed Mini App, then initialise or resume your Moonpet.</div>' +
+        '<div class="line muted">Log in with Telegram on the website to restore your existing account, or open the signed Mini App. Your save and existing entry requirements are kept.</div>' +
+        '<a class="terminal-link-button" href="/gkniftyheads-incubator.html" data-telegram-login>LOG IN WITH TELEGRAM</a>' +
         '<div class="button-grid one"><a class="terminal-link-button" href="https://t.me/WIKICOMSBOT?start=moonpet" target="_blank" rel="noopener noreferrer">OPEN MOONPET OS IN TELEGRAM</a>' +
         '<button type="button" class="terminal-button" data-utility="guide">HOW TO PLAY<span class="button-purpose">Read how care, quests, battles and rewards work before choosing a route.</span></button><button type="button" class="terminal-button" data-utility="about">ABOUT MOONPET OS<span class="button-purpose">Learn about persistent companions and competition.</span></button></div>', 'telegram-auth');
       await typeBoot(['AUTHENTICATION NOT FOUND', 'OPEN THE MINI APP INSIDE TELEGRAM', 'NO PLAYER DATA WAS READ'], { speed: 9, hold: 800 });

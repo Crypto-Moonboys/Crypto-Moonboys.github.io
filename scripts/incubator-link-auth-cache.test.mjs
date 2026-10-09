@@ -109,7 +109,7 @@ const direct = await runIncubator('');
 assertCachePreserved(direct, 'direct visit');
 assert.equal(
   direct.elements['incubator-sync-message'].textContent,
-  'Use /gklink in the Telegram bot to connect your account.',
+  'Log in with Telegram to restore your account, or use /gklink in the bot as a fallback.',
   'direct visit shows neutral link instructions',
 );
 

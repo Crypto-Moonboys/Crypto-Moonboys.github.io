@@ -1,0 +1,156 @@
+# Telegram website authentication: architecture and migration audit
+
+Status: implemented on a review branch; production login remains disabled. No
+production migration, Worker deployment or merge is authorized by this PR.
+
+## Existing paths and ownership
+
+`js/identity-gate.js` coordinates legacy Telegram Login evidence and the bot link
+flag. `/telegram/auth` verifies legacy HMAC evidence but does not activate an
+account. `/gklink`, the Incubator callback and `/telegram/link/confirm` establish
+activation. `/telegram/user/status` restores fresh, signed evidence only when
+valid proof accompanies the request. A browser ID, username or local linked flag
+is never sufficient proof for a protected server operation.
+
+`telegram_users.telegram_id` is the unique account anchor. Arcade progression,
+Block Topia progression, faction membership, pets, achievements, rewards and
+ownership references retain their existing keys. `telegram_users.id` is also
+preserved. The existing leaderboard deployment accepts registered Telegram
+accounts through its compatibility wrapper and shares the `wikicoms` D1 database
+with the API. Its anti-cheat KV and score validation stay in place.
+
+Moonpet `/telegram-pets/app/*` validates Telegram Mini App `initData` using the
+bot token, rejects expired data and uses scoped mutation challenges. Browser
+launches use the shared identity gate. Website login does not replace Mini App
+validation. Requests supplying two authentication methods must agree on identity.
+
+## New flow
+
+1. A desktop or mobile browser visits `/telegram/website/start` on
+   `https://api.cryptomoonboys.com`. The Worker creates a ten-minute transaction
+   containing state, a browser-cookie binding, nonce and PKCE verifier. It
+   redirects to Telegram with Authorization Code + S256 PKCE.
+2. Telegram returns to `/telegram/website/callback`. An atomic D1
+   `DELETE ... RETURNING` consumes the matching state and browser binding before
+   code exchange. The Worker sends the verifier and Client Secret to Telegram.
+3. `jose` verifies the ID token against Telegram's pinned JWKS URL. Validation
+   requires RS256, issuer, audience, expiration, recent issuance, nonce and the
+   profile `id` claim. Provider URLs are constants; token-supplied key URLs and
+   signing algorithms cannot select a verifier.
+4. The verified numeric **`id`**, not OIDC **`sub`**, resolves the existing
+   account. The issuer/client/subject binding must agree with that ID. Conflicts
+   fail closed, including a different identity when a live cookie session exists.
+   Concurrent conflicting bindings cannot activate or create the other account.
+5. The Worker upserts only verified name/username metadata and records
+   `link_confirmed`. It never replaces a user row, resets progression or grants
+   XP, pets, rewards, faction membership, ownership or game eligibility.
+6. A host-only `Secure; HttpOnly; SameSite=Strict` cookie holds a random session
+   secret. The browser returns to its allowlisted website URL with no tokens in
+   the URL. The short-lived login cookie uses `SameSite=Lax` for the callback.
+7. `/session` restores the identity and a five-minute opaque credential in memory.
+   Protected clients pass it in the existing `telegram_auth` envelope. Its `s1_`
+   namespace survives clients that copy only `id`, `hash` and `auth_date`.
+   Both Workers verify its hash, account, expiry, revocation and anti-cheat state
+   from D1; it cannot become a legacy Telegram HMAC credential.
+
+The website keeps only display identity and session mode in localStorage. New
+credentials and CSRF secrets are never persisted there. The existing legacy
+cache remains solely for compatibility and is cleared when a website session
+is restored. The server status endpoint preserves website credentials rather
+than converting them into 24-hour legacy HMAC evidence.
+
+## Session and security contract
+
+Access credentials expire after five minutes. Renewal uses the HttpOnly cookie,
+an exact allowed Origin and a session-bound CSRF header. Sessions have a
+30-minute idle limit without renewal and a 24-hour absolute limit. A visible
+website page renews every four minutes; protected asynchronous requests renew
+near expiry. Bootstrap cannot extend the idle deadline. Logout revokes the
+session, immediately invalidating every credential in both Workers, and clears
+the cookie. Blocked accounts can still log out.
+
+Telegram's documented code-flow response supplies no refresh token or UserInfo
+endpoint. Local renewal never invents a Telegram refresh grant. After absolute
+expiry, the player authenticates with Telegram again. Provider failures, invalid
+tokens, D1 failures, stale/replayed state, unknown subjects, mismatched IDs and
+expired/revoked sessions fail closed. Auth responses use `no-store`, restricted
+credentialed CORS and `no-referrer`; they do not return provider tokens or errors.
+
+The API custom domain is required. A `workers.dev` cookie would be third-party
+to the website and unreliable on mobile. The GitHub Pages hostname retains the
+bot fallback; it is not an OIDC return origin. Preview environments need explicit
+HTTPS API and origin configuration and a separate BotFather registration.
+
+Legacy HMAC evidence remains usable for its existing 24-hour window. Website
+logout revokes website sessions; it does not retroactively revoke independently
+issued bot/legacy evidence. Existing public profile/status reads are display
+interfaces and remain public; they never issue credentials from an ID alone.
+
+## Required configuration and approved deployment sequence
+
+In the BotFather Mini App, select **WIKICOMSBOT → Login Widget**:
+
+- Register `https://cryptomoonboys.com` and `https://www.cryptomoonboys.com`.
+- Register the exact redirect URI
+  `https://api.cryptomoonboys.com/telegram/website/callback`.
+- Keep the default **RS256** signing algorithm. Request only `openid profile`;
+  no phone, wallet or bot messaging permission is required.
+- Obtain the OIDC Client ID and Client Secret. These are separate from
+  `TELEGRAM_BOT_TOKEN`; set `TELEGRAM_OIDC_CLIENT_ID` and
+  `TELEGRAM_OIDC_CLIENT_SECRET` as Worker secrets. Never commit their values.
+
+After explicit GK deployment approval:
+
+1. Take the normal D1 backup and record returning-player IDs and existing
+   progression/ownership snapshots. Apply migration
+   `090_telegram_website_sessions.sql` to `wikicoms` with the normal Wrangler
+   migration workflow. It creates four auth tables and indexes only; no existing
+   account backfill or ID conversion is required. Fresh schema installations
+   contain the same definitions.
+2. Confirm `api.cryptomoonboys.com` routes to `moonboys-api` with HTTPS. Configure
+   the BotFather URLs and secrets above. Keep
+   `TELEGRAM_WEBSITE_LOGIN_ENABLED=false` during the rollout.
+3. Deploy the leaderboard Worker and then the API Worker from the reviewed
+   commit. They must use the same existing D1 binding; anti-cheat KV bindings and
+   bot token stay unchanged. Publish the website through the approved Pages flow.
+4. Enable `TELEGRAM_WEBSITE_LOGIN_ENABLED=true` only after both Workers and
+   migration are verified. Keep `TELEGRAM_WEBSITE_AUTH_ORIGIN` and
+   `TELEGRAM_WEBSITE_ORIGINS` at the documented first-party values.
+5. Use a returning account on desktop and mobile. Confirm Telegram's real code
+   flow echoes the requested nonce, cookie bootstrap works, and the same numeric
+   Telegram ID sees its original profile/Arcade XP and eligible games without a
+   bot command. Compare the pre-login snapshots. Verify Mini App launches,
+   `/gklink`, expiry, renewal and logout; a captured pre-logout test credential
+   must be rejected by both Workers. Do not log credential contents.
+
+Rollback: disable new login, retain the additive migration and bot fallback.
+Do not delete auth bindings, reset accounts or remove progression tables. Revoke
+website sessions if an authentication incident requires it. A repository PR
+cannot itself prove BotFather, real provider nonce support, custom-domain cookie
+behavior or production migration state; those are release acceptance checks.
+
+## Official references
+
+- [Current Telegram Login and OIDC specification](https://core.telegram.org/bots/telegram-login)
+- [Telegram Mini App validation](https://core.telegram.org/bots/webapps#validating-data-received-via-the-mini-app)
+- [OIDC discovery](https://oauth.telegram.org/.well-known/openid-configuration)
+
+No Web3Auth, WalletConnect, automatic wallet, game-economy or canon change is part
+of this migration.
+
+## Regression coverage
+
+`telegram-website-auth.test.mjs` exercises real SQLite constraints with D1-style
+atomic batches and signed mock-provider JWTs. It covers additive migration,
+retained account row IDs, both XP systems, pets, factions, achievements, reward
+receipts, ownership links, repeat login, old bot login, accepted leaderboard
+submissions, conflicting Mini App identities, callback replay, JWT validation,
+origin/CSRF checks, renewal, idle/absolute expiry, revocation and D1 failures.
+
+`telegram-website-session-client.test.mjs` covers memory-only credentials,
+bootstrap timing, competitive activation, legacy fallback, stale local flags,
+renewal and confirmed logout. `telegram-website-login-browser.test.mjs` follows
+the mocked-provider flow through the actual Incubator page in desktop and mobile
+Chromium, verifies existing server-backed Arcade XP and confirms logout. It
+requires no production credentials and does not contact Telegram. The first two
+suites run in Worker/API CI; the browser suite runs in Visual CI.

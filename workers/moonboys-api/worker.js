@@ -2,6 +2,7 @@ import { capturePetEconomy, assertPetEconomy, assertPetEconomySource } from './p
 import { atomicPetBatch } from './pets/atomic-mutations.js';
 import { getStyleLoadout, equipPetStyle } from './pets/style-loadout.js';
 import { verifyTelegramWebhookSecret } from './telegram-webhook-auth.js';
+import { handleTelegramWebsiteAuth, isWebsiteCredential, verifyWebsiteCredential } from './telegram-website-auth.js';
 import { createDisplayedPetScope, isDisplayedPetScopeStaleError } from './pets/displayed-pet-scope.js';
 import { projectCommittedPetResult } from './pets/committed-result.js';
 import { RELIC_ROUTE_DETAILS } from './pets/relic-passives.js';
@@ -823,6 +824,8 @@ function readTelegramAuthEvidenceFromAuthorization(request) {
 
 async function verifyTelegramAuthEvidenceForRestore(body, env) {
   const tg = parseTelegramAuthEvidence(body?.telegram_auth || body?.auth_evidence || body);
+  const websiteIdentity = await verifyWebsiteCredential(tg, env, body?.telegram_id);
+  if (websiteIdentity) return websiteIdentity.error ? null : websiteIdentity;
   if (!tg || typeof tg !== 'object') return null;
   const telegramId = String(tg.id || '').trim();
   const authDate = String(tg.auth_date || '').trim();
@@ -9728,6 +9731,12 @@ async function authenticatePetMiniApp(body, env) {
   if (body?.init_data) {
     const verified = await verifyTelegramMiniAppInitData(body.init_data, env.TELEGRAM_BOT_TOKEN, { max_age_seconds: 3600 });
     if (!verified.ok) return { error: verified.reason, status: 401 };
+    if (body.telegram_id != null && String(body.telegram_id) !== verified.telegramId) return { error: 'telegram_id_mismatch', status: 403 };
+    if (body.telegram_auth) {
+      const other = await verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth);
+      if (other.error) return other;
+      if (other.telegramId !== verified.telegramId) return { error: 'telegram_id_mismatch', status: 403 };
+    }
     return verified;
   }
   const verified = await verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth);
@@ -11564,6 +11573,14 @@ export default {
     const json = makeJsonResponder(corsHeaders);
     const err = makeErrorResponder(corsHeaders);
 
+    if (path.startsWith('/telegram/website/')) {
+      if (request.method !== 'OPTIONS') {
+        const limited = await enforcePublicRateLimit(request, env, path, null, corsHeaders, { ipLimit: 30 });
+        if (limited) return limited;
+      }
+      return handleTelegramWebsiteAuth(request, env);
+    }
+
     if (request.method === 'OPTIONS') {
       return new Response(null, { status: 204, headers: corsHeaders });
     }
@@ -12717,7 +12734,7 @@ export default {
           && !!restoreEvidence
           && String(restoreEvidence.telegramId || '') === String(user.telegram_id || '');
         const signedAuthPayload = (linked && canRestoreSignedAuth)
-          ? await buildSignedTelegramAuthPayload({
+          ? isWebsiteCredential(restoreEvidence.authPayload) ? restoreEvidence.authPayload : await buildSignedTelegramAuthPayload({
             id: String(user.telegram_id),
             username: user.username || null,
             first_name: user.first_name || null,

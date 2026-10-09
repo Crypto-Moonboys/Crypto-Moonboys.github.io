@@ -5,11 +5,11 @@
   var BASE = cfg.BASE_URL || '';
   var HASH_KEY = 'telegram_auth';
   var AUTH_STORAGE_KEY = 'MOONBOYS_TELEGRAM_AUTH';
-  var DIRECT_VISIT_PROMPT = 'Use /gklink in the Telegram bot to connect your account.';
+  var DIRECT_VISIT_PROMPT = 'Log in with Telegram to restore your account, or use /gklink in the bot as a fallback.';
 
   // Resolved text constants — fall back to literals so no type="module" is needed.
   var COPY = window.UI_STATUS_COPY || {
-    UNLINKED:        'Telegram not linked \u2014 run /gklink',
+    UNLINKED:        'Telegram login required',
     API_UNAVAILABLE: 'Core API unavailable',
   };
 
@@ -239,9 +239,14 @@
       });
   }
 
+  function bootAfterIdentity() {
+    var ready = window.MOONBOYS_IDENTITY && window.MOONBOYS_IDENTITY.ready;
+    if (ready) Promise.resolve(ready).then(boot);
+    else boot();
+  }
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', boot);
+    document.addEventListener('DOMContentLoaded', bootAfterIdentity);
   } else {
-    boot();
+    bootAfterIdentity();
   }
 }());

@@ -30,7 +30,7 @@
 
   // Resolved text constants — fall back to literals so no type="module" is needed.
   var COPY = window.UI_STATUS_COPY || {
-    UNLINKED:            'Telegram not linked \u2014 run /gklink',
+    UNLINKED:            'Telegram login required',
     FEATURE_UNAVAILABLE: 'Feature unavailable',
     API_UNAVAILABLE:     'Core API unavailable',
   };
@@ -205,7 +205,7 @@
       var factionName = p.faction && p.faction.name ? p.faction.name : null;
       var linked = factionName || p.wallet_address
         ? '<span class="tg-badge tg-badge-linked">✅ Linked</span>'
-        : '<span class="tg-badge tg-badge-unlinked">Run /gklink to activate</span>';
+        : '<span class="tg-badge tg-badge-unlinked">Log in with Telegram to activate</span>';
       var factionBadge = factionName
         ? '<span class="tg-badge tg-badge-faction">⚔️ ' + escapeHtml(factionName) + '</span>'
         : '';
@@ -374,9 +374,14 @@
     init:              init,
   };
 
+  function initAfterIdentity() {
+    var ready = window.MOONBOYS_IDENTITY && window.MOONBOYS_IDENTITY.ready;
+    if (ready) Promise.resolve(ready).then(init);
+    else init();
+  }
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
+    document.addEventListener('DOMContentLoaded', initAfterIdentity);
   } else {
-    init();
+    initAfterIdentity();
   }
 }());

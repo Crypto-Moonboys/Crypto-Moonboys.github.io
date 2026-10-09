@@ -6,15 +6,17 @@
  *   guest           — browse + casual local game play only; no leaderboard submission
  *   gravatar        — can post comments (email/Gravatar only); no votes, no XP
  *   telegram        — identified via Telegram auth; not yet competition-active
- *   telegram_linked — Telegram auth + bot link completed; fully competition-active
+ *   telegram_linked — verified website session or completed bot link; competition-active
  *                     (Battle Chamber, community XP, voting, seasonal leaderboard)
  *
- * IMPORTANT: completing the bot link flow is the required final activation step for
- * full competitive participation. Raw Telegram presence alone is NOT enough.
+ * Verified OIDC website login activates eligible access without a bot command.
+ * Raw Telegram presence alone is NOT account proof. Legacy auth + bot linking
+ * remains a fallback; the server validates every protected request.
  *
  * Sync model
  * ----------
- *   Step 1 — Telegram auth                               → tier becomes 'telegram'
+ *   Website — Telegram OIDC + server activation → tier becomes 'telegram_linked'
+ *   Legacy Step 1 — Telegram auth                        → tier becomes 'telegram'
  *   Step 2 — /gkstart → /gklink → click signed link     → tier becomes 'telegram_linked'
  *            (the bot sends a link that opens gkniftyheads-incubator.html#telegram_auth=… and finishes activation)
  *
@@ -55,6 +57,92 @@
   var STYLE_ID     = 'tg-sync-gate-styles';
   var bootstrapPromise = null;
   var competitiveGatePromise = null;
+  var websiteAuth = null;
+  var websiteCsrf = null;
+  var websitePromise = null;
+  var websitePending = false;
+  var websiteReady = Promise.resolve(null);
+
+  function supportsWebsiteSession() {
+    if (typeof document === 'undefined') return false;
+    var hostname = window.location && window.location.hostname;
+    return hostname === 'cryptomoonboys.com' || hostname === 'www.cryptomoonboys.com' ||
+      (window.MOONBOYS_API || {}).WEBSITE_LOGIN_ENABLED === true;
+  }
+
+  function clearWebsiteIdentity() {
+    websiteAuth = null;
+    websiteCsrf = null;
+    ['moonboys_tg_id', 'moonboys_tg_name', 'moonboys_tg_linked', 'moonboys_tg_session_mode'].forEach(lsRemove);
+    clearStoredTelegramAuthRaw();
+    setSyncHealth('bad', 'auth_expired');
+  }
+
+  function adoptWebsiteSession(data) {
+    var auth = data && data.telegram_auth;
+    if (!data || data.ok !== true || !auth || String(data.telegram_id) !== String(auth.id) ||
+      !/^s1_[A-Za-z0-9_-]{43}$/.test(auth.hash || '') || Number(auth.expires_at) <= Date.now() / 1000) return null;
+    var identityChanged = !websiteAuth || String(websiteAuth.id) !== String(auth.id);
+    websiteAuth = auth;
+    websiteCsrf = data.csrf_token;
+    // New credentials never enter localStorage, including the legacy auth cache.
+    clearStoredTelegramAuthRaw();
+    lsSet(LS_TG_ID, auth.id);
+    lsSet(LS_TG_NAME, data.display_name || auth.first_name || 'Telegram player');
+    lsSet(LS_TG_LINKED, '1');
+    lsSet('moonboys_tg_session_mode', 'website');
+    setSyncHealth('good', 'website_session_verified');
+    if (identityChanged && typeof window.dispatchEvent === 'function' && typeof CustomEvent === 'function') {
+      window.dispatchEvent(new CustomEvent('moonboys:telegram-session', { detail: { telegram_id: auth.id } }));
+      window.dispatchEvent(new CustomEvent('moonboys:sync-state', { detail: { state: 'good', telegram_id: auth.id } }));
+    }
+    return { ok: true, linked: true, source: 'telegram_oidc', telegram_id: String(auth.id), telegram_auth: auth };
+  }
+
+  function restoreWebsiteSession(renew) {
+    if (!supportsWebsiteSession() || !getApiBase()) return Promise.resolve(null);
+    if (websitePromise) return websitePromise;
+    var options = { credentials: 'include', headers: {} };
+    if (renew && websiteCsrf) {
+      options.method = 'POST';
+      options.headers['X-Moonboys-CSRF'] = websiteCsrf;
+    }
+    var path = options.method ? 'renew' : 'session';
+    websitePromise = fetch(getApiBase() + '/telegram/website/' + path, options)
+      .then(function (response) {
+        if (!response.ok) {
+          if (response.status === 401 || response.status === 403) {
+            if (lsGet('moonboys_tg_session_mode') === 'website') clearWebsiteIdentity();
+          }
+          return null;
+        }
+        return response.json().then(adoptWebsiteSession);
+      }).catch(function () { return null; })
+      .finally(function () { websitePromise = null; websitePending = false; });
+    return websitePromise;
+  }
+
+  function loginWithTelegram() {
+    var base = getApiBase();
+    if (!base || !supportsWebsiteSession()) { showSyncGateModal(true); return; }
+    var returnTo = window.location.origin + window.location.pathname + window.location.search;
+    window.location.assign(base + '/telegram/website/start?return_to=' + encodeURIComponent(returnTo));
+  }
+
+  function logoutTelegram() {
+    return Promise.resolve(websiteReady).then(function () {
+      if (!websiteCsrf && lsGet('moonboys_tg_session_mode') === 'website') return restoreWebsiteSession(false);
+    }).then(function () {
+      if (!websiteCsrf && lsGet('moonboys_tg_session_mode') === 'website') throw new Error('Logout could not be confirmed. Try again.');
+      if (!websiteCsrf) return;
+      return fetch(getApiBase() + '/telegram/website/logout', {
+        method: 'POST', credentials: 'include', headers: { 'X-Moonboys-CSRF': websiteCsrf },
+      }).then(function (response) { if (!response.ok) throw new Error('Logout could not be confirmed. Try again.'); });
+    }).then(function () {
+      clearWebsiteIdentity();
+      window.location.reload();
+    });
+  }
 
   // ── localStorage helpers ────────────────────────────────────
 
@@ -108,11 +196,13 @@
   }
 
   function getTelegramAuth() {
+    if (websiteAuth) return websiteAuth;
+    if (lsGet('moonboys_tg_session_mode') === 'website') return null;
     var raw = getStoredTelegramAuthRaw();
     if (!raw) return null;
     try {
       var parsed = JSON.parse(raw);
-      return parsed && typeof parsed === 'object' ? parsed : null;
+      return parsed && typeof parsed === 'object' && !/^s1_/.test(parsed.hash || '') ? parsed : null;
     } catch {
       return null;
     }
@@ -150,6 +240,7 @@
   }
 
   function isTelegramAuthExpired(auth) {
+    if (auth && /^s1_/.test(auth.hash || '')) return !Number.isFinite(Number(auth.expires_at)) || Number(auth.expires_at) <= Date.now() / 1000;
     var age = getTelegramAuthAgeSeconds(auth);
     if (age == null) return true;
     if (age < -300) return true;
@@ -270,6 +361,16 @@
   }
 
   function enforceCompetitiveArcadePageGate(options) {
+    if (websitePending) return websiteReady.then(function () { return enforceCompetitiveArcadePageGate(options); });
+    if (websiteAuth || lsGet('moonboys_tg_session_mode') === 'website') {
+      return restoreWebsiteSession(true).then(function (result) {
+        if (!result || !result.ok) return failCompetitiveArcadePageGate('auth_expired', options);
+        return buildCompetitiveGateResult(true, '', {
+          game_id: options && (options.game_id || options.gameId) || null,
+          telegram_auth: result.telegram_auth, source: 'telegram_oidc', linked: true, verified_by_server: true,
+        });
+      });
+    }
     var opts = options && typeof options === 'object' ? options : {};
     var gameId = opts.game_id || opts.gameId || null;
 
@@ -326,10 +427,11 @@
   }
 
   /**
-   * Returns true when both Telegram auth (Step 1) AND the bot link flow (Step 2) are complete.
+   * Returns true for a fresh website session or a completed legacy bot link.
    * Only a linked account is fully competition-active.
    */
   function isTelegramLinked() {
+    if (lsGet('moonboys_tg_session_mode') === 'website') return !!websiteAuth && !isTelegramAuthExpired(websiteAuth);
     return !!(lsGet(LS_TG_ID) && lsGet(LS_TG_LINKED));
   }
 
@@ -344,6 +446,9 @@
    * @returns {boolean} true only when a fresh signed payload exists and linked state is ready.
    */
   function setTelegramLinked(telegramId, authPayload, displayName) {
+    if (authPayload && /^s1_/.test(authPayload.hash || '')) {
+      return !!websiteAuth && String(websiteAuth.id) === String(telegramId) && !isTelegramAuthExpired(websiteAuth);
+    }
     var currentTelegramId = getTelegramId();
     var resolvedTelegramId = String(
       telegramId || (authPayload && authPayload.id) || currentTelegramId || ''
@@ -386,6 +491,10 @@
    * Called by comments.js after the Telegram Login Widget callback succeeds.
    */
   function saveTelegramIdentity(telegramId, displayName, authPayload) {
+    if (authPayload && /^s1_/.test(authPayload.hash || '')) return;
+    lsRemove('moonboys_tg_session_mode');
+    websiteAuth = null;
+    websiteCsrf = null;
     if (telegramId) lsSet(LS_TG_ID, telegramId);
     if (displayName) lsSet(LS_TG_NAME, displayName);
     if (authPayload && typeof authPayload === 'object') {
@@ -415,6 +524,11 @@
   }
 
   function getFreshTelegramAuth(options) {
+    if (websitePending) return websiteReady.then(function () { return getFreshTelegramAuth(options); });
+    if (websiteAuth || lsGet('moonboys_tg_session_mode') === 'website') {
+      if (websiteAuth && Number(websiteAuth.expires_at) > Date.now() / 1000 + 30 && !(options && options.force)) return Promise.resolve(websiteAuth);
+      return restoreWebsiteSession(true).then(function (result) { return result && result.telegram_auth || null; });
+    }
     var opts = options && typeof options === 'object' ? options : {};
     var force = !!opts.force;
     var currentAuth = force ? null : getSignedTelegramAuth();
@@ -431,6 +545,10 @@
   }
 
   function restoreLinkedTelegramAuth(options) {
+    if (websitePending) return websiteReady.then(function () { return restoreLinkedTelegramAuth(options); });
+    if (websiteAuth || lsGet('moonboys_tg_session_mode') === 'website') {
+      return restoreWebsiteSession(true).then(function (result) { return result || { ok: false, reason: 'auth_expired' }; });
+    }
     var opts = options && typeof options === 'object' ? options : {};
     var force = !!opts.force;
     var currentAuth = getSignedTelegramAuth();
@@ -575,7 +693,7 @@
 
   /**
    * Determine the current user's identity tier:
-   *   'telegram_linked' — Telegram auth completed AND bot link completed (competition-active)
+   *   'telegram_linked' — server-activated website session or bot-linked identity
    *   'telegram'        — Telegram auth only; identified but NOT yet competition-active
    *   'guest'           — anonymous; browsing and local gameplay only
    *
@@ -585,7 +703,7 @@
    *
    * Full competitive actions (leaderboard scores, likes, votes, faction, XP) require
    * 'telegram_linked'. Basic Telegram auth ('telegram') grants identity but NOT
-   * competition-active status until the bot link flow is completed.
+   * competition-active status until server activation is verified.
    */
   function getIdentityTier() {
     if (isTelegramLinked()) return 'telegram_linked';
@@ -609,13 +727,14 @@
 
   /**
    * Gate a fully competitive action (leaderboard scores, votes, likes, faction, XP).
-   * Requires BOTH Step 1 (Telegram auth) AND Step 2 (bot link completed).
+   * Requires a verified website session or the legacy activated bot link.
    * Also checks the anti-cheat status: if the account is blocked, the action is
    * rejected with a clear message instead of calling onAllowed().
    * Fail-safe default: protected mode fails closed whenever status verification fails.
    * Optional display/soft mode allows intentionally non-protected display paths to render.
    */
   function requireLinkedAccount(onAllowed, options) {
+    if (websitePending) { websiteReady.then(function () { requireLinkedAccount(onAllowed, options); }); return; }
     var opts = options && typeof options === 'object' ? options : {};
     var mode = opts.mode ? String(opts.mode).toLowerCase() : 'protected';
     var softMode = !!opts.soft || mode === 'display';
@@ -901,6 +1020,20 @@
     if (bodyEl)  bodyEl.innerHTML    = body;
     if (noteEl)  noteEl.innerHTML    = note;
 
+    if (supportsWebsiteSession()) {
+      if (titleEl) titleEl.textContent = 'Log in with Telegram';
+      if (bodyEl) bodyEl.textContent = 'Verify your Telegram account to restore your existing profile, XP and eligible competitive access. No bot command is required.';
+      var loginButton = document.getElementById('tg-gate-btn');
+      if (loginButton) {
+        loginButton.textContent = 'Log in with Telegram';
+        loginButton.removeAttribute('target');
+        loginButton.href = getApiBase() + '/telegram/website/start?return_to=' + encodeURIComponent(window.location.href.split('#')[0]);
+      }
+      var fallback = document.getElementById('tg-gate-secondary');
+      if (fallback) { fallback.href = getBotUrl(); fallback.textContent = 'Bot fallback: /gkstart → /gklink'; }
+      if (noteEl) noteEl.textContent = 'Existing eligibility and server validation still apply. Mini App launches retain Telegram authentication.';
+    }
+
     modal.style.display = 'flex';
     modal.setAttribute('aria-hidden', 'false');
     var closeBtn = modal.querySelector('.tg-sync-gate-close');
@@ -918,11 +1051,14 @@
   // ── Expose public API ────────────────────────────────────────
 
   window.MOONBOYS_IDENTITY = {
+    ready: websiteReady,
+    loginWithTelegram: loginWithTelegram,
+    logout: logoutTelegram,
     /**
      * Identity tier: 'guest' | 'telegram' | 'telegram_linked'
      *   guest           — no Telegram auth
      *   telegram        — Telegram auth only (Step 1 complete); NOT competition-active
-     *   telegram_linked — Telegram auth + bot link complete (Step 2 done); fully competition-active
+     *   telegram_linked — verified website session or activated bot link; competition-active
      */
     getIdentityTier:      getIdentityTier,
     /** Verified Telegram ID (string) or null */
@@ -965,7 +1101,7 @@
     requireTelegramSync:  requireTelegramSync,
     /**
      * Gate on full competition activation (Step 1 + Step 2):
-     * requires BOTH Telegram auth AND bot link completion (/gkstart → /gklink → one-time link).
+     * requires a verified website session or activated legacy bot link.
      * Use this for leaderboard scores, votes, likes, faction, XP.
      */
     requireLinkedAccount: requireLinkedAccount,
@@ -973,5 +1109,24 @@
     showSyncGateModal:    showSyncGateModal,
     dismissSyncGateModal: dismissSyncGateModal,
   };
+
+  if (supportsWebsiteSession()) {
+    websitePending = true;
+    websiteReady = restoreWebsiteSession(false);
+    window.MOONBOYS_IDENTITY.ready = websiteReady;
+    // Renew only while the player is using a visible website page.
+    if (typeof window.setInterval === 'function') {
+      window.setInterval(function () {
+        if (websiteAuth && !document.hidden) restoreWebsiteSession(true);
+      }, 240000);
+    }
+    document.addEventListener('click', function (event) {
+      var target = event.target && event.target.closest && event.target.closest('[data-telegram-login], [data-telegram-logout]');
+      if (!target) return;
+      event.preventDefault();
+      if (target.hasAttribute('data-telegram-logout')) logoutTelegram().catch(function (error) { window.alert(error.message); });
+      else loginWithTelegram();
+    });
+  }
 
 }());

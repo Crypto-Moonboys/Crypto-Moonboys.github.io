@@ -136,13 +136,14 @@
   // detect whether a live update raced the server response.
   var _liveXpRevision = 0;
 
-  function hydrateState() {
+  async function hydrateState() {
     if (_hydrated) return Promise.resolve(getState());
     // Lock immediately — prevents any concurrent or re-entrant call from
     // issuing a second fetch and overwriting live event-driven state.
     _hydrated = true;
 
     var gate = window.MOONBOYS_IDENTITY || null;
+    if (gate && gate.ready) await gate.ready;
     var apiCfg = window.MOONBOYS_API || null;
     var apiBase = apiCfg && typeof apiCfg.getApiBase === 'function'
       ? apiCfg.getApiBase({ mode: 'write' })

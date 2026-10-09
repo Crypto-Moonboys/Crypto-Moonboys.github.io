@@ -12,7 +12,7 @@ import { getAllRanks } from '/js/arcade/systems/faction-ranks.js';
 // Resolved text constants — use global set by ui-status-copy.js (classic script);
 // fall back to literals so the module works even if the script tag is missing.
 const COPY = window.UI_STATUS_COPY || {
-  UNLINKED:        'Telegram not linked \u2014 run /gklink',
+  UNLINKED:        'Telegram login required',
   API_UNAVAILABLE: 'Core API unavailable',
 };
 
