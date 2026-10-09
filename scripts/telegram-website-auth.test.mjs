@@ -27,6 +27,31 @@ test('migration 090 is additive and idempotent for existing accounts and retaine
   assert.equal(JSON.stringify(sqlite.prepare('SELECT * FROM telegram_users').all()), users);
 });
 
+for (const installation of ['fresh schema', 'migration 090']) test(`${installation} indexes idle/absolute session cleanup and credential cascades`, () => {
+  const { sqlite } = fixture();
+  if (installation === 'migration 090') {
+    for (const table of ['telegram_website_credentials', 'telegram_website_sessions', 'telegram_login_transactions', 'telegram_oidc_accounts']) sqlite.exec('DROP TABLE ' + table);
+    sqlite.exec(readFileSync('workers/moonboys-api/migrations/090_telegram_website_sessions.sql', 'utf8'));
+  }
+  const authSource = readFileSync('workers/moonboys-api/telegram-website-auth.js', 'utf8');
+  const cleanup = authSource.match(/prepare\('(DELETE FROM telegram_website_sessions[^']+)'\)/)?.[1];
+  assert.ok(cleanup, 'exercise the actual login-start cleanup statement');
+  const insert = sqlite.prepare('INSERT INTO telegram_website_sessions (session_hash, telegram_id, csrf_hash, created_at, last_seen_at, expires_at) VALUES (?, ?, ?, ?, ?, ?)');
+  for (const [key, seen, expiry] of [['active', 950, 2000], ['idle', 800, 2000], ['absolute', 950, 999], ['both', 800, 999]]) {
+    insert.run(key, ID, 'csrf-' + key, 500, seen, expiry);
+    sqlite.prepare('INSERT INTO telegram_website_credentials (token_hash, session_hash, expires_at) VALUES (?, ?, ?)').run('proof-' + key, key, 1500);
+  }
+  const plan = sqlite.prepare('EXPLAIN QUERY PLAN ' + cleanup).all(1000, 900).map(row => row.detail).join('\n');
+  assert.doesNotMatch(plan, /SCAN telegram_website_(sessions|credentials)\b/);
+  assert.match(plan, /USING (?:COVERING )?INDEX idx_telegram_session_expiry/);
+  assert.match(plan, /USING (?:COVERING )?INDEX idx_telegram_session_last_seen/);
+  assert.match(plan, /USING (?:COVERING )?INDEX idx_telegram_credential_session/);
+  sqlite.prepare(cleanup).run(1000, 900);
+  assert.deepEqual(sqlite.prepare('SELECT session_hash FROM telegram_website_sessions').all().map(row => row.session_hash), ['active']);
+  assert.deepEqual(sqlite.prepare('SELECT token_hash FROM telegram_website_credentials').all().map(row => row.token_hash), ['proof-active']);
+  assert.equal(sqlite.prepare('SELECT COUNT(*) AS n FROM telegram_users').get().n, 1);
+});
+
 test('verified website credential is accepted by the existing leaderboard without changing XP awards', async () => {
   const { env, sqlite } = fixture();
   const { data } = await loggedIn(env);

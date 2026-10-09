@@ -705,7 +705,18 @@
         // Cookie renewal is covered by the same deadline and cancellation as
         // the gameplay request; it must never let a superseded action continue.
         if (!authBody().init_data && typeof window !== 'undefined' && window.MOONBOYS_IDENTITY && typeof window.MOONBOYS_IDENTITY.getFreshTelegramAuth === 'function') {
-          telegramAuth = await window.MOONBOYS_IDENTITY.getFreshTelegramAuth();
+          var freshTelegramAuth = await window.MOONBOYS_IDENTITY.getFreshTelegramAuth();
+          var retainedTelegramAuth = typeof window.MOONBOYS_IDENTITY.getTelegramAuth === 'function'
+            ? window.MOONBOYS_IDENTITY.getTelegramAuth() : null;
+          // Retained website proof means renewal failed transiently. Do not
+          // submit without proof and turn that outage into permanent expiry.
+          if (!freshTelegramAuth && retainedTelegramAuth && /^s1_/.test(retainedTelegramAuth.hash || '')) {
+            var refreshError = new Error('TELEGRAM SESSION REFRESH UNAVAILABLE. TRY AGAIN.');
+            refreshError.status = 503;
+            refreshError.code = 'website_auth_refresh_unavailable';
+            throw refreshError;
+          }
+          telegramAuth = freshTelegramAuth;
         }
         // State is safe to retry after a transient D1 read failure. Mutations
         // must never replay automatically after an unconfirmed response.

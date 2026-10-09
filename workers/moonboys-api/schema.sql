@@ -2202,6 +2202,7 @@ CREATE TABLE IF NOT EXISTS telegram_website_sessions (
   revoked_at INTEGER
 );
 CREATE INDEX IF NOT EXISTS idx_telegram_session_expiry ON telegram_website_sessions(expires_at);
+CREATE INDEX IF NOT EXISTS idx_telegram_session_last_seen ON telegram_website_sessions(last_seen_at);
 
 CREATE TABLE IF NOT EXISTS telegram_website_credentials (
   token_hash TEXT PRIMARY KEY,
@@ -2209,3 +2210,4 @@ CREATE TABLE IF NOT EXISTS telegram_website_credentials (
   expires_at INTEGER NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_telegram_credential_expiry ON telegram_website_credentials(expires_at);
+CREATE INDEX IF NOT EXISTS idx_telegram_credential_session ON telegram_website_credentials(session_hash);

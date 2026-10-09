@@ -75,6 +75,12 @@ visible-tab refresh and the renewal timer retry the cookie session. A failed
 initial capability probe can also be retried. Protected actions renew expired
 five-minute access proof before deciding whether account activation is absent;
 confirmed session expiry or revocation still clears website identity.
+Moonpet reads and actions stop with a retryable error when renewal returns no
+fresh proof but the identity gate retains a website session. They send no
+unauthenticated gameplay request and do not mark authentication permanently
+failed. The next attempt renews again; confirmed expiry keeps the existing
+authentication failure behavior. Mini App `initData` and legacy proof still use
+their existing paths, and mutations never replay automatically.
 
 Faction status uses `POST /faction/status` with proof in the body. The API rejects
 website credentials in `telegram_auth` and `auth_evidence` URL query parameters
@@ -94,6 +100,12 @@ the cookie. Blocked accounts can still log out.
 Every authentication batch and revocation write must explicitly report success;
 an unconfirmed write returns 503 without issuing a replacement session cookie or
 claiming successful logout. The browser retains its state until logout succeeds.
+Migration 090 and the fresh schema index both absolute expiry and last-seen idle
+expiry, plus credential session references, so login cleanup and cascading
+credential deletion use indexed searches.
+An environment that applied an earlier PR revision of migration 090 must also
+install these two additive indexes during the approved rollout; reapplying its
+idempotent SQL preserves existing accounts and authentication records.
 
 Telegram's documented code-flow response supplies no refresh token or UserInfo
 endpoint. Local renewal never invents a Telegram refresh grant. After absolute
@@ -176,6 +188,9 @@ receipts, ownership links, repeat login, old bot login, accepted leaderboard
 submissions, conflicting Mini App identities, callback replay, JWT validation,
 origin/CSRF checks, renewal, idle/absolute expiry, revocation and D1 failures.
 It also covers resolved D1 mutation failures and disabled rollout capabilities.
+SQLite query-plan checks cover fresh-install and migrated session cleanup,
+including idle/absolute expiry indexes and indexed credential cascades; cleanup
+retains active sessions and deletes only expired sessions and their credentials.
 Malformed `return_to` input consistently returns 400 without creating a login
 transaction. Transport tests cover faction POST proof and rejection of JSON or
 encoded website proof in URL queries while preserving legacy GET compatibility.
@@ -188,3 +203,6 @@ the mocked-provider flow through the actual Incubator page in desktop and mobile
 Chromium, verifies existing server-backed Arcade XP and confirms logout. It
 requires no production credentials and does not contact Telegram. The first two
 suites run in Worker/API CI; the browser suite runs in Visual CI.
+`moonpet-passive-refresh.test.mjs` covers retryable website renewal failures for
+reads and actions, recovery on the next attempt without duplicate submission,
+confirmed expiry, Mini App/legacy compatibility and cancellation/deadlines.
