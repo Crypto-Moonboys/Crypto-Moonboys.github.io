@@ -1,0 +1,26 @@
+name: SPARKY ChatGPT Beginner Handoff
+
+on:
+  pull_request:
+    paths:
+      - 'gpt-users.html'
+      - 'swarmsy.html'
+      - 'sparky-chatgpt-guide.txt'
+      - 'scripts/sparky-chatgpt-handoff.test.mjs'
+      - '.github/workflows/sparky-chatgpt-handoff.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    name: Beginner launch, guide and clipboard smoke test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Test generated ChatGPT launch flows
+        run: node --test scripts/sparky-chatgpt-handoff.test.mjs
