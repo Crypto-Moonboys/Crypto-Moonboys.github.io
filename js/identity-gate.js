@@ -73,11 +73,31 @@
   }
   function supportsWebsiteSession() { return websiteAvailable; }
 
+  function fetchWebsite(url, options, readJson) {
+    var controller = typeof AbortController === 'function' ? new AbortController() : null;
+    var timer;
+    var request = Promise.resolve().then(function () {
+      return fetch(url, Object.assign({}, options, controller ? { signal: controller.signal } : {}));
+    }).then(function (response) {
+      if (!readJson) return response;
+      // Keep the deadline active while reading the body, too.
+      if (!response.ok) return { response: response, data: null };
+      return response.json().then(function (data) { return { response: response, data: data }; });
+    });
+    var deadline = new Promise(function (_, reject) {
+      timer = window.setTimeout(function () {
+        if (controller) controller.abort();
+        reject(new Error('website_request_timeout'));
+      }, 8000);
+    });
+    return Promise.race([request, deadline]).finally(function () { window.clearTimeout(timer); });
+  }
+
   function probeWebsiteSession() {
     if (!canProbeWebsiteSession() || !getApiBase()) return Promise.resolve(null);
-    return fetch(getApiBase() + '/telegram/website/capabilities', { credentials: 'omit' })
-      .then(function (response) { return response.ok ? response.json() : null; })
-      .then(function (data) {
+    return fetchWebsite(getApiBase() + '/telegram/website/capabilities', { credentials: 'omit' }, true)
+      .then(function (result) {
+        var data = result.data;
         websiteAvailable = !!(data && data.ok === true && data.enabled === true);
         if (!websiteAvailable) return null;
         return restoreWebsiteSession(false);
@@ -122,16 +142,17 @@
       options.headers['X-Moonboys-CSRF'] = websiteCsrf;
     }
     var path = options.method ? 'renew' : 'session';
-    websitePromise = fetch(getApiBase() + '/telegram/website/' + path, options)
-      .then(function (response) {
+    websitePromise = fetchWebsite(getApiBase() + '/telegram/website/' + path, options, true)
+      .then(function (result) {
+        var response = result.response;
         if (!response.ok) {
           if (response.status === 401 || response.status === 403) {
             if (lsGet('moonboys_tg_session_mode') === 'website') clearWebsiteIdentity();
           }
           return null;
         }
-        return response.json().then(adoptWebsiteSession);
-      }).catch(function () { return null; })
+        return adoptWebsiteSession(result.data);
+      }).catch(function () { websiteAvailable = false; return null; })
       .finally(function () { websitePromise = null; websitePending = false; });
     return websitePromise;
   }
@@ -151,9 +172,10 @@
     }).then(function () {
       if (!websiteCsrf && lsGet('moonboys_tg_session_mode') === 'website') throw new Error('Logout could not be confirmed. Try again.');
       if (!websiteCsrf) return;
-      return fetch(getApiBase() + '/telegram/website/logout', {
+      return fetchWebsite(getApiBase() + '/telegram/website/logout', {
         method: 'POST', credentials: 'include', headers: { 'X-Moonboys-CSRF': websiteCsrf },
-      }).then(function (response) { if (!response.ok) throw new Error('Logout could not be confirmed. Try again.'); });
+      }).then(function (response) { if (!response.ok) throw new Error('Logout could not be confirmed. Try again.'); })
+        .catch(function () { throw new Error('Logout could not be confirmed. Try again.'); });
     }).then(function () {
       clearWebsiteIdentity();
       window.location.reload();

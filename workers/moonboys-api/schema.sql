@@ -2187,6 +2187,7 @@ CREATE TABLE IF NOT EXISTS telegram_login_transactions (
   nonce TEXT NOT NULL,
   return_url TEXT NOT NULL,
   expected_telegram_id TEXT,
+  previous_session_hash TEXT,
   expires_at INTEGER NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_telegram_login_expiry ON telegram_login_transactions(expires_at);

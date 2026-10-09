@@ -154,9 +154,9 @@ export async function handleTelegramWebsiteAuth(request, env, fetchImpl = fetch)
       const results = await env.DB.batch([
         env.DB.prepare('DELETE FROM telegram_login_transactions WHERE expires_at <= ?').bind(nowSeconds()),
         env.DB.prepare('DELETE FROM telegram_website_sessions WHERE expires_at <= ? OR last_seen_at <= ?').bind(nowSeconds(), nowSeconds() - WEBSITE_IDLE_SECONDS),
-        env.DB.prepare(`INSERT INTO telegram_login_transactions (state_hash, browser_hash, verifier, nonce, return_url, expected_telegram_id, expires_at)
-          VALUES (?, ?, ?, ?, ?, ?, ?)`)
-          .bind(await authDigest(state), await authDigest(browser), verifier, nonce, returnUrl.href, session?.telegram_id || null, nowSeconds() + LOGIN_SECONDS),
+        env.DB.prepare(`INSERT INTO telegram_login_transactions (state_hash, browser_hash, verifier, nonce, return_url, expected_telegram_id, previous_session_hash, expires_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?)`)
+          .bind(await authDigest(state), await authDigest(browser), verifier, nonce, returnUrl.href, session?.telegram_id || null, session?.session_hash || null, nowSeconds() + LOGIN_SECONDS),
       ]);
       requireWrites(results, 3);
       const auth = new URL(ISSUER + '/auth');
@@ -208,9 +208,9 @@ export async function handleTelegramWebsiteAuth(request, env, fetchImpl = fetch)
       ]);
       requireWrites(results, 4);
       if (results[3]?.meta?.changes !== 1) fail('telegram_identity_conflict', 409);
-      // Invalidate the prior cookie session on a successful fresh login.
-      const oldSecret = cookie(request, SESSION_COOKIE);
-      if (oldSecret) requireWrites([await env.DB.prepare('UPDATE telegram_website_sessions SET revoked_at = ? WHERE session_hash = ?').bind(now, await authDigest(oldSecret)).run()], 1);
+      // Strict session cookies do not accompany the cross-site Telegram callback.
+      // Revoke only the verified session captured in this browser-bound transaction.
+      if (tx.previous_session_hash) requireWrites([await env.DB.prepare('UPDATE telegram_website_sessions SET revoked_at = ? WHERE session_hash = ?').bind(now, tx.previous_session_hash).run()], 1);
       headers.append('Set-Cookie', setCookie(SESSION_COOKIE, secret, WEBSITE_SESSION_SECONDS));
       headers.set('Location', tx.return_url);
       return new Response(null, { status: 303, headers });

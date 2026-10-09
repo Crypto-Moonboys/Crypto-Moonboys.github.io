@@ -280,11 +280,22 @@ test('fresh login cannot replace the cookie if prior-session revocation is uncon
   const { cookie, data } = await loggedIn(env);
   const login = await start(env, cookie);
   failRevocation(DB);
-  const response = await callback(env, login, {}, { Cookie: login.cookie + '; ' + cookie });
+  // Telegram's cross-site return sends the Lax login cookie, not the Strict session cookie.
+  const response = await callback(env, login);
   assert.equal(response.status, 503);
   assert.equal(response.headers.get('Location'), null);
   assert.equal(response.headers.getSetCookie().some(value => value.startsWith('__Host-moonboys_session=')), false);
   assert.equal((await verifyWebsiteCredential(data.telegram_auth, env)).telegramId, ID);
+});
+
+test('fresh login revokes the prior verified session when the Strict cookie is absent on callback', async () => {
+  const { env } = fixture();
+  const { cookie, data } = await loggedIn(env);
+  const response = await callback(env, await start(env, cookie));
+  assert.equal(response.status, 303);
+  assert.ok(response.headers.getSetCookie().some(value => value.startsWith('__Host-moonboys_session=')));
+  assert.equal((await verifyWebsiteCredential(data.telegram_auth, env)).status, 401);
+  assert.equal((await session(env, cookie)).status, 401);
 });
 
 test('every authentication batch must report success before redirecting or issuing proof', async () => {

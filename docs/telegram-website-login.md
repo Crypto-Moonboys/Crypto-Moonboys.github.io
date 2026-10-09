@@ -29,7 +29,9 @@ validation. Requests supplying two authentication methods must agree on identity
 1. A desktop or mobile browser visits `/telegram/website/start` on
    `https://api.cryptomoonboys.com`. The Worker creates a ten-minute transaction
    containing state, a browser-cookie binding, nonce and PKCE verifier. It
-   redirects to Telegram with Authorization Code + S256 PKCE.
+   also records any existing verified session for revocation: the Strict session
+   cookie will not accompany Telegram's cross-site return. It redirects to
+   Telegram with Authorization Code + S256 PKCE.
 2. Telegram returns to `/telegram/website/callback`. An atomic D1
    `DELETE ... RETURNING` consumes the matching state and browser binding before
    code exchange. The Worker sends the verifier and Client Secret to Telegram.
@@ -64,6 +66,9 @@ first, then queries `/telegram/website/capabilities`. Only a server-confirmed
 enabled capability activates website login controls and cookie bootstrap. A
 disabled flag, missing credentials, unavailable capability or disabled API keeps
 the bot fallback available. The capability exposes no secrets or account data.
+Capability, session, renewal and logout requests have an eight-second abort
+deadline. A stalled bootstrap settles identity waiters and uses the bot fallback;
+a timed-out logout retains local identity until revocation can be confirmed.
 
 ## Session and security contract
 

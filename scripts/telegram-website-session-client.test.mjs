@@ -12,18 +12,21 @@ function sessionData(suffix = 'A') {
 function browser({ seed = {}, fetchImpl = async () => Response.json(sessionData()), capability = { ok: true, enabled: true }, config = { BASE_URL: 'https://api.cryptomoonboys.com' }, readyState = 'complete' } = {}) {
   const storage = new Map(Object.entries(seed));
   const calls = [], events = [], timers = [], navigation = [];
+  const deadlines = new Map();
+  let timerId = 0;
   const location = { hostname: 'cryptomoonboys.com', origin: 'https://cryptomoonboys.com', pathname: '/games/', search: '',
     assign: value => navigation.push(value), reload: () => navigation.push('reload') };
   const listeners = {};
   const window = { location, MOONBOYS_API: config, setInterval: fn => timers.push(fn),
+    setTimeout: (fn, milliseconds) => { assert.equal(milliseconds, 8000); const id = ++timerId; deadlines.set(id, fn); return id; }, clearTimeout: id => deadlines.delete(id),
     dispatchEvent: event => events.push(event), alert() {} };
   const document = { readyState, hidden: false, addEventListener(name, fn) { listeners[name] = fn; }, getElementById() { return null; },
     createElement() { return { appendChild() {}, setAttribute() {}, querySelector() { return { addEventListener() {}, focus() {} }; }, addEventListener() {} }; },
     head: { appendChild() {} }, body: { appendChild() {} } };
   const context = vm.createContext({ window, document, localStorage: { getItem: key => storage.get(key) || null, setItem: (key, value) => storage.set(key, String(value)), removeItem: key => storage.delete(key) },
-    fetch: async (...args) => { calls.push(args); return args[0].endsWith('/capabilities') ? Response.json(capability) : fetchImpl(...args); }, CustomEvent: class { constructor(type, options) { this.type = type; this.detail = options.detail; } }, console });
+    fetch: async (...args) => { calls.push(args); return args[0].endsWith('/capabilities') ? typeof capability === 'function' ? capability(...args) : Response.json(capability) : fetchImpl(...args); }, AbortController, CustomEvent: class { constructor(type, options) { this.type = type; this.detail = options.detail; } }, console });
   vm.runInContext(source, context);
-  return { gate: window.MOONBOYS_IDENTITY, storage, calls, events, timers, navigation, document, window, listeners };
+  return { gate: window.MOONBOYS_IDENTITY, storage, calls, events, timers, navigation, document, window, listeners, deadlines };
 }
 
 test('bootstrap activates verified identity, preserves memory-only proof and avoids a mandatory bot link', async () => {
@@ -158,4 +161,37 @@ test('disabled or unknown website capability keeps legacy proof and sends login 
     assert.equal(b.gate.getSignedTelegramAuth().hash, proof.hash);
     assert.match(b.navigation.at(-1), /^https:\/\/t\.me\/WIKICOMSBOT/);
   }
+});
+
+test('stalled capability or session bootstrap aborts and settles every identity waiter', async () => {
+  for (const stage of ['capability', 'session', 'capability body', 'session body']) {
+    const stall = () => new Promise(() => {});
+    const fetchImpl = stage.endsWith('body') ? () => ({ ok: true, json: stall }) : stall;
+    const b = browser(stage.startsWith('capability') ? { capability: fetchImpl } : { fetchImpl });
+    const proof = b.gate.getFreshTelegramAuth();
+    const login = b.gate.loginWithTelegram();
+    await new Promise(resolve => setImmediate(resolve));
+    assert.equal(b.deadlines.size, 1);
+    const signal = b.calls.at(-1)[1].signal;
+    [...b.deadlines.values()][0]();
+    assert.equal(await b.gate.ready, null);
+    assert.equal(await proof, null);
+    await login;
+    assert.equal(signal.aborted, true);
+    assert.equal(b.deadlines.size, 0);
+    assert.match(b.navigation.at(-1), /^https:\/\/t\.me\/WIKICOMSBOT/);
+  }
+});
+
+test('a stalled logout aborts without clearing identity or claiming confirmed revocation', async () => {
+  const b = browser({ fetchImpl: url => url.endsWith('/logout') ? new Promise(() => {}) : Response.json(sessionData()) });
+  await b.gate.ready;
+  const logout = b.gate.logout();
+  await new Promise(resolve => setImmediate(resolve));
+  const signal = b.calls.at(-1)[1].signal;
+  [...b.deadlines.values()][0]();
+  await assert.rejects(logout, /Logout could not be confirmed/);
+  assert.equal(signal.aborted, true);
+  assert.equal(b.gate.isTelegramLinked(), true);
+  assert.equal(b.navigation.length, 0);
 });

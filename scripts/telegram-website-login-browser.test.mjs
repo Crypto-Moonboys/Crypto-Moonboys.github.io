@@ -4,7 +4,7 @@ import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { test } from 'node:test';
 import { chromium } from 'playwright';
-import { handleTelegramWebsiteAuth } from '../workers/moonboys-api/telegram-website-auth.js';
+import { handleTelegramWebsiteAuth, verifyWebsiteCredential } from '../workers/moonboys-api/telegram-website-auth.js';
 import apiWorker from '../workers/moonboys-api/worker.js';
 import { API, SITE, ID, fixture, provider } from './lib/telegram-website-auth-fixtures.mjs';
 
@@ -21,6 +21,7 @@ for (const [name, viewport] of [['desktop', { width: 1440, height: 900 }], ['mob
       const page = await context.newPage();
       await page.addInitScript(({ api }) => { window.MOONBOYS_API = { BASE_URL: api, WEBSITE_LOGIN_ENABLED: true }; }, { api: API });
       let authorization;
+      const callbackSessionCookies = [];
       const errors = [];
       page.on('pageerror', error => errors.push(error.message));
       await page.route('**/*', async route => {
@@ -33,6 +34,7 @@ for (const [name, viewport] of [['desktop', { width: 1440, height: 900 }], ['mob
         }
         if (url.origin === API) {
           const nodeRequest = new Request(request.url(), { method: request.method(), headers: await request.allHeaders(), body: request.postData() || undefined });
+          if (url.pathname === '/telegram/website/callback') callbackSessionCookies.push((nodeRequest.headers.get('Cookie') || '').includes('__Host-moonboys_session='));
           let response;
           if (url.pathname.startsWith('/telegram/website/')) {
             response = await handleTelegramWebsiteAuth(nodeRequest, env, authorization ? provider(authorization) : undefined);
@@ -83,6 +85,17 @@ for (const [name, viewport] of [['desktop', { width: 1440, height: 900 }], ['mob
       assert.ok(session?.httpOnly && session.secure);
       assert.equal(session.sameSite, 'Strict');
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth), false);
+
+      const priorProof = await page.evaluate(() => window.MOONBOYS_IDENTITY.getSignedTelegramAuth());
+      await page.locator('[data-telegram-login]').first().click();
+      await page.waitForFunction(previousHash => {
+        const proof = window.MOONBOYS_IDENTITY?.getSignedTelegramAuth();
+        return !!proof && proof.hash !== previousHash && window.MOONBOYS_IDENTITY.getIdentityTier() === 'telegram_linked';
+      }, priorProof.hash);
+      assert.deepEqual(callbackSessionCookies, [false, false], 'Strict cookie is absent on both cross-site callbacks');
+      assert.equal((await verifyWebsiteCredential(priorProof, env)).status, 401, 'returning login must revoke the prior credential');
+      assert.equal(sqlite.prepare('SELECT COUNT(*) AS n FROM telegram_users').get().n, 1);
+
       await page.locator('[data-telegram-logout]').click();
       await page.waitForFunction(() => window.MOONBOYS_IDENTITY?.getIdentityTier() === 'guest');
       assert.ok(sqlite.prepare('SELECT revoked_at FROM telegram_website_sessions').get().revoked_at);
