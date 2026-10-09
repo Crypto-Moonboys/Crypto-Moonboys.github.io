@@ -4,12 +4,13 @@
 
 Status: condensed source digest
 
-Phase 2 checkpoint: **61/94** complete source comparisons; **33 remain**.
+Phase 2 checkpoint: **80/94** complete source comparisons; **14 remain**.
 Eighteen new comparisons recover distinctive dossier, Chronometer, Flesh Fade,
 Pinks, Kent and Whale testimony, and check the remaining short business,
 token/channel, manifesto and operational accounts against their owning pages.
 Incompatible history, ontology and live-product claims retain exact attribution.
-Seven fully read originals still need connected comparisons, including W20.
+Nineteen further comparisons close all seven previously read pending originals.
+Fourteen sources still need complete readings and comparisons.
 Use the current [progress ledger](../brand-canon/wiki-rewrites/issue-1458-progress.md)
 and [source audit](../brand-canon/wiki-rewrites/issue-1458-audit.json) for exact
 scopes; the older orientation and first-tranche descriptions below are historical.
@@ -288,3 +289,14 @@ The archive should feed the movement. It should not bury the user under lore bef
 ## Issue #1458 first implementation tranche
 
 Merged #1457 already supplies Fifth Carbon across 12 articles. This tranche adds `wiki/whisper-codex.html` (W1), `wiki/six-pillars.html` (w32), `wiki/great-consensus.html` (w33), and `wiki/the-crypto-moongirls.html` (w56), with source attribution and connected existing-page additions. Cut Ledger is newly authored adult fiction, not W81 recovery. A source’s entire claim/scene transfer is not inferred from these routes. Full SAM, serial-ending, forty-roster and repository-wide semantic reconciliation remain pending.
+
+## PR1460 review continuation — 9 October2026
+
+The recorded comparison count is80/94;14 remain: w21, w23, w24, W4, w66, w67, w72, w73, w78, W8, w80, w82, w86, w87.
+Nineteen additional source comparisons close all earlier fully read pending originals.
+The existing audit records every substantive disposition and ten fresh owning
+article readings; all five major decisions remain proposed. No public lore,
+NFT descriptions or accepted ending is changed by this research checkpoint.
+Restored citation UI and permanent functional-preservation checks are verified
+on correction commit3150ac95; its exact-head Wiki/Graph checks retain the
+maintainer prose-approval hold. See the progress ledger for the complete receipt.

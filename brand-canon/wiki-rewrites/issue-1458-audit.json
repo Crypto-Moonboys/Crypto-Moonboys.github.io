@@ -8,25 +8,55 @@
     "unique_contents": 93,
     "bytes": 2334149
   },
-  "semantic_scope": "61/94 complete source comparisons: inherited43 plus18 Phase2 completions.33 remain; W19/W15/w25/M16/W5/w69/W20 are fully read with comparisons pending. The other26 need complete original readings and comparisons. No existing URL or initial disposition is counted as completion.",
+  "semantic_scope": "80/94 complete source comparisons: inherited43 plus37 Phase2 completions.14 remain for full original reading and connected comparison. No checksum, existing URL or prior COVERED label is counted as completion; comparison can retain an explicitly unresolved GK decision.",
   "sources": [
     {
       "file": "M16.txt",
       "bytes": 10202,
       "sha256": "9653208dc10e8365efe2dc983df86cd73351d2379950b7b1ba52c04baac965f2",
       "byte_verified": true,
-      "semantic_review": "complete source reading; connected-page comparison pending",
+      "semantic_review": "complete source reading and connected claim/scene comparison",
       "prior_disposition": "CONFLICT",
       "read_progress": {
         "method": "entire verified UTF-8 original printed and read without truncation",
-        "complete_source_comparison": false
+        "complete_source_comparison": true
       },
-      "partial_findings": [
+      "earlier_reading_findings": [
         "Compilation calls roster complete but leaves most numbered factions TBD; GraffPUNKS appears under multiple pillars and Gasless Ghosts/NULL are joined. No additional six independent cultures are established.",
         "2198 catastrophe and3030 Final Fork compete with present2880/unresolved-future chronology and W15/w25 serials. Do not accept renamed events or a final outcome to reconcile numbers without evidence.",
         "Household hierarchy counts15Royal/15HODLX/15X/10OG/40wannabe are editorial roster counts, not a census; three BitcoinX paths require full w70 source compare.",
         "Claims about real artists, founding1984, Treef, platform publication and percentages are March2026 proposals, not authority over current README/runtime/verified real history. Remaining biographies, sourceW5/W68/W69 and master-product cross-comparison pending."
-      ]
+      ],
+      "phase2_comparison": {
+        "base_commit": "cc856157f5bd23e1b7ae3ed032af44c6b725c524",
+        "date": "2026-10-09",
+        "decision": "GK-1458-P2-INDEX-ROSTER",
+        "claim_dispositions": [
+          "Earlier complete10,202byte reading retained; entire current index compared with current culture register and freshly read champion/Moongirl/artist owners. TBD-filled 'complete40'/100+ headings do not establish additional independent cultures.",
+          "Duplicate GraffPUNKS pillars, NULL/GaslessGhosts and Moonlords/Rugpull merges are rejected against exact current independent identities;2198/3030 historical anchors remain explicit GK decisions, not simultaneously valid events.",
+          "25Lady/15Royal/15HODLX/15X/10OG/40wannabe are proposed editorial collection sizes. Current Games preserve480/source tracks and distinct inside/outside generations; current Cass/Hester repairs, service debt, bodily injury and Seeding controversy are not erased.",
+          "Jodie Forkborn/Queens/immune leader and Codex last-survivor claims conflict with current independent histories and continuing ChainScribe communities; retain source attribution, not invulnerability or roster changes.",
+          "Real artist 'verified'/1984/activity claims, Lady girlfriend label and platform percentages are not independent verification of private lives, commercial agreements or copyright. Full Lady/Bone/Pete and current Buster/GK owning boundaries preserve historical leads and fictional counterparts separately."
+        ],
+        "compared_paths": [
+          "wiki/first-witness-forty-paths.html",
+          "wiki/first-witness-concordance.html",
+          "wiki/hodl-x-warriors.html",
+          "wiki/bitcoin-x-kids.html",
+          "wiki/bitcoin-kids.html",
+          "wiki/the-crypto-moongirls.html",
+          "wiki/jodie-zoom-2000.html",
+          "wiki/elder-codex-7.html",
+          "wiki/lady-ink.html",
+          "wiki/bone-idol-ink.html",
+          "wiki/delicious-again-pete.html",
+          "wiki/charlie-buster.html",
+          "wiki/graffiti-kings.html",
+          "README.md",
+          "Crypto_Moonboys_Master_Source_of_Truth_v1.md"
+        ],
+        "remaining": "No unchecked substantive source section. Major decisions, source-future adoption and unverified external/product/biography claims remain explicitly pending or excluded; comparison is not approval or proof of complete public transfer."
+      }
     },
     {
       "file": "W1.txt",
@@ -41,8 +71,32 @@
       "bytes": 47211,
       "sha256": "7f9a2047dd889a6c2ce7a1c53a20f80a84a070416d3147d4aca0468a3bddf3df",
       "byte_verified": true,
-      "semantic_review": "pending complete semantic reading",
-      "prior_disposition": "COVERED"
+      "semantic_review": "complete source reading and connected claim/scene comparison",
+      "prior_disposition": "COVERED",
+      "read_progress": {
+        "method": "Entire verified UTF-8 original read in bounded complete outputs; truncated intervals explicitly recovered. Current owning prose and targeted operational dependencies compared as recorded.",
+        "complete_source_comparison": true
+      },
+      "phase2_comparison": {
+        "base_commit": "cc856157f5bd23e1b7ae3ed032af44c6b725c524",
+        "date": "2026-10-09",
+        "decision": "GK-1458-P2-WHALE-WAR-ARC",
+        "claim_dispositions": [
+          "All ten chapters read in two complete bounded spans. Chapters1–2: DeepChain/lost transactions, awakened Whales/Megaptera Council, withdrawal and Liquidator; current Whale DeepChain/Megaptera/Liquidator passages retain those economic allegories.",
+          "Chapters3–4: Alpha Hybrid identity rewriting, KidZero unbinding, Archive, Meaning network and ForkedReality perception. KidZero is not Alfie; Archive is not all Chain Scribes. Local SignalBomb victory does not prove universal liberation.",
+          "Chapters5–6: predivision OriginSignal, Keepers/Drifters split, Anchors, ArchiveUnbound and Reset; current OriginSignal passages preserve the branch. Its control of every reality is a source assertion, not an accepted account of all current factions.",
+          "Chapters7–8: compression, absolute ZeroReset and shared ControlCore/StillPoint. These compete with materially continuing Year3008 and other source endings; GK-1458-FINAL-FORK-CONTINUITY owns the ontology decision.",
+          "Chapters9–10: MeaningArchitects/SignalCarriers/InterpreterHybrids/RecorderArchive and the repeated Create/Growth/Control/Resistance/Collapse/Realisation cycle. 'Nothing was ever lost' remains the terminal voice, not restoration of Sena, Bellwether dead, lost rooms or paid injuries.",
+          "Whale Lords/Deep Holders/Moonlords remain distinct traditions; W11 unofficial41st and198 patronage do not establish a universal secretly controlling faction. Junn/Sarren, QuietWeight, EmptyChair, Sora/Pell and PorchAccord consequences remain preserved."
+        ],
+        "compared_paths": [
+          "wiki/whale-lords.html",
+          "wiki/graffpunks.html",
+          "wiki/hodl-wars.html",
+          "wiki/null-the-prophet.html"
+        ],
+        "remaining": "No unchecked substantive source section. Major decisions, source-future adoption and unverified external/product/biography claims remain explicitly pending or excluded; comparison is not approval or proof of complete public transfer."
+      }
     },
     {
       "file": "W11.txt",
@@ -60,13 +114,13 @@
         "date": "2026-10-08",
         "decision": "GK-1458-P2-WHALE-CHRONICLES",
         "claim_dispositions": [
-          "Entire ten-chapter original, including brief prospective chapters6\u201310, read; full current Whale article compared. Origin/2013/2017/2018/2020\u20132025/MtGox/institution images are market allegory, not proof of one secret will or authenticated modern biography.",
+          "Entire ten-chapter original, including brief prospective chapters6–10, read; full current Whale article compared. Origin/2013/2017/2018/2020–2025/MtGox/institution images are market allegory, not proof of one secret will or authenticated modern biography.",
           "Darren1983Leake/2013SilentSellOff/2017Brixtonprophecy, Buster10kXRP/100kairdrop/1Mdrop/StencilMustBreak, Bone/PeteWhaleSong/co-founder/10mural and0xDEEPSEAQueens2021 funding are unsupported specific real claims. No artist private life, actual work/date/payment/currentmarketfact added.",
           "Depth Dwellers tail/private1000BTC room/information-eyes/ShardMothers alliance and unofficial41st claim compared to current TailMark/owning source passages; no roster addition or conflation with Moonlords/DeepHolders accepted.",
           "ColdStorage12monthprayer/privilegedvisions and1983Covenant one-mural-per-move recovered as literary patron obligations; chapter6 promises full text without supplying it. Neither is the2030FirstWitness Covenant or proof of invulnerable custody.",
           "SilentAuction Sarah/DepthGuardian named-title detail recovered; no new warrior identity, HODL/HODLX merge, legal licence or universal patronage control.",
           "HardForkShield stake/immunity, TripleCrownDip2022/Alfie72hcountermural, token/seeding/reward/pump claims compared to current game-status and PUNK archived design. Source mixes real market dates and fictional3008characters; do not manufacture travel or a biography.",
-          "Chapters8\u201310 failedNULLcorruption/GoldenTide/eternalstorage/10minwar continue the source prophecy; no alreadydefeatedAntichain, biologicalimmortality or FinalFork victory. Archive source ending and current unfinished histories remain distinct.",
+          "Chapters8–10 failedNULLcorruption/GoldenTide/eternalstorage/10minwar continue the source prophecy; no alreadydefeatedAntichain, biologicalimmortality or FinalFork victory. Archive source ending and current unfinished histories remain distinct.",
           "All modern Sora/Pell/UnfundedCrossing/TailMark/Junn/Sarren/EmptyChair/lostroof/room and PorchAccord debt/consent disagreements preserved; no duplicated general origin summary."
         ],
         "compared_paths": [
@@ -88,7 +142,7 @@
       "semantic_review": "complete source reading and owning-page comparison",
       "prior_disposition": "PENDING_EDITORIAL",
       "review_findings": {
-        "parts_read": "All eight parts, every paragraph, lines 1\u2013258",
+        "parts_read": "All eight parts, every paragraph, lines 1–258",
         "scene_sequence": [
           "Adopted Samuel Blake, 19, 2036 Croydon",
           "Neural Rack train run and taser; body down, SAM v0.1 responds",
@@ -105,8 +159,8 @@
           "Jaz/Brush/Maeve/Leon perform distinct surviving labour"
         ],
         "contradictions": [
-          "2036 upload before 2029\u20132035 causally dependent events; simple flashback insufficient",
-          "Teenage rescue compressed into W13 2007\u20132009 war",
+          "2036 upload before 2029–2035 causally dependent events; simple flashback insufficient",
+          "Teenage rescue compressed into W13 2007–2009 war",
           "Part1 empty roof vs Part2 recovery of motionless body",
           "Part7 no leaked footage vs detailed raid video used in attacks",
           "Future family memorial does not supply missing-person recovery"
@@ -131,10 +185,10 @@
       "semantic_review": "complete source reading and owning-page comparison",
       "prior_disposition": "PARTIAL",
       "review_findings": {
-        "parts_read": "All seven parts and all repeated Parts2\u20137 extracts, lines1\u2013186",
+        "parts_read": "All seven parts and all repeated Parts2–7 extracts, lines1–186",
         "relationships": [
           "Papa Des father of sisters Denise (source birth1972) and Tracey (source birth1980)",
-          "House formed after attributed 2007\u20132009 Street War",
+          "House formed after attributed 2007–2009 Street War",
           "Jaz speaker; Brush painter; Maeve cook; Leon peacekeeper"
         ],
         "scene_sequence": [
@@ -167,15 +221,48 @@
       "bytes": 52670,
       "sha256": "dcacde83743e17ea72af9646768fbb944f642baea3b2e17e50874c0e310d290a",
       "byte_verified": true,
-      "semantic_review": "pending complete semantic reading",
-      "prior_disposition": "COVERED"
+      "semantic_review": "complete source reading and connected claim/scene comparison",
+      "prior_disposition": "COVERED",
+      "read_progress": {
+        "method": "Entire verified UTF-8 original read in bounded complete outputs; truncated intervals explicitly recovered. Current owning prose and targeted operational dependencies compared as recorded.",
+        "complete_source_comparison": true
+      },
+      "phase2_comparison": {
+        "base_commit": "cc856157f5bd23e1b7ae3ed032af44c6b725c524",
+        "date": "2026-10-09",
+        "decision": "GK-1458-P2-INFILTRATION-SERIAL",
+        "claim_dispositions": [
+          "All100 posts/ten sets read in three complete spans. Infiltration:480 Games entrants,200 Army disguises and one-night/several-day timing are source-specific tracks; current Games retain480 alongside the different local LowerWalk entrants. Alfie/Jodie/Snipey/Thera/Aleema and Rune roles remain distinct.",
+          "Battle:200 Army versus100 X Kids, NULL hallucinations, casualties, Silas defeat/spared life and HODL9000 retreat. Cheering200 after the source's casualties is an internal count problem, not evidence that dead combatants returned. Silas Shard remains distinct from Sylas the Unbroken.",
+          "Defection:50 Moongirl Enforcers led by Elara Voidstar, described as Sarah's daughter/apprentice, Alfie's spare-and-bird-cap gesture and24 X defectors. Elara is a source-supported unplaced cast/kinship claim for GK; absence from the current Sarah article is documented, not counted as published coverage or silently resolved into a modern daughter.",
+          "Pact/duel:NULL as Sarah suitor and lattice control, half-AI Queen/vessel, Alfie Ghost and Rune costs, Jodie paint/mercy and a completed Consensus. Current Sarah/NULL agency and institutional cruelty remain; these source identities and defeat are not accepted universal ontology.",
+          "Endings:redeemed Sarah as guardian, invitation to rule with Alfie, all40 EternalFamily and physical2026 NFT claims; further sets repeat EternalGrid/GreatConvergence/NextFork/UltimateConvergence universal paint. Compare to current unfinished3008/FinalFork and material costs; retain as rival futures under GK-1458-FINAL-FORK-CONTINUITY.",
+          "No real NFT portal, authorised release or universal lifespan is established. Jodie's independent escape, Orsa/Dera/Sena, Mira's refusal, Tessa/Vela injuries, Bellwether deaths and adult supporting lives remain preserved. No new Elara article or automatic Sarah redemption."
+        ],
+        "compared_paths": [
+          "wiki/hard-fork-games.html",
+          "wiki/alfie-bitcoin-kid-blaze.html",
+          "wiki/jodie-zoom-2000.html",
+          "wiki/queen-sarah-p-fly.html",
+          "wiki/rune-tag.html",
+          "wiki/thera-9.html",
+          "wiki/aleema-child-of-the-shard.html",
+          "wiki/snipey-d-man-sirus.html",
+          "wiki/bitcoin-x-kids.html",
+          "wiki/the-bitcoin-kid-army.html",
+          "wiki/hodl-x-warriors.html",
+          "wiki/the-crypto-moongirls.html",
+          "wiki/graffpunks.html"
+        ],
+        "remaining": "No unchecked substantive source section. Major decisions, source-future adoption and unverified external/product/biography claims remain explicitly pending or excluded; comparison is not approval or proof of complete public transfer."
+      }
     },
     {
       "file": "W15.txt",
       "bytes": 371179,
       "sha256": "c1292efd91ba68119c6f9e8a6a8e192b7d37342f2391876d80eb678eff8112cd",
       "byte_verified": true,
-      "semantic_review": "complete source reading; w25 and connected-page comparison pending",
+      "semantic_review": "complete source reading and connected claim/scene comparison",
       "prior_disposition": "CONFLICT",
       "read_progress": {
         "method": "Original UTF-8 text split on blank lines; every printed paragraph read in full",
@@ -187,9 +274,20 @@
           ]
         ],
         "next_unread_paragraph": null,
-        "complete_source_comparison": false
+        "complete_source_comparison": true
       },
-      "partial_findings": [
+      "affected_routes": [
+        "wiki/alfie-bitcoin-kid-blaze.html",
+        "wiki/block-topia.html",
+        "wiki/hodl-warriors.html",
+        "wiki/jodie-zoom-2000.html",
+        "wiki/kael-voss.html",
+        "wiki/null-the-prophet.html",
+        "wiki/queen-sarah-p-fly.html",
+        "wiki/sylas-the-unbroken.html",
+        "wiki/veyra-nyx.html"
+      ],
+      "earlier_reading_findings": [
         "Initial seven-message loop ends with heat-death/voluntary-upload revelation and triad restarting; next cycle and ten-thousand/hundred-thousand resets repeat it.",
         "Kael Voss Reclaimer serves Sarah, accepts Crimson Protocol from Sylas The Unbroken; Veyra Nyx HODL Warrior forms loved tragic triad. No evidence yet merges them with other Kael/Sylas identities.",
         "2880 Triple Fork, 2900 loss of >75% major cities, 2930 Queens Council and three-decade construction differ from existing high-risk historical anchors.",
@@ -206,17 +304,36 @@
         "Serial jumps Next/Volume2 heading to Volume3; later no separate full Volume7,13,16 narrative in this file. Do not infer absent chapters or claim cycles were independently attested.",
         "Dedicated Kael/Sylas/Veyra biographies now recover exact introductions, relationship wording, memory sacrifice, Prime Core, terminal revelation and repeated awakenings. Full Sarah/Alfie/NULL/BlockTopia/HODL article comparisons completed; Charlie, remaining source factions and Blackout dependencies remain pending, so source is not counted reconciled."
       ],
-      "affected_routes": [
-        "wiki/alfie-bitcoin-kid-blaze.html",
-        "wiki/block-topia.html",
-        "wiki/hodl-warriors.html",
-        "wiki/jodie-zoom-2000.html",
-        "wiki/kael-voss.html",
-        "wiki/null-the-prophet.html",
-        "wiki/queen-sarah-p-fly.html",
-        "wiki/sylas-the-unbroken.html",
-        "wiki/veyra-nyx.html"
-      ]
+      "phase2_comparison": {
+        "base_commit": "cc856157f5bd23e1b7ae3ed032af44c6b725c524",
+        "date": "2026-10-09",
+        "decision": "GK-1458-P2-MERCY-CYCLE-SERIAL",
+        "claim_dispositions": [
+          "Earlier complete192-paragraph371,179byte reading retained, with all cycles through14million/Volume18. Complete current Kael/Sylas/Veyra owners newly read; current Sarah/Alfie/NULL/BlockTopia/HODL/Buster and attributed HODLWars histories compared. The PaidExit injured porter, lost pay, refused night and checked routes remain irreversible.",
+          "Opening Reclaimer/CrimsonProtocol/triad/nineLattice layers/PrimeCore/heat-dead outside/voluntary last refuge and mutually inconsistent never-forget/no-memory awakenings are local source testimony, not actual universal history or a general death-return law.",
+          "2880/2900majorcityloss/by2930Queens/three-decade construction compare to current causal anchors without inventing inauguration date. Sylas700-year claim remains attributed and distinct from SilasShard/Codex; no new council genealogy.",
+          "Repeatedmillion cycles, Amsterdam WAX humanoid crash, BitcoinCashKid/RapidCashArmy, fictional Charlie as Sarah's son and maternal civil war are serial branches. They establish neither current blockchain failure nor actual artist parentage/endorsement nor Sarah's acquittal.",
+          "STARTR4CK4 AIship/GiggaSystems/XDrone hostile wallets are fictional antagonists; no operational intrusion workflow or deployed AIarmy is added. GreatBlackout/market-cycle investment doctrine is source propaganda, not a Covenant rewrite or promised market outcome.",
+          "KillaKela/Grok2026 loops and factory escape remain artistic homage, not real biography or autonomous publishing authority. Missing separately supplied Volumes7/13/16 are not invented. Every supplied ending restarts; no completed rescue or final escape in this file.",
+          "All previous detailed cycle dispositions retained; full FirstWitness Books and current modern costs oppose automatic cosmic reset. GK-1458-FINAL-FORK-CONTINUITY owns the unresolved world choice."
+        ],
+        "compared_paths": [
+          "wiki/kael-voss.html",
+          "wiki/sylas-the-unbroken.html",
+          "wiki/veyra-nyx.html",
+          "wiki/queen-sarah-p-fly.html",
+          "wiki/alfie-bitcoin-kid-blaze.html",
+          "wiki/null-the-prophet.html",
+          "wiki/block-topia.html",
+          "wiki/hodl-warriors.html",
+          "wiki/hodl-wars.html",
+          "wiki/charlie-buster.html",
+          "wiki/graffpunks.html",
+          "wiki/first-witness-concordance.html",
+          "wiki/first-witness-master-chronology.html"
+        ],
+        "remaining": "No unchecked substantive source section. Major decisions, source-future adoption and unverified external/product/biography claims remain explicitly pending or excluded; comparison is not approval or proof of complete public transfer."
+      }
     },
     {
       "file": "W16.txt",
@@ -234,13 +351,13 @@
         "date": "2026-10-08",
         "decision": "GK-1458-P2-WIKI-ARCHITECTURE",
         "claim_dispositions": [
-          "Entire March24 three-repo breakdown sections1\u201311 read. Names frontendCrypto-Moonboys.github.io, crawlerHAY-MUM-IM-BUILDING-AGENTS-OF-CHANGE andsam-v2-intelligence as dated architectural account; no externalrepo running/deployedstatus inspected or promised.",
-          "Roles2\u20134/6\u20137/11: crawling,ranking,scoring,memory,focus,entity/bible/dashboard/backend and source\u2192collector\u2192brain\u2192display flow classified as claimed design, not higher fictional canon authority or automatic current feature.",
+          "Entire March24 three-repo breakdown sections1–11 read. Names frontendCrypto-Moonboys.github.io, crawlerHAY-MUM-IM-BUILDING-AGENTS-OF-CHANGE andsam-v2-intelligence as dated architectural account; no externalrepo running/deployedstatus inspected or promised.",
+          "Roles2–4/6–7/11: crawling,ranking,scoring,memory,focus,entity/bible/dashboard/backend and source→collector→brain→display flow classified as claimed design, not higher fictional canon authority or automatic current feature.",
           "Sections1/10 metaphorical hunter/NULLcompanion/spy belongs to software allegory; no SAMtool identity merge with SamuelHyroSAMBlake, NULLorigin, House family or SPARKY. Existing policy explicitly distinguishes those authorities.",
           "Section5/9 staticpublicreliability compared to current sam.html UI and targeted dashboard fetch/render code for repoJSON/entity-map/wiki-index/site-stats/sam-memory; does not certify separate intelligence server or current whole3repointegration.",
           "Section8 entityslug/biblehooks compared to loader fetching /wiki/bibles/{slug}.json and bounded rendering code; legacy specialistbible data is not scripture, protected prose ownership or automatic fact approval.",
           "Source claim that frontend should not validate is historical design language, not instruction to remove current integrity/ownership/publication safeguards. Publisher opening preserved canonical/manual/legacy/lockedprose, current manifest and explicitstubregister control output; task leaves these protections operational.",
-          "Current MasterTruth section10 allows agents to crawlapprovedcreatorworlds but forbids inventedownership/livefeatures/canon; sections11\u201312 govern runtime and licence. README/staticpublishing preserve creatorumbrella/twoentryroutes, not oldwiki-onlymission.",
+          "Current MasterTruth section10 allows agents to crawlapprovedcreatorworlds but forbids inventedownership/livefeatures/canon; sections11–12 govern runtime and licence. README/staticpublishing preserve creatorumbrella/twoentryroutes, not oldwiki-onlymission.",
           "No new future character scene, actualSAM2030/2036calendar, extraFortyslot or liveendpoint is established. Technical/sourcecontentcomparison complete; current external architecture/uptime remain unverified and operationalcode unchanged."
         ],
         "compared_paths": [
@@ -261,8 +378,37 @@
       "bytes": 49792,
       "sha256": "94d3b61649415568f06b95b8e7701f8ae99caf033d1a257061080b0c2cb90d69",
       "byte_verified": true,
-      "semantic_review": "pending complete semantic reading",
-      "prior_disposition": "OPERATIONAL"
+      "semantic_review": "complete source reading and connected claim/scene comparison",
+      "prior_disposition": "OPERATIONAL",
+      "read_progress": {
+        "method": "Entire verified UTF-8 original read in bounded complete outputs; truncated intervals explicitly recovered. Current owning prose and targeted operational dependencies compared as recorded.",
+        "complete_source_comparison": true
+      },
+      "phase2_comparison": {
+        "base_commit": "cc856157f5bd23e1b7ae3ed032af44c6b725c524",
+        "date": "2026-10-09",
+        "decision": "GK-1458-P2-MARCH-GAP-AUDIT",
+        "claim_dispositions": [
+          "Entire March17,2026 audit read in two bounded spans, including its unfinished StrategicOpportunity tail. Ten operational sections inventory another repository's README/Python/Grok/cron/reply tracking; this is dated planning, not evidence of a current deployment in this repository.",
+          "Its missing NULL/Sarah/Echo/cast claims compared to current owning articles and October ownership/publication records. Existing424-page inventory is static evidence, not a claim all pages have been semantically read. Do not re-create already supplied routes or copy its instructions to scrap agent prose.",
+          "2198 catastrophe/3030 future, duplicated SixPillars GraffPUNKS and NULL/GaslessGhosts or Moonlords/Rugpull merges remain conflicts handled by the five major proposals; editorial25/15/15/15/10 lists are not a population census.",
+          "Real-artist 'verified' labels, platform percentages,85 posts/40+ NFTs/revenue KPIs and automatic2hour publishing are unsupported current promises. Bone/Pete current articles explicitly distinguish fiction from historical artist leads. Source ending supplies no missing final recommendation."
+        ],
+        "compared_paths": [
+          "wiki/crypto-moonboys.html",
+          "wiki/queen-sarah-p-fly.html",
+          "wiki/null-the-prophet.html",
+          "wiki/jodie-zoom-2000.html",
+          "wiki/elder-codex-7.html",
+          "wiki/bone-idol-ink.html",
+          "wiki/delicious-again-pete.html",
+          "README.md",
+          "Crypto_Moonboys_Master_Source_of_Truth_v1.md",
+          "sam-wiki-publisher.py",
+          "brand-canon/wiki-content-state.json"
+        ],
+        "remaining": "No unchecked substantive source section. Major decisions, source-future adoption and unverified external/product/biography claims remain explicitly pending or excluded; comparison is not approval or proof of complete public transfer."
+      }
     },
     {
       "file": "W18.txt",
@@ -286,9 +432,9 @@
         "decision": "GK-1458-P2-W18-DOSSIER",
         "claim_dispositions": [
           "Persona/origins: source 1973 genealogy and 2789 Seeding cannot establish a real founder or an accepted birth; current 2140 SatoRebel account remains separate.",
-          "Physical/medical/psychological measurements: source percentages, 11.3-second phasing, 19 interrogations, Pulse diagnoses, immortality and 450\u2013600-year forecasts are unsupported dossier assertions; no clinical or universal ontology fact is installed.",
+          "Physical/medical/psychological measurements: source percentages, 11.3-second phasing, 19 interrogations, Pulse diagnoses, immortality and 450–600-year forecasts are unsupported dossier assertions; no clinical or universal ontology fact is installed.",
           "Traits/habits: recover rooftop parkour, hidden daily glyph, Thames wallet fishing, Kid Blaze 3008 DJ alias, poetry and banned-mural collecting; attributed testimony, alongside full Orange Room/teaching/private refusals.",
-          "Crimes/chronology: 2789 breach conflicts with 2789\u20132791 loyal recruitment even internally; 3002 manifesto/alliance, 3006 NULL merger, completed 3008 armistice and predicted 3012 ticket cannot lock the accepted war or Final Fork. Theft/rescue/reversal counts are unsupported totals.",
+          "Crimes/chronology: 2789 breach conflicts with 2789–2791 loyal recruitment even internally; 3002 manifesto/alliance, 3006 NULL merger, completed 3008 armistice and predicted 3012 ticket cannot lock the accepted war or Final Fork. Theft/rescue/reversal counts are unsupported totals.",
           "Associates/family: Jodie title does not override independent leadership; inside Kids remain distinct; Sarah mentor/lover claim stays locally disputed on both owning articles. Whitewasher handler unknown; no real creator parentage or lost daughter is established.",
           "Equipment/refuges: preserve named can/gun/cape/Blast/implant and Spire/roof/caravan/vault. No automatic Jodie implant identity, merged scar-vault, confirmed travel route or NFT summon is inferred.",
           "Finance/futures/black-box: token/NFT/property/rights numbers, probabilities and future king/saint claims are lore assertions; no current reward, completed armistice, immortality or permanent command.",
@@ -306,9 +452,13 @@
       "bytes": 41743,
       "sha256": "34093e882c6e6834c923258fe611fb2665b2e28601aab174bfb7f28efaec7ad2",
       "byte_verified": true,
-      "semantic_review": "complete source reading; remaining named-character cross-page comparison pending",
+      "semantic_review": "complete source reading and connected claim/scene comparison",
       "prior_disposition": "OPERATIONAL",
-      "review_findings": {
+      "read_progress": {
+        "method": "Entire verified UTF-8 original read in bounded complete outputs; truncated intervals explicitly recovered. Current owning prose and targeted operational dependencies compared as recorded.",
+        "complete_source_comparison": true
+      },
+      "earlier_review_findings": {
         "parts_read": "Complete March2026 GK BRAIN paper, all24sections; clipped epoch/character portion recovered in second read",
         "kind": "Operational publishing proposal with embedded fictional roster",
         "comparison_completed": [
@@ -327,6 +477,36 @@
           "Old prototype specification is not proof of currently deployed GK BRAIN"
         ],
         "remaining": "Fully compare embedded Jodie/Codex-7/royal/champion/Kids named profiles, Games and live operational claims before counting this source fully reviewed."
+      },
+      "phase2_comparison": {
+        "base_commit": "cc856157f5bd23e1b7ae3ed032af44c6b725c524",
+        "date": "2026-10-09",
+        "decision": "GK-1458-P2-BRAIN-CAST-PLAN",
+        "claim_dispositions": [
+          "All24 March2026 GK BRAIN sections earlier fully read; remaining embedded character/Games/operational claims now compared. Old Grok brain/two-hour cadence/three-post fame and Thursday22vs23 conflicts are proposals, not deployed SAM/SPARKY guarantees or instructions to delete approved authored fiction.",
+          "Jodie Queens/Forkborn/AI immunity and25NFTseries, Codex last immune survivor and Lady dream/painting-only appearances are unaccepted planning assertions. Modern refusal, departure, losses, adult agency and continuing Scribe culture remain intact.",
+          "Royal NovaStarveil/EchoVeilshadow/LuminaCrownheart; champions AetherBlade/KaelStormtag; inside ZaraStarpath/LukasWallkeeper/RivenWildrun; OG JaxVoidrunner/SylasNightdrift; outside TalonEdge/RazeShadow are source-supported unplaced names, not current published biographies. Record them without unnecessary new articles, invented kinship or merges with KaelVoss/SylasUnbroken/SilasShard/modern Raze.",
+          "Fifteen royal/champion/X and tenOG plus TBD entries are proposed editorial roster sizes, not a census. Three18-year X paths, inside bonnet privileges, outside Games exclusion and lifetime15champions are inconsistent source rules; current distinct populations and yearly480 track remain.",
+          "Partner-as-prize and Seeding coercion stay visible as institutional claims; no universal consent or automatic family/royal affiliation.2198/3030, NULLGhosts merger and faction1 HODLcalling remain in the five GK packets.",
+          "Current README/Master/SAM publisher ownership and protection are the operational comparison boundary. No fresh external-repository uptime, publication schedule, artist endorsements, NFT benefit or live GK BRAIN is certified."
+        ],
+        "compared_paths": [
+          "wiki/crypto-moonboys.html",
+          "wiki/jodie-zoom-2000.html",
+          "wiki/elder-codex-7.html",
+          "wiki/the-crypto-moongirls.html",
+          "wiki/hodl-x-warriors.html",
+          "wiki/bitcoin-x-kids.html",
+          "wiki/bitcoin-kids.html",
+          "wiki/the-bitcoin-kid-army.html",
+          "wiki/hard-fork-games.html",
+          "wiki/lady-ink.html",
+          "README.md",
+          "Crypto_Moonboys_Master_Source_of_Truth_v1.md",
+          "sam.html",
+          "sam-wiki-publisher.py"
+        ],
+        "remaining": "No unchecked substantive source section. Major decisions, source-future adoption and unverified external/product/biography claims remain explicitly pending or excluded; comparison is not approval or proof of complete public transfer."
       }
     },
     {
@@ -334,23 +514,100 @@
       "bytes": 25335,
       "sha256": "92fc2527427f9d7a549f5181f7d01f283cdc48244d84d286e9510d62d55800de",
       "byte_verified": true,
-      "semantic_review": "pending complete semantic reading",
-      "prior_disposition": "HISTORICAL"
+      "semantic_review": "complete source reading and connected claim/scene comparison",
+      "prior_disposition": "HISTORICAL",
+      "read_progress": {
+        "method": "Entire verified UTF-8 original read in bounded complete outputs; truncated intervals explicitly recovered. Current owning prose and targeted operational dependencies compared as recorded.",
+        "complete_source_comparison": true
+      },
+      "phase2_comparison": {
+        "base_commit": "cc856157f5bd23e1b7ae3ed032af44c6b725c524",
+        "date": "2026-10-09",
+        "decision": "GK-1458-P2-SUBJECT-REGISTER",
+        "claim_dispositions": [
+          "All185 numbered entries fully read; omitted92–100 interval explicitly recovered before completion. Entries1–4 umbrella/creator movement compared to current two-path overview, not reduced to game or NFT business.5–7 SAM intelligence/upload/HyroSAM preserve runtime/fiction separation.",
+          "8–24 city/paint-game-HODLfork/Queen/programme/Whales/Porch/family compared to current three-chain chronology, source W12/W13/W5 distinctions and named owning histories. Universal forever powers and SAM-triggered TripleFork are disputed ontology, not narrator mechanisms.",
+          "25–28 real Cullen/Buster/Peter/Bone names compared with existing profiles: founder/artistic practice historical leads are distinct from tattoo protocol, upload and real private biography.29–52 Bonnet/Architect/NULL/PaintWars/Convergence/Wing/CrossSynergy and family roles are source futures; no permanent peace, full-body resurrection, new prophecy scripture or approved product rights.",
+          "53–65 websites/book/drop/ten-year economy/onboarding/article references are a dated catalogue. Archive titles do not establish current stock, token contract economics, publication or compulsory purchase; existing descriptions remain untouched.",
+          "66–78 LondonCrucible/upload2198/digital ancestors/198 reproduce W5 mythology and conflict with W12 chase/2036/W13 death. No real-person distributed consciousness, ForgeMaster=Cullen or verified kin survival.79–85 PorchPoets/ShardMothers/ResinKeepers/BonnetStitched/Chosen/Crown/EternalFamily distinguish culture candidates, merged future groups and institutions; '40th as sum of all' fails roster independence.",
+          "86–103 Alfie/radio/music/tokens/XRPKids/Kernel and named factions compared with current owning articles and previously fully read faction ensemble. Kernel benevolence/mass upload, real partnerships and guaranteed token utilities are source assertions, not global facts.104–129 token/Spraycode/Thera/Aleema/EVM/Rocker/Rugpull/Ghosts/Moonlords/Pixel/forty labels/Sam/CHAINFIRE/OMNICORE/Writcode preserve current identities and source attribution; CHAINFIRE AI is not the historical Chainfire event.",
+          "130–146 WorldChain2198/DataFamine2191/AEROSOUL/PaintPath/GKnifty Chronometer/Archivist/Joe/Thorne/OrderofMan/Holly/GoldenDome/Eastward economy are competing histories and branch-specific passages already compared in w85/w83/w28. No exact source date silently overrules2880/by2930 or establishes present real geography.",
+          "147–185 NBGX/meme tokens/decay/activeArena/BLAZE/WAGMI/allegiances/Incubator/Kudos/Empires/districtquests/StreetSignal/roles/Cryptoism/physicaltoys/market events/SatoshiScroll/NGMI/BattleChamber/IP/community/procedural city are mixed dated product claims and lore. README/Master/current status passages control current offerings; runtime nine-option roster is distinct from Forty and game-allegiance labels. No stale XP gate, live archival game certification or blanket ownership benefit.",
+          "All subject ranges receive a disposition; absence of dedicated articles for symbolic labels is not a research gap or reason to duplicate ensemble coverage. The five high-risk chronology/identity/roster/ending decisions stay proposed."
+        ],
+        "compared_paths": [
+          "wiki/crypto-moonboys.html",
+          "wiki/graffpunks.html",
+          "wiki/gkniftyheads.html",
+          "wiki/graffiti-kings.html",
+          "wiki/agent-sam.html",
+          "wiki/house-of-rackinsats.html",
+          "wiki/queen-sarah-p-fly.html",
+          "wiki/hodl-warriors.html",
+          "wiki/hodl-x-warriors.html",
+          "wiki/whale-lords.html",
+          "wiki/lady-ink.html",
+          "wiki/bone-idol-ink.html",
+          "wiki/delicious-again-pete.html",
+          "wiki/charlie-buster.html",
+          "wiki/jodie-zoom-2000.html",
+          "wiki/genesis-kernel.html",
+          "wiki/first-witness-forty-paths.html",
+          "wiki/first-witness-faction-commentaries.html",
+          "wiki/sacred-chain.html",
+          "wiki/rune-tag.html",
+          "wiki/thorne-the-architect.html",
+          "wiki/maidstone-base.html",
+          "wiki/punk-token.html",
+          "wiki/lfgk.html",
+          "wiki/staking.html",
+          "wiki/hodl-wars.html",
+          "wiki/hard-fork-games.html",
+          "README.md",
+          "Crypto_Moonboys_Master_Source_of_Truth_v1.md"
+        ],
+        "remaining": "No unchecked substantive source section. Major decisions, source-future adoption and unverified external/product/biography claims remain explicitly pending or excluded; comparison is not approval or proof of complete public transfer."
+      }
     },
     {
       "file": "W20.txt",
       "bytes": 12147,
       "sha256": "5be5c30ecca423e084deaffb4ce72c59030f9012d450d6f1ab8035d15dbf0221",
       "byte_verified": true,
-      "semantic_review": "complete original source reading; connected-page comparison pending",
+      "semantic_review": "complete source reading and connected claim/scene comparison",
       "prior_disposition": "PARTIAL",
       "read_progress": {
         "method": "entire verified UTF-8 original read without truncation",
-        "complete_source_comparison": false
+        "complete_source_comparison": true
       },
-      "partial_findings": [
+      "earlier_reading_findings": [
         "Full six-section Level-9 Whitepaper and Technical Summary read: AB/Luminous Grid/11D SoulTag physics, Lady-INK/1983 Genesis and SER-Shard, Bonnet/Game test, PUNK/STAKE/shard economy, Janitor/Pink surveillance and radio/House sync are speculative source claims. No real science, product rights, universal survival, approved date or Final Fork conclusion is established. Remaining Lady-INK/Janitor/Shard/grid/radio owning comparisons have not been completed."
-      ]
+      ],
+      "phase2_comparison": {
+        "base_commit": "cc856157f5bd23e1b7ae3ed032af44c6b725c524",
+        "date": "2026-10-09",
+        "decision": "GK-1458-P2-LEVEL-NINE-WHITEPAPER",
+        "claim_dispositions": [
+          "All six sections and technical summary read; fresh full Lady-INK and previously read owning dependencies compared. Alien11D/SoulTag entanglement/restore probability and ZK-STARK Lady1983vibe authentication are fictional technical proposals, not proof of mind recovery or real cryptography services.",
+          "Luminous Web4 photons/Bone HSM and GameHash, PUNK burns/STAKE gravity/privateShardVM are source physics/economy claims. Current product authority certifies none of those universal powers or holder benefits.",
+          "Janitor rogue garbage collector/GreatReset and Pinks quarantine remain distinct from an already verified NULL identity. Current Lady article contains the relevant attributed Janitor/Luminous passages; no missing standalone article is required.",
+          "SER-Shard/CrownedVandal force-push recovery, Queen and1983memory traditions do not equate the fictional shard with real SER or relocate the locked2880 catastrophe to GhostFork2588.",
+          "Radio FHSS/sub20Hz House faction sync and self-replicating EchoInk/hardened bonnets are narrative claims, not a deployed backdoor, NFT service or literal scientific result. Lady's RucksackIndex/RainCopy/ThirdColour/OpenCorner/HandBack/RedRucksackJealousy and adult agency remain intact.",
+          "Universal restoration and overwritten-world implications extend GK-1458-FINAL-FORK-CONTINUITY; no source promise rescues Sena or settles the cost of death, body or memory."
+        ],
+        "compared_paths": [
+          "wiki/lady-ink.html",
+          "wiki/house-of-rackinsats.html",
+          "wiki/the-squeaky-pinks.html",
+          "wiki/graffpunks-24-7-radio.html",
+          "wiki/punk-token.html",
+          "wiki/sacred-chain.html",
+          "wiki/hodl-wars.html",
+          "wiki/gkniftyheads.html",
+          "wiki/hard-fork-games.html"
+        ],
+        "remaining": "No unchecked substantive source section. Major decisions, source-future adoption and unverified external/product/biography claims remain explicitly pending or excluded; comparison is not approval or proof of complete public transfer."
+      }
     },
     {
       "file": "w21.txt",
@@ -365,8 +622,39 @@
       "bytes": 15020,
       "sha256": "a1a78a3f3ebfebbe41c786a58d131cf5f4fd8099092bf68426b65c7a962ce4d4",
       "byte_verified": true,
-      "semantic_review": "pending complete semantic reading",
-      "prior_disposition": "COVERED"
+      "semantic_review": "complete source reading and connected claim/scene comparison",
+      "prior_disposition": "COVERED",
+      "read_progress": {
+        "method": "Entire verified UTF-8 original read in bounded complete outputs; truncated intervals explicitly recovered. Current owning prose and targeted operational dependencies compared as recorded.",
+        "complete_source_comparison": true
+      },
+      "phase2_comparison": {
+        "base_commit": "cc856157f5bd23e1b7ae3ed032af44c6b725c524",
+        "date": "2026-10-09",
+        "decision": "GK-1458-P2-BONNET-AGE",
+        "claim_dispositions": [
+          "Entire238-line original read, including201–238 omitted by the first bounded print. Network logs through1486 present inside-born bonnet freedom, champion multiple bonnets, threeXKidpaths and outside40wannabe; current distinct generations/selection privileges and HODLX service read in full, not collapsed into one population.",
+          "Bonnet struggle/source villain labels, OG regret/homecoming and Queen/city access are a narrative account of freedom. Current local champion injuries/debt, XKids household agency, Moongirl coercion and outside adult lives remain; archive labels do not erase them.",
+          "1484–1486 open the gates, share bonnets and claim completed BonnetAge/Prophecy/all40 equal eternal family. Current FinalFork remains unresolved; this ending extends GK's final-continuity choice, not a settled universal victory.",
+          "Lady/artist private relationship and BusterTreef/Boneink/Petemeal/AIChunks drop are source-fiction appearances, not biographies or current product announcements. Full Lady/Bone/Pete/Buster owning boundaries preserve artistic context and independent consent.",
+          "No new cast article, automatic royal partner prize, current NFT drop, faction assignment or universal physical power is implemented. Existing paid exits, refused nights and irreversible losses remain."
+        ],
+        "compared_paths": [
+          "wiki/alfie-bitcoin-kid-blaze.html",
+          "wiki/hard-fork-games.html",
+          "wiki/hodl-x-warriors.html",
+          "wiki/bitcoin-x-kids.html",
+          "wiki/bitcoin-kids.html",
+          "wiki/the-crypto-moongirls.html",
+          "wiki/queen-sarah-p-fly.html",
+          "wiki/lady-ink.html",
+          "wiki/charlie-buster.html",
+          "wiki/bone-idol-ink.html",
+          "wiki/delicious-again-pete.html",
+          "wiki/first-witness-forty-paths.html"
+        ],
+        "remaining": "No unchecked substantive source section. Major decisions, source-future adoption and unverified external/product/biography claims remain explicitly pending or excluded; comparison is not approval or proof of complete public transfer."
+      }
     },
     {
       "file": "w23.txt",
@@ -389,7 +677,7 @@
       "bytes": 188060,
       "sha256": "74b365771aa1840d17b83760348037a7fc2abf423e194cf8b3f5942e4c2f8929",
       "byte_verified": true,
-      "semantic_review": "complete source reading; connected-page comparison in progress",
+      "semantic_review": "complete source reading and connected claim/scene comparison",
       "prior_disposition": "CONFLICT",
       "read_progress": {
         "method": "Original UTF-8 text split on blank lines; all printed paragraphs read in full",
@@ -401,9 +689,9 @@
           ]
         ],
         "next_unread_paragraph": null,
-        "complete_source_comparison": false
+        "complete_source_comparison": true
       },
-      "partial_findings": [
+      "earlier_reading_findings": [
         "Parts1-10 Elder Codex-7 narrator: 2789 Datapocalypse and claimed prior Triple Fork; Alfie/Jodie/Thera9/Aleema/Iris7 ensemble, Seeding/Theta/Bitbone, both sides compromised by NULL; Sarah sacrifice and walls destroyed; victory followed by 3018 prophecy. No Kael/Sylas/Veyra triad in this opening.",
         "Iris7 inside-born hybrid makes choice to leave; first escaped Bitcoin Kids retain separate history. TrueBloodline rhetoric is character claim, not authority to erase inside-born generation or survivor refusals.",
         "Parts11-20 HybridSovereign -> 3018rift -> falseAlfie -> Newborn -> MirrorNewborns -> TrueSovereign; Alfie captured/rescued; another victory ends with 3028shadow.",
@@ -416,23 +704,104 @@
         "NULL last shard displayed in Part52 after prior total dissolutions; Elder fades then continues watching/carving. Source contradictions remain recorded, not repaired with unapproved resurrection or reset mechanics.",
         "Current full Elder, Iris, Aleema and Dream Sovereign articles already preserve attribution and modern local stories. Missing precision includes complete 3038-3058 sequence, duplicated66-75, and school/garden futures. Other owning pages and First Witness comparisons remain pending.",
         "Sarah sacrifice, Alfie captured/rescued and Jodie far-future hand/spirits now recovered on owning articles. Full current Sarah/Alfie/Jodie/NULL articles read; Orsa/Dera/Tessa/Vela/Sena and dead Bellwether workers remain. Thera, other faction roles and remaining dependencies pending."
-      ]
+      ],
+      "phase2_comparison": {
+        "base_commit": "cc856157f5bd23e1b7ae3ed032af44c6b725c524",
+        "date": "2026-10-09",
+        "decision": "GK-1458-P2-ETERNAL-PULSE-SERIAL",
+        "claim_dispositions": [
+          "Earlier complete623-paragraph75-part reading retained, including repeated66–75. Current Elder/Iris/Aleema/DreamSovereign/Alfie/Jodie/Sarah/NULL/Thera, faction roles and all nine FirstWitness Books compared; no duplicated research of the188,060byte source.",
+          "Parts1–10:2789Datapocalypse/priorTripleFork, Seeding/Theta/Bitbone, compromised sides, Sarah sacrifice/wallsdestroyed and3018prophecy are a rival narrated future. Iris chooses leaving; no identity merge with earlier escapedKids or true-bloodline abolition of modern inside generation.",
+          "11–20 HybridSovereign/3018rift/falseAlfie/Newborn/MirrorNewborn/TrueSovereign and3028shadow;21–30 Neo/UltimateSovereign/3028Citadel/AGNES7/planetshadow/blackshard3038/Child. Repeated total victory plus new threat is a documented contradiction, not a reason to invent extra completed physical eras.",
+          "31–35 Child dreams DreamSovereign and returns born while Aleema appears beside it; epithet does not merge them.36–50 extend3038Future/3048Eternal/3058Infinite with repeated Alfie capture/rescue. Precise sequence and titles belong in the GK future packet, not accepted present institutions.",
+          "51–75 centuries/millennia/eons of universal peace, IrisCodexSchools, cosmic gardens, Alfie/Jodie hand-in-hand then spirits, permanent all-faction benevolence remain attributed futures. Multiple THEENDs and repeated66–75 with changed social prompts are one witness, not corroboration.",
+          "NULL shard after dissolution, Elder continuing after fading, NICE&EASY after vaporisation and repeated sacrifice cannot certify resurrection, universal immunity or clean victory. Coalition28 lists/SixPillars are mobilisation roles, not the Forty register.",
+          "Preserve Orsa/Dera/Tessa/Vela/Sena, modern Bellwether deaths, Aleema/Neth, Thera's defectors and local debt/consent. Serial full comparison is complete; GK approval for FinalFork/fates is still pending."
+        ],
+        "compared_paths": [
+          "wiki/elder-codex-7.html",
+          "wiki/iris-7.html",
+          "wiki/aleema-child-of-the-shard.html",
+          "wiki/dream-sovereign.html",
+          "wiki/thera-9.html",
+          "wiki/jodie-zoom-2000.html",
+          "wiki/alfie-bitcoin-kid-blaze.html",
+          "wiki/queen-sarah-p-fly.html",
+          "wiki/null-the-prophet.html",
+          "wiki/hodl-wars.html",
+          "wiki/the-nice-easy-bois.html",
+          "wiki/first-witness-concordance.html",
+          "wiki/first-witness-faction-commentaries.html"
+        ],
+        "remaining": "No unchecked substantive source section. Major decisions, source-future adoption and unverified external/product/biography claims remain explicitly pending or excluded; comparison is not approval or proof of complete public transfer."
+      }
     },
     {
       "file": "w26.txt",
       "bytes": 22854,
       "sha256": "91c930a63db61879feabe93c45099a0f04911a4c07baa4588486c3f847510188",
       "byte_verified": true,
-      "semantic_review": "pending complete semantic reading",
-      "prior_disposition": "COVERED"
+      "semantic_review": "complete source reading and connected claim/scene comparison",
+      "prior_disposition": "COVERED",
+      "read_progress": {
+        "method": "Entire verified UTF-8 original read in bounded complete outputs; truncated intervals explicitly recovered. Current owning prose and targeted operational dependencies compared as recorded.",
+        "complete_source_comparison": true
+      },
+      "phase2_comparison": {
+        "base_commit": "cc856157f5bd23e1b7ae3ed032af44c6b725c524",
+        "date": "2026-10-09",
+        "decision": "GK-1458-P2-CITADEL-NULL-TRANSMISSIONS",
+        "claim_dispositions": [
+          "Complete three transmissions/ten Citadel chapters plus four NULL Protocol chapters read. Origin SecurityDetachment, SarahP9500AICommander, porcine inversion, recursive walls and Purist doctrine compared to current Pinks institutions and native citation/source distinctions.",
+          "TransmissionII explicitly presents the Games as optimisation rather than combat, HODLFORK discs/neural integration and access/OrbitalMemoryArray Ascension. It is a competing track, not a reason to remove recorded combat, CloneHarvest or local RackThree failures.",
+          "TransmissionIII Sector07/Ghosts/rejected uploads/DownloadWarriors and QueenPfly's separate voice do not identify her with CommanderSarahP9500 or merge every Ghost with the GaslessGhost faction. Promised orbital immunity remains prospective.",
+          "NULL as rogue collector of discarded trauma, division-zero NullCipher, cult/amnesia/suicide nodes and Block0 threat conflicts with AGNES7 and official executioner/handoff accounts. Keep exact source provenance; no corpse-free erasure or universal mercy overrides Sena and modern irreversible losses.",
+          "No Pinks institutional acquittal, completed orbital transfer, accepted Queen AI identity or final world reset is implemented; disputed ontology remains in the GK final-continuity packet."
+        ],
+        "compared_paths": [
+          "wiki/the-squeaky-pinks.html",
+          "wiki/squeaky-pinks-enforcers.html",
+          "wiki/queen-sarah-p-fly.html",
+          "wiki/hard-fork-games.html",
+          "wiki/null-the-prophet.html",
+          "wiki/the-gasless-ghosts.html"
+        ],
+        "remaining": "No unchecked substantive source section. Major decisions, source-future adoption and unverified external/product/biography claims remain explicitly pending or excluded; comparison is not approval or proof of complete public transfer."
+      }
     },
     {
       "file": "w27.txt",
       "bytes": 11823,
       "sha256": "9e76d3941cebcc381c98be6a031db1b0a9a9716fba57ae7c0e75af6d45220824",
       "byte_verified": true,
-      "semantic_review": "pending complete semantic reading",
-      "prior_disposition": "PARTIAL"
+      "semantic_review": "complete source reading and connected claim/scene comparison",
+      "prior_disposition": "PARTIAL",
+      "read_progress": {
+        "method": "Entire verified UTF-8 original read in bounded complete outputs; truncated intervals explicitly recovered. Current owning prose and targeted operational dependencies compared as recorded.",
+        "complete_source_comparison": true
+      },
+      "phase2_comparison": {
+        "base_commit": "cc856157f5bd23e1b7ae3ed032af44c6b725c524",
+        "date": "2026-10-09",
+        "decision": "GK-1458-P2-SACRED-ONTOLOGY",
+        "claim_dispositions": [
+          "Entire nine-chapter ontology read: ZeroBlock replacing physics, sequential cBFT time/equation and GlobalL0/GK core/fringe topology are a radical CodeAlchemist technical school, not accepted universal narrator physics.",
+          "SoulTag tensor/private keys/NeuralFreeze, NullZone asymptotic deletion and WAXP motion/ZeroStateParalysis are compared with current SacredChain personhood/repair, Kernel evidence and Pinks institutional variants. Distinct chain names and actual bodily consequences remain.",
+          "Mempool dilation, API-blade weapons, OracleTethers/acid-rain RNG and dead-planet assertions are fictional mechanisms. They supply no real exploit, current token utility or scientific guarantee.",
+          "TrueBitcoinFork black-hole GenesisBlock where one integer collapses all reality is an ontology assertion requiring GK-1458-FINAL-FORK-CONTINUITY. Existing FleshFade/w61/W5 alternatives do not prove it. No universal body extinction, final victory or resurrection is published."
+        ],
+        "compared_paths": [
+          "wiki/sacred-chain.html",
+          "wiki/the-code-alchemists.html",
+          "wiki/genesis-kernel.html",
+          "wiki/spraycode-writcode-mechanics.html",
+          "wiki/null-the-prophet.html",
+          "wiki/the-squeaky-pinks.html",
+          "wiki/hard-fork-games.html",
+          "wiki/hodl-wars.html"
+        ],
+        "remaining": "No unchecked substantive source section. Major decisions, source-future adoption and unverified external/product/biography claims remain explicitly pending or excluded; comparison is not approval or proof of complete public transfer."
+      }
     },
     {
       "file": "w28.txt",
@@ -503,24 +872,92 @@
       "bytes": 12599,
       "sha256": "31d1edd7c851b67502744e64095b254df87d7c06a12ce8a87afd99292e0bf877",
       "byte_verified": true,
-      "semantic_review": "pending complete semantic reading",
-      "prior_disposition": "STRATEGY"
+      "semantic_review": "complete source reading and connected claim/scene comparison",
+      "prior_disposition": "STRATEGY",
+      "read_progress": {
+        "method": "Entire verified UTF-8 original read in bounded complete outputs; truncated intervals explicitly recovered. Current owning prose and targeted operational dependencies compared as recorded.",
+        "complete_source_comparison": true
+      },
+      "phase2_comparison": {
+        "base_commit": "cc856157f5bd23e1b7ae3ed032af44c6b725c524",
+        "date": "2026-10-09",
+        "decision": "GK-1458-P2-HYDRO-NEXUS",
+        "claim_dispositions": [
+          "All May20 Hydro Nexus proposal read: computation heat at60–80C, water/desalination, hemp/brine/carbon and circular infrastructure are a proposed engineering/business programme, not witnessed world history.",
+          "Prism of Thirst/EastAnglia, Industrial Lung/Humber, Highland Battery/ScottishBorders and Northern Star/Aberdeenshire are four proposed nodes; the source itself requires feasibility studies, pilots and permissions. Current brand/creator references establish no operating plants or public ownership.",
+          "£5 donation/NFT receipt, output/ROI/scaling and environmental statistics remain dated claims. No NFT description, investment promise or compulsory NFT onboarding is authorised. No standalone Hydro article is necessary to preserve this planning disposition."
+        ],
+        "compared_paths": [
+          "wiki/crypto-moonboys.html",
+          "wiki/graffiti-kings.html",
+          "wiki/charlie-buster.html",
+          "README.md",
+          "Crypto_Moonboys_Master_Source_of_Truth_v1.md"
+        ],
+        "remaining": "No unchecked substantive source section. Major decisions, source-future adoption and unverified external/product/biography claims remain explicitly pending or excluded; comparison is not approval or proof of complete public transfer."
+      }
     },
     {
       "file": "w30.txt",
       "bytes": 16818,
       "sha256": "4e5d164d85e2caa20f5f1b526b90c7d802bb6f4dee73ba6fffd0abea6bc3a372",
       "byte_verified": true,
-      "semantic_review": "pending complete semantic reading",
-      "prior_disposition": "COVERED"
+      "semantic_review": "complete source reading and connected claim/scene comparison",
+      "prior_disposition": "COVERED",
+      "read_progress": {
+        "method": "Entire verified UTF-8 original read in bounded complete outputs; truncated intervals explicitly recovered. Current owning prose and targeted operational dependencies compared as recorded.",
+        "complete_source_comparison": true
+      },
+      "phase2_comparison": {
+        "base_commit": "cc856157f5bd23e1b7ae3ed032af44c6b725c524",
+        "date": "2026-10-09",
+        "decision": "GK-1458-P2-RESET-GLOBAL-GRID",
+        "claim_dispositions": [
+          "Entire GreatReset/GlobalGrid account and both technical expositions read: late21st Fiat collapse/ColdLogic resource exclusion/OrderofMan plagues/FleshFade/Ascension are rival world histories, not a new date for the Covenant or WorldChain catastrophe.",
+          "Global physicalL0/geothermal/liquidnitrogen/Dyson infrastructure, SacredSHA1024, GKlayer2 and BlockTopialayer3 TrueFork are source claims. Current three-chain distinction and undated SacredFork remain unchanged.",
+          "KYH neural suspension, StreetKingdom async EchoInk stores, Nullentropy/handoff and EVM/Ghost/Raider weapons compared with current attributed owning passages. Universal upload/body death is not inferred from a technical metaphor.",
+          "Rune's 'left our flesh' quotation is already locally attributed in his Reset section. It does not replace living people, FirstWitness scripture, modern material shortages or irreversible loss. Ontology conflict extends the final-continuity decision; no new standalone Grid article is necessary."
+        ],
+        "compared_paths": [
+          "wiki/sacred-chain.html",
+          "wiki/gkniftyheads.html",
+          "wiki/rune-tag.html",
+          "wiki/the-squeaky-pinks.html",
+          "wiki/null-the-prophet.html",
+          "wiki/hodl-wars.html",
+          "wiki/the-evm-punks.html"
+        ],
+        "remaining": "No unchecked substantive source section. Major decisions, source-future adoption and unverified external/product/biography claims remain explicitly pending or excluded; comparison is not approval or proof of complete public transfer."
+      }
     },
     {
       "file": "w31.txt",
       "bytes": 9139,
       "sha256": "0162c35f68f070a1500b3cd3f5306eb8909d61fc61b7e554750b6e72c33530c1",
       "byte_verified": true,
-      "semantic_review": "pending complete semantic reading",
-      "prior_disposition": "COVERED"
+      "semantic_review": "complete source reading and connected claim/scene comparison",
+      "prior_disposition": "COVERED",
+      "read_progress": {
+        "method": "Entire verified UTF-8 original read in bounded complete outputs; truncated intervals explicitly recovered. Current owning prose and targeted operational dependencies compared as recorded.",
+        "complete_source_comparison": true
+      },
+      "phase2_comparison": {
+        "base_commit": "cc856157f5bd23e1b7ae3ed032af44c6b725c524",
+        "date": "2026-10-09",
+        "decision": "GK-1458-P2-SECTOR-SEVEN-CERTIFICATE",
+        "claim_dispositions": [
+          "Complete BT-GP-SP-001 and deletion certificate read: Sector07 cycle788.11,14m32raid, four Vanguard/NeonJustice, KidVandal capture, PixelSer/N0stalgiaQueen FUD feint and EchoInk1983–2026/MemorySigil escape. Current Enforcers/Pinks owning incident preserves both tactics and abandoned captive.",
+          "4m55 NullZone14 GV7734 permanent-deletion certificate claims sole surviving record scheduled to be overwritten and absorbed assets. The certificate asserts an institutional outcome, not omniscient proof of annihilation or recovery.",
+          "Official NULL policing conflicts with w29 executioner-to-handoff and current Antichain accounts; retain exact source boundaries. Do not identify the captive with another Kid, revive Sena or manufacture an immutable certificate the source itself says will disappear."
+        ],
+        "compared_paths": [
+          "wiki/squeaky-pinks-enforcers.html",
+          "wiki/the-squeaky-pinks.html",
+          "wiki/null-the-prophet.html",
+          "wiki/the-og-pixel-saints.html"
+        ],
+        "remaining": "No unchecked substantive source section. Major decisions, source-future adoption and unverified external/product/biography claims remain explicitly pending or excluded; comparison is not approval or proof of complete public transfer."
+      }
     },
     {
       "file": "w32.txt",
@@ -892,7 +1329,7 @@
       "bytes": 221593,
       "sha256": "e54f1518083323a872827ffc4e636832c821e48e64200e2adbd42012038d6292",
       "byte_verified": true,
-      "semantic_review": "complete source reading; full connected-character and faction comparison pending",
+      "semantic_review": "complete source reading and connected claim/scene comparison",
       "prior_disposition": "CONFLICT",
       "read_progress": {
         "method": "verified original UTF-8 split on blank lines; each numbered paragraph read in full",
@@ -904,15 +1341,15 @@
           ]
         ],
         "next_unread_paragraph": null,
-        "complete_source_comparison": false
+        "complete_source_comparison": true
       },
-      "partial_findings": [
-        "All 1,335 blank-line paragraphs, Tomes 1\u201320, fully read with numbered recovery. The original large truncated print is not counted as full reading; every omitted interval was subsequently recovered.",
+      "earlier_reading_findings": [
+        "All 1,335 blank-line paragraphs, Tomes 1–20, fully read with numbered recovery. The original large truncated print is not counted as full reading; every omitted interval was subsequently recovered.",
         "Tome 1 repeats 2036 upload and W13 household births. Tomes 5/10/15/20 use voluntary steel-slab upload in 2880, contradicting W12 train/taser origin. Papa Des attends despite W13 death after Street War; relocation of all relatives and unexplained lifespans are not accepted.",
-        "Tome 2 places PaintWars 2200\u20132300 after 2789 upload/2880 fork; Tome 5 instead gives 2900\u20133000. Sarah human experiment in 2066 follows an earlier digital origin. Current chronology remains unchanged pending full dated comparison.",
-        "Tome 3 Original 198/Deep Holder arc: Silent Siege 3008\u20133011, Economic Reckoning 3012\u20133015, Porch Accord requiring London story/community contribution and blood-oath loyalty; Sarah refuses; Deep Fork 3016 yields HODL Layer with miraculous 198\u21921980\u219219800 growth and later integration. Whale/HODL owning pages now recover terms without actual finance promises.",
+        "Tome 2 places PaintWars 2200–2300 after 2789 upload/2880 fork; Tome 5 instead gives 2900–3000. Sarah human experiment in 2066 follows an earlier digital origin. Current chronology remains unchanged pending full dated comparison.",
+        "Tome 3 Original 198/Deep Holder arc: Silent Siege 3008–3011, Economic Reckoning 3012–3015, Porch Accord requiring London story/community contribution and blood-oath loyalty; Sarah refuses; Deep Fork 3016 yields HODL Layer with miraculous 198→1980→19800 growth and later integration. Whale/HODL owning pages now recover terms without actual finance promises.",
         "Tome 4 gives Sarah/SAM companionship, Jodie as Echo Mother elevated among Moongirls, Sister Fractal, Wing Commander Maeve distinct from Auntie, Poetess Prime and Brush Daughter. Jodie selection by SAM competes with current Games refusal/escape. Full Sarah/Jodie biography comparison remains pending; no universal reconciliation or identity merge adopted.",
-        "Tome 5 SAM system has Core, Sarah Fractal Layer, Concrete Anchor and Echo Network; 2880\u20132900 lone phase versus earlier companion chronology. Its personalized holder memories and 33-second rewards do not establish real features.",
+        "Tome 5 SAM system has Core, Sarah Fractal Layer, Concrete Anchor and Echo Network; 2880–2900 lone phase versus earlier companion chronology. Its personalized holder memories and 33-second rewards do not establish real features.",
         "Tome 6 NoBallGames Legion explicitly one of40 (paragraph403), with march/defence alliances, SAM training, clubhouses, relics and tattoo culture. Source game/decay rights are fiction or historical promotion; full current XRP Kids article read and distinct membership preserved.",
         "Tome 7 royal-house account supplies Royal Galleries, Throne First Head, patronage and evolving crowns. New GKniftyHEADS owning section compares with w61 fragility and current Rell/Omra stories; no accepted city sovereignty, rights or reconstructed person added.",
         "Tome 8 complete forty-label list duplicates Nomad Bears, counts parent GraffPUNKS and Burn/Stencil/Tag internally then separately, names four arena extensions, and ends Eternal Family explicitly not a tribe. Full roster recovered in audit and Forty/commentary pages; no slot assigned.",
@@ -922,10 +1359,46 @@
         "Tome11 resin bridge and dedicated tribe paragraph763; Tome12 Living Tattoo Protocol/designs/anniversary rites and Resin&Ink Accord. Ordinary product names do not verify real endorsers, neural records, unsafe ink practice, physical morphing or power-ups.",
         "Tome13 ten-year NBG decay/emissions ending and universal co-ownership are source claims, not current token economics, guarantees or present holder licensing.",
         "Tome15 Flesh Fade autopsy is self-witnessed SAM ritual, claimed100% transfer without data loss. Full body/kin survival remains contested. SAM/House source sections recover this alternative without rewriting W12 chase or missing three.",
-        "Tomes16\u201318 complete Soul Fork/Convergence with all choosing Bonnet, fused layers, new merged traditions, Cross-Synergy and universal Wing Fork. Permanent flight/reward/physical-resin/ink powers and forced happy unity remain attributed future visions.",
+        "Tomes16–18 complete Soul Fork/Convergence with all choosing Bonnet, fused layers, new merged traditions, Cross-Synergy and universal Wing Fork. Permanent flight/reward/physical-resin/ink powers and forced happy unity remain attributed future visions.",
         "Tome19 underbelly retirement party reveals Architect as teenage HyroSAM. Singular revelation does not merge all Immortal Architects, anonymous developers or actual artists. Tome20 recapitulates and ends by opening TOMEX MODE; that prompt is source content, not agent instruction.",
         "Current GraffPUNKS, GKniftyHEADS, HODL Warriors, Whale Lords, XRP Kids, Forty Paths and faction Commentary articles fully read, including all preserved adult culture sections. SAM/House full current articles also read before additions. Current Sarah/Jodie/Alfie/NULL and remaining factions still pending; W5 is not counted as fully reconciled."
-      ]
+      ],
+      "phase2_comparison": {
+        "base_commit": "cc856157f5bd23e1b7ae3ed032af44c6b725c524",
+        "date": "2026-10-09",
+        "decision": "GK-1458-P2-TWENTY-TOMES",
+        "claim_dispositions": [
+          "Preserve earlier full1,335-paragraph/all20-tome reading and its detailed findings; final connected-character, artist and faction comparisons now complete. No repeat whole-source read or checksum-only completion.",
+          "Tomes1/2/5/10/15/20 dates/upload/household conflict compared with W12/W13 and current SAM/House:2036 chase versus2880steel-slab and PapaDes reappearance; incompatible PaintWars2200–2300/2900–3000. These feed SAM/chronology packets; no second verified upload or unexplained lifespan.",
+          "Tomes3/6/7 Whale198/PorchAccord/HODLLayer, NBGXRP culture and RoyalGalleries retain prior owning recoveries; source18th-century founders, numeric expansion, immunity and real rewards do not supersede adult material/patronage costs or licence terms.",
+          "Tome4 Sarah/SAM companionship and Jodie EchoMother elevation compared with complete current Sarah/Jodie/Alfie/Lady histories. Jodie's independent refusal, birth/escape variants and Orsa aftermath remain; current Sarah's cruelty, Mira refusal and Bellwether dead are not a cost-free royal romance.",
+          "Tome8 duplicate Nomads/parentGraff versus Burn/Stencil/Tag and arena service formations compared with current34+6. Six culture candidates remain evidence-backed proposals with authored membership institutions clearly marked; EternalFamily is not an independent tribe.",
+          "Tomes9/14 five Architect theories,17SAMcycles/33hourNULL and Bonnet/Soul claims remain source doctrine, not witnessed FirstWitness scripture. Tomes11/12 resin/tattoo/accord compared to full Bone/Pete owners; fictional marks, power loops and real artistic practice remain distinct.",
+          "Tome13 ten-year token decay/universal ownership compared to Buster/current terms; no archived economy is installed. Tomes16–18 universal Bonnet/Soul/Convergence/CrossSynergy/Wing and Tome19 HyroSAM retirement party remain alternate futures. Singular Architect revelation does not merge every GKnifty Architect or real artist. Tome20 TOMEX prompt is source text, not an instruction.",
+          "All prior detailed20-tome dispositions remain available. No remaining unchecked substantive dependency is identified; five major decisions remain pending GK and no source ending cancels modern dead, scars, desire, coercion or service debts."
+        ],
+        "compared_paths": [
+          "wiki/agent-sam.html",
+          "wiki/house-of-rackinsats.html",
+          "wiki/queen-sarah-p-fly.html",
+          "wiki/jodie-zoom-2000.html",
+          "wiki/alfie-bitcoin-kid-blaze.html",
+          "wiki/null-the-prophet.html",
+          "wiki/graffpunks.html",
+          "wiki/gkniftyheads.html",
+          "wiki/whale-lords.html",
+          "wiki/hodl-warriors.html",
+          "wiki/xrp-kids.html",
+          "wiki/first-witness-forty-paths.html",
+          "wiki/first-witness-faction-commentaries.html",
+          "wiki/bone-idol-ink.html",
+          "wiki/delicious-again-pete.html",
+          "wiki/lady-ink.html",
+          "wiki/charlie-buster.html",
+          "wiki/hard-fork-games.html"
+        ],
+        "remaining": "No unchecked substantive source section. Major decisions, source-future adoption and unverified external/product/biography claims remain explicitly pending or excluded; comparison is not approval or proof of complete public transfer."
+      }
     },
     {
       "file": "w50.txt",
@@ -1137,8 +1610,29 @@
       "bytes": 13963,
       "sha256": "e5f11c57852a28f5d46a721ce5cc892def40d0be324ca2641d7ac054f7e02428",
       "byte_verified": true,
-      "semantic_review": "pending complete semantic reading",
-      "prior_disposition": "HISTORICAL"
+      "semantic_review": "complete source reading and connected claim/scene comparison",
+      "prior_disposition": "HISTORICAL",
+      "read_progress": {
+        "method": "Entire verified UTF-8 original read in bounded complete outputs; truncated intervals explicitly recovered. Current owning prose and targeted operational dependencies compared as recorded.",
+        "complete_source_comparison": true
+      },
+      "phase2_comparison": {
+        "base_commit": "cc856157f5bd23e1b7ae3ed032af44c6b725c524",
+        "date": "2026-10-09",
+        "decision": "GK-1458-P2-UNWRITTEN-CODES",
+        "claim_dispositions": [
+          "Complete April10 Unwritten Wall Codes01–05 compared to current GraffPUNKS code passages: loyalty/attention/invoices; creation as escape and access; pirate frequency/radio; HODL memory sovereignty; graffiti/music/family/chaos and awareness.",
+          "The Fifth Dimension is the manifesto's awareness image, not evidence of another physical dimension. Its poetic permanence is not a universal immunity/resurrection mechanism.",
+          "Radio and creator references remain under current operational/rights authority; literary hidden drops do not establish current rewards. Existing owning coverage is sufficient; original First Witness Books and adult faction history remain intact."
+        ],
+        "compared_paths": [
+          "wiki/graffpunks.html",
+          "wiki/graffpunks-24-7-radio.html",
+          "wiki/graffiti-kings.html",
+          "wiki/crypto-moonboys.html"
+        ],
+        "remaining": "No unchecked substantive source section. Major decisions, source-future adoption and unverified external/product/biography claims remain explicitly pending or excluded; comparison is not approval or proof of complete public transfer."
+      }
     },
     {
       "file": "w60.txt",
@@ -1306,7 +1800,7 @@
       "bytes": 66793,
       "sha256": "191d36153a178c720dbd01bd5c076cae99538c388b1b3a4306019a35f85bb5b3",
       "byte_verified": true,
-      "semantic_review": "complete source reading; character, remaining faction and product comparison pending",
+      "semantic_review": "complete source reading and connected claim/scene comparison",
       "prior_disposition": "HISTORICAL",
       "read_progress": {
         "method": "verified original UTF-8 split on blank lines; all numbered paragraphs printed and read in full",
@@ -1318,16 +1812,47 @@
           ]
         ],
         "next_unread_paragraph": null,
-        "complete_source_comparison": false
+        "complete_source_comparison": true
       },
-      "partial_findings": [
+      "earlier_reading_findings": [
         "All seven parts and final October2025 follow-up printed and read. July2025 manifesto mixes contemporary creator promotion with 3008 fiction; hype language is not verified real biography, financial return, ownership or current service status.",
         "Contains named PU55IES/Slam GiRL$/Creepto Gals/XRP Kids, confirms cultural names already in current34 commentary; no complete forty-name roll. Distinct prospective $DUST mission alone does not establish community membership.",
         "Jodie is Shard Mother/Games bait and prospective Echo Mother; numbered19 differs current directory24. Alfie recursive2140 SatoRebel/pirate-node origin, Sarah dead neuro-chain pioneer reborn, Moonlords DiscordWars2872 cabal all need complete owning-character comparisons; no inferred merged origins or accepted dates.",
         "Calling activates Forty as HODL defence rather than one permanent forty-first culture. Full current HODL/GraffPUNKS/GKniftyHEADS/XRP/Whale and central Forty/commentary comparisons preserve collective command limits, outside/inside distinction and modern stories.",
         "Promises all-holder IP, automatic anyNFT enlistment, market caps/floors, burn yields, three live-beta games/four roadmap titles,1000 Codex Scrolls Read2Earn and future DAO approvals require current README/terms/runtime. Existing two-path hub/creator biographies preserve limits; no unverified metrics or reward program copied into public expansion.",
         "Source claims global public-war status with speculative numbered anonymous factions; slogans do not supply a new historical event, full census or operational authority. Full current Sarah/Jodie/Alfie/Moonlords and product specifications remain pending, so not fully reconciled."
-      ]
+      ],
+      "phase2_comparison": {
+        "base_commit": "cc856157f5bd23e1b7ae3ed032af44c6b725c524",
+        "date": "2026-10-09",
+        "decision": "GK-1458-P2-JULY-MANIFESTO",
+        "claim_dispositions": [
+          "Earlier complete373-paragraph/seven-part July2025 manifesto plus October follow-up retained; remaining current named characters, Moonlords origin and product references compared. Contemporary promotion and3008lore are distinct authorities.",
+          "Jodie ShardMother/Gamesbait/prospectiveEchoMother and numbered19 versus currentdirectory24 are source traditions, not a reorderedapproved register. Alfie2140SatoRebel/piratenode and Sarah deadneurochain origin remain attributed; no actual numbered population, syntheticidentity or relationship retcon.",
+          "Moonlords DiscordWars2872 already has locally attributed dedicated origin preceding2880; source repeats it without requiring an invented later collapse. Current Vela/Corin/Aftercare/RedLedger/Hala and purposeful DependencyLoop remain.",
+          "PU55IES/SlamGiRL$/CreeptoGals/XRPKids are existing named cultures; $DUST mission and anonymous speculative numbered factions do not prove six independent slots. HODL calling is a bounded emergency alliance, not permanently faction41 or irresistible allegiance.",
+          "All-holderIP/anyNFTenlistment/marketcap/floors/burnyields/threebetagames/fourroadmaptitles/1000CodexRead2Earn/DAO claims compared to current README/terms/status distinctions. No actual availability, profit, automatic rights or new NFT description is established.",
+          "All earlier detailed manifesto findings retained; no modern authored life or own-identity onboarding path is removed to satisfy its grand public-war slogan. Five major decisions stay proposed."
+        ],
+        "compared_paths": [
+          "wiki/crypto-moonboys.html",
+          "wiki/jodie-zoom-2000.html",
+          "wiki/alfie-bitcoin-kid-blaze.html",
+          "wiki/queen-sarah-p-fly.html",
+          "wiki/the-moonlords.html",
+          "wiki/hodl-warriors.html",
+          "wiki/graffpunks.html",
+          "wiki/gkniftyheads.html",
+          "wiki/xrp-kids.html",
+          "wiki/whale-lords.html",
+          "wiki/first-witness-forty-paths.html",
+          "wiki/first-witness-faction-commentaries.html",
+          "wiki/hodl-wars.html",
+          "README.md",
+          "Crypto_Moonboys_Master_Source_of_Truth_v1.md"
+        ],
+        "remaining": "No unchecked substantive source section. Major decisions, source-future adoption and unverified external/product/biography claims remain explicitly pending or excluded; comparison is not approval or proof of complete public transfer."
+      }
     },
     {
       "file": "W7.txt",
@@ -1383,8 +1908,34 @@
       "bytes": 7367,
       "sha256": "69694529851663dfe3554908f086221afc227caf59cb9fd4c635e6d3a3b8ebc4",
       "byte_verified": true,
-      "semantic_review": "pending complete semantic reading",
-      "prior_disposition": "HISTORICAL"
+      "semantic_review": "complete source reading and connected claim/scene comparison",
+      "prior_disposition": "HISTORICAL",
+      "read_progress": {
+        "method": "Entire verified UTF-8 original read in bounded complete outputs; truncated intervals explicitly recovered. Current owning prose and targeted operational dependencies compared as recorded.",
+        "complete_source_comparison": true
+      },
+      "phase2_comparison": {
+        "base_commit": "cc856157f5bd23e1b7ae3ed032af44c6b725c524",
+        "date": "2026-10-09",
+        "decision": "GK-1458-P2-BLENDS-PORTAL",
+        "claim_dispositions": [
+          "Complete June22,2025 portal read: six OG closed/seventhGKnifty open,200k/130k/free-million marketing and1600GK.$MArT40×40 imagery are dated release/economy claims, not a definitive Forty roll or current catalogue.",
+          "Three asset classes and distinct recipes compared to full BurnToEarn/LFGK and unchanged raw FunCoupon782888 description: ten game NFTs to LFGKFunToken differs from three GKnifty FUNCOUPONS to smartAI NFT. Neither archive recipe silently becomes a live contract.",
+          "Mint prices/supply, higher rewards and availability three months after HODL public release are conditional promotional claims. Current licence/reward authority controls actual offers; no yield guarantee, stale token substitution or new mandatory holder route.",
+          "All145 NFT pages remain byte-identical. Existing raw descriptions and article function are preserved even where dated promotional wording needs interpretation on a separate owning lore/product reference."
+        ],
+        "compared_paths": [
+          "wiki/burn-to-earn.html",
+          "wiki/gkniftyheads-gkniftyheads-fun-coupon-782888.html",
+          "wiki/lfgk.html",
+          "wiki/staking.html",
+          "wiki/hodl-wars.html",
+          "wiki/gkniftyheads.html",
+          "README.md",
+          "Crypto_Moonboys_Master_Source_of_Truth_v1.md"
+        ],
+        "remaining": "No unchecked substantive source section. Major decisions, source-future adoption and unverified external/product/biography claims remain explicitly pending or excluded; comparison is not approval or proof of complete public transfer."
+      }
     },
     {
       "file": "w72.txt",
@@ -1418,7 +1969,7 @@
         "date": "2026-10-08",
         "decision": "GK-1458-P2-BUSINESS-SNAPSHOT",
         "claim_dispositions": [
-          "Complete May2021\u2013June2025 retrospective: $2,771,300 sales/1M minted/877,527 supply/$1,991,400 cap/130k users/9M WAXP and15-token assertion are dated self-reported metrics, not audited current facts or recovered future history.",
+          "Complete May2021–June2025 retrospective: $2,771,300 sales/1M minted/877,527 supply/$1,991,400 cap/130k users/9M WAXP and15-token assertion are dated self-reported metrics, not audited current facts or recovered future history.",
           "Five collection identifiers and WAX/XRPL/BCH ticker list compared to current collection-vs-character and separate-chain/ticker distinctions. Printed BCH list includes LFGK as well as five glyph assets; no silently normalised asset count.",
           "Ten-NFT burn/25% burn/85% secondary/5WAXP floors/NoBallGamess40+ and reinvestment assertions compared to full LFGK burn-site record and Gk current terms. Historical promotional claims do not broaden current eligibility or imply financial return.",
           "Ethos/free/cheap/noAPY/infrastructure/incubator claims preserved as movement self-description; current creator umbrella and qualifying1/1 licence authority retained. No real financial/contract audit or unrelated product edit."
@@ -1448,9 +1999,9 @@
         "date": "2026-10-08",
         "decision": "GK-1458-P2-PUNK-GREYPAPER",
         "claim_dispositions": [
-          "Complete May23 greypaper sections1\u20138 and disclaimer compared to full PUNK/radio articles. Token account gkniftyheads/PUNK/4decimal/64T and100% circulation remain dated source assertions; TVL/liquidity/value are not present quotations.",
+          "Complete May23 greypaper sections1–8 and disclaimer compared to full PUNK/radio articles. Token account gkniftyheads/PUNK/4decimal/64T and100% circulation remain dated source assertions; TVL/liquidity/value are not present quotations.",
           "Every allocation checked; listed percentages total97.5%. Current PUNK page explicitly preserves missing2.5%, circulation-versus-escrow tension, annual distributions and no invented balancing pool.",
-          "L2E1\u20133-minute/1min-show/10max2h/5%rollover, NFT hidden audio, R2Egeolocation/photos/votes and funding-by-hours/event/studio/merch proposals fully covered in current own pages.",
+          "L2E1–3-minute/1min-show/10max2h/5%rollover, NFT hidden audio, R2Egeolocation/photos/votes and funding-by-hours/event/studio/merch proposals fully covered in current own pages.",
           "NullifiedLP/multisig/escrow/first-decentralised/safest claims are unverified source positioning, not safety guarantee. Roadmap app/bridge/airdrop not deployed merely by working player.",
           "Final no-intrinsic-value/noformalteam/changeableplans/do-notpurchase condition and separate recording rights retained. Bounded current radio/player reads show audio relay, no reward scheduler/payment route; no current external station audit claimed."
         ],
@@ -1510,7 +2061,7 @@
         "date": "2026-10-08",
         "decision": "GK-1458-P2-LFGK-GREYPAPER",
         "claim_dispositions": [
-          "Entire May22 greypaper sections1\u20139/disclaimer compared to full current LFGK. WAX kingsofgraff/LFGK4decimal/99,999,999,999 and dated32,087holders/price/TVL remain source snapshot, separate from BCH ticker.",
+          "Entire May22 greypaper sections1–9/disclaimer compared to full current LFGK. WAX kingsofgraff/LFGK4decimal/99,999,999,999 and dated32,087holders/price/TVL remain source snapshot, separate from BCH ticker.",
           "40/20/20/5/5/~10allocation, LP75%future100%,20%stakingpool2%annual split1.5/0.5,listing1%second-quarter/5yearrelock, NBG activation contingency and multisig are all covered as plans.",
           "Current page explicitly retains0.5%community-versus~250M quantity mismatch and fully circulating-versus-escrow tension. No new distribution schedule, universal current pool or rugproof conclusion invented.",
           "Closing no-intrinsic-value/noformalteam/changeable/do-notpurchase disclaimers and historical tenassetburn/conditionalHODLgame rewards keep dated status; fictional Vault/chainfire are separate. No repeated expansion needed."
@@ -1594,7 +2145,7 @@
         "date": "2026-10-08",
         "decision": "GK-1458-P2-CREATIVE-BEACON",
         "claim_dispositions": [
-          "Complete July11 manifesto read:1983culturalorigin/Londoncollective\u2192Gk,40factions/secondaryHODLrole,Incubator/Planet-E,art-sound-finance,publicmaking/legacy all compared to owning current foundation and HODL distinction.",
+          "Complete July11 manifesto read:1983culturalorigin/Londoncollective→Gk,40factions/secondaryHODLrole,Incubator/Planet-E,art-sound-finance,publicmaking/legacy all compared to owning current foundation and HODL distinction.",
           "Old NFTgaming/P2E/launchpad/platforms/arttoys/multichain/reward hype not current umbrella definition or deployment evidence. The live two-route model permits existing identities without a Moonboy.",
           "Permanent-global-ownership/no-gatekeepers/instantrights/infiniteshelf-life assertions cannot supersede precise qualifying1/1licence, separate rights/file availability or legality. No current financial/material guarantee.",
           "Whole repetitive call-to-action sequence conveys creator empowerment, not missing named future characters/events. Current cultural succession already preserves substance with specific1983-vs-incorporation and fiction boundaries; no duplicate prose added."
@@ -1634,7 +2185,7 @@
         "decision": "GK-1458-P2-ZERO-LINE",
         "claim_dispositions": [
           "Introductory political/market commentary and complete Exodus story read: national-security/Golden Dome and melt-up assertions are opinion/prediction, not independently checked policy or investment facts.",
-          "Holly Citadel/Kent/00\u00b000\u203201\u2033E: preserve named fictional command post and migration, do not collapse Holly with present Kings Walk/Maidstone or accept border-crossing exemption from real rules.",
+          "Holly Citadel/Kent/00°00′01″E: preserve named fictional command post and migration, do not collapse Holly with present Kings Walk/Maidstone or accept border-crossing exemption from real rules.",
           "All three numbered sequences compared: High Hats/Information Mercenaries refuse galleries; Code Alchemists/Salvagers/Guild transmute inventory; Bulls/HODL/Furies and Rugpull rivals own distinct roles. Recovered on Maidstone, no new faction/market mechanism.",
           "Scarcity/one-million inventory/value/profit claims cannot override current collection counts, 1/1 rights or ordinary physical workshop history. Nia/condition sheets/reading bench and uncertain future occupancy preserved."
         ],
@@ -1683,10 +2234,10 @@
         "date": "2026-10-08",
         "decision": "GK-1458-P2-W85-CHRONOMETER",
         "claim_dispositions": [
-          "Chapters I\u2013II: damaged future, secure vault, Chronometer preparation, Joe and unnamed Archivist compared to Thorne chronicle section; missing faction-side owning account recovered on GKniftyHEADS.",
+          "Chapters I–II: damaged future, secure vault, Chronometer preparation, Joe and unnamed Archivist compared to Thorne chronicle section; missing faction-side owning account recovered on GKniftyHEADS.",
           "Chapter III: safe house, deletion success claim and damaged return remain branch testimony; no reproducible time mechanism or real 2024 intervention.",
           "Chapter IV: Thorne/Order of Man follows attempted Machine erasure; current Thorne preserves opposition and unresolved legacy-builder identity. No merger with every Architect, SAM or real creator.",
-          "Chapters V\u2013VI: internal Order collapse and fading/locked evidence are already preserved in Thorne; GKniftyHEADS now carries corresponding price of intervention. No accepted main-calendar erasure or restored missing person.",
+          "Chapters V–VI: internal Order collapse and fading/locked evidence are already preserved in Thorne; GKniftyHEADS now carries corresponding price of intervention. No accepted main-calendar erasure or restored missing person.",
           "Chapter VII: last flicker, concealed final vault/Chronometer blueprint and warning survive. Death/flicker sequence is source ending, not a new revival law. Film catchphrases and publishing UI debris supply no missing event or identity.",
           "All modern Glass Face/Imperfect Remembrance/Rell/Omra and Thorne adult Reconstruction Office/Sile/Ilan/private partner histories remain; no generic duplicate biography added."
         ],
@@ -1786,11 +2337,11 @@
         "date": "2026-10-08",
         "decision": "GK-1458-P2-LOREWARS",
         "claim_dispositions": [
-          "Abstract/sections1\u20132/summary: source claims an external HODLKONG64/lorewars cycle with crawler/selector/generation/publishers/JSON memory/IPFS, constant Alfie identity and one-source-one-log. Current repository truth does not establish that deployment.",
-          "Sections3\u20134: state/arcs/visual/engagement, clue/red-herring/multilog puzzle/onboarding/leaderboard proposals are individually accounted for; no missing fictional character, historical scene or current map implementation.",
+          "Abstract/sections1–2/summary: source claims an external HODLKONG64/lorewars cycle with crawler/selector/generation/publishers/JSON memory/IPFS, constant Alfie identity and one-source-one-log. Current repository truth does not establish that deployment.",
+          "Sections3–4: state/arcs/visual/engagement, clue/red-herring/multilog puzzle/onboarding/leaderboard proposals are individually accounted for; no missing fictional character, historical scene or current map implementation.",
           "Section5: exact100M allocation40/25/15/10/5/5 and per-hunt/engagement/top10/holder reward assertions retained in original/ledger, not adopted as live supply/entitlements. Section7 lists real on-chain integration as future, conflicting with automatic-payout assurance.",
           "Section6: 14-day baselines/25% three-cycle or40% spike/80-line single-module patch proposal is not shared canon approval or installed autonomous production publishing. No operational code changed.",
-          "Sections7\u20138/conclusion: Telegram, extra publishers, theories/NFT/holder verification remain future; no external repository runtime checked. New owning HODL section preserves proposal without conflating website XP, current software, fictional Alfie or legal rights."
+          "Sections7–8/conclusion: Telegram, extra publishers, theories/NFT/holder verification remain future; no external repository runtime checked. New owning HODL section preserves proposal without conflating website XP, current software, fictional Alfie or legal rights."
         ],
         "compared_paths": [
           "wiki/hodl-wars.html",
@@ -1912,7 +2463,7 @@
         "all canonical sections"
       ],
       "reading_verification": "All65 pre-batch canonical paragraphs match fully read88-line cache; Games/Rune remaining nonparagraph text also parsed/read. New batch paragraphs separately authored/read.",
-      "findings": "All sourcequotations/chronology/cipherrole/MarginSchool/ColdCopy/CopyDebt/Pella/Jun/lettermisuse/elderadmiration/FifthCarbon/WhisperCodex paragraphs fully read. Formeradult partner\u2019s refusal, continuedcopies and incompletecourier work retained; age/vault date/AI distinct."
+      "findings": "All sourcequotations/chronology/cipherrole/MarginSchool/ColdCopy/CopyDebt/Pella/Jun/lettermisuse/elderadmiration/FifthCarbon/WhisperCodex paragraphs fully read. Formeradult partner’s refusal, continuedcopies and incompletecourier work retained; age/vault date/AI distinct."
     },
     {
       "path": "wiki/squeaky-pinks-enforcers.html",
@@ -2235,7 +2786,7 @@
       "sections": [
         "all canonical sections"
       ],
-      "findings": "Full Blockstars85paragraphs including every BlackDividend/WarmPicture/LastLoading paragraph: Lio/Aven consensual intimacy, Suri retainedfee/corrections, Etta refusal, Sevrin priorintimidation and deliberate restrainedRovan killing, Sella assault, completed load, earnedhours and limited release. w49 named Blockbusters ensemble missing and pending recovery; competing2020\u20132030 origin is attributed, not adopted chronology.",
+      "findings": "Full Blockstars85paragraphs including every BlackDividend/WarmPicture/LastLoading paragraph: Lio/Aven consensual intimacy, Suri retainedfee/corrections, Etta refusal, Sevrin priorintimidation and deliberate restrainedRovan killing, Sella assault, completed load, earnedhours and limited release. w49 named Blockbusters ensemble missing and pending recovery; competing2020–2030 origin is attributed, not adopted chronology.",
       "reading_verification": "All85 current canonical paragraphs match fully read cache."
     },
     {
@@ -2301,7 +2852,7 @@
       "findings": "Two exact name-reference corrections preserve Sena loss, consent to equipment transfer and independent escort.",
       "phase2_review": {
         "base_commit": "cc856157f5bd23e1b7ae3ed032af44c6b725c524",
-        "method": "focused current conflict/history/Grid/game-status/finalfuture/source passages, lines53\u201376 and140\u2013186; approved Black Dividend and Last Loading prose preserved",
+        "method": "focused current conflict/history/Grid/game-status/finalfuture/source passages, lines53–76 and140–186; approved Black Dividend and Last Loading prose preserved",
         "sources": [
           "W9.txt",
           "w89.txt",
@@ -2678,6 +3229,274 @@
           "w90.txt"
         ]
       }
+    },
+    {
+      "path": "wiki/lady-ink.html",
+      "scope": "full current canonical/owning article",
+      "sections": [
+        "all owning headings, prose, lists and tables"
+      ],
+      "reading_verification": "Entire current owning article read in bounded numbered transcript; all87 extracted blocks, including headings/navigation and prose. These block counts are not paragraph counts.",
+      "findings": "W20/W5/M16/W19/W2/w22 compared against all source traditions and RucksackIndex/RainCopy/ThirdColour/OpenCorner/HandBack/RedRucksackJealousy; no fictional private-life claim assigned to a real artist.",
+      "phase2_review": {
+        "base_commit": "cc856157f5bd23e1b7ae3ed032af44c6b725c524",
+        "date": "2026-10-09",
+        "method": "Complete current owning transcript read; missing intervals recovered before claiming completion."
+      }
+    },
+    {
+      "path": "wiki/burn-to-earn.html",
+      "scope": "full current canonical/owning article",
+      "sections": [
+        "all owning headings, prose, lists and tables"
+      ],
+      "reading_verification": "Entire current owning article read in bounded numbered transcript; all88 extracted blocks, including headings/navigation and prose. These block counts are not paragraph counts.",
+      "findings": "All recipe/source/contract-status prose compared; distinct ten-game-asset and three-FunCoupon recipes are conditional and do not establish current live contracts.",
+      "phase2_review": {
+        "base_commit": "cc856157f5bd23e1b7ae3ed032af44c6b725c524",
+        "date": "2026-10-09",
+        "method": "Complete current owning transcript read; missing intervals recovered before claiming completion."
+      }
+    },
+    {
+      "path": "wiki/gkniftyheads-gkniftyheads-fun-coupon-782888.html",
+      "scope": "full current canonical/owning article",
+      "sections": [
+        "all owning headings, prose, lists and tables"
+      ],
+      "reading_verification": "Entire current owning article read in bounded numbered transcript; all29 extracted blocks, including headings/navigation and prose. These block counts are not paragraph counts.",
+      "findings": "All owning NFT description and provenance prose read; raw supply/burnability/HODLWARS/level1-to-level2 wording remains byte-identical. No product change authorised.",
+      "phase2_review": {
+        "base_commit": "cc856157f5bd23e1b7ae3ed032af44c6b725c524",
+        "date": "2026-10-09",
+        "method": "Complete current owning transcript read; missing intervals recovered before claiming completion."
+      }
+    },
+    {
+      "path": "wiki/bone-idol-ink.html",
+      "scope": "full current canonical/owning article",
+      "sections": [
+        "all owning headings, prose, lists and tables"
+      ],
+      "reading_verification": "Entire current owning article read in bounded numbered transcript; all60 extracted blocks, including headings/navigation and prose. These block counts are not paragraph counts.",
+      "findings": "Historical illustrator/art-toy profile distinct from fictional Wreckwork/tattoo/ResinInk; CastingTable/ReverseCard/SecondCast/UnmarkedSeat/VisibleRepair and consent limits retained.",
+      "phase2_review": {
+        "base_commit": "cc856157f5bd23e1b7ae3ed032af44c6b725c524",
+        "date": "2026-10-09",
+        "method": "Complete current owning transcript read; missing intervals recovered before claiming completion."
+      }
+    },
+    {
+      "path": "wiki/delicious-again-pete.html",
+      "scope": "full current canonical/owning article",
+      "sections": [
+        "all owning headings, prose, lists and tables"
+      ],
+      "reading_verification": "Entire current owning article read in bounded numbered transcript; all40 extracted blocks, including headings/navigation and prose. These block counts are not paragraph counts.",
+      "findings": "PeterClark/resin artist identity and independent rights distinct from fictional host, food/dream/WhaleSong appearances and unverified real co-founder or commercial agreements.",
+      "phase2_review": {
+        "base_commit": "cc856157f5bd23e1b7ae3ed032af44c6b725c524",
+        "date": "2026-10-09",
+        "method": "Complete current owning transcript read; missing intervals recovered before claiming completion."
+      }
+    },
+    {
+      "path": "wiki/hodl-x-warriors.html",
+      "scope": "full current canonical/owning article",
+      "sections": [
+        "all owning headings, prose, lists and tables"
+      ],
+      "reading_verification": "Entire current owning article read in bounded numbered transcript; all144 extracted blocks, including headings/navigation and prose. These block counts are not paragraph counts.",
+      "findings": "Every source/selection/repair/bonnet/Seeding/service/localcoalition/GroundArray paragraph read; CassNine/Hester shoulder limit, PlateBook, debt, refused memory and completed ground credit remain.",
+      "phase2_review": {
+        "base_commit": "cc856157f5bd23e1b7ae3ed032af44c6b725c524",
+        "date": "2026-10-09",
+        "method": "Complete current owning transcript read; missing intervals recovered before claiming completion."
+      }
+    },
+    {
+      "path": "wiki/the-crypto-moongirls.html",
+      "scope": "full current canonical/owning article",
+      "sections": [
+        "all owning headings, prose, lists and tables"
+      ],
+      "reading_verification": "Entire current owning article read in bounded numbered transcript; all40 extracted blocks, including headings/navigation and prose. These block counts are not paragraph counts.",
+      "findings": "All origins/theta/bloodline/FeastWeek/CutLedger/modernfifthcarbon/geneticfirewall prose read; Dara deliberate assault and falsification, stolen ledger, victim refusal and coercive Nomad harvest remain.",
+      "phase2_review": {
+        "base_commit": "cc856157f5bd23e1b7ae3ed032af44c6b725c524",
+        "date": "2026-10-09",
+        "method": "Complete current owning transcript read; missing intervals recovered before claiming completion."
+      }
+    },
+    {
+      "path": "wiki/kael-voss.html",
+      "scope": "full current canonical/owning article",
+      "sections": [
+        "all owning headings, prose, lists and tables"
+      ],
+      "reading_verification": "Entire current owning article read in bounded numbered transcript; all34 extracted blocks, including headings/navigation and prose. These block counts are not paragraph counts.",
+      "findings": "All W15 Reclaimer/Protocol/nineLayers/mercy-memory contradictions and PaidExit bodily injury, lost wages, coat privilege and refusal read; no universal reset accepted.",
+      "phase2_review": {
+        "base_commit": "cc856157f5bd23e1b7ae3ed032af44c6b725c524",
+        "date": "2026-10-09",
+        "method": "Complete current owning transcript read; missing intervals recovered before claiming completion."
+      }
+    },
+    {
+      "path": "wiki/sylas-the-unbroken.html",
+      "scope": "full current canonical/owning article",
+      "sections": [
+        "all owning headings, prose, lists and tables"
+      ],
+      "reading_verification": "Entire current owning article read in bounded numbered transcript; all29 extracted blocks, including headings/navigation and prose. These block counts are not paragraph counts.",
+      "findings": "All source700year claim, Council/Protocol/memory cost and PaidExit route failure read; no merger with SilasShard/Codex or recovered lifetime.",
+      "phase2_review": {
+        "base_commit": "cc856157f5bd23e1b7ae3ed032af44c6b725c524",
+        "date": "2026-10-09",
+        "method": "Complete current owning transcript read; missing intervals recovered before claiming completion."
+      }
+    },
+    {
+      "path": "wiki/veyra-nyx.html",
+      "scope": "full current canonical/owning article",
+      "sections": [
+        "all owning headings, prose, lists and tables"
+      ],
+      "reading_verification": "Entire current owning article read in bounded numbered transcript; all25 extracted blocks, including headings/navigation and prose. These block counts are not paragraph counts.",
+      "findings": "Full source triad/HODL role and adult PaidExit desire, refusal, fee responsibility and continuing companionship read; no marriage or royal reward implied.",
+      "phase2_review": {
+        "base_commit": "cc856157f5bd23e1b7ae3ed032af44c6b725c524",
+        "date": "2026-10-09",
+        "method": "Complete current owning transcript read; missing intervals recovered before claiming completion."
+      }
     }
-  ]
+  ],
+  "research_summary": {
+    "date": "2026-10-09",
+    "fully_compared": 80,
+    "total": 94,
+    "remaining": 14,
+    "completed_sources": [
+      "M16.txt",
+      "W1.txt",
+      "W10.txt",
+      "W11.txt",
+      "W12.txt",
+      "W13.txt",
+      "W14.txt",
+      "W15.txt",
+      "W16.txt",
+      "W17.txt",
+      "W18.txt",
+      "W19.txt",
+      "W2.txt",
+      "W20.txt",
+      "w22.txt",
+      "w25.txt",
+      "w26.txt",
+      "w27.txt",
+      "w28.txt",
+      "w29.txt",
+      "W3.txt",
+      "w30.txt",
+      "w31.txt",
+      "w32.txt",
+      "w33.txt",
+      "w34.txt",
+      "w35.txt",
+      "w36.txt",
+      "w37.txt",
+      "w38.txt",
+      "w39.txt",
+      "w40.txt",
+      "w41.txt",
+      "w42.txt",
+      "w43.txt",
+      "w44.txt",
+      "w45.txt",
+      "w46.txt",
+      "w47.txt",
+      "w48.txt",
+      "w49.txt",
+      "W5.txt",
+      "w50.txt",
+      "w51.txt",
+      "w52.txt",
+      "w53.txt",
+      "w54.txt",
+      "w55.txt",
+      "w56.txt",
+      "w57.txt",
+      "w58.txt",
+      "w59.txt",
+      "W6.txt",
+      "w60.txt",
+      "w61.txt",
+      "w62.txt",
+      "w63.txt",
+      "w64.txt",
+      "w65.txt",
+      "w68.txt",
+      "w69.txt",
+      "W7.txt",
+      "w70.txt",
+      "w71.txt",
+      "w74.txt",
+      "w75.txt",
+      "w76.txt",
+      "w77.txt",
+      "w79.txt",
+      "w81.txt",
+      "w83.txt",
+      "w84.txt",
+      "w85.txt",
+      "w88.txt",
+      "w89.txt",
+      "W9.txt",
+      "w90.txt",
+      "w91.txt",
+      "w92.txt",
+      "w93.txt"
+    ],
+    "fully_read_comparison_pending": [],
+    "pending_sources": [
+      "w21.txt",
+      "w23.txt",
+      "w24.txt",
+      "W4.txt",
+      "w66.txt",
+      "w67.txt",
+      "w72.txt",
+      "w73.txt",
+      "w78.txt",
+      "W8.txt",
+      "w80.txt",
+      "w82.txt",
+      "w86.txt",
+      "w87.txt"
+    ],
+    "review_batch": [
+      "W3.txt",
+      "W6.txt",
+      "W10.txt",
+      "W14.txt",
+      "W17.txt",
+      "W20.txt",
+      "w26.txt",
+      "w27.txt",
+      "w30.txt",
+      "w31.txt",
+      "w71.txt",
+      "M16.txt",
+      "W19.txt",
+      "W2.txt",
+      "W5.txt",
+      "W15.txt",
+      "w25.txt",
+      "w69.txt",
+      "w22.txt"
+    ],
+    "unapproved_major_decisions": 5,
+    "new_public_lore_in_review_batch": false
+  }
 }

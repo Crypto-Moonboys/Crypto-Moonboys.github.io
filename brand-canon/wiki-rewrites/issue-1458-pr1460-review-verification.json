@@ -118,7 +118,35 @@
     "pages_artifact": "fresh build; /tmp/gk-phase2/review-pages-artifact; no deployment",
     "diff_check": "passed"
   },
-  "github_actions": "Pending push of this correction checkpoint; exact-head results will be recorded in the PR conversation. Maintainer prose approval gate remains intact.",
+  "github_actions": {
+    "head": "3150ac95e4bc36dff6ef99edcbf11fb8d2d3e913",
+    "all_jobs_inspected": true,
+    "ci_run": 37890291563,
+    "graph_run": 37890291579,
+    "passing": [
+      "ci-arcade",
+      "ci-worker-api",
+      "ci-wax",
+      "ci-visual",
+      "Wiki Structure Enforcement",
+      "Production Deployment Truth",
+      "Worker Deployment Provenance/verify",
+      "Worker Deployment Provenance/verify-windows-command-line"
+    ],
+    "failed": [
+      "ci-wiki",
+      "Graph Publishing Integrity/verify"
+    ],
+    "failure_reason": "Only existing maintainer canon-prose-change-approved gate; canon, functional preservation and graph/index parity preceding it pass.",
+    "skipped": [
+      "PR template check/37890291562",
+      "PR template check/37890410801"
+    ],
+    "citation_browser_in_github": "passed:10 desktop/mobile and5 no-JavaScript; score/account gate/local fixture",
+    "all_green": false,
+    "approval_label_applied": false,
+    "pr_comment": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/pull/1460#issuecomment-6075419601"
+  },
   "research_checkpoint": {
     "fully_compared": 61,
     "total": 94,
@@ -132,5 +160,12 @@
     "issue_open": true,
     "merged": false,
     "deployed": false
+  },
+  "subsequent_research": {
+    "fully_compared": 80,
+    "remaining": 14,
+    "receipt": "brand-canon/wiki-rewrites/issue-1458-audit.json",
+    "public_lore_changed": false,
+    "note": "This subsequent documentation checkpoint is not the research count tested at correction commit3150ac95."
   }
 }

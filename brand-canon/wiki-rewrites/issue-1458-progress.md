@@ -1,6 +1,6 @@
 # Issue #1458 — implementation progress and restart ledger
 
-Updated 8 October 2026. **Status: Phase 2 active from merged PR #1459; full mission remains open.**
+Updated 9 October 2026. **Status: Phase 2 active from merged PR #1459; full mission remains open.**
 W81 is foundational truth. This is a checkpoint of completed implementation,
 not a claim that the whole universe is reconciled. Preserve the adult tone.
 
@@ -14,10 +14,9 @@ No direct push to main, merge, issue closure or production deployment.
 
 ## Current cumulative state
 
-61 of 94 original sources have full claim/scene comparison; 33 remain open.
-Seven further originals are completely read with comparisons pending: W19,
-W15, w25, M16, W5, w69 and W20. Existing wiki audits cover 84 distinct articles:
-82 full and two focused. Nine earlier new articles and 50 earlier expanded/corrected
+80 of 94 original sources have full claim/scene comparison; 14 remain open.
+All seven previously fully read pending originals have now been compared.
+Current wiki audits cover 94 distinct owning articles: 92 full and two focused. Nine earlier new articles and 50 earlier expanded/corrected
 existing lore articles, plus the provenance-only Spirit Borns correction, remain
 preserved. Phase 2 expands eight existing articles; seven overlap the earlier 50,
 so 51 distinct existing lore articles have now been expanded/corrected cumulatively.
@@ -72,15 +71,11 @@ can be fully compared without certifying old financial or service claims.
 No fresh external schedule, market, biography or other-repository deployment
 audit is claimed.
 
-Seven originals are fully read with comparisons pending: **W19, W15, w25,
-M16, W5, w69 and W20**. Preserve their exact earlier reading receipts.
-W20's six-section Level-9 Whitepaper and technical summary are fully read,
-not fully compared. Next dependencies: Lady-INK, Janitor, SER-Shard/Crowned
-Vandal, Luminous/Global/GK Grid, radio/House, Games and current product/rights.
-The other **26** open originals need entire source readings and comparisons:
-**W10, W14, W17, W2, w21, w22, w23, w24, w26, w27, W3, w30, w31, W4,
-W6, w66, w67, w71, w72, w73, w78, W8, w80, w82, w86 and w87**.
-Together these are exactly the remaining33; do not repeat inherited43 or these18.
+The review continuation completes another **19** comparisons: **W3, W6, W10, W14, W17, W20, w26, w27, w30, w31, w71, M16, W19, W2, W5, W15, w25, w69, w22**. Every substantive source range receives a disposition in the existing audit and register; comparison does not require filler or approval of conflicting endings. The earlier complete readings of W5/W15/w25/w69/W19/M16/W20 are retained and their pending connected comparisons closed.
+
+The exact **14** remaining originals are: **w21, w23, w24, W4, w66, w67, w72, w73, w78, W8, w80, w82, w86, w87**. Each needs full original reading and connected comparison. Do not repeat the inherited43, earlier18 or this19. No new public lore or new article is added by this research checkpoint.
+
+Ten fresh full owning audits cover Lady-INK, Burn-to-Earn, FunCoupon782888, Bone Idol Ink, Delicious Again Pete, HODL X Warriors, Crypto Moongirls and the Kael/Sylas/Veyra triad. Current champions, inside/outside children, artistic counterparts and the Paid Exit remain distinct; all existing losses, injury, consent and adult consequences stay intact.
 
 Five major recommendations remain unapproved and still need the wider source
 audit. W18's date/relationship conflicts and w28's ghost-world alternative now
@@ -160,10 +155,22 @@ queries. Publishing parity, graph, content state, 501 links (zero broken),
 `issue-1458-pr1460-review-verification.json`. Exact-head GitHub results follow
 in the PR conversation; retain the maintainer prose approval gate.
 
-The recorded source checkpoint remains 61/94 while further complete readings
-are compared and recorded. Continue the existing ledger; Issue #1458 and the
+The correction commit recorded61/94. The subsequent source comparison ledger
+now records80/94, with14 remaining; the correction verification and Actions
+receipts retain their exact historical scope. Continue the existing ledger; Issue #1458 and the
 five major decisions remain open. PR #1460 stays draft/on hold; GK must approve
 it before merge. No merge or deployment has occurred.
+
+
+### Correction-head complete GitHub Actions receipt
+
+At `3150ac95e4bc36dff6ef99edcbf11fb8d2d3e913`, all jobs and both failing logs
+were inspected. Arcade, Worker/API, WAX, Visual (including real citation-browser
+regression), Wiki Structure, Production Deployment Truth and both Worker
+Provenance jobs pass. Both draft template runs skip. Wiki and Graph fail only
+at the maintainer prose-approval gate after canon/functional preservation and
+graph parity pass. CI is not fully green. PR conversation receipt6075419601
+records run URLs and scope; no label was self-applied or gate weakened.
 
 ## Inherited PR #1459 verification and review receipts
 

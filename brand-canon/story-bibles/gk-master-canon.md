@@ -356,8 +356,9 @@ Phase 2 starts from merged main `cc856157f5bd23e1b7ae3ed032af44c6b725c524`,
 whose tree exactly matches PR #1459's corrected head. Eighteen further sources
 have complete section/claim comparison: W18, w85, w28, w29, w83, w88, W9,
 w74, w75, w76, w77, w79, w89, w81, w90, w91, W11 and W16. The cumulative
-count is **61/94**, with **33 comparisons still open**. W19/W15/w25/M16/W5/
-w69/W20 retain full reading receipts with connected comparisons incomplete.
+count is **80/94**, with **14 comparisons still open**. W19/W15/w25/M16/W5/
+w69/W20 retain their full reading receipts; their connected comparisons are
+now complete in the review continuation below.
 
 W18's Alfie portrait now retains Kid Blaze 3008's rooftop runs, Thames wallet
 fishing, poetry, banned murals, named can and gun, and reported refuges. Its
@@ -731,3 +732,14 @@ or replace the modern Forty. NULL is a threat, HODL an emergency protocol, and
 phygital value claims an aspiration subject to current creator terms. All current
 adult faction histories remain; a directory’s final unity slogan does not erase
 their actual costs or permanent disagreements.
+
+## PR1460 review continuation — 9 October2026
+
+The recorded comparison count is80/94;14 remain: w21, w23, w24, W4, w66, w67, w72, w73, w78, W8, w80, w82, w86, w87.
+Nineteen additional source comparisons close all earlier fully read pending originals.
+The existing audit records every substantive disposition and ten fresh owning
+article readings; all five major decisions remain proposed. No public lore,
+NFT descriptions or accepted ending is changed by this research checkpoint.
+Restored citation UI and permanent functional-preservation checks are verified
+on correction commit3150ac95; its exact-head Wiki/Graph checks retain the
+maintainer prose-approval hold. See the progress ledger for the complete receipt.
