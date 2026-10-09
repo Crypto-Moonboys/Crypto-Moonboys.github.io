@@ -10,7 +10,7 @@ Pinks, Kent and Whale testimony, and check the remaining short business,
 token/channel, manifesto and operational accounts against their owning pages.
 Incompatible history, ontology and live-product claims retain exact attribution.
 Nineteen further comparisons close all seven previously read pending originals.
-All remaining sources and connected comparisons are complete. Five major GK decisions remain proposed.
+All remaining sources and connected comparisons are complete. All five major GK decisions now have specific implementation approval (9 October 2026); the public ending remains unrevealed.
 Use the current [progress ledger](../brand-canon/wiki-rewrites/issue-1458-progress.md)
 and [source audit](../brand-canon/wiki-rewrites/issue-1458-audit.json) for exact
 scopes; the older orientation and first-tranche descriptions below are historical.
@@ -32,7 +32,7 @@ This is an orientation digest, **not** the final scripture, a complete forty-nam
 **Read the following before any website edit:**
 
 - [Disposition and context for all 94 source files](../brand-canon/wiki-rewrites/raw-canon-20261008-disposition.md), plus the [machine-readable 94-row register](../brand-canon/wiki-rewrites/raw-canon-20261008-source-register.csv).
-- [Detailed W81 continuity companion](../brand-canon/story-bibles/w81-continuity-companion-20261008.md) with eight-part Agent SAM, Moongirls, contested manuscript/character traditions, six pillars and concept/game proposals.
+- [Public concordance of source records](../wiki/first-witness-concordance.html) with eight-part Agent SAM, Moongirls, contested manuscript/character traditions, six pillars and concept/game proposals.
 - [First Witness source register](../wiki/first-witness-source-register.html), [master chronology](../wiki/first-witness-master-chronology.html), [Concordance](../wiki/first-witness-concordance.html) and [Forty Paths](../wiki/first-witness-forty-paths.html) for approved fictional continuity.
 - `README.md`, `Crypto_Moonboys_Master_Source_of_Truth_v1.md`, published legal terms and implemented runtime for **real-world claims and live features**.
 
@@ -49,15 +49,15 @@ This is an orientation digest, **not** the final scripture, a complete forty-nam
 
 ### Forty Paths does not mean forty approved names
 
-The current [Forty Paths](../wiki/first-witness-forty-paths.html) and [Faction Commentaries](../wiki/first-witness-faction-commentaries.html) recognise **34 named readings plus six unassigned positions**. The six source-named readings introduced above the former 28 were JPEG Bloodline, Whale Lords, XRP Kids, PU55IES, Slam GiRL$ and Creepto Gals. Their recent rituals and incidents include **new authorised fiction**, not necessarily verbatim W81 evidence.
+The current [Forty Paths](../wiki/first-witness-forty-paths.html) and [Faction Commentaries](../wiki/first-witness-faction-commentaries.html) recognise **40 named cultures with distinct membership institutions**. The six source-named readings introduced above the former 28 were JPEG Bloodline, Whale Lords, XRP Kids, PU55IES, Slam GiRL$ and Creepto Gals. Their recent rituals and incidents include **new authorised fiction**, not necessarily verbatim W81 evidence.
 
-`W5.txt` offers an alternate “forty” taxonomy, `M16.txt` has a partial forty-slot skeleton, and `w68.txt` uses an older **28-active** framework. None is the official complete modern roll. The **nine live selectable Battle Chamber factions** (including Crypto Moongirls) are an operational subset, not a replacement for the 34 named First Witness readings or proof that the other six historical slots are settled. Do not count a shared ideology, a location, an entire security protocol, or a duplicate faction twice merely to reach forty. HODL Warriors are the **current** qualifying-1/1 creator-builders, while in **Year 3008** they are also an exceptional collective defence; HODL X Warriors are the **distinct** champions/service branch. The generations of Bitcoin Kids and Bitcoin X Kids are also not interchangeable.
+`W5.txt` offers an alternate “forty” taxonomy, `M16.txt` has a partial forty-slot skeleton, and `w68.txt` uses an older **28-active** framework. None is the official complete modern roll. The **nine live selectable Battle Chamber factions** (including Crypto Moongirls) are an operational subset, not a replacement for the 40 named First Witness cultures. Do not count a shared ideology, a location, an entire security protocol, or a duplicate faction twice merely to reach forty. HODL Warriors are the **current** qualifying-1/1 creator-builders, while in **Year 3008** they are also an exceptional collective defence; HODL X Warriors are the **distinct** champions/service branch. The generations of Bitcoin Kids and Bitcoin X Kids are also not interchangeable.
 
 ### Detailed source material missing from this short digest
 
 | Sources | What the raw text adds | What should happen |
 |---|---|---|
-| `W12`, `W13` | Eight fictional Agent SAM / Samuel “HyroSAM” Blake parts: 2036 Croydon railway scene, Neural Rack, House of Rackinsats, upload, underground warfare and the Reset Core; related Denise and Tracey traditions. | An **Agent SAM** standalone wiki route is absent, but this is a **candidate**, not automatic canon. Resolve the internal **2036 versus “2030 Reset”** sequencing first; do not confuse fictional SAM with site software or SPARKY. |
+| `W12`, `W13` | Eight fictional Agent SAM / Samuel “HyroSAM” Blake parts: 2036 Croydon railway scene, Neural Rack, House of Rackinsats, upload, underground warfare and the Reset Core; related Denise and Tracey traditions. | The [Agent SAM biography](../wiki/agent-sam.html) now records the accepted 2036–2045 chronology. Original contradictory dates remain on surviving artifacts; do not confuse fictional SAM with site software or SPARKY. |
 | `w56` | The **Crypto Moongirls** as Block Topia elite, contested space-colony and lunar Self-Fork origin stories, Queen Sarah, Theta rule and coercion during the Games. | An existing [Crypto Moongirls faction chamber](../battle-chamber/factions/crypto-moongirls.html) is already in the [live Battle Chamber directory](../battle-chamber/factions/index.html) and faction systems. Sarah / Games / Jodie wiki pages also cover the source tradition. No separate **wiki encyclopedia article** is identified; reconcile the existing chamber before considering one. Sarah's origin account remains disputed. |
 | `W1` | **Whisper Codex** and the supposed **Conformal Plan**, attributed to NULL or a SAM intelligence core. | A disputed relic and cosmological belief, **not** proven astrophysics, official First Witness scripture or a known downloadable artefact. |
 | `W15` | **Kael Voss**, Sylas, **Final Fork Council**, **Layer Eight**, **Great Blackout**, recursive loops and variant futures. | Keep conflicting serial outcomes attributed; the Final Fork remains open. Do not collapse these roles into existing central biographies. |
@@ -246,7 +246,7 @@ A user can join by building a Moonboy identity or keeping the identity they alre
 
 ### Lore World
 
-In 3008, memory, identity and proof are contested. Block Topia represents optimisation, order and control. The Street Kingdoms represent messy human culture, graffiti memory and rebellion. The GK Grid lets factions coordinate. The Aether-Chain / Sacred Chain preserves what erasure systems try to destroy. The Forty Paths civilisation model currently has 34 named readings and six unassigned positions. Its cultures fight and collaborate through HODL Wars; the ultimate Final Fork outcome remains unresolved.
+In 3008, memory, identity and proof are contested. Block Topia represents optimisation, order and control. The Street Kingdoms represent messy human culture, graffiti memory and rebellion. The GK Grid lets factions coordinate. The Aether-Chain / Sacred Chain preserves what erasure systems try to destroy. The Forty Paths civilisation model currently has 40 named cultures with distinct membership institutions. Its cultures fight and collaborate through HODL Wars; the ultimate Final Fork outcome remains unresolved.
 
 ### IP World
 
@@ -335,3 +335,9 @@ reconciliation decisions. Comparison does not approve those choices, certify
 old external products or require publishing every game proposal. Approved
 modern stories, scripture, NFT descriptions and functions remain preserved.
 Issue1458 stays open; PR1460 remains draft/on hold with no merge or deployment.
+
+## Accepted historical and cultural reconciliation — 9 October 2026
+
+The World Chain Triple Fork is definitive in 2880. Earlier conflicting dates remain attributed records, not extra identical catastrophes. Over 75% of major cities are lost by 2900; fewer than twelve secure regions remain by 2930. These are separate measures. SAM's calendar is 2036 upload, late 2039 council, 2040 Stabilisation/Reset, 2041 bridge, early 2042 disappearance and 2045 climax. Surviving fictional artifacts retain their original contradictory dates.
+
+The original thirty-four cultures remain, joined by NoBallGames Legion, Wildstyle Collective, Fractal Taggers, Porch Poets, Resin Relic Keepers and Bone Idol Ink Ritualists. Their distinct membership institutions are developed in the [Forty register](../wiki/first-witness-forty-paths.html#approved-forty-register) and [Commentaries](../wiki/first-witness-faction-commentaries.html#noballgames-legion). The nine live Battle Chamber options remain unchanged. The public Year 3008 Final Fork is still ahead; competing source futures stay attributed and established character consequences remain.

@@ -672,7 +672,9 @@ const graffpunksStopwordOnly = {
     'null-the-prophet': ['Sena Rill', 'Roe Fen', 'Holdfast incident'],
     'the-finance-guild': ['Open Crate advance', 'reserved output'],
     'first-witness-forty-paths': ['faction classification'],
-    'first-witness-faction-commentaries': ['faction register', 'thirty-four readings', 'Room Vote', 'Open Verse', 'Two Lamps']
+    'first-witness-faction-commentaries': ['faction register', 'thirty-four readings', 'forty cultures',
+      'NoBallGames Legion', 'Wildstyle Collective', 'Fractal Taggers', 'Porch Poets',
+      'Resin Relic Keepers', 'Bone Idol Ink Ritualists', 'Room Vote', 'Open Verse', 'Two Lamps']
   });
   const institutionSubjects = {
     'first-witness-long-transmission': ['Blue Stair', 'Eda Senn', 'Hollow Bell', 'Second Gloss', 'Dara Ilex'],

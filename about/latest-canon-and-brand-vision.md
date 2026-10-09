@@ -168,20 +168,20 @@ The public rule is:
 
 This **public brand brief** continues to define the umbrella, two valid paths, creator/IP rules and live-vs-planned messaging. It is **not** the scriptural authority for Year 3008 continuity. For that subject use the [First Witness source register](../wiki/first-witness-source-register.html), [master chronology](../wiki/first-witness-master-chronology.html), [Concordance](../wiki/first-witness-concordance.html), [Forty Paths](../wiki/first-witness-forty-paths.html) and later GK-approved expansions.
 
-The retired 94-source W81 archive is **evidence**, not final canon, and the upload `RAW CANNON.zip` contains the same 94 individual historical texts. The [updated W81 condensed digest](w81-condensed-canon-digest.md), [94-file dispositions](../brand-canon/wiki-rewrites/raw-canon-20261008-disposition.md) and [continuity companion](../brand-canon/story-bibles/w81-continuity-companion-20261008.md) give the dated extraction and known conflicts. A new companion or status note does **not** amend the original witnessed books.
+The retired 94-source W81 archive is **evidence**, not final canon, and the upload `RAW CANNON.zip` contains the same 94 individual historical texts. The [updated W81 condensed digest](w81-condensed-canon-digest.md), [94-file dispositions](../brand-canon/wiki-rewrites/raw-canon-20261008-disposition.md) and [public concordance](../wiki/first-witness-concordance.html) give the dated extraction and known conflicts. A new companion or status note does **not** amend the original witnessed books.
 
 **Non-negotiable distinctions for lore copy:**
 
 - **2030 Great Concord** and the Bitcoin-witnessed common Covenant are not the same as the later sectarian **Great Consensus** of raw `w33.txt`.
 - The **Sacred/Aether-Chain** memory tradition has an **undated** Sacred Fork. The **World Chain** is separate and suffers its **2880** Triple Fork. Block Topia later governs via a distinct **True Bitcoin Fork**. By **2930** fewer than twelve secure regions remain; the main future conflict is **3008**.
-- The **Forty Paths** framework currently has **34 named readings and six unassigned positions**; old lists marked “28 active” or “40 complete” are archive evidence, not replacements.
+- The **Forty Paths** framework currently has **40 named cultures with distinct membership institutions**; old lists marked “28 active” or “40 complete” are archive evidence, not replacements.
 - Today's **HODL Warriors** creator-builder status for qualifying 1/1 holders, Year 3008 **HODL Warriors** extraordinary defence, and **HODL X Warriors** Games champion/service tradition are contextually distinct.
 - Escaped/outside **Bitcoin Kids** (Alfie line) and inside-city **Bitcoin X Kids** are not synonyms.
 - **NULL's origins, immortality/soul upload claims and the Final Fork's outcome** remain contested. Serial victories and later time loops in `w25.txt` / `W15.txt` are alternative narratives, not silently adopted endings.
-- **Fictional Samuel “HyroSAM” Blake / Agent SAM** is not identical to actual SAM automation or SWARMSY's SPARKY. The eight-part `W12.txt` source includes a **2036/2030** chronological conflict that still needs an editorial decision.
+- **Fictional Samuel “HyroSAM” Blake / Agent SAM** is not identical to actual SAM automation or SWARMSY's SPARKY. The eight-part `W12.txt` source preserves a **2036/2030** artifact conflict beside the accepted 2036–2045 chronology.
 - `w67.txt`, `w72.txt` and `w73.txt` are **game, mission and collectible-codex proposals**. They do not establish live tokens, NFT mint commitments, reward eligibility, playable release dates or current public ownership rights.
 
-**Agent SAM** has no identified dedicated wiki biography and needs an approved editorial/new-page decision. **Crypto Moongirls already has a [live Battle Chamber faction page](../battle-chamber/factions/crypto-moongirls.html)** and [faction directory entry](../battle-chamber/factions/index.html), with supporting profile and live faction data; it is not missing from the website. If a deeper wiki encyclopedia page is wanted, first reconcile that existing chamber and the `w56` source before proposing an additional route. The nine selectable Battle Chamber factions and the 34 named First Witness readings are separate registries. No public wiki HTML, First Witness books, game runtime or legal terms are changed in this documentation phase.
+**Agent SAM** has an [existing dedicated biography](../wiki/agent-sam.html); use its accepted chronology and preserve damaged artifact dates. **Crypto Moongirls already has a [live Battle Chamber faction page](../battle-chamber/factions/crypto-moongirls.html)** and [faction directory entry](../battle-chamber/factions/index.html), with supporting profile and live faction data; it is not missing from the website. If a deeper wiki encyclopedia page is wanted, first reconcile that existing chamber and the `w56` source before proposing an additional route. The nine selectable Battle Chamber factions and the 40 named First Witness cultures are separate registries. The accepted Forty register and historical dates are reflected in existing wiki owners; the original Books, live nine-faction runtime and legal terms remain separate.
 
 ## Core Canon Spine
 
@@ -268,3 +268,9 @@ The universe makes it memorable. The tools make it useful. The community makes i
 The brand is strongest when the user can say:
 
 **I can take a Moonboy, or take my own identity, and use this system to build something people remember.**
+
+## Accepted historical and cultural reconciliation — 9 October 2026
+
+The World Chain Triple Fork is definitive in 2880. Earlier conflicting dates remain attributed records, not extra identical catastrophes. Over 75% of major cities are lost by 2900; fewer than twelve secure regions remain by 2930. These are separate measures. SAM's calendar is 2036 upload, late 2039 council, 2040 Stabilisation/Reset, 2041 bridge, early 2042 disappearance and 2045 climax. Surviving fictional artifacts retain their original contradictory dates.
+
+The original thirty-four cultures remain, joined by NoBallGames Legion, Wildstyle Collective, Fractal Taggers, Porch Poets, Resin Relic Keepers and Bone Idol Ink Ritualists. Their distinct membership institutions are developed in the [Forty register](../wiki/first-witness-forty-paths.html#approved-forty-register) and [Commentaries](../wiki/first-witness-faction-commentaries.html#noballgames-legion). The nine live Battle Chamber options remain unchanged. The public Year 3008 Final Fork is still ahead; competing source futures stay attributed and established character consequences remain.

@@ -1,12 +1,6 @@
 # GK master canon bible — working reconciliation edition
 
-8 October 2026, Issue #1458. **W81 is foundational truth.** This edition gathers
-current convergence and source recovery into one entry point. It is not a claim
-that all 94 texts, every scene or all forty positions have been semantically
-resolved. [Policy](../CANON_POLICY.md), [locks](../canon-locks.json),
-[decisions](../reconciliation-decisions.json), [progress](../wiki-rewrites/issue-1458-progress.md)
-and [GK proposals](../wiki-rewrites/issue-1458-proposals.md) distinguish adopted
-interpretations from work awaiting evidence and approval.
+9 October 2026, Issue #1458. **Editorial canon — excluded from the website artifact and public discovery. W81 is foundational truth.** All 94 original comparisons are accepted as complete. GK has approved the five decisions below. [Approval receipt](https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/issues/1458#issuecomment-6077443666), [policy](../CANON_POLICY.md), [locks](../canon-locks.json), [decisions](../reconciliation-decisions.json) and [implementation progress](../wiki-rewrites/issue-1458-progress.md) govern the coordinated change. Historical continuation receipts below remain dated evidence, not outstanding research. The public Year 3008 storyline must preserve suspense. These records are editorial, not confidential storage: the GitHub repository itself is public.
 
 ## 1. Origin in 2030
 
@@ -17,8 +11,7 @@ readings. The Concord does not abolish earlier religions or retroactively name
 every 3008 faction. Read [the hub](../../wiki/the-first-witness.html), its nine
 Books and [Great Concord](../../wiki/first-witness-great-concord-2030.html).
 All nine current Book texts and their article commentary have now been fully
-read and compared with the serials; the supporting-chapter and historical
-transmission audit remains open.
+read and compared with the serials; the completed reconciliation records retain their source and transmission evidence.
 
 ## 2. Bitcoin witness and the Sacred Fork
 
@@ -44,12 +37,11 @@ and [concordance](../../wiki/first-witness-concordance.html).
 
 Current working sequence: 2030 Covenant and witness; later undated Sacred Fork;
 World Chain expansion before its catastrophe; 2880 Triple Fork; Chainfire and
-Great Unravelling; fewer than a dozen secure regions by 2930; Queens stronghold
+Great Unravelling; over 75% of major cities lost by 2900; fewer than twelve secure regions by 2930; Queens stronghold
 and development of Block Topia; outside cultures and Street Kingdoms; the main
 conflict in 3008. Exact intervening foundation years remain unknown.
 [Chronology](../../wiki/first-witness-master-chronology.html) is the current
-reference, revisable through the specific GK decisions. Competing 2198, 2588
-and 2765 anchors require causal audit; do not invent distinct catastrophes just
+reference, revisable through the specific GK decisions. Competing 2198 and 2588 catastrophe dates and the 2765 regional date survive as attributed archive records; do not invent distinct catastrophes just
 to make incompatible dates simultaneously true.
 
 ## 5. Triple Fork, Chainfire and Great Unravelling
@@ -58,9 +50,7 @@ The Triple Fork ruptures World Chain agreement. Chainfire names a collapse
 process; Great Unravelling names the wider social and infrastructural aftermath.
 A separate CHAINFIRE rebel AI is not automatically that catastrophe.
 [Triple Fork](../../wiki/triple-fork-event.html), Rune's chronology and raw M16,
-W15 and w92 are dependencies of any corrected anchor. Deliberate date decisions
-must account for surviving character lives and for regional collapse rather
-than changing one table alone.
+W15 and w92 are dependencies of any corrected anchor. GK-1458-TRIPLE-FORK makes 2880 definitive; incompatible dates do not create extra identical catastrophes. GK-1458-REGIONAL-COLLAPSE keeps the city-loss percentage and secure-region count separate. Queens construction has no invented exact inauguration date.
 
 ## 6. Block Topia and outside life
 
@@ -75,13 +65,7 @@ scarcity and the people who must receive anyone using an escape route.
 
 ## 7. Forty cultures, membership and alliances
 
-Thirty-four named readings are current convergence; six positions are pending
-source-supported reconciliation and GK approval. Nine live Battle Chamber
-options remain operationally separate. The following descriptions are the
-published commentary's reading, not a full transfer of each original faction
-biography. All original sources and the current named culture owners have
-now been compared; new membership institutions still need GK approval. No temporary escort, emergency muster, title or
-administrative office fills a slot simply because it has a name.
+Forty named enduring cultures are approved: the earlier thirty-four and the six completed institutions below. The nine live Battle Chamber options remain separate and unchanged. These are later interpretations and institutions, not added 2030 scripture. A service, role or temporary formation does not acquire a faction slot.
 
 | Current named reading | Existing characteristic reading / tension |
 | --- | --- |
@@ -116,9 +100,15 @@ administrative office fills a slot simply because it has a name.
 | JPEG Bloodline | Inherited custody and living care; keeping can become exclusion. |
 | Whale Lords | Patient reserves and the Hold; hoarding can wear the name of virtue. |
 | XRP Kids | Playful visible invention; freedom can spend another person’s resources. |
-| PU 55 IES | Receiving circles and women’s protection; solidarity can close into a clique. |
+| PU55IES | Receiving circles and women’s protection; solidarity can close into a clique. |
 | Slam GiRL$ | Performance that makes injury audible; a successful line can outlive correction. |
 | Creepto Gals | Patient attention to disturbing testimony; watchfulness can become confirmation bias. |
+| NoBallGames Legion | Clubhouse households, players, groundsworkers and retired members keep shared pitches and duties beyond any match. Distinct from XRP Kids; temporary Legion arena teams. |
+| Wildstyle Collective | Voluntary material commons and chosen gatherings support temporary painting; creators retain the right to remove their work. Distinct from GraffPUNKS; Burn Crews; Stencil Witches; Tag Lords. |
+| Fractal Taggers | Defectors, later adherents and their households maintain shared workrooms and teach craft without royal certification. Distinct from Crypto Moongirls; Thera-9; all defectors. |
+| Porch Poets | Mobile teaching circles, chosen learner-heirs and households sustain a living spoken repertoire and share hosting resources. Distinct from Chain Scribes; House of Rackinsats; biological descendants. |
+| Resin Relic Keepers | Keeper-apprentice lineages maintain shared storage, material histories and exchanges beyond any one commission. Distinct from Salvagers; real Peter Clark; token owners. |
+| Bone Idol Ink Ritualists | Self-governing consenting adult practitioners, recipients and apprentices share practice; refusal, removal and leaving remain possible. Distinct from real Bone Idol Ink; all tattoo wearers; Resin Relic Keepers. |
 
 The [Six Pillars](../../wiki/six-pillars.html) is a source-era functional doctrine,
 not six additional paths. It groups Authority, Utility, Predators, Fighters,
@@ -153,8 +143,7 @@ and ends with an Eternal Family explicitly described as the sum of tribes.
 w68's28 active directory says some of 40; w69's complete manifesto preserves
 female-crew/XRP names without delivering a full roll. Their comparison is now
 owned by Forty Paths and the commentary. The six-slot proposal distinguishes
-source testimony from proposed new membership institutions; no additional
-position is yet adopted.
+source testimony from proposed new membership institutions; all six are now approved and developed alongside the retained thirty-four. Source arithmetic remains evidence, not the current register.
 
 [The Hot Wall](the-hot-wall.md) extends the existing Black Mouth/Kiva lives with
 a new adult 3008 commission. A magnificent display, an ignored pause and a fire
@@ -321,26 +310,17 @@ remain material relationships, not interchangeable powers. Preserve the
 service records and local institutions instead of replacing them with an
 abstract battle map.
 
-## 13. Final Fork and the Eternal Pulse
+## 13. Final Fork: approved editorial intent, unrevealed public future
 
-The Final Fork is unresolved in current 3008 convergence. W15 cycles and w25
-Eternal Pulse offer incompatible finished worlds; duplicated numbered parts do
-not create independent corroboration. The Codex's next-universe tag and the
-Consensus's 3030 synchronization are different predicted endpoints. The complete
-source texts are now read: W15 through its fourteen-million restart, w25 through
-Part 75 and its repeated Parts 66–75. The four owning Elder/Iris/Aleema/Dream pages
-now retain the complete Sovereign progression and school/garden future as source
-visions. Remaining cross-page comparison must develop a recommended future
-continuity with scene-by-scene
-impact mapping before GK approves a final outcome. Until then, propagate the
-open status and preserve the competing accounts as attributed narratives.
+**GK-1458-FINAL-FORK-CONTINUITY — approved intended outcome:** the physical universe survives; compulsory convergence is defeated; no single sovereign owns humanity's future; irreversible consequences remain. This is the definitive direction for future development, not a completed event narrated in the public Year 3008 present. Do not reveal the full ending in public prose, headings, metadata, search, graph, navigation, loaded bibles or the Pages artifact.
 
-W5's Soul Fork, Cross-Synergy, Wing Fork and retirement party provide another
-terminal world, with universal consent, integrated layers and permanent rewards.
-Its completed unity cannot automatically cancel the existing coercion, missing
-people, damaged bodies or right to refuse. The Final Fork proposal now compares
-that third ending explicitly. Its resin/ink/token miracles remain fictional
-source claims, separate from current products, real wallets and creator rights.
+Exact date, casualties and the ultimate individual fates of Sarah, Alfie, Jodie and NULL are not supplied by this approval. No new death or rescue is invented here. Survival of the physical universe does not promise universal immortality, unanimous fusion, sovereignty for a benevolent ruler, restored bodies or erased accountability. Preserve Sena Rill's silence, Vex's lost warmth, Denise/Tracey/Forge's missing status, Paid Exit injury and refusal, Tessa's ended pledge, Orsa/Dera's agency and every established adult consequence.
+
+W15's loops, w25's Eternal Pulse, W5's Soul/Wing Forks and other completed source futures remain locally attributed visions or branch outcomes. They are not additional completed physical universes or authoritative evidence of the approved final result. The public chronology still labels the Final Fork future/unresolved; it may develop danger, choices and competing hopes without announcing this intended outcome.
+
+## 14. Agent SAM: approved chronology and surviving damage
+
+GK-1458-SAM-ORDER: 2036 upload at nineteen; late 2039 council; 2040 Stabilisation/Reset; 2041 bridge; early 2042 Denise/Tracey/Forge disappearance; 2045 climax. This is an approved editorial repair, not a newly discovered source inscription. Keep original 2029/2030/2031/2032/2035 dates on surviving fictional records as damaged or disputed evidence. Fifth Carbon's 2036/2030 contradiction, Marlo's copy, Bex's service correction, Nessa's debt and Davit's injury remain. Adoption follows the 2007–2009 household fighting without assigning an invented exact year. The 2030 Concord remains separate; the bridge establishes no general resurrection law. Samuel, deployed SAM, SPARKY, Chassis One, Forge and the real Cullen remain distinct.
 
 ## Continuation
 

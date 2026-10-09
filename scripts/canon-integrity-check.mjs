@@ -5,6 +5,7 @@ import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { tokenizeActiveHtml, readHtmlAttribute } from './wiki-html-structure.mjs';
 import { htmlToVisibleText, extractArticleHtml, sha256 } from './generate-wiki-content-state.mjs';
+import { EDITORIAL_ONLY_PATHS, checkPublicDisclosure } from './public-canon-disclosure.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const LOCK_PATH = 'brand-canon/canon-locks.json';
@@ -106,9 +107,10 @@ export function checkRegister(locks, decisions) {
   if (locks.forty.runtime_roster_size !== 9) errors.push('Battle Chamber roster requires independent runtime evidence');
   if (new Set(decisions.decisions.map(d => d.id)).size !== decisions.decisions.length) errors.push('Duplicate decision ID');
   for (const d of decisions.decisions) {
-    if (!d.id || !d.sources?.length || !d.reason || !d.old || !d.new || !d.affected_paths?.length
+    if (!d.id || !d.sources?.length || !d.reason || (!d.old && !(d.lock_field && d.old === null)) || !d.new || !d.affected_paths?.length
       || !['implemented', 'proposed', 'approved'].includes(d.status)) errors.push(`Incomplete decision ${d.id}`);
-    if (d.status === 'approved' && (!d.approval?.quote || !d.approval?.url || !d.approval?.date)) errors.push(`Missing GK approval evidence: ${d.id}`);
+    if ((d.status === 'approved' || (d.approval_packet && d.status === 'implemented'))
+      && (!d.approval?.quote || !d.approval?.url || !d.approval?.date)) errors.push(`Missing GK approval evidence: ${d.id}`);
   }
   for (const rule of locks.claim_rules) {
     try { new RegExp(rule.pattern, 'iu'); new RegExp(rule.denial || '(?!)', 'iu'); }
@@ -122,20 +124,68 @@ export function checkRegister(locks, decisions) {
 
 export function checkLockChanges(before, after, decisions) {
   const errors = [];
-  for (const field of ['anchors', 'forty', 'identity_boundaries', 'reviewed_story_baselines']) {
+  for (const field of ['anchors', 'forty', 'identity_boundaries', 'reviewed_story_baselines', 'disclosure_boundary']) {
     if (JSON.stringify(before[field]) === JSON.stringify(after[field])) continue;
     const d = decisions.decisions.find(d => d.status === 'approved' && d.lock_field === field
-      && JSON.stringify(d.old) === JSON.stringify(before[field]) && JSON.stringify(d.new) === JSON.stringify(after[field])
+      && JSON.stringify(d.old) === JSON.stringify(before[field] ?? null) && JSON.stringify(d.new) === JSON.stringify(after[field])
       && d.approval?.quote && d.approval?.url && d.approval?.date);
     if (!d) errors.push(`${field}: deliberate lock change needs a matching GK-approved old/new decision`);
   }
   return errors;
 }
 
+export function checkApprovedDecisions(locks, decisions) {
+  const errors = [];
+  const dates = { world_chain_triple_fork: 2880, sam_upload: 2036, sam_council: 2039,
+    sam_reset: 2040, sam_bridge: 2041, sam_disappearance: 2042, sam_climax: 2045 };
+  for (const [key, value] of Object.entries(dates)) {
+    if (locks.anchors[key] !== value) errors.push(`Approved chronology drift: ${key}`);
+  }
+  if (locks.anchors.secure_regions !== 'fewer than twelve by 2930'
+    || locks.anchors.major_city_loss !== 'over 75% by 2900') errors.push('Regional and major-city collapse measures must remain separate');
+  if (locks.forty.named_readings.length !== 40 || locks.forty.unassigned !== 0) errors.push('Approved Forty must contain forty named cultures');
+  const approvedForty = decisions.decisions.find(d => d.id === 'GK-1458-APPROVED-FORTY-LOCK');
+  if (JSON.stringify(locks.forty.named_readings) !== JSON.stringify(approvedForty?.new?.named_readings)) errors.push('Original thirty-four and six approved culture identities must remain intact');
+  const additions = ['NoBallGames Legion', 'Wildstyle Collective', 'Fractal Taggers', 'Porch Poets', 'Resin Relic Keepers', 'Bone Idol Ink Ritualists'];
+  const institutions = locks.forty.membership_institutions || [];
+  if (institutions.length !== 6 || new Set(institutions.map(c => c.institution)).size !== 6) errors.push('Six distinct enduring membership institutions required');
+  for (const name of additions) {
+    const culture = institutions.find(c => c.name === name);
+    if (!locks.forty.named_readings.includes(name) || !culture?.belonging || !culture?.owner
+      || !culture.distinct_from?.length) errors.push(`Missing approved enduring culture: ${name}`);
+    if (!locks.identity_boundaries.some(pair => pair[0] === name && pair.length > 1)) errors.push(`Missing identity distinction: ${name}`);
+  }
+  for (const id of ['GK-1458-TRIPLE-FORK', 'GK-1458-REGIONAL-COLLAPSE', 'GK-1458-SAM-ORDER', 'GK-1458-FORTY', 'GK-1458-FINAL-FORK-CONTINUITY']) {
+    const d = decisions.decisions.find(d => d.id === id);
+    if (d?.status !== 'implemented' || !d.approval?.quote || !d.approval?.date || !d.approval?.url) errors.push(`Approved implementation receipt missing: ${id}`);
+  }
+  if (locks.disclosure_boundary?.public_final_fork_status !== 'future/unresolved'
+    || JSON.stringify(locks.disclosure_boundary?.editorial_only_paths) !== JSON.stringify(EDITORIAL_ONLY_PATHS)) errors.push('Editorial/public Final Fork publication boundary changed');
+  return errors;
+}
+
+export function checkFortyPublication(html, locks) {
+  const errors = [];
+  const names = [...html.matchAll(/<tr\b[^>]*data-canon-culture="([^"]+)"/gu)]
+    .map(m => m[1].replaceAll('&amp;', '&'));
+  if (JSON.stringify(names) !== JSON.stringify(locks.forty.named_readings)) errors.push('Published Forty register differs from approved culture identities or order');
+  return errors;
+}
+
+export function checkEditorialIntent(master, decisions) {
+  const decision = decisions.decisions.find(d => d.id === 'GK-1458-FINAL-FORK-CONTINUITY');
+  const constraints = ['physical universe survives', 'compulsory convergence is defeated',
+    "no single sovereign owns humanity's future", 'irreversible consequences remain'];
+  return constraints.filter(text => !master.includes(text) || !decision?.new?.includes(text))
+    .map(text => `Approved editorial Final Fork constraint missing: ${text}`);
+}
+
 export function run(root = ROOT) {
   const locks = JSON.parse(fs.readFileSync(path.join(root, LOCK_PATH), 'utf8'));
   const decisions = JSON.parse(fs.readFileSync(path.join(root, DECISIONS_PATH), 'utf8'));
   const failures = checkRegister(locks, decisions);
+  failures.push(...checkApprovedDecisions(locks, decisions));
+  failures.push(...checkEditorialIntent(fs.readFileSync(path.join(root, EDITORIAL_ONLY_PATHS[0]), 'utf8'), decisions));
   const ledger = fs.readFileSync(path.join(root, 'brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md'), 'utf8');
   const csv = fs.readFileSync(path.join(root, 'brand-canon/wiki-rewrites/raw-canon-20261008-source-register.csv'), 'utf8');
   const expected = [...ledger.matchAll(/\| ([A-Za-z0-9]+\.txt) \| (\d+) \| `([a-f0-9]{64})` \|/gu)]
@@ -165,7 +215,16 @@ export function run(root = ROOT) {
   for (const name of fs.readdirSync(path.join(root, 'wiki')).sort()) {
     if (!name.endsWith('.html')) continue;
     pages++;
-    failures.push(...checkPage(fs.readFileSync(path.join(root, 'wiki', name), 'utf8'), locks, decisions, `wiki/${name}`));
+    const html = fs.readFileSync(path.join(root, 'wiki', name), 'utf8');
+    failures.push(...checkPage(html, locks, decisions, `wiki/${name}`));
+    failures.push(...checkPublicDisclosure(html, `wiki/${name}`));
+  }
+  const register = fs.readFileSync(path.join(root, 'wiki/first-witness-forty-paths.html'), 'utf8');
+  failures.push(...checkFortyPublication(register, locks));
+  for (const filename of ['js/wiki-index.json', 'js/entity-map.json', 'js/entity-graph.json',
+    'js/link-map.json', 'js/link-graph.json', 'js/graph-data.json', 'js/entity-graph-lite.json',
+    'sitemap.xml', 'sam-memory.json', 'about/w81-condensed-canon-digest.md', 'about/latest-canon-and-brand-vision.md']) {
+    failures.push(...checkPublicDisclosure(fs.readFileSync(path.join(root, filename), 'utf8'), filename));
   }
   const baselines = new Set([base, ...(locks.reviewed_story_baselines || []).map(b => b.commit)].filter(Boolean));
   for (const baseline of baselines) {

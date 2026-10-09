@@ -1,0 +1,170 @@
+{
+  "/wiki/charlie-buster.html": {
+    "relationship_hints": {
+      "lore": [
+        {
+          "url": "/wiki/first-witness-faction-commentaries.html#noballgames-legion",
+          "title": "NoBallGames Legion",
+          "description": "Distinct culture, enduring membership and Year 3008 consequences."
+        },
+        {
+          "url": "/wiki/first-witness-forty-paths.html#approved-forty-register",
+          "title": "The Forty culture register",
+          "description": "Forty cultures; the nine Battle Chamber options remain separate."
+        }
+      ]
+    }
+  },
+  "/wiki/graffpunks.html": {
+    "relationship_hints": {
+      "lore": [
+        {
+          "url": "/wiki/first-witness-faction-commentaries.html#wildstyle-collective",
+          "title": "Wildstyle Collective",
+          "description": "Distinct culture, enduring membership and Year 3008 consequences."
+        },
+        {
+          "url": "/wiki/first-witness-forty-paths.html#approved-forty-register",
+          "title": "The Forty culture register",
+          "description": "Forty cultures; the nine Battle Chamber options remain separate."
+        }
+      ]
+    }
+  },
+  "/wiki/the-crypto-moongirls.html": {
+    "relationship_hints": {
+      "lore": [
+        {
+          "url": "/wiki/first-witness-faction-commentaries.html#fractal-taggers",
+          "title": "Fractal Taggers",
+          "description": "Distinct culture, enduring membership and Year 3008 consequences."
+        },
+        {
+          "url": "/wiki/first-witness-forty-paths.html#approved-forty-register",
+          "title": "The Forty culture register",
+          "description": "Forty cultures; the nine Battle Chamber options remain separate."
+        }
+      ]
+    }
+  },
+  "/wiki/house-of-rackinsats.html": {
+    "relationship_hints": {
+      "lore": [
+        {
+          "url": "/wiki/first-witness-faction-commentaries.html#porch-poets",
+          "title": "Porch Poets",
+          "description": "Distinct culture, enduring membership and Year 3008 consequences."
+        },
+        {
+          "url": "/wiki/first-witness-forty-paths.html#approved-forty-register",
+          "title": "The Forty culture register",
+          "description": "Forty cultures; the nine Battle Chamber options remain separate."
+        }
+      ]
+    }
+  },
+  "/wiki/delicious-again-pete.html": {
+    "relationship_hints": {
+      "lore": [
+        {
+          "url": "/wiki/first-witness-faction-commentaries.html#resin-relic-keepers",
+          "title": "Resin Relic Keepers",
+          "description": "Distinct culture, enduring membership and Year 3008 consequences."
+        },
+        {
+          "url": "/wiki/first-witness-forty-paths.html#approved-forty-register",
+          "title": "The Forty culture register",
+          "description": "Forty cultures; the nine Battle Chamber options remain separate."
+        }
+      ]
+    }
+  },
+  "/wiki/bone-idol-ink.html": {
+    "relationship_hints": {
+      "lore": [
+        {
+          "url": "/wiki/first-witness-faction-commentaries.html#bone-idol-ink-ritualists",
+          "title": "Bone Idol Ink Ritualists",
+          "description": "Distinct culture, enduring membership and Year 3008 consequences."
+        },
+        {
+          "url": "/wiki/first-witness-forty-paths.html#approved-forty-register",
+          "title": "The Forty culture register",
+          "description": "Forty cultures; the nine Battle Chamber options remain separate."
+        }
+      ]
+    }
+  },
+  "/wiki/first-witness-forty-paths.html": {
+    "relationship_hints": {
+      "lore": [
+        {
+          "url": "/wiki/charlie-buster.html",
+          "title": "NoBallGames Legion context",
+          "description": "Existing owner and the distinct fictional culture; creator rights stay separate."
+        },
+        {
+          "url": "/wiki/graffpunks.html",
+          "title": "Wildstyle Collective context",
+          "description": "Existing owner and the distinct fictional culture; creator rights stay separate."
+        },
+        {
+          "url": "/wiki/the-crypto-moongirls.html",
+          "title": "Fractal Taggers context",
+          "description": "Existing owner and the distinct fictional culture; creator rights stay separate."
+        },
+        {
+          "url": "/wiki/house-of-rackinsats.html",
+          "title": "Porch Poets context",
+          "description": "Existing owner and the distinct fictional culture; creator rights stay separate."
+        },
+        {
+          "url": "/wiki/delicious-again-pete.html",
+          "title": "Resin Relic Keepers context",
+          "description": "Existing owner and the distinct fictional culture; creator rights stay separate."
+        },
+        {
+          "url": "/wiki/bone-idol-ink.html",
+          "title": "Bone Idol Ink Ritualists context",
+          "description": "Existing owner and the distinct fictional culture; creator rights stay separate."
+        }
+      ]
+    }
+  },
+  "/wiki/first-witness-faction-commentaries.html": {
+    "relationship_hints": {
+      "lore": [
+        {
+          "url": "/wiki/charlie-buster.html",
+          "title": "NoBallGames Legion context",
+          "description": "Existing owner and the distinct fictional culture; creator rights stay separate."
+        },
+        {
+          "url": "/wiki/graffpunks.html",
+          "title": "Wildstyle Collective context",
+          "description": "Existing owner and the distinct fictional culture; creator rights stay separate."
+        },
+        {
+          "url": "/wiki/the-crypto-moongirls.html",
+          "title": "Fractal Taggers context",
+          "description": "Existing owner and the distinct fictional culture; creator rights stay separate."
+        },
+        {
+          "url": "/wiki/house-of-rackinsats.html",
+          "title": "Porch Poets context",
+          "description": "Existing owner and the distinct fictional culture; creator rights stay separate."
+        },
+        {
+          "url": "/wiki/delicious-again-pete.html",
+          "title": "Resin Relic Keepers context",
+          "description": "Existing owner and the distinct fictional culture; creator rights stay separate."
+        },
+        {
+          "url": "/wiki/bone-idol-ink.html",
+          "title": "Bone Idol Ink Ritualists context",
+          "description": "Existing owner and the distinct fictional culture; creator rights stay separate."
+        }
+      ]
+    }
+  }
+}

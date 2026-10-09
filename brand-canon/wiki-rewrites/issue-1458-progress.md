@@ -1,6 +1,6 @@
 # Issue #1458 — implementation progress and restart ledger
 
-Updated 9 October 2026. **Status: Phase 2 active from merged PR #1459; full mission remains open.**
+Updated 9 October 2026. **Status: approved final decisions under coordinated implementation from merged PR #1460; Issue #1458 remains open.**
 W81 is foundational truth. This is a checkpoint of completed implementation,
 not a claim that the whole universe is reconciled. Preserve the adult tone.
 
@@ -12,9 +12,17 @@ snapshot created before changes and remote backup verified.
 Working branch: `codex/sandbox-issue-1458-20261008-090000`.
 No direct push to main, merge, issue closure or production deployment.
 
+## Approved final implementation — 9 October 2026
+
+Base: `e393177b07793d992e883a8073ad416a2e65f84e` (merged #1460). Backup: `backup/gk-final-decisions-base-20261009`. Working branch: `codex/gk-final-decisions-20261009`. [Exact GK approval receipt](https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/issues/1458#issuecomment-6077443666).
+
+The five approved decisions are implemented for one coordinated PR: 2880 single Triple Fork; separate over-75%-major-city loss by 2900 and fewer-than-twelve secure regions by 2930; SAM 2036/late-2039/2040/2041/early-2042/2045 with contradictory artifacts retained; six enduring cultures added to the retained thirty-four; Final Fork intent recorded only in editorial master/decisions while the public future remains unresolved. Original Books, modern adult fiction, NFT descriptions, nine live choices and ownership/approval safeguards remain.
+
+The four editorial ending records are excluded from Pages and public discovery. This is a website publication boundary, not confidential storage in a public Git repository. Regression checks cover dates, count, identities, damaged records, hidden/metadata leaks and the actual artifact builder. The exact implementation file map and preservation/browser results are in `issue-1458-final-implementation.json`; all five local domains passed, including final canon/search regressions; exact-head Actions results are recorded in the coordinated PR and Issue #1458 conversation. No merge, release or issue closure is authorized by content approval. Historical Phase 1/2 notes below retain their original checkpoint status; do not resume their obsolete research backlogs.
+
 ## Current cumulative state
 
-94 of94 original sources have full claim/scene comparison; none remain unread or awaiting connected comparison. Five major decisions still require GK approval.
+94 of94 original sources have full claim/scene comparison; none remain unread or awaiting connected comparison. All five major decisions now have explicit GK content implementation approval (9 October 2026); final merge approval remains separate.
 All seven previously fully read pending originals have now been compared.
 Current wiki audits cover 98 distinct owning articles:96 full and two focused. Nine earlier new articles and 50 earlier expanded/corrected
 existing lore articles, plus the provenance-only Spirit Borns correction, remain
@@ -28,8 +36,7 @@ not a claim that every source or current wiki page is reconciled.
 All current wiki lore remains preserved. The working master truth references
 the approved modern character/faction/culture registers and records specific
 existing adult lives alongside source doctrine. All nine First Witness Books
-remain byte-identical to the original PR base. Five major proposals remain
-proposed; no final ending, new Forty slot or historical retcon is adopted.
+remain byte-identical to the original PR base. The five final decisions are now approved for implementation. The public Year 3008 ending remains unrevealed; original artifact damage and all adult consequences remain.
 
 ### Phase 2 baseline and exact continuation
 
