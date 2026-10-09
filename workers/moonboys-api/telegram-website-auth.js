@@ -136,13 +136,14 @@ export async function handleTelegramWebsiteAuth(request, env, fetchImpl = fetch)
   const headers = headersFor(request, cfg);
   if (!cfg || url.origin !== cfg.origin) return reply(headers, { error: 'website_login_not_configured' }, 503);
   const action = url.pathname.slice(PREFIX.length);
+  const logoutRequest = action === 'logout' && (request.method === 'GET' || request.method === 'POST');
   try {
     if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers });
     if (action === 'capabilities' && request.method === 'GET') {
       if (!cfg.origins.includes(request.headers.get('Origin'))) fail('website_origin_required', 403);
       return reply(headers, { ok: true, enabled: cfg.enabled });
     }
-    if (!cfg.enabled) return reply(headers, { error: 'website_login_not_configured' }, 503);
+    if ((!cfg.enabled && !logoutRequest) || !env.DB) return reply(headers, { error: 'website_login_not_configured' }, 503);
     if (action === 'start' && request.method === 'GET') {
       let returnUrl;
       try { returnUrl = new URL(url.searchParams.get('return_to') || cfg.origins[0] + '/gkniftyheads-incubator.html'); }
@@ -219,8 +220,14 @@ export async function handleTelegramWebsiteAuth(request, env, fetchImpl = fetch)
     }
     if (!cfg.origins.includes(request.headers.get('Origin'))) fail('website_origin_required', 403);
     const session = await readSession(request, env, action === 'logout');
+    if (action === 'logout' && request.method === 'GET') {
+      // Revocation preparation issues no session or access credential. It stays
+      // available during rollback so a reloaded tab can obtain its CSRF token.
+      return reply(headers, { ok: true, csrf_token: session ? await authDigest('csrf:' + cookie(request, SESSION_COOKIE)) : null });
+    }
     if (!session) {
       headers.append('Set-Cookie', setCookie(SESSION_COOKIE, '', 0));
+      if (action === 'logout' && request.method === 'POST') return reply(headers, { ok: true });
       fail('website_session_expired');
     }
     const ac = await env.DB.prepare('SELECT is_blocked FROM telegram_anticheat_state WHERE telegram_id = ?').bind(session.telegram_id).first();

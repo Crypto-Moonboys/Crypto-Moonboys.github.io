@@ -189,12 +189,20 @@
 
   function logoutTelegram() {
     return Promise.resolve(websiteReady).then(function () {
-      if (!websiteCsrf && lsGet('moonboys_tg_session_mode') === 'website') return restoreWebsiteSession(false);
+      if (websiteCsrf || lsGet('moonboys_tg_session_mode') !== 'website') return;
+      // Logout remains usable after a rollback/reload without issuing gameplay
+      // proof. Preparing it reads only this cookie session's CSRF token.
+      return fetchWebsite(getApiBase() + '/telegram/website/logout', { credentials: 'include' }, true)
+        .then(function (result) {
+          var data = result.data;
+          if (!result.response.ok || !data || data.ok !== true ||
+            (data.csrf_token !== null && (typeof data.csrf_token !== 'string' || !data.csrf_token))) throw new Error('Logout could not be confirmed. Try again.');
+          websiteCsrf = data.csrf_token;
+        }).catch(function () { throw new Error('Logout could not be confirmed. Try again.'); });
     }).then(function () {
-      if (!websiteCsrf && lsGet('moonboys_tg_session_mode') === 'website') throw new Error('Logout could not be confirmed. Try again.');
-      if (!websiteCsrf) return;
+      if (!websiteCsrf && lsGet('moonboys_tg_session_mode') !== 'website') return;
       return fetchWebsite(getApiBase() + '/telegram/website/logout', {
-        method: 'POST', credentials: 'include', headers: { 'X-Moonboys-CSRF': websiteCsrf },
+        method: 'POST', credentials: 'include', headers: websiteCsrf ? { 'X-Moonboys-CSRF': websiteCsrf } : {},
       }).then(function (response) { if (!response.ok) throw new Error('Logout could not be confirmed. Try again.'); })
         .catch(function () { throw new Error('Logout could not be confirmed. Try again.'); });
     }).then(function () {
@@ -494,6 +502,12 @@
     return !!(lsGet(LS_TG_ID) && lsGet(LS_TG_LINKED));
   }
 
+  function websiteIdentityMatches(telegramId, authPayload) {
+    var id = String(telegramId || (authPayload && authPayload.id) || getTelegramId() || '');
+    return !!websiteAuth && id === String(websiteAuth.id) &&
+      (!authPayload || !authPayload.id || String(authPayload.id) === id);
+  }
+
   /**
    * Mark the current Telegram identity as bot-link-completed (competition-active).
    * Call this after the /gklink flow succeeds (e.g. redirect from gkniftyheads-incubator.html#telegram_auth=…).
@@ -505,9 +519,13 @@
    * @returns {boolean} true only when a fresh signed payload exists and linked state is ready.
    */
   function setTelegramLinked(telegramId, authPayload, displayName) {
-    if (authPayload && /^s1_/.test(authPayload.hash || '')) {
-      return !!websiteAuth && String(websiteAuth.id) === String(telegramId) && !isTelegramAuthExpired(websiteAuth);
+    if (websitePending) return false;
+    if (websiteAuth || lsGet('moonboys_tg_session_mode') === 'website') {
+      // A legacy callback cannot replace a cookie-backed identity, including
+      // one whose short access proof needs renewal. Same-ID callbacks preserve it.
+      return websiteIdentityMatches(telegramId, authPayload) && !isTelegramAuthExpired(websiteAuth);
     }
+    if (authPayload && /^s1_/.test(authPayload.hash || '')) return false;
     var currentTelegramId = getTelegramId();
     var resolvedTelegramId = String(
       telegramId || (authPayload && authPayload.id) || currentTelegramId || ''
@@ -550,10 +568,9 @@
    * Called by comments.js after the Telegram Login Widget callback succeeds.
    */
   function saveTelegramIdentity(telegramId, displayName, authPayload) {
-    if (authPayload && /^s1_/.test(authPayload.hash || '')) return;
-    lsRemove('moonboys_tg_session_mode');
-    websiteAuth = null;
-    websiteCsrf = null;
+    if (websitePending) return false;
+    if (websiteAuth || lsGet('moonboys_tg_session_mode') === 'website') return websiteIdentityMatches(telegramId, authPayload);
+    if (authPayload && /^s1_/.test(authPayload.hash || '')) return false;
     if (telegramId) lsSet(LS_TG_ID, telegramId);
     if (displayName) lsSet(LS_TG_NAME, displayName);
     if (authPayload && typeof authPayload === 'object') {
@@ -563,6 +580,7 @@
       }
     }
     if (telegramId) setSyncHealth('good', 'auth_verified');
+    return true;
   }
 
   /**

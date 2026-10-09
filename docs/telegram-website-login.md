@@ -123,6 +123,23 @@ Legacy HMAC evidence remains usable for its existing 24-hour window. Website
 logout revokes website sessions; it does not retroactively revoke independently
 issued bot/legacy evidence. Existing public profile/status reads are display
 interfaces and remain public; they never issue credentials from an ID alone.
+Legacy callbacks cannot replace a retained website identity or change identity
+during its initial bootstrap. A different Telegram ID requires confirmed website
+logout first. A same-ID callback preserves website proof, CSRF and session mode
+instead of downgrading to legacy evidence, including while short proof is expired.
+The Incubator keeps its legacy auth caches and competitive queue untouched when
+the current website session is retained.
+
+Logout stays available with the rollout flag disabled or OIDC secrets removed.
+`GET /telegram/website/logout` prepares revocation: it requires the exact allowed
+Origin, reads the cookie, and returns only the session-bound CSRF token (or null when no
+session exists), and issues no access credential or session. A reloaded tab can
+then send `POST /telegram/website/logout` with CSRF. An existing session requires
+valid CSRF and a successful revocation write; a confirmed missing session returns
+200 and clears the cookie. Database uncertainty remains a 503 and preserves
+client identity. New login and session/credential issuance stay disabled during
+rollback. D1, the first-party API domain and allowed origins must remain configured
+for logout; provider secrets are unnecessary.
 
 ## Required configuration and approved deployment sequence
 
@@ -166,8 +183,9 @@ After explicit GK deployment approval:
 
 Rollback: disable new login, retain the additive migration and bot fallback.
 Do not delete auth bindings, reset accounts or remove progression tables. Revoke
-website sessions if an authentication incident requires it. A repository PR
-cannot itself prove BotFather, real provider nonce support, custom-domain cookie
+website sessions if an authentication incident requires it. Keep the API domain,
+origin allowlist and D1 binding available so users can still revoke their sessions.
+A repository PR cannot itself prove BotFather, real provider nonce support, custom-domain cookie
 behavior or production migration state; those are release acceptance checks.
 
 ## Official references
@@ -198,11 +216,18 @@ encoded website proof in URL queries while preserving legacy GET compatibility.
 `telegram-website-session-client.test.mjs` covers memory-only credentials,
 bootstrap timing, competitive activation, legacy fallback, stale local flags,
 renewal after transient errors/hidden-tab expiry and confirmed logout.
+It rejects conflicting legacy identities, retains same-ID website sessions and
+prepares logout after a rollback reload without issuing gameplay proof.
 `telegram-website-login-browser.test.mjs` follows
 the mocked-provider flow through the actual Incubator page in desktop and mobile
 Chromium, verifies existing server-backed Arcade XP and confirms logout. It
-requires no production credentials and does not contact Telegram. The first two
-suites run in Worker/API CI; the browser suite runs in Visual CI.
+also follows signed same/different-ID legacy callbacks across reloads, verifies
+both accounts' existing XP, logs out during rollback without provider secrets,
+and clears identity after cleanup has already deleted the session. The browser
+tests require no production credentials and do not contact Telegram. Server tests
+cover disabled flags, either missing OIDC secret, origin/CSRF enforcement,
+idempotent missing-session logout and rejection of revoked proof by both Workers.
+The first two suites run in Worker/API CI; the browser suite runs in Visual CI.
 `moonpet-passive-refresh.test.mjs` covers retryable website renewal failures for
 reads and actions, recovery on the next attempt without duplicate submission,
 confirmed expiry, Mini App/legacy compatibility and cancellation/deadlines.

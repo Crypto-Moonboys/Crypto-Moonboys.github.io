@@ -220,16 +220,20 @@
         }
 
         if (!linkedOk) {
-          setStatus(COPY.UNLINKED, 'Signed Telegram auth is missing or expired. Run /gklink again.', false);
+          var activeWebsiteAuth = window.MOONBOYS_IDENTITY && window.MOONBOYS_IDENTITY.getTelegramAuth && window.MOONBOYS_IDENTITY.getTelegramAuth();
+          var differentWebsiteAccount = activeWebsiteAuth && /^s1_/.test(activeWebsiteAuth.hash || '') && String(activeWebsiteAuth.id) !== String(result.data.telegram_id);
+          setStatus(COPY.UNLINKED, differentWebsiteAccount ? 'Log out of your website Telegram account before linking a different account.' : 'Signed Telegram auth is missing or expired. Run /gklink again.', false);
           emitSyncState('bad', 'link_persist_failed');
           debug('link_persist_failed', { telegramId: result.data.telegram_id || null });
           return;
         }
 
-        persistRawPayload(JSON.stringify(canonicalPayload));
+        var currentAuth = window.MOONBOYS_IDENTITY && window.MOONBOYS_IDENTITY.getTelegramAuth && window.MOONBOYS_IDENTITY.getTelegramAuth();
+        var keptWebsiteSession = currentAuth && /^s1_/.test(currentAuth.hash || '');
+        if (!keptWebsiteSession) persistRawPayload(JSON.stringify(canonicalPayload));
         setStatus(displayName, 'Telegram linked successfully. XP and Block Topia progression are now sync-live.', true);
         emitSyncState('good', 'linked_ready', result.data.telegram_id);
-        discardLegacyCompetitiveQueueAfterLink();
+        if (!keptWebsiteSession) discardLegacyCompetitiveQueueAfterLink();
         debug('verify_success', { telegramId: result.data.telegram_id });
       })
       .catch(function (error) {

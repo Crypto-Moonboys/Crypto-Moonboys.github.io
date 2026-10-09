@@ -92,6 +92,108 @@ test('legacy bot-linked identity remains available when no website session exist
   assert.equal((await b.gate.getFreshTelegramAuth()).hash, proof.hash);
 });
 
+for (const expired of [false, true]) {
+  test(`a differing legacy callback cannot replace ${expired ? 'expired access to' : 'fresh access to'} a website account`, async () => {
+    const b = browser();
+    await b.gate.ready;
+    if (expired) b.gate.getTelegramAuth().expires_at = 1;
+    const proof = b.gate.getTelegramAuth();
+    const storage = JSON.stringify([...b.storage]);
+    const legacy = { id: '987654321', auth_date: Math.floor(Date.now() / 1000), hash: 'b'.repeat(64) };
+    const saved = b.gate.saveTelegramIdentity(legacy.id, 'Different account', legacy);
+    assert.equal(b.gate.getTelegramId(), ID);
+    assert.equal(b.gate.getTelegramAuth(), proof);
+    assert.equal(saved, false);
+    assert.equal(b.gate.setTelegramLinked(legacy.id, legacy, 'Different account'), false);
+    assert.equal(b.gate.saveTelegramIdentity(ID, 'Conflicting proof', legacy), false);
+    assert.equal(b.gate.setTelegramLinked(ID, legacy, 'Conflicting proof'), false);
+    assert.equal(JSON.stringify([...b.storage]), storage);
+  });
+
+  test(`a same-ID legacy callback preserves ${expired ? 'expired' : 'fresh'} website proof and renewal`, async () => {
+    const b = browser();
+    await b.gate.ready;
+    if (expired) b.gate.getTelegramAuth().expires_at = 1;
+    const proof = b.gate.getTelegramAuth();
+    const storage = JSON.stringify([...b.storage]);
+    const legacy = { id: ID, auth_date: Math.floor(Date.now() / 1000), hash: 'b'.repeat(64) };
+    b.gate.saveTelegramIdentity(ID, 'Legacy name', legacy);
+    assert.equal(b.gate.getTelegramAuth(), proof);
+    assert.equal(b.gate.setTelegramLinked(ID, legacy, 'Legacy name'), !expired);
+    assert.equal(JSON.stringify([...b.storage]), storage);
+    assert.equal((await b.gate.getFreshTelegramAuth({ force: true })).id, ID);
+    assert.equal(b.calls.at(-1)[1].headers['X-Moonboys-CSRF'], 'csrf-test');
+    assert.equal(b.storage.get('moonboys_tg_session_mode'), 'website');
+  });
+}
+
+test('legacy callbacks cannot change identity while website bootstrap is pending', async () => {
+  let finish;
+  const b = browser({ capability: () => new Promise(resolve => { finish = resolve; }) });
+  const legacy = { id: '987654321', auth_date: Math.floor(Date.now() / 1000), hash: 'b'.repeat(64) };
+  const saved = b.gate.saveTelegramIdentity(legacy.id, 'Legacy', legacy);
+  const linked = b.gate.setTelegramLinked(legacy.id, legacy, 'Legacy');
+  const stored = JSON.stringify([...b.storage]);
+  while (!finish) await new Promise(resolve => setImmediate(resolve));
+  finish(Response.json({ ok: true, enabled: true }));
+  await b.gate.ready;
+  assert.equal(saved, false);
+  assert.equal(linked, false);
+  assert.equal(stored, '[]');
+  assert.equal(b.gate.getTelegramId(), ID);
+});
+
+test('switching to a legacy account requires confirmed website logout', async () => {
+  let failLogout = true;
+  const b = browser({ fetchImpl: async url => url.endsWith('/logout')
+    ? Response.json(failLogout ? { error: 'unavailable' } : { ok: true }, { status: failLogout ? 503 : 200 }) : Response.json(sessionData()) });
+  await b.gate.ready;
+  const legacy = { id: '987654321', auth_date: Math.floor(Date.now() / 1000), hash: 'b'.repeat(64) };
+  await assert.rejects(b.gate.logout(), /Logout could not be confirmed/);
+  assert.equal(b.gate.setTelegramLinked(legacy.id, legacy, 'Legacy'), false);
+  assert.equal(b.gate.getTelegramId(), ID);
+  failLogout = false;
+  await b.gate.logout();
+  assert.equal(b.gate.saveTelegramIdentity(legacy.id, 'Legacy', legacy), true);
+  assert.equal(b.gate.setTelegramLinked(legacy.id, legacy, 'Legacy'), true);
+  assert.equal(b.gate.getSignedTelegramAuth().id, legacy.id);
+  assert.equal(b.storage.get('moonboys_tg_session_mode'), undefined);
+});
+
+test('logout after a rollback reload obtains CSRF without issuing or restoring gameplay proof', async () => {
+  for (const csrf of ['logout-csrf', null]) {
+    const b = browser({ capability: { ok: true, enabled: false },
+      seed: { moonboys_tg_id: ID, moonboys_tg_linked: '1', moonboys_tg_session_mode: 'website' },
+      fetchImpl: async (url, options) => {
+        assert.match(url, /\/logout$/);
+        return Response.json(options.method === 'POST' ? { ok: true } : { ok: true, csrf_token: csrf });
+      } });
+    await b.gate.ready;
+    assert.equal(b.gate.getTelegramAuth(), null);
+    await b.gate.logout();
+    assert.equal(b.calls[1][1].credentials, 'include');
+    assert.equal(b.calls[1][1].method, undefined);
+    assert.equal(b.calls[2][1].method, 'POST');
+    assert.equal(b.calls[2][1].headers['X-Moonboys-CSRF'] || null, csrf);
+    assert.equal(b.gate.getTelegramId(), null);
+    assert.equal(b.navigation.at(-1), 'reload');
+    assert.equal(b.calls.some(([url]) => /\/(session|renew)$/.test(url)), false);
+  }
+});
+
+test('unconfirmed logout preparation retains identity without sending a revocation request', async () => {
+  for (const response of [Response.json({ error: 'unavailable' }, { status: 503 }), Response.json({ ok: true })]) {
+    const b = browser({ capability: { ok: true, enabled: false },
+      seed: { moonboys_tg_id: ID, moonboys_tg_session_mode: 'website' }, fetchImpl: async () => response });
+    await b.gate.ready;
+    await assert.rejects(b.gate.logout(), /Logout could not be confirmed/);
+    assert.equal(b.gate.getTelegramId(), ID);
+    assert.equal(b.storage.get('moonboys_tg_session_mode'), 'website');
+    assert.equal(b.calls.filter(([, options]) => options.method === 'POST').length, 0);
+    assert.equal(b.navigation.length, 0);
+  }
+});
+
 test('a local website flag or an opaque credential in legacy storage cannot activate access', async () => {
   for (const extra of [{ moonboys_tg_session_mode: 'website' }, { moonboys_tg_auth: JSON.stringify(sessionData().telegram_auth) }]) {
     const b = browser({ seed: { moonboys_tg_id: ID, moonboys_tg_linked: '1', ...extra }, fetchImpl: async () => Response.json({ error: 'website_session_expired' }, { status: 401 }) });

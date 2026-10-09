@@ -258,6 +258,73 @@ test('session bootstrap and renewal require exact origin; renewal and logout req
   assert.equal(next.csrf_token, data.csrf_token, 'tabs retain a stable session-bound CSRF secret');
 });
 
+for (const [name, overrides] of [['disabled flag', { TELEGRAM_WEBSITE_LOGIN_ENABLED: 'false' }], ['removed client ID', { TELEGRAM_OIDC_CLIENT_ID: undefined }], ['removed client secret', { TELEGRAM_OIDC_CLIENT_SECRET: undefined }]]) {
+  test(`rollback with ${name} permits protected logout but no login or credential issuance`, async () => {
+    const { env, sqlite } = fixture();
+    const { cookie, data } = await loggedIn(env);
+    const rollback = { ...env, ...overrides };
+    const request = (action, method = 'POST', csrf = data.csrf_token, origin = SITE) => new Request(API + '/telegram/website/' + action,
+      { method, headers: { Cookie: cookie, Origin: origin, 'X-Moonboys-CSRF': csrf } });
+    const snapshot = preservationSnapshot(sqlite);
+    const credentials = sqlite.prepare('SELECT COUNT(*) AS n FROM telegram_website_credentials').get().n;
+    for (const [action, method] of [['start', 'GET'], ['callback', 'GET'], ['session', 'GET'], ['renew', 'POST']]) {
+      assert.equal((await handleTelegramWebsiteAuth(request(action, method), rollback)).status, 503);
+    }
+    assert.equal((await verifyWebsiteCredential(data.telegram_auth, rollback)).telegramId, ID);
+    for (const method of ['GET', 'POST']) {
+      const denied = await handleTelegramWebsiteAuth(request('logout', method, data.csrf_token, 'https://untrusted.example'), rollback);
+      assert.equal(denied.status, 403);
+      assert.equal(denied.headers.get('Set-Cookie'), null);
+    }
+    for (const csrf of ['', 'invalid']) {
+      const denied = await handleTelegramWebsiteAuth(request('logout', 'POST', csrf), rollback);
+      assert.equal(denied.status, 403);
+      assert.equal(denied.headers.get('Set-Cookie'), null);
+    }
+    const prepare = await handleTelegramWebsiteAuth(request('logout', 'GET', ''), rollback);
+    assert.equal(prepare.status, 200);
+    assert.deepEqual(await prepare.json(), { ok: true, csrf_token: data.csrf_token });
+    assert.equal(prepare.headers.get('Set-Cookie'), null, 'preparing logout cannot clear a live cookie');
+    assert.equal(sqlite.prepare('SELECT COUNT(*) AS n FROM telegram_website_credentials').get().n, credentials);
+    assert.equal(sqlite.prepare('SELECT revoked_at FROM telegram_website_sessions').get().revoked_at, null);
+    const logout = await handleTelegramWebsiteAuth(request('logout'), rollback);
+    assert.equal(logout.status, 200);
+    assert.match(logout.headers.get('Set-Cookie'), /Max-Age=0/);
+    assert.equal((await verifyWebsiteCredential(data.telegram_auth, rollback)).status, 401);
+    assert.equal((await verifyTelegramIdentityFromBody({ telegram_auth: data.telegram_auth }, rollback, () => { throw new Error('no legacy upgrade'); })).status, 401);
+    const score = await leaderboardWorker.fetch(new Request(API + '/', { method: 'POST', body: JSON.stringify({ telegram_auth: data.telegram_auth, telegram_id: ID, player: 'Verified', game: 'snake', score: 25 }) }), rollback);
+    assert.equal(score.status, 401);
+    assert.equal(preservationSnapshot(sqlite), snapshot);
+  });
+}
+
+test('logout is idempotent after login cleanup deletes a session and still requires exact origin and a successful read', async () => {
+  const { env, sqlite } = fixture();
+  const { cookie, data } = await loggedIn(env);
+  sqlite.exec('UPDATE telegram_website_sessions SET last_seen_at = 1');
+  await start(env);
+  assert.equal(sqlite.prepare('SELECT COUNT(*) AS n FROM telegram_website_sessions').get().n, 0);
+  assert.equal(sqlite.prepare('SELECT COUNT(*) AS n FROM telegram_website_credentials').get().n, 0);
+  for (const cookieHeader of [cookie, '']) {
+    const request = (origin = SITE, method = 'POST') => new Request(API + '/telegram/website/logout',
+      { method, headers: { Cookie: cookieHeader, Origin: origin, 'X-Moonboys-CSRF': data.csrf_token } });
+    const prepare = await handleTelegramWebsiteAuth(request(SITE, 'GET'), env);
+    assert.equal(prepare.status, 200);
+    assert.deepEqual(await prepare.json(), { ok: true, csrf_token: null });
+    const missing = await handleTelegramWebsiteAuth(request(), env);
+    assert.equal(missing.status, 200);
+    assert.deepEqual(await missing.json(), { ok: true });
+    assert.match(missing.headers.get('Set-Cookie'), /Max-Age=0/);
+    assert.equal((await handleTelegramWebsiteAuth(request('https://untrusted.example'), env)).status, 403);
+    const unavailable = await handleTelegramWebsiteAuth(request(), { ...env, DB: { prepare() { throw new Error('unconfirmed session lookup'); } } });
+    if (cookieHeader) {
+      assert.equal(unavailable.status, 503);
+      assert.equal(unavailable.headers.get('Set-Cookie'), null);
+    }
+  }
+  assert.equal((await verifyWebsiteCredential(data.telegram_auth, env)).status, 401);
+});
+
 test('expiry, idle timeout and logout invalidate session credentials in both Worker adapters', async () => {
   const { env, sqlite } = fixture();
   const { cookie, data } = await loggedIn(env);

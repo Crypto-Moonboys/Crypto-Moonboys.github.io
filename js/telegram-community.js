@@ -320,7 +320,9 @@
             }
             if (!linkedOk) {
               if (banner) {
-                banner.textContent = '❌ Link failed: signed Telegram auth payload is missing or expired. Run /gklink again to re-auth.';
+                var activeWebsiteAuth = window.MOONBOYS_IDENTITY.getTelegramAuth && window.MOONBOYS_IDENTITY.getTelegramAuth();
+                var differentWebsiteAccount = activeWebsiteAuth && /^s1_/.test(activeWebsiteAuth.hash || '') && String(activeWebsiteAuth.id) !== String(tid);
+                banner.textContent = differentWebsiteAccount ? '❌ Log out of your website Telegram account before linking a different account.' : '❌ Link failed: signed Telegram auth payload is missing or expired. Run /gklink again to re-auth.';
                 banner.className = (banner.className || '') + ' gklink-error';
               }
               return;

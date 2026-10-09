@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { createHash, createHmac } from 'node:crypto';
 import { existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
@@ -6,14 +7,23 @@ import { test } from 'node:test';
 import { chromium } from 'playwright';
 import { handleTelegramWebsiteAuth, verifyWebsiteCredential } from '../workers/moonboys-api/telegram-website-auth.js';
 import apiWorker from '../workers/moonboys-api/worker.js';
-import { API, SITE, ID, fixture, provider } from './lib/telegram-website-auth-fixtures.mjs';
+import { API, SITE, ID, BOT_TOKEN, fixture, provider, start } from './lib/telegram-website-auth-fixtures.mjs';
 
 const root = process.cwd();
 const types = { '.html': 'text/html', '.js': 'application/javascript', '.mjs': 'application/javascript', '.css': 'text/css', '.json': 'application/json', '.svg': 'image/svg+xml' };
+const OTHER_ID = '987654321';
+function legacyProof(id) {
+  const fields = { id, first_name: 'Legacy player', auth_date: Math.floor(Date.now() / 1000) };
+  const secret = createHash('sha256').update(BOT_TOKEN).digest();
+  const hash = createHmac('sha256', secret).update(Object.keys(fields).sort().map(key => key + '=' + fields[key]).join('\n')).digest('hex');
+  return { ...fields, hash };
+}
 
 for (const [name, viewport] of [['desktop', { width: 1440, height: 900 }], ['mobile', { width: 390, height: 844 }]]) {
   test(name + ' returning player follows PKCE redirect login and immediately restores server-backed Arcade XP', async () => {
     const { env, sqlite } = fixture();
+    sqlite.prepare('INSERT INTO telegram_users (telegram_id, first_name, xp, wallet_address) VALUES (?, ?, ?, ?)').run(OTHER_ID, 'Other existing player', 17, 'other-ownership-link');
+    sqlite.prepare('INSERT INTO arcade_progression_state (telegram_id, arcade_xp_total) VALUES (?, ?)').run(OTHER_ID, 7777);
     const executablePath = process.env.CHROMIUM_EXECUTABLE_PATH || (existsSync('/usr/bin/chromium') ? '/usr/bin/chromium' : undefined);
     const browser = await chromium.launch({ executablePath, headless: true });
     try {
@@ -44,7 +54,7 @@ for (const [name, viewport] of [['desktop', { width: 1440, height: 900 }], ['mob
               failRenewOnce = false;
               response = Response.json({ error: 'unavailable' }, { status: 503, headers: { 'Access-Control-Allow-Origin': SITE, 'Access-Control-Allow-Credentials': 'true' } });
             } else response = await handleTelegramWebsiteAuth(nodeRequest, env, authorization ? provider(authorization) : undefined);
-          } else if (['/blocktopia/progression', '/telegram/user/status', '/faction/status'].includes(url.pathname)) {
+          } else if (['/blocktopia/progression', '/telegram/user/status', '/faction/status', '/telegram/link/confirm'].includes(url.pathname)) {
             response = await apiWorker.fetch(nodeRequest, env);
           } else {
             // Unrelated feed requests are outside this authentication test.
@@ -83,7 +93,7 @@ for (const [name, viewport] of [['desktop', { width: 1440, height: 900 }], ['mob
       assert.equal(state.state.linked, true);
       assert.equal(state.authStored, null);
       assert.equal(state.legacyStored, null);
-      assert.equal(sqlite.prepare('SELECT COUNT(*) AS n FROM telegram_users').get().n, 1);
+      assert.equal(sqlite.prepare('SELECT COUNT(*) AS n FROM telegram_users').get().n, 2);
       assert.equal(sqlite.prepare('SELECT xp FROM telegram_users').get().xp, 420);
       assert.equal(errors.length, 0, errors.join('\n'));
       const cookies = await context.cookies(API);
@@ -91,6 +101,24 @@ for (const [name, viewport] of [['desktop', { width: 1440, height: 900 }], ['mob
       assert.ok(session?.httpOnly && session.secure);
       assert.equal(session.sameSite, 'Strict');
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth), false);
+
+      for (const [label, legacyId] of [['different', OTHER_ID], ['same', ID]]) {
+        const fragment = '#telegram_auth=' + encodeURIComponent(JSON.stringify(legacyProof(legacyId)));
+        await page.goto(SITE + '/gkniftyheads-incubator.html?legacy_case=' + label + fragment, { waitUntil: 'domcontentloaded' });
+        await page.waitForFunction(expected => document.getElementById('incubator-sync-message')?.textContent.includes(expected), label === 'different' ? 'Log out' : 'Telegram linked successfully');
+        const identity = await page.evaluate(() => ({ id: window.MOONBOYS_IDENTITY.getTelegramId(), auth: window.MOONBOYS_IDENTITY.getSignedTelegramAuth(),
+          mode: localStorage.getItem('moonboys_tg_session_mode'), cache: localStorage.getItem('moonboys_tg_auth'), legacyCache: localStorage.getItem('MOONBOYS_TELEGRAM_AUTH') }));
+        assert.equal(identity.id, ID);
+        assert.match(identity.auth.hash, /^s1_/);
+        assert.equal(identity.mode, 'website');
+        assert.equal(identity.cache, null);
+        assert.equal(identity.legacyCache, null);
+        await page.reload({ waitUntil: 'domcontentloaded' });
+        await page.waitForFunction(id => window.MOONBOYS_IDENTITY?.getSignedTelegramAuth()?.id === id, ID);
+        assert.equal(sqlite.prepare('SELECT arcade_xp_total FROM arcade_progression_state WHERE telegram_id = ?').get(ID).arcade_xp_total, 6300);
+        assert.equal(sqlite.prepare('SELECT arcade_xp_total FROM arcade_progression_state WHERE telegram_id = ?').get(OTHER_ID).arcade_xp_total, 7777);
+        assert.equal(sqlite.prepare('SELECT wallet_address FROM telegram_users WHERE telegram_id = ?').get(OTHER_ID).wallet_address, 'other-ownership-link');
+      }
 
       failRenewOnce = true;
       const recovery = await page.evaluate(async () => {
@@ -114,11 +142,35 @@ for (const [name, viewport] of [['desktop', { width: 1440, height: 900 }], ['mob
       }, priorProof.hash);
       assert.deepEqual(callbackSessionCookies, [false, false], 'Strict cookie is absent on both cross-site callbacks');
       assert.equal((await verifyWebsiteCredential(priorProof, env)).status, 401, 'returning login must revoke the prior credential');
-      assert.equal(sqlite.prepare('SELECT COUNT(*) AS n FROM telegram_users').get().n, 1);
+      assert.equal(sqlite.prepare('SELECT COUNT(*) AS n FROM telegram_users').get().n, 2);
 
+      const rollbackProof = await page.evaluate(() => window.MOONBOYS_IDENTITY.getSignedTelegramAuth());
+      env.TELEGRAM_WEBSITE_LOGIN_ENABLED = 'false';
+      const clientSecret = env.TELEGRAM_OIDC_CLIENT_SECRET;
+      delete env.TELEGRAM_OIDC_CLIENT_SECRET;
+      await page.reload({ waitUntil: 'domcontentloaded' });
+      await page.evaluate(() => window.MOONBOYS_IDENTITY.ready);
+      assert.equal(await page.evaluate(() => window.MOONBOYS_IDENTITY.getTelegramAuth()), null);
+      assert.equal((await verifyWebsiteCredential(rollbackProof, env)).telegramId, ID);
       await page.locator('[data-telegram-logout]').click();
       await page.waitForFunction(() => window.MOONBOYS_IDENTITY?.getIdentityTier() === 'guest');
-      assert.ok(sqlite.prepare('SELECT revoked_at FROM telegram_website_sessions').get().revoked_at);
+      assert.equal((await verifyWebsiteCredential(rollbackProof, env)).status, 401, 'rollback logout must revoke proof after a reload without OIDC secrets');
+
+      env.TELEGRAM_WEBSITE_LOGIN_ENABLED = 'true';
+      env.TELEGRAM_OIDC_CLIENT_SECRET = clientSecret;
+      await page.reload({ waitUntil: 'domcontentloaded' });
+      await page.locator('[data-telegram-login]').first().click();
+      await page.waitForFunction(() => window.MOONBOYS_IDENTITY?.getIdentityTier() === 'telegram_linked');
+      const cleanedProof = await page.evaluate(() => window.MOONBOYS_IDENTITY.getSignedTelegramAuth());
+      sqlite.exec('UPDATE telegram_website_sessions SET last_seen_at = 1');
+      await start(env);
+      assert.equal(sqlite.prepare('SELECT COUNT(*) AS n FROM telegram_website_sessions').get().n, 0);
+      await page.locator('[data-telegram-logout]').click();
+      await page.waitForFunction(() => window.MOONBOYS_IDENTITY?.getIdentityTier() === 'guest');
+      assert.equal((await verifyWebsiteCredential(cleanedProof, env)).status, 401);
+      assert.equal((await context.cookies(API)).some(cookie => cookie.name === '__Host-moonboys_session'), false);
+      assert.equal(sqlite.prepare('SELECT COUNT(*) AS n FROM telegram_users').get().n, 2);
+      assert.equal(errors.length, 0, errors.join('\n'));
     } finally { await browser.close(); }
   });
 }
