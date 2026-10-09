@@ -362,8 +362,12 @@
     "scripts/canon-integrity-check.mjs",
     "scripts/ci-change-scope.mjs",
     "scripts/ci-domain-groups.test.mjs",
+    "scripts/generate-related-wiki-paths.mjs",
     "scripts/prepare-pages-artifact.mjs",
     "scripts/public-canon-disclosure.mjs",
+    "scripts/relationship-hints-related-wiki-paths.test.mjs",
+    "scripts/wiki-lore-preservation-check.mjs",
+    "scripts/wiki-lore-preservation-check.test.mjs",
     "scripts/wiki-search.test.mjs",
     "wiki/agent-sam.html",
     "wiki/aleema-child-of-the-shard.html",
@@ -433,7 +437,8 @@
     "functional_preservation_changed_wiki_pages": 61,
     "exact_replacement_receipts": 55,
     "live_faction_choices_unchanged": 9,
-    "runtime_auth_worker_arcade_styling_files_unchanged": true
+    "runtime_auth_worker_arcade_styling_files_unchanged": true,
+    "existing_anchors_preserved": 1531
   },
   "public_disclosure": {
     "editorial_files_excluded": 4,
@@ -445,8 +450,9 @@
     "graph": "passed:417 indexed wiki pages / 427 nodes / 2083 edges / 75 mobile nodes",
     "publishing_regeneration": "Repeated deterministic regeneration passed; legacy search alias retained.",
     "browser": "passed:38 desktop/mobile views;19 no-JavaScript pages;six culture queries;four editorial routes 404",
-    "full_domains": "All five grouped CI domains passed in full. Aggregate npm test completed Arcade/Worker then found an obsolete 34-reading query; preserve its alias and strengthen six-culture discovery. Full Wiki, WAX and Visual reruns passed, then final canon/search reruns passed after editorial guard strengthening.",
+    "full_domains": "Aggregate npm test passed all five grouped domains. Final Wiki rerun verifies the navigation-anchor preservation fix after deterministic regeneration.",
     "commands": [
+      "npm test",
       "npm run ci:arcade (aggregate)",
       "npm run ci:worker-api (aggregate)",
       "npm run ci:wiki",
@@ -456,7 +462,14 @@
       "node scripts/wiki-search.test.mjs",
       "node scripts/graph-publishing-integrity.test.mjs",
       "node scripts/wiki-lore-preservation-check.mjs"
-    ]
+    ],
+    "internal_links": "passed:3188 internal links/fragments on 61 changed pages"
   },
-  "release": "unmerged; no deployment; issue remains open"
+  "release": "unmerged; no deployment; issue remains open",
+  "functional_safeguards": [
+    "scripts/generate-related-wiki-paths.mjs",
+    "scripts/wiki-lore-preservation-check.mjs",
+    "scripts/wiki-lore-preservation-check.test.mjs",
+    "scripts/relationship-hints-related-wiki-paths.test.mjs"
+  ]
 }

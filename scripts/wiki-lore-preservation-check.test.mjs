@@ -31,6 +31,12 @@ for (const [name, altered] of [
   else assert.throws(() => preservationFailures(before, altered), /Missing article body/);
 }
 const nft = '<body><article data-page-type="nft_template"><section><h2>Description</h2><p>Curated NFT description.</p></section></article></body>';
+const plain = `<body><article><h1 id="plain-article">Plain article</h1><p>Existing story.</p></article><!-- RELATED_WIKI_PATHS:BEGIN --><section data-related-wiki-paths="true" aria-labelledby="plain-related"><h2 id="plain-related">Related Wiki Paths</h2>${group}</section><!-- RELATED_WIKI_PATHS:END --></body>`;
+assert.deepEqual(preservationFailures(plain, plain.replace('Existing story.', 'Expanded story.')), [], 'ordinary articles without canonical markers may receive prose updates');
+assert.ok(preservationFailures(plain, plain.replaceAll('plain-related', 'new-related')).some(message => message.includes('anchor removed: plain-related')), 'existing related heading anchors remain protected without canonical markers');
+assert.ok(preservationFailures(plain, plain.replace('id="plain-article"', '')).some(message => message.includes('anchor removed: plain-article')), 'article anchors remain protected');
+assert.ok(preservationFailures(plain, plain.replace(group, '')).some(message => message.includes('related navigation group')), 'ordinary article curated navigation remains protected');
+assert.deepEqual(preservationFailures(plain, plain.replaceAll('plain-related', 'new-related'), { loreBatch: false }), [], 'separately reviewed functional edits remain possible');
 assert.deepEqual(preservationFailures(nft, nft), []);
 assert.ok(preservationFailures(nft, nft.replace('Curated NFT description.', 'Generated replacement.')).length, 'lore batches cannot rewrite NFT descriptions');
 assert.deepEqual(preservationFailures(nft, nft.replace('Curated NFT description.', 'Approved product edit.'), { loreBatch: false }), [], 'dedicated product edits remain separately reviewable');

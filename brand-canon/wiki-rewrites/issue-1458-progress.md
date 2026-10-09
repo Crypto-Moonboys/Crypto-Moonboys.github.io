@@ -1,6 +1,6 @@
 # Issue #1458 — implementation progress and restart ledger
 
-Updated 9 October 2026. **Status: approved final decisions under coordinated implementation from merged PR #1460; Issue #1458 remains open.**
+Updated 9 October 2026. **Status: all five final decisions implemented in coordinated PR #1461 from merged PR #1460; Issue #1458 remains open pending final review and merge approval.**
 W81 is foundational truth. This is a checkpoint of completed implementation,
 not a claim that the whole universe is reconciled. Preserve the adult tone.
 
@@ -18,7 +18,7 @@ Base: `e393177b07793d992e883a8073ad416a2e65f84e` (merged #1460). Backup: `backup
 
 The five approved decisions are implemented for one coordinated PR: 2880 single Triple Fork; separate over-75%-major-city loss by 2900 and fewer-than-twelve secure regions by 2930; SAM 2036/late-2039/2040/2041/early-2042/2045 with contradictory artifacts retained; six enduring cultures added to the retained thirty-four; Final Fork intent recorded only in editorial master/decisions while the public future remains unresolved. Original Books, modern adult fiction, NFT descriptions, nine live choices and ownership/approval safeguards remain.
 
-The four editorial ending records are excluded from Pages and public discovery. This is a website publication boundary, not confidential storage in a public Git repository. Regression checks cover dates, count, identities, damaged records, hidden/metadata leaks and the actual artifact builder. The exact implementation file map and preservation/browser results are in `issue-1458-final-implementation.json`; all five local domains passed, including final canon/search regressions; exact-head Actions results are recorded in the coordinated PR and Issue #1458 conversation. No merge, release or issue closure is authorized by content approval. Historical Phase 1/2 notes below retain their original checkpoint status; do not resume their obsolete research backlogs.
+The four editorial ending records are excluded from Pages and public discovery. This is a website publication boundary, not confidential storage in a public Git repository. Regression checks cover dates, count, identities, damaged records, hidden/metadata leaks and the actual artifact builder. Existing related-section anchors, accessible headings and curated groups are preserved on ordinary articles as well as canon-owned articles. All 1,531 unique existing anchors and 3,188 internal links/fragments on the 61 changed wiki pages passed verification. The exact 92-file implementation map and preservation/browser results are in `issue-1458-final-implementation.json`; aggregate `npm test` passed all five domains, with a final Wiki rerun for navigation preservation. Exact-head Actions results are recorded in [coordinated PR #1461](https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/pull/1461) and Issue #1458. No merge, release or issue closure is authorized by content approval. Historical Phase 1/2 notes below retain their original checkpoint status; do not resume their obsolete research backlogs.
 
 ## Current cumulative state
 

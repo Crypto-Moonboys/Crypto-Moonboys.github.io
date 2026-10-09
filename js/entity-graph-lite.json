@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-09T08:57:31.254Z",
-  "verified_at": "2026-10-09T08:57:31.254Z",
+  "generated_at": "2026-10-09T09:28:13.380Z",
+  "verified_at": "2026-10-09T09:28:13.380Z",
   "lite": true,
   "nodes": [
     {
@@ -72,7 +72,7 @@
       "title": "Block Topia and the Controlled Reading",
       "url": "/wiki/first-witness-block-topia-reading.html",
       "category": "core",
-      "rank_score": 361,
+      "rank_score": 365,
       "authority_score": 18
     },
     {
@@ -608,19 +608,19 @@
     {
       "source": "/wiki/first-witness-forty-paths.html",
       "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 360,
+      "score": 363,
       "weight": 1
     },
     {
       "source": "/wiki/first-witness-faction-commentaries.html",
       "target": "/wiki/first-witness-forty-paths.html",
-      "score": 354,
+      "score": 357,
       "weight": 1
     },
     {
       "source": "/wiki/first-witness-faction-commentaries.html",
       "target": "/wiki/the-first-witness.html",
-      "score": 353,
+      "score": 356,
       "weight": 1
     },
     {

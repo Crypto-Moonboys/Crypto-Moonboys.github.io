@@ -457,6 +457,9 @@ ${items}
 }
 
 function renderRelatedSection(groups, previousHtml = '', preserveUnmatchedGroups = false) {
+  const previousRoot = previousHtml.match(/<section\b[^>]*data-related-wiki-paths=["']true["'][^>]*>/i)?.[0];
+  const previousHeading = previousHtml.match(/<h2\b[^>]*>[\s\S]*?<\/h2>/i)?.[0];
+  const previousIntro = previousHtml.match(/<\/h2>\s*(<p\b[^>]*>[\s\S]*?<\/p>)/i)?.[1];
   const titles = new Set(groups.filter(group => group.links.length).map(group => escapeHtml(group.title)));
   const preservedGroups = preserveUnmatchedGroups
     ? existingRelatedGroups(previousHtml).filter(group => !titles.has(group.title))
@@ -476,9 +479,9 @@ function renderRelatedSection(groups, previousHtml = '', preserveUnmatchedGroups
   const renderedGroups = rendered.join('\n');
 
   return `${BEGIN}
-      <section class="wiki-section related-wiki-paths" data-related-wiki-paths="true" aria-labelledby="related-wiki-paths-title">
-        <h2 id="related-wiki-paths-title">Related Wiki Paths</h2>
-        <p class="lore-paragraph">Follow these internal paths into connected pages, categories, collections, games, lore, and site maps.</p>
+      ${previousRoot || '<section class="wiki-section related-wiki-paths" data-related-wiki-paths="true" aria-labelledby="related-wiki-paths-title">'}
+        ${previousHeading || '<h2 id="related-wiki-paths-title">Related Wiki Paths</h2>'}
+        ${previousIntro || '<p class="lore-paragraph">Follow these internal paths into connected pages, categories, collections, games, lore, and site maps.</p>'}
 ${renderedGroups}
       </section>
 ${END}`;

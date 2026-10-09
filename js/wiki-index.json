@@ -247,11 +247,11 @@
       "category": "core",
       "category_priority": 10,
       "has_description": true,
-      "article_word_count": 9342,
+      "article_word_count": 9361,
       "keyword_bag_size": 66,
       "heading_count": 68,
       "list_count": 1,
-      "internal_link_count": 59,
+      "internal_link_count": 60,
       "paragraph_count": 152,
       "section_count": 35,
       "lore_paragraph_count": 133,
@@ -432,9 +432,9 @@
     "link_score": {
       "inbound_count": 35,
       "outbound_count": 90,
-      "existing_outbound_count": 21,
-      "suggested_outbound_count": 69,
-      "authority": 80.5
+      "existing_outbound_count": 22,
+      "suggested_outbound_count": 68,
+      "authority": 81
     },
     "brand": null
   },
@@ -498,11 +498,11 @@
       "category": "core",
       "category_priority": 10,
       "has_description": true,
-      "article_word_count": 2343,
+      "article_word_count": 2362,
       "keyword_bag_size": 58,
       "heading_count": 17,
       "list_count": 1,
-      "internal_link_count": 29,
+      "internal_link_count": 30,
       "paragraph_count": 27,
       "section_count": 12,
       "lore_paragraph_count": 14,
@@ -623,9 +623,9 @@
     "link_score": {
       "inbound_count": 28,
       "outbound_count": 80,
-      "existing_outbound_count": 18,
-      "suggested_outbound_count": 62,
-      "authority": 65
+      "existing_outbound_count": 19,
+      "suggested_outbound_count": 61,
+      "authority": 65.5
     },
     "brand": null
   },
@@ -1568,7 +1568,7 @@
         "title": "first witness block topia reading"
       }
     ],
-    "rank_score": 361,
+    "rank_score": 365,
     "rank_signals": {
       "is_canonical": true,
       "alias_count": 2,
@@ -1595,9 +1595,9 @@
       "word_count_points": 45,
       "keyword_bag_points": 62,
       "content_quality_points": 133,
-      "authority_points": 41,
-      "final_rank_score": 361,
-      "authority_graph_points": 23
+      "authority_points": 45,
+      "final_rank_score": 365,
+      "authority_graph_points": 27
     },
     "search_index": {
       "normalized_title": "block topia and the controlled reading crypto moonboys wiki",
@@ -1687,11 +1687,11 @@
       ]
     },
     "link_score": {
-      "inbound_count": 10,
+      "inbound_count": 12,
       "outbound_count": 72,
       "existing_outbound_count": 6,
       "suggested_outbound_count": 66,
-      "authority": 23
+      "authority": 27
     },
     "brand": null
   },

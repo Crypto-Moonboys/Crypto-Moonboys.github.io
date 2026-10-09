@@ -38,10 +38,15 @@ export function functionalShell(html) {
 
 export function preservationFailures(before, after, { loreBatch = true } = {}) {
   const failures = [];
+  if (loreBatch) {
+    const ids = html => new Set([...html.matchAll(/\bid=["']([^"']+)["']/g)].map(m => m[1]));
+    const nextIds = ids(after);
+    for (const id of ids(before)) if (!nextIds.has(id)) failures.push(`Existing article/navigation anchor removed: ${id}`);
+  }
   if (canonical(before) && functionalShell(before) !== functionalShell(after)) {
     failures.push('Functional article body changed outside canonical prose/related paths');
   }
-  if (canonical(before)) {
+  if (loreBatch) {
     const next = relatedLayouts(after);
     for (const [title, layout] of relatedLayouts(before)) {
       if (JSON.stringify(next.get(title)) !== JSON.stringify(layout)) {
