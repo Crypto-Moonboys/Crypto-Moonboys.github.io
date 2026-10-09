@@ -69,6 +69,18 @@ the bot fallback available. The capability exposes no secrets or account data.
 Capability, session, renewal and logout requests have an eight-second abort
 deadline. A stalled bootstrap settles identity waiters and uses the bot fallback;
 a timed-out logout retains local identity until revocation can be confirmed.
+Verified capability and request health are separate: transient network errors,
+bad JSON and server errors do not permanently disable renewal. Later requests,
+visible-tab refresh and the renewal timer retry the cookie session. A failed
+initial capability probe can also be retried. Protected actions renew expired
+five-minute access proof before deciding whether account activation is absent;
+confirmed session expiry or revocation still clears website identity.
+
+Faction status uses `POST /faction/status` with proof in the body. The API rejects
+website credentials in `telegram_auth` and `auth_evidence` URL query parameters
+before database verification. Legacy signed GET status requests remain compatible;
+the current browser sends both credential types in POST bodies. No new website
+credential belongs in a URL, browser cache or log.
 
 ## Session and security contract
 
@@ -164,10 +176,14 @@ receipts, ownership links, repeat login, old bot login, accepted leaderboard
 submissions, conflicting Mini App identities, callback replay, JWT validation,
 origin/CSRF checks, renewal, idle/absolute expiry, revocation and D1 failures.
 It also covers resolved D1 mutation failures and disabled rollout capabilities.
+Malformed `return_to` input consistently returns 400 without creating a login
+transaction. Transport tests cover faction POST proof and rejection of JSON or
+encoded website proof in URL queries while preserving legacy GET compatibility.
 
 `telegram-website-session-client.test.mjs` covers memory-only credentials,
 bootstrap timing, competitive activation, legacy fallback, stale local flags,
-renewal and confirmed logout. `telegram-website-login-browser.test.mjs` follows
+renewal after transient errors/hidden-tab expiry and confirmed logout.
+`telegram-website-login-browser.test.mjs` follows
 the mocked-provider flow through the actual Incubator page in desktop and mobile
 Chromium, verifies existing server-backed Arcade XP and confirms logout. It
 requires no production credentials and does not contact Telegram. The first two

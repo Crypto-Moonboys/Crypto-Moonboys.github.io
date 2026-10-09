@@ -148,7 +148,11 @@
   async function loadStatus() {
     var auth = await getSignedTelegramAuthWithRestore();
     if (!auth) return getCachedStatus() || { faction: 'unaligned', faction_xp: 0, bonuses: FACTIONS.unaligned };
-    var data = await request('/faction/status?telegram_auth=' + encodeURIComponent(JSON.stringify(auth)));
+    var data = await request('/faction/status', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ telegram_auth: auth }),
+    });
     var faction = normalizeFaction(data.faction);
     var bonuses = data.bonuses || {};
     var payload = {

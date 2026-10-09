@@ -22,11 +22,14 @@ for (const [name, viewport] of [['desktop', { width: 1440, height: 900 }], ['mob
       await page.addInitScript(({ api }) => { window.MOONBOYS_API = { BASE_URL: api, WEBSITE_LOGIN_ENABLED: true }; }, { api: API });
       let authorization;
       const callbackSessionCookies = [];
+      const websiteProofUrls = [];
+      let failRenewOnce = false;
       const errors = [];
       page.on('pageerror', error => errors.push(error.message));
       await page.route('**/*', async route => {
         const request = route.request();
         const url = new URL(request.url());
+        if (['telegram_auth', 'auth_evidence'].some(key => url.searchParams.getAll(key).some(raw => raw.includes('s1_')))) websiteProofUrls.push(url.pathname);
         if (url.origin === 'https://oauth.telegram.org' && url.pathname === '/auth') {
           authorization = url;
           const callback = API + '/telegram/website/callback?code=browser-test-code&state=' + url.searchParams.get('state');
@@ -37,8 +40,11 @@ for (const [name, viewport] of [['desktop', { width: 1440, height: 900 }], ['mob
           if (url.pathname === '/telegram/website/callback') callbackSessionCookies.push((nodeRequest.headers.get('Cookie') || '').includes('__Host-moonboys_session='));
           let response;
           if (url.pathname.startsWith('/telegram/website/')) {
-            response = await handleTelegramWebsiteAuth(nodeRequest, env, authorization ? provider(authorization) : undefined);
-          } else if (['/blocktopia/progression', '/telegram/user/status'].includes(url.pathname)) {
+            if (url.pathname.endsWith('/renew') && failRenewOnce) {
+              failRenewOnce = false;
+              response = Response.json({ error: 'unavailable' }, { status: 503, headers: { 'Access-Control-Allow-Origin': SITE, 'Access-Control-Allow-Credentials': 'true' } });
+            } else response = await handleTelegramWebsiteAuth(nodeRequest, env, authorization ? provider(authorization) : undefined);
+          } else if (['/blocktopia/progression', '/telegram/user/status', '/faction/status'].includes(url.pathname)) {
             response = await apiWorker.fetch(nodeRequest, env);
           } else {
             // Unrelated feed requests are outside this authentication test.
@@ -85,6 +91,20 @@ for (const [name, viewport] of [['desktop', { width: 1440, height: 900 }], ['mob
       assert.ok(session?.httpOnly && session.secure);
       assert.equal(session.sameSite, 'Strict');
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth), false);
+
+      failRenewOnce = true;
+      const recovery = await page.evaluate(async () => {
+        window.MOONBOYS_IDENTITY.getTelegramAuth().expires_at = 1;
+        const failed = await window.MOONBOYS_IDENTITY.getFreshTelegramAuth();
+        let allowed = 0;
+        await window.MOONBOYS_IDENTITY.requireLinkedAccount(() => allowed++);
+        await window.MOONBOYS_FACTION.loadStatus();
+        return { failed, allowed, tier: window.MOONBOYS_IDENTITY.getIdentityTier() };
+      });
+      assert.equal(recovery.failed, null);
+      assert.equal(recovery.allowed, 1);
+      assert.equal(recovery.tier, 'telegram_linked');
+      assert.deepEqual(websiteProofUrls, [], 'website credentials must never enter request URLs');
 
       const priorProof = await page.evaluate(() => window.MOONBOYS_IDENTITY.getSignedTelegramAuth());
       await page.locator('[data-telegram-login]').first().click();

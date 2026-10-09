@@ -11573,6 +11573,13 @@ export default {
     const json = makeJsonResponder(corsHeaders);
     const err = makeErrorResponder(corsHeaders);
 
+    // Website bearers belong in request bodies/headers, never reusable URLs.
+    if (request.method !== 'OPTIONS' && ['telegram_auth', 'auth_evidence'].some(key =>
+      url.searchParams.getAll(key).some(raw => {
+        const auth = parseTelegramAuthEvidence(raw);
+        return isWebsiteCredential(auth) || isWebsiteCredential(auth?.telegram_auth);
+      }))) return err('website_auth_url_credentials_rejected', 400);
+
     if (path.startsWith('/telegram/website/')) {
       if (request.method !== 'OPTIONS') {
         const limited = await enforcePublicRateLimit(request, env, path, null, corsHeaders, { ipLimit: 30 });
@@ -13168,7 +13175,6 @@ export default {
       }, summary?.ok ? 200 : 503);
     }
 
-    // ── GET /faction/status with telegram_auth query payload ──────────────
     // Shared arcade progression sync endpoint.
     if (path === '/arcade/progression/sync' && request.method === 'POST') {
       let body;
@@ -13392,14 +13398,16 @@ export default {
       }
     }
 
-    if (path === '/faction/status' && request.method === 'GET') {
-      const rawAuth = url.searchParams.get('telegram_auth');
-      if (!rawAuth) return err('verified telegram_auth payload required', 401);
+    // ── POST /faction/status; legacy GET query evidence remains supported ──
+    if (path === '/faction/status' && (request.method === 'GET' || request.method === 'POST')) {
       let tgBody;
-      try {
-        tgBody = { telegram_auth: JSON.parse(rawAuth) };
-      } catch {
-        return err('Invalid telegram_auth payload', 400);
+      if (request.method === 'POST') {
+        try { tgBody = await request.json(); } catch { return err('Invalid JSON', 400); }
+      } else {
+        const rawAuth = url.searchParams.get('telegram_auth');
+        if (!rawAuth) return err('verified telegram_auth payload required', 401);
+        try { tgBody = { telegram_auth: JSON.parse(rawAuth) }; }
+        catch { return err('Invalid telegram_auth payload', 400); }
       }
       const verified = await verifyTelegramIdentityFromBody(tgBody, env, verifyTelegramAuth);
       if (verified.error) return err(verified.error, verified.status || 401);

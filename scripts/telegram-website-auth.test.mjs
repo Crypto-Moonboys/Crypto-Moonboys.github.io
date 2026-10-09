@@ -36,6 +36,63 @@ test('verified website credential is accepted by the existing leaderboard withou
   assert.equal(sqlite.prepare('SELECT arcade_xp_total FROM arcade_progression_state').get().arcade_xp_total, 6300);
 });
 
+test('faction status accepts website POST proof and preserves existing faction progression', async () => {
+  const { env, sqlite } = fixture();
+  const { data } = await loggedIn(env);
+  sqlite.prepare("UPDATE blocktopia_progression SET faction = 'graffpunks', faction_xp = 19 WHERE telegram_id = ?").run(ID);
+  const snapshot = preservationSnapshot(sqlite);
+  const response = await apiWorker.fetch(new Request(API + '/faction/status', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ telegram_auth: data.telegram_auth }),
+  }), env);
+  assert.equal(response.status, 200);
+  const status = await response.json();
+  assert.equal(status.faction, 'graffpunks');
+  assert.equal(status.faction_xp, 19);
+  assert.equal(preservationSnapshot(sqlite), snapshot);
+});
+
+test('website proof in URL queries is rejected before any authentication database read', async () => {
+  const { env } = fixture();
+  const { data } = await loggedIn(env);
+  const raw = JSON.stringify(data.telegram_auth);
+  const noReads = { ...env, DB: { prepare() { assert.fail('URL credentials must be rejected before database access'); } } };
+  for (const path of ['/faction/status', '/player/state', '/player/modifiers', '/player/daily-missions', '/faction/signal']) {
+    for (const key of ['telegram_auth', 'auth_evidence']) {
+      for (const proof of [raw, Buffer.from(raw).toString('base64url')]) {
+        const response = await apiWorker.fetch(new Request(API + path + '?' + new URLSearchParams({ [key]: proof })), noReads);
+        assert.equal(response.status, 400);
+        assert.equal((await response.json()).error, 'website_auth_url_credentials_rejected');
+      }
+    }
+  }
+});
+
+test('legacy faction GET authentication remains compatible with the new POST route', async () => {
+  const { env } = fixture();
+  const fields = { id: ID, first_name: 'Returning', auth_date: now() };
+  const key = new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(BOT_TOKEN)));
+  const proof = { ...fields, hash: hex(await hmac(key, Object.keys(fields).sort().map(name => name + '=' + fields[name]).join('\n'))) };
+  for (const method of ['GET', 'POST']) {
+    const response = await apiWorker.fetch(new Request(API + '/faction/status' + (method === 'GET' ? '?' + new URLSearchParams({ telegram_auth: JSON.stringify(proof) }) : ''), {
+      method, ...(method === 'POST' ? { headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ telegram_auth: proof }) } : {}),
+    }), env);
+    assert.equal(response.status, 200);
+    assert.equal((await response.json()).ok, true);
+  }
+});
+
+test('malformed return URLs are client errors and never create login transactions', async () => {
+  const { env, sqlite } = fixture();
+  for (const returnTo of ['not a URL', 'https://', 'https://[invalid', '/relative-path']) {
+    const response = await handleTelegramWebsiteAuth(new Request(API + '/telegram/website/start?' + new URLSearchParams({ return_to: returnTo })), env);
+    assert.equal(response.status, 400);
+    assert.deepEqual(await response.json(), { error: 'invalid_return_url' });
+    assert.equal(response.headers.get('Location'), null);
+    assert.equal(response.headers.get('Set-Cookie'), null);
+  }
+  assert.equal(sqlite.prepare('SELECT COUNT(*) AS n FROM telegram_login_transactions').get().n, 0);
+});
+
 async function hmac(keyBytes, value) {
   const key = await crypto.subtle.importKey('raw', keyBytes, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
   return new Uint8Array(await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(value)));

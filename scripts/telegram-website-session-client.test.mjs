@@ -17,16 +17,18 @@ function browser({ seed = {}, fetchImpl = async () => Response.json(sessionData(
   const location = { hostname: 'cryptomoonboys.com', origin: 'https://cryptomoonboys.com', pathname: '/games/', search: '',
     assign: value => navigation.push(value), reload: () => navigation.push('reload') };
   const listeners = {};
+  const nodes = new Map();
+  const appendChild = node => { if (node.id) nodes.set(node.id, node); };
   const window = { location, MOONBOYS_API: config, setInterval: fn => timers.push(fn),
     setTimeout: (fn, milliseconds) => { assert.equal(milliseconds, 8000); const id = ++timerId; deadlines.set(id, fn); return id; }, clearTimeout: id => deadlines.delete(id),
     dispatchEvent: event => events.push(event), alert() {} };
-  const document = { readyState, hidden: false, addEventListener(name, fn) { listeners[name] = fn; }, getElementById() { return null; },
-    createElement() { return { appendChild() {}, setAttribute() {}, querySelector() { return { addEventListener() {}, focus() {} }; }, addEventListener() {} }; },
-    head: { appendChild() {} }, body: { appendChild() {} } };
+  const document = { readyState, hidden: false, addEventListener(name, fn) { listeners[name] = fn; }, getElementById(id) { return nodes.get(id) || null; },
+    createElement() { return { style: {}, appendChild, setAttribute() {}, querySelector() { return { addEventListener() {}, focus() {} }; }, addEventListener() {} }; },
+    head: { appendChild }, body: { appendChild } };
   const context = vm.createContext({ window, document, localStorage: { getItem: key => storage.get(key) || null, setItem: (key, value) => storage.set(key, String(value)), removeItem: key => storage.delete(key) },
     fetch: async (...args) => { calls.push(args); return args[0].endsWith('/capabilities') ? typeof capability === 'function' ? capability(...args) : Response.json(capability) : fetchImpl(...args); }, AbortController, CustomEvent: class { constructor(type, options) { this.type = type; this.detail = options.detail; } }, console });
   vm.runInContext(source, context);
-  return { gate: window.MOONBOYS_IDENTITY, storage, calls, events, timers, navigation, document, window, listeners, deadlines };
+  return { gate: window.MOONBOYS_IDENTITY, storage, calls, events, timers, navigation, document, window, listeners, deadlines, context };
 }
 
 test('bootstrap activates verified identity, preserves memory-only proof and avoids a mandatory bot link', async () => {
@@ -194,4 +196,96 @@ test('a stalled logout aborts without clearing identity or claiming confirmed re
   assert.equal(signal.aborted, true);
   assert.equal(b.gate.isTelegramLinked(), true);
   assert.equal(b.navigation.length, 0);
+});
+
+test('faction status sends refreshed website credentials only in a POST body', async () => {
+  const b = browser({ fetchImpl: url => Response.json(url.endsWith('/faction/status') ? { faction: 'graffpunks', faction_xp: 19 } : sessionData()) });
+  await b.gate.ready;
+  vm.runInContext(readFileSync('js/faction-alignment.js', 'utf8'), b.context);
+  const status = await b.window.MOONBOYS_FACTION.loadStatus();
+  assert.equal(status.faction, 'graffpunks');
+  assert.equal(status.telegram_id, ID);
+  const [url, options] = b.calls.at(-1);
+  assert.equal(url, 'https://api.cryptomoonboys.com/faction/status');
+  assert.equal(options.method, 'POST');
+  assert.equal(options.headers['Content-Type'], 'application/json');
+  assert.equal(JSON.parse(options.body).telegram_auth.hash, b.gate.getSignedTelegramAuth().hash);
+  assert.equal(JSON.stringify([...b.storage]).includes('s1_'), false);
+  assert.equal(b.calls.some(([requestUrl]) => requestUrl.includes('s1_') || requestUrl.includes('telegram_auth=')), false);
+});
+
+test('transient renewal failures retain capability and recover without a page reload', async () => {
+  for (const failure of ['network', 'malformed JSON', 'malformed payload', 'missing CSRF', 'missing expiry', 'server error']) {
+    let renewals = 0;
+    const b = browser({ fetchImpl: url => {
+      if (!url.endsWith('/renew')) return Response.json(sessionData());
+      if (++renewals > 1) return Response.json(sessionData('B'));
+      if (failure === 'network') throw new Error('temporary outage');
+      if (failure === 'malformed JSON') return new Response('{', { headers: { 'Content-Type': 'application/json' } });
+      if (failure === 'malformed payload') return Response.json({ ok: true });
+      if (failure === 'missing CSRF') return Response.json({ ...sessionData(), csrf_token: undefined });
+      if (failure === 'missing expiry') { const data = sessionData(); delete data.telegram_auth.expires_at; return Response.json(data); }
+      return Response.json({ error: 'unavailable' }, { status: 503 });
+    } });
+    await b.gate.ready;
+    b.gate.getTelegramAuth().expires_at = Math.floor(Date.now() / 1000) - 1;
+    assert.equal(await b.gate.getFreshTelegramAuth(), null);
+    assert.equal(b.storage.get('moonboys_tg_session_mode'), 'website');
+    const recovered = await b.gate.getFreshTelegramAuth();
+    assert.equal(recovered.hash, 's1_' + 'B'.repeat(43), failure);
+    assert.equal(renewals, 2);
+    assert.equal(b.gate.isTelegramLinked(), true);
+    assert.equal(b.navigation.length, 0);
+  }
+});
+
+test('a failed capability probe can recover an existing cookie session on a later request', async () => {
+  let probes = 0;
+  const b = browser({ seed: { moonboys_tg_session_mode: 'website' }, capability: () => {
+    if (++probes === 1) throw new Error('temporary outage');
+    return Response.json({ ok: true, enabled: true });
+  } });
+  assert.equal(await b.gate.ready, null);
+  assert.equal((await b.gate.getFreshTelegramAuth()).id, ID);
+  assert.equal(probes, 2);
+  assert.equal(b.gate.isTelegramLinked(), true);
+});
+
+test('an expired access credential renews before a protected action decides the account is unlinked', async () => {
+  const b = browser({ fetchImpl: url => Response.json(sessionData(url.endsWith('/renew') ? 'B' : 'A')) });
+  await b.gate.ready;
+  b.document.hidden = true;
+  b.gate.getTelegramAuth().expires_at = Math.floor(Date.now() / 1000) - 1;
+  assert.equal(b.gate.isTelegramLinked(), false);
+  let allowed = 0;
+  await b.gate.requireLinkedAccount(() => allowed++);
+  assert.equal(allowed, 1);
+  assert.equal(b.gate.isTelegramLinked(), true);
+  assert.equal(b.document.getElementById('tg-sync-gate-modal'), null);
+  assert.ok(b.calls.some(([url]) => url.endsWith('/renew')));
+});
+
+test('visible-tab renewal retries after an interrupted refresh and preserves expiry rejection', async () => {
+  let renewals = 0;
+  const b = browser({ fetchImpl: url => {
+    if (!url.endsWith('/renew')) return Response.json(sessionData());
+    if (++renewals === 1) throw new Error('temporary outage');
+    return renewals === 2 ? Response.json(sessionData('B')) : Response.json({ error: 'website_session_expired' }, { status: 401 });
+  } });
+  await b.gate.ready;
+  b.gate.getTelegramAuth().expires_at = Math.floor(Date.now() / 1000) - 1;
+  b.document.hidden = false;
+  b.listeners.visibilitychange();
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(b.gate.isTelegramLinked(), false);
+  b.timers[0]();
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(b.gate.isTelegramLinked(), true);
+  assert.equal(renewals, 2);
+  b.gate.getTelegramAuth().expires_at = Math.floor(Date.now() / 1000) - 1;
+  let allowed = 0;
+  await b.gate.requireLinkedAccount(() => allowed++);
+  assert.equal(allowed, 0);
+  assert.equal(b.gate.isTelegramLinked(), false);
+  assert.equal(b.document.getElementById('tg-sync-gate-modal').style.display, 'flex');
 });

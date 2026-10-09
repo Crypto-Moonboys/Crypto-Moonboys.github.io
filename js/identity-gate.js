@@ -63,6 +63,9 @@
   var websitePending = false;
   var websiteReady = Promise.resolve(null);
   var websiteAvailable = false;
+  var websiteCapabilityKnown = false;
+  var websiteCapabilityPromise = null;
+  var websiteRequestHealthy = false;
 
   function canProbeWebsiteSession() {
     if (typeof document === 'undefined') return false;
@@ -93,15 +96,25 @@
     return Promise.race([request, deadline]).finally(function () { window.clearTimeout(timer); });
   }
 
-  function probeWebsiteSession() {
-    if (!canProbeWebsiteSession() || !getApiBase()) return Promise.resolve(null);
-    return fetchWebsite(getApiBase() + '/telegram/website/capabilities', { credentials: 'omit' }, true)
+  function readWebsiteCapability() {
+    if (websiteCapabilityKnown) return Promise.resolve(websiteAvailable);
+    if (!canProbeWebsiteSession() || !getApiBase()) return Promise.resolve(false);
+    if (websiteCapabilityPromise) return websiteCapabilityPromise;
+    websiteCapabilityPromise = fetchWebsite(getApiBase() + '/telegram/website/capabilities', { credentials: 'omit' }, true)
       .then(function (result) {
         var data = result.data;
-        websiteAvailable = !!(data && data.ok === true && data.enabled === true);
-        if (!websiteAvailable) return null;
-        return restoreWebsiteSession(false);
-      });
+        if (!data || data.ok !== true || typeof data.enabled !== 'boolean') return false;
+        websiteCapabilityKnown = true;
+        websiteAvailable = data.enabled;
+        websiteRequestHealthy = true;
+        return websiteAvailable;
+      }).catch(function () { websiteRequestHealthy = false; return false; })
+      .finally(function () { websiteCapabilityPromise = null; });
+    return websiteCapabilityPromise;
+  }
+
+  function probeWebsiteSession() {
+    return readWebsiteCapability().then(function (enabled) { return enabled ? restoreWebsiteSession(false) : null; });
   }
 
   function clearWebsiteIdentity() {
@@ -115,7 +128,8 @@
   function adoptWebsiteSession(data) {
     var auth = data && data.telegram_auth;
     if (!data || data.ok !== true || !auth || String(data.telegram_id) !== String(auth.id) ||
-      !/^s1_[A-Za-z0-9_-]{43}$/.test(auth.hash || '') || Number(auth.expires_at) <= Date.now() / 1000) return null;
+      !auth.id || typeof data.csrf_token !== 'string' || !data.csrf_token ||
+      !/^s1_[A-Za-z0-9_-]{43}$/.test(auth.hash || '') || !Number.isFinite(Number(auth.expires_at)) || Number(auth.expires_at) <= Date.now() / 1000) return null;
     var identityChanged = !websiteAuth || String(websiteAuth.id) !== String(auth.id);
     websiteAuth = auth;
     websiteCsrf = data.csrf_token;
@@ -134,6 +148,7 @@
   }
 
   function restoreWebsiteSession(renew) {
+    if (!websiteCapabilityKnown) return readWebsiteCapability().then(function (enabled) { return enabled ? restoreWebsiteSession(renew) : null; });
     if (!supportsWebsiteSession() || !getApiBase()) { websitePending = false; return Promise.resolve(null); }
     if (websitePromise) return websitePromise;
     var options = { credentials: 'include', headers: {} };
@@ -146,21 +161,27 @@
       .then(function (result) {
         var response = result.response;
         if (!response.ok) {
+          websiteRequestHealthy = response.status === 401 || response.status === 403;
           if (response.status === 401 || response.status === 403) {
             if (lsGet('moonboys_tg_session_mode') === 'website') clearWebsiteIdentity();
           }
           return null;
         }
-        return adoptWebsiteSession(result.data);
-      }).catch(function () { websiteAvailable = false; return null; })
+        var adopted = adoptWebsiteSession(result.data);
+        websiteRequestHealthy = !!adopted;
+        return adopted;
+      }).catch(function () { websiteRequestHealthy = false; return null; })
       .finally(function () { websitePromise = null; websitePending = false; });
     return websitePromise;
   }
 
   function loginWithTelegram() {
+    var waitedForBootstrap = websitePending;
     return websiteReady.then(function () {
+      if (!waitedForBootstrap && canProbeWebsiteSession() && (!websiteCapabilityKnown || (websiteAvailable && !websiteRequestHealthy))) return probeWebsiteSession();
+    }).then(function () {
       var base = getApiBase();
-      if (!base || !supportsWebsiteSession()) { window.location.assign(getBotUrl()); return; }
+      if (!base || !supportsWebsiteSession() || !websiteRequestHealthy) { window.location.assign(getBotUrl()); return; }
       var returnTo = window.location.origin + window.location.pathname + window.location.search;
       window.location.assign(base + '/telegram/website/start?return_to=' + encodeURIComponent(returnTo));
     });
@@ -772,7 +793,20 @@
    * Optional display/soft mode allows intentionally non-protected display paths to render.
    */
   function requireLinkedAccount(onAllowed, options) {
-    if (websitePending) { websiteReady.then(function () { requireLinkedAccount(onAllowed, options); }); return; }
+    if (websitePending) return websiteReady.then(function () { return requireLinkedAccount(onAllowed, options); });
+    if (websiteAuth || lsGet('moonboys_tg_session_mode') === 'website') {
+      return getFreshTelegramAuth().then(function (auth) {
+        if (auth) return checkLinkedAccount(onAllowed, options);
+        var opts = options || {};
+        if (opts.soft || String(opts.mode || '').toLowerCase() === 'display') { if (typeof onAllowed === 'function') onAllowed(); }
+        else if (lsGet('moonboys_tg_session_mode') === 'website') showStatusVerificationModal();
+        else showSyncGateModal(true);
+      });
+    }
+    return checkLinkedAccount(onAllowed, options);
+  }
+
+  function checkLinkedAccount(onAllowed, options) {
     var opts = options && typeof options === 'object' ? options : {};
     var mode = opts.mode ? String(opts.mode).toLowerCase() : 'protected';
     var softMode = !!opts.soft || mode === 'display';
@@ -799,7 +833,7 @@
       return;
     }
 
-    fetch(base + '/telegram/user/status?telegram_id=' + encodeURIComponent(telegramId))
+    return fetch(base + '/telegram/user/status?telegram_id=' + encodeURIComponent(telegramId))
       .then(function (r) {
         if (!r || !r.ok) throw new Error('status_http_' + (r && r.status ? r.status : '0'));
         return r.json().catch(function (e) {
@@ -1160,9 +1194,12 @@
     // Renew only while the player is using a visible website page.
     if (typeof window.setInterval === 'function') {
       window.setInterval(function () {
-        if (websiteAuth && !document.hidden) restoreWebsiteSession(true);
+        if ((websiteAuth || lsGet('moonboys_tg_session_mode') === 'website') && !document.hidden) restoreWebsiteSession(true);
       }, 240000);
     }
+    document.addEventListener('visibilitychange', function () {
+      if (!document.hidden && (websiteAuth || lsGet('moonboys_tg_session_mode') === 'website')) restoreWebsiteSession(true);
+    });
     document.addEventListener('click', function (event) {
       var target = event.target && event.target.closest && event.target.closest('[data-telegram-login], [data-telegram-logout]');
       if (!target) return;

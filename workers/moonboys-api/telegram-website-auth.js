@@ -144,7 +144,9 @@ export async function handleTelegramWebsiteAuth(request, env, fetchImpl = fetch)
     }
     if (!cfg.enabled) return reply(headers, { error: 'website_login_not_configured' }, 503);
     if (action === 'start' && request.method === 'GET') {
-      const returnUrl = new URL(url.searchParams.get('return_to') || cfg.origins[0] + '/gkniftyheads-incubator.html');
+      let returnUrl;
+      try { returnUrl = new URL(url.searchParams.get('return_to') || cfg.origins[0] + '/gkniftyheads-incubator.html'); }
+      catch { fail('invalid_return_url', 400); }
       if (!cfg.origins.includes(returnUrl.origin) || returnUrl.username || returnUrl.password) fail('invalid_return_url', 400);
       // Never carry browser credentials into the stored return URL.
       returnUrl.hash = '';
