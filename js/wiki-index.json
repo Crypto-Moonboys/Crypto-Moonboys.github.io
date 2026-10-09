@@ -1375,11 +1375,11 @@
       "category": "core",
       "category_priority": 10,
       "has_description": true,
-      "article_word_count": 9067,
+      "article_word_count": 9177,
       "keyword_bag_size": 27,
-      "heading_count": 51,
+      "heading_count": 53,
       "list_count": 1,
-      "internal_link_count": 24,
+      "internal_link_count": 34,
       "paragraph_count": 147,
       "section_count": 48,
       "lore_paragraph_count": 113,
@@ -1514,10 +1514,10 @@
     },
     "link_score": {
       "inbound_count": 44,
-      "outbound_count": 79,
-      "existing_outbound_count": 18,
+      "outbound_count": 80,
+      "existing_outbound_count": 19,
       "suggested_outbound_count": 61,
-      "authority": 97
+      "authority": 97.5
     },
     "brand": null
   },
@@ -2536,11 +2536,11 @@
       "category": "core",
       "category_priority": 10,
       "has_description": true,
-      "article_word_count": 11912,
+      "article_word_count": 11987,
       "keyword_bag_size": 25,
-      "heading_count": 53,
+      "heading_count": 54,
       "list_count": 1,
-      "internal_link_count": 22,
+      "internal_link_count": 28,
       "paragraph_count": 158,
       "section_count": 50,
       "lore_paragraph_count": 52,
@@ -2732,10 +2732,10 @@
     },
     "link_score": {
       "inbound_count": 82,
-      "outbound_count": 77,
-      "existing_outbound_count": 18,
+      "outbound_count": 79,
+      "existing_outbound_count": 20,
       "suggested_outbound_count": 59,
-      "authority": 173
+      "authority": 174
     },
     "brand": {
       "brand_family": "hodl",
@@ -3113,7 +3113,7 @@
         "title": "graffiti nexus crypto moonboys wiki"
       }
     ],
-    "rank_score": 341,
+    "rank_score": 343,
     "rank_signals": {
       "is_canonical": true,
       "alias_count": 1,
@@ -3140,9 +3140,9 @@
       "word_count_points": 50,
       "keyword_bag_points": 31,
       "content_quality_points": 122,
-      "authority_points": 58,
-      "final_rank_score": 341,
-      "authority_graph_points": 34
+      "authority_points": 60,
+      "final_rank_score": 343,
+      "authority_graph_points": 36
     },
     "search_index": {
       "normalized_title": "graffiti nexus crypto moonboys wiki",
@@ -3252,11 +3252,11 @@
       ]
     },
     "link_score": {
-      "inbound_count": 14,
+      "inbound_count": 15,
       "outbound_count": 73,
       "existing_outbound_count": 11,
       "suggested_outbound_count": 62,
-      "authority": 33.5
+      "authority": 35.5
     },
     "brand": null
   },
@@ -3584,11 +3584,11 @@
       ]
     },
     "link_score": {
-      "inbound_count": 210,
+      "inbound_count": 209,
       "outbound_count": 56,
       "existing_outbound_count": 20,
       "suggested_outbound_count": 36,
-      "authority": 430
+      "authority": 428
     },
     "brand": {
       "brand_family": "graffpunks",
@@ -4397,11 +4397,11 @@
       ]
     },
     "link_score": {
-      "inbound_count": 80,
+      "inbound_count": 81,
       "outbound_count": 52,
       "existing_outbound_count": 15,
       "suggested_outbound_count": 37,
-      "authority": 167.5
+      "authority": 169.5
     },
     "brand": null
   },
@@ -4585,9 +4585,9 @@
       "category": "core",
       "category_priority": 10,
       "has_description": true,
-      "article_word_count": 4451,
+      "article_word_count": 4508,
       "keyword_bag_size": 21,
-      "heading_count": 26,
+      "heading_count": 27,
       "list_count": 1,
       "internal_link_count": 24,
       "paragraph_count": 68,
@@ -4995,11 +4995,11 @@
       ]
     },
     "link_score": {
-      "inbound_count": 34,
+      "inbound_count": 35,
       "outbound_count": 34,
       "existing_outbound_count": 12,
       "suggested_outbound_count": 22,
-      "authority": 74
+      "authority": 76
     },
     "brand": null
   },
@@ -5340,11 +5340,11 @@
       ]
     },
     "link_score": {
-      "inbound_count": 34,
+      "inbound_count": 35,
       "outbound_count": 46,
       "existing_outbound_count": 17,
       "suggested_outbound_count": 29,
-      "authority": 76.5
+      "authority": 78.5
     },
     "brand": {
       "brand_family": "hodl",
@@ -6729,11 +6729,11 @@
       ]
     },
     "link_score": {
-      "inbound_count": 33,
+      "inbound_count": 34,
       "outbound_count": 47,
       "existing_outbound_count": 12,
       "suggested_outbound_count": 35,
-      "authority": 72
+      "authority": 74
     },
     "brand": null
   },
@@ -7039,11 +7039,11 @@
       ]
     },
     "link_score": {
-      "inbound_count": 33,
+      "inbound_count": 34,
       "outbound_count": 36,
       "existing_outbound_count": 11,
       "suggested_outbound_count": 25,
-      "authority": 71.5
+      "authority": 73.5
     },
     "brand": null
   },
@@ -7612,11 +7612,11 @@
       ]
     },
     "link_score": {
-      "inbound_count": 63,
+      "inbound_count": 62,
       "outbound_count": 47,
       "existing_outbound_count": 17,
       "suggested_outbound_count": 30,
-      "authority": 134.5
+      "authority": 132.5
     },
     "brand": null
   },
@@ -9890,11 +9890,11 @@
       ]
     },
     "link_score": {
-      "inbound_count": 41,
+      "inbound_count": 40,
       "outbound_count": 25,
       "existing_outbound_count": 8,
       "suggested_outbound_count": 17,
-      "authority": 86
+      "authority": 84
     },
     "brand": null
   },
@@ -17111,132 +17111,6 @@
     "brand": null
   },
   {
-    "title": "Lady-INK",
-    "desc": "Lady-INK, fictional artist of permanent record: her black rucksack, Echo-Ink murals, dream journeys, contested memory and the unfinished future of the walls.",
-    "url": "/wiki/lady-ink.html",
-    "tags": [
-      "lady",
-      "ink",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "characters",
-    "aliases": [
-      {
-        "title": "lady ink crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 290,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "characters",
-      "category_priority": 8,
-      "has_description": true,
-      "article_word_count": 3413,
-      "keyword_bag_size": 24,
-      "heading_count": 26,
-      "list_count": 1,
-      "internal_link_count": 14,
-      "paragraph_count": 46,
-      "section_count": 23,
-      "lore_paragraph_count": 42,
-      "content_quality_score": 105,
-      "authority_score": 24
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 40,
-      "word_count_points": 50,
-      "keyword_bag_points": 24,
-      "content_quality_points": 113,
-      "authority_points": 33,
-      "final_rank_score": 290,
-      "authority_graph_points": 9
-    },
-    "search_index": {
-      "normalized_title": "lady ink crypto moonboys wiki",
-      "tokens": [
-        "lady",
-        "ink",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "lady",
-        "ink",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "fictional",
-        "artist",
-        "of",
-        "permanent",
-        "record",
-        "her",
-        "black",
-        "rucksack",
-        "echo",
-        "murals",
-        "dream",
-        "journeys",
-        "contested",
-        "memory",
-        "and",
-        "the",
-        "unfinished",
-        "future",
-        "walls",
-        "ser",
-        "shard",
-        "primal",
-        "pigments",
-        "war",
-        "vandalized",
-        "node",
-        "ladyink",
-        "index",
-        "neri",
-        "loom",
-        "rain",
-        "copy",
-        "third",
-        "colour",
-        "disagreement",
-        "open",
-        "corner",
-        "mural",
-        "hand",
-        "back",
-        "day",
-        "mind",
-        "sanctuary",
-        "living",
-        "script",
-        "ultima",
-        "tag",
-        "red",
-        "argument",
-        "jealousy",
-        "vanishing",
-        "mark"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 1,
-      "outbound_count": 27,
-      "existing_outbound_count": 13,
-      "suggested_outbound_count": 14,
-      "authority": 8.5
-    },
-    "brand": null
-  },
-  {
     "title": "Snipey 'D-Man' Sirus",
     "desc": "Snipey Sirus is a fictional GraffPUNK scout and Tagtalk legend, known as D-Man and G-Man in differing accounts of Year 3008.",
     "url": "/wiki/snipey-d-man-sirus.html",
@@ -18041,6 +17915,145 @@
       "existing_outbound_count": 10,
       "suggested_outbound_count": 18,
       "authority": 13
+    },
+    "brand": null
+  },
+  {
+    "title": "Lady-INK",
+    "desc": "Lady-INK, fictional artist of permanent record: her black rucksack, Echo-Ink murals, dream journeys, contested memory and the unfinished future of the walls.",
+    "url": "/wiki/lady-ink.html",
+    "tags": [
+      "lady",
+      "ink",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "characters",
+    "aliases": [
+      {
+        "title": "lady ink crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 289,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "characters",
+      "category_priority": 8,
+      "has_description": true,
+      "article_word_count": 3827,
+      "keyword_bag_size": 24,
+      "heading_count": 28,
+      "list_count": 1,
+      "internal_link_count": 14,
+      "paragraph_count": 50,
+      "section_count": 25,
+      "lore_paragraph_count": 46,
+      "content_quality_score": 105,
+      "authority_score": 24
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 40,
+      "word_count_points": 50,
+      "keyword_bag_points": 24,
+      "content_quality_points": 113,
+      "authority_points": 32,
+      "final_rank_score": 289,
+      "authority_graph_points": 8
+    },
+    "search_index": {
+      "normalized_title": "lady ink crypto moonboys wiki",
+      "tokens": [
+        "lady",
+        "ink",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "lady",
+        "ink",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "fictional",
+        "artist",
+        "of",
+        "permanent",
+        "record",
+        "her",
+        "black",
+        "rucksack",
+        "echo",
+        "murals",
+        "dream",
+        "journeys",
+        "contested",
+        "memory",
+        "and",
+        "the",
+        "unfinished",
+        "future",
+        "walls",
+        "crowned",
+        "vandal",
+        "janitor",
+        "luminous",
+        "grid",
+        "hash",
+        "guilds",
+        "sovereign",
+        "union",
+        "anchor",
+        "level",
+        "nine",
+        "whitepaper",
+        "ser",
+        "shard",
+        "primal",
+        "pigments",
+        "war",
+        "vandalized",
+        "node",
+        "ladyink",
+        "index",
+        "neri",
+        "loom",
+        "rain",
+        "copy",
+        "third",
+        "colour",
+        "disagreement",
+        "open",
+        "corner",
+        "mural",
+        "hand",
+        "back",
+        "day",
+        "mind",
+        "sanctuary",
+        "living",
+        "script",
+        "ultima",
+        "tag",
+        "red",
+        "argument",
+        "jealousy",
+        "vanishing",
+        "mark"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 1,
+      "outbound_count": 29,
+      "existing_outbound_count": 12,
+      "suggested_outbound_count": 17,
+      "authority": 8
     },
     "brand": null
   },
@@ -31829,11 +31842,11 @@
       ]
     },
     "link_score": {
-      "inbound_count": 34,
+      "inbound_count": 33,
       "outbound_count": 20,
       "existing_outbound_count": 9,
       "suggested_outbound_count": 11,
-      "authority": 72.5
+      "authority": 70.5
     },
     "brand": {
       "brand_family": "nbg",

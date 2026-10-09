@@ -857,7 +857,7 @@
   },
   "/wiki/bitcoin-kids.html": {
     "outbound_count": 47,
-    "inbound_count": 63,
+    "inbound_count": 62,
     "existing_outbound": [
       "/wiki/alfie-bitcoin-kid-blaze.html",
       "/wiki/alfie-blaze.html",
@@ -937,7 +937,6 @@
       "/wiki/hodl-wars.html",
       "/wiki/ian-harrison.html",
       "/wiki/jodie-zoom-2000.html",
-      "/wiki/lady-ink.html",
       "/wiki/loopfiend.html",
       "/wiki/m1ntr-k1ll.html",
       "/wiki/metropolis.html",
@@ -997,7 +996,7 @@
   },
   "/wiki/bitcoin-x-kids.html": {
     "outbound_count": 47,
-    "inbound_count": 33,
+    "inbound_count": 34,
     "existing_outbound": [
       "/wiki/alfie-blaze.html",
       "/wiki/bitcoin-kids.html",
@@ -1063,6 +1062,7 @@
       "/wiki/hodl-wars.html",
       "/wiki/hodl-x-warriors.html",
       "/wiki/iris-7.html",
+      "/wiki/lady-ink.html",
       "/wiki/satoshi-scroll.html",
       "/wiki/seeding-rights.html",
       "/wiki/the-allcity-bulls.html",
@@ -1438,9 +1438,9 @@
       "/wiki/grit.html",
       "/wiki/grit42.html",
       "/wiki/hex-tagger-prime.html",
+      "/wiki/hodl-wars.html",
       "/wiki/ian-harrison.html",
       "/wiki/jodie-zoom-2000.html",
-      "/wiki/lady-ink.html",
       "/wiki/lfgk.html",
       "/wiki/loopfiend.html",
       "/wiki/m1ntr-k1ll.html",
@@ -17614,7 +17614,7 @@
   },
   "/wiki/graffiti-nexus.html": {
     "outbound_count": 73,
-    "inbound_count": 14,
+    "inbound_count": 15,
     "existing_outbound": [
       "/wiki/block-topia.html",
       "/wiki/crypto-moonboys.html",
@@ -17705,6 +17705,7 @@
       "/wiki/hodl-warriors.html",
       "/wiki/hodl-wars.html",
       "/wiki/hodl-x-warriors.html",
+      "/wiki/sacred-chain.html",
       "/wiki/the-bitcoin-kid-army.html",
       "/wiki/triple-fork-event.html"
     ]
@@ -17927,7 +17928,7 @@
   },
   "/wiki/graffpunks.html": {
     "outbound_count": 56,
-    "inbound_count": 210,
+    "inbound_count": 209,
     "existing_outbound": [
       "/wiki/atomichub-graffpunks-collection.html",
       "/wiki/bitcoin-kid-army.html",
@@ -18167,7 +18168,6 @@
       "/wiki/hodl-x-warriors.html",
       "/wiki/ian-harrison.html",
       "/wiki/jodie-zoom-2000.html",
-      "/wiki/lady-ink.html",
       "/wiki/loopfiend.html",
       "/wiki/m1ntr-k1ll.html",
       "/wiki/metropolis.html",
@@ -18580,7 +18580,7 @@
   },
   "/wiki/hodl-warriors.html": {
     "outbound_count": 46,
-    "inbound_count": 34,
+    "inbound_count": 35,
     "existing_outbound": [
       "/wiki/bitcoin-kid-army.html",
       "/wiki/bitcoin-kids.html",
@@ -18652,6 +18652,7 @@
       "/wiki/hodl-wars.html",
       "/wiki/hodl-x-warriors.html",
       "/wiki/iris-7.html",
+      "/wiki/lady-ink.html",
       "/wiki/midevilpunks.html",
       "/wiki/moon-mission.html",
       "/wiki/null-the-prophet.html",
@@ -18669,13 +18670,14 @@
     ]
   },
   "/wiki/hodl-wars.html": {
-    "outbound_count": 77,
+    "outbound_count": 79,
     "inbound_count": 82,
     "existing_outbound": [
       "/wiki/alfie-bitcoin-kid-blaze.html",
       "/wiki/bitcoin-kids.html",
       "/wiki/bitcoin-x-kids.html",
       "/wiki/block-topia.html",
+      "/wiki/burn-to-earn.html",
       "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-concordance.html",
       "/wiki/first-witness-faction-commentaries.html",
@@ -18687,6 +18689,7 @@
       "/wiki/hodl-warriors.html",
       "/wiki/hodl-x-warriors.html",
       "/wiki/hodlmoonboys-nft-collection.html",
+      "/wiki/null-the-prophet.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/sacred-chain.html",
       "/wiki/the-first-witness.html"
@@ -19227,25 +19230,25 @@
     ]
   },
   "/wiki/lady-ink.html": {
-    "outbound_count": 27,
+    "outbound_count": 29,
     "inbound_count": 1,
     "existing_outbound": [
-      "/wiki/bitcoin-kids.html",
+      "/wiki/bitcoin-x-kids.html",
       "/wiki/block-topia.html",
       "/wiki/bone-idol-ink.html",
-      "/wiki/burn-to-earn.html",
       "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-concordance.html",
       "/wiki/first-witness-master-chronology.html",
       "/wiki/first-witness-symbols-marks-sacred-design.html",
-      "/wiki/graffpunks.html",
+      "/wiki/hodl-warriors.html",
       "/wiki/jodie-zoom-2000.html",
-      "/wiki/nbgx-token.html",
       "/wiki/null-the-prophet.html",
-      "/wiki/punk-token.html"
+      "/wiki/the-princess.html",
+      "/wiki/the-whitewasher.html"
     ],
     "suggested_outbound": [
       "/wiki/aleema-child-of-the-shard.html",
+      "/wiki/bitcoin-kids.html",
       "/wiki/block-node-defenders.html",
       "/wiki/dream-sovereign.html",
       "/wiki/first-witness-digital-inheritance-after-death.html",
@@ -19253,10 +19256,12 @@
       "/wiki/first-witness-sacred-places-walls-pilgrimage.html",
       "/wiki/first-witness-street-kingdoms-reading.html",
       "/wiki/genesis-kernel.html",
+      "/wiki/gkniftyheads-vandal-776147.html",
+      "/wiki/graffiti-kings.html",
+      "/wiki/graffpunks.html",
       "/wiki/great-consensus.html",
-      "/wiki/grit.html",
+      "/wiki/hodl-x-warriors.html",
       "/wiki/house-of-rackinsats.html",
-      "/wiki/nbg-token.html",
       "/wiki/playable-nft-murals.html",
       "/wiki/the-shard-mothers-of-manhattan.html"
     ],
@@ -19803,7 +19808,7 @@
   },
   "/wiki/nbgx-token.html": {
     "outbound_count": 20,
-    "inbound_count": 34,
+    "inbound_count": 33,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
       "/wiki/fgl-token.html",
@@ -19845,7 +19850,6 @@
       "/wiki/hex-tagger-prime.html",
       "/wiki/ian-harrison.html",
       "/wiki/jodie-zoom-2000.html",
-      "/wiki/lady-ink.html",
       "/wiki/loopfiend.html",
       "/wiki/m1ntr-k1ll.html",
       "/wiki/nbg-token.html",
@@ -20116,7 +20120,7 @@
   },
   "/wiki/null-the-prophet.html": {
     "outbound_count": 52,
-    "inbound_count": 80,
+    "inbound_count": 81,
     "existing_outbound": [
       "/wiki/bitcoin-kids.html",
       "/wiki/block-topia.html",
@@ -20198,6 +20202,7 @@
       "/wiki/grit42.html",
       "/wiki/hex-tagger-prime.html",
       "/wiki/hodl-warriors.html",
+      "/wiki/hodl-wars.html",
       "/wiki/hodl-x-warriors.html",
       "/wiki/ian-harrison.html",
       "/wiki/iris-7.html",
@@ -20615,7 +20620,7 @@
   },
   "/wiki/punk-token.html": {
     "outbound_count": 25,
-    "inbound_count": 41,
+    "inbound_count": 40,
     "existing_outbound": [
       "/wiki/block-topia.html",
       "/wiki/crypto-moonboys.html",
@@ -20667,7 +20672,6 @@
       "/wiki/hex-tagger-prime.html",
       "/wiki/ian-harrison.html",
       "/wiki/jodie-zoom-2000.html",
-      "/wiki/lady-ink.html",
       "/wiki/loopfiend.html",
       "/wiki/m1ntr-k1ll.html",
       "/wiki/nbg-token.html",
@@ -21047,7 +21051,7 @@
     "inbound_from": []
   },
   "/wiki/sacred-chain.html": {
-    "outbound_count": 79,
+    "outbound_count": 80,
     "inbound_count": 44,
     "existing_outbound": [
       "/wiki/block-topia.html",
@@ -21062,6 +21066,7 @@
       "/wiki/first-witness-null-erasure.html",
       "/wiki/first-witness-sacred-fork.html",
       "/wiki/genesis-kernel.html",
+      "/wiki/graffiti-nexus.html",
       "/wiki/hard-fork-games.html",
       "/wiki/null-the-prophet.html",
       "/wiki/street-kingdoms.html",
@@ -23517,7 +23522,7 @@
   },
   "/wiki/the-princess.html": {
     "outbound_count": 34,
-    "inbound_count": 34,
+    "inbound_count": 35,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-great-concord-2030.html",
@@ -23564,6 +23569,7 @@
       "/wiki/fomo-plague.html",
       "/wiki/house-of-rackinsats.html",
       "/wiki/iris-7.html",
+      "/wiki/lady-ink.html",
       "/wiki/satoshi-scroll.html",
       "/wiki/the-allcity-bulls.html",
       "/wiki/the-aztec-raiders.html",
@@ -23852,7 +23858,7 @@
   },
   "/wiki/the-whitewasher.html": {
     "outbound_count": 36,
-    "inbound_count": 33,
+    "inbound_count": 34,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
       "/wiki/m1ntr-k1ll.html",
@@ -23897,6 +23903,7 @@
       "/wiki/bear-market-siege.html",
       "/wiki/billy-the-goat-kid.html",
       "/wiki/fomo-plague.html",
+      "/wiki/lady-ink.html",
       "/wiki/m1ntr-k1ll.html",
       "/wiki/null-the-prophet.html",
       "/wiki/samaelexe.html",

@@ -215,4 +215,16 @@ assert.ok(generated.includes('Curated NFT wording.'), 'existing NFT card descrip
 assert.match(generated, /class="wiki-rabbit-group" data-related-group="Related Wiki Pages"/, 'existing group classes are preserved');
 assert.equal(fs.readFileSync(path.join(root, 'wiki/gkniftyheads-nova-shadow-shredder-784419.html'), 'utf8'), curatedNft, 'NFT article is byte-identical after a scoped lore rebuild');
 
+// Inferred relations may omit existing curated navigation entirely. The group
+// and its nested layout/disclosure state must survive, not just shared titles.
+const curatedRoutes = '<details open class="wiki-rabbit-group curated-history" data-related-group="Curated History"><summary>History</summary><div class="wiki-rabbit-grid" role="list"><div><a class="wiki-rabbit-card" href="/wiki/paper-hands.html">Local history</a></div></div></details>';
+const categoryCards = '<div class="wiki-rabbit-group" data-related-group="Related Categories"><h3>Related Categories</h3><div class="wiki-rabbit-grid" role="list"><a class="wiki-rabbit-card" href="/categories/lore.html"><span class="wiki-rabbit-card-title">Lore</span></a></div></div>';
+const existingPage = fs.readFileSync(path.join(root, 'wiki/fallback-only.html'), 'utf8');
+write('wiki/fallback-only.html', existingPage.replace('      </section>\n<!-- RELATED_WIKI_PATHS:END -->', `${curatedRoutes}${categoryCards}\n      </section>\n<!-- RELATED_WIKI_PATHS:END -->`));
+runGenerateRelatedWikiPaths(root, { pages: ['fallback-only'] });
+const curatedResult = relatedSection(fs.readFileSync(path.join(root, 'wiki/fallback-only.html'), 'utf8'));
+assert.ok(curatedResult.includes(curatedRoutes), 'unmatched curated navigation remains byte-identical, with nested divs and open details');
+assert.match(curatedResult, /data-related-group="Related Categories">[\s\S]*?<div class="wiki-rabbit-grid" role="list">[\s\S]*?<a class="wiki-rabbit-card"/, 'existing category card grid does not become a chip grid');
+assert.equal(runGenerateRelatedWikiPaths(root, { pages: ['fallback-only'] }).written, 0, 'curated group preservation is stable on repeated generation');
+
 console.log('relationship-hints-related-wiki-paths.test.mjs passed');

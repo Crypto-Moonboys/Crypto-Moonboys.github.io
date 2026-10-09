@@ -14046,6 +14046,7 @@
       "/wiki/bitcoin-kids.html",
       "/wiki/bitcoin-x-kids.html",
       "/wiki/block-topia.html",
+      "/wiki/burn-to-earn.html",
       "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-concordance.html",
       "/wiki/first-witness-faction-commentaries.html",
@@ -14057,6 +14058,7 @@
       "/wiki/hodl-warriors.html",
       "/wiki/hodl-x-warriors.html",
       "/wiki/hodlmoonboys-nft-collection.html",
+      "/wiki/null-the-prophet.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/sacred-chain.html",
       "/wiki/the-first-witness.html"
@@ -14442,22 +14444,22 @@
   },
   "/wiki/lady-ink.html": {
     "existing_links": [
-      "/wiki/bitcoin-kids.html",
+      "/wiki/bitcoin-x-kids.html",
       "/wiki/block-topia.html",
       "/wiki/bone-idol-ink.html",
-      "/wiki/burn-to-earn.html",
       "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-concordance.html",
       "/wiki/first-witness-master-chronology.html",
       "/wiki/first-witness-symbols-marks-sacred-design.html",
-      "/wiki/graffpunks.html",
+      "/wiki/hodl-warriors.html",
       "/wiki/jodie-zoom-2000.html",
-      "/wiki/nbgx-token.html",
       "/wiki/null-the-prophet.html",
-      "/wiki/punk-token.html"
+      "/wiki/the-princess.html",
+      "/wiki/the-whitewasher.html"
     ],
     "suggested_links": [
       "/wiki/aleema-child-of-the-shard.html",
+      "/wiki/bitcoin-kids.html",
       "/wiki/block-node-defenders.html",
       "/wiki/dream-sovereign.html",
       "/wiki/first-witness-digital-inheritance-after-death.html",
@@ -14465,10 +14467,12 @@
       "/wiki/first-witness-sacred-places-walls-pilgrimage.html",
       "/wiki/first-witness-street-kingdoms-reading.html",
       "/wiki/genesis-kernel.html",
+      "/wiki/gkniftyheads-vandal-776147.html",
+      "/wiki/graffiti-kings.html",
+      "/wiki/graffpunks.html",
       "/wiki/great-consensus.html",
-      "/wiki/grit.html",
+      "/wiki/hodl-x-warriors.html",
       "/wiki/house-of-rackinsats.html",
-      "/wiki/nbg-token.html",
       "/wiki/playable-nft-murals.html",
       "/wiki/the-shard-mothers-of-manhattan.html"
     ]
@@ -15695,6 +15699,7 @@
       "/wiki/first-witness-null-erasure.html",
       "/wiki/first-witness-sacred-fork.html",
       "/wiki/genesis-kernel.html",
+      "/wiki/graffiti-nexus.html",
       "/wiki/hard-fork-games.html",
       "/wiki/null-the-prophet.html",
       "/wiki/street-kingdoms.html",

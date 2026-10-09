@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-09T05:28:37.013Z",
-  "verified_at": "2026-10-09T05:28:37.013Z",
+  "generated_at": "2026-10-09T07:01:29.687Z",
+  "verified_at": "2026-10-09T07:01:29.687Z",
   "lite": true,
   "nodes": [
     {
@@ -140,20 +140,20 @@
       "authority_score": 17
     },
     {
+      "id": "/wiki/graffiti-nexus.html",
+      "title": "Graffiti Nexus",
+      "url": "/wiki/graffiti-nexus.html",
+      "category": "core",
+      "rank_score": 343,
+      "authority_score": 24
+    },
+    {
       "id": "/wiki/first-witness-leadership-councils-succession.html",
       "title": "Leadership, Councils and Succession",
       "url": "/wiki/first-witness-leadership-councils-succession.html",
       "category": "core",
       "rank_score": 341,
       "authority_score": 14
-    },
-    {
-      "id": "/wiki/graffiti-nexus.html",
-      "title": "Graffiti Nexus",
-      "url": "/wiki/graffiti-nexus.html",
-      "category": "core",
-      "rank_score": 341,
-      "authority_score": 24
     },
     {
       "id": "/wiki/graffpunks.html",
@@ -798,6 +798,12 @@
       "weight": 1
     },
     {
+      "source": "/wiki/sacred-chain.html",
+      "target": "/wiki/hard-fork-games.html",
+      "score": 105,
+      "weight": 1
+    },
+    {
       "source": "/wiki/bitcoin-kids.html",
       "target": "/wiki/bitcoin-x-kids.html",
       "score": 104,
@@ -811,8 +817,8 @@
     },
     {
       "source": "/wiki/sacred-chain.html",
-      "target": "/wiki/hard-fork-games.html",
-      "score": 102,
+      "target": "/wiki/hodl-wars.html",
+      "score": 100,
       "weight": 1
     },
     {
@@ -830,6 +836,12 @@
     {
       "source": "/wiki/hodl-warriors.html",
       "target": "/wiki/crypto-moonboys.html",
+      "score": 97,
+      "weight": 0.97
+    },
+    {
+      "source": "/wiki/the-bitcoin-kid-army.html",
+      "target": "/wiki/hodl-wars.html",
       "score": 97,
       "weight": 0.97
     },
@@ -856,18 +868,6 @@
       "target": "/wiki/gkniftyheads.html",
       "score": 95,
       "weight": 0.95
-    },
-    {
-      "source": "/wiki/genesis-kernel.html",
-      "target": "/wiki/hodl-wars.html",
-      "score": 94,
-      "weight": 0.94
-    },
-    {
-      "source": "/wiki/sacred-chain.html",
-      "target": "/wiki/hodl-wars.html",
-      "score": 94,
-      "weight": 0.94
     },
     {
       "source": "/wiki/burn-to-earn.html",

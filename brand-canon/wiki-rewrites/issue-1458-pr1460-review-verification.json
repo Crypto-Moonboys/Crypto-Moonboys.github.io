@@ -162,10 +162,202 @@
     "deployed": false
   },
   "subsequent_research": {
-    "fully_compared": 80,
-    "remaining": 14,
+    "fully_compared": 94,
+    "remaining": 0,
     "receipt": "brand-canon/wiki-rewrites/issue-1458-audit.json",
-    "public_lore_changed": false,
-    "note": "This subsequent documentation checkpoint is not the research count tested at correction commit3150ac95."
+    "public_lore_changed": true,
+    "owning_article_audits": 98,
+    "five_major_approval_packets": "brand-canon/wiki-rewrites/issue-1458-proposals.md",
+    "note": "Final continuation94/94; historical3150 correction receipt remains61/94 and its exact Actions unchanged. Lady gains four locally attributed paragraphs; no new article or major decision implemented."
+  },
+  "final_review_validation": {
+    "date": "2026-10-09",
+    "scope": "Final94-source continuation plus restored curated navigation; original3150 test/GitHub evidence above remains historical.",
+    "full_npm_test": {
+      "exit_code": 0,
+      "domains": [
+        "arcade",
+        "worker-api",
+        "wiki",
+        "wax",
+        "visual"
+      ],
+      "log_sha256": "b775be937dd55fc504cf5f55066b92e98a1136972f51ad27ebeab31b74c5a0f6",
+      "note": "All five domains completed. The four curated-navigation restoration and guard strengthening added during this run receive the subsequent complete Wiki run and current browser/structural acceptance below."
+    },
+    "subsequent_complete_wiki": {
+      "exit_code": 0,
+      "log_sha256": "e00acb340397415137183279cfc55b0186e5f2cc065ee1b2a2303ebbd37bc2fb",
+      "canon_guard": "424pages/94sources/89decisions; full archive verifier and all permanent no-drift checks pass",
+      "includes": "Final curated-navigation/group-grid/disclosure guard and inline-style protection tests."
+    },
+    "article_browser": {
+      "desktop_mobile_views": 18,
+      "no_javascript_views": 9,
+      "search_autocomplete_queries": 12,
+      "script_errors": 0,
+      "horizontal_overflow": 0
+    },
+    "citation_browser": {
+      "desktop_mobile_views": 12,
+      "no_javascript_views": 6,
+      "account_gate": true,
+      "fixture_score_read": "Five original routes pass local score fixture; Lady additionally preserves panel/buttons/account gate with no live API mutation."
+    },
+    "structure": {
+      "base": "cc856157f5bd23e1b7ae3ed032af44c6b725c524",
+      "pages": [
+        {
+          "path": "wiki/alfie-bitcoin-kid-blaze.html",
+          "citation_panels_before": 1,
+          "citation_panels_after": 1,
+          "changed_existing_group_layouts": [],
+          "related_owner_ancestry_preserved": true
+        },
+        {
+          "path": "wiki/gkniftyheads.html",
+          "citation_panels_before": 0,
+          "citation_panels_after": 0,
+          "changed_existing_group_layouts": [],
+          "related_owner_ancestry_preserved": true
+        },
+        {
+          "path": "wiki/hodl-wars.html",
+          "citation_panels_before": 0,
+          "citation_panels_after": 0,
+          "changed_existing_group_layouts": [],
+          "related_owner_ancestry_preserved": true
+        },
+        {
+          "path": "wiki/lady-ink.html",
+          "citation_panels_before": 1,
+          "citation_panels_after": 1,
+          "changed_existing_group_layouts": [],
+          "related_owner_ancestry_preserved": true
+        },
+        {
+          "path": "wiki/maidstone-base.html",
+          "citation_panels_before": 1,
+          "citation_panels_after": 1,
+          "changed_existing_group_layouts": [],
+          "related_owner_ancestry_preserved": true
+        },
+        {
+          "path": "wiki/queen-sarah-p-fly.html",
+          "citation_panels_before": 1,
+          "citation_panels_after": 1,
+          "changed_existing_group_layouts": [],
+          "related_owner_ancestry_preserved": true
+        },
+        {
+          "path": "wiki/sacred-chain.html",
+          "citation_panels_before": 0,
+          "citation_panels_after": 0,
+          "changed_existing_group_layouts": [],
+          "related_owner_ancestry_preserved": true
+        },
+        {
+          "path": "wiki/the-squeaky-pinks.html",
+          "citation_panels_before": 1,
+          "citation_panels_after": 1,
+          "changed_existing_group_layouts": [],
+          "related_owner_ancestry_preserved": true
+        },
+        {
+          "path": "wiki/whale-lords.html",
+          "citation_panels_before": 1,
+          "citation_panels_after": 1,
+          "changed_existing_group_layouts": [],
+          "related_owner_ancestry_preserved": true
+        }
+      ],
+      "all_existing_group_tags_classes_grid_roles_and_owner_ancestry_preserved": true
+    },
+    "restored_curated_groups": {
+      "wiki/gkniftyheads.html": [
+        "Related Categories"
+      ],
+      "wiki/hodl-wars.html": [
+        "Related War Pages"
+      ],
+      "wiki/sacred-chain.html": [
+        "Core History and First Witness",
+        "Wider World and Site Maps"
+      ]
+    },
+    "preservation": {
+      "base": "cc856157f5bd23e1b7ae3ed032af44c6b725c524",
+      "changed_articles": 9,
+      "preserved_paragraphs": 785,
+      "preserved_canonical_ids": 263,
+      "internal_links_checked": 573,
+      "broken": [],
+      "per_page": [
+        {
+          "path": "wiki/alfie-bitcoin-kid-blaze.html",
+          "preserved_paragraphs": 108,
+          "preserved_canonical_ids": 34
+        },
+        {
+          "path": "wiki/gkniftyheads.html",
+          "preserved_paragraphs": 64,
+          "preserved_canonical_ids": 20
+        },
+        {
+          "path": "wiki/hodl-wars.html",
+          "preserved_paragraphs": 155,
+          "preserved_canonical_ids": 47
+        },
+        {
+          "path": "wiki/lady-ink.html",
+          "preserved_paragraphs": 44,
+          "preserved_canonical_ids": 21
+        },
+        {
+          "path": "wiki/maidstone-base.html",
+          "preserved_paragraphs": 31,
+          "preserved_canonical_ids": 13
+        },
+        {
+          "path": "wiki/queen-sarah-p-fly.html",
+          "preserved_paragraphs": 112,
+          "preserved_canonical_ids": 37
+        },
+        {
+          "path": "wiki/sacred-chain.html",
+          "preserved_paragraphs": 141,
+          "preserved_canonical_ids": 46
+        },
+        {
+          "path": "wiki/the-squeaky-pinks.html",
+          "preserved_paragraphs": 71,
+          "preserved_canonical_ids": 24
+        },
+        {
+          "path": "wiki/whale-lords.html",
+          "preserved_paragraphs": 59,
+          "preserved_canonical_ids": 21
+        }
+      ],
+      "protected_scripture_locks_and_story_bibles_unchanged": true
+    },
+    "nft_pages_byte_equal": 145,
+    "functional_shells_preserved": 9,
+    "original_register_fields_preserved": 94,
+    "graph": {
+      "indexed_wiki_pages": 417,
+      "nodes": 427,
+      "edges": 2083,
+      "mobile_nodes": 75
+    },
+    "publishing_parity": "11 outputs byte-identical after repeated generation; contentstate424current",
+    "pages_artifact": "/tmp/gk-phase2/research94-pages-artifact; nine HTML and migration JS/CSS byte-equal; no deployment",
+    "final_head_github_actions": "Verify after push; publish exact head/run/job results in PR1460 conversation. No self-applied maintainer label or claim of green CI.",
+    "final_source_hashes": {
+      "scripts/generate-related-wiki-paths.mjs": "d9ee88bca76493eb5bd3bbb34df8f6774362e6998ec414d6fee3314020bf902d",
+      "scripts/wiki-lore-preservation-check.mjs": "0f261ae23ff93364f920fcb4db28b6915bd05aa5e6fd83a8d0919471b2dc40e8",
+      "scripts/relationship-hints-related-wiki-paths.test.mjs": "632702e278d056b16d6d6fcbdd3d6fada784e6755f36e061288a27d57a6ea809",
+      "scripts/wiki-lore-preservation-check.test.mjs": "989a9ea816eaeccdb22334c8eb27a9f4495f9df5f3281039475a910edb90bb14"
+    }
   }
 }

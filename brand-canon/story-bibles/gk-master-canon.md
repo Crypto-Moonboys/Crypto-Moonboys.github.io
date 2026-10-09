@@ -79,8 +79,8 @@ Thirty-four named readings are current convergence; six positions are pending
 source-supported reconciliation and GK approval. Nine live Battle Chamber
 options remain operationally separate. The following descriptions are the
 published commentary's reading, not a full transfer of each original faction
-biography. Each culture's modern article and raw sources still need full
-history/relationship audit. No temporary escort, emergency muster, title or
+biography. All original sources and the current named culture owners have
+now been compared; new membership institutions still need GK approval. No temporary escort, emergency muster, title or
 administrative office fills a slot simply because it has a name.
 
 | Current named reading | Existing characteristic reading / tension |
@@ -356,7 +356,7 @@ Phase 2 starts from merged main `cc856157f5bd23e1b7ae3ed032af44c6b725c524`,
 whose tree exactly matches PR #1459's corrected head. Eighteen further sources
 have complete section/claim comparison: W18, w85, w28, w29, w83, w88, W9,
 w74, w75, w76, w77, w79, w89, w81, w90, w91, W11 and W16. The cumulative
-count is **80/94**, with **14 comparisons still open**. W19/W15/w25/M16/W5/
+count is **94/94**, with no source comparison still open. W19/W15/w25/M16/W5/
 w69/W20 retain their full reading receipts; their connected comparisons are
 now complete in the review continuation below.
 
@@ -735,7 +735,7 @@ their actual costs or permanent disagreements.
 
 ## PR1460 review continuation — 9 October2026
 
-The recorded comparison count is80/94;14 remain: w21, w23, w24, W4, w66, w67, w72, w73, w78, W8, w80, w82, w86, w87.
+Historical955fa4ea5 checkpoint:80/94;14 then remained: w21, w23, w24, W4, w66, w67, w72, w73, w78, W8, w80, w82, w86, w87.
 Nineteen additional source comparisons close all earlier fully read pending originals.
 The existing audit records every substantive disposition and ten fresh owning
 article readings; all five major decisions remain proposed. No public lore,
@@ -743,3 +743,38 @@ NFT descriptions or accepted ending is changed by this research checkpoint.
 Restored citation UI and permanent functional-preservation checks are verified
 on correction commit3150ac95; its exact-head Wiki/Graph checks retain the
 maintainer prose-approval hold. See the progress ledger for the complete receipt.
+
+### Detailed future recovery and remaining comparison checkpoint
+
+Historical90-source checkpoint: four sources then remained (w72/w73/w82/w86).
+This batch compares w66, w80, w87, w21, w23, w24, w78, W8, W4, w67. Exact reuse of
+previously read paragraphs is recorded for w80/w24/w78; source identities and
+bytes are preserved. Lady’s existing article now recovers the Crowned Vandal,
+Janitor and Luminous endpoint with local w21 attribution, and a separate W20
+technical interpretation. No settled ending, immunity, real artist upload or
+NFT reward is adopted; all existing adult stories remain. Spirit Borns receives
+a full current owning reading, without a prose change. Five major choices
+remain proposed; no merge, deployment or issue closure.
+
+### Detailed future recovery and remaining comparison checkpoint
+
+Final comparison count:94/94; no source remains pending.
+This batch compares w72, w73, w82, w86. Exact reuse of
+previously read paragraphs is recorded for w80/w24/w78; source identities and
+bytes are preserved. Lady’s existing article now recovers the Crowned Vandal,
+Janitor and Luminous endpoint with local w21 attribution, and a separate W20
+technical interpretation. No settled ending, immunity, real artist upload or
+NFT reward is adopted; all existing adult stories remain. Spirit Borns receives
+a full current owning reading, without a prose change. Five major choices
+remain proposed; no merge, deployment or issue closure.
+
+### Final94-source approval boundary
+
+All94 original witnesses are fully compared (43 inherited,51 Phase2).
+The audit records98 distinct owning article audits (96 full/two focused).
+No unread source or pending connected comparison remains. Five exact-evidence
+GK packets and affected-file maps are in issue-1458-proposals.md and the
+reconciliation decisions. Comparison does not approve those choices, certify
+old external products or require publishing every game proposal. Approved
+modern stories, scripture, NFT descriptions and functions remain preserved.
+Issue1458 stays open; PR1460 remains draft/on hold with no merge or deployment.

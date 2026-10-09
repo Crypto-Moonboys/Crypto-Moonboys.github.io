@@ -9,11 +9,26 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const canonical = html => html.match(/<!-- CANONICAL_CONTENT:BEGIN -->[\s\S]*?<!-- CANONICAL_CONTENT:END -->/g)?.join('') || '';
 const normalize = html => html.replace(/\s+/g, ' ').trim();
 
+function relatedLayouts(html) {
+  const section = html.match(/<!-- RELATED_WIKI_PATHS:BEGIN -->[\s\S]*?<!-- RELATED_WIKI_PATHS:END -->/)?.[0] || '';
+  const starts = [...section.matchAll(/<(div|details)\b[^>]*\bdata-related-group="([^"]+)"[^>]*>/g)];
+  return new Map(starts.map((match, index) => {
+    const block = section.slice(match.index, starts[index + 1]?.index);
+    const grid = block.match(/<(div|ul)\b[^>]*class="([^"]*\bwiki-rabbit-(?:chip-)?grid\b[^"]*)"[^>]*>/);
+    return [match[2], {
+      tag: match[1],
+      className: match[0].match(/class="([^"]*)"/)?.[1],
+      open: /\sopen(?:\s|=|>)/.test(match[0]),
+      grid: grid ? [grid[1], grid[2], grid[0].match(/role="([^"]*)"/)?.[1]] : null,
+    }];
+  }));
+}
+
 export function functionalShell(html) {
   const body = html.match(/<body\b[\s\S]*?<\/body>/i)?.[0];
   if (!body) throw new Error('Missing article body');
   const head = html.match(/<head\b[\s\S]*?<\/head>/i)?.[0] || '';
-  const dependencies = [...head.matchAll(/<script\b[\s\S]*?<\/script>|<link\b[^>]*>/gi)]
+  const dependencies = [...head.matchAll(/<script\b[\s\S]*?<\/script>|<style\b[\s\S]*?<\/style>|<link\b[^>]*>/gi)]
     .map(match => match[0]).filter(tag => !/type=["']application\/ld\+json["']/i.test(tag));
   return normalize(dependencies.join('\n') + body
     .replace(/<!-- CANONICAL_CONTENT:BEGIN -->[\s\S]*?<!-- CANONICAL_CONTENT:END -->/g, '')
@@ -25,6 +40,14 @@ export function preservationFailures(before, after, { loreBatch = true } = {}) {
   const failures = [];
   if (canonical(before) && functionalShell(before) !== functionalShell(after)) {
     failures.push('Functional article body changed outside canonical prose/related paths');
+  }
+  if (canonical(before)) {
+    const next = relatedLayouts(after);
+    for (const [title, layout] of relatedLayouts(before)) {
+      if (JSON.stringify(next.get(title)) !== JSON.stringify(layout)) {
+        failures.push(`Existing related navigation group removed or restructured: ${title}`);
+      }
+    }
   }
   if (loreBatch && /data-page-type=["']nft_(?:template|collection)["']/i.test(before)) {
     const article = html => normalize(html.match(/<article\b[\s\S]*?<\/article>/i)?.[0] || '');

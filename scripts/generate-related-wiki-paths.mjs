@@ -396,15 +396,34 @@ function groupKind(title) {
   return 'context';
 }
 
+function existingRelatedGroups(html) {
+  const groups = [];
+  for (const match of html.matchAll(/<(div|details)\b[^>]*\bdata-related-group="([^"]*)"[^>]*>/g)) {
+    if (!/class="[^"]*\bwiki-rabbit-group\b/.test(match[0])) continue;
+    const tags = new RegExp(`<\\/?${match[1]}\\b[^>]*>`, 'g');
+    tags.lastIndex = match.index;
+    let depth = 0;
+    for (let tag; (tag = tags.exec(html));) {
+      depth += tag[0].startsWith('</') ? -1 : 1;
+      if (depth === 0) {
+        groups.push({ title: match[2], tag: match[1], opening: match[0], html: html.slice(match.index, tags.lastIndex) });
+        break;
+      }
+    }
+  }
+  return groups;
+}
+
 function renderGroup(title, links, previousHtml = '') {
   if (!links.length) return '';
   const kind = groupKind(title);
-  const previousGroup = [...previousHtml.matchAll(/<(div|details)\b[^>]*class="([^"]*\bwiki-rabbit-group\b[^"]*)"[^>]*data-related-group="([^"]*)"/g)]
-    .find(match => match[3] === escapeHtml(title));
-  const groupClass = previousGroup?.[2] || `wiki-rabbit-group wiki-rabbit-group--${kind}`;
-  const listClass = kind === 'categories' ? 'wiki-rabbit-chip-grid' : 'wiki-rabbit-grid';
+  const previousGroup = existingRelatedGroups(previousHtml).find(group => group.title === escapeHtml(title));
+  const previousGrid = previousGroup?.html.match(/class="([^"]*\bwiki-rabbit-(?:chip-)?grid\b[^"]*)"/);
+  const listClass = previousGrid?.[1] || (kind === 'categories' ? 'wiki-rabbit-chip-grid' : 'wiki-rabbit-grid');
+  const chips = /\bwiki-rabbit-chip-grid\b/.test(listClass);
+  const groupClass = `wiki-rabbit-group wiki-rabbit-group--${kind}`;
   const items = links.map((link) => {
-    if (kind === 'categories') {
+    if (chips) {
       return `            <a class="wiki-rabbit-chip" href="${escapeHtml(link.url)}" role="listitem">${escapeHtml(link.title)}</a>`;
     }
     const previousCard = [...previousHtml.matchAll(/<a\b[^>]*href="([^"]*)"[^>]*>([\s\S]*?)<\/a>/g)]
@@ -421,15 +440,15 @@ function renderGroup(title, links, previousHtml = '') {
               ${desc}
             </a>`;
   }).join('\n');
-  if (previousGroup ? previousGroup[1] === 'details' : kind === 'nft-siblings') {
-    return `        <details class="${groupClass}" data-related-group="${escapeHtml(title)}">
+  if (previousGroup ? previousGroup.tag === 'details' : kind === 'nft-siblings') {
+    return `        ${previousGroup?.opening || `<details class="${groupClass}" data-related-group="${escapeHtml(title)}">`}
           <summary>${escapeHtml(title)}</summary>
           <div class="${listClass}" role="list">
 ${items}
           </div>
         </details>`;
   }
-  return `        <div class="${groupClass}" data-related-group="${escapeHtml(title)}">
+  return `        ${previousGroup?.opening || `<div class="${groupClass}" data-related-group="${escapeHtml(title)}">`}
           <h3>${escapeHtml(title)}</h3>
           <div class="${listClass}" role="list">
 ${items}
@@ -437,11 +456,19 @@ ${items}
         </div>`;
 }
 
-function renderRelatedSection(groups, previousHtml = '') {
-  const renderedGroups = groups
+function renderRelatedSection(groups, previousHtml = '', preserveUnmatchedGroups = false) {
+  const rendered = groups
     .filter((group) => group.links.length)
-    .map((group) => renderGroup(group.title, group.links, previousHtml))
-    .join('\n');
+    .map((group) => renderGroup(group.title, group.links, previousHtml));
+  if (preserveUnmatchedGroups) {
+    const titles = new Set(groups.filter(group => group.links.length).map(group => escapeHtml(group.title)));
+    // Curated navigation is not owned by an inferred relationship refresh.
+    // Retain complete nested blocks, including custom layout and disclosure state.
+    for (const group of existingRelatedGroups(previousHtml)) {
+      if (!titles.has(group.title)) rendered.push(`        ${group.html}`);
+    }
+  }
+  const renderedGroups = rendered.join('\n');
 
   return `${BEGIN}
       <section class="wiki-section related-wiki-paths" data-related-wiki-paths="true" aria-labelledby="related-wiki-paths-title">
@@ -847,7 +874,7 @@ export function runGenerateRelatedWikiPaths(root = ROOT, { pages = null } = {}) 
     }
     const groups = groupsForPage(context, url, html, kind);
     const previousSection = html.match(/<!-- RELATED_WIKI_PATHS:BEGIN -->[\s\S]*?<!-- RELATED_WIKI_PATHS:END -->/)?.[0] || '';
-    const section = renderRelatedSection(groups, previousSection);
+    const section = renderRelatedSection(groups, previousSection, !kind.isNftTemplate && !kind.isNftCollection);
     let nextHtml = insertSection(html, section);
     if (url === CORE_PROJECT_URL) nextHtml = updateCryptoMoonboysCategoryTags(nextHtml);
     nextHtml = upsertCategoryTags(nextHtml, context, url, kind);
