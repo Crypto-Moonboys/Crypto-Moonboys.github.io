@@ -217,13 +217,16 @@ assert.equal(fs.readFileSync(path.join(root, 'wiki/gkniftyheads-nova-shadow-shre
 
 // Inferred relations may omit existing curated navigation entirely. The group
 // and its nested layout/disclosure state must survive, not just shared titles.
-const curatedRoutes = '<details open class="wiki-rabbit-group curated-history" data-related-group="Curated History"><summary>History</summary><div class="wiki-rabbit-grid" role="list"><div><a class="wiki-rabbit-card" href="/wiki/paper-hands.html">Local history</a></div></div></details>';
+const curatedRoutes = '<details open class="wiki-rabbit-group curated-history" data-related-group="Curated History"><summary>History</summary><div class="wiki-rabbit-grid" role="list"><div><a class="wiki-rabbit-card" href="/wiki/paper-hands.html">Local history</a><a class="wiki-rabbit-card" href="/timeline.html">Timeline</a><a class="wiki-rabbit-card" href="/graph.html?mode=hero">World map</a></div></div></details>';
 const categoryCards = '<div class="wiki-rabbit-group" data-related-group="Related Categories"><h3>Related Categories</h3><div class="wiki-rabbit-grid" role="list"><a class="wiki-rabbit-card" href="/categories/lore.html"><span class="wiki-rabbit-card-title">Lore</span></a></div></div>';
 const existingPage = fs.readFileSync(path.join(root, 'wiki/fallback-only.html'), 'utf8');
 write('wiki/fallback-only.html', existingPage.replace('      </section>\n<!-- RELATED_WIKI_PATHS:END -->', `${curatedRoutes}${categoryCards}\n      </section>\n<!-- RELATED_WIKI_PATHS:END -->`));
 runGenerateRelatedWikiPaths(root, { pages: ['fallback-only'] });
 const curatedResult = relatedSection(fs.readFileSync(path.join(root, 'wiki/fallback-only.html'), 'utf8'));
 assert.ok(curatedResult.includes(curatedRoutes), 'unmatched curated navigation remains byte-identical, with nested divs and open details');
+assert.equal(hrefs(curatedResult).filter(url => url === '/wiki/paper-hands.html').length, 1, 'curated destinations take precedence over inferred links');
+assert.equal(hrefs(curatedResult).filter(url => url === '/timeline.html').length, 1, 'curated timeline is not duplicated in project links');
+assert.equal(hrefs(curatedResult).filter(url => url === '/graph.html?mode=hero').length, 1, 'curated query-string destination is not duplicated in project links');
 assert.match(curatedResult, /data-related-group="Related Categories">[\s\S]*?<div class="wiki-rabbit-grid" role="list">[\s\S]*?<a class="wiki-rabbit-card"/, 'existing category card grid does not become a chip grid');
 assert.equal(runGenerateRelatedWikiPaths(root, { pages: ['fallback-only'] }).written, 0, 'curated group preservation is stable on repeated generation');
 

@@ -359,5 +359,26 @@
       "scripts/relationship-hints-related-wiki-paths.test.mjs": "632702e278d056b16d6d6fcbdd3d6fada784e6755f36e061288a27d57a6ea809",
       "scripts/wiki-lore-preservation-check.test.mjs": "989a9ea816eaeccdb22334c8eb27a9f4495f9df5f3281039475a910edb90bb14"
     }
+  },
+  "release_review_followup": {
+    "date": "2026-10-09",
+    "approved_research_head": "1e8031e14818ea1f38feb9fb73beb2f7c37ed5b7",
+    "review_comment": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/pull/1460#discussion_r4227857438",
+    "scope": "Reserve retained curated-group URLs before inferred navigation rendering; remove redundant generated links only.",
+    "removed_duplicate_occurrences": {
+      "wiki/sacred-chain.html": 6,
+      "wiki/hodl-wars.html": 2,
+      "wiki/gkniftyheads.html": 3
+    },
+    "all_unique_destinations_preserved": true,
+    "three_pages_outside_related_blocks_byte_equal_to_approved_head": true,
+    "canon_locks_and_all_five_proposed_decisions_unchanged": true,
+    "regression_test": "passed; retained nested/open group byte-identical; paper-hands, timeline and query-string graph URLs each occur once; second generation writes zero",
+    "complete_wiki_suite": {
+      "exit_code": 0,
+      "log_sha256": "ae023356d665fb5d32b7d950fd575c00864ebd94370fcbfa3aeac4381bd6c4ee"
+    },
+    "publishing_surfaces_regenerated": true,
+    "final_head_actions": "Publish exact follow-up head and complete job results in the PR conversation after push; do not merge before all latest applicable checks pass."
   }
 }

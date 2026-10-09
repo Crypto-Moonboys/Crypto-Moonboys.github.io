@@ -457,16 +457,21 @@ ${items}
 }
 
 function renderRelatedSection(groups, previousHtml = '', preserveUnmatchedGroups = false) {
+  const titles = new Set(groups.filter(group => group.links.length).map(group => escapeHtml(group.title)));
+  const preservedGroups = preserveUnmatchedGroups
+    ? existingRelatedGroups(previousHtml).filter(group => !titles.has(group.title))
+    : [];
+  const preservedUrls = new Set(preservedGroups.flatMap(group =>
+    [...group.html.matchAll(/\bhref=(["'])(.*?)\1/gi)].map(match => match[2])));
   const rendered = groups
+    .map(group => ({ ...group, links: group.links.filter(link => !preservedUrls.has(escapeHtml(link.url))) }))
     .filter((group) => group.links.length)
     .map((group) => renderGroup(group.title, group.links, previousHtml));
-  if (preserveUnmatchedGroups) {
-    const titles = new Set(groups.filter(group => group.links.length).map(group => escapeHtml(group.title)));
-    // Curated navigation is not owned by an inferred relationship refresh.
-    // Retain complete nested blocks, including custom layout and disclosure state.
-    for (const group of existingRelatedGroups(previousHtml)) {
-      if (!titles.has(group.title)) rendered.push(`        ${group.html}`);
-    }
+  // Curated navigation is not owned by an inferred relationship refresh.
+  // Reserve its destinations before rendering inferred links, retaining complete
+  // nested blocks, custom layout and disclosure state without duplicate routes.
+  for (const group of preservedGroups) {
+    rendered.push(`        ${group.html}`);
   }
   const renderedGroups = rendered.join('\n');
 
