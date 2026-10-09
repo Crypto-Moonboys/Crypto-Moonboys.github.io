@@ -3,6 +3,8 @@ import { spawnSync } from 'node:child_process';
 const GROUPS = {
   wiki: [
     ['npm', 'run', 'test:canon'],
+    ['node', 'scripts/wiki-lore-preservation-check.test.mjs'],
+    ['node', 'scripts/wiki-lore-preservation-check.mjs'],
     ['node', 'scripts/resolve-canon-prose-approval.test.mjs'],
     ['node', 'scripts/audit-related-wiki-paths.mjs'],
     ['node', 'scripts/wiki-navigation-backfill-rendering.test.mjs'],
@@ -218,6 +220,7 @@ const GROUPS = {
     ['node', 'scripts/wax-collection-page-fallback.test.mjs'],
   ],
   visual: [
+    ['node', 'scripts/wiki-citation-preservation-browser.test.mjs'],
     ['node', 'scripts/moonpet-guide-browser.test.mjs'],
     ['node', 'scripts/moonpet-radio-browser.test.mjs'],
     ['node', 'scripts/moonpet-player-loop-browser.test.mjs'],

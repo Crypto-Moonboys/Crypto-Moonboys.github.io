@@ -180,4 +180,54 @@ assert.throws(() => runGenerateRelatedWikiPaths(root, { pages: [] }));
 assert.throws(() => runGenerateRelatedWikiPaths(root, { pages: ['../fallback-only'] }));
 assert.equal(fs.readFileSync(path.join(root, 'wiki/fallback-only.html'), 'utf8'), beforeInvalid, 'invalid selections fail before writing');
 
+// Existing generated paths may sit inside an ownership wrapper. Updating them
+// must not relocate that block or consume neighbouring engagement components.
+const functionalTail = `<!-- CITATION_VOTE_PANEL:BEGIN -->
+<section class="citation-vote-panel" data-citation-vote-panel="true"><h2>Citation Credibility</h2><div><span class="cite-vote" data-page-id="fallback-only" data-cite-id="citation-panel"></span></div></section>
+<!-- CITATION_VOTE_PANEL:END -->
+<section data-citation-vote-panel="true"><span class="cite-vote" data-cite-id="unmarked"></span></section>
+<script src="/js/engagement.js"></script>`;
+const protectedHtml = beforeInvalid.replace('<!-- RELATED_WIKI_PATHS:BEGIN -->', '<!-- SAM:BEGIN:related -->\n<!-- RELATED_WIKI_PATHS:BEGIN -->')
+  .replace('<!-- RELATED_WIKI_PATHS:END -->', '<!-- RELATED_WIKI_PATHS:END -->\n<!-- SAM:END:related -->')
+  .replace('<div class="wiki-comments"', `${functionalTail}\n<div class="wiki-comments"`);
+write('wiki/fallback-only.html', protectedHtml);
+runGenerateRelatedWikiPaths(root, { pages: ['fallback-only'] });
+const preserved = fs.readFileSync(path.join(root, 'wiki/fallback-only.html'), 'utf8');
+const outsideRelated = html => html.replace(/<!-- RELATED_WIKI_PATHS:BEGIN -->[\s\S]*?<!-- RELATED_WIKI_PATHS:END -->/, 'RELATED');
+assert.equal(outsideRelated(preserved), outsideRelated(protectedHtml), 'nested wrappers, both citation panels, comments, categories and scripts remain byte-identical');
+assert.equal(runGenerateRelatedWikiPaths(root, { pages: ['fallback-only'] }).written, 0, 'repeated generation does not accumulate whitespace or move components');
+
+const curatedNft = nftHtml.replace(/<span class="wiki-rabbit-card-desc">[\s\S]*?<\/span>/, '<span class="wiki-rabbit-card-desc">Curated collection description; preserve its wording.</span>');
+write('wiki/gkniftyheads-nova-shadow-shredder-784419.html', curatedNft);
+// This NFT's sibling card uses a registered NFT URL and a deliberately older
+// description than the search index; a scoped lore rebuild must retain it.
+const nftCard = '<a class="wiki-rabbit-card" href="/wiki/gkniftyheads-nova-shadow-shredder-784419.html" role="listitem"><span class="wiki-rabbit-card-title">NFT</span><span class="wiki-rabbit-card-desc">Curated NFT wording.</span></a>';
+const oldPaths = `<!-- RELATED_WIKI_PATHS:BEGIN --><section><div class="wiki-rabbit-group" data-related-group="Related Wiki Pages">${nftCard}</div></section><!-- RELATED_WIKI_PATHS:END -->`;
+const updatedIndex = JSON.parse(fs.readFileSync(path.join(root, 'js/wiki-index.json'), 'utf8'));
+const nftEntry = updatedIndex.find(entry => entry.url === '/wiki/gkniftyheads-nova-shadow-shredder-784419.html');
+nftEntry.tags = ['lore'];
+nftEntry.rank_score = 10000;
+writeJson('js/wiki-index.json', updatedIndex);
+write('wiki/fallback-only.html', protectedHtml.replace(/<!-- RELATED_WIKI_PATHS:BEGIN -->[\s\S]*?<!-- RELATED_WIKI_PATHS:END -->/, oldPaths));
+runGenerateRelatedWikiPaths(root, { pages: ['fallback-only'] });
+const generated = relatedSection(fs.readFileSync(path.join(root, 'wiki/fallback-only.html'), 'utf8'));
+assert.ok(generated.includes('Curated NFT wording.'), 'existing NFT card descriptions survive lore regeneration');
+assert.match(generated, /class="wiki-rabbit-group" data-related-group="Related Wiki Pages"/, 'existing group classes are preserved');
+assert.equal(fs.readFileSync(path.join(root, 'wiki/gkniftyheads-nova-shadow-shredder-784419.html'), 'utf8'), curatedNft, 'NFT article is byte-identical after a scoped lore rebuild');
+
+// Inferred relations may omit existing curated navigation entirely. The group
+// and its nested layout/disclosure state must survive, not just shared titles.
+const curatedRoutes = '<details open class="wiki-rabbit-group curated-history" data-related-group="Curated History"><summary>History</summary><div class="wiki-rabbit-grid" role="list"><div><a class="wiki-rabbit-card" href="/wiki/paper-hands.html">Local history</a><a class="wiki-rabbit-card" href="/timeline.html">Timeline</a><a class="wiki-rabbit-card" href="/graph.html?mode=hero">World map</a></div></div></details>';
+const categoryCards = '<div class="wiki-rabbit-group" data-related-group="Related Categories"><h3>Related Categories</h3><div class="wiki-rabbit-grid" role="list"><a class="wiki-rabbit-card" href="/categories/lore.html"><span class="wiki-rabbit-card-title">Lore</span></a></div></div>';
+const existingPage = fs.readFileSync(path.join(root, 'wiki/fallback-only.html'), 'utf8');
+write('wiki/fallback-only.html', existingPage.replace('      </section>\n<!-- RELATED_WIKI_PATHS:END -->', `${curatedRoutes}${categoryCards}\n      </section>\n<!-- RELATED_WIKI_PATHS:END -->`));
+runGenerateRelatedWikiPaths(root, { pages: ['fallback-only'] });
+const curatedResult = relatedSection(fs.readFileSync(path.join(root, 'wiki/fallback-only.html'), 'utf8'));
+assert.ok(curatedResult.includes(curatedRoutes), 'unmatched curated navigation remains byte-identical, with nested divs and open details');
+assert.equal(hrefs(curatedResult).filter(url => url === '/wiki/paper-hands.html').length, 1, 'curated destinations take precedence over inferred links');
+assert.equal(hrefs(curatedResult).filter(url => url === '/timeline.html').length, 1, 'curated timeline is not duplicated in project links');
+assert.equal(hrefs(curatedResult).filter(url => url === '/graph.html?mode=hero').length, 1, 'curated query-string destination is not duplicated in project links');
+assert.match(curatedResult, /data-related-group="Related Categories">[\s\S]*?<div class="wiki-rabbit-grid" role="list">[\s\S]*?<a class="wiki-rabbit-card"/, 'existing category card grid does not become a chip grid');
+assert.equal(runGenerateRelatedWikiPaths(root, { pages: ['fallback-only'] }).written, 0, 'curated group preservation is stable on repeated generation');
+
 console.log('relationship-hints-related-wiki-paths.test.mjs passed');

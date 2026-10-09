@@ -1,194 +1,567 @@
-# Issue #1458 — concrete canon decisions for GK review
+# Issue #1458 — five complete evidence packets for GK approval
 
-8 October 2026. These are proposals, not publication approval. Source reading
-and downstream auditing remain incomplete where stated. Durable decision IDs,
-old/new accounts and affected paths are in `../reconciliation-decisions.json`.
+9 October2026. **94/94 original sources fully compared; five major decisions remain proposed.** PR1460 is draft/on hold and Issue1458 stays open. Ordinary research/prose authority is not major-canon or release approval. No proposed date, slot, identity or ending has been applied.
 
-## Dates: retain 2880 and by 2930, with a reason
+Evidence paragraphs are nonempty decoded blank-line blocks, numbered from1 in each immutable original. Quotes are exact substrings; full source SHA256 values follow each witness. The audit retains complete section/scene dispositions and exact shared-paragraph maps. All98 current owning audits are separately scoped; no whole424-page fresh semantic audit is claimed.
 
-`GK-1458-TRIPLE-FORK`: M16's 2198 and w92's 2588 compete with the current 2880
-catastrophe. W15's opening itself supports a catastrophe followed by the by-2930
-secure-region condition and the 3008 saga. Recommend retaining 2880 because it
-preserves that causal sequence. An earlier named failure should be added only
-if actual scenes establish a distinct event, not to make every number true.
-Pending: read every dated passage and dependent character lifespan before GK
-approves the definitive historical correction. Update chronology, concordance,
-Triple Fork, Block Topia, Rune and all matching source-derived references
-together. Do not edit original source bytes.
+Each map names primary owners and every current canonical article found by the stated dependent-claim pattern. These are review/propagation targets for a future approved change, not a claim every target needs prose alteration. Original Books, protected modern stories, raw NFT descriptions and website functions remain preserved. Maps must be refreshed if approval selects a different alternative.
 
-`GK-1458-REGIONAL-COLLAPSE`: retain by 2930 for the catastrophe-linked loss of
-secure regions. A 2765 condition cannot be caused by a 2880 event. Investigate
-whether its source actually describes an independent earlier contraction before
-giving it one. A date alone is insufficient evidence for a second collapse.
+## GK-1458-TRIPLE-FORK — World Chain catastrophe: retain 2880
 
-### Full w70/w92 evidence now read
+Retain 2880 as the common World Chain Triple Fork anchor. Keep2198/2588 and the2963 game-collapse locally attributed alternatives; do not invent another identical catastrophe to make every date true.
 
-w70’s complete body explicitly places the Triple Fork in2880 and the loss of
-secure regions by2930; its introductory2765 line contradicts that sequence.
-w92’s complete Signal Cleave account explicitly makes OMNI-CORE’s lunar defeat
-and i-Fork the2588 World Chain rupture. It is a rival origin, not source proof
-of a separate identical catastrophe. These readings strengthen the current
-2880/by2930 recommendation without approving it as a definitive GK correction.
-The three-decade city-building claim supplies no reliable inauguration year.
-Other dated sources and supporting lifespan/chronology dependencies remain open.
+**Alternatives:** Adopt2198: would relocate the shared collapse and dependent lifespans/settlement sequence. Adopt2588: would adopt the OMNI-CORE/i-Fork rupture as shared history and relocate the same dependencies.
 
-## Agent SAM: complete eight-part decision
+**Exact evidence:**
 
-`GK-1458-SAM-ORDER` now follows complete W12 and W13 readings. The earlier
-simple-flashback recommendation is withdrawn: Parts 5 and 8 explicitly describe
-an across-time bridge, while Parts 3–8 repeatedly depend on the uploaded SAM.
-The bridge is source material, not an invention made to repair a heading.
+- `w70.txt` paragraph13: “In 2880, the World Chain suffered a catastrophic Triple Fork Event. The result was a complete collapse of consensus — three conflicting chains emerged, each claiming to be the “true” version of history, currency, and identity. Every citizen’s data was duplicated, falsified, or erased. Global economies imploded within hours.” — SHA256 `783217e96e078a911ea97a27d2e1cab7df2130b95464c5e7cdf7fee9cd3e5998`.
 
-**Recommended calendar, awaiting specific GK approval:** keep the repeated
-nineteen-year-old **2036** origin; displace the later civil sequence by one
-decade while preserving its intervals:
+- `W15.txt` paragraph3: “In 2880, the World Chain suffered a catastrophic Triple Fork Event.” — SHA256 `c1292efd91ba68119c6f9e8a6a8e192b7d37342f2391876d80eb678eff8112cd`.
 
-| Event | Original W12 location/date | Proposed canonical date |
-| --- | --- | --- |
-| Adoption into the surviving House | Parts 1/4/5 compress a teenage rescue into Street War memory | After the 2007–2009 fighting; exact year open |
-| Upload and first digital raids | Parts 1–3, 2036 | 2036 |
-| Preparatory family council | Part 4, late 2029 | Late 2039 |
-| Coercive Stabilisation / Reset | Parts 3–6, 2030 | 2040 |
-| First bridge work | Part 5, 2031; work grows through 2031–2035 | 2041; growth through 2041–2045 |
-| Denise, Tracey and Forge taken | Part 6, early 2032 | Early 2042 |
-| Final local strike and bridge | Part 8, 2035, three years after capture | 2045 |
+- `M16.txt` paragraph21: “The Collapse (2198)
+TRIPLE FORK EVENT — World Chain splits into 3 conflicting realities” — SHA256 `9653208dc10e8365efe2dc983df86cd73351d2379950b7b1ba52c04baac965f2`.
 
-This is a deliberate editorial correction, **not a newly discovered date**.
-The one-decade displacement preserves the 2036 origin found repeatedly in the
-first three parts and later callbacks, the council-before-Reset relation, the
-following bridge work and the three-year vanishing-to-climax interval. It also
-avoids making SAM a teenager before a birth implied by nineteen in 2036. W13's
-1972/1980 sister births leave living adult household members at the proposed
-capture. Adoption must be later than the original Street War, not a participation
-in it. Exact birth month, adoption day and an older supernatural lifespan are
-not inferred.
+- `w92.txt` paragraph23: “In 2588, the final corporate AI — OMNI-CORE — was struck down by an unknown GraffPUNK tag during a lunar server relay.
+The tag’s name? “The i-Fork.”” — SHA256 `7ec5c1322accab707b8035d7470310e37c521f89b510ccb63a19508472e3917b`.
 
-A competing economical edit is to move the upload to **2026** and retain the
-2029–2035 later calendar. That changes the repeatedly stated origin and all
-2036 callbacks; it still needs the adoption repair. It is an explicit alternative
-for GK, not a second accepted timeline. A literal retrocausal reading would
-require accepting the source's time-spanning personhood and causal loops as
-world mechanics; the existing common chronology does not approve that merely
-because a bridge is described. No replacement year is currently public canon.
+- `w92.txt` paragraph24: “In one pulse, the World Chain shattered into three irreconcilable chains.
+Reality fractured.
+Identity fractured.
+Value fractured.” — SHA256 `7ec5c1322accab707b8035d7470310e37c521f89b510ccb63a19508472e3917b`.
 
-**Separate ontology decision:** retain the extraordinary bridge as a source
-claim and retain the family's recognition of the returned SAM speaker. Do not
-publish a universal soul-upload law, guaranteed immortality or restoration of
-the three missing people. A personal guardian and an inherited memorial can
-matter without certifying every assertion made about the machine. W12 Part 1's
-empty roof competes with Part 2's bodily recovery; the body-down reading retains
-the concrete taser consequence. Part 7's missing footage competes with its
-broadcast of detailed footage: an image of an accusation is not independent
-camera evidence. These limits are implemented in the owning articles.
+**Preservation and identity consequences:** Keep2030 Concord, later undated Sacred Fork and three distinct chains. Retaining an existing anchor does not authenticate all source dating or erase variant passages.
 
-**Family decision already clarified by source scope:** W13 names Denise and
-Tracey as sisters, Papa Des as their father; W12 names Forge as Denise's husband.
-w33 supplies a different divine genealogy. Keep that sect theology distinct;
-no Forge/Etherstan merge or literal mother/daughter correction is approved.
-This source-specific clarification does not identify the unnamed Princess.
+**Primary owner edits/decisions, if approved:** `wiki/first-witness-master-chronology.html`, `wiki/first-witness-concordance.html`, `wiki/triple-fork-event.html`, `wiki/block-topia.html`, `wiki/rune-tag.html`, `wiki/alfie-bitcoin-kid-blaze.html`, `wiki/queen-sarah-p-fly.html`, `wiki/gkniftyheads.html`, `wiki/sacred-chain.html`, `brand-canon/story-bibles/gk-master-canon.md`, `brand-canon/story-bibles/w81-continuity-companion-20261008.md`, `brand-canon/wiki-rewrites/issue-1458-proposals.md`, `brand-canon/reconciliation-decisions.json`.
 
-### The newly read W5 alternatives
+**Dependent claim audit map:** pattern `2880|2198|2588|Triple Fork|Datapocalypse|Great Unravelling`; 115 current canonical articles:
 
-All 1,335 W5 paragraphs and 20 tomes are now read. Tome 1 repeats 2036; Tome 5 and
-Tomes 10/15/20 place a nineteen-year-old SAM on a voluntary steel slab in 2880.
-Tome 15 brings Papa Des to that ceremony despite W13's post-Street War death.
-Sarah's2066 human experiment also follows the supposed earlier digital origin.
-Tome 5's2900–3000 PaintWars contradict its 2200–2300 war passages. Accepting the
-2880 SAM origin would therefore require relocating the entire twentieth-century
-household, defining their lifespans and replacing the Neural Rack chase with a
-different death scene. Moving one number cannot reconcile that version.
+- `wiki/agent-sam.html`
 
-**Recommendation remains 2036 for the specific W12 guardian origin.** Keep the
-Flesh Fade as a disputed anniversary telling and W5's2880 household ceremony as
-its imagined re-founding, without inventing a second verified upload or the
-physical survival of all original relatives. This is an editorial interpretation
-proposed to GK, not a recovered narrator explanation. It preserves the concrete
-W12 chronology repair while retaining W5's pain, family presence and cultural
-inheritance. The existing source-attributed sections now contain both accounts.
+- `wiki/aleema-child-of-the-shard.html`
 
-W5 Tome 19 reveals its retiring Architect as HyroSAM. Keep that singular
-revelation within the telling; **do not identify every GKniftyHEADS Architect with
-Samuel Blake**. W5's Forge Master echo of Darren Cullen does not establish that
-W12's Jermaine Forge Harrington is the real artist or the same fictional person.
-W5's Sarah/SAM partnership and Jodie-as-Moongirl Echo Mother must still be compared
-with their complete modern biographies before a shared relationship is chosen.
-Neither these names nor the final party certifies rescue of W12's missing three.
+- `wiki/alfie-bitcoin-kid-blaze.html`
 
-**Ripple map if GK approves the calendar:** update the dated narrator sequence
-in Agent SAM and House of Rackinsats; add the accepted event sequence to the
-master chronology and concordance; update the SAM decision, master bible and
-continuity companion; update incoming Croydon/Princess/Consensus descriptions
-of its status; regenerate indexes, graphs and sitemap. Preserve Fifth Carbon's
-actual damaged **2036/2030** copy and its consequences: an approved catalogue
-correction must not rewrite what Marlo, Bex or the household received. Preserve
-all eight original W12 parts byte-for-byte outside publication.
+- `wiki/ava-chen.html`
 
-## Final Fork: one continuing world, specific recommendation
+- `wiki/battlemech-blast.html`
 
-`GK-1458-FINAL-FORK-CONTINUITY` follows full W15, w25 and M16 source reading,
-and full reading of all nine current First Witness Books. Remaining character,
-faction and supporting-chapter comparison is still open. This is a specific
-recommended world rule for GK review, not an implemented final battle.
+- `wiki/bear-market-siege.html`
 
-**Recommend one materially continuous world:** the current 3008 conflict and
-its existing personal histories remain real within the fiction. Do not adopt
-W15's heat-dead external universe, universal voluntary upload and fourteen
-million restarts as the actual history of every person. Do not adopt w25's
-universal escape, permanent benevolence and centuries of total peace as an
-already completed future. Retain their extraordinary encounters and personal
-choices as narrated visions whose universal explanations can be contested.
-Do not invent an additional cosmic reset to make both literal endings true.
+- `wiki/billy-the-goat-kid.html`
 
-The eventual Final Fork should resolve a particular existential threat and
-redistribute the capacity to preserve witness; it should not undo death,
-restoration failure, injury, debt, abuse or refusal. Children must retain a
-right to answer differently from a liberator. Emergency alliance must permit
-separation afterward. No final sovereign inherits the authority to decide
-every future person's memory or consent. Its exact date, casualties, Sarah's
-fate and named victors remain open until the remaining scenes support them.
+- `wiki/bit-cap-5000.html`
 
-**Evidence:** W15 repeatedly returns its triad to the opening after claiming
-liberation; its three Originals simultaneously remember and wake without
-memory. w25 declares final victory repeatedly through 3018–3058, then ends at
-Parts 50/55/60/65/70/75 and repeats 66–75. Its last NULL shard remains after
-earlier total dissolutions. These conflicts do not supply independent physical
-epochs. M16's 3030 ending is an editorial prospective timeline, not a narrated
-completed scene. Book I requires competing accounts and visible correction;
-Book VI requires graves, debts and history to survive a fork; Book VIII limits
-emergency unity; Book IX denies a final word for unborn minds. Approved modern
-stories supply concrete continuing people and irreversible consequences.
+- `wiki/bitcoin-kid-army.html`
 
-**Alternative:** accept literal universal upload/reset as actual physics.
-That would require a separate, explicit world-ontology retcon and a complete
-account of how bodily outside life, missing persons, unrestored fragments and
-the two incompatible terminal worlds survive it. It cannot be inferred from
-ordinary prose approval or resolved by deleting the modern scenes.
+- `wiki/bitcoin-kids.html`
 
-**Third ending now compared:** W5 Tomes 16–20 complete a Soul Fork/Convergence,
-Cross-Synergy, universal Wing Fork and Architect retirement. HODL/Optimisation
-layers fuse, everyone becomes family and token/resin/ink powers become permanent.
-Tome 19 identifies its Architect as SAM; its universal welcome removes dissent
-that the present world has not resolved. Retain this rich festival/flight future
-as a source vision. The recommendation does not turn its promotional miracles
-into physical world law, compel every survivor's consent or override either
-serial's contradictory ending. Full Sarah/Jodie/Alfie/NULL comparisons remain
-necessary before any fate is called settled.
+- `wiki/bitcoin-x-kids.html`
 
-**Downstream approval map:** master bible and continuity companion; chronology
-and concordance; Block Topia, Sarah, NULL, Alfie and Jodie; Elder, Iris, Aleema,
-Dream Sovereign and the later dedicated W15 cast recovery; HODL/War histories
-and all future-ending references discovered in remaining sources. Keep the
-nine Book texts unchanged. Reclassify any contradictory narrator assertions
-with exact receipts, preserve their source wording and dramatic stakes, and
-regenerate all affected discovery surfaces together. Full downstream audit is
-required before this recommendation is called implemented.
+- `wiki/block-node-defenders.html`
 
-## The six remaining Forty positions — source-supported membership
+- `wiki/block-topia.html`
 
-`GK-1458-FORTY`: all 34 current named readings stay in the published register.
-Full W5/w68/w69/M16 readings now support a **concrete six-name working proposal**,
-subject to the remaining source/biography comparison and specific GK approval.
-This is a proposed continuation of culture, not a recovered uncontested roll.
+- `wiki/bone-idol-ink.html`
+
+- `wiki/burn-to-earn.html`
+
+- `wiki/canvas-clash.html`
+
+- `wiki/charlie-buster.html`
+
+- `wiki/croydon-tower-blocks.html`
+
+- `wiki/crypto-moonboys.html`
+
+- `wiki/darren-cullen.html`
+
+- `wiki/dragan-volkov.html`
+
+- `wiki/dream-sovereign.html`
+
+- `wiki/elder-codex-7.html`
+
+- `wiki/fomo-plague.html`
+
+- `wiki/forkborn-collective.html`
+
+- `wiki/forklord-you.html`
+
+- `wiki/forksplit.html`
+
+- `wiki/games4punks-telegram.html`
+
+- `wiki/gang-signs.html`
+
+- `wiki/genesis-kernel.html`
+
+- `wiki/genesis-spray-drop.html`
+
+- `wiki/genesis-spray.html`
+
+- `wiki/gk.html`
+
+- `wiki/gkniftyheads.html`
+
+- `wiki/graffiti-kings.html`
+
+- `wiki/graffiti-queens-in-decentraland.html`
+
+- `wiki/graffpunks-24-7-radio.html`
+
+- `wiki/graffpunks-ecosystem.html`
+
+- `wiki/graffpunks.html`
+
+- `wiki/grit.html`
+
+- `wiki/grit42.html`
+
+- `wiki/hard-fork-games.html`
+
+- `wiki/harrison-rift.html`
+
+- `wiki/head-tags.html`
+
+- `wiki/hex-tagger-prime.html`
+
+- `wiki/hodl-warriors.html`
+
+- `wiki/hodl-wars.html`
+
+- `wiki/house-of-rackinsats.html`
+
+- `wiki/ian-harrison.html`
+
+- `wiki/iris-7.html`
+
+- `wiki/jodie-zoom-2000.html`
+
+- `wiki/lady-ink.html`
+
+- `wiki/lfgk.html`
+
+- `wiki/loopfiend.html`
+
+- `wiki/m1ntr-k1ll.html`
+
+- `wiki/maidstone-base.html`
+
+- `wiki/metaverse-battles.html`
+
+- `wiki/metropolis.html`
+
+- `wiki/midevilpunks.html`
+
+- `wiki/moon-mission.html`
+
+- `wiki/null-the-prophet.html`
+
+- `wiki/patchwork.html`
+
+- `wiki/phygital-prints.html`
+
+- `wiki/punk-token.html`
+
+- `wiki/pyralith.html`
+
+- `wiki/queen-sarah-p-fly.html`
+
+- `wiki/quell.html`
+
+- `wiki/rave-relics.html`
+
+- `wiki/rug-pull-wars.html`
+
+- `wiki/rune-tag.html`
+
+- `wiki/sacred-chain.html`
+
+- `wiki/samaelexe.html`
+
+- `wiki/satorebel.html`
+
+- `wiki/satoshi-scroll.html`
+
+- `wiki/seeding-rights.html`
+
+- `wiki/sneakar.html`
+
+- `wiki/snipey-d-man-sirus.html`
+
+- `wiki/spirit-borns.html`
+
+- `wiki/spraycode-writcode-mechanics.html`
+
+- `wiki/squeaky-pinks-enforcers.html`
+
+- `wiki/stikfamwars.html`
+
+- `wiki/street-kingdoms.html`
+
+- `wiki/the-allcity-bulls.html`
+
+- `wiki/the-aztec-raiders.html`
+
+- `wiki/the-bally-boys.html`
+
+- `wiki/the-bitcoin-kid-army.html`
+
+- `wiki/the-blockchain-furies.html`
+
+- `wiki/the-blockstars.html`
+
+- `wiki/the-chain-scribes.html`
+
+- `wiki/the-code-alchemists.html`
+
+- `wiki/the-crypto-stoned-boys.html`
+
+- `wiki/the-ducky-boys.html`
+
+- `wiki/the-evm-punks.html`
+
+- `wiki/the-finance-guild.html`
+
+- `wiki/the-gasless-ghosts.html`
+
+- `wiki/the-great-dip.html`
+
+- `wiki/the-hard-fork-rockers.html`
+
+- `wiki/the-high-hats.html`
+
+- `wiki/the-information-mercenaries.html`
+
+- `wiki/the-moonlords.html`
+
+- `wiki/the-nice-easy-bois.html`
+
+- `wiki/the-nomad-bears.html`
+
+- `wiki/the-og-pixel-saints.html`
+
+- `wiki/the-princess.html`
+
+- `wiki/the-rugpull-miners.html`
+
+- `wiki/the-salvagers.html`
+
+- `wiki/the-shard-mothers-of-manhattan.html`
+
+- `wiki/the-squeaky-pinks.html`
+
+- `wiki/the-tuskon-ogs.html`
+
+- `wiki/the-whitewasher.html`
+
+- `wiki/thorne-the-architect.html`
+
+- `wiki/triple-fork-event.html`
+
+- `wiki/wagmi-prophecy.html`
+
+- `wiki/whale-lords.html`
+
+- `wiki/xrp-kids.html`
+
+**Regenerate after approved edits:** `js/wiki-index.json`, `js/link-map.json`, `js/link-graph.json`, `js/entity-graph.json`, `js/graph-data.json`, `js/entity-graph-lite.json`, `sitemap.xml`, `brand-canon/wiki-content-state.json`.
+
+A maintainer must provide explicit decision evidence before implementation. No merge/deployment or issue closure is authorised.
+
+## GK-1458-REGIONAL-COLLAPSE — Secure regions: retain by 2930
+
+Retain fewer than a dozen secure regions by2930 as the condition after the2880 catastrophe. Record2765 as w70 introductory conflict. No scene independently establishes a separate2765 contraction.
+
+**Alternatives:** Adopt2765 as an independent earlier contraction only with separately approved causal history and evidence; current witnesses do not supply it. Move the common catastrophe earlier as part of the separate Triple Fork decision, with all settlement/lifespan dependencies revised together.
+
+**Exact evidence:**
+
+- `w70.txt` paragraph2: “THE HARD FORK – Rise of the HODL Warriors ⚡️⚡️⚡️
+By 2765, fewer than a dozen secure regions remained on Earth. One of them was a fortress buried in the eastern borough of a dying city: Queens, New York.
+GraffPUNKS ⚡⚡⚡
+Jun 26, 2025” — SHA256 `783217e96e078a911ea97a27d2e1cab7df2130b95464c5e7cdf7fee9cd3e5998`.
+
+- `w70.txt` paragraph18: “By 2930, fewer than a dozen secure regions remained on Earth. One of them was a fortress buried in the eastern borough of a dying city: Queens, New York.” — SHA256 `783217e96e078a911ea97a27d2e1cab7df2130b95464c5e7cdf7fee9cd3e5998`.
+
+- `W15.txt` paragraph4: “By 2930, fewer than a dozen secure regions remained on Earth.” — SHA256 `c1292efd91ba68119c6f9e8a6a8e192b7d37342f2391876d80eb678eff8112cd`.
+
+**Preservation and identity consequences:** W15 over75% majorcities lost by2900 is a different measure. Three decades of construction is not a proven inauguration date. Holly Citadel and journal Block City do not establish another secure region.
+
+**Primary owner edits/decisions, if approved:** `wiki/first-witness-master-chronology.html`, `wiki/first-witness-concordance.html`, `wiki/block-topia.html`, `wiki/hodl-wars.html`, `wiki/alfie-bitcoin-kid-blaze.html`, `wiki/queen-sarah-p-fly.html`, `wiki/the-nomad-bears.html`, `brand-canon/story-bibles/gk-master-canon.md`, `brand-canon/story-bibles/w81-continuity-companion-20261008.md`, `brand-canon/wiki-rewrites/issue-1458-proposals.md`, `brand-canon/reconciliation-decisions.json`.
+
+**Dependent claim audit map:** pattern `2930|2765|secure regions|last bastion|Queens.*fortress`; 86 current canonical articles:
+
+- `wiki/aleema-child-of-the-shard.html`
+
+- `wiki/alfie-bitcoin-kid-blaze.html`
+
+- `wiki/battlemech-blast.html`
+
+- `wiki/billy-the-goat-kid.html`
+
+- `wiki/bitcoin-kids.html`
+
+- `wiki/bitcoin-x-kids.html`
+
+- `wiki/block-node-defenders.html`
+
+- `wiki/block-topia.html`
+
+- `wiki/canvas-clash.html`
+
+- `wiki/charlie-buster.html`
+
+- `wiki/croydon-tower-blocks.html`
+
+- `wiki/crypto-moonboys.html`
+
+- `wiki/darren-cullen.html`
+
+- `wiki/dream-sovereign.html`
+
+- `wiki/elder-codex-7.html`
+
+- `wiki/forkborn-collective.html`
+
+- `wiki/forklord-you.html`
+
+- `wiki/forksplit.html`
+
+- `wiki/games4punks-telegram.html`
+
+- `wiki/gang-signs.html`
+
+- `wiki/genesis-kernel.html`
+
+- `wiki/genesis-spray-drop.html`
+
+- `wiki/genesis-spray.html`
+
+- `wiki/gk.html`
+
+- `wiki/gkniftyheads.html`
+
+- `wiki/graffiti-kings.html`
+
+- `wiki/graffiti-queens-in-decentraland.html`
+
+- `wiki/graffpunks-24-7-radio.html`
+
+- `wiki/graffpunks-ecosystem.html`
+
+- `wiki/graffpunks.html`
+
+- `wiki/grit42.html`
+
+- `wiki/harrison-rift.html`
+
+- `wiki/head-tags.html`
+
+- `wiki/hodl-wars.html`
+
+- `wiki/iris-7.html`
+
+- `wiki/maidstone-base.html`
+
+- `wiki/metaverse-battles.html`
+
+- `wiki/metropolis.html`
+
+- `wiki/midevilpunks.html`
+
+- `wiki/moon-mission.html`
+
+- `wiki/null-the-prophet.html`
+
+- `wiki/phygital-prints.html`
+
+- `wiki/pyralith.html`
+
+- `wiki/queen-sarah-p-fly.html`
+
+- `wiki/rave-relics.html`
+
+- `wiki/rug-pull-wars.html`
+
+- `wiki/rune-tag.html`
+
+- `wiki/sacred-chain.html`
+
+- `wiki/samaelexe.html`
+
+- `wiki/satoshi-scroll.html`
+
+- `wiki/seeding-rights.html`
+
+- `wiki/sneakar.html`
+
+- `wiki/squeaky-pinks-enforcers.html`
+
+- `wiki/stikfamwars.html`
+
+- `wiki/street-kingdoms.html`
+
+- `wiki/the-allcity-bulls.html`
+
+- `wiki/the-aztec-raiders.html`
+
+- `wiki/the-bally-boys.html`
+
+- `wiki/the-bitcoin-kid-army.html`
+
+- `wiki/the-blockchain-furies.html`
+
+- `wiki/the-blockstars.html`
+
+- `wiki/the-code-alchemists.html`
+
+- `wiki/the-crypto-stoned-boys.html`
+
+- `wiki/the-ducky-boys.html`
+
+- `wiki/the-evm-punks.html`
+
+- `wiki/the-finance-guild.html`
+
+- `wiki/the-gasless-ghosts.html`
+
+- `wiki/the-great-dip.html`
+
+- `wiki/the-hard-fork-rockers.html`
+
+- `wiki/the-high-hats.html`
+
+- `wiki/the-information-mercenaries.html`
+
+- `wiki/the-moonlords.html`
+
+- `wiki/the-nice-easy-bois.html`
+
+- `wiki/the-nomad-bears.html`
+
+- `wiki/the-princess.html`
+
+- `wiki/the-rugpull-miners.html`
+
+- `wiki/the-salvagers.html`
+
+- `wiki/the-shard-mothers-of-manhattan.html`
+
+- `wiki/the-squeaky-pinks.html`
+
+- `wiki/the-tuskon-ogs.html`
+
+- `wiki/the-whitewasher.html`
+
+- `wiki/thorne-the-architect.html`
+
+- `wiki/triple-fork-event.html`
+
+- `wiki/wagmi-prophecy.html`
+
+- `wiki/whale-lords.html`
+
+- `wiki/xrp-kids.html`
+
+**Regenerate after approved edits:** `js/wiki-index.json`, `js/link-map.json`, `js/link-graph.json`, `js/entity-graph.json`, `js/graph-data.json`, `js/entity-graph-lite.json`, `sitemap.xml`, `brand-canon/wiki-content-state.json`.
+
+A maintainer must provide explicit decision evidence before implementation. No merge/deployment or issue closure is authorised.
+
+## GK-1458-SAM-ORDER — SAM: keep 2036 origin; displace later sequence ten years
+
+Keep nineteen-year-old2036 origin. Proposed later calendar: late2039 council,2040 Stabilisation/Reset,2041 bridge, early2042 Denise/Tracey/Forge disappearance,2045 climax. Keep teenage adoption after2007–2009 fighting, exact year open. These dates are editorial repairs requiring GK approval, not recovered source dates.
+
+**Alternatives:** Move upload to2026 and retain2029–2035 later calendar; this changes repeated2036 origin/callbacks and still needs postwar adoption. Adopt a literal retrocausal loop or W5 2880 origin: requires explicit ontology/lifespan and household survival choices; neither is established by a bridge alone.
+
+**Exact evidence:**
+
+- `W12.txt` paragraph4: “PART 1 – London 2036: The Night HyroSAM Painted His Own Forever” — SHA256 `a5e54ec2a0170fe62ea8a321f29dbd89f9f23e698aa5d84edf283dd81def28bf`.
+
+- `W12.txt` paragraph5: “nineteen-year-old Samuel “HyroSAM” Blake” — SHA256 `a5e54ec2a0170fe62ea8a321f29dbd89f9f23e698aa5d84edf283dd81def28bf`.
+
+- `W12.txt` paragraph56: “one stormy evening in late 2029” — SHA256 `a5e54ec2a0170fe62ea8a321f29dbd89f9f23e698aa5d84edf283dd81def28bf`.
+
+- `W12.txt` paragraph68: “one electric-blue dawn in 2031” — SHA256 `a5e54ec2a0170fe62ea8a321f29dbd89f9f23e698aa5d84edf283dd81def28bf`.
+
+- `W12.txt` paragraph71: “From inside the chain he reached forward through time itself” — SHA256 `a5e54ec2a0170fe62ea8a321f29dbd89f9f23e698aa5d84edf283dd81def28bf`.
+
+- `W12.txt` paragraph81: “a cold, drizzling night in early 2032” — SHA256 `a5e54ec2a0170fe62ea8a321f29dbd89f9f23e698aa5d84edf283dd81def28bf`.
+
+- `W12.txt` paragraph111: “The year was 2035, three brutal years after the vanishing of Denise Aethelgard, Tracey Vara, and Jermaine “Forge” Harrington” — SHA256 `a5e54ec2a0170fe62ea8a321f29dbd89f9f23e698aa5d84edf283dd81def28bf`.
+
+Calendar: upload2036 → council2039 → Reset2040 → bridge2041 → disappearance2042 → climax2045. Across-time bridge remains source testimony. Preserve all exact2036/2030 copies as objects even if a catalogue chooses corrected dates.
+
+**Preservation and identity consequences:** Keep Fifth Carbon actual damaged2036/2030 document and Marlo/Bex consequences. Returned speaker remains extraordinary source testimony; no rescue of missing three, universal soul-upload, Forge/Cullen or SAM/SPARKY/Chassis identity merge. W5 singular retiring Architect cannot identify all GKniftyHEADS.
+
+**Primary owner edits/decisions, if approved:** `wiki/agent-sam.html`, `wiki/house-of-rackinsats.html`, `wiki/croydon-tower-blocks.html`, `wiki/the-princess.html`, `wiki/great-consensus.html`, `wiki/first-witness-master-chronology.html`, `wiki/first-witness-concordance.html`, `wiki/hodl-warriors.html`, `wiki/alfie-bitcoin-kid-blaze.html`, `wiki/gkniftyheads.html`, `wiki/jodie-zoom-2000.html`, `brand-canon/story-bibles/gk-master-canon.md`, `brand-canon/story-bibles/w81-continuity-companion-20261008.md`, `brand-canon/wiki-rewrites/issue-1458-proposals.md`, `brand-canon/reconciliation-decisions.json`.
+
+**Dependent claim audit map:** pattern `Agent SAM|HyroSAM|Samuel Blake|Fifth Carbon|Denise Aethelgard|Tracey Vara|Jermaine.*Harrington`; 20 current canonical articles:
+
+- `wiki/agent-sam.html`
+
+- `wiki/alfie-bitcoin-kid-blaze.html`
+
+- `wiki/block-topia.html`
+
+- `wiki/croydon-tower-blocks.html`
+
+- `wiki/great-consensus.html`
+
+- `wiki/hard-fork-games.html`
+
+- `wiki/hodl-warriors.html`
+
+- `wiki/hodl-wars.html`
+
+- `wiki/house-of-rackinsats.html`
+
+- `wiki/jodie-zoom-2000.html`
+
+- `wiki/maidstone-base.html`
+
+- `wiki/queen-sarah-p-fly.html`
+
+- `wiki/rune-tag.html`
+
+- `wiki/six-pillars.html`
+
+- `wiki/squeaky-pinks-enforcers.html`
+
+- `wiki/the-chain-scribes.html`
+
+- `wiki/the-crypto-moongirls.html`
+
+- `wiki/the-princess.html`
+
+- `wiki/the-squeaky-pinks.html`
+
+- `wiki/whisper-codex.html`
+
+**Regenerate after approved edits:** `js/wiki-index.json`, `js/link-map.json`, `js/link-graph.json`, `js/entity-graph.json`, `js/graph-data.json`, `js/entity-graph-lite.json`, `sitemap.xml`, `brand-canon/wiki-content-state.json`.
+
+A maintainer must provide explicit decision evidence before implementation. No merge/deployment or issue closure is authorised.
+
+## GK-1458-FORTY — Forty: six specific cultures for approval
+
+Keep34 accepted named readings. Propose NoBallGames Legion, Wildstyle Collective, Fractal Taggers, Porch Poets, Resin Relic Keepers and Bone Idol Ink Ritualists, with the explicitly authored membership/institutions below. Independence of the three briefly described groups is a proposed culture development, not recovered fact.
+
+**Alternatives:** Retain34/sixunassigned until stronger independent community history is approved. Approve a revised subset or alternative candidates individually; no numerical auto-fill from mission names, subcrews, bosses, rank titles or a directory heading.
+
+**Exact evidence:**
+
+- `W5.txt` paragraph403: “The Legion & The Eternal Synergy with the Moonboys Universe
+The NoBallGames Legion is one of the 40 factions, but it feels like the beating heart during festival cycles.” — SHA256 `e54f1518083323a872827ffc4e636832c821e48e64200e2adbd42012038d6292`.
+
+- `W5.txt` paragraph508: “Wildstyle Collective – The pure chaotic good artists who refuse any governance and simply paint whatever the Grid needs most in the moment.” — SHA256 `e54f1518083323a872827ffc4e636832c821e48e64200e2adbd42012038d6292`.
+
+- `W5.txt` paragraph509: “Fractal Taggers – Moongirl defectors who blend Sarah P-fly’s elegance with raw street chaos.” — SHA256 `e54f1518083323a872827ffc4e636832c821e48e64200e2adbd42012038d6292`.
+
+- `W5.txt` paragraph510: “Porch Poets – Papa Des’s spoken-word heirs. They encode poetry into smart contracts that auto-execute during moments of crisis.” — SHA256 `e54f1518083323a872827ffc4e636832c821e48e64200e2adbd42012038d6292`.
+
+- `W5.txt` paragraph763: “Peter Clark’s work even inspired the Resin Relic Keepers faction (number 32 in the 40 Factions Bible) — the dedicated tribe whose entire role is to protect, maintain, and expand the physical-digital bridge.” — SHA256 `e54f1518083323a872827ffc4e636832c821e48e64200e2adbd42012038d6292`.
+
+- `W5.txt` paragraph530: “Bone Idol Ink Ritualists – The tattoo and ritual marking faction that turns real-world ink into permanent on-chain power-ups.” — SHA256 `e54f1518083323a872827ffc4e636832c821e48e64200e2adbd42012038d6292`.
 
 | Proposed additional culture | Exact source evidence | Proposed connecting fiction, not recovered history |
 | --- | --- | --- |
@@ -199,80 +572,553 @@ This is a proposed continuation of culture, not a recovered uncontested roll.
 | Resin Relic Keepers | W5 Tome 8 paragraph 529 and Tome 11 paragraph 763 explicitly name a dedicated tribe protecting, maintaining and extending the physical/digital bridge;757–762 show circulation among other cultures. | A keeper/learner lineage that belongs beyond one repair commission, with shared storage and exchanges of contested objects. Its central dispute is whether an image's digital custody licenses alteration or sale of the physical object. No real Peter Clark endorsement, animated real resin, token benefit or generalSalvager merger is inferred. |
 | Bone Idol Ink Ritualists | W5 Tome 8 paragraph 530 names the marking faction; Tome 12 develops designs, repeated rites and their relationship to resin. | A self-governing marking tradition with adult practitioners, consenting recipients, apprentices and people who leave marks unrenewed. Kinship belongs to choices and responsibility, not a compulsory tattoo. Refusal, removal and an artist's pressure for an impressive public display produce internal conflict. No actual medical claim, power-up or real company authority is asserted. |
 
-These six would bring 34 to 40 **only after GK approval and full ripple completion**.
-Their institutions and membership rules above are explicit authored proposals.
-W5 provides uneven foundations: NoBallGames/Resin/Bone have substantial dedicated
-traditions; Wildstyle/Fractal/Porch have short roster descriptions. The proposal
-must not claim the latter's independence is already demonstrated by a sentence.
-Continue the remaining original sources and current biographies; revise a weak
-candidate if that comparison shows duplication. No proposed name is published
-as the accepted 35th–40th path in this batch.
-
-**Do not count the following as convenient replacements:** Burn Crews are
-40-person fireteams; Stencil Witches are explicitly femaleGraffPUNKS; Tag Lords are
-prestigious inheritors, all repeated inside and outside the parent description.
-NoBallGames' four arena entries are explicitly Legion extensions. Nomad Bears
-Expanded repeats the existing culture. Deep Holders/Whale Lords, Architects/
-GKniftyHEADS and Pixel Saint aliases require their existing identity boundaries.
-House/Porch Keepers/Eternal Family describe household, maintenance and universal
-belonging; the last says it is not a tribe. $DUST remains a protocol candidate
-without established independent community; w69's prospective mission cannot
-supply the missing history. Hip-Hop Gods Collective and Hybrid Wingborn remain
-alternatives needing more than genre custody or mercenary work to establish
-independent belonging.
-
-**Consequential relationship map:** Legion withXRP play, HODL mobilisation and
-Moongirl venue labour; Wildstyle with GraffPUNK hosts andPixel Saint preservation;
-Fractal Taggers with Moongirls, Thera andGraffPUNK receiving circles; Porch Poets with
-House/Scribes/Slam performance; Resin Keepers with Salvagers/Architects/Whales;
-Ink Ritualists withResin/Porch and consent/custody teachings. Existing modern
-figures, injured workers, lovers and refusals remain evidence in every comparison.
-None receives a universal conversion into the proposed new culture.
-
-**Approval ripple:** update both Forty pages, lock register, master bible and
-continuity companion; create or expand the genuinely owning culture references,
-propagate each membership boundary to the linked factions and relevant Games
-history; update citations, entity/link graphs, search, categories and sitemap.
-The nine current witnessed Books stay unchanged. Today's nine Battle Chamber
-keys and real creator licences stay under product authority. GK approval needs
-the final six names and their specific histories, not just permission to reach 40.
-
-## Eternal Pulse and Kael's serial worlds
-
-Full W15/w25 reading is complete; connected-page comparison remains pending. Do not resolve the Final Fork by importing one
-of their incompatible completed endings. Preserve Kael, Sylas, Veyra Nyx,
-Council, Layer Eight, Crimson Protocol, Great Blackout and Codex-7 as source
-research targets; they are not interchangeable with the modern supporting cast.
-The new master bible links their unresolved disposition rather than presenting
-a complete future outcome as already canonical.
 
 
-### Source roster checkpoint
+**Preservation and identity consequences:** No positions adopted. w72 nine-plus-thirty arithmetic and w86 twenty-three-plus-seventeen are not complete rolls. MirrorReapers/Halver/Phygital/Dust/ByteReapers, game MaskedForty and W11 unofficial41st lack independent membership proof. Keep nine Battle Chamber product keys unchanged; real artist profiles and NFT terms cannot become compulsory rituals.
 
-W5 paragraphs 1–1335 and all 20 tomes, w68's entire directory, and w69 paragraphs 1–373
-are fully read. All remain outside the seven fully compared sources while
-connected biographies and remaining product/evidence comparisons are unfinished.
-The roster arithmetic and recovered institutions are now owned by actual wiki
-pages; the six-slot proposal separates source evidence from new connecting
-fiction. Resume current Sarah/Jodie/Alfie/NULL and remaining original faction
-profiles. No approved slot, source identity or original paragraph is changed.
+**Primary owner edits/decisions, if approved:** `wiki/first-witness-forty-paths.html`, `wiki/first-witness-faction-commentaries.html`, `wiki/first-witness-concordance.html`, `wiki/charlie-buster.html`, `wiki/graffpunks.html`, `wiki/the-crypto-moongirls.html`, `wiki/thera-9.html`, `wiki/house-of-rackinsats.html`, `wiki/the-chain-scribes.html`, `wiki/delicious-again-pete.html`, `wiki/bone-idol-ink.html`, `wiki/the-salvagers.html`, `wiki/whale-lords.html`, `wiki/hard-fork-games.html`, `wiki/xrp-kids.html`, `wiki/the-og-pixel-saints.html`, `brand-canon/story-bibles/gk-master-canon.md`, `brand-canon/story-bibles/w81-continuity-companion-20261008.md`, `brand-canon/wiki-rewrites/issue-1458-proposals.md`, `brand-canon/reconciliation-decisions.json`.
 
+**Dependent claim audit map:** pattern `Forty|forty factions|34 named|thirty-four|NoBallGames Legion|Wildstyle Collective|Fractal Taggers|Porch Poets|Resin Relic Keepers|Bone Idol Ink Ritualists`; 115 current canonical articles:
 
-### Serial cast and relationship consequences now mapped
+- `wiki/2025-metaverse-launch-party.html`
 
-The three W15 biographies and six connected owning articles are implemented
-with local source attribution. Kael's service to Sarah and Veyra's HODL
-membership are recovered; Sylas's lifespan and the Council's continuous
-identity remain unverified. Their original Paid Exit adds bounded adult
-character work, not a conclusion to the cosmic sequence. A future approved
-ending must preserve the porter's injury and lost work, Veyra's refusal and
-Kael's retained former credential, just as it preserves modern losses.
+- `wiki/agent-sam.html`
 
-Specific relationship decisions still to resolve: W5's Sarah/SAM companionship
-cannot be installed alongside a missing household without a timed, causal
-bridge; its Jodie selection must preserve her Games refusal; w25's distant
-Alfie/Jodie union needs an actual passage from Orsa's and Dera's independent
-lives. W15's knowing Queen/messiah terminal scene cannot make their present
-choices remote performance. None is a source licence to remove an adult
-partner or claim that bodily survivors consented to restart. The remaining
-Thera/Charlie/Army/faction comparisons must support the eventual proposals.
+- `wiki/aleema-child-of-the-shard.html`
+
+- `wiki/alfie-bitcoin-kid-blaze.html`
+
+- `wiki/ava-chen.html`
+
+- `wiki/battlemech-blast.html`
+
+- `wiki/bear-market-siege.html`
+
+- `wiki/billy-the-goat-kid.html`
+
+- `wiki/bit-cap-5000.html`
+
+- `wiki/bitcoin-kid-army.html`
+
+- `wiki/bitcoin-kids.html`
+
+- `wiki/bitcoin-x-kids.html`
+
+- `wiki/block-node-defenders.html`
+
+- `wiki/block-topia.html`
+
+- `wiki/bone-idol-ink.html`
+
+- `wiki/canvas-clash.html`
+
+- `wiki/charlie-buster.html`
+
+- `wiki/croydon-tower-blocks.html`
+
+- `wiki/crypto-moonboys.html`
+
+- `wiki/darren-cullen.html`
+
+- `wiki/diamond-hands.html`
+
+- `wiki/dragan-volkov.html`
+
+- `wiki/dream-sovereign.html`
+
+- `wiki/elder-codex-7.html`
+
+- `wiki/forkborn-collective.html`
+
+- `wiki/forklord-you.html`
+
+- `wiki/forksplit.html`
+
+- `wiki/games4punks-telegram.html`
+
+- `wiki/gang-signs-card-game.html`
+
+- `wiki/gang-signs.html`
+
+- `wiki/genesis-spray-drop.html`
+
+- `wiki/gk.html`
+
+- `wiki/gkniftyheads.html`
+
+- `wiki/graffiti-kings.html`
+
+- `wiki/graffiti-nexus.html`
+
+- `wiki/graffiti-queens-in-decentraland.html`
+
+- `wiki/graffpunks-ecosystem.html`
+
+- `wiki/graffpunks.html`
+
+- `wiki/great-consensus.html`
+
+- `wiki/grit.html`
+
+- `wiki/grit42.html`
+
+- `wiki/hard-fork-games.html`
+
+- `wiki/harrison-rift.html`
+
+- `wiki/head-tags.html`
+
+- `wiki/hex-tagger-prime.html`
+
+- `wiki/hodl-warriors.html`
+
+- `wiki/hodl-wars.html`
+
+- `wiki/hodl-x-warriors.html`
+
+- `wiki/house-of-rackinsats.html`
+
+- `wiki/ian-harrison.html`
+
+- `wiki/iris-7.html`
+
+- `wiki/jillian-godsil.html`
+
+- `wiki/jodie-zoom-2000.html`
+
+- `wiki/kael-voss.html`
+
+- `wiki/lady-ink.html`
+
+- `wiki/lfgk.html`
+
+- `wiki/m1ntr-k1ll.html`
+
+- `wiki/metaverse-battles.html`
+
+- `wiki/metropolis.html`
+
+- `wiki/midevilpunks.html`
+
+- `wiki/moon-mission.html`
+
+- `wiki/ngmi-chronicles.html`
+
+- `wiki/null-the-prophet.html`
+
+- `wiki/paper-hands.html`
+
+- `wiki/phygital-prints.html`
+
+- `wiki/pmsl.html`
+
+- `wiki/pyralith.html`
+
+- `wiki/queen-sarah-p-fly.html`
+
+- `wiki/quell.html`
+
+- `wiki/rune-tag.html`
+
+- `wiki/sacred-chain.html`
+
+- `wiki/samaelexe.html`
+
+- `wiki/seeding-rights.html`
+
+- `wiki/sister-halcyon.html`
+
+- `wiki/six-pillars.html`
+
+- `wiki/sneakar.html`
+
+- `wiki/snipey-d-man-sirus.html`
+
+- `wiki/spirit-borns.html`
+
+- `wiki/spraycode-writcode-mechanics.html`
+
+- `wiki/squeaky-pinks-enforcers.html`
+
+- `wiki/stikfamwars.html`
+
+- `wiki/street-kingdoms.html`
+
+- `wiki/the-allcity-bulls.html`
+
+- `wiki/the-aztec-raiders.html`
+
+- `wiki/the-bally-boys.html`
+
+- `wiki/the-bitcoin-kid-army.html`
+
+- `wiki/the-blockchain-furies.html`
+
+- `wiki/the-blockstars.html`
+
+- `wiki/the-chain-scribes.html`
+
+- `wiki/the-code-alchemists.html`
+
+- `wiki/the-crypto-stoned-boys.html`
+
+- `wiki/the-ducky-boys.html`
+
+- `wiki/the-evm-punks.html`
+
+- `wiki/the-finance-guild.html`
+
+- `wiki/the-gasless-ghosts.html`
+
+- `wiki/the-great-dip.html`
+
+- `wiki/the-hard-fork-rockers.html`
+
+- `wiki/the-high-hats.html`
+
+- `wiki/the-information-mercenaries.html`
+
+- `wiki/the-moonlords.html`
+
+- `wiki/the-nice-easy-bois.html`
+
+- `wiki/the-nomad-bears.html`
+
+- `wiki/the-og-pixel-saints.html`
+
+- `wiki/the-princess.html`
+
+- `wiki/the-rugpull-miners.html`
+
+- `wiki/the-shard-mothers-of-manhattan.html`
+
+- `wiki/the-squeaky-pinks.html`
+
+- `wiki/the-tuskon-ogs.html`
+
+- `wiki/the-whitewasher.html`
+
+- `wiki/thera-9.html`
+
+- `wiki/thorne-the-architect.html`
+
+- `wiki/trevor-fung.html`
+
+- `wiki/veyra-nyx.html`
+
+- `wiki/whale-lords.html`
+
+- `wiki/xrp-kids.html`
+
+**Regenerate after approved edits:** `js/wiki-index.json`, `js/link-map.json`, `js/link-graph.json`, `js/entity-graph.json`, `js/graph-data.json`, `js/entity-graph-lite.json`, `sitemap.xml`, `brand-canon/wiki-content-state.json`.
+
+A maintainer must provide explicit decision evidence before implementation. No merge/deployment or issue closure is authorised.
+
+## GK-1458-FINAL-FORK-CONTINUITY — Final Fork: one materially continuing world
+
+Keep material3008 and irreversible losses; retain extraordinary serials as locally attributed visions/branch outcomes. A future Final Fork may end a specific existential threat, without restoring every death, failed memory, injury, debt or abuse, or awarding one sovereign every future mind. Exact date, casualties, Sarah/Alfie/Jodie/NULL fates remain open for specific approval.
+
+**Alternatives:** Adopt literal universal upload/heat-death/mercy reset. Requires explicit world ontology and an account of every current body, refused restoration, missing person and incompatible terminal version. Adopt universal Convergence/Wing/Luminous/BonnetAge victory. Requires explicit consent, source-fate reconciliation and treatment of currently continuing adult conflicts; comparison does not approve it.
+
+**Exact evidence:**
+
+- `W15.txt` paragraph16: “The real universe outside the Lattice had died in heat death long ago.” — SHA256 `c1292efd91ba68119c6f9e8a6a8e192b7d37342f2391876d80eb678eff8112cd`.
+
+- `W15.txt` paragraph182: “erased every single scar every bomb crater” — SHA256 `c1292efd91ba68119c6f9e8a6a8e192b7d37342f2391876d80eb678eff8112cd`.
+
+- `w25.txt` paragraph380: “I, Elder Codex-7, carved the ultimate eternal line into the final mural: “The canon is locked across all time and every era. The Bloodline chose. The war is truly won forever… but in 3058 a new dream will whisper again across the infinite Grid.”” — SHA256 `74b365771aa1840d17b83760348037a7fc2abf423e194cf8b3f5942e4c2f8929`.
+
+- `w82.txt` paragraph281: “That was our first mistake.
+Log // 2989.01.01 — The Broadcast Has Ended…” — SHA256 `0b47e37c8b73085fb6123a7091effb611fcfe24dd5b10c9a1644fead3768e255`.
+
+Further complete witnesses: W5 Tomes16–20 universal Soul/Wing festival and singular HyroSAM; W10 shared consciousness; W14 Sarah redemption/EternalFamily and physical2026 merge; w26/w27/w28/w30/W20 upload explanations; w21 CrownedVandal/Janitor/Luminous endpoint; w22 completed BonnetAge versus w24 incomplete ending; w23 NULL return after victory; w67/w72/w73 game branch endings; w86 voluntary archive rather than universal restoration. Exact dispositions and source hashes are in the audit. BookVI keeps graves/debts, BookVIII temporary unity and BookIX future choice; their texts are untouched.
+
+**Preservation and identity consequences:** Preserve Sena silence, Vex lost warmth, Denise/Tracey/Forge missing, Fifth Carbon damage, Paid Exit injury/refusal, Tessa severed pledge, Jodie Orsa/Dera agency, Scarlet/HandBack/RainCopy/OpenCorner conflicts and every approved modern scene. No Princess/Tracey/Sarah/RyaB/Elara genealogy merge; M1nTr/OracleGroup/AGNES/Janitor/NULL remain separately attributed. All nine original Books stay unchanged.
+
+**Primary owner edits/decisions, if approved:** `wiki/first-witness-master-chronology.html`, `wiki/first-witness-concordance.html`, `wiki/block-topia.html`, `wiki/queen-sarah-p-fly.html`, `wiki/null-the-prophet.html`, `wiki/alfie-bitcoin-kid-blaze.html`, `wiki/jodie-zoom-2000.html`, `wiki/lady-ink.html`, `wiki/elder-codex-7.html`, `wiki/iris-7.html`, `wiki/aleema-child-of-the-shard.html`, `wiki/dream-sovereign.html`, `wiki/kael-voss.html`, `wiki/sylas-the-unbroken.html`, `wiki/veyra-nyx.html`, `wiki/hodl-warriors.html`, `wiki/hodl-wars.html`, `wiki/genesis-kernel.html`, `wiki/gkniftyheads.html`, `wiki/sacred-chain.html`, `wiki/spirit-borns.html`, `wiki/agent-sam.html`, `wiki/house-of-rackinsats.html`, `wiki/the-crypto-moongirls.html`, `wiki/the-squeaky-pinks.html`, `wiki/squeaky-pinks-enforcers.html`, `brand-canon/story-bibles/gk-master-canon.md`, `brand-canon/story-bibles/w81-continuity-companion-20261008.md`, `brand-canon/wiki-rewrites/issue-1458-proposals.md`, `brand-canon/reconciliation-decisions.json`.
+
+**Dependent claim audit map:** pattern `Final Fork|Wing Fork|Soul Fork|Flesh Fade|Luminous|Genesis Kernel|universal.{0,60}upload|3008`; 140 current canonical articles:
+
+- `wiki/2025-metaverse-launch-party.html`
+
+- `wiki/agent-sam.html`
+
+- `wiki/aleema-child-of-the-shard.html`
+
+- `wiki/alfie-bitcoin-kid-blaze.html`
+
+- `wiki/ava-chen.html`
+
+- `wiki/battlemech-blast.html`
+
+- `wiki/bear-market-siege.html`
+
+- `wiki/billy-the-goat-kid.html`
+
+- `wiki/bit-cap-5000.html`
+
+- `wiki/bitcoin-graffpunks.html`
+
+- `wiki/bitcoin-kid-army.html`
+
+- `wiki/bitcoin-kids.html`
+
+- `wiki/bitcoin-x-kids.html`
+
+- `wiki/block-node-defenders.html`
+
+- `wiki/block-topia.html`
+
+- `wiki/bone-idol-ink.html`
+
+- `wiki/burn-to-earn.html`
+
+- `wiki/canvas-clash.html`
+
+- `wiki/charlie-buster.html`
+
+- `wiki/croydon-tower-blocks.html`
+
+- `wiki/crypto-moonboys.html`
+
+- `wiki/darren-cullen.html`
+
+- `wiki/delicious-again-pete.html`
+
+- `wiki/diamond-hands.html`
+
+- `wiki/dragan-volkov.html`
+
+- `wiki/dream-sovereign.html`
+
+- `wiki/elder-codex-7.html`
+
+- `wiki/exyboy.html`
+
+- `wiki/fomo-plague.html`
+
+- `wiki/forkborn-collective.html`
+
+- `wiki/forklord-you.html`
+
+- `wiki/forksplit.html`
+
+- `wiki/games4punks-telegram.html`
+
+- `wiki/gang-signs.html`
+
+- `wiki/genesis-kernel.html`
+
+- `wiki/genesis-spray-drop.html`
+
+- `wiki/genesis-spray.html`
+
+- `wiki/gk.html`
+
+- `wiki/gkniftyheads.html`
+
+- `wiki/graffiti-kings.html`
+
+- `wiki/graffiti-nexus.html`
+
+- `wiki/graffiti-queens-in-decentraland.html`
+
+- `wiki/graffpunks-24-7-radio.html`
+
+- `wiki/graffpunks-ecosystem.html`
+
+- `wiki/graffpunks.html`
+
+- `wiki/great-consensus.html`
+
+- `wiki/grit.html`
+
+- `wiki/grit42.html`
+
+- `wiki/hard-fork-games.html`
+
+- `wiki/harrison-rift.html`
+
+- `wiki/head-tags.html`
+
+- `wiki/hex-tagger-prime.html`
+
+- `wiki/hodl-warriors.html`
+
+- `wiki/hodl-wars.html`
+
+- `wiki/hodl-x-warriors.html`
+
+- `wiki/house-of-rackinsats.html`
+
+- `wiki/ian-harrison.html`
+
+- `wiki/iris-7.html`
+
+- `wiki/jodie-zoom-2000.html`
+
+- `wiki/kael-voss.html`
+
+- `wiki/lady-ink.html`
+
+- `wiki/lfgk.html`
+
+- `wiki/loopfiend.html`
+
+- `wiki/m1ntr-k1ll.html`
+
+- `wiki/maidstone-base.html`
+
+- `wiki/metaverse-battles.html`
+
+- `wiki/metropolis.html`
+
+- `wiki/midevilpunks.html`
+
+- `wiki/moon-mission.html`
+
+- `wiki/nbg-token.html`
+
+- `wiki/nbgx-token.html`
+
+- `wiki/ngmi-chronicles.html`
+
+- `wiki/null-the-prophet.html`
+
+- `wiki/paper-hands.html`
+
+- `wiki/patchwork.html`
+
+- `wiki/phygital-prints.html`
+
+- `wiki/pixel-journey.html`
+
+- `wiki/punk-token.html`
+
+- `wiki/pyralith.html`
+
+- `wiki/queen-sarah-p-fly.html`
+
+- `wiki/quell.html`
+
+- `wiki/rave-relics.html`
+
+- `wiki/rug-pull-wars.html`
+
+- `wiki/rune-tag.html`
+
+- `wiki/rust2riches.html`
+
+- `wiki/sacred-chain.html`
+
+- `wiki/samaelexe.html`
+
+- `wiki/satorebel.html`
+
+- `wiki/satoshi-scroll.html`
+
+- `wiki/seeding-rights.html`
+
+- `wiki/sister-halcyon.html`
+
+- `wiki/six-pillars.html`
+
+- `wiki/sneakar.html`
+
+- `wiki/snipey-d-man-sirus.html`
+
+- `wiki/spirit-borns.html`
+
+- `wiki/spraycode-writcode-mechanics.html`
+
+- `wiki/squeaky-pinks-enforcers.html`
+
+- `wiki/stikfamwars.html`
+
+- `wiki/storm-struggle.html`
+
+- `wiki/street-kingdoms.html`
+
+- `wiki/sylas-the-unbroken.html`
+
+- `wiki/tagzcoin.html`
+
+- `wiki/the-allcity-bulls.html`
+
+- `wiki/the-aztec-raiders.html`
+
+- `wiki/the-bally-boys.html`
+
+- `wiki/the-bitcoin-kid-army.html`
+
+- `wiki/the-blockchain-furies.html`
+
+- `wiki/the-blockstars.html`
+
+- `wiki/the-chain-scribes.html`
+
+- `wiki/the-code-alchemists.html`
+
+- `wiki/the-crypto-moongirls.html`
+
+- `wiki/the-crypto-stoned-boys.html`
+
+- `wiki/the-ducky-boys.html`
+
+- `wiki/the-evm-punks.html`
+
+- `wiki/the-finance-guild.html`
+
+- `wiki/the-gasless-ghosts.html`
+
+- `wiki/the-great-dip.html`
+
+- `wiki/the-hard-fork-rockers.html`
+
+- `wiki/the-high-hats.html`
+
+- `wiki/the-information-mercenaries.html`
+
+- `wiki/the-moonlords.html`
+
+- `wiki/the-nice-easy-bois.html`
+
+- `wiki/the-nomad-bears.html`
+
+- `wiki/the-og-pixel-saints.html`
+
+- `wiki/the-princess.html`
+
+- `wiki/the-rugpull-miners.html`
+
+- `wiki/the-salvagers.html`
+
+- `wiki/the-shard-mothers-of-manhattan.html`
+
+- `wiki/the-squeaky-pinks.html`
+
+- `wiki/the-tuskon-ogs.html`
+
+- `wiki/the-whitewasher.html`
+
+- `wiki/thera-9.html`
+
+- `wiki/thorne-the-architect.html`
+
+- `wiki/trevor-fung.html`
+
+- `wiki/triple-fork-event.html`
+
+- `wiki/veyra-nyx.html`
+
+- `wiki/wagmi-prophecy.html`
+
+- `wiki/whale-lords.html`
+
+- `wiki/whisper-codex.html`
+
+- `wiki/xrp-kids.html`
+
+**Regenerate after approved edits:** `js/wiki-index.json`, `js/link-map.json`, `js/link-graph.json`, `js/entity-graph.json`, `js/graph-data.json`, `js/entity-graph-lite.json`, `sitemap.xml`, `brand-canon/wiki-content-state.json`.
+
+A maintainer must provide explicit decision evidence before implementation. No merge/deployment or issue closure is authorised.

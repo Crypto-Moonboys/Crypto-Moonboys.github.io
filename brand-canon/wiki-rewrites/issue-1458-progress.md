@@ -1,8 +1,10 @@
 # Issue #1458 — implementation progress and restart ledger
 
-Updated 8 October 2026. **Status: current edits complete for merge review on PR #1459; wider reconciliation paused and full mission open.**
+Updated 9 October 2026. **Status: Phase 2 active from merged PR #1459; full mission remains open.**
 W81 is foundational truth. This is a checkpoint of completed implementation,
 not a claim that the whole universe is reconciled. Preserve the adult tone.
+
+Inherited Phase 1 branch receipts (historical):
 
 Base: `81bd8f13d17b0864d5de849f3c4aac4b902abc14` (merged #1457).
 Backup: `codex/backup-issue-1458-20261008-090000`, at that exact base; local
@@ -12,12 +14,15 @@ No direct push to main, merge, issue closure or production deployment.
 
 ## Current cumulative state
 
-43 of 94 original sources have full claim/scene comparison; 51 remain open.
-Seven further originals are completely read with comparisons pending. Existing
-wiki audits cover 76 distinct articles: 73 full and three focused. Nine new
-articles and 50 expanded/corrected existing lore articles, plus one provenance-only
-Spirit Borns metadata correction, are implemented, with
-five original adult connecting stories. This is an implementation checkpoint,
+94 of94 original sources have full claim/scene comparison; none remain unread or awaiting connected comparison. Five major decisions still require GK approval.
+All seven previously fully read pending originals have now been compared.
+Current wiki audits cover 98 distinct owning articles:96 full and two focused. Nine earlier new articles and 50 earlier expanded/corrected
+existing lore articles, plus the provenance-only Spirit Borns correction, remain
+preserved. Phase 2 expands nine existing articles; seven overlap the earlier50,
+so52 distinct existing lore articles are expanded/corrected cumulatively.
+Maidstone and Lady-INK are the two additional existing routes in this phase.
+The five earlier original adult connecting stories remain; no new story is
+authored in this checkpoint. This is an implementation checkpoint,
 not a claim that every source or current wiki page is reconciled.
 
 All current wiki lore remains preserved. The working master truth references
@@ -26,7 +31,187 @@ existing adult lives alongside source doctrine. All nine First Witness Books
 remain byte-identical to the original PR base. Five major proposals remain
 proposed; no final ending, new Forty slot or historical retcon is adopted.
 
-## Verified and actually reviewed
+### Phase 2 baseline and exact continuation
+
+New base: `cc856157f5bd23e1b7ae3ed032af44c6b725c524` (merged #1459).
+Working branch: `codex/gk-canon-phase2-20261008`.
+Backup: `backup/gk-canon-phase2-base-20261008`, at that exact base; remote verified.
+Draft PR: https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/pull/1460.
+Source checkpoint: `2900e8448`; generated publishing checkpoint: `8a028d4e9`.
+The merged tree matches corrected head `803e48f83d3d97deaa2fb3f0d8e6f5a04046cf7f`
+without differences. The historical Base/Backup/branch records above describe
+Phase 1 only. Keep this new Phase 2 PR separate; do not reopen merged #1459.
+
+The original archive was recovered again outside publication at
+`/tmp/gk-phase2/sources`: 94 identities, 93 unique texts, 2,334,149 bytes, every
+checksum matching both independent inventories. Eighteen additional source comparisons
+are complete: **W18, w85, w28, w29, w83, w88, W9, w74, w75, w76, w77, w79,
+w89, w81, w90, w91, W11 and W16**. Detailed dispositions identify every
+substantive source section in `issue-1458-audit.json`; the exact `GK-1458-P2-*`
+decision IDs also appear in the source CSV. Existing sufficient coverage is
+retained without filler; comparison completion does not require new prose.
+
+Fresh complete current canonical/owning readings: Alfie, GKniftyHEADS, Thorne,
+Sacred Chain, both Pinks articles, Sacred Fork, Maidstone, Charlie Buster,
+PUNK, radio, staking, LFGK, Graffiti Kings, GraffPUNKS and Whale Lords.
+This adds eight full audits including the two added in the first Phase 2 batch,
+and upgrades Sacred Chain's former focused audit. Sarah/NULL relationship and
+custody passages and HODL WARS history/Grid/game/future passages received focused
+dependency comparisons; no fresh full read of those long pages is claimed.
+The root SAM dashboard and selected current renderer/publisher/radio code were
+read as operational dependencies, not counted as additional wiki articles.
+
+Eight owning articles are expanded: Alfie, Sarah, GKniftyHEADS, Sacred Chain,
+primary Pinks, Maidstone, HODL WARS and Whale Lords. New native contents/search
+terms identify dossier habits/refuges, Chronometer, Flesh Fade, Know-Your-Hash,
+Holly Citadel, LOREWARS, Warzone and Depth Guardian. The real Buster biography,
+market/token contracts, current ownership terms and unrelated runtime stay
+under their separate authority. Dated business/token/channel/manifesto sources
+can be fully compared without certifying old financial or service claims.
+No fresh external schedule, market, biography or other-repository deployment
+audit is claimed.
+
+The review continuation completes another **19** comparisons: **W3, W6, W10, W14, W17, W20, w26, w27, w30, w31, w71, M16, W19, W2, W5, W15, w25, w69, w22**. Every substantive source range receives a disposition in the existing audit and register; comparison does not require filler or approval of conflicting endings. The earlier complete readings of W5/W15/w25/w69/W19/M16/W20 are retained and their pending connected comparisons closed.
+
+At the pushed955fa4ea5 checkpoint, the **14** remaining originals were: **w21, w23, w24, W4, w66, w67, w72, w73, w78, W8, w80, w82, w86, w87**. They are all fully compared in the final receipt below. Do not repeat the inherited43, earlier18 or this19. No new public lore or new article is added by this research checkpoint.
+
+Ten fresh full owning audits cover Lady-INK, Burn-to-Earn, FunCoupon782888, Bone Idol Ink, Delicious Again Pete, HODL X Warriors, Crypto Moongirls and the Kael/Sylas/Veyra triad. Current champions, inside/outside children, artistic counterparts and the Paid Exit remain distinct; all existing losses, injury, consent and adult consequences stay intact.
+
+Five major recommendations remain unapproved; the full94-source evidence
+audit is complete and the approval packets supply exact quotes and file maps. W18's date/relationship conflicts and w28's ghost-world alternative now
+extend the impact record; no lock or original scripture changes. The source
+records, modern stories, prior five authored stories and original archive
+identities remain preserved. Validation and delivery receipts are recorded below; Phase 2 is not complete
+and Issue #1458 stays open.
+
+### Phase 2 actual validation and delivery
+
+Historical initial Phase2 receipt: `issue-1458-phase2-verification.json`.
+Current review/correction receipt: `issue-1458-pr1460-review-verification.json`.
+The older verification file explicitly points here and preserves Phase1 evidence.
+
+- Original archive verifier passes94 identities/93 texts/2,334,149 bytes; all
+  original CSV identities/byte/hash/disposition fields match merged main.
+- Full `npm test` passed Arcade, WorkerAPI, Wiki and WAX, then hit one Visual
+  shell-parity failure from a pre-existing ignored `public-site` copied partial.
+  The artifact dated2October was preserved outside the source tree at
+  `/tmp/gk-phase2/preexisting-public-site`; no validator or source changed.
+  Complete `npm run ci:visual` then passed all16 commands, exit0. All five
+  repository domains have successful full runs; no single successful aggregate
+  invocation is claimed. The task-local browser cache uses installed Chromium.
+- Mandatory Wiki runs `test:canon`:94 originals, four Python corruption tests,
+  fourteen Node guard/command regressions,424-page guard and55 decisions.
+  Heading/prose, generic-attribution, identity/date/ending, roster, approval and
+  preserved-scene/deliberate-replacement safeguards remain operational.
+- Graph passes417 indexed wiki pages,427 nodes,2,083 edges and75 mobile nodes.
+  Repeated publishing regeneration produces no tracked output changes.
+  Content-state parity passes424 pages; category/sitemap/entity URLs stay valid.
+- Browser acceptance passes16 desktop/mobile views, eight no-JavaScript pages,
+  nine full-search/autocomplete queries and all new native contents entries.
+  External requests are blocked; no errors or horizontal overflow. Sixteen
+  additional screenshots capture the new sections; two mobile views inspected.
+- All741 old paragraphs and242 canonical IDs across eight changed articles
+  remain.501 internal links/fragments resolve, zero broken. FirstWitness pages,
+  locks and all protected adult stories/bibles remain unchanged from this base.
+- A fresh Pages artifact builds successfully; all eight changed HTML match.
+  It is preserved at `/tmp/gk-phase2/pages-artifact`, outside source scans.
+  Original W81, Worker code and private development files are excluded.
+  No deployment occurred.
+- GitHub source-head checks at `8a028d4e9`:Arcade/WorkerAPI/WAX/Visual,
+  WikiStructure, WorkerDeploymentProvenance and ProductionDeploymentTruth pass.
+  Template check is skipped for the draft. Wiki/Graph fail solely at the existing
+  maintainer `canon-prose-change-approved` gate; both logs name these eight edits.
+  Their canon guard and graph/index parity passed. No self-applied label or
+  weakened gate. Current PR comments were fetched; none present at this receipt.
+
+Local checks use `BASE_SHA=cc856157f5bd23e1b7ae3ed032af44c6b725c524` and
+`CANON_PROSE_CHANGE_APPROVED=1` for the explicitly authorised ordinary prose.
+That flag does not approve a major lock change, add a GitHub label, merge or
+release. Complete source/publishing changes are separated from this verification
+checkpoint; final documentation-head Actions must still be fetched after push.
+Keep PR1460 draft and Issue1458 open. Resume the exact33-source backlog above.
+
+## PR #1460 review correction — 9 October 2026
+
+Restored the four marked Citation Credibility panels removed by generation
+(Alfie, Sarah, primary Pinks and Maidstone); Whale Lords' unmarked panel is
+preserved. Fixed both deletion in the related-path generator and inherited
+runtime removal/hiding. Existing voting initializes and invokes the account
+gate. Related sections are updated in place, existing group layouts and curated
+NFT card descriptions remain intact. All 145 NFT pages are byte-identical to
+the merged baseline. No NFT descriptions or unrelated website functionality
+were rewritten. All eight canonical blocks remain byte-identical to the
+reviewed Phase 2 head; approved stories and no-drift protections are retained.
+
+Mandatory Wiki now runs functional-body/NFT preservation and corruption checks;
+Visual runs real-browser citation preservation. Generator/runtime regressions
+cover marked/unmarked panels, ownership wrappers, voting identities, comments,
+scripts, repeated generation and NFT wording. CI scope checks ensure edits to
+these safeguards trigger their domain. A fresh complete `npm test` passes all
+five domains, including the new checks. Citation browsers pass ten desktop/
+mobile and five no-JavaScript views using a local API fixture; article reading
+passes sixteen views, eight no-JavaScript pages and nine search/autocomplete
+queries. Publishing parity, graph, content state, 501 links (zero broken),
+741 paragraphs/242 IDs and a fresh Pages artifact pass. Machine receipt:
+`issue-1458-pr1460-review-verification.json`. Exact-head GitHub results follow
+in the PR conversation; retain the maintainer prose approval gate.
+
+The correction commit recorded61/94. The subsequent955fa4ea5 source comparison checkpoint
+recorded80/94, with14 then remaining; the correction verification and Actions
+receipts retain their exact historical scope. Continue the existing ledger; Issue #1458 and the
+five major decisions remain open. PR #1460 stays draft/on hold; GK must approve
+it before merge. No merge or deployment has occurred.
+
+
+### Correction-head complete GitHub Actions receipt
+
+At `3150ac95e4bc36dff6ef99edcbf11fb8d2d3e913`, all jobs and both failing logs
+were inspected. Arcade, Worker/API, WAX, Visual (including real citation-browser
+regression), Wiki Structure, Production Deployment Truth and both Worker
+Provenance jobs pass. Both draft template runs skip. Wiki and Graph fail only
+at the maintainer prose-approval gate after canon/functional preservation and
+graph parity pass. CI is not fully green. PR conversation receipt6075419601
+records run URLs and scope; no label was self-applied or gate weakened.
+
+### Further source comparisons and Lady-INK recovery
+
+Historical90-source checkpoint: **90/94** comparisons; **4 then remained: w72, w73, w82, w86**.
+The next batch completes w66, w80, w87, w21, w23, w24, w78, W8, W4, w67.
+All original sections, tables and numbered entries are read; exact decoded
+paragraph reuse and every unique block are recorded for w80/w24/w78. Shared
+paragraphs are not duplicate independent witnesses. All unchanged NFT
+descriptions and separate current product/biography authority remain.
+
+Lady-INK gains four source-recovery paragraphs in two locally attributed
+sections: CrownedVandal/Janitor/Luminous continuation and LevelNine explanation.
+Native contents/search terms/revision and publishing discovery are updated.
+All existing paragraphs, adult relationships, IDs and functional components
+are preserved; no new article or approved universal ending. Fresh full Spirit
+Born reading covers66 owning blocks, without rewriting its folklore/street tales.
+Mandatory Wiki and isolated Lady desktop/mobile/no-JavaScript/search acceptance
+ran successfully; final batch validations and exact-head Actions are recorded
+after push. The five major decisions remain proposed and Issue1458 stays open.
+
+### Final94-source comparison receipt
+
+The ledger records **94/94** complete comparisons; no source remains pending.
+The final batch completed w72, w73, w82, w86.
+All original sections, tables and numbered entries are read; exact decoded
+paragraph reuse and every unique block are recorded for w80/w24/w78. Shared
+paragraphs are not duplicate independent witnesses. All unchanged NFT
+descriptions and separate current product/biography authority remain.
+
+Lady-INK gains four source-recovery paragraphs in two locally attributed
+sections: CrownedVandal/Janitor/Luminous continuation and LevelNine explanation.
+Native contents/search terms/revision and publishing discovery are updated.
+All existing paragraphs, adult relationships, IDs and functional components
+are preserved; no new article or approved universal ending. Fresh full Spirit
+Born reading covers66 owning blocks, without rewriting its folklore/street tales.
+Mandatory Wiki and isolated Lady desktop/mobile/no-JavaScript/search acceptance
+ran successfully; final batch validations and exact-head Actions are recorded
+after push. The five major decisions remain proposed and Issue1458 stays open.
+
+## Inherited PR #1459 verification and review receipts
 
 - **94** original archive files verified against archive SHA-256, CSV and the
   independent immutable ledger; **93** unique contents, **2,334,149** bytes.
@@ -1184,3 +1369,41 @@ Push corrected code on the existing branch, reply to and resolve the three
 existing P2 threads, and record final exact-head Actions results in PR1459 and
 the existing Issue1458 comment. Hold merge until required checks and maintainer
 approval; do not self-apply the prose label or merge/deploy.
+
+## Final review continuation — 94/94
+
+All33 sources outstanding at the reviewed61-source head are now fully compared.
+The final four are w72/w73/w82/w86; every narrative, mission, table, Codex entry
+and incomplete terminal heading has a specific disposition. Current98 owning
+audits comprise96 full and two focused. Bitcoin, BitcoinWitness and SatoshiScroll
+are the three new full audits; unchanged prior full readings are reused, not
+counted again. Source identities/checksums/disposition fields remain immutable.
+
+Five complete GK packets now include exact source quotes, paragraph/hash
+locators, alternatives, primary owners and dependent-claim file maps. SAM dates
+and six membership institutions are explicit proposed editorial work. No source
+research backlog remains; approval and future ripple implementation remain open.
+PR1460 stays draft/on hold and Issue1458 stays open. Local/generated/browser
+and complete exact-head Actions evidence will be recorded after final push.
+
+## Final local verification and release hold
+
+Full npm test completed allfive domains. Four additional baseline navigation
+groups found in the structural audit were restored (GKniftyHEADS Categories,
+HODL RelatedWarPages, SacredChain CoreHistory and WiderWorld). Generator
+regressions preserve unmatched nested groups, categorycard grids and disclosure
+state; the permanent lore preservation guard also rejects removed/restructured
+groups and changes to inline styles that hide voting controls. A subsequent complete Wiki run passes on this final code, with424pages,
+94originals and89decisions. Eighteen article views, nine no-JavaScript pages and
+twelve search/autocomplete queries pass; citation checks include the five
+original routes plus Lady’s existing panel and account gate.
+
+All785 baseline paragraphs/263IDs remain across nine articles;573 internal
+links resolve. All145 NFT pages and functional shells stay preserved. Every
+existing relatedgroup tag/class/grid/role/openstate/owner nesting is preserved.
+Graph417indexed/427nodes/2083edges/75mobile passes; eleven generated outputs
+are stable. Fresh Pages artifact verifies allnine HTML and migration JS/CSS;
+no deployment. Original register identity/size/hash/disposition fields remain
+unchanged. Complete final-head Actions results will be posted to PR1460 after
+push; historical3150 evidence above is not presented as the final head.
+Five major decisions remain proposed; no merge or issue closure.

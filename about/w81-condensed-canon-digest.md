@@ -4,6 +4,17 @@
 
 Status: condensed source digest
 
+Phase 2 checkpoint: **94/94** complete source comparisons; **none remain**.
+Eighteen new comparisons recover distinctive dossier, Chronometer, Flesh Fade,
+Pinks, Kent and Whale testimony, and check the remaining short business,
+token/channel, manifesto and operational accounts against their owning pages.
+Incompatible history, ontology and live-product claims retain exact attribution.
+Nineteen further comparisons close all seven previously read pending originals.
+All remaining sources and connected comparisons are complete. Five major GK decisions remain proposed.
+Use the current [progress ledger](../brand-canon/wiki-rewrites/issue-1458-progress.md)
+and [source audit](../brand-canon/wiki-rewrites/issue-1458-audit.json) for exact
+scopes; the older orientation and first-tranche descriptions below are historical.
+
 Updated: 2026-10-08 (source reconciliation; original September summary retained)
 
 Source archive: the historical W81 set of 94 source files; the uploaded `RAW CANNON.zip` repackages the same 94 uncompressed source bytes
@@ -278,3 +289,49 @@ The archive should feed the movement. It should not bury the user under lore bef
 ## Issue #1458 first implementation tranche
 
 Merged #1457 already supplies Fifth Carbon across 12 articles. This tranche adds `wiki/whisper-codex.html` (W1), `wiki/six-pillars.html` (w32), `wiki/great-consensus.html` (w33), and `wiki/the-crypto-moongirls.html` (w56), with source attribution and connected existing-page additions. Cut Ledger is newly authored adult fiction, not W81 recovery. A source’s entire claim/scene transfer is not inferred from these routes. Full SAM, serial-ending, forty-roster and repository-wide semantic reconciliation remain pending.
+
+## PR1460 review continuation — 9 October2026
+
+Historical955fa4ea5 checkpoint:80/94;14 then remained: w21, w23, w24, W4, w66, w67, w72, w73, w78, W8, w80, w82, w86, w87.
+Nineteen additional source comparisons close all earlier fully read pending originals.
+The existing audit records every substantive disposition and ten fresh owning
+article readings; all five major decisions remain proposed. No public lore,
+NFT descriptions or accepted ending is changed by this research checkpoint.
+Restored citation UI and permanent functional-preservation checks are verified
+on correction commit3150ac95; its exact-head Wiki/Graph checks retain the
+maintainer prose-approval hold. See the progress ledger for the complete receipt.
+
+### Detailed future recovery and remaining comparison checkpoint
+
+Historical90-source checkpoint: four sources then remained (w72/w73/w82/w86).
+This batch compares w66, w80, w87, w21, w23, w24, w78, W8, W4, w67. Exact reuse of
+previously read paragraphs is recorded for w80/w24/w78; source identities and
+bytes are preserved. Lady’s existing article now recovers the Crowned Vandal,
+Janitor and Luminous endpoint with local w21 attribution, and a separate W20
+technical interpretation. No settled ending, immunity, real artist upload or
+NFT reward is adopted; all existing adult stories remain. Spirit Borns receives
+a full current owning reading, without a prose change. Five major choices
+remain proposed; no merge, deployment or issue closure.
+
+### Detailed future recovery and remaining comparison checkpoint
+
+Final comparison count:94/94; no source remains pending.
+This batch compares w72, w73, w82, w86. Exact reuse of
+previously read paragraphs is recorded for w80/w24/w78; source identities and
+bytes are preserved. Lady’s existing article now recovers the Crowned Vandal,
+Janitor and Luminous endpoint with local w21 attribution, and a separate W20
+technical interpretation. No settled ending, immunity, real artist upload or
+NFT reward is adopted; all existing adult stories remain. Spirit Borns receives
+a full current owning reading, without a prose change. Five major choices
+remain proposed; no merge, deployment or issue closure.
+
+### Final94-source approval boundary
+
+All94 original witnesses are fully compared (43 inherited,51 Phase2).
+The audit records98 distinct owning article audits (96 full/two focused).
+No unread source or pending connected comparison remains. Five exact-evidence
+GK packets and affected-file maps are in issue-1458-proposals.md and the
+reconciliation decisions. Comparison does not approve those choices, certify
+old external products or require publishing every game proposal. Approved
+modern stories, scripture, NFT descriptions and functions remain preserved.
+Issue1458 stays open; PR1460 remains draft/on hold with no merge or deployment.

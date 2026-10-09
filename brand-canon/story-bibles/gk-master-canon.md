@@ -79,8 +79,8 @@ Thirty-four named readings are current convergence; six positions are pending
 source-supported reconciliation and GK approval. Nine live Battle Chamber
 options remain operationally separate. The following descriptions are the
 published commentary's reading, not a full transfer of each original faction
-biography. Each culture's modern article and raw sources still need full
-history/relationship audit. No temporary escort, emergency muster, title or
+biography. All original sources and the current named culture owners have
+now been compared; new membership institutions still need GK approval. No temporary escort, emergency muster, title or
 administrative office fills a slot simply because it has a name.
 
 | Current named reading | Existing characteristic reading / tension |
@@ -349,6 +349,86 @@ rediscovering merged modern stories. Every substantive new decision needs exact
 source, authority, affected paths, rationale and approval when required. This
 bible is the working convergence entry point; pending items must remain visible
 until they are actually researched and implemented.
+
+### Phase 2: dossier, Chronometer and the loss of warmth
+
+Phase 2 starts from merged main `cc856157f5bd23e1b7ae3ed032af44c6b725c524`,
+whose tree exactly matches PR #1459's corrected head. Eighteen further sources
+have complete section/claim comparison: W18, w85, w28, w29, w83, w88, W9,
+w74, w75, w76, w77, w79, w89, w81, w90, w91, W11 and W16. The cumulative
+count is **94/94**, with no source comparison still open. W19/W15/w25/M16/W5/
+w69/W20 retain their full reading receipts; their connected comparisons are
+now complete in the review continuation below.
+
+W18's Alfie portrait now retains Kid Blaze 3008's rooftop runs, Thames wallet
+fishing, poetry, banned murals, named can and gun, and reported refuges. Its
+2789 breach precedes the end of its own 2789–2791 loyal service, before the
+larger city-chronology conflict is even considered. The claimed Sarah affair,
+3006 NULL merger, lost daughter, rescue totals and immortal futures remain
+disputed. The source's refusal to name inside children is recovered without
+absorbing Jodie's leadership, Dera's private refusal or the independent X Kids.
+Bram's assaults, Alfie's known delay, Tessa and Vela's injuries, and Sena's
+ceased response remain the existing modern history.
+
+w85's seven-chapter Crypto Protocol is already owned by Thorne's article;
+GKniftyHEADS now carries the matching Chronometer mission, Jump Leader Joe,
+unnamed Archivist, failed utopian return and concealed final blueprint. Its
+keepers fade in a branch they helped create. The last flicker cannot supply a
+new resurrection law or erase Rell and Omra's current lives. No source bridge
+merges Thorne's branch identity with every later city-builder legend.
+
+w28's radical Flesh Fade is a materially different rescue account: financial
+failure, Machine-administered deprivation, toxic bodily injury, Minting Stations
+and Arch-Scribe Vex's grief over lost warmth. Its universal ghost-world conclusion
+remains an unapproved ontology. w61's damaged heads, W5's voluntary ceremony and
+the inherited Sacred Fork are not one established event merely because their
+language overlaps. Sacred Chain's physical houses, paid custody, funerary care,
+failed restoration and Holdfast consequences retain their existing history.
+
+w29's Pinks equipment doctrine now retains the claimed sixty-second Digital
+Statue, ten-block Theta-Shield and Know-Your-Hash anonymity offence. The source
+calls its patrol executioners, then denies the role while assigning final
+destruction to NULL. Capture and delivery are still its alleged acts. The
+competing w65 account supplies an uncontrolled threat, not a second confirmation
+of an obedient disposal service. The Enforcers' existing custody allegations
+remain attributed. Glaze's bonus, Nela's injury and lost work, the unfinished
+hearing, Ressa's refusal and Hessa/Bex's Fifth Carbon consequences survive.
+
+w83's Holly Citadel account is a separate Kent migration fable, not proof that
+Maidstone lies at its stated coordinates or that crossing Greenwich changes
+political jurisdiction. Its named faction tasks are preserved beside Nia's
+ordinary place-record work. A WAX inventory and a promised melt-up establish
+neither a current valuation nor an intact command post in 3008.
+
+W11's full ten-chapter Chronicle supplies a Cold Storage cult of privileged
+visions and a 1983 Covenant demanding mural labour for each patron move. Its
+promised complete covenant text is absent. Sarah's Silent Auction title,
+Depth Guardian, is preserved as the tale's patronage legend; no accepted new
+warrior, Forty-first culture or Hard Fork immunity benefit follows. The source's
+real artist commissions, donations and airdrops are unverified. Sounding House,
+the Unfunded Crossing, Junn's lost rooms and Sarren's refusal remain material
+consequences in the current world.
+
+W9's proposed autonomous LOREWARS publisher cannot replace human canon decisions
+or make $BLAZE rewards live. W16's three-repository architecture remains dated
+software design and metaphor, not Agent SAM's biography or NULL's origin.
+Current static readers and preservation-first publishing can continue without
+certifying external intelligence servers. w91's numbered but unnamed examples
+01/13/28/40 do not establish missing cultures; its demand that every faction
+want one destruction is an ideological voice, not a world census.
+
+Complete w74/w75/w76/w77/w79/w81/w88/w89/w90 comparisons verify existing
+coverage of business history, greypapers, channels, Buster's style and public
+culture. The PUNK page preserves its source's missing2.5% allocation; LFGK
+preserves circulation/escrow and community-release arithmetic tensions. STAKE
+plans are not consensus staking. No new biography, market guarantee, company
+role, token mechanism or blanket creator rights are derived from these texts.
+Strong cultural details remain; repeated marketing does not require duplicate
+paragraphs in an already adequate article.
+
+No new original fiction, accepted historical anchor, scripture, identity merger
+or Forty assignment is added in this checkpoint. Exact section dispositions
+and source-level decisions are in the existing audit and decision registers.
 
 
 ### Complete Rocker/HODL witnesses and a repaired name reference
@@ -652,3 +732,49 @@ or replace the modern Forty. NULL is a threat, HODL an emergency protocol, and
 phygital value claims an aspiration subject to current creator terms. All current
 adult faction histories remain; a directory’s final unity slogan does not erase
 their actual costs or permanent disagreements.
+
+## PR1460 review continuation — 9 October2026
+
+Historical955fa4ea5 checkpoint:80/94;14 then remained: w21, w23, w24, W4, w66, w67, w72, w73, w78, W8, w80, w82, w86, w87.
+Nineteen additional source comparisons close all earlier fully read pending originals.
+The existing audit records every substantive disposition and ten fresh owning
+article readings; all five major decisions remain proposed. No public lore,
+NFT descriptions or accepted ending is changed by this research checkpoint.
+Restored citation UI and permanent functional-preservation checks are verified
+on correction commit3150ac95; its exact-head Wiki/Graph checks retain the
+maintainer prose-approval hold. See the progress ledger for the complete receipt.
+
+### Detailed future recovery and remaining comparison checkpoint
+
+Historical90-source checkpoint: four sources then remained (w72/w73/w82/w86).
+This batch compares w66, w80, w87, w21, w23, w24, w78, W8, W4, w67. Exact reuse of
+previously read paragraphs is recorded for w80/w24/w78; source identities and
+bytes are preserved. Lady’s existing article now recovers the Crowned Vandal,
+Janitor and Luminous endpoint with local w21 attribution, and a separate W20
+technical interpretation. No settled ending, immunity, real artist upload or
+NFT reward is adopted; all existing adult stories remain. Spirit Borns receives
+a full current owning reading, without a prose change. Five major choices
+remain proposed; no merge, deployment or issue closure.
+
+### Detailed future recovery and remaining comparison checkpoint
+
+Final comparison count:94/94; no source remains pending.
+This batch compares w72, w73, w82, w86. Exact reuse of
+previously read paragraphs is recorded for w80/w24/w78; source identities and
+bytes are preserved. Lady’s existing article now recovers the Crowned Vandal,
+Janitor and Luminous endpoint with local w21 attribution, and a separate W20
+technical interpretation. No settled ending, immunity, real artist upload or
+NFT reward is adopted; all existing adult stories remain. Spirit Borns receives
+a full current owning reading, without a prose change. Five major choices
+remain proposed; no merge, deployment or issue closure.
+
+### Final94-source approval boundary
+
+All94 original witnesses are fully compared (43 inherited,51 Phase2).
+The audit records98 distinct owning article audits (96 full/two focused).
+No unread source or pending connected comparison remains. Five exact-evidence
+GK packets and affected-file maps are in issue-1458-proposals.md and the
+reconciliation decisions. Comparison does not approve those choices, certify
+old external products or require publishing every game proposal. Approved
+modern stories, scripture, NFT descriptions and functions remain preserved.
+Issue1458 stays open; PR1460 remains draft/on hold with no merge or deployment.

@@ -11,6 +11,14 @@
 
 ## Scope limits
 
+**Phase 2 semantic checkpoint:**94/94 comparisons complete; no source backlog.
+51 Phase2 source comparisons have full section-level receipts in
+`issue-1458-audit.json` and corresponding `GK-1458-P2-*` decisions. All seven
+previously fully read pending originals and all remaining full readings are compared.
+The genre/status table below is historical routing evidence, not a completion
+counter or promotion to accepted canon/live products. Original names, sizes
+and hashes remain unchanged. The current CSV adds precise decision/route links.
+
 These statuses describe whether a **subject** appears in existing wiki material, whether it is historical/opinion/planning, or whether it requires adjudication. **COVERED does not mean every source sentence was line-matched or published.** An existing wiki URL is not a claim of full scene transfer; a missing standalone URL is not proof that the topic is absent from ensemble articles. This is not a replacement for a source-to-page paragraph-level diff. The 2026 migration published substantially revised existing pages, so adding every old subplot would undo reconciliations.
 
 Do **not** fill the six currently unassigned Forty Paths positions from old alternative lists. Do **not** collapse HODL Warriors / HODL X Warriors, Bitcoin Kids / Bitcoin X Kids, Sacred/Aether Chain / World Chain / True Bitcoin Fork, or in-universe Agent SAM / deployed SAM and SPARKY tools. Do **not** assert live games, mints, rights, economics, historical clients or releases from these texts. The current accepted Year 3008 timeline is the 2030 Great Concord, later undated Sacred Fork, 2880 World Chain Triple Fork, by-2930 secure regions, and an open Final Fork.
@@ -151,3 +159,49 @@ After human decisions, any website change requires the separate site policy: aut
 ## Issue #1458 first implementation tranche
 
 Merged #1457 already supplies Fifth Carbon across 12 articles. This tranche adds `wiki/whisper-codex.html` (W1), `wiki/six-pillars.html` (w32), `wiki/great-consensus.html` (w33), and `wiki/the-crypto-moongirls.html` (w56), with source attribution and connected existing-page additions. Cut Ledger is newly authored adult fiction, not W81 recovery. A source’s entire claim/scene transfer is not inferred from these routes. Full SAM, serial-ending, forty-roster and repository-wide semantic reconciliation remain pending.
+
+## PR1460 review continuation — 9 October2026
+
+Historical955fa4ea5 checkpoint:80/94;14 then remained: w21, w23, w24, W4, w66, w67, w72, w73, w78, W8, w80, w82, w86, w87.
+Nineteen additional source comparisons close all earlier fully read pending originals.
+The existing audit records every substantive disposition and ten fresh owning
+article readings; all five major decisions remain proposed. No public lore,
+NFT descriptions or accepted ending is changed by this research checkpoint.
+Restored citation UI and permanent functional-preservation checks are verified
+on correction commit3150ac95; its exact-head Wiki/Graph checks retain the
+maintainer prose-approval hold. See the progress ledger for the complete receipt.
+
+### Detailed future recovery and remaining comparison checkpoint
+
+Historical90-source checkpoint: four sources then remained (w72/w73/w82/w86).
+This batch compares w66, w80, w87, w21, w23, w24, w78, W8, W4, w67. Exact reuse of
+previously read paragraphs is recorded for w80/w24/w78; source identities and
+bytes are preserved. Lady’s existing article now recovers the Crowned Vandal,
+Janitor and Luminous endpoint with local w21 attribution, and a separate W20
+technical interpretation. No settled ending, immunity, real artist upload or
+NFT reward is adopted; all existing adult stories remain. Spirit Borns receives
+a full current owning reading, without a prose change. Five major choices
+remain proposed; no merge, deployment or issue closure.
+
+### Detailed future recovery and remaining comparison checkpoint
+
+Final comparison count:94/94; no source remains pending.
+This batch compares w72, w73, w82, w86. Exact reuse of
+previously read paragraphs is recorded for w80/w24/w78; source identities and
+bytes are preserved. Lady’s existing article now recovers the Crowned Vandal,
+Janitor and Luminous endpoint with local w21 attribution, and a separate W20
+technical interpretation. No settled ending, immunity, real artist upload or
+NFT reward is adopted; all existing adult stories remain. Spirit Borns receives
+a full current owning reading, without a prose change. Five major choices
+remain proposed; no merge, deployment or issue closure.
+
+### Final94-source approval boundary
+
+All94 original witnesses are fully compared (43 inherited,51 Phase2).
+The audit records98 distinct owning article audits (96 full/two focused).
+No unread source or pending connected comparison remains. Five exact-evidence
+GK packets and affected-file maps are in issue-1458-proposals.md and the
+reconciliation decisions. Comparison does not approve those choices, certify
+old external products or require publishing every game proposal. Approved
+modern stories, scripture, NFT descriptions and functions remain preserved.
+Issue1458 stays open; PR1460 remains draft/on hold with no merge or deployment.

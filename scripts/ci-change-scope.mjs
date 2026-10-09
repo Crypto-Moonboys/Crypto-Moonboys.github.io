@@ -12,6 +12,9 @@ const SCOPES = {
     'scripts/canon-test-command.test.mjs',
     'scripts/verify-w81-archive*.py',
     'scripts/resolve-canon-prose-approval*.mjs',
+    'scripts/wiki-lore-preservation-check*.mjs',
+    'scripts/generate-related-wiki-paths.mjs',
+    'scripts/relationship-hints-related-wiki-paths.test.mjs',
     '**/*.html',
     'about/**',
     'api/**',
@@ -93,6 +96,7 @@ const SCOPES = {
     'package-lock.json',
   ],
   visual: [
+    'scripts/wiki-citation-preservation-browser.test.mjs',
     '**/*.html',
     'about/**',
     'api/**',

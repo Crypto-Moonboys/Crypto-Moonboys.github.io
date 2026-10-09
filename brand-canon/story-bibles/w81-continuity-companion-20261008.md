@@ -10,6 +10,23 @@
 
 **Fictional canon owners:** [First Witness hub](../../wiki/the-first-witness.html), [master chronology](../../wiki/first-witness-master-chronology.html), [Concordance](../../wiki/first-witness-concordance.html), [Forty Paths](../../wiki/first-witness-forty-paths.html), [source register](../../wiki/first-witness-source-register.html).
 
+## Phase 2 continuation receipt
+
+Merged #1459 is the baseline. Current comparison count:94/94;no source still open.
+The master bible/progress/audit record51 Phase2 complete source comparisons;
+the seven previously read pending connected comparisons are now complete.
+W18's dates/relationship and w28's literal ghost-world claims remain disputed;
+w85's Chronometer belongs to its branch; w29 contradicts itself on who executes.
+Maidstone's w83 Holly Citadel is a migration fable, not a verified address or
+future fortress. W11's Depth Guardian title and two covenants are patronage
+legends; its unofficial41st faction changes no roster. W9/W16 describe proposals
+and software metaphors, not a current reward or fictional SAM identity.
+The short token/business/channel/artist/manifesto originals are fully compared
+with their existing owners, keeping dated claims and arithmetic faults visible.
+No original scripture, accepted anchor, Forty slot, final outcome or real artist
+biography is revised. Necessary Monsters, Fifth Carbon, Black Dividend,
+Last Loading and all five #1459 connecting stories remain preserved.
+
 ## What this document can and cannot decide
 
 This companion preserves source material **without silently promoting it into settled truth**. In this archive, a witness can be wrong, a character can lie, a proposed game can be cancelled and two documents can describe incompatible endings. The published First Witness provides the convergence account; old posts remain evidence of what different writers or factions believed.
@@ -123,3 +140,49 @@ The research-first sequence is:
 ## Issue #1458 first implementation tranche
 
 Merged #1457 already supplies Fifth Carbon across 12 articles. This tranche adds `wiki/whisper-codex.html` (W1), `wiki/six-pillars.html` (w32), `wiki/great-consensus.html` (w33), and `wiki/the-crypto-moongirls.html` (w56), with source attribution and connected existing-page additions. Cut Ledger is newly authored adult fiction, not W81 recovery. A source’s entire claim/scene transfer is not inferred from these routes. Full SAM, serial-ending, forty-roster and repository-wide semantic reconciliation remain pending.
+
+## PR1460 review continuation — 9 October2026
+
+Historical955fa4ea5 checkpoint:80/94;14 then remained: w21, w23, w24, W4, w66, w67, w72, w73, w78, W8, w80, w82, w86, w87.
+Nineteen additional source comparisons close all earlier fully read pending originals.
+The existing audit records every substantive disposition and ten fresh owning
+article readings; all five major decisions remain proposed. No public lore,
+NFT descriptions or accepted ending is changed by this research checkpoint.
+Restored citation UI and permanent functional-preservation checks are verified
+on correction commit3150ac95; its exact-head Wiki/Graph checks retain the
+maintainer prose-approval hold. See the progress ledger for the complete receipt.
+
+### Detailed future recovery and remaining comparison checkpoint
+
+Historical90-source checkpoint: four sources then remained (w72/w73/w82/w86).
+This batch compares w66, w80, w87, w21, w23, w24, w78, W8, W4, w67. Exact reuse of
+previously read paragraphs is recorded for w80/w24/w78; source identities and
+bytes are preserved. Lady’s existing article now recovers the Crowned Vandal,
+Janitor and Luminous endpoint with local w21 attribution, and a separate W20
+technical interpretation. No settled ending, immunity, real artist upload or
+NFT reward is adopted; all existing adult stories remain. Spirit Borns receives
+a full current owning reading, without a prose change. Five major choices
+remain proposed; no merge, deployment or issue closure.
+
+### Detailed future recovery and remaining comparison checkpoint
+
+Final comparison count:94/94; no source remains pending.
+This batch compares w72, w73, w82, w86. Exact reuse of
+previously read paragraphs is recorded for w80/w24/w78; source identities and
+bytes are preserved. Lady’s existing article now recovers the Crowned Vandal,
+Janitor and Luminous endpoint with local w21 attribution, and a separate W20
+technical interpretation. No settled ending, immunity, real artist upload or
+NFT reward is adopted; all existing adult stories remain. Spirit Borns receives
+a full current owning reading, without a prose change. Five major choices
+remain proposed; no merge, deployment or issue closure.
+
+### Final94-source approval boundary
+
+All94 original witnesses are fully compared (43 inherited,51 Phase2).
+The audit records98 distinct owning article audits (96 full/two focused).
+No unread source or pending connected comparison remains. Five exact-evidence
+GK packets and affected-file maps are in issue-1458-proposals.md and the
+reconciliation decisions. Comparison does not approve those choices, certify
+old external products or require publishing every game proposal. Approved
+modern stories, scripture, NFT descriptions and functions remain preserved.
+Issue1458 stays open; PR1460 remains draft/on hold with no merge or deployment.

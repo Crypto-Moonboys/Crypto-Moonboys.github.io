@@ -218,11 +218,12 @@ assert.ok(!css.includes('.battle-engagement-deck {'), 'wiki.css no longer owns f
 assert.ok(battleCss.includes('.wiki-engagement-module .battle-deck.battle-engagement-deck'), 'battle-layer.css owns final engagement module layout');
 
 // Runtime cleanup must preserve authored disclosures using historical TOC
-// anchors, while removing legacy navigation and separate citation panels.
+// anchors and existing citation voting, while removing legacy navigation.
 {
-  const fixture = (tagName, id, classes, inside) => ({
+  const fixture = (tagName, id, classes, inside, citationAttribute = false) => ({
     tagName, id, inside, removed: false,
     classList: { contains: value => classes.includes(value) },
+    getAttribute: name => name === 'data-citation-vote-panel' && citationAttribute ? 'true' : null,
     remove() { this.removed = true; }
   });
   const nodes = [
@@ -232,7 +233,8 @@ assert.ok(battleCss.includes('.wiki-engagement-module .battle-deck.battle-engage
     fixture('DIV', '', ['toc'], true),
     fixture('DETAILS', 'toc', [], false),
     fixture('DIV', '', ['citation-vote-panel'], true),
-    fixture('DETAILS', '', ['citation-vote-panel'], true)
+    fixture('DETAILS', '', ['citation-vote-panel'], true),
+    fixture('SECTION', '', [], false, true)
   ];
   const context = {
     setTimeout() {},
@@ -245,13 +247,14 @@ assert.ok(battleCss.includes('.wiki-engagement-module .battle-deck.battle-engage
   const article = { contains: node => node.inside };
   context.window.testCleanup(article);
   context.window.testCleanup(article); // Mutation-observer repeat stays safe.
-  assert.deepEqual(nodes.map(node => node.removed), [false, false, true, true, true, true, true]);
+  assert.deepEqual(nodes.map(node => node.removed), [false, false, true, true, true, false, false, false]);
 }
 
 const migrationCss = fs.readFileSync(path.join(process.cwd(), 'css/wiki-runtime-migration.css'), 'utf8');
 assert.ok(migrationCss.includes('#toc:not(details)') && migrationCss.includes('.toc:not(details)'),
   'legacy TOC hiding excludes native details disclosures');
 assert.doesNotMatch(migrationCss, /(?:#toc|\.toc)\s*,/, 'no blanket TOC hiding can override the native disclosure');
+assert.doesNotMatch(migrationCss, /\.citation-vote-panel|\[data-citation-vote-panel/, 'runtime migration cannot hide the preserved citation voting panel');
 
 // Expanded biographies must expose one complete authored contents landmark.
 // Inspect all disclosure styles, including NULL's historical character menu.
