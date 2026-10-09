@@ -81,9 +81,9 @@ test('website proof in URL queries is rejected before any authentication databas
   const { data } = await loggedIn(env);
   const raw = JSON.stringify(data.telegram_auth);
   const token = data.telegram_auth.hash;
-  const representations = [raw, JSON.stringify(token),
+  const representations = [token, ' \t' + token + '\n ', raw, JSON.stringify(token),
     JSON.stringify({ telegram_auth: data.telegram_auth }), JSON.stringify({ telegram_auth: token })];
-  const proofs = [token, ' \t' + token + '\n ', ...representations.flatMap(proof => [proof, Buffer.from(proof).toString('base64url')])];
+  const proofs = representations.flatMap(proof => [proof, Buffer.from(proof).toString('base64url'), Buffer.from(proof).toString('base64')]);
   const noReads = { ...env, DB: { prepare() { assert.fail('URL credentials must be rejected before database access'); } } };
   for (const path of ['/faction/status', '/player/state', '/player/modifiers', '/player/daily-missions', '/faction/signal']) {
     for (const key of ['telegram_auth', 'auth_evidence']) {

@@ -35,6 +35,8 @@ for (const [name, viewport] of [['desktop', { width: 1440, height: 900 }], ['mob
       const callbackSessionCookies = [];
       const websiteProofUrls = [];
       let renewalUnavailable = false;
+      let initialCookieProbeUnavailable = false;
+      let failedCookieProbes = 0;
       const renewalRejections = [];
       const errors = [];
       page.on('pageerror', error => errors.push(error.message));
@@ -52,9 +54,11 @@ for (const [name, viewport] of [['desktop', { width: 1440, height: 900 }], ['mob
           if (url.pathname === '/telegram/website/callback') callbackSessionCookies.push((nodeRequest.headers.get('Cookie') || '').includes('__Host-moonboys_session='));
           let response;
           if (url.pathname.startsWith('/telegram/website/')) {
-            if (url.pathname.endsWith('/renew') && renewalUnavailable) {
+            if ((url.pathname.endsWith('/renew') && renewalUnavailable) || (url.pathname.endsWith('/session') && initialCookieProbeUnavailable)) {
+              if (url.pathname.endsWith('/session')) failedCookieProbes++;
               response = Response.json({ error: 'unavailable' }, { status: 503, headers: { 'Access-Control-Allow-Origin': SITE, 'Access-Control-Allow-Credentials': 'true' } });
             } else response = await handleTelegramWebsiteAuth(nodeRequest, env, authorization ? provider(authorization) : undefined);
+            if (url.pathname.endsWith('/callback') && response.status === 303 && callbackSessionCookies.length === 1) initialCookieProbeUnavailable = true;
             if (url.pathname.endsWith('/renew') && [401, 403].includes(response.status)) renewalRejections.push(response.status);
           } else if (['/blocktopia/progression', '/telegram/user/status', '/faction/status', '/telegram/link/confirm', '/player/modifiers/active'].includes(url.pathname)) {
             response = await apiWorker.fetch(nodeRequest, env);
@@ -82,10 +86,21 @@ for (const [name, viewport] of [['desktop', { width: 1440, height: 900 }], ['mob
         return route.abort();
       });
       await page.goto(SITE + '/gkniftyheads-incubator.html', { waitUntil: 'domcontentloaded' });
+      const failedFirstProbe = page.waitForResponse(response => response.url().endsWith('/telegram/website/session') && response.status() === 503);
       await page.locator('[data-telegram-login]').first().click();
       await page.waitForURL(SITE + '/gkniftyheads-incubator.html', { waitUntil: 'domcontentloaded', timeout: 8000 }).catch(async error => {
         throw new Error(new URL(page.url()).pathname + ': ' + (await page.locator('body').innerText()).slice(0, 160) + '\n' + error.message);
       });
+      await failedFirstProbe;
+      await page.waitForFunction(() => !!window.MOONBOYS_STATE);
+      assert.equal(await page.evaluate(async () => {
+        await window.MOONBOYS_IDENTITY.ready;
+        await window.MOONBOYS_STATE.hydrateState();
+        return window.MOONBOYS_STATE.getState().source;
+      }), 'guest');
+      assert.ok(failedCookieProbes >= 2, 'initial session probe and immediate hydration retry both failed');
+      initialCookieProbeUnavailable = false;
+      await page.evaluate(() => window.MOONBOYS_IDENTITY.getFreshTelegramAuth());
       await page.waitForFunction(() => window.MOONBOYS_IDENTITY?.getIdentityTier() === 'telegram_linked');
       await page.waitForFunction(() => window.MOONBOYS_STATE?.getState().source === 'server');
       const state = await page.evaluate(() => ({ id: window.MOONBOYS_IDENTITY.getTelegramId(), state: window.MOONBOYS_STATE.getState(),
@@ -131,6 +146,8 @@ for (const [name, viewport] of [['desktop', { width: 1440, height: 900 }], ['mob
         return window.MOONBOYS_IDENTITY.getFreshTelegramAuth({ force: true });
       });
       assert.equal(failedRenewal, null);
+      assert.equal(await page.evaluate(() => window.MOONBOYS_IDENTITY.isTelegramLinked()), true, 'temporary proof expiry retains verified activation');
+      assert.equal(await page.evaluate(() => window.MOONBOYS_IDENTITY.getSignedTelegramAuth()), null, 'expired proof remains unusable');
       // A progression write must wait during the outage, without submitting
       // an unauthenticated request or losing the unsent modifier choice.
       const modifierSaved = page.waitForResponse(response => response.url().endsWith('/player/modifiers/active') && response.request().method() === 'POST');

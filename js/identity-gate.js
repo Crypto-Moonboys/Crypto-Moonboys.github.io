@@ -506,11 +506,12 @@
   }
 
   /**
-   * Returns true for a fresh website session or a completed legacy bot link.
-   * Only a linked account is fully competition-active.
+   * Returns true for a retained verified website identity or a legacy bot link.
+   * Short-proof expiry requires renewal; confirmed cookie expiry clears identity.
+   * Every protected write must still obtain fresh proof and pass server checks.
    */
   function isTelegramLinked() {
-    if (lsGet('moonboys_tg_session_mode') === 'website') return !!websiteAuth && !isTelegramAuthExpired(websiteAuth);
+    if (lsGet('moonboys_tg_session_mode') === 'website') return !!websiteAuth && String(websiteAuth.id) === String(getTelegramId());
     return !!(lsGet(LS_TG_ID) && lsGet(LS_TG_LINKED));
   }
 

@@ -16,15 +16,17 @@ function browser({ seed = {}, storage = new Map(Object.entries(seed)), fetchImpl
   const location = { hostname: 'cryptomoonboys.com', origin: 'https://cryptomoonboys.com', pathname: '/games/', search: '',
     assign: value => navigation.push(value), reload: () => navigation.push('reload') };
   const listeners = {};
+  const windowListeners = new Map();
   const nodes = new Map();
   const appendChild = node => { if (node.id) nodes.set(node.id, node); };
   const window = { location, MOONBOYS_API: config, setInterval: fn => timers.push(fn),
     setTimeout: (fn, milliseconds) => { assert.equal(milliseconds, 8000); const id = ++timerId; deadlines.set(id, fn); return id; }, clearTimeout: id => deadlines.delete(id),
-    dispatchEvent: event => events.push(event), alert() {} };
+    addEventListener(name, fn) { const callbacks = windowListeners.get(name) || []; callbacks.push(fn); windowListeners.set(name, callbacks); },
+    dispatchEvent: event => { events.push(event); for (const callback of windowListeners.get(event.type) || []) callback(event); }, alert() {} };
   const document = { readyState, hidden: false, addEventListener(name, fn) { listeners[name] = fn; }, getElementById(id) { return nodes.get(id) || null; },
     createElement() { return { style: {}, appendChild, setAttribute() {}, querySelector() { return { addEventListener() {}, focus() {} }; }, addEventListener() {} }; },
     head: { appendChild }, body: { appendChild } };
-  const context = vm.createContext({ window, document, localStorage: { getItem: key => storage.get(key) || null, setItem: (key, value) => storage.set(key, String(value)), removeItem: key => storage.delete(key) },
+  const context = vm.createContext({ window, document, setTimeout: () => 0, localStorage: { getItem: key => storage.get(key) || null, setItem: (key, value) => storage.set(key, String(value)), removeItem: key => storage.delete(key) },
     fetch: async (...args) => { calls.push(args); return args[0].endsWith('/capabilities') ? typeof capability === 'function' ? capability(...args) : Response.json(capability) : fetchImpl(...args); }, AbortController, CustomEvent: class { constructor(type, options) { this.type = type; this.detail = options.detail; } }, console });
   vm.runInContext(source, context);
   return { gate: window.MOONBOYS_IDENTITY, storage, calls, events, timers, navigation, document, window, listeners, deadlines, context };
@@ -359,7 +361,8 @@ test('an expired access credential renews before a protected action decides the 
   await b.gate.ready;
   b.document.hidden = true;
   b.gate.getTelegramAuth().expires_at = Math.floor(Date.now() / 1000) - 1;
-  assert.equal(b.gate.isTelegramLinked(), false);
+  assert.equal(b.gate.isTelegramLinked(), true, 'short proof expiry retains verified activation until the cookie session is rejected');
+  assert.equal(b.gate.getSignedTelegramAuth(), null);
   let allowed = 0;
   await b.gate.requireLinkedAccount(() => allowed++);
   assert.equal(allowed, 1);
@@ -380,7 +383,8 @@ test('visible-tab renewal retries after an interrupted refresh and preserves exp
   b.document.hidden = false;
   b.listeners.visibilitychange();
   await new Promise(resolve => setImmediate(resolve));
-  assert.equal(b.gate.isTelegramLinked(), false);
+  assert.equal(b.gate.isTelegramLinked(), true, 'transient renewal failure retains verified activation');
+  assert.equal(b.gate.getSignedTelegramAuth(), null);
   b.timers[0]();
   await new Promise(resolve => setImmediate(resolve));
   assert.equal(b.gate.isTelegramLinked(), true);
@@ -473,4 +477,168 @@ test('protected gates retry an unhealthy initial cookie probe before displaying 
   await b.gate.requireLinkedAccount(() => allowed++);
   assert.equal(allowed, 1);
   assert.equal(b.document.getElementById('tg-sync-gate-modal'), null);
+});
+
+function loadProfile(b) {
+  const busListeners = new Map();
+  b.window.MOONBOYS_EVENT_BUS = { on(name, callback) { busListeners.set(name, callback); } };
+  vm.runInContext(readFileSync('js/core/moonboys-state.js', 'utf8'), b.context);
+  return { state: b.window.MOONBOYS_STATE, emit(name, detail) { busListeners.get(name)?.(detail); } };
+}
+
+function progressionData(xp = 6300) { return { ok: true, progression: { arcade_xp_total: xp } }; }
+
+test('late verified cookie recovery retries guest profile hydration and fetches authoritative XP once', async () => {
+  let offline = true;
+  const b = browser({ fetchImpl: url => {
+    if (url.endsWith('/blocktopia/progression')) return Response.json(progressionData());
+    if (offline) throw new Error('temporary outage');
+    return Response.json(sessionData());
+  } });
+  const { state } = loadProfile(b);
+  await state.hydrateState();
+  assert.equal(state.getState().source, 'guest');
+  offline = false;
+  await b.gate.getFreshTelegramAuth();
+  await state.hydrateState();
+  assert.equal(state.getState().source, 'server');
+  assert.equal(state.getState().xp, 6300);
+  for (let i = 0; i < 3; i++) b.window.dispatchEvent({ type: 'moonboys:telegram-session', detail: { telegram_id: ID } });
+  await state.hydrateState();
+  assert.equal(b.calls.filter(([url]) => url.endsWith('/blocktopia/progression')).length, 1);
+});
+
+test('concurrent profile hydration shares one fetch and preserves an in-flight live XP update', async () => {
+  let finish;
+  const b = browser({ fetchImpl: url => url.endsWith('/blocktopia/progression') ? new Promise(resolve => { finish = resolve; }) : Response.json(sessionData()) });
+  await b.gate.ready;
+  const { state, emit } = loadProfile(b);
+  const first = state.hydrateState();
+  const second = state.hydrateState();
+  while (!finish) await new Promise(resolve => setImmediate(resolve));
+  for (let i = 0; i < 3; i++) b.window.dispatchEvent({ type: 'moonboys:telegram-session', detail: { telegram_id: ID } });
+  emit('xp:update', { total: 6400 });
+  finish(Response.json(progressionData()));
+  await Promise.all([first, second]);
+  assert.equal(state.getState().xp, 6400);
+  assert.equal(state.getState().source, 'server');
+  assert.equal(b.calls.filter(([url]) => url.endsWith('/blocktopia/progression')).length, 1);
+});
+
+test('a verified-session event during a failed auth wait schedules one hydration retry', async () => {
+  let finish;
+  const b = browser({ fetchImpl: url => Response.json(url.endsWith('/blocktopia/progression') ? progressionData() : sessionData()) });
+  await b.gate.ready;
+  b.gate.getFreshTelegramAuth = () => new Promise(resolve => { finish = resolve; });
+  const { state } = loadProfile(b);
+  const pending = state.hydrateState();
+  while (!finish) await new Promise(resolve => setImmediate(resolve));
+  b.gate.getFreshTelegramAuth = async () => sessionData().telegram_auth;
+  for (let i = 0; i < 3; i++) b.window.dispatchEvent({ type: 'moonboys:telegram-session', detail: { telegram_id: ID } });
+  finish(null);
+  assert.equal((await pending).source, 'server');
+  assert.equal(state.getState().xp, 6300);
+  assert.equal(state.getState().source, 'server');
+  assert.equal(b.calls.filter(([url]) => url.endsWith('/blocktopia/progression')).length, 1);
+});
+
+test('unverified session events cannot hydrate authoritative profile data', async () => {
+  const b = browser({ capability: { ok: true, enabled: false } });
+  const { state } = loadProfile(b);
+  await state.hydrateState();
+  b.window.dispatchEvent({ type: 'moonboys:telegram-session', detail: { telegram_id: ID } });
+  await state.hydrateState();
+  assert.equal(state.getState().linked, false);
+  assert.equal(b.calls.some(([url]) => url.endsWith('/blocktopia/progression')), false);
+});
+
+test('a late response for a previous account cannot overwrite the recovered profile', async () => {
+  let finish;
+  const b = browser({ fetchImpl: (url, options) => {
+    if (!url.endsWith('/blocktopia/progression')) return Response.json(sessionData());
+    const id = JSON.parse(options.body).telegram_auth.id;
+    return id === ID ? new Promise(resolve => { finish = resolve; }) : Response.json(progressionData(7777));
+  } });
+  await b.gate.ready;
+  const { state } = loadProfile(b);
+  const pending = state.hydrateState();
+  while (!finish) await new Promise(resolve => setImmediate(resolve));
+  const next = { ...sessionData().telegram_auth, id: '987654321' };
+  b.storage.set('moonboys_tg_id', next.id);
+  b.gate.getFreshTelegramAuth = async () => next;
+  b.gate.getSignedTelegramAuth = () => next;
+  b.window.dispatchEvent({ type: 'moonboys:telegram-session', detail: { telegram_id: next.id } });
+  finish(Response.json(progressionData(6300)));
+  assert.equal((await pending).xp, 7777);
+  assert.equal(state.getState().xp, 7777);
+  assert.equal(b.calls.filter(([url]) => url.endsWith('/blocktopia/progression')).length, 2);
+});
+
+test('a verified account change replaces already hydrated profile values with that account\'s XP', async () => {
+  let xp = 6300;
+  const b = browser({ fetchImpl: url => Response.json(url.endsWith('/blocktopia/progression') ? progressionData(xp) : sessionData()) });
+  await b.gate.ready;
+  const { state } = loadProfile(b);
+  await state.hydrateState();
+  const next = { ...sessionData().telegram_auth, id: '987654321' };
+  xp = 17;
+  b.storage.set('moonboys_tg_id', next.id);
+  b.gate.getFreshTelegramAuth = async () => next;
+  b.gate.getSignedTelegramAuth = () => next;
+  b.window.dispatchEvent({ type: 'moonboys:telegram-session', detail: { telegram_id: next.id } });
+  await state.hydrateState();
+  assert.equal(state.getState().xp, 17);
+  assert.equal(state.getState().source, 'server');
+});
+
+function loadScoreClient(b) {
+  // Run the complete score/auth transport code with presentation modules stubbed.
+  vm.runInContext(readFileSync('js/arcade-sync.js', 'utf8').replace(/^export /gm, ''), b.context);
+  vm.runInContext('ArcadeSync.syncPendingArcadeProgress = async function () { return { skipped: true }; };', b.context);
+  b.context.ArcadeMeta = { trackGameResult: () => ({ tracked: false }) };
+  b.context.console = { warn() {}, info() {}, error() {} };
+  vm.runInContext(readFileSync('js/leaderboard-client.js', 'utf8').replace(/^import .*;\s*$/gm, '').replace(/^export /gm, ''), b.context);
+  return (...args) => b.context.submitScore(...args);
+}
+
+for (const renewalFailure of [false, true]) {
+  test(`expired website proof reaches score renewal after ${renewalFailure ? 'a transient timer failure' : 'a hidden-tab expiry'}`, async () => {
+    let renewals = 0;
+    const b = browser({ config: { BASE_URL: 'https://api.cryptomoonboys.com', LEADERBOARD_URL: 'https://leaderboard.test' },
+      fetchImpl: url => {
+        if (url.endsWith('/renew')) {
+          if (++renewals === 1 && renewalFailure) throw new Error('temporary outage');
+          return Response.json(sessionData('B'));
+        }
+        if (url === 'https://leaderboard.test') return Response.json({ accepted: true });
+        if (url.endsWith('/faction/earn')) return Response.json({ ok: true });
+        return Response.json(sessionData());
+      } });
+    await b.gate.ready;
+    b.document.hidden = true;
+    b.gate.getTelegramAuth().expires_at = 1;
+    if (renewalFailure) assert.equal(await b.gate.getFreshTelegramAuth(), null);
+    const result = await loadScoreClient(b)('Returning player', 1000, 'snake');
+    assert.equal(result.accepted, true);
+    assert.equal(result.state, 'accepted_score');
+    const scores = b.calls.filter(([url]) => url === 'https://leaderboard.test');
+    assert.equal(scores.length, 1);
+    assert.equal(JSON.parse(scores[0][1].body).telegram_auth.hash, sessionData('B').telegram_auth.hash);
+    assert.equal(JSON.parse(scores[0][1].body).telegram_id, ID);
+    assert.equal(b.storage.has('moonboys_arcade_pending_progress_v1'), false);
+  });
+}
+
+test('score renewal rejects a confirmed expired cookie before any score write', async () => {
+  let expired = false;
+  const b = browser({ config: { BASE_URL: 'https://api.cryptomoonboys.com', LEADERBOARD_URL: 'https://leaderboard.test' },
+    fetchImpl: () => expired ? Response.json({ error: 'expired' }, { status: 401 }) : Response.json(sessionData()) });
+  await b.gate.ready;
+  b.gate.getTelegramAuth().expires_at = 1;
+  expired = true;
+  const result = await loadScoreClient(b)('Returning player', 1000, 'snake');
+  assert.equal(result.accepted, false);
+  assert.equal(result.state, 'auth_required');
+  assert.equal(b.gate.isTelegramLinked(), false);
+  assert.equal(b.calls.some(([url]) => url === 'https://leaderboard.test'), false);
 });

@@ -125,23 +125,36 @@
    * 2. If user is linked, fetch /blocktopia/progression and snapshot faction.
    * 3. Call setState() with real values so all subscribers update immediately.
    *
-   * HYDRATION LOCK: _hydrated is set to true at the START of the first call.
-   * After hydrateState() runs, state may only be updated via bus events
-   * (xp:update, faction:update, activity:event).  No subsequent API call may
-   * write to state.  Calling hydrateState() again is a no-op.
+   * Share one in-flight hydration. Finalize the lock only after an authoritative
+   * response; verified session recovery may retry an unsuccessful attempt.
+   * Successful hydration stays locked for that account so later XP changes
+   * arrive through bus events without repeated snapshots overwriting live state.
    */
   var _hydrated = false;
+  var _hydratedTelegramId = null;
+  var _hydratePromise = null;
+  var _hydrateRetryRequested = false;
   // Incremented each time a live xp:update bus event changes XP while hydration may
   // be in flight.  hydrateState() captures this revision before the fetch so it can
   // detect whether a live update raced the server response.
   var _liveXpRevision = 0;
 
-  async function hydrateState() {
+  function hydrateState() {
+    if (_hydratePromise) return _hydratePromise;
     if (_hydrated) return Promise.resolve(getState());
-    // Lock immediately — prevents any concurrent or re-entrant call from
-    // issuing a second fetch and overwriting live event-driven state.
-    _hydrated = true;
+    // Set the shared promise before auth can emit a verified-session event.
+    _hydratePromise = Promise.resolve().then(hydrateVerifiedState)
+      .catch(function () { return getState(); })
+      .finally(function () {
+        _hydratePromise = null;
+        var retry = _hydrateRetryRequested && !_hydrated;
+        _hydrateRetryRequested = false;
+        if (retry) return hydrateState();
+      }).then(function () { return getState(); });
+    return _hydratePromise;
+  }
 
+  async function hydrateVerifiedState() {
     var gate = window.MOONBOYS_IDENTITY || null;
     if (gate && gate.ready) await gate.ready;
     var apiCfg = window.MOONBOYS_API || null;
@@ -173,9 +186,8 @@
         return getState();
       }
 
-      // Fetch the authoritative XP value from the API.  This is the ONLY time
-      // the API is consulted for state — all subsequent XP changes arrive via
-      // bus events (xp:update) which update state through the bus listeners below.
+      // Fetch the authoritative XP snapshot. Once successfully hydrated for this
+      // account, subsequent XP changes arrive via the bus listeners below.
       // Capture the live-XP revision before the async fetch so we can detect a
       // concurrent xp:update that arrived while the request was in flight.
       var hydrateXpRevision = _liveXpRevision;
@@ -186,7 +198,12 @@
           body: JSON.stringify({ telegram_auth: telegramAuth }),
         });
         var payload = await res.json().catch(function () { return {}; });
+        // Another tab may have restored a different account during the fetch.
+        // A response for the previous identity must not hydrate the new profile.
+        if (String(gate.getTelegramId()) !== String(telegramAuth.id)) return getState();
         if (res.ok && payload && payload.ok === true && payload.progression) {
+          _hydrated = true;
+          _hydratedTelegramId = String(telegramAuth.id);
           var prog = payload.progression;
           var incomingXp = Math.max(0, Math.floor(Number(prog.arcade_xp_total) || 0));
           if (_liveXpRevision === hydrateXpRevision) {
@@ -221,8 +238,24 @@
     }());
   }
 
+  if (typeof window.addEventListener === 'function') {
+    window.addEventListener('moonboys:telegram-session', function () {
+      var gate = window.MOONBOYS_IDENTITY;
+      var auth = gate && gate.getSignedTelegramAuth && gate.getSignedTelegramAuth();
+      // The event is a trigger, never account proof. Recheck the identity gate.
+      if (!auth || String(auth.id) !== String(gate.getTelegramId())) return;
+      if (_hydrated && _hydratedTelegramId === String(auth.id)) return;
+      if (_hydratedTelegramId && _hydratedTelegramId !== String(auth.id)) {
+        _hydrated = false;
+        setState(Object.assign({}, DEFAULT_STATE));
+      }
+      if (_hydratePromise) { _hydrateRetryRequested = true; return; }
+      hydrateState();
+    });
+  }
+
   // ── Bus integration (SOLE write path post-hydration) ────────────────────────
-  // After hydrateState() completes, ALL state changes must arrive through these
+  // After successful account hydration, ALL state changes arrive through these
   // bus listeners.  No component may call setState() directly for XP or faction.
   // global-event-bus.js is guaranteed to have run before this file.
 

@@ -11577,7 +11577,14 @@ export default {
     if (request.method !== 'OPTIONS' && ['telegram_auth', 'auth_evidence'].some(key =>
       url.searchParams.getAll(key).some(raw => {
         const auth = parseTelegramAuthEvidence(raw);
-        return [raw, auth, auth?.telegram_auth].some(value =>
+        // Encoded plain tokens are still reusable credentials even though the
+        // legacy evidence parser accepts only decoded JSON.
+        let decoded = null;
+        try {
+          const normalized = raw.replace(/-/g, '+').replace(/_/g, '/');
+          decoded = atob(normalized + '='.repeat((4 - normalized.length % 4) % 4));
+        } catch {}
+        return [raw, decoded, auth, auth?.telegram_auth].some(value =>
           (typeof value === 'string' && /^s1_[A-Za-z0-9_-]{43}$/.test(value.trim())) || isWebsiteCredential(value));
       }))) return err('website_auth_url_credentials_rejected', 400);
 

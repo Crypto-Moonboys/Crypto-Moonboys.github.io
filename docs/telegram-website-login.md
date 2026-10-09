@@ -77,9 +77,20 @@ the callback cookie has no local session marker yet; legacy proof remains the
 fallback when that retry fails. Renewal authorization failures re-bootstrap the
 shared cookie once: another tab may have replaced it while this tab retains the
 old CSRF token. Only rejection of that cookie session clears local identity;
-transient re-bootstrap failures retain it for another attempt. Protected actions renew expired
-five-minute access proof before deciding whether account activation is absent;
-confirmed session expiry or revocation still clears website identity.
+transient re-bootstrap failures retain it for another attempt. Five-minute proof
+expiry does not revoke a retained verified website identity. Score submission and
+other protected actions can therefore reach renewal before sending a write;
+they still require fresh proof and server validation. Confirmed cookie session
+expiry or revocation clears activation.
+
+The shared profile hydrator retries after a verified session recovers, including
+when both initial cookie probes failed and left the profile in guest/cache state.
+It shares one in-flight fetch, locks only after authoritative hydration for that
+account, and preserves live XP updates that arrive during the fetch. A verified
+account change resets the old profile; a delayed response for another account
+cannot overwrite the current profile. Session events only trigger a retry;
+authentication still comes from the identity gate.
+
 Moonpet reads and actions stop with a retryable error when renewal returns no
 fresh proof but the identity gate retains a website session. They send no
 unauthenticated gameplay request and do not mark authentication permanently
@@ -102,11 +113,11 @@ prerequisite. Server validation and contribution authority remain unchanged.
 
 Faction status uses `POST /faction/status` with proof in the body. The API rejects
 website credentials in `telegram_auth` and `auth_evidence` URL query parameters
-before database verification, including bare or whitespace-padded tokens, JSON
-strings and the supported JSON/base64 evidence envelopes. Duplicate query keys
-are checked on both GET and POST requests. Legacy signed GET status requests
-remain compatible;
-the current browser sends both credential types in POST bodies. No new website
+before database verification, including bare or whitespace-padded tokens, their
+base64/base64url text encodings, JSON strings and the supported JSON/base64
+evidence envelopes. Duplicate query keys are checked on both GET and POST
+requests. Legacy signed GET status requests remain compatible; the current
+browser sends both credential types in POST bodies. No new website
 credential belongs in a URL, browser cache or log.
 
 ## Session and security contract
@@ -232,15 +243,20 @@ including idle/absolute expiry indexes and indexed credential cascades; cleanup
 retains active sessions and deletes only expired sessions and their credentials.
 Malformed `return_to` input consistently returns 400 without creating a login
 transaction. Transport tests cover faction POST proof and rejection of JSON or
-encoded website proof, bare/padded tokens, quoted/nested token strings and duplicate
-URL query keys on GET/POST, while preserving legacy GET compatibility.
+encoded website proof, bare/padded tokens and their base64/base64url text encodings,
+quoted/nested token strings and duplicate URL query keys on GET/POST, while
+preserving legacy GET compatibility.
 
 `telegram-website-session-client.test.mjs` covers memory-only credentials,
 bootstrap timing, competitive activation, legacy fallback, stale local flags,
 renewal after transient errors/hidden-tab expiry, cross-tab cookie replacement,
-markerless callback recovery and confirmed logout.
+markerless callback recovery and confirmed logout. Profile regressions cover
+late recovery from guest state, concurrent hydration, live XP races and account
+changes. Score submission renews expired proof after hidden-tab expiry or a
+transient timer failure, and sends no score when the cookie session is rejected.
 It rejects conflicting legacy identities, retains same-ID website sessions and
 prepares logout after a rollback reload without issuing gameplay proof.
+
 `telegram-website-login-browser.test.mjs` follows
 the mocked-provider flow through the actual Incubator page in desktop and mobile
 Chromium, verifies existing server-backed Arcade XP and confirms logout. It
@@ -248,8 +264,10 @@ also follows signed same/different-ID legacy callbacks across reloads, verifies
 both accounts' existing XP, logs out during rollback without provider secrets,
 and clears identity after cleanup has already deleted the session. It executes
 the modifier writer with expired proof against the actual Worker and validates
-cross-tab renewal after re-login replaces the shared HttpOnly cookie. The browser
-tests require no production credentials and do not contact Telegram. Server tests
+cross-tab renewal after re-login replaces the shared HttpOnly cookie. Both
+viewport tests also fail the first two cookie-session probes, then recover the
+original server-backed profile without a reload. The browser tests require no
+production credentials and do not contact Telegram. Server tests
 cover disabled flags, either missing OIDC secret, origin/CSRF enforcement,
 idempotent missing-session logout and rejection of revoked proof by both Workers.
 The first two suites run in Worker/API CI; the browser suite runs in Visual CI.
