@@ -1,3 +1,5 @@
+import { getFreshPlayerAuth, syncPlayerProgress } from './player-progress-sync.js';
+
 const POLL_MS = 60 * 1000;
 const FETCH_TIMEOUT_MS = 8000;
 const WTF_LOADING_STALL_MS = 3500;
@@ -13,16 +15,6 @@ let apiBaseRetryAttempt = 0;
 function getApiBase() {
   const cfg = (typeof window !== 'undefined') ? window.MOONBOYS_API : null;
   return cfg && cfg.BASE_URL ? String(cfg.BASE_URL).replace(/\/$/, '') : '';
-}
-
-function getSignedAuth() {
-  try {
-    const identity = window.MOONBOYS_IDENTITY;
-    if (!identity || typeof identity.getSignedTelegramAuth !== 'function') return null;
-    return identity.getSignedTelegramAuth() || null;
-  } catch (_) {
-    return null;
-  }
 }
 
 function makeFallbackSchedule(now = new Date()) {
@@ -81,7 +73,7 @@ function getNextFallbackEventFromNow(now = new Date()) {
 async function fetchTodayEvents() {
   const base = getApiBase();
   if (!base) return { ok: false, error: 'api_base_missing' };
-  const auth = getSignedAuth();
+  const auth = await getFreshPlayerAuth({ requireLinked: false });
   const ac = new AbortController();
   let timeoutId = null;
   try {
@@ -292,58 +284,27 @@ export function emitWtfXpBurst(payload) {
 }
 
 export async function checkInWtfEvent(eventId) {
-  const base = getApiBase();
-  const auth = getSignedAuth();
-  if (!base || !auth) return { ok: false, error: 'auth_required' };
-  const res = await fetch(`${base}/wtf/events/check-in`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ telegram_auth: auth, event_id: eventId }),
-  }).catch(() => null);
-  const data = res ? await res.json().catch(() => ({})) : { ok: false };
-  if (data.ok) dispatch('moonboys:wtf-event-checkin', data);
-  await refresh();
-  return data;
+  return syncPlayerProgress('/wtf/events/check-in', { event_id: eventId }, { requireLinked: false, onSuccess: async data => {
+    dispatch('moonboys:wtf-event-checkin', data);
+    await refresh();
+  } });
 }
 
 export async function completeWtfEvent(eventId, completionSource, sourceId) {
-  const base = getApiBase();
-  const auth = getSignedAuth();
-  if (!base || !auth) return { ok: false, error: 'auth_required' };
-  const res = await fetch(`${base}/wtf/events/complete`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      telegram_auth: auth,
-      event_id: eventId,
-      completion_source: completionSource,
-      source_id: sourceId || '',
-    }),
-  }).catch(() => null);
-  const data = res ? await res.json().catch(() => ({})) : { ok: false };
-  if (data.ok) {
+  return syncPlayerProgress('/wtf/events/complete', {
+    event_id: eventId, completion_source: completionSource, source_id: sourceId || '',
+  }, { requireLinked: false, onSuccess: async data => {
     dispatch('moonboys:wtf-event-complete', data);
     if (data.xp_burst) emitWtfXpBurst(data.xp_burst);
     if (Array.isArray(data.chain_options) && data.chain_options.length) {
       dispatch('moonboys:roguelite-options-unlocked', { event_id: eventId, options: data.chain_options });
     }
-  }
-  await refresh();
-  return data;
+    await refresh();
+  } });
 }
 
 export async function chooseWtfOption(eventId, optionId) {
-  const base = getApiBase();
-  const auth = getSignedAuth();
-  if (!base || !auth) return { ok: false, error: 'auth_required' };
-  const res = await fetch(`${base}/wtf/events/choose-option`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ telegram_auth: auth, event_id: eventId, option_id: optionId }),
-  }).catch(() => null);
-  const data = res ? await res.json().catch(() => ({})) : { ok: false };
-  await refresh();
-  return data;
+  return syncPlayerProgress('/wtf/events/choose-option', { event_id: eventId, option_id: optionId }, { requireLinked: false, onSuccess: refresh });
 }
 
 export function initDailyWtfEventSystem() {

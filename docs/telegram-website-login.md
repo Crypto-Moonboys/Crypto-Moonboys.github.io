@@ -72,7 +72,12 @@ a timed-out logout retains local identity until revocation can be confirmed.
 Verified capability and request health are separate: transient network errors,
 bad JSON and server errors do not permanently disable renewal. Later requests,
 visible-tab refresh and the renewal timer retry the cookie session. A failed
-initial capability probe can also be retried. Protected actions renew expired
+initial capability or session probe is retried by fresh-auth callers even when
+the callback cookie has no local session marker yet; legacy proof remains the
+fallback when that retry fails. Renewal authorization failures re-bootstrap the
+shared cookie once: another tab may have replaced it while this tab retains the
+old CSRF token. Only rejection of that cookie session clears local identity;
+transient re-bootstrap failures retain it for another attempt. Protected actions renew expired
 five-minute access proof before deciding whether account activation is absent;
 confirmed session expiry or revocation still clears website identity.
 Moonpet reads and actions stop with a retryable error when renewal returns no
@@ -81,6 +86,19 @@ unauthenticated gameplay request and do not mark authentication permanently
 failed. The next attempt renews again; confirmed expiry keeps the existing
 authentication failure behavior. Mini App `initData` and legacy proof still use
 their existing paths, and mutations never replay automatically.
+
+Arcade mission, faction contribution, Battle Chamber proof, modifier and Daily
+WTF writers await fresh authentication before submitting. Mission, modifier and
+streak hydration also renews before checking linked status. Local gameplay APIs
+and progression calculations remain synchronous and unchanged. Unsent updates
+use one authentication retry, then show a visible Retry updates control; that
+control can retry only updates for which no mutation request was sent. A queued
+update is pinned to its original Telegram account and stops if renewal or retry
+changes identity. Modifier selection keeps the newest unsent choice, so retrying
+an older choice cannot undo a later selection. An uncertain response after a
+mutation is surfaced for profile verification and never replayed automatically.
+Daily WTF retains its existing verified legacy access without adding a bot-link
+prerequisite. Server validation and contribution authority remain unchanged.
 
 Faction status uses `POST /faction/status` with proof in the body. The API rejects
 website credentials in `telegram_auth` and `auth_evidence` URL query parameters
@@ -219,7 +237,8 @@ URL query keys on GET/POST, while preserving legacy GET compatibility.
 
 `telegram-website-session-client.test.mjs` covers memory-only credentials,
 bootstrap timing, competitive activation, legacy fallback, stale local flags,
-renewal after transient errors/hidden-tab expiry and confirmed logout.
+renewal after transient errors/hidden-tab expiry, cross-tab cookie replacement,
+markerless callback recovery and confirmed logout.
 It rejects conflicting legacy identities, retains same-ID website sessions and
 prepares logout after a rollback reload without issuing gameplay proof.
 `telegram-website-login-browser.test.mjs` follows
@@ -227,11 +246,16 @@ the mocked-provider flow through the actual Incubator page in desktop and mobile
 Chromium, verifies existing server-backed Arcade XP and confirms logout. It
 also follows signed same/different-ID legacy callbacks across reloads, verifies
 both accounts' existing XP, logs out during rollback without provider secrets,
-and clears identity after cleanup has already deleted the session. The browser
+and clears identity after cleanup has already deleted the session. It executes
+the modifier writer with expired proof against the actual Worker and validates
+cross-tab renewal after re-login replaces the shared HttpOnly cookie. The browser
 tests require no production credentials and do not contact Telegram. Server tests
 cover disabled flags, either missing OIDC secret, origin/CSRF enforcement,
 idempotent missing-session logout and rejection of revoked proof by both Workers.
 The first two suites run in Worker/API CI; the browser suite runs in Visual CI.
+`telegram-progression-auth.test.mjs` executes the actual Arcade modules in Arcade
+CI: delayed renewal, safe unsent retries, account changes, modifier ordering,
+legacy/guest compatibility, hydration and uncertain-write rejection.
 `moonpet-passive-refresh.test.mjs` covers retryable website renewal failures for
 reads and actions, recovery on the next attempt without duplicate submission,
 confirmed expiry, Mini App/legacy compatibility and cancellation/deadlines.

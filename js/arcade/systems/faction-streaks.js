@@ -1,3 +1,5 @@
+import { getFreshPlayerAuth } from './player-progress-sync.js';
+
 /**
  * faction-streaks.js — Login, mission, and contribution streak tracking.
  *
@@ -219,21 +221,6 @@ function _emitStreakEvent(type, count) {
 
 // ── Server hydration ─────────────────────────────────────────────────────────
 
-function _isLinked() {
-  try {
-    var identity = (typeof window !== 'undefined') && window.MOONBOYS_IDENTITY;
-    return !!(identity && typeof identity.isTelegramLinked === 'function' && identity.isTelegramLinked());
-  } catch (_) { return false; }
-}
-
-function _getSignedAuth() {
-  try {
-    var identity = (typeof window !== 'undefined') && window.MOONBOYS_IDENTITY;
-    if (!identity || typeof identity.getSignedTelegramAuth !== 'function') return null;
-    return identity.getSignedTelegramAuth();
-  } catch (_) { return null; }
-}
-
 function _getApiBase() {
   try {
     var cfg = (typeof window !== 'undefined') && window.MOONBOYS_API;
@@ -248,9 +235,9 @@ function _getApiBase() {
  * @returns {Promise<void>}
  */
 export async function hydrateStreaksFromServer() {
-  if (!_isLinked()) return;
-  var auth = _getSignedAuth();
   var apiBase = _getApiBase();
+  var auth;
+  try { auth = await getFreshPlayerAuth(); } catch (_) { return; }
   if (!auth || !apiBase) return;
   try {
     var res = await fetch(apiBase + '/player/state', {

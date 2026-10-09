@@ -9,8 +9,7 @@ function sessionData(suffix = 'A') {
   return { ok: true, linked: true, telegram_id: ID, display_name: 'Returning player', csrf_token: 'csrf-test',
     telegram_auth: { id: ID, first_name: 'Returning', auth_date: Math.floor(Date.now() / 1000), hash: 's1_' + suffix.repeat(43), expires_at: Math.floor(Date.now() / 1000) + 300 } };
 }
-function browser({ seed = {}, fetchImpl = async () => Response.json(sessionData()), capability = { ok: true, enabled: true }, config = { BASE_URL: 'https://api.cryptomoonboys.com' }, readyState = 'complete' } = {}) {
-  const storage = new Map(Object.entries(seed));
+function browser({ seed = {}, storage = new Map(Object.entries(seed)), fetchImpl = async () => Response.json(sessionData()), capability = { ok: true, enabled: true }, config = { BASE_URL: 'https://api.cryptomoonboys.com' }, readyState = 'complete' } = {}) {
   const calls = [], events = [], timers = [], navigation = [];
   const deadlines = new Map();
   let timerId = 0;
@@ -75,8 +74,10 @@ test('fresh-auth renewal uses cookie plus CSRF and rotates only the in-memory ac
 });
 
 test('expired sessions clear website activation and cannot fall back to stale browser proof', async () => {
-  const b = browser({ fetchImpl: async url => url.endsWith('/renew') ? Response.json({ error: 'website_session_expired' }, { status: 401 }) : Response.json(sessionData()) });
+  let expired = false;
+  const b = browser({ fetchImpl: async () => expired ? Response.json({ error: 'website_session_expired' }, { status: 401 }) : Response.json(sessionData()) });
   await b.gate.ready;
+  expired = true;
   assert.equal(await b.gate.getFreshTelegramAuth({ force: true }), null);
   assert.equal(b.gate.isTelegramLinked(), false);
   assert.equal(b.gate.getSignedTelegramAuth(), null);
@@ -370,7 +371,7 @@ test('an expired access credential renews before a protected action decides the 
 test('visible-tab renewal retries after an interrupted refresh and preserves expiry rejection', async () => {
   let renewals = 0;
   const b = browser({ fetchImpl: url => {
-    if (!url.endsWith('/renew')) return Response.json(sessionData());
+    if (!url.endsWith('/renew')) return renewals > 2 ? Response.json({ error: 'website_session_expired' }, { status: 401 }) : Response.json(sessionData());
     if (++renewals === 1) throw new Error('temporary outage');
     return renewals === 2 ? Response.json(sessionData('B')) : Response.json({ error: 'website_session_expired' }, { status: 401 });
   } });
@@ -390,4 +391,86 @@ test('visible-tab renewal retries after an interrupted refresh and preserves exp
   assert.equal(allowed, 0);
   assert.equal(b.gate.isTelegramLinked(), false);
   assert.equal(b.document.getElementById('tg-sync-gate-modal').style.display, 'flex');
+});
+
+for (const status of [401, 403]) {
+ for (const changedId of [false, true]) {
+  test(`renewal ${status} re-bootstraps a replaced shared cookie before clearing cross-tab identity (${changedId ? 'new account' : 'same account'})`, async () => {
+    const storage = new Map();
+    let cookieSession = sessionData();
+    const fetchImpl = async (url, options) => {
+      if (url.endsWith('/renew') && options.headers['X-Moonboys-CSRF'] !== cookieSession.csrf_token) {
+        return Response.json({ error: 'old_session' }, { status });
+      }
+      return Response.json(cookieSession);
+    };
+    const first = browser({ storage, fetchImpl });
+    const second = browser({ storage, fetchImpl });
+    await Promise.all([first.gate.ready, second.gate.ready]);
+    cookieSession = { ...sessionData('B'), csrf_token: 'new-cookie-csrf' };
+    if (changedId) {
+      cookieSession.telegram_id = '987654321';
+      cookieSession.telegram_auth.id = '987654321';
+    }
+    assert.equal((await second.gate.getFreshTelegramAuth({ force: true })).hash, cookieSession.telegram_auth.hash);
+    const recovered = await first.gate.getFreshTelegramAuth(changedId ? {} : { force: true });
+    assert.equal(recovered.hash, cookieSession.telegram_auth.hash);
+    assert.equal(recovered.id, cookieSession.telegram_id);
+    assert.deepEqual(first.calls.slice(-2).map(([url]) => url.split('/').at(-1)), ['renew', 'session']);
+    assert.equal(first.calls.at(-1)[1].headers?.['X-Moonboys-CSRF'], undefined);
+    assert.equal(storage.get('moonboys_tg_session_mode'), 'website');
+    assert.equal(second.gate.isTelegramLinked(), true);
+    await first.gate.getFreshTelegramAuth({ force: true });
+    assert.equal(first.calls.at(-1)[1].headers['X-Moonboys-CSRF'], 'new-cookie-csrf');
+  });
+ }
+}
+
+test('a failed cross-tab session bootstrap retains identity and can recover on the next attempt', async () => {
+  let sessions = 0;
+  const b = browser({ fetchImpl: url => {
+    if (url.endsWith('/renew')) return Response.json({ error: 'stale_csrf' }, { status: 403 });
+    if (++sessions === 2) return Response.json({ error: 'unavailable' }, { status: 503 });
+    return Response.json(sessionData(sessions > 2 ? 'B' : 'A'));
+  } });
+  await b.gate.ready;
+  assert.equal(await b.gate.getFreshTelegramAuth({ force: true }), null);
+  assert.equal(b.storage.get('moonboys_tg_session_mode'), 'website');
+  assert.equal((await b.gate.getFreshTelegramAuth({ force: true })).hash, sessionData('B').telegram_auth.hash);
+  assert.equal(sessions, 3, 'one bootstrap per authorization failure');
+});
+
+for (const stage of ['capability', 'session']) {
+  for (const legacy of [false, true]) {
+    test(`fresh authentication retries a failed initial ${stage} probe without a website marker (${legacy ? 'legacy fallback' : 'guest'})`, async () => {
+      let capabilities = 0, sessions = 0, offline = true;
+      const proof = { id: ID, auth_date: Math.floor(Date.now() / 1000), hash: 'a'.repeat(64) };
+      const b = browser({ seed: legacy ? { moonboys_tg_id: ID, moonboys_tg_linked: '1', moonboys_tg_auth: JSON.stringify(proof) } : {},
+        capability: () => { capabilities++; if (offline && stage === 'capability') throw new Error('offline'); return Response.json({ ok: true, enabled: true }); },
+        fetchImpl: () => { sessions++; if (offline) throw new Error('offline'); return Response.json(sessionData()); } });
+      await b.gate.ready;
+      assert.equal(b.storage.get('moonboys_tg_session_mode'), undefined);
+      const fallback = await b.gate.getFreshTelegramAuth();
+      assert.equal(fallback && fallback.hash, legacy ? proof.hash : null, 'failed probe preserves legacy fallback');
+      offline = false;
+      assert.equal((await b.gate.getFreshTelegramAuth()).hash, sessionData().telegram_auth.hash);
+      assert.equal(capabilities, stage === 'capability' ? 3 : 1);
+      assert.equal(sessions, stage === 'session' ? 3 : 1);
+      assert.equal(b.storage.get('moonboys_tg_session_mode'), 'website');
+      assert.equal(b.storage.get('moonboys_tg_auth'), undefined);
+    });
+  }
+}
+
+test('protected gates retry an unhealthy initial cookie probe before displaying login', async () => {
+  let sessions = 0;
+  const b = browser({ fetchImpl: url => {
+    if (url.endsWith('/session') && ++sessions === 1) throw new Error('offline');
+    return Response.json(sessionData());
+  } });
+  await b.gate.ready;
+  let allowed = 0;
+  await b.gate.requireLinkedAccount(() => allowed++);
+  assert.equal(allowed, 1);
+  assert.equal(b.document.getElementById('tg-sync-gate-modal'), null);
 });

@@ -178,6 +178,7 @@ const GROUPS = {
     ['node', '--test', 'scripts/moonpet-beta-xp-quarantine.test.mjs'],
   ],
   arcade: [
+    ['node', '--test', 'scripts/telegram-progression-auth.test.mjs'],
     ['npm', 'run', 'test:btqm-runtime-assets'],
     ['node', 'scripts/public-arcade-branding-regression.test.mjs'],
     ['node', 'scripts/telegram-games-launcher.test.mjs'],

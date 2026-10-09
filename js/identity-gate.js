@@ -117,6 +117,10 @@
     return readWebsiteCapability().then(function (enabled) { return enabled ? restoreWebsiteSession(false) : null; });
   }
 
+  function shouldRetryWebsiteProbe() {
+    return canProbeWebsiteSession() && (!websiteCapabilityKnown || (websiteAvailable && !websiteRequestHealthy));
+  }
+
   function clearWebsiteIdentity() {
     websiteAuth = null;
     websiteCsrf = null;
@@ -158,6 +162,14 @@
     }
     var path = options.method ? 'renew' : 'session';
     websitePromise = fetchWebsite(getApiBase() + '/telegram/website/' + path, options, true)
+      .then(function (result) {
+        // Another tab can replace the shared cookie while this tab retains the
+        // old CSRF token. Check that cookie once before treating renewal as logout.
+        if (path === 'renew' && (result.response.status === 401 || result.response.status === 403)) {
+          return fetchWebsite(getApiBase() + '/telegram/website/session', { credentials: 'include' }, true);
+        }
+        return result;
+      })
       .then(function (result) {
         var response = result.response;
         if (!response.ok) {
@@ -601,10 +613,23 @@
   }
 
   function getFreshTelegramAuth(options) {
-    if (websitePending) return websiteReady.then(function () { return getFreshTelegramAuth(options); });
+    // The initial waiter consumes its one probe; a later caller can retry a
+    // transient failure without recursively probing or delaying bootstrap twice.
+    if (websitePending) return websiteReady.then(function () { return resolveFreshTelegramAuth(options, false); });
+    return resolveFreshTelegramAuth(options, true);
+  }
+
+  function resolveFreshTelegramAuth(options, retryProbe) {
     if (websiteAuth || lsGet('moonboys_tg_session_mode') === 'website') {
-      if (websiteAuth && Number(websiteAuth.expires_at) > Date.now() / 1000 + 30 && !(options && options.force)) return Promise.resolve(websiteAuth);
+      if (websiteAuth && String(websiteAuth.id) === String(getTelegramId()) &&
+        Number(websiteAuth.expires_at) > Date.now() / 1000 + 30 && !(options && options.force)) return Promise.resolve(websiteAuth);
       return restoreWebsiteSession(true).then(function (result) { return result && result.telegram_auth || null; });
+    }
+    if (retryProbe && shouldRetryWebsiteProbe()) {
+      return probeWebsiteSession().then(function (result) {
+        if (result && result.telegram_auth) return result.telegram_auth;
+        return resolveFreshTelegramAuth(options, false);
+      });
     }
     var opts = options && typeof options === 'object' ? options : {};
     var force = !!opts.force;
@@ -812,12 +837,12 @@
    */
   function requireLinkedAccount(onAllowed, options) {
     if (websitePending) return websiteReady.then(function () { return requireLinkedAccount(onAllowed, options); });
-    if (websiteAuth || lsGet('moonboys_tg_session_mode') === 'website') {
+    if (websiteAuth || lsGet('moonboys_tg_session_mode') === 'website' || shouldRetryWebsiteProbe()) {
       return getFreshTelegramAuth().then(function (auth) {
         if (auth) return checkLinkedAccount(onAllowed, options);
         var opts = options || {};
         if (opts.soft || String(opts.mode || '').toLowerCase() === 'display') { if (typeof onAllowed === 'function') onAllowed(); }
-        else if (lsGet('moonboys_tg_session_mode') === 'website') showStatusVerificationModal();
+        else if (lsGet('moonboys_tg_session_mode') === 'website' || shouldRetryWebsiteProbe()) showStatusVerificationModal();
         else showSyncGateModal(true);
       });
     }

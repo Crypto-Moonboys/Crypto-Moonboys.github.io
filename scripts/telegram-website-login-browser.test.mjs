@@ -22,6 +22,7 @@ function legacyProof(id) {
 for (const [name, viewport] of [['desktop', { width: 1440, height: 900 }], ['mobile', { width: 390, height: 844 }]]) {
   test(name + ' returning player follows PKCE redirect login and immediately restores server-backed Arcade XP', async () => {
     const { env, sqlite } = fixture();
+    sqlite.exec(await readFile('workers/moonboys-api/migrations/015_player_server_state.sql', 'utf8'));
     sqlite.prepare('INSERT INTO telegram_users (telegram_id, first_name, xp, wallet_address) VALUES (?, ?, ?, ?)').run(OTHER_ID, 'Other existing player', 17, 'other-ownership-link');
     sqlite.prepare('INSERT INTO arcade_progression_state (telegram_id, arcade_xp_total) VALUES (?, ?)').run(OTHER_ID, 7777);
     const executablePath = process.env.CHROMIUM_EXECUTABLE_PATH || (existsSync('/usr/bin/chromium') ? '/usr/bin/chromium' : undefined);
@@ -29,14 +30,15 @@ for (const [name, viewport] of [['desktop', { width: 1440, height: 900 }], ['mob
     try {
       const context = await browser.newContext({ viewport });
       const page = await context.newPage();
-      await page.addInitScript(({ api }) => { window.MOONBOYS_API = { BASE_URL: api, WEBSITE_LOGIN_ENABLED: true }; }, { api: API });
+      await context.addInitScript(({ api }) => { window.MOONBOYS_API = { BASE_URL: api, WEBSITE_LOGIN_ENABLED: true }; }, { api: API });
       let authorization;
       const callbackSessionCookies = [];
       const websiteProofUrls = [];
       let renewalUnavailable = false;
+      const renewalRejections = [];
       const errors = [];
       page.on('pageerror', error => errors.push(error.message));
-      await page.route('**/*', async route => {
+      await context.route('**/*', async route => {
         const request = route.request();
         const url = new URL(request.url());
         if (['telegram_auth', 'auth_evidence'].some(key => url.searchParams.getAll(key).some(raw => raw.includes('s1_')))) websiteProofUrls.push(url.pathname);
@@ -53,7 +55,8 @@ for (const [name, viewport] of [['desktop', { width: 1440, height: 900 }], ['mob
             if (url.pathname.endsWith('/renew') && renewalUnavailable) {
               response = Response.json({ error: 'unavailable' }, { status: 503, headers: { 'Access-Control-Allow-Origin': SITE, 'Access-Control-Allow-Credentials': 'true' } });
             } else response = await handleTelegramWebsiteAuth(nodeRequest, env, authorization ? provider(authorization) : undefined);
-          } else if (['/blocktopia/progression', '/telegram/user/status', '/faction/status', '/telegram/link/confirm'].includes(url.pathname)) {
+            if (url.pathname.endsWith('/renew') && [401, 403].includes(response.status)) renewalRejections.push(response.status);
+          } else if (['/blocktopia/progression', '/telegram/user/status', '/faction/status', '/telegram/link/confirm', '/player/modifiers/active'].includes(url.pathname)) {
             response = await apiWorker.fetch(nodeRequest, env);
           } else {
             // Unrelated feed requests are outside this authentication test.
@@ -128,6 +131,16 @@ for (const [name, viewport] of [['desktop', { width: 1440, height: 900 }], ['mob
         return window.MOONBOYS_IDENTITY.getFreshTelegramAuth({ force: true });
       });
       assert.equal(failedRenewal, null);
+      // A progression write must wait during the outage, without submitting
+      // an unauthenticated request or losing the unsent modifier choice.
+      const modifierSaved = page.waitForResponse(response => response.url().endsWith('/player/modifiers/active') && response.request().method() === 'POST');
+      await page.evaluate(async () => {
+        const modifiers = await import('/js/arcade/systems/cross-game-modifier-system.js');
+        modifiers.setActiveModifier('score_surge');
+      });
+      await page.locator('#moonboys-progression-sync-notice button').waitFor();
+      assert.equal(sqlite.prepare('SELECT active_modifier_id FROM player_modifier_state WHERE telegram_id = ?').get(ID), undefined);
+      assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth), false);
       renewalUnavailable = false;
       const recovery = await page.evaluate(async () => {
         let allowed = 0;
@@ -137,8 +150,18 @@ for (const [name, viewport] of [['desktop', { width: 1440, height: 900 }], ['mob
       });
       assert.equal(recovery.allowed, 1);
       assert.equal(recovery.tier, 'telegram_linked');
+
+      await page.getByRole('button', { name: 'Retry updates', exact: true }).click();
+      const modifierResponse = await modifierSaved;
+      assert.equal(modifierResponse.status(), 200, await modifierResponse.text());
+      assert.equal(sqlite.prepare('SELECT active_modifier_id FROM player_modifier_state WHERE telegram_id = ?').get(ID).active_modifier_id, 'score_surge');
+      await page.locator('#moonboys-progression-sync-notice').waitFor({ state: 'detached' });
       assert.deepEqual(websiteProofUrls, [], 'website credentials must never enter request URLs');
 
+      const otherTab = await context.newPage();
+      otherTab.on('pageerror', error => errors.push(error.message));
+      await otherTab.goto(SITE + '/gkniftyheads-incubator.html', { waitUntil: 'domcontentloaded' });
+      await otherTab.waitForFunction(() => window.MOONBOYS_IDENTITY?.getIdentityTier() === 'telegram_linked');
       const priorProof = await page.evaluate(() => window.MOONBOYS_IDENTITY.getSignedTelegramAuth());
       await page.locator('[data-telegram-login]').first().click();
       await page.waitForFunction(previousHash => {
@@ -147,6 +170,16 @@ for (const [name, viewport] of [['desktop', { width: 1440, height: 900 }], ['mob
       }, priorProof.hash);
       assert.deepEqual(callbackSessionCookies, [false, false], 'Strict cookie is absent on both cross-site callbacks');
       assert.equal((await verifyWebsiteCredential(priorProof, env)).status, 401, 'returning login must revoke the prior credential');
+      const crossTabRecovery = await otherTab.evaluate(async () => ({
+        proof: await window.MOONBOYS_IDENTITY.getFreshTelegramAuth({ force: true }),
+        mode: localStorage.getItem('moonboys_tg_session_mode'),
+      }));
+      assert.ok(renewalRejections.includes(403), 'old tab CSRF is rejected by the real Worker');
+      assert.equal(crossTabRecovery.proof.id, ID);
+      assert.equal(crossTabRecovery.mode, 'website');
+      assert.equal((await verifyWebsiteCredential(crossTabRecovery.proof, env)).telegramId, ID);
+      assert.equal(await page.evaluate(() => window.MOONBOYS_IDENTITY.isTelegramLinked()), true);
+      await otherTab.close();
       assert.equal(sqlite.prepare('SELECT COUNT(*) AS n FROM telegram_users').get().n, 2);
 
       const rollbackProof = await page.evaluate(() => window.MOONBOYS_IDENTITY.getSignedTelegramAuth());
