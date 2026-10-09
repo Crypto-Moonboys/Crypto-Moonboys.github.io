@@ -84,7 +84,10 @@ their existing paths, and mutations never replay automatically.
 
 Faction status uses `POST /faction/status` with proof in the body. The API rejects
 website credentials in `telegram_auth` and `auth_evidence` URL query parameters
-before database verification. Legacy signed GET status requests remain compatible;
+before database verification, including bare or whitespace-padded tokens, JSON
+strings and the supported JSON/base64 evidence envelopes. Duplicate query keys
+are checked on both GET and POST requests. Legacy signed GET status requests
+remain compatible;
 the current browser sends both credential types in POST bodies. No new website
 credential belongs in a URL, browser cache or log.
 
@@ -211,7 +214,8 @@ including idle/absolute expiry indexes and indexed credential cascades; cleanup
 retains active sessions and deletes only expired sessions and their credentials.
 Malformed `return_to` input consistently returns 400 without creating a login
 transaction. Transport tests cover faction POST proof and rejection of JSON or
-encoded website proof in URL queries while preserving legacy GET compatibility.
+encoded website proof, bare/padded tokens, quoted/nested token strings and duplicate
+URL query keys on GET/POST, while preserving legacy GET compatibility.
 
 `telegram-website-session-client.test.mjs` covers memory-only credentials,
 bootstrap timing, competitive activation, legacy fallback, stale local flags,

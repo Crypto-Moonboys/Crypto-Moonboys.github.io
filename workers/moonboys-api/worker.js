@@ -11577,7 +11577,8 @@ export default {
     if (request.method !== 'OPTIONS' && ['telegram_auth', 'auth_evidence'].some(key =>
       url.searchParams.getAll(key).some(raw => {
         const auth = parseTelegramAuthEvidence(raw);
-        return isWebsiteCredential(auth) || isWebsiteCredential(auth?.telegram_auth);
+        return [raw, auth, auth?.telegram_auth].some(value =>
+          (typeof value === 'string' && /^s1_[A-Za-z0-9_-]{43}$/.test(value.trim())) || isWebsiteCredential(value));
       }))) return err('website_auth_url_credentials_rejected', 400);
 
     if (path.startsWith('/telegram/website/')) {
