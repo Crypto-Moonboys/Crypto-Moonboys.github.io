@@ -3,401 +3,201 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Copy-ready SPARKY prompts for ChatGPT users who want the SWARMSY creator workflow without installing AnythingLLM.">
+  <meta name="description" content="Make your first sticker, poster, legal mural, zine, merch or character with ChatGPT and the free SPARKY beginner creator guide. No software installation needed.">
   <meta name="robots" content="index, follow">
-  <meta property="og:title" content="SPARKY For ChatGPT Users | Crypto Moonboys">
-  <meta property="og:description" content="Use ChatGPT as a street-level creator helper with copy-ready prompts for identity, mascot, message, proof, content and daily action.">
+  <meta property="og:title" content="Start Creating With ChatGPT | SPARKY | Crypto Moonboys">
+  <meta property="og:description" content="Choose something to make. Open ChatGPT with a ready-made SPARKY creative guide. Make your first real creative thing one step at a time.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://cryptomoonboys.com/gpt-users.html">
   <meta property="og:image" content="https://cryptomoonboys.com/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png">
   <link rel="canonical" href="https://cryptomoonboys.com/gpt-users.html">
-  <title>SPARKY For ChatGPT Users | Crypto Moonboys</title>
+  <title>Start Creating With ChatGPT | SPARKY | Crypto Moonboys</title>
   <link rel="stylesheet" href="/css/wiki.css">
   <link rel="icon" type="image/png" href="/favicon.png">
   <style>
-    .gpt-user-page {
-      --sparky-gold: #ffd400;
-      --sparky-ink: #050505;
-      --sparky-panel: rgba(255, 255, 255, 0.05);
-      --sparky-border: rgba(255, 212, 0, 0.28);
-    }
-
-    body.page-gpt-users #content {
-      padding-top: 0;
-    }
-
-    body.page-gpt-users .swarmsy-page {
-      padding-top: 0;
-    }
-
-    .gpt-user-page .swarmsy-hero {
-      background:
-        radial-gradient(circle at 20% 20%, rgba(255, 212, 0, 0.18), transparent 30%),
-        radial-gradient(circle at 80% 0%, rgba(255, 255, 255, 0.08), transparent 26%),
-        linear-gradient(135deg, #050505 0%, #141414 58%, #080808 100%);
-      border-color: var(--sparky-border);
-    }
-
-    .gpt-steps {
-      counter-reset: gpt-step;
-      display: grid;
-      gap: 16px;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      margin-top: 24px;
-    }
-
-    .gpt-step {
-      background: var(--sparky-panel);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 12px;
-      padding: 18px;
-      position: relative;
-    }
-
-    .gpt-step::before {
-      counter-increment: gpt-step;
-      content: counter(gpt-step);
-      display: grid;
-      place-items: center;
-      width: 32px;
-      height: 32px;
-      margin-bottom: 12px;
-      border-radius: 50%;
-      background: var(--sparky-gold);
-      color: var(--sparky-ink);
-      font-weight: 900;
-    }
-
-    .gpt-prompt-grid {
-      display: grid;
-      gap: 18px;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      margin-top: 24px;
-    }
-
-    .gpt-prompt-card {
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-    }
-
-    .gpt-prompt-card h3 {
-      margin-bottom: 0;
-    }
-
-    .gpt-prompt-card pre {
-      white-space: pre-wrap;
-      word-break: break-word;
-      overflow: auto;
-      max-height: 420px;
-      margin: 0;
-      padding: 16px;
-      border-radius: 10px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      background: rgba(0, 0, 0, 0.45);
-      color: #f5f5f5;
-      font-size: 0.92rem;
-      line-height: 1.55;
-    }
-
-    .gpt-copy-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-    }
-
-    .gpt-copy {
-      appearance: none;
-      border: 1px solid var(--sparky-border);
-      border-radius: 999px;
-      background: rgba(255, 212, 0, 0.1);
-      color: var(--sparky-gold);
-      cursor: pointer;
-      font-weight: 800;
-      padding: 10px 16px;
-    }
-
-    .gpt-copy:focus,
-    .gpt-copy:hover {
-      background: var(--sparky-gold);
-      color: var(--sparky-ink);
-    }
-
-    .gpt-warning {
-      border-left: 4px solid var(--sparky-gold);
-      padding: 14px 16px;
-      background: rgba(255, 212, 0, 0.08);
-      color: var(--color-text-muted);
-    }
+    body.page-gpt-users #content, body.page-gpt-users .swarmsy-page { padding-top: 0; }
+    .gpt-user-page { --gpt-gold: #f7c948; --gpt-stroke: rgba(247,201,72,.32); --gpt-text: #e7f6ff; max-width: 1080px; margin: 0 auto; }
+    .gpt-user-page .gpt-hero { padding: clamp(26px,4vw,48px) clamp(16px,4vw,42px); border: 1px solid var(--gpt-stroke); border-radius: 16px; background: linear-gradient(135deg,#101820,#0a1018 72%,#171309); }
+    .gpt-kicker { text-transform: uppercase; color: var(--gpt-gold); font-size: .79rem; letter-spacing: .13em; font-weight: 800; }
+    .gpt-user-page h1 { font-size: clamp(2rem,4.5vw,3.5rem); line-height: 1.1; margin: 10px 0 14px; max-width: 790px; }
+    .gpt-user-page h1 span { color: var(--gpt-gold); }
+    .gpt-lead { font-size: clamp(1.08rem,1.6vw,1.26rem); max-width: 740px; line-height: 1.55; margin: 0 0 18px; }
+    .gpt-quick { display: flex; gap: 10px; flex-wrap: wrap; margin: 0; padding: 0; list-style: none; }
+    .gpt-quick li { font-size: .94rem; font-weight: 700; color: #dae6ed; padding: 6px 10px; border: 1px solid #46515b; border-radius: 6px; }
+    .gpt-user-page .gpt-section { margin-top: 24px; padding: 22px clamp(12px,2.5vw,26px); border-radius: 12px; border: 1px solid rgba(168,191,209,.2); background: rgba(10,16,25,.74); }
+    .gpt-user-page .gpt-section h2 { margin: 0 0 6px; font-size: clamp(1.28rem,2vw,1.75rem); }
+    .gpt-user-page .gpt-section p { margin: 5px 0 14px; }
+    .gpt-small { color: #b4c4d0; font-size: .97rem; }
+    .gpt-route-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(180px,1fr)); gap: 9px; margin-top: 15px; }
+    .gpt-route { appearance: none; display: flex; flex-direction: column; gap: 4px; text-align: left; width: 100%; padding: 13px 14px; color: var(--gpt-text); background: rgba(255,255,255,.035); border: 1px solid #43515d; border-radius: 9px; cursor: pointer; line-height: 1.35; transition: background .1s,border-color .1s; }
+    .gpt-route strong { font-size: 1.08rem; }
+    .gpt-route span { color: #b5c8d4; font-size: .9rem; }
+    .gpt-route:hover, .gpt-route:focus-visible { border-color: var(--gpt-gold); background: rgba(247,201,72,.10); }
+    .gpt-route[aria-pressed="true"] { border: 2px solid var(--gpt-gold); padding: 12px 13px; background: rgba(247,201,72,.15); }
+    .gpt-route[aria-pressed="true"] strong { color: #ffe78d; }
+    .gpt-launch { border: 1px solid var(--gpt-stroke)!important; background: linear-gradient(135deg,rgba(247,201,72,.11),rgba(247,201,72,.035))!important; }
+    .gpt-launch p { max-width: 830px; }
+    .gpt-status { font-weight: 800; color: #ffe28a; }
+    .gpt-actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin: 18px 0 12px; }
+    .gpt-button { display: inline-flex; align-items: center; justify-content: center; min-height: 50px; padding: 11px 19px; border-radius: 9px; border: 1px solid var(--gpt-gold); background: transparent; color: var(--gpt-gold); font-size: 1.03rem; font-weight: 800; line-height: 1.25; text-align: center; cursor: pointer; text-decoration: none; }
+    .gpt-button--primary, .gpt-button--primary:hover, .gpt-button--primary:focus-visible { background: var(--gpt-gold); color: #15110a; }
+    .gpt-button:hover,.gpt-button:focus-visible { border-color: #fff0b5; color: #fff0b5; }
+    .gpt-button--primary:hover,.gpt-button--primary:focus-visible { background: #ffdf66; color: #090909; }
+    .gpt-button:focus-visible,.gpt-route:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+    .gpt-user-page details { border: 1px solid #47525c; border-radius: 9px; padding: 12px 15px; margin: 15px 0 0; }
+    .gpt-user-page summary { cursor: pointer; font-weight: 800; }
+    .gpt-prompt-label { display: block; margin: 12px 0 6px; }
+    #gpt-prompt-preview { display: block; width: 100%; min-height: 170px; padding: 12px; color: #e7f6ff; background: #071018; border: 1px solid #697b87; border-radius: 8px; font-size: .9rem; line-height: 1.5; resize: vertical; }
+    .gpt-tip-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(215px,1fr)); gap: 13px; }
+    .gpt-tip-grid article { padding: 10px 13px; border-left: 3px solid var(--gpt-gold); background: rgba(255,255,255,.025); }
+    .gpt-tip-grid h3 { margin: 0 0 4px; font-size: 1.04rem; }
+    .gpt-tip-grid p { margin: 0!important; color: #c2d0da; }
+    .gpt-footnote { padding: 0 4px; color: #b6c6d3; }
+    @media (max-width: 540px) { .gpt-route-grid { grid-template-columns: repeat(2,minmax(0,1fr)); } .gpt-route { padding: 10px; } .gpt-route[aria-pressed="true"] { padding: 9px; } .gpt-route strong { font-size: .98rem; } .gpt-actions { flex-direction: column; align-items: stretch; } .gpt-button { width: 100%; } }
+    @media (prefers-reduced-motion: reduce) { .gpt-route { transition: none; } }
   </style>
 </head>
 <body class="page-swarmsy page-gpt-users page-standard-shell">
 <main id="content" role="main">
   <div class="swarmsy-page gpt-user-page">
-    <section class="swarmsy-hero" aria-labelledby="gpt-users-title">
-      <div class="swarmsy-hero-inner">
-        <div class="swarmsy-kicker">SPARKY FOR CHATGPT USERS</div>
-        <h1 id="gpt-users-title" class="swarmsy-title">COPY<br><span>THE PROMPTS.</span><br>BUILD THE PROOF.</h1>
-        <p class="swarmsy-lead">
-          This is the simple ChatGPT version of the SPARKY workflow. You do not need to install SWARMSY or AnythingLLM. Copy the prompts below into ChatGPT, create a Project if you can, and let SPARKY help you build identity, message, mascot, lawful local proof, digital proof and next action.
-        </p>
-        <p class="swarmsy-lead">
-          SPARKY is built from underground creator logic: be an artist, build a memorable mascot or mark, get the message seen locally and online, document the proof, grow the following and keep moving.
-        </p>
-        <div class="swarmsy-pill-row" aria-label="SPARKY principles">
-          <span class="swarmsy-pill">Message</span>
-          <span class="swarmsy-pill">Mascot or mark</span>
-          <span class="swarmsy-pill">Lawful local proof</span>
-          <span class="swarmsy-pill">Digital echo</span>
-          <span class="swarmsy-pill">Next action</span>
-        </div>
+    <section class="gpt-hero" aria-labelledby="gpt-users-title">
+      <div class="gpt-kicker">SPARKY / BEGINNER CREATOR GUIDE / CHATGPT</div>
+      <h1 id="gpt-users-title">MAKE SOMETHING. <span>WE'LL WORK OUT HOW.</span></h1>
+      <p class="gpt-lead">Never made art before? Start here. Choose something fun to create and let ChatGPT guide you through it, one small step at a time. No SWARMSY installation, no complicated setup, no perfect idea needed.</p>
+      <ul class="gpt-quick" aria-label="Three steps">
+        <li>1. Pick an activity</li>
+        <li>2. Open ChatGPT</li>
+        <li>3. Make your first thing</li>
+      </ul>
+    </section>
+
+    <section class="gpt-section" aria-labelledby="gpt-choose-title">
+      <h2 id="gpt-choose-title">1. What do you want to make?</h2>
+      <p class="gpt-small">Tap an option. If you're unsure, leave the first one selected. You can change your mind later.</p>
+      <div class="gpt-route-grid" role="group" aria-label="Choose your first creative activity">
+          <button class="gpt-route" type="button" data-route="start" aria-pressed="true">
+            <strong>I'm starting from zero</strong><span>No idea, no experience, no problem.</span>
+          </button>
+          <button class="gpt-route" type="button" data-route="stickers" aria-pressed="false">
+            <strong>Make stickers</strong><span>A small, bold image people remember.</span>
+          </button>
+          <button class="gpt-route" type="button" data-route="posters" aria-pressed="false">
+            <strong>Make posters</strong><span>Design something worth putting up.</span>
+          </button>
+          <button class="gpt-route" type="button" data-route="walls" aria-pressed="false">
+            <strong>Paint a legal wall</strong><span>Sketch first, paint with permission.</span>
+          </button>
+          <button class="gpt-route" type="button" data-route="zines" aria-pressed="false">
+            <strong>Make a mini zine</strong><span>Turn one sheet of paper into a story.</span>
+          </button>
+          <button class="gpt-route" type="button" data-route="merch" aria-pressed="false">
+            <strong>Make my own merch</strong><span>T-shirts, bags, badges and more.</span>
+          </button>
+          <button class="gpt-route" type="button" data-route="character" aria-pressed="false">
+            <strong>Invent a character</strong><span>A face, symbol or little world.</span>
+          </button>
+          <button class="gpt-route" type="button" data-route="streetart" aria-pressed="false">
+            <strong>Try street-art style</strong><span>Lettering, stencil-inspired shapes and art.</span>
+          </button>
+          <button class="gpt-route" type="button" data-route="moonboy" aria-pressed="false">
+            <strong>Build a Moonboy</strong><span>Turn my avatar into a creative identity.</span>
+          </button>
+          <button class="gpt-route" type="button" data-route="grow" aria-pressed="false">
+            <strong>Show or sell my art</strong><span>Take one real thing into the world.</span>
+          </button>
       </div>
     </section>
 
-    <section class="swarmsy-section">
-      <h2>How To Use This In ChatGPT</h2>
-      <div class="gpt-steps">
-        <article class="gpt-step">
-          <h3>Create The Space</h3>
-          <p>Use a ChatGPT Project if available. Name it something like SPARKY Creator Build, then paste the Master SPARKY Instructions into the project instructions or first chat.</p>
-        </article>
-        <article class="gpt-step">
-          <h3>Add Your Proof</h3>
-          <p>Upload logos, PFPs, sketches, product photos, notes, screenshots or links as project files. SPARKY should separate rough ideas from approved decisions.</p>
-        </article>
-        <article class="gpt-step">
-          <h3>Pick A Lane</h3>
-          <p>Use one starter prompt: PFP/avatar, brand/art/product, no idea, image/poster/logo, daily plan or proof log.</p>
-        </article>
-        <article class="gpt-step">
-          <h3>Keep It Moving</h3>
-          <p>Use ChatGPT Tasks if you have them for daily and weekly check-ins. If not, paste the task prompts manually when you sit down to build.</p>
-        </article>
+    <section class="gpt-section gpt-launch" aria-labelledby="gpt-open-title">
+      <h2 id="gpt-open-title">2. Let ChatGPT take you through it</h2>
+      <p class="gpt-status" id="gpt-choice" aria-live="polite">Selected: Help me choose</p>
+      <p id="gpt-what">One easy idea and a first thing to try.</p>
+      <div class="gpt-actions">
+        <a id="gpt-open-link" class="gpt-button gpt-button--primary" href="https://chatgpt.com/?q=I%20came%20from%20the%20Crypto%20Moonboys%20SPARKY%20beginner%20page.%20Act%20as%20SPARKY%2C%20my%20practical%20creative%20guide.%20I%20am%20a%20complete%20beginner.%20Try%20to%20read%20https%3A%2F%2Fcryptomoonboys.com%2Fsparky-chatgpt-guide.txt%20for%20the%20full%20public%20SPARKY%20guide%3B%20only%20say%20you%20read%20it%20if%20you%20actually%20accessed%20it.%20If%20you%20cannot%20open%20the%20link%2C%20continue%20using%20these%20instructions.%20Take%20the%20lead%20without%20jargon%20or%20software%20setup.%20Help%20me%20make%20a%20real%20creative%20asset%20with%20simple%20materials%2C%20a%20digital%20alternative%20and%20a%20modest%20starting%20budget.%20Ask%20no%20more%20than%20ONE%20important%20question%20at%20a%20time.%20If%20I%20say%20'you%20choose'%2C%20pick%20a%20good%20default%20and%20create%20a%20first%20draft.%20Keep%20rough%20ideas%2C%20approved%20choices%20and%20actual%20completed%20proof%20separate.%20Street%20art%2C%20stickers%2C%20posters%20and%20murals%20must%20use%20owned%20or%20explicitly%20permissioned%20surfaces%3B%20never%20assume%20permission.%20Don't%20invent%20my%20achievements%2C%20images%20or%20Moonboy%20traits.%20Give%20me%20one%20doable%20action%20at%20a%20time%20and%20help%20me%20improve%20each%20version.%0A%0AMY%20STARTER%3A%20Help%20me%20choose.%20I%20have%20no%20idea%20yet.%20Choose%20a%20simple%20creative%20activity%20for%20me%20using%20ordinary%20materials.%20Give%20me%20one%20starter%20concept%20to%20react%20to.%0A%0ABegin%20with%20one%20useful%20creative%20suggestion%20and%20the%20easiest%20next%20step.%20Don't%20give%20me%20a%20long%20plan%20or%20a%20questionnaire." target="_blank" rel="noopener noreferrer">Open ChatGPT with my starter message ↗</a>
+        <button id="gpt-copy-prompt" class="gpt-button" type="button">Copy starter message</button>
       </div>
-      <p class="gpt-warning">
-        Keep real-world activations legal, permissioned and safe. Use AI spoof concepts, mockups and shock advertising as creative drafts unless they are clearly labelled and approved for public use.
-      </p>
+      <p class="gpt-small">ChatGPT should open with a ready-made message. Press <strong>Send</strong> if the message is waiting in the box. If nothing appears, use <strong>Copy starter message</strong>, paste it into a new chat and send it. A free ChatGPT account may help you keep your progress; features have usage limits.</p>
+      <details>
+        <summary>See the exact message we're giving ChatGPT</summary>
+        <label class="gpt-prompt-label" for="gpt-prompt-preview">Starter message (you can select and copy it yourself):</label>
+        <textarea id="gpt-prompt-preview" readonly rows="8">I came from the Crypto Moonboys SPARKY beginner page. Act as SPARKY, my practical creative guide. I am a complete beginner. Try to read https://cryptomoonboys.com/sparky-chatgpt-guide.txt for the full public SPARKY guide; only say you read it if you actually accessed it. If you cannot open the link, continue using these instructions. Take the lead without jargon or software setup. Help me make a real creative asset with simple materials, a digital alternative and a modest starting budget. Ask no more than ONE important question at a time. If I say 'you choose', pick a good default and create a first draft. Keep rough ideas, approved choices and actual completed proof separate. Street art, stickers, posters and murals must use owned or explicitly permissioned surfaces; never assume permission. Don't invent my achievements, images or Moonboy traits. Give me one doable action at a time and help me improve each version.
+
+MY STARTER: Help me choose. I have no idea yet. Choose a simple creative activity for me using ordinary materials. Give me one starter concept to react to.
+
+Begin with one useful creative suggestion and the easiest next step. Don't give me a long plan or a questionnaire.</textarea>
+      </details>
+      <p id="gpt-copy-status" class="gpt-small" role="status" aria-live="polite"></p>
+      <noscript><p class="gpt-small">Activity selection needs JavaScript. You can still open ChatGPT using the first button, or manually copy the message above.</p></noscript>
     </section>
 
-    <section class="swarmsy-section" aria-labelledby="prompt-library-title">
-      <h2 id="prompt-library-title">Copy-Ready Prompt Library</h2>
-      <p>Click Copy, paste into ChatGPT, then answer SPARKY with whatever details you already have. These prompts are meant to reduce thinking friction for beginners.</p>
-
-      <div class="gpt-prompt-grid">
-        <article class="swarmsy-card gpt-prompt-card">
-          <div class="gpt-copy-row">
-            <h3>Master SPARKY Instructions</h3>
-            <button class="gpt-copy" type="button" data-copy-target="prompt-master">Copy</button>
-          </div>
-          <pre id="prompt-master"><code>You are SPARKY, a graffiti-king style creator operator for a street-level creator build.
-
-You are not a generic chatbot. You help the user turn rough ideas into identity, message, mascot or mark, lawful local proof, digital proof, website or archive notes, content, community and next action.
-
-Core mission:
-- Make it easy for beginners to become full-time creators one small proof step at a time.
-- Think like underground street art, guerrilla branding, mascot culture, character worlds, music scenes, local proof and online reach.
-- Help the user build something that can be seen, documented, repeated and grown.
-
-Rules:
-- Do not invent PFP traits, links, rarity, backstory, proof or results.
-- Ask for missing details before building character or PFP work.
-- Keep real-world activation lawful, permissioned, safe and non-harmful.
-- Separate draft ideas from approved decisions.
-- Label AI concepts, spoof campaigns and mockups clearly when they are not real.
-- Prefer simple action over long theory.
-- Always end with a clear next move.
-
-Default workflow:
-1. Identify the lane: PFP/avatar, artist/music, brand/product, local business, website, bot/automation or normal question.
-2. Find the message: what people should remember.
-3. Find the mascot, mark, phrase, product image or character that carries the message.
-4. Pick one lawful local proof surface and one digital proof surface.
-5. Create the smallest useful asset today.
-6. Save the proof, decision or next action.
-7. Give the user one practical move to do next.</code></pre>
-        </article>
-
-        <article class="swarmsy-card gpt-prompt-card">
-          <div class="gpt-copy-row">
-            <h3>Start Here</h3>
-            <button class="gpt-copy" type="button" data-copy-target="prompt-start">Copy</button>
-          </div>
-          <pre id="prompt-start"><code>I am starting from zero. Help me choose one lane: PFP/avatar, artist/music, brand/product, local business, website, bot/automation or normal question. Ask only the details you need, then give me one strong first move.</code></pre>
-        </article>
-
-        <article class="swarmsy-card gpt-prompt-card">
-          <div class="gpt-copy-row">
-            <h3>PFP / Moonboy Builder</h3>
-            <button class="gpt-copy" type="button" data-copy-target="prompt-pfp">Copy</button>
-          </div>
-          <pre id="prompt-pfp"><code>I have a PFP, Moonboy or avatar to build. Ask me for the character details first before inventing anything: name, faction/community, visual description, image/link, local audience and goal.
-
-Then build:
-- Known details
-- Unknown details
-- Proposed lore expansion
-- 3 identity routes
-- Bio seed
-- Icon/stencil idea
-- Merch/poster surfaces
-- Lawful local campaign
-- Digital proof loop
-- First 3 actions</code></pre>
-        </article>
-
-        <article class="swarmsy-card gpt-prompt-card">
-          <div class="gpt-copy-row">
-            <h3>Brand / Art / Product Builder</h3>
-            <button class="gpt-copy" type="button" data-copy-target="prompt-brand">Copy</button>
-          </div>
-          <pre id="prompt-brand"><code>I have a brand, product, art, music, service or local business. Ask me for: what it is, first audience/location, message, mascot/mark/current visual, current assets and traction wanted.
-
-Then build:
-- Street-level identity route
-- Mascot/mark/stencil idea
-- Lawful local activation
-- Digital proof loop
-- Website/archive note
-- First 3 actions</code></pre>
-        </article>
-
-        <article class="swarmsy-card gpt-prompt-card">
-          <div class="gpt-copy-row">
-            <h3>No-Idea Direction</h3>
-            <button class="gpt-copy" type="button" data-copy-target="prompt-no-idea">Copy</button>
-          </div>
-          <pre id="prompt-no-idea"><code>I have no idea. Invent 3 bold local-first directions I could start today.
-
-For each direction give:
-- Who it is for
-- Message
-- Mascot or mark
-- Lawful local proof
-- Digital echo
-- First 3 actions
-
-Pick the best one and tell me exactly what to do first.</code></pre>
-        </article>
-
-        <article class="swarmsy-card gpt-prompt-card">
-          <div class="gpt-copy-row">
-            <h3>Image / Poster / Logo Prompt</h3>
-            <button class="gpt-copy" type="button" data-copy-target="prompt-image">Copy</button>
-          </div>
-          <pre id="prompt-image"><code>Create an external AI image prompt for [subject].
-
-Include:
-- A short message to the image AI explaining the project scope
-- A clear visual prompt
-- Style
-- Composition
-- Colours
-- Must include
-- Must avoid
-- Output needed
-- 3 stronger variations
-
-If ChatGPT image generation is available, tell me to use it here. Otherwise make the prompt ready for GPT, Grok, Midjourney, Ideogram, Leonardo, Firefly or Stable Diffusion.</code></pre>
-        </article>
-
-        <article class="swarmsy-card gpt-prompt-card">
-          <div class="gpt-copy-row">
-            <h3>Daily Empire Plan</h3>
-            <button class="gpt-copy" type="button" data-copy-target="prompt-daily">Copy</button>
-          </div>
-          <pre id="prompt-daily"><code>Plan today's local empire build.
-
-Make one Street-To-Digital Proof Card with:
-- Project type
-- Message
-- Mascot/mark
-- Lawful local proof surface
-- Digital proof surface
-- Proof capture
-- First task
-- Next 3 moves
-
-Keep it realistic for today.</code></pre>
-        </article>
-
-        <article class="swarmsy-card gpt-prompt-card">
-          <div class="gpt-copy-row">
-            <h3>7-Day Beginner Build Path</h3>
-            <button class="gpt-copy" type="button" data-copy-target="prompt-seven-day">Copy</button>
-          </div>
-          <pre id="prompt-seven-day"><code>Turn my rough idea into a 7-day beginner build path.
-
-Each day must create one proof asset:
-- Identity
-- Message
-- Mascot/mark
-- Visual prompt
-- Local proof mockup
-- Digital post/page
-- Weekly review
-
-Keep tasks small enough for a beginner.</code></pre>
-        </article>
-
-        <article class="swarmsy-card gpt-prompt-card">
-          <div class="gpt-copy-row">
-            <h3>ChatGPT Task: Daily Check-In</h3>
-            <button class="gpt-copy" type="button" data-copy-target="prompt-task-daily">Copy</button>
-          </div>
-          <pre id="prompt-task-daily"><code>Every day, ask me for today's project lane, then help me complete one Street-To-Digital Proof Card. Track what was done, what proof exists and the next action.</code></pre>
-        </article>
-
-        <article class="swarmsy-card gpt-prompt-card">
-          <div class="gpt-copy-row">
-            <h3>ChatGPT Task: Weekly Review</h3>
-            <button class="gpt-copy" type="button" data-copy-target="prompt-task-weekly">Copy</button>
-          </div>
-          <pre id="prompt-task-weekly"><code>Every week, review my proof notes and decide what to repeat, improve, publish, archive or stop. Give me the next 7-day build path.</code></pre>
-        </article>
-
-        <article class="swarmsy-card gpt-prompt-card">
-          <div class="gpt-copy-row">
-            <h3>Proof Log Prompt</h3>
-            <button class="gpt-copy" type="button" data-copy-target="prompt-proof">Copy</button>
-          </div>
-          <pre id="prompt-proof"><code>Help me create a proof log.
-
-Separate:
-- Rough idea
-- Draft
-- Approved decision
-- Made asset
-- Posted asset
-- Real-world proof
-- Digital proof
-- Result
-- Next action
-
-Do not turn plans into claims.</code></pre>
-        </article>
+    <section class="gpt-section" aria-labelledby="gpt-next-title">
+      <h2 id="gpt-next-title">3. ChatGPT helps you finish, not just imagine</h2>
+      <div class="gpt-tip-grid">
+        <article><h3>Start small</h3><p>Paper, pens and a phone are enough to begin. Get a real first draft before spending money.</p></article>
+        <article><h3>Learn as you go</h3><p>Say "show me", "make it easier", "you choose", or upload a photo of your attempt. Ask for the next step.</p></article>
+        <article><h3>Keep the proof</h3><p>Save the photo, artwork file or project note. Real finished work matters more than imagined likes or sales.</p></article>
+        <article><h3>Build the next version</h3><p>Make a sticker into a poster, a poster into a zine, or a character into merch. Return to the same chat.</p></article>
       </div>
     </section>
+
+    <section class="gpt-section" aria-labelledby="gpt-about-title">
+      <h2 id="gpt-about-title">What is SPARKY?</h2>
+      <p>SPARKY is the creative-guidance approach behind <a href="/swarmsy.html">SWARMSY</a>. This page brings the beginner part into ordinary ChatGPT. ChatGPT can suggest, draft, explain, critique and help plan. It <strong>does not automatically access your SWARMSY workspace, remember private SWARMSY decisions, print products or carry out real-world actions.</strong></p>
+      <p>The starter message asks ChatGPT to read our public <a href="/sparky-chatgpt-guide.txt">SPARKY creative guide</a> for the longer workflow. If it cannot open that link, the starter message still includes the essential instructions. To continue in a new chat, paste your saved project notes or images again.</p>
+      <p class="gpt-small">Stickers, posters and public artwork need permission where displayed. A legal wall is only legal when the relevant owner/authority permits your work. Use your own paper, belongings, private surfaces or digital mockups when in doubt. Never mistake a concept image for evidence that something was actually made or posted.</p>
+    </section>
+    <p class="gpt-footnote">Want the full self-hosted creative workspace? <a href="/swarmsy.html">Explore SWARMSY</a>. Want a simpler start? Pick an activity above.</p>
   </div>
 </main>
-
 <script>
-  document.querySelectorAll('[data-copy-target]').forEach(function (button) {
-    button.addEventListener('click', async function () {
-      var target = document.getElementById(button.getAttribute('data-copy-target'));
-      if (!target) return;
-      var originalText = button.textContent;
-      try {
-        await navigator.clipboard.writeText(target.textContent.trim());
-        button.textContent = 'Copied';
-      } catch (error) {
-        button.textContent = 'Select text';
-      }
-      window.setTimeout(function () {
-        button.textContent = originalText;
-      }, 1600);
+(function () {
+  'use strict';
+  var guideUrl = "https://cryptomoonboys.com/sparky-chatgpt-guide.txt";
+  var common = "Act as SPARKY, my practical creative guide. I am a complete beginner. Try to read https://cryptomoonboys.com/sparky-chatgpt-guide.txt for the full public SPARKY guide; only say you read it if you actually accessed it. If you cannot open the link, continue using these instructions. Take the lead without jargon or software setup. Help me make a real creative asset with simple materials, a digital alternative and a modest starting budget. Ask no more than ONE important question at a time. If I say 'you choose', pick a good default and create a first draft. Keep rough ideas, approved choices and actual completed proof separate. Street art, stickers, posters and murals must use owned or explicitly permissioned surfaces; never assume permission. Don't invent my achievements, images or Moonboy traits. Give me one doable action at a time and help me improve each version.";
+  var activities = [{"id":"start","short":"I'm starting from zero","name":"Help me choose","description":"No idea, no experience, no problem.","goal":"I have no idea yet. Choose a simple creative activity for me using ordinary materials. Give me one starter concept to react to.","hint":"One easy idea and a first thing to try."},{"id":"stickers","short":"Make stickers","name":"Sticker design","description":"A small, bold image people remember.","goal":"Help me make my first original sticker design. Start with a strong simple image or phrase, a paper prototype and a permission-only display plan.","hint":"A sticker concept, a size test and a first prototype."},{"id":"posters","short":"Make posters","name":"Poster design","description":"Design something worth putting up.","goal":"Help me design one original poster with a memorable headline, clear visual layout and print or phone-friendly output. Include legal, permissioned display options.","hint":"A usable headline, layout and printable first draft."},{"id":"walls","short":"Paint a legal wall","name":"Permitted mural","description":"Sketch first, paint with permission.","goal":"Help me plan my first legal mural or wall-art project, starting with a sketch and a safe small practice panel. Never assume I have permission for a public wall.","hint":"A wall sketch, materials and a permission-first path."},{"id":"zines","short":"Make a mini zine","name":"Folded mini zine","description":"Turn one sheet of paper into a story.","goal":"Help me make a one-sheet A4 folded mini zine. Pick one theme, help with a panel-by-panel page plan and an easy paper prototype.","hint":"A complete miniature zine story and folding plan."},{"id":"merch","short":"Make my own merch","name":"Merch design","description":"T-shirts, bags, badges and more.","goal":"Help me put one original design on a T-shirt, tote, patch or badge. Start with a paper or digital mockup, not an expensive bulk order.","hint":"A first merch design and low-risk sample plan."},{"id":"character","short":"Invent a character","name":"Mascot and character","description":"A face, symbol or little world.","goal":"Help me invent an original recognisable mascot or character with a simple silhouette, memorable trait, first two poses and a sticker version.","hint":"A first character concept and its visual brief."},{"id":"streetart","short":"Try street-art style","name":"Street-art design","description":"Lettering, stencil-inspired shapes and art.","goal":"Help me make a bold original graffiti-lettering or stencil-inspired artwork on paper or an authorised surface. Start with safe materials and simple shapes.","hint":"A lettering or stencil-style design on paper."},{"id":"moonboy","short":"Build a Moonboy","name":"Moonboy and PFP","description":"Turn my avatar into a creative identity.","goal":"Help me develop a Moonboy or PFP into a poster, sticker or character concept. First ask for the image or verified description. Never invent ownership, official traits, rarity or canon.","hint":"A character-based artwork grounded in my actual image."},{"id":"grow","short":"Show or sell my art","name":"Grow a project","description":"Take one real thing into the world.","goal":"Help me share or sell a creative thing I have genuinely made. Start by asking what exists; suggest one lawful real-world route and one truthful online post.","hint":"One realistic way to show what I've made."}];
+  var routes = {};
+  activities.forEach(function (activity) { routes[activity.id] = activity; });
+  var routeButtons = document.querySelectorAll('[data-route]');
+  var openLink = document.getElementById('gpt-open-link');
+  var preview = document.getElementById('gpt-prompt-preview');
+  var choice = document.getElementById('gpt-choice');
+  var what = document.getElementById('gpt-what');
+  var status = document.getElementById('gpt-copy-status');
+  var copy = document.getElementById('gpt-copy-prompt');
+  function promptFor(activity) {
+    return 'I came from the Crypto Moonboys SPARKY beginner page. ' + common +
+      '\n\nMY STARTER: ' + activity.name + '. ' + activity.goal +
+      '\n\nBegin with one useful creative suggestion and the easiest next step. Don\'t give me a long plan or a questionnaire.';
+  }
+  function setActivity(id) {
+    var activity = routes[id] || routes.start;
+    routeButtons.forEach(function (button) {
+      button.setAttribute('aria-pressed', button.getAttribute('data-route') === activity.id ? 'true' : 'false');
     });
+    choice.textContent = 'Selected: ' + activity.name;
+    what.textContent = activity.hint;
+    var prompt = promptFor(activity);
+    preview.value = prompt;
+    openLink.href = 'https://chatgpt.com/?q=' + encodeURIComponent(prompt);
+    status.textContent = '';
+  }
+  routeButtons.forEach(function (button) {
+    button.addEventListener('click', function () { setActivity(button.getAttribute('data-route')); });
   });
+  copy.addEventListener('click', async function () {
+    var prompt = preview.value;
+    try {
+      if (!navigator.clipboard || !navigator.clipboard.writeText) { throw new Error('Clipboard API unavailable'); }
+      await navigator.clipboard.writeText(prompt);
+      status.textContent = 'Starter message copied. Paste it into ChatGPT and press Send.';
+    } catch (error) {
+      preview.focus();
+      preview.select();
+      status.textContent = 'Select and copy the highlighted message, then paste it into ChatGPT.';
+    }
+  });
+  setActivity('start');
+}());
 </script>
 <script data-cfasync="false" src="/js/api-config.js"></script>
 <script data-cfasync="false" src="/js/arcade/core/global-event-bus.js"></script>
