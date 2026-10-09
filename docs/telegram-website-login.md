@@ -1,7 +1,6 @@
 # Telegram website authentication: architecture and migration audit
 
-Status: implemented on a review branch; production login remains disabled. No
-production migration, Worker deployment or merge is authorized by this PR.
+Status (activation PR #1465): OIDC implementation merged separately; migration 090, initial Worker deployments and BotFather/OIDC setup were reported completed. This PR changes the API production feature flag to enabled. The enabled flag takes effect only after PR #1465 is merged and the updated moonboys-api Worker is deployed. Real Telegram-provider authentication and returning-player preservation remain unverified until live acceptance passes. No production activation is claimed merely by merging the flag change.
 
 ## Existing paths and ownership
 
