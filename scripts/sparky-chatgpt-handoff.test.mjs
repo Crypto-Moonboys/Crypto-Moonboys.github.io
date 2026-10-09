@@ -16,7 +16,7 @@ function simulate() {
     setAttribute(key, value) { this.attrs[key] = value; },
     addEventListener(name, fn) { this.handlers[name] = fn; },
   }));
-  const elements = Object.fromEntries(['gpt-open-link', 'gpt-prompt-preview', 'gpt-choice', 'gpt-what', 'gpt-copy-status', 'gpt-copy-prompt'].map(id => [id, {
+  const elements = Object.fromEntries(['gpt-open-link', 'gpt-prompt-preview', 'gpt-prompt-details', 'gpt-choice', 'gpt-what', 'gpt-copy-status', 'gpt-copy-prompt'].map(id => [id, {
     href: '', value: '', textContent: '', handlers: {},
     addEventListener(name, fn) { this.handlers[name] = fn; },
     focus() { this.didFocus = true; },
@@ -76,6 +76,7 @@ test('clipboard fallback selects text for manual copy', async () => {
   const { elements, ctx } = simulate();
   ctx.navigator.clipboard.writeText = async () => { throw Error('blocked'); };
   await elements['gpt-copy-prompt'].handlers.click();
+  assert.equal(elements['gpt-prompt-details'].open, true, 'hidden prompt details become visible');
   assert.equal(elements['gpt-prompt-preview'].didSelect, true);
   assert.match(elements['gpt-copy-status'].textContent, /select and copy/i);
 });
