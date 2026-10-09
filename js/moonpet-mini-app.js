@@ -668,9 +668,6 @@
   // TEST-EXPORT: apiRequest:start
   async function post(path, payload, options) {
     if (!apiBase) throw new Error('API ENDPOINT DISABLED FOR THIS CONTEXT');
-    if (!initData && window.MOONBOYS_IDENTITY && typeof window.MOONBOYS_IDENTITY.getFreshTelegramAuth === 'function') {
-      telegramAuth = await window.MOONBOYS_IDENTITY.getFreshTelegramAuth();
-    }
     if (authenticationFailure) {
       var expiredError = new Error('TELEGRAM SESSION EXPIRED. OPEN A FRESH SESSION FROM @WIKICOMSBOT.');
       expiredError.status = 401;
@@ -705,6 +702,11 @@
       // The deadline covers fetch, body reads and all read-only retries. Racing
       // it also releases callers' guards if a transport ignores cancellation.
       return await Promise.race([deadline, cancelled, (async function () {
+        // Cookie renewal is covered by the same deadline and cancellation as
+        // the gameplay request; it must never let a superseded action continue.
+        if (!authBody().init_data && typeof window !== 'undefined' && window.MOONBOYS_IDENTITY && typeof window.MOONBOYS_IDENTITY.getFreshTelegramAuth === 'function') {
+          telegramAuth = await window.MOONBOYS_IDENTITY.getFreshTelegramAuth();
+        }
         // State is safe to retry after a transient D1 read failure. Mutations
         // must never replay automatically after an unconfirmed response.
         var stateAttempts = path === '/telegram-pets/app/state' ? 3 : 1;

@@ -62,6 +62,21 @@ function requestRuntime(f) {
   } };
 }
 
+test('stalled website renewal stays inside the request deadline and cannot submit a late mutation', async () => {
+  const f = context(), net = requestRuntime(f);
+  let resolveAuth;
+  Object.assign(f.ctx, { authBody: () => ({ telegram_auth: {} }), window: { MOONBOYS_IDENTITY: {
+    getFreshTelegramAuth: () => new Promise(resolve => { resolveAuth = resolve; }),
+  } } });
+  const action = f.ctx.post('/telegram-pets/app/action', { action: 'care' });
+  const rejection = assert.rejects(action, error => error.code === 'request_timeout');
+  await net.tick(60000);
+  await rejection;
+  resolveAuth({ id: '123456789', hash: 's1_fixture' });
+  await net.tick(0);
+  assert.equal(net.requests.length, 0, 'late authentication must never submit the timed-out gameplay action');
+});
+
 for (const phase of ['fetch', 'body']) test(`a stalled live ${phase} is aborted and releases polling after manual recovery`, async () => {
   const f = context(), net = requestRuntime(f);
   const read = f.ctx.refreshLiveState();
