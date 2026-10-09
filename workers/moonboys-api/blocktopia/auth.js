@@ -1,4 +1,5 @@
 import { TELEGRAM_AUTH_MAX_AGE } from './config.js';
+import { verifyWebsiteCredential } from '../telegram-website-auth.js';
 
 function logTelegramAuthFailure(event, context = {}) {
   console.log('[blocktopia][telegram_auth]', JSON.stringify({
@@ -35,6 +36,10 @@ function readTelegramAuthPayloadFromBody(body) {
 
 export async function verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth) {
   const tg = readTelegramAuthPayloadFromBody(body);
+  // Some admin routes use body.telegram_id as the target, not the actor.
+  // The verified credential ID remains the actor; route ownership rules apply.
+  const websiteIdentity = await verifyWebsiteCredential(tg, env);
+  if (websiteIdentity) return websiteIdentity;
   if (!tg || typeof tg !== 'object') {
     logTelegramAuthFailure('missing_payload');
     return { error: 'verified telegram_auth payload required', status: 401 };

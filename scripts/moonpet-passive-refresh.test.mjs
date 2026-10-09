@@ -62,6 +62,111 @@ function requestRuntime(f) {
   } };
 }
 
+function browserAuthRuntime(f, identity, auth, initData = '') {
+  Object.assign(f.ctx, { initData, telegramAuth: auth, petActionRefreshRequired: false,
+    window: { MOONBOYS_IDENTITY: identity } });
+  vm.runInContext(client.slice(client.indexOf('  function authBody()'), client.indexOf('  async function restoreBrowserAuth()')), f.ctx);
+}
+
+for (const path of ['/telegram-pets/app/state', '/telegram-pets/app/action']) test(`transient website renewal sends no unauthenticated ${path} and the next attempt recovers`, async () => {
+  const f = context(), net = requestRuntime(f);
+  const retained = { id: '123456789', hash: 's1_retained', expires_at: 1 };
+  const fresh = { id: '123456789', hash: 's1_fresh', expires_at: 9999999999 };
+  let renewals = 0;
+  browserAuthRuntime(f, {
+    getFreshTelegramAuth: async () => ++renewals === 1 ? null : fresh,
+    getTelegramAuth: () => retained,
+  }, retained);
+  const snapshot = JSON.stringify(f.ctx.state);
+  const payload = { action: 'care', pet_id: 'pet-one', request_id: 'manual-attempt' };
+  const blocked = f.ctx.post(path, payload);
+  const rejection = assert.rejects(blocked, error => error.status === 503 && /REFRESH/.test(error.message));
+  await net.tick(0);
+  if (net.requests[0]) net.requests[0].respond({ error: 'mini_app_auth_missing' }, 401);
+  await rejection;
+  assert.equal(net.requests.length, 0, 'renewal failure must not submit a read or mutation without proof');
+  assert.equal(f.ctx.telegramAuth, retained);
+  assert.equal(f.ctx.authenticationFailure, false);
+  assert.equal(f.ctx.petActionRefreshRequired, false);
+  assert.equal(JSON.stringify(f.ctx.state), snapshot);
+  assert.equal(net.timers.size, 0);
+  const retry = f.ctx.post(path, payload);
+  await net.tick(0);
+  assert.equal(net.requests.length, 1, 'only the explicitly retried request is submitted');
+  assert.deepEqual(net.requests[0].body.telegram_auth, fresh);
+  assert.equal(net.requests[0].body.pet_id, 'pet-one');
+  net.requests[0].respond({ ok: true });
+  assert.equal((await retry).ok, true);
+  assert.equal(renewals, 2);
+  assert.equal(f.ctx.authenticationFailure, false);
+});
+
+test('confirmed website expiry still follows the terminal Moonpet authentication path', async () => {
+  const f = context(), net = requestRuntime(f);
+  const expired = { id: '123456789', hash: 's1_expired' };
+  browserAuthRuntime(f, { getFreshTelegramAuth: async () => null, getTelegramAuth: () => null }, expired);
+  const read = f.ctx.post('/telegram-pets/app/state', {});
+  const rejection = assert.rejects(read, error => error.status === 401);
+  await net.tick(0);
+  assert.equal(net.requests[0].body.telegram_auth, undefined);
+  net.requests[0].respond({ error: 'mini_app_auth_expired' }, 401);
+  await rejection;
+  assert.equal(f.ctx.authenticationFailure, true);
+  assert.equal(f.ctx.petActionRefreshRequired, true);
+  await assert.rejects(f.ctx.post('/telegram-pets/app/state', {}), error => error.status === 401);
+  assert.equal(net.requests.length, 1);
+});
+
+for (const mode of ['mini-app', 'legacy']) test(`Moonpet ${mode} authentication retains its existing request proof`, async () => {
+  const f = context(), net = requestRuntime(f);
+  const legacy = { id: '123456789', hash: 'legacy-hmac' };
+  let renewals = 0;
+  browserAuthRuntime(f, { getFreshTelegramAuth: async () => { renewals++; return legacy; } }, legacy, mode === 'mini-app' ? 'validated-init-data' : '');
+  const read = f.ctx.post('/telegram-pets/app/state', {});
+  await net.tick(0);
+  if (mode === 'mini-app') {
+    assert.equal(renewals, 0);
+    assert.equal(net.requests[0].body.init_data, 'validated-init-data');
+    assert.equal(net.requests[0].body.telegram_auth, undefined);
+  } else {
+    assert.equal(renewals, 1);
+    assert.deepEqual(net.requests[0].body.telegram_auth, legacy);
+  }
+  net.requests[0].respond({ ok: true });
+  await read;
+});
+
+test('a superseded website renewal cannot send a late Moonpet request', async () => {
+  const f = context(), net = requestRuntime(f), controller = new AbortController();
+  let finishRenewal;
+  const retained = { id: '123456789', hash: 's1_retained' };
+  browserAuthRuntime(f, { getFreshTelegramAuth: () => new Promise(resolve => { finishRenewal = resolve; }), getTelegramAuth: () => retained }, retained);
+  const read = f.ctx.post('/telegram-pets/app/state', {}, { signal: controller.signal });
+  const rejection = assert.rejects(read, error => error.code === 'request_superseded');
+  controller.abort();
+  await rejection;
+  finishRenewal({ id: '123456789', hash: 's1_fresh' });
+  await net.tick(0);
+  assert.equal(net.requests.length, 0);
+  assert.equal(net.timers.size, 0);
+  assert.equal(f.ctx.authenticationFailure, false);
+});
+
+test('stalled website renewal stays inside the request deadline and cannot submit a late mutation', async () => {
+  const f = context(), net = requestRuntime(f);
+  let resolveAuth;
+  Object.assign(f.ctx, { authBody: () => ({ telegram_auth: {} }), window: { MOONBOYS_IDENTITY: {
+    getFreshTelegramAuth: () => new Promise(resolve => { resolveAuth = resolve; }),
+  } } });
+  const action = f.ctx.post('/telegram-pets/app/action', { action: 'care' });
+  const rejection = assert.rejects(action, error => error.code === 'request_timeout');
+  await net.tick(60000);
+  await rejection;
+  resolveAuth({ id: '123456789', hash: 's1_fixture' });
+  await net.tick(0);
+  assert.equal(net.requests.length, 0, 'late authentication must never submit the timed-out gameplay action');
+});
+
 for (const phase of ['fetch', 'body']) test(`a stalled live ${phase} is aborted and releases polling after manual recovery`, async () => {
   const f = context(), net = requestRuntime(f);
   const read = f.ctx.refreshLiveState();

@@ -1,3 +1,5 @@
+import { syncPlayerProgress } from './player-progress-sync.js';
+
 /**
  * faction-war-system.js — Faction war contribution tracking.
  *
@@ -450,41 +452,15 @@ function _emitWarEvent(eventName, payload) {
 
 // ── Server sync helpers ───────────────────────────────────────────────────────
 
-function _isLinked() {
-  try {
-    var identity = (typeof window !== 'undefined') && window.MOONBOYS_IDENTITY;
-    return !!(identity && typeof identity.isTelegramLinked === 'function' && identity.isTelegramLinked());
-  } catch (_) { return false; }
-}
-
-function _getSignedAuth() {
-  try {
-    var identity = (typeof window !== 'undefined') && window.MOONBOYS_IDENTITY;
-    if (!identity || typeof identity.getSignedTelegramAuth !== 'function') return null;
-    return identity.getSignedTelegramAuth();
-  } catch (_) { return null; }
-}
-
-function _getApiBase() {
-  try {
-    var cfg = (typeof window !== 'undefined') && window.MOONBOYS_API;
-    return cfg && cfg.BASE_URL ? String(cfg.BASE_URL).replace(/\/$/, '') : '';
-  } catch (_) { return ''; }
-}
-
 /**
  * Sync faction contribution to the server for Telegram-linked users.
- * Fires-and-forgets; never throws.
+ * Queues fresh authentication before submission; unsent failures expose a retry.
  * Maps local CONTRIBUTION_SOURCES to the server's FACTION_SIGNAL_ALLOWED_REASONS allowlist.
  * @param {string} factionId
  * @param {number} amount
  * @param {string} reason
  */
 function _syncContributionToServer(factionId, amount, reason) {
-  if (!_isLinked()) return;
-  var auth = _getSignedAuth();
-  var apiBase = _getApiBase();
-  if (!auth || !apiBase) return;
   // Map local source keys to server-recognised reason values.
   var SERVER_REASON_MAP = {
     score_submission: 'score_submission',
@@ -494,18 +470,11 @@ function _syncContributionToServer(factionId, amount, reason) {
     other:            'arcade_run',
   };
   var serverReason = SERVER_REASON_MAP[reason] || 'score_submission';
-  try {
-    fetch(apiBase + '/faction/signal/contribute', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        telegram_auth: auth,
-        faction_id: factionId,
-        contribution: amount,
-        reason: serverReason,
-      }),
-    }).catch(function () {});
-  } catch (_) {}
+  return syncPlayerProgress('/faction/signal/contribute', {
+    faction_id: factionId,
+    contribution: amount,
+    reason: serverReason,
+  });
 }
 
 /**
@@ -514,10 +483,6 @@ function _syncContributionToServer(factionId, amount, reason) {
  * This event call is proof/feed only (clout_delta is zero to avoid double-counting).
  */
 function _syncBattleChamberEventToServer(factionId, amount, reason) {
-  if (!_isLinked()) return;
-  var auth = _getSignedAuth();
-  var apiBase = _getApiBase();
-  if (!auth || !apiBase) return;
   var safeAmount = Math.max(0, Math.min(BATTLE_CHAMBER_EVENT_CLAMP_MAX, Math.floor(Number(amount) || 0)));
   var EVENT_TYPE_MAP = {
     score_submission: 'weekly_contribution',
@@ -527,23 +492,16 @@ function _syncBattleChamberEventToServer(factionId, amount, reason) {
     other: 'weekly_contribution',
   };
   var eventType = EVENT_TYPE_MAP[reason] || 'weekly_contribution';
-  try {
-    fetch(apiBase + '/battle-chamber/event', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        telegram_auth: auth,
-        faction_id: factionId,
-        event_type: eventType,
-        // Proof-only event; /faction/signal/contribute already owns clout totals.
-        clout_delta: 0,
-        source: 'faction-war-system',
-        metadata_json: {
-          ownership: 'faction_signal_route',
-          contribution_amount: safeAmount,
-          contribution_source: reason,
-        },
-      }),
-    }).catch(function () {});
-  } catch (_) {}
+  return syncPlayerProgress('/battle-chamber/event', {
+    faction_id: factionId,
+    event_type: eventType,
+    // Proof-only event; /faction/signal/contribute already owns clout totals.
+    clout_delta: 0,
+    source: 'faction-war-system',
+    metadata_json: {
+      ownership: 'faction_signal_route',
+      contribution_amount: safeAmount,
+      contribution_source: reason,
+    },
+  });
 }

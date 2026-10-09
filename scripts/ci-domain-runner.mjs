@@ -44,6 +44,8 @@ const GROUPS = {
     ['node', 'scripts/audit-published-vs-index.js'],
   ],
   'worker-api': [
+    ['node', '--test', 'scripts/telegram-website-auth.test.mjs'],
+    ['node', '--test', 'scripts/telegram-website-session-client.test.mjs'],
     ['node', '--test', 'scripts/moonpet-guide.test.mjs'],
     ['node', 'scripts/moonpet-retained-proof-slots.test.mjs'],
     ['node', 'scripts/moonpet-consolidated-atomicity.test.mjs'],
@@ -176,6 +178,7 @@ const GROUPS = {
     ['node', '--test', 'scripts/moonpet-beta-xp-quarantine.test.mjs'],
   ],
   arcade: [
+    ['node', '--test', 'scripts/telegram-progression-auth.test.mjs'],
     ['npm', 'run', 'test:btqm-runtime-assets'],
     ['node', 'scripts/public-arcade-branding-regression.test.mjs'],
     ['node', 'scripts/telegram-games-launcher.test.mjs'],
@@ -221,6 +224,7 @@ const GROUPS = {
     ['node', 'scripts/wax-collection-page-fallback.test.mjs'],
   ],
   visual: [
+    ['node', '--test', 'scripts/telegram-website-login-browser.test.mjs'],
     ['node', 'scripts/wiki-citation-preservation-browser.test.mjs'],
     ['node', 'scripts/moonpet-guide-browser.test.mjs'],
     ['node', 'scripts/moonpet-radio-browser.test.mjs'],

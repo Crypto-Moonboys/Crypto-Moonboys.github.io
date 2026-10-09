@@ -5,11 +5,11 @@
   var BASE = cfg.BASE_URL || '';
   var HASH_KEY = 'telegram_auth';
   var AUTH_STORAGE_KEY = 'MOONBOYS_TELEGRAM_AUTH';
-  var DIRECT_VISIT_PROMPT = 'Use /gklink in the Telegram bot to connect your account.';
+  var DIRECT_VISIT_PROMPT = 'Log in with Telegram to restore your account, or use /gklink in the bot as a fallback.';
 
   // Resolved text constants — fall back to literals so no type="module" is needed.
   var COPY = window.UI_STATUS_COPY || {
-    UNLINKED:        'Telegram not linked \u2014 run /gklink',
+    UNLINKED:        'Telegram login required',
     API_UNAVAILABLE: 'Core API unavailable',
   };
 
@@ -163,7 +163,7 @@
     var parsedPayload = parseTelegramAuthParam(rawPayload);
     debug('payload_received', { hasPayload: !!parsedPayload });
 
-    if (!parsedPayload || typeof parsedPayload !== 'object') {
+    if (!parsedPayload || typeof parsedPayload !== 'object' || /^s1_/.test(parsedPayload.hash || '')) {
       setStatus(COPY.UNLINKED, 'Invalid link. Use /gklink again.', false);
       emitSyncState('bad', 'invalid_payload');
       debug('payload_parse_failed', { rawLength: rawPayload.length });
@@ -220,16 +220,20 @@
         }
 
         if (!linkedOk) {
-          setStatus(COPY.UNLINKED, 'Signed Telegram auth is missing or expired. Run /gklink again.', false);
+          var activeWebsiteAuth = window.MOONBOYS_IDENTITY && window.MOONBOYS_IDENTITY.getTelegramAuth && window.MOONBOYS_IDENTITY.getTelegramAuth();
+          var differentWebsiteAccount = activeWebsiteAuth && /^s1_/.test(activeWebsiteAuth.hash || '') && String(activeWebsiteAuth.id) !== String(result.data.telegram_id);
+          setStatus(COPY.UNLINKED, differentWebsiteAccount ? 'Log out of your website Telegram account before linking a different account.' : 'Signed Telegram auth is missing or expired. Run /gklink again.', false);
           emitSyncState('bad', 'link_persist_failed');
           debug('link_persist_failed', { telegramId: result.data.telegram_id || null });
           return;
         }
 
-        persistRawPayload(JSON.stringify(canonicalPayload));
+        var currentAuth = window.MOONBOYS_IDENTITY && window.MOONBOYS_IDENTITY.getTelegramAuth && window.MOONBOYS_IDENTITY.getTelegramAuth();
+        var keptWebsiteSession = currentAuth && /^s1_/.test(currentAuth.hash || '');
+        if (!keptWebsiteSession) persistRawPayload(JSON.stringify(canonicalPayload));
         setStatus(displayName, 'Telegram linked successfully. XP and Block Topia progression are now sync-live.', true);
         emitSyncState('good', 'linked_ready', result.data.telegram_id);
-        discardLegacyCompetitiveQueueAfterLink();
+        if (!keptWebsiteSession) discardLegacyCompetitiveQueueAfterLink();
         debug('verify_success', { telegramId: result.data.telegram_id });
       })
       .catch(function (error) {
@@ -239,9 +243,14 @@
       });
   }
 
+  function bootAfterIdentity() {
+    var ready = window.MOONBOYS_IDENTITY && window.MOONBOYS_IDENTITY.ready;
+    if (ready) Promise.resolve(ready).then(boot);
+    else boot();
+  }
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', boot);
+    document.addEventListener('DOMContentLoaded', bootAfterIdentity);
   } else {
-    boot();
+    bootAfterIdentity();
   }
 }());

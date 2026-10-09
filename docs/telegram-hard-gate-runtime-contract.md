@@ -36,7 +36,7 @@ Primary areas to audit:
 ## Required tests
 
 - Guest cannot start an Arcade run.
-- Telegram-authenticated but not `/gklink`-activated user cannot start a competitive run.
+- Verified OIDC website login activates eligible competitive access without a bot command. Legacy widget identity without server activation remains blocked; `/gklink` stays a fallback.
 - Expired Telegram auth cannot start or continue competitive submissions.
 - Direct navigation to each active game route is blocked before gameplay initialization.
 - Unlinked score submission returns a hard rejection and creates no local pending record.

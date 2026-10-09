@@ -2,6 +2,7 @@ import { capturePetEconomy, assertPetEconomy, assertPetEconomySource } from './p
 import { atomicPetBatch } from './pets/atomic-mutations.js';
 import { getStyleLoadout, equipPetStyle } from './pets/style-loadout.js';
 import { verifyTelegramWebhookSecret } from './telegram-webhook-auth.js';
+import { handleTelegramWebsiteAuth, isWebsiteCredential, verifyWebsiteCredential } from './telegram-website-auth.js';
 import { createDisplayedPetScope, isDisplayedPetScopeStaleError } from './pets/displayed-pet-scope.js';
 import { projectCommittedPetResult } from './pets/committed-result.js';
 import { RELIC_ROUTE_DETAILS } from './pets/relic-passives.js';
@@ -823,6 +824,8 @@ function readTelegramAuthEvidenceFromAuthorization(request) {
 
 async function verifyTelegramAuthEvidenceForRestore(body, env) {
   const tg = parseTelegramAuthEvidence(body?.telegram_auth || body?.auth_evidence || body);
+  const websiteIdentity = await verifyWebsiteCredential(tg, env, body?.telegram_id);
+  if (websiteIdentity) return websiteIdentity.error ? null : websiteIdentity;
   if (!tg || typeof tg !== 'object') return null;
   const telegramId = String(tg.id || '').trim();
   const authDate = String(tg.auth_date || '').trim();
@@ -9728,6 +9731,12 @@ async function authenticatePetMiniApp(body, env) {
   if (body?.init_data) {
     const verified = await verifyTelegramMiniAppInitData(body.init_data, env.TELEGRAM_BOT_TOKEN, { max_age_seconds: 3600 });
     if (!verified.ok) return { error: verified.reason, status: 401 };
+    if (body.telegram_id != null && String(body.telegram_id) !== verified.telegramId) return { error: 'telegram_id_mismatch', status: 403 };
+    if (body.telegram_auth) {
+      const other = await verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth);
+      if (other.error) return other;
+      if (other.telegramId !== verified.telegramId) return { error: 'telegram_id_mismatch', status: 403 };
+    }
     return verified;
   }
   const verified = await verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth);
@@ -11564,6 +11573,29 @@ export default {
     const json = makeJsonResponder(corsHeaders);
     const err = makeErrorResponder(corsHeaders);
 
+    // Website bearers belong in request bodies/headers, never reusable URLs.
+    if (request.method !== 'OPTIONS' && ['telegram_auth', 'auth_evidence'].some(key =>
+      url.searchParams.getAll(key).some(raw => {
+        const auth = parseTelegramAuthEvidence(raw);
+        // Encoded plain tokens are still reusable credentials even though the
+        // legacy evidence parser accepts only decoded JSON.
+        let decoded = null;
+        try {
+          const normalized = raw.replace(/-/g, '+').replace(/_/g, '/');
+          decoded = atob(normalized + '='.repeat((4 - normalized.length % 4) % 4));
+        } catch {}
+        return [raw, decoded, auth, auth?.telegram_auth].some(value =>
+          (typeof value === 'string' && /^s1_[A-Za-z0-9_-]{43}$/.test(value.trim())) || isWebsiteCredential(value));
+      }))) return err('website_auth_url_credentials_rejected', 400);
+
+    if (path.startsWith('/telegram/website/')) {
+      if (request.method !== 'OPTIONS') {
+        const limited = await enforcePublicRateLimit(request, env, path, null, corsHeaders, { ipLimit: 30 });
+        if (limited) return limited;
+      }
+      return handleTelegramWebsiteAuth(request, env);
+    }
+
     if (request.method === 'OPTIONS') {
       return new Response(null, { status: 204, headers: corsHeaders });
     }
@@ -12717,7 +12749,7 @@ export default {
           && !!restoreEvidence
           && String(restoreEvidence.telegramId || '') === String(user.telegram_id || '');
         const signedAuthPayload = (linked && canRestoreSignedAuth)
-          ? await buildSignedTelegramAuthPayload({
+          ? isWebsiteCredential(restoreEvidence.authPayload) ? restoreEvidence.authPayload : await buildSignedTelegramAuthPayload({
             id: String(user.telegram_id),
             username: user.username || null,
             first_name: user.first_name || null,
@@ -13151,7 +13183,6 @@ export default {
       }, summary?.ok ? 200 : 503);
     }
 
-    // ── GET /faction/status with telegram_auth query payload ──────────────
     // Shared arcade progression sync endpoint.
     if (path === '/arcade/progression/sync' && request.method === 'POST') {
       let body;
@@ -13375,14 +13406,16 @@ export default {
       }
     }
 
-    if (path === '/faction/status' && request.method === 'GET') {
-      const rawAuth = url.searchParams.get('telegram_auth');
-      if (!rawAuth) return err('verified telegram_auth payload required', 401);
+    // ── POST /faction/status; legacy GET query evidence remains supported ──
+    if (path === '/faction/status' && (request.method === 'GET' || request.method === 'POST')) {
       let tgBody;
-      try {
-        tgBody = { telegram_auth: JSON.parse(rawAuth) };
-      } catch {
-        return err('Invalid telegram_auth payload', 400);
+      if (request.method === 'POST') {
+        try { tgBody = await request.json(); } catch { return err('Invalid JSON', 400); }
+      } else {
+        const rawAuth = url.searchParams.get('telegram_auth');
+        if (!rawAuth) return err('verified telegram_auth payload required', 401);
+        try { tgBody = { telegram_auth: JSON.parse(rawAuth) }; }
+        catch { return err('Invalid telegram_auth payload', 400); }
       }
       const verified = await verifyTelegramIdentityFromBody(tgBody, env, verifyTelegramAuth);
       if (verified.error) return err(verified.error, verified.status || 401);

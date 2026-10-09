@@ -702,6 +702,22 @@
       // The deadline covers fetch, body reads and all read-only retries. Racing
       // it also releases callers' guards if a transport ignores cancellation.
       return await Promise.race([deadline, cancelled, (async function () {
+        // Cookie renewal is covered by the same deadline and cancellation as
+        // the gameplay request; it must never let a superseded action continue.
+        if (!authBody().init_data && typeof window !== 'undefined' && window.MOONBOYS_IDENTITY && typeof window.MOONBOYS_IDENTITY.getFreshTelegramAuth === 'function') {
+          var freshTelegramAuth = await window.MOONBOYS_IDENTITY.getFreshTelegramAuth();
+          var retainedTelegramAuth = typeof window.MOONBOYS_IDENTITY.getTelegramAuth === 'function'
+            ? window.MOONBOYS_IDENTITY.getTelegramAuth() : null;
+          // Retained website proof means renewal failed transiently. Do not
+          // submit without proof and turn that outage into permanent expiry.
+          if (!freshTelegramAuth && retainedTelegramAuth && /^s1_/.test(retainedTelegramAuth.hash || '')) {
+            var refreshError = new Error('TELEGRAM SESSION REFRESH UNAVAILABLE. TRY AGAIN.');
+            refreshError.status = 503;
+            refreshError.code = 'website_auth_refresh_unavailable';
+            throw refreshError;
+          }
+          telegramAuth = freshTelegramAuth;
+        }
         // State is safe to retry after a transient D1 read failure. Mutations
         // must never replay automatically after an unconfirmed response.
         var stateAttempts = path === '/telegram-pets/app/state' ? 3 : 1;
@@ -4502,10 +4518,11 @@
     await restoreBrowserAuth();
     if (!initData && !telegramAuth) {
       await startupBoot;
-      tell('OPEN THIS GAME FROM @WIKICOMSBOT.', 'danger');
+      tell('LOG IN WITH TELEGRAM OR OPEN THIS GAME FROM @WIKICOMSBOT.', 'danger');
       screen.innerHTML = panel('TELEGRAM SIGNATURE REQUIRED',
         '<div class="line">MOONPET OS READS YOUR LIVE SAVE ONLY AFTER TELEGRAM VERIFIES YOUR IDENTITY.</div>' +
-        '<div class="line muted">No player data was requested in this browser. Open the signed Mini App, then initialise or resume your Moonpet.</div>' +
+        '<div class="line muted">Log in with Telegram on the website to restore your existing account, or open the signed Mini App. Your save and existing entry requirements are kept.</div>' +
+        '<a class="terminal-link-button" href="/gkniftyheads-incubator.html" data-telegram-login>LOG IN WITH TELEGRAM</a>' +
         '<div class="button-grid one"><a class="terminal-link-button" href="https://t.me/WIKICOMSBOT?start=moonpet" target="_blank" rel="noopener noreferrer">OPEN MOONPET OS IN TELEGRAM</a>' +
         '<button type="button" class="terminal-button" data-utility="guide">HOW TO PLAY<span class="button-purpose">Read how care, quests, battles and rewards work before choosing a route.</span></button><button type="button" class="terminal-button" data-utility="about">ABOUT MOONPET OS<span class="button-purpose">Learn about persistent companions and competition.</span></button></div>', 'telegram-auth');
       await typeBoot(['AUTHENTICATION NOT FOUND', 'OPEN THE MINI APP INSIDE TELEGRAM', 'NO PLAYER DATA WAS READ'], { speed: 9, hold: 800 });
