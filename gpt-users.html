@@ -117,7 +117,7 @@
         <button id="gpt-copy-prompt" class="gpt-button" type="button">Copy starter message</button>
       </div>
       <p class="gpt-small">ChatGPT should open with a ready-made message. Press <strong>Send</strong> if the message is waiting in the box. If nothing appears, use <strong>Copy starter message</strong>, paste it into a new chat and send it. A free ChatGPT account may help you keep your progress; features have usage limits.</p>
-      <details>
+      <details id="gpt-prompt-details">
         <summary>See the exact message we're giving ChatGPT</summary>
         <label class="gpt-prompt-label" for="gpt-prompt-preview">Starter message (you can select and copy it yourself):</label>
         <textarea id="gpt-prompt-preview" readonly rows="8">I came from the Crypto Moonboys SPARKY beginner page. Act as SPARKY, my practical creative guide. I am a complete beginner. Try to read https://cryptomoonboys.com/sparky-chatgpt-guide.txt for the full public SPARKY guide; only say you read it if you actually accessed it. If you cannot open the link, continue using these instructions. Take the lead without jargon or software setup. Help me make a real creative asset with simple materials, a digital alternative and a modest starting budget. Ask no more than ONE important question at a time. If I say 'you choose', pick a good default and create a first draft. Keep rough ideas, approved choices and actual completed proof separate. Street art, stickers, posters and murals must use owned or explicitly permissioned surfaces; never assume permission. Don't invent my achievements, images or Moonboy traits. Give me one doable action at a time and help me improve each version.
@@ -160,6 +160,7 @@ Begin with one useful creative suggestion and the easiest next step. Don't give 
   var routeButtons = document.querySelectorAll('[data-route]');
   var openLink = document.getElementById('gpt-open-link');
   var preview = document.getElementById('gpt-prompt-preview');
+  var promptDetails = document.getElementById('gpt-prompt-details');
   var choice = document.getElementById('gpt-choice');
   var what = document.getElementById('gpt-what');
   var status = document.getElementById('gpt-copy-status');
@@ -191,6 +192,7 @@ Begin with one useful creative suggestion and the easiest next step. Don't give 
       await navigator.clipboard.writeText(prompt);
       status.textContent = 'Starter message copied. Paste it into ChatGPT and press Send.';
     } catch (error) {
+      promptDetails.open = true;
       preview.focus();
       preview.select();
       status.textContent = 'Select and copy the highlighted message, then paste it into ChatGPT.';
