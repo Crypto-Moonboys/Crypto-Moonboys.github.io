@@ -16,7 +16,7 @@ ANTI_CHEAT_WORKER_URL = "https://moonboys-anti-cheat.sercullen.workers.dev"
 LEADERBOARD_API_URL = "https://moonboys-leaderboard.sercullen.workers.dev"
 PET_MINI_APP_ENABLED = "true"
 # Enable only after migration 090, BotFather registration and both Worker releases.
-TELEGRAM_WEBSITE_LOGIN_ENABLED = "false"
+TELEGRAM_WEBSITE_LOGIN_ENABLED = "true"
 TELEGRAM_WEBSITE_AUTH_ORIGIN = "https://api.cryptomoonboys.com"
 TELEGRAM_WEBSITE_ORIGINS = "https://cryptomoonboys.com,https://www.cryptomoonboys.com"
 # Secrets: TELEGRAM_OIDC_CLIENT_ID and TELEGRAM_OIDC_CLIENT_SECRET (not the bot token).
