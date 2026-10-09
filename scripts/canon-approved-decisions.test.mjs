@@ -82,6 +82,26 @@ test('editorial intent may exist in master records but not public prose or disco
   }
 });
 
+test('relative HTML and Markdown targets cannot link to excluded editorial records', () => {
+  const filename = 'brand-canon/wiki-rewrites/public-note.md';
+  for (const payload of ['[Master](../story-bibles/gk-master-canon.md)',
+    '[Companion](../story-bibles/w81-continuity-companion-20261008.md#history "Reference")',
+    '[Decisions](../reconciliation-decisions.json?view=all)', '[Proposals](<./issue-1458-proposals.md>)',
+    '[Master][canon]\n[canon]: ../story-bibles/gk-master-canon.md "Editorial"',
+    '<a href="../story-bibles/gk-master-canon.md#history">Master</a>',
+    "<a href='../reconciliation-decisions.json?view=all&amp;mode=history'>Decisions</a>",
+    '<a href=./issue-1458-proposals.md>Proposals</a>',
+    '[Master](../story-bibles/%67k-master-canon.md)',
+    '<a href="../../brand-canon/story-bibles/./gk-master-canon.md">Master</a>']) {
+    assert.ok(checkPublicDisclosure(payload, filename).some(e => e.includes('public link to editorial-only record')), payload);
+  }
+  for (const payload of ['[Chronology](../../wiki/first-witness-master-chronology.html#sam-calendar)',
+    '<a href="../../wiki/first-witness-concordance.html">Concordance</a>',
+    '[External](https://example.com/history.md)', 'The editorial master remains a repository record.']) {
+    assert.deepEqual(checkPublicDisclosure(payload, filename), [], payload);
+  }
+});
+
 test('the actual Pages builder excludes all ending records and retains public components', () => {
   const fixture = fs.mkdtempSync(path.join(os.tmpdir(), 'gk-disclosure-'));
   try {
@@ -98,5 +118,11 @@ test('the actual Pages builder excludes all ending records and retains public co
     write('wiki/accidental-ending.html', '<p hidden>The physical universe survives; compulsory convergence is defeated.</p>');
     assert.throws(() => execFileSync(process.execPath, ['scripts/prepare-pages-artifact.mjs', 'public-site'], { cwd: fixture, stdio: 'pipe' }),
       /editorial Final Fork outcome disclosed/u);
+    fs.unlinkSync(path.join(fixture, 'wiki/accidental-ending.html'));
+    write('brand-canon/wiki-rewrites/public-note.md', '[Companion](../story-bibles/w81-continuity-companion-20261008.md)');
+    assert.throws(() => execFileSync(process.execPath, ['scripts/prepare-pages-artifact.mjs', 'public-site'], { cwd: fixture, stdio: 'pipe' }),
+      /public link to editorial-only record/u);
+    write('brand-canon/wiki-rewrites/public-note.md', '[Chronology](../../wiki/first-witness-master-chronology.html)');
+    execFileSync(process.execPath, ['scripts/prepare-pages-artifact.mjs', 'public-site'], { cwd: fixture });
   } finally { fs.rmSync(fixture, { recursive: true, force: true }); }
 });

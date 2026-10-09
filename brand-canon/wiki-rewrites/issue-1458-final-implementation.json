@@ -257,13 +257,18 @@
         "brand-canon/story-bibles/gk-master-canon.md",
         "brand-canon/story-bibles/w81-continuity-companion-20261008.md",
         "brand-canon/wiki-content-state.json",
+        "brand-canon/wiki-rewrites/issue-1458-progress.md",
         "brand-canon/wiki-rewrites/issue-1458-proposals.md",
+        "brand-canon/wiki-rewrites/raw-canon-20261008-disposition.md",
         "js/entity-graph-lite.json",
         "js/entity-graph.json",
         "js/graph-data.json",
         "js/link-graph.json",
         "js/link-map.json",
         "js/wiki-index.json",
+        "scripts/canon-approved-decisions.test.mjs",
+        "scripts/prepare-pages-artifact.mjs",
+        "scripts/public-canon-disclosure.mjs",
         "wiki/agent-sam.html",
         "wiki/aleema-child-of-the-shard.html",
         "wiki/bitcoin-kid-army.html",
@@ -349,6 +354,7 @@
     "brand-canon/wiki-rewrites/issue-1458-final-implementation.json",
     "brand-canon/wiki-rewrites/issue-1458-progress.md",
     "brand-canon/wiki-rewrites/issue-1458-proposals.md",
+    "brand-canon/wiki-rewrites/raw-canon-20261008-disposition.md",
     "brand-canon/wiki-rewrites/raw-canon-20261008-source-register.csv",
     "js/entity-graph-lite.json",
     "js/entity-graph.json",
@@ -463,7 +469,8 @@
       "node scripts/graph-publishing-integrity.test.mjs",
       "node scripts/wiki-lore-preservation-check.mjs"
     ],
-    "internal_links": "passed:3188 internal links/fragments on 61 changed pages"
+    "internal_links": "passed:3188 internal links/fragments on 61 changed pages",
+    "public_link_boundary": "passed:relative/root-absolute Markdown, reference-style and HTML link targets normalize before editorial-path comparison; actual artifact rejects excluded relative targets."
   },
   "release": "unmerged; no deployment; issue remains open",
   "functional_safeguards": [
