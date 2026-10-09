@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-08T19:08:19.053Z",
-  "verified_at": "2026-10-08T19:08:19.053Z",
+  "generated_at": "2026-10-09T05:28:37.013Z",
+  "verified_at": "2026-10-09T05:28:37.013Z",
   "lite": true,
   "nodes": [
     {
@@ -816,26 +816,20 @@
       "weight": 1
     },
     {
-      "source": "/wiki/hodl-wars.html",
-      "target": "/wiki/gkniftyheads.html",
-      "score": 98,
-      "weight": 0.98
-    },
-    {
       "source": "/wiki/hodl-x-warriors.html",
       "target": "/wiki/bitcoin-kids.html",
       "score": 98,
       "weight": 0.98
     },
     {
-      "source": "/wiki/hodl-warriors.html",
-      "target": "/wiki/crypto-moonboys.html",
+      "source": "/wiki/bitcoin-kid-army.html",
+      "target": "/wiki/alfie-bitcoin-kid-blaze.html",
       "score": 97,
       "weight": 0.97
     },
     {
-      "source": "/wiki/sacred-chain.html",
-      "target": "/wiki/hodl-wars.html",
+      "source": "/wiki/hodl-warriors.html",
+      "target": "/wiki/crypto-moonboys.html",
       "score": 97,
       "weight": 0.97
     },
@@ -846,14 +840,14 @@
       "weight": 0.96
     },
     {
-      "source": "/wiki/bitcoin-kid-army.html",
-      "target": "/wiki/alfie-bitcoin-kid-blaze.html",
-      "score": 96,
-      "weight": 0.96
-    },
-    {
       "source": "/wiki/genesis-kernel.html",
       "target": "/wiki/graffpunks.html",
+      "score": 95,
+      "weight": 0.95
+    },
+    {
+      "source": "/wiki/hodl-wars.html",
+      "target": "/wiki/gkniftyheads.html",
       "score": 95,
       "weight": 0.95
     },
@@ -865,6 +859,12 @@
     },
     {
       "source": "/wiki/genesis-kernel.html",
+      "target": "/wiki/hodl-wars.html",
+      "score": 94,
+      "weight": 0.94
+    },
+    {
+      "source": "/wiki/sacred-chain.html",
       "target": "/wiki/hodl-wars.html",
       "score": 94,
       "weight": 0.94

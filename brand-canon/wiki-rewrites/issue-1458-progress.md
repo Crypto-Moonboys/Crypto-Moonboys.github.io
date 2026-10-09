@@ -135,6 +135,36 @@ release. Complete source/publishing changes are separated from this verification
 checkpoint; final documentation-head Actions must still be fetched after push.
 Keep PR1460 draft and Issue1458 open. Resume the exact33-source backlog above.
 
+## PR #1460 review correction — 9 October 2026
+
+Restored the four marked Citation Credibility panels removed by generation
+(Alfie, Sarah, primary Pinks and Maidstone); Whale Lords' unmarked panel is
+preserved. Fixed both deletion in the related-path generator and inherited
+runtime removal/hiding. Existing voting initializes and invokes the account
+gate. Related sections are updated in place, existing group layouts and curated
+NFT card descriptions remain intact. All 145 NFT pages are byte-identical to
+the merged baseline. No NFT descriptions or unrelated website functionality
+were rewritten. All eight canonical blocks remain byte-identical to the
+reviewed Phase 2 head; approved stories and no-drift protections are retained.
+
+Mandatory Wiki now runs functional-body/NFT preservation and corruption checks;
+Visual runs real-browser citation preservation. Generator/runtime regressions
+cover marked/unmarked panels, ownership wrappers, voting identities, comments,
+scripts, repeated generation and NFT wording. CI scope checks ensure edits to
+these safeguards trigger their domain. A fresh complete `npm test` passes all
+five domains, including the new checks. Citation browsers pass ten desktop/
+mobile and five no-JavaScript views using a local API fixture; article reading
+passes sixteen views, eight no-JavaScript pages and nine search/autocomplete
+queries. Publishing parity, graph, content state, 501 links (zero broken),
+741 paragraphs/242 IDs and a fresh Pages artifact pass. Machine receipt:
+`issue-1458-pr1460-review-verification.json`. Exact-head GitHub results follow
+in the PR conversation; retain the maintainer prose approval gate.
+
+The recorded source checkpoint remains 61/94 while further complete readings
+are compared and recorded. Continue the existing ledger; Issue #1458 and the
+five major decisions remain open. PR #1460 stays draft/on hold; GK must approve
+it before merge. No merge or deployment has occurred.
+
 ## Inherited PR #1459 verification and review receipts
 
 - **94** original archive files verified against archive SHA-256, CSV and the

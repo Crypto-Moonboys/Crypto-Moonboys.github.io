@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-08T19:08:19.053Z",
-  "verified_at": "2026-10-08T19:08:19.053Z",
+  "generated_at": "2026-10-09T05:28:37.013Z",
+  "verified_at": "2026-10-09T05:28:37.013Z",
   "nodes": [
     {
       "id": "/about.html",
@@ -3993,8 +3993,8 @@
     {
       "source": "/wiki/bitcoin-kid-army.html",
       "target": "/wiki/alfie-bitcoin-kid-blaze.html",
-      "score": 96,
-      "weight": 0.96
+      "score": 97,
+      "weight": 0.97
     },
     {
       "source": "/wiki/bitcoin-kid-army.html",
@@ -11871,8 +11871,8 @@
     {
       "source": "/wiki/gkniftyheads.html",
       "target": "/wiki/hodl-wars.html",
-      "score": 94,
-      "weight": 0.94
+      "score": 91,
+      "weight": 0.91
     },
     {
       "source": "/wiki/gkniftyheads.html",
@@ -12351,14 +12351,14 @@
     {
       "source": "/wiki/hodl-wars.html",
       "target": "/wiki/the-first-witness.html",
-      "score": 102,
-      "weight": 1
+      "score": 99,
+      "weight": 0.99
     },
     {
       "source": "/wiki/hodl-wars.html",
       "target": "/wiki/gkniftyheads.html",
-      "score": 98,
-      "weight": 0.98
+      "score": 95,
+      "weight": 0.95
     },
     {
       "source": "/wiki/hodl-wars.html",
@@ -12375,8 +12375,8 @@
     {
       "source": "/wiki/hodl-wars.html",
       "target": "/wiki/sacred-chain.html",
-      "score": 90,
-      "weight": 0.9
+      "score": 87,
+      "weight": 0.87
     },
     {
       "source": "/wiki/hodl-x-warriors.html",
@@ -13778,15 +13778,15 @@
     },
     {
       "source": "/wiki/sacred-chain.html",
-      "target": "/wiki/hodl-wars.html",
-      "score": 97,
-      "weight": 0.97
-    },
-    {
-      "source": "/wiki/sacred-chain.html",
       "target": "/wiki/gkniftyheads.html",
       "score": 95,
       "weight": 0.95
+    },
+    {
+      "source": "/wiki/sacred-chain.html",
+      "target": "/wiki/hodl-wars.html",
+      "score": 94,
+      "weight": 0.94
     },
     {
       "source": "/wiki/samaelexe.html",
@@ -15771,8 +15771,8 @@
     {
       "source": "/wiki/whale-lords.html",
       "target": "/wiki/the-squeaky-pinks.html",
-      "score": 79,
-      "weight": 0.79
+      "score": 80,
+      "weight": 0.8
     },
     {
       "source": "/wiki/whale-lords.html",

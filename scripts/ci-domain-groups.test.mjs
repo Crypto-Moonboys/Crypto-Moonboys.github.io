@@ -67,12 +67,20 @@ assert.match(
 );
 
 for (const filename of ['scripts/verify-w81-archive.py', 'scripts/verify-w81-archive.test.py',
-  'scripts/canon-test-command.test.mjs', 'scripts/canon-integrity-check.mjs', 'scripts/canon-integrity-check.test.mjs']) {
+  'scripts/canon-test-command.test.mjs', 'scripts/canon-integrity-check.mjs', 'scripts/canon-integrity-check.test.mjs',
+  'scripts/wiki-lore-preservation-check.mjs', 'scripts/wiki-lore-preservation-check.test.mjs',
+  'scripts/generate-related-wiki-paths.mjs', 'scripts/relationship-hints-related-wiki-paths.test.mjs']) {
   const env = { ...process.env, CHANGED_FILES: filename };
   delete env.GITHUB_OUTPUT;
   const output = execFileSync(process.execPath, [path.join(ROOT, 'scripts/ci-change-scope.mjs'), 'wiki'], { cwd: ROOT, env, encoding: 'utf8' });
   assert.match(output, /should_run=true/u, `${filename} alone must trigger mandatory wiki canon checks`);
 }
+
+assert.ok(runner.includes("['node', 'scripts/wiki-lore-preservation-check.test.mjs']") &&
+  runner.includes("['node', 'scripts/wiki-lore-preservation-check.mjs']"),
+  'mandatory wiki CI must protect functional article components and NFT descriptions during lore edits');
+assert.ok(runner.includes("['node', 'scripts/wiki-citation-preservation-browser.test.mjs']"),
+  'visual CI must verify visible, working citation panels after runtime migration');
 
 assert.ok(
   pkg.scripts.test.includes('npm run ci:arcade') &&

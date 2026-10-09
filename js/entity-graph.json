@@ -14075,7 +14075,7 @@
     "related_pages": [
       {
         "target_url": "/wiki/alfie-bitcoin-kid-blaze.html",
-        "score": 92,
+        "score": 93,
         "base_score": 80,
         "reasons": [
           "same_category:factions",
@@ -14084,32 +14084,32 @@
           "link_overlap:8",
           "rank_score_boost:3",
           "graph_centrality_boost:2",
-          "content_depth_boost:7"
+          "content_depth_boost:8"
         ],
         "rank_score_boost": 3,
         "authority_score_boost": 0,
         "graph_centrality_boost": 2,
-        "content_depth_boost": 7,
+        "content_depth_boost": 8,
         "reinforcement_boost": 0,
         "cluster_support_boost": 0,
         "co_citation_boost": 0,
         "freshness_boost": 4,
         "decay_penalty": 0,
         "recency_balance": 4,
-        "final_score": 96,
+        "final_score": 97,
         "score_breakdown": {
           "base_score": 80,
           "rank_score_boost": 3,
           "authority_score_boost": 0,
           "graph_centrality_boost": 2,
-          "content_depth_boost": 7,
+          "content_depth_boost": 8,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
           "freshness_boost": 4,
           "decay_penalty": 0,
           "recency_balance": 4,
-          "final_score": 96
+          "final_score": 97
         }
       },
       {
@@ -16827,6 +16827,43 @@
         }
       },
       {
+        "target_url": "/wiki/alfie-bitcoin-kid-blaze.html",
+        "score": 39,
+        "base_score": 26,
+        "reasons": [
+          "shared_tag:bitcoin",
+          "link_overlap:6",
+          "rank_score_boost:3",
+          "graph_centrality_boost:2",
+          "content_depth_boost:8"
+        ],
+        "rank_score_boost": 3,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 2,
+        "content_depth_boost": 8,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 1,
+        "decay_penalty": 0,
+        "recency_balance": 1,
+        "final_score": 40,
+        "score_breakdown": {
+          "base_score": 26,
+          "rank_score_boost": 3,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 2,
+          "content_depth_boost": 8,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 1,
+          "decay_penalty": 0,
+          "recency_balance": 1,
+          "final_score": 40
+        }
+      },
+      {
         "target_url": "/wiki/gkniftyheads.html",
         "score": 40,
         "base_score": 9,
@@ -16861,43 +16898,6 @@
           "decay_penalty": 0,
           "recency_balance": 0,
           "final_score": 40
-        }
-      },
-      {
-        "target_url": "/wiki/alfie-bitcoin-kid-blaze.html",
-        "score": 38,
-        "base_score": 26,
-        "reasons": [
-          "shared_tag:bitcoin",
-          "link_overlap:6",
-          "rank_score_boost:3",
-          "graph_centrality_boost:2",
-          "content_depth_boost:7"
-        ],
-        "rank_score_boost": 3,
-        "authority_score_boost": 0,
-        "graph_centrality_boost": 2,
-        "content_depth_boost": 7,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 1,
-        "decay_penalty": 0,
-        "recency_balance": 1,
-        "final_score": 39,
-        "score_breakdown": {
-          "base_score": 26,
-          "rank_score_boost": 3,
-          "authority_score_boost": 0,
-          "graph_centrality_boost": 2,
-          "content_depth_boost": 7,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 1,
-          "decay_penalty": 0,
-          "recency_balance": 1,
-          "final_score": 39
         }
       },
       {
@@ -19084,6 +19084,43 @@
         }
       },
       {
+        "target_url": "/wiki/alfie-bitcoin-kid-blaze.html",
+        "score": 59,
+        "base_score": 46,
+        "reasons": [
+          "same_category:factions",
+          "link_overlap:2",
+          "rank_score_boost:3",
+          "graph_centrality_boost:2",
+          "content_depth_boost:8"
+        ],
+        "rank_score_boost": 3,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 2,
+        "content_depth_boost": 8,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 2,
+        "decay_penalty": 0,
+        "recency_balance": 2,
+        "final_score": 61,
+        "score_breakdown": {
+          "base_score": 46,
+          "rank_score_boost": 3,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 2,
+          "content_depth_boost": 8,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 2,
+          "decay_penalty": 0,
+          "recency_balance": 2,
+          "final_score": 61
+        }
+      },
+      {
         "target_url": "/wiki/defi.html",
         "score": 59,
         "base_score": 52,
@@ -19157,43 +19194,6 @@
           "decay_penalty": 0,
           "recency_balance": 2,
           "final_score": 61
-        }
-      },
-      {
-        "target_url": "/wiki/alfie-bitcoin-kid-blaze.html",
-        "score": 58,
-        "base_score": 46,
-        "reasons": [
-          "same_category:factions",
-          "link_overlap:2",
-          "rank_score_boost:3",
-          "graph_centrality_boost:2",
-          "content_depth_boost:7"
-        ],
-        "rank_score_boost": 3,
-        "authority_score_boost": 0,
-        "graph_centrality_boost": 2,
-        "content_depth_boost": 7,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 2,
-        "decay_penalty": 0,
-        "recency_balance": 2,
-        "final_score": 60,
-        "score_breakdown": {
-          "base_score": 46,
-          "rank_score_boost": 3,
-          "authority_score_boost": 0,
-          "graph_centrality_boost": 2,
-          "content_depth_boost": 7,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 2,
-          "decay_penalty": 0,
-          "recency_balance": 2,
-          "final_score": 60
         }
       },
       {
@@ -33835,6 +33835,43 @@
         }
       },
       {
+        "target_url": "/wiki/alfie-bitcoin-kid-blaze.html",
+        "score": 56,
+        "base_score": 43,
+        "reasons": [
+          "same_category:factions",
+          "link_overlap:1",
+          "rank_score_boost:3",
+          "graph_centrality_boost:2",
+          "content_depth_boost:8"
+        ],
+        "rank_score_boost": 3,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 2,
+        "content_depth_boost": 8,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 2,
+        "decay_penalty": 0,
+        "recency_balance": 2,
+        "final_score": 58,
+        "score_breakdown": {
+          "base_score": 43,
+          "rank_score_boost": 3,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 2,
+          "content_depth_boost": 8,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 2,
+          "decay_penalty": 0,
+          "recency_balance": 2,
+          "final_score": 58
+        }
+      },
+      {
         "target_url": "/wiki/queen-sarah-p-fly.html",
         "score": 56,
         "base_score": 43,
@@ -33944,43 +33981,6 @@
           "decay_penalty": 0,
           "recency_balance": 2,
           "final_score": 58
-        }
-      },
-      {
-        "target_url": "/wiki/alfie-bitcoin-kid-blaze.html",
-        "score": 55,
-        "base_score": 43,
-        "reasons": [
-          "same_category:factions",
-          "link_overlap:1",
-          "rank_score_boost:3",
-          "graph_centrality_boost:2",
-          "content_depth_boost:7"
-        ],
-        "rank_score_boost": 3,
-        "authority_score_boost": 0,
-        "graph_centrality_boost": 2,
-        "content_depth_boost": 7,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 2,
-        "decay_penalty": 0,
-        "recency_balance": 2,
-        "final_score": 57,
-        "score_breakdown": {
-          "base_score": 43,
-          "rank_score_boost": 3,
-          "authority_score_boost": 0,
-          "graph_centrality_boost": 2,
-          "content_depth_boost": 7,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 2,
-          "decay_penalty": 0,
-          "recency_balance": 2,
-          "final_score": 57
         }
       },
       {
@@ -261589,11 +261589,11 @@
     "related_pages": [
       {
         "target_url": "/wiki/hodl-wars.html",
-        "score": 91,
-        "base_score": 64,
+        "score": 88,
+        "base_score": 61,
         "reasons": [
           "same_category:core",
-          "link_overlap:8",
+          "link_overlap:7",
           "rank_score_boost:3",
           "authority_score_boost:8",
           "graph_centrality_boost:8",
@@ -261609,9 +261609,9 @@
         "freshness_boost": 3,
         "decay_penalty": 0,
         "recency_balance": 3,
-        "final_score": 94,
+        "final_score": 91,
         "score_breakdown": {
-          "base_score": 64,
+          "base_score": 61,
           "rank_score_boost": 3,
           "authority_score_boost": 8,
           "graph_centrality_boost": 8,
@@ -261622,7 +261622,7 @@
           "freshness_boost": 3,
           "decay_penalty": 0,
           "recency_balance": 3,
-          "final_score": 94
+          "final_score": 91
         }
       },
       {
@@ -268276,6 +268276,43 @@
         }
       },
       {
+        "target_url": "/wiki/alfie-bitcoin-kid-blaze.html",
+        "score": 56,
+        "base_score": 43,
+        "reasons": [
+          "same_category:factions",
+          "link_overlap:1",
+          "rank_score_boost:3",
+          "graph_centrality_boost:2",
+          "content_depth_boost:8"
+        ],
+        "rank_score_boost": 3,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 2,
+        "content_depth_boost": 8,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 2,
+        "decay_penalty": 0,
+        "recency_balance": 2,
+        "final_score": 58,
+        "score_breakdown": {
+          "base_score": 43,
+          "rank_score_boost": 3,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 2,
+          "content_depth_boost": 8,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 2,
+          "decay_penalty": 0,
+          "recency_balance": 2,
+          "final_score": 58
+        }
+      },
+      {
         "target_url": "/wiki/house-of-rackinsats.html",
         "score": 56,
         "base_score": 52,
@@ -268346,43 +268383,6 @@
           "decay_penalty": 0,
           "recency_balance": 2,
           "final_score": 58
-        }
-      },
-      {
-        "target_url": "/wiki/alfie-bitcoin-kid-blaze.html",
-        "score": 55,
-        "base_score": 43,
-        "reasons": [
-          "same_category:factions",
-          "link_overlap:1",
-          "rank_score_boost:3",
-          "graph_centrality_boost:2",
-          "content_depth_boost:7"
-        ],
-        "rank_score_boost": 3,
-        "authority_score_boost": 0,
-        "graph_centrality_boost": 2,
-        "content_depth_boost": 7,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 2,
-        "decay_penalty": 0,
-        "recency_balance": 2,
-        "final_score": 57,
-        "score_breakdown": {
-          "base_score": 43,
-          "rank_score_boost": 3,
-          "authority_score_boost": 0,
-          "graph_centrality_boost": 2,
-          "content_depth_boost": 7,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 2,
-          "decay_penalty": 0,
-          "recency_balance": 2,
-          "final_score": 57
         }
       }
     ]
@@ -273602,11 +273602,11 @@
     "related_pages": [
       {
         "target_url": "/wiki/the-first-witness.html",
-        "score": 99,
-        "base_score": 73,
+        "score": 96,
+        "base_score": 70,
         "reasons": [
           "same_category:core",
-          "link_overlap:11",
+          "link_overlap:10",
           "rank_score_boost:4",
           "authority_score_boost:9",
           "graph_centrality_boost:8",
@@ -273622,9 +273622,9 @@
         "freshness_boost": 3,
         "decay_penalty": 0,
         "recency_balance": 3,
-        "final_score": 102,
+        "final_score": 99,
         "score_breakdown": {
-          "base_score": 73,
+          "base_score": 70,
           "rank_score_boost": 4,
           "authority_score_boost": 9,
           "graph_centrality_boost": 8,
@@ -273635,16 +273635,16 @@
           "freshness_boost": 3,
           "decay_penalty": 0,
           "recency_balance": 3,
-          "final_score": 102
+          "final_score": 99
         }
       },
       {
         "target_url": "/wiki/gkniftyheads.html",
-        "score": 95,
-        "base_score": 64,
+        "score": 92,
+        "base_score": 61,
         "reasons": [
           "same_category:core",
-          "link_overlap:8",
+          "link_overlap:7",
           "rank_score_boost:3",
           "authority_score_boost:15",
           "graph_centrality_boost:8",
@@ -273660,9 +273660,9 @@
         "freshness_boost": 3,
         "decay_penalty": 0,
         "recency_balance": 3,
-        "final_score": 98,
+        "final_score": 95,
         "score_breakdown": {
-          "base_score": 64,
+          "base_score": 61,
           "rank_score_boost": 3,
           "authority_score_boost": 15,
           "graph_centrality_boost": 8,
@@ -273673,7 +273673,7 @@
           "freshness_boost": 3,
           "decay_penalty": 0,
           "recency_balance": 3,
-          "final_score": 98
+          "final_score": 95
         }
       },
       {
@@ -273754,11 +273754,11 @@
       },
       {
         "target_url": "/wiki/sacred-chain.html",
-        "score": 87,
-        "base_score": 67,
+        "score": 84,
+        "base_score": 64,
         "reasons": [
           "same_category:core",
-          "link_overlap:9",
+          "link_overlap:8",
           "rank_score_boost:3",
           "authority_score_boost:4",
           "graph_centrality_boost:5",
@@ -273774,9 +273774,9 @@
         "freshness_boost": 3,
         "decay_penalty": 0,
         "recency_balance": 3,
-        "final_score": 90,
+        "final_score": 87,
         "score_breakdown": {
-          "base_score": 67,
+          "base_score": 64,
           "rank_score_boost": 3,
           "authority_score_boost": 4,
           "graph_centrality_boost": 5,
@@ -273787,7 +273787,7 @@
           "freshness_boost": 3,
           "decay_penalty": 0,
           "recency_balance": 3,
-          "final_score": 90
+          "final_score": 87
         }
       },
       {
@@ -273981,44 +273981,6 @@
         }
       },
       {
-        "target_url": "/wiki/first-witness-faction-commentaries.html",
-        "score": 74,
-        "base_score": 55,
-        "reasons": [
-          "same_category:core",
-          "link_overlap:5",
-          "rank_score_boost:4",
-          "authority_score_boost:2",
-          "graph_centrality_boost:5",
-          "content_depth_boost:8"
-        ],
-        "rank_score_boost": 4,
-        "authority_score_boost": 2,
-        "graph_centrality_boost": 5,
-        "content_depth_boost": 8,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 2,
-        "decay_penalty": 0,
-        "recency_balance": 2,
-        "final_score": 76,
-        "score_breakdown": {
-          "base_score": 55,
-          "rank_score_boost": 4,
-          "authority_score_boost": 2,
-          "graph_centrality_boost": 5,
-          "content_depth_boost": 8,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 2,
-          "decay_penalty": 0,
-          "recency_balance": 2,
-          "final_score": 76
-        }
-      },
-      {
         "target_url": "/wiki/the-bitcoin-kid-army.html",
         "score": 73,
         "base_score": 64,
@@ -274092,97 +274054,21 @@
         }
       },
       {
-        "target_url": "/wiki/first-witness-concordance.html",
-        "score": 72,
-        "base_score": 52,
-        "reasons": [
-          "same_category:core",
-          "link_overlap:4",
-          "rank_score_boost:3",
-          "authority_score_boost:7",
-          "graph_centrality_boost:8",
-          "content_depth_boost:2"
-        ],
-        "rank_score_boost": 3,
-        "authority_score_boost": 7,
-        "graph_centrality_boost": 8,
-        "content_depth_boost": 2,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 2,
-        "decay_penalty": 0,
-        "recency_balance": 2,
-        "final_score": 74,
-        "score_breakdown": {
-          "base_score": 52,
-          "rank_score_boost": 3,
-          "authority_score_boost": 7,
-          "graph_centrality_boost": 8,
-          "content_depth_boost": 2,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 2,
-          "decay_penalty": 0,
-          "recency_balance": 2,
-          "final_score": 74
-        }
-      },
-      {
-        "target_url": "/wiki/first-witness-source-register.html",
-        "score": 72,
-        "base_score": 58,
-        "reasons": [
-          "same_category:core",
-          "link_overlap:6",
-          "rank_score_boost:3",
-          "authority_score_boost:3",
-          "graph_centrality_boost:5",
-          "content_depth_boost:3"
-        ],
-        "rank_score_boost": 3,
-        "authority_score_boost": 3,
-        "graph_centrality_boost": 5,
-        "content_depth_boost": 3,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 2,
-        "decay_penalty": 0,
-        "recency_balance": 2,
-        "final_score": 74,
-        "score_breakdown": {
-          "base_score": 58,
-          "rank_score_boost": 3,
-          "authority_score_boost": 3,
-          "graph_centrality_boost": 5,
-          "content_depth_boost": 3,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 2,
-          "decay_penalty": 0,
-          "recency_balance": 2,
-          "final_score": 74
-        }
-      },
-      {
-        "target_url": "/wiki/first-witness-master-chronology.html",
+        "target_url": "/wiki/first-witness-faction-commentaries.html",
         "score": 71,
         "base_score": 52,
         "reasons": [
           "same_category:core",
           "link_overlap:4",
-          "rank_score_boost:3",
-          "authority_score_boost:5",
-          "graph_centrality_boost:8",
-          "content_depth_boost:3"
+          "rank_score_boost:4",
+          "authority_score_boost:2",
+          "graph_centrality_boost:5",
+          "content_depth_boost:8"
         ],
-        "rank_score_boost": 3,
-        "authority_score_boost": 5,
-        "graph_centrality_boost": 8,
-        "content_depth_boost": 3,
+        "rank_score_boost": 4,
+        "authority_score_boost": 2,
+        "graph_centrality_boost": 5,
+        "content_depth_boost": 8,
         "reinforcement_boost": 0,
         "cluster_support_boost": 0,
         "co_citation_boost": 0,
@@ -274192,10 +274078,10 @@
         "final_score": 73,
         "score_breakdown": {
           "base_score": 52,
-          "rank_score_boost": 3,
-          "authority_score_boost": 5,
-          "graph_centrality_boost": 8,
-          "content_depth_boost": 3,
+          "rank_score_boost": 4,
+          "authority_score_boost": 2,
+          "graph_centrality_boost": 5,
+          "content_depth_boost": 8,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
@@ -274242,41 +274128,40 @@
         }
       },
       {
-        "target_url": "/wiki/first-witness-hodl-doctrine.html",
-        "score": 68,
-        "base_score": 60,
+        "target_url": "/wiki/first-witness-concordance.html",
+        "score": 69,
+        "base_score": 49,
         "reasons": [
           "same_category:core",
-          "shared_tag:hodl",
-          "link_overlap:4",
+          "link_overlap:3",
           "rank_score_boost:3",
-          "authority_score_boost:1",
-          "graph_centrality_boost:2",
+          "authority_score_boost:7",
+          "graph_centrality_boost:8",
           "content_depth_boost:2"
         ],
         "rank_score_boost": 3,
-        "authority_score_boost": 1,
-        "graph_centrality_boost": 2,
+        "authority_score_boost": 7,
+        "graph_centrality_boost": 8,
         "content_depth_boost": 2,
         "reinforcement_boost": 0,
         "cluster_support_boost": 0,
         "co_citation_boost": 0,
-        "freshness_boost": 3,
+        "freshness_boost": 2,
         "decay_penalty": 0,
-        "recency_balance": 3,
+        "recency_balance": 2,
         "final_score": 71,
         "score_breakdown": {
-          "base_score": 60,
+          "base_score": 49,
           "rank_score_boost": 3,
-          "authority_score_boost": 1,
-          "graph_centrality_boost": 2,
+          "authority_score_boost": 7,
+          "graph_centrality_boost": 8,
           "content_depth_boost": 2,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
-          "freshness_boost": 3,
+          "freshness_boost": 2,
           "decay_penalty": 0,
-          "recency_balance": 3,
+          "recency_balance": 2,
           "final_score": 71
         }
       },
@@ -274319,12 +274204,88 @@
         }
       },
       {
-        "target_url": "/wiki/first-witness-forty-paths.html",
-        "score": 68,
+        "target_url": "/wiki/first-witness-source-register.html",
+        "score": 69,
         "base_score": 55,
         "reasons": [
           "same_category:core",
           "link_overlap:5",
+          "rank_score_boost:3",
+          "authority_score_boost:3",
+          "graph_centrality_boost:5",
+          "content_depth_boost:3"
+        ],
+        "rank_score_boost": 3,
+        "authority_score_boost": 3,
+        "graph_centrality_boost": 5,
+        "content_depth_boost": 3,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 2,
+        "decay_penalty": 0,
+        "recency_balance": 2,
+        "final_score": 71,
+        "score_breakdown": {
+          "base_score": 55,
+          "rank_score_boost": 3,
+          "authority_score_boost": 3,
+          "graph_centrality_boost": 5,
+          "content_depth_boost": 3,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 2,
+          "decay_penalty": 0,
+          "recency_balance": 2,
+          "final_score": 71
+        }
+      },
+      {
+        "target_url": "/wiki/first-witness-master-chronology.html",
+        "score": 68,
+        "base_score": 49,
+        "reasons": [
+          "same_category:core",
+          "link_overlap:3",
+          "rank_score_boost:3",
+          "authority_score_boost:5",
+          "graph_centrality_boost:8",
+          "content_depth_boost:3"
+        ],
+        "rank_score_boost": 3,
+        "authority_score_boost": 5,
+        "graph_centrality_boost": 8,
+        "content_depth_boost": 3,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 2,
+        "decay_penalty": 0,
+        "recency_balance": 2,
+        "final_score": 70,
+        "score_breakdown": {
+          "base_score": 49,
+          "rank_score_boost": 3,
+          "authority_score_boost": 5,
+          "graph_centrality_boost": 8,
+          "content_depth_boost": 3,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 2,
+          "decay_penalty": 0,
+          "recency_balance": 2,
+          "final_score": 70
+        }
+      },
+      {
+        "target_url": "/wiki/first-witness-forty-paths.html",
+        "score": 65,
+        "base_score": 52,
+        "reasons": [
+          "same_category:core",
+          "link_overlap:4",
           "rank_score_boost:3",
           "authority_score_boost:2",
           "graph_centrality_boost:5",
@@ -274340,9 +274301,9 @@
         "freshness_boost": 2,
         "decay_penalty": 0,
         "recency_balance": 2,
-        "final_score": 70,
+        "final_score": 67,
         "score_breakdown": {
-          "base_score": 55,
+          "base_score": 52,
           "rank_score_boost": 3,
           "authority_score_boost": 2,
           "graph_centrality_boost": 5,
@@ -274353,7 +274314,46 @@
           "freshness_boost": 2,
           "decay_penalty": 0,
           "recency_balance": 2,
-          "final_score": 70
+          "final_score": 67
+        }
+      },
+      {
+        "target_url": "/wiki/first-witness-hodl-doctrine.html",
+        "score": 65,
+        "base_score": 57,
+        "reasons": [
+          "same_category:core",
+          "shared_tag:hodl",
+          "link_overlap:3",
+          "rank_score_boost:3",
+          "authority_score_boost:1",
+          "graph_centrality_boost:2",
+          "content_depth_boost:2"
+        ],
+        "rank_score_boost": 3,
+        "authority_score_boost": 1,
+        "graph_centrality_boost": 2,
+        "content_depth_boost": 2,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 2,
+        "decay_penalty": 0,
+        "recency_balance": 2,
+        "final_score": 67,
+        "score_breakdown": {
+          "base_score": 57,
+          "rank_score_boost": 3,
+          "authority_score_boost": 1,
+          "graph_centrality_boost": 2,
+          "content_depth_boost": 2,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 2,
+          "decay_penalty": 0,
+          "recency_balance": 2,
+          "final_score": 67
         }
       }
     ]
@@ -276405,39 +276405,39 @@
       },
       {
         "target_url": "/wiki/alfie-bitcoin-kid-blaze.html",
-        "score": 58,
+        "score": 59,
         "base_score": 46,
         "reasons": [
           "same_category:factions",
           "link_overlap:2",
           "rank_score_boost:3",
           "graph_centrality_boost:2",
-          "content_depth_boost:7"
+          "content_depth_boost:8"
         ],
         "rank_score_boost": 3,
         "authority_score_boost": 0,
         "graph_centrality_boost": 2,
-        "content_depth_boost": 7,
+        "content_depth_boost": 8,
         "reinforcement_boost": 0,
         "cluster_support_boost": 0,
         "co_citation_boost": 0,
         "freshness_boost": 2,
         "decay_penalty": 0,
         "recency_balance": 2,
-        "final_score": 60,
+        "final_score": 61,
         "score_breakdown": {
           "base_score": 46,
           "rank_score_boost": 3,
           "authority_score_boost": 0,
           "graph_centrality_boost": 2,
-          "content_depth_boost": 7,
+          "content_depth_boost": 8,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
           "freshness_boost": 2,
           "decay_penalty": 0,
           "recency_balance": 2,
-          "final_score": 60
+          "final_score": 61
         }
       },
       {
@@ -280093,6 +280093,43 @@
         }
       },
       {
+        "target_url": "/wiki/alfie-bitcoin-kid-blaze.html",
+        "score": 56,
+        "base_score": 43,
+        "reasons": [
+          "same_category:factions",
+          "link_overlap:1",
+          "rank_score_boost:3",
+          "graph_centrality_boost:2",
+          "content_depth_boost:8"
+        ],
+        "rank_score_boost": 3,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 2,
+        "content_depth_boost": 8,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 2,
+        "decay_penalty": 0,
+        "recency_balance": 2,
+        "final_score": 58,
+        "score_breakdown": {
+          "base_score": 43,
+          "rank_score_boost": 3,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 2,
+          "content_depth_boost": 8,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 2,
+          "decay_penalty": 0,
+          "recency_balance": 2,
+          "final_score": 58
+        }
+      },
+      {
         "target_url": "/wiki/the-blockstars.html",
         "score": 56,
         "base_score": 46,
@@ -280200,43 +280237,6 @@
           "decay_penalty": 0,
           "recency_balance": 2,
           "final_score": 58
-        }
-      },
-      {
-        "target_url": "/wiki/alfie-bitcoin-kid-blaze.html",
-        "score": 55,
-        "base_score": 43,
-        "reasons": [
-          "same_category:factions",
-          "link_overlap:1",
-          "rank_score_boost:3",
-          "graph_centrality_boost:2",
-          "content_depth_boost:7"
-        ],
-        "rank_score_boost": 3,
-        "authority_score_boost": 0,
-        "graph_centrality_boost": 2,
-        "content_depth_boost": 7,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 2,
-        "decay_penalty": 0,
-        "recency_balance": 2,
-        "final_score": 57,
-        "score_breakdown": {
-          "base_score": 43,
-          "rank_score_boost": 3,
-          "authority_score_boost": 0,
-          "graph_centrality_boost": 2,
-          "content_depth_boost": 7,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 2,
-          "decay_penalty": 0,
-          "recency_balance": 2,
-          "final_score": 57
         }
       },
       {
@@ -288889,6 +288889,43 @@
         }
       },
       {
+        "target_url": "/wiki/alfie-bitcoin-kid-blaze.html",
+        "score": 56,
+        "base_score": 43,
+        "reasons": [
+          "same_category:factions",
+          "link_overlap:1",
+          "rank_score_boost:3",
+          "graph_centrality_boost:2",
+          "content_depth_boost:8"
+        ],
+        "rank_score_boost": 3,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 2,
+        "content_depth_boost": 8,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 2,
+        "decay_penalty": 0,
+        "recency_balance": 2,
+        "final_score": 58,
+        "score_breakdown": {
+          "base_score": 43,
+          "rank_score_boost": 3,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 2,
+          "content_depth_boost": 8,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 2,
+          "decay_penalty": 0,
+          "recency_balance": 2,
+          "final_score": 58
+        }
+      },
+      {
         "target_url": "/wiki/queen-sarah-p-fly.html",
         "score": 56,
         "base_score": 43,
@@ -288960,43 +288997,6 @@
           "decay_penalty": 0,
           "recency_balance": 2,
           "final_score": 58
-        }
-      },
-      {
-        "target_url": "/wiki/alfie-bitcoin-kid-blaze.html",
-        "score": 55,
-        "base_score": 43,
-        "reasons": [
-          "same_category:factions",
-          "link_overlap:1",
-          "rank_score_boost:3",
-          "graph_centrality_boost:2",
-          "content_depth_boost:7"
-        ],
-        "rank_score_boost": 3,
-        "authority_score_boost": 0,
-        "graph_centrality_boost": 2,
-        "content_depth_boost": 7,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 2,
-        "decay_penalty": 0,
-        "recency_balance": 2,
-        "final_score": 57,
-        "score_breakdown": {
-          "base_score": 43,
-          "rank_score_boost": 3,
-          "authority_score_boost": 0,
-          "graph_centrality_boost": 2,
-          "content_depth_boost": 7,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 2,
-          "decay_penalty": 0,
-          "recency_balance": 2,
-          "final_score": 57
         }
       },
       {
@@ -290390,6 +290390,43 @@
         }
       },
       {
+        "target_url": "/wiki/alfie-bitcoin-kid-blaze.html",
+        "score": 56,
+        "base_score": 43,
+        "reasons": [
+          "same_category:factions",
+          "link_overlap:1",
+          "rank_score_boost:3",
+          "graph_centrality_boost:2",
+          "content_depth_boost:8"
+        ],
+        "rank_score_boost": 3,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 2,
+        "content_depth_boost": 8,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 2,
+        "decay_penalty": 0,
+        "recency_balance": 2,
+        "final_score": 58,
+        "score_breakdown": {
+          "base_score": 43,
+          "rank_score_boost": 3,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 2,
+          "content_depth_boost": 8,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 2,
+          "decay_penalty": 0,
+          "recency_balance": 2,
+          "final_score": 58
+        }
+      },
+      {
         "target_url": "/wiki/queen-sarah-p-fly.html",
         "score": 56,
         "base_score": 43,
@@ -290461,43 +290498,6 @@
           "decay_penalty": 0,
           "recency_balance": 2,
           "final_score": 58
-        }
-      },
-      {
-        "target_url": "/wiki/alfie-bitcoin-kid-blaze.html",
-        "score": 55,
-        "base_score": 43,
-        "reasons": [
-          "same_category:factions",
-          "link_overlap:1",
-          "rank_score_boost:3",
-          "graph_centrality_boost:2",
-          "content_depth_boost:7"
-        ],
-        "rank_score_boost": 3,
-        "authority_score_boost": 0,
-        "graph_centrality_boost": 2,
-        "content_depth_boost": 7,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 2,
-        "decay_penalty": 0,
-        "recency_balance": 2,
-        "final_score": 57,
-        "score_breakdown": {
-          "base_score": 43,
-          "rank_score_boost": 3,
-          "authority_score_boost": 0,
-          "graph_centrality_boost": 2,
-          "content_depth_boost": 7,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 2,
-          "decay_penalty": 0,
-          "recency_balance": 2,
-          "final_score": 57
         }
       },
       {
@@ -301630,6 +301630,43 @@
         }
       },
       {
+        "target_url": "/wiki/alfie-bitcoin-kid-blaze.html",
+        "score": 56,
+        "base_score": 43,
+        "reasons": [
+          "same_category:factions",
+          "link_overlap:1",
+          "rank_score_boost:3",
+          "graph_centrality_boost:2",
+          "content_depth_boost:8"
+        ],
+        "rank_score_boost": 3,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 2,
+        "content_depth_boost": 8,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 2,
+        "decay_penalty": 0,
+        "recency_balance": 2,
+        "final_score": 58,
+        "score_breakdown": {
+          "base_score": 43,
+          "rank_score_boost": 3,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 2,
+          "content_depth_boost": 8,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 2,
+          "decay_penalty": 0,
+          "recency_balance": 2,
+          "final_score": 58
+        }
+      },
+      {
         "target_url": "/wiki/battlemech-blast.html",
         "score": 56,
         "base_score": 49,
@@ -301765,42 +301802,6 @@
           "authority_score_boost": 0,
           "graph_centrality_boost": 0,
           "content_depth_boost": 5,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 2,
-          "decay_penalty": 0,
-          "recency_balance": 2,
-          "final_score": 58
-        }
-      },
-      {
-        "target_url": "/wiki/tagzcoin.html",
-        "score": 56,
-        "base_score": 52,
-        "reasons": [
-          "same_category:factions",
-          "link_overlap:4",
-          "rank_score_boost:2",
-          "content_depth_boost:2"
-        ],
-        "rank_score_boost": 2,
-        "authority_score_boost": 0,
-        "graph_centrality_boost": 0,
-        "content_depth_boost": 2,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 2,
-        "decay_penalty": 0,
-        "recency_balance": 2,
-        "final_score": 58,
-        "score_breakdown": {
-          "base_score": 52,
-          "rank_score_boost": 2,
-          "authority_score_boost": 0,
-          "graph_centrality_boost": 0,
-          "content_depth_boost": 2,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
@@ -306109,6 +306110,43 @@
         }
       },
       {
+        "target_url": "/wiki/alfie-bitcoin-kid-blaze.html",
+        "score": 56,
+        "base_score": 43,
+        "reasons": [
+          "same_category:factions",
+          "link_overlap:1",
+          "rank_score_boost:3",
+          "graph_centrality_boost:2",
+          "content_depth_boost:8"
+        ],
+        "rank_score_boost": 3,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 2,
+        "content_depth_boost": 8,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 2,
+        "decay_penalty": 0,
+        "recency_balance": 2,
+        "final_score": 58,
+        "score_breakdown": {
+          "base_score": 43,
+          "rank_score_boost": 3,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 2,
+          "content_depth_boost": 8,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 2,
+          "decay_penalty": 0,
+          "recency_balance": 2,
+          "final_score": 58
+        }
+      },
+      {
         "target_url": "/wiki/spirit-borns.html",
         "score": 56,
         "base_score": 49,
@@ -306208,44 +306246,6 @@
           "authority_score_boost": 0,
           "graph_centrality_boost": 2,
           "content_depth_boost": 8,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 2,
-          "decay_penalty": 0,
-          "recency_balance": 2,
-          "final_score": 58
-        }
-      },
-      {
-        "target_url": "/wiki/wax-blockchain.html",
-        "score": 56,
-        "base_score": 49,
-        "reasons": [
-          "same_category:factions",
-          "link_overlap:3",
-          "rank_score_boost:2",
-          "authority_score_boost:1",
-          "graph_centrality_boost:2",
-          "content_depth_boost:2"
-        ],
-        "rank_score_boost": 2,
-        "authority_score_boost": 1,
-        "graph_centrality_boost": 2,
-        "content_depth_boost": 2,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 2,
-        "decay_penalty": 0,
-        "recency_balance": 2,
-        "final_score": 58,
-        "score_breakdown": {
-          "base_score": 49,
-          "rank_score_boost": 2,
-          "authority_score_boost": 1,
-          "graph_centrality_boost": 2,
-          "content_depth_boost": 2,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
@@ -308588,44 +308588,6 @@
         }
       },
       {
-        "target_url": "/wiki/hodl-wars.html",
-        "score": 94,
-        "base_score": 67,
-        "reasons": [
-          "same_category:core",
-          "link_overlap:9",
-          "rank_score_boost:3",
-          "authority_score_boost:8",
-          "graph_centrality_boost:8",
-          "content_depth_boost:8"
-        ],
-        "rank_score_boost": 3,
-        "authority_score_boost": 8,
-        "graph_centrality_boost": 8,
-        "content_depth_boost": 8,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 3,
-        "decay_penalty": 0,
-        "recency_balance": 3,
-        "final_score": 97,
-        "score_breakdown": {
-          "base_score": 67,
-          "rank_score_boost": 3,
-          "authority_score_boost": 8,
-          "graph_centrality_boost": 8,
-          "content_depth_boost": 8,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 3,
-          "decay_penalty": 0,
-          "recency_balance": 3,
-          "final_score": 97
-        }
-      },
-      {
         "target_url": "/wiki/gkniftyheads.html",
         "score": 92,
         "base_score": 61,
@@ -308661,6 +308623,44 @@
           "decay_penalty": 0,
           "recency_balance": 3,
           "final_score": 95
+        }
+      },
+      {
+        "target_url": "/wiki/hodl-wars.html",
+        "score": 91,
+        "base_score": 64,
+        "reasons": [
+          "same_category:core",
+          "link_overlap:8",
+          "rank_score_boost:3",
+          "authority_score_boost:8",
+          "graph_centrality_boost:8",
+          "content_depth_boost:8"
+        ],
+        "rank_score_boost": 3,
+        "authority_score_boost": 8,
+        "graph_centrality_boost": 8,
+        "content_depth_boost": 8,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 3,
+        "decay_penalty": 0,
+        "recency_balance": 3,
+        "final_score": 94,
+        "score_breakdown": {
+          "base_score": 64,
+          "rank_score_boost": 3,
+          "authority_score_boost": 8,
+          "graph_centrality_boost": 8,
+          "content_depth_boost": 8,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 3,
+          "decay_penalty": 0,
+          "recency_balance": 3,
+          "final_score": 94
         }
       },
       {
@@ -313560,39 +313560,75 @@
       },
       {
         "target_url": "/wiki/alfie-bitcoin-kid-blaze.html",
-        "score": 55,
+        "score": 56,
         "base_score": 43,
         "reasons": [
           "same_category:factions",
           "link_overlap:1",
           "rank_score_boost:3",
           "graph_centrality_boost:2",
-          "content_depth_boost:7"
+          "content_depth_boost:8"
         ],
         "rank_score_boost": 3,
         "authority_score_boost": 0,
         "graph_centrality_boost": 2,
-        "content_depth_boost": 7,
+        "content_depth_boost": 8,
         "reinforcement_boost": 0,
         "cluster_support_boost": 0,
         "co_citation_boost": 0,
         "freshness_boost": 2,
         "decay_penalty": 0,
         "recency_balance": 2,
-        "final_score": 57,
+        "final_score": 58,
         "score_breakdown": {
           "base_score": 43,
           "rank_score_boost": 3,
           "authority_score_boost": 0,
           "graph_centrality_boost": 2,
-          "content_depth_boost": 7,
+          "content_depth_boost": 8,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
           "freshness_boost": 2,
           "decay_penalty": 0,
           "recency_balance": 2,
-          "final_score": 57
+          "final_score": 58
+        }
+      },
+      {
+        "target_url": "/wiki/the-squeaky-pinks.html",
+        "score": 56,
+        "base_score": 46,
+        "reasons": [
+          "same_category:factions",
+          "link_overlap:2",
+          "rank_score_boost:2",
+          "content_depth_boost:8"
+        ],
+        "rank_score_boost": 2,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 0,
+        "content_depth_boost": 8,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 2,
+        "decay_penalty": 0,
+        "recency_balance": 2,
+        "final_score": 58,
+        "score_breakdown": {
+          "base_score": 46,
+          "rank_score_boost": 2,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 0,
+          "content_depth_boost": 8,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 2,
+          "decay_penalty": 0,
+          "recency_balance": 2,
+          "final_score": 58
         }
       },
       {
@@ -313660,42 +313696,6 @@
           "authority_score_boost": 3,
           "graph_centrality_boost": 5,
           "content_depth_boost": 2,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 2,
-          "decay_penalty": 0,
-          "recency_balance": 2,
-          "final_score": 57
-        }
-      },
-      {
-        "target_url": "/wiki/the-allcity-bulls.html",
-        "score": 55,
-        "base_score": 46,
-        "reasons": [
-          "same_category:factions",
-          "link_overlap:2",
-          "rank_score_boost:2",
-          "content_depth_boost:7"
-        ],
-        "rank_score_boost": 2,
-        "authority_score_boost": 0,
-        "graph_centrality_boost": 0,
-        "content_depth_boost": 7,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 2,
-        "decay_penalty": 0,
-        "recency_balance": 2,
-        "final_score": 57,
-        "score_breakdown": {
-          "base_score": 46,
-          "rank_score_boost": 2,
-          "authority_score_boost": 0,
-          "graph_centrality_boost": 0,
-          "content_depth_boost": 7,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
@@ -331075,6 +331075,43 @@
         }
       },
       {
+        "target_url": "/wiki/alfie-bitcoin-kid-blaze.html",
+        "score": 62,
+        "base_score": 49,
+        "reasons": [
+          "same_category:factions",
+          "link_overlap:3",
+          "rank_score_boost:3",
+          "graph_centrality_boost:2",
+          "content_depth_boost:8"
+        ],
+        "rank_score_boost": 3,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 2,
+        "content_depth_boost": 8,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 2,
+        "decay_penalty": 0,
+        "recency_balance": 2,
+        "final_score": 64,
+        "score_breakdown": {
+          "base_score": 49,
+          "rank_score_boost": 3,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 2,
+          "content_depth_boost": 8,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 2,
+          "decay_penalty": 0,
+          "recency_balance": 2,
+          "final_score": 64
+        }
+      },
+      {
         "target_url": "/wiki/queen-sarah-p-fly.html",
         "score": 62,
         "base_score": 49,
@@ -331184,43 +331221,6 @@
           "decay_penalty": 0,
           "recency_balance": 2,
           "final_score": 64
-        }
-      },
-      {
-        "target_url": "/wiki/alfie-bitcoin-kid-blaze.html",
-        "score": 61,
-        "base_score": 49,
-        "reasons": [
-          "same_category:factions",
-          "link_overlap:3",
-          "rank_score_boost:3",
-          "graph_centrality_boost:2",
-          "content_depth_boost:7"
-        ],
-        "rank_score_boost": 3,
-        "authority_score_boost": 0,
-        "graph_centrality_boost": 2,
-        "content_depth_boost": 7,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 2,
-        "decay_penalty": 0,
-        "recency_balance": 2,
-        "final_score": 63,
-        "score_breakdown": {
-          "base_score": 49,
-          "rank_score_boost": 3,
-          "authority_score_boost": 0,
-          "graph_centrality_boost": 2,
-          "content_depth_boost": 7,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 2,
-          "decay_penalty": 0,
-          "recency_balance": 2,
-          "final_score": 63
         }
       },
       {
@@ -354123,6 +354123,43 @@
         }
       },
       {
+        "target_url": "/wiki/alfie-bitcoin-kid-blaze.html",
+        "score": 56,
+        "base_score": 43,
+        "reasons": [
+          "same_category:factions",
+          "link_overlap:1",
+          "rank_score_boost:3",
+          "graph_centrality_boost:2",
+          "content_depth_boost:8"
+        ],
+        "rank_score_boost": 3,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 2,
+        "content_depth_boost": 8,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 2,
+        "decay_penalty": 0,
+        "recency_balance": 2,
+        "final_score": 58,
+        "score_breakdown": {
+          "base_score": 43,
+          "rank_score_boost": 3,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 2,
+          "content_depth_boost": 8,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 2,
+          "decay_penalty": 0,
+          "recency_balance": 2,
+          "final_score": 58
+        }
+      },
+      {
         "target_url": "/wiki/canvas-clash.html",
         "score": 56,
         "base_score": 49,
@@ -354260,42 +354297,6 @@
           "authority_score_boost": 0,
           "graph_centrality_boost": 2,
           "content_depth_boost": 8,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 2,
-          "decay_penalty": 0,
-          "recency_balance": 2,
-          "final_score": 58
-        }
-      },
-      {
-        "target_url": "/wiki/spraycode-writcode-mechanics.html",
-        "score": 56,
-        "base_score": 49,
-        "reasons": [
-          "same_category:factions",
-          "link_overlap:3",
-          "rank_score_boost:2",
-          "content_depth_boost:5"
-        ],
-        "rank_score_boost": 2,
-        "authority_score_boost": 0,
-        "graph_centrality_boost": 0,
-        "content_depth_boost": 5,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 2,
-        "decay_penalty": 0,
-        "recency_balance": 2,
-        "final_score": 58,
-        "score_breakdown": {
-          "base_score": 49,
-          "rank_score_boost": 2,
-          "authority_score_boost": 0,
-          "graph_centrality_boost": 0,
-          "content_depth_boost": 5,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
@@ -357059,6 +357060,43 @@
         }
       },
       {
+        "target_url": "/wiki/alfie-bitcoin-kid-blaze.html",
+        "score": 56,
+        "base_score": 43,
+        "reasons": [
+          "same_category:factions",
+          "link_overlap:1",
+          "rank_score_boost:3",
+          "graph_centrality_boost:2",
+          "content_depth_boost:8"
+        ],
+        "rank_score_boost": 3,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 2,
+        "content_depth_boost": 8,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 2,
+        "decay_penalty": 0,
+        "recency_balance": 2,
+        "final_score": 58,
+        "score_breakdown": {
+          "base_score": 43,
+          "rank_score_boost": 3,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 2,
+          "content_depth_boost": 8,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 2,
+          "decay_penalty": 0,
+          "recency_balance": 2,
+          "final_score": 58
+        }
+      },
+      {
         "target_url": "/wiki/queen-sarah-p-fly.html",
         "score": 56,
         "base_score": 43,
@@ -357198,43 +357236,6 @@
           "authority_score_boost": 0,
           "graph_centrality_boost": 0,
           "content_depth_boost": 2,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 2,
-          "decay_penalty": 0,
-          "recency_balance": 2,
-          "final_score": 57
-        }
-      },
-      {
-        "target_url": "/wiki/alfie-bitcoin-kid-blaze.html",
-        "score": 55,
-        "base_score": 43,
-        "reasons": [
-          "same_category:factions",
-          "link_overlap:1",
-          "rank_score_boost:3",
-          "graph_centrality_boost:2",
-          "content_depth_boost:7"
-        ],
-        "rank_score_boost": 3,
-        "authority_score_boost": 0,
-        "graph_centrality_boost": 2,
-        "content_depth_boost": 7,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 2,
-        "decay_penalty": 0,
-        "recency_balance": 2,
-        "final_score": 57,
-        "score_breakdown": {
-          "base_score": 43,
-          "rank_score_boost": 3,
-          "authority_score_boost": 0,
-          "graph_centrality_boost": 2,
-          "content_depth_boost": 7,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
@@ -357853,6 +357854,43 @@
         }
       },
       {
+        "target_url": "/wiki/alfie-bitcoin-kid-blaze.html",
+        "score": 56,
+        "base_score": 43,
+        "reasons": [
+          "same_category:factions",
+          "link_overlap:1",
+          "rank_score_boost:3",
+          "graph_centrality_boost:2",
+          "content_depth_boost:8"
+        ],
+        "rank_score_boost": 3,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 2,
+        "content_depth_boost": 8,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 2,
+        "decay_penalty": 0,
+        "recency_balance": 2,
+        "final_score": 58,
+        "score_breakdown": {
+          "base_score": 43,
+          "rank_score_boost": 3,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 2,
+          "content_depth_boost": 8,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 2,
+          "decay_penalty": 0,
+          "recency_balance": 2,
+          "final_score": 58
+        }
+      },
+      {
         "target_url": "/wiki/canvas-clash.html",
         "score": 56,
         "base_score": 49,
@@ -358026,42 +358064,6 @@
           "rank_score_boost": 2,
           "authority_score_boost": 1,
           "graph_centrality_boost": 2,
-          "content_depth_boost": 2,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 2,
-          "decay_penalty": 0,
-          "recency_balance": 2,
-          "final_score": 58
-        }
-      },
-      {
-        "target_url": "/wiki/wax-pepe.html",
-        "score": 56,
-        "base_score": 52,
-        "reasons": [
-          "same_category:factions",
-          "link_overlap:4",
-          "rank_score_boost:2",
-          "content_depth_boost:2"
-        ],
-        "rank_score_boost": 2,
-        "authority_score_boost": 0,
-        "graph_centrality_boost": 0,
-        "content_depth_boost": 2,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 2,
-        "decay_penalty": 0,
-        "recency_balance": 2,
-        "final_score": 58,
-        "score_breakdown": {
-          "base_score": 52,
-          "rank_score_boost": 2,
-          "authority_score_boost": 0,
-          "graph_centrality_boost": 0,
           "content_depth_boost": 2,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
@@ -358815,38 +358817,38 @@
     "related_pages": [
       {
         "target_url": "/wiki/the-squeaky-pinks.html",
-        "score": 76,
+        "score": 77,
         "base_score": 67,
         "reasons": [
           "same_category:factions",
           "link_overlap:9",
           "rank_score_boost:2",
-          "content_depth_boost:7"
+          "content_depth_boost:8"
         ],
         "rank_score_boost": 2,
         "authority_score_boost": 0,
         "graph_centrality_boost": 0,
-        "content_depth_boost": 7,
+        "content_depth_boost": 8,
         "reinforcement_boost": 0,
         "cluster_support_boost": 0,
         "co_citation_boost": 0,
         "freshness_boost": 3,
         "decay_penalty": 0,
         "recency_balance": 3,
-        "final_score": 79,
+        "final_score": 80,
         "score_breakdown": {
           "base_score": 67,
           "rank_score_boost": 2,
           "authority_score_boost": 0,
           "graph_centrality_boost": 0,
-          "content_depth_boost": 7,
+          "content_depth_boost": 8,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
           "freshness_boost": 3,
           "decay_penalty": 0,
           "recency_balance": 3,
-          "final_score": 79
+          "final_score": 80
         }
       },
       {
@@ -360166,39 +360168,39 @@
       },
       {
         "target_url": "/wiki/alfie-bitcoin-kid-blaze.html",
-        "score": 55,
+        "score": 56,
         "base_score": 43,
         "reasons": [
           "same_category:factions",
           "link_overlap:1",
           "rank_score_boost:3",
           "graph_centrality_boost:2",
-          "content_depth_boost:7"
+          "content_depth_boost:8"
         ],
         "rank_score_boost": 3,
         "authority_score_boost": 0,
         "graph_centrality_boost": 2,
-        "content_depth_boost": 7,
+        "content_depth_boost": 8,
         "reinforcement_boost": 0,
         "cluster_support_boost": 0,
         "co_citation_boost": 0,
         "freshness_boost": 2,
         "decay_penalty": 0,
         "recency_balance": 2,
-        "final_score": 57,
+        "final_score": 58,
         "score_breakdown": {
           "base_score": 43,
           "rank_score_boost": 3,
           "authority_score_boost": 0,
           "graph_centrality_boost": 2,
-          "content_depth_boost": 7,
+          "content_depth_boost": 8,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
           "freshness_boost": 2,
           "decay_penalty": 0,
           "recency_balance": 2,
-          "final_score": 57
+          "final_score": 58
         }
       },
       {

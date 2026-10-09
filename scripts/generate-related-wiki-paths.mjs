@@ -8,8 +8,6 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const RELATIONSHIP_HINTS_PATH = path.join('js', 'wiki-relationship-hints.json');
 const BEGIN = '<!-- RELATED_WIKI_PATHS:BEGIN -->';
 const END = '<!-- RELATED_WIKI_PATHS:END -->';
-const CITATION_VOTE_BEGIN = '<!-- CITATION_VOTE_PANEL:BEGIN -->';
-const CITATION_VOTE_END = '<!-- CITATION_VOTE_PANEL:END -->';
 const GROUP_LIMIT = 8;
 const TEMPLATE_LIMIT = 8;
 const HINT_GROUP_TITLES = new Map([
@@ -398,25 +396,32 @@ function groupKind(title) {
   return 'context';
 }
 
-function renderGroup(title, links) {
+function renderGroup(title, links, previousHtml = '') {
   if (!links.length) return '';
   const kind = groupKind(title);
-  const groupClass = `wiki-rabbit-group wiki-rabbit-group--${kind}`;
+  const previousGroup = [...previousHtml.matchAll(/<(div|details)\b[^>]*class="([^"]*\bwiki-rabbit-group\b[^"]*)"[^>]*data-related-group="([^"]*)"/g)]
+    .find(match => match[3] === escapeHtml(title));
+  const groupClass = previousGroup?.[2] || `wiki-rabbit-group wiki-rabbit-group--${kind}`;
   const listClass = kind === 'categories' ? 'wiki-rabbit-chip-grid' : 'wiki-rabbit-grid';
   const items = links.map((link) => {
     if (kind === 'categories') {
       return `            <a class="wiki-rabbit-chip" href="${escapeHtml(link.url)}" role="listitem">${escapeHtml(link.title)}</a>`;
     }
-    const desc = link.description
+    const previousCard = [...previousHtml.matchAll(/<a\b[^>]*href="([^"]*)"[^>]*>([\s\S]*?)<\/a>/g)]
+      .find(match => match[1] === escapeHtml(link.url));
+    const previousNftDescription = isNftTemplateUrl(link.url)
+      ? previousCard?.[2].match(/<span class="wiki-rabbit-card-desc">[\s\S]*?<\/span>/)?.[0]
+      : null;
+    const desc = previousNftDescription || (link.description
       ? `<span class="wiki-rabbit-card-desc">${escapeHtml(link.description)}</span>`
-      : '';
+      : '');
     const cardClass = kind === 'nft-siblings' ? 'wiki-rabbit-card wiki-rabbit-card--nft-sibling' : 'wiki-rabbit-card';
     return `            <a class="${cardClass}" href="${escapeHtml(link.url)}" role="listitem">
               <span class="wiki-rabbit-card-title">${escapeHtml(link.title)}</span>
               ${desc}
             </a>`;
   }).join('\n');
-  if (kind === 'nft-siblings') {
+  if (previousGroup ? previousGroup[1] === 'details' : kind === 'nft-siblings') {
     return `        <details class="${groupClass}" data-related-group="${escapeHtml(title)}">
           <summary>${escapeHtml(title)}</summary>
           <div class="${listClass}" role="list">
@@ -432,10 +437,10 @@ ${items}
         </div>`;
 }
 
-function renderRelatedSection(groups) {
+function renderRelatedSection(groups, previousHtml = '') {
   const renderedGroups = groups
     .filter((group) => group.links.length)
-    .map((group) => renderGroup(group.title, group.links))
+    .map((group) => renderGroup(group.title, group.links, previousHtml))
     .join('\n');
 
   return `${BEGIN}
@@ -458,13 +463,9 @@ function removeMarkedSection(html) {
   return html.replace(re, '');
 }
 
-function removeCitationVotePanel(html) {
-  const re = new RegExp(`\\s*${CITATION_VOTE_BEGIN.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}[\\s\\S]*?${CITATION_VOTE_END.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`);
-  return html.replace(re, '');
-}
-
 function insertSection(html, section) {
-  html = removeMarkedSection(html);
+  const replaced = replaceMarkedSection(html, section);
+  if (replaced !== null) return replaced;
 
   const articleEnd = html.match(/\s*<\/article>/i);
   if (articleEnd) {
@@ -517,10 +518,6 @@ function insertGeneratedBlock(html, block) {
   if (mainEnd !== -1) return `${html.slice(0, mainEnd)}\n${block}\n${html.slice(mainEnd)}`;
 
   return html;
-}
-
-function upsertCitationVotePanel(html, url) {
-  return removeCitationVotePanel(html);
 }
 
 function categoryTitle(url) {
@@ -841,7 +838,7 @@ export function runGenerateRelatedWikiPaths(root = ROOT, { pages = null } = {}) 
     if (selected && !selected.has(url)) continue;
     const kind = context.pageKinds.get(url);
     if (!isContentPage(html)) {
-      const nextHtml = removeCitationVotePanel(removeMarkedSection(html));
+      const nextHtml = removeMarkedSection(html);
       if (nextHtml !== html) {
         fs.writeFileSync(path.join(root, relForUrl(url)), nextHtml, 'utf8');
         written += 1;
@@ -849,11 +846,11 @@ export function runGenerateRelatedWikiPaths(root = ROOT, { pages = null } = {}) 
       continue;
     }
     const groups = groupsForPage(context, url, html, kind);
-    const section = renderRelatedSection(groups);
+    const previousSection = html.match(/<!-- RELATED_WIKI_PATHS:BEGIN -->[\s\S]*?<!-- RELATED_WIKI_PATHS:END -->/)?.[0] || '';
+    const section = renderRelatedSection(groups, previousSection);
     let nextHtml = insertSection(html, section);
     if (url === CORE_PROJECT_URL) nextHtml = updateCryptoMoonboysCategoryTags(nextHtml);
     nextHtml = upsertCategoryTags(nextHtml, context, url, kind);
-    nextHtml = upsertCitationVotePanel(nextHtml, url);
 
     if (nextHtml !== html) {
       const file = path.join(root, relForUrl(url));

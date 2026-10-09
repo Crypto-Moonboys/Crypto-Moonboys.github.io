@@ -1,0 +1,136 @@
+{
+  "base": "cc856157f5bd23e1b7ae3ed032af44c6b725c524",
+  "pages": [
+    {
+      "path": "wiki/alfie-bitcoin-kid-blaze.html",
+      "citation_panels_before": 1,
+      "citation_panels_after": 1,
+      "changed_existing_group_layouts": []
+    },
+    {
+      "path": "wiki/gkniftyheads.html",
+      "citation_panels_before": 0,
+      "citation_panels_after": 0,
+      "changed_existing_group_layouts": []
+    },
+    {
+      "path": "wiki/hodl-wars.html",
+      "citation_panels_before": 0,
+      "citation_panels_after": 0,
+      "changed_existing_group_layouts": []
+    },
+    {
+      "path": "wiki/maidstone-base.html",
+      "citation_panels_before": 1,
+      "citation_panels_after": 1,
+      "changed_existing_group_layouts": []
+    },
+    {
+      "path": "wiki/queen-sarah-p-fly.html",
+      "citation_panels_before": 1,
+      "citation_panels_after": 1,
+      "changed_existing_group_layouts": []
+    },
+    {
+      "path": "wiki/sacred-chain.html",
+      "citation_panels_before": 0,
+      "citation_panels_after": 0,
+      "changed_existing_group_layouts": []
+    },
+    {
+      "path": "wiki/the-squeaky-pinks.html",
+      "citation_panels_before": 1,
+      "citation_panels_after": 1,
+      "changed_existing_group_layouts": []
+    },
+    {
+      "path": "wiki/whale-lords.html",
+      "citation_panels_before": 1,
+      "citation_panels_after": 1,
+      "changed_existing_group_layouts": []
+    }
+  ],
+  "nft_pages_checked": 145,
+  "changed_nft_files": [],
+  "date": "2026-10-09",
+  "pr": 1460,
+  "issue": 1458,
+  "reviewed_head": "41b234aff6d81b989a5d61af58d767f9a661f680",
+  "corrections": {
+    "restored_marked_panels": [
+      "alfie-bitcoin-kid-blaze",
+      "queen-sarah-p-fly",
+      "the-squeaky-pinks",
+      "maidstone-base"
+    ],
+    "preserved_unmarked_panel": "whale-lords",
+    "runtime": "Migration neither removes nor hides citation panels; account-gated vote controls remain initialized.",
+    "generator": "Replace existing related block in place; preserve existing group layout and curated NFT card descriptions. Never delete neighbouring marked or unmarked citation panels.",
+    "lore": "Eight canonical content blocks byte-identical to reviewed head; 741 baseline paragraphs and 242 IDs preserved.",
+    "functional_shell": "All eight bodies outside canonical/related blocks equal the merged baseline (whitespace normalized); head dependencies unchanged."
+  },
+  "regression_checks": [
+    "scripts/wiki-lore-preservation-check.mjs",
+    "scripts/wiki-lore-preservation-check.test.mjs",
+    "scripts/relationship-hints-related-wiki-paths.test.mjs",
+    "scripts/wiki-navigation-backfill-rendering.test.mjs",
+    "scripts/wiki-citation-preservation-browser.test.mjs",
+    "scripts/ci-domain-groups.test.mjs"
+  ],
+  "validation": {
+    "npm_test": {
+      "command": "BASE_SHA=cc856157f5bd23e1b7ae3ed032af44c6b725c524 CANON_PROSE_CHANGE_APPROVED=1 CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium PLAYWRIGHT_BROWSERS_PATH=/tmp/gk-phase2/pw-browsers npm test",
+      "exit_code": 0,
+      "domains": [
+        "arcade",
+        "worker-api",
+        "wiki",
+        "wax",
+        "visual"
+      ],
+      "log_sha256": "a950ff6b81c603f07cd8bd934232632c4a5b66a353c7c821755259f9904c5234"
+    },
+    "citation_browser": {
+      "desktop_mobile_views": 10,
+      "no_javascript_views": 5,
+      "score_read": true,
+      "account_gate": true,
+      "external_api": "local test fixture only"
+    },
+    "article_browser": {
+      "desktop_mobile_views": 16,
+      "no_javascript_views": 8,
+      "search_autocomplete_queries": 9,
+      "script_errors": 0
+    },
+    "graph": {
+      "indexed_wiki_pages": 417,
+      "nodes": 427,
+      "edges": 2083,
+      "mobile_nodes": 75
+    },
+    "internal_links": {
+      "checked": 501,
+      "broken": 0
+    },
+    "content_state_check": "passed; 424 pages",
+    "publishing_parity": "passed; repeated generation stable",
+    "pages_artifact": "fresh build; /tmp/gk-phase2/review-pages-artifact; no deployment",
+    "diff_check": "passed"
+  },
+  "github_actions": "Pending push of this correction checkpoint; exact-head results will be recorded in the PR conversation. Maintainer prose approval gate remains intact.",
+  "research_checkpoint": {
+    "fully_compared": 61,
+    "total": 94,
+    "remaining": 33,
+    "note": "Additional originals read during repair validation; comparison decisions will be recorded in the continuation ledger, never inferred from COVERED."
+  },
+  "release": {
+    "draft": true,
+    "hold_merge": true,
+    "gk_approval": "pending",
+    "issue_open": true,
+    "merged": false,
+    "deployed": false
+  }
+}

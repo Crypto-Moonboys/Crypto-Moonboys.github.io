@@ -116,6 +116,13 @@ write only the requested pages while retaining full-site relationship context.
 Unknown pages fail before writing. This preserves unrelated curated links,
 including NFT collection groups.
 
+Lore batches must also pass `scripts/wiki-lore-preservation-check.mjs` against
+the PR base. Canonical prose and related paths may change; the existing article
+body outside those blocks, runtime dependencies and NFT article descriptions
+remain protected. The related-path generator preserves citation-voting panels,
+existing group layout and curated NFT card descriptions. Mandatory wiki CI
+runs this check and its removal/corruption regressions before the prose gate.
+
 Verify new terms in search/entity graphs, internal links and fragments, category
 navigation and sitemap; check desktop/mobile and no-JavaScript reading. Run
 broader required repository checks. Record results, limitations and pending

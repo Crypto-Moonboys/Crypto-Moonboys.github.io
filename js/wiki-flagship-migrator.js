@@ -218,6 +218,10 @@
 
   function removeLegacyPanels(article) {
     document.querySelectorAll('#toc, .toc, .citation-vote-panel, [data-citation-vote-panel="true"]').forEach(function (node) {
+      // Citation voting remains an active article feature. Inline source votes
+      // do not replace the existing panel, especially on prose-only sources.
+      if (node.classList.contains('citation-vote-panel') ||
+          (node.getAttribute && node.getAttribute('data-citation-vote-panel') === 'true')) return;
       // Rewritten articles retain old contents anchors on native disclosures.
       // They are authored navigation, not obsolete generated panels.
       if (node.tagName === 'DETAILS' && article.contains(node) &&
