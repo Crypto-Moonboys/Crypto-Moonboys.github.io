@@ -230,4 +230,18 @@ assert.equal(hrefs(curatedResult).filter(url => url === '/graph.html?mode=hero')
 assert.match(curatedResult, /data-related-group="Related Categories">[\s\S]*?<div class="wiki-rabbit-grid" role="list">[\s\S]*?<a class="wiki-rabbit-card"/, 'existing category card grid does not become a chip grid');
 assert.equal(runGenerateRelatedWikiPaths(root, { pages: ['fallback-only'] }).written, 0, 'curated group preservation is stable on repeated generation');
 
+// Existing anchors and accessible section headings are part of navigation,
+// including on articles without canonical ownership markers.
+const latestHtml = fs.readFileSync(path.join(root, 'wiki/fallback-only.html'), 'utf8');
+const customHeader = '<section class="wiki-rabbit-holes curated-routes" data-related-wiki-paths="true" role="region" aria-labelledby="fallback-related"><h2 id="fallback-related" class="curated-title">Curated Related Paths</h2><p class="curated-intro">Follow the surviving local records.</p>';
+const customHtml = latestHtml.replace(/<section\b[^>]*data-related-wiki-paths="true"[^>]*>\s*<h2\b[^>]*>[\s\S]*?<\/h2>\s*<p\b[^>]*>[\s\S]*?<\/p>/, customHeader);
+assert.notEqual(customHtml, latestHtml, 'fixture replaces the existing generated section header');
+write('wiki/fallback-only.html', customHtml);
+runGenerateRelatedWikiPaths(root, { pages: ['fallback-only'] });
+const customResult = relatedSection(fs.readFileSync(path.join(root, 'wiki/fallback-only.html'), 'utf8'));
+for (const fragment of ['<section class="wiki-rabbit-holes curated-routes" data-related-wiki-paths="true" role="region" aria-labelledby="fallback-related">', '<h2 id="fallback-related" class="curated-title">Curated Related Paths</h2>', '<p class="curated-intro">Follow the surviving local records.</p>']) {
+  assert.ok(customResult.includes(fragment), `existing section header survives: ${fragment}`);
+}
+assert.equal(runGenerateRelatedWikiPaths(root, { pages: ['fallback-only'] }).written, 0, 'custom anchor and header preservation remains stable');
+
 console.log('relationship-hints-related-wiki-paths.test.mjs passed');

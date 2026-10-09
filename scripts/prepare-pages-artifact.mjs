@@ -1,6 +1,7 @@
 #!/usr/bin/env node
-import { cp, mkdir, readdir, rm, stat } from 'node:fs/promises';
+import { cp, mkdir, readdir, readFile, rm, stat } from 'node:fs/promises';
 import path from 'node:path';
+import { isEditorialOnlyPath, checkPublicDisclosure } from './public-canon-disclosure.mjs';
 
 const artifactDir = process.argv[2] || 'public-site';
 const repoRoot = path.resolve('.');
@@ -100,6 +101,7 @@ async function exists(filePath) {
 
 function shouldCopyIntoArtifact(sourcePath) {
   const relativeSourcePath = path.relative(repoRoot, sourcePath);
+  if (isEditorialOnlyPath(relativeSourcePath)) return false;
   if (relativeSourcePath.startsWith('..') || path.isAbsolute(relativeSourcePath)) {
     return false;
   }
@@ -166,7 +168,20 @@ async function main() {
     }
   }
 
+  await verifyPublicDisclosure(resolvedArtifactDir);
   console.log(`Prepared GitHub Pages artifact: ${path.relative(repoRoot, resolvedArtifactDir)}`);
+}
+
+async function verifyPublicDisclosure(directory) {
+  for (const entry of await readdir(directory, { withFileTypes: true })) {
+    const filename = path.join(directory, entry.name);
+    if (entry.isDirectory()) await verifyPublicDisclosure(filename);
+    else if (/\.(?:html|json|md|txt|js|xml)$/iu.test(entry.name)) {
+      const relative = path.relative(resolvedArtifactDir, filename);
+      const failures = checkPublicDisclosure(await readFile(filename, 'utf8'), relative);
+      if (failures.length) throw new Error(failures.join('\n'));
+    }
+  }
 }
 
 main().catch((error) => {

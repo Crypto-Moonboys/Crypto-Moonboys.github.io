@@ -67,6 +67,7 @@ assert.match(
 );
 
 for (const filename of ['scripts/verify-w81-archive.py', 'scripts/verify-w81-archive.test.py',
+  'scripts/canon-approved-decisions.test.mjs', 'scripts/public-canon-disclosure.mjs', 'scripts/prepare-pages-artifact.mjs',
   'scripts/canon-test-command.test.mjs', 'scripts/canon-integrity-check.mjs', 'scripts/canon-integrity-check.test.mjs',
   'scripts/wiki-lore-preservation-check.mjs', 'scripts/wiki-lore-preservation-check.test.mjs',
   'scripts/generate-related-wiki-paths.mjs', 'scripts/relationship-hints-related-wiki-paths.test.mjs']) {

@@ -1,14 +1,21 @@
 {
   "schema_version": 1,
   "policy": "brand-canon/CANON_POLICY.md",
-  "authority": "GK directive, Issue #1458, 8 October 2026; W81 is foundational truth",
+  "authority": "GK final decisions, Issue #1458, 9 October 2026; W81 foundational; https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/issues/1458#issuecomment-6077443666",
   "anchors": {
     "great_concord": 2030,
     "sacred_fork": "later, undated",
     "world_chain_triple_fork": 2880,
-    "secure_regions": "by 2930",
+    "secure_regions": "fewer than twelve by 2930",
     "main_saga": 3008,
-    "final_fork": "unresolved"
+    "final_fork": "unresolved in public Year 3008; editorial intent approved",
+    "major_city_loss": "over 75% by 2900",
+    "sam_upload": 2036,
+    "sam_council": 2039,
+    "sam_reset": 2040,
+    "sam_bridge": 2041,
+    "sam_disappearance": 2042,
+    "sam_climax": 2045
   },
   "forty": {
     "named_readings": [
@@ -45,11 +52,91 @@
       "XRP Kids",
       "PU55IES",
       "Slam GiRL$",
-      "Creepto Gals"
+      "Creepto Gals",
+      "NoBallGames Legion",
+      "Wildstyle Collective",
+      "Fractal Taggers",
+      "Porch Poets",
+      "Resin Relic Keepers",
+      "Bone Idol Ink Ritualists"
     ],
-    "unassigned": 6,
+    "unassigned": 0,
     "runtime_roster_size": 9,
-    "source": "wiki/first-witness-faction-commentaries.html"
+    "source": "wiki/first-witness-faction-commentaries.html",
+    "membership_institutions": [
+      {
+        "name": "NoBallGames Legion",
+        "id": "noballgames-legion",
+        "institution": "clubhouse membership",
+        "belonging": "Clubhouse households, players, groundsworkers and retired members keep shared pitches and duties beyond any match.",
+        "distinct_from": [
+          "XRP Kids",
+          "temporary Legion arena teams"
+        ],
+        "owner": "wiki/first-witness-faction-commentaries.html#noballgames-legion"
+      },
+      {
+        "name": "Wildstyle Collective",
+        "id": "wildstyle-collective",
+        "institution": "voluntary material commons",
+        "belonging": "Voluntary material commons and chosen gatherings support temporary painting; creators retain the right to remove their work.",
+        "distinct_from": [
+          "GraffPUNKS",
+          "Burn Crews",
+          "Stencil Witches",
+          "Tag Lords"
+        ],
+        "owner": "wiki/first-witness-faction-commentaries.html#wildstyle-collective"
+      },
+      {
+        "name": "Fractal Taggers",
+        "id": "fractal-taggers",
+        "institution": "chosen workroom community",
+        "belonging": "Defectors, later adherents and their households maintain shared workrooms and teach craft without royal certification.",
+        "distinct_from": [
+          "Crypto Moongirls",
+          "Thera-9",
+          "all defectors"
+        ],
+        "owner": "wiki/first-witness-faction-commentaries.html#fractal-taggers"
+      },
+      {
+        "name": "Porch Poets",
+        "id": "porch-poets",
+        "institution": "mobile teaching circles",
+        "belonging": "Mobile teaching circles, chosen learner-heirs and households sustain a living spoken repertoire and share hosting resources.",
+        "distinct_from": [
+          "Chain Scribes",
+          "House of Rackinsats",
+          "biological descendants"
+        ],
+        "owner": "wiki/first-witness-faction-commentaries.html#porch-poets"
+      },
+      {
+        "name": "Resin Relic Keepers",
+        "id": "resin-relic-keepers",
+        "institution": "keeper and apprentice lineage",
+        "belonging": "Keeper-apprentice lineages maintain shared storage, material histories and exchanges beyond any one commission.",
+        "distinct_from": [
+          "Salvagers",
+          "real Peter Clark",
+          "token owners"
+        ],
+        "owner": "wiki/first-witness-faction-commentaries.html#resin-relic-keepers"
+      },
+      {
+        "name": "Bone Idol Ink Ritualists",
+        "id": "bone-idol-ink-ritualists",
+        "institution": "consenting adult practice",
+        "belonging": "Self-governing consenting adult practitioners, recipients and apprentices share practice; refusal, removal and leaving remain possible.",
+        "distinct_from": [
+          "real Bone Idol Ink",
+          "all tattoo wearers",
+          "Resin Relic Keepers"
+        ],
+        "owner": "wiki/first-witness-faction-commentaries.html#bone-idol-ink-ritualists"
+      }
+    ]
   },
   "identity_boundaries": [
     [
@@ -83,6 +170,42 @@
     [
       "Chainfire catastrophe",
       "CHAINFIRE rebel AI"
+    ],
+    [
+      "NoBallGames Legion",
+      "XRP Kids",
+      "temporary Legion arena teams"
+    ],
+    [
+      "Wildstyle Collective",
+      "GraffPUNKS",
+      "Burn Crews",
+      "Stencil Witches",
+      "Tag Lords"
+    ],
+    [
+      "Fractal Taggers",
+      "Crypto Moongirls",
+      "Thera-9",
+      "all defectors"
+    ],
+    [
+      "Porch Poets",
+      "Chain Scribes",
+      "House of Rackinsats",
+      "biological descendants"
+    ],
+    [
+      "Resin Relic Keepers",
+      "Salvagers",
+      "real Peter Clark",
+      "token owners"
+    ],
+    [
+      "Bone Idol Ink Ritualists",
+      "real Bone Idol Ink",
+      "all tattoo wearers",
+      "Resin Relic Keepers"
     ]
   ],
   "source_files": [
@@ -235,6 +358,50 @@
     {
       "id": "early-regional-collapse",
       "pattern": "\\bBy\\s+2765\\s+(?:fewer|less)\\s+than\\s+(?:a\\s+)?dozen\\s+secure\\s+regions\\s+remained\\b"
+    },
+    {
+      "id": "sam-upload-date",
+      "pattern": "\\b(?:SAM|Samuel Blake)\\b.{0,35}\\b(?:uploaded|upload|origin)\\s+(?:in\\s+)?(?<year>\\d{4})\\b",
+      "locked_anchor": "sam_upload"
+    },
+    {
+      "id": "sam-council-date",
+      "pattern": "\\bSAM council\\b.{0,35}\\b(?:met|convened)\\s+in\\s+(?:late\\s+)?(?<year>\\d{4})\\b",
+      "locked_anchor": "sam_council"
+    },
+    {
+      "id": "sam-reset-date",
+      "pattern": "\\bStabilisation/Reset\\b.{0,35}\\b(?:occurred|happened)\\s+in\\s+(?<year>\\d{4})\\b",
+      "locked_anchor": "sam_reset"
+    },
+    {
+      "id": "sam-disappearance-date",
+      "pattern": "\\bhousehold disappearance\\b.{0,35}\\b(?:occurred|happened)\\s+in\\s+(?:early\\s+)?(?<year>\\d{4})\\b",
+      "locked_anchor": "sam_disappearance"
+    },
+    {
+      "id": "noballgames-legion-identity",
+      "pattern": "\\bNoBallGames Legion\\b\\s+(?:are|is)\\s+(?:the same as|(?:also )?(?:known as|identical to|another name for))\\s+(?:the\\s+)?(?:XRP Kids)\\b"
+    },
+    {
+      "id": "wildstyle-collective-identity",
+      "pattern": "\\bWildstyle Collective\\b\\s+(?:are|is)\\s+(?:the same as|(?:also )?(?:known as|identical to|another name for))\\s+(?:the\\s+)?(?:GraffPUNKS|Burn Crews|Stencil Witches|Tag Lords)\\b"
+    },
+    {
+      "id": "fractal-taggers-identity",
+      "pattern": "\\bFractal Taggers\\b\\s+(?:are|is)\\s+(?:the same as|(?:also )?(?:known as|identical to|another name for))\\s+(?:the\\s+)?(?:Crypto Moongirls|Thera-9)\\b"
+    },
+    {
+      "id": "porch-poets-identity",
+      "pattern": "\\bPorch Poets\\b\\s+(?:are|is)\\s+(?:the same as|(?:also )?(?:known as|identical to|another name for))\\s+(?:the\\s+)?(?:Chain Scribes|House of Rackinsats)\\b"
+    },
+    {
+      "id": "resin-relic-keepers-identity",
+      "pattern": "\\bResin Relic Keepers\\b\\s+(?:are|is)\\s+(?:the same as|(?:also )?(?:known as|identical to|another name for))\\s+(?:the\\s+)?(?:Salvagers|token owners)\\b"
+    },
+    {
+      "id": "bone-idol-ink-ritualists-identity",
+      "pattern": "\\bBone Idol Ink Ritualists\\b\\s+(?:are|is)\\s+(?:the same as|(?:also )?(?:known as|identical to|another name for))\\s+(?:the\\s+)?(?:Resin Relic Keepers)\\b"
     }
   ],
   "reviewed_story_baselines": [
@@ -243,5 +410,15 @@
       "source": "GK continuation directive for PR1459, 8 October2026",
       "quote": "Preserve all completed work, including the Cut Ledger, Fifth Carbon and previously approved modern fiction."
     }
-  ]
+  ],
+  "disclosure_boundary": {
+    "editorial_only_paths": [
+      "brand-canon/story-bibles/gk-master-canon.md",
+      "brand-canon/reconciliation-decisions.json",
+      "brand-canon/wiki-rewrites/issue-1458-proposals.md",
+      "brand-canon/story-bibles/w81-continuity-companion-20261008.md"
+    ],
+    "public_final_fork_status": "future/unresolved",
+    "source_futures": "locally attributed; not the approved intended ending"
+  }
 }

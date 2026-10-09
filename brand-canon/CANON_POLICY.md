@@ -128,3 +128,11 @@ navigation and sitemap; check desktop/mobile and no-JavaScript reading. Run
 broader required repository checks. Record results, limitations and pending
 approvals in the progress ledger and PR. Never claim a check passed without a
 successful run. Keep Issue #1458 open until full reconciliation is complete.
+
+## Approved final decisions and publication boundary — 9 October 2026
+
+All 94 W81 comparisons are accepted as complete. Use the existing evidence; do not restart research. GK has approved the five Issue #1458 implementations recorded in the decision ledger. This approval permits the coordinated content change, not a merge or release.
+
+The intended Final Fork ending belongs to the editorial master and decision ledger. The public Year 3008 storyline remains future/unresolved. The four paths enumerated in `canon-locks.json` under `disclosure_boundary.editorial_only_paths` are excluded from Pages; public articles and discovery must not link readers to them or copy the intended ending, including hidden text, metadata and generated JSON. Editorial records in this public Git repository are not confidential storage. Preserve locally attributed source visions without converting them into the approved ending. The actual Pages builder and mandatory canon regressions enforce this boundary.
+
+Keep original contradictory SAM dates on surviving fictional artifacts. Correct the chronology and catalogue beside the damage; do not erase Fifth Carbon's conflict. The Forty now have forty named cultures and six distinct approved new institutions. Keep the original thirty-four, all adult lives, First Witness Books, identity boundaries and nine live Battle Chamber choices.

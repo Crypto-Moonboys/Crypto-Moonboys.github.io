@@ -6,7 +6,7 @@
 
 **Authority:** this is an **editorial mapping, not a canon promotion or live-feature approval**. Use [First Witness chronology](../../wiki/first-witness-master-chronology.html), [concordance](../../wiki/first-witness-concordance.html), [source register](../../wiki/first-witness-source-register.html), [Forty Paths](../../wiki/first-witness-forty-paths.html), `README.md` and the current Master Source of Truth ahead of the historical archive.
 
-**Companions:** [continuity reference](../story-bibles/w81-continuity-companion-20261008.md), [digest](../../about/w81-condensed-canon-digest.md), [CSV disposition index](raw-canon-20261008-source-register.csv), [immutable 94-hash ledger](w81-archive-retirement-20261004.md).
+**Companions:** [public continuity concordance](../../wiki/first-witness-concordance.html), [digest](../../about/w81-condensed-canon-digest.md), [CSV disposition index](raw-canon-20261008-source-register.csv), [immutable 94-hash ledger](w81-archive-retirement-20261004.md). The editorial continuity companion remains a repository record excluded from Pages.
 
 
 ## Scope limits

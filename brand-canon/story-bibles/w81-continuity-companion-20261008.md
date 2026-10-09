@@ -2,7 +2,9 @@
 
 > **Current authority, Issue #1458 (8 October 2026): W81 is foundational truth.** Older language below freezing convergence or treating raw canon as secondary is retained as dated audit evidence and is superseded by `brand-canon/CANON_POLICY.md`. Retcons and Forty-slot proposals must be researched and traced; significant changes require specific GK approval. See `brand-canon/story-bibles/gk-master-canon.md` and `brand-canon/wiki-rewrites/issue-1458-progress.md`.
 
-**Status:** research and editorial reference; **not** a new First Witness book, a new approved ending, a revised faction register, or live product documentation.
+**Current status (9 October 2026):** all 94 comparisons complete; five GK decisions approved for coordinated implementation. Editorial only: this companion preserves historical comparison notes below, not a new research backlog. [Approval receipt](https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/issues/1458#issuecomment-6077443666).
+
+The accepted anchors are 2880 Triple Fork; over 75% of major cities lost by 2900; fewer than twelve secure regions by 2930; SAM's 2036 / late 2039 / 2040 / 2041 / early 2042 / 2045 sequence. Original contradictory artifact dates survive. The Forty now retain the original thirty-four plus NoBallGames Legion, Wildstyle Collective, Fractal Taggers, Porch Poets, Resin Relic Keepers and Bone Idol Ink Ritualists with distinct membership institutions; the nine runtime options stay unchanged. Future intent is owned by the editorial master and decision ledger; public Year 3008 stays unresolved. Historical pending-approval statements below are superseded by this specific receipt.
 
 **Scope:** the 94 original W81 text entries represented by the uploaded `RAW CANNON.zip`. Original entry bytes match the [retirement inventory](../wiki-rewrites/w81-archive-retirement-20261004.md); repackaging the ZIP does not change their historical identities.
 
