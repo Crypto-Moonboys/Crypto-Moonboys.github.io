@@ -163,7 +163,7 @@
     var parsedPayload = parseTelegramAuthParam(rawPayload);
     debug('payload_received', { hasPayload: !!parsedPayload });
 
-    if (!parsedPayload || typeof parsedPayload !== 'object') {
+    if (!parsedPayload || typeof parsedPayload !== 'object' || /^s1_/.test(parsedPayload.hash || '')) {
       setStatus(COPY.UNLINKED, 'Invalid link. Use /gklink again.', false);
       emitSyncState('bad', 'invalid_payload');
       debug('payload_parse_failed', { rawLength: rawPayload.length });

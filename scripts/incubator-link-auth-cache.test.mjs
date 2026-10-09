@@ -106,6 +106,13 @@ function assertCachePreserved(result, label) {
 }
 
 const direct = await runIncubator('');
+let websiteFragmentRequests = 0;
+const websiteFragment = await runIncubator('#telegram_auth=' + encodeURIComponent(JSON.stringify({ id: 42, auth_date: 1, hash: 's1_' + 'A'.repeat(43) })), {
+  fetch: async () => { websiteFragmentRequests++; throw new Error('website credentials must not enter the legacy link path'); },
+});
+assertCachePreserved(websiteFragment, 'website credential fragment');
+assert.equal(websiteFragmentRequests, 0);
+assert.equal(websiteFragment.writes.length, 0, 'opaque website credentials must never enter the legacy localStorage cache');
 assertCachePreserved(direct, 'direct visit');
 assert.equal(
   direct.elements['incubator-sync-message'].textContent,
