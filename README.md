@@ -8,7 +8,7 @@ Crypto Moonboys is **not a game, NFT project, wiki, token project or chatbot**. 
 
 > **The user provides the spark. SPARKY carries the real score. Intelligence expands the possibilities. Memory protects the direction. Community helps turn it into culture.**
 
-Telegram website login uses verified OIDC identity and revocable sessions to restore existing accounts without a bot command. Mini App `initData` and `/gklink` remain supported. The implementation is disabled until the approved rollout in [the authentication audit and deployment guide](docs/telegram-website-login.md) is complete.
+Telegram website login uses verified OIDC identity and revocable sessions to restore existing accounts without a bot command. Mini App `initData` and `/gklink` remain supported. The production feature flag is enabled in the activation PR; website login becomes available only after its merged configuration is deployed to moonboys-api and real-provider/account-preservation smoke tests pass. See [the authentication audit and deployment guide](docs/telegram-website-login.md).
 
 ## Read This First
 
