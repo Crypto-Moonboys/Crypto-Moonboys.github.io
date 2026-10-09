@@ -34,6 +34,7 @@ const GROUPS = {
     ['node', 'scripts/wiki-shell-guard.test.mjs'],
     ['node', 'scripts/wiki-html-hygiene.test.mjs'],
     ['node', 'scripts/crypto-moonboy-pets-surface.test.mjs'],
+    ['node', '--test', 'scripts/live-graph-pets-verify.test.mjs'],
     ['node', '--test', 'scripts/moonpet-guide.test.mjs'],
     ['node', 'scripts/sync-moonpet-guide.mjs', '--check'],
     ['npm', 'run', 'test:wiki-structure'],

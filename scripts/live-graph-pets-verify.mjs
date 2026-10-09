@@ -72,10 +72,24 @@ assert.ok(
   `Live graph verified_at is older than ${MAX_GRAPH_AGE_HOURS} hours: ${graphData.verified_at}`,
 );
 
-const petsHtml = await petsPageResponse.text();
-assert.match(petsHtml, /crypto-moonboy-pets/i, 'Crypto Moonboy Pets page is missing its canonical page marker');
-assert.match(petsHtml, /\/petprogress/i, 'Crypto Moonboy Pets page is missing the current progression command');
-assert.match(petsHtml, /\/petgear/i, 'Crypto Moonboy Pets page is missing the current equipment progression command');
+// Current guides teach the signed Mini App and its panels. Legacy /petprogress
+// and /petgear are launch aliases, not required public gameplay instructions.
+const petsHtml = (await petsPageResponse.text())
+  .replace(/<!--[\s\S]*?-->|<(script|style|template)\b[^>]*>[\s\S]*?<\/\1\s*>/gi, '');
+assert.match(petsHtml, /<article\b[^>]*\sdata-entity-slug\s*=\s*["']crypto-moonboy-pets["']/i,
+  'Crypto Moonboy Pets page is missing its canonical page marker');
+const petsLinks = [...petsHtml.matchAll(/<a\b[^>]*\shref\s*=\s*(["'])(.*?)\1/gi)]
+  .map((match) => new URL(match[2].replace(/&amp;/gi, '&'), petsPageResponse.url));
+assert.ok(petsLinks.some((url) => url.origin === 'https://t.me' &&
+  url.pathname.toLowerCase() === '/wikicomsbot' && url.searchParams.get('start') === 'moonpet'),
+  'Crypto Moonboy Pets page is missing its signed Moonpet OS launch link');
+for (const [pathname, label] of [
+  ['/how-to-play-crypto-moonboy-pets.html', 'How to Play guide'],
+  ['/crypto-moonboy-pets-leaderboard.html', 'public leaderboard'],
+]) {
+  assert.ok(petsLinks.some((url) => url.origin === new URL(SITE_BASE_URL).origin && url.pathname === pathname),
+    `Crypto Moonboy Pets page is missing its ${label} link`);
+}
 
 const leaderboardContentType = petsLeaderboardResponse.headers.get('content-type') || '';
 assert.match(leaderboardContentType, /json/i, 'Crypto Moonboy Pets leaderboard API did not return JSON');
