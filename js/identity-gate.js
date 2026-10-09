@@ -62,12 +62,26 @@
   var websitePromise = null;
   var websitePending = false;
   var websiteReady = Promise.resolve(null);
+  var websiteAvailable = false;
 
-  function supportsWebsiteSession() {
+  function canProbeWebsiteSession() {
     if (typeof document === 'undefined') return false;
+    if ((window.MOONBOYS_API || {}).WEBSITE_LOGIN_ENABLED === false) return false;
     var hostname = window.location && window.location.hostname;
     return hostname === 'cryptomoonboys.com' || hostname === 'www.cryptomoonboys.com' ||
       (window.MOONBOYS_API || {}).WEBSITE_LOGIN_ENABLED === true;
+  }
+  function supportsWebsiteSession() { return websiteAvailable; }
+
+  function probeWebsiteSession() {
+    if (!canProbeWebsiteSession() || !getApiBase()) return Promise.resolve(null);
+    return fetch(getApiBase() + '/telegram/website/capabilities', { credentials: 'omit' })
+      .then(function (response) { return response.ok ? response.json() : null; })
+      .then(function (data) {
+        websiteAvailable = !!(data && data.ok === true && data.enabled === true);
+        if (!websiteAvailable) return null;
+        return restoreWebsiteSession(false);
+      });
   }
 
   function clearWebsiteIdentity() {
@@ -100,7 +114,7 @@
   }
 
   function restoreWebsiteSession(renew) {
-    if (!supportsWebsiteSession() || !getApiBase()) return Promise.resolve(null);
+    if (!supportsWebsiteSession() || !getApiBase()) { websitePending = false; return Promise.resolve(null); }
     if (websitePromise) return websitePromise;
     var options = { credentials: 'include', headers: {} };
     if (renew && websiteCsrf) {
@@ -123,10 +137,12 @@
   }
 
   function loginWithTelegram() {
-    var base = getApiBase();
-    if (!base || !supportsWebsiteSession()) { showSyncGateModal(true); return; }
-    var returnTo = window.location.origin + window.location.pathname + window.location.search;
-    window.location.assign(base + '/telegram/website/start?return_to=' + encodeURIComponent(returnTo));
+    return websiteReady.then(function () {
+      var base = getApiBase();
+      if (!base || !supportsWebsiteSession()) { window.location.assign(getBotUrl()); return; }
+      var returnTo = window.location.origin + window.location.pathname + window.location.search;
+      window.location.assign(base + '/telegram/website/start?return_to=' + encodeURIComponent(returnTo));
+    });
   }
 
   function logoutTelegram() {
@@ -1110,9 +1126,14 @@
     dismissSyncGateModal: dismissSyncGateModal,
   };
 
-  if (supportsWebsiteSession()) {
+  if (canProbeWebsiteSession()) {
     websitePending = true;
-    websiteReady = restoreWebsiteSession(false);
+    // Classic game pages may load api-config.js after this script.
+    websiteReady = new Promise(function (resolve) {
+      if (!getApiBase() && document.readyState === 'loading') document.addEventListener('DOMContentLoaded', resolve, { once: true });
+      else resolve();
+    }).then(probeWebsiteSession).catch(function () { return null; })
+      .finally(function () { websitePending = false; });
     window.MOONBOYS_IDENTITY.ready = websiteReady;
     // Renew only while the player is using a visible website page.
     if (typeof window.setInterval === 'function') {

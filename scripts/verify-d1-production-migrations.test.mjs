@@ -13,6 +13,7 @@ const production = JSON.parse(fs.readFileSync(new URL('../deployments/production
 const workflow = fs.readFileSync(new URL('../.github/workflows/d1-production-migration-verify.yml', import.meta.url), 'utf8');
 const schema = fs.readFileSync(new URL('../workers/moonboys-api/schema.sql', import.meta.url), 'utf8');
 const remoteQueryStep = workflow.match(/- name: Query production migration records[\s\S]*?(?=\n\s+- name: Report sanitised query failure)/)?.[0] || '';
+assert.ok(workflow.includes('{"name":"090_telegram_website_sessions.sql"}'), 'known-evidence workflow fixture must include the website authentication migration');
 const remoteIdentityAuditStep = workflow.match(/- name: Query production identity authority violations[\s\S]*?(?=\n\s+- name: Upload sanitised evidence)/)?.[0] || '';
 const pullRequestPaths = workflow.match(/pull_request:\s*\n\s*paths:([\s\S]*?)\n\s*workflow_dispatch:/)?.[1] || '';
 for (const name of [
@@ -29,11 +30,12 @@ for (const name of [
   '087_pet_journey_creation_clock.sql',
   '088_moonpet_finale_competition_quarters.sql',
   '089_community_xp_award_receipts.sql',
+  '090_telegram_website_sessions.sql',
 ]) {
   assert.ok(pullRequestPaths.includes('workers/moonboys-api/migrations/' + name));
   assert.ok(remoteQueryStep.includes(name));
 }
-for (const name of ['085_permanent_pet_weekly_evidence.sql', '086_restore_permanent_pet_ownership.sql', '087_pet_journey_creation_clock.sql', '088_moonpet_finale_competition_quarters.sql', '089_community_xp_award_receipts.sql']) {
+for (const name of ['085_permanent_pet_weekly_evidence.sql', '086_restore_permanent_pet_ownership.sql', '087_pet_journey_creation_clock.sql', '088_moonpet_finale_competition_quarters.sql', '089_community_xp_award_receipts.sql', '090_telegram_website_sessions.sql']) {
   assert.ok(REQUIRED_D1_MIGRATIONS.includes(name), 'recovery migration belongs to the verification gate');
   assert.ok(request.required_migrations.includes(name), 'recovery migration belongs to the evidence request');
   assert.ok(production.d1_databases.wikicoms.required_migrations.includes(name), 'recovery migration belongs to the production manifest');

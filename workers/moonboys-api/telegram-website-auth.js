@@ -29,11 +29,11 @@ function setCookie(name, value, age, sameSite = 'Strict') {
   return `${name}=${value}; Path=/; Secure; HttpOnly; SameSite=${sameSite}; Max-Age=${age}`;
 }
 function config(env) {
-  if (env.TELEGRAM_WEBSITE_LOGIN_ENABLED !== 'true' || !env.TELEGRAM_OIDC_CLIENT_ID || !env.TELEGRAM_OIDC_CLIENT_SECRET || !env.DB) return null;
   const origin = env.TELEGRAM_WEBSITE_AUTH_ORIGIN || 'https://api.cryptomoonboys.com';
   const origins = (env.TELEGRAM_WEBSITE_ORIGINS || 'https://cryptomoonboys.com,https://www.cryptomoonboys.com').split(',').map(v => v.trim());
   if (![origin, ...origins].every(v => { try { return new URL(v).origin === v && new URL(v).protocol === 'https:'; } catch { return false; } })) return null;
-  return { origin, origins, clientId: String(env.TELEGRAM_OIDC_CLIENT_ID), clientSecret: String(env.TELEGRAM_OIDC_CLIENT_SECRET), redirectUri: origin + PREFIX + 'callback' };
+  return { origin, origins, enabled: env.TELEGRAM_WEBSITE_LOGIN_ENABLED === 'true' && !!env.TELEGRAM_OIDC_CLIENT_ID && !!env.TELEGRAM_OIDC_CLIENT_SECRET && !!env.DB,
+    clientId: String(env.TELEGRAM_OIDC_CLIENT_ID), clientSecret: String(env.TELEGRAM_OIDC_CLIENT_SECRET), redirectUri: origin + PREFIX + 'callback' };
 }
 function headersFor(request, cfg) {
   const headers = new Headers({ 'Cache-Control': 'no-store', 'Pragma': 'no-cache', 'Referrer-Policy': 'no-referrer', 'X-Content-Type-Options': 'nosniff', 'X-Frame-Options': 'DENY', 'Vary': 'Origin' });
@@ -50,6 +50,9 @@ function reply(headers, data, status = 200) {
   return new Response(JSON.stringify(data), { status, headers });
 }
 function fail(code, status = 401) { throw Object.assign(new Error(code), { status }); }
+function requireWrites(results, count) {
+  if (!Array.isArray(results) || results.length !== count || results.some(result => result?.success !== true)) fail('website_login_unavailable', 503);
+}
 
 export async function validateTelegramIdToken(token, cfg, nonce, fetchImpl = fetch) {
   if (typeof token !== 'string' || token.length > 16384) fail('invalid_id_token');
@@ -117,6 +120,7 @@ async function issueCredential(env, session, csrf, headers, renew = false) {
       WHERE session_hash = ? AND revoked_at IS NULL AND expires_at > ? AND last_seen_at > ?`)
       .bind(await authDigest(hash), Math.min(now + WEBSITE_ACCESS_SECONDS, session.expires_at), session.session_hash, now, now - WEBSITE_IDLE_SECONDS),
   ]);
+  requireWrites(results, 3);
   if (results[2]?.meta?.changes !== 1) fail('website_session_expired');
   return reply(headers, { ok: true, linked: true, source: 'telegram_oidc', telegram_id: session.telegram_id,
     display_name: session.first_name || session.username || 'Telegram player', csrf_token: csrf,
@@ -134,6 +138,11 @@ export async function handleTelegramWebsiteAuth(request, env, fetchImpl = fetch)
   const action = url.pathname.slice(PREFIX.length);
   try {
     if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers });
+    if (action === 'capabilities' && request.method === 'GET') {
+      if (!cfg.origins.includes(request.headers.get('Origin'))) fail('website_origin_required', 403);
+      return reply(headers, { ok: true, enabled: cfg.enabled });
+    }
+    if (!cfg.enabled) return reply(headers, { error: 'website_login_not_configured' }, 503);
     if (action === 'start' && request.method === 'GET') {
       const returnUrl = new URL(url.searchParams.get('return_to') || cfg.origins[0] + '/gkniftyheads-incubator.html');
       if (!cfg.origins.includes(returnUrl.origin) || returnUrl.username || returnUrl.password) fail('invalid_return_url', 400);
@@ -142,13 +151,14 @@ export async function handleTelegramWebsiteAuth(request, env, fetchImpl = fetch)
       ['code', 'state', 'token', 'telegram_auth', 'auth_evidence'].forEach(key => returnUrl.searchParams.delete(key));
       const state = randomToken(), browser = randomToken(), verifier = randomToken(), nonce = randomToken();
       const session = await readSession(request, env);
-      await env.DB.batch([
+      const results = await env.DB.batch([
         env.DB.prepare('DELETE FROM telegram_login_transactions WHERE expires_at <= ?').bind(nowSeconds()),
         env.DB.prepare('DELETE FROM telegram_website_sessions WHERE expires_at <= ? OR last_seen_at <= ?').bind(nowSeconds(), nowSeconds() - WEBSITE_IDLE_SECONDS),
         env.DB.prepare(`INSERT INTO telegram_login_transactions (state_hash, browser_hash, verifier, nonce, return_url, expected_telegram_id, expires_at)
           VALUES (?, ?, ?, ?, ?, ?, ?)`)
           .bind(await authDigest(state), await authDigest(browser), verifier, nonce, returnUrl.href, session?.telegram_id || null, nowSeconds() + LOGIN_SECONDS),
       ]);
+      requireWrites(results, 3);
       const auth = new URL(ISSUER + '/auth');
       auth.search = new URLSearchParams({ client_id: cfg.clientId, redirect_uri: cfg.redirectUri, response_type: 'code', scope: 'openid profile',
         state, nonce, code_challenge: await authDigest(verifier), code_challenge_method: 'S256' }).toString();
@@ -196,10 +206,11 @@ export async function handleTelegramWebsiteAuth(request, env, fetchImpl = fetch)
           AND NOT EXISTS (SELECT 1 FROM telegram_anticheat_state WHERE telegram_id = ? AND is_blocked = 1)`)
           .bind(sessionHash, identity.id, await authDigest(csrf), now, now, now + WEBSITE_SESSION_SECONDS, ...bindingArgs, identity.id),
       ]);
+      requireWrites(results, 4);
       if (results[3]?.meta?.changes !== 1) fail('telegram_identity_conflict', 409);
       // Invalidate the prior cookie session on a successful fresh login.
       const oldSecret = cookie(request, SESSION_COOKIE);
-      if (oldSecret) await env.DB.prepare('UPDATE telegram_website_sessions SET revoked_at = ? WHERE session_hash = ?').bind(now, await authDigest(oldSecret)).run();
+      if (oldSecret) requireWrites([await env.DB.prepare('UPDATE telegram_website_sessions SET revoked_at = ? WHERE session_hash = ?').bind(now, await authDigest(oldSecret)).run()], 1);
       headers.append('Set-Cookie', setCookie(SESSION_COOKIE, secret, WEBSITE_SESSION_SECONDS));
       headers.set('Location', tx.return_url);
       return new Response(null, { status: 303, headers });
@@ -212,7 +223,7 @@ export async function handleTelegramWebsiteAuth(request, env, fetchImpl = fetch)
     }
     const ac = await env.DB.prepare('SELECT is_blocked FROM telegram_anticheat_state WHERE telegram_id = ?').bind(session.telegram_id).first();
     if (Number(ac?.is_blocked) === 1 && action !== 'logout') {
-      await env.DB.prepare('UPDATE telegram_website_sessions SET revoked_at = ? WHERE session_hash = ?').bind(nowSeconds(), session.session_hash).run();
+      requireWrites([await env.DB.prepare('UPDATE telegram_website_sessions SET revoked_at = ? WHERE session_hash = ?').bind(nowSeconds(), session.session_hash).run()], 1);
       headers.append('Set-Cookie', setCookie(SESSION_COOKIE, '', 0));
       fail('account_blocked', 403);
     }
@@ -225,7 +236,7 @@ export async function handleTelegramWebsiteAuth(request, env, fetchImpl = fetch)
       const csrf = request.headers.get('X-Moonboys-CSRF') || '';
       if (!csrf || await authDigest(csrf) !== session.csrf_hash) fail('csrf_verification_failed', 403);
       if (action === 'logout') {
-        await env.DB.prepare('UPDATE telegram_website_sessions SET revoked_at = ? WHERE session_hash = ?').bind(nowSeconds(), session.session_hash).run();
+        requireWrites([await env.DB.prepare('UPDATE telegram_website_sessions SET revoked_at = ? WHERE session_hash = ?').bind(nowSeconds(), session.session_hash).run()], 1);
         headers.append('Set-Cookie', setCookie(SESSION_COOKIE, '', 0));
         return reply(headers, { ok: true });
       }

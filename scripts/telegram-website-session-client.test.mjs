@@ -9,20 +9,21 @@ function sessionData(suffix = 'A') {
   return { ok: true, linked: true, telegram_id: ID, display_name: 'Returning player', csrf_token: 'csrf-test',
     telegram_auth: { id: ID, first_name: 'Returning', auth_date: Math.floor(Date.now() / 1000), hash: 's1_' + suffix.repeat(43), expires_at: Math.floor(Date.now() / 1000) + 300 } };
 }
-function browser({ seed = {}, fetchImpl = async () => Response.json(sessionData()) } = {}) {
+function browser({ seed = {}, fetchImpl = async () => Response.json(sessionData()), capability = { ok: true, enabled: true }, config = { BASE_URL: 'https://api.cryptomoonboys.com' }, readyState = 'complete' } = {}) {
   const storage = new Map(Object.entries(seed));
   const calls = [], events = [], timers = [], navigation = [];
   const location = { hostname: 'cryptomoonboys.com', origin: 'https://cryptomoonboys.com', pathname: '/games/', search: '',
     assign: value => navigation.push(value), reload: () => navigation.push('reload') };
-  const window = { location, MOONBOYS_API: { BASE_URL: 'https://api.cryptomoonboys.com' }, setInterval: fn => timers.push(fn),
+  const listeners = {};
+  const window = { location, MOONBOYS_API: config, setInterval: fn => timers.push(fn),
     dispatchEvent: event => events.push(event), alert() {} };
-  const document = { readyState: 'complete', hidden: false, addEventListener() {}, getElementById() { return null; },
+  const document = { readyState, hidden: false, addEventListener(name, fn) { listeners[name] = fn; }, getElementById() { return null; },
     createElement() { return { appendChild() {}, setAttribute() {}, querySelector() { return { addEventListener() {}, focus() {} }; }, addEventListener() {} }; },
     head: { appendChild() {} }, body: { appendChild() {} } };
   const context = vm.createContext({ window, document, localStorage: { getItem: key => storage.get(key) || null, setItem: (key, value) => storage.set(key, String(value)), removeItem: key => storage.delete(key) },
-    fetch: async (...args) => { calls.push(args); return fetchImpl(...args); }, CustomEvent: class { constructor(type, options) { this.type = type; this.detail = options.detail; } }, console });
+    fetch: async (...args) => { calls.push(args); return args[0].endsWith('/capabilities') ? Response.json(capability) : fetchImpl(...args); }, CustomEvent: class { constructor(type, options) { this.type = type; this.detail = options.detail; } }, console });
   vm.runInContext(source, context);
-  return { gate: window.MOONBOYS_IDENTITY, storage, calls, events, timers, navigation, document };
+  return { gate: window.MOONBOYS_IDENTITY, storage, calls, events, timers, navigation, document, window, listeners };
 }
 
 test('bootstrap activates verified identity, preserves memory-only proof and avoids a mandatory bot link', async () => {
@@ -36,8 +37,10 @@ test('bootstrap activates verified identity, preserves memory-only proof and avo
   assert.equal(b.storage.get('MOONBOYS_TELEGRAM_AUTH'), undefined);
   assert.equal(JSON.stringify([...b.storage]).includes('s1_'), false);
   assert.equal(JSON.stringify([...b.storage]).includes('csrf-test'), false);
-  assert.equal(b.calls[0][1].credentials, 'include');
-  assert.match(b.calls[0][0], /\/telegram\/website\/session$/);
+  assert.equal(b.calls[0][1].credentials, 'omit');
+  assert.match(b.calls[0][0], /\/telegram\/website\/capabilities$/);
+  assert.equal(b.calls[1][1].credentials, 'include');
+  assert.match(b.calls[1][0], /\/telegram\/website\/session$/);
   const competitive = await b.gate.enforceCompetitiveArcadePageGate({ game_id: 'snake' });
   assert.equal(competitive.ok, true);
   assert.equal(competitive.verified_by_server, true);
@@ -50,6 +53,7 @@ test('competitive page waits for cookie restoration before deciding identity tie
   let finish;
   const b = browser({ fetchImpl: url => url.endsWith('/session') ? new Promise(resolve => { finish = resolve; }) : Response.json(sessionData()) });
   const gateResult = b.gate.enforceCompetitiveArcadePageGate({ game_id: 'snake' });
+  while (!finish) await new Promise(resolve => setImmediate(resolve));
   finish(Response.json(sessionData()));
   assert.equal((await gateResult).ok, true);
 });
@@ -59,9 +63,9 @@ test('fresh-auth renewal uses cookie plus CSRF and rotates only the in-memory ac
   await b.gate.ready;
   const proof = await b.gate.getFreshTelegramAuth({ force: true });
   assert.equal(proof.hash, 's1_' + 'B'.repeat(43));
-  assert.equal(b.calls[1][1].method, 'POST');
-  assert.equal(b.calls[1][1].headers['X-Moonboys-CSRF'], 'csrf-test');
-  assert.equal(b.calls[1][1].credentials, 'include');
+  assert.equal(b.calls.at(-1)[1].method, 'POST');
+  assert.equal(b.calls.at(-1)[1].headers['X-Moonboys-CSRF'], 'csrf-test');
+  assert.equal(b.calls.at(-1)[1].credentials, 'include');
   assert.equal(JSON.stringify([...b.storage]).includes('s1_'), false);
 });
 
@@ -113,10 +117,45 @@ test('a failed logout retains identity and reports that revocation is unconfirme
 test('desktop/mobile login uses a browser redirect and hidden pages do not renew', async () => {
   const b = browser();
   await b.gate.ready;
-  b.gate.loginWithTelegram();
+  await b.gate.loginWithTelegram();
   assert.match(b.navigation[0], /^https:\/\/api\.cryptomoonboys\.com\/telegram\/website\/start\?return_to=/);
   const before = b.calls.length;
   b.document.hidden = true;
   b.timers[0]();
   assert.equal(b.calls.length, before);
+});
+
+test('game bootstrap waits for API configuration loaded later in the document', async () => {
+  const b = browser({ config: null, readyState: 'loading' });
+  assert.equal(b.calls.length, 0);
+  b.window.MOONBOYS_API = { BASE_URL: 'https://api.cryptomoonboys.com' };
+  b.listeners.DOMContentLoaded?.();
+  assert.equal((await b.gate.ready).telegram_id, ID);
+  assert.equal((await b.gate.getFreshTelegramAuth()).id, ID);
+});
+
+test('missing or disabled API configuration settles bootstrap without recursion or requests', async () => {
+  for (const config of [{}, { BASE_URL: null }]) {
+    const b = browser({ config, readyState: 'loading' });
+    const proof = b.gate.getFreshTelegramAuth();
+    b.listeners.DOMContentLoaded();
+    assert.equal(await b.gate.ready, null);
+    assert.equal(await proof, null);
+    assert.equal(b.calls.length, 0);
+    await b.gate.loginWithTelegram();
+    assert.match(b.navigation.at(-1), /^https:\/\/t\.me\/WIKICOMSBOT/);
+  }
+});
+
+test('disabled or unknown website capability keeps legacy proof and sends login to the bot', async () => {
+  const proof = { id: ID, auth_date: Math.floor(Date.now() / 1000), hash: 'a'.repeat(64) };
+  for (const capability of [{ ok: true, enabled: false }, { error: 'unavailable' }]) {
+    const b = browser({ capability, seed: { moonboys_tg_id: ID, moonboys_tg_linked: '1', moonboys_tg_auth: JSON.stringify(proof) } });
+    const login = b.gate.loginWithTelegram();
+    assert.equal(await b.gate.ready, null);
+    await login;
+    assert.equal(b.calls.length, 1, 'disabled rollout must not request session bootstrap');
+    assert.equal(b.gate.getSignedTelegramAuth().hash, proof.hash);
+    assert.match(b.navigation.at(-1), /^https:\/\/t\.me\/WIKICOMSBOT/);
+  }
 });

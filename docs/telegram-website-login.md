@@ -59,6 +59,12 @@ cache remains solely for compatibility and is cleared when a website session
 is restored. The server status endpoint preserves website credentials rather
 than converting them into 24-hour legacy HMAC evidence.
 
+The browser waits for API configuration when a game page loads the identity gate
+first, then queries `/telegram/website/capabilities`. Only a server-confirmed
+enabled capability activates website login controls and cookie bootstrap. A
+disabled flag, missing credentials, unavailable capability or disabled API keeps
+the bot fallback available. The capability exposes no secrets or account data.
+
 ## Session and security contract
 
 Access credentials expire after five minutes. Renewal uses the HttpOnly cookie,
@@ -68,6 +74,9 @@ website page renews every four minutes; protected asynchronous requests renew
 near expiry. Bootstrap cannot extend the idle deadline. Logout revokes the
 session, immediately invalidating every credential in both Workers, and clears
 the cookie. Blocked accounts can still log out.
+Every authentication batch and revocation write must explicitly report success;
+an unconfirmed write returns 503 without issuing a replacement session cookie or
+claiming successful logout. The browser retains its state until logout succeeds.
 
 Telegram's documented code-flow response supplies no refresh token or UserInfo
 endpoint. Local renewal never invents a Telegram refresh grant. After absolute
@@ -107,6 +116,9 @@ After explicit GK deployment approval:
    migration workflow. It creates four auth tables and indexes only; no existing
    account backfill or ID conversion is required. Fresh schema installations
    contain the same definitions.
+   Migration 090 is also required by the production manifest, evidence request,
+   parser and D1 verification workflow; missing applied-migration evidence fails
+   verification. These repository requirements do not claim it is already applied.
 2. Confirm `api.cryptomoonboys.com` routes to `moonboys-api` with HTTPS. Configure
    the BotFather URLs and secrets above. Keep
    `TELEGRAM_WEBSITE_LOGIN_ENABLED=false` during the rollout.
@@ -146,6 +158,7 @@ retained account row IDs, both XP systems, pets, factions, achievements, reward
 receipts, ownership links, repeat login, old bot login, accepted leaderboard
 submissions, conflicting Mini App identities, callback replay, JWT validation,
 origin/CSRF checks, renewal, idle/absolute expiry, revocation and D1 failures.
+It also covers resolved D1 mutation failures and disabled rollout capabilities.
 
 `telegram-website-session-client.test.mjs` covers memory-only credentials,
 bootstrap timing, competitive activation, legacy fallback, stale local flags,

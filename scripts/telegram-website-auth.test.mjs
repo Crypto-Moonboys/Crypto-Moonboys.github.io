@@ -237,3 +237,72 @@ test('off switch, wrong API host, redirects and duplicate callback fields are re
   const url = API + '/telegram/website/callback?code=a&code=b&state=' + login.authorization.searchParams.get('state');
   assert.equal((await handleTelegramWebsiteAuth(new Request(url, { headers: { Cookie: login.cookie } }), env)).status, 401);
 });
+
+test('capability reflects the server rollout flag and missing secrets without querying D1', async () => {
+  const { env } = fixture();
+  for (const [overrides, enabled] of [[{}, true], [{ TELEGRAM_WEBSITE_LOGIN_ENABLED: 'false' }, false], [{ TELEGRAM_OIDC_CLIENT_SECRET: undefined }, false]]) {
+    const response = await handleTelegramWebsiteAuth(new Request(API + '/telegram/website/capabilities', { headers: { Origin: SITE } }),
+      { ...env, ...overrides, DB: { prepare() { throw new Error('capability must not query D1'); } } });
+    assert.equal(response.status, 200);
+    assert.deepEqual(await response.json(), { ok: true, enabled });
+    assert.equal(response.headers.get('Access-Control-Allow-Origin'), SITE);
+    assert.equal(response.headers.get('Cache-Control'), 'no-store');
+  }
+  assert.equal((await handleTelegramWebsiteAuth(new Request(API + '/telegram/website/capabilities', { headers: { Origin: 'https://unknown.example' } }), env)).status, 403);
+});
+
+function failRevocation(DB) {
+  const prepare = DB.prepare.bind(DB);
+  DB.prepare = sql => {
+    const statement = prepare(sql);
+    if (!sql.startsWith('UPDATE telegram_website_sessions SET revoked_at')) return statement;
+    return { ...statement, bind: (...args) => ({ ...statement.bind(...args), run: async () => ({ success: false, meta: { changes: 0 } }) }) };
+  };
+}
+
+test('unconfirmed logout revocation retains the cookie and reports failure until D1 succeeds', async () => {
+  const { env, DB } = fixture();
+  const { cookie, data } = await loggedIn(env);
+  const prepare = DB.prepare;
+  failRevocation(DB);
+  const request = () => new Request(API + '/telegram/website/logout', { method: 'POST', headers: { Cookie: cookie, Origin: SITE, 'X-Moonboys-CSRF': data.csrf_token } });
+  const failed = await handleTelegramWebsiteAuth(request(), env);
+  assert.equal(failed.status, 503);
+  assert.equal(failed.headers.get('Set-Cookie'), null);
+  assert.equal((await verifyWebsiteCredential(data.telegram_auth, env)).telegramId, ID);
+  DB.prepare = prepare;
+  assert.equal((await handleTelegramWebsiteAuth(request(), env)).status, 200);
+  assert.equal((await verifyWebsiteCredential(data.telegram_auth, env)).status, 401);
+});
+
+test('fresh login cannot replace the cookie if prior-session revocation is unconfirmed', async () => {
+  const { env, DB } = fixture();
+  const { cookie, data } = await loggedIn(env);
+  const login = await start(env, cookie);
+  failRevocation(DB);
+  const response = await callback(env, login, {}, { Cookie: login.cookie + '; ' + cookie });
+  assert.equal(response.status, 503);
+  assert.equal(response.headers.get('Location'), null);
+  assert.equal(response.headers.getSetCookie().some(value => value.startsWith('__Host-moonboys_session=')), false);
+  assert.equal((await verifyWebsiteCredential(data.telegram_auth, env)).telegramId, ID);
+});
+
+test('every authentication batch must report success before redirecting or issuing proof', async () => {
+  for (const action of ['start', 'callback', 'session', 'renew']) {
+    const { env, DB } = fixture();
+    const existing = await loggedIn(env);
+    const login = await start(env);
+    // A failed earlier statement must not be hidden by successful final metadata.
+    DB.batch = async statements => statements.map((_, index) => ({ success: index !== 0, meta: { changes: 1 } }));
+    let response;
+    if (action === 'callback') response = await callback(env, login);
+    else if (action === 'start') response = await handleTelegramWebsiteAuth(new Request(API + '/telegram/website/start'), env);
+    else response = await handleTelegramWebsiteAuth(new Request(API + '/telegram/website/' + action, {
+      method: action === 'renew' ? 'POST' : 'GET', headers: { Cookie: existing.cookie, Origin: SITE, 'X-Moonboys-CSRF': existing.data.csrf_token },
+    }), env);
+    assert.equal(response.status, 503, action);
+    assert.equal(response.headers.get('Location'), null);
+    assert.equal(response.headers.getSetCookie().some(value => !value.includes('Max-Age=0')), false);
+    assert.deepEqual(await response.json(), { error: 'website_login_unavailable' });
+  }
+});
