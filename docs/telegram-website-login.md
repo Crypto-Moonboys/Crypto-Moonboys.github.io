@@ -72,7 +72,7 @@ the cookie. Blocked accounts can still log out.
 Telegram's documented code-flow response supplies no refresh token or UserInfo
 endpoint. Local renewal never invents a Telegram refresh grant. After absolute
 expiry, the player authenticates with Telegram again. Provider failures, invalid
-tokens, D1 failures, stale/replayed state, unknown subjects, mismatched IDs and
+tokens, D1 failures, stale/replayed state, unverified identities, mismatched IDs and
 expired/revoked sessions fail closed. Auth responses use `no-store`, restricted
 credentialed CORS and `no-referrer`; they do not return provider tokens or errors.
 
