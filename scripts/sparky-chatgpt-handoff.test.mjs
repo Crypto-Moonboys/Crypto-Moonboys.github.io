@@ -91,6 +91,7 @@ test('Moonboy creator article remains a manually owned non-canon reference', () 
   assert.match(wiki, /data-page-kind="public-creator-guide"/);
   assert.match(wiki, /<!-- MANUAL_CONTENT:BEGIN -->/);
   assert.match(wiki, /<!-- MANUAL_CONTENT:END -->/);
+  assert.ok(wiki.indexOf('<!-- MANUAL_CONTENT:END -->') < wiki.indexOf('<!-- RELATED_WIKI_PATHS:BEGIN -->'), 'generated Related Wiki Paths must remain outside manual ownership');
   assert.doesNotMatch(wiki, /data-canon-revision|data-canon-source-tier/);
 });
 
