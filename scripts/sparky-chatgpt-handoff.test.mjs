@@ -50,16 +50,55 @@ test('public beginner guide and ten activities stay discoverable', () => {
   }
 });
 
-test('activity changes the prepared ChatGPT handoff with no user input', () => {
+test('every activity selects exactly one route and launches its expected ChatGPT starter', () => {
+  // Independent expectations: do not derive the expected starter from the page's
+  // JavaScript activities table, or a broken route could pass by agreeing with itself.
+  const expected = [
+    { id: "start", name: "Help me choose", goalStart: "I have no idea yet. Choose a simple creative activity for me" },
+    { id: "stickers", name: "Sticker design", goalStart: "Help me make my first original sticker design." },
+    { id: "posters", name: "Poster design", goalStart: "Help me design one original poster" },
+    { id: "walls", name: "Permitted mural", goalStart: "Help me plan my first legal mural or wall-art project" },
+    { id: "zines", name: "Folded mini zine", goalStart: "Help me make a one-sheet A4 folded mini zine." },
+    { id: "merch", name: "Merch design", goalStart: "Help me put one original design on a T-shirt" },
+    { id: "character", name: "Mascot and character", goalStart: "Help me invent an original recognisable mascot or character" },
+    { id: "streetart", name: "Street-art design", goalStart: "Help me make a bold original graffiti-lettering or stencil-inspired artwork" },
+    { id: "moonboy", name: "Moonboy and PFP", goalStart: "Help me develop a Moonboy or PFP" },
+    { id: "grow", name: "Grow a project", goalStart: "Help me share or sell a creative thing I have genuinely made." },
+  ];
   const { routes, elements } = simulate();
-  assert.match(decodeURIComponent(elements['gpt-open-link'].href), /MY STARTER: Help me choose/);
-  routes.find(r => r.attrs['data-route'] === 'zines').handlers.click();
-  assert.equal(routes.find(r => r.attrs['data-route'] === 'zines').attrs['aria-pressed'], 'true');
-  assert.equal(routes.find(r => r.attrs['data-route'] === 'start').attrs['aria-pressed'], 'false');
-  assert.match(decodeURIComponent(elements['gpt-open-link'].href), /MY STARTER: Folded mini zine/);
-  assert.match(elements['gpt-prompt-preview'].value, /Try to read https:\/\/cryptomoonboys\.com\/sparky-chatgpt-guide\.txt/);
-  assert.match(elements['gpt-prompt-preview'].value, /if you cannot open the link/i);
-  assert.match(elements['gpt-prompt-preview'].value, /permissioned surfaces/i);
+  assert.equal(routes.length, expected.length, 'exactly ten activity buttons');
+
+  // Verify the initial default AND click every route, including going back to start.
+  for (const activity of expected) {
+    const button = routes.find(route => route.attrs['data-route'] === activity.id);
+    assert.ok(button, `missing button for ${activity.id}`);
+    assert.equal(typeof button.handlers.click, 'function', `click is not wired for ${activity.id}`);
+    button.handlers.click();
+
+    const pressed = routes.filter(route => route.attrs['aria-pressed'] === 'true');
+    assert.equal(pressed.length, 1, `exactly one activity must be selected for ${activity.id}`);
+    assert.equal(pressed[0], button, `wrong selected activity for ${activity.id}`);
+
+    const launch = new URL(elements['gpt-open-link'].href);
+    assert.equal(launch.origin, 'https://chatgpt.com', `wrong ChatGPT host for ${activity.id}`);
+    assert.equal(launch.pathname, '/', `wrong ChatGPT path for ${activity.id}`);
+    assert.equal([...launch.searchParams.keys()].join(','), 'q', `unexpected launch parameters for ${activity.id}`);
+
+    const prompt = launch.searchParams.get('q');
+    assert.ok(prompt, `ChatGPT starter is empty for ${activity.id}`);
+    assert.ok(prompt.includes(`MY STARTER: ${activity.name}. ${activity.goalStart}`),
+      `incorrect starter or activity instructions for ${activity.id}`);
+    assert.equal(elements['gpt-prompt-preview'].value, prompt,
+      `visible copy fallback differs from ChatGPT starter for ${activity.id}`);
+    assert.equal(elements['gpt-choice'].textContent, `Selected: ${activity.name}`,
+      `activity label is wrong for ${activity.id}`);
+    assert.match(prompt, /Try to read https:\/\/cryptomoonboys\.com\/sparky-chatgpt-guide\.txt/,
+      `public guide missing from ${activity.id}`);
+    assert.match(prompt, /if you cannot open the link/i,
+      `offline guide fallback missing from ${activity.id}`);
+    assert.match(prompt, /permissioned surfaces/i,
+      `permission constraint missing from ${activity.id}`);
+  }
 });
 
 test('copy action copies the selected prompt and reports success', async () => {
