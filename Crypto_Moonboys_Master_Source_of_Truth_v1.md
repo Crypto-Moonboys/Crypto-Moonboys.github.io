@@ -4,7 +4,7 @@ Version: 2.0
 Updated: July 2026  
 Legacy filename retained for compatibility with existing agents and links.
 
-> **Delivery clarification (10 October 2026; no change to lore, rights or the two-path mission):** Public AI creation on `cryptomoonboys.com` runs through the [ChatGPT Creator Studio](gpt-users.html), which opens ChatGPT rather than a hosted SWARMSY server. [SWARMSY-Ai](https://github.com/Crypto-Moonboys/SWARMSY-Ai) is a separate, optional PC beta for local or user-configured API-backed models. The website's old `sparky.html` chat has retired; private project records are not shared automatically and the public `/public/npc-chat` Worker bridge awaits separate retirement. Older instructions below saying “use SWARMSY” describe the optional private creator route, **not** a public website chat. Current delivery truth and link targets are governed by the [repository README](README.md).
+> **Delivery clarification (10 October 2026; no change to lore, rights or the two-path mission):** Public AI creation on `cryptomoonboys.com` runs through the [ChatGPT Creator Studio](https://cryptomoonboys.com/gpt-users.html), which opens ChatGPT rather than a hosted SWARMSY server. [SWARMSY-Ai](https://github.com/Crypto-Moonboys/SWARMSY-Ai) is a separate, optional PC beta for local or user-configured API-backed models. The website's old `sparky.html` chat has retired; private project records are not shared automatically and the public `/public/npc-chat` Worker bridge awaits separate retirement. Older instructions below saying “use SWARMSY” describe the optional private creator route, **not** a public website chat. Current delivery truth and link targets are governed by the [repository README](README.md).
 
 ## Read This First
 
