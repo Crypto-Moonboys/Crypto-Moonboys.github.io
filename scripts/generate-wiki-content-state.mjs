@@ -154,13 +154,17 @@ const NFT_SPECIALIST_SLUGS = new Set([
   'noballgamess-nft-collection', 'wax-nft-marketplaces',
 ]);
 
+// These are explicitly reviewed human/AI onboarding guides, not fictional canon articles.
+// Allowlist only: arbitrary page metadata must not suppress a lore conflict audit.
+const PUBLIC_CREATOR_GUIDE_SLUGS = new Set(['create-your-moonboy']);
+
 const NON_LORE_REFERENCE_SLUGS = new Set([
   '589-xrpl', '666-xrpl', 'alcor-exchange', 'alien-worlds-tlm', 'altcoins',
   'bitcoin-btc', 'bitcoin', 'blockchain', 'defi', 'defi-mining', 'diamond-hands',
   'ethereum', 'ethereum-ecosystem', 'exchanges', 'memecoins', 'paper-hands',
   'solana', 'staking', 'swap-nefty', 'tacoswap', 'tokenomics', 'wallets',
   'wax-blockchain', 'wax-dexs-defi', 'waxp', 'waxp-exchange', 'web3',
-  'xrp-ledger',
+  'xrp-ledger', 'create-your-moonboy',
 ]);
 
 const HIGH_CONFLICT_SLUGS = new Set([
@@ -802,6 +806,10 @@ function w81SourceBucket(cluster) {
 
 function likelySourceFamily({ firstWitness, likelyLore, directBible, nftSpecialist, generated, slug, cluster }) {
   if (firstWitness) return ['First Witness convergence canon'];
+  if (PUBLIC_CREATOR_GUIDE_SLUGS.has(slug)) return [
+    'moonboy-ai-canon-guide.txt (public creator instructions)',
+    'moonboy-canon-index.json (curated public source directory)',
+  ];
   if (nftSpecialist) return ['Structured NFT/template metadata'];
   if (generated) return ['Generated page structure'];
 
@@ -820,6 +828,7 @@ function canonConflictSeverity({
   slug, firstWitness, nftSpecialist, generated, likelyLore, cluster,
 }) {
   if (firstWitness) return 'NONE';
+  if (PUBLIC_CREATOR_GUIDE_SLUGS.has(slug)) return 'NOT_APPLICABLE';
   if (nftSpecialist || generated) return 'NOT_APPLICABLE';
   if (HIGH_CONFLICT_SLUGS.has(slug)) return 'HIGH';
   if (cluster === 'Characters' || cluster === 'Forty factions') return 'UNKNOWN_REVIEW';
@@ -978,7 +987,9 @@ export function buildWikiAudit() {
     const generated = nftTemplate || stub || redirect || generatedDraft || !articleHtml;
     const directBible = directBiblePath(slug, bibleSlugs);
     const explicitLoreCategory = /\/categories\/lore\.html(?:["'#?])/i.test(html);
-    const likelyLore = !nftSpecialist && !generated && (firstWitness || (!REAL_PERSON_SLUGS.has(slug) && (
+    const isPublicCreatorGuide = PUBLIC_CREATOR_GUIDE_SLUGS.has(slug) &&
+      /\bdata-page-kind=["']public-creator-guide["']/i.test(html);
+    const likelyLore = !isPublicCreatorGuide && !nftSpecialist && !generated && (firstWitness || (!REAL_PERSON_SLUGS.has(slug) && (
       explicitLoreCategory
       || CHARACTER_SLUGS.has(slug)
       || FORTY_FACTION_SLUGS.has(slug)
