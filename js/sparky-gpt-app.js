@@ -37,7 +37,9 @@
   const guideLink = doc.getElementById('gpt-guide-link');
   const search = doc.getElementById('gpt-search');
   const count = doc.getElementById('gpt-search-count');
-  if (!mount || !choice || !summary || !link || !textarea || !details || !copy || !status || !guideLink || !search || !count) return;
+  const launch = doc.getElementById('gpt-launch');
+  const launchHeading = doc.getElementById('gpt-launch-title');
+  if (!mount || !choice || !summary || !link || !textarea || !details || !copy || !status || !guideLink || !search || !count || !launch || !launchHeading) return;
   let selected = find(new URLSearchParams(root.location ? root.location.search : '').get('activity')).id;
   const buttons = new Map();
   function element(tag, className, content) {
@@ -62,6 +64,14 @@
       root.dispatchEvent(new root.CustomEvent('sparky-activity-change', { detail: { id: a.id, title: a.title } }));
     }
   }
+  function showStarter() {
+    const header = doc.getElementById('site-header');
+    if (header) launch.style.scrollMarginTop = Math.ceil(header.getBoundingClientRect().height) + 16 + 'px';
+    const reducedMotion = root.matchMedia && root.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    // A repeated fragment assignment does not scroll. Move explicitly every time.
+    launchHeading.focus({ preventScroll: true });
+    launch.scrollIntoView({ behavior: reducedMotion ? 'instant' : 'smooth', block: 'start' });
+  }
   function render(filter) {
     const q = String(filter || '').toLocaleLowerCase().trim();
     mount.replaceChildren();
@@ -85,7 +95,10 @@
         button.setAttribute('aria-pressed',a.id === selected ? 'true' : 'false');
         button.appendChild(element('strong','',a.title));
         button.appendChild(element('span','',a.goal));
-        button.addEventListener('click',() => setActivity(a.id));
+        button.addEventListener('click',() => {
+          setActivity(a.id);
+          showStarter();
+        });
         buttons.set(a.id,button);
         grid.appendChild(button);
       }
@@ -110,7 +123,7 @@
         const holder = group.closest('details');
         if (holder) holder.open = true;
       }
-      if (root.location) root.location.hash = 'gpt-launch-title';
+      showStarter();
     });
   });
   copy.addEventListener('click',async () => {
