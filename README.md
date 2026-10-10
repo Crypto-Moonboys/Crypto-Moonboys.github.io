@@ -524,7 +524,7 @@ The homepage must communicate within one viewing cycle:
 - qualifying 1/1 rights are governed by published creator terms;
 - Option 2 keeps an existing identity and can begin through the public ChatGPT Creator Studio;
 - SWARMSY is an optional PC creator operating environment, **not an always-on website chatbot**;
-- SPARKY is an in-app operator for SWARMSY; on the website, SPARKY activity guides are handed to ChatGPT;
+- SPARKY is an in-app operator for SWARMSY; the website sends ChatGPT a short starter for the selected creative task. Activity guides are optional references on the page; Moonboy starters also include the relevant public canon guide and source index;
 - both paths belong to one movement.
 
 The homepage must not force a first-time visitor to understand every mechanic before choosing a route.

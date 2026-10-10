@@ -10,18 +10,17 @@
   const moonboyIndex = BASE + 'moonboy-canon-index.json';
   const all = catalog.categories.flatMap(c => c.activities);
   const byId = Object.fromEntries(all.map(a => [a.id, a]));
-  const specialMoonboy = new Set(['moonboy']);
-  const common = 'Act as SPARKY, my practical beginner-friendly creative guide. Take the lead without jargon or requiring SWARMSY, coding skills or a perfect plan. Start with ONE useful draft, ask at most ONE essential question and give me one achievable next action. If I say "you choose", use sensible defaults. Make actual files or artwork only when those tools exist; do not claim publication, bookings, prints, sales or completed actions without evidence. Clearly separate ideas, user-approved decisions, verified source facts and finished proof. Physical street art and promotion must use my property or explicitly authorised locations. Explain any accounts, hosting, payments or licences needed for real-world outcomes. If a guide URL cannot be read, say so and use these included instructions; never pretend private SWARMSY workspace access. Keep a portable project record.';
+  const common = "I'm a beginner. Use plain language, make a useful first draft, and give me one practical next step. Ask one essential question if you need it; otherwise choose sensible defaults and start.";
   function find(id) { return byId[id] || byId.start; }
   function makePrompt(id) {
     const a = find(id);
-    const guides = [coreGuide, guideFor(a.guide)];
-    if (specialMoonboy.has(a.id)) guides.push(moonboyGuide, moonboyIndex);
-    return 'I came from the Crypto Moonboys SPARKY Creator Studio. ' + common +
-      '\n\nMY STARTER: ' + a.title + '.\nMY GOAL: ' + a.goal +
-      '\n\nPUBLIC INSTRUCTIONS: Please try to read only the relevant guides below before substantial work. State which URLs you actually accessed; if browsing is unavailable, continue with the rules in this message:\n' +
-      guides.join('\n') +
-      '\n\nMake the first useful thing now. For websites/wikis, offer actual working files and an honest publishing path. For a Moonboy, verify supplied identity/rights before claiming canon. Do not ask me to learn a software stack before getting creative.';
+    let prompt = a.title + '.\n\n' + a.goal + '\n\n' + common;
+    if (a.id === 'moonboy') {
+      prompt += '\n\nFor Crypto Moonboys details, use the public canon guide and source index:\n' +
+        moonboyGuide + '\n' + moonboyIndex +
+        '\nIf you cannot read them, ask me to supply the relevant source text before making canon claims. Keep new ideas separate from published canon.';
+    }
+    return prompt;
   }
   function makeUrl(id) { return 'https://chatgpt.com/?q=' + encodeURIComponent(makePrompt(id)); }
   root.SPARKY_CREATOR_APP = Object.freeze({catalog,all,find,makePrompt,makeUrl,guideFor});
@@ -57,7 +56,7 @@
     textarea.value = prompt;
     link.href = makeUrl(selected);
     guideLink.href = guideFor(a.guide);
-    guideLink.textContent = 'Read the ' + a.guide.replace(/-/g, ' ') + ' guide';
+    guideLink.textContent = 'Optional ' + a.guide.replace(/-/g, ' ') + ' guide';
     status.textContent = '';
     if (typeof root.dispatchEvent === 'function' && typeof root.CustomEvent === 'function') {
       root.dispatchEvent(new root.CustomEvent('sparky-activity-change', { detail: { id: a.id, title: a.title } }));
