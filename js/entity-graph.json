@@ -2000,6 +2000,43 @@
         }
       },
       {
+        "target_url": "/wiki/the-first-witness.html",
+        "score": 30,
+        "base_score": 3,
+        "reasons": [
+          "link_overlap:1",
+          "rank_score_boost:4",
+          "authority_score_boost:10",
+          "graph_centrality_boost:8",
+          "content_depth_boost:5"
+        ],
+        "rank_score_boost": 4,
+        "authority_score_boost": 10,
+        "graph_centrality_boost": 8,
+        "content_depth_boost": 5,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 0,
+        "decay_penalty": 0,
+        "recency_balance": 0,
+        "final_score": 30,
+        "score_breakdown": {
+          "base_score": 3,
+          "rank_score_boost": 4,
+          "authority_score_boost": 10,
+          "graph_centrality_boost": 8,
+          "content_depth_boost": 5,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 0,
+          "decay_penalty": 0,
+          "recency_balance": 0,
+          "final_score": 30
+        }
+      },
+      {
         "target_url": "/wiki/hodl-wars.html",
         "score": 29,
         "base_score": 3,
@@ -2027,43 +2064,6 @@
           "authority_score_boost": 7,
           "graph_centrality_boost": 8,
           "content_depth_boost": 8,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 0,
-          "decay_penalty": 0,
-          "recency_balance": 0,
-          "final_score": 29
-        }
-      },
-      {
-        "target_url": "/wiki/the-first-witness.html",
-        "score": 29,
-        "base_score": 3,
-        "reasons": [
-          "link_overlap:1",
-          "rank_score_boost:4",
-          "authority_score_boost:9",
-          "graph_centrality_boost:8",
-          "content_depth_boost:5"
-        ],
-        "rank_score_boost": 4,
-        "authority_score_boost": 9,
-        "graph_centrality_boost": 8,
-        "content_depth_boost": 5,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 0,
-        "decay_penalty": 0,
-        "recency_balance": 0,
-        "final_score": 29,
-        "score_breakdown": {
-          "base_score": 3,
-          "rank_score_boost": 4,
-          "authority_score_boost": 9,
-          "graph_centrality_boost": 8,
-          "content_depth_boost": 5,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
@@ -2741,6 +2741,43 @@
         }
       },
       {
+        "target_url": "/wiki/the-first-witness.html",
+        "score": 30,
+        "base_score": 3,
+        "reasons": [
+          "link_overlap:1",
+          "rank_score_boost:4",
+          "authority_score_boost:10",
+          "graph_centrality_boost:8",
+          "content_depth_boost:5"
+        ],
+        "rank_score_boost": 4,
+        "authority_score_boost": 10,
+        "graph_centrality_boost": 8,
+        "content_depth_boost": 5,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 0,
+        "decay_penalty": 0,
+        "recency_balance": 0,
+        "final_score": 30,
+        "score_breakdown": {
+          "base_score": 3,
+          "rank_score_boost": 4,
+          "authority_score_boost": 10,
+          "graph_centrality_boost": 8,
+          "content_depth_boost": 5,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 0,
+          "decay_penalty": 0,
+          "recency_balance": 0,
+          "final_score": 30
+        }
+      },
+      {
         "target_url": "/wiki/hodl-wars.html",
         "score": 29,
         "base_score": 3,
@@ -2768,43 +2805,6 @@
           "authority_score_boost": 7,
           "graph_centrality_boost": 8,
           "content_depth_boost": 8,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 0,
-          "decay_penalty": 0,
-          "recency_balance": 0,
-          "final_score": 29
-        }
-      },
-      {
-        "target_url": "/wiki/the-first-witness.html",
-        "score": 29,
-        "base_score": 3,
-        "reasons": [
-          "link_overlap:1",
-          "rank_score_boost:4",
-          "authority_score_boost:9",
-          "graph_centrality_boost:8",
-          "content_depth_boost:5"
-        ],
-        "rank_score_boost": 4,
-        "authority_score_boost": 9,
-        "graph_centrality_boost": 8,
-        "content_depth_boost": 5,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 0,
-        "decay_penalty": 0,
-        "recency_balance": 0,
-        "final_score": 29,
-        "score_breakdown": {
-          "base_score": 3,
-          "rank_score_boost": 4,
-          "authority_score_boost": 9,
-          "graph_centrality_boost": 8,
-          "content_depth_boost": 5,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
@@ -7221,6 +7221,43 @@
         }
       },
       {
+        "target_url": "/wiki/the-first-witness.html",
+        "score": 30,
+        "base_score": 3,
+        "reasons": [
+          "link_overlap:1",
+          "rank_score_boost:4",
+          "authority_score_boost:10",
+          "graph_centrality_boost:8",
+          "content_depth_boost:5"
+        ],
+        "rank_score_boost": 4,
+        "authority_score_boost": 10,
+        "graph_centrality_boost": 8,
+        "content_depth_boost": 5,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 0,
+        "decay_penalty": 0,
+        "recency_balance": 0,
+        "final_score": 30,
+        "score_breakdown": {
+          "base_score": 3,
+          "rank_score_boost": 4,
+          "authority_score_boost": 10,
+          "graph_centrality_boost": 8,
+          "content_depth_boost": 5,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 0,
+          "decay_penalty": 0,
+          "recency_balance": 0,
+          "final_score": 30
+        }
+      },
+      {
         "target_url": "/wiki/hodl-wars.html",
         "score": 29,
         "base_score": 3,
@@ -7248,43 +7285,6 @@
           "authority_score_boost": 7,
           "graph_centrality_boost": 8,
           "content_depth_boost": 8,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 0,
-          "decay_penalty": 0,
-          "recency_balance": 0,
-          "final_score": 29
-        }
-      },
-      {
-        "target_url": "/wiki/the-first-witness.html",
-        "score": 29,
-        "base_score": 3,
-        "reasons": [
-          "link_overlap:1",
-          "rank_score_boost:4",
-          "authority_score_boost:9",
-          "graph_centrality_boost:8",
-          "content_depth_boost:5"
-        ],
-        "rank_score_boost": 4,
-        "authority_score_boost": 9,
-        "graph_centrality_boost": 8,
-        "content_depth_boost": 5,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 0,
-        "decay_penalty": 0,
-        "recency_balance": 0,
-        "final_score": 29,
-        "score_breakdown": {
-          "base_score": 3,
-          "rank_score_boost": 4,
-          "authority_score_boost": 9,
-          "graph_centrality_boost": 8,
-          "content_depth_boost": 5,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
@@ -12366,6 +12366,43 @@
         }
       },
       {
+        "target_url": "/wiki/the-first-witness.html",
+        "score": 30,
+        "base_score": 3,
+        "reasons": [
+          "link_overlap:1",
+          "rank_score_boost:4",
+          "authority_score_boost:10",
+          "graph_centrality_boost:8",
+          "content_depth_boost:5"
+        ],
+        "rank_score_boost": 4,
+        "authority_score_boost": 10,
+        "graph_centrality_boost": 8,
+        "content_depth_boost": 5,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 0,
+        "decay_penalty": 0,
+        "recency_balance": 0,
+        "final_score": 30,
+        "score_breakdown": {
+          "base_score": 3,
+          "rank_score_boost": 4,
+          "authority_score_boost": 10,
+          "graph_centrality_boost": 8,
+          "content_depth_boost": 5,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 0,
+          "decay_penalty": 0,
+          "recency_balance": 0,
+          "final_score": 30
+        }
+      },
+      {
         "target_url": "/wiki/hodl-wars.html",
         "score": 29,
         "base_score": 3,
@@ -12393,43 +12430,6 @@
           "authority_score_boost": 7,
           "graph_centrality_boost": 8,
           "content_depth_boost": 8,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 0,
-          "decay_penalty": 0,
-          "recency_balance": 0,
-          "final_score": 29
-        }
-      },
-      {
-        "target_url": "/wiki/the-first-witness.html",
-        "score": 29,
-        "base_score": 3,
-        "reasons": [
-          "link_overlap:1",
-          "rank_score_boost:4",
-          "authority_score_boost:9",
-          "graph_centrality_boost:8",
-          "content_depth_boost:5"
-        ],
-        "rank_score_boost": 4,
-        "authority_score_boost": 9,
-        "graph_centrality_boost": 8,
-        "content_depth_boost": 5,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 0,
-        "decay_penalty": 0,
-        "recency_balance": 0,
-        "final_score": 29,
-        "score_breakdown": {
-          "base_score": 3,
-          "rank_score_boost": 4,
-          "authority_score_boost": 9,
-          "graph_centrality_boost": 8,
-          "content_depth_boost": 5,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
@@ -17014,17 +17014,17 @@
       },
       {
         "target_url": "/wiki/the-first-witness.html",
-        "score": 32,
+        "score": 33,
         "base_score": 6,
         "reasons": [
           "link_overlap:2",
           "rank_score_boost:4",
-          "authority_score_boost:9",
+          "authority_score_boost:10",
           "graph_centrality_boost:8",
           "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
-        "authority_score_boost": 9,
+        "authority_score_boost": 10,
         "graph_centrality_boost": 8,
         "content_depth_boost": 5,
         "reinforcement_boost": 0,
@@ -17033,11 +17033,11 @@
         "freshness_boost": 0,
         "decay_penalty": 0,
         "recency_balance": 0,
-        "final_score": 32,
+        "final_score": 33,
         "score_breakdown": {
           "base_score": 6,
           "rank_score_boost": 4,
-          "authority_score_boost": 9,
+          "authority_score_boost": 10,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
           "reinforcement_boost": 0,
@@ -17046,7 +17046,7 @@
           "freshness_boost": 0,
           "decay_penalty": 0,
           "recency_balance": 0,
-          "final_score": 32
+          "final_score": 33
         }
       }
     ]
@@ -17129,18 +17129,18 @@
       },
       {
         "target_url": "/wiki/the-first-witness.html",
-        "score": 84,
+        "score": 85,
         "base_score": 58,
         "reasons": [
           "same_category:core",
           "link_overlap:6",
           "rank_score_boost:4",
-          "authority_score_boost:9",
+          "authority_score_boost:10",
           "graph_centrality_boost:8",
           "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
-        "authority_score_boost": 9,
+        "authority_score_boost": 10,
         "graph_centrality_boost": 8,
         "content_depth_boost": 5,
         "reinforcement_boost": 0,
@@ -17149,11 +17149,11 @@
         "freshness_boost": 2,
         "decay_penalty": 0,
         "recency_balance": 2,
-        "final_score": 86,
+        "final_score": 87,
         "score_breakdown": {
           "base_score": 58,
           "rank_score_boost": 4,
-          "authority_score_boost": 9,
+          "authority_score_boost": 10,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
           "reinforcement_boost": 0,
@@ -17162,7 +17162,7 @@
           "freshness_boost": 2,
           "decay_penalty": 0,
           "recency_balance": 2,
-          "final_score": 86
+          "final_score": 87
         }
       },
       {
@@ -21907,6 +21907,43 @@
         }
       },
       {
+        "target_url": "/wiki/the-first-witness.html",
+        "score": 33,
+        "base_score": 6,
+        "reasons": [
+          "link_overlap:2",
+          "rank_score_boost:4",
+          "authority_score_boost:10",
+          "graph_centrality_boost:8",
+          "content_depth_boost:5"
+        ],
+        "rank_score_boost": 4,
+        "authority_score_boost": 10,
+        "graph_centrality_boost": 8,
+        "content_depth_boost": 5,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 0,
+        "decay_penalty": 0,
+        "recency_balance": 0,
+        "final_score": 33,
+        "score_breakdown": {
+          "base_score": 6,
+          "rank_score_boost": 4,
+          "authority_score_boost": 10,
+          "graph_centrality_boost": 8,
+          "content_depth_boost": 5,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 0,
+          "decay_penalty": 0,
+          "recency_balance": 0,
+          "final_score": 33
+        }
+      },
+      {
         "target_url": "/wiki/first-witness-faction-commentaries.html",
         "score": 32,
         "base_score": 12,
@@ -21934,43 +21971,6 @@
           "authority_score_boost": 3,
           "graph_centrality_boost": 5,
           "content_depth_boost": 8,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 0,
-          "decay_penalty": 0,
-          "recency_balance": 0,
-          "final_score": 32
-        }
-      },
-      {
-        "target_url": "/wiki/the-first-witness.html",
-        "score": 32,
-        "base_score": 6,
-        "reasons": [
-          "link_overlap:2",
-          "rank_score_boost:4",
-          "authority_score_boost:9",
-          "graph_centrality_boost:8",
-          "content_depth_boost:5"
-        ],
-        "rank_score_boost": 4,
-        "authority_score_boost": 9,
-        "graph_centrality_boost": 8,
-        "content_depth_boost": 5,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 0,
-        "decay_penalty": 0,
-        "recency_balance": 0,
-        "final_score": 32,
-        "score_breakdown": {
-          "base_score": 6,
-          "rank_score_boost": 4,
-          "authority_score_boost": 9,
-          "graph_centrality_boost": 8,
-          "content_depth_boost": 5,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
@@ -23722,17 +23722,17 @@
       },
       {
         "target_url": "/wiki/the-first-witness.html",
-        "score": 29,
+        "score": 30,
         "base_score": 3,
         "reasons": [
           "link_overlap:1",
           "rank_score_boost:4",
-          "authority_score_boost:9",
+          "authority_score_boost:10",
           "graph_centrality_boost:8",
           "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
-        "authority_score_boost": 9,
+        "authority_score_boost": 10,
         "graph_centrality_boost": 8,
         "content_depth_boost": 5,
         "reinforcement_boost": 0,
@@ -23741,11 +23741,11 @@
         "freshness_boost": 0,
         "decay_penalty": 0,
         "recency_balance": 0,
-        "final_score": 29,
+        "final_score": 30,
         "score_breakdown": {
           "base_score": 3,
           "rank_score_boost": 4,
-          "authority_score_boost": 9,
+          "authority_score_boost": 10,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
           "reinforcement_boost": 0,
@@ -23754,7 +23754,7 @@
           "freshness_boost": 0,
           "decay_penalty": 0,
           "recency_balance": 0,
-          "final_score": 29
+          "final_score": 30
         }
       }
     ]
@@ -27117,6 +27117,43 @@
         }
       },
       {
+        "target_url": "/wiki/the-first-witness.html",
+        "score": 33,
+        "base_score": 6,
+        "reasons": [
+          "link_overlap:2",
+          "rank_score_boost:4",
+          "authority_score_boost:10",
+          "graph_centrality_boost:8",
+          "content_depth_boost:5"
+        ],
+        "rank_score_boost": 4,
+        "authority_score_boost": 10,
+        "graph_centrality_boost": 8,
+        "content_depth_boost": 5,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 0,
+        "decay_penalty": 0,
+        "recency_balance": 0,
+        "final_score": 33,
+        "score_breakdown": {
+          "base_score": 6,
+          "rank_score_boost": 4,
+          "authority_score_boost": 10,
+          "graph_centrality_boost": 8,
+          "content_depth_boost": 5,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 0,
+          "decay_penalty": 0,
+          "recency_balance": 0,
+          "final_score": 33
+        }
+      },
+      {
         "target_url": "/wiki/first-witness-faction-commentaries.html",
         "score": 32,
         "base_score": 12,
@@ -27144,43 +27181,6 @@
           "authority_score_boost": 3,
           "graph_centrality_boost": 5,
           "content_depth_boost": 8,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 0,
-          "decay_penalty": 0,
-          "recency_balance": 0,
-          "final_score": 32
-        }
-      },
-      {
-        "target_url": "/wiki/the-first-witness.html",
-        "score": 32,
-        "base_score": 6,
-        "reasons": [
-          "link_overlap:2",
-          "rank_score_boost:4",
-          "authority_score_boost:9",
-          "graph_centrality_boost:8",
-          "content_depth_boost:5"
-        ],
-        "rank_score_boost": 4,
-        "authority_score_boost": 9,
-        "graph_centrality_boost": 8,
-        "content_depth_boost": 5,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 0,
-        "decay_penalty": 0,
-        "recency_balance": 0,
-        "final_score": 32,
-        "score_breakdown": {
-          "base_score": 6,
-          "rank_score_boost": 4,
-          "authority_score_boost": 9,
-          "graph_centrality_boost": 8,
-          "content_depth_boost": 5,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
@@ -34163,6 +34163,74 @@
   "/wiki/first-witness-addiction-intoxication-compulsion.html": {
     "related_pages": [
       {
+        "target_url": "/wiki/the-first-witness.html",
+        "score": 316,
+        "base_score": 289,
+        "reasons": [
+          "same_category:core",
+          "shared_tag:first witness",
+          "shared_tag:first witness bible",
+          "shared_tag:crypto moonboys bible",
+          "shared_tag:graffiti kings bible",
+          "shared_tag:GK bible",
+          "shared_tag:covenant",
+          "shared_tag:scripture",
+          "shared_tag:sacred text",
+          "shared_tag:bitcoin witness",
+          "shared_tag:bitcoin provenance",
+          "shared_tag:sacred chain",
+          "shared_tag:aether-chain",
+          "shared_tag:forty paths",
+          "shared_tag:40 GK factions",
+          "shared_tag:HODL WARS",
+          "shared_tag:Block Topia",
+          "shared_tag:Year 3008",
+          "shared_tag:2030 Concord",
+          "shared_tag:no single keeper",
+          "shared_tag:Crypto Moonboys lore",
+          "shared_tag:Graffiti Kings lore",
+          "shared_tag:religion",
+          "shared_tag:religious philosophy",
+          "shared_tag:philosophy",
+          "shared_tag:ethics",
+          "shared_tag:moral philosophy",
+          "shared_tag:spirituality",
+          "shared_tag:faith tradition",
+          "shared_tag:theology",
+          "shared_tag:belief system",
+          "link_overlap:3",
+          "rank_score_boost:4",
+          "authority_score_boost:10",
+          "graph_centrality_boost:8",
+          "content_depth_boost:5"
+        ],
+        "rank_score_boost": 4,
+        "authority_score_boost": 10,
+        "graph_centrality_boost": 8,
+        "content_depth_boost": 5,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 4,
+        "decay_penalty": 0,
+        "recency_balance": 4,
+        "final_score": 320,
+        "score_breakdown": {
+          "base_score": 289,
+          "rank_score_boost": 4,
+          "authority_score_boost": 10,
+          "graph_centrality_boost": 8,
+          "content_depth_boost": 5,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 4,
+          "decay_penalty": 0,
+          "recency_balance": 4,
+          "final_score": 320
+        }
+      },
+      {
         "target_url": "/wiki/first-witness-life-readings.html",
         "score": 315,
         "base_score": 289,
@@ -34221,74 +34289,6 @@
           "authority_score_boost": 8,
           "graph_centrality_boost": 8,
           "content_depth_boost": 7,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 4,
-          "decay_penalty": 0,
-          "recency_balance": 4,
-          "final_score": 319
-        }
-      },
-      {
-        "target_url": "/wiki/the-first-witness.html",
-        "score": 315,
-        "base_score": 289,
-        "reasons": [
-          "same_category:core",
-          "shared_tag:first witness",
-          "shared_tag:first witness bible",
-          "shared_tag:crypto moonboys bible",
-          "shared_tag:graffiti kings bible",
-          "shared_tag:GK bible",
-          "shared_tag:covenant",
-          "shared_tag:scripture",
-          "shared_tag:sacred text",
-          "shared_tag:bitcoin witness",
-          "shared_tag:bitcoin provenance",
-          "shared_tag:sacred chain",
-          "shared_tag:aether-chain",
-          "shared_tag:forty paths",
-          "shared_tag:40 GK factions",
-          "shared_tag:HODL WARS",
-          "shared_tag:Block Topia",
-          "shared_tag:Year 3008",
-          "shared_tag:2030 Concord",
-          "shared_tag:no single keeper",
-          "shared_tag:Crypto Moonboys lore",
-          "shared_tag:Graffiti Kings lore",
-          "shared_tag:religion",
-          "shared_tag:religious philosophy",
-          "shared_tag:philosophy",
-          "shared_tag:ethics",
-          "shared_tag:moral philosophy",
-          "shared_tag:spirituality",
-          "shared_tag:faith tradition",
-          "shared_tag:theology",
-          "shared_tag:belief system",
-          "link_overlap:3",
-          "rank_score_boost:4",
-          "authority_score_boost:9",
-          "graph_centrality_boost:8",
-          "content_depth_boost:5"
-        ],
-        "rank_score_boost": 4,
-        "authority_score_boost": 9,
-        "graph_centrality_boost": 8,
-        "content_depth_boost": 5,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 4,
-        "decay_penalty": 0,
-        "recency_balance": 4,
-        "final_score": 319,
-        "score_breakdown": {
-          "base_score": 289,
-          "rank_score_boost": 4,
-          "authority_score_boost": 9,
-          "graph_centrality_boost": 8,
-          "content_depth_boost": 5,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
@@ -35511,6 +35511,74 @@
   "/wiki/first-witness-ageing-retirement-elderhood.html": {
     "related_pages": [
       {
+        "target_url": "/wiki/the-first-witness.html",
+        "score": 316,
+        "base_score": 289,
+        "reasons": [
+          "same_category:core",
+          "shared_tag:first witness",
+          "shared_tag:first witness bible",
+          "shared_tag:crypto moonboys bible",
+          "shared_tag:graffiti kings bible",
+          "shared_tag:GK bible",
+          "shared_tag:covenant",
+          "shared_tag:scripture",
+          "shared_tag:sacred text",
+          "shared_tag:bitcoin witness",
+          "shared_tag:bitcoin provenance",
+          "shared_tag:sacred chain",
+          "shared_tag:aether-chain",
+          "shared_tag:forty paths",
+          "shared_tag:40 GK factions",
+          "shared_tag:HODL WARS",
+          "shared_tag:Block Topia",
+          "shared_tag:Year 3008",
+          "shared_tag:2030 Concord",
+          "shared_tag:no single keeper",
+          "shared_tag:Crypto Moonboys lore",
+          "shared_tag:Graffiti Kings lore",
+          "shared_tag:religion",
+          "shared_tag:religious philosophy",
+          "shared_tag:philosophy",
+          "shared_tag:ethics",
+          "shared_tag:moral philosophy",
+          "shared_tag:spirituality",
+          "shared_tag:faith tradition",
+          "shared_tag:theology",
+          "shared_tag:belief system",
+          "link_overlap:3",
+          "rank_score_boost:4",
+          "authority_score_boost:10",
+          "graph_centrality_boost:8",
+          "content_depth_boost:5"
+        ],
+        "rank_score_boost": 4,
+        "authority_score_boost": 10,
+        "graph_centrality_boost": 8,
+        "content_depth_boost": 5,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 4,
+        "decay_penalty": 0,
+        "recency_balance": 4,
+        "final_score": 320,
+        "score_breakdown": {
+          "base_score": 289,
+          "rank_score_boost": 4,
+          "authority_score_boost": 10,
+          "graph_centrality_boost": 8,
+          "content_depth_boost": 5,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 4,
+          "decay_penalty": 0,
+          "recency_balance": 4,
+          "final_score": 320
+        }
+      },
+      {
         "target_url": "/wiki/first-witness-life-readings.html",
         "score": 315,
         "base_score": 289,
@@ -35569,74 +35637,6 @@
           "authority_score_boost": 8,
           "graph_centrality_boost": 8,
           "content_depth_boost": 7,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 4,
-          "decay_penalty": 0,
-          "recency_balance": 4,
-          "final_score": 319
-        }
-      },
-      {
-        "target_url": "/wiki/the-first-witness.html",
-        "score": 315,
-        "base_score": 289,
-        "reasons": [
-          "same_category:core",
-          "shared_tag:first witness",
-          "shared_tag:first witness bible",
-          "shared_tag:crypto moonboys bible",
-          "shared_tag:graffiti kings bible",
-          "shared_tag:GK bible",
-          "shared_tag:covenant",
-          "shared_tag:scripture",
-          "shared_tag:sacred text",
-          "shared_tag:bitcoin witness",
-          "shared_tag:bitcoin provenance",
-          "shared_tag:sacred chain",
-          "shared_tag:aether-chain",
-          "shared_tag:forty paths",
-          "shared_tag:40 GK factions",
-          "shared_tag:HODL WARS",
-          "shared_tag:Block Topia",
-          "shared_tag:Year 3008",
-          "shared_tag:2030 Concord",
-          "shared_tag:no single keeper",
-          "shared_tag:Crypto Moonboys lore",
-          "shared_tag:Graffiti Kings lore",
-          "shared_tag:religion",
-          "shared_tag:religious philosophy",
-          "shared_tag:philosophy",
-          "shared_tag:ethics",
-          "shared_tag:moral philosophy",
-          "shared_tag:spirituality",
-          "shared_tag:faith tradition",
-          "shared_tag:theology",
-          "shared_tag:belief system",
-          "link_overlap:3",
-          "rank_score_boost:4",
-          "authority_score_boost:9",
-          "graph_centrality_boost:8",
-          "content_depth_boost:5"
-        ],
-        "rank_score_boost": 4,
-        "authority_score_boost": 9,
-        "graph_centrality_boost": 8,
-        "content_depth_boost": 5,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 4,
-        "decay_penalty": 0,
-        "recency_balance": 4,
-        "final_score": 319,
-        "score_breakdown": {
-          "base_score": 289,
-          "rank_score_boost": 4,
-          "authority_score_boost": 9,
-          "graph_centrality_boost": 8,
-          "content_depth_boost": 5,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
@@ -36860,7 +36860,7 @@
     "related_pages": [
       {
         "target_url": "/wiki/the-first-witness.html",
-        "score": 315,
+        "score": 316,
         "base_score": 289,
         "reasons": [
           "same_category:core",
@@ -36896,12 +36896,12 @@
           "shared_tag:belief system",
           "link_overlap:3",
           "rank_score_boost:4",
-          "authority_score_boost:9",
+          "authority_score_boost:10",
           "graph_centrality_boost:8",
           "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
-        "authority_score_boost": 9,
+        "authority_score_boost": 10,
         "graph_centrality_boost": 8,
         "content_depth_boost": 5,
         "reinforcement_boost": 0,
@@ -36910,11 +36910,11 @@
         "freshness_boost": 4,
         "decay_penalty": 0,
         "recency_balance": 4,
-        "final_score": 319,
+        "final_score": 320,
         "score_breakdown": {
           "base_score": 289,
           "rank_score_boost": 4,
-          "authority_score_boost": 9,
+          "authority_score_boost": 10,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
           "reinforcement_boost": 0,
@@ -36923,7 +36923,7 @@
           "freshness_boost": 4,
           "decay_penalty": 0,
           "recency_balance": 4,
-          "final_score": 319
+          "final_score": 320
         }
       },
       {
@@ -38204,6 +38204,74 @@
   "/wiki/first-witness-anonymity-pseudonyms-hidden-names.html": {
     "related_pages": [
       {
+        "target_url": "/wiki/the-first-witness.html",
+        "score": 316,
+        "base_score": 289,
+        "reasons": [
+          "same_category:core",
+          "shared_tag:first witness",
+          "shared_tag:first witness bible",
+          "shared_tag:crypto moonboys bible",
+          "shared_tag:graffiti kings bible",
+          "shared_tag:GK bible",
+          "shared_tag:covenant",
+          "shared_tag:scripture",
+          "shared_tag:sacred text",
+          "shared_tag:bitcoin witness",
+          "shared_tag:bitcoin provenance",
+          "shared_tag:sacred chain",
+          "shared_tag:aether-chain",
+          "shared_tag:forty paths",
+          "shared_tag:40 GK factions",
+          "shared_tag:HODL WARS",
+          "shared_tag:Block Topia",
+          "shared_tag:Year 3008",
+          "shared_tag:2030 Concord",
+          "shared_tag:no single keeper",
+          "shared_tag:Crypto Moonboys lore",
+          "shared_tag:Graffiti Kings lore",
+          "shared_tag:religion",
+          "shared_tag:religious philosophy",
+          "shared_tag:philosophy",
+          "shared_tag:ethics",
+          "shared_tag:moral philosophy",
+          "shared_tag:spirituality",
+          "shared_tag:faith tradition",
+          "shared_tag:theology",
+          "shared_tag:belief system",
+          "link_overlap:3",
+          "rank_score_boost:4",
+          "authority_score_boost:10",
+          "graph_centrality_boost:8",
+          "content_depth_boost:5"
+        ],
+        "rank_score_boost": 4,
+        "authority_score_boost": 10,
+        "graph_centrality_boost": 8,
+        "content_depth_boost": 5,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 4,
+        "decay_penalty": 0,
+        "recency_balance": 4,
+        "final_score": 320,
+        "score_breakdown": {
+          "base_score": 289,
+          "rank_score_boost": 4,
+          "authority_score_boost": 10,
+          "graph_centrality_boost": 8,
+          "content_depth_boost": 5,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 4,
+          "decay_penalty": 0,
+          "recency_balance": 4,
+          "final_score": 320
+        }
+      },
+      {
         "target_url": "/wiki/first-witness-life-readings.html",
         "score": 315,
         "base_score": 289,
@@ -38262,74 +38330,6 @@
           "authority_score_boost": 8,
           "graph_centrality_boost": 8,
           "content_depth_boost": 7,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 4,
-          "decay_penalty": 0,
-          "recency_balance": 4,
-          "final_score": 319
-        }
-      },
-      {
-        "target_url": "/wiki/the-first-witness.html",
-        "score": 315,
-        "base_score": 289,
-        "reasons": [
-          "same_category:core",
-          "shared_tag:first witness",
-          "shared_tag:first witness bible",
-          "shared_tag:crypto moonboys bible",
-          "shared_tag:graffiti kings bible",
-          "shared_tag:GK bible",
-          "shared_tag:covenant",
-          "shared_tag:scripture",
-          "shared_tag:sacred text",
-          "shared_tag:bitcoin witness",
-          "shared_tag:bitcoin provenance",
-          "shared_tag:sacred chain",
-          "shared_tag:aether-chain",
-          "shared_tag:forty paths",
-          "shared_tag:40 GK factions",
-          "shared_tag:HODL WARS",
-          "shared_tag:Block Topia",
-          "shared_tag:Year 3008",
-          "shared_tag:2030 Concord",
-          "shared_tag:no single keeper",
-          "shared_tag:Crypto Moonboys lore",
-          "shared_tag:Graffiti Kings lore",
-          "shared_tag:religion",
-          "shared_tag:religious philosophy",
-          "shared_tag:philosophy",
-          "shared_tag:ethics",
-          "shared_tag:moral philosophy",
-          "shared_tag:spirituality",
-          "shared_tag:faith tradition",
-          "shared_tag:theology",
-          "shared_tag:belief system",
-          "link_overlap:3",
-          "rank_score_boost:4",
-          "authority_score_boost:9",
-          "graph_centrality_boost:8",
-          "content_depth_boost:5"
-        ],
-        "rank_score_boost": 4,
-        "authority_score_boost": 9,
-        "graph_centrality_boost": 8,
-        "content_depth_boost": 5,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 4,
-        "decay_penalty": 0,
-        "recency_balance": 4,
-        "final_score": 319,
-        "score_breakdown": {
-          "base_score": 289,
-          "rank_score_boost": 4,
-          "authority_score_boost": 9,
-          "graph_centrality_boost": 8,
-          "content_depth_boost": 5,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
@@ -39553,7 +39553,7 @@
     "related_pages": [
       {
         "target_url": "/wiki/the-first-witness.html",
-        "score": 315,
+        "score": 316,
         "base_score": 289,
         "reasons": [
           "same_category:core",
@@ -39589,12 +39589,12 @@
           "shared_tag:belief system",
           "link_overlap:3",
           "rank_score_boost:4",
-          "authority_score_boost:9",
+          "authority_score_boost:10",
           "graph_centrality_boost:8",
           "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
-        "authority_score_boost": 9,
+        "authority_score_boost": 10,
         "graph_centrality_boost": 8,
         "content_depth_boost": 5,
         "reinforcement_boost": 0,
@@ -39603,11 +39603,11 @@
         "freshness_boost": 4,
         "decay_penalty": 0,
         "recency_balance": 4,
-        "final_score": 319,
+        "final_score": 320,
         "score_breakdown": {
           "base_score": 289,
           "rank_score_boost": 4,
-          "authority_score_boost": 9,
+          "authority_score_boost": 10,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
           "reinforcement_boost": 0,
@@ -39616,7 +39616,7 @@
           "freshness_boost": 4,
           "decay_penalty": 0,
           "recency_balance": 4,
-          "final_score": 319
+          "final_score": 320
         }
       },
       {
@@ -40897,7 +40897,7 @@
     "related_pages": [
       {
         "target_url": "/wiki/the-first-witness.html",
-        "score": 315,
+        "score": 316,
         "base_score": 289,
         "reasons": [
           "same_category:core",
@@ -40933,12 +40933,12 @@
           "shared_tag:belief system",
           "link_overlap:3",
           "rank_score_boost:4",
-          "authority_score_boost:9",
+          "authority_score_boost:10",
           "graph_centrality_boost:8",
           "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
-        "authority_score_boost": 9,
+        "authority_score_boost": 10,
         "graph_centrality_boost": 8,
         "content_depth_boost": 5,
         "reinforcement_boost": 0,
@@ -40947,11 +40947,11 @@
         "freshness_boost": 4,
         "decay_penalty": 0,
         "recency_balance": 4,
-        "final_score": 319,
+        "final_score": 320,
         "score_breakdown": {
           "base_score": 289,
           "rank_score_boost": 4,
-          "authority_score_boost": 9,
+          "authority_score_boost": 10,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
           "reinforcement_boost": 0,
@@ -40960,7 +40960,7 @@
           "freshness_boost": 4,
           "decay_penalty": 0,
           "recency_balance": 4,
-          "final_score": 319
+          "final_score": 320
         }
       },
       {
@@ -42247,7 +42247,7 @@
     "related_pages": [
       {
         "target_url": "/wiki/the-first-witness.html",
-        "score": 315,
+        "score": 316,
         "base_score": 289,
         "reasons": [
           "same_category:core",
@@ -42283,12 +42283,12 @@
           "shared_tag:belief system",
           "link_overlap:3",
           "rank_score_boost:4",
-          "authority_score_boost:9",
+          "authority_score_boost:10",
           "graph_centrality_boost:8",
           "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
-        "authority_score_boost": 9,
+        "authority_score_boost": 10,
         "graph_centrality_boost": 8,
         "content_depth_boost": 5,
         "reinforcement_boost": 0,
@@ -42297,11 +42297,11 @@
         "freshness_boost": 4,
         "decay_penalty": 0,
         "recency_balance": 4,
-        "final_score": 319,
+        "final_score": 320,
         "score_breakdown": {
           "base_score": 289,
           "rank_score_boost": 4,
-          "authority_score_boost": 9,
+          "authority_score_boost": 10,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
           "reinforcement_boost": 0,
@@ -42310,7 +42310,7 @@
           "freshness_boost": 4,
           "decay_penalty": 0,
           "recency_balance": 4,
-          "final_score": 319
+          "final_score": 320
         }
       },
       {
@@ -43596,7 +43596,7 @@
     "related_pages": [
       {
         "target_url": "/wiki/the-first-witness.html",
-        "score": 329,
+        "score": 330,
         "base_score": 303,
         "reasons": [
           "same_category:core",
@@ -43633,12 +43633,12 @@
           "shared_tag:belief system",
           "link_overlap:5",
           "rank_score_boost:4",
-          "authority_score_boost:9",
+          "authority_score_boost:10",
           "graph_centrality_boost:8",
           "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
-        "authority_score_boost": 9,
+        "authority_score_boost": 10,
         "graph_centrality_boost": 8,
         "content_depth_boost": 5,
         "reinforcement_boost": 0,
@@ -43647,11 +43647,11 @@
         "freshness_boost": 4,
         "decay_penalty": 0,
         "recency_balance": 4,
-        "final_score": 333,
+        "final_score": 334,
         "score_breakdown": {
           "base_score": 303,
           "rank_score_boost": 4,
-          "authority_score_boost": 9,
+          "authority_score_boost": 10,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
           "reinforcement_boost": 0,
@@ -43660,7 +43660,7 @@
           "freshness_boost": 4,
           "decay_penalty": 0,
           "recency_balance": 4,
-          "final_score": 333
+          "final_score": 334
         }
       },
       {
@@ -44958,7 +44958,7 @@
     "related_pages": [
       {
         "target_url": "/wiki/the-first-witness.html",
-        "score": 321,
+        "score": 322,
         "base_score": 295,
         "reasons": [
           "same_category:core",
@@ -44994,12 +44994,12 @@
           "shared_tag:belief system",
           "link_overlap:5",
           "rank_score_boost:4",
-          "authority_score_boost:9",
+          "authority_score_boost:10",
           "graph_centrality_boost:8",
           "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
-        "authority_score_boost": 9,
+        "authority_score_boost": 10,
         "graph_centrality_boost": 8,
         "content_depth_boost": 5,
         "reinforcement_boost": 0,
@@ -45008,11 +45008,11 @@
         "freshness_boost": 4,
         "decay_penalty": 0,
         "recency_balance": 4,
-        "final_score": 325,
+        "final_score": 326,
         "score_breakdown": {
           "base_score": 295,
           "rank_score_boost": 4,
-          "authority_score_boost": 9,
+          "authority_score_boost": 10,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
           "reinforcement_boost": 0,
@@ -45021,7 +45021,7 @@
           "freshness_boost": 4,
           "decay_penalty": 0,
           "recency_balance": 4,
-          "final_score": 325
+          "final_score": 326
         }
       },
       {
@@ -46315,7 +46315,7 @@
     "related_pages": [
       {
         "target_url": "/wiki/the-first-witness.html",
-        "score": 337,
+        "score": 338,
         "base_score": 311,
         "reasons": [
           "same_category:core",
@@ -46353,12 +46353,12 @@
           "shared_tag:belief system",
           "link_overlap:5",
           "rank_score_boost:4",
-          "authority_score_boost:9",
+          "authority_score_boost:10",
           "graph_centrality_boost:8",
           "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
-        "authority_score_boost": 9,
+        "authority_score_boost": 10,
         "graph_centrality_boost": 8,
         "content_depth_boost": 5,
         "reinforcement_boost": 0,
@@ -46367,11 +46367,11 @@
         "freshness_boost": 4,
         "decay_penalty": 0,
         "recency_balance": 4,
-        "final_score": 341,
+        "final_score": 342,
         "score_breakdown": {
           "base_score": 311,
           "rank_score_boost": 4,
-          "authority_score_boost": 9,
+          "authority_score_boost": 10,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
           "reinforcement_boost": 0,
@@ -46380,7 +46380,7 @@
           "freshness_boost": 4,
           "decay_penalty": 0,
           "recency_balance": 4,
-          "final_score": 341
+          "final_score": 342
         }
       },
       {
@@ -47688,7 +47688,7 @@
     "related_pages": [
       {
         "target_url": "/wiki/the-first-witness.html",
-        "score": 321,
+        "score": 322,
         "base_score": 295,
         "reasons": [
           "same_category:core",
@@ -47724,12 +47724,12 @@
           "shared_tag:belief system",
           "link_overlap:5",
           "rank_score_boost:4",
-          "authority_score_boost:9",
+          "authority_score_boost:10",
           "graph_centrality_boost:8",
           "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
-        "authority_score_boost": 9,
+        "authority_score_boost": 10,
         "graph_centrality_boost": 8,
         "content_depth_boost": 5,
         "reinforcement_boost": 0,
@@ -47738,11 +47738,11 @@
         "freshness_boost": 4,
         "decay_penalty": 0,
         "recency_balance": 4,
-        "final_score": 325,
+        "final_score": 326,
         "score_breakdown": {
           "base_score": 295,
           "rank_score_boost": 4,
-          "authority_score_boost": 9,
+          "authority_score_boost": 10,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
           "reinforcement_boost": 0,
@@ -47751,7 +47751,7 @@
           "freshness_boost": 4,
           "decay_penalty": 0,
           "recency_balance": 4,
-          "final_score": 325
+          "final_score": 326
         }
       },
       {
@@ -49049,7 +49049,7 @@
     "related_pages": [
       {
         "target_url": "/wiki/the-first-witness.html",
-        "score": 321,
+        "score": 322,
         "base_score": 295,
         "reasons": [
           "same_category:core",
@@ -49085,12 +49085,12 @@
           "shared_tag:belief system",
           "link_overlap:5",
           "rank_score_boost:4",
-          "authority_score_boost:9",
+          "authority_score_boost:10",
           "graph_centrality_boost:8",
           "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
-        "authority_score_boost": 9,
+        "authority_score_boost": 10,
         "graph_centrality_boost": 8,
         "content_depth_boost": 5,
         "reinforcement_boost": 0,
@@ -49099,11 +49099,11 @@
         "freshness_boost": 4,
         "decay_penalty": 0,
         "recency_balance": 4,
-        "final_score": 325,
+        "final_score": 326,
         "score_breakdown": {
           "base_score": 295,
           "rank_score_boost": 4,
-          "authority_score_boost": 9,
+          "authority_score_boost": 10,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
           "reinforcement_boost": 0,
@@ -49112,7 +49112,7 @@
           "freshness_boost": 4,
           "decay_penalty": 0,
           "recency_balance": 4,
-          "final_score": 325
+          "final_score": 326
         }
       },
       {
@@ -50409,7 +50409,7 @@
     "related_pages": [
       {
         "target_url": "/wiki/the-first-witness.html",
-        "score": 321,
+        "score": 322,
         "base_score": 295,
         "reasons": [
           "same_category:core",
@@ -50445,12 +50445,12 @@
           "shared_tag:belief system",
           "link_overlap:5",
           "rank_score_boost:4",
-          "authority_score_boost:9",
+          "authority_score_boost:10",
           "graph_centrality_boost:8",
           "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
-        "authority_score_boost": 9,
+        "authority_score_boost": 10,
         "graph_centrality_boost": 8,
         "content_depth_boost": 5,
         "reinforcement_boost": 0,
@@ -50459,11 +50459,11 @@
         "freshness_boost": 4,
         "decay_penalty": 0,
         "recency_balance": 4,
-        "final_score": 325,
+        "final_score": 326,
         "score_breakdown": {
           "base_score": 295,
           "rank_score_boost": 4,
-          "authority_score_boost": 9,
+          "authority_score_boost": 10,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
           "reinforcement_boost": 0,
@@ -50472,7 +50472,7 @@
           "freshness_boost": 4,
           "decay_penalty": 0,
           "recency_balance": 4,
-          "final_score": 325
+          "final_score": 326
         }
       },
       {
@@ -51770,7 +51770,7 @@
     "related_pages": [
       {
         "target_url": "/wiki/the-first-witness.html",
-        "score": 321,
+        "score": 322,
         "base_score": 295,
         "reasons": [
           "same_category:core",
@@ -51806,12 +51806,12 @@
           "shared_tag:belief system",
           "link_overlap:5",
           "rank_score_boost:4",
-          "authority_score_boost:9",
+          "authority_score_boost:10",
           "graph_centrality_boost:8",
           "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
-        "authority_score_boost": 9,
+        "authority_score_boost": 10,
         "graph_centrality_boost": 8,
         "content_depth_boost": 5,
         "reinforcement_boost": 0,
@@ -51820,11 +51820,11 @@
         "freshness_boost": 4,
         "decay_penalty": 0,
         "recency_balance": 4,
-        "final_score": 325,
+        "final_score": 326,
         "score_breakdown": {
           "base_score": 295,
           "rank_score_boost": 4,
-          "authority_score_boost": 9,
+          "authority_score_boost": 10,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
           "reinforcement_boost": 0,
@@ -51833,7 +51833,7 @@
           "freshness_boost": 4,
           "decay_penalty": 0,
           "recency_balance": 4,
-          "final_score": 325
+          "final_score": 326
         }
       },
       {
@@ -53130,7 +53130,7 @@
     "related_pages": [
       {
         "target_url": "/wiki/the-first-witness.html",
-        "score": 321,
+        "score": 322,
         "base_score": 295,
         "reasons": [
           "same_category:core",
@@ -53166,12 +53166,12 @@
           "shared_tag:belief system",
           "link_overlap:5",
           "rank_score_boost:4",
-          "authority_score_boost:9",
+          "authority_score_boost:10",
           "graph_centrality_boost:8",
           "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
-        "authority_score_boost": 9,
+        "authority_score_boost": 10,
         "graph_centrality_boost": 8,
         "content_depth_boost": 5,
         "reinforcement_boost": 0,
@@ -53180,11 +53180,11 @@
         "freshness_boost": 4,
         "decay_penalty": 0,
         "recency_balance": 4,
-        "final_score": 325,
+        "final_score": 326,
         "score_breakdown": {
           "base_score": 295,
           "rank_score_boost": 4,
-          "authority_score_boost": 9,
+          "authority_score_boost": 10,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
           "reinforcement_boost": 0,
@@ -53193,7 +53193,7 @@
           "freshness_boost": 4,
           "decay_penalty": 0,
           "recency_balance": 4,
-          "final_score": 325
+          "final_score": 326
         }
       },
       {
@@ -54491,7 +54491,7 @@
     "related_pages": [
       {
         "target_url": "/wiki/the-first-witness.html",
-        "score": 321,
+        "score": 322,
         "base_score": 295,
         "reasons": [
           "same_category:core",
@@ -54527,12 +54527,12 @@
           "shared_tag:belief system",
           "link_overlap:5",
           "rank_score_boost:4",
-          "authority_score_boost:9",
+          "authority_score_boost:10",
           "graph_centrality_boost:8",
           "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
-        "authority_score_boost": 9,
+        "authority_score_boost": 10,
         "graph_centrality_boost": 8,
         "content_depth_boost": 5,
         "reinforcement_boost": 0,
@@ -54541,11 +54541,11 @@
         "freshness_boost": 4,
         "decay_penalty": 0,
         "recency_balance": 4,
-        "final_score": 325,
+        "final_score": 326,
         "score_breakdown": {
           "base_score": 295,
           "rank_score_boost": 4,
-          "authority_score_boost": 9,
+          "authority_score_boost": 10,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
           "reinforcement_boost": 0,
@@ -54554,7 +54554,7 @@
           "freshness_boost": 4,
           "decay_penalty": 0,
           "recency_balance": 4,
-          "final_score": 325
+          "final_score": 326
         }
       },
       {
@@ -55851,7 +55851,7 @@
     "related_pages": [
       {
         "target_url": "/wiki/the-first-witness.html",
-        "score": 321,
+        "score": 322,
         "base_score": 295,
         "reasons": [
           "same_category:core",
@@ -55887,12 +55887,12 @@
           "shared_tag:belief system",
           "link_overlap:5",
           "rank_score_boost:4",
-          "authority_score_boost:9",
+          "authority_score_boost:10",
           "graph_centrality_boost:8",
           "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
-        "authority_score_boost": 9,
+        "authority_score_boost": 10,
         "graph_centrality_boost": 8,
         "content_depth_boost": 5,
         "reinforcement_boost": 0,
@@ -55901,11 +55901,11 @@
         "freshness_boost": 4,
         "decay_penalty": 0,
         "recency_balance": 4,
-        "final_score": 325,
+        "final_score": 326,
         "score_breakdown": {
           "base_score": 295,
           "rank_score_boost": 4,
-          "authority_score_boost": 9,
+          "authority_score_boost": 10,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
           "reinforcement_boost": 0,
@@ -55914,7 +55914,7 @@
           "freshness_boost": 4,
           "decay_penalty": 0,
           "recency_balance": 4,
-          "final_score": 325
+          "final_score": 326
         }
       },
       {
@@ -57214,7 +57214,7 @@
     "related_pages": [
       {
         "target_url": "/wiki/the-first-witness.html",
-        "score": 321,
+        "score": 322,
         "base_score": 295,
         "reasons": [
           "same_category:core",
@@ -57250,12 +57250,12 @@
           "shared_tag:belief system",
           "link_overlap:5",
           "rank_score_boost:4",
-          "authority_score_boost:9",
+          "authority_score_boost:10",
           "graph_centrality_boost:8",
           "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
-        "authority_score_boost": 9,
+        "authority_score_boost": 10,
         "graph_centrality_boost": 8,
         "content_depth_boost": 5,
         "reinforcement_boost": 0,
@@ -57264,11 +57264,11 @@
         "freshness_boost": 4,
         "decay_penalty": 0,
         "recency_balance": 4,
-        "final_score": 325,
+        "final_score": 326,
         "score_breakdown": {
           "base_score": 295,
           "rank_score_boost": 4,
-          "authority_score_boost": 9,
+          "authority_score_boost": 10,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
           "reinforcement_boost": 0,
@@ -57277,7 +57277,7 @@
           "freshness_boost": 4,
           "decay_penalty": 0,
           "recency_balance": 4,
-          "final_score": 325
+          "final_score": 326
         }
       },
       {
@@ -58576,7 +58576,7 @@
     "related_pages": [
       {
         "target_url": "/wiki/the-first-witness.html",
-        "score": 315,
+        "score": 316,
         "base_score": 289,
         "reasons": [
           "same_category:core",
@@ -58612,12 +58612,12 @@
           "shared_tag:belief system",
           "link_overlap:3",
           "rank_score_boost:4",
-          "authority_score_boost:9",
+          "authority_score_boost:10",
           "graph_centrality_boost:8",
           "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
-        "authority_score_boost": 9,
+        "authority_score_boost": 10,
         "graph_centrality_boost": 8,
         "content_depth_boost": 5,
         "reinforcement_boost": 0,
@@ -58626,11 +58626,11 @@
         "freshness_boost": 4,
         "decay_penalty": 0,
         "recency_balance": 4,
-        "final_score": 319,
+        "final_score": 320,
         "score_breakdown": {
           "base_score": 289,
           "rank_score_boost": 4,
-          "authority_score_boost": 9,
+          "authority_score_boost": 10,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
           "reinforcement_boost": 0,
@@ -58639,7 +58639,7 @@
           "freshness_boost": 4,
           "decay_penalty": 0,
           "recency_balance": 4,
-          "final_score": 319
+          "final_score": 320
         }
       },
       {
@@ -59921,7 +59921,7 @@
     "related_pages": [
       {
         "target_url": "/wiki/the-first-witness.html",
-        "score": 315,
+        "score": 316,
         "base_score": 289,
         "reasons": [
           "same_category:core",
@@ -59957,12 +59957,12 @@
           "shared_tag:belief system",
           "link_overlap:3",
           "rank_score_boost:4",
-          "authority_score_boost:9",
+          "authority_score_boost:10",
           "graph_centrality_boost:8",
           "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
-        "authority_score_boost": 9,
+        "authority_score_boost": 10,
         "graph_centrality_boost": 8,
         "content_depth_boost": 5,
         "reinforcement_boost": 0,
@@ -59971,11 +59971,11 @@
         "freshness_boost": 4,
         "decay_penalty": 0,
         "recency_balance": 4,
-        "final_score": 319,
+        "final_score": 320,
         "score_breakdown": {
           "base_score": 289,
           "rank_score_boost": 4,
-          "authority_score_boost": 9,
+          "authority_score_boost": 10,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
           "reinforcement_boost": 0,
@@ -59984,7 +59984,7 @@
           "freshness_boost": 4,
           "decay_penalty": 0,
           "recency_balance": 4,
-          "final_score": 319
+          "final_score": 320
         }
       },
       {
@@ -61269,7 +61269,7 @@
     "related_pages": [
       {
         "target_url": "/wiki/the-first-witness.html",
-        "score": 315,
+        "score": 316,
         "base_score": 289,
         "reasons": [
           "same_category:core",
@@ -61305,12 +61305,12 @@
           "shared_tag:belief system",
           "link_overlap:3",
           "rank_score_boost:4",
-          "authority_score_boost:9",
+          "authority_score_boost:10",
           "graph_centrality_boost:8",
           "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
-        "authority_score_boost": 9,
+        "authority_score_boost": 10,
         "graph_centrality_boost": 8,
         "content_depth_boost": 5,
         "reinforcement_boost": 0,
@@ -61319,11 +61319,11 @@
         "freshness_boost": 4,
         "decay_penalty": 0,
         "recency_balance": 4,
-        "final_score": 319,
+        "final_score": 320,
         "score_breakdown": {
           "base_score": 289,
           "rank_score_boost": 4,
-          "authority_score_boost": 9,
+          "authority_score_boost": 10,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
           "reinforcement_boost": 0,
@@ -61332,7 +61332,7 @@
           "freshness_boost": 4,
           "decay_penalty": 0,
           "recency_balance": 4,
-          "final_score": 319
+          "final_score": 320
         }
       },
       {
@@ -62616,6 +62616,74 @@
   "/wiki/first-witness-charity-mutual-aid-dependence.html": {
     "related_pages": [
       {
+        "target_url": "/wiki/the-first-witness.html",
+        "score": 316,
+        "base_score": 289,
+        "reasons": [
+          "same_category:core",
+          "shared_tag:first witness",
+          "shared_tag:first witness bible",
+          "shared_tag:crypto moonboys bible",
+          "shared_tag:graffiti kings bible",
+          "shared_tag:GK bible",
+          "shared_tag:covenant",
+          "shared_tag:scripture",
+          "shared_tag:sacred text",
+          "shared_tag:bitcoin witness",
+          "shared_tag:bitcoin provenance",
+          "shared_tag:sacred chain",
+          "shared_tag:aether-chain",
+          "shared_tag:forty paths",
+          "shared_tag:40 GK factions",
+          "shared_tag:HODL WARS",
+          "shared_tag:Block Topia",
+          "shared_tag:Year 3008",
+          "shared_tag:2030 Concord",
+          "shared_tag:no single keeper",
+          "shared_tag:Crypto Moonboys lore",
+          "shared_tag:Graffiti Kings lore",
+          "shared_tag:religion",
+          "shared_tag:religious philosophy",
+          "shared_tag:philosophy",
+          "shared_tag:ethics",
+          "shared_tag:moral philosophy",
+          "shared_tag:spirituality",
+          "shared_tag:faith tradition",
+          "shared_tag:theology",
+          "shared_tag:belief system",
+          "link_overlap:3",
+          "rank_score_boost:4",
+          "authority_score_boost:10",
+          "graph_centrality_boost:8",
+          "content_depth_boost:5"
+        ],
+        "rank_score_boost": 4,
+        "authority_score_boost": 10,
+        "graph_centrality_boost": 8,
+        "content_depth_boost": 5,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 4,
+        "decay_penalty": 0,
+        "recency_balance": 4,
+        "final_score": 320,
+        "score_breakdown": {
+          "base_score": 289,
+          "rank_score_boost": 4,
+          "authority_score_boost": 10,
+          "graph_centrality_boost": 8,
+          "content_depth_boost": 5,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 4,
+          "decay_penalty": 0,
+          "recency_balance": 4,
+          "final_score": 320
+        }
+      },
+      {
         "target_url": "/wiki/first-witness-life-readings.html",
         "score": 315,
         "base_score": 289,
@@ -62674,74 +62742,6 @@
           "authority_score_boost": 8,
           "graph_centrality_boost": 8,
           "content_depth_boost": 7,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 4,
-          "decay_penalty": 0,
-          "recency_balance": 4,
-          "final_score": 319
-        }
-      },
-      {
-        "target_url": "/wiki/the-first-witness.html",
-        "score": 315,
-        "base_score": 289,
-        "reasons": [
-          "same_category:core",
-          "shared_tag:first witness",
-          "shared_tag:first witness bible",
-          "shared_tag:crypto moonboys bible",
-          "shared_tag:graffiti kings bible",
-          "shared_tag:GK bible",
-          "shared_tag:covenant",
-          "shared_tag:scripture",
-          "shared_tag:sacred text",
-          "shared_tag:bitcoin witness",
-          "shared_tag:bitcoin provenance",
-          "shared_tag:sacred chain",
-          "shared_tag:aether-chain",
-          "shared_tag:forty paths",
-          "shared_tag:40 GK factions",
-          "shared_tag:HODL WARS",
-          "shared_tag:Block Topia",
-          "shared_tag:Year 3008",
-          "shared_tag:2030 Concord",
-          "shared_tag:no single keeper",
-          "shared_tag:Crypto Moonboys lore",
-          "shared_tag:Graffiti Kings lore",
-          "shared_tag:religion",
-          "shared_tag:religious philosophy",
-          "shared_tag:philosophy",
-          "shared_tag:ethics",
-          "shared_tag:moral philosophy",
-          "shared_tag:spirituality",
-          "shared_tag:faith tradition",
-          "shared_tag:theology",
-          "shared_tag:belief system",
-          "link_overlap:3",
-          "rank_score_boost:4",
-          "authority_score_boost:9",
-          "graph_centrality_boost:8",
-          "content_depth_boost:5"
-        ],
-        "rank_score_boost": 4,
-        "authority_score_boost": 9,
-        "graph_centrality_boost": 8,
-        "content_depth_boost": 5,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 4,
-        "decay_penalty": 0,
-        "recency_balance": 4,
-        "final_score": 319,
-        "score_breakdown": {
-          "base_score": 289,
-          "rank_score_boost": 4,
-          "authority_score_boost": 9,
-          "graph_centrality_boost": 8,
-          "content_depth_boost": 5,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
@@ -63967,7 +63967,7 @@
     "related_pages": [
       {
         "target_url": "/wiki/the-first-witness.html",
-        "score": 321,
+        "score": 322,
         "base_score": 295,
         "reasons": [
           "same_category:core",
@@ -64003,12 +64003,12 @@
           "shared_tag:belief system",
           "link_overlap:5",
           "rank_score_boost:4",
-          "authority_score_boost:9",
+          "authority_score_boost:10",
           "graph_centrality_boost:8",
           "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
-        "authority_score_boost": 9,
+        "authority_score_boost": 10,
         "graph_centrality_boost": 8,
         "content_depth_boost": 5,
         "reinforcement_boost": 0,
@@ -64017,11 +64017,11 @@
         "freshness_boost": 4,
         "decay_penalty": 0,
         "recency_balance": 4,
-        "final_score": 325,
+        "final_score": 326,
         "score_breakdown": {
           "base_score": 295,
           "rank_score_boost": 4,
-          "authority_score_boost": 9,
+          "authority_score_boost": 10,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
           "reinforcement_boost": 0,
@@ -64030,7 +64030,7 @@
           "freshness_boost": 4,
           "decay_penalty": 0,
           "recency_balance": 4,
-          "final_score": 325
+          "final_score": 326
         }
       },
       {
@@ -65323,7 +65323,7 @@
     "related_pages": [
       {
         "target_url": "/wiki/the-first-witness.html",
-        "score": 323,
+        "score": 324,
         "base_score": 297,
         "reasons": [
           "same_category:core",
@@ -65360,12 +65360,12 @@
           "shared_tag:belief system",
           "link_overlap:3",
           "rank_score_boost:4",
-          "authority_score_boost:9",
+          "authority_score_boost:10",
           "graph_centrality_boost:8",
           "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
-        "authority_score_boost": 9,
+        "authority_score_boost": 10,
         "graph_centrality_boost": 8,
         "content_depth_boost": 5,
         "reinforcement_boost": 0,
@@ -65374,11 +65374,11 @@
         "freshness_boost": 4,
         "decay_penalty": 0,
         "recency_balance": 4,
-        "final_score": 327,
+        "final_score": 328,
         "score_breakdown": {
           "base_score": 297,
           "rank_score_boost": 4,
-          "authority_score_boost": 9,
+          "authority_score_boost": 10,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
           "reinforcement_boost": 0,
@@ -65387,7 +65387,7 @@
           "freshness_boost": 4,
           "decay_penalty": 0,
           "recency_balance": 4,
-          "final_score": 327
+          "final_score": 328
         }
       },
       {
@@ -66678,7 +66678,7 @@
     "related_pages": [
       {
         "target_url": "/wiki/the-first-witness.html",
-        "score": 321,
+        "score": 322,
         "base_score": 295,
         "reasons": [
           "same_category:core",
@@ -66714,12 +66714,12 @@
           "shared_tag:belief system",
           "link_overlap:5",
           "rank_score_boost:4",
-          "authority_score_boost:9",
+          "authority_score_boost:10",
           "graph_centrality_boost:8",
           "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
-        "authority_score_boost": 9,
+        "authority_score_boost": 10,
         "graph_centrality_boost": 8,
         "content_depth_boost": 5,
         "reinforcement_boost": 0,
@@ -66728,11 +66728,11 @@
         "freshness_boost": 4,
         "decay_penalty": 0,
         "recency_balance": 4,
-        "final_score": 325,
+        "final_score": 326,
         "score_breakdown": {
           "base_score": 295,
           "rank_score_boost": 4,
-          "authority_score_boost": 9,
+          "authority_score_boost": 10,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
           "reinforcement_boost": 0,
@@ -66741,7 +66741,7 @@
           "freshness_boost": 4,
           "decay_penalty": 0,
           "recency_balance": 4,
-          "final_score": 325
+          "final_score": 326
         }
       },
       {
@@ -68033,7 +68033,7 @@
     "related_pages": [
       {
         "target_url": "/wiki/the-first-witness.html",
-        "score": 315,
+        "score": 316,
         "base_score": 289,
         "reasons": [
           "same_category:core",
@@ -68069,12 +68069,12 @@
           "shared_tag:belief system",
           "link_overlap:3",
           "rank_score_boost:4",
-          "authority_score_boost:9",
+          "authority_score_boost:10",
           "graph_centrality_boost:8",
           "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
-        "authority_score_boost": 9,
+        "authority_score_boost": 10,
         "graph_centrality_boost": 8,
         "content_depth_boost": 5,
         "reinforcement_boost": 0,
@@ -68083,11 +68083,11 @@
         "freshness_boost": 4,
         "decay_penalty": 0,
         "recency_balance": 4,
-        "final_score": 319,
+        "final_score": 320,
         "score_breakdown": {
           "base_score": 289,
           "rank_score_boost": 4,
-          "authority_score_boost": 9,
+          "authority_score_boost": 10,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
           "reinforcement_boost": 0,
@@ -68096,7 +68096,7 @@
           "freshness_boost": 4,
           "decay_penalty": 0,
           "recency_balance": 4,
-          "final_score": 319
+          "final_score": 320
         }
       },
       {
@@ -69382,7 +69382,7 @@
     "related_pages": [
       {
         "target_url": "/wiki/the-first-witness.html",
-        "score": 315,
+        "score": 316,
         "base_score": 289,
         "reasons": [
           "same_category:core",
@@ -69418,12 +69418,12 @@
           "shared_tag:belief system",
           "link_overlap:3",
           "rank_score_boost:4",
-          "authority_score_boost:9",
+          "authority_score_boost:10",
           "graph_centrality_boost:8",
           "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
-        "authority_score_boost": 9,
+        "authority_score_boost": 10,
         "graph_centrality_boost": 8,
         "content_depth_boost": 5,
         "reinforcement_boost": 0,
@@ -69432,11 +69432,11 @@
         "freshness_boost": 4,
         "decay_penalty": 0,
         "recency_balance": 4,
-        "final_score": 319,
+        "final_score": 320,
         "score_breakdown": {
           "base_score": 289,
           "rank_score_boost": 4,
-          "authority_score_boost": 9,
+          "authority_score_boost": 10,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
           "reinforcement_boost": 0,
@@ -69445,7 +69445,7 @@
           "freshness_boost": 4,
           "decay_penalty": 0,
           "recency_balance": 4,
-          "final_score": 319
+          "final_score": 320
         }
       },
       {
@@ -70732,7 +70732,7 @@
     "related_pages": [
       {
         "target_url": "/wiki/the-first-witness.html",
-        "score": 315,
+        "score": 316,
         "base_score": 289,
         "reasons": [
           "same_category:core",
@@ -70768,12 +70768,12 @@
           "shared_tag:belief system",
           "link_overlap:3",
           "rank_score_boost:4",
-          "authority_score_boost:9",
+          "authority_score_boost:10",
           "graph_centrality_boost:8",
           "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
-        "authority_score_boost": 9,
+        "authority_score_boost": 10,
         "graph_centrality_boost": 8,
         "content_depth_boost": 5,
         "reinforcement_boost": 0,
@@ -70782,11 +70782,11 @@
         "freshness_boost": 4,
         "decay_penalty": 0,
         "recency_balance": 4,
-        "final_score": 319,
+        "final_score": 320,
         "score_breakdown": {
           "base_score": 289,
           "rank_score_boost": 4,
-          "authority_score_boost": 9,
+          "authority_score_boost": 10,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
           "reinforcement_boost": 0,
@@ -70795,7 +70795,7 @@
           "freshness_boost": 4,
           "decay_penalty": 0,
           "recency_balance": 4,
-          "final_score": 319
+          "final_score": 320
         }
       },
       {
@@ -72076,7 +72076,7 @@
     "related_pages": [
       {
         "target_url": "/wiki/the-first-witness.html",
-        "score": 315,
+        "score": 316,
         "base_score": 289,
         "reasons": [
           "same_category:core",
@@ -72112,12 +72112,12 @@
           "shared_tag:belief system",
           "link_overlap:3",
           "rank_score_boost:4",
-          "authority_score_boost:9",
+          "authority_score_boost:10",
           "graph_centrality_boost:8",
           "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
-        "authority_score_boost": 9,
+        "authority_score_boost": 10,
         "graph_centrality_boost": 8,
         "content_depth_boost": 5,
         "reinforcement_boost": 0,
@@ -72126,11 +72126,11 @@
         "freshness_boost": 4,
         "decay_penalty": 0,
         "recency_balance": 4,
-        "final_score": 319,
+        "final_score": 320,
         "score_breakdown": {
           "base_score": 289,
           "rank_score_boost": 4,
-          "authority_score_boost": 9,
+          "authority_score_boost": 10,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
           "reinforcement_boost": 0,
@@ -72139,7 +72139,7 @@
           "freshness_boost": 4,
           "decay_penalty": 0,
           "recency_balance": 4,
-          "final_score": 319
+          "final_score": 320
         }
       },
       {
@@ -73422,7 +73422,7 @@
     "related_pages": [
       {
         "target_url": "/wiki/the-first-witness.html",
-        "score": 315,
+        "score": 316,
         "base_score": 289,
         "reasons": [
           "same_category:core",
@@ -73458,12 +73458,12 @@
           "shared_tag:belief system",
           "link_overlap:3",
           "rank_score_boost:4",
-          "authority_score_boost:9",
+          "authority_score_boost:10",
           "graph_centrality_boost:8",
           "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
-        "authority_score_boost": 9,
+        "authority_score_boost": 10,
         "graph_centrality_boost": 8,
         "content_depth_boost": 5,
         "reinforcement_boost": 0,
@@ -73472,11 +73472,11 @@
         "freshness_boost": 4,
         "decay_penalty": 0,
         "recency_balance": 4,
-        "final_score": 319,
+        "final_score": 320,
         "score_breakdown": {
           "base_score": 289,
           "rank_score_boost": 4,
-          "authority_score_boost": 9,
+          "authority_score_boost": 10,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
           "reinforcement_boost": 0,
@@ -73485,7 +73485,7 @@
           "freshness_boost": 4,
           "decay_penalty": 0,
           "recency_balance": 4,
-          "final_score": 319
+          "final_score": 320
         }
       },
       {
@@ -74767,6 +74767,74 @@
   "/wiki/first-witness-disaster-famine-mutual-aid.html": {
     "related_pages": [
       {
+        "target_url": "/wiki/the-first-witness.html",
+        "score": 316,
+        "base_score": 289,
+        "reasons": [
+          "same_category:core",
+          "shared_tag:first witness",
+          "shared_tag:first witness bible",
+          "shared_tag:crypto moonboys bible",
+          "shared_tag:graffiti kings bible",
+          "shared_tag:GK bible",
+          "shared_tag:covenant",
+          "shared_tag:scripture",
+          "shared_tag:sacred text",
+          "shared_tag:bitcoin witness",
+          "shared_tag:bitcoin provenance",
+          "shared_tag:sacred chain",
+          "shared_tag:aether-chain",
+          "shared_tag:forty paths",
+          "shared_tag:40 GK factions",
+          "shared_tag:HODL WARS",
+          "shared_tag:Block Topia",
+          "shared_tag:Year 3008",
+          "shared_tag:2030 Concord",
+          "shared_tag:no single keeper",
+          "shared_tag:Crypto Moonboys lore",
+          "shared_tag:Graffiti Kings lore",
+          "shared_tag:religion",
+          "shared_tag:religious philosophy",
+          "shared_tag:philosophy",
+          "shared_tag:ethics",
+          "shared_tag:moral philosophy",
+          "shared_tag:spirituality",
+          "shared_tag:faith tradition",
+          "shared_tag:theology",
+          "shared_tag:belief system",
+          "link_overlap:3",
+          "rank_score_boost:4",
+          "authority_score_boost:10",
+          "graph_centrality_boost:8",
+          "content_depth_boost:5"
+        ],
+        "rank_score_boost": 4,
+        "authority_score_boost": 10,
+        "graph_centrality_boost": 8,
+        "content_depth_boost": 5,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 4,
+        "decay_penalty": 0,
+        "recency_balance": 4,
+        "final_score": 320,
+        "score_breakdown": {
+          "base_score": 289,
+          "rank_score_boost": 4,
+          "authority_score_boost": 10,
+          "graph_centrality_boost": 8,
+          "content_depth_boost": 5,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 4,
+          "decay_penalty": 0,
+          "recency_balance": 4,
+          "final_score": 320
+        }
+      },
+      {
         "target_url": "/wiki/first-witness-life-readings.html",
         "score": 315,
         "base_score": 289,
@@ -74825,74 +74893,6 @@
           "authority_score_boost": 8,
           "graph_centrality_boost": 8,
           "content_depth_boost": 7,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 4,
-          "decay_penalty": 0,
-          "recency_balance": 4,
-          "final_score": 319
-        }
-      },
-      {
-        "target_url": "/wiki/the-first-witness.html",
-        "score": 315,
-        "base_score": 289,
-        "reasons": [
-          "same_category:core",
-          "shared_tag:first witness",
-          "shared_tag:first witness bible",
-          "shared_tag:crypto moonboys bible",
-          "shared_tag:graffiti kings bible",
-          "shared_tag:GK bible",
-          "shared_tag:covenant",
-          "shared_tag:scripture",
-          "shared_tag:sacred text",
-          "shared_tag:bitcoin witness",
-          "shared_tag:bitcoin provenance",
-          "shared_tag:sacred chain",
-          "shared_tag:aether-chain",
-          "shared_tag:forty paths",
-          "shared_tag:40 GK factions",
-          "shared_tag:HODL WARS",
-          "shared_tag:Block Topia",
-          "shared_tag:Year 3008",
-          "shared_tag:2030 Concord",
-          "shared_tag:no single keeper",
-          "shared_tag:Crypto Moonboys lore",
-          "shared_tag:Graffiti Kings lore",
-          "shared_tag:religion",
-          "shared_tag:religious philosophy",
-          "shared_tag:philosophy",
-          "shared_tag:ethics",
-          "shared_tag:moral philosophy",
-          "shared_tag:spirituality",
-          "shared_tag:faith tradition",
-          "shared_tag:theology",
-          "shared_tag:belief system",
-          "link_overlap:3",
-          "rank_score_boost:4",
-          "authority_score_boost:9",
-          "graph_centrality_boost:8",
-          "content_depth_boost:5"
-        ],
-        "rank_score_boost": 4,
-        "authority_score_boost": 9,
-        "graph_centrality_boost": 8,
-        "content_depth_boost": 5,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 4,
-        "decay_penalty": 0,
-        "recency_balance": 4,
-        "final_score": 319,
-        "score_breakdown": {
-          "base_score": 289,
-          "rank_score_boost": 4,
-          "authority_score_boost": 9,
-          "graph_centrality_boost": 8,
-          "content_depth_boost": 5,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
@@ -76118,7 +76118,7 @@
     "related_pages": [
       {
         "target_url": "/wiki/the-first-witness.html",
-        "score": 315,
+        "score": 316,
         "base_score": 289,
         "reasons": [
           "same_category:core",
@@ -76154,12 +76154,12 @@
           "shared_tag:belief system",
           "link_overlap:3",
           "rank_score_boost:4",
-          "authority_score_boost:9",
+          "authority_score_boost:10",
           "graph_centrality_boost:8",
           "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
-        "authority_score_boost": 9,
+        "authority_score_boost": 10,
         "graph_centrality_boost": 8,
         "content_depth_boost": 5,
         "reinforcement_boost": 0,
@@ -76168,11 +76168,11 @@
         "freshness_boost": 4,
         "decay_penalty": 0,
         "recency_balance": 4,
-        "final_score": 319,
+        "final_score": 320,
         "score_breakdown": {
           "base_score": 289,
           "rank_score_boost": 4,
-          "authority_score_boost": 9,
+          "authority_score_boost": 10,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
           "reinforcement_boost": 0,
@@ -76181,7 +76181,7 @@
           "freshness_boost": 4,
           "decay_penalty": 0,
           "recency_balance": 4,
-          "final_score": 319
+          "final_score": 320
         }
       },
       {
@@ -77465,6 +77465,74 @@
   "/wiki/first-witness-dual-use-tools-weapons.html": {
     "related_pages": [
       {
+        "target_url": "/wiki/the-first-witness.html",
+        "score": 316,
+        "base_score": 289,
+        "reasons": [
+          "same_category:core",
+          "shared_tag:first witness",
+          "shared_tag:first witness bible",
+          "shared_tag:crypto moonboys bible",
+          "shared_tag:graffiti kings bible",
+          "shared_tag:GK bible",
+          "shared_tag:covenant",
+          "shared_tag:scripture",
+          "shared_tag:sacred text",
+          "shared_tag:bitcoin witness",
+          "shared_tag:bitcoin provenance",
+          "shared_tag:sacred chain",
+          "shared_tag:aether-chain",
+          "shared_tag:forty paths",
+          "shared_tag:40 GK factions",
+          "shared_tag:HODL WARS",
+          "shared_tag:Block Topia",
+          "shared_tag:Year 3008",
+          "shared_tag:2030 Concord",
+          "shared_tag:no single keeper",
+          "shared_tag:Crypto Moonboys lore",
+          "shared_tag:Graffiti Kings lore",
+          "shared_tag:religion",
+          "shared_tag:religious philosophy",
+          "shared_tag:philosophy",
+          "shared_tag:ethics",
+          "shared_tag:moral philosophy",
+          "shared_tag:spirituality",
+          "shared_tag:faith tradition",
+          "shared_tag:theology",
+          "shared_tag:belief system",
+          "link_overlap:3",
+          "rank_score_boost:4",
+          "authority_score_boost:10",
+          "graph_centrality_boost:8",
+          "content_depth_boost:5"
+        ],
+        "rank_score_boost": 4,
+        "authority_score_boost": 10,
+        "graph_centrality_boost": 8,
+        "content_depth_boost": 5,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 4,
+        "decay_penalty": 0,
+        "recency_balance": 4,
+        "final_score": 320,
+        "score_breakdown": {
+          "base_score": 289,
+          "rank_score_boost": 4,
+          "authority_score_boost": 10,
+          "graph_centrality_boost": 8,
+          "content_depth_boost": 5,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 4,
+          "decay_penalty": 0,
+          "recency_balance": 4,
+          "final_score": 320
+        }
+      },
+      {
         "target_url": "/wiki/first-witness-life-readings.html",
         "score": 315,
         "base_score": 289,
@@ -77523,74 +77591,6 @@
           "authority_score_boost": 8,
           "graph_centrality_boost": 8,
           "content_depth_boost": 7,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 4,
-          "decay_penalty": 0,
-          "recency_balance": 4,
-          "final_score": 319
-        }
-      },
-      {
-        "target_url": "/wiki/the-first-witness.html",
-        "score": 315,
-        "base_score": 289,
-        "reasons": [
-          "same_category:core",
-          "shared_tag:first witness",
-          "shared_tag:first witness bible",
-          "shared_tag:crypto moonboys bible",
-          "shared_tag:graffiti kings bible",
-          "shared_tag:GK bible",
-          "shared_tag:covenant",
-          "shared_tag:scripture",
-          "shared_tag:sacred text",
-          "shared_tag:bitcoin witness",
-          "shared_tag:bitcoin provenance",
-          "shared_tag:sacred chain",
-          "shared_tag:aether-chain",
-          "shared_tag:forty paths",
-          "shared_tag:40 GK factions",
-          "shared_tag:HODL WARS",
-          "shared_tag:Block Topia",
-          "shared_tag:Year 3008",
-          "shared_tag:2030 Concord",
-          "shared_tag:no single keeper",
-          "shared_tag:Crypto Moonboys lore",
-          "shared_tag:Graffiti Kings lore",
-          "shared_tag:religion",
-          "shared_tag:religious philosophy",
-          "shared_tag:philosophy",
-          "shared_tag:ethics",
-          "shared_tag:moral philosophy",
-          "shared_tag:spirituality",
-          "shared_tag:faith tradition",
-          "shared_tag:theology",
-          "shared_tag:belief system",
-          "link_overlap:3",
-          "rank_score_boost:4",
-          "authority_score_boost:9",
-          "graph_centrality_boost:8",
-          "content_depth_boost:5"
-        ],
-        "rank_score_boost": 4,
-        "authority_score_boost": 9,
-        "graph_centrality_boost": 8,
-        "content_depth_boost": 5,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 4,
-        "decay_penalty": 0,
-        "recency_balance": 4,
-        "final_score": 319,
-        "score_breakdown": {
-          "base_score": 289,
-          "rank_score_boost": 4,
-          "authority_score_boost": 9,
-          "graph_centrality_boost": 8,
-          "content_depth_boost": 5,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
@@ -78815,7 +78815,7 @@
     "related_pages": [
       {
         "target_url": "/wiki/the-first-witness.html",
-        "score": 315,
+        "score": 316,
         "base_score": 289,
         "reasons": [
           "same_category:core",
@@ -78851,12 +78851,12 @@
           "shared_tag:belief system",
           "link_overlap:3",
           "rank_score_boost:4",
-          "authority_score_boost:9",
+          "authority_score_boost:10",
           "graph_centrality_boost:8",
           "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
-        "authority_score_boost": 9,
+        "authority_score_boost": 10,
         "graph_centrality_boost": 8,
         "content_depth_boost": 5,
         "reinforcement_boost": 0,
@@ -78865,11 +78865,11 @@
         "freshness_boost": 4,
         "decay_penalty": 0,
         "recency_balance": 4,
-        "final_score": 319,
+        "final_score": 320,
         "score_breakdown": {
           "base_score": 289,
           "rank_score_boost": 4,
-          "authority_score_boost": 9,
+          "authority_score_boost": 10,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
           "reinforcement_boost": 0,
@@ -78878,7 +78878,7 @@
           "freshness_boost": 4,
           "decay_penalty": 0,
           "recency_balance": 4,
-          "final_score": 319
+          "final_score": 320
         }
       },
       {
@@ -80232,7 +80232,7 @@
       },
       {
         "target_url": "/wiki/the-first-witness.html",
-        "score": 352,
+        "score": 353,
         "base_score": 326,
         "reasons": [
           "same_category:core",
@@ -80270,12 +80270,12 @@
           "shared_tag:belief system",
           "link_overlap:10",
           "rank_score_boost:4",
-          "authority_score_boost:9",
+          "authority_score_boost:10",
           "graph_centrality_boost:8",
           "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
-        "authority_score_boost": 9,
+        "authority_score_boost": 10,
         "graph_centrality_boost": 8,
         "content_depth_boost": 5,
         "reinforcement_boost": 0,
@@ -80284,11 +80284,11 @@
         "freshness_boost": 4,
         "decay_penalty": 0,
         "recency_balance": 4,
-        "final_score": 356,
+        "final_score": 357,
         "score_breakdown": {
           "base_score": 326,
           "rank_score_boost": 4,
-          "authority_score_boost": 9,
+          "authority_score_boost": 10,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
           "reinforcement_boost": 0,
@@ -80297,7 +80297,7 @@
           "freshness_boost": 4,
           "decay_penalty": 0,
           "recency_balance": 4,
-          "final_score": 356
+          "final_score": 357
         }
       },
       {
@@ -81531,7 +81531,7 @@
     "related_pages": [
       {
         "target_url": "/wiki/the-first-witness.html",
-        "score": 315,
+        "score": 316,
         "base_score": 289,
         "reasons": [
           "same_category:core",
@@ -81567,12 +81567,12 @@
           "shared_tag:belief system",
           "link_overlap:3",
           "rank_score_boost:4",
-          "authority_score_boost:9",
+          "authority_score_boost:10",
           "graph_centrality_boost:8",
           "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
-        "authority_score_boost": 9,
+        "authority_score_boost": 10,
         "graph_centrality_boost": 8,
         "content_depth_boost": 5,
         "reinforcement_boost": 0,
@@ -81581,11 +81581,11 @@
         "freshness_boost": 4,
         "decay_penalty": 0,
         "recency_balance": 4,
-        "final_score": 319,
+        "final_score": 320,
         "score_breakdown": {
           "base_score": 289,
           "rank_score_boost": 4,
-          "authority_score_boost": 9,
+          "authority_score_boost": 10,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
           "reinforcement_boost": 0,
@@ -81594,7 +81594,7 @@
           "freshness_boost": 4,
           "decay_penalty": 0,
           "recency_balance": 4,
-          "final_score": 319
+          "final_score": 320
         }
       },
       {
@@ -82878,7 +82878,7 @@
     "related_pages": [
       {
         "target_url": "/wiki/the-first-witness.html",
-        "score": 315,
+        "score": 316,
         "base_score": 289,
         "reasons": [
           "same_category:core",
@@ -82914,12 +82914,12 @@
           "shared_tag:belief system",
           "link_overlap:3",
           "rank_score_boost:4",
-          "authority_score_boost:9",
+          "authority_score_boost:10",
           "graph_centrality_boost:8",
           "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
-        "authority_score_boost": 9,
+        "authority_score_boost": 10,
         "graph_centrality_boost": 8,
         "content_depth_boost": 5,
         "reinforcement_boost": 0,
@@ -82928,11 +82928,11 @@
         "freshness_boost": 4,
         "decay_penalty": 0,
         "recency_balance": 4,
-        "final_score": 319,
+        "final_score": 320,
         "score_breakdown": {
           "base_score": 289,
           "rank_score_boost": 4,
-          "authority_score_boost": 9,
+          "authority_score_boost": 10,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
           "reinforcement_boost": 0,
@@ -82941,7 +82941,7 @@
           "freshness_boost": 4,
           "decay_penalty": 0,
           "recency_balance": 4,
-          "final_score": 319
+          "final_score": 320
         }
       },
       {
@@ -84223,7 +84223,7 @@
     "related_pages": [
       {
         "target_url": "/wiki/the-first-witness.html",
-        "score": 315,
+        "score": 316,
         "base_score": 289,
         "reasons": [
           "same_category:core",
@@ -84259,12 +84259,12 @@
           "shared_tag:belief system",
           "link_overlap:3",
           "rank_score_boost:4",
-          "authority_score_boost:9",
+          "authority_score_boost:10",
           "graph_centrality_boost:8",
           "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
-        "authority_score_boost": 9,
+        "authority_score_boost": 10,
         "graph_centrality_boost": 8,
         "content_depth_boost": 5,
         "reinforcement_boost": 0,
@@ -84273,11 +84273,11 @@
         "freshness_boost": 4,
         "decay_penalty": 0,
         "recency_balance": 4,
-        "final_score": 319,
+        "final_score": 320,
         "score_breakdown": {
           "base_score": 289,
           "rank_score_boost": 4,
-          "authority_score_boost": 9,
+          "authority_score_boost": 10,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
           "reinforcement_boost": 0,
@@ -84286,7 +84286,7 @@
           "freshness_boost": 4,
           "decay_penalty": 0,
           "recency_balance": 4,
-          "final_score": 319
+          "final_score": 320
         }
       },
       {
@@ -85638,7 +85638,7 @@
       },
       {
         "target_url": "/wiki/the-first-witness.html",
-        "score": 336,
+        "score": 337,
         "base_score": 310,
         "reasons": [
           "same_category:core",
@@ -85674,12 +85674,12 @@
           "shared_tag:belief system",
           "link_overlap:10",
           "rank_score_boost:4",
-          "authority_score_boost:9",
+          "authority_score_boost:10",
           "graph_centrality_boost:8",
           "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
-        "authority_score_boost": 9,
+        "authority_score_boost": 10,
         "graph_centrality_boost": 8,
         "content_depth_boost": 5,
         "reinforcement_boost": 0,
@@ -85688,11 +85688,11 @@
         "freshness_boost": 4,
         "decay_penalty": 0,
         "recency_balance": 4,
-        "final_score": 340,
+        "final_score": 341,
         "score_breakdown": {
           "base_score": 310,
           "rank_score_boost": 4,
-          "authority_score_boost": 9,
+          "authority_score_boost": 10,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
           "reinforcement_boost": 0,
@@ -85701,7 +85701,7 @@
           "freshness_boost": 4,
           "decay_penalty": 0,
           "recency_balance": 4,
-          "final_score": 340
+          "final_score": 341
         }
       },
       {
@@ -86925,7 +86925,7 @@
     "related_pages": [
       {
         "target_url": "/wiki/the-first-witness.html",
-        "score": 337,
+        "score": 338,
         "base_score": 311,
         "reasons": [
           "same_category:core",
@@ -86963,12 +86963,12 @@
           "shared_tag:belief system",
           "link_overlap:5",
           "rank_score_boost:4",
-          "authority_score_boost:9",
+          "authority_score_boost:10",
           "graph_centrality_boost:8",
           "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
-        "authority_score_boost": 9,
+        "authority_score_boost": 10,
         "graph_centrality_boost": 8,
         "content_depth_boost": 5,
         "reinforcement_boost": 0,
@@ -86977,11 +86977,11 @@
         "freshness_boost": 4,
         "decay_penalty": 0,
         "recency_balance": 4,
-        "final_score": 341,
+        "final_score": 342,
         "score_breakdown": {
           "base_score": 311,
           "rank_score_boost": 4,
-          "authority_score_boost": 9,
+          "authority_score_boost": 10,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
           "reinforcement_boost": 0,
@@ -86990,7 +86990,7 @@
           "freshness_boost": 4,
           "decay_penalty": 0,
           "recency_balance": 4,
-          "final_score": 341
+          "final_score": 342
         }
       },
       {
@@ -88293,7 +88293,7 @@
     "related_pages": [
       {
         "target_url": "/wiki/the-first-witness.html",
-        "score": 318,
+        "score": 319,
         "base_score": 292,
         "reasons": [
           "same_category:core",
@@ -88329,12 +88329,12 @@
           "shared_tag:belief system",
           "link_overlap:4",
           "rank_score_boost:4",
-          "authority_score_boost:9",
+          "authority_score_boost:10",
           "graph_centrality_boost:8",
           "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
-        "authority_score_boost": 9,
+        "authority_score_boost": 10,
         "graph_centrality_boost": 8,
         "content_depth_boost": 5,
         "reinforcement_boost": 0,
@@ -88343,11 +88343,11 @@
         "freshness_boost": 4,
         "decay_penalty": 0,
         "recency_balance": 4,
-        "final_score": 322,
+        "final_score": 323,
         "score_breakdown": {
           "base_score": 292,
           "rank_score_boost": 4,
-          "authority_score_boost": 9,
+          "authority_score_boost": 10,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
           "reinforcement_boost": 0,
@@ -88356,7 +88356,7 @@
           "freshness_boost": 4,
           "decay_penalty": 0,
           "recency_balance": 4,
-          "final_score": 322
+          "final_score": 323
         }
       },
       {
@@ -89649,7 +89649,7 @@
     "related_pages": [
       {
         "target_url": "/wiki/the-first-witness.html",
-        "score": 315,
+        "score": 316,
         "base_score": 289,
         "reasons": [
           "same_category:core",
@@ -89685,12 +89685,12 @@
           "shared_tag:belief system",
           "link_overlap:3",
           "rank_score_boost:4",
-          "authority_score_boost:9",
+          "authority_score_boost:10",
           "graph_centrality_boost:8",
           "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
-        "authority_score_boost": 9,
+        "authority_score_boost": 10,
         "graph_centrality_boost": 8,
         "content_depth_boost": 5,
         "reinforcement_boost": 0,
@@ -89699,11 +89699,11 @@
         "freshness_boost": 4,
         "decay_penalty": 0,
         "recency_balance": 4,
-        "final_score": 319,
+        "final_score": 320,
         "score_breakdown": {
           "base_score": 289,
           "rank_score_boost": 4,
-          "authority_score_boost": 9,
+          "authority_score_boost": 10,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
           "reinforcement_boost": 0,
@@ -89712,7 +89712,7 @@
           "freshness_boost": 4,
           "decay_penalty": 0,
           "recency_balance": 4,
-          "final_score": 319
+          "final_score": 320
         }
       },
       {
@@ -90998,7 +90998,7 @@
     "related_pages": [
       {
         "target_url": "/wiki/the-first-witness.html",
-        "score": 315,
+        "score": 316,
         "base_score": 289,
         "reasons": [
           "same_category:core",
@@ -91034,12 +91034,12 @@
           "shared_tag:belief system",
           "link_overlap:3",
           "rank_score_boost:4",
-          "authority_score_boost:9",
+          "authority_score_boost:10",
           "graph_centrality_boost:8",
           "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
-        "authority_score_boost": 9,
+        "authority_score_boost": 10,
         "graph_centrality_boost": 8,
         "content_depth_boost": 5,
         "reinforcement_boost": 0,
@@ -91048,11 +91048,11 @@
         "freshness_boost": 4,
         "decay_penalty": 0,
         "recency_balance": 4,
-        "final_score": 319,
+        "final_score": 320,
         "score_breakdown": {
           "base_score": 289,
           "rank_score_boost": 4,
-          "authority_score_boost": 9,
+          "authority_score_boost": 10,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
           "reinforcement_boost": 0,
@@ -91061,7 +91061,7 @@
           "freshness_boost": 4,
           "decay_penalty": 0,
           "recency_balance": 4,
-          "final_score": 319
+          "final_score": 320
         }
       },
       {
@@ -92343,7 +92343,7 @@
     "related_pages": [
       {
         "target_url": "/wiki/the-first-witness.html",
-        "score": 321,
+        "score": 322,
         "base_score": 295,
         "reasons": [
           "same_category:core",
@@ -92379,12 +92379,12 @@
           "shared_tag:belief system",
           "link_overlap:5",
           "rank_score_boost:4",
-          "authority_score_boost:9",
+          "authority_score_boost:10",
           "graph_centrality_boost:8",
           "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
-        "authority_score_boost": 9,
+        "authority_score_boost": 10,
         "graph_centrality_boost": 8,
         "content_depth_boost": 5,
         "reinforcement_boost": 0,
@@ -92393,11 +92393,11 @@
         "freshness_boost": 4,
         "decay_penalty": 0,
         "recency_balance": 4,
-        "final_score": 325,
+        "final_score": 326,
         "score_breakdown": {
           "base_score": 295,
           "rank_score_boost": 4,
-          "authority_score_boost": 9,
+          "authority_score_boost": 10,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
           "reinforcement_boost": 0,
@@ -92406,7 +92406,7 @@
           "freshness_boost": 4,
           "decay_penalty": 0,
           "recency_balance": 4,
-          "final_score": 325
+          "final_score": 326
         }
       },
       {
@@ -93698,7 +93698,7 @@
     "related_pages": [
       {
         "target_url": "/wiki/the-first-witness.html",
-        "score": 315,
+        "score": 316,
         "base_score": 289,
         "reasons": [
           "same_category:core",
@@ -93734,12 +93734,12 @@
           "shared_tag:belief system",
           "link_overlap:3",
           "rank_score_boost:4",
-          "authority_score_boost:9",
+          "authority_score_boost:10",
           "graph_centrality_boost:8",
           "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
-        "authority_score_boost": 9,
+        "authority_score_boost": 10,
         "graph_centrality_boost": 8,
         "content_depth_boost": 5,
         "reinforcement_boost": 0,
@@ -93748,11 +93748,11 @@
         "freshness_boost": 4,
         "decay_penalty": 0,
         "recency_balance": 4,
-        "final_score": 319,
+        "final_score": 320,
         "score_breakdown": {
           "base_score": 289,
           "rank_score_boost": 4,
-          "authority_score_boost": 9,
+          "authority_score_boost": 10,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
           "reinforcement_boost": 0,
@@ -93761,7 +93761,7 @@
           "freshness_boost": 4,
           "decay_penalty": 0,
           "recency_balance": 4,
-          "final_score": 319
+          "final_score": 320
         }
       },
       {
@@ -95045,7 +95045,7 @@
     "related_pages": [
       {
         "target_url": "/wiki/the-first-witness.html",
-        "score": 315,
+        "score": 316,
         "base_score": 289,
         "reasons": [
           "same_category:core",
@@ -95081,12 +95081,12 @@
           "shared_tag:belief system",
           "link_overlap:3",
           "rank_score_boost:4",
-          "authority_score_boost:9",
+          "authority_score_boost:10",
           "graph_centrality_boost:8",
           "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
-        "authority_score_boost": 9,
+        "authority_score_boost": 10,
         "graph_centrality_boost": 8,
         "content_depth_boost": 5,
         "reinforcement_boost": 0,
@@ -95095,11 +95095,11 @@
         "freshness_boost": 4,
         "decay_penalty": 0,
         "recency_balance": 4,
-        "final_score": 319,
+        "final_score": 320,
         "score_breakdown": {
           "base_score": 289,
           "rank_score_boost": 4,
-          "authority_score_boost": 9,
+          "authority_score_boost": 10,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
           "reinforcement_boost": 0,
@@ -95108,7 +95108,7 @@
           "freshness_boost": 4,
           "decay_penalty": 0,
           "recency_balance": 4,
-          "final_score": 319
+          "final_score": 320
         }
       },
       {
@@ -96394,7 +96394,7 @@
     "related_pages": [
       {
         "target_url": "/wiki/the-first-witness.html",
-        "score": 315,
+        "score": 316,
         "base_score": 289,
         "reasons": [
           "same_category:core",
@@ -96430,12 +96430,12 @@
           "shared_tag:belief system",
           "link_overlap:3",
           "rank_score_boost:4",
-          "authority_score_boost:9",
+          "authority_score_boost:10",
           "graph_centrality_boost:8",
           "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
-        "authority_score_boost": 9,
+        "authority_score_boost": 10,
         "graph_centrality_boost": 8,
         "content_depth_boost": 5,
         "reinforcement_boost": 0,
@@ -96444,11 +96444,11 @@
         "freshness_boost": 4,
         "decay_penalty": 0,
         "recency_balance": 4,
-        "final_score": 319,
+        "final_score": 320,
         "score_breakdown": {
           "base_score": 289,
           "rank_score_boost": 4,
-          "authority_score_boost": 9,
+          "authority_score_boost": 10,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
           "reinforcement_boost": 0,
@@ -96457,7 +96457,7 @@
           "freshness_boost": 4,
           "decay_penalty": 0,
           "recency_balance": 4,
-          "final_score": 319
+          "final_score": 320
         }
       },
       {
@@ -97736,7 +97736,7 @@
     "related_pages": [
       {
         "target_url": "/wiki/the-first-witness.html",
-        "score": 315,
+        "score": 316,
         "base_score": 289,
         "reasons": [
           "same_category:core",
@@ -97772,12 +97772,12 @@
           "shared_tag:belief system",
           "link_overlap:3",
           "rank_score_boost:4",
-          "authority_score_boost:9",
+          "authority_score_boost:10",
           "graph_centrality_boost:8",
           "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
-        "authority_score_boost": 9,
+        "authority_score_boost": 10,
         "graph_centrality_boost": 8,
         "content_depth_boost": 5,
         "reinforcement_boost": 0,
@@ -97786,11 +97786,11 @@
         "freshness_boost": 4,
         "decay_penalty": 0,
         "recency_balance": 4,
-        "final_score": 319,
+        "final_score": 320,
         "score_breakdown": {
           "base_score": 289,
           "rank_score_boost": 4,
-          "authority_score_boost": 9,
+          "authority_score_boost": 10,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
           "reinforcement_boost": 0,
@@ -97799,7 +97799,7 @@
           "freshness_boost": 4,
           "decay_penalty": 0,
           "recency_balance": 4,
-          "final_score": 319
+          "final_score": 320
         }
       },
       {
@@ -99081,6 +99081,74 @@
   "/wiki/first-witness-language-translation-sacred-words.html": {
     "related_pages": [
       {
+        "target_url": "/wiki/the-first-witness.html",
+        "score": 316,
+        "base_score": 289,
+        "reasons": [
+          "same_category:core",
+          "shared_tag:first witness",
+          "shared_tag:first witness bible",
+          "shared_tag:crypto moonboys bible",
+          "shared_tag:graffiti kings bible",
+          "shared_tag:GK bible",
+          "shared_tag:covenant",
+          "shared_tag:scripture",
+          "shared_tag:sacred text",
+          "shared_tag:bitcoin witness",
+          "shared_tag:bitcoin provenance",
+          "shared_tag:sacred chain",
+          "shared_tag:aether-chain",
+          "shared_tag:forty paths",
+          "shared_tag:40 GK factions",
+          "shared_tag:HODL WARS",
+          "shared_tag:Block Topia",
+          "shared_tag:Year 3008",
+          "shared_tag:2030 Concord",
+          "shared_tag:no single keeper",
+          "shared_tag:Crypto Moonboys lore",
+          "shared_tag:Graffiti Kings lore",
+          "shared_tag:religion",
+          "shared_tag:religious philosophy",
+          "shared_tag:philosophy",
+          "shared_tag:ethics",
+          "shared_tag:moral philosophy",
+          "shared_tag:spirituality",
+          "shared_tag:faith tradition",
+          "shared_tag:theology",
+          "shared_tag:belief system",
+          "link_overlap:3",
+          "rank_score_boost:4",
+          "authority_score_boost:10",
+          "graph_centrality_boost:8",
+          "content_depth_boost:5"
+        ],
+        "rank_score_boost": 4,
+        "authority_score_boost": 10,
+        "graph_centrality_boost": 8,
+        "content_depth_boost": 5,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 4,
+        "decay_penalty": 0,
+        "recency_balance": 4,
+        "final_score": 320,
+        "score_breakdown": {
+          "base_score": 289,
+          "rank_score_boost": 4,
+          "authority_score_boost": 10,
+          "graph_centrality_boost": 8,
+          "content_depth_boost": 5,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 4,
+          "decay_penalty": 0,
+          "recency_balance": 4,
+          "final_score": 320
+        }
+      },
+      {
         "target_url": "/wiki/first-witness-life-readings.html",
         "score": 315,
         "base_score": 289,
@@ -99139,74 +99207,6 @@
           "authority_score_boost": 8,
           "graph_centrality_boost": 8,
           "content_depth_boost": 7,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 4,
-          "decay_penalty": 0,
-          "recency_balance": 4,
-          "final_score": 319
-        }
-      },
-      {
-        "target_url": "/wiki/the-first-witness.html",
-        "score": 315,
-        "base_score": 289,
-        "reasons": [
-          "same_category:core",
-          "shared_tag:first witness",
-          "shared_tag:first witness bible",
-          "shared_tag:crypto moonboys bible",
-          "shared_tag:graffiti kings bible",
-          "shared_tag:GK bible",
-          "shared_tag:covenant",
-          "shared_tag:scripture",
-          "shared_tag:sacred text",
-          "shared_tag:bitcoin witness",
-          "shared_tag:bitcoin provenance",
-          "shared_tag:sacred chain",
-          "shared_tag:aether-chain",
-          "shared_tag:forty paths",
-          "shared_tag:40 GK factions",
-          "shared_tag:HODL WARS",
-          "shared_tag:Block Topia",
-          "shared_tag:Year 3008",
-          "shared_tag:2030 Concord",
-          "shared_tag:no single keeper",
-          "shared_tag:Crypto Moonboys lore",
-          "shared_tag:Graffiti Kings lore",
-          "shared_tag:religion",
-          "shared_tag:religious philosophy",
-          "shared_tag:philosophy",
-          "shared_tag:ethics",
-          "shared_tag:moral philosophy",
-          "shared_tag:spirituality",
-          "shared_tag:faith tradition",
-          "shared_tag:theology",
-          "shared_tag:belief system",
-          "link_overlap:3",
-          "rank_score_boost:4",
-          "authority_score_boost:9",
-          "graph_centrality_boost:8",
-          "content_depth_boost:5"
-        ],
-        "rank_score_boost": 4,
-        "authority_score_boost": 9,
-        "graph_centrality_boost": 8,
-        "content_depth_boost": 5,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 4,
-        "decay_penalty": 0,
-        "recency_balance": 4,
-        "final_score": 319,
-        "score_breakdown": {
-          "base_score": 289,
-          "rank_score_boost": 4,
-          "authority_score_boost": 9,
-          "graph_centrality_boost": 8,
-          "content_depth_boost": 5,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
@@ -100432,7 +100432,7 @@
     "related_pages": [
       {
         "target_url": "/wiki/the-first-witness.html",
-        "score": 315,
+        "score": 316,
         "base_score": 289,
         "reasons": [
           "same_category:core",
@@ -100468,12 +100468,12 @@
           "shared_tag:belief system",
           "link_overlap:3",
           "rank_score_boost:4",
-          "authority_score_boost:9",
+          "authority_score_boost:10",
           "graph_centrality_boost:8",
           "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
-        "authority_score_boost": 9,
+        "authority_score_boost": 10,
         "graph_centrality_boost": 8,
         "content_depth_boost": 5,
         "reinforcement_boost": 0,
@@ -100482,11 +100482,11 @@
         "freshness_boost": 4,
         "decay_penalty": 0,
         "recency_balance": 4,
-        "final_score": 319,
+        "final_score": 320,
         "score_breakdown": {
           "base_score": 289,
           "rank_score_boost": 4,
-          "authority_score_boost": 9,
+          "authority_score_boost": 10,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
           "reinforcement_boost": 0,
@@ -100495,7 +100495,7 @@
           "freshness_boost": 4,
           "decay_penalty": 0,
           "recency_balance": 4,
-          "final_score": 319
+          "final_score": 320
         }
       },
       {
@@ -101777,6 +101777,74 @@
   "/wiki/first-witness-libraries-architecture-archive-houses.html": {
     "related_pages": [
       {
+        "target_url": "/wiki/the-first-witness.html",
+        "score": 316,
+        "base_score": 289,
+        "reasons": [
+          "same_category:core",
+          "shared_tag:first witness",
+          "shared_tag:first witness bible",
+          "shared_tag:crypto moonboys bible",
+          "shared_tag:graffiti kings bible",
+          "shared_tag:GK bible",
+          "shared_tag:covenant",
+          "shared_tag:scripture",
+          "shared_tag:sacred text",
+          "shared_tag:bitcoin witness",
+          "shared_tag:bitcoin provenance",
+          "shared_tag:sacred chain",
+          "shared_tag:aether-chain",
+          "shared_tag:forty paths",
+          "shared_tag:40 GK factions",
+          "shared_tag:HODL WARS",
+          "shared_tag:Block Topia",
+          "shared_tag:Year 3008",
+          "shared_tag:2030 Concord",
+          "shared_tag:no single keeper",
+          "shared_tag:Crypto Moonboys lore",
+          "shared_tag:Graffiti Kings lore",
+          "shared_tag:religion",
+          "shared_tag:religious philosophy",
+          "shared_tag:philosophy",
+          "shared_tag:ethics",
+          "shared_tag:moral philosophy",
+          "shared_tag:spirituality",
+          "shared_tag:faith tradition",
+          "shared_tag:theology",
+          "shared_tag:belief system",
+          "link_overlap:3",
+          "rank_score_boost:4",
+          "authority_score_boost:10",
+          "graph_centrality_boost:8",
+          "content_depth_boost:5"
+        ],
+        "rank_score_boost": 4,
+        "authority_score_boost": 10,
+        "graph_centrality_boost": 8,
+        "content_depth_boost": 5,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 4,
+        "decay_penalty": 0,
+        "recency_balance": 4,
+        "final_score": 320,
+        "score_breakdown": {
+          "base_score": 289,
+          "rank_score_boost": 4,
+          "authority_score_boost": 10,
+          "graph_centrality_boost": 8,
+          "content_depth_boost": 5,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 4,
+          "decay_penalty": 0,
+          "recency_balance": 4,
+          "final_score": 320
+        }
+      },
+      {
         "target_url": "/wiki/first-witness-life-readings.html",
         "score": 315,
         "base_score": 289,
@@ -101835,74 +101903,6 @@
           "authority_score_boost": 8,
           "graph_centrality_boost": 8,
           "content_depth_boost": 7,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 4,
-          "decay_penalty": 0,
-          "recency_balance": 4,
-          "final_score": 319
-        }
-      },
-      {
-        "target_url": "/wiki/the-first-witness.html",
-        "score": 315,
-        "base_score": 289,
-        "reasons": [
-          "same_category:core",
-          "shared_tag:first witness",
-          "shared_tag:first witness bible",
-          "shared_tag:crypto moonboys bible",
-          "shared_tag:graffiti kings bible",
-          "shared_tag:GK bible",
-          "shared_tag:covenant",
-          "shared_tag:scripture",
-          "shared_tag:sacred text",
-          "shared_tag:bitcoin witness",
-          "shared_tag:bitcoin provenance",
-          "shared_tag:sacred chain",
-          "shared_tag:aether-chain",
-          "shared_tag:forty paths",
-          "shared_tag:40 GK factions",
-          "shared_tag:HODL WARS",
-          "shared_tag:Block Topia",
-          "shared_tag:Year 3008",
-          "shared_tag:2030 Concord",
-          "shared_tag:no single keeper",
-          "shared_tag:Crypto Moonboys lore",
-          "shared_tag:Graffiti Kings lore",
-          "shared_tag:religion",
-          "shared_tag:religious philosophy",
-          "shared_tag:philosophy",
-          "shared_tag:ethics",
-          "shared_tag:moral philosophy",
-          "shared_tag:spirituality",
-          "shared_tag:faith tradition",
-          "shared_tag:theology",
-          "shared_tag:belief system",
-          "link_overlap:3",
-          "rank_score_boost:4",
-          "authority_score_boost:9",
-          "graph_centrality_boost:8",
-          "content_depth_boost:5"
-        ],
-        "rank_score_boost": 4,
-        "authority_score_boost": 9,
-        "graph_centrality_boost": 8,
-        "content_depth_boost": 5,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 4,
-        "decay_penalty": 0,
-        "recency_balance": 4,
-        "final_score": 319,
-        "score_breakdown": {
-          "base_score": 289,
-          "rank_score_boost": 4,
-          "authority_score_boost": 9,
-          "graph_centrality_boost": 8,
-          "content_depth_boost": 5,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
@@ -103128,7 +103128,7 @@
     "related_pages": [
       {
         "target_url": "/wiki/the-first-witness.html",
-        "score": 337,
+        "score": 338,
         "base_score": 311,
         "reasons": [
           "same_category:core",
@@ -103166,12 +103166,12 @@
           "shared_tag:belief system",
           "link_overlap:5",
           "rank_score_boost:4",
-          "authority_score_boost:9",
+          "authority_score_boost:10",
           "graph_centrality_boost:8",
           "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
-        "authority_score_boost": 9,
+        "authority_score_boost": 10,
         "graph_centrality_boost": 8,
         "content_depth_boost": 5,
         "reinforcement_boost": 0,
@@ -103180,11 +103180,11 @@
         "freshness_boost": 4,
         "decay_penalty": 0,
         "recency_balance": 4,
-        "final_score": 341,
+        "final_score": 342,
         "score_breakdown": {
           "base_score": 311,
           "rank_score_boost": 4,
-          "authority_score_boost": 9,
+          "authority_score_boost": 10,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
           "reinforcement_boost": 0,
@@ -103193,7 +103193,7 @@
           "freshness_boost": 4,
           "decay_penalty": 0,
           "recency_balance": 4,
-          "final_score": 341
+          "final_score": 342
         }
       },
       {
@@ -104486,7 +104486,7 @@
     "related_pages": [
       {
         "target_url": "/wiki/the-first-witness.html",
-        "score": 321,
+        "score": 322,
         "base_score": 295,
         "reasons": [
           "same_category:core",
@@ -104522,12 +104522,12 @@
           "shared_tag:belief system",
           "link_overlap:5",
           "rank_score_boost:4",
-          "authority_score_boost:9",
+          "authority_score_boost:10",
           "graph_centrality_boost:8",
           "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
-        "authority_score_boost": 9,
+        "authority_score_boost": 10,
         "graph_centrality_boost": 8,
         "content_depth_boost": 5,
         "reinforcement_boost": 0,
@@ -104536,11 +104536,11 @@
         "freshness_boost": 4,
         "decay_penalty": 0,
         "recency_balance": 4,
-        "final_score": 325,
+        "final_score": 326,
         "score_breakdown": {
           "base_score": 295,
           "rank_score_boost": 4,
-          "authority_score_boost": 9,
+          "authority_score_boost": 10,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
           "reinforcement_boost": 0,
@@ -104549,7 +104549,7 @@
           "freshness_boost": 4,
           "decay_penalty": 0,
           "recency_balance": 4,
-          "final_score": 325
+          "final_score": 326
         }
       },
       {
@@ -105841,7 +105841,7 @@
     "related_pages": [
       {
         "target_url": "/wiki/the-first-witness.html",
-        "score": 315,
+        "score": 316,
         "base_score": 289,
         "reasons": [
           "same_category:core",
@@ -105877,12 +105877,12 @@
           "shared_tag:belief system",
           "link_overlap:3",
           "rank_score_boost:4",
-          "authority_score_boost:9",
+          "authority_score_boost:10",
           "graph_centrality_boost:8",
           "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
-        "authority_score_boost": 9,
+        "authority_score_boost": 10,
         "graph_centrality_boost": 8,
         "content_depth_boost": 5,
         "reinforcement_boost": 0,
@@ -105891,11 +105891,11 @@
         "freshness_boost": 4,
         "decay_penalty": 0,
         "recency_balance": 4,
-        "final_score": 319,
+        "final_score": 320,
         "score_breakdown": {
           "base_score": 289,
           "rank_score_boost": 4,
-          "authority_score_boost": 9,
+          "authority_score_boost": 10,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
           "reinforcement_boost": 0,
@@ -105904,7 +105904,7 @@
           "freshness_boost": 4,
           "decay_penalty": 0,
           "recency_balance": 4,
-          "final_score": 319
+          "final_score": 320
         }
       },
       {
@@ -107187,7 +107187,7 @@
     "related_pages": [
       {
         "target_url": "/wiki/the-first-witness.html",
-        "score": 337,
+        "score": 338,
         "base_score": 311,
         "reasons": [
           "same_category:core",
@@ -107225,12 +107225,12 @@
           "shared_tag:belief system",
           "link_overlap:5",
           "rank_score_boost:4",
-          "authority_score_boost:9",
+          "authority_score_boost:10",
           "graph_centrality_boost:8",
           "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
-        "authority_score_boost": 9,
+        "authority_score_boost": 10,
         "graph_centrality_boost": 8,
         "content_depth_boost": 5,
         "reinforcement_boost": 0,
@@ -107239,11 +107239,11 @@
         "freshness_boost": 4,
         "decay_penalty": 0,
         "recency_balance": 4,
-        "final_score": 341,
+        "final_score": 342,
         "score_breakdown": {
           "base_score": 311,
           "rank_score_boost": 4,
-          "authority_score_boost": 9,
+          "authority_score_boost": 10,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
           "reinforcement_boost": 0,
@@ -107252,7 +107252,7 @@
           "freshness_boost": 4,
           "decay_penalty": 0,
           "recency_balance": 4,
-          "final_score": 341
+          "final_score": 342
         }
       },
       {
@@ -108554,7 +108554,7 @@
     "related_pages": [
       {
         "target_url": "/wiki/the-first-witness.html",
-        "score": 323,
+        "score": 324,
         "base_score": 297,
         "reasons": [
           "same_category:core",
@@ -108591,12 +108591,12 @@
           "shared_tag:belief system",
           "link_overlap:3",
           "rank_score_boost:4",
-          "authority_score_boost:9",
+          "authority_score_boost:10",
           "graph_centrality_boost:8",
           "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
-        "authority_score_boost": 9,
+        "authority_score_boost": 10,
         "graph_centrality_boost": 8,
         "content_depth_boost": 5,
         "reinforcement_boost": 0,
@@ -108605,11 +108605,11 @@
         "freshness_boost": 4,
         "decay_penalty": 0,
         "recency_balance": 4,
-        "final_score": 327,
+        "final_score": 328,
         "score_breakdown": {
           "base_score": 297,
           "rank_score_boost": 4,
-          "authority_score_boost": 9,
+          "authority_score_boost": 10,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
           "reinforcement_boost": 0,
@@ -108618,7 +108618,7 @@
           "freshness_boost": 4,
           "decay_penalty": 0,
           "recency_balance": 4,
-          "final_score": 327
+          "final_score": 328
         }
       },
       {
@@ -109908,7 +109908,7 @@
     "related_pages": [
       {
         "target_url": "/wiki/the-first-witness.html",
-        "score": 315,
+        "score": 316,
         "base_score": 289,
         "reasons": [
           "same_category:core",
@@ -109944,12 +109944,12 @@
           "shared_tag:belief system",
           "link_overlap:3",
           "rank_score_boost:4",
-          "authority_score_boost:9",
+          "authority_score_boost:10",
           "graph_centrality_boost:8",
           "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
-        "authority_score_boost": 9,
+        "authority_score_boost": 10,
         "graph_centrality_boost": 8,
         "content_depth_boost": 5,
         "reinforcement_boost": 0,
@@ -109958,11 +109958,11 @@
         "freshness_boost": 4,
         "decay_penalty": 0,
         "recency_balance": 4,
-        "final_score": 319,
+        "final_score": 320,
         "score_breakdown": {
           "base_score": 289,
           "rank_score_boost": 4,
-          "authority_score_boost": 9,
+          "authority_score_boost": 10,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
           "reinforcement_boost": 0,
@@ -109971,7 +109971,7 @@
           "freshness_boost": 4,
           "decay_penalty": 0,
           "recency_balance": 4,
-          "final_score": 319
+          "final_score": 320
         }
       },
       {
@@ -111257,7 +111257,7 @@
     "related_pages": [
       {
         "target_url": "/wiki/the-first-witness.html",
-        "score": 315,
+        "score": 316,
         "base_score": 289,
         "reasons": [
           "same_category:core",
@@ -111293,12 +111293,12 @@
           "shared_tag:belief system",
           "link_overlap:3",
           "rank_score_boost:4",
-          "authority_score_boost:9",
+          "authority_score_boost:10",
           "graph_centrality_boost:8",
           "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
-        "authority_score_boost": 9,
+        "authority_score_boost": 10,
         "graph_centrality_boost": 8,
         "content_depth_boost": 5,
         "reinforcement_boost": 0,
@@ -111307,11 +111307,11 @@
         "freshness_boost": 4,
         "decay_penalty": 0,
         "recency_balance": 4,
-        "final_score": 319,
+        "final_score": 320,
         "score_breakdown": {
           "base_score": 289,
           "rank_score_boost": 4,
-          "authority_score_boost": 9,
+          "authority_score_boost": 10,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
           "reinforcement_boost": 0,
@@ -111320,7 +111320,7 @@
           "freshness_boost": 4,
           "decay_penalty": 0,
           "recency_balance": 4,
-          "final_score": 319
+          "final_score": 320
         }
       },
       {
@@ -112599,6 +112599,74 @@
   "/wiki/first-witness-music-dance-performance.html": {
     "related_pages": [
       {
+        "target_url": "/wiki/the-first-witness.html",
+        "score": 316,
+        "base_score": 289,
+        "reasons": [
+          "same_category:core",
+          "shared_tag:first witness",
+          "shared_tag:first witness bible",
+          "shared_tag:crypto moonboys bible",
+          "shared_tag:graffiti kings bible",
+          "shared_tag:GK bible",
+          "shared_tag:covenant",
+          "shared_tag:scripture",
+          "shared_tag:sacred text",
+          "shared_tag:bitcoin witness",
+          "shared_tag:bitcoin provenance",
+          "shared_tag:sacred chain",
+          "shared_tag:aether-chain",
+          "shared_tag:forty paths",
+          "shared_tag:40 GK factions",
+          "shared_tag:HODL WARS",
+          "shared_tag:Block Topia",
+          "shared_tag:Year 3008",
+          "shared_tag:2030 Concord",
+          "shared_tag:no single keeper",
+          "shared_tag:Crypto Moonboys lore",
+          "shared_tag:Graffiti Kings lore",
+          "shared_tag:religion",
+          "shared_tag:religious philosophy",
+          "shared_tag:philosophy",
+          "shared_tag:ethics",
+          "shared_tag:moral philosophy",
+          "shared_tag:spirituality",
+          "shared_tag:faith tradition",
+          "shared_tag:theology",
+          "shared_tag:belief system",
+          "link_overlap:3",
+          "rank_score_boost:4",
+          "authority_score_boost:10",
+          "graph_centrality_boost:8",
+          "content_depth_boost:5"
+        ],
+        "rank_score_boost": 4,
+        "authority_score_boost": 10,
+        "graph_centrality_boost": 8,
+        "content_depth_boost": 5,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 4,
+        "decay_penalty": 0,
+        "recency_balance": 4,
+        "final_score": 320,
+        "score_breakdown": {
+          "base_score": 289,
+          "rank_score_boost": 4,
+          "authority_score_boost": 10,
+          "graph_centrality_boost": 8,
+          "content_depth_boost": 5,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 4,
+          "decay_penalty": 0,
+          "recency_balance": 4,
+          "final_score": 320
+        }
+      },
+      {
         "target_url": "/wiki/first-witness-life-readings.html",
         "score": 315,
         "base_score": 289,
@@ -112657,74 +112725,6 @@
           "authority_score_boost": 8,
           "graph_centrality_boost": 8,
           "content_depth_boost": 7,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 4,
-          "decay_penalty": 0,
-          "recency_balance": 4,
-          "final_score": 319
-        }
-      },
-      {
-        "target_url": "/wiki/the-first-witness.html",
-        "score": 315,
-        "base_score": 289,
-        "reasons": [
-          "same_category:core",
-          "shared_tag:first witness",
-          "shared_tag:first witness bible",
-          "shared_tag:crypto moonboys bible",
-          "shared_tag:graffiti kings bible",
-          "shared_tag:GK bible",
-          "shared_tag:covenant",
-          "shared_tag:scripture",
-          "shared_tag:sacred text",
-          "shared_tag:bitcoin witness",
-          "shared_tag:bitcoin provenance",
-          "shared_tag:sacred chain",
-          "shared_tag:aether-chain",
-          "shared_tag:forty paths",
-          "shared_tag:40 GK factions",
-          "shared_tag:HODL WARS",
-          "shared_tag:Block Topia",
-          "shared_tag:Year 3008",
-          "shared_tag:2030 Concord",
-          "shared_tag:no single keeper",
-          "shared_tag:Crypto Moonboys lore",
-          "shared_tag:Graffiti Kings lore",
-          "shared_tag:religion",
-          "shared_tag:religious philosophy",
-          "shared_tag:philosophy",
-          "shared_tag:ethics",
-          "shared_tag:moral philosophy",
-          "shared_tag:spirituality",
-          "shared_tag:faith tradition",
-          "shared_tag:theology",
-          "shared_tag:belief system",
-          "link_overlap:3",
-          "rank_score_boost:4",
-          "authority_score_boost:9",
-          "graph_centrality_boost:8",
-          "content_depth_boost:5"
-        ],
-        "rank_score_boost": 4,
-        "authority_score_boost": 9,
-        "graph_centrality_boost": 8,
-        "content_depth_boost": 5,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 4,
-        "decay_penalty": 0,
-        "recency_balance": 4,
-        "final_score": 319,
-        "score_breakdown": {
-          "base_score": 289,
-          "rank_score_boost": 4,
-          "authority_score_boost": 9,
-          "graph_centrality_boost": 8,
-          "content_depth_boost": 5,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
@@ -113947,7 +113947,7 @@
     "related_pages": [
       {
         "target_url": "/wiki/the-first-witness.html",
-        "score": 321,
+        "score": 322,
         "base_score": 295,
         "reasons": [
           "same_category:core",
@@ -113983,12 +113983,12 @@
           "shared_tag:belief system",
           "link_overlap:5",
           "rank_score_boost:4",
-          "authority_score_boost:9",
+          "authority_score_boost:10",
           "graph_centrality_boost:8",
           "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
-        "authority_score_boost": 9,
+        "authority_score_boost": 10,
         "graph_centrality_boost": 8,
         "content_depth_boost": 5,
         "reinforcement_boost": 0,
@@ -113997,11 +113997,11 @@
         "freshness_boost": 4,
         "decay_penalty": 0,
         "recency_balance": 4,
-        "final_score": 325,
+        "final_score": 326,
         "score_breakdown": {
           "base_score": 295,
           "rank_score_boost": 4,
-          "authority_score_boost": 9,
+          "authority_score_boost": 10,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
           "reinforcement_boost": 0,
@@ -114010,7 +114010,7 @@
           "freshness_boost": 4,
           "decay_penalty": 0,
           "recency_balance": 4,
-          "final_score": 325
+          "final_score": 326
         }
       },
       {
@@ -115303,7 +115303,7 @@
     "related_pages": [
       {
         "target_url": "/wiki/the-first-witness.html",
-        "score": 315,
+        "score": 316,
         "base_score": 289,
         "reasons": [
           "same_category:core",
@@ -115339,12 +115339,12 @@
           "shared_tag:belief system",
           "link_overlap:3",
           "rank_score_boost:4",
-          "authority_score_boost:9",
+          "authority_score_boost:10",
           "graph_centrality_boost:8",
           "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
-        "authority_score_boost": 9,
+        "authority_score_boost": 10,
         "graph_centrality_boost": 8,
         "content_depth_boost": 5,
         "reinforcement_boost": 0,
@@ -115353,11 +115353,11 @@
         "freshness_boost": 4,
         "decay_penalty": 0,
         "recency_balance": 4,
-        "final_score": 319,
+        "final_score": 320,
         "score_breakdown": {
           "base_score": 289,
           "rank_score_boost": 4,
-          "authority_score_boost": 9,
+          "authority_score_boost": 10,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
           "reinforcement_boost": 0,
@@ -115366,7 +115366,7 @@
           "freshness_boost": 4,
           "decay_penalty": 0,
           "recency_balance": 4,
-          "final_score": 319
+          "final_score": 320
         }
       },
       {
@@ -116647,7 +116647,7 @@
     "related_pages": [
       {
         "target_url": "/wiki/the-first-witness.html",
-        "score": 331,
+        "score": 332,
         "base_score": 305,
         "reasons": [
           "same_category:core",
@@ -116685,12 +116685,12 @@
           "shared_tag:belief system",
           "link_overlap:3",
           "rank_score_boost:4",
-          "authority_score_boost:9",
+          "authority_score_boost:10",
           "graph_centrality_boost:8",
           "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
-        "authority_score_boost": 9,
+        "authority_score_boost": 10,
         "graph_centrality_boost": 8,
         "content_depth_boost": 5,
         "reinforcement_boost": 0,
@@ -116699,11 +116699,11 @@
         "freshness_boost": 4,
         "decay_penalty": 0,
         "recency_balance": 4,
-        "final_score": 335,
+        "final_score": 336,
         "score_breakdown": {
           "base_score": 305,
           "rank_score_boost": 4,
-          "authority_score_boost": 9,
+          "authority_score_boost": 10,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
           "reinforcement_boost": 0,
@@ -116712,7 +116712,7 @@
           "freshness_boost": 4,
           "decay_penalty": 0,
           "recency_balance": 4,
-          "final_score": 335
+          "final_score": 336
         }
       },
       {
@@ -118010,7 +118010,7 @@
     "related_pages": [
       {
         "target_url": "/wiki/the-first-witness.html",
-        "score": 315,
+        "score": 316,
         "base_score": 289,
         "reasons": [
           "same_category:core",
@@ -118046,12 +118046,12 @@
           "shared_tag:belief system",
           "link_overlap:3",
           "rank_score_boost:4",
-          "authority_score_boost:9",
+          "authority_score_boost:10",
           "graph_centrality_boost:8",
           "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
-        "authority_score_boost": 9,
+        "authority_score_boost": 10,
         "graph_centrality_boost": 8,
         "content_depth_boost": 5,
         "reinforcement_boost": 0,
@@ -118060,11 +118060,11 @@
         "freshness_boost": 4,
         "decay_penalty": 0,
         "recency_balance": 4,
-        "final_score": 319,
+        "final_score": 320,
         "score_breakdown": {
           "base_score": 289,
           "rank_score_boost": 4,
-          "authority_score_boost": 9,
+          "authority_score_boost": 10,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
           "reinforcement_boost": 0,
@@ -118073,7 +118073,7 @@
           "freshness_boost": 4,
           "decay_penalty": 0,
           "recency_balance": 4,
-          "final_score": 319
+          "final_score": 320
         }
       },
       {
@@ -119354,7 +119354,7 @@
     "related_pages": [
       {
         "target_url": "/wiki/the-first-witness.html",
-        "score": 315,
+        "score": 316,
         "base_score": 289,
         "reasons": [
           "same_category:core",
@@ -119390,12 +119390,12 @@
           "shared_tag:belief system",
           "link_overlap:3",
           "rank_score_boost:4",
-          "authority_score_boost:9",
+          "authority_score_boost:10",
           "graph_centrality_boost:8",
           "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
-        "authority_score_boost": 9,
+        "authority_score_boost": 10,
         "graph_centrality_boost": 8,
         "content_depth_boost": 5,
         "reinforcement_boost": 0,
@@ -119404,11 +119404,11 @@
         "freshness_boost": 4,
         "decay_penalty": 0,
         "recency_balance": 4,
-        "final_score": 319,
+        "final_score": 320,
         "score_breakdown": {
           "base_score": 289,
           "rank_score_boost": 4,
-          "authority_score_boost": 9,
+          "authority_score_boost": 10,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
           "reinforcement_boost": 0,
@@ -119417,7 +119417,7 @@
           "freshness_boost": 4,
           "decay_penalty": 0,
           "recency_balance": 4,
-          "final_score": 319
+          "final_score": 320
         }
       },
       {
@@ -120703,7 +120703,7 @@
     "related_pages": [
       {
         "target_url": "/wiki/the-first-witness.html",
-        "score": 315,
+        "score": 316,
         "base_score": 289,
         "reasons": [
           "same_category:core",
@@ -120739,12 +120739,12 @@
           "shared_tag:belief system",
           "link_overlap:3",
           "rank_score_boost:4",
-          "authority_score_boost:9",
+          "authority_score_boost:10",
           "graph_centrality_boost:8",
           "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
-        "authority_score_boost": 9,
+        "authority_score_boost": 10,
         "graph_centrality_boost": 8,
         "content_depth_boost": 5,
         "reinforcement_boost": 0,
@@ -120753,11 +120753,11 @@
         "freshness_boost": 4,
         "decay_penalty": 0,
         "recency_balance": 4,
-        "final_score": 319,
+        "final_score": 320,
         "score_breakdown": {
           "base_score": 289,
           "rank_score_boost": 4,
-          "authority_score_boost": 9,
+          "authority_score_boost": 10,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
           "reinforcement_boost": 0,
@@ -120766,7 +120766,7 @@
           "freshness_boost": 4,
           "decay_penalty": 0,
           "recency_balance": 4,
-          "final_score": 319
+          "final_score": 320
         }
       },
       {
@@ -122049,7 +122049,7 @@
     "related_pages": [
       {
         "target_url": "/wiki/the-first-witness.html",
-        "score": 315,
+        "score": 316,
         "base_score": 289,
         "reasons": [
           "same_category:core",
@@ -122085,12 +122085,12 @@
           "shared_tag:belief system",
           "link_overlap:3",
           "rank_score_boost:4",
-          "authority_score_boost:9",
+          "authority_score_boost:10",
           "graph_centrality_boost:8",
           "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
-        "authority_score_boost": 9,
+        "authority_score_boost": 10,
         "graph_centrality_boost": 8,
         "content_depth_boost": 5,
         "reinforcement_boost": 0,
@@ -122099,11 +122099,11 @@
         "freshness_boost": 4,
         "decay_penalty": 0,
         "recency_balance": 4,
-        "final_score": 319,
+        "final_score": 320,
         "score_breakdown": {
           "base_score": 289,
           "rank_score_boost": 4,
-          "authority_score_boost": 9,
+          "authority_score_boost": 10,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
           "reinforcement_boost": 0,
@@ -122112,7 +122112,7 @@
           "freshness_boost": 4,
           "decay_penalty": 0,
           "recency_balance": 4,
-          "final_score": 319
+          "final_score": 320
         }
       },
       {
@@ -123394,7 +123394,7 @@
     "related_pages": [
       {
         "target_url": "/wiki/the-first-witness.html",
-        "score": 315,
+        "score": 316,
         "base_score": 289,
         "reasons": [
           "same_category:core",
@@ -123430,12 +123430,12 @@
           "shared_tag:belief system",
           "link_overlap:3",
           "rank_score_boost:4",
-          "authority_score_boost:9",
+          "authority_score_boost:10",
           "graph_centrality_boost:8",
           "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
-        "authority_score_boost": 9,
+        "authority_score_boost": 10,
         "graph_centrality_boost": 8,
         "content_depth_boost": 5,
         "reinforcement_boost": 0,
@@ -123444,11 +123444,11 @@
         "freshness_boost": 4,
         "decay_penalty": 0,
         "recency_balance": 4,
-        "final_score": 319,
+        "final_score": 320,
         "score_breakdown": {
           "base_score": 289,
           "rank_score_boost": 4,
-          "authority_score_boost": 9,
+          "authority_score_boost": 10,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
           "reinforcement_boost": 0,
@@ -123457,7 +123457,7 @@
           "freshness_boost": 4,
           "decay_penalty": 0,
           "recency_balance": 4,
-          "final_score": 319
+          "final_score": 320
         }
       },
       {
@@ -124739,7 +124739,7 @@
     "related_pages": [
       {
         "target_url": "/wiki/the-first-witness.html",
-        "score": 315,
+        "score": 316,
         "base_score": 289,
         "reasons": [
           "same_category:core",
@@ -124775,12 +124775,12 @@
           "shared_tag:belief system",
           "link_overlap:3",
           "rank_score_boost:4",
-          "authority_score_boost:9",
+          "authority_score_boost:10",
           "graph_centrality_boost:8",
           "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
-        "authority_score_boost": 9,
+        "authority_score_boost": 10,
         "graph_centrality_boost": 8,
         "content_depth_boost": 5,
         "reinforcement_boost": 0,
@@ -124789,11 +124789,11 @@
         "freshness_boost": 4,
         "decay_penalty": 0,
         "recency_balance": 4,
-        "final_score": 319,
+        "final_score": 320,
         "score_breakdown": {
           "base_score": 289,
           "rank_score_boost": 4,
-          "authority_score_boost": 9,
+          "authority_score_boost": 10,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
           "reinforcement_boost": 0,
@@ -124802,7 +124802,7 @@
           "freshness_boost": 4,
           "decay_penalty": 0,
           "recency_balance": 4,
-          "final_score": 319
+          "final_score": 320
         }
       },
       {
@@ -126089,7 +126089,7 @@
     "related_pages": [
       {
         "target_url": "/wiki/the-first-witness.html",
-        "score": 321,
+        "score": 322,
         "base_score": 295,
         "reasons": [
           "same_category:core",
@@ -126125,12 +126125,12 @@
           "shared_tag:belief system",
           "link_overlap:5",
           "rank_score_boost:4",
-          "authority_score_boost:9",
+          "authority_score_boost:10",
           "graph_centrality_boost:8",
           "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
-        "authority_score_boost": 9,
+        "authority_score_boost": 10,
         "graph_centrality_boost": 8,
         "content_depth_boost": 5,
         "reinforcement_boost": 0,
@@ -126139,11 +126139,11 @@
         "freshness_boost": 4,
         "decay_penalty": 0,
         "recency_balance": 4,
-        "final_score": 325,
+        "final_score": 326,
         "score_breakdown": {
           "base_score": 295,
           "rank_score_boost": 4,
-          "authority_score_boost": 9,
+          "authority_score_boost": 10,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
           "reinforcement_boost": 0,
@@ -126152,7 +126152,7 @@
           "freshness_boost": 4,
           "decay_penalty": 0,
           "recency_balance": 4,
-          "final_score": 325
+          "final_score": 326
         }
       },
       {
@@ -127445,7 +127445,7 @@
     "related_pages": [
       {
         "target_url": "/wiki/the-first-witness.html",
-        "score": 315,
+        "score": 316,
         "base_score": 289,
         "reasons": [
           "same_category:core",
@@ -127481,12 +127481,12 @@
           "shared_tag:belief system",
           "link_overlap:3",
           "rank_score_boost:4",
-          "authority_score_boost:9",
+          "authority_score_boost:10",
           "graph_centrality_boost:8",
           "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
-        "authority_score_boost": 9,
+        "authority_score_boost": 10,
         "graph_centrality_boost": 8,
         "content_depth_boost": 5,
         "reinforcement_boost": 0,
@@ -127495,11 +127495,11 @@
         "freshness_boost": 4,
         "decay_penalty": 0,
         "recency_balance": 4,
-        "final_score": 319,
+        "final_score": 320,
         "score_breakdown": {
           "base_score": 289,
           "rank_score_boost": 4,
-          "authority_score_boost": 9,
+          "authority_score_boost": 10,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
           "reinforcement_boost": 0,
@@ -127508,7 +127508,7 @@
           "freshness_boost": 4,
           "decay_penalty": 0,
           "recency_balance": 4,
-          "final_score": 319
+          "final_score": 320
         }
       },
       {
@@ -128794,7 +128794,7 @@
     "related_pages": [
       {
         "target_url": "/wiki/the-first-witness.html",
-        "score": 315,
+        "score": 316,
         "base_score": 289,
         "reasons": [
           "same_category:core",
@@ -128830,12 +128830,12 @@
           "shared_tag:belief system",
           "link_overlap:3",
           "rank_score_boost:4",
-          "authority_score_boost:9",
+          "authority_score_boost:10",
           "graph_centrality_boost:8",
           "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
-        "authority_score_boost": 9,
+        "authority_score_boost": 10,
         "graph_centrality_boost": 8,
         "content_depth_boost": 5,
         "reinforcement_boost": 0,
@@ -128844,11 +128844,11 @@
         "freshness_boost": 4,
         "decay_penalty": 0,
         "recency_balance": 4,
-        "final_score": 319,
+        "final_score": 320,
         "score_breakdown": {
           "base_score": 289,
           "rank_score_boost": 4,
-          "authority_score_boost": 9,
+          "authority_score_boost": 10,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
           "reinforcement_boost": 0,
@@ -128857,7 +128857,7 @@
           "freshness_boost": 4,
           "decay_penalty": 0,
           "recency_balance": 4,
-          "final_score": 319
+          "final_score": 320
         }
       },
       {
@@ -130139,7 +130139,7 @@
     "related_pages": [
       {
         "target_url": "/wiki/the-first-witness.html",
-        "score": 315,
+        "score": 316,
         "base_score": 289,
         "reasons": [
           "same_category:core",
@@ -130175,12 +130175,12 @@
           "shared_tag:belief system",
           "link_overlap:3",
           "rank_score_boost:4",
-          "authority_score_boost:9",
+          "authority_score_boost:10",
           "graph_centrality_boost:8",
           "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
-        "authority_score_boost": 9,
+        "authority_score_boost": 10,
         "graph_centrality_boost": 8,
         "content_depth_boost": 5,
         "reinforcement_boost": 0,
@@ -130189,11 +130189,11 @@
         "freshness_boost": 4,
         "decay_penalty": 0,
         "recency_balance": 4,
-        "final_score": 319,
+        "final_score": 320,
         "score_breakdown": {
           "base_score": 289,
           "rank_score_boost": 4,
-          "authority_score_boost": 9,
+          "authority_score_boost": 10,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
           "reinforcement_boost": 0,
@@ -130202,7 +130202,7 @@
           "freshness_boost": 4,
           "decay_penalty": 0,
           "recency_balance": 4,
-          "final_score": 319
+          "final_score": 320
         }
       },
       {
@@ -131489,7 +131489,7 @@
     "related_pages": [
       {
         "target_url": "/wiki/the-first-witness.html",
-        "score": 315,
+        "score": 316,
         "base_score": 289,
         "reasons": [
           "same_category:core",
@@ -131525,12 +131525,12 @@
           "shared_tag:belief system",
           "link_overlap:3",
           "rank_score_boost:4",
-          "authority_score_boost:9",
+          "authority_score_boost:10",
           "graph_centrality_boost:8",
           "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
-        "authority_score_boost": 9,
+        "authority_score_boost": 10,
         "graph_centrality_boost": 8,
         "content_depth_boost": 5,
         "reinforcement_boost": 0,
@@ -131539,11 +131539,11 @@
         "freshness_boost": 4,
         "decay_penalty": 0,
         "recency_balance": 4,
-        "final_score": 319,
+        "final_score": 320,
         "score_breakdown": {
           "base_score": 289,
           "rank_score_boost": 4,
-          "authority_score_boost": 9,
+          "authority_score_boost": 10,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
           "reinforcement_boost": 0,
@@ -131552,7 +131552,7 @@
           "freshness_boost": 4,
           "decay_penalty": 0,
           "recency_balance": 4,
-          "final_score": 319
+          "final_score": 320
         }
       },
       {
@@ -132833,7 +132833,7 @@
     "related_pages": [
       {
         "target_url": "/wiki/the-first-witness.html",
-        "score": 349,
+        "score": 350,
         "base_score": 323,
         "reasons": [
           "same_category:core",
@@ -132871,12 +132871,12 @@
           "shared_tag:belief system",
           "link_overlap:9",
           "rank_score_boost:4",
-          "authority_score_boost:9",
+          "authority_score_boost:10",
           "graph_centrality_boost:8",
           "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
-        "authority_score_boost": 9,
+        "authority_score_boost": 10,
         "graph_centrality_boost": 8,
         "content_depth_boost": 5,
         "reinforcement_boost": 0,
@@ -132885,11 +132885,11 @@
         "freshness_boost": 4,
         "decay_penalty": 0,
         "recency_balance": 4,
-        "final_score": 353,
+        "final_score": 354,
         "score_breakdown": {
           "base_score": 323,
           "rank_score_boost": 4,
-          "authority_score_boost": 9,
+          "authority_score_boost": 10,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
           "reinforcement_boost": 0,
@@ -132898,7 +132898,7 @@
           "freshness_boost": 4,
           "decay_penalty": 0,
           "recency_balance": 4,
-          "final_score": 353
+          "final_score": 354
         }
       },
       {
@@ -134200,7 +134200,7 @@
     "related_pages": [
       {
         "target_url": "/wiki/the-first-witness.html",
-        "score": 321,
+        "score": 322,
         "base_score": 295,
         "reasons": [
           "same_category:core",
@@ -134236,12 +134236,12 @@
           "shared_tag:belief system",
           "link_overlap:5",
           "rank_score_boost:4",
-          "authority_score_boost:9",
+          "authority_score_boost:10",
           "graph_centrality_boost:8",
           "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
-        "authority_score_boost": 9,
+        "authority_score_boost": 10,
         "graph_centrality_boost": 8,
         "content_depth_boost": 5,
         "reinforcement_boost": 0,
@@ -134250,11 +134250,11 @@
         "freshness_boost": 4,
         "decay_penalty": 0,
         "recency_balance": 4,
-        "final_score": 325,
+        "final_score": 326,
         "score_breakdown": {
           "base_score": 295,
           "rank_score_boost": 4,
-          "authority_score_boost": 9,
+          "authority_score_boost": 10,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
           "reinforcement_boost": 0,
@@ -134263,7 +134263,7 @@
           "freshness_boost": 4,
           "decay_penalty": 0,
           "recency_balance": 4,
-          "final_score": 325
+          "final_score": 326
         }
       },
       {
@@ -135557,7 +135557,7 @@
     "related_pages": [
       {
         "target_url": "/wiki/the-first-witness.html",
-        "score": 315,
+        "score": 316,
         "base_score": 289,
         "reasons": [
           "same_category:core",
@@ -135593,12 +135593,12 @@
           "shared_tag:belief system",
           "link_overlap:3",
           "rank_score_boost:4",
-          "authority_score_boost:9",
+          "authority_score_boost:10",
           "graph_centrality_boost:8",
           "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
-        "authority_score_boost": 9,
+        "authority_score_boost": 10,
         "graph_centrality_boost": 8,
         "content_depth_boost": 5,
         "reinforcement_boost": 0,
@@ -135607,11 +135607,11 @@
         "freshness_boost": 4,
         "decay_penalty": 0,
         "recency_balance": 4,
-        "final_score": 319,
+        "final_score": 320,
         "score_breakdown": {
           "base_score": 289,
           "rank_score_boost": 4,
-          "authority_score_boost": 9,
+          "authority_score_boost": 10,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
           "reinforcement_boost": 0,
@@ -135620,7 +135620,7 @@
           "freshness_boost": 4,
           "decay_penalty": 0,
           "recency_balance": 4,
-          "final_score": 319
+          "final_score": 320
         }
       },
       {
@@ -136907,7 +136907,7 @@
     "related_pages": [
       {
         "target_url": "/wiki/the-first-witness.html",
-        "score": 321,
+        "score": 322,
         "base_score": 295,
         "reasons": [
           "same_category:core",
@@ -136943,12 +136943,12 @@
           "shared_tag:belief system",
           "link_overlap:5",
           "rank_score_boost:4",
-          "authority_score_boost:9",
+          "authority_score_boost:10",
           "graph_centrality_boost:8",
           "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
-        "authority_score_boost": 9,
+        "authority_score_boost": 10,
         "graph_centrality_boost": 8,
         "content_depth_boost": 5,
         "reinforcement_boost": 0,
@@ -136957,11 +136957,11 @@
         "freshness_boost": 4,
         "decay_penalty": 0,
         "recency_balance": 4,
-        "final_score": 325,
+        "final_score": 326,
         "score_breakdown": {
           "base_score": 295,
           "rank_score_boost": 4,
-          "authority_score_boost": 9,
+          "authority_score_boost": 10,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
           "reinforcement_boost": 0,
@@ -136970,7 +136970,7 @@
           "freshness_boost": 4,
           "decay_penalty": 0,
           "recency_balance": 4,
-          "final_score": 325
+          "final_score": 326
         }
       },
       {
@@ -138263,7 +138263,7 @@
     "related_pages": [
       {
         "target_url": "/wiki/the-first-witness.html",
-        "score": 315,
+        "score": 316,
         "base_score": 289,
         "reasons": [
           "same_category:core",
@@ -138299,12 +138299,12 @@
           "shared_tag:belief system",
           "link_overlap:3",
           "rank_score_boost:4",
-          "authority_score_boost:9",
+          "authority_score_boost:10",
           "graph_centrality_boost:8",
           "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
-        "authority_score_boost": 9,
+        "authority_score_boost": 10,
         "graph_centrality_boost": 8,
         "content_depth_boost": 5,
         "reinforcement_boost": 0,
@@ -138313,11 +138313,11 @@
         "freshness_boost": 4,
         "decay_penalty": 0,
         "recency_balance": 4,
-        "final_score": 319,
+        "final_score": 320,
         "score_breakdown": {
           "base_score": 289,
           "rank_score_boost": 4,
-          "authority_score_boost": 9,
+          "authority_score_boost": 10,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
           "reinforcement_boost": 0,
@@ -138326,7 +138326,7 @@
           "freshness_boost": 4,
           "decay_penalty": 0,
           "recency_balance": 4,
-          "final_score": 319
+          "final_score": 320
         }
       },
       {
@@ -139610,7 +139610,7 @@
     "related_pages": [
       {
         "target_url": "/wiki/the-first-witness.html",
-        "score": 315,
+        "score": 316,
         "base_score": 289,
         "reasons": [
           "same_category:core",
@@ -139646,12 +139646,12 @@
           "shared_tag:belief system",
           "link_overlap:3",
           "rank_score_boost:4",
-          "authority_score_boost:9",
+          "authority_score_boost:10",
           "graph_centrality_boost:8",
           "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
-        "authority_score_boost": 9,
+        "authority_score_boost": 10,
         "graph_centrality_boost": 8,
         "content_depth_boost": 5,
         "reinforcement_boost": 0,
@@ -139660,11 +139660,11 @@
         "freshness_boost": 4,
         "decay_penalty": 0,
         "recency_balance": 4,
-        "final_score": 319,
+        "final_score": 320,
         "score_breakdown": {
           "base_score": 289,
           "rank_score_boost": 4,
-          "authority_score_boost": 9,
+          "authority_score_boost": 10,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
           "reinforcement_boost": 0,
@@ -139673,7 +139673,7 @@
           "freshness_boost": 4,
           "decay_penalty": 0,
           "recency_balance": 4,
-          "final_score": 319
+          "final_score": 320
         }
       },
       {
@@ -140955,7 +140955,7 @@
     "related_pages": [
       {
         "target_url": "/wiki/the-first-witness.html",
-        "score": 315,
+        "score": 316,
         "base_score": 289,
         "reasons": [
           "same_category:core",
@@ -140991,12 +140991,12 @@
           "shared_tag:belief system",
           "link_overlap:3",
           "rank_score_boost:4",
-          "authority_score_boost:9",
+          "authority_score_boost:10",
           "graph_centrality_boost:8",
           "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
-        "authority_score_boost": 9,
+        "authority_score_boost": 10,
         "graph_centrality_boost": 8,
         "content_depth_boost": 5,
         "reinforcement_boost": 0,
@@ -141005,11 +141005,11 @@
         "freshness_boost": 4,
         "decay_penalty": 0,
         "recency_balance": 4,
-        "final_score": 319,
+        "final_score": 320,
         "score_breakdown": {
           "base_score": 289,
           "rank_score_boost": 4,
-          "authority_score_boost": 9,
+          "authority_score_boost": 10,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
           "reinforcement_boost": 0,
@@ -141018,7 +141018,7 @@
           "freshness_boost": 4,
           "decay_penalty": 0,
           "recency_balance": 4,
-          "final_score": 319
+          "final_score": 320
         }
       },
       {
@@ -142299,7 +142299,7 @@
     "related_pages": [
       {
         "target_url": "/wiki/the-first-witness.html",
-        "score": 321,
+        "score": 322,
         "base_score": 295,
         "reasons": [
           "same_category:core",
@@ -142335,12 +142335,12 @@
           "shared_tag:belief system",
           "link_overlap:5",
           "rank_score_boost:4",
-          "authority_score_boost:9",
+          "authority_score_boost:10",
           "graph_centrality_boost:8",
           "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
-        "authority_score_boost": 9,
+        "authority_score_boost": 10,
         "graph_centrality_boost": 8,
         "content_depth_boost": 5,
         "reinforcement_boost": 0,
@@ -142349,11 +142349,11 @@
         "freshness_boost": 4,
         "decay_penalty": 0,
         "recency_balance": 4,
-        "final_score": 325,
+        "final_score": 326,
         "score_breakdown": {
           "base_score": 295,
           "rank_score_boost": 4,
-          "authority_score_boost": 9,
+          "authority_score_boost": 10,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
           "reinforcement_boost": 0,
@@ -142362,7 +142362,7 @@
           "freshness_boost": 4,
           "decay_penalty": 0,
           "recency_balance": 4,
-          "final_score": 325
+          "final_score": 326
         }
       },
       {
@@ -147214,6 +147214,43 @@
         }
       },
       {
+        "target_url": "/wiki/the-first-witness.html",
+        "score": 33,
+        "base_score": 6,
+        "reasons": [
+          "link_overlap:2",
+          "rank_score_boost:4",
+          "authority_score_boost:10",
+          "graph_centrality_boost:8",
+          "content_depth_boost:5"
+        ],
+        "rank_score_boost": 4,
+        "authority_score_boost": 10,
+        "graph_centrality_boost": 8,
+        "content_depth_boost": 5,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 0,
+        "decay_penalty": 0,
+        "recency_balance": 0,
+        "final_score": 33,
+        "score_breakdown": {
+          "base_score": 6,
+          "rank_score_boost": 4,
+          "authority_score_boost": 10,
+          "graph_centrality_boost": 8,
+          "content_depth_boost": 5,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 0,
+          "decay_penalty": 0,
+          "recency_balance": 0,
+          "final_score": 33
+        }
+      },
+      {
         "target_url": "/wiki/battlemech-blast.html",
         "score": 31,
         "base_score": 24,
@@ -147250,41 +147287,6 @@
       },
       {
         "target_url": "/wiki/canvas-clash.html",
-        "score": 31,
-        "base_score": 24,
-        "reasons": [
-          "link_overlap:8",
-          "rank_score_boost:2",
-          "content_depth_boost:5"
-        ],
-        "rank_score_boost": 2,
-        "authority_score_boost": 0,
-        "graph_centrality_boost": 0,
-        "content_depth_boost": 5,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 1,
-        "decay_penalty": 0,
-        "recency_balance": 1,
-        "final_score": 32,
-        "score_breakdown": {
-          "base_score": 24,
-          "rank_score_boost": 2,
-          "authority_score_boost": 0,
-          "graph_centrality_boost": 0,
-          "content_depth_boost": 5,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 1,
-          "decay_penalty": 0,
-          "recency_balance": 1,
-          "final_score": 32
-        }
-      },
-      {
-        "target_url": "/wiki/spirit-borns.html",
         "score": 31,
         "base_score": 24,
         "reasons": [
@@ -148430,17 +148432,17 @@
       },
       {
         "target_url": "/wiki/the-first-witness.html",
-        "score": 38,
+        "score": 39,
         "base_score": 12,
         "reasons": [
           "link_overlap:4",
           "rank_score_boost:4",
-          "authority_score_boost:9",
+          "authority_score_boost:10",
           "graph_centrality_boost:8",
           "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
-        "authority_score_boost": 9,
+        "authority_score_boost": 10,
         "graph_centrality_boost": 8,
         "content_depth_boost": 5,
         "reinforcement_boost": 0,
@@ -148449,11 +148451,11 @@
         "freshness_boost": 0,
         "decay_penalty": 0,
         "recency_balance": 0,
-        "final_score": 38,
+        "final_score": 39,
         "score_breakdown": {
           "base_score": 12,
           "rank_score_boost": 4,
-          "authority_score_boost": 9,
+          "authority_score_boost": 10,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
           "reinforcement_boost": 0,
@@ -148462,7 +148464,7 @@
           "freshness_boost": 0,
           "decay_penalty": 0,
           "recency_balance": 0,
-          "final_score": 38
+          "final_score": 39
         }
       },
       {
@@ -148991,18 +148993,18 @@
       },
       {
         "target_url": "/wiki/the-first-witness.html",
-        "score": 84,
+        "score": 85,
         "base_score": 58,
         "reasons": [
           "same_category:core",
           "link_overlap:6",
           "rank_score_boost:4",
-          "authority_score_boost:9",
+          "authority_score_boost:10",
           "graph_centrality_boost:8",
           "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
-        "authority_score_boost": 9,
+        "authority_score_boost": 10,
         "graph_centrality_boost": 8,
         "content_depth_boost": 5,
         "reinforcement_boost": 0,
@@ -149011,11 +149013,11 @@
         "freshness_boost": 2,
         "decay_penalty": 0,
         "recency_balance": 2,
-        "final_score": 86,
+        "final_score": 87,
         "score_breakdown": {
           "base_score": 58,
           "rank_score_boost": 4,
-          "authority_score_boost": 9,
+          "authority_score_boost": 10,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
           "reinforcement_boost": 0,
@@ -149024,7 +149026,7 @@
           "freshness_boost": 2,
           "decay_penalty": 0,
           "recency_balance": 2,
-          "final_score": 86
+          "final_score": 87
         }
       },
       {
@@ -261730,18 +261732,18 @@
       },
       {
         "target_url": "/wiki/the-first-witness.html",
-        "score": 84,
+        "score": 85,
         "base_score": 58,
         "reasons": [
           "same_category:core",
           "link_overlap:6",
           "rank_score_boost:4",
-          "authority_score_boost:9",
+          "authority_score_boost:10",
           "graph_centrality_boost:8",
           "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
-        "authority_score_boost": 9,
+        "authority_score_boost": 10,
         "graph_centrality_boost": 8,
         "content_depth_boost": 5,
         "reinforcement_boost": 0,
@@ -261750,11 +261752,11 @@
         "freshness_boost": 2,
         "decay_penalty": 0,
         "recency_balance": 2,
-        "final_score": 86,
+        "final_score": 87,
         "score_breakdown": {
           "base_score": 58,
           "rank_score_boost": 4,
-          "authority_score_boost": 9,
+          "authority_score_boost": 10,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
           "reinforcement_boost": 0,
@@ -261763,7 +261765,7 @@
           "freshness_boost": 2,
           "decay_penalty": 0,
           "recency_balance": 2,
-          "final_score": 86
+          "final_score": 87
         }
       },
       {
@@ -262487,6 +262489,44 @@
         }
       },
       {
+        "target_url": "/wiki/the-first-witness.html",
+        "score": 82,
+        "base_score": 55,
+        "reasons": [
+          "same_category:core",
+          "link_overlap:5",
+          "rank_score_boost:4",
+          "authority_score_boost:10",
+          "graph_centrality_boost:8",
+          "content_depth_boost:5"
+        ],
+        "rank_score_boost": 4,
+        "authority_score_boost": 10,
+        "graph_centrality_boost": 8,
+        "content_depth_boost": 5,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 2,
+        "decay_penalty": 0,
+        "recency_balance": 2,
+        "final_score": 84,
+        "score_breakdown": {
+          "base_score": 55,
+          "rank_score_boost": 4,
+          "authority_score_boost": 10,
+          "graph_centrality_boost": 8,
+          "content_depth_boost": 5,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 2,
+          "decay_penalty": 0,
+          "recency_balance": 2,
+          "final_score": 84
+        }
+      },
+      {
         "target_url": "/wiki/hodl-wars.html",
         "score": 81,
         "base_score": 55,
@@ -262515,44 +262555,6 @@
           "authority_score_boost": 7,
           "graph_centrality_boost": 8,
           "content_depth_boost": 8,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 2,
-          "decay_penalty": 0,
-          "recency_balance": 2,
-          "final_score": 83
-        }
-      },
-      {
-        "target_url": "/wiki/the-first-witness.html",
-        "score": 81,
-        "base_score": 55,
-        "reasons": [
-          "same_category:core",
-          "link_overlap:5",
-          "rank_score_boost:4",
-          "authority_score_boost:9",
-          "graph_centrality_boost:8",
-          "content_depth_boost:5"
-        ],
-        "rank_score_boost": 4,
-        "authority_score_boost": 9,
-        "graph_centrality_boost": 8,
-        "content_depth_boost": 5,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 2,
-        "decay_penalty": 0,
-        "recency_balance": 2,
-        "final_score": 83,
-        "score_breakdown": {
-          "base_score": 55,
-          "rank_score_boost": 4,
-          "authority_score_boost": 9,
-          "graph_centrality_boost": 8,
-          "content_depth_boost": 5,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
@@ -263170,19 +263172,19 @@
     "related_pages": [
       {
         "target_url": "/wiki/the-first-witness.html",
-        "score": 95,
+        "score": 96,
         "base_score": 69,
         "reasons": [
           "same_category:core",
           "shared_tag:Block Topia",
           "link_overlap:7",
           "rank_score_boost:4",
-          "authority_score_boost:9",
+          "authority_score_boost:10",
           "graph_centrality_boost:8",
           "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
-        "authority_score_boost": 9,
+        "authority_score_boost": 10,
         "graph_centrality_boost": 8,
         "content_depth_boost": 5,
         "reinforcement_boost": 0,
@@ -263191,11 +263193,11 @@
         "freshness_boost": 3,
         "decay_penalty": 0,
         "recency_balance": 3,
-        "final_score": 98,
+        "final_score": 99,
         "score_breakdown": {
           "base_score": 69,
           "rank_score_boost": 4,
-          "authority_score_boost": 9,
+          "authority_score_boost": 10,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
           "reinforcement_boost": 0,
@@ -263204,7 +263206,7 @@
           "freshness_boost": 3,
           "decay_penalty": 0,
           "recency_balance": 3,
-          "final_score": 98
+          "final_score": 99
         }
       },
       {
@@ -264802,6 +264804,44 @@
         }
       },
       {
+        "target_url": "/wiki/the-first-witness.html",
+        "score": 76,
+        "base_score": 49,
+        "reasons": [
+          "same_category:core",
+          "link_overlap:3",
+          "rank_score_boost:4",
+          "authority_score_boost:10",
+          "graph_centrality_boost:8",
+          "content_depth_boost:5"
+        ],
+        "rank_score_boost": 4,
+        "authority_score_boost": 10,
+        "graph_centrality_boost": 8,
+        "content_depth_boost": 5,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 2,
+        "decay_penalty": 0,
+        "recency_balance": 2,
+        "final_score": 78,
+        "score_breakdown": {
+          "base_score": 49,
+          "rank_score_boost": 4,
+          "authority_score_boost": 10,
+          "graph_centrality_boost": 8,
+          "content_depth_boost": 5,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 2,
+          "decay_penalty": 0,
+          "recency_balance": 2,
+          "final_score": 78
+        }
+      },
+      {
         "target_url": "/wiki/hodl-wars.html",
         "score": 75,
         "base_score": 49,
@@ -264830,44 +264870,6 @@
           "authority_score_boost": 7,
           "graph_centrality_boost": 8,
           "content_depth_boost": 8,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 2,
-          "decay_penalty": 0,
-          "recency_balance": 2,
-          "final_score": 77
-        }
-      },
-      {
-        "target_url": "/wiki/the-first-witness.html",
-        "score": 75,
-        "base_score": 49,
-        "reasons": [
-          "same_category:core",
-          "link_overlap:3",
-          "rank_score_boost:4",
-          "authority_score_boost:9",
-          "graph_centrality_boost:8",
-          "content_depth_boost:5"
-        ],
-        "rank_score_boost": 4,
-        "authority_score_boost": 9,
-        "graph_centrality_boost": 8,
-        "content_depth_boost": 5,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 2,
-        "decay_penalty": 0,
-        "recency_balance": 2,
-        "final_score": 77,
-        "score_breakdown": {
-          "base_score": 49,
-          "rank_score_boost": 4,
-          "authority_score_boost": 9,
-          "graph_centrality_boost": 8,
-          "content_depth_boost": 5,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
@@ -266351,18 +266353,18 @@
       },
       {
         "target_url": "/wiki/the-first-witness.html",
-        "score": 87,
+        "score": 88,
         "base_score": 61,
         "reasons": [
           "same_category:core",
           "link_overlap:7",
           "rank_score_boost:4",
-          "authority_score_boost:9",
+          "authority_score_boost:10",
           "graph_centrality_boost:8",
           "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
-        "authority_score_boost": 9,
+        "authority_score_boost": 10,
         "graph_centrality_boost": 8,
         "content_depth_boost": 5,
         "reinforcement_boost": 0,
@@ -266371,11 +266373,11 @@
         "freshness_boost": 3,
         "decay_penalty": 0,
         "recency_balance": 3,
-        "final_score": 90,
+        "final_score": 91,
         "score_breakdown": {
           "base_score": 61,
           "rank_score_boost": 4,
-          "authority_score_boost": 9,
+          "authority_score_boost": 10,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
           "reinforcement_boost": 0,
@@ -266384,7 +266386,7 @@
           "freshness_boost": 3,
           "decay_penalty": 0,
           "recency_balance": 3,
-          "final_score": 90
+          "final_score": 91
         }
       },
       {
@@ -267110,18 +267112,18 @@
       },
       {
         "target_url": "/wiki/the-first-witness.html",
-        "score": 90,
+        "score": 91,
         "base_score": 64,
         "reasons": [
           "same_category:core",
           "link_overlap:8",
           "rank_score_boost:4",
-          "authority_score_boost:9",
+          "authority_score_boost:10",
           "graph_centrality_boost:8",
           "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
-        "authority_score_boost": 9,
+        "authority_score_boost": 10,
         "graph_centrality_boost": 8,
         "content_depth_boost": 5,
         "reinforcement_boost": 0,
@@ -267130,11 +267132,11 @@
         "freshness_boost": 3,
         "decay_penalty": 0,
         "recency_balance": 3,
-        "final_score": 93,
+        "final_score": 94,
         "score_breakdown": {
           "base_score": 64,
           "rank_score_boost": 4,
-          "authority_score_boost": 9,
+          "authority_score_boost": 10,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
           "reinforcement_boost": 0,
@@ -267143,7 +267145,7 @@
           "freshness_boost": 3,
           "decay_penalty": 0,
           "recency_balance": 3,
-          "final_score": 93
+          "final_score": 94
         }
       },
       {
@@ -269975,6 +269977,45 @@
         }
       },
       {
+        "target_url": "/wiki/the-first-witness.html",
+        "score": 96,
+        "base_score": 69,
+        "reasons": [
+          "same_category:core",
+          "shared_tag:Year 3008",
+          "link_overlap:7",
+          "rank_score_boost:4",
+          "authority_score_boost:10",
+          "graph_centrality_boost:8",
+          "content_depth_boost:5"
+        ],
+        "rank_score_boost": 4,
+        "authority_score_boost": 10,
+        "graph_centrality_boost": 8,
+        "content_depth_boost": 5,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 3,
+        "decay_penalty": 0,
+        "recency_balance": 3,
+        "final_score": 99,
+        "score_breakdown": {
+          "base_score": 69,
+          "rank_score_boost": 4,
+          "authority_score_boost": 10,
+          "graph_centrality_boost": 8,
+          "content_depth_boost": 5,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 3,
+          "decay_penalty": 0,
+          "recency_balance": 3,
+          "final_score": 99
+        }
+      },
+      {
         "target_url": "/wiki/sacred-chain.html",
         "score": 95,
         "base_score": 75,
@@ -270004,45 +270045,6 @@
           "authority_score_boost": 4,
           "graph_centrality_boost": 5,
           "content_depth_boost": 8,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 3,
-          "decay_penalty": 0,
-          "recency_balance": 3,
-          "final_score": 98
-        }
-      },
-      {
-        "target_url": "/wiki/the-first-witness.html",
-        "score": 95,
-        "base_score": 69,
-        "reasons": [
-          "same_category:core",
-          "shared_tag:Year 3008",
-          "link_overlap:7",
-          "rank_score_boost:4",
-          "authority_score_boost:9",
-          "graph_centrality_boost:8",
-          "content_depth_boost:5"
-        ],
-        "rank_score_boost": 4,
-        "authority_score_boost": 9,
-        "graph_centrality_boost": 8,
-        "content_depth_boost": 5,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 3,
-        "decay_penalty": 0,
-        "recency_balance": 3,
-        "final_score": 98,
-        "score_breakdown": {
-          "base_score": 69,
-          "rank_score_boost": 4,
-          "authority_score_boost": 9,
-          "graph_centrality_boost": 8,
-          "content_depth_boost": 5,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
@@ -273681,18 +273683,18 @@
     "related_pages": [
       {
         "target_url": "/wiki/the-first-witness.html",
-        "score": 99,
+        "score": 100,
         "base_score": 73,
         "reasons": [
           "same_category:core",
           "link_overlap:11",
           "rank_score_boost:4",
-          "authority_score_boost:9",
+          "authority_score_boost:10",
           "graph_centrality_boost:8",
           "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
-        "authority_score_boost": 9,
+        "authority_score_boost": 10,
         "graph_centrality_boost": 8,
         "content_depth_boost": 5,
         "reinforcement_boost": 0,
@@ -273701,11 +273703,11 @@
         "freshness_boost": 3,
         "decay_penalty": 0,
         "recency_balance": 3,
-        "final_score": 102,
+        "final_score": 103,
         "score_breakdown": {
           "base_score": 73,
           "rank_score_boost": 4,
-          "authority_score_boost": 9,
+          "authority_score_boost": 10,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
           "reinforcement_boost": 0,
@@ -273714,7 +273716,7 @@
           "freshness_boost": 3,
           "decay_penalty": 0,
           "recency_balance": 3,
-          "final_score": 102
+          "final_score": 103
         }
       },
       {
@@ -295346,6 +295348,43 @@
         }
       },
       {
+        "target_url": "/wiki/the-first-witness.html",
+        "score": 67,
+        "base_score": 40,
+        "reasons": [
+          "same_category:core",
+          "rank_score_boost:4",
+          "authority_score_boost:10",
+          "graph_centrality_boost:8",
+          "content_depth_boost:5"
+        ],
+        "rank_score_boost": 4,
+        "authority_score_boost": 10,
+        "graph_centrality_boost": 8,
+        "content_depth_boost": 5,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 2,
+        "decay_penalty": 0,
+        "recency_balance": 2,
+        "final_score": 69,
+        "score_breakdown": {
+          "base_score": 40,
+          "rank_score_boost": 4,
+          "authority_score_boost": 10,
+          "graph_centrality_boost": 8,
+          "content_depth_boost": 5,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 2,
+          "decay_penalty": 0,
+          "recency_balance": 2,
+          "final_score": 69
+        }
+      },
+      {
         "target_url": "/wiki/first-witness-life-readings.html",
         "score": 66,
         "base_score": 40,
@@ -295373,43 +295412,6 @@
           "authority_score_boost": 8,
           "graph_centrality_boost": 8,
           "content_depth_boost": 7,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 2,
-          "decay_penalty": 0,
-          "recency_balance": 2,
-          "final_score": 68
-        }
-      },
-      {
-        "target_url": "/wiki/the-first-witness.html",
-        "score": 66,
-        "base_score": 40,
-        "reasons": [
-          "same_category:core",
-          "rank_score_boost:4",
-          "authority_score_boost:9",
-          "graph_centrality_boost:8",
-          "content_depth_boost:5"
-        ],
-        "rank_score_boost": 4,
-        "authority_score_boost": 9,
-        "graph_centrality_boost": 8,
-        "content_depth_boost": 5,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 2,
-        "decay_penalty": 0,
-        "recency_balance": 2,
-        "final_score": 68,
-        "score_breakdown": {
-          "base_score": 40,
-          "rank_score_boost": 4,
-          "authority_score_boost": 9,
-          "graph_centrality_boost": 8,
-          "content_depth_boost": 5,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
@@ -308556,19 +308558,19 @@
     "related_pages": [
       {
         "target_url": "/wiki/the-first-witness.html",
-        "score": 116,
+        "score": 117,
         "base_score": 90,
         "reasons": [
           "same_category:core",
           "shared_tag:Year 3008",
           "link_overlap:14",
           "rank_score_boost:4",
-          "authority_score_boost:9",
+          "authority_score_boost:10",
           "graph_centrality_boost:8",
           "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
-        "authority_score_boost": 9,
+        "authority_score_boost": 10,
         "graph_centrality_boost": 8,
         "content_depth_boost": 5,
         "reinforcement_boost": 0,
@@ -308577,11 +308579,11 @@
         "freshness_boost": 4,
         "decay_penalty": 0,
         "recency_balance": 4,
-        "final_score": 120,
+        "final_score": 121,
         "score_breakdown": {
           "base_score": 90,
           "rank_score_boost": 4,
-          "authority_score_boost": 9,
+          "authority_score_boost": 10,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
           "reinforcement_boost": 0,
@@ -308590,7 +308592,7 @@
           "freshness_boost": 4,
           "decay_penalty": 0,
           "recency_balance": 4,
-          "final_score": 120
+          "final_score": 121
         }
       },
       {
@@ -311631,18 +311633,18 @@
       },
       {
         "target_url": "/wiki/the-first-witness.html",
-        "score": 81,
+        "score": 82,
         "base_score": 55,
         "reasons": [
           "same_category:core",
           "link_overlap:5",
           "rank_score_boost:4",
-          "authority_score_boost:9",
+          "authority_score_boost:10",
           "graph_centrality_boost:8",
           "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
-        "authority_score_boost": 9,
+        "authority_score_boost": 10,
         "graph_centrality_boost": 8,
         "content_depth_boost": 5,
         "reinforcement_boost": 0,
@@ -311651,11 +311653,11 @@
         "freshness_boost": 2,
         "decay_penalty": 0,
         "recency_balance": 2,
-        "final_score": 83,
+        "final_score": 84,
         "score_breakdown": {
           "base_score": 55,
           "rank_score_boost": 4,
-          "authority_score_boost": 9,
+          "authority_score_boost": 10,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
           "reinforcement_boost": 0,
@@ -311664,7 +311666,7 @@
           "freshness_boost": 2,
           "decay_penalty": 0,
           "recency_balance": 2,
-          "final_score": 83
+          "final_score": 84
         }
       },
       {
@@ -326594,6 +326596,44 @@
         }
       },
       {
+        "target_url": "/wiki/the-first-witness.html",
+        "score": 82,
+        "base_score": 55,
+        "reasons": [
+          "same_category:core",
+          "link_overlap:5",
+          "rank_score_boost:4",
+          "authority_score_boost:10",
+          "graph_centrality_boost:8",
+          "content_depth_boost:5"
+        ],
+        "rank_score_boost": 4,
+        "authority_score_boost": 10,
+        "graph_centrality_boost": 8,
+        "content_depth_boost": 5,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 2,
+        "decay_penalty": 0,
+        "recency_balance": 2,
+        "final_score": 84,
+        "score_breakdown": {
+          "base_score": 55,
+          "rank_score_boost": 4,
+          "authority_score_boost": 10,
+          "graph_centrality_boost": 8,
+          "content_depth_boost": 5,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 2,
+          "decay_penalty": 0,
+          "recency_balance": 2,
+          "final_score": 84
+        }
+      },
+      {
         "target_url": "/wiki/triple-fork-event.html",
         "score": 81,
         "base_score": 61,
@@ -326629,44 +326669,6 @@
           "decay_penalty": 0,
           "recency_balance": 3,
           "final_score": 84
-        }
-      },
-      {
-        "target_url": "/wiki/the-first-witness.html",
-        "score": 81,
-        "base_score": 55,
-        "reasons": [
-          "same_category:core",
-          "link_overlap:5",
-          "rank_score_boost:4",
-          "authority_score_boost:9",
-          "graph_centrality_boost:8",
-          "content_depth_boost:5"
-        ],
-        "rank_score_boost": 4,
-        "authority_score_boost": 9,
-        "graph_centrality_boost": 8,
-        "content_depth_boost": 5,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 2,
-        "decay_penalty": 0,
-        "recency_balance": 2,
-        "final_score": 83,
-        "score_breakdown": {
-          "base_score": 55,
-          "rank_score_boost": 4,
-          "authority_score_boost": 9,
-          "graph_centrality_boost": 8,
-          "content_depth_boost": 5,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 2,
-          "decay_penalty": 0,
-          "recency_balance": 2,
-          "final_score": 83
         }
       },
       {
@@ -350703,19 +350705,19 @@
       },
       {
         "target_url": "/wiki/the-first-witness.html",
-        "score": 95,
+        "score": 96,
         "base_score": 69,
         "reasons": [
           "same_category:core",
           "shared_tag:Block Topia",
           "link_overlap:7",
           "rank_score_boost:4",
-          "authority_score_boost:9",
+          "authority_score_boost:10",
           "graph_centrality_boost:8",
           "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
-        "authority_score_boost": 9,
+        "authority_score_boost": 10,
         "graph_centrality_boost": 8,
         "content_depth_boost": 5,
         "reinforcement_boost": 0,
@@ -350724,11 +350726,11 @@
         "freshness_boost": 3,
         "decay_penalty": 0,
         "recency_balance": 3,
-        "final_score": 98,
+        "final_score": 99,
         "score_breakdown": {
           "base_score": 69,
           "rank_score_boost": 4,
-          "authority_score_boost": 9,
+          "authority_score_boost": 10,
           "graph_centrality_boost": 8,
           "content_depth_boost": 5,
           "reinforcement_boost": 0,
@@ -350737,7 +350739,7 @@
           "freshness_boost": 3,
           "decay_penalty": 0,
           "recency_balance": 3,
-          "final_score": 98
+          "final_score": 99
         }
       },
       {

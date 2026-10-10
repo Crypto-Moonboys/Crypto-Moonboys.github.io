@@ -177,11 +177,11 @@
       ]
     },
     "link_score": {
-      "inbound_count": 99,
+      "inbound_count": 100,
       "outbound_count": 118,
       "existing_outbound_count": 91,
       "suggested_outbound_count": 27,
-      "authority": 243.5
+      "authority": 245.5
     },
     "brand": null
   },
@@ -430,11 +430,11 @@
       ]
     },
     "link_score": {
-      "inbound_count": 35,
+      "inbound_count": 36,
       "outbound_count": 90,
       "existing_outbound_count": 22,
       "suggested_outbound_count": 68,
-      "authority": 81
+      "authority": 83
     },
     "brand": null
   },
@@ -621,11 +621,11 @@
       ]
     },
     "link_score": {
-      "inbound_count": 28,
+      "inbound_count": 29,
       "outbound_count": 80,
       "existing_outbound_count": 19,
       "suggested_outbound_count": 61,
-      "authority": 65.5
+      "authority": 67.5
     },
     "brand": null
   },
@@ -949,11 +949,11 @@
       ]
     },
     "link_score": {
-      "inbound_count": 58,
+      "inbound_count": 59,
       "outbound_count": 67,
       "existing_outbound_count": 6,
       "suggested_outbound_count": 61,
-      "authority": 119
+      "authority": 121
     },
     "brand": null
   },
@@ -1111,11 +1111,11 @@
       ]
     },
     "link_score": {
-      "inbound_count": 80,
+      "inbound_count": 81,
       "outbound_count": 73,
       "existing_outbound_count": 6,
       "suggested_outbound_count": 67,
-      "authority": 163
+      "authority": 165
     },
     "brand": null
   },
@@ -4711,11 +4711,11 @@
       ]
     },
     "link_score": {
-      "inbound_count": 163,
+      "inbound_count": 164,
       "outbound_count": 60,
       "existing_outbound_count": 15,
       "suggested_outbound_count": 45,
-      "authority": 333.5
+      "authority": 335.5
     },
     "brand": null
   },
@@ -47004,6 +47004,82 @@
     "brand": null
   },
   {
+    "title": "GKniftyHEADS",
+    "desc": "Compact GKniftyHEADS parent hub for the brand page, collection index, featured templates, and related context.",
+    "url": "/categories/gkniftyheads.html",
+    "tags": [],
+    "category": "characters",
+    "aliases": [],
+    "rank_score": 182,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 0,
+      "mention_count": 0,
+      "category": "characters",
+      "category_priority": 8,
+      "has_description": true,
+      "article_word_count": 452,
+      "keyword_bag_size": 18,
+      "heading_count": 6,
+      "list_count": 0,
+      "internal_link_count": 20,
+      "paragraph_count": 7,
+      "section_count": 5,
+      "lore_paragraph_count": 0,
+      "content_quality_score": 51,
+      "authority_score": 20
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 40,
+      "word_count_points": 23,
+      "keyword_bag_points": 18,
+      "content_quality_points": 51,
+      "authority_points": 20,
+      "final_rank_score": 182,
+      "authority_graph_points": 0
+    },
+    "search_index": {
+      "normalized_title": "gkniftyheads crypto moonboys wiki",
+      "tokens": [
+        "gkniftyheads",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "gkniftyheads",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "compact",
+        "parent",
+        "hub",
+        "for",
+        "the",
+        "brand",
+        "page",
+        "collection",
+        "index",
+        "featured",
+        "templates",
+        "and",
+        "related",
+        "context"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 0,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 0,
+      "authority": 0
+    },
+    "brand": null
+  },
+  {
     "title": "Rebel Riff 👑👈",
     "desc": "Rebel Riff 👑👈 is an NFT in the gkniftyheads WAX AtomicAssets collection.",
     "url": "/wiki/gkniftyheads-rebel-riff-783269.html",
@@ -48822,82 +48898,6 @@
       "existing_outbound_count": 12,
       "suggested_outbound_count": 9,
       "authority": 10
-    },
-    "brand": null
-  },
-  {
-    "title": "GKniftyHEADS",
-    "desc": "Compact GKniftyHEADS parent hub for the brand page, collection index, featured templates, and related context.",
-    "url": "/categories/gkniftyheads.html",
-    "tags": [],
-    "category": "factions",
-    "aliases": [],
-    "rank_score": 176,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 0,
-      "tag_count": 0,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 434,
-      "keyword_bag_size": 18,
-      "heading_count": 6,
-      "list_count": 0,
-      "internal_link_count": 19,
-      "paragraph_count": 7,
-      "section_count": 5,
-      "lore_paragraph_count": 0,
-      "content_quality_score": 51,
-      "authority_score": 20
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 22,
-      "keyword_bag_points": 18,
-      "content_quality_points": 51,
-      "authority_points": 20,
-      "final_rank_score": 176,
-      "authority_graph_points": 0
-    },
-    "search_index": {
-      "normalized_title": "gkniftyheads crypto moonboys wiki",
-      "tokens": [
-        "gkniftyheads",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "gkniftyheads",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "compact",
-        "parent",
-        "hub",
-        "for",
-        "the",
-        "brand",
-        "page",
-        "collection",
-        "index",
-        "featured",
-        "templates",
-        "and",
-        "related",
-        "context"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 0,
-      "existing_outbound_count": 0,
-      "suggested_outbound_count": 0,
-      "authority": 0
     },
     "brand": null
   },

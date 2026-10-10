@@ -1537,6 +1537,30 @@
       "/wiki/nbg-token.html"
     ]
   },
+  "/wiki/create-your-moonboy.html": {
+    "outbound_count": 15,
+    "inbound_count": 0,
+    "existing_outbound": [
+      "/wiki/first-witness-concordance.html",
+      "/wiki/first-witness-faction-commentaries.html",
+      "/wiki/first-witness-forty-paths.html",
+      "/wiki/first-witness-master-chronology.html",
+      "/wiki/gkniftyheads.html",
+      "/wiki/the-first-witness.html"
+    ],
+    "suggested_outbound": [
+      "/wiki/bitcoin-kids.html",
+      "/wiki/bitcoin-x-kids.html",
+      "/wiki/block-topia.html",
+      "/wiki/crypto-moonboys.html",
+      "/wiki/graffiti-kings.html",
+      "/wiki/hodl-warriors.html",
+      "/wiki/hodl-wars.html",
+      "/wiki/hodl-x-warriors.html",
+      "/wiki/street-kingdoms.html"
+    ],
+    "inbound_from": []
+  },
   "/wiki/croydon-tower-blocks.html": {
     "outbound_count": 39,
     "inbound_count": 1,
@@ -4530,7 +4554,7 @@
   },
   "/wiki/first-witness-concordance.html": {
     "outbound_count": 73,
-    "inbound_count": 80,
+    "inbound_count": 81,
     "existing_outbound": [
       "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-master-chronology.html",
@@ -4619,6 +4643,7 @@
       "/wiki/bitcoin-x-kids.html",
       "/wiki/block-node-defenders.html",
       "/wiki/bone-idol-ink.html",
+      "/wiki/create-your-moonboy.html",
       "/wiki/dragan-volkov.html",
       "/wiki/ethereum-ecosystem.html",
       "/wiki/first-witness-ai-synthetic-minds.html",
@@ -5384,7 +5409,7 @@
   },
   "/wiki/first-witness-faction-commentaries.html": {
     "outbound_count": 90,
-    "inbound_count": 35,
+    "inbound_count": 36,
     "existing_outbound": [
       "/wiki/bone-idol-ink.html",
       "/wiki/charlie-buster.html",
@@ -5483,6 +5508,7 @@
       "/wiki/aleema-child-of-the-shard.html",
       "/wiki/bone-idol-ink.html",
       "/wiki/charlie-buster.html",
+      "/wiki/create-your-moonboy.html",
       "/wiki/delicious-again-pete.html",
       "/wiki/first-witness-forty-paths.html",
       "/wiki/first-witness-hodl-doctrine.html",
@@ -5747,7 +5773,7 @@
   },
   "/wiki/first-witness-forty-paths.html": {
     "outbound_count": 80,
-    "inbound_count": 28,
+    "inbound_count": 29,
     "existing_outbound": [
       "/wiki/bone-idol-ink.html",
       "/wiki/charlie-buster.html",
@@ -5836,6 +5862,7 @@
       "/wiki/aleema-child-of-the-shard.html",
       "/wiki/bone-idol-ink.html",
       "/wiki/charlie-buster.html",
+      "/wiki/create-your-moonboy.html",
       "/wiki/delicious-again-pete.html",
       "/wiki/first-witness-ai-synthetic-minds.html",
       "/wiki/first-witness-faction-commentaries.html",
@@ -7140,7 +7167,7 @@
   },
   "/wiki/first-witness-master-chronology.html": {
     "outbound_count": 67,
-    "inbound_count": 58,
+    "inbound_count": 59,
     "existing_outbound": [
       "/wiki/first-witness-concordance.html",
       "/wiki/first-witness-glossary.html",
@@ -7222,6 +7249,7 @@
       "/wiki/bitcoin-kids.html",
       "/wiki/bitcoin-x-kids.html",
       "/wiki/block-node-defenders.html",
+      "/wiki/create-your-moonboy.html",
       "/wiki/croydon-tower-blocks.html",
       "/wiki/elder-codex-7.html",
       "/wiki/first-witness-concordance.html",
@@ -17384,7 +17412,7 @@
   },
   "/wiki/gkniftyheads.html": {
     "outbound_count": 60,
-    "inbound_count": 163,
+    "inbound_count": 164,
     "existing_outbound": [
       "/wiki/bitcoin-x-kids.html",
       "/wiki/crypto-moonboys.html",
@@ -17455,6 +17483,7 @@
       "/wiki/blockchain.html",
       "/wiki/burn-to-earn.html",
       "/wiki/canvas-clash.html",
+      "/wiki/create-your-moonboy.html",
       "/wiki/crypto-moonboys.html",
       "/wiki/darren-cullen.html",
       "/wiki/genesis-kernel.html",
@@ -22884,7 +22913,7 @@
   },
   "/wiki/the-first-witness.html": {
     "outbound_count": 118,
-    "inbound_count": 99,
+    "inbound_count": 100,
     "existing_outbound": [
       "/wiki/alfie-bitcoin-kid-blaze.html",
       "/wiki/bitcoin.html",
@@ -23009,6 +23038,7 @@
     ],
     "inbound_from": [
       "/wiki/aleema-child-of-the-shard.html",
+      "/wiki/create-your-moonboy.html",
       "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-addiction-intoxication-compulsion.html",
       "/wiki/first-witness-ageing-retirement-elderhood.html",

@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-09T09:28:13.380Z",
-  "verified_at": "2026-10-10T08:04:59.766Z",
+  "generated_at": "2026-10-10T11:07:33.030Z",
+  "verified_at": "2026-10-10T11:07:33.030Z",
   "lite": true,
   "nodes": [
     {
@@ -620,19 +620,19 @@
     {
       "source": "/wiki/first-witness-faction-commentaries.html",
       "target": "/wiki/the-first-witness.html",
-      "score": 356,
+      "score": 357,
       "weight": 1
     },
     {
       "source": "/wiki/first-witness-source-register.html",
       "target": "/wiki/the-first-witness.html",
-      "score": 353,
+      "score": 354,
       "weight": 1
     },
     {
       "source": "/wiki/first-witness-book-1-the-first-witness.html",
       "target": "/wiki/the-first-witness.html",
-      "score": 341,
+      "score": 342,
       "weight": 1
     },
     {

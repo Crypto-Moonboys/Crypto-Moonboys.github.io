@@ -1094,6 +1094,27 @@
       "/wiki/web3.html"
     ]
   },
+  "/wiki/create-your-moonboy.html": {
+    "existing_links": [
+      "/wiki/first-witness-concordance.html",
+      "/wiki/first-witness-faction-commentaries.html",
+      "/wiki/first-witness-forty-paths.html",
+      "/wiki/first-witness-master-chronology.html",
+      "/wiki/gkniftyheads.html",
+      "/wiki/the-first-witness.html"
+    ],
+    "suggested_links": [
+      "/wiki/bitcoin-kids.html",
+      "/wiki/bitcoin-x-kids.html",
+      "/wiki/block-topia.html",
+      "/wiki/crypto-moonboys.html",
+      "/wiki/graffiti-kings.html",
+      "/wiki/hodl-warriors.html",
+      "/wiki/hodl-wars.html",
+      "/wiki/hodl-x-warriors.html",
+      "/wiki/street-kingdoms.html"
+    ]
+  },
   "/wiki/croydon-tower-blocks.html": {
     "existing_links": [
       "/wiki/agent-sam.html",
