@@ -1,0 +1,378 @@
+{
+  "schema_version": 1,
+  "updated": "2026-10-10",
+  "title": "Public Moonboy Creator Canon Source Index",
+  "audience": "Public AI-assisted creator sessions. Only approved public URLs are listed. This is not an editorial canon register.",
+  "policy": {
+    "fiction": "W81's 94 witnesses are foundational evidence, but incompatible accounts require deliberate reconciliation under current GK-approved public chronology and owning articles. A newer wiki page is not automatically right. GK is final approval authority.",
+    "brand_and_rights": "Use current public brand, verified NFT metadata, actual published terms and runtime evidence. Fiction cannot grant rights, eligibility, sales or live features.",
+    "disclosures": "Do not retrieve, publish, infer, or reveal editorial-only endings or unpublicised story-bible decisions. The Year 3008 Final Fork remains unresolved in public.",
+    "safety": "Official canon != user draft. Rights != canon promotion. Actual NFT != imagined character.",
+    "source_policy_url": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/blob/main/brand-canon/CANON_POLICY.md",
+    "read_order": [
+      "brand-overview",
+      "gkniftyheads",
+      "chronology",
+      "concordance",
+      "first-witness-hub",
+      "source-register",
+      "forty-paths",
+      "faction-commentaries"
+    ],
+    "unknowns": [
+      "Sacred Fork year",
+      "NULL origins and immortality claims",
+      "Final Fork outcome in public 3008",
+      "unverified character traits and NFT ownership"
+    ]
+  },
+  "sources": [
+    {
+      "id": "brand-overview",
+      "url": "https://cryptomoonboys.com/about/latest-canon-and-brand-vision.md",
+      "path": "about/latest-canon-and-brand-vision.md",
+      "authority": "public-brand",
+      "purpose": "Identity umbrella, two paths, general public rights framing",
+      "topics": [
+        "identity",
+        "ownership",
+        "brand"
+      ],
+      "read": "reference",
+      "approved_public_surface": true
+    },
+    {
+      "id": "w81-digest",
+      "url": "https://cryptomoonboys.com/about/w81-condensed-canon-digest.md",
+      "path": "about/w81-condensed-canon-digest.md",
+      "authority": "historical-evidence",
+      "purpose": "Filtered orientation to the foundational 94 W81 witnesses; use with modern convergence",
+      "topics": [
+        "archive",
+        "provenance"
+      ],
+      "read": "context-only",
+      "approved_public_surface": true
+    },
+    {
+      "id": "first-witness-hub",
+      "url": "https://cryptomoonboys.com/wiki/the-first-witness.html",
+      "path": "wiki/the-first-witness.html",
+      "authority": "public-convergence",
+      "purpose": "Covenant background, nine books, reading order",
+      "topics": [
+        "religion",
+        "covenant",
+        "world"
+      ],
+      "read": "core",
+      "approved_public_surface": true
+    },
+    {
+      "id": "source-register",
+      "url": "https://cryptomoonboys.com/wiki/first-witness-source-register.html",
+      "path": "wiki/first-witness-source-register.html",
+      "authority": "source-method",
+      "purpose": "Evidence labels and public document provenance; historical tiers need October policy context",
+      "topics": [
+        "source",
+        "research",
+        "canon"
+      ],
+      "read": "core",
+      "approved_public_surface": true
+    },
+    {
+      "id": "chronology",
+      "url": "https://cryptomoonboys.com/wiki/first-witness-master-chronology.html",
+      "path": "wiki/first-witness-master-chronology.html",
+      "authority": "public-convergence",
+      "purpose": "Accepted 2030, 2880, 2930, 3008 timeline and unresolved gaps",
+      "topics": [
+        "date",
+        "chronology",
+        "history"
+      ],
+      "read": "core",
+      "approved_public_surface": true
+    },
+    {
+      "id": "concordance",
+      "url": "https://cryptomoonboys.com/wiki/first-witness-concordance.html",
+      "path": "wiki/first-witness-concordance.html",
+      "authority": "public-convergence",
+      "purpose": "Contradictions and accepted public interpretations",
+      "topics": [
+        "contradictions",
+        "forks",
+        "identities"
+      ],
+      "read": "core",
+      "approved_public_surface": true
+    },
+    {
+      "id": "forty-paths",
+      "url": "https://cryptomoonboys.com/wiki/first-witness-forty-paths.html",
+      "path": "wiki/first-witness-forty-paths.html",
+      "authority": "public-convergence",
+      "purpose": "40 named fictional cultural traditions, not 40 selectable live factions",
+      "topics": [
+        "faction",
+        "forty"
+      ],
+      "read": "on-topic",
+      "approved_public_surface": true
+    },
+    {
+      "id": "faction-commentaries",
+      "url": "https://cryptomoonboys.com/wiki/first-witness-faction-commentaries.html",
+      "path": "wiki/first-witness-faction-commentaries.html",
+      "authority": "public-convergence",
+      "purpose": "Faction institutions, beliefs and contested customs",
+      "topics": [
+        "faction",
+        "culture"
+      ],
+      "read": "on-topic",
+      "approved_public_surface": true
+    },
+    {
+      "id": "glossary",
+      "url": "https://cryptomoonboys.com/wiki/first-witness-glossary.html",
+      "path": "wiki/first-witness-glossary.html",
+      "authority": "public-convergence",
+      "purpose": "Terminology and canonical meanings",
+      "topics": [
+        "definitions",
+        "lore"
+      ],
+      "read": "on-topic",
+      "approved_public_surface": true
+    },
+    {
+      "id": "gkniftyheads",
+      "url": "https://cryptomoonboys.com/wiki/gkniftyheads.html",
+      "path": "wiki/gkniftyheads.html",
+      "authority": "identity-subject",
+      "purpose": "Moonboy/GKniftyHEADS identity, NFT metadata distinctions and 1/1 scope",
+      "topics": [
+        "moonboy",
+        "gkniftyheads",
+        "licensing"
+      ],
+      "read": "core",
+      "approved_public_surface": true
+    },
+    {
+      "id": "crypto-moonboys",
+      "url": "https://cryptomoonboys.com/wiki/crypto-moonboys.html",
+      "path": "wiki/crypto-moonboys.html",
+      "authority": "identity-subject",
+      "purpose": "Universe and public creator umbrella",
+      "topics": [
+        "brand",
+        "moonboy"
+      ],
+      "read": "on-topic",
+      "approved_public_surface": true
+    },
+    {
+      "id": "block-topia",
+      "url": "https://cryptomoonboys.com/wiki/block-topia.html",
+      "path": "wiki/block-topia.html",
+      "authority": "world-subject",
+      "purpose": "Controlled city-state and in-world social systems",
+      "topics": [
+        "block-topia",
+        "location"
+      ],
+      "read": "on-topic",
+      "approved_public_surface": true
+    },
+    {
+      "id": "street-kingdoms",
+      "url": "https://cryptomoonboys.com/wiki/street-kingdoms.html",
+      "path": "wiki/street-kingdoms.html",
+      "authority": "world-subject",
+      "purpose": "Outside-world territories and cultural survival",
+      "topics": [
+        "street-kingdoms",
+        "location"
+      ],
+      "read": "on-topic",
+      "approved_public_surface": true
+    },
+    {
+      "id": "hodl-warriors",
+      "url": "https://cryptomoonboys.com/wiki/hodl-warriors.html",
+      "path": "wiki/hodl-warriors.html",
+      "authority": "identity-subject",
+      "purpose": "Context-specific collective defense and creator-builder roles",
+      "topics": [
+        "hodl",
+        "roles"
+      ],
+      "read": "on-topic",
+      "approved_public_surface": true
+    },
+    {
+      "id": "hodl-x-warriors",
+      "url": "https://cryptomoonboys.com/wiki/hodl-x-warriors.html",
+      "path": "wiki/hodl-x-warriors.html",
+      "authority": "identity-subject",
+      "purpose": "Separate HODL X champion and service tradition",
+      "topics": [
+        "hodl",
+        "roles"
+      ],
+      "read": "on-topic",
+      "approved_public_surface": true
+    },
+    {
+      "id": "hodl-doctrine",
+      "url": "https://cryptomoonboys.com/wiki/first-witness-hodl-doctrine.html",
+      "path": "wiki/first-witness-hodl-doctrine.html",
+      "authority": "public-convergence",
+      "purpose": "Different HODL readings",
+      "topics": [
+        "hodl",
+        "fiction"
+      ],
+      "read": "on-topic",
+      "approved_public_surface": true
+    },
+    {
+      "id": "bitcoin-x-kids",
+      "url": "https://cryptomoonboys.com/wiki/bitcoin-x-kids.html",
+      "path": "wiki/bitcoin-x-kids.html",
+      "authority": "identity-subject",
+      "purpose": "Inside-Block-Topia engineered generation",
+      "topics": [
+        "bitcoin-x-kids"
+      ],
+      "read": "on-topic",
+      "approved_public_surface": true
+    },
+    {
+      "id": "bitcoin-kids",
+      "url": "https://cryptomoonboys.com/wiki/bitcoin-kids.html",
+      "path": "wiki/bitcoin-kids.html",
+      "authority": "identity-subject",
+      "purpose": "Escaped or outside Bitcoin Kids",
+      "topics": [
+        "bitcoin-kids"
+      ],
+      "read": "on-topic",
+      "approved_public_surface": true
+    },
+    {
+      "id": "alfie",
+      "url": "https://cryptomoonboys.com/wiki/alfie-bitcoin-kid-blaze.html",
+      "path": "wiki/alfie-bitcoin-kid-blaze.html",
+      "authority": "character-subject",
+      "purpose": "Alfie Blaze / Bitcoin KiD; prophecy is interpretation",
+      "topics": [
+        "alfie",
+        "bitcoin-kids"
+      ],
+      "read": "on-topic",
+      "approved_public_surface": true
+    },
+    {
+      "id": "null",
+      "url": "https://cryptomoonboys.com/wiki/null-the-prophet.html",
+      "path": "wiki/null-the-prophet.html",
+      "authority": "character-subject",
+      "purpose": "NULL/Antichain; separate disputed origin from established threat",
+      "topics": [
+        "null",
+        "antichain"
+      ],
+      "read": "on-topic",
+      "approved_public_surface": true
+    },
+    {
+      "id": "queen-pfly",
+      "url": "https://cryptomoonboys.com/wiki/queen-sarah-p-fly.html",
+      "path": "wiki/queen-sarah-p-fly.html",
+      "authority": "character-subject",
+      "purpose": "Queen Sarah P-fly and Block Topia control",
+      "topics": [
+        "queen-pfly",
+        "authority"
+      ],
+      "read": "on-topic",
+      "approved_public_surface": true
+    },
+    {
+      "id": "graffpunks",
+      "url": "https://cryptomoonboys.com/wiki/graffpunks.html",
+      "path": "wiki/graffpunks.html",
+      "authority": "faction-subject",
+      "purpose": "Specific faction's culture and history",
+      "topics": [
+        "graffpunks",
+        "faction"
+      ],
+      "read": "on-topic",
+      "approved_public_surface": true
+    },
+    {
+      "id": "live-factions",
+      "url": "https://cryptomoonboys.com/battle-chamber/factions/index.html",
+      "path": "battle-chamber/factions/index.html",
+      "authority": "live-roster",
+      "purpose": "Currently listed Battle Chamber choices; not synonymous with Forty Paths",
+      "topics": [
+        "game",
+        "live",
+        "faction"
+      ],
+      "read": "on-topic",
+      "approved_public_surface": true
+    }
+  ],
+  "routes": {
+    "owned_or_assigned_nft": [
+      "brand-overview",
+      "gkniftyheads",
+      "chronology",
+      "concordance"
+    ],
+    "fictional_new_character": [
+      "brand-overview",
+      "gkniftyheads",
+      "chronology",
+      "concordance",
+      "first-witness-hub"
+    ],
+    "faction_based": [
+      "forty-paths",
+      "faction-commentaries"
+    ],
+    "localised_world": [
+      "block-topia",
+      "street-kingdoms"
+    ],
+    "rights": [
+      "brand-overview",
+      "gkniftyheads"
+    ],
+    "active_battle_chamber": [
+      "live-factions"
+    ],
+    "disputed": [
+      "source-register",
+      "concordance",
+      "w81-digest"
+    ]
+  },
+  "rules": [
+    "Read primary relevant public pages, not every source. If a link cannot be accessed say so; request source text/image from user.",
+    "Check exact faction names, NFT collection, asset ID, template ID, visual traits and status separately.",
+    "Attribute known vs invented details explicitly; do not label new work official without GK approval.",
+    "A 40-culture roster does not imply 40 live game options.",
+    "Never treat an archived proposal as an announced/live financial product.",
+    "Return a source map with exact URLs actually accessed."
+  ]
+}
