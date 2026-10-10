@@ -31,8 +31,9 @@ jobs:
         env:
           NODE_OPTIONS: --max-old-space-size=4096
         run: |
+          node scripts/wiki-publish-gate.js
           node scripts/generate-publishing-surfaces.mjs
-          git add -- js/wiki-index.json js/link-map.json js/link-graph.json js/entity-map.json js/entity-graph.json js/graph-data.json js/entity-graph-lite.json js/site-stats.json sitemap.xml index_stats.json sam-memory.json
+          git add -- js/wiki-publish-audit.json js/wiki-index.json js/link-map.json js/link-graph.json js/entity-map.json js/entity-graph.json js/graph-data.json js/entity-graph-lite.json js/site-stats.json sitemap.xml index_stats.json sam-memory.json
           if git diff --cached --quiet; then
             echo "No publishing changes needed."
             exit 0
