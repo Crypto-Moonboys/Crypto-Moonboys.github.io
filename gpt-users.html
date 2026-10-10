@@ -44,6 +44,24 @@ body.page-gpt-users #content,body.page-gpt-users .swarmsy-page{padding-top:0}
 .gpt-studio textarea{display:block;background:#06111a;border:1px solid #536979;color:#f2faff;border-radius:7px;padding:12px;width:100%;min-height:185px;resize:vertical;margin:10px 0 5px;font-size:.91rem;line-height:1.45}
 .gpt-tips{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.gpt-tip{padding:11px 13px;border-left:3px solid var(--gpt-gold);background:rgba(255,255,255,.03)}.gpt-tip strong{display:block}
 @media(max-width:650px){.gpt-feature-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.gpt-route-grid{grid-template-columns:1fr}.gpt-tips{grid-template-columns:1fr}.gpt-actions{flex-direction:column;align-items:stretch}.gpt-button{width:100%}}
+
+.gpt-memory .memory-form,.gpt-memory .memory-add-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:14px 0}
+.gpt-memory label{display:flex;flex-direction:column;gap:6px;font-size:.93rem;font-weight:700;color:#d7e9f1}
+.gpt-memory label.memory-wide{grid-column:1/-1}
+.gpt-memory input:not([type=file]),.gpt-memory select,.gpt-memory textarea{box-sizing:border-box;width:100%;margin:0;min-height:42px;padding:9px 11px;border:1px solid #647c89;border-radius:6px;color:#eff9ff;background:#06111a;font:inherit;font-weight:400}
+.gpt-memory textarea{min-height:75px!important}
+.gpt-memory .memory-add-grid button,.gpt-memory .memory-entry button{border:1px solid #f7c948;background:#171b20;color:#f7c948;border-radius:6px;min-height:34px;font-weight:700;cursor:pointer}
+.gpt-memory .memory-add-grid .memory-add-item{display:flex;flex-direction:column;gap:6px;min-width:0}
+.gpt-memory .memory-entries{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.gpt-memory .memory-entries>div{border:1px solid #445561;border-radius:7px;padding:11px;min-width:0}
+.gpt-memory .memory-entries strong,.gpt-memory .memory-entries small{display:block}
+.gpt-memory .memory-entries small{color:#b9ced8;font-size:.82rem;margin:4px 0 10px}
+.gpt-memory .memory-entry{display:flex;align-items:start;gap:7px;justify-content:space-between;margin-top:7px;padding-top:7px;border-top:1px solid #344957}
+.gpt-memory .memory-entry span{overflow-wrap:anywhere;font-size:.85rem;line-height:1.3}
+.gpt-memory .memory-entry button{flex-shrink:0;padding:3px 7px}
+.gpt-memory #memory-status[data-error=true]{color:#ffadad}
+@media(max-width:650px){.gpt-memory .memory-form,.gpt-memory .memory-add-grid,.gpt-memory .memory-entries{grid-template-columns:1fr}}
+
 </style>
 </head>
 <body class="page-swarmsy page-gpt-users page-standard-shell">
@@ -81,8 +99,51 @@ body.page-gpt-users #content,body.page-gpt-users .swarmsy-page{padding-top:0}
 <details class="gpt-prompt-details" id="gpt-prompt-details"><summary>View the exact message given to ChatGPT</summary><label for="gpt-prompt-preview">Message ready to send</label><textarea id="gpt-prompt-preview" readonly rows="8">I came from Crypto Moonboys. Act as SPARKY: guide a complete beginner, ask one useful question at most, create one practical draft now, keep made work distinct from invented plans, and be honest about tool access. Help me start a creative activity. Please try to read https://cryptomoonboys.com/sparky-chatgpt-guide.txt if accessible.</textarea></details>
 <p class="gpt-small" id="gpt-copy-status" role="status" aria-live="polite"></p>
 </section>
+
+<section class="gpt-section gpt-memory" id="creator-memory-studio" aria-labelledby="memory-title">
+<h2 id="memory-title">3. Your portable creator memory</h2>
+<p class="gpt-small">Keep an approved identity and project record that you can move between ChatGPT, SWARMSY and other AI tools. Your data stays in this browser until you export or share it. No account, automatic upload or cloud sync.</p>
+<p class="gpt-small">Current activity: <strong id="memory-current-activity">Creative project</strong>. Starting a new memory resets the editor, not your ChatGPT conversation.</p>
+<div class="gpt-actions">
+<button type="button" class="gpt-button" id="memory-new">New project from activity</button>
+<button type="button" class="gpt-button" id="memory-import">Import JSON</button>
+<button type="button" class="gpt-button gpt-button--primary" id="memory-export-json">Download project JSON</button>
+<button type="button" class="gpt-button" id="memory-export-md">Download readable Markdown</button>
+<input id="memory-import-file" type="file" accept=".json,application/json" hidden aria-label="Choose creator memory JSON file">
+</div>
+<div class="memory-form">
+<label>Project name <input data-memory-field="project.title" maxlength="140" placeholder="Your character, artwork, world or business"></label>
+<label>Project type / activity <input data-memory-field="project.kind" maxlength="100" placeholder="moonboy, website, music, art..."></label>
+<label class="memory-wide">Short project summary <textarea data-memory-field="project.summary" maxlength="3000" rows="3" placeholder="What exists and what are you building?"></textarea></label>
+<label>Voice / tone <textarea data-memory-field="identity.voice" maxlength="2000" rows="2" placeholder="How should it sound?"></textarea></label>
+<label>Visual style <textarea data-memory-field="identity.visual_style" maxlength="2000" rows="2" placeholder="Colours, silhouettes, motifs, styles to preserve"></textarea></label>
+<label>Themes <textarea data-memory-field="identity.themes" maxlength="2000" rows="2" placeholder="Story themes and recurring ideas"></textarea></label>
+<label>Boundaries <textarea data-memory-field="identity.boundaries" maxlength="2000" rows="2" placeholder="Things the project must avoid"></textarea></label>
+<label>Canon / project scope
+<select data-memory-field="canon.scope"><option value="independent">Independent creator project</option><option value="moonboys">Crypto Moonboys creator draft</option><option value="other">Other shared universe</option></select></label>
+<label>Next step <input data-memory-field="project.next_action" maxlength="1000" placeholder="The one thing to do next"></label>
+<label class="memory-wide">Canon / source notes <textarea data-memory-field="canon.notes" maxlength="2000" rows="2" placeholder="Source conflicts or missing proof; no draft becomes official automatically"></textarea></label>
+</div>
+<div class="memory-add-grid">
+<div class="memory-add-item"><label for="memory-add-decisions">Creator-approved decision</label><input id="memory-add-decisions" maxlength="2000" placeholder="Only add a decision you have actually approved"><button type="button" data-memory-add="decisions">Add approved decision</button></div>
+<div class="memory-add-item"><label for="memory-add-ideas">Unapproved idea</label><input id="memory-add-ideas" maxlength="2000" placeholder="A proposal still under discussion"><button type="button" data-memory-add="ideas">Add draft idea</button></div>
+<div class="memory-add-item"><label for="memory-add-sources">Source reference</label><input id="memory-add-sources" maxlength="2300" placeholder="Source title | https://example.com"><button type="button" data-memory-add="sources">Add source link</button></div>
+<div class="memory-add-item"><label for="memory-add-assets">Artwork / file reference</label><input id="memory-add-assets" maxlength="1200" placeholder="Artwork name | my-file.png"><button type="button" data-memory-add="assets">Add file reference</button></div>
+<div class="memory-add-item"><label for="memory-add-proofs">Unverified proof note</label><input id="memory-add-proofs" maxlength="2000" placeholder="What was actually completed? Keep evidence separately."><button type="button" data-memory-add="proofs">Add proof note</button></div>
+<div class="memory-add-item"><label for="memory-add-history">Project history note</label><input id="memory-add-history" maxlength="500" placeholder="Milestone or change (user-supplied)"><button type="button" data-memory-add="history">Add history note</button></div>
+</div>
+<div id="memory-entries" class="memory-entries" aria-live="polite"></div>
+<div class="gpt-actions">
+<button type="button" class="gpt-button gpt-button--primary" id="memory-copy-handoff">Copy project handoff for AI</button>
+<a class="gpt-button" href="https://chatgpt.com/" rel="noopener noreferrer" target="_blank">Open ChatGPT (paste handoff)</a>
+</div>
+<p id="memory-status" class="gpt-small" role="status" aria-live="polite"></p>
+<details id="memory-handoff-details" class="gpt-prompt-details"><summary>View / manually copy AI handoff</summary><textarea id="memory-handoff-preview" readonly rows="10" aria-label="AI handoff text"></textarea></details>
+<p class="gpt-small">Keep the JSON together with your actual art files. Source links are references, not verified facts. Your personal project approval does not grant official Moonboys canon or IP rights. <a href="/docs/portable-creator-memory.md">How the format works</a>.</p>
+</section>
+
 <section class="gpt-section" aria-labelledby="gpt-next-title">
-<h2 id="gpt-next-title">3. Make it, save it and keep going</h2>
+<h2 id="gpt-next-title">4. Make it, save it and keep going</h2>
 <div class="gpt-tips"><div class="gpt-tip"><strong>Start small</strong>Paper, a phone or a simple web page is enough for a first version.</div><div class="gpt-tip"><strong>Show your progress</strong>Upload a sketch, actual photo, draft or file and ask for improvements.</div><div class="gpt-tip"><strong>Save your project</strong>Keep an editable project record with approved choices, sources and the next move.</div></div>
 </section>
 <section class="gpt-section" aria-labelledby="gpt-about">
@@ -92,6 +153,8 @@ body.page-gpt-users #content,body.page-gpt-users .swarmsy-page{padding-top:0}
 </section>
 </div></main>
 <script src="/js/sparky-creator-activities.js"></script>
+<script src="/js/creator-memory.js"></script>
+<script src="/js/creator-memory-studio.js"></script>
 <script src="/js/sparky-gpt-app.js"></script>
 <script data-cfasync="false" src="/js/api-config.js"></script>
 <script data-cfasync="false" src="/js/arcade/core/global-event-bus.js"></script>

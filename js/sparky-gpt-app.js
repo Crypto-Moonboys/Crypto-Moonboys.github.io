@@ -59,6 +59,9 @@
     guideLink.href = guideFor(a.guide);
     guideLink.textContent = 'Read the ' + a.guide.replace(/-/g, ' ') + ' guide';
     status.textContent = '';
+    if (typeof root.dispatchEvent === 'function' && typeof root.CustomEvent === 'function') {
+      root.dispatchEvent(new root.CustomEvent('sparky-activity-change', { detail: { id: a.id, title: a.title } }));
+    }
   }
   function render(filter) {
     const q = String(filter || '').toLocaleLowerCase().trim();

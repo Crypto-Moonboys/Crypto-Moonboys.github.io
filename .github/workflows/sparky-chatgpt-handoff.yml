@@ -12,6 +12,11 @@ on:
       - 'wiki/create-your-moonboy.html'
       - 'js/sparky-creator-activities.js'
       - 'js/sparky-gpt-app.js'
+      - 'js/creator-memory.js'
+      - 'js/creator-memory-studio.js'
+      - 'docs/portable-creator-memory.md'
+      - 'scripts/creator-memory.test.mjs'
+      - 'scripts/creator-memory-studio.interaction.test.mjs'
       - 'scripts/sparky-chatgpt-handoff.test.mjs'
       - 'scripts/sparky-pages-artifact.test.mjs'
       - 'scripts/fixtures/sparky-creator-goal-hashes.json'
@@ -33,9 +38,9 @@ jobs:
         with:
           node-version: '22'
       - name: Check new creator application JavaScript
-        run: node --check js/sparky-creator-activities.js && node --check js/sparky-gpt-app.js
+        run: node --check js/sparky-creator-activities.js && node --check js/sparky-gpt-app.js && node --check js/creator-memory.js && node --check js/creator-memory-studio.js
       - name: Run all SPARKY creator regression tests
-        run: node --test scripts/sparky-chatgpt-handoff.test.mjs
+        run: node --test scripts/sparky-chatgpt-handoff.test.mjs scripts/creator-memory.test.mjs scripts/creator-memory-studio.interaction.test.mjs
       - name: Build the actual public Pages artifact
         run: node scripts/prepare-pages-artifact.mjs public-site
       - name: Verify deployed guides, canon index, wiki discovery and disclosure protection
