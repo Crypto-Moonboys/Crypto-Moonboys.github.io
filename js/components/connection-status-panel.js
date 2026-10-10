@@ -16,9 +16,11 @@
  *   data-csp-missed       — Missed Opportunities (MISSED badge, XP, counts)
  *
  * Header badge states:
- *   LIVE SYNC          — linked + fresh signed Telegram auth confirmed
- *   RELINK             — linked in localStorage but signed auth expired/missing
- *   Telegram Sync Required — not linked
+ *   Checking Telegram  — website (OIDC) session restoration still pending
+ *   Telegram Connected — linked + fresh signed Telegram auth confirmed (LIVE SYNC)
+ *   Telegram Connected · Renewing — verified website session renewing its short proof
+ *   RELINK             — legacy bot link in localStorage but signed auth expired/missing
+ *   Telegram Sync Required — not linked (after any pending restoration resolves)
  *
  * Missed XP display: checks page globals (MOONBOYS_WTF_EVENTS,
  * MOONBOYS_ROGUELITE_DAILY_STATE) and the session daily-state cache first.
@@ -55,6 +57,7 @@
   // Fallback used when the API does not return required_xp.
   var FALLBACK_REQUIRED_XP = 50;
   var DAILY_STATE_FETCH_TIMEOUT_MS = 6000;
+  var BADGE_PENDING_RETRY_MS = 30000;
   var STYLE_ID = 'csp-styles';
 
   // ── Per-session cache ─────────────────────────────────────────────────
@@ -1097,10 +1100,40 @@
     return buildSectionHTML('live');
   }
 
+  function isIdentitySessionPending() {
+    var gate = getIdentity();
+    return !!(gate && typeof gate.isSessionPending === 'function' && gate.isSessionPending());
+  }
+
+  function isWebsiteSessionMode() {
+    var gate = getIdentity();
+    return !!(gate && typeof gate.isWebsiteSession === 'function' && gate.isWebsiteSession());
+  }
+
+  function pendingIdentityBadgeHTML(label, detail) {
+    return '<span class="csp-badge csp-badge--pending" aria-label="' + esc(label) + '" data-csp-badge-state="pending">' +
+      '<span class="csp-pulse csp-pulse--warn"></span>' +
+      '<span class="csp-badge-stack"><strong>' + esc(label) + '</strong><small>' + esc(detail) + '</small></span>' +
+    '</span>';
+  }
+
   async function buildBadgeHTML() {
+    // Website (OIDC) identity is restored asynchronously from the cookie
+    // session. Never claim a sync is required before that check resolves.
+    if (isIdentitySessionPending()) return pendingIdentityBadgeHTML('Checking Telegram', 'Restoring your session…');
     var linked = isLinked();
+    if (!linked && isWebsiteSessionMode()) {
+      // Stale in-memory proof (e.g. another tab switched account): re-verify
+      // the cookie session once before deciding the player is unlinked.
+      var websiteGate = getIdentity();
+      if (websiteGate && typeof websiteGate.getFreshTelegramAuth === 'function') {
+        await Promise.resolve(websiteGate.getFreshTelegramAuth()).catch(function () { return null; });
+      }
+      linked = isLinked();
+      if (!linked && isWebsiteSessionMode()) return pendingIdentityBadgeHTML('Checking Telegram', 'Verifying your session…');
+    }
     if (!linked) {
-      return '<a href="/gkniftyheads-incubator.html" class="csp-badge csp-badge--unlinked" aria-label="Telegram Sync Required"><span class="csp-pulse csp-pulse--warn"></span><span><strong>Telegram Sync Required</strong><small>Link to activate live systems</small></span></a>';
+      return '<a href="/gkniftyheads-incubator.html" class="csp-badge csp-badge--unlinked" aria-label="Telegram Sync Required" data-csp-badge-state="unlinked"><span class="csp-pulse csp-pulse--warn"></span><span><strong>Telegram Sync Required</strong><small>Link to activate live systems</small></span></a>';
     }
     // Check for fresh signed auth — LIVE SYNC requires confirmed auth, not just localStorage linked state.
     var gate = getIdentity();
@@ -1115,6 +1148,11 @@
           : (restored.telegram_auth || null);
       }
     }
+    if (!freshAuth && isWebsiteSessionMode() && isLinked()) {
+      // A verified website session keeps its activation while its short proof
+      // renews; it never needs the /gklink bot flow.
+      return pendingIdentityBadgeHTML('Telegram Connected', (getDisplayName() || 'Player') + ' · Renewing session…');
+    }
     if (!freshAuth) {
       // Linked in localStorage but auth is expired or missing — show RELINK state.
       var relinkName = getDisplayName() || 'Player';
@@ -1123,9 +1161,9 @@
     var apiOnline = await checkApiOnline();
     if (!apiOnline || apiOnline.ok !== true) {
       return '' +
-        '<span class="csp-badge csp-badge--pending" aria-label="Sync pending">' +
+        '<span class="csp-badge csp-badge--pending" aria-label="Telegram Connected — sync pending" data-csp-badge-state="connected-pending">' +
           '<span class="csp-pulse csp-pulse--warn"></span>' +
-          '<span class="csp-badge-stack"><strong>SYNC PENDING</strong><small>' + esc(getApiSummary(apiOnline)) + '</small></span>' +
+          '<span class="csp-badge-stack"><strong>Telegram Connected</strong><small>SYNC PENDING · ' + esc(getApiSummary(apiOnline)) + '</small></span>' +
           '<span class="csp-badge-chip csp-badge-chip--warn">API?</span>' +
         '</span>';
     }
@@ -1137,9 +1175,9 @@
     var serverLinkedConfirmed = isServerLinkedConfirmed();
     var blocktopiaStatus = resolveBlocktopiaAccessState(linked, arcadeXp, requiredXp, serverLinkedConfirmed, progressionConfirmed);
     return '' +
-      '<span class="csp-badge csp-badge--linked" aria-label="Live sync active">' +
+      '<span class="csp-badge csp-badge--linked" aria-label="Telegram Connected — live sync active" data-csp-badge-state="connected">' +
         '<span class="csp-pulse"></span>' +
-        '<span class="csp-badge-stack"><strong>LIVE SYNC</strong><small>' + esc(name || 'Player') + ' · XP <span data-csp-badge-xp>' + arcadeXp + '</span></small></span>' +
+        '<span class="csp-badge-stack"><strong>Telegram Connected</strong><small>' + esc(name || 'Player') + ' · XP <span data-csp-badge-xp>' + arcadeXp + '</span></small></span>' +
         '<span class="csp-badge-chip" data-csp-badge-bt>' + blocktopiaBadgeLabel(blocktopiaStatus) + '</span>' +
         '<span class="csp-badge-chip csp-badge-chip--good">API</span>' +
       '</span>';
@@ -1320,6 +1358,19 @@
     var html = await buildBadgeHTML();
     if (String(el.dataset.cspToken) === String(token)) {
       el.innerHTML = html;
+      // Re-render once the asynchronous website session restoration settles.
+      var gate = getIdentity();
+      if (isIdentitySessionPending() && gate && gate.ready && typeof gate.ready.then === 'function') {
+        gate.ready.then(function () {}, function () {}).then(function () {
+          if (String(el.dataset.cspToken) === String(token)) mountBadge(el);
+        });
+      } else if (html.indexOf('data-csp-badge-state="pending"') !== -1) {
+        // Verifying/renewing after a transient failure: retry later so the
+        // badge cannot stay stuck when a renewal succeeds without an event.
+        setTimeout(function () {
+          if (String(el.dataset.cspToken) === String(token)) mountBadge(el);
+        }, BADGE_PENDING_RETRY_MS);
+      }
     }
   }
 
@@ -1362,6 +1413,16 @@
     mountAllSections();
     var badge = document.getElementById('moonboys-global-status-badge');
     if (badge) mountBadge(badge);
+  }
+
+  var _identityRefreshTimer = null;
+  function scheduleIdentityRefresh() {
+    // Coalesce the paired identity events dispatched for a single transition.
+    if (_identityRefreshTimer) clearTimeout(_identityRefreshTimer);
+    _identityRefreshTimer = setTimeout(function () {
+      _identityRefreshTimer = null;
+      invalidateAndRefresh();
+    }, 0);
   }
 
   function invalidateDailyStateCache() {
@@ -1479,6 +1540,11 @@
       'moonboys:score-updated',
     ].forEach(function (eventName) {
       window.addEventListener(eventName, scheduleLiveDataRefresh);
+    });
+    // Same-tab identity transitions (website login/restore, account switch,
+    // session expiry) invalidate per-identity caches and re-render the badge.
+    ['moonboys:telegram-session', 'moonboys:identity-change'].forEach(function (eventName) {
+      window.addEventListener(eventName, scheduleIdentityRefresh);
     });
     window.addEventListener('moonboys:wtf-countdown-tick', updateWtfCountdownUI);
     window.addEventListener('moonboys:faction-status', function (e) {

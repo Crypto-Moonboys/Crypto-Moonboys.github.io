@@ -121,12 +121,21 @@
     return canProbeWebsiteSession() && (!websiteCapabilityKnown || (websiteAvailable && !websiteRequestHealthy));
   }
 
+  // Same-tab notification for identity surfaces (e.g. the header badge).
+  // The event is a refresh trigger only, never account proof.
+  function notifyIdentityChange(telegramId) {
+    if (typeof window.dispatchEvent !== 'function' || typeof CustomEvent !== 'function') return;
+    window.dispatchEvent(new CustomEvent('moonboys:identity-change', { detail: { telegram_id: telegramId ? String(telegramId) : null, linked: !!telegramId } }));
+  }
+
   function clearWebsiteIdentity() {
+    var hadIdentity = !!websiteAuth || lsGet('moonboys_tg_session_mode') === 'website';
     websiteAuth = null;
     websiteCsrf = null;
     ['moonboys_tg_id', 'moonboys_tg_name', 'moonboys_tg_linked', 'moonboys_tg_session_mode'].forEach(lsRemove);
     clearStoredTelegramAuthRaw();
     setSyncHealth('bad', 'auth_expired');
+    if (hadIdentity) notifyIdentityChange(null);
   }
 
   function adoptWebsiteSession(data) {
@@ -147,6 +156,7 @@
     if (identityChanged && typeof window.dispatchEvent === 'function' && typeof CustomEvent === 'function') {
       window.dispatchEvent(new CustomEvent('moonboys:telegram-session', { detail: { telegram_id: auth.id } }));
       window.dispatchEvent(new CustomEvent('moonboys:sync-state', { detail: { state: 'good', telegram_id: auth.id } }));
+      notifyIdentityChange(auth.id);
     }
     return { ok: true, linked: true, source: 'telegram_oidc', telegram_id: String(auth.id), telegram_auth: auth };
   }
@@ -1168,6 +1178,10 @@
 
   window.MOONBOYS_IDENTITY = {
     ready: websiteReady,
+    /** True while the initial website cookie session restoration is unresolved. */
+    isSessionPending: function () { return websitePending; },
+    /** Hint (stored session mode, not proof) that the identity is a cookie-backed website (OIDC) session. */
+    isWebsiteSession: function () { return lsGet('moonboys_tg_session_mode') === 'website'; },
     loginWithTelegram: loginWithTelegram,
     logout: logoutTelegram,
     /**

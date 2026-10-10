@@ -131,7 +131,7 @@ check(!/wtf\/events\/(today|check-in|complete|choose-option)[^`'"\n]*telegram_au
 check(!xpBurst.includes('innerHTML'), 'XP burst animation avoids unsafe dynamic innerHTML rendering');
 
 console.log('\n[3] Top notice');
-check(csp.includes('LIVE SYNC') && csp.includes('Telegram Sync Required'), 'compact Telegram/XP live notice supports linked and unlinked states');
+check(csp.includes('Telegram Connected') && csp.includes('Telegram Sync Required') && csp.includes('Checking Telegram'), 'compact Telegram/XP live notice supports linked, pending and unlinked states');
 check(csp.includes('csp-badge-stack') && csp.includes('csp-badge-chip'), 'top notice is compact and chip-based');
 check(csp.indexOf('LIVE SYNC') < csp.indexOf('async function buildPanelHTML') || csp.includes('async function buildBadgeHTML'), 'top notice is rendered by badge path, not the full panel');
 check(csp.includes('blocktopiaBadgeLabel(blocktopiaStatus)') && csp.includes("return 'BT OPEN'") && csp.includes("return 'BT LOCK'") && csp.includes("return 'BT SYNC'"), 'initial badge uses shared BT OPEN / BT LOCK / BT SYNC labels');

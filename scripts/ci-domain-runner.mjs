@@ -226,6 +226,7 @@ const GROUPS = {
   ],
   visual: [
     ['node', '--test', 'scripts/telegram-website-login-browser.test.mjs'],
+    ['node', '--test', 'scripts/telegram-header-badge-browser.test.mjs'],
     ['node', 'scripts/wiki-citation-preservation-browser.test.mjs'],
     ['node', 'scripts/moonpet-guide-browser.test.mjs'],
     ['node', 'scripts/moonpet-radio-browser.test.mjs'],
