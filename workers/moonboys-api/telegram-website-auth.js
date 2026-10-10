@@ -227,12 +227,15 @@ export async function handleTelegramWebsiteAuth(request, env, fetchImpl = fetch)
       if (!tx) fail('login_expired_or_replayed');
       event('completed');
       stage = 'provider_exchange';
-      const response = await fetchImpl(ISSUER + '/token', { method: 'POST', redirect: 'error', signal: AbortSignal.timeout(10000),
+      // Workers fetch rejects redirect: 'error'; manual redirects fail the response.ok check.
+      const response = await fetchImpl(ISSUER + '/token', { method: 'POST', redirect: 'manual', signal: AbortSignal.timeout(10000),
         headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Authorization': 'Basic ' + btoa(cfg.clientId + ':' + cfg.clientSecret) },
         body: new URLSearchParams({ grant_type: 'authorization_code', code, redirect_uri: cfg.redirectUri, client_id: cfg.clientId, code_verifier: tx.verifier }) });
       providerStatus = response.status;
       if (!response.ok) fail('telegram_token_exchange_failed');
       const tokens = await response.json();
+      // Telegram can report OAuth errors with HTTP 200 and no id_token.
+      if (typeof tokens?.id_token !== 'string') fail('telegram_token_exchange_failed');
       event('completed');
       stage = 'id_token_verification';
       const identity = await validateTelegramIdToken(tokens.id_token, cfg, tx.nonce, fetchImpl);

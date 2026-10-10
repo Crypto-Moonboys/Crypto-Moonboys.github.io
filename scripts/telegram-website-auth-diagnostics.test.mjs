@@ -2,8 +2,8 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
 import { Miniflare, convertV4MiniflareOptions } from 'miniflare';
-import { handleTelegramWebsiteAuth } from '../workers/moonboys-api/telegram-website-auth.js';
-import { API, ID, fixture, start, callback, provider, session } from './lib/telegram-website-auth-fixtures.mjs';
+import { authDigest, handleTelegramWebsiteAuth } from '../workers/moonboys-api/telegram-website-auth.js';
+import { API, SITE, ISSUER, ID, jwk, jwt, fixture, start, callback, provider, session } from './lib/telegram-website-auth-fixtures.mjs';
 
 async function capture(operation) {
   const events = [];
@@ -123,4 +123,81 @@ test('concurrent callback handling creates exactly one session and exchanges the
   assert.deepEqual(responses.map(response => response.status).sort(), [303, 401]);
   assert.equal(exchanges, 1);
   assert.equal(sqlite.prepare('SELECT COUNT(*) AS n FROM telegram_website_sessions').get().n, 1);
+});
+
+test('callback completes inside workerd with real fetch semantics for the token exchange', async () => {
+  // The Node fixtures inject fetch; workerd rejects RequestInit values Node accepts.
+  const { build } = await import('esbuild');
+  const { outputFiles: [bundle] } = await build({ write: false, bundle: true, format: 'esm', platform: 'browser', conditions: ['workerd', 'worker', 'browser'],
+    stdin: { resolveDir: 'workers/moonboys-api', contents: `import { handleTelegramWebsiteAuth } from './telegram-website-auth.js';
+      export default { fetch: (request, env) => handleTelegramWebsiteAuth(request, env) };` } });
+  let authorization = null;
+  const tokenRequests = [];
+  const mf = new Miniflare(convertV4MiniflareOptions({ name: 'oidc-workerd-test', modules: true, script: bundle.text,
+    compatibilityDate: '2026-04-12', d1Databases: { DB: 'oidc-workerd-test-only' },
+    bindings: { TELEGRAM_WEBSITE_LOGIN_ENABLED: 'true', TELEGRAM_WEBSITE_AUTH_ORIGIN: API, TELEGRAM_WEBSITE_ORIGINS: SITE,
+      TELEGRAM_OIDC_CLIENT_ID: 'test-client', TELEGRAM_OIDC_CLIENT_SECRET: 'test-client-secret' },
+    outboundService: async request => {
+      const url = new URL(request.url);
+      if (url.href === ISSUER + '/.well-known/jwks.json') return Response.json({ keys: [jwk] });
+      assert.equal(url.href, ISSUER + '/token');
+      const body = new URLSearchParams(await request.text());
+      tokenRequests.push(body);
+      assert.equal(request.headers.get('Authorization'), 'Basic ' + btoa('test-client:test-client-secret'));
+      assert.equal(await authDigest(body.get('code_verifier')), authorization.searchParams.get('code_challenge'));
+      return Response.json({ id_token: await jwt({ nonce: authorization.searchParams.get('nonce') }) });
+    } }));
+  try {
+    const { sqlite } = fixture();
+    const DB = await mf.getD1Database('DB');
+    for (const name of ['telegram_users', 'telegram_activity_log', 'telegram_anticheat_state']) {
+      await DB.prepare(sqlite.prepare('SELECT sql FROM sqlite_master WHERE type = ? AND name = ?').get('table', name).sql).run();
+    }
+    const migration = readFileSync('workers/moonboys-api/migrations/090_telegram_website_sessions.sql', 'utf8').replace(/^\s*--.*$/gm, '');
+    await DB.batch(migration.split(';').map(sql => sql.trim()).filter(Boolean).map(sql => DB.prepare(sql)));
+    await DB.prepare('INSERT INTO telegram_users (telegram_id, username, xp, wallet_address) VALUES (?, ?, ?, ?)').bind(ID, 'original', 420, 'existing-ownership-link').run();
+    const original = await DB.prepare('SELECT * FROM telegram_users WHERE telegram_id = ?').bind(ID).first();
+    const started = await mf.dispatchFetch(API + '/telegram/website/start?return_to=' + encodeURIComponent(SITE + '/gkniftyheads-incubator.html'), { redirect: 'manual' });
+    assert.equal(started.status, 302);
+    authorization = new URL(started.headers.get('Location'));
+    const loginCookie = started.headers.getSetCookie().find(line => line.startsWith('__Host-moonboys_login=')).split(';')[0];
+    const response = await mf.dispatchFetch(API + '/telegram/website/callback?code=test-code&state=' + authorization.searchParams.get('state'),
+      { redirect: 'manual', headers: { Cookie: loginCookie } });
+    assert.equal(response.status, 303, await response.clone().text());
+    assert.equal(response.headers.get('Location'), SITE + '/gkniftyheads-incubator.html');
+    assert.equal(tokenRequests.length, 1);
+    const sessionCookie = response.headers.getSetCookie().find(line => line.startsWith('__Host-moonboys_session=')).split(';')[0];
+    const bootstrap = await mf.dispatchFetch(API + '/telegram/website/session', { headers: { Cookie: sessionCookie, Origin: SITE } });
+    assert.equal(bootstrap.status, 200, await bootstrap.clone().text());
+    assert.equal((await bootstrap.json()).telegram_id, ID);
+    const current = await DB.prepare('SELECT * FROM telegram_users WHERE telegram_id = ?').bind(ID).first();
+    for (const key of ['id', 'telegram_id', 'xp', 'level', 'wallet_address', 'created_at']) assert.equal(current[key], original[key]);
+  } finally { await mf.dispose(); }
+});
+
+test('Telegram OAuth errors returned with HTTP 200 fail at the provider exchange stage', async () => {
+  const { env } = fixture();
+  const login = await start(env);
+  const { response, events } = await capture(() => callback(env, login, {}, {}, async () => Response.json({ error: 'invalid_grant' })));
+  assert.equal(response.status, 401);
+  assert.deepEqual(await response.json(), { error: 'telegram_token_exchange_failed' });
+  failure(events, 'provider_exchange', 'telegram_token_exchange_failed');
+  assert.equal(events.at(-1).provider_http_status, 200);
+});
+
+test('token endpoint redirects are rejected rather than followed', async () => {
+  const { env, sqlite } = fixture();
+  const login = await start(env);
+  const requests = [];
+  const fetchImpl = async (input, options) => {
+    requests.push(String(input));
+    assert.equal(options.redirect, 'manual');
+    return new Response(null, { status: 302, headers: { Location: 'https://attacker.example/token' } });
+  };
+  const { response, events } = await capture(() => callback(env, login, {}, {}, fetchImpl));
+  assert.equal(response.status, 401);
+  assert.deepEqual(await response.json(), { error: 'telegram_token_exchange_failed' });
+  failure(events, 'provider_exchange', 'telegram_token_exchange_failed');
+  assert.deepEqual(requests, ['https://oauth.telegram.org/token']);
+  assert.equal(sqlite.prepare('SELECT COUNT(*) AS n FROM telegram_website_sessions').get().n, 0);
 });

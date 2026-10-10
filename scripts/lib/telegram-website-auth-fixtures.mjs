@@ -89,7 +89,7 @@ function provider(authorization, claims = {}, tokenError = false) {
     if (url === ISSUER + '/.well-known/jwks.json') return Response.json({ keys: [jwk] });
     assert.equal(url, ISSUER + '/token');
     assert.equal(options.method, 'POST');
-    assert.equal(options.redirect, 'error');
+    assert.equal(options.redirect, 'manual');
     assert.equal(options.headers.Authorization, 'Basic ' + btoa('test-client:test-client-secret'));
     assert.equal(options.body.get('redirect_uri'), API + '/telegram/website/callback');
     assert.equal(options.body.get('grant_type'), 'authorization_code');
