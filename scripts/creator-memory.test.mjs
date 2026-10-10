@@ -159,8 +159,8 @@ test("public studio has local file/clipboard UI, no private URL injection and pu
   assert.match(page, /id="memory-import-file" type="file"/);
   assert.match(page, /id="memory-export-json"/);
   assert.match(page, /id="memory-export-md"/);
-  assert.match(page, /src="\/js\/creator-memory\.js"/);
-  assert.match(page, /src="\/js\/creator-memory-studio\.js"/);
+  assert.match(page, /src="\/js\/creator-memory\.js\?v=[a-f0-9]{12}"/);
+  assert.match(page, /src="\/js\/creator-memory-studio\.js\?v=[a-f0-9]{12}"/);
   assert.match(ui, /URL\.createObjectURL/);
   assert.match(ui, /M\.serialize\(record\)/);
   assert.match(ui, /\["history", "History notes"/);

@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
 import { test } from 'node:test';
+import { createHash } from 'node:crypto';
 import vm from 'node:vm';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -36,9 +37,10 @@ class FakeEl {
   getAttribute(k){return this.attrs[k]??null;}
   addEventListener(event,cb){this.listeners[event]=cb;}
   focus(){this.focused=true;}
-  scrollIntoView(){}
+  scrollIntoView(){this.scrolled=true;}
   select(){this.selected=true;}
   closest(tag){let n=this.parent;while(n){if(n.tagName===tag)return n;n=n.parent;}return null;}
+  querySelectorAll(query){return query === '.gpt-group' ? this.children.filter(n=>n.className==='gpt-group') : [];}
   querySelector(query){
     const m=query.match(/^\[data-activity="([^"]+)"\]$/);
     if (!m) return null;
@@ -201,6 +203,25 @@ test('interactive page selects exactly one activity, supports deep-link, search 
   assert.match(nodes['gpt-copy-status'].textContent,/Copy the highlighted message/);
 });
 
+test('all twelve section headings switch the open section and scroll without choosing an activity',()=>{
+  const {nodes}=ui();
+  const sections=nodes['gpt-activity-groups'].children;
+  assert.equal(sections.length,12);
+  const starter=nodes['gpt-choice'].textContent;
+  for (const section of sections) {
+    const heading=section.children[0];
+    if (section.open) heading.listeners.click({preventDefault(){}});
+    heading.listeners.click({preventDefault(){}});
+    assert.equal(sections.filter(group=>group.open).length,1);
+    assert.equal(section.open,true);
+    assert.equal(section.scrolled,true);
+    assert.equal(heading.focused,true);
+    assert.equal(nodes['gpt-choice'].textContent,starter,'section selection must not choose an arbitrary activity');
+  }
+  sections.at(-1).children[0].listeners.click({preventDefault(){}});
+  assert.equal(sections.filter(group=>group.open).length,0,'active section remains collapsible');
+});
+
 test('optional ChatGPT reference does not require a separate app or workspace',()=>{
   const reference = read('sparky-chatgpt-guide.txt');
   assert.match(reference,/optional reference/i);
@@ -216,8 +237,11 @@ test('HTML links to the actual dynamic application without hidden promises',()=>
   assert.match(page,/data-feature="moonboy"/);
   assert.match(page,/id="gpt-guide-link" href="\/sparky-chatgpt-guide\.txt"/,'no-JavaScript default guide must exist');
   assert.doesNotMatch(page,/href="\/guides\/sparky\/core\.txt"/,'missing static guide should never be linked');
-  assert.match(page,/src="\/js\/sparky-creator-activities\.js"/);
-  assert.match(page,/src="\/js\/sparky-gpt-app\.js"/);
+  for (const file of ['sparky-creator-activities', 'creator-memory', 'creator-memory-studio', 'sparky-gpt-app']) {
+    const digest = createHash('sha256').update(read('js/' + file + '.js')).digest('hex').slice(0, 12);
+    assert.ok(page.includes('<script data-cfasync="false" src="/js/' + file + '.js?v=' + digest + '"></script>'),
+      file + ': load directly with a version matching the current file contents');
+  }
   assert.match(page,/swarm/i);
   assert.match(page,/href="\/moonboy-ai-canon-guide\.txt">Moonboy public canon guide<\/a>/);
 });
