@@ -1,3 +1,5 @@
+import { getFreshPlayerAuth, syncPlayerProgress } from './player-progress-sync.js';
+
 /**
  * cross-game-modifier-system.js — Arcade-wide modifier layer.
  *
@@ -350,21 +352,6 @@ function _recordModifierUse(id, gameId) {
 
 // ── Server sync helpers ───────────────────────────────────────────────────────
 
-function _isLinked() {
-  try {
-    var identity = window.MOONBOYS_IDENTITY;
-    return !!(identity && typeof identity.isTelegramLinked === 'function' && identity.isTelegramLinked());
-  } catch (_) { return false; }
-}
-
-function _getSignedAuth() {
-  try {
-    var identity = window.MOONBOYS_IDENTITY;
-    if (!identity || typeof identity.getSignedTelegramAuth !== 'function') return null;
-    return identity.getSignedTelegramAuth();
-  } catch (_) { return null; }
-}
-
 function _getApiBase() {
   try {
     var cfg = window.MOONBOYS_API;
@@ -374,21 +361,11 @@ function _getApiBase() {
 
 /**
  * Sync the active modifier to the server for linked users.
- * Fires-and-forgets; never throws.
+ * Queues fresh authentication before submission; unsent failures expose a retry.
  * @param {string|null} modifierId
  */
 function _syncActiveModifierToServer(modifierId) {
-  if (!_isLinked()) return;
-  var auth = _getSignedAuth();
-  var apiBase = _getApiBase();
-  if (!auth || !apiBase) return;
-  try {
-    fetch(apiBase + '/player/modifiers/active', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ telegram_auth: auth, active_modifier_id: modifierId || '' }),
-    }).catch(function () {});
-  } catch (_) {}
+  return syncPlayerProgress('/player/modifiers/active', { active_modifier_id: modifierId || '' }, { selection: true });
 }
 
 /**
@@ -398,9 +375,9 @@ function _syncActiveModifierToServer(modifierId) {
  * @returns {Promise<void>}
  */
 export async function hydrateModifiersFromServer() {
-  if (!_isLinked()) return;
-  var auth = _getSignedAuth();
   var apiBase = _getApiBase();
+  var auth;
+  try { auth = await getFreshPlayerAuth(); } catch (_) { return; }
   if (!auth || !apiBase) return;
   try {
     var res = await fetch(apiBase + '/player/modifiers', {

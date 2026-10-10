@@ -1,3 +1,5 @@
+import { getFreshPlayerAuth, syncPlayerProgress } from './player-progress-sync.js';
+
 /**
  * faction-missions.js — Faction mission system.
  *
@@ -401,21 +403,6 @@ function _emitMissionComplete(factionId, mission, tier) {
 
 // ── Server sync helpers ───────────────────────────────────────────────────────
 
-function _isLinked() {
-  try {
-    var identity = (typeof window !== 'undefined') && window.MOONBOYS_IDENTITY;
-    return !!(identity && typeof identity.isTelegramLinked === 'function' && identity.isTelegramLinked());
-  } catch (_) { return false; }
-}
-
-function _getSignedAuth() {
-  try {
-    var identity = (typeof window !== 'undefined') && window.MOONBOYS_IDENTITY;
-    if (!identity || typeof identity.getSignedTelegramAuth !== 'function') return null;
-    return identity.getSignedTelegramAuth();
-  } catch (_) { return null; }
-}
-
 function _getApiBase() {
   try {
     var cfg = (typeof window !== 'undefined') && window.MOONBOYS_API;
@@ -425,56 +412,32 @@ function _getApiBase() {
 
 /**
  * Sync mission progress to the server for Telegram-linked users.
- * Fires-and-forgets; never throws.
+ * Queues fresh authentication before submission; unsent failures expose a retry.
  * @param {string} missionId
  * @param {number} amount
  * @param {number} target
  */
 function _syncMissionProgressToServer(missionId, amount, target) {
-  if (!_isLinked()) return;
-  var auth = _getSignedAuth();
-  var apiBase = _getApiBase();
-  if (!auth || !apiBase) return;
-  try {
-    fetch(apiBase + '/player/daily-missions/progress', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        telegram_auth: auth,
-        mission_id: missionId,
-        amount: amount,
-        target: target,
-      }),
-    }).catch(function () {});
-  } catch (_) {}
+  return syncPlayerProgress('/player/daily-missions/progress', {
+    mission_id: missionId, amount: amount, target: target,
+  });
 }
 
 function _syncBattleChamberMissionEvent(factionId, mission, tier) {
-  if (!_isLinked()) return;
-  var auth = _getSignedAuth();
-  var apiBase = _getApiBase();
-  if (!auth || !apiBase) return;
-  try {
-    fetch(apiBase + '/battle-chamber/event', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        telegram_auth: auth,
-        faction_id: factionId,
-        event_type: 'mission_complete',
-        // Proof-only event; contribution authority is owned by /faction/signal/contribute.
-        clout_delta: 0,
-        source: 'faction-missions',
-        event_text: 'Mission complete logged for faction activity proof.',
-        metadata_json: {
-          mission_id: mission && mission.id ? mission.id : null,
-          mission_label: mission && mission.label ? mission.label : null,
-          mission_tier: tier || 'daily',
-          ownership: 'faction_signal_route',
-        },
-      }),
-    }).catch(function () {});
-  } catch (_) {}
+  return syncPlayerProgress('/battle-chamber/event', {
+    faction_id: factionId,
+    event_type: 'mission_complete',
+    // Proof-only event; contribution authority is owned by /faction/signal/contribute.
+    clout_delta: 0,
+    source: 'faction-missions',
+    event_text: 'Mission complete logged for faction activity proof.',
+    metadata_json: {
+      mission_id: mission && mission.id ? mission.id : null,
+      mission_label: mission && mission.label ? mission.label : null,
+      mission_tier: tier || 'daily',
+      ownership: 'faction_signal_route',
+    },
+  });
 }
 
 /**
@@ -483,9 +446,9 @@ function _syncBattleChamberMissionEvent(factionId, mission, tier) {
  * @returns {Promise<void>}
  */
 export async function hydrateMissionsFromServer() {
-  if (!_isLinked()) return;
-  var auth = _getSignedAuth();
   var apiBase = _getApiBase();
+  var auth;
+  try { auth = await getFreshPlayerAuth(); } catch (_) { return; }
   if (!auth || !apiBase) return;
   try {
     var res = await fetch(apiBase + '/player/daily-missions', {

@@ -1,3 +1,5 @@
+import { verifyWebsiteCredential } from './moonboys-api/telegram-website-auth.js';
+
 const GAMES = ["snake", "blocktopia", "meme-swarm-3008", "chain-maze", "forkfield", "bullrun-brick-smash", "block-topia-dropzone", "kaiju"];
 const VARIETY_BONUS_GAMES = ["snake", "blocktopia", "meme-swarm-3008", "chain-maze", "forkfield", "bullrun-brick-smash", "block-topia-dropzone"];
 const VARIETY_BONUS = 500;           // bonus points when a player has scored in all legacy variety games
@@ -140,6 +142,11 @@ async function verifyLeaderboardTelegramAuth(body, env) {
   if (!tg || typeof tg !== 'object') {
     return { ok: false, error: 'telegram_sync_required', status: 403 };
   }
+
+  const websiteIdentity = await verifyWebsiteCredential(tg, env, body.telegram_id);
+  if (websiteIdentity) return websiteIdentity.error
+    ? { ok: false, error: websiteIdentity.error, status: websiteIdentity.status }
+    : { ok: true, telegramId: websiteIdentity.telegramId, auth: tg };
 
   const telegramId = String(tg.id || '').trim();
   const authDate   = String(tg.auth_date || '').trim();

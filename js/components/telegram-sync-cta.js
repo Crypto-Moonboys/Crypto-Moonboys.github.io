@@ -9,7 +9,7 @@
  *   2. Load this script (regular non-module script, data-cfasync="false").
  *
  * The rendered banner:
- *   - Explains that /gklink syncs Arcade XP server-side for Telegram-linked users.
+ *   - Offers verified website login and the compatible bot-link fallback.
  *   - Opens the canonical public Telegram bot link.
  *   - Secondary info link leads to /gkniftyheads-incubator.html for more details.
  *   - Fits within the viewport on desktop and mobile (no horizontal overflow).
@@ -26,17 +26,19 @@
   var INCUBATOR_HREF = '/gkniftyheads-incubator.html';
 
   var TEMPLATE =
-    '<div class="tg-sync-cta" role="note" aria-label="Open the Telegram bot to sync Arcade XP">' +
+    '<div class="tg-sync-cta" role="note" aria-label="Log in with Telegram to sync Arcade XP">' +
       '<span class="tg-sync-cta-icon" aria-hidden="true">🔗</span>' +
       '<div class="tg-sync-cta-body">' +
-        '<strong>Link Telegram — sync Arcade XP</strong>' +
+        '<strong>Log in with Telegram — restore your profile</strong>' +
         '<span>' +
-          'Open @WIKICOMSBOT, press Start, then run <code>/gkstart</code> and <code>/gklink</code>. ' +
-          'Use the signed link the bot sends you to connect your website identity and store Arcade XP server-side. ' +
+          'Telegram website login restores your existing identity and server-backed XP without a bot command. ' +
+          'Bot fallback: open @WIKICOMSBOT, run <code>/gkstart</code> and <code>/gklink</code>, then use its signed link. ' +
           '<a href="' + INCUBATOR_HREF + '">Learn more</a>.' +
         '</span>' +
       '</div>' +
-      '<a href="' + BOT_HREF + '" class="swarmsy-action-card tg-sync-cta-btn" target="_blank" rel="noopener noreferrer"><strong>Open Telegram Bot</strong><span>Open the public @WIKICOMSBOT bot in Telegram.</span></a>' +
+      '<a href="' + INCUBATOR_HREF + '" data-telegram-login class="swarmsy-action-card tg-sync-cta-btn"><strong>Log in with Telegram</strong><span>Restore your existing account.</span></a>' +
+      '<button type="button" data-telegram-logout>Log out</button>' +
+      '<a href="' + BOT_HREF + '" target="_blank" rel="noopener noreferrer">Bot fallback</a>' +
     '</div>';
 
   function mount(el) {

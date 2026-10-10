@@ -5,7 +5,7 @@
  * No fetching. No backend logic. Pure string helpers only.
  *
  * Rules:
- *   UNLINKED             — user has not completed /gklink
+ *   UNLINKED             — user has no active Telegram identity
  *   FEATURE_UNAVAILABLE  — feature flag off or BASE_URL absent
  *   API_UNAVAILABLE      — live request failed (BASE_URL present but no response)
  *   SYNC_IN_PROGRESS     — linked but auth not yet resolved
@@ -28,7 +28,7 @@
   if (typeof window === 'undefined') return;
 
   window.UI_STATUS_COPY = Object.freeze({
-    UNLINKED:            'Telegram not linked \u2014 run /gklink',
+    UNLINKED:            'Telegram login required',
     FEATURE_UNAVAILABLE: 'Feature unavailable',
     API_UNAVAILABLE:     'Core API unavailable',
     SYNC_IN_PROGRESS:    'Sync in progress',
@@ -93,7 +93,7 @@
 
       /** Prompt user to link Telegram. */
       telegramRequired: function () {
-        return '<p class="status-hint">Link Telegram via <a href="/gkniftyheads-incubator.html">/gklink</a> to persist Arcade XP and unlock server-backed features.</p>';
+        return '<p class="status-hint">Log in with <a href="/gkniftyheads-incubator.html" data-telegram-login>Telegram</a> to persist Arcade XP and unlock server-backed features.</p>';
       },
 
       /** Progress is guest-only. */

@@ -67,7 +67,7 @@ check(comments.includes("fillIfEmpty(form, 'name'") && comments.includes("fillIf
 check(!comments.includes('telegram-widget.js') && !comments.includes('data-telegram-login') && !comments.includes('Bot domain invalid'), 'Linked/comment form path avoids the broken Telegram widget');
 check(comments.includes('Telegram linked:') && comments.includes('Email optional — Telegram identity will be used.'), 'Linked Telegram users see email-optional Telegram identity copy');
 check(comments.includes('if (!email && !telegramAuth)') && comments.includes('if (email)   payload.email = email;'), 'Comment submit requires email only when signed Telegram auth is unavailable');
-check(comments.includes('Telegram quick-fill unavailable. Link through the Incubator Hub /gklink flow.'), 'Unlinked users see a clean Telegram quick-fill fallback');
+check(comments.includes('Telegram quick-fill unavailable. Log in through the Incubator Hub; /gklink remains a fallback.'), 'Unlinked users see website login and the compatible bot fallback');
 check(comments.includes('Gravatar avatar ready from saved email.') && comments.includes('Email required for Gravatar avatar, never displayed.'), 'Gravatar copy reflects saved-email reality without fake account detection');
 check(comments.includes('Comments &amp; Battle Layer') && comments.includes('Share knowledge. Earn XP. Build the archive.'), 'Comment section renders the redesigned battle-layer dashboard header');
 check(comments.includes('name="discord_username"') && comments.includes('Gravatar used for avatar. Email never displayed.'), 'Comment form includes Discord and clear Gravatar privacy copy');
