@@ -605,10 +605,10 @@
       ]
     },
     "create_your_moonboy": {
-      "alias_candidates": [
+      "alias_candidates": [],
+      "aliases": [
         "create your moonboy"
       ],
-      "aliases": [],
       "canonical_title": "Create Your Moonboy | Crypto Moonboys Wiki",
       "canonical_url": "/wiki/create-your-moonboy.html",
       "category": "characters",
@@ -11197,5 +11197,5 @@
       ]
     }
   },
-  "updated_at": "2026-10-10T11:09:30Z"
+  "updated_at": "2026-10-10T11:14:01Z"
 }

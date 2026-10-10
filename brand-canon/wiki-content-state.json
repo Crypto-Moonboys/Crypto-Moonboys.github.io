@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
   "generator": "scripts/generate-wiki-content-state.mjs",
-  "source_tree_hash": "sha256:4d8270b2ef09c64e71322604ba5d8b8cbf0eaef7643f95a621b1b99957ef5db0",
+  "source_tree_hash": "sha256:e99fc9a722fdda03d006f36cd6b4bcce547b639af7c512f9615c590959c66d83",
   "hash_algorithm": "sha256",
-  "page_count": 424,
-  "manifest_entry_count": 424,
+  "page_count": 425,
+  "manifest_entry_count": 425,
   "absent_stub_authorization_source": {
     "path": "brand-canon/wiki-absent-stubs.json",
     "content_hash": "sha256:b8874d0ede0983258101755e0706517d067dd8d85aa8a081742c497bbac2b663"
@@ -89,8 +89,8 @@
     }
   ],
   "summary": {
-    "total_pages_audited": 424,
-    "total_manifest_entries": 424,
+    "total_pages_audited": 425,
+    "total_manifest_entries": 425,
     "absent_stub_authorizations": 0,
     "rewrite_status_counts": {
       "KEEP": 179,
@@ -102,17 +102,17 @@
       "GENERATED": 4,
       "NFT_SPECIALIST": 159,
       "FIRST_WITNESS_LOCKED": 82,
-      "NEEDS_HUMAN_REVIEW": 0
+      "NEEDS_HUMAN_REVIEW": 1
     },
     "automation_policy_counts": {
-      "metadata-only": 168,
+      "metadata-only": 169,
       "replace-sam-block": 0,
       "canon-locked": 255,
       "stub-allowed": 1
     },
     "pages_with_multiple_sam_blocks": 0,
     "pages_with_multiple_canonical_blocks": 0,
-    "pages_with_legacy_unmarked_content": 6,
+    "pages_with_legacy_unmarked_content": 7,
     "pages_with_exact_duplicate_paragraphs": 142,
     "pages_with_duplicate_headings": 1,
     "pages_with_likely_near_duplicate_sections": 3,
@@ -1590,6 +1590,46 @@
       "content_owner": "canon",
       "canon_revision": 3,
       "canon_source_tier": "first-witness+w81"
+    },
+    {
+      "path": "wiki/create-your-moonboy.html",
+      "slug": "create-your-moonboy",
+      "title": "Create Your Moonboy",
+      "page_exists": true,
+      "page_type": "historical_archive",
+      "current_word_count": 807,
+      "manual_content_block_count": 0,
+      "sam_content_block_count": 0,
+      "canonical_content_block_count": 0,
+      "legacy_sam_article_wrapper": false,
+      "legacy_unmarked_content": true,
+      "duplicate_heading_count": 0,
+      "exact_duplicate_paragraph_count": 0,
+      "likely_near_duplicate_sections": [],
+      "content_hash": "sha256:98a4af183f19503cb62b3039330a5f5c08ac421045dc0bad7bf1f1ecf7b271b0",
+      "article_content_hash": "sha256:2d43f4445c643a292e760654187f39bbe6e6fff16ec47d32f476693d83ef5929",
+      "article_markup_hash": "sha256:2b03c7132989ed5aba11b17b76d641a50c332989fb40e101c820b7c2fc844c61",
+      "git_blob_oid": "1c4ed705058ede3840beeaa0adef2879b3a1a1e8",
+      "wiki_stub_marker_scope": null,
+      "first_witness_page": false,
+      "nft_template_generated_page": false,
+      "likely_lore_page": true,
+      "rewrite_status": "NEEDS_HUMAN_REVIEW",
+      "automation_policy": "metadata-only",
+      "rewrite_cluster": "Historical/archive pages",
+      "duplicate_severity": "NONE",
+      "canon_conflict_severity": "UNKNOWN_REVIEW",
+      "recommended_action": "Resolve classification/source ambiguity before any prose write.",
+      "suggested_priority": "P2",
+      "likely_source_family": [
+        "about/latest-canon-and-brand-vision.md",
+        "about/w81-condensed-canon-digest.md",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (unresolved archive bucket; historical W81 sources)"
+      ],
+      "audit_notes": [
+        "Substantive article content has no MANUAL_CONTENT, SAM_CONTENT, or CANONICAL_CONTENT ownership markers.",
+        "Existing wiki prose is surviving public archive, not automatically current canon."
+      ]
     },
     {
       "path": "wiki/croydon-tower-blocks.html",

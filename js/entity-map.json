@@ -620,7 +620,9 @@
     "canonical_title": "Create Your Moonboy | Crypto Moonboys Wiki",
     "canonical_url": "/wiki/create-your-moonboy.html",
     "category": "characters",
-    "aliases": [],
+    "aliases": [
+      "create your moonboy"
+    ],
     "tags": [
       "create",
       "your",
@@ -632,10 +634,7 @@
     "source_urls": [
       "/wiki/create-your-moonboy.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "create your moonboy"
-    ]
+    "brand": null
   },
   {
     "entity_id": "croydon_tower_blocks",
