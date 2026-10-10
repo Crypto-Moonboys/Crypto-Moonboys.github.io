@@ -17,7 +17,7 @@
  * 13. pagePath defaults to /swarmsy.html when absent.
  * 14. Bridge token is never present in any response body.
  * 15. sparky-chat.js calls /public/npc-chat through window.MOONBOYS_API.getApiBase().
- * 16. /sparky.html loads sparky-chat.js (not paperclip-chat.js); sparky-chat.js has no Paperclip persona wording.
+ * 16. /sparky.html retires public chat; the legacy sparky-chat.js client remains independently covered without Paperclip persona wording.
  * 17. js/paperclip-chat.js does not exist; no public HTML page loads it.
  */
 
@@ -645,9 +645,9 @@ await test('sparky-chat.js includes telegram_auth in authenticated POST body', (
   assert.ok(chatJsSrc.includes('telegram_auth: telegramAuth'), 'chat client must send signed Telegram auth proof to the Worker');
 });
 
-// ── 16. sparky.html / sparky-chat.js naming correctness ──────────────────────
+// ── 16. Retired public chat page and legacy client isolation ────────────────
 
-console.log('\n[16] sparky.html loads sparky-chat.js; sparky-chat.js is free of Paperclip persona wording');
+console.log('\n[16] sparky.html redirects to GPT Studio without loading legacy chat; the archived client remains free of Paperclip persona wording');
 
 const sparkyHtmlSrc = await read('sparky.html');
 
