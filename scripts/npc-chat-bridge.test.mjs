@@ -651,15 +651,10 @@ console.log('\n[16] sparky.html loads sparky-chat.js; sparky-chat.js is free of 
 
 const sparkyHtmlSrc = await read('sparky.html');
 
-await test('/sparky.html loads /js/sparky-chat.js, not paperclip-chat.js', () => {
-  assert.ok(
-    sparkyHtmlSrc.includes('/js/sparky-chat.js'),
-    '/sparky.html must load /js/sparky-chat.js',
-  );
-  assert.ok(
-    !sparkyHtmlSrc.includes('paperclip-chat.js'),
-    '/sparky.html must not load paperclip-chat.js',
-  );
+await test('/sparky.html retires public chat and points visitors to the GPT Creator Studio', () => {
+  assert.ok(sparkyHtmlSrc.includes('/gpt-users.html'), 'retired chat page must point to GPT Creator Studio');
+  assert.ok(!sparkyHtmlSrc.includes('/js/sparky-chat.js'), 'retired chat page must not boot legacy chat client');
+  assert.ok(!sparkyHtmlSrc.includes('data-sparky-chat'), 'retired chat page must not contain chat form');
 });
 
 await test('js/sparky-chat.js contains no Paperclip persona wording', () => {
