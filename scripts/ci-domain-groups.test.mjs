@@ -83,6 +83,14 @@ assert.ok(runner.includes("['node', 'scripts/wiki-lore-preservation-check.test.m
 assert.ok(runner.includes("['node', 'scripts/wiki-citation-preservation-browser.test.mjs']"),
   'visual CI must verify visible, working citation panels after runtime migration');
 
+{
+  const filename = 'scripts/bible-loader-swarmsy-browser.test.mjs';
+  const env = { ...process.env, CHANGED_FILES: filename };
+  delete env.GITHUB_OUTPUT;
+  const output = execFileSync(process.execPath, [path.join(ROOT, 'scripts/ci-change-scope.mjs'), 'visual'], { cwd: ROOT, env, encoding: 'utf8' });
+  assert.match(output, /should_run=true/u, `${filename} alone must trigger visual browser checks`);
+}
+
 assert.ok(
   pkg.scripts.test.includes('npm run ci:arcade') &&
   pkg.scripts.test.includes('npm run ci:worker-api') &&

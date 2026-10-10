@@ -71,7 +71,8 @@ const routeNeedles = [
   "if (p.startsWith('/games/')) return '/wiki/games-graffpunks.html'",
   "if (p.startsWith('/battle-chamber/') || p === '/community.html') return '/search.html?q=Battle%20Chamber'",
   "if (p === '/dashboard.html' || p === '/admin-tools.html') return '/search.html?q=System%20Hub'",
-  "if (p === '/swarmsy.html' || p === '/sparky.html') return '/search.html?q=SWARMSY'"
+  "if (p === '/swarmsy.html') return '/search.html?q=SWARMSY'",
+  "if (p === '/sparky.html' || p === '/gpt-users.html') return '/search.html?q=SPARKY%20Creator%20Studio'"
 ];
 for (const needle of routeNeedles) {
   if (shell.includes(needle)) pass(`canonical route rule present`);

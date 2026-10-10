@@ -12,7 +12,24 @@ test("legacy SPARKY public chat is retired without Telegram gate", () => {
 test("SWARMSY PC app is retained, with public GPT Creator Studio action", () => {
   const html = read("swarmsy.html");
   assert.match(html, /https:\/\/github\.com\/Crypto-Moonboys\/SWARMSY-Ai/);
-  assert.match(html, /<a\b(?=[^>]*href="\/gpt-users\.html")[^>]*>\s*<strong>CREATE WITH CHATGPT<\/strong>/);
+  assert.match(html, /<a\b(?=[^>]*href="\/gpt-users\.html")[^>]*>\s*<strong>NEW TO CREATING\? START WITH CHATGPT<\/strong>/);
   assert.doesNotMatch(html, /href="\/sparky\.html"/);
   assert.doesNotMatch(html, /Telegram-gated public AI bridge/);
+});
+
+
+test("site entry points open ChatGPT instead of claiming a hosted SWARMSY assistant", () => {
+  const home = read("index.html");
+  const shell = read("js/site-shell.js");
+  const swarmsy = read("swarmsy.html");
+  const readme = read("README.md");
+  assert.match(home, /href="\/gpt-users\.html"/);
+  assert.match(home, /START WITH CHATGPT/);
+  assert.doesNotMatch(home, /SWARMSY Ai WILL BLOW YOU UP|SWARMSY helps you name it, shape it, create it and keep YOU moving 24\/7/);
+  assert.match(shell, /sparkyAgent\.href = '\/gpt-users\.html'/);
+  assert.match(shell, /Start creating with ChatGPT via the SPARKY Creator Studio/);
+  assert.match(swarmsy, /optional PC beta/);
+  assert.match(swarmsy, /not a hosted SWARMSY login or live chat/);
+  assert.match(readme, /Retired website chatbot/);
+  assert.match(readme, /not automatic account sync/);
 });
