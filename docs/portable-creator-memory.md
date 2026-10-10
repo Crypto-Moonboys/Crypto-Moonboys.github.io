@@ -1,6 +1,6 @@
 # Portable Creator Memory — version 1
 
-The public Creator Studio and SWARMSY use the **same** `sparky-creator-memory` JSON format. A creator may download the JSON, upload it to a different AI, edit it, and later re-import it. Markdown is a human-readable export, **not** the round-trip source.
+The public [ChatGPT Creator Studio](../gpt-users.html) and the optional, separately installed [SWARMSY PC beta](../swarmsy.html) support the **same** `sparky-creator-memory` JSON format. The website does not host SWARMSY, and neither tool automatically reads or synchronises the other's private workspace records. A creator may download the JSON, provide it to a different AI, edit it and later re-import it. Markdown is a human-readable export, **not** the round-trip source.
 
 ## Data and approval boundaries
 
