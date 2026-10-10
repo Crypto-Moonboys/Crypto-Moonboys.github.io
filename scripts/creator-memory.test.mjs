@@ -65,6 +65,33 @@ test("rejects malformed, oversize and unsupported files without parsing unknown 
   long.ideas = Array.from({ length: 130 }, (_, i) => ({ text: "Proposal " + i }));
   assert.equal(M.parse(M.serialize(long)).ideas.length, 100);
 });
+
+test("untrusted Markdown cannot embed tracking images or active creator links", () => {
+  const M = boot();
+  const pack = M.create({ title: "![tracking pixel](https://attacker.invalid/pixel)" });
+  pack.project.summary = "[click me](https://attacker.invalid/) <img src='https://attacker.invalid/x'> &lt;img&gt;";
+  pack.decisions.push({ text: "![image](https://attacker.invalid/x)", approved_at: "", source: "Creator" });
+  pack.history.push({ event: "![hidden](https://attacker.invalid/log)", date: "" });
+  const readable = M.markdown(pack);
+  assert.doesNotMatch(readable, /!\[[^\]]*\]\(https:\/\/attacker\.invalid/);
+  assert.doesNotMatch(readable, /<img/i);
+  assert.match(readable, /\\!\\\[tracking pixel\\\]/);
+  assert.match(readable, /&amp;lt;img/);
+});
+test("mergeTextEntries preserves live records first and fails instead of truncating", () => {
+  const M = boot();
+  const result = M.mergeTextEntries(
+    [{ text: "same", source: "live" }, { text: "newest" }],
+    [{ text: "same", source: "old" }, { text: "older" }]
+  );
+  assert.equal(result.length, 3);
+  assert.equal(result[0].source, "live");
+  assert.equal(result[1].text, "newest");
+  assert.equal(result[2].text, "older");
+  assert.throws(() => M.mergeTextEntries([{ text: "live" }],
+    Array.from({ length: 100 }, (_, i) => ({ text: "old" + i }))), /No records were dropped/);
+});
+
 test("public studio has local file/clipboard UI, no private URL injection and public format guide", () => {
   const page = read("gpt-users.html");
   const ui = read("js/creator-memory-studio.js");
