@@ -51,6 +51,7 @@ body.page-gpt-users #content,body.page-gpt-users .swarmsy-page{padding-top:0}
 .gpt-memory input:not([type=file]),.gpt-memory select,.gpt-memory textarea{box-sizing:border-box;width:100%;margin:0;min-height:42px;padding:9px 11px;border:1px solid #647c89;border-radius:6px;color:#eff9ff;background:#06111a;font:inherit;font-weight:400}
 .gpt-memory textarea{min-height:75px!important}
 .gpt-memory .memory-add-grid button,.gpt-memory .memory-entry button{border:1px solid #f7c948;background:#171b20;color:#f7c948;border-radius:6px;min-height:34px;font-weight:700;cursor:pointer}
+.gpt-memory .memory-add-grid .memory-add-item{display:flex;flex-direction:column;gap:6px;min-width:0}
 .gpt-memory .memory-entries{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .gpt-memory .memory-entries>div{border:1px solid #445561;border-radius:7px;padding:11px;min-width:0}
 .gpt-memory .memory-entries strong,.gpt-memory .memory-entries small{display:block}
@@ -124,12 +125,12 @@ body.page-gpt-users #content,body.page-gpt-users .swarmsy-page{padding-top:0}
 <label class="memory-wide">Canon / source notes <textarea data-memory-field="canon.notes" maxlength="2000" rows="2" placeholder="Source conflicts or missing proof; no draft becomes official automatically"></textarea></label>
 </div>
 <div class="memory-add-grid">
-<label>Creator-approved decision <input id="memory-add-decisions" maxlength="2000" placeholder="Only add a decision you have actually approved"><button type="button" data-memory-add="decisions">Add approved decision</button></label>
-<label>Unapproved idea <input id="memory-add-ideas" maxlength="2000" placeholder="A proposal still under discussion"><button type="button" data-memory-add="ideas">Add draft idea</button></label>
-<label>Source reference <input id="memory-add-sources" maxlength="2300" placeholder="Source title | https://example.com"><button type="button" data-memory-add="sources">Add source link</button></label>
-<label>Artwork / file reference <input id="memory-add-assets" maxlength="1200" placeholder="Artwork name | my-file.png"><button type="button" data-memory-add="assets">Add file reference</button></label>
-<label>Unverified proof note <input id="memory-add-proofs" maxlength="2000" placeholder="What was actually completed? Keep evidence separately."><button type="button" data-memory-add="proofs">Add proof note</button></label>
-<label>Project history note <input id="memory-add-history" maxlength="500" placeholder="Milestone or change (user-supplied)"><button type="button" data-memory-add="history">Add history note</button></label>
+<div class="memory-add-item"><label for="memory-add-decisions">Creator-approved decision</label><input id="memory-add-decisions" maxlength="2000" placeholder="Only add a decision you have actually approved"><button type="button" data-memory-add="decisions">Add approved decision</button></div>
+<div class="memory-add-item"><label for="memory-add-ideas">Unapproved idea</label><input id="memory-add-ideas" maxlength="2000" placeholder="A proposal still under discussion"><button type="button" data-memory-add="ideas">Add draft idea</button></div>
+<div class="memory-add-item"><label for="memory-add-sources">Source reference</label><input id="memory-add-sources" maxlength="2300" placeholder="Source title | https://example.com"><button type="button" data-memory-add="sources">Add source link</button></div>
+<div class="memory-add-item"><label for="memory-add-assets">Artwork / file reference</label><input id="memory-add-assets" maxlength="1200" placeholder="Artwork name | my-file.png"><button type="button" data-memory-add="assets">Add file reference</button></div>
+<div class="memory-add-item"><label for="memory-add-proofs">Unverified proof note</label><input id="memory-add-proofs" maxlength="2000" placeholder="What was actually completed? Keep evidence separately."><button type="button" data-memory-add="proofs">Add proof note</button></div>
+<div class="memory-add-item"><label for="memory-add-history">Project history note</label><input id="memory-add-history" maxlength="500" placeholder="Milestone or change (user-supplied)"><button type="button" data-memory-add="history">Add history note</button></div>
 </div>
 <div id="memory-entries" class="memory-entries" aria-live="polite"></div>
 <div class="gpt-actions">
