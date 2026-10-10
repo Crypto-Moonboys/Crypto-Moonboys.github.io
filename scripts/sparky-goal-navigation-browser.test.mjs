@@ -21,6 +21,7 @@ const goals = [
   ['world', 'Build an original fictional universe'],
   ['do-it', 'You choose — do it for me'],
 ];
+const activities = JSON.parse(read('scripts/fixtures/sparky-creator-goal-hashes.json')).activities;
 
 function destinationVisible() {
   const heading = document.getElementById('gpt-launch-title').getBoundingClientRect();
@@ -72,6 +73,19 @@ try {
       await websiteGroup.locator('summary').click();
       await page.locator('[data-activity="website"]').click();
       await checkDestination(page, goals[0][1]);
+      if (width === 1440 && reducedMotion === 'reduce') {
+        // Exercise every real directory button against the independent title fixture.
+        for (const summary of await page.locator('.gpt-group:not([open]) > summary').all()) {
+          await summary.click();
+        }
+        assert.equal(await page.locator('.gpt-group[open]').count(), 12);
+        assert.equal(activities.length, 107);
+        for (const { id, title } of activities) {
+          await page.locator(`[data-activity="${id}"]`).click();
+          await checkDestination(page, title);
+          assert.equal(await page.locator('[data-activity][aria-pressed="true"]').getAttribute('data-activity'), id);
+        }
+      }
       // A taller header must not hide the destination at mobile/text-expanded sizes.
       await page.locator('#site-header').evaluate(header => { header.style.minHeight = '240px'; });
       await page.locator('[data-feature="website"]').click();
@@ -80,7 +94,7 @@ try {
       await page.close();
     }
   }
-  console.log('Creator goal navigation passed: desktop/mobile, all six goals, repeat selection, directory selection, header clearance, focus, reduced motion and prompt parity.');
+  console.log('Creator goal navigation passed: desktop/mobile, all six goals, all 107 activities across 12 sections, repeat selection, header clearance, focus, reduced motion and prompt parity.');
 } finally {
   await browser?.close();
 }
