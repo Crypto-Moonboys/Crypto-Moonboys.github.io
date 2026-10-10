@@ -4,8 +4,8 @@
   const catalog = root.SPARKY_CREATOR_CATALOG;
   if (!catalog || !Array.isArray(catalog.categories)) return;
   const BASE = 'https://cryptomoonboys.com/';
-  const guideFor = id => BASE + 'guides/sparky/' + id + '.txt';
   const coreGuide = BASE + 'sparky-chatgpt-guide.txt';
+  const guideFor = id => id === 'core' ? coreGuide : BASE + 'guides/sparky/' + id + '.txt';
   const moonboyGuide = BASE + 'moonboy-ai-canon-guide.txt';
   const moonboyIndex = BASE + 'moonboy-canon-index.json';
   const all = catalog.categories.flatMap(c => c.activities);
