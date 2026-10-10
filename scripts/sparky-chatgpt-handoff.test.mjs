@@ -32,7 +32,7 @@ class FakeEl {
   select(){this.selected=true;}
   closest(tag){let n=this.parent;while(n){if(n.tagName===tag)return n;n=n.parent;}return null;}
   querySelector(query){
-    const m=query.match(/^\\[data-activity="([^"]+)"\\]$/);
+    const m=query.match(/^\[data-activity="([^"]+)"\]$/);
     if (!m) return null;
     const visit=n=>{if(n.attrs['data-activity']===m[1])return n;for(const x of n.children){const match=visit(x);if(match)return match;}return null;};
     return visit(this);
@@ -55,14 +55,14 @@ test('public source index contains only approved existing public sources',()=>{
   assert.match(guide,/LONG-FORM BIOGRAPHY MODE/);
   assert.match(guide,/NEW DRAFT/);
   assert.match(guide,/PUBLIC Final Fork outcome remains unresolved/i);
-  assert.match(wiki,/<h1[^>]*>Create Your Moonboy<\\/h1>/);
-  assert.match(wiki,/href="\\/gpt-users\\.html\\?activity=moonboy"/);
+  assert.match(wiki,/<h1[^>]*>Create Your Moonboy<\/h1>/);
+  assert.match(wiki,/href="\/gpt-users\.html\?activity=moonboy"/);
   const seen=new Set();
   for(const s of sourceIndex.sources){
     assert.ok(!seen.has(s.id),'duplicate source id '+s.id);seen.add(s.id);
     assert.ok(s.approved_public_surface,'unapproved surface '+s.id);
     assert.ok(s.url.startsWith('https://cryptomoonboys.com/'),'unknown host '+s.id);
-    assert.ok(!/(story-bibles|editorial|private|secrets|w81\\.zip|final-fork-ending)/i.test(s.path),'spoiler or removed path '+s.path);
+    assert.ok(!/(story-bibles|editorial|private|secrets|w81\.zip|final-fork-ending)/i.test(s.path),'spoiler or removed path '+s.path);
     assert.ok(existsSync(path.join(base,s.path)),'missing public source '+s.path);
   }
   assert.ok(!guide.includes('https://cryptomoonboys.com/about/w81.zip'),'retired ZIP link remains');
@@ -105,8 +105,8 @@ test('every one of 107 activities produces correct ChatGPT starter, goal, guide 
     assert.match(prompt,/not claim publication/i);
     assert.match(prompt,/explicitly authorised locations/i);
     if(e.id==='moonboy'){
-      assert.match(prompt,/moonboy-ai-canon-guide\\.txt/);
-      assert.match(prompt,/moonboy-canon-index\\.json/);
+      assert.match(prompt,/moonboy-ai-canon-guide\.txt/);
+      assert.match(prompt,/moonboy-canon-index\.json/);
     }
     if(e.id==='website'||e.id==='wiki')assert.match(prompt,/actual working files/i);
   }
@@ -155,8 +155,8 @@ test('HTML links to the actual dynamic application without hidden promises',()=>
   assert.match(page,/data-feature="wiki"/);
   assert.match(page,/data-feature="website"/);
   assert.match(page,/data-feature="moonboy"/);
-  assert.match(page,/src="\\/js\\/sparky-creator-activities\\.js"/);
-  assert.match(page,/src="\\/js\\/sparky-gpt-app\\.js"/);
+  assert.match(page,/src="\/js\/sparky-creator-activities\.js"/);
+  assert.match(page,/src="\/js\/sparky-gpt-app\.js"/);
   assert.match(page,/swarm/i);
   assert.match(page,/read.*canon/i);
 });
