@@ -4,7 +4,7 @@
 
 Status: condensed source digest
 
-> **Product delivery interpretation (10 October 2026):** This historical archive uses “SWARMSY/SPARKY” as creator-system language. It does not establish an active hosted SWARMSY website chatbot. Current public AI creation starts through [ChatGPT Creator Studio](../gpt-users.html); SWARMSY remains an optional separate PC beta using local or configured API models. This note does not change W81 source provenance or the locked fiction. See [README](../README.md).
+> **Product delivery interpretation (10 October 2026):** This historical archive uses “SWARMSY/SPARKY” as creator-system language. It does not establish an active hosted SWARMSY website chatbot. Current public AI creation starts through [ChatGPT Creator Studio](https://cryptomoonboys.com/gpt-users.html); SWARMSY remains an optional separate PC beta using local or configured API models. This note does not change W81 source provenance or the locked fiction. See [README](../README.md).
 
 Phase 2 checkpoint: **94/94** complete source comparisons; **none remain**.
 Eighteen new comparisons recover distinctive dossier, Chronometer, Flesh Fade,
