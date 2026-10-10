@@ -75,8 +75,9 @@ try {
       await checkDestination(page, goals[0][1]);
       if (width === 1440 && reducedMotion === 'reduce') {
         // Exercise every real directory button against the independent title fixture.
-        for (const summary of await page.locator('.gpt-group:not([open]) > summary').all()) {
-          await summary.click();
+        const closedSections = page.locator('.gpt-group:not([open]) > summary');
+        while (await closedSections.count()) {
+          await closedSections.first().click();
         }
         assert.equal(await page.locator('.gpt-group[open]').count(), 12);
         assert.equal(activities.length, 107);
