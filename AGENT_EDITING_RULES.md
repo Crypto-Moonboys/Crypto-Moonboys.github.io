@@ -17,7 +17,7 @@ Before editing public copy, agents must understand the hierarchy:
 - Crypto Moonboys is the Graffiti Kings creator umbrella, not a game.
 - The umbrella has two valid onboarding paths.
 - Path 1: build one or more 1/1 Moonboy identities through identity, faction, XP, eligible free NFT drops, keep/flip/burn and forge progression.
-- Path 2: keep an existing artist, business, product, brand or alter-ego identity and use SWARMSY without needing a Moonboy.
+- Path 2: keep an existing artist, business, product, brand or alter-ego identity and start through the public ChatGPT Creator Studio without needing a Moonboy. The separately installed SWARMSY PC beta is optional.
 - Moonboys are the new generation of Graffiti Kings identities in the Web3 and blockchain world.
 - GKniftyHEADS is the primary foundation alongside other Moonboy factions connected to OG Graffiti Kings artists.
 - Every 1/1 holder is a HODL Warrior and part of the active creator army.
@@ -49,7 +49,7 @@ When copy conflicts, use this order:
 ## Public copy guardrails
 
 - Never call Crypto Moonboys a game.
-- Never make Path 1 appear mandatory for users who only need SWARMSY.
+- Never make Path 1 or a SWARMSY installation appear mandatory for existing-identity users who start through the public ChatGPT Creator Studio.
 - Never present NFTs as the reason the umbrella exists.
 - Never reduce HODL Warriors to passive holders.
 - Never present SWARMSY as an unrelated side project.

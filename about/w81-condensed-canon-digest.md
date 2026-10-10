@@ -15,7 +15,7 @@ Use the current [progress ledger](../brand-canon/wiki-rewrites/issue-1458-progre
 and [source audit](../brand-canon/wiki-rewrites/issue-1458-audit.json) for exact
 scopes; the older orientation and first-tranche descriptions below are historical.
 
-Updated: 2026-10-08 (source reconciliation; original September summary retained)
+Updated: 2026-10-10 (current AI delivery clarified; historical source summaries retained)
 
 Source archive: the historical W81 set of 94 source files; the uploaded `RAW CANNON.zip` repackages the same 94 uncompressed source bytes
 
@@ -24,6 +24,14 @@ This digest exists because the w81 archive is too large and mixed to use safely 
 Important: the archive is raw source material. It is not automatically approved official canon, live runtime truth, legal terms, or final public copy. Current README and Master Source of Truth rules still apply.
 
 Archive publication status (2026-10-04): the original ZIP has been retired after article migration. The [W81 evidence and migration ledger](../brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md) records every source checksum, the immutable historical snapshot and the published article evidence. Current publishing and content-state generation use that ledger without requiring a ZIP.
+
+## Current AI delivery — 10 October 2026
+
+The [ChatGPT Creator Studio](https://cryptomoonboys.com/gpt-users.html) is the public AI starting point for both creator paths. Its SPARKY-guided activities open ChatGPT; the website does not run a hosted SWARMSY chatbot. [SWARMSY PC beta](https://github.com/Crypto-Moonboys/SWARMSY-Ai) is optional and separately installed, using local models or user-configured provider APIs. Installation and model setup are required; providers may charge. Creator-memory JSON import/export is manual, with no automatic sharing or synchronisation of private workspaces. `/sparky.html` is a retired redirect; the legacy Worker bridge awaits separate retirement.
+
+This clarification concerns current product delivery only. It does not alter historical W81 source bytes, fictional canon, creator rights or either onboarding path.
+
+Older source summaries mentioning SWARMSY/SPARKY describe the private creator concept or historical positioning. They do not make PC installation mandatory or establish a live website chatbot.
 
 ## Canon authority and raw-source reconciliation (8 October 2026)
 
@@ -101,7 +109,7 @@ The raw archive often says Crypto Moonboys is a franchise, NFT universe, game, W
 
 - Crypto Moonboys is the umbrella.
 - Games, NFTs, tokens, wiki, lore, Arcade, Battle Chamber and Block Topia are layers.
-- SWARMSY is the private creator operating environment.
+- The public ChatGPT Creator Studio starts both paths; SWARMSY PC beta is an optional, separately installed private creator environment.
 - Users can either build a Moonboy identity or keep their existing identity.
 - HODL Warriors are active creator-builders, not passive holders.
 
@@ -156,7 +164,7 @@ Current brand translation:
 - content is becoming cheap;
 - identity is becoming more valuable;
 - users need story, proof, repetition, public signal and community;
-- SWARMSY/SPARKY exist to help users operate with more structure and less drift;
+- the public ChatGPT Creator Studio provides SPARKY-guided activities, while the optional SWARMSY PC beta provides installed project guidance and memory;
 - the human keeps the soul, art, taste and final approval.
 
 ### 4. Two-Path Model
@@ -164,7 +172,7 @@ Current brand translation:
 Older archive posts often lean heavily toward NFTs, lore and games. The current source of truth adds balance:
 
 - Path 1: build a Moonboy identity.
-- Path 2: keep an existing identity and use SWARMSY.
+- Path 2: keep an existing identity and start through the public ChatGPT Creator Studio, with the separately installed SWARMSY PC beta as an optional route.
 
 The archive supports Path 1 heavily. Writers must actively preserve Path 2 so Crypto Moonboys does not shrink back into only an NFT/game/lore project.
 
@@ -203,7 +211,7 @@ Use the lore as a worldbuilding layer, not as the first thing a new user must un
 | HODL Warriors vs HODL X Warriors | HODL Warriors: qualifying 1/1 creator-builders today and extraordinary Year 3008 collective defence in lore. HODL X Warriors: separate Games champion/service tradition. Never merge by convenience. |
 | Creator-owned lore vs official canon | Users can create lore around their character. Official canon requires approval. |
 | User IP vs parent brand IP | Users can build with assigned/approved characters under terms. They do not own the whole Crypto Moonboys or Graffiti Kings brand. |
-| Path 1 vs Path 2 | Moonboy route is optional. Existing artists/businesses can use SWARMSY without NFTs or lore. |
+| Path 1 vs Path 2 | Moonboy route is optional. Existing artists/businesses can start through the public ChatGPT Creator Studio without NFTs, lore or a SWARMSY installation; SWARMSY PC beta is optional. |
 
 ## What To Keep From The Archive
 
@@ -214,7 +222,7 @@ Keep these ideas:
 - Users are builders, not only buyers.
 - Moonboys are identity anchors and potential IP, not only avatars.
 - Community can expand the universe through creator-owned lore and approved canon.
-- SWARMSY/SPARKY give users structure, memory and action support.
+- Preserve the structure, memory and action-support idea through the public ChatGPT Creator Studio and optional installed SWARMSY PC beta; private records move between tools only by manual export/import.
 - The 40 factions give different user identities and story routes.
 - The 3008 saga gives a dramatic world for games, stories and campaigns.
 - AI makes human identity and taste more important, not less.
@@ -242,7 +250,7 @@ Graffiti Kings creates the cultural origin. GKniftyHEADS and GraffPUNKS carry th
 
 ### User World
 
-A user can join by building a Moonboy identity or keeping the identity they already own. SWARMSY/SPARKY helps turn raw ideas into positioning, campaign plans, proof, content and momentum. The public website/wiki holds the shared memory and onboarding surface.
+A user can join by building a Moonboy identity or keeping the identity they already own. The public ChatGPT Creator Studio helps turn raw ideas into positioning, campaign plans, proof, content and momentum. The separately installed SWARMSY PC beta is an optional local/API route; private project memory is transferred manually. The public website/wiki holds the shared memory and onboarding surface.
 
 ### Lore World
 
@@ -260,7 +268,7 @@ Games, Arcade XP, missions, Battle Chamber and Block Topia are participation lay
 
 A new user should hear this before they hear the deep lore:
 
-Crypto Moonboys helps people build an identity people remember. You can create a new character-led Moonboy identity, or you can bring the art, brand, business or project you already have. SWARMSY helps you plan and keep momentum. The public site, wiki, factions, games, Arcade XP, NFTs and Block Topia give you ways to participate, prove activity and build with the community. The lore is the shared world that makes it all memorable.
+Crypto Moonboys helps people build an identity people remember. You can create a new character-led Moonboy identity, or you can bring the art, brand, business or project you already have. Start planning through the public ChatGPT Creator Studio, or optionally install the SWARMSY PC beta for local/API-backed project guidance. The public site, wiki, factions, games, Arcade XP, NFTs and Block Topia give you ways to participate, prove activity and build with the community. The lore is the shared world that makes it all memorable.
 
 ## Recommended Agent Instruction
 

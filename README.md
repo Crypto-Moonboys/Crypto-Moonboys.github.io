@@ -378,7 +378,7 @@ HODL Warriors are not passive holders. They are the creator army inside the umbr
 
 They:
 
-- use SWARMSY to build their own character worlds;
+- build their own character worlds through the public ChatGPT Creator Studio or, optionally, the separately installed SWARMSY PC beta;
 - support other 1/1 holders;
 - share work;
 - amplify launches;
@@ -414,7 +414,7 @@ Use these statements:
 - **Qualifying 1/1 holders keep 100% of their royalties; Crypto Moonboys and Graffiti Kings take nothing.**
 - **Ownership is automatic under the qualifying 1/1 creator terms. Canon status is community-governed.**
 - **Every qualifying 1/1 holder is a HODL Warrior.**
-- **SWARMSY helps both paths create, plan, brand, grow and keep momentum.**
+- **Both paths can start in the public ChatGPT Creator Studio; SWARMSY is an optional PC beta for creating, planning, branding, growth and momentum.**
 - **Games and NFTs are tools inside the system, not the mission.**
 - **GK provides the floor. The community builds on top.**
 
@@ -587,11 +587,11 @@ The two onboarding paths are not the same as the two runtime tracks.
 
 **Faction onboarding + Battle Chamber activity + Arcade play → server-backed XP → eligible free NFT drops when active → keep / flip / burn where supported → evolve where active → forge a qualifying unique 1/1 when live → HODL Warrior creator world**
 
-### SWARMSY / Existing Identity
+### Existing Identity / Creator Planning
 
-**Existing artist, business, product, brand or alter ego → SWARMSY identity strategy → creative direction → content and campaign planning → visibility → community → maintained momentum**
+**Existing artist, business, product, brand or alter ego → public ChatGPT Creator Studio or optional SWARMSY PC beta → identity strategy → creative direction → content and campaign planning → visibility → community → maintained momentum**
 
-A Moonboy is not required for the SWARMSY-only path.
+A Moonboy and a SWARMSY installation are not required for the existing-identity path.
 
 ## Arcade XP and Telegram Truth
 
