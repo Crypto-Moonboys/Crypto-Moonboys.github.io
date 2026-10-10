@@ -40,6 +40,7 @@ test("untrusted data cannot self-promote to verified or official canon", () => {
   malicious.canon.source_index = "https://attack.invalid/";
   malicious.proofs.push({ text: "Printed 50 posters", status: "verified", reference: "/tmp/unknown" });
   malicious.assets.push({ label: "Danger", reference: "image.png", status: "verified" });
+  malicious.history.push({ event: "Imported history should be visible", date: "2026-10-10T12:00:00.000Z" });
   malicious.sources.push({ title: "JS", url: "javascript:alert(1)" });
   malicious.sources.push({ title: "Known", url: "https://example.com/reference" });
   malicious.__proto_pollution_attempt = "__proto__";
