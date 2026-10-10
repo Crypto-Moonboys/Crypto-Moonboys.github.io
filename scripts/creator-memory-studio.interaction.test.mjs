@@ -235,6 +235,6 @@ test("HTML add-rows use one label per input and a sibling button", () => {
     assert.ok(row, "Missing " + kind + " add-row");
     assert.match(row, new RegExp('<label for="memory-add-' + kind + '">[^<]+</label>'));
     assert.match(row, new RegExp('<button[^>]+data-memory-add="' + kind + '"'));
-    assert.doesNotMatch(row, /<label[^>]*>[^]*?<button/);
+    assert.doesNotMatch(row, /<label[^>]*>[^<]*<button/);
   }
 });
