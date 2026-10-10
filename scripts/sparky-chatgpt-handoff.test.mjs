@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
 import { test } from 'node:test';
+import { createHash } from 'node:crypto';
 import vm from 'node:vm';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -216,8 +217,11 @@ test('HTML links to the actual dynamic application without hidden promises',()=>
   assert.match(page,/data-feature="moonboy"/);
   assert.match(page,/id="gpt-guide-link" href="\/sparky-chatgpt-guide\.txt"/,'no-JavaScript default guide must exist');
   assert.doesNotMatch(page,/href="\/guides\/sparky\/core\.txt"/,'missing static guide should never be linked');
-  assert.match(page,/src="\/js\/sparky-creator-activities\.js"/);
-  assert.match(page,/src="\/js\/sparky-gpt-app\.js"/);
+  for (const file of ['sparky-creator-activities', 'creator-memory', 'creator-memory-studio', 'sparky-gpt-app']) {
+    const digest = createHash('sha256').update(read('js/' + file + '.js')).digest('hex').slice(0, 12);
+    assert.ok(page.includes('<script data-cfasync="false" src="/js/' + file + '.js?v=' + digest + '"></script>'),
+      file + ': load directly with a version matching the current file contents');
+  }
   assert.match(page,/swarm/i);
   assert.match(page,/href="\/moonboy-ai-canon-guide\.txt">Moonboy public canon guide<\/a>/);
 });

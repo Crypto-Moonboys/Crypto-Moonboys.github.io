@@ -21,6 +21,7 @@ body.page-gpt-users #content,body.page-gpt-users .swarmsy-page{padding-top:0}
 .gpt-small{color:#b9ced8;font-size:.96rem;line-height:1.5}.gpt-studio p{margin:6px 0 13px}
 .gpt-feature-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-top:15px}
 .gpt-feature{border:1px solid #536574;color:#f0f7fb;background:rgba(255,255,255,.035);border-radius:8px;min-height:58px;text-align:left;padding:9px 12px;font-weight:800;cursor:pointer}
+.gpt-feature:disabled{opacity:.6;cursor:wait}
 .gpt-feature:hover,.gpt-feature:focus-visible{border-color:var(--gpt-gold);background:rgba(247,201,72,.11)}
 .gpt-search-row{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin:10px 0}
 .gpt-search-row label{font-weight:750}.gpt-studio #gpt-search{border:1px solid #778d99;border-radius:8px;background:#09131c;color:#fff;min-width:min(100%,260px);padding:10px 12px;flex:1}
@@ -75,17 +76,17 @@ body.page-gpt-users #content,body.page-gpt-users .swarmsy-page{padding-top:0}
 <section class="gpt-section" aria-labelledby="gpt-popular">
 <h2 id="gpt-popular">Start with a goal</h2>
 <p class="gpt-small">Common first choices. Select one, or browse the full directory below.</p>
-<div class="gpt-feature-grid"><button type="button" class="gpt-feature" data-feature="website">Build a website</button>
-<button type="button" class="gpt-feature" data-feature="wiki">Create a lore wiki</button>
-<button type="button" class="gpt-feature" data-feature="moonboy">Create a Moonboy</button>
-<button type="button" class="gpt-feature" data-feature="stickers">Make stickers</button>
-<button type="button" class="gpt-feature" data-feature="world">Build a world</button>
-<button type="button" class="gpt-feature" data-feature="do-it">You choose</button></div>
+<div class="gpt-feature-grid"><button type="button" class="gpt-feature" disabled data-feature="website">Build a website</button>
+<button type="button" class="gpt-feature" disabled data-feature="wiki">Create a lore wiki</button>
+<button type="button" class="gpt-feature" disabled data-feature="moonboy">Create a Moonboy</button>
+<button type="button" class="gpt-feature" disabled data-feature="stickers">Make stickers</button>
+<button type="button" class="gpt-feature" disabled data-feature="world">Build a world</button>
+<button type="button" class="gpt-feature" disabled data-feature="do-it">You choose</button></div>
 </section>
 <section class="gpt-section" aria-labelledby="gpt-choose-title">
 <h2 id="gpt-choose-title">1. Choose a creative activity</h2>
-<div class="gpt-search-row"><label for="gpt-search">Find an activity</label><input id="gpt-search" type="search" placeholder="Try website, character, music, zine…" autocomplete="off"></div>
-<p class="gpt-small" id="gpt-search-count" role="status" aria-live="polite">Explore beginner activities by section.</p>
+<div class="gpt-search-row"><label for="gpt-search">Find an activity</label><input id="gpt-search" type="search" disabled placeholder="Try website, character, music, zine…" autocomplete="off"></div>
+<p class="gpt-small" id="gpt-search-count" role="status" aria-live="polite">Loading creative activities…</p>
 <div class="gpt-groups" id="gpt-activity-groups"></div>
 <noscript><p>To select a specific activity, enable JavaScript. Without it, <a href="https://chatgpt.com/?q=I'm%20starting%20from%20zero.%0A%0AI%20have%20no%20idea%20yet.%20Choose%20one%20simple%20creative%20activity%20using%20ordinary%20materials%20and%20make%20me%20a%20first%20concept%20to%20react%20to.%0A%0AI'm%20a%20beginner.%20Use%20plain%20language%2C%20make%20a%20useful%20first%20draft%2C%20and%20give%20me%20one%20practical%20next%20step.%20Ask%20one%20essential%20question%20if%20you%20need%20it%3B%20otherwise%20choose%20sensible%20defaults%20and%20start.">start a beginner-friendly ChatGPT conversation</a>.</p></noscript>
 </section>
@@ -93,7 +94,7 @@ body.page-gpt-users #content,body.page-gpt-users .swarmsy-page{padding-top:0}
 <h2 id="gpt-launch-title" tabindex="-1">2. Open ChatGPT — your message is prepared</h2>
 <p class="gpt-status" id="gpt-choice" aria-live="polite">Selected: I'm starting from zero</p>
 <p id="gpt-what">Choose an activity. ChatGPT will suggest a first draft and one practical step.</p>
-<div class="gpt-actions"><a class="gpt-button gpt-button--primary" id="gpt-open-link" href="https://chatgpt.com/?q=I'm%20starting%20from%20zero.%0A%0AI%20have%20no%20idea%20yet.%20Choose%20one%20simple%20creative%20activity%20using%20ordinary%20materials%20and%20make%20me%20a%20first%20concept%20to%20react%20to.%0A%0AI'm%20a%20beginner.%20Use%20plain%20language%2C%20make%20a%20useful%20first%20draft%2C%20and%20give%20me%20one%20practical%20next%20step.%20Ask%20one%20essential%20question%20if%20you%20need%20it%3B%20otherwise%20choose%20sensible%20defaults%20and%20start." rel="noopener noreferrer" target="_blank">Open ChatGPT with my starter message ↗</a><button type="button" class="gpt-button" id="gpt-copy-prompt">Copy starter message</button></div>
+<div class="gpt-actions"><a class="gpt-button gpt-button--primary" id="gpt-open-link" href="https://chatgpt.com/?q=I'm%20starting%20from%20zero.%0A%0AI%20have%20no%20idea%20yet.%20Choose%20one%20simple%20creative%20activity%20using%20ordinary%20materials%20and%20make%20me%20a%20first%20concept%20to%20react%20to.%0A%0AI'm%20a%20beginner.%20Use%20plain%20language%2C%20make%20a%20useful%20first%20draft%2C%20and%20give%20me%20one%20practical%20next%20step.%20Ask%20one%20essential%20question%20if%20you%20need%20it%3B%20otherwise%20choose%20sensible%20defaults%20and%20start." rel="noopener noreferrer" target="_blank">Open ChatGPT with my starter message ↗</a><button type="button" class="gpt-button" id="gpt-copy-prompt" disabled>Copy starter message</button></div>
 <p class="gpt-small">The ChatGPT page may open with the message waiting to send. Press <strong>Send</strong>. If the input is empty or does not appear, use <strong>Copy starter message</strong>, paste into a new chat and send. ChatGPT features and tool access vary by account.</p>
 <p class="gpt-small"><a id="gpt-guide-link" href="/sparky-chatgpt-guide.txt">Optional activity guide</a> · <a href="/moonboy-ai-canon-guide.txt">Moonboy public canon guide</a> · <a href="/moonboy-canon-index.json">Canon source index</a></p>
 <details class="gpt-prompt-details" id="gpt-prompt-details"><summary>View the exact message given to ChatGPT</summary><label for="gpt-prompt-preview">Message ready to send</label><textarea id="gpt-prompt-preview" readonly rows="8">I'm starting from zero.
@@ -156,10 +157,10 @@ I'm a beginner. Use plain language, make a useful first draft, and give me one p
 <p>For lore and characters, use the <a href="/wiki/create-your-moonboy.html">Create Your Moonboy wiki guide</a>, the <a href="/moonboy-ai-canon-guide.txt">public AI canon instructions</a> and the <a href="/moonboy-canon-index.json">source index</a>. Creator-written material is not automatically official universe canon.</p>
 </section>
 </div></main>
-<script src="/js/sparky-creator-activities.js"></script>
-<script src="/js/creator-memory.js"></script>
-<script src="/js/creator-memory-studio.js"></script>
-<script src="/js/sparky-gpt-app.js"></script>
+<script data-cfasync="false" src="/js/sparky-creator-activities.js?v=c9c032abd55d"></script>
+<script data-cfasync="false" src="/js/creator-memory.js?v=e2c07dbad0f4"></script>
+<script data-cfasync="false" src="/js/creator-memory-studio.js?v=b3a70b5c5e72"></script>
+<script data-cfasync="false" src="/js/sparky-gpt-app.js?v=68d42cc0bd32"></script>
 <script data-cfasync="false" src="/js/api-config.js"></script>
 <script data-cfasync="false" src="/js/arcade/core/global-event-bus.js"></script>
 <script data-cfasync="false" src="/js/identity-gate.js"></script>

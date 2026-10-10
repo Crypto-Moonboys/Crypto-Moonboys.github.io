@@ -4,12 +4,15 @@ import { chromium } from 'playwright';
 
 const read = path => readFileSync(new URL('../' + path, import.meta.url), 'utf8');
 // Keep the real page, styles and shared header; isolate unrelated API/auth scripts.
-const scripts = ['js/site-shell.js', 'js/sparky-creator-activities.js', 'js/sparky-gpt-app.js'];
+const scripts = ['js/sparky-creator-activities.js', 'js/creator-memory.js', 'js/creator-memory-studio.js', 'js/sparky-gpt-app.js', 'js/site-shell.js'];
 const html = read('gpt-users.html')
-  .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '')
-  .replace('</body>', scripts.map(path => `<script src="/${path}"></script>`).join('') + '</body>');
+  .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, tag => {
+    const src = tag.match(/\bsrc="([^"]+)"/)?.[1];
+    return src && scripts.includes(new URL(src, 'http://creator.test').pathname.slice(1)) ? tag : '';
+  });
 const resources = new Map([
   ['/gpt-users.html', { body: html, contentType: 'text/html' }],
+  ['/gpt-users-legacy.html', { body: html.replace('id="gpt-launch"', '').replace('id="gpt-launch-title" tabindex="-1"', 'id="gpt-launch-title"'), contentType: 'text/html' }],
   ['/css/wiki.css', { body: read('css/wiki.css'), contentType: 'text/css' }],
   ...scripts.map(path => ['/' + path, { body: read(path), contentType: 'text/javascript' }]),
 ]);
@@ -50,11 +53,31 @@ try {
       const page = await browser.newPage({ viewport: { width, height: 960 }, reducedMotion });
       const errors = [];
       page.on('pageerror', error => errors.push(error.message));
-      await page.route('**/*', route => {
-        const resource = resources.get(new URL(route.request().url()).pathname);
+      const testStartup = width === 1440 && reducedMotion === 'reduce';
+      let releaseApp;
+      const appReady = new Promise(resolve => { releaseApp = resolve; });
+      let holdApp = testStartup;
+      await page.route('**/*', async route => {
+        const url = new URL(route.request().url());
+        if (holdApp && url.pathname === '/js/sparky-gpt-app.js') await appReady;
+        const resource = resources.get(url.pathname);
         return resource ? route.fulfill(resource) : route.abort();
       });
-      await page.goto('http://creator.test/gpt-users.html');
+      await page.goto('http://creator.test/gpt-users.html', { waitUntil: 'commit' });
+      if (testStartup) {
+        await page.locator('[data-feature="website"]').waitFor({ state: 'visible' });
+        for (const [id] of goals) assert.equal(await page.locator(`[data-feature="${id}"]`).isEnabled(), false, 'loading goals must not accept inert clicks');
+        assert.equal(await page.locator('#gpt-search').isEnabled(), false);
+        assert.equal(await page.locator('#gpt-copy-prompt').isEnabled(), false);
+        assert.equal(await page.locator('#gpt-search-count').textContent(), 'Loading creative activities…');
+        holdApp = false;
+        releaseApp();
+      }
+      await page.waitForFunction(() => document.querySelectorAll('[data-activity]').length === 107 && !document.querySelector('[data-feature="website"]').disabled);
+      await page.waitForLoadState('load');
+      for (const [id] of goals) assert.equal(await page.locator(`[data-feature="${id}"]`).isEnabled(), true);
+      assert.equal(await page.locator('#gpt-search').isEnabled(), true);
+      assert.equal(await page.locator('#gpt-copy-prompt').isEnabled(), true);
       assert.equal(await page.locator('[data-activity]').count(), 107);
       assert.equal(await page.evaluate(() => window.scrollY), 0, 'initial rendering must not jump');
       await page.locator('#gpt-search').fill('no-such-activity');
@@ -91,11 +114,16 @@ try {
       await page.locator('#site-header').evaluate(header => { header.style.minHeight = '240px'; });
       await page.locator('[data-feature="website"]').click();
       await checkDestination(page, goals[0][1]);
+      if (testStartup) {
+        await page.goto('http://creator.test/gpt-users-legacy.html');
+        await page.locator('[data-feature="wiki"]').click();
+        await checkDestination(page, goals[1][1]);
+      }
       assert.deepEqual(errors, [], `${width}/${reducedMotion}: no runtime errors`);
       await page.close();
     }
   }
-  console.log('Creator goal navigation passed: desktop/mobile, all six goals, all 107 activities across 12 sections, repeat selection, header clearance, focus, reduced motion and prompt parity.');
+  console.log('Creator goal navigation passed: real versioned script tags, delayed startup, legacy cached markup, desktop/mobile, all six goals, all 107 activities across 12 sections, repeat selection, header clearance, focus, reduced motion and prompt parity.');
 } finally {
   await browser?.close();
 }

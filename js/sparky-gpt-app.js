@@ -37,9 +37,11 @@
   const guideLink = doc.getElementById('gpt-guide-link');
   const search = doc.getElementById('gpt-search');
   const count = doc.getElementById('gpt-search-count');
-  const launch = doc.getElementById('gpt-launch');
   const launchHeading = doc.getElementById('gpt-launch-title');
+  // Older cached pages have the heading but no destination section ID.
+  const launch = doc.getElementById('gpt-launch') || (launchHeading && launchHeading.closest('section'));
   if (!mount || !choice || !summary || !link || !textarea || !details || !copy || !status || !guideLink || !search || !count || !launch || !launchHeading) return;
+  launchHeading.setAttribute('tabindex', '-1');
   let selected = find(new URLSearchParams(root.location ? root.location.search : '').get('activity')).id;
   const buttons = new Map();
   function element(tag, className, content) {
@@ -140,4 +142,7 @@
   });
   render('');
   setActivity(selected);
+  doc.querySelectorAll('[data-feature]').forEach(button => { button.disabled = false; });
+  search.disabled = false;
+  copy.disabled = false;
 })(window);
