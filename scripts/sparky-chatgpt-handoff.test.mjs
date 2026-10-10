@@ -155,6 +155,8 @@ test('HTML links to the actual dynamic application without hidden promises',()=>
   assert.match(page,/data-feature="wiki"/);
   assert.match(page,/data-feature="website"/);
   assert.match(page,/data-feature="moonboy"/);
+  assert.match(page,/id="gpt-guide-link" href="\/sparky-chatgpt-guide\.txt"/,'no-JavaScript default guide must exist');
+  assert.doesNotMatch(page,/href="\/guides\/sparky\/core\.txt"/,'missing static guide should never be linked');
   assert.match(page,/src="\/js\/sparky-creator-activities\.js"/);
   assert.match(page,/src="\/js\/sparky-gpt-app\.js"/);
   assert.match(page,/swarm/i);
