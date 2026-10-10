@@ -29,7 +29,7 @@ test("site entry points open ChatGPT instead of claiming a hosted SWARMSY assist
   assert.match(shell, /sparkyAgent\.href = '\/gpt-users\.html'/);
   assert.match(shell, /Start creating with ChatGPT via the SPARKY Creator Studio/);
   assert.match(swarmsy, /optional PC beta|PC beta/);
-  assert.match(swarmsy, /No SWARMSY server or Telegram login required/);
+  assert.match(swarmsy, /not a hosted SWARMSY login or live chat/);
   assert.match(readme, /Retired website chatbot/);
   assert.match(readme, /not automatic account sync/);
 });
