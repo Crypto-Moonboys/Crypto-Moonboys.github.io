@@ -804,9 +804,9 @@ function w81SourceBucket(cluster) {
   return buckets[cluster] || 'unresolved archive bucket';
 }
 
-function likelySourceFamily({ firstWitness, likelyLore, directBible, nftSpecialist, generated, slug, cluster }) {
+function likelySourceFamily({ firstWitness, likelyLore, directBible, nftSpecialist, generated, slug, cluster, isPublicCreatorGuide }) {
   if (firstWitness) return ['First Witness convergence canon'];
-  if (PUBLIC_CREATOR_GUIDE_SLUGS.has(slug)) return [
+  if (isPublicCreatorGuide) return [
     'moonboy-ai-canon-guide.txt (public creator instructions)',
     'moonboy-canon-index.json (curated public source directory)',
   ];
@@ -825,10 +825,10 @@ function likelySourceFamily({ firstWitness, likelyLore, directBible, nftSpeciali
 }
 
 function canonConflictSeverity({
-  slug, firstWitness, nftSpecialist, generated, likelyLore, cluster,
+  slug, firstWitness, nftSpecialist, generated, likelyLore, cluster, isPublicCreatorGuide,
 }) {
   if (firstWitness) return 'NONE';
-  if (PUBLIC_CREATOR_GUIDE_SLUGS.has(slug)) return 'NOT_APPLICABLE';
+  if (isPublicCreatorGuide) return 'NOT_APPLICABLE';
   if (nftSpecialist || generated) return 'NOT_APPLICABLE';
   if (HIGH_CONFLICT_SLUGS.has(slug)) return 'HIGH';
   if (cluster === 'Characters' || cluster === 'Forty factions') return 'UNKNOWN_REVIEW';
@@ -1021,7 +1021,7 @@ export function buildWikiAudit() {
       slug, firstWitness, nftTemplate, nftSpecialist, stub, redirect, generated, cluster, likelyLore,
     });
     const conflictSeverity = canonRevision ? 'NONE' : canonConflictSeverity({
-      slug, firstWitness, nftSpecialist, generated, likelyLore, directBible, cluster,
+      slug, firstWitness, nftSpecialist, generated, likelyLore, directBible, cluster, isPublicCreatorGuide,
     });
     const currentWordCount = countWords(articleText);
     assertValidStubAtRest({
@@ -1071,7 +1071,7 @@ export function buildWikiAudit() {
       recommended_action: recommendedAction(rewriteStatus),
       suggested_priority: priorityForPage({ status: rewriteStatus, conflictSeverity, duplicateLevel }),
       likely_source_family: likelySourceFamily({
-        firstWitness, likelyLore, directBible, nftSpecialist, generated, slug, cluster,
+        firstWitness, likelyLore, directBible, nftSpecialist, generated, slug, cluster, isPublicCreatorGuide,
       }),
       audit_notes: auditNotes({
         firstWitness, nftTemplate, nftSpecialist, generated, legacyUnmarked, directBible,
