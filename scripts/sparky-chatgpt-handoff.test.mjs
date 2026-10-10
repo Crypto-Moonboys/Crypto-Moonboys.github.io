@@ -75,6 +75,25 @@ test('public source index contains only approved existing public sources',()=>{
   assert.ok(!guide.includes('https://cryptomoonboys.com/about/w81.zip'),'retired ZIP link remains');
 });
 
+test('Moonboy creator article remains a manually owned non-canon reference', () => {
+  const inventory = JSON.parse(read('brand-canon/wiki-content-state.json'));
+  const record = inventory.pages.find(entry => entry.slug === 'create-your-moonboy');
+  assert.ok(record, 'Creator wiki guide missing from deterministic inventory');
+  assert.equal(record.page_type, 'reference');
+  assert.equal(record.rewrite_status, 'KEEP');
+  assert.equal(record.automation_policy, 'metadata-only');
+  assert.equal(record.canon_conflict_severity, 'NOT_APPLICABLE');
+  assert.equal(record.likely_lore_page, false);
+  assert.equal(record.manual_content_block_count, 1);
+  assert.equal(record.legacy_unmarked_content, false);
+  assert.ok(record.likely_source_family.some(source => source.includes('moonboy-ai-canon-guide.txt')));
+  assert.ok(record.likely_source_family.some(source => source.includes('moonboy-canon-index.json')));
+  assert.match(wiki, /data-page-kind="public-creator-guide"/);
+  assert.match(wiki, /<!-- MANUAL_CONTENT:BEGIN -->/);
+  assert.match(wiki, /<!-- MANUAL_CONTENT:END -->/);
+  assert.doesNotMatch(wiki, /data-canon-revision|data-canon-source-tier/);
+});
+
 test('catalogue has twelve clear sections and exactly the independently expected 107 routes',()=>{
   const app=boot().SPARKY_CREATOR_APP;
   assert.equal(app.catalog.categories.length,12);
