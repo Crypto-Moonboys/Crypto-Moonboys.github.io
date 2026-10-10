@@ -123,6 +123,7 @@
     } catch (error) { updateStatus(error.message, true); }
   });
   $("memory-copy-handoff").addEventListener("click", async () => {
+    preview.value = "";
     try {
       const text = M.handoff(record);
       preview.value = text; $("memory-handoff-details").open = true;
