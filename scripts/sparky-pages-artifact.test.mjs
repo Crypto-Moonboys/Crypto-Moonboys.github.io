@@ -22,6 +22,10 @@ test('real Pages artifact publishes every SPARKY guide and canon handoff URL', (
   const canonGuide = requirePublic('moonboy-ai-canon-guide.txt');
   const canonIndex = JSON.parse(requirePublic('moonboy-canon-index.json'));
   requirePublic('wiki/create-your-moonboy.html');
+  requirePublic('js/creator-memory.js');
+  requirePublic('js/creator-memory-studio.js');
+  requirePublic('docs/portable-creator-memory.md');
+  assert.match(rootPage, /creator-memory-studio/);
 
   assert.match(rootPage, /js\/sparky-gpt-app\.js/);
   assert.match(app, /moonboy-canon-index\.json/);
