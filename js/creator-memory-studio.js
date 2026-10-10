@@ -31,7 +31,8 @@
       ["ideas", "Unapproved ideas", "Proposals and experiments"],
       ["sources", "Source links", "References are not automatically trusted"],
       ["assets", "Artwork and file references", "Referenced files are not bundled"],
-      ["proofs", "Unverified proof notes", "Documented assertions, not automatic proof"]
+      ["proofs", "Unverified proof notes", "Documented assertions, not automatic proof"],
+      ["history", "History notes", "Imported entries are user-supplied; review before sharing"]
     ];
     for (const [key, title, hint] of sections) {
       const section = doc.createElement("div");
@@ -41,7 +42,7 @@
       record[key].forEach((entry, index) => {
         const row = doc.createElement("div"); row.className = "memory-entry";
         const label = doc.createElement("span");
-        label.textContent = entry.text || (entry.url ? entry.title + " — " + entry.url : entry.label + " — " + entry.reference);
+        label.textContent = entry.text || entry.event || (entry.url ? entry.title + " — " + entry.url : entry.label + " — " + entry.reference);
         const remove = doc.createElement("button");
         remove.type = "button"; remove.textContent = "Remove";
         remove.setAttribute("aria-label", "Remove " + key + " entry " + (index + 1));
@@ -55,9 +56,20 @@
   }
   fields.forEach(input => input.addEventListener("input", () => {
     const [category, key] = input.dataset.memoryField.split(".");
+    const previous = record[category][key];
+    const oldIndex = record.canon.source_index;
     record[category][key] = input.value;
     if (category === "canon" && key === "scope") {
       record.canon.source_index = input.value === "moonboys" ? "https://cryptomoonboys.com/moonboy-canon-index.json" : "";
+    }
+    try {
+      M.serialize(record);
+    } catch (error) {
+      record[category][key] = previous;
+      record.canon.source_index = oldIndex;
+      input.value = previous;
+      updateStatus("Project size limit reached. Download your current JSON or shorten an entry.", true);
+      return;
     }
     dirty = true;
   }));
@@ -66,7 +78,9 @@
     const value = input.value.trim();
     if (!value) return updateStatus("Enter an item first.", true);
     if (record[kind].length >= 100) return updateStatus("Maximum 100 items per section.", true);
+    const snapshot = JSON.stringify(record);
     const now = new Date().toISOString();
+    if (kind === "history") record.history.push({ event: value, date: now });
     if (kind === "decisions") record.decisions.push({ text: value, approved_at: now, source: "Creator approval in Studio" });
     if (kind === "ideas") record.ideas.push({ text: value, created_at: now });
     if (kind === "proofs") record.proofs.push({ text: value, reference: "", status: "unverified" });
@@ -84,6 +98,13 @@
       const parts = value.split("|").map(x => x.trim());
       const reference = parts.length > 1 ? parts.slice(1).join("|") : parts[0];
       record.assets.push({ label: parts.length > 1 ? parts[0] : "Asset", reference, status: "reference-only" });
+    }
+    try {
+      M.serialize(record);
+    } catch (error) {
+      record = JSON.parse(snapshot);
+      updateStatus("Project is too large to export. Item not added; shorten it or remove older items.", true);
+      return;
     }
     input.value = ""; dirty = true; draw(); updateStatus("Added to this session. Download JSON to preserve it.");
   }
@@ -119,6 +140,7 @@
     if (file.size > M.MAX_BYTES) return updateStatus("File exceeds 256 KB.", true);
     try {
       const imported = M.parse(await file.text());
+      M.serialize(imported);
       if (dirty && !root.confirm("Replace current unsaved project with " + (imported.project.title || "this imported project") + "?")) return;
       record = imported; dirty = false; draw();
       updateStatus("Imported locally. Files referenced in the pack are not attached. Export JSON after edits.");
