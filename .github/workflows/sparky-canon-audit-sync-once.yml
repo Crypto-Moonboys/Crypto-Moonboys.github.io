@@ -1,0 +1,42 @@
+name: One-time SPARKY Canon Audit Sync
+
+on:
+  push:
+    branches:
+      - feature/sparky-complete-creator-studio-20261010
+    paths:
+      - '.github/workflows/sparky-canon-audit-sync-once.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    if: github.repository == 'Crypto-Moonboys/Crypto-Moonboys.github.io'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout exact PR branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install project dependencies
+        run: npm ci
+      - name: Regenerate wiki audit and publishing indexes
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
+        run: |
+          node scripts/wiki-publish-gate.js
+          node scripts/generate-publishing-surfaces.mjs
+          node scripts/generate-wiki-content-state.mjs
+          node scripts/generate-wiki-content-state.mjs --check
+          git add -- brand-canon/wiki-content-state.json brand-canon/wiki-rewrite-audit.md js/wiki-publish-audit.json js/wiki-index.json js/link-map.json js/link-graph.json js/entity-map.json js/entity-graph.json js/graph-data.json js/entity-graph-lite.json js/site-stats.json sitemap.xml index_stats.json sam-memory.json
+          if git diff --cached --quiet; then echo "All generated surfaces already match"; exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "chore: regenerate approved Moonboy creator guide audit and public discovery"
+          git push origin HEAD:feature/sparky-complete-creator-studio-20261010
