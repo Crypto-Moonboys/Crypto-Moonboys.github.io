@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "generator": "scripts/generate-wiki-content-state.mjs",
-  "source_tree_hash": "sha256:e99fc9a722fdda03d006f36cd6b4bcce547b639af7c512f9615c590959c66d83",
+  "source_tree_hash": "sha256:d9cbf1efb92170b65c509ede90b343ffdfb8ef08d6d83b6fb3ea105603829d3e",
   "hash_algorithm": "sha256",
   "page_count": 425,
   "manifest_entry_count": 425,
@@ -93,7 +93,7 @@
     "total_manifest_entries": 425,
     "absent_stub_authorizations": 0,
     "rewrite_status_counts": {
-      "KEEP": 179,
+      "KEEP": 180,
       "REWRITE_FULL": 0,
       "RECONCILE": 0,
       "DEDUPE": 0,
@@ -102,7 +102,7 @@
       "GENERATED": 4,
       "NFT_SPECIALIST": 159,
       "FIRST_WITNESS_LOCKED": 82,
-      "NEEDS_HUMAN_REVIEW": 1
+      "NEEDS_HUMAN_REVIEW": 0
     },
     "automation_policy_counts": {
       "metadata-only": 169,
@@ -112,7 +112,7 @@
     },
     "pages_with_multiple_sam_blocks": 0,
     "pages_with_multiple_canonical_blocks": 0,
-    "pages_with_legacy_unmarked_content": 7,
+    "pages_with_legacy_unmarked_content": 6,
     "pages_with_exact_duplicate_paragraphs": 142,
     "pages_with_duplicate_headings": 1,
     "pages_with_likely_near_duplicate_sections": 3,
@@ -1596,39 +1596,37 @@
       "slug": "create-your-moonboy",
       "title": "Create Your Moonboy",
       "page_exists": true,
-      "page_type": "historical_archive",
+      "page_type": "reference",
       "current_word_count": 807,
-      "manual_content_block_count": 0,
+      "manual_content_block_count": 1,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 0,
       "legacy_sam_article_wrapper": false,
-      "legacy_unmarked_content": true,
+      "legacy_unmarked_content": false,
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:98a4af183f19503cb62b3039330a5f5c08ac421045dc0bad7bf1f1ecf7b271b0",
+      "content_hash": "sha256:6f33dd506f1181997af5d3f298eb9107f8d1b5541b6715a4a3acd51ba8ef88ac",
       "article_content_hash": "sha256:2d43f4445c643a292e760654187f39bbe6e6fff16ec47d32f476693d83ef5929",
-      "article_markup_hash": "sha256:2b03c7132989ed5aba11b17b76d641a50c332989fb40e101c820b7c2fc844c61",
-      "git_blob_oid": "1c4ed705058ede3840beeaa0adef2879b3a1a1e8",
+      "article_markup_hash": "sha256:71e7c92900cf28d7ed368f6f14e8c6b15e5304a2ffa3f3bf4c3eabfa2d6a0e2a",
+      "git_blob_oid": "978098132011d63301bb3ed662dd37a2ef171530",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
-      "likely_lore_page": true,
-      "rewrite_status": "NEEDS_HUMAN_REVIEW",
+      "likely_lore_page": false,
+      "rewrite_status": "KEEP",
       "automation_policy": "metadata-only",
-      "rewrite_cluster": "Historical/archive pages",
+      "rewrite_cluster": "Generated/non-lore pages",
       "duplicate_severity": "NONE",
-      "canon_conflict_severity": "UNKNOWN_REVIEW",
-      "recommended_action": "Resolve classification/source ambiguity before any prose write.",
-      "suggested_priority": "P2",
+      "canon_conflict_severity": "NOT_APPLICABLE",
+      "recommended_action": "Preserve article prose; allow metadata-only maintenance.",
+      "suggested_priority": "P4",
       "likely_source_family": [
-        "about/latest-canon-and-brand-vision.md",
-        "about/w81-condensed-canon-digest.md",
-        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (unresolved archive bucket; historical W81 sources)"
+        "moonboy-ai-canon-guide.txt (public creator instructions)",
+        "moonboy-canon-index.json (curated public source directory)"
       ],
       "audit_notes": [
-        "Substantive article content has no MANUAL_CONTENT, SAM_CONTENT, or CANONICAL_CONTENT ownership markers.",
-        "Existing wiki prose is surviving public archive, not automatically current canon."
+        "No article-ownership or duplication issue detected by the deterministic audit."
       ]
     },
     {
