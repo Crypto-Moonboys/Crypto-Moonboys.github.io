@@ -318,6 +318,51 @@ from OIDC bindings to users; session and activity rows reference the unique
 `telegram_users.telegram_id`. Existing accounts are upserted without replacement;
 progression and ownership columns are preserved.
 
+### Confirmed root cause of the callback 503
+
+The token exchange called `fetch(..., { redirect: 'error' })`. Node accepts that
+value, but the Workers runtime (workerd) throws
+`TypeError: Invalid redirect value, must be one of "follow" or "manual"` before
+any network request. The handler caught it as stage `provider_exchange`, category
+`provider_transport_or_response`, and returned 503 `website_login_unavailable`
+after the transaction had already been consumed. Every production callback that
+passed cookie/state validation therefore failed before contacting Telegram's
+token endpoint. The Node fixtures injected `fetch` and asserted `'error'`, so
+they could not detect it.
+
+The exchange now uses `redirect: 'manual'`; a 3xx response fails the existing
+`response.ok` check as `telegram_token_exchange_failed`, so redirects are still
+never followed. A Telegram OAuth error returned with HTTP 200 and no `id_token`
+now fails at `provider_exchange` instead of token verification. A Miniflare
+regression test bundles the handler and runs start, callback, token exchange,
+JWKS verification, D1 account/session writes and session bootstrap inside
+workerd; it returns 503 with the previous code. PKCE, nonce, state,
+browser-cookie binding, issuer/audience/algorithm checks, identity uniqueness
+and account blocking are unchanged. The earlier `invalid_login_callback`
+(cookie or state validation) is a separate failure mode and is not explained by
+this defect.
+
+### Why structured events were not visible
+
+`moonboys-api` has `[observability] head_sampling_rate = 0.1`, so Workers Logs
+persists only about one in ten invocations; a single start/callback pair is
+usually unsampled in the Events/query view. The events are emitted with
+`console.info`, so a level filter of error/warn also hides them. If Live Logs
+show no invocation at all for a callback that returned 503, confirm with
+read-only evidence that the Live view is attached to the `moonboys-api` Worker
+serving `api.cryptomoonboys.com`, that the active version's tag equals the
+commit reported by `/deployment-info`, and that the 503 response carries
+`X-Moonboys-Auth-Request-Id` (absent means the diagnostic version is not
+serving). `npx wrangler tail moonboys-api --format json` from the Worker
+directory is an independent real-time check. Raising `head_sampling_rate` to `1`
+temporarily is a GK cost decision and is not part of this fix.
+
+Release requirement: a `moonboys-api` Worker deployment only, through the
+provenance wrapper after GK approval. No D1 migration, secret, BotFather,
+frontend or leaderboard change is needed. Rollback: redeploy the previous
+`moonboys-api` version (`wrangler rollback` or the prior provenance-tagged
+commit) or set `TELEGRAM_WEBSITE_LOGIN_ENABLED=false`; no data is changed.
+
 Three callback invocations alone do not identify browser navigations, reloads,
 retries or duplicate submission. Distinct request IDs identify invocations, not
 transactions. After a failed exchange/write the transaction remains consumed;
