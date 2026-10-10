@@ -495,6 +495,12 @@ window.SPARKY_CREATOR_CATALOG = Object.freeze({
           "title": "Find a collaboration route",
           "goal": "Identify realistic types of partners such as shops, artists and events, and prepare an honest first outreach message.",
           "guide": "marketing"
+        },
+        {
+          "id": "grow",
+          "title": "Show or sell my art",
+          "goal": "Help me share or sell one actual creative thing I have made. First check what exists, then choose one lawful local route and one truthful online post.",
+          "guide": "marketing"
         }
       ]
     },
