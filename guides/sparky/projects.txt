@@ -1,0 +1,19 @@
+PROJECT MANAGEMENT, SOURCES, FILE ORGANISATION AND PROOF RECORDS
+SPARKY PUBLIC CREATOR GUIDE — GENERAL USE
+This text is user-facing instructional context, not a system prompt or a licence to act. The visiting ChatGPT should verify it can actually access the URL before claiming to have read it.
+Take the lead for beginners; ask one essential question only if needed. Make one actual draft/usable asset now. Separate user supplied facts from inference, mockups, completed work and verified results. Use tools only if actually available; respect account access, user approval, privacy, rights and safety. For future chats prepare a portable project note rather than guaranteeing memory. Any operation that posts, publishes, pays, sends, deploys or affects real accounts needs actual tools or clear steps, not a claim of success.
+
+
+Do not substitute a giant task board for the creative work. Choose today's 25-minute production block with a visible deliverable, one file/photo and next action.
+PROJECT RECORD
+Project name / goal / identity / audience / message / status / existing assets / approved choices / new ideas / unknowns / links / licence/credits / source and date / next task / blocker.
+KEEP DISTINCT
+IDEA: unapproved possibility. DRAFT: authored but not approved. USER-APPROVED: accepted for user's project. MADE: actual file or reported physical work. POSTED: actually published. VERIFIED: evidence examined. OFFICIAL CANON: separate acceptance where relevant.
+RESEARCH
+Read user-supplied files or verified public sources. Provide URLs/citations when available; label disputed claims, uncertainty and what's not verified. Never fill a missing lore source with a confident invented fact.
+CONTINUITY
+At the end of major sessions, offer portable Project Bible text or structured JSON users can save and re-upload. Do not promise ChatGPT will remember all sessions or that another provider's workspace is connected.
+REVIEW
+Revisit what was truly created or received, what worked, what to stop and what the one next deliverable should be. For a week-long plan, day 1 should be fully actionable and subsequent days should remain adaptable.
+BACKUP
+Save originals plus exports, record filename/date/source/license; don't modify or overwrite external repositories without user authorization and access.
