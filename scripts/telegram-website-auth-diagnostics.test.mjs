@@ -132,12 +132,13 @@ test('callback completes inside workerd with real fetch semantics for the token 
     stdin: { resolveDir: 'workers/moonboys-api', contents: `import { handleTelegramWebsiteAuth } from './telegram-website-auth.js';
       export default { fetch: (request, env) => handleTelegramWebsiteAuth(request, env) };` } });
   let authorization = null;
-  const tokenRequests = [];
+  const tokenRequests = [], outboundErrors = [];
   const mf = new Miniflare(convertV4MiniflareOptions({ name: 'oidc-workerd-test', modules: true, script: bundle.text,
     compatibilityDate: '2026-04-12', d1Databases: { DB: 'oidc-workerd-test-only' },
     bindings: { TELEGRAM_WEBSITE_LOGIN_ENABLED: 'true', TELEGRAM_WEBSITE_AUTH_ORIGIN: API, TELEGRAM_WEBSITE_ORIGINS: SITE,
       TELEGRAM_OIDC_CLIENT_ID: 'test-client', TELEGRAM_OIDC_CLIENT_SECRET: 'test-client-secret' },
-    outboundService: async request => {
+    // Assertion failures inside workerd's outbound hook surface as fetch errors; report them directly.
+    outboundService: async request => { try {
       const url = new URL(request.url);
       if (url.href === ISSUER + '/.well-known/jwks.json') return Response.json({ keys: [jwk] });
       assert.equal(url.href, ISSUER + '/token');
@@ -146,7 +147,7 @@ test('callback completes inside workerd with real fetch semantics for the token 
       assert.equal(request.headers.get('Authorization'), 'Basic ' + btoa('test-client:test-client-secret'));
       assert.equal(await authDigest(body.get('code_verifier')), authorization.searchParams.get('code_challenge'));
       return Response.json({ id_token: await jwt({ nonce: authorization.searchParams.get('nonce') }) });
-    } }));
+    } catch (error) { outboundErrors.push(error.message); return new Response(null, { status: 500 }); } } }));
   try {
     const { sqlite } = fixture();
     const DB = await mf.getD1Database('DB');
@@ -163,6 +164,7 @@ test('callback completes inside workerd with real fetch semantics for the token 
     const loginCookie = started.headers.getSetCookie().find(line => line.startsWith('__Host-moonboys_login=')).split(';')[0];
     const response = await mf.dispatchFetch(API + '/telegram/website/callback?code=test-code&state=' + authorization.searchParams.get('state'),
       { redirect: 'manual', headers: { Cookie: loginCookie } });
+    assert.deepEqual(outboundErrors, []);
     assert.equal(response.status, 303, await response.clone().text());
     assert.equal(response.headers.get('Location'), SITE + '/gkniftyheads-incubator.html');
     assert.equal(tokenRequests.length, 1);
