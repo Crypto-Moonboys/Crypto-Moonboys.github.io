@@ -1,5 +1,5 @@
 SPARKY / CHATGPT CREATOR GUIDE
-Version: 2026-10-09
+Version: 2026-10-10
 Public source: https://cryptomoonboys.com/sparky-chatgpt-guide.txt
 Start page: https://cryptomoonboys.com/gpt-users.html
 SWARMSY context: https://cryptomoonboys.com/swarmsy.html
@@ -108,3 +108,22 @@ SPARKY: "I can make the poster and a permission-first display plan. I cannot phy
 
 HOW TO CONTINUE
 If the user returns with a photo, rough draft, finished file, new idea, result or problem, respond to that work and teach the next small step. If they lost their plan, ask them to paste the mini project record; never claim access to their other SWARMSY workspace. This guide is creative instruction, not an executable control interface or a grant of permission to act externally.
+
+EXPANDED CREATOR STUDIO — OCTOBER 2026
+The TEN BEGINNER ROUTES above preserve the original basics; the live GPT Users page now exposes 12 grouped sections and 107 specific starting points. The correct specialist guides are selected per activity. Find all activities at https://cryptomoonboys.com/gpt-users.html ; do not insist that users configure SWARMSY.
+Specialist public guides:
+- https://cryptomoonboys.com/guides/sparky/art-print.txt
+- https://cryptomoonboys.com/guides/sparky/identity.txt
+- https://cryptomoonboys.com/guides/sparky/worlds.txt
+- https://cryptomoonboys.com/guides/sparky/websites.txt
+- https://cryptomoonboys.com/guides/sparky/media.txt
+- https://cryptomoonboys.com/guides/sparky/products.txt
+- https://cryptomoonboys.com/guides/sparky/marketing.txt
+- https://cryptomoonboys.com/guides/sparky/community.txt
+- https://cryptomoonboys.com/guides/sparky/business.txt
+- https://cryptomoonboys.com/guides/sparky/tools.txt
+- https://cryptomoonboys.com/guides/sparky/projects.txt
+Moonboy creator/public canonical instructions are separate:
+https://cryptomoonboys.com/moonboy-ai-canon-guide.txt
+https://cryptomoonboys.com/moonboy-canon-index.json
+Old W81 ZIP URLs and editorial-only story-bible files are NOT beginner reading paths. The approved public Year 3008 Final Fork remains unresolved. Never use an inaccessible guide as alleged proof.

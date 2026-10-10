@@ -1,4 +1,4 @@
-name: SPARKY ChatGPT Beginner Handoff
+name: SPARKY Creator Studio Handoff
 
 on:
   pull_request:
@@ -6,6 +6,12 @@ on:
       - 'gpt-users.html'
       - 'swarmsy.html'
       - 'sparky-chatgpt-guide.txt'
+      - 'guides/sparky/**'
+      - 'moonboy-ai-canon-guide.txt'
+      - 'moonboy-canon-index.json'
+      - 'wiki/create-your-moonboy.html'
+      - 'js/sparky-creator-activities.js'
+      - 'js/sparky-gpt-app.js'
       - 'scripts/sparky-chatgpt-handoff.test.mjs'
       - '.github/workflows/sparky-chatgpt-handoff.yml'
   workflow_dispatch:
@@ -15,12 +21,14 @@ permissions:
 
 jobs:
   smoke:
-    name: Beginner launch, guide and clipboard smoke test
+    name: All creator activity launch and public canon safety tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Test generated ChatGPT launch flows
+      - name: Check new creator application JavaScript
+        run: node --check js/sparky-creator-activities.js && node --check js/sparky-gpt-app.js
+      - name: Run all SPARKY creator regression tests
         run: node --test scripts/sparky-chatgpt-handoff.test.mjs
