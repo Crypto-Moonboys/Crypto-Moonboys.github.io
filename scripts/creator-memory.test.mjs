@@ -53,6 +53,7 @@ test("untrusted data cannot self-promote to verified or official canon", () => {
   assert.equal(parsed.sources[0].url, "https://example.com/reference");
   assert.ok(!Object.hasOwn(parsed, "__proto_pollution_attempt"));
   assert.doesNotMatch(M.markdown(parsed), /<img/);
+  assert.match(M.markdown(parsed), /Imported history should be visible/);
 });
 test("rejects malformed, oversize and unsupported files without parsing unknown formats", () => {
   const M = boot();
