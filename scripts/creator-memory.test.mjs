@@ -76,6 +76,8 @@ test("public studio has local file/clipboard UI, no private URL injection and pu
   assert.match(page, /src="\/js\/creator-memory\.js"/);
   assert.match(page, /src="\/js\/creator-memory-studio\.js"/);
   assert.match(ui, /URL\.createObjectURL/);
+  assert.match(ui, /M\.serialize\(record\)/);
+  assert.match(ui, /\["history", "History notes"/);
   assert.match(ui, /navigator\?\.clipboard\?\.writeText/);
   assert.match(app, /sparky-activity-change/);
   assert.ok(!ui.includes("fetch("), "studio must not upload anything");
