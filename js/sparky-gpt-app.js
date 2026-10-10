@@ -66,14 +66,15 @@
       root.dispatchEvent(new root.CustomEvent('sparky-activity-change', { detail: { id: a.id, title: a.title } }));
     }
   }
-  function showStarter() {
+  function showSection(section, heading) {
     const header = doc.getElementById('site-header');
-    if (header) launch.style.scrollMarginTop = Math.ceil(header.getBoundingClientRect().height) + 16 + 'px';
+    if (header) section.style.scrollMarginTop = Math.ceil(header.getBoundingClientRect().height) + 16 + 'px';
     const reducedMotion = root.matchMedia && root.matchMedia('(prefers-reduced-motion: reduce)').matches;
     // A repeated fragment assignment does not scroll. Move explicitly every time.
-    launchHeading.focus({ preventScroll: true });
-    launch.scrollIntoView({ behavior: reducedMotion ? 'instant' : 'smooth', block: 'start' });
+    heading.focus({ preventScroll: true });
+    section.scrollIntoView({ behavior: reducedMotion ? 'instant' : 'smooth', block: 'start' });
   }
+  function showStarter() { showSection(launch, launchHeading); }
   function render(filter) {
     const q = String(filter || '').toLocaleLowerCase().trim();
     mount.replaceChildren();
@@ -84,10 +85,18 @@
       if (!items.length) return;
       visible += items.length;
       const section = element('details','gpt-group');
-      section.open = !!q || groupNumber === 0 || items.some(a => a.id === selected);
+      section.id = 'gpt-category-' + groupNumber;
+      section.open = !!q || items.some(a => a.id === selected);
       const heading = element('summary','gpt-group-title');
       heading.appendChild(element('strong','',category.title));
       heading.appendChild(element('span','gpt-group-count',items.length + ' activities'));
+      heading.addEventListener('click', event => {
+        event.preventDefault();
+        const open = !section.open;
+        mount.querySelectorAll('.gpt-group').forEach(group => { group.open = false; });
+        section.open = open;
+        if (open) showSection(section, heading);
+      });
       section.appendChild(heading);
       const grid = element('div','gpt-route-grid');
       for (const a of items) {

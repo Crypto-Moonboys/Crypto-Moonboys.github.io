@@ -45,6 +45,19 @@ async function checkDestination(page, title) {
   assert.equal(new URL(await page.locator('#gpt-open-link').getAttribute('href')).searchParams.get('q'), prompt);
 }
 
+async function checkCategory(page, group) {
+  assert.equal(await page.locator('.gpt-group[open]').count(), 1, 'opening a section closes the previous section');
+  const id = await group.getAttribute('id');
+  await page.waitForFunction(id => {
+    const section = document.getElementById(id);
+    const heading = section.querySelector('summary').getBoundingClientRect();
+    const firstActivity = section.querySelector('[data-activity]').getBoundingClientRect();
+    const header = document.getElementById('site-header').getBoundingClientRect();
+    return section.open && heading.top >= header.bottom && heading.bottom < innerHeight && firstActivity.top < innerHeight;
+  }, id);
+  assert.ok(await group.locator('summary').evaluate(heading => document.activeElement === heading), 'section heading keeps keyboard focus');
+}
+
 let browser;
 try {
   browser = await chromium.launch({ headless: true, ...(process.env.CHROMIUM_EXECUTABLE_PATH ? { executablePath: process.env.CHROMIUM_EXECUTABLE_PATH } : {}) });
@@ -93,22 +106,28 @@ try {
         await checkDestination(page, title);
       }
       const websiteGroup = page.locator('.gpt-group').filter({ has: page.locator('[data-activity="website"]') });
-      await websiteGroup.locator('summary').click();
+      // Keyboard activation of a section must reveal it and close the old section too.
+      await websiteGroup.locator('summary').press('Enter');
+      await checkCategory(page, websiteGroup);
       await page.locator('[data-activity="website"]').click();
       await checkDestination(page, goals[0][1]);
       if (width === 1440 && reducedMotion === 'reduce') {
         // Exercise every real directory button against the independent title fixture.
-        const closedSections = page.locator('.gpt-group:not([open]) > summary');
-        while (await closedSections.count()) {
-          await closedSections.first().click();
-        }
-        assert.equal(await page.locator('.gpt-group[open]').count(), 12);
+        assert.equal(await page.locator('.gpt-group').count(), 12);
         assert.equal(activities.length, 107);
+        const visitedSections = new Set();
         for (const { id, title } of activities) {
+          const group = page.locator('.gpt-group').filter({ has: page.locator(`[data-activity="${id}"]`) });
+          if (!await group.evaluate(section => section.open)) {
+            await group.locator('summary').click();
+            await checkCategory(page, group);
+          }
+          visitedSections.add(await group.getAttribute('id'));
           await page.locator(`[data-activity="${id}"]`).click();
           await checkDestination(page, title);
           assert.equal(await page.locator('[data-activity][aria-pressed="true"]').getAttribute('data-activity'), id);
         }
+        assert.equal(visitedSections.size, 12, 'all section headings and their activities are covered');
       }
       // A taller header must not hide the destination at mobile/text-expanded sizes.
       await page.locator('#site-header').evaluate(header => { header.style.minHeight = '240px'; });
@@ -123,7 +142,7 @@ try {
       await page.close();
     }
   }
-  console.log('Creator goal navigation passed: real versioned script tags, delayed startup, legacy cached markup, desktop/mobile, all six goals, all 107 activities across 12 sections, repeat selection, header clearance, focus, reduced motion and prompt parity.');
+  console.log('Creator goal navigation passed: all 12 section headings, keyboard activation, real versioned script tags, delayed startup, legacy cached markup, desktop/mobile, all six goals, all 107 activities, repeat selection, header clearance, focus, reduced motion and prompt parity.');
 } finally {
   await browser?.close();
 }

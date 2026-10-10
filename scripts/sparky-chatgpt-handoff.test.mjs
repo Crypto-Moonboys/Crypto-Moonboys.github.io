@@ -37,9 +37,10 @@ class FakeEl {
   getAttribute(k){return this.attrs[k]??null;}
   addEventListener(event,cb){this.listeners[event]=cb;}
   focus(){this.focused=true;}
-  scrollIntoView(){}
+  scrollIntoView(){this.scrolled=true;}
   select(){this.selected=true;}
   closest(tag){let n=this.parent;while(n){if(n.tagName===tag)return n;n=n.parent;}return null;}
+  querySelectorAll(query){return query === '.gpt-group' ? this.children.filter(n=>n.className==='gpt-group') : [];}
   querySelector(query){
     const m=query.match(/^\[data-activity="([^"]+)"\]$/);
     if (!m) return null;
@@ -200,6 +201,25 @@ test('interactive page selects exactly one activity, supports deep-link, search 
   assert.equal(nodes['gpt-prompt-details'].open,true);
   assert.equal(nodes['gpt-prompt-preview'].selected,true);
   assert.match(nodes['gpt-copy-status'].textContent,/Copy the highlighted message/);
+});
+
+test('all twelve section headings switch the open section and scroll without choosing an activity',()=>{
+  const {nodes}=ui();
+  const sections=nodes['gpt-activity-groups'].children;
+  assert.equal(sections.length,12);
+  const starter=nodes['gpt-choice'].textContent;
+  for (const section of sections) {
+    const heading=section.children[0];
+    if (section.open) heading.listeners.click({preventDefault(){}});
+    heading.listeners.click({preventDefault(){}});
+    assert.equal(sections.filter(group=>group.open).length,1);
+    assert.equal(section.open,true);
+    assert.equal(section.scrolled,true);
+    assert.equal(heading.focused,true);
+    assert.equal(nodes['gpt-choice'].textContent,starter,'section selection must not choose an arbitrary activity');
+  }
+  sections.at(-1).children[0].listeners.click({preventDefault(){}});
+  assert.equal(sections.filter(group=>group.open).length,0,'active section remains collapsible');
 });
 
 test('optional ChatGPT reference does not require a separate app or workspace',()=>{
