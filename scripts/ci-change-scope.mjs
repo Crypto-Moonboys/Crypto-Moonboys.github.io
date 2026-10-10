@@ -99,6 +99,7 @@ const SCOPES = {
     'package-lock.json',
   ],
   visual: [
+    'scripts/bible-loader-swarmsy-browser.test.mjs',
     'scripts/wiki-citation-preservation-browser.test.mjs',
     '**/*.html',
     'about/**',
