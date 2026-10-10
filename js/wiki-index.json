@@ -39280,7 +39280,7 @@
     "tags": [],
     "category": "characters",
     "aliases": [],
-    "rank_score": 214,
+    "rank_score": 215,
     "rank_signals": {
       "is_canonical": true,
       "alias_count": 0,
@@ -39289,7 +39289,7 @@
       "category": "characters",
       "category_priority": 8,
       "has_description": true,
-      "article_word_count": 782,
+      "article_word_count": 809,
       "keyword_bag_size": 24,
       "heading_count": 18,
       "list_count": 0,
@@ -39304,11 +39304,11 @@
       "canonical_points": 20,
       "description_points": 10,
       "category_points": 40,
-      "word_count_points": 39,
+      "word_count_points": 40,
       "keyword_bag_points": 24,
       "content_quality_points": 71,
       "authority_points": 10,
-      "final_rank_score": 214,
+      "final_rank_score": 215,
       "authority_graph_points": 0
     },
     "search_index": {
