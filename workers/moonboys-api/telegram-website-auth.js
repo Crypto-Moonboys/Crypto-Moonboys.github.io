@@ -49,9 +49,33 @@ function reply(headers, data, status = 200) {
   headers.set('Content-Type', 'application/json');
   return new Response(JSON.stringify(data), { status, headers });
 }
-function fail(code, status = 401) { throw Object.assign(new Error(code), { status }); }
+const failureCategory = Symbol('authFailureCategory');
+function fail(code, status = 401, category = code) { throw Object.assign(new Error(code), { status, [failureCategory]: category }); }
+// Classify locally; never emit exception text, SQL, provider bodies or identity data.
+function diagnosticCategory(error, stage) {
+  if (error?.[failureCategory]) return error[failureCategory];
+  if (['TimeoutError', 'AbortError'].includes(error?.name)) return 'upstream_timeout';
+  const joseCategories = {
+    ERR_JWT_EXPIRED: 'id_token_expired', ERR_JWT_CLAIM_VALIDATION_FAILED: 'id_token_claim_invalid',
+    ERR_JWS_SIGNATURE_VERIFICATION_FAILED: 'id_token_signature_invalid', ERR_JWKS_TIMEOUT: 'jwks_timeout',
+    ERR_JWKS_NO_MATCHING_KEY: 'jwks_key_missing', ERR_JWS_INVALID: 'id_token_malformed',
+    ERR_JWT_INVALID: 'id_token_malformed', ERR_JOSE_ALG_NOT_ALLOWED: 'id_token_algorithm_invalid',
+  };
+  if (Object.hasOwn(joseCategories, error?.code)) return joseCategories[error.code];
+  if (stage.startsWith('d1_')) {
+    const message = String(error?.message || '') + ' ' + String(error?.cause?.message || '');
+    if (/no such (table|column)|has no column named/i.test(message)) return 'd1_schema_missing';
+    if (/FOREIGN KEY constraint/i.test(message)) return 'd1_foreign_key';
+    if (/UNIQUE constraint/i.test(message)) return 'd1_unique_constraint';
+    if (/NOT NULL constraint/i.test(message)) return 'd1_not_null_constraint';
+    return 'd1_operation_failed';
+  }
+  if (stage === 'provider_exchange') return 'provider_transport_or_response';
+  if (stage === 'id_token_verification') return 'id_token_verification_failed';
+  return 'unexpected_failure';
+}
 function requireWrites(results, count) {
-  if (!Array.isArray(results) || results.length !== count || results.some(result => result?.success !== true)) fail('website_login_unavailable', 503);
+  if (!Array.isArray(results) || results.length !== count || results.some(result => result?.success !== true)) fail('website_login_unavailable', 503, 'd1_batch_unconfirmed');
 }
 
 export async function validateTelegramIdToken(token, cfg, nonce, fetchImpl = fetch) {
@@ -134,8 +158,20 @@ export async function handleTelegramWebsiteAuth(request, env, fetchImpl = fetch)
   if (!url.pathname.startsWith(PREFIX)) return null;
   const cfg = config(env);
   const headers = headersFor(request, cfg);
-  if (!cfg || url.origin !== cfg.origin) return reply(headers, { error: 'website_login_not_configured' }, 503);
   const action = url.pathname.slice(PREFIX.length);
+  // A random request ID correlates stages without deriving any identifier from state or cookies.
+  const diagnostic = ['start', 'callback'].includes(action) && request.method === 'GET';
+  const requestId = diagnostic ? crypto.randomUUID() : null;
+  let stage = 'configuration';
+  let providerStatus;
+  const event = (outcome, category = null) => {
+    if (diagnostic) console.info(JSON.stringify({ event: 'telegram_website_auth', request_id: requestId,
+      action, stage, outcome, ...(category ? { category } : {}),
+      ...(stage === 'provider_exchange' && Number.isInteger(providerStatus) ? { provider_http_status: providerStatus } : {}) }));
+  };
+  if (diagnostic) headers.set('X-Moonboys-Auth-Request-Id', requestId);
+  event('received');
+  if (!cfg || url.origin !== cfg.origin) { event('failed', 'website_login_not_configured'); return reply(headers, { error: 'website_login_not_configured' }, 503); }
   const logoutRequest = action === 'logout' && (request.method === 'GET' || request.method === 'POST');
   try {
     if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers });
@@ -143,8 +179,9 @@ export async function handleTelegramWebsiteAuth(request, env, fetchImpl = fetch)
       if (!cfg.origins.includes(request.headers.get('Origin'))) fail('website_origin_required', 403);
       return reply(headers, { ok: true, enabled: cfg.enabled });
     }
-    if ((!cfg.enabled && !logoutRequest) || !env.DB) return reply(headers, { error: 'website_login_not_configured' }, 503);
+    if ((!cfg.enabled && !logoutRequest) || !env.DB) { event('failed', 'website_login_not_configured'); return reply(headers, { error: 'website_login_not_configured' }, 503); }
     if (action === 'start' && request.method === 'GET') {
+      stage = 'return_url_validation';
       let returnUrl;
       try { returnUrl = new URL(url.searchParams.get('return_to') || cfg.origins[0] + '/gkniftyheads-incubator.html'); }
       catch { fail('invalid_return_url', 400); }
@@ -153,7 +190,9 @@ export async function handleTelegramWebsiteAuth(request, env, fetchImpl = fetch)
       returnUrl.hash = '';
       ['code', 'state', 'token', 'telegram_auth', 'auth_evidence'].forEach(key => returnUrl.searchParams.delete(key));
       const state = randomToken(), browser = randomToken(), verifier = randomToken(), nonce = randomToken();
+      stage = 'd1_previous_session_lookup';
       const session = await readSession(request, env);
+      stage = 'd1_transaction_creation';
       const results = await env.DB.batch([
         env.DB.prepare('DELETE FROM telegram_login_transactions WHERE expires_at <= ?').bind(nowSeconds()),
         env.DB.prepare('DELETE FROM telegram_website_sessions WHERE expires_at <= ? OR last_seen_at <= ?').bind(nowSeconds(), nowSeconds() - WEBSITE_IDLE_SECONDS),
@@ -162,36 +201,55 @@ export async function handleTelegramWebsiteAuth(request, env, fetchImpl = fetch)
           .bind(await authDigest(state), await authDigest(browser), verifier, nonce, returnUrl.href, session?.telegram_id || null, session?.session_hash || null, nowSeconds() + LOGIN_SECONDS),
       ]);
       requireWrites(results, 3);
+      event('completed');
+      stage = 'authorization_redirect';
       const auth = new URL(ISSUER + '/auth');
       auth.search = new URLSearchParams({ client_id: cfg.clientId, redirect_uri: cfg.redirectUri, response_type: 'code', scope: 'openid profile',
         state, nonce, code_challenge: await authDigest(verifier), code_challenge_method: 'S256' }).toString();
       headers.set('Location', auth.href);
       headers.append('Set-Cookie', setCookie(LOGIN_COOKIE, browser, LOGIN_SECONDS, 'Lax'));
+      event('completed');
       return new Response(null, { status: 302, headers });
     }
     if (action === 'callback' && request.method === 'GET') {
+      stage = 'callback_validation';
       const state = url.searchParams.get('state'), code = url.searchParams.get('code'), browser = cookie(request, LOGIN_COOKIE);
       headers.append('Set-Cookie', setCookie(LOGIN_COOKIE, '', 0, 'Lax'));
-      if (!browser || !/^[A-Za-z0-9_-]{43}$/.test(state || '') || !code || code.length > 4096 ||
+      if (!browser) fail('invalid_login_callback', 401, 'login_cookie_missing_or_invalid');
+      if (!/^[A-Za-z0-9_-]{43}$/.test(state || '') || !code || code.length > 4096 ||
         url.searchParams.getAll('state').length !== 1 || url.searchParams.getAll('code').length !== 1 || url.searchParams.has('error')) fail('invalid_login_callback');
       // Atomic consumption before the token exchange prevents concurrent/replayed callbacks.
+      event('completed');
+      stage = 'd1_transaction_consumption';
       const tx = await env.DB.prepare(`DELETE FROM telegram_login_transactions
         WHERE state_hash = ? AND browser_hash = ? AND expires_at > ? RETURNING *`)
         .bind(await authDigest(state), await authDigest(browser), nowSeconds()).first();
       if (!tx) fail('login_expired_or_replayed');
+      event('completed');
+      stage = 'provider_exchange';
       const response = await fetchImpl(ISSUER + '/token', { method: 'POST', redirect: 'error', signal: AbortSignal.timeout(10000),
         headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Authorization': 'Basic ' + btoa(cfg.clientId + ':' + cfg.clientSecret) },
         body: new URLSearchParams({ grant_type: 'authorization_code', code, redirect_uri: cfg.redirectUri, client_id: cfg.clientId, code_verifier: tx.verifier }) });
+      providerStatus = response.status;
       if (!response.ok) fail('telegram_token_exchange_failed');
       const tokens = await response.json();
+      event('completed');
+      stage = 'id_token_verification';
       const identity = await validateTelegramIdToken(tokens.id_token, cfg, tx.nonce, fetchImpl);
+      event('completed');
+      stage = 'account_resolution';
       if (tx.expected_telegram_id && tx.expected_telegram_id !== identity.id) fail('logout_before_switching_accounts', 409);
+      stage = 'd1_identity_binding_lookup';
       const binding = await env.DB.prepare(`SELECT subject, telegram_id FROM telegram_oidc_accounts
         WHERE issuer = ? AND client_id = ? AND (subject = ? OR telegram_id = ?)`)
         .bind(ISSUER, cfg.clientId, identity.subject, identity.id).first();
       if (binding && (binding.subject !== identity.subject || binding.telegram_id !== identity.id)) fail('telegram_identity_conflict', 409);
+      event('completed');
+      stage = 'd1_account_status_lookup';
       const ac = await env.DB.prepare('SELECT is_blocked FROM telegram_anticheat_state WHERE telegram_id = ?').bind(identity.id).first();
       if (Number(ac?.is_blocked) === 1) fail('account_blocked', 403);
+      event('completed');
+      stage = 'd1_account_session_creation';
       const secret = randomToken(), sessionHash = await authDigest(secret), csrf = await authDigest('csrf:' + secret), now = nowSeconds();
       const ownsBinding = `EXISTS (SELECT 1 FROM telegram_oidc_accounts WHERE issuer = ? AND client_id = ? AND subject = ? AND telegram_id = ?)`;
       const bindingArgs = [ISSUER, cfg.clientId, identity.subject, identity.id];
@@ -211,11 +269,16 @@ export async function handleTelegramWebsiteAuth(request, env, fetchImpl = fetch)
       ]);
       requireWrites(results, 4);
       if (results[3]?.meta?.changes !== 1) fail('telegram_identity_conflict', 409);
+      event('completed');
+      stage = 'd1_previous_session_revocation';
       // Strict session cookies do not accompany the cross-site Telegram callback.
       // Revoke only the verified session captured in this browser-bound transaction.
       if (tx.previous_session_hash) requireWrites([await env.DB.prepare('UPDATE telegram_website_sessions SET revoked_at = ? WHERE session_hash = ?').bind(now, tx.previous_session_hash).run()], 1);
+      event('completed');
+      stage = 'session_redirect';
       headers.append('Set-Cookie', setCookie(SESSION_COOKIE, secret, WEBSITE_SESSION_SECONDS));
       headers.set('Location', tx.return_url);
+      event('completed');
       return new Response(null, { status: 303, headers });
     }
     if (!cfg.origins.includes(request.headers.get('Origin'))) fail('website_origin_required', 403);
@@ -253,6 +316,7 @@ export async function handleTelegramWebsiteAuth(request, env, fetchImpl = fetch)
     }
     return reply(headers, { error: 'not_found' }, 404);
   } catch (error) {
+    event('failed', diagnosticCategory(error, stage));
     // Never emit provider tokens, authorization codes, cookie values or SQL errors.
     return reply(headers, { error: error.status ? error.message : 'website_login_unavailable' }, error.status || 503);
   }

@@ -276,3 +276,60 @@ legacy/guest compatibility, hydration and uncertain-write rejection.
 `moonpet-passive-refresh.test.mjs` covers retryable website renewal failures for
 reads and actions, recovery on the next attempt without duplicate submission,
 confirmed expiry, Mini App/legacy compatibility and cancellation/deadlines.
+
+## Callback incident diagnostics
+
+`telegram_website_auth` structured events identify the action, stage, outcome,
+fixed failure category, and a random per-request ID. The response also carries
+`X-Moonboys-Auth-Request-Id`. Token exchange events include only the provider HTTP
+status. No authorization code, token, state, cookie, client secret, SQL text,
+callback URL, account ID or profile data is logged. Exception messages are
+classified locally and discarded. Public response errors remain unchanged.
+
+A handled Wrangler invocation can still return 503: the auth handler catches
+exceptions intentionally. `website_login_unavailable` can come from an
+unconfirmed D1 batch/revocation result or an exception during transaction
+consumption, provider exchange/JSON parsing, JWKS/token verification, account
+lookups, account/session writes or previous-session revocation. Use the failed
+stage and category to identify which operation needs investigation.
+
+Local validation of migration 090 and the actual D1 API confirms that atomic
+`DELETE ... RETURNING` and the guarded account/session batch work with the
+repository schema. This does not establish the deployed schema or production
+root cause. Do not remove transaction consumption or weaken browser binding,
+PKCE, nonce, issuer/audience validation, uniqueness or account blocking.
+
+Before an approved release, obtain read-only production evidence:
+
+```sql
+SELECT type, name, tbl_name, sql FROM sqlite_master
+WHERE tbl_name IN ('telegram_users', 'telegram_activity_log',
+  'telegram_anticheat_state', 'telegram_oidc_accounts',
+  'telegram_login_transactions', 'telegram_website_sessions',
+  'telegram_website_credentials')
+ORDER BY tbl_name, type, name;
+SELECT name FROM d1_migrations WHERE name LIKE '090%';
+```
+
+Compare those definitions and indexes with migration 090 and the callback SQL;
+inspect no player rows and apply no migrations until schema drift is confirmed
+and GK approves the required change. Migration 090 does not add a foreign key
+from OIDC bindings to users; session and activity rows reference the unique
+`telegram_users.telegram_id`. Existing accounts are upserted without replacement;
+progression and ownership columns are preserved.
+
+Three callback invocations alone do not identify browser navigations, reloads,
+retries or duplicate submission. Distinct request IDs identify invocations, not
+transactions. After a failed exchange/write the transaction remains consumed;
+a reload may fail at cookie validation or transaction consumption. Start a new
+login attempt rather than retrying the same callback. To distinguish browser
+causes, inspect a browser network trace locally and share only redacted timing,
+method, status and request IDs; never share callback URLs or credentials.
+
+This diagnostic change needs a moonboys-api Worker release, no D1 migration,
+frontend release or VPS restart. Hold merge and deployment for GK approval.
+After approval, use the repository readiness audit and provenance deployment
+wrapper from this document. Capture a failed-stage event if login still fails,
+then verify real-provider login on desktop/mobile, valid session bootstrap,
+return redirect and preservation of the existing account before declaring the
+incident resolved. Mocked browser tests do not substitute for that acceptance.
