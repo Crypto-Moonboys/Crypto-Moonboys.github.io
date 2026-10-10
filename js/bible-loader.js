@@ -67,25 +67,9 @@
     const article = document.querySelector('[data-entity-slug="crypto-moonboys"]');
     if (!article || document.getElementById('swarmsy-current')) return;
 
-    const swarmsyPath = article.querySelector('#path-swarmsy');
-    if (!swarmsyPath) return;
-
-    const helpItems = swarmsyPath.querySelectorAll('.cm-steps li');
-    if (helpItems[3]) {
-      helpItems[3].textContent = 'Approved SPARKY Truths and Proof Review: keep rough ideas separate from confirmed decisions, preserve user-scoped project truth and separate claims from evidence.';
-    }
-
-    const pathActions = swarmsyPath.querySelector('.cm-actions');
-    if (pathActions && !pathActions.querySelector('[data-swarmsy-repo-link]')) {
-      const repoLink = document.createElement('a');
-      repoLink.className = 'cm-button cm-button--secondary';
-      repoLink.href = SWARMSY_REPO;
-      repoLink.target = '_blank';
-      repoLink.rel = 'noopener noreferrer';
-      repoLink.dataset.swarmsyRepoLink = 'true';
-      repoLink.textContent = 'Open SWARMSY-Ai source';
-      pathActions.appendChild(repoLink);
-    }
+    // The protected article places its anchor on an h2 inside the section.
+    const swarmsySection = article.querySelector('#swarmsy')?.closest('section');
+    if (!swarmsySection) return;
 
     const section = document.createElement('section');
     section.className = 'cm-section';
@@ -108,20 +92,7 @@
       <div class="cm-actions"><a class="cm-button" href="/gpt-users.html">Create with ChatGPT</a><a class="cm-button cm-button--secondary" href="${SWARMSY_REPO}" target="_blank" rel="noopener noreferrer">Explore SWARMSY PC source</a></div>
     `;
 
-    const ownershipSection = article.querySelector('#ownership-and-canon');
-    if (ownershipSection) ownershipSection.before(section);
-    else swarmsyPath.parentElement.after(section);
-
-    const roleCards = article.querySelectorAll('#how-the-parts-fit .cm-role-card');
-    roleCards.forEach(card => {
-      const strong = card.querySelector('strong');
-      if (!strong) return;
-      if (strong.textContent.includes('Wiki Packs / Memory Locks / Proof Review')) {
-        strong.textContent = 'Core Packs / Approved SPARKY Truths / Proof Review';
-        const description = card.querySelector('p');
-        if (description) description.textContent = 'Local SPARKY protocols, user-scoped approved continuity and claim discipline that help creators avoid drift and fake authority.';
-      }
-    });
+    swarmsySection.after(section);
   }
 
   function appendBlockTopiaRelatedPaths() {
