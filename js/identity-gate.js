@@ -1180,7 +1180,7 @@
     ready: websiteReady,
     /** True while the initial website cookie session restoration is unresolved. */
     isSessionPending: function () { return websitePending; },
-    /** True when the current identity is a cookie-backed website (OIDC) session. */
+    /** Hint (stored session mode, not proof) that the identity is a cookie-backed website (OIDC) session. */
     isWebsiteSession: function () { return lsGet('moonboys_tg_session_mode') === 'website'; },
     loginWithTelegram: loginWithTelegram,
     logout: logoutTelegram,

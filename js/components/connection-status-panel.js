@@ -57,6 +57,7 @@
   // Fallback used when the API does not return required_xp.
   var FALLBACK_REQUIRED_XP = 50;
   var DAILY_STATE_FETCH_TIMEOUT_MS = 6000;
+  var BADGE_PENDING_RETRY_MS = 30000;
   var STYLE_ID = 'csp-styles';
 
   // ── Per-session cache ─────────────────────────────────────────────────
@@ -1363,6 +1364,12 @@
         gate.ready.then(function () {}, function () {}).then(function () {
           if (String(el.dataset.cspToken) === String(token)) mountBadge(el);
         });
+      } else if (html.indexOf('data-csp-badge-state="pending"') !== -1) {
+        // Verifying/renewing after a transient failure: retry later so the
+        // badge cannot stay stuck when a renewal succeeds without an event.
+        setTimeout(function () {
+          if (String(el.dataset.cspToken) === String(token)) mountBadge(el);
+        }, BADGE_PENDING_RETRY_MS);
       }
     }
   }
