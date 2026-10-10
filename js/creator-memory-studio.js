@@ -30,7 +30,8 @@
       ["decisions", "Approved decisions", "Creator-approved, not independently verified"],
       ["ideas", "Unapproved ideas", "Proposals and experiments"],
       ["sources", "Source links", "References are not automatically trusted"],
-      ["assets", "Artwork and file references", "Referenced files are not bundled"]
+      ["assets", "Artwork and file references", "Referenced files are not bundled"],
+      ["proofs", "Unverified proof notes", "Documented assertions, not automatic proof"]
     ];
     for (const [key, title, hint] of sections) {
       const section = doc.createElement("div");
@@ -68,6 +69,7 @@
     const now = new Date().toISOString();
     if (kind === "decisions") record.decisions.push({ text: value, approved_at: now, source: "Creator approval in Studio" });
     if (kind === "ideas") record.ideas.push({ text: value, created_at: now });
+    if (kind === "proofs") record.proofs.push({ text: value, reference: "", status: "unverified" });
     if (kind === "sources") {
       const parts = value.split("|").map(x => x.trim());
       const url = parts.length > 1 ? parts.slice(1).join("|") : parts[0];
