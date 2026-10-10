@@ -93,19 +93,19 @@
     section.innerHTML = `
       <p class="cm-kicker">Current SWARMSY-Ai implementation</p>
       <h2>WHAT IS IMPLEMENTED NOW</h2>
-      <p>SWARMSY is a customised AnythingLLM fork. AnythingLLM supplies the workspace, document, retrieval, model-provider, agent and API foundation. SPARKY remains the permanent visible operator for the guided creator journey.</p>
+      <p>SWARMSY is an optional locally run PC beta built on AnythingLLM, with user-configured local or API models. SPARKY guides projects inside that app. The public website instead offers <a href="/gpt-users.html">SPARKY-style ChatGPT creator activities</a>, not a hosted SWARMSY chat or automatic access to private records.</p>
       <div class="cm-role-grid">
         <div class="cm-role-card"><strong>Fixed protected SPARKY workspace</strong><p>The canonical SPARKY workspace is created automatically when missing, appears as a fixed “Continue with SPARKY” entry and is protected from normal rename, update and deletion routes.</p></div>
-        <div class="cm-role-card"><strong>Starter journey</strong><p>New users receive three starter routes: shape a project idea, build a project identity, or turn an idea into an action plan.</p></div>
+        <div class="cm-role-card"><strong>Starter journey</strong><p>Local SPARKY installations provide guided project onboarding. The current starter activities and their availability are documented in the PC repository, not guaranteed as public website features.</p></div>
         <div class="cm-role-card"><strong>Approved SPARKY Truths</strong><p>Confirmed facts and decisions are stored separately from rough ideas, scoped by workspace and user, injected into later prompts and available for archiving.</p></div>
         <div class="cm-role-card"><strong>Normal thread controls</strong><p>The fixed SPARKY entry keeps normal AnythingLLM thread history and New Thread controls.</p></div>
       </div>
-      <h3>Eight current core packs</h3>
-      <p>OG SPARKY Contract, Project Manager Protocol, Identity Questionnaire, Do It For Me Prompts, Approved Decisions, Action Confirmation, Tasks and Schedule, and Proof Review.</p>
+      <h3>Local SPARKY protocol packs</h3>
+      <p>The PC repository maintains a versioned pack catalogue for project identity, direction, approved records, planning and proof checks. Consult the current source for exact pack inventory; the packs are not automatically hosted as website services.</p>
       <h3>Creative controls</h3>
       <p>SAFE and WTF act as creative-intensity modes. MESSAGE, DOODAD and PLACEMENT help define what people remember, the recognisable device and the context that makes the idea land.</p>
-      <p class="cm-highlight">The repository proves the implemented source and workflows. It does not by itself prove that hosted releases, finished installers, automatic pack ingestion or external actions are live.</p>
-      <div class="cm-actions"><a class="cm-button" href="${SWARMSY_REPO}" target="_blank" rel="noopener noreferrer">View current SWARMSY-Ai repository</a><a class="cm-button cm-button--secondary" href="/swarmsy.html">Open SWARMSY page</a></div>
+      <p class="cm-highlight">The repository proves source and build workflows, not an active hosted SWARMSY service or a finished installer. The website uses ChatGPT for public AI creation; creator-memory transfer to the separate PC application is manual.</p>
+      <div class="cm-actions"><a class="cm-button" href="/gpt-users.html">Create with ChatGPT</a><a class="cm-button cm-button--secondary" href="${SWARMSY_REPO}" target="_blank" rel="noopener noreferrer">Explore SWARMSY PC source</a></div>
     `;
 
     const ownershipSection = article.querySelector('#ownership-and-canon');
