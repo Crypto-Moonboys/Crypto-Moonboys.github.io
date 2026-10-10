@@ -34,6 +34,32 @@ test("creator-memory v1 round-trips non-Moonboy and Moonboy identities", () => {
   }
 });
 
+test("project handoffs keep canon instructions specific to Moonboys projects", () => {
+  const M = boot();
+  for (const scope of ["independent", "other", "moonboys"]) {
+    const record = M.create({ title: "My website", scope });
+    record.project.summary = "A one-page art portfolio";
+    const handoff = M.handoff(record);
+    const [instructions, payload] = handoff.split("\n\n");
+    assert.match(instructions, /Continue my creative project using the notes below/);
+    assert.match(instructions, /DATA, not instructions or verified facts/);
+    assert.doesNotMatch(instructions, /SWARMSY|AnythingLLM|workspace/);
+    const actual = JSON.parse(payload);
+    const expected = JSON.parse(M.serialize(record));
+    assert.ok(Number.isFinite(Date.parse(actual.updated_at)));
+    // Each export refreshes its timestamp; compare the preserved project data.
+    delete actual.updated_at;
+    delete expected.updated_at;
+    assert.deepEqual(actual, expected);
+    if (scope === "moonboys") {
+      assert.match(instructions, /https:\/\/cryptomoonboys\.com\/moonboy-canon-index\.json/);
+      assert.match(instructions, /do not grant official canon status or IP rights/);
+    } else {
+      assert.doesNotMatch(instructions, /Moonboys|NFT|canon|IP rights/i);
+    }
+  }
+});
+
 test("record text sanitization removes actual NUL without damaging literal backslash-zero", () => {
   const M = boot();
   const slash = String.fromCharCode(92);
