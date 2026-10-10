@@ -225,6 +225,7 @@ const GROUPS = {
     ['node', 'scripts/wax-collection-page-fallback.test.mjs'],
   ],
   visual: [
+    ['node', 'scripts/sparky-goal-navigation-browser.test.mjs'],
     ['node', 'scripts/bible-loader-swarmsy-browser.test.mjs'],
     ['node', '--test', 'scripts/telegram-website-login-browser.test.mjs'],
     ['node', '--test', 'scripts/telegram-header-badge-browser.test.mjs'],

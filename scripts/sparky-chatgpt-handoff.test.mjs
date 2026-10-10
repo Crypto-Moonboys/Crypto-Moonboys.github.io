@@ -36,6 +36,7 @@ class FakeEl {
   getAttribute(k){return this.attrs[k]??null;}
   addEventListener(event,cb){this.listeners[event]=cb;}
   focus(){this.focused=true;}
+  scrollIntoView(){}
   select(){this.selected=true;}
   closest(tag){let n=this.parent;while(n){if(n.tagName===tag)return n;n=n.parent;}return null;}
   querySelector(query){
@@ -46,7 +47,7 @@ class FakeEl {
   }
 }
 function ui(search='') {
-  const ids=['gpt-activity-groups','gpt-choice','gpt-what','gpt-open-link','gpt-prompt-preview','gpt-prompt-details','gpt-copy-prompt','gpt-copy-status','gpt-guide-link','gpt-search','gpt-search-count'];
+  const ids=['gpt-activity-groups','gpt-choice','gpt-what','gpt-open-link','gpt-prompt-preview','gpt-prompt-details','gpt-copy-prompt','gpt-copy-status','gpt-guide-link','gpt-search','gpt-search-count','gpt-launch','gpt-launch-title'];
   const nodes=Object.fromEntries(ids.map(id=>[id,new FakeEl()]));
   const features=['website','wiki','moonboy','stickers','world','do-it'].map(id=>{const b=new FakeEl('button');b.setAttribute('data-feature',id);return b;});
   const doc={getElementById:id=>nodes[id],createElement:tag=>new FakeEl(tag),querySelectorAll:q=>q==='[data-feature]'?features:[]};
