@@ -40,7 +40,7 @@
       record[key].forEach((entry, index) => {
         const row = doc.createElement("div"); row.className = "memory-entry";
         const label = doc.createElement("span");
-        label.textContent = entry.text || (entry.title + " — " + entry.url) || (entry.label + " — " + entry.reference) || entry.reference;
+        label.textContent = entry.text || (entry.url ? entry.title + " — " + entry.url : entry.label + " — " + entry.reference);
         const remove = doc.createElement("button");
         remove.type = "button"; remove.textContent = "Remove";
         remove.setAttribute("aria-label", "Remove " + key + " entry " + (index + 1));
