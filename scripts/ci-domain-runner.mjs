@@ -45,6 +45,7 @@ const GROUPS = {
   ],
   'worker-api': [
     ['node', '--test', 'scripts/telegram-website-auth.test.mjs'],
+    ['node', '--test', 'scripts/telegram-website-auth-diagnostics.test.mjs'],
     ['node', '--test', 'scripts/telegram-website-session-client.test.mjs'],
     ['node', '--test', 'scripts/moonpet-guide.test.mjs'],
     ['node', 'scripts/moonpet-retained-proof-slots.test.mjs'],
