@@ -13,6 +13,10 @@ on:
       - 'js/sparky-creator-activities.js'
       - 'js/sparky-gpt-app.js'
       - 'scripts/sparky-chatgpt-handoff.test.mjs'
+      - 'scripts/sparky-pages-artifact.test.mjs'
+      - 'scripts/fixtures/sparky-creator-goal-hashes.json'
+      - 'scripts/prepare-pages-artifact.mjs'
+      - 'scripts/generate-wiki-content-state.mjs'
       - '.github/workflows/sparky-chatgpt-handoff.yml'
   workflow_dispatch:
 
@@ -32,3 +36,7 @@ jobs:
         run: node --check js/sparky-creator-activities.js && node --check js/sparky-gpt-app.js
       - name: Run all SPARKY creator regression tests
         run: node --test scripts/sparky-chatgpt-handoff.test.mjs
+      - name: Build the actual public Pages artifact
+        run: node scripts/prepare-pages-artifact.mjs public-site
+      - name: Verify deployed guides, canon index, wiki discovery and disclosure protection
+        run: node --test scripts/sparky-pages-artifact.test.mjs
