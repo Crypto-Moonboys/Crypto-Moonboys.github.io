@@ -604,6 +604,27 @@
         "wiki"
       ]
     },
+    "create_your_moonboy": {
+      "alias_candidates": [
+        "create your moonboy"
+      ],
+      "aliases": [],
+      "canonical_title": "Create Your Moonboy | Crypto Moonboys Wiki",
+      "canonical_url": "/wiki/create-your-moonboy.html",
+      "category": "characters",
+      "source_urls": [
+        "/wiki/create-your-moonboy.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "create",
+        "your",
+        "moonboy",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ]
+    },
     "croydon_tower_blocks": {
       "alias_candidates": [],
       "aliases": [],
@@ -11176,5 +11197,5 @@
       ]
     }
   },
-  "updated_at": "2026-10-08T13:18:16Z"
+  "updated_at": "2026-10-10T11:09:30Z"
 }

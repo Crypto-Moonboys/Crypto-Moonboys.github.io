@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-10T11:07:33.030Z",
-  "verified_at": "2026-10-10T11:07:33.030Z",
+  "generated_at": "2026-10-10T11:09:30.849Z",
+  "verified_at": "2026-10-10T11:09:30.849Z",
   "nodes": [
     {
       "id": "/about.html",
@@ -321,6 +321,14 @@
       "category": "misc",
       "rank_score": 251,
       "authority_score": 21
+    },
+    {
+      "id": "/wiki/create-your-moonboy.html",
+      "title": "Create Your Moonboy | Crypto Moonboys Wiki",
+      "url": "/wiki/create-your-moonboy.html",
+      "category": "characters",
+      "rank_score": 227,
+      "authority_score": 18
     },
     {
       "id": "/wiki/croydon-tower-blocks.html",
@@ -4319,6 +4327,36 @@
       "target": "/wiki/hodlmoonboys-nft-collection.html",
       "score": 48,
       "weight": 0.48
+    },
+    {
+      "source": "/wiki/create-your-moonboy.html",
+      "target": "/wiki/crypto-moonboys.html",
+      "score": 81,
+      "weight": 0.81
+    },
+    {
+      "source": "/wiki/create-your-moonboy.html",
+      "target": "/wiki/bitcoin-kids.html",
+      "score": 70,
+      "weight": 0.7
+    },
+    {
+      "source": "/wiki/create-your-moonboy.html",
+      "target": "/wiki/hodl-warriors.html",
+      "score": 69,
+      "weight": 0.69
+    },
+    {
+      "source": "/wiki/create-your-moonboy.html",
+      "target": "/wiki/null-the-prophet.html",
+      "score": 69,
+      "weight": 0.69
+    },
+    {
+      "source": "/wiki/create-your-moonboy.html",
+      "target": "/wiki/block-topia.html",
+      "score": 67,
+      "weight": 0.67
     },
     {
       "source": "/wiki/croydon-tower-blocks.html",

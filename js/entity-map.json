@@ -616,6 +616,28 @@
     ]
   },
   {
+    "entity_id": "create_your_moonboy",
+    "canonical_title": "Create Your Moonboy | Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/create-your-moonboy.html",
+    "category": "characters",
+    "aliases": [],
+    "tags": [
+      "create",
+      "your",
+      "moonboy",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/create-your-moonboy.html"
+    ],
+    "brand": null,
+    "alias_candidates": [
+      "create your moonboy"
+    ]
+  },
+  {
     "entity_id": "croydon_tower_blocks",
     "canonical_title": "Croydon Tower Blocks",
     "canonical_url": "/wiki/croydon-tower-blocks.html",

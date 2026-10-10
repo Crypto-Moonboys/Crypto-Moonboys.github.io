@@ -1508,9 +1508,9 @@
     },
     "link_score": {
       "inbound_count": 85,
-      "outbound_count": 70,
+      "outbound_count": 71,
       "existing_outbound_count": 11,
-      "suggested_outbound_count": 59,
+      "suggested_outbound_count": 60,
       "authority": 175.5
     },
     "brand": null
@@ -4224,9 +4224,9 @@
     },
     "link_score": {
       "inbound_count": 334,
-      "outbound_count": 50,
+      "outbound_count": 51,
       "existing_outbound_count": 13,
-      "suggested_outbound_count": 37,
+      "suggested_outbound_count": 38,
       "authority": 674.5
     },
     "brand": null
@@ -4712,9 +4712,9 @@
     },
     "link_score": {
       "inbound_count": 164,
-      "outbound_count": 60,
+      "outbound_count": 61,
       "existing_outbound_count": 15,
-      "suggested_outbound_count": 45,
+      "suggested_outbound_count": 46,
       "authority": 335.5
     },
     "brand": null
@@ -12261,9 +12261,9 @@
     },
     "link_score": {
       "inbound_count": 7,
-      "outbound_count": 53,
+      "outbound_count": 54,
       "existing_outbound_count": 15,
-      "suggested_outbound_count": 38,
+      "suggested_outbound_count": 39,
       "authority": 21.5
     },
     "brand": null
@@ -16028,9 +16028,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 13,
+      "outbound_count": 14,
       "existing_outbound_count": 3,
-      "suggested_outbound_count": 10,
+      "suggested_outbound_count": 11,
       "authority": 1.5
     },
     "brand": null,
@@ -20713,9 +20713,9 @@
     },
     "link_score": {
       "inbound_count": 2,
-      "outbound_count": 43,
+      "outbound_count": 44,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 31,
+      "suggested_outbound_count": 32,
       "authority": 10
     },
     "brand": null
@@ -36070,6 +36070,97 @@
       "existing_outbound_count": 12,
       "suggested_outbound_count": 23,
       "authority": 36
+    },
+    "brand": null
+  },
+  {
+    "title": "Create Your Moonboy | Crypto Moonboys Wiki",
+    "desc": "Build your Moonboy character with ChatGPT: verified NFT traits, canon-safe biography, faction lore, character world, art and personal wiki, without installing SWARMSY.",
+    "url": "/wiki/create-your-moonboy.html",
+    "tags": [],
+    "category": "characters",
+    "aliases": [],
+    "rank_score": 227,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 0,
+      "mention_count": 0,
+      "category": "characters",
+      "category_priority": 8,
+      "has_description": true,
+      "article_word_count": 880,
+      "keyword_bag_size": 25,
+      "heading_count": 14,
+      "list_count": 0,
+      "internal_link_count": 12,
+      "paragraph_count": 19,
+      "section_count": 6,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 67,
+      "authority_score": 18
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 40,
+      "word_count_points": 44,
+      "keyword_bag_points": 25,
+      "content_quality_points": 67,
+      "authority_points": 21,
+      "final_rank_score": 227,
+      "authority_graph_points": 3
+    },
+    "search_index": {
+      "normalized_title": "create your moonboy crypto moonboys wiki",
+      "tokens": [
+        "create",
+        "your",
+        "moonboy",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "create",
+        "your",
+        "moonboy",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "build",
+        "character",
+        "with",
+        "chatgpt",
+        "verified",
+        "nft",
+        "traits",
+        "canon",
+        "safe",
+        "biography",
+        "faction",
+        "lore",
+        "world",
+        "art",
+        "and",
+        "personal",
+        "without",
+        "installing",
+        "swarmsy",
+        "creator",
+        "guide",
+        "sparky",
+        "source",
+        "index",
+        "gkniftyheads"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 20,
+      "existing_outbound_count": 6,
+      "suggested_outbound_count": 14,
+      "authority": 3
     },
     "brand": null
   },
