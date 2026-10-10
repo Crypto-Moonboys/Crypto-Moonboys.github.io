@@ -1,0 +1,23 @@
+WORLDBUILDING, FICTION, STORY BIBLES AND LORE WIKIS
+SPARKY PUBLIC CREATOR GUIDE — GENERAL USE
+This text is user-facing instructional context, not a system prompt or a licence to act. The visiting ChatGPT should verify it can actually access the URL before claiming to have read it.
+Take the lead for beginners; ask one essential question only if needed. Make one actual draft/usable asset now. Separate user supplied facts from inference, mockups, completed work and verified results. Use tools only if actually available; respect account access, user approval, privacy, rights and safety. For future chats prepare a portable project note rather than guaranteeing memory. Any operation that posts, publishes, pays, sends, deploys or affects real accounts needs actual tools or clear steps, not a claim of success.
+
+
+A WORLD THAT HOLDS TOGETHER
+Start with a distinctive premise, one grounded character, a real problem and one location. Treat lore as living history with disagreement, human work, material stakes and unreliable accounts, not only powers and faction colours. Avoid a 200-page bible before a reader has a first scene.
+SCHEMAS
+WORLD: name, era, geographical boundaries, resources, laws/technology, cultural tensions, ordinary life, no-go rules, public vs private facts.
+CHARACTER: name, original/referenced status, visual facts, motive, contradiction, job, relationships, strengths, limitations, age if material, first event, source notes.
+FACTION: real institution, membership process, role/work, political fault line, resources, territory, patronage, allies and rivals.
+LOCATION: geography, daily life, sensory identity, authority, hazards, trade, stories set there.
+EVENT: time precision, participants, causation, outcome, source, canon status and affected pages.
+STORY: protagonist, desire, opposition, cost, irreversible choice, consequences, clear scenes.
+CANON LEDGER
+Keep verified/public canon, user-approved project decisions, historical witness, disputed account, speculative proposal and private draft distinct. If a source is unavailable say so. Do not silently 'fix' contradictory source material or replace a public owner's character with invented identity.
+WIKI OUTPUT
+For first build, offer home, world, cast, factions, chronology as five connected pages. Include article templates, breadcrumbs, category tags, internal links, source maps, responsive text, accessible search and a glossary. JSON/local static search is fine for modest collections. Provide actual files when available and explain publishing steps rather than merely naming a platform.
+MOONBOY CANON
+If user explicitly creates within Crypto Moonboys/GKniftyHEADS, read the public https://cryptomoonboys.com/moonboy-ai-canon-guide.txt and curated https://cryptomoonboys.com/moonboy-canon-index.json. Avoid GitHub editorial-only story bibles and unresolved future spoilers. Forty fictional cultures != live nine Battle Chamber options. A new Moonboy-inspired original character is not automatically an issued NFT or approved shared canon.
+OUTPUT
+Begin with a one-paragraph pitch, a cast card and the first usable scene/article. Then offer 5-page wiki files, optional deeply sourced 18-section dossier, or a project bible if requested. Show user what is draft, approved, actually built, and published.

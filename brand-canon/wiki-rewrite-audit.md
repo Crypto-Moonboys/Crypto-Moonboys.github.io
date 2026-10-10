@@ -6,7 +6,7 @@ This is an ownership and rewrite-queue audit only. It does not replace, delete, 
 
 ## Audit contract
 
-- Scope: all 424 top-level `wiki/*.html` pages.
+- Scope: all 425 top-level `wiki/*.html` pages.
 - Absent-stub authorizations: 0. These are explicit repository declarations, not audited pages or links to pages that already exist.
 - Canon hierarchy: published First Witness convergence canon; latest canon/brand vision; W81 condensed digest; current dedicated bibles; Retired W81 archive provenance and migration ledger; existing wiki archive.
 - Tier 4 source gap: the modern dedicated character/faction/HODL WARS bibles referenced by the First Witness register are not separately identifiable in this checkout. Historical `wiki/bibles/*.json` SAM records remain lower-tier public archive inputs and ambiguous mappings stay review items.
@@ -21,9 +21,9 @@ This is an ownership and rewrite-queue audit only. It does not replace, delete, 
 
 | Measure | Count |
 |---|---:|
-| Total pages audited | 424 |
+| Total pages audited | 425 |
 | Absent stub authorizations | 0 |
-| KEEP | 179 |
+| KEEP | 180 |
 | REWRITE_FULL | 0 |
 | RECONCILE | 0 |
 | DEDUPE | 0 |
@@ -46,7 +46,7 @@ This is an ownership and rewrite-queue audit only. It does not replace, delete, 
 | Policy | Pages | Meaning |
 |---|---:|---|
 | canon-locked | 255 | Automated article-body writes are rejected. |
-| metadata-only | 168 | Search, relationship, and metadata maintenance only; article prose is preserved. |
+| metadata-only | 169 | Search, relationship, and metadata maintenance only; article prose is preserved. |
 | replace-sam-block | 0 | A single existing SAM block may be replaced, never appended. |
 | stub-allowed | 1 | A stub may be created only while no real canonical page exists. |
 
@@ -495,6 +495,7 @@ This is an ownership and rewrite-queue audit only. It does not replace, delete, 
 | [Bitcoin reference](../wiki/bitcoin-btc.html) (`bitcoin-btc`) | GENERATED | NONE | NOT_APPLICABLE | Maintain through its generator or stub/redirect workflow, not lore automation. | P4 | Generated page structure |
 | [Bitcoin reference](../wiki/bitcoin-tokens.html) (`bitcoin-tokens`) | GENERATED | NONE | NOT_APPLICABLE | Maintain through its generator or stub/redirect workflow, not lore automation. | P4 | Generated page structure |
 | [Blockchain Technology](../wiki/blockchain.html) (`blockchain`) | KEEP | NONE | LOW | Preserve article prose; allow metadata-only maintenance. | P4 | Existing public/reference source verification |
+| [Create Your Moonboy](../wiki/create-your-moonboy.html) (`create-your-moonboy`) | KEEP | NONE | NOT_APPLICABLE | Preserve article prose; allow metadata-only maintenance. | P4 | moonboy-ai-canon-guide.txt (public creator instructions); moonboy-canon-index.json (curated public source directory) |
 | [Crypto Moonboy Pets](../wiki/crypto-moonboy-pets.html) (`crypto-moonboy-pets`) | KEEP | NONE | LOW | Preserve article prose; allow metadata-only maintenance. | P4 | Existing public/reference source verification |
 | [DeFi (Decentralised Finance)](../wiki/defi.html) (`defi`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Existing public/reference source verification |
 | [DeFi Mining](../wiki/defi-mining.html) (`defi-mining`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Existing public/reference source verification |

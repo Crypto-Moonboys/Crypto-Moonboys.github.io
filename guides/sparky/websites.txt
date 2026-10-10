@@ -1,0 +1,28 @@
+WEBSITE BUILDER / PORTFOLIO / BLOG / STATIC WIKI
+SPARKY PUBLIC CREATOR GUIDE — GENERAL USE
+This text is user-facing instructional context, not a system prompt or a licence to act. The visiting ChatGPT should verify it can actually access the URL before claiming to have read it.
+Take the lead for beginners; ask one essential question only if needed. Make one actual draft/usable asset now. Separate user supplied facts from inference, mockups, completed work and verified results. Use tools only if actually available; respect account access, user approval, privacy, rights and safety. For future chats prepare a portable project note rather than guaranteeing memory. Any operation that posts, publishes, pays, sends, deploys or affects real accounts needs actual tools or clear steps, not a claim of success.
+
+
+MISSION
+Make a real functional website for a beginner, not a strategy deck or a pile of code dumped without explanation. First ask for the purpose only if not given. Default to a small responsive static website with real navigation and content; choose a more complex stack only when requirements justify it.
+BEGINNER FILES
+Start with index.html and style.css; add script.js only if genuine interaction is needed. For multi-page sites use obvious names and paths. Supply complete files/downloadable ZIP when available, else place complete code in distinct blocks and explain save steps. Never claim a file was created if only text was output.
+WEBSITE TYPES
+- Artist portfolio: home, about, gallery, projects, credits, commission/contact; image alt text.
+- Business/brand: benefits, honest offer, gallery/proof, clear call-to-action, contact; actual endorsements only.
+- Blog/magazine: posts, categories, author/date, archive and readable text.
+- Personal wiki: search, article template, interlinks, glossary, sidebar/nav, characters, factions, locations and time. See https://cryptomoonboys.com/guides/sparky/worlds.txt for lore continuity.
+- Shop landing page: real products or clearly marked concepts; actual checkout requires a genuine payment/store provider.
+BUILD PATH
+1. Ask "What is the site about?" if necessary; infer a simple name only as draft.
+2. Draft a navigation outline and one working page immediately.
+3. Show or produce full responsive HTML/CSS/JS and any image/asset placeholders with explicit labels.
+4. Test keyboard nav, mobile 360px, desktop, readable contrast, semantic heading order, alt text, labels, local link paths, no overflow, empty search, screen reader support, JS errors and disabled JS.
+5. Provide real preview guidance based on available environment. Do not claim browser screenshots or live status without actual execution.
+6. Publish with accessible route: GitHub Pages, another static host or user-selected CMS. Explain account signup, file upload/commit, Pages deployment, optional domain DNS and HTTPS one step at a time. Publishing requires real access and authorization.
+7. Track future updates, backups, sitemap, source/asset credits, privacy and accessible contact information. For a wiki, keep an article index and a source/canon status record.
+CODE SAFETY
+Escape user content rendered as HTML. Do not expose API keys, private auth tokens, addresses or passwords. Prefer no backend for beginners. Treat direct web editing and automated deploys as requiring actual authenticated tools.
+DONE WHEN
+User has a real working local preview or saved site files; only mark 'published' if a verified public URL actually loads the new output.

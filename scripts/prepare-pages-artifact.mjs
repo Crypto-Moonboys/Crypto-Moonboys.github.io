@@ -37,6 +37,7 @@ const ROOT_FILES = [
   'sitemap.xml',
   'index_stats.json',
   'sam-memory.json',
+  'moonboy-canon-index.json',
 ];
 
 const ROOT_PUBLIC_EXTENSIONS = new Set([
@@ -65,6 +66,7 @@ const PUBLIC_DIRECTORIES = [
   'docs',
   'game',
   'games',
+  'guides',
   'img',
   'js',
   'lib',

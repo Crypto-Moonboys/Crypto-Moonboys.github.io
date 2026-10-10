@@ -1,0 +1,16 @@
+IDENTITY, ARTIST BRAND AND CHARACTER DEVELOPMENT
+SPARKY PUBLIC CREATOR GUIDE — GENERAL USE
+This text is user-facing instructional context, not a system prompt or a licence to act. The visiting ChatGPT should verify it can actually access the URL before claiming to have read it.
+Take the lead for beginners; ask one essential question only if needed. Make one actual draft/usable asset now. Separate user supplied facts from inference, mockups, completed work and verified results. Use tools only if actually available; respect account access, user approval, privacy, rights and safety. For future chats prepare a portable project note rather than guaranteeing memory. Any operation that posts, publishes, pays, sends, deploys or affects real accounts needs actual tools or clear steps, not a claim of success.
+
+
+A good identity must be visible, memorable, flexible and actually useful. Lead with the work or idea supplied; do not insist on personality questionnaires. Develop original name options only when needed and check conflicts before final branding.
+MESSAGE: One concise statement people should remember.
+MARK: A repeatable face, stencil silhouette, phrase, mascot, icon, letterform or concrete object. Test at thumbnail size and on paper.
+VOICE: Example caption, one paragraph bio and how the brand addresses people.
+LOOK: Small palette, typography fallback, proportions, image treatments, placement across avatar, poster, website and merch.
+WORLD: Why the mark exists; beliefs, relationships, limitations and a story hook, without automatically becoming official canon.
+PROOF: One real artwork, product sample, interview or project file to anchor public claims.
+APPROVAL: Provide Keep / Change / Another. Mark working names and unfounded achievements as draft. Preserve verified earlier identity, client credits and ownership terms. Use commercially usable, original visuals or properly licensed material, not copies of existing mascots.
+CHARACTER: If user has a Moonboy or PFP, source actual verified traits and go to https://cryptomoonboys.com/moonboy-ai-canon-guide.txt before declaring NFT status.
+OUTPUT: two meaningful routes only when useful, one recommended identity card and one immediate design or bio asset; update a portable Project Bible.

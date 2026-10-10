@@ -1537,6 +1537,35 @@
       "/wiki/nbg-token.html"
     ]
   },
+  "/wiki/create-your-moonboy.html": {
+    "outbound_count": 20,
+    "inbound_count": 0,
+    "existing_outbound": [
+      "/wiki/first-witness-concordance.html",
+      "/wiki/first-witness-faction-commentaries.html",
+      "/wiki/first-witness-forty-paths.html",
+      "/wiki/first-witness-master-chronology.html",
+      "/wiki/gkniftyheads.html",
+      "/wiki/the-first-witness.html"
+    ],
+    "suggested_outbound": [
+      "/wiki/bitcoin-kids.html",
+      "/wiki/bitcoin-x-kids.html",
+      "/wiki/block-topia.html",
+      "/wiki/crypto-moonboy-pets.html",
+      "/wiki/crypto-moonboys.html",
+      "/wiki/first-witness-source-register.html",
+      "/wiki/first-witness-world-chain-error.html",
+      "/wiki/gkniftyheads-gkniftyheads-fun-coupon-782888.html",
+      "/wiki/gkniftyheads-nft-collection.html",
+      "/wiki/graffiti-kings.html",
+      "/wiki/hodl-warriors.html",
+      "/wiki/hodl-wars.html",
+      "/wiki/hodl-x-warriors.html",
+      "/wiki/street-kingdoms.html"
+    ],
+    "inbound_from": []
+  },
   "/wiki/croydon-tower-blocks.html": {
     "outbound_count": 39,
     "inbound_count": 1,
@@ -1588,7 +1617,7 @@
     ]
   },
   "/wiki/crypto-moonboy-pets.html": {
-    "outbound_count": 13,
+    "outbound_count": 14,
     "inbound_count": 0,
     "existing_outbound": [
       "/wiki/block-topia.html",
@@ -1596,6 +1625,7 @@
       "/wiki/hodl-wars.html"
     ],
     "suggested_outbound": [
+      "/wiki/create-your-moonboy.html",
       "/wiki/first-witness-counterfeit-relics-fraud.html",
       "/wiki/first-witness-daily-practices-rituals.html",
       "/wiki/first-witness-relics-manuscripts-lost-editions.html",
@@ -1610,7 +1640,7 @@
     "inbound_from": []
   },
   "/wiki/crypto-moonboys.html": {
-    "outbound_count": 50,
+    "outbound_count": 51,
     "inbound_count": 334,
     "existing_outbound": [
       "/wiki/block-topia.html",
@@ -1630,6 +1660,7 @@
     "suggested_outbound": [
       "/wiki/bitcoin-kids.html",
       "/wiki/bitcoin-x-kids.html",
+      "/wiki/create-your-moonboy.html",
       "/wiki/crypto-moonboy-pets.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
@@ -4530,7 +4561,7 @@
   },
   "/wiki/first-witness-concordance.html": {
     "outbound_count": 73,
-    "inbound_count": 80,
+    "inbound_count": 81,
     "existing_outbound": [
       "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-master-chronology.html",
@@ -4619,6 +4650,7 @@
       "/wiki/bitcoin-x-kids.html",
       "/wiki/block-node-defenders.html",
       "/wiki/bone-idol-ink.html",
+      "/wiki/create-your-moonboy.html",
       "/wiki/dragan-volkov.html",
       "/wiki/ethereum-ecosystem.html",
       "/wiki/first-witness-ai-synthetic-minds.html",
@@ -5384,7 +5416,7 @@
   },
   "/wiki/first-witness-faction-commentaries.html": {
     "outbound_count": 90,
-    "inbound_count": 35,
+    "inbound_count": 36,
     "existing_outbound": [
       "/wiki/bone-idol-ink.html",
       "/wiki/charlie-buster.html",
@@ -5483,6 +5515,7 @@
       "/wiki/aleema-child-of-the-shard.html",
       "/wiki/bone-idol-ink.html",
       "/wiki/charlie-buster.html",
+      "/wiki/create-your-moonboy.html",
       "/wiki/delicious-again-pete.html",
       "/wiki/first-witness-forty-paths.html",
       "/wiki/first-witness-hodl-doctrine.html",
@@ -5747,7 +5780,7 @@
   },
   "/wiki/first-witness-forty-paths.html": {
     "outbound_count": 80,
-    "inbound_count": 28,
+    "inbound_count": 29,
     "existing_outbound": [
       "/wiki/bone-idol-ink.html",
       "/wiki/charlie-buster.html",
@@ -5836,6 +5869,7 @@
       "/wiki/aleema-child-of-the-shard.html",
       "/wiki/bone-idol-ink.html",
       "/wiki/charlie-buster.html",
+      "/wiki/create-your-moonboy.html",
       "/wiki/delicious-again-pete.html",
       "/wiki/first-witness-ai-synthetic-minds.html",
       "/wiki/first-witness-faction-commentaries.html",
@@ -7140,7 +7174,7 @@
   },
   "/wiki/first-witness-master-chronology.html": {
     "outbound_count": 67,
-    "inbound_count": 58,
+    "inbound_count": 59,
     "existing_outbound": [
       "/wiki/first-witness-concordance.html",
       "/wiki/first-witness-glossary.html",
@@ -7222,6 +7256,7 @@
       "/wiki/bitcoin-kids.html",
       "/wiki/bitcoin-x-kids.html",
       "/wiki/block-node-defenders.html",
+      "/wiki/create-your-moonboy.html",
       "/wiki/croydon-tower-blocks.html",
       "/wiki/elder-codex-7.html",
       "/wiki/first-witness-concordance.html",
@@ -17383,8 +17418,8 @@
     ]
   },
   "/wiki/gkniftyheads.html": {
-    "outbound_count": 60,
-    "inbound_count": 163,
+    "outbound_count": 61,
+    "inbound_count": 164,
     "existing_outbound": [
       "/wiki/bitcoin-x-kids.html",
       "/wiki/crypto-moonboys.html",
@@ -17407,6 +17442,7 @@
       "/wiki/atomichub-graffpunks-collection.html",
       "/wiki/bitcoin-kids.html",
       "/wiki/block-topia.html",
+      "/wiki/create-your-moonboy.html",
       "/wiki/crypto-moonboy-pets.html",
       "/wiki/elder-codex-7.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
@@ -17455,6 +17491,7 @@
       "/wiki/blockchain.html",
       "/wiki/burn-to-earn.html",
       "/wiki/canvas-clash.html",
+      "/wiki/create-your-moonboy.html",
       "/wiki/crypto-moonboys.html",
       "/wiki/darren-cullen.html",
       "/wiki/genesis-kernel.html",
@@ -18363,7 +18400,7 @@
     ]
   },
   "/wiki/hard-fork-games.html": {
-    "outbound_count": 70,
+    "outbound_count": 71,
     "inbound_count": 85,
     "existing_outbound": [
       "/wiki/block-topia.html",
@@ -18387,6 +18424,7 @@
       "/wiki/bitcoin.html",
       "/wiki/block-node-defenders.html",
       "/wiki/bone-idol-ink.html",
+      "/wiki/create-your-moonboy.html",
       "/wiki/crypto-moonboy-pets.html",
       "/wiki/first-witness-anonymity-pseudonyms-hidden-names.html",
       "/wiki/first-witness-apocrypha-disputed-passages.html",
@@ -19157,7 +19195,7 @@
     ]
   },
   "/wiki/jodie-zoom-2000.html": {
-    "outbound_count": 53,
+    "outbound_count": 54,
     "inbound_count": 7,
     "existing_outbound": [
       "/wiki/bitcoin-kids.html",
@@ -19182,6 +19220,7 @@
       "/wiki/aleema-child-of-the-shard.html",
       "/wiki/bitcoin-kid-army.html",
       "/wiki/bitcoin-x-kids.html",
+      "/wiki/create-your-moonboy.html",
       "/wiki/dream-sovereign.html",
       "/wiki/first-witness-apocrypha-disputed-passages.html",
       "/wiki/first-witness-bitcoin-witness.html",
@@ -22884,7 +22923,7 @@
   },
   "/wiki/the-first-witness.html": {
     "outbound_count": 118,
-    "inbound_count": 99,
+    "inbound_count": 100,
     "existing_outbound": [
       "/wiki/alfie-bitcoin-kid-blaze.html",
       "/wiki/bitcoin.html",
@@ -23009,6 +23048,7 @@
     ],
     "inbound_from": [
       "/wiki/aleema-child-of-the-shard.html",
+      "/wiki/create-your-moonboy.html",
       "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-addiction-intoxication-compulsion.html",
       "/wiki/first-witness-ageing-retirement-elderhood.html",
@@ -23827,7 +23867,7 @@
     ]
   },
   "/wiki/the-squeaky-pinks.html": {
-    "outbound_count": 43,
+    "outbound_count": 44,
     "inbound_count": 2,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
@@ -23848,6 +23888,7 @@
       "/wiki/bitcoin-x-kids.html",
       "/wiki/block-node-defenders.html",
       "/wiki/block-topia.html",
+      "/wiki/create-your-moonboy.html",
       "/wiki/first-witness-book-6-the-fork.html",
       "/wiki/first-witness-book-9-the-unwritten-block.html",
       "/wiki/first-witness-digital-inheritance-after-death.html",

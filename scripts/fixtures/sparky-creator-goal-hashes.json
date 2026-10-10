@@ -1,0 +1,648 @@
+{
+  "version": 1,
+  "description": "Independent full-goal digest snapshot. Update intentionally when a creative starter changes.",
+  "activities": [
+    {
+      "id": "start",
+      "title": "I'm starting from zero",
+      "guide": "core",
+      "goalDigest": "0b42082cba856a34"
+    },
+    {
+      "id": "learn-drawing",
+      "title": "Teach me to draw",
+      "guide": "core",
+      "goalDigest": "abf228ba0e564570"
+    },
+    {
+      "id": "rough-sketch",
+      "title": "Improve my rough sketch",
+      "guide": "core",
+      "goalDigest": "ea11934512a16a91"
+    },
+    {
+      "id": "style",
+      "title": "Find my creative style",
+      "guide": "core",
+      "goalDigest": "a9c5935e9f3d2a63"
+    },
+    {
+      "id": "seven-day",
+      "title": "My first seven creative days",
+      "guide": "core",
+      "goalDigest": "f93b8edc39191143"
+    },
+    {
+      "id": "restart",
+      "title": "Restart an unfinished project",
+      "guide": "core",
+      "goalDigest": "78863a85c8608432"
+    },
+    {
+      "id": "continue",
+      "title": "Continue my project",
+      "guide": "core",
+      "goalDigest": "6b583cf3a5406a7e"
+    },
+    {
+      "id": "files",
+      "title": "I already have artwork or files",
+      "guide": "core",
+      "goalDigest": "7bce250864209cf9"
+    },
+    {
+      "id": "do-it",
+      "title": "You choose — do it for me",
+      "guide": "core",
+      "goalDigest": "de9f497cf1270b5b"
+    },
+    {
+      "id": "stickers",
+      "title": "Make stickers",
+      "guide": "art-print",
+      "goalDigest": "ac84526eb7ad7567"
+    },
+    {
+      "id": "posters",
+      "title": "Make posters",
+      "guide": "art-print",
+      "goalDigest": "a5c3682770aa2c66"
+    },
+    {
+      "id": "walls",
+      "title": "Paint a legal wall",
+      "guide": "art-print",
+      "goalDigest": "47802080a5b40e71"
+    },
+    {
+      "id": "zines",
+      "title": "Make a mini zine",
+      "guide": "art-print",
+      "goalDigest": "7260747448e4b91c"
+    },
+    {
+      "id": "merch",
+      "title": "Make my own merch",
+      "guide": "art-print",
+      "goalDigest": "5e327ad2a476b328"
+    },
+    {
+      "id": "streetart",
+      "title": "Try graffiti-style art",
+      "guide": "art-print",
+      "goalDigest": "fe493cfa47335356"
+    },
+    {
+      "id": "screenprint",
+      "title": "Try printmaking",
+      "guide": "art-print",
+      "goalDigest": "ec59f13c8f4f77b6"
+    },
+    {
+      "id": "exhibit",
+      "title": "Exhibit my artwork",
+      "guide": "art-print",
+      "goalDigest": "864f2c2ee74688c6"
+    },
+    {
+      "id": "community-art",
+      "title": "Create a community art project",
+      "guide": "art-print",
+      "goalDigest": "a2452a208e1fb1e1"
+    },
+    {
+      "id": "artist-name",
+      "title": "Invent an artist identity",
+      "guide": "identity",
+      "goalDigest": "380d523b6f9b0ed0"
+    },
+    {
+      "id": "logo",
+      "title": "Design a logo or symbol",
+      "guide": "identity",
+      "goalDigest": "5bf46974917b5a0d"
+    },
+    {
+      "id": "character",
+      "title": "Invent a character",
+      "guide": "identity",
+      "goalDigest": "92b09e70a99ad79d"
+    },
+    {
+      "id": "character-bio",
+      "title": "Write my character biography",
+      "guide": "identity",
+      "goalDigest": "a42529c5d5af5398"
+    },
+    {
+      "id": "visual-identity",
+      "title": "Build a visual identity",
+      "guide": "identity",
+      "goalDigest": "78cc83daa9371311"
+    },
+    {
+      "id": "portfolio",
+      "title": "Write my artist portfolio",
+      "guide": "identity",
+      "goalDigest": "509d0f1a6e181076"
+    },
+    {
+      "id": "brand",
+      "title": "Build my brand",
+      "guide": "identity",
+      "goalDigest": "692ad84bf8e46143"
+    },
+    {
+      "id": "moonboy",
+      "title": "Build a Moonboy or PFP",
+      "guide": "identity",
+      "goalDigest": "339087d48de22d6a"
+    },
+    {
+      "id": "world",
+      "title": "Build an original fictional universe",
+      "guide": "worlds",
+      "goalDigest": "4f29156afd356cd5"
+    },
+    {
+      "id": "bible",
+      "title": "Create a world bible",
+      "guide": "worlds",
+      "goalDigest": "d68e5ac963f4b3da"
+    },
+    {
+      "id": "factions",
+      "title": "Create fictional factions",
+      "guide": "worlds",
+      "goalDigest": "df60b0e684931a68"
+    },
+    {
+      "id": "world-characters",
+      "title": "Create a character cast",
+      "guide": "worlds",
+      "goalDigest": "0f33018c671b760b"
+    },
+    {
+      "id": "locations",
+      "title": "Invent cities and locations",
+      "guide": "worlds",
+      "goalDigest": "e20135a17f3d9f4b"
+    },
+    {
+      "id": "timeline",
+      "title": "Build a lore timeline",
+      "guide": "worlds",
+      "goalDigest": "870c7f92d259b8f9"
+    },
+    {
+      "id": "story",
+      "title": "Write my first story",
+      "guide": "worlds",
+      "goalDigest": "76d02951f127f876"
+    },
+    {
+      "id": "comic",
+      "title": "Make a comic series",
+      "guide": "worlds",
+      "goalDigest": "360761c65ac3813c"
+    },
+    {
+      "id": "mystery",
+      "title": "Design an interactive mystery",
+      "guide": "worlds",
+      "goalDigest": "cb23a6ae2b735841"
+    },
+    {
+      "id": "canon-audit",
+      "title": "Check my lore for contradictions",
+      "guide": "worlds",
+      "goalDigest": "50b15f7dce6f7299"
+    },
+    {
+      "id": "website",
+      "title": "Build my first website",
+      "guide": "websites",
+      "goalDigest": "4bc2653213ee61bf"
+    },
+    {
+      "id": "artist-site",
+      "title": "Build an artist portfolio website",
+      "guide": "websites",
+      "goalDigest": "2f51e47d1ec2ab0f"
+    },
+    {
+      "id": "wiki",
+      "title": "Build my own lore wiki",
+      "guide": "websites",
+      "goalDigest": "e053dc360cc8c66c"
+    },
+    {
+      "id": "wiki-characters",
+      "title": "Build a character encyclopedia",
+      "guide": "websites",
+      "goalDigest": "2b2542832def0a7c"
+    },
+    {
+      "id": "blog",
+      "title": "Create a blog or magazine",
+      "guide": "websites",
+      "goalDigest": "ea2069381cf6a48e"
+    },
+    {
+      "id": "gallery",
+      "title": "Make an art archive/gallery",
+      "guide": "websites",
+      "goalDigest": "3808040583fb0044"
+    },
+    {
+      "id": "shop-site",
+      "title": "Create a product landing page",
+      "guide": "websites",
+      "goalDigest": "2ebd8f2f2b2c0713"
+    },
+    {
+      "id": "publish-site",
+      "title": "Put my website online",
+      "guide": "websites",
+      "goalDigest": "bff91398f0de25e2"
+    },
+    {
+      "id": "site-seo",
+      "title": "Improve my website",
+      "guide": "websites",
+      "goalDigest": "ee0d994c3f4d22ed"
+    },
+    {
+      "id": "ai-art",
+      "title": "Create an AI artwork",
+      "guide": "media",
+      "goalDigest": "278da9468debf954"
+    },
+    {
+      "id": "album-art",
+      "title": "Design album art",
+      "guide": "media",
+      "goalDigest": "8041a491180d1d65"
+    },
+    {
+      "id": "short-video",
+      "title": "Create a short video",
+      "guide": "media",
+      "goalDigest": "2d203bded35df354"
+    },
+    {
+      "id": "animation",
+      "title": "Animate my character",
+      "guide": "media",
+      "goalDigest": "87cddc952bf82b82"
+    },
+    {
+      "id": "music",
+      "title": "Make original music",
+      "guide": "media",
+      "goalDigest": "f836945c7a246700"
+    },
+    {
+      "id": "dj",
+      "title": "Create a DJ project",
+      "guide": "media",
+      "goalDigest": "80193c31cff0b42c"
+    },
+    {
+      "id": "podcast",
+      "title": "Start a podcast",
+      "guide": "media",
+      "goalDigest": "aa1b2a6e37062622"
+    },
+    {
+      "id": "photos",
+      "title": "Improve my art photographs",
+      "guide": "media",
+      "goalDigest": "47f1a74157da14a2"
+    },
+    {
+      "id": "storyboard",
+      "title": "Make a storyboard",
+      "guide": "media",
+      "goalDigest": "d79fec1f46d17b26"
+    },
+    {
+      "id": "apparel",
+      "title": "Design clothing",
+      "guide": "products",
+      "goalDigest": "7de8a5e9e860b2a7"
+    },
+    {
+      "id": "toy",
+      "title": "Create a designer toy",
+      "guide": "products",
+      "goalDigest": "94ea66ad97f6ee49"
+    },
+    {
+      "id": "packaging",
+      "title": "Make product packaging",
+      "guide": "products",
+      "goalDigest": "8fb7ea31d12c1411"
+    },
+    {
+      "id": "print-edition",
+      "title": "Release art prints",
+      "guide": "products",
+      "goalDigest": "8e76feec5b6b857b"
+    },
+    {
+      "id": "product-copy",
+      "title": "Write product descriptions",
+      "guide": "products",
+      "goalDigest": "ba8addc43cdeb9a6"
+    },
+    {
+      "id": "mockups",
+      "title": "Make product mockups",
+      "guide": "products",
+      "goalDigest": "90514e23982a76b5"
+    },
+    {
+      "id": "pricing",
+      "title": "Price my products",
+      "guide": "products",
+      "goalDigest": "cc9dd3753e3fc72e"
+    },
+    {
+      "id": "drop",
+      "title": "Plan a merch or art drop",
+      "guide": "products",
+      "goalDigest": "7bdfa2ca6743b511"
+    },
+    {
+      "id": "collectible",
+      "title": "Create a collectible concept",
+      "guide": "products",
+      "goalDigest": "ac4fb3127cb5ab24"
+    },
+    {
+      "id": "social",
+      "title": "Create social media posts",
+      "guide": "marketing",
+      "goalDigest": "979c376cccb3ba88"
+    },
+    {
+      "id": "content-calendar",
+      "title": "Plan my content calendar",
+      "guide": "marketing",
+      "goalDigest": "b82913d9143dca17"
+    },
+    {
+      "id": "reels",
+      "title": "Make a reel or TikTok",
+      "guide": "marketing",
+      "goalDigest": "8fc4a70d7a0b0a34"
+    },
+    {
+      "id": "campaign",
+      "title": "Create a street-to-digital campaign",
+      "guide": "marketing",
+      "goalDigest": "6e4c942f111d9995"
+    },
+    {
+      "id": "press",
+      "title": "Write a press pitch",
+      "guide": "marketing",
+      "goalDigest": "081b7e614dd20430"
+    },
+    {
+      "id": "launch",
+      "title": "Launch my new project",
+      "guide": "marketing",
+      "goalDigest": "39b16d2dd896b33b"
+    },
+    {
+      "id": "meme",
+      "title": "Create shareable art or memes",
+      "guide": "marketing",
+      "goalDigest": "0f6f3d0c23325f37"
+    },
+    {
+      "id": "puzzle-campaign",
+      "title": "Build a lore mystery campaign",
+      "guide": "marketing",
+      "goalDigest": "04220c9dc63d700b"
+    },
+    {
+      "id": "collab",
+      "title": "Find a collaboration route",
+      "guide": "marketing",
+      "goalDigest": "bc794954f55df832"
+    },
+    {
+      "id": "grow",
+      "title": "Show or sell my art",
+      "guide": "marketing",
+      "goalDigest": "efef1208329e4584"
+    },
+    {
+      "id": "start-community",
+      "title": "Start a creative community",
+      "guide": "community",
+      "goalDigest": "c35051a0446a7de8"
+    },
+    {
+      "id": "telegram",
+      "title": "Set up a Telegram or Discord community",
+      "guide": "community",
+      "goalDigest": "222922adbfb23cb1"
+    },
+    {
+      "id": "event",
+      "title": "Plan an art event",
+      "guide": "community",
+      "goalDigest": "f1a6c3c6723af4b9"
+    },
+    {
+      "id": "challenge",
+      "title": "Run an art challenge",
+      "guide": "community",
+      "goalDigest": "5026d91d3ebffd60"
+    },
+    {
+      "id": "missions",
+      "title": "Create community missions",
+      "guide": "community",
+      "goalDigest": "b82a81d9e9788e9f"
+    },
+    {
+      "id": "newsletter",
+      "title": "Write a newsletter",
+      "guide": "community",
+      "goalDigest": "73c5957cebbaf387"
+    },
+    {
+      "id": "collab-zine",
+      "title": "Create a collaborative zine",
+      "guide": "community",
+      "goalDigest": "3a563ea8b9345ba4"
+    },
+    {
+      "id": "public-benefit",
+      "title": "Create a community benefit project",
+      "guide": "community",
+      "goalDigest": "f9c44661269e992f"
+    },
+    {
+      "id": "creative-business",
+      "title": "Start a creative business",
+      "guide": "business",
+      "goalDigest": "dffb5524a1802853"
+    },
+    {
+      "id": "commission",
+      "title": "Sell art commissions",
+      "guide": "business",
+      "goalDigest": "37ccdb160e790e04"
+    },
+    {
+      "id": "client-pitch",
+      "title": "Pitch my creative work",
+      "guide": "business",
+      "goalDigest": "7c8c2cbcce0240e7"
+    },
+    {
+      "id": "invoices",
+      "title": "Make an invoice or quote",
+      "guide": "business",
+      "goalDigest": "f64fc2f5ffc0538c"
+    },
+    {
+      "id": "budget",
+      "title": "Plan my creative budget",
+      "guide": "business",
+      "goalDigest": "ac46dd3e37331cf2"
+    },
+    {
+      "id": "funding",
+      "title": "Find grants or sponsorship",
+      "guide": "business",
+      "goalDigest": "24f570439aebade8"
+    },
+    {
+      "id": "licensing",
+      "title": "Understand copyright and rights",
+      "guide": "business",
+      "goalDigest": "ef9ea9a6e3f11d05"
+    },
+    {
+      "id": "shop",
+      "title": "Start selling my art online",
+      "guide": "business",
+      "goalDigest": "d6a3efff733f5e37"
+    },
+    {
+      "id": "collector",
+      "title": "Build a collector offering",
+      "guide": "business",
+      "goalDigest": "697c72c889205776"
+    },
+    {
+      "id": "game",
+      "title": "Build a simple browser game",
+      "guide": "tools",
+      "goalDigest": "0910145132dae816"
+    },
+    {
+      "id": "interactive-world",
+      "title": "Make an interactive fictional world",
+      "guide": "tools",
+      "goalDigest": "82a8adafe153e19a"
+    },
+    {
+      "id": "quests",
+      "title": "Design game missions",
+      "guide": "tools",
+      "goalDigest": "8ffddef496fd7433"
+    },
+    {
+      "id": "bot",
+      "title": "Build a simple community bot",
+      "guide": "tools",
+      "goalDigest": "213341fb3f7723d5"
+    },
+    {
+      "id": "automation",
+      "title": "Automate creative tasks",
+      "guide": "tools",
+      "goalDigest": "9c7beff6778ee547"
+    },
+    {
+      "id": "github",
+      "title": "Help me with GitHub",
+      "guide": "tools",
+      "goalDigest": "90f02c809ff72e45"
+    },
+    {
+      "id": "nft-plan",
+      "title": "Plan a digital collectible project",
+      "guide": "tools",
+      "goalDigest": "7e1602b990a82384"
+    },
+    {
+      "id": "tools-website",
+      "title": "Make a useful website tool",
+      "guide": "tools",
+      "goalDigest": "4a44852573d325a4"
+    },
+    {
+      "id": "project-plan",
+      "title": "Plan my next 30 days",
+      "guide": "projects",
+      "goalDigest": "7c7ffa513358d91d"
+    },
+    {
+      "id": "daily",
+      "title": "Plan today's creative work",
+      "guide": "projects",
+      "goalDigest": "02da5e2941510c81"
+    },
+    {
+      "id": "proof",
+      "title": "Build my proof log",
+      "guide": "projects",
+      "goalDigest": "a08e62247e50f30a"
+    },
+    {
+      "id": "organise-files",
+      "title": "Organise my art and notes",
+      "guide": "projects",
+      "goalDigest": "4c43daf2de0ab91d"
+    },
+    {
+      "id": "research",
+      "title": "Research my creative subject",
+      "guide": "projects",
+      "goalDigest": "53e195a217e1974d"
+    },
+    {
+      "id": "critique",
+      "title": "Critique my artwork",
+      "guide": "projects",
+      "goalDigest": "765bd9e35a521280"
+    },
+    {
+      "id": "week-review",
+      "title": "Review this week's progress",
+      "guide": "projects",
+      "goalDigest": "9557abf77f96c1bd"
+    },
+    {
+      "id": "handover",
+      "title": "Make a project handover",
+      "guide": "projects",
+      "goalDigest": "0508bca881ecde0f"
+    },
+    {
+      "id": "site-audit",
+      "title": "Audit my website or wiki",
+      "guide": "projects",
+      "goalDigest": "423d0de3b6acbc8e"
+    }
+  ]
+}

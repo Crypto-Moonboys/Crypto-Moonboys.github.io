@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
   "generator": "scripts/generate-wiki-content-state.mjs",
-  "source_tree_hash": "sha256:4d8270b2ef09c64e71322604ba5d8b8cbf0eaef7643f95a621b1b99957ef5db0",
+  "source_tree_hash": "sha256:01a44b3a65b63a2820857e399d6e1363e13e87b206d1a47bc8cb286edc34d4ed",
   "hash_algorithm": "sha256",
-  "page_count": 424,
-  "manifest_entry_count": 424,
+  "page_count": 425,
+  "manifest_entry_count": 425,
   "absent_stub_authorization_source": {
     "path": "brand-canon/wiki-absent-stubs.json",
     "content_hash": "sha256:b8874d0ede0983258101755e0706517d067dd8d85aa8a081742c497bbac2b663"
@@ -89,11 +89,11 @@
     }
   ],
   "summary": {
-    "total_pages_audited": 424,
-    "total_manifest_entries": 424,
+    "total_pages_audited": 425,
+    "total_manifest_entries": 425,
     "absent_stub_authorizations": 0,
     "rewrite_status_counts": {
-      "KEEP": 179,
+      "KEEP": 180,
       "REWRITE_FULL": 0,
       "RECONCILE": 0,
       "DEDUPE": 0,
@@ -105,7 +105,7 @@
       "NEEDS_HUMAN_REVIEW": 0
     },
     "automation_policy_counts": {
-      "metadata-only": 168,
+      "metadata-only": 169,
       "replace-sam-block": 0,
       "canon-locked": 255,
       "stub-allowed": 1
@@ -1590,6 +1590,44 @@
       "content_owner": "canon",
       "canon_revision": 3,
       "canon_source_tier": "first-witness+w81"
+    },
+    {
+      "path": "wiki/create-your-moonboy.html",
+      "slug": "create-your-moonboy",
+      "title": "Create Your Moonboy",
+      "page_exists": true,
+      "page_type": "reference",
+      "current_word_count": 807,
+      "manual_content_block_count": 1,
+      "sam_content_block_count": 0,
+      "canonical_content_block_count": 0,
+      "legacy_sam_article_wrapper": false,
+      "legacy_unmarked_content": false,
+      "duplicate_heading_count": 0,
+      "exact_duplicate_paragraph_count": 0,
+      "likely_near_duplicate_sections": [],
+      "content_hash": "sha256:d33c41c20973badda52334931a9e477285048e4271f52a5e778977df906a5988",
+      "article_content_hash": "sha256:2d43f4445c643a292e760654187f39bbe6e6fff16ec47d32f476693d83ef5929",
+      "article_markup_hash": "sha256:34efb60ec1eef978ab8418a0f78c0227467920e4600c9307198b7c6a7415691b",
+      "git_blob_oid": "a4fc500a26194aed0192cd91259f29c8b33fdbb3",
+      "wiki_stub_marker_scope": null,
+      "first_witness_page": false,
+      "nft_template_generated_page": false,
+      "likely_lore_page": false,
+      "rewrite_status": "KEEP",
+      "automation_policy": "metadata-only",
+      "rewrite_cluster": "Generated/non-lore pages",
+      "duplicate_severity": "NONE",
+      "canon_conflict_severity": "NOT_APPLICABLE",
+      "recommended_action": "Preserve article prose; allow metadata-only maintenance.",
+      "suggested_priority": "P4",
+      "likely_source_family": [
+        "moonboy-ai-canon-guide.txt (public creator instructions)",
+        "moonboy-canon-index.json (curated public source directory)"
+      ],
+      "audit_notes": [
+        "No article-ownership or duplication issue detected by the deterministic audit."
+      ]
     },
     {
       "path": "wiki/croydon-tower-blocks.html",
