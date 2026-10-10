@@ -143,6 +143,12 @@
   root.addEventListener("sparky-activity-change", event => {
     latestActivity = event.detail?.id || "creative-project";
     $("memory-current-activity").textContent = event.detail?.title || "Creative project";
+    if (!dirty && !record.project.title && record.decisions.length === 0 && record.ideas.length === 0) {
+      record.project.kind = latestActivity;
+      record.canon.scope = latestActivity === "moonboy" ? "moonboys" : "independent";
+      record.canon.source_index = latestActivity === "moonboy" ? "https://cryptomoonboys.com/moonboy-canon-index.json" : "";
+      draw();
+    }
   });
   draw();
   updateStatus("Nothing is uploaded or saved automatically. Download the JSON to keep your work.");
