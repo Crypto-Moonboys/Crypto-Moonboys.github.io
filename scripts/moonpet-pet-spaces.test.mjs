@@ -24,7 +24,7 @@ function context(full = false) {
     careActionButtonOptions: (_, options) => options, actionCooldownButtonOptions: (_, options) => options,
     actionFactsMarkup: () => '', shouldShowAvailability: () => false, playOptionsReady: () => true,
     seasonTiming: () => ({ status: 'UNAVAILABLE' }), seasonSnapshotElapsed: () => 0,
-    activePetSummary: () => '', renderPlayNow: () => '', meter: () => '',
+    activePetSummary: () => '', renderPlayNow: () => '', renderPetEmotes: () => '', meter: () => '',
     homeNextLine: () => '', profileNextLine: () => '', moonpetStageLabel: (_, pet) => pet.lifecycle_phase || 'Egg',
     resolveMoonpetDisplayName: () => 'UNKNOWN', valueText: () => '', costText: () => '',
   };
