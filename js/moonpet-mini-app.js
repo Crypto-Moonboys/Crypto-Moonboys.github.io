@@ -1183,6 +1183,10 @@
             "Collect this completed daily bounty’s listed rewards. Progress is shared across your account.",
             "claim"
       ],
+      "weekly_bounty_claim": [
+            "Collect one completed Weekly Bounty Block. The account's UTC week and saved receipt prevent repeat payment.",
+            "claim"
+      ],
       "market_buy": [
             "Spend the displayed currency on this whole bundle. Check the contents and storage space before buying.",
             "spend"
@@ -1303,6 +1307,8 @@
     'food-counter': ['◉', 'Eat cooked meals from your bag, each with different saved stat effects.'],
     'pet-emotes': ['✦', 'Make the pet react. These expressions have no rewards or costs.'],
     'bonus-bounties': ['★', 'Three extra daily challenges from easy to hard.'],
+    'weekly-bounties': ['★', 'Weekly bounty targets with one saved reward each.'],
+    'food-shop': ['◇', 'Buy cooked meals with Moon Gold and eat them from Home.'],
     details: ['◉', 'Companion stats, personality and equipped items.'],
     'pet-spaces': ['◈', 'Choose your active pet or unlock another permanent space.'],
     'season-slots': ['◈', 'Track lifetime progression and calendar competition progress.'],
@@ -3094,20 +3100,23 @@
   function renderEconomy() {
     var guidance = state.guidance || {};
     var economy = guidance.economy || {};
-    function renderBounty(bounty) {
+    function renderBounty(bounty,weekly) {
       var routes = window.MoonpetPlayOptions && window.MoonpetPlayOptions.bountyRouteOptions ? window.MoonpetPlayOptions.bountyRouteOptions(bounty, state) : [];
       if (state.lifecycle && state.lifecycle.phase === 'egg') routes = [{ title: 'HATCH TO WORK ON BOUNTIES', screen: 'home', focus: 'incubation' }];
       return '<div class="line ' + (bounty.complete ? 'complete' : '') + '">' + (bounty.difficulty ? escapeHtml(bounty.difficulty) + ' // ' : '') + escapeHtml(bounty.title) + ' ' + number(bounty.progress) + '/' + number(bounty.required) + (bounty.claimed ? ' // CLAIMED' : bounty.complete ? ' // READY TO CLAIM' : ' // IN PROGRESS') + '</div>' +
         '<div class="line muted">' + escapeHtml(bounty.detail || '') + ' // REWARD ' + escapeHtml(valueText(bounty.reward)) + '</div>' +
-        (bounty.complete && !bounty.claimed ? '<div class="button-grid one">' + button('CLAIM ' + bounty.title, 'bounty_claim', { bounty_key: bounty.key, day_key: economy.day_key }) + '</div>' : !bounty.claimed && !bounty.complete ? '<div class="button-grid">' + routes.map(function (route) { return routeButton(route.title, route, route.detail); }).join('') + '</div>' : '');
+        (bounty.complete && !bounty.claimed ? '<div class="button-grid one">' + button('CLAIM ' + bounty.title, weekly ? 'weekly_bounty_claim' : 'bounty_claim', weekly ? { bounty_key: bounty.key, week_key: economy.week_key } : { bounty_key: bounty.key, day_key: economy.day_key }) + '</div>' : !bounty.claimed && !bounty.complete ? '<div class="button-grid">' + routes.map(function (route) { return routeButton(route.title, route, route.detail); }).join('') + '</div>' : '');
     }
     var bounties = (economy.bounties || []).map(renderBounty).join('');
     var bonusBounties = (economy.bonus_bounties || []).map(renderBounty).join('');
-    var offers = (economy.market_offers || []).map(function (offer) {
+    var weeklyBounties = (economy.weekly_bounties || []).map(function (bounty) { return renderBounty(bounty, true); }).join('');
+    function renderMarketOffer(offer) {
       var full = offer.capacity && !offer.capacity.available;
       var capacityDetail = full ? ' // MAKE SPACE FOR ' + offer.capacity.blocked.map(function (entry) { return number(entry.amount) + ' ' + String(entry.key).replace(/_/g, ' ') + ' (' + number(entry.owned) + '/' + number(entry.limit) + ' stored)'; }).join(' + ') + '. Whole bundle required; nothing is charged while full.' : '';
       return button(offer.title, 'market_buy', { offer_key: offer.key, day_key: economy.day_key }, { disabled: !offer.unlocked || !offer.affordable || offer.purchased || full || offer.available === false, statusLabel: offer.purchased ? 'SOLD' : full ? 'STORAGE FULL' : '', resourceRequired: offer.unlocked && !offer.affordable && !offer.purchased && !full, cost: offer.cost, reward: offer.reward, rewardLabel: 'GIVES', missing: !offer.affordable && !offer.purchased ? missingCostText(offer.cost) : '', detail: 'UNLOCK LEVEL ' + number(offer.min_level) + ' // ' + (offer.detail || '') + capacityDetail });
-    }).join('');
+    }
+    var offers = (economy.market_offers || []).map(renderMarketOffer).join('');
+    var foodOffers = (economy.food_offers || []).map(renderMarketOffer).join('');
     var shop = (guidance.shop_items || []).map(function (item) {
       return button((item.owned && !item.equipped ? 'EQUIP FREE // ' : '') + item.title, item.owned ? 'equip' : 'buy', { item_key: item.key, pet_id: state.pet.pet_id }, { disabled: !item.unlocked || (!item.owned && !item.affordable) || item.equipped, statusLabel: item.equipped ? 'EQUIPPED' : !item.unlocked ? 'LEVEL ' + number(item.min_level) + ' REQUIRED' : item.owned ? 'OWNED' : item.affordable ? 'CAN BUY NOW' : '', resourceRequired: item.unlocked && !item.owned && !item.affordable && !item.equipped, cost: item.owned ? {} : item.cost, missing: !item.owned && !item.affordable ? missingCostText(item.cost) : '', detail: 'UNLOCK LEVEL ' + number(item.min_level) + ' // YOUR LEVEL ' + number(state.pet.level) + ' // ' + (item.description || '') + (item.owned ? ' // FREE SWITCH. Keeps upgrades and mastery; no XP or daily shopping credit.' : ' // Buy once; permanent gear survives resets.') });
     }).join('');
@@ -3161,7 +3170,7 @@
         '<div class="line muted">' + (bonuses ? 'ACTIVE ' + escapeHtml(bonuses) : 'MISSING ' + escapeHtml((set.missing || []).map(words).join(' / ') || 'EQUIP OWNED SET PIECES')) + '</div>';
     }).join('');
     var cosmetics = (live.cosmetics || []).filter(function (item) {
-      return ['profile_frame', 'victory_pose', 'run_trail'].includes(item.key);
+      return ['profile_frame', 'victory_pose', 'run_trail', 'neon_aura', 'street_sparks', 'gold_frame', 'cyber_scanlines'].includes(item.key);
     }).map(function (item) {
       var loadout = state.style_loadout || {}, equipped = (loadout.equipped || []).includes(item.key);
       return '<div class="line">' + escapeHtml(words(item.key)) + '</div><div class="line muted">' + escapeHtml((loadout.details || {})[item.key] || '') + '</div>' + (item.unlocked
@@ -3175,8 +3184,10 @@
       panel('RELIC VAULT', '<div class="line muted">Owned relics activate automatically in new Contract runs. Their route effects are listed below and saved at run start; new drops apply on the next run. Standard Moon Run and Daily Run keep their separate rules.</div>' + (state.relics_available === false ? '<div class="line danger">RELIC VAULT TEMPORARILY UNAVAILABLE. Refresh to try again. Your collection has not been cleared.</div>' : relics || '<div class="line muted">NO RELICS RECOVERED.</div>'), 'relics') +
       panel('DAILY BOUNTIES', '<div class="line muted">Four account-wide targets per UTC day. Only accepted actions count. The Energy Drink, Dance and Cuddles care buttons do not count. Claim completed bounties before 00:00 UTC; unclaimed bounty targets expire when the board changes. Already paid rewards stay paid. Contracts remain available between resets.</div>' + (bounties || '<div class="line muted">NO BOUNTIES.</div>'), 'bounties') +
       panel('EXTRA DAILY CHALLENGES // EASY TO HARD', '<div class="line muted">Three bonus targets each UTC day, additional to the four original Bounties and seven Daily Missions. Accepted actions only; a completed target may be claimed once. These do not replace the Daily Journey or Weekly Crest.</div>' + (bonusBounties || '<div class="line muted">BONUS BOARD SYNCING.</div>'), 'bonus-bounties') +
+      panel('WEEKLY BOUNTY BLOCKS', '<div class="line muted">Three bonus account targets per UTC Monday–Sunday week. Separate from the pet’s creation-based Weekly Journey and existing Boss rotation. Accepted actions count once, and completed Blocks claim one currency reward each. Unclaimed targets expire at the next UTC Monday.</div>' + (weeklyBounties || '<div class="line muted">WEEKLY BOARD SYNCING.</div>'), 'weekly-bounties') +
       panel('CRYSTAL EXPEDITIONS // CHOOSE A DESTINATION', expeditionBody, 'expedition') +
       panel('MOON MARKET', '<div class="line muted">Paid bundles must fit in full. Use items or spend materials before buying when storage is full.</div><div class="button-grid one">' + offers + '</div><div class="button-grid">' + routeButton('OPEN BAG', { screen: 'economy', focus: 'inventory' }) + routeButton('OPEN CRAFTING', { screen: 'economy', focus: 'crafting' }) + '</div>', 'market') +
+      panel('FOOD SHOP // DAILY STOCK', '<div class="line muted">Five cooked-meal bundles, each available once per UTC day. Buy the complete bundle with Moon Gold, then eat it from your saved Bag or Home Food Counter. These are consumables, not extra Care Feed attempts.</div><div class="button-grid one">' + (foodOffers || '<div class="line muted">FOOD OFFERS SYNCING.</div>') + '</div>', 'food-shop') +
       panel('PERMANENT SHOP', '<div class="line muted">Buy when this pet meets the listed level and you have every listed resource. Owned gear switches free once its level gate is met. Equipped gear is already in use; purchases and upgrades persist across resets.</div><div class="button-grid">' + shop + '</div>', 'shop') + panel('STYLE LAB // EQUIP YOUR LOOK', '<div class="line muted">Unlock once, then equip or remove each style free for this pet. Cosmetics change the canvas presentation, not stats. Existing owned styles work immediately. Callsign editing stays free in Profile.</div><div class="button-grid one">' + routeButton('EDIT CALLSIGN', { screen: 'profile', focus: 'callsign' }, 'Use the existing name control; no badge purchase is required.') + '</div><div class="button-grid">' + cosmetics + '</div>', 'style-lab') +
       panel('INVENTORY', inventory || '<div class="line muted">BAG EMPTY.</div>', 'inventory') +
       panel('MOON GOLD TRADE', '<div class="line muted">Game currency only. A loss spends the selected stake. Trades share a five-minute account cooldown.</div><div class="button-grid three">' + (state.trade && state.trade.offers || []).map(function (offer) { return button(offer.wager + ' GOLD', 'trade', { wager: offer.wager }, { disabled: !offer.available, cooldown: state.trade.cooldown, resourceRequired: !offer.affordable, detail: offer.affordable ? '' : 'Requires ' + number(offer.wager) + ' Moon Gold.' }); }).join('') + '</div>', 'trade');
@@ -4670,6 +4681,17 @@
     var equipped = state && state.style_loadout && state.style_loadout.equipped || [];
     if (!equipped.length) return;
     ctx.save();
+    if (!foreground && equipped.includes('neon_aura')) {
+      ctx.globalAlpha = 0.38;
+      drawPixelRect(97, 50, 2, 138, '#61f5ff');
+      drawPixelRect(220, 50, 2, 138, '#f6a7ff');
+      drawPixelRect(100, 47, 118, 2, '#61f5ff');
+      drawPixelRect(100, 188, 118, 2, '#f6a7ff');
+    }
+    if (!foreground && equipped.includes('cyber_scanlines')) {
+      ctx.globalAlpha = 0.14;
+      for (var scan = 42; scan < 190; scan += 8) drawPixelRect(90, scan, 140, 1, '#d0f2f8');
+    }
     if (!foreground && equipped.includes('run_trail') && activeScreen === 'explore') {
       for (var i = 0; i < 8; i++) {
         ctx.fillStyle = i % 2 ? '#f6a7ff' : '#61f5ff';
@@ -4678,6 +4700,18 @@
       }
     }
     ctx.globalAlpha = 1;
+    if (foreground && equipped.includes('street_sparks')) {
+      ctx.globalAlpha = 0.75;
+      for (var spark = 0; spark < 12; spark += 1) {
+        var shift = reducedMotion ? 0 : Math.sin(time / 420 + spark * 2) * 5;
+        drawPixelRect(93 + (spark * 23) % 135, 46 + (spark * 19) % 127 + shift, 2, 2, spark % 2 ? '#ffda6b' : '#ff54cf');
+      }
+    }
+    ctx.globalAlpha = 1;
+    if (foreground && equipped.includes('gold_frame')) {
+      ctx.strokeStyle = '#e2ad39'; ctx.lineWidth = 3; ctx.strokeRect(2, 2, 316, 216);
+      ctx.strokeStyle = '#fff0a0'; ctx.lineWidth = 1; ctx.strokeRect(6, 6, 308, 208);
+    }
     if (foreground && equipped.includes('profile_frame')) {
       ctx.strokeStyle = '#f6a7ff'; ctx.lineWidth = 2; ctx.strokeRect(3, 3, 314, 214);
       ctx.strokeStyle = '#61f5ff'; ctx.strokeRect(6, 6, 308, 208);
