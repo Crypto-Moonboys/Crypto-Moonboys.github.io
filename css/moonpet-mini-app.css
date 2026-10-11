@@ -699,7 +699,8 @@ button, input, select, textarea {
   border-radius: 10px;
   background: rgba(120,188,213,.07);
 }
-.menu-status-heading { font-weight: 700; color: var(--ui-text); cursor: pointer; }
+.menu-status-heading, .menu-status-more > summary { min-height: 44px; padding: 12px 0; color: var(--ui-text); cursor: pointer; }
+.menu-status-heading { font-weight: 700; }
 .menu-status-heading, .menu-status-entry { overflow-wrap: anywhere; }
 .menu-status-entry { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--ui-border); }
 .menu-status-label { color: #edc77a; font-weight: 700; line-height: 1.5; }
@@ -708,7 +709,6 @@ button, input, select, textarea {
 .menu-status-entry[data-status-kind="complete"] .menu-status-label { color: #96d6aa; }
 .menu-status-entry[data-status-kind="review"] .menu-status-label,
 .menu-status-entry[data-status-kind="recovery"] .menu-status-label { color: #ff9b9b; }
-.menu-status-more > summary { padding: 10px 0; color: var(--ui-text); cursor: pointer; }
 
 .mission-status {
   margin: 10px 0;

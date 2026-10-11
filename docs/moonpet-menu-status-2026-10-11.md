@@ -60,11 +60,27 @@ that achievements need a claim button.
 
 This is frontend presentation and shared guidance only: no Worker route,
 migration, fee, reward, authentication, ownership, timer or settlement change,
-and no additional polling. Assets use `20261011-menu-status-v1`.
+and no additional polling. CSS and the play-options helper use
+`20261011-menu-status-v2`; other changed assets retain `20261011-menu-status-v1`.
+
+## PR review fixes
+
+Saved Status and More Saved Status summaries have a minimum 44px touch target
+with vertical padding. Native disclosure markers and keyboard toggling remain
+available. Browser regressions measure collapsed/expanded targets, toggle the
+bottom edge and use Enter across all six menus at 360, 390 and 1280px widths.
+
+Failed playable Finale battles appear as Retry Ready, distinct from active
+battles and earned reward claims. Counts deduplicate the original pet and
+competition season and exclude deleted pets and unavailable/deferred boards.
+Review opens the existing Finale panel without retrying; choosing its retry
+build changes the indicator back to an active battle. Unit coverage checks the
+failure/retry/victory/claim transition and Worker-backed browser coverage uses
+an actual failed battle at both phone sizes.
 
 ## Verification
 
-- `node scripts/moonpet-mission-status.test.mjs`: 17 tests, including the real
+- `node scripts/moonpet-mission-status.test.mjs`: 18 tests, including the real
   inbox/nav renderer, capped backlog transitions, account deduplication, partial
   hydration, egg/source-pet recovery, timer readiness and terminal states.
 - `node scripts/moonpet-option-guidance.test.mjs`: existing 84 action/Kaiju tests.

@@ -459,6 +459,9 @@
       var activeFinales = (finales.pets || []).filter(function (pet) { return pet.pet_id && pet.competition_season_key && pet.status === 'active' && pet.playable !== false; });
       var finaleIds = new Set(activeFinales.map(function (pet) { return pet.pet_id + ':' + pet.competition_season_key; }));
       if (finaleIds.size) add('missions', 'finale_session', 'SAVED FINALE BATTLES', 'SAVED // RESUME', 'resume', 'season-finale', 'Resume the saved round. Battle health and supplies are separate from pet resources.', { count: finaleIds.size });
+      var failedFinales = (finales.pets || []).filter(function (pet) { return pet.pet_id && pet.competition_season_key && pet.status === 'failed' && pet.playable !== false; });
+      var retryIds = new Set(failedFinales.map(function (pet) { return pet.pet_id + ':' + pet.competition_season_key; }));
+      if (retryIds.size) add('missions', 'finale_retry', 'SAVED FINALE RETRIES', 'RETRY READY', 'ready', 'season-finale', 'Choose a build in the original Finale panel to retry. No pet energy cost; this is not a reward claim.', { count: retryIds.size });
     }
 
     // Weekly victory payout is account-wide, even if several pets have victory

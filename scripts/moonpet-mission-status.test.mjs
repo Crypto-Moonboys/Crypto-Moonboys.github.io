@@ -264,6 +264,42 @@ test('terminal Journeys and quest progress never become extra claim badges', () 
   assert.equal(menuStatuses(state).missions.entries[0].status, 'ENDED // FAILED');
 });
 
+test('failed playable Finales stay retry-ready, then resume or become a reward claim', () => {
+  const state = snapshot();
+  const failed = { pet_id: 'original-pet', competition_season_key: 'saved-quarter', status: 'failed', playable: true };
+  state.season_finales = { available: true, pets: [failed, { ...failed },
+    { ...failed, pet_id: 'deleted-pet', playable: false },
+    { ...failed, pet_id: '' }, { ...failed, competition_season_key: '' },
+    { ...failed, pet_id: 'not-started', status: 'not_started' },
+    { ...failed, pet_id: 'active-pet', status: 'active' }] };
+  const before = structuredClone(state);
+  let menu = menuStatuses(state).missions;
+  const retry = menu.entries.find(entry => entry.key === 'finale_retry');
+  assert.equal(retry.count, 1, 'retries deduplicate original pet and competition season');
+  assert.equal(retry.status, 'RETRY READY');
+  assert.equal(retry.kind, 'ready');
+  assert.equal(retry.focus, 'season-finale');
+  assert.match(retry.detail, /not a reward claim/);
+  assert.deepEqual(menuBadge(menu), { count: 1, countLowerBound: false, kind: 'ready', activeCount: 1 });
+  assert.deepEqual(missionClaims(state), [], 'failed battles cannot count as earned rewards');
+  assert.deepEqual(state, before, 'review status does not retry or mutate a battle');
+  state.season_finales.pets = [failed];
+  failed.status = 'active';
+  menu = menuStatuses(state).missions;
+  assert.equal(menu.entries.some(entry => entry.key === 'finale_retry'), false);
+  assert.equal(menuBadge(menu).kind, 'active');
+  failed.status = 'won';
+  assert.equal(menuBadge(menuStatuses(state).missions).kind, 'claims');
+  failed.claimed = true;
+  assert.equal(menuBadge(menuStatuses(state).missions).count, 0);
+  failed.status = 'failed';
+  state.season_finales.available = false;
+  assert.equal(menuBadge(menuStatuses(state).missions).count, 0);
+  state.season_finales.available = true;
+  state.hydration = { full: false, modules: [] };
+  assert.equal(menuBadge(menuStatuses(state).missions).count, 0, 'deferred authority suppresses retries');
+});
+
 test('paid bounties/tiers disappear, while evolution is labelled an upgrade rather than a claim', () => {
   const state = snapshot();
   state.guidance.economy = { bounties: [{ key: 'one', complete: true, claimed: true }] };

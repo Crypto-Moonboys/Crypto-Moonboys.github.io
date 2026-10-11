@@ -420,7 +420,23 @@ try {
       const status = page.locator('.menu-status');
       assert.equal(await status.getAttribute('aria-label'), key + ' saved status');
       assert.equal(await status.getAttribute('open'), null, 'ordinary saved status starts compact');
-      await status.locator(':scope > summary').click();
+      const summary = status.locator(':scope > summary');
+      // Navigation can finish deferred hydration and replace the screen before
+      // layout. Measure the current connected summary after it is rendered.
+      await page.waitForFunction(menu => {
+        const node = document.querySelector('.menu-status[aria-label="' + menu + ' saved status"] > summary');
+        return node && node.getBoundingClientRect().height >= 44;
+      }, key);
+      const collapsedSummaryHeight = await summary.evaluate(node => node.getBoundingClientRect().height);
+      assert.ok(collapsedSummaryHeight >= 44, key + ' collapsed summary has a 44px touch target (actual ' + collapsedSummaryHeight + ')');
+      await summary.focus();
+      await summary.press('Enter');
+      assert.notEqual(await status.getAttribute('open'), null, 'native summary keyboard toggle expands ' + key);
+      const summaryBox = await summary.boundingBox();
+      assert.ok(summaryBox.height >= 44, key + ' expanded summary has a 44px touch target');
+      await summary.click({ position: { x: 24, y: summaryBox.height - 2 } });
+      assert.equal(await status.getAttribute('open'), null, 'bottom edge of summary toggles ' + key);
+      await summary.click();
       const shortcut = status.locator('[data-jump]').first();
       const focus = await shortcut.getAttribute('data-focus');
       const before = actions.length;
@@ -436,7 +452,12 @@ try {
     await page.locator('[data-screen="missions"]').click();
     const more = page.locator('.menu-status-more');
     assert.equal(await more.count(), 1);
-    await more.locator('summary').click();
+    const moreSummary = more.locator(':scope > summary');
+    const moreBox = await moreSummary.boundingBox();
+    assert.ok(moreBox.height >= 44, 'collapsed More Saved Status has a 44px touch target');
+    await moreSummary.click({ position: { x: 24, y: moreBox.height - 2 } });
+    assert.notEqual(await more.getAttribute('open'), null, 'bottom edge opens More Saved Status');
+    assert.ok(await moreSummary.evaluate(node => node.getBoundingClientRect().height) >= 44, 'expanded More Saved Status has a 44px touch target');
     await page.locator('[data-screen="home"]').click();
     await page.locator('[data-screen="missions"]').click();
     assert.equal(await more.getAttribute('open') !== null, true, 'expanded saved status survives menu navigation');
@@ -1179,6 +1200,7 @@ try {
     assert.equal(bountyResult.result.accepted, true);
     assert.equal(bountyResult.state.guidance.economy.bounties.find((b) => b.key === readyBounty.key).claimed, true);
     await page.waitForFunction(() => document.querySelector('[data-panel="bounties"]').textContent.includes('CLAIMED'));
+    await page.waitForFunction(() => !document.querySelector('.is-active'));
     await page.locator('[data-screen="explore"]').click();
     const districtText = await page.locator('[data-panel="districts"]').textContent();
     assert.ok(!districtText.includes('// 0% REWARD'), 'fractional reward preview must not round to zero');
@@ -2360,8 +2382,18 @@ try {
     while(currentFinale().status==='active') await completionAction(page.locator('[data-action="finale_step"]').filter({hasText:'STRIKE'}),'finale_step');
     await page.waitForSelector('[data-action="finale_retry"]');
     assert.match(await page.locator('[data-panel="season-finale"]').textContent(),/pet is unharmed/);
+    assert.equal(await missionNav.locator('.dock-claim-badge').textContent(), '1', 'one failed Finale is ready to retry');
+    assert.match(await missionNav.getAttribute('aria-label'), /1 actions ready to review/);
+    const retryInbox = page.locator('.menu-status');
+    if (await retryInbox.getAttribute('open') === null) await retryInbox.locator(':scope > summary').click();
+    assert.match(await retryInbox.locator('[data-status-kind="ready"]').textContent(), /SAVED FINALE RETRIES.*RETRY READY/);
+    const beforeRetryReview = actions.length;
+    await retryInbox.locator('[data-focus="season-finale"]').click();
+    assert.equal(actions.length, beforeRetryReview, 'reviewing a failed Finale does not retry it');
     await completionAction(page.locator('[data-action="finale_retry"]').filter({hasText:'GUARDIAN'}),'finale_retry');
     await page.waitForSelector('[data-action="finale_step"]');
+    assert.equal(await missionNav.locator('.dock-claim-badge').count(), 0, 'retry clears the ready indicator');
+    assert.equal(await missionNav.locator('.dock-active-badge').textContent(), '1', 'retried Finale returns to active saved battle');
     await completionAction(page.locator('[data-action="finale_step"]').filter({hasText:'GUARD / CHARGE'}),'finale_step');
     const persisted=currentFinale();
     await page.reload();await page.waitForSelector('[data-panel="care"]');
