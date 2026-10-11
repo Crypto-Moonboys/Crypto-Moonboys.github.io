@@ -4,6 +4,8 @@ import { DatabaseSync } from 'node:sqlite';
 import {
   PET_DAILY_BOUNTIES,
   PET_DAILY_BONUS_BOUNTIES,
+  PET_WEEKLY_BOUNTIES,
+  PET_FOOD_OFFERS,
   PET_ECONOMY_ROUTES,
   PET_EXPEDITION_TIERS,
   PET_MARKET_OFFERS,
@@ -11,6 +13,8 @@ import {
   formatPetEconomyValue,
   getPetDailyBounties,
   getPetDailyBonusBounties,
+  getPetWeeklyBounties,
+  getPetFoodOffers,
   getPetMarketOffers,
   resolvePetExpeditionReward,
 } from '../workers/moonboys-api/pets/economy-expansion.js';
@@ -41,12 +45,21 @@ assert.ok(PET_DAILY_BONUS_BOUNTIES.every(entry => /^bonus_/.test(entry.key) &&
   ['EASY', 'MEDIUM', 'HARD'].includes(entry.difficulty) &&
   entry.required >= 1 && entry.required <= 5), 'safe distinct bonus objectives');
 
+const isoWeeklyBoard = getPetWeeklyBounties('2026-W41');
+assert.equal(PET_WEEKLY_BOUNTIES.length, 10);
+assert.equal(isoWeeklyBoard.length, 3);
+assert.deepEqual(isoWeeklyBoard, getPetWeeklyBounties('2026-W41'));
+assert.equal(new Set(isoWeeklyBoard.map(entry=>entry.key)).size,3);
+assert.ok(PET_WEEKLY_BOUNTIES.every(entry=>entry.key.startsWith('week_') && ['EASY','MEDIUM','HARD'].includes(entry.difficulty)));
+assert.equal(PET_FOOD_OFFERS.length,5);
+assert.equal(getPetFoodOffers().length,5);
+
 const currentBetaEventTypes = new Set([
   'feed', 'play', 'clean', 'sleep', 'train', 'work', 'random_event', 'activity_claim',
   'run_complete', 'run_extract', 'adventure', 'daily_chest', 'kaiju_battle',
-  'use_item', 'use_item_reward',
+  'use_item', 'use_item_reward', 'weekly_boss', 'seasonal_boss',
 ]);
-for (const bounty of [...PET_DAILY_BOUNTIES, ...PET_DAILY_BONUS_BOUNTIES]) {
+for (const bounty of [...PET_DAILY_BOUNTIES, ...PET_DAILY_BONUS_BOUNTIES, ...PET_WEEKLY_BOUNTIES]) {
   assert.ok(bounty.event_types.every((eventType) => currentBetaEventTypes.has(eventType)), `${bounty.key} bounty must reference current beta actions only`);
 }
 
@@ -186,6 +199,33 @@ assert.equal(readyState.bounties.find(({ key }) => key === bounty.key).complete,
 const bountyClaim = await hooks.claimPetEconomyBounty(d1, 'economy-player', bounty.key);
 assert.equal(bountyClaim.accepted, true);
 assert.equal((await hooks.claimPetEconomyBounty(d1, 'economy-player', bounty.key)).duplicate, true, 'a bounty cannot pay twice');
+
+const weeklyBefore = await hooks.getPetEconomyState(d1,'economy-player');
+const weeklyTarget = weeklyBefore.weekly_bounties[0];
+assert.equal(weeklyBefore.weekly_bounties.length,3);
+for(let i=0;i<weeklyTarget.required;i++) {
+  const id='week-event-'+i;
+  sqlite.prepare(`INSERT INTO telegram_pet_events
+    (id,telegram_id,event_type,event_key,season_key,day_key,week_key,status,reason,metadata)
+    VALUES (?,'economy-player',?,?, 'test-season',?,?,'accepted','test','{}')`)
+    .run(id,weeklyTarget.event_types[0],id,currentDay,weeklyBefore.week_key);
+}
+const weeklyReady=(await hooks.getPetEconomyState(d1,'economy-player')).weekly_bounties.find(entry=>entry.key===weeklyTarget.key);
+assert.equal(weeklyReady.complete,true);
+const goldBeforeWeekly=sqlite.prepare("SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id='economy-player'").get().moon_gold;
+const weeklyPaid=await hooks.claimPetWeeklyBounty(d1,'economy-player',weeklyTarget.key,new Date(),weeklyBefore.week_key);
+assert.equal(weeklyPaid.accepted,true,weeklyPaid.reason);
+assert.equal((await hooks.claimPetWeeklyBounty(d1,'economy-player',weeklyTarget.key,new Date(),weeklyBefore.week_key)).duplicate,true);
+assert.equal(sqlite.prepare("SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id='economy-player'").get().moon_gold,
+  goldBeforeWeekly+(weeklyTarget.reward.moon_gold||0),'Weekly claim pays once');
+const staleWeekly=await hooks.claimPetWeeklyBounty(d1,'economy-player',weeklyTarget.key,new Date(),'2001-W01');
+assert.equal(staleWeekly.accepted,false);
+assert.equal(staleWeekly.reason,'bounty_week_changed');
+const purchasedFood=(await hooks.getPetEconomyState(d1,'economy-player')).food_offers[0];
+assert.ok(purchasedFood,'food shop projects independent of rotating Moon Market stock');
+assert.equal((await hooks.buyPetMarketOffer(d1,'economy-player',purchasedFood.key)).accepted,true);
+assert.equal((await hooks.buyPetMarketOffer(d1,'economy-player',purchasedFood.key)).duplicate,true);
+assert.ok(sqlite.prepare("SELECT quantity FROM telegram_pet_inventory WHERE telegram_id='economy-player' AND asset_key=?").get(Object.keys(purchasedFood.reward.items)[0]).quantity>=2);
 
 const beforeEnergy = sqlite.prepare(`SELECT energy FROM telegram_pet_profiles WHERE telegram_id = 'economy-player'`).get().energy;
 const expeditionClaim = await hooks.runPetCrystalExpedition(d1, 'economy-player', new Date(), 'request-expedition-1');
