@@ -214,7 +214,7 @@ test('audit all recipes and consumable use',async()=>{
   assert.equal(f.sql.prepare("SELECT quantity FROM telegram_pet_inventory WHERE telegram_id=? AND asset_type='item' AND asset_key=?").get(f.owner,recipe.output.item_key).quantity,before+recipe.output.quantity);
   assert.equal((await processPetCraftRecipe(f.db,f.owner,key,key)).duplicate,true);
  }
- for(const key of ['moon_snack','energy_drink','clean_wipe','lucky_charm','style_patch','adventure_map']){
+ for(const key of ['moon_snack','street_pizza','moon_burger','garden_veggies','energy_drink','clean_wipe','lucky_charm','style_patch','adventure_map']){
   const p=funded('consume-'+key);
   p.sql.prepare("INSERT INTO telegram_pet_inventory (telegram_id,asset_type,asset_key,quantity) VALUES (?,'item',?,2)").run(p.owner,key);
   const body={action:'use_item',item_key:key,request_id:key};
@@ -226,7 +226,8 @@ test('audit all recipes and consumable use',async()=>{
    assert.equal(board.entries[0].pet_xp,r.pet_xp_awarded+(period==='all_time'?500000:0),key+period);
   }
  }
- console.log('6 recipes and 6 consumables verified with single use and four-period XP parity');
+ assert.equal(Object.keys(PET_CRAFTING_RECIPES).length,9);
+ console.log('9 recipes and 9 consumables verified with single use and four-period XP parity');
 });
 
 test('all twelve market offers deliver their full bundle exactly once', async () => {
