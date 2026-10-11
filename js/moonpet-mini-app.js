@@ -4733,7 +4733,7 @@
     drawPet(renderTime);
     ctx.restore();
     drawEquippedStyles(renderTime, true);
-    if (state && state.adopted && localEmoteUntil > renderTime && localEmoteLabel &&
+    if (state && state.adopted && typeof localEmoteUntil !== 'undefined' && typeof localEmoteLabel !== 'undefined' && localEmoteUntil > renderTime && localEmoteLabel &&
         !stageZeroPresentationActive(renderTime)) {
       ctx.save();
       drawPixelRect(108, 15, 104, 22, '#15131c');
