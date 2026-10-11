@@ -1,4 +1,5 @@
 import { capturePetEconomy, assertPetEconomy, assertPetEconomySource } from './pets/economic-projection.js';
+import { submitMoonpetRadioRequest } from './pets/radio-requests.js';
 import { atomicPetBatch } from './pets/atomic-mutations.js';
 import { getStyleLoadout, equipPetStyle } from './pets/style-loadout.js';
 import { verifyTelegramWebhookSecret } from './telegram-webhook-auth.js';
@@ -11061,7 +11062,7 @@ async function dispatchPetMiniAppAction(db, telegramId, user, body, botToken) {
     if (PET_MINI_APP_COMBAT_ENTRY_ACTIONS.has(action) || PET_MINI_APP_COMBAT_CLEANUP_ACTIONS.has(action)) return null;
     throw error;
   });
-  const eggAllowedActions = ['event_recover', 'event_close', 'guidance_ack', 'notification_set', 'season_slots', 'buy_pet_slot', 'switch_pet_slot', 'energy_drink', 'dance', 'cuddles', 'weekly_boss_claim', 'contract_claim', 'style_equip', 'seasonal_boss_claim', 'daily_completion_claim', 'bounty_claim', 'weekly_bounty_claim', 'season_claim', 'finale_start', 'finale_retry', 'finale_step', 'finale_claim'];
+  const eggAllowedActions = ['event_recover', 'event_close', 'guidance_ack', 'notification_set', 'season_slots', 'buy_pet_slot', 'switch_pet_slot', 'energy_drink', 'dance', 'cuddles', 'weekly_boss_claim', 'contract_claim', 'style_equip', 'seasonal_boss_claim', 'daily_completion_claim', 'bounty_claim', 'weekly_bounty_claim', 'radio_request', 'season_claim', 'finale_start', 'finale_retry', 'finale_step', 'finale_claim'];
   if (lifecycle?.phase === 'egg' && !eggAllowedActions.includes(action)) {
     if (PET_MINI_APP_COMBAT_CLEANUP_ACTIONS.has(action) || PET_MINI_APP_COMBAT_ENTRY_ACTIONS.has(action)) {
       // fall through; locked cleanup must remain available for stale combat state.
@@ -11190,6 +11191,11 @@ async function dispatchPetMiniAppAction(db, telegramId, user, body, botToken) {
   }
   if (action === 'bounty_claim') return claimPetEconomyBounty(db, telegramId, body.bounty_key, new Date(), body.day_key);
   if (action === 'weekly_bounty_claim') return claimPetWeeklyBounty(db, telegramId, body.bounty_key, new Date(), body.week_key);
+  if (action === 'radio_request') {
+    const pet = await getPetProfile(db,telegramId);
+    if(!pet?.pet_id || pet.pet_id!==displayedPetId) return {accepted:false,reason:'displayed_pet_changed',refresh_state:true};
+    return submitMoonpetRadioRequest(db,telegramId,pet.pet_id,body.message);
+  }
   if (action === 'expedition') return runPetCrystalExpedition(db, telegramId, new Date(), eventKey, body.expedition_key, body.pet_id, body.day_key);
   if (action === 'market_buy') return buyPetMarketOffer(db, telegramId, body.offer_key, new Date(), eventKey, body.day_key);
   if (action === 'district_mission') {
