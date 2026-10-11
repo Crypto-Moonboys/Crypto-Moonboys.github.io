@@ -376,20 +376,23 @@
     var s = snapshot || {}, g = s.guidance || {}, groups = [];
     if (!s.adopted || !s.pet) return groups;
     var egg = !s.lifecycle || s.lifecycle.phase === 'egg';
-    function add(key, title, entries, identity, eligible) {
+    function add(key, title, entries, identity, eligible, countLowerBound) {
       var seen = new Set();
       (entries || []).forEach(function (entry) {
         var id = identity(entry);
         if (id && eligible(entry)) seen.add(id);
       });
-      if (seen.size) groups.push(Object.assign({ key: key, title: title, count: seen.size }, route({ key: key })));
+      if (seen.size) groups.push(Object.assign({ key: key, title: title, count: seen.size, countLowerBound: Boolean(countLowerBound) }, route({ key: key })));
     }
     var bonus = g.daily_completion;
     if (bonus && bonus.available !== false) add('daily_completion', 'DAILY 7/7 BONUS', bonus.pending,
       function (entry) { return entry.utc_day; }, function (entry) { return Boolean(entry.pet_id || !egg); });
     var contracts = s.contracts || {};
     add('contract_claim', 'SAVED CONTRACT XP', contracts.pending_rewards,
-      function (entry) { return entry.contract_id; }, function (entry) { return Boolean(entry.pet_id || contracts.pet_id); });
+      function (entry) { return entry.contract_id; }, function (entry) { return Boolean(entry.pet_id || contracts.pet_id); },
+      // The deployed Contract inbox is capped at ten. A full page cannot
+      // establish an exact total, even when exactly ten receipts remain.
+      (contracts.pending_rewards || []).length >= 10);
     var finales = s.season_finales;
     if (finales && finales.available !== false) add('finale_claim', 'FINALE VICTORY REWARD', finales.pets,
       function (entry) { return entry.pet_id && entry.competition_season_key && entry.pet_id + ':' + entry.competition_season_key; },

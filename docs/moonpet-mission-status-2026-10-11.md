@@ -17,7 +17,12 @@ states; the bonus panel summary also explains its current state when collapsed.
 
 The Missions badge counts distinct saved daily bonus days, Contract reward IDs
 and won/unpaid Finale pet/competition-quarter pairs. It uses existing server
-projections and existing claim controls. Saved rewards for earlier pets remain
+projections and existing claim controls. The deployed Contract inbox is capped
+at ten entries, so a full inbox carries an explicit lower-bound flag. Contract
+review links and aggregate dock counts show `+`; the accessible label says
+“at least”. Even exactly ten entries are conservatively labelled `10+`; fewer
+than ten regain an exact count. Claiming from a larger backlog therefore never
+presents the still-full page as an exact total. No Worker deployment is needed. Saved rewards for earlier pets remain
 visible; an egg cannot receive an unassigned daily bonus. A syncing/unavailable
 feature never invents a claim. Journey awards are automatic and excluded, as
 are claims whose controls belong to Home, Explore, Work, Economy or Profile.
@@ -28,7 +33,9 @@ the authoritative save is accepted. No polling or extra API request is added.
 
 - `scripts/moonpet-mission-status.test.mjs`: completion vs payment, missing/core
   authority, old pending days, egg gates, source-pet recovery, deduplication,
-  unavailable features and automatic Journey exclusions.
+  unavailable features and automatic Journey exclusions. Review regression covers
+  capped backlogs of 12/11/10 and exact 9/1/0 remaining rewards, combined daily
+  bonus counts, rendered review links/dock labels and refresh suppression.
 - Existing SQLite-backed browser suite: 360/390px mobile and 1280px desktop tab
   readiness/current goal; real daily claim and Finale handlers, no-write review
   navigation, badge removal after payment and failed post-payment refresh.

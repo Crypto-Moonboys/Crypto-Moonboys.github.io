@@ -19,7 +19,9 @@ Any gameplay, documentation, or UI change affecting Moonpet status should refere
 The [11 October mission status update](moonpet-mission-status-2026-10-11.md)
 shows the current daily goal and a persistent seven-mission completion summary
 in Missions. The Missions dock badge counts only saved claimable daily 7/7
-bonuses, Contract XP and Finale victories. Automatic Growth Mark/Weekly Crest
+bonuses, Contract XP and Finale victories. A full ten-entry Contract inbox
+is a lower bound: its review link and combined dock count show `+`, with
+“at least” in the accessible dock label, until fewer than ten remain. Automatic Growth Mark/Weekly Crest
 settlement, unfinished goals and claims in other menus do not contribute.
 Unassigned daily bonuses require a hatched selected pet; saved assigned rewards
 retain their original pet. An unconfirmed action response hides the badge until

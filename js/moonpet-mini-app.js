@@ -2667,7 +2667,7 @@
       if (summary.next) body += '<div class="line" data-current-mission="' + escapeHtml(summary.next.key) + '">CURRENT GOAL // ' + escapeHtml(summary.next.title) + '</div>' + objectiveRouteButton(summary.next.key);
       else body += '<div class="line muted">' + (summary.status === 'BONUS CLAIMED' ? 'Today’s checklist and bonus are finished. New daily missions start at 00:00 UTC.' : 'Today’s checklist is complete. Review your saved bonus below.') + '</div>';
       if (summary.claims.length) body += '<div class="button-grid one">' + summary.claims.map(function (claim) {
-        return routeButton('REVIEW ' + claim.title + ' // ' + number(claim.count), claim, 'Open the saved reward and choose when to claim. Reviewing spends nothing.');
+        return routeButton('REVIEW ' + claim.title + ' // ' + number(claim.count) + (claim.countLowerBound ? '+' : ''), claim, 'Open the saved reward and choose when to claim. Reviewing spends nothing.');
       }).join('') + '</div>';
     }
     return '<section class="mission-status' + (summary.completed === summary.total ? ' mission-status-complete' : '') + '" aria-label="Daily mission status">' + body + '</section>';
@@ -3187,10 +3187,11 @@
   function renderNav() {
     var claims = !authenticationFailure && !petActionRefreshRequired && window.MoonpetPlayOptions && window.MoonpetPlayOptions.missionClaims ? window.MoonpetPlayOptions.missionClaims(state) : [];
     var count = claims.reduce(function (total, claim) { return total + claim.count; }, 0);
+    var countLowerBound = claims.some(function (claim) { return claim.countLowerBound; });
     nav.innerHTML = navItems.map(function (item) {
       var claimCount = item[0] === 'missions' ? count : 0;
-      var label = claimCount ? claimCount + (claimCount === 1 ? ' claim' : ' claims') : item[3];
-      return '<button type="button" data-screen="' + item[0] + '" aria-label="' + item[2] + (claimCount ? ', ' + claimCount + (claimCount === 1 ? ' saved reward ready to claim' : ' saved rewards ready to claim') : ', ' + item[3]) + '" aria-current="' + (item[0] === activeScreen ? 'page' : 'false') + '"><span aria-hidden="true">' + item[1] + '</span>' + (claimCount ? '<b class="dock-claim-badge" aria-hidden="true">' + (claimCount > 99 ? '99+' : claimCount) + '</b>' : '') + item[2] + '<small>' + label + '</small></button>';
+      var label = claimCount ? claimCount + (countLowerBound ? '+' : '') + (claimCount === 1 ? ' claim' : ' claims') : item[3];
+      return '<button type="button" data-screen="' + item[0] + '" aria-label="' + item[2] + (claimCount ? ', ' + (countLowerBound ? 'at least ' : '') + claimCount + (claimCount === 1 ? ' saved reward ready to claim' : ' saved rewards ready to claim') : ', ' + item[3]) + '" aria-current="' + (item[0] === activeScreen ? 'page' : 'false') + '"><span aria-hidden="true">' + item[1] + '</span>' + (claimCount ? '<b class="dock-claim-badge" aria-hidden="true">' + (claimCount > 99 ? '99+' : claimCount + (countLowerBound ? '+' : '')) + '</b>' : '') + item[2] + '<small>' + label + '</small></button>';
     }).join('');
   }
 

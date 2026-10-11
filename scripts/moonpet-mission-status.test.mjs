@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import fs from 'node:fs';
+import vm from 'node:vm';
 import { createRequire } from 'node:module';
 
 const { missionStatus, missionClaims } = createRequire(import.meta.url)('../js/moonpet-play-options.js');
@@ -85,4 +87,39 @@ test('automatic Journey settlement, unclaimed cache and unrelated tabs do not in
   state.guidance.season = { tiers: [{ unlocked: true, claimed_at: null }] };
   state.live_systems = { bounties: [{ complete: true, claimed: false }] };
   assert.deepEqual(missionClaims(state), []);
+});
+
+
+test('capped Contract backlog stays a lower bound through claims and becomes exact below ten', () => {
+  const state = snapshot(7);
+  state.guidance.daily_completion.pending = [{ utc_day: '2000-01-01' }];
+  const backlog = Array.from({ length: 12 }, (_, index) => ({ contract_id: `saved-${index}`, pet_id: 'earlier-pet' }));
+  const client = fs.readFileSync(new URL('../js/moonpet-mini-app.js', import.meta.url), 'utf8');
+  const navSource = client.slice(client.indexOf('  var navItems = ['), client.indexOf('  // TEST-EXPORT: callsignDraft:start'));
+  const statusSource = client.slice(client.indexOf('  function renderMissionStatus('), client.indexOf('  function renderSeasonFinales('));
+  const context = vm.createContext({ state, window: { MoonpetPlayOptions: { missionClaims } }, nav: {},
+    authenticationFailure: false, petActionRefreshRequired: false, activeScreen: 'missions',
+    number: String, escapeHtml: String, objectiveRouteButton: () => '', routeButton: label => label });
+  vm.runInContext(navSource + statusSource, context);
+  for (const remaining of [12, 11, 10, 9, 1, 0]) {
+    state.contracts = { available: false, pending_rewards: backlog.slice(0, remaining).slice(0, 10) };
+    const claims = missionClaims(state);
+    const contract = claims.find(claim => claim.key === 'contract_claim');
+    const lowerBound = remaining >= 10;
+    if (remaining) {
+      assert.equal(contract.count, Math.min(remaining, 10));
+      assert.equal(contract.countLowerBound, lowerBound);
+      const review = context.renderMissionStatus(missionStatus(state));
+      assert.ok(review.includes(`REVIEW SAVED CONTRACT XP // ${contract.count}${lowerBound ? '+' : ''}`));
+    } else assert.equal(contract, undefined);
+    context.renderNav();
+    const total = Math.min(remaining, 10) + 1;
+    assert.ok(context.nav.innerHTML.includes(`<small>${total}${lowerBound ? '+' : ''} ${total === 1 ? 'claim' : 'claims'}</small>`));
+    assert.ok(context.nav.innerHTML.includes(`MISSIONS, ${lowerBound ? 'at least ' : ''}${total} saved rewards ready to claim`) || total === 1 && context.nav.innerHTML.includes('MISSIONS, 1 saved reward ready to claim'));
+    assert.ok(context.nav.innerHTML.includes(`class="dock-claim-badge" aria-hidden="true">${total}${lowerBound ? '+' : ''}</b>`));
+  }
+  context.petActionRefreshRequired = true;
+  context.renderNav();
+  assert.ok(!context.nav.innerHTML.includes('dock-claim-badge'));
+  assert.ok(!context.nav.innerHTML.includes('at least'));
 });
