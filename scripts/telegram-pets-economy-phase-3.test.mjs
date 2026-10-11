@@ -36,11 +36,11 @@ assert.equal(clampPetMaterialStack('scrap_metal', 9998, 10), 9999, 'material sta
 assert.equal(clampPetMaterialStack('scrap_metal', 2, -10), 0, 'material stacks cannot become negative');
 assert.equal(clampPetMaterialStack('constructor', 2, 10), 0, 'invalid materials must not produce balances');
 assert.throws(() => { PET_CRAFTING_MATERIALS.scrap_metal.sources.push('tamper'); }, TypeError, 'material source arrays must reject mutation');
-assert.equal(Object.keys(PET_CRAFTING_RECIPES).length, 6, 'the workshop needs a useful recipe set including the Kaiju sink');
+assert.equal(Object.keys(PET_CRAFTING_RECIPES).length, 9, 'the workshop includes the original six recipes and three real cooked meals');
 for (const [key, recipe] of Object.entries(PET_CRAFTING_RECIPES)) {
   assert.ok(recipe.title && recipe.detail && recipe.min_level > 0, `${key} needs player-facing recipe metadata`);
   assert.ok(Object.keys(recipe.cost).every((material) => normalizePetMaterial(material)), `${key} may only consume canonical materials`);
-  assert.ok(['moon_snack', 'clean_wipe', 'energy_drink', 'style_patch', 'adventure_map'].includes(recipe.output.item_key), `${key} must produce a canonical usable item`);
+  assert.ok(['moon_snack', 'clean_wipe', 'energy_drink', 'style_patch', 'adventure_map', 'street_pizza', 'moon_burger', 'garden_veggies'].includes(recipe.output.item_key), `${key} must produce a canonical usable item`);
   assert.ok(Object.isFrozen(recipe.cost) && Object.isFrozen(recipe.output), `${key} economy rules must be immutable`);
 }
 assert.equal(getPetCraftingRecipe('BATTERY_PACK').output.item_key, 'energy_drink');
