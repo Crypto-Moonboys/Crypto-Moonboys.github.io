@@ -179,7 +179,7 @@ for (const path of ['manual', 'care', 'cooldown', 'action']) test(`${path}: Miss
   const read = path === 'manual' ? f.ctx.syncState() : path === 'care' ? f.ctx.refreshFastActionState()
     : path === 'action' ? f.ctx.runAction('buy', { item_key: 'moon_snack' }) : f.ctx.refreshExpiredCooldownState();
   assert.equal(f.requests[0].body.mode || f.requests[0].body.state_mode, undefined);
-  f.requests[0].resolve({ selectedRouteScreen: '', selectedRoutePanel: '', state: full(), result: { accepted: true } }); await read;
+  f.requests[0].resolve({ state: full(), result: { accepted: true } }); await read;
   for (const tab of ['home', 'missions', 'explore', 'work', 'profile']) {
     f.ctx.switchScreen(tab);
     assert.equal(f.ctx.stateNeedsScreenHydration(f.ctx.state, tab), false);

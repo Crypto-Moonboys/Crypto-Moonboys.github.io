@@ -737,6 +737,7 @@ try {
     await seed(currentUser, 'egg');
     let dailyOverride = null;
     let oldExpeditionState = false;
+    let settleStreetEventOnRecovery = null;
     let startupStateFailures = 2;
     page.on('pageerror', (error) => errors.push(error.message));
     page.on('response', (response) => {
@@ -759,6 +760,15 @@ try {
         }
         let result;
         if (url.pathname.endsWith('/action')) {
+          if (body.action === 'event_recover' && settleStreetEventOnRecovery) {
+            const concurrent = settleStreetEventOnRecovery;
+            assert.equal(body.event_id, concurrent.event_id);
+            const recovered = await hooks.processPetRandomEvent(db, currentUser, '', { saved_event_id: concurrent.event_id });
+            assert.equal(recovered.accepted, true);
+            assert.equal(recovered.pet.pet_id, concurrent.source_pet_id);
+            concurrent.settled_wallet = sqlite.prepare('SELECT moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles WHERE telegram_id=?').get(currentUser);
+            settleStreetEventOnRecovery = null;
+          }
           actions.push(body.action);
           result = await hooks.processPetMiniAppAction(db, currentUser, { id: currentUser }, body, token);
         }
@@ -2573,9 +2583,10 @@ try {
     }
     assert.deepEqual(errors, []);
     console.log('Confirmed pet deletion and stable three-space order browser flow passed at ' + viewport.width + 'x' + viewport.height);
-    // A different client settles a source-pet event after this client loads its
-    // recovery button while another companion is selected. The duplicate reply
-    // has no pet field; the old saved projection must retain its source identity.
+    // Settle through another client immediately before this recovery dispatch.
+    // Keeping the event pending until the click prevents startup notice reads
+    // from removing its button and makes the two-client ordering deterministic.
+    // The duplicate reply has no pet; the old projection must retain its source.
     currentUser = 'browser-street-replay-' + viewport.width;
     await seed(currentUser, 'young');
     const streetSource = await hooks.getPetProfile(db, currentUser);
@@ -2601,26 +2612,33 @@ try {
     await page.goto(`${fixtureOrigin}/moonpet-game.html?screen=explore&focus=street-event`);
     const savedStreetButton = page.locator('[data-action="event_recover"]');
     await savedStreetButton.waitFor({ state: 'visible' });
-    const otherClientRecovery = await hooks.processPetRandomEvent(db, currentUser, '', { saved_event_id: streetReservation.reservation_id });
-    assert.equal(otherClientRecovery.accepted, true);
-    assert.equal(otherClientRecovery.pet.pet_id, streetSource.pet_id);
-    const streetWallet = sqlite.prepare('SELECT moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles WHERE telegram_id=?').get(currentUser);
-    const streetReplayResponse = page.waitForResponse(r => r.url().endsWith('/telegram-pets/app/action') && r.request().postDataJSON()?.action === 'event_recover');
-    await savedStreetButton.click();
-    const streetReplay = await (await streetReplayResponse).json();
+    const concurrentStreet = { event_id: streetReservation.reservation_id, source_pet_id: streetSource.pet_id };
+    settleStreetEventOnRecovery = concurrentStreet;
+    const streetRecoveryControl = await savedStreetButton.elementHandle();
+    const [streetReplayResponse] = await Promise.all([
+      page.waitForResponse(r => r.url().endsWith('/telegram-pets/app/action') && r.request().postDataJSON()?.action === 'event_recover'),
+      savedStreetButton.click(),
+    ]);
+    const streetReplay = await streetReplayResponse.json();
     assert.equal(streetReplay.result.accepted, true); assert.equal(streetReplay.result.duplicate, true);
     assert.equal(streetReplay.result.pet, undefined);
     assert.equal(streetReplay.state.pet.pet_id, streetOther.pet_id);
     await page.waitForFunction(() => !document.querySelector('[data-action="event_recover"]'));
     assert.equal(await page.locator('.choice-result').count(), 0, 'the selected companion cannot inherit another pet’s event');
-    assert.deepEqual(sqlite.prepare('SELECT moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles WHERE telegram_id=?').get(currentUser), streetWallet);
+    assert.ok(concurrentStreet.settled_wallet, 'the other client settled before this recovery dispatch');
+    assert.deepEqual(sqlite.prepare('SELECT moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles WHERE telegram_id=?').get(currentUser), concurrentStreet.settled_wallet);
     assert.equal(sqlite.prepare("SELECT COUNT(*) n FROM telegram_pet_reward_claims WHERE telegram_id=? AND source='pet_event'").get(currentUser).n, 1);
+    await page.waitForFunction(node => !node.classList.contains('is-active'), streetRecoveryControl);
+    await streetRecoveryControl.dispose();
     await page.locator('[data-screen="profile"]').click();
     await page.waitForSelector('[data-panel="pet-spaces"]');
     await page.locator('[data-panel="pet-spaces"]').evaluate(node => { node.open = true; });
+    const streetSourceControl = await page.locator(`[data-action="switch_pet_slot"][data-payload*="${streetSource.pet_id}"]`).elementHandle();
     const sourceSwitchResponse = page.waitForResponse(r => r.url().endsWith('/telegram-pets/app/action') && r.request().postDataJSON()?.action === 'switch_pet_slot');
     await page.locator(`[data-action="switch_pet_slot"][data-payload*="${streetSource.pet_id}"]`).click();
     assert.equal((await (await sourceSwitchResponse).json()).state.pet.pet_id, streetSource.pet_id);
+    await page.waitForFunction(node => !node.classList.contains('is-active'), streetSourceControl);
+    await streetSourceControl.dispose();
     await page.locator('[data-screen="explore"]').click();
     await page.waitForSelector('[data-panel="street-event"] .choice-result', { state: 'attached' });
     const recoveredStreetText = await page.locator('[data-panel="street-event"] .choice-result').textContent();
