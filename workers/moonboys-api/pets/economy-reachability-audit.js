@@ -11,6 +11,7 @@ import {
 } from './economy-phase-3.js';
 import {
   PET_DAILY_BOUNTIES,
+  PET_DAILY_BONUS_BOUNTIES,
   PET_ECONOMY_ROUTES,
   PET_EXPEDITION_TIERS,
   PET_MARKET_OFFERS,
@@ -28,7 +29,7 @@ export const PET_ECONOMY_REACHABILITY_CLASSIFICATIONS = Object.freeze({
 });
 
 const ACCOUNT_WALLET_CURRENCIES = Object.freeze(['moon_gold', 'moon_crystals', 'style_tokens']);
-const CANONICAL_ITEMS = Object.freeze(['moon_snack', 'energy_drink', 'clean_wipe', 'lucky_charm', 'style_patch', 'adventure_map']);
+const CANONICAL_ITEMS = Object.freeze(['moon_snack', 'energy_drink', 'clean_wipe', 'lucky_charm', 'style_patch', 'adventure_map', 'street_pizza', 'moon_burger', 'garden_veggies']);
 const VERIFIED_CURRENCY_SOURCES = Object.freeze({
   moon_gold: Object.freeze(['care', 'jobs', 'daily_chest', 'run_rewards', 'districts', 'event_chains', 'bounties', 'expeditions', 'market_exchange', 'seasonal_boss', 'trade']),
   moon_crystals: Object.freeze(['jobs', 'run_rewards', 'bounties', 'expeditions', 'market_exchange', 'seasonal_boss', 'trade']),
@@ -72,6 +73,8 @@ export function buildPetEconomyReachabilityAudit(definitions = {}) {
   const cosmeticSinks = definitions.cosmetic_sinks || PET_COSMETIC_SINKS;
   const rareDropTables = definitions.rare_drop_tables || PET_RARE_DROP_TABLES;
   const marketOffers = definitions.market_offers || PET_MARKET_OFFERS;
+  const dailyBounties = definitions.daily_bounties || PET_DAILY_BOUNTIES;
+  const bonusBounties = definitions.bonus_bounties || PET_DAILY_BONUS_BOUNTIES;
   const expeditionTiers = definitions.expedition_tiers || PET_EXPEDITION_TIERS;
   const seasonalBosses = definitions.seasonal_bosses || PET_SEASONAL_BOSSES;
   const evolutionDefinitions = definitions.evolutions || evolutions;
@@ -205,14 +208,27 @@ export function buildPetEconomyReachabilityAudit(definitions = {}) {
     purchase_path: 'Mini App economy:market_buy and Telegram petmarket callbacks',
   }));
 
-  const bountySurfaces = PET_DAILY_BOUNTIES.map((bounty) => ({
-    kind: 'daily_bounty',
-    key: bounty.key,
-    classification: classifications.LIVE_REACHABLE,
-    event_types: [...bounty.event_types],
-    reward: { ...bounty.reward },
-    claim_path: 'Mini App economy:bounty_claim and Telegram petbounties callbacks',
-  }));
+  const bountySurfaces = [
+    ...dailyBounties.map((bounty) => ({
+      kind: 'daily_bounty',
+      board: 'original',
+      key: bounty.key,
+      classification: classifications.LIVE_REACHABLE,
+      event_types: [...bounty.event_types],
+      reward: { ...bounty.reward },
+      claim_path: 'Mini App economy:bounty_claim and Telegram petbounties callbacks',
+    })),
+    ...bonusBounties.map((bounty) => ({
+      kind: 'daily_bounty',
+      board: 'bonus',
+      key: bounty.key,
+      difficulty: bounty.difficulty,
+      classification: classifications.LIVE_REACHABLE,
+      event_types: [...bounty.event_types],
+      reward: { ...bounty.reward },
+      claim_path: 'Mini App economy:bounty_claim (additional daily challenge board)',
+    })),
+  ];
 
   const expeditionSurfaces = expeditionTiers.map((tier) => ({
     kind: 'crystal_expedition',

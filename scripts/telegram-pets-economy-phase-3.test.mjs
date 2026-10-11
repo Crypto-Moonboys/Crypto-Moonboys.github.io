@@ -36,11 +36,11 @@ assert.equal(clampPetMaterialStack('scrap_metal', 9998, 10), 9999, 'material sta
 assert.equal(clampPetMaterialStack('scrap_metal', 2, -10), 0, 'material stacks cannot become negative');
 assert.equal(clampPetMaterialStack('constructor', 2, 10), 0, 'invalid materials must not produce balances');
 assert.throws(() => { PET_CRAFTING_MATERIALS.scrap_metal.sources.push('tamper'); }, TypeError, 'material source arrays must reject mutation');
-assert.equal(Object.keys(PET_CRAFTING_RECIPES).length, 6, 'the workshop needs a useful recipe set including the Kaiju sink');
+assert.equal(Object.keys(PET_CRAFTING_RECIPES).length, 9, 'the workshop includes the original six recipes and three real cooked meals');
 for (const [key, recipe] of Object.entries(PET_CRAFTING_RECIPES)) {
   assert.ok(recipe.title && recipe.detail && recipe.min_level > 0, `${key} needs player-facing recipe metadata`);
   assert.ok(Object.keys(recipe.cost).every((material) => normalizePetMaterial(material)), `${key} may only consume canonical materials`);
-  assert.ok(['moon_snack', 'clean_wipe', 'energy_drink', 'style_patch', 'adventure_map'].includes(recipe.output.item_key), `${key} must produce a canonical usable item`);
+  assert.ok(['moon_snack', 'clean_wipe', 'energy_drink', 'style_patch', 'adventure_map', 'street_pizza', 'moon_burger', 'garden_veggies'].includes(recipe.output.item_key), `${key} must produce a canonical usable item`);
   assert.ok(Object.isFrozen(recipe.cost) && Object.isFrozen(recipe.output), `${key} economy rules must be immutable`);
 }
 assert.equal(getPetCraftingRecipe('BATTERY_PACK').output.item_key, 'energy_drink');
@@ -120,6 +120,15 @@ assert.ok(audit.surfaces.find((entry) => entry.kind === 'material' && entry.key 
   'Kaiju Fragment safe accumulation-only classification still requires a verified source');
 assert.deepEqual(audit.surfaces.find((entry) => entry.kind === 'material' && entry.key === 'kaiju_fragment').sinks, ['recipe:kaiju_field_kit'],
   'Kaiju Fragment must expose its live crafting sink');
+const expectedItems = ['moon_snack', 'energy_drink', 'clean_wipe', 'lucky_charm', 'style_patch', 'adventure_map', 'street_pizza', 'moon_burger', 'garden_veggies'];
+assert.deepEqual(audit.canonical_items.map((item) => item.key), expectedItems, 'the entire old and new item catalogue must be audited explicitly');
+for (const [itemKey, recipeKey] of [['street_pizza','pizza_night'], ['moon_burger','moon_grill'], ['garden_veggies','veggie_patch']]) {
+  const item = audit.canonical_items.find((entry) => entry.key === itemKey);
+  assert.ok(item.sources.includes('recipe:' + recipeKey), itemKey + ' must expose its real crafting source');
+  assert.equal(item.classification, PET_ECONOMY_REACHABILITY_CLASSIFICATIONS.LIVE_REACHABLE);
+  const recipe = audit.surfaces.find((entry) => entry.kind === 'recipe' && entry.key === recipeKey);
+  assert.equal(recipe?.output?.item_key, itemKey, itemKey + ' source must agree with its recipe output');
+}
 for (const item of audit.canonical_items) {
   assert.equal(item.classification, PET_ECONOMY_REACHABILITY_CLASSIFICATIONS.LIVE_REACHABLE, `${item.key} must have a current beta source`);
   assert.equal(item.account_owned, true, `${item.key} inventory must remain account-owned`);

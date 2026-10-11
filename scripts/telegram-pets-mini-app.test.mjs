@@ -1513,7 +1513,7 @@ assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20261011-ui-v1/);
 assert.doesNotMatch(html, /moonpet-art-resolver\.js/, 'the game must not load the retired static background resolver');
 assert.match(html, /\/js\/moonpet-bot-art-loader\.js\?v=20261006-live-refresh-v5/);
 assert.match(html, /\/js\/moonpet-bot-art-renderer\.js\?v=20261002-audit-recovery-v2/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261011-ui-v1/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261011-content-v1/);
 assert.match(html, /role="button" aria-label="Interact with your animated Moonpet"/);
 assert.match(client, /data-utility="guide">HOW TO PLAY/);
 const guideMarkupSource = extractTestExport(client, 'guideMarkup');
@@ -1804,7 +1804,7 @@ for (const sdkInitData of [expired, tampered, 'auth_date=invalid&hash=' + 'a'.re
   assert.equal(entry.requests.length, 3, 'Read-only startup state requests retain their transient retry policy');
 }
 assert.match(html, /\/js\/api-config\.js\?v=20260813-first-party-api/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261011-ui-v1/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261011-content-v1/);
 // Season slot UI: timing, account/pet separation, unlock affordance, switching, and rejection copy.
 assert.match(client, /function renderSeasonSlots\(\)/, 'Mini App must render a focused season-slot summary');
 assert.match(client, /function render\(options\) \{\s*var editableState = options && options\.discardCallsignDraft \? null : captureEditableState\(\);[\s\S]*restoreEditableState\(editableState\);/, 'render must preserve only drafts that were not explicitly discarded');
@@ -2129,6 +2129,38 @@ assert.match(client, /var BOT_RENDER_FIT_HEIGHT = 184/);
 assert.match(client, /var BOT_RENDER_PIVOT_Y = 1/);
 assert.match(client, /animateAction\('greet', true, greetingVariant === 'front_wave' \? 2200 : 1400/);
 assert.doesNotMatch(client, /greetCompanion[\s\S]{0,1200}(?:post\(|runAction\()/, 'pet taps must remain cosmetic and server-neutral');
+
+const emoteStart = client.indexOf('  function playLocalEmote(key) {');
+const emoteEnd = client.indexOf('  function companionGreetingVariant(pet) {');
+assert.ok(emoteStart >= 0 && emoteEnd > emoteStart, 'local emote must exist in the client');
+const emoteSource = client.slice(emoteStart, emoteEnd);
+assert.doesNotMatch(emoteSource, /post\(|runAction\(/, 'cosmetic emotes cannot spend, change incubation or award XP');
+for (const phase of ['egg', 'young']) {
+  const motions = [];
+  const context = {
+    state: { adopted: true, lifecycle: { phase } },
+    busy: false, animationUntil: 0, localEmoteLabel: '', localEmoteUntil: 0,
+    performance: { now: () => 100 }, companionCombatActive: () => false,
+    lifecycleCeremonyActive: () => false, activeScreen: 'home',
+    animateAction: (family, accepted, duration, payload) => motions.push({family,accepted,duration,payload}),
+    haptic: () => {},
+  };
+  assert.equal(vm.runInNewContext(emoteSource + ";playLocalEmote('stretch')", context), true);
+  assert.equal(motions[0].family, phase === 'egg' ? 'interact' : 'train',
+    'egg stretch must show egg_react instead of falling back to idle');
+  assert.equal(motions[0].payload.source, 'local_emote', 'emotes stay local and free');
+  assert.equal(context.localEmoteLabel, 'STRETCH!', 'Stage 0 receives the displayed expression');
+}
+assert.match(client, /renderPlayNow\(\) \+ renderFoodCounter\(\) \+ renderPetEmotes\(\) \+ renderSeasonSlots\(\)/,
+  'the egg chamber must actually render the free emote controls');
+assert.match(drawWorldSource, /!hatchArtTransitionActive\(renderTime\)/,
+  'egg emote caption is visible but never masks the hatch reveal');
+assert.doesNotMatch(drawWorldSource, /localEmoteLabel[\s\S]{0,125}!stageZeroPresentationActive\(renderTime\)/,
+  'Stage 0 must not suppress its emote caption');
+const stageZeroLoader = fs.readFileSync(new URL('../js/moonpet-bot-art-loader.js', import.meta.url),'utf8');
+assert.match(stageZeroLoader, /\["interact", "greet", "blocked"\]\.includes\(mode\)\) return "egg_react"/,
+  'Stage 0 must have an authored fallback reaction animation');
+
 assert.match(client, /drawPet\(renderTime\)/);
 assert.doesNotMatch(drawWorldSource, /drawCombatHud|drawLifecycleCeremony|drawCinematicFeedback/,
   'no pet slot may draw transient update panels on the game canvas');

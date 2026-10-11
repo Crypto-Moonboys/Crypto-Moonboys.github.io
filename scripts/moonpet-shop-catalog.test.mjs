@@ -214,7 +214,7 @@ test('audit all recipes and consumable use',async()=>{
   assert.equal(f.sql.prepare("SELECT quantity FROM telegram_pet_inventory WHERE telegram_id=? AND asset_type='item' AND asset_key=?").get(f.owner,recipe.output.item_key).quantity,before+recipe.output.quantity);
   assert.equal((await processPetCraftRecipe(f.db,f.owner,key,key)).duplicate,true);
  }
- for(const key of ['moon_snack','energy_drink','clean_wipe','lucky_charm','style_patch','adventure_map']){
+ for(const key of ['moon_snack','street_pizza','moon_burger','garden_veggies','energy_drink','clean_wipe','lucky_charm','style_patch','adventure_map']){
   const p=funded('consume-'+key);
   p.sql.prepare("INSERT INTO telegram_pet_inventory (telegram_id,asset_type,asset_key,quantity) VALUES (?,'item',?,2)").run(p.owner,key);
   const body={action:'use_item',item_key:key,request_id:key};
@@ -226,7 +226,8 @@ test('audit all recipes and consumable use',async()=>{
    assert.equal(board.entries[0].pet_xp,r.pet_xp_awarded+(period==='all_time'?500000:0),key+period);
   }
  }
- console.log('6 recipes and 6 consumables verified with single use and four-period XP parity');
+ assert.equal(Object.keys(PET_CRAFTING_RECIPES).length,9);
+ console.log('9 recipes and 9 consumables verified with single use and four-period XP parity');
 });
 
 test('all twelve market offers deliver their full bundle exactly once', async () => {
@@ -670,4 +671,231 @@ for (const failure of ['ownership read','legacy recovery']) test(`resolved ${fai
   await assert.rejects(f.act({action:'buy',item_key:'moon_kibble',request_id:'outage'}),/equipment_ownership_unavailable|pet_state_read_unavailable/);
   assert.equal(injected,true);assert.deepEqual(wallet(f),before);
   assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_events WHERE event_type='buy'").get().n,2);
+});
+
+
+test('server-authoritative added adventures enforce level, energy, receipt replay and shared cooldown', async () => {
+  const choices = ['help_the_crew','scan_the_route','cash_out','push_forward'];
+  const adventures = ['neon_roof_chase','rugpull_rescue','sewer_signal','kaiju_evacuation'];
+  for (let index=0;index<adventures.length;index++) {
+    const key=adventures[index],choiceKey=choices[index],f=funded('adventure-route-'+key);
+    const encounter=hooks.resolvePetAdventureEncounter(key);
+    assert.equal(encounter.key,key,'new adventure must resolve from canonical server content');
+    assert.equal(encounter.choices.length,4,key+' offers all four distinct outcomes');
+    assert.ok(encounter.choices.some(choice=>choice.key===choiceKey));
+    assert.ok(encounter.adventure.energy_cost>0);
+    const setPet=(xp,energy)=>{
+      f.sql.prepare('UPDATE telegram_pet_instances SET pet_xp=?, energy=? WHERE telegram_id=?').run(xp,energy,f.owner);
+      f.sql.prepare('UPDATE telegram_pet_profiles SET pet_xp=?, energy=? WHERE telegram_id=?').run(xp,energy,f.owner);
+    };
+    setPet(0,100);
+    const locked=await hooks.processPetAdventure(f.db,f.owner,choiceKey,{encounter_key:key,event_key:'locked-'+key});
+    assert.equal(locked.accepted,false,key+' cannot bypass the level gate');
+    assert.equal(locked.reason,'level_locked');
+    setPet(500000,0);
+    const tired=await hooks.processPetAdventure(f.db,f.owner,choiceKey,{encounter_key:key,event_key:'tired-'+key});
+    assert.equal(tired.accepted,false,key+' cannot spend when energy is zero');
+    assert.equal(tired.reason,'pet_tired');
+    setPet(500000,100);
+    const eventKey='accepted-'+key;
+    const before=f.sql.prepare('SELECT moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles WHERE telegram_id=?').get(f.owner);
+    const won=await hooks.processPetAdventure(f.db,f.owner,choiceKey,{encounter_key:key,event_key:eventKey,source:'test'});
+    assert.equal(won.accepted,true,key+': '+won.reason);
+    assert.equal(won.encounter.key,key);
+    assert.equal(won.choice.key,choiceKey);
+    const save=()=>({
+      wallet:f.sql.prepare('SELECT moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles WHERE telegram_id=?').get(f.owner),
+      receipts:f.sql.prepare("SELECT source,idempotency_key,status,pet_id FROM telegram_pet_reward_claims WHERE telegram_id=? AND source='pet_adventure'").all(f.owner),
+      actions:f.sql.prepare("SELECT id,event_type,pet_id FROM telegram_pet_events WHERE telegram_id=? AND event_type='adventure' AND status='accepted'").all(f.owner)
+    });
+    const saved=save();
+    assert.equal(saved.receipts.length,1,key+' writes one reward ledger receipt');
+    assert.equal(saved.receipts[0].status,'awarded');
+    assert.equal(saved.receipts[0].source,'pet_adventure');
+    assert.equal(saved.receipts[0].pet_id,'current-'+f.owner);
+    assert.equal(saved.actions.length,1);
+    assert.equal(saved.actions[0].pet_id,'current-'+f.owner);
+    const again=await hooks.processPetAdventure(f.db,f.owner,choiceKey,{encounter_key:key,event_key:eventKey,source:'test'});
+    assert.equal(again.duplicate,true,'retry must return the original '+key+' receipt');
+    assert.deepEqual(save(),saved,'retry must not award XP/currency/events twice');
+    setPet(500000,100);
+    const cooling=await hooks.processPetAdventure(f.db,f.owner,choiceKey,{encounter_key:key,event_key:'fresh-'+key,source:'test'});
+    assert.equal(cooling.accepted,false,key+' shares the Adventure cooldown');
+    assert.equal(cooling.reason,'adventure_cooldown');
+    assert.deepEqual(save().wallet,saved.wallet,'cooldown rejection does not mint currency');
+    assert.ok(Number.isFinite(before.moon_gold));
+    f.sql.close();
+  }
+});
+
+
+test('all three cooked meals save their exact distinct hunger, energy and happiness effects',async()=>{
+  for (const [key,expected] of [
+    ['street_pizza',{hunger:-30,energy:4,happiness:4}],
+    ['moon_burger',{hunger:-22,energy:12,happiness:2}],
+    ['garden_veggies',{hunger:-16,energy:6,happiness:14}],
+  ]) {
+    const f=funded('meal-effect-'+key);
+    const petId='current-'+f.owner;
+    f.sql.prepare(`UPDATE telegram_pet_instances
+      SET hunger=60,energy=40,happiness=45,cleanliness=80,last_decay_at=CURRENT_TIMESTAMP,
+        source_profile_updated_at=CURRENT_TIMESTAMP WHERE pet_id=?`).run(petId);
+    f.sql.prepare(`UPDATE telegram_pet_profiles
+      SET hunger=60,energy=40,happiness=45,cleanliness=80,last_decay_at=CURRENT_TIMESTAMP,
+        updated_at=datetime('now','-60 seconds') WHERE telegram_id=?`).run(f.owner);
+    f.sql.prepare("INSERT INTO telegram_pet_inventory(telegram_id,asset_type,asset_key,quantity) VALUES (?,'item',?,2)").run(f.owner,key);
+    const readNeeds=()=>f.sql.prepare('SELECT hunger,energy,happiness FROM telegram_pet_instances WHERE pet_id=?').get(petId);
+    const before=readNeeds();
+    const result=await f.act({action:'use_item',item_key:key,request_id:'one-'+key});
+    assert.equal(result.accepted,true,key+': '+result.reason);
+    const after=readNeeds();
+    for (const [stat,delta] of Object.entries(expected)) {
+      assert.ok(Math.abs((after[stat]-before[stat])-delta)<0.51,
+        key+' '+stat+': expected a distinct saved delta of '+delta+'; got '+(after[stat]-before[stat]));
+    }
+    const receipt=f.sql.prepare("SELECT metadata FROM telegram_pet_events WHERE telegram_id=? AND event_type='use_item' AND status='accepted'").get(f.owner);
+    assert.ok(receipt,key+' must have an accepted saved use-item event');
+    const deltas=JSON.parse(receipt.metadata).profile_deltas;
+    assert.deepEqual({hunger:deltas.hunger,energy:deltas.energy,happiness:deltas.happiness},expected,
+      key+' accepted event must record its exact authoritative requested deltas');
+    assert.equal(f.sql.prepare("SELECT quantity FROM telegram_pet_inventory WHERE telegram_id=? AND asset_key=?").get(f.owner,key).quantity,1);
+    assert.equal(f.sql.prepare("SELECT COUNT(*) AS n FROM telegram_pet_events WHERE telegram_id=? AND event_type='feed' AND status='accepted'").get(f.owner).n,0);
+    f.sql.close();
+  }
+});
+
+test('cooked meals and Care Feed share the same 45-second account cooldown and never award extra Feed mission credit',async()=>{
+  const f=funded('meal-care-cooldown');
+  for(const itemKey of ['street_pizza','moon_burger','garden_veggies']){
+    f.sql.prepare("INSERT INTO telegram_pet_inventory (telegram_id,asset_type,asset_key,quantity) VALUES (?,'item',?,2)").run(f.owner,itemKey);
+  }
+  const bag=(key)=>f.sql.prepare("SELECT quantity FROM telegram_pet_inventory WHERE telegram_id=? AND asset_type='item' AND asset_key=?").get(f.owner,key).quantity;
+  const req={action:'use_item',item_key:'street_pizza',request_id:'first-meal'};
+  const first=await f.act(req);
+  assert.equal(first.accepted,true,first.reason);
+  assert.equal(bag('street_pizza'),1);
+  const snapshot=await hooks.buildPetMiniAppState(f.db,f.owner,'fixture-token');
+  assert.ok(snapshot.cooldowns.entries.some(entry=>entry.key==='action:meal' && entry.remaining_seconds>0),
+    'server-projected remaining meal cooldown must appear in the game UI');
+  assert.ok(snapshot.cooldowns.entries.some(entry=>entry.key==='action:feed' && entry.remaining_seconds>0),
+    'Care Feed must also show the shared meal cooldown');
+  const other=await f.act({action:'use_item',item_key:'moon_burger',request_id:'second-meal'});
+  assert.equal(other.accepted,false,'second cooked meal cannot bypass same-account cooldown');
+  assert.equal(other.reason,'meal_cooldown');
+  assert.ok(other.remaining_seconds>0);
+  assert.equal(bag('moon_burger'),2,'cooldown must not consume the refused burger');
+  const feedBlocked=await f.act({action:'feed',request_id:'feed-while-meal-cooling'});
+  assert.equal(feedBlocked.accepted,false,'Care Feed cannot bypass a recently eaten meal');
+  assert.equal(feedBlocked.reason,'cooldown');
+  assert.equal((await f.act(req)).duplicate,true,'same request returns original receipt before testing cooldown');
+  assert.equal(bag('street_pizza'),1,'duplicate request must not consume again');
+  assert.equal(f.sql.prepare("SELECT COUNT(*) AS total FROM telegram_pet_events WHERE telegram_id=? AND event_type='feed' AND status='accepted'").get(f.owner).total,0,
+    'bag meals never generate Feed mission events');
+  f.sql.prepare("UPDATE telegram_pet_events SET created_at=datetime('now','-46 seconds') WHERE telegram_id=? AND event_type='use_item' AND status='accepted'").run(f.owner);
+  const feed=await f.act({action:'feed',request_id:'feed-after-wait'});
+  assert.equal(feed.accepted,true,feed.reason);
+  const afterFeed=await f.act({action:'use_item',item_key:'garden_veggies',request_id:'meal-after-feed'});
+  assert.equal(afterFeed.accepted,false,'meal cannot bypass accepted Feed cooldown');
+  assert.equal(afterFeed.reason,'meal_cooldown');
+  assert.equal(bag('garden_veggies'),2);
+  f.sql.prepare("UPDATE telegram_pet_events SET created_at=datetime('now','-46 seconds') WHERE telegram_id=? AND event_type='feed' AND status='accepted'").run(f.owner);
+  const acceptedBurger=await f.act({action:'use_item',item_key:'moon_burger',request_id:'burger-after-wait'});
+  assert.equal(acceptedBurger.accepted,true,acceptedBurger.reason);
+  assert.equal(bag('moon_burger'),1);
+  assert.equal(f.sql.prepare("SELECT COUNT(*) AS total FROM telegram_pet_events WHERE telegram_id=? AND event_type='feed' AND status='accepted'").get(f.owner).total,1,
+    'only the explicitly accepted Care Feed counts as a Feed event');
+  assert.equal(f.sql.prepare("SELECT COUNT(*) AS total FROM telegram_pet_events WHERE telegram_id=? AND event_type='use_item' AND status='accepted'").get(f.owner).total,2,
+    'accepted meals settle once and preserve the shared bag event type');
+  f.sql.close();
+});
+
+test('mixed SQLite and ISO timestamp formats select actual newest Feed for meal cooldown', async () => {
+  const f = funded('mixed-meal-timestamps');
+  const petId = 'current-'+f.owner;
+  for(const key of ['street_pizza','moon_burger']) {
+    f.sql.prepare("INSERT INTO telegram_pet_inventory (telegram_id,asset_type,asset_key,quantity) VALUES (?,'item',?,2)").run(f.owner,key);
+  }
+  const nowMs = Date.now();
+  const pizza = await f.act({action:'use_item',item_key:'street_pizza',request_id:'old-pizza'});
+  assert.equal(pizza.accepted,true,pizza.reason);
+  // ISO timestamp is lexically higher than SQL's space-separated timestamp,
+  // despite being 40 seconds older. MAX(created_at) is not safe here.
+  f.sql.prepare("UPDATE telegram_pet_events SET created_at=? WHERE telegram_id=? AND event_type='use_item' AND status='accepted'")
+    .run(new Date(nowMs-40000).toISOString(), f.owner);
+  f.sql.prepare(`INSERT INTO telegram_pet_events
+    (id,pet_id,telegram_id,event_type,event_key,season_key,day_key,week_key,status,reason,metadata,created_at)
+    SELECT ?,pet_id,telegram_id,'feed',?,season_key,day_key,week_key,'accepted','fixture','{}',?
+    FROM telegram_pet_events WHERE telegram_id=? AND event_type='use_item' LIMIT 1`)
+    .run('older-feed-mixed-format','older-feed-mixed-format',new Date(nowMs-40000).toISOString(),f.owner);
+  f.sql.prepare(`INSERT INTO telegram_pet_events
+    (id,pet_id,telegram_id,event_type,event_key,season_key,day_key,week_key,status,reason,metadata,created_at)
+    SELECT ?,pet_id,telegram_id,'feed',?,season_key,day_key,week_key,'accepted','fixture','{}',datetime('now','-1 seconds')
+    FROM telegram_pet_events WHERE telegram_id=? AND event_type='use_item' LIMIT 1`)
+    .run('recent-feed-mixed-format','recent-feed-mixed-format',f.owner);
+  for (const [surface, state] of [
+    ['core', await hooks.buildPetMiniAppCoreState(f.db,f.owner)],
+    ['mini app', await hooks.buildPetMiniAppState(f.db,f.owner,'fixture-token')],
+  ]) {
+    const mealCooldown = state.cooldowns.entries.find(entry => entry.key==='action:meal');
+    assert.ok(mealCooldown && mealCooldown.remaining_seconds >= 35,
+      `${surface} must project the actual newest event of each type, not lexical MAX(created_at)`);
+  }
+  const next = await f.act({action:'use_item',item_key:'moon_burger',request_id:'mixed-burger'});
+  assert.equal(next.accepted,false,'the newer SQLite Feed must still block the next cooked meal');
+  assert.equal(next.reason,'meal_cooldown');
+  assert.ok(next.remaining_seconds >= 25,'the newest actual timestamp, not lexical MAX, controls the 45-second cooldown');
+  assert.equal(f.sql.prepare("SELECT quantity FROM telegram_pet_inventory WHERE telegram_id=? AND asset_key='moon_burger'").get(f.owner).quantity,2);
+  f.sql.close();
+});
+
+test('concurrent meal and Feed cooldown guards preserve subsecond precision',async t=>{
+  const nowMs=Math.floor(Date.now()/1000)*1000;
+  t.mock.timers.enable({apis:['Date'],now:nowMs});
+  const insertAccepted=(f,sourceId,id,type,createdAt,metadata='{}')=>{
+    f.sql.prepare(`INSERT INTO telegram_pet_events
+      (id,pet_id,telegram_id,event_type,event_key,season_key,day_key,week_key,status,reason,metadata,created_at)
+      SELECT ?,pet_id,telegram_id,?,?,season_key,day_key,week_key,'accepted','fixture',?,?
+      FROM telegram_pet_events WHERE id=?`)
+      .run(id,type,id,metadata,createdAt,sourceId);
+  };
+  const justBeforeExpiry=new Date(nowMs-44100).toISOString();
+
+  const meal=funded('subsecond-meal-race');
+  const originalFeed=await meal.act({action:'feed',request_id:'old-feed'});
+  assert.equal(originalFeed.accepted,true,originalFeed.reason);
+  const oldFeedId=meal.sql.prepare("SELECT id FROM telegram_pet_events WHERE telegram_id=? AND event_type='feed' AND status='accepted'").get(meal.owner).id;
+  meal.sql.prepare('UPDATE telegram_pet_events SET created_at=? WHERE id=?').run(new Date(nowMs-60000).toISOString(),oldFeedId);
+  meal.sql.prepare("INSERT INTO telegram_pet_inventory (telegram_id,asset_type,asset_key,quantity) VALUES (?,'item','street_pizza',1)").run(meal.owner);
+  let mealRaceInserted=false;
+  meal.db.beforeBatch=async statements=>{
+    if(mealRaceInserted||!statements.some(statement=>statement.query.includes("'item_use_pending'")))return;
+    mealRaceInserted=true;
+    insertAccepted(meal,oldFeedId,'racing-feed-for-meal','feed',justBeforeExpiry);
+  };
+  const mealResult=await meal.act({action:'use_item',item_key:'street_pizza',request_id:'meal-racing-feed'});
+  assert.equal(mealRaceInserted,true);
+  assert.equal(mealResult.accepted,false,'a Feed written after the precheck must still block a meal during settlement');
+  assert.equal(mealResult.reason,'meal_cooldown');
+  assert.equal(meal.sql.prepare("SELECT quantity FROM telegram_pet_inventory WHERE telegram_id=? AND asset_key='street_pizza'").get(meal.owner).quantity,1);
+  meal.sql.close();
+
+  const feed=funded('subsecond-feed-race');
+  feed.sql.prepare("INSERT INTO telegram_pet_inventory (telegram_id,asset_type,asset_key,quantity) VALUES (?,'item','street_pizza',1)").run(feed.owner);
+  const originalMeal=await feed.act({action:'use_item',item_key:'street_pizza',request_id:'old-meal'});
+  assert.equal(originalMeal.accepted,true,originalMeal.reason);
+  const oldMeal=feed.sql.prepare("SELECT id,created_at FROM telegram_pet_events WHERE telegram_id=? AND event_type='use_item' AND status='accepted'").get(feed.owner);
+  assert.equal(oldMeal.created_at,new Date(nowMs).toISOString(),'bag meals must persist the exact action timestamp');
+  feed.sql.prepare('UPDATE telegram_pet_events SET created_at=? WHERE id=?').run(new Date(nowMs-60000).toISOString(),oldMeal.id);
+  let feedRaceInserted=false;
+  feed.db.beforeBatch=async statements=>{
+    if(feedRaceInserted||!statements.some(statement=>statement.query.includes("'pet_action_pending'")))return;
+    feedRaceInserted=true;
+    insertAccepted(feed,oldMeal.id,'racing-meal-for-feed','use_item',justBeforeExpiry,JSON.stringify({consumed_item_key:'street_pizza'}));
+  };
+  const feedResult=await feed.act({action:'feed',request_id:'feed-racing-meal'});
+  assert.equal(feedRaceInserted,true);
+  assert.equal(feedResult.accepted,false,'a meal written after the precheck must still block Feed during settlement');
+  assert.equal(feedResult.reason,'cooldown');
+  assert.equal(feed.sql.prepare("SELECT COUNT(*) AS n FROM telegram_pet_events WHERE telegram_id=? AND event_type='feed' AND status='accepted'").get(feed.owner).n,0);
+  feed.sql.close();
 });

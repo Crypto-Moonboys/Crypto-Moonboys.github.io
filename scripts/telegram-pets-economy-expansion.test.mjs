@@ -3,12 +3,14 @@ import fs from 'node:fs';
 import { DatabaseSync } from 'node:sqlite';
 import {
   PET_DAILY_BOUNTIES,
+  PET_DAILY_BONUS_BOUNTIES,
   PET_ECONOMY_ROUTES,
   PET_EXPEDITION_TIERS,
   PET_MARKET_OFFERS,
   buildPetEconomyGuidanceActions,
   formatPetEconomyValue,
   getPetDailyBounties,
+  getPetDailyBonusBounties,
   getPetMarketOffers,
   resolvePetExpeditionReward,
 } from '../workers/moonboys-api/pets/economy-expansion.js';
@@ -29,12 +31,30 @@ assert.notDeepEqual(firstBoard.map(({ key }) => key), getPetDailyBounties('2026-
 assert.equal(new Set(firstBoard.map(({ key }) => key)).size, 4);
 assert.deepEqual(getPetDailyBounties('2026-08-12', 1), getPetDailyBounties('2026-08-12', 99), 'level-ups cannot replace the fixed daily bounty board');
 assert.ok(PET_DAILY_BOUNTIES.every(({ min_level = 1 }) => min_level <= 1), 'every bounty in the fixed board pool must be available to starters');
+const addedBoard = getPetDailyBonusBounties('2026-10-11');
+assert.equal(PET_DAILY_BONUS_BOUNTIES.length, 12);
+assert.equal(addedBoard.length, 3);
+assert.deepEqual(addedBoard, getPetDailyBonusBounties('2026-10-11'));
+assert.equal(new Set(addedBoard.map(entry => entry.key)).size, 3);
+assert.deepEqual(addedBoard.map(entry => entry.difficulty), ['EASY','MEDIUM','HARD']);
+for(let offset=0;offset<366;offset++){
+  const day=new Date(Date.UTC(2026,0,1+offset)).toISOString().slice(0,10);
+  const selection=getPetDailyBonusBounties(day);
+  assert.deepEqual(selection.map(entry=>entry.difficulty), ['EASY','MEDIUM','HARD'],day);
+  const events=selection.flatMap(entry=>entry.event_types);
+  assert.equal(new Set(events).size,events.length,'no accepted action event can advance two same-day bonus challenges: '+day);
+}
+assert.deepEqual(firstBoard, getPetDailyBounties('2026-08-12'), 'new bonus challenges must never reshuffle the original daily board');
+assert.ok(PET_DAILY_BONUS_BOUNTIES.every(entry => /^bonus_/.test(entry.key) &&
+  ['EASY', 'MEDIUM', 'HARD'].includes(entry.difficulty) &&
+  entry.required >= 1 && entry.required <= 5), 'safe distinct bonus objectives');
+
 const currentBetaEventTypes = new Set([
   'feed', 'play', 'clean', 'sleep', 'train', 'work', 'random_event', 'activity_claim',
   'run_complete', 'run_extract', 'adventure', 'daily_chest', 'kaiju_battle',
   'use_item', 'use_item_reward',
 ]);
-for (const bounty of PET_DAILY_BOUNTIES) {
+for (const bounty of [...PET_DAILY_BOUNTIES, ...PET_DAILY_BONUS_BOUNTIES]) {
   assert.ok(bounty.event_types.every((eventType) => currentBetaEventTypes.has(eventType)), `${bounty.key} bounty must reference current beta actions only`);
 }
 
@@ -99,6 +119,18 @@ for (const kind of ['market_offer', 'daily_bounty', 'crystal_expedition']) {
   for (const surface of audit.surfaces.filter((entry) => entry.kind === kind)) {
     assert.equal(surface.classification, PET_ECONOMY_REACHABILITY_CLASSIFICATIONS.LIVE_REACHABLE, `${surface.key} ${kind} must be live and reachable`);
   }
+}
+const originalAuditBounties = audit.surfaces.filter((entry) => entry.kind === 'daily_bounty' && entry.board === 'original');
+const bonusAuditBounties = audit.surfaces.filter((entry) => entry.kind === 'daily_bounty' && entry.board === 'bonus');
+assert.deepEqual(originalAuditBounties.map((entry) => entry.key), PET_DAILY_BOUNTIES.map((entry) => entry.key), 'preserve every original daily bounty in the machine audit');
+assert.deepEqual(bonusAuditBounties.map((entry) => entry.key), PET_DAILY_BONUS_BOUNTIES.map((entry) => entry.key), 'all 12 extra daily challenges must appear in the economy audit');
+assert.equal(new Set([...originalAuditBounties, ...bonusAuditBounties].map((entry) => entry.key)).size, PET_DAILY_BOUNTIES.length + PET_DAILY_BONUS_BOUNTIES.length, 'bonus and original bounty IDs must not collide');
+for (const entry of bonusAuditBounties) {
+  const source = PET_DAILY_BONUS_BOUNTIES.find((bounty) => bounty.key === entry.key);
+  assert.deepEqual(entry.event_types, source.event_types, 'audited bonus progress matches server events');
+  assert.deepEqual(entry.reward, source.reward, 'audited bonus payment matches server authority');
+  assert.equal(entry.difficulty, source.difficulty, 'difficulty is discoverable');
+  assert.match(entry.claim_path, /bounty_claim/, 'the extra board exposes an actual claim path');
 }
 assert.equal(audit.surfaces.find((entry) => entry.kind === 'currency' && entry.key === 'moon_crystals').sources.includes('daily_chest'), false,
   'audit currency metadata must not claim Daily Chest creates Moon Crystals');
@@ -174,6 +206,37 @@ assert.equal(readyState.bounties.find(({ key }) => key === bounty.key).complete,
 const bountyClaim = await hooks.claimPetEconomyBounty(d1, 'economy-player', bounty.key);
 assert.equal(bountyClaim.accepted, true);
 assert.equal((await hooks.claimPetEconomyBounty(d1, 'economy-player', bounty.key)).duplicate, true, 'a bounty cannot pay twice');
+
+// Bonus rewards must be authorized by accepted events, not client progress.
+const activeBonus=getPetDailyBonusBounties(currentDay)[0];
+const missingBonus=await hooks.claimPetEconomyBounty(d1,'economy-player',activeBonus.key);
+assert.equal(missingBonus.accepted,false,'unearned bonus cannot pay');
+assert.equal(missingBonus.reason,'bounty_incomplete');
+for(let i=0;i<activeBonus.required;i++){
+  const id=`bonus-action-${i}`;
+  sqlite.prepare(`INSERT INTO telegram_pet_events
+    (id,telegram_id,event_type,event_key,season_key,day_key,week_key,status,reason,metadata)
+    VALUES (?,'economy-player',?,?, 'test-season',?, 'test-week','accepted','verified-action','{}')`)
+    .run(id,activeBonus.event_types[0],id,currentDay);
+}
+const bonusReady=(await hooks.getPetEconomyState(d1,'economy-player')).bonus_bounties.find(entry=>entry.key===activeBonus.key);
+assert.ok(bonusReady?.complete && !bonusReady.claimed,'accepted server evidence completes the bonus');
+const beforeBonusGold=sqlite.prepare("SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id='economy-player'").get().moon_gold;
+const paidBonus=await hooks.claimPetEconomyBounty(d1,'economy-player',activeBonus.key,new Date(),currentDay);
+assert.equal(paidBonus.accepted,true,paidBonus.reason);
+assert.equal(paidBonus.duplicate,false,'first bonus payment is new');
+assert.equal(sqlite.prepare("SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id='economy-player'").get().moon_gold,
+  beforeBonusGold+(activeBonus.reward.moon_gold||0),'one bonus reward credited');
+assert.equal((await hooks.getPetEconomyState(d1,'economy-player')).bonus_bounties.find(entry=>entry.key===activeBonus.key).claimed,true);
+const paidAgain=await hooks.claimPetEconomyBounty(d1,'economy-player',activeBonus.key,new Date(),currentDay);
+assert.equal(paidAgain.duplicate,true,'same-day replay returns old receipt');
+assert.equal((await hooks.claimPetEconomyBounty(d1,'economy-player',activeBonus.key,new Date(Date.now()+86400000),currentDay)).duplicate,true,
+  'completed old-day receipt remains recoverable across UTC boundary');
+const invalidOldDay=await hooks.claimPetEconomyBounty(d1,'economy-player',activeBonus.key,new Date(),'2001-01-01');
+assert.equal(invalidOldDay.accepted,false,'new payout cannot use a stale period');
+assert.equal(invalidOldDay.reason,'economy_day_changed');
+assert.equal(sqlite.prepare("SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id='economy-player'").get().moon_gold,
+  beforeBonusGold+(activeBonus.reward.moon_gold||0),'stale/duplicate attempts never mint a second bonus');
 
 const beforeEnergy = sqlite.prepare(`SELECT energy FROM telegram_pet_profiles WHERE telegram_id = 'economy-player'`).get().energy;
 const expeditionClaim = await hooks.runPetCrystalExpedition(d1, 'economy-player', new Date(), 'request-expedition-1');
