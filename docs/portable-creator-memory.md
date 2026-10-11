@@ -24,6 +24,8 @@ The public Studio works fully in the browser: local file input, in-memory editin
 
 A ChatGPT URL never includes the creator's personal project record. Copy the handoff text, paste it into ChatGPT, or upload the exported JSON. Other AI tools have different document support. Where URLs cannot be read, provide the source text manually.
 
+The website's copied AI handoff ends with the same instruction as its activity starters: browse the public [Graffiti Kings creative guide](https://cryptomoonboys.com/graffiti-kings-creative-guide.html) for project culture, voice and creative direction, respecting the creator's own identity and preferences. This instruction is added to the handoff text, not the portable JSON schema. Reading the public page does not give an agent access to private project records.
+
 SWARMSY exports its existing SPARKY Records to this format and can import creator-approved decisions and draft ideas as **new records after confirmation**. It does not overwrite records silently, import proof as verified, or upload a file merely because it was selected. Duplicates are skipped against current visible records; if a network operation fails, review any partially created records.
 
 ## Schema example

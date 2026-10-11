@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - 'gpt-users.html'
+      - 'graffiti-kings-creative-guide.html'
       - 'swarmsy.html'
       - 'sparky-chatgpt-guide.txt'
       - 'guides/sparky/**'

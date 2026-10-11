@@ -17,6 +17,13 @@ function requirePublic(relative) {
 test('real Pages artifact publishes every SPARKY guide and canon handoff URL', () => {
   const rootPage = requirePublic('gpt-users.html');
   const app = requirePublic('js/sparky-gpt-app.js');
+  const creativeGuide = requirePublic('graffiti-kings-creative-guide.html');
+  assert.match(app, /graffiti-kings-creative-guide\.html/);
+  assert.match(creativeGuide, /data-page-kind="public-creative-brief"/);
+  assert.match(creativeGuide, /The voice: conviction, wit and something to say/);
+  for (const [, href] of creativeGuide.matchAll(/href="(\/[^"#?]+)(?:[?#][^"]*)?"/g)) {
+    requirePublic(href.slice(1));
+  }
   const catalogSource = requirePublic('js/sparky-creator-activities.js');
   const mainGuide = requirePublic('sparky-chatgpt-guide.txt');
   const canonGuide = requirePublic('moonboy-ai-canon-guide.txt');
@@ -56,6 +63,8 @@ test('deployed discovery finds Moonboy creator route and restricted sources stay
   const found = search.some(entry=>entry.url==='/wiki/create-your-moonboy.html');
   assert.ok(found,'Creator page not in deployed wiki search index');
   const sitemap = requirePublic('sitemap.xml');
+  assert.ok(search.some(entry=>entry.url==='/graffiti-kings-creative-guide.html'), 'Creative guide missing from deployed search');
+  assert.ok(sitemap.includes('https://cryptomoonboys.com/graffiti-kings-creative-guide.html'));
   assert.ok(sitemap.includes('https://cryptomoonboys.com/wiki/create-your-moonboy.html'));
   for (const restricted of [
     'brand-canon/story-bibles/gk-master-canon.md',

@@ -104,6 +104,9 @@ function studio() {
   const context = { window, URL: TestURL, TextEncoder, Blob };
   vm.runInNewContext(read("js/creator-memory.js"), context, { filename: "creator-memory.js" });
   vm.runInNewContext(read("js/creator-memory-studio.js"), context, { filename: "creator-memory-studio.js" });
+  // The page loads the app after the studio. Use its real context instruction.
+  vm.runInNewContext(read("js/sparky-creator-activities.js"), context);
+  vm.runInNewContext(read("js/sparky-gpt-app.js"), { ...context, URLSearchParams, encodeURIComponent });
 
   const M = window.SPARKY_CREATOR_MEMORY;
   const byField = (name) => fields.find((field) => field.dataset.memoryField === name);
@@ -148,6 +151,37 @@ test("activity events affect only pristine new projects, never imported blank pr
   assert.equal(pack.canon.scope, "other");
   assert.equal(pack.project.summary, "An intentionally untitled imported world");
   assert.equal(pack.identity.visual_style, "Clouds");
+});
+
+test("website handoff adds public creative context without changing portable JSON", async () => {
+  const s = studio();
+  const before = await s.exportJSON();
+  await s.nodes["memory-copy-handoff"].click();
+  const context = s.window.SPARKY_CREATOR_APP.contextPrompt;
+  const handoff = s.copied.at(-1);
+  assert.ok(handoff.endsWith('\n\n' + context));
+  const payload = handoff.slice(handoff.indexOf('\n\n{') + 2, -('\n\n' + context).length);
+  const data = JSON.parse(payload);
+  assert.deepEqual({ ...data, updated_at: before.updated_at }, before);
+  assert.equal(s.nodes["memory-handoff-preview"].value, s.copied.at(-1));
+  const after = await s.exportJSON();
+  assert.deepEqual({ ...after, updated_at: before.updated_at }, before);
+  s.setClipboardFails(true);
+  await s.nodes["memory-copy-handoff"].click();
+  assert.ok(s.nodes["memory-handoff-preview"].value.endsWith(context));
+  assert.equal(s.nodes["memory-handoff-preview"].selected, true);
+});
+
+test("handoff waits for creative context instead of copying an incomplete prompt", async () => {
+  const s = studio();
+  const app = s.window.SPARKY_CREATOR_APP;
+  delete s.window.SPARKY_CREATOR_APP;
+  await s.nodes["memory-copy-handoff"].click();
+  assert.equal(s.copied.length, 0);
+  assert.match(s.nodes["memory-status"].textContent, /Creative context is still loading/);
+  s.window.SPARKY_CREATOR_APP = app;
+  await s.nodes["memory-copy-handoff"].click();
+  assert.ok(s.copied.at(-1).endsWith(app.contextPrompt));
 });
 
 test("editing after download marks changes unsaved and clears private old handoffs", async () => {

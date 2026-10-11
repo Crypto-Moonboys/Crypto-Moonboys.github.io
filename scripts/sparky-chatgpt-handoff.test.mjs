@@ -133,7 +133,13 @@ test('all 107 ChatGPT prompts preserve the task without unrelated workspace inst
     assert.ok(prompt.includes(app.find(e.id).goal),'incomplete or wrong goal in launch URL: '+e.id);
     assert.match(prompt,/use plain language/i);
     assert.match(prompt,/useful first draft/i);
-    assert.ok(prompt.length < 1000, 'starter is too long: '+e.id);
+    assert.ok(prompt.length < 1400, 'starter is too long: '+e.id);
+    assert.ok(prompt.endsWith('\n\n' + app.contextPrompt), 'missing final creative context instruction: ' + e.id);
+    assert.equal(prompt.split(app.contextUrl).length, 2, 'context should appear exactly once: ' + e.id);
+    assert.match(app.contextPrompt, /Before creating, browse/);
+    assert.match(app.contextPrompt, /culture, voice and creative direction/);
+    assert.match(app.contextPrompt, /respecting my own identity and preferences/);
+    assert.match(app.contextPrompt, /If you cannot read it, say so and ask me to paste the page text/);
     assert.doesNotMatch(prompt,/SWARMSY|AnythingLLM|workspace|PUBLIC INSTRUCTIONS|portable project record|Act as SPARKY/i,e.id);
     if(e.id==='moonboy'){
       assert.match(app.find(e.id).goal, /verified NFT image/);
@@ -142,14 +148,15 @@ test('all 107 ChatGPT prompts preserve the task without unrelated workspace inst
       assert.match(prompt,/moonboy-canon-index\.json/);
       assert.match(prompt,/ask me to supply the relevant source text/i);
     } else {
-      assert.doesNotMatch(prompt,/cryptomoonboys\.com|canon claims|published canon|NFT ownership/i,e.id);
+      assert.doesNotMatch(prompt.replace(app.contextPrompt, ''),/cryptomoonboys\.com|canon claims|published canon|NFT ownership/i,e.id);
     }
     assert.doesNotMatch(prompt,/sparky-chatgpt-guide\.txt|guides\/sparky\//,e.id);
   }
 });
 
 test('website prompt asks for website deliverables without unrelated art or Moonboy rules',()=>{
-  const prompt = boot().SPARKY_CREATOR_APP.makePrompt('website');
+  const app = boot().SPARKY_CREATOR_APP;
+  const prompt = app.makePrompt('website').replace(app.contextPrompt, '');
   assert.match(prompt,/one-page website/);
   assert.match(prompt,/responsive design, usable files, preview and step-by-step hosting/);
   assert.doesNotMatch(prompt,/street art|authorised locations|Moonboy|NFT|proof|record|licences/i);
@@ -162,6 +169,30 @@ test('no-JavaScript starter links and preview match the generated default prompt
   for (const [,href] of links) assert.equal(new URL(href).searchParams.get('q'),app.makePrompt('start'));
   const preview = page.match(/<textarea id="gpt-prompt-preview"[^>]*>([^<]+)<\/textarea>/)?.[1];
   assert.equal(preview, app.makePrompt('start'));
+});
+
+test('shared creative brief is readable public HTML with valid public sources', () => {
+  const app = boot().SPARKY_CREATOR_APP;
+  assert.equal(app.contextUrl, 'https://cryptomoonboys.com/graffiti-kings-creative-guide.html');
+  const brief = read(new URL(app.contextUrl).pathname.slice(1));
+  const staticHTML = brief.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '');
+  assert.match(staticHTML, /data-page-kind="public-creative-brief"/);
+  assert.match(staticHTML, /<meta name="robots" content="index, follow">/);
+  assert.ok(staticHTML.includes('<link rel="canonical" href="' + app.contextUrl + '">'));
+  assert.match(staticHTML, /more than forty years of street culture/);
+  assert.match(staticHTML, /Two ways in\. Both count/);
+  assert.match(staticHTML, /The voice: conviction, wit and something to say/);
+  assert.match(staticHTML, /Stories with teeth, people with lives/);
+  assert.match(staticHTML, /new illustrative drafts, not official slogans or lore/);
+  assert.equal((staticHTML.match(/<h3>/g) || []).length, 12, 'all activity sections have creative direction');
+  assert.deepEqual([...staticHTML.matchAll(/<h3>([^<]+)<\/h3>/g)].map(match=>match[1]), Array.from(app.catalog.categories, category=>category.title));
+  assert.doesNotMatch(staticHTML, /story-bibles|reconciliation-decisions|issue-1458-proposals|w81-continuity-companion/);
+  for (const [, href] of staticHTML.matchAll(/href="(\/[^"#?]+)(?:[?#][^"]*)?"/g)) {
+    assert.ok(existsSync(path.join(base, href)), 'missing public resource ' + href);
+  }
+  assert.match(page, /href="\/graffiti-kings-creative-guide\.html"/);
+  const workflow = read('.github/workflows/sparky-chatgpt-handoff.yml');
+  assert.match(workflow, /- 'graffiti-kings-creative-guide\.html'/, 'brief-only changes must trigger prompt and artifact validation');
 });
 
 test('interactive page selects exactly one activity, supports deep-link, search and copy fallback',async()=>{

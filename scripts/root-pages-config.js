@@ -19,6 +19,7 @@
 
 const APPROVED_ROOT_PAGES = [
   { path: '/about.html', title: 'About Crypto Moonboys' },
+  { path: '/graffiti-kings-creative-guide.html', title: 'Graffiti Kings Creative Guide' },
   { path: '/categories/index.html', title: 'Categories' },
   { path: '/categories/tools.html', title: 'Tools' },
   { path: '/categories/gkniftyheads.html', title: 'GKniftyheads' },

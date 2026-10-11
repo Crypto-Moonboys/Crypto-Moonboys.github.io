@@ -34,6 +34,7 @@ const APPROVED_CATEGORIES = new Set(Object.keys(RANKING_CONFIG.CATEGORY_PRIORITY
 // scripts/root-pages-config.js by comparing the extracted paths.
 const REQUIRED_ROOT_PAGES = [
   '/about.html',
+  '/graffiti-kings-creative-guide.html',
   '/categories/index.html',
   '/categories/tools.html',
   '/categories/gkniftyheads.html',
