@@ -87,7 +87,7 @@ import {
 } from './pets/player-guidance.js';
 import {
   PET_ECONOMY_ROUTES, PET_EXPEDITION_TIERS, buildPetEconomyGuidanceActions, formatPetEconomyValue,
-  getPetDailyBounties, getPetExpedition, getPetMarketOffers, getPetMarketCapacity, resolvePetExpeditionReward,
+  getPetDailyBounties, getPetDailyBonusBounties, getPetExpedition, getPetMarketOffers, getPetMarketCapacity, resolvePetExpeditionReward,
 } from './pets/economy-expansion.js';
 import { PET_CRAFTING_MATERIALS, PET_CRAFTING_RECIPES, getActivePetSetBonuses } from './pets/economy-phase-3.js';
 import { PET_ELITE_JOBS, canStartPetEliteJob } from './pets/content-phase-4.js';
@@ -1495,6 +1495,18 @@ const PET_INVENTORY_ITEMS = Object.freeze({
     kind: 'usable_item',
     description: 'Use: reduce hunger by 18, restore 8 energy and gain up to 4 Pet XP. Stat limits and the daily XP cap apply.',
   },
+  street_pizza: {
+    key: 'street_pizza', title: 'Street Pizza', kind: 'usable_item',
+    description: 'Use: reduce hunger by 30, restore 4 energy, raise happiness by 4 and earn up to 3 Pet XP. Bag use does not count as a Feed mission.',
+  },
+  moon_burger: {
+    key: 'moon_burger', title: 'Moon Burger', kind: 'usable_item',
+    description: 'Use: reduce hunger by 22, restore 12 energy, raise happiness by 2 and earn up to 4 Pet XP. Bag use is not a Feed action.',
+  },
+  garden_veggies: {
+    key: 'garden_veggies', title: 'Garden Veggie Box', kind: 'usable_item',
+    description: 'Use: reduce hunger by 16, restore 6 energy, raise happiness by 14 and earn up to 3 Pet XP. Bag use is not a Feed action.',
+  },
   energy_drink: {
     key: 'energy_drink',
     title: 'Energy Drink',
@@ -1710,16 +1722,13 @@ const PET_ADVENTURES = Object.freeze([
     style_tokens: 3,
   },
   {
-    key: 'nebula_market',
-    title: 'Nebula Market Flip',
-    min_level: 9,
-    energy_cost: 34,
-    hunger_cost: 16,
-    pet_xp: 72,
-    gold: 76,
-    crystals: 3,
-    style_tokens: 5,
+    key: 'nebula_market', title: 'Nebula Market Flip', min_level: 9,
+    energy_cost: 34, hunger_cost: 16, pet_xp: 72, gold: 76, crystals: 3, style_tokens: 5,
   },
+  { key: 'neon_roof_chase', title: 'Neon Roof Chase', min_level: 3, energy_cost: 22, hunger_cost: 9, pet_xp: 32, gold: 31, crystals: 0, style_tokens: 2 },
+  { key: 'rugpull_rescue', title: 'Rugpull Mine Rescue', min_level: 12, energy_cost: 28, hunger_cost: 12, pet_xp: 51, gold: 49, crystals: 1, style_tokens: 3 },
+  { key: 'sewer_signal', title: 'Sewer Signal Recovery', min_level: 18, energy_cost: 31, hunger_cost: 14, pet_xp: 59, gold: 57, crystals: 2, style_tokens: 3 },
+  { key: 'kaiju_evacuation', title: 'Kaiju Evacuation Run', min_level: 25, energy_cost: 34, hunger_cost: 16, pet_xp: 70, gold: 69, crystals: 2, style_tokens: 4 },
 ]);
 
 function hashPetAdventureSeed(value) {
@@ -1802,6 +1811,26 @@ function buildPetAdventureEncounter(adventure) {
             energy: scalePetAdventureRange(energy, 0.45, 0.9, 0),
             hunger: scalePetAdventureRange(hunger, 0.5, 1.0, 0),
           }),
+        }),
+      }),
+      Object.freeze({
+        key: 'help_the_crew',
+        label: 'Help The Crew',
+        copy: 'You pull another runner out of trouble. The payoff is smaller, but the crew remembers.',
+        rewards: Object.freeze({
+          pet_xp: scalePetAdventureRange(petXp, 0.6, 0.9, 5),
+          moon_gold: scalePetAdventureRange(gold, 0.4, 0.75, 2),
+          style_tokens: scalePetAdventureRange(styleTokens + 1, 0, 1, 0),
+        }),
+        costs: Object.freeze({
+          energy: scalePetAdventureRange(energy, 0.3, 0.6, 1),
+          hunger: scalePetAdventureRange(hunger, 0.35, 0.7, 0),
+        }),
+        risk: Object.freeze({
+          chance: 0.2,
+          copy: 'The rescue takes more energy than expected, but the crew gets home.',
+          rewards: Object.freeze({ pet_xp: scalePetAdventureRange(petXp, 0.3, 0.55, 2), moon_gold: scalePetAdventureRange(gold, 0.15, 0.4, 1) }),
+          costs: Object.freeze({ energy: scalePetAdventureRange(energy, 0.6, 0.85, 1), hunger: scalePetAdventureRange(hunger, 0.4, 0.8, 0) }),
         }),
       }),
       Object.freeze({
@@ -3444,6 +3473,9 @@ async function processPetUseItem(db, telegramId, itemKeyRaw, options = {}) {
   if (!pet) return { accepted: false, reason: 'pet_current_season_unavailable', xp_awarded: 0, pet_xp_awarded: 0 };
   const effects = {
     moon_snack: { hunger: -18, energy: 8, pet_xp: 4 },
+    street_pizza: { hunger: -30, energy: 4, happiness: 4, pet_xp: 3 },
+    moon_burger: { hunger: -22, energy: 12, happiness: 2, pet_xp: 4 },
+    garden_veggies: { hunger: -16, energy: 6, happiness: 14, pet_xp: 3 },
     energy_drink: { energy: 22, pet_xp: 6 },
     clean_wipe: { cleanliness: 24, happiness: 4, pet_xp: 4 },
     lucky_charm: { pet_xp: 8 },
@@ -17076,6 +17108,11 @@ async function getPetEconomyState(db, telegramId, petRaw = null, now = new Date(
     return { ...bounty, progress: Math.min(bounty.required, progress), complete: progress >= bounty.required,
       claimed: claimedKeys.has(`pet_bounty:${dayKey}:${bounty.key}`) };
   });
+  const bonusBounties = getPetDailyBonusBounties(dayKey).map((bounty) => {
+    const progress = bounty.event_types.reduce((sum, eventType) => sum + (counts.get(eventType) || 0), 0);
+    return { ...bounty, progress: Math.min(bounty.required, progress), complete: progress >= bounty.required,
+      claimed: claimedKeys.has(`pet_bounty:${dayKey}:${bounty.key}`) };
+  });
   const itemBalances = Object.fromEntries((itemRows.results || []).map((row) => [row.asset_key, row.quantity]));
   const materialBalances = Object.fromEntries((materialRows.results || []).map((row) => [row.material_key, row.quantity]));
   const marketOffers = getPetMarketOffers(dayKey).map((offer) => {
@@ -17094,6 +17131,7 @@ async function getPetEconomyState(db, telegramId, petRaw = null, now = new Date(
     pet,
     routes: PET_ECONOMY_ROUTES,
     bounties,
+    bonus_bounties: bonusBounties,
     market_offers: marketOffers,
     expedition,
     expedition_attempts: expeditionAttempts,
@@ -17136,7 +17174,7 @@ async function claimPetEconomyBounty(db, telegramId, bountyKey, now = new Date()
   if (!state) return { accepted: false, reason: 'pet_not_adopted' };
   const sourceAuthority = activePetRewardAuthority(state.pet);
   if (!sourceAuthority) return { accepted: false, reason: 'source_pet_authority_required' };
-  const bounty = state.bounties.find((entry) => entry.key === String(bountyKey || ''));
+  const bounty = [...state.bounties, ...state.bonus_bounties].find((entry) => entry.key === String(bountyKey || ''));
   if (!bounty) return { accepted: false, reason: 'bounty_not_available', state };
   if (!bounty.complete) return { accepted: false, reason: 'bounty_incomplete', bounty, state };
   const lifecycle = await db.prepare('SELECT phase FROM telegram_pet_lifecycle_by_pet WHERE pet_id=? AND telegram_id=?')
