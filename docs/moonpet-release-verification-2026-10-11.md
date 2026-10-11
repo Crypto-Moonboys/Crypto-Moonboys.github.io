@@ -7,10 +7,11 @@ Fresh runtime checks completed at `2026-10-11T19:50:56.234Z`.
 ## Result
 
 The deployed frontend, Worker source and bot launcher match the intended release.
-**Full release confirmation remains blocked on production D1 migration evidence.**
-Cloudflare rejected the read-only migration query with error `7403`: the configured
-account is invalid or is not authorised to access that service. This does not
-prove any migration is missing, and no migration was applied by this audit.
+Production migration status is now confirmed by GK's supplied local remote-Wrangler
+output: **No migrations to apply!** The requested release checks are complete with
+that user-provided evidence. The earlier automated D1 query was rejected with
+Cloudflare error `7403`; GitHub's D1 credentials remain an automation access issue.
+No migration was applied by this audit.
 
 | Surface | Confirmed result |
 | --- | --- |
@@ -20,7 +21,7 @@ prove any migration is missing, and no migration was applied by this audit.
 | Leaderboard Worker | Commit `a4a500f3fc38d03158bfce4b9be9a7e1517e0c5b`; current runtime and build manifests match. |
 | Anti-cheat Worker | Commit `2323ef3a07794411ff4d5788a02ff63995226cba`; Worker and shared source match. Root build/dependency manifests have subsequently changed; this Worker imports only local source. Compiled-bundle identity is not claimed. |
 | Actual WIKICOMSBOT menu | Read with Telegram getMe/getChatMenuButton for the dedicated canary chat. Menu matches `/games/telegram/?v=20260903-games-shell-v8`. No Telegram message was sent. |
-| Production D1 | **Unverified**: authorised access is needed to confirm the 52 existing required migration records. |
+| Production D1 | User-provided Wrangler 4.143.1 remote migration list reports no migrations to apply for the local checkout. |
 
 Current asset versions: CSS, Mini App and guide `20261011-ui-v1`;
 Play Options `20261011-bounty-v1`. The bot and live launcher agree on
@@ -33,25 +34,30 @@ different purposes and do not need identical values.
 - [Pages deployment passed](https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/actions/runs/38167946228).
 - [Live Site Verify passed](https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/actions/runs/38168050986): 301 checks, zero failures/warnings.
 - [Signed production health probes passed](https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/actions/runs/38163869572) at 18:28 UTC against the deployed API commit: saved state, private and public leaderboards.
-- [Fresh release evidence](https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/actions/runs/38169678987) is intentionally unsuccessful overall because the D1 check is unverified. Its frontend, provenance and launcher results are confirmed.
+- [Fresh release evidence](https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/actions/runs/38169678987) was unsuccessful overall because its automated D1 query lacked authorised access. Its frontend, provenance and launcher results are confirmed; the subsequent local migration confirmation is recorded below.
 
 The retained production manifest and Worker evidence request still describe
 August observations. Use this fresh evidence for this release; the audit does
-not replace unavailable database evidence with historical claims.
+retains the automated query failure alongside the subsequent user-provided database evidence.
 
-## Remaining read-only check
+## Production migration confirmation
 
-From an authenticated local checkout of current main, run:
+GK supplied this result from `D:\GITHUB\Crypto-Moonboys.github.io` on 11 October 2026:
 
 ```sh
 npx wrangler d1 migrations list wikicoms --remote --config workers/moonboys-api/wrangler.toml
 ```
 
-Retain the result. If any required migrations are listed as unapplied, investigate
-before applying them; several historical migrations require their own preflight.
-Alternatively correct the repository Cloudflare credentials and run the existing
-D1 Production Migration Verify workflow, whose remote job checks the exact
-52-record contract and the identity-authority view.
+```text
+wrangler 4.143.1
+Resource location: remote
+No migrations to apply!
+```
+
+This closes the pending-migration release check for the user's checkout. It is
+user-provided evidence, not an independently retrieved payload of the exact 52
+migration records or a separate identity-authority-view audit. The original
+GitHub Actions D1 access failure is preserved in the JSON evidence.
 
 No additional Worker deployment or bot restart is indicated by source/launcher
 checks. The audit made no production code, database, bot-menu or deployment changes.

@@ -195,10 +195,19 @@
     "actual_url": "https://cryptomoonboys.com/moonpet-game.html?v=20261011-rewards-v1",
     "expected_url": "https://cryptomoonboys.com/moonpet-game.html?v=20261011-rewards-v1"
   },
-  "verification_result": "partial-migrations-unverified",
+  "verification_result": "confirmed-with-user-provided-migration-list",
   "evidence_run": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/actions/runs/38169678987",
   "pages_run": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/actions/runs/38167946228",
   "ci_run": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/actions/runs/38167946242",
-  "production_health_run": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/actions/runs/38163869572"
+  "production_health_run": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/actions/runs/38163869572",
+  "local_migration_confirmation": {
+    "status": "no-pending-migrations",
+    "source": "user-provided-local-wrangler-output",
+    "database": "wikicoms",
+    "location": "remote",
+    "wrangler_version": "4.143.1",
+    "command": "npx wrangler d1 migrations list wikicoms --remote --config workers/moonboys-api/wrangler.toml",
+    "result": "No migrations to apply!",
+    "scope": "Migration list for user checkout; no independent exact-row or identity-authority-view audit."
+  }
 }
-
