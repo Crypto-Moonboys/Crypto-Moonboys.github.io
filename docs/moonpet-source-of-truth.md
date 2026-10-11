@@ -914,7 +914,11 @@ The [11 October current rewards and recovery audit](moonpet-rewards-completion-2
 records every existing ending, saved claim and reset boundary. Dated Bounty,
 Market and Expedition controls reject an unpaid previous-day board without
 consuming the new board; already-paid requests acknowledge their original
-receipt. Unclaimed Bounty targets retain their existing midnight expiry, while
+receipt. Exact paid retries keep the original displayed pet ID: a read-only,
+authenticated-account receipt check runs before current-pet scoping. Unpaid or
+pending requests still require the current displayed pet; missing identity,
+foreign receipts and failed reads never authorize a new reward. Unclaimed
+Bounty targets retain their existing midnight expiry, while
 complete daily bonuses and earned season/boss/Contract/Finale claims retain
 their existing recovery rules. Every adopted-state projection schedules daily
 and Monday competition/boss refreshes; Weekly Journey keeps the pet's separate

@@ -58,6 +58,11 @@ invent an empty wallet, a completed objective or a claim.
   bounty shortcuts carry the same date. Previously paid Bounty receipts are read
   before current-day eligibility so their acknowledgements survive midnight and
   a pet switch. Market and Expedition retain their existing request receipts.
+  The authenticated Mini App path reads only already-awarded account receipts
+  before creating its displayed-pet scope. Exact retries keep their original
+  displayed pet ID and return that receipt's source/date with zero new rewards.
+  Unpaid and pending requests still enter the original immutable scope; missing
+  displayed IDs, foreign receipts and unavailable receipt reads cannot bypass it.
 - Every adopted-state cooldown summary schedules the next UTC day and Monday
   competition/boss boundary, even without optional panels or used cooldowns.
   This schedules the existing serialized server refresh, never a client payout.
@@ -129,3 +134,11 @@ Native disclosure keyboard checks wait for an explicit save refresh before
 typing, because a navigation-triggered read can replace the focused node. They
 also verify that expanded help survives the refresh and dismissed help survives
 review navigation, without weakening the 44px touch-target measurement.
+
+Review follow-up: the first HTTP retry regression implicitly supplied the newly
+selected pet ID. Retaining the original displayed ID reproduced all three
+`displayed_pet_changed` failures. The expanded 24-case suite now tests exact
+action bodies through result-only and full HTTP responses, including a replacement
+egg, original receipt provenance, zero reward deltas, unchanged wallets/XP/energy/
+inventory/materials/receipts/events, unpaid/pending/foreign guard rejection and
+failed-read recovery. Receipt confirmation never calls a reward writer.

@@ -10970,6 +10970,20 @@ async function processPetMiniAppAction(database, telegramId, user, body, botToke
   }
   const petId = String(body?.displayed_pet_id || '').trim();
   if (!petId) return { accepted: false, reason: 'displayed_pet_required', refresh_state: true };
+  // An exact retry can still display the pet that earned the paid receipt.
+  // Only acknowledge an already-awarded account receipt here: an unpaid or
+  // pending action must enter the immutable displayed-pet scope below.
+  let receipt = null;
+  if (action === 'bounty_claim') {
+    const dayKey = body.day_key == null || body.day_key === '' ? getPetDayKey(new Date()) : String(body.day_key);
+    receipt = await readPetBountyReceipt(database, telegramId, body.bounty_key, dayKey);
+  } else if (body.request_id && (action === 'market_buy' || action === 'expedition')) {
+    const requestKey = petMiniAppEventKey(telegramId, action, body.request_id).slice(0, 120);
+    receipt = action === 'market_buy'
+      ? await readPetMarketRequestReceipt(database, telegramId, requestKey)
+      : await readPetExpeditionReceipt(database, telegramId, requestKey);
+  }
+  if (receipt) return { ...receipt, refresh_state: true };
   const scope = createDisplayedPetScope(database, telegramId, petId);
   try {
     // Every handler and its nested helpers receives the same immutable pet
@@ -11274,7 +11288,7 @@ function serializePetMiniAppActionResult(result = {}, identity = null, telegramI
   for (const key of ['pet_xp_awarded', 'xp_awarded', 'damage', 'participation_only', 'participation_qualification_week', 'energy_cost', 'action', 'attempt', 'retry_after_seconds', 'remaining_seconds', 'server_time', 'gold_delta', 'crystal_delta', 'daily_limit', 'used_today', 'won', 'reward_pending', 'refresh_state']) {
     if (result[key] !== undefined) output[key] = result[key];
   }
-  for (const key of ['rewards', 'receipt_rewards', 'applied', 'job', 'item', 'recipe', 'encounter', 'choice', 'result_copy', 'reaction', 'boss', 'progress', 'tier', 'expedition', 'offer', 'bounty', 'queue', 'run', 'room', 'session', 'pending', 'computed', 'resolved', 'match', 'reward_results', 'region', 'chain_key', 'step', 'final', 'cosmetic', 'cost', 'faction_bonus', 'acknowledged', 'rare_morph', 'care_type', 'deleted_pet_id', 'replacement_pet_id', 'reward_history_preserved', 'season_slots', 'entry_requirement', 'capabilities_version', 'capabilities', 'cooldown', 'expires_at']) {
+  for (const key of ['rewards', 'receipt_rewards', 'receipt', 'applied', 'job', 'item', 'recipe', 'encounter', 'choice', 'result_copy', 'reaction', 'boss', 'progress', 'tier', 'expedition', 'offer', 'bounty', 'queue', 'run', 'room', 'session', 'pending', 'computed', 'resolved', 'match', 'reward_results', 'region', 'chain_key', 'step', 'final', 'cosmetic', 'cost', 'faction_bonus', 'acknowledged', 'rare_morph', 'care_type', 'deleted_pet_id', 'replacement_pet_id', 'reward_history_preserved', 'season_slots', 'entry_requirement', 'capabilities_version', 'capabilities', 'cooldown', 'expires_at']) {
     if (result[key] !== undefined) output[key] = result[key];
   }
   // A repeated combat-ending request may deliver this player's first payout.
@@ -17100,9 +17114,8 @@ async function getPetEconomyState(db, telegramId, petRaw = null, now = new Date(
   return { ...state, guidance_actions: buildPetEconomyGuidanceActions(state) };
 }
 
-async function claimPetEconomyBounty(db, telegramId, bountyKey, now = new Date(), expectedDay = '') {
-  const dayKey = expectedDay == null || expectedDay === '' ? getPetDayKey(now) : String(expectedDay);
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(dayKey)) return { accepted: false, reason: 'economy_day_changed', refresh_state: true };
+async function readPetBountyReceipt(db, telegramId, bountyKey, dayKey) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dayKey)) return null;
   const receipt = await db.prepare(`SELECT pet_id,day_key,applied_rewards FROM telegram_pet_reward_claims
     WHERE telegram_id=? AND source='pet_bounty' AND idempotency_key=? AND status='awarded'`)
     .bind(telegramId, `${dayKey}:${String(bountyKey || '')}`).first().then(requirePetFirstReadResult);
@@ -17110,6 +17123,14 @@ async function claimPetEconomyBounty(db, telegramId, bountyKey, now = new Date()
   // Do this before today's eligibility checks; no second reward is submitted.
   if (receipt) return { accepted: true, duplicate: true, reason: 'bounty_claimed', rewards: {}, pet_xp_awarded: 0, xp_awarded: 0,
     receipt: { pet_id: receipt.pet_id, day_key: dayKey, rewards: safeJsonParse(receipt.applied_rewards, {}) } };
+  return null;
+}
+
+async function claimPetEconomyBounty(db, telegramId, bountyKey, now = new Date(), expectedDay = '') {
+  const dayKey = expectedDay == null || expectedDay === '' ? getPetDayKey(now) : String(expectedDay);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dayKey)) return { accepted: false, reason: 'economy_day_changed', refresh_state: true };
+  const receipt = await readPetBountyReceipt(db, telegramId, bountyKey, dayKey);
+  if (receipt) return receipt;
   if (dayKey !== getPetDayKey(now)) return { accepted: false, reason: 'economy_day_changed', refresh_state: true };
   const state = await getPetEconomyState(db, telegramId, null, now);
   if (!state) return { accepted: false, reason: 'pet_not_adopted' };
