@@ -309,7 +309,7 @@ try {
     await context.close();
   }
   // Core Home stays interactive while one background read prepares all tabs.
-  for (const viewport of [{ width: 390, height: 844 }, { width: 360, height: 640 }]) {
+  for (const viewport of [{ width: 390, height: 844 }, { width: 360, height: 640 }, { width: 1280, height: 900 }]) {
     const context = await createFixtureContext({ viewport, reducedMotion: 'reduce' });
     const page = await context.newPage();
     const modes = [], errors = [];
@@ -337,9 +337,14 @@ try {
     await page.waitForSelector('[data-panel="care"]'); await startedGate;
     assert.equal(await page.locator('[data-panel="module-loading"]').count(), 0, 'Home is usable during background projection');
     assert.deepEqual(modes, ['core', 'full'], 'exactly one background full read begins before any tab tap');
+    assert.equal(await page.locator('.dock-claim-badge').count(), 0, 'core startup cannot invent unloaded claim counts');
     releaseWarmup();
     await page.locator('[data-screen="missions"]').click();
     await page.waitForSelector('[data-panel="contracts"]');
+    assert.match(await page.locator('.mission-status').textContent(), /IN PROGRESS/);
+    assert.equal(await page.locator('.mission-status [data-current-mission]').count(), 1);
+    assert.equal(await page.locator('[data-panel="missions"] .mission-row-current').count(), 1);
+    assert.equal(await page.locator('#screen').evaluate(node => node.scrollWidth <= node.clientWidth), true, 'mission status fits narrow Telegram controls');
     for (const [tab, panel] of [['work','timed-activity'],['economy','equipment'],['profile','pet-spaces'],['explore','districts'],['missions','contracts']]) {
       await page.locator(`[data-screen="${tab}"]`).click();
       assert.equal(await page.locator(`[data-panel="${panel}"]`).count(), 1, `${tab} renders immediately from the shared projection`);
@@ -2179,6 +2184,16 @@ try {
     await page.locator('[data-panel="play-now"] [data-focus="daily-completion"]').click();
     assert.match(await page.locator('[data-panel="daily-completion"]').textContent(),/7\/7 COMPLETE/);
     assert.match(await page.locator('[data-panel="missions"]').textContent(),/7\/7/);
+    const missionNav = page.locator('#nav [data-screen="missions"]');
+    assert.match(await missionNav.getAttribute('aria-label'), /1 saved reward ready to claim/);
+    assert.equal(await missionNav.locator('.dock-claim-badge').textContent(), '1');
+    assert.match(await page.locator('.mission-status-heading').textContent(), /7\/7 \/\/ COMPLETE/);
+    const beforeReview = actions.length;
+    await page.locator('.mission-status [data-focus="daily-completion"]').click();
+    assert.equal(actions.length, beforeReview, 'reviewing the claim submits no gameplay action');
+    assert.equal(await page.locator('[data-panel="daily-completion"]').getAttribute('open') !== null, true);
+    await page.locator('.mission-status').scrollIntoViewIfNeeded();
+    await page.screenshot({ path: path.join(screenshotDirectory, `mission-complete-${viewport.width}.png`) });
     async function completionAction(locator, action) {
       const response=page.waitForResponse(r=>r.url().endsWith('/telegram-pets/app/action') && r.request().postDataJSON()?.action===action);
       await locator.click();const data=await (await response).json();assert.equal(data.result.accepted,true,JSON.stringify(data.result));
@@ -2188,6 +2203,8 @@ try {
     await completionAction(page.locator('[data-action="daily_completion_claim"]'),'daily_completion_claim');
     await page.waitForFunction(()=>document.querySelector('[data-panel="daily-completion"]').textContent.includes('BONUS CLAIMED'));
     assert.equal(await page.locator('[data-action="daily_completion_claim"]').count(),0);
+    assert.match(await page.locator('.mission-status-heading').textContent(), /7\/7 \/\/ BONUS CLAIMED/);
+    assert.equal(await missionNav.locator('.dock-claim-badge').count(), 0);
     assert.match(await page.locator('[data-panel="season-finale"]').textContent(),/LOCKED/);
     sqlite.prepare(`INSERT INTO telegram_pet_season_completions
       (pet_id,telegram_id,season_key,legendary_evolution_id,growth_marks_earned,weekly_crests_earned)
@@ -2217,10 +2234,12 @@ try {
     }
     await page.waitForSelector('[data-action="finale_claim"]');
     assert.match(await page.locator('[data-panel="season-finale"]').textContent(),/FINALE VICTOR/);
+    assert.equal(await missionNav.locator('.dock-claim-badge').textContent(), '1', 'saved finale payout contributes one claim');
     failLiveStateRead=viewport.width===360?'resolved':true;
     const committedClaim=await completionAction(page.locator('[data-action="finale_claim"]'),'finale_claim');
     assert.equal(committedClaim.state,null);
     await page.waitForFunction(()=>document.querySelector('#terminal-output').textContent.includes('DISPLAY SYNC FAILED'));
+    assert.equal(await missionNav.locator('.dock-claim-badge').count(), 0, 'unconfirmed display must not advertise a stale paid claim');
     assert.ok(currentFinale().claimed_at,'the reward committed even though the following read failed');
     const claimsBeforeRefresh=actions.filter(action=>action==='finale_claim').length;
     failLiveStateRead=false;
