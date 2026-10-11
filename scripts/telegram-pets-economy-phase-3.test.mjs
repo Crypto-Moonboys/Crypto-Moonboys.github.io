@@ -120,6 +120,15 @@ assert.ok(audit.surfaces.find((entry) => entry.kind === 'material' && entry.key 
   'Kaiju Fragment safe accumulation-only classification still requires a verified source');
 assert.deepEqual(audit.surfaces.find((entry) => entry.kind === 'material' && entry.key === 'kaiju_fragment').sinks, ['recipe:kaiju_field_kit'],
   'Kaiju Fragment must expose its live crafting sink');
+const expectedItems = ['moon_snack', 'energy_drink', 'clean_wipe', 'lucky_charm', 'style_patch', 'adventure_map', 'street_pizza', 'moon_burger', 'garden_veggies'];
+assert.deepEqual(audit.canonical_items.map((item) => item.key), expectedItems, 'the entire old and new item catalogue must be audited explicitly');
+for (const [itemKey, recipeKey] of [['street_pizza','pizza_night'], ['moon_burger','moon_grill'], ['garden_veggies','veggie_patch']]) {
+  const item = audit.canonical_items.find((entry) => entry.key === itemKey);
+  assert.ok(item.sources.includes('recipe:' + recipeKey), itemKey + ' must expose its real crafting source');
+  assert.equal(item.classification, PET_ECONOMY_REACHABILITY_CLASSIFICATIONS.LIVE_REACHABLE);
+  const recipe = audit.surfaces.find((entry) => entry.kind === 'recipe' && entry.key === recipeKey);
+  assert.equal(recipe?.output?.item_key, itemKey, itemKey + ' source must agree with its recipe output');
+}
 for (const item of audit.canonical_items) {
   assert.equal(item.classification, PET_ECONOMY_REACHABILITY_CLASSIFICATIONS.LIVE_REACHABLE, `${item.key} must have a current beta source`);
   assert.equal(item.account_owned, true, `${item.key} inventory must remain account-owned`);
