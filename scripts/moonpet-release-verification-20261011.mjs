@@ -38,8 +38,8 @@ await Promise.all([...assets].map(async ([url, path]) => {
       report.assets[report.assets.length - 1].first_difference = { offset, committed_bytes: committed.length, live_bytes: live.bytes.length, expected: committed.subarray(Math.max(0, offset - 80), offset + 350).toString(), actual: live.bytes.subarray(Math.max(0, offset - 80), offset + 350).toString() };
       if (path === 'games/telegram/index.html') {
         const normalized = live.bytes.toString()
-          .replace(/<script type="[0-9a-f]{32}-text\/javascript">/g, '<script>')
-          .replace(/<script src="\/cdn-cgi\/scripts\/[0-9a-f]+\/cloudflare-static\/rocket-loader\.min\.js" data-cf-settings="[0-9a-f]{32}-\|[0-9]+" defer><\/script>/g, '');
+          .replace(/<script type="[0-9a-f]{24,32}-text\/javascript">/g, '<script>')
+          .replace(/<script src="\/cdn-cgi\/scripts\/[0-9a-f]+\/cloudflare-static\/rocket-loader\.min\.js" data-cf-settings="[0-9a-f]{24,32}-\|[0-9]+" defer><\/script>/g, '');
         const normalizedHash = hash(Buffer.from(normalized));
         report.assets[report.assets.length - 1].normalized_sha256 = normalizedHash;
         if (normalizedHash === committedHash) {
