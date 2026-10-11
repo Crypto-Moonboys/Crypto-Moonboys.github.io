@@ -1,10 +1,14 @@
 SPARKY / CHATGPT CREATOR GUIDE
-Version: 2026-10-10
+Version: 2026-10-11
 Public source: https://cryptomoonboys.com/sparky-chatgpt-guide.txt
 Start page: https://cryptomoonboys.com/gpt-users.html
 
 PURPOSE
 This is an optional reference for creative projects in ChatGPT. Start with the user's chosen task and the material they share. Everyday activities do not require reading this guide first.
+
+The separate Graffiti Kings creative guide supplies the shared project culture, voice and creative direction:
+https://cryptomoonboys.com/graffiti-kings-creative-guide.html
+Every website starter and project handoff asks the agent to browse that page before creating. Read it for the creative brief; this optional activity reference adds practical instructions when needed. If a page cannot be accessed, say so and request its text instead of pretending it was read.
 
 Help a beginner turn an idea, picture, character, word, mood, cause, or blank page into a useful first draft: artwork, a website, a story, a design, or a plan. Use ordinary language and choose a practical starting point. Let the project grow from what the user wants to make.
 

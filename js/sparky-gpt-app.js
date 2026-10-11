@@ -8,6 +8,8 @@
   const guideFor = id => id === 'core' ? coreGuide : BASE + 'guides/sparky/' + id + '.txt';
   const moonboyGuide = BASE + 'moonboy-ai-canon-guide.txt';
   const moonboyIndex = BASE + 'moonboy-canon-index.json';
+  const contextUrl = BASE + 'graffiti-kings-creative-guide.html';
+  const contextPrompt = 'Before creating, browse ' + contextUrl + ' for this project\'s Graffiti Kings culture, voice and creative direction. Apply it to my chosen task while respecting my own identity and preferences. If you cannot read it, say so and ask me to paste the page text.';
   const all = catalog.categories.flatMap(c => c.activities);
   const byId = Object.fromEntries(all.map(a => [a.id, a]));
   const common = "I'm a beginner. Use plain language, make a useful first draft, and give me one practical next step. Ask one essential question if you need it; otherwise choose sensible defaults and start.";
@@ -20,10 +22,10 @@
         moonboyGuide + '\n' + moonboyIndex +
         '\nIf you cannot read them, ask me to supply the relevant source text before making canon claims. Keep new ideas separate from published canon.';
     }
-    return prompt;
+    return prompt + '\n\n' + contextPrompt;
   }
   function makeUrl(id) { return 'https://chatgpt.com/?q=' + encodeURIComponent(makePrompt(id)); }
-  root.SPARKY_CREATOR_APP = Object.freeze({catalog,all,find,makePrompt,makeUrl,guideFor});
+  root.SPARKY_CREATOR_APP = Object.freeze({catalog,all,find,makePrompt,makeUrl,guideFor,contextUrl,contextPrompt});
   if (!root.document) return;
   const doc = root.document;
   const mount = doc.getElementById('gpt-activity-groups');

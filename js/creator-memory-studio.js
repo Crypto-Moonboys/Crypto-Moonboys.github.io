@@ -227,7 +227,9 @@
     clearPreview();
     const generationAtCopy = generation;
     try {
-      const handoff = M.handoff(record);
+      const contextPrompt = root.SPARKY_CREATOR_APP?.contextPrompt;
+      if (!contextPrompt) throw new Error("Creative context is still loading. Try again once the activity directory has loaded.");
+      const handoff = M.handoff(record) + '\n\n' + contextPrompt;
       preview.value = handoff;
       details.open = true;
       if (!root.navigator?.clipboard?.writeText) throw new Error("Clipboard unavailable");

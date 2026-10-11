@@ -37082,6 +37082,87 @@
     "brand": null
   },
   {
+    "title": "Graffiti Kings Creative Guide | Crypto Moonboys",
+    "desc": "The shared creative brief for Crypto Moonboys Creator Studio: Graffiti Kings culture, voice, visual direction and making work people remember.",
+    "url": "/graffiti-kings-creative-guide.html",
+    "tags": [],
+    "category": "concepts",
+    "aliases": [],
+    "rank_score": 222,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 0,
+      "mention_count": 0,
+      "category": "concepts",
+      "category_priority": 5,
+      "has_description": true,
+      "article_word_count": 1732,
+      "keyword_bag_size": 21,
+      "heading_count": 21,
+      "list_count": 2,
+      "internal_link_count": 3,
+      "paragraph_count": 41,
+      "section_count": 8,
+      "lore_paragraph_count": 0,
+      "content_quality_score": 77,
+      "authority_score": 19
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 25,
+      "word_count_points": 50,
+      "keyword_bag_points": 21,
+      "content_quality_points": 77,
+      "authority_points": 19,
+      "final_rank_score": 222,
+      "authority_graph_points": 0
+    },
+    "search_index": {
+      "normalized_title": "graffiti kings creative guide crypto moonboys",
+      "tokens": [
+        "graffiti",
+        "kings",
+        "creative",
+        "guide",
+        "crypto",
+        "moonboys"
+      ],
+      "keyword_bag": [
+        "graffiti",
+        "kings",
+        "creative",
+        "guide",
+        "crypto",
+        "moonboys",
+        "the",
+        "shared",
+        "brief",
+        "for",
+        "creator",
+        "studio",
+        "culture",
+        "voice",
+        "visual",
+        "direction",
+        "and",
+        "making",
+        "work",
+        "people",
+        "remember"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 0,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 0,
+      "authority": 0
+    },
+    "brand": null
+  },
+  {
     "title": "👉👑 BITCOIN KiD ROYALE ⚡️⚡️⚡️",
     "desc": "👉👑 BITCOIN KiD ROYALE ⚡️⚡️⚡️ is an NFT in the gkniftyheads WAX AtomicAssets collection.",
     "url": "/wiki/gkniftyheads-bitcoin-kid-royale-776145.html",

@@ -11,6 +11,7 @@ const html = read('gpt-users.html')
     return src && scripts.includes(new URL(src, 'http://creator.test').pathname.slice(1)) ? tag : '';
   });
 const resources = new Map([
+  ['/graffiti-kings-creative-guide.html', { body: read('graffiti-kings-creative-guide.html'), contentType: 'text/html' }],
   ['/gpt-users.html', { body: html, contentType: 'text/html' }],
   ['/gpt-users-legacy.html', { body: html.replace('id="gpt-launch"', '').replace('id="gpt-launch-title" tabindex="-1"', 'id="gpt-launch-title"'), contentType: 'text/html' }],
   ['/css/wiki.css', { body: read('css/wiki.css'), contentType: 'text/css' }],
@@ -43,6 +44,7 @@ async function checkDestination(page, title) {
   const prompt = await page.locator('#gpt-prompt-preview').inputValue();
   assert.ok(prompt.startsWith(title + '.\n\n'));
   assert.equal(new URL(await page.locator('#gpt-open-link').getAttribute('href')).searchParams.get('q'), prompt);
+  assert.ok(prompt.endsWith(await page.evaluate(() => window.SPARKY_CREATOR_APP.contextPrompt)));
 }
 
 async function checkCategory(page, group) {
@@ -88,6 +90,7 @@ try {
       }
       await page.waitForFunction(() => document.querySelectorAll('[data-activity]').length === 107 && !document.querySelector('[data-feature="website"]').disabled);
       await page.waitForLoadState('load');
+      assert.equal(await page.locator('#gpt-context-link').getAttribute('href'), '/graffiti-kings-creative-guide.html');
       for (const [id] of goals) assert.equal(await page.locator(`[data-feature="${id}"]`).isEnabled(), true);
       assert.equal(await page.locator('#gpt-search').isEnabled(), true);
       assert.equal(await page.locator('#gpt-copy-prompt').isEnabled(), true);
@@ -141,6 +144,20 @@ try {
       assert.deepEqual(errors, [], `${width}/${reducedMotion}: no runtime errors`);
       await page.close();
     }
+    // Crawlers and users without JavaScript receive the complete creative brief.
+    const context = await browser.newContext({ javaScriptEnabled: false, viewport: { width, height: 960 } });
+    const brief = await context.newPage();
+    await brief.route('**/*', route => {
+      const resource = resources.get(new URL(route.request().url()).pathname);
+      return resource ? route.fulfill(resource) : route.abort();
+    });
+    await brief.goto('http://creator.test/graffiti-kings-creative-guide.html');
+    assert.ok(await brief.locator('h1').isVisible());
+    assert.equal(await brief.locator('#activities h3').count(), 12);
+    assert.match(await brief.locator('#voice').innerText(), /Plain language can still be sharp/);
+    assert.match(await brief.locator('#worlds').innerText(), /preserve the source's grit/);
+    assert.ok(await brief.evaluate(() => document.documentElement.scrollWidth <= innerWidth), 'creative guide fits mobile and desktop');
+    await context.close();
   }
   console.log('Creator goal navigation passed: all 12 section headings, keyboard activation, real versioned script tags, delayed startup, legacy cached markup, desktop/mobile, all six goals, all 107 activities, repeat selection, header clearance, focus, reduced motion and prompt parity.');
 } finally {
