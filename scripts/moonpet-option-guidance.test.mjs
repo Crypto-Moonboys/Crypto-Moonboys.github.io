@@ -452,7 +452,7 @@ test('meal cooldown affects cooked food only, never unrelated bag items', () => 
 
 test('real Egg Food Counter renders but never allows a pre-hatch meal', () => {
   const ctx = context();
-  ctx.panel = (_, body) => body;
+  ctx.panel = (title, body) => '<section><h2>' + title + '</h2>' + body + '</section>';
   ctx.state.lifecycle.phase = 'egg';
   ctx.stateNeedsFullHydration = () => false;
   ctx.state.inventory = [{ key: 'street_pizza', title: 'Street Pizza', kind: 'usable_item', count: 1 }];
