@@ -318,6 +318,12 @@ test('inverted hunger is presented as accessible fullness and clamped to 100', (
   assert.match(ctx.meter('FULLNESS', 75, true), /25\/100/);
   assert.match(ctx.meter('FULLNESS', -20, true), /aria-valuenow="100"/);
   assert.match(ctx.meter('FULLNESS', 130, true), /aria-valuenow="0"/);
+  ctx.activeScreen = 'home';
+  vm.runInContext(between('  var panelOpenState', '  function meter('), ctx);
+  const vitals = ctx.panel('VITAL SYSTEMS', ctx.meter('FULLNESS', 75, true), 'vitals');
+  const summary = vitals.match(/<summary\b[^>]*>[\s\S]*?<\/summary>/)[0];
+  assert.match(summary, /Check health, energy, fullness, fun and cleanliness\./);
+  assert.doesNotMatch(summary, /\bhunger\b/i);
   const home = between('  function renderHome()', '  // TEST-EXPORT: coreStateHydration:start');
   assert.ok(home.includes("meter('FULLNESS', pet.hunger, true)"));
   const care = home.slice(home.indexOf("panel('CARE CONSOLE'"), home.indexOf('      renderSeasonSlots()'));

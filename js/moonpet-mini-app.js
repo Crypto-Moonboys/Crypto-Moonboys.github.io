@@ -1296,7 +1296,7 @@
     'play-now': ['▶', 'Browse more activities, goals and ways to play.'],
     'active-pet': ['◉', 'Your active companion, stage and growth progress.'],
     incubation: ['◉', 'Build your egg’s signal for breakout. Identity reveals at Stage 3.'],
-    vitals: ['♥', 'Check health, energy, hunger, fun and cleanliness.'],
+    vitals: ['♥', 'Check health, energy, fullness, fun and cleanliness.'],
     care: ['♥', 'Feed, play, rest, train and collect Daily Cache.'],
     details: ['◉', 'Companion stats, personality and equipped items.'],
     'pet-spaces': ['◈', 'Choose your active pet or unlock another permanent space.'],
