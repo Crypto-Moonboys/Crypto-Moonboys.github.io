@@ -2129,6 +2129,38 @@ assert.match(client, /var BOT_RENDER_FIT_HEIGHT = 184/);
 assert.match(client, /var BOT_RENDER_PIVOT_Y = 1/);
 assert.match(client, /animateAction\('greet', true, greetingVariant === 'front_wave' \? 2200 : 1400/);
 assert.doesNotMatch(client, /greetCompanion[\s\S]{0,1200}(?:post\(|runAction\()/, 'pet taps must remain cosmetic and server-neutral');
+
+const emoteStart = client.indexOf('  function playLocalEmote(key) {');
+const emoteEnd = client.indexOf('  function companionGreetingVariant(pet) {');
+assert.ok(emoteStart >= 0 && emoteEnd > emoteStart, 'local emote must exist in the client');
+const emoteSource = client.slice(emoteStart, emoteEnd);
+assert.doesNotMatch(emoteSource, /post\(|runAction\(/, 'cosmetic emotes cannot spend, change incubation or award XP');
+for (const phase of ['egg', 'young']) {
+  const motions = [];
+  const context = {
+    state: { adopted: true, lifecycle: { phase } },
+    busy: false, animationUntil: 0, localEmoteLabel: '', localEmoteUntil: 0,
+    performance: { now: () => 100 }, companionCombatActive: () => false,
+    lifecycleCeremonyActive: () => false, activeScreen: 'home',
+    animateAction: (family, accepted, duration, payload) => motions.push({family,accepted,duration,payload}),
+    haptic: () => {},
+  };
+  assert.equal(vm.runInNewContext(emoteSource + ";playLocalEmote('stretch')", context), true);
+  assert.equal(motions[0].family, phase === 'egg' ? 'interact' : 'train',
+    'egg stretch must show egg_react instead of falling back to idle');
+  assert.equal(motions[0].payload.source, 'local_emote', 'emotes stay local and free');
+  assert.equal(context.localEmoteLabel, 'STRETCH!', 'Stage 0 receives the displayed expression');
+}
+assert.match(client, /renderPlayNow\(\) \+ renderPetEmotes\(\) \+ renderSeasonSlots\(\)/,
+  'the egg chamber must actually render the free emote controls');
+assert.match(drawWorldSource, /!hatchArtTransitionActive\(renderTime\)/,
+  'egg emote caption is visible but never masks the hatch reveal');
+assert.doesNotMatch(drawWorldSource, /localEmoteLabel[\s\S]{0,125}!stageZeroPresentationActive\(renderTime\)/,
+  'Stage 0 must not suppress its emote caption');
+const stageZeroLoader = fs.readFileSync(new URL('../js/moonpet-bot-art-loader.js', import.meta.url),'utf8');
+assert.match(stageZeroLoader, /\["interact", "greet", "blocked"\]\.includes\(mode\)\) return "egg_react"/,
+  'Stage 0 must have an authored fallback reaction animation');
+
 assert.match(client, /drawPet\(renderTime\)/);
 assert.doesNotMatch(drawWorldSource, /drawCombatHud|drawLifecycleCeremony|drawCinematicFeedback/,
   'no pet slot may draw transient update panels on the game canvas');
