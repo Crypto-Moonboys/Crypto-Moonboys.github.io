@@ -29,6 +29,7 @@ function runFixture(mutate) {
     mutate(fixture);
     const result = spawnSync(process.platform === 'win32' ? 'npm.cmd' : 'npm', ['run', 'test:canon'], {
       cwd: fixture, encoding: 'utf8', timeout: 30000,
+      shell: process.platform === 'win32',
       env: { ...process.env, PYTHONDONTWRITEBYTECODE: '1' },
     });
     assert.ifError(result.error);
