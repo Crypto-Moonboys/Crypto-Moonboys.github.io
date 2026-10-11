@@ -120,6 +120,18 @@ for (const kind of ['market_offer', 'daily_bounty', 'crystal_expedition']) {
     assert.equal(surface.classification, PET_ECONOMY_REACHABILITY_CLASSIFICATIONS.LIVE_REACHABLE, `${surface.key} ${kind} must be live and reachable`);
   }
 }
+const originalAuditBounties = audit.surfaces.filter((entry) => entry.kind === 'daily_bounty' && entry.board === 'original');
+const bonusAuditBounties = audit.surfaces.filter((entry) => entry.kind === 'daily_bounty' && entry.board === 'bonus');
+assert.deepEqual(originalAuditBounties.map((entry) => entry.key), PET_DAILY_BOUNTIES.map((entry) => entry.key), 'preserve every original daily bounty in the machine audit');
+assert.deepEqual(bonusAuditBounties.map((entry) => entry.key), PET_DAILY_BONUS_BOUNTIES.map((entry) => entry.key), 'all 12 extra daily challenges must appear in the economy audit');
+assert.equal(new Set([...originalAuditBounties, ...bonusAuditBounties].map((entry) => entry.key)).size, PET_DAILY_BOUNTIES.length + PET_DAILY_BONUS_BOUNTIES.length, 'bonus and original bounty IDs must not collide');
+for (const entry of bonusAuditBounties) {
+  const source = PET_DAILY_BONUS_BOUNTIES.find((bounty) => bounty.key === entry.key);
+  assert.deepEqual(entry.event_types, source.event_types, 'audited bonus progress matches server events');
+  assert.deepEqual(entry.reward, source.reward, 'audited bonus payment matches server authority');
+  assert.equal(entry.difficulty, source.difficulty, 'difficulty is discoverable');
+  assert.match(entry.claim_path, /bounty_claim/, 'the extra board exposes an actual claim path');
+}
 assert.equal(audit.surfaces.find((entry) => entry.kind === 'currency' && entry.key === 'moon_crystals').sources.includes('daily_chest'), false,
   'audit currency metadata must not claim Daily Chest creates Moon Crystals');
 
