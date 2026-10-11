@@ -255,7 +255,7 @@ const targets = {
   cosmetics: /SELECT cosmetic_key, quantity, unlocked_at/,
   live_attempts: /SELECT system_key, action_key, period_key, status, payload_json, updated_at/,
   raid_rewards: /SELECT b.pet_id,b.season_key,b.boss_key/,
-  cooldowns: /SELECT event_type, MAX\(created_at\) AS created_at/,
+  cooldowns: /ROW_NUMBER\(\) OVER \(PARTITION BY event_type ORDER BY julianday\(created_at\) DESC, created_at DESC\)/,
   special_care: /SELECT event_type, MAX\(created_at\) AS last_created_at/,
   economy_progress: /SELECT event_type, COUNT\(\*\) AS total/,
   economy_claims: /SELECT source, idempotency_key, pet_id, metadata, applied_rewards/,

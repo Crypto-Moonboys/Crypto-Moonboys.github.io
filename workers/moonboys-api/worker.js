@@ -3509,22 +3509,22 @@ async function processPetUseItem(db, telegramId, itemKeyRaw, options = {}) {
   const requestedRewards = JSON.stringify({ pet_xp: petXp, community_xp: 0, moon_gold: 0, moon_crystals: 0, style_tokens: walletRewards.style_tokens, materials: {}, items: {}, relics: {} });
   const consumeResultsStatements = [
     db.prepare(`INSERT OR IGNORE INTO telegram_pet_events
-      (id, pet_id, telegram_id, event_type, event_key, xp_awarded, pet_xp_awarded, season_key, day_key, week_key, status, reason, metadata)
+      (id, pet_id, telegram_id, event_type, event_key, xp_awarded, pet_xp_awarded, season_key, day_key, week_key, status, reason, metadata, created_at)
       SELECT ?, ?, ?, 'use_item', ?, 0,
         MIN(?,MAX(0,?-(SELECT COALESCE(SUM(pet_xp_awarded),0) FROM telegram_pet_events WHERE telegram_id=? AND day_key=? AND status='accepted'))),
-        ?, ?, ?, 'pending', 'item_use_pending', ?
+        ?, ?, ?, 'pending', 'item_use_pending', ?, ?
       WHERE EXISTS (SELECT 1 FROM telegram_pet_inventory
         WHERE telegram_id = ? AND asset_type = 'item' AND asset_key = ? AND quantity > 0)
         ${itemHasWalletReward ? `AND ${accountWalletRecoveryResolvedSql('?')}` : ''}
         ${isMeal ? `AND NOT EXISTS (SELECT 1 FROM telegram_pet_events
           WHERE telegram_id=? AND status IN ('pending','accepted') AND ${PET_MEAL_OR_FEED_EVENT_SQL}
-            AND (? - unixepoch(created_at)) < ?)` : ''}
+            AND COALESCE((julianday(?) - julianday(created_at)) * 86400, 0) < ?)` : ''}
         AND EXISTS (SELECT 1 FROM telegram_pet_instances p JOIN telegram_pet_active_slots a
           ON a.pet_id=p.pet_id AND a.telegram_id=p.telegram_id AND a.season_key=p.season_key
           WHERE p.pet_id=? AND p.telegram_id=? AND p.season_key=? AND p.status='active')
-      RETURNING id`).bind(consumeEventId, pet.pet_id || null, telegramId, eventKey, petXp, PETS_DAILY_PET_XP_CAP, telegramId, dayKey, pet.season_key, dayKey, weekKey, rewardMetadata,
+      RETURNING id`).bind(consumeEventId, pet.pet_id || null, telegramId, eventKey, petXp, PETS_DAILY_PET_XP_CAP, telegramId, dayKey, pet.season_key, dayKey, weekKey, rewardMetadata, now.toISOString(),
         telegramId, key, ...(itemHasWalletReward ? [telegramId] : []),
-        ...(isMeal ? [telegramId, Math.floor(now.getTime() / 1000), PETS_ACTION_COOLDOWN_SECONDS] : []),
+        ...(isMeal ? [telegramId, now.toISOString(), PETS_ACTION_COOLDOWN_SECONDS] : []),
         pet.pet_id, telegramId, pet.season_key),
     db.prepare(`INSERT OR IGNORE INTO telegram_pet_reward_claims
       (claim_id, pet_id, telegram_id, source, idempotency_key, day_key, status, requested_rewards, applied_rewards, metadata)
@@ -7243,10 +7243,10 @@ async function processPetAction(db, telegramId, action, options = {}) {
           WHERE telegram_id=? AND event_type=? AND day_key=? AND status IN ('pending','accepted')) < ?)
         AND NOT EXISTS (SELECT 1 FROM telegram_pet_events
           WHERE telegram_id=? AND event_type=? AND (status='accepted' OR (?=1 AND status='pending'))
-            AND (? - unixepoch(created_at)) < ?)
+            AND COALESCE((julianday(?) - julianday(created_at)) * 86400, 0) < ?)
         ${normalizedAction === 'feed' ? `AND NOT EXISTS (SELECT 1 FROM telegram_pet_events
           WHERE telegram_id=? AND status IN ('pending','accepted') AND ${PET_MEAL_USE_EVENT_SQL}
-            AND (? - unixepoch(created_at)) < ?)` : ''}
+                AND COALESCE((julianday(?) - julianday(created_at)) * 86400, 0) < ?)` : ''}
         AND EXISTS (SELECT 1 FROM telegram_pet_instances p JOIN telegram_pet_active_slots a
           ON a.pet_id=p.pet_id AND a.telegram_id=p.telegram_id AND a.season_key=p.season_key
           WHERE p.pet_id=? AND p.telegram_id=? AND p.season_key=? AND p.status='active'
@@ -7266,8 +7266,8 @@ async function processPetAction(db, telegramId, action, options = {}) {
       petXp, PETS_DAILY_PET_XP_CAP, telegramId, dayKey, pet.season_key, dayKey, weekKey, metadata, now.toISOString(),
       ...(actionHasWalletReward ? [telegramId] : []),
       specialPolicy ? 1 : 0, telegramId, normalizedAction, dayKey, Number(specialPolicy?.daily_limit || 0),
-      telegramId, normalizedAction, specialPolicy ? 1 : 0, Math.floor(now.getTime() / 1000), specialPolicy?.cooldown_seconds || PETS_ACTION_COOLDOWN_SECONDS,
-      ...(normalizedAction === 'feed' ? [telegramId, Math.floor(now.getTime() / 1000), PETS_ACTION_COOLDOWN_SECONDS] : []),
+      telegramId, normalizedAction, specialPolicy ? 1 : 0, now.toISOString(), specialPolicy?.cooldown_seconds || PETS_ACTION_COOLDOWN_SECONDS,
+      ...(normalizedAction === 'feed' ? [telegramId, now.toISOString(), PETS_ACTION_COOLDOWN_SECONDS] : []),
       pet.pet_id, telegramId, pet.season_key, pet.equipped_food || '', pet.equipped_toy || '', pet.equipped_outfit || '', normalizedAction, now.toISOString(),
       sourceEquipment, telegramId,
       normalizedAction, telegramId, specialPolicy ? 1 : 0, telegramId, telegramId, telegramId, telegramId, telegramId, telegramId),
@@ -10419,11 +10419,13 @@ async function buildPetMiniAppCoreState(db, telegramId, options = {}) {
     activityPromise,
     buildPetSeasonSlotCoreSummary(db, telegramId, now),
     getPetSpecialActionGuidanceState(db, telegramId, now),
-    db.prepare(`SELECT event_type, MAX(created_at) AS created_at
+    db.prepare(`SELECT event_type, created_at FROM (
+      SELECT event_type, created_at,
+        ROW_NUMBER() OVER (PARTITION BY event_type ORDER BY julianday(created_at) DESC, created_at DESC) AS event_rank
       FROM telegram_pet_events
       WHERE telegram_id=? AND status='accepted'
         AND (event_type IN ('feed','play','clean','sleep','train') OR ${PET_MEAL_USE_EVENT_SQL})
-      GROUP BY event_type`).bind(String(telegramId)).all().then(requirePetReadResult),
+    ) WHERE event_rank=1`).bind(String(telegramId)).all().then(requirePetReadResult),
     readAcceptedDailyChestPetEventForDay(db, telegramId, dayKey),
     db.prepare(`SELECT COALESCE(SUM(pet_xp_awarded), 0) AS pet_xp
       FROM telegram_pet_events
@@ -10708,10 +10710,13 @@ async function buildPetMiniAppState(db, telegramId, botToken, options = {}) {
     }),
     getPetNotificationPreference(db, telegramId),
     buildPetSeasonSlotSummary(db, telegramId, now),
-    db.prepare(`SELECT event_type, MAX(created_at) AS created_at FROM telegram_pet_events
+    db.prepare(`SELECT event_type, created_at FROM (
+      SELECT event_type, created_at,
+        ROW_NUMBER() OVER (PARTITION BY event_type ORDER BY julianday(created_at) DESC, created_at DESC) AS event_rank
+      FROM telegram_pet_events
       WHERE telegram_id=? AND status='accepted'
         AND (event_type IN ('adventure','work','trade','feed','play','clean','sleep','train') OR ${PET_MEAL_USE_EVENT_SQL})
-      GROUP BY event_type`).bind(telegramId).all().then(requirePetReadResult),
+    ) WHERE event_rank=1`).bind(telegramId).all().then(requirePetReadResult),
   ]);
   const pendingStreetEvents = await readPendingStreetEvents(db, telegramId);
   const leaderboardRows = leaderboard.rows;
