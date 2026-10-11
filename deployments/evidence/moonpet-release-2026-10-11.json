@@ -1,0 +1,204 @@
+{
+  "checked_at": "2026-10-11T19:50:56.234Z",
+  "intended_commit": "bfa8997d0942ca1101aab26b7b7c19a29c3999ca",
+  "assets": [
+    {
+      "path": "js/moonpet-bot-art-loader.js",
+      "url": "https://cryptomoonboys.com/js/moonpet-bot-art-loader.js?v=20261006-live-refresh-v5",
+      "http_status": 200,
+      "status": "verified",
+      "sha256": "a82fb39556593fde01dab32ddf14c0e85ef0b53e9a6cd067338b63dd39e4f012",
+      "expected_sha256": "a82fb39556593fde01dab32ddf14c0e85ef0b53e9a6cd067338b63dd39e4f012"
+    },
+    {
+      "path": "css/moonpet-mini-app.css",
+      "url": "https://cryptomoonboys.com/css/moonpet-mini-app.css?v=20261011-ui-v1",
+      "http_status": 200,
+      "status": "verified",
+      "sha256": "7c611ad59cfb152d7fe6cf47196ee43085854b43e1315250c5d22f762ad74587",
+      "expected_sha256": "7c611ad59cfb152d7fe6cf47196ee43085854b43e1315250c5d22f762ad74587"
+    },
+    {
+      "path": "moonpet-game.html",
+      "url": "https://cryptomoonboys.com/moonpet-game.html?v=20261011-rewards-v1",
+      "http_status": 200,
+      "status": "verified",
+      "sha256": "59e212dc8211ce4465b89e3ff81936dd347d32e881dbc2219963d8e780712c8f",
+      "expected_sha256": "59e212dc8211ce4465b89e3ff81936dd347d32e881dbc2219963d8e780712c8f"
+    },
+    {
+      "path": "js/moonpet-canvas-readability-shim.js",
+      "url": "https://cryptomoonboys.com/js/moonpet-canvas-readability-shim.js?v=20260813-canvas-readability-shim",
+      "http_status": 200,
+      "status": "verified",
+      "sha256": "3aad4841f9a402f02ca33edd5c171485862a759dbb5b0ceb4851b5ed9ce85634",
+      "expected_sha256": "3aad4841f9a402f02ca33edd5c171485862a759dbb5b0ceb4851b5ed9ce85634"
+    },
+    {
+      "path": "js/moonpet-bot-art-renderer.js",
+      "url": "https://cryptomoonboys.com/js/moonpet-bot-art-renderer.js?v=20261002-audit-recovery-v2",
+      "http_status": 200,
+      "status": "verified",
+      "sha256": "febbe2a68767273d46b2468d38111eada8a3c8c0db20642fb136d7d17ffbc783",
+      "expected_sha256": "febbe2a68767273d46b2468d38111eada8a3c8c0db20642fb136d7d17ffbc783"
+    },
+    {
+      "path": "js/api-config.js",
+      "url": "https://cryptomoonboys.com/js/api-config.js?v=20260813-first-party-api",
+      "http_status": 200,
+      "status": "verified",
+      "sha256": "29474a5af7b4c828fd0f099933e82bc2464b22f37728c303b52d4a8129629c0e",
+      "expected_sha256": "29474a5af7b4c828fd0f099933e82bc2464b22f37728c303b52d4a8129629c0e"
+    },
+    {
+      "path": "games/telegram/index.html",
+      "url": "https://cryptomoonboys.com/games/telegram/?v=20260903-games-shell-v8",
+      "http_status": 200,
+      "status": "verified-with-cloudflare-transformation",
+      "sha256": "c3a19c134aa34af76471c667c12ed894a81dff62cfbc0311c8ee448de913b191",
+      "expected_sha256": "2749aa6b9d6b418032be81cf04fb2a7f051a34a45950037564ef9216700bdbad",
+      "first_difference": {
+        "offset": 11774,
+        "committed_bytes": 17563,
+        "live_bytes": 17753,
+        "expected": "\"></span><span class=\"button-light\"></span></div>\n    </div>\n  </main>\n  <script>\n    (function () {\n      var FALLBACK_READY_MS = 1200;\n      var INIT_DATA_STORAGE_KEY = 'moonboys.telegram.initData';\n      var root = document.getElementById('launcherRoot');\n      var status = document.getElementById('launchStatus');\n      var links = Array.prototype.slice.call(document.querySelectorAll('nav a[href]'));\n      var telegramApp =",
+        "actual": "\"></span><span class=\"button-light\"></span></div>\n    </div>\n  </main>\n  <script type=\"903106b4ec5fa22e42e5590a-text/javascript\">\n    (function () {\n      var FALLBACK_READY_MS = 1200;\n      var INIT_DATA_STORAGE_KEY = 'moonboys.telegram.initData';\n      var root = document.getElementById('launcherRoot');\n      var status = document.getElementById('launchStatus');\n      var links = Array.prototype.slice.call(document.querySele"
+      },
+      "normalized_sha256": "2749aa6b9d6b418032be81cf04fb2a7f051a34a45950037564ef9216700bdbad",
+      "transformation": "Cloudflare Rocket Loader script type and loader injection only"
+    },
+    {
+      "path": "js/identity-gate.js",
+      "url": "https://cryptomoonboys.com/js/identity-gate.js",
+      "http_status": 200,
+      "status": "verified",
+      "sha256": "e88a8ea15a1f39d54f6886fde43782b7a5542db74ad312b714635ed090b41bdd",
+      "expected_sha256": "e88a8ea15a1f39d54f6886fde43782b7a5542db74ad312b714635ed090b41bdd"
+    },
+    {
+      "path": "js/moonpet-guide.js",
+      "url": "https://cryptomoonboys.com/js/moonpet-guide.js?v=20261011-ui-v1",
+      "http_status": 200,
+      "status": "verified",
+      "sha256": "e8742748f39ee7f146e3663e764067761807c60b49dfa23965e3fbfeee0230c0",
+      "expected_sha256": "e8742748f39ee7f146e3663e764067761807c60b49dfa23965e3fbfeee0230c0"
+    },
+    {
+      "path": "js/moonpet-play-options.js",
+      "url": "https://cryptomoonboys.com/js/moonpet-play-options.js?v=20261011-bounty-v1",
+      "http_status": 200,
+      "status": "verified",
+      "sha256": "aba52984dd11b13d93d32dcecda99082bec480d2ed846a0e1b15cc438740b406",
+      "expected_sha256": "aba52984dd11b13d93d32dcecda99082bec480d2ed846a0e1b15cc438740b406"
+    },
+    {
+      "path": "how-to-play-crypto-moonboy-pets.html",
+      "url": "https://cryptomoonboys.com/how-to-play-crypto-moonboy-pets.html",
+      "http_status": 200,
+      "status": "verified",
+      "sha256": "9ca9ad820191440bd2c3495c445a061eadfbb4fe0da93a58d7354e301337e364",
+      "expected_sha256": "9ca9ad820191440bd2c3495c445a061eadfbb4fe0da93a58d7354e301337e364"
+    },
+    {
+      "path": "js/moonpet-mini-app.js",
+      "url": "https://cryptomoonboys.com/js/moonpet-mini-app.js?v=20261011-ui-v1",
+      "http_status": 200,
+      "status": "verified",
+      "sha256": "0dc641e5051745738fe2cf7d59a832e2bce76a5c4915e33de0f8f605c84955a2",
+      "expected_sha256": "0dc641e5051745738fe2cf7d59a832e2bce76a5c4915e33de0f8f605c84955a2"
+    }
+  ],
+  "workers": [
+    {
+      "service": "moonboys-api",
+      "commit": "18a0d9f009e6d7a38643407b992a0dfda3b27491",
+      "deployed_at": "2026-10-11T18:02:04.071Z",
+      "environment": "production",
+      "url": "https://moonboys-api.sercullen.workers.dev/deployment-info",
+      "status": "verified",
+      "health_ok": true,
+      "changed_runtime_paths": [],
+      "changed_build_manifest_paths": [],
+      "deployed_worker_tree": "4ca938799d1b6d465702694347edc360601aecae",
+      "intended_worker_tree": "4ca938799d1b6d465702694347edc360601aecae"
+    },
+    {
+      "service": "moonboys-api",
+      "commit": "18a0d9f009e6d7a38643407b992a0dfda3b27491",
+      "deployed_at": "2026-10-11T18:02:04.071Z",
+      "environment": "production",
+      "url": "https://api.cryptomoonboys.com/deployment-info",
+      "status": "verified",
+      "health_ok": true,
+      "changed_runtime_paths": [],
+      "changed_build_manifest_paths": [],
+      "deployed_worker_tree": "4ca938799d1b6d465702694347edc360601aecae",
+      "intended_worker_tree": "4ca938799d1b6d465702694347edc360601aecae"
+    },
+    {
+      "service": "moonboys-leaderboard",
+      "commit": "a4a500f3fc38d03158bfce4b9be9a7e1517e0c5b",
+      "deployed_at": "2026-10-09T18:37:20.695Z",
+      "environment": "production",
+      "url": "https://moonboys-leaderboard.sercullen.workers.dev/deployment-info",
+      "status": "verified",
+      "health_ok": null,
+      "changed_runtime_paths": [],
+      "changed_build_manifest_paths": [],
+      "deployed_worker_tree": "980697cfcad0232738300379cadc36cfe6120287",
+      "intended_worker_tree": "980697cfcad0232738300379cadc36cfe6120287"
+    },
+    {
+      "service": "moonboys-anti-cheat",
+      "commit": "2323ef3a07794411ff4d5788a02ff63995226cba",
+      "deployed_at": "2026-08-10T12:56:13.630Z",
+      "environment": "production",
+      "url": "https://moonboys-anti-cheat.sercullen.workers.dev/deployment-info",
+      "status": "verified",
+      "health_ok": null,
+      "changed_runtime_paths": [],
+      "changed_build_manifest_paths": [
+        "package-lock.json",
+        "package.json"
+      ],
+      "deployed_worker_tree": "c51b0ae9f4b78ce24c5032564ed52fe28fe6efd7",
+      "intended_worker_tree": "c51b0ae9f4b78ce24c5032564ed52fe28fe6efd7"
+    }
+  ],
+  "bot_menus": [
+    {
+      "credential": "TELEGRAM_BOT_TOKEN",
+      "username": "WIKICOMSBOT",
+      "scope": "dedicated-canary-chat",
+      "type": "web_app",
+      "url": "https://cryptomoonboys.com/games/telegram/?v=20260903-games-shell-v8",
+      "expected_url": "https://cryptomoonboys.com/games/telegram/?v=20260903-games-shell-v8",
+      "status": "verified"
+    },
+    {
+      "credential": "MOONPET_CANARY_BOT_TOKEN",
+      "username": "WIKICOMSBOT",
+      "scope": "dedicated-canary-chat",
+      "type": "web_app",
+      "url": "https://cryptomoonboys.com/games/telegram/?v=20260903-games-shell-v8",
+      "expected_url": "https://cryptomoonboys.com/games/telegram/?v=20260903-games-shell-v8",
+      "status": "verified"
+    }
+  ],
+  "migrations": {
+    "status": "unverified",
+    "reason": "Wrangler D1 query failed.\n7403\nAPIError\nA request to the Cloudflare API (/accounts/[REDACTED]/d1/database/[REDACTED-ID]/query) failed.\nThe given account is not valid or is not authorized to access this service [code: 7403]\n",
+    "required_count": 52
+  },
+  "launcher": {
+    "status": "verified",
+    "actual_url": "https://cryptomoonboys.com/moonpet-game.html?v=20261011-rewards-v1",
+    "expected_url": "https://cryptomoonboys.com/moonpet-game.html?v=20261011-rewards-v1"
+  },
+  "verification_result": "partial-migrations-unverified",
+  "evidence_run": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/actions/runs/38169678987",
+  "pages_run": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/actions/runs/38167946228",
+  "ci_run": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/actions/runs/38167946242",
+  "production_health_run": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/actions/runs/38163869572"
+}
+
