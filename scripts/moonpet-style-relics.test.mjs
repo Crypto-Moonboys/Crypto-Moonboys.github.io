@@ -64,7 +64,7 @@ const petRow=f=>f.sql.prepare('SELECT * FROM telegram_pet_instances WHERE pet_id
 test('all three styles equip and remove free, persist per pet, reject unowned/foreign/stale pets',async()=>{
   const f=fixture('style-controls');await f.state();const before=f.sql.prepare('SELECT moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles').get();
   assert.equal((await f.act({action:'style_equip',pet_id:petRow(f).pet_id,cosmetic_key:'profile_frame',enabled:true})).accepted,false);
-  for(const key of ['profile_frame','victory_pose','run_trail']) {
+  for(const key of ['profile_frame','victory_pose','run_trail','neon_aura','street_sparks','gold_frame','cyber_scanlines']) {
     f.sql.prepare('INSERT INTO telegram_pet_cosmetic_unlocks(telegram_id,cosmetic_key,quantity)VALUES(?,?,1)').run(f.owner,key);
     const req={action:'style_equip',pet_id:petRow(f).pet_id,cosmetic_key:key,enabled:true};
     assert.equal((await f.act(req)).accepted,true);assert.equal((await f.act(req)).accepted,true);
