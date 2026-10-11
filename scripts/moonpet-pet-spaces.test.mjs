@@ -24,7 +24,7 @@ function context(full = false) {
     careActionButtonOptions: (_, options) => options, actionCooldownButtonOptions: (_, options) => options,
     actionFactsMarkup: () => '', shouldShowAvailability: () => false, playOptionsReady: () => true,
     seasonTiming: () => ({ status: 'UNAVAILABLE' }), seasonSnapshotElapsed: () => 0,
-    activePetSummary: () => '', renderPlayNow: () => '', renderPetEmotes: () => '', meter: () => '',
+    activePetSummary: () => '', renderPlayNow: () => '', renderFoodCounter: () => '<div data-panel="food-counter">FOOD COUNTER // CHOOSE A MEAL</div>', renderPetEmotes: () => '', meter: () => '',
     homeNextLine: () => '', profileNextLine: () => '', moonpetStageLabel: (_, pet) => pet.lifecycle_phase || 'Egg',
     resolveMoonpetDisplayName: () => 'UNKNOWN', valueText: () => '', costText: () => '',
   };
@@ -115,3 +115,11 @@ for (const stopped of [false, true]) {
     if (stopped) assert.match(ctx.screen.innerHTML, /RETRY MODULE/);
   });
 }
+
+test('Stage-0 Home keeps Food Counter visible without permitting bag consumption before hatch', () => {
+  const ctx = context(true);
+  const html = ctx.renderHome();
+  assert.match(html, /data-panel="food-counter">FOOD COUNTER \/\/ CHOOSE A MEAL/, 'Egg Home must include the food counter panel');
+  assert.match(html, /SECRET BOT CHAMBER/, 'Egg incubation remains available');
+  assert.match(html, /PET SPACES/, 'Permanent pet switching remains visible');
+});
