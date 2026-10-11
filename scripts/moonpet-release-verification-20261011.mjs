@@ -36,6 +36,17 @@ await Promise.all([...assets].map(async ([url, path]) => {
       const committed = source(path), limit = Math.min(committed.length, live.bytes.length);
       let offset = 0; while (offset < limit && committed[offset] === live.bytes[offset]) offset++;
       report.assets[report.assets.length - 1].first_difference = { offset, committed_bytes: committed.length, live_bytes: live.bytes.length, expected: committed.subarray(Math.max(0, offset - 80), offset + 350).toString(), actual: live.bytes.subarray(Math.max(0, offset - 80), offset + 350).toString() };
+      if (path === 'games/telegram/index.html') {
+        const normalized = live.bytes.toString()
+          .replace(/<script type="[0-9a-f]{32}-text\/javascript">/g, '<script>')
+          .replace(/<script src="\/cdn-cgi\/scripts\/[0-9a-f]+\/cloudflare-static\/rocket-loader\.min\.js" data-cf-settings="[0-9a-f]{32}-\|[0-9]+" defer><\/script>/g, '');
+        const normalizedHash = hash(Buffer.from(normalized));
+        report.assets[report.assets.length - 1].normalized_sha256 = normalizedHash;
+        if (normalizedHash === committedHash) {
+          report.assets[report.assets.length - 1].status = 'verified-with-cloudflare-transformation';
+          report.assets[report.assets.length - 1].transformation = 'Cloudflare Rocket Loader script type and loader injection only';
+        }
+      }
     }
     if (path === 'games/telegram/index.html') {
       const target = live.bytes.toString().match(/<a[^>]+href=(['"])([^'"]*\/moonpet-game\.html[^'"]*)\1[^>]*>\s*Moonpet OS\s*<\/a>/i)?.[2];
@@ -91,4 +102,4 @@ report.checked_at = new Date().toISOString();
 fs.writeFileSync('moonpet-release-verification.json', JSON.stringify(report, null, 2) + '\n');
 console.log(JSON.stringify(report, null, 2));
 const requiredWorkers = report.workers.filter(worker => worker.service === 'moonboys-api');
-if (report.assets.some(asset => asset.status !== 'verified') || report.launcher?.status !== 'verified' || requiredWorkers.some(worker => worker.status !== 'verified') || report.migrations.status !== 'verified-applied') process.exitCode = 1;
+if (report.assets.some(asset => !['verified', 'verified-with-cloudflare-transformation'].includes(asset.status)) || report.launcher?.status !== 'verified' || requiredWorkers.some(worker => worker.status !== 'verified') || report.migrations.status !== 'verified-applied') process.exitCode = 1;
