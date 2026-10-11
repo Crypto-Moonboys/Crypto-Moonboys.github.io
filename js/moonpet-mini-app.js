@@ -2655,7 +2655,22 @@
         detail: claim.pet_id ? 'Saved for the original claim pet. No new mission or energy cost.' : 'Pet XP goes to your selected hatched pet. The target is saved when you claim.',
       });
     }).join('') + '</div>';
-    return panel('DAILY 7/7 BONUS', body, 'daily-completion');
+    return panel('DAILY 7/7 BONUS', body, 'daily-completion', bonus.claimed ? 'Today’s bonus claimed. Earlier saved days remain available below.' : bonus.ready ? '7/7 complete. Open to review and claim your saved bonus.' : 'Complete today’s seven missions to unlock the daily bonus.');
+  }
+
+  function renderMissionStatus(summary) {
+    var status = summary.status;
+    if (petActionRefreshRequired) status = 'REFRESH REQUIRED';
+    var body = '<div class="mission-status-heading">DAILY MISSIONS // ' + number(summary.completed) + '/' + number(summary.total) + ' // ' + escapeHtml(status) + '</div>';
+    if (petActionRefreshRequired) body += '<div class="line muted">Refresh the saved game before choosing another action.</div>';
+    else {
+      if (summary.next) body += '<div class="line" data-current-mission="' + escapeHtml(summary.next.key) + '">CURRENT GOAL // ' + escapeHtml(summary.next.title) + '</div>' + objectiveRouteButton(summary.next.key);
+      else body += '<div class="line muted">' + (summary.status === 'BONUS CLAIMED' ? 'Today’s checklist and bonus are finished. New daily missions start at 00:00 UTC.' : 'Today’s checklist is complete. Review your saved bonus below.') + '</div>';
+      if (summary.claims.length) body += '<div class="button-grid one">' + summary.claims.map(function (claim) {
+        return routeButton('REVIEW ' + claim.title + ' // ' + number(claim.count) + (claim.countLowerBound ? '+' : ''), claim, 'Open the saved reward and choose when to claim. Reviewing spends nothing.');
+      }).join('') + '</div>';
+    }
+    return '<section class="mission-status' + (summary.completed === summary.total ? ' mission-status-complete' : '') + '" aria-label="Daily mission status">' + body + '</section>';
   }
 
   function renderSeasonFinales() {
@@ -2691,9 +2706,11 @@
     var missions = state.guidance && state.guidance.missions || [];
     var completedMissions = missions.filter(function (mission) { return mission.completed; }).length;
     var missionPercent = missions.length ? Math.round(completedMissions / missions.length * 100) : 0;
+    var summary = window.MoonpetPlayOptions && window.MoonpetPlayOptions.missionStatus ? window.MoonpetPlayOptions.missionStatus(state) : null;
     var rows = missions.map(function (mission) {
       var steps = (mission.steps || []).map(function (step) { return (step.completed ? '[OK] ' : '[ ] ') + step.title; }).join(' // ');
-      return '<div class="line ' + (mission.completed ? 'complete' : '') + '">' + (mission.completed ? '[OK] ' : '[  ] ') + escapeHtml(mission.title) + '</div>' + (mission.detail ? '<div class="line muted">' + escapeHtml(mission.detail) + '</div>' : '') + (steps ? '<div class="line muted">' + escapeHtml(steps) + '</div>' : '') + (mission.completed ? '' : objectiveRouteButton(mission.key));
+      var current = summary && summary.next && summary.next.key === mission.key;
+      return '<div class="mission-row' + (current ? ' mission-row-current' : '') + '"' + (current ? ' data-current-mission="' + escapeHtml(mission.key) + '"' : '') + '><div class="line ' + (mission.completed ? 'complete' : '') + '">' + (mission.completed ? '[OK] ' : current ? '[CURRENT] ' : '[  ] ') + escapeHtml(mission.title) + '</div>' + (mission.detail ? '<div class="line muted">' + escapeHtml(mission.detail) + '</div>' : '') + (steps ? '<div class="line muted">' + escapeHtml(steps) + '</div>' : '') + (mission.completed ? '' : objectiveRouteButton(mission.key)) + '</div>';
     }).join('') || '<div class="line muted">NO MISSION DATA.</div>';
     var achievements = state.guidance && state.guidance.achievements || [];
     var unlockedCount = achievements.filter(function (entry) { return entry.unlocked_at; }).length;
@@ -2716,13 +2733,14 @@
       : 'WEEKLY JOURNEY // SYNCING';
     var weeklyJourney = weeklyJourneyMarkup(weeklyAuthority, weeklyCapability, state);
     return activePetSummary() +
+      (summary && summary.available ? renderMissionStatus(summary) : '') +
       renderPlayNow() +
       renderContracts() +
       panel('DAILY JOURNEY // GROWTH MARK', dailyJourney, 'daily-journey') +
       panel('OFFICIAL DAILY OBJECTIVES', dailyObjectiveMarkup(), 'daily-objectives') +
       panel(weeklyTitle, weeklyJourney, 'weekly-journey') +
       renderDailyCompletion() +
-      panel('DAILY MISSION BUFFER // ' + number(completedMissions) + '/' + number(missions.length), '<div class="line muted">NEXT // ' + escapeHtml(dailyJourneyNextAction(dailyAuthority, completedMissions, guidance, state)) + '</div><div class="line muted">DAY ' + escapeHtml(guidance.day_key || 'UTC') + ' // WEEK ' + escapeHtml(guidance.week_key || 'UTC') + '</div>' + meter('DAILY CLEAR', missionPercent) + rows, 'missions') +
+      panel('DAILY MISSION BUFFER // ' + number(completedMissions) + '/' + number(missions.length), '<div class="line muted">DAY ' + escapeHtml(guidance.day_key || 'UTC') + ' // WEEK ' + escapeHtml(guidance.week_key || 'UTC') + '</div>' + meter('DAILY CLEAR', missionPercent) + rows, 'missions', summary && summary.next ? 'Current goal: ' + summary.next.title : summary && summary.available ? summary.status : 'Today’s missions, progress and qualifying routes.') +
       renderSeasonFinales() +
       panel('ACHIEVEMENT ARCHIVE // ' + number(unlockedCount) + '/' + number(achievements.length), achievementRows || '<div class="line muted">EMPTY ARCHIVE.</div>', 'achievements');
   }
@@ -3167,8 +3185,13 @@
   ];
 
   function renderNav() {
+    var claims = !authenticationFailure && !petActionRefreshRequired && window.MoonpetPlayOptions && window.MoonpetPlayOptions.missionClaims ? window.MoonpetPlayOptions.missionClaims(state) : [];
+    var count = claims.reduce(function (total, claim) { return total + claim.count; }, 0);
+    var countLowerBound = claims.some(function (claim) { return claim.countLowerBound; });
     nav.innerHTML = navItems.map(function (item) {
-      return '<button type="button" data-screen="' + item[0] + '" aria-current="' + (item[0] === activeScreen ? 'page' : 'false') + '"><span>' + item[1] + '</span>' + item[2] + '<small>' + item[3] + '</small></button>';
+      var claimCount = item[0] === 'missions' ? count : 0;
+      var label = claimCount ? claimCount + (countLowerBound ? '+' : '') + (claimCount === 1 ? ' claim' : ' claims') : item[3];
+      return '<button type="button" data-screen="' + item[0] + '" aria-label="' + item[2] + (claimCount ? ', ' + (countLowerBound ? 'at least ' : '') + claimCount + (claimCount === 1 ? ' saved reward ready to claim' : ' saved rewards ready to claim') : ', ' + item[3]) + '" aria-current="' + (item[0] === activeScreen ? 'page' : 'false') + '"><span aria-hidden="true">' + item[1] + '</span>' + (claimCount ? '<b class="dock-claim-badge" aria-hidden="true">' + (claimCount > 99 ? '99+' : claimCount + (countLowerBound ? '+' : '')) + '</b>' : '') + item[2] + '<small>' + label + '</small></button>';
     }).join('');
   }
 

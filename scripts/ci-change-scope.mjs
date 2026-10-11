@@ -99,6 +99,7 @@ const SCOPES = {
     'package-lock.json',
   ],
   visual: [
+    'scripts/moonpet-player-loop-browser.test.mjs',
     'scripts/sparky-goal-navigation-browser.test.mjs',
     'scripts/bible-loader-swarmsy-browser.test.mjs',
     'scripts/wiki-citation-preservation-browser.test.mjs',
