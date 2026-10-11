@@ -133,6 +133,7 @@ const GROUPS = {
     ['node', 'scripts/moonpet-care-frequency.test.mjs'],
     ['node', 'scripts/moonpet-weekly-payout-period.test.mjs'],
     ['node', 'scripts/moonpet-completion-acknowledgements.test.mjs'],
+    ['node', '--test', 'scripts/moonpet-rewards-reset.test.mjs'],
     ['node', 'scripts/moonpet-style-relics.test.mjs'],
     ['node', 'scripts/moonpet-progression-sync.test.mjs'],
     ['node', 'scripts/moonpet-standard-run-recovery.test.mjs'],

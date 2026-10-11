@@ -3033,12 +3033,12 @@
       if (state.lifecycle && state.lifecycle.phase === 'egg') routes = [{ title: 'HATCH TO WORK ON BOUNTIES', screen: 'home', focus: 'incubation' }];
       return '<div class="line ' + (bounty.complete ? 'complete' : '') + '">' + escapeHtml(bounty.title) + ' ' + number(bounty.progress) + '/' + number(bounty.required) + (bounty.claimed ? ' // CLAIMED' : bounty.complete ? ' // READY TO CLAIM' : ' // IN PROGRESS') + '</div>' +
         '<div class="line muted">' + escapeHtml(bounty.detail || '') + ' // REWARD ' + escapeHtml(valueText(bounty.reward)) + '</div>' +
-        (bounty.complete && !bounty.claimed ? '<div class="button-grid one">' + button('CLAIM ' + bounty.title, 'bounty_claim', { bounty_key: bounty.key }) + '</div>' : !bounty.claimed && !bounty.complete ? '<div class="button-grid">' + routes.map(function (route) { return routeButton(route.title, route, route.detail); }).join('') + '</div>' : '');
+        (bounty.complete && !bounty.claimed ? '<div class="button-grid one">' + button('CLAIM ' + bounty.title, 'bounty_claim', { bounty_key: bounty.key, day_key: economy.day_key }) + '</div>' : !bounty.claimed && !bounty.complete ? '<div class="button-grid">' + routes.map(function (route) { return routeButton(route.title, route, route.detail); }).join('') + '</div>' : '');
     }).join('');
     var offers = (economy.market_offers || []).map(function (offer) {
       var full = offer.capacity && !offer.capacity.available;
       var capacityDetail = full ? ' // MAKE SPACE FOR ' + offer.capacity.blocked.map(function (entry) { return number(entry.amount) + ' ' + String(entry.key).replace(/_/g, ' ') + ' (' + number(entry.owned) + '/' + number(entry.limit) + ' stored)'; }).join(' + ') + '. Whole bundle required; nothing is charged while full.' : '';
-      return button(offer.title, 'market_buy', { offer_key: offer.key }, { disabled: !offer.unlocked || !offer.affordable || offer.purchased || full || offer.available === false, statusLabel: offer.purchased ? 'SOLD' : full ? 'STORAGE FULL' : '', resourceRequired: offer.unlocked && !offer.affordable && !offer.purchased && !full, detail: (offer.unlocked ? '' : 'REQUIRES LEVEL ' + number(offer.min_level) + ' // ') + (offer.detail || '') + ' // COST ' + costText(offer.cost) + ' // GIVES ' + valueText(offer.reward) + capacityDetail });
+      return button(offer.title, 'market_buy', { offer_key: offer.key, day_key: economy.day_key }, { disabled: !offer.unlocked || !offer.affordable || offer.purchased || full || offer.available === false, statusLabel: offer.purchased ? 'SOLD' : full ? 'STORAGE FULL' : '', resourceRequired: offer.unlocked && !offer.affordable && !offer.purchased && !full, detail: (offer.unlocked ? '' : 'REQUIRES LEVEL ' + number(offer.min_level) + ' // ') + (offer.detail || '') + ' // COST ' + costText(offer.cost) + ' // GIVES ' + valueText(offer.reward) + capacityDetail });
     }).join('');
     var shop = (guidance.shop_items || []).map(function (item) {
       return button((item.owned && !item.equipped ? 'EQUIP FREE // ' : '') + item.title, item.owned ? 'equip' : 'buy', { item_key: item.key, pet_id: state.pet.pet_id }, { disabled: !item.unlocked || (!item.owned && !item.affordable) || item.equipped, statusLabel: item.equipped ? 'EQUIPPED' : item.owned ? 'OWNED' : '', resourceRequired: item.unlocked && !item.owned && !item.affordable && !item.equipped, detail: (item.unlocked ? '' : 'REQUIRES LEVEL ' + number(item.min_level) + ' // ') + (item.description || '') + (item.owned ? ' // FREE SWITCH. Keeps upgrades and mastery; no XP or daily shopping credit.' : ' // COST ' + costText(item.cost)) });
@@ -3057,7 +3057,7 @@
         expeditionOptions.map(function (entry) {
           return '<div class="line"><strong>' + escapeHtml(entry.title) + '</strong> // LEVEL ' + number(entry.min_level) + ' // ' + number(entry.energy) + ' ENERGY</div>' +
             '<div class="line muted">POSSIBLE FINDS // ' + escapeHtml((entry.rewards || []).map(valueText).join(' / ')) + '</div>' +
-            '<div class="button-grid one">' + button('EXPLORE ' + entry.title, 'expedition', { expedition_key: entry.key, pet_id: state.pet.pet_id }, {
+            '<div class="button-grid one">' + button('EXPLORE ' + entry.title, 'expedition', { expedition_key: entry.key, pet_id: state.pet.pet_id, day_key: economy.day_key }, {
               disabled: !entry.available, cooldown: economy.expedition_cooldown,
               resourceRequired: entry.unlocked && !entry.affordable,
               detail: !entry.unlocked ? 'Requires Level ' + number(entry.min_level) : !entry.affordable ? 'Requires ' + number(entry.energy) + ' Energy' : 'Spend ' + number(entry.energy) + ' Energy and 1 attempt',
@@ -3105,7 +3105,7 @@
       panel('CRAFTING MATERIALS', materials || '<div class="line muted">NO MATERIAL DATA.</div>', 'materials') +
       panel('CRAFTING WORKSHOP', craftingGoalMarkup() + '<div class="line signal">RECIPES // CHOOSE TO SPEND MATERIALS</div><div class="button-grid">' + crafting + '</div>', 'crafting') +
       panel('RELIC VAULT', '<div class="line muted">Owned relics activate automatically in new Contract runs. Their route effects are listed below and saved at run start; new drops apply on the next run. Standard Moon Run and Daily Run keep their separate rules.</div>' + (state.relics_available === false ? '<div class="line danger">RELIC VAULT TEMPORARILY UNAVAILABLE. Refresh to try again. Your collection has not been cleared.</div>' : relics || '<div class="line muted">NO RELICS RECOVERED.</div>'), 'relics') +
-      panel('DAILY BOUNTIES', '<div class="line muted">Four account-wide targets per UTC day. Only accepted actions count. The Energy Drink, Dance and Cuddles care buttons do not count. New targets arrive at 00:00 UTC. Contracts remain available between resets.</div>' + (bounties || '<div class="line muted">NO BOUNTIES.</div>'), 'bounties') +
+      panel('DAILY BOUNTIES', '<div class="line muted">Four account-wide targets per UTC day. Only accepted actions count. The Energy Drink, Dance and Cuddles care buttons do not count. Claim completed bounties before 00:00 UTC; unclaimed bounty targets expire when the board changes. Already paid rewards stay paid. Contracts remain available between resets.</div>' + (bounties || '<div class="line muted">NO BOUNTIES.</div>'), 'bounties') +
       panel('CRYSTAL EXPEDITIONS // CHOOSE A DESTINATION', expeditionBody, 'expedition') +
       panel('MOON MARKET', '<div class="line muted">Paid bundles must fit in full. Use items or spend materials before buying when storage is full.</div><div class="button-grid one">' + offers + '</div><div class="button-grid">' + routeButton('OPEN BAG', { screen: 'economy', focus: 'inventory' }) + routeButton('OPEN CRAFTING', { screen: 'economy', focus: 'crafting' }) + '</div>', 'market') +
       panel('PERMANENT SHOP', '<div class="button-grid">' + shop + '</div>', 'shop') + panel('STYLE LAB // EQUIP YOUR LOOK', '<div class="line muted">Unlock once, then equip or remove each style free for this pet. Cosmetics change the canvas presentation, not stats. Existing owned styles work immediately. Callsign editing stays free in Profile.</div><div class="button-grid one">' + routeButton('EDIT CALLSIGN', { screen: 'profile', focus: 'callsign' }, 'Use the existing name control; no badge purchase is required.') + '</div><div class="button-grid">' + cosmetics + '</div>', 'style-lab') +
@@ -3279,6 +3279,23 @@
   }
   // TEST-EXPORT: callsignDraft:end
 
+  // TEST-EXPORT: rewardLifecycle:start
+  function renderRewardLifecycle() {
+    var copy = window.MoonpetGuide && window.MoonpetGuide.rewardLifecycle && window.MoonpetGuide.rewardLifecycle[activeScreen];
+    if (!state || !state.adopted || !copy) return '';
+    var entries = state.cooldowns && state.cooldowns.entries || [];
+    var daily = entries.find(function (entry) { return entry.key === 'account_day_reset'; });
+    var weekly = entries.find(function (entry) { return entry.key === 'account_week_reset'; });
+    var journey = activeScreen === 'missions' && state.weekly_journey && state.weekly_journey.cooldown;
+    var body = '<div class="line muted">' + copy + '</div>' +
+      '<div class="line">DAILY RESET // 00:00 UTC' + (daily ? ' // ' + countdownMarkup(daily, 'in ') : '') + '</div>' +
+      '<div class="line">WEEKLY ROTATION // MONDAY 00:00 UTC' + (weekly ? ' // ' + countdownMarkup(weekly, 'in ') : '') + '</div>' +
+      (journey ? '<div class="line">THIS PET’S WEEKLY JOURNEY RESET // ' + countdownMarkup(journey, 'in ') + '</div>' : '') +
+      '<div class="line muted">The server opens new boards and limits automatically. Your pet, XP, owned items and saved sessions persist. A countdown reaching zero only requests fresh state; it does not award anything.</div>';
+    return panel('REWARDS // ENDINGS & RESETS', body, 'reward-lifecycle', 'When play ends, what is paid, and what resets. Open or close this help.');
+  }
+  // TEST-EXPORT: rewardLifecycle:end
+
   function render(options) {
     var editableState = options && options.discardCallsignDraft ? null : captureEditableState();
     rememberPanels();
@@ -3301,7 +3318,7 @@
             ? '<div class="line danger">MODULE STATE COULD NOT LOAD.</div><div class="line muted">Automatic retries stopped to protect the API. HOME is still available.</div><div class="button-grid"><button type="button" class="terminal-button" data-utility="module-retry">RETRY MODULE<span class="button-purpose">Read your saved menu again; no previous gameplay action is repeated.</span></button>' + routeButton('RETURN HOME', { screen: 'home', focus: 'care' }, 'Use lightweight care while the module is unavailable.') + '</div>'
             : '<div class="line signal">FETCHING SERVER-AUTHORITATIVE MODULE STATE...</div><div class="line muted">HOME remains usable while this module loads.</div>',
           'module-loading')
-        : renderMenuStatus() + renderRecommended() + screens[activeScreen]();
+        : renderMenuStatus() + renderRecommended() + renderRewardLifecycle() + screens[activeScreen]();
     restoreEditableState(editableState);
     if (draftPetId === (state && state.pet && state.pet.pet_id)) Object.keys(routeDraft).forEach(function (id) {
       var input = document.getElementById(id);
@@ -3420,7 +3437,7 @@
         if (Number(entry[1]) > 0) gains.push('+' + number(entry[1]) + ' ' + words(entry[0]));
       });
     });
-    var parts = ['Action complete'];
+    var parts = [result.duplicate ? 'SAVED RESULT CONFIRMED' : 'Action complete'];
     var reasonCopy = rejectionMessage(result.reason);
     if (reasonCopy) parts.push(reasonCopy);
     var terminalResult = result.battle && (result.battle.outcome || result.battle.result) || result.match && (result.match.outcome || result.match.result) || result.resolved && result.resolved.result;
@@ -3435,7 +3452,7 @@
         ? 'GROWTH MARK AWARDED'
         : 'GROWTH MARK BLOCKED // ' + words(result.daily_journey.reason || 'not qualified'));
     }
-    if (result.duplicate) parts.push('DUPLICATE BLOCKED BY AUTHORITY');
+    if (result.duplicate) parts.push('DUPLICATE BLOCKED BY AUTHORITY // NO SECOND PAYMENT');
     journeyActionProgressLines(beforeState, afterState, result).forEach(function (line) { parts.push(line); });
     if (result.reaction) parts.push('MOONPET: ' + String(result.reaction));
     return parts.join(' // ');
@@ -3443,6 +3460,7 @@
 
   function rejectionMessage(reason) {
     var messages = {
+      economy_day_changed: 'the daily board changed. Nothing new was spent or awarded; review the refreshed board before choosing again.',
       daily_tactic_invalid: 'choose one of the offered checkpoint tactics.',
       daily_tactic_stale: 'that checkpoint has changed or its tactic is already chosen; use the refreshed run.',
       contracts_unavailable: 'contracts are syncing; refresh after the update.',

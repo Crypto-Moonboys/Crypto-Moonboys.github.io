@@ -897,6 +897,12 @@ button, input, select, textarea {
 }
 
 .guide-step { margin-bottom: 8px; min-width: 0; overflow-wrap: anywhere; }
+.panel-body details > summary {
+  min-height: 44px;
+  padding-block: 10px;
+  box-sizing: border-box;
+  cursor: pointer;
+}
 .guide-step > summary {
   min-height: 44px;
   display: flex;

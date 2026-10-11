@@ -41,7 +41,7 @@ function context(full = false) {
     fullStateHydrationFailures: 0, FULL_STATE_HYDRATION_MAX_AUTO_RETRIES: 3, fullStateHydrationPromise: null,
     renderedPetId: '', authenticationFailure: false, reducedMotion: false,
     captureEditableState: () => null, renderHud() {}, renderNav() {}, renderCanvasTools() {}, restoreEditableState() {},
-    renderMenuStatus: () => '', renderRecommended: () => '', applyRequestedFocus() {},
+    renderMenuStatus: () => '', renderRewardLifecycle: () => '', renderRecommended: () => '', applyRequestedFocus() {},
     screens: { home: ctx.renderHome, profile: ctx.renderProfile },
   });
   vm.runInContext(between('  function render(options)', '  // TEST-EXPORT: actionResultFeedback:start'), ctx);
