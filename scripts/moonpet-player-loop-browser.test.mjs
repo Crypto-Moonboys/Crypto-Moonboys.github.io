@@ -432,6 +432,11 @@ try {
     assert.ok(Number(await page.locator('#nav [data-screen="economy"] .dock-claim-badge').textContent()) >= 3);
     for (const key of ['home','missions','explore','work','economy','profile']) {
       await page.locator(`#nav [data-screen="${key}"]`).click();
+      // Explore/Work navigation can start an asynchronous saved-state read.
+      // Refresh completes an ordered snapshot before testing native keyboard
+      // input, so that read cannot replace a focused summary mid-keystroke.
+      await page.locator('[data-utility="sync"]').click();
+      await page.waitForFunction(() => document.querySelector('#terminal-output')?.textContent.includes('LIVE SAVE REFRESHED.'));
       const lifecycleSelector = '[data-panel="reward-lifecycle"] > summary';
       await measureDisclosureTarget(page, lifecycleSelector, false);
       const help = page.locator('[data-panel="reward-lifecycle"]');
@@ -440,6 +445,9 @@ try {
       assert.match(await help.textContent(), /DAILY RESET.*00:00 UTC/);
       assert.match(await help.textContent(), /WEEKLY ROTATION.*MONDAY 00:00 UTC/);
       assert.match(await help.textContent(), /pet, XP, owned items and saved sessions persist/);
+      await page.locator('[data-utility="sync"]').click();
+      await page.waitForFunction(() => document.querySelector('#terminal-output')?.textContent.includes('LIVE SAVE REFRESHED.'));
+      await measureDisclosureTarget(page, lifecycleSelector, true);
       await help.locator(':scope > summary').press('Enter');
       await measureDisclosureTarget(page, lifecycleSelector, false);
       const status = page.locator('.menu-status');

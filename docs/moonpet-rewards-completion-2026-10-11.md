@@ -125,3 +125,7 @@ source evidence, reward caps, original-pet recovery, saved endings and concurren
 The Worker-backed browser loop exercises both mobile sizes, existing runs,
 Contracts/bosses/raids, claims, jobs/timers, expeditions, crafting and all-menu
 status clearing. Public/in-game guide tests cover 360/390/1280px and shared copy.
+Native disclosure keyboard checks wait for an explicit save refresh before
+typing, because a navigation-triggered read can replace the focused node. They
+also verify that expanded help survives the refresh and dismissed help survives
+review navigation, without weakening the 44px touch-target measurement.
