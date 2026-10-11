@@ -74,6 +74,8 @@
   var companionTapSequence = 0;
   var localEmoteLabel = '';
   var localEmoteUntil = 0;
+  var radioRequestDraft = '';
+  var radioRequestSubmittedDay = '';
   var noticesBusy = false;
   var lastPassiveRefreshAt = 0;
   var reducedMotion = Boolean(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
@@ -1187,6 +1189,10 @@
             "Collect one completed Weekly Bounty Block. The account's UTC week and saved receipt prevent repeat payment.",
             "claim"
       ],
+      "radio_request": [
+            "Save one GraffPUNKS Radio request in the private host-review queue per UTC day. No guaranteed broadcast or rewards.",
+            "manage"
+      ],
       "market_buy": [
             "Spend the displayed currency on this whole bundle. Check the contents and storage space before buying.",
             "spend"
@@ -1309,6 +1315,7 @@
     'bonus-bounties': ['★', 'Three extra daily challenges from easy to hard.'],
     'weekly-bounties': ['★', 'Weekly bounty targets with one saved reward each.'],
     'food-shop': ['◇', 'Buy cooked meals with Moon Gold and eat them from Home.'],
+    'radio-requests': ['♫', 'Submit one moderated radio song or message request per day.'],
     details: ['◉', 'Companion stats, personality and equipped items.'],
     'pet-spaces': ['◈', 'Choose your active pet or unlock another permanent space.'],
     'season-slots': ['◈', 'Track lifetime progression and calendar competition progress.'],
@@ -2008,6 +2015,17 @@
       '<div class="button-grid one">' + routeButton('COOK MORE MEALS', { screen: 'economy', focus: 'crafting' }, 'Craft food using existing materials and unlock levels.') + '</div>', 'food-counter');
   }
 
+  function renderRadioRequestPanel() {
+    var submitted = radioRequestSubmittedDay === new Date(Date.now() + serverClockOffsetMs).toISOString().slice(0, 10);
+    return panel('GRAFFPUNKS RADIO // SEND A REQUEST',
+      '<div class="line muted">Suggest a track or short message for the Radio host. One saved request per Telegram account per UTC day. Requests go to a private host-review queue, not automatically on air. No currency cost or reward.</div>' +
+      (submitted ? '<div class="line complete">SAVED TODAY // HOST REVIEW PENDING</div>' : '') +
+      '<label class="line" for="radio-request-text">TRACK OR MESSAGE (4–160 CHARACTERS)</label>' +
+      '<textarea id="radio-request-text" class="terminal-input" rows="3" maxlength="160" placeholder="Artist — track, or your message">' + escapeHtml(radioRequestDraft) + '</textarea>' +
+      '<div class="button-grid one">' + button('SAVE RADIO REQUEST', 'radio_request', {}, { disabled: submitted, detail: 'Private once-daily host queue. No live broadcast is promised.' }) + '</div>',
+      'radio-requests');
+  }
+
   function renderPetEmotes() {
     var emotes = [
       ['wave', 'WAVE'], ['laugh', 'TICKLE / LAUGH'], ['cheer', 'CHEER'], ['stretch', 'STRETCH'], ['groove', 'GROOVE']
@@ -2035,7 +2053,7 @@
       return '<div class="ticker"><span>SECRET BOT // SIGNAL ' + number(incubation.progress) + '/' + number(incubation.target) + ' // IDENTITY FORMING //</span></div>' +
         panel('SECRET BOT CHAMBER', '<div class="line complete">THE SECRET BOT REMEMBERS HOW YOU TREAT IT.</div><div class="line muted">NEXT // ' + escapeHtml(homeNextLine()) + '</div><div class="line muted">Use at least three types of care to build the breakout signal. Identity stays hidden until Stage 3.</div>' + meter('BREAKOUT SIGNAL', Number(incubation.progress || 0) / Math.max(1, Number(incubation.target || 12)) * 100) + '<div class="line">WARM ' + number(signals.warm) + ' // TALK ' + number(signals.talk) + ' // INSPIRATION ' + number(signals.music) + ' // REST ' + number(signals.rest) + '</div><div class="button-grid">' + button('WARM BOT', 'incubate', { care_type: 'warm' }) + button('TALK TO BOT', 'incubate', { care_type: 'talk' }) + button('INSPIRE BOT', 'incubate', { care_type: 'music' }) + button('LET IT REST', 'incubate', { care_type: 'rest' }) + '</div><div class="button-grid one">' + button('HATCH BOT', 'hatch', {}, { disabled: !incubation.ready, statusLabel: incubation.ready ? '' : 'HATCH NOT READY' }) + '</div><div class="line muted">DAILY SIGNALS ' + number(incubation.actions_today) + '/' + number(incubation.daily_cap) + '</div>', 'incubation') +
         panel('SECRET BOT ACTIONS', '<div class="button-grid">' + button('ENERGY DRINK', 'energy_drink') + button('DANCE', 'dance') + button('CUDDLES', 'cuddles') + '</div><div class="line muted">Stat-only care. Does not advance incubation or award XP.</div>', 'care') +
-        renderPlayNow() + renderSeasonSlots();
+        renderPlayNow() + renderSeasonSlots() + renderRadioRequestPanel();
     }
     var equipped = ['food', 'toy', 'outfit', 'armor', 'weapon', 'charm'].map(function (slot) {
       return '<div class="line"><strong>' + slot.toUpperCase() + '</strong> // ' + escapeHtml(words(pet['equipped_' + slot] || (slot === 'food' ? 'basic food' : slot === 'toy' ? 'basic toy' : 'none equipped'))) + '</div>';
@@ -2044,7 +2062,7 @@
     return '<div class="ticker"><span>MOONPET OS // ' + escapeHtml(displayName) + ' // ' + escapeHtml(moonpetStageLabel(lifecycle, pet)) + ' // STREAK ' + number(pet.streak_days) + ' DAYS //</span></div>' +
       activePetSummary() +
       renderPlayNow() +
-      renderFoodCounter() + renderPetEmotes() +
+      renderFoodCounter() + renderPetEmotes() + renderRadioRequestPanel() +
       panel('VITAL SYSTEMS', '<div class="line muted">Higher is better on every meter. Fullness is the opposite of hunger: Feed raises fullness.</div>' + meter('HEALTH', pet.health) + meter('ENERGY', pet.energy) + meter('FULLNESS', pet.hunger, true) + meter('FUN', pet.happiness) + meter('CLEAN', pet.cleanliness), 'vitals') +
       panel('CARE CONSOLE', '<div class="button-grid">' +
         button('FEED', 'feed') + button('PLAY', 'play') + button('CLEAN', 'clean') + button('SLEEP', 'sleep') + button('TRAIN', 'train') +
@@ -3978,6 +3996,10 @@
       if (['adventure', 'random_event', 'event_recover'].includes(action)) rememberChoiceResult(action, data.result, stateBeforeAction, requestPayload);
       // Record a confirmed sleep/wake preference on the pet that took the
       // action, before a newer projection can select a different companion.
+      if (actionAccepted && action === 'radio_request') {
+        radioRequestSubmittedDay = String(data.result.day_key || '');
+        radioRequestDraft = '';
+      }
       if (actionAccepted && actionFamily === 'sleep') setSleepLatch(true, stateBeforeAction);
       else if (authoritativeSleepClear && actionAccepted) setSleepLatch(false, stateBeforeAction);
 
@@ -4118,6 +4140,9 @@
     else if (utility.dataset.utility === 'sync') syncState();
   });
 
+  screen.addEventListener('input', function (event) {
+    if (event.target && event.target.id === 'radio-request-text') radioRequestDraft = String(event.target.value || '').slice(0, 160);
+  });
   screen.addEventListener('click', function (event) {
     var emoteButton = event.target.closest('[data-local-emote]');
     if (emoteButton) {
@@ -4195,6 +4220,14 @@
       if (sideGoal) payload.side_goal = sideGoal.value;
       var routeFormat = document.getElementById('contract-format');
       if (routeFormat) payload.format = routeFormat.value;
+    }
+    if (target.dataset.action === 'radio_request') {
+      var submittedText = radioRequestDraft.replace(/\s+/g, ' ').trim();
+      if (submittedText.length < 4 || submittedText.length > 160) {
+        tell('RADIO REQUEST MUST CONTAIN 4–160 CHARACTERS.', 'danger');
+        return;
+      }
+      payload.message = submittedText;
     }
     runAction(target.dataset.action, payload, target);
   });
