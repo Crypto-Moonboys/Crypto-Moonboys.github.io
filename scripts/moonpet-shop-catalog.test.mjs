@@ -808,3 +808,29 @@ test('cooked meals and Care Feed share the same 45-second account cooldown and n
     'accepted meals settle once and preserve the shared bag event type');
   f.sql.close();
 });
+
+test('mixed SQLite and ISO timestamp formats select actual newest Feed for meal cooldown', async () => {
+  const f = funded('mixed-meal-timestamps');
+  const petId = 'current-'+f.owner;
+  for(const key of ['street_pizza','moon_burger']) {
+    f.sql.prepare("INSERT INTO telegram_pet_inventory (telegram_id,asset_type,asset_key,quantity) VALUES (?,'item',?,2)").run(f.owner,key);
+  }
+  const nowMs = Date.now();
+  const pizza = await f.act({action:'use_item',item_key:'street_pizza',request_id:'old-pizza'});
+  assert.equal(pizza.accepted,true,pizza.reason);
+  // ISO timestamp is lexically higher than SQL's space-separated timestamp,
+  // despite being 40 seconds older. MAX(created_at) is not safe here.
+  f.sql.prepare("UPDATE telegram_pet_events SET created_at=? WHERE telegram_id=? AND event_type='use_item' AND status='accepted'")
+    .run(new Date(nowMs-40000).toISOString(), f.owner);
+  f.sql.prepare(`INSERT INTO telegram_pet_events
+    (id,pet_id,telegram_id,event_type,event_key,season_key,day_key,week_key,status,reason,metadata,created_at)
+    SELECT ?,pet_id,telegram_id,'feed',?,season_key,day_key,week_key,'accepted','fixture','{}',datetime('now','-1 seconds')
+    FROM telegram_pet_events WHERE telegram_id=? AND event_type='use_item' LIMIT 1`)
+    .run('recent-feed-mixed-format','recent-feed-mixed-format',f.owner);
+  const next = await f.act({action:'use_item',item_key:'moon_burger',request_id:'mixed-burger'});
+  assert.equal(next.accepted,false,'the newer SQLite Feed must still block the next cooked meal');
+  assert.equal(next.reason,'meal_cooldown');
+  assert.ok(next.remaining_seconds >= 25,'the newest actual timestamp, not lexical MAX, controls the 45-second cooldown');
+  assert.equal(f.sql.prepare("SELECT quantity FROM telegram_pet_inventory WHERE telegram_id=? AND asset_key='moon_burger'").get(f.owner).quantity,2);
+  f.sql.close();
+});
