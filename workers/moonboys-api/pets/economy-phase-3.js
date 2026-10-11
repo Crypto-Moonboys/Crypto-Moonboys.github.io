@@ -18,6 +18,9 @@ export const PET_CRAFTING_MATERIALS = deepFreeze({
 
 export const PET_CRAFTING_RECIPES = deepFreeze({
   street_rations: { title: 'Street Rations', detail: 'Two Moon Snacks for long care and run sessions.', min_level: 3, cost: { scrap_metal: 2, moon_fabric: 1 }, output: { item_key: 'moon_snack', quantity: 2 } },
+  pizza_night: { title: 'Pizza Night', detail: 'Cook two Street Pizzas. Use from Food Counter for real Hunger/Energy/Happiness changes; no second Feed credit.', min_level: 3, cost: { moon_fabric: 2, scrap_metal: 2 }, output: { item_key: 'street_pizza', quantity: 2 } },
+  moon_grill: { title: 'Moon Grill', detail: 'Cook two Moon Burgers. The meal supports Energy and Hunger; bag use is separate from Care Feed.', min_level: 6, cost: { moon_fabric: 3, battery_cell: 1 }, output: { item_key: 'moon_burger', quantity: 2 } },
+  veggie_patch: { title: 'Veggie Patch', detail: 'Prepare two Garden Veggie Boxes to improve Happiness and Hunger.', min_level: 4, cost: { moon_fabric: 2, scrap_metal: 1 }, output: { item_key: 'garden_veggies', quantity: 2 } },
   clean_kit: { title: 'Clean Kit', detail: 'Two Clean Wipes to recover cleanliness between missions.', min_level: 4, cost: { moon_fabric: 2, spray_core: 1 }, output: { item_key: 'clean_wipe', quantity: 2 } },
   battery_pack: { title: 'Battery Pack', detail: 'An Energy Drink for demanding runs and boss fights.', min_level: 6, cost: { battery_cell: 3, crystal_shard: 1 }, output: { item_key: 'energy_drink', quantity: 1 } },
   style_patch: { title: 'Style Patch', detail: 'A consumable patch that converts into Style Tokens and Pet XP when used.', min_level: 8, cost: { moon_fabric: 3, spray_core: 2 }, output: { item_key: 'style_patch', quantity: 1 } },
