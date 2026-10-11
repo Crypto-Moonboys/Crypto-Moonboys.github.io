@@ -195,6 +195,36 @@ test('shared creative brief is readable public HTML with valid public sources', 
   assert.match(workflow, /- 'graffiti-kings-creative-guide\.html'/, 'brief-only changes must trigger prompt and artifact validation');
 });
 
+test('creative context offers shock without requiring a new identity or claiming a live swarm', () => {
+  const brief = read('graffiti-kings-creative-guide.html');
+  const section = id => {
+    const content = brief.match(new RegExp('<section id="' + id + '">([\\s\\S]*?)</section>'))?.[1];
+    assert.ok(content, 'missing creative context section: ' + id);
+    return content;
+  };
+  assert.match(section('identity'), /One striking image and one line may be enough/);
+  assert.match(section('identity'), /full character universe.*optional expansions/);
+  assert.match(section('identity'), /Do not rename an established artist, replace their mascot/);
+  assert.match(section('shock'), /one message, one recognisable mark, one unexpected twist and one hook/);
+  assert.match(section('visuals'), /Test it in one colour, at sticker size/);
+  assert.match(section('worlds'), /Start with a grabbing hook, not a lore dump/);
+  assert.match(section('streets'), /posters, stickers, stencils/);
+  assert.match(section('streets'), /Street sighting → digital story → next physical encounter/);
+  assert.match(section('streets'), /physical work is not indestructible/);
+  assert.match(section('streets'), /own property or explicitly authorised locations/);
+  assert.match(section('swarm'), /24\/7 digital support/);
+  assert.match(section('swarm'), /Bots are staff, not fake fans/);
+  assert.match(section('swarm'), /does not run a 24\/7 bot service/);
+  assert.match(section('swarm'), /separately configured tool, authorised accounts/);
+  assert.match(section('activities'), /deliverable stays the thing they chose/);
+  assert.doesNotMatch(brief, /Banksy|HODLKONG64\/GRAFFITI-KINGS-APP/i, 'no named artist comparison or private repository dependency');
+  const ids = [...brief.matchAll(/\bid="([^"]+)"/g)].map(match => match[1]);
+  assert.equal(new Set(ids).size, ids.length, 'creative guide IDs must be unique');
+  for (const [, id] of brief.matchAll(/href="#([^"]+)"/g)) {
+    assert.ok(ids.includes(id), 'creative guide navigation target missing: ' + id);
+  }
+});
+
 test('interactive page selects exactly one activity, supports deep-link, search and copy fallback',async()=>{
   const {w,nodes,features,findButtons}=ui('?activity=moonboy');
   assert.equal(nodes['gpt-choice'].textContent,'Selected: Build a Moonboy or PFP');

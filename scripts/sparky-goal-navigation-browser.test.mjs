@@ -156,6 +156,14 @@ try {
     assert.equal(await brief.locator('#activities h3').count(), 12);
     assert.match(await brief.locator('#voice').innerText(), /Plain language can still be sharp/);
     assert.match(await brief.locator('#worlds').innerText(), /preserve the source's grit/);
+    assert.match(await brief.locator('#identity').innerText(), /One striking image and one line may be enough/);
+    assert.match(await brief.locator('#shock').innerText(), /one message, one recognisable mark/);
+    assert.match(await brief.locator('#swarm').innerText(), /does not run a 24\/7 bot service/);
+    for (const id of ['shock', 'streets', 'swarm']) {
+      await brief.locator(`nav a[href="#${id}"]`).click();
+      assert.equal(new URL(brief.url()).hash, '#' + id);
+      assert.ok(await brief.locator(`#${id} h2`).isVisible(), `${id}: no-JavaScript section navigation works`);
+    }
     assert.ok(await brief.evaluate(() => document.documentElement.scrollWidth <= innerWidth), 'creative guide fits mobile and desktop');
     await context.close();
   }
