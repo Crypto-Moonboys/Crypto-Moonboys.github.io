@@ -2745,6 +2745,34 @@
       panel('ACHIEVEMENT ARCHIVE // ' + number(unlockedCount) + '/' + number(achievements.length), achievementRows || '<div class="line muted">EMPTY ARCHIVE.</div>', 'achievements');
   }
 
+  // TEST-EXPORT: kaijuGuidance:start
+  function renderKaijuHowTo(kaiju) {
+    if (!window.MoonpetGuide || !window.MoonpetGuide.kaijuHowTo) return '';
+    var key = 'explore:kaiju-help';
+    var expanded = Object.prototype.hasOwnProperty.call(panelOpenState, key) ? panelOpenState[key] : !kaiju.match && !kaiju.queue && !kaiju.result;
+    return '<details class="guide-step kaiju-help" data-kaiju-help data-panel-key="' + key + '"' + (expanded ? ' open' : '') + '><summary>HOW TO PLAY KAIJU // 3 STEPS + EXAMPLE</summary>' + window.MoonpetGuide.kaijuHowTo + '</details>';
+  }
+
+  function renderKaijuCards(kaiju) {
+    var match = kaiju.match;
+    if (!match || match.own_card_locked) return '';
+    var cards = kaiju.cards || [];
+    var category = match.category;
+    function activeValue(card) {
+      return category && card.active_stat === category.label && typeof card.active_value === 'number' && Number.isFinite(card.active_value) ? card.active_value : null;
+    }
+    var values = cards.map(activeValue).filter(function (value) { return value !== null; });
+    var highest = values.length ? Math.max.apply(null, values) : null;
+    return '<div class="line muted">Only the battle category counts. HIGHEST IN YOUR HAND marks your strongest shown value, not a guaranteed win.</div><div class="button-grid kaiju-decisions">' + cards.map(function (card) {
+      var value = activeValue(card);
+      var best = value !== null && value === highest;
+      var active = value !== null ? category.name + ' [' + category.label + '] ' + number(value) : 'CATEGORY PENDING';
+      return '<div class="kaiju-card-option' + (best ? ' kaiju-best-active' : '') + '" data-kaiju-card="' + escapeHtml(card.id) + '"' + (best ? ' data-kaiju-best-active' : '') + '>' +
+        button(card.name + ' // ' + active + (best ? ' // HIGHEST IN YOUR HAND' : ''), 'kaiju_card', { match_id: match.match_id, card_key: card.id }, { detail: 'Tap to lock this card. Rival stays hidden until resolution.' }) + '</div>';
+    }).join('') + '</div>';
+  }
+  // TEST-EXPORT: kaijuGuidance:end
+
   function renderExplore() {
     var savedEvents = (state.pending_street_events || []).map(function (entry) {
       return entry.recoverable ? button('RECOVER SAVED EVENT', 'event_recover', { event_id: entry.event_id }, { detail: 'Recovers the original outcome for the pet that started it.' })
@@ -2864,15 +2892,12 @@
         '<div class="button-grid">' + kaijuCleanup + button('FIND KAIJU PLAYER', 'kaiju_matchmake', {}, kaijuEntryOptions) + button('START SOLO KAIJU', 'kaiju_start', {}, kaijuEntryOptions) + '</div>';
     } else {
       kaijuBody = kaijuMatch
-        ? '<div class="combat-intel"><div class="line">' + escapeHtml(kaijuMatch.mode === 'group' ? 'PLAYER VS PLAYER' : 'PLAYER VS CRT') + ' // TABLE ' + escapeHtml(kaijuMatch.match_id) + '</div><div class="line signal">BATTLE CATEGORY // ' + escapeHtml(kaijuMatch.category ? kaijuMatch.category.name + ' [' + kaijuMatch.category.label + ']' : 'ARMING') + '</div><div class="line muted">PICK THE CARD WITH THE STRONGEST ACTIVE CATEGORY. THE RIVAL CARD STAYS SEALED.</div></div><div class="line muted">' + (kaijuMatch.own_card_locked ? 'YOUR CARD LOCKED. ' : 'SELECT A CODE CARD. ') + (kaijuMatch.opponent_card_locked ? 'RIVAL LOCKED.' : 'WAITING ON RIVAL.') + '</div>' + (kaijuMatch.own_card_locked ? '' : '<div class="button-grid kaiju-decisions">' + (kaiju.cards || []).map(function (card) {
-          var leaders = (card.strongest || []).map(function (entry) { return entry.label + ' ' + entry.value; }).join(' // ');
-          var active = card.active_stat ? card.active_stat + ' ' + number(card.active_value) : 'CATEGORY PENDING';
-          return button(card.name + (card.active_value != null ? ' // ' + number(card.active_value) : ''), 'kaiju_card', { match_id: kaijuMatch.match_id, card_key: card.id }, { detail: 'ACTIVE ' + active + ' // BEST ' + leaders });
-        }).join('') + '</div>')
+        ? '<div class="combat-intel"><div class="line">' + escapeHtml(kaijuMatch.mode === 'group' ? 'PLAYER VS PLAYER' : 'PLAYER VS CRT') + ' // TABLE ' + escapeHtml(kaijuMatch.match_id) + '</div><div class="line signal">BATTLE CATEGORY // ' + escapeHtml(kaijuMatch.category ? kaijuMatch.category.name + ' [' + kaijuMatch.category.label + ']' : 'ARMING') + '</div><div class="line muted">PICK THE CARD WITH THE STRONGEST ACTIVE CATEGORY. THE RIVAL CARD STAYS SEALED.</div></div><div class="line muted">' + (kaijuMatch.own_card_locked ? 'YOUR CARD LOCKED. ' : 'SELECT A CODE CARD. ') + (kaijuMatch.opponent_card_locked ? 'RIVAL LOCKED.' : 'WAITING ON RIVAL.') + '</div>' + renderKaijuCards(kaiju)
         : kaijuQueue
           ? '<div class="line">KAIJU MATCHMAKING // POSITION ' + number(kaijuQueue.position) + '</div><div class="button-grid one">' + button('CANCEL QUEUE', 'kaiju_queue_cancel', {}, { danger: true }) + '</div>'
           : (kaiju.result ? '<div class="combat-recap"><strong>LAST KAIJU RESULT // ' + escapeHtml(words(kaiju.result.outcome || kaiju.result.result)) + '</strong><span>CATEGORY // ' + escapeHtml(kaiju.result.category ? kaiju.result.category.name : words(kaiju.result.category_key)) + '</span>' + (kaiju.result.score ? '<span>SCORE // ' + number(kaiju.result.score.player) + ' : ' + number(kaiju.result.score.opponent) + '</span>' : '') + '</div>' : '') + '<div class="line">PLAYER MATCHMAKING OR SOLO CRT BATTLES.</div><div class="button-grid">' + button('FIND KAIJU PLAYER', 'kaiju_matchmake') + button('START SOLO KAIJU', 'kaiju_start') + '</div>';
     }
+    kaijuBody = renderKaijuHowTo(kaiju) + kaijuBody;
     var regions = (state.regions || []).map(function (region) {
       var mission = region.mission || {};
       var opponent = mission.opponent || {};

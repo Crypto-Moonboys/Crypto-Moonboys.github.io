@@ -1509,11 +1509,11 @@ statusFrames.shift()();
 assert.equal(testStatusOutput.dataset.tone, 'danger');
 assert.equal(testStatusClasses.has('is-scrolling'), true, 'overflowing updates must activate the scrolling text track');
 assert.match(testStatusProperties['--status-scroll-duration'], /s$/, 'overflowing updates must receive a readable duration');
-assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20261011-mission-status-v2/);
+assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20261011-kaiju-guide-v1/);
 assert.doesNotMatch(html, /moonpet-art-resolver\.js/, 'the game must not load the retired static background resolver');
 assert.match(html, /\/js\/moonpet-bot-art-loader\.js\?v=20261006-live-refresh-v5/);
 assert.match(html, /\/js\/moonpet-bot-art-renderer\.js\?v=20261002-audit-recovery-v2/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261011-mission-status-v2/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261011-kaiju-guide-v1/);
 assert.match(html, /role="button" aria-label="Interact with your animated Moonpet"/);
 assert.match(client, /data-utility="guide">HOW TO PLAY/);
 const guideMarkupSource = extractTestExport(client, 'guideMarkup');
@@ -1804,7 +1804,7 @@ for (const sdkInitData of [expired, tampered, 'auth_date=invalid&hash=' + 'a'.re
   assert.equal(entry.requests.length, 3, 'Read-only startup state requests retain their transient retry policy');
 }
 assert.match(html, /\/js\/api-config\.js\?v=20260813-first-party-api/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261011-mission-status-v2/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261011-kaiju-guide-v1/);
 // Season slot UI: timing, account/pet separation, unlock affordance, switching, and rejection copy.
 assert.match(client, /function renderSeasonSlots\(\)/, 'Mini App must render a focused season-slot summary');
 assert.match(client, /function render\(options\) \{\s*var editableState = options && options\.discardCallsignDraft \? null : captureEditableState\(\);[\s\S]*restoreEditableState\(editableState\);/, 'render must preserve only drafts that were not explicitly discarded');
@@ -2319,7 +2319,7 @@ assert.match(worker, /player1_telegram_id, player2_telegram_id, category_key, ro
 assert.match(worker, /category_key: category\?\.key \|\| null/, 'Kaiju category must be visible before card lock');
 assert.match(worker, /serializePetKaijuCardPreview\(card, hydratedKaiju\?\.category_key\)/, 'Kaiju cards must include the hydrated active-category score');
 assert.match(client, /BATTLE CATEGORY/, 'Kaiju must state what the current duel values');
-assert.match(client, /ACTIVE ' \+ active/, 'Kaiju cards must emphasize their active score');
+assert.match(client, /renderKaijuCards\(kaiju\)/, 'the live Kaiju panel must use the category-focused renderer tested in option guidance');
 assert.match(css, /\.combat-intent/, 'combat intelligence panels need responsive styling');
 assert.match(guide, /player intent stays hidden until both lock/, 'the complete guide must document Arena fairness');
 assert.match(guide, /before cards lock/, 'the complete guide must explain informed Kaiju drafting');
