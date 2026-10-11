@@ -514,6 +514,10 @@
     var economy = g.economy || {};
     claims('economy', 'bounty_claim', 'COMPLETED DAILY BOUNTIES', economy.bounties,
       function (entry) { return entry.key; }, function (entry) { return entry.complete === true && !entry.claimed; }, 'bounties');
+    claims('economy', 'extra_bounty_claim', 'EXTRA DAILY CHALLENGES', economy.bonus_bounties,
+      function (entry) { return entry.key; }, function (entry) { return entry.complete === true && !entry.claimed; }, 'bonus-bounties');
+    claims('economy', 'weekly_bounty_claim', 'WEEKLY BOUNTY BLOCKS', economy.weekly_bounties,
+      function (entry) { return entry.key; }, function (entry) { return entry.complete === true && !entry.claimed; }, 'weekly-bounties');
     var bountyList = economy.bounties || [];
     if (bountyList.length) add('economy', 'bounty_progress', 'DAILY BOUNTY BOARD', bountyList.every(function (entry) { return entry.claimed; }) ? 'ALL CLAIMED' : 'TODAY’S TARGETS', 'progress', 'bounties',
       bountyList.filter(function (entry) { return entry.complete; }).length + '/' + bountyList.length + ' complete // ' + bountyList.filter(function (entry) { return entry.claimed; }).length + ' claimed. Account targets reset at 00:00 UTC.');
