@@ -727,3 +727,49 @@ test('server-authoritative added adventures enforce level, energy, receipt repla
     f.sql.close();
   }
 });
+
+
+test('cooked meals and Care Feed share the same 45-second account cooldown and never award extra Feed mission credit',async()=>{
+  const f=funded('meal-care-cooldown');
+  for(const itemKey of ['street_pizza','moon_burger','garden_veggies']){
+    f.sql.prepare("INSERT INTO telegram_pet_inventory (telegram_id,asset_type,asset_key,quantity) VALUES (?,'item',?,2)").run(f.owner,itemKey);
+  }
+  const bag=(key)=>f.sql.prepare("SELECT quantity FROM telegram_pet_inventory WHERE telegram_id=? AND asset_type='item' AND asset_key=?").get(f.owner,key).quantity;
+  const req={action:'use_item',item_key:'street_pizza',request_id:'first-meal'};
+  const first=await f.act(req);
+  assert.equal(first.accepted,true,first.reason);
+  assert.equal(bag('street_pizza'),1);
+  const snapshot=await hooks.buildPetMiniAppState(f.db,f.owner,'fixture-token');
+  assert.ok(snapshot.cooldowns.entries.some(entry=>entry.key==='action:meal' && entry.remaining_seconds>0),
+    'server-projected remaining meal cooldown must appear in the game UI');
+  assert.ok(snapshot.cooldowns.entries.some(entry=>entry.key==='action:feed' && entry.remaining_seconds>0),
+    'Care Feed must also show the shared meal cooldown');
+  const other=await f.act({action:'use_item',item_key:'moon_burger',request_id:'second-meal'});
+  assert.equal(other.accepted,false,'second cooked meal cannot bypass same-account cooldown');
+  assert.equal(other.reason,'meal_cooldown');
+  assert.ok(other.remaining_seconds>0);
+  assert.equal(bag('moon_burger'),2,'cooldown must not consume the refused burger');
+  const feedBlocked=await f.act({action:'feed',request_id:'feed-while-meal-cooling'});
+  assert.equal(feedBlocked.accepted,false,'Care Feed cannot bypass a recently eaten meal');
+  assert.equal(feedBlocked.reason,'cooldown');
+  assert.equal((await f.act(req)).duplicate,true,'same request returns original receipt before testing cooldown');
+  assert.equal(bag('street_pizza'),1,'duplicate request must not consume again');
+  assert.equal(f.sql.prepare("SELECT COUNT(*) AS total FROM telegram_pet_events WHERE telegram_id=? AND event_type='feed' AND status='accepted'").get(f.owner).total,0,
+    'bag meals never generate Feed mission events');
+  f.sql.prepare("UPDATE telegram_pet_events SET created_at=datetime('now','-46 seconds') WHERE telegram_id=? AND event_type='use_item' AND status='accepted'").run(f.owner);
+  const feed=await f.act({action:'feed',request_id:'feed-after-wait'});
+  assert.equal(feed.accepted,true,feed.reason);
+  const afterFeed=await f.act({action:'use_item',item_key:'garden_veggies',request_id:'meal-after-feed'});
+  assert.equal(afterFeed.accepted,false,'meal cannot bypass accepted Feed cooldown');
+  assert.equal(afterFeed.reason,'meal_cooldown');
+  assert.equal(bag('garden_veggies'),2);
+  f.sql.prepare("UPDATE telegram_pet_events SET created_at=datetime('now','-46 seconds') WHERE telegram_id=? AND event_type='feed' AND status='accepted'").run(f.owner);
+  const acceptedBurger=await f.act({action:'use_item',item_key:'moon_burger',request_id:'burger-after-wait'});
+  assert.equal(acceptedBurger.accepted,true,acceptedBurger.reason);
+  assert.equal(bag('moon_burger'),1);
+  assert.equal(f.sql.prepare("SELECT COUNT(*) AS total FROM telegram_pet_events WHERE telegram_id=? AND event_type='feed' AND status='accepted'").get(f.owner).total,1,
+    'only the explicitly accepted Care Feed counts as a Feed event');
+  assert.equal(f.sql.prepare("SELECT COUNT(*) AS total FROM telegram_pet_events WHERE telegram_id=? AND event_type='use_item' AND status='accepted'").get(f.owner).total,2,
+    'accepted meals settle once and preserve the shared bag event type');
+  f.sql.close();
+});
