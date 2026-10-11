@@ -16,6 +16,24 @@ Any gameplay, documentation, or UI change affecting Moonpet status should refere
 
 ## Current rules and historical audits
 
+The [11 October all-menu status update](moonpet-menu-status-2026-10-11.md)
+extends dock indicators to all six menus. Red counts distinguish claims, ready
+upgrades and states needing review; amber counts show saved sessions active or
+waiting when no red count takes priority. Each menu has a compact, collapsible
+Saved Status inbox linking to the original controls. Recovery opens it by default;
+the player's open/closed choice is retained per pet and menu. Deferred modules
+and unconfirmed writes cannot advertise claims. No new polls or automatic actions
+are introduced.
+
+Weekly Boss counts distinct account boss/week payouts, rather than participating
+pets. Its projection filters records after its ten-row limit, so any visible
+count is a lower bound (`+`). Raid counts use original pet/boss/rotation and show
+`+` on a full ten-row page; Contract inbox bounds remain unchanged. Season tiers
+use account/quarter/tier, bounties use the current account board and timers use
+server readiness. Journey completion/automatic settlement, saved choices, match
+queues and ready evolution are separate from unclaimed rewards. Worker rules,
+payloads, balances and source ownership are unchanged.
+
 The [11 October street-floor update](moonpet-street-floor-2026-10-11.md) adds a
 static pavement strip behind the hatched companion on the loaded street-wall
 backdrop, with a contact shadow once companion art is ready. Sprite size,

@@ -677,7 +677,7 @@ button, input, select, textarea {
   content: "";
 }
 
-.dock-claim-badge {
+.dock-claim-badge, .dock-active-badge {
   position: absolute;
   top: 2px;
   right: 2px;
@@ -690,6 +690,25 @@ button, input, select, textarea {
   line-height: 12px;
   letter-spacing: 0;
 }
+
+.dock-active-badge { background: #edc77a; }
+.menu-status {
+  margin: 10px 0;
+  padding: 12px;
+  border: 1px solid #78bcd5;
+  border-radius: 10px;
+  background: rgba(120,188,213,.07);
+}
+.menu-status-heading { font-weight: 700; color: var(--ui-text); cursor: pointer; }
+.menu-status-heading, .menu-status-entry { overflow-wrap: anywhere; }
+.menu-status-entry { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--ui-border); }
+.menu-status-label { color: #edc77a; font-weight: 700; line-height: 1.5; }
+.menu-status-entry[data-status-kind="claim"] .menu-status-label,
+.menu-status-entry[data-status-kind="ready"] .menu-status-label,
+.menu-status-entry[data-status-kind="complete"] .menu-status-label { color: #96d6aa; }
+.menu-status-entry[data-status-kind="review"] .menu-status-label,
+.menu-status-entry[data-status-kind="recovery"] .menu-status-label { color: #ff9b9b; }
+.menu-status-more > summary { padding: 10px 0; color: var(--ui-text); cursor: pointer; }
 
 .mission-status {
   margin: 10px 0;

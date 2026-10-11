@@ -337,7 +337,8 @@ try {
     await page.waitForSelector('[data-panel="care"]'); await startedGate;
     assert.equal(await page.locator('[data-panel="module-loading"]').count(), 0, 'Home is usable during background projection');
     assert.deepEqual(modes, ['core', 'full'], 'exactly one background full read begins before any tab tap');
-    assert.equal(await page.locator('.dock-claim-badge').count(), 0, 'core startup cannot invent unloaded claim counts');
+    assert.equal(await page.locator('#nav [data-screen="home"] .dock-claim-badge').textContent(), '1', 'core authority can show the available Daily Cache');
+    assert.equal(await page.locator('#nav [data-screen]:not([data-screen="home"]) .dock-claim-badge').count(), 0, 'core startup cannot invent unloaded claim counts');
     await page.waitForFunction(() => window.MoonpetBetaAppearance.getBackgroundArtState().floor?.shadow === true);
     assert.deepEqual(await page.evaluate(() => {
       const canvas = document.getElementById('moonpet-canvas'), scale = canvas.width / 320;
@@ -371,6 +372,91 @@ try {
     assert.equal(await page.locator('[data-panel="module-loading"]').count(), 0);
     assert.deepEqual(modes, ['core','full','full']); assert.deepEqual(errors, []);
     console.log(`Background tab readiness and Missions refresh browser flow passed at ${viewport.width}x${viewport.height}`);
+    await context.close();
+  }
+  // All six dock indicators and inbox routes use actual SQLite-backed Worker
+  // projections. Navigation submits no action; real claims clear their badge.
+  for (const viewport of [{ width: 360, height: 640 }, { width: 390, height: 844 }, { width: 1280, height: 900 }]) {
+    const id = 'browser-menu-inbox-' + viewport.width;
+    await seed(id, 'young');
+    const pet = await hooks.getPetProfile(db, id);
+    const day = new Date().toISOString().slice(0, 10);
+    for (const type of ['feed','play','clean','train','trade','buy','adventure','work','work','random_event','activity_claim','kaiju_battle','use_item']) {
+      sqlite.prepare(`INSERT INTO telegram_pet_events
+        (id,pet_id,telegram_id,event_type,event_key,pet_xp_awarded,season_key,day_key,week_key,status)
+        VALUES (?,?,?,?,?,0,?,?,'fixture','accepted')`).run(realCrypto.randomUUID(),pet.pet_id,id,type,realCrypto.randomUUID(),pet.season_key,day);
+    }
+    sqlite.prepare('INSERT INTO telegram_pet_season_state(telegram_id,season_key,season_xp) VALUES(?,?,300)').run(id,'pet-s2026-003');
+    const act = body => dispatchRenderedPetAction(db,id,{id},body,token);
+    assert.equal((await act({ action: 'run_start', request_id: 'inbox-run' })).accepted, true);
+    assert.equal((await act({ action: 'activity_start', activity_type: 'sleep', request_id: 'inbox-timer' })).accepted, true);
+    sqlite.prepare("UPDATE telegram_pet_activity_sessions SET started_at=datetime('now','-30 minutes') WHERE telegram_id=? AND status='active'").run(id);
+    const context = await createFixtureContext({ viewport, reducedMotion: 'reduce' });
+    const page = await context.newPage(), actions = [], errors = [];
+    page.on('pageerror', error => errors.push(error.message));
+    await page.addInitScript(() => localStorage.setItem('moonpet-radio-preference','off'));
+    await page.route('**/*', async route => {
+      const url = new URL(route.request().url());
+      if (url.hostname === 'telegram.org') return route.fulfill({ contentType: 'text/javascript', body: "window.Telegram={WebApp:{initData:'fixture',ready(){},expand(){},onEvent(){},setHeaderColor(){},setBackgroundColor(){}}};" });
+      if (url.pathname.endsWith('/telegram-pets/app/performance')) return route.fulfill({ json: { ok: true } });
+      if (url.pathname.includes('/telegram-pets/app/')) {
+        const body = route.request().postDataJSON();
+        let result;
+        if (url.pathname.endsWith('/action')) { actions.push(body.action); result = await act(body); }
+        const state = body.mode === 'core' ? await hooks.buildPetMiniAppCoreState(db,id)
+          : body.mode === 'live' ? await hooks.buildPetMiniAppLiveState(db,id) : await hooks.buildPetMiniAppState(db,id,token);
+        return route.fulfill({ json: { ok: true, state, result } });
+      }
+      return url.hostname === '127.0.0.1' ? route.continue() : route.abort();
+    });
+    await page.goto(fixtureOrigin + '/moonpet-game.html');
+    await page.waitForSelector('#nav [data-screen="work"] .dock-claim-badge');
+    for (const key of ['home','missions','work','profile']) assert.equal(await page.locator(`#nav [data-screen="${key}"] .dock-claim-badge`).textContent(), '1', key + ' has one actual claim');
+    assert.equal(await page.locator('#nav [data-screen="explore"] .dock-active-badge').textContent(), '1');
+    assert.match(await page.locator('#nav [data-screen="explore"]').getAttribute('aria-label'), /saved session active or waiting/);
+    assert.ok(Number(await page.locator('#nav [data-screen="economy"] .dock-claim-badge').textContent()) >= 3);
+    for (const key of ['home','missions','explore','work','economy','profile']) {
+      await page.locator(`#nav [data-screen="${key}"]`).click();
+      const status = page.locator('.menu-status');
+      assert.equal(await status.getAttribute('aria-label'), key + ' saved status');
+      assert.equal(await status.getAttribute('open'), null, 'ordinary saved status starts compact');
+      await status.locator(':scope > summary').click();
+      const shortcut = status.locator('[data-jump]').first();
+      const focus = await shortcut.getAttribute('data-focus');
+      const before = actions.length;
+      await shortcut.click();
+      assert.equal(actions.length, before, 'inbox review spends nothing in ' + key);
+      await page.waitForFunction(id => document.querySelector(`[data-panel="${id}"]`)?.open === true, focus);
+      assert.equal(await page.locator(`[data-panel="${focus}"]`).getAttribute('open') !== null, true, 'review expands its original panel');
+      assert.equal(await page.locator('#screen').evaluate(node => node.scrollWidth <= node.clientWidth), true, key + ' inbox fits viewport');
+      assert.equal(await page.locator('#nav').evaluate(node => node.scrollWidth <= node.clientWidth), true, 'all six dock badges fit');
+      await page.locator('#screen').evaluate(node => { node.scrollTop = 0; });
+      await page.screenshot({ path: path.join(screenshotDirectory, `menu-status-${key}-${viewport.width}.png`) });
+    }
+    await page.locator('[data-screen="missions"]').click();
+    const more = page.locator('.menu-status-more');
+    assert.equal(await more.count(), 1);
+    await more.locator('summary').click();
+    await page.locator('[data-screen="home"]').click();
+    await page.locator('[data-screen="missions"]').click();
+    assert.equal(await more.getAttribute('open') !== null, true, 'expanded saved status survives menu navigation');
+    for (const [key, action] of [['home','daily_chest'], ['work','activity_claim'], ['profile','season_claim'], ['missions','daily_completion_claim']]) {
+      await page.locator(`[data-screen="${key}"]`).click();
+      await page.locator('.menu-status [data-jump]').first().click();
+      const response = page.waitForResponse(r => r.url().endsWith('/telegram-pets/app/action') && r.request().postDataJSON()?.action === action);
+      await page.locator(`[data-action="${action}"]`).first().click();
+      assert.equal((await (await response).json()).result.accepted, true);
+      await page.waitForFunction(screen => !document.querySelector(`#nav [data-screen="${screen}"] .dock-claim-badge`), key);
+    }
+    const beforeBounties = Number(await page.locator('#nav [data-screen="economy"] .dock-claim-badge').textContent());
+    await page.locator('[data-screen="economy"]').click();
+    await page.locator('.menu-status [data-focus="bounties"]').first().click();
+    const bountyResponse = page.waitForResponse(r => r.url().endsWith('/telegram-pets/app/action') && r.request().postDataJSON()?.action === 'bounty_claim');
+    await page.locator('[data-action="bounty_claim"]').first().click();
+    assert.equal((await (await bountyResponse).json()).result.accepted, true);
+    await page.waitForFunction(count => Number(document.querySelector('#nav [data-screen="economy"] .dock-claim-badge')?.textContent) === count - 1, beforeBounties);
+    assert.deepEqual(errors, []);
+    console.log(`All-menu saved inbox, free review, responsive dock and real claim clearing passed at ${viewport.width}x${viewport.height}`);
     await context.close();
   }
   // Exercise the partial response with the real renderer, including a delayed
@@ -2244,7 +2330,8 @@ try {
     assert.equal(await missionNav.locator('.dock-claim-badge').textContent(), '1');
     assert.match(await page.locator('.mission-status-heading').textContent(), /7\/7 \/\/ COMPLETE/);
     const beforeReview = actions.length;
-    await page.locator('.mission-status [data-focus="daily-completion"]').click();
+    await page.locator('.menu-status > summary').click();
+    await page.locator('.menu-status [data-focus="daily-completion"]').click();
     assert.equal(actions.length, beforeReview, 'reviewing the claim submits no gameplay action');
     assert.equal(await page.locator('[data-panel="daily-completion"]').getAttribute('open') !== null, true);
     await page.locator('.mission-status').scrollIntoViewIfNeeded();

@@ -2666,9 +2666,6 @@
     else {
       if (summary.next) body += '<div class="line" data-current-mission="' + escapeHtml(summary.next.key) + '">CURRENT GOAL // ' + escapeHtml(summary.next.title) + '</div>' + objectiveRouteButton(summary.next.key);
       else body += '<div class="line muted">' + (summary.status === 'BONUS CLAIMED' ? 'Today’s checklist and bonus are finished. New daily missions start at 00:00 UTC.' : 'Today’s checklist is complete. Review your saved bonus below.') + '</div>';
-      if (summary.claims.length) body += '<div class="button-grid one">' + summary.claims.map(function (claim) {
-        return routeButton('REVIEW ' + claim.title + ' // ' + number(claim.count) + (claim.countLowerBound ? '+' : ''), claim, 'Open the saved reward and choose when to claim. Reviewing spends nothing.');
-      }).join('') + '</div>';
     }
     return '<section class="mission-status' + (summary.completed === summary.total ? ' mission-status-complete' : '') + '" aria-label="Daily mission status">' + body + '</section>';
   }
@@ -3034,7 +3031,7 @@
     var bounties = (economy.bounties || []).map(function (bounty) {
       var routes = window.MoonpetPlayOptions && window.MoonpetPlayOptions.bountyRouteOptions ? window.MoonpetPlayOptions.bountyRouteOptions(bounty, state) : [];
       if (state.lifecycle && state.lifecycle.phase === 'egg') routes = [{ title: 'HATCH TO WORK ON BOUNTIES', screen: 'home', focus: 'incubation' }];
-      return '<div class="line ' + (bounty.complete ? 'complete' : '') + '">' + escapeHtml(bounty.title) + ' ' + number(bounty.progress) + '/' + number(bounty.required) + (bounty.claimed ? ' // CLAIMED' : bounty.complete ? ' // READY TO CLAIM' : '') + '</div>' +
+      return '<div class="line ' + (bounty.complete ? 'complete' : '') + '">' + escapeHtml(bounty.title) + ' ' + number(bounty.progress) + '/' + number(bounty.required) + (bounty.claimed ? ' // CLAIMED' : bounty.complete ? ' // READY TO CLAIM' : ' // IN PROGRESS') + '</div>' +
         '<div class="line muted">' + escapeHtml(bounty.detail || '') + ' // REWARD ' + escapeHtml(valueText(bounty.reward)) + '</div>' +
         (bounty.complete && !bounty.claimed ? '<div class="button-grid one">' + button('CLAIM ' + bounty.title, 'bounty_claim', { bounty_key: bounty.key }) + '</div>' : !bounty.claimed && !bounty.complete ? '<div class="button-grid">' + routes.map(function (route) { return routeButton(route.title, route, route.detail); }).join('') + '</div>' : '');
     }).join('');
@@ -3141,7 +3138,7 @@
       : '<div class="line complete">FINAL EVOLUTION ONLINE.</div><div class="line muted">' + escapeHtml(currentPerk.perk || '') + '</div>';
     var season = guidance.season || {};
     var tiers = (season.tiers || []).map(function (tier) {
-      return '<div class="line ' + (tier.claimed_at ? 'complete' : tier.unlocked ? '' : 'locked') + '">' + escapeHtml(tier.title) + ' // ' + number(tier.required_xp) + ' XP // ' + escapeHtml(tier.season_key || season.key) + '</div>' +
+      return '<div class="line ' + (tier.claimed_at ? 'complete' : tier.unlocked ? '' : 'locked') + '">' + escapeHtml(tier.title) + ' // ' + number(tier.required_xp) + ' XP // ' + escapeHtml(tier.season_key || season.key) + ' // ' + (tier.claimed_at ? 'CLAIMED' : tier.unlocked ? 'CLAIM READY' : 'LOCKED') + '</div>' +
         '<div class="line muted">REWARD ' + escapeHtml(valueText(tier.reward)) + ' // +' + number(season.evolution_bonus_style) + ' EVOLUTION STYLE</div>' +
         (tier.unlocked && !tier.claimed_at ? '<div class="button-grid one">' + button('CLAIM ' + tier.title, 'season_claim', { tier_id: tier.tier_id, season_key: tier.season_key || season.key }) + '</div>' : '');
     }).join('');
@@ -3209,14 +3206,46 @@
     ['home', '⌂', 'HOME', 'Care'], ['missions', '☷', 'MISSIONS', 'Goals'], ['explore', '⚔', 'EXPLORE', 'Runs'], ['work', '⚒', 'WORK', 'Timers'], ['economy', '◇', 'ECONOMY', 'Gear'], ['profile', '★', 'PROFILE', 'Pets'],
   ];
 
+  // TEST-EXPORT: menuStatus:start
+  function renderMenuStatus() {
+    if (!state || !state.adopted || !window.MoonpetPlayOptions || !window.MoonpetPlayOptions.menuStatuses) return '';
+    if (petActionRefreshRequired) return '<section class="menu-status" aria-label="Saved menu status"><div class="line danger">REFRESH REQUIRED</div><div class="line muted">Read the authoritative save before choosing another action. The previous request will not be replayed.</div></section>';
+    var menu = window.MoonpetPlayOptions.menuStatuses(state)[activeScreen];
+    if (!menu || !menu.loaded || !menu.entries.length) return '';
+    var priority = { review: 0, recovery: 0, claim: 1, ready: 1, resume: 2, waiting: 3, progress: 4, complete: 5 };
+    var entries = menu.entries.slice().sort(function (a, b) { return priority[a.kind] - priority[b.kind]; });
+    var badge = window.MoonpetPlayOptions.menuBadge(menu);
+    function row(entry) {
+      var count = entry.kind === 'claim' || entry.count > 1 || entry.countLowerBound ? ' // ' + number(entry.count) + (entry.countLowerBound ? '+' : '') : '';
+      return '<div class="menu-status-entry" data-status-key="' + escapeHtml(entry.key) + '" data-status-kind="' + escapeHtml(entry.kind) + '"><div class="line"><strong>' + escapeHtml(entry.title) + count + '</strong></div><div class="menu-status-label">' + escapeHtml(entry.status) + '</div>' +
+        (entry.cooldown ? '<div class="line muted">' + countdownMarkup(entry.cooldown, entry.kind === 'waiting' ? 'Claim window in ' : 'Reset in ') + '</div>' : '') +
+        '<div class="button-grid one">' + routeButton('REVIEW ' + entry.title + count, entry, entry.detail) + '</div></div>';
+    }
+    var title = activeScreen.toUpperCase() + ' // SAVED STATUS';
+    var heading = title + (badge.count ? ' // ' + number(badge.count) + (badge.countLowerBound ? '+' : '') + ' ' + (badge.kind === 'claims' && badge.count === 1 ? 'CLAIM' : badge.kind.toUpperCase()) : '');
+    var body = '<div class="line muted">Review links open the original panel. They spend nothing and do not claim, start or repeat an action.</div>' + entries.slice(0, 2).map(row).join('');
+    if (entries.length > 2) {
+      var panelKey = state.pet.pet_id + ':' + activeScreen + ':menu-status-more';
+      body += '<details class="menu-status-more" data-panel-key="' + panelKey + '"' + (panelOpenState[panelKey] ? ' open' : '') + '><summary>MORE SAVED STATUS // ' + number(entries.length - 2) + '</summary>' + entries.slice(2).map(row).join('') + '</details>';
+    }
+    var statusKey = state.pet.pet_id + ':' + activeScreen + ':menu-status';
+    var expanded = Object.prototype.hasOwnProperty.call(panelOpenState, statusKey) ? panelOpenState[statusKey] : entries.some(function (entry) { return entry.kind === 'review' || entry.kind === 'recovery'; });
+    return '<details class="menu-status" data-panel-key="' + statusKey + '" aria-label="' + activeScreen + ' saved status"' + (expanded ? ' open' : '') + '><summary class="menu-status-heading">' + heading + '</summary>' + body + '</details>';
+  }
+  // TEST-EXPORT: menuStatus:end
+
   function renderNav() {
-    var claims = !authenticationFailure && !petActionRefreshRequired && window.MoonpetPlayOptions && window.MoonpetPlayOptions.missionClaims ? window.MoonpetPlayOptions.missionClaims(state) : [];
-    var count = claims.reduce(function (total, claim) { return total + claim.count; }, 0);
-    var countLowerBound = claims.some(function (claim) { return claim.countLowerBound; });
+    var statuses = !authenticationFailure && !petActionRefreshRequired && window.MoonpetPlayOptions && window.MoonpetPlayOptions.menuStatuses ? window.MoonpetPlayOptions.menuStatuses(state) : {};
     nav.innerHTML = navItems.map(function (item) {
-      var claimCount = item[0] === 'missions' ? count : 0;
-      var label = claimCount ? claimCount + (countLowerBound ? '+' : '') + (claimCount === 1 ? ' claim' : ' claims') : item[3];
-      return '<button type="button" data-screen="' + item[0] + '" aria-label="' + item[2] + (claimCount ? ', ' + (countLowerBound ? 'at least ' : '') + claimCount + (claimCount === 1 ? ' saved reward ready to claim' : ' saved rewards ready to claim') : ', ' + item[3]) + '" aria-current="' + (item[0] === activeScreen ? 'page' : 'false') + '"><span aria-hidden="true">' + item[1] + '</span>' + (claimCount ? '<b class="dock-claim-badge" aria-hidden="true">' + (claimCount > 99 ? '99+' : claimCount + (countLowerBound ? '+' : '')) + '</b>' : '') + item[2] + '<small>' + label + '</small></button>';
+      var badge = statuses[item[0]] ? window.MoonpetPlayOptions.menuBadge(statuses[item[0]]) : { count: 0 };
+      var count = badge.count, lower = badge.countLowerBound;
+      var countText = count + (lower ? '+' : '');
+      var noun = badge.kind === 'claims' ? count === 1 ? 'claim' : 'claims' : badge.kind;
+      var label = count ? countText + ' ' + noun : item[3];
+      var description = badge.kind === 'claims' ? count === 1 ? 'saved reward ready to claim' : 'saved rewards ready to claim'
+        : badge.kind === 'active' ? count === 1 ? 'saved session active or waiting' : 'saved sessions active or waiting'
+        : badge.kind === 'review' ? 'saved states needing review or recovery' : 'actions ready to review';
+      return '<button type="button" data-screen="' + item[0] + '" aria-label="' + item[2] + (count ? ', ' + (lower ? 'at least ' : '') + count + ' ' + description + (badge.activeCount && badge.kind !== 'active' ? ', also ' + badge.activeCount + ' active or waiting' : '') : ', ' + item[3]) + '" aria-current="' + (item[0] === activeScreen ? 'page' : 'false') + '"><span aria-hidden="true">' + item[1] + '</span>' + (count ? '<b class="' + (badge.kind === 'active' ? 'dock-active-badge' : 'dock-claim-badge') + '" aria-hidden="true">' + (count > 99 ? '99+' : countText) + '</b>' : '') + item[2] + '<small>' + label + '</small></button>';
     }).join('');
   }
 
@@ -3272,7 +3301,7 @@
             ? '<div class="line danger">MODULE STATE COULD NOT LOAD.</div><div class="line muted">Automatic retries stopped to protect the API. HOME is still available.</div><div class="button-grid"><button type="button" class="terminal-button" data-utility="module-retry">RETRY MODULE<span class="button-purpose">Read your saved menu again; no previous gameplay action is repeated.</span></button>' + routeButton('RETURN HOME', { screen: 'home', focus: 'care' }, 'Use lightweight care while the module is unavailable.') + '</div>'
             : '<div class="line signal">FETCHING SERVER-AUTHORITATIVE MODULE STATE...</div><div class="line muted">HOME remains usable while this module loads.</div>',
           'module-loading')
-        : renderRecommended() + screens[activeScreen]();
+        : renderMenuStatus() + renderRecommended() + screens[activeScreen]();
     restoreEditableState(editableState);
     if (draftPetId === (state && state.pet && state.pet.pet_id)) Object.keys(routeDraft).forEach(function (id) {
       var input = document.getElementById(id);
