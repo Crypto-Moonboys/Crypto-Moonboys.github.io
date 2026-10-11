@@ -16,6 +16,14 @@ Any gameplay, documentation, or UI change affecting Moonpet status should refere
 
 ## Current rules and historical audits
 
+The [11 October street-floor update](moonpet-street-floor-2026-10-11.md) adds a
+static pavement strip behind the hatched companion on the loaded street-wall
+backdrop, with a contact shadow once companion art is ready. Sprite size,
+aspect ratio, baseline and tap bounds are unchanged. The egg/hatch chamber,
+loading/failed street-image fallback and unadopted views receive no street floor.
+This is canvas presentation only, with no gameplay or reward change.
+
+
 The [11 October mission status update](moonpet-mission-status-2026-10-11.md)
 shows the current daily goal and a persistent seven-mission completion summary
 in Missions. The Missions dock badge counts only saved claimable daily 7/7
