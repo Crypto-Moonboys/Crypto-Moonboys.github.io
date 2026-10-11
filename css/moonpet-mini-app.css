@@ -890,7 +890,7 @@ button, input, select, textarea {
 .guide-step[open] > summary::before { content: '−'; }
 .guide-step p, .guide-step li { line-height: 1.65; }
 .guide-step li { margin-block: 8px; }
-.guide-step ul { padding-left: 20px; }
+.guide-step ul, .guide-step ol { padding-left: 20px; }
 
 .period-tabs {
   display: grid;
@@ -1148,3 +1148,10 @@ button, input, select, textarea {
 .canvas-tool { padding: 5px; }
 .canvas-tool svg { width: 20px; height: 20px; margin: 0 auto; }
 .canvas-tool small { display: block; margin-top: 1px; font-size: 7px; line-height: 1; letter-spacing: 0; font-weight: 700; }
+
+
+/* Emphasize the current Kaiju category without implying a known rival card. */
+.kaiju-card-option { display: flex; min-width: 0; }
+.kaiju-card-option .terminal-button { width: 100%; }
+.kaiju-best-active .terminal-button { border-color: var(--ui-text); box-shadow: inset 3px 0 0 var(--ui-text); }
+.kaiju-help { padding: 0 10px; border: 1px solid var(--ui-border-strong); }

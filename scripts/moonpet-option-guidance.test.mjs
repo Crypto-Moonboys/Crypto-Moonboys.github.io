@@ -2,6 +2,9 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
 import test from 'node:test';
+import { createRequire } from 'node:module';
+import { __petMediaTestHooks as hooks } from '../workers/moonboys-api/worker.js';
+const guide = createRequire(import.meta.url)('../js/moonpet-guide.js');
 const read = path => fs.readFileSync(new URL('../' + path, import.meta.url), 'utf8');
 const source = read('js/moonpet-mini-app.js');
 const worker = read('workers/moonboys-api/worker.js');
@@ -181,4 +184,65 @@ test('solo and player Kaiju card choices announce the actual Worker energy cost 
     assert.match(html, /ACTIVE POWER 90 \/\/ BEST POWER 90/);
     assert.match(purpose, /rival’s card stays hidden/);
   }
+});
+
+
+test('Kaiju guidance highlights current category leaders, including ties, without changing payloads', () => {
+  const expected = { pwr: ['god-dzilla'], size: ['mf-gidorah'], atk: ['mc-rodan', 'mecha-zilla'], def: ['mecha-zilla'], spd: ['moth-def'], lgcy: ['god-dzilla'] };
+  const ctx = context();
+  ctx.number = String; ctx.panelOpenState = {}; ctx.window.MoonpetGuide = guide;
+  vm.runInContext(block('kaijuGuidance'), ctx);
+  for (const category of hooks.PET_KAIJU_CATEGORIES) {
+    const cards = hooks.PET_KAIJU_CARDS.map(card => ({ ...card, active_stat: category.label, active_value: card.stats[category.key] }));
+    const board = { match: { match_id: 'saved-match', category }, cards };
+    const before = structuredClone(board);
+    const html = ctx.renderKaijuCards(board);
+    const leaders = [...html.matchAll(/data-kaiju-card="([^"]+)" data-kaiju-best-active/g)].map(match => match[1]);
+    assert.deepEqual(leaders, expected[category.key]);
+    for (const card of cards) {
+      assert.ok(html.includes(escape(card.name + ' // ' + category.name + ' [' + category.label + '] ' + card.active_value)));
+      assert.ok(html.includes(escape(JSON.stringify({ match_id: 'saved-match', card_key: card.id }))));
+    }
+    assert.match(html, /not a guaranteed win/);
+    assert.match(html, /Settlement costs 4 energy for a loss, 5 for a draw or 6 for a win/);
+    assert.deepEqual(board, before);
+  }
+});
+
+test('Kaiju missing category, bad active values, locked cards and refresh stay truthful', () => {
+  const ctx = context(); ctx.number = String; ctx.panelOpenState = {}; ctx.window.MoonpetGuide = guide;
+  vm.runInContext(block('kaijuGuidance'), ctx);
+  const category = hooks.PET_KAIJU_CATEGORIES.find(entry => entry.key === 'spd');
+  const board = { match: { match_id: 'saved', category }, cards: [
+    { id: 'wrong', name: '<wrong>', active_stat: 'PWR', active_value: 99 },
+    { id: 'null', name: 'Missing', active_stat: 'SPD', active_value: null },
+    { id: 'nan', name: 'Invalid', active_stat: 'SPD', active_value: NaN }
+  ] };
+  assert.doesNotMatch(ctx.renderKaijuCards(board), /data-kaiju-best-active/);
+  assert.match(ctx.renderKaijuCards(board), /&lt;wrong&gt;/);
+  board.cards.push({ id: 'zero', name: 'Zero', active_stat: 'SPD', active_value: 0 });
+  assert.match(ctx.renderKaijuCards(board), /data-kaiju-card="zero" data-kaiju-best-active/);
+  board.match.category = null;
+  assert.doesNotMatch(ctx.renderKaijuCards(board), /data-kaiju-best-active/);
+  board.match.own_card_locked = true;
+  assert.equal(ctx.renderKaijuCards(board), '');
+  board.match.own_card_locked = false; ctx.petActionRefreshRequired = true;
+  assert.match(ctx.renderKaijuCards(board), /REFRESH REQUIRED/);
+  assert.doesNotMatch(ctx.renderKaijuCards(board), /CLAIM READY/);
+});
+
+test('shared Kaiju example is read-only and help visibility survives redraw preferences', () => {
+  const ctx = context(); ctx.panelOpenState = {}; ctx.window.MoonpetGuide = guide;
+  vm.runInContext(block('kaijuGuidance'), ctx);
+  const html = ctx.renderKaijuHowTo({});
+  assert.match(html, / open><summary>/);
+  assert.ok(html.includes(guide.kaijuHowTo));
+  assert.doesNotMatch(html, /data-action=/);
+  assert.match(html, /Example only/);
+  assert.match(html, /Solo is a real match with normal settlement costs/);
+  assert.ok(guide.sections.find(section => section.id === 'combat').body.includes(guide.kaijuHowTo));
+  ctx.panelOpenState['explore:kaiju-help'] = false;
+  assert.doesNotMatch(ctx.renderKaijuHowTo({}), / open>/);
+  ctx.panelOpenState['explore:kaiju-help'] = true;
+  assert.match(ctx.renderKaijuHowTo({ match: { match_id: 'saved' } }), / open>/);
 });

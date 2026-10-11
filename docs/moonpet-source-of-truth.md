@@ -853,7 +853,19 @@ Requirements:
 
 - Active hatched Moonpet
 
-Kaiju is a live combat system.
+Kaiju is a live combat system. The [11 October newcomer guide](moonpet-kaiju-guide-2026-10-11.md)
+adds a collapsible three-step explainer and a read-only worked example in EXPLORE,
+shared with in-game How to Play and the public play guide. It opens before the
+first match; the user's open/closed choice survives normal redraws within the
+session. Solo CRT is a real match with normal settlement costs.
+
+Card buttons name only the current battle category and its projected value.
+HIGHEST IN YOUR HAND highlights every tied highest shown value for that category;
+it does not predict the hidden rival card or guarantee a win. Pending/mismatched
+category values do not receive a highest-value marker. Locking a card remains
+the existing server action; already locked choices are hidden. Settlement still
+charges 6/5/4 energy for win/draw/loss with original-pet recovery. No Worker,
+reward, ownership, polling or migration changes accompany this presentation.
 
 ---
 
