@@ -345,6 +345,40 @@ test('confirmed choice feedback stays with its source pet, hides duplicate gains
   assert.doesNotMatch(ctx.renderChoiceResult('adventure'), /\+99|<b>COST<\/b>/);
 });
 
+test('duplicate Street Event recovery uses the saved source even after a pet switch', async () => {
+  // Exercise the actual receipt-only Worker response, which has no result.pet.
+  const db = { prepare(sql) {
+    assert.match(sql, /id=\? AND telegram_id=\? AND event_type='random_event'/);
+    return { bind(id, owner) {
+      assert.equal(id, 'accepted-event'); assert.equal(owner, 'owner');
+      return { first: async () => ({ id, pet_id: 'source-pet', status: 'accepted' }) };
+    } };
+  } };
+  const result = await hooks.processPetRandomEvent(db, 'owner', '', { saved_event_id: 'accepted-event' });
+  assert.equal(result.accepted, true); assert.equal(result.duplicate, true);
+  assert.equal(result.pet, undefined);
+  const ctx = context(); ctx.lastChoiceResult = null; ctx.panelOpenState = {};
+  vm.runInContext(block('actionResultFeedback'), ctx);
+  const before = { pet: { pet_id: 'replacement-pet' }, pending_street_events: [
+    { event_id: 'other-event', pet_id: 'unrelated-pet' },
+    { event_id: 'accepted-event', pet_id: 'source-pet' },
+  ] };
+  ctx.rememberChoiceResult('event_recover', result, before, { event_id: 'accepted-event' });
+  assert.equal(ctx.lastChoiceResult.pet_id, 'source-pet');
+  ctx.state.pet.pet_id = 'replacement-pet';
+  assert.equal(ctx.renderChoiceResult('street-event'), '');
+  ctx.state.pet.pet_id = 'source-pet';
+  assert.match(ctx.renderChoiceResult('street-event'), /NO SECOND PAYMENT/);
+  assert.doesNotMatch(ctx.renderChoiceResult('street-event'), /\+[0-9]|<b>COST<\/b>/);
+  ctx.lastChoiceResult = null;
+  ctx.rememberChoiceResult('event_recover', result, before, { event_id: 'missing-event' });
+  assert.equal(ctx.lastChoiceResult, null, 'unknown ownership cannot become the displayed pet');
+  ctx.rememberChoiceResult('event_recover', result, { pet: before.pet }, { event_id: 'accepted-event' });
+  assert.equal(ctx.lastChoiceResult, null, 'absent saved state cannot invent a source');
+  ctx.rememberChoiceResult('event_recover', { ...result, pet: { pet_id: 'verified-source' } }, before, { event_id: 'missing-event' });
+  assert.equal(ctx.lastChoiceResult.pet_id, 'verified-source', 'a returned source pet remains authoritative');
+});
+
 test('real Shop renderer explains each gate and keeps owned free switches available', () => {
   const ctx = context();
   ctx.state.pet = { pet_id: 'guidance-pet', level: 1, moon_gold: 5 };

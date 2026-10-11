@@ -2573,6 +2573,61 @@ try {
     }
     assert.deepEqual(errors, []);
     console.log('Confirmed pet deletion and stable three-space order browser flow passed at ' + viewport.width + 'x' + viewport.height);
+    // A different client settles a source-pet event after this client loads its
+    // recovery button while another companion is selected. The duplicate reply
+    // has no pet field; the old saved projection must retain its source identity.
+    currentUser = 'browser-street-replay-' + viewport.width;
+    await seed(currentUser, 'young');
+    const streetSource = await hooks.getPetProfile(db, currentUser);
+    sqlite.prepare('INSERT INTO arcade_progression_state(telegram_id,arcade_xp_total) VALUES (?,5000)').run(currentUser);
+    sqlite.prepare('INSERT INTO arcade_xp_wallets(telegram_id,arcade_xp_earned,arcade_xp_spendable) VALUES (?,5000,5000)').run(currentUser);
+    assert.equal((await hooks.buyPetSeasonSlot(db, currentUser, 2)).accepted, true);
+    const streetOther = (await hooks.buildPetSeasonSlotSummary(db, currentUser)).slots.find(slot => slot.pet_id !== streetSource.pet_id);
+    sqlite.prepare("UPDATE telegram_pet_lifecycle_by_pet SET phase='young' WHERE pet_id=?").run(streetOther.pet_id);
+    sqlite.prepare("UPDATE telegram_pet_instances SET stage='young',pet_xp=3240 WHERE pet_id=?").run(streetOther.pet_id);
+    const streetBoard = await hooks.buildPetMiniAppState(db, currentUser, token);
+    const streetChoice = hooks.PET_RANDOM_EVENTS.moon_crate_found.choices.find(choice => choice.key === 'flip_it_fast');
+    const streetReservation = await hooks.reservePetRepeatRewardEvent(db, {
+      telegram_id: currentUser, pet_id: streetSource.pet_id, season_key: streetSource.season_key,
+      event_type: 'random_event', event_key: 'source-street-replay', mode: 'event',
+      day_key: streetBoard.guidance.day_key, week_key: streetBoard.guidance.week_key,
+      saved_event_decision: { version: 1, encounter_key: 'moon_crate_found', choice_key: streetChoice.key,
+        kind: 'success', copy: streetChoice.copy, rewards: streetChoice.rewards, costs: streetChoice.costs,
+        reward_draws: { pet_xp: 0.5, moon_gold: 0.5 }, cost_draws: { energy: 0 } },
+    });
+    assert.equal(streetReservation.claimed, true);
+    assert.equal((await dispatchRenderedPetAction(db, currentUser, { id: currentUser },
+      { action: 'switch_pet_slot', pet_id: streetOther.pet_id }, token)).accepted, true);
+    await page.goto(`${fixtureOrigin}/moonpet-game.html?screen=explore&focus=street-event`);
+    const savedStreetButton = page.locator('[data-action="event_recover"]');
+    await savedStreetButton.waitFor({ state: 'visible' });
+    const otherClientRecovery = await hooks.processPetRandomEvent(db, currentUser, '', { saved_event_id: streetReservation.reservation_id });
+    assert.equal(otherClientRecovery.accepted, true);
+    assert.equal(otherClientRecovery.pet.pet_id, streetSource.pet_id);
+    const streetWallet = sqlite.prepare('SELECT moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles WHERE telegram_id=?').get(currentUser);
+    const streetReplayResponse = page.waitForResponse(r => r.url().endsWith('/telegram-pets/app/action') && r.request().postDataJSON()?.action === 'event_recover');
+    await savedStreetButton.click();
+    const streetReplay = await (await streetReplayResponse).json();
+    assert.equal(streetReplay.result.accepted, true); assert.equal(streetReplay.result.duplicate, true);
+    assert.equal(streetReplay.result.pet, undefined);
+    assert.equal(streetReplay.state.pet.pet_id, streetOther.pet_id);
+    await page.waitForFunction(() => !document.querySelector('[data-action="event_recover"]'));
+    assert.equal(await page.locator('.choice-result').count(), 0, 'the selected companion cannot inherit another pet’s event');
+    assert.deepEqual(sqlite.prepare('SELECT moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles WHERE telegram_id=?').get(currentUser), streetWallet);
+    assert.equal(sqlite.prepare("SELECT COUNT(*) n FROM telegram_pet_reward_claims WHERE telegram_id=? AND source='pet_event'").get(currentUser).n, 1);
+    await page.locator('[data-screen="profile"]').click();
+    await page.waitForSelector('[data-panel="pet-spaces"]');
+    await page.locator('[data-panel="pet-spaces"]').evaluate(node => { node.open = true; });
+    const sourceSwitchResponse = page.waitForResponse(r => r.url().endsWith('/telegram-pets/app/action') && r.request().postDataJSON()?.action === 'switch_pet_slot');
+    await page.locator(`[data-action="switch_pet_slot"][data-payload*="${streetSource.pet_id}"]`).click();
+    assert.equal((await (await sourceSwitchResponse).json()).state.pet.pet_id, streetSource.pet_id);
+    await page.locator('[data-screen="explore"]').click();
+    await page.waitForSelector('[data-panel="street-event"] .choice-result', { state: 'attached' });
+    const recoveredStreetText = await page.locator('[data-panel="street-event"] .choice-result').textContent();
+    assert.match(recoveredStreetText, /NO SECOND PAYMENT/);
+    assert.doesNotMatch(recoveredStreetText, /\+[0-9]|COST/);
+    assert.deepEqual(errors, []);
+    console.log('Duplicate Street Event recovery stays with its saved source pet at ' + viewport.width + 'x' + viewport.height);
     await context.close();
   }
 } finally {

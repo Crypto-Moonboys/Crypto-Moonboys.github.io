@@ -3373,9 +3373,15 @@
   // One confirmed choice for this visit; not a new history or reward ledger.
   // Keep source attribution even if the following state read selects another pet.
   // TEST-EXPORT: choiceResult:start
-  function rememberChoiceResult(action, result, beforeState) {
+  function rememberChoiceResult(action, result, beforeState, payload) {
     if (!result || result.accepted !== true || !['adventure', 'random_event', 'event_recover'].includes(action)) return;
-    var petId = result.pet && result.pet.pet_id || beforeState && beforeState.pet && beforeState.pet.pet_id;
+    var savedEvent = action === 'event_recover' && beforeState && (beforeState.pending_street_events || []).find(function (entry) {
+      return payload && payload.event_id && entry.event_id === payload.event_id;
+    });
+    // Duplicate recoveries may omit result.pet. Their source is the saved event,
+    // never whichever companion happens to be selected when recovery is clicked.
+    var petId = result.pet && result.pet.pet_id || (action === 'event_recover'
+      ? savedEvent && savedEvent.pet_id : beforeState && beforeState.pet && beforeState.pet.pet_id);
     if (!petId) return;
     lastChoiceResult = {
       pet_id: petId,
@@ -3924,7 +3930,7 @@
       var data = await post('/telegram-pets/app/action', requestPayload);
       if (!data || !data.result || typeof data.result.accepted !== 'boolean') throw new Error('ACTION RESPONSE UNCONFIRMED');
       var actionAccepted = Boolean(data.result && data.result.accepted);
-      if (['adventure', 'random_event', 'event_recover'].includes(action)) rememberChoiceResult(action, data.result, stateBeforeAction);
+      if (['adventure', 'random_event', 'event_recover'].includes(action)) rememberChoiceResult(action, data.result, stateBeforeAction, requestPayload);
       // Record a confirmed sleep/wake preference on the pet that took the
       // action, before a newer projection can select a different companion.
       if (actionAccepted && actionFamily === 'sleep') setSleepLatch(true, stateBeforeAction);

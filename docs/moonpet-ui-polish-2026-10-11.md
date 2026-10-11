@@ -19,7 +19,7 @@ Baseline: merged `main` at `18a0d9f009e6d7a38643407b992a0dfda3b27491` (PR #1483)
 
 The frontend consumes existing projections and action responses. Worker code, API request bodies, authentication, receipts, prices, reward caps, outcome rolls, ownership, timers and migrations are unchanged. Rendering, opening a route, reading help and dismissing a result never submit a gameplay action.
 
-The confirmed-choice display holds one latest response in memory, associated with its original pet. Another pet cannot inherit it. A duplicate acknowledgement shows no new gains or repeat costs. Rejected/unconfirmed responses do not create a completion display. Menu navigation and save refresh retain it; a full app reload clears this temporary presentation. Existing saved-event recovery remains the persistent authority, rather than this display becoming an additional ledger.
+The confirmed-choice display holds one latest response in memory, associated with its original pet. Another pet cannot inherit it. A duplicate Street Event recovery without a returned pet uses the matching saved event's source; if that ownership is absent, it creates no result display. A duplicate acknowledgement shows no new gains or repeat costs. Rejected/unconfirmed responses do not create a completion display. Menu navigation and save refresh retain it; a full app reload clears this temporary presentation. Existing saved-event recovery remains the persistent authority, rather than this display becoming an additional ledger.
 
 Fullness is only the presentation of `100 - hunger`; Feed effects and stored hunger are unchanged. Cost/reward previews still follow caps, scaling and stat limits. Missing resources are explanations derived from the current balances, not permission to spend.
 
