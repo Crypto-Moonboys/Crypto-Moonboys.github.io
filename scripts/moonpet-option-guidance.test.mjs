@@ -259,6 +259,7 @@ test('cost and reward facts stay separate, labelled, escaped and in the accessib
   assert.match(html, /fact-cost"><b>COST<\/b> 17 moon gold \+ 2 moon crystals/);
   assert.match(html, /fact-reward"><b>GIVES<\/b> 3 &lt;unsafe&gt;/);
   assert.match(html, /<b>STILL NEED<\/b> 4 Gold/);
+  assert.ok(html.indexOf('fact-cost') < html.indexOf('class="button-purpose"'), 'prices must be visible before long explanatory prose');
   const requirements = html.match(/id="([^"]+-requirements)"/)[1];
   assert.ok(html.match(/aria-describedby="([^"]+)"/)[1].split(' ').includes(requirements));
   assert.equal(ctx.valueText({}), 'NONE', 'a zero reward is not a free action');

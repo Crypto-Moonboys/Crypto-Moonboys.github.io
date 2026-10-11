@@ -1284,10 +1284,10 @@
     var descriptionId = 'moonpet-action-description-' + (button.descriptionCount = (button.descriptionCount || 0) + 1);
     var facts = actionFactsMarkup(options);
     var detail = shouldShowAvailability(options) || facts
-      ? '<small class="button-requirements" id="' + descriptionId + '-requirements">' + availabilityDetailMarkup(options) + facts + '</small>'
+      ? '<small class="button-requirements" id="' + descriptionId + '-requirements">' + facts + availabilityDetailMarkup(options) + '</small>'
       : '';
     var describedBy = descriptionId + '-purpose' + (detail ? ' ' + descriptionId + '-requirements' : '');
-    return '<button class="terminal-button action-button action-' + kind + (kind === 'risk' ? ' danger' : '') + '" type="button" data-action="' + escapeHtml(action) + '" data-payload="' + escapeHtml(JSON.stringify(payload || {})) + '" aria-label="' + escapeHtml(label) + '" aria-description="' + escapeHtml(purpose) + '" aria-describedby="' + describedBy + '"' + (disabled ? ' disabled' : '') + '>' + escapeHtml(label) + '<span class="button-state">' + badge + '</span><span class="button-purpose" id="' + descriptionId + '-purpose">' + escapeHtml(purpose) + '</span>' + detail + '</button>';
+    return '<button class="terminal-button action-button action-' + kind + (kind === 'risk' ? ' danger' : '') + '" type="button" data-action="' + escapeHtml(action) + '" data-payload="' + escapeHtml(JSON.stringify(payload || {})) + '" aria-label="' + escapeHtml(label) + '" aria-description="' + escapeHtml(purpose) + '" aria-describedby="' + describedBy + '"' + (disabled ? ' disabled' : '') + '>' + escapeHtml(label) + '<span class="button-state">' + badge + '</span>' + detail + '<span class="button-purpose" id="' + descriptionId + '-purpose">' + escapeHtml(purpose) + '</span></button>';
   }
 
   var panelOpenState = Object.create(null);
