@@ -434,7 +434,7 @@ for (const accepted of [true, false]) {
     stateRefreshPayload: () => ({ mode: 'core' }), readSleepLatch: () => false,
     hatchArtTransitionActive: () => false, selectBotArtForState: () => Promise.resolve(), scheduleCooldownRefresh: () => {},
     careActionButtonOptions: (_, value) => value || {}, actionCooldownButtonOptions: (_, value) => value,
-    shouldShowAvailability: value => Boolean(value.disabled), availabilityDetailMarkup: value => value.statusLabel,
+    actionFactsMarkup: () => '', shouldShowAvailability: value => Boolean(value.disabled), availabilityDetailMarkup: value => value.statusLabel,
     escapeHtml: value => String(value),
     patchFastActionState: () => assert.fail('a changed pet must never patch the old snapshot'),
     scheduleFastActionStateRefresh: () => assert.fail('stale reconciliation must begin immediately'),
@@ -482,7 +482,7 @@ for (const accepted of [true, false]) {
     stateRefreshPayload: () => ({}), readSleepLatch: () => false, mergeActionResultCooldown: next => next,
     hatchArtTransitionActive: () => false, selectBotArtForState: () => Promise.resolve(), scheduleCooldownRefresh: () => {},
     careActionButtonOptions: (_, value) => value || {}, actionCooldownButtonOptions: (_, value) => value,
-    shouldShowAvailability: value => Boolean(value.disabled), availabilityDetailMarkup: value => value.statusLabel,
+    actionFactsMarkup: () => '', shouldShowAvailability: value => Boolean(value.disabled), availabilityDetailMarkup: value => value.statusLabel,
     escapeHtml: value => String(value),
     async post(path, body) {
       calls.push({ path, body });
@@ -618,7 +618,7 @@ const bountyContext = vm.createContext({
   ] } } },
   petActionRefreshRequired: false, window: { MoonpetPlayOptions: options },
   careActionButtonOptions: (_, value) => value || {}, actionCooldownButtonOptions: (_, value) => value,
-  shouldShowAvailability: value => Boolean(value.disabled), availabilityDetailMarkup: value => value.statusLabel,
+  actionFactsMarkup: () => '', shouldShowAvailability: value => Boolean(value.disabled), availabilityDetailMarkup: value => value.statusLabel,
   escapeHtml: value => String(value), words: value => String(value), number: value => Number(value || 0),
   panel: (_, body) => body, craftingGoalMarkup: () => '',
   routeButton: (label, route) => '<button data-jump="' + route.screen + '">' + label + '</button>',
@@ -652,7 +652,7 @@ for (const moduleScreen of ['missions', 'profile']) {
   let failModule = true;
   const moduleContext = vm.createContext({
     state: { adopted: true, pet: { pet_id: 'shown-pet' }, lifecycle: { phase: 'young' }, hydration: { full: false, modules: ['home'] } },
-    activeScreen: moduleScreen, screen: { scrollTop: 0, innerHTML: '' },
+    selectedRouteScreen: '', selectedRoutePanel: '', activeScreen: moduleScreen, screen: { scrollTop: 0, innerHTML: '' },
     fullStateHydrationPromise: null, fullStateHydrationRetryTimer: 0, fullStateHydrationFailures: 0,
     fullStateHydrationRetryDelayMs: 0, FULL_STATE_HYDRATION_MAX_AUTO_RETRIES: 3,
     busy: false, noticesBusy: false, authenticationFailure: false, passiveRefreshInFlight: false,
@@ -669,7 +669,7 @@ for (const moduleScreen of ['missions', 'profile']) {
     panel: (_, body) => body, routeButton: () => '<button data-jump="home">RETURN HOME</button>', renderMenuStatus: () => '', renderRewardLifecycle: () => '', renderRecommended: () => '', renderPetSpaces: () => '',
     showPendingNotices: async () => {}, applyRequestedFocus: () => {},
     careActionButtonOptions: (_, value) => value || {}, actionCooldownButtonOptions: (_, value) => value,
-    shouldShowAvailability: value => Boolean(value.disabled), availabilityDetailMarkup: value => value.statusLabel,
+    actionFactsMarkup: () => '', shouldShowAvailability: value => Boolean(value.disabled), availabilityDetailMarkup: value => value.statusLabel,
     escapeHtml: value => String(value),
     async post(path, payload) {
       calls.push({ path, payload });

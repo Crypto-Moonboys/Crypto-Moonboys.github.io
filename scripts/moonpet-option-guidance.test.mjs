@@ -4,6 +4,8 @@ import vm from 'node:vm';
 import test from 'node:test';
 import { createRequire } from 'node:module';
 import { __petMediaTestHooks as hooks } from '../workers/moonboys-api/worker.js';
+import { previewEncounterChoice } from '../workers/moonboys-api/pets/choice-preview.js';
+import { PET_MARKET_OFFERS } from '../workers/moonboys-api/pets/economy-expansion.js';
 const guide = createRequire(import.meta.url)('../js/moonpet-guide.js');
 const read = path => fs.readFileSync(new URL('../' + path, import.meta.url), 'utf8');
 const source = read('js/moonpet-mini-app.js');
@@ -14,11 +16,13 @@ const escape = value => String(value ?? '').replaceAll('&', '&amp;').replaceAll(
 function context() {
   const ctx = { state: { adopted: true, pet: { pet_id: 'guidance-pet', energy: 80 }, lifecycle: { phase: 'young' }, guidance: {}, cooldowns: { entries: [] }, entry_requirement: { eligible: true } },
     petActionRefreshRequired: false, escapeHtml: escape, playOptionsReady: () => true,
+    number: value => Number(value || 0).toLocaleString('en-US'), words: value => String(value || '').replaceAll('_', ' '),
     cooldownRemainingSeconds: value => Number(value && value.remaining_seconds || 0),
     countdownText: () => 'Available in 2 minutes', countdownMarkup: () => '<span data-cooldown-expires-at="later">Available in 2 minutes</span>',
     post: () => { throw Error('Rendering must not request data'); },
     window: { setTimeout: () => { throw Error('Rendering must not create timers'); } } };
-  vm.createContext(ctx); vm.runInContext(block('actionAvailability') + between('  function button(', '  var panelOpenState'), ctx);
+  vm.createContext(ctx); vm.runInContext(between('  function valueText(', '  function renderEconomy('), ctx);
+  vm.runInContext(block('actionAvailability') + between('  function button(', '  var panelOpenState'), ctx);
   vm.runInContext(between('  function routeButton(', '  function objectiveRouteButton('), ctx);
   ctx.button('FEED', 'feed', {}, {});
   return ctx;
@@ -245,4 +249,142 @@ test('shared Kaiju example is read-only and help visibility survives redraw pref
   assert.doesNotMatch(ctx.renderKaijuHowTo({}), / open>/);
   ctx.panelOpenState['explore:kaiju-help'] = true;
   assert.match(ctx.renderKaijuHowTo({ match: { match_id: 'saved' } }), / open>/);
+});
+
+test('cost and reward facts stay separate, labelled, escaped and in the accessible description', () => {
+  const ctx = context();
+  const html = ctx.button('BUNDLE', 'market_buy', { offer_key: 'same-offer' }, {
+    cost: { moon_gold: 17, moon_crystals: 2 }, reward: { items: { '<unsafe>': 3 } }, rewardLabel: 'GIVES', missing: '4 Gold',
+  });
+  assert.match(html, /fact-cost"><b>COST<\/b> 17 moon gold \+ 2 moon crystals/);
+  assert.match(html, /fact-reward"><b>GIVES<\/b> 3 &lt;unsafe&gt;/);
+  assert.match(html, /<b>STILL NEED<\/b> 4 Gold/);
+  const requirements = html.match(/id="([^"]+-requirements)"/)[1];
+  assert.ok(html.match(/aria-describedby="([^"]+)"/)[1].split(' ').includes(requirements));
+  assert.equal(ctx.valueText({}), 'NONE', 'a zero reward is not a free action');
+  assert.equal(ctx.costText({}), 'FREE');
+});
+
+test('all current adventure and Street Event branches render authoritative odds and separate ranges', () => {
+  const ctx = context();
+  for (const encounter of [
+    ...['moon_alley', 'graffiti_vault', 'nebula_market'].map(hooks.resolvePetAdventureEncounter),
+    ...['lost_delivery_drone', 'neon_storm', 'underground_cipher'].map(hooks.resolvePetRandomEncounter),
+  ]) for (const choice of encounter.choices) {
+    const preview = previewEncounterChoice(choice, { moon_gold: 10000, moon_crystals: 100, style_tokens: 100 });
+    const html = ctx.button(choice.label, 'adventure', { adventure_key: choice.key }, { preview });
+    assert.equal((html.match(/class="choice-outcome"/g) || []).length, preview.outcomes.length);
+    for (const outcome of preview.outcomes) {
+      assert.ok(html.includes(Number(outcome.chance.toFixed(2)) + '% ' + outcome.kind.toUpperCase()));
+      for (const values of [outcome.rewards, outcome.costs]) for (const [key, bounds] of Object.entries(values)) {
+        const range = bounds[0] === bounds[1] ? ctx.number(bounds[0]) : ctx.number(bounds[0]) + '–' + ctx.number(bounds[1]);
+        assert.ok(html.includes(range + ' ' + ctx.words(key)), choice.key + ':' + key);
+      }
+    }
+    assert.equal(JSON.parse(html.match(/data-payload="([^"]+)"/)[1].replaceAll('&quot;', '"')).adventure_key, choice.key);
+  }
+});
+
+test('shop shortfalls use existing currency and material balances, never potential rewards', () => {
+  const ctx = context();
+  ctx.state.pet = { moon_gold: 7, moon_crystals: 2, style_tokens: 8 };
+  ctx.state.materials = [{ key: 'scrap_metal', quantity: 3 }];
+  assert.equal(ctx.missingCostText({ moon_gold: 10, moon_crystals: 2, scrap_metal: 5 }), '3 moon gold + 2 scrap metal');
+  assert.equal(ctx.missingCostText({ moon_gold: 7 }), '');
+  ctx.state.pet.moon_gold = 0;
+  assert.equal(ctx.missingCostText({ moon_gold: 10 }), '10 moon gold');
+});
+
+test('recommendations omit fully blocked adventures and unquoted or locked upgrades', () => {
+  const options = createRequire(import.meta.url)('../js/moonpet-play-options.js');
+  const snapshot = { adopted: true, lifecycle: { phase: 'young' }, pet: { energy: 30 },
+    adventure: { available: true, minimum_energy: 16, choices: [{ preview: { available: false } }] },
+    live_systems: { upgrades: [{ unlocked: false, affordable: true, quote_version: 'quote' }] } };
+  assert.ok(!options.recommendations(snapshot).some(entry => ['adventure', 'gear_upgrade'].includes(entry.key)));
+  snapshot.adventure.choices.push({ preview: { available: true, affordability: 'conditional' } });
+  assert.ok(options.recommendations(snapshot).some(entry => entry.key === 'adventure'));
+  snapshot.live_systems.upgrades[0].unlocked = true;
+  delete snapshot.live_systems.upgrades[0].quote_version;
+  assert.ok(!options.recommendations(snapshot).some(entry => entry.key === 'gear_upgrade'));
+  snapshot.live_systems.upgrades[0].quote_version = 'quote';
+  assert.ok(options.recommendations(snapshot).some(entry => entry.key === 'gear_upgrade'));
+});
+
+test('inverted hunger is presented as accessible fullness and clamped to 100', () => {
+  const ctx = context();
+  vm.runInContext(between('  function meter(', '  function renderCanvasTools('), ctx);
+  assert.match(ctx.meter('FULLNESS', 75, true), /aria-label="FULLNESS".*aria-valuenow="25"/);
+  assert.match(ctx.meter('FULLNESS', 75, true), /25\/100/);
+  assert.match(ctx.meter('FULLNESS', -20, true), /aria-valuenow="100"/);
+  assert.match(ctx.meter('FULLNESS', 130, true), /aria-valuenow="0"/);
+  const home = between('  function renderHome()', '  // TEST-EXPORT: coreStateHydration:start');
+  assert.ok(home.includes("meter('FULLNESS', pet.hunger, true)"));
+  const care = home.slice(home.indexOf("panel('CARE CONSOLE'"), home.indexOf('      renderSeasonSlots()'));
+  assert.doesNotMatch(care, /meter\(/, 'Care actions do not duplicate the vital bars');
+});
+
+test('confirmed choice feedback stays with its source pet, hides duplicate gains, and escapes text', () => {
+  const ctx = context();
+  ctx.lastChoiceResult = null; ctx.panelOpenState = {};
+  vm.runInContext(block('actionResultFeedback'), ctx);
+  const before = { pet: { pet_id: 'source-pet' } };
+  ctx.rememberChoiceResult('adventure', { accepted: false }, before);
+  assert.equal(ctx.lastChoiceResult, null);
+  ctx.rememberChoiceResult('adventure', { accepted: true, pet: { pet_id: 'source-pet' }, choice: { label: '<Cash Out>' },
+    result_copy: '<server outcome>', rewards: { moon_gold: 5 }, applied: { costsApplied: { energy: 7 } } }, before);
+  assert.equal(ctx.renderChoiceResult('adventure'), '', 'another pet cannot inherit this response');
+  ctx.state.pet.pet_id = 'source-pet';
+  const html = ctx.renderChoiceResult('adventure');
+  assert.match(html, /&lt;Cash Out&gt;/); assert.match(html, /&lt;server outcome&gt;/);
+  assert.match(html, /\+5 moon gold/); assert.match(html, /<b>COST<\/b> 7 energy/);
+  assert.match(html, /data-dismiss-choice-result/);
+  assert.equal(ctx.renderChoiceResult('street-event'), '');
+  ctx.rememberChoiceResult('adventure', { accepted: true, duplicate: true, rewards: { moon_gold: 99 }, applied: { costsApplied: { energy: 7 } } }, before);
+  assert.match(ctx.renderChoiceResult('adventure'), /NO SECOND PAYMENT/);
+  assert.doesNotMatch(ctx.renderChoiceResult('adventure'), /\+99|<b>COST<\/b>/);
+});
+
+test('real Shop renderer explains each gate and keeps owned free switches available', () => {
+  const ctx = context();
+  ctx.state.pet = { pet_id: 'guidance-pet', level: 1, moon_gold: 5 };
+  ctx.panel = (_, body) => body; ctx.craftingGoalMarkup = () => '';
+  ctx.window.MoonpetPlayOptions = createRequire(import.meta.url)('../js/moonpet-play-options.js');
+  vm.runInContext(between('  function renderEconomy(', '  // TEST-EXPORT: notificationControls:start'), ctx);
+  ctx.state.guidance.shop_items = [
+    { key: 'locked', title: 'Locked Item', min_level: 8, unlocked: false, affordable: false, cost: { moon_gold: 12 } },
+    { key: 'poor', title: 'Poor Item', min_level: 1, unlocked: true, affordable: false, cost: { moon_gold: 12 } },
+    { key: 'ready', title: 'Ready Item', min_level: 1, unlocked: true, affordable: true, cost: { moon_gold: 5 } },
+    { key: 'owned', title: 'Owned Item', min_level: 1, unlocked: true, affordable: false, owned: true },
+    { key: 'equipped', title: 'Equipped Item', min_level: 1, unlocked: true, owned: true, equipped: true },
+  ];
+  const html = ctx.renderEconomy();
+  const card = title => html.match(new RegExp('<button[^>]*aria-label="[^"\\n]*' + title + '[^"\\n]*"[^>]*>[\\s\\S]*?<\\/button>'))[0];
+  assert.match(card('Locked Item'), / disabled.*LEVEL 8 REQUIRED/);
+  assert.match(card('Poor Item'), / disabled.*STILL NEED<\/b> 7 moon gold/);
+  assert.doesNotMatch(card('Ready Item'), / disabled/); assert.match(card('Ready Item'), /CAN BUY NOW/);
+  assert.doesNotMatch(card('Owned Item'), / disabled/); assert.match(card('Owned Item'), /COST<\/b> FREE/);
+  assert.match(card('Equipped Item'), / disabled.*EQUIPPED/);
+  assert.match(html, /UNLOCK LEVEL 8 \/\/ YOUR LEVEL 1/);
+});
+
+test('real Market renderer discloses every cost and granted item/material/currency in all twelve templates', () => {
+  const ctx = context();
+  ctx.panel = (_, body) => body; ctx.craftingGoalMarkup = () => '';
+  ctx.window.MoonpetPlayOptions = createRequire(import.meta.url)('../js/moonpet-play-options.js');
+  ctx.state.guidance.economy = { day_key: '2026-10-11', market_offers: PET_MARKET_OFFERS.map(offer => ({ ...offer, unlocked: true, affordable: true, available: true })) };
+  vm.runInContext(between('  function renderEconomy(', '  // TEST-EXPORT: notificationControls:start'), ctx);
+  const html = ctx.renderEconomy();
+  assert.equal(PET_MARKET_OFFERS.length, 12);
+  for (const offer of PET_MARKET_OFFERS) {
+    const card = html.match(new RegExp('<button[^>]*aria-label="' + offer.title + '"[^>]*>[\\s\\S]*?<\\/button>'))[0];
+    assert.match(card, /fact-cost"><b>COST<\/b>/);
+    assert.match(card, /fact-reward"><b>GIVES<\/b>/);
+    for (const [key, amount] of Object.entries(offer.cost)) assert.ok(card.includes(amount + ' ' + ctx.words(key)));
+    for (const [key, amount] of Object.entries(offer.reward)) {
+      if (typeof amount === 'object') for (const [item, quantity] of Object.entries(amount)) assert.ok(card.includes(quantity + ' ' + ctx.words(item)));
+      else assert.ok(card.includes(amount + ' ' + ctx.words(key)));
+    }
+    const payload = JSON.parse(card.match(/data-payload="([^"]+)"/)[1].replaceAll('&quot;', '"'));
+    assert.equal(payload.offer_key, offer.key); assert.equal(payload.day_key, '2026-10-11');
+  }
 });

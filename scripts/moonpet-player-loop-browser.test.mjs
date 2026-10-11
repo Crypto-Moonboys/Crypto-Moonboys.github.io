@@ -922,6 +922,24 @@ try {
     await page.locator('#utility-content [data-utility="guide"]').click();
     await page.locator('[data-utility-close]').click();
     assert.equal(await page.locator('[data-panel="how-to-play"] [data-utility="guide"]').evaluate(b => b === document.activeElement), true, 'closing help returns focus to Profile');
+    const helpActionsBefore = actions.length;
+    for (const dismissal of ['escape', 'backdrop', 'close']) {
+      await page.locator('[data-panel="how-to-play"] [data-utility="guide"]').click();
+      const readingHelp = page.locator('.guide-step').filter({ hasText: 'Read Needs, Costs And Outcomes' });
+      await readingHelp.locator('summary').click();
+      assert.ok(await readingHelp.locator('summary').evaluate(node => node.getBoundingClientRect().height >= 44));
+      await page.locator('#utility-content').evaluate(node => { node.scrollTop = node.scrollHeight; });
+      const closeBox = await page.locator('[data-utility-close]').boundingBox();
+      assert.ok(closeBox.height >= 44 && closeBox.y >= 0 && closeBox.y + closeBox.height <= viewport.height);
+      if (dismissal === 'escape') await page.keyboard.press('Escape');
+      else if (dismissal === 'backdrop') {
+        const backdrop = await page.locator('#utility-layer').boundingBox();
+        await page.mouse.click(backdrop.x + 2, backdrop.y + 2);
+      } else await page.locator('[data-utility-close]').click();
+      assert.equal(await page.locator('#utility-layer').isVisible(), false);
+      assert.equal(await page.locator('[data-panel="how-to-play"] [data-utility="guide"]').evaluate(node => node === document.activeElement), true);
+    }
+    assert.equal(actions.length, helpActionsBefore, 'opening and dismissing help spends and writes nothing');
     if (process.env.MOONPET_BROWSER_SCREENSHOT) await page.screenshot({ path: process.env.MOONPET_BROWSER_SCREENSHOT.replace('.png', `-canvas-tools-${viewport.width}.png`) });
     await page.locator('[data-screen="home"]').click();
     assert.ok(await page.locator('#nav button').evaluateAll((buttons) => buttons.length === 6 && buttons.every((b) => b.getBoundingClientRect().right <= innerWidth && b.getBoundingClientRect().left >= 0)), 'all six navigation buttons must fit the viewport');
@@ -1065,6 +1083,17 @@ try {
     currentUser = 'browser-young';
     await page.reload();
     await page.waitForSelector('[data-panel="care"]');
+    assert.equal(await page.locator('[data-panel="care"] [role="meter"]').count(), 0);
+    await page.locator('[data-panel="vitals"] > summary').click();
+    const vitalRead = await page.locator('[data-panel="vitals"]').evaluate(node => ({
+      meters: [...node.querySelectorAll('[role="meter"]')].map(meter => ({ name: meter.getAttribute('aria-label'), value: Number(meter.getAttribute('aria-valuenow')) })),
+      fits: node.scrollWidth <= node.clientWidth,
+    }));
+    assert.equal(vitalRead.meters.length, 5);
+    assert.ok(vitalRead.meters.some(meter => meter.name === 'FULLNESS'));
+    assert.ok(vitalRead.meters.every(meter => meter.value >= 0 && meter.value <= 100));
+    assert.equal(vitalRead.fits, true, 'vital values fit narrow phones');
+    await page.locator('[data-panel="vitals"] > summary').click();
     await page.waitForFunction(() => window.MoonpetBetaAppearance.getBackgroundArtState().mode === 'bitty_background');
     assert.equal(await page.evaluate(() => window.MoonpetBetaAppearance.getBackgroundArtState().source), '/img/BITTY BACKGROUND.jpg');
     await page.waitForFunction(() => window.MoonpetBetaAppearance.getBackgroundArtState().floor?.shadow === true);
@@ -1805,6 +1834,7 @@ try {
     sqlite.prepare('UPDATE telegram_pet_profiles SET energy=100 WHERE telegram_id=?').run(currentUser);
     await page.reload(); await page.waitForSelector('[data-panel="care"]');
     await page.locator('[data-panel="play-now"] [data-focus="adventure"]').filter({ hasText: 'ADVENTURE CHOICES' }).click();
+    await page.waitForSelector('[data-panel="adventure"][data-route-selected][open]');
     const adventureText = await page.locator('[data-panel="adventure"]').textContent();
     assert.ok(adventureText.includes('ENTRY REQUIRES') && adventureText.includes('% SETBACK') && adventureText.includes('BASE REWARD'));
     assert.ok((await page.locator('[data-panel="street-event"]').textContent()).includes('COST'));
@@ -1816,6 +1846,26 @@ try {
     assert.ok(adventureResult.state.adventure.cooldown.remaining_seconds > 1700);
     assert.ok(adventureResult.state.cooldowns.entries.some((entry) => entry.key === 'adventure'));
     await page.waitForFunction(() => Array.from(document.querySelectorAll('[data-action="adventure"]')).every((b) => b.disabled));
+    const confirmedChoice = page.locator('[data-panel="adventure"] .choice-result');
+    await confirmedChoice.waitFor({ state: 'visible' });
+    assert.ok((await confirmedChoice.textContent()).includes(adventureResult.result.result_copy));
+    assert.ok(await page.locator('[data-panel="adventure"] .choice-outcome .fact-cost').count());
+    assert.ok(await page.locator('[data-panel="adventure"] .choice-outcome .fact-reward').count());
+    const beforeChoiceReview = gameplayCount();
+    await measureDisclosureTarget(page, '[data-panel="adventure"] .choice-result > summary', true);
+    await confirmedChoice.locator('summary').click();
+    await measureDisclosureTarget(page, '[data-panel="adventure"] .choice-result > summary', false);
+    await page.locator('[data-screen="work"]').click();
+    await page.locator('[data-screen="explore"]').click();
+    await measureDisclosureTarget(page, '[data-panel="adventure"] .choice-result > summary', false);
+    await page.locator('[data-utility="sync"]').click();
+    await page.waitForSelector('[data-panel="adventure"][data-route-selected]');
+    await measureDisclosureTarget(page, '[data-panel="adventure"] .choice-result > summary', false);
+    await confirmedChoice.locator('summary').click();
+    await page.screenshot({ path: path.join(screenshotDirectory, `moonpet-ui-outcome-${viewport.width}.png`) });
+    await confirmedChoice.locator('[data-dismiss-choice-result]').click();
+    assert.equal(await confirmedChoice.count(), 0);
+    assert.equal(gameplayCount(), beforeChoiceReview, 'reviewing, collapsing and dismissing a result never replays its action');
     assert.equal(await page.locator('[data-panel="play-now"] [data-focus="adventure"]').filter({ hasText: 'ADVENTURE CHOICES' }).count(), 0);
     if (process.env.MOONPET_BROWSER_SCREENSHOT) await page.screenshot({ path: process.env.MOONPET_BROWSER_SCREENSHOT.replace('.png', `-choices-${viewport.width}.png`) });
     sqlite.prepare("UPDATE telegram_pet_events SET created_at=datetime('now','-31 minutes') WHERE telegram_id=? AND event_type='adventure'").run(currentUser);
@@ -2211,6 +2261,21 @@ try {
     await page.reload(); await page.waitForSelector('[data-panel="care"]');
     await page.locator('[data-screen="economy"]').click();
     const freeGear = page.locator('[data-panel="shop"] [data-action="equip"]').filter({hasText:'Moon Kibble'});
+    if (!await page.locator('[data-panel="shop"]').evaluate(node => node.open)) await page.locator('[data-panel="shop"] > summary').click();
+    await freeGear.waitFor({ state: 'visible' });
+    await freeGear.scrollIntoViewIfNeeded();
+    const shopProjection = (await hooks.buildPetMiniAppState(db, currentUser, token)).guidance.shop_items;
+    assert.equal(shopProjection.length, 17);
+    for (const item of shopProjection) {
+      const card = page.locator('[data-panel="shop"] [data-action]').filter({ hasText: item.title });
+      assert.equal(await card.count(), 1);
+      assert.ok((await card.textContent()).includes('UNLOCK LEVEL ' + item.min_level));
+      assert.equal(await card.isDisabled(), !item.unlocked || (!item.owned && !item.affordable) || item.equipped);
+      assert.equal(await card.locator('.fact-cost').count() >= 1, true);
+    }
+    const shoppingFacts = await page.locator('[data-panel="shop"] .action-facts').evaluateAll(nodes => nodes.every(node => node.clientWidth > 0 && node.scrollWidth <= node.clientWidth));
+    assert.equal(shoppingFacts, true, 'prices and missing resources wrap within phone cards');
+    await page.screenshot({ path: path.join(screenshotDirectory, `moonpet-ui-shop-${viewport.width}.png`) });
     assert.equal(await freeGear.isEnabled(),true,'owned gear must be usable with zero Gold');
     const equippedResponse = page.waitForResponse(r=>r.url().endsWith('/telegram-pets/app/action') && r.request().postDataJSON()?.action==='equip');
     await freeGear.click();

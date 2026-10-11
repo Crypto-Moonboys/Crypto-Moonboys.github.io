@@ -117,6 +117,9 @@
   var utilityReturnFocus = null;
   var activeUtility = '';
   var utilityRequestGeneration = 0;
+  var lastChoiceResult = null;
+  var selectedRoutePanel = '';
+  var selectedRouteScreen = '';
 
   function currentPetSleepKey(snapshot) {
     var pet = snapshot && snapshot.pet || {};
@@ -836,6 +839,30 @@
     return detail ? label + ' // ' + escapeHtml(detail) : label;
   }
 
+  function actionFactsMarkup(options) {
+    options = options || {};
+    function fact(kind, title, text) {
+      return '<span class="action-fact fact-' + kind + '"><b>' + escapeHtml(title) + '</b> ' + escapeHtml(text) + '</span>';
+    }
+    var facts = '';
+    if (options.cost) facts += fact('cost', 'COST', costText(options.cost));
+    if (options.reward) facts += fact('reward', options.rewardLabel || 'BASE REWARD', valueText(options.reward));
+    if (options.missing) facts += fact('cost', 'STILL NEED', options.missing);
+    if (options.preview && Array.isArray(options.preview.outcomes)) {
+      options.preview.outcomes.forEach(function (outcome) {
+        function ranges(values) {
+          return Object.entries(values || {}).map(function (entry) {
+            var bounds = entry[1];
+            return (bounds[0] === bounds[1] ? number(bounds[0]) : number(bounds[0]) + '–' + number(bounds[1])) + ' ' + words(entry[0]);
+          }).join(' + ') || 'NONE';
+        }
+        facts += '<span class="choice-outcome">' + fact('outcome', String(Number(Number(outcome.chance).toFixed(2))) + '% ' + String(outcome.kind || 'OUTCOME').toUpperCase(), '')
+          + fact('reward', 'BASE REWARD', ranges(outcome.rewards)) + fact('cost', 'COST', ranges(outcome.costs)) + '</span>';
+      });
+    }
+    return facts ? '<span class="action-facts">' + facts + '</span>' : '';
+  }
+
   function shouldShowAvailability(options) {
     options = options || {};
     return Boolean(
@@ -1255,8 +1282,9 @@
     }
     var badge = disabled ? 'UNAVAILABLE' : kind === 'claim' ? 'CLAIM READY' : kind === 'risk' ? 'REVIEW RISK' : kind === 'spend' ? 'CHECK COST' : kind === 'choice' ? 'COMMIT CHOICE' : 'READY';
     var descriptionId = 'moonpet-action-description-' + (button.descriptionCount = (button.descriptionCount || 0) + 1);
-    var detail = shouldShowAvailability(options)
-      ? '<small class="button-requirements" id="' + descriptionId + '-requirements">' + availabilityDetailMarkup(options) + '</small>'
+    var facts = actionFactsMarkup(options);
+    var detail = shouldShowAvailability(options) || facts
+      ? '<small class="button-requirements" id="' + descriptionId + '-requirements">' + availabilityDetailMarkup(options) + facts + '</small>'
       : '';
     var describedBy = descriptionId + '-purpose' + (detail ? ' ' + descriptionId + '-requirements' : '');
     return '<button class="terminal-button action-button action-' + kind + (kind === 'risk' ? ' danger' : '') + '" type="button" data-action="' + escapeHtml(action) + '" data-payload="' + escapeHtml(JSON.stringify(payload || {})) + '" aria-label="' + escapeHtml(label) + '" aria-description="' + escapeHtml(purpose) + '" aria-describedby="' + describedBy + '"' + (disabled ? ' disabled' : '') + '>' + escapeHtml(label) + '<span class="button-state">' + badge + '</span><span class="button-purpose" id="' + descriptionId + '-purpose">' + escapeHtml(purpose) + '</span>' + detail + '</button>';
@@ -1335,7 +1363,7 @@
   function meter(label, value, invert) {
     var amount = Math.max(0, Math.min(100, Number(value) || 0));
     if (invert) amount = 100 - amount;
-    return '<div class="meter"><span>' + escapeHtml(label) + '</span><span class="meter-track"><span class="meter-fill" style="width:' + amount + '%"></span></span><strong>' + Math.floor(amount) + '</strong></div>';
+    return '<div class="meter" role="meter" aria-label="' + escapeHtml(label) + '" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + Math.floor(amount) + '"><span>' + escapeHtml(label) + '</span><span class="meter-track" aria-hidden="true"><span class="meter-fill" style="width:' + amount + '%"></span></span><strong>' + Math.floor(amount) + '/100</strong></div>';
   }
 
   function renderCanvasTools() {
@@ -1980,7 +2008,7 @@
     return '<div class="ticker"><span>MOONPET OS // ' + escapeHtml(displayName) + ' // ' + escapeHtml(moonpetStageLabel(lifecycle, pet)) + ' // STREAK ' + number(pet.streak_days) + ' DAYS //</span></div>' +
       activePetSummary() +
       renderPlayNow() +
-      panel('VITAL SYSTEMS', meter('HEALTH', pet.health) + meter('ENERGY', pet.energy) + meter('HUNGER', pet.hunger, true) + meter('FUN', pet.happiness) + meter('CLEAN', pet.cleanliness), 'vitals') +
+      panel('VITAL SYSTEMS', '<div class="line muted">Higher is better on every meter. Fullness is the opposite of hunger: Feed raises fullness.</div>' + meter('HEALTH', pet.health) + meter('ENERGY', pet.energy) + meter('FULLNESS', pet.hunger, true) + meter('FUN', pet.happiness) + meter('CLEAN', pet.cleanliness), 'vitals') +
       panel('CARE CONSOLE', '<div class="button-grid">' +
         button('FEED', 'feed') + button('PLAY', 'play') + button('CLEAN', 'clean') + button('SLEEP', 'sleep') + button('TRAIN', 'train') +
         button('ENERGY DRINK', 'energy_drink') + button('DANCE', 'dance') + button('CUDDLES', 'cuddles') +
@@ -2783,11 +2811,11 @@
     var guidance = state.guidance || {};
     var encounter = state.encounter;
     var eventButtons = encounter ? encounter.choices.map(function (choice) {
-      return button(choice.label, 'random_event', { choice: choice.key, challenge_token: encounter.challenge_token }, { disabled: choice.preview && choice.preview.available === false, resourceRequired: choice.preview && choice.preview.available === false, detail: choice.preview && choice.preview.detail || '' });
+      return button(choice.label, 'random_event', { choice: choice.key, challenge_token: encounter.challenge_token }, { disabled: choice.preview && choice.preview.available === false, resourceRequired: choice.preview && choice.preview.available === false, preview: choice.preview, detail: choice.preview && choice.preview.affordability_detail || '' });
     }).join('') : '';
     var adventure = state.adventure;
     var adventureButtons = adventure ? adventure.choices.map(function (choice) {
-      return button(choice.label, 'adventure', { adventure_key: choice.key, challenge_token: adventure.challenge_token }, { disabled: adventure.available === false || choice.preview && choice.preview.available === false, resourceRequired: choice.preview && choice.preview.available === false, cooldown: adventure.cooldown, detail: (adventure.minimum_energy ? 'ENTRY REQUIRES ' + number(adventure.minimum_energy) + ' ENERGY // ' : '') + (choice.preview && choice.preview.detail || '') });
+      return button(choice.label, 'adventure', { adventure_key: choice.key, challenge_token: adventure.challenge_token }, { disabled: adventure.available === false || choice.preview && choice.preview.available === false, resourceRequired: choice.preview && choice.preview.available === false, cooldown: adventure.cooldown, preview: choice.preview, detail: (adventure.minimum_energy ? 'ENTRY REQUIRES ' + number(adventure.minimum_energy) + ' ENERGY // ' : '') + (choice.preview && choice.preview.affordability_detail || '') });
     }).join('') : '';
     var boss = guidance.weekly_boss || {};
     var run = state.run;
@@ -2958,8 +2986,8 @@
       (boss.rotation_cooldown ? '<div class="line muted">NEXT WEEKLY BOSS ' + countdownMarkup(boss.rotation_cooldown, 'in ') + '</div>' : '') +
       '<div class="button-grid">' + (state.contracts && state.contracts.available ? routeButton('CONTINUE WITH CONTRACTS', { screen: 'missions', focus: 'contracts' }, 'Saved quests without pet energy costs or cooldowns.') : '') + '</div>';
     return renderPlayNow() + panel('DISTRICT NETWORK', '<div class="line muted">NEXT // ' + escapeHtml(exploreNextLine()) + '</div>' + regions, 'districts') + panel('MOON RUN', '<div class="line muted">NEXT // ' + escapeHtml(exploreNextLine()) + '</div>' + runBody, 'moon-run') +
-      panel(adventure ? adventure.title : 'PET ADVENTURE', '<div class="line">' + escapeHtml(adventure ? adventure.intro : 'NO ADVENTURE SIGNAL.') + '</div><div class="line muted">One adventure every 30 minutes. Entry energy is a requirement; actual costs depend on the outcome below. Base rewards remain subject to caps. Hunger costs increase hunger.</div><div class="button-grid">' + adventureButtons + '</div>', 'adventure') +
-      panel(encounter ? encounter.title : 'STREET EVENT', '<div class="line">' + escapeHtml(encounter ? encounter.intro : 'NO EVENT SIGNAL.') + '</div><div class="line muted">Compare both outcomes before choosing. Base rewards are reduced by repeated-play scaling and daily caps; stat changes stop at their limits. Hunger costs increase hunger.</div><div class="button-grid">' + eventButtons + '</div><div class="button-grid one">' + savedEvents + '</div>', 'street-event') +
+      panel(adventure ? adventure.title : 'PET ADVENTURE', '<div class="line">' + escapeHtml(adventure ? adventure.intro : 'NO ADVENTURE SIGNAL.') + '</div><div class="line muted">One adventure every 30 minutes. Entry energy is a requirement; actual costs depend on the outcome below. Base rewards remain subject to caps. Hunger costs increase hunger.</div>' + renderChoiceResult('adventure') + '<div class="button-grid">' + adventureButtons + '</div>', 'adventure') +
+      panel(encounter ? encounter.title : 'STREET EVENT', '<div class="line">' + escapeHtml(encounter ? encounter.intro : 'NO EVENT SIGNAL.') + '</div><div class="line muted">Compare both outcomes before choosing. Base rewards are reduced by repeated-play scaling and daily caps; stat changes stop at their limits. Hunger costs increase hunger.</div>' + renderChoiceResult('street-event') + '<div class="button-grid">' + eventButtons + '</div><div class="button-grid one">' + savedEvents + '</div>', 'street-event') +
       panel('WEEKLY BOSS // ' + (boss.title || 'LOCKED'), '<div class="line muted">NEXT // ' + escapeHtml(exploreNextLine()) + '</div>' + bossBody, 'weekly-boss') +
       panel('STREET STORY CHAINS', chains || '<div class="line muted">NO CHAIN SIGNAL.</div>', 'story-chains') + panel('SEASONAL RAID', seasonalBody, 'seasonal-boss') +
       panel('PET ARENA', arenaBody, 'arena') + panel('KAIJU CODE CARDS', kaijuBody, 'kaiju');
@@ -2970,8 +2998,7 @@
     var jobs = guidance.jobs || state.jobs || [];
     var jobsHtml = jobs.map(function (job) {
       var specialistGate = job.required_track ? ' // ' + words(job.required_track).toUpperCase() + ' ' + number(job.current_xp) + '/' + number(job.required_xp) : '';
-      var jobRewards = valueText({ pet_xp: job.pet_xp, moon_gold: job.moon_gold, moon_crystals: job.moon_crystals, style_tokens: job.style_tokens });
-      return button(job.title, 'work', { job_key: job.key }, { disabled: job.available === false, cooldown: job.cooldown, detail: 'LVL ' + job.min_level + ' // STAGE ' + number(job.min_evolution_stage) + specialistGate + ' // BASE REWARD ' + jobRewards + ' // ' + (job.lore || '') });
+        return button(job.title, 'work', { job_key: job.key }, { disabled: job.available === false, cooldown: job.cooldown, reward: { pet_xp: job.pet_xp, moon_gold: job.moon_gold, moon_crystals: job.moon_crystals, style_tokens: job.style_tokens }, detail: 'LVL ' + job.min_level + ' // STAGE ' + number(job.min_evolution_stage) + specialistGate + ' // ' + (job.lore || '') });
     }).join('');
     var activity = guidance.activity;
     var activityHtml = activity ? '' : '<div class="line muted">Choose recovery, training, work or exploration. One activity at a time; it continues while you play other routes or close the app. Claiming ends it. Base previews are subject to reward caps and stat limits; hunger increases are costs.</div>';
@@ -3018,11 +3045,19 @@
         Object.entries(amount).forEach(function (asset) { if (Number(asset[1]) > 0) output.push(number(asset[1]) + ' ' + words(asset[0])); });
       } else if (typeof amount !== 'object') output.push(number(amount) + ' ' + words(key));
     });
-    return output.join(' + ') || 'FREE';
+    return output.join(' + ') || 'NONE';
   }
 
   function costText(cost) {
-    return valueText(cost);
+    return Object.values(cost || {}).some(function (amount) { return Number(amount) > 0; }) ? valueText(cost) : 'FREE';
+  }
+
+  // Existing balances explain a purchase; they never authorize it.
+  function missingCostText(cost) {
+    var wallet = Object.assign({}, state.pet || {});
+    (state.materials || []).forEach(function (material) { wallet[material.key || material.material_key] = material.quantity; });
+    return Object.entries(cost || {}).filter(function (entry) { return Number(entry[1]) > Number(wallet[entry[0]] || 0); })
+      .map(function (entry) { return number(Number(entry[1]) - Number(wallet[entry[0]] || 0)) + ' ' + words(entry[0]); }).join(' + ');
   }
 
   function renderEconomy() {
@@ -3038,10 +3073,10 @@
     var offers = (economy.market_offers || []).map(function (offer) {
       var full = offer.capacity && !offer.capacity.available;
       var capacityDetail = full ? ' // MAKE SPACE FOR ' + offer.capacity.blocked.map(function (entry) { return number(entry.amount) + ' ' + String(entry.key).replace(/_/g, ' ') + ' (' + number(entry.owned) + '/' + number(entry.limit) + ' stored)'; }).join(' + ') + '. Whole bundle required; nothing is charged while full.' : '';
-      return button(offer.title, 'market_buy', { offer_key: offer.key, day_key: economy.day_key }, { disabled: !offer.unlocked || !offer.affordable || offer.purchased || full || offer.available === false, statusLabel: offer.purchased ? 'SOLD' : full ? 'STORAGE FULL' : '', resourceRequired: offer.unlocked && !offer.affordable && !offer.purchased && !full, detail: (offer.unlocked ? '' : 'REQUIRES LEVEL ' + number(offer.min_level) + ' // ') + (offer.detail || '') + ' // COST ' + costText(offer.cost) + ' // GIVES ' + valueText(offer.reward) + capacityDetail });
+      return button(offer.title, 'market_buy', { offer_key: offer.key, day_key: economy.day_key }, { disabled: !offer.unlocked || !offer.affordable || offer.purchased || full || offer.available === false, statusLabel: offer.purchased ? 'SOLD' : full ? 'STORAGE FULL' : '', resourceRequired: offer.unlocked && !offer.affordable && !offer.purchased && !full, cost: offer.cost, reward: offer.reward, rewardLabel: 'GIVES', missing: !offer.affordable && !offer.purchased ? missingCostText(offer.cost) : '', detail: 'UNLOCK LEVEL ' + number(offer.min_level) + ' // ' + (offer.detail || '') + capacityDetail });
     }).join('');
     var shop = (guidance.shop_items || []).map(function (item) {
-      return button((item.owned && !item.equipped ? 'EQUIP FREE // ' : '') + item.title, item.owned ? 'equip' : 'buy', { item_key: item.key, pet_id: state.pet.pet_id }, { disabled: !item.unlocked || (!item.owned && !item.affordable) || item.equipped, statusLabel: item.equipped ? 'EQUIPPED' : item.owned ? 'OWNED' : '', resourceRequired: item.unlocked && !item.owned && !item.affordable && !item.equipped, detail: (item.unlocked ? '' : 'REQUIRES LEVEL ' + number(item.min_level) + ' // ') + (item.description || '') + (item.owned ? ' // FREE SWITCH. Keeps upgrades and mastery; no XP or daily shopping credit.' : ' // COST ' + costText(item.cost)) });
+      return button((item.owned && !item.equipped ? 'EQUIP FREE // ' : '') + item.title, item.owned ? 'equip' : 'buy', { item_key: item.key, pet_id: state.pet.pet_id }, { disabled: !item.unlocked || (!item.owned && !item.affordable) || item.equipped, statusLabel: item.equipped ? 'EQUIPPED' : !item.unlocked ? 'LEVEL ' + number(item.min_level) + ' REQUIRED' : item.owned ? 'OWNED' : item.affordable ? 'CAN BUY NOW' : '', resourceRequired: item.unlocked && !item.owned && !item.affordable && !item.equipped, cost: item.owned ? {} : item.cost, missing: !item.owned && !item.affordable ? missingCostText(item.cost) : '', detail: 'UNLOCK LEVEL ' + number(item.min_level) + ' // YOUR LEVEL ' + number(state.pet.level) + ' // ' + (item.description || '') + (item.owned ? ' // FREE SWITCH. Keeps upgrades and mastery; no XP or daily shopping credit.' : ' // Buy once; permanent gear survives resets.') });
     }).join('');
     var inventory = (state.inventory || []).filter(function (item) { return Number(item.count || item.quantity || 0) > 0; }).map(function (item) {
       return '<div class="line">' + escapeHtml(words(item.title || item.key || item.item_key)) + ' x' + number(item.count || item.quantity) + '</div>' +
@@ -3076,7 +3111,7 @@
       var equip = catalogItem ? '<div class="button-grid one">' + button(catalogItem.equipped ? 'EQUIPPED' : 'EQUIP FREE', 'equip', { item_key: item.item_key, pet_id: state.pet.pet_id }, { disabled: !catalogItem.unlocked || catalogItem.equipped, detail: catalogItem.unlocked ? 'Keeps upgrades and mastery. No currency cost, XP or shopping credit.' : 'REQUIRES LEVEL ' + number(catalogItem.min_level) }) + '</div>' : '';
       return '<div class="line complete">' + escapeHtml(words(item.slot)) + ' // ' + escapeHtml(words(item.item_key)) + '</div>' +
         '<div class="line muted">LEVEL ' + number(item.item_level) + ' // ITEM XP ' + number(item.item_xp) + ' // MASTERY ' + number(item.mastery_tier) + ' (' + number(item.mastery_xp) + ' XP)</div>' + equip +
-        (upgrade.maxed ? '<div class="line complete">MAX LEVEL</div>' : '<div class="button-grid one">' + button('UPGRADE TO LEVEL ' + number(upgrade.target_level), 'gear_upgrade', { item_key: item.item_key, target_level: upgrade.target_level, quote_version: upgrade.quote_version }, { disabled: !upgrade.affordable || !upgrade.quote_version, resourceRequired: upgrade.unlocked && !upgrade.affordable, detail: (upgrade.unlocked ? '' : 'REQUIRES LEVEL ' + number(upgrade.required_level) + ' // ') + costText(upgrade.cost) }) + '</div>');
+        (upgrade.maxed ? '<div class="line complete">MAX LEVEL</div>' : '<div class="button-grid one">' + button('UPGRADE TO LEVEL ' + number(upgrade.target_level), 'gear_upgrade', { item_key: item.item_key, target_level: upgrade.target_level, quote_version: upgrade.quote_version }, { disabled: !upgrade.unlocked || !upgrade.affordable || !upgrade.quote_version, resourceRequired: upgrade.unlocked && !upgrade.affordable, cost: upgrade.cost, missing: !upgrade.affordable ? missingCostText(upgrade.cost) : '', detail: 'UNLOCK LEVEL ' + number(upgrade.required_level) + ' // YOUR LEVEL ' + number(state.pet.level) + (upgrade.quote_version ? '' : ' // REFRESH REQUIRED: upgrade quote unavailable.') }) + '</div>');
     }).join('');
     var materials = (state.materials || []).map(function (item) {
       return '<div class="line ' + (item.quantity ? 'complete' : 'locked') + '">' + escapeHtml(item.label) + ' x' + number(item.quantity) + '</div><div class="line muted">SOURCE: ' + escapeHtml((item.sources || []).map(words).join(' / ')) + '</div>';
@@ -3084,7 +3119,7 @@
     var crafting = (live.crafting || []).map(function (recipe) {
       var plan = window.MoonpetPlayOptions && window.MoonpetPlayOptions.craftingGoal && window.MoonpetPlayOptions.craftingGoal(state, recipe.key);
       var full = plan && plan.output_full;
-      return button(recipe.title, 'craft', { recipe_key: recipe.key }, { disabled: !recipe.unlocked || !recipe.affordable || full, statusLabel: full ? 'OUTPUT STACK FULL' : '', resourceRequired: recipe.unlocked && !recipe.affordable, detail: (recipe.unlocked ? '' : 'REQUIRES LEVEL ' + number(recipe.min_level) + ' // ') + (recipe.detail || '') + ' // COST ' + costText(recipe.cost) + ' // MAKES ' + number(recipe.output && recipe.output.quantity) + ' ' + words(recipe.output && recipe.output.item_key) });
+      return button(recipe.title, 'craft', { recipe_key: recipe.key }, { disabled: !recipe.unlocked || !recipe.affordable || full, statusLabel: full ? 'OUTPUT STACK FULL' : '', resourceRequired: recipe.unlocked && !recipe.affordable, cost: recipe.cost, missing: !recipe.affordable ? missingCostText(recipe.cost) : '', detail: 'UNLOCK LEVEL ' + number(recipe.min_level) + ' // ' + (recipe.detail || '') + ' // MAKES ' + number(recipe.output && recipe.output.quantity) + ' ' + words(recipe.output && recipe.output.item_key) });
     }).join('');
     var relics = (state.relics || []).map(function (item) { return '<div class="line complete">◆ ' + escapeHtml(words(item.relic_id)) + '</div><div class="line muted">' + escapeHtml(item.route_effect || 'Collection requirement.') + '</div>'; }).join('');
     var equipmentSets = (live.equipment_sets || []).map(function (set) {
@@ -3098,7 +3133,7 @@
       var loadout = state.style_loadout || {}, equipped = (loadout.equipped || []).includes(item.key);
       return '<div class="line">' + escapeHtml(words(item.key)) + '</div><div class="line muted">' + escapeHtml((loadout.details || {})[item.key] || '') + '</div>' + (item.unlocked
         ? button(equipped ? 'UNEQUIP FREE' : 'EQUIP FREE', 'style_equip', { pet_id: state.pet.pet_id, cosmetic_key: item.key, enabled: !equipped }, { disabled: loadout.available !== true, detail: loadout.available ? 'Owned. No currency cost.' : 'Style state unavailable. Refresh before switching.' })
-        : button('UNLOCK ' + words(item.key), 'cosmetic_unlock', { cosmetic_key: item.key }, { disabled: !item.affordable, resourceRequired: !item.affordable, detail: costText(item.cost) }));
+        : button('UNLOCK ' + words(item.key), 'cosmetic_unlock', { cosmetic_key: item.key }, { disabled: !item.affordable, resourceRequired: !item.affordable, cost: item.cost, missing: !item.affordable ? missingCostText(item.cost) : '' }));
     }).join('');
     return panel('EQUIPMENT PROGRESSION', gear || '<div class="line muted">NO EQUIPMENT MASTERY RECORDS.</div>', 'equipment') +
       panel('LOADOUT SYNERGIES', equipmentSets || '<div class="line muted">NO SET DATA.</div>', 'equipment-sets') +
@@ -3108,7 +3143,7 @@
       panel('DAILY BOUNTIES', '<div class="line muted">Four account-wide targets per UTC day. Only accepted actions count. The Energy Drink, Dance and Cuddles care buttons do not count. Claim completed bounties before 00:00 UTC; unclaimed bounty targets expire when the board changes. Already paid rewards stay paid. Contracts remain available between resets.</div>' + (bounties || '<div class="line muted">NO BOUNTIES.</div>'), 'bounties') +
       panel('CRYSTAL EXPEDITIONS // CHOOSE A DESTINATION', expeditionBody, 'expedition') +
       panel('MOON MARKET', '<div class="line muted">Paid bundles must fit in full. Use items or spend materials before buying when storage is full.</div><div class="button-grid one">' + offers + '</div><div class="button-grid">' + routeButton('OPEN BAG', { screen: 'economy', focus: 'inventory' }) + routeButton('OPEN CRAFTING', { screen: 'economy', focus: 'crafting' }) + '</div>', 'market') +
-      panel('PERMANENT SHOP', '<div class="button-grid">' + shop + '</div>', 'shop') + panel('STYLE LAB // EQUIP YOUR LOOK', '<div class="line muted">Unlock once, then equip or remove each style free for this pet. Cosmetics change the canvas presentation, not stats. Existing owned styles work immediately. Callsign editing stays free in Profile.</div><div class="button-grid one">' + routeButton('EDIT CALLSIGN', { screen: 'profile', focus: 'callsign' }, 'Use the existing name control; no badge purchase is required.') + '</div><div class="button-grid">' + cosmetics + '</div>', 'style-lab') +
+      panel('PERMANENT SHOP', '<div class="line muted">Buy when this pet meets the listed level and you have every listed resource. Owned gear switches free once its level gate is met. Equipped gear is already in use; purchases and upgrades persist across resets.</div><div class="button-grid">' + shop + '</div>', 'shop') + panel('STYLE LAB // EQUIP YOUR LOOK', '<div class="line muted">Unlock once, then equip or remove each style free for this pet. Cosmetics change the canvas presentation, not stats. Existing owned styles work immediately. Callsign editing stays free in Profile.</div><div class="button-grid one">' + routeButton('EDIT CALLSIGN', { screen: 'profile', focus: 'callsign' }, 'Use the existing name control; no badge purchase is required.') + '</div><div class="button-grid">' + cosmetics + '</div>', 'style-lab') +
       panel('INVENTORY', inventory || '<div class="line muted">BAG EMPTY.</div>', 'inventory') +
       panel('MOON GOLD TRADE', '<div class="line muted">Game currency only. A loss spends the selected stake. Trades share a five-minute account cooldown.</div><div class="button-grid three">' + (state.trade && state.trade.offers || []).map(function (offer) { return button(offer.wager + ' GOLD', 'trade', { wager: offer.wager }, { disabled: !offer.available, cooldown: state.trade.cooldown, resourceRequired: !offer.affordable, detail: offer.affordable ? '' : 'Requires ' + number(offer.wager) + ' Moon Gold.' }); }).join('') + '</div>', 'trade');
   }
@@ -3326,11 +3361,46 @@
     });
     renderedPetId = state && state.pet && state.pet.pet_id || null;
     renderedPetName = String(state && state.pet && state.pet.callsign || '');
+    if (selectedRouteScreen === activeScreen && selectedRoutePanel) {
+      var selectedPanel = screen.querySelector('[data-panel="' + CSS.escape(selectedRoutePanel) + '"]');
+      if (selectedPanel) selectedPanel.setAttribute('data-route-selected', '');
+    }
     if (reducedMotion) drawWorld(0);
     applyRequestedFocus();
   }
 
   // TEST-EXPORT: actionResultFeedback:start
+  // One confirmed choice for this visit; not a new history or reward ledger.
+  // Keep source attribution even if the following state read selects another pet.
+  // TEST-EXPORT: choiceResult:start
+  function rememberChoiceResult(action, result, beforeState) {
+    if (!result || result.accepted !== true || !['adventure', 'random_event', 'event_recover'].includes(action)) return;
+    var petId = result.pet && result.pet.pet_id || beforeState && beforeState.pet && beforeState.pet.pet_id;
+    if (!petId) return;
+    lastChoiceResult = {
+      pet_id: petId,
+      panel: action === 'adventure' ? 'adventure' : 'street-event',
+      title: result.choice && (result.choice.label || result.choice.key) || 'Saved choice',
+      message: resultMessage(result, beforeState, beforeState),
+      cost: result.duplicate ? null : result.applied && result.applied.costsApplied,
+      duplicate: Boolean(result.duplicate),
+    };
+    var key = [petId, 'explore', lastChoiceResult.panel + '-result'].join(':');
+    panelOpenState[key] = true;
+  }
+
+  function renderChoiceResult(panelId) {
+    var saved = lastChoiceResult;
+    if (!saved || saved.panel !== panelId || !state.pet || saved.pet_id !== state.pet.pet_id) return '';
+    var key = [saved.pet_id, 'explore', panelId + '-result'].join(':');
+    return '<details class="choice-result" data-panel-key="' + escapeHtml(key) + '"' + (panelOpenState[key] ? ' open' : '') + '><summary class="line">LAST CONFIRMED RESULT // ' + escapeHtml(saved.title) + '</summary>'
+      + saved.message.split(' // ').map(function (part) { return '<div class="line' + (/^\+/.test(part) ? ' fact-reward' : '') + '">' + escapeHtml(part) + '</div>'; }).join('')
+      + (saved.cost ? actionFactsMarkup({ cost: saved.cost }) : '')
+      + '<div class="line muted">This visit’s confirmed response for this pet. Stat limits and reward caps apply. Closing this text changes no progress.</div>'
+      + '<button type="button" class="terminal-button" data-dismiss-choice-result>DISMISS RESULT ×</button></details>';
+  }
+  // TEST-EXPORT: choiceResult:end
+
   function resultRewardMap(result) {
     if (result && result.duplicate) return {};
     var applied = result && result.applied;
@@ -3663,6 +3733,10 @@
       if (focusScreen !== activeScreen) return;
       var target = screen.querySelector('[data-panel="' + CSS.escape(panelId) + '"]');
       if (target) {
+        selectedRoutePanel = panelId;
+        selectedRouteScreen = activeScreen;
+        screen.querySelectorAll('[data-route-selected]').forEach(function (entry) { entry.removeAttribute('data-route-selected'); });
+        target.setAttribute('data-route-selected', '');
         if (target.tagName === 'DETAILS') target.open = true;
         rememberPanels();
         var summary = target.querySelector('summary');
@@ -3670,7 +3744,7 @@
         var screenRect = screen.getBoundingClientRect();
         var relativeTop = target.getBoundingClientRect().top - screenRect.top + screen.scrollTop;
         screen.scrollTo({ top: Math.max(0, relativeTop - 8), behavior: reducedMotion ? 'auto' : 'smooth' });
-      }
+      } else tell('SECTION UNAVAILABLE. REVIEW THIS MENU’S CURRENT REQUIREMENTS.', 'danger');
     }, 0);
   }
 
@@ -3850,6 +3924,7 @@
       var data = await post('/telegram-pets/app/action', requestPayload);
       if (!data || !data.result || typeof data.result.accepted !== 'boolean') throw new Error('ACTION RESPONSE UNCONFIRMED');
       var actionAccepted = Boolean(data.result && data.result.accepted);
+      if (['adventure', 'random_event', 'event_recover'].includes(action)) rememberChoiceResult(action, data.result, stateBeforeAction);
       // Record a confirmed sleep/wake preference on the pet that took the
       // action, before a newer projection can select a different companion.
       if (actionAccepted && actionFamily === 'sleep') setSleepLatch(true, stateBeforeAction);
@@ -4039,6 +4114,14 @@
         applyRequestedFocus();
       }
       haptic('light');
+      return;
+    }
+    if (event.target.closest('[data-dismiss-choice-result]')) {
+      lastChoiceResult = null;
+      var resultPanel = event.target.closest('.choice-result');
+      var parentSummary = resultPanel && resultPanel.closest('[data-panel]').querySelector('summary');
+      if (resultPanel) resultPanel.remove();
+      if (parentSummary) parentSummary.focus({ preventScroll: true });
       return;
     }
     var target = event.target.closest('[data-action]');

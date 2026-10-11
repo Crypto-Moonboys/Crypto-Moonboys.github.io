@@ -16,6 +16,21 @@ Any gameplay, documentation, or UI change affecting Moonpet status should refere
 
 ## Current rules and historical audits
 
+The [11 October existing UI polish](moonpet-ui-polish-2026-10-11.md) addresses
+H01/H18/H19/H22/H23/H28/H40/H44. Care actions and Vital Systems remain separate;
+Fullness displays `100 - hunger`, so every vital meter reads higher as better.
+The guide Close control has a 44px target. Adventure and Street Event choices
+separate authoritative odds, base rewards and costs. Their latest confirmed
+response is readable, collapsible and dismissible for its original pet during
+this visit; navigation/save refresh retain it, while app reload clears it.
+This temporary display is not a reward ledger and never grants progress.
+Recommendations omit fully blocked adventure choices and unquoted/locked
+upgrades. Opened routes receive a persistent selected-panel marker. Shop cards
+explain unlock level, current level, full cost and exact shortfalls; owned gear
+still switches free subject to its existing level gate. Reward/cost text has
+both colour and explicit labels, including inside disabled controls. Worker
+rules, payloads, costs, rewards and ownership remain unchanged.
+
 The [11 October all-menu status update](moonpet-menu-status-2026-10-11.md)
 extends dock indicators to all six menus. Red counts distinguish claims, ready
 upgrades and states needing review; amber counts show saved sessions active or
