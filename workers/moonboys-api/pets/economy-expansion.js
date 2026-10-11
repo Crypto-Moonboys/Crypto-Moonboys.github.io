@@ -72,7 +72,16 @@ export const PET_DAILY_BONUS_BOUNTIES = freeze([
   { key: 'bonus_kaiju', title: 'Code Breaker', difficulty: 'HARD', detail: 'Finish 2 Kaiju battles.', event_types: ['kaiju_battle'], required: 2, reward: { moon_gold: 65, moon_crystals: 1 } },
 ]);
 export function getPetDailyBonusBounties(dayKey) {
-  return rotate(PET_DAILY_BONUS_BOUNTIES, `bonus-bounty:${dayKey}:v1`, 3);
+  // Stable Easy/Medium/Hard difficulty and distinct server action evidence.
+  const usedEvents = new Set();
+  return ['EASY', 'MEDIUM', 'HARD'].map((difficulty) => {
+    const available = PET_DAILY_BONUS_BOUNTIES.filter((entry) => entry.difficulty === difficulty &&
+      entry.event_types.every((event) => !usedEvents.has(event)));
+    const [picked] = rotate(available, `bonus-bounty:${dayKey}:${difficulty}:v2`, 1);
+    if (!picked) throw new Error(`pet_bonus_bounty_pool_missing_${difficulty.toLowerCase()}`);
+    picked.event_types.forEach((event) => usedEvents.add(event));
+    return picked;
+  });
 }
 
 // Weekly Bounty Blocks do not replace the creation-based Weekly Journey.
