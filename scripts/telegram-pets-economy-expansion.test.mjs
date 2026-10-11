@@ -3,12 +3,14 @@ import fs from 'node:fs';
 import { DatabaseSync } from 'node:sqlite';
 import {
   PET_DAILY_BOUNTIES,
+  PET_DAILY_BONUS_BOUNTIES,
   PET_ECONOMY_ROUTES,
   PET_EXPEDITION_TIERS,
   PET_MARKET_OFFERS,
   buildPetEconomyGuidanceActions,
   formatPetEconomyValue,
   getPetDailyBounties,
+  getPetDailyBonusBounties,
   getPetMarketOffers,
   resolvePetExpeditionReward,
 } from '../workers/moonboys-api/pets/economy-expansion.js';
@@ -29,12 +31,22 @@ assert.notDeepEqual(firstBoard.map(({ key }) => key), getPetDailyBounties('2026-
 assert.equal(new Set(firstBoard.map(({ key }) => key)).size, 4);
 assert.deepEqual(getPetDailyBounties('2026-08-12', 1), getPetDailyBounties('2026-08-12', 99), 'level-ups cannot replace the fixed daily bounty board');
 assert.ok(PET_DAILY_BOUNTIES.every(({ min_level = 1 }) => min_level <= 1), 'every bounty in the fixed board pool must be available to starters');
+const addedBoard = getPetDailyBonusBounties('2026-10-11');
+assert.equal(PET_DAILY_BONUS_BOUNTIES.length, 12);
+assert.equal(addedBoard.length, 3);
+assert.deepEqual(addedBoard, getPetDailyBonusBounties('2026-10-11'));
+assert.equal(new Set(addedBoard.map(entry => entry.key)).size, 3);
+assert.deepEqual(firstBoard, getPetDailyBounties('2026-08-12'), 'new bonus challenges must never reshuffle the original daily board');
+assert.ok(PET_DAILY_BONUS_BOUNTIES.every(entry => /^bonus_/.test(entry.key) &&
+  ['EASY', 'MEDIUM', 'HARD'].includes(entry.difficulty) &&
+  entry.required >= 1 && entry.required <= 5), 'safe distinct bonus objectives');
+
 const currentBetaEventTypes = new Set([
   'feed', 'play', 'clean', 'sleep', 'train', 'work', 'random_event', 'activity_claim',
   'run_complete', 'run_extract', 'adventure', 'daily_chest', 'kaiju_battle',
   'use_item', 'use_item_reward',
 ]);
-for (const bounty of PET_DAILY_BOUNTIES) {
+for (const bounty of [...PET_DAILY_BOUNTIES, ...PET_DAILY_BONUS_BOUNTIES]) {
   assert.ok(bounty.event_types.every((eventType) => currentBetaEventTypes.has(eventType)), `${bounty.key} bounty must reference current beta actions only`);
 }
 
