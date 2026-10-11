@@ -147,7 +147,7 @@
       if (event === 'run_complete' || event === 'run_extract') return s.run
         ? !s.run.daily && (runAvailability(s).step || runAvailability(s).extract)
         : energy >= 12;
-      if (event === 'adventure') return Boolean(s.adventure && s.adventure.available);
+      if (event === 'adventure') return Boolean(s.adventure && s.adventure.available && (s.adventure.choices || []).some(function (choice) { return !choice.preview || choice.preview.available !== false; }));
       if (event === 'daily_chest') return Boolean(g.daily_cache && g.daily_cache.available);
       if (event === 'kaiju_battle') {
         var capability = s.capabilities && s.capabilities.systems && s.capabilities.systems.kaiju;

@@ -251,8 +251,19 @@ for (const key of ['daily_care', 'weekly_care', 'weekly_training']) assert.equal
 assert.equal(options.objectiveRoutes('weekly_training', { ...snapshot, guidance: { activity: { status: 'active' } } })[0].available, false);
 assert.equal(options.objectiveRoutes('weekly_care', snapshot)[0].available, true);
 assert.equal(selectBounty({ cooldowns: careCooldowns, guidance: { jobs: [{ available: true }] } }, ['care_pair','job_shift']).focus, 'jobs');
-assert.equal(selectBounty({ pet: { energy: 0 }, adventure: { available: true } }, ['run_bank']).focus, 'adventure');
-assert.equal(selectBounty({ run: { daily: true }, adventure: { available: true } }, ['run_bank']).focus, 'adventure', 'official run is not a qualifying standard run event');
+assert.equal(selectBounty({ pet: { energy: 0 }, adventure: { available: true, choices: [{ preview: { available: true } }] } }, ['run_bank']).focus, 'adventure');
+assert.equal(selectBounty({ run: { daily: true }, adventure: { available: true, choices: [{ preview: { available: true } }] } }, ['run_bank']).focus, 'adventure', 'official run is not a qualifying standard run event');
+const blockedAdventure = { available: true, choices: [{ preview: { available: false } }, { preview: { available: false } }] };
+for (const adventure of [blockedAdventure, { available: true, choices: [] }, { available: true }]) {
+  const extra = { run: { daily: true }, adventure };
+  assert.equal(options.bountyRouteOptions(bountyByKey.run_bank, { ...snapshot, ...extra }).find(route => route.focus === 'adventure').available, false);
+  assert.equal(selectBounty(extra, ['run_bank']), undefined, 'an open adventure board without playable choices cannot advance the bounty');
+  const guidance = { economy: { bounties: [bountyByKey.run_bank] } };
+  assert.ok(!options.recommendations({ ...snapshot, ...extra, guidance }).some(route => route.key === 'bounty_target'), 'Coach must not recommend a blocked bounty route');
+}
+const alternativeAdventure = { ...blockedAdventure, choices: [...blockedAdventure.choices, { preview: { available: true, affordability: 'conditional' } }] };
+assert.equal(selectBounty({ run: { daily: true }, adventure: alternativeAdventure }, ['run_bank']).focus, 'adventure', 'a playable alternative keeps the qualifying route ready');
+assert.equal(selectBounty({ adventure: blockedAdventure }, ['run_bank']).focus, 'moon-run', 'a blocked adventure must not hide another qualifying route');
 assert.equal(selectBounty({ pet: { energy: 0 }, run: { daily: false, depth: 1 } }, ['run_bank']).focus, 'moon-run', 'saved extraction is available at zero energy');
 assert.equal(selectBounty({ pet: { energy: 100 }, run: { daily: false, depth: 0, source_pet: { energy: 0 } } }, ['run_bank']), undefined, 'use the saved run pet energy after a slot switch');
 assert.equal(selectBounty({ run: { daily: false, depth: 2, source_available: false } }, ['run_bank']), undefined, 'unavailable source pets cannot resume or bank a run');
@@ -366,6 +377,7 @@ const eggHome = client.slice(client.indexOf("if (lifecycle.phase === 'egg') {", 
 for (const action of ['energy_drink', 'dance', 'cuddles']) assert.ok(eggHome.includes("'" + action + "'"));
 const html = read('moonpet-game.html');
 assert.ok(html.indexOf('/js/moonpet-play-options.js') < html.indexOf('/js/moonpet-mini-app.js'));
+assert.ok(html.includes('/js/moonpet-play-options.js?v=20261011-bounty-v1'), 'the bounty recommendation fix reaches players with a fresh asset URL');
 
 // Execute the shipped fast-path handler with the refresh response held open.
 // A transaction race must refresh immediately and block a second mutation.
