@@ -156,6 +156,27 @@ try {
     assert.equal(await brief.locator('#activities h3').count(), 12);
     assert.match(await brief.locator('#voice').innerText(), /Plain language can still be sharp/);
     assert.match(await brief.locator('#worlds').innerText(), /preserve the source's grit/);
+    assert.match(await brief.locator('#identity').innerText(), /One striking image and one line may be enough/);
+    assert.match(await brief.locator('#shock').innerText(), /one message, one recognisable mark/);
+    assert.match(await brief.locator('#swarm').innerText(), /does not run a 24\/7 bot service/);
+    for (const id of ['shock', 'streets', 'swarm']) {
+      // Test each native link from the guide entrance, avoiding a race between
+      // the previous smooth jump and scrolling back to the offscreen contents.
+      await brief.goto('http://creator.test/graffiti-kings-creative-guide.html');
+      await brief.locator(`nav a[href="#${id}"]`).click();
+      await brief.waitForURL(`http://creator.test/graffiti-kings-creative-guide.html#${id}`);
+      assert.equal(new URL(brief.url()).hash, '#' + id);
+      // Poll from Node: page-side animation-frame callbacks are disabled in
+      // this context, but browser geometry remains readable via Playwright.
+      let heading;
+      for (let attempt = 0; attempt < 50; attempt++) {
+        heading = await brief.locator(`#${id} h2`).boundingBox();
+        if (heading && heading.y >= 0 && heading.y + heading.height <= 960) break;
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+      assert.ok(heading && heading.y >= 0 && heading.y + heading.height <= 960,
+        `${width}/${id}: native jump must show the heading, actual box ${JSON.stringify(heading)}`);
+    }
     assert.ok(await brief.evaluate(() => document.documentElement.scrollWidth <= innerWidth), 'creative guide fits mobile and desktop');
     await context.close();
   }
