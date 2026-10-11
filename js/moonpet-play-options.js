@@ -414,7 +414,129 @@
     return { available: Boolean(missions.length), completed: completed, total: missions.length, next: next, status: status, claims: missionClaims(s) };
   }
 
-  var api = { missionStatus: missionStatus, missionClaims: missionClaims, recommendations: recommendations, route: route, objectiveRoutes: objectiveRoutes, bountyRoutes: bountyRoutes, bountyRouteOptions: bountyRouteOptions, runAvailability: runAvailability, craftingGoal: craftingGoal, options: options };
+  // Read-only menu inbox. Ready claims, saved sessions and completed goals have
+  // different meanings; a timer reaching zero locally is never claim authority.
+  function menuStatuses(snapshot) {
+    var s = snapshot || {}, g = s.guidance || {}, live = s.live_systems || {};
+    var menus = {};
+    ['home', 'missions', 'explore', 'work', 'economy', 'profile'].forEach(function (screen) {
+      menus[screen] = { loaded: Boolean(s.adopted && s.pet && (screen === 'home' || !s.hydration || s.hydration.full !== false || (s.hydration.modules || []).includes(screen))), entries: [] };
+    });
+    if (!s.adopted || !s.pet) return menus;
+    var egg = !s.lifecycle || s.lifecycle.phase === 'egg';
+    function add(screen, key, title, status, kind, focus, detail, extra) {
+      if (!menus[screen].loaded) return;
+      menus[screen].entries.push(Object.assign({ key: key, title: title, status: status, kind: kind, count: 1, screen: screen, focus: focus, detail: detail }, extra || {}));
+    }
+    function claims(screen, key, title, entries, identity, eligible, focus, cap, filteredAfterLimit) {
+      var seen = new Set();
+      (entries || []).forEach(function (entry) { var id = identity(entry); if (id && eligible(entry)) seen.add(id); });
+      if (seen.size) add(screen, key, title, 'CLAIM READY', 'claim', focus,
+        'Review the saved reward, then choose to claim. Its original owner and limits still apply.',
+        { count: seen.size, countLowerBound: Boolean(filteredAfterLimit || cap && (entries || []).length >= cap) });
+    }
+    var cache = g.daily_cache;
+    if (!egg && cache && cache.available === true && !cache.claimed && !cache.syncing) add('home', 'daily_cache', 'DAILY CACHE', 'CLAIM READY', 'claim', 'care', 'One account claim per UTC day. Review the current reward before opening.');
+    if (egg && s.lifecycle && s.lifecycle.incubation && s.lifecycle.incubation.ready === true) add('home', 'hatch', 'EGGYONE BREAKOUT', 'READY TO HATCH', 'ready', 'incubation', 'Start the saved hatch when you are ready; identity stays hidden until Stage 3.');
+
+    missionClaims(s).forEach(function (claim) { add('missions', claim.key, claim.title, 'CLAIM READY', 'claim', claim.focus,
+      'Review the saved reward, then choose to claim. Switching pets does not redirect it.', claim); });
+    var contract = s.contracts && s.contracts.run;
+    if (contract && s.contracts.available === true) add('missions', 'contract_session', contract.title || 'CONTINUING CONTRACT',
+      contract.status === 'active' ? 'SAVED // RESUME' : contract.status === 'completed' ? 'COMPLETE' : 'ENDED // ' + String(contract.status || 'UNKNOWN').toUpperCase(),
+      contract.status === 'active' ? 'resume' : 'complete', 'contracts',
+      'Goal ' + Number(contract.progress || 0) + '/' + Number(contract.target || 0) + ' // Rooms ' + Number(contract.depth || 0) + '/' + Number(contract.max_depth || 0) + '. Contracts are repeatable; only a successful clear earns rank.');
+    function journey(key, title, board, focus, awarded, requiredState) {
+      if (egg || !board || !(Number(board.required_objectives) > 0) || requiredState && board.state !== requiredState) return;
+      var done = Number(board.completed_objectives || 0), target = Number(board.required_objectives);
+      add('missions', key, title, board[awarded] ? 'SETTLED' : board.duplicate_blocked ? 'ALREADY AWARDED' : done >= target ? 'COMPLETE // SETTLEMENT PENDING' : 'IN PROGRESS', 'progress', focus,
+        done + '/' + target + ' objectives. Marks and Crests settle through the server; there is no extra claim button.', { cooldown: board.cooldown });
+    }
+    journey('daily_journey', 'DAILY JOURNEY', s.daily_journey, 'daily-journey', 'growth_mark_awarded');
+    journey('weekly_journey', 'WEEKLY JOURNEY', s.weekly_journey, 'weekly-journey', 'weekly_crest_awarded', 'AVAILABLE');
+    var finales = s.season_finales;
+    if (finales && finales.available !== false) {
+      var activeFinales = (finales.pets || []).filter(function (pet) { return pet.pet_id && pet.competition_season_key && pet.status === 'active' && pet.playable !== false; });
+      var finaleIds = new Set(activeFinales.map(function (pet) { return pet.pet_id + ':' + pet.competition_season_key; }));
+      if (finaleIds.size) add('missions', 'finale_session', 'SAVED FINALE BATTLES', 'SAVED // RESUME', 'resume', 'season-finale', 'Resume the saved round. Battle health and supplies are separate from pet resources.', { count: finaleIds.size });
+      var failedFinales = (finales.pets || []).filter(function (pet) { return pet.pet_id && pet.competition_season_key && pet.status === 'failed' && pet.playable !== false; });
+      var retryIds = new Set(failedFinales.map(function (pet) { return pet.pet_id + ':' + pet.competition_season_key; }));
+      if (retryIds.size) add('missions', 'finale_retry', 'SAVED FINALE RETRIES', 'RETRY READY', 'ready', 'season-finale', 'Choose a build in the original Finale panel to retry. No pet energy cost; this is not a reward claim.', { count: retryIds.size });
+    }
+
+    // Weekly victory payout is account-wide, even if several pets have victory
+    // evidence for the same boss/week. Raid payout is per original pet/rotation.
+    var weekly = g.weekly_boss || {};
+    // The Weekly projection also filters stale boss IDs after LIMIT 10. Even a
+    // shorter visible list cannot prove that no later valid payouts remain.
+    claims('explore', 'weekly_boss_claim', 'SAVED WEEKLY BOSS REWARDS', weekly.pending_rewards,
+      function (entry) { return entry.week_key && entry.boss_id && entry.week_key + ':' + entry.boss_id; }, function (entry) { return Boolean(entry.pet_id); }, 'weekly-boss', 10, true);
+    var raid = live.seasonal_boss || {};
+    claims('explore', 'seasonal_boss_claim', 'SAVED RAID REWARDS', raid.pending_rewards,
+      function (entry) { return entry.pet_id && entry.boss_key && entry.season_instance && entry.pet_id + ':' + entry.boss_key + ':' + entry.season_instance; }, function () { return true; }, 'seasonal-boss', 10);
+    var run = s.run;
+    if (run) {
+      var runOpen = runAvailability(s), source = run.source_available !== false && !egg;
+      add('explore', 'run_session', run.daily ? 'OFFICIAL DAILY RUN' : 'STANDARD MOON RUN',
+        !source ? 'SOURCE PET NEEDS REVIEW' : run.settlement_pending ? 'FINISH SAVED RESULT' : !runOpen.step ? 'SOURCE PET NEEDS ENERGY' : 'SAVED // RESUME',
+        !source ? 'review' : run.settlement_pending ? 'recovery' : 'resume', 'moon-run',
+        'Cleared ' + Number(run.daily ? run.current_room != null ? run.current_room : run.depth || 0 : run.depth || 0) + '/' + Number(run.max_room || run.max_depth || 0) + ' rooms. ' +
+        (run.settlement_pending ? 'Finish the saved ending without another fight or attempt.' : run.daily ? 'One account attempt per UTC day; extraction ends this attempt.' : 'Extract to secure the unbanked bag; a failed room loses it.'));
+    } else if (s.daily_run && s.daily_run.attempted === true) add('explore', 'daily_run_finished', 'TODAY’S OFFICIAL DAILY RUN', 'ATTEMPT USED // ' + String(s.daily_run.status || 'SAVED').toUpperCase(), 'complete', 'moon-run', 'Depth ' + Number(s.daily_run.depth || 0) + ' // Score ' + Number(s.daily_run.score || 0) + '. The account attempt resets at 00:00 UTC.', { cooldown: s.daily_run.cooldown });
+    function combat(key, title, match, queue, focus, locked) {
+      if (match) add('explore', key, title, egg ? 'SAVED MATCH NEEDS REVIEW' : locked ? 'WAITING FOR RESOLUTION' : match.status === 'readying' ? match.ready ? 'WAITING FOR RIVAL' : 'MATCH FOUND // READY UP' : 'SAVED // RESUME',
+        egg ? 'review' : locked || match.status === 'readying' && match.ready ? 'waiting' : 'resume', focus,
+        'Review the original match. Locked choices stay saved; waiting does not require another move.');
+      else if (queue) add('explore', key, title, 'MATCHMAKING', 'waiting', focus, 'Queue position ' + Number(queue.position || 0) + '. Review or cancel through the original panel.');
+    }
+    combat('arena_session', 'PET ARENA', s.arena, s.arena_queue, 'arena', s.arena && s.arena.own_move_locked);
+    combat('kaiju_session', 'KAIJU CODE CARDS', s.kaiju && s.kaiju.match, s.kaiju && s.kaiju.queue, 'kaiju', s.kaiju && s.kaiju.match && s.kaiju.match.own_card_locked);
+    (s.pending_street_events || []).forEach(function (entry) {
+      add('explore', 'street_event:' + entry.event_id, 'SAVED STREET EVENT', entry.recoverable ? 'RECOVER SAVED OUTCOME' : 'HISTORY NEEDS REVIEW', 'review', egg ? 'saved-street-events' : 'street-event',
+        entry.recoverable ? 'Recover the original pet’s saved outcome, without choosing another event.' : 'No verified payout is promised. Review the saved history before choosing to close it.');
+    });
+    (s.regions || []).forEach(function (region) {
+      if (region.pending_choice_key || region.settling) add('explore', 'district:' + region.key, region.title || 'DISTRICT CHOICE', region.settling ? 'SETTLING' : 'SAVED CHOICE // RESUME', region.settling ? 'waiting' : 'resume', 'districts', 'Resume only the original district choice. The panel shows whether energy is already paid.');
+    });
+    (live.chains || []).forEach(function (chain) {
+      if (chain.pending_choice_key || chain.settling) add('explore', 'story:' + chain.key, chain.title || 'STREET STORY', chain.settling ? 'SETTLING' : 'SAVED CHOICE // RESUME', chain.settling ? 'waiting' : 'resume', 'story-chains', 'Step ' + (Number(chain.step_index || 0) + 1) + '/' + (chain.steps || []).length + '. Resume the original choice; each chain allows one accepted choice per UTC day.');
+      else add('explore', 'story:' + chain.key, chain.title || 'STREET STORY', chain.used_today ? 'TODAY’S CHOICE COMPLETE' : 'NEXT STORY STEP', 'progress', 'story-chains', 'Next step ' + (Number(chain.step_index || 0) + 1) + '/' + (chain.steps || []).length + ' // ' + Number(chain.completed_cycles || 0) + ' full cycles finished. Each chain allows one accepted choice per UTC day.', { cooldown: chain.cooldown });
+    });
+    if (raid.pending_move || raid.settling) add('explore', 'raid_attack', 'SEASONAL RAID ATTACK', raid.settling ? 'SETTLING' : 'SAVED ATTACK // RESUME', raid.settling ? 'waiting' : 'resume', 'seasonal-boss', 'Resume the original attack; the panel shows energy and source-pet requirements.');
+    else if (raid.defeated_at) add('explore', 'raid_finished', 'CURRENT SEASONAL RAID', raid.reward_claimed_at ? 'VICTORY REWARD CLAIMED' : 'VICTORY SAVED', 'complete', 'seasonal-boss', 'This pet’s victory is recorded. Review any saved rewards; starting another attack is not required.');
+    if (weekly.defeated) add('explore', 'weekly_boss_finished', 'CURRENT WEEKLY BOSS', weekly.reward_claimed ? 'VICTORY REWARD CLAIMED' : 'VICTORY SAVED', 'complete', 'weekly-boss', 'Shared boss defeated. A separate participation challenge may still be available for this pet’s Weekly Journey.', { cooldown: weekly.rotation_cooldown });
+
+    var activity = g.activity;
+    if (activity) add('work', 'activity_session', String(activity.activity_type || 'TIMED ACTIVITY').replace(/_/g, ' ').toUpperCase(),
+      activity.unavailable ? 'REFRESH REQUIRED' : activity.recovery_pending ? 'RECOVER SAVED REWARD' : activity.ready === true ? 'CLAIM READY' : 'RUNNING',
+      activity.unavailable ? 'review' : activity.recovery_pending ? 'recovery' : activity.ready === true ? 'claim' : 'waiting', 'timed-activity',
+      activity.recovery_pending ? 'Finish the original saved claim once; no new activity is started.' : 'One activity at a time. Claiming ends it; compare the next duration reward first.', { cooldown: !activity.ready && !activity.unavailable ? activity.cooldown : null });
+    var economy = g.economy || {};
+    claims('economy', 'bounty_claim', 'COMPLETED DAILY BOUNTIES', economy.bounties,
+      function (entry) { return entry.key; }, function (entry) { return entry.complete === true && !entry.claimed; }, 'bounties');
+    var bountyList = economy.bounties || [];
+    if (bountyList.length) add('economy', 'bounty_progress', 'DAILY BOUNTY BOARD', bountyList.every(function (entry) { return entry.claimed; }) ? 'ALL CLAIMED' : 'TODAY’S TARGETS', 'progress', 'bounties',
+      bountyList.filter(function (entry) { return entry.complete; }).length + '/' + bountyList.length + ' complete // ' + bountyList.filter(function (entry) { return entry.claimed; }).length + ' claimed. Account targets reset at 00:00 UTC.');
+    var season = g.season || {};
+    claims('profile', 'season_claim', 'UNLOCKED SEASON TIERS', season.tiers,
+      function (entry) { return entry.tier_id && (entry.season_key || season.key) && (entry.season_key || season.key) + ':' + entry.tier_id; }, function (entry) { return entry.unlocked === true && !entry.claimed_at; }, 'season');
+    if (g.evolution && g.evolution.ready === true) add('profile', 'evolution_ready', g.evolution.name || 'NEXT EVOLUTION', 'READY TO EVOLVE', 'ready', 'evolution', 'Review the saved requirements and costs before evolving. This is an upgrade, not a reward claim.');
+    if (s.lifecycle && s.lifecycle.rare && s.lifecycle.rare.ready === true) add('profile', 'rare_morph_ready', 'HIDDEN MORPH SIGNAL', 'READY TO REVIEW', 'ready', 'rare-morph', 'Review the saved hidden signal before choosing Answer Rare Signal.');
+    return menus;
+  }
+
+  function menuBadge(menu) {
+    var entries = menu && menu.loaded ? menu.entries : [];
+    var attention = entries.filter(function (entry) { return ['claim', 'ready', 'recovery', 'review'].includes(entry.kind); });
+    var active = entries.filter(function (entry) { return ['resume', 'waiting'].includes(entry.kind); });
+    var shown = attention.length ? attention : active;
+    var count = shown.reduce(function (sum, entry) { return sum + entry.count; }, 0);
+    var kind = !attention.length ? 'active' : attention.every(function (entry) { return entry.kind === 'claim'; }) ? 'claims'
+      : attention.some(function (entry) { return ['recovery', 'review'].includes(entry.kind); }) ? 'review' : 'ready';
+    return { count: count, countLowerBound: shown.some(function (entry) { return entry.countLowerBound; }), kind: kind, activeCount: active.reduce(function (sum, entry) { return sum + entry.count; }, 0) };
+  }
+
+  var api = { menuStatuses: menuStatuses, menuBadge: menuBadge, missionStatus: missionStatus, missionClaims: missionClaims, recommendations: recommendations, route: route, objectiveRoutes: objectiveRoutes, bountyRoutes: bountyRoutes, bountyRouteOptions: bountyRouteOptions, runAvailability: runAvailability, craftingGoal: craftingGoal, options: options };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.MoonpetPlayOptions = api;
 })(typeof window !== 'undefined' ? window : globalThis);
