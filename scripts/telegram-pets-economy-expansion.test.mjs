@@ -133,6 +133,27 @@ for (const kind of ['market_offer', 'daily_bounty', 'crystal_expedition']) {
     assert.equal(surface.classification, PET_ECONOMY_REACHABILITY_CLASSIFICATIONS.LIVE_REACHABLE, `${surface.key} ${kind} must be live and reachable`);
   }
 }
+const originalAuditBounties = audit.surfaces.filter((entry) => entry.kind === 'daily_bounty' && entry.board === 'original');
+const bonusAuditBounties = audit.surfaces.filter((entry) => entry.kind === 'daily_bounty' && entry.board === 'bonus');
+const weeklyAuditBounties = audit.surfaces.filter((entry) => entry.kind === 'weekly_bounty');
+assert.deepEqual(originalAuditBounties.map((entry) => entry.key), PET_DAILY_BOUNTIES.map((entry) => entry.key));
+assert.deepEqual(bonusAuditBounties.map((entry) => entry.key), PET_DAILY_BONUS_BOUNTIES.map((entry) => entry.key));
+assert.deepEqual(weeklyAuditBounties.map((entry) => entry.key), PET_WEEKLY_BOUNTIES.map((entry) => entry.key));
+assert.equal(new Set([...originalAuditBounties, ...bonusAuditBounties, ...weeklyAuditBounties].map((entry) => entry.key)).size,
+ PET_DAILY_BOUNTIES.length + PET_DAILY_BONUS_BOUNTIES.length + PET_WEEKLY_BOUNTIES.length, 'all challenge and bounty keys are unique');
+for (const surface of bonusAuditBounties) {
+  const source = PET_DAILY_BONUS_BOUNTIES.find((entry) => entry.key === surface.key);
+  assert.deepEqual(surface.event_types, source.event_types);
+  assert.deepEqual(surface.reward, source.reward);
+  assert.equal(surface.difficulty, source.difficulty);
+  assert.match(surface.claim_path, /bounty_claim/);
+}
+for (const surface of weeklyAuditBounties) {
+  const source = PET_WEEKLY_BOUNTIES.find((entry) => entry.key === surface.key);
+  assert.deepEqual(surface.event_types, source.event_types);
+  assert.deepEqual(surface.reward, source.reward);
+  assert.match(surface.claim_path, /weekly_bounty_claim/);
+}
 assert.equal(audit.surfaces.find((entry) => entry.kind === 'currency' && entry.key === 'moon_crystals').sources.includes('daily_chest'), false,
   'audit currency metadata must not claim Daily Chest creates Moon Crystals');
 
