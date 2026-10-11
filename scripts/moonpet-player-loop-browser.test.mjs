@@ -338,6 +338,13 @@ try {
     assert.equal(await page.locator('[data-panel="module-loading"]').count(), 0, 'Home is usable during background projection');
     assert.deepEqual(modes, ['core', 'full'], 'exactly one background full read begins before any tab tap');
     assert.equal(await page.locator('.dock-claim-badge').count(), 0, 'core startup cannot invent unloaded claim counts');
+    await page.waitForFunction(() => window.MoonpetBetaAppearance.getBackgroundArtState().floor?.shadow === true);
+    assert.deepEqual(await page.evaluate(() => {
+      const canvas = document.getElementById('moonpet-canvas'), scale = canvas.width / 320;
+      return Array.from(canvas.getContext('2d').getImageData(10 * scale, 213 * scale, 1, 1).data);
+    }), [37, 38, 41, 255], 'pavement renders from core state at mobile and desktop widths');
+    await page.screenshot({ path: path.join(screenshotDirectory, `moonpet-street-floor-core-${viewport.width}.png`) });
+
     releaseWarmup();
     await page.locator('[data-screen="missions"]').click();
     await page.waitForSelector('[data-panel="contracts"]');
@@ -674,6 +681,7 @@ try {
     // from the later scenario whose diagnostics this array describes.
     failedResponses.length = 0;
     assert.equal(await page.evaluate(() => window.MoonpetBetaAppearance.getBackgroundArtState().mode), 'stage0_secret_bot', 'egg keeps its existing background');
+    assert.equal(await page.evaluate(() => window.MoonpetBetaAppearance.getBackgroundArtState().floor), null, 'egg chamber receives no street floor');
     // Check the real collapsed UX before expanding the older gameplay matrix.
     const beforeDisclosures = actions.length;
     for (const section of ['home', 'missions', 'explore', 'work', 'economy', 'profile']) {
@@ -925,6 +933,29 @@ try {
     await page.waitForSelector('[data-panel="care"]');
     await page.waitForFunction(() => window.MoonpetBetaAppearance.getBackgroundArtState().mode === 'bitty_background');
     assert.equal(await page.evaluate(() => window.MoonpetBetaAppearance.getBackgroundArtState().source), '/img/BITTY BACKGROUND.jpg');
+    await page.waitForFunction(() => window.MoonpetBetaAppearance.getBackgroundArtState().floor?.shadow === true);
+    const floorPixels = await page.evaluate(() => {
+      const canvas = document.getElementById('moonpet-canvas');
+      const scale = canvas.width / 320;
+      const pixel = canvas.getContext('2d').getImageData(10 * scale, 213 * scale, 1, 1).data;
+      return { color: Array.from(pixel), floor: window.MoonpetBetaAppearance.getBackgroundArtState().floor,
+        sprite: window.MoonpetBetaAppearance.getBotArtState().lastRender };
+    });
+    assert.deepEqual(floorPixels.color, [37, 38, 41, 255], 'actual rendered street paving reaches the canvas bottom strip');
+    assert.equal(floorPixels.floor.baseline_y, 219, 'grounding preserves the original sprite baseline');
+    assert.ok(floorPixels.sprite?.drew && floorPixels.sprite.drawHeight <= 184 && floorPixels.sprite.drawWidth <= 184, 'grounding preserves contained companion art');
+    await page.screenshot({ path: path.join(screenshotDirectory, `moonpet-street-floor-${viewport.width}.png`) });
+    const streetImage = /\/img\/BITTY(?:%20| )BACKGROUND\.jpg/;
+    const failStreetImage = route => route.abort();
+    await page.route(streetImage, failStreetImage);
+    await page.reload(); await page.waitForSelector('[data-panel="care"]');
+    await page.waitForFunction(() => window.MoonpetBetaAppearance.getBackgroundArtState().mode === 'retro_space_loop');
+    assert.equal(await page.evaluate(() => window.MoonpetBetaAppearance.getBackgroundArtState().floor), null, 'failed street image retains space fallback without pavement');
+    await page.unroute(streetImage, failStreetImage);
+    await page.reload(); await page.waitForSelector('[data-panel="care"]');
+    await page.waitForFunction(() => window.MoonpetBetaAppearance.getBackgroundArtState().floor?.shadow === true);
+
+
     if (viewport.width === 390) {
       await page.emulateMedia({ reducedMotion: 'no-preference' });
       await page.reload();

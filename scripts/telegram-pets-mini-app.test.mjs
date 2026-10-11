@@ -1100,7 +1100,7 @@ assert.doesNotMatch(unadoptedBlock, /hatch your Moonpet first/,
 // Windows checkouts cannot reintroduce indentation/newline-sensitive regexes.
 const TEST_EXPORT_NAMES = [
   'seasonTiming', 'callsignDraft', 'capabilityCombatHelper', 'actionAvailability', 'dailyJourneyMarkup', 'weeklyJourneyMarkup', 'nextGuidance', 'journeyActionProgress', 'actionResultFeedback', 'stateRequestGate',
-  'companionCombatActive', 'lifecycleCeremonyStarter', 'lifecycleDirector', 'retroSpaceLoop',
+  'companionCombatActive', 'lifecycleCeremonyStarter', 'lifecycleDirector', 'retroSpaceLoop', 'companionFloor',
 ];
 for (const name of TEST_EXPORT_NAMES) {
   for (const newline of ['\n', '\r\n']) {
@@ -1513,7 +1513,7 @@ assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20261011-kaiju-guide-v1/);
 assert.doesNotMatch(html, /moonpet-art-resolver\.js/, 'the game must not load the retired static background resolver');
 assert.match(html, /\/js\/moonpet-bot-art-loader\.js\?v=20261006-live-refresh-v5/);
 assert.match(html, /\/js\/moonpet-bot-art-renderer\.js\?v=20261002-audit-recovery-v2/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261011-kaiju-guide-v1/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261011-street-floor-v1/);
 assert.match(html, /role="button" aria-label="Interact with your animated Moonpet"/);
 assert.match(client, /data-utility="guide">HOW TO PLAY/);
 const guideMarkupSource = extractTestExport(client, 'guideMarkup');
@@ -1804,7 +1804,7 @@ for (const sdkInitData of [expired, tampered, 'auth_date=invalid&hash=' + 'a'.re
   assert.equal(entry.requests.length, 3, 'Read-only startup state requests retain their transient retry policy');
 }
 assert.match(html, /\/js\/api-config\.js\?v=20260813-first-party-api/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261011-kaiju-guide-v1/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261011-street-floor-v1/);
 // Season slot UI: timing, account/pet separation, unlock affordance, switching, and rejection copy.
 assert.match(client, /function renderSeasonSlots\(\)/, 'Mini App must render a focused season-slot summary');
 assert.match(client, /function render\(options\) \{\s*var editableState = options && options\.discardCallsignDraft \? null : captureEditableState\(\);[\s\S]*restoreEditableState\(editableState\);/, 'render must preserve only drafts that were not explicitly discarded');
@@ -2070,6 +2070,55 @@ assert.match(client, /function drawRetroSpaceBackground\(time\)/, 'the canvas mu
 assert.match(client, /drawRetroSpaceBackground\(renderTime\)/, 'the space battle must render behind the selected bot');
 assert.match(client, /var RETRO_SPACE_LOOP_MS = 20000;/, 'the space battle must use a perfect 20-second timeline');
 const drawWorldSource = client.slice(client.indexOf('function drawWorld(time)'), client.indexOf('function frame(time)'));
+const floorSource = extractTestExport(client, 'companionFloor');
+const floorWorldSource = extractTestExport(client, 'drawWorld');
+assert.ok(floorSource && floorWorldSource, 'ground layer and composition must be executable');
+const floorPaint = [], floorAlpha = [];
+const floorContext = { globalAlpha: 1, save() { floorAlpha.push(this.globalAlpha); }, restore() { this.globalAlpha = floorAlpha.pop(); } };
+const drawFloor = new Function('ctx', 'drawPixelRect', 'BOT_RENDER_BASELINE_Y', 'BOT_RENDER_CENTER_X', floorSource + '; return drawCompanionFloor;')(
+  floorContext, (x, y, width, height, color) => floorPaint.push({ x, y, width, height, color, alpha: floorContext.globalAlpha }), 219, 160);
+drawFloor(false);
+const pavingOnly = structuredClone(floorPaint);
+assert.ok(pavingOnly.length <= 32, 'floor is a bounded static set of primitives');
+assert.ok(pavingOnly.every(rect => rect.x >= 0 && rect.x + rect.width <= 320 && rect.y >= 198 && rect.y + rect.height <= 220), 'floor stays within the bottom strip');
+floorPaint.length = 0; drawFloor(true);
+assert.deepEqual(floorPaint.slice(0, pavingOnly.length), pavingOnly);
+assert.equal(floorPaint.length, pavingOnly.length + 3, 'a ready companion adds only its contact shadow');
+assert.ok(floorPaint.slice(pavingOnly.length).every(rect => rect.alpha === 0.7 && rect.y >= 203 && rect.y + rect.height <= 209));
+assert.equal(floorContext.globalAlpha, 1, 'shadow opacity cannot leak into sprites');
+const worldCalls = [];
+const floorRuntime = vm.createContext({ reducedMotion: false, performance: { now: () => 7 },
+  state: { adopted: true, pet: { pet_id: 'grounded' }, lifecycle: { phase: 'young' } },
+  botArtRendererReady: true, BOT_RENDER_BASELINE_Y: 219, STAGE_ZERO_BACKGROUND_URL: 'egg-room',
+  backgroundArtState: {}, stageZero: false, streetReady: true,
+  ctx: { save() {}, restore() {} },
+  drawStageZeroBackground: () => worldCalls.push('egg-room'),
+  drawRetroSpaceBackground: () => worldCalls.push('space'),
+  drawCompanionFloor: shadow => worldCalls.push(shadow ? 'floor+shadow' : 'floor'),
+  drawEquippedStyles: (_, foreground) => worldCalls.push(foreground ? 'style-front' : 'style-back'),
+  drawPet: () => worldCalls.push('pet') });
+vm.runInContext('function stageZeroPresentationActive() { return stageZero; } function drawPetBackground() { if (streetReady) backgroundArtState = { mode: "bitty_background" }; return streetReady; }' + floorWorldSource, floorRuntime);
+for (const scenario of [
+  { stageZero: false, streetReady: true, adopted: true, art: true, floor: 'floor+shadow' },
+  { stageZero: false, streetReady: true, adopted: true, art: false, floor: 'floor' },
+  { stageZero: true, streetReady: true, adopted: true, art: true, floor: null },
+  { stageZero: false, streetReady: false, adopted: true, art: true, floor: null },
+  { stageZero: false, streetReady: true, adopted: false, art: true, floor: null }
+]) {
+  Object.assign(floorRuntime, { stageZero: scenario.stageZero, streetReady: scenario.streetReady, botArtRendererReady: scenario.art });
+  floorRuntime.state.adopted = scenario.adopted;
+  const before = structuredClone(floorRuntime.state);
+  worldCalls.length = 0; floorRuntime.drawWorld(10);
+  assert.deepEqual(floorRuntime.state, before, 'ground rendering cannot mutate the save');
+  if (scenario.floor) {
+    assert.deepEqual(worldCalls, [scenario.floor, 'style-back', 'pet', 'style-front'], 'ground is behind styles and companion');
+    assert.equal(floorRuntime.backgroundArtState.floor.shadow, scenario.art);
+    assert.equal(floorRuntime.backgroundArtState.floor.baseline_y, 219);
+  } else {
+    assert.ok(!worldCalls.some(call => call.startsWith('floor')));
+    assert.equal(floorRuntime.backgroundArtState.floor, null, 'a previous street floor never leaks into another scene');
+  }
+}
 assert.match(client, /canvas\.addEventListener\('click'/);
 assert.match(client, /function moonpetBotFitBounds\(\)/);
 assert.match(client, /canvasX >= botBounds\.left && canvasX <= botBounds\.right && canvasY >= botBounds\.top && canvasY <= botBounds\.bottom/);
