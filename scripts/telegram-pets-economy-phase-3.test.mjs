@@ -84,7 +84,7 @@ assert.equal(resolvePetRareDrop('missing', 0.5), null);
 assert.throws(() => { PET_RARE_DROP_TABLES.job[0].weight = 0; }, TypeError, 'drop weights must reject mutation');
 assert.equal(resolvePetRareDrop('job', 0), 'scrap_metal', 'failed mutation must not alter deterministic drop resolution');
 
-assert.ok(Object.keys(PET_COSMETIC_SINKS).length === 3, 'only the three working cosmetics remain');
+assert.ok(Object.keys(PET_COSMETIC_SINKS).length === 7, 'all seven renderable styles are purchasable');
 assert.equal(PET_COSMETIC_SINKS.profile_frame.repeatable, false);
 assert.ok(Object.isFrozen(PET_COSMETIC_SINKS.profile_frame.cost), 'cosmetic cost objects must be frozen');
 assert.throws(() => { PET_COSMETIC_SINKS.profile_frame.cost.style_tokens = 0; }, TypeError, 'cosmetic costs must reject mutation');
