@@ -449,3 +449,17 @@ test('meal cooldown affects cooked food only, never unrelated bag items', () => 
   for (const name of ['Street Pizza','Moon Burger']) assert.match(card(name), / disabled/, name+' must respect shared meal cooldown');
   for (const name of ['Moon Snack','Clean Wipe']) assert.doesNotMatch(card(name), / disabled/, name+' must not inherit cooked meal cooldown');
 });
+
+test('real Egg Food Counter renders but never allows a pre-hatch meal', () => {
+  const ctx = context();
+  ctx.panel = (_, body) => body;
+  ctx.state.lifecycle.phase = 'egg';
+  ctx.stateNeedsFullHydration = () => false;
+  ctx.state.inventory = [{ key: 'street_pizza', title: 'Street Pizza', kind: 'usable_item', count: 1 }];
+  vm.runInContext(between('  function renderFoodCounter()', '  function renderPetEmotes()'), ctx);
+  const html=ctx.renderFoodCounter();
+  assert.match(html, /FOOD COUNTER \/\/ CHOOSE A MEAL/, 'the food counter remains visible on Egg Home');
+  assert.match(html, /Street Pizza/, 'saved food is not hidden');
+  assert.match(html, /HATCH REQUIRED/, 'bag consumption is still gated until hatch');
+  assert.match(html, /data-action="use_item"[^>]* disabled/, 'a pre-hatch meal cannot spend a bag item');
+});
