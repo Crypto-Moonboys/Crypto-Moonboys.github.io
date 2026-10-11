@@ -16,6 +16,17 @@ Any gameplay, documentation, or UI change affecting Moonpet status should refere
 
 ## Current rules and historical audits
 
+### Draft PR #1485: cooked meals, optional challenges and more adventures (11 Oct 2026)
+
+This section describes proposed code under review, **not** evidence of production deployment.
+
+- The original seven Daily Missions, four Daily Bounties, pet-specific daily/weekly Journeys, permanent companion ownership and 45-second Care Feed timer remain authoritative. Three *additional* daily bonus targets are chosen each UTC day: **one EASY, one MEDIUM and one HARD**, with no server event type shared between the selected bonus targets. Their source must be an accepted authoritative event; bonus claims use independent `bonus_*` keys and the existing account-owned bounty receipt. Duplicate or stale UTC-day claims must not pay twice. Existing daily bounty rotations and receipt keys must never change.
+- Three cooked bag foods are `street_pizza`, `moon_burger` and `garden_veggies`. Pizza reduces hunger by 30, adds 4 energy/4 happiness and up to 3 Pet XP; Burger reduces hunger by 22, adds 12 energy/2 happiness and up to 4 Pet XP; Veggies reduce hunger by 16, add 6 energy/14 happiness and up to 3 Pet XP. Actual awards remain subject to pet stat/XP caps. All three are consumables created by ingredient-cost Crafting or future approved shop inventory; Bag use is `use_item`, **not** a qualifying Feed mission.
+- Eating any cooked meal and performing Care **Feed** share the existing **45-second account-wide cooldown** in either order; the server checks pending and accepted event evidence **inside** the atomic item/action reservation, so overlapping requests cannot consume another meal, bypass the Feed timer, or pay twice. The client must display the server-projected `action:meal`/Feed timer in Home/Bag and disable unavailable buttons, without treating the client timer as authority. Other pre-existing bag items are not affected.
+- Four new server-owned Adventures and a `help_the_crew` option use the existing adventure outcome preview, per-choice reward and risk, level/energy gates, a shared 30-minute Adventure cooldown and original earning pet attribution; retries must only acknowledge saved receipts, not reroll the outcome.
+- Five no-cost client-only expressive pet emotes and tap-to-laugh do **not** send gameplay requests or issue rewards, radio streams, new animations/assets, or XP.
+- Documentation generation comes from `js/moonpet-guide.js` and the `scripts/sync-moonpet-guide.mjs` website marker blocks. Keep the shared game guide and public `how-to-play-crypto-moonboy-pets.html` synchronized; do not rewrite unrelated canon/About guidance.
+
 The [11 October existing UI polish](moonpet-ui-polish-2026-10-11.md) addresses
 H01/H18/H19/H22/H23/H28/H40/H44. Care actions and Vital Systems remain separate;
 Fullness displays `100 - hunger`, so every vital meter reads higher as better.
