@@ -5,7 +5,7 @@ import { REQUIRED_D1_MIGRATIONS, verifyD1MigrationPayload } from './verify-d1-pr
 
 const expected = 'bfa8997d0942ca1101aab26b7b7c19a29c3999ca';
 const site = 'https://cryptomoonboys.com';
-const git = (...args) => execFileSync('git', args);
+const git = (...args) => execFileSync('git', args, { maxBuffer: 16 * 1024 * 1024 });
 const source = path => git('show', `${expected}:${path}`);
 const hash = bytes => createHash('sha256').update(bytes).digest('hex');
 const report = { checked_at: new Date().toISOString(), intended_commit: expected, assets: [], workers: [], bot_menus: [], migrations: {} };
