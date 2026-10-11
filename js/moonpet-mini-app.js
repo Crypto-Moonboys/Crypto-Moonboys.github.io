@@ -2063,7 +2063,7 @@
       return '<div class="ticker"><span>SECRET BOT // SIGNAL ' + number(incubation.progress) + '/' + number(incubation.target) + ' // IDENTITY FORMING //</span></div>' +
         panel('SECRET BOT CHAMBER', '<div class="line complete">THE SECRET BOT REMEMBERS HOW YOU TREAT IT.</div><div class="line muted">NEXT // ' + escapeHtml(homeNextLine()) + '</div><div class="line muted">Use at least three types of care to build the breakout signal. Identity stays hidden until Stage 3.</div>' + meter('BREAKOUT SIGNAL', Number(incubation.progress || 0) / Math.max(1, Number(incubation.target || 12)) * 100) + '<div class="line">WARM ' + number(signals.warm) + ' // TALK ' + number(signals.talk) + ' // INSPIRATION ' + number(signals.music) + ' // REST ' + number(signals.rest) + '</div><div class="button-grid">' + button('WARM BOT', 'incubate', { care_type: 'warm' }) + button('TALK TO BOT', 'incubate', { care_type: 'talk' }) + button('INSPIRE BOT', 'incubate', { care_type: 'music' }) + button('LET IT REST', 'incubate', { care_type: 'rest' }) + '</div><div class="button-grid one">' + button('HATCH BOT', 'hatch', {}, { disabled: !incubation.ready, statusLabel: incubation.ready ? '' : 'HATCH NOT READY' }) + '</div><div class="line muted">DAILY SIGNALS ' + number(incubation.actions_today) + '/' + number(incubation.daily_cap) + '</div>', 'incubation') +
         panel('SECRET BOT ACTIONS', '<div class="button-grid">' + button('ENERGY DRINK', 'energy_drink') + button('DANCE', 'dance') + button('CUDDLES', 'cuddles') + '</div><div class="line muted">Stat-only care. Does not advance incubation or award XP.</div>', 'care') +
-        renderPlayNow() + renderSeasonSlots() + renderRadioRequestPanel();
+        renderPlayNow() + renderPetEmotes() + renderSeasonSlots() + renderRadioRequestPanel();
     }
     var equipped = ['food', 'toy', 'outfit', 'armor', 'weapon', 'charm'].map(function (slot) {
       return '<div class="line"><strong>' + slot.toUpperCase() + '</strong> // ' + escapeHtml(words(pet['equipped_' + slot] || (slot === 'food' ? 'basic food' : slot === 'toy' ? 'basic toy' : 'none equipped'))) + '</div>';
@@ -4266,7 +4266,9 @@
         companionCombatActive(state, activeScreen) || lifecycleCeremonyActive(now)) return false;
     localEmoteLabel = entry[1];
     localEmoteUntil = now + entry[2];
-    animateAction(entry[0], true, entry[2], { source: 'local_emote', variant: key });
+    // The egg has an authored reaction, but no train animation.
+    var family = key === 'stretch' && state.lifecycle && state.lifecycle.phase === 'egg' ? 'interact' : entry[0];
+    animateAction(family, true, entry[2], { source: 'local_emote', variant: key });
     haptic('light');
     return true;
   }
@@ -4820,7 +4822,7 @@
     ctx.restore();
     drawEquippedStyles(renderTime, true);
     if (state && state.adopted && typeof localEmoteUntil !== 'undefined' && typeof localEmoteLabel !== 'undefined' && localEmoteUntil > renderTime && localEmoteLabel &&
-        !stageZeroPresentationActive(renderTime)) {
+        !hatchArtTransitionActive(renderTime)) {
       ctx.save();
       drawPixelRect(108, 15, 104, 22, '#15131c');
       ctx.fillStyle = '#f3efad';
