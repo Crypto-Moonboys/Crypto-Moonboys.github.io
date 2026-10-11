@@ -117,6 +117,21 @@ async function createFixtureContext(options) {
   }, fixtureOrigin);
   return context;
 }
+async function measureDisclosureTarget(page, selector, expanded) {
+  // Hydration may replace a summary between separate Playwright calls. Capture
+  // its state and height in the same browser operation and return the number,
+  // not a DOM handle that can become detached before the assertion.
+  const sample = await page.waitForFunction(({ selector, expanded }) => {
+    const node = document.querySelector(selector);
+    if (!node || !node.isConnected || node.parentElement.open !== expanded) return false;
+    const height = node.getBoundingClientRect().height;
+    return height >= 44 ? height : false;
+  }, { selector, expanded });
+  const height = await sample.jsonValue();
+  await sample.dispose();
+  assert.ok(height >= 44, selector + ' has a 44px touch target');
+  return height;
+}
 try {
   browser = await chromium.launch(launch);
   // Required run controls fail closed and Refresh retries the asset itself.
@@ -421,22 +436,14 @@ try {
       assert.equal(await status.getAttribute('aria-label'), key + ' saved status');
       assert.equal(await status.getAttribute('open'), null, 'ordinary saved status starts compact');
       const summary = status.locator(':scope > summary');
-      // Navigation can finish deferred hydration and replace the screen before
-      // layout. Measure the current connected summary after it is rendered.
-      await page.waitForFunction(menu => {
-        const node = document.querySelector('.menu-status[aria-label="' + menu + ' saved status"] > summary');
-        return node && node.getBoundingClientRect().height >= 44;
-      }, key);
-      const collapsedSummaryHeight = await summary.evaluate(node => node.getBoundingClientRect().height);
-      assert.ok(collapsedSummaryHeight >= 44, key + ' collapsed summary has a 44px touch target (actual ' + collapsedSummaryHeight + ')');
-      await summary.focus();
+      const summarySelector = '.menu-status[aria-label="' + key + ' saved status"] > summary';
+      await measureDisclosureTarget(page, summarySelector, false);
       await summary.press('Enter');
-      assert.notEqual(await status.getAttribute('open'), null, 'native summary keyboard toggle expands ' + key);
-      const summaryBox = await summary.boundingBox();
-      assert.ok(summaryBox.height >= 44, key + ' expanded summary has a 44px touch target');
-      await summary.click({ position: { x: 24, y: summaryBox.height - 2 } });
-      assert.equal(await status.getAttribute('open'), null, 'bottom edge of summary toggles ' + key);
+      const expandedHeight = await measureDisclosureTarget(page, summarySelector, true);
+      await summary.click({ position: { x: 24, y: expandedHeight - 2 } });
+      await measureDisclosureTarget(page, summarySelector, false);
       await summary.click();
+      await measureDisclosureTarget(page, summarySelector, true);
       const shortcut = status.locator('[data-jump]').first();
       const focus = await shortcut.getAttribute('data-focus');
       const before = actions.length;
@@ -453,11 +460,10 @@ try {
     const more = page.locator('.menu-status-more');
     assert.equal(await more.count(), 1);
     const moreSummary = more.locator(':scope > summary');
-    const moreBox = await moreSummary.boundingBox();
-    assert.ok(moreBox.height >= 44, 'collapsed More Saved Status has a 44px touch target');
-    await moreSummary.click({ position: { x: 24, y: moreBox.height - 2 } });
-    assert.notEqual(await more.getAttribute('open'), null, 'bottom edge opens More Saved Status');
-    assert.ok(await moreSummary.evaluate(node => node.getBoundingClientRect().height) >= 44, 'expanded More Saved Status has a 44px touch target');
+    const moreSelector = '.menu-status[aria-label="missions saved status"] .menu-status-more > summary';
+    const moreHeight = await measureDisclosureTarget(page, moreSelector, false);
+    await moreSummary.click({ position: { x: 24, y: moreHeight - 2 } });
+    await measureDisclosureTarget(page, moreSelector, true);
     await page.locator('[data-screen="home"]').click();
     await page.locator('[data-screen="missions"]').click();
     assert.equal(await more.getAttribute('open') !== null, true, 'expanded saved status survives menu navigation');

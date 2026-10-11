@@ -69,6 +69,12 @@ Saved Status and More Saved Status summaries have a minimum 44px touch target
 with vertical padding. Native disclosure markers and keyboard toggling remain
 available. Browser regressions measure collapsed/expanded targets, toggle the
 bottom edge and use Enter across all six menus at 360, 390 and 1280px widths.
+The visual CI follow-up captures disclosure state and height in one browser
+operation: hydration can replace a summary between separate wait/measure calls,
+making a detached node report 0px. Both disclosure checks now return the measured
+number directly from the readiness poll, retaining the 44px requirement and
+collapsed/expanded, keyboard and bottom-edge coverage. This changes the test,
+not the game's styling or hydration behavior.
 
 Failed playable Finale battles appear as Retry Ready, distinct from active
 battles and earned reward claims. Counts deduplicate the original pet and
