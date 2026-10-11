@@ -729,6 +729,41 @@ test('server-authoritative added adventures enforce level, energy, receipt repla
 });
 
 
+test('all three cooked meals save their exact distinct hunger, energy and happiness effects',async()=>{
+  for (const [key,expected] of [
+    ['street_pizza',{hunger:-30,energy:4,happiness:4}],
+    ['moon_burger',{hunger:-22,energy:12,happiness:2}],
+    ['garden_veggies',{hunger:-16,energy:6,happiness:14}],
+  ]) {
+    const f=funded('meal-effect-'+key);
+    const petId='current-'+f.owner;
+    f.sql.prepare(`UPDATE telegram_pet_instances
+      SET hunger=60,energy=40,happiness=45,cleanliness=80,last_decay_at=CURRENT_TIMESTAMP,
+        source_profile_updated_at=CURRENT_TIMESTAMP WHERE pet_id=?`).run(petId);
+    f.sql.prepare(`UPDATE telegram_pet_profiles
+      SET hunger=60,energy=40,happiness=45,cleanliness=80,last_decay_at=CURRENT_TIMESTAMP,
+        updated_at=datetime('now','-60 seconds') WHERE telegram_id=?`).run(f.owner);
+    f.sql.prepare("INSERT INTO telegram_pet_inventory(telegram_id,asset_type,asset_key,quantity) VALUES (?,'item',?,2)").run(f.owner,key);
+    const readNeeds=()=>f.sql.prepare('SELECT hunger,energy,happiness FROM telegram_pet_instances WHERE pet_id=?').get(petId);
+    const before=readNeeds();
+    const result=await f.act({action:'use_item',item_key:key,request_id:'one-'+key});
+    assert.equal(result.accepted,true,key+': '+result.reason);
+    const after=readNeeds();
+    for (const [stat,delta] of Object.entries(expected)) {
+      assert.ok(Math.abs((after[stat]-before[stat])-delta)<0.51,
+        key+' '+stat+': expected a distinct saved delta of '+delta+'; got '+(after[stat]-before[stat]));
+    }
+    const receipt=f.sql.prepare("SELECT metadata FROM telegram_pet_events WHERE telegram_id=? AND event_type='use_item' AND status='accepted'").get(f.owner);
+    assert.ok(receipt,key+' must have an accepted saved use-item event');
+    const deltas=JSON.parse(receipt.metadata).profile_deltas;
+    assert.deepEqual({hunger:deltas.hunger,energy:deltas.energy,happiness:deltas.happiness},expected,
+      key+' accepted event must record its exact authoritative requested deltas');
+    assert.equal(f.sql.prepare("SELECT quantity FROM telegram_pet_inventory WHERE telegram_id=? AND asset_key=?").get(f.owner,key).quantity,1);
+    assert.equal(f.sql.prepare("SELECT COUNT(*) AS n FROM telegram_pet_events WHERE telegram_id=? AND event_type='feed' AND status='accepted'").get(f.owner).n,0);
+    f.sql.close();
+  }
+});
+
 test('cooked meals and Care Feed share the same 45-second account cooldown and never award extra Feed mission credit',async()=>{
   const f=funded('meal-care-cooldown');
   for(const itemKey of ['street_pizza','moon_burger','garden_veggies']){
