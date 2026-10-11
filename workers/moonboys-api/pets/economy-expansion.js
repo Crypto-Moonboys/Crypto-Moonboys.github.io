@@ -55,6 +55,26 @@ export const PET_DAILY_BOUNTIES = freeze([
   { key: 'item_user', title: 'Prepared Moonpet', detail: 'Use 1 consumable item.', event_types: ['use_item', 'use_item_reward'], required: 1, reward: { moon_gold: 25, style_tokens: 1 } },
 ]);
 
+// Extra challenges have a separate stable rotation and distinct keys.
+// Do not reshuffle the legacy four daily bounties or change historical claims.
+export const PET_DAILY_BONUS_BOUNTIES = freeze([
+  { key: 'bonus_clean_sweep', title: 'Clean Sweep', difficulty: 'EASY', detail: 'Complete 2 accepted Clean actions.', event_types: ['clean'], required: 2, reward: { moon_gold: 26 } },
+  { key: 'bonus_play_date', title: 'Play Date', difficulty: 'EASY', detail: 'Complete 2 accepted Play actions.', event_types: ['play'], required: 2, reward: { moon_gold: 30 } },
+  { key: 'bonus_food_route', title: 'Food Route', difficulty: 'EASY', detail: 'Use 1 bag consumable.', event_types: ['use_item'], required: 1, reward: { moon_gold: 27 } },
+  { key: 'bonus_street_art', title: 'Street Assignment', difficulty: 'MEDIUM', detail: 'Complete 3 accepted jobs.', event_types: ['work'], required: 3, reward: { moon_gold: 45, style_tokens: 1 } },
+  { key: 'bonus_route_scout', title: 'Route Scout', difficulty: 'MEDIUM', detail: 'Resolve 2 Street Events or Adventures.', event_types: ['random_event','adventure'], required: 2, reward: { moon_gold: 46, style_tokens: 1 } },
+  { key: 'bonus_care_cycle', title: 'Full Routine', difficulty: 'MEDIUM', detail: 'Complete 5 accepted Feed, Play, Clean or Sleep actions.', event_types: ['feed','play','clean','sleep'], required: 5, reward: { moon_gold: 50, style_tokens: 1 } },
+  { key: 'bonus_training_focus', title: 'Training Focus', difficulty: 'MEDIUM', detail: 'Complete 3 accepted Train actions.', event_types: ['train'], required: 3, reward: { moon_gold: 50, moon_crystals: 1 } },
+  { key: 'bonus_worker', title: 'Shift Leader', difficulty: 'HARD', detail: 'Complete 5 accepted jobs.', event_types: ['work'], required: 5, reward: { moon_gold: 70, style_tokens: 2 } },
+  { key: 'bonus_gear_up', title: 'Prepared For Trouble', difficulty: 'HARD', detail: 'Use 3 bag consumables.', event_types: ['use_item'], required: 3, reward: { moon_gold: 55, moon_crystals: 1 } },
+  { key: 'bonus_two_routes', title: 'Double Route', difficulty: 'HARD', detail: 'Finish or extract 2 standard Moon Runs.', event_types: ['run_complete','run_extract'], required: 2, reward: { moon_gold: 75, moon_crystals: 1 } },
+  { key: 'bonus_risk_taker', title: 'Street Survivor', difficulty: 'HARD', detail: 'Finish 3 Street Events or Adventures.', event_types: ['random_event','adventure'], required: 3, reward: { moon_gold: 72, style_tokens: 2 } },
+  { key: 'bonus_kaiju', title: 'Code Breaker', difficulty: 'HARD', detail: 'Finish 2 Kaiju battles.', event_types: ['kaiju_battle'], required: 2, reward: { moon_gold: 65, moon_crystals: 1 } },
+]);
+export function getPetDailyBonusBounties(dayKey) {
+  return rotate(PET_DAILY_BONUS_BOUNTIES, `bonus-bounty:${dayKey}:v1`, 3);
+}
+
 export const PET_MARKET_OFFERS = freeze([
   { key: 'snack_crate', title: 'Snack Crate', detail: '3 Moon Snacks for long care streaks.', cost: { moon_gold: 70 }, reward: { items: { moon_snack: 3 } }, min_level: 1 },
   { key: 'clean_kit', title: 'Clean Kit', detail: '3 Clean Wipes for missions and recovery.', cost: { moon_gold: 60 }, reward: { items: { clean_wipe: 3 } }, min_level: 1 },
