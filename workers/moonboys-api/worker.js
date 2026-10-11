@@ -7244,6 +7244,9 @@ async function processPetAction(db, telegramId, action, options = {}) {
         AND NOT EXISTS (SELECT 1 FROM telegram_pet_events
           WHERE telegram_id=? AND event_type=? AND (status='accepted' OR (?=1 AND status='pending'))
             AND (? - unixepoch(created_at)) < ?)
+        ${normalizedAction === 'feed' ? `AND NOT EXISTS (SELECT 1 FROM telegram_pet_events
+          WHERE telegram_id=? AND status IN ('pending','accepted') AND ${PET_MEAL_USE_EVENT_SQL}
+            AND (? - unixepoch(created_at)) < ?)` : ''}
         AND EXISTS (SELECT 1 FROM telegram_pet_instances p JOIN telegram_pet_active_slots a
           ON a.pet_id=p.pet_id AND a.telegram_id=p.telegram_id AND a.season_key=p.season_key
           WHERE p.pet_id=? AND p.telegram_id=? AND p.season_key=? AND p.status='active'
@@ -7264,6 +7267,7 @@ async function processPetAction(db, telegramId, action, options = {}) {
       ...(actionHasWalletReward ? [telegramId] : []),
       specialPolicy ? 1 : 0, telegramId, normalizedAction, dayKey, Number(specialPolicy?.daily_limit || 0),
       telegramId, normalizedAction, specialPolicy ? 1 : 0, Math.floor(now.getTime() / 1000), specialPolicy?.cooldown_seconds || PETS_ACTION_COOLDOWN_SECONDS,
+      ...(normalizedAction === 'feed' ? [telegramId, Math.floor(now.getTime() / 1000), PETS_ACTION_COOLDOWN_SECONDS] : []),
       pet.pet_id, telegramId, pet.season_key, pet.equipped_food || '', pet.equipped_toy || '', pet.equipped_outfit || '', normalizedAction, now.toISOString(),
       sourceEquipment, telegramId,
       normalizedAction, telegramId, specialPolicy ? 1 : 0, telegramId, telegramId, telegramId, telegramId, telegramId, telegramId),
@@ -7331,7 +7335,9 @@ async function processPetAction(db, telegramId, action, options = {}) {
         };
       }
     }
-    const cooldown = await getPetAcceptedActionCooldown(db, telegramId, normalizedAction, specialPolicy?.cooldown_seconds || PETS_ACTION_COOLDOWN_SECONDS, now);
+    const cooldown = normalizedAction === 'feed'
+      ? await getPetAcceptedMealCooldown(db, telegramId, now)
+      : await getPetAcceptedActionCooldown(db, telegramId, normalizedAction, specialPolicy?.cooldown_seconds || PETS_ACTION_COOLDOWN_SECONDS, now);
     if (cooldown) return attachPetCooldown({ accepted: false, reason: 'cooldown', retry_after_seconds: cooldown.remaining_seconds, cooldown, xp_awarded: 0, pet_xp_awarded: 0, pet }, cooldown);
     const pending = specialPolicy ? await getPetActiveSlotPendingWork(db, telegramId, now) : null;
     if (pending) return { accepted: false, reason: pending.reason, pending, pet };
