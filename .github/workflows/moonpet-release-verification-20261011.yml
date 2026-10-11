@@ -1,0 +1,38 @@
+name: MoonPet Release Verification 2026-10-11
+
+on:
+  push:
+    branches: [sandbox/release-verification-20261011]
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install the existing migration reader
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Read live release evidence
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          MOONPET_CANARY_BOT_TOKEN: ${{ secrets.MOONPET_CANARY_BOT_TOKEN }}
+          MOONPET_CANARY_TELEGRAM_ID: ${{ secrets.MOONPET_CANARY_TELEGRAM_ID }}
+        run: node scripts/moonpet-release-verification-20261011.mjs
+      - name: Retain sanitised evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: moonpet-release-verification
+          path: moonpet-release-verification.json
+          if-no-files-found: error
+          retention-days: 90
