@@ -4222,7 +4222,10 @@
         companionCombatActive(state, activeScreen) || lifecycleCeremonyActive(now)) return false;
     localEmoteLabel = entry[1];
     localEmoteUntil = now + entry[2];
-    animateAction(entry[0], true, entry[2], { source: 'local_emote', variant: key });
+    // Stage 0 has egg_react/egg_care, but no train animation. Use the
+    // authored egg reaction instead of falling back to an unchanged idle egg.
+    var family = key === 'stretch' && state.lifecycle && state.lifecycle.phase === 'egg' ? 'interact' : entry[0];
+    animateAction(family, true, entry[2], { source: 'local_emote', variant: key });
     haptic('light');
     return true;
   }
@@ -4753,7 +4756,7 @@
     ctx.restore();
     drawEquippedStyles(renderTime, true);
     if (state && state.adopted && typeof localEmoteUntil !== 'undefined' && typeof localEmoteLabel !== 'undefined' && localEmoteUntil > renderTime && localEmoteLabel &&
-        !stageZeroPresentationActive(renderTime)) {
+        !hatchArtTransitionActive(renderTime)) {
       ctx.save();
       drawPixelRect(108, 15, 104, 22, '#15131c');
       ctx.fillStyle = '#f3efad';
