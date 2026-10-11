@@ -16114,6 +16114,7 @@ export const __petMediaTestHooks = Object.freeze({
   PET_ECONOMY_ROUTES,
   getPetEconomyState,
   claimPetEconomyBounty,
+  claimPetWeeklyBounty,
   runPetCrystalExpedition,
   buyPetMarketOffer,
   applyPetItemActionBonuses,
