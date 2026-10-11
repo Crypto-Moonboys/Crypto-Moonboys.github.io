@@ -828,6 +828,8 @@ button, input, select, textarea {
   font-size: 10px;
 }
 
+.utility-close { min-height: 44px; min-width: 64px; }
+
 .utility-close:focus-visible,
 .period-button:focus-visible,
 .terminal-button:focus-visible,
@@ -1161,13 +1163,29 @@ button, input, select, textarea {
 .terminal-button .button-state { display: block; margin-top: 5px; color: #c8d4df; font-size: 9px; font-weight: 700; letter-spacing: .045em; line-height: 1.35; }
 .action-button, .route-button { min-width: 0; text-align: left; overflow-wrap: anywhere; }
 .action-button .button-requirements { color: #d4dce4; font-size: 10px; line-height: 1.45; letter-spacing: .025em; }
-.action-button:disabled { opacity: .72; border-style: dashed; }
+.action-button:disabled { opacity: 1; border-style: dashed; color: var(--ui-text-secondary); }
 .action-claim:not(:disabled) { border-color: #78cfa5; box-shadow: inset 3px 0 #78cfa5; }
 .action-claim:not(:disabled) .button-state { color: #9ae9bf; }
 .action-spend:not(:disabled) .button-state { color: #f4d294; }
 .action-risk:not(:disabled) { border-color: #da8e8e; box-shadow: inset 3px 0 #da8e8e; }
 .action-risk .button-state { color: #ffc0c0; }
 .route-button .button-state { color: #a4d5ec; }
+
+.action-facts, .action-fact, .choice-outcome { display: block; }
+.action-facts { margin-top: 8px; line-height: 1.6; font-size: 11px; letter-spacing: 0; }
+.action-fact { padding-block: 2px; overflow-wrap: anywhere; }
+.action-fact b { margin-right: 4px; }
+.fact-cost { color: #f4d294; }
+.fact-reward { color: #9ae9bf; }
+.fact-outcome { color: #d4dce4; }
+.choice-outcome + .choice-outcome { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--ui-border); }
+.choice-result { margin-block: 12px; padding: 8px; border: 1px solid #78cfa5; border-radius: 10px; }
+.choice-result > summary { min-height: 44px; padding-block: 10px; box-sizing: border-box; cursor: pointer; color: #9ae9bf; }
+.choice-result .line { white-space: normal; overflow-wrap: anywhere; }
+.choice-result .terminal-button { min-height: 44px; margin-top: 8px; }
+[data-route-selected] { border-color: #a4d5ec; box-shadow: inset 3px 0 #a4d5ec; }
+[data-route-selected] > .panel-summary { flex-wrap: wrap; }
+[data-route-selected] > .panel-summary::before { flex-basis: 100%; content: 'SELECTED ROUTE'; color: #a4d5ec; font-size: 9px; line-height: 1.4; }
 .dock button small { display: block; margin-top: 3px; font-size: 8px; line-height: 1.2; letter-spacing: 0; text-transform: none; }
 .dock button[aria-current="page"] { border-color: #78bcd5; background: rgba(120,188,213,.09); }
 .canvas-tool { padding: 5px; }

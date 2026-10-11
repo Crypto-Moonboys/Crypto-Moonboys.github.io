@@ -261,7 +261,7 @@
       if (s.daily_run && s.daily_run.available) add('daily_run', 'OFFICIAL DAILY RUN', 'One official attempt per account / UTC day. Advances Daily Journey.');
     }
     if ((live.chains || []).some(function (x) { return x.available; })) add('event_chain', 'STORY CHOICES', 'Continue an available authored story. One rewarded step per chain / UTC day.');
-    if (s.adventure && s.adventure.available) add('adventure', 'ADVENTURE CHOICES', 'Compare outcome odds and costs. One adventure every 30 minutes; entry requires ' + s.adventure.minimum_energy + ' energy.');
+    if (s.adventure && s.adventure.available && (s.adventure.choices || []).some(function (choice) { return !choice.preview || choice.preview.available !== false; })) add('adventure', 'ADVENTURE CHOICES', 'Compare outcome odds and costs. One adventure every 30 minutes; entry requires ' + s.adventure.minimum_energy + ' energy.');
     if (s.encounter && (s.encounter.choices || []).some(function (choice) { return !choice.preview || choice.preview.available !== false; })) add('random_event', 'STREET EVENT CHOICES', 'Compare rewards, costs and setbacks. Repeated-play scaling and daily reward caps apply.');
     if ((g.jobs || []).some(function (job) { return job.available; })) add('work', 'AVAILABLE PET JOBS', 'Choose among jobs your pet has unlocked; each job keeps its costs and reward rules.');
     if ((g.economy && g.economy.expedition_options || []).some(function (entry) { return entry.available; })) add('expedition', 'CHOOSE AN EXPEDITION', 'Compare unlocked destinations, energy costs and possible finds. Three shared attempts per UTC day.');
@@ -331,7 +331,7 @@
       if (s.kaiju && s.kaiju.match && ['open', 'selecting'].includes(s.kaiju.match.status)) add('kaiju_resume', 'RETURN TO KAIJU MATCH', 'Review your cards and the current match.', route({ key: 'kaiju' }), 19);
       if (g.evolution && g.evolution.ready) add('evolution_ready', 'EVOLUTION READY // ' + g.evolution.name, 'Your requirements are met. Review the new form and perk before evolving.', route({ key: 'evolution' }), 41);
       if (lifecycle.rare && lifecycle.rare.ready) add('rare_morph', 'ANSWER THE HIDDEN SIGNAL', 'A morph path is ready. Review it before choosing.', route({ key: 'rare_morph' }), 42);
-      if ((s.live_systems && s.live_systems.upgrades || []).some(function (item) { return item.affordable && !item.maxed; })) {
+      if ((s.live_systems && s.live_systems.upgrades || []).some(function (item) { return item.unlocked && item.affordable && !item.maxed && item.quote_version; })) {
         add('gear_upgrade', 'REVIEW EQUIPMENT UPGRADES', 'An upgrade is affordable. Compare its benefit and material cost before spending.', route({ key: 'gear_upgrade' }), 75);
       }
       if (!preferences || !preferences.crafting_goal) {

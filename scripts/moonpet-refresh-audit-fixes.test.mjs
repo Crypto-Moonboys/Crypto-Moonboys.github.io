@@ -11,7 +11,7 @@ function clientContext() {
   let now = 10000, sequence = 0;
   const requests = [], messages = [], timers = new Map();
   const ctx = {
-    state: full(), activeScreen: 'missions', busy: false, noticesBusy: false, authenticationFailure: false,
+    selectedRouteScreen: '', selectedRoutePanel: '', state: full(), activeScreen: 'missions', busy: false, noticesBusy: false, authenticationFailure: false,
     petActionRefreshRequired: false, fastActionStateDirty: true, fastActionStateRefreshInFlight: false, fastActionStateRefreshTimer: 0,
     fastActionStateRefreshFailures: 0, fastActionStateRefreshRetryAt: 0, FAST_ACTION_STATE_MAX_AUTO_RETRIES: 3,
     passiveRefreshInFlight: false, cooldownRefreshInFlight: false, seasonRefreshBusy: false, fullStateHydrationPromise: null,

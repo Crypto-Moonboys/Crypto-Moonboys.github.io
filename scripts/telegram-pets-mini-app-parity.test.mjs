@@ -713,7 +713,9 @@ for (const surface of informationSurfaces) {
 }
 
 assert.match(clientSource, /valueText\(bounty\.reward\)/, 'bounties must disclose their complete reward');
-assert.match(clientSource, /valueText\(offer\.reward\)/, 'market offers must disclose what they grant');
+// Market reward disclosure is executed against all twelve templates by the
+// real-renderer case in moonpet-option-guidance.test.mjs; avoid pinning its
+// formatter's old inline call here.
 assert.match(clientSource, /item\.description/, 'shop entries must explain what they buy');
 assert.match(clientSource, /POSSIBLE FINDS/, 'expeditions must disclose their possible reward pool');
 assert.match(clientSource, /boss\.remaining_hp/, 'weekly boss must expose live remaining HP');
