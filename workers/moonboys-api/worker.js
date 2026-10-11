@@ -9947,7 +9947,7 @@ function buildPetCareCooldowns(rows = [], now = new Date()) {
 async function getPetAcceptedActionCooldown(db, telegramId, eventType, seconds, now = new Date()) {
   const last = await db.prepare(`SELECT created_at FROM telegram_pet_events
     WHERE telegram_id = ? AND event_type = ? AND status = 'accepted'
-    ORDER BY created_at DESC LIMIT 1`).bind(telegramId, eventType).first().then(requirePetFirstReadResult);
+    ORDER BY julianday(created_at) DESC, created_at DESC LIMIT 1`).bind(telegramId, eventType).first().then(requirePetFirstReadResult);
   const cooldown = last ? buildPetCooldownFromStart(last.created_at, seconds, now) : null;
   return cooldown?.remaining_seconds > 0 ? cooldown : null;
 }
