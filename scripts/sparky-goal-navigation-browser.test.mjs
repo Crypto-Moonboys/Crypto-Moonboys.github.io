@@ -160,9 +160,16 @@ try {
     assert.match(await brief.locator('#shock').innerText(), /one message, one recognisable mark/);
     assert.match(await brief.locator('#swarm').innerText(), /does not run a 24\/7 bot service/);
     for (const id of ['shock', 'streets', 'swarm']) {
+      // Test each native link from the guide entrance, avoiding a race between
+      // the previous smooth jump and scrolling back to the offscreen contents.
+      await brief.goto('http://creator.test/graffiti-kings-creative-guide.html');
       await brief.locator(`nav a[href="#${id}"]`).click();
+      await brief.waitForURL(`http://creator.test/graffiti-kings-creative-guide.html#${id}`);
       assert.equal(new URL(brief.url()).hash, '#' + id);
-      assert.ok(await brief.locator(`#${id} h2`).isVisible(), `${id}: no-JavaScript section navigation works`);
+      await brief.waitForFunction(id => {
+        const heading = document.querySelector(`#${id} h2`).getBoundingClientRect();
+        return heading.top >= 0 && heading.bottom <= innerHeight;
+      }, id);
     }
     assert.ok(await brief.evaluate(() => document.documentElement.scrollWidth <= innerWidth), 'creative guide fits mobile and desktop');
     await context.close();
