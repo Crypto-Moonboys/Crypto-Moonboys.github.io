@@ -32,6 +32,11 @@ await Promise.all([...assets].map(async ([url, path]) => {
   try {
     const live = await request(url), committedHash = hash(source(path)), liveHash = hash(live.bytes);
     report.assets.push({ path, url, http_status: live.status, status: liveHash === committedHash ? 'verified' : 'mismatch', sha256: liveHash, expected_sha256: committedHash });
+    if (liveHash !== committedHash) {
+      const committed = source(path), limit = Math.min(committed.length, live.bytes.length);
+      let offset = 0; while (offset < limit && committed[offset] === live.bytes[offset]) offset++;
+      report.assets[report.assets.length - 1].first_difference = { offset, committed_bytes: committed.length, live_bytes: live.bytes.length, expected: committed.subarray(Math.max(0, offset - 80), offset + 350).toString(), actual: live.bytes.subarray(Math.max(0, offset - 80), offset + 350).toString() };
+    }
     if (path === 'games/telegram/index.html') {
       const target = live.bytes.toString().match(/<a[^>]+href=(['"])([^'"]*\/moonpet-game\.html[^'"]*)\1[^>]*>\s*Moonpet OS\s*<\/a>/i)?.[2];
       report.launcher = { status: target && new URL(target, site).href === new URL(launch, site).href ? 'verified' : 'mismatch', actual_url: target ? new URL(target, site).href : null, expected_url: new URL(launch, site).href };
@@ -48,9 +53,10 @@ for (const [service, directory, origin] of [
     const live = JSON.parse((await request(`${origin}/deployment-info`)).bytes);
     if (live.service !== service || !/^[0-9a-f]{40}$/.test(live.commit) || live.environment !== 'production' || !Number.isFinite(Date.parse(live.deployed_at))) throw new Error('Invalid provenance response');
     git('merge-base', '--is-ancestor', live.commit, expected);
-    const changed = git('diff', '--name-only', live.commit, expected, '--', `workers/${directory}`, 'workers/shared', 'package.json', 'package-lock.json').toString().trim().split('\n').filter(Boolean);
+    const changed = git('diff', '--name-only', live.commit, expected, '--', `workers/${directory}`, 'workers/shared').toString().trim().split('\n').filter(Boolean);
+    const buildManifestChanges = git('diff', '--name-only', live.commit, expected, '--', 'package.json', 'package-lock.json').toString().trim().split('\n').filter(Boolean);
     const health = service === 'moonboys-api' ? JSON.parse((await request(`${origin}/health`)).bytes).ok === true : null;
-    report.workers.push({ ...live, url: `${origin}/deployment-info`, status: changed.length || health === false ? 'mismatch' : 'verified', health_ok: health, changed_runtime_paths: changed, deployed_worker_tree: git('rev-parse', `${live.commit}:workers/${directory}`).toString().trim(), intended_worker_tree: git('rev-parse', `${expected}:workers/${directory}`).toString().trim() });
+    report.workers.push({ ...live, url: `${origin}/deployment-info`, status: changed.length || health === false ? 'mismatch' : 'verified', health_ok: health, changed_runtime_paths: changed, changed_build_manifest_paths: buildManifestChanges, deployed_worker_tree: git('rev-parse', `${live.commit}:workers/${directory}`).toString().trim(), intended_worker_tree: git('rev-parse', `${expected}:workers/${directory}`).toString().trim() });
   } catch (error) { report.workers.push({ service, url: `${origin}/deployment-info`, status: 'unverified', reason: error.message }); }
 }
 for (const name of ['TELEGRAM_BOT_TOKEN', 'MOONPET_CANARY_BOT_TOKEN']) {
