@@ -72,6 +72,8 @@
   var lifecycleCeremonyUntil = 0;
   var lifecycleCeremonyTimer = 0;
   var companionTapSequence = 0;
+  var localEmoteLabel = '';
+  var localEmoteUntil = 0;
   var noticesBusy = false;
   var lastPassiveRefreshAt = 0;
   var reducedMotion = Boolean(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
@@ -1298,6 +1300,9 @@
     incubation: ['◉', 'Build your egg’s signal for breakout. Identity reveals at Stage 3.'],
     vitals: ['♥', 'Check health, energy, fullness, fun and cleanliness.'],
     care: ['♥', 'Feed, play, rest, train and collect Daily Cache.'],
+    'food-counter': ['◉', 'Eat cooked meals from your bag, each with different saved stat effects.'],
+    'pet-emotes': ['✦', 'Make the pet react. These expressions have no rewards or costs.'],
+    'bonus-bounties': ['★', 'Three extra daily challenges from easy to hard.'],
     details: ['◉', 'Companion stats, personality and equipped items.'],
     'pet-spaces': ['◈', 'Choose your active pet or unlock another permanent space.'],
     'season-slots': ['◈', 'Track lifetime progression and calendar competition progress.'],
@@ -1981,6 +1986,31 @@
   }
   // TEST-EXPORT: nextGuidance:end
 
+  // These use the existing signed inventory/crafting handlers. Bag food is
+  // not a Care Feed action and cannot multiply the seven-mission credit.
+  function renderFoodCounter() {
+    var foodKeys = ['street_pizza', 'moon_burger', 'garden_veggies', 'moon_snack'];
+    var food = (state.inventory || []).filter(function (item) {
+      return foodKeys.includes(item.key || item.item_key) && Number(item.count || item.quantity || 0) > 0;
+    });
+    var controls = food.map(function (item) {
+      return button('EAT ' + (item.title || words(item.key)) + ' ×' + number(item.count || item.quantity), 'use_item', { item_key: item.key || item.item_key }, { detail: item.description });
+    }).join('');
+    var empty = stateNeedsFullHydration(state) ? 'BAG IS LOADING. OPEN ECONOMY TO LOAD MEALS.' : 'NO COOKED MEALS IN THE BAG.';
+    return panel('FOOD COUNTER // CHOOSE A MEAL', '<div class="line muted">Pizza, burgers and veggie boxes have different hunger, energy and happiness effects. Using a meal consumes one saved bag item. It does not count as another Feed action.</div>' +
+      (controls ? '<div class="button-grid one">' + controls + '</div>' : '<div class="line muted">' + empty + '</div>') +
+      '<div class="button-grid one">' + routeButton('COOK MORE MEALS', { screen: 'economy', focus: 'crafting' }, 'Craft food using existing materials and unlock levels.') + '</div>', 'food-counter');
+  }
+
+  function renderPetEmotes() {
+    var emotes = [
+      ['wave', 'WAVE'], ['laugh', 'TICKLE / LAUGH'], ['cheer', 'CHEER'], ['stretch', 'STRETCH'], ['groove', 'GROOVE']
+    ];
+    return panel('PET EMOTES // NO COST', '<div class="line muted">Local animations only. They never send an API reward request, change pet needs or turn on Radio.</div><div class="button-grid">' +
+      emotes.map(function (item) { return '<button type="button" class="terminal-button" data-local-emote="' + item[0] + '">' + item[1] + '<span class="button-purpose">Play a short expression. No XP, currency, cost or mission credit.</span></button>'; }).join('') +
+      '</div>', 'pet-emotes');
+  }
+
   function renderHome() {
     if (!state.adopted) {
       var entry = state.entry_requirement || {};
@@ -2008,6 +2038,7 @@
     return '<div class="ticker"><span>MOONPET OS // ' + escapeHtml(displayName) + ' // ' + escapeHtml(moonpetStageLabel(lifecycle, pet)) + ' // STREAK ' + number(pet.streak_days) + ' DAYS //</span></div>' +
       activePetSummary() +
       renderPlayNow() +
+      renderFoodCounter() + renderPetEmotes() +
       panel('VITAL SYSTEMS', '<div class="line muted">Higher is better on every meter. Fullness is the opposite of hunger: Feed raises fullness.</div>' + meter('HEALTH', pet.health) + meter('ENERGY', pet.energy) + meter('FULLNESS', pet.hunger, true) + meter('FUN', pet.happiness) + meter('CLEAN', pet.cleanliness), 'vitals') +
       panel('CARE CONSOLE', '<div class="button-grid">' +
         button('FEED', 'feed') + button('PLAY', 'play') + button('CLEAN', 'clean') + button('SLEEP', 'sleep') + button('TRAIN', 'train') +
@@ -3063,13 +3094,15 @@
   function renderEconomy() {
     var guidance = state.guidance || {};
     var economy = guidance.economy || {};
-    var bounties = (economy.bounties || []).map(function (bounty) {
+    function renderBounty(bounty) {
       var routes = window.MoonpetPlayOptions && window.MoonpetPlayOptions.bountyRouteOptions ? window.MoonpetPlayOptions.bountyRouteOptions(bounty, state) : [];
       if (state.lifecycle && state.lifecycle.phase === 'egg') routes = [{ title: 'HATCH TO WORK ON BOUNTIES', screen: 'home', focus: 'incubation' }];
-      return '<div class="line ' + (bounty.complete ? 'complete' : '') + '">' + escapeHtml(bounty.title) + ' ' + number(bounty.progress) + '/' + number(bounty.required) + (bounty.claimed ? ' // CLAIMED' : bounty.complete ? ' // READY TO CLAIM' : ' // IN PROGRESS') + '</div>' +
+      return '<div class="line ' + (bounty.complete ? 'complete' : '') + '">' + (bounty.difficulty ? escapeHtml(bounty.difficulty) + ' // ' : '') + escapeHtml(bounty.title) + ' ' + number(bounty.progress) + '/' + number(bounty.required) + (bounty.claimed ? ' // CLAIMED' : bounty.complete ? ' // READY TO CLAIM' : ' // IN PROGRESS') + '</div>' +
         '<div class="line muted">' + escapeHtml(bounty.detail || '') + ' // REWARD ' + escapeHtml(valueText(bounty.reward)) + '</div>' +
         (bounty.complete && !bounty.claimed ? '<div class="button-grid one">' + button('CLAIM ' + bounty.title, 'bounty_claim', { bounty_key: bounty.key, day_key: economy.day_key }) + '</div>' : !bounty.claimed && !bounty.complete ? '<div class="button-grid">' + routes.map(function (route) { return routeButton(route.title, route, route.detail); }).join('') + '</div>' : '');
-    }).join('');
+    }
+    var bounties = (economy.bounties || []).map(renderBounty).join('');
+    var bonusBounties = (economy.bonus_bounties || []).map(renderBounty).join('');
     var offers = (economy.market_offers || []).map(function (offer) {
       var full = offer.capacity && !offer.capacity.available;
       var capacityDetail = full ? ' // MAKE SPACE FOR ' + offer.capacity.blocked.map(function (entry) { return number(entry.amount) + ' ' + String(entry.key).replace(/_/g, ' ') + ' (' + number(entry.owned) + '/' + number(entry.limit) + ' stored)'; }).join(' + ') + '. Whole bundle required; nothing is charged while full.' : '';
@@ -3141,6 +3174,7 @@
       panel('CRAFTING WORKSHOP', craftingGoalMarkup() + '<div class="line signal">RECIPES // CHOOSE TO SPEND MATERIALS</div><div class="button-grid">' + crafting + '</div>', 'crafting') +
       panel('RELIC VAULT', '<div class="line muted">Owned relics activate automatically in new Contract runs. Their route effects are listed below and saved at run start; new drops apply on the next run. Standard Moon Run and Daily Run keep their separate rules.</div>' + (state.relics_available === false ? '<div class="line danger">RELIC VAULT TEMPORARILY UNAVAILABLE. Refresh to try again. Your collection has not been cleared.</div>' : relics || '<div class="line muted">NO RELICS RECOVERED.</div>'), 'relics') +
       panel('DAILY BOUNTIES', '<div class="line muted">Four account-wide targets per UTC day. Only accepted actions count. The Energy Drink, Dance and Cuddles care buttons do not count. Claim completed bounties before 00:00 UTC; unclaimed bounty targets expire when the board changes. Already paid rewards stay paid. Contracts remain available between resets.</div>' + (bounties || '<div class="line muted">NO BOUNTIES.</div>'), 'bounties') +
+      panel('EXTRA DAILY CHALLENGES // EASY TO HARD', '<div class="line muted">Three bonus targets each UTC day, additional to the four original Bounties and seven Daily Missions. Accepted actions only; a completed target may be claimed once. These do not replace the Daily Journey or Weekly Crest.</div>' + (bonusBounties || '<div class="line muted">BONUS BOARD SYNCING.</div>'), 'bonus-bounties') +
       panel('CRYSTAL EXPEDITIONS // CHOOSE A DESTINATION', expeditionBody, 'expedition') +
       panel('MOON MARKET', '<div class="line muted">Paid bundles must fit in full. Use items or spend materials before buying when storage is full.</div><div class="button-grid one">' + offers + '</div><div class="button-grid">' + routeButton('OPEN BAG', { screen: 'economy', focus: 'inventory' }) + routeButton('OPEN CRAFTING', { screen: 'economy', focus: 'crafting' }) + '</div>', 'market') +
       panel('PERMANENT SHOP', '<div class="line muted">Buy when this pet meets the listed level and you have every listed resource. Owned gear switches free once its level gate is met. Equipped gear is already in use; purchases and upgrades persist across resets.</div><div class="button-grid">' + shop + '</div>', 'shop') + panel('STYLE LAB // EQUIP YOUR LOOK', '<div class="line muted">Unlock once, then equip or remove each style free for this pet. Cosmetics change the canvas presentation, not stats. Existing owned styles work immediately. Callsign editing stays free in Profile.</div><div class="button-grid one">' + routeButton('EDIT CALLSIGN', { screen: 'profile', focus: 'callsign' }, 'Use the existing name control; no badge purchase is required.') + '</div><div class="button-grid">' + cosmetics + '</div>', 'style-lab') +
@@ -4074,6 +4108,11 @@
   });
 
   screen.addEventListener('click', function (event) {
+    var emoteButton = event.target.closest('[data-local-emote]');
+    if (emoteButton) {
+      playLocalEmote(emoteButton.dataset.localEmote);
+      return;
+    }
     var utility = event.target.closest('[data-utility]');
     if (utility) {
       if (utility.dataset.utility === 'guide' || utility.dataset.utility === 'about' || utility.dataset.utility === 'leaderboard') openUtility(utility.dataset.utility);
@@ -4149,6 +4188,26 @@
     runAction(target.dataset.action, payload, target);
   });
 
+  // Purely client-side expressions; no reward, XP or care requests.
+  function playLocalEmote(key) {
+    var moods = {
+      wave: ['greet', 'HELLO!', 2200],
+      laugh: ['play', 'HA HA!', 1600],
+      cheer: ['cuddles', 'YES!', 1800],
+      stretch: ['train', 'STRETCH!', 1700],
+      groove: ['dance', 'GROOVE!', 2400],
+    };
+    var entry = moods[key];
+    var now = performance.now();
+    if (!entry || busy || !state || !state.adopted || animationUntil > now ||
+        companionCombatActive(state, activeScreen) || lifecycleCeremonyActive(now)) return false;
+    localEmoteLabel = entry[1];
+    localEmoteUntil = now + entry[2];
+    animateAction(entry[0], true, entry[2], { source: 'local_emote', variant: key });
+    haptic('light');
+    return true;
+  }
+
   function companionGreetingVariant(pet) {
     return pet ? 'front_wave' : 'basic';
   }
@@ -4157,6 +4216,7 @@
     var now = performance.now();
     if (busy || !state || !state.adopted || animationUntil > now || companionCombatActive(state, activeScreen) || lifecycleCeremonyActive(now)) return;
     companionTapSequence += 1;
+    if (companionTapSequence % 3 === 0) { playLocalEmote('laugh'); return; }
     var greetingVariant = companionGreetingVariant(state.pet);
     animateAction('greet', true, greetingVariant === 'front_wave' ? 2200 : 1400, { source: 'pet_tap', sequence: companionTapSequence, variant: greetingVariant });
     haptic('light');
@@ -4673,7 +4733,16 @@
     drawPet(renderTime);
     ctx.restore();
     drawEquippedStyles(renderTime, true);
-
+    if (state && state.adopted && localEmoteUntil > renderTime && localEmoteLabel &&
+        !stageZeroPresentationActive(renderTime)) {
+      ctx.save();
+      drawPixelRect(108, 15, 104, 22, '#15131c');
+      ctx.fillStyle = '#f3efad';
+      ctx.textAlign = 'center';
+      ctx.font = 'bold 12px monospace';
+      ctx.fillText(localEmoteLabel, 160, 30);
+      ctx.restore();
+    }
   }
   // TEST-EXPORT: drawWorld:end
 
