@@ -30,12 +30,12 @@ test('website guide and About blocks are exactly the shared in-game copy', () =>
   const markup = new Function('window', helper + '; return guideMarkup();')({ MoonpetGuide: guide });
   assert.ok(markup.startsWith(guide.game(guide.sections)));
   const html = read('moonpet-game.html');
-  const guideAsset = '/js/moonpet-guide.js?v=20261011-menu-status-v1';
-  const appAsset = '/js/moonpet-mini-app.js?v=20261011-menu-status-v1';
+  const guideAsset = '/js/moonpet-guide.js?v=20261011-rewards-v1';
+  const appAsset = '/js/moonpet-mini-app.js?v=20261011-rewards-v1';
   assert.ok(html.includes(guideAsset) && html.includes(appAsset));
   assert.ok(html.indexOf(guideAsset) < html.indexOf(appAsset));
-  assert.match(source, /MOONPET_MINI_APP_URL = `\$\{SITE_URL\}\/moonpet-game\.html\?v=20261007-guidance-v1`/);
-  assert.match(read('games/telegram/index.html'), /moonpet-game\.html\?v=20261007-guidance-v1/);
+  assert.match(source, /MOONPET_MINI_APP_URL = `\$\{SITE_URL\}\/moonpet-game\.html\?v=20261011-rewards-v1`/);
+  assert.match(read('games/telegram/index.html'), /moonpet-game\.html\?v=20261011-rewards-v1/);
   const leaderboard = read('crypto-moonboy-pets-leaderboard.html');
   assert.match(leaderboard, /for the earning competition quarter, including awards earned by retained pets/);
   assert.doesNotMatch(leaderboard, /original earning pet season|Beta history/);
@@ -151,4 +151,15 @@ test('all player help excludes obsolete or unimplemented promises', () => {
   const copy = guide.sections.concat(guide.about).map(s => s.title + s.body).join('');
   assert.doesNotMatch(copy, /\b(?:beta|Breeding|Lineage|Fusion|Sanctuary|Prestige)\b|premium routes|IN DEVELOPMENT/i);
   for (const content of [copy, read('how-to-play-crypto-moonboy-pets.html'), read('wiki/crypto-moonboy-pets.html')]) assert.match(content, /Pets persist: no automatic seasonal reset, replacement or retirement/);
+});
+
+test('all menus and the public guide share current reward endings and explicit expiry rules', () => {
+  assert.deepEqual(Object.keys(guide.rewardLifecycle), ['home', 'missions', 'explore', 'work', 'economy', 'profile']);
+  for (const copy of Object.values(guide.rewardLifecycle)) assert.ok(section('endings').includes(copy));
+  assert.match(guide.rewardLifecycle.economy, /unclaimed bounty targets expire/);
+  assert.match(guide.rewardLifecycle.work, /24 hours after the cap.*expires/);
+  assert.match(guide.rewardLifecycle.missions, /complete unclaimed days remain claimable after midnight/);
+  assert.match(guide.rewardLifecycle.explore, /one account attempt per UTC day, including a failed attempt/);
+  assert.match(guide.rewardLifecycle.profile, /earning quarter after rollover/);
+  assert.match(read('js/moonpet-mini-app.js'), /economy_day_changed:.*Nothing new was spent or awarded/);
 });

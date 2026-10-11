@@ -262,6 +262,11 @@ assert.deepEqual(
   [...REQUIRED_D1_MIGRATIONS].sort(),
   'the production evidence request must track the complete exact migration gate',
 );
+assert.deepEqual(
+  [...production.d1_databases.wikicoms.required_migrations].sort(),
+  [...REQUIRED_D1_MIGRATIONS].sort(),
+  'the deployment manifest must not omit current reward/ownership migrations from its evidence gate',
+);
 assert.doesNotThrow(() => validateRequest(request), 'the checked-in D1 evidence request must satisfy the migration contract');
 
 assert.doesNotThrow(() => normalizeD1StatementResult([{ success: true, results: [] }]), 'normaliser accepts array statement responses');

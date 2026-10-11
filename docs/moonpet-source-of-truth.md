@@ -908,6 +908,23 @@ Current progression systems include:
 
 ---
 
+## Current rewards and reset audit
+
+The [11 October current rewards and recovery audit](moonpet-rewards-completion-2026-10-11.md)
+records every existing ending, saved claim and reset boundary. Dated Bounty,
+Market and Expedition controls reject an unpaid previous-day board without
+consuming the new board; already-paid requests acknowledge their original
+receipt. Exact paid retries keep the original displayed pet ID: a read-only,
+authenticated-account receipt check runs before current-pet scoping. Unpaid or
+pending requests still require the current displayed pet; missing identity,
+foreign receipts and failed reads never authorize a new reward. Unclaimed
+Bounty targets retain their existing midnight expiry, while
+complete daily bonuses and earned season/boss/Contract/Finale claims retain
+their existing recovery rules. Every adopted-state projection schedules daily
+and Monday competition/boss refreshes; Weekly Journey keeps the pet's separate
+qualification-period countdown. The six menus share dismissible ending/reset
+help with the public guide. No reward, ownership or new-phase feature changes.
+
 # Historical Records
 
 Retired Breeding and Sanctuary tables and migrations remain as historical storage and safe ownership recovery evidence. No gameplay module, launcher or API exposes those systems. Pets never retire automatically. Historical nameplate ownership remains saved, but the removed badge cannot be bought or equipped.

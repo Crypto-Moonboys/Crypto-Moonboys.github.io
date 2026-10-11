@@ -126,7 +126,7 @@ export function buildPetEconomyGuidanceActions(state = {}) {
   if (claimable) actions.push({
     key: `bounty:${claimable.key}`, priority: 86, title: `Claim ${claimable.title}`,
     detail: `Completed ${claimable.progress}/${claimable.required}. Reward: ${formatPetEconomyValue(claimable.reward)}.`,
-    label: '📜 Claim Bounty', callback_data: `pet:bounty:${claimable.key}`,
+    label: '📜 Claim Bounty', callback_data: `pet:bounty:${claimable.key}${state.day_key ? `:${state.day_key}` : ''}`,
   });
   const expedition = Array.isArray(state.expedition_options)
     ? state.expedition_options.filter((entry) => entry.available).at(-1) : state.expedition;

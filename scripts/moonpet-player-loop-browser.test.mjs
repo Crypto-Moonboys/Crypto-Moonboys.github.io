@@ -432,6 +432,24 @@ try {
     assert.ok(Number(await page.locator('#nav [data-screen="economy"] .dock-claim-badge').textContent()) >= 3);
     for (const key of ['home','missions','explore','work','economy','profile']) {
       await page.locator(`#nav [data-screen="${key}"]`).click();
+      // Explore/Work navigation can start an asynchronous saved-state read.
+      // Refresh completes an ordered snapshot before testing native keyboard
+      // input, so that read cannot replace a focused summary mid-keystroke.
+      await page.locator('[data-utility="sync"]').click();
+      await page.waitForFunction(() => document.querySelector('#terminal-output')?.textContent.includes('LIVE SAVE REFRESHED.'));
+      const lifecycleSelector = '[data-panel="reward-lifecycle"] > summary';
+      await measureDisclosureTarget(page, lifecycleSelector, false);
+      const help = page.locator('[data-panel="reward-lifecycle"]');
+      await help.locator(':scope > summary').press('Enter');
+      await measureDisclosureTarget(page, lifecycleSelector, true);
+      assert.match(await help.textContent(), /DAILY RESET.*00:00 UTC/);
+      assert.match(await help.textContent(), /WEEKLY ROTATION.*MONDAY 00:00 UTC/);
+      assert.match(await help.textContent(), /pet, XP, owned items and saved sessions persist/);
+      await page.locator('[data-utility="sync"]').click();
+      await page.waitForFunction(() => document.querySelector('#terminal-output')?.textContent.includes('LIVE SAVE REFRESHED.'));
+      await measureDisclosureTarget(page, lifecycleSelector, true);
+      await help.locator(':scope > summary').press('Enter');
+      await measureDisclosureTarget(page, lifecycleSelector, false);
       const status = page.locator('.menu-status');
       assert.equal(await status.getAttribute('aria-label'), key + ' saved status');
       assert.equal(await status.getAttribute('open'), null, 'ordinary saved status starts compact');
@@ -453,6 +471,7 @@ try {
       assert.equal(await page.locator(`[data-panel="${focus}"]`).getAttribute('open') !== null, true, 'review expands its original panel');
       assert.equal(await page.locator('#screen').evaluate(node => node.scrollWidth <= node.clientWidth), true, key + ' inbox fits viewport');
       assert.equal(await page.locator('#nav').evaluate(node => node.scrollWidth <= node.clientWidth), true, 'all six dock badges fit');
+      assert.equal(await help.getAttribute('open'), null, 'dismissed reward help stays closed during review navigation');
       await page.locator('#screen').evaluate(node => { node.scrollTop = 0; });
       await page.screenshot({ path: path.join(screenshotDirectory, `menu-status-${key}-${viewport.width}.png`) });
     }
@@ -480,7 +499,9 @@ try {
     await page.locator('.menu-status [data-focus="bounties"]').first().click();
     const bountyResponse = page.waitForResponse(r => r.url().endsWith('/telegram-pets/app/action') && r.request().postDataJSON()?.action === 'bounty_claim');
     await page.locator('[data-action="bounty_claim"]').first().click();
-    assert.equal((await (await bountyResponse).json()).result.accepted, true);
+    const bountyReply = await bountyResponse;
+    assert.equal(bountyReply.request().postDataJSON().day_key, day, 'claims retain the displayed board date');
+    assert.equal((await bountyReply.json()).result.accepted, true);
     await page.waitForFunction(count => Number(document.querySelector('#nav [data-screen="economy"] .dock-claim-badge')?.textContent) === count - 1, beforeBounties);
     assert.deepEqual(errors, []);
     console.log(`All-menu saved inbox, free review, responsive dock and real claim clearing passed at ${viewport.width}x${viewport.height}`);
