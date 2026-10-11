@@ -9922,8 +9922,9 @@ function buildPetCooldownFromStart(startedAtRaw, cooldownSeconds, now = new Date
 }
 
 async function getPetAcceptedMealCooldown(db, telegramId, now = new Date()) {
-  const row = await db.prepare(`SELECT MAX(created_at) AS created_at FROM telegram_pet_events
-    WHERE telegram_id=? AND status='accepted' AND ${PET_MEAL_OR_FEED_EVENT_SQL}`)
+  const row = await db.prepare(`SELECT created_at FROM telegram_pet_events
+    WHERE telegram_id=? AND status='accepted' AND ${PET_MEAL_OR_FEED_EVENT_SQL}
+    ORDER BY julianday(created_at) DESC, created_at DESC LIMIT 1`)
     .bind(telegramId).first().then(requirePetFirstReadResult);
   const cooldown = row?.created_at ? buildPetCooldownFromStart(row.created_at, PETS_ACTION_COOLDOWN_SECONDS, now) : null;
   return cooldown?.remaining_seconds > 0 ? cooldown : null;
