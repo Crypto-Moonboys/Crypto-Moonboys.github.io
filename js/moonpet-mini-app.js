@@ -1993,11 +1993,19 @@
     var food = (state.inventory || []).filter(function (item) {
       return foodKeys.includes(item.key || item.item_key) && Number(item.count || item.quantity || 0) > 0;
     });
+    var mealCooldown = actionCooldownEntry('meal');
     var controls = food.map(function (item) {
-      return button('EAT ' + (item.title || words(item.key)) + ' ×' + number(item.count || item.quantity), 'use_item', { item_key: item.key || item.item_key }, { detail: item.description });
+      var isCookedMeal = ['street_pizza', 'moon_burger', 'garden_veggies'].includes(item.key || item.item_key);
+      return button('EAT ' + (item.title || words(item.key)) + ' ×' + number(item.count || item.quantity),
+        'use_item', { item_key: item.key || item.item_key }, {
+          disabled: isCookedMeal && !!mealCooldown,
+          cooldown: isCookedMeal ? mealCooldown : null,
+          statusLabel: isCookedMeal && mealCooldown ? 'MEAL COOLDOWN' : '',
+          detail: item.description
+        });
     }).join('');
     var empty = stateNeedsFullHydration(state) ? 'BAG IS LOADING. OPEN ECONOMY TO LOAD MEALS.' : 'NO COOKED MEALS IN THE BAG.';
-    return panel('FOOD COUNTER // CHOOSE A MEAL', '<div class="line muted">Pizza, burgers and veggie boxes have different hunger, energy and happiness effects. Using a meal consumes one saved bag item. It does not count as another Feed action.</div>' +
+    return panel('FOOD COUNTER // CHOOSE A MEAL', '<div class="line muted">Pizza, burgers and veggie boxes have different hunger, energy and happiness effects. Cooked meals share a 45-second account cooldown with Care Feed. Using a meal consumes one saved bag item, but does not count as another Feed action.</div>' +
       (controls ? '<div class="button-grid one">' + controls + '</div>' : '<div class="line muted">' + empty + '</div>') +
       '<div class="button-grid one">' + routeButton('COOK MORE MEALS', { screen: 'economy', focus: 'crafting' }, 'Craft food using existing materials and unlock levels.') + '</div>', 'food-counter');
   }
@@ -3111,10 +3119,17 @@
     var shop = (guidance.shop_items || []).map(function (item) {
       return button((item.owned && !item.equipped ? 'EQUIP FREE // ' : '') + item.title, item.owned ? 'equip' : 'buy', { item_key: item.key, pet_id: state.pet.pet_id }, { disabled: !item.unlocked || (!item.owned && !item.affordable) || item.equipped, statusLabel: item.equipped ? 'EQUIPPED' : !item.unlocked ? 'LEVEL ' + number(item.min_level) + ' REQUIRED' : item.owned ? 'OWNED' : item.affordable ? 'CAN BUY NOW' : '', resourceRequired: item.unlocked && !item.owned && !item.affordable && !item.equipped, cost: item.owned ? {} : item.cost, missing: !item.owned && !item.affordable ? missingCostText(item.cost) : '', detail: 'UNLOCK LEVEL ' + number(item.min_level) + ' // YOUR LEVEL ' + number(state.pet.level) + ' // ' + (item.description || '') + (item.owned ? ' // FREE SWITCH. Keeps upgrades and mastery; no XP or daily shopping credit.' : ' // Buy once; permanent gear survives resets.') });
     }).join('');
+    var mealCooldown = actionCooldownEntry('meal');
     var inventory = (state.inventory || []).filter(function (item) { return Number(item.count || item.quantity || 0) > 0; }).map(function (item) {
+      var isCookedMeal = ['street_pizza', 'moon_burger', 'garden_veggies'].includes(item.key || item.item_key);
       return '<div class="line">' + escapeHtml(words(item.title || item.key || item.item_key)) + ' x' + number(item.count || item.quantity) + '</div>' +
         (item.description ? '<div class="line muted">' + escapeHtml(item.description) + '</div>' : '') +
-        ((item.kind === 'usable_item' || item.usable) ? '<div class="button-grid one">' + button('USE ' + (item.title || item.key), 'use_item', { item_key: item.key || item.item_key }) + '</div>' : '');
+        ((item.kind === 'usable_item' || item.usable) ? '<div class="button-grid one">' +
+          button('USE ' + (item.title || item.key), 'use_item', { item_key: item.key || item.item_key }, {
+            disabled: isCookedMeal && !!mealCooldown,
+            cooldown: isCookedMeal ? mealCooldown : null,
+            statusLabel: isCookedMeal && mealCooldown ? 'MEAL COOLDOWN' : '',
+          }) + '</div>' : '');
     }).join('');
     var expeditionOptions = economy.expedition_options;
     var expeditionBody = '<div class="line muted">Expedition destinations are syncing. Refresh after the game update.</div>';
