@@ -1,0 +1,119 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import test from 'node:test';
+import { fixture, hooks, currentSeason } from './moonpet-audit-regression-fixture.mjs';
+import { PET_HOME_GARDEN, readPetGardenState } from '../workers/moonboys-api/pets/home-garden.js';
+
+const migration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/095_moonpet_home_garden.sql', import.meta.url), 'utf8');
+const worker = fs.readFileSync(new URL('../workers/moonboys-api/worker.js', import.meta.url), 'utf8');
+const client = fs.readFileSync(new URL('../js/moonpet-mini-app.js', import.meta.url), 'utf8');
+const crafting = fs.readFileSync(new URL('../workers/moonboys-api/pets/economy-phase-3.js', import.meta.url), 'utf8');
+
+test('095 adds only per-pet garden persistence and receipt authority', () => {
+  const f = fixture('home-e3-schema');
+  f.sql.exec('PRAGMA foreign_keys=ON');
+  f.sql.exec(migration);
+  assert.deepEqual(f.sql.prepare('PRAGMA foreign_key_check').all(), []);
+  assert.equal(PET_HOME_GARDEN.crop_key, 'garden_veggies');
+  assert.equal(PET_HOME_GARDEN.grow_seconds, 21600);
+  assert.equal(PET_HOME_GARDEN.harvest_quantity, 1);
+  assert.throws(() => f.sql.prepare(`INSERT INTO telegram_pet_garden_plots
+    (pet_id,telegram_id,season_key,crop_key,status,planted_at,ready_at)
+    VALUES (?,?,?,?,?,?,?)`).run('current-'+f.owner,f.owner,currentSeason,'new_crop','growing','2026-01-01T00:00:00Z','2026-01-01T06:00:00Z'), /CHECK constraint/);
+  f.sql.close();
+});
+
+test('each pet owns one independent six-hour garden plot', async () => {
+  const f = fixture('home-e3-plots');
+  const petA = 'current-' + f.owner;
+  const petB = 'garden-second-' + f.owner;
+  f.pet(petB, currentSeason, 500, 2);
+
+  const first = await f.act({ action:'garden_plant', request_id:'plant-a' });
+  assert.equal(first.accepted, true);
+  assert.equal(first.reason, 'pet_garden_planted');
+  let gardenA = await readPetGardenState(f.db, f.owner, { pet_id:petA, season_key:currentSeason });
+  assert.equal(gardenA.status, 'growing');
+  assert.equal(Math.round((Date.parse(gardenA.ready_at)-Date.parse(gardenA.planted_at))/1000), 21600);
+
+  const duplicate = await f.act({ action:'garden_plant', request_id:'plant-a-retry' });
+  assert.equal(duplicate.accepted, true);
+  assert.equal(duplicate.duplicate, true);
+  assert.equal(f.sql.prepare('SELECT COUNT(*) AS c FROM telegram_pet_garden_plots WHERE telegram_id=?').get(f.owner).c, 1);
+
+  f.active(petB);
+  const coreB = await hooks.buildPetMiniAppCoreState(f.db, f.owner);
+  assert.equal(coreB.pet_garden.status, 'empty');
+  assert.equal((await f.act({ action:'garden_plant', request_id:'plant-b' })).accepted, true);
+
+  f.active(petA);
+  const coreA = await hooks.buildPetMiniAppCoreState(f.db, f.owner);
+  assert.equal(coreA.pet_garden.status, 'growing');
+  assert.equal(f.sql.prepare('SELECT COUNT(*) AS c FROM telegram_pet_garden_plots WHERE telegram_id=?').get(f.owner).c, 2);
+  f.sql.close();
+});
+
+test('mature harvest adds exactly one existing veggie box and duplicate retry adds nothing', async () => {
+  const f = fixture('home-e3-harvest');
+  const before = f.sql.prepare('SELECT pet_xp,moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles WHERE telegram_id=?').get(f.owner);
+  assert.equal((await f.act({ action:'garden_plant', request_id:'plant' })).accepted, true);
+  f.sql.prepare("UPDATE telegram_pet_garden_plots SET ready_at='2000-01-01T00:00:00.000Z' WHERE telegram_id=?").run(f.owner);
+
+  const earlyState = await hooks.buildPetMiniAppCoreState(f.db, f.owner);
+  assert.equal(earlyState.pet_garden.status, 'ready');
+  const first = await f.act({ action:'garden_harvest', request_id:'harvest-once' });
+  assert.equal(first.accepted, true);
+  assert.equal(first.reason, 'pet_garden_harvested');
+  assert.equal(first.rewards.items.garden_veggies, 1);
+  assert.equal(f.sql.prepare("SELECT quantity FROM telegram_pet_inventory WHERE telegram_id=? AND asset_type='item' AND asset_key='garden_veggies'").get(f.owner).quantity, 1);
+  assert.equal(f.sql.prepare('SELECT COUNT(*) AS c FROM telegram_pet_garden_plots WHERE telegram_id=?').get(f.owner).c, 0);
+
+  const retry = await f.act({ action:'garden_harvest', request_id:'harvest-once' });
+  assert.equal(retry.accepted, true);
+  assert.equal(retry.duplicate, true);
+  assert.equal(f.sql.prepare("SELECT quantity FROM telegram_pet_inventory WHERE telegram_id=? AND asset_type='item' AND asset_key='garden_veggies'").get(f.owner).quantity, 1);
+  const after = f.sql.prepare('SELECT pet_xp,moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles WHERE telegram_id=?').get(f.owner);
+  assert.deepEqual(after, before, 'garden has no XP or currency reward');
+  f.sql.close();
+});
+
+test('an old harvest request can never consume a later crop', async () => {
+  const f = fixture('home-e3-stale-harvest');
+  await f.act({ action:'garden_plant', request_id:'plant-one' });
+  f.sql.prepare("UPDATE telegram_pet_garden_plots SET ready_at='2000-01-01T00:00:00.000Z' WHERE telegram_id=?").run(f.owner);
+  assert.equal((await f.act({ action:'garden_harvest', request_id:'old-harvest' })).accepted, true);
+  assert.equal((await f.act({ action:'garden_plant', request_id:'plant-two' })).accepted, true);
+  f.sql.prepare("UPDATE telegram_pet_garden_plots SET ready_at='2000-01-01T00:00:00.000Z' WHERE telegram_id=?").run(f.owner);
+  const retry = await f.act({ action:'garden_harvest', request_id:'old-harvest' });
+  assert.equal(retry.accepted, true);
+  assert.equal(retry.duplicate, true);
+  assert.equal(f.sql.prepare('SELECT COUNT(*) AS c FROM telegram_pet_garden_plots WHERE telegram_id=?').get(f.owner).c, 1, 'later crop is untouched');
+  f.sql.close();
+});
+
+test('Kitchen reuses existing cooked recipes and Gym reuses existing Train authorities', () => {
+  for (const key of ['pizza_night','moon_grill','veggie_patch']) {
+    assert.match(crafting, new RegExp(key + ':'));
+  }
+  assert.match(worker, /train:\s*\{ pet_xp: 20, community_xp: 6,[\s\S]*energy: -18, gold: 10, crystals: 1/);
+  assert.match(client, /\['pizza_night','moon_grill','veggie_patch'\]/);
+  assert.match(client, /button\('TRAIN NOW', 'train'\)/);
+  assert.match(client, /button\('START TIMED TRAINING', 'activity_start', \{ activity_type:'train' \}/);
+  assert.doesNotMatch(migration, /moon_gold|pet_xp|community_xp|style_tokens|moon_crystals/);
+});
+
+test('Home E3 stays on the existing canvas and garden is not added to live polling', async () => {
+  assert.match(client, /var HOME_STATION_HOTSPOTS/);
+  assert.match(client, /drawHomeStations\(\)/);
+  assert.match(client, /homeStationAt\(canvasX,canvasY\)/);
+  assert.match(worker, /readPetGardenState\(lifecycleScope\.db, telegramId, petRaw, now\)/);
+  assert.match(worker, /readPetGardenState\(identityScope\.db, telegramId, petRaw, now\)/);
+  assert.match(worker, /action === 'garden_plant' \|\| action === 'garden_harvest'/);
+  const f = fixture('home-e3-live-read');
+  await f.act({ action:'garden_plant', request_id:'plant' });
+  let reads = 0;
+  f.db.beforeFirst = statement => { if (statement.query.includes('telegram_pet_garden_plots')) reads += 1; };
+  await hooks.buildPetMiniAppLiveState(f.db, f.owner);
+  assert.equal(reads, 0, 'high-frequency live state performs no garden read');
+  f.sql.close();
+});
