@@ -67,7 +67,7 @@ for (const [faction, definition] of Object.entries(PET_FACTION_BONUSES)) {
 assert.match(workerSource, /track_multiplier: 1 \+ Number\(factionBonus/, 'training faction bonus must change runtime Training XP');
 assert.match(workerSource, /applyPetFactionBonus\(scaled\.rewards/, 'Arena faction bonuses must be applied before settlement');
 assert.equal(Object.keys(PET_EQUIPMENT_UPGRADE_COSTS).length, 9);
-assert.equal(Object.keys(PET_COSMETIC_SINKS).length, 3);
+assert.equal(Object.keys(PET_COSMETIC_SINKS).length, 7);
 assert.equal(validateMoonpetLiveSystemOwnershipClassification(), true, 'live ownership classification must be deterministic and complete');
 for (const key of [
   'care_actions', 'timed_activities', 'daily_chest', 'jobs', 'daily_journey', 'weekly_journey',
@@ -375,7 +375,7 @@ seedPlayer('retired-style');
 runtimeDb.prepare("UPDATE telegram_pet_profiles SET moon_gold=0,moon_crystals=0,style_tokens=25 WHERE telegram_id='retired-style'").run();
 runtimeDb.prepare("INSERT INTO telegram_pet_cosmetic_unlocks(telegram_id,cosmetic_key,quantity) VALUES ('retired-style','rename_badge',1)").run();
 const retiredStyleState = await buildPetLiveSystemsState(d1, 'retired-style', livePet('retired-style', { moon_gold: 0, moon_crystals: 0, style_tokens: 25 }), {}, [], []);
-assert.deepEqual(retiredStyleState.cosmetics.map(item => item.key), ['profile_frame', 'victory_pose', 'run_trail']);
+assert.deepEqual(retiredStyleState.cosmetics.map(item => item.key), ['profile_frame', 'victory_pose', 'run_trail', 'neon_aura', 'street_sparks', 'gold_frame', 'cyber_scanlines']);
 assert.ok(!retiredStyleState.cosmetics.some(item => item.affordable), '25 Style Tokens cannot recommend the retired badge');
 assert.equal(runtimeDb.prepare("SELECT quantity FROM telegram_pet_cosmetic_unlocks WHERE telegram_id='retired-style' AND cosmetic_key='rename_badge'").get().quantity, 1, 'catalog retirement preserves saved ownership');
 

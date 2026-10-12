@@ -12,6 +12,8 @@ import {
 import {
   PET_DAILY_BOUNTIES,
   PET_DAILY_BONUS_BOUNTIES,
+  PET_FOOD_OFFERS,
+  PET_WEEKLY_BOUNTIES,
   PET_ECONOMY_ROUTES,
   PET_EXPEDITION_TIERS,
   PET_MARKET_OFFERS,
@@ -73,6 +75,8 @@ export function buildPetEconomyReachabilityAudit(definitions = {}) {
   const cosmeticSinks = definitions.cosmetic_sinks || PET_COSMETIC_SINKS;
   const rareDropTables = definitions.rare_drop_tables || PET_RARE_DROP_TABLES;
   const marketOffers = definitions.market_offers || PET_MARKET_OFFERS;
+  const foodOffers = definitions.food_offers || PET_FOOD_OFFERS;
+  const weeklyBounties = definitions.weekly_bounties || PET_WEEKLY_BOUNTIES;
   const dailyBounties = definitions.daily_bounties || PET_DAILY_BOUNTIES;
   const bonusBounties = definitions.bonus_bounties || PET_DAILY_BONUS_BOUNTIES;
   const expeditionTiers = definitions.expedition_tiers || PET_EXPEDITION_TIERS;
@@ -138,7 +142,7 @@ export function buildPetEconomyReachabilityAudit(definitions = {}) {
     for (const [materialKey] of positiveEntries(boss.rewards?.materials)) addSource(materialSources, materialKey, `run_boss:${boss.boss_id}`);
   }
 
-  for (const offer of marketOffers) {
+  for (const offer of [...marketOffers, ...foodOffers]) {
     for (const [costKey] of positiveEntries(offer.cost)) addSink(currencySinks, costKey, `market:${offer.key}`);
     invalidMaterialReferencesFrom(offer.reward?.materials, `market:${offer.key}`, invalidMaterialReferences);
     for (const [materialKey] of positiveEntries(offer.reward?.materials)) {
@@ -208,6 +212,17 @@ export function buildPetEconomyReachabilityAudit(definitions = {}) {
     purchase_path: 'Mini App economy:market_buy and Telegram petmarket callbacks',
   }));
 
+  const foodSurfaces = foodOffers.map((offer) => ({
+    kind: 'food_offer', key: offer.key, classification: classifications.LIVE_REACHABLE,
+    cost: { ...offer.cost }, reward: { ...offer.reward },
+    purchase_path: 'Mini App economy:market_buy (Food Shop, once per UTC day)',
+  }));
+  const weeklyBountySurfaces = weeklyBounties.map((bounty) => ({
+    kind: 'weekly_bounty', key: bounty.key, difficulty: bounty.difficulty,
+    classification: classifications.LIVE_REACHABLE, event_types: [...bounty.event_types],
+    reward: { ...bounty.reward }, claim_path: 'Mini App economy:weekly_bounty_claim (ISO UTC week)',
+  }));
+
   const bountySurfaces = [
     ...dailyBounties.map((bounty) => ({
       kind: 'daily_bounty',
@@ -254,7 +269,9 @@ export function buildPetEconomyReachabilityAudit(definitions = {}) {
       ...materialSurfaces,
       ...recipeSurfaces,
       ...marketSurfaces,
+      ...foodSurfaces,
       ...bountySurfaces,
+      ...weeklyBountySurfaces,
       ...expeditionSurfaces,
       ...cosmeticSurfaces,
       ...PET_ECONOMY_ROUTES.map((route) => ({ kind: 'economy_route', classification: classifications.LIVE_REACHABLE, ...route })),

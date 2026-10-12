@@ -72,8 +72,7 @@ export const PET_DAILY_BONUS_BOUNTIES = freeze([
   { key: 'bonus_kaiju', title: 'Code Breaker', difficulty: 'HARD', detail: 'Finish 2 Kaiju battles.', event_types: ['kaiju_battle'], required: 2, reward: { moon_gold: 65, moon_crystals: 1 } },
 ]);
 export function getPetDailyBonusBounties(dayKey) {
-  // Exactly one of each difficulty. Do not count the same server event toward
-  // two bonus targets in a single day, even if their titles differ.
+  // Stable Easy/Medium/Hard difficulty and distinct server action evidence.
   const usedEvents = new Set();
   return ['EASY', 'MEDIUM', 'HARD'].map((difficulty) => {
     const available = PET_DAILY_BONUS_BOUNTIES.filter((entry) => entry.difficulty === difficulty &&
@@ -83,6 +82,34 @@ export function getPetDailyBonusBounties(dayKey) {
     picked.event_types.forEach((event) => usedEvents.add(event));
     return picked;
   });
+}
+
+// Weekly Bounty Blocks do not replace the creation-based Weekly Journey.
+export const PET_WEEKLY_BOUNTIES = freeze([
+  { key: 'week_care', title: 'Routine Keeper', difficulty: 'EASY', detail: 'Complete 12 accepted care actions this UTC week.', event_types: ['feed', 'play', 'clean', 'sleep', 'train'], required: 12, reward: { moon_gold: 100, style_tokens: 2 } },
+  { key: 'week_shift', title: 'Night Shift', difficulty: 'EASY', detail: 'Finish 8 pet jobs this UTC week.', event_types: ['work'], required: 8, reward: { moon_gold: 115, moon_crystals: 1 } },
+  { key: 'week_events', title: 'Street Noticeboard', difficulty: 'MEDIUM', detail: 'Finish 5 Street Events or Adventures this UTC week.', event_types: ['random_event','adventure'], required: 5, reward: { moon_gold: 140, style_tokens: 2 } },
+  { key: 'week_runs', title: 'Moon Run Crew', difficulty: 'MEDIUM', detail: 'Finish or extract 4 standard Moon Runs this UTC week.', event_types: ['run_complete','run_extract'], required: 4, reward: { moon_gold: 155, moon_crystals: 2 } },
+  { key: 'week_train', title: 'Training Week', difficulty: 'MEDIUM', detail: 'Complete 8 accepted Train actions this UTC week.', event_types: ['train'], required: 8, reward: { moon_gold: 130, moon_crystals: 1 } },
+  { key: 'week_gear', title: 'Prepared', difficulty: 'MEDIUM', detail: 'Use 5 consumable items this UTC week.', event_types: ['use_item'], required: 5, reward: { moon_gold: 125, style_tokens: 2 } },
+  { key: 'week_kaiju', title: 'Card Counter', difficulty: 'HARD', detail: 'Finish 4 Kaiju battles this UTC week.', event_types: ['kaiju_battle'], required: 4, reward: { moon_gold: 170, moon_crystals: 2 } },
+  { key: 'week_boss', title: 'Boss Pressure', difficulty: 'HARD', detail: 'Attempt 4 weekly or seasonal boss encounters this UTC week.', event_types: ['weekly_boss','seasonal_boss'], required: 4, reward: { moon_gold: 170, style_tokens: 3 } },
+  { key: 'week_workhorse', title: 'Five-Day Hustle', difficulty: 'HARD', detail: 'Finish 20 pet jobs this UTC week.', event_types: ['work'], required: 20, reward: { moon_gold: 200, style_tokens: 3 } },
+  { key: 'week_freerun', title: 'Route Marathon', difficulty: 'HARD', detail: 'Finish or extract 8 standard Moon Runs this UTC week.', event_types: ['run_complete','run_extract'], required: 8, reward: { moon_gold: 200, moon_crystals: 3 } },
+]);
+export function getPetWeeklyBounties(weekKey) {
+  return rotate(PET_WEEKLY_BOUNTIES, `weekly-bounty:${weekKey}:v1`, 3);
+}
+
+export const PET_FOOD_OFFERS = freeze([
+  { key: 'food_pizza_2', title: 'Street Pizza Twins', detail: 'Two cooked Street Pizzas ready to eat from Home.', cost: { moon_gold: 85 }, reward: { items: { street_pizza: 2 } }, min_level: 3 },
+  { key: 'food_burger_2', title: 'Moon Burger Duo', detail: 'Two Moon Burgers for the Food Counter.', cost: { moon_gold: 95 }, reward: { items: { moon_burger: 2 } }, min_level: 6 },
+  { key: 'food_veggies_3', title: 'Garden Box Pack', detail: 'Three Veggie Boxes to improve needs and happiness.', cost: { moon_gold: 100 }, reward: { items: { garden_veggies: 3 } }, min_level: 4 },
+  { key: 'food_crew_feast', title: 'Crew Feast', detail: 'Pizza, burger and vegetables in one limited daily bundle.', cost: { moon_gold: 140, style_tokens: 2 }, reward: { items: { street_pizza: 1, moon_burger: 1, garden_veggies: 1 } }, min_level: 10 },
+  { key: 'food_snack_party', title: 'Street Snack Party', detail: 'One of each cooked meal and two Moon Snacks.', cost: { moon_gold: 185 }, reward: { items: { street_pizza: 1, moon_burger: 1, garden_veggies: 1, moon_snack: 2 } }, min_level: 12 },
+]);
+export function getPetFoodOffers() {
+  return PET_FOOD_OFFERS;
 }
 
 export const PET_MARKET_OFFERS = freeze([
