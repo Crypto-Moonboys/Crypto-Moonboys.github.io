@@ -61,7 +61,7 @@ test('mature harvest adds exactly one existing veggie box and duplicate retry ad
   const f = fixture('home-e3-harvest');
   const before = f.sql.prepare('SELECT pet_xp,moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles WHERE telegram_id=?').get(f.owner);
   assert.equal((await f.act({ action:'garden_plant', request_id:'plant' })).accepted, true);
-  f.sql.prepare("UPDATE telegram_pet_garden_plots SET ready_at='2000-01-01T00:00:00.000Z' WHERE telegram_id=?").run(f.owner);
+  f.sql.prepare("UPDATE telegram_pet_garden_plots SET planted_at='1999-12-31T18:00:00.000Z', ready_at='2000-01-01T00:00:00.000Z' WHERE telegram_id=?").run(f.owner);
 
   const earlyState = await hooks.buildPetMiniAppCoreState(f.db, f.owner);
   assert.equal(earlyState.pet_garden.status, 'ready');
@@ -84,10 +84,10 @@ test('mature harvest adds exactly one existing veggie box and duplicate retry ad
 test('an old harvest request can never consume a later crop', async () => {
   const f = fixture('home-e3-stale-harvest');
   await f.act({ action:'garden_plant', request_id:'plant-one' });
-  f.sql.prepare("UPDATE telegram_pet_garden_plots SET ready_at='2000-01-01T00:00:00.000Z' WHERE telegram_id=?").run(f.owner);
+  f.sql.prepare("UPDATE telegram_pet_garden_plots SET planted_at='1999-12-31T18:00:00.000Z', ready_at='2000-01-01T00:00:00.000Z' WHERE telegram_id=?").run(f.owner);
   assert.equal((await f.act({ action:'garden_harvest', request_id:'old-harvest' })).accepted, true);
   assert.equal((await f.act({ action:'garden_plant', request_id:'plant-two' })).accepted, true);
-  f.sql.prepare("UPDATE telegram_pet_garden_plots SET ready_at='2000-01-01T00:00:00.000Z' WHERE telegram_id=?").run(f.owner);
+  f.sql.prepare("UPDATE telegram_pet_garden_plots SET planted_at='1999-12-31T18:00:00.000Z', ready_at='2000-01-01T00:00:00.000Z' WHERE telegram_id=?").run(f.owner);
   const retry = await f.act({ action:'garden_harvest', request_id:'old-harvest' });
   assert.equal(retry.accepted, true);
   assert.equal(retry.duplicate, true);
