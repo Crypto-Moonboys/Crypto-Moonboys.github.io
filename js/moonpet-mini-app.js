@@ -1314,7 +1314,7 @@
     'pet-emotes': ['✦', 'Make the pet react. These expressions have no rewards or costs.'],
     'bonus-bounties': ['★', 'Three extra daily challenges from easy to hard.'],
     'weekly-bounties': ['★', 'Weekly bounty targets with one saved reward each.'],
-    'food-shop': ['◇', 'Buy cooked meals with Moon Gold and eat them from Home.'],
+    'food-shop': ['◇', 'Buy cooked meals with the listed resources and eat them from Home.'],
     'radio-requests': ['♫', 'Submit one moderated radio song or message request per day.'],
     details: ['◉', 'Companion stats, personality and equipped items.'],
     'pet-spaces': ['◈', 'Choose your active pet or unlock another permanent space.'],
@@ -3135,8 +3135,8 @@
         '<div class="line muted">' + escapeHtml(bounty.detail || '') + ' // REWARD ' + escapeHtml(valueText(bounty.reward)) + '</div>' +
         (bounty.complete && !bounty.claimed ? '<div class="button-grid one">' + button('CLAIM ' + bounty.title, weekly ? 'weekly_bounty_claim' : 'bounty_claim', weekly ? { bounty_key: bounty.key, week_key: economy.week_key } : { bounty_key: bounty.key, day_key: economy.day_key }) + '</div>' : !bounty.claimed && !bounty.complete ? '<div class="button-grid">' + routes.map(function (route) { return routeButton(route.title, route, route.detail); }).join('') + '</div>' : '');
     }
-    var bounties = (economy.bounties || []).map(renderBounty).join('');
-    var bonusBounties = (economy.bonus_bounties || []).map(renderBounty).join('');
+    var bounties = (economy.bounties || []).map(function (bounty) { return renderBounty(bounty, false); }).join('');
+    var bonusBounties = (economy.bonus_bounties || []).map(function (bounty) { return renderBounty(bounty, false); }).join('');
     var weeklyBounties = (economy.weekly_bounties || []).map(function (bounty) { return renderBounty(bounty, true); }).join('');
     function renderMarketOffer(offer) {
       var full = offer.capacity && !offer.capacity.available;
@@ -3224,7 +3224,7 @@
       panel('WEEKLY BOUNTY BLOCKS', '<div class="line muted">Three bonus account targets per UTC Monday–Sunday week. Separate from the pet’s creation-based Weekly Journey and existing Boss rotation. Accepted actions count once, and completed Blocks claim one currency reward each. Unclaimed targets expire at the next UTC Monday.</div>' + (weeklyBounties || '<div class="line muted">WEEKLY BOARD SYNCING.</div>'), 'weekly-bounties') +
       panel('CRYSTAL EXPEDITIONS // CHOOSE A DESTINATION', expeditionBody, 'expedition') +
       panel('MOON MARKET', '<div class="line muted">Paid bundles must fit in full. Use items or spend materials before buying when storage is full.</div><div class="button-grid one">' + offers + '</div><div class="button-grid">' + routeButton('OPEN BAG', { screen: 'economy', focus: 'inventory' }) + routeButton('OPEN CRAFTING', { screen: 'economy', focus: 'crafting' }) + '</div>', 'market') +
-      panel('FOOD SHOP // DAILY STOCK', '<div class="line muted">Five cooked-meal bundles, each available once per UTC day. Buy the complete bundle with Moon Gold, then eat it from your saved Bag or Home Food Counter. These are consumables, not extra Care Feed attempts.</div><div class="button-grid one">' + (foodOffers || '<div class="line muted">FOOD OFFERS SYNCING.</div>') + '</div>', 'food-shop') +
+      panel('FOOD SHOP // DAILY STOCK', '<div class="line muted">Five cooked-meal bundles, each available once per UTC day. Buy the complete bundle with its listed resources, then eat it from your saved Bag or Home Food Counter. These are consumables, not extra Care Feed attempts.</div><div class="button-grid one">' + (foodOffers || '<div class="line muted">FOOD OFFERS SYNCING.</div>') + '</div>', 'food-shop') +
       panel('PERMANENT SHOP', '<div class="line muted">Buy when this pet meets the listed level and you have every listed resource. Owned gear switches free once its level gate is met. Equipped gear is already in use; purchases and upgrades persist across resets.</div><div class="button-grid">' + shop + '</div>', 'shop') + panel('STYLE LAB // EQUIP YOUR LOOK', '<div class="line muted">Unlock once, then equip or remove each style free for this pet. Cosmetics change the canvas presentation, not stats. Existing owned styles work immediately. Callsign editing stays free in Profile.</div><div class="button-grid one">' + routeButton('EDIT CALLSIGN', { screen: 'profile', focus: 'callsign' }, 'Use the existing name control; no badge purchase is required.') + '</div><div class="button-grid">' + cosmetics + '</div>', 'style-lab') +
       panel('INVENTORY', inventory || '<div class="line muted">BAG EMPTY.</div>', 'inventory') +
       panel('MOON GOLD TRADE', '<div class="line muted">Game currency only. A loss spends the selected stake. Trades share a five-minute account cooldown.</div><div class="button-grid three">' + (state.trade && state.trade.offers || []).map(function (offer) { return button(offer.wager + ' GOLD', 'trade', { wager: offer.wager }, { disabled: !offer.available, cooldown: state.trade.cooldown, resourceRequired: !offer.affordable, detail: offer.affordable ? '' : 'Requires ' + number(offer.wager) + ' Moon Gold.' }); }).join('') + '</div>', 'trade');

@@ -47,12 +47,28 @@ const stylesSource = client.match(/  function drawEquippedStyles\([^\n]+\) \{[\s
 assert.ok(stylesSource);
 const draws = [];
 const ctx = { save() {}, restore() {}, fillRect(...args) { draws.push(['fill', ...args]); }, strokeRect(...args) { draws.push(['stroke', ...args]); } };
-const drawStyles = new Function('state', 'ctx', 'activeScreen', 'reducedMotion', stylesSource + '; return drawEquippedStyles;');
-drawStyles({ style_loadout: { equipped: ['rename_badge'] } }, ctx, 'home', true)(0, true);
+const drawStyles = new Function('state', 'ctx', 'activeScreen', 'reducedMotion', 'drawPixelRect', stylesSource + '; return drawEquippedStyles;');
+const drawPixelRect = (...args) => draws.push(['pixel', ...args]);
+const renderStyle = (key, time, foreground, motion = true, screen = 'home') => {
+  draws.length = 0;
+  drawStyles({ style_loadout: { equipped: [key] } }, ctx, screen, motion, drawPixelRect)(time, foreground);
+  return draws.slice();
+};
+renderStyle('rename_badge', 0, true);
 assert.deepEqual(draws, [], 'a previously saved Rename Badge no longer draws a nameplate');
-drawStyles({ style_loadout: { equipped: ['rename_badge', 'profile_frame'] } }, ctx, 'home', true)(0, true);
+draws.length = 0;
+drawStyles({ style_loadout: { equipped: ['rename_badge', 'profile_frame'] } }, ctx, 'home', true, drawPixelRect)(0, true);
 assert.equal(draws.filter(draw => draw[0] === 'stroke').length, 2, 'the working Profile Frame remains visible');
-drawStyles({ style_loadout: { equipped: ['run_trail'] } }, ctx, 'explore', true)(0, false);
+draws.length = 0;
+drawStyles({ style_loadout: { equipped: ['run_trail'] } }, ctx, 'explore', true, drawPixelRect)(0, false);
 assert.equal(draws.filter(draw => draw[0] === 'fill').length, 8, 'the working Run Trail remains visible');
+assert.equal(renderStyle('neon_aura', 0, false).filter(draw => draw[0] === 'pixel').length, 4, 'Neon Aura draws its framing glow');
+assert.equal(renderStyle('street_sparks', 0, true).filter(draw => draw[0] === 'pixel').length, 12, 'Street Sparks draws its canvas accents');
+assert.equal(renderStyle('gold_frame', 0, true).filter(draw => draw[0] === 'stroke').length, 2, 'Gold Frame draws both borders');
+assert.equal(renderStyle('cyber_scanlines', 0, false).filter(draw => draw[0] === 'pixel').length, 19, 'Cyber Scanlines draws the overlay');
+assert.deepEqual(renderStyle('run_trail', 0, false, true, 'explore'), renderStyle('run_trail', 900, false, true, 'explore'),
+  'reduced motion keeps the Run Trail stationary');
+assert.deepEqual(renderStyle('street_sparks', 0, true), renderStyle('street_sparks', 900, true),
+  'reduced motion keeps Street Sparks stationary');
 
 console.log('moonpet-roadmap-regression.test.mjs passed: playable Profile and canvas cleanup');

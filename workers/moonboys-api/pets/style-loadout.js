@@ -4,7 +4,7 @@ export const STYLE_DETAILS = Object.freeze({
   profile_frame:'Neon border around your game canvas.',
   victory_pose:'Idle victory pose using your bot’s existing victory animation.',
   run_trail:'Pixel trail behind your bot on the Explore screen.',
-  neon_aura:'Animated neon glow framing the active Moonpet without changing its art or stats.',
+  neon_aura:'Static neon glow framing the active Moonpet without changing its art or stats.',
   street_sparks:'Graffiti-colour sparks around your bot on the main canvas.',
   gold_frame:'Metallic gold double border around the pet canvas.',
   cyber_scanlines:'Subtle monochrome scanline overlay behind the bot.',

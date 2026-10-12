@@ -2,16 +2,16 @@
 
 ## Scope and source of truth
 
-This delivery implements selected H-numbered feedback in issue #1478 without adding an interactive house, casino/lottery, mining game, clan, garden, gym, nightclub or pet-arcade runtime. It is split into two dependent review PRs; their source and tests must ship together. The current permanent-pet, original-pet reward attribution, one-year evolution, account cooldown, source receipt and XP limits are unchanged. Existing daily missions and core Journeys still use their own rules.
+This main-based replacement PR implements selected H-numbered feedback in issue #1478 after #1485 was squash-merged. It replaces the obsolete stacked #1486 branch; it is not split across two pending review PRs. No interactive house, casino/lottery, mining game, clan, garden, gym, nightclub or pet-arcade runtime is added. The current permanent-pet, original-pet reward attribution, one-year evolution, account cooldown, source receipt and XP limits are unchanged. Existing daily missions and core Journeys still use their own rules.
 
-### New content in PR #1485
+### Content retained from merged PR #1485
 
 - Four new gated Adventure settings and one additional risk/reward option, **Help The Crew**, use the existing server-owned Adventure outcomes, energy/currency previews, one-choice settlement and shared cooldown. No extra attempts or independent reward ledger.
 - Twelve optional daily bonus challenge templates; three chosen deterministically each UTC day in a separate board. The original ten-template pool and four existing daily bounty positions do not change, so an open daily page cannot silently change its claim keys. Source events come from accepted server actions; new claims use the same `pet_bounty` authority.
 - Real cooked consumables (pizza, burger and vegetables) use the same account inventory and signed `use_item` action. Three recipes use only existing materials. Each meal has different changes to hunger, energy and happiness. Bag use cannot generate another `Feed` mission event.
 - Five **local-only** pet emote controls and periodic tap-to-laugh cycle. Neither buttons nor animation triggers create backend actions, XP, currency, special-care counts or Radio streams.
 
-### New economy and customisation in PR #1486
+### Additive economy and customisation in this main-based replacement
 
 - **Weekly Bounty Blocks:** ten additional templates; three active per UTC ISO week, independent from the pet's creation-based Weekly Journey and independent from Monday Weekly Boss settlement. Account-owned server event counts, per-week receipt keys `weekly:YYYY-W##:<bounty_key>`, and earned-currency-only claims. Expiring unclaimed weekly challenges never grant a free retroactive payout. Duplicate confirmations cannot pay twice. Historical daily bounties are unchanged.
 - **Food Shop:** five additive bundle offers in a separate visible panel; fixed menu, one purchase of each offer per UTC day using existing `pet_market` purchase and inventory-capacity settlement. Original Moon Market's twelve-offer pool and four rotating offers remain identical. No external token/real-money purchases.
@@ -40,7 +40,7 @@ If GK later wants a fee, request a separate economic simulation showing three pl
 
 ## Release and validation gates
 
-- PR #1485 and #1486 must be reviewed and merged **in order** with verified tests; no automatic production deployment or migration is performed by a PR.
+- This is a replacement review on current main after #1485 was squash-merged. CI, code review, D1 migration validation and GK approval remain required; no automatic production deployment or migration is performed by a PR.
 - First apply and verify migration 091 against a backed-up production D1 database from approved main. Its only schema change is rebuilding the existing style loadout table with four additional allowed cosmetic keys; preserve all pre-existing rows. Then deploy Worker from the same freshly fetched main, and release matching Pages/Telegram assets for Adventure, meals, bounties and Radio. Confirm `/deployment-info`, migration ledger, source ownership, and versioned Mini App/Play Options/Guide. No VPS restart is required.
 - Exercise actual SQLite-backed reward/market style and state fixtures, duplicate click, competing clients, UTC day/week boundary, unavailable D1, old-pet switch/deletion, Stage 0 egg, inventory capacity and capped bonuses. Art/panels at 360, 390 and 1280px, reduced-motion and signed Telegram clients are required; PR CI alone is not production sign-off.
 - Do not expose identifiers/message content in test reports, screenshots or GitHub comments. For the Radio queue, the end-to-end success condition is a saved private record plus host-retrieval capability—not audible playback.

@@ -16,15 +16,18 @@ Any gameplay, documentation, or UI change affecting Moonpet status should refere
 
 ## Current rules and historical audits
 
-### Draft PR #1485: cooked meals, optional challenges and more adventures (11 Oct 2026)
+### Main-based existing-game expansion (PR #1487 replacement for #1486, 12 Oct 2026)
 
-This section describes proposed code under review, **not** evidence of production deployment.
+This section records the main-based replacement rules under review, **not** evidence of production deployment. PR #1485 was squash-merged; the replacement is not split across two pending PRs.
 
 - The original seven Daily Missions, four Daily Bounties, pet-specific daily/weekly Journeys, permanent companion ownership and 45-second Care Feed timer remain authoritative. Three *additional* daily bonus targets are chosen each UTC day: **one EASY, one MEDIUM and one HARD**, with no server event type shared between the selected bonus targets. Their source must be an accepted authoritative event; bonus claims use independent `bonus_*` keys and the existing account-owned bounty receipt. Duplicate or stale UTC-day claims must not pay twice. Existing daily bounty rotations and receipt keys must never change.
-- Three cooked bag foods are `street_pizza`, `moon_burger` and `garden_veggies`. Pizza reduces hunger by 30, adds 4 energy/4 happiness and up to 3 Pet XP; Burger reduces hunger by 22, adds 12 energy/2 happiness and up to 4 Pet XP; Veggies reduce hunger by 16, add 6 energy/14 happiness and up to 3 Pet XP. Actual awards remain subject to pet stat/XP caps. All three are consumables created by ingredient-cost Crafting or future approved shop inventory; Bag use is `use_item`, **not** a qualifying Feed mission.
+- Three cooked bag foods are `street_pizza`, `moon_burger` and `garden_veggies`. Pizza reduces hunger by 30, adds 4 energy/4 happiness and up to 3 Pet XP; Burger reduces hunger by 22, adds 12 energy/2 happiness and up to 4 Pet XP; Veggies reduce hunger by 16, add 6 energy/14 happiness and up to 3 Pet XP. Actual awards remain subject to pet stat/XP caps. The five additive Food Shop bundles use the existing `pet_market` purchase and inventory-capacity settlement, with each offer available once per UTC day. Crew Feast costs 140 Moon Gold and 2 Style Tokens; each other offer costs the resources shown on its offer. Purchased meals are consumables; Bag use is `use_item`, **not** a qualifying Feed mission.
 - Eating any cooked meal and performing Care **Feed** share the existing **45-second account-wide cooldown** in either order; the server checks pending and accepted event evidence **inside** the atomic item/action reservation, so overlapping requests cannot consume another meal, bypass the Feed timer, or pay twice. The client must display the server-projected `action:meal`/Feed timer in Home/Bag and disable unavailable buttons, without treating the client timer as authority. Other pre-existing bag items are not affected.
 - Four new server-owned Adventures and a `help_the_crew` option use the existing adventure outcome preview, per-choice reward and risk, level/energy gates, a shared 30-minute Adventure cooldown and original earning pet attribution; retries must only acknowledge saved receipts, not reroll the outcome.
 - Five no-cost client-only expressive pet emotes and tap-to-laugh do **not** send gameplay requests or issue rewards, radio streams, new animations/assets, or XP.
+- Ten weekly bounty templates rotate to three account-wide targets each UTC ISO week. Accepted server events count toward immutable per-week receipts; the board is separate from the creation-based Weekly Journey and Weekly Boss settlement. Unclaimed targets expire at the next UTC week and cannot pay retroactively. Boss Pressure counts saved weekly boss attempts and seasonal raid hits, not just payout events.
+- Style Lab retains the original three cosmetics and adds Neon Aura, Street Sparks, Gold Frame and Cyber Scanlines. They are canvas-only and do not change stats; owned styles equip/remove for free per pet. Trail and spark animation respects reduced-motion settings. D1 migration 091 expands the style-loadout constraint and must preserve existing rows and foreign keys before Worker release.
+- GraffPUNKS Radio accepts one 4–160 character request per Telegram account per UTC day for private host review. The request is not public, does not guarantee airtime, and is stored in the existing system-events table; no new table is introduced. Only trusted operators may retrieve and moderate the private queue.
 - Documentation generation comes from `js/moonpet-guide.js` and the `scripts/sync-moonpet-guide.mjs` website marker blocks. Keep the shared game guide and public `how-to-play-crypto-moonboy-pets.html` synchronized; do not rewrite unrelated canon/About guidance.
 
 The [11 October existing UI polish](moonpet-ui-polish-2026-10-11.md) addresses
@@ -712,9 +715,9 @@ bag for a standard Moon Run bonus. Style Patch is a consumable, not clothing;
 Adventure Map does not improve expedition outcomes or job luck. Care's Energy
 Drink button and the consumable Energy Drink remain separate actions. Style Lab
 uses account-owned unlocks and per-pet visual loadouts. Equip/remove is free;
-frames, Explore trails and idle victory poses render on the canvas.
-Existing ownership works without repurchasing. Callsign editing remains free.
-The styles do not change stats; reduced-motion mode keeps decorative trails still.
+frames, Explore trails, idle victory poses and the four added canvas effects render
+without changing stats. Existing ownership works without repurchasing. Callsign
+editing remains free; reduced-motion mode keeps decorative effects still.
 
 
 ### Moon Gold trade availability
