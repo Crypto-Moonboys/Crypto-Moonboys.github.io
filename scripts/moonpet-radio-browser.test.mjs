@@ -32,6 +32,7 @@ const server = http.createServer((request, response) => {
     var radioRequestedOn = false, radioEnabled = false, radioRequestGeneration = 0, radioRetryNeedsLoad = false, radioNeedsGesture = false;
     function syncMoonpetScore() {} function haptic() {}
     var canvasTools = document.getElementById('canvas-tools'), audioEnabled = false;
+    var homeRoomSwitcher = null, activeScreen = 'home', activeHomeRoom = 'main', HOME_ROOMS = ['main','kitchen','garden','gym'];
     ${toolsRenderer}
     function tell(text) { document.getElementById('notice').textContent = text; }
     ${preferences}

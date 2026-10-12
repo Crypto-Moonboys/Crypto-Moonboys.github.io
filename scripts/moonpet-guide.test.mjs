@@ -30,12 +30,12 @@ test('website guide and About blocks are exactly the shared in-game copy', () =>
   const markup = new Function('window', helper + '; return guideMarkup();')({ MoonpetGuide: guide });
   assert.ok(markup.startsWith(guide.game(guide.sections)));
   const html = read('moonpet-game.html');
-  const guideAsset = '/js/moonpet-guide.js?v=20261012-home-e3';
-  const appAsset = '/js/moonpet-mini-app.js?v=20261012-canvas-layout-v1';
+  const guideAsset = '/js/moonpet-guide.js?v=20261012-home-e4-rooms-v1';
+  const appAsset = '/js/moonpet-mini-app.js?v=20261012-home-e4-rooms-v1';
   assert.ok(html.includes(guideAsset) && html.includes(appAsset));
   assert.ok(html.indexOf(guideAsset) < html.indexOf(appAsset));
-  assert.match(source, /MOONPET_MINI_APP_URL = `\$\{SITE_URL\}\/moonpet-game\.html\?v=20261012-home-e3`/);
-  assert.match(read('games/telegram/index.html'), /moonpet-game\.html\?v=20261012-home-e3/);
+  assert.match(source, /MOONPET_MINI_APP_URL = `\$\{SITE_URL\}\/moonpet-game\.html\?v=20261012-home-e4-rooms-v1`/);
+  assert.match(read('games/telegram/index.html'), /moonpet-game\.html\?v=20261012-home-e4-rooms-v1/);
   const leaderboard = read('crypto-moonboy-pets-leaderboard.html');
   assert.match(leaderboard, /for the earning competition quarter, including awards earned by retained pets/);
   assert.doesNotMatch(leaderboard, /original earning pet season|Beta history/);
@@ -45,14 +45,15 @@ test('website guide and About blocks are exactly the shared in-game copy', () =>
   assert.equal((markup.match(/<details class="guide-step" open/g) || []).length, 2);
 });
 
-test('Home guide documents E3 without inventing new Kitchen or Gym authorities', () => {
+test('Home guide documents E4 rooms without inventing new Kitchen or Gym authorities', () => {
   const home = plain(section('house'));
-  assert.match(home, /KITCHEN.*GARDEN.*GYM/);
+  assert.match(home, /MAIN ROOM.*KITCHEN.*GARDEN.*GYM/);
   assert.match(home, /Pizza Night, Moon Grill and Veggie Patch.*existing/);
-  assert.match(home, /existing instant Train action and timed Training system/);
+  assert.match(home, /existing instant Train action and timed Training system|existing Train systems/);
   assert.match(home, /6-hour server timer.*one existing Garden Veggie Box/);
   assert.match(home, /Planting and harvesting themselves award no XP, currency, mission credit or competition credit/);
   assert.match(home, /do not occupy the paid LEFT, RIGHT or WALL furniture slots/);
+  assert.match(home, /Room visual upgrades are the next Home expansion/);
   assert.doesNotMatch(home, /kitchen, gym and garden are future features/i);
 });
 
