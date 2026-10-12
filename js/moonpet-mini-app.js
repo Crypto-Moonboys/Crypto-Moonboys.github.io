@@ -5141,9 +5141,9 @@
 
   // TEST-EXPORT: homeStationsCanvas:start
   var HOME_STATION_HOTSPOTS = Object.freeze({
-    kitchen: Object.freeze({ x:4, y:4, w:62, h:25, panel:'kitchen' }),
-    garden: Object.freeze({ x:129, y:4, w:62, h:25, panel:'garden' }),
-    gym: Object.freeze({ x:254, y:4, w:62, h:25, panel:'gym' })
+    kitchen: Object.freeze({ x:8, y:62, w:52, h:28, panel:'kitchen' }),
+    garden: Object.freeze({ x:8, y:98, w:52, h:28, panel:'garden' }),
+    gym: Object.freeze({ x:8, y:134, w:52, h:28, panel:'gym' })
   });
 
   function homeStationAt(x,y) {
@@ -5156,35 +5156,37 @@
 
   function drawHomeStations() {
     if (!state || !state.adopted || !state.lifecycle || state.lifecycle.phase === 'egg') return;
+    // Small wall-side props only: no backing panels, banners or permanent text.
+    // Keep the surrounding room visible and leave the floor-level E2 slots free.
     ctx.save();
-    ctx.font='bold 7px monospace';
-    ctx.textAlign='center';
-
     var kitchen=HOME_STATION_HOTSPOTS.kitchen;
-    drawPixelRect(kitchen.x,kitchen.y,kitchen.w,kitchen.h,'#17171d');
-    drawPixelRect(kitchen.x+4,kitchen.y+4,18,12,'#8b8f98');
-    drawPixelRect(kitchen.x+7,kitchen.y+7,12,5,'#22242c');
-    drawPixelRect(kitchen.x+24,kitchen.y+9,7,3,'#c6c1ad');
-    ctx.fillStyle='#efefdf'; ctx.fillText('KITCHEN',kitchen.x+kitchen.w/2,kitchen.y+22);
+    drawPixelRect(kitchen.x+5,kitchen.y+10,42,3,'#c6c1ad');
+    drawPixelRect(kitchen.x+8,kitchen.y+13,36,11,'#8b8f98');
+    drawPixelRect(kitchen.x+13,kitchen.y+16,14,6,'#22242c');
+    drawPixelRect(kitchen.x+31,kitchen.y+16,8,2,'#e1ddce');
+    drawPixelRect(kitchen.x+12,kitchen.y+6,11,4,'#353b46');
+    drawPixelRect(kitchen.x+30,kitchen.y+6,11,4,'#353b46');
+    drawPixelRect(kitchen.x+8,kitchen.y+24,3,3,'#535965');
+    drawPixelRect(kitchen.x+41,kitchen.y+24,3,3,'#535965');
 
     var garden=HOME_STATION_HOTSPOTS.garden;
-    drawPixelRect(garden.x,garden.y,garden.w,garden.h,'#17171d');
-    drawPixelRect(garden.x+8,garden.y+12,46,8,'#72543c');
+    drawPixelRect(garden.x+5,garden.y+17,42,3,'#ab8057');
+    drawPixelRect(garden.x+8,garden.y+20,36,6,'#72543c');
     var gardenState=state.pet_garden || {};
     if(gardenState.status==='growing'||gardenState.status==='ready'){
       var stemHeight=gardenState.status==='ready'?12:7;
-      drawPixelRect(garden.x+28,garden.y+12-stemHeight,3,stemHeight,'#78a660');
-      drawPixelRect(garden.x+20,garden.y+7,10,4,'#78a660');
-      drawPixelRect(garden.x+31,garden.y+5,11,4,'#78a660');
+      drawPixelRect(garden.x+25,garden.y+17-stemHeight,3,stemHeight,'#78a660');
+      drawPixelRect(garden.x+17,garden.y+11,10,4,'#78a660');
+      drawPixelRect(garden.x+28,garden.y+9,11,4,'#78a660');
     }
-    ctx.fillStyle='#efefdf'; ctx.fillText(gardenState.status==='ready'?'GARDEN!':'GARDEN',garden.x+garden.w/2,garden.y+22);
 
     var gym=HOME_STATION_HOTSPOTS.gym;
-    drawPixelRect(gym.x,gym.y,gym.w,gym.h,'#17171d');
-    drawPixelRect(gym.x+17,gym.y+9,28,4,'#b4bac4');
-    drawPixelRect(gym.x+11,gym.y+6,6,10,'#6f7680');
-    drawPixelRect(gym.x+45,gym.y+6,6,10,'#6f7680');
-    ctx.fillStyle='#efefdf'; ctx.fillText('GYM',gym.x+gym.w/2,gym.y+22);
+    drawPixelRect(gym.x+12,gym.y+6,28,3,'#b4bac4');
+    drawPixelRect(gym.x+6,gym.y+3,6,9,'#6f7680');
+    drawPixelRect(gym.x+40,gym.y+3,6,9,'#6f7680');
+    drawPixelRect(gym.x+10,gym.y+18,32,4,'#8c739c');
+    drawPixelRect(gym.x+13,gym.y+22,3,5,'#6f7680');
+    drawPixelRect(gym.x+36,gym.y+22,3,5,'#6f7680');
     ctx.restore();
   }
   // TEST-EXPORT: homeStationsCanvas:end

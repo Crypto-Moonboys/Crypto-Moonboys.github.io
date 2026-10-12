@@ -37,8 +37,16 @@ try {
       assert.equal((await f.act({action:'house_place',slot_key:slot,item_key:item})).accepted, true);
     }
     f.active(young);
-    const context = await browser.newContext({viewport:{width,height:width < 500 ? 844 : 900}, reducedMotion:'reduce'});
+    const context = await browser.newContext({viewport:{width,height:width === 360 ? 640 : width < 500 ? 844 : 900}, reducedMotion:'reduce'});
     await context.addInitScript(base => { window.MOONBOYS_API={BASE_URL:base}; localStorage.setItem('moonpet-radio-preference','off'); }, origin);
+    await context.addInitScript(() => {
+      window.stationCanvasLabels=[];
+      const fillText=CanvasRenderingContext2D.prototype.fillText;
+      CanvasRenderingContext2D.prototype.fillText=function(text,...args){
+        if (/^(KITCHEN|GARDEN!?|GYM)$/.test(String(text))) window.stationCanvasLabels.push(text);
+        return fillText.call(this,text,...args);
+      };
+    });
     const page = await context.newPage(), errors = [], requests = [];
     page.on('pageerror', error => errors.push(error.message));
     await page.route('**/*', async route => {
@@ -104,6 +112,12 @@ try {
       const changed=await page.locator('#moonpet-canvas').evaluate(canvas=>Array.from(canvas.getContext('2d').getImageData(2,410,1,1).data));
       assert.notDeepEqual(changed,pixels,'saved floor visibly changes the actual canvas');
       assert.equal(await page.evaluate(()=>window.MoonpetBetaAppearance.getBotArtState().lastRender.drew),true,'existing pet renderer still draws above Home');
+      await page.reload(); await ready(); await room('studio_white','steel','plant_pot');
+      const petCanvas=await page.locator('#moonpet-canvas').boundingBox();
+      const petRequests=requests.filter(r=>r.path.endsWith('/action')).length;
+      await page.locator('#moonpet-canvas').click({position:{x:160/320*petCanvas.width,y:140/220*petCanvas.height}});
+      await page.waitForFunction(()=>window.MoonpetBetaAppearance.getBotArtState()?.lastRender?.animationMode==='greet');
+      assert.equal(requests.filter(r=>r.path.endsWith('/action')).length,petRequests,'pet tap remains local');
       // E2: a paid item is purchased once, then drawn on this same canvas.
       await page.getByRole('button',{name:/CUSTOMIZE HOME/}).click();
       const furniturePanel=page.locator('[data-panel="furniture-shop"]');
@@ -181,11 +195,25 @@ try {
 
       const canvasBox = await page.locator('#moonpet-canvas').boundingBox();
       assert.ok(canvasBox);
-      await page.locator('#moonpet-canvas').click({ position: {
-        x: 160 / 320 * canvasBox.width,
-        y: 16 / 220 * canvasBox.height,
-      }});
-      await page.locator('[data-panel="garden"][data-route-selected]').waitFor();
+      assert.deepEqual(await page.evaluate(()=>window.stationCanvasLabels),[],'no permanent station text is painted');
+      // Validate the actual responsive rectangles, including the short mobile layout.
+      const overlays=await page.locator('#hud, #canvas-tools button').evaluateAll(nodes=>nodes.map(node=>{
+        const r=node.getBoundingClientRect();return {x:r.x,y:r.y,w:r.width,h:r.height};
+      }));
+      const stationBoxes=[62,98,134].map(y=>({x:canvasBox.x+8/320*canvasBox.width,
+        y:canvasBox.y+y/220*canvasBox.height,w:52/320*canvasBox.width,h:28/220*canvasBox.height}));
+      const overlaps=(a,b)=>a.x<b.x+b.w && a.x+a.w>b.x && a.y<b.y+b.h && a.y+a.h>b.y;
+      assert.ok(stationBoxes.every(box=>overlays.every(overlay=>!overlaps(box,overlay))),'station targets clear HUD/Audio/Radio/Refresh');
+      const stationRequests=requests.filter(r=>r.path.endsWith('/action')).length;
+      // Click the visible room props, not the former labelled HUD strip.
+      for (const [panel,y] of [['kitchen',76],['gym',148],['garden',112]]) {
+        await page.locator('#moonpet-canvas').click({ position: {
+          x: 34 / 320 * canvasBox.width,
+          y: y / 220 * canvasBox.height,
+        }});
+        await page.locator('[data-panel="'+panel+'"][data-route-selected][open]').waitFor();
+      }
+      assert.equal(requests.filter(r=>r.path.endsWith('/action')).length,stationRequests,'opening station panels sends no gameplay action');
       const gardenPanel = page.locator('[data-panel="garden"]');
       if (!await gardenPanel.evaluate(node => node.open)) await gardenPanel.locator('summary').click();
       const plantResponse = page.waitForResponse(r => r.url().endsWith('/action') &&
