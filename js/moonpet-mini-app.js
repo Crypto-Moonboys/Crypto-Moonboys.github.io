@@ -36,6 +36,8 @@
   var requestedScreen = launchParameter('screen');
   var requestedFocus = launchParameter('focus');
   var activeScreen = SCREEN_ORDER.includes(requestedScreen) ? requestedScreen : 'home';
+  var HOME_ROOMS = Object.freeze(['main','kitchen','garden','gym']);
+  var activeHomeRoom = 'main';
   var requestedFocusScreen = activeScreen;
   var busy = false;
   var playOptionsLoadPromise = null;
@@ -106,6 +108,7 @@
   var ctx = canvas.getContext('2d', { alpha: false });
   var hud = document.getElementById('hud');
   var canvasTools = document.getElementById('canvas-tools');
+  var homeRoomSwitcher = document.getElementById('home-room-switcher');
   var screen = document.getElementById('screen');
   var nav = document.getElementById('nav');
   var output = document.getElementById('terminal-output');
@@ -1436,6 +1439,18 @@
     var radioCaption = radioButton.querySelector('small');
     if (radioCaption) radioCaption.textContent = radioStatus === 'loading' ? 'LOADING' : radioStatus === 'error' ? 'RETRY' : 'RADIO';
     radioButton.title = radioButton.getAttribute('aria-label');
+    renderHomeRoomSwitcher();
+  }
+
+  function renderHomeRoomSwitcher() {
+    if (!homeRoomSwitcher) return;
+    var hatchedHome = Boolean(state && state.adopted && state.pet && state.lifecycle && state.lifecycle.phase !== 'egg' && activeScreen === 'home');
+    homeRoomSwitcher.hidden = !hatchedHome;
+    if (!hatchedHome) return;
+    homeRoomSwitcher.innerHTML = HOME_ROOMS.map(function (room) {
+      var label = room === 'main' ? 'MAIN ROOM' : room.toUpperCase();
+      return '<button type="button" data-home-room="' + room + '" aria-pressed="' + (room === activeHomeRoom ? 'true' : 'false') + '">' + label + '</button>';
+    }).join('');
   }
 
   function closeUtility() {
@@ -2070,7 +2085,7 @@
       ? state.live_systems.crafting.filter(function (recipe) {
           return ['pizza_night','moon_grill','veggie_patch'].includes(recipe.key);
         }) : [];
-    var kitchenBody = '<div class="line muted">Uses the existing Crafting recipes and material costs. Cooking adds the same saved meal items already used by the Food Counter; E3 adds no duplicate recipe or reward path.</div>';
+    var kitchenBody = '<div class="line muted">This dedicated Kitchen room uses the existing Crafting recipes and material costs. Cooking adds the same saved meal items already used by the Food Counter; changing rooms adds no duplicate recipe or reward path.</div>';
     if (stateNeedsFullHydration(state)) {
       kitchenBody += '<div class="line muted">KITCHEN RECIPES SYNCING…</div><div class="button-grid one">' +
         routeButton('OPEN FULL CRAFTING', { screen:'economy', focus:'crafting' }, 'Load every existing recipe and material balance.') + '</div>';
@@ -2088,7 +2103,7 @@
     }
 
     var activity = state && state.guidance && state.guidance.activity;
-    var gymBody = '<div class="line muted">Gym equipment drives the existing Train systems. Train Now keeps the current 18 Energy cost, care cooldown and rewards. Timed Training is the existing background Work activity.</div><div class="button-grid one">' +
+    var gymBody = '<div class="line muted">This dedicated Gym room drives the existing Train systems. Train Now keeps the current 18 Energy cost, care cooldown and rewards. Timed Training is the existing background Work activity.</div><div class="button-grid one">' +
       button('TRAIN NOW', 'train') +
       (activity && activity.status === 'active'
         ? routeButton('REVIEW TIMED ACTIVITY', { screen:'work', focus:'timed-activity' }, 'Review or claim the background activity already running.')
@@ -2096,7 +2111,7 @@
       '</div>';
 
     var garden = state && state.pet_garden || { available:false };
-    var gardenBody = '<div class="line muted">One plot per pet. Planting is free. Growth uses the server clock for 6 hours. Harvest gives exactly 1 existing Garden Veggie Box and no XP, currency or mission credit.</div>';
+    var gardenBody = '<div class="line muted">This dedicated Garden room contains one plot per pet. Planting is free. Growth uses the server clock for 6 hours. Harvest gives exactly 1 existing Garden Veggie Box and no XP, currency or mission credit.</div>';
     if (garden.available !== true) {
       gardenBody += '<div class="line muted">GARDEN SYNCING OR MIGRATION NOT AVAILABLE.</div>';
     } else if (garden.status === 'empty') {
@@ -2110,9 +2125,10 @@
       gardenBody += '<div class="line muted">HARVEST SETTLING. REFRESH IF THIS MESSAGE REMAINS.</div>';
     }
 
-    return panel('INTERACTIVE KITCHEN', kitchenBody, 'kitchen') +
-      panel('GYM EQUIPMENT', gymBody, 'gym') +
-      panel('GARDEN', gardenBody, 'garden');
+    if (activeHomeRoom === 'kitchen') return panel('INTERACTIVE KITCHEN // ROOM', kitchenBody, 'kitchen');
+    if (activeHomeRoom === 'gym') return panel('GYM EQUIPMENT // ROOM', gymBody, 'gym');
+    if (activeHomeRoom === 'garden') return panel('GARDEN // ROOM', gardenBody, 'garden');
+    return panel('MAIN ROOM', '<div class="line muted">Your pet’s core Home. Wall, floor and furniture customization stays here. Use the room switcher on the canvas to visit Kitchen, Garden or Gym.</div>', 'main-room');
   }
   // TEST-EXPORT: homeStationsPanel:end
 
@@ -4519,17 +4535,24 @@
     };
   }
 
+  if (homeRoomSwitcher) homeRoomSwitcher.addEventListener('click', function (event) {
+    var target = event.target.closest('[data-home-room]');
+    if (!target || busy || activeScreen !== 'home') return;
+    var room = String(target.dataset.homeRoom || '');
+    if (!HOME_ROOMS.includes(room) || room === activeHomeRoom) return;
+    activeHomeRoom = room;
+    render();
+    drawWorld(reducedMotion ? 0 : performance.now());
+    screen.scrollTop = 0;
+    tell('HOME ROOM // ' + (room === 'main' ? 'MAIN ROOM' : room.toUpperCase()));
+    haptic('light');
+  });
+
   canvas.addEventListener('click', function (event) {
     var bounds = canvas.getBoundingClientRect();
     if (!bounds.width || !bounds.height) return;
     var canvasX = (event.clientX - bounds.left) * canvas.width / bounds.width;
     var canvasY = (event.clientY - bounds.top) * canvas.height / bounds.height;
-    var stationKey = activeScreen === 'home' ? homeStationAt(canvasX,canvasY) : null;
-    if (stationKey) {
-      scrollToPanel(HOME_STATION_HOTSPOTS[stationKey].panel);
-      haptic('light');
-      return;
-    }
     var botBounds = moonpetBotFitBounds();
     if (canvasX >= botBounds.left && canvasX <= botBounds.right && canvasY >= botBounds.top && canvasY <= botBounds.bottom) greetCompanion();
   });
@@ -5154,57 +5177,111 @@
   // TEST-EXPORT: purchasedFurniture:end
 
 
-  // TEST-EXPORT: homeStationsCanvas:start
-  var HOME_STATION_HOTSPOTS = Object.freeze({
-    kitchen: Object.freeze({ x:8, y:62, w:52, h:28, panel:'kitchen' }),
-    garden: Object.freeze({ x:8, y:98, w:52, h:28, panel:'garden' }),
-    gym: Object.freeze({ x:8, y:134, w:52, h:28, panel:'gym' })
-  });
-
-  function homeStationAt(x,y) {
-    if (!state || !state.adopted || !state.lifecycle || state.lifecycle.phase === 'egg') return null;
-    return Object.keys(HOME_STATION_HOTSPOTS).find(function (key) {
-      var box=HOME_STATION_HOTSPOTS[key];
-      return x>=box.x && x<=box.x+box.w && y>=box.y && y<=box.y+box.h;
-    }) || null;
-  }
-
-  function drawHomeStations() {
-    if (!state || !state.adopted || !state.lifecycle || state.lifecycle.phase === 'egg') return;
-    // Small wall-side props only: no backing panels, banners or permanent text.
-    // Keep the surrounding room visible and leave the floor-level E2 slots free.
-    ctx.save();
-    var kitchen=HOME_STATION_HOTSPOTS.kitchen;
-    drawPixelRect(kitchen.x+5,kitchen.y+10,42,3,'#c6c1ad');
-    drawPixelRect(kitchen.x+8,kitchen.y+13,36,11,'#8b8f98');
-    drawPixelRect(kitchen.x+13,kitchen.y+16,14,6,'#22242c');
-    drawPixelRect(kitchen.x+31,kitchen.y+16,8,2,'#e1ddce');
-    drawPixelRect(kitchen.x+12,kitchen.y+6,11,4,'#353b46');
-    drawPixelRect(kitchen.x+30,kitchen.y+6,11,4,'#353b46');
-    drawPixelRect(kitchen.x+8,kitchen.y+24,3,3,'#535965');
-    drawPixelRect(kitchen.x+41,kitchen.y+24,3,3,'#535965');
-
-    var garden=HOME_STATION_HOTSPOTS.garden;
-    drawPixelRect(garden.x+5,garden.y+17,42,3,'#ab8057');
-    drawPixelRect(garden.x+8,garden.y+20,36,6,'#72543c');
-    var gardenState=state.pet_garden || {};
-    if(gardenState.status==='growing'||gardenState.status==='ready'){
-      var stemHeight=gardenState.status==='ready'?12:7;
-      drawPixelRect(garden.x+25,garden.y+17-stemHeight,3,stemHeight,'#78a660');
-      drawPixelRect(garden.x+17,garden.y+11,10,4,'#78a660');
-      drawPixelRect(garden.x+28,garden.y+9,11,4,'#78a660');
+  // TEST-EXPORT: homeRoomsCanvas:start
+  function drawRoomTiles(yStart, tileWidth, tileHeight, base, grout) {
+    drawPixelRect(0,0,320,yStart,base);
+    for (var y=0;y<yStart;y+=tileHeight) {
+      drawPixelRect(0,y,320,1,grout);
+      var offset=((y/tileHeight)%2)*Math.floor(tileWidth/2);
+      for (var x=-offset;x<320;x+=tileWidth) drawPixelRect(x,y,tileWidth,1,grout);
     }
-
-    var gym=HOME_STATION_HOTSPOTS.gym;
-    drawPixelRect(gym.x+12,gym.y+6,28,3,'#b4bac4');
-    drawPixelRect(gym.x+6,gym.y+3,6,9,'#6f7680');
-    drawPixelRect(gym.x+40,gym.y+3,6,9,'#6f7680');
-    drawPixelRect(gym.x+10,gym.y+18,32,4,'#8c739c');
-    drawPixelRect(gym.x+13,gym.y+22,3,5,'#6f7680');
-    drawPixelRect(gym.x+36,gym.y+22,3,5,'#6f7680');
-    ctx.restore();
   }
-  // TEST-EXPORT: homeStationsCanvas:end
+
+  function drawKitchenRoom() {
+    drawRoomTiles(150,32,18,'#352a29','#5a4542');
+    drawPixelRect(0,150,320,70,'#262329');
+    for (var x=0;x<320;x+=32) drawPixelRect(x,150,1,70,'#3f3a42');
+    drawPixelRect(0,153,320,2,'#80736b');
+    drawPixelRect(10,101,83,45,'#68574e');
+    drawPixelRect(13,105,77,8,'#c3b49d');
+    drawPixelRect(20,116,28,22,'#252830');
+    drawPixelRect(57,116,26,22,'#4e4b50');
+    drawPixelRect(227,91,82,55,'#5f514b');
+    drawPixelRect(230,95,76,8,'#cab9a0');
+    drawPixelRect(245,107,45,35,'#2c3038');
+    drawPixelRect(255,113,25,18,'#11151b');
+    drawPixelRect(112,50,96,8,'#6d5a4c');
+    drawPixelRect(120,58,4,30,'#76665b');
+    drawPixelRect(194,58,4,30,'#76665b');
+    drawPixelRect(130,63,22,18,'#9b7b54');
+    drawPixelRect(163,61,25,20,'#758b83');
+    drawPixelRect(18,83,24,13,'#8d3b32');
+    drawPixelRect(51,82,19,14,'#c39a55');
+    drawPixelRect(281,57,12,30,'#8e8372');
+    drawPixelRect(277,50,20,8,'#cfc5aa');
+  }
+
+  function drawGardenRoom() {
+    drawPixelRect(0,0,320,145,'#18312f');
+    drawPixelRect(0,145,320,75,'#262f29');
+    drawPixelRect(0,142,320,3,'#6e866f');
+    for (var x=18;x<320;x+=72) {
+      drawPixelRect(x,28,50,4,'#7f9e91');
+      drawPixelRect(x+8,32,3,37,'#61766e');
+      drawPixelRect(x+39,32,3,37,'#61766e');
+      drawPixelRect(x+3,69,44,4,'#b8a66e');
+    }
+    drawPixelRect(8,160,80,32,'#6e4f35');
+    drawPixelRect(12,164,72,9,'#3b2d23');
+    drawPixelRect(232,160,80,32,'#6e4f35');
+    drawPixelRect(236,164,72,9,'#3b2d23');
+    drawPixelRect(112,154,96,39,'#7b5d3c');
+    drawPixelRect(116,158,88,10,'#3a2f25');
+    var gardenState=state && state.pet_garden || {};
+    var ready=gardenState.status==='ready';
+    var growing=gardenState.status==='growing'||ready;
+    if (growing) {
+      var height=ready?25:16;
+      for (var stemX of [128,151,174]) {
+        drawPixelRect(stemX,158-height,4,height,'#6c9c5d');
+        drawPixelRect(stemX-7,146-height/2,10,5,'#7eb46b');
+        drawPixelRect(stemX+2,140-height/3,11,5,'#7eb46b');
+      }
+      if (ready) {
+        drawPixelRect(124,129,11,8,'#d3a94f');
+        drawPixelRect(147,127,11,8,'#d3a94f');
+        drawPixelRect(170,130,11,8,'#d3a94f');
+      }
+    }
+    drawPixelRect(22,106,56,5,'#819d82');
+    drawPixelRect(242,106,56,5,'#819d82');
+    drawPixelRect(28,111,4,35,'#657567');
+    drawPixelRect(68,111,4,35,'#657567');
+    drawPixelRect(248,111,4,35,'#657567');
+    drawPixelRect(288,111,4,35,'#657567');
+  }
+
+  function drawGymRoom() {
+    drawPixelRect(0,0,320,148,'#27282d');
+    for (var y=20;y<148;y+=26) drawPixelRect(0,y,320,1,'#3f4148');
+    drawPixelRect(0,148,320,72,'#181a1f');
+    for (var x=0;x<320;x+=24) drawPixelRect(x,148,2,72,'#2e3037');
+    drawPixelRect(10,80,68,66,'#33363d');
+    drawPixelRect(17,89,54,4,'#a4abb3');
+    drawPixelRect(25,94,4,43,'#737a82');
+    drawPixelRect(60,94,4,43,'#737a82');
+    drawPixelRect(20,104,49,5,'#a4abb3');
+    drawPixelRect(241,64,9,64,'#6c596f');
+    drawPixelRect(252,64,9,64,'#6c596f');
+    drawPixelRect(232,128,38,7,'#827087');
+    drawPixelRect(104,165,112,8,'#5d4f68');
+    drawPixelRect(121,173,4,28,'#777d85');
+    drawPixelRect(195,173,4,28,'#777d85');
+    drawPixelRect(137,52,46,6,'#8e949d');
+    drawPixelRect(133,47,8,16,'#5f666f');
+    drawPixelRect(179,47,8,16,'#5f666f');
+    drawPixelRect(148,38,24,5,'#b5bcc4');
+    drawPixelRect(158,43,4,35,'#6f767f');
+    drawPixelRect(83,33,7,48,'#c9a85d');
+    drawPixelRect(230,34,7,47,'#c9a85d');
+  }
+
+  function drawDedicatedHomeRoom(room) {
+    if (room==='kitchen') drawKitchenRoom();
+    else if (room==='garden') drawGardenRoom();
+    else if (room==='gym') drawGymRoom();
+  }
+  // TEST-EXPORT: homeRoomsCanvas:end
 
   // TEST-EXPORT: drawWorld:start
   function drawWorld(time) {
@@ -5223,21 +5300,28 @@
     var showHome = state && state.adopted && state.pet && !hatchArtTransitionActive(renderTime);
     if (showHome) {
       var home = savedHomeLayout(state);
-      drawHomeWall(home.wall);
-      drawHomeFloor(home.floor, Boolean(botArtRendererReady));
-      var purchased = state.pet_furniture && state.pet_furniture.available === true
-        ? savedPurchasedFurniture(state) : null;
-      if (!purchased || !purchased.right) drawHomeFurniture(home.furniture);
-      if (purchased) {
-        if (purchased.wall) drawPurchasedFurniture(purchased.wall,'wall');
-        if (purchased.left) drawPurchasedFurniture(purchased.left,'left');
-        if (purchased.right) drawPurchasedFurniture(purchased.right,'right');
-        home.purchased = purchased;
+      var room = state.lifecycle && state.lifecycle.phase === 'egg' ? 'main' : activeHomeRoom;
+      if (!HOME_ROOMS.includes(room)) room = 'main';
+      if (room === 'main') {
+        drawHomeWall(home.wall);
+        drawHomeFloor(home.floor, Boolean(botArtRendererReady));
+        var purchased = state.pet_furniture && state.pet_furniture.available === true
+          ? savedPurchasedFurniture(state) : null;
+        if (!purchased || !purchased.right) drawHomeFurniture(home.furniture);
+        if (purchased) {
+          if (purchased.wall) drawPurchasedFurniture(purchased.wall,'wall');
+          if (purchased.left) drawPurchasedFurniture(purchased.left,'left');
+          if (purchased.right) drawPurchasedFurniture(purchased.right,'right');
+          home.purchased = purchased;
+        }
+        backgroundArtState.floor = { mode: home.floor, baseline_y: BOT_RENDER_BASELINE_Y, shadow: Boolean(botArtRendererReady) };
+      } else {
+        drawDedicatedHomeRoom(room);
+        backgroundArtState.floor = { mode: room + '_room', baseline_y: BOT_RENDER_BASELINE_Y, shadow: Boolean(botArtRendererReady) };
       }
-      drawHomeStations();
-      home.stations = ['kitchen','garden','gym'];
+      home.active_room = room;
+      home.rooms = HOME_ROOMS.slice();
       backgroundArtState.home = home;
-      backgroundArtState.floor = { mode: home.floor, baseline_y: BOT_RENDER_BASELINE_Y, shadow: Boolean(botArtRendererReady) };
     }
 
     ctx.save();
