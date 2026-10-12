@@ -270,6 +270,31 @@ failRead=true;
 await assert.rejects(hooks.deletePetSlot(db,'blocked',confirm(blockedId)),/read_unavailable/);
 failRead=false;
 assert.equal((await hooks.deletePetSlot(db,'blocked',confirm(blockedId))).accepted,true);
+// Home E3 garden state follows the same deletion rule: an unclaimed
+// harvest settlement blocks deletion, while a merely growing crop is removed
+// with the pet and completed harvest history remains on the account.
+const gardenDeleteId=await player('garden-delete'), gardenDeletePet=rowFor(gardenDeleteId);
+sql.prepare(`INSERT INTO telegram_pet_garden_plots
+  (pet_id,telegram_id,season_key,crop_key,status,planted_at,ready_at)
+  VALUES (?,'garden-delete',?,'garden_veggies','growing','2026-10-12T00:00:00Z','2026-10-12T06:00:00Z')`)
+  .run(gardenDeleteId,gardenDeletePet.season_key);
+const gardenDelete=await hooks.deletePetSlot(db,'garden-delete',confirm(gardenDeleteId));
+assert.equal(gardenDelete.accepted,true);
+assert.equal(sql.prepare('SELECT COUNT(*) AS n FROM telegram_pet_garden_plots WHERE pet_id=?').get(gardenDeleteId).n,0,
+  'active garden plot is removed with the deleted pet');
+
+const gardenPendingId=await player('garden-pending'), gardenPendingPet=rowFor(gardenPendingId);
+sql.prepare(`INSERT INTO telegram_pet_garden_harvests
+  (telegram_id,event_key,pet_id,season_key,crop_key,crop_planted_at,quantity,status)
+  VALUES ('garden-pending','pending-harvest',?,?,'garden_veggies','2026-10-12T00:00:00Z',1,'pending')`)
+  .run(gardenPendingId,gardenPendingPet.season_key);
+await expectBlocked('garden-pending',gardenPendingId,'pending garden harvest settlement blocks deletion');
+sql.prepare("UPDATE telegram_pet_garden_harvests SET status='completed',harvested_at=CURRENT_TIMESTAMP WHERE telegram_id='garden-pending' AND event_key='pending-harvest'").run();
+const gardenPendingDelete=await hooks.deletePetSlot(db,'garden-pending',confirm(gardenPendingId));
+assert.equal(gardenPendingDelete.accepted,true);
+assert.equal(sql.prepare("SELECT COUNT(*) AS n FROM telegram_pet_garden_harvests WHERE telegram_id='garden-pending' AND event_key='pending-harvest' AND status='completed'").get().n,1,
+  'completed garden harvest history survives pet deletion');
+
 // Replacement lifetime periods still qualify saved weekly boss recovery.
 const boss=PET_WEEKLY_BOSSES[0], now=new Date().toISOString(), day=now.slice(0,10), week='2026-W40';
 const bossPet=sql.prepare('SELECT * FROM telegram_pet_instances WHERE pet_id=?').get(paidDeletion.replacement_pet_id);
