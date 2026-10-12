@@ -153,6 +153,7 @@ const GROUPS = {
     ['node', '--test', 'scripts/moonpet-option-guidance.test.mjs'],
     ['node', '--test', 'scripts/moonpet-dance-radio.test.mjs'],
     ['node', '--test', 'scripts/moonpet-radio-requests.test.mjs'],
+    ['node', '--test', 'scripts/moonpet-radio-group-delivery.test.mjs'],
     ['node', '--test', 'scripts/moonpet-art-loading.test.mjs'],
     ['node', '--test', 'scripts/moonpet-legacy-event-close.test.mjs'],
     ['node', 'scripts/moonpet-activity-options.test.mjs'],

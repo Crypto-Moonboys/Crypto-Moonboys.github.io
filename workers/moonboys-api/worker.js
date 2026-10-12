@@ -1,5 +1,6 @@
 import { capturePetEconomy, assertPetEconomy, assertPetEconomySource } from './pets/economic-projection.js';
 import { submitMoonpetRadioRequest } from './pets/radio-requests.js';
+import { forwardRadioRequestsToGroup } from './pets/radio-group-delivery.js';
 import { atomicPetBatch } from './pets/atomic-mutations.js';
 import { getStyleLoadout, equipPetStyle } from './pets/style-loadout.js';
 import { readPetHouseLayout, setPetHouseLayout } from './pets/house-layout.js';
@@ -15168,6 +15169,22 @@ export default {
           failed: petNotifications.failed,
         });
       }
+    }
+
+    if (shouldRunPetNotifications) {
+      const radio = await forwardRadioRequestsToGroup(env.DB, {
+        chat_id: env.TELEGRAM_GROUP_CHAT_ID,
+        message_thread_id: env.TELEGRAM_GROUP_THREAD_ID,
+        bot_token: env.TELEGRAM_BOT_TOKEN,
+      }, sendTelegramMessage).catch(error => ({
+        ok:false, sent:0, failed:1, error:error?.message || String(error),
+      }));
+      scheduledResults.push({task:'moonpet_radio_group_delivery',ok:radio.ok,
+        error:radio.ok?null:(radio.error || 'radio_group_delivery_failed')});
+      if(!radio.ok) logApiFailure('moonpet_radio_group_delivery_failed', {
+        sent:radio.sent, failed:radio.failed, error:radio.error || null,
+      });
+      else if(radio.sent) logApiEvent('moonpet_radio_group_delivery_complete',{sent:radio.sent});
     }
 
     const groupType = shouldRunDailySummary && shouldRunTimedEvents

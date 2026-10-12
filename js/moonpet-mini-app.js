@@ -1194,7 +1194,7 @@
             "manage"
       ],
       "radio_request": [
-            "Save one GraffPUNKS Radio request in the private host-review queue per UTC day. No guaranteed broadcast or rewards.",
+            "Save one GraffPUNKS Radio request per UTC day. The request is forwarded to the Telegram group for DJ review, where group members can read it. No guaranteed broadcast or rewards.",
             "manage"
       ],
       "market_buy": [
@@ -2033,11 +2033,11 @@
   function renderRadioRequestPanel() {
     var submitted = radioRequestSubmittedDay === new Date(Date.now() + serverClockOffsetMs).toISOString().slice(0, 10);
     return panel('GRAFFPUNKS RADIO // SEND A REQUEST',
-      '<div class="line muted">Suggest a track or short message for the Radio host. One saved request per Telegram account per UTC day. Requests go to a private host-review queue, not automatically on air. No currency cost or reward.</div>' +
+      '<div class="line muted">Suggest a track or short message for the Radio host. One saved request per Telegram account per UTC day. Requests are forwarded to the GraffPUNKS Telegram group for DJ review (visible to group members), not automatically on air. No currency cost or reward.</div>' +
       (submitted ? '<div class="line complete">SAVED TODAY // HOST REVIEW PENDING</div>' : '') +
       '<label class="line" for="radio-request-text">TRACK OR MESSAGE (4–160 CHARACTERS)</label>' +
       '<textarea id="radio-request-text" class="terminal-input" rows="3" maxlength="160" placeholder="Artist — track, or your message">' + escapeHtml(radioRequestDraft) + '</textarea>' +
-      '<div class="button-grid one">' + button('SAVE RADIO REQUEST', 'radio_request', {}, { disabled: submitted, detail: 'Private once-daily host queue. No live broadcast is promised.' }) + '</div>',
+      '<div class="button-grid one">' + button('SAVE RADIO REQUEST', 'radio_request', {}, { disabled: submitted, detail: 'Once-daily request is posted to the Telegram group for DJ review. No live broadcast is promised.' }) + '</div>',
       'radio-requests');
   }
 
