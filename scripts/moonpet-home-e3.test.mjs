@@ -116,7 +116,8 @@ test('fresh request recovers a crop-bound pending receipt after settlement batch
   await f.act({ action:'garden_plant', request_id:'plant' });
   f.sql.prepare("UPDATE telegram_pet_garden_plots SET planted_at='1999-12-31T18:00:00.000Z', ready_at='2000-01-01T00:00:00.000Z' WHERE telegram_id=?").run(f.owner);
 
-  f.db.beforeBatch = () => {
+  f.db.beforeBatch = statements => {
+    if (!statements.some(statement => statement.query.includes("UPDATE telegram_pet_garden_plots SET status='harvesting'"))) return;
     f.db.beforeBatch = null;
     throw new Error('injected garden settlement failure');
   };
