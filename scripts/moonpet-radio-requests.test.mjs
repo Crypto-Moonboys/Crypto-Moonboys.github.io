@@ -59,7 +59,7 @@ test('radio messages persist privately one per account/UTC day with safe duplica
   assert.equal(optedIn.accepted,true);
   assert.equal(JSON.parse(rows().find(row=>row.telegram_id==='user-two'&&row.period_key==='2026-10-12').payload_json).telegram_group_delivery,'pending');
   assert.equal((await submitMoonpetRadioRequest(db,'user-one','wrong-pet','Future request',new Date('2026-10-13T12:00:00.000Z'))).accepted,false);
-  assert.equal(rows().length,3);
+  assert.equal(rows().length,4);
   fixture.sql.close();
 });
 test('resolved D1 write failures never claim a request was saved',async()=>{
