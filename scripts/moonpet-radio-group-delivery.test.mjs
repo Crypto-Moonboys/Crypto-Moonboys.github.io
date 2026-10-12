@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { DatabaseSync } from 'node:sqlite';
 import fs from 'node:fs';
-import { forwardRadioRequestsToGroup,radioGroupMessage } from '../workers/moonboys-api/pets/radio-group-delivery.js';
+import { forwardRadioRequestsToGroup,radioGroupMessage,RADIO_DELIVERY_QUERY } from '../workers/moonboys-api/pets/radio-group-delivery.js';
 
 function fixture() {
   const sql=new DatabaseSync(':memory:');
@@ -10,6 +10,7 @@ function fixture() {
     id TEXT PRIMARY KEY,period_key TEXT,status TEXT,system_key TEXT,
     action_key TEXT,payload_json TEXT,created_at TEXT DEFAULT CURRENT_TIMESTAMP,
     updated_at TEXT DEFAULT CURRENT_TIMESTAMP)`);
+  sql.exec(fs.readFileSync(new URL('../workers/moonboys-api/migrations/093_moonpet_radio_group_delivery_index.sql',import.meta.url),'utf8'));
   const put=(id,day,message,consented=true)=>{
     sql.prepare(`INSERT INTO telegram_pet_system_events(id,period_key,status,system_key,action_key,payload_json)
       VALUES (?,?, 'completed','radio_request','submission',?)`).run(id,day,JSON.stringify({message,moderation:'pending_host_review',...(consented?{telegram_group_delivery:'pending'}:{})}));
@@ -20,7 +21,8 @@ function fixture() {
     async run(){return {meta:{changes:stmt.run(...args).changes}};}
   }}};
   const status=id=>JSON.parse(sql.prepare('SELECT payload_json FROM telegram_pet_system_events WHERE id=?').get(id).payload_json).telegram_group_delivery;
-  return{sql,put,db,status,close:()=>sql.close()};
+  const queryPlan=()=>sql.prepare('EXPLAIN QUERY PLAN '+RADIO_DELIVERY_QUERY).all(5).map(row=>row.detail).join(' ');
+  return{sql,put,db,status,queryPlan,close:()=>sql.close()};
 }
 const config={bot_token:'test-token',chat_id:'-100999',message_thread_id:'21'};
 test('HTML is escaped and player identity is not included in group message',()=>{
@@ -41,7 +43,7 @@ test('one saved request delivers once and respects Telegram topic',async()=>{
   f.close();
 });
 test('do not dump older private requests or send when group config missing',async()=>{
-  const f=fixture();f.put('old','2026-10-11','OLD SONG');
+  const f=fixture();f.put('old','2026-10-11','OLD SONG',false);
   let calls=0;const send=async()=>{calls++;return{ok:true};};
   assert.equal((await forwardRadioRequestsToGroup(f.db,{},send)).skipped,'group_not_configured');
   await forwardRadioRequestsToGroup(f.db,config,send);
@@ -51,6 +53,20 @@ test('do not dump older private requests or send when group config missing',asyn
   await forwardRadioRequestsToGroup(f.db,config,send);
   assert.equal(calls,0);
   assert.equal(f.status('legacy-today'),undefined);
+  f.close();
+});
+test('malformed payloads are skipped and the pending queue uses its partial ordering index',async()=>{
+  const f=fixture();
+  f.put('valid','2026-10-12','Safe request');
+  f.sql.prepare(`INSERT INTO telegram_pet_system_events(id,period_key,status,system_key,action_key,payload_json)
+    VALUES ('malformed','2026-10-12','completed','radio_request','submission','{bad json')`).run();
+  const queryPlan=f.queryPlan();
+  assert.match(queryPlan,/idx_pet_system_events_radio_delivery/);
+  assert.doesNotMatch(queryPlan,/USE TEMP B-TREE/);
+  const sends=[];
+  assert.equal((await forwardRadioRequestsToGroup(f.db,config,async(...args)=>{sends.push(args);return{ok:true,status:200};})).sent,1);
+  assert.equal(sends.length,1);
+  assert.equal(f.sql.prepare('SELECT payload_json FROM telegram_pet_system_events WHERE id=?').get('malformed').payload_json,'{bad json');
   f.close();
 });
 test('definite HTTP failure retries, uncertain network failure stays held to avoid duplicates',async()=>{

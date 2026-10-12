@@ -6,6 +6,11 @@ import { normalizeMoonpetRadioRequest } from './radio-requests.js';
 
 const MAX_PER_TICK = 5;
 const START_DAY = '2026-10-12'; // never dump older private requests into a group retroactively
+export const RADIO_DELIVERY_QUERY = `SELECT id,period_key,payload_json FROM telegram_pet_system_events
+    WHERE system_key='radio_request' AND action_key='submission' AND status='completed'
+      AND period_key>='${START_DAY}'
+      AND json_extract(CASE WHEN json_valid(payload_json) THEN payload_json ELSE '{}' END,'$.telegram_group_delivery')='pending'
+    ORDER BY created_at ASC LIMIT ?`;
 
 function escapeTelegramHtml(value) {
   return String(value).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -23,12 +28,7 @@ export function radioGroupMessage(payload, dayKey) {
 export async function forwardRadioRequestsToGroup(db, config, send, options = {}) {
   const chatId = String(config?.chat_id || '').trim();
   if (!chatId || !config?.bot_token) return {ok:true,skipped:'group_not_configured',sent:0,failed:0};
-  const rows = requirePetReadResult(await db.prepare(`SELECT id,period_key,payload_json FROM telegram_pet_system_events
-    WHERE system_key='radio_request' AND action_key='submission' AND status='completed'
-      AND period_key>=?
-      AND json_valid(payload_json)
-      AND json_extract(payload_json,'$.telegram_group_delivery')='pending'
-    ORDER BY created_at ASC LIMIT ?`).bind(START_DAY, MAX_PER_TICK).all()).results;
+  const rows = requirePetReadResult(await db.prepare(RADIO_DELIVERY_QUERY).bind(MAX_PER_TICK).all()).results;
   let sent=0,failed=0,claimed=0;
   for(const row of rows){
     let payload;

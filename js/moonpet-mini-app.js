@@ -2037,8 +2037,8 @@
       (submitted ? '<div class="line complete">SAVED TODAY // HOST REVIEW PENDING</div>' : '') +
       '<label class="line" for="radio-request-text">TRACK OR MESSAGE (4–160 CHARACTERS)</label>' +
       '<textarea id="radio-request-text" class="terminal-input" rows="3" maxlength="160" placeholder="Artist — track, or your message">' + escapeHtml(radioRequestDraft) + '</textarea>' +
-      '<label class="line"><input id="radio-group-consent" type="checkbox"> I agree that this request will be posted to the Telegram group.</label>' +
-      '<div class="button-grid one">' + button('SAVE RADIO REQUEST', 'radio_request', {}, { disabled: submitted, detail: 'Once-daily request is posted to the Telegram group for DJ review. No live broadcast is promised.' }) + '</div>',
+      '<label class="line"><input id="radio-group-consent" type="checkbox"> I agree that this request will be forwarded to the Telegram group.</label>' +
+      '<div class="button-grid one">' + button('SAVE RADIO REQUEST', 'radio_request', {}, { disabled: submitted, detail: 'With checked consent, requests are forwarded on the five-minute schedule for DJ review. No live broadcast is promised.' }) + '</div>',
       'radio-requests');
   }
 
@@ -4206,6 +4206,23 @@
   screen.addEventListener('input', function (event) {
     if (event.target && event.target.id === 'radio-request-text') radioRequestDraft = String(event.target.value || '').slice(0, 160);
   });
+  // TEST-EXPORT: radioRequestConsent:start
+  function submitRadioRequest(payload, draft, share, target) {
+    var submittedText = String(draft || '').replace(/\s+/g, ' ').trim();
+    if (submittedText.length < 4 || submittedText.length > 160) {
+      tell('RADIO REQUEST MUST CONTAIN 4–160 CHARACTERS.', 'danger');
+      return false;
+    }
+    if (!share || !share.checked) {
+      tell('CONFIRM GROUP SHARING FIRST.', 'danger');
+      return false;
+    }
+    payload.group_delivery_consent = true;
+    payload.message = submittedText;
+    runAction('radio_request', payload, target);
+    return true;
+  }
+  // TEST-EXPORT: radioRequestConsent:end
   screen.addEventListener('click', function (event) {
     var emoteButton = event.target.closest('[data-local-emote]');
     if (emoteButton) {
@@ -4285,15 +4302,8 @@
       if (routeFormat) payload.format = routeFormat.value;
     }
     if (target.dataset.action === 'radio_request') {
-      var submittedText = radioRequestDraft.replace(/\s+/g, ' ').trim();
-      if (submittedText.length < 4 || submittedText.length > 160) {
-        tell('RADIO REQUEST MUST CONTAIN 4–160 CHARACTERS.', 'danger');
-        return;
-      }
-      var share = document.getElementById('radio-group-consent');
-      if (!share || !share.checked) { tell('CONFIRM GROUP SHARING FIRST.', 'danger'); return; }
-      payload.group_delivery_consent = true;
-      payload.message = submittedText;
+      submitRadioRequest(payload, radioRequestDraft, document.getElementById('radio-group-consent'), target);
+      return;
     }
     runAction(target.dataset.action, payload, target);
   });
