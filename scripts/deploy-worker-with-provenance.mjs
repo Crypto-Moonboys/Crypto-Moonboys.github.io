@@ -8,6 +8,7 @@ import { normalizeD1StatementResult } from './verify-d1-production-migrations.mj
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SHA_RE = /^[0-9a-f]{40}$/i;
 const PET_HOUSE_MIGRATION = '092_moonpet_house_layouts.sql';
+const PET_FURNITURE_MIGRATION = '094_moonpet_home_furniture.sql';
 
 export const SUPPORTED_WORKERS = Object.freeze({
   'moonboys-api': 'workers/moonboys-api',
@@ -90,7 +91,7 @@ export function requireTelegramWebhookSecret(secretListJson) {
 export function buildPetHouseMigrationCheckInvocation(options = {}) {
   const args = [
     'wrangler', 'd1', 'execute', 'wikicoms', '--remote',
-    '--command', `SELECT name FROM d1_migrations WHERE name='${PET_HOUSE_MIGRATION}'`,
+    '--command', `SELECT name FROM d1_migrations WHERE name IN ('${PET_HOUSE_MIGRATION}','${PET_FURNITURE_MIGRATION}')`,
     '--json',
   ];
   return (options.platform || process.platform) === 'win32'
@@ -111,8 +112,9 @@ export function requirePetHouseMigrationApplied(migrationQueryJson) {
   } catch {
     throw new Error(`Could not verify production D1 migration ${PET_HOUSE_MIGRATION}`);
   }
-  if (!statement.results.some((row) => row?.name === PET_HOUSE_MIGRATION)) {
-    throw new Error(`Production moonboys-api requires applied D1 migration ${PET_HOUSE_MIGRATION}. Apply it to remote wikicoms before deploying.`);
+  for (const required of [PET_HOUSE_MIGRATION, PET_FURNITURE_MIGRATION]) {
+    if (!statement.results.some((row) => row?.name === required))
+      throw new Error(`Production moonboys-api requires applied D1 migration ${required}. Apply it to remote wikicoms before deploying.`);
   }
 }
 

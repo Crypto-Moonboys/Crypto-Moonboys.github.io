@@ -104,7 +104,25 @@ try {
       const changed=await page.locator('#moonpet-canvas').evaluate(canvas=>Array.from(canvas.getContext('2d').getImageData(2,410,1,1).data));
       assert.notDeepEqual(changed,pixels,'saved floor visibly changes the actual canvas');
       assert.equal(await page.evaluate(()=>window.MoonpetBetaAppearance.getBotArtState().lastRender.drew),true,'existing pet renderer still draws above Home');
+      // E2: a paid item is purchased once, then drawn on this same canvas.
+      await page.getByRole('button',{name:/CUSTOMIZE HOME/}).click();
+      const furniturePanel=page.locator('[data-panel="furniture-shop"]');
+      await furniturePanel.waitFor();
+      if (!await furniturePanel.evaluate(node=>node.open)) await furniturePanel.locator('summary').click();
+      const beforePurchase=f.sql.prepare('SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id=?').get(f.owner).moon_gold;
+      const buyResponse=page.waitForResponse(r=>r.url().endsWith('/action') && r.request().postDataJSON()?.action==='furniture_buy');
+      await furniturePanel.locator('[data-action="furniture_buy"]').filter({hasText:'BUY Neon Lamp'}).click();
+      assert.equal((await (await buyResponse).json()).result.accepted,true);
+      assert.equal(f.sql.prepare('SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id=?').get(f.owner).moon_gold,beforePurchase-120);
+      const placeResponse=page.waitForResponse(r=>r.url().endsWith('/action') && r.request().postDataJSON()?.action==='furniture_place');
+      await furniturePanel.locator('[data-action="furniture_place"]').filter({hasText:'PLACE Neon Lamp'}).click();
+      assert.equal((await (await placeResponse).json()).result.accepted,true);
+      await page.waitForFunction(()=>window.MoonpetBetaAppearance.getBackgroundArtState().home?.purchased?.left==='neon_lamp');
+      assert.equal(await page.locator('canvas').count(),1);
+      assert.equal(await page.locator('.pet-house-room').count(),0);
       await page.reload(); await ready(); await room('studio_white','steel','plant_pot');
+      await page.waitForFunction(()=>window.MoonpetBetaAppearance.getBackgroundArtState().home?.purchased?.left==='neon_lamp');
+
       // Switch restores each original pet's own Home without extra room fetches.
       const switchResponse=page.waitForResponse(r=>r.url().endsWith('/action') && r.request().postDataJSON()?.action==='switch_pet_slot');
       await page.locator('[data-action="switch_pet_slot"]:enabled').first().click();

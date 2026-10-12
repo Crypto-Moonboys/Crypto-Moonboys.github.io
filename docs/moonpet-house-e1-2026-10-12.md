@@ -18,3 +18,7 @@ Wall finishes are translucent layers over existing backgrounds; flooring stays a
 Validate the original ownership/economy/layout tests, actual core and full projections, main canvas pixels for all three selections, per-pet switching/reload, egg and hatched art, Profile editor/confirmation, interactions and 360px/390px/desktop layouts. Run all five CI domains and synchronize the shared How to Play guide. Before/after screenshots use local SQLite-backed fixtures, never live player records.
 
 After GK approves the final PR and merge, publish the frontend and deploy only `moonboys-api` through the existing provenance wrapper. A Worker deployment is necessary only because the original implementation deferred `pet_house` until Profile. No new or repeated D1 migration is required; existing migration 092, layout writes and records are unchanged. No economy or gameplay changes are introduced. Keep #1478 open for future phases; additional rooms and purchases are outside this correction.
+
+## E2 follow-up — Furniture Shop (proposed PR)
+
+E2 adds twelve permanent account-owned Moon Gold furniture purchases and three bounded per-pet placements on the **same existing canvas**. It does not change the nine free E1 choices. One right-slot paid item visually replaces the free furnishing until removed; the free selection remains saved. E2 migration 094 adds account purchase receipts and per-pet placement records. No rewards, gameplay stats or pet lifecycle changes. Requires GK economy approval, migration 094 and matching Worker deploy before production.
