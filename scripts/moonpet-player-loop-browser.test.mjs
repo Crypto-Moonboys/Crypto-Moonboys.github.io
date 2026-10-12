@@ -1252,16 +1252,27 @@ try {
     }
     assert.equal(gameplayCount(), beforeBountyNavigation);
     // Seed accepted evidence for one current bounty, then use its real claim handler.
-    const readyBounty = bountyState.guidance.economy.bounties.find((b) => !b.complete);
+    const readyBounty = bountyState.guidance.economy.bounties.find((b) => !b.complete && !b.claimed);
     assert.ok(readyBounty);
     const questDay = new Date().toISOString().slice(0, 10);
     for (let i = 0; i < readyBounty.required; i++) sqlite.prepare(`INSERT INTO telegram_pet_events
       (id,pet_id,telegram_id,event_type,event_key,pet_xp_awarded,season_key,day_key,week_key,status,metadata)
       VALUES (?,?,?,?,?,0,?,?,'fixture','accepted','{}')`).run(realCrypto.randomUUID(), bountyState.pet.pet_id, currentUser, readyBounty.event_types[0], realCrypto.randomUUID(), bountyState.pet.season_key, questDay);
+    const seededBounty = (await hooks.getPetEconomyState(db, currentUser, null, new Date())).bounties.find((b) => b.key === readyBounty.key);
+    assert.equal(seededBounty.progress, readyBounty.required, 'the accepted fixture events complete the selected bounty');
+    const refreshedBountyState = page.waitForResponse(async (r) => {
+      if (!r.url().endsWith('/telegram-pets/app/state') || r.request().method() !== 'POST') return false;
+      const data = await r.json().catch(() => null);
+      return Boolean(data?.state?.guidance?.economy?.bounties?.some((b) => b.key === readyBounty.key && b.complete));
+    });
     await page.reload(); await page.waitForSelector('[data-panel="care"]');
+    const bountyStateResponse = await refreshedBountyState;
+    assert.equal(bountyStateResponse.ok(), true, 'reload completes an authoritative state refresh');
     await page.locator('[data-panel="play-now"] [data-focus="bounties"]').filter({ hasText: 'CLAIM READY BOUNTIES' }).click();
+    const claimButton = page.locator('[data-action="bounty_claim"]').filter({ hasText: readyBounty.title });
+    await claimButton.waitFor({ state: 'visible' });
     const bountyResponse = page.waitForResponse((r) => r.url().endsWith('/telegram-pets/app/action') && r.request().postDataJSON()?.action === 'bounty_claim');
-    await page.locator('[data-action="bounty_claim"]').filter({ hasText: readyBounty.title }).click();
+    await claimButton.click();
     const bountyResult = await (await bountyResponse).json();
     assert.equal(bountyResult.result.accepted, true);
     assert.equal(bountyResult.state.guidance.economy.bounties.find((b) => b.key === readyBounty.key).claimed, true);

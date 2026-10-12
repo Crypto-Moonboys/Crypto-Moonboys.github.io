@@ -110,7 +110,8 @@
   function bountyRoutes(bounty) {
     var labels = { feed: 'CARE', play: 'CARE', clean: 'CARE', sleep: 'CARE', train: 'CARE', work: 'PET JOBS',
       random_event: 'STREET EVENT', activity_claim: 'TIMED ACTIVITY', run_complete: 'MOON RUN', run_extract: 'MOON RUN',
-      adventure: 'ADVENTURE', daily_chest: 'DAILY CACHE', kaiju_battle: 'KAIJU', use_item: 'INVENTORY', use_item_reward: 'INVENTORY' };
+      adventure: 'ADVENTURE', daily_chest: 'DAILY CACHE', kaiju_battle: 'KAIJU', weekly_boss: 'WEEKLY BOSS',
+      seasonal_boss: 'SEASONAL RAID', use_item: 'INVENTORY', use_item_reward: 'INVENTORY' };
     var destinations = [];
     (bounty.event_types || []).forEach(function (event) {
       if (!Object.prototype.hasOwnProperty.call(labels, event)) return;
@@ -149,6 +150,14 @@
         : energy >= 12;
       if (event === 'adventure') return Boolean(s.adventure && s.adventure.available && (s.adventure.choices || []).some(function (choice) { return !choice.preview || choice.preview.available !== false; }));
       if (event === 'daily_chest') return Boolean(g.daily_cache && g.daily_cache.available);
+      if (event === 'weekly_boss') return Boolean(g.weekly_boss && g.weekly_boss.available);
+      if (event === 'seasonal_boss') {
+        var boss = s.live_systems && s.live_systems.seasonal_boss;
+        return Boolean(boss && boss.available && (boss.pending_move && boss.retry_energy_charged ||
+          (boss.choices || [{ key: 'strike', energy: 18 }]).some(function (choice) {
+            return (!boss.pending_move || choice.key === boss.pending_move) && energy >= choice.energy;
+          })));
+      }
       if (event === 'kaiju_battle') {
         var capability = s.capabilities && s.capabilities.systems && s.capabilities.systems.kaiju;
         return s.capabilities_version === 1 && Boolean(capability && capability.state === 'AVAILABLE' && capability.unlocked === true && capability.active === true);
@@ -514,6 +523,10 @@
     var economy = g.economy || {};
     claims('economy', 'bounty_claim', 'COMPLETED DAILY BOUNTIES', economy.bounties,
       function (entry) { return entry.key; }, function (entry) { return entry.complete === true && !entry.claimed; }, 'bounties');
+    claims('economy', 'extra_bounty_claim', 'EXTRA DAILY CHALLENGES', economy.bonus_bounties,
+      function (entry) { return entry.key; }, function (entry) { return entry.complete === true && !entry.claimed; }, 'bonus-bounties');
+    claims('economy', 'weekly_bounty_claim', 'WEEKLY BOUNTY BLOCKS', economy.weekly_bounties,
+      function (entry) { return entry.key; }, function (entry) { return entry.complete === true && !entry.claimed; }, 'weekly-bounties');
     var bountyList = economy.bounties || [];
     if (bountyList.length) add('economy', 'bounty_progress', 'DAILY BOUNTY BOARD', bountyList.every(function (entry) { return entry.claimed; }) ? 'ALL CLAIMED' : 'TODAY’S TARGETS', 'progress', 'bounties',
       bountyList.filter(function (entry) { return entry.complete; }).length + '/' + bountyList.length + ' complete // ' + bountyList.filter(function (entry) { return entry.claimed; }).length + ' claimed. Account targets reset at 00:00 UTC.');

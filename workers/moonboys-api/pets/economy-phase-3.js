@@ -57,6 +57,10 @@ export const PET_COSMETIC_SINKS = deepFreeze({
   profile_frame: { cost: { style_tokens: 80, moon_crystals: 4 }, repeatable: false },
   victory_pose: { cost: { style_tokens: 120, arena_token: 15 }, repeatable: false },
   run_trail: { cost: { style_tokens: 100, spray_core: 5 }, repeatable: false },
+  neon_aura: { cost: { style_tokens: 110, moon_crystals: 5 }, repeatable: false },
+  street_sparks: { cost: { style_tokens: 90, spray_core: 4 }, repeatable: false },
+  gold_frame: { cost: { style_tokens: 145, moon_gold: 350 }, repeatable: false },
+  cyber_scanlines: { cost: { style_tokens: 80, battery_cell: 3 }, repeatable: false },
 });
 
 function hasOwn(object, key) {

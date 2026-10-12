@@ -4,6 +4,8 @@ import { DatabaseSync } from 'node:sqlite';
 import {
   PET_DAILY_BOUNTIES,
   PET_DAILY_BONUS_BOUNTIES,
+  PET_WEEKLY_BOUNTIES,
+  PET_FOOD_OFFERS,
   PET_ECONOMY_ROUTES,
   PET_EXPEDITION_TIERS,
   PET_MARKET_OFFERS,
@@ -11,6 +13,8 @@ import {
   formatPetEconomyValue,
   getPetDailyBounties,
   getPetDailyBonusBounties,
+  getPetWeeklyBounties,
+  getPetFoodOffers,
   getPetMarketOffers,
   resolvePetExpeditionReward,
 } from '../workers/moonboys-api/pets/economy-expansion.js';
@@ -49,12 +53,21 @@ assert.ok(PET_DAILY_BONUS_BOUNTIES.every(entry => /^bonus_/.test(entry.key) &&
   ['EASY', 'MEDIUM', 'HARD'].includes(entry.difficulty) &&
   entry.required >= 1 && entry.required <= 5), 'safe distinct bonus objectives');
 
+const isoWeeklyBoard = getPetWeeklyBounties('2026-W41');
+assert.equal(PET_WEEKLY_BOUNTIES.length, 10);
+assert.equal(isoWeeklyBoard.length, 3);
+assert.deepEqual(isoWeeklyBoard, getPetWeeklyBounties('2026-W41'));
+assert.equal(new Set(isoWeeklyBoard.map(entry=>entry.key)).size,3);
+assert.ok(PET_WEEKLY_BOUNTIES.every(entry=>entry.key.startsWith('week_') && ['EASY','MEDIUM','HARD'].includes(entry.difficulty)));
+assert.equal(PET_FOOD_OFFERS.length,5);
+assert.equal(getPetFoodOffers().length,5);
+
 const currentBetaEventTypes = new Set([
   'feed', 'play', 'clean', 'sleep', 'train', 'work', 'random_event', 'activity_claim',
   'run_complete', 'run_extract', 'adventure', 'daily_chest', 'kaiju_battle',
-  'use_item', 'use_item_reward',
+  'use_item', 'use_item_reward', 'weekly_boss', 'seasonal_boss',
 ]);
-for (const bounty of [...PET_DAILY_BOUNTIES, ...PET_DAILY_BONUS_BOUNTIES]) {
+for (const bounty of [...PET_DAILY_BOUNTIES, ...PET_DAILY_BONUS_BOUNTIES, ...PET_WEEKLY_BOUNTIES]) {
   assert.ok(bounty.event_types.every((eventType) => currentBetaEventTypes.has(eventType)), `${bounty.key} bounty must reference current beta actions only`);
 }
 
@@ -131,6 +144,16 @@ for (const entry of bonusAuditBounties) {
   assert.deepEqual(entry.reward, source.reward, 'audited bonus payment matches server authority');
   assert.equal(entry.difficulty, source.difficulty, 'difficulty is discoverable');
   assert.match(entry.claim_path, /bounty_claim/, 'the extra board exposes an actual claim path');
+}
+const weeklyAuditBounties = audit.surfaces.filter((entry) => entry.kind === 'weekly_bounty');
+assert.deepEqual(weeklyAuditBounties.map((entry) => entry.key), PET_WEEKLY_BOUNTIES.map((entry) => entry.key), 'all weekly challenges must be audited');
+assert.equal(new Set([...originalAuditBounties, ...bonusAuditBounties, ...weeklyAuditBounties].map((entry) => entry.key)).size,
+  PET_DAILY_BOUNTIES.length + PET_DAILY_BONUS_BOUNTIES.length + PET_WEEKLY_BOUNTIES.length, 'all bounty keys stay distinct');
+for (const surface of weeklyAuditBounties) {
+  const definition = PET_WEEKLY_BOUNTIES.find((entry) => entry.key === surface.key);
+  assert.deepEqual(surface.event_types, definition.event_types);
+  assert.deepEqual(surface.reward, definition.reward);
+  assert.match(surface.claim_path, /weekly_bounty_claim/);
 }
 assert.equal(audit.surfaces.find((entry) => entry.kind === 'currency' && entry.key === 'moon_crystals').sources.includes('daily_chest'), false,
   'audit currency metadata must not claim Daily Chest creates Moon Crystals');
@@ -237,6 +260,67 @@ assert.equal(invalidOldDay.accepted,false,'new payout cannot use a stale period'
 assert.equal(invalidOldDay.reason,'economy_day_changed');
 assert.equal(sqlite.prepare("SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id='economy-player'").get().moon_gold,
   beforeBonusGold+(activeBonus.reward.moon_gold||0),'stale/duplicate attempts never mint a second bonus');
+
+const weeklyBefore = await hooks.getPetEconomyState(d1,'economy-player');
+const weeklyTarget = weeklyBefore.weekly_bounties[0];
+assert.equal(weeklyBefore.weekly_bounties.length,3);
+for(let i=0;i<weeklyTarget.required;i++) {
+  const id='week-event-'+i;
+  sqlite.prepare(`INSERT INTO telegram_pet_events
+    (id,telegram_id,event_type,event_key,season_key,day_key,week_key,status,reason,metadata)
+    VALUES (?,'economy-player',?,?, 'test-season',?,?,'accepted','test','{}')`)
+    .run(id,weeklyTarget.event_types[0],id,currentDay,weeklyBefore.week_key);
+}
+const weeklyReady=(await hooks.getPetEconomyState(d1,'economy-player')).weekly_bounties.find(entry=>entry.key===weeklyTarget.key);
+assert.equal(weeklyReady.complete,true);
+const goldBeforeWeekly=sqlite.prepare("SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id='economy-player'").get().moon_gold;
+const weeklyPaid=await hooks.claimPetWeeklyBounty(d1,'economy-player',weeklyTarget.key,new Date(),weeklyBefore.week_key);
+assert.equal(weeklyPaid.accepted,true,weeklyPaid.reason);
+assert.equal((await hooks.claimPetWeeklyBounty(d1,'economy-player',weeklyTarget.key,new Date(),weeklyBefore.week_key)).duplicate,true);
+assert.equal(sqlite.prepare("SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id='economy-player'").get().moon_gold,
+  goldBeforeWeekly+(weeklyTarget.reward.moon_gold||0),'Weekly claim pays once');
+const staleWeekly=await hooks.claimPetWeeklyBounty(d1,'economy-player',weeklyTarget.key,new Date(),'2001-W01');
+assert.equal(staleWeekly.accepted,false);
+assert.equal(staleWeekly.reason,'bounty_week_changed');
+// Boss Pressure counts each committed seasonal hit, not just the later victory payout.
+// Pending/replayed attempts and the victory event cannot double-count a hit.
+const bossWeekNumber = Array.from({length:52}, (_,i)=>i+1).find(i=>{
+  const key='2026-W'+String(i).padStart(2,'0');
+  return key!==weeklyBefore.week_key && getPetWeeklyBounties(key).some(b=>b.key==='week_boss');
+});
+assert.ok(bossWeekNumber,'at least one separate 2026 week rotates Boss Pressure');
+const bossMonday = new Date(Date.UTC(2025,11,29+7*(bossWeekNumber-1)));
+const bossNow = new Date(bossMonday.getTime()+3*86400000);
+const bossWeekKey='2026-W'+String(bossWeekNumber).padStart(2,'0');
+for(let i=0;i<4;i++){
+  const day = new Date(bossMonday.getTime()+i*86400000).toISOString().slice(0,10);
+  sqlite.prepare(`INSERT INTO telegram_pet_system_events
+    (id,pet_id,telegram_id,season_key,system_key,action_key,period_key,status,payload_json)
+    VALUES (?,?,'economy-player',?,'seasonal_boss','test_raid',?,?, '{}')`)
+    .run('boss-attempt-'+i,readyState.pet.pet_id,readyState.pet.season_key,
+      'test-season:'+day,i===3?'pending':'completed');
+}
+const bossBefore = (await hooks.getPetEconomyState(d1,'economy-player',null,bossNow)).weekly_bounties.find(b=>b.key==='week_boss');
+assert.equal(bossBefore.progress,3,'three completed seasonal attempts count; a pending attempt does not');
+sqlite.prepare(`INSERT INTO telegram_pet_events
+  (id,telegram_id,event_type,event_key,season_key,day_key,week_key,status,reason,metadata)
+  VALUES ('boss-victory','economy-player','seasonal_boss','boss-victory','test-season',?,?,'accepted','test','{}')`)
+  .run(bossNow.toISOString().slice(0,10),bossWeekKey);
+assert.equal((await hooks.getPetEconomyState(d1,'economy-player',null,bossNow)).weekly_bounties.find(b=>b.key==='week_boss').progress,3,
+  'a victory payout event is not a second seasonal attempt');
+sqlite.prepare(`INSERT INTO telegram_pet_events
+  (id,telegram_id,event_type,event_key,season_key,day_key,week_key,status,reason,metadata)
+  VALUES ('boss-weekly','economy-player','weekly_boss','boss-weekly','test-season',?,?,'accepted','test','{}')`)
+  .run(bossNow.toISOString().slice(0,10),bossWeekKey);
+const bossReady=(await hooks.getPetEconomyState(d1,'economy-player',null,bossNow)).weekly_bounties.find(b=>b.key==='week_boss');
+assert.equal(bossReady.progress,4);
+assert.equal(bossReady.complete,true,'one weekly attempt plus three settled seasonal attempts completes Boss Pressure');
+
+const purchasedFood=(await hooks.getPetEconomyState(d1,'economy-player')).food_offers[0];
+assert.ok(purchasedFood,'food shop projects independent of rotating Moon Market stock');
+assert.equal((await hooks.buyPetMarketOffer(d1,'economy-player',purchasedFood.key)).accepted,true);
+assert.equal((await hooks.buyPetMarketOffer(d1,'economy-player',purchasedFood.key)).duplicate,true);
+assert.ok(sqlite.prepare("SELECT quantity FROM telegram_pet_inventory WHERE telegram_id='economy-player' AND asset_key=?").get(Object.keys(purchasedFood.reward.items)[0]).quantity>=2);
 
 const beforeEnergy = sqlite.prepare(`SELECT energy FROM telegram_pet_profiles WHERE telegram_id = 'economy-player'`).get().energy;
 const expeditionClaim = await hooks.runPetCrystalExpedition(d1, 'economy-player', new Date(), 'request-expedition-1');

@@ -74,6 +74,8 @@
   var companionTapSequence = 0;
   var localEmoteLabel = '';
   var localEmoteUntil = 0;
+  var radioRequestDraft = '';
+  var radioRequestSubmittedDay = '';
   var noticesBusy = false;
   var lastPassiveRefreshAt = 0;
   var reducedMotion = Boolean(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
@@ -1183,6 +1185,14 @@
             "Collect this completed daily bounty’s listed rewards. Progress is shared across your account.",
             "claim"
       ],
+      "weekly_bounty_claim": [
+            "Collect one completed Weekly Bounty Block. The account's UTC week and saved receipt prevent repeat payment.",
+            "claim"
+      ],
+      "radio_request": [
+            "Save one GraffPUNKS Radio request in the private host-review queue per UTC day. No guaranteed broadcast or rewards.",
+            "manage"
+      ],
       "market_buy": [
             "Spend the displayed currency on this whole bundle. Check the contents and storage space before buying.",
             "spend"
@@ -1303,6 +1313,9 @@
     'food-counter': ['◉', 'Eat cooked meals from your bag, each with different saved stat effects.'],
     'pet-emotes': ['✦', 'Make the pet react. These expressions have no rewards or costs.'],
     'bonus-bounties': ['★', 'Three extra daily challenges from easy to hard.'],
+    'weekly-bounties': ['★', 'Weekly bounty targets with one saved reward each.'],
+    'food-shop': ['◇', 'Buy cooked meals with the listed resources and eat them from Home.'],
+    'radio-requests': ['♫', 'Submit one moderated radio song or message request per day.'],
     details: ['◉', 'Companion stats, personality and equipped items.'],
     'pet-spaces': ['◈', 'Choose your active pet or unlock another permanent space.'],
     'season-slots': ['◈', 'Track lifetime progression and calendar competition progress.'],
@@ -2012,6 +2025,17 @@
       '<div class="button-grid one">' + routeButton('COOK MORE MEALS', { screen: 'economy', focus: 'crafting' }, 'Craft food using existing materials and unlock levels.') + '</div>', 'food-counter');
   }
 
+  function renderRadioRequestPanel() {
+    var submitted = radioRequestSubmittedDay === new Date(Date.now() + serverClockOffsetMs).toISOString().slice(0, 10);
+    return panel('GRAFFPUNKS RADIO // SEND A REQUEST',
+      '<div class="line muted">Suggest a track or short message for the Radio host. One saved request per Telegram account per UTC day. Requests go to a private host-review queue, not automatically on air. No currency cost or reward.</div>' +
+      (submitted ? '<div class="line complete">SAVED TODAY // HOST REVIEW PENDING</div>' : '') +
+      '<label class="line" for="radio-request-text">TRACK OR MESSAGE (4–160 CHARACTERS)</label>' +
+      '<textarea id="radio-request-text" class="terminal-input" rows="3" maxlength="160" placeholder="Artist — track, or your message">' + escapeHtml(radioRequestDraft) + '</textarea>' +
+      '<div class="button-grid one">' + button('SAVE RADIO REQUEST', 'radio_request', {}, { disabled: submitted, detail: 'Private once-daily host queue. No live broadcast is promised.' }) + '</div>',
+      'radio-requests');
+  }
+
   function renderPetEmotes() {
     var emotes = [
       ['wave', 'WAVE'], ['laugh', 'TICKLE / LAUGH'], ['cheer', 'CHEER'], ['stretch', 'STRETCH'], ['groove', 'GROOVE']
@@ -2039,7 +2063,7 @@
       return '<div class="ticker"><span>SECRET BOT // SIGNAL ' + number(incubation.progress) + '/' + number(incubation.target) + ' // IDENTITY FORMING //</span></div>' +
         panel('SECRET BOT CHAMBER', '<div class="line complete">THE SECRET BOT REMEMBERS HOW YOU TREAT IT.</div><div class="line muted">NEXT // ' + escapeHtml(homeNextLine()) + '</div><div class="line muted">Use at least three types of care to build the breakout signal. Identity stays hidden until Stage 3.</div>' + meter('BREAKOUT SIGNAL', Number(incubation.progress || 0) / Math.max(1, Number(incubation.target || 12)) * 100) + '<div class="line">WARM ' + number(signals.warm) + ' // TALK ' + number(signals.talk) + ' // INSPIRATION ' + number(signals.music) + ' // REST ' + number(signals.rest) + '</div><div class="button-grid">' + button('WARM BOT', 'incubate', { care_type: 'warm' }) + button('TALK TO BOT', 'incubate', { care_type: 'talk' }) + button('INSPIRE BOT', 'incubate', { care_type: 'music' }) + button('LET IT REST', 'incubate', { care_type: 'rest' }) + '</div><div class="button-grid one">' + button('HATCH BOT', 'hatch', {}, { disabled: !incubation.ready, statusLabel: incubation.ready ? '' : 'HATCH NOT READY' }) + '</div><div class="line muted">DAILY SIGNALS ' + number(incubation.actions_today) + '/' + number(incubation.daily_cap) + '</div>', 'incubation') +
         panel('SECRET BOT ACTIONS', '<div class="button-grid">' + button('ENERGY DRINK', 'energy_drink') + button('DANCE', 'dance') + button('CUDDLES', 'cuddles') + '</div><div class="line muted">Stat-only care. Does not advance incubation or award XP.</div>', 'care') +
-        renderPlayNow() + renderFoodCounter() + renderPetEmotes() + renderSeasonSlots();
+        renderPlayNow() + renderFoodCounter() + renderPetEmotes() + renderRadioRequestPanel() + renderSeasonSlots();
     }
     var equipped = ['food', 'toy', 'outfit', 'armor', 'weapon', 'charm'].map(function (slot) {
       return '<div class="line"><strong>' + slot.toUpperCase() + '</strong> // ' + escapeHtml(words(pet['equipped_' + slot] || (slot === 'food' ? 'basic food' : slot === 'toy' ? 'basic toy' : 'none equipped'))) + '</div>';
@@ -2048,7 +2072,7 @@
     return '<div class="ticker"><span>MOONPET OS // ' + escapeHtml(displayName) + ' // ' + escapeHtml(moonpetStageLabel(lifecycle, pet)) + ' // STREAK ' + number(pet.streak_days) + ' DAYS //</span></div>' +
       activePetSummary() +
       renderPlayNow() +
-      renderFoodCounter() + renderPetEmotes() +
+      renderFoodCounter() + renderPetEmotes() + renderRadioRequestPanel() +
       panel('VITAL SYSTEMS', '<div class="line muted">Higher is better on every meter. Fullness is the opposite of hunger: Feed raises fullness.</div>' + meter('HEALTH', pet.health) + meter('ENERGY', pet.energy) + meter('FULLNESS', pet.hunger, true) + meter('FUN', pet.happiness) + meter('CLEAN', pet.cleanliness), 'vitals') +
       panel('CARE CONSOLE', '<div class="button-grid">' +
         button('FEED', 'feed') + button('PLAY', 'play') + button('CLEAN', 'clean') + button('SLEEP', 'sleep') + button('TRAIN', 'train') +
@@ -3104,20 +3128,23 @@
   function renderEconomy() {
     var guidance = state.guidance || {};
     var economy = guidance.economy || {};
-    function renderBounty(bounty) {
+    function renderBounty(bounty,weekly) {
       var routes = window.MoonpetPlayOptions && window.MoonpetPlayOptions.bountyRouteOptions ? window.MoonpetPlayOptions.bountyRouteOptions(bounty, state) : [];
       if (state.lifecycle && state.lifecycle.phase === 'egg') routes = [{ title: 'HATCH TO WORK ON BOUNTIES', screen: 'home', focus: 'incubation' }];
       return '<div class="line ' + (bounty.complete ? 'complete' : '') + '">' + (bounty.difficulty ? escapeHtml(bounty.difficulty) + ' // ' : '') + escapeHtml(bounty.title) + ' ' + number(bounty.progress) + '/' + number(bounty.required) + (bounty.claimed ? ' // CLAIMED' : bounty.complete ? ' // READY TO CLAIM' : ' // IN PROGRESS') + '</div>' +
         '<div class="line muted">' + escapeHtml(bounty.detail || '') + ' // REWARD ' + escapeHtml(valueText(bounty.reward)) + '</div>' +
-        (bounty.complete && !bounty.claimed ? '<div class="button-grid one">' + button('CLAIM ' + bounty.title, 'bounty_claim', { bounty_key: bounty.key, day_key: economy.day_key }) + '</div>' : !bounty.claimed && !bounty.complete ? '<div class="button-grid">' + routes.map(function (route) { return routeButton(route.title, route, route.detail); }).join('') + '</div>' : '');
+        (bounty.complete && !bounty.claimed ? '<div class="button-grid one">' + button('CLAIM ' + bounty.title, weekly ? 'weekly_bounty_claim' : 'bounty_claim', weekly ? { bounty_key: bounty.key, week_key: economy.week_key } : { bounty_key: bounty.key, day_key: economy.day_key }) + '</div>' : !bounty.claimed && !bounty.complete ? '<div class="button-grid">' + routes.map(function (route) { return routeButton(route.title, route, route.detail); }).join('') + '</div>' : '');
     }
-    var bounties = (economy.bounties || []).map(renderBounty).join('');
-    var bonusBounties = (economy.bonus_bounties || []).map(renderBounty).join('');
-    var offers = (economy.market_offers || []).map(function (offer) {
+    var bounties = (economy.bounties || []).map(function (bounty) { return renderBounty(bounty, false); }).join('');
+    var bonusBounties = (economy.bonus_bounties || []).map(function (bounty) { return renderBounty(bounty, false); }).join('');
+    var weeklyBounties = (economy.weekly_bounties || []).map(function (bounty) { return renderBounty(bounty, true); }).join('');
+    function renderMarketOffer(offer) {
       var full = offer.capacity && !offer.capacity.available;
       var capacityDetail = full ? ' // MAKE SPACE FOR ' + offer.capacity.blocked.map(function (entry) { return number(entry.amount) + ' ' + String(entry.key).replace(/_/g, ' ') + ' (' + number(entry.owned) + '/' + number(entry.limit) + ' stored)'; }).join(' + ') + '. Whole bundle required; nothing is charged while full.' : '';
       return button(offer.title, 'market_buy', { offer_key: offer.key, day_key: economy.day_key }, { disabled: !offer.unlocked || !offer.affordable || offer.purchased || full || offer.available === false, statusLabel: offer.purchased ? 'SOLD' : full ? 'STORAGE FULL' : '', resourceRequired: offer.unlocked && !offer.affordable && !offer.purchased && !full, cost: offer.cost, reward: offer.reward, rewardLabel: 'GIVES', missing: !offer.affordable && !offer.purchased ? missingCostText(offer.cost) : '', detail: 'UNLOCK LEVEL ' + number(offer.min_level) + ' // ' + (offer.detail || '') + capacityDetail });
-    }).join('');
+    }
+    var offers = (economy.market_offers || []).map(renderMarketOffer).join('');
+    var foodOffers = (economy.food_offers || []).map(renderMarketOffer).join('');
     var shop = (guidance.shop_items || []).map(function (item) {
       return button((item.owned && !item.equipped ? 'EQUIP FREE // ' : '') + item.title, item.owned ? 'equip' : 'buy', { item_key: item.key, pet_id: state.pet.pet_id }, { disabled: !item.unlocked || (!item.owned && !item.affordable) || item.equipped, statusLabel: item.equipped ? 'EQUIPPED' : !item.unlocked ? 'LEVEL ' + number(item.min_level) + ' REQUIRED' : item.owned ? 'OWNED' : item.affordable ? 'CAN BUY NOW' : '', resourceRequired: item.unlocked && !item.owned && !item.affordable && !item.equipped, cost: item.owned ? {} : item.cost, missing: !item.owned && !item.affordable ? missingCostText(item.cost) : '', detail: 'UNLOCK LEVEL ' + number(item.min_level) + ' // YOUR LEVEL ' + number(state.pet.level) + ' // ' + (item.description || '') + (item.owned ? ' // FREE SWITCH. Keeps upgrades and mastery; no XP or daily shopping credit.' : ' // Buy once; permanent gear survives resets.') });
     }).join('');
@@ -3180,7 +3207,7 @@
         '<div class="line muted">' + (bonuses ? 'ACTIVE ' + escapeHtml(bonuses) : 'MISSING ' + escapeHtml((set.missing || []).map(words).join(' / ') || 'EQUIP OWNED SET PIECES')) + '</div>';
     }).join('');
     var cosmetics = (live.cosmetics || []).filter(function (item) {
-      return ['profile_frame', 'victory_pose', 'run_trail'].includes(item.key);
+      return ['profile_frame', 'victory_pose', 'run_trail', 'neon_aura', 'street_sparks', 'gold_frame', 'cyber_scanlines'].includes(item.key);
     }).map(function (item) {
       var loadout = state.style_loadout || {}, equipped = (loadout.equipped || []).includes(item.key);
       return '<div class="line">' + escapeHtml(words(item.key)) + '</div><div class="line muted">' + escapeHtml((loadout.details || {})[item.key] || '') + '</div>' + (item.unlocked
@@ -3194,8 +3221,10 @@
       panel('RELIC VAULT', '<div class="line muted">Owned relics activate automatically in new Contract runs. Their route effects are listed below and saved at run start; new drops apply on the next run. Standard Moon Run and Daily Run keep their separate rules.</div>' + (state.relics_available === false ? '<div class="line danger">RELIC VAULT TEMPORARILY UNAVAILABLE. Refresh to try again. Your collection has not been cleared.</div>' : relics || '<div class="line muted">NO RELICS RECOVERED.</div>'), 'relics') +
       panel('DAILY BOUNTIES', '<div class="line muted">Four account-wide targets per UTC day. Only accepted actions count. The Energy Drink, Dance and Cuddles care buttons do not count. Claim completed bounties before 00:00 UTC; unclaimed bounty targets expire when the board changes. Already paid rewards stay paid. Contracts remain available between resets.</div>' + (bounties || '<div class="line muted">NO BOUNTIES.</div>'), 'bounties') +
       panel('EXTRA DAILY CHALLENGES // EASY TO HARD', '<div class="line muted">Three bonus targets each UTC day, additional to the four original Bounties and seven Daily Missions. Accepted actions only; a completed target may be claimed once. These do not replace the Daily Journey or Weekly Crest.</div>' + (bonusBounties || '<div class="line muted">BONUS BOARD SYNCING.</div>'), 'bonus-bounties') +
+      panel('WEEKLY BOUNTY BLOCKS', '<div class="line muted">Three bonus account targets per UTC Monday–Sunday week. Separate from the pet’s creation-based Weekly Journey and existing Boss rotation. Accepted actions count once, and completed Blocks claim one currency reward each. Unclaimed targets expire at the next UTC Monday.</div>' + (weeklyBounties || '<div class="line muted">WEEKLY BOARD SYNCING.</div>'), 'weekly-bounties') +
       panel('CRYSTAL EXPEDITIONS // CHOOSE A DESTINATION', expeditionBody, 'expedition') +
       panel('MOON MARKET', '<div class="line muted">Paid bundles must fit in full. Use items or spend materials before buying when storage is full.</div><div class="button-grid one">' + offers + '</div><div class="button-grid">' + routeButton('OPEN BAG', { screen: 'economy', focus: 'inventory' }) + routeButton('OPEN CRAFTING', { screen: 'economy', focus: 'crafting' }) + '</div>', 'market') +
+      panel('FOOD SHOP // DAILY STOCK', '<div class="line muted">Five cooked-meal bundles, each available once per UTC day. Buy the complete bundle with its listed resources, then eat it from your saved Bag or Home Food Counter. These are consumables, not extra Care Feed attempts.</div><div class="button-grid one">' + (foodOffers || '<div class="line muted">FOOD OFFERS SYNCING.</div>') + '</div>', 'food-shop') +
       panel('PERMANENT SHOP', '<div class="line muted">Buy when this pet meets the listed level and you have every listed resource. Owned gear switches free once its level gate is met. Equipped gear is already in use; purchases and upgrades persist across resets.</div><div class="button-grid">' + shop + '</div>', 'shop') + panel('STYLE LAB // EQUIP YOUR LOOK', '<div class="line muted">Unlock once, then equip or remove each style free for this pet. Cosmetics change the canvas presentation, not stats. Existing owned styles work immediately. Callsign editing stays free in Profile.</div><div class="button-grid one">' + routeButton('EDIT CALLSIGN', { screen: 'profile', focus: 'callsign' }, 'Use the existing name control; no badge purchase is required.') + '</div><div class="button-grid">' + cosmetics + '</div>', 'style-lab') +
       panel('INVENTORY', inventory || '<div class="line muted">BAG EMPTY.</div>', 'inventory') +
       panel('MOON GOLD TRADE', '<div class="line muted">Game currency only. A loss spends the selected stake. Trades share a five-minute account cooldown.</div><div class="button-grid three">' + (state.trade && state.trade.offers || []).map(function (offer) { return button(offer.wager + ' GOLD', 'trade', { wager: offer.wager }, { disabled: !offer.available, cooldown: state.trade.cooldown, resourceRequired: !offer.affordable, detail: offer.affordable ? '' : 'Requires ' + number(offer.wager) + ' Moon Gold.' }); }).join('') + '</div>', 'trade');
@@ -3986,6 +4015,10 @@
       if (['adventure', 'random_event', 'event_recover'].includes(action)) rememberChoiceResult(action, data.result, stateBeforeAction, requestPayload);
       // Record a confirmed sleep/wake preference on the pet that took the
       // action, before a newer projection can select a different companion.
+      if (actionAccepted && action === 'radio_request') {
+        radioRequestSubmittedDay = String(data.result.day_key || '');
+        radioRequestDraft = '';
+      }
       if (actionAccepted && actionFamily === 'sleep') setSleepLatch(true, stateBeforeAction);
       else if (authoritativeSleepClear && actionAccepted) setSleepLatch(false, stateBeforeAction);
 
@@ -4126,6 +4159,9 @@
     else if (utility.dataset.utility === 'sync') syncState();
   });
 
+  screen.addEventListener('input', function (event) {
+    if (event.target && event.target.id === 'radio-request-text') radioRequestDraft = String(event.target.value || '').slice(0, 160);
+  });
   screen.addEventListener('click', function (event) {
     var emoteButton = event.target.closest('[data-local-emote]');
     if (emoteButton) {
@@ -4203,6 +4239,14 @@
       if (sideGoal) payload.side_goal = sideGoal.value;
       var routeFormat = document.getElementById('contract-format');
       if (routeFormat) payload.format = routeFormat.value;
+    }
+    if (target.dataset.action === 'radio_request') {
+      var submittedText = radioRequestDraft.replace(/\s+/g, ' ').trim();
+      if (submittedText.length < 4 || submittedText.length > 160) {
+        tell('RADIO REQUEST MUST CONTAIN 4–160 CHARACTERS.', 'danger');
+        return;
+      }
+      payload.message = submittedText;
     }
     runAction(target.dataset.action, payload, target);
   });
@@ -4692,6 +4736,17 @@
     var equipped = state && state.style_loadout && state.style_loadout.equipped || [];
     if (!equipped.length) return;
     ctx.save();
+    if (!foreground && equipped.includes('neon_aura')) {
+      ctx.globalAlpha = 0.38;
+      drawPixelRect(97, 50, 2, 138, '#61f5ff');
+      drawPixelRect(220, 50, 2, 138, '#f6a7ff');
+      drawPixelRect(100, 47, 118, 2, '#61f5ff');
+      drawPixelRect(100, 188, 118, 2, '#f6a7ff');
+    }
+    if (!foreground && equipped.includes('cyber_scanlines')) {
+      ctx.globalAlpha = 0.14;
+      for (var scan = 42; scan < 190; scan += 8) drawPixelRect(90, scan, 140, 1, '#d0f2f8');
+    }
     if (!foreground && equipped.includes('run_trail') && activeScreen === 'explore') {
       for (var i = 0; i < 8; i++) {
         ctx.fillStyle = i % 2 ? '#f6a7ff' : '#61f5ff';
@@ -4700,6 +4755,18 @@
       }
     }
     ctx.globalAlpha = 1;
+    if (foreground && equipped.includes('street_sparks')) {
+      ctx.globalAlpha = 0.75;
+      for (var spark = 0; spark < 12; spark += 1) {
+        var shift = reducedMotion ? 0 : Math.sin(time / 420 + spark * 2) * 5;
+        drawPixelRect(93 + (spark * 23) % 135, 46 + (spark * 19) % 127 + shift, 2, 2, spark % 2 ? '#ffda6b' : '#ff54cf');
+      }
+    }
+    ctx.globalAlpha = 1;
+    if (foreground && equipped.includes('gold_frame')) {
+      ctx.strokeStyle = '#e2ad39'; ctx.lineWidth = 3; ctx.strokeRect(2, 2, 316, 216);
+      ctx.strokeStyle = '#fff0a0'; ctx.lineWidth = 1; ctx.strokeRect(6, 6, 308, 208);
+    }
     if (foreground && equipped.includes('profile_frame')) {
       ctx.strokeStyle = '#f6a7ff'; ctx.lineWidth = 2; ctx.strokeRect(3, 3, 314, 214);
       ctx.strokeStyle = '#61f5ff'; ctx.strokeRect(6, 6, 308, 208);

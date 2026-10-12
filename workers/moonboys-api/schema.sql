@@ -2149,7 +2149,7 @@ CREATE INDEX IF NOT EXISTS idx_pet_finales_owner ON telegram_pet_season_finales(
 CREATE TABLE IF NOT EXISTS telegram_pet_style_loadouts (
   pet_id TEXT NOT NULL,
   telegram_id TEXT NOT NULL,
-  cosmetic_key TEXT NOT NULL CHECK(cosmetic_key IN ('rename_badge','profile_frame','victory_pose','run_trail')),
+  cosmetic_key TEXT NOT NULL CHECK(cosmetic_key IN ('rename_badge','profile_frame','victory_pose','run_trail','neon_aura','street_sparks','gold_frame','cyber_scanlines')),
   enabled INTEGER NOT NULL DEFAULT 1 CHECK(enabled IN (0,1)),
   PRIMARY KEY(pet_id,cosmetic_key),
   FOREIGN KEY(pet_id) REFERENCES telegram_pet_instances(pet_id)

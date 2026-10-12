@@ -84,7 +84,7 @@ assert.equal(resolvePetRareDrop('missing', 0.5), null);
 assert.throws(() => { PET_RARE_DROP_TABLES.job[0].weight = 0; }, TypeError, 'drop weights must reject mutation');
 assert.equal(resolvePetRareDrop('job', 0), 'scrap_metal', 'failed mutation must not alter deterministic drop resolution');
 
-assert.ok(Object.keys(PET_COSMETIC_SINKS).length === 3, 'only the three working cosmetics remain');
+assert.ok(Object.keys(PET_COSMETIC_SINKS).length === 7, 'all seven renderable styles are purchasable');
 assert.equal(PET_COSMETIC_SINKS.profile_frame.repeatable, false);
 assert.ok(Object.isFrozen(PET_COSMETIC_SINKS.profile_frame.cost), 'cosmetic cost objects must be frozen');
 assert.throws(() => { PET_COSMETIC_SINKS.profile_frame.cost.style_tokens = 0; }, TypeError, 'cosmetic costs must reject mutation');
@@ -128,6 +128,12 @@ for (const [itemKey, recipeKey] of [['street_pizza','pizza_night'], ['moon_burge
   assert.equal(item.classification, PET_ECONOMY_REACHABILITY_CLASSIFICATIONS.LIVE_REACHABLE);
   const recipe = audit.surfaces.find((entry) => entry.kind === 'recipe' && entry.key === recipeKey);
   assert.equal(recipe?.output?.item_key, itemKey, itemKey + ' source must agree with its recipe output');
+}
+const foodAudit = audit.surfaces.filter((entry) => entry.kind === 'food_offer');
+assert.equal(foodAudit.length, 5, 'all five Food Shop bundles must be audited');
+for (const surface of foodAudit) {
+  assert.equal(surface.classification, PET_ECONOMY_REACHABILITY_CLASSIFICATIONS.LIVE_REACHABLE);
+  assert.match(surface.purchase_path, /market_buy/);
 }
 for (const item of audit.canonical_items) {
   assert.equal(item.classification, PET_ECONOMY_REACHABILITY_CLASSIFICATIONS.LIVE_REACHABLE, `${item.key} must have a current beta source`);

@@ -1513,7 +1513,7 @@ assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20261011-ui-v1/);
 assert.doesNotMatch(html, /moonpet-art-resolver\.js/, 'the game must not load the retired static background resolver');
 assert.match(html, /\/js\/moonpet-bot-art-loader\.js\?v=20261006-live-refresh-v5/);
 assert.match(html, /\/js\/moonpet-bot-art-renderer\.js\?v=20261002-audit-recovery-v2/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261011-content-v1/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261011-economy-v1/);
 assert.match(html, /role="button" aria-label="Interact with your animated Moonpet"/);
 assert.match(client, /data-utility="guide">HOW TO PLAY/);
 const guideMarkupSource = extractTestExport(client, 'guideMarkup');
@@ -1804,7 +1804,7 @@ for (const sdkInitData of [expired, tampered, 'auth_date=invalid&hash=' + 'a'.re
   assert.equal(entry.requests.length, 3, 'Read-only startup state requests retain their transient retry policy');
 }
 assert.match(html, /\/js\/api-config\.js\?v=20260813-first-party-api/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261011-content-v1/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261011-economy-v1/);
 // Season slot UI: timing, account/pet separation, unlock affordance, switching, and rejection copy.
 assert.match(client, /function renderSeasonSlots\(\)/, 'Mini App must render a focused season-slot summary');
 assert.match(client, /function render\(options\) \{\s*var editableState = options && options\.discardCallsignDraft \? null : captureEditableState\(\);[\s\S]*restoreEditableState\(editableState\);/, 'render must preserve only drafts that were not explicitly discarded');
@@ -2151,7 +2151,7 @@ for (const phase of ['egg', 'young']) {
   assert.equal(motions[0].payload.source, 'local_emote', 'emotes stay local and free');
   assert.equal(context.localEmoteLabel, 'STRETCH!', 'Stage 0 receives the displayed expression');
 }
-assert.match(client, /renderPlayNow\(\) \+ renderFoodCounter\(\) \+ renderPetEmotes\(\) \+ renderSeasonSlots\(\)/,
+assert.match(client, /renderPlayNow\(\) \+ renderFoodCounter\(\) \+ renderPetEmotes\(\) \+ renderRadioRequestPanel\(\) \+ renderSeasonSlots\(\)/,
   'the egg chamber must actually render the free emote controls');
 assert.match(drawWorldSource, /!hatchArtTransitionActive\(renderTime\)/,
   'egg emote caption is visible but never masks the hatch reveal');

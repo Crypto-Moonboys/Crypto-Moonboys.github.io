@@ -4,7 +4,7 @@ import vm from 'node:vm';
 import { createRequire } from 'node:module';
 import { DatabaseSync } from 'node:sqlite';
 import { getDailyMoonRunSummary } from '../workers/moonboys-api/pets/daily-moon-run.js';
-import { PET_DAILY_BOUNTIES } from '../workers/moonboys-api/pets/economy-expansion.js';
+import { PET_DAILY_BOUNTIES, PET_WEEKLY_BOUNTIES } from '../workers/moonboys-api/pets/economy-expansion.js';
 import { previewEncounterChoice } from '../workers/moonboys-api/pets/choice-preview.js';
 import { __petMediaTestHooks as hooks } from '../workers/moonboys-api/worker.js';
 
@@ -227,6 +227,18 @@ const bountyTargets = {
 };
 for (const bounty of PET_DAILY_BOUNTIES) assert.deepEqual(options.bountyRoutes(bounty).map((target) => target.focus), bountyTargets[bounty.key]);
 assert.deepEqual(options.bountyRoutes({ event_types: ['__proto__', 'unknown'] }), []);
+const bossPressure = PET_WEEKLY_BOUNTIES.find((bounty) => bounty.key === 'week_boss');
+assert.deepEqual(options.bountyRoutes(bossPressure).map(({ screen, focus, title }) => ({ screen, focus, title })), [
+  { screen: 'explore', focus: 'weekly-boss', title: 'OPEN WEEKLY BOSS' },
+  { screen: 'explore', focus: 'seasonal-boss', title: 'OPEN SEASONAL RAID' },
+], 'Boss Pressure offers navigation for both qualifying encounters');
+const bossPressureState = { ...snapshot, guidance: { weekly_boss: { available: true } },
+  live_systems: { seasonal_boss: { available: true, choices: [{ key: 'strike', energy: 18 }] } } };
+assert.deepEqual(options.bountyRouteOptions(bossPressure, bossPressureState).map((route) => route.available), [true, true]);
+assert.deepEqual(options.bountyRouteOptions(bossPressure, { ...bossPressureState, pet: { energy: 0 } }).map((route) => route.available), [true, false],
+  'an unavailable raid energy choice does not appear ready');
+assert.deepEqual(options.bountyRouteOptions(bossPressure, { ...bossPressureState,
+  guidance: { weekly_boss: { available: false } }, live_systems: { seasonal_boss: { available: false } } }).map((route) => route.available), [false, false]);
 const careTarget = { ...PET_DAILY_BOUNTIES[0], complete: false, progress: 1, claimed: false };
 const claimTarget = { ...PET_DAILY_BOUNTIES[2], complete: true, progress: 1, claimed: false };
 const targeted = { ...snapshot, guidance: { economy: { bounties: [careTarget, claimTarget] }, activity: { ready: true } } };
@@ -377,7 +389,7 @@ const eggHome = client.slice(client.indexOf("if (lifecycle.phase === 'egg') {", 
 for (const action of ['energy_drink', 'dance', 'cuddles']) assert.ok(eggHome.includes("'" + action + "'"));
 const html = read('moonpet-game.html');
 assert.ok(html.indexOf('/js/moonpet-play-options.js') < html.indexOf('/js/moonpet-mini-app.js'));
-assert.ok(html.includes('/js/moonpet-play-options.js?v=20261011-bounty-v1'), 'the bounty recommendation fix reaches players with a fresh asset URL');
+assert.ok(html.includes('/js/moonpet-play-options.js?v=20261011-economy-v1'), 'the bounty recommendation fix reaches players with a fresh asset URL');
 
 // Execute the shipped fast-path handler with the refresh response held open.
 // A transaction race must refresh immediately and block a second mutation.
