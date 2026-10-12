@@ -690,7 +690,7 @@ for (const moduleScreen of ['missions', 'profile']) {
     words: value => value, tell: () => {}, beginStateRequest: () => calls.length,
     stateRequestGate: { isCurrent: () => true }, readSleepLatch: () => false,
     hatchArtTransitionActive: () => false, selectBotArtForState: () => Promise.resolve(), scheduleCooldownRefresh: () => {},
-    renderHud: () => {}, renderNav: () => {}, renderCanvasTools: () => {},
+    renderHud: () => {}, renderNav: () => {}, syncViewportHeight: () => {}, renderCanvasTools: () => {},
     captureEditableState: () => null, rememberPanels: () => {}, restoreEditableState: () => {},
     panel: (_, body) => body, routeButton: () => '<button data-jump="home">RETURN HOME</button>', renderMenuStatus: () => '', renderRewardLifecycle: () => '', renderRecommended: () => '', renderPetSpaces: () => '',
     showPendingNotices: async () => {}, applyRequestedFocus: () => {},
