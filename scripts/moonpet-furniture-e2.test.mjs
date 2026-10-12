@@ -4,6 +4,7 @@ import test from 'node:test';
 import vm from 'node:vm';
 import { fixture, hooks, currentSeason } from './moonpet-audit-regression-fixture.mjs';
 import { PET_HOME_FURNITURE, PET_FURNITURE_SLOTS, readPetFurnitureState } from '../workers/moonboys-api/pets/home-furniture.js';
+import { PET_ACCOUNT_WALLET_RECOVERY_REQUIRED_SOURCE, PET_ACCOUNT_WALLET_RECOVERY_REQUIRED_EVENT_KEY } from '../workers/moonboys-api/pets/wallet-reconciliation.js';
 import { buildPetEconomyReachabilityAudit } from '../workers/moonboys-api/pets/economy-reachability-audit.js';
 
 const migration=fs.readFileSync(new URL('../workers/moonboys-api/migrations/094_moonpet_home_furniture.sql',import.meta.url),'utf8');
@@ -44,6 +45,20 @@ test('purchase debits once, duplicate is idempotent, invalid prices and insuffic
   assert.equal(receipt.price_gold,120);
   assert.ok(receipt.purchase_event_key);
   assert.equal(f.sql.prepare('SELECT COUNT(*) AS c FROM telegram_pet_furniture_unlocks').get().c,1);
+  f.sql.close();
+});
+
+test('pending wallet recovery freezes furniture Gold purchases',async()=>{
+  const f=fixture('furniture-wallet-freeze');
+  const original=f.sql.prepare('SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id=?').get(f.owner).moon_gold;
+  f.sql.prepare("INSERT INTO telegram_pet_reward_claims(claim_id,pet_id,telegram_id,source,idempotency_key,day_key,status,requested_rewards,applied_rewards,metadata) " +
+    "VALUES (?,NULL,?,?,?,'2026-10-12','pending','{}','{}','{}')")
+    .run('furniture-recovery-marker',f.owner,PET_ACCOUNT_WALLET_RECOVERY_REQUIRED_SOURCE,PET_ACCOUNT_WALLET_RECOVERY_REQUIRED_EVENT_KEY);
+  const blocked=await f.act({action:'furniture_buy',item_key:'neon_lamp'});
+  assert.equal(blocked.accepted,false);
+  assert.equal(blocked.reason,'wallet_reconciliation_recovery_pending');
+  assert.equal(f.sql.prepare('SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id=?').get(f.owner).moon_gold,original);
+  assert.equal(f.sql.prepare('SELECT COUNT(*) AS c FROM telegram_pet_furniture_unlocks').get().c,0);
   f.sql.close();
 });
 
