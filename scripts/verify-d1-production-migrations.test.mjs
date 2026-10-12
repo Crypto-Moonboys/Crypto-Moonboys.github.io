@@ -15,6 +15,7 @@ const schema = fs.readFileSync(new URL('../workers/moonboys-api/schema.sql', imp
 const remoteQueryStep = workflow.match(/- name: Query production migration records[\s\S]*?(?=\n\s+- name: Report sanitised query failure)/)?.[0] || '';
 assert.ok(workflow.includes('{"name":"090_telegram_website_sessions.sql"}'), 'known-evidence workflow fixture must include the website authentication migration');
 assert.ok(workflow.includes('{"name":"093_moonpet_radio_group_delivery_index.sql"}'), 'known-evidence workflow fixture must include the Radio delivery index migration');
+assert.ok(workflow.includes('{"name":"095_moonpet_home_garden.sql"}'), 'known-evidence workflow fixture must include the Home E3 garden migration');
 const remoteIdentityAuditStep = workflow.match(/- name: Query production identity authority violations[\s\S]*?(?=\n\s+- name: Upload sanitised evidence)/)?.[0] || '';
 const pullRequestPaths = workflow.match(/pull_request:\s*\n\s*paths:([\s\S]*?)\n\s*workflow_dispatch:/)?.[1] || '';
 for (const name of [
@@ -36,10 +37,25 @@ for (const name of [
   '092_moonpet_house_layouts.sql',
   '093_moonpet_radio_group_delivery_index.sql',
   '094_moonpet_home_furniture.sql',
+  '095_moonpet_home_garden.sql',
 ]) {
   assert.ok(pullRequestPaths.includes('workers/moonboys-api/migrations/' + name));
   assert.ok(remoteQueryStep.includes(name));
 }
+
+const gardenMigration = '095_moonpet_home_garden.sql';
+assert.ok(REQUIRED_D1_MIGRATIONS.includes(gardenMigration));
+assert.ok(request.required_migrations.includes(gardenMigration));
+assert.ok(production.d1_databases.wikicoms.required_migrations.includes(gardenMigration));
+assert.ok(pullRequestPaths.includes('workers/moonboys-api/migrations/' + gardenMigration));
+assert.ok(remoteQueryStep.includes(gardenMigration));
+assert.throws(() => validateRequest({ ...request, required_migrations: request.required_migrations.filter(n => n !== gardenMigration) }),
+  /missing required migrations: 095_moonpet_home_garden\.sql/);
+assert.throws(() => verifyD1MigrationPayload([{ success: true, results: request.required_migrations.filter(n => n !== gardenMigration).map(n => ({ name: n })) }], request),
+  /missing migrations: 095_moonpet_home_garden\.sql/);
+assert.match(schema, /CREATE TABLE IF NOT EXISTS telegram_pet_garden_plots[\s\S]*crop_key TEXT NOT NULL CHECK\(crop_key='garden_veggies'\)/);
+assert.match(schema, /CREATE TABLE IF NOT EXISTS telegram_pet_garden_harvests[\s\S]*PRIMARY KEY\(telegram_id,event_key\)/);
+
 const radioDeliveryIndexMigration = '093_moonpet_radio_group_delivery_index.sql';
 assert.ok(REQUIRED_D1_MIGRATIONS.includes(radioDeliveryIndexMigration));
 assert.ok(request.required_migrations.includes(radioDeliveryIndexMigration));
