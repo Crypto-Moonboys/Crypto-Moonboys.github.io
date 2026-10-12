@@ -1190,7 +1190,7 @@
             "claim"
       ],
       "house_place": [
-            "Save this free room change for the current pet. No XP or currency awarded.",
+            "Save this free Home appearance behind the current pet on the main canvas. No XP or currency awarded.",
             "manage"
       ],
       "radio_request": [
@@ -1320,7 +1320,7 @@
     'weekly-bounties': ['★', 'Weekly bounty targets with one saved reward each.'],
     'food-shop': ['◇', 'Buy cooked meals with the listed resources and eat them from Home.'],
     'radio-requests': ['♫', 'Submit one moderated radio song or message request per day.'],
-    'pet-house': ['⌂', 'Decorate and view the room saved to this pet.'],
+    'pet-house': ['⌂', 'Edit the saved Home behind this pet on the main canvas.'],
     details: ['◉', 'Companion stats, personality and equipped items.'],
     'pet-spaces': ['◈', 'Choose your active pet or unlock another permanent space.'],
     'season-slots': ['◈', 'Track lifetime progression and calendar competition progress.'],
@@ -2070,7 +2070,7 @@
         panel('SECRET BOT CHAMBER', '<div class="line complete">THE SECRET BOT REMEMBERS HOW YOU TREAT IT.</div><div class="line muted">NEXT // ' + escapeHtml(homeNextLine()) + '</div><div class="line muted">Use at least three types of care to build the breakout signal. Identity stays hidden until Stage 3.</div>' + meter('BREAKOUT SIGNAL', Number(incubation.progress || 0) / Math.max(1, Number(incubation.target || 12)) * 100) + '<div class="line">WARM ' + number(signals.warm) + ' // TALK ' + number(signals.talk) + ' // INSPIRATION ' + number(signals.music) + ' // REST ' + number(signals.rest) + '</div><div class="button-grid">' + button('WARM BOT', 'incubate', { care_type: 'warm' }) + button('TALK TO BOT', 'incubate', { care_type: 'talk' }) + button('INSPIRE BOT', 'incubate', { care_type: 'music' }) + button('LET IT REST', 'incubate', { care_type: 'rest' }) + '</div><div class="button-grid one">' + button('HATCH BOT', 'hatch', {}, { disabled: !incubation.ready, statusLabel: incubation.ready ? '' : 'HATCH NOT READY' }) + '</div><div class="line muted">DAILY SIGNALS ' + number(incubation.actions_today) + '/' + number(incubation.daily_cap) + '</div>', 'incubation') +
         panel('SECRET BOT ACTIONS', '<div class="button-grid">' + button('ENERGY DRINK', 'energy_drink') + button('DANCE', 'dance') + button('CUDDLES', 'cuddles') + '</div><div class="line muted">Stat-only care. Does not advance incubation or award XP.</div>', 'care') +
         renderPlayNow() + renderFoodCounter() + renderPetEmotes() + renderRadioRequestPanel() +
-        '<div class="button-grid one">' + routeButton('VISIT PET HOUSE', { screen:'profile', focus:'pet-house' }, 'View a saved room for this pet. No cost.') + '</div>' + renderSeasonSlots();
+        '<div class="button-grid one">' + routeButton('CUSTOMIZE HOME', { screen:'profile', focus:'pet-house' }, 'Edit the Home shown behind this pet. No cost.') + '</div>' + renderSeasonSlots();
     }
     var equipped = ['food', 'toy', 'outfit', 'armor', 'weapon', 'charm'].map(function (slot) {
       return '<div class="line"><strong>' + slot.toUpperCase() + '</strong> // ' + escapeHtml(words(pet['equipped_' + slot] || (slot === 'food' ? 'basic food' : slot === 'toy' ? 'basic toy' : 'none equipped'))) + '</div>';
@@ -2080,7 +2080,7 @@
       activePetSummary() +
       renderPlayNow() +
       renderFoodCounter() + renderPetEmotes() + renderRadioRequestPanel() +
-      '<div class="button-grid one">' + routeButton('VISIT PET HOUSE', { screen:'profile', focus:'pet-house' }, 'View a saved room for this pet. No cost.') + '</div>' +
+      '<div class="button-grid one">' + routeButton('CUSTOMIZE HOME', { screen:'profile', focus:'pet-house' }, 'Edit the Home shown behind this pet. No cost.') + '</div>' +
       panel('VITAL SYSTEMS', '<div class="line muted">Higher is better on every meter. Fullness is the opposite of hunger: Feed raises fullness.</div>' + meter('HEALTH', pet.health) + meter('ENERGY', pet.energy) + meter('FULLNESS', pet.hunger, true) + meter('FUN', pet.happiness) + meter('CLEAN', pet.cleanliness), 'vitals') +
       panel('CARE CONSOLE', '<div class="button-grid">' +
         button('FEED', 'feed') + button('PLAY', 'play') + button('CLEAN', 'clean') + button('SLEEP', 'sleep') + button('TRAIN', 'train') +
@@ -2229,6 +2229,12 @@
     if (authenticationFailure || !nextState || !stateRequestGate.isCurrent(requestGeneration)) return false;
     var serverTime = Date.parse(nextState.server_time || nextState.cooldowns && nextState.cooldowns.server_time || '');
     if (Number.isFinite(serverTime)) serverClockOffsetMs = serverTime - Date.now();
+    // Missions defers cosmetic reads; retain only the same pet's confirmed Home.
+    if (nextState.hydration && nextState.hydration.mode === 'missions' && nextState.pet_house === undefined &&
+        state && state.pet_house && state.pet && nextState.pet && state.pet.pet_id === nextState.pet.pet_id &&
+        state.pet_house.pet_id === nextState.pet.pet_id) {
+      nextState = Object.assign({}, nextState, { pet_house: state.pet_house });
+    }
     state = nextState;
     petActionRefreshRequired = false;
     fastActionStateDirty = false;
@@ -3261,14 +3267,9 @@
   function renderPetHouse() {
     var house = state.pet_house;
     if (!house || house.available !== true || house.pet_id !== state.pet.pet_id)
-      return panel('PET HOUSE // SAVED ROOM', '<div class="line muted">ROOM UNAVAILABLE. REFRESH PROFILE TO READ THE SELECTED PET SAVE.</div>', 'pet-house');
+      return panel('HOME CUSTOMIZATION', '<div class="line muted">HOME SAVE UNAVAILABLE. REFRESH TO READ THE SELECTED PET SAVE.</div><div class="button-grid one">' + routeButton('BACK TO HOME', { screen:'home' }, 'Return to your pet on the main canvas.') + '</div>', 'pet-house');
     var layout = house.layout || {};
     var choices = house.choices || {};
-    var preview = '<div class="pet-house-room" role="img" aria-label="Pet room with ' +
-      escapeHtml(words(layout.wall)) + ' walls, ' + escapeHtml(words(layout.floor)) + ' floor and ' +
-      escapeHtml(words(layout.furniture)) + '" data-wall="' + escapeHtml(layout.wall) +
-      '" data-floor="' + escapeHtml(layout.floor) + '" data-furniture="' + escapeHtml(layout.furniture) +
-      '"><div class="pet-house-wall"></div><div class="pet-house-floor"></div><div class="pet-house-furnishing"></div></div>';
     var controls = ['wall','floor','furniture'].map(function (slot) {
       var available = choices[slot] || [];
       return '<div class="line muted">' + escapeHtml(slot.toUpperCase()) + '</div><div class="button-grid">' +
@@ -3280,9 +3281,9 @@
               detail:'Free decoration for the selected pet; no Moon Gold, XP or item cost.' });
         }).join('') + '</div>';
     }).join('');
-    return panel('PET HOUSE // SAVED ROOM',
-      '<div class="line muted">Starter room saved per pet. No purchases or rewards. More rooms, paid furniture, kitchen, gym and garden are separate future features.</div>' +
-      preview + controls, 'pet-house');
+    return panel('HOME CUSTOMIZATION',
+      '<div class="line muted">Edit Home: these free choices change the actual room behind your pet on the main game canvas. Each pet keeps its own saved Home.</div>' +
+      controls + '<div class="button-grid one">' + routeButton('BACK TO HOME', { screen:'home' }, 'See the saved room behind your pet on the main canvas.') + '</div>', 'pet-house');
   }
   // TEST-EXPORT: petHouse:end
 
@@ -3631,6 +3632,7 @@
       if (result.duplicate) blockedParts.push('Duplicate blocked by authority.');
       return blockedParts.join(' - ');
     }
+    if (result.reason === 'pet_house_saved') return 'HOME SAVED // Return to Home to see this pet’s wall, floor and furnishing. No currency or XP changed.';
     var reward = resultRewardMap(result);
     var gains = Object.entries(reward).filter(function (entry) { return Number(entry[1]) > 0 && typeof entry[1] !== 'object' && !(entry[0] === 'pet_xp' && result.pet_xp_awarded != null); }).map(function (entry) { return '+' + number(entry[1]) + ' ' + words(entry[0]); });
     ['materials', 'items', 'relics'].forEach(function (kind) {
@@ -4855,6 +4857,83 @@
   }
   // TEST-EXPORT: companionFloor:end
 
+  // TEST-EXPORT: homeScene:start
+  function savedHomeLayout(snapshot) {
+    var house = snapshot && snapshot.pet_house;
+    var layout = house && house.available === true && snapshot.pet && house.pet_id === snapshot.pet.pet_id ? house.layout || {} : {};
+    return {
+      wall: ['warehouse_brick', 'night_wall', 'studio_white'].includes(layout.wall) ? layout.wall : 'warehouse_brick',
+      floor: ['concrete', 'checkerboard', 'steel'].includes(layout.floor) ? layout.floor : 'concrete',
+      furniture: ['sleep_mat', 'record_deck', 'plant_pot'].includes(layout.furniture) ? layout.furniture : 'sleep_mat'
+    };
+  }
+
+  function drawHomeWall(wall) {
+    // Translucent finishes keep the existing street/chamber art visible.
+    var top = BOT_RENDER_BASELINE_Y - 21;
+    ctx.save();
+    ctx.globalAlpha = wall === 'studio_white' ? 0.68 : 0.42;
+    drawPixelRect(0, 0, 320, top, wall === 'studio_white' ? '#ddd9cd' : wall === 'night_wall' ? '#18182c' : '#443b3b');
+    ctx.globalAlpha = 0.22;
+    if (wall === 'warehouse_brick') {
+      for (var row = 18; row < top; row += 24) {
+        drawPixelRect(0, row, 320, 2, '#9b8279');
+        for (var brick = row % 48 ? 0 : 24; brick < 320; brick += 48) drawPixelRect(brick, row - 18, 1, 18, '#9b8279');
+      }
+    } else {
+      for (var seam = 40; seam < 320; seam += 80) drawPixelRect(seam, 0, 1, top, wall === 'studio_white' ? '#56565e' : '#8170b3');
+    }
+    ctx.restore();
+  }
+
+  function drawHomeFloor(floor, withShadow) {
+    // Reuse the original ground/contact shadow and preserve the pet baseline.
+    drawCompanionFloor(false);
+    var top = BOT_RENDER_BASELINE_Y - 21;
+    ctx.save();
+    if (floor === 'checkerboard') {
+      for (var y = top + 3; y < 220; y += 10) {
+        for (var x = 0; x < 320; x += 20) drawPixelRect(x, y, 20, Math.min(10, 220 - y),
+          ((x / 20 + (y - top - 3) / 10) % 2) ? '#aaa99c' : '#3b3d42');
+      }
+    } else if (floor === 'steel') {
+      drawPixelRect(0, top + 3, 320, 220 - top - 3, '#464d52');
+      for (var plate = 0; plate < 320; plate += 40) drawPixelRect(plate, top + 3, 2, 220 - top - 3, '#818b8d');
+    }
+    if (withShadow) {
+      ctx.globalAlpha = 0.7;
+      drawPixelRect(BOT_RENDER_CENTER_X - 38, BOT_RENDER_BASELINE_Y - 14, 76, 2, '#0b0b0e');
+      drawPixelRect(BOT_RENDER_CENTER_X - 28, BOT_RENDER_BASELINE_Y - 16, 56, 2, '#0b0b0e');
+      drawPixelRect(BOT_RENDER_CENTER_X - 22, BOT_RENDER_BASELINE_Y - 12, 44, 2, '#0b0b0e');
+    }
+    ctx.restore();
+  }
+
+  function drawHomeFurniture(furniture) {
+    // Right-side placements stay outside the existing sprite/tap bounds.
+    var base = BOT_RENDER_BASELINE_Y - 3;
+    if (furniture === 'record_deck') {
+      drawPixelRect(260, base - 36, 50, 4, '#9c8bbe');
+      drawPixelRect(264, base - 32, 42, 27, '#292c3e');
+      drawPixelRect(265, base - 40, 18, 4, '#171b25');
+      drawPixelRect(286, base - 39, 16, 2, '#61f5ff');
+      drawPixelRect(264, base - 5, 4, 5, '#151518');
+      drawPixelRect(302, base - 5, 4, 5, '#151518');
+    } else if (furniture === 'plant_pot') {
+      drawPixelRect(279, base - 46, 3, 26, '#598464');
+      drawPixelRect(267, base - 43, 14, 8, '#598464');
+      drawPixelRect(282, base - 50, 17, 9, '#79a57c');
+      drawPixelRect(284, base - 33, 13, 7, '#598464');
+      drawPixelRect(271, base - 20, 22, 3, '#ba8969');
+      drawPixelRect(274, base - 17, 16, 17, '#88624b');
+    } else {
+      drawPixelRect(258, base - 8, 52, 8, '#2d3444');
+      drawPixelRect(260, base - 10, 48, 6, '#69738a');
+      drawPixelRect(264, base - 9, 12, 4, '#b3bbcf');
+    }
+  }
+  // TEST-EXPORT: homeScene:end
+
   // TEST-EXPORT: drawWorld:start
   function drawWorld(time) {
     var renderTime = reducedMotion ? performance.now() : time;
@@ -4868,10 +4947,15 @@
     }
 
     backgroundArtState.floor = null;
-    if (backgroundArtState.mode === 'bitty_background' && state && state.adopted && state.pet && state.lifecycle && state.lifecycle.phase !== 'egg') {
-      var withShadow = Boolean(botArtRendererReady);
-      drawCompanionFloor(withShadow);
-      backgroundArtState.floor = { mode: 'street_pavement', baseline_y: BOT_RENDER_BASELINE_Y, shadow: withShadow };
+    backgroundArtState.home = null;
+    var showHome = state && state.adopted && state.pet && !hatchArtTransitionActive(renderTime);
+    if (showHome) {
+      var home = savedHomeLayout(state);
+      drawHomeWall(home.wall);
+      drawHomeFloor(home.floor, Boolean(botArtRendererReady));
+      drawHomeFurniture(home.furniture);
+      backgroundArtState.home = home;
+      backgroundArtState.floor = { mode: home.floor, baseline_y: BOT_RENDER_BASELINE_Y, shadow: Boolean(botArtRendererReady) };
     }
 
     ctx.save();

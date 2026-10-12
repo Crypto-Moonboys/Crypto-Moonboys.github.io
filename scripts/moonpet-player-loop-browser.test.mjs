@@ -221,16 +221,16 @@ try {
     const response=page.waitForResponse(r => r.url().endsWith('/action') && r.request().postDataJSON().action === 'season_claim');
     await claim.click();assert.equal((await (await response).json()).result.accepted,true);
     assert.equal(sqlite.prepare("SELECT COUNT(*) n FROM telegram_pet_reward_claims WHERE telegram_id=? AND source='pet_season_reward' AND status='awarded'").get(id).n,1);
-    await page.waitForSelector('[data-panel="pet-house"] .pet-house-room', {state:'attached'});
+    await page.waitForSelector('[data-panel="pet-house"] [data-action="house_place"]', {state:'attached'});
     await page.locator('[data-panel="pet-house"] > summary').click();
     const houseResponse=page.waitForResponse(r=>r.url().endsWith('/action') && r.request().postDataJSON().action === 'house_place');
     await page.locator('[data-action="house_place"]').filter({hasText:'SET Night Wall'}).click();
     const savedHouse=await (await houseResponse).json();
     assert.equal(savedHouse.result.accepted,true,'eggs can save free room choices');
     assert.equal(savedHouse.state.pet_house.layout.wall,'night_wall');
-    await page.waitForSelector('.pet-house-room[data-wall="night_wall"]');
+    await page.waitForFunction(()=>window.MoonpetBetaAppearance.getBackgroundArtState().home?.wall === 'night_wall');
     await page.reload();
-    await page.waitForSelector('.pet-house-room[data-wall="night_wall"]', {state:'attached'});
+    await page.waitForFunction(()=>window.MoonpetBetaAppearance.getBackgroundArtState().home?.wall === 'night_wall');
     await context.close();
   }
 
@@ -381,7 +381,7 @@ try {
     for (const [tab, panel] of [['work','timed-activity'],['economy','equipment'],['profile','pet-spaces'],['explore','districts'],['missions','contracts']]) {
       await page.locator(`[data-screen="${tab}"]`).click();
       assert.equal(await page.locator(`[data-panel="${panel}"]`).count(), 1, `${tab} renders immediately from the shared projection`);
-      if(tab === 'profile') await page.waitForSelector('[data-panel="pet-house"] .pet-house-room', {state:'attached'});
+      if(tab === 'profile') await page.waitForSelector('[data-panel="pet-house"] [data-action="house_place"]', {state:'attached'});
       assert.equal(await page.locator('[data-panel="module-loading"]').count(), 0);
     }
     assert.deepEqual(modes, ['core','full','profile'], 'only Profile adds its house projection to the shared tab state');
@@ -836,12 +836,12 @@ try {
     // from the later scenario whose diagnostics this array describes.
     failedResponses.length = 0;
     assert.equal(await page.evaluate(() => window.MoonpetBetaAppearance.getBackgroundArtState().mode), 'stage0_secret_bot', 'egg keeps its existing background');
-    assert.equal(await page.evaluate(() => window.MoonpetBetaAppearance.getBackgroundArtState().floor), null, 'egg chamber receives no street floor');
+    assert.equal(await page.evaluate(() => window.MoonpetBetaAppearance.getBackgroundArtState().floor.mode), 'concrete', 'egg keeps its saved default Home floor');
     // Check the real collapsed UX before expanding the older gameplay matrix.
     const beforeDisclosures = actions.filter(action=>action !== 'guidance_ack').length;
     for (const section of ['home', 'missions', 'explore', 'work', 'economy', 'profile']) {
       await page.locator(`[data-screen="${section}"]`).click();
-      if(section === 'profile') await page.waitForSelector('[data-panel="pet-house"] .pet-house-room', {state:'attached'});
+      if(section === 'profile') await page.waitForSelector('[data-panel="pet-house"] [data-action="house_place"]', {state:'attached'});
       const panels = page.locator('#screen > details.panel');
       assert.ok(await panels.count() > 0);
       assert.equal(await page.locator('#screen > section.panel').count(), 0);
@@ -1073,11 +1073,11 @@ try {
     assert.equal(await page.locator('[data-season-slot].is-owned,[data-season-slot].is-active').count(),3,'Profile retains old pets and rollover egg');
     await page.waitForSelector('[data-panel="season-slots"]');
     assert.ok((await page.locator('[data-panel="season-slots"]').textContent()).includes('PETS AND PURCHASED SPACES DO NOT RESET'));
-    await page.waitForSelector('.pet-house-room');
+    await page.waitForSelector('[data-panel="pet-house"] [data-action="house_place"]');
     const originalHouseResponse=page.waitForResponse(r=>r.url().endsWith('/telegram-pets/app/action') && r.request().postDataJSON()?.action==='house_place');
     await page.locator('[data-action="house_place"]').filter({hasText:'SET Night Wall'}).click();
     assert.equal((await (await originalHouseResponse).json()).result.accepted,true);
-    await page.waitForSelector('.pet-house-room[data-wall="night_wall"]');
+    await page.waitForFunction(()=>window.MoonpetBetaAppearance.getBackgroundArtState().home?.wall === 'night_wall');
     const recoveredSwitch = page.waitForResponse(r=>r.url().endsWith('/telegram-pets/app/action') && r.request().postDataJSON()?.action==='switch_pet_slot');
     await page.locator('[data-season-slot="2"] [data-action="switch_pet_slot"]').click();
     const restored = await (await recoveredSwitch).json();
@@ -1085,7 +1085,7 @@ try {
     assert.equal(restored.state.pet.pet_xp,9876,'switching restores purchased pet progression');
     assert.equal(restored.state.pet_house.pet_id,`${currentUser}:purchased`);
     assert.equal(restored.state.pet_house.layout.wall,'warehouse_brick','switching does not transfer room choices');
-    await page.waitForSelector('.pet-house-room[data-wall="warehouse_brick"]');
+    await page.waitForFunction(()=>window.MoonpetBetaAppearance.getBackgroundArtState().home?.wall === 'warehouse_brick');
     assert.equal(sqlite.prepare('SELECT item_key FROM telegram_pet_house_layouts WHERE pet_id=? AND slot_key=?').get(`${currentUser}:original`,'wall').item_key,'night_wall');
     // The restored pet's selector starts open even though competition details stay collapsed.
     await page.locator('[data-season-slot="2"].is-active').waitFor({ state: 'attached' });
@@ -1144,7 +1144,7 @@ try {
     await page.route(streetImage, failStreetImage);
     await page.reload(); await page.waitForSelector('[data-panel="care"]');
     await page.waitForFunction(() => window.MoonpetBetaAppearance.getBackgroundArtState().mode === 'retro_space_loop');
-    assert.equal(await page.evaluate(() => window.MoonpetBetaAppearance.getBackgroundArtState().floor), null, 'failed street image retains space fallback without pavement');
+    assert.equal(await page.evaluate(() => window.MoonpetBetaAppearance.getBackgroundArtState().floor.mode), 'concrete', 'failed street image retains the saved Home over the space fallback');
     await page.unroute(streetImage, failStreetImage);
     await page.reload(); await page.waitForSelector('[data-panel="care"]');
     await page.waitForFunction(() => window.MoonpetBetaAppearance.getBackgroundArtState().floor?.shadow === true);
