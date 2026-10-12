@@ -28,8 +28,8 @@ CREATE TABLE IF NOT EXISTS telegram_pet_garden_harvests (
   harvested_at TEXT,
   created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY(telegram_id,event_key),
-  FOREIGN KEY(pet_id,telegram_id,season_key)
-    REFERENCES telegram_pet_season_slots(pet_id,telegram_id,season_key) ON DELETE CASCADE
+  -- Harvest receipts are account history. Pet deletion must not erase them.
+  FOREIGN KEY(telegram_id) REFERENCES telegram_pet_profiles(telegram_id) ON DELETE CASCADE
 );
 CREATE INDEX IF NOT EXISTS idx_pet_garden_harvest_crop
   ON telegram_pet_garden_harvests(pet_id,crop_planted_at,status);
