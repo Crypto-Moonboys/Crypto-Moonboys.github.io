@@ -88,6 +88,29 @@ test('mature harvest adds exactly one existing veggie box and duplicate retry ad
   f.sql.close();
 });
 
+test('full veggie inventory leaves no pending harvest receipt and can retry after space is freed', async () => {
+  const f = fixture('home-e3-capacity-retry');
+  await f.act({ action:'garden_plant', request_id:'plant-full' });
+  f.sql.prepare("UPDATE telegram_pet_garden_plots SET planted_at='1999-12-31T18:00:00.000Z', ready_at='2000-01-01T00:00:00.000Z' WHERE telegram_id=?").run(f.owner);
+  f.sql.prepare("INSERT INTO telegram_pet_inventory(telegram_id,asset_type,asset_key,quantity) VALUES (?,'item','garden_veggies',999999)").run(f.owner);
+
+  const blocked = await f.act({ action:'garden_harvest', request_id:'full-bag-attempt' });
+  assert.equal(blocked.accepted, false);
+  assert.equal(blocked.reason, 'pet_garden_inventory_full');
+  assert.equal(f.sql.prepare("SELECT COUNT(*) AS c FROM telegram_pet_garden_harvests WHERE telegram_id=? AND status IN ('pending','settling')").get(f.owner).c, 0,
+    'capacity rejection must not leave a deletion-blocking receipt');
+  assert.equal(f.sql.prepare('SELECT COUNT(*) AS c FROM telegram_pet_garden_plots WHERE telegram_id=?').get(f.owner).c, 1,
+    'the mature crop remains available');
+
+  f.sql.prepare("UPDATE telegram_pet_inventory SET quantity=999998 WHERE telegram_id=? AND asset_type='item' AND asset_key='garden_veggies'").run(f.owner);
+  const retry = await f.act({ action:'garden_harvest', request_id:'after-space-freed' });
+  assert.equal(retry.accepted, true);
+  assert.equal(retry.reason, 'pet_garden_harvested');
+  assert.equal(f.sql.prepare("SELECT quantity FROM telegram_pet_inventory WHERE telegram_id=? AND asset_type='item' AND asset_key='garden_veggies'").get(f.owner).quantity, 999999);
+  assert.equal(f.sql.prepare('SELECT COUNT(*) AS c FROM telegram_pet_garden_plots WHERE telegram_id=?').get(f.owner).c, 0);
+  f.sql.close();
+});
+
 test('an old harvest request can never consume a later crop', async () => {
   const f = fixture('home-e3-stale-harvest');
   await f.act({ action:'garden_plant', request_id:'plant-one' });
