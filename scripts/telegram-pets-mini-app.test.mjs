@@ -1563,11 +1563,11 @@ statusFrames.shift()();
 assert.equal(testStatusOutput.dataset.tone, 'danger');
 assert.equal(testStatusClasses.has('is-scrolling'), true, 'overflowing updates must activate the scrolling text track');
 assert.match(testStatusProperties['--status-scroll-duration'], /s$/, 'overflowing updates must receive a readable duration');
-assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20261012-canvas-layout-v2/);
+assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20261012-home-e4-rooms-v1/);
 assert.doesNotMatch(html, /moonpet-art-resolver\.js/, 'the game must not load the retired static background resolver');
 assert.match(html, /\/js\/moonpet-bot-art-loader\.js\?v=20261006-live-refresh-v5/);
 assert.match(html, /\/js\/moonpet-bot-art-renderer\.js\?v=20261002-audit-recovery-v2/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261012-canvas-layout-v1/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261012-home-e4-rooms-v1/);
 assert.match(html, /role="button" aria-label="Interact with your animated Moonpet"/);
 assert.match(client, /data-utility="guide">HOW TO PLAY/);
 const guideMarkupSource = extractTestExport(client, 'guideMarkup');
@@ -1858,7 +1858,7 @@ for (const sdkInitData of [expired, tampered, 'auth_date=invalid&hash=' + 'a'.re
   assert.equal(entry.requests.length, 3, 'Read-only startup state requests retain their transient retry policy');
 }
 assert.match(html, /\/js\/api-config\.js\?v=20260813-first-party-api/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261012-canvas-layout-v1/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261012-home-e4-rooms-v1/);
 // Season slot UI: timing, account/pet separation, unlock affordance, switching, and rejection copy.
 assert.match(client, /function renderSeasonSlots\(\)/, 'Mini App must render a focused season-slot summary');
 assert.match(client, /function render\(options\) \{\s*var editableState = options && options\.discardCallsignDraft \? null : captureEditableState\(\);[\s\S]*restoreEditableState\(editableState\);/, 'render must preserve only drafts that were not explicitly discarded');
