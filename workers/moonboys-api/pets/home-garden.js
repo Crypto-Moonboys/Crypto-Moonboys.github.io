@@ -94,6 +94,18 @@ async function readHarvestReceipt(db, telegramId, eventKey) {
     .bind(owner(telegramId), eventKey).first().then(requirePetFirstReadResult);
 }
 
+async function readCurrentCropPendingReceipt(db, telegramId, pet) {
+  return db.prepare(`SELECT h.pet_id,h.season_key,h.crop_key,h.crop_planted_at,h.quantity,h.status,h.harvested_at,h.event_key
+    FROM telegram_pet_garden_harvests h
+    JOIN telegram_pet_garden_plots g
+      ON g.pet_id=h.pet_id AND g.telegram_id=h.telegram_id AND g.season_key=h.season_key
+      AND g.planted_at=h.crop_planted_at AND g.crop_key=h.crop_key
+    WHERE h.telegram_id=? AND h.pet_id=? AND h.season_key=? AND h.status='pending'
+      AND g.status='growing' AND julianday(g.ready_at)<=julianday('now')
+    LIMIT 1`)
+    .bind(owner(telegramId), pet.pet_id, pet.season_key).first().then(requirePetFirstReadResult);
+}
+
 export async function harvestPetGarden(db, telegramId, pet, eventKey, now = new Date()) {
   if (!pet?.pet_id || !pet?.season_key || typeof eventKey !== 'string' || !eventKey)
     return { accepted: false, reason: 'pet_garden_source_required' };
@@ -107,9 +119,16 @@ export async function harvestPetGarden(db, telegramId, pet, eventKey, now = new 
     result_copy: 'Harvest already saved. No duplicate food was added.',
   };
 
+  // A previous request may have persisted its reservation and then lost the
+  // settlement response/batch. Recover that crop-bound pending receipt even
+  // when this click has a new request UUID; never let the unique crop key strand
+  // an otherwise harvestable plot.
+  const recoverable = await readCurrentCropPendingReceipt(db, telegramId, pet);
+  const settlementEventKey = recoverable?.event_key || eventKey;
+
   // Reserve only a crop that is already mature. Binding the receipt to its
   // planted_at timestamp means an old retry can never harvest a later crop.
-  await db.prepare(`INSERT OR IGNORE INTO telegram_pet_garden_harvests
+  if (!recoverable) await db.prepare(`INSERT OR IGNORE INTO telegram_pet_garden_harvests
     (telegram_id,event_key,pet_id,season_key,crop_key,crop_planted_at,quantity,status)
     SELECT ?,?,g.pet_id,g.season_key,g.crop_key,g.planted_at,?,'pending'
     FROM telegram_pet_garden_plots g
@@ -120,11 +139,11 @@ export async function harvestPetGarden(db, telegramId, pet, eventKey, now = new 
       AND a.telegram_id=? AND a.pet_id=?
       AND (NOT EXISTS(SELECT 1 FROM telegram_pet_inventory WHERE telegram_id=? AND asset_type='item' AND asset_key=?)
         OR EXISTS(SELECT 1 FROM telegram_pet_inventory WHERE telegram_id=? AND asset_type='item' AND asset_key=? AND quantity<=999998))`)
-    .bind(owner(telegramId),eventKey,PET_HOME_GARDEN.harvest_quantity,pet.pet_id,owner(telegramId),pet.season_key,
+    .bind(owner(telegramId),settlementEventKey,PET_HOME_GARDEN.harvest_quantity,pet.pet_id,owner(telegramId),pet.season_key,
       PET_HOME_GARDEN.crop_key,owner(telegramId),pet.pet_id,
       owner(telegramId),PET_HOME_GARDEN.crop_key,owner(telegramId),PET_HOME_GARDEN.crop_key).run().then(requirePetMutationResult);
 
-  const reserved = await readHarvestReceipt(db, telegramId, eventKey);
+  const reserved = recoverable || await readHarvestReceipt(db, telegramId, settlementEventKey);
   if (!reserved) {
     const [garden, bag] = await Promise.all([
       readPetGardenState(db, telegramId, pet, now),
@@ -152,32 +171,32 @@ export async function harvestPetGarden(db, telegramId, pet, eventKey, now = new 
         AND julianday(ready_at)<=julianday('now')
         AND (NOT EXISTS(SELECT 1 FROM telegram_pet_inventory WHERE telegram_id=? AND asset_type='item' AND asset_key=?)
           OR EXISTS(SELECT 1 FROM telegram_pet_inventory WHERE telegram_id=? AND asset_type='item' AND asset_key=? AND quantity<=999998))`)
-      .bind(pet.pet_id,owner(telegramId),pet.season_key,PET_HOME_GARDEN.crop_key,owner(telegramId),eventKey,
+      .bind(pet.pet_id,owner(telegramId),pet.season_key,PET_HOME_GARDEN.crop_key,owner(telegramId),settlementEventKey,
         owner(telegramId),PET_HOME_GARDEN.crop_key,owner(telegramId),PET_HOME_GARDEN.crop_key),
     db.prepare(`UPDATE telegram_pet_garden_harvests SET status='settling'
       WHERE telegram_id=? AND event_key=? AND status='pending'
         AND EXISTS(SELECT 1 FROM telegram_pet_garden_plots g
           WHERE g.pet_id=telegram_pet_garden_harvests.pet_id AND g.status='harvesting'
             AND g.planted_at=telegram_pet_garden_harvests.crop_planted_at)`)
-      .bind(owner(telegramId),eventKey),
+      .bind(owner(telegramId),settlementEventKey),
     db.prepare(`INSERT INTO telegram_pet_inventory(telegram_id,asset_type,asset_key,quantity)
       SELECT telegram_id,'item',crop_key,quantity FROM telegram_pet_garden_harvests
       WHERE telegram_id=? AND event_key=? AND status='settling'
       ON CONFLICT(telegram_id,asset_type,asset_key) DO UPDATE SET quantity=quantity+excluded.quantity`)
-      .bind(owner(telegramId),eventKey),
+      .bind(owner(telegramId),settlementEventKey),
     db.prepare(`DELETE FROM telegram_pet_garden_plots
       WHERE pet_id=? AND telegram_id=? AND season_key=? AND status='harvesting'
         AND planted_at=(SELECT crop_planted_at FROM telegram_pet_garden_harvests
           WHERE telegram_id=? AND event_key=? AND status='settling')`)
-      .bind(pet.pet_id,owner(telegramId),pet.season_key,owner(telegramId),eventKey),
+      .bind(pet.pet_id,owner(telegramId),pet.season_key,owner(telegramId),settlementEventKey),
     db.prepare(`UPDATE telegram_pet_garden_harvests SET status='completed',harvested_at=CURRENT_TIMESTAMP
       WHERE telegram_id=? AND event_key=? AND status='settling'
         AND NOT EXISTS(SELECT 1 FROM telegram_pet_garden_plots g
           WHERE g.pet_id=telegram_pet_garden_harvests.pet_id
             AND g.planted_at=telegram_pet_garden_harvests.crop_planted_at)`)
-      .bind(owner(telegramId),eventKey),
+      .bind(owner(telegramId),settlementEventKey),
     db.prepare(`SELECT pet_id,season_key,crop_key,crop_planted_at,quantity,status,harvested_at
-      FROM telegram_pet_garden_harvests WHERE telegram_id=? AND event_key=?`).bind(owner(telegramId),eventKey),
+      FROM telegram_pet_garden_harvests WHERE telegram_id=? AND event_key=?`).bind(owner(telegramId),settlementEventKey),
     gardenRead(db, telegramId, pet),
   ]);
   [locked, settling, inventory, cleared, completed].forEach(requirePetMutationResult);
@@ -190,22 +209,23 @@ export async function harvestPetGarden(db, telegramId, pet, eventKey, now = new 
     result_copy: 'Harvest complete. +1 Garden Veggie Box added to your Bag and Food Counter.',
   };
 
-  const bag = await db.prepare(`SELECT quantity FROM telegram_pet_inventory
-    WHERE telegram_id=? AND asset_type='item' AND asset_key=?`)
-    .bind(owner(telegramId),PET_HOME_GARDEN.crop_key).first().then(requirePetFirstReadResult);
-  if (Number(bag?.quantity || 0) >= 999999 && receipt?.status === 'pending') {
-    // Capacity can change after reservation but before the guarded plot lock.
-    // Release only this request's untouched pending receipt while the original
-    // crop is still present, so a later click can retry after bag space exists.
+  if (receipt?.status === 'pending') {
+    // The settlement batch is atomic. If it returns with the receipt still
+    // pending and the exact crop still growing, no inventory credit or crop
+    // deletion committed. Release that reservation unconditionally before any
+    // later bag read can race, so a new request can retry safely.
     await db.prepare(`DELETE FROM telegram_pet_garden_harvests
       WHERE telegram_id=? AND event_key=? AND pet_id=? AND crop_planted_at=?
         AND status='pending'
         AND EXISTS(SELECT 1 FROM telegram_pet_garden_plots g
           WHERE g.pet_id=? AND g.telegram_id=? AND g.season_key=? AND g.status='growing'
             AND g.planted_at=telegram_pet_garden_harvests.crop_planted_at)`)
-      .bind(owner(telegramId),eventKey,pet.pet_id,receipt.crop_planted_at,
+      .bind(owner(telegramId),settlementEventKey,pet.pet_id,receipt.crop_planted_at,
         pet.pet_id,owner(telegramId),pet.season_key).run().then(requirePetMutationResult);
   }
+  const bag = await db.prepare(`SELECT quantity FROM telegram_pet_inventory
+    WHERE telegram_id=? AND asset_type='item' AND asset_key=?`)
+    .bind(owner(telegramId),PET_HOME_GARDEN.crop_key).first().then(requirePetFirstReadResult);
   return {
     accepted: false,
     reason: Number(bag?.quantity || 0) >= 999999 ? 'pet_garden_inventory_full' : 'pet_garden_harvest_conflict',
