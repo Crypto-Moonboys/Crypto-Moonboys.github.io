@@ -35,6 +35,7 @@ for (const name of [
   '091_moonpet_style_catalog_expansion.sql',
   '092_moonpet_house_layouts.sql',
   '093_moonpet_radio_group_delivery_index.sql',
+  '094_moonpet_home_furniture.sql',
 ]) {
   assert.ok(pullRequestPaths.includes('workers/moonboys-api/migrations/' + name));
   assert.ok(remoteQueryStep.includes(name));

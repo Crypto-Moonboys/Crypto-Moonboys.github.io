@@ -12,6 +12,7 @@ const renderProfile = new Function('state', 'panel', `
   function activePetSummary() { return ''; }
   function renderSeasonSlots() { return ''; }
   function renderPetHouse() { return ''; }
+  function renderFurnitureShop() { return ''; }
   function button(label) { return label; }
   function routeButton(label) { return label; }
   function number(value) { return Number(value || 0); }

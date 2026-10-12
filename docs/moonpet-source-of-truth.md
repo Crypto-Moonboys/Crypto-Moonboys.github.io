@@ -14,6 +14,10 @@ Its purpose is to prevent documentation drift between:
 
 Any gameplay, documentation, or UI change affecting Moonpet status should reference this document.
 
+### H11 House E2 — Furniture Shop and placement (proposal, not deployed)
+
+Twelve cosmetic items are purchased once per account using server-defined Moon Gold prices (120–900 Gold), then placed without additional cost in up to three fixed slots (LEFT, RIGHT, WALL) for each permanent pet. Purchases are serialized in a D1 transaction: conditional wallet debit plus unique account/item receipt; replay or simultaneous purchase must not double-charge. Placements require both saved ownership and the currently displayed pet identity in the same D1 transaction. Egg pets are eligible. Existing free E1 wall, floor and furnishing selections remain untouched; a purchased RIGHT item visually replaces the free furnishing only while placed. No extra XP, rewards, missions, energy, pet stats, new canvas, passive polling or lifecycle changes. Migration 094 is required before the Worker deploy. This is a proposed release and must not be treated as live until merged, migrated and verified.
+
 ### H11 House E1 — main-canvas Home correction (12 October 2026)
 
 Home customization changes the actual room displayed behind the selected pet in the existing main game canvas. PROFILE’s HOME CUSTOMIZATION editor retains the original nine free Wall, Floor and Furnishing choices and `house_place` action; HOME links to CUSTOMIZE HOME, and BACK TO HOME returns to the pet. There is no separate preview room, destination or minigame.

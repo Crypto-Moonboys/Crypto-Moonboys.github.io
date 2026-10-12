@@ -104,7 +104,66 @@ try {
       const changed=await page.locator('#moonpet-canvas').evaluate(canvas=>Array.from(canvas.getContext('2d').getImageData(2,410,1,1).data));
       assert.notDeepEqual(changed,pixels,'saved floor visibly changes the actual canvas');
       assert.equal(await page.evaluate(()=>window.MoonpetBetaAppearance.getBotArtState().lastRender.drew),true,'existing pet renderer still draws above Home');
+      // E2: a paid item is purchased once, then drawn on this same canvas.
+      await page.getByRole('button',{name:/CUSTOMIZE HOME/}).click();
+      const furniturePanel=page.locator('[data-panel="furniture-shop"]');
+      await furniturePanel.waitFor();
+      if (!await furniturePanel.evaluate(node=>node.open)) await furniturePanel.locator('summary').click();
+      const beforePurchase=f.sql.prepare('SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id=?').get(f.owner).moon_gold;
+      const buyResponse=page.waitForResponse(r=>r.url().endsWith('/action') && r.request().postDataJSON()?.action==='furniture_buy');
+      await furniturePanel.locator('[data-action="furniture_buy"]').filter({hasText:'BUY Neon Lamp'}).click();
+      assert.equal((await (await buyResponse).json()).result.accepted,true);
+      assert.equal(f.sql.prepare('SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id=?').get(f.owner).moon_gold,beforePurchase-120);
+      const placeResponse=page.waitForResponse(r=>r.url().endsWith('/action') && r.request().postDataJSON()?.action==='furniture_place');
+      await furniturePanel.locator('[data-action="furniture_place"]').filter({hasText:'PLACE Neon Lamp'}).click();
+      assert.equal((await (await placeResponse).json()).result.accepted,true);
+      await page.waitForFunction(()=>window.MoonpetBetaAppearance.getBackgroundArtState().home?.purchased?.left==='neon_lamp');
+      // E2 RIGHT slot must temporarily replace the saved E1 furnishing on the
+      // *same* main canvas, then restore it without changing the E1 D1 row.
+      const rightPixel = () => page.locator('#moonpet-canvas').evaluate(canvas =>
+        Array.from(canvas.getContext('2d').getImageData(560, 414, 1, 1).data));
+      const originalRightPixel = await rightPixel();
+      const savedFreeFurnishing = f.sql.prepare(
+        "SELECT item_key FROM telegram_pet_house_layouts WHERE pet_id=? AND slot_key='furniture'"
+      ).get(young).item_key;
+      assert.equal(savedFreeFurnishing, 'plant_pot');
+      const rightBuy = page.waitForResponse(r => r.url().endsWith('/action') &&
+        r.request().postDataJSON()?.action === 'furniture_buy' &&
+        r.request().postDataJSON()?.item_key === 'retro_tv');
+      await furniturePanel.locator('[data-action="furniture_buy"][data-payload*="retro_tv"]').click();
+      assert.equal((await (await rightBuy).json()).result.accepted, true);
+      const rightPlace = page.waitForResponse(r => r.url().endsWith('/action') &&
+        r.request().postDataJSON()?.action === 'furniture_place' &&
+        r.request().postDataJSON()?.item_key === 'retro_tv');
+      await furniturePanel.locator('[data-action="furniture_place"][data-payload*="retro_tv"]').click();
+      assert.equal((await (await rightPlace).json()).result.accepted, true);
+      await page.waitForFunction(() =>
+        window.MoonpetBetaAppearance.getBackgroundArtState().home?.purchased?.right === 'retro_tv');
+      assert.notDeepEqual(await rightPixel(), originalRightPixel,
+        'paid RIGHT furniture must visually replace the original E1 furnishing');
+      assert.equal(f.sql.prepare(
+        "SELECT item_key FROM telegram_pet_house_layouts WHERE pet_id=? AND slot_key='furniture'"
+      ).get(young).item_key, savedFreeFurnishing, 'placing paid furniture must not overwrite E1 selection');
+      const removeRight = page.waitForResponse(r => r.url().endsWith('/action') &&
+        r.request().postDataJSON()?.action === 'furniture_remove' &&
+        r.request().postDataJSON()?.slot_key === 'right');
+      await furniturePanel.locator('[data-action="furniture_remove"]').filter({hasText:'REMOVE RIGHT FURNITURE'}).click();
+      assert.equal((await (await removeRight).json()).result.accepted, true);
+      await page.waitForFunction(() =>
+        window.MoonpetBetaAppearance.getBackgroundArtState().home?.purchased?.right === null);
+      assert.deepEqual(await rightPixel(), originalRightPixel,
+        'removing paid RIGHT furniture restores the original E1 furnishing pixels');
+      assert.equal(f.sql.prepare(
+        "SELECT item_key FROM telegram_pet_house_layouts WHERE pet_id=? AND slot_key='furniture'"
+      ).get(young).item_key, savedFreeFurnishing, 'E1 selection remains saved after removal');
+      assert.equal(f.sql.prepare(
+        "SELECT COUNT(*) AS total FROM telegram_pet_furniture_unlocks WHERE telegram_id=? AND item_key='retro_tv'"
+      ).get(f.owner).total, 1, 'removal must retain purchased furniture ownership');
+      assert.equal(await page.locator('canvas').count(),1);
+      assert.equal(await page.locator('.pet-house-room').count(),0);
       await page.reload(); await ready(); await room('studio_white','steel','plant_pot');
+      await page.waitForFunction(()=>window.MoonpetBetaAppearance.getBackgroundArtState().home?.purchased?.left==='neon_lamp');
+
       // Switch restores each original pet's own Home without extra room fetches.
       const switchResponse=page.waitForResponse(r=>r.url().endsWith('/action') && r.request().postDataJSON()?.action==='switch_pet_slot');
       await page.locator('[data-action="switch_pet_slot"]:enabled').first().click();

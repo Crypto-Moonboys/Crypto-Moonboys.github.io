@@ -1,4 +1,5 @@
 import { PET_REGION_CONTENT, PET_SEASONAL_BOSSES } from './content-phase-4.js';
+import { PET_HOME_FURNITURE } from './home-furniture.js';
 import bosses from './content/bosses.json' with { type: 'json' };
 import evolutions from './content/evolutions.json' with { type: 'json' };
 import {
@@ -73,6 +74,7 @@ export function buildPetEconomyReachabilityAudit(definitions = {}) {
   const recipes = definitions.recipes || PET_CRAFTING_RECIPES;
   const upgradeCosts = definitions.upgrade_costs || PET_EQUIPMENT_UPGRADE_COSTS;
   const cosmeticSinks = definitions.cosmetic_sinks || PET_COSMETIC_SINKS;
+  const furnitureCatalog = definitions.furniture_catalog || PET_HOME_FURNITURE;
   const rareDropTables = definitions.rare_drop_tables || PET_RARE_DROP_TABLES;
   const marketOffers = definitions.market_offers || PET_MARKET_OFFERS;
   const foodOffers = definitions.food_offers || PET_FOOD_OFFERS;
@@ -106,6 +108,8 @@ export function buildPetEconomyReachabilityAudit(definitions = {}) {
       addSink(currencySinks, costKey, `equipment_upgrade:${level}`);
     }
   }
+
+  for (const key of Object.keys(furnitureCatalog)) addSink(currencySinks,'moon_gold',`furniture:${key}`);
 
   for (const [cosmeticKey, sink] of Object.entries(cosmeticSinks)) {
     invalidMaterialReferencesFrom(Object.fromEntries(Object.entries(sink.cost).filter(([key]) => !ACCOUNT_WALLET_CURRENCIES.includes(key))), `cosmetic:${cosmeticKey}`, invalidMaterialReferences);
@@ -254,6 +258,13 @@ export function buildPetEconomyReachabilityAudit(definitions = {}) {
     run_path: 'Mini App economy:expedition and Telegram petexpedition callbacks',
   }));
 
+  const furnitureSurfaces = Object.entries(furnitureCatalog).map(([key, item]) => ({
+    kind:'furniture_offer',key,slot:item.slot,cost:{moon_gold:item.price_gold},
+    classification:classifications.LIVE_REACHABLE,
+    purchase_path:'Mini App profile:furniture_buy (one-time account purchase)',
+    placement_path:'Mini App profile:furniture_place / furniture_remove (per pet, free)',
+  }));
+
   const cosmeticSurfaces = Object.entries(cosmeticSinks).map(([key, sink]) => ({
     kind: 'cosmetic',
     key,
@@ -274,6 +285,7 @@ export function buildPetEconomyReachabilityAudit(definitions = {}) {
       ...weeklyBountySurfaces,
       ...expeditionSurfaces,
       ...cosmeticSurfaces,
+      ...furnitureSurfaces,
       ...PET_ECONOMY_ROUTES.map((route) => ({ kind: 'economy_route', classification: classifications.LIVE_REACHABLE, ...route })),
     ],
     canonical_items: CANONICAL_ITEMS.map((key) => ({

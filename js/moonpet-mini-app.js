@@ -1193,6 +1193,18 @@
             "Save this free Home appearance behind the current pet on the main canvas. No XP or currency awarded.",
             "manage"
       ],
+      "furniture_buy": [
+            "Buy this permanent account-owned furniture item for the listed Moon Gold price. Buying twice never charges twice.",
+            "spend"
+      ],
+      "furniture_place": [
+            "Place owned furniture in the selected pet's left, right or wall slot. No additional cost.",
+            "manage"
+      ],
+      "furniture_remove": [
+            "Clear a furniture slot from this pet's Home. Ownership stays with your account and no Gold is spent.",
+            "manage"
+      ],
       "radio_request": [
             "Save one GraffPUNKS Radio request per UTC day. The request is forwarded to the Telegram group for DJ review, where group members can read it. No guaranteed broadcast or rewards.",
             "manage"
@@ -1266,7 +1278,7 @@
       options = Object.assign({}, options, { disabled: true, statusLabel: 'ARCADE XP REQUIRED' });
     }
     var accountActions = ['adopt', 'guidance_ack', 'notification_set', 'season_slots', 'buy_pet_slot', 'switch_pet_slot', 'delete_pet_slot', 'arena_queue_cancel', 'arena_forfeit', 'kaiju_queue_cancel', 'kaiju_match_cancel'];
-    var eggActions = accountActions.concat(['incubate', 'hatch', 'energy_drink', 'dance', 'cuddles', 'house_place', 'bounty_claim', 'season_claim', 'weekly_boss_claim', 'contract_claim', 'style_equip', 'seasonal_boss_claim', 'daily_completion_claim', 'finale_start', 'finale_retry', 'finale_step', 'finale_claim', 'event_recover', 'event_close']);
+    var eggActions = accountActions.concat(['incubate', 'hatch', 'energy_drink', 'dance', 'cuddles', 'house_place', 'furniture_buy', 'furniture_place', 'furniture_remove', 'bounty_claim', 'season_claim', 'weekly_boss_claim', 'contract_claim', 'style_equip', 'seasonal_boss_claim', 'daily_completion_claim', 'finale_start', 'finale_retry', 'finale_step', 'finale_claim', 'event_recover', 'event_close']);
     if (state && state.lifecycle && state.lifecycle.phase === 'egg' && !eggActions.includes(action)) {
       options = Object.assign({}, options, { disabled: true, cooldown: null, statusLabel: 'HATCH REQUIRED' });
     } else if (state && state.adopted === false && !accountActions.includes(action)) {
@@ -1321,6 +1333,7 @@
     'food-shop': ['◇', 'Buy cooked meals with the listed resources and eat them from Home.'],
     'radio-requests': ['♫', 'Submit one moderated radio song or message request per day.'],
     'pet-house': ['⌂', 'Edit the saved Home behind this pet on the main canvas.'],
+    'furniture-shop': ['◇', 'Buy permanent furniture with Moon Gold, then place it on the real pet canvas.'],
     details: ['◉', 'Companion stats, personality and equipped items.'],
     'pet-spaces': ['◈', 'Choose your active pet or unlock another permanent space.'],
     'season-slots': ['◈', 'Track lifetime progression and calendar competition progress.'],
@@ -2234,6 +2247,11 @@
         state && state.pet_house && state.pet && nextState.pet && state.pet.pet_id === nextState.pet.pet_id &&
         state.pet_house.pet_id === nextState.pet.pet_id) {
       nextState = Object.assign({}, nextState, { pet_house: state.pet_house });
+    }
+    if (nextState.hydration && nextState.hydration.mode === 'missions' && nextState.pet_furniture === undefined &&
+        state && state.pet_furniture && state.pet && nextState.pet && state.pet.pet_id === nextState.pet.pet_id &&
+        state.pet_furniture.pet_id === nextState.pet.pet_id) {
+      nextState = Object.assign({}, nextState, { pet_furniture: state.pet_furniture });
     }
     state = nextState;
     petActionRefreshRequired = false;
@@ -3287,6 +3305,45 @@
   }
   // TEST-EXPORT: petHouse:end
 
+  // TEST-EXPORT: furnitureShop:start
+  function renderFurnitureShop() {
+    var shop = state && state.pet_furniture;
+    if (!shop || shop.available !== true || !state.pet || shop.pet_id !== state.pet.pet_id)
+      return panel('FURNITURE SHOP', '<div class="line muted">FURNITURE INVENTORY UNAVAILABLE. REFRESH BEFORE BUYING OR PLACING.</div>', 'furniture-shop');
+    var owned = Array.isArray(shop.owned) ? shop.owned : [];
+    var placed = shop.placements || {};
+    var catalog = shop.catalog || {};
+    var gold = Math.max(0, Number(state.pet.moon_gold) || 0);
+    var groups = ['left','right','wall'].map(function (slot) {
+      var active = placed[slot];
+      var rows = Object.keys(catalog).filter(function (key) { return catalog[key].slot === slot; }).map(function (key) {
+        var item = catalog[key];
+        var purchased = owned.includes(key);
+        var equipped = active === key;
+        var price = Math.max(0, Number(item.price_gold) || 0);
+        return '<div class="line">' + escapeHtml(item.label) + ' // ' +
+          (purchased ? 'OWNED' : number(price) + ' MOON GOLD') + (equipped ? ' // PLACED' : '') + '</div>' +
+          '<div class="button-grid one">' +
+          (purchased
+            ? button(equipped ? 'PLACED: ' + item.label : 'PLACE ' + item.label, 'furniture_place',
+              {slot_key:slot,item_key:key}, {disabled:equipped,statusLabel:equipped?'CURRENT':'',
+                detail:'Place owned furniture on this pet’s main canvas. No additional cost.'})
+            : button('BUY ' + item.label + ' // ' + number(price) + ' GOLD', 'furniture_buy',
+              {item_key:key}, {disabled:gold<price,statusLabel:gold<price?'NOT ENOUGH GOLD':'',
+                detail:'One-time permanent account purchase. Cost: '+number(price)+' Moon Gold.'})) +
+          '</div>';
+      }).join('');
+      return '<div class="line muted">PLACEMENT // ' + slot.toUpperCase() + ' // ' +
+        escapeHtml(active && catalog[active] ? catalog[active].label : 'EMPTY') + '</div>' +
+        (active ? '<div class="button-grid one">' + button('REMOVE ' + slot.toUpperCase() + ' FURNITURE',
+          'furniture_remove',{slot_key:slot},{detail:'Remove this item without losing ownership or receiving a refund.'}) + '</div>' : '') + rows;
+    }).join('');
+    return panel('FURNITURE SHOP // ' + owned.length + '/12 OWNED',
+      '<div class="line muted">Permanent account purchases; one item in each of three fixed positions per pet. Furniture is cosmetic only. Your existing free furnishing remains selected when no paid item occupies the right slot. No XP, extra rewards or pet-stat effects.</div>' +
+      '<div class="line">AVAILABLE MOON GOLD // ' + number(gold) + '</div>' + groups, 'furniture-shop');
+  }
+  // TEST-EXPORT: furnitureShop:end
+
   function renderProfile() {
     var helpPanel = panel('HOW TO PLAY', '<div class="line muted">Care, daily and weekly goals, runs, bosses, rewards and the season finale.</div><div class="button-grid one"><button type="button" class="terminal-button" data-utility="guide">HOW TO PLAY<span class="button-purpose">Read how care, quests, battles and rewards work before choosing a route.</span></button><button type="button" class="terminal-button" data-utility="about">ABOUT MOONPET OS<span class="button-purpose">Learn about persistent companions and competition.</span></button></div>', 'how-to-play');
     if (!state.pet) return helpPanel + panel('IDENTITY CORE', '<div class="line muted">INITIALISE A MOONPET TO UNLOCK THIS MODULE.</div>');
@@ -3352,7 +3409,7 @@
     var callsignPanel = callsignUnlocked
       ? '<label class="line" for="pet-name-input">CUSTOM CALLSIGN</label><input id="pet-name-input" class="terminal-input" maxlength="32" value="' + escapeHtml(state.pet.callsign || '') + '"><div class="button-grid one">' + button('SAVE CALLSIGN', 'rename') + '</div><div class="line muted">CANONICAL IDENTITY STAYS SEPARATE FROM ANY CUSTOM CALLSIGN.</div>'
       : '<div class="line complete">UNKNOWN</div><div class="line muted">CALLSIGN LOCKED UNTIL STAGE 3.</div>';
-    return activePetSummary() + helpPanel + renderSeasonSlots() + renderPetHouse() +
+    return activePetSummary() + helpPanel + renderSeasonSlots() + renderPetHouse() + renderFurnitureShop() +
       panel('IDENTITY CORE', '<div class="line complete">' + escapeHtml(resolveMoonpetDisplayName(lifecycle, identity)) + ' // ' + escapeHtml(moonpetStageLabel(lifecycle, state.pet || {})) + '</div><div class="line muted">' + escapeHtml(words(lifecycle.temperament || 'forming')) + ' TEMPERAMENT</div>' + innate + '<div class="line muted">PERSONALITY</div>' + (traits || '<div class="line muted">TRAITS STILL FORMING. Personality develops through play.</div>')) + panel('HIDDEN MORPH SIGNAL', rarePanel, 'rare-morph') +
       panel('APTITUDES', aptitudeRows) +
       panel('MEMORY ARCHIVE', memoryRows + (milestones || '<div class="line muted">NO MILESTONES RECORDED YET.</div>'), 'memories') +
@@ -3633,6 +3690,7 @@
       return blockedParts.join(' - ');
     }
     if (result.reason === 'pet_house_saved') return 'HOME SAVED // Return to Home to see this pet’s wall, floor and furnishing. No currency or XP changed.';
+    if (result.reason === 'pet_furniture_purchased' || result.reason === 'pet_furniture_owned' || result.reason === 'pet_furniture_placed' || result.reason === 'pet_furniture_removed') return String(result.result_copy || 'Furniture save confirmed.');
     var reward = resultRewardMap(result);
     var gains = Object.entries(reward).filter(function (entry) { return Number(entry[1]) > 0 && typeof entry[1] !== 'object' && !(entry[0] === 'pet_xp' && result.pet_xp_awarded != null); }).map(function (entry) { return '+' + number(entry[1]) + ' ' + words(entry[0]); });
     ['materials', 'items', 'relics'].forEach(function (kind) {
@@ -3689,6 +3747,10 @@
       contract_stale: 'that contract changed; use the refreshed choices.',
       contract_active: 'finish or abandon your current contract first.',
       contract_invalid_choice: 'choose one of the available routes or upgrades.',
+      pet_furniture_invalid: 'choose an available Furniture Shop item. Nothing was charged.',
+      pet_furniture_placement_invalid: 'choose an owned item and its matching Home slot. No Gold was spent.',
+      pet_furniture_not_owned: 'buy this furniture once before placing it. No Gold was spent.',
+      pet_furniture_insufficient_gold: 'not enough Moon Gold for this item. No Gold was spent; review the displayed price.',
       market_capacity_full: 'the whole bundle must fit. Use items or spend materials/currency first; nothing was charged.',
       market_state_changed: 'your pet or balances changed before purchase. Nothing was charged; review the refreshed offer.',
       market_pet_unavailable: 'select a hatched active pet before buying.',
@@ -4934,6 +4996,69 @@
   }
   // TEST-EXPORT: homeScene:end
 
+
+  // TEST-EXPORT: purchasedFurniture:start
+  function savedPurchasedFurniture(snapshot) {
+    var shop = snapshot && snapshot.pet_furniture;
+    var placements = shop && shop.available === true && snapshot.pet && shop.pet_id === snapshot.pet.pet_id
+      ? shop.placements || {} : {};
+    var owned = shop && Array.isArray(shop.owned) ? shop.owned : [];
+    var catalog = shop && shop.catalog || {};
+    var result = {left:null,right:null,wall:null};
+    ['left','right','wall'].forEach(function (slot) {
+      var key = placements[slot];
+      if (typeof key === 'string' && owned.includes(key) && catalog[key] && catalog[key].slot === slot)
+        result[slot] = key;
+    });
+    return result;
+  }
+  function drawPurchasedFurniture(key, slot) {
+    // Bounded pixel shapes. Left/right are outside the pet's tap/sprite bounds;
+    // wall art is high above its head. No image downloads or animation loops.
+    var base = BOT_RENDER_BASELINE_Y - 4;
+    var x = slot === 'left' ? 10 : slot === 'right' ? 260 : 123;
+    var y = slot === 'wall' ? 37 : base - 49;
+    if (key === 'neon_lamp') {
+      drawPixelRect(x+12,y+3,4,42,'#303643'); drawPixelRect(x+4,y,20,8,'#54d7ff');
+      drawPixelRect(x+9,y+44,10,3,'#6b7180');
+    } else if (key === 'speaker_stack') {
+      drawPixelRect(x,y+4,40,45,'#252632');
+      drawPixelRect(x+9,y+10,22,17,'#6c7693'); drawPixelRect(x+13,y+14,14,9,'#1a1b25');
+      drawPixelRect(x+9,y+30,22,14,'#6c7693'); drawPixelRect(x+13,y+33,14,8,'#1a1b25');
+    } else if (key === 'arcade_cabinet') {
+      drawPixelRect(x+3,y,38,49,'#30283e'); drawPixelRect(x+8,y+7,28,22,'#41b8b4');
+      drawPixelRect(x+8,y+32,28,5,'#ae7bc7'); drawPixelRect(x+17,y+39,4,6,'#e3b76c');
+    } else if (key === 'tool_chest') {
+      drawPixelRect(x+3,y+20,43,27,'#774e5b'); drawPixelRect(x+6,y+25,37,3,'#a8889a');
+      drawPixelRect(x+6,y+35,37,3,'#a8889a'); drawPixelRect(x+15,y+15,18,6,'#e0bb70');
+    } else if (key === 'street_sofa') {
+      drawPixelRect(x,y+24,50,21,'#5b5475'); drawPixelRect(x+3,y+14,44,16,'#8a719b');
+      drawPixelRect(x+4,y+43,6,6,'#343344'); drawPixelRect(x+40,y+43,6,6,'#343344');
+    } else if (key === 'retro_tv') {
+      drawPixelRect(x+3,y+7,46,34,'#4e5360'); drawPixelRect(x+7,y+11,32,24,'#5bc1bc');
+      drawPixelRect(x+41,y+16,4,4,'#c6b57a'); drawPixelRect(x+8,y+41,4,7,'#373843');
+    } else if (key === 'crystal_altar') {
+      drawPixelRect(x+3,y+34,45,13,'#665b75'); drawPixelRect(x+9,y+26,32,8,'#a9a0bd');
+      drawPixelRect(x+20,y+4,12,23,'#7fe7ed'); drawPixelRect(x+17,y+14,18,11,'#4598cb');
+    } else if (key === 'gold_throne') {
+      drawPixelRect(x+4,y+6,42,41,'#9b773a'); drawPixelRect(x+9,y+13,32,24,'#cfa454');
+      drawPixelRect(x+13,y+25,24,16,'#62415d'); drawPixelRect(x+20,y,10,8,'#e8c977');
+    } else if (key === 'graffiti_frame') {
+      drawPixelRect(x,y,75,36,'#322a3b'); drawPixelRect(x+4,y+4,67,28,'#b3a1a9');
+      drawPixelRect(x+12,y+14,27,8,'#cc4c83'); drawPixelRect(x+34,y+10,24,12,'#4a84b8');
+    } else if (key === 'moon_clock') {
+      drawPixelRect(x+20,y,36,36,'#b7a9bb'); drawPixelRect(x+24,y+4,28,28,'#34394e');
+      drawPixelRect(x+36,y+8,3,12,'#e6e3ca'); drawPixelRect(x+37,y+18,10,3,'#e6e3ca');
+    } else if (key === 'neon_sign') {
+      drawPixelRect(x+3,y+5,73,27,'#1b2132'); drawPixelRect(x+8,y+9,63,3,'#52e3d9');
+      drawPixelRect(x+12,y+16,50,9,'#b26af3'); drawPixelRect(x+8,y+28,63,2,'#52e3d9');
+    } else if (key === 'trophy_shelf') {
+      drawPixelRect(x+2,y+27,75,5,'#9e825c'); drawPixelRect(x+10,y+8,16,20,'#c6a25c');
+      drawPixelRect(x+34,y+3,14,25,'#b9c5d1'); drawPixelRect(x+57,y+12,12,16,'#d6b56d');
+    }
+  }
+  // TEST-EXPORT: purchasedFurniture:end
+
   // TEST-EXPORT: drawWorld:start
   function drawWorld(time) {
     var renderTime = reducedMotion ? performance.now() : time;
@@ -4953,7 +5078,15 @@
       var home = savedHomeLayout(state);
       drawHomeWall(home.wall);
       drawHomeFloor(home.floor, Boolean(botArtRendererReady));
-      drawHomeFurniture(home.furniture);
+      var purchased = state.pet_furniture && state.pet_furniture.available === true
+        ? savedPurchasedFurniture(state) : null;
+      if (!purchased || !purchased.right) drawHomeFurniture(home.furniture);
+      if (purchased) {
+        if (purchased.wall) drawPurchasedFurniture(purchased.wall,'wall');
+        if (purchased.left) drawPurchasedFurniture(purchased.left,'left');
+        if (purchased.right) drawPurchasedFurniture(purchased.right,'right');
+        home.purchased = purchased;
+      }
       backgroundArtState.home = home;
       backgroundArtState.floor = { mode: home.floor, baseline_y: BOT_RENDER_BASELINE_Y, shadow: Boolean(botArtRendererReady) };
     }
