@@ -195,6 +195,11 @@ try {
 
       const canvasBox = await page.locator('#moonpet-canvas').boundingBox();
       assert.ok(canvasBox);
+      assert.ok(Math.abs(canvasBox.width / canvasBox.height - 16 / 11) < 0.01,
+        'displayed MoonPet canvas preserves native 16:11 ratio at '+width+'px viewport');
+      const viewportBox = await page.locator('.viewport').boundingBox();
+      assert.ok(viewportBox && Math.abs(viewportBox.width / viewportBox.height - 16 / 11) < 0.01,
+        'canvas viewport cannot stretch the 320x220 world');
       assert.deepEqual(await page.evaluate(()=>window.stationCanvasLabels),[],'no permanent station text is painted');
       // Validate the actual responsive rectangles, including the short mobile layout.
       const overlays=await page.locator('#hud, #canvas-tools button').evaluateAll(nodes=>nodes.map(node=>{
