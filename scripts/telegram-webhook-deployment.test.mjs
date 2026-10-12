@@ -35,6 +35,7 @@ test('moonboys-api migration preflight queries remote D1 portably and fails clos
   const applied = JSON.stringify([{ success: true, results: [{ name: '092_moonpet_house_layouts.sql' }, { name: '094_moonpet_home_furniture.sql' }, { name: '095_moonpet_home_garden.sql' }] }]);
   assert.doesNotThrow(() => requirePetHouseMigrationApplied(applied));
   assert.throws(() => requirePetHouseMigrationApplied(JSON.stringify([{ success:true, results:[{name:'092_moonpet_house_layouts.sql'}] }])), /094_moonpet_home_furniture\.sql/);
+  assert.throws(() => requirePetHouseMigrationApplied(JSON.stringify([{ success:true, results:[{name:'092_moonpet_house_layouts.sql'},{name:'094_moonpet_home_furniture.sql'}] }])), /095_moonpet_home_garden\.sql/);
   for (const result of ['', '{}', JSON.stringify([{ success: true, results: [] }])]) {
     assert.throws(() => requirePetHouseMigrationApplied(result), /092_moonpet_house_layouts\.sql/);
   }
