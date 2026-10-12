@@ -221,11 +221,16 @@ try {
         'bottom navigation remains fully visible at '+width+'x'+height+(telegramHeight ? ' with Telegram '+telegramHeight : ''));
       for (const screenKey of ['home','missions','explore','work','economy','profile']) {
         await page.locator('[data-screen="'+screenKey+'"]').click();
-        const activeDock = page.locator('#nav [data-screen="'+screenKey+'"]');
-        await activeDock.waitFor({state:'visible'});
-        const activeDockBox = await activeDock.boundingBox();
-        assert.ok(activeDockBox && activeDockBox.y + activeDockBox.height <= shellBox.y + shellBox.height + 1,
-          'bottom menu stays visible on '+screenKey);
+        await page.waitForFunction((key) => {
+          const button = document.querySelector('#nav [data-screen="' + key + '"]');
+          const shell = document.querySelector('#moonpet-app');
+          if (!button || !shell) return false;
+          const buttonBox = button.getBoundingClientRect();
+          const shellBox = shell.getBoundingClientRect();
+          return buttonBox.width > 0 && buttonBox.height >= 44
+            && buttonBox.top >= shellBox.top
+            && buttonBox.bottom <= shellBox.bottom + 1;
+        }, screenKey);
       }
       await page.locator('[data-screen="home"]').click();
       assert.deepEqual(await page.evaluate(()=>window.stationCanvasLabels),[],'no permanent station text is painted');
