@@ -27,7 +27,7 @@ export async function forwardRadioRequestsToGroup(db, config, send, options = {}
     WHERE system_key='radio_request' AND action_key='submission' AND status='completed'
       AND period_key>=?
       AND json_valid(payload_json)
-      AND COALESCE(json_extract(payload_json,'$.telegram_group_delivery'),'pending')='pending'
+      AND json_extract(payload_json,'$.telegram_group_delivery')='pending'
     ORDER BY created_at ASC LIMIT ?`).bind(START_DAY, MAX_PER_TICK).all()).results;
   let sent=0,failed=0,claimed=0;
   for(const row of rows){
@@ -41,7 +41,7 @@ export async function forwardRadioRequestsToGroup(db, config, send, options = {}
       SET payload_json=json_set(payload_json,'$.telegram_group_delivery','sending'),
           updated_at=CURRENT_TIMESTAMP
       WHERE id=? AND status='completed' AND system_key='radio_request'
-        AND COALESCE(json_extract(payload_json,'$.telegram_group_delivery'),'pending')='pending'`)
+        AND json_extract(payload_json,'$.telegram_group_delivery')='pending'`)
       .bind(row.id).run());
     if(Number(claimedRow?.meta?.changes)!==1)continue;
     claimed++;
