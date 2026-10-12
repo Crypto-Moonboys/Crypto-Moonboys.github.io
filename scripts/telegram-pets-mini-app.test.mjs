@@ -227,8 +227,12 @@ assert.match(client, /if \(!pet\.progression\)[^\n]+PROGRESSION UNAVAILABLE/, 'm
 const apiConfig = fs.readFileSync(new URL('../js/api-config.js', import.meta.url), 'utf8');
 const css = fs.readFileSync(new URL('../css/moonpet-mini-app.css', import.meta.url), 'utf8');
 assert.match(css, /--moonpet-viewport-height:\s*100dvh/, 'Moonpet shell must have a dynamic viewport-height fallback');
-assert.equal((css.match(/grid-template-rows:\s*auto minmax\([^;]+\) minmax\(0,\s*1fr\) auto/g) || []).length, 3,
-  'base, wide and short layouts must each preserve the four-row status, canvas, controls and dock flow');
+assert.match(css, /grid-template-rows:\s*auto auto minmax\(0,\s*1fr\) auto/,
+  'the shell must reserve an intrinsic-ratio canvas row between status and scrollable controls');
+assert.match(css, /\.viewport \{[\s\S]{0,260}aspect-ratio:\s*16\s*\/\s*11/,
+  'the visible canvas viewport must preserve the native 320x220 world ratio');
+assert.match(css, /#moonpet-canvas \{[\s\S]{0,220}width:\s*100%;[\s\S]{0,140}height:\s*auto;[\s\S]{0,140}aspect-ratio:\s*16\s*\/\s*11/,
+  'the bitmap must scale proportionally instead of stretching to an arbitrary row height');
 assert.match(client, /tg\.viewportHeight \|\| tg\.viewportStableHeight/, 'Moonpet shell must use Telegram visible viewport height');
 assert.match(client, /tg\.onEvent\('viewportChanged', syncViewportHeight\)/, 'Moonpet shell must track Telegram viewport changes');
 const guide = fs.readFileSync(new URL('../how-to-play-crypto-moonboy-pets.html', import.meta.url), 'utf8');
@@ -1507,8 +1511,8 @@ assert.match(fs.readFileSync(new URL('../workers/moonboys-api/pets/completion-fe
 assert.match(client, /DAILY MISSION BUFFER \/\/ /);
 assert.match(client, /meter\('DAILY CLEAR', missionPercent\)/);
 assert.match(html, /id="utility-layer"/);
-assert.match(css, /grid-template-rows:\s*auto minmax\([^;]+\) minmax\(0,\s*1fr\) auto/,
-  'the fixed status header must leave the canvas directly above scrollable controls');
+assert.match(css, /grid-template-rows:\s*auto auto minmax\(0,\s*1fr\) auto/,
+  'the fixed status header must leave the proportional canvas directly above scrollable controls');
 assert.match(css, /\.terminal-output \{[\s\S]*min-height:\s*36px/,
   'routine status updates must remain visibly fixed above the canvas');
 assert.match(css, /\.terminal-output\.is-scrolling \.terminal-output-text \{[\s\S]*animation:\s*terminal-status-scroll/,
@@ -1549,7 +1553,7 @@ statusFrames.shift()();
 assert.equal(testStatusOutput.dataset.tone, 'danger');
 assert.equal(testStatusClasses.has('is-scrolling'), true, 'overflowing updates must activate the scrolling text track');
 assert.match(testStatusProperties['--status-scroll-duration'], /s$/, 'overflowing updates must receive a readable duration');
-assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20261011-ui-v1/);
+assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20261012-canvas-ratio-v1/);
 assert.doesNotMatch(html, /moonpet-art-resolver\.js/, 'the game must not load the retired static background resolver');
 assert.match(html, /\/js\/moonpet-bot-art-loader\.js\?v=20261006-live-refresh-v5/);
 assert.match(html, /\/js\/moonpet-bot-art-renderer\.js\?v=20261002-audit-recovery-v2/);
