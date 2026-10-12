@@ -3604,6 +3604,9 @@
     });
     renderHud();
     renderNav();
+    // The dock's populated height is part of the available-layout budget.
+    // Recompute only after nav buttons exist so the canvas cannot steal their space.
+    syncViewportHeight();
     renderCanvasTools();
     var waitingForModule = stateNeedsScreenHydration(state, activeScreen);
     var hydrationStopped = waitingForModule && fullStateHydrationFailures >= FULL_STATE_HYDRATION_MAX_AUTO_RETRIES && !fullStateHydrationPromise;
