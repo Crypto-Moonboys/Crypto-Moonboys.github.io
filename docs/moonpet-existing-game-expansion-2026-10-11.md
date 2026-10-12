@@ -16,21 +16,55 @@ This main-based replacement PR implements selected H-numbered feedback in issue 
 - **Weekly Bounty Blocks:** ten additional templates; three active per UTC ISO week, independent from the pet's creation-based Weekly Journey and independent from Monday Weekly Boss settlement. Account-owned server event counts, per-week receipt keys `weekly:YYYY-W##:<bounty_key>`, and earned-currency-only claims. Expiring unclaimed weekly challenges never grant a free retroactive payout. Duplicate confirmations cannot pay twice. Historical daily bounties are unchanged.
 - **Food Shop:** five additive bundle offers in a separate visible panel; fixed menu, one purchase of each offer per UTC day using existing `pet_market` purchase and inventory-capacity settlement. Original Moon Market's twelve-offer pool and four rotating offers remain identical. No external token/real-money purchases.
 - **Style Lab:** four new cosmetic ownership keys and actual canvas-only visuals alongside the three working original cosmetics. Styles are non-repeatable account purchases, free per-pet equip/removal; they do not modify rarity, trait assignment, stats, original identities or gender.
-- **GraffPUNKS Radio requests:** signed Mini App form accepts 4–160 characters, one saved request per Telegram account and UTC day. Existing `telegram_pet_system_events` table (migration 074) holds private `system_key='radio_request'` rows with `pet_id=''`, `action_key='submission'`, `status='completed'` and `period_key=YYYY-MM-DD`. The unique account-day key prevents races and second submissions; a repeated request confirms the first saved result. No new D1 table is created for Radio requests. The expanded Style Lab does require migration **091_moonpet_style_catalog_expansion.sql** to widen the CHECK constraint on per-pet loadouts while retaining every saved row, source pet and enabled selection. It must be applied and verified **before** the seven-style Worker/Pages release. The user receives a **stored-for-host-review** confirmation; this is not an assurance a real presenter has read or broadcast the request.
+- **GraffPUNKS Radio requests:** the signed Mini App form accepts 4–160 characters, one saved request per Telegram account and UTC day. Existing `telegram_pet_system_events` table (migration 074) holds `system_key='radio_request'` rows with `pet_id=''`, `action_key='submission'`, `status='completed'` and `period_key=YYYY-MM-DD`; its unique account-day key prevents races and second submissions, and a repeat confirms the first saved result. The original private-only rule is superseded: the current Mini App blocks submission unless the group-sharing checkbox is selected; only a consented submission receives a pending delivery marker and is forwarded by the Worker, which sends request text but no account or pet IDs. Group members can read that text. Legacy requests saved without a consent marker and requests saved before 2026-10-12 stay private and are not forwarded retroactively. Polling runs every five minutes and processes at most five pending requests per check; delivery may take longer with a backlog or transport retry. Group review does not mean the request has been read or aired. Migration **093_moonpet_radio_group_delivery_index.sql** adds only the targeted pending-queue index; apply and verify it before deploying the scheduled Worker change. No new D1 table is created for Radio requests. The expanded Style Lab does require migration **091_moonpet_style_catalog_expansion.sql** to widen the CHECK constraint on per-pet loadouts while retaining every saved row, source pet and enabled selection. It must be applied and verified **before** the seven-style Worker/Pages release.
 
 ## Radio host queue: operational retrieval
 
-Only a trusted operator with production D1 access should run an account-scoped private read such as:
+Only a trusted operator with production D1 access should inspect the private host queue using a read that omits submitter and pet IDs, such as:
 
 ```sql
 SELECT created_at, period_key AS utc_day,
-  json_extract(payload_json,'$.message') AS request_message
+  json_extract(CASE WHEN json_valid(payload_json) THEN payload_json ELSE '{}' END,'$.message') AS request_message
 FROM telegram_pet_system_events
 WHERE system_key='radio_request' AND action_key='submission' AND status='completed'
 ORDER BY created_at DESC LIMIT 50;
 ```
 
-Do not publish `telegram_id`, request text or associated pet IDs to the public site, dashboards, logs, bots or GitHub. Moderate personally identifying and abusive content. Without someone reviewing this private queue, a submitted request does not reach an on-air DJ automatically. No scraping, ChatGPT training, token payment or spam-like relaying is permitted.
+Requests held in `sending` are not retried automatically because Telegram may already have accepted them. A trusted operator can review aged candidates with this private read (15 minutes is a review threshold, not proof the send failed):
+
+HTTP 429 and 5xx responses are retried no more than three send attempts total; 429 responses honor Telegram's `retry_after` delay. Other HTTP failures, transient failures that exhaust those attempts, and invalid saved messages move to `failed` and leave the scheduled queue. HTTP failures retain the last status; invalid messages have the local error `invalid_message`. Inspect these alongside aged `sending` claims before deciding whether to repair a payload, mark a request `sent`, or return it to `pending`.
+
+```sql
+SELECT id, created_at, updated_at, period_key AS utc_day,
+  json_extract(CASE WHEN json_valid(payload_json) THEN payload_json ELSE '{}' END,'$.message') AS request_message,
+  json_extract(CASE WHEN json_valid(payload_json) THEN payload_json ELSE '{}' END,'$.telegram_group_delivery') AS delivery_state,
+  json_extract(CASE WHEN json_valid(payload_json) THEN payload_json ELSE '{}' END,'$.telegram_group_delivery_http_status') AS last_http_status,
+  json_extract(CASE WHEN json_valid(payload_json) THEN payload_json ELSE '{}' END,'$.telegram_group_delivery_error') AS delivery_error
+FROM telegram_pet_system_events
+WHERE system_key='radio_request' AND action_key='submission' AND status='completed'
+  AND json_extract(CASE WHEN json_valid(payload_json) THEN payload_json ELSE '{}' END,'$.telegram_group_delivery') IN ('sending','failed')
+  AND updated_at < datetime('now','-15 minutes')
+ORDER BY updated_at ASC LIMIT 50;
+```
+
+Compare each candidate's text and UTC day with the configured group/topic before reconciling its marker. If a matching post is confirmed, set its marker to `sent`; only reset it to `pending` after confirming no post was delivered. Changing the marker value in this conditional update to `pending` starts a fresh three-attempt allowance:
+
+```sql
+UPDATE telegram_pet_system_events
+SET payload_json=json_remove(json_set(CASE WHEN json_valid(payload_json) THEN payload_json ELSE '{}' END,
+      '$.telegram_group_delivery','sent',
+      '$.telegram_group_delivery_attempts',0),
+    '$.telegram_group_delivery_http_status','$.telegram_group_delivery_retry_at'),
+    updated_at=CURRENT_TIMESTAMP
+WHERE id='<reviewed-row-id>' AND system_key='radio_request'
+  AND action_key='submission' AND status='completed'
+  AND json_extract(CASE WHEN json_valid(payload_json) THEN payload_json ELSE '{}' END,'$.telegram_group_delivery') IN ('sending','failed')
+  AND updated_at < datetime('now','-15 minutes');
+```
+
+Match the reviewed row ID, require the current marker to remain `sending` or `failed`, and verify exactly one row changed. If identical requests make the match ambiguous, leave the marker held and escalate rather than risk a duplicate. Never automate this recovery decision.
+
+Do not publish `telegram_id`, request text or associated pet IDs to the public site, dashboards, logs, or GitHub. For submissions with explicit group consent, only the configured Telegram group receives the request text; its members can read it, but no submitter or pet ID is sent. Moderate personally identifying and abusive content. Group delivery is for DJ review only and does not control playback or guarantee an on-air selection. No scraping, ChatGPT training, token payment or spam-like relaying is permitted.
 
 ## Moon Run pricing — explicit decision
 

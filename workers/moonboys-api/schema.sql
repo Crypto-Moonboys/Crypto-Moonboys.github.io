@@ -1794,6 +1794,11 @@ CREATE TABLE IF NOT EXISTS telegram_pet_system_events (
 );
 CREATE INDEX IF NOT EXISTS idx_pet_system_events_owner ON telegram_pet_system_events (telegram_id, system_key, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_pet_system_events_pet_owner ON telegram_pet_system_events (pet_id, telegram_id, season_key, system_key, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_pet_system_events_radio_delivery
+  ON telegram_pet_system_events (created_at ASC)
+  WHERE system_key='radio_request' AND action_key='submission' AND status='completed'
+    AND period_key>='2026-10-12'
+    AND json_extract(CASE WHEN json_valid(payload_json) THEN payload_json ELSE '{}' END,'$.telegram_group_delivery')='pending';
 CREATE TABLE IF NOT EXISTS telegram_pet_live_progression_state (
   pet_id TEXT NOT NULL, telegram_id TEXT NOT NULL, season_key TEXT NOT NULL,
   region_mastery_json TEXT NOT NULL DEFAULT '{}', completed_regions_json TEXT NOT NULL DEFAULT '[]',

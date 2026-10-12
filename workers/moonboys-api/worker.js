@@ -1,5 +1,6 @@
 import { capturePetEconomy, assertPetEconomy, assertPetEconomySource } from './pets/economic-projection.js';
 import { submitMoonpetRadioRequest } from './pets/radio-requests.js';
+import { forwardRadioRequestsToGroup } from './pets/radio-group-delivery.js';
 import { atomicPetBatch } from './pets/atomic-mutations.js';
 import { getStyleLoadout, equipPetStyle } from './pets/style-loadout.js';
 import { readPetHouseLayout, setPetHouseLayout } from './pets/house-layout.js';
@@ -11258,7 +11259,7 @@ async function dispatchPetMiniAppAction(db, telegramId, user, body, botToken) {
   if (action === 'radio_request') {
     const pet = await getPetProfile(db,telegramId);
     if(!pet?.pet_id || pet.pet_id!==displayedPetId) return {accepted:false,reason:'displayed_pet_changed',refresh_state:true};
-    return submitMoonpetRadioRequest(db,telegramId,pet.pet_id,body.message);
+    return submitMoonpetRadioRequest(db,telegramId,pet.pet_id,body.message,new Date(),body.group_delivery_consent===true);
   }
   if (action === 'expedition') return runPetCrystalExpedition(db, telegramId, new Date(), eventKey, body.expedition_key, body.pet_id, body.day_key);
   if (action === 'market_buy') return buyPetMarketOffer(db, telegramId, body.offer_key, new Date(), eventKey, body.day_key);
@@ -15170,6 +15171,22 @@ export default {
       }
     }
 
+    if (shouldRunPetNotifications) {
+      const radio = await forwardRadioRequestsToGroup(env.DB, {
+        chat_id: env.TELEGRAM_GROUP_CHAT_ID,
+        message_thread_id: env.TELEGRAM_GROUP_THREAD_ID,
+        bot_token: env.TELEGRAM_BOT_TOKEN,
+      }, sendTelegramMessage).catch(error => ({
+        ok:false, sent:0, failed:1, error:error?.message || String(error),
+      }));
+      scheduledResults.push({task:'moonpet_radio_group_delivery',ok:radio.ok,
+        error:radio.ok?null:(radio.error || 'radio_group_delivery_failed')});
+      if(!radio.ok) logApiFailure('moonpet_radio_group_delivery_failed', {
+        sent:radio.sent, failed:radio.failed, error:radio.error || null,
+      });
+      else if(radio.sent) logApiEvent('moonpet_radio_group_delivery_complete',{sent:radio.sent});
+    }
+
     const groupType = shouldRunDailySummary && shouldRunTimedEvents
       ? 'all'
       : (shouldRunDailySummary ? 'daily_summary' : (shouldRunTimedEvents ? 'timed_events' : null));
@@ -15221,7 +15238,7 @@ export default {
 const SITE_URL = 'https://cryptomoonboys.com';
 const TELEGRAM_GAMES_MENU_URL = `${SITE_URL}/games/telegram/?v=20260903-games-shell-v8`;
 const TELEGRAM_GAMES_MENU_TEXT = 'Games';
-const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20261011-rewards-v1`;
+const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20261012-radio-group-v2`;
 const PET_MEDIA_BASE_URL = `${SITE_URL}/img/pets`;
 const PET_MEDIA_MANIFEST = Object.freeze({
   feed: 'CRYPTO MOONBOYS PET FEED.jpg',
