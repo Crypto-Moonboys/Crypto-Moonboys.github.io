@@ -1236,7 +1236,8 @@ try {
     await page.waitForFunction(() => window.MoonpetBetaAppearance.getBotArtState()?.lastRender?.animationMode === 'victory');
     await page.locator('[data-screen="explore"]').click();
     await page.screenshot({ path: path.join(screenshotDirectory, 'moonpet-equipped-styles-' + viewport.width + '.png') });
-    assert.deepEqual(await page.evaluate(() => window.petCanvasTextDraws), [], 'canvas has no floating pet name or text overlay even with a saved Rename Badge');
+    const unexpectedCanvasText = await page.evaluate(() => window.petCanvasTextDraws.filter(text => !['KITCHEN','GARDEN','GYM'].includes(text)));
+    assert.deepEqual(unexpectedCanvasText, [], 'canvas has no floating pet name or dynamic text overlay; only fixed Home station labels are allowed');
     assert.equal(sqlite.prepare('SELECT enabled FROM telegram_pet_style_loadouts WHERE pet_id=? AND cosmetic_key=?').get(stylePet.pet_id,'rename_badge').enabled, 1, 'cleanup keeps existing saved ownership intact');
     await page.locator('[data-screen="economy"]').click();
     assert.equal(await page.locator('[data-action="style_equip"]').filter({hasText:'UNEQUIP FREE'}).count(),3);
