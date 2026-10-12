@@ -1,6 +1,7 @@
 // Home E2: server-priced, account-owned cosmetic furniture and per-pet placements.
 // No XP, Pet lifecycle, missions, E1 free furnishing or reward ledger changes.
 import { requirePetReadResult, requirePetMutationResult } from './read-result.js';
+import { ensurePetAccountWalletReadyForMutation, accountWalletRecoveryResolvedSql } from './wallet-reconciliation.js';
 
 export const PET_HOME_FURNITURE = Object.freeze({
   neon_lamp: Object.freeze({label:'Neon Lamp',slot:'left',price_gold:120}),
@@ -48,11 +49,13 @@ export async function buyPetFurniture(db,owner,pet,itemKey,eventKey) {
   if(!item||!pet?.pet_id||!pet?.season_key||typeof eventKey!=='string'||!eventKey)
     return {accepted:false,reason:'pet_furniture_invalid'};
   const price=item.price_gold;
+  if (!(await ensurePetAccountWalletReadyForMutation(db,owner)))
+    return {accepted:false,reason:'wallet_reconciliation_recovery_pending',refresh_state:true};
   // One D1 batch = one SQLite transaction. The receipt INSERT is contingent on
   // the previous conditional debit (changes()=1). Any SQL failure rolls back.
   const [debit,unlock,owned,wallet]=await db.batch([
     db.prepare("UPDATE telegram_pet_profiles SET moon_gold=moon_gold-?,updated_at=CURRENT_TIMESTAMP " +
-      "WHERE telegram_id=? AND moon_gold>=? " +
+      "WHERE telegram_id=? AND moon_gold>=? AND " + accountWalletRecoveryResolvedSql('telegram_pet_profiles.telegram_id') + " " +
       "AND NOT EXISTS(SELECT 1 FROM telegram_pet_furniture_unlocks WHERE telegram_id=? AND item_key=?) " +
       "AND EXISTS(SELECT 1 FROM telegram_pet_active_slots a " +
       "JOIN telegram_pet_instances p ON p.pet_id=a.pet_id AND p.telegram_id=a.telegram_id AND p.season_key=a.season_key " +
