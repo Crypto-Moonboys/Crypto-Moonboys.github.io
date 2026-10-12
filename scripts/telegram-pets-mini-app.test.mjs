@@ -86,7 +86,7 @@ assert.equal(
 );
 assert.match(
   miniAppStateSource,
-  /const \[runPet, styleLoadout, contracts, dailyReservation\] = await Promise\.all\(\[/,
+  /const \[runPet, styleLoadout, petHouse, contracts, dailyReservation\] = await Promise\.all\(\[/,
   'independent Style, Contract and Daily reservation reads must execute concurrently',
 );
 assert.match(
