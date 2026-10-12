@@ -22,7 +22,7 @@ function clientContext() {
     Date: { now: () => now, parse: Date.parse }, performance: { now: () => now }, screen: { scrollTop: 0, innerHTML: '' },
     window: { clearTimeout(id) { timers.delete(id); }, setTimeout(fn, delay) { const id = ++sequence; timers.set(id, { fn, delay, at: now + delay }); return id; } },
     document: { getElementById: () => null }, panel: (title, body) => title + body, routeButton: label => label,
-    captureEditableState: () => null, rememberPanels() {}, renderHud() {}, renderNav() {}, renderCanvasTools() {}, restoreEditableState() {},
+    captureEditableState: () => null, rememberPanels() {}, renderHud() {}, renderNav() {}, syncViewportHeight() {}, renderCanvasTools() {}, restoreEditableState() {},
     renderMenuStatus: () => '', renderRewardLifecycle: () => '', renderRecommended: () => '', renderPetSpaces: () => '', screens: { home: () => 'READY', explore: () => 'READY', work: () => 'READY', profile: () => 'READY', missions: () => 'READY' }, applyRequestedFocus() {}, words: s => s,
     tell(message) { messages.push(message); }, haptic() {}, showPendingNotices: async () => {}, playOptionsReady: () => true,
     crypto: { randomUUID: () => 'local-action' }, actionAnimationFamily: () => 'equip', animateAction() {},
