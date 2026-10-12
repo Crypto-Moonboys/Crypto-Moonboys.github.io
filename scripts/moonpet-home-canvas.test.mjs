@@ -121,3 +121,38 @@ test('Home layers precede the pet/effects and the original hatch reveal excludes
   assert.deepEqual(calls,['egg','effects-back','pet','effects-front']);
   assert.equal(runtime.backgroundArtState.home,null);
 });
+
+const stationsSource=client.split('// TEST-EXPORT: homeStationsCanvas:start')[1].split('// TEST-EXPORT: homeStationsCanvas:end')[0];
+test('E3 props have transparent surroundings, no text or top-strip paint',()=>{
+  const paint=[], stack=[];
+  const ctx={globalAlpha:1,save(){stack.push(this.globalAlpha);},restore(){this.globalAlpha=stack.pop();},
+    fillText(){throw Error('Stations must not label the canvas');}};
+  const runtime=vm.createContext({state:{adopted:true,lifecycle:{phase:'young'}},ctx,
+    drawPixelRect:(x,y,w,h,color)=>paint.push({x,y,w,h,color})});
+  vm.runInContext(stationsSource,runtime);
+  const overlap=(a,b)=>a.x<b.x+b.w && a.x+a.w>b.x && a.y<b.y+b.h && a.y+a.h>b.y;
+  const reserved=[{x:68,y:35,w:184,h:184},{x:10,y:166,w:50,h:49},
+    {x:260,y:166,w:50,h:49},{x:123,y:37,w:80,h:36}];
+  for(const [key,box] of Object.entries(runtime.HOME_STATION_HOTSPOTS)) {
+    assert.ok(box.y>=60 && box.y+box.h<166,'stations clear HUD and floor-level furniture');
+    assert.ok(!reserved.some(area=>overlap(box,area)),key+' clears the pet and E2 furniture');
+    assert.equal(runtime.homeStationAt(box.x+box.w/2,box.y+box.h/2),key);
+  }
+  assert.equal(runtime.homeStationAt(160,16),null,'old HUD-strip target is removed');
+  assert.equal(runtime.homeStationAt(160,140),null,'pet taps are not captured by stations');
+  for(const status of ['empty','growing','ready']) {
+    runtime.state.pet_garden={status};paint.length=0;runtime.drawHomeStations();
+    assert.ok(paint.length>0 && paint.length<30,'props use bounded static primitives');
+    assert.equal(ctx.globalAlpha,1);
+    assert.ok(paint.every(rect=>rect.y>=62),'nothing paints the top strip');
+    for(const box of Object.values(runtime.HOME_STATION_HOTSPOTS)) {
+      const rects=paint.filter(rect=>overlap(rect,box));
+      assert.ok(rects.length>0);
+      assert.ok(rects.every(rect=>rect.x>=box.x && rect.y>=box.y && rect.x+rect.w<=box.x+box.w && rect.y+rect.h<=box.y+box.h));
+      assert.ok(!rects.some(rect=>rect.x===box.x && rect.y===box.y),'surrounding room remains unpainted');
+      assert.ok(rects.reduce((sum,rect)=>sum+rect.w*rect.h,0)<box.w*box.h,'no opaque full-box backing');
+    }
+  }
+  runtime.state.lifecycle.phase='egg';paint.length=0;runtime.drawHomeStations();
+  assert.equal(paint.length,0);assert.equal(runtime.homeStationAt(34,76),null,'egg gating stays unchanged');
+});
