@@ -195,7 +195,7 @@ try {
       assert.equal(f.sql.prepare('SELECT COUNT(*) AS total FROM telegram_pet_garden_plots WHERE pet_id=?').get(young).total, 1);
       await gardenPanel.getByText(/CROP GROWING/).waitFor();
 
-      f.sql.prepare("UPDATE telegram_pet_garden_plots SET ready_at='2000-01-01T00:00:00.000Z' WHERE pet_id=?").run(young);
+      f.sql.prepare("UPDATE telegram_pet_garden_plots SET planted_at='1999-12-31T18:00:00.000Z', ready_at='2000-01-01T00:00:00.000Z' WHERE pet_id=?").run(young);
       const refreshResponse = page.waitForResponse(r => r.url().endsWith('/state'));
       await page.locator('[data-utility="sync"]').click();
       await refreshResponse;
