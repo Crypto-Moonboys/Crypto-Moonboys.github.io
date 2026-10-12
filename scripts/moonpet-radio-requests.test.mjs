@@ -48,12 +48,16 @@ test('radio messages persist privately one per account/UTC day with safe duplica
   assert.equal(rows()[0].system_key,'radio_request');
   assert.equal(rows()[0].status,'completed');
   assert.equal(JSON.parse(rows()[0].payload_json).message,'Tune: GraffPUNKS');
+  assert.equal(JSON.parse(rows()[0].payload_json).telegram_group_delivery,undefined,'legacy request stays private');
   const dup=await submitMoonpetRadioRequest(db,'user-one','pet-one','Different request',day);
   assert.equal(dup.accepted,true);assert.equal(dup.duplicate,true);
   assert.equal(JSON.parse(rows()[0].payload_json).message,'Tune: GraffPUNKS','second request must not overwrite the first');
   assert.equal((await submitMoonpetRadioRequest(db,'user-two','pet-two','Second account',day)).accepted,true);
   assert.equal((await submitMoonpetRadioRequest(db,'user-one','pet-one','Next day song',new Date('2026-10-12T00:00:00.000Z'))).accepted,true);
   assert.equal(rows().length,3);
+  const optedIn=await submitMoonpetRadioRequest(db,'user-two','pet-two','Share on group',new Date('2026-10-12T12:00:00.000Z'),true);
+  assert.equal(optedIn.accepted,true);
+  assert.equal(JSON.parse(rows().find(row=>row.telegram_id==='user-two'&&row.period_key==='2026-10-12').payload_json).telegram_group_delivery,'pending');
   assert.equal((await submitMoonpetRadioRequest(db,'user-one','wrong-pet','Future request',new Date('2026-10-13T12:00:00.000Z'))).accepted,false);
   assert.equal(rows().length,3);
   fixture.sql.close();
