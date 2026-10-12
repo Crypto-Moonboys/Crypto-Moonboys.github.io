@@ -80,6 +80,36 @@ test('definite HTTP failure retries, uncertain network failure stays held to avo
   assert.equal((await forwardRadioRequestsToGroup(f.db,config,async()=>({ok:true}))).sent,0);
   f.close();
 });
+test('aged uncertain claims wait for operator reconciliation before a retry',async()=>{
+  const f=fixture();
+  for(const id of ['confirmed','missing','ambiguous']){
+    f.put(id,'2026-10-12','Same request');
+    f.sql.prepare(`UPDATE telegram_pet_system_events
+      SET payload_json=json_set(payload_json,'$.telegram_group_delivery','sending'),
+          updated_at=datetime('now','-20 minutes') WHERE id=?`).run(id);
+  }
+  const candidates=f.sql.prepare(`SELECT id,updated_at FROM telegram_pet_system_events
+    WHERE system_key='radio_request' AND action_key='submission' AND status='completed'
+      AND json_extract(CASE WHEN json_valid(payload_json) THEN payload_json ELSE '{}' END,'$.telegram_group_delivery')='sending'
+      AND updated_at<datetime('now','-15 minutes')`).all();
+  assert.deepEqual(candidates.map(row=>row.id).sort(),['ambiguous','confirmed','missing']);
+  let calls=0;
+  await forwardRadioRequestsToGroup(f.db,config,async()=>{calls++;return{ok:true};});
+  assert.equal(calls,0,'stale claims must not be retried automatically');
+  const reconcile=f.sql.prepare(`UPDATE telegram_pet_system_events
+    SET payload_json=json_set(CASE WHEN json_valid(payload_json) THEN payload_json ELSE '{}' END,'$.telegram_group_delivery',?),
+        updated_at=CURRENT_TIMESTAMP
+    WHERE id=? AND system_key='radio_request' AND action_key='submission' AND status='completed'
+      AND json_extract(CASE WHEN json_valid(payload_json) THEN payload_json ELSE '{}' END,'$.telegram_group_delivery')='sending'
+      AND updated_at<datetime('now','-15 minutes')`);
+  assert.equal(reconcile.run('sent','confirmed').changes,1);
+  assert.equal(reconcile.run('pending','missing').changes,1);
+  assert.equal(f.status('ambiguous'),'sending','ambiguous matches stay held for review');
+  assert.equal((await forwardRadioRequestsToGroup(f.db,config,async()=>{calls++;return{ok:true};})).sent,1);
+  assert.equal(calls,1);
+  assert.equal(f.status('missing'),'sent');
+  f.close();
+});
 test('double scheduled calls cannot claim an already sending request',async()=>{
   const f=fixture();f.put('race','2026-10-12','Race protected');
   let release;const wait=new Promise(resolve=>{release=resolve;});

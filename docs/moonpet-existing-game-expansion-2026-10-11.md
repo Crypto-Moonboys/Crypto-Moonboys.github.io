@@ -24,11 +24,38 @@ Only a trusted operator with production D1 access should inspect the private hos
 
 ```sql
 SELECT created_at, period_key AS utc_day,
-  json_extract(payload_json,'$.message') AS request_message
+  json_extract(CASE WHEN json_valid(payload_json) THEN payload_json ELSE '{}' END,'$.message') AS request_message
 FROM telegram_pet_system_events
 WHERE system_key='radio_request' AND action_key='submission' AND status='completed'
 ORDER BY created_at DESC LIMIT 50;
 ```
+
+Requests held in `sending` are not retried automatically because Telegram may already have accepted them. A trusted operator can review aged candidates with this private read (15 minutes is a review threshold, not proof the send failed):
+
+```sql
+SELECT id, created_at, updated_at, period_key AS utc_day,
+  json_extract(CASE WHEN json_valid(payload_json) THEN payload_json ELSE '{}' END,'$.message') AS request_message
+FROM telegram_pet_system_events
+WHERE system_key='radio_request' AND action_key='submission' AND status='completed'
+  AND json_extract(CASE WHEN json_valid(payload_json) THEN payload_json ELSE '{}' END,'$.telegram_group_delivery')='sending'
+  AND updated_at < datetime('now','-15 minutes')
+ORDER BY updated_at ASC LIMIT 50;
+```
+
+Compare each candidate's text and UTC day with the configured group/topic before reconciling its marker. If a matching post is confirmed, set its marker to `sent`; only reset it to `pending` after confirming no post was delivered. For the latter case, change the marker value in this conditional update to `pending`:
+
+```sql
+UPDATE telegram_pet_system_events
+SET payload_json=json_set(CASE WHEN json_valid(payload_json) THEN payload_json ELSE '{}' END,
+      '$.telegram_group_delivery','sent'),
+    updated_at=CURRENT_TIMESTAMP
+WHERE id='<reviewed-row-id>' AND system_key='radio_request'
+  AND action_key='submission' AND status='completed'
+  AND json_extract(CASE WHEN json_valid(payload_json) THEN payload_json ELSE '{}' END,'$.telegram_group_delivery')='sending'
+  AND updated_at < datetime('now','-15 minutes');
+```
+
+Match the reviewed row ID, require the current marker to remain `sending`, and verify exactly one row changed. If identical requests make the match ambiguous, leave the marker held and escalate rather than risk a duplicate. Never automate this recovery decision.
 
 Do not publish `telegram_id`, request text or associated pet IDs to the public site, dashboards, logs, or GitHub. For submissions with explicit group consent, only the configured Telegram group receives the request text; its members can read it, but no submitter or pet ID is sent. Moderate personally identifying and abusive content. Group delivery is for DJ review only and does not control playback or guarantee an on-air selection. No scraping, ChatGPT training, token payment or spam-like relaying is permitted.
 

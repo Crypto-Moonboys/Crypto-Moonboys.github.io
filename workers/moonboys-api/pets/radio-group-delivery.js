@@ -35,8 +35,8 @@ export async function forwardRadioRequestsToGroup(db, config, send, options = {}
     try {payload=JSON.parse(row.payload_json);}catch{failed++;continue;}
     const body=radioGroupMessage(payload,row.period_key);
     if(!body){failed++;continue;}
-    // A conditional claim is permanent until a definitive Telegram failure:
-    // an unknown send result must NOT silently retry (duplicate group posts).
+    // Keep uncertain outcomes held for operator reconciliation rather than
+    // silently retrying them and risking duplicate group posts.
     const claimedRow=requirePetMutationResult(await db.prepare(`UPDATE telegram_pet_system_events
       SET payload_json=json_set(payload_json,'$.telegram_group_delivery','sending'),
           updated_at=CURRENT_TIMESTAMP
