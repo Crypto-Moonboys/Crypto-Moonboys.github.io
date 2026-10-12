@@ -130,12 +130,12 @@ try {
       const rightBuy = page.waitForResponse(r => r.url().endsWith('/action') &&
         r.request().postDataJSON()?.action === 'furniture_buy' &&
         r.request().postDataJSON()?.item_key === 'retro_tv');
-      await furniturePanel.locator('[data-action="furniture_buy"]').filter({hasText:'BUY Retro TV'}).click();
+      await furniturePanel.locator('[data-action="furniture_buy"][data-payload*="retro_tv"]').click();
       assert.equal((await (await rightBuy).json()).result.accepted, true);
       const rightPlace = page.waitForResponse(r => r.url().endsWith('/action') &&
         r.request().postDataJSON()?.action === 'furniture_place' &&
         r.request().postDataJSON()?.item_key === 'retro_tv');
-      await furniturePanel.locator('[data-action="furniture_place"]').filter({hasText:'PLACE Retro TV'}).click();
+      await furniturePanel.locator('[data-action="furniture_place"][data-payload*="retro_tv"]').click();
       assert.equal((await (await rightPlace).json()).result.accepted, true);
       await page.waitForFunction(() =>
         window.MoonpetBetaAppearance.getBackgroundArtState().home?.purchased?.right === 'retro_tv');
