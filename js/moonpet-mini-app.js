@@ -5183,7 +5183,9 @@
     for (var y=0;y<yStart;y+=tileHeight) {
       drawPixelRect(0,y,320,1,grout);
       var offset=((y/tileHeight)%2)*Math.floor(tileWidth/2);
-      for (var x=-offset;x<320;x+=tileWidth) drawPixelRect(x,y,tileWidth,1,grout);
+      for (var x=offset;x<320;x+=tileWidth) {
+        drawPixelRect(x,y,1,Math.min(tileHeight,yStart-y),grout);
+      }
     }
   }
 
