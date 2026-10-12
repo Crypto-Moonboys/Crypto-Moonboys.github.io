@@ -84,7 +84,7 @@ button, input, select, textarea {
   position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  grid-template-rows: auto minmax(178px, 32dvh) minmax(0, 1fr) auto;
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
   overflow: hidden;
   background:
     repeating-linear-gradient(180deg, rgba(255,255,255,.008) 0 1px, transparent 1px 6px),
@@ -119,6 +119,8 @@ button, input, select, textarea {
 
 .viewport {
   position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 11;
   min-height: 0;
   overflow: hidden;
   border-bottom: 1px solid var(--ui-border);
@@ -129,7 +131,8 @@ button, input, select, textarea {
 #moonpet-canvas {
   display: block;
   width: 100%;
-  height: 100%;
+  height: auto;
+  aspect-ratio: 16 / 11;
   image-rendering: pixelated;
 }
 
@@ -1077,7 +1080,6 @@ button, input, select, textarea {
 }
 
 @media (min-width: 560px) {
-  .terminal-shell { grid-template-rows: auto minmax(210px, 35dvh) minmax(0, 1fr) auto; }
   .screen { padding: 14px; }
   .button-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .hud-chip { font-size: 11px; }
@@ -1105,7 +1107,6 @@ button, input, select, textarea {
 }
 
 @media (max-height: 620px) {
-  .terminal-shell { grid-template-rows: auto minmax(150px, 30dvh) minmax(0, 1fr) auto; }
   .terminal-output { min-height: 34px; padding-block: 7px; }
 }
 
