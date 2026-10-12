@@ -117,16 +117,26 @@ export async function harvestPetGarden(db, telegramId, pet, eventKey, now = new 
       ON a.pet_id=g.pet_id AND a.telegram_id=g.telegram_id AND a.season_key=g.season_key
     WHERE g.pet_id=? AND g.telegram_id=? AND g.season_key=? AND g.status='growing'
       AND g.crop_key=? AND julianday(g.ready_at)<=julianday('now')
-      AND a.telegram_id=? AND a.pet_id=?`)
+      AND a.telegram_id=? AND a.pet_id=?
+      AND (NOT EXISTS(SELECT 1 FROM telegram_pet_inventory WHERE telegram_id=? AND asset_type='item' AND asset_key=?)
+        OR EXISTS(SELECT 1 FROM telegram_pet_inventory WHERE telegram_id=? AND asset_type='item' AND asset_key=? AND quantity<=999998))`)
     .bind(owner(telegramId),eventKey,PET_HOME_GARDEN.harvest_quantity,pet.pet_id,owner(telegramId),pet.season_key,
-      PET_HOME_GARDEN.crop_key,owner(telegramId),pet.pet_id).run().then(requirePetMutationResult);
+      PET_HOME_GARDEN.crop_key,owner(telegramId),pet.pet_id,
+      owner(telegramId),PET_HOME_GARDEN.crop_key,owner(telegramId),PET_HOME_GARDEN.crop_key).run().then(requirePetMutationResult);
 
   const reserved = await readHarvestReceipt(db, telegramId, eventKey);
   if (!reserved) {
-    const garden = await readPetGardenState(db, telegramId, pet, now);
+    const [garden, bag] = await Promise.all([
+      readPetGardenState(db, telegramId, pet, now),
+      db.prepare(`SELECT quantity FROM telegram_pet_inventory
+        WHERE telegram_id=? AND asset_type='item' AND asset_key=?`)
+        .bind(owner(telegramId),PET_HOME_GARDEN.crop_key).first().then(requirePetFirstReadResult),
+    ]);
     return {
       accepted: false,
-      reason: garden.status === 'growing' ? 'pet_garden_not_ready' : garden.status === 'ready' ? 'pet_garden_harvest_conflict' : 'pet_garden_empty',
+      reason: Number(bag?.quantity || 0) >= 999999 ? 'pet_garden_inventory_full'
+        : garden.status === 'growing' ? 'pet_garden_not_ready'
+        : garden.status === 'ready' ? 'pet_garden_harvest_conflict' : 'pet_garden_empty',
       garden, refresh_state: true,
     };
   }
@@ -183,6 +193,19 @@ export async function harvestPetGarden(db, telegramId, pet, eventKey, now = new 
   const bag = await db.prepare(`SELECT quantity FROM telegram_pet_inventory
     WHERE telegram_id=? AND asset_type='item' AND asset_key=?`)
     .bind(owner(telegramId),PET_HOME_GARDEN.crop_key).first().then(requirePetFirstReadResult);
+  if (Number(bag?.quantity || 0) >= 999999 && receipt?.status === 'pending') {
+    // Capacity can change after reservation but before the guarded plot lock.
+    // Release only this request's untouched pending receipt while the original
+    // crop is still present, so a later click can retry after bag space exists.
+    await db.prepare(`DELETE FROM telegram_pet_garden_harvests
+      WHERE telegram_id=? AND event_key=? AND pet_id=? AND crop_planted_at=?
+        AND status='pending'
+        AND EXISTS(SELECT 1 FROM telegram_pet_garden_plots g
+          WHERE g.pet_id=? AND g.telegram_id=? AND g.season_key=? AND g.status='growing'
+            AND g.planted_at=telegram_pet_garden_harvests.crop_planted_at)`)
+      .bind(owner(telegramId),eventKey,pet.pet_id,receipt.crop_planted_at,
+        pet.pet_id,owner(telegramId),pet.season_key).run().then(requirePetMutationResult);
+  }
   return {
     accepted: false,
     reason: Number(bag?.quantity || 0) >= 999999 ? 'pet_garden_inventory_full' : 'pet_garden_harvest_conflict',
