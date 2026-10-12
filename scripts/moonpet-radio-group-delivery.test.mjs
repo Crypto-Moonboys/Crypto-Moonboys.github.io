@@ -10,9 +10,9 @@ function fixture() {
     id TEXT PRIMARY KEY,period_key TEXT,status TEXT,system_key TEXT,
     action_key TEXT,payload_json TEXT,created_at TEXT DEFAULT CURRENT_TIMESTAMP,
     updated_at TEXT DEFAULT CURRENT_TIMESTAMP)`);
-  const put=(id,day,message)=>{
+  const put=(id,day,message,consented=true)=>{
     sql.prepare(`INSERT INTO telegram_pet_system_events(id,period_key,status,system_key,action_key,payload_json)
-      VALUES (?,?, 'completed','radio_request','submission',?)`).run(id,day,JSON.stringify({message,moderation:'pending_host_review'}));
+      VALUES (?,?, 'completed','radio_request','submission',?)`).run(id,day,JSON.stringify({message,moderation:'pending_host_review',...(consented?{telegram_group_delivery:'pending'}:{})}));
   };
   const db={prepare(query){const stmt=sql.prepare(query);let args=[];return{
     bind(...v){args=v;return this;},
@@ -47,6 +47,10 @@ test('do not dump older private requests or send when group config missing',asyn
   await forwardRadioRequestsToGroup(f.db,config,send);
   assert.equal(calls,0);
   assert.equal(f.status('old'),undefined);
+  f.put('legacy-today','2026-10-12','Saved as private',false);
+  await forwardRadioRequestsToGroup(f.db,config,send);
+  assert.equal(calls,0);
+  assert.equal(f.status('legacy-today'),undefined);
   f.close();
 });
 test('definite HTTP failure retries, uncertain network failure stays held to avoid duplicates',async()=>{

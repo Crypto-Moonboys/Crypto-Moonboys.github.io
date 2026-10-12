@@ -2037,6 +2037,7 @@
       (submitted ? '<div class="line complete">SAVED TODAY // HOST REVIEW PENDING</div>' : '') +
       '<label class="line" for="radio-request-text">TRACK OR MESSAGE (4–160 CHARACTERS)</label>' +
       '<textarea id="radio-request-text" class="terminal-input" rows="3" maxlength="160" placeholder="Artist — track, or your message">' + escapeHtml(radioRequestDraft) + '</textarea>' +
+      '<label class="line"><input id="radio-group-consent" type="checkbox"> I agree that this request will be posted to the Telegram group.</label>' +
       '<div class="button-grid one">' + button('SAVE RADIO REQUEST', 'radio_request', {}, { disabled: submitted, detail: 'Once-daily request is posted to the Telegram group for DJ review. No live broadcast is promised.' }) + '</div>',
       'radio-requests');
   }
@@ -4289,6 +4290,9 @@
         tell('RADIO REQUEST MUST CONTAIN 4–160 CHARACTERS.', 'danger');
         return;
       }
+      var share = document.getElementById('radio-group-consent');
+      if (!share || !share.checked) { tell('CONFIRM GROUP SHARING FIRST.', 'danger'); return; }
+      payload.group_delivery_consent = true;
       payload.message = submittedText;
     }
     runAction(target.dataset.action, payload, target);

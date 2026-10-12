@@ -11259,7 +11259,7 @@ async function dispatchPetMiniAppAction(db, telegramId, user, body, botToken) {
   if (action === 'radio_request') {
     const pet = await getPetProfile(db,telegramId);
     if(!pet?.pet_id || pet.pet_id!==displayedPetId) return {accepted:false,reason:'displayed_pet_changed',refresh_state:true};
-    return submitMoonpetRadioRequest(db,telegramId,pet.pet_id,body.message);
+    return submitMoonpetRadioRequest(db,telegramId,pet.pet_id,body.message,new Date(),body.group_delivery_consent===true);
   }
   if (action === 'expedition') return runPetCrystalExpedition(db, telegramId, new Date(), eventKey, body.expedition_key, body.pet_id, body.day_key);
   if (action === 'market_buy') return buyPetMarketOffer(db, telegramId, body.offer_key, new Date(), eventKey, body.day_key);
