@@ -21,6 +21,13 @@ test('095 adds only per-pet garden persistence and receipt authority', () => {
   const harvestFks = f.sql.prepare("PRAGMA foreign_key_list('telegram_pet_garden_harvests')").all();
   assert.equal(harvestFks.some(row => row.table === 'telegram_pet_season_slots'), false, 'completed harvest history must survive pet deletion');
   assert.equal(harvestFks.some(row => row.table === 'telegram_pet_profiles' && row.from === 'telegram_id'), true);
+  const sourcePet = f.sql.prepare('SELECT pet_id,season_key FROM telegram_pet_season_slots WHERE telegram_id=? AND status=\'active\' LIMIT 1').get(f.owner);
+  f.sql.prepare(`INSERT INTO telegram_pet_garden_harvests
+    (telegram_id,event_key,pet_id,season_key,crop_key,crop_planted_at,quantity,status)
+    VALUES (?,?,?,?,?,?,1,'completed')`).run(f.owner,'crop-once',sourcePet.pet_id,sourcePet.season_key,'garden_veggies','2026-01-01T00:00:00Z');
+  assert.throws(() => f.sql.prepare(`INSERT INTO telegram_pet_garden_harvests
+    (telegram_id,event_key,pet_id,season_key,crop_key,crop_planted_at,quantity,status)
+    VALUES (?,?,?,?,?,?,1,'pending')`).run(f.owner,'crop-twice',sourcePet.pet_id,sourcePet.season_key,'garden_veggies','2026-01-01T00:00:00Z'), /UNIQUE constraint/);
   assert.throws(() => f.sql.prepare(`INSERT INTO telegram_pet_garden_plots
     (pet_id,telegram_id,season_key,crop_key,status,planted_at,ready_at)
     VALUES (?,?,?,?,?,?,?)`).run('current-'+f.owner,f.owner,currentSeason,'new_crop','growing','2026-01-01T00:00:00Z','2026-01-01T06:00:00Z'), /CHECK constraint/);
