@@ -63,6 +63,7 @@ async function readyBountyPet(owner) {
   return {petId,source,bounty};
 }
 const confirm=pet_id=>({action:'delete_pet_slot',pet_id,confirm_pet_id:pet_id,confirmed:true});
+const rowFor=id=>sql.prepare('SELECT * FROM telegram_pet_instances WHERE pet_id=?').get(id);
 const oldId=await player('owner');
 await player('stranger');
 // Bank a real reward and snapshot its complete receipt, asset and account rows.
@@ -341,7 +342,6 @@ for (const index of [0,1,2,0,2,1]) {
 assert.equal((await hooks.buyPetSeasonSlot(db,spaceOwner,3)).reason,'pet_slot_already_owned');
 assert.deepEqual(sql.prepare('SELECT * FROM arcade_xp_wallets WHERE telegram_id=?').get(spaceOwner),spaceWallet);
 
-const rowFor=id=>sql.prepare('SELECT * FROM telegram_pet_instances WHERE pet_id=?').get(id);
 async function expectBlocked(owner,id,message) {
   assert.equal((await hooks.deletePetSlot(db,owner,confirm(id))).reason,'pet_delete_blocked',message);
   assert.equal(rowFor(id).status,'active');
