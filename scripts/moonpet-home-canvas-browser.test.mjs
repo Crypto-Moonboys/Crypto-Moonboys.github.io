@@ -22,8 +22,14 @@ await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
 const origin = 'http://127.0.0.1:' + server.address().port;
 const browser = await chromium.launch({ headless:true, ...(process.env.CHROMIUM_EXECUTABLE_PATH ? {executablePath:process.env.CHROMIUM_EXECUTABLE_PATH} : {}) });
 try {
-  for (const width of [360, 390, 1280]) {
-    const f = fixture('home-e1-' + width);
+  for (const viewport of [
+    { width:360, height:640 },
+    { width:390, height:844 },
+    { width:1280, height:900 },
+    { width:720, height:400 },
+  ]) {
+    const { width, height } = viewport;
+    const f = fixture('home-e1-' + width + 'x' + height);
     const young = 'current-' + f.owner, egg = 'egg-' + f.owner;
     f.pet(egg, currentSeason, 0, 2);
     f.sql.prepare("UPDATE telegram_pet_lifecycle_by_pet SET phase='egg',incubation_json='{\"progress\":0,\"target\":12,\"signals\":{}}' WHERE pet_id=?").run(egg);
@@ -37,7 +43,7 @@ try {
       assert.equal((await f.act({action:'house_place',slot_key:slot,item_key:item})).accepted, true);
     }
     f.active(young);
-    const context = await browser.newContext({viewport:{width,height:width === 360 ? 640 : width < 500 ? 844 : 900}, reducedMotion:'reduce'});
+    const context = await browser.newContext({viewport:{width,height}, reducedMotion:'reduce'});
     await context.addInitScript(base => { window.MOONBOYS_API={BASE_URL:base}; localStorage.setItem('moonpet-radio-preference','off'); }, origin);
     await context.addInitScript(() => {
       window.stationCanvasLabels=[];
@@ -200,6 +206,12 @@ try {
       const viewportBox = await page.locator('.viewport').boundingBox();
       assert.ok(viewportBox && Math.abs(viewportBox.width / viewportBox.height - 16 / 11) < 0.01,
         'canvas viewport cannot stretch the 320x220 world');
+      const screenBox = await page.locator('#screen').boundingBox();
+      const dockBox = await page.locator('#nav').boundingBox();
+      assert.ok(screenBox && screenBox.height >= 80,
+        'scrollable controls retain usable height at '+width+'x'+height);
+      assert.ok(dockBox && dockBox.height >= 44 && dockBox.y + dockBox.height <= height + 1,
+        'bottom navigation remains fully visible at '+width+'x'+height);
       assert.deepEqual(await page.evaluate(()=>window.stationCanvasLabels),[],'no permanent station text is painted');
       // Validate the actual responsive rectangles, including the short mobile layout.
       const overlays=await page.locator('#hud, #canvas-tools button').evaluateAll(nodes=>nodes.map(node=>{
@@ -254,6 +266,6 @@ try {
     assert.deepEqual(errors,[]);
     assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth <= window.innerWidth+1),'viewport fits '+width+'px');
     await context.close(); f.sql.close();
-    console.log('Home canvas verified at '+width+'px'+(before?' (before evidence)':''));
+    console.log('Home canvas verified at '+width+'x'+height+(before?' (before evidence)':''));
   }
 } finally { await browser.close(); await new Promise(resolve=>server.close(resolve)); }
