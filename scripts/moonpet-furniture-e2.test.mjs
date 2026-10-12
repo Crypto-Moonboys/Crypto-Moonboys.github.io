@@ -47,6 +47,37 @@ test('purchase debits once, duplicate is idempotent, invalid prices and insuffic
   f.sql.close();
 });
 
+test('concurrent duplicate purchases produce one receipt and one debit',async()=>{
+  const f=fixture('furniture-concurrent');
+  const [first,second]=await Promise.all([
+    f.act({action:'furniture_buy',item_key:'speaker_stack'}),
+    f.act({action:'furniture_buy',item_key:'speaker_stack'}),
+  ]);
+  assert.equal(first.accepted,true);
+  assert.equal(second.accepted,true);
+  assert.equal([first,second].filter(r=>r.reason==='pet_furniture_purchased').length,1);
+  assert.equal([first,second].filter(r=>r.duplicate===true).length,1);
+  assert.equal(f.sql.prepare('SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id=?').get(f.owner).moon_gold,760);
+  assert.equal(f.sql.prepare('SELECT COUNT(*) AS c FROM telegram_pet_furniture_unlocks').get().c,1);
+  f.sql.close();
+});
+
+test('failed unlock insert rolls back the conditional Gold debit',async()=>{
+  const f=fixture('furniture-rollback');
+  const before=f.sql.prepare('SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id=?').get(f.owner).moon_gold;
+  let armed=false;
+  f.db.beforeBatch=async statements=>{
+    if(!armed && statements.some(stmt=>stmt.query.includes('INSERT INTO telegram_pet_furniture_unlocks'))) {
+      armed=true;
+      f.sql.exec("CREATE TRIGGER reject_furniture_unlock BEFORE INSERT ON telegram_pet_furniture_unlocks BEGIN SELECT RAISE(ABORT,'unlock_failed'); END");
+    }
+  };
+  await assert.rejects(f.act({action:'furniture_buy',item_key:'neon_lamp'}),/unlock_failed/);
+  assert.equal(f.sql.prepare('SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id=?').get(f.owner).moon_gold,before);
+  assert.equal(f.sql.prepare('SELECT COUNT(*) AS c FROM telegram_pet_furniture_unlocks').get().c,0);
+  f.sql.close();
+});
+
 test('owned furniture places only in matching slots and survives pet switches without double charging',async()=>{
   const f=fixture('furniture-ownership');
   const petA='current-'+f.owner,petB='second-'+f.owner;
