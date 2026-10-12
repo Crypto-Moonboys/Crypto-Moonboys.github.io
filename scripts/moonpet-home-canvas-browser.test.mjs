@@ -164,6 +164,49 @@ try {
       await page.reload(); await ready(); await room('studio_white','steel','plant_pot');
       await page.waitForFunction(()=>window.MoonpetBetaAppearance.getBackgroundArtState().home?.purchased?.left==='neon_lamp');
 
+      // E3: Kitchen, Garden and Gym remain interactions on this one Home canvas.
+      await page.waitForFunction(() => {
+        const stations = window.MoonpetBetaAppearance.getBackgroundArtState().home?.stations || [];
+        return stations.join(',') === 'kitchen,garden,gym';
+      });
+      assert.equal(await page.locator('[data-panel="kitchen"]').count(), 1);
+      assert.equal(await page.locator('[data-panel="garden"]').count(), 1);
+      assert.equal(await page.locator('[data-panel="gym"]').count(), 1);
+      await page.waitForFunction(() =>
+        document.querySelectorAll('[data-panel="kitchen"] [data-action="craft"]').length === 3);
+      assert.equal(await page.locator('[data-panel="kitchen"] [data-action="craft"]').count(), 3,
+        'Kitchen exposes only the three existing cooked-meal recipes');
+      assert.equal(await page.locator('[data-panel="gym"] [data-action="train"]').count(), 1);
+      assert.equal(await page.locator('[data-panel="gym"] [data-action="activity_start"][data-payload*="train"]').count(), 1);
+
+      const canvasBox = await page.locator('#moonpet-canvas').boundingBox();
+      assert.ok(canvasBox);
+      await page.locator('#moonpet-canvas').click({ position: {
+        x: 160 / 320 * canvasBox.width,
+        y: 16 / 220 * canvasBox.height,
+      }});
+      await page.locator('[data-panel="garden"][data-route-selected]').waitFor();
+      const gardenPanel = page.locator('[data-panel="garden"]');
+      if (!await gardenPanel.evaluate(node => node.open)) await gardenPanel.locator('summary').click();
+      const plantResponse = page.waitForResponse(r => r.url().endsWith('/action') &&
+        r.request().postDataJSON()?.action === 'garden_plant');
+      await gardenPanel.locator('[data-action="garden_plant"]').click();
+      assert.equal((await (await plantResponse).json()).result.accepted, true);
+      assert.equal(f.sql.prepare('SELECT COUNT(*) AS total FROM telegram_pet_garden_plots WHERE pet_id=?').get(young).total, 1);
+      await gardenPanel.getByText(/CROP GROWING/).waitFor();
+
+      f.sql.prepare("UPDATE telegram_pet_garden_plots SET ready_at='2000-01-01T00:00:00.000Z' WHERE pet_id=?").run(young);
+      const refreshResponse = page.waitForResponse(r => r.url().endsWith('/state'));
+      await page.locator('[data-utility="sync"]').click();
+      await refreshResponse;
+      await page.locator('[data-panel="garden"] [data-action="garden_harvest"]').waitFor();
+      const harvestResponse = page.waitForResponse(r => r.url().endsWith('/action') &&
+        r.request().postDataJSON()?.action === 'garden_harvest');
+      await page.locator('[data-panel="garden"] [data-action="garden_harvest"]').click();
+      assert.equal((await (await harvestResponse).json()).result.accepted, true);
+      assert.equal(f.sql.prepare("SELECT quantity FROM telegram_pet_inventory WHERE telegram_id=? AND asset_type='item' AND asset_key='garden_veggies'").get(f.owner).quantity, 1);
+      assert.equal(await page.locator('canvas').count(), 1, 'E3 must not add another room canvas');
+
       // Switch restores each original pet's own Home without extra room fetches.
       const switchResponse=page.waitForResponse(r=>r.url().endsWith('/action') && r.request().postDataJSON()?.action==='switch_pet_slot');
       await page.locator('[data-action="switch_pet_slot"]:enabled').first().click();
