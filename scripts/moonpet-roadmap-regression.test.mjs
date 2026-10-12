@@ -11,6 +11,7 @@ const renderProfile = new Function('state', 'panel', `
   var MOONPET_IDENTITY_REVEAL_STAGE = 3;
   function activePetSummary() { return ''; }
   function renderSeasonSlots() { return ''; }
+  function renderPetHouse() { return ''; }
   function button(label) { return label; }
   function routeButton(label) { return label; }
   function number(value) { return Number(value || 0); }
