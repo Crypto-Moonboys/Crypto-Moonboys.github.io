@@ -2168,6 +2168,19 @@ CREATE TABLE IF NOT EXISTS moonpet_beta_xp_quarantine (
 CREATE INDEX IF NOT EXISTS idx_moonpet_beta_xp_quarantine_owner
   ON moonpet_beta_xp_quarantine(telegram_id,season_key,reason);
 
+-- MoonPet House E1 / D1 migration 092: cosmetic per-pet starter room.
+CREATE TABLE IF NOT EXISTS telegram_pet_house_layouts (
+  pet_id TEXT NOT NULL, telegram_id TEXT NOT NULL, season_key TEXT NOT NULL,
+  slot_key TEXT NOT NULL CHECK(slot_key IN ('wall','floor','furniture')),
+  item_key TEXT NOT NULL, updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (pet_id,slot_key),
+  FOREIGN KEY (pet_id) REFERENCES telegram_pet_instances(pet_id),
+  CHECK ((slot_key='wall' AND item_key IN ('warehouse_brick','night_wall','studio_white')) OR
+    (slot_key='floor' AND item_key IN ('concrete','checkerboard','steel')) OR
+    (slot_key='furniture' AND item_key IN ('sleep_mat','record_deck','plant_pot')))
+);
+CREATE INDEX IF NOT EXISTS idx_pet_house_layout_owner ON telegram_pet_house_layouts(telegram_id,pet_id,season_key);
+
 -- Telegram website authentication (migration 090).
 -- Additive authentication metadata. Existing player and ownership keys stay intact.
 CREATE TABLE IF NOT EXISTS telegram_oidc_accounts (
@@ -2212,15 +2225,3 @@ CREATE TABLE IF NOT EXISTS telegram_website_credentials (
 CREATE INDEX IF NOT EXISTS idx_telegram_credential_expiry ON telegram_website_credentials(expires_at);
 CREATE INDEX IF NOT EXISTS idx_telegram_credential_session ON telegram_website_credentials(session_hash);
 
--- MoonPet House E1 / D1 migration 092: cosmetic per-pet starter room.
-CREATE TABLE IF NOT EXISTS telegram_pet_house_layouts (
-  pet_id TEXT NOT NULL, telegram_id TEXT NOT NULL, season_key TEXT NOT NULL,
-  slot_key TEXT NOT NULL CHECK(slot_key IN ('wall','floor','furniture')),
-  item_key TEXT NOT NULL, updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (pet_id,slot_key),
-  FOREIGN KEY (pet_id) REFERENCES telegram_pet_instances(pet_id),
-  CHECK ((slot_key='wall' AND item_key IN ('warehouse_brick','night_wall','studio_white')) OR
-    (slot_key='floor' AND item_key IN ('concrete','checkerboard','steel')) OR
-    (slot_key='furniture' AND item_key IN ('sleep_mat','record_deck','plant_pot')))
-);
-CREATE INDEX IF NOT EXISTS idx_pet_house_layout_owner ON telegram_pet_house_layouts(telegram_id,pet_id,season_key);
