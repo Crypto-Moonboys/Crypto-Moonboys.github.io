@@ -241,6 +241,8 @@ assert.match(client, /controlsMinHeight = Math\.max\(120, Math\.min\(220, Math\.
   'canvas sizing must continuously reserve a usable controls pane from the live shell height');
 assert.match(client, /canvasMaxWidth = Math\.max\(175, Math\.floor\(canvasHeight \* 16 \/ 11\)\)/,
   'live sizing must derive the width from the 16:11 canvas ratio');
+assert.match(client, /renderHud\(\);[\s\S]{0,120}renderNav\(\);[\s\S]{0,220}syncViewportHeight\(\);[\s\S]{0,120}renderCanvasTools\(\);/,
+  'render must recompute the canvas cap after the populated dock is measurable');
 assert.match(client, /tg\.viewportHeight \|\| tg\.viewportStableHeight/, 'Moonpet shell must use Telegram visible viewport height');
 assert.match(client, /tg\.onEvent\('viewportChanged', syncViewportHeight\)/, 'Moonpet shell must track Telegram viewport changes');
 const guide = fs.readFileSync(new URL('../how-to-play-crypto-moonboy-pets.html', import.meta.url), 'utf8');
@@ -1561,7 +1563,7 @@ statusFrames.shift()();
 assert.equal(testStatusOutput.dataset.tone, 'danger');
 assert.equal(testStatusClasses.has('is-scrolling'), true, 'overflowing updates must activate the scrolling text track');
 assert.match(testStatusProperties['--status-scroll-duration'], /s$/, 'overflowing updates must receive a readable duration');
-assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20261012-canvas-ratio-v1/);
+assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20261012-canvas-layout-v2/);
 assert.doesNotMatch(html, /moonpet-art-resolver\.js/, 'the game must not load the retired static background resolver');
 assert.match(html, /\/js\/moonpet-bot-art-loader\.js\?v=20261006-live-refresh-v5/);
 assert.match(html, /\/js\/moonpet-bot-art-renderer\.js\?v=20261002-audit-recovery-v2/);
