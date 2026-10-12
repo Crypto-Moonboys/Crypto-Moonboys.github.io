@@ -233,6 +233,8 @@ assert.match(css, /\.viewport \{[\s\S]{0,260}aspect-ratio:\s*16\s*\/\s*11/,
   'the visible canvas viewport must preserve the native 320x220 world ratio');
 assert.match(css, /#moonpet-canvas \{[\s\S]{0,220}width:\s*100%;[\s\S]{0,140}height:\s*auto;[\s\S]{0,140}aspect-ratio:\s*16\s*\/\s*11/,
   'the bitmap must scale proportionally instead of stretching to an arbitrary row height');
+assert.match(css, /@media \(max-height:\s*620px\)[\s\S]{0,420}\.viewport \{[\s\S]{0,180}width:\s*min\(100%,\s*68dvh\)/,
+  'short and landscape viewports must cap the proportional canvas by available height');
 assert.match(client, /tg\.viewportHeight \|\| tg\.viewportStableHeight/, 'Moonpet shell must use Telegram visible viewport height');
 assert.match(client, /tg\.onEvent\('viewportChanged', syncViewportHeight\)/, 'Moonpet shell must track Telegram viewport changes');
 const guide = fs.readFileSync(new URL('../how-to-play-crypto-moonboy-pets.html', import.meta.url), 'utf8');
