@@ -17142,7 +17142,7 @@ async function getPetEconomyState(db, telegramId, petRaw = null, now = new Date(
   const dayKey = getPetDayKey(now);
   const level = getPetLevel(pet.pet_xp);
   await reconcileLegacyPetInventory(db, telegramId);
-  const [eventRows, claimRows, sourcePet, itemRows, materialRows, weeklyEventRows, weeklyClaims] = await Promise.all([
+  const [eventRows, claimRows, sourcePet, itemRows, materialRows, weeklyEventRows, weeklyClaims, seasonalAttemptRows] = await Promise.all([
     db.prepare(`SELECT event_type, COUNT(*) AS total FROM telegram_pet_events
       WHERE telegram_id = ? AND day_key = ? AND status = 'accepted' GROUP BY event_type`)
       .bind(telegramId, dayKey).all().then(requirePetReadResult),
@@ -17161,6 +17161,11 @@ async function getPetEconomyState(db, telegramId, petRaw = null, now = new Date(
     db.prepare(`SELECT idempotency_key FROM telegram_pet_reward_claims
       WHERE telegram_id=? AND source='pet_bounty' AND status='awarded' AND idempotency_key LIKE ?`)
       .bind(telegramId,`weekly:${getPetWeekKey(now)}:%`).all().then(requirePetReadResult),
+    db.prepare(`SELECT COUNT(*) AS total FROM telegram_pet_system_events
+      WHERE telegram_id=? AND system_key='seasonal_boss' AND status='completed'
+      AND substr(period_key,-10)>=? AND substr(period_key,-10)<=?`)
+      .bind(telegramId, (() => { const monday = new Date(Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),now.getUTCDate())); monday.setUTCDate(monday.getUTCDate() - ((monday.getUTCDay()+6)%7)); return monday.toISOString().slice(0,10); })(), getPetDayKey(now))
+      .first().then(requirePetFirstReadResult),
   ]);
   const counts = new Map((eventRows.results || []).map((row) => [String(row.event_type), Math.max(0, Number(row.total) || 0)]));
   const claims = claimRows.results || [];
@@ -17179,7 +17184,12 @@ async function getPetEconomyState(db, telegramId, petRaw = null, now = new Date(
   const weeklyCounts = new Map((weeklyEventRows.results || []).map(row => [String(row.event_type),Math.max(0,Number(row.total)||0)]));
   const weeklyPaid = new Set((weeklyClaims.results || []).map(row => String(row.idempotency_key)));
   const weeklyBounties = getPetWeeklyBounties(weekKey).map(bounty => {
-    const progress = bounty.event_types.reduce((sum,eventType) => sum+(weeklyCounts.get(eventType)||0),0);
+    // Successful seasonal raid attempts are saved as system events; the pet event
+    // `seasonal_boss` only records a later defeated-boss award. Count the
+    // original completed attempts instead and never count both as one hit.
+    const progress = bounty.key==='week_boss'
+      ? (weeklyCounts.get('weekly_boss')||0)+Math.max(0,Number(seasonalAttemptRows?.total)||0)
+      : bounty.event_types.reduce((sum,eventType) => sum+(weeklyCounts.get(eventType)||0),0);
     return { ...bounty, progress: Math.min(bounty.required,progress),
       complete: progress >= bounty.required, claimed: weeklyPaid.has(`weekly:${weekKey}:${bounty.key}`) };
   });
