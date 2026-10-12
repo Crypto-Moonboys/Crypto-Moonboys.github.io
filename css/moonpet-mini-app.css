@@ -121,6 +121,7 @@ button, input, select, textarea {
   position: relative;
   width: 100%;
   aspect-ratio: 16 / 11;
+  justify-self: center;
   min-height: 0;
   overflow: hidden;
   border-bottom: 1px solid var(--ui-border);
@@ -1107,6 +1108,13 @@ button, input, select, textarea {
 }
 
 @media (max-height: 620px) {
+  /* Preserve 16:11 without letting a wide landscape shell consume the whole
+     vertical viewport. 68dvh leaves room for status, scrollable controls and
+     the 44px dock while the canvas remains proportional. */
+  .viewport {
+    width: min(100%, 68vh);
+    width: min(100%, 68dvh);
+  }
   .terminal-output { min-height: 34px; padding-block: 7px; }
 }
 
