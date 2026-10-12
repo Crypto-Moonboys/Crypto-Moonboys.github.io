@@ -1013,6 +1013,14 @@
             "Raise happiness with affection. This Care action awards no XP or incubation signal.",
             "care"
       ],
+      "garden_plant": [
+            "Plant this pet’s free garden plot. One crop grows for six server-timed hours; no XP, currency or mission credit.",
+            "progress"
+      ],
+      "garden_harvest": [
+            "Harvest the mature plot into one existing Garden Veggie Box. The saved crop is consumed exactly once.",
+            "claim"
+      ],
       "daily_chest": [
             "Collect today’s Daily Cache once per account. Check the displayed rewards and XP allowance.",
             "claim"
@@ -2043,6 +2051,59 @@
       '<div class="button-grid one">' + routeButton('COOK MORE MEALS', { screen: 'economy', focus: 'crafting' }, 'Craft food using existing materials and unlock levels.') + '</div>', 'food-counter');
   }
 
+
+  // TEST-EXPORT: homeStationsPanel:start
+  function renderHomeStations() {
+    var recipes = state && state.live_systems && Array.isArray(state.live_systems.crafting)
+      ? state.live_systems.crafting.filter(function (recipe) {
+          return ['pizza_night','moon_grill','veggie_patch'].includes(recipe.key);
+        }) : [];
+    var kitchenBody = '<div class="line muted">Uses the existing Crafting recipes and material costs. Cooking adds the same saved meal items already used by the Food Counter; E3 adds no duplicate recipe or reward path.</div>';
+    if (stateNeedsFullHydration(state)) {
+      kitchenBody += '<div class="line muted">KITCHEN RECIPES SYNCING…</div><div class="button-grid one">' +
+        routeButton('OPEN FULL CRAFTING', { screen:'economy', focus:'crafting' }, 'Load every existing recipe and material balance.') + '</div>';
+    } else {
+      kitchenBody += '<div class="button-grid one">' + recipes.map(function (recipe) {
+        var cost = Object.entries(recipe.cost || {}).map(function (entry) {
+          return number(entry[1]) + ' ' + words(entry[0]);
+        }).join(' + ');
+        return button('COOK ' + String(recipe.title || words(recipe.key)).toUpperCase(), 'craft', { recipe_key: recipe.key }, {
+          disabled: !recipe.unlocked || !recipe.affordable,
+          statusLabel: !recipe.unlocked ? 'LEVEL LOCKED' : !recipe.affordable ? 'MATERIALS NEEDED' : '',
+          detail: String(recipe.detail || '') + (cost ? ' Cost: ' + cost + '.' : '')
+        });
+      }).join('') + '</div>';
+    }
+
+    var activity = state && state.guidance && state.guidance.activity;
+    var gymBody = '<div class="line muted">Gym equipment drives the existing Train systems. Train Now keeps the current 18 Energy cost, care cooldown and rewards. Timed Training is the existing background Work activity.</div><div class="button-grid one">' +
+      button('TRAIN NOW', 'train') +
+      (activity && activity.status === 'active'
+        ? routeButton('REVIEW TIMED ACTIVITY', { screen:'work', focus:'timed-activity' }, 'Review or claim the background activity already running.')
+        : button('START TIMED TRAINING', 'activity_start', { activity_type:'train' }, { detail:'Start the existing background Train activity. It does not count as another instant Train mission.' })) +
+      '</div>';
+
+    var garden = state && state.pet_garden || { available:false };
+    var gardenBody = '<div class="line muted">One plot per pet. Planting is free. Growth uses the server clock for 6 hours. Harvest gives exactly 1 existing Garden Veggie Box and no XP, currency or mission credit.</div>';
+    if (garden.available !== true) {
+      gardenBody += '<div class="line muted">GARDEN SYNCING OR MIGRATION NOT AVAILABLE.</div>';
+    } else if (garden.status === 'empty') {
+      gardenBody += '<div class="button-grid one">' + button('PLANT VEGGIE PATCH', 'garden_plant', {}, { detail:'Start this pet’s one 6-hour server-timed crop.' }) + '</div>';
+    } else if (garden.status === 'growing') {
+      gardenBody += '<div class="line complete">CROP GROWING // ' + countdownMarkup({ expires_at:garden.ready_at }, 'READY IN ') + '</div>';
+    } else if (garden.status === 'ready') {
+      gardenBody += '<div class="line complete">CROP READY // 1 GARDEN VEGGIE BOX</div><div class="button-grid one">' +
+        button('HARVEST VEGGIES', 'garden_harvest', {}, { detail:'Add one existing Garden Veggie Box to your Bag and reset this plot.' }) + '</div>';
+    } else {
+      gardenBody += '<div class="line muted">HARVEST SETTLING. REFRESH IF THIS MESSAGE REMAINS.</div>';
+    }
+
+    return panel('INTERACTIVE KITCHEN', kitchenBody, 'kitchen') +
+      panel('GYM EQUIPMENT', gymBody, 'gym') +
+      panel('GARDEN', gardenBody, 'garden');
+  }
+  // TEST-EXPORT: homeStationsPanel:end
+
   function renderRadioRequestPanel() {
     var submitted = radioRequestSubmittedDay === new Date(Date.now() + serverClockOffsetMs).toISOString().slice(0, 10);
     return panel('GRAFFPUNKS RADIO // SEND A REQUEST',
@@ -2092,7 +2153,7 @@
     return '<div class="ticker"><span>MOONPET OS // ' + escapeHtml(displayName) + ' // ' + escapeHtml(moonpetStageLabel(lifecycle, pet)) + ' // STREAK ' + number(pet.streak_days) + ' DAYS //</span></div>' +
       activePetSummary() +
       renderPlayNow() +
-      renderFoodCounter() + renderPetEmotes() + renderRadioRequestPanel() +
+      renderFoodCounter() + renderHomeStations() + renderPetEmotes() + renderRadioRequestPanel() +
       '<div class="button-grid one">' + routeButton('CUSTOMIZE HOME', { screen:'profile', focus:'pet-house' }, 'Edit the Home shown behind this pet. No cost.') + '</div>' +
       panel('VITAL SYSTEMS', '<div class="line muted">Higher is better on every meter. Fullness is the opposite of hunger: Feed raises fullness.</div>' + meter('HEALTH', pet.health) + meter('ENERGY', pet.energy) + meter('FULLNESS', pet.hunger, true) + meter('FUN', pet.happiness) + meter('CLEAN', pet.cleanliness), 'vitals') +
       panel('CARE CONSOLE', '<div class="button-grid">' +
@@ -2253,6 +2314,11 @@
         state.pet_furniture.pet_id === nextState.pet.pet_id) {
       nextState = Object.assign({}, nextState, { pet_furniture: state.pet_furniture });
     }
+    if (nextState.hydration && nextState.hydration.mode === 'missions' && nextState.pet_garden === undefined &&
+        state && state.pet_garden && state.pet && nextState.pet && state.pet.pet_id === nextState.pet.pet_id &&
+        state.pet_garden.pet_id === nextState.pet.pet_id) {
+      nextState = Object.assign({}, nextState, { pet_garden: state.pet_garden });
+    }
     state = nextState;
     petActionRefreshRequired = false;
     fastActionStateDirty = false;
@@ -2289,6 +2355,8 @@
     if (live.seasonal_boss && !live.seasonal_boss.defeated_at && live.seasonal_boss.cooldown) entries.push(live.seasonal_boss.cooldown);
     (snapshot && snapshot.regions || []).forEach(function (region) { if (region && region.cooldown) entries.push(region.cooldown); });
     (live.chains || []).forEach(function (chain) { if (chain && chain.cooldown) entries.push(chain.cooldown); });
+    var garden = snapshot && snapshot.pet_garden;
+    if (garden && garden.status === 'growing' && garden.ready_at) entries.push({ key: 'garden:grow', expires_at: garden.ready_at });
     return entries;
   }
 
@@ -3691,6 +3759,7 @@
     }
     if (result.reason === 'pet_house_saved') return 'HOME SAVED // Return to Home to see this pet’s wall, floor and furnishing. No currency or XP changed.';
     if (result.reason === 'pet_furniture_purchased' || result.reason === 'pet_furniture_owned' || result.reason === 'pet_furniture_placed' || result.reason === 'pet_furniture_removed') return String(result.result_copy || 'Furniture save confirmed.');
+    if (result.reason === 'pet_garden_planted' || result.reason === 'pet_garden_already_planted' || result.reason === 'pet_garden_harvested') return String(result.result_copy || 'Garden save confirmed.');
     var reward = resultRewardMap(result);
     var gains = Object.entries(reward).filter(function (entry) { return Number(entry[1]) > 0 && typeof entry[1] !== 'object' && !(entry[0] === 'pet_xp' && result.pet_xp_awarded != null); }).map(function (entry) { return '+' + number(entry[1]) + ' ' + words(entry[0]); });
     ['materials', 'items', 'relics'].forEach(function (kind) {
@@ -3751,6 +3820,10 @@
       pet_furniture_placement_invalid: 'choose an owned item and its matching Home slot. No Gold was spent.',
       pet_furniture_not_owned: 'buy this furniture once before placing it. No Gold was spent.',
       pet_furniture_insufficient_gold: 'not enough Moon Gold for this item. No Gold was spent; review the displayed price.',
+      pet_garden_not_ready: 'this crop is still growing. Nothing was harvested; wait for the server timer.',
+      pet_garden_empty: 'this pet has no crop ready to harvest. Plant a new patch first.',
+      pet_garden_harvest_conflict: 'this crop changed or was already harvested in another session. No duplicate food was added.',
+      pet_garden_inventory_full: 'the Garden Veggie Box stack is full. Use food from the Bag before harvesting.',
       market_capacity_full: 'the whole bundle must fit. Use items or spend materials/currency first; nothing was charged.',
       market_state_changed: 'your pet or balances changed before purchase. Nothing was charged; review the refreshed offer.',
       market_pet_unavailable: 'select a hatched active pet before buying.',
@@ -4436,6 +4509,12 @@
     if (!bounds.width || !bounds.height) return;
     var canvasX = (event.clientX - bounds.left) * canvas.width / bounds.width;
     var canvasY = (event.clientY - bounds.top) * canvas.height / bounds.height;
+    var stationKey = activeScreen === 'home' ? homeStationAt(canvasX,canvasY) : null;
+    if (stationKey) {
+      scrollToPanel(HOME_STATION_HOTSPOTS[stationKey].panel);
+      haptic('light');
+      return;
+    }
     var botBounds = moonpetBotFitBounds();
     if (canvasX >= botBounds.left && canvasX <= botBounds.right && canvasY >= botBounds.top && canvasY <= botBounds.bottom) greetCompanion();
   });
@@ -5059,6 +5138,57 @@
   }
   // TEST-EXPORT: purchasedFurniture:end
 
+
+  // TEST-EXPORT: homeStationsCanvas:start
+  var HOME_STATION_HOTSPOTS = Object.freeze({
+    kitchen: Object.freeze({ x:4, y:4, w:62, h:25, panel:'kitchen' }),
+    garden: Object.freeze({ x:129, y:4, w:62, h:25, panel:'garden' }),
+    gym: Object.freeze({ x:254, y:4, w:62, h:25, panel:'gym' })
+  });
+
+  function homeStationAt(x,y) {
+    if (!state || !state.adopted || !state.lifecycle || state.lifecycle.phase === 'egg') return null;
+    return Object.keys(HOME_STATION_HOTSPOTS).find(function (key) {
+      var box=HOME_STATION_HOTSPOTS[key];
+      return x>=box.x && x<=box.x+box.w && y>=box.y && y<=box.y+box.h;
+    }) || null;
+  }
+
+  function drawHomeStations() {
+    if (!state || !state.adopted || !state.lifecycle || state.lifecycle.phase === 'egg') return;
+    ctx.save();
+    ctx.font='bold 7px monospace';
+    ctx.textAlign='center';
+
+    var kitchen=HOME_STATION_HOTSPOTS.kitchen;
+    drawPixelRect(kitchen.x,kitchen.y,kitchen.w,kitchen.h,'#17171d');
+    drawPixelRect(kitchen.x+4,kitchen.y+4,18,12,'#8b8f98');
+    drawPixelRect(kitchen.x+7,kitchen.y+7,12,5,'#22242c');
+    drawPixelRect(kitchen.x+24,kitchen.y+9,7,3,'#c6c1ad');
+    ctx.fillStyle='#efefdf'; ctx.fillText('KITCHEN',kitchen.x+kitchen.w/2,kitchen.y+22);
+
+    var garden=HOME_STATION_HOTSPOTS.garden;
+    drawPixelRect(garden.x,garden.y,garden.w,garden.h,'#17171d');
+    drawPixelRect(garden.x+8,garden.y+12,46,8,'#72543c');
+    var gardenState=state.pet_garden || {};
+    if(gardenState.status==='growing'||gardenState.status==='ready'){
+      var stemHeight=gardenState.status==='ready'?12:7;
+      drawPixelRect(garden.x+28,garden.y+12-stemHeight,3,stemHeight,'#78a660');
+      drawPixelRect(garden.x+20,garden.y+7,10,4,'#78a660');
+      drawPixelRect(garden.x+31,garden.y+5,11,4,'#78a660');
+    }
+    ctx.fillStyle='#efefdf'; ctx.fillText(gardenState.status==='ready'?'GARDEN!':'GARDEN',garden.x+garden.w/2,garden.y+22);
+
+    var gym=HOME_STATION_HOTSPOTS.gym;
+    drawPixelRect(gym.x,gym.y,gym.w,gym.h,'#17171d');
+    drawPixelRect(gym.x+17,gym.y+9,28,4,'#b4bac4');
+    drawPixelRect(gym.x+11,gym.y+6,6,10,'#6f7680');
+    drawPixelRect(gym.x+45,gym.y+6,6,10,'#6f7680');
+    ctx.fillStyle='#efefdf'; ctx.fillText('GYM',gym.x+gym.w/2,gym.y+22);
+    ctx.restore();
+  }
+  // TEST-EXPORT: homeStationsCanvas:end
+
   // TEST-EXPORT: drawWorld:start
   function drawWorld(time) {
     var renderTime = reducedMotion ? performance.now() : time;
@@ -5087,6 +5217,8 @@
         if (purchased.right) drawPurchasedFurniture(purchased.right,'right');
         home.purchased = purchased;
       }
+      drawHomeStations();
+      home.stations = ['kitchen','garden','gym'];
       backgroundArtState.home = home;
       backgroundArtState.floor = { mode: home.floor, baseline_y: BOT_RENDER_BASELINE_Y, shadow: Boolean(botArtRendererReady) };
     }

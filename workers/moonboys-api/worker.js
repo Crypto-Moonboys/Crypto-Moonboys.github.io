@@ -5,6 +5,7 @@ import { atomicPetBatch } from './pets/atomic-mutations.js';
 import { getStyleLoadout, equipPetStyle } from './pets/style-loadout.js';
 import { readPetHouseLayout, setPetHouseLayout } from './pets/house-layout.js';
 import { readPetFurnitureState, buyPetFurniture, placePetFurniture, removePetFurniture } from './pets/home-furniture.js';
+import { readPetGardenState, plantPetGarden, harvestPetGarden } from './pets/home-garden.js';
 import { verifyTelegramWebhookSecret } from './telegram-webhook-auth.js';
 import { handleTelegramWebsiteAuth, isWebsiteCredential, verifyWebsiteCredential } from './telegram-website-auth.js';
 import { createDisplayedPetScope, isDisplayedPetScopeStaleError } from './pets/displayed-pet-scope.js';
@@ -10418,7 +10419,7 @@ async function buildPetMiniAppCoreState(db, telegramId, options = {}) {
     .catch(error => { throw normalizePetProjectionError(error); });
   const activityPromise = getActivePetActivitySession(db, telegramId, now)
     .then((active) => active || getRecoverablePetActivitySession(db, telegramId));
-  const [rawLifecycle, activity, seasonSlots, specialActions, recentCare, dailyCache, dailyPetXpRow, petHouse, petFurniture] = await Promise.all([
+  const [rawLifecycle, activity, seasonSlots, specialActions, recentCare, dailyCache, dailyPetXpRow, petHouse, petFurniture, petGarden] = await Promise.all([
     lifecyclePromise,
     activityPromise,
     buildPetSeasonSlotCoreSummary(db, telegramId, now),
@@ -10439,6 +10440,8 @@ async function buildPetMiniAppCoreState(db, telegramId, options = {}) {
     options.skipHouse ? Promise.resolve(undefined) : readPetHouseLayout(lifecycleScope.db, telegramId, petRaw)
       .catch(() => ({ available: false, pet_id: petRaw.pet_id })),
     options.skipHouse ? Promise.resolve(undefined) : readPetFurnitureState(lifecycleScope.db, telegramId, petRaw)
+      .catch(() => ({ available: false, pet_id: petRaw.pet_id })),
+    options.skipHouse ? Promise.resolve(undefined) : readPetGardenState(lifecycleScope.db, telegramId, petRaw, now)
       .catch(() => ({ available: false, pet_id: petRaw.pet_id })),
   ]);
   // Match the full-state privacy contract: stage-1 identity stays hidden, while
@@ -10507,6 +10510,7 @@ async function buildPetMiniAppCoreState(db, telegramId, options = {}) {
     hydration: { mode: 'core', full: false },
     pet_house: petHouse,
     pet_furniture: petFurniture,
+    pet_garden: petGarden,
     pet: canonicalPet,
     lifecycle,
     next,
@@ -10794,13 +10798,14 @@ async function buildPetMiniAppState(db, telegramId, botToken, options = {}) {
       ? { key: 'rare_morph', title: 'Answer the hidden signal', detail: 'Your companion history has opened a one-of-one morph path.', action: 'rare_morph', destination: 'profile' }
       : guidedNext?.key && guidedNext.key !== 'maintain' ? guidedNext : liveNext || guidedNext;
   const activeRun = guidance?.active_run || null;
-  const [runPet, styleLoadout, petHouse, petFurniture, contracts, dailyReservation] = await Promise.all([
+  const [runPet, styleLoadout, petHouse, petFurniture, petGarden, contracts, dailyReservation] = await Promise.all([
     !activeRun || activeRun.pet_id === petRaw.pet_id
       ? Promise.resolve(petRaw)
       : getPetInstanceWithAtomicDecay(db, activeRun.pet_id),
     getStyleLoadout(db, telegramId, petRaw.pet_id),
     readPetHouseLayout(identityScope.db, telegramId, petRaw).catch(() => ({ available: false, pet_id: petRaw.pet_id })),
     readPetFurnitureState(identityScope.db, telegramId, petRaw).catch(() => ({ available: false, pet_id: petRaw.pet_id })),
+    readPetGardenState(identityScope.db, telegramId, petRaw, now).catch(() => ({ available: false, pet_id: petRaw.pet_id })),
     getContractBoard(db, telegramId, petRaw, now),
     activeRun
       ? getDailyMoonRunReservation(db, { telegram_id: telegramId, run_id: activeRun.run_id })
@@ -10917,6 +10922,7 @@ async function buildPetMiniAppState(db, telegramId, botToken, options = {}) {
     style_loadout: styleLoadout,
     pet_house: petHouse,
     pet_furniture: petFurniture,
+    pet_garden: petGarden,
     trade: {
       cooldown: tradeCooldown?.remaining_seconds > 0 ? tradeCooldown : null,
       offers: [10, 25, 50].map((wager) => ({ wager, affordable: Number(petRaw.moon_gold) >= wager,
@@ -11273,6 +11279,15 @@ async function dispatchPetMiniAppAction(db, telegramId, user, body, botToken) {
     if (action === 'furniture_place') return placePetFurniture(scope.db, telegramId, pet, body.item_key, body.slot_key);
     return removePetFurniture(scope.db, telegramId, pet, body.slot_key);
   }
+  if (action === 'garden_plant' || action === 'garden_harvest') {
+    const pet = await getPetProfile(db, telegramId);
+    if (!pet?.pet_id || pet.pet_id !== displayedPetId)
+      return { accepted:false, reason:'displayed_pet_changed', refresh_state:true };
+    const scope = createDisplayedPetScope(db, telegramId, pet.pet_id, pet.season_key);
+    return action === 'garden_plant'
+      ? plantPetGarden(scope.db, telegramId, pet, new Date())
+      : harvestPetGarden(scope.db, telegramId, pet, eventKey, new Date());
+  }
   if (action === 'radio_request') {
     const pet = await getPetProfile(db,telegramId);
     if(!pet?.pet_id || pet.pet_id!==displayedPetId) return {accepted:false,reason:'displayed_pet_changed',refresh_state:true};
@@ -11411,7 +11426,7 @@ function serializePetMiniAppActionResult(result = {}, identity = null, telegramI
   for (const key of ['pet_xp_awarded', 'xp_awarded', 'damage', 'participation_only', 'participation_qualification_week', 'energy_cost', 'action', 'attempt', 'retry_after_seconds', 'remaining_seconds', 'server_time', 'gold_delta', 'crystal_delta', 'daily_limit', 'used_today', 'won', 'reward_pending', 'refresh_state']) {
     if (result[key] !== undefined) output[key] = result[key];
   }
-  for (const key of ['rewards', 'receipt_rewards', 'receipt', 'applied', 'job', 'item', 'recipe', 'encounter', 'choice', 'result_copy', 'reaction', 'boss', 'progress', 'tier', 'expedition', 'offer', 'bounty', 'queue', 'run', 'room', 'session', 'pending', 'computed', 'resolved', 'match', 'reward_results', 'region', 'chain_key', 'step', 'final', 'cosmetic', 'furniture', 'item_key', 'moon_gold_remaining', 'cost', 'faction_bonus', 'acknowledged', 'rare_morph', 'care_type', 'deleted_pet_id', 'replacement_pet_id', 'reward_history_preserved', 'season_slots', 'entry_requirement', 'capabilities_version', 'capabilities', 'cooldown', 'expires_at']) {
+  for (const key of ['rewards', 'receipt_rewards', 'receipt', 'applied', 'job', 'item', 'recipe', 'encounter', 'choice', 'result_copy', 'reaction', 'boss', 'progress', 'tier', 'expedition', 'offer', 'bounty', 'queue', 'run', 'room', 'session', 'pending', 'computed', 'resolved', 'match', 'reward_results', 'region', 'chain_key', 'step', 'final', 'cosmetic', 'furniture', 'garden', 'item_key', 'moon_gold_remaining', 'cost', 'faction_bonus', 'acknowledged', 'rare_morph', 'care_type', 'deleted_pet_id', 'replacement_pet_id', 'reward_history_preserved', 'season_slots', 'entry_requirement', 'capabilities_version', 'capabilities', 'cooldown', 'expires_at']) {
     if (result[key] !== undefined) output[key] = result[key];
   }
   // A repeated combat-ending request may deliver this player's first payout.
@@ -15255,7 +15270,7 @@ export default {
 const SITE_URL = 'https://cryptomoonboys.com';
 const TELEGRAM_GAMES_MENU_URL = `${SITE_URL}/games/telegram/?v=20260903-games-shell-v8`;
 const TELEGRAM_GAMES_MENU_TEXT = 'Games';
-const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20261012-furniture-e2`;
+const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20261012-home-e3`;
 const PET_MEDIA_BASE_URL = `${SITE_URL}/img/pets`;
 const PET_MEDIA_MANIFEST = Object.freeze({
   feed: 'CRYPTO MOONBOYS PET FEED.jpg',

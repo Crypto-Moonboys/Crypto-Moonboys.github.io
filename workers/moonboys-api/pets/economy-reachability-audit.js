@@ -1,5 +1,6 @@
 import { PET_REGION_CONTENT, PET_SEASONAL_BOSSES } from './content-phase-4.js';
 import { PET_HOME_FURNITURE } from './home-furniture.js';
+import { PET_HOME_GARDEN } from './home-garden.js';
 import bosses from './content/bosses.json' with { type: 'json' };
 import evolutions from './content/evolutions.json' with { type: 'json' };
 import {
@@ -75,6 +76,7 @@ export function buildPetEconomyReachabilityAudit(definitions = {}) {
   const upgradeCosts = definitions.upgrade_costs || PET_EQUIPMENT_UPGRADE_COSTS;
   const cosmeticSinks = definitions.cosmetic_sinks || PET_COSMETIC_SINKS;
   const furnitureCatalog = definitions.furniture_catalog || PET_HOME_FURNITURE;
+  const garden = definitions.garden || PET_HOME_GARDEN;
   const rareDropTables = definitions.rare_drop_tables || PET_RARE_DROP_TABLES;
   const marketOffers = definitions.market_offers || PET_MARKET_OFFERS;
   const foodOffers = definitions.food_offers || PET_FOOD_OFFERS;
@@ -100,6 +102,8 @@ export function buildPetEconomyReachabilityAudit(definitions = {}) {
     for (const [materialKey] of positiveEntries(recipe.output?.materials)) addSource(materialSources, materialKey, `recipe:${recipeKey}`);
     if (itemSources.has(recipe.output.item_key)) itemSources.get(recipe.output.item_key).push(`recipe:${recipeKey}`);
   }
+
+  if (itemSources.has(garden.crop_key)) itemSources.get(garden.crop_key).push('garden:harvest');
 
   for (const [level, cost] of Object.entries(upgradeCosts)) {
     invalidMaterialReferencesFrom(Object.fromEntries(Object.entries(cost).filter(([key]) => !ACCOUNT_WALLET_CURRENCIES.includes(key))), `equipment_upgrade:${level}`, invalidMaterialReferences);
@@ -258,6 +262,11 @@ export function buildPetEconomyReachabilityAudit(definitions = {}) {
     run_path: 'Mini App economy:expedition and Telegram petexpedition callbacks',
   }));
 
+  const gardenSurface = {
+    kind:'garden_source', key:garden.crop_key, quantity:garden.harvest_quantity, grow_seconds:garden.grow_seconds,
+    classification:classifications.LIVE_REACHABLE, source_path:'Mini App home:garden_plant / garden_harvest (per pet, server timed)',
+  };
+
   const furnitureSurfaces = Object.entries(furnitureCatalog).map(([key, item]) => ({
     kind:'furniture_offer',key,slot:item.slot,cost:{moon_gold:item.price_gold},
     classification:classifications.LIVE_REACHABLE,
@@ -285,6 +294,7 @@ export function buildPetEconomyReachabilityAudit(definitions = {}) {
       ...weeklyBountySurfaces,
       ...expeditionSurfaces,
       ...cosmeticSurfaces,
+      gardenSurface,
       ...furnitureSurfaces,
       ...PET_ECONOMY_ROUTES.map((route) => ({ kind: 'economy_route', classification: classifications.LIVE_REACHABLE, ...route })),
     ],

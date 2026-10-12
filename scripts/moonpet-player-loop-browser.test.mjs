@@ -717,15 +717,15 @@ try {
       await page.waitForFunction(() => document.querySelector('#terminal-output').textContent.includes('ACTION RESPONSE UNCONFIRMED'));
       assert.equal(faultResult.accepted, true, 'the response disappears only after the real care receipt commits');
       const savedXP = (await hooks.getPetProfile(db, id)).pet_xp;
-      assert.equal(await page.locator('[data-action="train"]').isDisabled(), true, 'unconfirmed save disables other mutations');
+      assert.equal(await page.locator('[data-panel="care"] [data-action="train"]').isDisabled(), true, 'unconfirmed save disables other mutations');
       const sent = actions.length;
-      await page.locator('[data-action="train"]').evaluate(node => node.click());
+      await page.locator('[data-panel="care"] [data-action="train"]').evaluate(node => node.click());
       assert.equal(actions.length, sent);
       await page.locator('[data-utility="sync"]').click();
       await page.waitForFunction(() => document.querySelector('#terminal-output').textContent.includes('LIVE SAVE REFRESHED'));
       assert.equal(actions.length, sent, 'Refresh only reads state');
       assert.equal((await hooks.getPetProfile(db, id)).pet_xp, savedXP, 'Refresh cannot repay the uncertain care action');
-      assert.equal(await page.locator('[data-action="train"]').isDisabled(), false, 'verified state restores eligible controls');
+      assert.equal(await page.locator('[data-panel="care"] [data-action="train"]').isDisabled(), false, 'verified state restores eligible controls');
     }
     sessionExpired = true;
     await page.locator('[data-utility="sync"]').click();
@@ -1236,7 +1236,8 @@ try {
     await page.waitForFunction(() => window.MoonpetBetaAppearance.getBotArtState()?.lastRender?.animationMode === 'victory');
     await page.locator('[data-screen="explore"]').click();
     await page.screenshot({ path: path.join(screenshotDirectory, 'moonpet-equipped-styles-' + viewport.width + '.png') });
-    assert.deepEqual(await page.evaluate(() => window.petCanvasTextDraws), [], 'canvas has no floating pet name or text overlay even with a saved Rename Badge');
+    const unexpectedCanvasText = await page.evaluate(() => window.petCanvasTextDraws.filter(text => !['KITCHEN','GARDEN','GYM'].includes(text)));
+    assert.deepEqual(unexpectedCanvasText, [], 'canvas has no floating pet name or dynamic text overlay; only fixed Home station labels are allowed');
     assert.equal(sqlite.prepare('SELECT enabled FROM telegram_pet_style_loadouts WHERE pet_id=? AND cosmetic_key=?').get(stylePet.pet_id,'rename_badge').enabled, 1, 'cleanup keeps existing saved ownership intact');
     await page.locator('[data-screen="economy"]').click();
     assert.equal(await page.locator('[data-action="style_equip"]').filter({hasText:'UNEQUIP FREE'}).count(),3);
@@ -1536,7 +1537,7 @@ try {
       if (draft) longDrafts++;
       if (activeLong.path && !resumedPath) {
         await page.reload(); await page.waitForSelector('[data-panel="care"]');
-        assert.equal(await page.locator('[data-action="train"]').isDisabled(), true, 'zero-energy training must show its gate');
+        assert.equal(await page.locator('[data-panel="care"] [data-action="train"]').isDisabled(), true, 'zero-energy training must show its gate');
         await page.locator('[data-panel="play-now"] [data-focus="contracts"]').click();
         assert.deepEqual((await hooks.buildPetMiniAppState(db, currentUser, token)).contracts.run.path, activeLong.path);
         assert.ok((await page.locator('[data-panel="contracts"]').textContent()).includes('QUIET STREETS // 2 ROOMS LEFT'));
@@ -2036,7 +2037,7 @@ try {
     assert.equal(await page.locator('[data-action="activity_claim"]').isDisabled(), true);
     await page.locator('[data-screen="home"]').click();
     assert.equal(await page.locator('[data-action="sleep"]').isDisabled(), true);
-    assert.equal(await page.locator('[data-action="train"]').isDisabled(), true);
+    assert.equal(await page.locator('[data-panel="care"] [data-action="train"]').isDisabled(), true);
     assert.equal(await page.locator('[data-action="feed"]').isEnabled(), true);
     upgradeDuringCare = currentUser;
     const staleCareResponse = page.waitForResponse((r) => r.url().endsWith('/telegram-pets/app/action') && r.request().postDataJSON()?.action === 'feed');
