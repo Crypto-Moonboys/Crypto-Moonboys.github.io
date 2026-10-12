@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import test from 'node:test';
 import { fixture, hooks, currentSeason } from './moonpet-audit-regression-fixture.mjs';
 import { PET_HOME_GARDEN, readPetGardenState } from '../workers/moonboys-api/pets/home-garden.js';
+import { buildPetEconomyReachabilityAudit } from '../workers/moonboys-api/pets/economy-reachability-audit.js';
 
 const migration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/095_moonpet_home_garden.sql', import.meta.url), 'utf8');
 const worker = fs.readFileSync(new URL('../workers/moonboys-api/worker.js', import.meta.url), 'utf8');
@@ -17,6 +18,9 @@ test('095 adds only per-pet garden persistence and receipt authority', () => {
   assert.equal(PET_HOME_GARDEN.crop_key, 'garden_veggies');
   assert.equal(PET_HOME_GARDEN.grow_seconds, 21600);
   assert.equal(PET_HOME_GARDEN.harvest_quantity, 1);
+  const harvestFks = f.sql.prepare("PRAGMA foreign_key_list('telegram_pet_garden_harvests')").all();
+  assert.equal(harvestFks.some(row => row.table === 'telegram_pet_season_slots'), false, 'completed harvest history must survive pet deletion');
+  assert.equal(harvestFks.some(row => row.table === 'telegram_pet_profiles' && row.from === 'telegram_id'), true);
   assert.throws(() => f.sql.prepare(`INSERT INTO telegram_pet_garden_plots
     (pet_id,telegram_id,season_key,crop_key,status,planted_at,ready_at)
     VALUES (?,?,?,?,?,?,?)`).run('current-'+f.owner,f.owner,currentSeason,'new_crop','growing','2026-01-01T00:00:00Z','2026-01-01T06:00:00Z'), /CHECK constraint/);
@@ -89,6 +93,16 @@ test('an old harvest request can never consume a later crop', async () => {
   assert.equal(retry.duplicate, true);
   assert.equal(f.sql.prepare('SELECT COUNT(*) AS c FROM telegram_pet_garden_plots WHERE telegram_id=?').get(f.owner).c, 1, 'later crop is untouched');
   f.sql.close();
+});
+
+test('economy reachability records Garden as a real additional source of the existing veggie item', () => {
+  const audit = buildPetEconomyReachabilityAudit();
+  const veggies = audit.canonical_items.find(entry => entry.key === 'garden_veggies');
+  assert.ok(veggies.sources.includes('recipe:veggie_patch'));
+  assert.ok(veggies.sources.includes('garden:harvest'));
+  const garden = audit.surfaces.find(entry => entry.kind === 'garden_source');
+  assert.deepEqual({ key:garden.key, quantity:garden.quantity, grow_seconds:garden.grow_seconds },
+    { key:'garden_veggies', quantity:1, grow_seconds:21600 });
 });
 
 test('Kitchen reuses existing cooked recipes and Gym reuses existing Train authorities', () => {
