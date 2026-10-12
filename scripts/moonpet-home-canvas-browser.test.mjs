@@ -26,10 +26,12 @@ try {
     { width:360, height:640 },
     { width:390, height:844 },
     { width:1280, height:900 },
+    { width:720, height:621 },
+    { width:720, height:640, telegramHeight:500 },
     { width:720, height:400 },
   ]) {
-    const { width, height } = viewport;
-    const f = fixture('home-e1-' + width + 'x' + height);
+    const { width, height, telegramHeight = 0 } = viewport;
+    const f = fixture('home-e1-' + width + 'x' + height + (telegramHeight ? '-tg' + telegramHeight : ''));
     const young = 'current-' + f.owner, egg = 'egg-' + f.owner;
     f.pet(egg, currentSeason, 0, 2);
     f.sql.prepare("UPDATE telegram_pet_lifecycle_by_pet SET phase='egg',incubation_json='{\"progress\":0,\"target\":12,\"signals\":{}}' WHERE pet_id=?").run(egg);
@@ -58,7 +60,7 @@ try {
     await page.route('**/*', async route => {
       const url = new URL(route.request().url());
       if (before && process.env.HOUSE_BASE_CLIENT && url.pathname === '/js/moonpet-mini-app.js') return route.fulfill({contentType:'application/javascript',body:await fs.readFile(process.env.HOUSE_BASE_CLIENT,'utf8')});
-      if (url.hostname === 'telegram.org') return route.fulfill({contentType:'application/javascript',body:"window.Telegram={WebApp:{initData:'fixture',ready(){},expand(){},onEvent(){},setHeaderColor(){},setBackgroundColor(){}}};"});
+      if (url.hostname === 'telegram.org') return route.fulfill({contentType:'application/javascript',body:`window.Telegram={WebApp:{initData:'fixture',viewportHeight:${telegramHeight || 0},viewportStableHeight:${telegramHeight || 0},ready(){},expand(){},onEvent(){},setHeaderColor(){},setBackgroundColor(){}}};`});
       if (url.pathname.endsWith('/telegram-pets/app/performance')) return route.fulfill({json:{ok:true}});
       if (url.pathname.includes('/telegram-pets/app/')) {
         const body = route.request().postDataJSON(); requests.push({path:url.pathname,body});
@@ -210,8 +212,22 @@ try {
       const dockBox = await page.locator('#nav').boundingBox();
       assert.ok(screenBox && screenBox.height >= 80,
         'scrollable controls retain usable height at '+width+'x'+height);
-      assert.ok(dockBox && dockBox.height >= 44 && dockBox.y + dockBox.height <= height + 1,
-        'bottom navigation remains fully visible at '+width+'x'+height);
+      const shellBox = await page.locator('#moonpet-app').boundingBox();
+      assert.ok(shellBox);
+      const expectedShellHeight = telegramHeight || height;
+      assert.ok(Math.abs(shellBox.height - expectedShellHeight) <= 2,
+        'shell follows the live Telegram/browser viewport height');
+      assert.ok(dockBox && dockBox.height >= 44 && dockBox.y + dockBox.height <= shellBox.y + shellBox.height + 1,
+        'bottom navigation remains fully visible at '+width+'x'+height+(telegramHeight ? ' with Telegram '+telegramHeight : ''));
+      for (const screenKey of ['home','missions','explore','work','economy','profile']) {
+        await page.locator('[data-screen="'+screenKey+'"]').click();
+        const activeDock = page.locator('#nav [data-screen="'+screenKey+'"]');
+        await activeDock.waitFor({state:'visible'});
+        const activeDockBox = await activeDock.boundingBox();
+        assert.ok(activeDockBox && activeDockBox.y + activeDockBox.height <= shellBox.y + shellBox.height + 1,
+          'bottom menu stays visible on '+screenKey);
+      }
+      await page.locator('[data-screen="home"]').click();
       assert.deepEqual(await page.evaluate(()=>window.stationCanvasLabels),[],'no permanent station text is painted');
       // Validate the actual responsive rectangles, including the short mobile layout.
       const overlays=await page.locator('#hud, #canvas-tools button').evaluateAll(nodes=>nodes.map(node=>{
@@ -266,6 +282,6 @@ try {
     assert.deepEqual(errors,[]);
     assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth <= window.innerWidth+1),'viewport fits '+width+'px');
     await context.close(); f.sql.close();
-    console.log('Home canvas verified at '+width+'x'+height+(before?' (before evidence)':''));
+    console.log('Home canvas verified at '+width+'x'+height+(telegramHeight ? ' / Telegram '+telegramHeight : '')+(before?' (before evidence)':''));
   }
 } finally { await browser.close(); await new Promise(resolve=>server.close(resolve)); }
