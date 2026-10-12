@@ -45,6 +45,17 @@ test('website guide and About blocks are exactly the shared in-game copy', () =>
   assert.equal((markup.match(/<details class="guide-step" open/g) || []).length, 2);
 });
 
+test('Home guide documents E3 without inventing new Kitchen or Gym authorities', () => {
+  const home = plain(section('house'));
+  assert.match(home, /KITCHEN.*GARDEN.*GYM/);
+  assert.match(home, /Pizza Night, Moon Grill and Veggie Patch.*existing/);
+  assert.match(home, /existing instant Train action and timed Training system/);
+  assert.match(home, /6-hour server timer.*one existing Garden Veggie Box/);
+  assert.match(home, /Planting and harvesting themselves award no XP, currency, mission credit or competition credit/);
+  assert.match(home, /do not occupy the paid LEFT, RIGHT or WALL furniture slots/);
+  assert.doesNotMatch(home, /kitchen, gym and garden are future features/i);
+});
+
 test('entry, owned space and incubation numbers match authoritative code', () => {
   assert.equal(PET_ENTRY_ARCADE_XP, 1000);
   assert.match(plain(section('start')), /1,000 lifetime Arcade XP.*first pet is free/);
