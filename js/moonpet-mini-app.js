@@ -1189,6 +1189,10 @@
             "Collect one completed Weekly Bounty Block. The account's UTC week and saved receipt prevent repeat payment.",
             "claim"
       ],
+      "house_place": [
+            "Save this free room change for the current pet. No XP or currency awarded.",
+            "manage"
+      ],
       "radio_request": [
             "Save one GraffPUNKS Radio request in the private host-review queue per UTC day. No guaranteed broadcast or rewards.",
             "manage"
@@ -1262,7 +1266,7 @@
       options = Object.assign({}, options, { disabled: true, statusLabel: 'ARCADE XP REQUIRED' });
     }
     var accountActions = ['adopt', 'guidance_ack', 'notification_set', 'season_slots', 'buy_pet_slot', 'switch_pet_slot', 'delete_pet_slot', 'arena_queue_cancel', 'arena_forfeit', 'kaiju_queue_cancel', 'kaiju_match_cancel'];
-    var eggActions = accountActions.concat(['incubate', 'hatch', 'energy_drink', 'dance', 'cuddles', 'bounty_claim', 'season_claim', 'weekly_boss_claim', 'contract_claim', 'style_equip', 'seasonal_boss_claim', 'daily_completion_claim', 'finale_start', 'finale_retry', 'finale_step', 'finale_claim', 'event_recover', 'event_close']);
+    var eggActions = accountActions.concat(['incubate', 'hatch', 'energy_drink', 'dance', 'cuddles', 'house_place', 'bounty_claim', 'season_claim', 'weekly_boss_claim', 'contract_claim', 'style_equip', 'seasonal_boss_claim', 'daily_completion_claim', 'finale_start', 'finale_retry', 'finale_step', 'finale_claim', 'event_recover', 'event_close']);
     if (state && state.lifecycle && state.lifecycle.phase === 'egg' && !eggActions.includes(action)) {
       options = Object.assign({}, options, { disabled: true, cooldown: null, statusLabel: 'HATCH REQUIRED' });
     } else if (state && state.adopted === false && !accountActions.includes(action)) {
@@ -1316,6 +1320,7 @@
     'weekly-bounties': ['★', 'Weekly bounty targets with one saved reward each.'],
     'food-shop': ['◇', 'Buy cooked meals with the listed resources and eat them from Home.'],
     'radio-requests': ['♫', 'Submit one moderated radio song or message request per day.'],
+    'pet-house': ['⌂', 'Decorate and view the room saved to this pet.'],
     details: ['◉', 'Companion stats, personality and equipped items.'],
     'pet-spaces': ['◈', 'Choose your active pet or unlock another permanent space.'],
     'season-slots': ['◈', 'Track lifetime progression and calendar competition progress.'],
@@ -2063,7 +2068,8 @@
       return '<div class="ticker"><span>SECRET BOT // SIGNAL ' + number(incubation.progress) + '/' + number(incubation.target) + ' // IDENTITY FORMING //</span></div>' +
         panel('SECRET BOT CHAMBER', '<div class="line complete">THE SECRET BOT REMEMBERS HOW YOU TREAT IT.</div><div class="line muted">NEXT // ' + escapeHtml(homeNextLine()) + '</div><div class="line muted">Use at least three types of care to build the breakout signal. Identity stays hidden until Stage 3.</div>' + meter('BREAKOUT SIGNAL', Number(incubation.progress || 0) / Math.max(1, Number(incubation.target || 12)) * 100) + '<div class="line">WARM ' + number(signals.warm) + ' // TALK ' + number(signals.talk) + ' // INSPIRATION ' + number(signals.music) + ' // REST ' + number(signals.rest) + '</div><div class="button-grid">' + button('WARM BOT', 'incubate', { care_type: 'warm' }) + button('TALK TO BOT', 'incubate', { care_type: 'talk' }) + button('INSPIRE BOT', 'incubate', { care_type: 'music' }) + button('LET IT REST', 'incubate', { care_type: 'rest' }) + '</div><div class="button-grid one">' + button('HATCH BOT', 'hatch', {}, { disabled: !incubation.ready, statusLabel: incubation.ready ? '' : 'HATCH NOT READY' }) + '</div><div class="line muted">DAILY SIGNALS ' + number(incubation.actions_today) + '/' + number(incubation.daily_cap) + '</div>', 'incubation') +
         panel('SECRET BOT ACTIONS', '<div class="button-grid">' + button('ENERGY DRINK', 'energy_drink') + button('DANCE', 'dance') + button('CUDDLES', 'cuddles') + '</div><div class="line muted">Stat-only care. Does not advance incubation or award XP.</div>', 'care') +
-        renderPlayNow() + renderFoodCounter() + renderPetEmotes() + renderRadioRequestPanel() + renderSeasonSlots();
+        renderPlayNow() + renderFoodCounter() + renderPetEmotes() + renderRadioRequestPanel() +
+        '<div class="button-grid one">' + routeButton('VISIT PET HOUSE', { screen:'profile', focus:'pet-house' }, 'View a saved room for this pet. No cost.') + '</div>' + renderSeasonSlots();
     }
     var equipped = ['food', 'toy', 'outfit', 'armor', 'weapon', 'charm'].map(function (slot) {
       return '<div class="line"><strong>' + slot.toUpperCase() + '</strong> // ' + escapeHtml(words(pet['equipped_' + slot] || (slot === 'food' ? 'basic food' : slot === 'toy' ? 'basic toy' : 'none equipped'))) + '</div>';
@@ -2073,6 +2079,7 @@
       activePetSummary() +
       renderPlayNow() +
       renderFoodCounter() + renderPetEmotes() + renderRadioRequestPanel() +
+      '<div class="button-grid one">' + routeButton('VISIT PET HOUSE', { screen:'profile', focus:'pet-house' }, 'View a saved room for this pet. No cost.') + '</div>' +
       panel('VITAL SYSTEMS', '<div class="line muted">Higher is better on every meter. Fullness is the opposite of hunger: Feed raises fullness.</div>' + meter('HEALTH', pet.health) + meter('ENERGY', pet.energy) + meter('FULLNESS', pet.hunger, true) + meter('FUN', pet.happiness) + meter('CLEAN', pet.cleanliness), 'vitals') +
       panel('CARE CONSOLE', '<div class="button-grid">' +
         button('FEED', 'feed') + button('PLAY', 'play') + button('CLEAN', 'clean') + button('SLEEP', 'sleep') + button('TRAIN', 'train') +
@@ -2116,11 +2123,16 @@
   }
 
   function stateNeedsScreenHydration(snapshot, screenKey) {
-    if (!stateNeedsFullHydration(snapshot) || screenKey === 'home') return false;
-    return !(snapshot.hydration.modules || []).includes(screenKey);
+    if (!snapshot || screenKey === 'home') return false;
+    var hydration = snapshot.hydration || {};
+    if (screenKey === 'profile' && hydration.mode === 'full')
+      return !(hydration.modules || []).includes('profile');
+    if (!stateNeedsFullHydration(snapshot)) return false;
+    return !(hydration.modules || []).includes(screenKey);
   }
 
   function stateRefreshPayload(snapshot, screenKey) {
+    if (screenKey === 'profile') return { mode: 'profile' };
     if (screenKey === 'missions' && stateNeedsFullHydration(snapshot)) return { mode: 'missions' };
     if (screenKey && screenKey !== 'home') return {};
     return stateNeedsFullHydration(snapshot) ? { mode: 'core' } : {};
@@ -2174,7 +2186,7 @@
       var warmupController = background ? new AbortController() : null;
       if (warmupController) stateRequestGate.setBackgroundRequest(warmupController);
       try {
-        var data = await post('/telegram-pets/app/state', !background && reason === 'missions' ? { mode: 'missions' } : {},
+        var data = await post('/telegram-pets/app/state', background ? {} : stateRefreshPayload(state, reason || activeScreen),
           warmupController ? { signal: warmupController.signal } : undefined);
         if (!setStateSnapshot(data.state, requestGeneration)) return null;
         fastActionStateDirty = false;
@@ -2231,7 +2243,7 @@
     lastSeasonServerRefreshAt = seasonSnapshotReceivedAt;
     cooldownRefreshFailures = 0;
     scheduleCooldownRefresh();
-    if (nextState.hydration && nextState.hydration.full === false) queueActiveScreenHydration();
+    if (stateNeedsScreenHydration(nextState, activeScreen)) queueActiveScreenHydration();
     return true;
   }
 
@@ -3243,6 +3255,36 @@
   }
   // TEST-EXPORT: notificationControls:end
 
+
+  // TEST-EXPORT: petHouse:start
+  function renderPetHouse() {
+    var house = state.pet_house;
+    if (!house || house.available !== true || house.pet_id !== state.pet.pet_id)
+      return panel('PET HOUSE // SAVED ROOM', '<div class="line muted">ROOM UNAVAILABLE. REFRESH PROFILE TO READ THE SELECTED PET SAVE.</div>', 'pet-house');
+    var layout = house.layout || {};
+    var choices = house.choices || {};
+    var preview = '<div class="pet-house-room" role="img" aria-label="Pet room with ' +
+      escapeHtml(words(layout.wall)) + ' walls, ' + escapeHtml(words(layout.floor)) + ' floor and ' +
+      escapeHtml(words(layout.furniture)) + '" data-wall="' + escapeHtml(layout.wall) +
+      '" data-floor="' + escapeHtml(layout.floor) + '" data-furniture="' + escapeHtml(layout.furniture) +
+      '"><div class="pet-house-wall"></div><div class="pet-house-floor"></div><div class="pet-house-furnishing"></div></div>';
+    var controls = ['wall','floor','furniture'].map(function (slot) {
+      var available = choices[slot] || [];
+      return '<div class="line muted">' + escapeHtml(slot.toUpperCase()) + '</div><div class="button-grid">' +
+        available.map(function (item) {
+          var active = layout[slot] === item.key;
+          return button((active ? 'ACTIVE: ' : 'SET ') + item.label, 'house_place',
+            { slot_key:slot, item_key:item.key },
+            { disabled:active, statusLabel:active ? 'SAVED' : '',
+              detail:'Free decoration for the selected pet; no Moon Gold, XP or item cost.' });
+        }).join('') + '</div>';
+    }).join('');
+    return panel('PET HOUSE // SAVED ROOM',
+      '<div class="line muted">Starter room saved per pet. No purchases or rewards. More rooms, paid furniture, kitchen, gym and garden are separate future features.</div>' +
+      preview + controls, 'pet-house');
+  }
+  // TEST-EXPORT: petHouse:end
+
   function renderProfile() {
     var helpPanel = panel('HOW TO PLAY', '<div class="line muted">Care, daily and weekly goals, runs, bosses, rewards and the season finale.</div><div class="button-grid one"><button type="button" class="terminal-button" data-utility="guide">HOW TO PLAY<span class="button-purpose">Read how care, quests, battles and rewards work before choosing a route.</span></button><button type="button" class="terminal-button" data-utility="about">ABOUT MOONPET OS<span class="button-purpose">Learn about persistent companions and competition.</span></button></div>', 'how-to-play');
     if (!state.pet) return helpPanel + panel('IDENTITY CORE', '<div class="line muted">INITIALISE A MOONPET TO UNLOCK THIS MODULE.</div>');
@@ -3308,7 +3350,7 @@
     var callsignPanel = callsignUnlocked
       ? '<label class="line" for="pet-name-input">CUSTOM CALLSIGN</label><input id="pet-name-input" class="terminal-input" maxlength="32" value="' + escapeHtml(state.pet.callsign || '') + '"><div class="button-grid one">' + button('SAVE CALLSIGN', 'rename') + '</div><div class="line muted">CANONICAL IDENTITY STAYS SEPARATE FROM ANY CUSTOM CALLSIGN.</div>'
       : '<div class="line complete">UNKNOWN</div><div class="line muted">CALLSIGN LOCKED UNTIL STAGE 3.</div>';
-    return activePetSummary() + helpPanel + renderSeasonSlots() +
+    return activePetSummary() + helpPanel + renderSeasonSlots() + renderPetHouse() +
       panel('IDENTITY CORE', '<div class="line complete">' + escapeHtml(resolveMoonpetDisplayName(lifecycle, identity)) + ' // ' + escapeHtml(moonpetStageLabel(lifecycle, state.pet || {})) + '</div><div class="line muted">' + escapeHtml(words(lifecycle.temperament || 'forming')) + ' TEMPERAMENT</div>' + innate + '<div class="line muted">PERSONALITY</div>' + (traits || '<div class="line muted">TRAITS STILL FORMING. Personality develops through play.</div>')) + panel('HIDDEN MORPH SIGNAL', rarePanel, 'rare-morph') +
       panel('APTITUDES', aptitudeRows) +
       panel('MEMORY ARCHIVE', memoryRows + (milestones || '<div class="line muted">NO MILESTONES RECORDED YET.</div>'), 'memories') +
@@ -3849,7 +3891,7 @@
       var requestGeneration = beginStateRequest();
       var acknowledged = await post('/telegram-pets/app/action', { action: 'guidance_ack', notices: visible.map(function (notice) {
         return { key: notice.key, scope: notice.scope, pet_id: notice.pet_id, season_key: notice.season_key };
-      }), request_id: crypto.randomUUID() });
+      }), request_id: crypto.randomUUID(), state_mode: activeScreen === 'profile' ? 'profile' : undefined });
       if (setStateSnapshot(acknowledged.state, requestGeneration)) render();
     } catch (_) {}
     noticesBusy = false;
@@ -4008,6 +4050,7 @@
         displayed_pet_id: stateBeforeAction && stateBeforeAction.pet && stateBeforeAction.pet.pet_id || null
       }, payload || {});
       if (fastResponse) requestPayload.response_mode = 'result_only';
+      else if (activeScreen === 'profile') requestPayload.state_mode = 'profile';
       else if (activeScreen === 'missions' && stateNeedsFullHydration(stateBeforeAction)) requestPayload.state_mode = 'missions';
       var data = await post('/telegram-pets/app/action', requestPayload);
       if (!data || !data.result || typeof data.result.accepted !== 'boolean') throw new Error('ACTION RESPONSE UNCONFIRMED');

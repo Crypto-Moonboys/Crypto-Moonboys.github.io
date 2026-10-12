@@ -610,6 +610,7 @@ for (const changedDuringNotices of [true, false]) {
   const selected = changedDuringNotices ? { adopted: true, pet: { pet_id: 'selected-egg', evolution_stage: 0 }, lifecycle: { phase: 'egg' } } : evolved;
   const actionContext = vm.createContext({
     state: original, activeScreen: 'profile', busy: false, noticesBusy: false, petActionRefreshRequired: false, sleepLatched: false,
+    stateNeedsScreenHydration: () => false,
     lifecycleCeremony: null, lifecycleCeremonyUntil: 0, lifecycleCeremonyTimer: 0, lifecycleCeremonyStartedAt: 0, reducedMotion: false,
     window: { clearTimeout: () => {} }, crypto: { randomUUID: () => 'evolve-source-pet' }, performance: { now: () => 1 },
     words: value => value, resolveMoonpetDisplayName: () => 'UNKNOWN', shouldUseFastActionResponse: () => false,
@@ -667,7 +668,8 @@ const refreshPayloadContext = vm.createContext({});
 vm.runInContext(hydrationSource, refreshPayloadContext);
 for (const moduleScreen of ['profile', 'economy', 'explore', 'work']) {
   const payload = refreshPayloadContext.stateRefreshPayload({ hydration: { full: false, modules: ['home'] } }, moduleScreen);
-  assert.equal(payload.mode, undefined, 'Refresh must load the visible full-state module instead of returning another core snapshot');
+  assert.equal(payload.mode, moduleScreen === 'profile' ? 'profile' : undefined,
+    'Profile refresh requests its house projection; other full-state modules keep the existing projection');
 }
 assert.equal(refreshPayloadContext.stateRefreshPayload({ hydration: { full: false } }, 'home').mode, 'core');
 assert.equal(refreshPayloadContext.stateRefreshPayload({ hydration: { full: false } }, 'missions').mode, 'missions');
@@ -699,7 +701,7 @@ for (const moduleScreen of ['missions', 'profile']) {
       calls.push({ path, payload });
       if (failModule) throw Error('mini_app_state_failed');
       return { state: { adopted: true, pet: { pet_id: 'fresh-pet' }, lifecycle: { phase: 'young' },
-        hydration: { full: moduleScreen === 'profile', modules: ['home', moduleScreen] } } };
+        hydration: { mode: 'full', full: true, modules: ['home', moduleScreen] } } };
     },
   });
   moduleContext.screens = {
@@ -801,7 +803,7 @@ for (const mode of ['foreign-only', 'mixed', 'account']) {
   const account = { key: 'account-notice', scope: 'account', pet_id: null, season_key: '2026-S2', title: 'Historical season reward' };
   const notices = mode === 'foreign-only' ? [other, legacy] : mode === 'account' ? [account] : [other, legacy, own, { ...own, key: 'later-owned-notice' }, account];
   const context = vm.createContext({
-    state: { pet: { pet_id: own.pet_id, season_key: own.season_key }, notices }, noticesBusy: false,
+    state: { pet: { pet_id: own.pet_id, season_key: own.season_key }, notices }, noticesBusy: false, activeScreen: 'home',
     haptic: () => {}, tell: text => displayed.push(text), render: () => {},
     beginStateRequest: () => 1, setStateSnapshot: () => true, crypto: { randomUUID: () => 'notice-request' },
     post: async (_path, body) => { requests.push(body); return { state: {} }; },

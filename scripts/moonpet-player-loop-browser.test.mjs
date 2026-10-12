@@ -160,7 +160,7 @@ try {
       if (url.pathname.includes('/telegram-pets/app/')) {
         const body = route.request().postDataJSON();
         const result = url.pathname.endsWith('/action') ? (actions.push(body.action), await act(body)) : undefined;
-        const state = body.mode === 'core' ? await hooks.buildPetMiniAppCoreState(db,id) : body.mode === 'live' ? await hooks.buildPetMiniAppLiveState(db,id) : await hooks.buildPetMiniAppState(db,id,token);
+        const state = body.mode === 'core' ? await hooks.buildPetMiniAppCoreState(db,id) : body.mode === 'live' ? await hooks.buildPetMiniAppLiveState(db,id) : await hooks.buildPetMiniAppState(db,id,token,{mode:body.state_mode || body.mode});
         return route.fulfill({status:result?.accepted === false ? 409 : 200,json:{state,result}});
       }
       if (url.hostname === '127.0.0.1') return route.continue();
@@ -209,7 +209,7 @@ try {
       if(url.pathname.includes('/telegram-pets/app/')) {
         const body=route.request().postDataJSON();
         const result=url.pathname.endsWith('/action')?await dispatchRenderedPetAction(db,id,{id},body,token):undefined;
-        const state=body.mode === 'core'?await hooks.buildPetMiniAppCoreState(db,id): body.mode === 'live' ? await hooks.buildPetMiniAppLiveState(db,id) :await hooks.buildPetMiniAppState(db,id,token);
+        const state=body.mode === 'core'?await hooks.buildPetMiniAppCoreState(db,id): body.mode === 'live' ? await hooks.buildPetMiniAppLiveState(db,id) :await hooks.buildPetMiniAppState(db,id,token,{mode:body.state_mode || body.mode});
         return route.fulfill({status:result?.accepted === false?409:200,json:{state,result}});
       }
       if(url.hostname === '127.0.0.1')return route.continue();return route.abort();
@@ -221,6 +221,16 @@ try {
     const response=page.waitForResponse(r => r.url().endsWith('/action') && r.request().postDataJSON().action === 'season_claim');
     await claim.click();assert.equal((await (await response).json()).result.accepted,true);
     assert.equal(sqlite.prepare("SELECT COUNT(*) n FROM telegram_pet_reward_claims WHERE telegram_id=? AND source='pet_season_reward' AND status='awarded'").get(id).n,1);
+    await page.waitForSelector('[data-panel="pet-house"] .pet-house-room', {state:'attached'});
+    await page.locator('[data-panel="pet-house"] > summary').click();
+    const houseResponse=page.waitForResponse(r=>r.url().endsWith('/action') && r.request().postDataJSON().action === 'house_place');
+    await page.locator('[data-action="house_place"]').filter({hasText:'SET Night Wall'}).click();
+    const savedHouse=await (await houseResponse).json();
+    assert.equal(savedHouse.result.accepted,true,'eggs can save free room choices');
+    assert.equal(savedHouse.state.pet_house.layout.wall,'night_wall');
+    await page.waitForSelector('.pet-house-room[data-wall="night_wall"]');
+    await page.reload();
+    await page.waitForSelector('.pet-house-room[data-wall="night_wall"]', {state:'attached'});
     await context.close();
   }
 
@@ -248,7 +258,7 @@ try {
           requests.push(body);
           result = await hooks.processPetMiniAppAction(db, id, { id }, body, token);
         }
-        const state = body.mode === 'core' ? await hooks.buildPetMiniAppCoreState(db, id) : body.mode === 'live' ? await hooks.buildPetMiniAppLiveState(db, id) : await hooks.buildPetMiniAppState(db, id, token);
+        const state = body.mode === 'core' ? await hooks.buildPetMiniAppCoreState(db, id) : body.mode === 'live' ? await hooks.buildPetMiniAppLiveState(db, id) : await hooks.buildPetMiniAppState(db, id, token, {mode:body.state_mode || body.mode});
         return route.fulfill({ status: result?.accepted === false ? 409 : 200, json: { state, result } });
       }
       if (url.hostname === '127.0.0.1') return route.continue();
@@ -298,7 +308,7 @@ try {
         const result = url.pathname.endsWith('/action')
           ? await hooks.processPetMiniAppAction(db, id, { id }, body, token) : undefined;
         const state = body.mode === 'core' ? await hooks.buildPetMiniAppCoreState(db, id)
-          : body.mode === 'live' ? await hooks.buildPetMiniAppLiveState(db, id) : await hooks.buildPetMiniAppState(db, id, token);
+          : body.mode === 'live' ? await hooks.buildPetMiniAppLiveState(db, id) : await hooks.buildPetMiniAppState(db, id, token, {mode:body.state_mode || body.mode});
         return route.fulfill({ json: { ok: true, state, result } });
       }
       if (url.hostname === '127.0.0.1') return route.continue();
@@ -323,7 +333,7 @@ try {
     assert.deepEqual(errors, []);
     await context.close();
   }
-  // Core Home stays interactive while one background read prepares all tabs.
+  // Core Home stays interactive while one background read prepares shared tabs.
   for (const viewport of [{ width: 390, height: 844 }, { width: 360, height: 640 }, { width: 1280, height: 900 }]) {
     const context = await createFixtureContext({ viewport, reducedMotion: 'reduce' });
     const page = await context.newPage();
@@ -340,7 +350,7 @@ try {
       if (url.pathname.endsWith('/telegram-pets/app/state')) {
         const body = route.request().postDataJSON(); modes.push(body.mode || 'full');
         const state = body.mode === 'core' ? await hooks.buildPetMiniAppCoreState(db, 'browser-missions')
-          : await hooks.buildPetMiniAppState(db, 'browser-missions', token, { mode: body.mode });
+          : await hooks.buildPetMiniAppState(db, 'browser-missions', token, { mode: body.state_mode || body.mode });
         if (!body.mode && firstFull) { firstFull = false; warmupStarted(); await warmupGate; }
         return route.fulfill({ json: { ok: true, state } });
       }
@@ -371,9 +381,10 @@ try {
     for (const [tab, panel] of [['work','timed-activity'],['economy','equipment'],['profile','pet-spaces'],['explore','districts'],['missions','contracts']]) {
       await page.locator(`[data-screen="${tab}"]`).click();
       assert.equal(await page.locator(`[data-panel="${panel}"]`).count(), 1, `${tab} renders immediately from the shared projection`);
+      if(tab === 'profile') await page.waitForSelector('[data-panel="pet-house"] .pet-house-room', {state:'attached'});
       assert.equal(await page.locator('[data-panel="module-loading"]').count(), 0);
     }
-    assert.deepEqual(modes, ['core','full'], 'loaded tab navigation performs no additional state reads');
+    assert.deepEqual(modes, ['core','full','profile'], 'only Profile adds its house projection to the shared tab state');
     const renderedContracts = await page.locator('[data-panel="contracts"]').elementHandle();
     const refreshedResponse = page.waitForResponse(response => response.url().endsWith('/telegram-pets/app/state') && response.request().method() === 'POST');
     await page.locator('[data-utility="sync"]').click();
@@ -381,11 +392,11 @@ try {
     assert.equal(response.ok(), true);
     assert.notEqual((await response.json()).state.hydration?.full, false);
     await page.waitForFunction(node => !node.isConnected, renderedContracts, { timeout: 10000 });
-    assert.deepEqual(modes, ['core','full','full'], 'Missions Refresh retains full state instead of discarding other tabs');
+    assert.deepEqual(modes, ['core','full','profile','full'], 'Missions Refresh retains full state instead of discarding other tabs');
     await page.locator('[data-screen="economy"]').click();
     assert.equal(await page.locator('[data-panel="equipment"]').count(), 1);
     assert.equal(await page.locator('[data-panel="module-loading"]').count(), 0);
-    assert.deepEqual(modes, ['core','full','full']); assert.deepEqual(errors, []);
+    assert.deepEqual(modes, ['core','full','profile','full']); assert.deepEqual(errors, []);
     console.log(`Background tab readiness and Missions refresh browser flow passed at ${viewport.width}x${viewport.height}`);
     await context.close();
   }
@@ -419,7 +430,7 @@ try {
         let result;
         if (url.pathname.endsWith('/action')) { actions.push(body.action); result = await act(body); }
         const state = body.mode === 'core' ? await hooks.buildPetMiniAppCoreState(db,id)
-          : body.mode === 'live' ? await hooks.buildPetMiniAppLiveState(db,id) : await hooks.buildPetMiniAppState(db,id,token);
+          : body.mode === 'live' ? await hooks.buildPetMiniAppLiveState(db,id) : await hooks.buildPetMiniAppState(db,id,token,{mode:body.state_mode || body.mode});
         return route.fulfill({ json: { ok: true, state, result } });
       }
       return url.hostname === '127.0.0.1' ? route.continue() : route.abort();
@@ -529,7 +540,7 @@ try {
         if (body.mode === 'missions') await missionsGate;
         const state = body.mode === 'core'
           ? await hooks.buildPetMiniAppCoreState(db, 'browser-missions')
-          : body.mode === 'live' ? await hooks.buildPetMiniAppLiveState(db, 'browser-missions') : await hooks.buildPetMiniAppState(db, 'browser-missions', token, { mode: body.mode });
+          : body.mode === 'live' ? await hooks.buildPetMiniAppLiveState(db, 'browser-missions') : await hooks.buildPetMiniAppState(db, 'browser-missions', token, { mode: body.state_mode || body.mode });
         if (!body.mode && holdFullResponse) {
           holdFullResponse = false;
           fullRequestStarted();
@@ -621,7 +632,7 @@ try {
       if (url.pathname.includes('/telegram-pets/app/')) {
         const body = route.request().postDataJSON();
         const result = url.pathname.endsWith('/action') ? await act(id, body) : undefined;
-        const state = body.mode === 'core' ? await hooks.buildPetMiniAppCoreState(db, id) : body.mode === 'live' ? await hooks.buildPetMiniAppLiveState(db, id) : await hooks.buildPetMiniAppState(db, id, token);
+        const state = body.mode === 'core' ? await hooks.buildPetMiniAppCoreState(db, id) : body.mode === 'live' ? await hooks.buildPetMiniAppLiveState(db, id) : await hooks.buildPetMiniAppState(db, id, token, {mode:body.state_mode || body.mode});
         return route.fulfill({ json: { state, result: result && hooks.serializePetMiniAppActionResult(result, state.guidance?.identity, id) } });
       }
       if (url.hostname === '127.0.0.1') return route.continue();
@@ -680,7 +691,7 @@ try {
             return faultAction === 'feed' ? route.abort('connectionreset') : route.fulfill({ json: {} });
           }
         }
-        const state = body.mode === 'core' ? await hooks.buildPetMiniAppCoreState(db, id) : body.mode === 'live' ? await hooks.buildPetMiniAppLiveState(db, id) : await hooks.buildPetMiniAppState(db, id, token);
+        const state = body.mode === 'core' ? await hooks.buildPetMiniAppCoreState(db, id) : body.mode === 'live' ? await hooks.buildPetMiniAppLiveState(db, id) : await hooks.buildPetMiniAppState(db, id, token, {mode:body.state_mode || body.mode});
         return route.fulfill({ json: { state, result } });
       }
       if (url.hostname === '127.0.0.1') return route.continue();
@@ -773,7 +784,7 @@ try {
           result = await hooks.processPetMiniAppAction(db, currentUser, { id: currentUser }, body, token);
         }
         let state;
-        try { state = await hooks.buildPetMiniAppState(db, currentUser, token); }
+        try { state = await hooks.buildPetMiniAppState(db, currentUser, token, {mode:body.state_mode || body.mode}); }
         catch (error) {
           if (!['isolated_saved_state_read_failure','pet_state_read_unavailable','pet_state_source_changed'].includes(error.message)) throw error;
           // Production preserves an action's committed result if only its
@@ -827,9 +838,10 @@ try {
     assert.equal(await page.evaluate(() => window.MoonpetBetaAppearance.getBackgroundArtState().mode), 'stage0_secret_bot', 'egg keeps its existing background');
     assert.equal(await page.evaluate(() => window.MoonpetBetaAppearance.getBackgroundArtState().floor), null, 'egg chamber receives no street floor');
     // Check the real collapsed UX before expanding the older gameplay matrix.
-    const beforeDisclosures = actions.length;
+    const beforeDisclosures = actions.filter(action=>action !== 'guidance_ack').length;
     for (const section of ['home', 'missions', 'explore', 'work', 'economy', 'profile']) {
       await page.locator(`[data-screen="${section}"]`).click();
+      if(section === 'profile') await page.waitForSelector('[data-panel="pet-house"] .pet-house-room', {state:'attached'});
       const panels = page.locator('#screen > details.panel');
       assert.ok(await panels.count() > 0);
       assert.equal(await page.locator('#screen > section.panel').count(), 0);
@@ -881,7 +893,7 @@ try {
     await page.locator('[data-panel="recommended"] [data-jump]').first().click();
     await page.waitForFunction(() => document.querySelector('[data-panel="incubation"]').open);
     assert.equal(await page.locator('[data-panel="incubation"] > summary').evaluate(node => node === document.activeElement), true, 'recommendation opens and focuses destination');
-    assert.equal(actions.length, beforeDisclosures, 'disclosures and recommendations do not submit gameplay actions');
+    assert.equal(actions.filter(action=>action !== 'guidance_ack').length, beforeDisclosures, 'disclosures and recommendations do not submit gameplay actions; automatic notice acknowledgments are read receipts');
     // The remaining matrix tests gameplay, not collapsed defaults. Expand through
     // native summary clicks after each render so its controls remain reachable.
     function expandGameplayPanels() {
@@ -1061,11 +1073,20 @@ try {
     assert.equal(await page.locator('[data-season-slot].is-owned,[data-season-slot].is-active').count(),3,'Profile retains old pets and rollover egg');
     await page.waitForSelector('[data-panel="season-slots"]');
     assert.ok((await page.locator('[data-panel="season-slots"]').textContent()).includes('PETS AND PURCHASED SPACES DO NOT RESET'));
+    await page.waitForSelector('.pet-house-room');
+    const originalHouseResponse=page.waitForResponse(r=>r.url().endsWith('/telegram-pets/app/action') && r.request().postDataJSON()?.action==='house_place');
+    await page.locator('[data-action="house_place"]').filter({hasText:'SET Night Wall'}).click();
+    assert.equal((await (await originalHouseResponse).json()).result.accepted,true);
+    await page.waitForSelector('.pet-house-room[data-wall="night_wall"]');
     const recoveredSwitch = page.waitForResponse(r=>r.url().endsWith('/telegram-pets/app/action') && r.request().postDataJSON()?.action==='switch_pet_slot');
     await page.locator('[data-season-slot="2"] [data-action="switch_pet_slot"]').click();
     const restored = await (await recoveredSwitch).json();
     assert.equal(restored.state.pet.pet_id,`${currentUser}:purchased`);
     assert.equal(restored.state.pet.pet_xp,9876,'switching restores purchased pet progression');
+    assert.equal(restored.state.pet_house.pet_id,`${currentUser}:purchased`);
+    assert.equal(restored.state.pet_house.layout.wall,'warehouse_brick','switching does not transfer room choices');
+    await page.waitForSelector('.pet-house-room[data-wall="warehouse_brick"]');
+    assert.equal(sqlite.prepare('SELECT item_key FROM telegram_pet_house_layouts WHERE pet_id=? AND slot_key=?').get(`${currentUser}:original`,'wall').item_key,'night_wall');
     // The restored pet's selector starts open even though competition details stay collapsed.
     await page.locator('[data-season-slot="2"].is-active').waitFor({ state: 'attached' });
     assert.equal(await page.locator('[data-panel="pet-spaces"]').evaluate(node=>node.open),true);

@@ -3,9 +3,11 @@
 import { spawnSync } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { normalizeD1StatementResult } from './verify-d1-production-migrations.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SHA_RE = /^[0-9a-f]{40}$/i;
+const PET_HOUSE_MIGRATION = '092_moonpet_house_layouts.sql';
 
 export const SUPPORTED_WORKERS = Object.freeze({
   'moonboys-api': 'workers/moonboys-api',
@@ -85,6 +87,35 @@ export function requireTelegramWebhookSecret(secretListJson) {
   }
 }
 
+export function buildPetHouseMigrationCheckInvocation(options = {}) {
+  const args = [
+    'wrangler', 'd1', 'execute', 'wikicoms', '--remote',
+    '--command', `SELECT name FROM d1_migrations WHERE name='${PET_HOUSE_MIGRATION}'`,
+    '--json',
+  ];
+  return (options.platform || process.platform) === 'win32'
+    ? buildWindowsCmdInvocation('npx', args, options)
+    : { command: 'npx', args, windowsVerbatimArguments: false };
+}
+
+export function requirePetHouseMigrationApplied(migrationQueryJson) {
+  let payload;
+  try {
+    payload = JSON.parse(migrationQueryJson);
+  } catch {
+    throw new Error(`Could not verify production D1 migration ${PET_HOUSE_MIGRATION}`);
+  }
+  let statement;
+  try {
+    statement = normalizeD1StatementResult(payload);
+  } catch {
+    throw new Error(`Could not verify production D1 migration ${PET_HOUSE_MIGRATION}`);
+  }
+  if (!statement.results.some((row) => row?.name === PET_HOUSE_MIGRATION)) {
+    throw new Error(`Production moonboys-api requires applied D1 migration ${PET_HOUSE_MIGRATION}. Apply it to remote wikicoms before deploying.`);
+  }
+}
+
 function run(command, args, options = {}) {
   const result = spawnSync(command, args, {
     cwd: options.cwd || ROOT,
@@ -134,6 +165,13 @@ export function deployWorker(service) {
 
   const commitSha = assertDeployableCheckout();
   if (service === 'moonboys-api') {
+    // The Profile projection reads this table, so fail closed until production
+    // D1 confirms that its migration has been applied.
+    const migrationCheck = buildPetHouseMigrationCheckInvocation();
+    requirePetHouseMigrationApplied(run(migrationCheck.command, migrationCheck.args, {
+      cwd: path.join(ROOT, workerPath),
+      windowsVerbatimArguments: migrationCheck.windowsVerbatimArguments,
+    }));
     // Read names/types only; Cloudflare never returns secret values. A missing
     // binding or unavailable lookup must block deployment of the closed gate.
     const secretList = buildWebhookSecretListInvocation();

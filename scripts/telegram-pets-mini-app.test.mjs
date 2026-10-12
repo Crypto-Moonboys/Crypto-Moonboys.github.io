@@ -86,7 +86,7 @@ assert.equal(
 );
 assert.match(
   miniAppStateSource,
-  /const \[runPet, styleLoadout, contracts, dailyReservation\] = await Promise\.all\(\[/,
+  /const \[runPet, styleLoadout, petHouse, contracts, dailyReservation\] = await Promise\.all\(\[/,
   'independent Style, Contract and Daily reservation reads must execute concurrently',
 );
 assert.match(
@@ -126,6 +126,8 @@ assert.match(client, /stateNeedsScreenHydration\(state, nextScreen\)[\s\S]*hydra
   'opening a non-HOME screen must lazy-load the full server state');
 assert.match(client, /stateRefreshPayload\(state, activeScreen\)[\s\S]*\{ mode: 'core' \}/,
   'care and cooldown reconciliation must stay on the lightweight core path until a module is opened');
+assert.match(client, /if \(screenKey === 'profile'\) return \{ mode: 'profile' \}/,
+  'Profile reads must request the projection that includes the saved pet room');
 assert.match(client, /summary\.hydrated === false \|\| stateNeedsFullHydration\(state\)[\s\S]*Detailed pet progression, Growth Marks, Weekly Crests/,
   'core HOME must not render missing progression as fake zero progress');
 assert.match(client, /FULL_STATE_HYDRATION_MAX_AUTO_RETRIES = 3/,
@@ -151,6 +153,7 @@ var fastActionStateDirty = false;
 var busy = false, noticesBusy = false, authenticationFailure = false;
 var passiveRefreshInFlight = false, cooldownRefreshInFlight = false, seasonRefreshBusy = false, fastActionStateRefreshInFlight = false;
 var screen = { scrollTop: 0 }, requests = [], timers = [];
+var currentPet = 'pet-one';
 var window = { clearTimeout() {}, setTimeout(fn, delay) { timers.push({ fn, delay }); return timers.length; } };
 var failure = false;
 function words(s) { return s; } function tell() {} function render() {}
@@ -162,12 +165,14 @@ async function post(path, payload) {
   if (failure) throw new Error('offline');
   return { state: payload.mode === 'missions'
     ? { hydration: { full: false, mode: 'missions', modules: ['missions'] } }
-    : { adopted: true } };
+    : payload.mode === 'profile'
+      ? { hydration: { mode: 'full', full: true, modules: ['profile'] }, pet: { pet_id: currentPet }, pet_house: { pet_id: currentPet } }
+      : { adopted: true, hydration: { mode: 'full', full: true, modules: [] }, pet: { pet_id: currentPet }, pet_house: null } };
 }
 return { hydrateFullState, stateNeedsScreenHydration, stateRefreshPayload,
   requests, timers, fail() { failure = true; },
-  reset() { state = { hydration: { full: false } }; fullStateHydrationFailures = 0; },
-  screen(key) { activeScreen = key; }, snapshot() { return state; } };
+  reset() { state = { hydration: { full: false } }; fullStateHydrationFailures = 0; currentPet = 'pet-one'; },
+  screen(key) { activeScreen = key; }, pet(id) { currentPet = id; }, snapshot() { return state; } };
 `)();
 function extractModuleSource() {
   return client.split('// TEST-EXPORT: coreStateHydration:start')[1].split('// TEST-EXPORT: coreStateHydration:end')[0];
@@ -183,6 +188,15 @@ assert.equal(moduleRuntime.requests.length, 1, 'reopening hydrated Missions does
 moduleRuntime.screen('explore');
 await moduleRuntime.hydrateFullState('explore');
 assert.deepEqual(moduleRuntime.requests[1], {}, 'Explore still requests complete authority after Missions');
+assert.equal(moduleRuntime.stateNeedsScreenHydration(moduleRuntime.snapshot(), 'profile'), true,
+  'a generic full projection leaves the Profile-only room deferred');
+moduleRuntime.pet('pet-two'); moduleRuntime.screen('profile');
+assert.deepEqual(moduleRuntime.stateRefreshPayload(moduleRuntime.snapshot(), 'profile'), { mode: 'profile' });
+await moduleRuntime.hydrateFullState('profile');
+assert.deepEqual(moduleRuntime.requests[2], { mode: 'profile' });
+assert.equal(moduleRuntime.snapshot().pet_house.pet_id, 'pet-two',
+  'Profile hydration reads the room belonging to the newly selected pet, not the previous snapshot');
+assert.equal(moduleRuntime.stateNeedsScreenHydration(moduleRuntime.snapshot(), 'profile'), false);
 moduleRuntime.reset(); moduleRuntime.screen('missions'); moduleRuntime.fail();
 await moduleRuntime.hydrateFullState('missions');
 assert.equal(moduleRuntime.timers.at(-1).delay, 750);
@@ -1513,7 +1527,7 @@ assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20261011-ui-v1/);
 assert.doesNotMatch(html, /moonpet-art-resolver\.js/, 'the game must not load the retired static background resolver');
 assert.match(html, /\/js\/moonpet-bot-art-loader\.js\?v=20261006-live-refresh-v5/);
 assert.match(html, /\/js\/moonpet-bot-art-renderer\.js\?v=20261002-audit-recovery-v2/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261011-economy-v1/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261012-house-e1/);
 assert.match(html, /role="button" aria-label="Interact with your animated Moonpet"/);
 assert.match(client, /data-utility="guide">HOW TO PLAY/);
 const guideMarkupSource = extractTestExport(client, 'guideMarkup');
@@ -1804,7 +1818,7 @@ for (const sdkInitData of [expired, tampered, 'auth_date=invalid&hash=' + 'a'.re
   assert.equal(entry.requests.length, 3, 'Read-only startup state requests retain their transient retry policy');
 }
 assert.match(html, /\/js\/api-config\.js\?v=20260813-first-party-api/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261011-economy-v1/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261012-house-e1/);
 // Season slot UI: timing, account/pet separation, unlock affordance, switching, and rejection copy.
 assert.match(client, /function renderSeasonSlots\(\)/, 'Mini App must render a focused season-slot summary');
 assert.match(client, /function render\(options\) \{\s*var editableState = options && options\.discardCallsignDraft \? null : captureEditableState\(\);[\s\S]*restoreEditableState\(editableState\);/, 'render must preserve only drafts that were not explicitly discarded');
@@ -2151,8 +2165,10 @@ for (const phase of ['egg', 'young']) {
   assert.equal(motions[0].payload.source, 'local_emote', 'emotes stay local and free');
   assert.equal(context.localEmoteLabel, 'STRETCH!', 'Stage 0 receives the displayed expression');
 }
-assert.match(client, /renderPlayNow\(\) \+ renderFoodCounter\(\) \+ renderPetEmotes\(\) \+ renderRadioRequestPanel\(\) \+ renderSeasonSlots\(\)/,
+assert.match(client, /renderPlayNow\(\) \+ renderFoodCounter\(\) \+ renderPetEmotes\(\) \+ renderRadioRequestPanel\(\)/,
   'the egg chamber must actually render the free emote controls');
+assert.match(client, /VISIT PET HOUSE[\s\S]{0,240}renderSeasonSlots\(\)/,
+  'the egg chamber retains its pet selector after the free House shortcut');
 assert.match(drawWorldSource, /!hatchArtTransitionActive\(renderTime\)/,
   'egg emote caption is visible but never masks the hatch reveal');
 assert.doesNotMatch(drawWorldSource, /localEmoteLabel[\s\S]{0,125}!stageZeroPresentationActive\(renderTime\)/,
