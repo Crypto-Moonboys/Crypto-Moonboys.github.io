@@ -111,6 +111,69 @@ test('full veggie inventory leaves no pending harvest receipt and can retry afte
   f.sql.close();
 });
 
+test('fresh request recovers a crop-bound pending receipt after settlement batch failure', async () => {
+  const f = fixture('home-e3-settlement-recovery');
+  await f.act({ action:'garden_plant', request_id:'plant' });
+  f.sql.prepare("UPDATE telegram_pet_garden_plots SET planted_at='1999-12-31T18:00:00.000Z', ready_at='2000-01-01T00:00:00.000Z' WHERE telegram_id=?").run(f.owner);
+
+  f.db.beforeBatch = () => {
+    f.db.beforeBatch = null;
+    throw new Error('injected garden settlement failure');
+  };
+  await assert.rejects(
+    f.act({ action:'garden_harvest', request_id:'lost-settlement-response' }),
+    /injected garden settlement failure/
+  );
+  const pending = f.sql.prepare("SELECT event_key,status FROM telegram_pet_garden_harvests WHERE telegram_id=?").get(f.owner);
+  assert.equal(pending.status, 'pending');
+  assert.equal(f.sql.prepare('SELECT COUNT(*) AS c FROM telegram_pet_garden_plots WHERE telegram_id=?').get(f.owner).c, 1);
+
+  const recovered = await f.act({ action:'garden_harvest', request_id:'fresh-ui-request' });
+  assert.equal(recovered.accepted, true);
+  assert.equal(recovered.reason, 'pet_garden_harvested');
+  assert.equal(f.sql.prepare("SELECT quantity FROM telegram_pet_inventory WHERE telegram_id=? AND asset_type='item' AND asset_key='garden_veggies'").get(f.owner).quantity, 1);
+  assert.equal(f.sql.prepare("SELECT COUNT(*) AS c FROM telegram_pet_garden_harvests WHERE telegram_id=?").get(f.owner).c, 1,
+    'fresh UUID recovers the existing crop receipt instead of creating another');
+  assert.equal(f.sql.prepare("SELECT status FROM telegram_pet_garden_harvests WHERE telegram_id=?").get(f.owner).status, 'completed');
+  f.sql.close();
+});
+
+test('pending cleanup does not depend on a later independently-racing bag snapshot', async () => {
+  const f = fixture('home-e3-capacity-interleave');
+  await f.act({ action:'garden_plant', request_id:'plant' });
+  f.sql.prepare("UPDATE telegram_pet_garden_plots SET planted_at='1999-12-31T18:00:00.000Z', ready_at='2000-01-01T00:00:00.000Z' WHERE telegram_id=?").run(f.owner);
+  f.sql.prepare("INSERT INTO telegram_pet_inventory(telegram_id,asset_type,asset_key,quantity) VALUES (?,'item','garden_veggies',999998)").run(f.owner);
+
+  let filledBeforeSettlement = false;
+  f.db.beforeBatch = () => {
+    if (filledBeforeSettlement) return;
+    filledBeforeSettlement = true;
+    f.sql.prepare("UPDATE telegram_pet_inventory SET quantity=999999 WHERE telegram_id=? AND asset_type='item' AND asset_key='garden_veggies'").run(f.owner);
+  };
+  let consumedBeforeBagRead = false;
+  f.db.beforeFirst = statement => {
+    if (!consumedBeforeBagRead && statement.query.includes('SELECT quantity FROM telegram_pet_inventory')) {
+      consumedBeforeBagRead = true;
+      f.sql.prepare("UPDATE telegram_pet_inventory SET quantity=999998 WHERE telegram_id=? AND asset_type='item' AND asset_key='garden_veggies'").run(f.owner);
+    }
+    return undefined;
+  };
+
+  const raced = await f.act({ action:'garden_harvest', request_id:'capacity-race' });
+  assert.equal(raced.accepted, false);
+  assert.equal(f.sql.prepare("SELECT COUNT(*) AS c FROM telegram_pet_garden_harvests WHERE telegram_id=? AND status='pending'").get(f.owner).c, 0,
+    'pending receipt cleanup happens before and independently of the later bag read');
+  assert.equal(f.sql.prepare('SELECT COUNT(*) AS c FROM telegram_pet_garden_plots WHERE telegram_id=?').get(f.owner).c, 1);
+
+  f.db.beforeBatch = null;
+  f.db.beforeFirst = null;
+  const retry = await f.act({ action:'garden_harvest', request_id:'retry-after-race' });
+  assert.equal(retry.accepted, true);
+  assert.equal(f.sql.prepare("SELECT quantity FROM telegram_pet_inventory WHERE telegram_id=? AND asset_type='item' AND asset_key='garden_veggies'").get(f.owner).quantity, 999999);
+  assert.equal(f.sql.prepare('SELECT COUNT(*) AS c FROM telegram_pet_garden_plots WHERE telegram_id=?').get(f.owner).c, 0);
+  f.sql.close();
+});
+
 test('an old harvest request can never consume a later crop', async () => {
   const f = fixture('home-e3-stale-harvest');
   await f.act({ action:'garden_plant', request_id:'plant-one' });
