@@ -112,10 +112,11 @@ test('Home layers precede the pet/effects and the original hatch reveal excludes
     stageZeroPresentationActive:()=>true,hatching:false,ctx:{save(){},restore(){}},
     drawStageZeroBackground:()=>calls.push('egg'),savedHomeLayout:()=>({wall:'night_wall',floor:'steel',furniture:'plant_pot'}),
     drawHomeWall:()=>calls.push('wall'),drawHomeFloor:()=>calls.push('floor+shadow'),drawHomeFurniture:()=>calls.push('furniture'),
+    drawHomeStations:()=>calls.push('stations'),
     drawEquippedStyles:(_,front)=>calls.push(front?'effects-front':'effects-back'),drawPet:()=>calls.push('pet')});
   vm.runInContext('function hatchArtTransitionActive(){return hatching;}'+source,runtime);
   runtime.drawWorld(0);
-  assert.deepEqual(calls,['egg','wall','floor+shadow','furniture','effects-back','pet','effects-front']);
+  assert.deepEqual(calls,['egg','wall','floor+shadow','furniture','stations','effects-back','pet','effects-front']);
   runtime.hatching=true;calls.length=0;runtime.drawWorld(0);
   assert.deepEqual(calls,['egg','effects-back','pet','effects-front']);
   assert.equal(runtime.backgroundArtState.home,null);
