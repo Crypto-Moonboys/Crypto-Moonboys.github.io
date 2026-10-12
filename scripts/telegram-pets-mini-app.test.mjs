@@ -1599,6 +1599,11 @@ assert.match(lockedGuideMarkup, /Pet Stages And Realistic Timing/);
 assert.doesNotMatch(lockedGuideMarkup, /Advanced Traits|Breeding|Lineage|Fusion|Sanctuary|Prestige|coming soon/, 'the in-app guide covers playable systems only');
 assert.match(client, /data-utility="leaderboard">OPEN FULL LEADERBOARD/);
 assert.match(html, /id="canvas-tools"[\s\S]*data-utility="audio"[\s\S]*data-utility="radio"[\s\S]*data-utility="sync"/);
+assert.match(html, /id="home-room-switcher" class="home-room-switcher"/);
+assert.match(client, /var HOME_ROOMS = Object\.freeze\(\['main','kitchen','garden','gym'\]\)/);
+assert.match(client, /homeRoomSwitcher\.addEventListener\('click'/);
+assert.match(client, /drawDedicatedHomeRoom\(room\)/);
+assert.doesNotMatch(client, /HOME_STATION_HOTSPOTS|homeStationAt\(/);
 assert.match(html, /data-utility="sync" aria-label="Refresh live save"/);
 assert.match(client, /canvasTools\.addEventListener\('click'/);
 assert.match(client, /else if \(utility\.dataset\.utility === 'radio'\) toggleRadio\(\)/);
@@ -2145,6 +2150,7 @@ const floorRuntime = vm.createContext({ reducedMotion: false, performance: { now
   state: { adopted: true, pet: { pet_id: 'grounded' }, lifecycle: { phase: 'young' } },
   botArtRendererReady: true, BOT_RENDER_BASELINE_Y: 219, STAGE_ZERO_BACKGROUND_URL: 'egg-room',
   backgroundArtState: {}, stageZero: false, streetReady: true,
+  HOME_ROOMS: ['main','kitchen','garden','gym'], activeHomeRoom: 'main',
   ctx: { save() {}, restore() {} },
   drawStageZeroBackground: () => worldCalls.push('egg-room'),
   drawRetroSpaceBackground: () => worldCalls.push('space'),
@@ -2153,7 +2159,7 @@ const floorRuntime = vm.createContext({ reducedMotion: false, performance: { now
   drawHomeWall: () => worldCalls.push('wall'),
   drawHomeFloor: (_, shadow) => worldCalls.push(shadow ? 'floor+shadow' : 'floor'),
   drawHomeFurniture: () => worldCalls.push('furniture'),
-  drawHomeStations: () => worldCalls.push('stations'),
+  drawDedicatedHomeRoom: room => worldCalls.push('room:' + room),
   hatchArtTransitionActive: () => false,
   drawEquippedStyles: (_, foreground) => worldCalls.push(foreground ? 'style-front' : 'style-back'),
   drawPet: () => worldCalls.push('pet') });
@@ -2171,7 +2177,7 @@ for (const scenario of [
   worldCalls.length = 0; floorRuntime.drawWorld(10);
   assert.deepEqual(floorRuntime.state, before, 'ground rendering cannot mutate the save');
   if (scenario.floor) {
-    assert.deepEqual(worldCalls, [...(scenario.stageZero ? ['egg-room'] : scenario.streetReady ? [] : ['space']), 'wall', scenario.floor, 'furniture', 'stations', 'style-back', 'pet', 'style-front'], 'Home layers are behind styles and companion');
+    assert.deepEqual(worldCalls, [...(scenario.stageZero ? ['egg-room'] : scenario.streetReady ? [] : ['space']), 'wall', scenario.floor, 'furniture', 'style-back', 'pet', 'style-front'], 'Main Room layers are behind styles and companion');
     assert.equal(floorRuntime.backgroundArtState.floor.shadow, scenario.art);
     assert.equal(floorRuntime.backgroundArtState.floor.baseline_y, 219);
   } else {
