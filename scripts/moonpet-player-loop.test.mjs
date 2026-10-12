@@ -803,7 +803,7 @@ for (const mode of ['foreign-only', 'mixed', 'account']) {
   const account = { key: 'account-notice', scope: 'account', pet_id: null, season_key: '2026-S2', title: 'Historical season reward' };
   const notices = mode === 'foreign-only' ? [other, legacy] : mode === 'account' ? [account] : [other, legacy, own, { ...own, key: 'later-owned-notice' }, account];
   const context = vm.createContext({
-    state: { pet: { pet_id: own.pet_id, season_key: own.season_key }, notices }, noticesBusy: false,
+    state: { pet: { pet_id: own.pet_id, season_key: own.season_key }, notices }, noticesBusy: false, activeScreen: 'home',
     haptic: () => {}, tell: text => displayed.push(text), render: () => {},
     beginStateRequest: () => 1, setStateSnapshot: () => true, crypto: { randomUUID: () => 'notice-request' },
     post: async (_path, body) => { requests.push(body); return { state: {} }; },

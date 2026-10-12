@@ -30,11 +30,14 @@ export function validPetHouseChoice(slotKey, itemKey) {
     PET_HOUSE_CHOICES[slotKey].some(entry=>entry.key===itemKey);
 }
 
-export async function readPetHouseLayout(db, owner, pet) {
-  if (!pet?.pet_id || !pet.season_key) return { available:false, reason:'pet_house_source_required' };
-  const rows = requirePetReadResult(await db.prepare(`SELECT slot_key,item_key FROM telegram_pet_house_layouts
+function petHouseLayoutRead(db, owner, pet) {
+  return db.prepare(`SELECT slot_key,item_key FROM telegram_pet_house_layouts
     WHERE telegram_id=? AND pet_id=? AND season_key=?`)
-    .bind(String(owner),pet.pet_id,pet.season_key).all()).results;
+    .bind(String(owner),pet.pet_id,pet.season_key);
+}
+
+function petHouseProjection(result, pet) {
+  const rows = requirePetReadResult(result).results;
   const layout = { ...PET_HOUSE_DEFAULTS };
   for (const row of rows) {
     if (!validPetHouseChoice(row.slot_key,row.item_key)) throw new Error('pet_house_state_invalid');
@@ -44,6 +47,11 @@ export async function readPetHouseLayout(db, owner, pet) {
     layout,choices:PET_HOUSE_CHOICES,cost:{},reward:{} };
 }
 
+export async function readPetHouseLayout(db, owner, pet) {
+  if (!pet?.pet_id || !pet.season_key) return { available:false, reason:'pet_house_source_required' };
+  return petHouseProjection(await petHouseLayoutRead(db,owner,pet).all(),pet);
+}
+
 export async function setPetHouseLayout(db, owner, pet, slotKey, itemKey) {
   if (!validPetHouseChoice(slotKey,itemKey))
     return {accepted:false,reason:'pet_house_choice_invalid'};
@@ -51,7 +59,7 @@ export async function setPetHouseLayout(db, owner, pet, slotKey, itemKey) {
     return {accepted:false,reason:'pet_house_source_required',refresh_state:true};
   // A selected pet is checked before dispatch; this guarded INSERT checks it
   // again inside the mutation, so switching pets cannot write the old house.
-  const result = requirePetMutationResult(await db.prepare(`INSERT INTO telegram_pet_house_layouts
+  const [writeResult, readResult] = await db.batch([db.prepare(`INSERT INTO telegram_pet_house_layouts
     (pet_id,telegram_id,season_key,slot_key,item_key)
     SELECT i.pet_id,i.telegram_id,i.season_key,?,?
     FROM telegram_pet_active_slots a
@@ -62,10 +70,12 @@ export async function setPetHouseLayout(db, owner, pet, slotKey, itemKey) {
       item_key=excluded.item_key,updated_at=CURRENT_TIMESTAMP
     WHERE telegram_pet_house_layouts.telegram_id=excluded.telegram_id
       AND telegram_pet_house_layouts.season_key=excluded.season_key`)
-    .bind(slotKey,itemKey,String(owner),pet.pet_id,pet.season_key).run());
+    .bind(slotKey,itemKey,String(owner),pet.pet_id,pet.season_key),
+    petHouseLayoutRead(db,owner,pet)]);
+  const result = requirePetMutationResult(writeResult);
   if (!Number.isFinite(Number(result?.meta?.changes))) throw new Error('pet_state_write_unavailable');
   if (Number(result.meta.changes)!==1) return {accepted:false,reason:'displayed_pet_changed',refresh_state:true};
-  const house=await readPetHouseLayout(db,owner,pet);
+  const house=petHouseProjection(readResult,pet);
   return {accepted:true,reason:'pet_house_saved',pet_house:house,refresh_state:true,
     result_copy:'House appearance saved to this pet. No Gold or XP spent.'};
 }

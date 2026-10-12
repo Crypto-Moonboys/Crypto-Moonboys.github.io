@@ -3891,7 +3891,7 @@
       var requestGeneration = beginStateRequest();
       var acknowledged = await post('/telegram-pets/app/action', { action: 'guidance_ack', notices: visible.map(function (notice) {
         return { key: notice.key, scope: notice.scope, pet_id: notice.pet_id, season_key: notice.season_key };
-      }), request_id: crypto.randomUUID() });
+      }), request_id: crypto.randomUUID(), state_mode: activeScreen === 'profile' ? 'profile' : undefined });
       if (setStateSnapshot(acknowledged.state, requestGeneration)) render();
     } catch (_) {}
     noticesBusy = false;
