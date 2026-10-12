@@ -107,52 +107,45 @@ test('Missions preserves only the same pet Home and never hides an explicit fail
 test('Home layers precede the pet/effects and the original hatch reveal excludes them',()=>{
   const source=client.split('// TEST-EXPORT: drawWorld:start')[1].split('// TEST-EXPORT: drawWorld:end')[0];
   const calls=[];
-  const runtime=vm.createContext({state:{adopted:true,pet:{pet_id:'one'}},reducedMotion:true,performance:{now:()=>7},
+  const runtime=vm.createContext({state:{adopted:true,pet:{pet_id:'one'},lifecycle:{phase:'young'}},reducedMotion:true,performance:{now:()=>7},
     BOT_RENDER_BASELINE_Y:219,STAGE_ZERO_BACKGROUND_URL:'egg',backgroundArtState:{},botArtRendererReady:true,
+    HOME_ROOMS:['main','kitchen','garden','gym'],activeHomeRoom:'main',
     stageZeroPresentationActive:()=>true,hatching:false,ctx:{save(){},restore(){}},
     drawStageZeroBackground:()=>calls.push('egg'),savedHomeLayout:()=>({wall:'night_wall',floor:'steel',furniture:'plant_pot'}),
     drawHomeWall:()=>calls.push('wall'),drawHomeFloor:()=>calls.push('floor+shadow'),drawHomeFurniture:()=>calls.push('furniture'),
-    drawHomeStations:()=>calls.push('stations'),
+    drawDedicatedHomeRoom:room=>calls.push('room:'+room),
     drawEquippedStyles:(_,front)=>calls.push(front?'effects-front':'effects-back'),drawPet:()=>calls.push('pet')});
   vm.runInContext('function hatchArtTransitionActive(){return hatching;}'+source,runtime);
   runtime.drawWorld(0);
-  assert.deepEqual(calls,['egg','wall','floor+shadow','furniture','stations','effects-back','pet','effects-front']);
+  assert.deepEqual(calls,['egg','wall','floor+shadow','furniture','effects-back','pet','effects-front']);
+  runtime.activeHomeRoom='kitchen';calls.length=0;runtime.drawWorld(0);
+  assert.deepEqual(calls,['egg','room:kitchen','effects-back','pet','effects-front']);
+  assert.equal(runtime.backgroundArtState.home.active_room,'kitchen');
+  assert.deepEqual(Array.from(runtime.backgroundArtState.home.rooms),['main','kitchen','garden','gym']);
+  runtime.activeHomeRoom='main';
   runtime.hatching=true;calls.length=0;runtime.drawWorld(0);
   assert.deepEqual(calls,['egg','effects-back','pet','effects-front']);
   assert.equal(runtime.backgroundArtState.home,null);
 });
 
-const stationsSource=client.split('// TEST-EXPORT: homeStationsCanvas:start')[1].split('// TEST-EXPORT: homeStationsCanvas:end')[0];
-test('E3 props have transparent surroundings, no text or top-strip paint',()=>{
-  const paint=[], stack=[];
-  const ctx={globalAlpha:1,save(){stack.push(this.globalAlpha);},restore(){this.globalAlpha=stack.pop();},
-    fillText(){throw Error('Stations must not label the canvas');}};
-  const runtime=vm.createContext({state:{adopted:true,lifecycle:{phase:'young'}},ctx,
+const roomsSource=client.split('// TEST-EXPORT: homeRoomsCanvas:start')[1].split('// TEST-EXPORT: homeRoomsCanvas:end')[0];
+test('E4 Kitchen, Garden and Gym render as distinct full-canvas rooms without text',()=>{
+  const paint=[];
+  const runtime=vm.createContext({state:{pet_garden:{status:'ready'}},
     drawPixelRect:(x,y,w,h,color)=>paint.push({x,y,w,h,color})});
-  vm.runInContext(stationsSource,runtime);
-  const overlap=(a,b)=>a.x<b.x+b.w && a.x+a.w>b.x && a.y<b.y+b.h && a.y+a.h>b.y;
-  const reserved=[{x:68,y:35,w:184,h:184},{x:10,y:166,w:50,h:49},
-    {x:260,y:166,w:50,h:49},{x:123,y:37,w:80,h:36}];
-  for(const [key,box] of Object.entries(runtime.HOME_STATION_HOTSPOTS)) {
-    assert.ok(box.y>=60 && box.y+box.h<166,'stations clear HUD and floor-level furniture');
-    assert.ok(!reserved.some(area=>overlap(box,area)),key+' clears the pet and E2 furniture');
-    assert.equal(runtime.homeStationAt(box.x+box.w/2,box.y+box.h/2),key);
+  vm.runInContext(roomsSource,runtime);
+  const signatures={};
+  for(const room of ['kitchen','garden','gym']) {
+    paint.length=0;
+    runtime.drawDedicatedHomeRoom(room);
+    assert.ok(paint.length>=15,room+' has a real room scene rather than a tiny station prop');
+    assert.ok(paint.every(rect=>rect.x>=0&&rect.y>=0&&rect.w>0&&rect.h>0&&rect.x+rect.w<=320&&rect.y+rect.h<=220),room+' stays inside the 320x220 world');
+    assert.ok(paint.some(rect=>rect.w===320),room+' paints a full-width room surface');
+    signatures[room]=JSON.stringify(paint);
   }
-  assert.equal(runtime.homeStationAt(160,16),null,'old HUD-strip target is removed');
-  assert.equal(runtime.homeStationAt(160,140),null,'pet taps are not captured by stations');
-  for(const status of ['empty','growing','ready']) {
-    runtime.state.pet_garden={status};paint.length=0;runtime.drawHomeStations();
-    assert.ok(paint.length>0 && paint.length<30,'props use bounded static primitives');
-    assert.equal(ctx.globalAlpha,1);
-    assert.ok(paint.every(rect=>rect.y>=62),'nothing paints the top strip');
-    for(const box of Object.values(runtime.HOME_STATION_HOTSPOTS)) {
-      const rects=paint.filter(rect=>overlap(rect,box));
-      assert.ok(rects.length>0);
-      assert.ok(rects.every(rect=>rect.x>=box.x && rect.y>=box.y && rect.x+rect.w<=box.x+box.w && rect.y+rect.h<=box.y+box.h));
-      assert.ok(!rects.some(rect=>rect.x===box.x && rect.y===box.y),'surrounding room remains unpainted');
-      assert.ok(rects.reduce((sum,rect)=>sum+rect.w*rect.h,0)<box.w*box.h,'no opaque full-box backing');
-    }
-  }
-  runtime.state.lifecycle.phase='egg';paint.length=0;runtime.drawHomeStations();
-  assert.equal(paint.length,0);assert.equal(runtime.homeStationAt(34,76),null,'egg gating stays unchanged');
+  assert.notEqual(signatures.kitchen,signatures.garden);
+  assert.notEqual(signatures.kitchen,signatures.gym);
+  assert.notEqual(signatures.garden,signatures.gym);
+  assert.doesNotMatch(roomsSource,/fillText|strokeText/,'room art must not bake labels into the canvas');
+  assert.doesNotMatch(client,/HOME_STATION_HOTSPOTS|homeStationAt\(/,'retired station hitboxes must not remain');
 });
