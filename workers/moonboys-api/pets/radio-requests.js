@@ -19,14 +19,15 @@ async function readSaved(db, telegramId, dayKey) {
     .bind(telegramId,SYSTEM,ACTION,dayKey).first().then(requirePetFirstReadResult);
 }
 
-export async function submitMoonpetRadioRequest(db,telegramId,petId,rawMessage,now=new Date()) {
+export async function submitMoonpetRadioRequest(db,telegramId,petId,rawMessage,now=new Date(),groupDeliveryConsent=false) {
   const message=normalizeMoonpetRadioRequest(rawMessage);
   if(!message) return {accepted:false,reason:'radio_request_invalid',max_length:MAX_LENGTH};
   const dayKey=now.toISOString().slice(0,10);
   const previous=await readSaved(db,telegramId,dayKey);
   if(previous) return {accepted:true,duplicate:true,reason:'radio_request_saved',day_key:dayKey};
   const id=crypto.randomUUID();
-  const payload=JSON.stringify({message,source_pet_id:petId,moderation:'pending_host_review'});
+  const payload=JSON.stringify({message,source_pet_id:petId,moderation:'pending_host_review',
+    ...(groupDeliveryConsent===true ? {telegram_group_delivery:'pending'} : {})});
   const result=await db.prepare(`INSERT OR IGNORE INTO telegram_pet_system_events
     (id,pet_id,telegram_id,season_key,system_key,action_key,period_key,status,payload_json)
     SELECT ?,'',?,'',?, ?,?,'completed',?
