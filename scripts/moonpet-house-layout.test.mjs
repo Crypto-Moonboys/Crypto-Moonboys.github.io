@@ -5,6 +5,7 @@ import { DatabaseSync } from 'node:sqlite';
 import { PET_HOUSE_CHOICES, PET_HOUSE_DEFAULTS, readPetHouseLayout, setPetHouseLayout, validPetHouseChoice } from '../workers/moonboys-api/pets/house-layout.js';
 
 const migration=fs.readFileSync(new URL('../workers/moonboys-api/migrations/092_moonpet_house_layouts.sql', import.meta.url),'utf8');
+const schema=fs.readFileSync(new URL('../workers/moonboys-api/schema.sql', import.meta.url),'utf8');
 const worker=fs.readFileSync(new URL('../workers/moonboys-api/worker.js', import.meta.url),'utf8');
 const client=fs.readFileSync(new URL('../js/moonpet-mini-app.js', import.meta.url),'utf8');
 const entry=fs.readFileSync(new URL('../moonpet-game.html', import.meta.url),'utf8');
@@ -15,6 +16,9 @@ function fixture() {
   sql.exec(`CREATE TABLE telegram_pet_instances (
     pet_id TEXT PRIMARY KEY,telegram_id TEXT NOT NULL,season_key TEXT NOT NULL,
     status TEXT NOT NULL DEFAULT 'active'
+  ); CREATE TABLE telegram_pet_season_slots (
+    pet_id TEXT PRIMARY KEY,telegram_id TEXT NOT NULL,season_key TEXT NOT NULL,
+    UNIQUE(pet_id,telegram_id,season_key)
   ); CREATE TABLE telegram_pet_active_slots (
     telegram_id TEXT PRIMARY KEY,pet_id TEXT NOT NULL,season_key TEXT NOT NULL
   ); CREATE TABLE telegram_pet_profiles (
@@ -26,6 +30,9 @@ function fixture() {
     .run('pet-2','owner-a','new-quarter','active');
   sql.prepare('INSERT INTO telegram_pet_instances(pet_id,telegram_id,season_key,status) VALUES (?,?,?,?)')
     .run('pet-other','owner-b','old-quarter','active');
+  sql.prepare('INSERT INTO telegram_pet_season_slots VALUES (?,?,?)').run('pet-1','owner-a','old-quarter');
+  sql.prepare('INSERT INTO telegram_pet_season_slots VALUES (?,?,?)').run('pet-2','owner-a','new-quarter');
+  sql.prepare('INSERT INTO telegram_pet_season_slots VALUES (?,?,?)').run('pet-other','owner-b','old-quarter');
   sql.prepare('INSERT INTO telegram_pet_active_slots VALUES (?,?,?)').run('owner-a','pet-1','old-quarter');
   sql.prepare('INSERT INTO telegram_pet_active_slots VALUES (?,?,?)').run('owner-b','pet-other','old-quarter');
   sql.prepare('INSERT INTO telegram_pet_profiles VALUES (?,?,?)').run('owner-a',750,2300);
@@ -46,7 +53,9 @@ function fixture() {
 
 test('092 schema and house options admit only valid bounded placements',()=>{
   const f=fixture();
+  f.sql.exec(migration);
   assert.deepEqual(f.sql.prepare('PRAGMA foreign_key_check').all(),[]);
+  assert.match(schema,/FOREIGN KEY \(pet_id,telegram_id,season_key\) REFERENCES telegram_pet_season_slots\(pet_id,telegram_id,season_key\) ON DELETE CASCADE/);
   assert.deepEqual(Object.keys(PET_HOUSE_CHOICES),['wall','floor','furniture']);
   for(const [slot,options] of Object.entries(PET_HOUSE_CHOICES)){
     assert.equal(options.length,3);
@@ -56,6 +65,12 @@ test('092 schema and house options admit only valid bounded placements',()=>{
   assert.equal(validPetHouseChoice('wall','unverified_item'),false);
   assert.throws(()=>f.sql.prepare("INSERT INTO telegram_pet_house_layouts(pet_id,telegram_id,season_key,slot_key,item_key) VALUES ('pet-1','owner-a','old-quarter','wall','hacked')").run(),/CHECK constraint/);
   assert.throws(()=>f.sql.prepare("INSERT INTO telegram_pet_house_layouts(pet_id,telegram_id,season_key,slot_key,item_key) VALUES ('missing','owner-a','old-quarter','wall','night_wall')").run(),/FOREIGN KEY constraint/);
+  for(const [owner,season] of [['owner-b','old-quarter'],['owner-a','new-quarter']]){
+    assert.throws(()=>f.sql.prepare("INSERT INTO telegram_pet_house_layouts(pet_id,telegram_id,season_key,slot_key,item_key) VALUES ('pet-1',? ,?,'wall','night_wall')").run(owner,season),/FOREIGN KEY constraint/);
+  }
+  f.sql.prepare("INSERT INTO telegram_pet_house_layouts(pet_id,telegram_id,season_key,slot_key,item_key) VALUES ('pet-1','owner-a','old-quarter','wall','night_wall')").run();
+  f.sql.prepare("DELETE FROM telegram_pet_season_slots WHERE pet_id='pet-1'").run();
+  assert.equal(f.sql.prepare("SELECT COUNT(*) AS c FROM telegram_pet_house_layouts WHERE pet_id='pet-1'").get().c,0,'deleting the owning season slot cascades to room placements');
   f.close();
 });
 
@@ -112,4 +127,6 @@ test('house is wired only through signed selected-pet state and actions',()=>{
   assert.match(client,/function renderPetHouse\(/);
   assert.match(entry,/moonpet-mini-app\.js\?v=20261012-house-e1/);
   assert.doesNotMatch(client,/house_place[\s\S]{0,90}moon_gold/);
+  assert.match(worker,/options\.mode === 'profile'[\s\S]{0,100}readPetHouseLayout/);
+  assert.match(worker,/hydration: \{ mode: 'full', full: true, modules: options\.mode === 'profile' \? \['profile'\] : \[\] \}/);
 });

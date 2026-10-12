@@ -5,7 +5,7 @@ import test from 'node:test';
 const source = fs.readFileSync(new URL('../js/moonpet-mini-app.js', import.meta.url), 'utf8');
 const between = (start, end) => source.slice(source.indexOf(start), source.indexOf(end, source.indexOf(start)));
 const block = name => between('// TEST-EXPORT: ' + name + ':start', '// TEST-EXPORT: ' + name + ':end');
-const full = () => ({ adopted: true, pet: { pet_id: 'pet-a', season_key: 'lifetime-a', callsign: 'A' }, hydration: { full: true }, cooldowns: { entries: [] } });
+const full = () => ({ adopted: true, pet: { pet_id: 'pet-a', season_key: 'lifetime-a', callsign: 'A' }, hydration: { mode: 'full', full: true, modules: ['profile'] }, cooldowns: { entries: [] } });
 const partial = () => ({ ...full(), hydration: { full: false, mode: 'missions', modules: ['missions'] } });
 function clientContext() {
   let now = 10000, sequence = 0;
@@ -60,7 +60,7 @@ for (const path of ['manual', 'care', 'cooldown', 'action']) for (const target o
     await f.tick(0);
     assert.equal(f.requests.length, 2);
     assert.equal(f.requests[1].path, '/telegram-pets/app/state');
-    assert.equal(f.requests[1].body.mode, undefined);
+    assert.equal(f.requests[1].body.mode, target === 'profile' ? 'profile' : undefined);
     const hydration = f.ctx.fullStateHydrationPromise;
     f.requests[1].resolve({ state: full() }); await hydration;
     assert.equal(f.ctx.stateNeedsScreenHydration(f.ctx.state, target), false);

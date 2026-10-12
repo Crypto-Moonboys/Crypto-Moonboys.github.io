@@ -2123,11 +2123,16 @@
   }
 
   function stateNeedsScreenHydration(snapshot, screenKey) {
-    if (!stateNeedsFullHydration(snapshot) || screenKey === 'home') return false;
-    return !(snapshot.hydration.modules || []).includes(screenKey);
+    if (!snapshot || screenKey === 'home') return false;
+    var hydration = snapshot.hydration || {};
+    if (screenKey === 'profile' && hydration.mode === 'full')
+      return !(hydration.modules || []).includes('profile');
+    if (!stateNeedsFullHydration(snapshot)) return false;
+    return !(hydration.modules || []).includes(screenKey);
   }
 
   function stateRefreshPayload(snapshot, screenKey) {
+    if (screenKey === 'profile') return { mode: 'profile' };
     if (screenKey === 'missions' && stateNeedsFullHydration(snapshot)) return { mode: 'missions' };
     if (screenKey && screenKey !== 'home') return {};
     return stateNeedsFullHydration(snapshot) ? { mode: 'core' } : {};
@@ -2181,7 +2186,7 @@
       var warmupController = background ? new AbortController() : null;
       if (warmupController) stateRequestGate.setBackgroundRequest(warmupController);
       try {
-        var data = await post('/telegram-pets/app/state', !background && reason === 'missions' ? { mode: 'missions' } : {},
+        var data = await post('/telegram-pets/app/state', background ? {} : stateRefreshPayload(state, reason || activeScreen),
           warmupController ? { signal: warmupController.signal } : undefined);
         if (!setStateSnapshot(data.state, requestGeneration)) return null;
         fastActionStateDirty = false;
@@ -2238,7 +2243,7 @@
     lastSeasonServerRefreshAt = seasonSnapshotReceivedAt;
     cooldownRefreshFailures = 0;
     scheduleCooldownRefresh();
-    if (nextState.hydration && nextState.hydration.full === false) queueActiveScreenHydration();
+    if (stateNeedsScreenHydration(nextState, activeScreen)) queueActiveScreenHydration();
     return true;
   }
 
@@ -4045,6 +4050,7 @@
         displayed_pet_id: stateBeforeAction && stateBeforeAction.pet && stateBeforeAction.pet.pet_id || null
       }, payload || {});
       if (fastResponse) requestPayload.response_mode = 'result_only';
+      else if (activeScreen === 'profile') requestPayload.state_mode = 'profile';
       else if (activeScreen === 'missions' && stateNeedsFullHydration(stateBeforeAction)) requestPayload.state_mode = 'missions';
       var data = await post('/telegram-pets/app/action', requestPayload);
       if (!data || !data.result || typeof data.result.accepted !== 'boolean') throw new Error('ACTION RESPONSE UNCONFIRMED');

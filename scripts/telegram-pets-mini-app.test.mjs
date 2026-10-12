@@ -126,6 +126,8 @@ assert.match(client, /stateNeedsScreenHydration\(state, nextScreen\)[\s\S]*hydra
   'opening a non-HOME screen must lazy-load the full server state');
 assert.match(client, /stateRefreshPayload\(state, activeScreen\)[\s\S]*\{ mode: 'core' \}/,
   'care and cooldown reconciliation must stay on the lightweight core path until a module is opened');
+assert.match(client, /if \(screenKey === 'profile'\) return \{ mode: 'profile' \}/,
+  'Profile reads must request the projection that includes the saved pet room');
 assert.match(client, /summary\.hydrated === false \|\| stateNeedsFullHydration\(state\)[\s\S]*Detailed pet progression, Growth Marks, Weekly Crests/,
   'core HOME must not render missing progression as fake zero progress');
 assert.match(client, /FULL_STATE_HYDRATION_MAX_AUTO_RETRIES = 3/,
@@ -151,6 +153,7 @@ var fastActionStateDirty = false;
 var busy = false, noticesBusy = false, authenticationFailure = false;
 var passiveRefreshInFlight = false, cooldownRefreshInFlight = false, seasonRefreshBusy = false, fastActionStateRefreshInFlight = false;
 var screen = { scrollTop: 0 }, requests = [], timers = [];
+var currentPet = 'pet-one';
 var window = { clearTimeout() {}, setTimeout(fn, delay) { timers.push({ fn, delay }); return timers.length; } };
 var failure = false;
 function words(s) { return s; } function tell() {} function render() {}
@@ -162,12 +165,14 @@ async function post(path, payload) {
   if (failure) throw new Error('offline');
   return { state: payload.mode === 'missions'
     ? { hydration: { full: false, mode: 'missions', modules: ['missions'] } }
-    : { adopted: true } };
+    : payload.mode === 'profile'
+      ? { hydration: { mode: 'full', full: true, modules: ['profile'] }, pet: { pet_id: currentPet }, pet_house: { pet_id: currentPet } }
+      : { adopted: true, hydration: { mode: 'full', full: true, modules: [] }, pet: { pet_id: currentPet }, pet_house: null } };
 }
 return { hydrateFullState, stateNeedsScreenHydration, stateRefreshPayload,
   requests, timers, fail() { failure = true; },
-  reset() { state = { hydration: { full: false } }; fullStateHydrationFailures = 0; },
-  screen(key) { activeScreen = key; }, snapshot() { return state; } };
+  reset() { state = { hydration: { full: false } }; fullStateHydrationFailures = 0; currentPet = 'pet-one'; },
+  screen(key) { activeScreen = key; }, pet(id) { currentPet = id; }, snapshot() { return state; } };
 `)();
 function extractModuleSource() {
   return client.split('// TEST-EXPORT: coreStateHydration:start')[1].split('// TEST-EXPORT: coreStateHydration:end')[0];
@@ -183,6 +188,15 @@ assert.equal(moduleRuntime.requests.length, 1, 'reopening hydrated Missions does
 moduleRuntime.screen('explore');
 await moduleRuntime.hydrateFullState('explore');
 assert.deepEqual(moduleRuntime.requests[1], {}, 'Explore still requests complete authority after Missions');
+assert.equal(moduleRuntime.stateNeedsScreenHydration(moduleRuntime.snapshot(), 'profile'), true,
+  'a generic full projection leaves the Profile-only room deferred');
+moduleRuntime.pet('pet-two'); moduleRuntime.screen('profile');
+assert.deepEqual(moduleRuntime.stateRefreshPayload(moduleRuntime.snapshot(), 'profile'), { mode: 'profile' });
+await moduleRuntime.hydrateFullState('profile');
+assert.deepEqual(moduleRuntime.requests[2], { mode: 'profile' });
+assert.equal(moduleRuntime.snapshot().pet_house.pet_id, 'pet-two',
+  'Profile hydration reads the room belonging to the newly selected pet, not the previous snapshot');
+assert.equal(moduleRuntime.stateNeedsScreenHydration(moduleRuntime.snapshot(), 'profile'), false);
 moduleRuntime.reset(); moduleRuntime.screen('missions'); moduleRuntime.fail();
 await moduleRuntime.hydrateFullState('missions');
 assert.equal(moduleRuntime.timers.at(-1).delay, 750);

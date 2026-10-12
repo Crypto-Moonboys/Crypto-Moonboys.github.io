@@ -1,7 +1,12 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import fs from 'node:fs';
-import { buildWebhookSecretListInvocation, requireTelegramWebhookSecret } from './deploy-worker-with-provenance.mjs';
+import {
+  buildPetHouseMigrationCheckInvocation,
+  buildWebhookSecretListInvocation,
+  requirePetHouseMigrationApplied,
+  requireTelegramWebhookSecret,
+} from './deploy-worker-with-provenance.mjs';
 
 test('production secret preflight rejects missing, malformed and non-secret bindings', () => {
   for (const result of ['', 'null', '{}', '[]', '{invalid', JSON.stringify([{ name: 'TELEGRAM_BOT_TOKEN', type: 'secret_text' }]), JSON.stringify([{ name: 'TELEGRAM_WEBHOOK_SECRET', type: 'plain_text' }])]) {
@@ -19,10 +24,26 @@ test('production preflight reads secret names with portable, read-only Wrangler 
   assert.deepEqual(windows.args, ['/d', '/s', '/c', '"npx wrangler secret list --format json"']);
 });
 
+test('moonboys-api migration preflight queries remote D1 portably and fails closed', () => {
+  const query = "SELECT name FROM d1_migrations WHERE name='092_moonpet_house_layouts.sql'";
+  assert.deepEqual(buildPetHouseMigrationCheckInvocation({ platform: 'linux' }), {
+    command: 'npx',
+    args: ['wrangler', 'd1', 'execute', 'wikicoms', '--remote', '--command', query, '--json'],
+    windowsVerbatimArguments: false,
+  });
+  assert.equal(buildPetHouseMigrationCheckInvocation({ platform: 'win32', comspec: 'cmd.exe' }).command, 'cmd.exe');
+  const applied = JSON.stringify([{ success: true, results: [{ name: '092_moonpet_house_layouts.sql' }] }]);
+  assert.doesNotThrow(() => requirePetHouseMigrationApplied(applied));
+  for (const result of ['', '{}', JSON.stringify([{ success: true, results: [] }])]) {
+    assert.throws(() => requirePetHouseMigrationApplied(result), /092_moonpet_house_layouts\.sql/);
+  }
+});
+
 test('production deployment requires the webhook secret before the Worker is deployed', () => {
   const source = fs.readFileSync(new URL('./deploy-worker-with-provenance.mjs', import.meta.url), 'utf8');
   const deploy = source.slice(source.indexOf('export function deployWorker('));
   assert.ok(deploy.indexOf('requireTelegramWebhookSecret(run(') < deploy.indexOf('const invocation = buildWranglerProcessInvocation'));
+  assert.ok(deploy.indexOf('requirePetHouseMigrationApplied(run(') < deploy.indexOf('const invocation = buildWranglerProcessInvocation'));
   const manifest = JSON.parse(fs.readFileSync(new URL('../workers/DEPLOY_STATUS.json', import.meta.url), 'utf8'));
   assert.ok(manifest['workers/moonboys-api'].required_secrets.includes('TELEGRAM_WEBHOOK_SECRET'));
 });

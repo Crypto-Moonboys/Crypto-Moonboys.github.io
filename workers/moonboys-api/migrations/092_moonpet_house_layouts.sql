@@ -8,7 +8,9 @@ CREATE TABLE IF NOT EXISTS telegram_pet_house_layouts (
   item_key TEXT NOT NULL,
   updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (pet_id, slot_key),
-  FOREIGN KEY (pet_id) REFERENCES telegram_pet_instances(pet_id),
+  FOREIGN KEY (pet_id) REFERENCES telegram_pet_instances(pet_id) ON DELETE CASCADE,
+  FOREIGN KEY (pet_id,telegram_id,season_key)
+    REFERENCES telegram_pet_season_slots(pet_id,telegram_id,season_key) ON DELETE CASCADE,
   CHECK (
     (slot_key='wall' AND item_key IN ('warehouse_brick','night_wall','studio_white')) OR
     (slot_key='floor' AND item_key IN ('concrete','checkerboard','steel')) OR

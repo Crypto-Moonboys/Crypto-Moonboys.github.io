@@ -10790,7 +10790,9 @@ async function buildPetMiniAppState(db, telegramId, botToken, options = {}) {
       ? Promise.resolve(petRaw)
       : getPetInstanceWithAtomicDecay(db, activeRun.pet_id),
     getStyleLoadout(db, telegramId, petRaw.pet_id),
-    readPetHouseLayout(identityScope.db, telegramId, petRaw),
+    options.mode === 'profile'
+      ? readPetHouseLayout(identityScope.db, telegramId, petRaw)
+      : Promise.resolve(null),
     getContractBoard(db, telegramId, petRaw, now),
     activeRun
       ? getDailyMoonRunReservation(db, { telegram_id: telegramId, run_id: activeRun.run_id })
@@ -10862,6 +10864,7 @@ async function buildPetMiniAppState(db, telegramId, botToken, options = {}) {
   await assertPetEconomy(db, telegramId, economy);
   return {
     adopted: true,
+    hydration: { mode: 'full', full: true, modules: options.mode === 'profile' ? ['profile'] : [] },
     pet: canonicalPet,
     lifecycle: serializedLifecycle,
     next,
