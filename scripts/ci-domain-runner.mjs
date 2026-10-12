@@ -136,6 +136,7 @@ const GROUPS = {
     ['node', '--test', 'scripts/moonpet-rewards-reset.test.mjs'],
     ['node', 'scripts/moonpet-style-relics.test.mjs'],
     ['node', '--test', 'scripts/moonpet-style-migration-091.test.mjs'],
+    ['node', '--test', 'scripts/moonpet-house-layout.test.mjs'],
     ['node', 'scripts/moonpet-progression-sync.test.mjs'],
     ['node', 'scripts/moonpet-standard-run-recovery.test.mjs'],
     ['node', 'scripts/moonpet-run-authority-sanity.test.mjs'],

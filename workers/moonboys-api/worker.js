@@ -2,6 +2,7 @@ import { capturePetEconomy, assertPetEconomy, assertPetEconomySource } from './p
 import { submitMoonpetRadioRequest } from './pets/radio-requests.js';
 import { atomicPetBatch } from './pets/atomic-mutations.js';
 import { getStyleLoadout, equipPetStyle } from './pets/style-loadout.js';
+import { readPetHouseLayout, setPetHouseLayout } from './pets/house-layout.js';
 import { verifyTelegramWebhookSecret } from './telegram-webhook-auth.js';
 import { handleTelegramWebsiteAuth, isWebsiteCredential, verifyWebsiteCredential } from './telegram-website-auth.js';
 import { createDisplayedPetScope, isDisplayedPetScopeStaleError } from './pets/displayed-pet-scope.js';
@@ -10784,11 +10785,12 @@ async function buildPetMiniAppState(db, telegramId, botToken, options = {}) {
       ? { key: 'rare_morph', title: 'Answer the hidden signal', detail: 'Your companion history has opened a one-of-one morph path.', action: 'rare_morph', destination: 'profile' }
       : guidedNext?.key && guidedNext.key !== 'maintain' ? guidedNext : liveNext || guidedNext;
   const activeRun = guidance?.active_run || null;
-  const [runPet, styleLoadout, contracts, dailyReservation] = await Promise.all([
+  const [runPet, styleLoadout, petHouse, contracts, dailyReservation] = await Promise.all([
     !activeRun || activeRun.pet_id === petRaw.pet_id
       ? Promise.resolve(petRaw)
       : getPetInstanceWithAtomicDecay(db, activeRun.pet_id),
     getStyleLoadout(db, telegramId, petRaw.pet_id),
+    readPetHouseLayout(identityScope.db, telegramId, petRaw),
     getContractBoard(db, telegramId, petRaw, now),
     activeRun
       ? getDailyMoonRunReservation(db, { telegram_id: telegramId, run_id: activeRun.run_id })
@@ -10902,6 +10904,7 @@ async function buildPetMiniAppState(db, telegramId, botToken, options = {}) {
     daily_run: dailyRunSummary,
     contracts,
     style_loadout: styleLoadout,
+    pet_house: petHouse,
     trade: {
       cooldown: tradeCooldown?.remaining_seconds > 0 ? tradeCooldown : null,
       offers: [10, 25, 50].map((wager) => ({ wager, affordable: Number(petRaw.moon_gold) >= wager,
@@ -11114,7 +11117,7 @@ async function dispatchPetMiniAppAction(db, telegramId, user, body, botToken) {
     if (PET_MINI_APP_COMBAT_ENTRY_ACTIONS.has(action) || PET_MINI_APP_COMBAT_CLEANUP_ACTIONS.has(action)) return null;
     throw error;
   });
-  const eggAllowedActions = ['event_recover', 'event_close', 'guidance_ack', 'notification_set', 'season_slots', 'buy_pet_slot', 'switch_pet_slot', 'energy_drink', 'dance', 'cuddles', 'weekly_boss_claim', 'contract_claim', 'style_equip', 'seasonal_boss_claim', 'daily_completion_claim', 'bounty_claim', 'weekly_bounty_claim', 'radio_request', 'season_claim', 'finale_start', 'finale_retry', 'finale_step', 'finale_claim'];
+  const eggAllowedActions = ['event_recover', 'event_close', 'guidance_ack', 'notification_set', 'season_slots', 'buy_pet_slot', 'switch_pet_slot', 'energy_drink', 'dance', 'cuddles', 'weekly_boss_claim', 'contract_claim', 'style_equip', 'seasonal_boss_claim', 'daily_completion_claim', 'bounty_claim', 'weekly_bounty_claim', 'radio_request', 'house_place', 'season_claim', 'finale_start', 'finale_retry', 'finale_step', 'finale_claim'];
   if (lifecycle?.phase === 'egg' && !eggAllowedActions.includes(action)) {
     if (PET_MINI_APP_COMBAT_CLEANUP_ACTIONS.has(action) || PET_MINI_APP_COMBAT_ENTRY_ACTIONS.has(action)) {
       // fall through; locked cleanup must remain available for stale combat state.
@@ -11243,6 +11246,12 @@ async function dispatchPetMiniAppAction(db, telegramId, user, body, botToken) {
   }
   if (action === 'bounty_claim') return claimPetEconomyBounty(db, telegramId, body.bounty_key, new Date(), body.day_key);
   if (action === 'weekly_bounty_claim') return claimPetWeeklyBounty(db, telegramId, body.bounty_key, new Date(), body.week_key);
+  if (action === 'house_place') {
+    const pet = await getPetProfile(db, telegramId);
+    if (!pet?.pet_id || pet.pet_id !== displayedPetId)
+      return { accepted:false, reason:'displayed_pet_changed', refresh_state:true };
+    return setPetHouseLayout(db, telegramId, pet, body.slot_key, body.item_key);
+  }
   if (action === 'radio_request') {
     const pet = await getPetProfile(db,telegramId);
     if(!pet?.pet_id || pet.pet_id!==displayedPetId) return {accepted:false,reason:'displayed_pet_changed',refresh_state:true};

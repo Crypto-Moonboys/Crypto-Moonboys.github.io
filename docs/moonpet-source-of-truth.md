@@ -14,6 +14,10 @@ Its purpose is to prevent documentation drift between:
 
 Any gameplay, documentation, or UI change affecting Moonpet status should reference this document.
 
+### Proposed next batch: H11 Pet House E1 (pending PR)
+
+This first phase adds a per-pet cosmetic starter room saved in D1 migration 092. Three bounded slots (wall, floor and one furnishing) each have three free options. Source identity is the selected pet ID, ownership season and authenticated Telegram account. Successful choices never grant XP, currency, items, quest credit, cooldown resets or pet age changes. The room is read only when opening fully hydrated PROFILE, not during initial lightweight HOME startup or passive polling. Rejected and uncertain writes must leave the existing room intact; Refresh is the recovery method. No purchases, additional rooms, housing economy, kitchen, gym, garden or nightclub are claimed in E1. Migration 092 and a matching provenance Worker deployment are required after review/merge. This is proposed code, not proof of production deployment.
+
 ## Current rules and historical audits
 
 ### Main-based existing-game expansion (PR #1487 replacement for #1486, 12 Oct 2026)
