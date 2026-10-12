@@ -2139,6 +2139,7 @@ const floorRuntime = vm.createContext({ reducedMotion: false, performance: { now
   drawHomeWall: () => worldCalls.push('wall'),
   drawHomeFloor: (_, shadow) => worldCalls.push(shadow ? 'floor+shadow' : 'floor'),
   drawHomeFurniture: () => worldCalls.push('furniture'),
+  drawHomeStations: () => worldCalls.push('stations'),
   hatchArtTransitionActive: () => false,
   drawEquippedStyles: (_, foreground) => worldCalls.push(foreground ? 'style-front' : 'style-back'),
   drawPet: () => worldCalls.push('pet') });
@@ -2156,7 +2157,7 @@ for (const scenario of [
   worldCalls.length = 0; floorRuntime.drawWorld(10);
   assert.deepEqual(floorRuntime.state, before, 'ground rendering cannot mutate the save');
   if (scenario.floor) {
-    assert.deepEqual(worldCalls, [...(scenario.stageZero ? ['egg-room'] : scenario.streetReady ? [] : ['space']), 'wall', scenario.floor, 'furniture', 'style-back', 'pet', 'style-front'], 'Home layers are behind styles and companion');
+    assert.deepEqual(worldCalls, [...(scenario.stageZero ? ['egg-room'] : scenario.streetReady ? [] : ['space']), 'wall', scenario.floor, 'furniture', 'stations', 'style-back', 'pet', 'style-front'], 'Home layers are behind styles and companion');
     assert.equal(floorRuntime.backgroundArtState.floor.shadow, scenario.art);
     assert.equal(floorRuntime.backgroundArtState.floor.baseline_y, 219);
   } else {
