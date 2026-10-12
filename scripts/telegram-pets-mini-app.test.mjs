@@ -2151,8 +2151,10 @@ for (const phase of ['egg', 'young']) {
   assert.equal(motions[0].payload.source, 'local_emote', 'emotes stay local and free');
   assert.equal(context.localEmoteLabel, 'STRETCH!', 'Stage 0 receives the displayed expression');
 }
-assert.match(client, /renderPlayNow\(\) \+ renderFoodCounter\(\) \+ renderPetEmotes\(\) \+ renderRadioRequestPanel\(\) \+ renderSeasonSlots\(\)/,
+assert.match(client, /renderPlayNow\(\) \+ renderFoodCounter\(\) \+ renderPetEmotes\(\) \+ renderRadioRequestPanel\(\)/,
   'the egg chamber must actually render the free emote controls');
+assert.match(client, /VISIT PET HOUSE[\s\S]{0,240}renderSeasonSlots\(\)/,
+  'the egg chamber retains its pet selector after the free House shortcut');
 assert.match(drawWorldSource, /!hatchArtTransitionActive\(renderTime\)/,
   'egg emote caption is visible but never masks the hatch reveal');
 assert.doesNotMatch(drawWorldSource, /localEmoteLabel[\s\S]{0,125}!stageZeroPresentationActive\(renderTime\)/,
