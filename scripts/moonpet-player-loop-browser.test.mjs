@@ -691,7 +691,14 @@ try {
             return faultAction === 'feed' ? route.abort('connectionreset') : route.fulfill({ json: {} });
           }
         }
-        const state = body.mode === 'core' ? await hooks.buildPetMiniAppCoreState(db, id) : body.mode === 'live' ? await hooks.buildPetMiniAppLiveState(db, id) : await hooks.buildPetMiniAppState(db, id, token, {mode:body.state_mode || body.mode});
+        let state;
+        try {
+          state = body.mode === 'core' ? await hooks.buildPetMiniAppCoreState(db, id) : body.mode === 'live' ? await hooks.buildPetMiniAppLiveState(db, id) : await hooks.buildPetMiniAppState(db, id, token, {mode:body.state_mode || body.mode});
+        } catch (error) {
+          if (!['isolated_saved_state_read_failure', 'pet_state_read_unavailable', 'pet_state_source_changed'].includes(error.message)) throw error;
+          return result ? route.fulfill({ json: { result, state: null } })
+            : route.fulfill({ status: 503, json: { error: 'mini_app_state_failed' } });
+        }
         return route.fulfill({ json: { state, result } });
       }
       if (url.hostname === '127.0.0.1') return route.continue();

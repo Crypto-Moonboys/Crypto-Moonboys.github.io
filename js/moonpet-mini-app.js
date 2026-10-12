@@ -295,7 +295,19 @@
     var telegramHeight = Number(tg && (tg.viewportHeight || tg.viewportStableHeight) || 0);
     var visualHeight = Number(window.visualViewport && window.visualViewport.height || 0);
     var height = Math.round(telegramHeight || visualHeight || window.innerHeight || document.documentElement.clientHeight || 0);
-    if (height > 240) document.documentElement.style.setProperty('--moonpet-viewport-height', height + 'px');
+    if (height <= 240) return;
+    document.documentElement.style.setProperty('--moonpet-viewport-height', height + 'px');
+
+    // Keep the native 320x220 world proportional without letting a wide desktop
+    // or reduced Telegram viewport consume the controls. Use the same live shell
+    // height source as the app itself, then reserve real status/dock chrome plus
+    // a usable controls pane. Mobile naturally remains full-width when narrower.
+    var outputHeight = Math.ceil(output && output.getBoundingClientRect ? output.getBoundingClientRect().height : 36);
+    var dockHeight = Math.ceil(nav && nav.getBoundingClientRect ? nav.getBoundingClientRect().height : 56);
+    var controlsMinHeight = Math.max(120, Math.min(220, Math.round(height * 0.24)));
+    var canvasHeight = Math.max(120, height - outputHeight - dockHeight - controlsMinHeight);
+    var canvasMaxWidth = Math.max(175, Math.floor(canvasHeight * 16 / 11));
+    document.documentElement.style.setProperty('--moonpet-canvas-max-width', canvasMaxWidth + 'px');
   }
 
   function bindViewportSizing() {
@@ -3592,6 +3604,9 @@
     });
     renderHud();
     renderNav();
+    // The dock's populated height is part of the available-layout budget.
+    // Recompute only after nav buttons exist so the canvas cannot steal their space.
+    syncViewportHeight();
     renderCanvasTools();
     var waitingForModule = stateNeedsScreenHydration(state, activeScreen);
     var hydrationStopped = waitingForModule && fullStateHydrationFailures >= FULL_STATE_HYDRATION_MAX_AUTO_RETRIES && !fullStateHydrationPromise;

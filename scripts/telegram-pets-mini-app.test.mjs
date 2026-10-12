@@ -233,8 +233,16 @@ assert.match(css, /\.viewport \{[\s\S]{0,260}aspect-ratio:\s*16\s*\/\s*11/,
   'the visible canvas viewport must preserve the native 320x220 world ratio');
 assert.match(css, /#moonpet-canvas \{[\s\S]{0,220}width:\s*100%;[\s\S]{0,140}height:\s*auto;[\s\S]{0,140}aspect-ratio:\s*16\s*\/\s*11/,
   'the bitmap must scale proportionally instead of stretching to an arbitrary row height');
-assert.match(css, /@media \(max-height:\s*620px\)[\s\S]{0,420}\.viewport \{[\s\S]{0,180}width:\s*min\(100%,\s*68dvh\)/,
-  'short and landscape viewports must cap the proportional canvas by available height');
+assert.match(css, /--moonpet-canvas-max-width:\s*100%/,
+  'Moonpet CSS must expose a safe default canvas width cap');
+assert.match(css, /\.viewport \{[\s\S]{0,260}width:\s*min\(100%,\s*var\(--moonpet-canvas-max-width\)\)/,
+  'the proportional canvas must obey the live shell-height width cap');
+assert.match(client, /controlsMinHeight = Math\.max\(120, Math\.min\(220, Math\.round\(height \* 0\.24\)\)\)/,
+  'canvas sizing must continuously reserve a usable controls pane from the live shell height');
+assert.match(client, /canvasMaxWidth = Math\.max\(175, Math\.floor\(canvasHeight \* 16 \/ 11\)\)/,
+  'live sizing must derive the width from the 16:11 canvas ratio');
+assert.match(client, /renderHud\(\);[\s\S]{0,120}renderNav\(\);[\s\S]{0,220}syncViewportHeight\(\);[\s\S]{0,120}renderCanvasTools\(\);/,
+  'render must recompute the canvas cap after the populated dock is measurable');
 assert.match(client, /tg\.viewportHeight \|\| tg\.viewportStableHeight/, 'Moonpet shell must use Telegram visible viewport height');
 assert.match(client, /tg\.onEvent\('viewportChanged', syncViewportHeight\)/, 'Moonpet shell must track Telegram viewport changes');
 const guide = fs.readFileSync(new URL('../how-to-play-crypto-moonboy-pets.html', import.meta.url), 'utf8');
@@ -1555,11 +1563,11 @@ statusFrames.shift()();
 assert.equal(testStatusOutput.dataset.tone, 'danger');
 assert.equal(testStatusClasses.has('is-scrolling'), true, 'overflowing updates must activate the scrolling text track');
 assert.match(testStatusProperties['--status-scroll-duration'], /s$/, 'overflowing updates must receive a readable duration');
-assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20261012-canvas-ratio-v1/);
+assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20261012-canvas-layout-v2/);
 assert.doesNotMatch(html, /moonpet-art-resolver\.js/, 'the game must not load the retired static background resolver');
 assert.match(html, /\/js\/moonpet-bot-art-loader\.js\?v=20261006-live-refresh-v5/);
 assert.match(html, /\/js\/moonpet-bot-art-renderer\.js\?v=20261002-audit-recovery-v2/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261012-home-e3-props/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261012-canvas-layout-v1/);
 assert.match(html, /role="button" aria-label="Interact with your animated Moonpet"/);
 assert.match(client, /data-utility="guide">HOW TO PLAY/);
 const guideMarkupSource = extractTestExport(client, 'guideMarkup');
@@ -1850,7 +1858,7 @@ for (const sdkInitData of [expired, tampered, 'auth_date=invalid&hash=' + 'a'.re
   assert.equal(entry.requests.length, 3, 'Read-only startup state requests retain their transient retry policy');
 }
 assert.match(html, /\/js\/api-config\.js\?v=20260813-first-party-api/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261012-home-e3-props/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261012-canvas-layout-v1/);
 // Season slot UI: timing, account/pet separation, unlock affordance, switching, and rejection copy.
 assert.match(client, /function renderSeasonSlots\(\)/, 'Mini App must render a focused season-slot summary');
 assert.match(client, /function render\(options\) \{\s*var editableState = options && options\.discardCallsignDraft \? null : captureEditableState\(\);[\s\S]*restoreEditableState\(editableState\);/, 'render must preserve only drafts that were not explicitly discarded');

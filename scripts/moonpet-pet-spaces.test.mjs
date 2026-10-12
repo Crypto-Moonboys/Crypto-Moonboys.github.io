@@ -40,7 +40,7 @@ function context(full = false) {
     screen: { innerHTML: '', querySelectorAll: () => [] }, document: { getElementById: () => null },
     fullStateHydrationFailures: 0, FULL_STATE_HYDRATION_MAX_AUTO_RETRIES: 3, fullStateHydrationPromise: null,
     renderedPetId: '', authenticationFailure: false, reducedMotion: false,
-    captureEditableState: () => null, renderHud() {}, renderNav() {}, renderCanvasTools() {}, restoreEditableState() {},
+    captureEditableState: () => null, renderHud() {}, renderNav() {}, syncViewportHeight() {}, renderCanvasTools() {}, restoreEditableState() {},
     renderMenuStatus: () => '', renderRewardLifecycle: () => '', renderRecommended: () => '', applyRequestedFocus() {},
     screens: { home: ctx.renderHome, profile: ctx.renderProfile },
   });
