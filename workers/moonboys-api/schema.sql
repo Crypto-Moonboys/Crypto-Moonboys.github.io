@@ -2224,4 +2224,3 @@ CREATE TABLE IF NOT EXISTS telegram_website_credentials (
 );
 CREATE INDEX IF NOT EXISTS idx_telegram_credential_expiry ON telegram_website_credentials(expires_at);
 CREATE INDEX IF NOT EXISTS idx_telegram_credential_session ON telegram_website_credentials(session_hash);
-
