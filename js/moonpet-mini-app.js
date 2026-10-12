@@ -5217,7 +5217,7 @@
     drawPixelRect(0,0,320,145,'#18312f');
     drawPixelRect(0,145,320,75,'#262f29');
     drawPixelRect(0,142,320,3,'#6e866f');
-    for (var x=18;x<320;x+=72) {
+    for (var x=18;x<=270;x+=72) {
       drawPixelRect(x,28,50,4,'#7f9e91');
       drawPixelRect(x+8,32,3,37,'#61766e');
       drawPixelRect(x+39,32,3,37,'#61766e');
