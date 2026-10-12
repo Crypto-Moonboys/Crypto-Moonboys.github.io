@@ -67,6 +67,7 @@ export const PET_DELETION_BLOCKERS_SQL = `
   OR EXISTS (SELECT 1 FROM telegram_pet_contracts WHERE telegram_id=? AND pet_id=? AND (status='active' OR (status='completed' AND reward_xp>0 AND reward_settled=0)))
   OR EXISTS (SELECT 1 FROM telegram_pet_season_finales WHERE telegram_id=? AND pet_id=? AND (status='active' OR (status='won' AND claimed_at IS NULL)))
   OR EXISTS (SELECT 1 FROM telegram_pet_reward_claims WHERE telegram_id=? AND pet_id=? AND status='pending')
+  OR EXISTS (SELECT 1 FROM telegram_pet_garden_harvests WHERE telegram_id=? AND pet_id=? AND status IN ('pending','settling'))
   OR EXISTS (SELECT 1 FROM telegram_pet_system_events WHERE telegram_id=? AND pet_id=? AND status IN ('pending','settling'))
   OR EXISTS (SELECT 1 FROM telegram_pet_weekly_boss_victories_by_pet v WHERE v.telegram_id=? AND v.pet_id=? AND NOT EXISTS (
     SELECT 1 FROM telegram_pet_system_events e WHERE e.telegram_id=v.telegram_id AND e.pet_id=v.pet_id AND e.season_key=v.season_key
@@ -75,7 +76,7 @@ export const PET_DELETION_BLOCKERS_SQL = `
     AND NOT EXISTS (SELECT 1 FROM telegram_pet_reward_claims c WHERE c.telegram_id=r.telegram_id AND c.pet_id=r.pet_id AND c.status='awarded'
       AND ((c.source='pet_run_legacy' AND c.idempotency_key=SUBSTR('pet_run_'||CASE WHEN r.status='extracted' THEN 'extract' ELSE 'complete' END||':'||r.telegram_id||':'||r.run_id,1,120))
         OR (c.source='roguelite_completion' AND c.idempotency_key=r.run_id||CASE WHEN r.status='extracted' THEN ':extract' ELSE '' END))))`;
-const blockerArgs = (owner, petId) => [owner,owner,owner,owner,owner,owner,owner,owner,owner,petId,owner,petId,owner,petId,owner,petId,owner,petId,owner,petId];
+const blockerArgs = (owner, petId) => [owner,owner,owner,owner,owner,owner,owner,owner,owner,petId,owner,petId,owner,petId,owner,petId,owner,petId,owner,petId,owner,petId];
 
 export async function readDeletedPetHistory(db, owner) {
   const rows = await db.prepare(`SELECT d.pet_id,d.applied_at AS deleted_at,i.pet_xp,
@@ -115,6 +116,11 @@ export async function deleteOwnedPet(db, telegramId, body, stateColumns) {
         space_created_at:old.space_created_at,space_pet_id:old.space_pet_id}),petId,owner,...blockerArgs(owner,petId)),
     db.prepare(`UPDATE telegram_pet_instances SET status='archived',updated_at=CURRENT_TIMESTAMP WHERE pet_id=? AND telegram_id=? AND ${claim}`).bind(petId,owner,...args),
     db.prepare(`UPDATE telegram_pet_season_slots SET status='archived',updated_at=CURRENT_TIMESTAMP WHERE pet_id=? AND telegram_id=? AND ${claim}`).bind(petId,owner,...args),
+    // A growing/ready crop is pet state, not reward history. Remove it when the
+    // pet is voluntarily replaced; pending/settling harvests are blocked above.
+    db.prepare(`DELETE FROM telegram_pet_garden_plots
+      WHERE pet_id=? AND telegram_id=? AND season_key=? AND ${claim}`)
+      .bind(petId,owner,old.season_key,...args),
     db.prepare(`INSERT INTO telegram_pet_season_slots
       (pet_id,telegram_id,season_key,slot_number,acquisition_type,source_event_key,arcade_xp_spent,journey_clock)
       SELECT ?,telegram_id,?,slot_number,acquisition_type,?,0,'created_at' FROM telegram_pet_season_slots WHERE pet_id=? AND telegram_id=? AND ${claim}`)
