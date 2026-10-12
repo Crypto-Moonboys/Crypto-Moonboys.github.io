@@ -281,6 +281,40 @@ assert.equal(sqlite.prepare("SELECT moon_gold FROM telegram_pet_profiles WHERE t
 const staleWeekly=await hooks.claimPetWeeklyBounty(d1,'economy-player',weeklyTarget.key,new Date(),'2001-W01');
 assert.equal(staleWeekly.accepted,false);
 assert.equal(staleWeekly.reason,'bounty_week_changed');
+// Boss Pressure counts each committed seasonal hit, not just the later victory payout.
+// Pending/replayed attempts and the victory event cannot double-count a hit.
+const bossWeekNumber = Array.from({length:52}, (_,i)=>i+1).find(i=>{
+  const key='2026-W'+String(i).padStart(2,'0');
+  return key!==weeklyBefore.week_key && getPetWeeklyBounties(key).some(b=>b.key==='week_boss');
+});
+assert.ok(bossWeekNumber,'at least one separate 2026 week rotates Boss Pressure');
+const bossMonday = new Date(Date.UTC(2025,11,29+7*(bossWeekNumber-1)));
+const bossNow = new Date(bossMonday.getTime()+3*86400000);
+const bossWeekKey='2026-W'+String(bossWeekNumber).padStart(2,'0');
+for(let i=0;i<4;i++){
+  const day = new Date(bossMonday.getTime()+i*86400000).toISOString().slice(0,10);
+  sqlite.prepare(`INSERT INTO telegram_pet_system_events
+    (id,pet_id,telegram_id,season_key,system_key,action_key,period_key,status,payload_json)
+    VALUES (?,?,'economy-player',?,'seasonal_boss','test_raid',?,?, '{}')`)
+    .run('boss-attempt-'+i,readyState.pet.pet_id,readyState.pet.season_key,
+      'test-season:'+day,i===3?'pending':'completed');
+}
+const bossBefore = (await hooks.getPetEconomyState(d1,'economy-player',null,bossNow)).weekly_bounties.find(b=>b.key==='week_boss');
+assert.equal(bossBefore.progress,3,'three completed seasonal attempts count; a pending attempt does not');
+sqlite.prepare(`INSERT INTO telegram_pet_events
+  (id,telegram_id,event_type,event_key,season_key,day_key,week_key,status,reason,metadata)
+  VALUES ('boss-victory','economy-player','seasonal_boss','boss-victory','test-season',?,?,'accepted','test','{}')`)
+  .run(bossNow.toISOString().slice(0,10),bossWeekKey);
+assert.equal((await hooks.getPetEconomyState(d1,'economy-player',null,bossNow)).weekly_bounties.find(b=>b.key==='week_boss').progress,3,
+  'a victory payout event is not a second seasonal attempt');
+sqlite.prepare(`INSERT INTO telegram_pet_events
+  (id,telegram_id,event_type,event_key,season_key,day_key,week_key,status,reason,metadata)
+  VALUES ('boss-weekly','economy-player','weekly_boss','boss-weekly','test-season',?,?,'accepted','test','{}')`)
+  .run(bossNow.toISOString().slice(0,10),bossWeekKey);
+const bossReady=(await hooks.getPetEconomyState(d1,'economy-player',null,bossNow)).weekly_bounties.find(b=>b.key==='week_boss');
+assert.equal(bossReady.progress,4);
+assert.equal(bossReady.complete,true,'one weekly attempt plus three settled seasonal attempts completes Boss Pressure');
+
 const purchasedFood=(await hooks.getPetEconomyState(d1,'economy-player')).food_offers[0];
 assert.ok(purchasedFood,'food shop projects independent of rotating Moon Market stock');
 assert.equal((await hooks.buyPetMarketOffer(d1,'economy-player',purchasedFood.key)).accepted,true);
