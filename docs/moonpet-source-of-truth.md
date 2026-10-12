@@ -14,9 +14,13 @@ Its purpose is to prevent documentation drift between:
 
 Any gameplay, documentation, or UI change affecting Moonpet status should reference this document.
 
-### Proposed next batch: H11 Pet House E1 (pending PR)
+### H11 House E1 — main-canvas Home correction (12 October 2026)
 
-This first phase adds a per-pet cosmetic starter room saved in D1 migration 092. Three bounded slots (wall, floor and one furnishing) each have three free options. Source identity is the selected pet ID, ownership season and authenticated Telegram account. Successful choices never grant XP, currency, items, quest credit, cooldown resets or pet age changes. The room is read only when opening fully hydrated PROFILE, not during initial lightweight HOME startup or passive polling. Rejected and uncertain writes must leave the existing room intact; Refresh is the recovery method. No purchases, additional rooms, housing economy, kitchen, gym, garden or nightclub are claimed in E1. Migration 092 and a matching provenance Worker deployment are required after review/merge. This is proposed code, not proof of production deployment.
+Home customization changes the actual room displayed behind the selected pet in the existing main game canvas. PROFILE’s HOME CUSTOMIZATION editor retains the original nine free Wall, Floor and Furnishing choices and `house_place` action; HOME links to CUSTOMIZE HOME, and BACK TO HOME returns to the pet. There is no separate preview room, destination or minigame.
+
+Each original pet ID/ownership season keeps its existing migration-092 layout, including eggs. Existing core and full state responses include the selected pet’s read-only layout so reloads, switching and care reconciliation do not need another client request or Profile hydration. Missions retains only the same pet’s confirmed appearance in the client without a layout query; high-frequency live polling is unchanged. Missing, unavailable, invalid or wrong-pet visual state uses starter appearance without saving anything; unavailable editor state disables selection until an authoritative refresh succeeds.
+
+The frontend adds static wall/floor/furnishing primitives within the existing render loop. Existing backgrounds remain visible; sprite geometry, animation, interactions, Radio, cosmetics and reduced motion are preserved. The hatch reveal retains its original scene and restores the selected Home afterward. No ownership checks, layout writes, player records, economy, rewards, quests, inventory, lifecycle or cooldowns change. This correction requires a Moonboys API deployment solely for the read-only projection dependency, plus frontend publication; it requires no migration or repeated application of migration 092. This PR is not production-deployment evidence.
 
 ## Current rules and historical audits
 
@@ -72,7 +76,7 @@ static pavement strip behind the hatched companion on the loaded street-wall
 backdrop, with a contact shadow once companion art is ready. Sprite size,
 aspect ratio, baseline and tap bounds are unchanged. The egg/hatch chamber,
 loading/failed street-image fallback and unadopted views receive no street floor.
-This is canvas presentation only, with no gameplay or reward change.
+This is canvas presentation only, with no gameplay or reward change. The E1 Home correction extends flooring to saved egg and hatched-pet environments; its hatch reveal still retains the original chamber before restoring Home.
 
 
 The [11 October mission status update](moonpet-mission-status-2026-10-11.md)

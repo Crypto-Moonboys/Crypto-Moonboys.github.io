@@ -10417,7 +10417,7 @@ async function buildPetMiniAppCoreState(db, telegramId, options = {}) {
     .catch(error => { throw normalizePetProjectionError(error); });
   const activityPromise = getActivePetActivitySession(db, telegramId, now)
     .then((active) => active || getRecoverablePetActivitySession(db, telegramId));
-  const [rawLifecycle, activity, seasonSlots, specialActions, recentCare, dailyCache, dailyPetXpRow] = await Promise.all([
+  const [rawLifecycle, activity, seasonSlots, specialActions, recentCare, dailyCache, dailyPetXpRow, petHouse] = await Promise.all([
     lifecyclePromise,
     activityPromise,
     buildPetSeasonSlotCoreSummary(db, telegramId, now),
@@ -10434,6 +10434,9 @@ async function buildPetMiniAppCoreState(db, telegramId, options = {}) {
       FROM telegram_pet_events
       WHERE telegram_id=? AND day_key=? AND status='accepted'`)
       .bind(String(telegramId), dayKey).first().then(requirePetFirstReadResult),
+    // Home appearance uses the existing bounded, selected-pet read; live polling stays unchanged.
+    options.skipHouse ? Promise.resolve(undefined) : readPetHouseLayout(lifecycleScope.db, telegramId, petRaw)
+      .catch(() => ({ available: false, pet_id: petRaw.pet_id })),
   ]);
   // Match the full-state privacy contract: stage-1 identity stays hidden, while
   // the internal stage-2 art handoff may be exposed only through the existing
@@ -10499,6 +10502,7 @@ async function buildPetMiniAppCoreState(db, telegramId, options = {}) {
   return {
     adopted: true,
     hydration: { mode: 'core', full: false },
+    pet_house: petHouse,
     pet: canonicalPet,
     lifecycle,
     next,
@@ -10520,7 +10524,7 @@ async function buildPetMiniAppCoreState(db, telegramId, options = {}) {
 // The caller has already run the same ordered recovery passes as full state.
 async function buildPetMiniAppMissionsState(db, telegramId, petRaw, now, economy) {
   const achievementScope = createDisplayedPetScope(db, telegramId, petRaw.pet_id, petRaw.season_key);
-  const corePromise = buildPetMiniAppCoreState(db, telegramId, { prepared: true, petRaw, now, economy });
+  const corePromise = buildPetMiniAppCoreState(db, telegramId, { prepared: true, petRaw, now, economy, skipHouse: true });
   const [core, missions, achievements, contracts, seasonFinales, progression] = await Promise.all([
     corePromise,
     buildPetMissions(db, telegramId, petRaw, now),
@@ -10791,9 +10795,7 @@ async function buildPetMiniAppState(db, telegramId, botToken, options = {}) {
       ? Promise.resolve(petRaw)
       : getPetInstanceWithAtomicDecay(db, activeRun.pet_id),
     getStyleLoadout(db, telegramId, petRaw.pet_id),
-    options.mode === 'profile'
-      ? readPetHouseLayout(identityScope.db, telegramId, petRaw)
-      : Promise.resolve(null),
+    readPetHouseLayout(identityScope.db, telegramId, petRaw).catch(() => ({ available: false, pet_id: petRaw.pet_id })),
     getContractBoard(db, telegramId, petRaw, now),
     activeRun
       ? getDailyMoonRunReservation(db, { telegram_id: telegramId, run_id: activeRun.run_id })
@@ -15238,7 +15240,7 @@ export default {
 const SITE_URL = 'https://cryptomoonboys.com';
 const TELEGRAM_GAMES_MENU_URL = `${SITE_URL}/games/telegram/?v=20260903-games-shell-v8`;
 const TELEGRAM_GAMES_MENU_TEXT = 'Games';
-const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20261012-radio-group-v2`;
+const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20261012-home-canvas-e1`;
 const PET_MEDIA_BASE_URL = `${SITE_URL}/img/pets`;
 const PET_MEDIA_MANIFEST = Object.freeze({
   feed: 'CRYPTO MOONBOYS PET FEED.jpg',
