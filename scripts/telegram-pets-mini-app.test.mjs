@@ -227,7 +227,7 @@ assert.match(client, /if \(!pet\.progression\)[^\n]+PROGRESSION UNAVAILABLE/, 'm
 const apiConfig = fs.readFileSync(new URL('../js/api-config.js', import.meta.url), 'utf8');
 const css = fs.readFileSync(new URL('../css/moonpet-mini-app.css', import.meta.url), 'utf8');
 assert.match(css, /--moonpet-viewport-height:\s*100dvh/, 'Moonpet shell must have a dynamic viewport-height fallback');
-assert.match(css, /grid-template-rows:\s*auto auto minmax\(0,\s*1fr\) auto/,
+assert.match(css, /grid-template-rows:\s*auto auto minmax\(0,\s*1fr\)\s*;/,
   'the shell must reserve an intrinsic-ratio canvas row between status and scrollable controls');
 assert.match(css, /\.viewport \{[\s\S]{0,260}aspect-ratio:\s*16\s*\/\s*11/,
   'the visible canvas viewport must preserve the native 320x220 world ratio');
@@ -1521,7 +1521,7 @@ assert.match(fs.readFileSync(new URL('../workers/moonboys-api/pets/completion-fe
 assert.match(client, /DAILY MISSION BUFFER \/\/ /);
 assert.match(client, /meter\('DAILY CLEAR', missionPercent\)/);
 assert.match(html, /id="utility-layer"/);
-assert.match(css, /grid-template-rows:\s*auto auto minmax\(0,\s*1fr\) auto/,
+assert.match(css, /grid-template-rows:\s*auto auto minmax\(0,\s*1fr\)\s*;/,
   'the fixed status header must leave the proportional canvas directly above scrollable controls');
 assert.match(css, /\.terminal-output \{[\s\S]*min-height:\s*36px/,
   'routine status updates must remain visibly fixed above the canvas');
@@ -1563,11 +1563,11 @@ statusFrames.shift()();
 assert.equal(testStatusOutput.dataset.tone, 'danger');
 assert.equal(testStatusClasses.has('is-scrolling'), true, 'overflowing updates must activate the scrolling text track');
 assert.match(testStatusProperties['--status-scroll-duration'], /s$/, 'overflowing updates must receive a readable duration');
-assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20261012-home-e4-rooms-v1/);
+assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20261013-menu-flow-v1/);
 assert.doesNotMatch(html, /moonpet-art-resolver\.js/, 'the game must not load the retired static background resolver');
 assert.match(html, /\/js\/moonpet-bot-art-loader\.js\?v=20261006-live-refresh-v5/);
 assert.match(html, /\/js\/moonpet-bot-art-renderer\.js\?v=20261002-audit-recovery-v2/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261013-static-background-v1/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261013-menu-flow-v1/);
 assert.match(html, /role="button" aria-label="Interact with your animated Moonpet"/);
 assert.match(client, /data-utility="guide">HOW TO PLAY/);
 const guideMarkupSource = extractTestExport(client, 'guideMarkup');
@@ -1804,7 +1804,7 @@ function browserEntryHarness({ sdkInitData = '', inheritedInitData = '', api = {
     startupScreen, startupMessages,
     runStartup: () => {
       Object.assign(runtime, {
-        screen: startupScreen, bindViewportSizing() {}, syncViewportHeight() {}, initBotArtMode: async () => {},
+        nav: {}, screen: Object.assign(startupScreen, { appendChild() {} }), bindViewportSizing() {}, syncViewportHeight() {}, initBotArtMode: async () => {},
         requestAnimationFrame() {}, frame() {}, typeBoot: async () => {}, beginStateRequest: () => 1,
         tell: message => startupMessages.push(message), escapeHtml: value => String(value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'),
       });
@@ -1863,7 +1863,7 @@ for (const sdkInitData of [expired, tampered, 'auth_date=invalid&hash=' + 'a'.re
   assert.equal(entry.requests.length, 3, 'Read-only startup state requests retain their transient retry policy');
 }
 assert.match(html, /\/js\/api-config\.js\?v=20260813-first-party-api/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261013-static-background-v1/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261013-menu-flow-v1/);
 // Season slot UI: timing, account/pet separation, unlock affordance, switching, and rejection copy.
 assert.match(client, /function renderSeasonSlots\(\)/, 'Mini App must render a focused season-slot summary');
 assert.match(client, /function render\(options\) \{\s*var editableState = options && options\.discardCallsignDraft \? null : captureEditableState\(\);[\s\S]*restoreEditableState\(editableState\);/, 'render must preserve only drafts that were not explicitly discarded');

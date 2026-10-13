@@ -19,7 +19,7 @@ function clientContext() {
     cooldownRefreshFailures: 0, cooldownRefreshTimer: 0, lastCooldownRefreshKey: '', seasonSnapshotReceivedAt: 0, lastSeasonServerRefreshAt: 0,
     serverClockOffsetMs: 0, sleepLatched: false, reducedMotion: false, renderedPetId: 'pet-a', renderedPetName: 'A', requestedFocus: '', requestedFocusScreen: 'missions', SCREEN_ORDER: ['home','missions','explore','work','profile'],
     AbortController,
-    Date: { now: () => now, parse: Date.parse }, performance: { now: () => now }, screen: { scrollTop: 0, innerHTML: '' },
+    Date: { now: () => now, parse: Date.parse }, performance: { now: () => now }, nav: {}, screen: { appendChild() {}, scrollTop: 0, innerHTML: '' },
     window: { clearTimeout(id) { timers.delete(id); }, setTimeout(fn, delay) { const id = ++sequence; timers.set(id, { fn, delay, at: now + delay }); return id; } },
     document: { getElementById: () => null }, panel: (title, body) => title + body, routeButton: label => label,
     captureEditableState: () => null, rememberPanels() {}, renderHud() {}, renderNav() {}, syncViewportHeight() {}, renderCanvasTools() {}, restoreEditableState() {},

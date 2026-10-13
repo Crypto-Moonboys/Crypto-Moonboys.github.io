@@ -105,6 +105,8 @@ try {
     const nav = document.getElementById("nav");
     nav.innerHTML = ["HOME", "MISSIONS", "EXPLORE", "WORK", "ECONOMY", "PROFILE"]
       .map((label) => `<button type="button"><span>+</span>${label}</button>`).join("");
+    const controls = document.getElementById("screen");
+    controls.scrollTop = controls.scrollHeight;
     const shell = document.getElementById("moonpet-app").getBoundingClientRect();
     const viewport = document.querySelector(".viewport").getBoundingClientRect();
     const tools = document.getElementById('canvas-tools');

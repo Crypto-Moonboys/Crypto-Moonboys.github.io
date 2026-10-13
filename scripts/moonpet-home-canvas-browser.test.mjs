@@ -217,28 +217,25 @@ try {
       assert.ok(viewportBox && Math.abs(viewportBox.width / viewportBox.height - 16 / 11) < 0.01,
         'canvas viewport cannot stretch the 320x220 world');
       const screenBox = await page.locator('#screen').boundingBox();
-      const dockBox = await page.locator('#nav').boundingBox();
       assert.ok(screenBox && screenBox.height >= 80,
         'scrollable controls retain usable height at '+width+'x'+height);
       const shellBox = await page.locator('#moonpet-app').boundingBox();
-      assert.ok(shellBox);
-      const expectedShellHeight = telegramHeight || height;
-      assert.ok(Math.abs(shellBox.height - expectedShellHeight) <= 2,
-        'shell follows the live Telegram/browser viewport height');
-      assert.ok(dockBox && dockBox.height >= 44 && dockBox.y + dockBox.height <= shellBox.y + shellBox.height + 1,
-        'bottom navigation remains fully visible at '+width+'x'+height+(telegramHeight ? ' with Telegram '+telegramHeight : ''));
+      assert.ok(Math.abs(shellBox.height - (telegramHeight || height)) <= 2);
+      assert.ok(Math.abs(screenBox.y + screenBox.height - shellBox.y - shellBox.height) <= 2,
+        'options now use the area formerly reserved for the fixed menu');
       for (const screenKey of ['home','missions','explore','work','economy','profile']) {
+        await page.locator('#screen').evaluate(node => { node.scrollTop = node.scrollHeight; });
+        const flow = await page.locator('#nav').evaluate(node => ({
+          parent: node.parentElement.id, last: node === node.parentElement.lastElementChild,
+          position: getComputedStyle(node).position,
+          fits: node.getBoundingClientRect().bottom <= node.parentElement.getBoundingClientRect().bottom + 1,
+          buttons: node.querySelectorAll('button[data-screen]').length
+        }));
+        assert.equal(flow.parent, 'screen'); assert.equal(flow.last, true);
+        assert.equal(flow.position, 'relative'); assert.equal(flow.fits, true); assert.equal(flow.buttons, 6);
         await page.locator('[data-screen="'+screenKey+'"]').click();
-        await page.waitForFunction((key) => {
-          const button = document.querySelector('#nav [data-screen="' + key + '"]');
-          const shell = document.querySelector('#moonpet-app');
-          if (!button || !shell) return false;
-          const buttonBox = button.getBoundingClientRect();
-          const shellBox = shell.getBoundingClientRect();
-          return buttonBox.width > 0 && buttonBox.height >= 44
-            && buttonBox.top >= shellBox.top
-            && buttonBox.bottom <= shellBox.bottom + 1;
-        }, screenKey);
+        await page.waitForFunction(key => document.querySelector('#nav [aria-current="page"]').dataset.screen === key, screenKey);
+        assert.equal(await page.locator('#screen').evaluate(node=>node.scrollTop), 0, 'new section starts with its options');
       }
       await page.locator('[data-screen="home"]').click();
       await page.locator('#home-room-switcher [data-home-room="garden"]').click();

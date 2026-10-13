@@ -678,7 +678,7 @@ for (const moduleScreen of ['missions', 'profile']) {
   let failModule = true;
   const moduleContext = vm.createContext({
     state: { adopted: true, pet: { pet_id: 'shown-pet' }, lifecycle: { phase: 'young' }, hydration: { full: false, modules: ['home'] } },
-    selectedRouteScreen: '', selectedRoutePanel: '', activeScreen: moduleScreen, screen: { scrollTop: 0, innerHTML: '' },
+    selectedRouteScreen: '', selectedRoutePanel: '', activeScreen: moduleScreen, nav: {}, screen: { appendChild() {}, scrollTop: 0, innerHTML: '' },
     fullStateHydrationPromise: null, fullStateHydrationRetryTimer: 0, fullStateHydrationFailures: 0,
     fullStateHydrationRetryDelayMs: 0, FULL_STATE_HYDRATION_MAX_AUTO_RETRIES: 3,
     busy: false, noticesBusy: false, authenticationFailure: false, passiveRefreshInFlight: false,

@@ -37,7 +37,7 @@ function context(full = false) {
   vm.runInContext(between('  function renderHome()', '  // TEST-EXPORT: coreStateHydration:start'), ctx);
   vm.runInContext(between('  function renderProfile()', '  var screens ='), ctx);
   Object.assign(ctx, {
-    screen: { innerHTML: '', querySelectorAll: () => [] }, document: { getElementById: () => null },
+    nav: {}, screen: { appendChild() {}, innerHTML: '', querySelectorAll: () => [] }, document: { getElementById: () => null },
     fullStateHydrationFailures: 0, FULL_STATE_HYDRATION_MAX_AUTO_RETRIES: 3, fullStateHydrationPromise: null,
     renderedPetId: '', authenticationFailure: false, reducedMotion: false,
     captureEditableState: () => null, renderHud() {}, renderNav() {}, syncViewportHeight() {}, renderCanvasTools() {}, restoreEditableState() {},
