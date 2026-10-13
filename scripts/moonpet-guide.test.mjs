@@ -30,7 +30,7 @@ test('website guide and About blocks are exactly the shared in-game copy', () =>
   const markup = new Function('window', helper + '; return guideMarkup();')({ MoonpetGuide: guide });
   assert.ok(markup.startsWith(guide.game(guide.sections)));
   const html = read('moonpet-game.html');
-  const guideAsset = '/js/moonpet-guide.js?v=20261012-home-e4-rooms-v1';
+  const guideAsset = '/js/moonpet-guide.js?v=20261013-wall-overlay-free-v1';
   const appAsset = '/js/moonpet-mini-app.js?v=20261013-wall-overlay-free-v1';
   assert.ok(html.includes(guideAsset) && html.includes(appAsset));
   assert.ok(html.indexOf(guideAsset) < html.indexOf(appAsset));
