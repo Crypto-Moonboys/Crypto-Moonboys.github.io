@@ -3779,7 +3779,7 @@
       if (result.duplicate) blockedParts.push('Duplicate blocked by authority.');
       return blockedParts.join(' - ');
     }
-    if (result.reason === 'pet_house_saved') return 'HOME SAVED // Return to Home to see this pet’s wall, floor and furnishing. No currency or XP changed.';
+    if (result.reason === 'pet_house_saved') return String(result.result_copy || 'HOME SAVED // Return to Home to see this pet’s saved customization. No currency or XP changed.');
     if (result.reason === 'pet_furniture_purchased' || result.reason === 'pet_furniture_owned' || result.reason === 'pet_furniture_placed' || result.reason === 'pet_furniture_removed') return String(result.result_copy || 'Furniture save confirmed.');
     if (result.reason === 'pet_garden_planted' || result.reason === 'pet_garden_already_planted' || result.reason === 'pet_garden_harvested') return String(result.result_copy || 'Garden save confirmed.');
     var reward = resultRewardMap(result);

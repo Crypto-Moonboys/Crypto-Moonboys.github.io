@@ -1090,6 +1090,12 @@ ${weeklyJourneyMarkupSource}
 ${journeyActionProgressSource}
 ${actionResultFeedbackSource}; return { resultMessage: resultMessage(result, beforeState, afterState) };`,
 );
+for (const copy of ['Home room saved to this pet. No Gold or XP spent.', 'House appearance saved to this pet. No Gold or XP spent.']) {
+  assert.equal(actionResultFeedbackRuntime({accepted:true,reason:'pet_house_saved',result_copy:copy},{},{}).resultMessage,copy,
+    'house save confirmation must use authoritative room/cosmetic copy');
+}
+assert.match(actionResultFeedbackRuntime({accepted:true,reason:'pet_house_saved'},{},{}).resultMessage,/saved customization/,
+  'older responses without copy retain a neutral confirmation');
 const completionFeedback = actionResultFeedbackRuntime({ accepted: true, pet_xp_awarded: 25, rewards: { pet_xp: 25, moon_gold: 50, style_tokens: 1 } }, {}, {});
 assert.equal((completionFeedback.resultMessage.match(/25 pet xp/gi) || []).length, 1, 'daily/finale reward text must not duplicate the actual Pet XP payout');
 const cappedCompletionFeedback = actionResultFeedbackRuntime({ accepted: true, pet_xp_awarded: 0, rewards: { pet_xp: 25, moon_gold: 50 } }, {}, {});
