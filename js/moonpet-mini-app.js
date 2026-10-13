@@ -4953,7 +4953,7 @@
   }
 
   var homePlantImage = null;
-  function drawHomeFurniture(furniture) {
+  function drawHomeFurniture(furniture, time) {
     // Right-side placements stay outside the existing sprite/tap bounds.
     var base = BOT_RENDER_BASELINE_Y - 3;
     if (furniture === 'record_deck') {
@@ -4968,13 +4968,19 @@
         homePlantImage = new Image();
         homePlantImage.decoding = 'async';
         homePlantImage.onload = function () { if (reducedMotion) drawWorld(performance.now()); };
-        homePlantImage.src = '/img/Neon_PurplePlant.png';
+        homePlantImage.src = '/img/pot-pot.png';
       }
-      if (homePlantImage.complete && homePlantImage.naturalWidth && homePlantImage.naturalHeight) {
-        var plantWidth = 220 * homePlantImage.naturalWidth / homePlantImage.naturalHeight;
+      if (homePlantImage.complete && homePlantImage.naturalWidth === 1280 && homePlantImage.naturalHeight === 1280) {
+        // 25 row-major 256px frames. A fixed crop encloses every frame's alpha
+        // bounds, avoiding padding-driven scaling and frame-to-frame jitter.
+        var plantFrame = reducedMotion ? 0 : Math.floor(Math.max(0, Number(time) || 0) / 125) % 25;
+        var plantWidth = 114;
+        var plantHeight = plantWidth * 145 / 125;
         ctx.save();
         ctx.imageSmoothingEnabled = true;
-        ctx.drawImage(homePlantImage, 320 - plantWidth, 0, plantWidth, 220);
+        ctx.drawImage(homePlantImage, (plantFrame % 5) * 256 + 66,
+          Math.floor(plantFrame / 5) * 256 + 92, 125, 145,
+          320 - plantWidth, 213 - plantHeight, plantWidth, plantHeight);
         ctx.restore();
       }
     } else {
@@ -5108,7 +5114,7 @@
         drawHomeFloor(home.floor, Boolean(botArtRendererReady), floorSaved);
         var purchased = state.pet_furniture && state.pet_furniture.available === true
           ? savedPurchasedFurniture(state) : null;
-        if (!purchased || !purchased.right) drawHomeFurniture(home.furniture);
+        if (!purchased || !purchased.right) drawHomeFurniture(home.furniture, renderTime);
         if (purchased) {
           if (purchased.wall) drawPurchasedFurniture(purchased.wall,'wall');
           if (purchased.left) drawPurchasedFurniture(purchased.left,'left');

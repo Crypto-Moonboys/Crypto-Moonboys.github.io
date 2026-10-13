@@ -9,7 +9,7 @@ const scene=client.split('// TEST-EXPORT: homeScene:start')[1].split('// TEST-EX
 function painter() {
   const calls=[], stack=[];
   const ctx={globalAlpha:1,drawImage:(image,...args)=>calls.push({source:image.src,args}),save(){stack.push(this.globalAlpha);},restore(){this.globalAlpha=stack.pop();}};
-  const runtime=vm.createContext({ctx,Image:function(){this.complete=true;this.naturalWidth=456;this.naturalHeight=880;},reducedMotion:false,backgroundArtState:{},BOT_RENDER_BASELINE_Y:219,BOT_RENDER_CENTER_X:160,
+  const runtime=vm.createContext({ctx,Image:function(){this.complete=true;this.naturalWidth=1280;this.naturalHeight=1280;},reducedMotion:false,backgroundArtState:{},BOT_RENDER_BASELINE_Y:219,BOT_RENDER_CENTER_X:160,
     drawPixelRect:(x,y,w,h,color)=>calls.push({x,y,w,h,color,alpha:ctx.globalAlpha}),
     drawCompanionFloor:()=>calls.push({originalFloor:true})});
   vm.runInContext(scene,runtime);
@@ -52,8 +52,8 @@ test('transparent full-canvas mat choices and furniture remain distinct',()=>{
       assert.ok(calls.filter(c=>!c.originalFloor&&!c.source).every(c=>c.x>=0 && c.y>=0 && c.x+c.w<=320 && c.y+c.h<=220));
       if(fn==='drawHomeFurniture') assert.ok(calls.filter(c=>!c.source).every(c=>c.x>252),'pixel furniture stays outside original companion bounds');
       if(fn==='drawHomeFurniture'&&option==='plant_pot') {
-        assert.equal(calls[0].source,'/img/Neon_PurplePlant.png');
-        assert.deepEqual(calls[0].args,[206,0,114,220],'plant image fills canvas height and preserves its aspect ratio');
+        assert.equal(calls[0].source,'/img/pot-pot.png');
+        assert.deepEqual(calls[0].args,[66,92,125,145,206,213-114*145/125,114,114*145/125],'plant frame retains the right-side visible footprint');
       }
       outputs.push(JSON.stringify(calls));
     }
@@ -63,6 +63,18 @@ test('transparent full-canvas mat choices and furniture remain distinct',()=>{
   assert.equal(calls[0].source,'/img/blacknsilvermatt.png');
   assert.deepEqual(calls[0].args,[0,0,320,220]);
   assert.doesNotMatch(scene,/fetch\(|post\(|requestAnimationFrame|setTimeout|setInterval|createElement/,'static layers do not add requests, loops or a second canvas');
+});
+
+test('plant sheet advances, wraps and freezes for reduced motion without shifting its placement',()=>{
+  const {runtime,calls}=painter();
+  runtime.drawHomeFurniture('plant_pot',0);const first=calls.at(-1).args;
+  runtime.drawHomeFurniture('plant_pot',125);const next=calls.at(-1).args;
+  assert.deepEqual(next.slice(0,4),[322,92,125,145]);
+  assert.deepEqual(next.slice(4),first.slice(4));
+  runtime.drawHomeFurniture('plant_pot',3125);assert.deepEqual(calls.at(-1).args,first);
+  runtime.reducedMotion=true;runtime.drawHomeFurniture('plant_pot',1375);
+  assert.deepEqual(calls.at(-1).args,first);
+  assert.doesNotMatch(scene,/Neon_PurplePlant|setInterval|requestAnimationFrame/,'old static art and extra animation loops are absent');
 });
 
 test('core/full responses restore each pet Home and live polling makes no House reads',async()=>{
