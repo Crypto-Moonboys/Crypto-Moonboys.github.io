@@ -1150,8 +1150,9 @@ try {
     const failStreetImage = route => route.abort();
     await page.route(streetImage, failStreetImage);
     await page.reload(); await page.waitForSelector('[data-panel="care"]');
-    await page.waitForFunction(() => window.MoonpetBetaAppearance.getBackgroundArtState().mode === 'retro_space_loop');
-    assert.equal(await page.evaluate(() => window.MoonpetBetaAppearance.getBackgroundArtState().floor.mode), 'concrete', 'failed street image retains the saved Home over the space fallback');
+    await page.waitForFunction(() => window.MoonpetBetaAppearance.getBackgroundArtState().mode === 'static_fallback');
+    assert.equal(await page.evaluate(() => window.MoonpetBetaAppearance.getBackgroundArtState().floor.mode), 'concrete', 'failed street image retains the saved Home over a static fallback');
+    assert.equal(await page.evaluate(() => window.MoonpetBetaAppearance.getBackgroundArtState().loop_ms), undefined, 'fallback has no animation timeline');
     await page.unroute(streetImage, failStreetImage);
     await page.reload(); await page.waitForSelector('[data-panel="care"]');
     await page.waitForFunction(() => window.MoonpetBetaAppearance.getBackgroundArtState().floor?.shadow === true);

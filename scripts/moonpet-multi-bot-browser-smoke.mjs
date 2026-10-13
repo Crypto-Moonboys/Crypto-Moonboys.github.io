@@ -75,15 +75,9 @@ try {
   await animatedPage.route("https://telegram.org/**", (route) => route.fulfill({ contentType: "text/javascript", body: "window.Telegram={WebApp:{initData:'',viewportHeight:520,viewportStableHeight:520,ready(){},expand(){},setHeaderColor(){},setBackgroundColor(){},onEvent(){}}};" }));
   await animatedPage.goto(`http://127.0.0.1:${address.port}/moonpet-game.html?botArt=1&sideSprites=0`, { waitUntil: "networkidle" });
   await animatedPage.waitForFunction(() => Boolean(window.MoonpetBetaAppearance));
-  const frameSnapshot = () => animatedPage.evaluate(() => {
-    const canvas = document.getElementById("moonpet-canvas");
-    return canvas.toDataURL("image/png");
-  });
-  await animatedPage.waitForTimeout(1200);
-  const firstFrame = await frameSnapshot();
-  await animatedPage.waitForTimeout(250);
-  const secondFrame = await frameSnapshot();
-  assert.notEqual(secondFrame, firstFrame, "the retro space battle must animate between live canvas frames");
+  await animatedPage.waitForFunction(() => window.MoonpetBetaAppearance.getBackgroundArtState().mode === 'bitty_background');
+  assert.equal(await animatedPage.evaluate(() => window.MoonpetBetaAppearance.getBackgroundArtState().loop_ms), undefined,
+    'normal-motion presentation has no retired background animation timeline');
   const animatedStatus = await animatedPage.evaluate(() => {
     const output = document.getElementById('terminal-output');
     output.classList.add('is-scrolling');
@@ -173,8 +167,8 @@ try {
     const drew = renderer.renderMoonpetBot(context, "idle", 160, 219, 1, 0, { active: false, startedAt: 0 });
     return { drew, colors: colors.size, render: renderer.getMoonpetBotArtRendererState().lastRender };
   });
-  assert.equal(liveComposition.drew, true, "the selected bot must render over the space battle");
-  assert.ok(liveComposition.colors >= 8, "the retro space battle must render a nonblank multicolor frame");
+  assert.equal(liveComposition.drew, true, "the selected bot must render over the static room artwork");
+  assert.ok(liveComposition.colors >= 8, "the static room artwork must render a nonblank multicolor frame");
   assert.ok(liveComposition.render.drawWidth <= 184.01 && liveComposition.render.drawHeight <= 184.01,
     "the enlarged bot must stay inside the shared fit box");
   assert.ok(219 - liveComposition.render.drawHeight >= 35 - 0.01,

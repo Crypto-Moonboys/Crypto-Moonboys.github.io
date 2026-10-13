@@ -1154,7 +1154,7 @@ assert.doesNotMatch(unadoptedBlock, /hatch your Moonpet first/,
 // Windows checkouts cannot reintroduce indentation/newline-sensitive regexes.
 const TEST_EXPORT_NAMES = [
   'seasonTiming', 'callsignDraft', 'capabilityCombatHelper', 'actionAvailability', 'dailyJourneyMarkup', 'weeklyJourneyMarkup', 'nextGuidance', 'journeyActionProgress', 'actionResultFeedback', 'stateRequestGate',
-  'companionCombatActive', 'lifecycleCeremonyStarter', 'lifecycleDirector', 'retroSpaceLoop', 'companionFloor',
+  'companionCombatActive', 'lifecycleCeremonyStarter', 'lifecycleDirector', 'companionFloor',
 ];
 for (const name of TEST_EXPORT_NAMES) {
   for (const newline of ['\n', '\r\n']) {
@@ -1563,11 +1563,11 @@ statusFrames.shift()();
 assert.equal(testStatusOutput.dataset.tone, 'danger');
 assert.equal(testStatusClasses.has('is-scrolling'), true, 'overflowing updates must activate the scrolling text track');
 assert.match(testStatusProperties['--status-scroll-duration'], /s$/, 'overflowing updates must receive a readable duration');
-assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20261012-home-e4-rooms-v1/);
+assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20261013-static-background-v1/);
 assert.doesNotMatch(html, /moonpet-art-resolver\.js/, 'the game must not load the retired static background resolver');
 assert.match(html, /\/js\/moonpet-bot-art-loader\.js\?v=20261006-live-refresh-v5/);
 assert.match(html, /\/js\/moonpet-bot-art-renderer\.js\?v=20261002-audit-recovery-v2/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261012-home-e4-rooms-v1/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261013-static-background-v1/);
 assert.match(html, /role="button" aria-label="Interact with your animated Moonpet"/);
 assert.match(client, /data-utility="guide">HOW TO PLAY/);
 const guideMarkupSource = extractTestExport(client, 'guideMarkup');
@@ -1863,7 +1863,7 @@ for (const sdkInitData of [expired, tampered, 'auth_date=invalid&hash=' + 'a'.re
   assert.equal(entry.requests.length, 3, 'Read-only startup state requests retain their transient retry policy');
 }
 assert.match(html, /\/js\/api-config\.js\?v=20260813-first-party-api/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261012-home-e4-rooms-v1/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261013-static-background-v1/);
 // Season slot UI: timing, account/pet separation, unlock affordance, switching, and rejection copy.
 assert.match(client, /function renderSeasonSlots\(\)/, 'Mini App must render a focused season-slot summary');
 assert.match(client, /function render\(options\) \{\s*var editableState = options && options\.discardCallsignDraft \? null : captureEditableState\(\);[\s\S]*restoreEditableState\(editableState\);/, 'render must preserve only drafts that were not explicitly discarded');
@@ -2063,16 +2063,10 @@ assert.deepEqual(botArtIdentity({
 }, 'Stage 3 bot art may resolve the revealed identity pack');
 assert.doesNotMatch(client, /selectWorldBackgroundForState|loadMoonpetBackground|setWorldBackground/,
   'pet state changes must not invoke retired background selectors');
-assert.match(client, /backgroundArtState = \{ mode: 'retro_space_loop', loop_ms: 20000, source: 'canvas' \}/,
-  'animated background provenance must remain inspectable');
-const retroSpaceLoopSource = extractTestExport(client, 'retroSpaceLoop');
-assert.ok(retroSpaceLoopSource, 'retro space loop timing must be runtime testable');
-const retroSpaceLoopPhase = new Function(`const RETRO_SPACE_LOOP_MS = 20000;${retroSpaceLoopSource}; return retroSpaceLoopPhase;`)();
-assert.equal(retroSpaceLoopPhase(0), 0);
-assert.equal(retroSpaceLoopPhase(5000), 0.25);
-assert.equal(retroSpaceLoopPhase(19999), 19999 / 20000);
-assert.equal(retroSpaceLoopPhase(20000), 0, 'space battle must return exactly to its first frame after 20 seconds');
-assert.equal(retroSpaceLoopPhase(40000), 0, 'space battle loop must remain stable across repeated cycles');
+assert.doesNotMatch(client, /RETRO_SPACE_|retroSpaceLoop|drawRetro(?:SpaceBackground|EnemyShip|PlayerShip|Explosion)/,
+  'retired animated background renderers and timeline must remain removed');
+assert.match(client, /backgroundArtState = \{ mode: 'static_fallback', source: 'canvas' \}/,
+  'image loading and failure use a static fallback');
 const petBackgroundSource = extractTestExport(client, 'petBackground');
 assert.ok(fs.existsSync(new URL('../img/BITTY BACKGROUND.jpg', import.meta.url)));
 assert.doesNotMatch(client, /bg-bg23999-v1|SPACE_BACKGROUND_FRAMES|drawSpaceSheetBackground/);
@@ -2125,9 +2119,6 @@ for (const [botName, bot] of Object.entries(rareBackgroundRegistry.bots)) {
 assert.equal(itemArtRegistry.policy.character_attachment, 'never', 'item art must remain independent from character sprites');
 assert.ok(Object.keys(itemArtRegistry.items).length > 0, 'item art requirements must cover current gameplay objects');
 assert.doesNotMatch(client, /WORLD_SCENES|WORLD_BUILDING_HEIGHTS|drawGraffitiTag|drawUtcAmbience/, 'retired scene code stays removed');
-assert.match(client, /function drawRetroSpaceBackground\(time\)/, 'the canvas must render the animated retro space battle');
-assert.match(client, /drawRetroSpaceBackground\(renderTime\)/, 'the space battle must render behind the selected bot');
-assert.match(client, /var RETRO_SPACE_LOOP_MS = 20000;/, 'the space battle must use a perfect 20-second timeline');
 const drawWorldSource = client.slice(client.indexOf('function drawWorld(time)'), client.indexOf('function frame(time)'));
 const floorSource = extractTestExport(client, 'companionFloor');
 const floorWorldSource = extractTestExport(client, 'drawWorld');
@@ -2153,7 +2144,7 @@ const floorRuntime = vm.createContext({ reducedMotion: false, performance: { now
   HOME_ROOMS: ['main','kitchen','garden','gym'], activeHomeRoom: 'main',
   ctx: { save() {}, restore() {} },
   drawStageZeroBackground: () => worldCalls.push('egg-room'),
-  drawRetroSpaceBackground: () => worldCalls.push('space'),
+  drawPixelRect: (...args) => { assert.deepEqual(args, [0, 0, 320, 220, '#03040d']); worldCalls.push('static'); },
   drawCompanionFloor: shadow => worldCalls.push(shadow ? 'floor+shadow' : 'floor'),
   savedHomeLayout: () => ({ wall:'warehouse_brick', floor:'concrete', furniture:'sleep_mat' }),
   drawHomeWall: () => worldCalls.push('wall'),
@@ -2177,7 +2168,7 @@ for (const scenario of [
   worldCalls.length = 0; floorRuntime.drawWorld(10);
   assert.deepEqual(floorRuntime.state, before, 'ground rendering cannot mutate the save');
   if (scenario.floor) {
-    assert.deepEqual(worldCalls, [...(scenario.stageZero ? ['egg-room'] : scenario.streetReady ? [] : ['space']), 'wall', scenario.floor, 'furniture', 'style-back', 'pet', 'style-front'], 'Main Room layers are behind styles and companion');
+    assert.deepEqual(worldCalls, [...(scenario.stageZero ? ['egg-room'] : scenario.streetReady ? [] : ['static']), 'wall', scenario.floor, 'furniture', 'style-back', 'pet', 'style-front'], 'Main Room layers are behind styles and companion');
     assert.equal(floorRuntime.backgroundArtState.floor.shadow, scenario.art);
     assert.equal(floorRuntime.backgroundArtState.floor.baseline_y, 219);
   } else {
