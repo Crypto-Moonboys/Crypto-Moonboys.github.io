@@ -42,7 +42,7 @@ const server = http.createServer((request, response) => {
     function drawWorld() {}
     ${animation}
     ${listeners}
-    document.getElementById('dance').addEventListener('click', function () { startDanceRadio(); animateAction('dance', true, 3600); });
+    document.getElementById('dance').addEventListener('click', function () { animateAction('dance', true, 3600); });
     document.getElementById('feed').addEventListener('click', function () { animateAction('feed', true, 2400); });
     window.danceState = () => ({ mode: animationMode, until: animationUntil, now: performance.now(), paused: radioPlayer.paused });
     document.getElementById('radio').addEventListener('click', toggleRadio);
@@ -91,27 +91,26 @@ try {
     const dancePage = await danceContext.newPage();
     const danceErrors = []; dancePage.on('pageerror', error => danceErrors.push(error.message));
     await dancePage.goto(base);
+    const beforeDance=streams;
     await dancePage.locator('#dance').tap();
-    await dancePage.waitForFunction(() => radioState().enabled && document.getElementById('stream').currentTime > 0);
-    assert.equal(await dancePage.evaluate(() => localStorage.getItem('moonpet-radio-preference')), 'off', 'Dance playback must not save a manual On preference');
-    assert.equal(await dancePage.evaluate(() => danceState().mode), 'dance');
-    await dancePage.waitForFunction(() => !radioState().requested && danceState().paused);
-    assert.ok(await dancePage.evaluate(() => danceState().now >= danceState().until), 'native playback stops at the real animation deadline');
-    if (reducedMotion === 'reduce') await dancePage.waitForFunction(() => danceState().mode === 'idle');
-    const beforeDanceReload = streams;
-    await dancePage.reload(); await dancePage.locator('#normal').tap();
-    assert.equal(await dancePage.evaluate(() => radioState().requested), false);
-    assert.equal(streams, beforeDanceReload, 'temporary Dance audio does not restart on reload or an unrelated tap');
+    assert.equal(await dancePage.evaluate(()=>radioState().requested||radioState().enabled),false);
+    assert.equal(await dancePage.evaluate(()=>localStorage.getItem('moonpet-radio-preference')),'off');
+    await dancePage.waitForFunction(()=>danceState().now>=danceState().until);
+    assert.equal(streams,beforeDance,'Dance with Radio off makes no media request');
+    await dancePage.locator('#radio').tap();
+    await dancePage.waitForFunction(()=>radioState().enabled&&document.getElementById('stream').currentTime>0);
     await dancePage.locator('#dance').tap();
-    await dancePage.waitForFunction(() => radioState().enabled);
+    await dancePage.waitForFunction(()=>danceState().now>=danceState().until);
+    assert.equal(await dancePage.evaluate(()=>radioState().enabled&&!danceState().paused),true,'Dance ending preserves native playback');
     await dancePage.locator('#feed').tap();
-    assert.equal(await dancePage.evaluate(() => danceState().paused && !radioState().requested), true, 'replacement pose stops the stream');
+    assert.equal(await dancePage.evaluate(()=>radioState().enabled&&!danceState().paused),true,'replacement pose does not stop manual Radio');
     await dancePage.locator('#dance').tap();
-    await dancePage.waitForFunction(() => radioState().enabled);
-    await dancePage.locator('#radio').tap(); // explicit Off releases the automatic timer
-    await dancePage.locator('#radio').tap(); // explicit On owns playback after Dance
-    await dancePage.waitForFunction(() => danceState().now >= danceState().until && radioState().enabled && !danceState().paused);
-    assert.equal(await dancePage.evaluate(() => localStorage.getItem('moonpet-radio-preference')), 'on');
+    await dancePage.locator('#radio').tap();
+    await dancePage.waitForFunction(()=>danceState().now>=danceState().until);
+    assert.equal(await dancePage.evaluate(()=>radioState().requested||radioState().enabled),false,'manual Off survives pose completion');
+    const beforeReload=streams;
+    await dancePage.reload();await dancePage.locator('#normal').tap();
+    assert.equal(streams,beforeReload,'saved Off survives reload');
     assert.deepEqual(danceErrors, []);
     await danceContext.close();
   }
@@ -119,20 +118,19 @@ try {
     const cold = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, reducedMotion });
     await cold.addInitScript(() => localStorage.setItem('moonpet-radio-preference', 'off'));
     const page = await cold.newPage(); await page.goto(base + '?slow=1');
+    await page.locator('#radio').tap();
     await page.locator('#dance').tap();
-    await page.waitForFunction(() => danceState().now > 3800 && danceState().until === Infinity);
-    assert.equal(await page.locator('#radio span').textContent(), '⏳', 'slow connection has visible feedback');
-    assert.equal(await page.locator('#radio').getAttribute('aria-busy'), 'true');
-    await page.waitForFunction(() => radioState().enabled && document.getElementById('stream').currentTime > 0);
-    assert.ok(await page.evaluate(() => danceState().until - danceState().now > 3000), 'full audible pose begins after native media is ready');
-    assert.equal(await page.locator('#radio span').textContent(), '📻');
-    await page.waitForFunction(() => !radioState().requested && danceState().paused);
-    if (reducedMotion === 'reduce') await page.waitForFunction(() => danceState().mode === 'idle');
-    assert.equal(await page.evaluate(() => localStorage.getItem('moonpet-radio-preference')), 'off');
+    assert.equal(await page.locator('#radio').getAttribute('aria-busy'),'true');
+    await page.waitForFunction(()=>danceState().now>=danceState().until);
+    assert.ok(await page.evaluate(()=>Number.isFinite(danceState().until)),'Dance never waits on the cold stream');
+    await page.waitForFunction(()=>radioState().enabled&&document.getElementById('stream').currentTime>0);
+    assert.equal(await page.evaluate(()=>localStorage.getItem('moonpet-radio-preference')),'on');
+    assert.equal(await page.evaluate(()=>danceState().paused),false,'cold manual Radio connects even after Dance ends');
+    await page.locator('#radio').tap();
     await cold.close();
   }
-  console.log('Native cold-stream Dance passed: 4.5-second server setup, held pose, visible loading, full audible dance and reduced-motion completion.');
-  console.log('Native Dance radio passed: mobile trusted tap, exact pose deadline, reduced motion, saved Off, interrupted pose and manual override.');
+  console.log('Native cold-stream Radio remains independent of Dance in both motion modes.');
+  console.log('Native Dance preserves Radio on/off, including pose completion, interruption and reload.');
   await browser.close(); browser = null;
   // When a browser permits autoplay, audio starts with no synthetic user action.
   browser = await chromium.launch({ ...launch, args: [...launch.args, '--autoplay-policy=no-user-gesture-required'] });

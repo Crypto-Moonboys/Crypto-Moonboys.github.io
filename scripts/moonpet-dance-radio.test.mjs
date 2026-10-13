@@ -56,149 +56,60 @@ function fixture({ reducedMotion = false, fast = true, stallPlay = false, reply,
   return { ctx, timers, attempts, requests, saved, notices, handlers, player, tap, tick, response, resolveAction: value => resolveAction(value || response) };
 }
 
-for (const reducedMotion of [false, true]) test(`Dance starts in the tap and stops at its actual pose deadline (reduced motion ${reducedMotion})`, async () => {
-  const f = fixture({ reducedMotion });
-  const work = f.tap();
-  assert.equal(f.attempts.length, 1); assert.equal(f.attempts[0].gesture, true);
-  assert.equal(f.ctx.animationMode, 'dance'); assert.equal(f.ctx.animationUntil, Infinity);
-  await work; assert.equal(f.ctx.radioEnabled, true); assert.equal(f.ctx.animationUntil, 3600);
-  await f.tick(3599); assert.equal(f.player.paused, false);
-  await f.tick(1); assert.equal(f.player.paused, true); assert.equal(f.ctx.radioRequestedOn, false);
-  if (reducedMotion) assert.equal(f.ctx.animationMode, 'idle');
-  assert.deepEqual(f.saved, [], 'automatic dance start/stop keeps the manual preference');
-  assert.equal(f.requests.length, 1); assert.equal(f.requests[0].payload.action, 'dance');
-  assert.equal(f.timers.size, 0);
+for (const reducedMotion of [false,true]) {
+  for (const radioOn of [false,true]) test(`Dance preserves radio ${radioOn?'on':'off'} (reduced motion ${reducedMotion})`,async()=>{
+    const f=fixture({reducedMotion});
+    if(radioOn) await f.ctx.setRadioEnabled(true,true);
+    const attempts=f.attempts.length,pauses=f.player.pauses,saved=[...f.saved];
+    await f.tap();await f.tick(10000);
+    assert.equal(f.ctx.radioRequestedOn,radioOn);
+    assert.equal(f.ctx.radioEnabled,radioOn);
+    assert.equal(f.attempts.length,attempts,'Dance never calls play');
+    assert.equal(f.player.pauses,pauses,'Dance ending never pauses music');
+    assert.deepEqual(f.saved,saved,'Dance leaves the radio preference untouched');
+    assert.equal(f.requests.length,1,'existing dance action still runs once');
+  });
+}
+for (const reply of [{result:{accepted:false,reason:'blocked'}},{error:'unavailable'}]) test('failed Dance cannot stop manually playing radio: '+JSON.stringify(reply),async()=>{
+  const f=fixture({reply});await f.ctx.setRadioEnabled(true,true);
+  await f.tap();await f.tick(10000);
+  assert.equal(f.ctx.radioEnabled,true);assert.equal(f.player.pauses,0);
 });
-
-test('a slow accepted Dance uses the accepted animation deadline and still unlocks audio in the tap', async () => {
-  const f = fixture({ fast: false, pending: true }); f.ctx.sleepLatched = true;
-  const work = f.tap(); await flush();
-  assert.equal(f.attempts[0].gesture, true); assert.equal(f.ctx.actionSequence, 0);
-  await f.tick(500); f.resolveAction(); await work;
-  assert.equal(f.ctx.sleepLatched, false); assert.equal(f.ctx.animationUntil, 4100);
-  await f.tick(3599); assert.equal(f.ctx.radioEnabled, true);
-  await f.tick(1); assert.equal(f.ctx.radioEnabled, false); assert.equal(f.timers.size, 0);
+test('pending Dance has no ownership of the radio control',async()=>{
+  const f=fixture({pending:true});const action=f.tap();
+  await f.ctx.toggleRadio();f.resolveAction();await action;await f.tick(10000);
+  assert.equal(f.ctx.radioRequestedOn,true);assert.equal(f.player.pauses,0);
+  await f.ctx.toggleRadio();assert.equal(f.ctx.radioRequestedOn,false);
 });
-
-test('a replacement pose stops dance radio immediately', async () => {
-  const f = fixture(); await f.tap(); await f.tick(500);
-  f.ctx.animateAction('feed', true, 2800);
-  assert.equal(f.ctx.animationMode, 'feed'); assert.equal(f.ctx.radioEnabled, false);
-  assert.equal(f.timers.size, 0); assert.deepEqual(f.saved, []);
+test('a cold manual stream can connect while Dance ends without being cancelled',async()=>{
+  const f=fixture({stallPlay:true});const playback=f.ctx.setRadioEnabled(true,true);
+  await f.tap();await f.tick(4000);f.attempts[0].resolve();await playback;
+  assert.equal(f.ctx.radioEnabled,true);assert.equal(f.player.pauses,0);
 });
-
-test('restarting a dance cannot let its old completion stop the new dance', async () => {
-  const f = fixture(); await f.tap();
-  const stale = [...f.timers.values()][0].fn;
-  await f.tick(1000); await f.tap(); stale();
-  assert.equal(f.ctx.radioEnabled, true);
-  await f.tick(2600); assert.equal(f.ctx.radioEnabled, true);
-  await f.tick(1000); assert.equal(f.ctx.radioEnabled, false);
+test('manual radio failure still restores the off state and offers a gesture retry',async()=>{
+  const f=fixture({stallPlay:true});const playback=f.ctx.setRadioEnabled(true,true);
+  f.attempts[0].reject({name:'NotAllowedError'});await playback;
+  assert.equal(f.ctx.radioRequestedOn,false);assert.equal(f.ctx.radioNeedsGesture,true);
 });
-
-test('an extended pose cannot be stopped by its stale sequence timer', async () => {
-  const f = fixture(); await f.tap(); const stale = [...f.timers.values()][0].fn;
-  await f.tick(500); f.ctx.animateAction('dance', true, 3600); stale();
-  assert.equal(f.ctx.radioEnabled, true); await f.tick(3600); assert.equal(f.ctx.radioEnabled, false);
+test('Radio off during Dance stays off after the pose completes',async()=>{
+  const f=fixture();await f.ctx.setRadioEnabled(true,true);
+  await f.tap();await f.ctx.toggleRadio();await f.tick(10000);
+  assert.equal(f.ctx.radioRequestedOn,false);assert.equal(f.ctx.radioEnabled,false);
+  assert.equal(f.player.pauses,1);assert.equal(f.attempts.length,1);
 });
-
-test('the Radio control overrides dance ownership and protects new manual playback from stale timers', async () => {
-  const f = fixture(); await f.tap(); const stale = [...f.timers.values()][0].fn;
-  await f.ctx.toggleRadio(); assert.equal(f.ctx.radioEnabled, false);
-  await f.ctx.toggleRadio(); stale(); await f.tick(3600);
-  assert.equal(f.ctx.radioEnabled, true); assert.deepEqual(f.saved, [false, true]);
+test('a Dance click never resumes blocked autoplay',()=>{
+  const f=fixture();f.ctx.radioNeedsGesture=true;
+  f.ctx.resumeRadioOnGesture({type:'click',isTrusted:true,target:{closest:selector=>selector.includes('[data-action="dance"]')}});
+  assert.equal(f.attempts.length,0);
 });
-
-test('a station already playing still stops when the requested Dance finishes', async () => {
-  const f = fixture(); await f.ctx.setRadioEnabled(true, false); await f.tap(); await f.tick(3600);
-  assert.equal(f.ctx.radioEnabled, false); assert.deepEqual(f.saved, [true]);
+test('a local pose click never resumes blocked autoplay',()=>{
+  const f=fixture();f.ctx.radioNeedsGesture=true;
+  f.ctx.resumeRadioOnGesture({type:'click',isTrusted:true,target:{closest:selector=>selector.includes('[data-local-emote]')}});
+  assert.equal(f.attempts.length,0);
 });
-
-test('rejected and unconfirmed Dance responses stop temporary playback without replaying the mutation', async () => {
-  for (const reply of [{ result: { accepted: false, reason: 'cooldown' }, state_pending: true }, {}]) {
-    const f = fixture({ reply }); await f.tap();
-    assert.equal(f.ctx.radioEnabled, false); assert.equal(f.player.paused, true);
-    assert.equal(f.ctx.animationMode, 'blocked'); assert.equal(f.requests.length, 1); assert.deepEqual(f.saved, []);
-  }
-});
-
-for (const reducedMotion of [false, true]) test(`cold stream gets a full audible dance after connection (reduced motion ${reducedMotion})`, async () => {
-  const f = fixture({ stallPlay: true, reducedMotion }); await f.tap();
-  await f.tick(5000);
-  assert.equal(f.ctx.animationMode, 'dance'); assert.equal(f.ctx.animationUntil, Infinity);
-  assert.equal(f.ctx.radioRequestedOn, true, 'the short pose deadline must not abort a slow connection');
-  f.attempts[0].resolve(); await flush();
-  assert.equal(f.ctx.radioEnabled, true); assert.equal(f.ctx.animationUntil, 8600);
-  await f.tick(3599); assert.equal(f.player.paused, false);
-  await f.tick(1); assert.equal(f.ctx.radioEnabled, false); assert.equal(f.player.paused, true);
-  if (reducedMotion) assert.equal(f.ctx.animationMode, 'idle');
-  assert.deepEqual(f.saved, []);
-});
-
-test('a hung stream times out visibly and cannot revive after a late success', async () => {
-  const f = fixture({ stallPlay: true, reducedMotion: true }); await f.tap();
-  await f.tick(15000);
-  assert.equal(f.ctx.radioRequestedOn, false); assert.equal(f.ctx.radioStatus, 'error');
-  assert.equal(f.player.paused, true); assert.ok(Number.isFinite(f.ctx.animationUntil));
-  assert.match(f.notices.at(-1), /TIMED OUT/);
-  f.attempts[0].resolve(); await flush(); assert.equal(f.ctx.radioEnabled, false);
-  await f.tick(3600); assert.equal(f.ctx.animationMode, 'idle'); assert.equal(f.timers.size, 0);
-});
-
-test('a manual radio connection reports loading and times out without saving Off', async () => {
-  const f = fixture({ stallPlay: true }); f.ctx.toggleRadio();
-  assert.equal(f.ctx.radioStatus, 'loading'); assert.match(f.notices.at(-1), /CONNECTING/);
-  await f.tick(15000); assert.equal(f.ctx.radioStatus, 'error'); assert.match(f.notices.at(-1), /TIMED OUT/);
-  assert.deepEqual(f.saved, []); f.attempts[0].resolve(); await flush(); assert.equal(f.ctx.radioEnabled, false);
-});
-
-test('another action during connection releases the held dance and ignores late playback', async () => {
-  const f = fixture({ stallPlay: true }); await f.tap(); await f.tick(1000);
-  f.ctx.animateAction('feed', true, 2800);
-  f.attempts[0].resolve(); await flush();
-  assert.equal(f.ctx.animationMode, 'feed'); assert.equal(f.ctx.animationUntil, 3800);
-  assert.equal(f.ctx.radioRequestedOn, false); assert.equal(f.player.paused, true);
-});
-
-test('manual override during connection cannot leave a held pose or inherit its auto-stop', async () => {
-  const f = fixture({ stallPlay: true, reducedMotion: true }); await f.tap(); await f.tick(5000);
-  await f.ctx.toggleRadio(); assert.ok(Number.isFinite(f.ctx.animationUntil));
-  const manual = f.ctx.toggleRadio(); f.attempts[1].resolve(); await manual;
-  f.attempts[0].resolve(); await flush(); await f.tick(3600);
-  assert.equal(f.ctx.radioEnabled, true); assert.equal(f.ctx.animationMode, 'idle');
-  assert.deepEqual(f.saved, [false, true]);
-});
-
-test('temporary playback failure cannot arm unrelated first-tap autoplay', async () => {
-  const f = fixture({ stallPlay: true }); await f.tap();
-  f.attempts[0].reject(Object.assign(new Error('blocked'), { name: 'NotAllowedError' })); await flush();
-  assert.equal(f.ctx.radioNeedsGesture, false); assert.equal(f.ctx.radioRequestedOn, false);
-  assert.match(f.notices.at(-1), /RADIO NEEDS A TAP/);
-  f.ctx.resumeRadioOnGesture({ type: 'click', isTrusted: true });
-  assert.equal(f.attempts.length, 1); assert.equal(f.timers.size, 0); assert.deepEqual(f.saved, []);
-});
-
-test('Dance owns its gesture instead of first-tap autoplay persisting an On preference', async () => {
-  const f = fixture(); f.ctx.radioNeedsGesture = true;
-  f.ctx.resumeRadioOnGesture({ type: 'click', isTrusted: true, target: { closest: selector => selector.includes('[data-action="dance"]') } });
-  assert.equal(f.attempts.length, 0); await f.tap(); await f.tick(3600); assert.deepEqual(f.saved, []);
-});
-
-for (const event of ['pagehide', 'visibilitychange']) test(`${event} stops the dance and prevents restored-page radio replay`, async () => {
-  const f = fixture(); await f.tap();
-  if (event === 'visibilitychange') f.ctx.document.hidden = true;
-  f.handlers[event](); assert.equal(f.ctx.radioRequestedOn, false); assert.equal(f.player.paused, true);
-  f.handlers.pageshow({ persisted: true }); await flush();
-  assert.equal(f.attempts.length, 1); assert.deepEqual(f.saved, []); assert.equal(f.timers.size, 0);
-});
-
-test('pending action abandonment has a bounded radio deadline', async () => {
-  const f = fixture({ fast: false, pending: true }); const work = f.tap(); await f.tick(65000);
-  assert.equal(f.ctx.radioEnabled, false); f.resolveAction(); await work;
-  assert.equal(f.ctx.radioEnabled, false, 'a late action cannot replay media outside the original tap');
-});
-
-test('busy controls and unrelated actions never start dance radio', async () => {
-  const f = fixture(); f.ctx.busy = true; await f.tap(); f.ctx.busy = false; await f.tap('feed');
-  assert.equal(f.attempts.length, 0); assert.equal(f.requests.length, 1);
+test('manual radio timeout hides playback and ignores a late play resolution',async()=>{
+  const f=fixture({stallPlay:true});const playback=f.ctx.setRadioEnabled(true,true);
+  await f.tick(16000);assert.equal(f.ctx.radioRequestedOn,false);assert.equal(f.ctx.radioStatus,'error');
+  f.attempts[0].resolve();await playback;
+  assert.equal(f.ctx.radioEnabled,false);assert.equal(f.ctx.radioRequestedOn,false);
 });

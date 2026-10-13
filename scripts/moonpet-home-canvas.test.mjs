@@ -159,13 +159,13 @@ test('Home layers precede the pet/effects and the original hatch reveal excludes
   runtime.drawWorld(0);
   assert.deepEqual(calls,['egg','wall','floor+shadow','furniture','effects-back','pet','effects-front']);
   runtime.selectedRoom='kitchen';calls.length=0;runtime.drawWorld(0);
-  assert.deepEqual(calls,['egg','room:kitchen','effects-back','pet','effects-front']);
+  assert.deepEqual(calls,['egg','room:kitchen','furniture','effects-back','pet','effects-front']);
   assert.equal(runtime.backgroundArtState.home.active_room,'kitchen');
   assert.deepEqual(Array.from(runtime.backgroundArtState.home.rooms),['main','kitchen','garden','gym']);
   runtime.state.pet_house={available:true,pet_id:'one',floor_saved:true};
   for(const room of ['kitchen','garden','gym']) {
     runtime.selectedRoom=room;calls.length=0;runtime.drawWorld(0);
-    assert.deepEqual(calls,['egg','room:'+room,'floor+shadow','effects-back','pet','effects-front'],
+    assert.deepEqual(calls,['egg','room:'+room,'floor+shadow','furniture','effects-back','pet','effects-front'],
       'saved mat draws above each room background and below the pet');
   }
   runtime.state.pet_house.pet_id='other';calls.length=0;runtime.drawWorld(0);
@@ -174,10 +174,8 @@ test('Home layers precede the pet/effects and the original hatch reveal excludes
   assert.deepEqual(calls,['egg','wall','floor+shadow','stereo','effects-back','pet','effects-front']);
   runtime.radioRequestedOn=false;calls.length=0;runtime.drawWorld(0);
   assert.ok(calls.includes('furniture'),'radio off restores the saved furnishing');
-  runtime.animationMode='dance';runtime.animationUntil=100;runtime.actionSequence=1;calls.length=0;runtime.drawWorld(0);
-  assert.ok(calls.includes('stereo'),'local dance shows stereo without switching radio on');
-  runtime.musicStereoSuppressedSequence=1;calls.length=0;runtime.drawWorld(0);
-  assert.ok(calls.includes('furniture'),'explicit radio off hides stereo during the same dance');
+  runtime.animationMode='dance';runtime.animationUntil=100;calls.length=0;runtime.drawWorld(0);
+  assert.ok(calls.includes('furniture'),'dance does not display stereo or hide furnishings');
   runtime.animationMode='idle';
   runtime.selectedRoom='main';
   runtime.hatching=true;calls.length=0;runtime.drawWorld(0);

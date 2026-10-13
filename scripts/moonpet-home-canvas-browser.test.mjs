@@ -193,11 +193,15 @@ try {
       await page.locator('#nav [data-screen="home"]').click();
       const emotes=page.locator('[data-panel="pet-emotes"]');
       if(!await emotes.evaluate(node=>node.open)) await emotes.locator('summary').click();
-      await emotes.locator('[data-local-emote="groove"]').click();
+      await page.locator('[data-utility="radio"]').click();
       await page.waitForFunction(()=>window.MoonpetBetaAppearance.getBackgroundArtState().stereo!==null);
-      assert.equal(await page.locator('[data-utility="radio"]').getAttribute('aria-pressed'),'false','local dance does not change radio preference');
+      await emotes.locator('[data-local-emote="groove"]').click();
+      await page.waitForFunction(()=>window.MoonpetBetaAppearance.getBotArtState().lastRender.animationMode==='idle');
+      assert.equal(await page.locator('[data-utility="radio"]').getAttribute('aria-pressed'),'true','dance ending leaves manual radio playing');
+      assert.ok(await page.evaluate(()=>window.MoonpetBetaAppearance.getBackgroundArtState().stereo!==null));
+      await page.locator('[data-utility="radio"]').click();
       await page.waitForFunction(()=>window.MoonpetBetaAppearance.getBackgroundArtState().stereo===null);
-      assert.deepEqual(await rightPixels(),originalRightPixels,'dance ending restores the free plant');
+      assert.deepEqual(await rightPixels(),originalRightPixels,'radio off restores the free plant after dancing');
       assert.equal(f.sql.prepare(
         "SELECT item_key FROM telegram_pet_house_layouts WHERE pet_id=? AND slot_key='furniture'"
       ).get(young).item_key, savedFreeFurnishing, 'E1 selection remains saved after removal');
@@ -247,6 +251,13 @@ try {
           await settings.getByRole('button',{name:/BACK TO HOME/}).click();
           await page.waitForFunction(({key,source})=>{const art=window.MoonpetBetaAppearance.getBackgroundArtState();return art.home?.active_room===key&&art.matt===source;},{key,source});
         }
+        const furnishingPixels=await rightPixels();
+        await page.locator('[data-utility="radio"]').click();
+        await page.waitForFunction(()=>window.MoonpetBetaAppearance.getBackgroundArtState().stereo!==null);
+        assert.notDeepEqual(await rightPixels(),furnishingPixels,'radio replaces furniture in '+key);
+        await page.locator('[data-utility="radio"]').click();
+        await page.waitForFunction(()=>window.MoonpetBetaAppearance.getBackgroundArtState().stereo===null);
+        assert.deepEqual(await rightPixels(),furnishingPixels,'radio off restores furniture in '+key);
         roomSignatures[key]=await page.locator('#moonpet-canvas').evaluate(c=>c.toDataURL());
         await page.reload();await ready();
         await page.waitForFunction(key=>window.MoonpetBetaAppearance.getBackgroundArtState().home?.active_room===key,key);
