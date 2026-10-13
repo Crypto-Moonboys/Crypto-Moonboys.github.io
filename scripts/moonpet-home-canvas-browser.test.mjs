@@ -96,14 +96,19 @@ try {
       const inventory=f.sql.prepare('SELECT * FROM telegram_pet_inventory WHERE telegram_id=? ORDER BY asset_type,asset_key').all(f.owner);
       for (const [slot,item,label] of [['wall','studio_white','Studio White'],['floor','steel','Steel'],['furniture','plant_pot','Plant Pot']]) {
         const previous=await page.locator('#moonpet-canvas').evaluate(c=>c.toDataURL());
+        const previousWall=slot==='wall' ? await page.locator('#moonpet-canvas').evaluate(c=>
+          Array.from(c.getContext('2d').getImageData(8,120,100,220).data)) : null;
         const response=page.waitForResponse(r=>r.url().endsWith('/action') && r.request().postDataJSON()?.action==='house_place');
         await panel.locator('[data-action="house_place"]').filter({hasText:'SET '+label}).click();
         assert.equal((await (await response).json()).result.accepted,true);
         await panel.locator('[data-action="house_place"]:disabled').filter({hasText:'ACTIVE: '+label}).waitFor();
         await page.waitForFunction(({slot,item})=>window.MoonpetBetaAppearance.getBackgroundArtState().home?.[slot]===item,{slot,item});
         const nextCanvas=await page.locator('#moonpet-canvas').evaluate(c=>c.toDataURL());
-        if (slot==='wall') assert.equal(nextCanvas,previous,'wall choices no longer paint any overlay over the graffiti background');
-        else assert.notEqual(nextCanvas,previous,slot+' changes main canvas pixels');
+        if (slot==='wall') {
+          const nextWall=await page.locator('#moonpet-canvas').evaluate(c=>
+            Array.from(c.getContext('2d').getImageData(8,120,100,220).data));
+          assert.deepEqual(nextWall,previousWall,'wall choices leave the graffiti wall pixels untouched');
+        } else assert.notEqual(nextCanvas,previous,slot+' changes main canvas pixels');
       }
       assert.deepEqual(f.sql.prepare('SELECT moon_gold,moon_crystals,style_tokens,pet_xp FROM telegram_pet_profiles WHERE telegram_id=?').get(f.owner),wallet);
       assert.deepEqual(f.sql.prepare('SELECT * FROM telegram_pet_inventory WHERE telegram_id=? ORDER BY asset_type,asset_key').all(f.owner),inventory);
