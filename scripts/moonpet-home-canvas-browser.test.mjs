@@ -201,6 +201,12 @@ try {
       const hud=await page.locator('#hud').boundingBox();
       assert.ok(icons.every(icon=>icon.x>=hud.x+hud.width || icon.y>=hud.y+hud.height), 'icons leave the HUD clear');
 
+      const keyboardRoom=page.locator('#home-room-switcher [data-home-room="kitchen"]');
+      await keyboardRoom.focus();
+      await page.evaluate(()=>{window.originalRoomTarget=document.activeElement;});
+      await keyboardRoom.press('Enter');
+      assert.equal(await page.evaluate(()=>document.activeElement===window.originalRoomTarget),true,'room selection retains keyboard focus and node identity');
+      assert.equal(await keyboardRoom.getAttribute('aria-pressed'),'true');
       const roomActionRequests = requests.filter(r=>r.path.endsWith('/action')).length;
       const roomSignatures = {};
       for (const [roomKey,panelId] of [['kitchen','kitchen'],['gym','gym'],['garden','garden'],['main','main-room']]) {

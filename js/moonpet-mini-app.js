@@ -1449,17 +1449,25 @@
     var hatchedHome = Boolean(state && state.adopted && state.pet && state.lifecycle && state.lifecycle.phase !== 'egg' && activeScreen === 'home');
     homeRoomSwitcher.hidden = !hatchedHome;
     if (!hatchedHome) return;
-    var roomIcons = { main:'🏠', kitchen:'🍳', gym:'🏋️', garden:'🌱' };
-    var markup = HOME_ROOMS.map(function (room) {
-      var label = room === 'main' ? 'MAIN ROOM' : room.toUpperCase();
-      return '<button type="button" data-home-room="' + room + '" aria-label="' + label + '" title="' + label + '" aria-pressed="' + (room === activeHomeRoom ? 'true' : 'false') + '"><span aria-hidden="true">' + roomIcons[room] + '</span></button>';
-    }).join('');
-    if (homeRoomSwitcher.innerHTML !== markup) {
+    var buttons = homeRoomSwitcher.querySelectorAll('[data-home-room]');
+    var roomSetChanged = buttons.length !== HOME_ROOMS.length || Array.prototype.some.call(buttons, function (button, index) {
+      return button.dataset.homeRoom !== HOME_ROOMS[index];
+    });
+    if (roomSetChanged) {
+      var roomIcons = { main:'🏠', kitchen:'🍳', gym:'🏋️', garden:'🌱' };
       var toolbar = homeRoomSwitcher.parentElement;
       var scrollTop = toolbar ? toolbar.scrollTop : 0;
-      homeRoomSwitcher.innerHTML = markup;
+      homeRoomSwitcher.innerHTML = HOME_ROOMS.map(function (room) {
+        var label = room === 'main' ? 'MAIN ROOM' : room.toUpperCase();
+        return '<button type="button" data-home-room="' + room + '" aria-label="' + label + '" title="' + label + '"><span aria-hidden="true">' + roomIcons[room] + '</span></button>';
+      }).join('');
       if (toolbar) toolbar.scrollTop = scrollTop;
+      buttons = homeRoomSwitcher.querySelectorAll('[data-home-room]');
     }
+    Array.prototype.forEach.call(buttons, function (button) {
+      button.setAttribute('aria-pressed', String(button.dataset.homeRoom === activeHomeRoom));
+    });
+
   }
 
   function closeUtility() {
