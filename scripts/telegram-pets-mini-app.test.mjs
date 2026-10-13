@@ -1090,6 +1090,12 @@ ${weeklyJourneyMarkupSource}
 ${journeyActionProgressSource}
 ${actionResultFeedbackSource}; return { resultMessage: resultMessage(result, beforeState, afterState) };`,
 );
+for (const copy of ['Home room saved to this pet. No Gold or XP spent.', 'House appearance saved to this pet. No Gold or XP spent.']) {
+  assert.equal(actionResultFeedbackRuntime({accepted:true,reason:'pet_house_saved',result_copy:copy},{},{}).resultMessage,copy,
+    'house save confirmation must use authoritative room/cosmetic copy');
+}
+assert.match(actionResultFeedbackRuntime({accepted:true,reason:'pet_house_saved'},{},{}).resultMessage,/saved customization/,
+  'older responses without copy retain a neutral confirmation');
 const completionFeedback = actionResultFeedbackRuntime({ accepted: true, pet_xp_awarded: 25, rewards: { pet_xp: 25, moon_gold: 50, style_tokens: 1 } }, {}, {});
 assert.equal((completionFeedback.resultMessage.match(/25 pet xp/gi) || []).length, 1, 'daily/finale reward text must not duplicate the actual Pet XP payout');
 const cappedCompletionFeedback = actionResultFeedbackRuntime({ accepted: true, pet_xp_awarded: 0, rewards: { pet_xp: 25, moon_gold: 50 } }, {}, {});
@@ -1563,11 +1569,11 @@ statusFrames.shift()();
 assert.equal(testStatusOutput.dataset.tone, 'danger');
 assert.equal(testStatusClasses.has('is-scrolling'), true, 'overflowing updates must activate the scrolling text track');
 assert.match(testStatusProperties['--status-scroll-duration'], /s$/, 'overflowing updates must receive a readable duration');
-assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20261013-emoji-controls-v1/);
+assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20261013-profile-rooms-v1/);
 assert.doesNotMatch(html, /moonpet-art-resolver\.js/, 'the game must not load the retired static background resolver');
 assert.match(html, /\/js\/moonpet-bot-art-loader\.js\?v=20261006-live-refresh-v5/);
 assert.match(html, /\/js\/moonpet-bot-art-renderer\.js\?v=20261002-audit-recovery-v2/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261013-wall-overlay-free-v1/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261013-profile-rooms-v1/);
 assert.match(html, /role="button" aria-label="Interact with your animated Moonpet"/);
 assert.match(client, /data-utility="guide">HOW TO PLAY/);
 const guideMarkupSource = extractTestExport(client, 'guideMarkup');
@@ -1599,9 +1605,9 @@ assert.match(lockedGuideMarkup, /Pet Stages And Realistic Timing/);
 assert.doesNotMatch(lockedGuideMarkup, /Advanced Traits|Breeding|Lineage|Fusion|Sanctuary|Prestige|coming soon/, 'the in-app guide covers playable systems only');
 assert.match(client, /data-utility="leaderboard">OPEN FULL LEADERBOARD/);
 assert.match(html, /id="canvas-tools"[\s\S]*data-utility="audio"[\s\S]*data-utility="radio"[\s\S]*data-utility="sync"/);
-assert.match(html, /id="home-room-switcher" class="home-room-switcher"/);
+assert.doesNotMatch(html, /id="home-room-switcher"/);
 assert.match(client, /var HOME_ROOMS = Object\.freeze\(\['main','kitchen','garden','gym'\]\)/);
-assert.match(client, /homeRoomSwitcher\.addEventListener\('click'/);
+assert.doesNotMatch(client, /homeRoomSwitcher|data-home-room/);
 assert.match(client, /drawDedicatedHomeRoom\(room\)/);
 assert.doesNotMatch(client, /HOME_STATION_HOTSPOTS|homeStationAt\(/);
 assert.match(html, /data-utility="sync" aria-label="Refresh live save"/);
@@ -1863,7 +1869,7 @@ for (const sdkInitData of [expired, tampered, 'auth_date=invalid&hash=' + 'a'.re
   assert.equal(entry.requests.length, 3, 'Read-only startup state requests retain their transient retry policy');
 }
 assert.match(html, /\/js\/api-config\.js\?v=20260813-first-party-api/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261013-wall-overlay-free-v1/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261013-profile-rooms-v1/);
 // Season slot UI: timing, account/pet separation, unlock affordance, switching, and rejection copy.
 assert.match(client, /function renderSeasonSlots\(\)/, 'Mini App must render a focused season-slot summary');
 assert.match(client, /function render\(options\) \{\s*var editableState = options && options\.discardCallsignDraft \? null : captureEditableState\(\);[\s\S]*restoreEditableState\(editableState\);/, 'render must preserve only drafts that were not explicitly discarded');

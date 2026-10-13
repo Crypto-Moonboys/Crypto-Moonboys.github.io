@@ -15,6 +15,19 @@ import { createRequire } from 'node:module';
 const { bountyRoutes } = createRequire(import.meta.url)('../js/moonpet-play-options.js');
 
 // Local SQLite-backed API fixture: no live player account or network mutations.
+async function originalBackgroundPixel(page) {
+  return page.evaluate(async()=>{
+    const live=document.getElementById('moonpet-canvas');
+    const image=new Image();image.src='/img/BITTY BACKGROUND.jpg';await image.decode();
+    const reference=document.createElement('canvas');reference.width=live.width;reference.height=live.height;
+    const scale=Math.max(reference.width/image.naturalWidth,reference.height/image.naturalHeight);
+    const w=reference.width/scale,h=reference.height/scale;
+    const context=reference.getContext('2d');
+    context.drawImage(image,(image.naturalWidth-w)/2,(image.naturalHeight-h)/2,w,h,0,0,reference.width,reference.height);
+    return Array.from(context.getImageData(10*live.width/320,213*live.width/320,1,1).data);
+  });
+}
+
 const root = process.cwd();
 const screenshotDirectory = path.join(root, 'output', 'moonpet-browser');
 await fs.mkdir(screenshotDirectory, { recursive: true });
@@ -224,13 +237,13 @@ try {
     await page.waitForSelector('[data-panel="pet-house"] [data-action="house_place"]', {state:'attached'});
     await page.locator('[data-panel="pet-house"] > summary').click();
     const houseResponse=page.waitForResponse(r=>r.url().endsWith('/action') && r.request().postDataJSON().action === 'house_place');
-    await page.locator('[data-action="house_place"]').filter({hasText:'SET Night Wall'}).click();
+    await page.locator('[data-action="house_place"]').filter({hasText:'SET Kitchen'}).click();
     const savedHouse=await (await houseResponse).json();
     assert.equal(savedHouse.result.accepted,true,'eggs can save free room choices');
-    assert.equal(savedHouse.state.pet_house.layout.wall,'night_wall');
-    await page.waitForFunction(()=>window.MoonpetBetaAppearance.getBackgroundArtState().home?.wall === 'night_wall');
+    assert.equal(savedHouse.state.pet_house.layout.room,'kitchen');
+    await page.waitForFunction(()=>window.MoonpetBetaAppearance.getBackgroundArtState().home?.room === 'kitchen');
     await page.reload();
-    await page.waitForFunction(()=>window.MoonpetBetaAppearance.getBackgroundArtState().home?.wall === 'night_wall');
+    await page.waitForFunction(()=>window.MoonpetBetaAppearance.getBackgroundArtState().home?.room === 'kitchen');
     await context.close();
   }
 
@@ -368,7 +381,7 @@ try {
     assert.deepEqual(await page.evaluate(() => {
       const canvas = document.getElementById('moonpet-canvas'), scale = canvas.width / 320;
       return Array.from(canvas.getContext('2d').getImageData(10 * scale, 213 * scale, 1, 1).data);
-    }), [37, 38, 41, 255], 'pavement renders from core state at mobile and desktop widths');
+    }), await originalBackgroundPixel(page), 'original background remains visible from core state at mobile and desktop widths');
     await page.screenshot({ path: path.join(screenshotDirectory, `moonpet-street-floor-core-${viewport.width}.png`) });
 
     releaseWarmup();
@@ -1084,18 +1097,19 @@ try {
     assert.ok((await page.locator('[data-panel="season-slots"]').textContent()).includes('PETS AND PURCHASED SPACES DO NOT RESET'));
     await page.waitForSelector('[data-panel="pet-house"] [data-action="house_place"]');
     const originalHouseResponse=page.waitForResponse(r=>r.url().endsWith('/telegram-pets/app/action') && r.request().postDataJSON()?.action==='house_place');
-    await page.locator('[data-action="house_place"]').filter({hasText:'SET Night Wall'}).click();
+    await page.locator('[data-action="house_place"]').filter({hasText:'SET Kitchen'}).click();
     assert.equal((await (await originalHouseResponse).json()).result.accepted,true);
-    await page.waitForFunction(()=>window.MoonpetBetaAppearance.getBackgroundArtState().home?.wall === 'night_wall');
+    await page.waitForFunction(()=>window.MoonpetBetaAppearance.getBackgroundArtState().home?.room === 'kitchen');
     const recoveredSwitch = page.waitForResponse(r=>r.url().endsWith('/telegram-pets/app/action') && r.request().postDataJSON()?.action==='switch_pet_slot');
     await page.locator('[data-season-slot="2"] [data-action="switch_pet_slot"]').click();
     const restored = await (await recoveredSwitch).json();
     assert.equal(restored.state.pet.pet_id,`${currentUser}:purchased`);
     assert.equal(restored.state.pet.pet_xp,9876,'switching restores purchased pet progression');
     assert.equal(restored.state.pet_house.pet_id,`${currentUser}:purchased`);
+    assert.equal(restored.state.pet_house.layout.room,'main','another pet starts in unchanged Main Room');
     assert.equal(restored.state.pet_house.layout.wall,'warehouse_brick','switching does not transfer room choices');
-    await page.waitForFunction(()=>window.MoonpetBetaAppearance.getBackgroundArtState().home?.wall === 'warehouse_brick');
-    assert.equal(sqlite.prepare('SELECT item_key FROM telegram_pet_house_layouts WHERE pet_id=? AND slot_key=?').get(`${currentUser}:original`,'wall').item_key,'night_wall');
+    await page.waitForFunction(()=>window.MoonpetBetaAppearance.getBackgroundArtState().home?.room === 'main');
+    assert.equal(sqlite.prepare('SELECT room_key FROM telegram_pet_house_rooms WHERE pet_id=?').get(`${currentUser}:original`).room_key,'kitchen');
     // The restored pet's selector starts open even though competition details stay collapsed.
     await page.locator('[data-season-slot="2"].is-active').waitFor({ state: 'attached' });
     assert.equal(await page.locator('[data-panel="pet-spaces"]').evaluate(node=>node.open),true);
@@ -1144,7 +1158,7 @@ try {
       return { color: Array.from(pixel), floor: window.MoonpetBetaAppearance.getBackgroundArtState().floor,
         sprite: window.MoonpetBetaAppearance.getBotArtState().lastRender };
     });
-    assert.deepEqual(floorPixels.color, [37, 38, 41, 255], 'actual rendered street paving reaches the canvas bottom strip');
+    assert.deepEqual(floorPixels.color, await originalBackgroundPixel(page), 'original background reaches the bottom without a synthetic floor strip');
     assert.equal(floorPixels.floor.baseline_y, 219, 'grounding preserves the original sprite baseline');
     assert.ok(floorPixels.sprite?.drew && floorPixels.sprite.drawHeight <= 184 && floorPixels.sprite.drawWidth <= 184, 'grounding preserves contained companion art');
     await page.screenshot({ path: path.join(screenshotDirectory, `moonpet-street-floor-${viewport.width}.png`) });

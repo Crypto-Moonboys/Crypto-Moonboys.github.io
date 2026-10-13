@@ -38,6 +38,7 @@ for (const name of [
   '093_moonpet_radio_group_delivery_index.sql',
   '094_moonpet_home_furniture.sql',
   '095_moonpet_home_garden.sql',
+  '096_moonpet_home_rooms.sql',
 ]) {
   assert.ok(pullRequestPaths.includes('workers/moonboys-api/migrations/' + name));
   assert.ok(remoteQueryStep.includes(name));
@@ -824,3 +825,11 @@ assert.throws(
 );
 
 console.log('verify-d1-production-migrations.test.mjs passed');
+
+const roomMigration='096_moonpet_home_rooms.sql';
+assert.ok(REQUIRED_D1_MIGRATIONS.includes(roomMigration));
+assert.ok(request.required_migrations.includes(roomMigration));
+assert.ok(production.d1_databases.wikicoms.required_migrations.includes(roomMigration));
+assert.ok(workflow.includes('{"name":"096_moonpet_home_rooms.sql"}'));
+assert.throws(()=>validateRequest({...request,required_migrations:request.required_migrations.filter(name=>name!==roomMigration)}),/missing required migrations: 096_moonpet_home_rooms\.sql/);
+assert.throws(()=>verifyD1MigrationPayload([{success:true,results:request.required_migrations.filter(name=>name!==roomMigration).map(name=>({name}))}],request),/missing migrations: 096_moonpet_home_rooms\.sql/);

@@ -4,6 +4,11 @@
 import { requirePetReadResult, requirePetMutationResult } from './read-result.js';
 
 export const PET_HOUSE_CHOICES = Object.freeze({
+  room: Object.freeze([
+    Object.freeze({ key:'kitchen', label:'Kitchen' }),
+    Object.freeze({ key:'garden', label:'Garden' }),
+    Object.freeze({ key:'gym', label:'Gym' }),
+  ]),
   wall: Object.freeze([
     Object.freeze({ key:'warehouse_brick', label:'Warehouse Brick' }),
     Object.freeze({ key:'night_wall', label:'Night Wall' }),
@@ -22,18 +27,21 @@ export const PET_HOUSE_CHOICES = Object.freeze({
 });
 
 export const PET_HOUSE_DEFAULTS = Object.freeze({
-  wall:'warehouse_brick', floor:'concrete', furniture:'sleep_mat',
+  room:'main', wall:'warehouse_brick', floor:'concrete', furniture:'sleep_mat',
 });
 
 export function validPetHouseChoice(slotKey, itemKey) {
+  if (slotKey==='room' && itemKey==='main') return true; // explicit reset, not a fourth replacement option
   return Object.hasOwn(PET_HOUSE_CHOICES, slotKey) &&
     PET_HOUSE_CHOICES[slotKey].some(entry=>entry.key===itemKey);
 }
 
 function petHouseLayoutRead(db, owner, pet) {
   return db.prepare(`SELECT slot_key,item_key FROM telegram_pet_house_layouts
+    WHERE telegram_id=? AND pet_id=? AND season_key=?
+    UNION ALL SELECT 'room' AS slot_key,room_key AS item_key FROM telegram_pet_house_rooms
     WHERE telegram_id=? AND pet_id=? AND season_key=?`)
-    .bind(String(owner),pet.pet_id,pet.season_key);
+    .bind(String(owner),pet.pet_id,pet.season_key,String(owner),pet.pet_id,pet.season_key);
 }
 
 function petHouseProjection(result, pet) {
@@ -59,6 +67,24 @@ export async function setPetHouseLayout(db, owner, pet, slotKey, itemKey) {
     return {accepted:false,reason:'pet_house_source_required',refresh_state:true};
   // A selected pet is checked before dispatch; this guarded INSERT checks it
   // again inside the mutation, so switching pets cannot write the old house.
+  if (slotKey==='room') {
+    const [writeResult,readResult] = await db.batch([db.prepare(`INSERT INTO telegram_pet_house_rooms
+      (pet_id,telegram_id,season_key,room_key)
+      SELECT i.pet_id,i.telegram_id,i.season_key,?
+      FROM telegram_pet_active_slots a
+      JOIN telegram_pet_instances i ON i.pet_id=a.pet_id
+        AND i.telegram_id=a.telegram_id AND i.season_key=a.season_key
+      WHERE a.telegram_id=? AND a.pet_id=? AND i.season_key=? AND i.status='active'
+      ON CONFLICT(pet_id) DO UPDATE SET room_key=excluded.room_key,updated_at=CURRENT_TIMESTAMP
+      WHERE telegram_pet_house_rooms.telegram_id=excluded.telegram_id
+        AND telegram_pet_house_rooms.season_key=excluded.season_key`)
+      .bind(itemKey,String(owner),pet.pet_id,pet.season_key),petHouseLayoutRead(db,owner,pet)]);
+    const result=requirePetMutationResult(writeResult);
+    if (!Number.isFinite(Number(result?.meta?.changes))) throw new Error('pet_state_write_unavailable');
+    if (Number(result.meta.changes)!==1) return {accepted:false,reason:'displayed_pet_changed',refresh_state:true};
+    return {accepted:true,reason:'pet_house_saved',pet_house:petHouseProjection(readResult,pet),refresh_state:true,
+      result_copy:'Home room saved to this pet. No Gold or XP spent.'};
+  }
   const [writeResult, readResult] = await db.batch([db.prepare(`INSERT INTO telegram_pet_house_layouts
     (pet_id,telegram_id,season_key,slot_key,item_key)
     SELECT i.pet_id,i.telegram_id,i.season_key,?,?

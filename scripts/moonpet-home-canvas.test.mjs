@@ -18,7 +18,7 @@ function painter() {
 
 test('invalid, missing, unavailable and wrong-pet House state use safe appearance without writing',()=>{
   const {runtime}=painter();
-  const fallback={wall:'warehouse_brick',floor:'concrete',furniture:'sleep_mat'};
+  const fallback={room:'main',wall:'warehouse_brick',floor:'concrete',furniture:'sleep_mat'};
   for(const house of [null,{}, {available:false}, {available:true,pet_id:'other',layout:{wall:'night_wall'}},
     {available:true,pet_id:'pet',layout:{wall:'constructor',floor:'hacked',furniture:null}}]) {
     const snapshot={adopted:true,pet:{pet_id:'pet'},pet_house:house};
@@ -26,7 +26,7 @@ test('invalid, missing, unavailable and wrong-pet House state use safe appearanc
     assert.deepEqual(JSON.parse(JSON.stringify(runtime.savedHomeLayout(snapshot))),fallback);
     assert.deepEqual(snapshot,original);
   }
-  const good={adopted:true,pet:{pet_id:'pet'},pet_house:{available:true,pet_id:'pet',layout:{wall:'studio_white',floor:'steel',furniture:'plant_pot'}}};
+  const good={adopted:true,pet:{pet_id:'pet'},pet_house:{available:true,pet_id:'pet',layout:{room:'main',wall:'studio_white',floor:'steel',furniture:'plant_pot'}}};
   assert.deepEqual(JSON.parse(JSON.stringify(runtime.savedHomeLayout(good))),good.pet_house.layout);
 });
 
@@ -41,7 +41,7 @@ test('all Home wall choices leave the graffiti background completely untouched',
   assert.doesNotMatch(scene,/drawPixelRect\([^\n]*wall|for \(var seam/,'wall renderer must not draw decorative geometry over graffiti');
 });
 
-test('floor and furniture starter options remain distinct with bounded work',()=>{
+test('stored floor choices preserve original art while furniture stays distinct',()=>{
   const {runtime,calls,ctx}=painter();
   for(const [fn,options] of [['drawHomeFloor',['concrete','checkerboard','steel']],['drawHomeFurniture',['sleep_mat','record_deck','plant_pot']]]) {
     const outputs=[];
@@ -53,7 +53,7 @@ test('floor and furniture starter options remain distinct with bounded work',()=
       if(fn==='drawHomeFurniture') assert.ok(calls.every(c=>c.x>252),'furniture stays outside original companion bounds');
       outputs.push(JSON.stringify(calls));
     }
-    assert.equal(new Set(outputs).size,3,fn+' distinguishes all existing choices');
+    assert.equal(new Set(outputs).size,fn==='drawHomeFloor'?1:3,fn==='drawHomeFloor'?'saved floor choices keep the original room art unchanged':'furniture distinguishes all existing choices');
   }
   assert.doesNotMatch(scene,/fetch\(|post\(|requestAnimationFrame|setTimeout|setInterval|createElement/,'static layers do not add requests, loops or a second canvas');
 });
@@ -121,18 +121,18 @@ test('Home layers precede the pet/effects and the original hatch reveal excludes
     BOT_RENDER_BASELINE_Y:219,STAGE_ZERO_BACKGROUND_URL:'egg',backgroundArtState:{},botArtRendererReady:true,
     HOME_ROOMS:['main','kitchen','garden','gym'],activeHomeRoom:'main',
     stageZeroPresentationActive:()=>true,hatching:false,ctx:{save(){},restore(){}},
-    drawStageZeroBackground:()=>calls.push('egg'),savedHomeLayout:()=>({wall:'night_wall',floor:'steel',furniture:'plant_pot'}),
+    drawStageZeroBackground:()=>calls.push('egg'),savedHomeLayout:()=>({room:runtime.selectedRoom||'main',wall:'night_wall',floor:'steel',furniture:'plant_pot'}),
     drawHomeWall:()=>calls.push('wall'),drawHomeFloor:()=>calls.push('floor+shadow'),drawHomeFurniture:()=>calls.push('furniture'),
     drawDedicatedHomeRoom:room=>calls.push('room:'+room),
     drawEquippedStyles:(_,front)=>calls.push(front?'effects-front':'effects-back'),drawPet:()=>calls.push('pet')});
   vm.runInContext('function hatchArtTransitionActive(){return hatching;}'+source,runtime);
   runtime.drawWorld(0);
   assert.deepEqual(calls,['egg','wall','floor+shadow','furniture','effects-back','pet','effects-front']);
-  runtime.activeHomeRoom='kitchen';calls.length=0;runtime.drawWorld(0);
+  runtime.selectedRoom='kitchen';calls.length=0;runtime.drawWorld(0);
   assert.deepEqual(calls,['egg','room:kitchen','effects-back','pet','effects-front']);
   assert.equal(runtime.backgroundArtState.home.active_room,'kitchen');
   assert.deepEqual(Array.from(runtime.backgroundArtState.home.rooms),['main','kitchen','garden','gym']);
-  runtime.activeHomeRoom='main';
+  runtime.selectedRoom='main';
   runtime.hatching=true;calls.length=0;runtime.drawWorld(0);
   assert.deepEqual(calls,['egg','effects-back','pet','effects-front']);
   assert.equal(runtime.backgroundArtState.home,null);
@@ -158,25 +158,4 @@ test('E4 Kitchen, Garden and Gym render as distinct full-canvas rooms without te
   assert.notEqual(signatures.garden,signatures.gym);
   assert.doesNotMatch(roomsSource,/fillText|strokeText/,'room art must not bake labels into the canvas');
   assert.doesNotMatch(client,/HOME_STATION_HOTSPOTS|homeStationAt\(/,'retired station hitboxes must not remain');
-});
-
-
-test('emoji room updates preserve target identity and toolbar scrolling',()=>{
-  const source=client.slice(client.indexOf('  function renderHomeRoomSwitcher()'),client.indexOf('  function closeUtility()'));
-  const toolbar={scrollTop:170};let html='',writes=0,buttons=[];
-  const switcher={hidden:false,parentElement:toolbar,querySelectorAll(){return buttons;},get innerHTML(){return html;},
-    set innerHTML(value){html=value;writes++;toolbar.scrollTop=0;
-      buttons=[...value.matchAll(/data-home-room="([^"]+)"/g)].map(match=>({dataset:{homeRoom:match[1]},
-        attributes:{},setAttribute(key,value){this.attributes[key]=value;}}));}};
-  const runtime=vm.createContext({state:{adopted:true,pet:{},lifecycle:{phase:'young'}},activeScreen:'home',
-    activeHomeRoom:'main',HOME_ROOMS:['main','kitchen','garden','gym'],homeRoomSwitcher:switcher});
-  vm.runInContext(source,runtime);runtime.renderHomeRoomSwitcher();
-  assert.equal(toolbar.scrollTop,170);
-  const original=buttons.slice();
-  runtime.renderHomeRoomSwitcher();assert.equal(writes,1);
-  runtime.activeHomeRoom='gym';toolbar.scrollTop=120;runtime.renderHomeRoomSwitcher();
-  assert.equal(writes,1);assert.equal(toolbar.scrollTop,120);
-  buttons.forEach((button,index)=>assert.equal(button,original[index],'room selection keeps target nodes'));
-  assert.equal(buttons[0].attributes['aria-pressed'],'false');
-  assert.equal(buttons[3].attributes['aria-pressed'],'true');
 });

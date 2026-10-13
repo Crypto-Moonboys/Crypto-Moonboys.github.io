@@ -40,6 +40,7 @@ function fixture() {
   sql.prepare('INSERT INTO telegram_pet_active_slots VALUES (?,?,?)').run('owner-b','pet-other','old-quarter');
   sql.prepare('INSERT INTO telegram_pet_profiles VALUES (?,?,?)').run('owner-a',750,2300);
   sql.exec(migration);
+  sql.exec(fs.readFileSync(new URL('../workers/moonboys-api/migrations/096_moonpet_home_rooms.sql', import.meta.url),'utf8'));
   const d1={
     prepare(statement) {
       let values=[];
@@ -75,7 +76,7 @@ test('092 schema and house options admit only valid bounded placements',()=>{
   f.sql.exec(migration);
   assert.deepEqual(f.sql.prepare('PRAGMA foreign_key_check').all(),[]);
   assert.match(schema,/FOREIGN KEY \(pet_id,telegram_id,season_key\) REFERENCES telegram_pet_season_slots\(pet_id,telegram_id,season_key\) ON DELETE CASCADE/);
-  assert.deepEqual(Object.keys(PET_HOUSE_CHOICES),['wall','floor','furniture']);
+  assert.deepEqual(Object.keys(PET_HOUSE_CHOICES),['room','wall','floor','furniture']);
   for(const [slot,options] of Object.entries(PET_HOUSE_CHOICES)){
     assert.equal(options.length,3);
     for(const item of options) assert.equal(validPetHouseChoice(slot,item.key),true);
@@ -183,7 +184,7 @@ test('house is wired only through signed selected-pet state and actions',()=>{
   assert.match(worker,/getPetHouseLayout|readPetHouseLayout/);
   assert.match(worker,/action === 'house_place'/);
   assert.match(client,/function renderPetHouse\(/);
-  assert.match(entry,/moonpet-mini-app\.js\?v=20261013-wall-overlay-free-v1/);
+  assert.match(entry,/moonpet-mini-app\.js\?v=20261013-profile-rooms-v1/);
   assert.doesNotMatch(client,/house_place[\s\S]{0,90}moon_gold/);
   assert.match(worker,/readPetHouseLayout\(lifecycleScope\.db, telegramId, petRaw\)/);
   assert.match(worker,/readPetHouseLayout\(identityScope\.db, telegramId, petRaw\)/);
@@ -214,4 +215,62 @@ test('notice acknowledgments preserve Profile hydration without adding requests'
     assert.equal(requests[0].state_mode,activeScreen === 'profile'?'profile':undefined);
     assert.equal(context.state.hydration.modules.includes('profile'),activeScreen === 'profile');
   }
+});
+
+
+test('room selection defaults to Main, persists per pet and preserves old layout/rewards',async()=>{
+  const f=fixture();
+  await setPetHouseLayout(f.d1,'owner-a',f.pet1,'wall','night_wall');
+  const oldRows=f.sql.prepare('SELECT * FROM telegram_pet_house_layouts').all();
+  const balances=f.sql.prepare('SELECT * FROM telegram_pet_profiles').all();
+  assert.equal((await readPetHouseLayout(f.d1,'owner-a',f.pet1)).layout.room,'main');
+  for(const room of ['kitchen','garden','gym']){
+    const saved=await setPetHouseLayout(f.d1,'owner-a',f.pet1,'room',room);
+    assert.equal(saved.accepted,true);assert.equal(saved.pet_house.layout.room,room);
+    assert.equal((await readPetHouseLayout(f.d1,'owner-a',f.pet1)).layout.room,room);
+    assert.equal((await readPetHouseLayout(f.d1,'owner-a',f.pet2)).layout.room,'main');
+  }
+  assert.deepEqual(f.sql.prepare('SELECT * FROM telegram_pet_house_layouts').all(),oldRows);
+  assert.deepEqual(f.sql.prepare('SELECT * FROM telegram_pet_profiles').all(),balances);
+  assert.equal((await setPetHouseLayout(f.d1,'owner-a',f.pet1,'room','unverified')).accepted,false);
+  assert.equal((await setPetHouseLayout(f.d1,'owner-b',f.pet1,'room','kitchen')).accepted,false);
+  f.sql.prepare("UPDATE telegram_pet_active_slots SET pet_id='pet-2',season_key='new-quarter' WHERE telegram_id='owner-a'").run();
+  assert.equal((await setPetHouseLayout(f.d1,'owner-a',f.pet1,'room','kitchen')).accepted,false);
+  assert.equal((await readPetHouseLayout(f.d1,'owner-a',f.pet1)).layout.room,'gym');
+  assert.equal((await setPetHouseLayout(f.d1,'owner-a',f.pet1,'room','main')).accepted,false,'reset cannot target another selected pet');
+  f.sql.prepare("UPDATE telegram_pet_active_slots SET pet_id='pet-1',season_key='old-quarter' WHERE telegram_id='owner-a'").run();
+  assert.equal((await setPetHouseLayout(f.d1,'owner-a',f.pet1,'room','main')).accepted,true);
+  assert.equal((await readPetHouseLayout(f.d1,'owner-a',f.pet1)).layout.room,'main');
+  assert.deepEqual(f.sql.prepare('SELECT * FROM telegram_pet_house_layouts').all(),oldRows);
+  assert.deepEqual(f.sql.prepare('SELECT * FROM telegram_pet_profiles').all(),balances);
+  f.close();
+});
+
+
+test('room save read failures roll back and failed D1 mutations cannot claim success',async()=>{
+  const f=fixture();const nativePrepare=f.d1.prepare.bind(f.d1);
+  f.d1.prepare=statement=>{
+    const prepared=nativePrepare(statement);
+    if(statement.startsWith('SELECT slot_key,item_key')) prepared.exec=()=>{throw Error('room_read_offline');};
+    return prepared;
+  };
+  await assert.rejects(setPetHouseLayout(f.d1,'owner-a',f.pet1,'room','kitchen'),/room_read_offline/);
+  assert.equal(f.sql.prepare('SELECT COUNT(*) AS c FROM telegram_pet_house_rooms').get().c,0);
+  f.d1.prepare=nativePrepare;f.d1.batch=async()=>[{success:false},{results:[]}];
+  await assert.rejects(setPetHouseLayout(f.d1,'owner-a',f.pet1,'room','garden'),/pet_state_write_unavailable/);
+  f.close();
+});
+
+test('096 is additive/idempotent and enforces room ownership and valid choices',async()=>{
+  const f=fixture();const roomMigration=fs.readFileSync(new URL('../workers/moonboys-api/migrations/096_moonpet_home_rooms.sql',import.meta.url),'utf8');
+  await setPetHouseLayout(f.d1,'owner-a',f.pet1,'room','garden');
+  const saved=f.sql.prepare('SELECT * FROM telegram_pet_house_rooms').all();
+  f.sql.exec(roomMigration);assert.deepEqual(f.sql.prepare('SELECT * FROM telegram_pet_house_rooms').all(),saved);
+  for(const [owner,season,key] of [['owner-b','new-quarter','gym'],['owner-a','old-quarter','gym'],['owner-a','new-quarter','hacked']]){
+    assert.throws(()=>f.sql.prepare('INSERT INTO telegram_pet_house_rooms(pet_id,telegram_id,season_key,room_key) VALUES (?,?,?,?)')
+      .run('pet-2',owner,season,key),/constraint/i);
+  }
+  f.sql.prepare("DELETE FROM telegram_pet_season_slots WHERE pet_id='pet-1'").run();
+  assert.equal(f.sql.prepare('SELECT COUNT(*) AS c FROM telegram_pet_house_rooms').get().c,0);
+  assert.deepEqual(f.sql.prepare('PRAGMA foreign_key_check').all(),[]);f.close();
 });

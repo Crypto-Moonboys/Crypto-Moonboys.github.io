@@ -96,12 +96,12 @@ try {
       const inventory=f.sql.prepare('SELECT * FROM telegram_pet_inventory WHERE telegram_id=? ORDER BY asset_type,asset_key').all(f.owner);
       const wallPixels=()=>page.locator('#moonpet-canvas').evaluate(canvas=>{
         const context=canvas.getContext('2d');
-        return [[16,2],[2,100],[638,100],[160,20],[320,20],[480,20]]
+        return [[16,2],[2,100],[638,100],[160,20],[320,20],[480,20],[2,410],[638,438]]
           .map(([x,y])=>Array.from(context.getImageData(x,y,1,1).data));
       });
-      for (const [slot,item,label] of [['wall','studio_white','Studio White'],['floor','steel','Steel'],['furniture','plant_pot','Plant Pot']]) {
+      for (const [slot,item,label] of [['floor','steel','Steel'],['furniture','plant_pot','Plant Pot']]) {
         const previous=await page.locator('#moonpet-canvas').evaluate(c=>c.toDataURL());
-        const previousWall=slot==='wall' ? await wallPixels() : null;
+        const previousWall=await wallPixels();
         const response=page.waitForResponse(r=>r.url().endsWith('/action') && r.request().postDataJSON()?.action==='house_place');
         await panel.locator('[data-action="house_place"]').filter({hasText:'SET '+label}).click();
         assert.equal((await (await response).json()).result.accepted,true);
@@ -110,18 +110,19 @@ try {
         const nextCanvas=await page.locator('#moonpet-canvas').evaluate(c=>c.toDataURL());
         if (slot==='wall') {
           assert.deepEqual(await wallPixels(),previousWall,'wall choices leave the graffiti borders and seam pixels untouched');
-        } else assert.notEqual(nextCanvas,previous,slot+' changes main canvas pixels');
+        } else if(slot==='floor') assert.deepEqual(await wallPixels(),previousWall,'saved floor leaves original room art unchanged');
+        else assert.notEqual(nextCanvas,previous,slot+' changes main canvas pixels');
       }
       assert.deepEqual(f.sql.prepare('SELECT moon_gold,moon_crystals,style_tokens,pet_xp FROM telegram_pet_profiles WHERE telegram_id=?').get(f.owner),wallet);
       assert.deepEqual(f.sql.prepare('SELECT * FROM telegram_pet_inventory WHERE telegram_id=? ORDER BY asset_type,asset_key').all(f.owner),inventory);
-      assert.equal(requests.slice(count).filter(r=>r.body.action==='house_place').length,3);
+      assert.equal(requests.slice(count).filter(r=>r.body.action==='house_place').length,2);
       assert.ok(requests.slice(count).filter(r=>r.path.endsWith('/action')).every(r=>['house_place','guidance_ack'].includes(r.body.action)),'saving decoration introduces no extra gameplay actions');
       await panel.getByRole('button',{name:/BACK TO HOME/}).click();
-      await room('studio_white','steel','plant_pot');
+      await room('night_wall','steel','plant_pot');
       const changed=await page.locator('#moonpet-canvas').evaluate(canvas=>Array.from(canvas.getContext('2d').getImageData(2,410,1,1).data));
-      assert.notDeepEqual(changed,pixels,'saved floor visibly changes the actual canvas');
+      assert.deepEqual(changed,pixels,'Main Room background stays untouched');
       assert.equal(await page.evaluate(()=>window.MoonpetBetaAppearance.getBotArtState().lastRender.drew),true,'existing pet renderer still draws above Home');
-      await page.reload(); await ready(); await room('studio_white','steel','plant_pot');
+      await page.reload(); await ready(); await room('night_wall','steel','plant_pot');
       const petCanvas=await page.locator('#moonpet-canvas').boundingBox();
       const petRequests=requests.filter(r=>r.path.endsWith('/action')).length;
       await page.locator('#moonpet-canvas').click({position:{x:160/320*petCanvas.width,y:140/220*petCanvas.height}});
@@ -184,61 +185,55 @@ try {
       ).get(f.owner).total, 1, 'removal must retain purchased furniture ownership');
       assert.equal(await page.locator('canvas').count(),1);
       assert.equal(await page.locator('.pet-house-room').count(),0);
-      await page.reload(); await ready(); await room('studio_white','steel','plant_pot');
+      await page.reload(); await ready(); await room('night_wall','steel','plant_pot');
       await page.waitForFunction(()=>window.MoonpetBetaAppearance.getBackgroundArtState().home?.purchased?.left==='neon_lamp');
       // E4: one canvas, four switchable Home rooms. Room changes are local UI only.
       await page.waitForFunction(() => {
         const home = window.MoonpetBetaAppearance.getBackgroundArtState().home;
         return home?.active_room === 'main' && (home.rooms || []).join(',') === 'main,kitchen,garden,gym';
       });
-      const roomButtons = page.locator('#home-room-switcher [data-home-room]');
-      assert.equal(await roomButtons.count(), 4);
-      const icons=await page.locator('.canvas-controls button').evaluateAll(nodes=>nodes.map(node=>{
-        const r=node.getBoundingClientRect();return {text:node.textContent.trim(),label:node.getAttribute('aria-label'),
-          x:r.x,y:r.y,w:r.width,h:r.height};
-      }));
-      assert.equal(icons.length,7);
-      assert.ok(icons.every(icon=>icon.label && !/[A-Z]/.test(icon.text) && icon.w===44 && icon.h===44));
-      assert.ok(icons.slice(3).every(icon=>icon.y>=icons[2].y+icons[2].h), 'room icons sit below utilities');
-      const scene=await page.locator('.viewport').boundingBox();
-      assert.ok(icons.every(icon=>icon.x>=scene.x && icon.x+icon.w<=scene.x+scene.width+1), 'toolbar stays within scene width');
-      for(const button of await page.locator('.canvas-controls button').all()) {
-        await button.evaluate(node=>node.scrollIntoView({block:'nearest'}));
-        const box=await button.boundingBox();
-        assert.ok(box.y>=scene.y && box.y+box.height<=scene.y+scene.height+1, 'every icon is reachable in short toolbar');
+      assert.equal(await page.locator('#home-room-switcher, [data-home-room]').count(),0,'canvas room icons are removed');
+      assert.equal(await page.locator('.canvas-controls button').count(),3,'only Audio/Radio/Refresh remain');
+      async function chooseRoom(key) {
+        const label={main:'RETURN TO MAIN ROOM',kitchen:'Kitchen',garden:'Garden',gym:'Gym'}[key];
+        await page.locator('#nav [data-screen="profile"]').click();
+        const settings=page.locator('[data-panel="pet-house"]');await settings.waitFor();
+        if(!await settings.evaluate(node=>node.open)) await settings.locator('summary').click();
+        assert.doesNotMatch(await settings.innerText(),/Warehouse Brick|Night Wall|Studio White/);
+        const target=settings.locator('[data-action="house_place"]').filter({hasText:label});
+        if(!await target.isDisabled()) {
+          const response=page.waitForResponse(r=>r.url().endsWith('/action') && r.request().postDataJSON()?.action==='house_place'
+            && r.request().postDataJSON()?.slot_key==='room');
+          await target.click();assert.equal((await (await response).json()).result.accepted,true);
+        }
+        await settings.getByRole('button',{name:/BACK TO HOME/}).click();
+        await page.waitForFunction(key=>window.MoonpetBetaAppearance.getBackgroundArtState().home?.active_room===key,key);
       }
-      const hud=await page.locator('#hud').boundingBox();
-      assert.ok(icons.every(icon=>icon.x>=hud.x+hud.width || icon.y>=hud.y+hud.height), 'icons leave the HUD clear');
-
-      const keyboardRoom=page.locator('#home-room-switcher [data-home-room="kitchen"]');
-      await keyboardRoom.focus();
-      await page.evaluate(()=>{window.originalRoomTarget=document.activeElement;});
-      await keyboardRoom.press('Enter');
-      assert.equal(await page.evaluate(()=>document.activeElement===window.originalRoomTarget),true,'room selection retains keyboard focus and node identity');
-      assert.equal(await keyboardRoom.getAttribute('aria-pressed'),'true');
-      const roomActionRequests = requests.filter(r=>r.path.endsWith('/action')).length;
-      const roomSignatures = {};
-      for (const [roomKey,panelId] of [['kitchen','kitchen'],['gym','gym'],['garden','garden'],['main','main-room']]) {
-        await page.locator('#home-room-switcher [data-home-room="'+roomKey+'"]').click();
-        await page.waitForFunction(key => window.MoonpetBetaAppearance.getBackgroundArtState().home?.active_room === key, roomKey);
-        await page.locator('[data-panel="'+panelId+'"]').waitFor();
-        roomSignatures[roomKey] = await page.locator('#moonpet-canvas').evaluate(c=>c.toDataURL());
+      const originalMainPixels=await wallPixels();
+      const roomBalances=f.sql.prepare('SELECT moon_gold,moon_crystals,style_tokens,pet_xp FROM telegram_pet_profiles WHERE telegram_id=?').get(f.owner);
+      const roomSignatures={main:await page.locator('#moonpet-canvas').evaluate(c=>c.toDataURL())};
+      const oldWall=f.sql.prepare("SELECT item_key FROM telegram_pet_house_layouts WHERE pet_id=? AND slot_key='wall'").get(young).item_key;
+      for(const key of ['kitchen','garden','gym']) {
+        await chooseRoom(key);roomSignatures[key]=await page.locator('#moonpet-canvas').evaluate(c=>c.toDataURL());
+        await page.reload();await ready();
+        await page.waitForFunction(key=>window.MoonpetBetaAppearance.getBackgroundArtState().home?.active_room===key,key);
+        assert.equal(f.sql.prepare('SELECT room_key FROM telegram_pet_house_rooms WHERE pet_id=?').get(young).room_key,key);
       }
-      assert.notEqual(roomSignatures.main, roomSignatures.kitchen);
-      assert.notEqual(roomSignatures.main, roomSignatures.garden);
-      assert.notEqual(roomSignatures.main, roomSignatures.gym);
-      assert.notEqual(roomSignatures.kitchen, roomSignatures.garden);
-      assert.equal(requests.filter(r=>r.path.endsWith('/action')).length,roomActionRequests,
-        'switching Home rooms must not send gameplay actions');
-      await page.locator('#home-room-switcher [data-home-room="kitchen"]').click();
-      await page.waitForFunction(()=>window.MoonpetBetaAppearance.getBackgroundArtState().home?.active_room==='kitchen');
+      assert.equal(new Set(Object.values(roomSignatures)).size,4,'saved rooms differ from unchanged Main Room');
+      assert.equal(f.sql.prepare("SELECT item_key FROM telegram_pet_house_layouts WHERE pet_id=? AND slot_key='wall'").get(young).item_key,oldWall);
+      await chooseRoom('main');await page.reload();await ready();
+      await page.waitForFunction(()=>window.MoonpetBetaAppearance.getBackgroundArtState().home?.active_room==='main');
+      assert.deepEqual(await wallPixels(),originalMainPixels,'Main Room reset restores unchanged original art');
+      assert.deepEqual(f.sql.prepare('SELECT moon_gold,moon_crystals,style_tokens,pet_xp FROM telegram_pet_profiles WHERE telegram_id=?').get(f.owner),roomBalances);
+      await page.waitForFunction(()=>window.MoonpetBetaAppearance.getBackgroundArtState().home?.purchased?.left==='neon_lamp');
+      await chooseRoom('kitchen');
       assert.equal(await page.locator('[data-panel="kitchen"] [data-action="craft"]').count(), 3,
         'Kitchen exposes only the three existing cooked-meal recipes');
-      await page.locator('#home-room-switcher [data-home-room="gym"]').click();
+      await chooseRoom('gym');
       await page.waitForFunction(()=>window.MoonpetBetaAppearance.getBackgroundArtState().home?.active_room==='gym');
       assert.equal(await page.locator('[data-panel="gym"] [data-action="train"]').count(), 1);
       assert.equal(await page.locator('[data-panel="gym"] [data-action="activity_start"][data-payload*="train"]').count(), 1);
-      await page.locator('#home-room-switcher [data-home-room="garden"]').click();
+      await chooseRoom('garden');
       await page.waitForFunction(()=>window.MoonpetBetaAppearance.getBackgroundArtState().home?.active_room==='garden');
 
       const canvasBox = await page.locator('#moonpet-canvas').boundingBox();
@@ -270,7 +265,7 @@ try {
         assert.equal(await page.locator('#screen').evaluate(node=>node.scrollTop), 0, 'new section starts with its options');
       }
       await page.locator('[data-screen="home"]').click();
-      await page.locator('#home-room-switcher [data-home-room="garden"]').click();
+      await chooseRoom('garden');
       await page.waitForFunction(()=>window.MoonpetBetaAppearance.getBackgroundArtState().home?.active_room==='garden');
       const gardenPanel = page.locator('[data-panel="garden"]');
       if (!await gardenPanel.evaluate(node => node.open)) await gardenPanel.locator('summary').click();

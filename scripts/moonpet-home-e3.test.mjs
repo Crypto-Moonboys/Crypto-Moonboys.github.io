@@ -213,7 +213,8 @@ test('Kitchen reuses existing cooked recipes and Gym reuses existing Train autho
 test('Home E4 switches dedicated rooms on the existing canvas and garden is not added to live polling', async () => {
   assert.match(client, /var HOME_ROOMS = Object\.freeze\(\['main','kitchen','garden','gym'\]\)/);
   assert.match(client, /function drawDedicatedHomeRoom\(room\)/);
-  assert.match(client, /data-home-room/);
+  assert.doesNotMatch(client, /data-home-room/);
+  assert.match(client, /\['room','floor','furniture'\]/);
   assert.doesNotMatch(client, /HOME_STATION_HOTSPOTS|homeStationAt\(/);
   assert.match(worker, /readPetGardenState\(lifecycleScope\.db, telegramId, petRaw, now\)/);
   assert.match(worker, /readPetGardenState\(identityScope\.db, telegramId, petRaw, now\)/);

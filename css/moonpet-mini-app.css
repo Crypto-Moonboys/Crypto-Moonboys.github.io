@@ -787,10 +787,10 @@ button, input, select, textarea {
   overscroll-behavior: contain;
 }
 
-.canvas-tools, .home-room-switcher { display: grid; gap: 0; }
-.canvas-tools[hidden], .home-room-switcher[hidden] { display: none; }
+.canvas-tools { display: grid; gap: 0; }
+.canvas-tools[hidden] { display: none; }
 
-.canvas-tool, .home-room-switcher button {
+.canvas-tool {
   display: grid;
   place-items: center;
   width: 44px;
@@ -805,18 +805,18 @@ button, input, select, textarea {
   touch-action: manipulation;
 }
 
-.canvas-tool span, .home-room-switcher button span { display: grid; place-items: center; width: 16px; height: 16px; pointer-events: none; }
-.canvas-tool[aria-pressed="true"] span, .home-room-switcher button[aria-pressed="true"] span {
+.canvas-tool span { display: grid; place-items: center; width: 16px; height: 16px; pointer-events: none; }
+.canvas-tool[aria-pressed="true"] span {
   background: rgba(255,255,255,.16);
   box-shadow: inset 0 0 0 1px rgba(255,255,255,.35);
 }
-.canvas-tool:hover span, .home-room-switcher button:hover span { background: rgba(255,255,255,.12); }
-.canvas-tool:focus-visible span, .home-room-switcher button:focus-visible span {
+.canvas-tool:hover span { background: rgba(255,255,255,.12); }
+.canvas-tool:focus-visible span {
   outline: 1px solid #fff;
   outline-offset: 1px;
 }
-.canvas-tool:focus-visible, .home-room-switcher button:focus-visible { outline: none; }
-.canvas-tool:active, .home-room-switcher button:active { transform: scale(.94); }
+.canvas-tool:focus-visible { outline: none; }
+.canvas-tool:active { transform: scale(.94); }
 
 .utility-close,
 .period-button {

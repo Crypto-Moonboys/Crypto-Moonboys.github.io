@@ -37,7 +37,6 @@
   var requestedFocus = launchParameter('focus');
   var activeScreen = SCREEN_ORDER.includes(requestedScreen) ? requestedScreen : 'home';
   var HOME_ROOMS = Object.freeze(['main','kitchen','garden','gym']);
-  var activeHomeRoom = 'main';
   var requestedFocusScreen = activeScreen;
   var busy = false;
   var playOptionsLoadPromise = null;
@@ -108,7 +107,6 @@
   var ctx = canvas.getContext('2d', { alpha: false });
   var hud = document.getElementById('hud');
   var canvasTools = document.getElementById('canvas-tools');
-  var homeRoomSwitcher = document.getElementById('home-room-switcher');
   var screen = document.getElementById('screen');
   var nav = document.getElementById('nav');
   var output = document.getElementById('terminal-output');
@@ -1441,33 +1439,6 @@
     var radioCaption = radioButton.querySelector('span');
     if (radioCaption) radioCaption.textContent = radioStatus === 'loading' ? '⏳' : radioStatus === 'error' ? '⚠️' : '📻';
     radioButton.title = radioButton.getAttribute('aria-label');
-    renderHomeRoomSwitcher();
-  }
-
-  function renderHomeRoomSwitcher() {
-    if (!homeRoomSwitcher) return;
-    var hatchedHome = Boolean(state && state.adopted && state.pet && state.lifecycle && state.lifecycle.phase !== 'egg' && activeScreen === 'home');
-    homeRoomSwitcher.hidden = !hatchedHome;
-    if (!hatchedHome) return;
-    var buttons = homeRoomSwitcher.querySelectorAll('[data-home-room]');
-    var roomSetChanged = buttons.length !== HOME_ROOMS.length || Array.prototype.some.call(buttons, function (button, index) {
-      return button.dataset.homeRoom !== HOME_ROOMS[index];
-    });
-    if (roomSetChanged) {
-      var roomIcons = { main:'🏠', kitchen:'🍳', gym:'🏋️', garden:'🌱' };
-      var toolbar = homeRoomSwitcher.parentElement;
-      var scrollTop = toolbar ? toolbar.scrollTop : 0;
-      homeRoomSwitcher.innerHTML = HOME_ROOMS.map(function (room) {
-        var label = room === 'main' ? 'MAIN ROOM' : room.toUpperCase();
-        return '<button type="button" data-home-room="' + room + '" aria-label="' + label + '" title="' + label + '"><span aria-hidden="true">' + roomIcons[room] + '</span></button>';
-      }).join('');
-      if (toolbar) toolbar.scrollTop = scrollTop;
-      buttons = homeRoomSwitcher.querySelectorAll('[data-home-room]');
-    }
-    Array.prototype.forEach.call(buttons, function (button) {
-      button.setAttribute('aria-pressed', String(button.dataset.homeRoom === activeHomeRoom));
-    });
-
   }
 
   function closeUtility() {
@@ -2142,10 +2113,11 @@
       gardenBody += '<div class="line muted">HARVEST SETTLING. REFRESH IF THIS MESSAGE REMAINS.</div>';
     }
 
-    if (activeHomeRoom === 'kitchen') return panel('INTERACTIVE KITCHEN // ROOM', kitchenBody, 'kitchen');
-    if (activeHomeRoom === 'gym') return panel('GYM EQUIPMENT // ROOM', gymBody, 'gym');
-    if (activeHomeRoom === 'garden') return panel('GARDEN // ROOM', gardenBody, 'garden');
-    return panel('MAIN ROOM', '<div class="line muted">Your pet’s core Home. Wall, floor and furniture customization stays here. Use the room switcher on the canvas to visit Kitchen, Garden or Gym.</div>', 'main-room');
+    var room = state.lifecycle && state.lifecycle.phase === 'egg' ? 'main' : savedHomeLayout(state).room;
+    if (room === 'kitchen') return panel('INTERACTIVE KITCHEN // ROOM', kitchenBody, 'kitchen');
+    if (room === 'gym') return panel('GYM EQUIPMENT // ROOM', gymBody, 'gym');
+    if (room === 'garden') return panel('GARDEN // ROOM', gardenBody, 'garden');
+    return panel('MAIN ROOM', '<div class="line muted">Your pet’s original Main Room stays unchanged until you choose Kitchen, Garden or Gym in Profile → Home Customization.</div>', 'main-room');
   }
   // TEST-EXPORT: homeStationsPanel:end
 
@@ -3401,7 +3373,7 @@
       return panel('HOME CUSTOMIZATION', '<div class="line muted">HOME SAVE UNAVAILABLE. REFRESH TO READ THE SELECTED PET SAVE.</div><div class="button-grid one">' + routeButton('BACK TO HOME', { screen:'home' }, 'Return to your pet on the main canvas.') + '</div>', 'pet-house');
     var layout = house.layout || {};
     var choices = house.choices || {};
-    var controls = ['wall','floor','furniture'].map(function (slot) {
+    var controls = ['room','floor','furniture'].map(function (slot) {
       var available = choices[slot] || [];
       return '<div class="line muted">' + escapeHtml(slot.toUpperCase()) + '</div><div class="button-grid">' +
         available.map(function (item) {
@@ -3413,8 +3385,10 @@
         }).join('') + '</div>';
     }).join('');
     return panel('HOME CUSTOMIZATION',
-      '<div class="line muted">Edit Home: these free choices change the actual room behind your pet on the main game canvas. Each pet keeps its own saved Home.</div>' +
-      controls + '<div class="button-grid one">' + routeButton('BACK TO HOME', { screen:'home' }, 'See the saved room behind your pet on the main canvas.') + '</div>', 'pet-house');
+      '<div class="line muted">Main Room is your original Home until you choose Kitchen, Garden or Gym. Each pet keeps its own saved room. Floor and furnishing choices remain saved for Main Room.</div>' +
+      controls + (layout.room && layout.room !== 'main' ? '<div class="button-grid one">' + button('RETURN TO MAIN ROOM', 'house_place',
+        { slot_key:'room', item_key:'main' }, { detail:'Restore your original Main Room; saved floor and furniture choices are kept. No cost or reward.' }) + '</div>' : '') +
+      '<div class="button-grid one">' + routeButton('BACK TO HOME', { screen:'home' }, 'See the saved room behind your pet on the main canvas.') + '</div>', 'pet-house');
   }
   // TEST-EXPORT: petHouse:end
 
@@ -3805,7 +3779,7 @@
       if (result.duplicate) blockedParts.push('Duplicate blocked by authority.');
       return blockedParts.join(' - ');
     }
-    if (result.reason === 'pet_house_saved') return 'HOME SAVED // Return to Home to see this pet’s wall, floor and furnishing. No currency or XP changed.';
+    if (result.reason === 'pet_house_saved') return String(result.result_copy || 'HOME SAVED // Return to Home to see this pet’s saved customization. No currency or XP changed.');
     if (result.reason === 'pet_furniture_purchased' || result.reason === 'pet_furniture_owned' || result.reason === 'pet_furniture_placed' || result.reason === 'pet_furniture_removed') return String(result.result_copy || 'Furniture save confirmed.');
     if (result.reason === 'pet_garden_planted' || result.reason === 'pet_garden_already_planted' || result.reason === 'pet_garden_harvested') return String(result.result_copy || 'Garden save confirmed.');
     var reward = resultRewardMap(result);
@@ -4552,19 +4526,6 @@
     };
   }
 
-  if (homeRoomSwitcher) homeRoomSwitcher.addEventListener('click', function (event) {
-    var target = event.target.closest('[data-home-room]');
-    if (!target || busy || activeScreen !== 'home') return;
-    var room = String(target.dataset.homeRoom || '');
-    if (!HOME_ROOMS.includes(room) || room === activeHomeRoom) return;
-    activeHomeRoom = room;
-    render();
-    drawWorld(reducedMotion ? 0 : performance.now());
-    screen.scrollTop = 0;
-    tell('HOME ROOM // ' + (room === 'main' ? 'MAIN ROOM' : room.toUpperCase()));
-    haptic('light');
-  });
-
   canvas.addEventListener('click', function (event) {
     var bounds = canvas.getBoundingClientRect();
     if (!bounds.width || !bounds.height) return;
@@ -4951,6 +4912,7 @@
     var house = snapshot && snapshot.pet_house;
     var layout = house && house.available === true && snapshot.pet && house.pet_id === snapshot.pet.pet_id ? house.layout || {} : {};
     return {
+      room: ['kitchen','garden','gym'].includes(layout.room) ? layout.room : 'main',
       wall: ['warehouse_brick', 'night_wall', 'studio_white'].includes(layout.wall) ? layout.wall : 'warehouse_brick',
       floor: ['concrete', 'checkerboard', 'steel'].includes(layout.floor) ? layout.floor : 'concrete',
       furniture: ['sleep_mat', 'record_deck', 'plant_pot'].includes(layout.furniture) ? layout.furniture : 'sleep_mat'
@@ -5185,7 +5147,7 @@
     var showHome = state && state.adopted && state.pet && !hatchArtTransitionActive(renderTime);
     if (showHome) {
       var home = savedHomeLayout(state);
-      var room = state.lifecycle && state.lifecycle.phase === 'egg' ? 'main' : activeHomeRoom;
+      var room = state.lifecycle && state.lifecycle.phase === 'egg' ? 'main' : home.room;
       if (!HOME_ROOMS.includes(room)) room = 'main';
       if (room === 'main') {
         drawHomeWall(home.wall);
