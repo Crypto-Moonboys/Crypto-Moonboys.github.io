@@ -55,7 +55,7 @@
     },
     invCanvas: {
       label: '👾 Meme Swarm 3008', color: '#3fb950', touchScheme: 'lr-fire',
-      controls: ['← → Move ship', 'Space Shoot'],
+      controls: ['← → Move ship', 'Space Shoot', 'Upgrades: ← → choose; Fire confirms'],
       tips: ['Boss every 5th wave', 'Shoot fast', 'Speed up as waves rise']
     },
     astCanvas: {
@@ -103,6 +103,9 @@
   overlay.setAttribute('aria-modal', 'true');
   overlay.setAttribute('aria-label', 'Game — fullscreen mode');
 
+  var isMemeSwarm = /\/games\/meme-swarm-3008\/?$/.test(window.location.pathname);
+  if (isMemeSwarm) overlay.classList.add('overlay-meme-swarm-game');
+
   // Control bar
   var ctrlBar = document.createElement('div');
   ctrlBar.id = 'overlay-ctrl-bar';
@@ -132,6 +135,8 @@
   var btnPause = makeCtrlBtn('overlay-btn-pause', 'Pause/Resume',      '⏸', 'Pause');
   var btnReset = makeCtrlBtn('overlay-btn-reset', 'Reset game',        '↺', 'Reset');
   btnReset.setAttribute('data-fullscreen-action', 'reset');
+  var btnRadio = makeCtrlBtn('overlay-btn-radio', 'Play GraffPUNKS Radio', '📻', 'Radio');
+  btnRadio.disabled = true;
   var btnMute  = makeCtrlBtn('overlay-btn-mute',  'Mute/Unmute',       '🔊', 'Mute');
   var btnExit  = makeCtrlBtn('overlay-btn-exit',  'Exit fullscreen',   '✕', 'Exit');
   var fullscreenPrompt = document.createElement('div');
@@ -166,6 +171,7 @@
   ctrlBar.appendChild(panelStatus);
   ctrlBar.appendChild(btnInfo);
   ctrlBar.appendChild(btnData);
+  if (isMemeSwarm) ctrlBar.appendChild(btnRadio);
   ctrlBar.appendChild(btnModifiers);
   ctrlBar.appendChild(btnFaction);
   ctrlBar.appendChild(btnFS);
@@ -1637,6 +1643,35 @@
       detail: resetDetail
     }));
   });
+
+  if (isMemeSwarm) {
+    var observedRadio = null;
+    var radioMountObserver = null;
+    var radioStateObserver = new MutationObserver(syncRadioControl);
+    function syncRadioControl() {
+      var control = document.getElementById('arcade-radio-toggle');
+      btnRadio.disabled = !control;
+      if (!control) return;
+      if (radioMountObserver) radioMountObserver.disconnect();
+      if (control !== observedRadio) {
+        observedRadio = control;
+        radioStateObserver.disconnect();
+        radioStateObserver.observe(control, {attributes:true, attributeFilter:['aria-pressed']});
+      }
+      var on = control.getAttribute('aria-pressed') === 'true';
+      btnRadio.setAttribute('aria-pressed', String(on));
+      btnRadio.setAttribute('aria-label', (on ? 'Stop' : 'Play') + ' GraffPUNKS Radio');
+      btnRadio.title = btnRadio.getAttribute('aria-label');
+    }
+    btnRadio.addEventListener('click', function () {
+      var control = document.getElementById('arcade-radio-toggle');
+      if (control) control.click();
+      syncRadioControl();
+    });
+    radioMountObserver = new MutationObserver(syncRadioControl);
+    radioMountObserver.observe(document.body, {childList:true, subtree:true});
+    syncRadioControl();
+  }
 
   btnMute.addEventListener('click', function () {
     var audio = getArcadeAudio();

@@ -81,7 +81,8 @@ import {
   BOSS_ARCHETYPE_DEFS, pickBossArchetype, spawnBossArchetype,
 } from '/js/arcade/systems/boss-system.js';
 
-import { createRenderer } from './render-system.js?v=renderer-upgrade-screen-20260723';
+import { navigateChoice } from './choice-input.js?v=mobile-choice-20261014';
+import { createRenderer } from './render-system.js?v=mobile-choice-20261014';
 
 const MEME_IMPACT_COLORS = [
   '#ff3158','#ffd43b','#ff6b2b','#ff2ed1','#ad5cff','#2ee8ff','#ff4fd1','#ff7849','#9cff31','#f7c948',
@@ -201,6 +202,7 @@ function createLegacybootstrapInvaders(root) {
   let upgrades       = makeUpgrades();
   let upgradePhase   = false;   // false | 'picking'
   let upgradeChoices = [];
+  let choiceCursor = 0;
 
   // â”€â”€ Roguelite: scaling director & wave modifiers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   let director          = createScalingDirector();
@@ -649,10 +651,12 @@ function createLegacybootstrapInvaders(root) {
     if (shouldOfferRiskReward(wave)) {
       riskRewardChoices = pickRiskRewardChoices();
       riskRewardPhase   = 'picking';
+      choiceCursor = 0;
     } else {
       // Go straight to upgrade screen
       upgradeChoices = pickUpgradeChoicesWithRarity(upgrades, wave);
       upgradePhase   = 'picking';
+      choiceCursor = 0;
     }
   }
 
@@ -685,6 +689,7 @@ function createLegacybootstrapInvaders(root) {
     upgrades       = makeUpgrades();
     upgradePhase   = false;
     upgradeChoices = [];
+    choiceCursor = 0;
     screenFlashTimer = 0;
     droneAngle       = 0;
     droneCooldown    = 0;
@@ -1548,7 +1553,7 @@ function createLegacybootstrapInvaders(root) {
       player, invaders, boss, bossPhase, bullets, invBullets,
       bunkers, powerupItems, activePowerups,
       particles, scoreTexts, hitFlashes, stars,
-      upgradePhase, upgradeChoices, upgrades,
+      upgradePhase, upgradeChoices, upgrades, choiceCursor,
       screenFlashTimer, droneAngle, bombCooldown,
       // Roguelite additions
       warningBanner, eventBanner, mutationFlash,
@@ -1571,7 +1576,10 @@ function createLegacybootstrapInvaders(root) {
   engine.onKeyDown = (e)  => {
     // During the risk/reward screen: 1/2 select, then move to upgrade screen
     if (riskRewardPhase === 'picking') {
-      const idx = { '1': 0, '2': 1 }[e.key];
+      if (e.repeat) return;
+      const navigation = navigateChoice(e.key, choiceCursor, riskRewardChoices.length);
+      choiceCursor = navigation.cursor;
+      const idx = navigation.confirmIndex;
       if (idx !== undefined && riskRewardChoices[idx]) {
         activeRiskReward  = riskRewardChoices[idx];
         riskRewardPhase   = false;
@@ -1592,12 +1600,16 @@ function createLegacybootstrapInvaders(root) {
         // Now show upgrade screen
         upgradeChoices = pickUpgradeChoicesWithRarity(upgrades, wave);
         upgradePhase   = 'picking';
+        choiceCursor = 0;
       }
       return;
     }
     // During the upgrade screen: 1/2/3 select an upgrade, then start next wave
     if (upgradePhase === 'picking') {
-      const idx = { '1': 0, '2': 1, '3': 2 }[e.key];
+      if (e.repeat) return;
+      const navigation = navigateChoice(e.key, choiceCursor, upgradeChoices.length);
+      choiceCursor = navigation.cursor;
+      const idx = navigation.confirmIndex;
       if (idx !== undefined && upgradeChoices[idx]) {
         const def = upgradeChoices[idx];
         // Add piercing flag to bullets if needed
@@ -1612,6 +1624,7 @@ function createLegacybootstrapInvaders(root) {
         upgradeChoices = [];
         screenFlashTimer = 0.35;
         playSfx('upgrade');
+        window.dispatchEvent(new CustomEvent('invaders-upgrade-selected', {detail:{id:def.id}}));
         startWave();
       }
       return; // block all other keys during upgrade screen

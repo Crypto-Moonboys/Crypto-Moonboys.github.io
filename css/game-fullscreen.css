@@ -1405,3 +1405,8 @@ body.sync-error #game-overlay {
 body.conflict-active #game-overlay {
   background: radial-gradient(circle at 20% 12%, rgba(255,0,80,.07), transparent 50%), #090c16;
 }
+
+/* Meme Swarm's radio is controlled from the toolbar, never the playfield. */
+#game-overlay.overlay-meme-swarm-game #arcade-radio-panel { display:none !important; }
+#game-overlay.overlay-meme-swarm-game #overlay-btn-radio .btn-label { display:none; }
+#game-overlay.overlay-meme-swarm-game #overlay-btn-radio[aria-pressed="true"] { color:#7dff72; border-color:#7dff72; }

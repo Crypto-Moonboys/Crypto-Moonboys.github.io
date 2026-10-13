@@ -188,6 +188,7 @@ const GROUPS = {
     ['node', '--test', 'scripts/moonpet-beta-xp-quarantine.test.mjs'],
   ],
   arcade: [
+    ['node', '--test', 'scripts/meme-swarm-mobile.test.mjs'],
     ['node', '--test', 'scripts/telegram-progression-auth.test.mjs'],
     ['npm', 'run', 'test:btqm-runtime-assets'],
     ['node', 'scripts/public-arcade-branding-regression.test.mjs'],
@@ -234,6 +235,7 @@ const GROUPS = {
     ['node', 'scripts/wax-collection-page-fallback.test.mjs'],
   ],
   visual: [
+    ['node', 'scripts/meme-swarm-mobile-browser.test.mjs'],
     ['node', 'scripts/sparky-goal-navigation-browser.test.mjs'],
     ['node', 'scripts/bible-loader-swarmsy-browser.test.mjs'],
     ['node', '--test', 'scripts/telegram-website-login-browser.test.mjs'],
