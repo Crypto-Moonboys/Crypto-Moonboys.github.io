@@ -85,7 +85,7 @@ button, input, select, textarea {
   position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  grid-template-rows: auto auto minmax(0, 1fr);
   overflow: hidden;
   background:
     repeating-linear-gradient(180deg, rgba(255,255,255,.008) 0 1px, transparent 1px 6px),

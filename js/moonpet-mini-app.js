@@ -303,8 +303,8 @@
 
     // Keep the native 320x220 world proportional without letting a wide desktop
     // or reduced Telegram viewport consume the controls. Use the same live shell
-    // height source as the app itself, then reserve real status/dock chrome plus
-    // a usable controls pane. Mobile naturally remains full-width when narrower.
+    // height source as the app itself, then reserve the status bar plus
+    // a usable controls pane including its in-flow menu. Mobile naturally remains full-width when narrower.
     var outputHeight = Math.ceil(output && output.getBoundingClientRect ? output.getBoundingClientRect().height : 36);
     var dockHeight = Math.ceil(nav && nav.getBoundingClientRect ? nav.getBoundingClientRect().height : 56);
     var controlsMinHeight = Math.max(120, Math.min(220, Math.round(height * 0.24)));
@@ -3620,8 +3620,7 @@
     });
     renderHud();
     renderNav();
-    // The dock's populated height is part of the available-layout budget.
-    // Recompute only after nav buttons exist so the canvas cannot steal their space.
+    // Reserve readable controls including the menu at the end of the scroll area.
     syncViewportHeight();
     renderCanvasTools();
     var waitingForModule = stateNeedsScreenHydration(state, activeScreen);
@@ -3636,6 +3635,7 @@
             : '<div class="line signal">FETCHING SERVER-AUTHORITATIVE MODULE STATE...</div><div class="line muted">HOME remains usable while this module loads.</div>',
           'module-loading')
         : renderMenuStatus() + renderRecommended() + renderRewardLifecycle() + screens[activeScreen]();
+    screen.appendChild(nav);
     restoreEditableState(editableState);
     if (draftPetId === (state && state.pet && state.pet.pet_id)) Object.keys(routeDraft).forEach(function (id) {
       var input = document.getElementById(id);
@@ -5306,6 +5306,7 @@
         '<a class="terminal-link-button" href="/gkniftyheads-incubator.html" data-telegram-login>LOG IN WITH TELEGRAM</a>' +
         '<div class="button-grid one"><a class="terminal-link-button" href="https://t.me/WIKICOMSBOT?start=moonpet" target="_blank" rel="noopener noreferrer">OPEN MOONPET OS IN TELEGRAM</a>' +
         '<button type="button" class="terminal-button" data-utility="guide">HOW TO PLAY<span class="button-purpose">Read how care, quests, battles and rewards work before choosing a route.</span></button><button type="button" class="terminal-button" data-utility="about">ABOUT MOONPET OS<span class="button-purpose">Learn about persistent companions and competition.</span></button></div>', 'telegram-auth');
+      screen.appendChild(nav);
       await typeBoot(['AUTHENTICATION NOT FOUND', 'OPEN THE MINI APP INSIDE TELEGRAM', 'NO PLAYER DATA WAS READ'], { speed: 9, hold: 800 });
       return;
     }
@@ -5341,6 +5342,7 @@
       screen.innerHTML = '<div class="connection-fault">STARTUP FAULT // ' + escapeHtml(error.message || 'API UNAVAILABLE') + '</div>' + (authenticationFailed
         ? '<div class="line muted">Close this game and reopen Moonpet OS from the bot to get a fresh signed Telegram session.</div><div class="button-grid one"><a class="terminal-link-button" href="https://t.me/WIKICOMSBOT?start=moonpet" target="_blank" rel="noopener noreferrer">OPEN FRESH TELEGRAM SESSION</a></div>'
         : '<div class="button-grid one"><button type="button" class="terminal-button" data-utility="retry">RETRY CONNECTION<span class="button-purpose">Reconnect and read your saved pet. No gameplay action is repeated.</span></button></div>');
+      screen.appendChild(nav);
       await typeBoot(['STARTUP FAULT', startupFaultMessage, authenticationFailed ? 'REOPEN MOONPET OS FROM THE BOT' : 'USE RETRY CONNECTION BELOW'], { speed: 8, hold: 900 });
     }
   }
