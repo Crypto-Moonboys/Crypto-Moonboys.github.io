@@ -214,10 +214,14 @@ try {
       const roomSignatures={main:await page.locator('#moonpet-canvas').evaluate(c=>c.toDataURL())};
       const oldWall=f.sql.prepare("SELECT item_key FROM telegram_pet_house_layouts WHERE pet_id=? AND slot_key='wall'").get(young).item_key;
       for(const key of ['kitchen','garden','gym']) {
-        await chooseRoom(key);roomSignatures[key]=await page.locator('#moonpet-canvas').evaluate(c=>c.toDataURL());
+        await chooseRoom(key);
+        await page.waitForFunction(key=>window.MoonpetBetaAppearance.getBackgroundArtState().mode===key+'_background',key);
+        roomSignatures[key]=await page.locator('#moonpet-canvas').evaluate(c=>c.toDataURL());
         await page.reload();await ready();
         await page.waitForFunction(key=>window.MoonpetBetaAppearance.getBackgroundArtState().home?.active_room===key,key);
         assert.equal(f.sql.prepare('SELECT room_key FROM telegram_pet_house_rooms WHERE pet_id=?').get(young).room_key,key);
+        await page.waitForFunction(key=>window.MoonpetBetaAppearance.getBackgroundArtState().mode===key+'_background',key);
+        assert.equal(await page.evaluate(()=>window.MoonpetBetaAppearance.getBackgroundArtState().source),{kitchen:'/img/Neon_Moon_Pets_Cyberpunk_Kitchen.jpg',garden:'/img/Neon_MoonPets_Lab.jpg',gym:'/img/Neon_Graffiti_Moonpets_Gym.jpg'}[key]);
       }
       assert.equal(new Set(Object.values(roomSignatures)).size,4,'saved rooms differ from unchanged Main Room');
       assert.equal(f.sql.prepare("SELECT item_key FROM telegram_pet_house_layouts WHERE pet_id=? AND slot_key='wall'").get(young).item_key,oldWall);

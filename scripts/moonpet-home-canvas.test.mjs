@@ -139,23 +139,24 @@ test('Home layers precede the pet/effects and the original hatch reveal excludes
 });
 
 const roomsSource=client.split('// TEST-EXPORT: homeRoomsCanvas:start')[1].split('// TEST-EXPORT: homeRoomsCanvas:end')[0];
-test('E4 Kitchen, Garden and Gym render as distinct full-canvas rooms without text',()=>{
-  const paint=[];
-  const runtime=vm.createContext({state:{pet_garden:{status:'ready'}},
-    drawPixelRect:(x,y,w,h,color)=>paint.push({x,y,w,h,color})});
+test('saved rooms load the requested JPEG art with cover cropping and reuse images',()=>{
+  const paint=[], images=[];
+  function Image() { this.complete=false; this.naturalWidth=640; this.naturalHeight=480; images.push(this); }
+  const runtime=vm.createContext({Image,reducedMotion:false,backgroundArtState:{},
+    ctx:{save(){},restore(){},drawImage:(...args)=>paint.push(args)}});
   vm.runInContext(roomsSource,runtime);
-  const signatures={};
-  for(const room of ['kitchen','garden','gym']) {
-    paint.length=0;
-    runtime.drawDedicatedHomeRoom(room);
-    assert.ok(paint.length>=15,room+' has a real room scene rather than a tiny station prop');
-    assert.ok(paint.every(rect=>rect.x>=0&&rect.y>=0&&rect.w>0&&rect.h>0&&rect.x+rect.w<=320&&rect.y+rect.h<=220),room+' stays inside the 320x220 world');
-    assert.ok(paint.some(rect=>rect.w===320),room+' paints a full-width room surface');
-    signatures[room]=JSON.stringify(paint);
+  const sources={kitchen:'/img/Neon_Moon_Pets_Cyberpunk_Kitchen.jpg',garden:'/img/Neon_MoonPets_Lab.jpg',gym:'/img/Neon_Graffiti_Moonpets_Gym.jpg'};
+  for(const [room,source] of Object.entries(sources)) {
+    assert.equal(runtime.drawDedicatedHomeRoom(room),false,'loading retains the existing fallback');
+    const image=images.at(-1); assert.equal(image.src,source); image.complete=true;
+    assert.equal(runtime.drawDedicatedHomeRoom(room),true);
+    assert.deepEqual(paint.at(-1).slice(1),[0,20,640,440,0,0,320,220]);
+    assert.equal(runtime.backgroundArtState.source,source);
+    assert.equal(runtime.drawDedicatedHomeRoom(room),true);
   }
-  assert.notEqual(signatures.kitchen,signatures.garden);
-  assert.notEqual(signatures.kitchen,signatures.gym);
-  assert.notEqual(signatures.garden,signatures.gym);
-  assert.doesNotMatch(roomsSource,/fillText|strokeText/,'room art must not bake labels into the canvas');
-  assert.doesNotMatch(client,/HOME_STATION_HOTSPOTS|homeStationAt\(/,'retired station hitboxes must not remain');
+  assert.equal(images.length,3,'one cached image per room');
+  images[0].naturalWidth=0;
+  assert.equal(runtime.drawDedicatedHomeRoom('kitchen'),false,'failed art retains fallback');
+  assert.equal(runtime.drawDedicatedHomeRoom('main'),false,'Main Room is untouched');
+  assert.doesNotMatch(roomsSource,/fillText|strokeText|drawPixelRect/,'retired procedural scenes and labels are removed');
 });

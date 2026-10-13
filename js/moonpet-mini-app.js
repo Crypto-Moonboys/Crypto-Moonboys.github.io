@@ -5022,110 +5022,34 @@
 
 
   // TEST-EXPORT: homeRoomsCanvas:start
-  function drawRoomTiles(yStart, tileWidth, tileHeight, base, grout) {
-    drawPixelRect(0,0,320,yStart,base);
-    for (var y=0;y<yStart;y+=tileHeight) {
-      drawPixelRect(0,y,320,1,grout);
-      var offset=((y/tileHeight)%2)*Math.floor(tileWidth/2);
-      for (var x=offset;x<320;x+=tileWidth) {
-        drawPixelRect(x,y,1,Math.min(tileHeight,yStart-y),grout);
-      }
-    }
-  }
-
-  function drawKitchenRoom() {
-    drawRoomTiles(150,32,18,'#352a29','#5a4542');
-    drawPixelRect(0,150,320,70,'#262329');
-    for (var x=0;x<320;x+=32) drawPixelRect(x,150,1,70,'#3f3a42');
-    drawPixelRect(0,153,320,2,'#80736b');
-    drawPixelRect(10,101,83,45,'#68574e');
-    drawPixelRect(13,105,77,8,'#c3b49d');
-    drawPixelRect(20,116,28,22,'#252830');
-    drawPixelRect(57,116,26,22,'#4e4b50');
-    drawPixelRect(227,91,82,55,'#5f514b');
-    drawPixelRect(230,95,76,8,'#cab9a0');
-    drawPixelRect(245,107,45,35,'#2c3038');
-    drawPixelRect(255,113,25,18,'#11151b');
-    drawPixelRect(112,50,96,8,'#6d5a4c');
-    drawPixelRect(120,58,4,30,'#76665b');
-    drawPixelRect(194,58,4,30,'#76665b');
-    drawPixelRect(130,63,22,18,'#9b7b54');
-    drawPixelRect(163,61,25,20,'#758b83');
-    drawPixelRect(18,83,24,13,'#8d3b32');
-    drawPixelRect(51,82,19,14,'#c39a55');
-    drawPixelRect(281,57,12,30,'#8e8372');
-    drawPixelRect(277,50,20,8,'#cfc5aa');
-  }
-
-  function drawGardenRoom() {
-    drawPixelRect(0,0,320,145,'#18312f');
-    drawPixelRect(0,145,320,75,'#262f29');
-    drawPixelRect(0,142,320,3,'#6e866f');
-    for (var x=18;x<=270;x+=72) {
-      drawPixelRect(x,28,50,4,'#7f9e91');
-      drawPixelRect(x+8,32,3,37,'#61766e');
-      drawPixelRect(x+39,32,3,37,'#61766e');
-      drawPixelRect(x+3,69,44,4,'#b8a66e');
-    }
-    drawPixelRect(8,160,80,32,'#6e4f35');
-    drawPixelRect(12,164,72,9,'#3b2d23');
-    drawPixelRect(232,160,80,32,'#6e4f35');
-    drawPixelRect(236,164,72,9,'#3b2d23');
-    drawPixelRect(112,154,96,39,'#7b5d3c');
-    drawPixelRect(116,158,88,10,'#3a2f25');
-    var gardenState=state && state.pet_garden || {};
-    var ready=gardenState.status==='ready';
-    var growing=gardenState.status==='growing'||ready;
-    if (growing) {
-      var height=ready?25:16;
-      for (var stemX of [128,151,174]) {
-        drawPixelRect(stemX,158-height,4,height,'#6c9c5d');
-        drawPixelRect(stemX-7,146-height/2,10,5,'#7eb46b');
-        drawPixelRect(stemX+2,140-height/3,11,5,'#7eb46b');
-      }
-      if (ready) {
-        drawPixelRect(124,129,11,8,'#d3a94f');
-        drawPixelRect(147,127,11,8,'#d3a94f');
-        drawPixelRect(170,130,11,8,'#d3a94f');
-      }
-    }
-    drawPixelRect(22,106,56,5,'#819d82');
-    drawPixelRect(242,106,56,5,'#819d82');
-    drawPixelRect(28,111,4,35,'#657567');
-    drawPixelRect(68,111,4,35,'#657567');
-    drawPixelRect(248,111,4,35,'#657567');
-    drawPixelRect(288,111,4,35,'#657567');
-  }
-
-  function drawGymRoom() {
-    drawPixelRect(0,0,320,148,'#27282d');
-    for (var y=20;y<148;y+=26) drawPixelRect(0,y,320,1,'#3f4148');
-    drawPixelRect(0,148,320,72,'#181a1f');
-    for (var x=0;x<320;x+=24) drawPixelRect(x,148,2,72,'#2e3037');
-    drawPixelRect(10,80,68,66,'#33363d');
-    drawPixelRect(17,89,54,4,'#a4abb3');
-    drawPixelRect(25,94,4,43,'#737a82');
-    drawPixelRect(60,94,4,43,'#737a82');
-    drawPixelRect(20,104,49,5,'#a4abb3');
-    drawPixelRect(241,64,9,64,'#6c596f');
-    drawPixelRect(252,64,9,64,'#6c596f');
-    drawPixelRect(232,128,38,7,'#827087');
-    drawPixelRect(104,165,112,8,'#5d4f68');
-    drawPixelRect(121,173,4,28,'#777d85');
-    drawPixelRect(195,173,4,28,'#777d85');
-    drawPixelRect(137,52,46,6,'#8e949d');
-    drawPixelRect(133,47,8,16,'#5f666f');
-    drawPixelRect(179,47,8,16,'#5f666f');
-    drawPixelRect(148,38,24,5,'#b5bcc4');
-    drawPixelRect(158,43,4,35,'#6f767f');
-    drawPixelRect(83,33,7,48,'#c9a85d');
-    drawPixelRect(230,34,7,47,'#c9a85d');
-  }
-
+  var HOME_ROOM_BACKGROUND_URLS = Object.freeze({
+    kitchen: '/img/Neon_Moon_Pets_Cyberpunk_Kitchen.jpg',
+    garden: '/img/Neon_MoonPets_Lab.jpg',
+    gym: '/img/Neon_Graffiti_Moonpets_Gym.jpg'
+  });
+  var homeRoomBackgroundImages = {};
   function drawDedicatedHomeRoom(room) {
-    if (room==='kitchen') drawKitchenRoom();
-    else if (room==='garden') drawGardenRoom();
-    else if (room==='gym') drawGymRoom();
+    var source = HOME_ROOM_BACKGROUND_URLS[room];
+    if (!source) return false;
+    var image = homeRoomBackgroundImages[room];
+    if (!image) {
+      image = new Image();
+      homeRoomBackgroundImages[room] = image;
+      image.decoding = 'async';
+      image.onload = function () { if (reducedMotion) drawWorld(performance.now()); };
+      image.src = source;
+    }
+    if (!image.complete || !image.naturalWidth || !image.naturalHeight) return false;
+    var scale = Math.max(320 / image.naturalWidth, 220 / image.naturalHeight);
+    var width = 320 / scale, height = 220 / scale;
+    ctx.save();
+    ctx.imageSmoothingEnabled = true;
+    ctx.drawImage(image, (image.naturalWidth - width) / 2, (image.naturalHeight - height) / 2,
+      width, height, 0, 0, 320, 220);
+    ctx.restore();
+    backgroundArtState.mode = room + '_background';
+    backgroundArtState.source = source;
+    return true;
   }
   // TEST-EXPORT: homeRoomsCanvas:end
 
