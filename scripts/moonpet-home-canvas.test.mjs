@@ -30,10 +30,25 @@ test('invalid, missing, unavailable and wrong-pet House state use safe appearanc
   assert.deepEqual(JSON.parse(JSON.stringify(runtime.savedHomeLayout(good))),good.pet_house.layout);
 });
 
-test('every starter option paints a distinct layer with bounded work and restored canvas alpha',()=>{
+test('Home walls never wash out the graffiti background',()=>{
   const {runtime,calls,ctx}=painter();
-  for(const [fn,options] of [['drawHomeWall',['warehouse_brick','night_wall','studio_white']],
-    ['drawHomeFloor',['concrete','checkerboard','steel']],['drawHomeFurniture',['sleep_mat','record_deck','plant_pot']]]) {
+  calls.length=0; runtime.drawHomeWall('warehouse_brick');
+  assert.equal(calls.length,0,'default warehouse brick leaves the original graffiti untouched');
+  for(const wall of ['night_wall','studio_white']) {
+    calls.length=0; runtime.drawHomeWall(wall);
+    assert.ok(calls.length>0 && calls.length<12,wall+' uses only bounded trim');
+    assert.equal(ctx.globalAlpha,1,'wall trim cannot change canvas alpha');
+    assert.ok(calls.every(c=>c.alpha===1),'wall customization must not use translucent paint');
+    assert.ok(calls.every(c=>c.x>=0 && c.y>=0 && c.x+c.w<=320 && c.y+c.h<=220));
+    assert.ok(!calls.some(c=>c.x===0 && c.y===0 && c.w===320 && c.h>2),
+      'no wall option may paint a full-width translucent veil over the graffiti');
+  }
+  assert.doesNotMatch(scene,/globalAlpha\s*=\s*(?:0\.22|0\.42|0\.68)/,'retired wall wash/detail alpha values stay removed');
+});
+
+test('floor and furniture starter options remain distinct with bounded work',()=>{
+  const {runtime,calls,ctx}=painter();
+  for(const [fn,options] of [['drawHomeFloor',['concrete','checkerboard','steel']],['drawHomeFurniture',['sleep_mat','record_deck','plant_pot']]]) {
     const outputs=[];
     for(const option of options) {
       calls.length=0; runtime[fn](option,true);
