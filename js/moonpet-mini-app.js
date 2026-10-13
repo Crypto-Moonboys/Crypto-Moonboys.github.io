@@ -3329,7 +3329,7 @@
         }).join('') + '</div>';
     }).join('');
     return panel('HOME CUSTOMIZATION',
-      '<div class="line muted">Main Room is your original Home until you choose Kitchen, Garden or Gym. Each pet keeps its own saved room. Saved mats and furnishings appear in every room. Radio temporarily replaces only right-side furniture.</div>' +
+      '<div class="line muted">Main Room is your original Home until you choose Kitchen, Garden or Gym. Each pet keeps its own saved room. Saved mats and furnishings appear in every room. Radio draws its stereo in front of right-side furniture.</div>' +
       controls + (layout.room && layout.room !== 'main' ? '<div class="button-grid one">' + button('RETURN TO MAIN ROOM', 'house_place',
         { slot_key:'room', item_key:'main' }, { detail:'Restore your original Main Room; saved floor and furniture choices are kept. No cost or reward.' }) + '</div>' : '') +
       '<div class="button-grid one">' + routeButton('BACK TO HOME', { screen:'home' }, 'See the saved room behind your pet on the main canvas.') + '</div>', 'pet-house');
@@ -5081,15 +5081,15 @@
       }
       var purchased = state.pet_furniture && state.pet_furniture.available === true
         ? savedPurchasedFurniture(state) : null;
-      if (!musicActive && (!purchased || !purchased.right)) drawHomeFurniture(home.furniture, renderTime);
+      if (!purchased || !purchased.right) drawHomeFurniture(home.furniture, renderTime);
       if (purchased) {
         if (purchased.wall) drawPurchasedFurniture(purchased.wall,'wall');
         if (purchased.left) drawPurchasedFurniture(purchased.left,'left');
-        if (purchased.right && !musicActive) drawPurchasedFurniture(purchased.right,'right');
+        if (purchased.right) drawPurchasedFurniture(purchased.right,'right');
         home.purchased = purchased;
       }
       if (musicActive) drawMusicStereo(renderTime);
-      home.right_override = musicActive ? 'stereo' : null;
+      home.right_overlay = musicActive ? 'stereo' : null;
       home.active_room = room;
       home.rooms = HOME_ROOMS.slice();
       backgroundArtState.home = home;

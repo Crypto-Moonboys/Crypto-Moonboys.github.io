@@ -171,7 +171,14 @@ test('Home layers precede the pet/effects and the original hatch reveal excludes
   runtime.state.pet_house.pet_id='other';calls.length=0;runtime.drawWorld(0);
   assert.equal(calls.includes('floor+shadow'),false,'other pet floor cannot decorate this room');
   runtime.selectedRoom='main';runtime.radioRequestedOn=true;calls.length=0;runtime.drawWorld(0);
-  assert.deepEqual(calls,['egg','wall','floor+shadow','stereo','effects-back','pet','effects-front']);
+  assert.deepEqual(calls,['egg','wall','floor+shadow','furniture','stereo','effects-back','pet','effects-front']);
+  runtime.state.pet_furniture={available:true};
+  runtime.savedPurchasedFurniture=()=>({right:'retro_tv'});
+  runtime.drawPurchasedFurniture=()=>calls.push('paid-right');
+  calls.length=0;runtime.drawWorld(0);
+  assert.deepEqual(calls,['egg','wall','floor+shadow','paid-right','stereo','effects-back','pet','effects-front'],
+    'paid right furniture remains drawn behind the stereo');
+  runtime.state.pet_furniture=null;
   runtime.radioRequestedOn=false;calls.length=0;runtime.drawWorld(0);
   assert.ok(calls.includes('furniture'),'radio off restores the saved furnishing');
   runtime.animationMode='dance';runtime.animationUntil=100;calls.length=0;runtime.drawWorld(0);
