@@ -220,10 +220,21 @@ try {
       for(const key of ['kitchen','garden','gym']) {
         await chooseRoom(key);
         await page.waitForFunction(key=>window.MoonpetBetaAppearance.getBackgroundArtState().mode===key+'_background',key);
+        for (const [item,label,source] of [['concrete','NEON MATT','/img/neonmatt.png'],['checkerboard','GOLD MATT','/img/goldmatt.png'],['steel','CAMO MATT','/img/camomatt.png']]) {
+          await page.locator('#nav [data-screen="profile"]').click();
+          const settings=page.locator('[data-panel="pet-house"]');await settings.waitFor();
+          if(!await settings.evaluate(node=>node.open)) await settings.locator('summary').click();
+          const target=settings.locator('[data-action="house_place"]').filter({hasText:label});
+          const response=page.waitForResponse(r=>r.url().endsWith('/action')&&r.request().postDataJSON()?.slot_key==='floor');
+          await target.click();assert.equal((await (await response).json()).result.accepted,true);
+          await settings.getByRole('button',{name:/BACK TO HOME/}).click();
+          await page.waitForFunction(({key,source})=>{const art=window.MoonpetBetaAppearance.getBackgroundArtState();return art.home?.active_room===key&&art.matt===source;},{key,source});
+        }
         roomSignatures[key]=await page.locator('#moonpet-canvas').evaluate(c=>c.toDataURL());
         await page.reload();await ready();
         await page.waitForFunction(key=>window.MoonpetBetaAppearance.getBackgroundArtState().home?.active_room===key,key);
         assert.equal(f.sql.prepare('SELECT room_key FROM telegram_pet_house_rooms WHERE pet_id=?').get(young).room_key,key);
+        await page.waitForFunction(()=>window.MoonpetBetaAppearance.getBackgroundArtState().matt==='/img/camomatt.png');
         await page.waitForFunction(key=>window.MoonpetBetaAppearance.getBackgroundArtState().mode===key+'_background',key);
         assert.equal(await page.evaluate(()=>window.MoonpetBetaAppearance.getBackgroundArtState().source),{kitchen:'/img/Neon_Moon_Pets_Cyberpunk_Kitchen.jpg',garden:'/img/Neon_MoonPets_Lab.jpg',gym:'/img/Neon_Graffiti_Moonpets_Gym.jpg'}[key]);
       }

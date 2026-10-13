@@ -3385,7 +3385,7 @@
         }).join('') + '</div>';
     }).join('');
     return panel('HOME CUSTOMIZATION',
-      '<div class="line muted">Main Room is your original Home until you choose Kitchen, Garden or Gym. Each pet keeps its own saved room. Floor and furnishing choices remain saved for Main Room.</div>' +
+      '<div class="line muted">Main Room is your original Home until you choose Kitchen, Garden or Gym. Each pet keeps its own saved room. Saved mats appear in every room. Furnishing choices remain saved for Main Room.</div>' +
       controls + (layout.room && layout.room !== 'main' ? '<div class="button-grid one">' + button('RETURN TO MAIN ROOM', 'house_place',
         { slot_key:'room', item_key:'main' }, { detail:'Restore your original Main Room; saved floor and furniture choices are kept. No cost or reward.' }) + '</div>' : '') +
       '<div class="button-grid one">' + routeButton('BACK TO HOME', { screen:'home' }, 'See the saved room behind your pet on the main canvas.') + '</div>', 'pet-house');
@@ -5094,9 +5094,10 @@
       var home = savedHomeLayout(state);
       var room = state.lifecycle && state.lifecycle.phase === 'egg' ? 'main' : home.room;
       if (!HOME_ROOMS.includes(room)) room = 'main';
+      var floorSaved = Boolean(state.pet_house && state.pet_house.available === true && state.pet && state.pet_house.pet_id === state.pet.pet_id && state.pet_house.floor_saved);
       if (room === 'main') {
         drawHomeWall(home.wall);
-        drawHomeFloor(home.floor, Boolean(botArtRendererReady), Boolean(state.pet_house && state.pet_house.available === true && state.pet && state.pet_house.pet_id === state.pet.pet_id && state.pet_house.floor_saved));
+        drawHomeFloor(home.floor, Boolean(botArtRendererReady), floorSaved);
         var purchased = state.pet_furniture && state.pet_furniture.available === true
           ? savedPurchasedFurniture(state) : null;
         if (!purchased || !purchased.right) drawHomeFurniture(home.furniture);
@@ -5109,6 +5110,7 @@
         backgroundArtState.floor = { mode: home.floor, baseline_y: BOT_RENDER_BASELINE_Y, shadow: Boolean(botArtRendererReady) };
       } else {
         drawDedicatedHomeRoom(room);
+        if (floorSaved) drawHomeFloor(home.floor, Boolean(botArtRendererReady), true);
         backgroundArtState.floor = { mode: room + '_room', baseline_y: BOT_RENDER_BASELINE_Y, shadow: Boolean(botArtRendererReady) };
       }
       home.active_room = room;
