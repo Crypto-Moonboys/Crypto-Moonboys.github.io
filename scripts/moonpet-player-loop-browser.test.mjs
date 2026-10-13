@@ -989,11 +989,14 @@ try {
     assert.ok(await page.locator('#nav button').evaluateAll((buttons) => buttons.length === 6 && buttons.every((b) => b.getBoundingClientRect().right <= innerWidth && b.getBoundingClientRect().left >= 0)), 'all six navigation buttons must fit the viewport');
     for (const action of ['energy_drink', 'dance', 'cuddles']) assert.equal(await page.locator(`[data-panel="care"] [data-action="${action}"]`).count(), 1);
     const dancesBefore = actions.filter(action => action === 'dance').length;
+    const radioAttemptsBefore=await page.evaluate(()=>window.radioTapChecks.length);
+    const danceResponse=page.waitForResponse(response=>response.url().endsWith('/action')&&response.request().postDataJSON()?.action==='dance');
     await page.locator('[data-panel="care"] [data-action="dance"]').click();
-    await page.waitForFunction(() => document.querySelector('[data-utility="radio"]').getAttribute('aria-pressed') === 'true');
-    await page.waitForFunction(() => document.querySelector('[data-utility="radio"]').getAttribute('aria-pressed') === 'false');
-    assert.equal(actions.filter(action => action === 'dance').length, dancesBefore + 1, 'Dance audio never repeats the gameplay mutation');
-    assert.equal(await page.evaluate(() => window.radioTapChecks.at(-1)), true, 'real rendered Dance button plays inside its trusted gesture');
+    await danceResponse;
+    await page.waitForFunction(()=>window.MoonpetBetaAppearance.getBotArtState().lastRender.animationMode==='idle');
+    assert.equal(await page.locator('[data-utility="radio"]').getAttribute('aria-pressed'),'false','Dance does not toggle Radio');
+    assert.equal(actions.filter(action => action === 'dance').length, dancesBefore + 1, 'Dance submits its gameplay mutation once');
+    assert.equal(await page.evaluate(()=>window.radioTapChecks.length),radioAttemptsBefore,'rendered Dance button does not call media play');
     assert.equal(await page.evaluate(() => localStorage.getItem('moonpet-radio-preference')), 'off', 'completed Dance keeps manual radio Off');
     for (const screen of ['work', 'economy']) {
       await page.locator(`[data-screen="${screen}"]`).click();
