@@ -183,7 +183,7 @@ test('house is wired only through signed selected-pet state and actions',()=>{
   assert.match(worker,/getPetHouseLayout|readPetHouseLayout/);
   assert.match(worker,/action === 'house_place'/);
   assert.match(client,/function renderPetHouse\(/);
-  assert.match(entry,/moonpet-mini-app\.js\?v=20261013-menu-flow-v1/);
+  assert.match(entry,/moonpet-mini-app\.js\?v=20261013-emoji-controls-v1/);
   assert.doesNotMatch(client,/house_place[\s\S]{0,90}moon_gold/);
   assert.match(worker,/readPetHouseLayout\(lifecycleScope\.db, telegramId, petRaw\)/);
   assert.match(worker,/readPetHouseLayout\(identityScope\.db, telegramId, petRaw\)/);
