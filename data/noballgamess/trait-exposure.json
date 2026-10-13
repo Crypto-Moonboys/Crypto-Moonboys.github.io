@@ -1,6 +1,6 @@
 {
   "collection": "noballgamess",
-  "generated_at": "2026-10-12T11:01:04.631Z",
+  "generated_at": "2026-10-13T10:44:37.565Z",
   "note": "Trait exposure uses live_supply when live counts are available; issued_supply fallback remains explicit.",
   "ranking_formula": {
     "source_of_truth": "AtomicAssets",
