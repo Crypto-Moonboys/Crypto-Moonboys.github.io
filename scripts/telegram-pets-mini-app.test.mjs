@@ -2073,7 +2073,7 @@ assert.doesNotMatch(client, /bg-bg23999-v1|SPACE_BACKGROUND_FRAMES|drawSpaceShee
 function backgroundHarness(reduce = false) {
   const images = [], draws = [];
   const api = new Function('images', 'draws', 'reducedMotion', `
-    var petBackgroundImage = null, petBackgroundReady = false, backgroundArtState, state = {}, redraws = 0;
+    var petBackgroundImage = null, petBackgroundReady = false, backgroundArtState, state = null, redraws = 0;
     function Image() { images.push(this); }
     var ctx = { save() {}, restore() {}, drawImage(...args) { draws.push(args); } };
     function drawWorld() { redraws++; }
@@ -2099,7 +2099,7 @@ const stillBackground = backgroundHarness(true);
 stillBackground.draw();
 Object.assign(stillBackground.images[0], { naturalWidth: 1280, naturalHeight: 880 });
 stillBackground.images[0].onload();
-assert.equal(stillBackground.redraws(), 1, 'redraw loaded image in reduced motion');
+assert.equal(stillBackground.redraws(), 1, 'redraw loaded image in reduced motion even before player state arrives');
 background.images[0].onerror();
 assert.equal(background.draw(), false, 'failed image retains fallback');
 assert.equal(Object.keys(botArtRegistry.bots).length, 8, 'all eight bots must be registered');

@@ -4816,7 +4816,7 @@
       petBackgroundImage.decoding = 'async';
       petBackgroundImage.onload = function () {
         petBackgroundReady = petBackgroundImage.naturalWidth > 0 && petBackgroundImage.naturalHeight > 0;
-        if (reducedMotion && state) drawWorld(performance.now());
+        if (reducedMotion) drawWorld(performance.now());
       };
       petBackgroundImage.onerror = function () { petBackgroundReady = false; };
       petBackgroundImage.src = PET_BACKGROUND_URL;
