@@ -67,7 +67,7 @@ const chromeCandidates = [
   "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
   "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe"
 ];
-const executablePath = chromeCandidates.find((candidate) => fsSync.existsSync(candidate));
+const executablePath = process.env.CHROMIUM_EXECUTABLE_PATH || chromeCandidates.find((candidate) => fsSync.existsSync(candidate));
 const browser = await chromium.launch({ headless: true, ...(executablePath ? { executablePath } : {}) });
 try {
   const animatedPage = await browser.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1 });
@@ -153,6 +153,7 @@ try {
 
   await fs.mkdir(OUTPUT, { recursive: true });
   await selectAndWaitForPack(page, { speciesId: "neon_raccoon", speciesName: "F1 EDDY", evolutionStage: 2 }, "F1 EDDY");
+  await page.waitForFunction(() => window.MoonpetBetaAppearance.getBackgroundArtState().mode === 'bitty_background');
   const liveComposition = await page.evaluate(() => {
     const canvas = document.getElementById("moonpet-canvas");
     const context = canvas.getContext("2d");
