@@ -30,20 +30,15 @@ test('invalid, missing, unavailable and wrong-pet House state use safe appearanc
   assert.deepEqual(JSON.parse(JSON.stringify(runtime.savedHomeLayout(good))),good.pet_house.layout);
 });
 
-test('Home walls never wash out the graffiti background',()=>{
+test('all Home wall choices leave the graffiti background completely untouched',()=>{
   const {runtime,calls,ctx}=painter();
-  calls.length=0; runtime.drawHomeWall('warehouse_brick');
-  assert.equal(calls.length,0,'default warehouse brick leaves the original graffiti untouched');
-  for(const wall of ['night_wall','studio_white']) {
+  for(const wall of ['warehouse_brick','night_wall','studio_white']) {
     calls.length=0; runtime.drawHomeWall(wall);
-    assert.ok(calls.length>0 && calls.length<12,wall+' uses only bounded trim');
-    assert.equal(ctx.globalAlpha,1,'wall trim cannot change canvas alpha');
-    assert.ok(calls.every(c=>c.alpha===1),'wall customization must not use translucent paint');
-    assert.ok(calls.every(c=>c.x>=0 && c.y>=0 && c.x+c.w<=320 && c.y+c.h<=220));
-    assert.ok(!calls.some(c=>c.x===0 && c.y===0 && c.w===320 && c.h>2),
-      'no wall option may paint a full-width translucent veil over the graffiti');
+    assert.equal(calls.length,0,wall+' must paint no border, seam, tint or overlay');
+    assert.equal(ctx.globalAlpha,1,'wall selection cannot change canvas alpha');
   }
-  assert.doesNotMatch(scene,/globalAlpha\s*=\s*(?:0\.22|0\.42|0\.68)/,'retired wall wash/detail alpha values stay removed');
+  assert.doesNotMatch(scene,/globalAlpha\s*=\s*(?:0\.22|0\.42|0\.68)/,'retired wall alpha values stay removed');
+  assert.doesNotMatch(scene,/drawPixelRect\([^\n]*wall|for \(var seam/,'wall renderer must not draw decorative geometry over graffiti');
 });
 
 test('floor and furniture starter options remain distinct with bounded work',()=>{
