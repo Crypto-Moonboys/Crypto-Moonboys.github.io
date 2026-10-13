@@ -237,6 +237,12 @@ test('room selection defaults to Main, persists per pet and preserves old layout
   f.sql.prepare("UPDATE telegram_pet_active_slots SET pet_id='pet-2',season_key='new-quarter' WHERE telegram_id='owner-a'").run();
   assert.equal((await setPetHouseLayout(f.d1,'owner-a',f.pet1,'room','kitchen')).accepted,false);
   assert.equal((await readPetHouseLayout(f.d1,'owner-a',f.pet1)).layout.room,'gym');
+  assert.equal((await setPetHouseLayout(f.d1,'owner-a',f.pet1,'room','main')).accepted,false,'reset cannot target another selected pet');
+  f.sql.prepare("UPDATE telegram_pet_active_slots SET pet_id='pet-1',season_key='old-quarter' WHERE telegram_id='owner-a'").run();
+  assert.equal((await setPetHouseLayout(f.d1,'owner-a',f.pet1,'room','main')).accepted,true);
+  assert.equal((await readPetHouseLayout(f.d1,'owner-a',f.pet1)).layout.room,'main');
+  assert.deepEqual(f.sql.prepare('SELECT * FROM telegram_pet_house_layouts').all(),oldRows);
+  assert.deepEqual(f.sql.prepare('SELECT * FROM telegram_pet_profiles').all(),balances);
   f.close();
 });
 

@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS telegram_pet_house_rooms (
   pet_id TEXT PRIMARY KEY,
   telegram_id TEXT NOT NULL,
   season_key TEXT NOT NULL,
-  room_key TEXT NOT NULL CHECK(room_key IN ('kitchen','garden','gym')),
+  room_key TEXT NOT NULL CHECK(room_key IN ('main','kitchen','garden','gym')),
   updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (pet_id) REFERENCES telegram_pet_instances(pet_id) ON DELETE CASCADE,
   FOREIGN KEY (pet_id,telegram_id,season_key)

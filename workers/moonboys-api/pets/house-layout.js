@@ -31,6 +31,7 @@ export const PET_HOUSE_DEFAULTS = Object.freeze({
 });
 
 export function validPetHouseChoice(slotKey, itemKey) {
+  if (slotKey==='room' && itemKey==='main') return true; // explicit reset, not a fourth replacement option
   return Object.hasOwn(PET_HOUSE_CHOICES, slotKey) &&
     PET_HOUSE_CHOICES[slotKey].some(entry=>entry.key===itemKey);
 }

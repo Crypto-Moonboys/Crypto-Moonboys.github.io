@@ -195,7 +195,7 @@ try {
       assert.equal(await page.locator('#home-room-switcher, [data-home-room]').count(),0,'canvas room icons are removed');
       assert.equal(await page.locator('.canvas-controls button').count(),3,'only Audio/Radio/Refresh remain');
       async function chooseRoom(key) {
-        const label={kitchen:'Kitchen',garden:'Garden',gym:'Gym'}[key];
+        const label={main:'RETURN TO MAIN ROOM',kitchen:'Kitchen',garden:'Garden',gym:'Gym'}[key];
         await page.locator('#nav [data-screen="profile"]').click();
         const settings=page.locator('[data-panel="pet-house"]');await settings.waitFor();
         if(!await settings.evaluate(node=>node.open)) await settings.locator('summary').click();
@@ -209,6 +209,8 @@ try {
         await settings.getByRole('button',{name:/BACK TO HOME/}).click();
         await page.waitForFunction(key=>window.MoonpetBetaAppearance.getBackgroundArtState().home?.active_room===key,key);
       }
+      const originalMainPixels=await wallPixels();
+      const roomBalances=f.sql.prepare('SELECT moon_gold,moon_crystals,style_tokens,pet_xp FROM telegram_pet_profiles WHERE telegram_id=?').get(f.owner);
       const roomSignatures={main:await page.locator('#moonpet-canvas').evaluate(c=>c.toDataURL())};
       const oldWall=f.sql.prepare("SELECT item_key FROM telegram_pet_house_layouts WHERE pet_id=? AND slot_key='wall'").get(young).item_key;
       for(const key of ['kitchen','garden','gym']) {
@@ -219,6 +221,11 @@ try {
       }
       assert.equal(new Set(Object.values(roomSignatures)).size,4,'saved rooms differ from unchanged Main Room');
       assert.equal(f.sql.prepare("SELECT item_key FROM telegram_pet_house_layouts WHERE pet_id=? AND slot_key='wall'").get(young).item_key,oldWall);
+      await chooseRoom('main');await page.reload();await ready();
+      await page.waitForFunction(()=>window.MoonpetBetaAppearance.getBackgroundArtState().home?.active_room==='main');
+      assert.deepEqual(await wallPixels(),originalMainPixels,'Main Room reset restores unchanged original art');
+      assert.deepEqual(f.sql.prepare('SELECT moon_gold,moon_crystals,style_tokens,pet_xp FROM telegram_pet_profiles WHERE telegram_id=?').get(f.owner),roomBalances);
+      await page.waitForFunction(()=>window.MoonpetBetaAppearance.getBackgroundArtState().home?.purchased?.left==='neon_lamp');
       await chooseRoom('kitchen');
       assert.equal(await page.locator('[data-panel="kitchen"] [data-action="craft"]').count(), 3,
         'Kitchen exposes only the three existing cooked-meal recipes');
