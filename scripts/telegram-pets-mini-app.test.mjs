@@ -2128,13 +2128,10 @@ const floorContext = { globalAlpha: 1, save() { floorAlpha.push(this.globalAlpha
 const drawFloor = new Function('ctx', 'drawPixelRect', 'BOT_RENDER_BASELINE_Y', 'BOT_RENDER_CENTER_X', floorSource + '; return drawCompanionFloor;')(
   floorContext, (x, y, width, height, color) => floorPaint.push({ x, y, width, height, color, alpha: floorContext.globalAlpha }), 219, 160);
 drawFloor(false);
-const pavingOnly = structuredClone(floorPaint);
-assert.ok(pavingOnly.length <= 32, 'floor is a bounded static set of primitives');
-assert.ok(pavingOnly.every(rect => rect.x >= 0 && rect.x + rect.width <= 320 && rect.y >= 198 && rect.y + rect.height <= 220), 'floor stays within the bottom strip');
-floorPaint.length = 0; drawFloor(true);
-assert.deepEqual(floorPaint.slice(0, pavingOnly.length), pavingOnly);
-assert.equal(floorPaint.length, pavingOnly.length + 3, 'a ready companion adds only its contact shadow');
-assert.ok(floorPaint.slice(pavingOnly.length).every(rect => rect.alpha === 0.7 && rect.y >= 203 && rect.y + rect.height <= 209));
+assert.equal(floorPaint.length, 0, 'the canvas background remains visible to the bottom edge with no paving strip');
+drawFloor(true);
+assert.equal(floorPaint.length, 3, 'a ready companion adds only its contact shadow');
+assert.ok(floorPaint.every(rect => rect.alpha === 0.7 && rect.y >= 203 && rect.y + rect.height <= 209));
 assert.equal(floorContext.globalAlpha, 1, 'shadow opacity cannot leak into sprites');
 const worldCalls = [];
 const floorRuntime = vm.createContext({ reducedMotion: false, performance: { now: () => 7 },
