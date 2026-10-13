@@ -110,6 +110,7 @@ try {
     const viewport = document.querySelector(".viewport").getBoundingClientRect();
     const tools = document.getElementById('canvas-tools');
     tools.hidden = false;
+    document.querySelector('.canvas-controls').scrollTop=0;
     const toolBoxes = [...tools.children].map(button => button.getBoundingClientRect());
     const output = document.getElementById("terminal-output");
     const outputText = output.querySelector(".terminal-output-text");
@@ -142,7 +143,8 @@ try {
   assert.equal(shellLayout.viewportVariable, "520px", "shell must use Telegram's visible viewport height");
   assert.ok(shellLayout.shellBottom <= 520.5, "shell must fit inside Telegram's visible viewport");
   assert.ok(Math.abs(shellLayout.outputBottom - shellLayout.viewportTop) < 1, "status strip must sit directly above the canvas");
-  assert.equal(shellLayout.toolsFit, true, 'all three compact emoji controls must fit a short Telegram viewport');
+  assert.equal(shellLayout.toolsFit,true, 'utilities fit the Telegram viewport');
+  assert.equal(await page.locator('.canvas-tool').evaluateAll(nodes=>nodes.every(node=>node.offsetWidth===44 && node.offsetHeight===44)),true, 'tiny emojis retain 44px tap targets');
   assert.ok(shellLayout.outputHeight >= 34, "status strip must remain visible");
   assert.equal(shellLayout.outputPosition, "relative", "status strip must occupy a stable grid row");
   assert.equal(shellLayout.outputAnimation, "none", "the fixed status bar must not move or animate");

@@ -149,3 +149,18 @@ test('E4 Kitchen, Garden and Gym render as distinct full-canvas rooms without te
   assert.doesNotMatch(roomsSource,/fillText|strokeText/,'room art must not bake labels into the canvas');
   assert.doesNotMatch(client,/HOME_STATION_HOTSPOTS|homeStationAt\(/,'retired station hitboxes must not remain');
 });
+
+
+test('emoji room updates preserve toolbar scrolling and avoid replacing unchanged controls',()=>{
+  const source=client.slice(client.indexOf('  function renderHomeRoomSwitcher()'),client.indexOf('  function closeUtility()'));
+  const toolbar={scrollTop:170};let html='',writes=0;
+  const switcher={hidden:false,parentElement:toolbar,get innerHTML(){return html;},
+    set innerHTML(value){html=value;writes++;toolbar.scrollTop=0;}};
+  const runtime=vm.createContext({state:{adopted:true,pet:{},lifecycle:{phase:'young'}},activeScreen:'home',
+    activeHomeRoom:'main',HOME_ROOMS:['main','kitchen','garden','gym'],homeRoomSwitcher:switcher});
+  vm.runInContext(source,runtime);runtime.renderHomeRoomSwitcher();
+  assert.equal(toolbar.scrollTop,170);
+  runtime.renderHomeRoomSwitcher();assert.equal(writes,1,'radio updates cannot replace unchanged room targets');
+  runtime.activeHomeRoom='gym';toolbar.scrollTop=120;runtime.renderHomeRoomSwitcher();
+  assert.equal(writes,2);assert.equal(toolbar.scrollTop,120,'selection redraw retains the toolbar position');
+});

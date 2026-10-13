@@ -1450,10 +1450,16 @@
     homeRoomSwitcher.hidden = !hatchedHome;
     if (!hatchedHome) return;
     var roomIcons = { main:'🏠', kitchen:'🍳', gym:'🏋️', garden:'🌱' };
-    homeRoomSwitcher.innerHTML = HOME_ROOMS.map(function (room) {
+    var markup = HOME_ROOMS.map(function (room) {
       var label = room === 'main' ? 'MAIN ROOM' : room.toUpperCase();
       return '<button type="button" data-home-room="' + room + '" aria-label="' + label + '" title="' + label + '" aria-pressed="' + (room === activeHomeRoom ? 'true' : 'false') + '"><span aria-hidden="true">' + roomIcons[room] + '</span></button>';
     }).join('');
+    if (homeRoomSwitcher.innerHTML !== markup) {
+      var toolbar = homeRoomSwitcher.parentElement;
+      var scrollTop = toolbar ? toolbar.scrollTop : 0;
+      homeRoomSwitcher.innerHTML = markup;
+      if (toolbar) toolbar.scrollTop = scrollTop;
+    }
   }
 
   function closeUtility() {
