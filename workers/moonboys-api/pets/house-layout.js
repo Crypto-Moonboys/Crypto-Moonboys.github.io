@@ -15,9 +15,9 @@ export const PET_HOUSE_CHOICES = Object.freeze({
     Object.freeze({ key:'studio_white', label:'Studio White' }),
   ]),
   floor: Object.freeze([
-    Object.freeze({ key:'concrete', label:'Concrete' }),
-    Object.freeze({ key:'checkerboard', label:'Checkerboard' }),
-    Object.freeze({ key:'steel', label:'Steel' }),
+    Object.freeze({ key:'concrete', label:'NEON MATT' }),
+    Object.freeze({ key:'checkerboard', label:'GOLD MATT' }),
+    Object.freeze({ key:'steel', label:'CAMO MATT' }),
   ]),
   furniture: Object.freeze([
     Object.freeze({ key:'sleep_mat', label:'Sleep Mat' }),
@@ -52,7 +52,7 @@ function petHouseProjection(result, pet) {
     layout[row.slot_key] = row.item_key;
   }
   return { available:true,pet_id:pet.pet_id,season_key:pet.season_key,
-    layout,choices:PET_HOUSE_CHOICES,cost:{},reward:{} };
+    layout,floor_saved:rows.some(row=>row.slot_key==='floor'),choices:PET_HOUSE_CHOICES,cost:{},reward:{} };
 }
 
 export async function readPetHouseLayout(db, owner, pet) {

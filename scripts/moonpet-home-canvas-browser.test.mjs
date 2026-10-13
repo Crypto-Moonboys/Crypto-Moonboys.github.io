@@ -37,7 +37,7 @@ try {
     f.sql.prepare("UPDATE telegram_pet_lifecycle_by_pet SET phase='egg',incubation_json='{\"progress\":0,\"target\":12,\"signals\":{}}' WHERE pet_id=?").run(egg);
     f.sql.prepare("UPDATE telegram_pet_instances SET stage='egg' WHERE pet_id=?").run(egg);
     // Original server-authoritative action seeds representative existing saved choices.
-    for (const [slot, item] of [['wall','night_wall'],['floor','checkerboard'],['furniture','record_deck']]) {
+    for (const [slot, item] of [['wall','night_wall'],['furniture','record_deck']]) {
       assert.equal((await f.act({action:'house_place',slot_key:slot,item_key:item})).accepted, true);
     }
     f.active(egg);
@@ -76,7 +76,8 @@ try {
       }, [wall,floor,furniture]);
     }
     await page.goto(origin + '/moonpet-game.html'); await ready();
-    await room('night_wall','checkerboard','record_deck');
+    await room('night_wall','concrete','record_deck');
+    await page.waitForFunction(()=>window.MoonpetBetaAppearance.getBackgroundArtState().matt==='/img/blacknsilvermatt.png');
     await page.waitForFunction(()=>window.MoonpetBetaAppearance.getBackgroundArtState().mode === 'bitty_background');
     await page.locator('.viewport').screenshot({path:path.join(evidence,'hatched-'+width+'.png')});
     if (!before) {
@@ -99,7 +100,7 @@ try {
         return [[16,2],[2,100],[638,100],[160,20],[320,20],[480,20],[2,410],[638,438]]
           .map(([x,y])=>Array.from(context.getImageData(x,y,1,1).data));
       });
-      for (const [slot,item,label] of [['floor','steel','Steel'],['furniture','plant_pot','Plant Pot']]) {
+      for (const [slot,item,label] of [['floor','concrete','NEON MATT'],['floor','checkerboard','GOLD MATT'],['floor','steel','CAMO MATT'],['furniture','plant_pot','Plant Pot']]) {
         const previous=await page.locator('#moonpet-canvas').evaluate(c=>c.toDataURL());
         const previousWall=await wallPixels();
         const response=page.waitForResponse(r=>r.url().endsWith('/action') && r.request().postDataJSON()?.action==='house_place');
@@ -110,12 +111,15 @@ try {
         const nextCanvas=await page.locator('#moonpet-canvas').evaluate(c=>c.toDataURL());
         if (slot==='wall') {
           assert.deepEqual(await wallPixels(),previousWall,'wall choices leave the graffiti borders and seam pixels untouched');
-        } else if(slot==='floor') assert.deepEqual(await wallPixels(),previousWall,'saved floor leaves original room art unchanged');
+        } else if(slot==='floor') {
+          await page.waitForFunction(item=>window.MoonpetBetaAppearance.getBackgroundArtState().matt==={concrete:'/img/neonmatt.png',checkerboard:'/img/goldmatt.png',steel:'/img/camomatt.png'}[item],item);
+          assert.deepEqual(await wallPixels(),previousWall,'transparent mat keeps room borders visible');
+        }
         else assert.notEqual(nextCanvas,previous,slot+' changes main canvas pixels');
       }
       assert.deepEqual(f.sql.prepare('SELECT moon_gold,moon_crystals,style_tokens,pet_xp FROM telegram_pet_profiles WHERE telegram_id=?').get(f.owner),wallet);
       assert.deepEqual(f.sql.prepare('SELECT * FROM telegram_pet_inventory WHERE telegram_id=? ORDER BY asset_type,asset_key').all(f.owner),inventory);
-      assert.equal(requests.slice(count).filter(r=>r.body.action==='house_place').length,2);
+      assert.equal(requests.slice(count).filter(r=>r.body.action==='house_place').length,4);
       assert.ok(requests.slice(count).filter(r=>r.path.endsWith('/action')).every(r=>['house_place','guidance_ack'].includes(r.body.action)),'saving decoration introduces no extra gameplay actions');
       await panel.getByRole('button',{name:/BACK TO HOME/}).click();
       await room('night_wall','steel','plant_pot');

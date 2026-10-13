@@ -98,12 +98,14 @@ test('house design persists per pet, across cycles, without awarding/spending re
   const f=fixture();
   const initial=await readPetHouseLayout(f.d1,'owner-a',f.pet1);
   assert.equal(initial.available,true);
+  assert.equal(initial.floor_saved,false,'unsaved floor uses the free Main Room mat');
   assert.deepEqual(initial.layout,PET_HOUSE_DEFAULTS);
   assert.equal(initial.pet_id,'pet-1');
   for(const [slot,item] of [['wall','night_wall'],['floor','checkerboard'],['furniture','record_deck']]){
     const save=await setPetHouseLayout(f.d1,'owner-a',f.pet1,slot,item);
     assert.equal(save.accepted,true,slot);
     assert.equal(save.pet_house.layout[slot],item);
+    if(slot==='floor') assert.equal(save.pet_house.floor_saved,true,'saved floor overrides the built-in mat');
     assert.deepEqual(save.pet_house.reward,{});
   }
   const repeat=await setPetHouseLayout(f.d1,'owner-a',f.pet1,'wall','night_wall');
@@ -184,7 +186,7 @@ test('house is wired only through signed selected-pet state and actions',()=>{
   assert.match(worker,/getPetHouseLayout|readPetHouseLayout/);
   assert.match(worker,/action === 'house_place'/);
   assert.match(client,/function renderPetHouse\(/);
-  assert.match(entry,/moonpet-mini-app\.js\?v=20261013-room-art-v1/);
+  assert.match(entry,/moonpet-mini-app\.js\?v=20261013-matts-v1/);
   assert.doesNotMatch(client,/house_place[\s\S]{0,90}moon_gold/);
   assert.match(worker,/readPetHouseLayout\(lifecycleScope\.db, telegramId, petRaw\)/);
   assert.match(worker,/readPetHouseLayout\(identityScope\.db, telegramId, petRaw\)/);
