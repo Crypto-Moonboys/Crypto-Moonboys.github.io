@@ -416,8 +416,6 @@
   }
 
   // TEST-EXPORT: radioPlayback:start
-  var danceRadioSession = null;
-  var musicStereoSuppressedSequence = -1;
   var radioConnectionTimer = 0;
   var radioStatus = 'off';
   var RADIO_CONNECTION_TIMEOUT_MS = 15000;
@@ -427,72 +425,19 @@
     radioConnectionTimer = 0;
   }
 
-  function releaseDanceRadio() {
-    var session = danceRadioSession;
-    if (!session) return null;
-    window.clearTimeout(session.timer);
-    danceRadioSession = null;
-    // Finish a held pose normally if playback fails or the user takes over.
-    if (session.waiting && session.animationSequence === actionSequence && animationMode === 'dance') {
-      animateAction('dance', true, session.duration);
-    }
-    return session;
-  }
-
-  function stopDanceRadio() {
-    if (releaseDanceRadio()) setRadioEnabled(false, false, false);
-  }
-
-  function startDanceRadio() {
-    // A new tap owns the stream without pausing an existing dance between taps.
-    releaseDanceRadio();
-    var session = { animationSequence: 0, timer: 0 };
-    danceRadioSession = session;
-    // Bound the pending-action phase too; normal completion replaces this with
-    // the actual pose deadline. The API request itself is capped at 60 seconds.
-    session.timer = window.setTimeout(function () {
-      if (danceRadioSession === session) stopDanceRadio();
-    }, 65000);
-    // Call play in the original user gesture, before awaiting the action save.
-    // Temporary dance playback must not change the remembered Radio preference.
-    setRadioEnabled(true, false, false);
-    return session;
-  }
-
-  function syncDanceRadioAnimation(mode, until, sequence) {
-    var session = danceRadioSession;
-    if (!session) return;
-    if (mode !== 'dance') { stopDanceRadio(); return; }
-    window.clearTimeout(session.timer);
-    session.animationSequence = sequence;
-    session.duration = Math.max(1, until - performance.now());
-    session.waiting = radioRequestedOn && !radioEnabled;
-    if (session.waiting) {
-      // A cold live stream may connect after the original 3.6-second pose.
-      // Keep the pose until playback begins; connection setup is bounded below.
-      animationUntil = Number.POSITIVE_INFINITY;
-      return;
-    }
-    session.timer = window.setTimeout(function () {
-      if (danceRadioSession === session && session.animationSequence === sequence) stopDanceRadio();
-    }, Math.max(0, until - performance.now()));
-  }
-
   function radioPlaybackFailed(error, announce) {
     clearRadioConnectionTimer();
-    var temporaryDance = Boolean(releaseDanceRadio());
     radioStatus = 'error';
-    musicStereoSuppressedSequence = actionSequence;
     if (radioPlayer) radioPlayer.pause();
     radioRequestedOn = false;
     radioEnabled = false;
-    radioNeedsGesture = !temporaryDance && Boolean(error && error.name === 'NotAllowedError');
+    radioNeedsGesture = Boolean(error && error.name === 'NotAllowedError');
     radioRetryNeedsLoad = !radioNeedsGesture;
     syncMoonpetScore();
     renderCanvasTools();
     var code = Number(radioPlayer && radioPlayer.error && radioPlayer.error.code || error && error.code || 0);
     var reason = ({ 1: 'INTERRUPTED', 2: 'NETWORK', 3: 'DECODE', 4: 'FORMAT' })[code];
-    if (announce !== false || temporaryDance) tell(error && error.name === 'TimeoutError'
+    if (announce !== false) tell(error && error.name === 'TimeoutError'
       ? 'RADIO CONNECTION TIMED OUT. TAP THE RADIO ICON TO RETRY.'
       : error && error.name === 'NotAllowedError'
       ? 'RADIO NEEDS A TAP. TAP THE RADIO ICON TO PLAY.'
@@ -506,7 +451,6 @@
     radioNeedsGesture = false;
     var requestGeneration = ++radioRequestGeneration;
     if (!on) {
-      musicStereoSuppressedSequence = actionSequence;
       if (radioPlayer) radioPlayer.pause();
       radioEnabled = false;
       if (persistPreference !== false) saveRadioPreference(false);
@@ -539,8 +483,6 @@
       clearRadioConnectionTimer();
       radioEnabled = true;
       radioStatus = 'live';
-      if (danceRadioSession && danceRadioSession.waiting && danceRadioSession.animationSequence === actionSequence
-          && animationMode === 'dance') animateAction('dance', true, danceRadioSession.duration);
       radioRetryNeedsLoad = false;
       if (persistPreference !== false) saveRadioPreference(true);
       syncMoonpetScore();
@@ -555,8 +497,6 @@
   }
 
   function toggleRadio() {
-    // An explicit Radio choice takes ownership from the automatic dance stop.
-    releaseDanceRadio();
     var playback = setRadioEnabled(!radioRequestedOn, true);
     haptic('light');
     return playback;
@@ -565,7 +505,7 @@
     if (!radioNeedsGesture || radioRequestedOn || radioEnabled || !state || document.hidden || !event.isTrusted) return;
     if (event.type === 'keydown' && (event.repeat || !['Enter', ' '].includes(event.key))) return;
     // The Radio button owns its toggle; Audio should not unexpectedly start radio.
-    if (event.target && event.target.closest && event.target.closest('[data-utility="radio"], [data-utility="audio"], [data-action="dance"]')) return;
+    if (event.target && event.target.closest && event.target.closest('[data-utility="radio"], [data-utility="audio"], [data-action="dance"], [data-local-emote]')) return;
     setRadioEnabled(true, false);
   }
 
@@ -1022,7 +962,7 @@
             "care"
       ],
       "dance": [
-            "Raise happiness and play the radio for this dance. The pose waits while radio connects, then ends with the music; the Radio control can override it. No XP or incubation signal.",
+            "Raise happiness and play a short dance pose. Dance never starts or stops Radio; use the Radio control separately. No XP or incubation signal.",
             "care"
       ],
       "cuddles": [
@@ -3389,7 +3329,7 @@
         }).join('') + '</div>';
     }).join('');
     return panel('HOME CUSTOMIZATION',
-      '<div class="line muted">Main Room is your original Home until you choose Kitchen, Garden or Gym. Each pet keeps its own saved room. Saved mats appear in every room. Furnishing choices remain saved for Main Room.</div>' +
+      '<div class="line muted">Main Room is your original Home until you choose Kitchen, Garden or Gym. Each pet keeps its own saved room. Saved mats and furnishings appear in every room. Radio temporarily replaces only right-side furniture.</div>' +
       controls + (layout.room && layout.room !== 'main' ? '<div class="button-grid one">' + button('RETURN TO MAIN ROOM', 'house_place',
         { slot_key:'room', item_key:'main' }, { detail:'Restore your original Main Room; saved floor and furniture choices are kept. No cost or reward.' }) + '</div>' : '') +
       '<div class="button-grid one">' + routeButton('BACK TO HOME', { screen:'home' }, 'See the saved room behind your pet on the main canvas.') + '</div>', 'pet-house');
@@ -4102,7 +4042,6 @@
     var animationDuration = duration || 2400;
     actionStartedAt = performance.now();
     animationUntil = sleepLatched && animationMode === 'sleep' ? Number.POSITIVE_INFINITY : actionStartedAt + animationDuration;
-    syncDanceRadioAnimation(animationMode, animationUntil, actionSequence);
     if (reducedMotion) {
       window.clearTimeout(reducedMotionAnimationTimer);
       var sequence = actionSequence;
@@ -4199,7 +4138,6 @@
     var authoritativeSleepClear = ['energy_drink', 'dance', 'cuddles'].includes(String(action || '').toLowerCase());
     var waitForAcceptedAnimation = !fastResponse && authoritativeSleepClear;
     var actionFamily = actionAnimationFamily(action, payload);
-    var danceRadioScope = actionFamily === 'dance' ? startDanceRadio() : null;
     if (sleepLatched && actionFamily !== 'sleep' && !authoritativeSleepClear) setSleepLatch(false);
     if (!waitForAcceptedAnimation) animateAction(action, true, fastResponse ? (actionFamily === 'dance' ? 3600 : 2800) : 8000, payload);
     tell(words(action) + ' in progress...');
@@ -4329,8 +4267,6 @@
       animateAction(action, actionAccepted === true, 2800, payload);
       haptic(actionAccepted ? 'success' : 'error');
     } finally {
-      if (danceRadioScope && danceRadioSession === danceRadioScope
-        && (!danceRadioScope.animationSequence || actionAccepted !== true)) stopDanceRadio();
       busy = false;
       if (buttonElement) buttonElement.classList.remove('is-active');
     }
@@ -5132,26 +5068,25 @@
       var home = savedHomeLayout(state);
       var room = state.lifecycle && state.lifecycle.phase === 'egg' ? 'main' : home.room;
       if (!HOME_ROOMS.includes(room)) room = 'main';
-      var musicActive = (radioRequestedOn || animationMode === 'dance' && animationUntil > renderTime
-        && actionSequence !== musicStereoSuppressedSequence) && !(state.lifecycle && state.lifecycle.phase === 'egg');
+      var musicActive = radioRequestedOn && !(state.lifecycle && state.lifecycle.phase === 'egg');
       var floorSaved = Boolean(state.pet_house && state.pet_house.available === true && state.pet && state.pet_house.pet_id === state.pet.pet_id && state.pet_house.floor_saved);
       if (room === 'main') {
         drawHomeWall(home.wall);
         drawHomeFloor(home.floor, Boolean(botArtRendererReady), floorSaved);
-        var purchased = state.pet_furniture && state.pet_furniture.available === true
-          ? savedPurchasedFurniture(state) : null;
-        if (!musicActive && (!purchased || !purchased.right)) drawHomeFurniture(home.furniture, renderTime);
-        if (purchased) {
-          if (purchased.wall) drawPurchasedFurniture(purchased.wall,'wall');
-          if (purchased.left) drawPurchasedFurniture(purchased.left,'left');
-          if (purchased.right && !musicActive) drawPurchasedFurniture(purchased.right,'right');
-          home.purchased = purchased;
-        }
         backgroundArtState.floor = { mode: home.floor, baseline_y: BOT_RENDER_BASELINE_Y, shadow: Boolean(botArtRendererReady) };
       } else {
         drawDedicatedHomeRoom(room);
         if (floorSaved) drawHomeFloor(home.floor, Boolean(botArtRendererReady), true);
         backgroundArtState.floor = { mode: room + '_room', baseline_y: BOT_RENDER_BASELINE_Y, shadow: Boolean(botArtRendererReady) };
+      }
+      var purchased = state.pet_furniture && state.pet_furniture.available === true
+        ? savedPurchasedFurniture(state) : null;
+      if (!musicActive && (!purchased || !purchased.right)) drawHomeFurniture(home.furniture, renderTime);
+      if (purchased) {
+        if (purchased.wall) drawPurchasedFurniture(purchased.wall,'wall');
+        if (purchased.left) drawPurchasedFurniture(purchased.left,'left');
+        if (purchased.right && !musicActive) drawPurchasedFurniture(purchased.right,'right');
+        home.purchased = purchased;
       }
       if (musicActive) drawMusicStereo(renderTime);
       home.right_override = musicActive ? 'stereo' : null;
@@ -5283,7 +5218,6 @@
   }
 
   window.addEventListener('pagehide', function () {
-    stopDanceRadio();
     window.clearInterval(scoreTimer); scoreTimer = 0;
     radioRequestGeneration += 1;
     if (radioPlayer) radioPlayer.pause();
@@ -5294,7 +5228,7 @@
     if (event.persisted) refreshSeasonSnapshot(true);
   });
   document.addEventListener('visibilitychange', function () {
-    if (document.hidden) { stopDanceRadio(); return; }
+    if (document.hidden) return;
     refreshSeasonSnapshot(true);
     if (performanceSent) return;
     performanceFrames = 0; performanceSlowFrames = 0; performanceStartedAt = 0; performanceLastFrameAt = 0;
