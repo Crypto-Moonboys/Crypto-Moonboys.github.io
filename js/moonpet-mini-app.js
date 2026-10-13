@@ -4934,24 +4934,14 @@
 
   // TEST-EXPORT: companionFloor:start
   function drawCompanionFloor(withShadow) {
-    // Static street paving. Keep the sprite baseline and touch bounds intact.
-    var top = BOT_RENDER_BASELINE_Y - 21;
+    // Keep the background art visible to the bottom edge; only retain the optional
+    // contact shadow so removing the old paving strip does not move the pet.
+    if (!withShadow) return;
     ctx.save();
-    drawPixelRect(0, top, 320, 220 - top, '#252629');
-    drawPixelRect(0, top, 320, 2, '#474347');
-    drawPixelRect(0, top + 2, 320, 1, '#151518');
-    drawPixelRect(0, top + 10, 320, 1, '#151518');
-    for (var column = 0; column < 8; column += 1) {
-      drawPixelRect(column * 40, top + 3, 1, 7, '#19191d');
-      drawPixelRect(column * 40 + 20, top + 11, 1, 220 - top - 11, '#19191d');
-      drawPixelRect(column * 40 + 9, top + 5, 5, 1, '#303136');
-    }
-    if (withShadow) {
-      ctx.globalAlpha = 0.7;
-      drawPixelRect(BOT_RENDER_CENTER_X - 38, BOT_RENDER_BASELINE_Y - 14, 76, 2, '#0b0b0e');
-      drawPixelRect(BOT_RENDER_CENTER_X - 28, BOT_RENDER_BASELINE_Y - 16, 56, 2, '#0b0b0e');
-      drawPixelRect(BOT_RENDER_CENTER_X - 22, BOT_RENDER_BASELINE_Y - 12, 44, 2, '#0b0b0e');
-    }
+    ctx.globalAlpha = 0.7;
+    drawPixelRect(BOT_RENDER_CENTER_X - 38, BOT_RENDER_BASELINE_Y - 14, 76, 2, '#0b0b0e');
+    drawPixelRect(BOT_RENDER_CENTER_X - 28, BOT_RENDER_BASELINE_Y - 16, 56, 2, '#0b0b0e');
+    drawPixelRect(BOT_RENDER_CENTER_X - 22, BOT_RENDER_BASELINE_Y - 12, 44, 2, '#0b0b0e');
     ctx.restore();
   }
   // TEST-EXPORT: companionFloor:end
