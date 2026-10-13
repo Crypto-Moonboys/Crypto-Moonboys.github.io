@@ -4892,6 +4892,25 @@
     drawCompanionFloor(withShadow);
   }
 
+  var radioDiscoImage = null;
+  function drawRadioDiscoBall(time) {
+    if (!radioDiscoImage) {
+      radioDiscoImage = new Image();
+      radioDiscoImage.decoding = 'async';
+      radioDiscoImage.onload = function () { if (reducedMotion) drawWorld(performance.now()); };
+      radioDiscoImage.src = '/img/ball-disco.png';
+    }
+    if (!radioDiscoImage.complete || radioDiscoImage.naturalWidth !== 1280 || radioDiscoImage.naturalHeight !== 1280) return;
+    var frame = reducedMotion ? 0 : Math.floor(Math.max(0, Number(time) || 0) / 125) % 25;
+    var width = 64, height = width * 215 / 180;
+    ctx.save();
+    ctx.imageSmoothingEnabled = true;
+    ctx.drawImage(radioDiscoImage, (frame % 5) * 256 + 38, Math.floor(frame / 5) * 256 + 12,
+      180, 215, 44, 0, width, height);
+    ctx.restore();
+    backgroundArtState.disco = { source:'/img/ball-disco.png', frame:frame };
+  }
+
   var musicStereoImage = null;
   function drawMusicStereo(time) {
     if (!musicStereoImage) {
@@ -5063,6 +5082,7 @@
     backgroundArtState.home = null;
     backgroundArtState.matt = null;
     backgroundArtState.stereo = null;
+    backgroundArtState.disco = null;
     var showHome = state && state.adopted && state.pet && !hatchArtTransitionActive(renderTime);
     if (showHome) {
       var home = savedHomeLayout(state);
@@ -5088,7 +5108,7 @@
         if (purchased.right) drawPurchasedFurniture(purchased.right,'right');
         home.purchased = purchased;
       }
-      if (musicActive) drawMusicStereo(renderTime);
+      if (musicActive) { drawMusicStereo(renderTime); drawRadioDiscoBall(renderTime); }
       home.right_overlay = musicActive ? 'stereo' : null;
       home.active_room = room;
       home.rooms = HOME_ROOMS.slice();
