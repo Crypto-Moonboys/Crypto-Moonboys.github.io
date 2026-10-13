@@ -4702,7 +4702,12 @@
         var serverTime = Date.parse(merged.server_time || '');
         if (Number.isFinite(serverTime)) serverClockOffsetMs = serverTime - Date.now();
       }
+      // Read the current position after the request: the user may have scrolled
+      // while it was in flight. Keep an in-flow menu anchored to the section end.
+      var scrollTop = screen.scrollTop;
+      var atBottom = screen.scrollHeight - screen.clientHeight - scrollTop <= 1;
       render();
+      screen.scrollTop = atBottom ? screen.scrollHeight : scrollTop;
       var after = multiplayerFingerprint(state);
       if (before !== after && activeScreen === 'explore') {
         tell('MULTIPLAYER STATE UPDATED.');

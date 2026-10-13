@@ -644,3 +644,24 @@ for (const phase of ['fetch', 'body']) test(`superseding tab warmup aborts stall
   await assert.rejects(read, error => error.code === 'request_superseded');
   assert.equal(stalled.signal.aborted, true); assert.equal(net.timers.size, 0);
 });
+
+for (const scenario of [
+  { name:'reading position', before:240, during:240, expected:240 },
+  { name:'scrolling during the request', before:240, during:420, expected:420 },
+  { name:'bottom menu with taller refreshed content', before:800, during:800, expected:1000 },
+  { name:'bottom menu with shorter refreshed content', before:800, during:800, height:900, expected:700 },
+]) test('passive live refresh preserves '+scenario.name, async () => {
+  // Model the browser clamping scrollTop when innerHTML temporarily empties
+  // the options, then adding longer/shorter refreshed panels plus navigation.
+  let top=scenario.before;
+  const screen={clientHeight:200,scrollHeight:1000,
+    get scrollTop(){return top;},set scrollTop(value){top=Math.max(0,Math.min(value,this.scrollHeight-this.clientHeight));}};
+  const f=context({screen,render(){screen.scrollHeight=200;screen.scrollTop=0;screen.scrollHeight=scenario.height||1200;}});
+  const read=f.ctx.refreshLiveState();
+  assert.equal(f.calls.length,1);
+  screen.scrollTop=scenario.during;
+  f.pending.shift().resolve({state:patch(2)});
+  await read;
+  assert.equal(screen.scrollTop,scenario.expected);
+  assert.equal(f.calls.length,1,'scroll preservation adds no API request');
+});
