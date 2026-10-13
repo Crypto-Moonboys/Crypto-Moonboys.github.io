@@ -28,7 +28,7 @@ Twelve cosmetic items are purchased once per account using server-defined Moon G
 
 ### H11 House E1 — main-canvas Home correction (12 October 2026)
 
-Home customization changes the actual room displayed behind the selected pet in the existing main game canvas. PROFILE’s HOME CUSTOMIZATION editor retains the original nine free Wall, Floor and Furnishing choices and `house_place` action; HOME links to CUSTOMIZE HOME, and BACK TO HOME returns to the pet. There is no separate preview room, destination or minigame.
+Home customization uses the existing main game canvas. PROFILE’s HOME CUSTOMIZATION editor retains the original nine free Wall, Floor and Furnishing choices and `house_place` action; Floor and Furnishing remain visible Main Room changes, while saved Wall choices no longer paint any tint, border, seam or brick overlay over the base graffiti. HOME links to CUSTOMIZE HOME, and BACK TO HOME returns to the pet. There is no separate preview room, destination or minigame.
 
 Each original pet ID/ownership season keeps its existing migration-092 layout, including eggs. Existing core and full state responses include the selected pet’s read-only layout so reloads, switching and care reconciliation do not need another client request or Profile hydration. Missions retains only the same pet’s confirmed appearance in the client without a layout query; high-frequency live polling is unchanged. Missing, unavailable, invalid or wrong-pet visual state uses starter appearance without saving anything; unavailable editor state disables selection until an authoritative refresh succeeds.
 
