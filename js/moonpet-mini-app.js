@@ -4968,22 +4968,10 @@
   }
 
   function drawHomeWall(wall) {
-    // Keep the original graffiti art completely unwashed.
-    // The default warehouse wall paints nothing; alternate wall choices use
-    // only narrow opaque trim so they remain distinguishable without adding
-    // any translucent full-canvas veil or brick-detail overlay.
-    if (wall === 'warehouse_brick') return;
-    var top = BOT_RENDER_BASELINE_Y - 21;
-    var color = wall === 'studio_white' ? '#ddd9cd' : '#18182c';
-    ctx.save();
-    drawPixelRect(0, 0, 320, 2, color);
-    drawPixelRect(0, 0, 2, top, color);
-    drawPixelRect(318, 0, 2, top, color);
-    drawPixelRect(0, top - 2, 320, 2, color);
-    if (wall === 'studio_white') {
-      for (var seam = 80; seam < 320; seam += 80) drawPixelRect(seam, 0, 1, top, '#56565e');
-    }
-    ctx.restore();
+    // Wall selection remains in the saved Home contract, but the base graffiti
+    // artwork is now rendered completely untouched. No wall option paints any
+    // border, seam, tint, brick detail or translucent overlay over the canvas.
+    return;
   }
 
   function drawHomeFloor(floor, withShadow) {

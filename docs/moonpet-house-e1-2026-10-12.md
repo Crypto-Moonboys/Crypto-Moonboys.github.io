@@ -13,7 +13,7 @@
 
 ## Main-canvas correction and release
 
-Wall finishes are translucent layers over existing backgrounds; flooring stays aligned to the original 219px sprite baseline and shadow. Furniture stays outside the original pet/tap bounds. Existing animation and effects draw above these static layers. Eggs use the same saved Home; the hatch reveal retains its original chamber before restoring Home. Invalid or wrong-pet visual state falls back without changing the save.
+Wall selections remain server-saved per pet but no longer paint any translucent layer, border, seam or brick-detail geometry over the base graffiti background; flooring stays aligned to the original 219px sprite baseline and shadow. Furniture stays outside the original pet/tap bounds. Existing animation and effects draw above these static layers. Eggs use the same saved Home; the hatch reveal retains its original chamber before restoring Home. Invalid or wrong-pet visual state falls back without changing the save.
 
 Validate the original ownership/economy/layout tests, actual core and full projections, main canvas pixels for all three selections, per-pet switching/reload, egg and hatched art, Profile editor/confirmation, interactions and 360px/390px/desktop layouts. Run all five CI domains and synchronize the shared How to Play guide. Before/after screenshots use local SQLite-backed fixtures, never live player records.
 
