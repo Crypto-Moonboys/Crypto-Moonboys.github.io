@@ -101,7 +101,9 @@ try {
         assert.equal((await (await response).json()).result.accepted,true);
         await panel.locator('[data-action="house_place"]:disabled').filter({hasText:'ACTIVE: '+label}).waitFor();
         await page.waitForFunction(({slot,item})=>window.MoonpetBetaAppearance.getBackgroundArtState().home?.[slot]===item,{slot,item});
-        assert.notEqual(await page.locator('#moonpet-canvas').evaluate(c=>c.toDataURL()),previous,slot+' changes main canvas pixels');
+        const nextCanvas=await page.locator('#moonpet-canvas').evaluate(c=>c.toDataURL());
+        if (slot==='wall') assert.equal(nextCanvas,previous,'wall choices no longer paint any overlay over the graffiti background');
+        else assert.notEqual(nextCanvas,previous,slot+' changes main canvas pixels');
       }
       assert.deepEqual(f.sql.prepare('SELECT moon_gold,moon_crystals,style_tokens,pet_xp FROM telegram_pet_profiles WHERE telegram_id=?').get(f.owner),wallet);
       assert.deepEqual(f.sql.prepare('SELECT * FROM telegram_pet_inventory WHERE telegram_id=? ORDER BY asset_type,asset_key').all(f.owner),inventory);
