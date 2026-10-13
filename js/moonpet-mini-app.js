@@ -4952,6 +4952,7 @@
     drawCompanionFloor(withShadow);
   }
 
+  var homePlantImage = null;
   function drawHomeFurniture(furniture) {
     // Right-side placements stay outside the existing sprite/tap bounds.
     var base = BOT_RENDER_BASELINE_Y - 3;
@@ -4963,12 +4964,19 @@
       drawPixelRect(264, base - 5, 4, 5, '#151518');
       drawPixelRect(302, base - 5, 4, 5, '#151518');
     } else if (furniture === 'plant_pot') {
-      drawPixelRect(279, base - 46, 3, 26, '#598464');
-      drawPixelRect(267, base - 43, 14, 8, '#598464');
-      drawPixelRect(282, base - 50, 17, 9, '#79a57c');
-      drawPixelRect(284, base - 33, 13, 7, '#598464');
-      drawPixelRect(271, base - 20, 22, 3, '#ba8969');
-      drawPixelRect(274, base - 17, 16, 17, '#88624b');
+      if (!homePlantImage) {
+        homePlantImage = new Image();
+        homePlantImage.decoding = 'async';
+        homePlantImage.onload = function () { if (reducedMotion) drawWorld(performance.now()); };
+        homePlantImage.src = '/img/Neon_PurplePlant.png';
+      }
+      if (homePlantImage.complete && homePlantImage.naturalWidth && homePlantImage.naturalHeight) {
+        var plantWidth = 220 * homePlantImage.naturalWidth / homePlantImage.naturalHeight;
+        ctx.save();
+        ctx.imageSmoothingEnabled = true;
+        ctx.drawImage(homePlantImage, 320 - plantWidth, 0, plantWidth, 220);
+        ctx.restore();
+      }
     } else {
       drawPixelRect(258, base - 8, 52, 8, '#2d3444');
       drawPixelRect(260, base - 10, 48, 6, '#69738a');

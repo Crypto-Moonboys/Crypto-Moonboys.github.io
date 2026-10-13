@@ -9,7 +9,7 @@ const scene=client.split('// TEST-EXPORT: homeScene:start')[1].split('// TEST-EX
 function painter() {
   const calls=[], stack=[];
   const ctx={globalAlpha:1,drawImage:(image,...args)=>calls.push({source:image.src,args}),save(){stack.push(this.globalAlpha);},restore(){this.globalAlpha=stack.pop();}};
-  const runtime=vm.createContext({ctx,Image:function(){this.complete=true;this.naturalWidth=640;this.naturalHeight=440;},reducedMotion:false,backgroundArtState:{},BOT_RENDER_BASELINE_Y:219,BOT_RENDER_CENTER_X:160,
+  const runtime=vm.createContext({ctx,Image:function(){this.complete=true;this.naturalWidth=456;this.naturalHeight=880;},reducedMotion:false,backgroundArtState:{},BOT_RENDER_BASELINE_Y:219,BOT_RENDER_CENTER_X:160,
     drawPixelRect:(x,y,w,h,color)=>calls.push({x,y,w,h,color,alpha:ctx.globalAlpha}),
     drawCompanionFloor:()=>calls.push({originalFloor:true})});
   vm.runInContext(scene,runtime);
@@ -50,7 +50,11 @@ test('transparent full-canvas mat choices and furniture remain distinct',()=>{
       assert.ok(calls.length>0 && calls.length<100);
       assert.equal(ctx.globalAlpha,1,'layer opacity must not affect pet sprites');
       assert.ok(calls.filter(c=>!c.originalFloor&&!c.source).every(c=>c.x>=0 && c.y>=0 && c.x+c.w<=320 && c.y+c.h<=220));
-      if(fn==='drawHomeFurniture') assert.ok(calls.every(c=>c.x>252),'furniture stays outside original companion bounds');
+      if(fn==='drawHomeFurniture') assert.ok(calls.filter(c=>!c.source).every(c=>c.x>252),'pixel furniture stays outside original companion bounds');
+      if(fn==='drawHomeFurniture'&&option==='plant_pot') {
+        assert.equal(calls[0].source,'/img/Neon_PurplePlant.png');
+        assert.deepEqual(calls[0].args,[206,0,114,220],'plant image fills canvas height and preserves its aspect ratio');
+      }
       outputs.push(JSON.stringify(calls));
     }
     assert.equal(new Set(outputs).size,3,'saved mats and furniture distinguish all existing choices');
