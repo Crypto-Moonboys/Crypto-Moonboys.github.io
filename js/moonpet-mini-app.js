@@ -3377,8 +3377,8 @@
       var available = choices[slot] || [];
       return '<div class="line muted">' + escapeHtml(slot.toUpperCase()) + '</div><div class="button-grid">' +
         available.map(function (item) {
-          var active = layout[slot] === item.key;
-          return button((active ? 'ACTIVE: ' : 'SET ') + item.label, 'house_place',
+          var active = layout[slot] === item.key && (slot !== 'floor' || house.floor_saved === true);
+          return button((active ? 'ACTIVE: ' : 'SET ') + (slot === 'floor' ? {concrete:'NEON MATT',checkerboard:'GOLD MATT',steel:'CAMO MATT'}[item.key] || item.label : item.label), 'house_place',
             { slot_key:slot, item_key:item.key },
             { disabled:active, statusLabel:active ? 'SAVED' : '',
               detail:'Free decoration for the selected pet; no Moon Gold, XP or item cost.' });
@@ -4926,9 +4926,29 @@
     return;
   }
 
-  function drawHomeFloor(floor, withShadow) {
-    // No synthetic floor strip: preserve the original background to the canvas edge.
-    // Floor selections remain saved but do not paint over the background.
+  var HOME_MATT_URLS = Object.freeze({
+    concrete:'/img/neonmatt.png', checkerboard:'/img/goldmatt.png', steel:'/img/camomatt.png',
+    default:'/img/blacknsilvermatt.png'
+  });
+  var homeMattImages = {};
+  function drawHomeFloor(floor, withShadow, selected) {
+    var key = selected === false ? 'default' : floor;
+    var source = HOME_MATT_URLS[key] || HOME_MATT_URLS.default;
+    var image = homeMattImages[source];
+    if (!image) {
+      image = new Image();
+      homeMattImages[source] = image;
+      image.decoding = 'async';
+      image.onload = function () { if (reducedMotion) drawWorld(performance.now()); };
+      image.src = source;
+    }
+    if (image.complete && image.naturalWidth && image.naturalHeight) {
+      ctx.save();
+      ctx.imageSmoothingEnabled = true;
+      ctx.drawImage(image, 0, 0, 320, 220);
+      ctx.restore();
+      backgroundArtState.matt = source;
+    }
     drawCompanionFloor(withShadow);
   }
 
@@ -5068,6 +5088,7 @@
 
     backgroundArtState.floor = null;
     backgroundArtState.home = null;
+    backgroundArtState.matt = null;
     var showHome = state && state.adopted && state.pet && !hatchArtTransitionActive(renderTime);
     if (showHome) {
       var home = savedHomeLayout(state);
@@ -5075,7 +5096,7 @@
       if (!HOME_ROOMS.includes(room)) room = 'main';
       if (room === 'main') {
         drawHomeWall(home.wall);
-        drawHomeFloor(home.floor, Boolean(botArtRendererReady));
+        drawHomeFloor(home.floor, Boolean(botArtRendererReady), Boolean(state.pet_house && state.pet_house.available === true && state.pet && state.pet_house.pet_id === state.pet.pet_id && state.pet_house.floor_saved));
         var purchased = state.pet_furniture && state.pet_furniture.available === true
           ? savedPurchasedFurniture(state) : null;
         if (!purchased || !purchased.right) drawHomeFurniture(home.furniture);

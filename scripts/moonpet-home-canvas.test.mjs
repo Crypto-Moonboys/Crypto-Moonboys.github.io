@@ -8,8 +8,8 @@ const scene=client.split('// TEST-EXPORT: homeScene:start')[1].split('// TEST-EX
 
 function painter() {
   const calls=[], stack=[];
-  const ctx={globalAlpha:1,save(){stack.push(this.globalAlpha);},restore(){this.globalAlpha=stack.pop();}};
-  const runtime=vm.createContext({ctx,BOT_RENDER_BASELINE_Y:219,BOT_RENDER_CENTER_X:160,
+  const ctx={globalAlpha:1,drawImage:(image,...args)=>calls.push({source:image.src,args}),save(){stack.push(this.globalAlpha);},restore(){this.globalAlpha=stack.pop();}};
+  const runtime=vm.createContext({ctx,Image:function(){this.complete=true;this.naturalWidth=640;this.naturalHeight=440;},reducedMotion:false,backgroundArtState:{},BOT_RENDER_BASELINE_Y:219,BOT_RENDER_CENTER_X:160,
     drawPixelRect:(x,y,w,h,color)=>calls.push({x,y,w,h,color,alpha:ctx.globalAlpha}),
     drawCompanionFloor:()=>calls.push({originalFloor:true})});
   vm.runInContext(scene,runtime);
@@ -41,7 +41,7 @@ test('all Home wall choices leave the graffiti background completely untouched',
   assert.doesNotMatch(scene,/drawPixelRect\([^\n]*wall|for \(var seam/,'wall renderer must not draw decorative geometry over graffiti');
 });
 
-test('stored floor choices preserve original art while furniture stays distinct',()=>{
+test('transparent full-canvas mat choices and furniture remain distinct',()=>{
   const {runtime,calls,ctx}=painter();
   for(const [fn,options] of [['drawHomeFloor',['concrete','checkerboard','steel']],['drawHomeFurniture',['sleep_mat','record_deck','plant_pot']]]) {
     const outputs=[];
@@ -49,12 +49,15 @@ test('stored floor choices preserve original art while furniture stays distinct'
       calls.length=0; runtime[fn](option,true);
       assert.ok(calls.length>0 && calls.length<100);
       assert.equal(ctx.globalAlpha,1,'layer opacity must not affect pet sprites');
-      assert.ok(calls.filter(c=>!c.originalFloor).every(c=>c.x>=0 && c.y>=0 && c.x+c.w<=320 && c.y+c.h<=220));
+      assert.ok(calls.filter(c=>!c.originalFloor&&!c.source).every(c=>c.x>=0 && c.y>=0 && c.x+c.w<=320 && c.y+c.h<=220));
       if(fn==='drawHomeFurniture') assert.ok(calls.every(c=>c.x>252),'furniture stays outside original companion bounds');
       outputs.push(JSON.stringify(calls));
     }
-    assert.equal(new Set(outputs).size,fn==='drawHomeFloor'?1:3,fn==='drawHomeFloor'?'saved floor choices keep the original room art unchanged':'furniture distinguishes all existing choices');
+    assert.equal(new Set(outputs).size,3,'saved mats and furniture distinguish all existing choices');
   }
+  calls.length=0;runtime.drawHomeFloor('concrete',true,false);
+  assert.equal(calls[0].source,'/img/blacknsilvermatt.png');
+  assert.deepEqual(calls[0].args,[0,0,320,220]);
   assert.doesNotMatch(scene,/fetch\(|post\(|requestAnimationFrame|setTimeout|setInterval|createElement/,'static layers do not add requests, loops or a second canvas');
 });
 
