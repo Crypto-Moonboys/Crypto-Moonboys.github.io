@@ -4968,19 +4968,20 @@
   }
 
   function drawHomeWall(wall) {
-    // Translucent finishes keep the existing street/chamber art visible.
+    // Keep the original graffiti art completely unwashed.
+    // The default warehouse wall paints nothing; alternate wall choices use
+    // only narrow opaque trim so they remain distinguishable without adding
+    // any translucent full-canvas veil or brick-detail overlay.
+    if (wall === 'warehouse_brick') return;
     var top = BOT_RENDER_BASELINE_Y - 21;
+    var color = wall === 'studio_white' ? '#ddd9cd' : '#18182c';
     ctx.save();
-    ctx.globalAlpha = wall === 'studio_white' ? 0.68 : 0.42;
-    drawPixelRect(0, 0, 320, top, wall === 'studio_white' ? '#ddd9cd' : wall === 'night_wall' ? '#18182c' : '#443b3b');
-    ctx.globalAlpha = 0.22;
-    if (wall === 'warehouse_brick') {
-      for (var row = 18; row < top; row += 24) {
-        drawPixelRect(0, row, 320, 2, '#9b8279');
-        for (var brick = row % 48 ? 0 : 24; brick < 320; brick += 48) drawPixelRect(brick, row - 18, 1, 18, '#9b8279');
-      }
-    } else {
-      for (var seam = 40; seam < 320; seam += 80) drawPixelRect(seam, 0, 1, top, wall === 'studio_white' ? '#56565e' : '#8170b3');
+    drawPixelRect(0, 0, 320, 2, color);
+    drawPixelRect(0, 0, 2, top, color);
+    drawPixelRect(318, 0, 2, top, color);
+    drawPixelRect(0, top - 2, 320, 2, color);
+    if (wall === 'studio_white') {
+      for (var seam = 80; seam < 320; seam += 80) drawPixelRect(seam, 0, 1, top, '#56565e');
     }
     ctx.restore();
   }
