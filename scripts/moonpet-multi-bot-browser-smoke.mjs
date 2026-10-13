@@ -84,14 +84,13 @@ try {
     return getComputedStyle(output.querySelector('.terminal-output-text')).animationName;
   });
   assert.equal(animatedStatus, 'terminal-status-scroll', 'normal-motion status details retain their scrolling track');
-  const glowTracks = await animatedPage.locator('.canvas-tool').evaluateAll(buttons => buttons.map(button => {
-    const style = getComputedStyle(button);
-    return [style.animationName, style.animationDuration, style.animationDelay];
-  }));
-  assert.equal(glowTracks.length, 3);
-  assert.ok(glowTracks.every(track => track[0] === 'canvas-tool-glow'));
-  assert.equal(new Set(glowTracks.map(track => track[1])).size, 3, 'each icon must glow at a different pace');
-  assert.equal(new Set(glowTracks.map(track => track[2])).size, 3, 'glow phases must be staggered');
+  const iconStyles = await animatedPage.locator('.canvas-tool').evaluateAll(buttons => buttons.map(button => ({
+    animation:getComputedStyle(button).animationName, size:getComputedStyle(button).fontSize,
+    text:button.textContent.trim(), label:button.getAttribute('aria-label')
+  })));
+  assert.equal(iconStyles.length,3);
+  assert.ok(iconStyles.every(icon=>icon.animation==='none' && icon.size==='12px' && icon.label));
+  assert.ok(iconStyles.every(icon=>!/[A-Z]/.test(icon.text)), 'utilities have emojis without visible words');
   await animatedPage.close();
 
   const page = await browser.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1 });
@@ -111,6 +110,7 @@ try {
     const viewport = document.querySelector(".viewport").getBoundingClientRect();
     const tools = document.getElementById('canvas-tools');
     tools.hidden = false;
+    document.querySelector('.canvas-controls').scrollTop=0;
     const toolBoxes = [...tools.children].map(button => button.getBoundingClientRect());
     const output = document.getElementById("terminal-output");
     const outputText = output.querySelector(".terminal-output-text");
@@ -143,7 +143,8 @@ try {
   assert.equal(shellLayout.viewportVariable, "520px", "shell must use Telegram's visible viewport height");
   assert.ok(shellLayout.shellBottom <= 520.5, "shell must fit inside Telegram's visible viewport");
   assert.ok(Math.abs(shellLayout.outputBottom - shellLayout.viewportTop) < 1, "status strip must sit directly above the canvas");
-  assert.equal(shellLayout.toolsFit, true, 'all three 44px canvas controls must fit a short Telegram viewport');
+  assert.equal(shellLayout.toolsFit,true, 'utilities fit the Telegram viewport');
+  assert.equal(await page.locator('.canvas-tool').evaluateAll(nodes=>nodes.every(node=>node.offsetWidth===44 && node.offsetHeight===44)),true, 'tiny emojis retain 44px tap targets');
   assert.ok(shellLayout.outputHeight >= 34, "status strip must remain visible");
   assert.equal(shellLayout.outputPosition, "relative", "status strip must occupy a stable grid row");
   assert.equal(shellLayout.outputAnimation, "none", "the fixed status bar must not move or animate");

@@ -184,6 +184,29 @@ try {
       });
       const roomButtons = page.locator('#home-room-switcher [data-home-room]');
       assert.equal(await roomButtons.count(), 4);
+      const icons=await page.locator('.canvas-controls button').evaluateAll(nodes=>nodes.map(node=>{
+        const r=node.getBoundingClientRect();return {text:node.textContent.trim(),label:node.getAttribute('aria-label'),
+          x:r.x,y:r.y,w:r.width,h:r.height};
+      }));
+      assert.equal(icons.length,7);
+      assert.ok(icons.every(icon=>icon.label && !/[A-Z]/.test(icon.text) && icon.w===44 && icon.h===44));
+      assert.ok(icons.slice(3).every(icon=>icon.y>=icons[2].y+icons[2].h), 'room icons sit below utilities');
+      const scene=await page.locator('.viewport').boundingBox();
+      assert.ok(icons.every(icon=>icon.x>=scene.x && icon.x+icon.w<=scene.x+scene.width+1), 'toolbar stays within scene width');
+      for(const button of await page.locator('.canvas-controls button').all()) {
+        await button.evaluate(node=>node.scrollIntoView({block:'nearest'}));
+        const box=await button.boundingBox();
+        assert.ok(box.y>=scene.y && box.y+box.height<=scene.y+scene.height+1, 'every icon is reachable in short toolbar');
+      }
+      const hud=await page.locator('#hud').boundingBox();
+      assert.ok(icons.every(icon=>icon.x>=hud.x+hud.width || icon.y>=hud.y+hud.height), 'icons leave the HUD clear');
+
+      const keyboardRoom=page.locator('#home-room-switcher [data-home-room="kitchen"]');
+      await keyboardRoom.focus();
+      await page.evaluate(()=>{window.originalRoomTarget=document.activeElement;});
+      await keyboardRoom.press('Enter');
+      assert.equal(await page.evaluate(()=>document.activeElement===window.originalRoomTarget),true,'room selection retains keyboard focus and node identity');
+      assert.equal(await keyboardRoom.getAttribute('aria-pressed'),'true');
       const roomActionRequests = requests.filter(r=>r.path.endsWith('/action')).length;
       const roomSignatures = {};
       for (const [roomKey,panelId] of [['kitchen','kitchen'],['gym','gym'],['garden','garden'],['main','main-room']]) {

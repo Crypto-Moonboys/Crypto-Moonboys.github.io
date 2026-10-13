@@ -149,3 +149,24 @@ test('E4 Kitchen, Garden and Gym render as distinct full-canvas rooms without te
   assert.doesNotMatch(roomsSource,/fillText|strokeText/,'room art must not bake labels into the canvas');
   assert.doesNotMatch(client,/HOME_STATION_HOTSPOTS|homeStationAt\(/,'retired station hitboxes must not remain');
 });
+
+
+test('emoji room updates preserve target identity and toolbar scrolling',()=>{
+  const source=client.slice(client.indexOf('  function renderHomeRoomSwitcher()'),client.indexOf('  function closeUtility()'));
+  const toolbar={scrollTop:170};let html='',writes=0,buttons=[];
+  const switcher={hidden:false,parentElement:toolbar,querySelectorAll(){return buttons;},get innerHTML(){return html;},
+    set innerHTML(value){html=value;writes++;toolbar.scrollTop=0;
+      buttons=[...value.matchAll(/data-home-room="([^"]+)"/g)].map(match=>({dataset:{homeRoom:match[1]},
+        attributes:{},setAttribute(key,value){this.attributes[key]=value;}}));}};
+  const runtime=vm.createContext({state:{adopted:true,pet:{},lifecycle:{phase:'young'}},activeScreen:'home',
+    activeHomeRoom:'main',HOME_ROOMS:['main','kitchen','garden','gym'],homeRoomSwitcher:switcher});
+  vm.runInContext(source,runtime);runtime.renderHomeRoomSwitcher();
+  assert.equal(toolbar.scrollTop,170);
+  const original=buttons.slice();
+  runtime.renderHomeRoomSwitcher();assert.equal(writes,1);
+  runtime.activeHomeRoom='gym';toolbar.scrollTop=120;runtime.renderHomeRoomSwitcher();
+  assert.equal(writes,1);assert.equal(toolbar.scrollTop,120);
+  buttons.forEach((button,index)=>assert.equal(button,original[index],'room selection keeps target nodes'));
+  assert.equal(buttons[0].attributes['aria-pressed'],'false');
+  assert.equal(buttons[3].attributes['aria-pressed'],'true');
+});

@@ -916,7 +916,9 @@ try {
     await page.locator('[data-screen="home"]').click();
     const canvasTools = page.locator('#canvas-tools');
     assert.equal(await canvasTools.locator('button').count(), 3);
-    assert.equal((await canvasTools.textContent()).trim(), 'AUDIORADIOREFRESH', 'canvas controls explain their icons with visible labels');
+    assert.doesNotMatch((await canvasTools.textContent()).trim(), /[A-Z]/, 'canvas utilities show emojis without visible words');
+    assert.equal(await canvasTools.locator('span[aria-hidden="true"]').count(),3);
+    await page.locator('.canvas-controls').evaluate(node=>{node.scrollTop=0;});
     assert.equal(await page.locator('#screen [data-utility="audio"], #screen [data-utility="radio"], #screen [data-utility="sync"]').count(), 0);
     const layout = await canvasTools.evaluate((tools) => {
       const viewport = document.querySelector('.viewport').getBoundingClientRect();
@@ -931,7 +933,7 @@ try {
     });
     assert.ok(layout.every(button => button.within && button.clearOfHud && button.width >= 44 && button.height >= 44 && button.label));
     assert.ok(layout.every((button, index) => index === 0 || button.top >= layout[index - 1].bottom));
-    assert.ok(layout.every(button => button.motion === 'none'), 'reduced motion must stop all three glow animations');
+    assert.ok(layout.every(button => button.motion === 'none'), 'compact utility icons have no glow animation');
     const radio = canvasTools.locator('[data-utility="radio"]');
     await radio.click();
     await page.waitForFunction(() => document.querySelector('[data-utility="radio"]').getAttribute('aria-busy') === 'false');
