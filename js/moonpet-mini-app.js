@@ -4965,26 +4965,9 @@
   }
 
   function drawHomeFloor(floor, withShadow) {
-    // Reuse the original ground/contact shadow and preserve the pet baseline.
-    drawCompanionFloor(false);
-    var top = BOT_RENDER_BASELINE_Y - 21;
-    ctx.save();
-    if (floor === 'checkerboard') {
-      for (var y = top + 3; y < 220; y += 10) {
-        for (var x = 0; x < 320; x += 20) drawPixelRect(x, y, 20, Math.min(10, 220 - y),
-          ((x / 20 + (y - top - 3) / 10) % 2) ? '#aaa99c' : '#3b3d42');
-      }
-    } else if (floor === 'steel') {
-      drawPixelRect(0, top + 3, 320, 220 - top - 3, '#464d52');
-      for (var plate = 0; plate < 320; plate += 40) drawPixelRect(plate, top + 3, 2, 220 - top - 3, '#818b8d');
-    }
-    if (withShadow) {
-      ctx.globalAlpha = 0.7;
-      drawPixelRect(BOT_RENDER_CENTER_X - 38, BOT_RENDER_BASELINE_Y - 14, 76, 2, '#0b0b0e');
-      drawPixelRect(BOT_RENDER_CENTER_X - 28, BOT_RENDER_BASELINE_Y - 16, 56, 2, '#0b0b0e');
-      drawPixelRect(BOT_RENDER_CENTER_X - 22, BOT_RENDER_BASELINE_Y - 12, 44, 2, '#0b0b0e');
-    }
-    ctx.restore();
+    // No synthetic floor strip: preserve the original background to the canvas edge.
+    // Floor selections remain saved but do not paint over the background.
+    drawCompanionFloor(withShadow);
   }
 
   function drawHomeFurniture(furniture) {
