@@ -171,11 +171,11 @@ try {
         'paid RIGHT furniture must visually replace the original E1 furnishing');
       const paidPixels=await rightPixels();
       await page.locator('[data-utility="radio"]').click();
-      await page.waitForFunction(()=>window.MoonpetBetaAppearance.getBackgroundArtState().stereo?.source==='/img/bass-yeo.png');
-      assert.notDeepEqual(await rightPixels(),paidPixels,'stereo temporarily replaces paid right furniture');
+      await page.waitForFunction(()=>window.MoonpetBetaAppearance.getBackgroundArtState().stereo?.source==='/img/bass-yeo.png'&&window.MoonpetBetaAppearance.getBackgroundArtState().disco?.source==='/img/ball-disco.png');
+      assert.notDeepEqual(await rightPixels(),paidPixels,'stereo appears in front of paid right furniture');
       assert.equal(f.sql.prepare("SELECT item_key FROM telegram_pet_furniture_placements WHERE pet_id=? AND slot_key='right'").get(young).item_key,'retro_tv');
       await page.locator('[data-utility="radio"]').click();
-      await page.waitForFunction(()=>window.MoonpetBetaAppearance.getBackgroundArtState().stereo===null);
+      await page.waitForFunction(()=>window.MoonpetBetaAppearance.getBackgroundArtState().stereo===null&&window.MoonpetBetaAppearance.getBackgroundArtState().disco===null);
       assert.deepEqual(await rightPixels(),paidPixels,'radio off restores paid right furniture');
       assert.equal(f.sql.prepare(
         "SELECT item_key FROM telegram_pet_house_layouts WHERE pet_id=? AND slot_key='furniture'"
@@ -200,7 +200,7 @@ try {
       assert.equal(await page.locator('[data-utility="radio"]').getAttribute('aria-pressed'),'true','dance ending leaves manual radio playing');
       assert.ok(await page.evaluate(()=>window.MoonpetBetaAppearance.getBackgroundArtState().stereo!==null));
       await page.locator('[data-utility="radio"]').click();
-      await page.waitForFunction(()=>window.MoonpetBetaAppearance.getBackgroundArtState().stereo===null);
+      await page.waitForFunction(()=>window.MoonpetBetaAppearance.getBackgroundArtState().stereo===null&&window.MoonpetBetaAppearance.getBackgroundArtState().disco===null);
       assert.deepEqual(await rightPixels(),originalRightPixels,'radio off restores the free plant after dancing');
       assert.equal(f.sql.prepare(
         "SELECT item_key FROM telegram_pet_house_layouts WHERE pet_id=? AND slot_key='furniture'"
@@ -254,9 +254,9 @@ try {
         const furnishingPixels=await rightPixels();
         await page.locator('[data-utility="radio"]').click();
         await page.waitForFunction(()=>window.MoonpetBetaAppearance.getBackgroundArtState().stereo!==null);
-        assert.notDeepEqual(await rightPixels(),furnishingPixels,'radio replaces furniture in '+key);
+        assert.notDeepEqual(await rightPixels(),furnishingPixels,'stereo overlays furniture in '+key);
         await page.locator('[data-utility="radio"]').click();
-        await page.waitForFunction(()=>window.MoonpetBetaAppearance.getBackgroundArtState().stereo===null);
+        await page.waitForFunction(()=>window.MoonpetBetaAppearance.getBackgroundArtState().stereo===null&&window.MoonpetBetaAppearance.getBackgroundArtState().disco===null);
         assert.deepEqual(await rightPixels(),furnishingPixels,'radio off restores furniture in '+key);
         roomSignatures[key]=await page.locator('#moonpet-canvas').evaluate(c=>c.toDataURL());
         await page.reload();await ready();
