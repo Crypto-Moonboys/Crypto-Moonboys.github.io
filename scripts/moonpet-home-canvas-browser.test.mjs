@@ -46,7 +46,7 @@ try {
     }
     f.active(young);
     const context = await browser.newContext({viewport:{width,height}, reducedMotion:'reduce'});
-    await context.addInitScript(base => { window.MOONBOYS_API={BASE_URL:base}; localStorage.setItem('moonpet-radio-preference','off'); }, origin);
+    await context.addInitScript(base => { HTMLMediaElement.prototype.play=function(){return Promise.resolve();}; HTMLMediaElement.prototype.pause=function(){}; window.MOONBOYS_API={BASE_URL:base}; localStorage.setItem('moonpet-radio-preference','off'); }, origin);
     const page = await context.newPage(), errors = [], requests = [];
     page.on('pageerror', error => errors.push(error.message));
     await page.route('**/*', async route => {
@@ -169,6 +169,14 @@ try {
         window.MoonpetBetaAppearance.getBackgroundArtState().home?.purchased?.right === 'retro_tv');
       assert.notDeepEqual(await rightPixels(), originalRightPixels,
         'paid RIGHT furniture must visually replace the original E1 furnishing');
+      const paidPixels=await rightPixels();
+      await page.locator('[data-utility="radio"]').click();
+      await page.waitForFunction(()=>window.MoonpetBetaAppearance.getBackgroundArtState().stereo?.source==='/img/bass-yeo.png');
+      assert.notDeepEqual(await rightPixels(),paidPixels,'stereo temporarily replaces paid right furniture');
+      assert.equal(f.sql.prepare("SELECT item_key FROM telegram_pet_furniture_placements WHERE pet_id=? AND slot_key='right'").get(young).item_key,'retro_tv');
+      await page.locator('[data-utility="radio"]').click();
+      await page.waitForFunction(()=>window.MoonpetBetaAppearance.getBackgroundArtState().stereo===null);
+      assert.deepEqual(await rightPixels(),paidPixels,'radio off restores paid right furniture');
       assert.equal(f.sql.prepare(
         "SELECT item_key FROM telegram_pet_house_layouts WHERE pet_id=? AND slot_key='furniture'"
       ).get(young).item_key, savedFreeFurnishing, 'placing paid furniture must not overwrite E1 selection');
@@ -181,6 +189,15 @@ try {
         window.MoonpetBetaAppearance.getBackgroundArtState().home?.purchased?.right === null);
       assert.deepEqual(await rightPixels(), originalRightPixels,
         'removing paid RIGHT furniture restores the original E1 furnishing pixels');
+      await page.waitForFunction(()=>window.MoonpetBetaAppearance.getBotArtState().lastRender.animationMode==='idle');
+      await page.locator('#nav [data-screen="home"]').click();
+      const emotes=page.locator('[data-panel="pet-emotes"]');
+      if(!await emotes.evaluate(node=>node.open)) await emotes.locator('summary').click();
+      await emotes.locator('[data-local-emote="groove"]').click();
+      await page.waitForFunction(()=>window.MoonpetBetaAppearance.getBackgroundArtState().stereo!==null);
+      assert.equal(await page.locator('[data-utility="radio"]').getAttribute('aria-pressed'),'false','local dance does not change radio preference');
+      await page.waitForFunction(()=>window.MoonpetBetaAppearance.getBackgroundArtState().stereo===null);
+      assert.deepEqual(await rightPixels(),originalRightPixels,'dance ending restores the free plant');
       assert.equal(f.sql.prepare(
         "SELECT item_key FROM telegram_pet_house_layouts WHERE pet_id=? AND slot_key='furniture'"
       ).get(young).item_key, savedFreeFurnishing, 'E1 selection remains saved after removal');

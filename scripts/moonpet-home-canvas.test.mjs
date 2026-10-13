@@ -77,6 +77,17 @@ test('plant sheet advances, wraps and freezes for reduced motion without shiftin
   assert.doesNotMatch(scene,/Neon_PurplePlant|setInterval|requestAnimationFrame/,'old static art and extra animation loops are absent');
 });
 
+test('stereo sprite advances, wraps and respects reduced motion',()=>{
+  const {runtime,calls}=painter();
+  runtime.drawMusicStereo(0);const first=calls.at(-1);
+  assert.equal(first.source,'/img/bass-yeo.png');
+  assert.deepEqual(first.args.slice(0,4),[22,14,211,226]);
+  runtime.drawMusicStereo(125);assert.deepEqual(calls.at(-1).args.slice(0,4),[278,14,211,226]);
+  assert.deepEqual(calls.at(-1).args.slice(4),first.args.slice(4));
+  runtime.drawMusicStereo(3125);assert.deepEqual(calls.at(-1),first);
+  runtime.reducedMotion=true;runtime.drawMusicStereo(1500);assert.deepEqual(calls.at(-1),first);
+});
+
 test('core/full responses restore each pet Home and live polling makes no House reads',async()=>{
   const f=fixture('home-projection');
   try {
@@ -138,7 +149,7 @@ test('Home layers precede the pet/effects and the original hatch reveal excludes
   const calls=[];
   const runtime=vm.createContext({state:{adopted:true,pet:{pet_id:'one'},lifecycle:{phase:'young'}},reducedMotion:true,performance:{now:()=>7},
     BOT_RENDER_BASELINE_Y:219,STAGE_ZERO_BACKGROUND_URL:'egg',backgroundArtState:{},botArtRendererReady:true,
-    HOME_ROOMS:['main','kitchen','garden','gym'],activeHomeRoom:'main',
+    HOME_ROOMS:['main','kitchen','garden','gym'],activeHomeRoom:'main',animationMode:'idle',animationUntil:0,actionSequence:0,musicStereoSuppressedSequence:-1,radioRequestedOn:false,drawMusicStereo:()=>calls.push('stereo'),
     stageZeroPresentationActive:()=>true,hatching:false,ctx:{save(){},restore(){}},
     drawStageZeroBackground:()=>calls.push('egg'),savedHomeLayout:()=>({room:runtime.selectedRoom||'main',wall:'night_wall',floor:'steel',furniture:'plant_pot'}),
     drawHomeWall:()=>calls.push('wall'),drawHomeFloor:()=>calls.push('floor+shadow'),drawHomeFurniture:()=>calls.push('furniture'),
@@ -159,6 +170,15 @@ test('Home layers precede the pet/effects and the original hatch reveal excludes
   }
   runtime.state.pet_house.pet_id='other';calls.length=0;runtime.drawWorld(0);
   assert.equal(calls.includes('floor+shadow'),false,'other pet floor cannot decorate this room');
+  runtime.selectedRoom='main';runtime.radioRequestedOn=true;calls.length=0;runtime.drawWorld(0);
+  assert.deepEqual(calls,['egg','wall','floor+shadow','stereo','effects-back','pet','effects-front']);
+  runtime.radioRequestedOn=false;calls.length=0;runtime.drawWorld(0);
+  assert.ok(calls.includes('furniture'),'radio off restores the saved furnishing');
+  runtime.animationMode='dance';runtime.animationUntil=100;runtime.actionSequence=1;calls.length=0;runtime.drawWorld(0);
+  assert.ok(calls.includes('stereo'),'local dance shows stereo without switching radio on');
+  runtime.musicStereoSuppressedSequence=1;calls.length=0;runtime.drawWorld(0);
+  assert.ok(calls.includes('furniture'),'explicit radio off hides stereo during the same dance');
+  runtime.animationMode='idle';
   runtime.selectedRoom='main';
   runtime.hatching=true;calls.length=0;runtime.drawWorld(0);
   assert.deepEqual(calls,['egg','effects-back','pet','effects-front']);

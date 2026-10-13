@@ -1573,7 +1573,7 @@ assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20261013-profile-rooms-v1/);
 assert.doesNotMatch(html, /moonpet-art-resolver\.js/, 'the game must not load the retired static background resolver');
 assert.match(html, /\/js\/moonpet-bot-art-loader\.js\?v=20261006-live-refresh-v5/);
 assert.match(html, /\/js\/moonpet-bot-art-renderer\.js\?v=20261002-audit-recovery-v2/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261013-small-plant-v1/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261013-stereo-v1/);
 assert.match(html, /role="button" aria-label="Interact with your animated Moonpet"/);
 assert.match(client, /data-utility="guide">HOW TO PLAY/);
 const guideMarkupSource = extractTestExport(client, 'guideMarkup');
@@ -1626,6 +1626,7 @@ function radioHarness() {
     pause() { this.pauseCount++; }, load() { this.loads++; this.error = null; } };
   const api = new Function('radioPlayer', 'notices', `
     var radioRequestedOn = false, radioEnabled = false, radioRequestGeneration = 0, radioRetryNeedsLoad = false, radioNeedsGesture = false, saved = false;
+    var actionSequence = 0;
     var state = { adopted: true }, document = { hidden: false };
     var window = { setTimeout() { return 0; }, clearTimeout() {} };
     function saveRadioPreference(on) { saved = on; }
@@ -1869,7 +1870,7 @@ for (const sdkInitData of [expired, tampered, 'auth_date=invalid&hash=' + 'a'.re
   assert.equal(entry.requests.length, 3, 'Read-only startup state requests retain their transient retry policy');
 }
 assert.match(html, /\/js\/api-config\.js\?v=20260813-first-party-api/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261013-small-plant-v1/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261013-stereo-v1/);
 // Season slot UI: timing, account/pet separation, unlock affordance, switching, and rejection copy.
 assert.match(client, /function renderSeasonSlots\(\)/, 'Mini App must render a focused season-slot summary');
 assert.match(client, /function render\(options\) \{\s*var editableState = options && options\.discardCallsignDraft \? null : captureEditableState\(\);[\s\S]*restoreEditableState\(editableState\);/, 'render must preserve only drafts that were not explicitly discarded');
@@ -1960,7 +1961,7 @@ assert.match(html, /moonpet-canvas/);
 assert.match(client, /requestAnimationFrame\(frame\)/);
 assert.match(client, /if \(reducedMotion\) return/);
 assert.match(client, /fillRect/);
-assert.equal((client.match(/new Image\s*\(/g) || []).length, 5, 'Mini App caches Stage 0, Main Room, dedicated-room, mat and plant art');
+assert.equal((client.match(/new Image\s*\(/g) || []).length, 6, 'Mini App caches Stage 0, Main Room, dedicated-room, mat, plant and stereo art');
 assert.match(client, /typeBoot/);
 assert.match(client, /actionAnimationFamily/);
 assert.match(client, /key === 'activity_start'.*payload && payload\.activity_type/);
@@ -2144,7 +2145,7 @@ const floorRuntime = vm.createContext({ reducedMotion: false, performance: { now
   state: { adopted: true, pet: { pet_id: 'grounded' }, lifecycle: { phase: 'young' } },
   botArtRendererReady: true, BOT_RENDER_BASELINE_Y: 219, STAGE_ZERO_BACKGROUND_URL: 'egg-room',
   backgroundArtState: {}, stageZero: false, streetReady: true,
-  HOME_ROOMS: ['main','kitchen','garden','gym'], activeHomeRoom: 'main',
+  HOME_ROOMS: ['main','kitchen','garden','gym'], activeHomeRoom: 'main', radioRequestedOn:false, animationMode:'idle', animationUntil:0, actionSequence:0, musicStereoSuppressedSequence:-1,
   ctx: { save() {}, restore() {} },
   drawStageZeroBackground: () => worldCalls.push('egg-room'),
   drawPixelRect: (...args) => { assert.deepEqual(args, [0, 0, 320, 220, '#03040d']); worldCalls.push('static'); },

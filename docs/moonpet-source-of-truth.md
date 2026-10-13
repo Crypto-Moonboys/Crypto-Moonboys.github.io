@@ -22,6 +22,8 @@ The selected room is stored per permanent pet in `telegram_pet_house_rooms` and 
 
 Kitchen, Garden and Gym use the existing repository JPEGs `/img/Neon_Moon_Pets_Cyberpunk_Kitchen.jpg`, `/img/Neon_MoonPets_Lab.jpg` and `/img/Neon_Graffiti_Moonpets_Gym.jpg` respectively. Each fills the same 320×220 canvas with centred cover cropping, replacing the procedural scene. Pet rendering, saved room selection, utilities and gameplay panels are unchanged. Main Room and egg art retain their existing presentation.
 
+Radio playback and active dance poses temporarily display the animated `bass-yeo.png` stereo on the right side of the pet. This visual replaces free/paid right-side furniture without changing saved placements; radio off or the end of a local dance restores the saved furniture. The existing canvas animation loop drives the 25-frame sheet; reduced-motion mode uses one still frame.
+
 Room save/reset uses the existing signed `house_place` action with `slot_key: room`, the displayed-pet/owner/lifetime guards, transactional write/read validation and no costs, rewards, care credit or new polling. Kitchen recipes, Gym actions and Garden settlement keep the authorities described below. These are room presentations on the existing canvas, not new gameplay systems.
 
 Apply and record migration 096 through the tracked D1 flow before the matching API deployment, and release the matching frontend afterward. The D1 evidence request, production requirements, workflow query and provenance wrapper must require 096. This section supersedes the historical canvas station/wall-selector presentation below and is not evidence of deployment.

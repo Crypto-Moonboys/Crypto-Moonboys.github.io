@@ -417,6 +417,7 @@
 
   // TEST-EXPORT: radioPlayback:start
   var danceRadioSession = null;
+  var musicStereoSuppressedSequence = -1;
   var radioConnectionTimer = 0;
   var radioStatus = 'off';
   var RADIO_CONNECTION_TIMEOUT_MS = 15000;
@@ -481,6 +482,7 @@
     clearRadioConnectionTimer();
     var temporaryDance = Boolean(releaseDanceRadio());
     radioStatus = 'error';
+    musicStereoSuppressedSequence = actionSequence;
     if (radioPlayer) radioPlayer.pause();
     radioRequestedOn = false;
     radioEnabled = false;
@@ -504,6 +506,7 @@
     radioNeedsGesture = false;
     var requestGeneration = ++radioRequestGeneration;
     if (!on) {
+      musicStereoSuppressedSequence = actionSequence;
       if (radioPlayer) radioPlayer.pause();
       radioEnabled = false;
       if (persistPreference !== false) saveRadioPreference(false);
@@ -1439,6 +1442,7 @@
     var radioCaption = radioButton.querySelector('span');
     if (radioCaption) radioCaption.textContent = radioStatus === 'loading' ? '⏳' : radioStatus === 'error' ? '⚠️' : '📻';
     radioButton.title = radioButton.getAttribute('aria-label');
+    if (reducedMotion && state) drawWorld(performance.now());
   }
 
   function closeUtility() {
@@ -4952,6 +4956,25 @@
     drawCompanionFloor(withShadow);
   }
 
+  var musicStereoImage = null;
+  function drawMusicStereo(time) {
+    if (!musicStereoImage) {
+      musicStereoImage = new Image();
+      musicStereoImage.decoding = 'async';
+      musicStereoImage.onload = function () { if (reducedMotion) drawWorld(performance.now()); };
+      musicStereoImage.src = '/img/bass-yeo.png';
+    }
+    if (!musicStereoImage.complete || musicStereoImage.naturalWidth !== 1280 || musicStereoImage.naturalHeight !== 1280) return;
+    var frame = reducedMotion ? 0 : Math.floor(Math.max(0, Number(time) || 0) / 125) % 25;
+    var width = 76, height = width * 226 / 211;
+    ctx.save();
+    ctx.imageSmoothingEnabled = true;
+    ctx.drawImage(musicStereoImage, (frame % 5) * 256 + 22, Math.floor(frame / 5) * 256 + 14,
+      211, 226, 296 - width, 215 - height, width, height);
+    ctx.restore();
+    backgroundArtState.stereo = { source:'/img/bass-yeo.png', frame:frame };
+  }
+
   var homePlantImage = null;
   function drawHomeFurniture(furniture, time) {
     // Right-side placements stay outside the existing sprite/tap bounds.
@@ -5103,22 +5126,25 @@
     backgroundArtState.floor = null;
     backgroundArtState.home = null;
     backgroundArtState.matt = null;
+    backgroundArtState.stereo = null;
     var showHome = state && state.adopted && state.pet && !hatchArtTransitionActive(renderTime);
     if (showHome) {
       var home = savedHomeLayout(state);
       var room = state.lifecycle && state.lifecycle.phase === 'egg' ? 'main' : home.room;
       if (!HOME_ROOMS.includes(room)) room = 'main';
+      var musicActive = (radioRequestedOn || animationMode === 'dance' && animationUntil > renderTime
+        && actionSequence !== musicStereoSuppressedSequence) && !(state.lifecycle && state.lifecycle.phase === 'egg');
       var floorSaved = Boolean(state.pet_house && state.pet_house.available === true && state.pet && state.pet_house.pet_id === state.pet.pet_id && state.pet_house.floor_saved);
       if (room === 'main') {
         drawHomeWall(home.wall);
         drawHomeFloor(home.floor, Boolean(botArtRendererReady), floorSaved);
         var purchased = state.pet_furniture && state.pet_furniture.available === true
           ? savedPurchasedFurniture(state) : null;
-        if (!purchased || !purchased.right) drawHomeFurniture(home.furniture, renderTime);
+        if (!musicActive && (!purchased || !purchased.right)) drawHomeFurniture(home.furniture, renderTime);
         if (purchased) {
           if (purchased.wall) drawPurchasedFurniture(purchased.wall,'wall');
           if (purchased.left) drawPurchasedFurniture(purchased.left,'left');
-          if (purchased.right) drawPurchasedFurniture(purchased.right,'right');
+          if (purchased.right && !musicActive) drawPurchasedFurniture(purchased.right,'right');
           home.purchased = purchased;
         }
         backgroundArtState.floor = { mode: home.floor, baseline_y: BOT_RENDER_BASELINE_Y, shadow: Boolean(botArtRendererReady) };
@@ -5127,6 +5153,8 @@
         if (floorSaved) drawHomeFloor(home.floor, Boolean(botArtRendererReady), true);
         backgroundArtState.floor = { mode: room + '_room', baseline_y: BOT_RENDER_BASELINE_Y, shadow: Boolean(botArtRendererReady) };
       }
+      if (musicActive) drawMusicStereo(renderTime);
+      home.right_override = musicActive ? 'stereo' : null;
       home.active_room = room;
       home.rooms = HOME_ROOMS.slice();
       backgroundArtState.home = home;
