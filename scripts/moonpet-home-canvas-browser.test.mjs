@@ -148,9 +148,9 @@ try {
       await page.waitForFunction(()=>window.MoonpetBetaAppearance.getBackgroundArtState().home?.purchased?.left==='neon_lamp');
       // E2 RIGHT slot must temporarily replace the saved E1 furnishing on the
       // *same* main canvas, then restore it without changing the E1 D1 row.
-      const rightPixel = () => page.locator('#moonpet-canvas').evaluate(canvas =>
-        Array.from(canvas.getContext('2d').getImageData(560, 414, 1, 1).data));
-      const originalRightPixel = await rightPixel();
+      const rightPixels = () => page.locator('#moonpet-canvas').evaluate(canvas =>
+        Array.from(canvas.getContext('2d').getImageData(500, 160, 138, 270).data));
+      const originalRightPixels = await rightPixels();
       const savedFreeFurnishing = f.sql.prepare(
         "SELECT item_key FROM telegram_pet_house_layouts WHERE pet_id=? AND slot_key='furniture'"
       ).get(young).item_key;
@@ -167,7 +167,7 @@ try {
       assert.equal((await (await rightPlace).json()).result.accepted, true);
       await page.waitForFunction(() =>
         window.MoonpetBetaAppearance.getBackgroundArtState().home?.purchased?.right === 'retro_tv');
-      assert.notDeepEqual(await rightPixel(), originalRightPixel,
+      assert.notDeepEqual(await rightPixels(), originalRightPixels,
         'paid RIGHT furniture must visually replace the original E1 furnishing');
       assert.equal(f.sql.prepare(
         "SELECT item_key FROM telegram_pet_house_layouts WHERE pet_id=? AND slot_key='furniture'"
@@ -179,7 +179,7 @@ try {
       assert.equal((await (await removeRight).json()).result.accepted, true);
       await page.waitForFunction(() =>
         window.MoonpetBetaAppearance.getBackgroundArtState().home?.purchased?.right === null);
-      assert.deepEqual(await rightPixel(), originalRightPixel,
+      assert.deepEqual(await rightPixels(), originalRightPixels,
         'removing paid RIGHT furniture restores the original E1 furnishing pixels');
       assert.equal(f.sql.prepare(
         "SELECT item_key FROM telegram_pet_house_layouts WHERE pet_id=? AND slot_key='furniture'"

@@ -4974,13 +4974,13 @@
         // 25 row-major 256px frames. A fixed crop encloses every frame's alpha
         // bounds, avoiding padding-driven scaling and frame-to-frame jitter.
         var plantFrame = reducedMotion ? 0 : Math.floor(Math.max(0, Number(time) || 0) / 125) % 25;
-        var plantWidth = 114;
+        var plantWidth = 74;
         var plantHeight = plantWidth * 145 / 125;
         ctx.save();
         ctx.imageSmoothingEnabled = true;
         ctx.drawImage(homePlantImage, (plantFrame % 5) * 256 + 66,
           Math.floor(plantFrame / 5) * 256 + 92, 125, 145,
-          320 - plantWidth, 213 - plantHeight, plantWidth, plantHeight);
+          296 - plantWidth, 172 - plantHeight, plantWidth, plantHeight);
         ctx.restore();
       }
     } else {

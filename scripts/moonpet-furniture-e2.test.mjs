@@ -165,7 +165,7 @@ test('furniture UI and main-canvas draw use existing pet render, no new timer or
   assert.match(client,/furniture_buy/);
   assert.match(client,/furniture_place/);
   assert.match(client,/furniture_remove/);
-  assert.match(entry,/moonpet-mini-app\.js\?v=20261013-plant-sprite-v1/);
+  assert.match(entry,/moonpet-mini-app\.js\?v=20261013-small-plant-v1/);
   const art=client.split('// TEST-EXPORT: purchasedFurniture:start')[1].split('// TEST-EXPORT: purchasedFurniture:end')[0];
   assert.doesNotMatch(art,/fetch\(|requestAnimationFrame|setInterval|setTimeout|createElement/);
   const calls=[];

@@ -53,7 +53,7 @@ test('transparent full-canvas mat choices and furniture remain distinct',()=>{
       if(fn==='drawHomeFurniture') assert.ok(calls.filter(c=>!c.source).every(c=>c.x>252),'pixel furniture stays outside original companion bounds');
       if(fn==='drawHomeFurniture'&&option==='plant_pot') {
         assert.equal(calls[0].source,'/img/pot-pot.png');
-        assert.deepEqual(calls[0].args,[66,92,125,145,206,213-114*145/125,114,114*145/125],'plant frame retains the right-side visible footprint');
+        assert.deepEqual(calls[0].args,[66,92,125,145,222,172-74*145/125,74,74*145/125],'plant frame retains the right-side visible footprint');
       }
       outputs.push(JSON.stringify(calls));
     }
