@@ -94,10 +94,14 @@ try {
       const count=requests.length;
       const wallet=f.sql.prepare('SELECT moon_gold,moon_crystals,style_tokens,pet_xp FROM telegram_pet_profiles WHERE telegram_id=?').get(f.owner);
       const inventory=f.sql.prepare('SELECT * FROM telegram_pet_inventory WHERE telegram_id=? ORDER BY asset_type,asset_key').all(f.owner);
+      const wallPixels=()=>page.locator('#moonpet-canvas').evaluate(canvas=>{
+        const context=canvas.getContext('2d');
+        return [[16,2],[2,100],[638,100],[160,20],[320,20],[480,20]]
+          .map(([x,y])=>Array.from(context.getImageData(x,y,1,1).data));
+      });
       for (const [slot,item,label] of [['wall','studio_white','Studio White'],['floor','steel','Steel'],['furniture','plant_pot','Plant Pot']]) {
         const previous=await page.locator('#moonpet-canvas').evaluate(c=>c.toDataURL());
-        const previousWall=slot==='wall' ? await page.locator('#moonpet-canvas').evaluate(c=>
-          Array.from(c.getContext('2d').getImageData(8,120,100,220).data)) : null;
+        const previousWall=slot==='wall' ? await wallPixels() : null;
         const response=page.waitForResponse(r=>r.url().endsWith('/action') && r.request().postDataJSON()?.action==='house_place');
         await panel.locator('[data-action="house_place"]').filter({hasText:'SET '+label}).click();
         assert.equal((await (await response).json()).result.accepted,true);
@@ -105,9 +109,7 @@ try {
         await page.waitForFunction(({slot,item})=>window.MoonpetBetaAppearance.getBackgroundArtState().home?.[slot]===item,{slot,item});
         const nextCanvas=await page.locator('#moonpet-canvas').evaluate(c=>c.toDataURL());
         if (slot==='wall') {
-          const nextWall=await page.locator('#moonpet-canvas').evaluate(c=>
-            Array.from(c.getContext('2d').getImageData(8,120,100,220).data));
-          assert.deepEqual(nextWall,previousWall,'wall choices leave the graffiti wall pixels untouched');
+          assert.deepEqual(await wallPixels(),previousWall,'wall choices leave the graffiti borders and seam pixels untouched');
         } else assert.notEqual(nextCanvas,previous,slot+' changes main canvas pixels');
       }
       assert.deepEqual(f.sql.prepare('SELECT moon_gold,moon_crystals,style_tokens,pet_xp FROM telegram_pet_profiles WHERE telegram_id=?').get(f.owner),wallet);
