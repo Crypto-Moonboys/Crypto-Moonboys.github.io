@@ -116,7 +116,7 @@ assert.equal(websiteFragment.writes.length, 0, 'opaque website credentials must 
 assertCachePreserved(direct, 'direct visit');
 assert.equal(
   direct.elements['incubator-sync-message'].textContent,
-  'Log in with Telegram to restore your account, or use /gklink in the bot as a fallback.',
+  'Log in with Telegram to restore your account. Use the same Telegram account on the website and in the bot.',
   'direct visit shows neutral link instructions',
 );
 

@@ -180,7 +180,26 @@ for (const [name, viewport] of [['desktop', { width: 1440, height: 900 }], ['mob
       await otherTab.goto(SITE + '/gkniftyheads-incubator.html', { waitUntil: 'domcontentloaded' });
       await otherTab.waitForFunction(() => window.MOONBOYS_IDENTITY?.getIdentityTier() === 'telegram_linked');
       const priorProof = await page.evaluate(() => window.MOONBOYS_IDENTITY.getSignedTelegramAuth());
-      await page.locator('[data-telegram-login]').first().click();
+      const sessionCount = sqlite.prepare('SELECT COUNT(*) AS n FROM telegram_website_sessions').get().n;
+      await page.goto(SITE + '/community.html', { waitUntil: 'domcontentloaded' });
+      await page.evaluate(() => window.MOONBOYS_IDENTITY.ready);
+      await page.waitForFunction(() => document.querySelector('[data-telegram-account] strong')?.textContent === 'Telegram account');
+      assert.equal(await page.locator('[data-telegram-account]').getAttribute('data-telegram-login'), null);
+      await Promise.all([
+        page.waitForURL(SITE + '/gkniftyheads-incubator.html'),
+        page.locator('[data-telegram-account]').click(),
+      ]);
+      await page.evaluate(() => window.MOONBOYS_IDENTITY.ready);
+      assert.equal(sqlite.prepare('SELECT COUNT(*) AS n FROM telegram_website_sessions').get().n, sessionCount, 'opening account information does not create another session');
+      assert.equal(callbackSessionCookies.length, 1, 'connected Community navigation does not authorize again');
+      assert.equal((await verifyWebsiteCredential(priorProof, env)).telegramId, ID, 'other tabs retain a valid credential');
+      assert.equal(await page.locator('[data-tg-sync-cta] [data-telegram-login]').isVisible(), false, 'connected players are not offered redundant login');
+      // Deliberately reauthenticate to exercise session rotation and old-tab
+      // recovery; the ordinary connected UI now offers logout instead.
+      await Promise.all([
+        page.waitForNavigation({ waitUntil: 'domcontentloaded' }),
+        page.evaluate(() => { window.MOONBOYS_IDENTITY.loginWithTelegram(); }),
+      ]);
       await page.waitForFunction(previousHash => {
         const proof = window.MOONBOYS_IDENTITY?.getSignedTelegramAuth();
         return !!proof && proof.hash !== previousHash && window.MOONBOYS_IDENTITY.getIdentityTier() === 'telegram_linked';
@@ -219,14 +238,22 @@ for (const [name, viewport] of [['desktop', { width: 1440, height: 900 }], ['mob
       await page.reload({ waitUntil: 'domcontentloaded' });
       await page.locator('[data-telegram-login]').first().click();
       await page.waitForFunction(() => window.MOONBOYS_IDENTITY?.getIdentityTier() === 'telegram_linked');
+      // Maintenance cleanup models a settled tab retaining its cached session.
+      // Drain bootstrap reads first: an in-flight renewal that sees the removed
+      // session can correctly hide Logout between pointer-down and pointer-up.
+      await page.evaluate(() => window.MOONBOYS_IDENTITY.ready);
+      await page.waitForLoadState('networkidle');
+      await page.locator('[data-telegram-logout]').waitFor({ state: 'visible' });
       const cleanedProof = await page.evaluate(() => window.MOONBOYS_IDENTITY.getSignedTelegramAuth());
       sqlite.exec('UPDATE telegram_website_sessions SET last_seen_at = 1');
       await start(env);
       assert.equal(sqlite.prepare('SELECT COUNT(*) AS n FROM telegram_website_sessions').get().n, 0);
+      const cleanedLogout = page.waitForResponse(response => response.url().endsWith('/telegram/website/logout') && response.request().method() === 'POST');
       await Promise.all([
         page.waitForNavigation({ waitUntil: 'domcontentloaded' }),
         page.locator('[data-telegram-logout]').click(),
       ]);
+      assert.equal((await cleanedLogout).status(), 200, 'logout confirms a previously cleaned session');
       await page.waitForFunction(() => window.MOONBOYS_IDENTITY?.getIdentityTier() === 'guest');
       assert.equal((await verifyWebsiteCredential(cleanedProof, env)).status, 401);
       assert.equal((await context.cookies(API)).some(cookie => cookie.name === '__Host-moonboys_session'), false);

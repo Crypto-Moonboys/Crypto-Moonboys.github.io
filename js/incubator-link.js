@@ -5,7 +5,7 @@
   var BASE = cfg.BASE_URL || '';
   var HASH_KEY = 'telegram_auth';
   var AUTH_STORAGE_KEY = 'MOONBOYS_TELEGRAM_AUTH';
-  var DIRECT_VISIT_PROMPT = 'Log in with Telegram to restore your account, or use /gklink in the bot as a fallback.';
+  var DIRECT_VISIT_PROMPT = 'Log in with Telegram to restore your account. Use the same Telegram account on the website and in the bot.';
 
   // Resolved text constants — fall back to literals so no type="module" is needed.
   var COPY = window.UI_STATUS_COPY || {

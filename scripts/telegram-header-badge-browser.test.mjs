@@ -6,7 +6,7 @@ import { test } from 'node:test';
 import { chromium } from 'playwright';
 
 // Regression: the shared header badge must follow the verified website (OIDC)
-// identity — never "Telegram Sync Required" for a linked player.
+// identity — never "Log in with Telegram" for a linked player.
 const root = process.cwd();
 const SITE = 'https://example.test';
 const API = 'https://api.example.test';
@@ -75,8 +75,25 @@ for (const [name, viewport] of [['desktop', { width: 1440, height: 900 }], ['mob
       // 1. Initial guest: no cookie session → sync is genuinely required.
       await page.goto(SITE + '/gkniftyheads-incubator.html', { waitUntil: 'domcontentloaded' });
       await page.evaluate(() => window.MOONBOYS_IDENTITY.ready);
-      await expectBadge(page, 'Telegram Sync Required');
+      await expectBadge(page, 'Log in with Telegram');
       assert.equal(await page.evaluate(() => window.MOONBOYS_IDENTITY.getIdentityTier()), 'guest');
+
+      const loginCard = page.locator('[data-tg-sync-cta]');
+      assert.equal(await loginCard.count(), 1, 'Incubator offers one shared login card');
+      const groupLink = loginCard.locator('[data-telegram-group]');
+      assert.equal(await groupLink.getAttribute('href'), 'https://t.me/gkniftyheads');
+      assert.equal(await groupLink.isVisible(), true);
+      assert.equal(await groupLink.getAttribute('target'), '_blank');
+      assert.equal(await loginCard.locator('[data-telegram-login]').isVisible(), true);
+      assert.equal(await loginCard.locator('[data-telegram-logout]').isVisible(), false, 'guests are not offered logout');
+      assert.equal(await loginCard.locator('details').evaluate(node => node.open), false, 'bot commands stay in optional help');
+
+      await page.goto(SITE + '/community.html', { waitUntil: 'domcontentloaded' });
+      await page.evaluate(() => window.MOONBOYS_IDENTITY.ready);
+      await page.waitForSelector('[data-telegram-account][data-telegram-login]');
+      assert.equal(await page.locator('[data-telegram-account] strong').textContent(), 'Log in with Telegram', 'guests retain direct Community login');
+      await page.goto(SITE + '/gkniftyheads-incubator.html', { waitUntil: 'domcontentloaded' });
+      await page.evaluate(() => window.MOONBOYS_IDENTITY.ready);
 
       // 2. Pending authentication: while the cookie session is unresolved the
       //    badge must not claim a sync is required.
@@ -85,7 +102,9 @@ for (const [name, viewport] of [['desktop', { width: 1440, height: 900 }], ['mob
       hold = new Promise(resolve => { release = resolve; });
       await page.reload({ waitUntil: 'domcontentloaded' });
       await expectBadge(page, 'Checking Telegram');
-      assert.equal((await badge(page).textContent()).includes('Sync Required'), false);
+      assert.equal((await badge(page).textContent()).includes('Log in with Telegram'), false);
+      assert.equal(await loginCard.locator('[data-telegram-login]').isVisible(), false, 'login waits for session restoration');
+      assert.match(await loginCard.locator('[data-tg-login-status]').textContent(), /Checking/);
 
       // 3. Successful OIDC restoration updates the header without a reload.
       release();
@@ -93,7 +112,14 @@ for (const [name, viewport] of [['desktop', { width: 1440, height: 900 }], ['mob
       await expectBadge(page, 'Telegram Connected');
       const restored = await page.evaluate(() => ({ tier: window.MOONBOYS_IDENTITY.getIdentityTier(), linked: window.MOONBOYS_IDENTITY.isTelegramLinked() }));
       assert.deepEqual(restored, { tier: 'telegram_linked', linked: true });
-      assert.equal((await badge(page).textContent()).includes('Sync Required'), false);
+      assert.equal((await badge(page).textContent()).includes('Log in with Telegram'), false);
+      assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth), false);
+
+      await page.waitForFunction(() => document.querySelector('[data-tg-login-status]')?.textContent === 'Telegram connected.');
+      assert.equal(await loginCard.locator('[data-telegram-login]').isVisible(), false, 'connected players are not asked to log in again');
+      assert.equal(await loginCard.locator('[data-telegram-logout]').isVisible(), true);
+
+      assert.equal(await groupLink.isVisible(), true, 'joining the group remains available after login');
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth), false);
 
       // 4. Navigation across shared-shell pages (Incubator, Games, Battle
@@ -101,7 +127,7 @@ for (const [name, viewport] of [['desktop', { width: 1440, height: 900 }], ['mob
       for (const route of SHARED_SHELL_PAGES) {
         await page.goto(SITE + route, { waitUntil: 'domcontentloaded' });
         await expectBadge(page, 'Telegram Connected');
-        assert.equal((await badge(page).textContent()).includes('Sync Required'), false, route + ' shows a false sync-required badge');
+        assert.equal((await badge(page).textContent()).includes('Log in with Telegram'), false, route + ' shows a false sync-required badge');
       }
 
       // 5. Account switching in the shared cookie updates the header identity.
@@ -114,7 +140,7 @@ for (const [name, viewport] of [['desktop', { width: 1440, height: 900 }], ['mob
       // 6. Session expiry clears the identity and the header updates in place.
       current = null;
       await page.evaluate(() => window.MOONBOYS_IDENTITY.getFreshTelegramAuth({ force: true }));
-      await expectBadge(page, 'Telegram Sync Required');
+      await expectBadge(page, 'Log in with Telegram');
       assert.equal(await page.evaluate(() => window.MOONBOYS_IDENTITY.getIdentityTier()), 'guest');
 
       // 7. Logout after a fresh login returns the header to the guest state.
@@ -126,7 +152,7 @@ for (const [name, viewport] of [['desktop', { width: 1440, height: 900 }], ['mob
         page.evaluate(() => window.MOONBOYS_IDENTITY.logout()),
       ]);
       await page.evaluate(() => window.MOONBOYS_IDENTITY.ready);
-      await expectBadge(page, 'Telegram Sync Required');
+      await expectBadge(page, 'Log in with Telegram');
       assert.equal(await page.evaluate(() => window.MOONBOYS_IDENTITY.getIdentityTier()), 'guest');
       assert.equal(errors.length, 0, errors.join('\n'));
     } finally { await browser.close(); }

@@ -116,7 +116,7 @@ check(incubator.includes('href="/favicon.png"') && !incubator.includes('href="/f
 console.log('\n[1b] Incubator direct-visit link handling');
 check(incubator.includes('/js/incubator-link.js'), 'incubator page still loads Telegram link handler');
 check(incubatorLink.includes('getTelegramHashState') && incubatorLink.includes('params.has(HASH_KEY)'), 'incubator link handler distinguishes direct visits from empty bot callbacks');
-check(incubatorLink.includes('Log in with Telegram to restore your account, or use /gklink in the bot as a fallback.'), 'incubator direct visit offers website login and the compatible bot fallback');
+check(incubatorLink.includes('Log in with Telegram to restore your account. Use the same Telegram account on the website and in the bot.'), 'incubator direct visit offers website login and the compatible bot fallback');
 check(!incubatorLink.includes("debug('payload_missing');"), 'incubator direct visit does not log noisy payload_missing');
 check(incubatorLink.includes("debug('payload_missing_after_callback');"), 'incubator empty bot callback still records debug context');
 
@@ -131,7 +131,7 @@ check(!/wtf\/events\/(today|check-in|complete|choose-option)[^`'"\n]*telegram_au
 check(!xpBurst.includes('innerHTML'), 'XP burst animation avoids unsafe dynamic innerHTML rendering');
 
 console.log('\n[3] Top notice');
-check(csp.includes('Telegram Connected') && csp.includes('Telegram Sync Required') && csp.includes('Checking Telegram'), 'compact Telegram/XP live notice supports linked, pending and unlinked states');
+check(csp.includes('Telegram Connected') && csp.includes('Log in with Telegram') && csp.includes('Checking Telegram'), 'compact Telegram/XP live notice supports linked, pending and unlinked states');
 check(csp.includes('csp-badge-stack') && csp.includes('csp-badge-chip'), 'top notice is compact and chip-based');
 check(csp.indexOf('LIVE SYNC') < csp.indexOf('async function buildPanelHTML') || csp.includes('async function buildBadgeHTML'), 'top notice is rendered by badge path, not the full panel');
 check(csp.includes('blocktopiaBadgeLabel(blocktopiaStatus)') && csp.includes("return 'BT OPEN'") && csp.includes("return 'BT LOCK'") && csp.includes("return 'BT SYNC'"), 'initial badge uses shared BT OPEN / BT LOCK / BT SYNC labels');

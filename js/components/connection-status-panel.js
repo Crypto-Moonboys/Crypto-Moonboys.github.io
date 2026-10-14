@@ -20,7 +20,7 @@
  *   Telegram Connected — linked + fresh signed Telegram auth confirmed (LIVE SYNC)
  *   Telegram Connected · Renewing — verified website session renewing its short proof
  *   RELINK             — legacy bot link in localStorage but signed auth expired/missing
- *   Telegram Sync Required — not linked (after any pending restoration resolves)
+ *   Log in with Telegram — not linked (after any pending restoration resolves)
  *
  * Missed XP display: checks page globals (MOONBOYS_WTF_EVENTS,
  * MOONBOYS_ROGUELITE_DAILY_STATE) and the session daily-state cache first.
@@ -1133,7 +1133,7 @@
       if (!linked && isWebsiteSessionMode()) return pendingIdentityBadgeHTML('Checking Telegram', 'Verifying your session…');
     }
     if (!linked) {
-      return '<a href="/gkniftyheads-incubator.html" class="csp-badge csp-badge--unlinked" aria-label="Telegram Sync Required" data-csp-badge-state="unlinked"><span class="csp-pulse csp-pulse--warn"></span><span><strong>Telegram Sync Required</strong><small>Link to activate live systems</small></span></a>';
+      return '<a href="/gkniftyheads-incubator.html" class="csp-badge csp-badge--unlinked" data-telegram-login aria-label="Log in with Telegram" data-csp-badge-state="unlinked"><span class="csp-pulse csp-pulse--warn"></span><span><strong>Log in with Telegram</strong><small>Restore your saved account</small></span></a>';
     }
     // Check for fresh signed auth — LIVE SYNC requires confirmed auth, not just localStorage linked state.
     var gate = getIdentity();
