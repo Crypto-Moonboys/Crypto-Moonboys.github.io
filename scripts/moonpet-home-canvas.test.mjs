@@ -180,7 +180,7 @@ test('room arrangements coexist, preserve floor layers and exclude free items ou
     savedPurchasedFurniture:snapshot=>snapshot.pet_furniture.placements,
     drawHomeWall:()=>calls.push('wall'),drawHomeFloor:()=>calls.push('floor+shadow'),drawHomeFurniture:key=>calls.push(key),drawPurchasedFurniture:key=>calls.push(key),
     drawDedicatedHomeRoom:room=>calls.push('room:'+room),
-    drawCompanionWings:()=>{},drawEquippedStyles:(_,front)=>calls.push(front?'effects-front':'effects-back'),drawPet:()=>calls.push('pet')});
+    drawCompanionWings:()=>{},drawFrogGuardian:()=>{},drawEquippedStyles:(_,front)=>calls.push(front?'effects-front':'effects-back'),drawPet:()=>calls.push('pet')});
   vm.runInContext(helpers+'function hatchArtTransitionActive(){return hatching;}'+source,runtime);
   runtime.drawWorld(0);
   assert.deepEqual(calls,['egg','wall','floor+shadow','plant_pot','neon_lamp','effects-back','pet','effects-front']);

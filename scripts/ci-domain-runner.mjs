@@ -141,6 +141,7 @@ const GROUPS = {
     ['node', '--test', 'scripts/moonpet-home-e3.test.mjs'],
     ['node', '--test', 'scripts/moonpet-home-canvas.test.mjs'],
     ['node', '--test', 'scripts/moonpet-companion-wings.test.mjs'],
+    ['node', '--test', 'scripts/moonpet-frog-guardian.test.mjs'],
     ['node', '--test', 'scripts/moonpet-room-furniture.test.mjs'],
     ['node', 'scripts/moonpet-progression-sync.test.mjs'],
     ['node', 'scripts/moonpet-standard-run-recovery.test.mjs'],
