@@ -57,9 +57,17 @@ try {
       if (url.pathname.includes('/telegram-pets/app/')) {
         const body = route.request().postDataJSON(); requests.push({path:url.pathname,body});
         const result = url.pathname.endsWith('/action') ? await f.act(body) : undefined;
-        const state = body.mode === 'core' ? await hooks.buildPetMiniAppCoreState(f.db,f.owner)
-          : body.mode === 'live' ? await hooks.buildPetMiniAppLiveState(f.db,f.owner)
-          : await hooks.buildPetMiniAppState(f.db,f.owner,'fixture-token',{mode:body.state_mode || body.mode});
+        let state;
+        try {
+          state = body.mode === 'core' ? await hooks.buildPetMiniAppCoreState(f.db,f.owner)
+            : body.mode === 'live' ? await hooks.buildPetMiniAppLiveState(f.db,f.owner)
+            : await hooks.buildPetMiniAppState(f.db,f.owner,'fixture-token',{mode:body.state_mode || body.mode});
+        } catch (error) {
+          // Switching to the egg can invalidate an in-flight projection. Match
+          // the production state route rather than crashing the fixture process.
+          if (error.message !== 'pet_state_source_changed') throw error;
+          return route.fulfill({status:503,json:{error:'mini_app_state_failed'}});
+        }
         return route.fulfill({status:result?.accepted === false ? 409 : 200,json:{state,result}});
       }
       return url.origin === origin ? route.continue() : route.abort();
