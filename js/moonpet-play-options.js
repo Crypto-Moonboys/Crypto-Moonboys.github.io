@@ -252,6 +252,50 @@
       })[0];
       if (nextBounty) add('bounty_target', 'NEXT BOUNTY // ' + nextBounty.bounty.title, nextBounty.bounty.progress + '/' + nextBounty.bounty.required + ' // ' + (nextBounty.bounty.detail || '') + ' A qualifying route is ready; review its costs.', nextBounty.routes[0]);
     }
+
+    // Room actions are navigation suggestions only. The current room is a
+    // server-saved per-pet selection; never silently change it from a shortcut.
+    var room = s.pet_house && s.pet_house.available === true && s.pet_house.pet_id === s.pet?.pet_id
+      ? s.pet_house.layout && s.pet_house.layout.room || 'main' : null;
+    var homeDestination = function (target, focus) {
+      return room === target ? { screen: 'home', focus: focus } : { screen: 'profile', focus: 'pet-house' };
+    };
+    var bonusClaims = [
+      ['bonus_bounties', 'extra_bounty_claims', 'CLAIM EXTRA DAILY CHALLENGES', 'bonus-bounties'],
+      ['weekly_bounties', 'weekly_bounty_claims', 'CLAIM WEEKLY BOUNTY BLOCKS', 'weekly-bounties']
+    ];
+    bonusClaims.forEach(function (row) {
+      var board = g.economy && g.economy[row[0]];
+      if (!Array.isArray(board)) return;
+      var count = board.filter(function (item) { return item && item.complete === true && !item.claimed; }).length;
+      if (count) add(row[1], row[2] + ' // ' + count, 'Collect completed server-tracked rewards before the UTC board resets. Already claimed rewards are excluded.', { screen:'economy', focus:row[3] });
+    });
+    if (!egg) {
+      var garden = s.pet_garden;
+      if (garden && garden.available === true && garden.pet_id === s.pet?.pet_id) {
+        if (garden.status === 'ready') add('garden_harvest', 'HARVEST VEGGIES', 'One Garden Veggie Box is ready in this pet’s saved Garden plot. Collect it once; no harvest XP.', homeDestination('garden','garden'));
+        else if (garden.status === 'empty') add('garden_plant', 'PLANT VEGGIE PATCH', 'Optional free six-hour Garden plot. Choose Garden in Home Customization if it is not the selected room.', homeDestination('garden','garden'));
+      }
+      var recipes = (live.crafting || []).filter(function (item) {
+        return item && ['pizza_night','moon_grill','veggie_patch'].includes(item.key) && item.unlocked === true && item.affordable === true;
+      });
+      if (recipes.length) add('kitchen_ready', 'COOK AVAILABLE MEAL', 'Your saved recipe data shows ' + recipes.length + ' affordable unlocked Kitchen recipe(s). Review ingredients and choose Cook.', homeDestination('kitchen','kitchen'));
+      var pet = s.pet || {}, activity = g.activity;
+      var trainBlocked = (s.cooldowns && s.cooldowns.entries || []).some(function (entry) {
+        return entry && ['action:train','train'].includes(entry.key) && Number(entry.remaining_seconds || 0) > 0;
+      });
+      if (Number(pet.energy) >= 18 && !activity && !trainBlocked && s.hydration && s.hydration.full === true) {
+        add('gym_train', 'TRAIN NOW IN GYM', 'Your pet has at least 18 Energy. Review the normal Train cooldown and rewards before starting.', homeDestination('gym','gym'));
+      }
+      var shop = s.pet_furniture;
+      if (shop && shop.available === true && shop.arrangements_available === true && shop.pet_id === pet.pet_id) {
+        var currentRoom = room || 'main', saved = shop.arrangements && shop.arrangements[currentRoom];
+        var catalog = shop.catalog || {}, owned = Array.isArray(shop.owned) ? shop.owned : [];
+        var placed = Array.isArray(saved) ? saved.map(function (item) { return item && item.key; }) : null;
+        var eligible = owned.filter(function (key) { return Object.hasOwn(catalog,key) && (!placed || !placed.includes(key)); });
+        if (placed && placed.length < 8 && eligible.length) add('room_furniture', 'CUSTOMIZE ROOM FURNITURE', 'You own ' + eligible.length + ' unplaced paid furniture item(s). This room has ' + (8-placed.length) + ' free display slots; adding them has no extra cost.', { screen:'profile', focus:'pet-house' });
+      }
+    }
     if (s.contracts && s.contracts.available) add('contract', s.contracts.run && s.contracts.run.status === 'active' ? 'CONTINUE CONTRACT' : 'CONTINUING CONTRACTS', 'Choose a quest, build and route length. Saved rank and upgrade drafts. New quests after every finish; no pet energy cost.');
     if (egg) {
       add('incubate', 'SECRET BOT CARE', 'Care and reveal remain server-controlled. Hatch to unlock Contracts.');
@@ -310,6 +354,11 @@
       else if (entry.key === 'incubate') rank = 25;
       else if (entry.key === 'daily_chest') rank = 30;
       else if (entry.key === 'bounty_target') rank = 38;
+      else if (entry.key === 'garden_harvest') rank = 27;
+      else if (entry.key === 'kitchen_ready') rank = 66;
+      else if (entry.key === 'gym_train') rank = 69;
+      else if (entry.key === 'garden_plant') rank = 77;
+      else if (entry.key === 'room_furniture') rank = 96;
       else if (entry.key === 'craft_goal') { var goal = craftingGoal(s, preferences && preferences.crafting_goal); rank = goal && goal.ready ? 40 : goal && goal.routes.length ? 70 : 85; }
       else if (entry.key === 'daily_run' || entry.key === 'weekly_boss') rank = 45;
       else if (['daily_journey', 'weekly_journey', 'mission', 'bounty', 'season'].includes(entry.key)) rank = 85;
