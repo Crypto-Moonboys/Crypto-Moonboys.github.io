@@ -156,8 +156,8 @@ test('wrong owner, stale selected pet and missing unlocks fail closed',async()=>
 });
 
 test('furniture UI and main-canvas draw use existing pet render, no new timer or canvas',()=>{
-  assert.match(worker,/readPetFurnitureState\(lifecycleScope\.db/);
-  assert.match(worker,/readPetFurnitureState\(identityScope\.db/);
+  assert.match(worker,/readFurnitureWithRooms\(lifecycleScope\.db/);
+  assert.match(worker,/readFurnitureWithRooms\(identityScope\.db/);
   assert.match(worker,/createDisplayedPetScope\(db, telegramId, pet\.pet_id, pet\.season_key\)/);
   assert.match(client,/function renderFurnitureShop\(/);
   assert.match(client,/function drawPurchasedFurniture\(/);
@@ -165,7 +165,7 @@ test('furniture UI and main-canvas draw use existing pet render, no new timer or
   assert.match(client,/furniture_buy/);
   assert.match(client,/furniture_place/);
   assert.match(client,/furniture_remove/);
-  assert.match(entry,/moonpet-mini-app\.js\?v=20261014-fishtank-v1/);
+  assert.match(entry,/moonpet-mini-app\.js\?v=20261014-room-items-v1/);
   const art=client.split('// TEST-EXPORT: purchasedFurniture:start')[1].split('// TEST-EXPORT: purchasedFurniture:end')[0];
   assert.doesNotMatch(art,/fetch\(|requestAnimationFrame|setInterval|setTimeout|createElement/);
   const calls=[];

@@ -14,6 +14,12 @@ Its purpose is to prevent documentation drift between:
 
 Any gameplay, documentation, or UI change affecting Moonpet status should reference this document.
 
+### Room furniture arrangements — pending release
+
+Each permanent pet saves a separate arrangement of at most eight furniture items in each room. Main Room supports the free Fish Tank (`sleep_mat`), Lava Lamp (`record_deck`) and Plant Pot (`plant_pot`) together with any owned paid furniture. Kitchen, Garden and Gym allow only owned paid furniture. Floor mats remain available in all rooms. Free and paid furnishings do not automatically suppress one another. Add/remove controls, directional position controls and IN FRONT set the order; the default lava lamp is behind the plant at the right edge. Radio remains a temporary overlay and is not a placed furniture item.
+
+Migration `097_moonpet_room_furniture.sql` adds bounded room-arrangement records without rewriting old layouts, paid ownership or legacy placements. Existing placements remain the initial arrangement until a room is explicitly saved, including an explicitly empty arrangement. The signed `furniture_arrange` action guards the current permanent pet, account ownership, room eligibility, unique item keys, canvas positions and an eight-item maximum within one D1 batch. It never debits currency or awards progression. After GK approval, apply only the new migration, capture migration evidence and deploy the matching main-branch Moonboys API through the existing provenance wrapper. Automatic Pages publishing stays unchanged; arrangement controls remain unavailable until the matching API supplies the saved arrangement contract. This supersedes the fixed-slot/free-furniture priority described in historical sections below and is not evidence of production deployment.
+
 ### H11 Profile room selection — PR #1502 contract (pending release)
 
 Profile → Home Customization replaces the Warehouse Brick, Night Wall and Studio White controls with **Kitchen**, **Garden** and **Gym**. All four room emojis are removed from the canvas; Audio, Radio and Refresh remain. The existing **Main Room** stays unchanged until the pet owner saves an alternative. **Return to Main Room** is a separate free reset that restores the original art while retaining furniture; the three replacement choices remain Kitchen/Garden/Gym.

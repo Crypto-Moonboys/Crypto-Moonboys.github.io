@@ -1157,6 +1157,7 @@
             "Save this free Home appearance behind the current pet on the main canvas. No XP or currency awarded.",
             "manage"
       ],
+      "furniture_arrange": ["Save up to eight items in this pet’s room; no cost or reward.","manage"],
       "furniture_buy": [
             "Buy this permanent account-owned furniture item for the listed Moon Gold price. Buying twice never charges twice.",
             "spend"
@@ -1242,7 +1243,7 @@
       options = Object.assign({}, options, { disabled: true, statusLabel: 'ARCADE XP REQUIRED' });
     }
     var accountActions = ['adopt', 'guidance_ack', 'notification_set', 'season_slots', 'buy_pet_slot', 'switch_pet_slot', 'delete_pet_slot', 'arena_queue_cancel', 'arena_forfeit', 'kaiju_queue_cancel', 'kaiju_match_cancel'];
-    var eggActions = accountActions.concat(['incubate', 'hatch', 'energy_drink', 'dance', 'cuddles', 'house_place', 'furniture_buy', 'furniture_place', 'furniture_remove', 'bounty_claim', 'season_claim', 'weekly_boss_claim', 'contract_claim', 'style_equip', 'seasonal_boss_claim', 'daily_completion_claim', 'finale_start', 'finale_retry', 'finale_step', 'finale_claim', 'event_recover', 'event_close']);
+    var eggActions = accountActions.concat(['incubate', 'hatch', 'energy_drink', 'dance', 'cuddles', 'house_place', 'furniture_buy', 'furniture_place', 'furniture_remove', 'furniture_arrange', 'bounty_claim', 'season_claim', 'weekly_boss_claim', 'contract_claim', 'style_equip', 'seasonal_boss_claim', 'daily_completion_claim', 'finale_start', 'finale_retry', 'finale_step', 'finale_claim', 'event_recover', 'event_close']);
     if (state && state.lifecycle && state.lifecycle.phase === 'egg' && !eggActions.includes(action)) {
       options = Object.assign({}, options, { disabled: true, cooldown: null, statusLabel: 'HATCH REQUIRED' });
     } else if (state && state.adopted === false && !accountActions.includes(action)) {
@@ -3310,6 +3311,63 @@
   // TEST-EXPORT: notificationControls:end
 
 
+  // TEST-EXPORT: roomFurniture:start
+  var FREE_HOME_LABELS = {sleep_mat:'Fish Tank',record_deck:'Lava Lamp',plant_pot:'Plant Pot'};
+  function furnitureOrigin(key, catalog) {
+    if(key==='sleep_mat') return {x:6,y:35,width:44,height:130};
+    if(key==='record_deck') return {x:282,y:27,width:35,height:113};
+    if(key==='plant_pot') return {x:222,y:86,width:74,height:86};
+    var slot=catalog[key] && catalog[key].slot;
+    return {x:slot==='left'?10:slot==='right'?260:123,y:slot==='wall'?37:166,width:slot==='wall'?75:50,height:49};
+  }
+  function roomFurnitureItems(snapshot, room) {
+    var shop=snapshot && snapshot.pet_furniture;
+    if(!snapshot || !snapshot.pet)return [];
+    if(!shop || !shop.available || shop.pet_id!==snapshot.pet.pet_id) {
+      if(room!=='main')return [];
+      var key=savedHomeLayout(snapshot).furniture, origin=furnitureOrigin(key,{});
+      return [{key:key,x:origin.x,y:origin.y}];
+    }
+    var catalog=shop.catalog||{}, owned=shop.owned||[];
+    var saved=shop.arrangements_available && shop.arrangements && shop.arrangements[room];
+    if(Array.isArray(saved)) return saved.filter(function(item){return item && (room==='main'&&Object.hasOwn(FREE_HOME_LABELS,item.key)||owned.includes(item.key)&&Object.hasOwn(catalog,item.key));}).slice(0,8);
+    var items=[];
+    if(room==='main') {var free=savedHomeLayout(snapshot).furniture;items.push(Object.assign({key:free},furnitureOrigin(free,catalog)));}
+    var placements=savedPurchasedFurniture(snapshot);
+    ['left','right','wall'].forEach(function(slot){var key=placements[slot];if(key)items.push(Object.assign({key:key},furnitureOrigin(key,catalog)));});
+    return items.map(function(item){return {key:item.key,x:item.x,y:item.y};});
+  }
+  function furnitureRoom(snapshot) { return snapshot.lifecycle && snapshot.lifecycle.phase==='egg' ? 'main' : savedHomeLayout(snapshot).room; }
+  function arrangementPayload(room,items) { return {room_key:room,items:items.map(function(item){return {key:item.key,x:item.x,y:item.y};})}; }
+  function furnitureToggle(key,label) {
+    var room=furnitureRoom(state), shop=state.pet_furniture||{}, items=roomFurnitureItems(state,room);
+    var present=items.some(function(item){return item.key===key;});
+    var next=items.filter(function(item){return item.key!==key;});
+    if(!present) {
+      var origin=furnitureOrigin(key,shop.catalog||{}), item={key:key,x:origin.x,y:origin.y};
+      if(key==='record_deck')next.unshift(item);else next.push(item);
+    }
+    return button((present?'REMOVE ':'ADD ')+label,'furniture_arrange',arrangementPayload(room,next),
+      {disabled:!shop.arrangements_available||!present&&items.length>=8,statusLabel:!shop.arrangements_available?'REFRESH REQUIRED':!present&&items.length>=8?'8 ITEM LIMIT':'',detail:'Save this room arrangement. Ownership is retained; no cost or reward.'});
+  }
+  function renderRoomArrangement() {
+    var room=furnitureRoom(state), shop=state.pet_furniture||{}, catalog=shop.catalog||{}, items=roomFurnitureItems(state,room);
+    if(!shop.arrangements_available)return '<div class="line muted">ROOM ARRANGEMENT UNAVAILABLE. Refresh before changing furniture.</div>';
+    return '<div class="line">'+escapeHtml(room.toUpperCase())+' ITEMS // '+items.length+'/8</div>' + items.map(function(item,index){
+      var label=FREE_HOME_LABELS[item.key]||(catalog[item.key]||{}).label||item.key, origin=furnitureOrigin(item.key,catalog);
+      var controls=[['LEFT',-8,0],['RIGHT',8,0],['UP',0,-8],['DOWN',0,8]].map(function(direction){
+        var next=items.map(function(entry){return Object.assign({},entry);});
+        next[index].x=Math.max(0,Math.min(320-origin.width,item.x+direction[1]));
+        next[index].y=Math.max(20,Math.min(220-origin.height,item.y+direction[2]));
+        return button(direction[0]+' '+label,'furniture_arrange',arrangementPayload(room,next),{disabled:next[index].x===item.x&&next[index].y===item.y});
+      }).join('');
+      var front=items.filter(function(_,i){return i!==index;}).concat([item]);
+      return '<div class="line">'+escapeHtml(label)+' // X '+item.x+' Y '+item.y+'</div><div class="button-grid">'+controls+
+        button('IN FRONT: '+label,'furniture_arrange',arrangementPayload(room,front),{disabled:index===items.length-1})+furnitureToggle(item.key,label)+'</div>';
+    }).join('');
+  }
+  // TEST-EXPORT: roomFurniture:end
+
   // TEST-EXPORT: petHouse:start
   function renderPetHouse() {
     var house = state.pet_house;
@@ -3319,6 +3377,10 @@
     var choices = house.choices || {};
     var controls = ['room','floor','furniture'].map(function (slot) {
       var available = choices[slot] || [];
+      if(slot==='furniture') {
+        if(furnitureRoom(state)!=='main')return '<div class="line muted">FREE FURNITURE // MAIN ROOM ONLY</div>';
+        return '<div class="line muted">FREE FURNITURE</div><div class="button-grid">'+available.map(function(item){return furnitureToggle(item.key,FREE_HOME_LABELS[item.key]||item.label);}).join('')+'</div>';
+      }
       return '<div class="line muted">' + escapeHtml(slot.toUpperCase()) + '</div><div class="button-grid">' +
         available.map(function (item) {
           var active = layout[slot] === item.key && (slot !== 'floor' || house.floor_saved === true);
@@ -3329,8 +3391,8 @@
         }).join('') + '</div>';
     }).join('');
     return panel('HOME CUSTOMIZATION',
-      '<div class="line muted">Main Room is your original Home until you choose Kitchen, Garden or Gym. Each pet keeps its own saved room. Saved mats and furnishings appear in every room. Radio draws its stereo in front of right-side furniture.</div>' +
-      controls + (layout.room && layout.room !== 'main' ? '<div class="button-grid one">' + button('RETURN TO MAIN ROOM', 'house_place',
+      '<div class="line muted">Main Room is your original Home until you choose Kitchen, Garden or Gym. Each pet keeps its own saved room. Saved mats appear in every room. Free furniture is available only in Main Room. Add up to eight free and owned paid items per room; move them and set their draw order below. Radio draws its stereo in front of furniture.</div>' +
+      controls + renderRoomArrangement() + (layout.room && layout.room !== 'main' ? '<div class="button-grid one">' + button('RETURN TO MAIN ROOM', 'house_place',
         { slot_key:'room', item_key:'main' }, { detail:'Restore your original Main Room; saved floor and furniture choices are kept. No cost or reward.' }) + '</div>' : '') +
       '<div class="button-grid one">' + routeButton('BACK TO HOME', { screen:'home' }, 'See the saved room behind your pet on the main canvas.') + '</div>', 'pet-house');
   }
@@ -3342,35 +3404,29 @@
     if (!shop || shop.available !== true || !state.pet || shop.pet_id !== state.pet.pet_id)
       return panel('FURNITURE SHOP', '<div class="line muted">FURNITURE INVENTORY UNAVAILABLE. REFRESH BEFORE BUYING OR PLACING.</div>', 'furniture-shop');
     var owned = Array.isArray(shop.owned) ? shop.owned : [];
-    var placed = shop.placements || {};
+    var roomItems=roomFurnitureItems(state,furnitureRoom(state));
     var catalog = shop.catalog || {};
     var gold = Math.max(0, Number(state.pet.moon_gold) || 0);
     var groups = ['left','right','wall'].map(function (slot) {
-      var active = placed[slot];
       var rows = Object.keys(catalog).filter(function (key) { return catalog[key].slot === slot; }).map(function (key) {
         var item = catalog[key];
         var purchased = owned.includes(key);
-        var equipped = active === key;
+        var equipped = roomItems.some(function(entry){return entry.key===key;});
         var price = Math.max(0, Number(item.price_gold) || 0);
         return '<div class="line">' + escapeHtml(item.label) + ' // ' +
           (purchased ? 'OWNED' : number(price) + ' MOON GOLD') + (equipped ? ' // PLACED' : '') + '</div>' +
           '<div class="button-grid one">' +
           (purchased
-            ? button(equipped ? 'PLACED: ' + item.label : 'PLACE ' + item.label, 'furniture_place',
-              {slot_key:slot,item_key:key}, {disabled:equipped,statusLabel:equipped?'CURRENT':'',
-                detail:'Place owned furniture on this pet’s main canvas. No additional cost.'})
+            ? furnitureToggle(key,item.label)
             : button('BUY ' + item.label + ' // ' + number(price) + ' GOLD', 'furniture_buy',
               {item_key:key}, {disabled:gold<price,statusLabel:gold<price?'NOT ENOUGH GOLD':'',
                 detail:'One-time permanent account purchase. Cost: '+number(price)+' Moon Gold.'})) +
           '</div>';
       }).join('');
-      return '<div class="line muted">PLACEMENT // ' + slot.toUpperCase() + ' // ' +
-        escapeHtml(active && catalog[active] ? catalog[active].label : 'EMPTY') + '</div>' +
-        (active ? '<div class="button-grid one">' + button('REMOVE ' + slot.toUpperCase() + ' FURNITURE',
-          'furniture_remove',{slot_key:slot},{detail:'Remove this item without losing ownership or receiving a refund.'}) + '</div>' : '') + rows;
+      return '<div class="line muted">DEFAULT POSITION // ' + slot.toUpperCase() + '</div>' + rows;
     }).join('');
     return panel('FURNITURE SHOP // ' + owned.length + '/12 OWNED',
-      '<div class="line muted">Permanent account purchases; one item in each of three fixed positions per pet. Furniture is cosmetic only. Fish Tank draws on the LEFT; Plant Pot and Record Deck draw on the RIGHT. Paid furniture in the matching slot takes visual priority; removing it restores your saved free furnishing. No XP, extra rewards or pet-stat effects.</div>' +
+      '<div class="line muted">Permanent account purchases; up to eight placed items per room. All owned paid items can coexist with Main Room free furniture. Kitchen, Garden and Gym allow paid furniture only. Move items and change their draw order in Home Customization. Furniture is cosmetic only. No XP, extra rewards or pet-stat effects.</div>' +
       '<div class="line">AVAILABLE MOON GOLD // ' + number(gold) + '</div>' + groups, 'furniture-shop');
   }
   // TEST-EXPORT: furnitureShop:end
@@ -3724,7 +3780,7 @@
       return blockedParts.join(' - ');
     }
     if (result.reason === 'pet_house_saved') return String(result.result_copy || 'HOME SAVED // Return to Home to see this pet’s saved customization. No currency or XP changed.');
-    if (result.reason === 'pet_furniture_purchased' || result.reason === 'pet_furniture_owned' || result.reason === 'pet_furniture_placed' || result.reason === 'pet_furniture_removed') return String(result.result_copy || 'Furniture save confirmed.');
+    if (result.reason === 'pet_furniture_purchased' || result.reason === 'pet_furniture_owned' || result.reason === 'pet_furniture_placed' || result.reason === 'pet_furniture_removed' || result.reason === 'pet_room_furniture_saved') return String(result.result_copy || 'Furniture save confirmed.');
     if (result.reason === 'pet_garden_planted' || result.reason === 'pet_garden_already_planted' || result.reason === 'pet_garden_harvested') return String(result.result_copy || 'Garden save confirmed.');
     var reward = resultRewardMap(result);
     var gains = Object.entries(reward).filter(function (entry) { return Number(entry[1]) > 0 && typeof entry[1] !== 'object' && !(entry[0] === 'pet_xp' && result.pet_xp_awarded != null); }).map(function (entry) { return '+' + number(entry[1]) + ' ' + words(entry[0]); });
@@ -4930,6 +4986,7 @@
     backgroundArtState.stereo = { source:'/img/bass-yeo.png', frame:frame };
   }
 
+  var homeLavaLampImage = null;
   var homeFishTankImage = null;
   var homePlantImage = null;
   function drawHomeFurniture(furniture, time) {
@@ -4956,12 +5013,17 @@
         backgroundArtState.tank = {source:'/img/tank-fishyfish.png',frame:tankFrame};
       }
     } else if (furniture === 'record_deck') {
-      drawPixelRect(260, base - 36, 50, 4, '#9c8bbe');
-      drawPixelRect(264, base - 32, 42, 27, '#292c3e');
-      drawPixelRect(265, base - 40, 18, 4, '#171b25');
-      drawPixelRect(286, base - 39, 16, 2, '#61f5ff');
-      drawPixelRect(264, base - 5, 4, 5, '#151518');
-      drawPixelRect(302, base - 5, 4, 5, '#151518');
+      if(!homeLavaLampImage) {
+        homeLavaLampImage=new Image();homeLavaLampImage.decoding='async';
+        homeLavaLampImage.onload=function(){if(reducedMotion)drawWorld(performance.now());};
+        homeLavaLampImage.src='/img/lamp-larvalampy.png';
+      }
+      if(homeLavaLampImage.complete&&homeLavaLampImage.naturalWidth===1280&&homeLavaLampImage.naturalHeight===1024) {
+        var lampFrame=reducedMotion?0:Math.floor(Math.max(0,Number(time)||0)/125)%20;
+        ctx.save();ctx.imageSmoothingEnabled=true;
+        ctx.drawImage(homeLavaLampImage,(lampFrame%5)*256+93,Math.floor(lampFrame/5)*256+14,70,226,282,27,35,113);
+        ctx.restore();backgroundArtState.lamp={source:'/img/lamp-larvalampy.png',frame:lampFrame};
+      }
     } else if (furniture === 'plant_pot') {
       if (!homePlantImage) {
         homePlantImage = new Image();
@@ -5101,6 +5163,7 @@
     backgroundArtState.stereo = null;
     backgroundArtState.disco = null;
     backgroundArtState.tank = null;
+    backgroundArtState.lamp = null;
     var showHome = state && state.adopted && state.pet && !hatchArtTransitionActive(renderTime);
     if (showHome) {
       var home = savedHomeLayout(state);
@@ -5119,14 +5182,16 @@
       }
       var purchased = state.pet_furniture && state.pet_furniture.available === true
         ? savedPurchasedFurniture(state) : null;
-      var homeFurnitureSlot = home.furniture === 'sleep_mat' ? 'left' : 'right';
-      if (!purchased || !purchased[homeFurnitureSlot]) drawHomeFurniture(home.furniture, renderTime);
-      if (purchased) {
-        if (purchased.wall) drawPurchasedFurniture(purchased.wall,'wall');
-        if (purchased.left) drawPurchasedFurniture(purchased.left,'left');
-        if (purchased.right) drawPurchasedFurniture(purchased.right,'right');
-        home.purchased = purchased;
-      }
+      var items=roomFurnitureItems(state,room), catalog=(state.pet_furniture||{}).catalog||{};
+      items.forEach(function(item){
+        var origin=furnitureOrigin(item.key,catalog);
+        ctx.save();ctx.translate(item.x-origin.x,item.y-origin.y);
+        if(Object.hasOwn(FREE_HOME_LABELS,item.key))drawHomeFurniture(item.key,renderTime);
+        else drawPurchasedFurniture(item.key,catalog[item.key].slot);
+        ctx.restore();
+      });
+      if(purchased)home.purchased=purchased;
+      home.items=items;
       if (musicActive) { drawMusicStereo(renderTime); drawRadioDiscoBall(renderTime); }
       home.right_overlay = musicActive ? 'stereo' : null;
       home.active_room = room;

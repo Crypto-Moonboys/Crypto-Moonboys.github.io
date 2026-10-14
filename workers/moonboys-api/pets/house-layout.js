@@ -20,8 +20,8 @@ export const PET_HOUSE_CHOICES = Object.freeze({
     Object.freeze({ key:'steel', label:'CAMO MATT' }),
   ]),
   furniture: Object.freeze([
-    Object.freeze({ key:'sleep_mat', label:'Sleep Mat' }),
-    Object.freeze({ key:'record_deck', label:'Record Deck' }),
+    Object.freeze({ key:'sleep_mat', label:'Fish Tank' }),
+    Object.freeze({ key:'record_deck', label:'Lava Lamp' }),
     Object.freeze({ key:'plant_pot', label:'Plant Pot' }),
   ]),
 });

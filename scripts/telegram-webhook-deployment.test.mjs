@@ -26,14 +26,14 @@ test('production preflight reads secret names with portable, read-only Wrangler 
 });
 
 test('moonboys-api migration preflight queries remote D1 portably and fails closed', () => {
-  const query = "SELECT name FROM d1_migrations WHERE name IN ('092_moonpet_house_layouts.sql','094_moonpet_home_furniture.sql','095_moonpet_home_garden.sql','096_moonpet_home_rooms.sql')";
+  const query = "SELECT name FROM d1_migrations WHERE name IN ('092_moonpet_house_layouts.sql','094_moonpet_home_furniture.sql','095_moonpet_home_garden.sql','096_moonpet_home_rooms.sql','097_moonpet_room_furniture.sql')";
   assert.deepEqual(buildPetHouseMigrationCheckInvocation({ platform: 'linux' }), {
     command: 'npx',
     args: ['wrangler', 'd1', 'execute', 'wikicoms', '--remote', '--command', query, '--json'],
     windowsVerbatimArguments: false,
   });
   assert.equal(buildPetHouseMigrationCheckInvocation({ platform: 'win32', comspec: 'cmd.exe' }).command, 'cmd.exe');
-  const applied = JSON.stringify([{ success: true, results: [{ name: '092_moonpet_house_layouts.sql' }, { name: '094_moonpet_home_furniture.sql' }, { name: '095_moonpet_home_garden.sql' }, { name: '096_moonpet_home_rooms.sql' }] }]);
+  const applied = JSON.stringify([{ success: true, results: [{ name: '092_moonpet_house_layouts.sql' }, { name: '094_moonpet_home_furniture.sql' }, { name: '095_moonpet_home_garden.sql' }, { name: '096_moonpet_home_rooms.sql' }, { name: '097_moonpet_room_furniture.sql' }] }]);
   assert.doesNotThrow(() => requirePetHouseMigrationApplied(applied));
   assert.throws(() => requirePetHouseMigrationApplied(JSON.stringify([{ success:true, results:[{name:'092_moonpet_house_layouts.sql'}] }])), /094_moonpet_home_furniture\.sql/);
   assert.throws(() => requirePetHouseMigrationApplied(JSON.stringify([{ success:true, results:[{name:'092_moonpet_house_layouts.sql'},{name:'094_moonpet_home_furniture.sql'}] }])), /095_moonpet_home_garden\.sql/);

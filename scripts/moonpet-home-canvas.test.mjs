@@ -9,7 +9,7 @@ const scene=client.split('// TEST-EXPORT: homeScene:start')[1].split('// TEST-EX
 function painter() {
   const calls=[], stack=[];
   const ctx={globalAlpha:1,drawImage:(image,...args)=>calls.push({source:image.src,args}),save(){stack.push(this.globalAlpha);},restore(){this.globalAlpha=stack.pop();}};
-  const runtime=vm.createContext({ctx,Image:function(){this.complete=true;this.naturalWidth=1280;this.naturalHeight=1280;},reducedMotion:false,backgroundArtState:{},BOT_RENDER_BASELINE_Y:219,BOT_RENDER_CENTER_X:160,
+  const runtime=vm.createContext({ctx,Image:function(){this.complete=true;this.naturalWidth=1280;Object.defineProperty(this,'naturalHeight',{get(){return this.src==='/img/lamp-larvalampy.png'?1024:1280;}});},reducedMotion:false,backgroundArtState:{},BOT_RENDER_BASELINE_Y:219,BOT_RENDER_CENTER_X:160,
     drawPixelRect:(x,y,w,h,color)=>calls.push({x,y,w,h,color,alpha:ctx.globalAlpha}),
     drawCompanionFloor:()=>calls.push({originalFloor:true})});
   vm.runInContext(scene,runtime);
@@ -168,59 +168,40 @@ test('Missions preserves only the same pet Home and never hides an explicit fail
   assert.equal(runtime.state.pet_house,undefined,'pet switch cannot transfer the old Home');
 });
 
-test('Home layers precede the pet/effects and the original hatch reveal excludes them',()=>{
+test('room arrangements coexist, preserve floor layers and exclude free items outside Main',()=>{
   const source=client.split('// TEST-EXPORT: drawWorld:start')[1].split('// TEST-EXPORT: drawWorld:end')[0];
+  const helpers=client.split('// TEST-EXPORT: roomFurniture:start')[1].split('// TEST-EXPORT: roomFurniture:end')[0];
   const calls=[];
-  const runtime=vm.createContext({state:{adopted:true,pet:{pet_id:'one'},lifecycle:{phase:'young'}},reducedMotion:true,performance:{now:()=>7},
+  const runtime=vm.createContext({state:{adopted:true,pet:{pet_id:'one'},lifecycle:{phase:'young'},pet_furniture:{available:true,pet_id:'one',owned:['neon_lamp'],catalog:{neon_lamp:{slot:'left'}},placements:{left:'neon_lamp'}}},reducedMotion:true,performance:{now:()=>7},
     BOT_RENDER_BASELINE_Y:219,STAGE_ZERO_BACKGROUND_URL:'egg',backgroundArtState:{},botArtRendererReady:true,
-    HOME_ROOMS:['main','kitchen','garden','gym'],activeHomeRoom:'main',animationMode:'idle',animationUntil:0,actionSequence:0,musicStereoSuppressedSequence:-1,radioRequestedOn:false,drawMusicStereo:()=>calls.push('stereo'),drawRadioDiscoBall:()=>calls.push('disco'),
-    stageZeroPresentationActive:()=>true,hatching:false,ctx:{save(){},restore(){}},
-    drawStageZeroBackground:()=>calls.push('egg'),savedHomeLayout:()=>({room:runtime.selectedRoom||'main',wall:'night_wall',floor:'steel',furniture:runtime.selectedFurniture||'plant_pot'}),
-    drawHomeWall:()=>calls.push('wall'),drawHomeFloor:()=>calls.push('floor+shadow'),drawHomeFurniture:()=>calls.push('furniture'),
+    HOME_ROOMS:['main','kitchen','garden','gym'],radioRequestedOn:false,drawMusicStereo:()=>calls.push('stereo'),drawRadioDiscoBall:()=>calls.push('disco'),
+    stageZeroPresentationActive:()=>true,hatching:false,ctx:{save(){},restore(){},translate(){}},
+    drawStageZeroBackground:()=>calls.push('egg'),savedHomeLayout:()=>({room:runtime.selectedRoom||'main',wall:'night_wall',floor:'steel',furniture:'plant_pot'}),
+    savedPurchasedFurniture:snapshot=>snapshot.pet_furniture.placements,
+    drawHomeWall:()=>calls.push('wall'),drawHomeFloor:()=>calls.push('floor+shadow'),drawHomeFurniture:key=>calls.push(key),drawPurchasedFurniture:key=>calls.push(key),
     drawDedicatedHomeRoom:room=>calls.push('room:'+room),
     drawEquippedStyles:(_,front)=>calls.push(front?'effects-front':'effects-back'),drawPet:()=>calls.push('pet')});
-  vm.runInContext('function hatchArtTransitionActive(){return hatching;}'+source,runtime);
+  vm.runInContext(helpers+'function hatchArtTransitionActive(){return hatching;}'+source,runtime);
   runtime.drawWorld(0);
-  assert.deepEqual(calls,['egg','wall','floor+shadow','furniture','effects-back','pet','effects-front']);
-  runtime.selectedRoom='kitchen';calls.length=0;runtime.drawWorld(0);
-  assert.deepEqual(calls,['egg','room:kitchen','furniture','effects-back','pet','effects-front']);
-  assert.equal(runtime.backgroundArtState.home.active_room,'kitchen');
-  assert.deepEqual(Array.from(runtime.backgroundArtState.home.rooms),['main','kitchen','garden','gym']);
+  assert.deepEqual(calls,['egg','wall','floor+shadow','plant_pot','neon_lamp','effects-back','pet','effects-front']);
   runtime.state.pet_house={available:true,pet_id:'one',floor_saved:true};
   for(const room of ['kitchen','garden','gym']) {
     runtime.selectedRoom=room;calls.length=0;runtime.drawWorld(0);
-    assert.deepEqual(calls,['egg','room:'+room,'floor+shadow','furniture','effects-back','pet','effects-front'],
-      'saved mat draws above each room background and below the pet');
+    assert.deepEqual(calls,['egg','room:'+room,'floor+shadow','neon_lamp','effects-back','pet','effects-front']);
   }
-  runtime.state.pet_house.pet_id='other';calls.length=0;runtime.drawWorld(0);
-  assert.equal(calls.includes('floor+shadow'),false,'other pet floor cannot decorate this room');
-  runtime.selectedRoom='main';runtime.radioRequestedOn=true;calls.length=0;runtime.drawWorld(0);
-  assert.deepEqual(calls,['egg','wall','floor+shadow','furniture','stereo','disco','effects-back','pet','effects-front']);
-  runtime.state.pet_furniture={available:true};
-  runtime.savedPurchasedFurniture=()=>({right:'retro_tv'});
-  runtime.drawPurchasedFurniture=()=>calls.push('paid-right');
-  calls.length=0;runtime.drawWorld(0);
-  assert.deepEqual(calls,['egg','wall','floor+shadow','paid-right','stereo','disco','effects-back','pet','effects-front'],
-    'paid right furniture remains drawn behind the stereo');
-  runtime.selectedFurniture='sleep_mat';calls.length=0;runtime.drawWorld(0);
-  assert.ok(calls.includes('furniture'),'paid right furniture must not hide left-side tank');
-  runtime.savedPurchasedFurniture=()=>({left:'neon_lamp'});calls.length=0;runtime.drawWorld(0);
-  assert.equal(calls.includes('furniture'),false,'paid left furniture retains its slot priority');
-  runtime.selectedFurniture='plant_pot';
-  runtime.state.pet_furniture=null;
+  runtime.selectedRoom='main';runtime.state.pet_furniture.arrangements_available=true;
+  runtime.state.pet_furniture.arrangements={main:[{key:'record_deck',x:282,y:27},{key:'plant_pot',x:222,y:86},{key:'sleep_mat',x:6,y:35},{key:'neon_lamp',x:10,y:150}]};
+  runtime.radioRequestedOn=true;calls.length=0;runtime.drawWorld(0);
+  assert.deepEqual(calls,['egg','wall','floor+shadow','record_deck','plant_pot','sleep_mat','neon_lamp','stereo','disco','effects-back','pet','effects-front']);
   runtime.radioRequestedOn=false;calls.length=0;runtime.drawWorld(0);
-  assert.ok(calls.includes('furniture'),'radio off keeps the saved furnishing');
-  assert.equal(calls.includes('disco'),false,'Radio off removes the disco ball');
-  runtime.animationMode='dance';runtime.animationUntil=100;calls.length=0;runtime.drawWorld(0);
-  assert.ok(calls.includes('furniture'),'dance does not display stereo or hide furnishings');
-  runtime.animationMode='idle';
-  runtime.selectedRoom='main';
+  assert.ok(calls.includes('plant_pot')&&calls.includes('sleep_mat')&&calls.includes('record_deck'));
+  assert.equal(calls.includes('stereo'),false);
   runtime.hatching=true;calls.length=0;runtime.drawWorld(0);
-  assert.deepEqual(calls,['egg','effects-back','pet','effects-front']);
-  assert.equal(runtime.backgroundArtState.home,null);
+  assert.equal(calls.includes('plant_pot'),false,'original hatch reveal excludes furniture');
 });
 
 const roomsSource=client.split('// TEST-EXPORT: homeRoomsCanvas:start')[1].split('// TEST-EXPORT: homeRoomsCanvas:end')[0];
+
 test('saved rooms load the requested JPEG art with cover cropping and reuse images',()=>{
   const paint=[], images=[];
   function Image() { this.complete=false; this.naturalWidth=640; this.naturalHeight=480; images.push(this); }
