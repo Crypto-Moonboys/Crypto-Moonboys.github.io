@@ -514,3 +514,34 @@ test('PR2 Kitchen/Gym recommendations require ready data and respect existing ga
   s.cooldowns.entries=[];s.hydration.full=false;
   assert.equal(play.options(s).some(x=>x.key==='gym_train'),false);
 });
+
+test('PR2 egg Weekly Bounty claim remains actionable without unlocking other egg-only routes', () => {
+  const play=createRequire(import.meta.url)('../js/moonpet-play-options.js');
+  const s={adopted:true,pet:{pet_id:'egg-a'},lifecycle:{phase:'egg'},
+    guidance:{economy:{weekly_bounties:[{key:'weekly',complete:true,claimed:false}],bonus_bounties:[]}}};
+  const claim=play.options(s).find(x=>x.key==='weekly_bounty_claims');
+  assert.ok(claim);
+  assert.equal(claim.focus,'weekly-bounties');
+  assert.equal(play.recommendations(s)[0].key,'weekly_bounty_claims');
+  const client=read('js/moonpet-mini-app.js');
+  const whitelist=client.match(/var eggActions = accountActions\.concat\(\[([^\]]+)\]\)/)?.[1];
+  assert.ok(whitelist && whitelist.includes("'weekly_bounty_claim'"));
+  assert.ok(!whitelist.includes("'garden_plant'") && !whitelist.includes("'craft'"));
+  s.guidance.economy.weekly_bounties[0].claimed=true;
+  assert.equal(play.options(s).some(x=>x.key==='weekly_bounty_claims'),false);
+});
+
+test('PR2 Kitchen recommendations reject full output stacks and missing output authority', () => {
+  const play=createRequire(import.meta.url)('../js/moonpet-play-options.js');
+  const s={adopted:true,pet:{pet_id:'a',energy:5},lifecycle:{phase:'young'},hydration:{full:true},
+    guidance:{economy:{}},live_systems:{crafting:[{
+      key:'pizza_night',unlocked:true,affordable:true,
+      output:{item_key:'street_pizza',quantity:2},cost:{}
+    }]},inventory:[{key:'street_pizza',count:999998}],
+    pet_house:{available:true,pet_id:'a',layout:{room:'kitchen'}}};
+  assert.equal(play.options(s).some(x=>x.key==='kitchen_ready'),false);
+  s.inventory[0].count=999997;
+  assert.ok(play.options(s).some(x=>x.key==='kitchen_ready'));
+  delete s.live_systems.crafting[0].output;
+  assert.equal(play.options(s).some(x=>x.key==='kitchen_ready'),false);
+});
