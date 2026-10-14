@@ -483,7 +483,7 @@ test('PR2 navigation prioritizes verified Home readiness and new claim boards wi
   assert.equal(ranked[0].focus,'bonus-bounties');
   assert.ok(ranked.some(x=>x.key==='weekly_bounty_claims'&&x.focus==='weekly-bounties'));
   assert.ok(ranked.some(x=>x.key==='garden_harvest'&&x.screen==='home'&&x.focus==='garden'));
-  assert.ok(ranked.some(x=>x.key==='room_furniture'&&x.screen==='profile'&&x.focus==='pet-house'));
+  assert.ok(play.options(s).some(x=>x.key==='room_furniture'&&x.screen==='profile'&&x.focus==='pet-house')); // Recommendations dedupe identical destinations.
   assert.equal(play.options(s).find(x=>x.key==='garden_harvest').title,'HARVEST VEGGIES');
   s.pet_house.layout.room='main';
   assert.deepEqual({screen:play.options(s).find(x=>x.key==='garden_harvest').screen,focus:play.options(s).find(x=>x.key==='garden_harvest').focus},{screen:'profile',focus:'pet-house'});
