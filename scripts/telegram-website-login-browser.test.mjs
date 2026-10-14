@@ -180,6 +180,19 @@ for (const [name, viewport] of [['desktop', { width: 1440, height: 900 }], ['mob
       await otherTab.goto(SITE + '/gkniftyheads-incubator.html', { waitUntil: 'domcontentloaded' });
       await otherTab.waitForFunction(() => window.MOONBOYS_IDENTITY?.getIdentityTier() === 'telegram_linked');
       const priorProof = await page.evaluate(() => window.MOONBOYS_IDENTITY.getSignedTelegramAuth());
+      const sessionCount = sqlite.prepare('SELECT COUNT(*) AS n FROM telegram_website_sessions').get().n;
+      await page.goto(SITE + '/community.html', { waitUntil: 'domcontentloaded' });
+      await page.evaluate(() => window.MOONBOYS_IDENTITY.ready);
+      await page.waitForFunction(() => document.querySelector('[data-telegram-account] strong')?.textContent === 'Telegram account');
+      assert.equal(await page.locator('[data-telegram-account]').getAttribute('data-telegram-login'), null);
+      await Promise.all([
+        page.waitForURL(SITE + '/gkniftyheads-incubator.html'),
+        page.locator('[data-telegram-account]').click(),
+      ]);
+      await page.evaluate(() => window.MOONBOYS_IDENTITY.ready);
+      assert.equal(sqlite.prepare('SELECT COUNT(*) AS n FROM telegram_website_sessions').get().n, sessionCount, 'opening account information does not create another session');
+      assert.equal(callbackSessionCookies.length, 1, 'connected Community navigation does not authorize again');
+      assert.equal((await verifyWebsiteCredential(priorProof, env)).telegramId, ID, 'other tabs retain a valid credential');
       assert.equal(await page.locator('[data-tg-sync-cta] [data-telegram-login]').isVisible(), false, 'connected players are not offered redundant login');
       // Deliberately reauthenticate to exercise session rotation and old-tab
       // recovery; the ordinary connected UI now offers logout instead.

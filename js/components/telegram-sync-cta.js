@@ -65,6 +65,16 @@
 
   function updateAll() {
     document.querySelectorAll('[data-tg-sync-cta][data-tg-sync-cta-mounted]').forEach(update);
+    var gate = window.MOONBOYS_IDENTITY;
+    var pending = Boolean(gate && gate.isSessionPending && gate.isSessionPending());
+    var linked = !pending && Boolean(gate && gate.isTelegramLinked && gate.isTelegramLinked());
+    document.querySelectorAll('[data-telegram-account]').forEach(function (link) {
+      // Connected players open account information without rotating their session.
+      if (pending || linked) link.removeAttribute('data-telegram-login');
+      else link.setAttribute('data-telegram-login', '');
+      link.querySelector('strong').textContent = linked ? 'Telegram account' : 'Log in with Telegram';
+      link.querySelector('span').textContent = linked ? 'View your connection status and community group link.' : 'Approve Telegram’s login request to restore your existing account and server-saved progress.';
+    });
   }
 
   function mountAll() {
@@ -72,6 +82,7 @@
     for (var i = 0; i < nodes.length; i++) {
       mount(nodes[i]);
     }
+    updateAll();
   }
 
   ['moonboys:identity-change', 'moonboys:telegram-session', 'moonboys:sync-state', 'storage'].forEach(function (event) { window.addEventListener(event, updateAll); });

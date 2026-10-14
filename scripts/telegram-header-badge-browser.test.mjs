@@ -88,6 +88,13 @@ for (const [name, viewport] of [['desktop', { width: 1440, height: 900 }], ['mob
       assert.equal(await loginCard.locator('[data-telegram-logout]').isVisible(), false, 'guests are not offered logout');
       assert.equal(await loginCard.locator('details').evaluate(node => node.open), false, 'bot commands stay in optional help');
 
+      await page.goto(SITE + '/community.html', { waitUntil: 'domcontentloaded' });
+      await page.evaluate(() => window.MOONBOYS_IDENTITY.ready);
+      await page.waitForSelector('[data-telegram-account][data-telegram-login]');
+      assert.equal(await page.locator('[data-telegram-account] strong').textContent(), 'Log in with Telegram', 'guests retain direct Community login');
+      await page.goto(SITE + '/gkniftyheads-incubator.html', { waitUntil: 'domcontentloaded' });
+      await page.evaluate(() => window.MOONBOYS_IDENTITY.ready);
+
       // 2. Pending authentication: while the cookie session is unresolved the
       //    badge must not claim a sync is required.
       current = session(ID, 'Returning');

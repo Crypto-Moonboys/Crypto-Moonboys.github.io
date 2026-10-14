@@ -4438,7 +4438,7 @@ body.page-home .article-card-cat {
 .tg-sync-cta { display: grid; grid-template-columns: auto minmax(0, 1fr) minmax(180px, .4fr); gap: 16px; align-items: center; padding: 18px 20px; border: 1px solid var(--color-border); border-radius: 16px; }
 .tg-sync-cta-actions { display: grid; gap: 10px; min-width: 0; }
 .tg-sync-cta-body { display: grid; gap: 8px; min-width: 0; overflow-wrap: anywhere; }
-.tg-sync-cta [hidden] { display: none !important; }
+.tg-sync-cta [hidden] { display: none; }
 .tg-sync-cta-account, .tg-sync-cta-help { grid-column: 2 / -1; overflow-wrap: anywhere; }
 .tg-sync-cta-help summary { cursor: pointer; padding: 12px 0; }
 @media (max-width: 720px) { .tg-sync-cta { grid-template-columns: minmax(0, 1fr); } .tg-sync-cta-account, .tg-sync-cta-help { grid-column: 1 / -1; } }
