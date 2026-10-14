@@ -2087,6 +2087,60 @@
       '</div>', 'pet-emotes');
   }
 
+  // TEST-EXPORT: companionWings:start
+  var companionWingsPreferences = Object.create(null);
+  var companionWingsImage = null;
+  function wingsEligible(snapshot) {
+    return Boolean(snapshot && snapshot.adopted && snapshot.pet && snapshot.pet.pet_id &&
+      Number(snapshot.pet.level) >= 2 && !(snapshot.lifecycle && snapshot.lifecycle.phase === 'egg'));
+  }
+  function wingsPreferenceKey(snapshot) { return 'moonpet-wings-v1:' + encodeURIComponent(snapshot.pet.pet_id); }
+  function companionWingsEnabled(snapshot) {
+    if (!wingsEligible(snapshot)) return false;
+    var key = wingsPreferenceKey(snapshot);
+    if (!Object.prototype.hasOwnProperty.call(companionWingsPreferences,key)) {
+      try { companionWingsPreferences[key] = localStorage.getItem(key) === 'on'; }
+      catch (_) { companionWingsPreferences[key] = false; }
+    }
+    return companionWingsPreferences[key];
+  }
+  function renderCompanionWings() {
+    if (!wingsEligible(state)) return '<div class="line muted">BOTTY WINGS // UNLOCK AT LEVEL 2</div>';
+    var enabled = companionWingsEnabled(state);
+    return '<div class="line">BOTTY WINGS // '+(enabled?'ON':'OFF')+'</div><div class="button-grid one">' +
+      '<button type="button" class="terminal-button" data-local-wings aria-pressed="'+enabled+'" aria-label="Turn wings '+(enabled?'off':'on')+'">TURN WINGS '+(enabled?'OFF':'ON')+
+      '<span class="button-purpose">Free visual effect. Saved per pet on this device; no XP, stats or currency change.</span></button></div>';
+  }
+  function toggleCompanionWings() {
+    if (!wingsEligible(state)) return;
+    var key = wingsPreferenceKey(state), enabled = !companionWingsEnabled(state), persisted = true;
+    companionWingsPreferences[key] = enabled;
+    try { localStorage.setItem(key,enabled?'on':'off'); } catch (_) { persisted = false; }
+    tell('WINGS '+(enabled?'ON':'OFF')+(persisted?' — SAVED ON THIS DEVICE.':' — THIS SESSION ONLY.'));
+    render();
+    if (reducedMotion) drawWorld(performance.now());
+  }
+  function drawCompanionWings(time) {
+    backgroundArtState.wings = null;
+    if (!companionWingsEnabled(state) || !botArtRendererReady || hatchArtTransitionActive(time)) return;
+    if (!companionWingsImage) {
+      companionWingsImage = new Image();
+      companionWingsImage.decoding = 'async';
+      companionWingsImage.onload = function () { if (reducedMotion) drawWorld(performance.now()); };
+      companionWingsImage.src = '/img/BOTTY%20WINGS-waveone-v1.png';
+    }
+    if (!companionWingsImage.complete || companionWingsImage.naturalWidth !== 1280 || companionWingsImage.naturalHeight !== 1280) return;
+    // Fixed union of all 25 frame alpha bounds; keep the flutter centred behind
+    // the companion without rescaling individual frames or clipping sparkles.
+    var frame = reducedMotion ? 0 : Math.floor(Math.max(0,Number(time)||0)/125)%25;
+    ctx.save();ctx.imageSmoothingEnabled = true;
+    ctx.drawImage(companionWingsImage,(frame%5)*256+6,Math.floor(frame/5)*256+38,250,176,
+      BOT_RENDER_CENTER_X-120,26,240,240*176/250);
+    ctx.restore();
+    backgroundArtState.wings = {source:'/img/BOTTY%20WINGS-waveone-v1.png',frame:frame};
+  }
+  // TEST-EXPORT: companionWings:end
+
   function renderHome() {
     if (!state.adopted) {
       var entry = state.entry_requirement || {};
@@ -2125,7 +2179,7 @@
           detail: dailyCache.claimed ? number(dailyCache.receipt && dailyCache.receipt.pet_xp_awarded) + ' PET XP COLLECTED // One cache per account / UTC day.' : dailyCache.available ? '40 MOON GOLD + 2 STYLE // UP TO ' + number(dailyCache.available_pet_xp) + ' PET XP WITH TODAY’S CAP.' : 'Waiting for cache status.' }) + '<button class="terminal-button" type="button" data-pet-greet>SAY HELLO<span class="button-purpose">Wave to your pet. This is an animation, with no XP or stat change.</span></button>' +
       '</div>' + (state.guidance && state.guidance.activity && state.guidance.activity.status === 'active' ? '<div class="button-grid one">' + routeButton('REVIEW BACKGROUND ACTIVITY', { screen: 'work', focus: 'timed-activity' }, 'Sleep and Train unlock when the activity ends. Feed, Play, Clean and Contracts remain available.') + '</div>' : '') + (dailyCache.claimed && state.contracts && state.contracts.available ? '<div class="button-grid one">' + routeButton('CONTINUE WITH CONTRACTS', { screen: 'missions', focus: 'contracts' }, 'Your cache is collected. Saved quests keep going without energy or cooldowns.') + '</div>' : ''), 'care') +
       renderSeasonSlots() +
-      panel('COMPANION DETAILS', '<div class="line complete">' + escapeHtml(displayName) + ' // ' + escapeHtml(moonpetStageLabel(lifecycle, pet)) + '</div><div class="line">LEVEL ' + number(pet.level) + ' // ' + number(pet.pet_xp) + ' XP // ' + number(pet.style_tokens) + ' STYLE // ' + number(pet.streak_days) + '-DAY STREAK</div><div class="line muted">' + escapeHtml(words(lifecycle.temperament || 'forming')) + ' TEMPERAMENT // ' + escapeHtml(words(lifecycle.appearance && lifecycle.appearance.marking || 'moon mark')) + '</div>' + equipped, 'details');
+      panel('COMPANION DETAILS', '<div class="line complete">' + escapeHtml(displayName) + ' // ' + escapeHtml(moonpetStageLabel(lifecycle, pet)) + '</div><div class="line">LEVEL ' + number(pet.level) + ' // ' + number(pet.pet_xp) + ' XP // ' + number(pet.style_tokens) + ' STYLE // ' + number(pet.streak_days) + '-DAY STREAK</div><div class="line muted">' + escapeHtml(words(lifecycle.temperament || 'forming')) + ' TEMPERAMENT // ' + escapeHtml(words(lifecycle.appearance && lifecycle.appearance.marking || 'moon mark')) + '</div>' + equipped + renderCompanionWings(), 'details');
   }
 
   // TEST-EXPORT: stateRequestGate:start
@@ -4380,6 +4434,7 @@
   }
   // TEST-EXPORT: radioRequestConsent:end
   screen.addEventListener('click', function (event) {
+    if (event.target.closest('[data-local-wings]')) { toggleCompanionWings(); return; }
     var emoteButton = event.target.closest('[data-local-emote]');
     if (emoteButton) {
       playLocalEmote(emoteButton.dataset.localEmote);
@@ -5202,6 +5257,7 @@
 
     ctx.save();
     drawEquippedStyles(renderTime, false);
+    drawCompanionWings(renderTime);
     drawPet(renderTime);
     ctx.restore();
     drawEquippedStyles(renderTime, true);
