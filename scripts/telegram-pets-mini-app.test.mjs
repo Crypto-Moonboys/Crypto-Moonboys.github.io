@@ -1117,6 +1117,9 @@ assert.match(blockedResultFeedback.resultMessage, /Action unavailable - hatch yo
   'blocked action result must show useful reason copy');
 assert.doesNotMatch(blockedResultFeedback.resultMessage, /Daily Journey|GROWTH MARK|\+99|\+50/,
   'rejected action result must not show journey progress or reward language');
+assert.match(actionResultFeedbackRuntime({ accepted: false, reason: 'pet_room_furniture_authoritative' }, {}, {}).resultMessage,
+  /Main Room uses its saved arrangement\. Refresh and edit it in Home Customization\./,
+  'legacy furniture actions must explain how to edit an authoritative room arrangement');
 const blockedWithoutReason = actionResultFeedbackRuntime({ accepted: false }, {}, {});
 assert.equal(blockedWithoutReason.resultMessage, 'Action unavailable',
   'rejected action without reason must not render a dangling hyphen');

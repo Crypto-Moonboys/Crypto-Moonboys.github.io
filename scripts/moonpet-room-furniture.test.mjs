@@ -49,6 +49,26 @@ test('wrong owner, stale active pet and failed D1 writes cannot save arrangement
  assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_room_furniture').get().n,0);
  }finally{f.sql.close();}
 });
+test('saved Main arrangement rejects legacy furniture writes without changing either save',async()=>{
+ const f=setup('room-legacy-write'),pet={pet_id:'current-'+f.owner,season_key:currentSeason};
+ try{
+ assert.equal((await f.act({action:'house_place',slot_key:'furniture',item_key:'sleep_mat'})).accepted,true);
+ assert.equal((await f.act({action:'furniture_place',item_key:'neon_lamp',slot_key:'left'})).accepted,true);
+ const items=[{key:'sleep_mat',x:6,y:35},{key:'neon_lamp',x:10,y:150}];
+ assert.equal((await saveRoomFurniture(f.db,f.owner,pet,'main',items)).accepted,true);
+ const freeWrite=await f.act({action:'house_place',slot_key:'furniture',item_key:'record_deck'});
+ const paidWrite=await f.act({action:'furniture_place',item_key:'speaker_stack',slot_key:'left'});
+ const paidRemove=await f.act({action:'furniture_remove',slot_key:'left'});
+ for(const result of [freeWrite,paidWrite,paidRemove]){
+  assert.equal(result.accepted,false);
+  assert.equal(result.reason,'pet_room_furniture_authoritative');
+ }
+ assert.deepEqual(await readRoomFurniture(f.db,f.owner,pet,paid),{main:items});
+ assert.equal(f.sql.prepare("SELECT item_key FROM telegram_pet_house_layouts WHERE pet_id=? AND slot_key='furniture'").get(pet.pet_id).item_key,'sleep_mat');
+ assert.equal(f.sql.prepare("SELECT item_key FROM telegram_pet_furniture_placements WHERE pet_id=? AND slot_key='left'").get(pet.pet_id).item_key,'neon_lamp');
+ assert.equal((await f.act({action:'house_place',slot_key:'floor',item_key:'steel'})).accepted,true);
+ }finally{f.sql.close();}
+});
 test('lava lamp uses exactly twenty stable frames and reduced motion',()=>{
  const client=fs.readFileSync('js/moonpet-mini-app.js','utf8'),source=client.split('// TEST-EXPORT: homeScene:start')[1].split('// TEST-EXPORT: homeScene:end')[0];
  const calls=[],runtime=vm.createContext({ctx:{save(){},restore(){},drawImage(image,...args){calls.push({src:image.src,args});}},Image:function(){this.complete=true;this.naturalWidth=1280;this.naturalHeight=1024;},backgroundArtState:{},BOT_RENDER_BASELINE_Y:219,reducedMotion:false});

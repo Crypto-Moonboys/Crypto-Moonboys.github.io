@@ -3841,6 +3841,7 @@
       pet_furniture_invalid: 'choose an available Furniture Shop item. Nothing was charged.',
       pet_furniture_placement_invalid: 'choose an owned item and its matching Home slot. No Gold was spent.',
       pet_furniture_not_owned: 'buy this furniture once before placing it. No Gold was spent.',
+      pet_room_furniture_authoritative: 'this pet’s Main Room uses its saved arrangement. Refresh and edit it in Home Customization.',
       pet_furniture_insufficient_gold: 'not enough Moon Gold for this item. No Gold was spent; review the displayed price.',
       pet_garden_not_ready: 'this crop is still growing. Nothing was harvested; wait for the server timer.',
       pet_garden_empty: 'this pet has no crop ready to harvest. Plant a new patch first.',

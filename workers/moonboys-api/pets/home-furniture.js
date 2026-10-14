@@ -25,6 +25,13 @@ function ownedAndPlacedQuery(db,owner,pet) {
     "WHERE telegram_id=? AND pet_id=? AND season_key=?")
     .bind(String(owner),String(owner),pet.pet_id,pet.season_key);
 }
+function mainRoomArrangementQuery(db,owner,pet) {
+  return db.prepare("SELECT 1 AS saved FROM telegram_pet_room_furniture r " +
+    "JOIN telegram_pet_active_slots a ON a.telegram_id=r.telegram_id " +
+    "AND a.pet_id=r.pet_id AND a.season_key=r.season_key " +
+    "WHERE r.telegram_id=? AND r.pet_id=? AND r.season_key=? AND r.room_key='main'")
+    .bind(String(owner),pet.pet_id,pet.season_key);
+}
 function projectFurniture(result,pet) {
   const owned=new Set();
   const placements={left:null,right:null,wall:null};
@@ -87,38 +94,47 @@ export async function placePetFurniture(db,owner,pet,itemKey,slotKey) {
   const item=Object.hasOwn(PET_HOME_FURNITURE,itemKey)?PET_HOME_FURNITURE[itemKey]:null;
   if(!item||item.slot!==slotKey||!pet?.pet_id||!pet?.season_key)
     return {accepted:false,reason:'pet_furniture_placement_invalid'};
-  const [saved,read]=await db.batch([
+  const [saved,read,arrangement]=await db.batch([
     db.prepare("INSERT INTO telegram_pet_furniture_placements(pet_id,telegram_id,season_key,slot_key,item_key) " +
       "SELECT p.pet_id,p.telegram_id,p.season_key,?,? FROM telegram_pet_active_slots a " +
       "JOIN telegram_pet_instances p ON p.pet_id=a.pet_id AND p.telegram_id=a.telegram_id AND p.season_key=a.season_key " +
       "JOIN telegram_pet_season_slots s ON s.pet_id=p.pet_id AND s.telegram_id=p.telegram_id AND s.season_key=p.season_key " +
       "JOIN telegram_pet_furniture_unlocks u ON u.telegram_id=p.telegram_id AND u.item_key=? " +
       "WHERE a.telegram_id=? AND a.pet_id=? AND p.season_key=? AND p.status='active' AND s.status='active' " +
+      "AND NOT EXISTS(SELECT 1 FROM telegram_pet_room_furniture r " +
+      "WHERE r.telegram_id=p.telegram_id AND r.pet_id=p.pet_id AND r.season_key=p.season_key AND r.room_key='main') " +
       "ON CONFLICT(pet_id,slot_key) DO UPDATE SET item_key=excluded.item_key,updated_at=CURRENT_TIMESTAMP " +
       "WHERE telegram_pet_furniture_placements.telegram_id=excluded.telegram_id " +
       "AND telegram_pet_furniture_placements.season_key=excluded.season_key")
       .bind(slotKey,itemKey,itemKey,String(owner),pet.pet_id,pet.season_key),
     ownedAndPlacedQuery(db,owner,pet),
+    mainRoomArrangementQuery(db,owner,pet),
   ]);
   const changed=Number(requirePetMutationResult(saved)?.meta?.changes);
   const furniture=projectFurniture(read,pet);
-  if(changed!==1) return {accepted:false,reason:'pet_furniture_not_owned',refresh_state:true};
+  const hasMainArrangement=requirePetReadResult(arrangement).results.length>0;
+  if(changed!==1) return {accepted:false,reason:hasMainArrangement?'pet_room_furniture_authoritative':'pet_furniture_not_owned',refresh_state:true};
   return {accepted:true,reason:'pet_furniture_placed',furniture,refresh_state:true,
     result_copy:'Placed in this pet’s main Home canvas. No Gold spent.'};
 }
 export async function removePetFurniture(db,owner,pet,slotKey) {
   if(!PET_FURNITURE_SLOTS.includes(slotKey)||!pet?.pet_id||!pet?.season_key)
     return {accepted:false,reason:'pet_furniture_placement_invalid'};
-  const [removed,read]=await db.batch([
+  const [removed,read,arrangement]=await db.batch([
     db.prepare("DELETE FROM telegram_pet_furniture_placements WHERE pet_id=? AND telegram_id=? AND season_key=? AND slot_key=? " +
       "AND EXISTS(SELECT 1 FROM telegram_pet_active_slots a " +
       "JOIN telegram_pet_instances p ON p.pet_id=a.pet_id AND p.telegram_id=a.telegram_id AND p.season_key=a.season_key " +
-      "WHERE a.telegram_id=? AND a.pet_id=? AND p.season_key=? AND p.status='active')")
-      .bind(pet.pet_id,String(owner),pet.season_key,slotKey,String(owner),pet.pet_id,pet.season_key),
+      "WHERE a.telegram_id=? AND a.pet_id=? AND p.season_key=? AND p.status='active') " +
+      "AND NOT EXISTS(SELECT 1 FROM telegram_pet_room_furniture r " +
+      "WHERE r.telegram_id=? AND r.pet_id=? AND r.season_key=? AND r.room_key='main')")
+      .bind(pet.pet_id,String(owner),pet.season_key,slotKey,String(owner),pet.pet_id,pet.season_key,String(owner),pet.pet_id,pet.season_key),
     ownedAndPlacedQuery(db,owner,pet),
+    mainRoomArrangementQuery(db,owner,pet),
   ]);
   requirePetMutationResult(removed);
   const furniture=projectFurniture(read,pet);
+  if(requirePetReadResult(arrangement).results.length)
+    return {accepted:false,reason:'pet_room_furniture_authoritative',refresh_state:true};
   return {accepted:true,reason:'pet_furniture_removed',furniture,refresh_state:true,
     result_copy:'Removed from this pet’s Home. Account ownership retained.'};
 }

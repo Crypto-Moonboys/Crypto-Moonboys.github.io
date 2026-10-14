@@ -85,22 +85,38 @@ export async function setPetHouseLayout(db, owner, pet, slotKey, itemKey) {
     return {accepted:true,reason:'pet_house_saved',pet_house:petHouseProjection(readResult,pet),refresh_state:true,
       result_copy:'Home room saved to this pet. No Gold or XP spent.'};
   }
-  const [writeResult, readResult] = await db.batch([db.prepare(`INSERT INTO telegram_pet_house_layouts
+  const arrangementGuard = slotKey==='furniture'
+    ? `AND NOT EXISTS(SELECT 1 FROM telegram_pet_room_furniture r
+        WHERE r.pet_id=i.pet_id AND r.telegram_id=i.telegram_id
+          AND r.season_key=i.season_key AND r.room_key='main')`
+    : '';
+  const statements = [db.prepare(`INSERT INTO telegram_pet_house_layouts
     (pet_id,telegram_id,season_key,slot_key,item_key)
     SELECT i.pet_id,i.telegram_id,i.season_key,?,?
     FROM telegram_pet_active_slots a
     JOIN telegram_pet_instances i ON i.pet_id=a.pet_id
       AND i.telegram_id=a.telegram_id AND i.season_key=a.season_key
     WHERE a.telegram_id=? AND a.pet_id=? AND i.season_key=? AND i.status='active'
+    ${arrangementGuard}
     ON CONFLICT(pet_id,slot_key) DO UPDATE SET
       item_key=excluded.item_key,updated_at=CURRENT_TIMESTAMP
     WHERE telegram_pet_house_layouts.telegram_id=excluded.telegram_id
       AND telegram_pet_house_layouts.season_key=excluded.season_key`)
     .bind(slotKey,itemKey,String(owner),pet.pet_id,pet.season_key),
-    petHouseLayoutRead(db,owner,pet)]);
+    petHouseLayoutRead(db,owner,pet)];
+  if(slotKey==='furniture') statements.push(db.prepare(`SELECT EXISTS(
+    SELECT 1 FROM telegram_pet_room_furniture r
+    JOIN telegram_pet_active_slots a
+      ON a.telegram_id=r.telegram_id AND a.pet_id=r.pet_id AND a.season_key=r.season_key
+    WHERE r.telegram_id=? AND r.pet_id=? AND r.season_key=? AND r.room_key='main') AS saved`)
+    .bind(String(owner),pet.pet_id,pet.season_key));
+  const [writeResult, readResult, arrangementResult] = await db.batch(statements);
   const result = requirePetMutationResult(writeResult);
   if (!Number.isFinite(Number(result?.meta?.changes))) throw new Error('pet_state_write_unavailable');
-  if (Number(result.meta.changes)!==1) return {accepted:false,reason:'displayed_pet_changed',refresh_state:true};
+  const arrangementSaved=slotKey==='furniture'&&Number(requirePetReadResult(arrangementResult).results[0]?.saved)===1;
+  if (Number(result.meta.changes)!==1) {
+    return {accepted:false,reason:arrangementSaved?'pet_room_furniture_authoritative':'displayed_pet_changed',refresh_state:true};
+  }
   const house=petHouseProjection(readResult,pet);
   return {accepted:true,reason:'pet_house_saved',pet_house:house,refresh_state:true,
     result_copy:'House appearance saved to this pet. No Gold or XP spent.'};
