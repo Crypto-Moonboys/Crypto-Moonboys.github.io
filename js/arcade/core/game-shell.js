@@ -1,5 +1,5 @@
 import { bootstrapFromAdapter } from '/js/arcade/engine/game-adapter.js';
-import { mountArcadeRadio } from '/js/arcade/core/radio.js';
+import { mountArcadeRadio } from '/js/arcade/core/radio.js?v=meme-mobile-20261014';
 /**
  * game-shell.js — Arcade Game Shell
  *

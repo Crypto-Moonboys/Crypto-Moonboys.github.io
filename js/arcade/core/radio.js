@@ -109,6 +109,7 @@ export function mountArcadeRadio() {
     panel.appendChild(toggle);
 
     function _applyState(on) {
+      isOn = Boolean(on);
       if (on) {
         audio.play().catch(function () {
           // Autoplay blocked — silently flip back off so UI stays honest.

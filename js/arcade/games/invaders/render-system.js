@@ -986,7 +986,7 @@ export function createRenderer(ctx, W, H) {
     }
   }
 
-  function drawUpgradeScreen(choices, upgrades) {
+  function drawUpgradeScreen(choices, upgrades, selectedChoice = 0) {
     const time = performance.now() * 0.001;
     const count = Math.max(1, choices.length || 3);
     const margin = Math.max(14, Math.min(46, W * 0.085));
@@ -1053,7 +1053,7 @@ export function createRenderer(ctx, W, H) {
     ctx.shadowBlur = 0;
     ctx.fillStyle = '#f7c948';
     ctx.font = 'bold 14px system-ui';
-    ctx.fillText('Choose an upgrade — select your next moonboy mod · press 1 / 2 / 3', W / 2, panelY + 82);
+    ctx.fillText('Choose a mod · ← / → + Fire · or 1 / 2 / 3', W / 2, panelY + 82);
 
     for (let i = 0; i < choices.length; i++) {
       const def = choices[i];
@@ -1076,8 +1076,8 @@ export function createRenderer(ctx, W, H) {
       else ctx.rect(x, cardY, cardW, cardH);
       ctx.fill();
       ctx.shadowBlur = 0;
-      ctx.strokeStyle = accent;
-      ctx.lineWidth = 2.5;
+      ctx.strokeStyle = i === selectedChoice ? '#fff' : accent;
+      ctx.lineWidth = i === selectedChoice ? 4 : 2.5;
       ctx.stroke();
 
       ctx.fillStyle = accent;
@@ -1108,7 +1108,7 @@ export function createRenderer(ctx, W, H) {
 
     ctx.fillStyle = 'rgba(255,255,255,0.46)';
     ctx.font = 'bold 11px system-ui';
-    ctx.fillText('Pick one. Next wave starts instantly.', W / 2, footerY);
+    ctx.fillText('← / → choose · Fire confirms · Next wave starts instantly.', W / 2, footerY);
     ctx.restore();
   }
 
@@ -1295,7 +1295,7 @@ export function createRenderer(ctx, W, H) {
 
   // ── Risk/reward screen ────────────────────────────────────────────────────────
 
-  function drawRiskRewardScreen(choices) {
+  function drawRiskRewardScreen(choices, selectedChoice = 0) {
     ctx.fillStyle = 'rgba(40, 5, 5, 0.94)';
     ctx.fillRect(0, 0, W, H);
 
@@ -1309,7 +1309,7 @@ export function createRenderer(ctx, W, H) {
     ctx.shadowBlur  = 0;
     ctx.fillStyle   = '#f7c948';
     ctx.font        = '13px system-ui';
-    ctx.fillText('Risk vs. Reward  ( 1 / 2 )', W / 2, 95);
+    ctx.fillText('← / → choose · Fire confirms · or 1 / 2', W / 2, 95);
     ctx.restore();
 
     const cardW  = 150;
@@ -1330,8 +1330,8 @@ export function createRenderer(ctx, W, H) {
       else               ctx.rect(cx, cardY, cardW, cardH);
       ctx.fill();
       ctx.save();
-      ctx.strokeStyle = col;
-      ctx.lineWidth   = 2;
+      ctx.strokeStyle = i === selectedChoice ? '#fff' : col;
+      ctx.lineWidth   = i === selectedChoice ? 4 : 2;
       ctx.shadowBlur  = 8;
       ctx.shadowColor = col;
       ctx.beginPath();
@@ -1715,14 +1715,14 @@ export function createRenderer(ctx, W, H) {
     // Upgrade screen overlay (drawn on top of the frozen game state)
     if (s.upgradePhase === 'picking') {
       noteUpgradeScreenOpen();
-      drawUpgradeScreen(s.upgradeChoices, s.upgrades);
+      drawUpgradeScreen(s.upgradeChoices, s.upgrades, s.choiceCursor);
     } else {
       upgradeScreenEventOpen = false;
     }
 
     // Risk/reward screen (shown before upgrade screen)
     if (s.riskRewardPhase === 'picking') {
-      drawRiskRewardScreen(s.riskRewardChoices);
+      drawRiskRewardScreen(s.riskRewardChoices, s.choiceCursor);
     }
 
     // Screen flash (drawn above everything)

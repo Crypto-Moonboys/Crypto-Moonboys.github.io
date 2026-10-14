@@ -32,7 +32,7 @@ async function loadMountGame({ gateResult }) {
   const src = await fs.readFile(path.join(ROOT, 'js/arcade/core/game-shell.js'), 'utf8');
   const transformed = `${src
     .replace("import { bootstrapFromAdapter } from '/js/arcade/engine/game-adapter.js';", 'const bootstrapFromAdapter = __deps.bootstrapFromAdapter;')
-    .replace("import { mountArcadeRadio } from '/js/arcade/core/radio.js';", 'const mountArcadeRadio = __deps.mountArcadeRadio;')
+    .replace(/import \{ mountArcadeRadio \} from '\/js\/arcade\/core\/radio\.js(?:\?[^']*)?';/, 'const mountArcadeRadio = __deps.mountArcadeRadio;')
     .replace('export async function mountGame(options) {', 'async function mountGame(options) {')}
   module.exports = { mountGame };`;
 
