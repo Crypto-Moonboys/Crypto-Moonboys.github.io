@@ -3322,7 +3322,7 @@
       return '<div class="line muted">' + escapeHtml(slot.toUpperCase()) + '</div><div class="button-grid">' +
         available.map(function (item) {
           var active = layout[slot] === item.key && (slot !== 'floor' || house.floor_saved === true);
-          return button((active ? 'ACTIVE: ' : 'SET ') + (slot === 'floor' ? {concrete:'NEON MATT',checkerboard:'GOLD MATT',steel:'CAMO MATT'}[item.key] || item.label : item.label), 'house_place',
+          return button((active ? 'ACTIVE: ' : 'SET ') + (slot === 'floor' ? {concrete:'NEON MATT',checkerboard:'GOLD MATT',steel:'CAMO MATT'}[item.key] || item.label : slot === 'furniture' && item.key === 'sleep_mat' ? 'Fish Tank' : item.label), 'house_place',
             { slot_key:slot, item_key:item.key },
             { disabled:active, statusLabel:active ? 'SAVED' : '',
               detail:'Free decoration for the selected pet; no Moon Gold, XP or item cost.' });
@@ -3370,7 +3370,7 @@
           'furniture_remove',{slot_key:slot},{detail:'Remove this item without losing ownership or receiving a refund.'}) + '</div>' : '') + rows;
     }).join('');
     return panel('FURNITURE SHOP // ' + owned.length + '/12 OWNED',
-      '<div class="line muted">Permanent account purchases; one item in each of three fixed positions per pet. Furniture is cosmetic only. Your existing free furnishing remains selected when no paid item occupies the right slot. No XP, extra rewards or pet-stat effects.</div>' +
+      '<div class="line muted">Permanent account purchases; one item in each of three fixed positions per pet. Furniture is cosmetic only. Fish Tank draws on the LEFT; Plant Pot and Record Deck draw on the RIGHT. Paid furniture in the matching slot takes visual priority; removing it restores your saved free furnishing. No XP, extra rewards or pet-stat effects.</div>' +
       '<div class="line">AVAILABLE MOON GOLD // ' + number(gold) + '</div>' + groups, 'furniture-shop');
   }
   // TEST-EXPORT: furnitureShop:end
@@ -4930,11 +4930,32 @@
     backgroundArtState.stereo = { source:'/img/bass-yeo.png', frame:frame };
   }
 
+  var homeFishTankImage = null;
   var homePlantImage = null;
   function drawHomeFurniture(furniture, time) {
-    // Right-side placements stay outside the existing sprite/tap bounds.
+    // Furnishings stay outside the existing sprite/tap bounds.
     var base = BOT_RENDER_BASELINE_Y - 3;
-    if (furniture === 'record_deck') {
+    if (furniture === 'sleep_mat') {
+      // Keep the saved decoration key; replace its appearance without a migration.
+      if (!homeFishTankImage) {
+        homeFishTankImage = new Image();
+        homeFishTankImage.decoding = 'async';
+        homeFishTankImage.onload = function () { if (reducedMotion) drawWorld(performance.now()); };
+        homeFishTankImage.src = '/img/tank-fishyfish.png';
+      }
+      if (homeFishTankImage.complete && homeFishTankImage.naturalWidth === 1280 && homeFishTankImage.naturalHeight === 1280) {
+        // 25 row-major frames; the union of their alpha bounds is 76x223.
+        var tankFrame = reducedMotion ? 0 : Math.floor(Math.max(0, Number(time) || 0) / 125) % 25;
+        var tankWidth = 44, tankHeight = tankWidth * 223 / 76;
+        ctx.save();
+        ctx.imageSmoothingEnabled = true;
+        ctx.drawImage(homeFishTankImage, (tankFrame % 5) * 256 + 90,
+          Math.floor(tankFrame / 5) * 256 + 17, 76, 223,
+          6, 164 - tankHeight, tankWidth, tankHeight);
+        ctx.restore();
+        backgroundArtState.tank = {source:'/img/tank-fishyfish.png',frame:tankFrame};
+      }
+    } else if (furniture === 'record_deck') {
       drawPixelRect(260, base - 36, 50, 4, '#9c8bbe');
       drawPixelRect(264, base - 32, 42, 27, '#292c3e');
       drawPixelRect(265, base - 40, 18, 4, '#171b25');
@@ -4961,10 +4982,6 @@
           296 - plantWidth, 172 - plantHeight, plantWidth, plantHeight);
         ctx.restore();
       }
-    } else {
-      drawPixelRect(258, base - 8, 52, 8, '#2d3444');
-      drawPixelRect(260, base - 10, 48, 6, '#69738a');
-      drawPixelRect(264, base - 9, 12, 4, '#b3bbcf');
     }
   }
   // TEST-EXPORT: homeScene:end
@@ -5083,6 +5100,7 @@
     backgroundArtState.matt = null;
     backgroundArtState.stereo = null;
     backgroundArtState.disco = null;
+    backgroundArtState.tank = null;
     var showHome = state && state.adopted && state.pet && !hatchArtTransitionActive(renderTime);
     if (showHome) {
       var home = savedHomeLayout(state);
@@ -5101,7 +5119,8 @@
       }
       var purchased = state.pet_furniture && state.pet_furniture.available === true
         ? savedPurchasedFurniture(state) : null;
-      if (!purchased || !purchased.right) drawHomeFurniture(home.furniture, renderTime);
+      var homeFurnitureSlot = home.furniture === 'sleep_mat' ? 'left' : 'right';
+      if (!purchased || !purchased[homeFurnitureSlot]) drawHomeFurniture(home.furniture, renderTime);
       if (purchased) {
         if (purchased.wall) drawPurchasedFurniture(purchased.wall,'wall');
         if (purchased.left) drawPurchasedFurniture(purchased.left,'left');

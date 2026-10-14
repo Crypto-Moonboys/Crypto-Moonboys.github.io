@@ -88,6 +88,19 @@ test('stereo sprite advances, wraps and respects reduced motion',()=>{
   runtime.reducedMotion=true;runtime.drawMusicStereo(1500);assert.deepEqual(calls.at(-1),first);
 });
 
+test('fish tank replaces the saved sleep mat with stable left-side sprite frames',()=>{
+  const {runtime,calls}=painter();
+  runtime.drawHomeFurniture('sleep_mat',0);const first=calls.at(-1);
+  assert.equal(first.source,'/img/tank-fishyfish.png');
+  assert.deepEqual(first.args,[90,17,76,223,6,164-44*223/76,44,44*223/76]);
+  assert.ok(first.args[4]+first.args[6]<90,'tank stays left of pet bounds');
+  assert.ok(first.args[5]>20,'tank stays below HUD');
+  runtime.drawHomeFurniture('sleep_mat',125);assert.deepEqual(calls.at(-1).args.slice(0,4),[346,17,76,223]);
+  assert.deepEqual(calls.at(-1).args.slice(4),first.args.slice(4));
+  runtime.drawHomeFurniture('sleep_mat',3125);assert.deepEqual(calls.at(-1),first);
+  runtime.reducedMotion=true;runtime.drawHomeFurniture('sleep_mat',1375);assert.deepEqual(calls.at(-1),first);
+});
+
 test('disco ball uses fixed transparent frame bounds and upper-left placement',()=>{
   const {runtime,calls}=painter();
   runtime.drawRadioDiscoBall(0);const first=calls.at(-1);
@@ -162,7 +175,7 @@ test('Home layers precede the pet/effects and the original hatch reveal excludes
     BOT_RENDER_BASELINE_Y:219,STAGE_ZERO_BACKGROUND_URL:'egg',backgroundArtState:{},botArtRendererReady:true,
     HOME_ROOMS:['main','kitchen','garden','gym'],activeHomeRoom:'main',animationMode:'idle',animationUntil:0,actionSequence:0,musicStereoSuppressedSequence:-1,radioRequestedOn:false,drawMusicStereo:()=>calls.push('stereo'),drawRadioDiscoBall:()=>calls.push('disco'),
     stageZeroPresentationActive:()=>true,hatching:false,ctx:{save(){},restore(){}},
-    drawStageZeroBackground:()=>calls.push('egg'),savedHomeLayout:()=>({room:runtime.selectedRoom||'main',wall:'night_wall',floor:'steel',furniture:'plant_pot'}),
+    drawStageZeroBackground:()=>calls.push('egg'),savedHomeLayout:()=>({room:runtime.selectedRoom||'main',wall:'night_wall',floor:'steel',furniture:runtime.selectedFurniture||'plant_pot'}),
     drawHomeWall:()=>calls.push('wall'),drawHomeFloor:()=>calls.push('floor+shadow'),drawHomeFurniture:()=>calls.push('furniture'),
     drawDedicatedHomeRoom:room=>calls.push('room:'+room),
     drawEquippedStyles:(_,front)=>calls.push(front?'effects-front':'effects-back'),drawPet:()=>calls.push('pet')});
@@ -189,6 +202,11 @@ test('Home layers precede the pet/effects and the original hatch reveal excludes
   calls.length=0;runtime.drawWorld(0);
   assert.deepEqual(calls,['egg','wall','floor+shadow','paid-right','stereo','disco','effects-back','pet','effects-front'],
     'paid right furniture remains drawn behind the stereo');
+  runtime.selectedFurniture='sleep_mat';calls.length=0;runtime.drawWorld(0);
+  assert.ok(calls.includes('furniture'),'paid right furniture must not hide left-side tank');
+  runtime.savedPurchasedFurniture=()=>({left:'neon_lamp'});calls.length=0;runtime.drawWorld(0);
+  assert.equal(calls.includes('furniture'),false,'paid left furniture retains its slot priority');
+  runtime.selectedFurniture='plant_pot';
   runtime.state.pet_furniture=null;
   runtime.radioRequestedOn=false;calls.length=0;runtime.drawWorld(0);
   assert.ok(calls.includes('furniture'),'radio off keeps the saved furnishing');

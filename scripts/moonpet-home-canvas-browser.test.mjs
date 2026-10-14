@@ -335,6 +335,34 @@ try {
       assert.equal(f.sql.prepare("SELECT quantity FROM telegram_pet_inventory WHERE telegram_id=? AND asset_type='item' AND asset_key='garden_veggies'").get(f.owner).quantity, 1);
       assert.equal(await page.locator('canvas').count(), 1, 'E4 rooms must reuse the one MoonPet canvas');
 
+      // The former Sleep Mat is now a persistent, free left-side fish tank.
+      await page.locator('#nav [data-screen="profile"]').click();
+      const tankSettings=page.locator('[data-panel="pet-house"]');
+      if(!await tankSettings.evaluate(node=>node.open)) await tankSettings.locator('summary').click();
+      assert.doesNotMatch(await tankSettings.innerText(),/Sleep Mat/);
+      const tankSave=page.waitForResponse(r=>r.url().endsWith('/action')&&r.request().postDataJSON()?.item_key==='sleep_mat');
+      await tankSettings.getByRole('button',{name:/SET Fish Tank/}).click();
+      assert.equal((await (await tankSave).json()).result.accepted,true);
+      await tankSettings.getByRole('button',{name:/BACK TO HOME/}).click();
+      assert.equal(await page.evaluate(()=>window.MoonpetBetaAppearance.getBackgroundArtState().tank),null,'paid left furniture keeps priority');
+      // Remove the fixture's paid left placement; no production records are used.
+      assert.equal((await f.act({action:'furniture_remove',slot_key:'left'})).accepted,true);
+      await page.locator('[data-utility="sync"]').click();
+      for(const key of ['main','kitchen','garden','gym']) {
+        await chooseRoom(key);
+        await page.waitForFunction(()=>window.MoonpetBetaAppearance.getBackgroundArtState().tank?.source==='/img/tank-fishyfish.png');
+        await page.reload();await ready();
+        await page.waitForFunction(key=>{const art=window.MoonpetBetaAppearance.getBackgroundArtState();return art.home?.active_room===key&&art.tank?.source==='/img/tank-fishyfish.png';},key);
+        assert.equal(f.sql.prepare("SELECT item_key FROM telegram_pet_house_layouts WHERE pet_id=? AND slot_key='furniture'").get(young).item_key,'sleep_mat');
+      }
+      await page.locator('[data-utility="radio"]').click();
+      await page.waitForFunction(()=>{const art=window.MoonpetBetaAppearance.getBackgroundArtState();return art.stereo&&art.disco&&art.tank;});
+      await page.locator('[data-utility="radio"]').click();
+      await page.waitForFunction(()=>{const art=window.MoonpetBetaAppearance.getBackgroundArtState();return !art.stereo&&!art.disco&&art.tank;});
+      await page.locator('.viewport').screenshot({path:path.join(evidence,'fishtank-'+width+'x'+height+'.png')});
+      // Restore fixture selections for the existing pet-switch assertions below.
+      assert.equal((await f.act({action:'house_place',slot_key:'furniture',item_key:'plant_pot'})).accepted,true);
+
       // Switch restores each original pet's own Home without extra room fetches.
       const switchResponse=page.waitForResponse(r=>r.url().endsWith('/action') && r.request().postDataJSON()?.action==='switch_pet_slot');
       await page.locator('[data-action="switch_pet_slot"]:enabled').first().click();
