@@ -3370,7 +3370,7 @@
           'furniture_remove',{slot_key:slot},{detail:'Remove this item without losing ownership or receiving a refund.'}) + '</div>' : '') + rows;
     }).join('');
     return panel('FURNITURE SHOP // ' + owned.length + '/12 OWNED',
-      '<div class="line muted">Permanent account purchases; one item in each of three fixed positions per pet. Furniture is cosmetic only. Your existing free furnishing remains selected when no paid item occupies the right slot. No XP, extra rewards or pet-stat effects.</div>' +
+      '<div class="line muted">Permanent account purchases; one item in each of three fixed positions per pet. Furniture is cosmetic only. Fish Tank draws on the LEFT; Plant Pot and Record Deck draw on the RIGHT. Paid furniture in the matching slot takes visual priority; removing it restores your saved free furnishing. No XP, extra rewards or pet-stat effects.</div>' +
       '<div class="line">AVAILABLE MOON GOLD // ' + number(gold) + '</div>' + groups, 'furniture-shop');
   }
   // TEST-EXPORT: furnitureShop:end

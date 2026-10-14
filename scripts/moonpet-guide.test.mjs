@@ -30,7 +30,7 @@ test('website guide and About blocks are exactly the shared in-game copy', () =>
   const markup = new Function('window', helper + '; return guideMarkup();')({ MoonpetGuide: guide });
   assert.ok(markup.startsWith(guide.game(guide.sections)));
   const html = read('moonpet-game.html');
-  const guideAsset = '/js/moonpet-guide.js?v=20261014-radio-disco-v1';
+  const guideAsset = '/js/moonpet-guide.js?v=20261014-fishtank-v1';
   const appAsset = '/js/moonpet-mini-app.js?v=20261014-fishtank-v1';
   assert.ok(html.includes(guideAsset) && html.includes(appAsset));
   assert.ok(html.indexOf(guideAsset) < html.indexOf(appAsset));
@@ -174,4 +174,12 @@ test('all menus and the public guide share current reward endings and explicit e
   assert.match(guide.rewardLifecycle.explore, /one account attempt per UTC day, including a failed attempt/);
   assert.match(guide.rewardLifecycle.profile, /earning quarter after rollover/);
   assert.match(read('js/moonpet-mini-app.js'), /economy_day_changed:.*Nothing new was spent or awarded/);
+});
+
+test('shared Home guidance explains the matching free furniture positions',()=>{
+  const home=plain(section('house'));
+  assert.match(home,/Fish Tank replaces Sleep Mat/);
+  assert.match(home,/Paid LEFT furniture takes visual priority over Fish Tank/);
+  assert.match(home,/paid RIGHT furniture takes visual priority over Plant Pot and Record Deck/);
+  assert.match(home,/Free furnishings stay selected and reappear/);
 });
