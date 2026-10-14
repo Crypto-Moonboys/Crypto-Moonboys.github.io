@@ -238,14 +238,22 @@ for (const [name, viewport] of [['desktop', { width: 1440, height: 900 }], ['mob
       await page.reload({ waitUntil: 'domcontentloaded' });
       await page.locator('[data-telegram-login]').first().click();
       await page.waitForFunction(() => window.MOONBOYS_IDENTITY?.getIdentityTier() === 'telegram_linked');
+      // Maintenance cleanup models a settled tab retaining its cached session.
+      // Drain bootstrap reads first: an in-flight renewal that sees the removed
+      // session can correctly hide Logout between pointer-down and pointer-up.
+      await page.evaluate(() => window.MOONBOYS_IDENTITY.ready);
+      await page.waitForLoadState('networkidle');
+      await page.locator('[data-telegram-logout]').waitFor({ state: 'visible' });
       const cleanedProof = await page.evaluate(() => window.MOONBOYS_IDENTITY.getSignedTelegramAuth());
       sqlite.exec('UPDATE telegram_website_sessions SET last_seen_at = 1');
       await start(env);
       assert.equal(sqlite.prepare('SELECT COUNT(*) AS n FROM telegram_website_sessions').get().n, 0);
+      const cleanedLogout = page.waitForResponse(response => response.url().endsWith('/telegram/website/logout') && response.request().method() === 'POST');
       await Promise.all([
         page.waitForNavigation({ waitUntil: 'domcontentloaded' }),
         page.locator('[data-telegram-logout]').click(),
       ]);
+      assert.equal((await cleanedLogout).status(), 200, 'logout confirms a previously cleaned session');
       await page.waitForFunction(() => window.MOONBOYS_IDENTITY?.getIdentityTier() === 'guest');
       assert.equal((await verifyWebsiteCredential(cleanedProof, env)).status, 401);
       assert.equal((await context.cookies(API)).some(cookie => cookie.name === '__Host-moonboys_session'), false);
