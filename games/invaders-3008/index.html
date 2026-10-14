@@ -7,7 +7,7 @@
   <meta name="description" content="Bitcoin Cannon versus a full meme-coin invasion. Blast frogs, doges, apes, unicorns and cursed coins through spectacular neon waves.">
   <meta name="robots" content="index, follow">
   <link rel="stylesheet" href="/css/wiki.css">
-  <link rel="stylesheet" href="/css/game-fullscreen.css">
+  <link rel="stylesheet" href="/css/game-fullscreen.css?v=meme-mobile-20261014">
 <style>
     .game-card{background:rgba(255,255,255,.03);border:1px solid var(--color-border,#333);border-radius:16px;padding:18px}
     /* Use .game-card .hud (specificity 0,2,0) to beat body .hud (0,1,1) from
@@ -92,7 +92,7 @@
 <script data-cfasync="false" src="/js/wiki.js"></script>
 <script src="/js/identity-gate.js"></script>
 <script src="/js/scroll-shell.js"></script>
-<script src="/js/game-fullscreen.js"></script>
+<script src="/js/game-fullscreen.js?v=meme-mobile-20261014"></script>
 <script src="/js/api-config.js"></script>
 <script src="/js/components/ui-status-copy.js"></script>
 <script src="/js/arcade/core/global-event-bus.js"></script>
@@ -505,10 +505,9 @@
     if (event.key === 'b' || event.key === 'B') {
       queuedBombSkin = randomBombSkin();
     }
-    if (!/^[123]$/.test(event.key)) return;
-    if (performance.now() > upgradePromptSeenUntil) return;
-    advanceCannonLevel();
   }, true);
+
+  window.addEventListener('invaders-upgrade-selected', advanceCannonLevel);
 
   window.addEventListener('click', (event) => {
     const id = event.target && event.target.id;
@@ -693,8 +692,8 @@
 </script>
 <script src="/js/arcade/games/invaders/meme-visual-hotfix.js?v=meme-wave-seven-renderer-upgrade-screen-20260723"></script>
 <script type="module">
-import { mountGame }         from '/js/arcade/core/game-shell.js';
-import { bootstrapInvaders } from '/js/arcade/games/invaders/bootstrap.js?v=renderer-upgrade-screen-20260723';
+import { mountGame }         from '/js/arcade/core/game-shell.js?v=meme-mobile-20261014';
+import { bootstrapInvaders } from '/js/arcade/games/invaders/bootstrap.js?v=mobile-choice-20261014';
 import { mountModifierPanel } from '/js/arcade/systems/cross-game-modifier-ui.js';
 import { mountFactionHud } from '/js/arcade/ui/faction-hud.js';
 mountGame({

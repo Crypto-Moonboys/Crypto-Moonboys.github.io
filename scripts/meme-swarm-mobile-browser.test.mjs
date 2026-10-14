@@ -15,7 +15,9 @@ await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
 const base='http://127.0.0.1:'+server.address().port;
 const browser=await chromium.launch({headless:true,...(process.env.CHROMIUM_EXECUTABLE_PATH?{executablePath:process.env.CHROMIUM_EXECUTABLE_PATH}:{})});
 try {
-  for(const viewport of [{width:360,height:640},{width:390,height:844},{width:844,height:390},{width:1280,height:900}]){
+  const cases=[...[{width:360,height:640},{width:390,height:844},{width:844,height:390},{width:1280,height:900}].map(viewport=>({viewport,routePath:'/games/meme-swarm-3008/'})),
+    ...['/games/meme-swarm-3008/index.html','/games/invaders-3008/','/games/invaders-3008/index.html'].map(routePath=>({viewport:{width:360,height:640},routePath}))];
+  for(const {viewport,routePath} of cases){
     const context=await browser.newContext({viewport,isMobile:viewport.width<1000,hasTouch:true});
     await context.addInitScript(()=>{
       localStorage.setItem('arcade_radio_on','false');window.__mediaStarts=0;window.__upgradesChosen=[];window.addEventListener('invaders-upgrade-selected',event=>window.__upgradesChosen.push(event.detail.id));
@@ -35,7 +37,7 @@ try {
       }
       return route.continue();
     });
-    await page.goto(base+'/games/meme-swarm-3008/');
+    await page.goto(base+routePath);
     await page.waitForFunction(()=>window.__memeGame&&window.__choices);
     await page.locator('#overlay-btn-radio:enabled').waitFor({state:'visible'});
     const radio=page.locator('#overlay-btn-radio');
@@ -68,7 +70,7 @@ try {
     if(risk==='skipWave') assert.equal(await page.evaluate(()=>window.__choices.snapshot().riskRewardPhase),false,'skip-wave choice completes immediately');
     else assert.equal(await page.evaluate(()=>window.__choices.snapshot().activeRiskReward?.id),risk,'Fire confirms highlighted risk');
     assert.deepEqual(errors,[]);
-    console.log('Meme Swarm mobile toolbar, canvas and choices passed at '+viewport.width+'x'+viewport.height);
+    console.log('Meme Swarm mobile toolbar, canvas and choices passed at '+viewport.width+'x'+viewport.height+' on '+routePath);
     await context.close();
   }
 }finally{await browser.close();await new Promise(resolve=>server.close(resolve));}

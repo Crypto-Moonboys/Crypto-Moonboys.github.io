@@ -103,7 +103,7 @@
   overlay.setAttribute('aria-modal', 'true');
   overlay.setAttribute('aria-label', 'Game — fullscreen mode');
 
-  var isMemeSwarm = /\/games\/meme-swarm-3008\/?$/.test(window.location.pathname);
+  var isMemeSwarm = Boolean(document.getElementById('invCanvas'));
   if (isMemeSwarm) overlay.classList.add('overlay-meme-swarm-game');
 
   // Control bar
