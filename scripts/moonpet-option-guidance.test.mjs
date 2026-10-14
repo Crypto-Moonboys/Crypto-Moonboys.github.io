@@ -499,7 +499,7 @@ test('PR2 navigation prioritizes verified Home readiness and new claim boards wi
 test('PR2 Kitchen/Gym recommendations require ready data and respect existing gates', () => {
   const play=createRequire(import.meta.url)('../js/moonpet-play-options.js');
   const s={adopted:true,pet:{pet_id:'a',energy:18},lifecycle:{phase:'young'},hydration:{full:true},
-    guidance:{economy:{}},live_systems:{crafting:[{key:'pizza_night',unlocked:true,affordable:true}]},
+    guidance:{economy:{}},live_systems:{crafting:[{key:'pizza_night',unlocked:true,affordable:true,output:{item_key:'street_pizza',quantity:1},cost:{}}]},
     pet_house:{available:true,pet_id:'a',layout:{room:'kitchen'}},cooldowns:{entries:[]}};
   let choices=play.options(s);
   assert.ok(choices.some(x=>x.key==='kitchen_ready'&&x.screen==='home'&&x.focus==='kitchen'));
