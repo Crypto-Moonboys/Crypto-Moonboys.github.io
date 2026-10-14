@@ -5168,6 +5168,30 @@
   // TEST-EXPORT: purchasedFurniture:end
 
 
+  // TEST-EXPORT: frogGuardian:start
+  var frogGuardianImage = null;
+  function drawFrogGuardian(time) {
+    backgroundArtState.guardian = null;
+    if (!state || !state.adopted || !state.pet || !state.pet.pet_id) return;
+    if (!frogGuardianImage) {
+      frogGuardianImage = new Image();
+      frogGuardianImage.decoding = 'async';
+      frogGuardianImage.onload = function () { if (reducedMotion) drawWorld(performance.now()); };
+      frogGuardianImage.src = '/img/pepe-pepeb0y.png';
+    }
+    if (!frogGuardianImage.complete || frogGuardianImage.naturalWidth !== 1280 || frogGuardianImage.naturalHeight !== 1280) return;
+    // Crop the union of all 25 transparent frame bounds. Their visible bottom
+    // is identical, so the frog sits flush on the canvas edge without bobbing.
+    var frame = reducedMotion ? 0 : Math.floor(Math.max(0,Number(time)||0)/125)%25;
+    var width = 55, height = width*156/171;
+    ctx.save();ctx.imageSmoothingEnabled = true;
+    ctx.drawImage(frogGuardianImage,(frame%5)*256+31,Math.floor(frame/5)*256+68,171,156,
+      32,220-height,width,height);
+    ctx.restore();
+    backgroundArtState.guardian = {source:'/img/pepe-pepeb0y.png',frame:frame};
+  }
+  // TEST-EXPORT: frogGuardian:end
+
   // TEST-EXPORT: homeRoomsCanvas:start
   var HOME_ROOM_BACKGROUND_URLS = Object.freeze({
     kitchen: '/img/Neon_Moon_Pets_Cyberpunk_Kitchen.jpg',
@@ -5261,6 +5285,7 @@
     drawPet(renderTime);
     ctx.restore();
     drawEquippedStyles(renderTime, true);
+    drawFrogGuardian(renderTime);
     if (state && state.adopted && typeof localEmoteUntil !== 'undefined' && typeof localEmoteLabel !== 'undefined' && localEmoteUntil > renderTime && localEmoteLabel &&
         !hatchArtTransitionActive(renderTime)) {
       ctx.save();

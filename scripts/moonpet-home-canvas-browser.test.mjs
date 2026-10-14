@@ -67,6 +67,7 @@ try {
     async function ready() {
       await page.waitForFunction(() => window.MoonpetBetaAppearance?.isBotArtReady());
       await page.locator('#boot-layer.is-hidden').waitFor({state:'attached'});
+      await page.waitForFunction(()=>window.MoonpetBetaAppearance.getBackgroundArtState().guardian?.source==='/img/pepe-pepeb0y.png');
     }
     await page.goto(origin+'/moonpet-game.html');await ready();
     async function settings(){
@@ -86,11 +87,12 @@ try {
         const response=page.waitForResponse(r=>r.url().endsWith('/action')&&r.request().postDataJSON()?.slot_key==='room');
         await target.click();assert.equal((await (await response).json()).result.accepted,true);
       }
-      await page.waitForFunction(key=>window.MoonpetBetaAppearance.getBackgroundArtState().home?.active_room===key,key);
+      await page.waitForFunction(key=>{const art=window.MoonpetBetaAppearance.getBackgroundArtState();return art.home?.active_room===key&&art.guardian?.source==='/img/pepe-pepeb0y.png';},key);
     }
     const balance=f.sql.prepare('SELECT moon_gold,moon_crystals,style_tokens,pet_xp FROM telegram_pet_profiles WHERE telegram_id=?').get(f.owner);
     const initialLegacy=f.sql.prepare('SELECT * FROM telegram_pet_house_layouts WHERE pet_id=? ORDER BY slot_key').all(young);
     assert.equal(await page.locator('canvas').count(),1);
+    assert.equal(await page.locator('[data-guardian], [data-action*=guardian]').count(),0,'guardian has no selection control');
     assert.equal(await page.locator('.canvas-controls button').count(),3);
     let panel=await settings();assert.doesNotMatch(await panel.innerText(),/Sleep Mat|Record Deck/);
     // The prior saved Record Deck appears as Lava Lamp; adding the other free
@@ -141,6 +143,7 @@ try {
     }
     await chooseRoom('main');await page.reload();await ready();
     await page.waitForFunction(()=>window.MoonpetBetaAppearance.getBackgroundArtState().home.items.length===8);
+    await page.locator('.viewport').screenshot({path:path.join(evidence,'guardian-pet-'+width+'x'+height+'.png')});
     assert.deepEqual(f.sql.prepare('SELECT moon_gold,moon_crystals,style_tokens,pet_xp FROM telegram_pet_profiles WHERE telegram_id=?').get(f.owner),balance);
     assert.deepEqual(f.sql.prepare('SELECT * FROM telegram_pet_house_layouts WHERE pet_id=? AND slot_key<>\'floor\' ORDER BY slot_key').all(young),initialLegacy.filter(row=>row.slot_key!=='floor'));
     const canvasBox=await page.locator('#moonpet-canvas').boundingBox();assert.ok(Math.abs(canvasBox.width/canvasBox.height-16/11)<0.01);
@@ -154,6 +157,8 @@ try {
     f.active(egg);await page.reload();await ready();
     await page.waitForFunction(()=>window.MoonpetBetaAppearance.getBackgroundArtState().mode==='stage0_secret_bot');
     assert.equal(await page.evaluate(()=>window.MoonpetBetaAppearance.getBackgroundArtState().home.items.some(i=>i.key==='record_deck')),false,'other pet retains its own selection');
+    assert.equal(await page.evaluate(()=>window.MoonpetBetaAppearance.getBackgroundArtState().guardian?.frame),0,'guardian remains beside egg with reduced motion');
+    await page.locator('.viewport').screenshot({path:path.join(evidence,'guardian-egg-'+width+'x'+height+'.png')});
     assert.deepEqual(errors,[]);
     console.log('Home room arrangements verified at '+width+'x'+height+(telegramHeight?' / Telegram '+telegramHeight:''));
     await context.close();f.sql.close();
