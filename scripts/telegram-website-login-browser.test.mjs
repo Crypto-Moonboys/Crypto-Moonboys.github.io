@@ -180,7 +180,13 @@ for (const [name, viewport] of [['desktop', { width: 1440, height: 900 }], ['mob
       await otherTab.goto(SITE + '/gkniftyheads-incubator.html', { waitUntil: 'domcontentloaded' });
       await otherTab.waitForFunction(() => window.MOONBOYS_IDENTITY?.getIdentityTier() === 'telegram_linked');
       const priorProof = await page.evaluate(() => window.MOONBOYS_IDENTITY.getSignedTelegramAuth());
-      await page.locator('[data-telegram-login]').first().click();
+      assert.equal(await page.locator('[data-tg-sync-cta] [data-telegram-login]').isVisible(), false, 'connected players are not offered redundant login');
+      // Deliberately reauthenticate to exercise session rotation and old-tab
+      // recovery; the ordinary connected UI now offers logout instead.
+      await Promise.all([
+        page.waitForNavigation({ waitUntil: 'domcontentloaded' }),
+        page.evaluate(() => { window.MOONBOYS_IDENTITY.loginWithTelegram(); }),
+      ]);
       await page.waitForFunction(previousHash => {
         const proof = window.MOONBOYS_IDENTITY?.getSignedTelegramAuth();
         return !!proof && proof.hash !== previousHash && window.MOONBOYS_IDENTITY.getIdentityTier() === 'telegram_linked';

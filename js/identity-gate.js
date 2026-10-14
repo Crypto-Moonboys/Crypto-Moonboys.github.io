@@ -1156,7 +1156,7 @@
         loginButton.href = getApiBase() + '/telegram/website/start?return_to=' + encodeURIComponent(window.location.href.split('#')[0]);
       }
       var fallback = document.getElementById('tg-gate-secondary');
-      if (fallback) { fallback.href = getBotUrl(); fallback.textContent = 'Bot fallback: /gkstart → /gklink'; }
+      if (fallback) { fallback.href = '/gkniftyheads-incubator.html#telegram-login-help'; fallback.textContent = 'Need help signing in?'; }
       if (noteEl) noteEl.textContent = 'Existing eligibility and server validation still apply. Mini App launches retain Telegram authentication.';
     }
 

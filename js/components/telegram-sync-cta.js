@@ -9,7 +9,7 @@
  *   2. Load this script (regular non-module script, data-cfasync="false").
  *
  * The rendered banner:
- *   - Offers verified website login and the compatible bot-link fallback.
+ *   - Offers one primary login action and keeps bot recovery under help.
  *   - Opens the canonical public Telegram bot link.
  *   - Secondary info link leads to /gkniftyheads-incubator.html for more details.
  *   - Fits within the viewport on desktop and mobile (no horizontal overflow).
@@ -23,28 +23,48 @@
   'use strict';
 
   var BOT_HREF       = 'https://t.me/WIKICOMSBOT';
+  var GROUP_HREF     = 'https://t.me/gkniftyheads';
   var INCUBATOR_HREF = '/gkniftyheads-incubator.html';
 
   var TEMPLATE =
     '<div class="tg-sync-cta" role="note" aria-label="Log in with Telegram to sync Arcade XP">' +
       '<span class="tg-sync-cta-icon" aria-hidden="true">🔗</span>' +
       '<div class="tg-sync-cta-body">' +
-        '<strong>Log in with Telegram — restore your profile</strong>' +
+        '<strong data-tg-login-heading>One Telegram account. Your saved progress.</strong>' +
         '<span>' +
-          'Telegram website login restores your existing identity and server-backed XP without a bot command. ' +
-          'Bot fallback: open @WIKICOMSBOT, run <code>/gkstart</code> and <code>/gklink</code>, then use its signed link. ' +
-          '<a href="' + INCUBATOR_HREF + '">Learn more</a>.' +
+          'Log in and approve Telegram’s request. Use the same Telegram account on the website and in the bot to restore your server-saved profile and progress.' +
         '</span>' +
       '</div>' +
-      '<a href="' + INCUBATOR_HREF + '" data-telegram-login class="swarmsy-action-card tg-sync-cta-btn"><strong>Log in with Telegram</strong><span>Restore your existing account.</span></a>' +
-      '<button type="button" data-telegram-logout>Log out</button>' +
-      '<a href="' + BOT_HREF + '" target="_blank" rel="noopener noreferrer">Bot fallback</a>' +
+      '<div class="tg-sync-cta-actions">' +
+        '<a href="' + INCUBATOR_HREF + '" data-telegram-login class="swarmsy-action-card tg-sync-cta-btn"><strong>Log in with Telegram</strong><span>Restore your existing account.</span></a>' +
+        '<a href="' + GROUP_HREF + '" data-telegram-group class="swarmsy-action-card" target="_blank" rel="noopener noreferrer"><strong>Join Telegram group</strong><span>Open the GKniftyHEADS community.</span></a>' +
+      '</div>' +
+      '<div class="tg-sync-cta-account"><span data-tg-login-status role="status"></span><button type="button" data-telegram-logout hidden>Log out</button></div>' +
+      '<details class="tg-sync-cta-help"><summary>Need help signing in?</summary><p>If website login is unavailable, <a href="' + BOT_HREF + '" target="_blank" rel="noopener noreferrer">open @WIKICOMSBOT</a>, send <code>/gkstart</code>, then <code>/gklink</code> and open its signed link.</p></details>' +
     '</div>';
 
   function mount(el) {
     if (el.dataset.tgSyncCtaMounted) return;
     el.dataset.tgSyncCtaMounted = '1';
     el.innerHTML = TEMPLATE;
+    update(el);
+  }
+
+  function update(el) {
+    var gate = window.MOONBOYS_IDENTITY;
+    var pending = Boolean(gate && gate.isSessionPending && gate.isSessionPending());
+    var linked = !pending && Boolean(gate && gate.isTelegramLinked && gate.isTelegramLinked());
+    el.querySelector('[data-telegram-login]').hidden = pending || linked;
+    // A remembered website session can still be cleared after a login rollback.
+    // This hint exposes logout only; it never claims authenticated access.
+    var rememberedWebsite = !pending && Boolean(gate && gate.isWebsiteSession && gate.isWebsiteSession());
+    el.querySelector('[data-telegram-logout]').hidden = !linked && !rememberedWebsite;
+    el.querySelector('[data-tg-login-status]').textContent = pending ? 'Checking your Telegram session…' : linked ? 'Telegram connected.' : '';
+    el.querySelector('[data-tg-login-heading]').textContent = linked ? 'You’re connected with Telegram' : 'One Telegram account. Your saved progress.';
+  }
+
+  function updateAll() {
+    document.querySelectorAll('[data-tg-sync-cta][data-tg-sync-cta-mounted]').forEach(update);
   }
 
   function mountAll() {
@@ -53,6 +73,9 @@
       mount(nodes[i]);
     }
   }
+
+  ['moonboys:identity-change', 'moonboys:telegram-session', 'moonboys:sync-state', 'storage'].forEach(function (event) { window.addEventListener(event, updateAll); });
+  if (window.MOONBOYS_IDENTITY) Promise.resolve(window.MOONBOYS_IDENTITY.ready).then(updateAll);
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', mountAll);
