@@ -463,3 +463,54 @@ test('real Egg Food Counter renders but never allows a pre-hatch meal', () => {
   assert.match(html, /HATCH REQUIRED/, 'bag consumption is still gated until hatch');
   assert.match(html, /data-action="use_item"[^>]* disabled/, 'a pre-hatch meal cannot spend a bag item');
 });
+
+
+test('PR2 navigation prioritizes verified Home readiness and new claim boards without spending rewards', () => {
+  const play = createRequire(import.meta.url)('../js/moonpet-play-options.js');
+  const base = () => ({
+    adopted:true, pet:{pet_id:'a',energy:25,level:3}, lifecycle:{phase:'young'},
+    hydration:{full:true}, guidance:{economy:{bonus_bounties:[],weekly_bounties:[]}},
+    live_systems:{crafting:[]}, pet_house:{available:true,pet_id:'a',layout:{room:'garden'}},
+    pet_garden:{available:true,pet_id:'a',status:'ready'},
+    pet_furniture:{available:true,arrangements_available:true,pet_id:'a',catalog:{lamp:{slot:'left'}},owned:['lamp'],arrangements:{garden:[]}}
+  });
+  const s=base();
+  s.guidance.economy.bonus_bounties=[{key:'one',complete:true,claimed:false},{key:'two',complete:true,claimed:true}];
+  s.guidance.economy.weekly_bounties=[{key:'week',complete:true,claimed:false}];
+  const ranked=play.recommendations(s);
+  assert.equal(ranked[0].key,'extra_bounty_claims');
+  assert.equal(ranked[0].screen,'economy');
+  assert.equal(ranked[0].focus,'bonus-bounties');
+  assert.ok(ranked.some(x=>x.key==='weekly_bounty_claims'&&x.focus==='weekly-bounties'));
+  assert.ok(ranked.some(x=>x.key==='garden_harvest'&&x.screen==='home'&&x.focus==='garden'));
+  assert.ok(ranked.some(x=>x.key==='room_furniture'&&x.screen==='profile'&&x.focus==='pet-house'));
+  assert.equal(play.options(s).find(x=>x.key==='garden_harvest').title,'HARVEST VEGGIES');
+  s.pet_house.layout.room='main';
+  assert.deepEqual({screen:play.options(s).find(x=>x.key==='garden_harvest').screen,focus:play.options(s).find(x=>x.key==='garden_harvest').focus},{screen:'profile',focus:'pet-house'});
+  s.pet_garden.status='growing';
+  assert.equal(play.options(s).some(x=>x.key==='garden_harvest'||x.key==='garden_plant'),false);
+  s.pet_garden.status='empty';
+  assert.ok(play.options(s).some(x=>x.key==='garden_plant'));
+  s.pet_garden.pet_id='another-pet';
+  assert.equal(play.options(s).some(x=>x.key==='garden_plant'),false);
+  s.lifecycle.phase='egg';
+  assert.equal(play.options(s).some(x=>x.key==='garden_plant'||x.key==='room_furniture'),false);
+});
+test('PR2 Kitchen/Gym recommendations require ready data and respect existing gates', () => {
+  const play=createRequire(import.meta.url)('../js/moonpet-play-options.js');
+  const s={adopted:true,pet:{pet_id:'a',energy:18},lifecycle:{phase:'young'},hydration:{full:true},
+    guidance:{economy:{}},live_systems:{crafting:[{key:'pizza_night',unlocked:true,affordable:true}]},
+    pet_house:{available:true,pet_id:'a',layout:{room:'kitchen'}},cooldowns:{entries:[]}};
+  let choices=play.options(s);
+  assert.ok(choices.some(x=>x.key==='kitchen_ready'&&x.screen==='home'&&x.focus==='kitchen'));
+  assert.ok(choices.some(x=>x.key==='gym_train'&&x.screen==='profile'&&x.focus==='pet-house'));
+  s.live_systems.crafting[0].affordable=false;
+  s.guidance.activity={status:'active'};
+  choices=play.options(s);
+  assert.equal(choices.some(x=>x.key==='kitchen_ready'||x.key==='gym_train'),false);
+  delete s.guidance.activity;
+  s.cooldowns.entries=[{key:'action:train',remaining_seconds:35}];
+  assert.equal(play.options(s).some(x=>x.key==='gym_train'),false);
+  s.cooldowns.entries=[];s.hydration.full=false;
+  assert.equal(play.options(s).some(x=>x.key==='gym_train'),false);
+});
