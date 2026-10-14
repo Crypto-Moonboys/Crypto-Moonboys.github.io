@@ -7,6 +7,7 @@ import { PET_HOUSE_CHOICES, PET_HOUSE_DEFAULTS, readPetHouseLayout, setPetHouseL
 import { createDisplayedPetScope } from '../workers/moonboys-api/pets/displayed-pet-scope.js';
 
 const migration=fs.readFileSync(new URL('../workers/moonboys-api/migrations/092_moonpet_house_layouts.sql', import.meta.url),'utf8');
+const roomFurnitureMigration=fs.readFileSync(new URL('../workers/moonboys-api/migrations/097_moonpet_room_furniture.sql', import.meta.url),'utf8');
 const schema=fs.readFileSync(new URL('../workers/moonboys-api/schema.sql', import.meta.url),'utf8');
 const worker=fs.readFileSync(new URL('../workers/moonboys-api/worker.js', import.meta.url),'utf8');
 const client=fs.readFileSync(new URL('../js/moonpet-mini-app.js', import.meta.url),'utf8');
@@ -41,6 +42,7 @@ function fixture() {
   sql.prepare('INSERT INTO telegram_pet_profiles VALUES (?,?,?)').run('owner-a',750,2300);
   sql.exec(migration);
   sql.exec(fs.readFileSync(new URL('../workers/moonboys-api/migrations/096_moonpet_home_rooms.sql', import.meta.url),'utf8'));
+  sql.exec(roomFurnitureMigration);
   const d1={
     prepare(statement) {
       let values=[];
@@ -186,7 +188,7 @@ test('house is wired only through signed selected-pet state and actions',()=>{
   assert.match(worker,/getPetHouseLayout|readPetHouseLayout/);
   assert.match(worker,/action === 'house_place'/);
   assert.match(client,/function renderPetHouse\(/);
-  assert.match(entry,/moonpet-mini-app\.js\?v=20261014-fishtank-v1/);
+  assert.match(entry,/moonpet-mini-app\.js\?v=20261014-room-items-v1/);
   assert.doesNotMatch(client,/house_place[\s\S]{0,90}moon_gold/);
   assert.match(worker,/readPetHouseLayout\(lifecycleScope\.db, telegramId, petRaw\)/);
   assert.match(worker,/readPetHouseLayout\(identityScope\.db, telegramId, petRaw\)/);

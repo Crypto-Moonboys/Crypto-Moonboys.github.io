@@ -3,6 +3,7 @@ import { submitMoonpetRadioRequest } from './pets/radio-requests.js';
 import { forwardRadioRequestsToGroup } from './pets/radio-group-delivery.js';
 import { atomicPetBatch } from './pets/atomic-mutations.js';
 import { getStyleLoadout, equipPetStyle } from './pets/style-loadout.js';
+import { readRoomFurniture, saveRoomFurniture } from './pets/room-furniture.js';
 import { readPetHouseLayout, setPetHouseLayout } from './pets/house-layout.js';
 import { readPetFurnitureState, buyPetFurniture, placePetFurniture, removePetFurniture } from './pets/home-furniture.js';
 import { readPetGardenState, plantPetGarden, harvestPetGarden } from './pets/home-garden.js';
@@ -10439,7 +10440,7 @@ async function buildPetMiniAppCoreState(db, telegramId, options = {}) {
     // Home appearance uses the existing bounded, selected-pet read; live polling stays unchanged.
     options.skipHouse ? Promise.resolve(undefined) : readPetHouseLayout(lifecycleScope.db, telegramId, petRaw)
       .catch(() => ({ available: false, pet_id: petRaw.pet_id })),
-    options.skipHouse ? Promise.resolve(undefined) : readPetFurnitureState(lifecycleScope.db, telegramId, petRaw)
+    options.skipHouse ? Promise.resolve(undefined) : readFurnitureWithRooms(lifecycleScope.db, telegramId, petRaw)
       .catch(() => ({ available: false, pet_id: petRaw.pet_id })),
     options.skipHouse ? Promise.resolve(undefined) : readPetGardenState(lifecycleScope.db, telegramId, petRaw, now)
       .catch(() => ({ available: false, pet_id: petRaw.pet_id })),
@@ -10804,7 +10805,7 @@ async function buildPetMiniAppState(db, telegramId, botToken, options = {}) {
       : getPetInstanceWithAtomicDecay(db, activeRun.pet_id),
     getStyleLoadout(db, telegramId, petRaw.pet_id),
     readPetHouseLayout(identityScope.db, telegramId, petRaw).catch(() => ({ available: false, pet_id: petRaw.pet_id })),
-    readPetFurnitureState(identityScope.db, telegramId, petRaw).catch(() => ({ available: false, pet_id: petRaw.pet_id })),
+    readFurnitureWithRooms(identityScope.db, telegramId, petRaw).catch(() => ({ available: false, pet_id: petRaw.pet_id })),
     readPetGardenState(identityScope.db, telegramId, petRaw, now).catch(() => ({ available: false, pet_id: petRaw.pet_id })),
     getContractBoard(db, telegramId, petRaw, now),
     activeRun
@@ -11135,7 +11136,7 @@ async function dispatchPetMiniAppAction(db, telegramId, user, body, botToken) {
     if (PET_MINI_APP_COMBAT_ENTRY_ACTIONS.has(action) || PET_MINI_APP_COMBAT_CLEANUP_ACTIONS.has(action)) return null;
     throw error;
   });
-  const eggAllowedActions = ['event_recover', 'event_close', 'guidance_ack', 'notification_set', 'season_slots', 'buy_pet_slot', 'switch_pet_slot', 'energy_drink', 'dance', 'cuddles', 'weekly_boss_claim', 'contract_claim', 'style_equip', 'seasonal_boss_claim', 'daily_completion_claim', 'bounty_claim', 'weekly_bounty_claim', 'radio_request', 'house_place', 'furniture_buy', 'furniture_place', 'furniture_remove', 'season_claim', 'finale_start', 'finale_retry', 'finale_step', 'finale_claim'];
+  const eggAllowedActions = ['event_recover', 'event_close', 'guidance_ack', 'notification_set', 'season_slots', 'buy_pet_slot', 'switch_pet_slot', 'energy_drink', 'dance', 'cuddles', 'weekly_boss_claim', 'contract_claim', 'style_equip', 'seasonal_boss_claim', 'daily_completion_claim', 'bounty_claim', 'weekly_bounty_claim', 'radio_request', 'house_place', 'furniture_buy', 'furniture_place', 'furniture_remove', 'furniture_arrange', 'season_claim', 'finale_start', 'finale_retry', 'finale_step', 'finale_claim'];
   if (lifecycle?.phase === 'egg' && !eggAllowedActions.includes(action)) {
     if (PET_MINI_APP_COMBAT_CLEANUP_ACTIONS.has(action) || PET_MINI_APP_COMBAT_ENTRY_ACTIONS.has(action)) {
       // fall through; locked cleanup must remain available for stale combat state.
@@ -11270,11 +11271,12 @@ async function dispatchPetMiniAppAction(db, telegramId, user, body, botToken) {
       return { accepted:false, reason:'displayed_pet_changed', refresh_state:true };
     return setPetHouseLayout(db, telegramId, pet, body.slot_key, body.item_key);
   }
-  if (['furniture_buy','furniture_place','furniture_remove'].includes(action)) {
+  if (['furniture_buy','furniture_place','furniture_remove','furniture_arrange'].includes(action)) {
     const pet = await getPetProfile(db, telegramId);
     if (!pet?.pet_id || pet.pet_id !== displayedPetId)
       return { accepted:false, reason:'displayed_pet_changed', refresh_state:true };
     const scope = createDisplayedPetScope(db, telegramId, pet.pet_id, pet.season_key);
+    if (action === 'furniture_arrange') return saveRoomFurniture(scope.db, telegramId, pet, body.room_key, body.items);
     if (action === 'furniture_buy') return buyPetFurniture(scope.db, telegramId, pet, body.item_key, eventKey);
     if (action === 'furniture_place') return placePetFurniture(scope.db, telegramId, pet, body.item_key, body.slot_key);
     return removePetFurniture(scope.db, telegramId, pet, body.slot_key);
@@ -11723,6 +11725,13 @@ async function runTelegramGroupAnnouncements(env, options = {}) {
 }
 
 // ── Main fetch handler ────────────────────────────────────────────────────────
+
+async function readFurnitureWithRooms(db,owner,pet) {
+  const furniture=await readPetFurnitureState(db,owner,pet);
+  if(!furniture.available)return furniture;
+  try { return { ...furniture, arrangements_available:true, arrangements:await readRoomFurniture(db,owner,pet,furniture.owned) }; }
+  catch { return { ...furniture, arrangements_available:false }; }
+}
 
 export default {
   async fetch(request, env) {

@@ -70,7 +70,7 @@ test('every rendered mutation, including computed actions, has explicit guidance
   const ctx = context(), called = calledActions();
   assert.ok(called.size >= 60, 'audit must include the real dynamic action call sites');
   for (const action of called) assert.ok(Object.hasOwn(ctx.button.guidance, action), `missing help for rendered ${action}`);
-  assert.equal(actions.length, 77, 'Radio, Weekly Bounty, Home, Furniture and Garden buttons require explicit purposes');
+  assert.equal(actions.length, 78, 'Radio, Weekly Bounty, Home, Furniture, room arrangements and Garden buttons require explicit purposes');
 });
 
 for (const kind of ['claim','spend','risk']) test(`${kind} uses words as well as color to highlight its consequence`, () => {

@@ -22,3 +22,7 @@ After GK approves the final PR and merge, publish the frontend and deploy only `
 ## E2 follow-up — Furniture Shop (proposed PR)
 
 E2 adds twelve permanent account-owned Moon Gold furniture purchases and three bounded per-pet placements on the **same existing canvas**. It does not change the nine free E1 choices. A paid item in the matching slot visually replaces the free furnishing until removed; the free selection remains saved. Fish Tank replaces Sleep Mat under the unchanged `sleep_mat` save key and draws on the LEFT; Plant Pot and Record Deck draw on the RIGHT. The tank presentation is a frontend-only change. E2 migration 094 adds account purchase receipts and per-pet placement records. No rewards, gameplay stats or pet lifecycle changes. Requires GK economy approval, migration 094 and matching Worker deploy before production.
+
+## Room arrangement follow-up (pending release)
+
+The eight-item arrangement contract supersedes the fixed-slot priority above: Main Room allows all three free furnishings and owned paid items together; other rooms allow paid furnishings only. Record Deck is displayed as animated Lava Lamp. Mats stay available across rooms. Positions and draw order are saved per pet and room under additive migration 097, without changing old layouts, ownership or the furniture economy. Release requires the matching Moonboys API and frontend after GK approval.

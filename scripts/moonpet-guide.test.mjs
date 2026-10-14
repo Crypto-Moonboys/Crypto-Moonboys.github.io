@@ -30,8 +30,8 @@ test('website guide and About blocks are exactly the shared in-game copy', () =>
   const markup = new Function('window', helper + '; return guideMarkup();')({ MoonpetGuide: guide });
   assert.ok(markup.startsWith(guide.game(guide.sections)));
   const html = read('moonpet-game.html');
-  const guideAsset = '/js/moonpet-guide.js?v=20261014-fishtank-v1';
-  const appAsset = '/js/moonpet-mini-app.js?v=20261014-fishtank-v1';
+  const guideAsset = '/js/moonpet-guide.js?v=20261014-room-items-v1';
+  const appAsset = '/js/moonpet-mini-app.js?v=20261014-room-items-v1';
   assert.ok(html.includes(guideAsset) && html.includes(appAsset));
   assert.ok(html.indexOf(guideAsset) < html.indexOf(appAsset));
   assert.match(source, /MOONPET_MINI_APP_URL = `\$\{SITE_URL\}\/moonpet-game\.html\?v=20261012-home-e4-rooms-v1`/);
@@ -176,10 +176,11 @@ test('all menus and the public guide share current reward endings and explicit e
   assert.match(read('js/moonpet-mini-app.js'), /economy_day_changed:.*Nothing new was spent or awarded/);
 });
 
-test('shared Home guidance explains the matching free furniture positions',()=>{
-  const home=plain(section('house'));
-  assert.match(home,/Fish Tank replaces Sleep Mat/);
-  assert.match(home,/Paid LEFT furniture takes visual priority over Fish Tank/);
-  assert.match(home,/paid RIGHT furniture takes visual priority over Plant Pot and Record Deck/);
-  assert.match(home,/Free furnishings stay selected and reappear/);
+test('shared Home guidance explains eight saved items and Main-only free furniture',()=>{
+ const home=plain(section('house'));
+ assert.match(home,/up to eight furniture items per room/);
+ assert.match(home,/Kitchen, Garden and Gym allow paid furniture only/);
+ assert.match(home,/saved floor mats still appear in every room/);
+ assert.match(home,/Free and paid items do not hide each other automatically/);
+ assert.match(home,/Lava Lamp replaces Record Deck/);
 });
