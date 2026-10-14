@@ -30,7 +30,7 @@ test('website guide and About blocks are exactly the shared in-game copy', () =>
   const markup = new Function('window', helper + '; return guideMarkup();')({ MoonpetGuide: guide });
   assert.ok(markup.startsWith(guide.game(guide.sections)));
   const html = read('moonpet-game.html');
-  const guideAsset = '/js/moonpet-guide.js?v=20261014-room-items-v1';
+  const guideAsset = '/js/moonpet-guide.js?v=20261014-home-guide-sync-v2';
   const appAsset = '/js/moonpet-mini-app.js?v=20261014-frog-guardian-v1';
   assert.ok(html.includes(guideAsset) && html.includes(appAsset));
   assert.ok(html.indexOf(guideAsset) < html.indexOf(appAsset));
@@ -52,8 +52,8 @@ test('Home guide documents E4 rooms without inventing new Kitchen or Gym authori
   assert.match(home, /existing instant Train action and timed Training system|existing Train systems/);
   assert.match(home, /6-hour server timer.*one existing Garden Veggie Box/);
   assert.match(home, /Planting and harvesting themselves award no XP, currency, mission credit or competition credit/);
-  assert.match(home, /do not occupy the paid LEFT, RIGHT or WALL furniture slots/);
-  assert.match(home, /Room visual upgrades are the next Home expansion/);
+  assert.match(home, /built-in scenery and functional stations are not player-placed furniture/);
+  assert.match(home, /Additional purchasable room items, new Garden crops and Comfort or Health upgrades require a separate approved release/);
   assert.doesNotMatch(home, /kitchen, gym and garden are future features/i);
 });
 
@@ -183,4 +183,27 @@ test('shared Home guidance explains eight saved items and Main-only free furnitu
  assert.match(home,/saved floor mats still appear in every room/);
  assert.match(home,/Free and paid items do not hide each other automatically/);
  assert.match(home,/Lava Lamp replaces Record Deck/);
+});
+
+test('latest Home visuals and About match the shipped Main/room/wings/guardian contracts', () => {
+  const home = plain(section('house'));
+  const visuals = plain(section('home-visuals'));
+  const about = plain(guide.about.find(s => s.id === 'home')?.body || '');
+  const ui = read('js/moonpet-mini-app.js');
+  const layout = read('workers/moonboys-api/pets/room-furniture.js');
+  assert.match(home, /Each free furnishing uses one of Main Room’s eight available display slots/);
+  assert.match(home, /Kitchen, Garden and Gym allow paid furniture only/);
+  assert.match(visuals, /HUD level 2.*TURN WINGS ON\/OFF/);
+  assert.match(visuals, /this browser\/device only/);
+  assert.match(visuals, /Frog Guardian.*owned pet or egg.*during hatch/);
+  assert.match(visuals, /Dance animations do not start or stop Radio/);
+  assert.match(about, /eight-item furniture arrangement.*Main Room.*Kitchen, Garden and Gym/);
+  assert.match(about, /frog guardian.*HUD level 2.*wings.*browser\/device/);
+  assert.match(ui, /Number\(snapshot\.pet\.level\) >= 2/);
+  assert.match(ui, /function drawFrogGuardian\(time\)/);
+  assert.match(layout, /items\.length>8/);
+  assert.match(layout, /free&&room!=='main'/);
+  assert.match(read('how-to-play-crypto-moonboy-pets.html'), /moonpet-home-visuals/);
+  assert.match(read('wiki/crypto-moonboy-pets.html'), /moonpet-home/);
+  assert.doesNotMatch(plain(section('house')), /paid LEFT, RIGHT or WALL furniture slots/);
 });
