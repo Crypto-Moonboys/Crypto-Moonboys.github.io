@@ -1961,7 +1961,7 @@ assert.match(html, /moonpet-canvas/);
 assert.match(client, /requestAnimationFrame\(frame\)/);
 assert.match(client, /if \(reducedMotion\) return/);
 assert.match(client, /fillRect/);
-assert.equal((client.match(/new Image\s*\(/g) || []).length, 7, 'Mini App caches Stage 0, Main Room, dedicated-room, mat, plant, stereo and disco art');
+assert.equal((client.match(/new Image\s*\(/g) || []).length, 8, 'Mini App caches Stage 0, Main Room, dedicated-room, mat, plant, fish tank, stereo and disco art');
 assert.match(client, /typeBoot/);
 assert.match(client, /actionAnimationFamily/);
 assert.match(client, /key === 'activity_start'.*payload && payload\.activity_type/);
