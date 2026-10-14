@@ -277,7 +277,12 @@
         else if (garden.status === 'empty') add('garden_plant', 'PLANT VEGGIE PATCH', 'Optional free six-hour Garden plot. Choose Garden in Home Customization if it is not the selected room.', homeDestination('garden','garden'));
       }
       var recipes = (live.crafting || []).filter(function (item) {
-        return item && ['pizza_night','moon_grill','veggie_patch'].includes(item.key) && item.unlocked === true && item.affordable === true;
+        if (!item || !['pizza_night','moon_grill','veggie_patch'].includes(item.key)) return false;
+        // Use the same output-stack capacity guard as craftingGoal(). A recipe
+        // can be affordable but still rejected when its Bag stack is full.
+        return item.unlocked === true && item.affordable === true &&
+          Boolean(item.output && item.output.item_key && Number(item.output.quantity) > 0) &&
+          Boolean(craftingGoal(s,item.key) && !craftingGoal(s,item.key).output_full);
       });
       if (recipes.length) add('kitchen_ready', 'COOK AVAILABLE MEAL', 'Your saved recipe data shows ' + recipes.length + ' affordable unlocked Kitchen recipe(s). Review ingredients and choose Cook.', homeDestination('kitchen','kitchen'));
       var pet = s.pet || {}, activity = g.activity;
