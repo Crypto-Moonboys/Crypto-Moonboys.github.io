@@ -14,7 +14,15 @@ Its purpose is to prevent documentation drift between:
 
 Any gameplay, documentation, or UI change affecting Moonpet status should reference this document.
 
-### Room furniture arrangements — pending release
+## 14 October 2026 — shipped client visual and arrangement guidance
+
+The merged client now includes four room backgrounds, the animated Fish Tank and Lava Lamp, free and purchased Main Room furniture side by side, and at most eight displayed objects per permanent pet per room. The Main Room accepts its three free furnishing keys plus owned paid items, and Kitchen/Garden/Gym accept paid placeable items only. A mat, fixed room scenery, animated frog guardian, wings and Radio overlays do not occupy display slots. There are still 12 purchasable furniture catalogue entries; the 120-item catalogue and stat-granting Comfort/Health upgrades in [#1513](https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/issues/1513) are proposals, not playable features.
+
+PR #1511 makes wings available only to hatched pets at HUD level 2 or above. The toggle is under HOME → Companion Details, and the setting is per pet in the current device/browser local storage, not a server-synced attribute or paid item. PR #1512 adds a frog guardian automatically beside every owned egg or pet, including during hatch, without player control or reward effects. Dance never automatically changes Radio state; only Radio controls the stereo/disco-ball overlays. In-game and public How to Play/About share their source in `js/moonpet-guide.js`, published via `scripts/sync-moonpet-guide.mjs`.
+
+The user ran `npx wrangler d1 migrations list wikicoms --remote --config workers/moonboys-api/wrangler.toml` on 14 October 2026 and received **“No migrations to apply!”**. This is evidence of no *pending* migrations in that remote Wrangler target, not an independently verified Worker commit, table-level schema audit, signed Mini App behaviour or Pages deployment. Do not claim end-to-end production sign-off without the matching checks.
+
+### Room furniture arrangements — merged code, live Worker verification outstanding
 
 Each permanent pet saves a separate arrangement of at most eight furniture items in each room. Main Room supports the free Fish Tank (`sleep_mat`), Lava Lamp (`record_deck`) and Plant Pot (`plant_pot`) together with any owned paid furniture. Kitchen, Garden and Gym allow only owned paid furniture. Floor mats remain available in all rooms. Free and paid furnishings do not automatically suppress one another. Add/remove controls, directional position controls and IN FRONT set the order; the default lava lamp is behind the plant at the right edge. Radio remains a temporary overlay and is not a placed furniture item.
 
