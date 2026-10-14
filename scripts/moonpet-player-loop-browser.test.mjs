@@ -741,8 +741,14 @@ try {
       const sent = actions.length;
       await page.locator('[data-panel="care"] [data-action="train"]').evaluate(node => node.click());
       assert.equal(actions.length, sent);
+      // Status text can be superseded by another announcement before the next
+      // animation frame. Verify the authoritative read and restored controls.
+      const recoveredSave = page.waitForResponse(response => response.url().endsWith('/telegram-pets/app/state') && response.request().method() === 'POST');
       await page.locator('[data-utility="sync"]').click();
-      await page.waitForFunction(() => document.querySelector('#terminal-output').textContent.includes('LIVE SAVE REFRESHED'));
+      const recoveredResponse = await recoveredSave;
+      assert.equal(recoveredResponse.ok(), true, 'Refresh successfully reads the committed save');
+      assert.equal((await recoveredResponse.json()).state.pet.pet_xp, savedXP, 'the response includes the committed care XP');
+      await page.locator('[data-panel="care"] [data-action="train"]:enabled').waitFor();
       assert.equal(actions.length, sent, 'Refresh only reads state');
       assert.equal((await hooks.getPetProfile(db, id)).pet_xp, savedXP, 'Refresh cannot repay the uncertain care action');
       assert.equal(await page.locator('[data-panel="care"] [data-action="train"]').isDisabled(), false, 'verified state restores eligible controls');
