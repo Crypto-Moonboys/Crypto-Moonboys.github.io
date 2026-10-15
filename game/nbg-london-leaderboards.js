@@ -13,6 +13,7 @@
   var status = null;
   var tableBody = null;
   var account = null;
+  var personal = null;
 
   function formatTime(ms) {
     if (!Number.isFinite(Number(ms))) return '—';
@@ -63,6 +64,29 @@
     if (!response.ok || !result || !result.ok)
       throw new Error(result && result.error ? result.error : 'Leaderboard request failed');
     return result;
+  }
+
+  async function loadPersonal() {
+    if (!personal) return;
+    if (!displayIdentity()) {
+      personal.textContent = 'Your all-time bests: log in with Telegram to save records.';
+      return;
+    }
+    personal.textContent = 'Loading your verified personal bests…';
+    try {
+      var auth = await signedAuth();
+      if (!auth) throw new Error('Telegram verification needed');
+      var result = await callJson('/me', { telegram_auth: auth });
+      if (!result.records) {
+        personal.textContent = result.player + ' — no completed ranked runs yet.';
+        return;
+      }
+      personal.textContent = result.player + ' | Best time: ' + formatTime(result.records.fastest_ms) +
+        ' | Best speed + XP: ' + Number(result.records.speed_xp_rate).toLocaleString() +
+        ' XP/min | Most XP: ' + Number(result.records.best_xp).toLocaleString();
+    } catch (error) {
+      personal.textContent = 'Your permanent records are unavailable until Telegram verification succeeds.';
+    }
   }
 
   function addCell(row, value) {
@@ -173,6 +197,7 @@
       setStatus('Saved permanently for ' + result.player + ': ' +
         formatTime(result.time_ms) + ' · ' + result.xp.toLocaleString() + ' XP');
       loadLeaders();
+      loadPersonal();
     } catch (error) {
       if (current === generation)
         setStatus('Run not saved: ' + error.message + '. Unsaved runs are not queued.');
@@ -182,6 +207,7 @@
   function init() {
     status = document.getElementById('nbg-record-status');
     account = document.getElementById('nbg-record-account');
+    personal = document.getElementById('nbg-record-personal');
     tableBody = document.getElementById('nbg-record-rows');
     if (!tableBody) return;
     displayIdentity();
@@ -194,7 +220,10 @@
         loadLeaders();
       });
     });
-    window.addEventListener('moonboys:identity-change', displayIdentity);
+    window.addEventListener('moonboys:identity-change', function () {
+      displayIdentity();
+      loadPersonal();
+    });
     window.addEventListener('nbg-level-started', beginRankedRun);
     window.addEventListener('nbg-level-complete', function (event) {
       finishRankedRun(event.detail || {});
@@ -209,6 +238,7 @@
       setStatus('Game over. Only completed runs count toward permanent leaderboards.');
     });
     loadLeaders();
+    loadPersonal();
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
