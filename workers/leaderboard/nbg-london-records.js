@@ -70,10 +70,12 @@ export async function handleNbgLondonRecords(request, env, verifyIdentity) {
         return json(request, { ok: false, error: 'invalid_competition_period' }, 400);
       const start = periodStart(Date.now(), kind);
       const result = await env.DB.prepare(
-        `SELECT display_name AS name, total_xp, run_count, best_time_ms
-         FROM nbg_london_period_scores
-         WHERE period_kind = ? AND period_start_ms = ?
-         ORDER BY total_xp DESC, best_time_ms ASC, telegram_id ASC LIMIT 20`
+        `SELECT s.display_name AS name, s.total_xp, s.run_count, s.best_time_ms
+         FROM nbg_london_period_scores s
+         LEFT JOIN telegram_anticheat_state a ON a.telegram_id = s.telegram_id
+         WHERE s.period_kind = ? AND s.period_start_ms = ?
+           AND COALESCE(a.is_blocked, 0) = 0
+         ORDER BY s.total_xp DESC, s.best_time_ms ASC, s.telegram_id ASC LIMIT 20`
       ).bind(kind, start).all();
       return json(request, {
         ok: true, period: kind, start_ms: start,
