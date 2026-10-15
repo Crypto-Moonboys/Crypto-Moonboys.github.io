@@ -71,6 +71,7 @@ async function api(path, body) {
 }
 
 assert.equal(efficiencyRate(800, 120_000), 400, 'speed + XP must rank XP earned per minute');
+assert.equal(efficiencyRate(1201, 120000), 600.5, 'fractional XP rates must retain accurate ranking');
 assert.equal(validFinish({ complete: true, time_ms: 120000, xp: 600, coins: 25, secret_coins: 0 }, 120500), true);
 assert.equal(validFinish({ complete: true, time_ms: 1500, xp: 600, coins: 25, secret_coins: 0 }, 1500), false);
 assert.equal(validFinish({ complete: true, time_ms: 120000, xp: 600, coins: 25, secret_coins: 0 }, 350000), false);
