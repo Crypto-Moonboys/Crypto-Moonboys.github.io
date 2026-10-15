@@ -78,7 +78,7 @@
       var cutoff = document.getElementById('nbg-prize-cutoff');
       if (cutoff) cutoff.textContent = requested.charAt(0).toUpperCase() + requested.slice(1) +
         ' competition closes ' + new Date(result.end_ms).toUTCString() +
-        '. Top 3 only; payouts at 01:00 UTC.';
+        '. Top 3 only; prizes follow Arcade UTC rollover.';
       if (!result.standings.length) {
         var empty = document.createElement('tr');
         var blank = document.createElement('td');
