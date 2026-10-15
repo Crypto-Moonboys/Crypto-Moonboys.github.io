@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { DatabaseSync } from 'node:sqlite';
 import { webcrypto } from 'node:crypto';
 import { efficiencyRate, validFinish, handleNbgLondonRecords } from '../workers/leaderboard/nbg-london-records.js';
+import { periodStart, endedPeriods, settleNbgLondonDue, settleNbgLondonPeriod } from '../workers/leaderboard/nbg-london-prizes.js';
 
 if (!globalThis.crypto) globalThis.crypto = webcrypto;
 
@@ -10,6 +11,18 @@ const sqlite = new DatabaseSync(':memory:');
 sqlite.exec('PRAGMA foreign_keys = ON; CREATE TABLE telegram_users (telegram_id TEXT PRIMARY KEY);');
 sqlite.exec("INSERT INTO telegram_users VALUES ('100'), ('200')");
 sqlite.exec(readFileSync('workers/moonboys-api/migrations/098_nbg_london_records.sql', 'utf8'));
+sqlite.exec(readFileSync('workers/moonboys-api/migrations/099_nbg_london_competition_prizes.sql', 'utf8'));
+sqlite.exec(`CREATE TABLE telegram_anticheat_state(telegram_id TEXT PRIMARY KEY, is_blocked INTEGER NOT NULL DEFAULT 0);
+CREATE TABLE arcade_progression_state (
+ telegram_id TEXT PRIMARY KEY, arcade_xp_total INTEGER DEFAULT 0, arcade_daily_xp INTEGER DEFAULT 0,
+ arcade_daily_key TEXT, arcade_restriction_level INTEGER DEFAULT 0, restricted_until TEXT, updated_at TEXT);
+CREATE TABLE arcade_xp_wallets (
+ telegram_id TEXT PRIMARY KEY, arcade_xp_earned INTEGER DEFAULT 0, arcade_xp_spendable INTEGER DEFAULT 0,
+ arcade_xp_spent INTEGER DEFAULT 0, updated_at TEXT);
+CREATE TABLE arcade_progression_events (
+ id TEXT PRIMARY KEY, telegram_id TEXT NOT NULL, client_run_id TEXT NOT NULL,
+ game TEXT, raw_score INTEGER, local_meta_points INTEGER, normalized_points INTEGER,
+ xp_awarded INTEGER, status TEXT, reason TEXT, processed_at TEXT);`);
 
 const DB = {
   prepare(sql) {
@@ -24,6 +37,18 @@ const DB = {
       },
       all: async () => ({ results: sqlite.prepare(sql).all() }),
     };
+  },
+  async batch(statements) {
+    sqlite.exec('BEGIN');
+    try {
+      const results = [];
+      for (const statement of statements) results.push(await statement.run());
+      sqlite.exec('COMMIT');
+      return results;
+    } catch (error) {
+      sqlite.exec('ROLLBACK');
+      throw error;
+    }
   }
 };
 const env = { DB, LEADERBOARD: { get: async () => null } };
@@ -76,6 +101,11 @@ try {
     fakeNow += 1000;
   }
 
+  assert.equal(periodStart(Date.UTC(2026, 9, 16, 1), 'daily'), Date.UTC(2026, 9, 16, 1));
+  assert.equal(periodStart(Date.UTC(2026, 9, 16, 0, 59), 'daily'), Date.UTC(2026, 9, 15, 1));
+  assert.equal(periodStart(Date.UTC(2026, 9, 14, 10), 'weekly'), Date.UTC(2026, 9, 12, 1));
+  assert.ok(endedPeriods(Date.UTC(2026, 9, 16, 1)).some(period => period.kind === 'daily'));
+
   await submit('100', 125000, 850);
   await submit('200', 115000, 350);
   await submit('100', 105000, 200);
@@ -88,6 +118,11 @@ try {
   assert.equal(myBest.records.speed_xp_rate, 1000);
   assert.equal((await api('/nbg-london/me', {})).status, 403,
     'personal best endpoint must not disclose anonymous account records');
+
+  const competition = await api('/nbg-london/competition?period=daily');
+  assert.equal(competition.status, 200, 'live daily standings are public');
+  assert.ok(competition.standings.some(row => row.name === '@alpha'), 'period board displays Telegram names');
+  assert.ok(competition.standings.some(row => row.total_xp >= 2000), 'completed runs accumulate XP for the period');
 
   const fastest = await api('/nbg-london/leaderboard?metric=fastest');
   const speedXp = await api('/nbg-london/leaderboard?metric=speed_xp');
