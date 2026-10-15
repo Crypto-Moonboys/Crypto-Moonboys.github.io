@@ -16,6 +16,11 @@
   var JUMP_VELOCITY = -11.4;
   var DOUBLE_JUMP_VELOCITY = -12.8;
   var DOUBLE_JUMP_SIDE_SPEED = 5.4;
+  var SPEEDRUN_PAR_MS = 180000;
+  var SPEEDRUN_TIME_BONUS_PER_SECOND = 35;
+  var COIN_COMBO_WINDOW_MS = 2400;
+  var MAX_COIN_COMBO = 4;
+  var COURSE_SECTIONS = 18;
   var INVULN_TIME = 1050;
   var SKYLINE_PARALLAX = 0.22;
   var SKYLINE_Y = 40;
@@ -148,6 +153,20 @@
     var cameraY = 0;
     var checkpointX = 72;
     var finishBonusAwarded = false;
+    var runElapsedMs = 0;
+    var speedrunBonusXp = 0;
+    var comboCount = 0;
+    var comboExpiresAt = 0;
+    var bestTimeMs = null;
+    var bestXp = 0;
+    try {
+      var savedBestTime = Number(window.localStorage.getItem('nbg-london-best-run-ms'));
+      if (savedBestTime > 0 && Number.isFinite(savedBestTime)) bestTimeMs = savedBestTime;
+      var savedBestXp = Number(window.localStorage.getItem('nbg-london-best-xp'));
+      if (savedBestXp > 0 && Number.isFinite(savedBestXp)) bestXp = savedBestXp;
+    } catch (error) {
+      // Private browsing may block local storage; speedrun remains playable.
+    }
     var sprayTimer = 0;
 
     var player = {
@@ -246,6 +265,50 @@
       { type: 'pigeon', x: 1010, y: 128, w: 28, h: 22, vx: 1.35, min: 940, max: 1128, bob: 0 },
       { type: 'bot', x: 1455, y: FLOOR_Y - 38, w: 30, h: 38, vx: 0.85, min: 1390, max: 1550 }
     ];
+    var hazards = [];
+    var courseCheckpoints = [];
+
+    // Build the playable remainder of the 22,000px course after the handcrafted opening.
+    // Stable deterministic placement: no random or potentially impossible gaps.
+    for (var section = 0; section < COURSE_SECTIONS; section += 1) {
+      var startX = 2200 + section * 1050;
+      var ledges = [
+        { x: startX + 95, y: 174 - section % 3 * 10, w: 150, h: 16 },
+        { x: startX + 350, y: 122 - section % 2 * 16, w: 130, h: 16 },
+        { x: startX + 590, y: 157 - section % 4 * 8, w: 145, h: 16 },
+        { x: startX + 820, y: 116 + section % 3 * 8, w: 110, h: 16 }
+      ];
+      ledges.forEach(function (ledge) {
+        platforms.push(ledge);
+        for (var j = 0; j < 3; j += 1) {
+          coins.push({ x: ledge.x + 30 + j * 30, y: ledge.y - 24 - j % 2 * 8, r: 8,
+            xp: 100 + section % 4 * 25, taken: false });
+        }
+      });
+      [45, 520, 980].forEach(function (dx) {
+        coins.push({ x: startX + dx, y: 176, r: 8, xp: 100 + section % 3 * 25, taken: false });
+      });
+
+      hazards.push({ x: startX + 275, y: FLOOR_Y - 18, w: 34, h: 18, type: 'cones' });
+      hazards.push({ x: startX + 745, y: FLOOR_Y - 20, w: 46, h: 20, type: 'spikes' });
+      if (section >= 8 && section % 3 === 0) {
+        hazards.push({ x: startX + 1000, y: FLOOR_Y - 24, w: 34, h: 24, type: 'barrier' });
+      }
+      enemies.push({ type: 'rat', x: startX + 435, y: FLOOR_Y - 20,
+        w: 28, h: 18, vx: 1.1 + section * 0.025, min: startX + 395, max: startX + 535 });
+      if (section % 2 === 1) {
+        enemies.push({ type: 'bot', x: startX + 870, y: FLOOR_Y - 38,
+          w: 30, h: 38, vx: 0.85 + section * 0.035, min: startX + 800, max: startX + 960 });
+      }
+      if (section % 3 === 2) {
+        enemies.push({ type: 'pigeon', x: startX + 615, y: 110,
+          w: 28, h: 22, vx: 1.35, min: startX + 575, max: startX + 720, bob: 0 });
+      }
+      if (section === 3 || section === 7 || section === 11 || section === 15) {
+        courseCheckpoints.push({ x: startX + 965, y: FLOOR_Y - 48, w: 30, h: 48, active: false });
+      }
+    }
+
     var initialEnemies = enemies.map(function (enemy) {
       return Object.assign({}, enemy);
     });
@@ -418,8 +481,13 @@
         var coinRect = { x: coin.x - coin.r, y: coin.y - coin.r, w: coin.r * 2, h: coin.r * 2 };
         if (rectsOverlap(player, coinRect)) {
           coin.taken = true;
-          xp += coin.xp;
-          window.dispatchEvent(new CustomEvent('nbg-xp-collected', { detail: { xp: xp, coin: coin } }));
+          comboCount = time < comboExpiresAt ? Math.min(MAX_COIN_COMBO, comboCount + 1) : 1;
+          comboExpiresAt = time + COIN_COMBO_WINDOW_MS;
+          var earnedXp = coin.xp * comboCount;
+          xp += earnedXp;
+          window.dispatchEvent(new CustomEvent('nbg-xp-collected', {
+            detail: { xp: xp, coin: coin, earnedXp: earnedXp, multiplier: comboCount }
+          }));
         }
         coin.float = Math.sin((time + coin.x * 11) / 180) * 3;
       }
@@ -441,6 +509,36 @@
       }
     }
 
+    function damagePlayer(type, hazardX) {
+      if (player.invuln > 0) return;
+      player.health -= 1;
+      player.vx = hazardX > player.x ? -5.5 : 5.5;
+      player.vy = -6.2;
+      player.invuln = INVULN_TIME;
+      comboCount = 0;
+      comboExpiresAt = 0;
+      setPlayerAnimation('hurt');
+      window.dispatchEvent(new CustomEvent('nbg-player-hit', {
+        detail: { health: player.health, enemy: type }
+      }));
+      if (player.health <= 0) {
+        player.health = 3;
+        xp = Math.max(0, xp - 150);
+        resetToCheckpoint();
+      }
+    }
+
+    function updateHazards() {
+      if (player.invuln > 0) return;
+      for (var i = 0; i < hazards.length; i += 1) {
+        var hazard = hazards[i];
+        if (rectsOverlap(player, hazard)) {
+          damagePlayer(hazard.type, hazard.x);
+          break;
+        }
+      }
+    }
+
     function updateEnemies(time, dt) {
       var step = dt / TARGET_FRAME_MS;
       for (var i = 0; i < enemies.length; i += 1) {
@@ -457,27 +555,23 @@
         };
 
         if (player.invuln <= 0 && rectsOverlap(player, enemyRect)) {
-          player.health -= 1;
-          player.vx = enemy.x > player.x ? -5.5 : 5.5;
-          player.vy = -6.2;
-          player.invuln = INVULN_TIME;
-          setPlayerAnimation('hurt');
-          window.dispatchEvent(new CustomEvent('nbg-player-hit', { detail: { health: player.health, enemy: enemy.type } }));
-          if (player.health <= 0) {
-            player.health = 3;
-            xp = Math.max(0, xp - 150);
-            resetToCheckpoint();
-          }
+          damagePlayer(enemy.type, enemy.x);
         }
       }
     }
 
     function updateLevel() {
-      if (!checkpoint.active && rectsOverlap(player, checkpoint)) {
-        checkpoint.active = true;
-        checkpointX = checkpoint.x;
-        xp += 250;
-        window.dispatchEvent(new CustomEvent('nbg-checkpoint', { detail: { xp: xp } }));
+      var allCheckpoints = [checkpoint].concat(courseCheckpoints);
+      for (var i = 0; i < allCheckpoints.length; i += 1) {
+        var marker = allCheckpoints[i];
+        if (!marker.active && rectsOverlap(player, marker)) {
+          marker.active = true;
+          checkpointX = Math.max(checkpointX, marker.x);
+          xp += 250;
+          window.dispatchEvent(new CustomEvent('nbg-checkpoint', {
+            detail: { xp: xp, x: marker.x }
+          }));
+        }
       }
 
       if (!complete && rectsOverlap(player, finish)) {
@@ -488,12 +582,35 @@
         if (!finishBonusAwarded) {
           finishBonusAwarded = true;
           xp += 500 + coins.filter(function (coin) { return coin.taken; }).length * 25;
+          speedrunBonusXp = Math.max(0, Math.ceil((SPEEDRUN_PAR_MS - runElapsedMs) / 1000)) * SPEEDRUN_TIME_BONUS_PER_SECOND;
+          xp += speedrunBonusXp;
+          if (xp > bestXp) {
+            bestXp = xp;
+            try {
+              window.localStorage.setItem('nbg-london-best-xp', String(bestXp));
+            } catch (error) {
+              // Best score remains visible for this session if storage is disabled.
+            }
+          }
+          if (bestTimeMs === null || runElapsedMs < bestTimeMs) {
+            bestTimeMs = runElapsedMs;
+            try {
+              window.localStorage.setItem('nbg-london-best-run-ms', String(Math.round(bestTimeMs)));
+            } catch (error) {
+              // Best time still tracks within this page if storage is blocked.
+            }
+          }
         }
         window.dispatchEvent(new CustomEvent('nbg-level-complete', {
           detail: {
             level: 'NBG London Graffiti Run - Level 1',
             xp: xp,
             coins: coins.filter(function (coin) { return coin.taken; }).length,
+            secretCoins: secretCoins.filter(function (coin) { return coin.taken; }).length,
+            timeMs: Math.round(runElapsedMs),
+            speedrunBonusXp: speedrunBonusXp,
+            bestTimeMs: Math.round(bestTimeMs),
+            bestXp: bestXp,
             leaderboardReady: true
           }
         }));
@@ -516,7 +633,7 @@
       hud.xp.textContent = 'XP ' + xp;
       hud.coins.textContent = 'COINS ' + collected + '/' + coins.length;
       hud.health.textContent = 'HEALTH ' + player.health;
-      hud.state.textContent = complete ? 'LEVEL COMPLETE' : running ? (checkpoint.active ? 'CHECKPOINT' : 'RUNNING') : WAITING_HUD_TEXT;
+      hud.state.textContent = complete ? 'LEVEL COMPLETE' : running ? ((checkpoint.active || courseCheckpoints.some(function (marker) { return marker.active; })) ? 'CHECKPOINT' : 'RUNNING') : WAITING_HUD_TEXT;
     }
 
     function drawImageLayer(image, parallax, y, h, fallbackColor) {
@@ -590,6 +707,44 @@
       }
     }
 
+    function formatRunTime(ms) {
+      var seconds = Math.floor(ms / 1000);
+      var minutes = Math.floor(seconds / 60);
+      var remainder = String(seconds % 60).padStart(2, '0');
+      return minutes + ':' + remainder + '.' + Math.floor(ms / 100) % 10;
+    }
+
+    function drawHazards() {
+      hazards.forEach(function (hazard) {
+        var x = Math.round(hazard.x - cameraX);
+        if (x + hazard.w < -30 || x > WIDTH + 30) return;
+        var y = hazard.y + FOREGROUND_VISUAL_OFFSET_Y;
+        ctx.save();
+        if (hazard.type === 'barrier') {
+          ctx.fillStyle = '#f96f33';
+          ctx.fillRect(x, y, hazard.w, hazard.h);
+          ctx.fillStyle = '#ffe88c';
+          ctx.fillRect(x, y + 4, hazard.w, 4);
+          ctx.fillRect(x, y + 14, hazard.w, 4);
+        } else {
+          var count = hazard.type === 'spikes' ? 5 : 2;
+          var partWidth = hazard.w / count;
+          ctx.fillStyle = hazard.type === 'spikes' ? '#d9e4fc' : '#ff713d';
+          for (var i = 0; i < count; i += 1) {
+            ctx.beginPath();
+            ctx.moveTo(x + i * partWidth, y + hazard.h);
+            ctx.lineTo(x + (i + 0.5) * partWidth, y);
+            ctx.lineTo(x + (i + 1) * partWidth, y + hazard.h);
+            ctx.closePath();
+            ctx.fill();
+          }
+          ctx.fillStyle = '#273449';
+          ctx.fillRect(x, y + hazard.h - 3, hazard.w, 3);
+        }
+        ctx.restore();
+      });
+    }
+
     function drawWorld() {
       drawImageLayer(images.sky, 0.08, 0, HEIGHT, '#171730');
       drawSkylineLayer();
@@ -605,6 +760,7 @@
         ctx.fillRect(Math.round(p.x - cameraX), platformY, p.w, 3);
         ctx.fillStyle = '#2b2932';
       }
+      drawHazards();
     }
 
     function drawCoins(time) {
@@ -612,6 +768,7 @@
         var coin = coins[i];
         if (coin.taken) continue;
         var x = Math.round(coin.x - cameraX - 8);
+        if (x < -24 || x > WIDTH + 12) continue;
         var y = Math.round(coin.y + (coin.float || 0) + FOREGROUND_VISUAL_OFFSET_Y - 8);
         if (images.coin) {
           ctx.drawImage(images.coin, x, y, 16, 16);
@@ -647,6 +804,7 @@
         var enemy = enemies[i];
         var image = images[enemy.type];
         var x = Math.round(enemy.x - cameraX);
+        if (x < -enemy.w || x > WIDTH) continue;
         var y = Math.round(enemy.y + (enemy.bob || 0) + FOREGROUND_VISUAL_OFFSET_Y);
         if (image) {
           ctx.save();
@@ -716,15 +874,38 @@
 
     function drawOverlay() {
       if (!complete) return;
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.72)';
+      ctx.save();
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
       ctx.fillRect(0, 0, WIDTH, HEIGHT);
+      ctx.textAlign = 'center';
       ctx.fillStyle = '#ffd447';
       ctx.font = '900 24px Courier New';
-      ctx.fillText('LEVEL COMPLETE', 122, 112);
+      ctx.fillText('LEVEL COMPLETE', WIDTH / 2, 72);
       ctx.fillStyle = '#ffffff';
-      ctx.font = '800 13px Courier New';
-      ctx.fillText('LEADERBOARD XP READY: ' + xp, 130, 138);
-      ctx.fillText('PRESS RESET TO RUN AGAIN', 136, 160);
+      ctx.font = '800 14px Courier New';
+      ctx.fillText('RUN TIME ' + formatRunTime(runElapsedMs), WIDTH / 2, 108);
+      ctx.fillText('BEST TIME ' + formatRunTime(bestTimeMs || runElapsedMs), WIDTH / 2, 129);
+      ctx.fillStyle = '#7cff82';
+      ctx.fillText('SPEED BONUS +' + speedrunBonusXp + ' XP', WIDTH / 2, 151);
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '800 12px Courier New';
+      ctx.fillText('LEADERBOARD XP READY: ' + xp, WIDTH / 2, 174);
+      ctx.fillText('PERSONAL BEST XP: ' + bestXp, WIDTH / 2, 196);
+      ctx.fillText('PRESS RESET TO RUN AGAIN', WIDTH / 2, 221);
+      ctx.restore();
+    }
+
+    function drawSpeedrunHud(time) {
+      ctx.save();
+      ctx.fillStyle = 'rgba(9, 19, 38, 0.83)';
+      ctx.fillRect(WIDTH - 165, 5, 160, 37);
+      ctx.font = 'bold 12px Courier New';
+      ctx.fillStyle = '#ffffff';
+      ctx.fillText('SPEED ' + formatRunTime(runElapsedMs), WIDTH - 159, 19);
+      ctx.font = 'bold 10px Courier New';
+      ctx.fillStyle = '#ffe45a';
+      ctx.fillText('PAR 3:00' + (comboCount > 1 && time < comboExpiresAt ? '  COMBO x' + comboCount : ''), WIDTH - 159, 34);
+      ctx.restore();
     }
 
     function drawSecretNotification(time) {
@@ -752,20 +933,24 @@
       drawEnemies();
       drawPlayer();
       ctx.restore();
+      drawSpeedrunHud(time);
       drawSecretNotification(time);
       drawOverlay();
     }
 
     function tick(time) {
       if (!lastTime) lastTime = time;
-      var dt = Math.min(33, time - lastTime);
+      var frameElapsedMs = Math.max(0, time - lastTime);
+      var dt = Math.min(33, frameElapsedMs);
       lastTime = time;
 
       if (running) {
+        runElapsedMs += frameElapsedMs;
         updatePlayer(dt);
         updateCoins(time);
         updateSecretCoins(time);
         updateEnemies(time, dt);
+        updateHazards();
         updateLevel();
         updateCamera();
         updateCameraY();
@@ -786,6 +971,14 @@
         get secretNotificationUntil() { return secretNotificationUntil; },
         get secretNotificationText() { return secretNotificationText; },
         get enemies() { return enemies; },
+        get platforms() { return platforms; },
+        get hazards() { return hazards; },
+        get courseCheckpoints() { return courseCheckpoints; },
+        get runElapsedMs() { return runElapsedMs; },
+        get bestTimeMs() { return bestTimeMs; },
+        get bestXp() { return bestXp; },
+        get speedrunBonusXp() { return speedrunBonusXp; },
+        get comboCount() { return comboCount; },
         get xp() { return xp; },
         get complete() { return complete; },
         get assetsLoaded() { return assetsLoaded; },
@@ -832,6 +1025,10 @@
       checkpointX = 72;
       finishBonusAwarded = false;
       sprayTimer = 0;
+      runElapsedMs = 0;
+      speedrunBonusXp = 0;
+      comboCount = 0;
+      comboExpiresAt = 0;
       xp = 0;
       secretNotificationUntil = 0;
       secretNotificationText = '';
@@ -863,6 +1060,7 @@
         Object.assign(enemy, initialEnemies[index]);
       });
       checkpoint.active = false;
+      courseCheckpoints.forEach(function (marker) { marker.active = false; });
       gameVisible = true;
       updateCamera();
       updateCameraY();
