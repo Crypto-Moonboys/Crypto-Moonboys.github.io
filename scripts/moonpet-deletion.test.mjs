@@ -504,3 +504,10 @@ assert.equal(archivedFinale.intent,null);
 assert.equal(sql.prepare('SELECT COUNT(*) n FROM telegram_pet_season_completions WHERE pet_id=?').get(archivedId).n,1);
 assert.deepEqual(sql.prepare('PRAGMA foreign_key_check').all(),[]);
 console.log('Confirmed Moonpet deletion, reward retention, replacement and concurrency tests passed');
+
+test('PR3 deletion requires two deliberate steps and retains backend pet-id proof', () => {
+  const client=fs.readFileSync(new URL('../js/moonpet-mini-app.js',import.meta.url),'utf8');
+  const start=client.indexOf("if (action === 'delete_pet_slot')",client.indexOf("async function runAction("));
+  const block=client.slice(start,client.indexOf("if (action === 'event_close')",start));
+  for(const text of ['STEP 1 OF 2','STEP 2 OF 2',"window.prompt","!== 'DELETE'","slot.pet_id === petToDelete","currentSlot !== deletionSlot","confirm_pet_id: petToDelete"])assert.ok(block.includes(text),text);
+});
