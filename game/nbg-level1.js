@@ -128,6 +128,8 @@
       if (manifest.enemies.turquoiseRatWalk) assets.turquoiseRatWalk = resolveAssetPath(manifest.enemies.turquoiseRatWalk);
       if (manifest.enemies.turquoiseRatKick) assets.turquoiseRatKick = resolveAssetPath(manifest.enemies.turquoiseRatKick);
       if (manifest.enemies.turquoiseRatPunch) assets.turquoiseRatPunch = resolveAssetPath(manifest.enemies.turquoiseRatPunch);
+      if (manifest.enemies.brownRatWalk) assets.brownRatWalk = resolveAssetPath(manifest.enemies.brownRatWalk);
+      if (manifest.enemies.brownRatPunch) assets.brownRatPunch = resolveAssetPath(manifest.enemies.brownRatPunch);
       if (manifest.enemies.pigeon) assets.pigeon = resolveAssetPath(manifest.enemies.pigeon);
       if (manifest.enemies.graffitiBot) assets.bot = resolveAssetPath(manifest.enemies.graffitiBot);
       if (manifest.enemies.graffitiBotKick) assets.botKick = resolveAssetPath(manifest.enemies.graffitiBotKick);
@@ -702,7 +704,7 @@
         }
         if (rat.y + rat.h >= FLOOR_Y) {
           enemies.push({
-            type: rat.variant === 'parachuteRatC' ? 'turquoiseRat' : 'rat',
+            type: rat.variant === 'parachuteRatC' ? 'turquoiseRat' : 'brownRat',
             x: rat.x, y: FLOOR_Y - 42, w: 28, h: 42,
             vx: Math.random() < 0.5 ? -1.1 : 1.1,
             min: Math.max(0, rat.x - 65), max: Math.min(WORLD_WIDTH - 28, rat.x + 65)
@@ -735,11 +737,12 @@
         enemy.x += enemy.vx * step;
         if (enemy.x < enemy.min || enemy.x > enemy.max) enemy.vx *= -1;
         if (enemy.type === 'pigeon') enemy.bob = Math.sin(time / 180) * 9;
-        if (enemy.type === 'rat' || enemy.type === 'turquoiseRat') {
+        if (enemy.type === 'rat' || enemy.type === 'turquoiseRat' || enemy.type === 'brownRat') {
           var ratClose = Math.abs(player.x - enemy.x) < RAT_ATTACK_RANGE && Math.abs(player.y - enemy.y) < 65;
           if (ratClose && time >= (enemy.nextAttackAt || 0) && time >= (enemy.attackUntil || 0)) {
             enemy.attackType = enemy.type === 'turquoiseRat' ?
               (Math.random() < 0.5 ? 'turquoiseRatKick' : 'turquoiseRatPunch') :
+              enemy.type === 'brownRat' ? 'brownRatPunch' :
               (Math.random() < 0.5 ? 'ratBladeFlurry' : 'ratViperPounce');
             enemy.attackStartedAt = time;
             enemy.attackUntil = time + RAT_ATTACK_DURATION_MS;
@@ -1040,10 +1043,11 @@
         var botHurt = enemy.type === 'bot' && (enemy.hurtUntil || 0) > time;
         var botKicking = enemy.type === 'bot' && !botHurt && Math.abs(player.x - enemy.x) < 68 && Math.abs(player.y - enemy.y) < 48;
         var botImageKey = botHurt ? 'botHurt' : botKicking ? 'botKick' : 'bot';
-        var isWalkingRat = enemy.type === 'rat' || enemy.type === 'turquoiseRat';
+        var isWalkingRat = enemy.type === 'rat' || enemy.type === 'turquoiseRat' || enemy.type === 'brownRat';
         var ratAttacking = isWalkingRat && (enemy.attackUntil || 0) > time;
         var ratImageKey = ratAttacking ? enemy.attackType :
-          (enemy.type === 'turquoiseRat' ? 'turquoiseRatWalk' : 'rat');
+          (enemy.type === 'turquoiseRat' ? 'turquoiseRatWalk' :
+          enemy.type === 'brownRat' ? 'brownRatWalk' : 'rat');
         var image = images[enemy.type === 'bot' ? botImageKey : isWalkingRat ? ratImageKey : enemy.type];
         var x = Math.round(enemy.x - cameraX);
         if (x < -enemy.w || x > WIDTH) continue;
@@ -1061,8 +1065,9 @@
             var ratSourceY = Math.floor(ratFrame / RAT_SHEET_COLUMNS) * ratFrameHeight;
             // Attack sheets have much smaller artwork inside their 512px cells than
             // the walk sheet has inside its 256px cells. Enlarge only attack frames.
-            var ratDrawWidth = ratAttacking && enemy.type === 'rat' ? Math.round(RAT_RENDER_WIDTH * 1.9) : RAT_RENDER_WIDTH;
-            var ratDrawHeight = ratAttacking && enemy.type === 'rat' ? Math.round(RAT_RENDER_HEIGHT * 1.9) : RAT_RENDER_HEIGHT;
+            var ratScale = ratAttacking ? (enemy.type === 'rat' ? 1.9 : enemy.type === 'brownRat' ? 1.35 : 1) : 1;
+            var ratDrawWidth = Math.round(RAT_RENDER_WIDTH * ratScale);
+            var ratDrawHeight = Math.round(RAT_RENDER_HEIGHT * ratScale);
             var ratDrawX = x - Math.round((ratDrawWidth - enemy.w) / 2);
             var ratDrawY = y + enemy.h - ratDrawHeight;
             if (enemy.vx < 0) {
