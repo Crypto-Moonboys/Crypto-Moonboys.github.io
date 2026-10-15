@@ -1477,11 +1477,27 @@ assert.deepEqual(Object.fromEntries(Object.entries(turquoiseSources).map(([key,v
   turquoiseRatPunch: '/game/assets/enemies/ggdf-punch.png'
 }, 'all three exclusive turquoise-rat animations must load');
 assert.ok(
-  runtimeSource.includes("type: rat.variant === 'parachuteRatC' ? 'turquoiseRat' : 'rat'") &&
+  runtimeSource.includes("type: rat.variant === 'parachuteRatC' ? 'turquoiseRat' : 'brownRat'") &&
   runtimeSource.includes("enemy.type === 'turquoiseRat' ?") &&
   runtimeSource.includes("'turquoiseRatKick' : 'turquoiseRatPunch'") &&
-  runtimeSource.includes("enemy.type === 'turquoiseRat' ? 'turquoiseRatWalk' : 'rat'"),
+  runtimeSource.includes("enemy.type === 'turquoiseRat' ? 'turquoiseRatWalk' :"),
   'only turquoise parachutes must turn into turquoise walking and attacking rats'
+);
+
+const brownAssets = await page.evaluate(() =>
+  Object.fromEntries(['brownRatWalk','brownRatPunch'].map(key =>
+    [key, window.NBGLevel1State.assetStatus[key]?.src])));
+assert.deepEqual(Object.fromEntries(Object.entries(brownAssets).map(([key,value]) =>
+  [key, new URL(value, url).pathname])), {
+  brownRatWalk: '/game/assets/enemies/dfgdf-walk.png',
+  brownRatPunch: '/game/assets/enemies/dfgdf-punch_fast_with_lightning_bolts.png'
+}, 'the two brown rat sheets must load');
+assert.ok(
+  runtimeSource.includes("type: rat.variant === 'parachuteRatC' ? 'turquoiseRat' : 'brownRat'") &&
+  runtimeSource.includes("enemy.type === 'brownRat' ? 'brownRatWalk' : 'rat'") &&
+  runtimeSource.includes("enemy.type === 'brownRat' ? 'brownRatPunch'") &&
+  runtimeSource.includes("enemy.type === 'brownRat' ? 1.35 : 1"),
+  'only the two non-turquoise parachutes use brown walk and enlarged lightning punch'
 );
 
 const pixelEnergy = await page.evaluate(() => {
