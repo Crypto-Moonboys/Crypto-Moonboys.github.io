@@ -2352,7 +2352,7 @@ CREATE TABLE IF NOT EXISTS nbg_london_records (
   display_name TEXT NOT NULL,
   fastest_ms INTEGER NOT NULL CHECK (fastest_ms > 0),
   fastest_xp INTEGER NOT NULL CHECK (fastest_xp >= 0),
-  speed_xp_rate INTEGER NOT NULL CHECK (speed_xp_rate >= 0),
+  speed_xp_rate REAL NOT NULL CHECK (speed_xp_rate >= 0),
   speed_xp_ms INTEGER NOT NULL CHECK (speed_xp_ms > 0),
   speed_xp_xp INTEGER NOT NULL CHECK (speed_xp_xp >= 0),
   best_xp INTEGER NOT NULL CHECK (best_xp >= 0),
