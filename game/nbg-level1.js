@@ -860,14 +860,37 @@
       drawImageLayer(images.wall, 0.58, 154, 88, '#2d2033');
       drawStreetLayer();
 
-      ctx.fillStyle = '#2b2932';
+      // A whole platform uses brick OR rock, never an alternating mixture.
       for (var i = 0; i < platforms.length; i += 1) {
         var p = platforms[i];
+        var x = Math.round(p.x - cameraX);
+        if (x + p.w < 0 || x > WIDTH) continue;
         var platformY = p.y + FOREGROUND_VISUAL_OFFSET_Y;
-        ctx.fillRect(Math.round(p.x - cameraX), platformY, p.w, p.h);
-        ctx.fillStyle = '#59d8ff';
-        ctx.fillRect(Math.round(p.x - cameraX), platformY, p.w, 3);
-        ctx.fillStyle = '#2b2932';
+        var tileImage = p.material === 'rock' ? images.floatingRock : images.floatingBrick;
+        if (!tileImage) {
+          ctx.fillStyle = p.material === 'rock' ? '#394050' : '#854e26';
+          ctx.fillRect(x, platformY, p.w, p.h);
+          continue;
+        }
+        for (var tileX = 0; tileX < p.w; tileX += 16) {
+          var width = Math.min(16, p.w - tileX);
+          ctx.drawImage(tileImage, 0, 0,
+            tileImage.naturalWidth * width / 16, tileImage.naturalHeight,
+            x + tileX, platformY, width, p.h);
+        }
+      }
+
+      for (var j = 0; j < crates.length; j += 1) {
+        var crate = crates[j];
+        var crateX = Math.round(crate.x - cameraX);
+        if (crateX + crate.w < 0 || crateX > WIDTH) continue;
+        var crateY = crate.y + FOREGROUND_VISUAL_OFFSET_Y;
+        if (images.floorCrate) {
+          ctx.drawImage(images.floorCrate, crateX, crateY, crate.w, crate.h);
+        } else {
+          ctx.fillStyle = '#b5793e';
+          ctx.fillRect(crateX, crateY, crate.w, crate.h);
+        }
       }
       drawHazards();
     }
@@ -962,6 +985,23 @@
     }
 
     function drawObjects() {
+      for (var boxIndex = 0; boxIndex < rewardBoxes.length; boxIndex += 1) {
+        var box = rewardBoxes[boxIndex];
+        var boxX = Math.round(box.x - cameraX);
+        if (boxX + box.w < 0 || boxX > WIDTH) continue;
+        var boxY = box.y + FOREGROUND_VISUAL_OFFSET_Y;
+        var boxImage = box.type === 'star' ? images.starBox : images.mysteryBox;
+        ctx.save();
+        if (box.opened) ctx.globalAlpha = 0.32;
+        if (boxImage) {
+          ctx.drawImage(boxImage, boxX, boxY, box.w, box.h);
+        } else {
+          ctx.fillStyle = box.type === 'star' ? '#ffd85c' : '#ff9c38';
+          ctx.fillRect(boxX, boxY, box.w, box.h);
+        }
+        ctx.restore();
+      }
+
       var checkX = Math.round(checkpoint.x - cameraX);
       var checkpointY = checkpoint.y + FOREGROUND_VISUAL_OFFSET_Y;
       if (images.checkpoint) ctx.drawImage(images.checkpoint, checkX, checkpointY, checkpoint.w, checkpoint.h);
@@ -1058,6 +1098,18 @@
       ctx.restore();
     }
 
+    function drawRewardNotification(time) {
+      if (time >= rewardNotificationUntil) return;
+      ctx.save();
+      ctx.font = 'bold 13px Courier New';
+      ctx.textAlign = 'center';
+      ctx.fillStyle = '#191522';
+      ctx.fillText(rewardNotificationText, WIDTH / 2 + 1, 67);
+      ctx.fillStyle = '#fff08c';
+      ctx.fillText(rewardNotificationText, WIDTH / 2, 66);
+      ctx.restore();
+    }
+
     function render(time) {
       ctx.clearRect(0, 0, WIDTH, HEIGHT);
       ctx.fillStyle = '#0076fc';
@@ -1073,6 +1125,7 @@
       ctx.restore();
       drawSpeedrunHud(time);
       drawSecretNotification(time);
+      drawRewardNotification(time);
       drawOverlay();
     }
 
