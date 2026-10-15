@@ -478,8 +478,13 @@
         var coinRect = { x: coin.x - coin.r, y: coin.y - coin.r, w: coin.r * 2, h: coin.r * 2 };
         if (rectsOverlap(player, coinRect)) {
           coin.taken = true;
-          xp += coin.xp;
-          window.dispatchEvent(new CustomEvent('nbg-xp-collected', { detail: { xp: xp, coin: coin } }));
+          comboCount = time < comboExpiresAt ? Math.min(MAX_COIN_COMBO, comboCount + 1) : 1;
+          comboExpiresAt = time + COIN_COMBO_WINDOW_MS;
+          var earnedXp = coin.xp * comboCount;
+          xp += earnedXp;
+          window.dispatchEvent(new CustomEvent('nbg-xp-collected', {
+            detail: { xp: xp, coin: coin, earnedXp: earnedXp, multiplier: comboCount }
+          }));
         }
         coin.float = Math.sin((time + coin.x * 11) / 180) * 3;
       }
@@ -501,6 +506,36 @@
       }
     }
 
+    function damagePlayer(type, hazardX) {
+      if (player.invuln > 0) return;
+      player.health -= 1;
+      player.vx = hazardX > player.x ? -5.5 : 5.5;
+      player.vy = -6.2;
+      player.invuln = INVULN_TIME;
+      comboCount = 0;
+      comboExpiresAt = 0;
+      setPlayerAnimation('hurt');
+      window.dispatchEvent(new CustomEvent('nbg-player-hit', {
+        detail: { health: player.health, enemy: type }
+      }));
+      if (player.health <= 0) {
+        player.health = 3;
+        xp = Math.max(0, xp - 150);
+        resetToCheckpoint();
+      }
+    }
+
+    function updateHazards() {
+      if (player.invuln > 0) return;
+      for (var i = 0; i < hazards.length; i += 1) {
+        var hazard = hazards[i];
+        if (rectsOverlap(player, hazard)) {
+          damagePlayer(hazard.type, hazard.x);
+          break;
+        }
+      }
+    }
+
     function updateEnemies(time, dt) {
       var step = dt / TARGET_FRAME_MS;
       for (var i = 0; i < enemies.length; i += 1) {
@@ -517,27 +552,23 @@
         };
 
         if (player.invuln <= 0 && rectsOverlap(player, enemyRect)) {
-          player.health -= 1;
-          player.vx = enemy.x > player.x ? -5.5 : 5.5;
-          player.vy = -6.2;
-          player.invuln = INVULN_TIME;
-          setPlayerAnimation('hurt');
-          window.dispatchEvent(new CustomEvent('nbg-player-hit', { detail: { health: player.health, enemy: enemy.type } }));
-          if (player.health <= 0) {
-            player.health = 3;
-            xp = Math.max(0, xp - 150);
-            resetToCheckpoint();
-          }
+          damagePlayer(enemy.type, enemy.x);
         }
       }
     }
 
     function updateLevel() {
-      if (!checkpoint.active && rectsOverlap(player, checkpoint)) {
-        checkpoint.active = true;
-        checkpointX = checkpoint.x;
-        xp += 250;
-        window.dispatchEvent(new CustomEvent('nbg-checkpoint', { detail: { xp: xp } }));
+      var allCheckpoints = [checkpoint].concat(courseCheckpoints);
+      for (var i = 0; i < allCheckpoints.length; i += 1) {
+        var marker = allCheckpoints[i];
+        if (!marker.active && rectsOverlap(player, marker)) {
+          marker.active = true;
+          checkpointX = marker.x;
+          xp += 250;
+          window.dispatchEvent(new CustomEvent('nbg-checkpoint', {
+            detail: { xp: xp, x: marker.x }
+          }));
+        }
       }
 
       if (!complete && rectsOverlap(player, finish)) {
@@ -548,12 +579,26 @@
         if (!finishBonusAwarded) {
           finishBonusAwarded = true;
           xp += 500 + coins.filter(function (coin) { return coin.taken; }).length * 25;
+          speedrunBonusXp = Math.max(0, Math.ceil((SPEEDRUN_PAR_MS - runElapsedMs) / 1000)) * SPEEDRUN_TIME_BONUS_PER_SECOND;
+          xp += speedrunBonusXp;
+          if (bestTimeMs === null || runElapsedMs < bestTimeMs) {
+            bestTimeMs = runElapsedMs;
+            try {
+              window.localStorage.setItem('nbg-london-best-run-ms', String(Math.round(bestTimeMs)));
+            } catch (error) {
+              // Best time still tracks within this page if storage is blocked.
+            }
+          }
         }
         window.dispatchEvent(new CustomEvent('nbg-level-complete', {
           detail: {
             level: 'NBG London Graffiti Run - Level 1',
             xp: xp,
             coins: coins.filter(function (coin) { return coin.taken; }).length,
+            secretCoins: secretCoins.filter(function (coin) { return coin.taken; }).length,
+            timeMs: Math.round(runElapsedMs),
+            speedrunBonusXp: speedrunBonusXp,
+            bestTimeMs: Math.round(bestTimeMs),
             leaderboardReady: true
           }
         }));
@@ -576,7 +621,7 @@
       hud.xp.textContent = 'XP ' + xp;
       hud.coins.textContent = 'COINS ' + collected + '/' + coins.length;
       hud.health.textContent = 'HEALTH ' + player.health;
-      hud.state.textContent = complete ? 'LEVEL COMPLETE' : running ? (checkpoint.active ? 'CHECKPOINT' : 'RUNNING') : WAITING_HUD_TEXT;
+      hud.state.textContent = complete ? 'LEVEL COMPLETE' : running ? ((checkpoint.active || courseCheckpoints.some(function (marker) { return marker.active; })) ? 'CHECKPOINT' : 'RUNNING') : WAITING_HUD_TEXT;
     }
 
     function drawImageLayer(image, parallax, y, h, fallbackColor) {
@@ -822,10 +867,12 @@
       lastTime = time;
 
       if (running) {
+        runElapsedMs += dt;
         updatePlayer(dt);
         updateCoins(time);
         updateSecretCoins(time);
         updateEnemies(time, dt);
+        updateHazards();
         updateLevel();
         updateCamera();
         updateCameraY();
@@ -846,6 +893,13 @@
         get secretNotificationUntil() { return secretNotificationUntil; },
         get secretNotificationText() { return secretNotificationText; },
         get enemies() { return enemies; },
+        get platforms() { return platforms; },
+        get hazards() { return hazards; },
+        get courseCheckpoints() { return courseCheckpoints; },
+        get runElapsedMs() { return runElapsedMs; },
+        get bestTimeMs() { return bestTimeMs; },
+        get speedrunBonusXp() { return speedrunBonusXp; },
+        get comboCount() { return comboCount; },
         get xp() { return xp; },
         get complete() { return complete; },
         get assetsLoaded() { return assetsLoaded; },
@@ -892,6 +946,10 @@
       checkpointX = 72;
       finishBonusAwarded = false;
       sprayTimer = 0;
+      runElapsedMs = 0;
+      speedrunBonusXp = 0;
+      comboCount = 0;
+      comboExpiresAt = 0;
       xp = 0;
       secretNotificationUntil = 0;
       secretNotificationText = '';
@@ -923,6 +981,7 @@
         Object.assign(enemy, initialEnemies[index]);
       });
       checkpoint.active = false;
+      courseCheckpoints.forEach(function (marker) { marker.active = false; });
       gameVisible = true;
       updateCamera();
       updateCameraY();
