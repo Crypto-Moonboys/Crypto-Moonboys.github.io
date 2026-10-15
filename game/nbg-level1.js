@@ -158,9 +158,12 @@
     var comboCount = 0;
     var comboExpiresAt = 0;
     var bestTimeMs = null;
+    var bestXp = 0;
     try {
       var savedBestTime = Number(window.localStorage.getItem('nbg-london-best-run-ms'));
       if (savedBestTime > 0 && Number.isFinite(savedBestTime)) bestTimeMs = savedBestTime;
+      var savedBestXp = Number(window.localStorage.getItem('nbg-london-best-xp'));
+      if (savedBestXp > 0 && Number.isFinite(savedBestXp)) bestXp = savedBestXp;
     } catch (error) {
       // Private browsing may block local storage; speedrun remains playable.
     }
@@ -581,6 +584,14 @@
           xp += 500 + coins.filter(function (coin) { return coin.taken; }).length * 25;
           speedrunBonusXp = Math.max(0, Math.ceil((SPEEDRUN_PAR_MS - runElapsedMs) / 1000)) * SPEEDRUN_TIME_BONUS_PER_SECOND;
           xp += speedrunBonusXp;
+          if (xp > bestXp) {
+            bestXp = xp;
+            try {
+              window.localStorage.setItem('nbg-london-best-xp', String(bestXp));
+            } catch (error) {
+              // Best score remains visible for this session if storage is disabled.
+            }
+          }
           if (bestTimeMs === null || runElapsedMs < bestTimeMs) {
             bestTimeMs = runElapsedMs;
             try {
@@ -599,6 +610,7 @@
             timeMs: Math.round(runElapsedMs),
             speedrunBonusXp: speedrunBonusXp,
             bestTimeMs: Math.round(bestTimeMs),
+            bestXp: bestXp,
             leaderboardReady: true
           }
         }));
@@ -878,7 +890,8 @@
       ctx.fillStyle = '#ffffff';
       ctx.font = '800 12px Courier New';
       ctx.fillText('LEADERBOARD XP READY: ' + xp, WIDTH / 2, 174);
-      ctx.fillText('PRESS RESET TO RUN AGAIN', WIDTH / 2, 199);
+      ctx.fillText('PERSONAL BEST XP: ' + bestXp, WIDTH / 2, 196);
+      ctx.fillText('PRESS RESET TO RUN AGAIN', WIDTH / 2, 221);
       ctx.restore();
     }
 
@@ -963,6 +976,7 @@
         get courseCheckpoints() { return courseCheckpoints; },
         get runElapsedMs() { return runElapsedMs; },
         get bestTimeMs() { return bestTimeMs; },
+        get bestXp() { return bestXp; }
         get speedrunBonusXp() { return speedrunBonusXp; },
         get comboCount() { return comboCount; },
         get xp() { return xp; },
