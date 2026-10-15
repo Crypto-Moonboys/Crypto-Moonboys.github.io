@@ -5,7 +5,7 @@
 const DAY = 86400000;
 const WEEK = DAY * 7;
 const SEASON = DAY * 90;
-const EPOCH = Date.UTC(2024, 0, 1, 1);
+const EPOCH = 1704067200000; // existing leaderboard SEASON_EPOCH_MS
 const DURATIONS = Object.freeze({ daily: DAY, weekly: WEEK, seasonal: SEASON });
 export const PRIZE_ARCADE_XP = Object.freeze({
   daily: Object.freeze([100, 60, 30]),
