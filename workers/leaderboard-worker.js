@@ -264,7 +264,7 @@ async function getAuthoritativeLinkedTelegramState(env, telegramId) {
   }
 }
 
-async function resolveSubmissionIdentity(body, env) {
+export async function resolveSubmissionIdentity(body, env) {
   const authResult = await verifyLeaderboardTelegramAuth(body, env);
   if (!authResult.ok) return authResult;
   const linkedState = await getAuthoritativeLinkedTelegramState(env, authResult.telegramId);
