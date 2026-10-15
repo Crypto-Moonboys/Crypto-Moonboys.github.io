@@ -1050,11 +1050,13 @@ state = await page.evaluate(() => ({
   victoryLoaded: Boolean(window.NBGLevel1State.playerAnimations.victory?.image),
   elapsed: window.NBGLevel1State.runElapsedMs,
   speedBonus: window.NBGLevel1State.speedrunBonusXp,
-  bestTime: window.NBGLevel1State.bestTimeMs
+  bestTime: window.NBGLevel1State.bestTimeMs,
+  bestXp: window.NBGLevel1State.bestXp
 }));
 assert.ok(state.elapsed > 0, 'finish result must report elapsed run time');
 assert.ok(state.speedBonus > 0, 'fast finish must earn a speedrun time bonus');
 assert.ok(state.bestTime > 0, 'finish must store a personal best time');
+assert.equal(state.bestXp, state.xp, 'finish must save the highest XP score');
 assert.equal(state.complete, true, 'finish flag must complete the level');
 assert.equal(state.running, false, 'game loop update state must stop after completion');
 assert.equal(state.completionAnimationActive, false, 'victory animation loop must stop after the final victory frame renders');
@@ -1091,6 +1093,7 @@ state = await page.evaluate(() => ({
   resetElapsed: window.NBGLevel1State.runElapsedMs,
   resetSpeedBonus: window.NBGLevel1State.speedrunBonusXp,
   resetCourseCheckpoints: window.NBGLevel1State.courseCheckpoints.filter((marker) => marker.active).length,
+  bestXpAfterReset: window.NBGLevel1State.bestXp,
   hud: document.getElementById('hud-state').textContent,
   titleScreenCount: document.querySelectorAll('#title-screen').length,
   stageActive: document.getElementById('game-stage').classList.contains('is-active')
@@ -1118,6 +1121,7 @@ assert.equal(state.cameraY, 0, 'fullscreen reset must reset cameraY to zero');
 assert.equal(state.resetElapsed, 0, 'fullscreen reset must restart speedrun clock');
 assert.equal(state.resetSpeedBonus, 0, 'fullscreen reset must clear previous speed bonus');
 assert.equal(state.resetCourseCheckpoints, 0, 'fullscreen reset must restore every mid-course checkpoint');
+assert.ok(state.bestXpAfterReset > 0, 'personal best XP must survive a run reset');
 assert.equal(state.titleScreenCount, 0, 'fullscreen reset must not return to title screen');
 assert.equal(state.stageActive, true, 'fullscreen reset must keep canvas and HUD visible');
 
