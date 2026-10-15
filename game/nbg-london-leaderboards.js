@@ -10,6 +10,8 @@
   var metric = 'fastest';
   var competitionPeriod = 'daily';
   var prizeRows = null;
+  var prizeRequestNumber = 0;
+  var identityRequestNumber = 0;
   var generation = 0;
   var runPromise = null;
   var status = null;
@@ -38,11 +40,10 @@
   function displayIdentity() {
     var gate = window.MOONBOYS_IDENTITY;
     var linked = !!(gate && typeof gate.isTelegramLinked === 'function' && gate.isTelegramLinked());
-    var name = linked && gate.getTelegramName ? gate.getTelegramName() : null;
-    if (account) account.textContent = linked && name ? 'Telegram: ' + name : linked ?
-      'Telegram account linked' : 'Guest — scores are not saved';
+    // Cached local display names are not authoritative Telegram usernames.
+    if (account) account.textContent = linked ? 'Telegram linked — verifying username…' : 'Guest — scores are not saved';
     var hudName = document.getElementById('nbg-hud-player');
-    if (hudName) hudName.textContent = linked && name ? String(name).slice(0, 36) : linked ? 'TELEGRAM' : 'GUEST';
+    if (hudName) hudName.textContent = linked ? 'TELEGRAM' : 'GUEST';
     return linked;
   }
 
@@ -71,10 +72,12 @@
   async function loadPrizeStandings() {
     if (!prizeRows) return;
     var requested = competitionPeriod;
+    var requestNumber = ++prizeRequestNumber;
     prizeRows.replaceChildren();
     try {
       var result = await callJson('/competition?period=' + encodeURIComponent(requested));
-      if (requested !== competitionPeriod) return;
+      if (requested !== competitionPeriod || requestNumber !== prizeRequestNumber) return;
+      prizeRows.replaceChildren();
       var cutoff = document.getElementById('nbg-prize-cutoff');
       if (cutoff) cutoff.textContent = requested.charAt(0).toUpperCase() + requested.slice(1) +
         ' competition closes ' + new Date(result.end_ms).toUTCString() +
@@ -98,7 +101,7 @@
         prizeRows.appendChild(row);
       });
     } catch (error) {
-      if (requested !== competitionPeriod) return;
+      if (requested !== competitionPeriod || requestNumber !== prizeRequestNumber) return;
       var row = document.createElement('tr');
       var cell = document.createElement('td');
       cell.colSpan = 4;
@@ -110,6 +113,8 @@
 
   async function loadPersonal() {
     if (!personal) return;
+    var requestNumber = ++identityRequestNumber;
+    var initialId = String(window.MOONBOYS_IDENTITY?.getTelegramId?.() || '');
     if (!displayIdentity()) {
       personal.textContent = 'Your all-time bests: log in with Telegram to save records.';
       return;
@@ -119,6 +124,11 @@
       var auth = await signedAuth();
       if (!auth) throw new Error('Telegram verification needed');
       var result = await callJson('/me', { telegram_auth: auth });
+      if (requestNumber !== identityRequestNumber ||
+          initialId !== String(window.MOONBOYS_IDENTITY?.getTelegramId?.() || '')) return;
+      var hudName = document.getElementById('nbg-hud-player');
+      if (hudName) hudName.textContent = result.player.slice(0, 36);
+      if (account) account.textContent = 'Telegram: ' + result.player;
       if (!result.records) {
         personal.textContent = result.player + ' — no completed ranked runs yet.';
         return;
@@ -202,6 +212,8 @@
       var result = await runPromise;
       if (current !== generation) return;
       if (result && result.run_id) {
+        var hudName = document.getElementById('nbg-hud-player');
+        if (hudName) hudName.textContent = result.player.slice(0, 36);
         if (account) account.textContent = 'Playing as ' + result.player;
         setStatus('Ranked run active — completed results are saved to your Telegram name.');
       } else {
