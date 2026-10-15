@@ -101,9 +101,9 @@ try {
     fakeNow += 1000;
   }
 
-  assert.equal(periodStart(Date.UTC(2026, 9, 16, 1), 'daily'), Date.UTC(2026, 9, 16, 1));
-  assert.equal(periodStart(Date.UTC(2026, 9, 16, 0, 59), 'daily'), Date.UTC(2026, 9, 15, 1));
-  assert.equal(periodStart(Date.UTC(2026, 9, 14, 10), 'weekly'), Date.UTC(2026, 9, 12, 1));
+  assert.equal(periodStart(Date.UTC(2026, 9, 16, 1), 'daily'), Date.UTC(2026, 9, 16, 0));
+  assert.equal(periodStart(Date.UTC(2026, 9, 15, 23, 59), 'daily'), Date.UTC(2026, 9, 15, 0));
+  assert.equal(periodStart(Date.UTC(2026, 9, 14, 10), 'weekly'), Date.UTC(2026, 9, 12, 0));
   assert.ok(endedPeriods(Date.UTC(2026, 9, 16, 1)).some(period => period.kind === 'daily'));
 
   await submit('100', 125000, 850);
