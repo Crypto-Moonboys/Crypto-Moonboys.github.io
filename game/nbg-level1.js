@@ -981,16 +981,20 @@
             ratFrame = Math.max(0, ratFrame);
             var ratSourceX = ratFrame % RAT_SHEET_COLUMNS * ratFrameWidth;
             var ratSourceY = Math.floor(ratFrame / RAT_SHEET_COLUMNS) * ratFrameHeight;
-            var ratDrawX = x - Math.round((RAT_RENDER_WIDTH - enemy.w) / 2);
-            var ratDrawY = y + enemy.h - RAT_RENDER_HEIGHT;
+            // Attack sheets have much smaller artwork inside their 512px cells than
+            // the walk sheet has inside its 256px cells. Enlarge only attack frames.
+            var ratDrawWidth = ratAttacking ? Math.round(RAT_RENDER_WIDTH * 1.8) : RAT_RENDER_WIDTH;
+            var ratDrawHeight = ratAttacking ? Math.round(RAT_RENDER_HEIGHT * 1.8) : RAT_RENDER_HEIGHT;
+            var ratDrawX = x - Math.round((ratDrawWidth - enemy.w) / 2);
+            var ratDrawY = y + enemy.h - ratDrawHeight;
             if (enemy.vx < 0) {
-              ctx.translate(ratDrawX + RAT_RENDER_WIDTH, ratDrawY);
+              ctx.translate(ratDrawX + ratDrawWidth, ratDrawY);
               ctx.scale(-1, 1);
               ctx.drawImage(image, ratSourceX, ratSourceY, ratFrameWidth, ratFrameHeight,
-                0, 0, RAT_RENDER_WIDTH, RAT_RENDER_HEIGHT);
+                0, 0, ratDrawWidth, ratDrawHeight);
             } else {
               ctx.drawImage(image, ratSourceX, ratSourceY, ratFrameWidth, ratFrameHeight,
-                ratDrawX, ratDrawY, RAT_RENDER_WIDTH, RAT_RENDER_HEIGHT);
+                ratDrawX, ratDrawY, ratDrawWidth, ratDrawHeight);
             }
           } else if (enemy.type === 'bot') {
             var cellW = image.naturalWidth / BOT_SHEET_COLUMNS;
