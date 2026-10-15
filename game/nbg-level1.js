@@ -16,6 +16,11 @@
   var JUMP_VELOCITY = -11.4;
   var DOUBLE_JUMP_VELOCITY = -12.8;
   var DOUBLE_JUMP_SIDE_SPEED = 5.4;
+  var SPEEDRUN_PAR_MS = 180000;
+  var SPEEDRUN_TIME_BONUS_PER_SECOND = 35;
+  var COIN_COMBO_WINDOW_MS = 2400;
+  var MAX_COIN_COMBO = 4;
+  var COURSE_SECTIONS = 18;
   var INVULN_TIME = 1050;
   var SKYLINE_PARALLAX = 0.22;
   var SKYLINE_Y = 40;
@@ -148,6 +153,17 @@
     var cameraY = 0;
     var checkpointX = 72;
     var finishBonusAwarded = false;
+    var runElapsedMs = 0;
+    var speedrunBonusXp = 0;
+    var comboCount = 0;
+    var comboExpiresAt = 0;
+    var bestTimeMs = null;
+    try {
+      var savedBestTime = Number(window.localStorage.getItem('nbg-london-best-run-ms'));
+      if (savedBestTime > 0 && Number.isFinite(savedBestTime)) bestTimeMs = savedBestTime;
+    } catch (error) {
+      // Private browsing may block local storage; speedrun remains playable.
+    }
     var sprayTimer = 0;
 
     var player = {
@@ -246,6 +262,50 @@
       { type: 'pigeon', x: 1010, y: 128, w: 28, h: 22, vx: 1.35, min: 940, max: 1128, bob: 0 },
       { type: 'bot', x: 1455, y: FLOOR_Y - 38, w: 30, h: 38, vx: 0.85, min: 1390, max: 1550 }
     ];
+    var hazards = [];
+    var courseCheckpoints = [];
+
+    // Build the playable remainder of the 22,000px course after the handcrafted opening.
+    // Stable deterministic placement: no random or potentially impossible gaps.
+    for (var section = 0; section < COURSE_SECTIONS; section += 1) {
+      var startX = 2200 + section * 1050;
+      var ledges = [
+        { x: startX + 95, y: 174 - section % 3 * 10, w: 150, h: 16 },
+        { x: startX + 350, y: 122 - section % 2 * 16, w: 130, h: 16 },
+        { x: startX + 590, y: 157 - section % 4 * 8, w: 145, h: 16 },
+        { x: startX + 820, y: 116 + section % 3 * 8, w: 110, h: 16 }
+      ];
+      ledges.forEach(function (ledge) {
+        platforms.push(ledge);
+        for (var j = 0; j < 3; j += 1) {
+          coins.push({ x: ledge.x + 30 + j * 30, y: ledge.y - 24 - j % 2 * 8, r: 8,
+            xp: 100 + section % 4 * 25, taken: false });
+        }
+      });
+      [45, 520, 980].forEach(function (dx) {
+        coins.push({ x: startX + dx, y: 176, r: 8, xp: 100 + section % 3 * 25, taken: false });
+      });
+
+      hazards.push({ x: startX + 275, y: FLOOR_Y - 18, w: 34, h: 18, type: 'cones' });
+      hazards.push({ x: startX + 745, y: FLOOR_Y - 20, w: 46, h: 20, type: 'spikes' });
+      if (section >= 8 && section % 3 === 0) {
+        hazards.push({ x: startX + 1000, y: FLOOR_Y - 24, w: 34, h: 24, type: 'barrier' });
+      }
+      enemies.push({ type: 'rat', x: startX + 435, y: FLOOR_Y - 20,
+        w: 28, h: 18, vx: 1.1 + section * 0.025, min: startX + 395, max: startX + 535 });
+      if (section % 2 === 1) {
+        enemies.push({ type: 'bot', x: startX + 870, y: FLOOR_Y - 38,
+          w: 30, h: 38, vx: 0.85 + section * 0.035, min: startX + 800, max: startX + 960 });
+      }
+      if (section % 3 === 2) {
+        enemies.push({ type: 'pigeon', x: startX + 615, y: 110,
+          w: 28, h: 22, vx: 1.35, min: startX + 575, max: startX + 720, bob: 0 });
+      }
+      if (section === 3 || section === 7 || section === 11 || section === 15) {
+        courseCheckpoints.push({ x: startX + 965, y: FLOOR_Y - 48, w: 30, h: 48, active: false });
+      }
+    }
+
     var initialEnemies = enemies.map(function (enemy) {
       return Object.assign({}, enemy);
     });
