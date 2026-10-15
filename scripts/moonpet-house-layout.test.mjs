@@ -294,11 +294,11 @@ test('PR3 home status shows saved selected-pet ownership without inventing comfo
   ctx.state.pet_furniture.arrangements.main=[{key:'sleep_mat',x:6,y:35}];
   ctx.state.pet_house.floor_saved=false;
   const egg=ctx.renderHomeStatusSummary();
-  assert.match(egg,/CURRENT ROOM \\/\\/ MAIN \\/\\/ DISPLAYED/);
-  assert.match(egg,/SAVED FOR AFTER HATCHING \\/\\/ KITCHEN/);
-  assert.match(egg,/CURRENT MATT \\/\\/ FREE BLACK \\/ SILVER MATT/);
-  assert.match(egg,/DISPLAYED \\/\\/ 1\\/8 \\/\\/ Fish Tank/);
-  assert.doesNotMatch(egg,/DISPLAYED \\/\\/ 1\\/8 \\/\\/ Neon Lamp/);
+  assert.ok(egg.includes("CURRENT ROOM // MAIN // DISPLAYED"), "Expected egg display to include CURRENT ROOM // MAIN // DISPLAYED");
+  assert.ok(egg.includes("SAVED FOR AFTER HATCHING // KITCHEN"), "Expected egg display to include SAVED FOR AFTER HATCHING // KITCHEN");
+  assert.ok(egg.includes("CURRENT MATT // FREE BLACK / SILVER MATT"), "Expected egg display to include CURRENT MATT // FREE BLACK / SILVER MATT");
+  assert.ok(egg.includes("DISPLAYED // 1/8 // Fish Tank"), "Expected egg display to include DISPLAYED // 1/8 // Fish Tank");
+  assert.ok(egg.includes("DISPLAYED // 1/8 // Neon Lamp") === false, "Expected egg display to exclude DISPLAYED // 1/8 // Neon Lamp");
   ctx.state.pet.pet_id='pet-b';
   assert.match(ctx.renderHomeStatusSummary(),/SYNCING/);
 });
