@@ -317,7 +317,7 @@ assert.equal(
     runtimeSource.includes('{ x: 720, y: 154, w: 132, h: 16 }') &&
     runtimeSource.includes('{ x: 155, y: 176, r: 8, xp: 100, taken: false }') &&
     runtimeSource.includes('{ x: 760, y: 116, r: 8, xp: 150, taken: false }') &&
-    runtimeSource.includes("{ type: 'rat', x: 600, y: FLOOR_Y - 20, w: 28, h: 18, vx: 1.1, min: 540, max: 690 }") &&
+    runtimeSource.includes("{ type: 'rat', x: 600, y: FLOOR_Y - 42, w: 28, h: 42, vx: 1.1, min: 540, max: 690 }") &&
     runtimeSource.includes("{ type: 'pigeon', x: 1010, y: 128, w: 28, h: 22, vx: 1.35, min: 940, max: 1128, bob: 0 }") &&
     runtimeSource.includes("{ type: 'bot', x: 1455, y: FLOOR_Y - 38, w: 30, h: 38, vx: 0.85, min: 1390, max: 1550 }") &&
     runtimeSource.includes('var checkpoint = { x: 1240, y: FLOOR_Y - 48, w: 30, h: 48, active: false }') &&
@@ -777,6 +777,27 @@ assert.equal(
   new URL(state.assetStatus.coin.src, url).pathname,
   '/game/assets/objects/2300-spritesheet.png',
   'regular XP coins must load the uploaded WAX CASH sprite sheet'
+);
+assert.ok(
+  runtimeSource.includes('var RAT_SHEET_COLUMNS = 5') &&
+  runtimeSource.includes('var RAT_SHEET_ROWS = 5') &&
+  runtimeSource.includes('var RAT_SHEET_FRAMES = 25') &&
+  runtimeSource.includes('var RAT_RENDER_WIDTH = 50') &&
+  runtimeSource.includes('var RAT_RENDER_HEIGHT = 60') &&
+  runtimeSource.includes("Math.random() < 0.5 ? 'ratBladeFlurry' : 'ratViperPounce'") &&
+  runtimeSource.includes('var ratFrameWidth = image.naturalWidth / RAT_SHEET_COLUMNS') &&
+  runtimeSource.includes('var ratFrameHeight = image.naturalHeight / RAT_SHEET_ROWS'),
+  'rat must render at 70% runner size from 5x5 frames and choose random attacks'
+);
+assert.deepEqual(
+  Object.fromEntries(['rat','ratBladeFlurry','ratViperPounce'].map(key =>
+    [key, new URL(state.assetStatus[key]?.src || '', url).pathname])),
+  {
+    rat: '/game/assets/enemies/BRATTY1-walk.png',
+    ratBladeFlurry: '/game/assets/enemies/BRATTY1-asm_dagger_blade_flurry.png',
+    ratViperPounce: '/game/assets/enemies/BRATTY1-asm_dagger_viper_pounce.png'
+  },
+  'all three BRATTY sprite sheets must load in Level 1'
 );
 assert.equal(state.running, true, 'ArrowRight must start the game loop');
 assert.equal(state.coinCount, 312, 'speedrun must spawn 312 XP coins across four sizes');

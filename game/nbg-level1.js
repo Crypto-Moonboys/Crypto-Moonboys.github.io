@@ -21,6 +21,14 @@
   var BOT_SHEET_FRAMES = 25;
   var BOT_RENDER_WIDTH = 70;
   var BOT_RENDER_HEIGHT = 52;
+  var RAT_SHEET_COLUMNS = 5;
+  var RAT_SHEET_ROWS = 5;
+  var RAT_SHEET_FRAMES = 25;
+  var RAT_RENDER_WIDTH = 50;
+  var RAT_RENDER_HEIGHT = 60;
+  var RAT_ATTACK_RANGE = 70;
+  var RAT_ATTACK_DURATION_MS = 850;
+  var RAT_ATTACK_COOLDOWN_MS = 1700;
   var SPEEDRUN_PAR_MS = 180000;
   var SPEEDRUN_TIME_BONUS_PER_SECOND = 35;
   var COIN_COMBO_WINDOW_MS = 2400;
@@ -105,6 +113,8 @@
 
     if (manifest.enemies) {
       if (manifest.enemies.londonRat) assets.rat = resolveAssetPath(manifest.enemies.londonRat);
+      if (manifest.enemies.londonRatBladeFlurry) assets.ratBladeFlurry = resolveAssetPath(manifest.enemies.londonRatBladeFlurry);
+      if (manifest.enemies.londonRatViperPounce) assets.ratViperPounce = resolveAssetPath(manifest.enemies.londonRatViperPounce);
       if (manifest.enemies.pigeon) assets.pigeon = resolveAssetPath(manifest.enemies.pigeon);
       if (manifest.enemies.graffitiBot) assets.bot = resolveAssetPath(manifest.enemies.graffitiBot);
       if (manifest.enemies.graffitiBotKick) assets.botKick = resolveAssetPath(manifest.enemies.graffitiBotKick);
@@ -297,7 +307,7 @@
     });
 
     var enemies = [
-      { type: 'rat', x: 600, y: FLOOR_Y - 20, w: 28, h: 18, vx: 1.1, min: 540, max: 690 },
+      { type: 'rat', x: 600, y: FLOOR_Y - 42, w: 28, h: 42, vx: 1.1, min: 540, max: 690 },
       { type: 'pigeon', x: 1010, y: 128, w: 28, h: 22, vx: 1.35, min: 940, max: 1128, bob: 0 },
       { type: 'bot', x: 1455, y: FLOOR_Y - 38, w: 30, h: 38, vx: 0.85, min: 1390, max: 1550 }
     ];
@@ -349,8 +359,8 @@
       if (section >= 8 && section % 3 === 0) {
         hazards.push({ x: startX + 1000, y: FLOOR_Y - 24, w: 34, h: 24, type: 'barrier' });
       }
-      enemies.push({ type: 'rat', x: startX + 435, y: FLOOR_Y - 20,
-        w: 28, h: 18, vx: 1.1 + section * 0.025, min: startX + 395, max: startX + 535 });
+      enemies.push({ type: 'rat', x: startX + 435, y: FLOOR_Y - 42,
+        w: 28, h: 42, vx: 1.1 + section * 0.025, min: startX + 395, max: startX + 535 });
       if (section % 2 === 1) {
         enemies.push({ type: 'bot', x: startX + 870, y: FLOOR_Y - 38,
           w: 30, h: 38, vx: 0.85 + section * 0.035, min: startX + 800, max: startX + 960 });
@@ -651,6 +661,15 @@
         enemy.x += enemy.vx * step;
         if (enemy.x < enemy.min || enemy.x > enemy.max) enemy.vx *= -1;
         if (enemy.type === 'pigeon') enemy.bob = Math.sin(time / 180) * 9;
+        if (enemy.type === 'rat') {
+          var ratClose = Math.abs(player.x - enemy.x) < RAT_ATTACK_RANGE && Math.abs(player.y - enemy.y) < 65;
+          if (ratClose && time >= (enemy.nextAttackAt || 0) && time >= (enemy.attackUntil || 0)) {
+            enemy.attackType = Math.random() < 0.5 ? 'ratBladeFlurry' : 'ratViperPounce';
+            enemy.attackStartedAt = time;
+            enemy.attackUntil = time + RAT_ATTACK_DURATION_MS;
+            enemy.nextAttackAt = time + RAT_ATTACK_COOLDOWN_MS;
+          }
+        }
         if (enemy.type === 'bot' && sprayTimer > 0 && Math.abs(player.x - enemy.x) < 65 && Math.abs(player.y - enemy.y) < 60 &&
             (player.facing > 0 ? enemy.x >= player.x - 8 : enemy.x <= player.x + player.w + 8)) {
           enemy.hurtUntil = time + 360;
@@ -945,13 +964,35 @@
         var botHurt = enemy.type === 'bot' && (enemy.hurtUntil || 0) > time;
         var botKicking = enemy.type === 'bot' && !botHurt && Math.abs(player.x - enemy.x) < 68 && Math.abs(player.y - enemy.y) < 48;
         var botImageKey = botHurt ? 'botHurt' : botKicking ? 'botKick' : 'bot';
-        var image = images[enemy.type === 'bot' ? botImageKey : enemy.type];
+        var ratAttacking = enemy.type === 'rat' && (enemy.attackUntil || 0) > time;
+        var ratImageKey = ratAttacking ? enemy.attackType : 'rat';
+        var image = images[enemy.type === 'bot' ? botImageKey : enemy.type === 'rat' ? ratImageKey : enemy.type];
         var x = Math.round(enemy.x - cameraX);
         if (x < -enemy.w || x > WIDTH) continue;
         var y = Math.round(enemy.y + (enemy.bob || 0) + FOREGROUND_VISUAL_OFFSET_Y);
         if (image) {
           ctx.save();
-          if (enemy.type === 'bot') {
+          if (enemy.type === 'rat') {
+            var ratFrameWidth = image.naturalWidth / RAT_SHEET_COLUMNS;
+            var ratFrameHeight = image.naturalHeight / RAT_SHEET_ROWS;
+            var ratFrame = ratAttacking ?
+              Math.min(RAT_SHEET_FRAMES - 1, Math.floor((time - enemy.attackStartedAt) / (RAT_ATTACK_DURATION_MS / RAT_SHEET_FRAMES))) :
+              Math.floor((time + enemy.x * 3) / 90) % RAT_SHEET_FRAMES;
+            ratFrame = Math.max(0, ratFrame);
+            var ratSourceX = ratFrame % RAT_SHEET_COLUMNS * ratFrameWidth;
+            var ratSourceY = Math.floor(ratFrame / RAT_SHEET_COLUMNS) * ratFrameHeight;
+            var ratDrawX = x - Math.round((RAT_RENDER_WIDTH - enemy.w) / 2);
+            var ratDrawY = y + enemy.h - RAT_RENDER_HEIGHT;
+            if (enemy.vx < 0) {
+              ctx.translate(ratDrawX + RAT_RENDER_WIDTH, ratDrawY);
+              ctx.scale(-1, 1);
+              ctx.drawImage(image, ratSourceX, ratSourceY, ratFrameWidth, ratFrameHeight,
+                0, 0, RAT_RENDER_WIDTH, RAT_RENDER_HEIGHT);
+            } else {
+              ctx.drawImage(image, ratSourceX, ratSourceY, ratFrameWidth, ratFrameHeight,
+                ratDrawX, ratDrawY, RAT_RENDER_WIDTH, RAT_RENDER_HEIGHT);
+            }
+          } else if (enemy.type === 'bot') {
             var cellW = image.naturalWidth / BOT_SHEET_COLUMNS;
             var cellH = image.naturalHeight / BOT_SHEET_ROWS;
             var frameMs = botHurt ? 75 : botKicking ? 70 : 85;

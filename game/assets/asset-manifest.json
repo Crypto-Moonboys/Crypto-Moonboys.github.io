@@ -32,7 +32,9 @@
     "finishFlag": "objects/finish-flag.svg"
   },
   "enemies": {
-    "londonRat": "enemies/london-rat.svg",
+    "londonRat": "enemies/BRATTY1-walk.png",
+    "londonRatBladeFlurry": "enemies/BRATTY1-asm_dagger_blade_flurry.png",
+    "londonRatViperPounce": "enemies/BRATTY1-asm_dagger_viper_pounce.png",
     "pigeon": "enemies/pigeon.svg",
     "graffitiBot": "enemies/bb8-walk.png",
     "graffitiBotKick": "enemies/bb8-kick.png",
