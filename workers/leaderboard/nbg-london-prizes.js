@@ -25,7 +25,7 @@ export function periodsForFinish(now) {
   }));
 }
 
-// Settlement happens only at/after the 01:00 UTC cutoff. No partial prizes.
+// Settlement happens at the shared 00:00 UTC Arcade daily cron.
 export function endedPeriods(now) {
   const dayEnd = periodStart(now, 'daily');
   const ends = [];
