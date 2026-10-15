@@ -871,11 +871,14 @@ await page.evaluate(() => {
 // Double jump is edge-triggered and resets on landing, respawn and restart.
 assert.ok(
   runtimeSource.includes('var DOUBLE_JUMP_VELOCITY = -12.8') &&
-  runtimeSource.includes('var jumpPressed = !!jump && !jumpWasDown') &&
-  runtimeSource.includes('jumpWasDown = !!jump') &&
+  runtimeSource.includes('var DOUBLE_JUMP_SIDE_SPEED = 5.4') &&
+  runtimeSource.includes('var pendingJumpPresses = 0') &&
+  runtimeSource.includes("getControlForCode(e.code) === 'jump'") &&
+  runtimeSource.includes('var jumpPressed = pendingJumpPresses > 0') &&
   runtimeSource.includes('if (jumpPressed && player.grounded)') &&
-  runtimeSource.includes('else if (jumpPressed && !player.grounded && jumpsUsed < 2)') &&
+  runtimeSource.includes('else if (jumpPressed && !player.grounded && jumpsUsed === 1)') &&
   runtimeSource.includes('player.vy = DOUBLE_JUMP_VELOCITY') &&
+  runtimeSource.includes('player.vx = left ? -DOUBLE_JUMP_SIDE_SPEED : DOUBLE_JUMP_SIDE_SPEED') &&
   runtimeSource.includes('jumpsUsed = 2') &&
   runtimeSource.includes('jumpsUsed = 0'),
   'double jump must require a fresh second press and reset on landing'
@@ -895,6 +898,25 @@ assert.ok(state.y < beforeJumpY, 'player must jump upward');
 assert.equal(state.anim, 'jump', 'player must switch to jump animation');
 assert.ok(state.cameraY > 0, 'cameraY must rise smoothly after the player jumps');
 assert.ok(state.cameraY <= 42, 'cameraY must stay capped by CAMERA_JUMP_MAX_Y');
+
+await page.keyboard.down('KeyA');
+await page.keyboard.down('Space');
+await page.waitForTimeout(70);
+await page.keyboard.up('Space');
+await page.keyboard.up('KeyA');
+state = await page.evaluate(() => ({
+  vy: window.NBGLevel1State.player.vy,
+  vx: window.NBGLevel1State.player.vx,
+  jumpsUsed: window.NBGLevel1State.jumpsUsed
+}));
+assert.equal(state.jumpsUsed, 2, 'second midair press must consume exactly the second jump');
+assert.ok(state.vy < 0, 'second jump must add fresh upward velocity');
+assert.ok(state.vx < 0, 'second jump plus left must reverse horizontal momentum');
+await page.keyboard.down('Space');
+await page.waitForTimeout(50);
+await page.keyboard.up('Space');
+assert.equal(await page.evaluate(() => window.NBGLevel1State.jumpsUsed), 2, 'third jump press must not grant another jump');
+
 
 await page.waitForFunction(() => (
   window.NBGLevel1State.player.vy > 0 &&
