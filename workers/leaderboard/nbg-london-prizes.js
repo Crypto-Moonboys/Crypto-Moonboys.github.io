@@ -1,5 +1,6 @@
 // NBG London timeboxed competitions. Only 3 distinct users receive prizes per period.
-// All periods start and end at 01:00 UTC; season = 90 days from 2024-01-01.
+// Match existing Arcade UTC boundaries: daily midnight, weekly Monday midnight,
+// 90-day seasons anchored at 2024-01-01T00:00:00.000Z (shared Arcade epoch).
 // Prize ladder is provisional and must be approved before production deployment.
 const DAY = 86400000;
 const WEEK = DAY * 7;
