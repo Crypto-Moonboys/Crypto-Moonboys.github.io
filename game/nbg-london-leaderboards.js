@@ -8,6 +8,8 @@
     xp: { title: 'Highest XP', value: function (row) { return Number(row.xp || 0).toLocaleString() + ' XP'; } }
   };
   var metric = 'fastest';
+  var competitionPeriod = 'daily';
+  var prizeRows = null;
   var generation = 0;
   var runPromise = null;
   var status = null;
@@ -64,6 +66,46 @@
     if (!response.ok || !result || !result.ok)
       throw new Error(result && result.error ? result.error : 'Leaderboard request failed');
     return result;
+  }
+
+  async function loadPrizeStandings() {
+    if (!prizeRows) return;
+    var requested = competitionPeriod;
+    prizeRows.replaceChildren();
+    try {
+      var result = await callJson('/competition?period=' + encodeURIComponent(requested));
+      if (requested !== competitionPeriod) return;
+      var cutoff = document.getElementById('nbg-prize-cutoff');
+      if (cutoff) cutoff.textContent = requested.charAt(0).toUpperCase() + requested.slice(1) +
+        ' competition closes ' + new Date(result.end_ms).toUTCString() +
+        '. Top 3 only; payouts at 01:00 UTC.';
+      if (!result.standings.length) {
+        var empty = document.createElement('tr');
+        var blank = document.createElement('td');
+        blank.colSpan = 4;
+        blank.textContent = 'No verified completed runs in this period yet.';
+        empty.appendChild(blank);
+        prizeRows.appendChild(empty);
+        return;
+      }
+      result.standings.forEach(function (item) {
+        var row = document.createElement('tr');
+        addCell(row, item.rank);
+        addCell(row, item.name);
+        addCell(row, Number(item.total_xp).toLocaleString() + ' XP');
+        addCell(row, item.prize_eligible ? '+' + Number(result.prizes[item.rank - 1]).toLocaleString() +
+          ' Arcade XP (pending cutoff)' : '—');
+        prizeRows.appendChild(row);
+      });
+    } catch (error) {
+      if (requested !== competitionPeriod) return;
+      var row = document.createElement('tr');
+      var cell = document.createElement('td');
+      cell.colSpan = 4;
+      cell.textContent = 'Competition standings unavailable.';
+      row.appendChild(cell);
+      prizeRows.replaceChildren(row);
+    }
   }
 
   async function loadPersonal() {
@@ -199,6 +241,7 @@
         formatTime(result.time_ms) + ' · ' + result.xp.toLocaleString() + ' XP');
       loadLeaders();
       loadPersonal();
+      loadPrizeStandings();
     } catch (error) {
       if (current === generation)
         setStatus('Run not saved: ' + error.message + '. Unsaved runs are not queued.');
@@ -210,6 +253,7 @@
     account = document.getElementById('nbg-record-account');
     personal = document.getElementById('nbg-record-personal');
     tableBody = document.getElementById('nbg-record-rows');
+    prizeRows = document.getElementById('nbg-prize-rows');
     if (!tableBody) return;
     displayIdentity();
     Array.prototype.forEach.call(document.querySelectorAll('[data-nbg-metric]'), function (button) {
@@ -219,6 +263,15 @@
           peer.setAttribute('aria-pressed', String(peer === button));
         });
         loadLeaders();
+      });
+    });
+    Array.prototype.forEach.call(document.querySelectorAll('[data-nbg-period]'), function (button) {
+      button.addEventListener('click', function () {
+        competitionPeriod = button.getAttribute('data-nbg-period');
+        Array.prototype.forEach.call(document.querySelectorAll('[data-nbg-period]'), function (peer) {
+          peer.setAttribute('aria-pressed', String(peer === button));
+        });
+        loadPrizeStandings();
       });
     });
     window.addEventListener('moonboys:identity-change', function () {
@@ -240,6 +293,7 @@
     });
     loadLeaders();
     loadPersonal();
+    loadPrizeStandings();
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
