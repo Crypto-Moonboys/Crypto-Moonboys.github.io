@@ -15,8 +15,18 @@ CREATE TABLE IF NOT EXISTS nbg_london_period_scores (
 CREATE INDEX IF NOT EXISTS idx_nbg_london_period_ranks
   ON nbg_london_period_scores (period_kind, period_start_ms, total_xp DESC, best_time_ms ASC);
 
--- Awards are created by the 01:00 UTC Worker cron, never by the browser.
--- A receipt is unique by period + rank, ensuring only three awards per window.
+-- The existing Arcade midnight-UTC Worker cron freezes winner rosters and
+-- settles rewards. Closed periods remain retryable until every prize is paid.
+CREATE TABLE IF NOT EXISTS nbg_london_prize_periods (
+  period_kind TEXT NOT NULL CHECK(period_kind IN ('daily','weekly','seasonal')),
+  period_start_ms INTEGER NOT NULL,
+  period_end_ms INTEGER NOT NULL,
+  frozen_at_ms INTEGER NOT NULL,
+  freeze_token TEXT NOT NULL UNIQUE,
+  PRIMARY KEY(period_kind, period_start_ms)
+);
+
+-- An immutable period/rank/player receipt prevents ranking changes across retries.
 CREATE TABLE IF NOT EXISTS nbg_london_prize_awards (
   event_id TEXT PRIMARY KEY,
   period_kind TEXT NOT NULL CHECK (period_kind IN ('daily', 'weekly', 'seasonal')),
@@ -25,6 +35,11 @@ CREATE TABLE IF NOT EXISTS nbg_london_prize_awards (
   telegram_id TEXT NOT NULL REFERENCES telegram_users(telegram_id) ON DELETE CASCADE,
   prize_arcade_xp INTEGER NOT NULL CHECK (prize_arcade_xp > 0),
   settled_at_ms INTEGER NOT NULL,
-  UNIQUE (period_kind, period_start_ms, rank)
+  payout_token TEXT UNIQUE,
+  paid_at_ms INTEGER,
+  UNIQUE (period_kind, period_start_ms, rank),
+  UNIQUE (period_kind, period_start_ms, telegram_id)
 );
 CREATE INDEX IF NOT EXISTS idx_nbg_london_prizes_player ON nbg_london_prize_awards (telegram_id, settled_at_ms);
+
+CREATE INDEX IF NOT EXISTS idx_nbg_london_unpaid_prizes ON nbg_london_prize_awards(paid_at_ms, period_kind, period_start_ms);
