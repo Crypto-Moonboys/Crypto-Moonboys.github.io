@@ -1466,6 +1466,24 @@ assert.deepEqual(await page.evaluate(() => ({
   enemies: window.NBGLevel1State.enemies.length
 })), { active: 0, spawns: 0, enemies: 36 }, 'reset must clear parachutes and restore original enemy roster');
 
+// The three new monochrome rat sheets belong only to the turquoise parachute.
+const turquoiseSources = await page.evaluate(() =>
+  Object.fromEntries(['turquoiseRatWalk','turquoiseRatKick','turquoiseRatPunch'].map(key =>
+    [key, window.NBGLevel1State.assetStatus[key]?.src])));
+assert.deepEqual(Object.fromEntries(Object.entries(turquoiseSources).map(([key,value]) =>
+  [key, new URL(value, url).pathname])), {
+  turquoiseRatWalk: '/game/assets/enemies/ggdf-walk.png',
+  turquoiseRatKick: '/game/assets/enemies/ggdf-kick.png',
+  turquoiseRatPunch: '/game/assets/enemies/ggdf-punch.png'
+}, 'all three exclusive turquoise-rat animations must load');
+assert.ok(
+  runtimeSource.includes("type: rat.variant === 'parachuteRatC' ? 'turquoiseRat' : 'rat'") &&
+  runtimeSource.includes("enemy.type === 'turquoiseRat' ?") &&
+  runtimeSource.includes("'turquoiseRatKick' : 'turquoiseRatPunch'") &&
+  runtimeSource.includes("enemy.type === 'turquoiseRat' ? 'turquoiseRatWalk' : 'rat'"),
+  'only turquoise parachutes must turn into turquoise walking and attacking rats'
+);
+
 const pixelEnergy = await page.evaluate(() => {
   const canvas = document.getElementById('game');
   const data = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data;
