@@ -983,8 +983,8 @@
             var ratSourceY = Math.floor(ratFrame / RAT_SHEET_COLUMNS) * ratFrameHeight;
             // Attack sheets have much smaller artwork inside their 512px cells than
             // the walk sheet has inside its 256px cells. Enlarge only attack frames.
-            var ratDrawWidth = ratAttacking ? Math.round(RAT_RENDER_WIDTH * 1.8) : RAT_RENDER_WIDTH;
-            var ratDrawHeight = ratAttacking ? Math.round(RAT_RENDER_HEIGHT * 1.8) : RAT_RENDER_HEIGHT;
+            var ratDrawWidth = ratAttacking ? Math.round(RAT_RENDER_WIDTH * 1.9) : RAT_RENDER_WIDTH;
+            var ratDrawHeight = ratAttacking ? Math.round(RAT_RENDER_HEIGHT * 1.9) : RAT_RENDER_HEIGHT;
             var ratDrawX = x - Math.round((ratDrawWidth - enemy.w) / 2);
             var ratDrawY = y + enemy.h - ratDrawHeight;
             if (enemy.vx < 0) {
