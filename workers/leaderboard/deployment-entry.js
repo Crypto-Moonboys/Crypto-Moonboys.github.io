@@ -1,5 +1,6 @@
 import baseWorker, { resolveSubmissionIdentity } from '../leaderboard-worker.js';
 import { handleNbgLondonRecords } from './nbg-london-records.js';
+import { settleNbgLondonDue } from './nbg-london-prizes.js';
 import { withDeploymentProvenance } from '../shared/deployment-provenance.js';
 import { withRegisteredTelegramLinkFallback } from './registered-telegram-link-fallback.js';
 
@@ -42,6 +43,21 @@ const leaderboardWorker = {
       return handleNbgLondonRecords(request, runtimeEnv, resolveSubmissionIdentity);
     }
     return baseWorker.fetch(request, runtimeEnv, context);
+  },
+  async scheduled(event, env, context) {
+    if (event.cron === '0 1 * * *') {
+      const job = settleNbgLondonDue({
+        ...env,
+        DB: withRegisteredTelegramLinkFallback(env.DB),
+      }).catch(error => {
+        console.error('[nbg-london-prizes]', error?.message || 'settlement_failed');
+        throw error;
+      });
+      context.waitUntil(job);
+    }
+    if (typeof baseWorker.scheduled === 'function') {
+      return baseWorker.scheduled(event, env, context);
+    }
   },
 };
 
