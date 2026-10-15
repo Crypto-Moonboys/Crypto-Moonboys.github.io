@@ -3430,15 +3430,18 @@
       return '<div class="line muted">HOME INVENTORY SYNCING. Refresh the current pet before editing.</div>';
     }
     var layout = savedHomeLayout(state);
+    var displayedRoom = furnitureRoom(state);
+    var deferredRoom = displayedRoom !== layout.room ? layout.room : null;
     var floor = house.floor_saved === true
       ? ({concrete:'NEON MATT',checkerboard:'GOLD MATT',steel:'CAMO MATT'}[layout.floor] || 'SAVED MATT')
-      : layout.room === 'main' ? 'FREE BLACK / SILVER MATT' : 'NO SAVED MATT';
-    var items = roomFurnitureItems(state, layout.room);
+      : displayedRoom === 'main' ? 'FREE BLACK / SILVER MATT' : 'NO SAVED MATT';
+    var items = roomFurnitureItems(state, displayedRoom);
     var owned = Array.isArray(shop.owned) ? shop.owned : [], catalog = shop.catalog || {};
     var names = items.map(function (item) {
       return FREE_HOME_LABELS[item.key] || (catalog[item.key] && catalog[item.key].label) || 'UNKNOWN ITEM';
     });
-    return '<div class="line complete">CURRENT ROOM // ' + escapeHtml(layout.room.toUpperCase()) + ' // SAVED</div>' +
+    return '<div class="line complete">CURRENT ROOM // ' + escapeHtml(displayedRoom.toUpperCase()) + ' // DISPLAYED</div>' +
+      (deferredRoom ? '<div class="line muted">SAVED FOR AFTER HATCHING // ' + escapeHtml(deferredRoom.toUpperCase()) + '</div>' : '') +
       '<div class="line">CURRENT MATT // ' + escapeHtml(floor) + '</div>' +
       '<div class="line">DISPLAYED // ' + items.length + '/8' + (names.length ? ' // ' + escapeHtml(names.join(' / ')) : ' // NONE PLACED') + '</div>' +
       '<div class="line">ACCOUNT PAID FURNITURE OWNED // ' + owned.length + '/' + Object.keys(catalog).length + '</div>' +
@@ -4267,10 +4270,10 @@
       var deletionLabel = 'PET SPACE ' + Number(deletionSlot.slot_number) + ' // ' +
         String(deletionSlot.pet && (deletionSlot.pet.callsign || deletionSlot.pet.display_name) || 'MOONPET');
       if (!window.confirm('STEP 1 OF 2 // DELETE ' + deletionLabel +
-        '?\\n\\nPERMANENT: this pet, its age and training cannot be restored. A fresh egg uses the same space without a new Arcade XP charge.\\n\\nYour purchased spaces, account currencies, items and reward history remain. Select Cancel to keep your pet.')) return;
+        '?\n\nPERMANENT: this pet, its age and training cannot be restored. A fresh egg uses the same space without a new Arcade XP charge.\n\nYour purchased spaces, account currencies, items and reward history remain. Select Cancel to keep your pet.')) return;
       // The second action must be deliberate; cancelling never submits a Worker request.
       if (typeof window.prompt !== 'function' ||
-          window.prompt('STEP 2 OF 2 // ' + deletionLabel + '\\n\\nType DELETE exactly to archive this pet. Anything else cancels.', '') !== 'DELETE') {
+          window.prompt('STEP 2 OF 2 // ' + deletionLabel + '\n\nType DELETE exactly to archive this pet. Anything else cancels.', '') !== 'DELETE') {
         tell('PET DELETION CANCELLED. NOTHING WAS SENT.');
         return;
       }
