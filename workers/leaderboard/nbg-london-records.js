@@ -1,4 +1,4 @@
-import { periodsForFinish, periodStart } from './nbg-london-prizes.js';
+import { periodsForFinish, periodStart, PRIZE_ARCADE_XP } from './nbg-london-prizes.js';
 
 // NBG London all-time bests. Score XP is a game metric, not awarded Arcade XP.
 const PREFIX = '/nbg-london';
@@ -76,7 +76,9 @@ export async function handleNbgLondonRecords(request, env, verifyIdentity) {
          ORDER BY total_xp DESC, best_time_ms ASC, telegram_id ASC LIMIT 20`
       ).bind(kind, start).all();
       return json(request, {
-        ok: true, period: kind, start_ms: start, end_ms: periodStart(start + (kind === 'daily' ? 86400000 : kind === 'weekly' ? 604800000 : 7776000000), kind),
+        ok: true, period: kind, start_ms: start,
+        end_ms: start + (kind === 'daily' ? 86400000 : kind === 'weekly' ? 604800000 : 7776000000),
+        prizes: PRIZE_ARCADE_XP[kind],
         standings: (result.results || []).map((row, index) => ({
           rank: index + 1, name: row.name, total_xp: row.total_xp,
           run_count: row.run_count, best_time_ms: row.best_time_ms,
