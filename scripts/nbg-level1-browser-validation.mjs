@@ -299,7 +299,7 @@ assert.equal(
     runtimeSource.includes('ctx.fillRect(Math.round(p.x - cameraX), platformY, p.w, p.h)') &&
     runtimeSource.includes('ctx.fillRect(Math.round(p.x - cameraX), platformY, p.w, 3)') &&
     runtimeSource.includes('var y = Math.round(coin.y + (coin.float || 0) + FOREGROUND_VISUAL_OFFSET_Y - coinSize / 2)') &&
-    runtimeSource.includes('ctx.fillRect(x - 2, y + coinSize + Math.sin(time / 120) * 1, coinSize + 4, 2)') &&
+    !runtimeSource.includes('ctx.fillRect(x - 2, y + coinSize + Math.sin(time / 120) * 1, coinSize + 4, 2)') &&
     runtimeSource.includes('var y = Math.round(enemy.y + (enemy.bob || 0) + FOREGROUND_VISUAL_OFFSET_Y)') &&
     runtimeSource.includes('var checkpointY = checkpoint.y + FOREGROUND_VISUAL_OFFSET_Y') &&
     runtimeSource.includes('ctx.drawImage(images.checkpoint, checkX, checkpointY, checkpoint.w, checkpoint.h)') &&
