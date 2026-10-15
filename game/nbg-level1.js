@@ -215,6 +215,17 @@
       { x: 1510, y: 148, w: 180, h: 16 }
     ];
 
+    var secretNotificationUntil = 0;
+    var secretNotificationText = '';
+    var secretCoins = [
+      { x: 405, y: -92, r: 8, xp: 500, taken: false, secret: true },
+      { x: 485, y: -105, r: 8, xp: 500, taken: false, secret: true },
+      { x: 755, y: -102, r: 8, xp: 500, taken: false, secret: true },
+      { x: 825, y: -116, r: 8, xp: 500, taken: false, secret: true },
+      { x: 1180, y: -99, r: 8, xp: 500, taken: false, secret: true },
+      { x: 1580, y: -112, r: 8, xp: 500, taken: false, secret: true }
+    ];
+
     var coins = [
       { x: 155, y: 176, r: 8, xp: 100, taken: false },
       { x: 270, y: 150, r: 8, xp: 100, taken: false },
@@ -414,6 +425,22 @@
       }
     }
 
+    function updateSecretCoins(time) {
+      for (var i = 0; i < secretCoins.length; i += 1) {
+        var coin = secretCoins[i];
+        if (coin.taken) continue;
+        var coinRect = { x: coin.x - coin.r, y: coin.y - coin.r, w: coin.r * 2, h: coin.r * 2 };
+        if (rectsOverlap(player, coinRect)) {
+          coin.taken = true;
+          xp += coin.xp;
+          secretNotificationText = 'SECRET FOUND +500 XP';
+          secretNotificationUntil = time + 2000;
+          window.dispatchEvent(new CustomEvent('nbg-xp-collected', { detail: { xp: xp, coin: coin } }));
+          window.dispatchEvent(new CustomEvent('nbg-secret-found', { detail: { xp: xp, coin: coin } }));
+        }
+      }
+    }
+
     function updateEnemies(time, dt) {
       var step = dt / TARGET_FRAME_MS;
       for (var i = 0; i < enemies.length; i += 1) {
@@ -597,6 +624,24 @@
       }
     }
 
+    function drawSecretCoins(time) {
+      for (var i = 0; i < secretCoins.length; i += 1) {
+        var coin = secretCoins[i];
+        if (coin.taken) continue;
+        var x = Math.round(coin.x - cameraX);
+        var y = Math.round(coin.y + FOREGROUND_VISUAL_OFFSET_Y);
+        ctx.save();
+        ctx.fillStyle = '#ffe45a';
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(x, y, coin.r + Math.sin(time / 220) * 1.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.restore();
+      }
+    }
+
     function drawEnemies() {
       for (var i = 0; i < enemies.length; i += 1) {
         var enemy = enemies[i];
@@ -682,6 +727,18 @@
       ctx.fillText('PRESS RESET TO RUN AGAIN', 136, 160);
     }
 
+    function drawSecretNotification(time) {
+      if (time >= secretNotificationUntil) return;
+      ctx.save();
+      ctx.font = 'bold 15px Courier New';
+      ctx.textAlign = 'center';
+      ctx.fillStyle = '#000000';
+      ctx.fillText(secretNotificationText, WIDTH / 2 + 1, 47);
+      ctx.fillStyle = '#ffe45a';
+      ctx.fillText(secretNotificationText, WIDTH / 2, 46);
+      ctx.restore();
+    }
+
     function render(time) {
       ctx.clearRect(0, 0, WIDTH, HEIGHT);
       ctx.fillStyle = '#0076fc';
@@ -690,10 +747,12 @@
       ctx.translate(0, Math.round(cameraY));
       drawWorld();
       drawCoins(time);
+      drawSecretCoins(time);
       drawObjects();
       drawEnemies();
       drawPlayer();
       ctx.restore();
+      drawSecretNotification(time);
       drawOverlay();
     }
 
@@ -705,6 +764,7 @@
       if (running) {
         updatePlayer(dt);
         updateCoins(time);
+        updateSecretCoins(time);
         updateEnemies(time, dt);
         updateLevel();
         updateCamera();
@@ -722,6 +782,9 @@
         get player() { return player; },
         get jumpsUsed() { return jumpsUsed; },
         get coins() { return coins; },
+        get secretCoins() { return secretCoins; },
+        get secretNotificationUntil() { return secretNotificationUntil; },
+        get secretNotificationText() { return secretNotificationText; },
         get enemies() { return enemies; },
         get xp() { return xp; },
         get complete() { return complete; },
@@ -770,6 +833,8 @@
       finishBonusAwarded = false;
       sprayTimer = 0;
       xp = 0;
+      secretNotificationUntil = 0;
+      secretNotificationText = '';
       pendingInitialInput = null;
       initialInputReplay = null;
       clearInput();
@@ -793,6 +858,7 @@
         coin.taken = false;
         coin.float = 0;
       });
+      secretCoins.forEach(function (coin) { coin.taken = false; });
       enemies.forEach(function (enemy, index) {
         Object.assign(enemy, initialEnemies[index]);
       });
