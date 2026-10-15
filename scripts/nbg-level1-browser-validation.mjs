@@ -714,6 +714,12 @@ let state = await page.evaluate(() => ({
   health: window.NBGLevel1State.player.health,
   coinCount: window.NBGLevel1State.coins.length,
   enemyCount: window.NBGLevel1State.enemies.length,
+  platformCount: window.NBGLevel1State.platforms.length,
+  hazardCount: window.NBGLevel1State.hazards.length,
+  extraCheckpointCount: window.NBGLevel1State.courseCheckpoints.length,
+  courseLastPlatformX: Math.max(...window.NBGLevel1State.platforms.map((p) => p.x)),
+  courseLastHazardX: Math.max(...window.NBGLevel1State.hazards.map((h) => h.x)),
+  runElapsedMs: window.NBGLevel1State.runElapsedMs,
   cameraY: window.NBGLevel1State.cameraY,
   xp: window.NBGLevel1State.xp,
   assetStatus: window.NBGLevel1State.assetStatus,
@@ -737,8 +743,14 @@ let state = await page.evaluate(() => ({
 }));
 
 assert.equal(state.running, true, 'ArrowRight must start the game loop');
-assert.equal(state.coinCount, 12, 'Level 1 must spawn 12 XP coins');
-assert.equal(state.enemyCount, 3, 'Level 1 must spawn 3 enemies');
+assert.equal(state.coinCount, 282, 'speedrun must spawn 282 regular XP coins across the world');
+assert.equal(state.enemyCount, 36, 'speedrun must spawn 36 moving enemies');
+assert.equal(state.platformCount, 76, 'speedrun must provide 76 playable jump platforms');
+assert.equal(state.hazardCount, 39, 'speedrun must provide 39 collidable obstacles');
+assert.equal(state.extraCheckpointCount, 4, 'extended course must have four additional checkpoints');
+assert.ok(state.courseLastPlatformX > 20000, 'platform course must reach the final world section');
+assert.ok(state.courseLastHazardX > 20000, 'late world sections must contain obstacles');
+assert.ok(state.runElapsedMs > 0, 'speedrun clock must advance once play starts');
 assert.equal(state.health, 3, 'player must spawn with health');
 assert.equal(typeof state.cameraY, 'number', 'cameraY must remain exposed after gameplay starts');
 assert.deepEqual(
@@ -963,6 +975,39 @@ assert.ok(state.taken >= 1, 'coin must be marked collected');
 
 await page.evaluate(() => {
   const player = window.NBGLevel1State.player;
+  const hazard = window.NBGLevel1State.hazards[0];
+  player.invuln = 0;
+  player.x = hazard.x + 4;
+  player.y = hazard.y;
+  player.vx = 0;
+  player.vy = 0;
+});
+await page.waitForFunction(() => window.NBGLevel1State.player.invuln > 0, null, { timeout: 2500 });
+state = await page.evaluate(() => ({
+  health: window.NBGLevel1State.player.health,
+  combo: window.NBGLevel1State.comboCount
+}));
+assert.ok(state.health < 3, 'course obstacle collisions must damage the runner');
+assert.equal(state.combo, 0, 'hitting a hazard must break the XP combo');
+
+await page.evaluate(() => {
+  const player = window.NBGLevel1State.player;
+  const marker = window.NBGLevel1State.courseCheckpoints[0];
+  player.x = marker.x + 4;
+  player.y = marker.y;
+  player.vx = 0;
+  player.vy = 0;
+  player.invuln = 2000;
+});
+await page.waitForFunction(() => window.NBGLevel1State.courseCheckpoints[0].active, null, { timeout: 2500 });
+assert.equal(
+  await page.evaluate(() => window.NBGLevel1State.courseCheckpoints[0].active),
+  true,
+  'mid-course checkpoint must activate'
+);
+
+await page.evaluate(() => {
+  const player = window.NBGLevel1State.player;
   const enemy = window.NBGLevel1State.enemies[0];
   player.invuln = 0;
   player.x = enemy.x;
@@ -1002,8 +1047,14 @@ state = await page.evaluate(() => ({
   hud: document.getElementById('hud-state').textContent,
   anim: window.NBGLevel1State.player.anim,
   frame: window.NBGLevel1State.player.frame,
-  victoryLoaded: Boolean(window.NBGLevel1State.playerAnimations.victory?.image)
+  victoryLoaded: Boolean(window.NBGLevel1State.playerAnimations.victory?.image),
+  elapsed: window.NBGLevel1State.runElapsedMs,
+  speedBonus: window.NBGLevel1State.speedrunBonusXp,
+  bestTime: window.NBGLevel1State.bestTimeMs
 }));
+assert.ok(state.elapsed > 0, 'finish result must report elapsed run time');
+assert.ok(state.speedBonus > 0, 'fast finish must earn a speedrun time bonus');
+assert.ok(state.bestTime > 0, 'finish must store a personal best time');
 assert.equal(state.complete, true, 'finish flag must complete the level');
 assert.equal(state.running, false, 'game loop update state must stop after completion');
 assert.equal(state.completionAnimationActive, false, 'victory animation loop must stop after the final victory frame renders');
@@ -1037,6 +1088,9 @@ state = await page.evaluate(() => ({
   checkpointActive: window.NBGLevel1State.checkpoint.active,
   pendingInitialInput: window.NBGLevel1State.pendingInitialInput,
   cameraY: window.NBGLevel1State.cameraY,
+  resetElapsed: window.NBGLevel1State.runElapsedMs,
+  resetSpeedBonus: window.NBGLevel1State.speedrunBonusXp,
+  resetCourseCheckpoints: window.NBGLevel1State.courseCheckpoints.filter((marker) => marker.active).length,
   hud: document.getElementById('hud-state').textContent,
   titleScreenCount: document.querySelectorAll('#title-screen').length,
   stageActive: document.getElementById('game-stage').classList.contains('is-active')
@@ -1061,6 +1115,9 @@ assert.equal(state.taken, 0, 'fullscreen reset must restore every coin to untake
 assert.equal(state.checkpointActive, false, 'fullscreen reset must clear checkpoint state');
 assert.equal(state.pendingInitialInput, null, 'fullscreen reset must clear queued first input state');
 assert.equal(state.cameraY, 0, 'fullscreen reset must reset cameraY to zero');
+assert.equal(state.resetElapsed, 0, 'fullscreen reset must restart speedrun clock');
+assert.equal(state.resetSpeedBonus, 0, 'fullscreen reset must clear previous speed bonus');
+assert.equal(state.resetCourseCheckpoints, 0, 'fullscreen reset must restore every mid-course checkpoint');
 assert.equal(state.titleScreenCount, 0, 'fullscreen reset must not return to title screen');
 assert.equal(state.stageActive, true, 'fullscreen reset must keep canvas and HUD visible');
 
