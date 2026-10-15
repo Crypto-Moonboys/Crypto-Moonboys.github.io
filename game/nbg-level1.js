@@ -94,6 +94,11 @@
 
     if (manifest.objects) {
       if (manifest.objects.xpCoin) assets.coin = resolveAssetPath(manifest.objects.xpCoin);
+      if (manifest.objects.mysteryBox) assets.mysteryBox = resolveAssetPath(manifest.objects.mysteryBox);
+      if (manifest.objects.starBox) assets.starBox = resolveAssetPath(manifest.objects.starBox);
+      if (manifest.objects.floorCrate) assets.floorCrate = resolveAssetPath(manifest.objects.floorCrate);
+      if (manifest.objects.floatingBrick) assets.floatingBrick = resolveAssetPath(manifest.objects.floatingBrick);
+      if (manifest.objects.floatingRock) assets.floatingRock = resolveAssetPath(manifest.objects.floatingRock);
       if (manifest.objects.checkpoint) assets.checkpoint = resolveAssetPath(manifest.objects.checkpoint);
       if (manifest.objects.finishFlag) assets.finish = resolveAssetPath(manifest.objects.finishFlag);
     }
@@ -242,6 +247,21 @@
       { x: 1510, y: 148, w: 180, h: 16 }
     ];
 
+    platforms.forEach(function (platform, index) {
+      platform.material = index % 2 === 0 ? 'brick' : 'rock';
+    });
+
+    var crates = [
+      { x: 1840, y: FLOOR_Y - 28, w: 28, h: 28 },
+      { x: 2070, y: FLOOR_Y - 28, w: 28, h: 28 }
+    ];
+    var rewardBoxes = [
+      { x: 535, y: 85, w: 25, h: 25, type: 'mystery', opened: false },
+      { x: 1600, y: 55, w: 25, h: 25, type: 'star', opened: false }
+    ];
+    var rewardNotificationText = '';
+    var rewardNotificationUntil = 0;
+
     var secretNotificationUntil = 0;
     var secretNotificationText = '';
     var secretCoins = [
@@ -294,7 +314,8 @@
         { x: startX + 590, y: 157 - section % 4 * 8, w: 145, h: 16 },
         { x: startX + 820, y: 116 + section % 3 * 8, w: 110, h: 16 }
       ];
-      ledges.forEach(function (ledge) {
+      ledges.forEach(function (ledge, ledgeIndex) {
+        ledge.material = (section + ledgeIndex) % 2 === 0 ? 'brick' : 'rock';
         platforms.push(ledge);
         for (var j = 0; j < 3; j += 1) {
           coins.push({ x: ledge.x + 30 + j * 30, y: ledge.y - 24 - j % 2 * 8,
@@ -315,6 +336,13 @@
         coins.push({ x: startX + 866, y: ledges[3].y - 62,
           tier: extraTierName, size: extraTier.size, r: Math.round(extraTier.size * 0.4), xp: extraTier.xp, taken: false });
       }
+
+      crates.push({ x: startX + 65, y: FLOOR_Y - 28, w: 28, h: 28 });
+      crates.push({ x: startX + 675, y: FLOOR_Y - 28, w: 28, h: 28 });
+      rewardBoxes.push({ x: startX + 189, y: ledges[0].y - 78, w: 25, h: 25,
+        type: 'mystery', opened: false });
+      rewardBoxes.push({ x: startX + 651, y: ledges[2].y - 95, w: 25, h: 25,
+        type: 'star', opened: false });
 
       hazards.push({ x: startX + 275, y: FLOOR_Y - 18, w: 34, h: 18, type: 'cones' });
       hazards.push({ x: startX + 745, y: FLOOR_Y - 20, w: 46, h: 20, type: 'spikes' });
@@ -445,7 +473,7 @@
 
     function resolveVerticalCollision(previousY) {
       var floor = { x: 0, y: FLOOR_Y, w: WORLD_WIDTH, h: 60 };
-      var solids = [floor].concat(platforms);
+      var solids = [floor].concat(platforms, crates);
       player.grounded = false;
 
       for (var i = 0; i < solids.length; i += 1) {
@@ -472,9 +500,22 @@
       if (sprayTimer > 0) sprayTimer -= dt;
       if (player.invuln > 0) player.invuln -= dt;
 
+      var previousX = player.x;
       player.x += player.vx * step;
       var visualMarginX = getPlayerVisualMarginX();
       player.x = clamp(player.x, 12 + visualMarginX, WORLD_WIDTH - player.w - 12 - visualMarginX);
+      // Crates block movement from the sides but can also be jumped onto.
+      for (var crateIndex = 0; crateIndex < crates.length; crateIndex += 1) {
+        var crate = crates[crateIndex];
+        if (!rectsOverlap(player, crate)) continue;
+        if (player.vx > 0 && previousX + player.w <= crate.x + 1) {
+          player.x = crate.x - player.w;
+          player.vx = 0;
+        } else if (player.vx < 0 && previousX >= crate.x + crate.w - 1) {
+          player.x = crate.x + crate.w;
+          player.vx = 0;
+        }
+      }
 
       var previousY = player.y;
       player.vy += GRAVITY * step;
@@ -519,6 +560,41 @@
           }));
         }
         coin.float = Math.sin((time + coin.x * 11) / 180) * 3;
+      }
+    }
+
+    function updateRewardBoxes(time) {
+      for (var i = 0; i < rewardBoxes.length; i += 1) {
+        var box = rewardBoxes[i];
+        if (box.opened || !rectsOverlap(player, box)) continue;
+        box.opened = true;
+        // Rewards are rolled on every actual collection, never preselected by position.
+        var pool = box.type === 'star' ?
+          [{ type: 'xp', amount: 500 }, { type: 'xp', amount: 750 },
+            { type: 'xp', amount: 1000 }, { type: 'health', amount: 2 }] :
+          [{ type: 'xp', amount: 100 }, { type: 'xp', amount: 250 },
+            { type: 'xp', amount: 500 }, { type: 'health', amount: 1 }];
+        var roll = Math.min(pool.length - 1, Math.floor(Math.random() * pool.length));
+        var reward = pool[roll];
+        var earnedXp = 0;
+        var healed = 0;
+        if (reward.type === 'health') {
+          healed = Math.min(reward.amount, Math.max(0, 5 - player.health));
+          player.health += healed;
+          if (!healed) {
+            earnedXp = box.type === 'star' ? 500 : 100;
+          }
+        } else {
+          earnedXp = reward.amount;
+        }
+        xp += earnedXp;
+        box.reward = { type: reward.type, amount: reward.amount, xp: earnedXp, health: healed };
+        rewardNotificationText = (box.type === 'star' ? 'STAR BOX ' : 'MYSTERY BOX ') +
+          (earnedXp ? '+' + earnedXp + ' XP' : '+' + healed + ' HEALTH');
+        rewardNotificationUntil = time + 2300;
+        window.dispatchEvent(new CustomEvent('nbg-reward-found', {
+          detail: { kind: box.type, reward: box.reward, xp: xp, health: player.health, box: box }
+        }));
       }
     }
 
@@ -784,14 +860,37 @@
       drawImageLayer(images.wall, 0.58, 154, 88, '#2d2033');
       drawStreetLayer();
 
-      ctx.fillStyle = '#2b2932';
+      // A whole platform uses brick OR rock, never an alternating mixture.
       for (var i = 0; i < platforms.length; i += 1) {
         var p = platforms[i];
+        var x = Math.round(p.x - cameraX);
+        if (x + p.w < 0 || x > WIDTH) continue;
         var platformY = p.y + FOREGROUND_VISUAL_OFFSET_Y;
-        ctx.fillRect(Math.round(p.x - cameraX), platformY, p.w, p.h);
-        ctx.fillStyle = '#59d8ff';
-        ctx.fillRect(Math.round(p.x - cameraX), platformY, p.w, 3);
-        ctx.fillStyle = '#2b2932';
+        var tileImage = p.material === 'rock' ? images.floatingRock : images.floatingBrick;
+        if (!tileImage) {
+          ctx.fillStyle = p.material === 'rock' ? '#394050' : '#854e26';
+          ctx.fillRect(x, platformY, p.w, p.h);
+          continue;
+        }
+        for (var tileX = 0; tileX < p.w; tileX += 16) {
+          var width = Math.min(16, p.w - tileX);
+          ctx.drawImage(tileImage, 0, 0,
+            tileImage.naturalWidth * width / 16, tileImage.naturalHeight,
+            x + tileX, platformY, width, p.h);
+        }
+      }
+
+      for (var j = 0; j < crates.length; j += 1) {
+        var crate = crates[j];
+        var crateX = Math.round(crate.x - cameraX);
+        if (crateX + crate.w < 0 || crateX > WIDTH) continue;
+        var crateY = crate.y + FOREGROUND_VISUAL_OFFSET_Y;
+        if (images.floorCrate) {
+          ctx.drawImage(images.floorCrate, crateX, crateY, crate.w, crate.h);
+        } else {
+          ctx.fillStyle = '#b5793e';
+          ctx.fillRect(crateX, crateY, crate.w, crate.h);
+        }
       }
       drawHazards();
     }
@@ -886,6 +985,23 @@
     }
 
     function drawObjects() {
+      for (var boxIndex = 0; boxIndex < rewardBoxes.length; boxIndex += 1) {
+        var box = rewardBoxes[boxIndex];
+        var boxX = Math.round(box.x - cameraX);
+        if (boxX + box.w < 0 || boxX > WIDTH) continue;
+        var boxY = box.y + FOREGROUND_VISUAL_OFFSET_Y;
+        var boxImage = box.type === 'star' ? images.starBox : images.mysteryBox;
+        ctx.save();
+        if (box.opened) ctx.globalAlpha = 0.32;
+        if (boxImage) {
+          ctx.drawImage(boxImage, boxX, boxY, box.w, box.h);
+        } else {
+          ctx.fillStyle = box.type === 'star' ? '#ffd85c' : '#ff9c38';
+          ctx.fillRect(boxX, boxY, box.w, box.h);
+        }
+        ctx.restore();
+      }
+
       var checkX = Math.round(checkpoint.x - cameraX);
       var checkpointY = checkpoint.y + FOREGROUND_VISUAL_OFFSET_Y;
       if (images.checkpoint) ctx.drawImage(images.checkpoint, checkX, checkpointY, checkpoint.w, checkpoint.h);
@@ -982,6 +1098,18 @@
       ctx.restore();
     }
 
+    function drawRewardNotification(time) {
+      if (time >= rewardNotificationUntil) return;
+      ctx.save();
+      ctx.font = 'bold 13px Courier New';
+      ctx.textAlign = 'center';
+      ctx.fillStyle = '#191522';
+      ctx.fillText(rewardNotificationText, WIDTH / 2 + 1, 67);
+      ctx.fillStyle = '#fff08c';
+      ctx.fillText(rewardNotificationText, WIDTH / 2, 66);
+      ctx.restore();
+    }
+
     function render(time) {
       ctx.clearRect(0, 0, WIDTH, HEIGHT);
       ctx.fillStyle = '#0076fc';
@@ -997,6 +1125,7 @@
       ctx.restore();
       drawSpeedrunHud(time);
       drawSecretNotification(time);
+      drawRewardNotification(time);
       drawOverlay();
     }
 
@@ -1011,6 +1140,7 @@
         updatePlayer(dt);
         updateCoins(time);
         updateSecretCoins(time);
+        updateRewardBoxes(time);
         updateEnemies(time, dt);
         updateHazards();
         updateLevel();
@@ -1034,6 +1164,10 @@
         get secretNotificationText() { return secretNotificationText; },
         get enemies() { return enemies; },
         get platforms() { return platforms; },
+        get crates() { return crates; },
+        get rewardBoxes() { return rewardBoxes; },
+        get rewardNotificationText() { return rewardNotificationText; },
+        get rewardNotificationUntil() { return rewardNotificationUntil; },
         get hazards() { return hazards; },
         get courseCheckpoints() { return courseCheckpoints; },
         get runElapsedMs() { return runElapsedMs; },
@@ -1094,6 +1228,8 @@
       xp = 0;
       secretNotificationUntil = 0;
       secretNotificationText = '';
+      rewardNotificationText = '';
+      rewardNotificationUntil = 0;
       pendingInitialInput = null;
       initialInputReplay = null;
       clearInput();
@@ -1118,6 +1254,7 @@
         coin.float = 0;
       });
       secretCoins.forEach(function (coin) { coin.taken = false; });
+      rewardBoxes.forEach(function (box) { box.opened = false; box.reward = null; });
       enemies.forEach(function (enemy, index) {
         Object.assign(enemy, initialEnemies[index]);
       });

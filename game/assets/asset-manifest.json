@@ -23,6 +23,11 @@
   },
   "objects": {
     "xpCoin": "objects/2300-spritesheet.png",
+    "mysteryBox": "objects/RANDOMBOX.png",
+    "starBox": "objects/STARBOX.png",
+    "floorCrate": "objects/CRATE1.png",
+    "floatingBrick": "objects/BRICK1.png",
+    "floatingRock": "objects/ROCK1.png",
     "checkpoint": "objects/checkpoint.svg",
     "finishFlag": "objects/finish-flag.svg"
   },
