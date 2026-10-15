@@ -112,7 +112,7 @@
       if (!result.records || !result.records.length) {
         var emptyRow = document.createElement('tr');
         var cell = document.createElement('td');
-        cell.colSpan = 4;
+        cell.colSpan = 5;
         cell.textContent = 'No verified completed runs yet.';
         emptyRow.appendChild(cell);
         tableBody.appendChild(emptyRow);
@@ -123,6 +123,7 @@
           addCell(row, item.name || 'Telegram player');
           addCell(row, formatTime(item.time_ms));
           addCell(row, Number(item.xp || 0).toLocaleString() + ' XP');
+          addCell(row, METRICS[requested].value(item));
           tableBody.appendChild(row);
         });
       }
@@ -134,7 +135,7 @@
         tableBody.replaceChildren();
         var row = document.createElement('tr');
         var cell = document.createElement('td');
-        cell.colSpan = 4;
+        cell.colSpan = 5;
         cell.textContent = 'Leaderboard unavailable. Try again later.';
         row.appendChild(cell);
         tableBody.appendChild(row);
