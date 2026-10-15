@@ -1500,6 +1500,113 @@ assert.ok(
   'only the two non-turquoise parachutes use brown walk and enlarged lightning punch'
 );
 
+// Long-running survival regression: enemies must be defeatable, limited, and resettable.
+assert.ok(
+  runtimeSource.includes('var PARACHUTE_MAX_LANDED = 5') &&
+  runtimeSource.includes('landedCount < PARACHUTE_MAX_LANDED') &&
+  runtimeSource.includes('PARACHUTE_LANDED_LIFETIME_MS') &&
+  runtimeSource.includes("new CustomEvent('nbg-enemy-defeated'") &&
+  runtimeSource.includes("new CustomEvent('nbg-game-over'"),
+  'enemies must have bounded populations, defeat events and a true game-over state'
+);
+await page.evaluate(() => window.NBGLevel1Runtime.reset());
+await page.keyboard.down('KeyD');
+await page.waitForFunction(() => window.NBGLevel1State.running === true, null, { timeout: 2500 });
+await page.keyboard.up('KeyD');
+const beforeDefeat = await page.evaluate(() => {
+  const state = window.NBGLevel1State;
+  const target = state.enemies[0];
+  state.player.x = 420;
+  state.player.y = 214 - state.player.h;
+  state.player.vx = 0;
+  state.player.vy = 0;
+  state.player.facing = 1;
+  state.player.invuln = 5000;
+  target.x = state.player.x + 50;
+  target.y = 214 - target.h;
+  target.vx = 0;
+  return { xp: state.xp, health: state.player.health };
+});
+await page.keyboard.down('KeyS');
+await page.waitForFunction(() => window.NBGLevel1State.enemies[0].defeated === true, null, { timeout: 2500 });
+await page.keyboard.up('KeyS');
+const afterDefeat = await page.evaluate(() => ({
+  xp: window.NBGLevel1State.xp,
+  defeated: window.NBGLevel1State.enemies[0].defeated,
+  health: window.NBGLevel1State.player.health
+}));
+assert.equal(afterDefeat.defeated, true, 'spray must defeat regular rats, not only animate');
+assert.equal(afterDefeat.xp, beforeDefeat.xp + 75, 'rat defeat must award XP only once');
+assert.equal(afterDefeat.health, beforeDefeat.health, 'spraying a rat must not harm the player');
+await page.waitForTimeout(120);
+assert.equal(await page.evaluate(() => window.NBGLevel1State.xp), afterDefeat.xp,
+  'a defeated enemy must not award XP again');
+
+// Expired parachute walkers must not accumulate, even after dozens of spawns.
+await page.evaluate(() => {
+  const state = window.NBGLevel1State;
+  for (let i = 0; i < 100; i++) {
+    state.enemies.push({
+      type: 'brownRat', x: 1800 + i * 3, y: 172, w: 28, h: 42,
+      vx: 0.5, min: 1780, max: 2200, spawnedByParachute: true,
+      spawnedAt: -100000
+    });
+  }
+});
+await page.waitForFunction(() => window.NBGLevel1State.activeSpawnedRats === 0,
+  null, { timeout: 2500 });
+assert.equal(await page.evaluate(() => window.NBGLevel1State.enemies.length), 36,
+  '100 expired parachute walkers must be removed without affecting fixed enemies');
+
+// Health reaching zero must freeze the timer until an explicit reset.
+await page.evaluate(() => {
+  const state = window.NBGLevel1State;
+  const hazard = state.hazards[0];
+  state.player.health = 1;
+  state.player.invuln = 0;
+  state.player.x = hazard.x + 5;
+  state.player.y = hazard.y;
+  state.player.vx = 0;
+  state.player.vy = 0;
+});
+await page.waitForFunction(() => window.NBGLevel1State.gameOver === true,
+  null, { timeout: 2500 });
+const deadState = await page.evaluate(() => ({
+  health: window.NBGLevel1State.player.health,
+  elapsed: window.NBGLevel1State.runElapsedMs,
+  running: window.NBGLevel1State.running,
+  hud: document.getElementById('hud-state')?.textContent
+}));
+assert.equal(deadState.health, 0, 'zero health must not silently restore lives');
+assert.equal(deadState.running, false, 'game over must end active gameplay');
+assert.equal(deadState.hud, 'GAME OVER', 'game over must be visible to the player');
+await page.waitForTimeout(300);
+assert.equal(await page.evaluate(() => window.NBGLevel1State.runElapsedMs), deadState.elapsed,
+  'clock must stop completely once the player dies');
+await page.evaluate(() => window.NBGLevel1Runtime.start());
+assert.equal(await page.evaluate(() => window.NBGLevel1State.running), false,
+  'starting without resetting must not resume a failed run');
+await page.evaluate(() => window.NBGLevel1Runtime.reset());
+assert.deepEqual(await page.evaluate(() => ({
+  running: window.NBGLevel1State.running,
+  gameOver: window.NBGLevel1State.gameOver,
+  health: window.NBGLevel1State.player.health,
+  elapsed: window.NBGLevel1State.runElapsedMs,
+  active: window.NBGLevel1State.parachuteRats.length,
+  spawned: window.NBGLevel1State.activeSpawnedRats,
+  enemies: window.NBGLevel1State.enemies.length,
+  defeated: window.NBGLevel1State.enemies.filter(enemy => enemy.defeated).length
+})), {
+  running: false, gameOver: false, health: 3, elapsed: 0,
+  active: 0, spawned: 0, enemies: 36, defeated: 0
+}, 'reset must restore all enemies, health and speedrun clock');
+await page.keyboard.down('KeyD');
+await page.waitForFunction(() => window.NBGLevel1State.running === true, null, { timeout: 2500 });
+await page.keyboard.up('KeyD');
+const afterRestart = await page.evaluate(() => window.NBGLevel1State.runElapsedMs);
+assert.ok(afterRestart < 2500, 'new run must restart with a fresh clock');
+await page.evaluate(() => window.NBGLevel1Runtime.reset());
+
 const pixelEnergy = await page.evaluate(() => {
   const canvas = document.getElementById('game');
   const data = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data;
