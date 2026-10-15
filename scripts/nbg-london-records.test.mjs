@@ -24,6 +24,7 @@ CREATE TABLE arcade_progression_events (
  game TEXT, raw_score INTEGER, local_meta_points INTEGER, normalized_points INTEGER,
  xp_awarded INTEGER, status TEXT, reason TEXT, processed_at TEXT);`);
 
+let batchTail = Promise.resolve();
 const DB = {
   prepare(sql) {
     return {
@@ -39,15 +40,24 @@ const DB = {
     };
   },
   async batch(statements) {
-    sqlite.exec('BEGIN');
+    // Model D1's serialized atomic batches: overlapping requests cannot nest SQL transactions.
+    const previous = batchTail;
+    let release;
+    batchTail = new Promise(resolve => { release = resolve; });
+    await previous;
     try {
-      const results = [];
-      for (const statement of statements) results.push(await statement.run());
-      sqlite.exec('COMMIT');
-      return results;
-    } catch (error) {
-      sqlite.exec('ROLLBACK');
-      throw error;
+      sqlite.exec('BEGIN');
+      try {
+        const results = [];
+        for (const statement of statements) results.push(await statement.run());
+        sqlite.exec('COMMIT');
+        return results;
+      } catch (error) {
+        sqlite.exec('ROLLBACK');
+        throw error;
+      }
+    } finally {
+      release();
     }
   }
 };
