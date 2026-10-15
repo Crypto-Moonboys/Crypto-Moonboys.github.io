@@ -16,6 +16,11 @@
   var JUMP_VELOCITY = -11.4;
   var DOUBLE_JUMP_VELOCITY = -12.8;
   var DOUBLE_JUMP_SIDE_SPEED = 5.4;
+  var BOT_SHEET_COLUMNS = 5;
+  var BOT_SHEET_ROWS = 5;
+  var BOT_SHEET_FRAMES = 25;
+  var BOT_RENDER_WIDTH = 70;
+  var BOT_RENDER_HEIGHT = 52;
   var SPEEDRUN_PAR_MS = 180000;
   var SPEEDRUN_TIME_BONUS_PER_SECOND = 35;
   var COIN_COMBO_WINDOW_MS = 2400;
@@ -96,6 +101,8 @@
       if (manifest.enemies.londonRat) assets.rat = resolveAssetPath(manifest.enemies.londonRat);
       if (manifest.enemies.pigeon) assets.pigeon = resolveAssetPath(manifest.enemies.pigeon);
       if (manifest.enemies.graffitiBot) assets.bot = resolveAssetPath(manifest.enemies.graffitiBot);
+      if (manifest.enemies.graffitiBotKick) assets.botKick = resolveAssetPath(manifest.enemies.graffitiBotKick);
+      if (manifest.enemies.graffitiBotHurt) assets.botHurt = resolveAssetPath(manifest.enemies.graffitiBotHurt);
     }
 
     return assets;
@@ -546,6 +553,10 @@
         enemy.x += enemy.vx * step;
         if (enemy.x < enemy.min || enemy.x > enemy.max) enemy.vx *= -1;
         if (enemy.type === 'pigeon') enemy.bob = Math.sin(time / 180) * 9;
+        if (enemy.type === 'bot' && sprayTimer > 0 && Math.abs(player.x - enemy.x) < 65 && Math.abs(player.y - enemy.y) < 60 &&
+            (player.facing > 0 ? enemy.x >= player.x - 8 : enemy.x <= player.x + player.w + 8)) {
+          enemy.hurtUntil = time + 360;
+        }
 
         var enemyRect = {
           x: enemy.x,
@@ -799,16 +810,37 @@
       }
     }
 
-    function drawEnemies() {
+    function drawEnemies(time) {
       for (var i = 0; i < enemies.length; i += 1) {
         var enemy = enemies[i];
-        var image = images[enemy.type];
+        var botHurt = enemy.type === 'bot' && (enemy.hurtUntil || 0) > time;
+        var botKicking = enemy.type === 'bot' && !botHurt && Math.abs(player.x - enemy.x) < 68 && Math.abs(player.y - enemy.y) < 48;
+        var botImageKey = botHurt ? 'botHurt' : botKicking ? 'botKick' : 'bot';
+        var image = images[enemy.type === 'bot' ? botImageKey : enemy.type];
         var x = Math.round(enemy.x - cameraX);
         if (x < -enemy.w || x > WIDTH) continue;
         var y = Math.round(enemy.y + (enemy.bob || 0) + FOREGROUND_VISUAL_OFFSET_Y);
         if (image) {
           ctx.save();
-          if (enemy.vx < 0) {
+          if (enemy.type === 'bot') {
+            var cellW = image.naturalWidth / BOT_SHEET_COLUMNS;
+            var cellH = image.naturalHeight / BOT_SHEET_ROWS;
+            var frameMs = botHurt ? 75 : botKicking ? 70 : 85;
+            var frame = botHurt ? Math.min(BOT_SHEET_FRAMES - 1, Math.floor((time - (enemy.hurtUntil - 360)) / frameMs)) :
+              Math.floor((time + enemy.x * 3) / frameMs) % BOT_SHEET_FRAMES;
+            frame = Math.max(0, frame);
+            var sourceX = frame % BOT_SHEET_COLUMNS * cellW;
+            var sourceY = Math.floor(frame / BOT_SHEET_COLUMNS) * cellH;
+            var drawX = x - Math.round((BOT_RENDER_WIDTH - enemy.w) / 2);
+            var drawY = y + enemy.h - BOT_RENDER_HEIGHT;
+            if (enemy.vx < 0) {
+              ctx.translate(drawX + BOT_RENDER_WIDTH, drawY);
+              ctx.scale(-1, 1);
+              ctx.drawImage(image, sourceX, sourceY, cellW, cellH, 0, 0, BOT_RENDER_WIDTH, BOT_RENDER_HEIGHT);
+            } else {
+              ctx.drawImage(image, sourceX, sourceY, cellW, cellH, drawX, drawY, BOT_RENDER_WIDTH, BOT_RENDER_HEIGHT);
+            }
+          } else if (enemy.vx < 0) {
             ctx.translate(x + enemy.w, y);
             ctx.scale(-1, 1);
             ctx.drawImage(image, 0, 0, enemy.w, enemy.h);
@@ -930,7 +962,7 @@
       drawCoins(time);
       drawSecretCoins(time);
       drawObjects();
-      drawEnemies();
+      drawEnemies(time);
       drawPlayer();
       ctx.restore();
       drawSpeedrunHud(time);
