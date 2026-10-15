@@ -504,3 +504,15 @@ assert.equal(archivedFinale.intent,null);
 assert.equal(sql.prepare('SELECT COUNT(*) n FROM telegram_pet_season_completions WHERE pet_id=?').get(archivedId).n,1);
 assert.deepEqual(sql.prepare('PRAGMA foreign_key_check').all(),[]);
 console.log('Confirmed Moonpet deletion, reward retention, replacement and concurrency tests passed');
+
+// Worker-API CI executes this file directly. Keep its top-level assertion harness.
+{
+  const client = await readFile(new URL('../js/moonpet-mini-app.js', import.meta.url), 'utf8');
+  const start = client.indexOf("if (action === 'delete_pet_slot')", client.indexOf("async function runAction("));
+  const block = client.slice(start, client.indexOf("if (action === 'event_close')", start));
+  for (const token of ['STEP 1 OF 2', 'STEP 2 OF 2', 'window.prompt', "!== 'DELETE'",
+    'slot.pet_id === petToDelete', 'currentSlot !== deletionSlot', 'confirm_pet_id: petToDelete']) {
+    assert.ok(block.includes(token), token);
+  }
+  assert.equal(block.includes('\\\\n'), false, 'deletion dialogs should not show literal backslash-n sequences');
+}

@@ -2620,18 +2620,63 @@ try {
     await page.waitForSelector('[data-action="delete_pet_slot"]', { state: 'attached' });
     await page.locator('[data-panel="pet-spaces"]').evaluate(node => { node.open = true; });
     const deleteRequests = actions.filter(action => action === 'delete_pet_slot').length;
-    const cancelledDialog = new Promise(resolve => page.once('dialog', async dialog => {
+    const deleteButton = page.locator('[data-season-slot="1"] [data-action="delete_pet_slot"]');
+    // First-step cancellation must not create a mutation.
+    const firstCancel = new Promise(resolve => page.once('dialog', async dialog => {
       assert.equal(dialog.type(), 'confirm');
-      assert.match(dialog.message(), /cannot return to play/);
-      assert.match(dialog.message(), /reward history are kept/);
+      assert.match(dialog.message(), /STEP 1 OF 2/);
+      assert.match(dialog.message(), /cannot be restored/);
+      assert.match(dialog.message(), /reward history remain/);
       await dialog.dismiss(); resolve();
     }));
-    await page.locator('[data-season-slot="1"] [data-action="delete_pet_slot"]').click(); await cancelledDialog;
-    assert.equal(actions.filter(action => action === 'delete_pet_slot').length, deleteRequests, 'Cancel sends no deletion request');
+    await deleteButton.click(); await firstCancel;
+    assert.equal(actions.filter(action => action === 'delete_pet_slot').length, deleteRequests, 'First cancel sends no deletion');
     assert.equal(sqlite.prepare('SELECT status FROM telegram_pet_instances WHERE pet_id=?').get(deletionPet.pet_id).status, 'active');
-    page.once('dialog', dialog => dialog.accept());
+    // Accept the warning, then dismiss the separate exact-DELETE prompt.
+    const secondCancel = new Promise((resolve,reject) => {
+      let count = 0;
+      const onDialog = async dialog => {
+        try {
+          count++;
+          if (count === 1) {
+            assert.equal(dialog.type(), 'confirm');
+            await dialog.accept();
+          } else {
+            assert.equal(dialog.type(), 'prompt');
+            assert.match(dialog.message(), /STEP 2 OF 2.*PET SPACE 1/);
+            await dialog.dismiss();
+            page.off('dialog', onDialog);
+            resolve();
+          }
+        } catch (error) { page.off('dialog', onDialog); reject(error); }
+      };
+      page.on('dialog', onDialog);
+    });
+    await deleteButton.click(); await secondCancel;
+    assert.equal(actions.filter(action => action === 'delete_pet_slot').length, deleteRequests, 'Second cancel sends no deletion');
+    assert.equal(sqlite.prepare('SELECT status FROM telegram_pet_instances WHERE pet_id=?').get(deletionPet.pet_id).status, 'active');
+    // The successful path requires two dialogs and an exact typed confirmation.
+    const acceptedDialogs = new Promise((resolve,reject) => {
+      let count = 0;
+      const onDialog = async dialog => {
+        try {
+          count++;
+          if (count === 1) {
+            assert.equal(dialog.type(), 'confirm');
+            await dialog.accept();
+          } else {
+            assert.equal(dialog.type(), 'prompt');
+            assert.match(dialog.message(), /Type DELETE exactly/);
+            await dialog.accept('DELETE');
+            page.off('dialog', onDialog);
+            resolve();
+          }
+        } catch (error) { page.off('dialog', onDialog); reject(error); }
+      };
+      page.on('dialog', onDialog);
+    });
     const deletionResponse = page.waitForResponse(r => r.url().endsWith('/telegram-pets/app/action') && r.request().postDataJSON()?.action === 'delete_pet_slot');
-    await page.locator('[data-season-slot="1"] [data-action="delete_pet_slot"]').click();
+    await deleteButton.click(); await acceptedDialogs;
     const deletionData = await (await deletionResponse).json();
     assert.equal(deletionData.result.accepted, true, JSON.stringify(deletionData.result));
     assert.equal(deletionData.result.deleted_pet_id, deletionPet.pet_id);

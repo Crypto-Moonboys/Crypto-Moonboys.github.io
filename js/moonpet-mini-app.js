@@ -3422,6 +3422,33 @@
   }
   // TEST-EXPORT: roomFurniture:end
 
+  // TEST-EXPORT: homeStatusSummary:start
+  function renderHomeStatusSummary() {
+    var pet = state && state.pet, house = state && state.pet_house, shop = state && state.pet_furniture;
+    if (!pet || !house || house.available !== true || house.pet_id !== pet.pet_id ||
+        !shop || shop.available !== true || shop.pet_id !== pet.pet_id || shop.arrangements_available !== true) {
+      return '<div class="line muted">HOME INVENTORY SYNCING. Refresh the current pet before editing.</div>';
+    }
+    var layout = savedHomeLayout(state);
+    var displayedRoom = furnitureRoom(state);
+    var deferredRoom = displayedRoom !== layout.room ? layout.room : null;
+    var floor = house.floor_saved === true
+      ? ({concrete:'NEON MATT',checkerboard:'GOLD MATT',steel:'CAMO MATT'}[layout.floor] || 'SAVED MATT')
+      : displayedRoom === 'main' ? 'FREE BLACK / SILVER MATT' : 'NO SAVED MATT';
+    var items = roomFurnitureItems(state, displayedRoom);
+    var owned = Array.isArray(shop.owned) ? shop.owned : [], catalog = shop.catalog || {};
+    var names = items.map(function (item) {
+      return FREE_HOME_LABELS[item.key] || (catalog[item.key] && catalog[item.key].label) || 'UNKNOWN ITEM';
+    });
+    return '<div class="line complete">CURRENT ROOM // ' + escapeHtml(displayedRoom.toUpperCase()) + ' // DISPLAYED</div>' +
+      (deferredRoom ? '<div class="line muted">SAVED FOR AFTER HATCHING // ' + escapeHtml(deferredRoom.toUpperCase()) + '</div>' : '') +
+      '<div class="line">CURRENT MATT // ' + escapeHtml(floor) + '</div>' +
+      '<div class="line">DISPLAYED // ' + items.length + '/8' + (names.length ? ' // ' + escapeHtml(names.join(' / ')) : ' // NONE PLACED') + '</div>' +
+      '<div class="line">ACCOUNT PAID FURNITURE OWNED // ' + owned.length + '/' + Object.keys(catalog).length + '</div>' +
+      '<div class="line muted">OWNED means permanently purchased; DISPLAYED means placed for this pet in this room. Remove to free a slot without losing ownership. Room and placement changes are free; new Shop purchases cost Moon Gold. NO COMFORT, HEALTH, XP OR PASSIVE REWARD EFFECT.</div>';
+  }
+  // TEST-EXPORT: homeStatusSummary:end
+
   // TEST-EXPORT: petHouse:start
   function renderPetHouse() {
     var house = state.pet_house;
@@ -3446,7 +3473,7 @@
     }).join('');
     return panel('HOME CUSTOMIZATION',
       '<div class="line muted">Main Room is your original Home until you choose Kitchen, Garden or Gym. Each pet keeps its own saved room. Saved mats appear in every room. Free furniture is available only in Main Room. Add up to eight free and owned paid items per room; move them and set their draw order below. Radio draws its stereo in front of furniture.</div>' +
-      controls + renderRoomArrangement() + (layout.room && layout.room !== 'main' ? '<div class="button-grid one">' + button('RETURN TO MAIN ROOM', 'house_place',
+      renderHomeStatusSummary() + controls + renderRoomArrangement() + (layout.room && layout.room !== 'main' ? '<div class="button-grid one">' + button('RETURN TO MAIN ROOM', 'house_place',
         { slot_key:'room', item_key:'main' }, { detail:'Restore your original Main Room; saved floor and furniture choices are kept. No cost or reward.' }) + '</div>' : '') +
       '<div class="button-grid one">' + routeButton('BACK TO HOME', { screen:'home' }, 'See the saved room behind your pet on the main canvas.') + '</div>', 'pet-house');
   }
@@ -3481,7 +3508,7 @@
     }).join('');
     return panel('FURNITURE SHOP // ' + owned.length + '/12 OWNED',
       '<div class="line muted">Permanent account purchases; up to eight placed items per room. All owned paid items can coexist with Main Room free furniture. Kitchen, Garden and Gym allow paid furniture only. Move items and change their draw order in Home Customization. Furniture is cosmetic only. No XP, extra rewards or pet-stat effects.</div>' +
-      '<div class="line">AVAILABLE MOON GOLD // ' + number(gold) + '</div>' + groups, 'furniture-shop');
+      renderHomeStatusSummary() + '<div class="line">AVAILABLE MOON GOLD // ' + number(gold) + '</div>' + groups, 'furniture-shop');
   }
   // TEST-EXPORT: furnitureShop:end
 
@@ -4234,7 +4261,28 @@
     }
     if (action === 'delete_pet_slot') {
       var petToDelete = String(payload && payload.pet_id || '');
-      if (!petToDelete || !window.confirm('Delete ' + (payload.pet_label || 'this pet') + '?\n\nThis pet cannot return to play. A fresh egg will use the same owned space at no XP cost.\n\nAccount XP, currencies, items, competition scores and reward history are kept. This pet\'s training will not transfer.')) return;
+      var deletionSlot = state && state.season_slots && Array.isArray(state.season_slots.slots)
+        ? state.season_slots.slots.find(function (slot) { return slot && slot.pet_id === petToDelete && slot.unlocked === true; }) : null;
+      if (!petToDelete || !deletionSlot) {
+        tell('PET DELETE UNAVAILABLE. REFRESH OWNED PET SPACES FIRST.', 'danger');
+        return;
+      }
+      var deletionLabel = 'PET SPACE ' + Number(deletionSlot.slot_number) + ' // ' +
+        String(deletionSlot.pet && (deletionSlot.pet.callsign || deletionSlot.pet.display_name) || 'MOONPET');
+      if (!window.confirm('STEP 1 OF 2 // DELETE ' + deletionLabel +
+        '?\n\nPERMANENT: this pet, its age and training cannot be restored. A fresh egg uses the same space without a new Arcade XP charge.\n\nYour purchased spaces, account currencies, items and reward history remain. Select Cancel to keep your pet.')) return;
+      // The second action must be deliberate; cancelling never submits a Worker request.
+      if (typeof window.prompt !== 'function' ||
+          window.prompt('STEP 2 OF 2 // ' + deletionLabel + '\n\nType DELETE exactly to archive this pet. Anything else cancels.', '') !== 'DELETE') {
+        tell('PET DELETION CANCELLED. NOTHING WAS SENT.');
+        return;
+      }
+      var currentSlot = state && state.season_slots && Array.isArray(state.season_slots.slots)
+        ? state.season_slots.slots.find(function (slot) { return slot && slot.pet_id === petToDelete && slot.unlocked === true && slot.slot_number === deletionSlot.slot_number; }) : null;
+      if (!currentSlot || currentSlot !== deletionSlot) {
+        tell('PET SELECTION CHANGED. REFRESH BEFORE DELETING.', 'danger');
+        return;
+      }
       payload = { pet_id: petToDelete, confirm_pet_id: petToDelete, confirmed: true };
     }
     if (action === 'event_close') {
