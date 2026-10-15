@@ -275,7 +275,7 @@ assert.equal(
   'standalone Level 1 runtime must expose a render-only eased vertical jump camera'
 );
 assert.equal(
-  /function render\(time\)\s*\{\s*ctx\.clearRect\(0, 0, WIDTH, HEIGHT\);\s*ctx\.fillStyle = '#0076fc';\s*ctx\.fillRect\(0, 0, WIDTH, HEIGHT\);\s*ctx\.save\(\);\s*ctx\.translate\(0, Math\.round\(cameraY\)\);\s*drawWorld\(\);\s*drawCoins\(time\);\s*drawSecretCoins\(time\);\s*drawObjects\(\);\s*drawEnemies\(time\);\s*drawPlayer\(\);\s*ctx\.restore\(\);\s*drawSpeedrunHud\(time\);\s*drawSecretNotification\(time\);\s*drawOverlay\(\);/.test(runtimeSource),
+  /function render\(time\)\s*\{\s*ctx\.clearRect\(0, 0, WIDTH, HEIGHT\);\s*ctx\.fillStyle = '#0076fc';\s*ctx\.fillRect\(0, 0, WIDTH, HEIGHT\);\s*ctx\.save\(\);\s*ctx\.translate\(0, Math\.round\(cameraY\)\);\s*drawWorld\(\);\s*drawCoins\(time\);\s*drawSecretCoins\(time\);\s*drawObjects\(\);\s*drawEnemies\(time\);\s*drawPlayer\(\);\s*ctx\.restore\(\);\s*drawSpeedrunHud\(time\);\s*drawSecretNotification\(time\);\s*drawRewardNotification\(time\);\s*drawOverlay\(\);/.test(runtimeSource),
   true,
   'standalone Level 1 render must wrap gameplay drawing in a positive rounded cameraY transform while leaving the overlay unshifted'
 );
@@ -296,8 +296,9 @@ assert.equal(
 );
 assert.equal(
   runtimeSource.includes('var platformY = p.y + FOREGROUND_VISUAL_OFFSET_Y') &&
-    runtimeSource.includes('ctx.fillRect(Math.round(p.x - cameraX), platformY, p.w, p.h)') &&
-    runtimeSource.includes('ctx.fillRect(Math.round(p.x - cameraX), platformY, p.w, 3)') &&
+    runtimeSource.includes("var tileImage = p.material === 'rock' ? images.floatingRock : images.floatingBrick") &&
+    runtimeSource.includes('for (var tileX = 0; tileX < p.w; tileX += 16)') &&
+    runtimeSource.includes('x + tileX, platformY, width, p.h)') &&
     runtimeSource.includes('var y = Math.round(coin.y + (coin.float || 0) + FOREGROUND_VISUAL_OFFSET_Y - coinSize / 2)') &&
     !runtimeSource.includes('ctx.fillRect(x - 2, y + coinSize + Math.sin(time / 120) * 1, coinSize + 4, 2)') &&
     runtimeSource.includes('var y = Math.round(enemy.y + (enemy.bob || 0) + FOREGROUND_VISUAL_OFFSET_Y)') &&
@@ -1271,6 +1272,117 @@ for (const tier of ['small', 'medium', 'large', 'xl']) {
 await page.evaluate(() => window.NBGLevel1Runtime.reset());
 assert.equal(await page.evaluate(() => window.NBGLevel1State.coins.filter((coin) => coin.taken).length),
   0, 'reset must restore all four sizes of regular coins');
+
+// Five new 81x81 PNG objects must load; each platform is tiled from just one material.
+const blockState = await page.evaluate(() => ({
+  crates: window.NBGLevel1State.crates.length,
+  boxes: window.NBGLevel1State.rewardBoxes.length,
+  materials: [...new Set(window.NBGLevel1State.platforms.map((platform) => platform.material))].sort(),
+  initialClosed: window.NBGLevel1State.rewardBoxes.every((box) => !box.opened),
+  assets: Object.fromEntries(['mysteryBox', 'starBox', 'floorCrate', 'floatingBrick', 'floatingRock'].map((name) =>
+    [name, window.NBGLevel1State.assetStatus[name]?.src]))
+}));
+assert.equal(blockState.crates, 38, 'all 18 sections and the opening must contain solid crates');
+assert.equal(blockState.boxes, 38, 'all 18 sections and the opening must contain reward boxes');
+assert.deepEqual(blockState.materials, ['brick', 'rock'], 'platforms use only uniform brick or rock textures');
+assert.equal(blockState.initialClosed, true, 'all random reward boxes start unopened');
+assert.deepEqual(Object.fromEntries(Object.entries(blockState.assets).map(([key, value]) =>
+  [key, new URL(value, url).pathname])), {
+  mysteryBox: '/game/assets/objects/RANDOMBOX.png',
+  starBox: '/game/assets/objects/STARBOX.png',
+  floorCrate: '/game/assets/objects/CRATE1.png',
+  floatingBrick: '/game/assets/objects/BRICK1.png',
+  floatingRock: '/game/assets/objects/ROCK1.png'
+}, 'runtime must load the five exact uploaded object images');
+assert.ok(
+  runtimeSource.includes('var solids = [floor].concat(platforms, crates)') &&
+  runtimeSource.includes('player.x = crate.x - player.w') &&
+  runtimeSource.includes('player.x = crate.x + crate.w') &&
+  runtimeSource.includes('var roll = Math.min(pool.length - 1, Math.floor(Math.random() * pool.length))') &&
+  runtimeSource.includes("new CustomEvent('nbg-reward-found'"),
+  'crates must have real solid collisions and each reward box must roll on collection'
+);
+
+// Check physical side collision and standing on top of a floor crate.
+await page.keyboard.down('KeyD');
+await page.waitForFunction(() => window.NBGLevel1State.running === true, null, { timeout: 3000 });
+await page.evaluate(() => {
+  const state = window.NBGLevel1State;
+  const crate = state.crates[0];
+  state.player.x = crate.x - state.player.w - 1;
+  state.player.y = 214 - state.player.h;
+  state.player.vx = 4;
+  state.player.vy = 0;
+  state.player.invuln = 5000;
+});
+await page.waitForTimeout(115);
+await page.keyboard.up('KeyD');
+assert.equal(await page.evaluate(() => {
+  const state = window.NBGLevel1State;
+  return state.player.x <= state.crates[0].x - state.player.w + 1;
+}), true, 'crate must block walking sideways');
+await page.evaluate(() => {
+  const state = window.NBGLevel1State;
+  const crate = state.crates[0];
+  state.player.x = crate.x + 2;
+  state.player.y = crate.y - state.player.h - 10;
+  state.player.vx = 0;
+  state.player.vy = 2;
+  state.player.grounded = false;
+});
+await page.waitForFunction(() => {
+  const state = window.NBGLevel1State;
+  return state.player.grounded && Math.abs(state.player.y - (state.crates[0].y - state.player.h)) < 2;
+}, null, { timeout: 2500 });
+
+// Exercise independent random payouts for a mystery and a star box.
+await page.evaluate(() => { window.__rewardRandomOriginal = Math.random; Math.random = () => 0; });
+const beforeMystery = await page.evaluate(() => {
+  const state = window.NBGLevel1State;
+  const box = state.rewardBoxes.find((candidate) => candidate.type === 'mystery' && !candidate.opened);
+  state.player.x = box.x + 3;
+  state.player.y = box.y + 3;
+  state.player.vx = 0; state.player.vy = 0;
+  state.player.invuln = 5000;
+  return { xp: state.xp, x: box.x };
+});
+await page.waitForFunction((x) =>
+  window.NBGLevel1State.rewardBoxes.some((box) => box.x === x && box.opened),
+  beforeMystery.x, { timeout: 2500 });
+assert.equal(await page.evaluate(() => window.NBGLevel1State.xp), beforeMystery.xp + 100,
+  'mystery boxes must award randomly selected XP');
+await page.evaluate(() => { Math.random = () => 0.5; });
+const beforeStar = await page.evaluate(() => {
+  const state = window.NBGLevel1State;
+  const box = state.rewardBoxes.find((candidate) => candidate.type === 'star' && !candidate.opened);
+  state.player.x = box.x + 3;
+  state.player.y = box.y + 3;
+  state.player.vx = 0; state.player.vy = 0;
+  state.player.invuln = 5000;
+  return { xp: state.xp, x: box.x };
+});
+await page.waitForFunction((x) =>
+  window.NBGLevel1State.rewardBoxes.some((box) => box.x === x && box.opened),
+  beforeStar.x, { timeout: 2500 });
+const starResult = await page.evaluate(() => ({
+  xp: window.NBGLevel1State.xp,
+  banner: window.NBGLevel1State.rewardNotificationText,
+  mysteryOpened: window.NBGLevel1State.rewardBoxes[0].opened,
+  starOpened: window.NBGLevel1State.rewardBoxes[1].opened
+}));
+assert.equal(starResult.xp, beforeStar.xp + 1000, 'star box must roll its own independent reward pool');
+assert.ok(starResult.banner.includes('STAR BOX +1000 XP'), 'the randomly selected reward must be displayed');
+assert.equal(starResult.mysteryOpened && starResult.starOpened, true, 'collected boxes stay opened in a run');
+await page.waitForTimeout(100);
+assert.equal(await page.evaluate(() => window.NBGLevel1State.xp), starResult.xp,
+  'opened boxes must not pay the same reward twice');
+await page.evaluate(() => { Math.random = window.__rewardRandomOriginal; });
+await page.evaluate(() => window.NBGLevel1Runtime.reset());
+assert.equal(await page.evaluate(() =>
+  window.NBGLevel1State.rewardBoxes.every((box) => !box.opened && box.reward == null)), true,
+  'reset must restore all reward boxes and clear their rewards');
+assert.equal(await page.evaluate(() => window.NBGLevel1State.rewardNotificationUntil), 0,
+  'reset must clear reward notification timing');
 
 const pixelEnergy = await page.evaluate(() => {
   const canvas = document.getElementById('game');
