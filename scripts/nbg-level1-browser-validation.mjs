@@ -275,7 +275,7 @@ assert.equal(
   'standalone Level 1 runtime must expose a render-only eased vertical jump camera'
 );
 assert.equal(
-  /function render\(time\)\s*\{\s*ctx\.clearRect\(0, 0, WIDTH, HEIGHT\);\s*ctx\.fillStyle = '#0076fc';\s*ctx\.fillRect\(0, 0, WIDTH, HEIGHT\);\s*ctx\.save\(\);\s*ctx\.translate\(0, Math\.round\(cameraY\)\);\s*drawWorld\(\);\s*drawCoins\(time\);\s*drawSecretCoins\(time\);\s*drawObjects\(\);\s*drawEnemies\(time\);\s*drawPlayer\(\);\s*ctx\.restore\(\);\s*drawSpeedrunHud\(time\);\s*drawSecretNotification\(time\);\s*drawRewardNotification\(time\);\s*drawOverlay\(\);/.test(runtimeSource),
+  /function render\(time\)\s*\{\s*ctx\.clearRect\(0, 0, WIDTH, HEIGHT\);\s*ctx\.fillStyle = '#0076fc';\s*ctx\.fillRect\(0, 0, WIDTH, HEIGHT\);\s*ctx\.save\(\);\s*ctx\.translate\(0, Math\.round\(cameraY\)\);\s*drawWorld\(\);\s*drawCoins\(time\);\s*drawSecretCoins\(time\);\s*drawObjects\(\);\s*drawEnemies\(time\);\s*drawParachuteRats\(time\);\s*drawPlayer\(\);\s*ctx\.restore\(\);\s*drawSpeedrunHud\(time\);\s*drawSecretNotification\(time\);\s*drawRewardNotification\(time\);\s*drawOverlay\(\);/.test(runtimeSource),
   true,
   'standalone Level 1 render must wrap gameplay drawing in a positive rounded cameraY transform while leaving the overlay unshifted'
 );
@@ -1404,6 +1404,67 @@ assert.equal(await page.evaluate(() =>
   'reset must restore all reward boxes and clear their rewards');
 assert.equal(await page.evaluate(() => window.NBGLevel1State.rewardNotificationUntil), 0,
   'reset must clear reward notification timing');
+
+// Parachuting rats: exact uploads, glide physics, landing conversion, and reset.
+const parachuteAssets = await page.evaluate(() =>
+  Object.fromEntries(['parachuteRatA','parachuteRatB','parachuteRatC'].map(key => [
+    key, window.NBGLevel1State.assetStatus[key]?.src
+  ])));
+assert.deepEqual(Object.fromEntries(Object.entries(parachuteAssets).map(([key, value]) =>
+  [key, new URL(value, url).pathname])), {
+  parachuteRatA: '/game/assets/enemies/bX4VuQWSc3xcqQaY7FQFP3-spritesheet.png',
+  parachuteRatB: '/game/assets/enemies/dds-dss.png',
+  parachuteRatC: '/game/assets/enemies/fgg-ggf.png'
+}, 'all three parachute rat sprite sheets must load');
+assert.ok(
+  runtimeSource.includes('function updateParachuteRats(time, dt)') &&
+  runtimeSource.includes('function drawParachuteRats(time)') &&
+  runtimeSource.includes('PARACHUTE_GLIDE_SPEED + Math.sin(') &&
+  runtimeSource.includes('enemies.push({') &&
+  runtimeSource.includes("damagePlayer('parachute-rat', rat.x)"),
+  'parachute rats must glide, attack on contact and convert to walkers when grounded'
+);
+await page.keyboard.down('KeyD');
+await page.waitForFunction(() => window.NBGLevel1State.running === true, null, { timeout: 3000 });
+await page.keyboard.up('KeyD');
+await page.evaluate(() => {
+  const state = window.NBGLevel1State;
+  state.player.x = 400;
+  state.player.y = 214 - state.player.h;
+  state.player.vx = 0;
+  state.player.vy = 0;
+  state.player.invuln = 5000;
+});
+await page.waitForFunction(() => window.NBGLevel1State.parachuteSpawnCount >= 1, null, { timeout: 12000 });
+let chuteState = await page.evaluate(() => ({
+  count: window.NBGLevel1State.parachuteRats.length,
+  first: window.NBGLevel1State.parachuteRats[0] ? { ...window.NBGLevel1State.parachuteRats[0] } : null,
+  countWalkers: window.NBGLevel1State.enemies.length
+}));
+assert.equal(chuteState.count, 1, 'a random aerial rat must spawn');
+const beforeGlideY = chuteState.first.y;
+await page.waitForTimeout(200);
+chuteState = await page.evaluate(() => ({
+  y: window.NBGLevel1State.parachuteRats[0]?.y,
+  x: window.NBGLevel1State.parachuteRats[0]?.x
+}));
+assert.ok(chuteState.y > beforeGlideY && chuteState.y - beforeGlideY < 35,
+  'parachute rat must descend gradually, without snapping downward');
+await page.evaluate(() => {
+  const state = window.NBGLevel1State;
+  state.parachuteRats[0].y = 214 - state.parachuteRats[0].h - 1;
+  state.parachuteRats[0].x = state.player.x + 75;
+});
+const walkersBeforeLand = await page.evaluate(() => window.NBGLevel1State.enemies.length);
+await page.waitForFunction(() => window.NBGLevel1State.parachuteRats.length === 0, null, { timeout: 1500 });
+assert.equal(await page.evaluate(() => window.NBGLevel1State.enemies.length), walkersBeforeLand + 1,
+  'missed parachute rat must become a walking BRATTY rat on landing');
+await page.evaluate(() => window.NBGLevel1Runtime.reset());
+assert.deepEqual(await page.evaluate(() => ({
+  active: window.NBGLevel1State.parachuteRats.length,
+  spawns: window.NBGLevel1State.parachuteSpawnCount,
+  enemies: window.NBGLevel1State.enemies.length
+})), { active: 0, spawns: 0, enemies: 36 }, 'reset must clear parachutes and restore original enemy roster');
 
 const pixelEnergy = await page.evaluate(() => {
   const canvas = document.getElementById('game');

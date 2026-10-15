@@ -29,6 +29,13 @@
   var RAT_ATTACK_RANGE = 70;
   var RAT_ATTACK_DURATION_MS = 850;
   var RAT_ATTACK_COOLDOWN_MS = 1700;
+  var PARACHUTE_SPAWN_MIN_MS = 5500;
+  var PARACHUTE_SPAWN_JITTER_MS = 4500;
+  var PARACHUTE_MAX_ACTIVE = 3;
+  var PARACHUTE_GLIDE_SPEED = 0.68;
+  var PARACHUTE_STEER_SPEED = 0.028;
+  var PARACHUTE_RENDER_WIDTH = 64;
+  var PARACHUTE_RENDER_HEIGHT = 64;
   var SPEEDRUN_PAR_MS = 180000;
   var SPEEDRUN_TIME_BONUS_PER_SECOND = 35;
   var COIN_COMBO_WINDOW_MS = 2400;
@@ -115,6 +122,9 @@
       if (manifest.enemies.londonRat) assets.rat = resolveAssetPath(manifest.enemies.londonRat);
       if (manifest.enemies.londonRatBladeFlurry) assets.ratBladeFlurry = resolveAssetPath(manifest.enemies.londonRatBladeFlurry);
       if (manifest.enemies.londonRatViperPounce) assets.ratViperPounce = resolveAssetPath(manifest.enemies.londonRatViperPounce);
+      if (manifest.enemies.parachuteRatA) assets.parachuteRatA = resolveAssetPath(manifest.enemies.parachuteRatA);
+      if (manifest.enemies.parachuteRatB) assets.parachuteRatB = resolveAssetPath(manifest.enemies.parachuteRatB);
+      if (manifest.enemies.parachuteRatC) assets.parachuteRatC = resolveAssetPath(manifest.enemies.parachuteRatC);
       if (manifest.enemies.pigeon) assets.pigeon = resolveAssetPath(manifest.enemies.pigeon);
       if (manifest.enemies.graffitiBot) assets.bot = resolveAssetPath(manifest.enemies.graffitiBot);
       if (manifest.enemies.graffitiBotKick) assets.botKick = resolveAssetPath(manifest.enemies.graffitiBotKick);
@@ -191,6 +201,9 @@
       // Private browsing may block local storage; speedrun remains playable.
     }
     var sprayTimer = 0;
+    var parachuteRats = [];
+    var nextParachuteAt = 6000;
+    var parachuteSpawnCount = 0;
 
     var player = {
       x: 64,
@@ -651,6 +664,63 @@
           damagePlayer(hazard.type, hazard.x);
           break;
         }
+      }
+    }
+
+    function updateParachuteRats(time, dt) {
+      var step = dt / TARGET_FRAME_MS;
+      if (runElapsedMs >= nextParachuteAt && parachuteRats.length < PARACHUTE_MAX_ACTIVE &&
+          player.x > 350 && player.x < WORLD_WIDTH - 250) {
+        var variants = ['parachuteRatA', 'parachuteRatB', 'parachuteRatC'];
+        var variant = variants[Math.floor(Math.random() * variants.length)];
+        var drift = (Math.random() * 2 - 1) * 90;
+        parachuteRats.push({
+          x: clamp(player.x + drift, 28, WORLD_WIDTH - 60),
+          y: -110, w: 28, h: 42, variant: variant,
+          swayPhase: Math.random() * Math.PI * 2, vx: 0, age: 0
+        });
+        parachuteSpawnCount += 1;
+        nextParachuteAt = runElapsedMs + PARACHUTE_SPAWN_MIN_MS +
+          Math.random() * PARACHUTE_SPAWN_JITTER_MS;
+      }
+      for (var i = parachuteRats.length - 1; i >= 0; i -= 1) {
+        var rat = parachuteRats[i];
+        rat.age += dt;
+        var targetX = player.x + player.w / 2 - rat.w / 2;
+        var horizontalTarget = clamp((targetX - rat.x) * PARACHUTE_STEER_SPEED, -0.9, 0.9);
+        rat.vx += (horizontalTarget - rat.vx) * Math.min(1, 0.065 * step);
+        rat.x += (rat.vx + Math.sin(rat.age / 380 + rat.swayPhase) * 0.24) * step;
+        rat.x = clamp(rat.x, 0, WORLD_WIDTH - rat.w);
+        rat.y += (PARACHUTE_GLIDE_SPEED + Math.sin(rat.age / 470 + rat.swayPhase) * 0.11) * step;
+        if (player.invuln <= 0 && rectsOverlap(player, rat)) {
+          damagePlayer('parachute-rat', rat.x);
+          // A successful ambush exits like a landed rat so it cannot hit repeatedly.
+          rat.y = FLOOR_Y - rat.h;
+        }
+        if (rat.y + rat.h >= FLOOR_Y) {
+          enemies.push({
+            type: 'rat', x: rat.x, y: FLOOR_Y - 42, w: 28, h: 42,
+            vx: Math.random() < 0.5 ? -1.1 : 1.1,
+            min: Math.max(0, rat.x - 65), max: Math.min(WORLD_WIDTH - 28, rat.x + 65)
+          });
+          parachuteRats.splice(i, 1);
+        }
+      }
+    }
+
+    function drawParachuteRats(time) {
+      for (var i = 0; i < parachuteRats.length; i += 1) {
+        var rat = parachuteRats[i];
+        var image = images[rat.variant];
+        if (!image) continue;
+        var x = Math.round(rat.x - cameraX - (PARACHUTE_RENDER_WIDTH - rat.w) / 2);
+        if (x + PARACHUTE_RENDER_WIDTH < -10 || x > WIDTH + 10) continue;
+        var y = Math.round(rat.y + FOREGROUND_VISUAL_OFFSET_Y - 13);
+        var frame = Math.floor((time + i * 153) / 95) % 25;
+        var frameW = image.naturalWidth / 5;
+        var frameH = image.naturalHeight / 5;
+        ctx.drawImage(image, frame % 5 * frameW, Math.floor(frame / 5) * frameH,
+          frameW, frameH, x, y, PARACHUTE_RENDER_WIDTH, PARACHUTE_RENDER_HEIGHT);
       }
     }
 
@@ -1166,6 +1236,7 @@
       drawSecretCoins(time);
       drawObjects();
       drawEnemies(time);
+      drawParachuteRats(time);
       drawPlayer();
       ctx.restore();
       drawSpeedrunHud(time);
@@ -1187,6 +1258,7 @@
         updateSecretCoins(time);
         updateRewardBoxes(time);
         updateEnemies(time, dt);
+        updateParachuteRats(time, dt);
         updateHazards();
         updateLevel();
         updateCamera();
@@ -1208,6 +1280,9 @@
         get secretNotificationUntil() { return secretNotificationUntil; },
         get secretNotificationText() { return secretNotificationText; },
         get enemies() { return enemies; },
+        get parachuteRats() { return parachuteRats; },
+        get parachuteSpawnCount() { return parachuteSpawnCount; },
+        get nextParachuteAt() { return nextParachuteAt; },
         get platforms() { return platforms; },
         get crates() { return crates; },
         get rewardBoxes() { return rewardBoxes; },
@@ -1266,6 +1341,9 @@
       checkpointX = 72;
       finishBonusAwarded = false;
       sprayTimer = 0;
+      parachuteRats = [];
+      nextParachuteAt = 6000;
+      parachuteSpawnCount = 0;
       runElapsedMs = 0;
       speedrunBonusXp = 0;
       comboCount = 0;
@@ -1300,6 +1378,8 @@
       });
       secretCoins.forEach(function (coin) { coin.taken = false; });
       rewardBoxes.forEach(function (box) { box.opened = false; box.reward = null; });
+      // Remove extra walkers created by landed parachutes before restoring patrols.
+      enemies.length = initialEnemies.length;
       enemies.forEach(function (enemy, index) {
         Object.assign(enemy, initialEnemies[index]);
       });
