@@ -1378,6 +1378,8 @@
       });
       secretCoins.forEach(function (coin) { coin.taken = false; });
       rewardBoxes.forEach(function (box) { box.opened = false; box.reward = null; });
+      // Remove extra walkers created by landed parachutes before restoring patrols.
+      enemies.length = initialEnemies.length;
       enemies.forEach(function (enemy, index) {
         Object.assign(enemy, initialEnemies[index]);
       });
