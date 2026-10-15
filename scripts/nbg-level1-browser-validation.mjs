@@ -275,7 +275,7 @@ assert.equal(
   'standalone Level 1 runtime must expose a render-only eased vertical jump camera'
 );
 assert.equal(
-  /function render\(time\)\s*\{\s*ctx\.clearRect\(0, 0, WIDTH, HEIGHT\);\s*ctx\.fillStyle = '#0076fc';\s*ctx\.fillRect\(0, 0, WIDTH, HEIGHT\);\s*ctx\.save\(\);\s*ctx\.translate\(0, Math\.round\(cameraY\)\);\s*drawWorld\(\);\s*drawCoins\(time\);\s*drawSecretCoins\(time\);\s*drawObjects\(\);\s*drawEnemies\(\);\s*drawPlayer\(\);\s*ctx\.restore\(\);\s*drawSpeedrunHud\(time\);\s*drawSecretNotification\(time\);\s*drawOverlay\(\);/.test(runtimeSource),
+  /function render\(time\)\s*\{\s*ctx\.clearRect\(0, 0, WIDTH, HEIGHT\);\s*ctx\.fillStyle = '#0076fc';\s*ctx\.fillRect\(0, 0, WIDTH, HEIGHT\);\s*ctx\.save\(\);\s*ctx\.translate\(0, Math\.round\(cameraY\)\);\s*drawWorld\(\);\s*drawCoins\(time\);\s*drawSecretCoins\(time\);\s*drawObjects\(\);\s*drawEnemies\(time\);\s*drawPlayer\(\);\s*ctx\.restore\(\);\s*drawSpeedrunHud\(time\);\s*drawSecretNotification\(time\);\s*drawOverlay\(\);/.test(runtimeSource),
   true,
   'standalone Level 1 render must wrap gameplay drawing in a positive rounded cameraY transform while leaving the overlay unshifted'
 );
@@ -742,6 +742,28 @@ let state = await page.evaluate(() => ({
   ]))
 }));
 
+assert.ok(
+  runtimeSource.includes('var BOT_SHEET_COLUMNS = 5') &&
+  runtimeSource.includes('var BOT_SHEET_ROWS = 5') &&
+  runtimeSource.includes('var BOT_SHEET_FRAMES = 25') &&
+  runtimeSource.includes("botHurt ? 'botHurt' : botKicking ? 'botKick' : 'bot'") &&
+  runtimeSource.includes('var cellW = image.naturalWidth / BOT_SHEET_COLUMNS') &&
+  runtimeSource.includes('var cellH = image.naturalHeight / BOT_SHEET_ROWS') &&
+  runtimeSource.includes('function drawEnemies(time)') &&
+  runtimeSource.includes('ctx.drawImage(image, sourceX, sourceY, cellW, cellH, drawX, drawY, BOT_RENDER_WIDTH, BOT_RENDER_HEIGHT)'),
+  'graffiti bot must use three time-animated 25-frame 5x5 sprite sheets'
+);
+assert.deepEqual(
+  Object.fromEntries(['bot', 'botKick', 'botHurt'].map((key) => [
+    key, new URL(state.assetStatus[key]?.src || '', url).pathname
+  ])),
+  {
+    bot: '/game/assets/enemies/bb8-walk.png',
+    botKick: '/game/assets/enemies/bb8-kick.png',
+    botHurt: '/game/assets/enemies/bb8-hurt.png'
+  },
+  'all three uploaded BB8 animation sheets must be required runtime assets'
+);
 assert.equal(state.running, true, 'ArrowRight must start the game loop');
 assert.equal(state.coinCount, 282, 'speedrun must spawn 282 regular XP coins across the world');
 assert.equal(state.enemyCount, 36, 'speedrun must spawn 36 moving enemies');
