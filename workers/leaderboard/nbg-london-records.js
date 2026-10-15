@@ -153,13 +153,14 @@ export async function handleNbgLondonRecords(request, env, verifyIdentity) {
     const xp = body.xp;
     const rate = efficiencyRate(xp, timeMs);
     const name = displayName(identity.linkedAccount);
+    const finishToken = crypto.randomUUID();
     const writes = [
       env.DB.prepare(
-        'UPDATE nbg_london_runs SET finished_at_ms = ? WHERE run_id = ? AND telegram_id = ? AND finished_at_ms IS NULL'
-      ).bind(now, runId, telegramId),
+        'UPDATE nbg_london_runs SET finished_at_ms = ?, finish_token = ? WHERE run_id = ? AND telegram_id = ? AND finished_at_ms IS NULL'
+      ).bind(now, finishToken, runId, telegramId),
       env.DB.prepare(
       'INSERT INTO nbg_london_records (telegram_id, display_name, fastest_ms, fastest_xp, speed_xp_rate, speed_xp_ms, speed_xp_xp, best_xp, best_xp_ms, updated_at_ms) ' +
-      'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ' +
+      'SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ? WHERE EXISTS (SELECT 1 FROM nbg_london_runs WHERE run_id = ? AND finish_token = ?) ' +
       'ON CONFLICT(telegram_id) DO UPDATE SET ' +
       'display_name = excluded.display_name, updated_at_ms = excluded.updated_at_ms, ' +
       'fastest_xp = CASE WHEN excluded.fastest_ms < fastest_ms OR (excluded.fastest_ms = fastest_ms AND excluded.fastest_xp > fastest_xp) THEN excluded.fastest_xp ELSE fastest_xp END, ' +
@@ -169,20 +170,20 @@ export async function handleNbgLondonRecords(request, env, verifyIdentity) {
       'speed_xp_rate = MAX(speed_xp_rate, excluded.speed_xp_rate), ' +
       'best_xp_ms = CASE WHEN excluded.best_xp > best_xp OR (excluded.best_xp = best_xp AND excluded.best_xp_ms < best_xp_ms) THEN excluded.best_xp_ms ELSE best_xp_ms END, ' +
       'best_xp = MAX(best_xp, excluded.best_xp)'
-    ).bind(telegramId, name, timeMs, xp, rate, timeMs, xp, xp, timeMs, now)
+    ).bind(telegramId, name, timeMs, xp, rate, timeMs, xp, xp, timeMs, now, runId, finishToken)
     ];
     for (const period of periodsForFinish(now)) {
       writes.push(env.DB.prepare(
         `INSERT INTO nbg_london_period_scores
            (period_kind, period_start_ms, telegram_id, display_name, total_xp, run_count, best_time_ms, updated_at_ms)
-         VALUES (?, ?, ?, ?, ?, 1, ?, ?)
+         SELECT ?, ?, ?, ?, ?, 1, ?, ? WHERE EXISTS (SELECT 1 FROM nbg_london_runs WHERE run_id = ? AND finish_token = ?)
          ON CONFLICT(period_kind, period_start_ms, telegram_id) DO UPDATE SET
            display_name = excluded.display_name,
            total_xp = nbg_london_period_scores.total_xp + excluded.total_xp,
            run_count = nbg_london_period_scores.run_count + 1,
            best_time_ms = MIN(nbg_london_period_scores.best_time_ms, excluded.best_time_ms),
            updated_at_ms = excluded.updated_at_ms`
-      ).bind(period.kind, period.start, telegramId, name, xp, timeMs, now));
+      ).bind(period.kind, period.start, telegramId, name, xp, timeMs, now, runId, finishToken));
     }
     // A run receipt, all-time best and all three active period results commit atomically.
     const applied = await env.DB.batch(writes);
