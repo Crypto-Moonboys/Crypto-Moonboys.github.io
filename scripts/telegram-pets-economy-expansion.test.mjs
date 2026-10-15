@@ -231,7 +231,15 @@ assert.equal(bountyClaim.accepted, true);
 assert.equal((await hooks.claimPetEconomyBounty(d1, 'economy-player', bounty.key)).duplicate, true, 'a bounty cannot pay twice');
 
 // Bonus rewards must be authorized by accepted events, not client progress.
-const activeBonus=getPetDailyBonusBounties(currentDay)[0];
+// The base bounty fixture above records accepted actions. Depending on the
+// UTC day's rotation, those same actions can legitimately complete the first
+// bonus before this negative test. Select an actually incomplete bonus so the
+// assertion verifies claim authority rather than assuming rotation order.
+const bonusBefore=(await hooks.getPetEconomyState(d1,'economy-player')).bonus_bounties;
+const incompleteBonus=bonusBefore.find(entry=>!entry.complete && !entry.claimed);
+assert.ok(incompleteBonus,'at least one distinct bonus must remain unearned after base bounty evidence');
+const activeBonus=getPetDailyBonusBounties(currentDay).find(entry=>entry.key===incompleteBonus.key);
+assert.ok(activeBonus,'unearned bonus must match the current rotated board');
 const missingBonus=await hooks.claimPetEconomyBounty(d1,'economy-player',activeBonus.key);
 assert.equal(missingBonus.accepted,false,'unearned bonus cannot pay');
 assert.equal(missingBonus.reason,'bounty_incomplete');

@@ -389,7 +389,7 @@ const eggHome = client.slice(client.indexOf("if (lifecycle.phase === 'egg') {", 
 for (const action of ['energy_drink', 'dance', 'cuddles']) assert.ok(eggHome.includes("'" + action + "'"));
 const html = read('moonpet-game.html');
 assert.ok(html.indexOf('/js/moonpet-play-options.js') < html.indexOf('/js/moonpet-mini-app.js'));
-assert.ok(html.includes('/js/moonpet-play-options.js?v=20261011-economy-v1'), 'the bounty recommendation fix reaches players with a fresh asset URL');
+assert.ok(html.includes('/js/moonpet-play-options.js?v=20261015-home-guidance-v1'), 'the bounty recommendation fix reaches players with a fresh asset URL');
 
 // Execute the shipped fast-path handler with the refresh response held open.
 // A transaction race must refresh immediately and block a second mutation.
