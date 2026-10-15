@@ -1,0 +1,214 @@
+/* NBG London: public all-time records, authenticated Telegram submissions only. */
+(function () {
+  'use strict';
+
+  var METRICS = {
+    fastest: { title: 'Fastest Time', value: function (row) { return formatTime(row.time_ms); } },
+    speed_xp: { title: 'Fastest + XP', value: function (row) { return Number(row.value || 0).toLocaleString() + ' XP/min'; } },
+    xp: { title: 'Highest XP', value: function (row) { return Number(row.xp || 0).toLocaleString() + ' XP'; } }
+  };
+  var metric = 'fastest';
+  var generation = 0;
+  var runPromise = null;
+  var status = null;
+  var tableBody = null;
+  var account = null;
+
+  function formatTime(ms) {
+    if (!Number.isFinite(Number(ms))) return '—';
+    var seconds = Math.floor(Number(ms) / 1000);
+    return String(Math.floor(seconds / 60)).padStart(2, '0') + ':' +
+      String(seconds % 60).padStart(2, '0') + '.' +
+      String(Math.floor((Number(ms) % 1000) / 10)).padStart(2, '0');
+  }
+
+  function apiBase() {
+    var cfg = window.MOONBOYS_API;
+    var url = cfg && typeof cfg.getLeaderboardUrl === 'function' ? cfg.getLeaderboardUrl() : null;
+    return typeof url === 'string' && /^https:\/\//.test(url) ? url.replace(/\/$/, '') : null;
+  }
+
+  function setStatus(message) {
+    if (status) status.textContent = message;
+  }
+
+  function displayIdentity() {
+    var gate = window.MOONBOYS_IDENTITY;
+    var linked = !!(gate && typeof gate.isTelegramLinked === 'function' && gate.isTelegramLinked());
+    var name = linked && gate.getTelegramName ? gate.getTelegramName() : null;
+    if (account) account.textContent = linked && name ? 'Telegram: ' + name : linked ?
+      'Telegram account linked' : 'Guest — scores are not saved';
+    return linked;
+  }
+
+  async function signedAuth() {
+    var gate = window.MOONBOYS_IDENTITY;
+    if (!gate || !displayIdentity() || typeof gate.getFreshTelegramAuth !== 'function') return null;
+    var auth = await gate.getFreshTelegramAuth();
+    return auth && auth.id && auth.hash && auth.auth_date ? auth : null;
+  }
+
+  async function callJson(path, data) {
+    var base = apiBase();
+    if (!base) throw new Error('Leaderboard API unavailable in this environment');
+    var response = await fetch(base + '/nbg-london' + path, {
+      method: data ? 'POST' : 'GET',
+      headers: data ? { 'Content-Type': 'application/json' } : {},
+      body: data ? JSON.stringify(data) : undefined,
+      cache: 'no-store'
+    });
+    var result = await response.json().catch(function () { return null; });
+    if (!response.ok || !result || !result.ok)
+      throw new Error(result && result.error ? result.error : 'Leaderboard request failed');
+    return result;
+  }
+
+  function addCell(row, value) {
+    var cell = document.createElement('td');
+    cell.textContent = String(value);
+    row.appendChild(cell);
+  }
+
+  async function loadLeaders() {
+    if (!tableBody) return;
+    var requested = metric;
+    tableBody.replaceChildren();
+    var loading = document.createElement('tr');
+    var loadingCell = document.createElement('td');
+    loadingCell.colSpan = 4;
+    loadingCell.textContent = 'Loading verified Telegram scores…';
+    loading.appendChild(loadingCell);
+    tableBody.appendChild(loading);
+    try {
+      var result = await callJson('/leaderboard?metric=' + encodeURIComponent(requested));
+      if (metric !== requested) return;
+      tableBody.replaceChildren();
+      if (!result.records || !result.records.length) {
+        var emptyRow = document.createElement('tr');
+        var cell = document.createElement('td');
+        cell.colSpan = 4;
+        cell.textContent = 'No verified completed runs yet.';
+        emptyRow.appendChild(cell);
+        tableBody.appendChild(emptyRow);
+      } else {
+        result.records.forEach(function (item) {
+          var row = document.createElement('tr');
+          addCell(row, item.rank);
+          addCell(row, item.name || 'Telegram player');
+          addCell(row, formatTime(item.time_ms));
+          addCell(row, Number(item.xp || 0).toLocaleString() + ' XP');
+          tableBody.appendChild(row);
+        });
+      }
+      var descriptor = document.getElementById('nbg-record-ranking');
+      if (descriptor) descriptor.textContent = METRICS[metric].title +
+        (metric === 'speed_xp' ? ' — ranked by XP earned per minute' : '');
+    } catch (error) {
+      if (metric === requested) {
+        tableBody.replaceChildren();
+        var row = document.createElement('tr');
+        var cell = document.createElement('td');
+        cell.colSpan = 4;
+        cell.textContent = 'Leaderboard unavailable. Try again later.';
+        row.appendChild(cell);
+        tableBody.appendChild(row);
+      }
+    }
+  }
+
+  async function beginRankedRun() {
+    var current = ++generation;
+    runPromise = null;
+    if (!displayIdentity()) {
+      setStatus('Guest run: score is session-only, not permanently ranked.');
+      return;
+    }
+    setStatus('Verifying Telegram account for this run…');
+    runPromise = (async function () {
+      var auth = await signedAuth();
+      if (!auth) return null;
+      return callJson('/run/start', { telegram_auth: auth });
+    }());
+    try {
+      var result = await runPromise;
+      if (current !== generation) return;
+      if (result && result.run_id) {
+        if (account) account.textContent = 'Playing as ' + result.player;
+        setStatus('Ranked run active — completed results are saved to your Telegram name.');
+      } else {
+        setStatus('Telegram verification unavailable. This run will not be saved.');
+      }
+    } catch (error) {
+      if (current === generation) setStatus('Ranked run unavailable: ' + error.message + '. No score will be saved.');
+    }
+  }
+
+  async function finishRankedRun(detail) {
+    var current = generation;
+    var sessionPromise = runPromise;
+    if (!sessionPromise) {
+      setStatus('Run complete. Guest scores are not stored permanently.');
+      return;
+    }
+    try {
+      var session = await sessionPromise;
+      if (current !== generation || !session || !session.run_id) {
+        if (current === generation) setStatus('Run not ranked: no verified Telegram start session.');
+        return;
+      }
+      var auth = await signedAuth();
+      if (!auth || current !== generation) {
+        if (current === generation) setStatus('Run not saved: Telegram login expired.');
+        return;
+      }
+      setStatus('Submitting completed run for verification…');
+      var result = await callJson('/run/finish', {
+        telegram_auth: auth, run_id: session.run_id, complete: true,
+        time_ms: detail.timeMs, xp: detail.xp,
+        coins: detail.coins, secret_coins: detail.secretCoins
+      });
+      if (current !== generation) return;
+      setStatus('Saved permanently for ' + result.player + ': ' +
+        formatTime(result.time_ms) + ' · ' + result.xp.toLocaleString() + ' XP');
+      loadLeaders();
+    } catch (error) {
+      if (current === generation)
+        setStatus('Run not saved: ' + error.message + '. Unsaved runs are not queued.');
+    }
+  }
+
+  function init() {
+    status = document.getElementById('nbg-record-status');
+    account = document.getElementById('nbg-record-account');
+    tableBody = document.getElementById('nbg-record-rows');
+    if (!tableBody) return;
+    displayIdentity();
+    Array.prototype.forEach.call(document.querySelectorAll('[data-nbg-metric]'), function (button) {
+      button.addEventListener('click', function () {
+        metric = button.getAttribute('data-nbg-metric');
+        Array.prototype.forEach.call(document.querySelectorAll('[data-nbg-metric]'), function (peer) {
+          peer.setAttribute('aria-pressed', String(peer === button));
+        });
+        loadLeaders();
+      });
+    });
+    window.addEventListener('moonboys:identity-change', displayIdentity);
+    window.addEventListener('nbg-level-started', beginRankedRun);
+    window.addEventListener('nbg-level-complete', function (event) {
+      finishRankedRun(event.detail || {});
+    });
+    window.addEventListener('nbg-level-reset', function () {
+      generation += 1;
+      runPromise = null;
+      displayIdentity();
+      setStatus('Fresh run ready. Only completed, Telegram-verified runs are saved.');
+    });
+    window.addEventListener('nbg-game-over', function () {
+      setStatus('Game over. Only completed runs count toward permanent leaderboards.');
+    });
+    loadLeaders();
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+}());
