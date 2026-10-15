@@ -282,14 +282,23 @@ test('096 is additive/idempotent and enforces room ownership and valid choices',
 test('PR3 home status shows saved selected-pet ownership without inventing comfort upgrades', () => {
   const source=fs.readFileSync(new URL('../js/moonpet-mini-app.js',import.meta.url),'utf8');
   const block=source.split('// TEST-EXPORT: homeStatusSummary:start')[1].split('// TEST-EXPORT: homeStatusSummary:end')[0];
-  const ctx={state:{pet:{pet_id:'pet-a'},pet_house:{available:true,pet_id:'pet-a',floor_saved:true,layout:{room:'kitchen',floor:'steel'}},pet_furniture:{available:true,pet_id:'pet-a',arrangements_available:true,owned:['neon_lamp'],catalog:{neon_lamp:{label:'Neon Lamp'}},arrangements:{kitchen:[{key:'neon_lamp',x:15,y:30}]}}},savedHomeLayout:s=>s.pet_house.layout,roomFurnitureItems:(s,room)=>s.pet_furniture.arrangements[room],FREE_HOME_LABELS:{sleep_mat:'Fish Tank'},escapeHtml:String};
+  const ctx={state:{pet:{pet_id:'pet-a'},lifecycle:{phase:'young'},pet_house:{available:true,pet_id:'pet-a',floor_saved:true,layout:{room:'kitchen',floor:'steel'}},pet_furniture:{available:true,pet_id:'pet-a',arrangements_available:true,owned:['neon_lamp'],catalog:{neon_lamp:{label:'Neon Lamp'}},arrangements:{kitchen:[{key:'neon_lamp',x:15,y:30}]}}},savedHomeLayout:s=>s.pet_house.layout,furnitureRoom:s=>s.lifecycle.phase==='egg'?'main':s.pet_house.layout.room,roomFurnitureItems:(s,room)=>s.pet_furniture.arrangements[room]||[],FREE_HOME_LABELS:{sleep_mat:'Fish Tank'},escapeHtml:String};
   vm.createContext(ctx);vm.runInContext(block,ctx);
   const out=ctx.renderHomeStatusSummary();
-  assert.match(out,/CURRENT ROOM \/\/ KITCHEN \/\/ SAVED/);
+  assert.match(out,/CURRENT ROOM \/\/ KITCHEN \/\/ DISPLAYED/);
   assert.match(out,/CURRENT MATT \/\/ CAMO MATT/);
   assert.match(out,/DISPLAYED \/\/ 1\/8 \/\/ Neon Lamp/);
   assert.match(out,/ACCOUNT PAID FURNITURE OWNED \/\/ 1\/1/);
   assert.match(out,/NO COMFORT, HEALTH, XP OR PASSIVE REWARD EFFECT/);
+  ctx.state.lifecycle.phase='egg';
+  ctx.state.pet_furniture.arrangements.main=[{key:'sleep_mat',x:6,y:35}];
+  ctx.state.pet_house.floor_saved=false;
+  const egg=ctx.renderHomeStatusSummary();
+  assert.match(egg,/CURRENT ROOM \\/\\/ MAIN \\/\\/ DISPLAYED/);
+  assert.match(egg,/SAVED FOR AFTER HATCHING \\/\\/ KITCHEN/);
+  assert.match(egg,/CURRENT MATT \\/\\/ FREE BLACK \\/ SILVER MATT/);
+  assert.match(egg,/DISPLAYED \\/\\/ 1\\/8 \\/\\/ Fish Tank/);
+  assert.doesNotMatch(egg,/DISPLAYED \\/\\/ 1\\/8 \\/\\/ Neon Lamp/);
   ctx.state.pet.pet_id='pet-b';
   assert.match(ctx.renderHomeStatusSummary(),/SYNCING/);
 });
