@@ -14,6 +14,7 @@
   var RUN_ACCEL = 0.74;
   var MAX_SPEED = 4.2;
   var JUMP_VELOCITY = -11.4;
+  var DOUBLE_JUMP_VELOCITY = -12.8;
   var INVULN_TIME = 1050;
   var SKYLINE_PARALLAX = 0.22;
   var SKYLINE_Y = 40;
@@ -125,6 +126,8 @@
     ctx.imageSmoothingEnabled = false;
 
     var keys = {};
+    var jumpWasDown = false;
+    var jumpsUsed = 0;
     var touch = { left: false, right: false, jump: false, spray: false };
     var images = {};
     var playerAnimations = {};
@@ -244,6 +247,7 @@
       player.y = FLOOR_Y - player.h;
       player.vx = 0;
       player.vy = 0;
+      jumpsUsed = 0;
       player.invuln = INVULN_TIME;
       setPlayerAnimation('hurt');
       sprayTimer = 0;
@@ -281,6 +285,7 @@
 
     function clearInput() {
       keys = {};
+      jumpWasDown = false;
       Object.keys(touch).forEach(function (control) {
         touch[control] = false;
       });
@@ -294,6 +299,8 @@
       var left = keys.ArrowLeft || keys.KeyA || touch.left || (replay && replay.control === 'left');
       var right = keys.ArrowRight || keys.KeyD || touch.right || (replay && replay.control === 'right');
       var jump = keys.Space || keys.ArrowUp || keys.KeyW || touch.jump || (replay && replay.control === 'jump');
+      var jumpPressed = !!jump && !jumpWasDown;
+      jumpWasDown = !!jump;
       var spray = keys.KeyS || keys.KeyX || touch.spray || (replay && replay.control === 'spray');
 
       if (left) {
@@ -309,9 +316,13 @@
       }
       player.vx = clamp(player.vx, -MAX_SPEED, MAX_SPEED);
 
-      if (jump && player.grounded) {
+      if (jumpPressed && player.grounded) {
         player.vy = JUMP_VELOCITY;
         player.grounded = false;
+        jumpsUsed = 1;
+      } else if (jumpPressed && !player.grounded && jumpsUsed < 2) {
+        player.vy = DOUBLE_JUMP_VELOCITY;
+        jumpsUsed = 2;
       }
 
       if (spray && sprayTimer <= 0) {
@@ -335,6 +346,7 @@
           player.y = tile.y - player.h;
           player.vy = 0;
           player.grounded = true;
+          jumpsUsed = 0;
         }
       }
     }
@@ -700,6 +712,7 @@
     function exposeTestState() {
       window.NBGLevel1State = {
         get player() { return player; },
+        get jumpsUsed() { return jumpsUsed; },
         get coins() { return coins; },
         get enemies() { return enemies; },
         get xp() { return xp; },
@@ -761,6 +774,7 @@
       player.vy = 0;
       player.facing = 1;
       player.grounded = true;
+      jumpsUsed = 0;
       player.health = 3;
       player.invuln = 0;
       setPlayerAnimation('idle');
