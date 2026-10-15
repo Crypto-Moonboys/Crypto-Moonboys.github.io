@@ -45,7 +45,7 @@ const leaderboardWorker = {
     return baseWorker.fetch(request, runtimeEnv, context);
   },
   async scheduled(event, env, context) {
-    if (event.cron === '0 1 * * *') {
+    if (event.cron === '0 0 * * *') {
       const job = settleNbgLondonDue({
         ...env,
         DB: withRegisteredTelegramLinkFallback(env.DB),
