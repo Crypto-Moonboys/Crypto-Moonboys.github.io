@@ -25,6 +25,7 @@
   var SPEEDRUN_TIME_BONUS_PER_SECOND = 35;
   var COIN_COMBO_WINDOW_MS = 2400;
   var MAX_COIN_COMBO = 4;
+  var COIN_TIERS = { small: { size: 16, xp: 100 }, medium: { size: 32, xp: 250 }, large: { size: 40, xp: 500 }, xl: { size: 50, xp: 1000 } };
   var COURSE_SECTIONS = 18;
   var INVULN_TIME = 1050;
   var SKYLINE_PARALLAX = 0.22;
@@ -267,6 +268,14 @@
       { x: 1940, y: 176, r: 8, xp: 200, taken: false }
     ];
 
+    // Standard opening coins retain their placement but use the small tier.
+    coins.forEach(function (coin) {
+      coin.tier = 'small';
+      coin.size = COIN_TIERS.small.size;
+      coin.xp = COIN_TIERS.small.xp;
+      coin.r = Math.round(coin.size * 0.4);
+    });
+
     var enemies = [
       { type: 'rat', x: 600, y: FLOOR_Y - 20, w: 28, h: 18, vx: 1.1, min: 540, max: 690 },
       { type: 'pigeon', x: 1010, y: 128, w: 28, h: 22, vx: 1.35, min: 940, max: 1128, bob: 0 },
@@ -288,13 +297,24 @@
       ledges.forEach(function (ledge) {
         platforms.push(ledge);
         for (var j = 0; j < 3; j += 1) {
-          coins.push({ x: ledge.x + 30 + j * 30, y: ledge.y - 24 - j % 2 * 8, r: 8,
-            xp: 100 + section % 4 * 25, taken: false });
+          coins.push({ x: ledge.x + 30 + j * 30, y: ledge.y - 24 - j % 2 * 8,
+            tier: 'small', size: 16, r: 6, xp: 100, taken: false });
         }
       });
       [45, 520, 980].forEach(function (dx) {
-        coins.push({ x: startX + dx, y: 176, r: 8, xp: 100 + section % 3 * 25, taken: false });
+        coins.push({ x: startX + dx, y: 176, tier: 'small', size: 16, r: 6, xp: 100, taken: false });
       });
+
+      var tierName = section % 4 === 3 ? 'xl' : section % 4 === 2 ? 'large' : 'medium';
+      var tier = COIN_TIERS[tierName];
+      coins.push({ x: startX + 404, y: ledges[1].y - 75,
+        tier: tierName, size: tier.size, r: Math.round(tier.size * 0.4), xp: tier.xp, taken: false });
+      if (section >= 6) {
+        var extraTierName = section % 3 === 0 ? 'large' : 'medium';
+        var extraTier = COIN_TIERS[extraTierName];
+        coins.push({ x: startX + 866, y: ledges[3].y - 62,
+          tier: extraTierName, size: extraTier.size, r: Math.round(extraTier.size * 0.4), xp: extraTier.xp, taken: false });
+      }
 
       hazards.push({ x: startX + 275, y: FLOOR_Y - 18, w: 34, h: 18, type: 'cones' });
       hazards.push({ x: startX + 745, y: FLOOR_Y - 20, w: 46, h: 20, type: 'spikes' });
@@ -485,7 +505,9 @@
       for (var i = 0; i < coins.length; i += 1) {
         var coin = coins[i];
         if (coin.taken) continue;
-        var coinRect = { x: coin.x - coin.r, y: coin.y - coin.r, w: coin.r * 2, h: coin.r * 2 };
+        var hitSize = Math.round((coin.size || 16) * 0.8);
+        var coinRect = { x: coin.x - hitSize / 2, y: coin.y - hitSize / 2,
+          w: hitSize, h: hitSize };
         if (rectsOverlap(player, coinRect)) {
           coin.taken = true;
           comboCount = time < comboExpiresAt ? Math.min(MAX_COIN_COMBO, comboCount + 1) : 1;
@@ -778,9 +800,10 @@
       for (var i = 0; i < coins.length; i += 1) {
         var coin = coins[i];
         if (coin.taken) continue;
-        var x = Math.round(coin.x - cameraX - 8);
-        if (x < -24 || x > WIDTH + 12) continue;
-        var y = Math.round(coin.y + (coin.float || 0) + FOREGROUND_VISUAL_OFFSET_Y - 8);
+        var coinSize = coin.size || 16;
+        var x = Math.round(coin.x - cameraX - coinSize / 2);
+        if (x < -coinSize || x > WIDTH + coinSize) continue;
+        var y = Math.round(coin.y + (coin.float || 0) + FOREGROUND_VISUAL_OFFSET_Y - coinSize / 2);
         if (images.coin) {
           var coinColumns = 5;
           var coinRows = 5;
@@ -791,13 +814,13 @@
           var coinSourceX = (coinFrame % coinColumns) * coinSourceWidth;
           var coinSourceY = Math.floor(coinFrame / coinColumns) * coinSourceHeight;
           ctx.drawImage(images.coin, coinSourceX, coinSourceY,
-            coinSourceWidth, coinSourceHeight, x, y, 16, 16);
+            coinSourceWidth, coinSourceHeight, x, y, coinSize, coinSize);
         } else {
           ctx.fillStyle = '#ffd447';
-          ctx.fillRect(x + 3, y, 10, 16);
+          ctx.fillRect(x + Math.round(coinSize * 0.18), y, Math.round(coinSize * 0.64), coinSize);
         }
         ctx.fillStyle = 'rgba(255, 212, 71, 0.22)';
-        ctx.fillRect(x - 2, y + 16 + Math.sin(time / 120) * 1, 20, 2);
+        ctx.fillRect(x - 2, y + coinSize + Math.sin(time / 120) * 1, coinSize + 4, 2);
       }
     }
 
