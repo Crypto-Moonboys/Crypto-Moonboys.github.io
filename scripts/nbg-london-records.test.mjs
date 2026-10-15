@@ -141,6 +141,32 @@ try {
     env, async () => ({ ok: false, error: 'telegram_link_required', status: 403 }));
   assert.equal(unlinked.status, 403, 'unlinked identity must fail closed');
 
+  // Two simultaneous attempts to finish the same receipt must change standings once.
+  const replayStart = await api('/nbg-london/run/start', { telegram_auth: { id: '100' } });
+  assert.equal(replayStart.status, 200);
+  fakeNow += 175000;
+  const beforeConcurrent = sqlite.prepare(
+    `SELECT total_xp,run_count FROM nbg_london_period_scores
+     WHERE period_kind='daily' AND telegram_id='100' AND period_start_ms=?`
+  ).get(periodStart(fakeNow, 'daily'));
+  const concurrentBody = {
+    telegram_auth: { id: '100' }, run_id: replayStart.run_id,
+    complete: true, time_ms: 175000, xp: 400, coins: 12, secret_coins: 0
+  };
+  const finishes = await Promise.all([
+    api('/nbg-london/run/finish', concurrentBody),
+    api('/nbg-london/run/finish', concurrentBody)
+  ]);
+  assert.deepEqual(finishes.map(result => result.status).sort(), [200, 409],
+    'concurrent finish attempts must have exactly one winner');
+  const afterConcurrent = sqlite.prepare(
+    `SELECT total_xp,run_count FROM nbg_london_period_scores
+     WHERE period_kind='daily' AND telegram_id='100' AND period_start_ms=?`
+  ).get(periodStart(fakeNow, 'daily'));
+  assert.equal(afterConcurrent.total_xp, beforeConcurrent.total_xp + 400);
+  assert.equal(afterConcurrent.run_count, beforeConcurrent.run_count + 1);
+  fakeNow += 1000;
+
   // Only the overall top 3 receive Arcade XP on settlement; 4th/blocked get none.
   sqlite.exec("INSERT INTO telegram_users(telegram_id) VALUES ('300'), ('400'), ('500')");
   sqlite.exec("INSERT INTO telegram_anticheat_state(telegram_id, is_blocked) VALUES ('500', 1)");
@@ -156,6 +182,12 @@ try {
   const settledOnce = await settleNbgLondonPeriod(env, period, cutoff);
   assert.deepEqual(settledOnce.map(winner => [winner.telegram_id, winner.arcade_xp]),
     [['100', 100], ['200', 60], ['300', 30]], 'only 3 non-blocked prize winners per day');
+  // A changed blocklist after payout must not reshuffle a frozen winning roster.
+  sqlite.prepare('UPDATE telegram_anticheat_state SET is_blocked=0 WHERE telegram_id=?').run('500');
+  const frozenRoster = sqlite.prepare(
+    'SELECT telegram_id FROM nbg_london_prize_awards WHERE period_kind=? AND period_start_ms=? ORDER BY rank'
+  ).all('daily', previousStart).map(row => row.telegram_id);
+  assert.deepEqual(frozenRoster, ['100','200','300']);
   const settlementRetry = await settleNbgLondonPeriod(env, period, cutoff);
   assert.deepEqual(settlementRetry, [], 'cron retries must not issue duplicate payments');
   assert.equal(sqlite.prepare('SELECT COUNT(*) AS n FROM nbg_london_prize_awards').get().n, 3);
