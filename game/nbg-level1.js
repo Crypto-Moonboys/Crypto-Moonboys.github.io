@@ -695,6 +695,44 @@
       }
     }
 
+    function formatRunTime(ms) {
+      var seconds = Math.floor(ms / 1000);
+      var minutes = Math.floor(seconds / 60);
+      var remainder = String(seconds % 60).padStart(2, '0');
+      return minutes + ':' + remainder + '.' + Math.floor(ms / 100) % 10;
+    }
+
+    function drawHazards() {
+      hazards.forEach(function (hazard) {
+        var x = Math.round(hazard.x - cameraX);
+        if (x + hazard.w < -30 || x > WIDTH + 30) return;
+        var y = hazard.y + FOREGROUND_VISUAL_OFFSET_Y;
+        ctx.save();
+        if (hazard.type === 'barrier') {
+          ctx.fillStyle = '#f96f33';
+          ctx.fillRect(x, y, hazard.w, hazard.h);
+          ctx.fillStyle = '#ffe88c';
+          ctx.fillRect(x, y + 4, hazard.w, 4);
+          ctx.fillRect(x, y + 14, hazard.w, 4);
+        } else {
+          var count = hazard.type === 'spikes' ? 5 : 2;
+          var partWidth = hazard.w / count;
+          ctx.fillStyle = hazard.type === 'spikes' ? '#d9e4fc' : '#ff713d';
+          for (var i = 0; i < count; i += 1) {
+            ctx.beginPath();
+            ctx.moveTo(x + i * partWidth, y + hazard.h);
+            ctx.lineTo(x + (i + 0.5) * partWidth, y);
+            ctx.lineTo(x + (i + 1) * partWidth, y + hazard.h);
+            ctx.closePath();
+            ctx.fill();
+          }
+          ctx.fillStyle = '#273449';
+          ctx.fillRect(x, y + hazard.h - 3, hazard.w, 3);
+        }
+        ctx.restore();
+      });
+    }
+
     function drawWorld() {
       drawImageLayer(images.sky, 0.08, 0, HEIGHT, '#171730');
       drawSkylineLayer();
@@ -710,6 +748,7 @@
         ctx.fillRect(Math.round(p.x - cameraX), platformY, p.w, 3);
         ctx.fillStyle = '#2b2932';
       }
+      drawHazards();
     }
 
     function drawCoins(time) {
@@ -821,15 +860,37 @@
 
     function drawOverlay() {
       if (!complete) return;
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.72)';
+      ctx.save();
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
       ctx.fillRect(0, 0, WIDTH, HEIGHT);
+      ctx.textAlign = 'center';
       ctx.fillStyle = '#ffd447';
       ctx.font = '900 24px Courier New';
-      ctx.fillText('LEVEL COMPLETE', 122, 112);
+      ctx.fillText('LEVEL COMPLETE', WIDTH / 2, 72);
       ctx.fillStyle = '#ffffff';
-      ctx.font = '800 13px Courier New';
-      ctx.fillText('LEADERBOARD XP READY: ' + xp, 130, 138);
-      ctx.fillText('PRESS RESET TO RUN AGAIN', 136, 160);
+      ctx.font = '800 14px Courier New';
+      ctx.fillText('RUN TIME ' + formatRunTime(runElapsedMs), WIDTH / 2, 108);
+      ctx.fillText('BEST TIME ' + formatRunTime(bestTimeMs || runElapsedMs), WIDTH / 2, 129);
+      ctx.fillStyle = '#7cff82';
+      ctx.fillText('SPEED BONUS +' + speedrunBonusXp + ' XP', WIDTH / 2, 151);
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '800 12px Courier New';
+      ctx.fillText('LEADERBOARD XP READY: ' + xp, WIDTH / 2, 174);
+      ctx.fillText('PRESS RESET TO RUN AGAIN', WIDTH / 2, 199);
+      ctx.restore();
+    }
+
+    function drawSpeedrunHud(time) {
+      ctx.save();
+      ctx.fillStyle = 'rgba(9, 19, 38, 0.83)';
+      ctx.fillRect(WIDTH - 165, 5, 160, 37);
+      ctx.font = 'bold 12px Courier New';
+      ctx.fillStyle = '#ffffff';
+      ctx.fillText('SPEED ' + formatRunTime(runElapsedMs), WIDTH - 159, 19);
+      ctx.font = 'bold 10px Courier New';
+      ctx.fillStyle = '#ffe45a';
+      ctx.fillText('PAR 3:00' + (comboCount > 1 && time < comboExpiresAt ? '  COMBO x' + comboCount : ''), WIDTH - 159, 34);
+      ctx.restore();
     }
 
     function drawSecretNotification(time) {
@@ -857,6 +918,7 @@
       drawEnemies();
       drawPlayer();
       ctx.restore();
+      drawSpeedrunHud(time);
       drawSecretNotification(time);
       drawOverlay();
     }
