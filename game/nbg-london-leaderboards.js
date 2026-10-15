@@ -38,6 +38,8 @@
     var name = linked && gate.getTelegramName ? gate.getTelegramName() : null;
     if (account) account.textContent = linked && name ? 'Telegram: ' + name : linked ?
       'Telegram account linked' : 'Guest — scores are not saved';
+    var hudName = document.getElementById('nbg-hud-player');
+    if (hudName) hudName.textContent = linked && name ? String(name).slice(0, 36) : linked ? 'TELEGRAM' : 'GUEST';
     return linked;
   }
 
