@@ -1607,6 +1607,20 @@ const afterRestart = await page.evaluate(() => window.NBGLevel1State.runElapsedM
 assert.ok(afterRestart < 2500, 'new run must restart with a fresh clock');
 await page.evaluate(() => window.NBGLevel1Runtime.reset());
 
+// Guest runs cannot leave permanent device-local best scores, even after finishing.
+const guestRecords = await page.evaluate(() => ({
+  bestXp: localStorage.getItem('nbg-london-best-xp'),
+  bestTime: localStorage.getItem('nbg-london-best-run-ms'),
+  tabs: [...document.querySelectorAll('[data-nbg-metric]')].map(button => button.dataset.nbgMetric),
+  account: document.getElementById('nbg-record-account')?.textContent || '',
+  hud: document.getElementById('nbg-hud-player')?.textContent || ''
+}));
+assert.equal(guestRecords.bestXp, null, 'guest XP must not remain permanently in localStorage');
+assert.equal(guestRecords.bestTime, null, 'guest run time must not remain permanently in localStorage');
+assert.deepEqual(guestRecords.tabs, ['fastest', 'speed_xp', 'xp'], 'three London ranking views must be visible');
+assert.ok(guestRecords.account.includes('Guest') && guestRecords.hud === 'GUEST',
+  'guest players must be shown as unranked, not as permanently scored Telegram users');
+
 const pixelEnergy = await page.evaluate(() => {
   const canvas = document.getElementById('game');
   const data = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data;
