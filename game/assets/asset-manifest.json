@@ -29,7 +29,9 @@
   "enemies": {
     "londonRat": "enemies/london-rat.svg",
     "pigeon": "enemies/pigeon.svg",
-    "graffitiBot": "enemies/graffiti-bot.svg"
+    "graffitiBot": "enemies/bb8-walk.png",
+    "graffitiBotKick": "enemies/bb8-kick.png",
+    "graffitiBotHurt": "enemies/bb8-hurt.png"
   },
   "acceptance": {
     "startButton": true,
