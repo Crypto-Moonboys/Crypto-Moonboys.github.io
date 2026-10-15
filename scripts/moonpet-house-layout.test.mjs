@@ -188,7 +188,7 @@ test('house is wired only through signed selected-pet state and actions',()=>{
   assert.match(worker,/getPetHouseLayout|readPetHouseLayout/);
   assert.match(worker,/action === 'house_place'/);
   assert.match(client,/function renderPetHouse\(/);
-  assert.match(entry,/moonpet-mini-app\.js\?v=20261015-pr2-egg-claim-v1/);
+  assert.match(entry,/moonpet-mini-app\.js\?v=20261015-pr3-home-delete-v1/);
   assert.doesNotMatch(client,/house_place[\s\S]{0,90}moon_gold/);
   assert.match(worker,/readPetHouseLayout\(lifecycleScope\.db, telegramId, petRaw\)/);
   assert.match(worker,/readPetHouseLayout\(identityScope\.db, telegramId, petRaw\)/);
@@ -277,4 +277,19 @@ test('096 is additive/idempotent and enforces room ownership and valid choices',
   f.sql.prepare("DELETE FROM telegram_pet_season_slots WHERE pet_id='pet-1'").run();
   assert.equal(f.sql.prepare('SELECT COUNT(*) AS c FROM telegram_pet_house_rooms').get().c,0);
   assert.deepEqual(f.sql.prepare('PRAGMA foreign_key_check').all(),[]);f.close();
+});
+
+test('PR3 home status shows saved selected-pet ownership without inventing comfort upgrades', () => {
+  const source=fs.readFileSync(new URL('../js/moonpet-mini-app.js',import.meta.url),'utf8');
+  const block=source.split('// TEST-EXPORT: homeStatusSummary:start')[1].split('// TEST-EXPORT: homeStatusSummary:end')[0];
+  const ctx={state:{pet:{pet_id:'pet-a'},pet_house:{available:true,pet_id:'pet-a',floor_saved:true,layout:{room:'kitchen',floor:'steel'}},pet_furniture:{available:true,pet_id:'pet-a',arrangements_available:true,owned:['neon_lamp'],catalog:{neon_lamp:{label:'Neon Lamp'}},arrangements:{kitchen:[{key:'neon_lamp',x:15,y:30}]}}},savedHomeLayout:s=>s.pet_house.layout,roomFurnitureItems:(s,room)=>s.pet_furniture.arrangements[room],FREE_HOME_LABELS:{sleep_mat:'Fish Tank'},escapeHtml:String};
+  vm.createContext(ctx);vm.runInContext(block,ctx);
+  const out=ctx.renderHomeStatusSummary();
+  assert.match(out,/CURRENT ROOM \/\/ KITCHEN \/\/ SAVED/);
+  assert.match(out,/CURRENT MATT \/\/ CAMO MATT/);
+  assert.match(out,/DISPLAYED \/\/ 1\/8 \/\/ Neon Lamp/);
+  assert.match(out,/ACCOUNT PAID FURNITURE OWNED \/\/ 1\/1/);
+  assert.match(out,/NO COMFORT, HEALTH, XP OR PASSIVE REWARD EFFECT/);
+  ctx.state.pet.pet_id='pet-b';
+  assert.match(ctx.renderHomeStatusSummary(),/SYNCING/);
 });
