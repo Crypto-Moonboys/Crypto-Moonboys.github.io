@@ -819,8 +819,6 @@
           ctx.fillStyle = '#ffd447';
           ctx.fillRect(x + Math.round(coinSize * 0.18), y, Math.round(coinSize * 0.64), coinSize);
         }
-        ctx.fillStyle = 'rgba(255, 212, 71, 0.22)';
-        ctx.fillRect(x - 2, y + coinSize + Math.sin(time / 120) * 1, coinSize + 4, 2);
       }
     }
 
