@@ -298,8 +298,8 @@ assert.equal(
   runtimeSource.includes('var platformY = p.y + FOREGROUND_VISUAL_OFFSET_Y') &&
     runtimeSource.includes('ctx.fillRect(Math.round(p.x - cameraX), platformY, p.w, p.h)') &&
     runtimeSource.includes('ctx.fillRect(Math.round(p.x - cameraX), platformY, p.w, 3)') &&
-    runtimeSource.includes('var y = Math.round(coin.y + (coin.float || 0) + FOREGROUND_VISUAL_OFFSET_Y - 8)') &&
-    runtimeSource.includes('ctx.fillRect(x - 2, y + 16 + Math.sin(time / 120) * 1, 20, 2)') &&
+    runtimeSource.includes('var y = Math.round(coin.y + (coin.float || 0) + FOREGROUND_VISUAL_OFFSET_Y - coinSize / 2)') &&
+    runtimeSource.includes('ctx.fillRect(x - 2, y + coinSize + Math.sin(time / 120) * 1, coinSize + 4, 2)') &&
     runtimeSource.includes('var y = Math.round(enemy.y + (enemy.bob || 0) + FOREGROUND_VISUAL_OFFSET_Y)') &&
     runtimeSource.includes('var checkpointY = checkpoint.y + FOREGROUND_VISUAL_OFFSET_Y') &&
     runtimeSource.includes('ctx.drawImage(images.checkpoint, checkX, checkpointY, checkpoint.w, checkpoint.h)') &&
@@ -778,7 +778,7 @@ assert.equal(
   'regular XP coins must load the uploaded WAX CASH sprite sheet'
 );
 assert.equal(state.running, true, 'ArrowRight must start the game loop');
-assert.equal(state.coinCount, 282, 'speedrun must spawn 282 regular XP coins across the world');
+assert.equal(state.coinCount, 312, 'speedrun must spawn 312 XP coins across four sizes');
 assert.equal(state.enemyCount, 36, 'speedrun must spawn 36 moving enemies');
 assert.equal(state.platformCount, 76, 'speedrun must provide 76 playable jump platforms');
 assert.equal(state.hazardCount, 39, 'speedrun must provide 39 collidable obstacles');
@@ -1226,6 +1226,51 @@ assert.equal(state.xp, 0, 'reset must clear secret XP');
 assert.equal(state.taken, 0, 'reset must restore every secret coin');
 assert.equal(state.banner, '', 'reset must clear secret notification');
 assert.equal(state.bannerUntil, 0, 'reset must clear secret notification expiry');
+
+// Four WAX CASH coin sizes have fixed XP tiers and scaled collision hitboxes.
+await page.evaluate(() => window.NBGLevel1Runtime.reset());
+await page.keyboard.down('KeyD');
+await page.waitForFunction(() => window.NBGLevel1State?.running === true, null, { timeout: 3000 });
+await page.keyboard.up('KeyD');
+state = await page.evaluate(() => ({
+  tiers: [...new Set(window.NBGLevel1State.coins.map((coin) => coin.tier))].sort(),
+  pairs: Object.fromEntries(['small', 'medium', 'large', 'xl'].map((tier) => {
+    const coin = window.NBGLevel1State.coins.find((entry) => entry.tier === tier);
+    return [tier, { size: coin.size, xp: coin.xp, r: coin.r }];
+  }))
+}));
+assert.deepEqual(state.tiers, ['large', 'medium', 'small', 'xl'], 'four coin tiers must be present');
+assert.deepEqual(state.pairs, {
+  small: { size: 16, xp: 100, r: 6 },
+  medium: { size: 32, xp: 250, r: 13 },
+  large: { size: 40, xp: 500, r: 16 },
+  xl: { size: 50, xp: 1000, r: 20 }
+}, 'each coin tier must use the required size, XP and pickup radius');
+for (const tier of ['small', 'medium', 'large', 'xl']) {
+  const previous = await page.evaluate((name) => {
+    const state = window.NBGLevel1State;
+    const coin = state.coins.find((entry) => entry.tier === name && !entry.taken);
+    state.player.x = coin.x - 8;
+    state.player.y = coin.y - 8;
+    state.player.vx = 0;
+    state.player.vy = 0;
+    state.player.invuln = 3000;
+    return { xp: state.xp, coinX: coin.x, xpValue: coin.xp };
+  }, tier);
+  await page.waitForFunction((coinX) =>
+    window.NBGLevel1State.coins.some((coin) => coin.x === coinX && coin.taken),
+    previous.coinX, { timeout: 2500 }
+  );
+  const gained = await page.evaluate(() => ({
+    xp: window.NBGLevel1State.xp,
+    multiplier: window.NBGLevel1State.comboCount
+  }));
+  assert.equal(gained.xp - previous.xp, previous.xpValue * gained.multiplier,
+    tier + ' coin collection must award the tier XP times the earned combo multiplier');
+}
+await page.evaluate(() => window.NBGLevel1Runtime.reset());
+assert.equal(await page.evaluate(() => window.NBGLevel1State.coins.filter((coin) => coin.taken).length),
+  0, 'reset must restore all four sizes of regular coins');
 
 const pixelEnergy = await page.evaluate(() => {
   const canvas = document.getElementById('game');
