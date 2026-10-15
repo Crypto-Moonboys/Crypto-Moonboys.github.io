@@ -15,6 +15,7 @@
   var MAX_SPEED = 4.2;
   var JUMP_VELOCITY = -11.4;
   var DOUBLE_JUMP_VELOCITY = -12.8;
+  var DOUBLE_JUMP_SIDE_SPEED = 5.4;
   var INVULN_TIME = 1050;
   var SKYLINE_PARALLAX = 0.22;
   var SKYLINE_Y = 40;
@@ -126,7 +127,7 @@
     ctx.imageSmoothingEnabled = false;
 
     var keys = {};
-    var jumpWasDown = false;
+    var pendingJumpPresses = 0;
     var jumpsUsed = 0;
     var touch = { left: false, right: false, jump: false, spray: false };
     var images = {};
@@ -273,7 +274,11 @@
     }
 
     function onKey(e, down) {
+      var wasDown = !!keys[e.code];
       keys[e.code] = down;
+      if (down && !wasDown && getControlForCode(e.code) === 'jump') {
+        pendingJumpPresses = Math.min(2, pendingJumpPresses + 1);
+      }
       if (isStartInputCode(e.code)) {
         e.preventDefault();
         if (down) {
@@ -285,7 +290,7 @@
 
     function clearInput() {
       keys = {};
-      jumpWasDown = false;
+      pendingJumpPresses = 0;
       Object.keys(touch).forEach(function (control) {
         touch[control] = false;
       });
@@ -298,9 +303,8 @@
       var replay = initialInputReplay;
       var left = keys.ArrowLeft || keys.KeyA || touch.left || (replay && replay.control === 'left');
       var right = keys.ArrowRight || keys.KeyD || touch.right || (replay && replay.control === 'right');
-      var jump = keys.Space || keys.ArrowUp || keys.KeyW || touch.jump || (replay && replay.control === 'jump');
-      var jumpPressed = !!jump && !jumpWasDown;
-      jumpWasDown = !!jump;
+      var jumpPressed = pendingJumpPresses > 0 || (replay && replay.control === 'jump');
+      if (pendingJumpPresses > 0) pendingJumpPresses -= 1;
       var spray = keys.KeyS || keys.KeyX || touch.spray || (replay && replay.control === 'spray');
 
       if (left) {
@@ -320,8 +324,12 @@
         player.vy = JUMP_VELOCITY;
         player.grounded = false;
         jumpsUsed = 1;
-      } else if (jumpPressed && !player.grounded && jumpsUsed < 2) {
+      } else if (jumpPressed && !player.grounded && jumpsUsed === 1) {
         player.vy = DOUBLE_JUMP_VELOCITY;
+        if (left !== right) {
+          player.vx = left ? -DOUBLE_JUMP_SIDE_SPEED : DOUBLE_JUMP_SIDE_SPEED;
+          player.facing = left ? -1 : 1;
+        }
         jumpsUsed = 2;
       }
 
@@ -890,6 +898,7 @@
         if (Object.prototype.hasOwnProperty.call(touch, control)) {
           touch[control] = active;
           if (active) {
+            if (control === 'jump') pendingJumpPresses = Math.min(2, pendingJumpPresses + 1);
             queueInitialInput(control);
             beginGameplay();
           }
