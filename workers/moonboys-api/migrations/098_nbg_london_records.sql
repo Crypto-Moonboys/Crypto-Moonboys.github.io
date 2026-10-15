@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS nbg_london_runs (
   started_at_ms INTEGER NOT NULL,
   expires_at_ms INTEGER NOT NULL,
   finished_at_ms INTEGER,
+  finish_token TEXT UNIQUE,
   CHECK (expires_at_ms > started_at_ms)
 );
 CREATE INDEX IF NOT EXISTS idx_nbg_london_runs_player ON nbg_london_runs(telegram_id, started_at_ms);
