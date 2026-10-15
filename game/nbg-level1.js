@@ -32,6 +32,10 @@
   var PARACHUTE_SPAWN_MIN_MS = 5500;
   var PARACHUTE_SPAWN_JITTER_MS = 4500;
   var PARACHUTE_MAX_ACTIVE = 3;
+  var PARACHUTE_MAX_LANDED = 5;
+  var PARACHUTE_LANDED_LIFETIME_MS = 22000;
+  var SPRAY_ENEMY_RANGE = 86;
+  var ENEMY_STOMP_BOUNCE = -9;
   var PARACHUTE_GLIDE_SPEED = 0.68;
   var PARACHUTE_STEER_SPEED = 0.028;
   var PARACHUTE_RENDER_WIDTH = 64;
@@ -209,6 +213,8 @@
     var parachuteRats = [];
     var nextParachuteAt = 6000;
     var parachuteSpawnCount = 0;
+    var gameOver = false;
+    var runSequence = 0;
 
     var player = {
       x: 64,
@@ -551,8 +557,8 @@
       resolveVerticalCollision(previousY);
 
       if (player.y > HEIGHT + 80) {
-        player.health = Math.max(1, player.health - 1);
-        resetToCheckpoint();
+        damagePlayer('fall', player.x);
+        if (!gameOver) resetToCheckpoint();
       }
 
       if (sprayTimer > 0) {
@@ -642,8 +648,34 @@
       }
     }
 
+    function defeatEnemy(enemy, time, reason) {
+      if (enemy.defeated) return;
+      enemy.defeated = true;
+      enemy.defeatedAt = time;
+      var earnedXp = enemy.spawnedByParachute ? 100 : 75;
+      xp += earnedXp;
+      window.dispatchEvent(new CustomEvent('nbg-enemy-defeated', {
+        detail: { type: enemy.type || enemy.variant, reason: reason, earnedXp: earnedXp, xp: xp }
+      }));
+    }
+
+    function playerSprayHits(target) {
+      if (sprayTimer <= 0 || gameOver) return false;
+      var playerCenter = player.x + player.w / 2;
+      var targetCenter = target.x + target.w / 2;
+      var distance = (targetCenter - playerCenter) * player.facing;
+      var verticalDistance = Math.abs((target.y + target.h / 2) - (player.y + player.h / 2));
+      return distance >= -6 && distance <= SPRAY_ENEMY_RANGE && verticalDistance < 58;
+    }
+
+    function playerStomps(target) {
+      return player.vy > 1.5 &&
+        player.y + player.h <= target.y + target.h * 0.58 &&
+        rectsOverlap(player, target);
+    }
+
     function damagePlayer(type, hazardX) {
-      if (player.invuln > 0) return;
+      if (player.invuln > 0 || gameOver) return;
       player.health -= 1;
       player.vx = hazardX > player.x ? -5.5 : 5.5;
       player.vy = -6.2;
@@ -655,9 +687,13 @@
         detail: { health: player.health, enemy: type }
       }));
       if (player.health <= 0) {
-        player.health = 3;
-        xp = Math.max(0, xp - 150);
-        resetToCheckpoint();
+        player.health = 0;
+        gameOver = true;
+        running = false;
+        clearInput();
+        window.dispatchEvent(new CustomEvent('nbg-game-over', {
+          detail: { timeMs: Math.round(runElapsedMs), xp: xp, enemy: type }
+        }));
       }
     }
 
@@ -674,7 +710,9 @@
 
     function updateParachuteRats(time, dt) {
       var step = dt / TARGET_FRAME_MS;
+      var landedCount = enemies.filter(function (enemy) { return enemy.spawnedByParachute && !enemy.defeated; }).length;
       if (runElapsedMs >= nextParachuteAt && parachuteRats.length < PARACHUTE_MAX_ACTIVE &&
+          landedCount < PARACHUTE_MAX_LANDED &&
           player.x > 350 && player.x < WORLD_WIDTH - 250) {
         var variants = ['parachuteRatA', 'parachuteRatB', 'parachuteRatC'];
         var variant = variants[Math.floor(Math.random() * variants.length)];
@@ -697,18 +735,28 @@
         rat.x += (rat.vx + Math.sin(rat.age / 380 + rat.swayPhase) * 0.24) * step;
         rat.x = clamp(rat.x, 0, WORLD_WIDTH - rat.w);
         rat.y += (PARACHUTE_GLIDE_SPEED + Math.sin(rat.age / 470 + rat.swayPhase) * 0.11) * step;
+        if (playerSprayHits(rat) || playerStomps(rat)) {
+          var stomped = !playerSprayHits(rat);
+          if (stomped) player.vy = ENEMY_STOMP_BOUNCE;
+          defeatEnemy(rat, time, stomped ? 'stomp' : 'spray');
+          parachuteRats.splice(i, 1);
+          continue;
+        }
         if (player.invuln <= 0 && rectsOverlap(player, rat)) {
           damagePlayer('parachute-rat', rat.x);
-          // A successful ambush exits like a landed rat so it cannot hit repeatedly.
           rat.y = FLOOR_Y - rat.h;
         }
         if (rat.y + rat.h >= FLOOR_Y) {
-          enemies.push({
-            type: rat.variant === 'parachuteRatC' ? 'turquoiseRat' : 'brownRat',
-            x: rat.x, y: FLOOR_Y - 42, w: 28, h: 42,
-            vx: Math.random() < 0.5 ? -1.1 : 1.1,
-            min: Math.max(0, rat.x - 65), max: Math.min(WORLD_WIDTH - 28, rat.x + 65)
-          });
+          if (landedCount < PARACHUTE_MAX_LANDED) {
+            enemies.push({
+              type: rat.variant === 'parachuteRatC' ? 'turquoiseRat' : 'brownRat',
+              x: rat.x, y: FLOOR_Y - 42, w: 28, h: 42,
+              vx: Math.random() < 0.5 ? -1.1 : 1.1,
+              min: Math.max(0, rat.x - 65), max: Math.min(WORLD_WIDTH - 28, rat.x + 65),
+              spawnedByParachute: true, spawnedAt: runElapsedMs
+            });
+            landedCount += 1;
+          }
           parachuteRats.splice(i, 1);
         }
       }
@@ -732,8 +780,21 @@
 
     function updateEnemies(time, dt) {
       var step = dt / TARGET_FRAME_MS;
-      for (var i = 0; i < enemies.length; i += 1) {
+      for (var i = enemies.length - 1; i >= 0; i -= 1) {
         var enemy = enemies[i];
+        if (enemy.defeated || (enemy.spawnedByParachute &&
+            (runElapsedMs - enemy.spawnedAt >= PARACHUTE_LANDED_LIFETIME_MS ||
+            Math.abs(enemy.x - player.x) > WIDTH * 2))) {
+          if (enemy.spawnedByParachute) enemies.splice(i, 1);
+          continue;
+        }
+        if (playerSprayHits(enemy) || playerStomps(enemy)) {
+          var stomped = !playerSprayHits(enemy);
+          if (stomped) player.vy = ENEMY_STOMP_BOUNCE;
+          defeatEnemy(enemy, time, stomped ? 'stomp' : 'spray');
+          if (enemy.spawnedByParachute) enemies.splice(i, 1);
+          continue;
+        }
         enemy.x += enemy.vx * step;
         if (enemy.x < enemy.min || enemy.x > enemy.max) enemy.vx *= -1;
         if (enemy.type === 'pigeon') enemy.bob = Math.sin(time / 180) * 9;
@@ -840,7 +901,7 @@
       hud.xp.textContent = 'XP ' + xp;
       hud.coins.textContent = 'COINS ' + collected + '/' + coins.length;
       hud.health.textContent = 'HEALTH ' + player.health;
-      hud.state.textContent = complete ? 'LEVEL COMPLETE' : running ? ((checkpoint.active || courseCheckpoints.some(function (marker) { return marker.active; })) ? 'CHECKPOINT' : 'RUNNING') : WAITING_HUD_TEXT;
+      hud.state.textContent = complete ? 'LEVEL COMPLETE' : gameOver ? 'GAME OVER' : running ? ((checkpoint.active || courseCheckpoints.some(function (marker) { return marker.active; })) ? 'CHECKPOINT' : 'RUNNING') : WAITING_HUD_TEXT;
     }
 
     function drawImageLayer(image, parallax, y, h, fallbackColor) {
@@ -1040,6 +1101,7 @@
     function drawEnemies(time) {
       for (var i = 0; i < enemies.length; i += 1) {
         var enemy = enemies[i];
+        if (enemy.defeated) continue;
         var botHurt = enemy.type === 'bot' && (enemy.hurtUntil || 0) > time;
         var botKicking = enemy.type === 'bot' && !botHurt && Math.abs(player.x - enemy.x) < 68 && Math.abs(player.y - enemy.y) < 48;
         var botImageKey = botHurt ? 'botHurt' : botKicking ? 'botKick' : 'bot';
@@ -1179,7 +1241,24 @@
     }
 
     function drawOverlay() {
-      if (!complete) return;
+      if (!complete && !gameOver) return;
+      if (gameOver) {
+        ctx.save();
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.84)';
+        ctx.fillRect(0, 0, WIDTH, HEIGHT);
+        ctx.textAlign = 'center';
+        ctx.fillStyle = '#ff786b';
+        ctx.font = '900 26px Courier New';
+        ctx.fillText('GAME OVER', WIDTH / 2, 81);
+        ctx.font = 'bold 13px Courier New';
+        ctx.fillStyle = '#ffffff';
+        ctx.fillText('RUN TIME ' + formatRunTime(runElapsedMs), WIDTH / 2, 121);
+        ctx.fillText('XP EARNED ' + xp, WIDTH / 2, 145);
+        ctx.fillStyle = '#ffd447';
+        ctx.fillText('PRESS RESET TO TRY AGAIN', WIDTH / 2, 190);
+        ctx.restore();
+        return;
+      }
       ctx.save();
       ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
       ctx.fillRect(0, 0, WIDTH, HEIGHT);
@@ -1258,7 +1337,8 @@
       drawOverlay();
     }
 
-    function tick(time) {
+    function tick(time, sequence) {
+      if (sequence !== runSequence) return;
       if (!lastTime) lastTime = time;
       var frameElapsedMs = Math.max(0, time - lastTime);
       var dt = Math.min(33, frameElapsedMs);
@@ -1267,6 +1347,11 @@
       if (running) {
         runElapsedMs += frameElapsedMs;
         updatePlayer(dt);
+        if (gameOver) {
+          updateHud();
+          render(time);
+          return;
+        }
         updateCoins(time);
         updateSecretCoins(time);
         updateRewardBoxes(time);
@@ -1281,7 +1366,7 @@
       }
       updateHud();
       render(time);
-      if (running || completionAnimationActive) requestAnimationFrame(tick);
+      if (running || completionAnimationActive) requestAnimationFrame(function (nextTime) { tick(nextTime, sequence); });
     }
 
     function exposeTestState() {
@@ -1310,6 +1395,8 @@
         get comboCount() { return comboCount; },
         get xp() { return xp; },
         get complete() { return complete; },
+        get gameOver() { return gameOver; },
+        get activeSpawnedRats() { return enemies.filter(function (enemy) { return enemy.spawnedByParachute && !enemy.defeated; }).length; },
         get assetsLoaded() { return assetsLoaded; },
         get gameVisible() { return gameVisible; },
         get waitingForFirstInput() { return waitingForFirstInput; },
@@ -1344,7 +1431,9 @@
     }
 
     function resetRun() {
+      runSequence += 1;
       running = false;
+      gameOver = false;
       waitingForFirstInput = true;
       completionAnimationActive = false;
       complete = false;
@@ -1392,10 +1481,8 @@
       secretCoins.forEach(function (coin) { coin.taken = false; });
       rewardBoxes.forEach(function (box) { box.opened = false; box.reward = null; });
       // Remove extra walkers created by landed parachutes before restoring patrols.
-      enemies.length = initialEnemies.length;
-      enemies.forEach(function (enemy, index) {
-        Object.assign(enemy, initialEnemies[index]);
-      });
+      enemies.length = 0;
+      initialEnemies.forEach(function (enemy) { enemies.push(Object.assign({}, enemy)); });
       checkpoint.active = false;
       courseCheckpoints.forEach(function (marker) { marker.active = false; });
       gameVisible = true;
@@ -1467,15 +1554,17 @@
     function beginGameplay() {
       if (running) return Promise.resolve(window.NBGLevel1State);
       if (!assetsLoaded) return init().then(beginGameplay);
-      if (complete) return Promise.resolve(window.NBGLevel1State);
+      if (complete || gameOver) return Promise.resolve(window.NBGLevel1State);
       initialInputReplay = pendingInitialInput;
       pendingInitialInput = null;
       waitingForFirstInput = false;
       running = true;
+      runSequence += 1;
+      var sequence = runSequence;
       lastTime = 0;
       updateHud();
       window.dispatchEvent(new CustomEvent('nbg-level-started', { detail: { level: 'london-level-1' } }));
-      requestAnimationFrame(tick);
+      requestAnimationFrame(function (time) { tick(time, sequence); });
       return Promise.resolve(window.NBGLevel1State);
     }
 
