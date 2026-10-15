@@ -901,7 +901,7 @@
       hud.xp.textContent = 'XP ' + xp;
       hud.coins.textContent = 'COINS ' + collected + '/' + coins.length;
       hud.health.textContent = 'HEALTH ' + player.health;
-      hud.state.textContent = complete ? 'LEVEL COMPLETE' : running ? ((checkpoint.active || courseCheckpoints.some(function (marker) { return marker.active; })) ? 'CHECKPOINT' : 'RUNNING') : WAITING_HUD_TEXT;
+      hud.state.textContent = complete ? 'LEVEL COMPLETE' : gameOver ? 'GAME OVER' : running ? ((checkpoint.active || courseCheckpoints.some(function (marker) { return marker.active; })) ? 'CHECKPOINT' : 'RUNNING') : WAITING_HUD_TEXT;
     }
 
     function drawImageLayer(image, parallax, y, h, fallbackColor) {
@@ -1241,7 +1241,24 @@
     }
 
     function drawOverlay() {
-      if (!complete) return;
+      if (!complete && !gameOver) return;
+      if (gameOver) {
+        ctx.save();
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.84)';
+        ctx.fillRect(0, 0, WIDTH, HEIGHT);
+        ctx.textAlign = 'center';
+        ctx.fillStyle = '#ff786b';
+        ctx.font = '900 26px Courier New';
+        ctx.fillText('GAME OVER', WIDTH / 2, 81);
+        ctx.font = 'bold 13px Courier New';
+        ctx.fillStyle = '#ffffff';
+        ctx.fillText('RUN TIME ' + formatRunTime(runElapsedMs), WIDTH / 2, 121);
+        ctx.fillText('XP EARNED ' + xp, WIDTH / 2, 145);
+        ctx.fillStyle = '#ffd447';
+        ctx.fillText('PRESS RESET TO TRY AGAIN', WIDTH / 2, 190);
+        ctx.restore();
+        return;
+      }
       ctx.save();
       ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
       ctx.fillRect(0, 0, WIDTH, HEIGHT);
@@ -1320,7 +1337,8 @@
       drawOverlay();
     }
 
-    function tick(time) {
+    function tick(time, sequence) {
+      if (sequence !== runSequence) return;
       if (!lastTime) lastTime = time;
       var frameElapsedMs = Math.max(0, time - lastTime);
       var dt = Math.min(33, frameElapsedMs);
@@ -1329,6 +1347,11 @@
       if (running) {
         runElapsedMs += frameElapsedMs;
         updatePlayer(dt);
+        if (gameOver) {
+          updateHud();
+          render(time);
+          return;
+        }
         updateCoins(time);
         updateSecretCoins(time);
         updateRewardBoxes(time);
@@ -1343,7 +1366,7 @@
       }
       updateHud();
       render(time);
-      if (running || completionAnimationActive) requestAnimationFrame(tick);
+      if (running || completionAnimationActive) requestAnimationFrame(function (nextTime) { tick(nextTime, sequence); });
     }
 
     function exposeTestState() {
@@ -1372,6 +1395,8 @@
         get comboCount() { return comboCount; },
         get xp() { return xp; },
         get complete() { return complete; },
+        get gameOver() { return gameOver; },
+        get activeSpawnedRats() { return enemies.filter(function (enemy) { return enemy.spawnedByParachute && !enemy.defeated; }).length; },
         get assetsLoaded() { return assetsLoaded; },
         get gameVisible() { return gameVisible; },
         get waitingForFirstInput() { return waitingForFirstInput; },
@@ -1406,7 +1431,9 @@
     }
 
     function resetRun() {
+      runSequence += 1;
       running = false;
+      gameOver = false;
       waitingForFirstInput = true;
       completionAnimationActive = false;
       complete = false;
@@ -1454,10 +1481,8 @@
       secretCoins.forEach(function (coin) { coin.taken = false; });
       rewardBoxes.forEach(function (box) { box.opened = false; box.reward = null; });
       // Remove extra walkers created by landed parachutes before restoring patrols.
-      enemies.length = initialEnemies.length;
-      enemies.forEach(function (enemy, index) {
-        Object.assign(enemy, initialEnemies[index]);
-      });
+      enemies.length = 0;
+      initialEnemies.forEach(function (enemy) { enemies.push(Object.assign({}, enemy)); });
       checkpoint.active = false;
       courseCheckpoints.forEach(function (marker) { marker.active = false; });
       gameVisible = true;
@@ -1529,15 +1554,17 @@
     function beginGameplay() {
       if (running) return Promise.resolve(window.NBGLevel1State);
       if (!assetsLoaded) return init().then(beginGameplay);
-      if (complete) return Promise.resolve(window.NBGLevel1State);
+      if (complete || gameOver) return Promise.resolve(window.NBGLevel1State);
       initialInputReplay = pendingInitialInput;
       pendingInitialInput = null;
       waitingForFirstInput = false;
       running = true;
+      runSequence += 1;
+      var sequence = runSequence;
       lastTime = 0;
       updateHud();
       window.dispatchEvent(new CustomEvent('nbg-level-started', { detail: { level: 'london-level-1' } }));
-      requestAnimationFrame(tick);
+      requestAnimationFrame(function (time) { tick(time, sequence); });
       return Promise.resolve(window.NBGLevel1State);
     }
 
