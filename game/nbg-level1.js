@@ -94,6 +94,11 @@
 
     if (manifest.objects) {
       if (manifest.objects.xpCoin) assets.coin = resolveAssetPath(manifest.objects.xpCoin);
+      if (manifest.objects.mysteryBox) assets.mysteryBox = resolveAssetPath(manifest.objects.mysteryBox);
+      if (manifest.objects.starBox) assets.starBox = resolveAssetPath(manifest.objects.starBox);
+      if (manifest.objects.floorCrate) assets.floorCrate = resolveAssetPath(manifest.objects.floorCrate);
+      if (manifest.objects.floatingBrick) assets.floatingBrick = resolveAssetPath(manifest.objects.floatingBrick);
+      if (manifest.objects.floatingRock) assets.floatingRock = resolveAssetPath(manifest.objects.floatingRock);
       if (manifest.objects.checkpoint) assets.checkpoint = resolveAssetPath(manifest.objects.checkpoint);
       if (manifest.objects.finishFlag) assets.finish = resolveAssetPath(manifest.objects.finishFlag);
     }
@@ -242,6 +247,21 @@
       { x: 1510, y: 148, w: 180, h: 16 }
     ];
 
+    platforms.forEach(function (platform, index) {
+      platform.material = index % 2 === 0 ? 'brick' : 'rock';
+    });
+
+    var crates = [
+      { x: 1840, y: FLOOR_Y - 28, w: 28, h: 28 },
+      { x: 2070, y: FLOOR_Y - 28, w: 28, h: 28 }
+    ];
+    var rewardBoxes = [
+      { x: 535, y: 85, w: 25, h: 25, type: 'mystery', opened: false },
+      { x: 1600, y: 55, w: 25, h: 25, type: 'star', opened: false }
+    ];
+    var rewardNotificationText = '';
+    var rewardNotificationUntil = 0;
+
     var secretNotificationUntil = 0;
     var secretNotificationText = '';
     var secretCoins = [
@@ -294,7 +314,8 @@
         { x: startX + 590, y: 157 - section % 4 * 8, w: 145, h: 16 },
         { x: startX + 820, y: 116 + section % 3 * 8, w: 110, h: 16 }
       ];
-      ledges.forEach(function (ledge) {
+      ledges.forEach(function (ledge, ledgeIndex) {
+        ledge.material = (section + ledgeIndex) % 2 === 0 ? 'brick' : 'rock';
         platforms.push(ledge);
         for (var j = 0; j < 3; j += 1) {
           coins.push({ x: ledge.x + 30 + j * 30, y: ledge.y - 24 - j % 2 * 8,
@@ -315,6 +336,13 @@
         coins.push({ x: startX + 866, y: ledges[3].y - 62,
           tier: extraTierName, size: extraTier.size, r: Math.round(extraTier.size * 0.4), xp: extraTier.xp, taken: false });
       }
+
+      crates.push({ x: startX + 65, y: FLOOR_Y - 28, w: 28, h: 28 });
+      crates.push({ x: startX + 675, y: FLOOR_Y - 28, w: 28, h: 28 });
+      rewardBoxes.push({ x: startX + 189, y: ledges[0].y - 78, w: 25, h: 25,
+        type: 'mystery', opened: false });
+      rewardBoxes.push({ x: startX + 651, y: ledges[2].y - 95, w: 25, h: 25,
+        type: 'star', opened: false });
 
       hazards.push({ x: startX + 275, y: FLOOR_Y - 18, w: 34, h: 18, type: 'cones' });
       hazards.push({ x: startX + 745, y: FLOOR_Y - 20, w: 46, h: 20, type: 'spikes' });
