@@ -22,7 +22,7 @@
     ]
   },
   "objects": {
-    "xpCoin": "objects/xp-coin.svg",
+    "xpCoin": "objects/2300-spritesheet.png",
     "checkpoint": "objects/checkpoint.svg",
     "finishFlag": "objects/finish-flag.svg"
   },

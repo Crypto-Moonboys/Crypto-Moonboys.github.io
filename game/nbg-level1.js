@@ -782,7 +782,16 @@
         if (x < -24 || x > WIDTH + 12) continue;
         var y = Math.round(coin.y + (coin.float || 0) + FOREGROUND_VISUAL_OFFSET_Y - 8);
         if (images.coin) {
-          ctx.drawImage(images.coin, x, y, 16, 16);
+          var coinColumns = 5;
+          var coinRows = 5;
+          var coinFrameCount = coinColumns * coinRows;
+          var coinFrame = Math.floor((time + coin.x * 7) / 85) % coinFrameCount;
+          var coinSourceWidth = images.coin.naturalWidth / coinColumns;
+          var coinSourceHeight = images.coin.naturalHeight / coinRows;
+          var coinSourceX = (coinFrame % coinColumns) * coinSourceWidth;
+          var coinSourceY = Math.floor(coinFrame / coinColumns) * coinSourceHeight;
+          ctx.drawImage(images.coin, coinSourceX, coinSourceY,
+            coinSourceWidth, coinSourceHeight, x, y, 16, 16);
         } else {
           ctx.fillStyle = '#ffd447';
           ctx.fillRect(x + 3, y, 10, 16);

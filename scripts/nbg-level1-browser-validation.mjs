@@ -764,6 +764,19 @@ assert.deepEqual(
   },
   'all three uploaded BB8 animation sheets must be required runtime assets'
 );
+assert.ok(
+  runtimeSource.includes('var coinColumns = 5') &&
+  runtimeSource.includes('var coinRows = 5') &&
+  runtimeSource.includes('var coinFrameCount = coinColumns * coinRows') &&
+  runtimeSource.includes('var coinFrame = Math.floor((time + coin.x * 7) / 85) % coinFrameCount') &&
+  runtimeSource.includes('ctx.drawImage(images.coin, coinSourceX, coinSourceY,'),
+  'regular XP coins must animate individual 5x5 WAX CASH sheet frames'
+);
+assert.equal(
+  new URL(state.assetStatus.coin.src, url).pathname,
+  '/game/assets/objects/2300-spritesheet.png',
+  'regular XP coins must load the uploaded WAX CASH sprite sheet'
+);
 assert.equal(state.running, true, 'ArrowRight must start the game loop');
 assert.equal(state.coinCount, 282, 'speedrun must spawn 282 regular XP coins across the world');
 assert.equal(state.enemyCount, 36, 'speedrun must spawn 36 moving enemies');
