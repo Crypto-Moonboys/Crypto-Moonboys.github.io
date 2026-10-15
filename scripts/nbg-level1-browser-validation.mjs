@@ -976,6 +976,7 @@ assert.ok(state.taken >= 1, 'coin must be marked collected');
 await page.evaluate(() => {
   const player = window.NBGLevel1State.player;
   const hazard = window.NBGLevel1State.hazards[0];
+  player.health = 3;
   player.invuln = 0;
   player.x = hazard.x + 4;
   player.y = hazard.y;
