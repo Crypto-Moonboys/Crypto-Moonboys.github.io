@@ -473,7 +473,7 @@
 
     function resolveVerticalCollision(previousY) {
       var floor = { x: 0, y: FLOOR_Y, w: WORLD_WIDTH, h: 60 };
-      var solids = [floor].concat(platforms);
+      var solids = [floor].concat(platforms, crates);
       player.grounded = false;
 
       for (var i = 0; i < solids.length; i += 1) {
@@ -500,9 +500,22 @@
       if (sprayTimer > 0) sprayTimer -= dt;
       if (player.invuln > 0) player.invuln -= dt;
 
+      var previousX = player.x;
       player.x += player.vx * step;
       var visualMarginX = getPlayerVisualMarginX();
       player.x = clamp(player.x, 12 + visualMarginX, WORLD_WIDTH - player.w - 12 - visualMarginX);
+      // Crates block movement from the sides but can also be jumped onto.
+      for (var crateIndex = 0; crateIndex < crates.length; crateIndex += 1) {
+        var crate = crates[crateIndex];
+        if (!rectsOverlap(player, crate)) continue;
+        if (player.vx > 0 && previousX + player.w <= crate.x + 1) {
+          player.x = crate.x - player.w;
+          player.vx = 0;
+        } else if (player.vx < 0 && previousX >= crate.x + crate.w - 1) {
+          player.x = crate.x + crate.w;
+          player.vx = 0;
+        }
+      }
 
       var previousY = player.y;
       player.vy += GRAVITY * step;
@@ -547,6 +560,41 @@
           }));
         }
         coin.float = Math.sin((time + coin.x * 11) / 180) * 3;
+      }
+    }
+
+    function updateRewardBoxes(time) {
+      for (var i = 0; i < rewardBoxes.length; i += 1) {
+        var box = rewardBoxes[i];
+        if (box.opened || !rectsOverlap(player, box)) continue;
+        box.opened = true;
+        // Rewards are rolled on every actual collection, never preselected by position.
+        var pool = box.type === 'star' ?
+          [{ type: 'xp', amount: 500 }, { type: 'xp', amount: 750 },
+            { type: 'xp', amount: 1000 }, { type: 'health', amount: 2 }] :
+          [{ type: 'xp', amount: 100 }, { type: 'xp', amount: 250 },
+            { type: 'xp', amount: 500 }, { type: 'health', amount: 1 }];
+        var roll = Math.min(pool.length - 1, Math.floor(Math.random() * pool.length));
+        var reward = pool[roll];
+        var earnedXp = 0;
+        var healed = 0;
+        if (reward.type === 'health') {
+          healed = Math.min(reward.amount, Math.max(0, 5 - player.health));
+          player.health += healed;
+          if (!healed) {
+            earnedXp = box.type === 'star' ? 500 : 100;
+          }
+        } else {
+          earnedXp = reward.amount;
+        }
+        xp += earnedXp;
+        box.reward = { type: reward.type, amount: reward.amount, xp: earnedXp, health: healed };
+        rewardNotificationText = (box.type === 'star' ? 'STAR BOX ' : 'MYSTERY BOX ') +
+          (earnedXp ? '+' + earnedXp + ' XP' : '+' + healed + ' HEALTH');
+        rewardNotificationUntil = time + 2300;
+        window.dispatchEvent(new CustomEvent('nbg-reward-found', {
+          detail: { kind: box.type, reward: box.reward, xp: xp, health: player.health, box: box }
+        }));
       }
     }
 
@@ -1039,6 +1087,7 @@
         updatePlayer(dt);
         updateCoins(time);
         updateSecretCoins(time);
+        updateRewardBoxes(time);
         updateEnemies(time, dt);
         updateHazards();
         updateLevel();
@@ -1062,6 +1111,10 @@
         get secretNotificationText() { return secretNotificationText; },
         get enemies() { return enemies; },
         get platforms() { return platforms; },
+        get crates() { return crates; },
+        get rewardBoxes() { return rewardBoxes; },
+        get rewardNotificationText() { return rewardNotificationText; },
+        get rewardNotificationUntil() { return rewardNotificationUntil; },
         get hazards() { return hazards; },
         get courseCheckpoints() { return courseCheckpoints; },
         get runElapsedMs() { return runElapsedMs; },
@@ -1122,6 +1175,8 @@
       xp = 0;
       secretNotificationUntil = 0;
       secretNotificationText = '';
+      rewardNotificationText = '';
+      rewardNotificationUntil = 0;
       pendingInitialInput = null;
       initialInputReplay = null;
       clearInput();
@@ -1146,6 +1201,7 @@
         coin.float = 0;
       });
       secretCoins.forEach(function (coin) { coin.taken = false; });
+      rewardBoxes.forEach(function (box) { box.opened = false; box.reward = null; });
       enemies.forEach(function (enemy, index) {
         Object.assign(enemy, initialEnemies[index]);
       });
