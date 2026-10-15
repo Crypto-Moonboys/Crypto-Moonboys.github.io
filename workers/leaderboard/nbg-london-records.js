@@ -1,3 +1,5 @@
+import { periodsForFinish, periodStart } from './nbg-london-prizes.js';
+
 // NBG London all-time bests. Score XP is a game metric, not awarded Arcade XP.
 const PREFIX = '/nbg-london';
 const METRICS = Object.freeze({
@@ -62,6 +64,26 @@ export async function handleNbgLondonRecords(request, env, verifyIdentity) {
   if (!env.DB) return json(request, { ok: false, error: 'records_database_unavailable' }, 503);
 
   try {
+    if (request.method === 'GET' && url.pathname === PREFIX + '/competition') {
+      const kind = url.searchParams.get('period') || 'daily';
+      if (!['daily', 'weekly', 'seasonal'].includes(kind))
+        return json(request, { ok: false, error: 'invalid_competition_period' }, 400);
+      const start = periodStart(Date.now(), kind);
+      const result = await env.DB.prepare(
+        `SELECT display_name AS name, total_xp, run_count, best_time_ms
+         FROM nbg_london_period_scores
+         WHERE period_kind = ? AND period_start_ms = ?
+         ORDER BY total_xp DESC, best_time_ms ASC, telegram_id ASC LIMIT 20`
+      ).bind(kind, start).all();
+      return json(request, {
+        ok: true, period: kind, start_ms: start, end_ms: periodStart(start + (kind === 'daily' ? 86400000 : kind === 'weekly' ? 604800000 : 7776000000), kind),
+        standings: (result.results || []).map((row, index) => ({
+          rank: index + 1, name: row.name, total_xp: row.total_xp,
+          run_count: row.run_count, best_time_ms: row.best_time_ms,
+          prize_eligible: index < 3 && row.total_xp > 0,
+        })),
+      });
+    }
     if (request.method === 'GET' && url.pathname === PREFIX + '/leaderboard') {
       const metric = url.searchParams.get('metric') || 'fastest';
       if (!Object.prototype.hasOwnProperty.call(METRICS, metric))
@@ -123,17 +145,15 @@ export async function handleNbgLondonRecords(request, env, verifyIdentity) {
     if (!validFinish(body, now - session.started_at_ms))
       return json(request, { ok: false, error: 'run_validation_failed' }, 422);
 
-    const consumed = await env.DB.prepare(
-      'UPDATE nbg_london_runs SET finished_at_ms = ? WHERE run_id = ? AND telegram_id = ? AND finished_at_ms IS NULL'
-    ).bind(now, runId, telegramId).run();
-    if (consumed?.meta?.changes !== 1)
-      return json(request, { ok: false, error: 'run_already_submitted' }, 409);
-
     const timeMs = body.time_ms;
     const xp = body.xp;
     const rate = efficiencyRate(xp, timeMs);
     const name = displayName(identity.linkedAccount);
-    await env.DB.prepare(
+    const writes = [
+      env.DB.prepare(
+        'UPDATE nbg_london_runs SET finished_at_ms = ? WHERE run_id = ? AND telegram_id = ? AND finished_at_ms IS NULL'
+      ).bind(now, runId, telegramId),
+      env.DB.prepare(
       'INSERT INTO nbg_london_records (telegram_id, display_name, fastest_ms, fastest_xp, speed_xp_rate, speed_xp_ms, speed_xp_xp, best_xp, best_xp_ms, updated_at_ms) ' +
       'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ' +
       'ON CONFLICT(telegram_id) DO UPDATE SET ' +
@@ -145,7 +165,25 @@ export async function handleNbgLondonRecords(request, env, verifyIdentity) {
       'speed_xp_rate = MAX(speed_xp_rate, excluded.speed_xp_rate), ' +
       'best_xp_ms = CASE WHEN excluded.best_xp > best_xp OR (excluded.best_xp = best_xp AND excluded.best_xp_ms < best_xp_ms) THEN excluded.best_xp_ms ELSE best_xp_ms END, ' +
       'best_xp = MAX(best_xp, excluded.best_xp)'
-    ).bind(telegramId, name, timeMs, xp, rate, timeMs, xp, xp, timeMs, now).run();
+    ).bind(telegramId, name, timeMs, xp, rate, timeMs, xp, xp, timeMs, now)
+    ];
+    for (const period of periodsForFinish(now)) {
+      writes.push(env.DB.prepare(
+        `INSERT INTO nbg_london_period_scores
+           (period_kind, period_start_ms, telegram_id, display_name, total_xp, run_count, best_time_ms, updated_at_ms)
+         VALUES (?, ?, ?, ?, ?, 1, ?, ?)
+         ON CONFLICT(period_kind, period_start_ms, telegram_id) DO UPDATE SET
+           display_name = excluded.display_name,
+           total_xp = nbg_london_period_scores.total_xp + excluded.total_xp,
+           run_count = nbg_london_period_scores.run_count + 1,
+           best_time_ms = MIN(nbg_london_period_scores.best_time_ms, excluded.best_time_ms),
+           updated_at_ms = excluded.updated_at_ms`
+      ).bind(period.kind, period.start, telegramId, name, xp, timeMs, now));
+    }
+    // A run receipt, all-time best and all three active period results commit atomically.
+    const applied = await env.DB.batch(writes);
+    if (applied?.[0]?.meta?.changes !== 1)
+      return json(request, { ok: false, error: 'run_already_submitted' }, 409);
     return json(request, { ok: true, saved: true, player: name, time_ms: timeMs, xp, xp_per_minute: rate });
   } catch (error) {
     console.error('[nbg-london-records]', error?.message || 'database_error');
