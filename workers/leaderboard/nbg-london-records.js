@@ -81,7 +81,8 @@ export async function handleNbgLondonRecords(request, env, verifyIdentity) {
       });
     }
     if (request.method !== 'POST' ||
-        (url.pathname !== PREFIX + '/run/start' && url.pathname !== PREFIX + '/run/finish')) {
+        (url.pathname !== PREFIX + '/run/start' && url.pathname !== PREFIX + '/run/finish' &&
+         url.pathname !== PREFIX + '/me')) {
       return json(request, { ok: false, error: 'not_found' }, 404);
     }
     if (request.headers.get('Origin') && !ORIGINS.has(request.headers.get('Origin')))
@@ -94,6 +95,14 @@ export async function handleNbgLondonRecords(request, env, verifyIdentity) {
       return json(request, { ok: false, error: 'account_blocked' }, 403);
     const telegramId = identity.telegramId;
     const now = Date.now();
+
+    if (url.pathname === PREFIX + '/me') {
+      const own = await env.DB.prepare(
+        'SELECT fastest_ms, fastest_xp, speed_xp_rate, speed_xp_ms, speed_xp_xp, best_xp, best_xp_ms ' +
+        'FROM nbg_london_records WHERE telegram_id = ?'
+      ).bind(telegramId).first();
+      return json(request, { ok: true, player: displayName(identity.linkedAccount), records: own || null });
+    }
 
     if (url.pathname === PREFIX + '/run/start') {
       const runId = crypto.randomUUID();
