@@ -101,7 +101,7 @@
     tableBody.replaceChildren();
     var loading = document.createElement('tr');
     var loadingCell = document.createElement('td');
-    loadingCell.colSpan = 4;
+    loadingCell.colSpan = 5;
     loadingCell.textContent = 'Loading verified Telegram scores…';
     loading.appendChild(loadingCell);
     tableBody.appendChild(loading);
