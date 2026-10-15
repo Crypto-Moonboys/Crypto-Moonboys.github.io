@@ -868,6 +868,19 @@ await page.evaluate(() => {
   window.NBGLevel1State.player.invuln = 0;
 });
 
+// Double jump is edge-triggered and resets on landing, respawn and restart.
+assert.ok(
+  runtimeSource.includes('var DOUBLE_JUMP_VELOCITY = -12.8') &&
+  runtimeSource.includes('var jumpPressed = !!jump && !jumpWasDown') &&
+  runtimeSource.includes('jumpWasDown = !!jump') &&
+  runtimeSource.includes('if (jumpPressed && player.grounded)') &&
+  runtimeSource.includes('else if (jumpPressed && !player.grounded && jumpsUsed < 2)') &&
+  runtimeSource.includes('player.vy = DOUBLE_JUMP_VELOCITY') &&
+  runtimeSource.includes('jumpsUsed = 2') &&
+  runtimeSource.includes('jumpsUsed = 0'),
+  'double jump must require a fresh second press and reset on landing'
+);
+
 const beforeJumpY = state.y;
 await page.keyboard.down('Space');
 await page.waitForTimeout(80);
