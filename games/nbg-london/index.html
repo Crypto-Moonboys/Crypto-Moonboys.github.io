@@ -39,6 +39,36 @@
       max-height: none;
       min-height: 0;
     }
+
+    .nbg-record-board {
+      margin: 22px auto 6px;
+      max-width: 1120px;
+      border: 1px solid var(--color-border, #444);
+      border-radius: 14px;
+      padding: 18px;
+      background: rgba(16, 19, 31, .8);
+    }
+    .nbg-record-board h2 { margin: 0 0 8px; }
+    .nbg-record-board p { margin: 7px 0; }
+    .nbg-record-switches { display: flex; flex-wrap: wrap; gap: 8px; margin: 15px 0; }
+    .nbg-record-switches button {
+      background: #283249; color: #fff; border: 1px solid #60718e;
+      border-radius: 7px; padding: 9px 13px; cursor: pointer;
+    }
+    .nbg-record-switches button[aria-pressed="true"] {
+      background: #145a8a; border-color: #7acbff; font-weight: 700;
+    }
+    .nbg-record-board table { width: 100%; border-collapse: collapse; }
+    .nbg-record-board th, .nbg-record-board td {
+      text-align: left; padding: 9px; border-bottom: 1px solid #3b4356;
+    }
+    .nbg-record-board td:nth-child(n+3), .nbg-record-board th:nth-child(n+3) { text-align: right; }
+    .nbg-record-board td:nth-child(2) { overflow-wrap: anywhere; }
+    .nbg-record-board .nbg-record-scroller { overflow-x: auto; }
+    @media (max-width: 520px) {
+      .nbg-record-board { padding: 12px; }
+      .nbg-record-board th, .nbg-record-board td { padding: 7px 5px; font-size: .83rem; }
+    }
   </style>
   <link rel="icon" type="image/png" href="/favicon.png">
 </head>
@@ -71,6 +101,7 @@
           <span id="hud-coins">COINS 0/12</span>
           <span id="hud-health">HEALTH 3</span>
           <span id="hud-state">READY</span>
+          <span id="nbg-hud-player">GUEST</span>
         </div>
         <div class="touch-controls" role="group" aria-label="Touch controls">
           <div class="touch-controls__move">
@@ -85,11 +116,30 @@
       </section>
     </div>
   </div>
+  <section id="nbg-record-board" class="nbg-record-board" aria-label="NBG London Telegram leaderboards">
+    <h2>London All-Time Leaderboards</h2>
+    <p id="nbg-record-account" aria-live="polite">Checking Telegram login…</p>
+    <p id="nbg-record-status" aria-live="polite">Only verified Telegram accounts save permanent completed runs. Guest scores are session-only.</p>
+    <div class="nbg-record-switches" role="group" aria-label="Ranking type">
+      <button type="button" data-nbg-metric="fastest" aria-pressed="true">Fastest Only</button>
+      <button type="button" data-nbg-metric="speed_xp" aria-pressed="false">Fastest + XP</button>
+      <button type="button" data-nbg-metric="xp" aria-pressed="false">Highest XP</button>
+    </div>
+    <p id="nbg-record-ranking">Fastest Time</p>
+    <div class="nbg-record-scroller">
+      <table>
+        <thead><tr><th scope="col">Rank</th><th scope="col">Telegram Player</th><th scope="col">Time</th><th scope="col">Points / XP</th></tr></thead>
+        <tbody id="nbg-record-rows"><tr><td colspan="4">Loading verified records…</td></tr></tbody>
+      </table>
+    </div>
+    <p><small>Fastest: lowest finished time. Fastest + XP: most XP per minute. Highest XP: largest completed-run XP. Only authenticated, server-accepted results persist; game XP does not automatically grant Arcade XP.</small></p>
+  </section>
 </main>
 <footer id="site-footer"><div class="footer-bottom"><p>Crypto Moonboys GK Wiki</p></div></footer>
 </div></div>
 <button id="back-to-top" aria-label="Back to top">Up</button>
 <script data-cfasync="false" src="/js/wiki.js"></script><script src="/js/identity-gate.js"></script><script src="/js/scroll-shell.js"></script><script src="/js/game-fullscreen.js"></script><script src="/js/api-config.js"></script><script src="/js/components/ui-status-copy.js"></script><script src="/js/arcade/core/global-event-bus.js"></script><script src="/js/core/moonboys-state.js"></script><script src="/js/faction-alignment.js"></script><script src="/js/components/connection-status-panel.js"></script><script src="/js/components/global-player-header.js"></script><script src="/js/components/live-activity-summary.js"></script>
 <script src="/game/nbg-level1.js"></script>
+<script src="/game/nbg-london-leaderboards.js"></script>
 </body>
 </html>
