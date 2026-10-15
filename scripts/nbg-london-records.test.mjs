@@ -81,6 +81,14 @@ try {
   await submit('100', 105000, 200);
   await submit('100', 120000, 2000);
 
+  const myBest = await api('/nbg-london/me', { telegram_auth: { id: '100' } });
+  assert.equal(myBest.player, '@alpha', 'personal results use server-verified username');
+  assert.equal(myBest.records.fastest_ms, 105000);
+  assert.equal(myBest.records.best_xp, 2000);
+  assert.equal(myBest.records.speed_xp_rate, 1000);
+  assert.equal((await api('/nbg-london/me', {})).status, 403,
+    'personal best endpoint must not disclose anonymous account records');
+
   const fastest = await api('/nbg-london/leaderboard?metric=fastest');
   const speedXp = await api('/nbg-london/leaderboard?metric=speed_xp');
   const highest = await api('/nbg-london/leaderboard?metric=xp');
