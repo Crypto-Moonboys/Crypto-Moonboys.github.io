@@ -1078,6 +1078,58 @@ assert.equal(state.running, true, 'first valid keyboard input after fullscreen r
 assert.ok(state.x > resetStartX, 'fresh run after fullscreen reset must move from the start position');
 assert.equal(state.hud, 'RUNNING', 'HUD must return to RUNNING after first reset input starts play');
 
+// Six hidden rewards are collectible off-screen without changing the normal coin counter.
+state = await page.evaluate(() => ({
+  secretCount: window.NBGLevel1State.secretCoins.length,
+  secretValues: window.NBGLevel1State.secretCoins.map((coin) => coin.xp),
+  secretHeights: window.NBGLevel1State.secretCoins.map((coin) => coin.y),
+  regularCount: window.NBGLevel1State.coins.length,
+  regularHud: document.getElementById('hud-coins').textContent,
+  xp: window.NBGLevel1State.xp
+}));
+assert.equal(state.secretCount, 6, 'level must contain six secret rewards');
+assert.deepEqual(state.secretValues, [500, 500, 500, 500, 500, 500], 'each secret coin must award 500 XP');
+assert.ok(state.secretHeights.every((y) => y < 0), 'each secret reward must sit above the regular gameplay viewport');
+const secretStartingXp = state.xp;
+const regularHudBeforeSecrets = state.regularHud;
+for (let index = 0; index < 6; index += 1) {
+  await page.evaluate((i) => {
+    const state = window.NBGLevel1State;
+    const secret = state.secretCoins[i];
+    state.player.x = secret.x - 8;
+    state.player.y = secret.y - 8;
+    state.player.vx = 0;
+    state.player.vy = 0;
+    state.player.invuln = 2000;
+  }, index);
+  await page.waitForFunction((i) => window.NBGLevel1State.secretCoins[i].taken, index, { timeout: 2000 });
+}
+state = await page.evaluate(() => ({
+  xp: window.NBGLevel1State.xp,
+  taken: window.NBGLevel1State.secretCoins.filter((coin) => coin.taken).length,
+  banner: window.NBGLevel1State.secretNotificationText,
+  bannerUntil: window.NBGLevel1State.secretNotificationUntil,
+  hud: document.getElementById('hud-coins').textContent
+}));
+assert.equal(state.xp, secretStartingXp + 3000, 'all six secrets must add exactly 3000 XP');
+assert.equal(state.taken, 6, 'secret coins must remain collected during the run');
+assert.equal(state.banner, 'SECRET FOUND +500 XP', 'secret collection must display discovery notification');
+assert.ok(state.bannerUntil > 0, 'secret discovery notification must have an expiry time');
+assert.equal(state.hud, regularHudBeforeSecrets, 'secret collection must not change normal coin HUD counts');
+await page.waitForTimeout(120);
+assert.equal(await page.evaluate(() => window.NBGLevel1State.xp), secretStartingXp + 3000, 'secret cannot be collected twice');
+await page.evaluate(() => window.NBGLevel1Runtime.reset());
+state = await page.evaluate(() => ({
+  xp: window.NBGLevel1State.xp,
+  taken: window.NBGLevel1State.secretCoins.filter((coin) => coin.taken).length,
+  banner: window.NBGLevel1State.secretNotificationText,
+  bannerUntil: window.NBGLevel1State.secretNotificationUntil
+}));
+assert.equal(state.xp, 0, 'reset must clear secret XP');
+assert.equal(state.taken, 0, 'reset must restore every secret coin');
+assert.equal(state.banner, '', 'reset must clear secret notification');
+assert.equal(state.bannerUntil, 0, 'reset must clear secret notification expiry');
+
 const pixelEnergy = await page.evaluate(() => {
   const canvas = document.getElementById('game');
   const data = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data;
