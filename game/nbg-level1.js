@@ -563,7 +563,7 @@
         var marker = allCheckpoints[i];
         if (!marker.active && rectsOverlap(player, marker)) {
           marker.active = true;
-          checkpointX = marker.x;
+          checkpointX = Math.max(checkpointX, marker.x);
           xp += 250;
           window.dispatchEvent(new CustomEvent('nbg-checkpoint', {
             detail: { xp: xp, x: marker.x }
@@ -756,6 +756,7 @@
         var coin = coins[i];
         if (coin.taken) continue;
         var x = Math.round(coin.x - cameraX - 8);
+        if (x < -24 || x > WIDTH + 12) continue;
         var y = Math.round(coin.y + (coin.float || 0) + FOREGROUND_VISUAL_OFFSET_Y - 8);
         if (images.coin) {
           ctx.drawImage(images.coin, x, y, 16, 16);
@@ -791,6 +792,7 @@
         var enemy = enemies[i];
         var image = images[enemy.type];
         var x = Math.round(enemy.x - cameraX);
+        if (x < -enemy.w || x > WIDTH) continue;
         var y = Math.round(enemy.y + (enemy.bob || 0) + FOREGROUND_VISUAL_OFFSET_Y);
         if (image) {
           ctx.save();
@@ -925,11 +927,12 @@
 
     function tick(time) {
       if (!lastTime) lastTime = time;
-      var dt = Math.min(33, time - lastTime);
+      var frameElapsedMs = Math.max(0, time - lastTime);
+      var dt = Math.min(33, frameElapsedMs);
       lastTime = time;
 
       if (running) {
-        runElapsedMs += dt;
+        runElapsedMs += frameElapsedMs;
         updatePlayer(dt);
         updateCoins(time);
         updateSecretCoins(time);
