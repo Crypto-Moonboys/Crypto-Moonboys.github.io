@@ -976,7 +976,7 @@
         get courseCheckpoints() { return courseCheckpoints; },
         get runElapsedMs() { return runElapsedMs; },
         get bestTimeMs() { return bestTimeMs; },
-        get bestXp() { return bestXp; }
+        get bestXp() { return bestXp; },
         get speedrunBonusXp() { return speedrunBonusXp; },
         get comboCount() { return comboCount; },
         get xp() { return xp; },
