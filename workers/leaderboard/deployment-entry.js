@@ -38,6 +38,9 @@ const leaderboardWorker = {
       ...env,
       DB: withRegisteredTelegramLinkFallback(env.DB),
     };
+    if (url.pathname.startsWith('/nbg-london/')) {
+      return handleNbgLondonRecords(request, runtimeEnv, resolveSubmissionIdentity);
+    }
     return baseWorker.fetch(request, runtimeEnv, context);
   },
 };
