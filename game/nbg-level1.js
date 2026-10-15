@@ -664,6 +664,8 @@
 
     function render(time) {
       ctx.clearRect(0, 0, WIDTH, HEIGHT);
+      ctx.fillStyle = '#0076fc';
+      ctx.fillRect(0, 0, WIDTH, HEIGHT);
       ctx.save();
       ctx.translate(0, Math.round(cameraY));
       drawWorld();
