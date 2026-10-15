@@ -1,0 +1,35 @@
+name: NBG London Level 1 Browser Validation
+
+on:
+  pull_request:
+    paths:
+      - game/nbg-level1.js
+      - game/assets/**
+      - scripts/nbg-level1-browser-validation.mjs
+      - .github/workflows/nbg-level1-browser.yml
+  push:
+    branches: [main]
+    paths:
+      - game/nbg-level1.js
+      - game/assets/**
+      - scripts/nbg-level1-browser-validation.mjs
+      - .github/workflows/nbg-level1-browser.yml
+
+permissions:
+  contents: read
+
+jobs:
+  level1-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: node --check game/nbg-level1.js
+      - run: node --check scripts/nbg-level1-browser-validation.mjs
+      - run: npm run test:nbg-level1
