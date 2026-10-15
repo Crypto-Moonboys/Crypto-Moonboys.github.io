@@ -141,6 +141,49 @@ try {
     env, async () => ({ ok: false, error: 'telegram_link_required', status: 403 }));
   assert.equal(unlinked.status, 403, 'unlinked identity must fail closed');
 
+  // Only the overall top 3 receive Arcade XP on settlement; 4th/blocked get none.
+  sqlite.exec("INSERT INTO telegram_users(telegram_id) VALUES ('300'), ('400'), ('500')");
+  sqlite.exec("INSERT INTO telegram_anticheat_state(telegram_id, is_blocked) VALUES ('500', 1)");
+  const cutoff = periodStart(fakeNow, 'daily');
+  const previousStart = cutoff - 86400000;
+  for (const [id, points] of [['100', 8000], ['200', 6500], ['300', 4000],
+                               ['400', 3900], ['500', 9000]]) {
+    sqlite.prepare(`INSERT INTO nbg_london_period_scores
+       (period_kind, period_start_ms, telegram_id, display_name, total_xp, run_count, best_time_ms, updated_at_ms)
+       VALUES('daily', ?, ?, ?, ?, 1, 100000, ?)`).run(previousStart, id, '@' + id, points, fakeNow);
+  }
+  const period = { kind: 'daily', start: previousStart, end: cutoff };
+  const settledOnce = await settleNbgLondonPeriod(env, period, cutoff);
+  assert.deepEqual(settledOnce.map(winner => [winner.telegram_id, winner.arcade_xp]),
+    [['100', 100], ['200', 60], ['300', 30]], 'only 3 non-blocked prize winners per day');
+  const settlementRetry = await settleNbgLondonPeriod(env, period, cutoff);
+  assert.deepEqual(settlementRetry, [], 'cron retries must not issue duplicate payments');
+  assert.equal(sqlite.prepare('SELECT COUNT(*) AS n FROM nbg_london_prize_awards').get().n, 3);
+  assert.equal(sqlite.prepare('SELECT arcade_xp_total FROM arcade_progression_state WHERE telegram_id = ?').get('100').arcade_xp_total, 100);
+  assert.equal(sqlite.prepare('SELECT arcade_xp_spendable FROM arcade_xp_wallets WHERE telegram_id = ?').get('200').arcade_xp_spendable, 60);
+  assert.equal(sqlite.prepare('SELECT arcade_xp_total FROM arcade_progression_state WHERE telegram_id = ?').get('400'), undefined);
+  assert.equal(sqlite.prepare('SELECT arcade_xp_total FROM arcade_progression_state WHERE telegram_id = ?').get('500'), undefined);
+  assert.equal(sqlite.prepare('SELECT COUNT(*) AS n FROM arcade_progression_events').get().n, 3);
+  const previousRanks = await api('/nbg-london/competition?period=daily');
+  assert.equal(previousRanks.status, 200, 'period board stays available after settlement');
+  
+  const weekly = { kind: 'weekly', start: periodStart(fakeNow, 'weekly') - 604800000,
+    end: periodStart(fakeNow, 'weekly') };
+  sqlite.prepare(`INSERT INTO nbg_london_period_scores
+    (period_kind, period_start_ms, telegram_id, display_name, total_xp, run_count, best_time_ms, updated_at_ms)
+    VALUES ('weekly', ?, '100', '@alpha', 1000, 1, 100000, ?)`).run(weekly.start, fakeNow);
+  const weeklyResult = await settleNbgLondonPeriod(env, weekly, weekly.end);
+  assert.equal(weeklyResult[0]?.arcade_xp, 500, 'weekly prizes use separate rank ladder');
+  const season = { kind: 'seasonal', start: periodStart(fakeNow, 'seasonal') - 7776000000,
+    end: periodStart(fakeNow, 'seasonal') };
+  sqlite.prepare(`INSERT INTO nbg_london_period_scores
+    (period_kind, period_start_ms, telegram_id, display_name, total_xp, run_count, best_time_ms, updated_at_ms)
+    VALUES ('seasonal', ?, '100', '@alpha', 1000, 1, 100000, ?)`).run(season.start, fakeNow);
+  assert.equal((await settleNbgLondonPeriod(env, season, season.end))[0]?.arcade_xp, 2500,
+    '90-day season prizes require ended seasonal period');
+  assert.equal(sqlite.prepare('SELECT arcade_xp_total FROM arcade_progression_state WHERE telegram_id = ?').get('100').arcade_xp_total, 3100,
+    'daily, weekly and season winnings credit the shared Arcade XP lifetime total');
+
   const shortRun = await api('/nbg-london/run/start', { telegram_auth: { id: '100' } });
   fakeNow += 2000;
   const impossible = await api('/nbg-london/run/finish', {
