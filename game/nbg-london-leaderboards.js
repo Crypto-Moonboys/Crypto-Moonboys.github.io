@@ -14,6 +14,9 @@
   var identityRequestNumber = 0;
   var generation = 0;
   var runPromise = null;
+  // Keep signed start POSTs ordered even across reset/account changes. A stale
+  // server start must never invalidate a later run's D1 session.
+  var serverStartQueue = Promise.resolve();
   var runIdentity = null;
   var status = null;
   var tableBody = null;
@@ -229,9 +232,24 @@
           String(auth.id) !== startingId ||
           String(gate.getTelegramId() || '') !== startingId ||
           !gate.isTelegramLinked()) return null;
-      var started = await callJson('/run/start', { telegram_auth: auth });
-      if (current !== generation || String(gate.getTelegramId() || '') !== startingId) return null;
-      return Object.assign({}, started, { telegram_id: startingId });
+      // The Worker atomically invalidates older unfinished runs on /run/start.
+      // Serialise the *whole* HTTP operation: merely discarding a stale browser
+      // response after reset still lets that old request revoke the new session.
+      // Check identity again when queued work actually reaches the network.
+      var queuedStart = serverStartQueue.then(async function () {
+        if (current !== generation ||
+            String(gate.getTelegramId() || '') !== startingId ||
+            !gate.isTelegramLinked()) return null;
+        var started = await callJson('/run/start', { telegram_auth: auth });
+        if (current !== generation ||
+            String(gate.getTelegramId() || '') !== startingId ||
+            !gate.isTelegramLinked()) return null;
+        return Object.assign({}, started, { telegram_id: startingId });
+      });
+      // Keep the queue alive after a failed request; its actual error still
+      // propagates to this run's existing "not ranked" status handler.
+      serverStartQueue = queuedStart.then(function () {}, function () {});
+      return queuedStart;
     }());
     try {
       var result = await runPromise;
