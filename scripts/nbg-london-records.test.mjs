@@ -448,7 +448,7 @@ try {
     .find(sql => sql.includes('INSERT OR IGNORE INTO nbg_london_prize_awards'));
   assert.ok(winnerSql && winnerSql.includes('json_each(?)'),
     'blocked IDs must be bound through one JSON array parameter');
-  assert.ok((winnerSql.match(/\\?/g) || []).length <= 100,
+  assert.ok((winnerSql.match(/\?/g) || []).length <= 100,
     'winner selection must remain within D1 binding limits');
   for (const id of overflowBlocked) kvBans.delete('anticheat:blocked:' + id);
 
