@@ -1,3 +1,5 @@
+import { awardCommunityXp } from '../moonboys-api/community-xp-awards.js';
+
 // NBG London competition boundaries match the existing Arcade UTC cycle.
 // Daily: 00:00 UTC; weekly: Monday 00:00 UTC;
 // seasonal: every 90 days from the existing Arcade epoch 2024-01-01 00:00 UTC.
@@ -100,57 +102,69 @@ async function freezePeriod(env, period, now) {
 
 async function payPrize(env, prize, now) {
   // Fail closed for a KV-only ban, including a ban applied after roster freeze.
-  // D1 is checked again atomically inside the payout batch.
+  // The D1 ban is rechecked atomically through the shared Community XP helper.
   if (await isKvBlocked(env, prize.telegram_id)) return false;
-  const token = crypto.randomUUID();
-  const key = new Date(now).toISOString().slice(0, 10); // actual payout day, not historic period end
+  const key = new Date(now).toISOString().slice(0, 10);
   const id = prize.event_id;
   const telegramId = prize.telegram_id;
   const xp = prize.prize_arcade_xp;
-  const eligible = `EXISTS (SELECT 1 FROM nbg_london_prize_awards p
+  const action = 'nbg_london_prize';
+  const guard = `EXISTS (
+    SELECT 1 FROM nbg_london_prize_awards p
     LEFT JOIN telegram_anticheat_state a ON a.telegram_id = p.telegram_id
-    WHERE p.event_id = ? AND p.payout_token = ? AND p.paid_at_ms IS NULL
-      AND COALESCE(a.is_blocked, 0) = 0)`;
-  const statements = [
-    env.DB.prepare(
-      `UPDATE nbg_london_prize_awards SET payout_token = ?
-       WHERE event_id = ? AND paid_at_ms IS NULL AND payout_token IS NULL
-         AND NOT EXISTS (
-           SELECT 1 FROM telegram_anticheat_state a
-           WHERE a.telegram_id = nbg_london_prize_awards.telegram_id AND a.is_blocked = 1
-         )`
-    ).bind(token, id),
-    env.DB.prepare(
-      `INSERT INTO arcade_progression_state
-       (telegram_id,arcade_xp_total,arcade_daily_xp,arcade_daily_key,arcade_restriction_level,restricted_until,updated_at)
-       SELECT ?,?,?,?,0,NULL,CURRENT_TIMESTAMP WHERE ${eligible}
-       ON CONFLICT(telegram_id) DO UPDATE SET
-       arcade_xp_total = arcade_progression_state.arcade_xp_total + excluded.arcade_xp_total,
-       arcade_daily_xp = CASE WHEN arcade_progression_state.arcade_daily_key = excluded.arcade_daily_key
-         THEN arcade_progression_state.arcade_daily_xp + excluded.arcade_daily_xp ELSE excluded.arcade_daily_xp END,
-       arcade_daily_key = excluded.arcade_daily_key, updated_at=CURRENT_TIMESTAMP`
-    ).bind(telegramId, xp, xp, key, id, token),
-    env.DB.prepare(
-      `INSERT INTO arcade_xp_wallets
-       (telegram_id,arcade_xp_earned,arcade_xp_spendable,arcade_xp_spent,updated_at)
-       SELECT ?,?,?,0,CURRENT_TIMESTAMP WHERE ${eligible}
-       ON CONFLICT(telegram_id) DO UPDATE SET
-       arcade_xp_earned = arcade_xp_wallets.arcade_xp_earned + excluded.arcade_xp_earned,
-       arcade_xp_spendable = arcade_xp_wallets.arcade_xp_spendable + excluded.arcade_xp_spendable,
-       updated_at=CURRENT_TIMESTAMP`
-    ).bind(telegramId, xp, xp, id, token),
-    env.DB.prepare(
-      `INSERT OR IGNORE INTO arcade_progression_events
-       (id,telegram_id,client_run_id,game,raw_score,local_meta_points,normalized_points,xp_awarded,status,reason,processed_at)
-       SELECT ?,?,?,'nbg-london',?,0,?,?, 'accepted',?,CURRENT_TIMESTAMP WHERE ${eligible}`
-    ).bind(id, telegramId, id, prize.prize_arcade_xp, prize.prize_arcade_xp, xp,
-      'period_prize_' + prize.period_kind + '_rank_' + prize.rank, id, token),
-    env.DB.prepare(
-      'UPDATE nbg_london_prize_awards SET paid_at_ms = ? WHERE event_id = ? AND payout_token = ? AND paid_at_ms IS NULL'
-    ).bind(now, id, token),
-  ];
-  const results = await env.DB.batch(statements);
-  return results[4]?.meta?.changes === 1;
+    WHERE p.event_id = ? AND p.telegram_id = ? AND p.prize_arcade_xp = ?
+      AND p.paid_at_ms IS NULL AND p.payout_token IS NULL
+      AND COALESCE(a.is_blocked, 0) = 0
+  )`;
+  // awardCommunityXp atomically creates the Community receipt, XP log,
+  // telegram_users XP, active Community season standing and these extra writes.
+  // Its one-time source gate prevents double wallet credit and paid receipts.
+  const result = await awardCommunityXp(env.DB, telegramId, xp, action, id, {
+    now,
+    sourcePredicate: { sql: guard, args: [id, telegramId, xp] },
+    sourceStatements(gate) {
+      const sourceGate = gate.sql;
+      const args = gate.args;
+      return [
+        { statement: env.DB.prepare(
+          `INSERT INTO arcade_progression_state
+           (telegram_id,arcade_xp_total,arcade_daily_xp,arcade_daily_key,
+            arcade_restriction_level,restricted_until,updated_at)
+           SELECT ?,?,?,?,0,NULL,CURRENT_TIMESTAMP WHERE ${sourceGate}
+           ON CONFLICT(telegram_id) DO UPDATE SET
+             arcade_xp_total = arcade_progression_state.arcade_xp_total + excluded.arcade_xp_total,
+             arcade_daily_xp = CASE
+               WHEN arcade_progression_state.arcade_daily_key = excluded.arcade_daily_key
+                 THEN arcade_progression_state.arcade_daily_xp + excluded.arcade_daily_xp
+               ELSE excluded.arcade_daily_xp END,
+             arcade_daily_key = excluded.arcade_daily_key, updated_at=CURRENT_TIMESTAMP`
+        ).bind(telegramId, xp, xp, key, ...args) },
+        { statement: env.DB.prepare(
+          `INSERT INTO arcade_xp_wallets
+           (telegram_id,arcade_xp_earned,arcade_xp_spendable,arcade_xp_spent,updated_at)
+           SELECT ?,?,?,0,CURRENT_TIMESTAMP WHERE ${sourceGate}
+           ON CONFLICT(telegram_id) DO UPDATE SET
+             arcade_xp_earned = arcade_xp_wallets.arcade_xp_earned + excluded.arcade_xp_earned,
+             arcade_xp_spendable = arcade_xp_wallets.arcade_xp_spendable + excluded.arcade_xp_spendable,
+             updated_at = CURRENT_TIMESTAMP`
+        ).bind(telegramId, xp, xp, ...args) },
+        { statement: env.DB.prepare(
+          `INSERT OR IGNORE INTO arcade_progression_events
+           (id,telegram_id,client_run_id,game,raw_score,local_meta_points,
+            normalized_points,xp_awarded,status,reason,processed_at)
+           SELECT ?,?,?,'nbg-london',?,0,?,?,'accepted',?,CURRENT_TIMESTAMP
+            WHERE ${sourceGate}`
+        ).bind(id, telegramId, id, xp, xp, xp,
+          'period_prize_' + prize.period_kind + '_rank_' + prize.rank, ...args) },
+        { statement: env.DB.prepare(
+          `UPDATE nbg_london_prize_awards SET paid_at_ms=?
+           WHERE event_id=? AND telegram_id=? AND paid_at_ms IS NULL
+             AND ${sourceGate}`
+        ).bind(now, id, telegramId, ...args) },
+      ];
+    },
+  });
+  return result.accepted && !result.duplicate && result.xp_awarded === xp;
 }
 
 export async function settleNbgLondonPeriod(env, period, now = Date.now()) {
