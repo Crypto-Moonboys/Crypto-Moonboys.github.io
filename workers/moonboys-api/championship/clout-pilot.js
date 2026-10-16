@@ -136,7 +136,7 @@ const SOURCE_QUERIES = Object.freeze({
     "FROM nbg_london_verified_runs v",
     "JOIN nbg_london_runs r ON r.run_id=v.run_id AND r.telegram_id=v.telegram_id",
     "WHERE v.telegram_id=? AND v.day_key=? AND v.finished_at_ms>=?",
-    " AND v.authority='server_replay' AND v.replay_version=1",
+    " AND v.authority='server_replay' AND v.replay_version=2",
     " AND r.finished_at_ms=v.finished_at_ms AND r.finish_token IS NOT NULL",
     " AND v.verified_xp>0",
     "ORDER BY v.verified_xp DESC,v.finished_at_ms ASC,v.run_id ASC LIMIT 1",
@@ -203,7 +203,7 @@ export function normalizeNbgLondonSkill(verifiedXp) {
 function verifiedNbgLondonScore(row) {
   if (!/^[0-9a-f-]{36}$/i.test(String(row.source_event_id||'')) ||
       !Number.isSafeInteger(row.finished_at_ms) ||
-      row.replay_version !== 1 || row.authority !== 'server_replay' ||
+      row.replay_version !== 2 || row.authority !== 'server_replay' ||
       !/^[0-9a-f]{64}$/u.test(String(row.replay_sha256||'')) ||
       !/^[0-9a-f]{64}$/u.test(String(row.input_sha256||'')))
     throw new Error('clout_nbg_invalid_verified_receipt');
