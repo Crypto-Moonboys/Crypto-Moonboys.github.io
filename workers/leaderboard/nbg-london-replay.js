@@ -111,7 +111,7 @@ function deterministicBoxXp(runId, box, index) {
   return box.kind === 'star' ? [500,750,1000,0][pick] : [100,250,500,0][pick];
 }
 
-export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now }) {
+export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, debug = false }) {
   if (typeof runId !== 'string' || !Number.isFinite(startedAtMs) ||
       !Number.isFinite(now)) return { valid: false };
   const bytes = decodeFrames(replay);
@@ -188,7 +188,7 @@ export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now })
     }
     if(p.y>350) {
       invulnerableDamage(p.x);
-      if(p.health<=0) return {valid:false};
+      if(p.health<=0) return {valid:false, ...(debug ? {debug:{reason:'health',x:p.x,elapsed,consumedFrames}}:{})};
       p.x=checkpointX;p.y=FLOOR-p.h;p.vx=0;p.vy=0;
       jumps=0;p.invuln=1050;sprayTimer=0;
     }
@@ -235,7 +235,7 @@ export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now })
     for(const hazard of level.hazards) {
       if(Math.abs(hazard.x-p.x)<60 && overlap(p,hazard)) invulnerableDamage(hazard.x);
     }
-    if(p.health<=0) return {valid:false};
+    if(p.health<=0) return {valid:false, ...(debug ? {debug:{reason:'health',x:p.x,elapsed,consumedFrames}}:{})};
     for(const checkpoint of level.checkpoints) {
       if(!checkpoint.active && Math.abs(checkpoint.x-p.x)<60 && overlap(p,checkpoint)) {
         checkpoint.active=true;checkpointX=Math.max(checkpointX,checkpoint.x);
@@ -254,7 +254,7 @@ export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now })
      elapsed<MIN_MS || elapsed>MAX_MS || maximumX < WORLD-175 ||
      Math.abs(elapsed-(now-startedAtMs))>20000 ||
      !Number.isSafeInteger(xp) || xp<0 || xp>1000000)
-    return {valid:false};
+    return {valid:false, ...(debug ? {debug:{reason:'finish',x:p.x,maximumX,elapsed,consumedFrames,complete,health:p.health}}:{})};
 
   return { valid:true, complete:true, time_ms:Math.round(elapsed),
     xp, coins:coinCount, secret_coins:secretCount };
