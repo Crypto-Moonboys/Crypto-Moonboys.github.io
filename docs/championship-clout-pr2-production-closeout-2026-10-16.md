@@ -20,19 +20,21 @@ Evidence supplied directly by GK from Windows Command Prompt:
 
 **Interpretation:** Code is deployed, **not active Championship scoring**. The HTTP endpoint indicates health and source commit, not authenticated Telegram gameplay, Clout writes, or balance reconciliation. The deploy output did not list a pilot launch-time binding.
 
-Retained snapshot: [Worker provenance evidence](https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/blob/main/deployments/evidence/worker-provenance-clout-pr2-2026-10-16.json). The `Worker Live Evidence Capture` workflow must independently re-fetch **all three** Workers and compare the retained JSON before this evidence PR can merge. The current workflow is **red due to the separately documented leaderboard provenance failure**; the other Workers' entries here are historical carry-forward, not fresh owner tests.
+Retained snapshot: [Worker provenance evidence](https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/blob/main/deployments/evidence/worker-provenance-clout-pr2-2026-10-16.json). The `Worker Live Evidence Capture` workflow must independently re-fetch **all three** Workers and compare their full Git SHAs, exact Cloudflare UTC timestamps and canonical endpoints before this evidence PR merges. An earlier capture failed before the leaderboard was repaired; only a **new passing run** may clear that blocker. The anti-cheat entry originated in earlier retained records and remains subject to fresh CI verification.
 
-## 1a. CI blocker: unrelated leaderboard provenance is currently invalid
+## 1a. Leaderboard provenance incident and beta repair — #1536
 
-**Independent evidence, not an inference:** [Worker Live Evidence Capture run 38906623163](https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/actions/runs/38906623163) attempted a production read-only check of the three tracked Workers. It got past the first `moonboys-api` verification but failed on `moonboys-leaderboard` with HTTP **503** from `GET /deployment-info`:
+**Incident (retained, not concealed):** [CI run 38906623163](https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/actions/runs/38906623163) previously failed on `moonboys-leaderboard /deployment-info` with HTTP 503, `commit=null`, deployed timestamp `2026-10-16T04:41:16.094Z`. That proved a missing provenance tag, **not a gameplay outage**. Historical August receipts cannot substitute for live checks.
+
+**Owner's repair, verified from Windows CMD screenshot:** GK deployed the `moonboys-leaderboard` Worker using `node scripts/deploy-worker-with-provenance.mjs leaderboard`, then installed the existing Telegram bot token as a Cloudflare secret, and ran the provenance-tagged deployment wrapper **again** after the secret update. The final deployed version now reports:
 
 ```json
-{"service":"moonboys-leaderboard","commit":null,"deployed_at":"2026-10-16T04:41:16.094Z","environment":"production"}
+{"service":"moonboys-leaderboard","commit":"ed03324dcfef0311a62ff3c31a36d8665a2d8421","deployed_at":"2026-10-16T13:54:53.321Z","environment":"production"}
 ```
 
-The leaderboard was apparently replaced by a deployment lacking a valid Git commit tag; the failed provenance endpoint **does not prove gameplay endpoints are unavailable**. Its older August evidence remains historical and **must not be represented as the current deployed commit**. The production manifest now explicitly shows `workers/leaderboard` as `verification-pending`, with unknown current commit, while retaining the old evidence as history.
+The accompanying `GET /health` response reports `ok=true`, `telegram_auth_configured=true`, `database_configured=true`, `leaderboard_store_configured=true`, `nbg_london_prize_payouts_available=false`. These values confirm the secret **binding is present**, not an authenticated score accepted. No secret values or personal identifiers are retained here. No database or KV reset occurred.
 
-The original all-three-Worker evidence workflow is a deliberate release gate and is **not bypassed** here. **PR #1535 is on MERGE HOLD until the blocker is addressed** through a separate approved, provenance-tagged leaderboard Worker release and subsequent full CI recapture, or an independently reviewed, equally strict alternative authorized by GK. No leaderboard Worker has been redeployed by this PR.
+The PR's manifest replaces the `verification-pending` leaderboard snapshot with this new **owner-observed** tagged deployment and keeps August evidence historical. The three-Worker evidence request expects the exact new leaderboard commit and time, alongside unchanged API/anti-cheat expectations. A fresh passing **read-only** GitHub Action is still required before merging; do not dismiss historical failure or bypass any provenance contract. #1536 may be closed as resolved **only after** independent verification passes.
 
 ## 2. D1 migration / backup (already performed, do not repeat)
 
@@ -76,5 +78,5 @@ The owner exported production D1 before the migration and moved both SQL backup 
 - `node scripts/production-deployment-truth-audit.test.mjs`
 - `node scripts/production-deployment-truth-audit.mjs`
 - `node scripts/verify-d1-production-migrations.test.mjs`
-- CI `Worker Live Evidence Capture` must show `Worker provenance evidence matches live production for 3 services` for the **new** request, with no drift in other two Workers.
+- CI `Worker Live Evidence Capture` must show `Worker provenance evidence matches live production for 3 services` for the **updated** request, including the repaired leaderboard's full commit and new 2026-10-16T13:54:53.321Z UTC timestamp, with no change to the two other Workers.
 - No merge until required CI green and explicit GK release-evidence approval; **merging this PR is not an authorization to redeploy or activate Clout**.
