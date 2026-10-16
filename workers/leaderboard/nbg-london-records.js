@@ -263,9 +263,15 @@ export async function handleNbgLondonRecords(request, env, verifyIdentity, verif
     const name = displayName(identity.linkedAccount);
     let fingerprints = null;
     if (trustedReceiptsEnabled) {
-      // Both cryptographic digests omit run_id; cheap cross-session/player
-      // replays must collide. This is an extra defense, not proof of a human.
-      fingerprints = await fingerprintNbgLondonReplay(body?.replay);
+      // Only the real server replay simulator supplies this trace; never
+      // promote client masks, replay metadata or a test-only mock counter.
+      // It removes semantically ignored spray/jump presses which otherwise
+      // evade simple input hashing without changing the achieved result.
+      if (!(verified.effective_input_masks instanceof Uint8Array))
+        return json(request, {ok:false,error:'canonical_replay_unavailable'},503);
+      fingerprints = await fingerprintNbgLondonReplay(
+        body?.replay, verified.effective_input_masks
+      );
       if (!fingerprints || fingerprints.replay_version !== 1)
         return json(request, { ok: false, error: 'invalid_verified_replay_fingerprint' }, 422);
       const prior = await env.DB.prepare([
