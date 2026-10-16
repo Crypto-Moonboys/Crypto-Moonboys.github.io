@@ -37,9 +37,16 @@ const gate = {
   isTelegramLinked() { return linked; },
   async getFreshTelegramAuth() { return nextAuth(); },
 };
+const stored = new Map();
+const localStorage = {
+  getItem(key) { return stored.has(key) ? stored.get(key) : null; },
+  setItem(key, value) { stored.set(String(key), String(value)); },
+  removeItem(key) { stored.delete(key); },
+};
 const window = {
   MOONBOYS_IDENTITY: gate,
   MOONBOYS_API: { getLeaderboardUrl: () => 'https://leaderboard.test' },
+  localStorage,
   addEventListener(type, fn) { listeners.set(type, fn); },
 };
 let heldStartResponse = null;
@@ -243,6 +250,40 @@ let failPendingStart;
 heldStartResponse = new Promise((resolve, reject) => { failPendingStart = reject; });
 await emit('nbg-level-started');
 assert.equal(requests('/run/start').length, beforeUncertain + 1);
+const pendingKey = 'nbg-london:pending-ranked-start:v1:200';
+assert.ok(localStorage.getItem(pendingKey),
+  'durable in-flight marker must exist BEFORE an HTTP start response');
+
+// Emulate a complete browser reload while the old Worker may still commit.
+// Its fresh in-memory queue must see the persisted marker and refuse a new
+// ranked POST, despite having no knowledge of the old page's open request.
+let reloadReady;
+const reloadEvents = new Map();
+const reloadedDocument = {
+  ...document,
+  addEventListener(type, fn) { if (type === 'DOMContentLoaded') reloadReady = fn; },
+};
+const reloadedWindow = {
+  ...window,
+  addEventListener(type, fn) { reloadEvents.set(type, fn); },
+};
+vm.runInNewContext(source, {
+  window: reloadedWindow, document: reloadedDocument, fetch,
+  URL, Date, String, Number, Promise, Object, Array, console,
+});
+reloadReady();
+await flush();
+const startsBeforeReload = requests('/run/start').length;
+reloadEvents.get('nbg-level-started')({ detail: {} });
+await flush();
+assert.equal(requests('/run/start').length, startsBeforeReload,
+  'fresh page must not bypass unresolved start while old Worker request is active');
+reloadEvents.get('nbg-level-complete')({ detail: { replay: { version: 1, frames: 'AQIDBAU=' } } });
+await flush();
+assert.match(elements.get('nbg-record-status').textContent, /Practice run completed/);
+assert.doesNotMatch(elements.get('nbg-record-status').textContent, /Guest scores/,
+  'signed player with an unresolved start must be labelled practice, not guest');
+
 await emit('nbg-level-reset');
 const waitingAfterFailure = window.NBGLondonBeforeQueuedRun();
 assert.equal(typeof waitingAfterFailure?.then, 'function',
@@ -250,15 +291,21 @@ assert.equal(typeof waitingAfterFailure?.then, 'function',
 failPendingStart(new TypeError('transport disconnected after POST'));
 await waitingAfterFailure;
 await flush();
+assert.ok(localStorage.getItem(pendingKey),
+  'ambiguous transport error must keep the persisted marker across reload');
 assert.equal(requests('/run/start').length, beforeUncertain + 1,
   'uncertain old start must block queued replacement POST before it reaches D1');
 assert.match(elements.get('nbg-record-status').textContent, /Practice only/,
-  'player must be told the next run is practice until refresh');
+  'player must be told the next run remains practice after refresh');
 await emit('nbg-level-started');
 await emit('nbg-level-reset');
 await emit('nbg-level-started');
 assert.equal(requests('/run/start').length, beforeUncertain + 1,
   'same owner must not resume ranked starts after indeterminate network failure');
+await emit('nbg-level-complete', { replay: { version: 1, frames: 'AQIDBAU=' } });
+assert.match(elements.get('nbg-record-status').textContent, /Practice run completed/);
+assert.doesNotMatch(elements.get('nbg-record-status').textContent, /Guest scores/,
+  'Telegram-linked unresolved player must not be announced as a guest');
 telegramId = '300';
 nextAuth = async () => auth('300');
 await emit('moonboys:identity-change');
