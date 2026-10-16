@@ -1620,6 +1620,7 @@
       if (running) return Promise.resolve(window.NBGLevel1State);
       if (!assetsLoaded) return init().then(beginGameplay);
       if (complete || gameOver) return Promise.resolve(window.NBGLevel1State);
+      if (pendingChallengeStart) return pendingChallengeStart;
       // Only a separately released v2 ranked mode uses the pre-play
       // handshake. Existing guest/legacy play stays synchronous and intact.
       if (window.NBG_CHALLENGE_CLIENT_RELEASED === true &&
