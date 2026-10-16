@@ -26,7 +26,7 @@ export function validFinish(body, elapsedServerMs) {
     Number.isSafeInteger(timeMs) && timeMs >= MIN_FINISH_MS && timeMs <= MAX_FINISH_MS &&
     Number.isSafeInteger(xp) && xp >= 0 && xp <= 1_000_000 &&
     Number.isSafeInteger(body?.coins) && body.coins >= 0 && body.coins <= 312 &&
-    Number.isSafeInteger(body?.secret_coins) && body.secret_coins >= 0 && body.secret_coins <= 6 &&
+    Number.isSafeInteger(body?.secret_coins) && body.secret_coins >= 0 && body.secret_coins <= 42 &&
     elapsedServerMs + SERVER_CLOCK_TOLERANCE_MS >= timeMs &&
     elapsedServerMs - SERVER_CLOCK_TOLERANCE_MS <= timeMs;
 }
