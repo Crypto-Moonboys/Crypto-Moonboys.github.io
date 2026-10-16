@@ -144,12 +144,22 @@
       throw error;
     }
     var result = await response.json().catch(function () { return null; });
-    if (path === '/run/start' && response.ok && (!result || result.ok !== true)) {
-      // A 2xx response without a valid acknowledgement is not proof that
-      // the new session can safely be replaced by a later start.
-      var uncertainResponse = new Error('start_request_outcome_unknown');
-      uncertainResponse.uncertainStart = true;
-      throw uncertainResponse;
+    if (path === '/run/start') {
+      // Gateway 5xx / HTML timeouts do NOT prove the Worker stopped its D1
+      // write. Only a valid successful Worker start or an explicit 4xx
+      // application rejection safely settles the pending-start marker.
+      var acknowledged = response.ok && result && result.ok === true &&
+        (result.ranked === false ||
+          (typeof result.run_id === 'string' &&
+            /^[0-9a-f-]{36}$/i.test(result.run_id)));
+      var rejected = !response.ok && Number(response.status) >= 400 &&
+        Number(response.status) < 500 && result && result.ok === false &&
+        typeof result.error === 'string' && result.error.length > 0;
+      if (!acknowledged && !rejected) {
+        var uncertainResponse = new Error('start_request_outcome_unknown');
+        uncertainResponse.uncertainStart = true;
+        throw uncertainResponse;
+      }
     }
     if (!response.ok || !result || !result.ok)
       throw new Error(result && result.error ? result.error : 'Leaderboard request failed');
