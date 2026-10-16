@@ -8,6 +8,7 @@ on:
       - games/nbg-london/index.html
       - game/assets/**
       - workers/leaderboard/nbg-london-records.js
+      - workers/leaderboard/nbg-london-replay.js
       - workers/leaderboard/nbg-london-prizes.js
       - workers/leaderboard/deployment-entry.js
       - workers/leaderboard-worker.js
@@ -15,6 +16,7 @@ on:
       - workers/moonboys-api/migrations/099_nbg_london_competition_prizes.sql
       - workers/leaderboard/wrangler.toml
       - scripts/nbg-london-records.test.mjs
+      - scripts/nbg-london-replay.test.mjs
       - scripts/nbg-london-client-auth.test.mjs
       - scripts/nbg-level1-browser-validation.mjs
       - .github/workflows/nbg-level1-browser.yml
@@ -26,6 +28,7 @@ on:
       - games/nbg-london/index.html
       - game/assets/**
       - workers/leaderboard/nbg-london-records.js
+      - workers/leaderboard/nbg-london-replay.js
       - workers/leaderboard/nbg-london-prizes.js
       - workers/leaderboard/deployment-entry.js
       - workers/leaderboard-worker.js
@@ -33,6 +36,7 @@ on:
       - workers/moonboys-api/migrations/099_nbg_london_competition_prizes.sql
       - workers/leaderboard/wrangler.toml
       - scripts/nbg-london-records.test.mjs
+      - scripts/nbg-london-replay.test.mjs
       - scripts/nbg-london-client-auth.test.mjs
       - scripts/nbg-level1-browser-validation.mjs
       - .github/workflows/nbg-level1-browser.yml
@@ -55,9 +59,11 @@ jobs:
       - run: node --check game/nbg-level1.js
       - run: node --check game/nbg-london-leaderboards.js
       - run: node --check workers/leaderboard/nbg-london-records.js
+      - run: node --check workers/leaderboard/nbg-london-replay.js
       - run: node --check workers/leaderboard/nbg-london-prizes.js
       - run: node --check workers/leaderboard/deployment-entry.js
       - run: node --check scripts/nbg-level1-browser-validation.mjs
       - run: node --test scripts/nbg-london-records.test.mjs
+      - run: node --test scripts/nbg-london-replay.test.mjs
       - run: node --test scripts/nbg-london-client-auth.test.mjs
       - run: npm run test:nbg-level1
