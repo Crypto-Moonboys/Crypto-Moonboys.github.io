@@ -124,4 +124,20 @@ await flush();
 assert.equal(requests('/run/start').length, startsBeforeRenewal + 1,
   'reauthenticating the same Telegram ID must preserve a ranked session');
 
+// Valid same-ID run sends only encoded gameplay to the server. The browser's
+// claimed million XP cannot enter the official finish request.
+nextAuth = async () => auth('100');
+await emit('nbg-level-complete', {
+  xp: 1000000, timeMs: 65000, coins: 312, secretCoins: 6,
+  replay: { version: 1, frames: 'AQIDBAU=' },
+});
+assert.equal(requests('/run/finish').length, 1,
+  'a linked player with a replay must submit exactly one official finish');
+const officialPayload = requests('/run/finish')[0].body;
+assert.equal(officialPayload.replay.frames, 'AQIDBAU=');
+assert.equal(Object.hasOwn(officialPayload, 'xp'), false,
+  'raw browser XP is not forwarded to the ranking API');
+assert.equal(Object.hasOwn(officialPayload, 'time_ms'), false,
+  'raw browser time is not forwarded to the ranking API');
+
 console.log('[PASS] NBG London start/finish Telegram account-race protection');
