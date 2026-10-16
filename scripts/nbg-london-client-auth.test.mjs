@@ -185,24 +185,44 @@ assert.equal(requests('/run/finish').length, finishesBeforeRace + 1,
 assert.equal(requests('/run/finish').at(-1).body.run_id, activeStart.response.run_id,
   'finish must use the latest D1 run, never the stale server session');
 
-// The same serialization also prevents a late old-account request from
-// overtaking a start for a newly linked Telegram account.
+// An unrelated Telegram player MUST start and finish while owner A's request
+// is still stalled. The Worker invalidates D1 sessions by telegram_id only;
+// a shared global queue could block B forever or exhaust elapsed-time tolerance.
 const startsBeforeSwap = requests('/run/start').length;
+const finishesBeforeSwap = requests('/run/finish').length;
 let releaseOldOwner;
 heldStartResponse = new Promise(resolve => { releaseOldOwner = resolve; });
 await emit('nbg-level-reset');
 await emit('nbg-level-started');
+assert.equal(requests('/run/start').length, startsBeforeSwap + 1,
+  'A must have an unresolved server start before the identity change');
+assert.equal(requests('/run/start').at(-1).body.telegram_auth.id, '100');
+
 telegramId = '200';
 nextAuth = async () => auth('200');
 await emit('moonboys:identity-change');
 await emit('nbg-level-reset');
 await emit('nbg-level-started');
-assert.equal(requests('/run/start').length, startsBeforeSwap + 1,
-  'new account cannot overtake an earlier HTTP start');
+assert.equal(requests('/run/start').length, startsBeforeSwap + 2,
+  'B should POST without waiting for A\'s indefinitely pending response');
+const ownerBStart = requests('/run/start').at(-1);
+assert.equal(ownerBStart.body.telegram_auth.id, '200');
+assert.ok(ownerBStart.response?.run_id,
+  'B should already receive a session while A is still pending');
+await emit('nbg-level-complete', {
+  replay: { version: 1, frames: 'AQIDBAU=' },
+});
+assert.equal(requests('/run/finish').length, finishesBeforeSwap + 1,
+  'B can finish before A responds');
+assert.equal(requests('/run/finish').at(-1).body.run_id, ownerBStart.response.run_id,
+  'B must submit its own server run, not A\'s pending run');
+
+// The old A response resolves last; it must not touch B's active run or
+// start a duplicate session.
 releaseOldOwner();
 await flush();
-assert.equal(requests('/run/start').length, startsBeforeSwap + 2);
-assert.equal(requests('/run/start').at(-1).body.telegram_auth.id, '200',
-  'queued start must retain the correct signed account');
+assert.equal(requests('/run/start').length, startsBeforeSwap + 2,
+  'stale A completion must not issue an additional request');
+assert.equal(requests('/run/finish').length, finishesBeforeSwap + 1);
 
 console.log('[PASS] NBG London start/finish Telegram account-race protection');
