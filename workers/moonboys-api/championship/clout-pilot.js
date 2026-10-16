@@ -29,6 +29,12 @@ export const PILOT_SOURCE_POLICY = Object.freeze({
     { kind: 'skill', game_key: 'dead-run', skill_source: 'verified_dead_run_score_v1' },
     { kind: 'variety', game_key: 'dead-run' },
   ]),
+  // Only post-101 replay-unique proof rows qualify. Pre-release practice
+  // totals and legacy NBG leaderboard positions are NOT Championship proof.
+  nbg_london: Object.freeze([
+    { kind: 'skill', game_key: 'nbg-london', skill_source: 'verified_nbg_replay_v1' },
+    { kind: 'variety', game_key: 'nbg-london' },
+  ]),
 });
 
 /* Every candidate is read directly from an accepted source receipt, AND
@@ -123,6 +129,18 @@ const SOURCE_QUERIES = Object.freeze({
     // new immutable source; prior lower effects remain idempotent.
     "ORDER BY s.score DESC,s.ended_at ASC,s.session_id ASC LIMIT 1",
   ].join(' '),
+  nbg_london: [
+    "SELECT 'nbg_london' AS source_system,v.run_id AS source_event_id,",
+    " NULL AS earned_at,NULL AS source_pet_id,v.finished_at_ms,v.verified_xp,",
+    " v.replay_version,v.replay_sha256,v.input_sha256,v.authority",
+    "FROM nbg_london_verified_runs v",
+    "JOIN nbg_london_runs r ON r.run_id=v.run_id AND r.telegram_id=v.telegram_id",
+    "WHERE v.telegram_id=? AND v.day_key=? AND v.finished_at_ms>=?",
+    " AND v.authority='server_replay' AND v.replay_version=1",
+    " AND r.finished_at_ms=v.finished_at_ms AND r.finish_token IS NOT NULL",
+    " AND v.verified_xp>0",
+    "ORDER BY v.verified_xp DESC,v.finished_at_ms ASC,v.run_id ASC LIMIT 1",
+  ].join(' '),
 });
 
 /**
@@ -171,6 +189,25 @@ function verifiedDeadRunScore(row) {
       expected.score <= 0 || baseXp <= 0)
     throw new Error('clout_dead_run_settlement_mismatch');
   return normalizeDeadRunSkill(expected.score);
+}
+
+/** Versioned NBG skill from independently simulated GAME score XP, not an
+ * Arcade XP wallet balance or a prize. No retroactive practice-score promotion.
+ */
+export function normalizeNbgLondonSkill(verifiedXp) {
+  if (!Number.isSafeInteger(verifiedXp) || verifiedXp<0 || verifiedXp>1_000_000)
+    throw new Error('clout_nbg_score_out_of_range');
+  return Math.floor(100*verifiedXp/(verifiedXp+20000));
+}
+
+function verifiedNbgLondonScore(row) {
+  if (!/^[0-9a-f-]{36}$/i.test(String(row.source_event_id||'')) ||
+      !Number.isSafeInteger(row.finished_at_ms) ||
+      row.replay_version !== 1 || row.authority !== 'server_replay' ||
+      !/^[0-9a-f]{64}$/u.test(String(row.replay_sha256||'')) ||
+      !/^[0-9a-f]{64}$/u.test(String(row.input_sha256||'')))
+    throw new Error('clout_nbg_invalid_verified_receipt');
+  return normalizeNbgLondonSkill(row.verified_xp);
 }
 
 function validSourceTime(value, day, lower, now) {
@@ -282,29 +319,35 @@ export async function syncCloutPilotForVerifiedOwner(db, telegramId, options = {
   const verificationDay = cloutDayKey(nowMs);
   let day = verificationDay;
   let finishingAfterMidnight = false;
-  // ONLY the signed Dead Run finish path supplies deadRunFinishAt, read from
-  // the persisted server-owned dead_run_sessions. Keep nowMs independent:
-  // earned_at_ms stays on the source UTC day; verified_at_ms and recorded_at_ms
-  // remain the actual later time when Clout is checked.
-  if (options.deadRunFinishAt !== undefined) {
-    if (options.deadRunEnabled !== true ||
-        typeof options.deadRunFinishAt !== 'string' ||
-        !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/u.test(options.deadRunFinishAt)) {
-      throw new Error('clout_dead_run_invalid_finish_clock');
-    }
-    const finishAtMs = Date.parse(options.deadRunFinishAt);
-    if (!Number.isSafeInteger(finishAtMs) ||
-        new Date(finishAtMs).toISOString() !== options.deadRunFinishAt ||
-        finishAtMs > nowMs) throw new Error('clout_dead_run_invalid_finish_clock');
+  let attributedFinishedSource = null;
+  // Only server code may pass these values, read from a persisted signed
+  // Dead Run finish or immutable NBG replay receipt. They CANNOT be supplied
+  // through a public player endpoint. Verified timestamps stay at nowMs.
+  if (options.deadRunFinishAt !== undefined && options.nbgFinishAtMs !== undefined)
+    throw new Error('clout_conflicting_finish_sources');
+  if (options.deadRunFinishAt !== undefined || options.nbgFinishAtMs !== undefined) {
+    attributedFinishedSource = options.deadRunFinishAt !== undefined ? 'dead_run' : 'nbg_london';
+    const isDeadRun = attributedFinishedSource === 'dead_run';
+    const sourceTime = isDeadRun ? options.deadRunFinishAt : options.nbgFinishAtMs;
+    const invalidClock = isDeadRun
+      ? 'clout_dead_run_invalid_finish_clock'
+      : 'clout_nbg_invalid_finish_clock';
+    if ((isDeadRun ? options.deadRunEnabled !== true : options.nbgEnabled !== true) ||
+        (isDeadRun ? (
+          typeof sourceTime !== 'string' ||
+          !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/u.test(sourceTime)
+        ) : !Number.isSafeInteger(sourceTime))) throw new Error(invalidClock);
+    const finishAtMs = isDeadRun ? Date.parse(sourceTime) : sourceTime;
+    if (!Number.isSafeInteger(finishAtMs) || finishAtMs > nowMs ||
+        (isDeadRun && new Date(finishAtMs).toISOString() !== sourceTime))
+      throw new Error(invalidClock);
     const finishDay = cloutDayKey(finishAtMs);
     if (finishDay !== verificationDay) {
-      // A narrow current-or-immediately-prior-day exception handles a late
-      // waitUntil across midnight, without silently backfilling last week.
+      // Signed, recorded finish only. Do not backfill any other past sources.
       if (finishAtMs < startAtMs ||
           finishDay !== cloutDayKey(nowMs - 86_400_000) ||
-          nowMs - finishAtMs > CLOUT_DEAD_RUN_MIDNIGHT_GRACE_MS) {
-        return { state: 'stale_finished_run', day_key: finishDay };
-      }
+          nowMs - finishAtMs > CLOUT_DEAD_RUN_MIDNIGHT_GRACE_MS)
+        return { state:'stale_finished_run',day_key:finishDay };
       day = finishDay;
       finishingAfterMidnight = true;
     }
@@ -321,15 +364,25 @@ export async function syncCloutPilotForVerifiedOwner(db, telegramId, options = {
 
   const receipts = new Map();
   for (const [sourceKind, query] of Object.entries(SOURCE_QUERIES)) {
-    // The midnight grace is narrowly for a real server-finished Dead Run.
-    // Never backfill yesterday's /daily, Moonpet or other community rewards.
-    if (finishingAfterMidnight && sourceKind !== 'dead_run') continue;
+    if (finishingAfterMidnight && sourceKind !== attributedFinishedSource) continue;
+    if (options.coreSourcesEnabled === false &&
+        sourceKind !== 'nbg_london') continue;
     if (sourceKind === 'dead_run' && options.deadRunEnabled !== true) continue;
-    const args = sourceKind === 'dead_run' ? [owner, day, options.startAt] : [owner, day];
+    if (sourceKind === 'nbg_london' && options.nbgEnabled !== true) continue;
+    const args = sourceKind === 'dead_run'
+      ? [owner, day, options.startAt]
+      : sourceKind === 'nbg_london'
+        ? [owner,day,startAtMs]
+        : [owner,day];
     const results = readRows(await db.prepare(query).bind(...args).all());
     if (results.length > 10) throw new Error('clout_pilot_source_limit_exceeded');
     for (const row of results) {
-      const earnedAtMs = validSourceTime(row.earned_at, day, startAtMs, nowMs);
+      const sourceTime = sourceKind === 'nbg_london'
+        ? Number.isSafeInteger(row.finished_at_ms)
+          ? new Date(row.finished_at_ms).toISOString()
+          : null
+        : row.earned_at;
+      const earnedAtMs = validSourceTime(sourceTime, day, startAtMs, nowMs);
       if (typeof row.source_event_id !== 'string' || !row.source_event_id ||
           row.source_event_id.length > 180 ||
           row.source_system !== ({
@@ -337,6 +390,7 @@ export async function syncCloutPilotForVerifiedOwner(db, telegramId, options = {
             moonpet_daily_journey: 'moonpet',
             moonpet_weekly_journey: 'moonpet',
             dead_run: 'dead_run',
+            nbg_london: 'nbg_london',
           })[sourceKind]) {
         throw new Error('clout_pilot_invalid_source_receipt');
       }
@@ -347,11 +401,13 @@ export async function syncCloutPilotForVerifiedOwner(db, telegramId, options = {
       }
       if (prior) throw new Error('clout_pilot_duplicate_authority_row');
       const normalizedSkill = sourceKind === 'dead_run'
-        ? verifiedDeadRunScore(row) : null;
+        ? verifiedDeadRunScore(row)
+        : sourceKind === 'nbg_london' ? verifiedNbgLondonScore(row) : null;
       receipts.set(receiptKey, {
         sourceKind, source_system: row.source_system, source_event_id: row.source_event_id,
         source_pet_id: row.source_pet_id || null,
-        verification_kind: sourceKind === 'dead_run' ? 'server_settlement' : 'server_receipt',
+        verification_kind: sourceKind === 'dead_run' ? 'server_settlement' :
+          sourceKind === 'nbg_london' ? 'server_replay' : 'server_receipt',
         normalized_skill: normalizedSkill,
         owner, day_key: day, earned_at_ms: earnedAtMs,
       });
@@ -366,7 +422,8 @@ export async function syncCloutPilotForVerifiedOwner(db, telegramId, options = {
     statements.push(source);
     for (const effect of effects) {
       // Only independently recomputed scoreRun() results can mint Skill.
-      const trusted = effect.skill_source === 'verified_dead_run_score_v1'
+      const trusted = effect.skill_source === 'verified_dead_run_score_v1' ||
+        effect.skill_source === 'verified_nbg_replay_v1'
         ? { ...effect, normalized_skill: receipt.normalized_skill } : effect;
       statements.push(prepareWrites(db, receipt, trusted, nowMs).effectInsert);
     }
