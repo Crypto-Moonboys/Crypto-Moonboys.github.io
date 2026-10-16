@@ -255,7 +255,8 @@ test('PR2 must not expose a browser write route, economy mutation or enabled def
   assert.match(entry, /CHAMPIONSHIP_CLOUT_PILOT_ENABLED === 'true'/,
     'no optional Clout work should be scheduled while the pilot is disabled');
   assert.match(entry, /CHAMPIONSHIP_CLOUT_PILOT_ENABLED !== 'true'/);
-  assert.match(entry, /isMiniAppPetAction && body && response\.ok/);
+  assert.match(entry, /else if \(isMiniAppPetAction && body\)/,
+    'only completed Mini App responses may schedule Clout projection');
   assert.match(entry, /verifyTelegramMiniAppInitData\(/);
   assert.match(entry, /projectCloutForAuthenticatedMiniApp\(env, body, response\)/);
   assert.doesNotMatch(entry, /\/championship\/clout\/pilot\/sync/);
