@@ -167,13 +167,19 @@ assert.equal(requests('/run/start').length, startsBeforeRace + 1,
   'older start must already be in flight');
 
 await emit('nbg-level-reset');
-await emit('nbg-level-started');
+const pendingNewSession = window.NBGLondonBeforeQueuedRun();
+assert.equal(typeof pendingNewSession?.then, 'function',
+  'the game must await a queued same-owner session BEFORE starting physics');
 assert.equal(requests('/run/start').length, startsBeforeRace + 1,
   'reset must not POST a new same-owner start before the stale POST settles');
 releaseStaleStart();
+await pendingNewSession;
 await flush();
 assert.equal(requests('/run/start').length, startsBeforeRace + 2,
   'new same-owner session starts only after stale server start completes');
+await emit('nbg-level-started');
+assert.equal(requests('/run/start').length, startsBeforeRace + 2,
+  'the game started event must not duplicate a prepared server session');
 const activeStart = requests('/run/start').at(-1);
 assert.equal(activeStart.body.telegram_auth.id, '100');
 nextAuth = async () => auth('100');
