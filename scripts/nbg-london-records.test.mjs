@@ -82,6 +82,8 @@ async function api(path, body) {
 
 assert.equal(efficiencyRate(800, 120_000), 400, 'speed + XP must rank XP earned per minute');
 assert.equal(efficiencyRate(1201, 120000), 600.5, 'fractional XP rates must retain accurate ranking');
+assert.ok(efficiencyRate(3005, 300500) > efficiencyRate(3000, 300001),
+  'near-tie XP rates must compare exactly rather than round into incorrect order');
 assert.equal(validFinish({ complete: true, time_ms: 120000, xp: 600, coins: 25, secret_coins: 0 }, 120500), true);
 assert.equal(validFinish({ complete: true, time_ms: 1500, xp: 600, coins: 25, secret_coins: 0 }, 1500), false);
 assert.equal(validFinish({ complete: true, time_ms: 120000, xp: 600, coins: 25, secret_coins: 0 }, 350000), false);
@@ -134,6 +136,11 @@ try {
   assert.equal(competition.status, 200, 'live daily standings are public');
   assert.ok(competition.standings.some(row => row.name === '@alpha'), 'period board displays Telegram names');
   assert.ok(competition.standings.some(row => row.total_xp >= 2000), 'completed runs accumulate XP for the period');
+  assert.equal(competition.payout_enabled, false, 'beta payouts must default to disabled');
+  assert.ok(competition.standings.every(row => row.prize_eligible === false),
+    'client-reported beta XP must not qualify for any future prize');
+  assert.equal(sqlite.prepare('SELECT SUM(trusted_xp) AS trusted FROM nbg_london_period_scores').get().trusted, 0,
+    'untrusted historic run totals cannot be upgraded to trusted Arcade XP later');
 
   const fastest = await api('/nbg-london/leaderboard?metric=fastest');
   const speedXp = await api('/nbg-london/leaderboard?metric=speed_xp');
@@ -186,8 +193,8 @@ try {
   for (const [id, points] of [['100', 8000], ['200', 6500], ['300', 4000],
                                ['400', 3900], ['500', 9000]]) {
     sqlite.prepare(`INSERT INTO nbg_london_period_scores
-       (period_kind, period_start_ms, telegram_id, display_name, total_xp, run_count, best_time_ms, updated_at_ms)
-       VALUES('daily', ?, ?, ?, ?, 1, 100000, ?)`).run(previousStart, id, '@' + id, points, fakeNow);
+       (period_kind, period_start_ms, telegram_id, display_name, total_xp, trusted_xp, verified_run_count, run_count, best_time_ms, updated_at_ms)
+       VALUES('daily', ?, ?, ?, ?, ?, 1, 1, 100000, ?)`).run(previousStart, id, '@' + id, points, points, fakeNow);
   }
   const period = { kind: 'daily', start: previousStart, end: cutoff };
   const settledOnce = await settleNbgLondonPeriod(env, period, cutoff);
@@ -213,15 +220,15 @@ try {
   const weekly = { kind: 'weekly', start: periodStart(fakeNow, 'weekly') - 604800000,
     end: periodStart(fakeNow, 'weekly') };
   sqlite.prepare(`INSERT INTO nbg_london_period_scores
-    (period_kind, period_start_ms, telegram_id, display_name, total_xp, run_count, best_time_ms, updated_at_ms)
-    VALUES ('weekly', ?, '100', '@alpha', 1000, 1, 100000, ?)`).run(weekly.start, fakeNow);
+    (period_kind, period_start_ms, telegram_id, display_name, total_xp, trusted_xp, verified_run_count, run_count, best_time_ms, updated_at_ms)
+    VALUES ('weekly', ?, '100', '@alpha', 1000, 1000, 1, 1, 100000, ?)`).run(weekly.start, fakeNow);
   const weeklyResult = await settleNbgLondonPeriod(env, weekly, weekly.end);
   assert.equal(weeklyResult[0]?.arcade_xp, 500, 'weekly prizes use separate rank ladder');
   const season = { kind: 'seasonal', start: periodStart(fakeNow, 'seasonal') - 7776000000,
     end: periodStart(fakeNow, 'seasonal') };
   sqlite.prepare(`INSERT INTO nbg_london_period_scores
-    (period_kind, period_start_ms, telegram_id, display_name, total_xp, run_count, best_time_ms, updated_at_ms)
-    VALUES ('seasonal', ?, '100', '@alpha', 1000, 1, 100000, ?)`).run(season.start, fakeNow);
+    (period_kind, period_start_ms, telegram_id, display_name, total_xp, trusted_xp, verified_run_count, run_count, best_time_ms, updated_at_ms)
+    VALUES ('seasonal', ?, '100', '@alpha', 1000, 1000, 1, 1, 100000, ?)`).run(season.start, fakeNow);
   assert.equal((await settleNbgLondonPeriod(env, season, season.end))[0]?.arcade_xp, 2500,
     '90-day season prizes require ended seasonal period');
   assert.equal(sqlite.prepare('SELECT arcade_xp_total FROM arcade_progression_state WHERE telegram_id = ?').get('100').arcade_xp_total, 3100,
