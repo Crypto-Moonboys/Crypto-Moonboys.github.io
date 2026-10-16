@@ -25,27 +25,39 @@ const spoof = await verifyNbgLondonReplay({
 assert.equal(spoof.valid, false,
   'browser-reported million XP and a simple held-right script cannot skip crates');
 
-// A complete *physical* replay must derive points from the level's
-// collectibles and checkpoints. A scripted replay may be fast, but cannot
-// claim extra XP that the simulator did not earn.
-const honestInputs = [];
-for(let i=0;i<5100;i++){
-  honestInputs.push([33,33,10 | (i % 10 === 0 ? 4 : 0)]);
-}
-const honestReplay = frameStream(honestInputs);
-const result = await verifyNbgLondonReplay({
-  runId:id, replay:honestReplay,
-  startedAtMs:1000000, now:1000000+5100*33
-});
-// If this replay does not complete the level, it must be rejected: no
-// authenticated account, elapsed clock or plausible XP claim overrides it.
-assert.ok(result.valid === false || (result.complete === true &&
-  Number.isSafeInteger(result.xp) && result.xp >= 0 && result.xp < 1000000));
-if(result.valid) {
-  const tampered = await verifyNbgLondonReplay({
-    runId:id, startedAtMs:1000000, now:1000000+5100*33,
-    replay: { ...honestReplay, xp:1000000, coins:312, complete:true }
+// Find a simulated input sequence that actually finishes the 22,000 px
+// level. Use the server's completion frame, not a browser-computed position.
+let legitimate = null;
+const diagnostics = [];
+for (const period of [8,10,12,14,16,18,20,24,30]) {
+  const frames = Array.from({length:5100}, (_,i) =>
+    [33,33,10 | (i % period === 0 ? 4 : 0)]);
+  const inspected = await verifyNbgLondonReplay({
+    runId:id, replay:frameStream(frames),
+    startedAtMs:1000000, now:1000000+5100*33, debug:true
   });
-  assert.equal(tampered.xp, result.xp, 'untrusted counters never change calculated XP');
+  diagnostics.push({period, ...(inspected.debug || {}), valid:inspected.valid});
+  if(!inspected.debug?.complete) continue;
+  const count=inspected.debug.consumedFrames;
+  const completedReplay=frameStream(frames.slice(0,count));
+  const calculated = await verifyNbgLondonReplay({
+    runId:id, replay:completedReplay,
+    startedAtMs:1000000, now:1000000+count*33
+  });
+  if(calculated.valid) {
+    legitimate={replay:completedReplay, count, result:calculated};
+    break;
+  }
 }
+assert.ok(legitimate, 'at least one physically completed replay must save: ' +
+  JSON.stringify(diagnostics));
+
+const tampered = await verifyNbgLondonReplay({
+  runId:id, startedAtMs:1000000, now:1000000+legitimate.count*33,
+  replay: { ...legitimate.replay, xp:1000000, coins:312, complete:true }
+});
+assert.equal(tampered.xp, legitimate.result.xp,
+  'untrusted counters never change server-computed XP');
+assert.ok(legitimate.result.xp < 1000000 && legitimate.result.xp >= 0,
+  'official XP is bounded by rewards physically reachable in the course');
 console.log('[PASS] NBG London server-derived replay score protection');
