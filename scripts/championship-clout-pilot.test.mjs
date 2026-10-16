@@ -179,7 +179,7 @@ function addNbgProof(f,{id=NBG_RUN_IDS.a,owner=OWNER,finishedAt=Date.parse(NOON)
       'INSERT INTO nbg_london_verified_runs',
       '(run_id,telegram_id,day_key,finished_at_ms,time_ms,verified_xp,replay_version,',
       'replay_sha256,input_sha256,authority,recorded_at_ms)',
-      "VALUES(?,?,?,?,?,?,1,?,?,'server_replay',?)",
+      "VALUES(?,?,?,?,?,?,2,?,?,'server_replay',?)",
     ].join(' ')).run(
       id,owner,new Date(finishedAt).toISOString().slice(0,10),finishedAt,
       130000,verifiedXp,replayHex.repeat(64),inputHex.repeat(64),finishedAt,
