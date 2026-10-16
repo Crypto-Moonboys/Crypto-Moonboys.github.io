@@ -773,8 +773,12 @@ for (const entry of [
 // an actual required direction at the first crossing of a world checkpoint.
 // Test both a matching and a mismatching seed without enabling production.
 for(const trial of [
-  {seed:0xffffffff,expectedFailure:false,label:'right gate'},
-  {seed:0,expectedFailure:true,label:'left gate'},
+  {seed:0xffffffff,expectedFailure:false,label:'right action at right tag',
+    key:'ArrowRight',x:1880,next:'RIGHT'},
+  {seed:0,expectedFailure:false,label:'left action at left tag',
+    key:'ArrowLeft',x:1898,next:'LEFT'},
+  {seed:0,expectedFailure:true,label:'right action at left tag',
+    key:'ArrowRight',x:1880,next:'LEFT'},
 ]){
   const gatePage=await browser.newPage({viewport:{width:960,height:540}});
   try{
@@ -788,14 +792,14 @@ for(const trial of [
         ranked:true,replay_version:2,challenge_seed:seed,
       });
     },trial.seed);
-    await gatePage.keyboard.down('ArrowRight');
+    await gatePage.keyboard.down(trial.key);
     await gatePage.waitForFunction(()=>
       window.NBGLevel1State?.running===true && window.NBGLevel1State.rankedChallengeVersion===2,
       null,{timeout:5000});
-    await gatePage.evaluate(()=>{
+    await gatePage.evaluate(x=>{
       const p=window.NBGLevel1State.player;
-      p.x=1880;p.vx=4.2;p.y=214-p.h;p.vy=0;p.grounded=true;
-    });
+      p.x=x;p.vx=4.2;p.y=214-p.h;p.vy=0;p.grounded=true;
+    },trial.x);
     await gatePage.waitForFunction(()=>window.NBGLevel1State?.rankedChallengeGateIndex===1,
       null,{timeout:5000});
     const gateState=await gatePage.evaluate(()=>({
@@ -805,9 +809,10 @@ for(const trial of [
     assert.equal(gateState.missed,trial.expectedFailure,
       trial.label+' must be checked against the real movement control');
     assert.match(gateState.hud,trial.expectedFailure
-      ? /TAG MISSED - NOT RANKED/ : /TAG 2\/32: HOLD RIGHT/,
+      ? /TAG MISSED - NOT RANKED/ :
+        new RegExp('TAG 2/32: HOLD '+trial.next),
       trial.label+' should have an unambiguous in-game result');
-    await gatePage.keyboard.up('ArrowRight');
+    await gatePage.keyboard.up(trial.key);
   }finally{await gatePage.close();}
 }
 
