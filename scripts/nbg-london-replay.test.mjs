@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
-import { verifyNbgLondonReplay, NBG_REPLAY_VERSION } from '../workers/leaderboard/nbg-london-replay.js';
+import { webcrypto } from 'node:crypto';
+import { verifyNbgLondonReplay, NBG_REPLAY_VERSION, fingerprintNbgLondonReplay } from '../workers/leaderboard/nbg-london-replay.js';
+if (!globalThis.crypto) globalThis.crypto = webcrypto;
 
 function frameStream(frames) {
   const bytes = [];
@@ -10,6 +12,26 @@ function frameStream(frames) {
   }
   return { version: NBG_REPLAY_VERSION, frames: Buffer.from(bytes).toString('base64') };
 }
+const commonInputs = frameStream([[33,33,2],[33,33,6],[33,33,2],[33,33,10]]);
+const sameControlsDifferentTime = frameStream([[32,32,2],[32,32,6],[32,32,2],[32,32,10]]);
+const differentControls = frameStream([[33,33,2],[33,33,6],[33,33,2],[33,33,2]]);
+const fingerprints = await fingerprintNbgLondonReplay(commonInputs);
+const timingVariant = await fingerprintNbgLondonReplay(sameControlsDifferentTime);
+const controlVariant = await fingerprintNbgLondonReplay(differentControls);
+assert.match(fingerprints.replay_sha256,/^[a-f0-9]{64}$/);
+assert.match(fingerprints.input_sha256,/^[a-f0-9]{64}$/);
+assert.equal(fingerprints.replay_version,NBG_REPLAY_VERSION);
+assert.equal(fingerprints.frame_count,4);
+assert.equal(fingerprints.input_sha256,timingVariant.input_sha256,
+  'time-only edits to the same physical button presses share the anti-replay digest');
+assert.notEqual(fingerprints.replay_sha256,timingVariant.replay_sha256,
+  'raw replay proof detects any changed timing bytes');
+assert.notEqual(fingerprints.input_sha256,controlVariant.input_sha256);
+assert.equal((await fingerprintNbgLondonReplay({...commonInputs,frames:'bad%%'})),null,
+  'malformed base64 cannot generate a trusted source fingerprint');
+assert.equal((await fingerprintNbgLondonReplay({...commonInputs,version:99})),null,
+  'unknown replay versions cannot be promoted to trusted receipts');
+
 const id = '00000000-0000-4000-8000-000000000001';
 const base = { runId:id, startedAtMs:1000000, now:1100000 };
 
