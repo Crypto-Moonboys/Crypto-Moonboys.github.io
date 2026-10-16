@@ -4,12 +4,17 @@ import { verifyNbgLondonReplay } from './nbg-london-replay.js';
 import { settleNbgLondonDue } from './nbg-london-prizes.js';
 import { withDeploymentProvenance } from '../shared/deployment-provenance.js';
 import { withRegisteredTelegramLinkFallback } from './registered-telegram-link-fallback.js';
+import { syncCloutPilotForVerifiedOwner } from '../moonboys-api/championship/clout-pilot.js';
 
 // Official XP is independently computed from physical movement replays.
 // Real-money-equivalent shared Arcade XP prizes stay separately code-locked
 // until the owner explicitly approves the beta competition reward release.
 const NBG_LONDON_REPLAY_VERIFIER = verifyNbgLondonReplay;
 const NBG_LONDON_PRIZES_RELEASED = false;
+// PR3B SOURCE-TRUST CODE LOCK: Cloudflare environment flags alone cannot
+// enable the new 101-dependent writer or Championship Clout in production.
+// A separately reviewed release, migration and signed canary are required.
+const NBG_VERIFIED_RUN_RECEIPTS_RELEASED = false;
 
 const CANONICAL_GAMES = Object.freeze([
   'snake',
@@ -35,6 +40,8 @@ const leaderboardWorker = {
         leaderboard_store_configured: Boolean(env.LEADERBOARD),
         nbg_london_ranked_scoring_available: typeof NBG_LONDON_REPLAY_VERIFIER === 'function',
         nbg_london_prize_payouts_available: NBG_LONDON_PRIZES_RELEASED,
+        nbg_london_trusted_receipts_available: NBG_VERIFIED_RUN_RECEIPTS_RELEASED &&
+          env.NBG_VERIFIED_RUN_RECEIPTS_ENABLED === 'true',
       }), {
         headers: {
           'Content-Type': 'application/json',
@@ -55,7 +62,29 @@ const leaderboardWorker = {
           env.NBG_LONDON_PRIZES_ENABLED : 'false',
         NBG_LONDON_SCORE_AUTHORITY_ENABLED: NBG_LONDON_PRIZES_RELEASED ?
           env.NBG_LONDON_SCORE_AUTHORITY_ENABLED : 'false',
-      }, resolveSubmissionIdentity, NBG_LONDON_REPLAY_VERIFIER);
+      }, resolveSubmissionIdentity, NBG_LONDON_REPLAY_VERIFIER, {
+        verifiedReceiptsReleased: NBG_VERIFIED_RUN_RECEIPTS_RELEASED,
+        waitUntil: typeof context?.waitUntil === 'function'
+          ? context.waitUntil.bind(context) : null,
+        // Called only after the full replay-unique NBG finish batch commits.
+        // Never authorize an XP payment or delay the finished-game response.
+        onVerifiedRun: async ({db,telegramId,runId}) => {
+          if (!NBG_VERIFIED_RUN_RECEIPTS_RELEASED ||
+              env.CHAMPIONSHIP_CLOUT_PILOT_ENABLED !== 'true' ||
+              env.CHAMPIONSHIP_CLOUT_NBG_ENABLED !== 'true') return;
+          const receipt = await db.prepare([
+            'SELECT finished_at_ms,telegram_id FROM nbg_london_verified_runs',
+            "WHERE run_id=? AND telegram_id=? AND authority='server_replay' LIMIT 1",
+          ].join(' ')).bind(runId,telegramId).first();
+          if (!receipt || String(receipt.telegram_id) !== String(telegramId) ||
+              !Number.isSafeInteger(receipt.finished_at_ms)) return;
+          await syncCloutPilotForVerifiedOwner(db,telegramId,{
+            enabled:true,nbgEnabled:true,coreSourcesEnabled:false,
+            nbgFinishAtMs:receipt.finished_at_ms,
+            startAt:env.CHAMPIONSHIP_CLOUT_PILOT_START_AT,
+          });
+        },
+      });
     }
     return baseWorker.fetch(request, runtimeEnv, context);
   },
