@@ -203,15 +203,24 @@
   async function beginRankedRun() {
     var current = ++generation;
     runPromise = null;
-    if (!displayIdentity()) {
+    // Capture the identity at the exact beginning of play, before an await.
+    // Website credential renewal can adopt another tab's Telegram account.
+    var gate = window.MOONBOYS_IDENTITY;
+    var startingId = String(gate && gate.getTelegramId ? gate.getTelegramId() || '' : '');
+    if (!displayIdentity() || !startingId) {
       setStatus('Guest run: score is session-only, not permanently ranked.');
       return;
     }
     setStatus('Verifying Telegram account for this run…');
     runPromise = (async function () {
       var auth = await signedAuth();
-      if (!auth) return null;
-      return callJson('/run/start', { telegram_auth: auth });
+      if (!auth || current !== generation ||
+          String(auth.id) !== startingId ||
+          String(gate.getTelegramId() || '') !== startingId ||
+          !gate.isTelegramLinked()) return null;
+      var started = await callJson('/run/start', { telegram_auth: auth });
+      if (current !== generation || String(gate.getTelegramId() || '') !== startingId) return null;
+      return Object.assign({}, started, { telegram_id: startingId });
     }());
     try {
       var result = await runPromise;
@@ -222,7 +231,7 @@
         if (account) account.textContent = 'Playing as ' + result.player;
         setStatus('Ranked run active — completed results are saved to your Telegram name.');
       } else {
-        setStatus('Telegram verification unavailable. This run will not be saved.');
+        setStatus('Run not ranked: Telegram account changed during login verification.');
       }
     } catch (error) {
       if (current === generation) setStatus('Ranked run unavailable: ' + error.message + '. No score will be saved.');
@@ -242,9 +251,15 @@
         if (current === generation) setStatus('Run not ranked: no verified Telegram start session.');
         return;
       }
+      var gate = window.MOONBOYS_IDENTITY;
+      if (current !== generation || !gate || String(gate.getTelegramId() || '') !== session.telegram_id) {
+        if (current === generation) setStatus('Run not saved: Telegram account changed during play.');
+        return;
+      }
       var auth = await signedAuth();
-      if (!auth || current !== generation) {
-        if (current === generation) setStatus('Run not saved: Telegram login expired.');
+      if (!auth || current !== generation || String(auth.id) !== session.telegram_id ||
+          String(gate.getTelegramId() || '') !== session.telegram_id || !gate.isTelegramLinked()) {
+        if (current === generation) setStatus('Run not saved: Telegram account changed or login expired.');
         return;
       }
       setStatus('Submitting completed run for verification…');
@@ -292,6 +307,12 @@
       });
     });
     window.addEventListener('moonboys:identity-change', function () {
+      // A started run can never migrate to a different linked Telegram account.
+      if (runPromise) {
+        generation += 1;
+        runPromise = null;
+        setStatus('Telegram account changed. This run is no longer eligible for permanent scores.');
+      }
       displayIdentity();
       loadPersonal();
     });
