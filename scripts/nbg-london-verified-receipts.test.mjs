@@ -13,10 +13,16 @@ import {
 
 if (!globalThis.crypto) globalThis.crypto = webcrypto;
 const realNow = Date.now;
-// Two days in the future guarantees a real SQLite wall clock stays below the
-// legacy source's SQL period freeze cutoff, without overriding SQLite strftime
-// needed by migration 101 CHECK(day_key).
-let now = realNow() + 2 * 86400000;
+// Fix the test clock at 12:00 UTC on a future day. Using realNow()+2 days
+// preserves the runner's hour/minute and silently crosses a daily boundary
+// during the multi-run test when CI starts near midnight. UTC noon also
+// guarantees SQLite's real wall clock precedes the source's frozen-period
+// cutoff without overriding SQLite strftime (needed by migration 101).
+const future = new Date(realNow() + 2 * 86400000);
+let now = Date.UTC(
+  future.getUTCFullYear(), future.getUTCMonth(), future.getUTCDate(), 12
+);
+const fixtureDayStart = periodStart(now, 'daily');
 Date.now = () => now;
 const submitDay = () => new Date(now).toISOString().slice(0,10);
 
@@ -261,9 +267,43 @@ test('replay reuse by new sessions/other owners and timing-only edits are reject
     assert.equal((await f.finish(fresh,replayB)).status,200,
       'a distinct input sequence with a matching real-time session is eligible');
     assert.equal(count(f,'nbg_london_verified_runs'),2);
-    const expectedTotal=f.sql.prepare("SELECT total_xp,trusted_xp,run_count,verified_run_count FROM nbg_london_period_scores WHERE period_kind='daily' AND telegram_id='100'").get();
+    assert.equal(periodStart(now,'daily'),fixtureDayStart,
+      'five minutes of successive runs must not cross the pinned UTC noon day');
+    const expectedTotal=f.sql.prepare(
+      "SELECT total_xp,trusted_xp,run_count,verified_run_count FROM nbg_london_period_scores WHERE period_kind='daily' AND period_start_ms=? AND telegram_id='100'"
+    ).get(fixtureDayStart);
     assert.deepEqual({...expectedTotal},{total_xp:1200,trusted_xp:1200,run_count:2,verified_run_count:2});
   }finally{f.close();}
+});
+
+test('explicit midnight rollover correctly separates daily trusted XP for distinct signed runs',async()=>{
+  const priorClock=now;
+  const pinnedDate=new Date(priorClock);
+  now=Date.UTC(
+    pinnedDate.getUTCFullYear(), pinnedDate.getUTCMonth(),
+    pinnedDate.getUTCDate(), 23, 57, 0
+  );
+  const f=fixture();
+  try{
+    const beforeMidnight=await f.start();
+    now+=120000; // 23:59 UTC
+    assert.equal((await f.finish(beforeMidnight,replayA)).status,200);
+    const firstDay=periodStart(now,'daily');
+    const afterMidnight=await f.start();
+    now+=120000; // 00:01 UTC on the following day
+    assert.equal((await f.finish(afterMidnight,replayB)).status,200);
+    const nextDay=periodStart(now,'daily');
+    assert.equal(nextDay-firstDay,86400000);
+    const rows=f.sql.prepare(
+      "SELECT period_start_ms,total_xp,trusted_xp,run_count,verified_run_count FROM nbg_london_period_scores WHERE telegram_id='100' AND period_kind='daily' ORDER BY period_start_ms"
+    ).all();
+    assert.equal(rows.length,2);
+    assert.deepEqual(rows.map(row=>({...row})),[
+      {period_start_ms:firstDay,total_xp:600,trusted_xp:600,run_count:1,verified_run_count:1},
+      {period_start_ms:nextDay,total_xp:600,trusted_xp:600,run_count:1,verified_run_count:1},
+    ]);
+    assert.equal(count(f,'nbg_london_verified_runs'),2);
+  }finally{f.close();now=priorClock;}
 });
 
 test('concurrent finishes of same session claim and credit exactly once',async()=>{
