@@ -101,6 +101,40 @@ function decodeFrames(replay) {
   return bytes;
 }
 
+/**
+ * Independent replay reuse fingerprints for #1530 PR3B. Do NOT include the
+ * run UUID in either digest: a copied replay across sessions/accounts must
+ * have the same fingerprint. Input fingerprint ignores timing bytes so a
+ * cheap wall-clock-only edit to identical controls is rejected too.
+ *
+ * This does not prove human play or stop newly scripted input streams.
+ * Proof rows are created only after the existing full physics replay passes.
+ */
+export async function fingerprintNbgLondonReplay(replay) {
+  const decoded = decodeFrames(replay);
+  if (!decoded) return null;
+  const raw = new Uint8Array(decoded.length);
+  const controls = new Uint8Array(decoded.length / 5);
+  for (let i = 0, frame = 0; i < decoded.length; i += 5, frame++) {
+    for (let j = 0; j < 5; j++) raw[i + j] = decoded.charCodeAt(i + j);
+    if (raw[i + 4] > 15) return null;
+    controls[frame] = raw[i + 4];
+  }
+  if (!globalThis.crypto?.subtle) throw new Error('nbg_replay_crypto_unavailable');
+  const [rawHash, controlsHash] = await Promise.all([
+    crypto.subtle.digest('SHA-256', raw),
+    crypto.subtle.digest('SHA-256', controls),
+  ]);
+  const hex = digest => Array.from(new Uint8Array(digest), byte =>
+    byte.toString(16).padStart(2, '0')).join('');
+  return {
+    replay_sha256: hex(rawHash),
+    input_sha256: hex(controlsHash),
+    frame_count: controls.length,
+    replay_version: NBG_REPLAY_VERSION,
+  };
+}
+
 export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, debug = false, testInputOverride = null }) {
   if (typeof runId !== 'string' || !Number.isFinite(startedAtMs) ||
       !Number.isFinite(now)) return { valid: false };
