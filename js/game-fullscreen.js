@@ -839,6 +839,7 @@
     var right = makeTouchBtn('→', 'touch-btn--wide', 'Run right');
     var spray = makeTouchBtn('S', 'touch-btn--fire', 'Spray');
     var jump = makeTouchBtn('JUMP', 'touch-btn--wide', 'Jump');
+    var look = makeTouchBtn('↓', 'touch-btn--wide', 'Look below');
     bindHold(left, 'ArrowLeft');
     bindHold(right, 'ArrowRight');
     bindHold(jump, ' ', 'Space');
@@ -847,6 +848,12 @@
     move.appendChild(right);
     actions.appendChild(spray);
     actions.appendChild(jump);
+    // Only NBG London implements render-only looking below; other runners
+    // preserve their original touch layout and controls.
+    if (window.location.pathname === '/games/nbg-london/') {
+      bindHold(look, 'ArrowDown');
+      actions.appendChild(look);
+    }
     wrap.appendChild(move);
     wrap.appendChild(actions);
     return wrap;

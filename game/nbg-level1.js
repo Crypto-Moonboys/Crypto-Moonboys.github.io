@@ -59,6 +59,7 @@
   var CAMERA_JUMP_FOLLOW = 0.95;
   var CAMERA_JUMP_MAX_Y = 42;
   var CAMERA_JUMP_EASE = 0.28;
+  var CAMERA_LOOK_DOWN_MAX_Y = 84; // View only: no physics or replay changes.
   function rectsOverlap(a, b) {
     return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
   }
@@ -176,7 +177,7 @@
     var keys = {};
     var pendingJumpPresses = 0;
     var jumpsUsed = 0;
-    var touch = { left: false, right: false, jump: false, spray: false };
+    var touch = { left: false, right: false, jump: false, spray: false, look: false };
     var images = {};
     var playerAnimations = {};
     var assetStatus = {};
@@ -472,6 +473,7 @@
       if (down && !wasDown && getControlForCode(e.code) === 'jump') {
         pendingJumpPresses = Math.min(2, pendingJumpPresses + 1);
       }
+      if (e.code === 'ArrowDown') e.preventDefault();
       if (isStartInputCode(e.code)) {
         e.preventDefault();
         if (down) {
@@ -938,6 +940,9 @@
       var groundedY = FLOOR_Y - player.h;
       var jumpLift = Math.max(0, groundedY - player.y);
       var targetCameraY = Math.min(CAMERA_JUMP_MAX_Y, jumpLift * CAMERA_JUMP_FOLLOW);
+      // Hold Down to inspect the ground below a higher platform. This only
+      // translates rendered scenery and does not affect hitboxes or XP.
+      if (keys.ArrowDown || touch.look) targetCameraY -= CAMERA_LOOK_DOWN_MAX_Y;
       cameraY += (targetCameraY - cameraY) * CAMERA_JUMP_EASE;
     }
 
@@ -1063,6 +1068,10 @@
       drawSkylineLayer();
       drawImageLayer(images.wall, 0.58, 154, 88, '#2d2033');
       drawStreetLayer();
+      // Looking below shifts the road upward; extend the painted roadbed
+      // beneath its existing 28px street strip instead of exposing blue clear.
+      ctx.fillStyle = '#303238';
+      ctx.fillRect(0, STREET_Y + STREET_BAND_HEIGHT, WIDTH, CAMERA_LOOK_DOWN_MAX_Y + 2);
 
       // A whole platform uses brick OR rock, never an alternating mixture.
       for (var i = 0; i < platforms.length; i += 1) {
@@ -1394,6 +1403,7 @@
         recordReplayTick(frameElapsedMs, dt);
         updatePlayer(dt);
         if (gameOver) {
+          cameraY = 0; // Terminal frame is always normally framed.
           updateHud();
           render(time);
           return;
@@ -1407,6 +1417,7 @@
         updateLevel();
         updateCamera();
         updateCameraY();
+        if (!running) cameraY = 0; // Completion must not freeze a held-down look.
       } else if (completionAnimationActive) {
         completionAnimationActive = !advancePlayerAnimation(dt, false);
       }
@@ -1710,8 +1721,10 @@
           touch[control] = active;
           if (active) {
             if (control === 'jump') pendingJumpPresses = Math.min(2, pendingJumpPresses + 1);
-            queueInitialInput(control);
-            beginGameplay(control);
+            if (control !== 'look') {
+              queueInitialInput(control);
+              beginGameplay(control);
+            }
           }
         }
       }
