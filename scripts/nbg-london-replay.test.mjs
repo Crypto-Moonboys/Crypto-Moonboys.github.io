@@ -135,6 +135,67 @@ assert.ok(!challengedA.valid || !challengedB.valid ||
   'copied v1 input must not produce an identical accepted score for two distinct v2 challenges');
 assert.equal((await fingerprintNbgLondonReplay(challengeReplay)).replay_version,2);
 
+// #1539 P1: independently drive and finish a *real* v2 game with a persisted
+// server-owned seed that requires RIGHT at all 32 course gates. Reusing the
+// actual completed replay under a different seed must fail in physics,
+// not just collide in an auxiliary raw-frame hash. The earlier 37-variant
+// movement-only challenge is insufficient to enforce this.
+let challengedPhysicalRun=null;
+const seedAllRight=0xffffffff;
+const challengedDiagnostics=[];
+for(const approach of [80,95,110,125,140,160]){
+  const masks=[];
+  let lastJump=-1000;
+  const v2Template={...frameStream(
+    Array.from({length:5100},()=>[33,33,0])
+  ),version:2};
+  const simulated=await verifyNbgLondonReplay({
+    runId:id,replay:v2Template,challengeSeed:seedAllRight,
+    startedAtMs:1000000,now:1000000+5100*33,debug:true,
+    testInputOverride(state){
+      const obstacle=state.obstacles.filter(o=>
+        o.x+o.w>state.x&&o.x<state.x+190
+      ).sort((a,b)=>a.x-b.x)[0];
+      const distance=obstacle?obstacle.x-state.x:Infinity;
+      const canJump=state.elapsed-lastJump>180;
+      let mask=10;
+      if(canJump&&state.grounded&&distance<approach&&distance>-35){
+        mask|=4;lastJump=state.elapsed;
+      }else if(canJump&&!state.grounded&&state.jumps===1&&
+          state.vy>1&&distance<55&&distance>-35){
+        mask|=4;lastJump=state.elapsed;
+      }
+      masks.push(mask);
+      return mask;
+    },
+  });
+  challengedDiagnostics.push({approach,...(simulated.debug||{}),valid:simulated.valid});
+  if(!simulated.debug?.complete)continue;
+  const count=simulated.debug.consumedFrames;
+  const replay={...frameStream(masks.slice(0,count).map(x=>[33,33,x])),version:2};
+  const verified=await verifyNbgLondonReplay({
+    runId:id,replay,challengeSeed:seedAllRight,
+    startedAtMs:1000000,now:1000000+count*33,
+  });
+  if(verified.valid){challengedPhysicalRun={replay,count,result:verified};break;}
+}
+assert.ok(challengedPhysicalRun,
+  'at least one v2 scored course must be physically completable through all 32 gates: '+
+    JSON.stringify(challengedDiagnostics));
+assert.equal(challengedPhysicalRun.result.valid,true);
+assert.ok(challengedPhysicalRun.result.xp>0);
+const replayUnderDifferentGate=await verifyNbgLondonReplay({
+  runId:'aabbccdd-aabb-4aab-8aab-aabbccddaabb',
+  replay:challengedPhysicalRun.replay,challengeSeed:seedAllRight^1,
+  startedAtMs:1000000,now:1000000+challengedPhysicalRun.count*33,
+  debug:true,
+});
+assert.equal(replayUnderDifferentGate.valid,false,
+  'same physically completed v2 input stream cannot satisfy different persisted gate bit');
+assert.equal(replayUnderDifferentGate.debug?.reason,'challenge_gate',
+  'cross-seed rejection must come from a required real player action, not XP/RNG divergence');
+assert.equal(replayUnderDifferentGate.debug?.gateIndex,0);
+
 const tampered = await verifyNbgLondonReplay({
   runId:id, startedAtMs:1000000, now:1000000+legitimate.count*33,
   replay: { ...legitimate.replay, xp:1000000, coins:312, complete:true }
