@@ -297,6 +297,37 @@ try {
   assert.equal(sqlite.prepare('SELECT COUNT(*) AS n FROM nbg_london_prize_awards').get().n, 5,
     'no extra prizes may be minted for unverified older runs');
 
+  // Fifty blocked, frozen unpaid periods must NOT occupy the retry batch and
+  // starve one newer unblocked prize. Blocked receipts remain intact for retry.
+  sqlite.prepare('UPDATE telegram_anticheat_state SET is_blocked=1 WHERE telegram_id=?').run('500');
+  const freeze = sqlite.prepare(`INSERT INTO nbg_london_prize_periods
+    (period_kind,period_start_ms,period_end_ms,frozen_at_ms,freeze_token)
+    VALUES ('daily',?,?,?,?)`);
+  const award = sqlite.prepare(`INSERT INTO nbg_london_prize_awards
+    (event_id,period_kind,period_start_ms,rank,telegram_id,prize_arcade_xp,settled_at_ms)
+    VALUES (?,'daily',?,1,?,100,?)`);
+  for (let i = 0; i < 50; i++) {
+    const start = oldPracticeStart - (i + 20) * 86400000;
+    freeze.run(start, start + 86400000, fakeNow, 'blocked-freeze-' + i);
+    award.run('blocked-daily-' + i, start, '500', fakeNow);
+  }
+  const eligibleStart = oldPracticeStart - 5 * 86400000;
+  freeze.run(eligibleStart, eligibleStart + 86400000, fakeNow, 'eligible-freeze');
+  award.run('eligible-daily-award', eligibleStart, '300', fakeNow);
+  const recovered = await settleNbgLondonDue(env, fakeNow);
+  assert.ok(recovered.some(periodResult =>
+    periodResult.period_start_ms === eligibleStart &&
+    periodResult.payouts.some(prize => prize.telegram_id === '300' && prize.arcade_xp === 100)),
+  'newer unblocked payout must settle despite fifty older blocked unpaid periods');
+  assert.equal(sqlite.prepare(
+    "SELECT COUNT(*) AS n FROM nbg_london_prize_awards WHERE telegram_id='500' AND paid_at_ms IS NULL"
+  ).get().n, 50, 'blocked receipts remain unpaid and retryable after unblocking');
+  assert.equal(sqlite.prepare(
+    "SELECT arcade_xp_total FROM arcade_progression_state WHERE telegram_id='300'"
+  ).get().arcade_xp_total, 130, 'eligible award credits the existing shared Arcade XP wallet once');
+  assert.deepEqual((await settleNbgLondonDue(env, fakeNow)).flatMap(report => report.payouts), [],
+    'retrying the recovered period cannot credit it twice');
+
   const shortRun = await api('/nbg-london/run/start', { telegram_auth: { id: '100' } });
   fakeNow += 2000;
   const impossible = await api('/nbg-london/run/finish', {
