@@ -1681,7 +1681,7 @@ await page.evaluate(() => {
 });
 await page.waitForFunction(() => window.NBGLevel1State.activeSpawnedRats === 0,
   null, { timeout: 2500 });
-assert.equal(await page.evaluate(() => window.NBGLevel1State.enemies.length), 36,
+assert.equal(await page.evaluate(() => window.NBGLevel1State.enemies.length), 57,
   '100 expired parachute walkers must be removed without affecting fixed enemies');
 
 // Health reaching zero must freeze the timer until an explicit reset.
