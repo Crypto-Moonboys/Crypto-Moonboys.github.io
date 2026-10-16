@@ -65,6 +65,47 @@
     .nbg-record-board td:nth-child(n+3), .nbg-record-board th:nth-child(n+3) { text-align: right; }
     .nbg-record-board td:nth-child(2) { overflow-wrap: anywhere; }
     .nbg-record-board .nbg-record-scroller { overflow-x: auto; }
+    /* Standalone NBG fullscreen mode keeps the active scores panel inside the
+       opaque overlay. The drawer scrolls without shrinking the 16:9 game. */
+    #game-overlay #overlay-ctrl-bar #nbg-open-records {
+      width: auto;
+      min-width: 70px;
+      padding: 0 10px;
+      font-size: .72rem;
+      flex-shrink: 0;
+    }
+    #game-overlay #nbg-record-drawer {
+      position: absolute;
+      inset: var(--overlay-toolbar-height, 34px) 0 0;
+      z-index: 9020;
+      box-sizing: border-box;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      background: #090c16;
+      padding: 16px max(12px, env(safe-area-inset-right)) 24px max(12px, env(safe-area-inset-left));
+    }
+    #game-overlay #nbg-record-drawer[hidden] { display: none !important; }
+    #game-overlay #nbg-close-records {
+      display: block;
+      margin: 0 auto 12px;
+      border: 1px solid #7acbff;
+      border-radius: 8px;
+      padding: 10px 14px;
+      background: #145a8a;
+      color: #fff;
+      cursor: pointer;
+      font-weight: 700;
+    }
+    #game-overlay #nbg-record-drawer :focus-visible,
+    #game-overlay #nbg-open-records:focus-visible {
+      outline: 2px solid #f7ab1a;
+      outline-offset: 3px;
+    }
+    #game-overlay #nbg-record-drawer .nbg-record-board {
+      width: 100%;
+      margin: 0 auto;
+      max-width: 900px;
+    }
     @media (max-width: 520px) {
       .nbg-record-board { padding: 12px; }
       .nbg-record-board th, .nbg-record-board td { padding: 7px 5px; font-size: .83rem; }
