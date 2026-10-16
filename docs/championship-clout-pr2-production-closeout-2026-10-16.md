@@ -20,7 +20,19 @@ Evidence supplied directly by GK from Windows Command Prompt:
 
 **Interpretation:** Code is deployed, **not active Championship scoring**. The HTTP endpoint indicates health and source commit, not authenticated Telegram gameplay, Clout writes, or balance reconciliation. The deploy output did not list a pilot launch-time binding.
 
-Retained snapshot: [Worker provenance evidence](https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/blob/main/deployments/evidence/worker-provenance-clout-pr2-2026-10-16.json). Workflow `Worker Live Evidence Capture` MUST independently re-fetch **all three** Workers and compare the retained JSON before this evidence PR can be merged. Other Workers' entries are historical carry-forward, not newly owner-tested.
+Retained snapshot: [Worker provenance evidence](https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/blob/main/deployments/evidence/worker-provenance-clout-pr2-2026-10-16.json). The `Worker Live Evidence Capture` workflow must independently re-fetch **all three** Workers and compare the retained JSON before this evidence PR can merge. The current workflow is **red due to the separately documented leaderboard provenance failure**; the other Workers' entries here are historical carry-forward, not fresh owner tests.
+
+## 1a. CI blocker: unrelated leaderboard provenance is currently invalid
+
+**Independent evidence, not an inference:** [Worker Live Evidence Capture run 38906623163](https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/actions/runs/38906623163) attempted a production read-only check of the three tracked Workers. It got past the first `moonboys-api` verification but failed on `moonboys-leaderboard` with HTTP **503** from `GET /deployment-info`:
+
+```json
+{"service":"moonboys-leaderboard","commit":null,"deployed_at":"2026-10-16T04:41:16.094Z","environment":"production"}
+```
+
+The leaderboard was apparently replaced by a deployment lacking a valid Git commit tag; the failed provenance endpoint **does not prove gameplay endpoints are unavailable**. Its older August evidence remains historical and **must not be represented as the current deployed commit**. The production manifest now explicitly shows `workers/leaderboard` as `verification-pending`, with unknown current commit, while retaining the old evidence as history.
+
+The original all-three-Worker evidence workflow is a deliberate release gate and is **not bypassed** here. **PR #1535 is on MERGE HOLD until the blocker is addressed** through a separate approved, provenance-tagged leaderboard Worker release and subsequent full CI recapture, or an independently reviewed, equally strict alternative authorized by GK. No leaderboard Worker has been redeployed by this PR.
 
 ## 2. D1 migration / backup (already performed, do not repeat)
 
