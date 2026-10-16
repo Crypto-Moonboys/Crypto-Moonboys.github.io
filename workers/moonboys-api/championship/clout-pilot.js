@@ -10,6 +10,9 @@ import { scoreRun, difficultyForPlayer } from '../routes/dead-run-core.js';
 
 const OWNER = /^\d{1,20}$/u;
 const START = /^\d{4}-\d{2}-\d{2}T00:00:00\.000Z$/u;
+// Signed, server-finished Dead Run may cross UTC midnight in waitUntil.
+// Limit the exception: never reopen arbitrary historical days or backfill XP.
+export const CLOUT_DEAD_RUN_MIDNIGHT_GRACE_MS = 15 * 60_000;
 
 export const PILOT_SOURCE_POLICY = Object.freeze({
   telegram_daily: Object.freeze([{ kind: 'community', fixed_points: 5 }]),
@@ -276,7 +279,36 @@ export async function syncCloutPilotForVerifiedOwner(db, telegramId, options = {
   const nowMs = options.now instanceof Date ? options.now.getTime() : Date.now();
   if (!Number.isSafeInteger(nowMs)) throw new Error('clout_pilot_invalid_now');
   if (nowMs < startAtMs) return { state: 'prelaunch' };
-  const day = cloutDayKey(nowMs);
+  const verificationDay = cloutDayKey(nowMs);
+  let day = verificationDay;
+  let finishingAfterMidnight = false;
+  // ONLY the signed Dead Run finish path supplies deadRunFinishAt, read from
+  // the persisted server-owned dead_run_sessions. Keep nowMs independent:
+  // earned_at_ms stays on the source UTC day; verified_at_ms and recorded_at_ms
+  // remain the actual later time when Clout is checked.
+  if (options.deadRunFinishAt !== undefined) {
+    if (options.deadRunEnabled !== true ||
+        typeof options.deadRunFinishAt !== 'string' ||
+        !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/u.test(options.deadRunFinishAt)) {
+      throw new Error('clout_dead_run_invalid_finish_clock');
+    }
+    const finishAtMs = Date.parse(options.deadRunFinishAt);
+    if (!Number.isSafeInteger(finishAtMs) ||
+        new Date(finishAtMs).toISOString() !== options.deadRunFinishAt ||
+        finishAtMs > nowMs) throw new Error('clout_dead_run_invalid_finish_clock');
+    const finishDay = cloutDayKey(finishAtMs);
+    if (finishDay !== verificationDay) {
+      // A narrow current-or-immediately-prior-day exception handles a late
+      // waitUntil across midnight, without silently backfilling last week.
+      if (finishAtMs < startAtMs ||
+          finishDay !== cloutDayKey(nowMs - 86_400_000) ||
+          nowMs - finishAtMs > CLOUT_DEAD_RUN_MIDNIGHT_GRACE_MS) {
+        return { state: 'stale_finished_run', day_key: finishDay };
+      }
+      day = finishDay;
+      finishingAfterMidnight = true;
+    }
+  }
 
   // Fail closed if ban authority cannot be read. A missing account cannot
   // acquire Clout even if a mismatched client supplies its numeric ID.
@@ -289,6 +321,9 @@ export async function syncCloutPilotForVerifiedOwner(db, telegramId, options = {
 
   const receipts = new Map();
   for (const [sourceKind, query] of Object.entries(SOURCE_QUERIES)) {
+    // The midnight grace is narrowly for a real server-finished Dead Run.
+    // Never backfill yesterday's /daily, Moonpet or other community rewards.
+    if (finishingAfterMidnight && sourceKind !== 'dead_run') continue;
     if (sourceKind === 'dead_run' && options.deadRunEnabled !== true) continue;
     const args = sourceKind === 'dead_run' ? [owner, day, options.startAt] : [owner, day];
     const results = readRows(await db.prepare(query).bind(...args).all());
