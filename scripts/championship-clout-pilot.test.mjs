@@ -333,3 +333,162 @@ test('Mini App signature binds the actor: tampered owner cannot authorize a Clou
   params.set('user', JSON.stringify({ id: 200, first_name: 'Attacker' }));
   assert.equal((await verifyTelegramMiniAppInitData(params.toString(), botToken)).ok, false);
 });
+
+
+test('Dead Run skill normalization is deterministic and monotonic, not an XP conversion', () => {
+  assert.equal(normalizeDeadRunSkill(0), 0);
+  assert.equal(normalizeDeadRunSkill(5000), 50);
+  assert.equal(normalizeDeadRunSkill(20000), 80);
+  assert.equal(normalizeDeadRunSkill(1_000_000), 99);
+  assert.ok([0,100,500,1000,5000,20000,600000].every((score,i,list) =>
+    i===0 || normalizeDeadRunSkill(score)>=normalizeDeadRunSkill(list[i-1])));
+  for (const invalid of [-1,1.5,NaN,Infinity,1_000_001,'5000']) {
+    assert.throws(()=>normalizeDeadRunSkill(invalid),/score_out_of_range/);
+  }
+});
+
+test('Dead Run source gate is separate from /daily and OFF by default', async () => {
+  const f=fixture();
+  try {
+    addDeadRun(f);
+    assert.equal((await sync(f)).state,'no_qualifying_receipts');
+    assert.equal(count(f,'championship_clout_sources'),0);
+    addDaily(f);
+    assert.equal((await sync(f)).total_points,5,'newcomer /daily remains unchanged');
+    assert.equal(count(f,'championship_clout_effects'),1);
+  } finally {f.close();}
+});
+
+test('one exact ranked and settled Dead Run receipt produces immutable Skill and Variety', async () => {
+  const f=fixture();
+  try {
+    const {score}=addDeadRun(f);
+    addDaily(f);
+    const rating=normalizeDeadRunSkill(score);
+    const out=await sync(f,OWNER,{deadRunEnabled:true});
+    assert.equal(out.state,'recorded');
+    assert.equal(out.total_points,Math.floor(rating*0.4)+10);
+    assert.equal(count(f,'championship_clout_sources'),2);
+    assert.equal(count(f,'championship_clout_effects'),3);
+    const skill=f.sql.prepare("SELECT * FROM championship_clout_effects WHERE source_system='dead_run' AND effect_kind='skill'").get();
+    assert.equal(skill.source_event_id,DEAD_RUN_IDS.a);
+    assert.equal(skill.verification_kind,'server_settlement');
+    assert.equal(skill.normalized_skill,rating);
+    assert.equal(skill.game_key,'dead-run');
+    assert.equal(skill.fixed_points,null);
+    assert.deepEqual(JSON.parse(f.sql.prepare("SELECT game_keys_json FROM championship_clout_daily WHERE telegram_id=?").get(OWNER).game_keys_json),['dead-run']);
+    assert.equal((await sync(f,OWNER,{deadRunEnabled:true})).total_points,out.total_points,
+      'retries cannot repeat Clout effects');
+    assert.equal(count(f,'championship_clout_effects'),3);
+    assert.equal(f.sql.prepare("SELECT xp FROM telegram_users WHERE telegram_id=?").get(OWNER).xp,25);
+    assert.equal(f.sql.prepare("SELECT xp_total FROM dead_run_players WHERE telegram_id=?").get(OWNER).xp_total,0);
+    assert.equal(count(f,'arcade_progression_events'),1);
+  } finally {f.close();}
+});
+
+test('same title uses the best settled score once; Moonpet adds distinct variety', async () => {
+  const f=fixture();
+  try {
+    addDeadRun(f,{id:DEAD_RUN_IDS.a,distance:1200,survival:300});
+    const better=addDeadRun(f,{id:DEAD_RUN_IDS.b,startedAt:DAY+'T12:00:00.000Z',
+      endedAt:DAY+'T12:50:00.000Z',distance:2200,survival:800});
+    const out=await sync(f,OWNER,{deadRunEnabled:true});
+    assert.equal(out.total_points,Math.floor(normalizeDeadRunSkill(better.score)*0.4)+5);
+    assert.equal(count(f,'championship_clout_sources'),2);
+    assert.equal(count(f,'championship_clout_effects'),4);
+    assert.equal(f.sql.prepare("SELECT variety_points FROM championship_clout_daily WHERE telegram_id=?").get(OWNER).variety_points,5);
+    addPet(f);addMark(f);
+    const mixed=await sync(f,OWNER,{deadRunEnabled:true});
+    assert.equal(mixed.total_points,out.total_points+10);
+    assert.deepEqual(JSON.parse(f.sql.prepare("SELECT game_keys_json FROM championship_clout_daily WHERE telegram_id=?").get(OWNER).game_keys_json),['dead-run','moonpet']);
+  } finally {f.close();}
+});
+
+test('cross-owner, unfinished, unranked, rejected and incomplete receipts cannot mint Clout', async () => {
+  const permutations=[
+    {status:'active'},{status:'settling'},{ranked:0},{suspicious:6},
+    {distance:39},{survival:19},{statsApplied:0},{arcadeApplied:0},
+    {hordeApplied:0},{arcadeReceipt:false},{receiptOwner:'200'},
+    {receiptRunId:DEAD_RUN_IDS.b},{receiptScore:17},{receiptXp:2},
+    {arcadeReason:'client_score'},
+  ];
+  for (const mode of permutations) {
+    const f=fixture();
+    try {
+      addDeadRun(f,mode);
+      assert.equal((await sync(f,OWNER,{deadRunEnabled:true})).state,
+        'no_qualifying_receipts',JSON.stringify(mode));
+      assert.equal(count(f,'championship_clout_effects'),0,JSON.stringify(mode));
+    } finally {f.close();}
+  }
+  const f=fixture();
+  try {
+    addDeadRun(f,{owner:'200'});
+    assert.equal((await sync(f,OWNER,{deadRunEnabled:true})).state,'no_qualifying_receipts');
+    assert.equal((await sync(f,'200',{deadRunEnabled:true})).state,'recorded');
+    assert.equal(f.sql.prepare("SELECT DISTINCT telegram_id FROM championship_clout_effects").get().telegram_id,'200');
+  } finally {f.close();}
+});
+
+test('independent scoreRun recomputation rejects forged score, XP and unsafe ranges', async () => {
+  for (const mode of [{scoreOverride:12345},{xpOverride:275,scoreOverride:4000},
+    {scoreOverride:1_000_001},{xpOverride:1}]) {
+    const f=fixture();
+    try {
+      addDeadRun(f,mode);
+      await assert.rejects(sync(f,OWNER,{deadRunEnabled:true}),
+        /settlement_mismatch|score_out_of_range/);
+      assert.equal(count(f,'championship_clout_effects'),0);
+      assert.equal(count(f,'championship_clout_sources'),0);
+    } finally {f.close();}
+  }
+});
+
+test('finish day, not session start day, controls Clout; yesterday is never backfilled', async () => {
+  const f=fixture();
+  try {
+    addDeadRun(f,{startedAt:'2026-10-16T23:56:00.000Z',endedAt:DAY+'T00:10:00.000Z'});
+    assert.equal((await sync(f,OWNER,{deadRunEnabled:true})).state,'recorded');
+    const row=f.sql.prepare("SELECT day_key,earned_at_ms FROM championship_clout_sources WHERE source_system='dead_run'").get();
+    assert.equal(row.day_key,DAY);
+    assert.equal(row.earned_at_ms,Date.parse(DAY+'T00:10:00.000Z'));
+    assert.equal((await sync(f,OWNER,{deadRunEnabled:true,
+      now:new Date('2026-10-18T12:00:00.000Z')})).state,'no_qualifying_receipts');
+  } finally {f.close();}
+});
+
+test('failed second Clout effect must roll back parent and all earlier writes', async () => {
+  const f=fixture();
+  try {
+    addDeadRun(f);
+    f.sql.exec(
+      "CREATE TRIGGER no_dead_run_variety BEFORE INSERT ON championship_clout_effects " +
+      "WHEN NEW.source_system='dead_run' AND NEW.effect_kind='variety' " +
+      "BEGIN SELECT RAISE(ABORT,'injected clout write failure'); END;"
+    );
+    await assert.rejects(sync(f,OWNER,{deadRunEnabled:true}),/injected clout write failure/);
+    for(const table of ['championship_clout_sources','championship_clout_effects','championship_clout_daily'])
+      assert.equal(count(f,table),0,'no partial Clout state on rollback: '+table);
+    f.sql.exec('DROP TRIGGER no_dead_run_variety');
+    assert.equal((await sync(f,OWNER,{deadRunEnabled:true})).state,'recorded');
+  } finally {f.close();}
+});
+
+test('Dead Run Clout only reads signed accepted finishes and runs off the response path', () => {
+  const worker=readFileSync('workers/moonboys-api/worker-phase5-final.js','utf8');
+  const source=readFileSync('workers/moonboys-api/championship/clout-pilot.js','utf8');
+  const config=readFileSync('workers/moonboys-api/wrangler.toml','utf8');
+  assert.match(config,/CHAMPIONSHIP_CLOUT_PILOT_ENABLED = "false"/);
+  assert.match(config,/CHAMPIONSHIP_CLOUT_DEAD_RUN_ENABLED = "false"/);
+  assert.match(worker,/path === '\/api\/dead-run\/session\/finish'/);
+  assert.match(worker,/cloutDeadRunFinish && deadRunResponse\.ok/);
+  assert.match(worker,/saved\?\.result\?\.ranked !== true/);
+  assert.match(worker,/verifyTelegramMiniAppInitData\(signed, env\.TELEGRAM_BOT_TOKEN/);
+  assert.match(worker,/max_age_seconds: DEAD_RUN_MAX_SESSION_SECONDS \+ 900/);
+  assert.match(worker,/session_id=\? AND telegram_id=\? AND status='finished' AND ranked=1/);
+  assert.match(worker,/ctx\.waitUntil\(projectCloutForAcceptedDeadRunFinish/);
+  assert.doesNotMatch(worker,/await\s+projectCloutForAcceptedDeadRunFinish\(/);
+  assert.match(source,/a\.client_run_id=s\.session_id/);
+  assert.match(source,/a\.raw_score=s\.score AND a\.xp_awarded=s\.xp_awarded/);
+  assert.doesNotMatch(source,/UPDATE\s+arcade_xp_wallets|UPDATE\s+telegram_users\s+SET\s+xp/i);
+});
