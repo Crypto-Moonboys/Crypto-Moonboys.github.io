@@ -199,6 +199,7 @@ const GROUPS = {
     ['node', 'scripts/nbg-london-client-auth.test.mjs'],
     ['node', '--test', 'scripts/nbg-london-verified-receipts.test.mjs'],
     ['node', '--test', 'scripts/nbg-london-challenge-v2.test.mjs'],
+    ['node', '--test', 'scripts/nbg-london-challenge-gates.test.mjs'],
     ['node', '--test', 'scripts/nbg-london-challenge-start-race.test.mjs'],
     ['node', '--test', 'scripts/meme-swarm-mobile.test.mjs'],
     ['node', '--test', 'scripts/telegram-progression-auth.test.mjs'],
