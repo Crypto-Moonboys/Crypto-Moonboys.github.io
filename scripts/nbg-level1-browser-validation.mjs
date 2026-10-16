@@ -784,7 +784,7 @@ assert.ok(
   runtimeSource.includes('var RAT_SHEET_FRAMES = 25') &&
   runtimeSource.includes('var RAT_RENDER_WIDTH = 50') &&
   runtimeSource.includes('var RAT_RENDER_HEIGHT = 60') &&
-  runtimeSource.includes("Math.random() < 0.5 ? 'ratBladeFlurry' : 'ratViperPounce'") &&
+  runtimeSource.includes("nextRunRandom() < 0.5 ? 'ratBladeFlurry' : 'ratViperPounce'") &&
   runtimeSource.includes('var ratFrameWidth = image.naturalWidth / RAT_SHEET_COLUMNS') &&
   runtimeSource.includes('var ratFrameHeight = image.naturalHeight / RAT_SHEET_ROWS'),
   'rat must render at 70% runner size from 5x5 frames and choose random attacks'
@@ -1319,7 +1319,7 @@ assert.ok(
   runtimeSource.includes('var solids = [floor].concat(platforms, crates)') &&
   runtimeSource.includes('player.x = crate.x - player.w') &&
   runtimeSource.includes('player.x = crate.x + crate.w') &&
-  runtimeSource.includes('var roll = Math.min(pool.length - 1, Math.floor(Math.random() * pool.length))') &&
+  runtimeSource.includes('var roll = Math.min(pool.length - 1, Math.floor(nextRunRandom() * pool.length))') &&
   runtimeSource.includes("new CustomEvent('nbg-reward-found'"),
   'crates must have real solid collisions and each reward box must roll on collection'
 );
