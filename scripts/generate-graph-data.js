@@ -42,8 +42,10 @@ const OUTPUT_PATH       = path.join(ROOT, 'js', 'graph-data.json');
 const TOP_EDGES_PER_NODE = 5;
 // Minimum relationship score to include an edge
 const MIN_EDGE_SCORE = 40;
-// Keep stable graph verification deterministic in CI while refreshing before
-// the live freshness guard's 24-hour limit.
+// Normal publishing refreshes graph verification before the live freshness guard's
+// 24-hour limit. GRAPH_PUBLISHING_CHECK=1 prevents CI parity checks from
+// refreshing a timestamp when node/edge content is unchanged; a CI run is not
+// evidence of a new live verification.
 const VERIFIED_AT_REFRESH_AFTER_MS = 20 * 60 * 60 * 1000;
 function compareStrings(a, b) {
   return a < b ? -1 : a > b ? 1 : 0;
@@ -68,7 +70,8 @@ function preserveTimestampsIfStable(nodes, edges) {
     const shouldRefreshVerifiedAt =
       !Number.isFinite(existingVerifiedAt) ||
       existingVerifiedAt > now ||
-      now - existingVerifiedAt > VERIFIED_AT_REFRESH_AFTER_MS;
+      (process.env.GRAPH_PUBLISHING_CHECK !== '1' &&
+        now - existingVerifiedAt > VERIFIED_AT_REFRESH_AFTER_MS);
 
     if (
       existingStable === nextStable &&
