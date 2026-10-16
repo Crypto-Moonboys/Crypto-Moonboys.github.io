@@ -5,12 +5,20 @@ function frameStream(frames) {
   const bytes = [];
   for (const [dt, elapsed, mask] of frames) {
     const d = Math.round(dt * 10);
-    bytes.push(d & 255, (d >> 8) & 255, elapsed & 255, (elapsed >> 8) & 255, mask);
+    const wall=Math.round(elapsed * 10);
+    bytes.push(d & 255, (d >> 8) & 255, wall & 255, (wall >> 8) & 255, mask);
   }
   return { version: NBG_REPLAY_VERSION, frames: Buffer.from(bytes).toString('base64') };
 }
 const id = '00000000-0000-4000-8000-000000000001';
 const base = { runId:id, startedAtMs:1000000, now:1100000 };
+
+// Fabricated physics time cannot exceed recorded real time, including at
+// the 1ms/2.5ms edge that previously allowed accelerated scores.
+const forgedTime = frameStream(Array.from({length:3000}, () => [2.5,1,2]));
+assert.equal((await verifyNbgLondonReplay({
+  ...base, replay:forgedTime
+})).valid, false, 'input frames cannot simulate more time than actually elapsed');
 
 const invalid = await verifyNbgLondonReplay({ ...base, replay: {
   version:1, frames:'obviously-invalid'
