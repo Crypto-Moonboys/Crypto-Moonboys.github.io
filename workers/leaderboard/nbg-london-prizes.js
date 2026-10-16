@@ -48,6 +48,7 @@ function validatePeriod(period, now) {
 async function freezePeriod(env, period, now) {
   // D1 ranking filters D1 blocks; additional KV-only blocked ids must be
   // removed BEFORE ROW_NUMBER so a banned leader never takes a prize rank.
+  // Unverified practice times must never break ties between trusted XP totals.
   const candidates = (await env.DB.prepare(
     `SELECT s.telegram_id FROM nbg_london_period_scores s
        LEFT JOIN telegram_anticheat_state a ON a.telegram_id = s.telegram_id
@@ -59,8 +60,9 @@ async function freezePeriod(env, period, now) {
   for (const candidate of candidates) {
     if (await isKvBlocked(env, candidate.telegram_id)) kvExcluded.push(candidate.telegram_id);
   }
-  const kvFilter = kvExcluded.length ?
-    'AND s.telegram_id NOT IN (' + kvExcluded.map(() => '?').join(',') + ')' : '';
+  // A single JSON parameter avoids D1's 100-binding ceiling even when
+  // hundreds of KV-only bans must be excluded before ranking.
+  const kvFilter = 'AND s.telegram_id NOT IN (SELECT value FROM json_each(?))';
   const token = crypto.randomUUID();
   // Both the closed-period marker and winner selection remain in one atomic
   // D1 batch. Re-read D1 bans there, even after the preceding KV checks.
@@ -79,7 +81,7 @@ async function freezePeriod(env, period, now) {
        FROM (
          SELECT s.telegram_id,
            ROW_NUMBER() OVER (
-             ORDER BY s.trusted_xp DESC, s.best_time_ms ASC, s.telegram_id ASC
+             ORDER BY s.trusted_xp DESC, s.telegram_id ASC
            ) AS rank
          FROM nbg_london_period_scores s
          LEFT JOIN telegram_anticheat_state a ON a.telegram_id = s.telegram_id
@@ -95,7 +97,7 @@ async function freezePeriod(env, period, now) {
     ).bind(period.kind, period.start, period.kind, period.start,
       PRIZE_ARCADE_XP[period.kind][0], PRIZE_ARCADE_XP[period.kind][1],
       PRIZE_ARCADE_XP[period.kind][2], now,
-      period.kind, period.start, ...kvExcluded, period.kind, period.start, token),
+      period.kind, period.start, JSON.stringify(kvExcluded), period.kind, period.start, token),
   ];
   await env.DB.batch(statements);
 }
