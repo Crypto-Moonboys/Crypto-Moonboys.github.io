@@ -1068,6 +1068,10 @@
       drawSkylineLayer();
       drawImageLayer(images.wall, 0.58, 154, 88, '#2d2033');
       drawStreetLayer();
+      // Looking below shifts the road upward; extend the painted roadbed
+      // beneath its existing 28px street strip instead of exposing blue clear.
+      ctx.fillStyle = '#303238';
+      ctx.fillRect(0, STREET_Y + STREET_BAND_HEIGHT, WIDTH, CAMERA_LOOK_DOWN_MAX_Y + 2);
 
       // A whole platform uses brick OR rock, never an alternating mixture.
       for (var i = 0; i < platforms.length; i += 1) {
@@ -1399,6 +1403,7 @@
         recordReplayTick(frameElapsedMs, dt);
         updatePlayer(dt);
         if (gameOver) {
+          cameraY = 0; // Terminal frame is always normally framed.
           updateHud();
           render(time);
           return;
@@ -1412,6 +1417,7 @@
         updateLevel();
         updateCamera();
         updateCameraY();
+        if (!running) cameraY = 0; // Completion must not freeze a held-down look.
       } else if (completionAnimationActive) {
         completionAnimationActive = !advancePlayerAnimation(dt, false);
       }
