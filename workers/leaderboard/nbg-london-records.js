@@ -69,8 +69,11 @@ export async function handleNbgLondonRecords(request, env, verifyIdentity) {
       if (!['daily', 'weekly', 'seasonal'].includes(kind))
         return json(request, { ok: false, error: 'invalid_competition_period' }, 400);
       const start = periodStart(Date.now(), kind);
+      const payoutEnabled = env.NBG_LONDON_PRIZES_ENABLED === 'true' &&
+        env.NBG_LONDON_SCORE_AUTHORITY_ENABLED === 'true';
       const result = await env.DB.prepare(
-        `SELECT s.display_name AS name, s.total_xp, s.run_count, s.best_time_ms
+        `SELECT s.display_name AS name, s.total_xp, s.trusted_xp,
+           s.verified_run_count, s.run_count, s.best_time_ms
          FROM nbg_london_period_scores s
          LEFT JOIN telegram_anticheat_state a ON a.telegram_id = s.telegram_id
          WHERE s.period_kind = ? AND s.period_start_ms = ?
@@ -81,10 +84,12 @@ export async function handleNbgLondonRecords(request, env, verifyIdentity) {
         ok: true, period: kind, start_ms: start,
         end_ms: start + (kind === 'daily' ? 86400000 : kind === 'weekly' ? 604800000 : 7776000000),
         prizes: PRIZE_ARCADE_XP[kind],
+        payout_enabled: payoutEnabled,
         standings: (result.results || []).map((row, index) => ({
           rank: index + 1, name: row.name, total_xp: row.total_xp,
           run_count: row.run_count, best_time_ms: row.best_time_ms,
-          prize_eligible: index < 3 && row.total_xp > 0,
+          prize_eligible: payoutEnabled && index < 3 && row.trusted_xp > 0 &&
+            row.verified_run_count > 0,
         })),
       });
     }
@@ -154,10 +159,20 @@ export async function handleNbgLondonRecords(request, env, verifyIdentity) {
     const rate = efficiencyRate(xp, timeMs);
     const name = displayName(identity.linkedAccount);
     const finishToken = crypto.randomUUID();
+    const periods = periodsForFinish(now);
+    // The receipt claim must succeed while ALL attributed periods remain open.
+    // A freeze batch that wins the DB race prevents a late finish from being
+    // claimed or credited; a successful finish precedes the atomic freeze query.
+    const periodGuard = periods.map(() =>
+      'AND NOT EXISTS (SELECT 1 FROM nbg_london_prize_periods WHERE period_kind = ? AND period_start_ms = ?)'
+    ).join(' ');
+    const guardParams = periods.flatMap(period => [period.kind, period.start]);
     const writes = [
       env.DB.prepare(
-        'UPDATE nbg_london_runs SET finished_at_ms = ?, finish_token = ? WHERE run_id = ? AND telegram_id = ? AND finished_at_ms IS NULL'
-      ).bind(now, finishToken, runId, telegramId),
+        'UPDATE nbg_london_runs SET finished_at_ms = ?, finish_token = ? ' +
+        'WHERE run_id = ? AND telegram_id = ? AND finished_at_ms IS NULL ' +
+        'AND CAST(strftime(\'%s\', \'now\') AS INTEGER) * 1000 < ? ' + periodGuard
+      ).bind(now, finishToken, runId, telegramId, periodStart(now, 'daily') + 86400000, ...guardParams),
       env.DB.prepare(
       'INSERT INTO nbg_london_records (telegram_id, display_name, fastest_ms, fastest_xp, speed_xp_rate, speed_xp_ms, speed_xp_xp, best_xp, best_xp_ms, updated_at_ms) ' +
       'SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ? WHERE EXISTS (SELECT 1 FROM nbg_london_runs WHERE run_id = ? AND finish_token = ?) ' +
@@ -172,7 +187,7 @@ export async function handleNbgLondonRecords(request, env, verifyIdentity) {
       'best_xp = MAX(best_xp, excluded.best_xp)'
     ).bind(telegramId, name, timeMs, xp, rate, timeMs, xp, xp, timeMs, now, runId, finishToken)
     ];
-    for (const period of periodsForFinish(now)) {
+    for (const period of periods) {
       writes.push(env.DB.prepare(
         `INSERT INTO nbg_london_period_scores
            (period_kind, period_start_ms, telegram_id, display_name, total_xp, run_count, best_time_ms, updated_at_ms)
