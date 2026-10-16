@@ -17,6 +17,10 @@
   // The Worker invalidates unfinished sessions per Telegram owner, so only
   // starts for the SAME owner need ordering. Do not stall a newly linked owner.
   var serverStartQueues = new Map();
+  // A failed fetch may have reached the Worker and still be committing in D1.
+  // Until a page reload, that owner must use practice rather than race a new
+  // official session against an unknown older request.
+  var uncertainStartOwners = new Set();
   var runIdentity = null;
   var preparedStartGeneration = -1;
   var status = null;
@@ -62,12 +66,24 @@
   async function callJson(path, data) {
     var base = apiBase();
     if (!base) throw new Error('Leaderboard API unavailable in this environment');
-    var response = await fetch(base + '/nbg-london' + path, {
-      method: data ? 'POST' : 'GET',
-      headers: data ? { 'Content-Type': 'application/json' } : {},
-      body: data ? JSON.stringify(data) : undefined,
-      cache: 'no-store'
-    });
+    var response;
+    try {
+      response = await fetch(base + '/nbg-london' + path, {
+        method: data ? 'POST' : 'GET',
+        headers: data ? { 'Content-Type': 'application/json' } : {},
+        body: data ? JSON.stringify(data) : undefined,
+        cache: 'no-store'
+      });
+    } catch (error) {
+      // HTTP error responses prove that processing has returned, but a fetch
+      // rejection does NOT prove a start POST was never committed by the Worker.
+      if (path === '/run/start') {
+        var uncertain = new Error('start_request_outcome_unknown');
+        uncertain.uncertainStart = true;
+        throw uncertain;
+      }
+      throw error;
+    }
     var result = await response.json().catch(function () { return null; });
     if (!response.ok || !result || !result.ok)
       throw new Error(result && result.error ? result.error : 'Leaderboard request failed');
@@ -226,6 +242,10 @@
       return;
     }
     runIdentity = startingId;
+    if (uncertainStartOwners.has(startingId)) {
+      setStatus('Practice only: prior ranked start lost connection. Refresh the page before retrying official scores.');
+      return;
+    }
     setStatus('Verifying Telegram account for this run…');
     runPromise = (async function () {
       var auth = await signedAuth();
@@ -241,7 +261,13 @@
         if (current !== generation ||
             String(gate.getTelegramId() || '') !== startingId ||
             !gate.isTelegramLinked()) return null;
-        var started = await callJson('/run/start', { telegram_auth: auth });
+        var started;
+        try {
+          started = await callJson('/run/start', { telegram_auth: auth });
+        } catch (error) {
+          if (error && error.uncertainStart) uncertainStartOwners.add(startingId);
+          throw error;
+        }
         if (current !== generation ||
             String(gate.getTelegramId() || '') !== startingId ||
             !gate.isTelegramLinked()) return null;
@@ -282,7 +308,7 @@
     var gate = window.MOONBOYS_IDENTITY;
     var id = String(gate && gate.getTelegramId ? gate.getTelegramId() || '' : '');
     if (!id || !gate.isTelegramLinked || !gate.isTelegramLinked() ||
-        !serverStartQueues.has(id)) return null;
+        uncertainStartOwners.has(id) || !serverStartQueues.has(id)) return null;
     // A same-owner HTTP start is still pending: create the replacement session
     // BEFORE simulation begins so its real elapsed-time checks stay accurate.
     // The later nbg-level-started event must not issue another /run/start.
