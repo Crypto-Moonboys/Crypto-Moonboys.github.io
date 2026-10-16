@@ -6,6 +6,31 @@
 -- A source_event_id MUST be unique to the accepted user's qualifying source
 -- event. A shared boss/event must use its PER-OWNER accepted receipt, never its
 -- global event identifier, to avoid falsely treating multiple owners as one.
+-- A source is established once for exactly ONE owner, earned day and
+-- verification. Its individual Clout effects must reference this immutable
+-- claim. Two effect kinds cannot launder one receipt into another account/day.
+-- This is a ledger constraint, NOT independent proof of gameplay: later
+-- trusted source adapters must validate the original receipt before insert.
+CREATE TABLE IF NOT EXISTS championship_clout_sources (
+  source_system TEXT NOT NULL CHECK(length(source_system) BETWEEN 1 AND 64),
+  source_event_id TEXT NOT NULL CHECK(length(source_event_id) BETWEEN 1 AND 180),
+  policy_version TEXT NOT NULL CHECK(length(policy_version) BETWEEN 1 AND 48),
+  telegram_id TEXT NOT NULL REFERENCES telegram_users(telegram_id),
+  day_key TEXT NOT NULL CHECK(length(day_key)=10),
+  earned_at_ms INTEGER NOT NULL CHECK(earned_at_ms >= 1704067200000),
+  verified_at_ms INTEGER NOT NULL
+    CHECK(verified_at_ms >= earned_at_ms),
+  verification_kind TEXT NOT NULL
+    CHECK(verification_kind IN ('server_receipt','server_replay','server_settlement')),
+  recorded_at_ms INTEGER NOT NULL CHECK(recorded_at_ms >= verified_at_ms),
+  PRIMARY KEY (source_system,source_event_id,policy_version),
+  UNIQUE (source_system,source_event_id,policy_version,telegram_id,
+    day_key,earned_at_ms,verified_at_ms,verification_kind),
+  CHECK(strftime('%Y-%m-%d', earned_at_ms / 1000, 'unixepoch') = day_key)
+);
+CREATE INDEX IF NOT EXISTS idx_championship_clout_source_owner_day
+  ON championship_clout_sources (telegram_id,day_key,policy_version);
+
 CREATE TABLE IF NOT EXISTS championship_clout_effects (
   source_system TEXT NOT NULL CHECK(length(source_system) BETWEEN 1 AND 64),
   source_event_id TEXT NOT NULL CHECK(length(source_event_id) BETWEEN 1 AND 180),
@@ -24,6 +49,12 @@ CREATE TABLE IF NOT EXISTS championship_clout_effects (
   fixed_points INTEGER CHECK(fixed_points BETWEEN 0 AND 25),
   recorded_at_ms INTEGER NOT NULL CHECK(recorded_at_ms >= 1704067200000),
   PRIMARY KEY (source_system, source_event_id, effect_kind, policy_version),
+  FOREIGN KEY (source_system,source_event_id,policy_version,telegram_id,
+    day_key,earned_at_ms,verified_at_ms,verification_kind)
+    REFERENCES championship_clout_sources (source_system,source_event_id,
+      policy_version,telegram_id,day_key,earned_at_ms,verified_at_ms,
+      verification_kind)
+    ON UPDATE RESTRICT ON DELETE RESTRICT,
   CHECK (
     (effect_kind = 'skill' AND game_key IS NOT NULL
       AND normalized_skill IS NOT NULL AND fixed_points IS NULL)
