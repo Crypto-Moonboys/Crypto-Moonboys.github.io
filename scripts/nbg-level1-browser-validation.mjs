@@ -1647,15 +1647,33 @@ assert.equal(await page.locator('[data-nbg-metric="xp"]').getAttribute('aria-pre
 await page.locator('[data-nbg-period="weekly"]').click();
 assert.equal(await page.locator('[data-nbg-period="weekly"]').getAttribute('aria-pressed'), 'true',
   'weekly/daily/seasonal tabs must remain interactive');
+const gameplayBeforeKeys = await page.evaluate(() => ({
+  running: window.NBGLevel1State.running,
+  x: window.NBGLevel1State.player.x
+}));
+await page.locator('[data-nbg-metric="fastest"]').focus();
+await page.keyboard.press('Space');
+assert.equal(await page.locator('[data-nbg-metric="fastest"]').getAttribute('aria-pressed'), 'true',
+  'Space must activate native Scores buttons rather than jumping or starting game');
+await page.keyboard.press('ArrowRight');
+assert.deepEqual(await page.evaluate(() => ({
+  running: window.NBGLevel1State.running,
+  x: window.NBGLevel1State.player.x
+})), gameplayBeforeKeys, 'arrow keys must not move the game behind the open Scores drawer');
 await page.keyboard.press('Escape');
 assert.equal(await page.locator('#nbg-record-drawer').isVisible(), false,
   'Escape should close scores rather than exit fullscreen game');
 assert.equal(new URL(page.url()).pathname, '/games/nbg-london/',
   'closing scores must not navigate away from the game');
-await scoreToggle.click();
-await page.locator('#nbg-close-records').click();
+await scoreToggle.focus();
+await page.keyboard.press('Enter');
+await page.locator('#nbg-record-drawer').waitFor({ state: 'visible', timeout: 3000 });
+assert.equal(new URL(page.url()).pathname, '/games/nbg-london/',
+  'Enter on the Scores button must not trigger a game shell navigation or start');
+await page.locator('#nbg-close-records').focus();
+await page.keyboard.press('Space');
 assert.equal(await scoreToggle.getAttribute('aria-expanded'), 'false',
-  'close button must return to gameplay');
+  'Space on the native Close button must close the Scores drawer without a jump');
 assert.equal(await page.locator('#game').isVisible(), true, 'closing scores must restore the game');
   
 const pixelEnergy = await page.evaluate(() => {
