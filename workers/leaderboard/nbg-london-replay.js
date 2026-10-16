@@ -6,6 +6,11 @@
 // official XP is computed from the same deterministic gameplay events.
 // Arcade prize settlement remains separately locked pending approval.
 
+import {
+  nbgChallengeGateStep,
+  NBG_V2_CHALLENGE_GATE_COUNT,
+} from './nbg-london-run-challenge.js';
+
 const STEP = 1000 / 60;
 const FLOOR = 214;
 const WORLD = 22000;
@@ -209,6 +214,7 @@ export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, d
   let elapsed=0, xp=0, coinCount=0, secretCount=0, complete=false;
   let consumedFrames=0;
   let maximumX=64;
+  let challengeGateIndex=0;
   // The browser resets the same LCG seed at every run start; no client
   // reward or random-spawn claim is trusted by the Worker.
   let runRandomState = challengeV2 ? challengeSeed >>> 0 : 0x9e3779b9;
@@ -433,6 +439,19 @@ export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, d
       if(Math.abs(hazard.x-p.x)<60 && overlap(p,hazard)) invulnerableDamage(hazard.x);
     }
     if(p.health<=0) return {valid:false, ...(debug ? {debug:{reason:'health',x:p.x,elapsed,consumedFrames}}:{})};
+    if (challengeV2) {
+      // Physically encounter every run-bound LEFT/RIGHT tag while crossing
+      // the original London course. A different seed has a different 32-bit
+      // required direction sequence; it cannot be supplied as metadata.
+      // The verifier obtains challengeSeed ONLY from the original D1 run.
+      const gate=nbgChallengeGateStep(challengeSeed,challengeGateIndex,p.x,mask);
+      if (gate.failed)
+        return {valid:false, ...(debug ? {debug:{
+          reason:'challenge_gate',gateIndex:challengeGateIndex,
+          x:p.x,elapsed,consumedFrames,
+        }}:{})};
+      challengeGateIndex=gate.gateIndex;
+    }
     for(const checkpoint of level.checkpoints) {
       if(!checkpoint.active && Math.abs(checkpoint.x-p.x)<60 && overlap(p,checkpoint)) {
         checkpoint.active=true;checkpointX=Math.max(checkpointX,checkpoint.x);
@@ -447,7 +466,9 @@ export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, d
     }
   }
 
-  if(!complete || consumedFrames!==bytes.length/5 ||
+  if(!complete || (challengeV2 &&
+     challengeGateIndex!==NBG_V2_CHALLENGE_GATE_COUNT) ||
+     consumedFrames!==bytes.length/5 ||
      elapsed<MIN_MS || elapsed>MAX_MS || maximumX < WORLD-175 ||
      Math.abs(elapsed-(now-startedAtMs))>20000 ||
      !Number.isSafeInteger(xp) || xp<0 || xp>1000000)
