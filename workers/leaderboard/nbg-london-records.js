@@ -207,9 +207,17 @@ export async function handleNbgLondonRecords(request, env, verifyIdentity, verif
         reason: 'authoritative_scoring_unavailable',
       });
       const runId = crypto.randomUUID();
-      await env.DB.prepare(
-        'INSERT INTO nbg_london_runs (run_id, telegram_id, started_at_ms, expires_at_ms) VALUES (?, ?, ?, ?)'
-      ).bind(runId, telegramId, now, now + MAX_FINISH_MS + SERVER_CLOCK_TOLERANCE_MS).run();
+      // A player cannot stockpile concurrent server sessions and submit the
+      // same physical replay under several receipts for inflated period XP.
+      // Starting a new run atomically invalidates their older unfinished runs.
+      await env.DB.batch([
+        env.DB.prepare(
+          'UPDATE nbg_london_runs SET finished_at_ms = ? WHERE telegram_id = ? AND finished_at_ms IS NULL'
+        ).bind(now, telegramId),
+        env.DB.prepare(
+          'INSERT INTO nbg_london_runs (run_id, telegram_id, started_at_ms, expires_at_ms) VALUES (?, ?, ?, ?)'
+        ).bind(runId, telegramId, now, now + MAX_FINISH_MS + SERVER_CLOCK_TOLERANCE_MS),
+      ]);
       return json(request, { ok: true, run_id: runId, player: displayName(identity.linkedAccount), ranked: true });
     }
 
