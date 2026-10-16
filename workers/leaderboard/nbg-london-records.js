@@ -83,11 +83,15 @@ function displayName(user) {
   return joined.slice(0, 70) || 'Telegram player';
 }
 
-export async function handleNbgLondonRecords(request, env, verifyIdentity) {
+// Production deliberately supplies NO replay authority until a deterministic
+// server-side verifier exists. A runtime flag or Telegram login is NOT proof
+// of an honest run. Only a trusted, code-wired verifier may unlock writes.
+export async function handleNbgLondonRecords(request, env, verifyIdentity, verifyRunReplay = null) {
   const url = new URL(request.url);
   if (!url.pathname.startsWith(PREFIX)) return null;
   if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors(request) });
   if (!env.DB) return json(request, { ok: false, error: 'records_database_unavailable' }, 503);
+  const hasScoreAuthority = typeof verifyRunReplay === 'function';
 
   try {
     if (request.method === 'GET' && url.pathname === PREFIX + '/competition') {
@@ -95,8 +99,17 @@ export async function handleNbgLondonRecords(request, env, verifyIdentity) {
       if (!['daily', 'weekly', 'seasonal'].includes(kind))
         return json(request, { ok: false, error: 'invalid_competition_period' }, 400);
       const start = periodStart(Date.now(), kind);
-      const payoutEnabled = env.NBG_LONDON_PRIZES_ENABLED === 'true' &&
+      const payoutEnabled = hasScoreAuthority &&
+        env.NBG_LONDON_PRIZES_ENABLED === 'true' &&
         env.NBG_LONDON_SCORE_AUTHORITY_ENABLED === 'true';
+      // Never publish old client-supplied practice records as verified scores.
+      // Merely setting Worker environment flags cannot lift this hold.
+      if (!hasScoreAuthority) return json(request, {
+        ok: true, period: kind, start_ms: start,
+        end_ms: start + (kind === 'daily' ? 86400000 : kind === 'weekly' ? 604800000 : 7776000000),
+        prizes: PRIZE_ARCADE_XP[kind], payout_enabled: false,
+        ranking_basis: 'unavailable', scores_enabled: false, standings: [],
+      });
       // Practice/overall totals and verified prize standings are distinct:
       // only the latter uses the identical filter and sort order as freezePeriod.
       // Telegram ID breaks trusted-XP ties; client-reported practice time cannot.
@@ -140,6 +153,9 @@ export async function handleNbgLondonRecords(request, env, verifyIdentity) {
       const metric = url.searchParams.get('metric') || 'fastest';
       if (!Object.prototype.hasOwnProperty.call(METRICS, metric))
         return json(request, { ok: false, error: 'invalid_metric' }, 400);
+      if (!hasScoreAuthority) return json(request, {
+        ok: true, metric, scores_enabled: false, records: [],
+      });
       const columns = metric === 'fastest'
         ? 'fastest_ms AS time_ms, fastest_xp AS xp, fastest_ms AS value'
         : metric === 'speed_xp'
@@ -173,6 +189,10 @@ export async function handleNbgLondonRecords(request, env, verifyIdentity) {
     const now = Date.now();
 
     if (url.pathname === PREFIX + '/me') {
+      if (!hasScoreAuthority) return json(request, {
+        ok: true, player: displayName(identity.linkedAccount),
+        scores_enabled: false, records: null,
+      });
       const own = await env.DB.prepare(
         'SELECT fastest_ms, fastest_xp, speed_xp_rate, speed_xp_ms, speed_xp_xp, best_xp, best_xp_ms ' +
         'FROM nbg_london_records WHERE telegram_id = ?'
@@ -181,6 +201,10 @@ export async function handleNbgLondonRecords(request, env, verifyIdentity) {
     }
 
     if (url.pathname === PREFIX + '/run/start') {
+      if (!hasScoreAuthority) return json(request, {
+        ok: true, ranked: false, player: displayName(identity.linkedAccount),
+        reason: 'authoritative_scoring_unavailable',
+      });
       const runId = crypto.randomUUID();
       await env.DB.prepare(
         'INSERT INTO nbg_london_runs (run_id, telegram_id, started_at_ms, expires_at_ms) VALUES (?, ?, ?, ?)'
@@ -188,6 +212,11 @@ export async function handleNbgLondonRecords(request, env, verifyIdentity) {
       return json(request, { ok: true, run_id: runId, player: displayName(identity.linkedAccount), ranked: true });
     }
 
+    // An unverified /run/finish must not consume receipts or write ANY best
+    // or period score, even if both prize flags are accidentally enabled.
+    if (!hasScoreAuthority) return json(request, {
+      ok: false, saved: false, error: 'authoritative_scoring_unavailable',
+    }, 409);
     const runId = String(body?.run_id || '');
     if (!/^[0-9a-f-]{36}$/i.test(runId)) return json(request, { ok: false, error: 'invalid_run_id' }, 400);
     const session = await env.DB.prepare(
@@ -196,11 +225,24 @@ export async function handleNbgLondonRecords(request, env, verifyIdentity) {
     if (!session || session.telegram_id !== telegramId || session.finished_at_ms != null ||
         now > session.expires_at_ms)
       return json(request, { ok: false, error: 'run_expired_or_invalid' }, 409);
-    if (!validFinish(body, now - session.started_at_ms))
+    // Raw browser-reported XP, duration, coins and completion are NEVER
+    // authoritative. The verifier receives a replay, not those counters.
+    // It must independently simulate the level and return earned results.
+    let verified;
+    try {
+      verified = await verifyRunReplay({
+        runId, telegramId, replay: body?.replay,
+        startedAtMs: session.started_at_ms, now,
+      });
+    } catch (error) {
+      console.error('[nbg-london-replay]', error?.message || 'replay_error');
+      return json(request, { ok: false, error: 'run_verification_unavailable' }, 503);
+    }
+    if (!validFinish(verified, now - session.started_at_ms))
       return json(request, { ok: false, error: 'run_validation_failed' }, 422);
 
-    const timeMs = body.time_ms;
-    const xp = body.xp;
+    const timeMs = verified.time_ms;
+    const xp = verified.xp;
     const rate = efficiencyRate(xp, timeMs);
     const name = displayName(identity.linkedAccount);
     const finishToken = crypto.randomUUID();
