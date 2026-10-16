@@ -65,7 +65,7 @@ test('32 separate input gates cover original finish and are mirrored in browser'
   assert.match(browser,/rankedChallengeSeed >>> rankedChallengeGateIndex/);
   assert.match(browser,/if \(\(activeInputMask & 3\) !== required\) rankedChallengeGateFailed = true/);
   assert.match(browser,/updatePlayer\(dt\);\s*updateChallengeGates\(\)/);
-  assert.match(browser,/TAG .*HOLD/);
+  assert.match(browser,/\/32: HOLD /);
   assert.match(verifier,/nbgChallengeGateStep\(challengeSeed,challengeGateIndex,p\.x,mask\)/);
   assert.match(verifier,/if \(gate\.failed\)/);
   assert.match(verifier,/challengeGateIndex!==NBG_V2_CHALLENGE_GATE_COUNT/);
