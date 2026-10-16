@@ -2532,6 +2532,10 @@ CREATE TABLE IF NOT EXISTS championship_clout_archives (
 -- No Community XP, Arcade XP, Moonpet XP or prize payout authority.
 -- Do NOT deploy the gated trusted writer before this migration is explicitly
 -- backed up, remotely applied and verified by the owner.
+-- #1539: migration 101 run challenge, issued before replay v2 simulation.
+ALTER TABLE nbg_london_runs ADD COLUMN challenge_seed INTEGER;
+ALTER TABLE nbg_london_runs ADD COLUMN challenge_version INTEGER NOT NULL DEFAULT 1
+  CHECK(challenge_version IN (1,2));
 CREATE UNIQUE INDEX IF NOT EXISTS idx_nbg_london_runs_id_owner
   ON nbg_london_runs(run_id,telegram_id);
 
