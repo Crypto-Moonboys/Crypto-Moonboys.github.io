@@ -48,6 +48,24 @@ function json(request, payload, status = 200) {
   return new Response(JSON.stringify(payload), { status, headers: cors(request) });
 }
 
+// Public boards use BOTH anti-cheat authorities. Filter before taking the
+// first 20 so a KV-only banned leader cannot displace eligible participants.
+// Fail closed if the shared KV binding or any ban lookup is unavailable.
+async function publicUnblockedRows(rows, env, cache = new Map()) {
+  if (!env.LEADERBOARD || typeof env.LEADERBOARD.get !== 'function')
+    throw new Error('nbg_anticheat_kv_unavailable');
+  const safe = [];
+  for (const row of rows || []) {
+    const id = String(row.telegram_id || '');
+    if (!id) continue;
+    if (!cache.has(id)) cache.set(id, Boolean(await env.LEADERBOARD.get('anticheat:blocked:' + id)));
+    if (cache.get(id)) continue;
+    safe.push(row);
+    if (safe.length >= 20) break;
+  }
+  return safe;
+}
+
 function displayName(user) {
   const username = String(user?.username || '').replace(/^@/, '').trim();
   if (/^[A-Za-z0-9_]{3,32}$/.test(username)) return '@' + username;
@@ -75,30 +93,35 @@ export async function handleNbgLondonRecords(request, env, verifyIdentity) {
       // only the latter uses the identical filter and sort order as freezePeriod.
       const [result, verified] = await Promise.all([
         env.DB.prepare(
-          `SELECT s.display_name AS name, s.total_xp, s.run_count, s.best_time_ms
+          `SELECT s.telegram_id, s.display_name AS name, s.total_xp, s.run_count, s.best_time_ms
            FROM nbg_london_period_scores s
            LEFT JOIN telegram_anticheat_state a ON a.telegram_id = s.telegram_id
            WHERE s.period_kind = ? AND s.period_start_ms = ?
              AND COALESCE(a.is_blocked, 0) = 0
-           ORDER BY s.total_xp DESC, s.best_time_ms ASC, s.telegram_id ASC LIMIT 20`
+           ORDER BY s.total_xp DESC, s.best_time_ms ASC, s.telegram_id ASC`
         ).bind(kind, start).all(),
         env.DB.prepare(
-          `SELECT s.display_name AS name, s.trusted_xp AS total_xp,
+          `SELECT s.telegram_id, s.display_name AS name, s.trusted_xp AS total_xp,
                   s.verified_run_count AS run_count, s.best_time_ms
            FROM nbg_london_period_scores s
            LEFT JOIN telegram_anticheat_state a ON a.telegram_id = s.telegram_id
            WHERE s.period_kind = ? AND s.period_start_ms = ?
              AND s.verified_run_count > 0 AND s.trusted_xp > 0
              AND COALESCE(a.is_blocked, 0) = 0
-           ORDER BY s.trusted_xp DESC, s.best_time_ms ASC, s.telegram_id ASC LIMIT 20`
+           ORDER BY s.trusted_xp DESC, s.best_time_ms ASC, s.telegram_id ASC`
         ).bind(kind, start).all(),
       ]);
-      const practiceStandings = (result.results || []).map((row, index) => ({
+      const kvChecks = new Map();
+      const [practiceRows, verifiedRows] = await Promise.all([
+        publicUnblockedRows(result.results, env, kvChecks),
+        publicUnblockedRows(verified.results, env, kvChecks),
+      ]);
+      const practiceStandings = practiceRows.map((row, index) => ({
         rank: index + 1, name: row.name, total_xp: row.total_xp,
         run_count: row.run_count, best_time_ms: row.best_time_ms,
         prize_eligible: false, prize_rank: null,
       }));
-      const verifiedStandings = (verified.results || []).map((row, index) => ({
+      const verifiedStandings = verifiedRows.map((row, index) => ({
         rank: index + 1, name: row.name, total_xp: row.total_xp,
         run_count: row.run_count, best_time_ms: row.best_time_ms,
         prize_eligible: payoutEnabled && index < 3,
@@ -123,10 +146,14 @@ export async function handleNbgLondonRecords(request, env, verifyIdentity) {
           ? 'speed_xp_ms AS time_ms, speed_xp_xp AS xp, speed_xp_rate AS value'
           : 'best_xp_ms AS time_ms, best_xp AS xp, best_xp AS value';
       const result = await env.DB.prepare(
-        'SELECT display_name, ' + columns + ' FROM nbg_london_records ORDER BY ' + METRICS[metric] + ' LIMIT 20'
+        'SELECT r.telegram_id, r.display_name, ' + columns +
+        ' FROM nbg_london_records r ' +
+        'LEFT JOIN telegram_anticheat_state a ON a.telegram_id = r.telegram_id ' +
+        'WHERE COALESCE(a.is_blocked, 0) = 0 ORDER BY ' + METRICS[metric]
       ).all();
+      const publicRows = await publicUnblockedRows(result.results, env);
       return json(request, {
-        ok: true, metric, records: (result.results || []).map((row, index) => ({
+        ok: true, metric, records: publicRows.map((row, index) => ({
           rank: index + 1, name: row.display_name, time_ms: row.time_ms, xp: row.xp, value: row.value,
         })),
       });
