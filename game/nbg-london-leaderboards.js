@@ -81,9 +81,9 @@
       var cutoff = document.getElementById('nbg-prize-cutoff');
       if (cutoff) cutoff.textContent = result.payout_enabled ?
         requested.charAt(0).toUpperCase() + requested.slice(1) +
-          ' competition closes ' + new Date(result.end_ms).toUTCString() +
-          '. Only verified top-three results can earn Arcade XP at the shared UTC rollover.' :
-        'BETA PAYOUT HOLD — NBG London results are not verified for Arcade XP prizes. ' +
+          ' VERIFIED XP prize standings close ' + new Date(result.end_ms).toUTCString() +
+          '. Prizes use only verified XP, not practice totals.' :
+        'BETA PAYOUT HOLD — practice XP is not verified for Arcade XP prizes. ' +
           'No rewards are scheduled or pending. Current period ends ' +
           new Date(result.end_ms).toUTCString() + '.';
       if (!result.standings.length) {
@@ -100,8 +100,8 @@
         addCell(row, item.rank);
         addCell(row, item.name);
         addCell(row, Number(item.total_xp).toLocaleString() + ' XP');
-        addCell(row, result.payout_enabled && item.prize_eligible ?
-          '+' + Number(result.prizes[item.rank - 1]).toLocaleString() + ' Arcade XP (pending verification)' :
+        addCell(row, result.payout_enabled && item.prize_eligible && item.prize_rank ?
+          '+' + Number(result.prizes[item.prize_rank - 1]).toLocaleString() + ' Arcade XP (pending cutoff)' :
           result.payout_enabled ? 'Not prize-eligible' : 'Payouts on hold');
         prizeRows.appendChild(row);
       });
