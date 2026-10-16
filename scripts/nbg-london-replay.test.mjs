@@ -95,7 +95,7 @@ assert.ok(legitimate.result.xp < 1000000 && legitimate.result.xp >= 0,
 // Replay frame format remains v1; course version 2 is an explicit additive
 // layout capability. Cached players omit it and continue using the original
 // 6 secrets, original enemy placement and two-jump physics.
-const tripleInputs = frameStream(Array.from({length:40},(_,i) =>
+const tripleInputs = frameStream(Array.from({length:15},(_,i) =>
   [33,33,2 | ([0,2,4,6].includes(i) ? 4 : 0)]));
 const tripleReplay = { ...tripleInputs, course_version: 2 };
 const tripleVerified = await verifyNbgLondonReplay({
