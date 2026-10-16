@@ -174,7 +174,9 @@ test('enabled but unmigrated code path fails CLOSED and does not consume a run o
     now+=120000;
     const response=await f.finish(id,replayA);
     assert.equal(response.status,503);
-    assert.equal(response.saved,false);
+    assert.equal(response.ok,false);
+    assert.equal(response.error,'records_unavailable',
+      'missing schema must fail closed before consuming a run');
     assert.equal(f.sql.prepare('SELECT finished_at_ms FROM nbg_london_runs WHERE run_id=?').get(id).finished_at_ms,null);
     assert.equal(count(f,'nbg_london_records'),0);
     assert.equal(count(f,'nbg_london_period_scores'),0);
@@ -240,8 +242,14 @@ test('replay reuse by new sessions/other owners and timing-only edits are reject
     assert.equal((await f.finish(other,replayA,'200')).status,409,'cross-owner identical stream blocked');
     assert.equal((await f.finish(other,replayATiming,'200')).status,409,
       'cross-owner input-only clone blocked');
-    assert.equal((await f.finish(second,replayB)).status,200,
-      'a distinct already-physics-validated input sequence is allowed by this test fixture');
+    // This verification fixture returns a fixed 120-second duration. A
+    // finished run started 240 seconds ago must be rejected by validFinish.
+    // Use a fresh server session so this separate-digest acceptance tests the
+    // genuine timestamp contract, not a fabricated early/late finish.
+    const fresh=await f.start('100');
+    now+=120000;
+    assert.equal((await f.finish(fresh,replayB)).status,200,
+      'a distinct input sequence with a matching real-time session is eligible');
     assert.equal(count(f,'nbg_london_verified_runs'),2);
     const expectedTotal=f.sql.prepare("SELECT total_xp,trusted_xp,run_count,verified_run_count FROM nbg_london_period_scores WHERE period_kind='daily' AND telegram_id='100'").get();
     assert.deepEqual({...expectedTotal},{total_xp:1200,trusted_xp:1200,run_count:2,verified_run_count:2});
