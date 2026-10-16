@@ -153,9 +153,17 @@ export async function fingerprintNbgLondonReplay(replay, effectiveInputMasks = n
         : (effectiveMask & 15) === 0 &&
           (effectiveMask & 16) === previousFacing;
       if (inert) continue;
-      if (frame !== 0) return null;
+      // A zero-time action (including the FIRST tick) can trigger a spray
+      // cooldown or jump without advancing scored elapsed time. It changes
+      // the physics trace without paying for any gameplay time, so trusted
+      // proof must fail closed instead of minting a fresh action hash.
+      return null;
     }
-    canonical.push(effectiveMask);
+    // The normalized action stream describes changes in applied control
+    // state, not client render-frame boundaries. Two adjacent identical
+    // effective transitions represent the same action run even if an
+    // attacker splits a 33ms capped-speed frame into 0.1ms+32.9ms.
+    if (canonical.at(-1) !== effectiveMask) canonical.push(effectiveMask);
     if (effectiveInputMasks !== null) previousFacing = effectiveMask & 16;
   }
   if (canonical.length === 0) return null;

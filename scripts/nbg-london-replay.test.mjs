@@ -219,4 +219,54 @@ assert.equal(await fingerprintNbgLondonReplay(
   zeroWithJump,Uint8Array.from([18,20,18])
 ),null,'an active zero-time jump inserted mid-replay must fail trusted receipt validation');
 
+
+// P1 regression: a copied result may prepend a 0ms SPRAY action at startup.
+// Unlike inert 0ms ticks, spray starts its cooldown immediately and may
+// change the action digest even if the game still awards identical XP.
+const activeZeroPrefix = {
+  version:1,
+  frames:Buffer.concat([Buffer.from([0,0,0,0,8]),acceptedBytes]).toString('base64'),
+};
+const activeZeroVerified=await verifyNbgLondonReplay({
+  runId:'eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee',
+  replay:activeZeroPrefix,
+  startedAtMs:1000000,now:1000000+legitimate.count*33,
+});
+assert.equal(activeZeroVerified.valid,true,
+  'a 0ms active startup action can still leave the legacy replay valid');
+assert.equal(await fingerprintNbgLondonReplay(
+  activeZeroPrefix,activeZeroVerified.effective_input_masks,
+),null,'trusted receipts must reject an active 0ms prefix, not fingerprint it');
+
+// P1 regression: one original 33ms frame at capped Right speed can be
+// subdivided into 0.1ms + 32.9ms. The server-scored run remains equivalent;
+// splitting render frames must NOT create an additional Clout source digest.
+const splitIdx=cappedRightFrame*5;
+assert.equal(acceptedBytes[splitIdx]+256*acceptedBytes[splitIdx+1],330);
+assert.equal(acceptedBytes[splitIdx+2]+256*acceptedBytes[splitIdx+3],330);
+const splitMask=acceptedBytes[splitIdx+4];
+const splitBytes=Buffer.concat([
+  acceptedBytes.subarray(0,splitIdx),
+  Buffer.from([1,0,1,0,splitMask,73,1,73,1,splitMask]),
+  acceptedBytes.subarray(splitIdx+5),
+]);
+const splitReplay={version:1,frames:splitBytes.toString('base64')};
+const splitVerified=await verifyNbgLondonReplay({
+  runId:'ffffffff-ffff-4fff-8fff-ffffffffffff',
+  replay:splitReplay,
+  startedAtMs:1000000,now:1000000+legitimate.count*33,
+});
+assert.equal(splitVerified.valid,true,
+  'server physics accepts split capped-speed gameplay as a real replay');
+assert.equal(splitVerified.xp,legitimate.result.xp);
+assert.equal(splitVerified.time_ms,legitimate.result.time_ms);
+assert.equal(splitVerified.coins,legitimate.result.coins);
+assert.equal(splitVerified.secret_coins,legitimate.result.secret_coins);
+const splitDigests=await fingerprintNbgLondonReplay(
+  splitReplay,splitVerified.effective_input_masks,
+);
+assert.notEqual(splitDigests.replay_sha256,originalFingerprints.replay_sha256);
+assert.equal(splitDigests.input_sha256,originalFingerprints.input_sha256,
+  'canonical adjacent action runs must ignore attacker-created frame splits');
+
 console.log('[PASS] NBG London server-derived replay score protection');
