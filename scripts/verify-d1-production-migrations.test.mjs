@@ -43,10 +43,22 @@ for (const name of [
   '098_nbg_london_records.sql',
   '099_nbg_london_competition_prizes.sql',
   '100_championship_clout_foundation.sql',
+  '101_nbg_london_verified_run_receipts.sql',
 ]) {
   assert.ok(pullRequestPaths.includes('workers/moonboys-api/migrations/' + name));
   assert.ok(remoteQueryStep.includes(name));
 }
+
+const nbgRunMigration = '101_nbg_london_verified_run_receipts.sql';
+for (const list of [REQUIRED_D1_MIGRATIONS,request.required_migrations,
+  production.d1_databases.wikicoms.required_migrations]) {
+  assert.ok(list.includes(nbgRunMigration), 'NBG verified run receipts must be tracked');
+}
+assert.match(schema,/CREATE TABLE IF NOT EXISTS nbg_london_verified_runs/);
+assert.match(schema,/CREATE UNIQUE INDEX IF NOT EXISTS idx_nbg_london_runs_id_owner/);
+assert.ok(remoteQueryStep.includes(nbgRunMigration));
+assert.throws(()=>validateRequest({...request,required_migrations:request.required_migrations.filter(n=>n!==nbgRunMigration)}),
+  /missing required migrations: 101_nbg_london_verified_run_receipts\\.sql/);
 
 const cloutMigration = '100_championship_clout_foundation.sql';
 for (const source of [REQUIRED_D1_MIGRATIONS, request.required_migrations,
