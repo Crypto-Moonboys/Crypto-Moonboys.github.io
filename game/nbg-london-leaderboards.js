@@ -25,7 +25,7 @@
   var startTokenSequence = 0;
   var runIdentity = null;
   var practiceOnlyReason = null;
-  var PRACTICE_START_MESSAGE = 'Telegram practice only: a previous ranked start may still be processing. Scores are not saved; refresh does not clear the pending-start safety hold.';
+  var PRACTICE_START_MESSAGE = 'Practice only (Telegram-linked): a previous ranked start may still be processing. Scores are not saved; refreshing does not clear the pending-start safety hold.';
   var preparedStartGeneration = -1;
   var status = null;
   var tableBody = null;
