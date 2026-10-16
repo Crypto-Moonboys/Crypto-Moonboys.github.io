@@ -45,8 +45,10 @@ CREATE TABLE arcade_progression_events (
  xp_awarded INTEGER, status TEXT, reason TEXT, processed_at TEXT);`);
 
 let batchTail = Promise.resolve();
+const leaderboardSqlLog = [];
 const DB = {
   prepare(sql) {
+    leaderboardSqlLog.push(sql);
     return {
       bind(...args) {
         const stmt = sqlite.prepare(sql);
@@ -501,6 +503,45 @@ try {
   assert.equal((await api('/nbg-london/leaderboard?metric=xp')).status, 503,
     'public lifetime board must fail closed when anti-cheat KV is unavailable');
   env.LEADERBOARD = originalKv;
+
+  // Drive the KV ban filter past its first SQL page. All sorted public
+  // queries must use LIMIT/OFFSET, backfill ranks, and only read the active
+  // competition ranking basis, even when the leading page is entirely banned.
+  const busyDay = periodStart(fakeNow, 'daily');
+  for (let i = 0; i < 70; i++) {
+    const id = String(900 + i);
+    insertUser.run(id);
+    insertRecord.run(id, '@blocked' + id, 66000 + i, 20000,
+      1500, 66000 + i, 20000, 20000, 66000 + i, fakeNow);
+    insertPeriod.run(busyDay, id, '@blocked' + id,
+      900000 - i * 100, 900000 - i * 100, 66000 + i, fakeNow);
+    kvBans.add('anticheat:blocked:' + id);
+  }
+  const sqlMark = leaderboardSqlLog.length;
+  env.NBG_LONDON_PRIZES_ENABLED = 'true';
+  env.NBG_LONDON_SCORE_AUTHORITY_ENABLED = 'true';
+  const busyPrize = await api('/nbg-london/competition?period=daily');
+  delete env.NBG_LONDON_PRIZES_ENABLED;
+  delete env.NBG_LONDON_SCORE_AUTHORITY_ENABLED;
+  assert.equal(busyPrize.standings.length, 20);
+  assert.equal(busyPrize.standings[0].name, '@score702',
+    'verified board must refill from later pages past seventy KV-only bans');
+  const prizeSql = leaderboardSqlLog.slice(sqlMark).filter(sql =>
+    sql.includes('FROM nbg_london_period_scores s'));
+  assert.equal(prizeSql.length, 2, 'seventy bans should require two bounded pages');
+  assert.ok(prizeSql.every(sql => sql.includes(' LIMIT ? OFFSET ?')),
+    'no public competition response may materialize unbounded SQL results');
+  assert.ok(prizeSql.every(sql => sql.includes('s.trusted_xp DESC')),
+    'only the selected trusted-XP ranking may be queried');
+  const lifetimeMark = leaderboardSqlLog.length;
+  const busyLifetime = await api('/nbg-london/leaderboard?metric=xp');
+  assert.equal(busyLifetime.records.length, 20);
+  assert.ok(busyLifetime.records.every(row => !row.name.startsWith('@blocked')));
+  const lifetimeSql = leaderboardSqlLog.slice(lifetimeMark).filter(sql =>
+    sql.includes('FROM nbg_london_records r'));
+  assert.ok(lifetimeSql.length >= 2, 'over sixty-four banned leaders require paged backfill');
+  assert.ok(lifetimeSql.every(sql => sql.includes(' LIMIT ? OFFSET ?')),
+    'all-time boards must use bounded SQL reads');
 
 } finally {
   Date.now = nowOriginal;
