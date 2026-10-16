@@ -1,11 +1,12 @@
 import assert from 'node:assert/strict';
 import { createHmac } from 'node:crypto';
 import { verifyTelegramMiniAppInitData } from '../workers/moonboys-api/pets/mini-app-auth.js';
+import { scoreRun, difficultyForPlayer } from '../workers/moonboys-api/routes/dead-run-core.js';
 import { test } from 'node:test';
 import { readFileSync } from 'node:fs';
 import { DatabaseSync } from 'node:sqlite';
 import {
-  PILOT_REPROJECT_SQL, syncCloutPilotForVerifiedOwner,
+  PILOT_REPROJECT_SQL, syncCloutPilotForVerifiedOwner, normalizeDeadRunSkill,
 } from '../workers/moonboys-api/championship/clout-pilot.js';
 import {
   CLOUT_POLICY_VERSION, projectCloutDay,
@@ -33,7 +34,9 @@ function fixture() {
     'CREATE TABLE telegram_pet_weekly_crests(crest_id TEXT PRIMARY KEY,pet_id TEXT,telegram_id TEXT,season_key TEXT,qualification_week INTEGER,objective_id TEXT,evidence_key TEXT,earned_at TEXT);',
     'CREATE TABLE telegram_pet_weekly_journey_receipts(receipt_id TEXT PRIMARY KEY,crest_id TEXT,telegram_id TEXT,pet_id TEXT,season_key TEXT,qualification_week INTEGER,status TEXT,reason TEXT,completed_objectives INTEGER);',
     "INSERT INTO telegram_users VALUES ('100',25),('200',75);",
+    'CREATE TABLE arcade_progression_events(id TEXT PRIMARY KEY,telegram_id TEXT,client_run_id TEXT,game TEXT,raw_score INTEGER,xp_awarded INTEGER,status TEXT,reason TEXT);',
   ].join('\n'));
+  sql.exec(readFileSync('workers/moonboys-api/migrations/075_dead_run_gps_survival.sql', 'utf8'));
   sql.exec(readFileSync('workers/moonboys-api/migrations/100_championship_clout_foundation.sql', 'utf8'));
   const db = {
     prepare(query) {
@@ -95,6 +98,57 @@ function addCrest(f, { owner = OWNER, pet = 'pet-1', season = 'pet-s2026-004',
     .run(id, pet, owner, season, 42, 'weekly_journey', 'weekly-journey:' + season + ':42:5-of-5', EARLY);
   f.sql.prepare('INSERT INTO telegram_pet_weekly_journey_receipts VALUES (?,?,?,?,?,?,?,?,?)')
     .run('journey:' + id, id, owner, pet, season, 42, status, reason, count);
+}
+
+const DEAD_RUN_START = DAY + 'T11:30:00.000Z';
+const DEAD_RUN_IDS = Object.freeze({
+  a: '3196c5ac-556f-41b2-8e22-3ed1b9a9ef10',
+  b: '4122c06e-3c7d-45c2-9f41-c51908891234',
+  c: '5a7c8f22-3011-4c8a-92ab-7a71ac11ff00',
+});
+
+// Populate one existing, post-settlement source + its independently saved
+// Arcade receipt, exactly as real Dead Run finish writes these fields.
+function addDeadRun(f, options = {}) {
+  const {
+    owner = OWNER, id = DEAD_RUN_IDS.a, startedAt = DEAD_RUN_START,
+    endedAt = NOON, ranked = 1, status = 'finished',
+    suspicious = 0, distance = 2000, survival = 600, kills = 5,
+    crates = 3, shoves = 1, scoreOverride = null, xpOverride = null,
+    arcadeReceipt = true, arcadeReason = 'verified_gps_run',
+    statsApplied = 1, arcadeApplied = 1, hordeApplied = 1,
+    receiptOwner = owner, receiptRunId = id, receiptScore = null,
+    receiptXp = null,
+  } = options;
+  const score = scoreRun({
+    verified_distance_m: distance, survival_seconds: survival,
+    kills, crates, shove_count: shoves,
+  }, difficultyForPlayer({ xp_total: 0, best_survival_seconds: 0, runs_total: 0 }));
+  const finalScore = scoreOverride ?? score.score;
+  const finalXp = xpOverride ?? Math.min(275, Math.floor(
+    score.xp * (arcadeReason === 'verified_gps_horde_event' ? 1.1 : 1)
+  ));
+  f.sql.prepare('INSERT OR IGNORE INTO dead_run_players(telegram_id) VALUES (?)').run(owner);
+  f.sql.prepare([
+    'INSERT INTO dead_run_sessions(',
+    'session_id,telegram_id,day_key,status,ranked,seed,started_at,ended_at,',
+    'last_sample_at_ms,verified_distance_m,suspicious_points,survival_seconds,',
+    'score,xp_awarded,kills,crates,shove_count,player_stats_applied,arcade_xp_applied,horde_applied',
+    ') VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)'
+  ].join(' ')).run(
+    id,owner,startedAt.slice(0,10),status,ranked,123,startedAt,endedAt,
+    Date.parse(endedAt) - 1000,distance,suspicious,survival,
+    finalScore,finalXp,kills,crates,shoves,statsApplied,arcadeApplied,hordeApplied,
+  );
+  if (arcadeReceipt) f.sql.prepare([
+    'INSERT INTO arcade_progression_events',
+    '(id,telegram_id,client_run_id,game,raw_score,xp_awarded,status,reason)',
+    "VALUES(?,?,?,?,?,?,'accepted',?)",
+  ].join(' ')).run(
+    'dead_run:' + id, receiptOwner, receiptRunId, 'dead-run',
+    receiptScore ?? finalScore, receiptXp ?? finalXp, arcadeReason,
+  );
+  return { score:finalScore, xp:finalXp };
 }
 
 async function sync(f, owner = OWNER, opts = {}) {
