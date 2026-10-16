@@ -104,6 +104,13 @@ async function payPrize(env, prize, now) {
   // Fail closed for a KV-only ban, including a ban applied after roster freeze.
   // The D1 ban is rechecked atomically through the shared Community XP helper.
   if (await isKvBlocked(env, prize.telegram_id)) return false;
+  const eligibleNow = await env.DB.prepare(
+    `SELECT p.event_id FROM nbg_london_prize_awards p
+      LEFT JOIN telegram_anticheat_state a ON a.telegram_id=p.telegram_id
+      WHERE p.event_id=? AND p.telegram_id=? AND p.paid_at_ms IS NULL
+        AND p.payout_token IS NULL AND COALESCE(a.is_blocked,0)=0`
+  ).bind(prize.event_id, prize.telegram_id).first();
+  if (!eligibleNow) return false;
   const key = new Date(now).toISOString().slice(0, 10);
   const id = prize.event_id;
   const telegramId = prize.telegram_id;
@@ -119,7 +126,9 @@ async function payPrize(env, prize, now) {
   // awardCommunityXp atomically creates the Community receipt, XP log,
   // telegram_users XP, active Community season standing and these extra writes.
   // Its one-time source gate prevents double wallet credit and paid receipts.
-  const result = await awardCommunityXp(env.DB, telegramId, xp, action, id, {
+  let result;
+  try {
+    result = await awardCommunityXp(env.DB, telegramId, xp, action, id, {
     now,
     sourcePredicate: { sql: guard, args: [id, telegramId, xp] },
     sourceStatements(gate) {
@@ -163,7 +172,14 @@ async function payPrize(env, prize, now) {
         ).bind(now, id, telegramId, ...args) },
       ];
     },
-  });
+    });
+  } catch (error) {
+    // A D1 block or competing settled claim may invalidate the source between
+    // the optimistic precheck and the atomic Community XP batch. In either
+    // case that batch has not credited anything and the prize stays unpaid.
+    if (error?.message === 'community_xp_source_changed') return false;
+    throw error;
+  }
   return result.accepted && !result.duplicate && result.xp_awarded === xp;
 }
 
