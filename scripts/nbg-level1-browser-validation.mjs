@@ -1615,6 +1615,57 @@ const afterRestart = await page.evaluate(() => window.NBGLevel1State.runElapsedM
 assert.ok(afterRestart < 2500, 'new run must restart with a fresh clock');
 await page.evaluate(() => window.NBGLevel1Runtime.reset());
 
+// When a same-owner ranked start is queued behind an earlier HTTP request,
+// simulation must remain at elapsed 0 until the replacement session exists.
+// Exercise an actual short key press that is released during the handshake.
+await page.evaluate(() => {
+  window.__nbgOriginalQueuedStart = window.NBGLondonBeforeQueuedRun;
+  window.NBGLondonBeforeQueuedRun = () => new Promise(resolve => {
+    window.__nbgReleaseQueuedStart = resolve;
+  });
+});
+await page.keyboard.press('s');
+await page.waitForFunction(() => typeof window.__nbgReleaseQueuedStart === 'function');
+await page.waitForTimeout(300);
+assert.deepEqual(await page.evaluate(() => ({
+  running: window.NBGLevel1State.running,
+  elapsed: window.NBGLevel1State.runElapsedMs,
+  control: window.NBGLevel1State.pendingInitialInput?.control,
+})), { running: false, elapsed: 0, control: 'spray' },
+'queued ranked session must freeze physics and preserve initiating key press');
+await page.evaluate(() => window.__nbgReleaseQueuedStart());
+await page.waitForFunction(() => window.NBGLevel1State.running &&
+  window.NBGLevel1State.runElapsedMs > 0);
+await page.evaluate(() => {
+  window.NBGLevel1Runtime.reset();
+  window.NBGLondonBeforeQueuedRun = window.__nbgOriginalQueuedStart;
+  delete window.__nbgOriginalQueuedStart;
+  delete window.__nbgReleaseQueuedStart;
+});
+
+// Resetting while a signed handshake is pending must not revive a stale run.
+await page.evaluate(() => {
+  window.__nbgOriginalQueuedStart = window.NBGLondonBeforeQueuedRun;
+  window.NBGLondonBeforeQueuedRun = () => new Promise(resolve => {
+    window.__nbgReleaseQueuedStart = resolve;
+  });
+});
+await page.keyboard.press('s');
+await page.waitForFunction(() => typeof window.__nbgReleaseQueuedStart === 'function');
+await page.evaluate(() => window.NBGLevel1Runtime.reset());
+await page.evaluate(() => window.__nbgReleaseQueuedStart());
+await page.waitForTimeout(150);
+assert.deepEqual(await page.evaluate(() => ({
+  running: window.NBGLevel1State.running,
+  elapsed: window.NBGLevel1State.runElapsedMs
+})), { running: false, elapsed: 0 },
+'reset must prevent a stale queued session from starting gameplay');
+await page.evaluate(() => {
+  window.NBGLondonBeforeQueuedRun = window.__nbgOriginalQueuedStart;
+  delete window.__nbgOriginalQueuedStart;
+  delete window.__nbgReleaseQueuedStart;
+});
+
 // Guest runs cannot leave permanent device-local best scores, even after finishing.
 const guestRecords = await page.evaluate(() => ({
   bestXp: localStorage.getItem('nbg-london-best-xp'),
