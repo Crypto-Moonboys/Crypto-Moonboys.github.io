@@ -7,6 +7,7 @@ import { readFileSync } from 'node:fs';
 import { DatabaseSync } from 'node:sqlite';
 import {
   PILOT_REPROJECT_SQL, syncCloutPilotForVerifiedOwner, normalizeDeadRunSkill,
+  normalizeNbgLondonSkill,
   CLOUT_DEAD_RUN_MIDNIGHT_GRACE_MS,
 } from '../workers/moonboys-api/championship/clout-pilot.js';
 import {
@@ -38,7 +39,9 @@ function fixture() {
     'CREATE TABLE arcade_progression_events(id TEXT PRIMARY KEY,telegram_id TEXT,client_run_id TEXT,game TEXT,raw_score INTEGER,xp_awarded INTEGER,status TEXT,reason TEXT,UNIQUE(telegram_id,client_run_id));',
   ].join('\n'));
   sql.exec(readFileSync('workers/moonboys-api/migrations/075_dead_run_gps_survival.sql', 'utf8'));
+  sql.exec(readFileSync('workers/moonboys-api/migrations/098_nbg_london_records.sql', 'utf8'));
   sql.exec(readFileSync('workers/moonboys-api/migrations/100_championship_clout_foundation.sql', 'utf8'));
+  sql.exec(readFileSync('workers/moonboys-api/migrations/101_nbg_london_verified_run_receipts.sql', 'utf8'));
   const db = {
     prepare(query) {
       const st = sql.prepare(query);
@@ -159,6 +162,29 @@ function addDeadRun(f, options = {}) {
     receiptScore ?? finalScore, receiptXp ?? finalXp, arcadeReason,
   );
   return { score:finalScore, xp:finalXp };
+}
+
+const NBG_RUN_IDS = Object.freeze({
+  a:'f8d6e47c-2e10-4c09-8b48-613f24a1b612',
+  b:'f8d6e47c-2e10-4c09-8b48-613f24a1b613',
+});
+function addNbgProof(f,{id=NBG_RUN_IDS.a,owner=OWNER,finishedAt=Date.parse(NOON),
+  verifiedXp=20000,validProof=true,replayHex='a',inputHex='b'}={}){
+  const startAt=finishedAt-130000;
+  f.sql.prepare(
+    'INSERT INTO nbg_london_runs(run_id,telegram_id,started_at_ms,expires_at_ms,finished_at_ms,finish_token) VALUES(?,?,?,?,?,?)'
+  ).run(id,owner,startAt,finishedAt+600000,finishedAt,'token:'+id);
+  if(validProof){
+    f.sql.prepare([
+      'INSERT INTO nbg_london_verified_runs',
+      '(run_id,telegram_id,day_key,finished_at_ms,time_ms,verified_xp,replay_version,',
+      'replay_sha256,input_sha256,authority,recorded_at_ms)',
+      "VALUES(?,?,?,?,?,?,1,?,?,'server_replay',?)",
+    ].join(' ')).run(
+      id,owner,new Date(finishedAt).toISOString().slice(0,10),finishedAt,
+      130000,verifiedXp,replayHex.repeat(64),inputHex.repeat(64),finishedAt,
+    );
+  }
 }
 
 async function sync(f, owner = OWNER, opts = {}) {
