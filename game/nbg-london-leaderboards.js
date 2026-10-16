@@ -14,9 +14,9 @@
   var identityRequestNumber = 0;
   var generation = 0;
   var runPromise = null;
-  // Keep signed start POSTs ordered even across reset/account changes. A stale
-  // server start must never invalidate a later run's D1 session.
-  var serverStartQueue = Promise.resolve();
+  // The Worker invalidates unfinished sessions per Telegram owner, so only
+  // starts for the SAME owner need ordering. Do not stall a newly linked owner.
+  var serverStartQueues = new Map();
   var runIdentity = null;
   var status = null;
   var tableBody = null;
@@ -232,11 +232,11 @@
           String(auth.id) !== startingId ||
           String(gate.getTelegramId() || '') !== startingId ||
           !gate.isTelegramLinked()) return null;
-      // The Worker atomically invalidates older unfinished runs on /run/start.
-      // Serialise the *whole* HTTP operation: merely discarding a stale browser
-      // response after reset still lets that old request revoke the new session.
-      // Check identity again when queued work actually reaches the network.
-      var queuedStart = serverStartQueue.then(async function () {
+      // Each /run/start invalidates unfinished D1 sessions for its own owner.
+      // Serialize the full HTTP request per owner so a late old request cannot
+      // revoke a newer run. Other Telegram owners must not be blocked by it.
+      var previousStart = serverStartQueues.get(startingId) || Promise.resolve();
+      var queuedStart = previousStart.then(async function () {
         if (current !== generation ||
             String(gate.getTelegramId() || '') !== startingId ||
             !gate.isTelegramLinked()) return null;
@@ -246,9 +246,14 @@
             !gate.isTelegramLinked()) return null;
         return Object.assign({}, started, { telegram_id: startingId });
       });
-      // Keep the queue alive after a failed request; its actual error still
-      // propagates to this run's existing "not ranked" status handler.
-      serverStartQueue = queuedStart.then(function () {}, function () {});
+      // A failed request must not poison later same-owner starts. Remove idle
+      // entries only when no newer run has replaced that owner's queue tail.
+      var tail = queuedStart.then(function () {}, function () {});
+      serverStartQueues.set(startingId, tail);
+      tail.then(function () {
+        if (serverStartQueues.get(startingId) === tail)
+          serverStartQueues.delete(startingId);
+      });
       return queuedStart;
     }());
     try {
