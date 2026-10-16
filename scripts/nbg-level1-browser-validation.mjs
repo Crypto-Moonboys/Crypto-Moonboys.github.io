@@ -1799,61 +1799,49 @@ for (const mode of ['keyboard', 'touch']) {
   });
 }
 
-// Queued signed starts must retain three distinct physical Jump presses
-// from keyboard and touch, and cap a fourth press at the new triple-jump limit.
+// Fresh isolated browser per input type: no prior game-over, Scores focus,
+// or reset state can interfere with the queued three-press contract.
 for (const mode of ['keyboard', 'touch']) {
-  await page.evaluate(() => {
-    window.__nbgOriginalQueuedStart = window.NBGLondonBeforeQueuedRun;
-    window.NBGLondonBeforeQueuedRun = () => new Promise(resolve => {
-      window.__nbgReleaseQueuedStart = resolve;
-    });
+  const queuedPage = await browser.newPage({
+    viewport: { width: 480, height: 320 },
+    hasTouch: mode === 'touch'
   });
-  if (mode === 'keyboard') {
-    // Exercise the real window key handlers synchronously. Browser focus can
-    // move during the lengthy signed-session mock; genuine keyboard startup
-    // and single press behavior is separately tested above.
-    await page.evaluate(() => {
-      for (let press = 0; press < 4; press++) {
-        window.dispatchEvent(new KeyboardEvent('keydown',
-          { key: 'w', code: 'KeyW', bubbles: true, cancelable: true }));
-        window.dispatchEvent(new KeyboardEvent('keyup',
-          { key: 'w', code: 'KeyW', bubbles: true, cancelable: true }));
-      }
-    });
-  } else {
-    await page.evaluate(() => {
-      for (let press = 0; press < 4; press++) {
-        window.NBGLevel1Runtime.setTouchControl('jump', true);
-        window.NBGLevel1Runtime.setTouchControl('jump', false);
-      }
-    });
-  }
-  await page.waitForFunction(() => typeof window.__nbgReleaseQueuedStart === 'function');
-  assert.deepEqual(await page.evaluate(() => ({
-    running: window.NBGLevel1State.running,
-    pending: window.NBGLevel1State.pendingJumpPresses,
-  })), { running: false, pending: 3 },
-  mode + ' must preserve three distinct Jump presses during the handshake');
-  await page.evaluate(() => window.__nbgReleaseQueuedStart());
   try {
-    await page.waitForFunction(() => window.NBGLevel1State.running &&
-      window.NBGLevel1State.jumpsUsed === 3, null, { timeout: 1500 });
-  } catch (error) {
-    const diagnostic = await page.evaluate(() => ({
+    await queuedPage.goto(url, { waitUntil: 'domcontentloaded' });
+    await queuedPage.waitForFunction(() => window.NBGLevel1State?.assetsLoaded,
+      null, { timeout: 20000 });
+    await queuedPage.evaluate(() => {
+      window.__nbgOriginalQueuedStart = window.NBGLondonBeforeQueuedRun;
+      window.NBGLondonBeforeQueuedRun = () => new Promise(resolve => {
+        window.__nbgReleaseQueuedStart = resolve;
+      });
+    });
+    if (mode === 'keyboard') {
+      for (let press = 0; press < 4; press++)
+        await queuedPage.keyboard.press('w');
+    } else {
+      await queuedPage.evaluate(() => {
+        for (let press = 0; press < 4; press++) {
+          window.NBGLevel1Runtime.setTouchControl('jump', true);
+          window.NBGLevel1Runtime.setTouchControl('jump', false);
+        }
+      });
+    }
+    await queuedPage.waitForFunction(() =>
+      typeof window.__nbgReleaseQueuedStart === 'function');
+    const queued = await queuedPage.evaluate(() => ({
       running: window.NBGLevel1State.running,
       pending: window.NBGLevel1State.pendingJumpPresses,
-      jumps: window.NBGLevel1State.jumpsUsed,
-      grounded: window.NBGLevel1State.player.grounded,
-      y: window.NBGLevel1State.player.y
+      waiting: window.NBGLevel1State.waitingForFirstInput,
     }));
-    assert.fail(mode + ' queued third jump did not register: ' + JSON.stringify(diagnostic));
+    assert.equal(queued.running, false, mode + ' cannot start before server handshake');
+    assert.equal(queued.pending, 3, mode + ' stores three distinct Jump presses, not four');
+    await queuedPage.evaluate(() => window.__nbgReleaseQueuedStart());
+    await queuedPage.waitForFunction(() => window.NBGLevel1State.running &&
+      window.NBGLevel1State.jumpsUsed === 3, null, { timeout: 1800 });
+  } finally {
+    await queuedPage.close();
   }
-  await page.evaluate(() => {
-    window.NBGLevel1Runtime.reset();
-    window.NBGLondonBeforeQueuedRun = window.__nbgOriginalQueuedStart;
-    delete window.__nbgOriginalQueuedStart;
-    delete window.__nbgReleaseQueuedStart;
-  });
 }
 
 // Resetting while a signed handshake is pending must not revive a stale run.
