@@ -8,10 +8,30 @@ import { periodStart, endedPeriods, settleNbgLondonDue, settleNbgLondonPeriod } 
 if (!globalThis.crypto) globalThis.crypto = webcrypto;
 
 const sqlite = new DatabaseSync(':memory:');
-sqlite.exec('PRAGMA foreign_keys = ON; CREATE TABLE telegram_users (telegram_id TEXT PRIMARY KEY);');
+sqlite.exec(`PRAGMA foreign_keys = ON;
+CREATE TABLE telegram_users (
+  telegram_id TEXT PRIMARY KEY, xp INTEGER NOT NULL DEFAULT 0,
+  level INTEGER NOT NULL DEFAULT 1, updated_at TEXT
+);
+CREATE TABLE telegram_seasons (
+  id INTEGER PRIMARY KEY, name TEXT, start_date TEXT, end_date TEXT,
+  is_active INTEGER NOT NULL DEFAULT 1
+);
+CREATE TABLE telegram_leaderboard (
+  telegram_id TEXT NOT NULL, season_id INTEGER NOT NULL,
+  xp INTEGER NOT NULL DEFAULT 0, updated_at TEXT,
+  PRIMARY KEY(telegram_id, season_id)
+);
+CREATE TABLE telegram_xp_log (
+  id INTEGER PRIMARY KEY AUTOINCREMENT, telegram_id TEXT NOT NULL,
+  action TEXT NOT NULL, xp_change INTEGER NOT NULL, reference_id TEXT, created_at TEXT
+);
+INSERT INTO telegram_seasons(id,name,start_date,end_date,is_active)
+ VALUES (1,'NBG-test-active','2020-01-01T00:00:00.000Z','2090-01-01T00:00:00.000Z',1);`);
 sqlite.exec("INSERT INTO telegram_users VALUES ('100'), ('200')");
 sqlite.exec(readFileSync('workers/moonboys-api/migrations/098_nbg_london_records.sql', 'utf8'));
 sqlite.exec(readFileSync('workers/moonboys-api/migrations/099_nbg_london_competition_prizes.sql', 'utf8'));
+sqlite.exec(readFileSync('workers/moonboys-api/migrations/089_community_xp_award_receipts.sql', 'utf8'));
 sqlite.exec(`CREATE TABLE telegram_anticheat_state(telegram_id TEXT PRIMARY KEY, is_blocked INTEGER NOT NULL DEFAULT 0);
 CREATE TABLE arcade_progression_state (
  telegram_id TEXT PRIMARY KEY, arcade_xp_total INTEGER DEFAULT 0, arcade_daily_xp INTEGER DEFAULT 0,
