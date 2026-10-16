@@ -29,6 +29,13 @@ test('v2 ranked handshake awaits signed challenge before any replay tick',()=>{
     assert.ok(game.includes(control),'must preserve keyboard startup '+control);
   }
   assert.match(game,/pendingJumpPresses/);
+  assert.match(game,/if \(assetsLoaded && window\.NBG_CHALLENGE_CLIENT_RELEASED !== true\) return;/,
+    'v2 must queue initiating taps even when game assets are already loaded');
+  assert.match(game,/if \(!pendingInitialInput\) pendingInitialInput = \{ control: control \};/,
+    'first S, X, Left, Right, Jump or touch initiation must survive the handshake');
+  assert.match(game,/initialInputReplay = pendingInitialInput;/);
+  assert.match(game,/if \(keys\.KeyS \|\| keys\.KeyX \|\| touch\.spray \|\| \(replay && replay\.control === 'spray'\)\)/,
+    'the recorded initial spray must be consumed on the first post-handshake frame');
   assert.match(game,/touch\.spray/);
   // Touch controls are stored in the generic touch[control] map. The
   // implementation counts jump presses separately, not as touch.jump.
@@ -58,5 +65,15 @@ test('legacy practice and v1 boards remain supported, v2 requires signed preplay
     'local resets and identity changes must never drop the server-start queue');
   assert.match(client,/current!==generation/);
   assert.match(client,/detail\.replay\.version !== 2/);
-  assert.match(source,/trustedReceiptsEnabled \? 2 : 1/);
+  assert.match(source,/body\?\.replay_capability === 'challenge_v2'/,
+    'server must require explicit v2 client negotiation');
+  assert.match(source,/challengeVersion = challengedStart \? 2 : 1/);
+  assert.match(source,/const trustedForSession = trustedReceiptsEnabled &&/,
+    'trusted receipt gate is per issued run, not global Worker release');
+  assert.match(source,/if \(trustedReceiptsEnabled && !trustedForSession/);
+  assert.match(client,/replay_capability:'challenge_v2'/);
+  assert.match(client,/session\.replay_version===2\?2:1/,
+    'cached legacy client must select its issued replay version');
+  assert.match(client,/event\?\.detail\?\.replay_version === 2/,
+    'mixed cached legacy game must still start the old session path');
 });
