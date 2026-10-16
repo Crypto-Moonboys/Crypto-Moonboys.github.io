@@ -153,4 +153,34 @@ assert.notEqual(
   'original uncanonicalized raw stream is not authoritative for trusted receipts',
 );
 
+
+// Another semantic copy: with horizontal speed already capped, Right and
+// Left+Right can produce the identical resulting velocity, facing and score.
+// Hashing raw direction bits would allow duplicate score farming.
+const cappedRightFrame=legitimate.result.effective_input_masks.findIndex(
+  (effective,i) =>
+    (acceptedBytes[i*5+4]&3)===2 && (effective&3)===0 && (effective&16)===16,
+);
+assert.ok(cappedRightFrame>=0,'a completed run must have a speed-capped Right frame');
+const cancelledBytes=Buffer.from(acceptedBytes);
+cancelledBytes[cappedRightFrame*5+4]|=1;
+const cancelledReplay={version:1,frames:cancelledBytes.toString('base64')};
+const cancelledVerified=await verifyNbgLondonReplay({
+  runId:'cccccccc-cccc-4ccc-8ccc-cccccccccccc',
+  replay:cancelledReplay,
+  startedAtMs:1000000,now:1000000+legitimate.count*33,
+});
+assert.equal(cancelledVerified.valid,true,'cancelling velocity at the cap cannot invalidate the finish');
+assert.equal(cancelledVerified.xp,legitimate.result.xp);
+assert.equal(cancelledVerified.time_ms,legitimate.result.time_ms);
+assert.equal(cancelledVerified.coins,legitimate.result.coins);
+assert.equal(cancelledVerified.secret_coins,legitimate.result.secret_coins);
+const cancelledFingerprints=await fingerprintNbgLondonReplay(
+  cancelledReplay,cancelledVerified.effective_input_masks,
+);
+assert.notEqual(cancelledFingerprints.replay_sha256,originalFingerprints.replay_sha256,
+  'the attacker changed decoded frame bytes');
+assert.equal(cancelledFingerprints.input_sha256,originalFingerprints.input_sha256,
+  'the actual physics-effective direction and facing canonicalize the copy');
+
 console.log('[PASS] NBG London server-derived replay score protection');
