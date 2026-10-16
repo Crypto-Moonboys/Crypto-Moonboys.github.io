@@ -1799,6 +1799,39 @@ for (const mode of ['keyboard', 'touch']) {
   });
 }
 
+// Queued signed starts must retain three distinct physical Jump presses
+// from keyboard and touch, and cap a fourth press at the new triple-jump limit.
+for (const mode of ['keyboard', 'touch']) {
+  await page.evaluate(() => {
+    window.__nbgOriginalQueuedStart = window.NBGLondonBeforeQueuedRun;
+    window.NBGLondonBeforeQueuedRun = () => new Promise(resolve => {
+      window.__nbgReleaseQueuedStart = resolve;
+    });
+  });
+  if (mode === 'keyboard') {
+    for (let press = 0; press < 4; press++) await page.keyboard.press('w');
+  } else {
+    await page.evaluate(() => {
+      for (let press = 0; press < 4; press++) {
+        window.NBGLevel1Runtime.setTouchControl('jump', true);
+        window.NBGLevel1Runtime.setTouchControl('jump', false);
+      }
+    });
+  }
+  await page.waitForFunction(() => typeof window.__nbgReleaseQueuedStart === 'function');
+  assert.equal(await page.evaluate(() => window.NBGLevel1State.running), false,
+    mode + ' queued presses must not begin physics before the signed session');
+  await page.evaluate(() => window.__nbgReleaseQueuedStart());
+  await page.waitForFunction(() => window.NBGLevel1State.running &&
+    window.NBGLevel1State.jumpsUsed === 3, null, { timeout: 1500 });
+  await page.evaluate(() => {
+    window.NBGLevel1Runtime.reset();
+    window.NBGLondonBeforeQueuedRun = window.__nbgOriginalQueuedStart;
+    delete window.__nbgOriginalQueuedStart;
+    delete window.__nbgReleaseQueuedStart;
+  });
+}
+
 // Resetting while a signed handshake is pending must not revive a stale run.
 await page.evaluate(() => {
   window.__nbgOriginalQueuedStart = window.NBGLondonBeforeQueuedRun;
