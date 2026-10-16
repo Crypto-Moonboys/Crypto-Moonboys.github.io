@@ -23,6 +23,14 @@ export function endedPeriods(now) {
     return { kind, start: end - duration, end };
   }).filter(period => period.start >= EPOCH && now >= period.end);
 }
+// Anti-cheat may have written only to the shared KV after a D1 ban write
+// failed. Both authorities must be consulted before freezing or paying.
+async function isKvBlocked(env, telegramId) {
+  if (!env?.LEADERBOARD || typeof env.LEADERBOARD.get !== 'function')
+    throw new Error('nbg_anticheat_kv_unavailable');
+  return Boolean(await env.LEADERBOARD.get('anticheat:blocked:' + telegramId));
+}
+
 function reference(kind, start, rank) {
   return `nbg-london:${kind}:${start}:${rank}`;
 }
@@ -36,9 +44,24 @@ function validatePeriod(period, now) {
 // D1 atomic batch. The freeze token prevents a competing scheduler overwriting
 // the first snapshot if a blocked player's status changes during the attempt.
 async function freezePeriod(env, period, now) {
+  // D1 ranking filters D1 blocks; additional KV-only blocked ids must be
+  // removed BEFORE ROW_NUMBER so a banned leader never takes a prize rank.
+  const candidates = (await env.DB.prepare(
+    `SELECT s.telegram_id FROM nbg_london_period_scores s
+       LEFT JOIN telegram_anticheat_state a ON a.telegram_id = s.telegram_id
+      WHERE s.period_kind = ? AND s.period_start_ms = ?
+        AND s.verified_run_count > 0 AND s.trusted_xp > 0
+        AND COALESCE(a.is_blocked, 0) = 0`
+  ).bind(period.kind, period.start).all()).results || [];
+  const kvExcluded = [];
+  for (const candidate of candidates) {
+    if (await isKvBlocked(env, candidate.telegram_id)) kvExcluded.push(candidate.telegram_id);
+  }
+  const kvFilter = kvExcluded.length ?
+    'AND s.telegram_id NOT IN (' + kvExcluded.map(() => '?').join(',') + ')' : '';
   const token = crypto.randomUUID();
-  // Both the closed-period marker and the winner SELECT execute in one D1 batch:
-  // no accepted finish can sneak into a period between ranking and freezing.
+  // Both the closed-period marker and winner selection remain in one atomic
+  // D1 batch. Re-read D1 bans there, even after the preceding KV checks.
   const statements = [
     env.DB.prepare(
       `INSERT OR IGNORE INTO nbg_london_prize_periods
@@ -61,6 +84,7 @@ async function freezePeriod(env, period, now) {
          WHERE s.period_kind = ? AND s.period_start_ms = ?
            AND s.verified_run_count > 0 AND s.trusted_xp > 0
            AND COALESCE(a.is_blocked, 0) = 0
+           ${kvFilter}
        ) r
        WHERE r.rank <= 3 AND EXISTS (
          SELECT 1 FROM nbg_london_prize_periods
@@ -69,12 +93,15 @@ async function freezePeriod(env, period, now) {
     ).bind(period.kind, period.start, period.kind, period.start,
       PRIZE_ARCADE_XP[period.kind][0], PRIZE_ARCADE_XP[period.kind][1],
       PRIZE_ARCADE_XP[period.kind][2], now,
-      period.kind, period.start, period.kind, period.start, token),
+      period.kind, period.start, ...kvExcluded, period.kind, period.start, token),
   ];
   await env.DB.batch(statements);
 }
 
 async function payPrize(env, prize, now) {
+  // Fail closed for a KV-only ban, including a ban applied after roster freeze.
+  // D1 is checked again atomically inside the payout batch.
+  if (await isKvBlocked(env, prize.telegram_id)) return false;
   const token = crypto.randomUUID();
   const key = new Date(now).toISOString().slice(0, 10); // actual payout day, not historic period end
   const id = prize.event_id;
@@ -155,21 +182,36 @@ export async function settleNbgLondonDue(env, now = Date.now()) {
        FROM nbg_london_period_scores s
        LEFT JOIN nbg_london_prize_periods p
          ON p.period_kind=s.period_kind AND p.period_start_ms=s.period_start_ms
-      WHERE p.period_kind IS NULL AND s.period_start_ms +
+      WHERE p.period_kind IS NULL
+        AND s.verified_run_count > 0 AND s.trusted_xp > 0
+        AND s.period_start_ms +
         CASE s.period_kind WHEN 'daily' THEN ? WHEN 'weekly' THEN ? ELSE ? END <= ?
       ORDER BY s.period_start_ms ASC LIMIT 50`
   ).bind(DAY, DURATIONS.weekly, DURATIONS.seasonal, now).all()).results || [];
   // Blocked frozen recipients keep their immutable receipts, but must not
   // consume retry slots and starve newer periods with eligible unpaid prizes.
-  const pending = (await env.DB.prepare(
-    `SELECT DISTINCT p.period_kind,p.period_start_ms
+  const unpaid = (await env.DB.prepare(
+    `SELECT p.period_kind,p.period_start_ms,p.telegram_id
        FROM nbg_london_prize_awards p
        LEFT JOIN telegram_anticheat_state a ON a.telegram_id=p.telegram_id
       WHERE p.paid_at_ms IS NULL AND COALESCE(a.is_blocked,0)=0
-      ORDER BY p.period_start_ms ASC LIMIT 50`
+      ORDER BY p.period_start_ms ASC`
   ).all()).results || [];
+  // KV-only blocked recipients cannot occupy any of the 50 retry slots.
+  // Scan before limiting, and recheck KV again in payPrize for each recipient.
+  const pending = new Map();
+  const kvChecks = new Map();
+  for (const row of unpaid) {
+    if (!kvChecks.has(row.telegram_id))
+      kvChecks.set(row.telegram_id, await isKvBlocked(env, row.telegram_id));
+    if (kvChecks.get(row.telegram_id)) continue;
+    const key = row.period_kind + ':' + row.period_start_ms;
+    if (!pending.has(key)) pending.set(key, row);
+    if (pending.size >= 50) break;
+  }
   const merged = new Map();
-  for (const row of [...open, ...pending]) merged.set(row.period_kind + ':' + row.period_start_ms, row);
+  for (const row of [...open, ...pending.values()])
+    merged.set(row.period_kind + ':' + row.period_start_ms, row);
   const reports = [];
   for (const row of merged.values()) {
     const period = { kind: row.period_kind, start: row.period_start_ms,
