@@ -93,14 +93,28 @@ const verify = async body => {
   return { ok: true, telegramId: id,
     linkedAccount: { username: id === '100' ? 'alpha' : 'bravo', first_name: 'Server' } };
 };
+// Test-only scorer: models results returned by a future trusted replay
+// simulator. It is NEVER passed from production. A client cannot install a
+// verifier by changing a request or Worker environment variable.
+const testReplayAuthority = async ({ replay }) => replay;
 function request(path, body) {
+  const payload = body && path.endsWith('/run/finish') && body.replay === undefined
+    ? { ...body, replay: {
+      complete: body.complete, time_ms: body.time_ms, xp: body.xp,
+      coins: body.coins, secret_coins: body.secret_coins,
+    } } : body;
   return new Request('https://moonboys-leaderboard.sercullen.workers.dev' + path, {
     method: body ? 'POST' : 'GET',
     headers: { Origin: 'https://cryptomoonboys.com', 'Content-Type': 'application/json' },
-    body: body ? JSON.stringify(body) : undefined
+    body: body ? JSON.stringify(payload) : undefined
   });
 }
 async function api(path, body) {
+  const response = await handleNbgLondonRecords(request(path, body), env, verify, testReplayAuthority);
+  return { status: response.status, ...(await response.json()) };
+}
+async function betaApi(path, body) {
+  // Exactly the production call site: NO authoritative verifier installed.
   const response = await handleNbgLondonRecords(request(path, body), env, verify);
   return { status: response.status, ...(await response.json()) };
 }
@@ -127,6 +141,35 @@ assert.equal(Number(sqlite.prepare("SELECT strftime('%s','now') AS epoch").get()
   fakeNow, 'D1 SQL cutoff and JavaScript period math must share the test clock');
 try {
   assert.equal((await api('/nbg-london/run/start', {})).status, 403, 'guests cannot create ranked runs');
+
+  // SECURITY REGRESSION: Neither Telegram verification nor payout flags
+  // authorize storing client-controlled scores without a trusted game engine.
+  env.NBG_LONDON_PRIZES_ENABLED = 'true';
+  env.NBG_LONDON_SCORE_AUTHORITY_ENABLED = 'true';
+  const sessionsBeforeHold = sqlite.prepare('SELECT COUNT(*) AS n FROM nbg_london_runs').get().n;
+  const fakeStart = await betaApi('/nbg-london/run/start', { telegram_auth: { id: '100' } });
+  assert.equal(fakeStart.status, 200);
+  assert.equal(fakeStart.ranked, false);
+  assert.equal(fakeStart.run_id, undefined, 'disabled ranking may not mint a scored session');
+  assert.equal(sqlite.prepare('SELECT COUNT(*) AS n FROM nbg_london_runs').get().n, sessionsBeforeHold);
+  const fakeFinish = await betaApi('/nbg-london/run/finish', {
+    telegram_auth: { id: '100' },
+    run_id: '00000000-0000-0000-0000-000000000001',
+    complete: true, time_ms: 65000, xp: 1000000, coins: 0, secret_coins: 0,
+  });
+  assert.equal(fakeFinish.status, 409, 'forged XP must be denied without replay authority');
+  assert.equal(fakeFinish.error, 'authoritative_scoring_unavailable');
+  assert.equal(sqlite.prepare('SELECT COUNT(*) AS n FROM nbg_london_records').get().n, 0);
+  assert.equal(sqlite.prepare('SELECT COUNT(*) AS n FROM nbg_london_period_scores').get().n, 0);
+  assert.deepEqual((await betaApi('/nbg-london/leaderboard?metric=xp')).records, [],
+    'pre-authority records never claim to be verified public scores');
+  const betaStandings = await betaApi('/nbg-london/competition?period=daily');
+  assert.deepEqual(betaStandings.standings, []);
+  assert.equal(betaStandings.payout_enabled, false,
+    'prize flags alone cannot advertise or enable payouts');
+  assert.equal((await betaApi('/nbg-london/me', { telegram_auth: { id: '100' } })).records, null);
+  delete env.NBG_LONDON_PRIZES_ENABLED;
+  delete env.NBG_LONDON_SCORE_AUTHORITY_ENABLED;
 
   async function submit(id, timeMs, xp) {
     const started = await api('/nbg-london/run/start', { telegram_auth: { id } });
@@ -157,6 +200,20 @@ try {
   await submit('200', 115000, 350);
   await submit('100', 105000, 200);
   await submit('100', 120000, 2000);
+
+  // Even with a trusted replay verifier installed, the raw browser counters
+  // must not override its independently calculated result.
+  const tamperedSession = await api('/nbg-london/run/start', { telegram_auth: { id: '100' } });
+  fakeNow += 130000;
+  const tampered = await api('/nbg-london/run/finish', {
+    telegram_auth: { id: '100' }, run_id: tamperedSession.run_id,
+    complete: true, time_ms: 130000, xp: 1000000, coins: 312, secret_coins: 6,
+    replay: { complete: true, time_ms: 130000, xp: 123, coins: 1, secret_coins: 0 },
+  });
+  assert.equal(tampered.status, 200);
+  assert.equal(tampered.xp, 123,
+    'recorded score must come from replay authority, never client-reported million XP');
+  fakeNow += 1000;
 
   const myBest = await api('/nbg-london/me', { telegram_auth: { id: '100' } });
   assert.equal(myBest.player, '@alpha', 'personal results use server-verified username');
