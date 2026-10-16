@@ -224,6 +224,9 @@
     // Same seeded gameplay randomness as the Worker replay authority.
     // Visual-only animation timing may differ, physics and rewards may not.
     var runRandomState = 0x9e3779b9;
+    var rankedChallengeSeed = null;
+    var rankedChallengeVersion = 1;
+    var pendingChallengeStart = null;
     function nextRunRandom() {
       runRandomState = (Math.imul(runRandomState, 1664525) + 1013904223) >>> 0;
       return runRandomState / 4294967296;
@@ -515,7 +518,7 @@
       for (var i = 0; i < runReplayFrames.length; i += 16384) {
         segments.push(String.fromCharCode.apply(null, runReplayFrames.slice(i, i + 16384)));
       }
-      return { version: 1, frames: btoa(segments.join('')) };
+      return { version: rankedChallengeVersion, frames: btoa(segments.join('')) };
     }
 
     function handleInput(step) {
@@ -527,11 +530,13 @@
       var spray = keys.KeyS || keys.KeyX || touch.spray || (replay && replay.control === 'spray');
 
       if (left) {
-        player.vx -= RUN_ACCEL * step;
+        player.vx -= RUN_ACCEL * (rankedChallengeVersion === 2 ?
+          0.80 + (rankedChallengeSeed % 37) / 100 : 1) * step;
         player.facing = -1;
       }
       if (right) {
-        player.vx += RUN_ACCEL * step;
+        player.vx += RUN_ACCEL * (rankedChallengeVersion === 2 ?
+          0.80 + (rankedChallengeSeed % 37) / 100 : 1) * step;
         player.facing = 1;
       }
       if (!left && !right) {
@@ -1382,6 +1387,14 @@
 
     function tick(time, sequence) {
       if (sequence !== runSequence) return;
+      // Ranked v2 first frame is a clock-initialization frame, NOT a physics
+      // or replay tick. This preserves held Jump/Left/Spray/touch inputs for
+      // the first positive-duration tick, avoiding rejected active 0ms starts.
+      if (rankedChallengeVersion === 2 && !lastTime) {
+        lastTime = time;
+        requestAnimationFrame(function(next){tick(next,sequence);});
+        return;
+      }
       if (!lastTime) lastTime = time;
       var frameElapsedMs = Math.round(Math.max(0, time - lastTime) * 10) / 10;
       var dt = Math.min(33, frameElapsedMs);
@@ -1494,6 +1507,9 @@
       runReplayFrames = [];
       replayInvalid = false;
       runRandomState = 0x9e3779b9;
+      rankedChallengeSeed = null;
+      rankedChallengeVersion = 1;
+      pendingChallengeStart = null;
       speedrunBonusXp = 0;
       comboCount = 0;
       comboExpiresAt = 0;
@@ -1602,6 +1618,40 @@
       if (running) return Promise.resolve(window.NBGLevel1State);
       if (!assetsLoaded) return init().then(beginGameplay);
       if (complete || gameOver) return Promise.resolve(window.NBGLevel1State);
+      // Only a separately released v2 ranked mode uses the pre-play
+      // handshake. Existing guest/legacy play stays synchronous and intact.
+      if (window.NBG_CHALLENGE_CLIENT_RELEASED === true &&
+          typeof window.NBG_REQUEST_RANKED_CHALLENGE === 'function' &&
+          !pendingChallengeStart) {
+        var expectedSequence = runSequence;
+        pendingChallengeStart = Promise.resolve()
+          .then(function(){return window.NBG_REQUEST_RANKED_CHALLENGE();})
+          .then(function(challenge){
+            if (runSequence !== expectedSequence) return window.NBGLevel1State;
+            if (!challenge || challenge.ranked !== true ||
+                challenge.replay_version !== 2 ||
+                !Number.isSafeInteger(challenge.challenge_seed) ||
+                challenge.challenge_seed < 0 || challenge.challenge_seed > 0xffffffff) {
+              // Guest/unavailable ranked challenge becomes practice; never
+              // pretend that a replay was challenge verified.
+              rankedChallengeVersion = 1;
+              rankedChallengeSeed = null;
+            } else {
+              rankedChallengeVersion = 2;
+              rankedChallengeSeed = challenge.challenge_seed;
+            }
+            pendingChallengeStart = null;
+            return beginGameplay();
+          }).catch(function(){
+            pendingChallengeStart = null;
+            // Failed challenge means no ranked v2 source; guest practice
+            // remains possible and the browser never blocks indefinitely.
+            rankedChallengeVersion = 1;
+            rankedChallengeSeed = null;
+            return beginGameplay();
+          });
+        return pendingChallengeStart;
+      }
       initialInputReplay = pendingInitialInput;
       pendingInitialInput = null;
       waitingForFirstInput = false;
@@ -1610,10 +1660,13 @@
       var sequence = runSequence;
       runReplayFrames = [];
       replayInvalid = false;
-      runRandomState = 0x9e3779b9;
+      runRandomState = rankedChallengeVersion === 2
+        ? rankedChallengeSeed >>> 0 : 0x9e3779b9;
       lastTime = 0;
       updateHud();
-      window.dispatchEvent(new CustomEvent('nbg-level-started', { detail: { level: 'london-level-1' } }));
+      window.dispatchEvent(new CustomEvent('nbg-level-started', {
+        detail: { level:'london-level-1', replay_version:rankedChallengeVersion }
+      }));
       requestAnimationFrame(function (time) { tick(time, sequence); });
       return Promise.resolve(window.NBGLevel1State);
     }
