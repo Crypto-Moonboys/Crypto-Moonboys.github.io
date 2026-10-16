@@ -18,6 +18,7 @@
   // starts for the SAME owner need ordering. Do not stall a newly linked owner.
   var serverStartQueues = new Map();
   var runIdentity = null;
+  var preparedStartGeneration = -1;
   var status = null;
   var tableBody = null;
   var account = null;
@@ -277,6 +278,20 @@
     }
   }
 
+  function beforeQueuedRun() {
+    var gate = window.MOONBOYS_IDENTITY;
+    var id = String(gate && gate.getTelegramId ? gate.getTelegramId() || '' : '');
+    if (!id || !gate.isTelegramLinked || !gate.isTelegramLinked() ||
+        !serverStartQueues.has(id)) return null;
+    // A same-owner HTTP start is still pending: create the replacement session
+    // BEFORE simulation begins so its real elapsed-time checks stay accurate.
+    // The later nbg-level-started event must not issue another /run/start.
+    var preparation = beginRankedRun();
+    preparedStartGeneration = generation;
+    setStatus('Waiting for previous ranked start before gameplay begins…');
+    return preparation;
+  }
+
   async function finishRankedRun(detail) {
     var current = generation;
     var sessionPromise = runPromise;
@@ -425,7 +440,14 @@
       displayIdentity();
       loadPersonal();
     });
-    window.addEventListener('nbg-level-started', beginRankedRun);
+    window.NBGLondonBeforeQueuedRun = beforeQueuedRun;
+    window.addEventListener('nbg-level-started', function () {
+      if (preparedStartGeneration === generation) {
+        preparedStartGeneration = -1;
+        return;
+      }
+      beginRankedRun();
+    });
     window.addEventListener('nbg-level-complete', function (event) {
       finishRankedRun(event.detail || {});
     });
