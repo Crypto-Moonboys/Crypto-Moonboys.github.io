@@ -6,6 +6,7 @@
  * v1 deliberately credits current UTC day only; old periods are NOT backfilled.
  */
 import { CLOUT_POLICY_VERSION, cloutDayKey } from './clout-policy.js';
+import { scoreRun, difficultyForPlayer } from '../routes/dead-run-core.js';
 
 const OWNER = /^\d{1,20}$/u;
 const START = /^\d{4}-\d{2}-\d{2}T00:00:00\.000Z$/u;
@@ -19,6 +20,11 @@ export const PILOT_SOURCE_POLICY = Object.freeze({
   moonpet_weekly_journey: Object.freeze([
     { kind: 'mission', fixed_points: 10 },
     { kind: 'variety', game_key: 'moonpet' },
+  ]),
+  // PR3A has a separate game gate; only settled, server-scored runs qualify.
+  dead_run: Object.freeze([
+    { kind: 'skill', game_key: 'dead-run', skill_source: 'verified_dead_run_score_v1' },
+    { kind: 'variety', game_key: 'dead-run' },
   ]),
 });
 
@@ -87,7 +93,76 @@ const SOURCE_QUERIES = Object.freeze({
     "  AND r.completed_objectives>=5",
     "ORDER BY c.crest_id LIMIT 11",
   ].join(' '),
+  dead_run: [
+    // Full source settlement plus exact matching accepted Arcade receipt.
+    "SELECT 'dead_run' AS source_system, s.session_id AS source_event_id,",
+    " s.ended_at AS earned_at, NULL AS source_pet_id, s.started_at,",
+    " s.score AS verified_score, s.xp_awarded AS awarded_game_xp,",
+    " s.verified_distance_m, s.survival_seconds, s.kills, s.crates, s.shove_count,",
+    " s.difficulty_xp_basis, s.difficulty_best_basis, s.difficulty_runs_basis,",
+    " a.reason AS settlement_reason",
+    "FROM dead_run_sessions s",
+    "JOIN arcade_progression_events a ON a.id='dead_run:' || s.session_id",
+    " AND a.telegram_id=s.telegram_id AND a.client_run_id=s.session_id",
+    " AND a.game='dead-run' AND a.status='accepted'",
+    " AND a.reason IN ('verified_gps_run','verified_gps_horde_event')",
+    " AND a.raw_score=s.score AND a.xp_awarded=s.xp_awarded",
+    "WHERE s.telegram_id=? AND substr(s.ended_at,1,10)=?",
+    " AND s.ended_at>=? AND s.ended_at>=s.started_at",
+    " AND s.status='finished' AND s.ranked=1",
+    " AND s.suspicious_points<6 AND s.verified_distance_m>=40",
+    " AND s.survival_seconds>=20 AND s.score>0 AND s.xp_awarded>0",
+    " AND s.player_stats_applied=1 AND s.arcade_xp_applied=1",
+    " AND s.horde_applied=1",
+    " AND s.start_lat IS NULL AND s.start_lng IS NULL",
+    " AND s.last_lat IS NULL AND s.last_lng IS NULL",
+    "ORDER BY s.ended_at,s.session_id LIMIT 11",
+  ].join(' '),
 });
+
+/**
+ * Fixed skill v1: a monotonically increasing server-score curve (0..99).
+ * No conversion of Arcade XP, game XP, or client-submitted points.
+ */
+export function normalizeDeadRunSkill(verifiedScore) {
+  if (!Number.isSafeInteger(verifiedScore) || verifiedScore < 0 ||
+      verifiedScore > 1_000_000) throw new Error('clout_dead_run_score_out_of_range');
+  return Math.floor(verifiedScore * 100 / (verifiedScore + 5000));
+}
+
+function verifiedDeadRunScore(row) {
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+    String(row.source_event_id || '')
+  )) throw new Error('clout_dead_run_invalid_session_id');
+  const startedMs = Date.parse(row.started_at);
+  const endedMs = Date.parse(row.earned_at);
+  if (!Number.isSafeInteger(startedMs) || !Number.isSafeInteger(endedMs) ||
+      startedMs >= endedMs) throw new Error('clout_dead_run_invalid_settlement_clock');
+  for (const key of ['survival_seconds','kills','crates','shove_count',
+    'difficulty_xp_basis','difficulty_best_basis','difficulty_runs_basis']) {
+    if (!Number.isSafeInteger(row[key]) || row[key] < 0)
+      throw new Error('clout_dead_run_invalid_' + key);
+  }
+  if (typeof row.verified_distance_m !== 'number' ||
+      !Number.isFinite(row.verified_distance_m) || row.verified_distance_m < 40)
+    throw new Error('clout_dead_run_invalid_distance');
+  const difficulty = difficultyForPlayer({
+    xp_total: row.difficulty_xp_basis,
+    best_survival_seconds: row.difficulty_best_basis,
+    runs_total: row.difficulty_runs_basis,
+  });
+  const expected = scoreRun({
+    verified_distance_m: row.verified_distance_m,
+    survival_seconds: row.survival_seconds,
+    kills: row.kills, crates: row.crates, shove_count: row.shove_count,
+  }, difficulty);
+  const multiplier = row.settlement_reason === 'verified_gps_horde_event' ? 1.1 : 1;
+  const expectedXp = Math.min(275, Math.floor(expected.xp * multiplier));
+  if (expected.score !== row.verified_score ||
+      expectedXp !== row.awarded_game_xp || expected.score <= 0 || expectedXp <= 0)
+    throw new Error('clout_dead_run_settlement_mismatch');
+  return normalizeDeadRunSkill(expected.score);
+}
 
 function validSourceTime(value, day, lower, now) {
   if (typeof value !== 'string') throw new Error('clout_source_time_invalid');
@@ -107,7 +182,7 @@ function prepareWrites(db, receipt, effect, nowMs) {
   ].join(' ')).bind(
     receipt.source_system, receipt.source_event_id, CLOUT_POLICY_VERSION,
     receipt.owner, receipt.day_key, receipt.earned_at_ms,
-    nowMs, 'server_receipt', nowMs,
+    nowMs, receipt.verification_kind || 'server_receipt', nowMs,
   );
 
   // Always read the immutable parent to carry its ORIGINAL verification stamp;
@@ -125,7 +200,7 @@ function prepareWrites(db, receipt, effect, nowMs) {
     'AND s.telegram_id=? AND s.day_key=? AND s.earned_at_ms=?',
   ].join(' ')).bind(
     kind, effect.game_key ?? null, receipt.source_pet_id ?? null,
-    null, effect.fixed_points ?? null,
+    effect.normalized_skill ?? null, effect.fixed_points ?? null,
     receipt.source_system, receipt.source_event_id, CLOUT_POLICY_VERSION,
     receipt.owner, receipt.day_key, receipt.earned_at_ms,
   );
@@ -208,12 +283,20 @@ export async function syncCloutPilotForVerifiedOwner(db, telegramId, options = {
 
   const receipts = new Map();
   for (const [sourceKind, query] of Object.entries(SOURCE_QUERIES)) {
-    const results = readRows(await db.prepare(query).bind(owner, day).all());
+    if (sourceKind === 'dead_run' && options.deadRunEnabled !== true) continue;
+    const args = sourceKind === 'dead_run' ? [owner, day, options.startAt] : [owner, day];
+    const results = readRows(await db.prepare(query).bind(...args).all());
     if (results.length > 10) throw new Error('clout_pilot_source_limit_exceeded');
     for (const row of results) {
       const earnedAtMs = validSourceTime(row.earned_at, day, startAtMs, nowMs);
       if (typeof row.source_event_id !== 'string' || !row.source_event_id ||
-          row.source_event_id.length > 180 || !['moonpet', 'telegram_daily'].includes(row.source_system)) {
+          row.source_event_id.length > 180 ||
+          row.source_system !== ({
+            telegram_daily: 'telegram_daily',
+            moonpet_daily_journey: 'moonpet',
+            moonpet_weekly_journey: 'moonpet',
+            dead_run: 'dead_run',
+          })[sourceKind]) {
         throw new Error('clout_pilot_invalid_source_receipt');
       }
       const receiptKey = row.source_system + ':' + row.source_event_id;
@@ -222,9 +305,13 @@ export async function syncCloutPilotForVerifiedOwner(db, telegramId, options = {
         throw new Error('clout_pilot_conflicting_source_receipt');
       }
       if (prior) throw new Error('clout_pilot_duplicate_authority_row');
+      const normalizedSkill = sourceKind === 'dead_run'
+        ? verifiedDeadRunScore(row) : null;
       receipts.set(receiptKey, {
         sourceKind, source_system: row.source_system, source_event_id: row.source_event_id,
         source_pet_id: row.source_pet_id || null,
+        verification_kind: sourceKind === 'dead_run' ? 'server_settlement' : 'server_receipt',
+        normalized_skill: normalizedSkill,
         owner, day_key: day, earned_at_ms: earnedAtMs,
       });
     }
@@ -236,7 +323,12 @@ export async function syncCloutPilotForVerifiedOwner(db, telegramId, options = {
     const effects = PILOT_SOURCE_POLICY[receipt.sourceKind];
     const { source } = prepareWrites(db, receipt, effects[0], nowMs);
     statements.push(source);
-    for (const effect of effects) statements.push(prepareWrites(db, receipt, effect, nowMs).effectInsert);
+    for (const effect of effects) {
+      // Only independently recomputed scoreRun() results can mint Skill.
+      const trusted = effect.skill_source === 'verified_dead_run_score_v1'
+        ? { ...effect, normalized_skill: receipt.normalized_skill } : effect;
+      statements.push(prepareWrites(db, receipt, trusted, nowMs).effectInsert);
+    }
   }
   statements.push(db.prepare(PILOT_REPROJECT_SQL).bind(
     owner, day, CLOUT_POLICY_VERSION, owner, day, CLOUT_POLICY_VERSION, nowMs,
