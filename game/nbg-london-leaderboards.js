@@ -283,7 +283,62 @@
     }
   }
 
+  function installFullscreenRecordsDrawer() {
+    // The reusable Arcade shell moves only .game-card into its opaque overlay.
+    // Move this SAME live records panel to a scrollable drawer on that overlay;
+    // no cloning, duplicate IDs, or inaccessible content behind the game.
+    var overlay = document.getElementById('game-overlay');
+    var toolbar = document.getElementById('overlay-ctrl-bar');
+    var board = document.getElementById('nbg-record-board');
+    if (!overlay || !toolbar || !board || document.getElementById('nbg-record-drawer')) return;
+
+    var open = document.createElement('button');
+    open.id = 'nbg-open-records';
+    open.type = 'button';
+    open.textContent = 'Scores';
+    open.setAttribute('aria-label', 'View London scores and saved results');
+    open.setAttribute('aria-controls', 'nbg-record-drawer');
+    open.setAttribute('aria-expanded', 'false');
+    toolbar.appendChild(open);
+
+    var drawer = document.createElement('section');
+    drawer.id = 'nbg-record-drawer';
+    drawer.setAttribute('role', 'region');
+    drawer.setAttribute('aria-label', 'London scores and saved results');
+    drawer.hidden = true;
+
+    var close = document.createElement('button');
+    close.id = 'nbg-close-records';
+    close.type = 'button';
+    close.textContent = 'Close scores and return to game';
+    drawer.appendChild(close);
+    drawer.appendChild(board);
+    overlay.appendChild(drawer);
+
+    function setOpen(visible) {
+      drawer.hidden = !visible;
+      open.setAttribute('aria-expanded', String(visible));
+      if (visible) {
+        drawer.scrollTop = 0;
+        close.focus();
+      } else {
+        open.focus();
+      }
+    }
+    open.addEventListener('click', function () { setOpen(drawer.hidden); });
+    close.addEventListener('click', function () { setOpen(false); });
+    // Capture Escape before the fullscreen-only shell redirects to /games/.
+    document.addEventListener('keydown', function (event) {
+      if (!drawer.hidden && event.key === 'Escape') {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        setOpen(false);
+      }
+    }, true);
+  }
+
   function init() {
+    installFullscreenRecordsDrawer();
     status = document.getElementById('nbg-record-status');
     account = document.getElementById('nbg-record-account');
     personal = document.getElementById('nbg-record-personal');
