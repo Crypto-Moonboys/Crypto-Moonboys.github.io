@@ -66,6 +66,7 @@ export const REQUIRED_D1_MIGRATIONS = Object.freeze([
   '097_moonpet_room_furniture.sql',
   '098_nbg_london_records.sql',
   '099_nbg_london_competition_prizes.sql',
+  '100_championship_clout_foundation.sql',
 ]);
 
 function readJson(filePath, label) {
