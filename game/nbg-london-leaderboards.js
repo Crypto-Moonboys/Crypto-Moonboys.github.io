@@ -80,7 +80,9 @@
       if (requested !== competitionPeriod || requestNumber !== prizeRequestNumber) return;
       prizeRows.replaceChildren();
       var cutoff = document.getElementById('nbg-prize-cutoff');
-      if (cutoff) cutoff.textContent = result.payout_enabled ?
+      if (cutoff) cutoff.textContent = result.scores_enabled === false ?
+        'BETA PRACTICE — official score saving and prize payouts are locked until server gameplay verification is available.' :
+        result.payout_enabled ?
         requested.charAt(0).toUpperCase() + requested.slice(1) +
           ' VERIFIED XP prize standings close ' + new Date(result.end_ms).toUTCString() +
           '. Prizes use only verified XP, not practice totals.' :
@@ -91,7 +93,9 @@
         var empty = document.createElement('tr');
         var blank = document.createElement('td');
         blank.colSpan = 4;
-        blank.textContent = 'No verified completed runs in this period yet.';
+        blank.textContent = result.scores_enabled === false ?
+          'Official competition standings are paused during beta testing.' :
+          'No verified completed runs in this period yet.';
         empty.appendChild(blank);
         prizeRows.appendChild(empty);
         return;
@@ -136,7 +140,9 @@
       if (hudName) hudName.textContent = result.player.slice(0, 36);
       if (account) account.textContent = 'Telegram: ' + result.player;
       if (!result.records) {
-        personal.textContent = result.player + ' — no completed ranked runs yet.';
+        personal.textContent = result.scores_enabled === false ?
+          result.player + ' — beta practice only; official bests are not being saved.' :
+          result.player + ' — no completed ranked runs yet.';
         return;
       }
       personal.textContent = result.player + ' | Best time: ' + formatTime(result.records.fastest_ms) +
@@ -171,7 +177,9 @@
         var emptyRow = document.createElement('tr');
         var cell = document.createElement('td');
         cell.colSpan = 5;
-        cell.textContent = 'No verified completed runs yet.';
+        cell.textContent = result.scores_enabled === false ?
+          'Beta testing — official scores are paused until anti-cheat verification is ready.' :
+          'No verified completed runs yet.';
         emptyRow.appendChild(cell);
         tableBody.appendChild(emptyRow);
       } else {
@@ -228,7 +236,12 @@
     try {
       var result = await runPromise;
       if (current !== generation) return;
-      if (result && result.run_id) {
+      if (result && result.ranked === false) {
+        var betaHudName = document.getElementById('nbg-hud-player');
+        if (betaHudName) betaHudName.textContent = result.player.slice(0, 36);
+        if (account) account.textContent = 'Playing as ' + result.player + ' (beta)';
+        setStatus('Beta practice: gameplay works, but official scores are not saved until server verification is ready.');
+      } else if (result && result.run_id) {
         var hudName = document.getElementById('nbg-hud-player');
         if (hudName) hudName.textContent = result.player.slice(0, 36);
         if (account) account.textContent = 'Playing as ' + result.player;
@@ -251,7 +264,9 @@
     try {
       var session = await sessionPromise;
       if (current !== generation || !session || !session.run_id) {
-        if (current === generation) setStatus('Run not ranked: no verified Telegram start session.');
+        if (current === generation) setStatus(session && session.ranked === false ?
+          'Practice run completed. Official XP and records were not saved during beta.' :
+          'Run not ranked: no verified Telegram start session.');
         return;
       }
       var gate = window.MOONBOYS_IDENTITY;
@@ -392,10 +407,10 @@
       runPromise = null;
       runIdentity = null;
       displayIdentity();
-      setStatus('Fresh run ready. Only completed, Telegram-verified runs are saved.');
+      setStatus('Fresh beta run ready. Official score saving requires server replay verification.');
     });
     window.addEventListener('nbg-game-over', function () {
-      setStatus('Game over. Only completed runs count toward permanent leaderboards.');
+      setStatus('Game over. Beta practice scores are not saved to official leaderboards.');
     });
     loadLeaders();
     loadPersonal();
