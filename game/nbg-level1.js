@@ -477,7 +477,7 @@
       var wasDown = !!keys[e.code];
       keys[e.code] = down;
       if (down && !wasDown && getControlForCode(e.code) === 'jump') {
-        pendingJumpPresses = Math.min(2, pendingJumpPresses + 1);
+        pendingJumpPresses = Math.min(3, pendingJumpPresses + 1);
       }
       if (e.code === 'ArrowDown') e.preventDefault();
       if (isStartInputCode(e.code)) {
@@ -1737,7 +1737,7 @@
         if (Object.prototype.hasOwnProperty.call(touch, control)) {
           touch[control] = active;
           if (active) {
-            if (control === 'jump') pendingJumpPresses = Math.min(2, pendingJumpPresses + 1);
+            if (control === 'jump') pendingJumpPresses = Math.min(3, pendingJumpPresses + 1);
             if (control !== 'look') {
               queueInitialInput(control);
               beginGameplay(control);
