@@ -231,4 +231,41 @@ assert.equal(requests('/run/start').length, startsBeforeSwap + 2,
   'stale A completion must not issue an additional request');
 assert.equal(requests('/run/finish').length, finishesBeforeSwap + 1);
 
+// A rejected fetch may still commit its D1 start on the Worker later.
+// The client must NOT issue a replacement same-owner start on that uncertain
+// session, even if it was already queued before the network failure.
+telegramId = '200';
+linked = true;
+nextAuth = async () => auth('200');
+await emit('nbg-level-reset');
+const beforeUncertain = requests('/run/start').length;
+let failPendingStart;
+heldStartResponse = new Promise((resolve, reject) => { failPendingStart = reject; });
+await emit('nbg-level-started');
+assert.equal(requests('/run/start').length, beforeUncertain + 1);
+await emit('nbg-level-reset');
+const waitingAfterFailure = window.NBGLondonBeforeQueuedRun();
+assert.equal(typeof waitingAfterFailure?.then, 'function',
+  'same-owner replacement must initially wait for unresolved start');
+failPendingStart(new TypeError('transport disconnected after POST'));
+await waitingAfterFailure;
+await flush();
+assert.equal(requests('/run/start').length, beforeUncertain + 1,
+  'uncertain old start must block queued replacement POST before it reaches D1');
+assert.match(elements.get('nbg-record-status').textContent, /Practice only/,
+  'player must be told the next run is practice until refresh');
+await emit('nbg-level-started');
+await emit('nbg-level-reset');
+await emit('nbg-level-started');
+assert.equal(requests('/run/start').length, beforeUncertain + 1,
+  'same owner must not resume ranked starts after indeterminate network failure');
+telegramId = '300';
+nextAuth = async () => auth('300');
+await emit('moonboys:identity-change');
+await emit('nbg-level-reset');
+await emit('nbg-level-started');
+assert.equal(requests('/run/start').length, beforeUncertain + 2,
+  'unrelated account remains free to start ranked while owner 200 is practice-only');
+assert.equal(requests('/run/start').at(-1).body.telegram_auth.id, '300');
+
 console.log('[PASS] NBG London start/finish Telegram account-race protection');
