@@ -4,6 +4,7 @@ import { applyPetRuntimeCommandAward } from './worker.js';
 import { recoverPetRuntimeAwards } from './pets/runtime-recovery.js';
 import { handleDeadRunRequest, cleanupExpiredSessions } from './routes/dead-run.js';
 import { syncCloutPilotForVerifiedOwner } from './championship/clout-pilot.js';
+import { verifyTelegramMiniAppInitData } from './pets/mini-app-auth.js';
 
 const PROGRESSION_API_ACTIONS = Object.freeze({
   feed: 'feed',
@@ -288,6 +289,27 @@ async function projectCloutForAuthenticatedWebhook(env, update, response) {
   }
 }
 
+// Signed Moonpet Mini App actions are another receipt-owning entry point.
+// Recheck Telegram's signed init_data independently; do NOT read telegram_id
+// from the action body. The existing base handler still owns game acceptance.
+async function projectCloutForAuthenticatedMiniApp(env, body, response) {
+  if (!response?.ok || env?.CHAMPIONSHIP_CLOUT_PILOT_ENABLED !== 'true' ||
+      !env?.DB || !env?.TELEGRAM_BOT_TOKEN || !body) return;
+  const verified = await verifyTelegramMiniAppInitData(
+    body.init_data, env.TELEGRAM_BOT_TOKEN, { max_age_seconds: 3600 }
+  );
+  if (!verified.ok) return;
+  try {
+    await syncCloutPilotForVerifiedOwner(env.DB, verified.telegramId, {
+      enabled: true, startAt: env.CHAMPIONSHIP_CLOUT_PILOT_START_AT,
+    });
+  } catch (error) {
+    console.log('[moonboys-api]', JSON.stringify({
+      event: 'clout_pilot_mini_app_sync_failed', reason: String(error?.message || error),
+    }));
+  }
+}
+
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
@@ -303,7 +325,8 @@ export default {
     if (deadRunResponse) return deadRunResponse;
 
     const isPetAction = url.pathname === '/telegram-pets/action' && request.method === 'POST';
-    const body = (isPetAction || isTelegramWebhook) ? await readJsonSafe(request) : null;
+    const isMiniAppPetAction = path === '/telegram-pets/app/action' && request.method === 'POST';
+    const body = (isPetAction || isMiniAppPetAction || isTelegramWebhook) ? await readJsonSafe(request) : null;
 
     if (isPetAction && body) {
       const runtimeAction = PROGRESSION_API_ACTIONS[String(body.action || '').trim().toLowerCase()];
@@ -327,6 +350,9 @@ export default {
     if (isTelegramWebhook && body && response.ok) {
       await repairTelegramRunRuntimeAward(env, body);
       await projectCloutForAuthenticatedWebhook(env, body, response);
+    }
+    if (isMiniAppPetAction && body && response.ok) {
+      await projectCloutForAuthenticatedMiniApp(env, body, response);
     }
 
     return response;
