@@ -1,4 +1,6 @@
 import assert from 'node:assert/strict';
+import { createHmac } from 'node:crypto';
+import { verifyTelegramMiniAppInitData } from '../workers/moonboys-api/pets/mini-app-auth.js';
 import { test } from 'node:test';
 import { readFileSync } from 'node:fs';
 import { DatabaseSync } from 'node:sqlite';
@@ -246,6 +248,26 @@ test('PR2 must not expose a browser write route, economy mutation or enabled def
   assert.match(entry, /verifyTelegramWebhookSecret\(request, env\)/);
   assert.match(entry, /projectCloutForAuthenticatedWebhook\(env, body, response\)/);
   assert.match(entry, /CHAMPIONSHIP_CLOUT_PILOT_ENABLED !== 'true'/);
+  assert.match(entry, /isMiniAppPetAction && body && response\.ok/);
+  assert.match(entry, /verifyTelegramMiniAppInitData\(/);
+  assert.match(entry, /projectCloutForAuthenticatedMiniApp\(env, body, response\)/);
   assert.doesNotMatch(entry, /\/championship\/clout\/pilot\/sync/);
   assert.doesNotMatch(pilot, /UPDATE arcade_xp_wallets|UPDATE telegram_users SET xp|INSERT INTO telegram_xp_log/);
+});
+
+test('Mini App signature binds the actor: tampered owner cannot authorize a Clout sync', async () => {
+  const botToken = 'bot-token-for-test-only';
+  const params = new URLSearchParams({
+    auth_date: String(Math.floor(Date.now() / 1000)),
+    user: JSON.stringify({ id: Number(OWNER), first_name: 'Fixture' }),
+  });
+  const check = [...params.entries()].sort(([a], [b]) => a.localeCompare(b))
+    .map(([key, value]) => key + '=' + value).join('\n');
+  const secret = createHmac('sha256', 'WebAppData').update(botToken).digest();
+  params.set('hash', createHmac('sha256', secret).update(check).digest('hex'));
+  const verified = await verifyTelegramMiniAppInitData(params.toString(), botToken);
+  assert.equal(verified.ok, true);
+  assert.equal(verified.telegramId, OWNER);
+  params.set('user', JSON.stringify({ id: 200, first_name: 'Attacker' }));
+  assert.equal((await verifyTelegramMiniAppInitData(params.toString(), botToken)).ok, false);
 });
