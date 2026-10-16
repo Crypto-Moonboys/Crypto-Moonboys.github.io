@@ -1643,6 +1643,44 @@ await page.evaluate(() => {
   delete window.__nbgReleaseQueuedStart;
 });
 
+// A single queued Jump press (keyboard or touch) must not consume the
+// second jump. The input layer already stores it in pendingJumpPresses; the
+// queued-start replay must not duplicate it on the first positive-time tick.
+for (const mode of ['keyboard', 'touch']) {
+  await page.evaluate(() => {
+    window.__nbgOriginalQueuedStart = window.NBGLondonBeforeQueuedRun;
+    window.NBGLondonBeforeQueuedRun = () => new Promise(resolve => {
+      window.__nbgReleaseQueuedStart = resolve;
+    });
+  });
+  if (mode === 'keyboard') {
+    await page.keyboard.press('w');
+  } else {
+    await page.evaluate(() => {
+      window.NBGLevel1Runtime.setTouchControl('jump', true);
+      window.NBGLevel1Runtime.setTouchControl('jump', false);
+    });
+  }
+  await page.waitForFunction(() => typeof window.__nbgReleaseQueuedStart === 'function');
+  assert.deepEqual(await page.evaluate(() => ({
+    running: window.NBGLevel1State.running,
+    elapsed: window.NBGLevel1State.runElapsedMs,
+  })), { running: false, elapsed: 0 },
+  mode + ' Jump must not advance physics during queued start');
+  await page.evaluate(() => window.__nbgReleaseQueuedStart());
+  await page.waitForFunction(() => window.NBGLevel1State.running &&
+    window.NBGLevel1State.runElapsedMs > 50 && window.NBGLevel1State.jumpsUsed > 0);
+  await page.waitForTimeout(100);
+  assert.equal(await page.evaluate(() => window.NBGLevel1State.jumpsUsed), 1,
+    mode + ' single queued Jump must consume only first jump, not double jump');
+  await page.evaluate(() => {
+    window.NBGLevel1Runtime.reset();
+    window.NBGLondonBeforeQueuedRun = window.__nbgOriginalQueuedStart;
+    delete window.__nbgOriginalQueuedStart;
+    delete window.__nbgReleaseQueuedStart;
+  });
+}
+
 // Resetting while a signed handshake is pending must not revive a stale run.
 await page.evaluate(() => {
   window.__nbgOriginalQueuedStart = window.NBGLondonBeforeQueuedRun;
