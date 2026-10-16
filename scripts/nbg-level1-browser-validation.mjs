@@ -769,6 +769,48 @@ for (const entry of [
   }
 }
 
+// P1 real-browser v2 gameplay-gate parity: each saved challenge bit controls
+// an actual required direction at the first crossing of a world checkpoint.
+// Test both a matching and a mismatching seed without enabling production.
+for(const trial of [
+  {seed:0xffffffff,expectedFailure:false,label:'right gate'},
+  {seed:0,expectedFailure:true,label:'left gate'},
+]){
+  const gatePage=await browser.newPage({viewport:{width:960,height:540}});
+  try{
+    await gatePage.goto(url,{waitUntil:'networkidle'});
+    await gatePage.waitForFunction(()=>
+      window.NBGLevel1State?.assetsLoaded===true && !window.NBGLevel1State.running,
+      null,{timeout:5000});
+    await gatePage.evaluate(seed=>{
+      window.NBG_CHALLENGE_CLIENT_RELEASED=true;
+      window.NBG_REQUEST_RANKED_CHALLENGE=async()=>({
+        ranked:true,replay_version:2,challenge_seed:seed,
+      });
+    },trial.seed);
+    await gatePage.keyboard.down('ArrowRight');
+    await gatePage.waitForFunction(()=>
+      window.NBGLevel1State?.running===true && window.NBGLevel1State.rankedChallengeVersion===2,
+      null,{timeout:5000});
+    await gatePage.evaluate(()=>{
+      const p=window.NBGLevel1State.player;
+      p.x=1880;p.vx=4.2;p.y=214-p.h;p.vy=0;p.grounded=true;
+    });
+    await gatePage.waitForFunction(()=>window.NBGLevel1State?.rankedChallengeGateIndex===1,
+      null,{timeout:5000});
+    const gateState=await gatePage.evaluate(()=>({
+      missed:window.NBGLevel1State.rankedChallengeGateFailed,
+      hud:document.getElementById('hud-state')?.textContent,
+    }));
+    assert.equal(gateState.missed,trial.expectedFailure,
+      trial.label+' must be checked against the real movement control');
+    assert.match(gateState.hud,trial.expectedFailure
+      ? /TAG MISSED - NOT RANKED/ : /TAG 2\/32: HOLD RIGHT/,
+      trial.label+' should have an unambiguous in-game result');
+    await gatePage.keyboard.up('ArrowRight');
+  }finally{await gatePage.close();}
+}
+
 await page.keyboard.down('ArrowRight');
 await page.waitForFunction(() => window.NBGLevel1State?.running === true, null, { timeout: 5000 });
 await page.waitForTimeout(450);
