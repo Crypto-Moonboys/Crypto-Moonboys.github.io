@@ -281,7 +281,6 @@ async function projectCloutForAuthenticatedWebhook(env, update, response) {
     await syncCloutPilotForVerifiedOwner(env.DB, owner, {
       enabled: true, startAt: env.CHAMPIONSHIP_CLOUT_PILOT_START_AT,
       deadRunEnabled: env.CHAMPIONSHIP_CLOUT_DEAD_RUN_ENABLED === 'true',
-      deadRunEnabled: env.CHAMPIONSHIP_CLOUT_DEAD_RUN_ENABLED === 'true',
     });
   } catch (error) {
     // Never turn a successful source award into a second XP/pet award or
@@ -305,6 +304,7 @@ async function projectCloutForAuthenticatedMiniApp(env, body, response) {
   try {
     await syncCloutPilotForVerifiedOwner(env.DB, verified.telegramId, {
       enabled: true, startAt: env.CHAMPIONSHIP_CLOUT_PILOT_START_AT,
+      deadRunEnabled: env.CHAMPIONSHIP_CLOUT_DEAD_RUN_ENABLED === 'true',
     });
   } catch (error) {
     console.log('[moonboys-api]', JSON.stringify({
