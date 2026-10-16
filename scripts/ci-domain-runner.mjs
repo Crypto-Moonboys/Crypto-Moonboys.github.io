@@ -193,6 +193,11 @@ const GROUPS = {
     ['node', '--test', 'scripts/moonpet-beta-xp-quarantine.test.mjs'],
   ],
   arcade: [
+    // #1530 PR3B: real replay simulation + durable source integrity regressions.
+    ['node', 'scripts/nbg-london-replay.test.mjs'],
+    ['node', 'scripts/nbg-london-records.test.mjs'],
+    ['node', 'scripts/nbg-london-client-auth.test.mjs'],
+    ['node', '--test', 'scripts/nbg-london-verified-receipts.test.mjs'],
     ['node', '--test', 'scripts/meme-swarm-mobile.test.mjs'],
     ['node', '--test', 'scripts/telegram-progression-auth.test.mjs'],
     ['npm', 'run', 'test:btqm-runtime-assets'],
