@@ -258,7 +258,7 @@
       // revoke a newer run. Other Telegram owners must not be blocked by it.
       var previousStart = serverStartQueues.get(startingId) || Promise.resolve();
       var queuedStart = previousStart.then(async function () {
-        if (current !== generation ||
+        if (current !== generation || uncertainStartOwners.has(startingId) ||
             String(gate.getTelegramId() || '') !== startingId ||
             !gate.isTelegramLinked()) return null;
         var started;
@@ -297,7 +297,9 @@
         if (account) account.textContent = 'Playing as ' + result.player;
         setStatus('Ranked run active — completed results are saved to your Telegram name.');
       } else {
-        setStatus('Run not ranked: Telegram account changed during login verification.');
+        setStatus(uncertainStartOwners.has(startingId) ?
+          'Practice only: prior ranked start lost connection. Refresh the page before retrying official scores.' :
+          'Run not ranked: Telegram account changed during login verification.');
       }
     } catch (error) {
       if (current === generation) setStatus('Ranked run unavailable: ' + error.message + '. No score will be saved.');
