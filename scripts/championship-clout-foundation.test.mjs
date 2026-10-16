@@ -125,8 +125,8 @@ test('weekly / quarter / annual sums and tie breakers remain stable and determin
     snapshot('300','2026-07-16',40,['moonpet-contract']),
   ];
   const quarter=projectCloutLeaderboard(rows,'quarterly',MID);
-  assert.deepEqual(quarter.rows.map(r=>r.telegram_id), ['100','200','300']);
-  assert.deepEqual(quarter.rows.map(r=>r.total_points), [45,45,0].filter(n=>n>0)); // prior quarter excluded
+  assert.deepEqual(quarter.rows.map(r=>r.telegram_id), ['100','200']);
+  assert.deepEqual(quarter.rows.map(r=>r.total_points), [45,45]); // July prior quarter excluded
   assert.equal(quarter.rows[0].distinct_games,3);
   assert.equal(quarter.rows[0].active_days,2);
   const week=projectCloutLeaderboard(rows,'weekly',MID);
