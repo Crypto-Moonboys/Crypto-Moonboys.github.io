@@ -20,6 +20,16 @@ assert.equal((await verifyNbgLondonReplay({
   ...base, replay:forgedTime
 })).valid, false, 'input frames cannot simulate more time than actually elapsed');
 
+// Adjacent-frame grounded jump + double-jump is valid game input, not a
+// malformed replay even though this short input stream cannot finish.
+const quickDouble = frameStream(Array.from({length:40},(_,i) =>
+  [33,33,2 | (i<2?4:0)]));
+const quickDoubleResult = await verifyNbgLondonReplay({
+  ...base, replay:quickDouble, debug:true
+});
+assert.equal(quickDoubleResult.debug?.reason, 'finish',
+  'the Worker must accept adjacent-frame double jump transitions');
+
 const invalid = await verifyNbgLondonReplay({ ...base, replay: {
   version:1, frames:'obviously-invalid'
 } });
