@@ -145,7 +145,8 @@ export async function handleNbgLondonRecords(request, env, verifyIdentity, verif
         end_ms: start + (kind === 'daily' ? 86400000 : kind === 'weekly' ? 604800000 : 7776000000),
         prizes: PRIZE_ARCADE_XP[kind],
         payout_enabled: payoutEnabled,
-        ranking_basis: payoutEnabled ? 'trusted_xp' : 'practice_xp',
+        scores_enabled: true,
+        ranking_basis: payoutEnabled ? 'trusted_xp' : 'verified_game_xp',
         standings: payoutEnabled ? verifiedStandings : practiceStandings,
       });
     }
@@ -167,7 +168,7 @@ export async function handleNbgLondonRecords(request, env, verifyIdentity, verif
         'LEFT JOIN telegram_anticheat_state a ON a.telegram_id = r.telegram_id ' +
         'WHERE COALESCE(a.is_blocked, 0) = 0 ORDER BY ' + METRICS[metric]);
       return json(request, {
-        ok: true, metric, records: publicRows.map((row, index) => ({
+        ok: true, metric, scores_enabled: true, records: publicRows.map((row, index) => ({
           rank: index + 1, name: row.display_name, time_ms: row.time_ms, xp: row.xp, value: row.value,
         })),
       });
