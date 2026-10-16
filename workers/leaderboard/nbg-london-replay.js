@@ -18,7 +18,7 @@ const overlap = (a, b) => a.x < b.x + b.w && a.x + a.w > b.x &&
   a.y < b.y + b.h && a.y + a.h > b.y;
 export const NBG_REPLAY_VERSION = 1;
 
-function levelData() {
+function levelData(courseVersion = 1) {
   const platforms = [
     { x: 360, y: 178, w: 150, h: 16 },
     { x: 720, y: 154, w: 132, h: 16 },
@@ -67,6 +67,10 @@ function levelData() {
     const tiers = [{xp:250,size:32},{xp:250,size:32},{xp:500,size:40},{xp:1000,size:50}];
     const tier = tiers[i%4];
     coins.push({ x:x+404, y:ledges[1].y-75, size:tier.size, xp:tier.xp });
+    if (courseVersion===2) {
+      secrets.push({ x:x+405,y:-94-i%3*9,r:8,xp:500 });
+      secrets.push({ x:x+865,y:-102-i%2*10,r:8,xp:500 });
+    }
     if (i>=6) {
       const special=i%3===0 ? {xp:500,size:40}:{xp:250,size:32};
       coins.push({ x:x+866, y:ledges[3].y-62, size:special.size, xp:special.xp });
@@ -80,9 +84,9 @@ function levelData() {
     if (i>=8 && i%3===0) hazards.push({ x:x+1000, y:FLOOR-24, w:34, h:24 });
     enemies.push({ x:x+435,y:FLOOR-42,w:28,h:42,vx:1.1+i*0.025,
       min:x+395,max:x+535,type:'rat' });
-    if (i%2===1) enemies.push({ x:x+870,y:FLOOR-38,w:30,h:38,vx:0.85+i*0.035,
+    if (courseVersion===2 || i%2===1) enemies.push({ x:x+870,y:FLOOR-38,w:30,h:38,vx:0.85+i*0.035,
       min:x+800,max:x+960,type:'bot' });
-    if (i%3===2) enemies.push({ x:x+615,y:110,w:28,h:22,vx:1.35,
+    if (courseVersion===2 || i%3===2) enemies.push({ x:x+615,y:110,w:28,h:22,vx:1.35,
       min:x+575,max:x+720,type:'pigeon' });
     if ([3,7,11,15].includes(i))
       checkpoints.push({ x:x+965,y:FLOOR-48,w:30,h:48 });
@@ -107,7 +111,13 @@ export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, d
   const bytes = decodeFrames(replay);
   if (!bytes) return { valid: false };
 
-  const level = levelData();
+  // Legacy cached v1 clients never sent a course_version: keep their exact
+  // original level, random/parachute physics and two-jump rules. The new
+  // browser keeps the v1 replay frame format but opts into course revision 2.
+  if (replay.course_version != null && replay.course_version !== 2)
+    return { valid:false };
+  const courseVersion = replay.course_version === 2 ? 2 : 1;
+  const level = levelData(courseVersion);
   const solids=[{x:0,y:FLOOR,w:WORLD,h:60},...level.platforms,...level.crates];
   const p = { x:64, y:FLOOR-34, w:24, h:34, vx:0, vy:0, facing:1,
     grounded:true, health:3, invuln:0 };
@@ -176,6 +186,13 @@ export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, d
           p.facing=left ? -1:1;
         }
         jumps=2;
+      } else if(courseVersion===2 && jumps===2) {
+        p.vy=-12.8;
+        if (left!==right) {
+          p.vx=left ? -5.4:5.4;
+          p.facing=left ? -1:1;
+        }
+        jumps=3;
       }
     }
     if(sprayTimer>0) sprayTimer-=dt;
@@ -279,8 +296,8 @@ export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, d
         [Math.floor(nextRunRandom()*3)];
       const drift=(nextRunRandom()*2-1)*90;
       parachuteRats.push({
-        x:clamp(p.x+drift,28,WORLD-60),
-        y:-110,w:28,h:42,variant,
+        x:clamp(p.x+(courseVersion===2 ? 240+drift*0.25 : drift),28,WORLD-60),
+        y:courseVersion===2 ? 55 : -110,w:28,h:42,variant,
         swayPhase:nextRunRandom()*Math.PI*2,vx:0,age:0,
       });
       nextParachuteAt=elapsed+5500+nextRunRandom()*4500;
@@ -293,7 +310,7 @@ export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, d
       rat.vx+=(horizontal-rat.vx)*Math.min(1,0.065*step);
       rat.x+=(rat.vx+Math.sin(rat.age/380+rat.swayPhase)*0.24)*step;
       rat.x=clamp(rat.x,0,WORLD-rat.w);
-      rat.y+=(0.68+Math.sin(rat.age/470+rat.swayPhase)*0.11)*step;
+      rat.y+=((courseVersion===2 ? 2.8 : 0.68)+Math.sin(rat.age/470+rat.swayPhase)*0.11)*step;
       const sprayHit=sprayed(rat);
       const stompHit=stomped(rat);
       if(sprayHit||stompHit){
