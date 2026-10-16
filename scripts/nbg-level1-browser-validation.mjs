@@ -1819,11 +1819,25 @@ for (const mode of ['keyboard', 'touch']) {
     });
   }
   await page.waitForFunction(() => typeof window.__nbgReleaseQueuedStart === 'function');
-  assert.equal(await page.evaluate(() => window.NBGLevel1State.running), false,
-    mode + ' queued presses must not begin physics before the signed session');
+  assert.deepEqual(await page.evaluate(() => ({
+    running: window.NBGLevel1State.running,
+    pending: window.NBGLevel1State.pendingJumpPresses,
+  })), { running: false, pending: 3 },
+  mode + ' must preserve three distinct Jump presses during the handshake');
   await page.evaluate(() => window.__nbgReleaseQueuedStart());
-  await page.waitForFunction(() => window.NBGLevel1State.running &&
-    window.NBGLevel1State.jumpsUsed === 3, null, { timeout: 1500 });
+  try {
+    await page.waitForFunction(() => window.NBGLevel1State.running &&
+      window.NBGLevel1State.jumpsUsed === 3, null, { timeout: 1500 });
+  } catch (error) {
+    const diagnostic = await page.evaluate(() => ({
+      running: window.NBGLevel1State.running,
+      pending: window.NBGLevel1State.pendingJumpPresses,
+      jumps: window.NBGLevel1State.jumpsUsed,
+      grounded: window.NBGLevel1State.player.grounded,
+      y: window.NBGLevel1State.player.y
+    }));
+    assert.fail(mode + ' queued third jump did not register: ' + JSON.stringify(diagnostic));
+  }
   await page.evaluate(() => {
     window.NBGLevel1Runtime.reset();
     window.NBGLondonBeforeQueuedRun = window.__nbgOriginalQueuedStart;
