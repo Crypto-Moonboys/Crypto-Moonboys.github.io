@@ -241,7 +241,9 @@
         if(!auth||current!==generation||String(auth.id)!==startingId||
             String(gate.getTelegramId()||'')!==startingId||
             !gate.isTelegramLinked())return null;
-        var started=await callJson('/run/start',{telegram_auth:auth});
+        var started=await callJson('/run/start',{
+          telegram_auth:auth,replay_capability:'challenge_v2'
+        });
         if(current!==generation||String(gate.getTelegramId()||'')!==startingId||
             !gate.isTelegramLinked())return null;
         return Object.assign({},started,{telegram_id:startingId});
@@ -335,10 +337,11 @@
         if (current === generation) setStatus('Run not saved: Telegram account changed or login expired.');
         return;
       }
-      if (!detail.replay ||
-          (window.NBG_CHALLENGE_CLIENT_RELEASED === true
-            ? detail.replay.version !== 2
-            : detail.replay.version !== 1)) {
+      // Cache-mixed sites may run the new leaderboard client alongside an
+      // older game build. Use the ACTUAL returned server session version, not
+      // a global frontend flag, to decide which replay is expected.
+      var expectedVersion=session.replay_version===2?2:1;
+      if (!detail.replay || detail.replay.version !== expectedVersion) {
         setStatus('Run not saved: missing gameplay replay. Reset and play a fresh run.');
         return;
       }
@@ -461,9 +464,12 @@
       loadPersonal();
     });
     window.NBG_REQUEST_RANKED_CHALLENGE=requestRankedChallengeBeforePlay;
-    window.addEventListener('nbg-level-started', function(){
-      // v2 already has the authenticated session from the pre-play handshake.
-      if(window.NBG_CHALLENGE_CLIENT_RELEASED === true) return;
+    window.addEventListener('nbg-level-started', function(event){
+      // A v2 engine has already obtained its signed session before the first
+      // tick. A cached v1 engine emits no v2 marker and must still be able to
+      // start legacy ranked play even with the new leaderboard script loaded.
+      if(window.NBG_CHALLENGE_CLIENT_RELEASED === true &&
+          event?.detail?.replay_version === 2) return;
       beginRankedRun();
     });
     window.addEventListener('nbg-level-complete', function (event) {
