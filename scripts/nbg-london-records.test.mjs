@@ -222,8 +222,31 @@ try {
   sqlite.prepare(`INSERT INTO nbg_london_period_scores
     (period_kind, period_start_ms, telegram_id, display_name, total_xp, trusted_xp, verified_run_count, run_count, best_time_ms, updated_at_ms)
     VALUES ('weekly', ?, '100', '@alpha', 1000, 1000, 1, 1, 100000, ?)`).run(weekly.start, fakeNow);
-  const weeklyResult = await settleNbgLondonPeriod(env, weekly, weekly.end);
-  assert.equal(weeklyResult[0]?.arcade_xp, 500, 'weekly prizes use separate rank ladder');
+  // Block the winner AFTER the atomic roster freeze, before any payout statement.
+  // The frozen rank remains immutable, but the blocked user is never paid.
+  const originalBatch = env.DB.batch;
+  let frozeWeekly = false;
+  env.DB.batch = async function (statements) {
+    const result = await originalBatch.call(this, statements);
+    if (!frozeWeekly && sqlite.prepare(
+      "SELECT 1 FROM nbg_london_prize_periods WHERE period_kind='weekly' AND period_start_ms=?"
+    ).get(weekly.start)) {
+      frozeWeekly = true;
+      sqlite.prepare('INSERT INTO telegram_anticheat_state (telegram_id, is_blocked) VALUES (?,1) ON CONFLICT(telegram_id) DO UPDATE SET is_blocked=1').run('100');
+    }
+    return result;
+  };
+  const weeklyHeld = await settleNbgLondonPeriod(env, weekly, weekly.end);
+  env.DB.batch = originalBatch;
+  assert.deepEqual(weeklyHeld, [], 'blocked frozen winner must not receive a payout');
+  assert.equal(sqlite.prepare(
+    "SELECT paid_at_ms FROM nbg_london_prize_awards WHERE period_kind='weekly' AND period_start_ms=?"
+  ).get(weekly.start).paid_at_ms, null, 'blocked prize must remain unpaid and retryable');
+  sqlite.prepare('UPDATE telegram_anticheat_state SET is_blocked=0 WHERE telegram_id=?').run('100');
+  const weeklyResult = await settleNbgLondonPeriod(env, weekly, weekly.end + 86400000);
+  assert.equal(weeklyResult[0]?.arcade_xp, 500, 'eligible frozen weekly winner gets exactly one prize after unblocking');
+  assert.deepEqual(await settleNbgLondonPeriod(env, weekly, weekly.end + 86400000), [],
+    'retry cannot pay the same frozen weekly winner twice');
   const season = { kind: 'seasonal', start: periodStart(fakeNow, 'seasonal') - 7776000000,
     end: periodStart(fakeNow, 'seasonal') };
   sqlite.prepare(`INSERT INTO nbg_london_period_scores
@@ -234,6 +257,18 @@ try {
   assert.equal(sqlite.prepare('SELECT arcade_xp_total FROM arcade_progression_state WHERE telegram_id = ?').get('100').arcade_xp_total, 3100,
     'daily, weekly and season winnings credit the shared Arcade XP lifetime total');
 
+  // Existing unverified high-score snapshots stay excluded even if payout flags
+  // are enabled after a future server-authoritative scoring cutover.
+  const oldPracticeStart = previousStart - 86400000;
+  sqlite.prepare(`INSERT INTO nbg_london_period_scores
+    (period_kind, period_start_ms, telegram_id, display_name, total_xp, run_count, best_time_ms, updated_at_ms)
+    VALUES ('daily', ?, '400', '@practice', 999999, 1, 65000, ?)`).run(oldPracticeStart, fakeNow);
+  const oldPractice = { kind: 'daily', start: oldPracticeStart, end: oldPracticeStart + 86400000 };
+  assert.deepEqual(await settleNbgLondonPeriod(env, oldPractice, cutoff), [],
+    'fabricated old beta XP cannot gain retroactive Arcade prizes');
+  assert.equal(sqlite.prepare('SELECT COUNT(*) AS n FROM nbg_london_prize_awards').get().n, 5,
+    'no extra prizes may be minted for unverified older runs');
+
   const shortRun = await api('/nbg-london/run/start', { telegram_auth: { id: '100' } });
   fakeNow += 2000;
   const impossible = await api('/nbg-london/run/finish', {
@@ -243,6 +278,26 @@ try {
   assert.equal(impossible.status, 422, 'impossibly fast client reports are rejected');
   assert.equal((await api('/nbg-london/leaderboard?metric=xp')).records[0].xp, 2000,
     'rejected results cannot overwrite verified bests');
+
+  // A prior freeze winning the database race must reject a late finish before
+  // writing even the all-time best: the active period cannot be revised.
+  const lateStart = await api('/nbg-london/run/start', { telegram_auth: { id: '100' } });
+  fakeNow += 120000;
+  const activeDaily = periodStart(fakeNow, 'daily');
+  sqlite.prepare(`INSERT INTO nbg_london_prize_periods
+    (period_kind, period_start_ms, period_end_ms, frozen_at_ms, freeze_token)
+    VALUES ('daily', ?, ?, ?, ?)`).run(activeDaily, activeDaily + 86400000, fakeNow, 'frozen-test-token');
+  const late = await api('/nbg-london/run/finish', {
+    telegram_auth: { id: '100' }, run_id: lateStart.run_id,
+    complete: true, time_ms: 120000, xp: 999000, coins: 20, secret_coins: 0
+  });
+  assert.equal(late.status, 409, 'finish arriving after a period freeze must fail atomically');
+  assert.equal((await api('/nbg-london/leaderboard?metric=xp')).records[0].xp, 2000,
+    'late receipt must not modify the all-time record');
+  assert.equal(sqlite.prepare(
+    "SELECT total_xp FROM nbg_london_period_scores WHERE period_kind='daily' AND period_start_ms=? AND telegram_id='100'"
+  ).get(activeDaily).total_xp, afterConcurrent.total_xp,
+    'late receipt must not change the already frozen daily total');
 } finally {
   Date.now = nowOriginal;
   sqlite.close();
