@@ -437,6 +437,17 @@
     }
 
     function onKey(e, down) {
+      // Scores drawer is a normal keyboard-accessible UI, not a game input.
+      // Keep key-up cleanup for keys pressed before opening the drawer.
+      var drawer = document.getElementById('nbg-record-drawer');
+      var scoresOpen = drawer && !drawer.hidden;
+      var scoresControl = e.target && e.target.closest &&
+        e.target.closest('#nbg-record-drawer, #nbg-open-records');
+      if (down && (scoresOpen || scoresControl)) return;
+      if (!down && (scoresOpen || scoresControl)) {
+        keys[e.code] = false;
+        return;
+      }
       var wasDown = !!keys[e.code];
       keys[e.code] = down;
       if (down && !wasDown && getControlForCode(e.code) === 'jump') {
@@ -1570,6 +1581,7 @@
         return Promise.resolve(resetRun());
       },
       getState: function () { return window.NBGLevel1State; },
+      suspendInput: clearInput,
       setTouchControl: function (control, active) {
         if (Object.prototype.hasOwnProperty.call(touch, control)) {
           touch[control] = active;
