@@ -469,7 +469,12 @@
       // tick. A cached v1 engine emits no v2 marker and must still be able to
       // start legacy ranked play even with the new leaderboard script loaded.
       if(window.NBG_CHALLENGE_CLIENT_RELEASED === true &&
-          event?.detail?.replay_version === 2) return;
+          (event?.detail?.replay_version === 2 ||
+           event?.detail?.replay_version === 1)) return;
+      // Cached old game scripts omit replay_version entirely. They may still
+      // request a legacy v1 session; new-engine v1 is a deliberate practice
+      // fallback after an unavailable v2 preplay challenge and must not
+      // silently start a second ranked v1 session.
       beginRankedRun();
     });
     window.addEventListener('nbg-level-complete', function (event) {
