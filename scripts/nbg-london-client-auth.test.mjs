@@ -51,6 +51,7 @@ const window = {
 };
 let heldStartResponse = null;
 let nextRunSequence = 0;
+let nextStartHttpResponse = null;
 async function fetch(url, options = {}) {
   const pathname = new URL(url).pathname;
   const body = options.body ? JSON.parse(options.body) : null;
@@ -61,6 +62,11 @@ async function fetch(url, options = {}) {
     const responseBarrier = heldStartResponse;
     heldStartResponse = null;
     await responseBarrier;
+  }
+  if (pathname.endsWith('/run/start') && nextStartHttpResponse) {
+    const reply = nextStartHttpResponse;
+    nextStartHttpResponse = null;
+    return reply;
   }
   const data = pathname.endsWith('/leaderboard')
     ? { ok: true, records: [] }
@@ -314,5 +320,68 @@ await emit('nbg-level-started');
 assert.equal(requests('/run/start').length, beforeUncertain + 2,
   'unrelated account remains free to start ranked while owner 200 is practice-only');
 assert.equal(requests('/run/start').at(-1).body.telegram_auth.id, '300');
+
+// An HTML gateway 504 may arrive while the upstream Worker is still writing.
+// It must NOT clear the durable marker or permit a queued same-owner POST.
+telegramId = '400';
+linked = true;
+nextAuth = async () => auth('400');
+await emit('nbg-level-reset');
+const beforeGateway = requests('/run/start').length;
+let releaseGateway;
+heldStartResponse = new Promise(resolve => { releaseGateway = resolve; });
+nextStartHttpResponse = {
+  ok: false, status: 504,
+  async json() { throw new SyntaxError('Gateway returned HTML'); },
+};
+await emit('nbg-level-started');
+assert.equal(requests('/run/start').length, beforeGateway + 1);
+const gatewayKey = 'nbg-london:pending-ranked-start:v1:400';
+assert.ok(localStorage.getItem(gatewayKey),
+  'gateway request must have durable marker before network start');
+await emit('nbg-level-reset');
+const pendingGatewayReplacement = window.NBGLondonBeforeQueuedRun();
+assert.equal(typeof pendingGatewayReplacement?.then, 'function');
+releaseGateway();
+await pendingGatewayReplacement;
+await flush();
+assert.ok(localStorage.getItem(gatewayKey),
+  'gateway 504 must retain durable marker after an ambiguous server outcome');
+assert.equal(requests('/run/start').length, beforeGateway + 1,
+  'gateway error cannot allow a queued same-owner replacement POST');
+await emit('nbg-level-started');
+await emit('nbg-level-reset');
+await emit('nbg-level-started');
+assert.equal(requests('/run/start').length, beforeGateway + 1,
+  'gateway 504 must keep later same-owner starts practice-only');
+
+// A new page cannot bypass the 504 hold either, even with an empty queue.
+reloadEvents.get('nbg-level-reset')({ detail: {} });
+const freshStartsBeforeGatewayReload = requests('/run/start').length;
+reloadEvents.get('nbg-level-started')({ detail: {} });
+await flush();
+assert.equal(requests('/run/start').length, freshStartsBeforeGatewayReload,
+  'a freshly initialized client must honor the marker after a gateway 504');
+
+// An explicit application 4xx is an acknowledged rejection, not a gateway
+// timeout. It must release the pending marker so the player is not stuck.
+telegramId = '500';
+nextAuth = async () => auth('500');
+await emit('moonboys:identity-change');
+await emit('nbg-level-reset');
+const appRejectionKey = 'nbg-london:pending-ranked-start:v1:500';
+nextStartHttpResponse = {
+  ok: false, status: 403,
+  async json() { return { ok: false, error: 'account_blocked' }; },
+};
+const beforeAppRejection = requests('/run/start').length;
+await emit('nbg-level-started');
+assert.equal(requests('/run/start').length, beforeAppRejection + 1);
+assert.equal(localStorage.getItem(appRejectionKey), null,
+  'definitive Worker 4xx must clear its pending-start marker');
+await emit('nbg-level-reset');
+await emit('nbg-level-started');
+assert.equal(requests('/run/start').length, beforeAppRejection + 2,
+  'confirmed application rejection must not lock future starts');
 
 console.log('[PASS] NBG London start/finish Telegram account-race protection');
