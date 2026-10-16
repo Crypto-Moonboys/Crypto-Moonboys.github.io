@@ -32,12 +32,12 @@ This is a source-receipt adapter for the additive PR1 ledger, not an XP migratio
 - Moonpet Daily/Weekly Journey currently stores the *source's* qualification day as UTC midnight; the adapter uses that persisted source time. Do not replace it with the later HTTP retry timestamp or reinterpret the pet's own weekly journey as an ISO Championship week.
 - The 365-day pet life, 240 Growth Marks, 44 Crests, first-pet entry, slots, XP balances and existing boards remain untouched.
 - Existing Pet Contract/boss receipts are **not yet authorized for this pilot** without per-outcome terminal victory/settlement proof. Wiki engagement is deferred until canonical published-page and citation-ID validation ships. Separate source-specific follow-up is required.
-- The first pilot is reachable via **authenticated Telegram webhook /daily and pet bot commands/callbacks** only. Mini App-only actions and website wiki participation need a separately verified signed-identity invocation and are **not claimed to sync yet**. A newcomer without a pet can qualify with /daily through the bot.
+- The first pilot is reachable via **authenticated Telegram webhook /daily and pet bot commands/callbacks**, plus the existing **signed Moonpet Mini App /telegram-pets/app/action** path. The Mini App actor is independently reverified using Telegram's HMAC init_data; raw body.telegram_id is never used for Clout. Website wiki participation remains excluded pending canonical verification. A newcomer without a pet can qualify with /daily through the bot.
 
 ## Runtime safety and activation
 
-- Wrapper verifies the Telegram webhook secret **before** processing the bot payload.
-- Only /daily, pet-prefixed bot commands and pet:* callbacks invoke the pilot after the existing base handler reports HTTP success. User identity is taken from the verified Telegram update, not any browser body parameter.
+- Wrapper verifies the Telegram webhook secret **before** processing a bot payload, and revalidates the signed actor for Moonpet Mini App action callbacks.
+- Only /daily, pet-prefixed bot commands, pet:* callbacks and valid signed Mini App actions invoke the pilot after the existing base handler reports HTTP success. User identity is taken from the verified Telegram update or signed Mini App init_data, never a browser body.telegram_id parameter.
 - The source adapter independently reloads saved source rows and ban/account authority from D1. Unknown owners, rejected proofs, unmatched XP log, wrong pet, wrong UTC day and unavailable reads do not award points.
 - All parent-source/effect writes and the SQL rebuild of the daily snapshot run in **one D1 batch**. A retry cannot increment the score, and SQL recomputes the original monotonic Skill formula if future score effects already exist.
 - Pilot projection failure only logs a Clout-specific error. It cannot undo or repeat an already accepted /daily or Moonpet reward. A later accepted bot update can retry.
@@ -54,7 +54,7 @@ Also run node --test scripts/championship-clout-foundation.test.mjs and npm run 
 ## Live acceptance still required
 
 - Signed /daily at or after a deliberately approved UTC-midnight canary start saves one 5-point community effect and repeats stay one.
-- Signed returning Moonpet Daily 3/5 and Weekly 5/5 source completions save mission and variety, but never alter source XP/Marks/Crests.
+- Signed returning Moonpet Daily 3/5 and Weekly 5/5 source completions via bot or Mini App save mission and variety, but never alter source XP/Marks/Crests.
 - Concurrent duplicate submissions; wrong owner/pet; old-day retry; ban; D1 unavailable; source repair replay; quarter rollover; non-Moonpet newcomer; no currency leakage.
 - Monitor actual Worker deployed SHA and database before/after counts; run existing Telegram UX and 360/390px canary checks at PR5.
 - Document the canary rollback/flag-off process before anyone enables pilot writes.
