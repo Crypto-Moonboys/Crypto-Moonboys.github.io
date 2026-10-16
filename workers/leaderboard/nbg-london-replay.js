@@ -101,16 +101,6 @@ function decodeFrames(replay) {
   return bytes;
 }
 
-function deterministicBoxXp(runId, box, index) {
-  // Fixed from the server-issued run receipt, never a browser-claimed reward.
-  let hash = 2166136261;
-  const text = runId + ':' + index + ':' + box.x;
-  for (let i=0; i<text.length; i++)
-    hash = Math.imul(hash ^ text.charCodeAt(i), 16777619) >>> 0;
-  const pick = hash % 4;
-  return box.kind === 'star' ? [500,750,1000,0][pick] : [100,250,500,0][pick];
-}
-
 export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, debug = false, testInputOverride = null }) {
   if (typeof runId !== 'string' || !Number.isFinite(startedAtMs) ||
       !Number.isFinite(now)) return { valid: false };
@@ -125,6 +115,28 @@ export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, d
   let elapsed=0, xp=0, coinCount=0, secretCount=0, complete=false;
   let consumedFrames=0;
   let maximumX=64;
+  // The browser resets the same LCG seed at every run start; no client
+  // reward or random-spawn claim is trusted by the Worker.
+  let runRandomState = 0x9e3779b9;
+  const nextRunRandom = () => {
+    runRandomState = (Math.imul(runRandomState,1664525)+1013904223) >>> 0;
+    return runRandomState / 4294967296;
+  };
+  let parachuteRats=[];
+  let nextParachuteAt=6000;
+  const sprayed = target => {
+    if(sprayTimer<=0) return false;
+    const center=(target.x+target.w/2-p.x-p.w/2)*p.facing;
+    const vertical=Math.abs(target.y+target.h/2-p.y-p.h/2);
+    return center>=-6 && center<=86 && vertical<58;
+  };
+  const stomped = target => p.vy>1.5 &&
+    p.y+p.h<=target.y+target.h*0.58 && overlap(p,target);
+  const defeat = (enemy,stomp) => {
+    enemy.defeated=true;
+    xp+=enemy.spawnedByParachute ? 100 : 75;
+    if(stomp) p.vy=-9;
+  };
   const invulnerableDamage = (sourceX) => {
     if (p.invuln>0) return;
     p.health--;
@@ -210,29 +222,102 @@ export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, d
         coin.taken=true;secretCount++;xp+=coin.xp;
       }
     }
-    for(let index=0;index<level.boxes.length;index++) {
-      const box=level.boxes[index];
-      if(box.opened || Math.abs(box.x-p.x)>55 || !overlap(p,box)) continue;
+    // Same reward PRNG consumption/order as updateRewardBoxes in the game.
+    for(const box of level.boxes) {
+      if(box.opened || !overlap(p,box)) continue;
       box.opened=true;
-      xp+=deterministicBoxXp(runId,box,index);
+      const pick=Math.min(3,Math.floor(nextRunRandom()*4));
+      if(pick===3){
+        const healed=Math.min(box.kind==='star'?2:1,Math.max(0,5-p.health));
+        p.health+=healed;
+        if(!healed) xp+=box.kind==='star'?500:100;
+      } else {
+        xp+=(box.kind==='star'?[500,750,1000]:[100,250,500])[pick];
+      }
     }
-    for(const enemy of level.enemies) {
-      if(enemy.defeated) continue;
-      const near=Math.abs(enemy.x-p.x)<110;
-      const centerDistance=(enemy.x+enemy.w/2-p.x-p.w/2)*p.facing;
-      const verticalDistance=Math.abs(enemy.y+enemy.h/2-p.y-p.h/2);
-      const sprayHit=sprayTimer>0 && centerDistance>=-6 &&
-        centerDistance<=86 && verticalDistance<58;
-      const stomp=p.vy>1.5 && p.y+p.h<=enemy.y+enemy.h*0.58 && overlap(p,enemy);
-      if(sprayHit || stomp) {
-        enemy.defeated=true;xp+=75;
-        if(stomp) p.vy=-9;
+    // Update all active walkers, including landed parachute rats, in the
+    // browser's reverse-index order. Random attack variants also consume
+    // the shared RNG state before the next parachute spawn.
+    for(let i=level.enemies.length-1;i>=0;i--) {
+      const enemy=level.enemies[i];
+      if(enemy.defeated || (enemy.spawnedByParachute &&
+         (elapsed-enemy.spawnedAt>=22000 || Math.abs(enemy.x-p.x)>960))) {
+        if(enemy.spawnedByParachute) level.enemies.splice(i,1);
+        continue;
+      }
+      const sprayHit=sprayed(enemy);
+      const stompHit=stomped(enemy);
+      if(sprayHit || stompHit){
+        defeat(enemy,!sprayHit && stompHit);
+        if(enemy.spawnedByParachute) level.enemies.splice(i,1);
         continue;
       }
       enemy.x+=enemy.vx*step;
       if(enemy.x<enemy.min || enemy.x>enemy.max) enemy.vx*=-1;
-      const bob=enemy.type==='pigeon' ? Math.sin(elapsed/180)*9:0;
-      if(near && overlap(p,{...enemy,y:enemy.y+bob})) invulnerableDamage(enemy.x);
+      if(enemy.type==='pigeon') enemy.bob=Math.sin(elapsed/180)*9;
+      if(['rat','turquoiseRat','brownRat'].includes(enemy.type)){
+        const close=Math.abs(p.x-enemy.x)<70 && Math.abs(p.y-enemy.y)<65;
+        if(close && elapsed>=(enemy.nextAttackAt||0) &&
+            elapsed>=(enemy.attackUntil||0)){
+          if(enemy.type==='rat'||enemy.type==='turquoiseRat') nextRunRandom();
+          enemy.attackUntil=elapsed+850;
+          enemy.nextAttackAt=elapsed+1700;
+        }
+      }
+      if(p.invuln<=0 && overlap(p,{x:enemy.x,y:enemy.y+(enemy.bob||0),
+          w:enemy.w,h:enemy.h})){
+        invulnerableDamage(enemy.x);
+      }
+    }
+    // Parachute enemies are gameplay entities, not decoration. Replay their
+    // full drift, collision, landing and attack sequence; otherwise a valid
+    // browser run can diverge from the Worker after a few seconds.
+    let landedCount=level.enemies.filter(e=>e.spawnedByParachute&&!e.defeated).length;
+    if(elapsed>=nextParachuteAt && parachuteRats.length<3 && landedCount<5 &&
+       p.x>350 && p.x<WORLD-250){
+      const variant=['parachuteRatA','parachuteRatB','parachuteRatC']
+        [Math.floor(nextRunRandom()*3)];
+      const drift=(nextRunRandom()*2-1)*90;
+      parachuteRats.push({
+        x:clamp(p.x+drift,28,WORLD-60),
+        y:-110,w:28,h:42,variant,
+        swayPhase:nextRunRandom()*Math.PI*2,vx:0,age:0,
+      });
+      nextParachuteAt=elapsed+5500+nextRunRandom()*4500;
+    }
+    for(let i=parachuteRats.length-1;i>=0;i--){
+      const rat=parachuteRats[i];
+      rat.age+=dt;
+      const targetX=p.x+p.w/2-rat.w/2;
+      const horizontal=clamp((targetX-rat.x)*0.028,-0.9,0.9);
+      rat.vx+=(horizontal-rat.vx)*Math.min(1,0.065*step);
+      rat.x+=(rat.vx+Math.sin(rat.age/380+rat.swayPhase)*0.24)*step;
+      rat.x=clamp(rat.x,0,WORLD-rat.w);
+      rat.y+=(0.68+Math.sin(rat.age/470+rat.swayPhase)*0.11)*step;
+      const sprayHit=sprayed(rat);
+      const stompHit=stomped(rat);
+      if(sprayHit||stompHit){
+        defeat({...rat,spawnedByParachute:true},!sprayHit && stompHit);
+        parachuteRats.splice(i,1);
+        continue;
+      }
+      if(p.invuln<=0&&overlap(p,rat)){
+        invulnerableDamage(rat.x);
+        rat.y=FLOOR-rat.h;
+      }
+      if(rat.y+rat.h>=FLOOR){
+        if(landedCount<5){
+          level.enemies.push({
+            type:rat.variant==='parachuteRatC'?'turquoiseRat':'brownRat',
+            x:rat.x,y:FLOOR-42,w:28,h:42,
+            vx:nextRunRandom()<0.5?-1.1:1.1,
+            min:Math.max(0,rat.x-65),max:Math.min(WORLD-28,rat.x+65),
+            spawnedByParachute:true,spawnedAt:elapsed,
+          });
+          landedCount++;
+        }
+        parachuteRats.splice(i,1);
+      }
     }
     for(const hazard of level.hazards) {
       if(Math.abs(hazard.x-p.x)<60 && overlap(p,hazard)) invulnerableDamage(hazard.x);
