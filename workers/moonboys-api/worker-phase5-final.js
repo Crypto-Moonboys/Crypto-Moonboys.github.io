@@ -321,7 +321,8 @@ async function projectCloutForAcceptedDeadRunFinish(env, clonedRequest, response
   const saved = await response.clone().json().catch(() => null);
   if (!saved?.ok || saved?.result?.ranked !== true) return;
   const body = await clonedRequest.json().catch(() => null);
-  const sessionId = String(body?.session_id || '');
+  // Match handleFinish's canonical session-id normalization exactly.
+  const sessionId = String(body?.session_id || '').trim();
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(sessionId))
     return;
   if (!env?.TELEGRAM_BOT_TOKEN || !env?.DB) return;
@@ -331,13 +332,19 @@ async function projectCloutForAcceptedDeadRunFinish(env, clonedRequest, response
   });
   if (!verified.ok) return;
   const settled = await env.DB.prepare([
-    'SELECT telegram_id FROM dead_run_sessions',
+    'SELECT telegram_id, ended_at FROM dead_run_sessions',
     "WHERE session_id=? AND telegram_id=? AND status='finished' AND ranked=1 LIMIT 1",
   ].join(' ')).bind(sessionId, verified.telegramId).first();
   if (!settled || String(settled.telegram_id) !== verified.telegramId) return;
+  // The persisted server finish timestamp owns UTC attribution. A waitUntil
+  // invocation crossing midnight must not silently credit tomorrow.
+  // The Clout projector separately bounds any after-midnight grace and keeps
+  // verified_at_ms at its real execution time.
+  if (typeof settled.ended_at !== 'string') return;
   await syncCloutPilotForVerifiedOwner(env.DB, verified.telegramId, {
     enabled: true, deadRunEnabled: true,
     startAt: env.CHAMPIONSHIP_CLOUT_PILOT_START_AT,
+    deadRunFinishAt: settled.ended_at,
   });
 }
 
