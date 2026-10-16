@@ -118,6 +118,7 @@ export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, d
   if (!bytes) return { valid: false };
 
   const level = levelData();
+  const solids=[{x:0,y:FLOOR,w:WORLD,h:60},...level.platforms,...level.crates];
   const p = { x:64, y:FLOOR-34, w:24, h:34, vx:0, vy:0, facing:1,
     grounded:true, health:3, invuln:0 };
   let jumps=0, sprayTimer=0, combo=0, comboExpires=0, checkpointX=72;
@@ -184,7 +185,6 @@ export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, d
     p.vy+=0.52*step;
     p.y+=p.vy*step;
     p.grounded=false;
-    const solids=[{x:0,y:FLOOR,w:WORLD,h:60},...level.platforms,...level.crates];
     for(const tile of solids) {
       if(Math.abs(tile.x-p.x)>250 && tile.w<1000) continue;
       if(previousY+p.h<=tile.y+1 && p.vy>=0 && overlap(p,tile)) {
