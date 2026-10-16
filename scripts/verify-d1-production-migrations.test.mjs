@@ -42,11 +42,22 @@ for (const name of [
   '097_moonpet_room_furniture.sql',
   '098_nbg_london_records.sql',
   '099_nbg_london_competition_prizes.sql',
+  '100_championship_clout_foundation.sql',
 ]) {
   assert.ok(pullRequestPaths.includes('workers/moonboys-api/migrations/' + name));
   assert.ok(remoteQueryStep.includes(name));
 }
 
+const cloutMigration = '100_championship_clout_foundation.sql';
+for (const source of [REQUIRED_D1_MIGRATIONS, request.required_migrations,
+  production.d1_databases.wikicoms.required_migrations]) {
+  assert.ok(source.includes(cloutMigration), 'Clout migration must be in each required D1 authority');
+}
+assert.ok(pullRequestPaths.includes('workers/moonboys-api/migrations/' + cloutMigration));
+assert.ok(remoteQueryStep.includes(cloutMigration));
+assert.match(schema, /CREATE TABLE IF NOT EXISTS championship_clout_effects/);
+assert.match(schema, /CREATE TABLE IF NOT EXISTS championship_clout_daily/);
+assert.match(schema, /CREATE TABLE IF NOT EXISTS championship_clout_archives/);
 const gardenMigration = '095_moonpet_home_garden.sql';
 assert.ok(REQUIRED_D1_MIGRATIONS.includes(gardenMigration));
 assert.ok(request.required_migrations.includes(gardenMigration));
