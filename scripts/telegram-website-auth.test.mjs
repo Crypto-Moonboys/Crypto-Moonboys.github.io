@@ -17,7 +17,8 @@ function preservationSnapshot(sqlite) {
 test('migration 090 is additive and idempotent for existing accounts and retained ownership data', () => {
   const { sqlite } = fixture();
   const migration = readFileSync('workers/moonboys-api/migrations/090_telegram_website_sessions.sql', 'utf8');
-  assert.ok(readFileSync('workers/moonboys-api/schema.sql', 'utf8').endsWith(migration));
+  assert.ok(readFileSync('workers/moonboys-api/schema.sql', 'utf8').includes(migration),
+    'the canonical schema must contain the unchanged Telegram session migration, even when later migrations are appended');
   const snapshot = preservationSnapshot(sqlite);
   const users = JSON.stringify(sqlite.prepare('SELECT * FROM telegram_users').all());
   for (const table of ['telegram_website_credentials', 'telegram_website_sessions', 'telegram_login_transactions', 'telegram_oidc_accounts']) sqlite.exec('DROP TABLE ' + table);
