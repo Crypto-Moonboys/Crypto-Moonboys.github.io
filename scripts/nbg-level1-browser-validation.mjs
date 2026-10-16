@@ -1666,6 +1666,34 @@ await page.evaluate(() => {
   delete window.__nbgReleaseQueuedStart;
 });
 
+// A linked account change during an unresolved pre-play handshake must let
+// the new player's controls start immediately, even if old HTTP never settles.
+await page.evaluate(() => {
+  window.__nbgOriginalQueuedStart = window.NBGLondonBeforeQueuedRun;
+  window.NBGLondonBeforeQueuedRun = () => new Promise(resolve => {
+    window.__nbgReleaseQueuedStart = resolve;
+  });
+});
+await page.keyboard.press('s');
+await page.waitForFunction(() => typeof window.__nbgReleaseQueuedStart === 'function');
+await page.evaluate(() => {
+  // A genuine identity-change signal invalidates old owner gameplay waits.
+  window.NBGLondonBeforeQueuedRun = null;
+  window.dispatchEvent(new Event('moonboys:identity-change'));
+});
+await page.keyboard.press('d');
+await page.waitForFunction(() => window.NBGLevel1State.running === true, null, { timeout: 2500 });
+await page.evaluate(() => window.__nbgReleaseQueuedStart());
+await page.waitForTimeout(150);
+assert.equal(await page.evaluate(() => window.NBGLevel1State.running), true,
+  'stale owner handshake must neither freeze nor restart new gameplay');
+await page.evaluate(() => {
+  window.NBGLevel1Runtime.reset();
+  window.NBGLondonBeforeQueuedRun = window.__nbgOriginalQueuedStart;
+  delete window.__nbgOriginalQueuedStart;
+  delete window.__nbgReleaseQueuedStart;
+});
+
 // Guest runs cannot leave permanent device-local best scores, even after finishing.
 const guestRecords = await page.evaluate(() => ({
   bestXp: localStorage.getItem('nbg-london-best-xp'),
