@@ -1676,6 +1676,24 @@ assert.equal(await scoreToggle.getAttribute('aria-expanded'), 'false',
   'Space on the native Close button must close the Scores drawer without a jump');
 assert.equal(await page.locator('#game').isVisible(), true, 'closing scores must restore the game');
   
+// Closing Scores leaves focus on its toolbar control. Movement must
+// still reach the runner without a second click or Tab press.
+const resumedFrom = await page.evaluate(() => ({
+  running: window.NBGLevel1State.running,
+  x: window.NBGLevel1State.player.x
+}));
+await page.keyboard.down('ArrowRight');
+await page.waitForTimeout(300);
+await page.keyboard.up('ArrowRight');
+const resumedTo = await page.evaluate(() => ({
+  running: window.NBGLevel1State.running,
+  x: window.NBGLevel1State.player.x
+}));
+assert.equal(resumedTo.running, true,
+  'ArrowRight must start or resume gameplay when Scores is closed');
+assert.ok(resumedTo.x > resumedFrom.x,
+  'ArrowRight must move the player with focus left on the closed Scores button');
+
 const pixelEnergy = await page.evaluate(() => {
   const canvas = document.getElementById('game');
   const data = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data;
