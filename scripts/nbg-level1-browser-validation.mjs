@@ -709,6 +709,14 @@ assert.ok(lookingBelow.y < beforeLook.y - 45,
 assert.ok(Math.abs(lookingBelow.x - beforeLook.x) < 3,
   'looking below must not steer or drop the player beyond residual running inertia');
 assert.equal(lookingBelow.xp, beforeLook.xp, 'camera look must not award XP');
+// Inspect actual rendered pixels, not just cameraY: previously the negative
+// pan exposed the blue clear color below the finite-height street artwork.
+const belowPixel = await page.evaluate(() => {
+  const canvas = document.getElementById('game');
+  return Array.from(canvas.getContext('2d').getImageData(25, canvas.height - 3, 1, 1).data);
+});
+assert.notDeepEqual(belowPixel.slice(0, 3), [0, 118, 252],
+  'looking below must paint the bottom of the viewport instead of blue void');
 await page.keyboard.up('ArrowDown');
 await page.waitForFunction(() => window.NBGLevel1State.cameraY > -15, null, { timeout: 3000 });
 // Touch look uses the same render-only control; release restores the camera.
@@ -717,6 +725,12 @@ await page.waitForFunction(() => window.NBGLevel1State.cameraY < -50, null, { ti
 await page.evaluate(() => window.NBGLevel1Runtime.setTouchControl('look', false));
 await page.waitForFunction(() => window.NBGLevel1State.cameraY > -15, null, { timeout: 3000 });
 await page.evaluate(() => window.NBGLevel1Runtime.reset());
+// Both terminal branches must restore normal camera framing even if the
+// player holds Down when completion/game-over stops the animation loop.
+assert.match(runtimeSource, /if \(gameOver\)\s*\{\s*cameraY = 0;/,
+  'fatal-hit terminal render must reset a held-down camera');
+assert.match(runtimeSource, /if \(!running\) cameraY = 0;/,
+  'completed run must reset a held-down camera');
 
 const preInitMovePage = await openWithDelayedNbgInit(browser, url);
 await preInitMovePage.keyboard.down('ArrowRight');
