@@ -113,6 +113,21 @@ assert.equal(oldDouble.debug?.jumps, 2,
 assert.equal((await verifyNbgLondonReplay({
   ...base, replay: { ...tripleReplay, course_version: 3 }
 })).valid, false, 'unapproved course revisions must fail rather than silently downgrade');
+// Cached v1 replays omit the property completely. An explicitly present
+// null/undefined/invalid version is not equivalent and must be rejected.
+for (const courseVersion of [null, undefined, 0, 1, '2', false, {}, []]) {
+  const checked = await verifyNbgLondonReplay({
+    ...base,
+    replay: { ...tripleInputs, course_version: courseVersion },
+    debug: true
+  });
+  assert.equal(checked.valid, false,
+    'explicit unsupported course_version must reject: ' + String(courseVersion));
+  assert.equal(checked.debug, undefined,
+    'unsupported versions must fail before replay physics is simulated');
+}
+assert.equal(oldDouble.debug?.courseVersion, 1,
+  'omitting course_version retains the original legacy course');
 
 // Exercise an entire physically completed revision-2 course (with more
 // enemies, all eighteen sections of secrets and faster parachute encounters),
