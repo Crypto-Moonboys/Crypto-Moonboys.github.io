@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "requested_at": "2026-10-16T13:15:41.328Z",
+  "requested_at": "2026-10-16T13:57:29.386Z",
   "services": [
     "moonboys-api",
     "moonboys-leaderboard",
@@ -8,7 +8,7 @@
   ],
   "expected_commits": {
     "moonboys-api": "ed03324dcfef0311a62ff3c31a36d8665a2d8421",
-    "moonboys-leaderboard": "2323ef3a07794411ff4d5788a02ff63995226cba",
+    "moonboys-leaderboard": "ed03324dcfef0311a62ff3c31a36d8665a2d8421",
     "moonboys-anti-cheat": "2323ef3a07794411ff4d5788a02ff63995226cba"
   },
   "retained_evidence": "deployments/evidence/worker-provenance-clout-pr2-2026-10-16.json"
