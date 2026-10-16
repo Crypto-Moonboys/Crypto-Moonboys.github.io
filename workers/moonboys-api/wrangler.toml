@@ -24,6 +24,10 @@ TELEGRAM_WEBSITE_ORIGINS = "https://cryptomoonboys.com,https://www.cryptomoonboy
 DEAD_RUN_ENABLED = "false"
 DEAD_RUN_RANKED_ENABLED = "false"
 DEAD_RUN_DAILY_RANKED_LIMIT = "5"
+# #1530 PR2: no Clout writes until a separately authorized canary release.
+CHAMPIONSHIP_CLOUT_PILOT_ENABLED = "false"
+# Set CHAMPIONSHIP_CLOUT_PILOT_START_AT to an approved UTC midnight ISO timestamp
+# through the release configuration only; never turn on automatically.
 
 [observability]
 enabled = true

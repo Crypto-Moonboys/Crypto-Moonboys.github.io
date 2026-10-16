@@ -3,6 +3,8 @@ import { verifyTelegramWebhookSecret } from './telegram-webhook-auth.js';
 import { applyPetRuntimeCommandAward } from './worker.js';
 import { recoverPetRuntimeAwards } from './pets/runtime-recovery.js';
 import { handleDeadRunRequest, cleanupExpiredSessions } from './routes/dead-run.js';
+import { syncCloutPilotForVerifiedOwner } from './championship/clout-pilot.js';
+import { verifyTelegramMiniAppInitData } from './pets/mini-app-auth.js';
 
 const PROGRESSION_API_ACTIONS = Object.freeze({
   feed: 'feed',
@@ -262,6 +264,52 @@ async function repairTelegramRunRuntimeAward(env, update) {
   await applyRuntimeAward(env, context.telegramId, context.runtimeEventKey, context.runtimeAction, context.primaryEventKey);
 }
 
+// PR2: only an authenticated Telegram webhook may trigger this receipt-only
+// projection. The authenticated identity comes from the Telegram update after
+// verifyTelegramWebhookSecret, never from an arbitrary browser/HTTP owner field.
+// Off until a later separately approved release toggles both pilot settings.
+async function projectCloutForAuthenticatedWebhook(env, update, response) {
+  if (!response?.ok || env?.CHAMPIONSHIP_CLOUT_PILOT_ENABLED !== 'true' || !env?.DB) return;
+  const command = telegramCommandFromUpdate(update);
+  const callback = String(update?.callback_query?.data || '');
+  if (command !== 'daily' && !command.startsWith('pet') && !callback.startsWith('pet:')) return;
+  const owner = String(telegramMessageFromUpdate(update)?.from?.id ||
+    update?.callback_query?.from?.id || '').trim();
+  if (!/^\d{1,20}$/.test(owner)) return;
+  try {
+    await syncCloutPilotForVerifiedOwner(env.DB, owner, {
+      enabled: true, startAt: env.CHAMPIONSHIP_CLOUT_PILOT_START_AT,
+    });
+  } catch (error) {
+    // Never turn a successful source award into a second XP/pet award or
+    // reject an already accepted command due to a Clout-only outage.
+    console.log('[moonboys-api]', JSON.stringify({
+      event: 'clout_pilot_source_sync_failed', reason: String(error?.message || error),
+    }));
+  }
+}
+
+// Signed Moonpet Mini App actions are another receipt-owning entry point.
+// Recheck Telegram's signed init_data independently; do NOT read telegram_id
+// from the action body. The existing base handler still owns game acceptance.
+async function projectCloutForAuthenticatedMiniApp(env, body, response) {
+  if (!response?.ok || env?.CHAMPIONSHIP_CLOUT_PILOT_ENABLED !== 'true' ||
+      !env?.DB || !env?.TELEGRAM_BOT_TOKEN || !body) return;
+  const verified = await verifyTelegramMiniAppInitData(
+    body.init_data, env.TELEGRAM_BOT_TOKEN, { max_age_seconds: 3600 }
+  );
+  if (!verified.ok) return;
+  try {
+    await syncCloutPilotForVerifiedOwner(env.DB, verified.telegramId, {
+      enabled: true, startAt: env.CHAMPIONSHIP_CLOUT_PILOT_START_AT,
+    });
+  } catch (error) {
+    console.log('[moonboys-api]', JSON.stringify({
+      event: 'clout_pilot_mini_app_sync_failed', reason: String(error?.message || error),
+    }));
+  }
+}
+
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
@@ -277,7 +325,8 @@ export default {
     if (deadRunResponse) return deadRunResponse;
 
     const isPetAction = url.pathname === '/telegram-pets/action' && request.method === 'POST';
-    const body = (isPetAction || isTelegramWebhook) ? await readJsonSafe(request) : null;
+    const isMiniAppPetAction = path === '/telegram-pets/app/action' && request.method === 'POST';
+    const body = (isPetAction || isMiniAppPetAction || isTelegramWebhook) ? await readJsonSafe(request) : null;
 
     if (isPetAction && body) {
       const runtimeAction = PROGRESSION_API_ACTIONS[String(body.action || '').trim().toLowerCase()];
@@ -300,6 +349,21 @@ export default {
     }
     if (isTelegramWebhook && body && response.ok) {
       await repairTelegramRunRuntimeAward(env, body);
+    }
+    // Clout is an optional, non-economic projection. Do not hold up the
+    // accepted game /daily or Mini App response to reverify its actor, read D1,
+    // or reproject a daily leaderboard. Cloudflare keeps this task alive after
+    // the response via waitUntil; a missing execution context fails closed.
+    if (response.ok && env?.CHAMPIONSHIP_CLOUT_PILOT_ENABLED === 'true' &&
+        typeof ctx?.waitUntil === 'function') {
+      if (isTelegramWebhook && body) {
+        ctx.waitUntil(projectCloutForAuthenticatedWebhook(env, body, response));
+      } else if (isMiniAppPetAction && body) {
+        ctx.waitUntil(projectCloutForAuthenticatedMiniApp(env, body, response)
+          .catch((error) => console.log('[moonboys-api]', JSON.stringify({
+            event: 'clout_pilot_mini_app_sync_failed', reason: String(error?.message || error),
+          }))));
+      }
     }
 
     return response;
