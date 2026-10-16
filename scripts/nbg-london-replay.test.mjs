@@ -113,4 +113,44 @@ assert.equal(tampered.xp, legitimate.result.xp,
   'untrusted counters never change server-computed XP');
 assert.ok(legitimate.result.xp < 1000000 && legitimate.result.xp >= 0,
   'official XP is bounded by rewards physically reachable in the course');
+
+// Codex P2: a copied valid run can change spray bits during the 230 ms
+// cooldown without changing physics, XP, or completion. Uncanonicalized
+// raw control hashes treat that copy as a new run. The Worker now hashes
+// the actual server-applied action stream instead.
+const acceptedBytes=Buffer.from(legitimate.replay.frames,'base64');
+const ignoredSprayFrame=legitimate.result.effective_input_masks.findIndex(
+  (effective,i)=>(acceptedBytes[i*5+4]&8)!==0 && (effective&8)===0,
+);
+assert.ok(ignoredSprayFrame>=0,
+  'the real completed replay must contain a spray tap ignored by cooldown');
+const editedBytes=Buffer.from(acceptedBytes);
+editedBytes[ignoredSprayFrame*5+4]&=~8;
+const editedReplay={version:1,frames:editedBytes.toString('base64')};
+const editedVerified=await verifyNbgLondonReplay({
+  runId:'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
+  replay:editedReplay,
+  startedAtMs:1000000,now:1000000+legitimate.count*33,
+});
+assert.equal(editedVerified.valid,true,
+  'removing a semantically ignored spray tap must leave source replay valid');
+assert.equal(editedVerified.xp,legitimate.result.xp,
+  'changing a cooldown-ignored button cannot alter score');
+assert.equal(editedVerified.time_ms,legitimate.result.time_ms);
+const originalFingerprints=await fingerprintNbgLondonReplay(
+  legitimate.replay,legitimate.result.effective_input_masks,
+);
+const editedFingerprints=await fingerprintNbgLondonReplay(
+  editedReplay,editedVerified.effective_input_masks,
+);
+assert.notEqual(originalFingerprints.replay_sha256,editedFingerprints.replay_sha256,
+  'decoded bytes are visibly different');
+assert.equal(originalFingerprints.input_sha256,editedFingerprints.input_sha256,
+  'canonical effective-action fingerprint blocks the disguised copied run');
+assert.notEqual(
+  (await fingerprintNbgLondonReplay(legitimate.replay)).input_sha256,
+  editedFingerprints.input_sha256,
+  'original uncanonicalized raw stream is not authoritative for trusted receipts',
+);
+
 console.log('[PASS] NBG London server-derived replay score protection');
