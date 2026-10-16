@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-10-16T13:15:41.328Z",
+  "database": "wikicoms",
+  "source": "owner-provided production Wrangler 4.143.1 command output from Windows CMD, October 16 2026",
+  "confidence": "owner-supplied CLI evidence (not independent CI full migration ledger capture)",
+  "migration": {
+    "name": "100_championship_clout_foundation.sql",
+    "applied_status": "success",
+    "executed_sql_commands": 10,
+    "migrations_pending_after_apply": 0,
+    "registered_in_d1_migrations": true
+  },
+  "tables_reported": [
+    "championship_clout_archives",
+    "championship_clout_daily",
+    "championship_clout_effects",
+    "championship_clout_sources"
+  ],
+  "foreign_key_check": {
+    "command": "PRAGMA foreign_key_check",
+    "reported_violations": 0,
+    "observation": "Owner CLI showed a successfully executed query and no violation rows; no independent raw output attachment was retained."
+  },
+  "backup": {
+    "export_status": "Wrangler export successful after a failed first network attempt",
+    "backup_files": "Two SQL backups reported moved outside Git working tree; do not publish them.",
+    "restored_or_integrity_tested": false
+  },
+  "limitations": [
+    "Does not independently verify every migration name from the full required set.",
+    "Does not authorize another migration or a rollback against production D1.",
+    "Does not prove any live signed Clout award, scoreboard, or the correctness of existing XP balances."
+  ]
+}

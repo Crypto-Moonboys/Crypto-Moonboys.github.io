@@ -1,0 +1,49 @@
+{
+  "schema_version": 2,
+  "verified_at": "2026-10-16T13:15:41.328Z",
+  "capture_method": "owner-provided-Windows-CMD-health-and-deployment-info; GitHub live recapture required",
+  "verification_limitations": "Values for moonboys-api were supplied in owner terminal screenshot; other Workers copied from previously retained history. The required PR CI Worker Live Evidence Capture must independently compare the three production endpoints before merge. No Clout scoring activity was exercised.",
+  "expected_commits": {
+    "moonboys-api": "ed03324dcfef0311a62ff3c31a36d8665a2d8421",
+    "moonboys-leaderboard": "2323ef3a07794411ff4d5788a02ff63995226cba",
+    "moonboys-anti-cheat": "2323ef3a07794411ff4d5788a02ff63995226cba"
+  },
+  "workers": [
+    {
+      "service": "moonboys-api",
+      "commit": "ed03324dcfef0311a62ff3c31a36d8665a2d8421",
+      "deployed_at": "2026-10-16T13:08:04.162Z",
+      "url": "https://moonboys-api.sercullen.workers.dev/deployment-info"
+    },
+    {
+      "service": "moonboys-leaderboard",
+      "commit": "2323ef3a07794411ff4d5788a02ff63995226cba",
+      "deployed_at": "2026-08-10T12:55:41.171Z",
+      "url": "https://moonboys-leaderboard.sercullen.workers.dev/deployment-info"
+    },
+    {
+      "service": "moonboys-anti-cheat",
+      "commit": "2323ef3a07794411ff4d5788a02ff63995226cba",
+      "deployed_at": "2026-08-10T12:56:13.630Z",
+      "url": "https://moonboys-anti-cheat.sercullen.workers.dev/deployment-info"
+    }
+  ],
+  "owner_reported_observations": {
+    "source": "owner-supplied Windows CMD screenshot and Wrangler deploy output",
+    "observed_surface": "https://api.cryptomoonboys.com/deployment-info",
+    "response": {
+      "service": "moonboys-api",
+      "commit": "ed03324dcfef0311a62ff3c31a36d8665a2d8421",
+      "deployed_at": "2026-10-16T13:08:04.162Z",
+      "environment": "production"
+    },
+    "health_url": "https://api.cryptomoonboys.com/health",
+    "health_response": {
+      "ok": true
+    },
+    "wrangler_version_id": "aa97f39c-95bd-4add-a8f1-20772a1305be",
+    "configured_clout_pilot_enabled": "false",
+    "clout_start_at_binding_present_in_deploy_output": false,
+    "notes": "Confirmed healthy HTTP and code provenance; neither confirms signed gameplay receipt writes or an active Championship."
+  }
+}

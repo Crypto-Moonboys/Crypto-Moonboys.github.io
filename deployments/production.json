@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "last_reviewed_at": "2026-08-31T22:34:40.251Z",
-  "repository_main_commit_at_review": "a30a5cfdf7010a875166597b5bc60e497c985cc9",
+  "last_reviewed_at": "2026-10-16T13:15:41.328Z",
+  "repository_main_commit_at_review": "ed03324dcfef0311a62ff3c31a36d8665a2d8421",
   "surfaces": {
     "github-pages": {
       "readiness": "deployable",
@@ -20,19 +20,26 @@
     "workers/moonboys-api": {
       "readiness": "live-deployable",
       "deployment_status": "verified-live",
-      "deployed_commit": "c652589a50b5e7d3e893f6b58e3bd2b11697515d",
-      "deployed_at": "2026-08-22T21:06:23.216Z",
+      "deployed_commit": "ed03324dcfef0311a62ff3c31a36d8665a2d8421",
+      "deployed_at": "2026-10-16T13:08:04.162Z",
       "verification_urls": [
-        "https://moonboys-api.sercullen.workers.dev/deployment-info"
+        "https://moonboys-api.sercullen.workers.dev/deployment-info",
+        "https://api.cryptomoonboys.com/deployment-info",
+        "https://api.cryptomoonboys.com/health"
       ],
       "evidence": [
+        {
+          "type": "retained-worker-provenance",
+          "url": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/blob/main/deployments/evidence/worker-provenance-clout-pr2-2026-10-16.json",
+          "recorded_at": "2026-10-16T13:15:41.328Z"
+        },
         {
           "type": "retained-worker-provenance",
           "url": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/blob/main/deployments/evidence/worker-provenance-live-2026-08-31.json",
           "recorded_at": "2026-08-31T22:34:40.251Z"
         }
       ],
-      "notes": "The public deployment-info endpoint and retained provenance evidence confirm the production Worker is running commit c652589a50b5e7d3e893f6b58e3bd2b11697515d."
+      "notes": "PR2 #1534 merged; owner-supplied production Wrangler deployment and custom-domain /health + /deployment-info show ed03324 at 2026-10-16T13:08:04.162Z, Wrangler version aa97f39c-95bd-4add-a8f1-20772a1305be. New retained evidence needs independent GitHub Actions live comparison before this PR merges. CHAMPIONSHIP_CLOUT_PILOT_ENABLED=false in deployment bindings; no live Clout award, source smoke test or ranking activation claimed."
     },
     "workers/anti-cheat": {
       "readiness": "live-deployable",
@@ -116,7 +123,7 @@
   },
   "d1_databases": {
     "wikicoms": {
-      "deployment_status": "unverified",
+      "deployment_status": "verification-pending",
       "verified_at": null,
       "required_migrations": [
         "038_telegram_pet_equipment_progression.sql",
@@ -182,9 +189,17 @@
         "099_nbg_london_competition_prizes.sql",
         "100_championship_clout_foundation.sql"
       ],
-      "verified_migrations": [],
-      "evidence": [],
-      "notes": "Production D1 applied migrations 042-045 successfully and passed schema plus foreign-key checks on 2026-08-11; durable repository evidence remains pending."
+      "verified_migrations": [
+        "100_championship_clout_foundation.sql"
+      ],
+      "evidence": [
+        {
+          "type": "owner-supplied-wrangler-d1-command-summary",
+          "url": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/blob/main/deployments/evidence/clout-pr2-d1-migration-2026-10-16.json",
+          "recorded_at": "2026-10-16T13:15:41.328Z"
+        }
+      ],
+      "notes": "Owner-supplied 2026-10-16 Wrangler evidence: migration 100 applied, no pending migrations, four championship tables, D1 migrations ledger row, and PRAGMA foreign_key_check without reported violations. Full required-migration inventory has NOT been independently captured; status intentionally verification-pending. Two private SQL backups moved outside working tree; contents/restore not independently tested. Clout pilot remains disabled."
     }
   }
 }

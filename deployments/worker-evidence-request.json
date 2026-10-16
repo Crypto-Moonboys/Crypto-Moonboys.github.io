@@ -1,15 +1,15 @@
 {
   "schema_version": 2,
-  "requested_at": "2026-08-31T22:34:40.251Z",
+  "requested_at": "2026-10-16T13:15:41.328Z",
   "services": [
     "moonboys-api",
     "moonboys-leaderboard",
     "moonboys-anti-cheat"
   ],
   "expected_commits": {
-    "moonboys-api": "c652589a50b5e7d3e893f6b58e3bd2b11697515d",
+    "moonboys-api": "ed03324dcfef0311a62ff3c31a36d8665a2d8421",
     "moonboys-leaderboard": "2323ef3a07794411ff4d5788a02ff63995226cba",
     "moonboys-anti-cheat": "2323ef3a07794411ff4d5788a02ff63995226cba"
   },
-  "retained_evidence": "deployments/evidence/worker-provenance-live-2026-08-31.json"
+  "retained_evidence": "deployments/evidence/worker-provenance-clout-pr2-2026-10-16.json"
 }
