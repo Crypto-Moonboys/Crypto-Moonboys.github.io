@@ -1310,8 +1310,8 @@
       ctx.fillText('SPEED BONUS +' + speedrunBonusXp + ' XP', WIDTH / 2, 151);
       ctx.fillStyle = '#ffffff';
       ctx.font = '800 12px Courier New';
-      ctx.fillText('LEADERBOARD XP READY: ' + xp, WIDTH / 2, 174);
-      ctx.fillText('PERSONAL BEST XP: ' + bestXp, WIDTH / 2, 196);
+      ctx.fillText('PRACTICE XP: ' + xp, WIDTH / 2, 174);
+      ctx.fillText('BEST PRACTICE XP: ' + bestXp, WIDTH / 2, 196);
       ctx.fillText('PRESS RESET TO RUN AGAIN', WIDTH / 2, 221);
       ctx.restore();
     }
