@@ -124,6 +124,10 @@ assert.equal(efficiencyRate(1201, 120000), 600.5, 'fractional XP rates must reta
 assert.ok(efficiencyRate(3005, 300500) > efficiencyRate(3000, 300001),
   'near-tie XP rates must compare exactly rather than round into incorrect order');
 assert.equal(validFinish({ complete: true, time_ms: 120000, xp: 600, coins: 25, secret_coins: 0 }, 120500), true);
+assert.equal(validFinish({ complete: true, time_ms: 120000, xp: 23000, coins: 25, secret_coins: 42 }, 120500), true,
+  'new revision may verify 42 full-course secret coins without touching Arcade wallets');
+assert.equal(validFinish({ complete: true, time_ms: 120000, xp: 23000, coins: 25, secret_coins: 43 }, 120500), false,
+  'unreachable 43rd secret coin remains invalid');
 assert.equal(validFinish({ complete: true, time_ms: 1500, xp: 600, coins: 25, secret_coins: 0 }, 1500), false);
 assert.equal(validFinish({ complete: true, time_ms: 120000, xp: 600, coins: 25, secret_coins: 0 }, 350000), false);
 

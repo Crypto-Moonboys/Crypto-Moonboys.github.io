@@ -76,6 +76,10 @@ const SCOPES = {
     'scripts/*invaders*',
     'scripts/*leaderboard*',
     'scripts/nbg-london-*.test.mjs',
+    // Publishing safety must be tested even on gate-only PRs.
+    'scripts/verify-nbg-pages-worker-course.mjs',
+    'scripts/verify-nbg-pages-worker-course.test.mjs',
+    '.github/workflows/pages.yml',
     'scripts/ci-change-scope.mjs',
     'scripts/*faction*',
     'scripts/*avatar-builder*',

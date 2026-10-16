@@ -19,6 +19,10 @@ on:
       - scripts/nbg-london-replay.test.mjs
       - scripts/nbg-london-client-auth.test.mjs
       - scripts/nbg-level1-browser-validation.mjs
+      - scripts/verify-nbg-pages-worker-course.mjs
+      - scripts/verify-nbg-pages-worker-course.test.mjs
+      - scripts/ci-change-scope.mjs
+      - .github/workflows/pages.yml
       - .github/workflows/nbg-level1-browser.yml
   push:
     branches: [main]
@@ -39,6 +43,10 @@ on:
       - scripts/nbg-london-replay.test.mjs
       - scripts/nbg-london-client-auth.test.mjs
       - scripts/nbg-level1-browser-validation.mjs
+      - scripts/verify-nbg-pages-worker-course.mjs
+      - scripts/verify-nbg-pages-worker-course.test.mjs
+      - scripts/ci-change-scope.mjs
+      - .github/workflows/pages.yml
       - .github/workflows/nbg-level1-browser.yml
 
 permissions:
@@ -66,4 +74,5 @@ jobs:
       - run: node --test scripts/nbg-london-records.test.mjs
       - run: node --test scripts/nbg-london-replay.test.mjs
       - run: node --test scripts/nbg-london-client-auth.test.mjs
+      - run: node --test scripts/verify-nbg-pages-worker-course.test.mjs
       - run: npm run test:nbg-level1

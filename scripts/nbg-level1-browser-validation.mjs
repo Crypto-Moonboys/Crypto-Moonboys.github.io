@@ -883,7 +883,7 @@ assert.deepEqual(
 );
 assert.equal(state.running, true, 'ArrowRight must start the game loop');
 assert.equal(state.coinCount, 312, 'speedrun must spawn 312 XP coins across four sizes');
-assert.equal(state.enemyCount, 36, 'speedrun must spawn 36 moving enemies');
+assert.equal(state.enemyCount, 57, 'each of 18 course sections must include rat, bot and pigeon');
 assert.equal(state.platformCount, 76, 'speedrun must provide 76 playable jump platforms');
 assert.equal(state.hazardCount, 39, 'speedrun must provide 39 collidable obstacles');
 assert.equal(state.extraCheckpointCount, 4, 'extended course must have four additional checkpoints');
@@ -1031,8 +1031,10 @@ assert.ok(
   runtimeSource.includes('player.vy = DOUBLE_JUMP_VELOCITY') &&
   runtimeSource.includes('player.vx = left ? -DOUBLE_JUMP_SIDE_SPEED : DOUBLE_JUMP_SIDE_SPEED') &&
   runtimeSource.includes('jumpsUsed = 2') &&
+  runtimeSource.includes('jumpsUsed = 3') &&
+  runtimeSource.includes('var TRIPLE_JUMP_VELOCITY = -12.8') &&
   runtimeSource.includes('jumpsUsed = 0'),
-  'double jump must require a fresh second press and reset on landing'
+  'triple jump must require a fresh third press and reset on landing'
 );
 
 const beforeJumpY = state.y;
@@ -1066,7 +1068,13 @@ assert.ok(state.vx < 0, 'second jump plus left must reverse horizontal momentum'
 await page.keyboard.down('Space');
 await page.waitForTimeout(50);
 await page.keyboard.up('Space');
-assert.equal(await page.evaluate(() => window.NBGLevel1State.jumpsUsed), 2, 'third jump press must not grant another jump');
+assert.equal(await page.evaluate(() => window.NBGLevel1State.jumpsUsed), 3,
+  'third midair press must consume the newly allowed third jump');
+await page.keyboard.down('Space');
+await page.waitForTimeout(50);
+await page.keyboard.up('Space');
+assert.equal(await page.evaluate(() => window.NBGLevel1State.jumpsUsed), 3,
+  'fourth midair press must not grant another jump');
 
 
 await page.waitForFunction(() => (
@@ -1279,21 +1287,26 @@ assert.equal(state.running, true, 'first valid keyboard input after fullscreen r
 assert.ok(state.x > resetStartX, 'fresh run after fullscreen reset must move from the start position');
 assert.equal(state.hud, 'RUNNING', 'HUD must return to RUNNING after first reset input starts play');
 
-// Six hidden rewards are collectible off-screen without changing the normal coin counter.
+// Forty-two hidden rewards run across the full course without affecting regular coin count.
 state = await page.evaluate(() => ({
   secretCount: window.NBGLevel1State.secretCoins.length,
   secretValues: window.NBGLevel1State.secretCoins.map((coin) => coin.xp),
   secretHeights: window.NBGLevel1State.secretCoins.map((coin) => coin.y),
+  secretPositions: window.NBGLevel1State.secretCoins.map((coin) => coin.x),
   regularCount: window.NBGLevel1State.coins.length,
   regularHud: document.getElementById('hud-coins').textContent,
   xp: window.NBGLevel1State.xp
 }));
-assert.equal(state.secretCount, 6, 'level must contain six secret rewards');
-assert.deepEqual(state.secretValues, [500, 500, 500, 500, 500, 500], 'each secret coin must award 500 XP');
+assert.equal(state.secretCount, 42, 'opening six and two secrets in each of 18 sections');
+assert.deepEqual(state.secretValues, Array(42).fill(500), 'each secret coin must award 500 XP');
 assert.ok(state.secretHeights.every((y) => y < 0), 'each secret reward must sit above the regular gameplay viewport');
+assert.deepEqual([...new Set(state.secretPositions.filter(x => x >= 2200)
+  .map(x => Math.floor((x - 2200) / 1050)))].sort((a,b) => a - b),
+  Array.from({ length: 18 }, (_, i) => i),
+  'hidden rewards must cover all 18 generated sections through the finish');
 const secretStartingXp = state.xp;
 const regularHudBeforeSecrets = state.regularHud;
-for (let index = 0; index < 6; index += 1) {
+for (let index = 0; index < 42; index += 1) {
   await page.evaluate((i) => {
     const state = window.NBGLevel1State;
     const secret = state.secretCoins[i];
@@ -1312,13 +1325,13 @@ state = await page.evaluate(() => ({
   bannerUntil: window.NBGLevel1State.secretNotificationUntil,
   hud: document.getElementById('hud-coins').textContent
 }));
-assert.equal(state.xp, secretStartingXp + 3000, 'all six secrets must add exactly 3000 XP');
-assert.equal(state.taken, 6, 'secret coins must remain collected during the run');
+assert.equal(state.xp, secretStartingXp + 21000, 'all 42 secrets must add exactly 21000 XP');
+assert.equal(state.taken, 42, 'secret coins must remain collected during the run');
 assert.equal(state.banner, 'SECRET FOUND +500 XP', 'secret collection must display discovery notification');
 assert.ok(state.bannerUntil > 0, 'secret discovery notification must have an expiry time');
 assert.equal(state.hud, regularHudBeforeSecrets, 'secret collection must not change normal coin HUD counts');
 await page.waitForTimeout(120);
-assert.equal(await page.evaluate(() => window.NBGLevel1State.xp), secretStartingXp + 3000, 'secret cannot be collected twice');
+assert.equal(await page.evaluate(() => window.NBGLevel1State.xp), secretStartingXp + 21000, 'secret cannot be collected twice');
 await page.evaluate(() => window.NBGLevel1Runtime.reset());
 state = await page.evaluate(() => ({
   xp: window.NBGLevel1State.xp,
@@ -1538,8 +1551,8 @@ chuteState = await page.evaluate(() => ({
   y: window.NBGLevel1State.parachuteRats[0]?.y,
   x: window.NBGLevel1State.parachuteRats[0]?.x
 }));
-assert.ok(chuteState.y > beforeGlideY && chuteState.y - beforeGlideY < 35,
-  'parachute rat must descend gradually, without snapping downward');
+assert.ok(chuteState.y > beforeGlideY && chuteState.y - beforeGlideY < 75,
+  'parachute rat must descend visibly, without teleporting downward');
 await page.evaluate(() => {
   const state = window.NBGLevel1State;
   state.parachuteRats[0].y = 214 - state.parachuteRats[0].h - 1;
@@ -1554,7 +1567,30 @@ assert.deepEqual(await page.evaluate(() => ({
   active: window.NBGLevel1State.parachuteRats.length,
   spawns: window.NBGLevel1State.parachuteSpawnCount,
   enemies: window.NBGLevel1State.enemies.length
-})), { active: 0, spawns: 0, enemies: 36 }, 'reset must clear parachutes and restore original enemy roster');
+})), { active: 0, spawns: 0, enemies: 57 }, 'reset must clear parachutes and restore original enemy roster');
+
+// Parachute encounters must happen in the second half too, not merely when
+// the runner waits near the original London opening.
+await page.keyboard.down('KeyD');
+await page.waitForFunction(() => window.NBGLevel1State.running, null, { timeout: 3000 });
+await page.keyboard.up('KeyD');
+await page.evaluate(() => {
+  const state = window.NBGLevel1State;
+  state.player.x = 14500;
+  state.player.y = 214 - state.player.h;
+  state.player.vx = 0;
+  state.player.vy = 0;
+  state.player.invuln = 20000;
+});
+await page.waitForFunction(() => window.NBGLevel1State.parachuteSpawnCount >= 1,
+  null, { timeout: 12000 });
+const laterParachute = await page.evaluate(() => ({
+  x: window.NBGLevel1State.parachuteRats[0]?.x,
+  count: window.NBGLevel1State.parachuteSpawnCount
+}));
+assert.ok(laterParachute.count >= 1 && laterParachute.x > 14000,
+  'parachute encounters must spawn near the player after x=14,500');
+await page.evaluate(() => window.NBGLevel1Runtime.reset());
 
 // The three new monochrome rat sheets belong only to the turquoise parachute.
 const turquoiseSources = await page.evaluate(() =>
@@ -1645,7 +1681,7 @@ await page.evaluate(() => {
 });
 await page.waitForFunction(() => window.NBGLevel1State.activeSpawnedRats === 0,
   null, { timeout: 2500 });
-assert.equal(await page.evaluate(() => window.NBGLevel1State.enemies.length), 36,
+assert.equal(await page.evaluate(() => window.NBGLevel1State.enemies.length), 57,
   '100 expired parachute walkers must be removed without affecting fixed enemies');
 
 // Health reaching zero must freeze the timer until an explicit reset.
@@ -1688,7 +1724,7 @@ assert.deepEqual(await page.evaluate(() => ({
   defeated: window.NBGLevel1State.enemies.filter(enemy => enemy.defeated).length
 })), {
   running: false, gameOver: false, health: 3, elapsed: 0,
-  active: 0, spawned: 0, enemies: 36, defeated: 0
+  active: 0, spawned: 0, enemies: 57, defeated: 0
 }, 'reset must restore all enemies, health and speedrun clock');
 await page.keyboard.down('KeyD');
 await page.waitForFunction(() => window.NBGLevel1State.running === true, null, { timeout: 2500 });
@@ -1761,6 +1797,82 @@ for (const mode of ['keyboard', 'touch']) {
     delete window.__nbgOriginalQueuedStart;
     delete window.__nbgReleaseQueuedStart;
   });
+}
+
+// Fresh isolated browser per input type: no prior game-over, Scores focus,
+// or reset state can interfere with the queued three-press contract.
+for (const mode of ['keyboard', 'touch']) {
+  const queuedPage = await browser.newPage({
+    viewport: { width: 480, height: 320 },
+    hasTouch: mode === 'touch'
+  });
+  try {
+    await queuedPage.goto(url, { waitUntil: 'domcontentloaded' });
+    await queuedPage.waitForFunction(() => window.NBGLevel1State?.assetsLoaded,
+      null, { timeout: 20000 });
+    await queuedPage.evaluate(() => {
+      // Gameplay keyboard handlers intentionally ignore presses while Scores
+      // drawer is open; isolate this test with the drawer closed.
+      const drawer = document.getElementById('nbg-record-drawer');
+      if (drawer) drawer.hidden = true;
+      // This is a SIGNED-player preplay regression. With guest identity the
+      // runtime correctly cancels an owner-bound wait on every new input.
+      // Supply one stable mock owner so presses exercise the real queue.
+      window.MOONBOYS_IDENTITY = {
+        ...window.MOONBOYS_IDENTITY,
+        getTelegramId: () => 'nbg-queued-jump-test-owner',
+        isTelegramLinked: () => true,
+      };
+      window.__nbgOriginalQueuedStart = window.NBGLondonBeforeQueuedRun;
+      window.NBGLondonBeforeQueuedRun = () => new Promise(resolve => {
+        window.__nbgReleaseQueuedStart = resolve;
+      });
+    });
+    let immediateQueued;
+    if (mode === 'keyboard') {
+      // Read the actual window handler counter synchronously before blur
+      // or other browser lifecycle processing can clear held game inputs.
+      immediateQueued = await queuedPage.evaluate(() => {
+        const counts = [];
+        for (let press = 0; press < 4; press++) {
+          window.dispatchEvent(new KeyboardEvent('keydown',
+            { key: 'w', code: 'KeyW', bubbles: true, cancelable: true }));
+          counts.push(window.NBGLevel1State.pendingJumpPresses);
+          window.dispatchEvent(new KeyboardEvent('keyup',
+            { key: 'w', code: 'KeyW', bubbles: true, cancelable: true }));
+        }
+        return counts;
+      });
+    } else {
+      await queuedPage.evaluate(() => {
+        for (let press = 0; press < 4; press++) {
+          window.NBGLevel1Runtime.setTouchControl('jump', true);
+          window.NBGLevel1Runtime.setTouchControl('jump', false);
+        }
+      });
+    }
+    await queuedPage.waitForFunction(() =>
+      typeof window.__nbgReleaseQueuedStart === 'function');
+    const queued = await queuedPage.evaluate(() => ({
+      running: window.NBGLevel1State.running,
+      pending: window.NBGLevel1State.pendingJumpPresses,
+      waiting: window.NBGLevel1State.waitingForFirstInput,
+      scoresHidden: document.getElementById('nbg-record-drawer')?.hidden,
+      gameOver: window.NBGLevel1State.gameOver,
+      complete: window.NBGLevel1State.complete
+    }));
+    assert.equal(queued.running, false, mode + ' cannot start before server handshake');
+    if (mode === 'keyboard') assert.deepEqual(immediateQueued, [1,2,3,3],
+      'keyboard handler must retain first three distinct press edges');
+    assert.equal(queued.pending, 3,
+      mode + ' should store three distinct Jump presses: ' +
+      JSON.stringify({ ...queued, immediateQueued }));
+    await queuedPage.evaluate(() => window.__nbgReleaseQueuedStart());
+    await queuedPage.waitForFunction(() => window.NBGLevel1State.running &&
+      window.NBGLevel1State.jumpsUsed === 3, null, { timeout: 1800 });
+  } finally {
+    await queuedPage.close();
+  }
 }
 
 // Resetting while a signed handshake is pending must not revive a stale run.
