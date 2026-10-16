@@ -71,7 +71,7 @@ async function emit(type, detail) {
 }
 function auth(id) { return { id, hash: 'signed-' + id, auth_date: '1800000000' }; }
 function requests(path) { return calls.filter(call => call.pathname.endsWith(path)); }
-assert.match(elements.get('nbg-record-status').textContent, /Only completed|Fresh run|/); // initialized
+assert.match(elements.get('nbg-record-account').textContent, /Guest/, 'initial guest status is visible');
 
 // A fresh-auth restore can adopt another tab's account. The run remains unranked.
 telegramId = '100'; linked = true;
@@ -97,15 +97,16 @@ assert.equal(requests('/run/finish').length, 0,
 
 // The real identity-change signal must invalidate a pending authenticated run.
 telegramId = '100';
-let finishAuth;
+const finishResolvers = [];
 nextAuth = async () => auth('100');
 await emit('nbg-level-started');
 assert.equal(requests('/run/start').length, 2);
-nextAuth = () => new Promise(resolve => { finishAuth = resolve; });
+nextAuth = () => new Promise(resolve => { finishResolvers.push(resolve); });
 await emit('nbg-level-complete', { timeMs: 120000, xp: 200, coins: 12, secretCoins: 0 });
+assert.equal(finishResolvers.length, 1);
 telegramId = '200';
 await emit('moonboys:identity-change');
-finishAuth(auth('200'));
+finishResolvers.forEach(resolve => resolve(auth('200')));
 await flush();
 assert.equal(requests('/run/finish').length, 0,
   'logout or account change during finish authentication blocks submission');
