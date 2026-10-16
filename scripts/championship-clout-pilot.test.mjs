@@ -246,7 +246,14 @@ test('PR2 must not expose a browser write route, economy mutation or enabled def
   const entry = readFileSync('workers/moonboys-api/worker-phase5-final.js', 'utf8');
   const pilot = readFileSync('workers/moonboys-api/championship/clout-pilot.js', 'utf8');
   assert.match(entry, /verifyTelegramWebhookSecret\(request, env\)/);
-  assert.match(entry, /projectCloutForAuthenticatedWebhook\(env, body, response\)/);
+  assert.match(entry, /ctx\.waitUntil\(projectCloutForAuthenticatedWebhook\(env, body, response\)\)/);
+  assert.match(entry, /ctx\.waitUntil\(projectCloutForAuthenticatedMiniApp\(env, body, response\)/);
+  assert.doesNotMatch(entry, /await\s+projectCloutForAuthenticated(?:Webhook|MiniApp)\(/,
+    'Clout source reads and projection must never block the completed gameplay response');
+  assert.match(entry, /typeof ctx\?\.waitUntil === 'function'/,
+    'Cloudflare execution context must own background Clout projection lifecycle');
+  assert.match(entry, /CHAMPIONSHIP_CLOUT_PILOT_ENABLED === 'true'/,
+    'no optional Clout work should be scheduled while the pilot is disabled');
   assert.match(entry, /CHAMPIONSHIP_CLOUT_PILOT_ENABLED !== 'true'/);
   assert.match(entry, /isMiniAppPetAction && body && response\.ok/);
   assert.match(entry, /verifyTelegramMiniAppInitData\(/);
