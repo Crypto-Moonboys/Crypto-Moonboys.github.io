@@ -160,8 +160,14 @@ test('migration adds isolated tables, rejects duplicate/cross-owner source claim
     db.exec(readFileSync('workers/moonboys-api/migrations/100_championship_clout_foundation.sql','utf8'));
     const tables=db.prepare("SELECT name FROM sqlite_master WHERE name LIKE 'championship_clout_%' AND type='table' ORDER BY name").all();
     assert.deepEqual(tables.map(x=>x.name),[
-      'championship_clout_archives','championship_clout_daily','championship_clout_effects',
+      'championship_clout_archives','championship_clout_daily',
+      'championship_clout_effects','championship_clout_sources',
     ]);
+    const addSource=db.prepare(
+      'INSERT INTO championship_clout_sources (source_system,source_event_id,policy_version,telegram_id,day_key,earned_at_ms,verified_at_ms,verification_kind,recorded_at_ms) VALUES (?,?,?,?,?,?,?,?,?)'
+    );
+    addSource.run('moonpet','event-100',CLOUT_POLICY_VERSION,'100','2026-10-16',
+      MID,MID+500,'server_receipt',MID+600);
     const insert=db.prepare(
       'INSERT INTO championship_clout_effects (source_system,source_event_id,effect_kind,policy_version,telegram_id,verification_kind,earned_at_ms,verified_at_ms,day_key,game_key,normalized_skill,recorded_at_ms) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)'
     );
@@ -170,6 +176,31 @@ test('migration adds isolated tables, rejects duplicate/cross-owner source claim
     assert.throws(()=>insert.run('moonpet','event-100','skill',CLOUT_POLICY_VERSION,'200','server_receipt',
       MID,MID+500,'2026-10-16','moonpet-contract',100,MID+600),/UNIQUE|constraint/i);
     assert.equal(db.prepare('SELECT COUNT(*) AS n FROM championship_clout_effects').get().n,1);
+    const anotherEffect=db.prepare(
+      'INSERT INTO championship_clout_effects (source_system,source_event_id,effect_kind,policy_version,telegram_id,verification_kind,earned_at_ms,verified_at_ms,day_key,game_key,recorded_at_ms) VALUES (?,?,?,?,?,?,?,?,?,?,?)'
+    );
+    anotherEffect.run('moonpet','event-100','variety',CLOUT_POLICY_VERSION,
+      '100','server_receipt',MID,MID+500,'2026-10-16','moonpet-contract',MID+600);
+    assert.throws(()=>anotherEffect.run('moonpet','event-100','variety',
+      CLOUT_POLICY_VERSION,'200','server_receipt',MID,MID+500,
+      '2026-10-16','moonpet-contract',MID+600),
+      /FOREIGN KEY|constraint/i,'another effect kind cannot move receipt to another owner');
+    assert.throws(()=>anotherEffect.run('moonpet','event-100','variety',
+      CLOUT_POLICY_VERSION,'100','server_receipt',MID,MID+500,
+      '2026-10-17','moonpet-contract',MID+600),
+      /FOREIGN KEY|constraint/i,'a reused source cannot be attributed to a new UTC day');
+    assert.throws(()=>addSource.run('moonpet','event-100',CLOUT_POLICY_VERSION,
+      '200','2026-10-16',MID,MID+500,'server_receipt',MID+600),
+      /UNIQUE|constraint/i,'the immutable source owner cannot be reassigned');
+    assert.throws(()=>addSource.run('moonpet','bad-earned-day',CLOUT_POLICY_VERSION,
+      '100','2026-10-17',MID,MID+500,'server_receipt',MID+600),
+      /CHECK|constraint/i,'a source must be recorded against its actual earning day');
+    assert.throws(()=>db.prepare(
+      'DELETE FROM championship_clout_sources WHERE source_event_id=?'
+    ).run('event-100'),/FOREIGN KEY|constraint/i,
+      'a source supporting effects cannot be deleted silently');
+    assert.deepEqual(db.prepare('PRAGMA foreign_key_check').all(),[],
+      'all effects retain a matching unique owner/day source receipt');
     const failForeign=()=>insert.run('moonpet','fake','skill',CLOUT_POLICY_VERSION,'999','server_receipt',
       MID,MID+500,'2026-10-16','moonpet-contract',100,MID+600);
     assert.throws(failForeign,/FOREIGN KEY|constraint/i);
@@ -205,7 +236,8 @@ test('read-side D1 query excludes bans and never writes awards', async () => {
     // Exact D1-like read adapter with zero mutation functions exposed.
     const readOnly={
       prepare(sql) {
-        assert.match(sql,/^SELECT/u);
+        assert.match(sql,/^WITH eligible AS/u,
+          'the official period selector aggregates before LIMIT');
         const st=db.prepare(sql);
         return {bind(...params){return {async all(){return {success:true,results:st.all(...params)}}}}};
       },
@@ -217,5 +249,52 @@ test('read-side D1 query excludes bans and never writes awards', async () => {
     await assert.rejects(()=>readCloutLeaderboard({
       prepare(){return {bind(){return {async all(){return {success:false,results:[]}}}}}},
     },'daily',MID),/daily_read_unavailable/);
+  } finally {db.close();}
+});
+
+
+test('annual read aggregates more than 50,000 daily snapshots without truncating the winners', async () => {
+  const db=new DatabaseSync(':memory:');
+  try {
+    db.exec('PRAGMA foreign_keys=ON; CREATE TABLE telegram_users (telegram_id TEXT PRIMARY KEY);');
+    db.exec('CREATE TABLE telegram_anticheat_state (telegram_id TEXT PRIMARY KEY,is_blocked INTEGER DEFAULT 0);');
+    db.exec(readFileSync('workers/moonboys-api/migrations/100_championship_clout_foundation.sql','utf8'));
+    const addPlayer=db.prepare('INSERT INTO telegram_users (telegram_id) VALUES (?)');
+    const addDay=db.prepare(
+      'INSERT INTO championship_clout_daily (telegram_id,day_key,policy_version,skill_points,mission_points,variety_points,community_points,streak_points,total_points,game_keys_json,first_earned_at_ms,recalculated_at_ms) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)'
+    );
+    const leapStart=moment('2028-01-01T00:00:00Z');
+    db.exec('BEGIN');
+    for(let player=0;player<140;player++){
+      const id=String(player+1000);
+      addPlayer.run(id);
+      for(let day=0;day<366;day++){
+        const earnedDay=leapStart+day*86_400_000;
+        const dayKey=new Date(earnedDay).toISOString().slice(0,10);
+        const points=player===0?2:1;
+        addDay.run(id,dayKey,CLOUT_POLICY_VERSION,points,0,0,0,0,points,
+          JSON.stringify(player%2?['snake']:['snake','nbg-london']),
+          earnedDay+12*3600000,earnedDay+13*3600000);
+      }
+    }
+    db.exec('COMMIT');
+    assert.equal(db.prepare('SELECT COUNT(*) AS n FROM championship_clout_daily').get().n,140*366);
+    const readOnly={prepare(sql){
+      assert.match(sql,/^WITH eligible AS/u);
+      const stmt=db.prepare(sql);
+      return {bind(...args){return {async all(){return {success:true,results:stmt.all(...args)}}}}};
+    }};
+    const result=await readCloutLeaderboard(readOnly,'annual',moment('2028-08-01T12:00:00Z'),100);
+    assert.equal(result.rows.length,100);
+    assert.equal(result.rows[0].telegram_id,'1000');
+    assert.equal(result.rows[0].total_points,732);
+    assert.equal(result.rows[0].active_days,366);
+    assert.equal(result.rows[0].distinct_games,2);
+    assert.equal(result.rows[1].total_points,366);
+    assert.equal(result.rows[1].distinct_games,2,
+      'distinct game count must be a set across all 366 days, not a sum');
+    assert.equal(result.rows[99].rank,100);
+    assert.equal(db.prepare('SELECT COUNT(*) AS n FROM championship_clout_daily').get().n,140*366,
+      'read-side annual aggregation does not rewrite stored results');
   } finally {db.close();}
 });
