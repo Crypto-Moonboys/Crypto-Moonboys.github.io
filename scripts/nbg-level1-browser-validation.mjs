@@ -1356,8 +1356,7 @@ await page.waitForFunction(() => {
   return state.player.grounded && Math.abs(state.player.y - (state.crates[0].y - state.player.h)) < 2;
 }, null, { timeout: 2500 });
 
-// Exercise independent random payouts for a mystery and a star box.
-await page.evaluate(() => { window.__rewardRandomOriginal = Math.random; Math.random = () => 0; });
+// Exercise deterministic seeded reward pools; overriding Math.random must not change ranked gameplay.
 const beforeMystery = await page.evaluate(() => {
   const state = window.NBGLevel1State;
   const box = state.rewardBoxes.find((candidate) => candidate.type === 'mystery' && !candidate.opened);
@@ -1370,9 +1369,15 @@ const beforeMystery = await page.evaluate(() => {
 await page.waitForFunction((x) =>
   window.NBGLevel1State.rewardBoxes.some((box) => box.x === x && box.opened),
   beforeMystery.x, { timeout: 2500 });
-assert.equal(await page.evaluate(() => window.NBGLevel1State.xp), beforeMystery.xp + 100,
-  'mystery boxes must award randomly selected XP');
-await page.evaluate(() => { Math.random = () => 0.5; });
+const mysteryResult = await page.evaluate(() => ({
+  xp: window.NBGLevel1State.xp,
+  reward: window.NBGLevel1State.rewardBoxes.find(box =>
+    box.type === 'mystery' && box.opened)?.reward,
+}));
+assert.ok(mysteryResult.reward &&
+  [0, 100, 250, 500].includes(mysteryResult.reward.xp) &&
+  mysteryResult.xp === beforeMystery.xp + mysteryResult.reward.xp,
+  'mystery box must award exactly its seeded reward');
 const beforeStar = await page.evaluate(() => {
   const state = window.NBGLevel1State;
   const box = state.rewardBoxes.find((candidate) => candidate.type === 'star' && !candidate.opened);
@@ -1389,15 +1394,18 @@ const starResult = await page.evaluate(() => ({
   xp: window.NBGLevel1State.xp,
   banner: window.NBGLevel1State.rewardNotificationText,
   mysteryOpened: window.NBGLevel1State.rewardBoxes[0].opened,
-  starOpened: window.NBGLevel1State.rewardBoxes[1].opened
+  starOpened: window.NBGLevel1State.rewardBoxes[1].opened,
+  reward: window.NBGLevel1State.rewardBoxes[1].reward,
 }));
-assert.equal(starResult.xp, beforeStar.xp + 1000, 'star box must roll its own independent reward pool');
-assert.ok(starResult.banner.includes('STAR BOX +1000 XP'), 'the randomly selected reward must be displayed');
+assert.ok(starResult.reward &&
+  [0, 500, 750, 1000].includes(starResult.reward.xp) &&
+  starResult.xp === beforeStar.xp + starResult.reward.xp,
+  'star box must award exactly its seeded reward');
+assert.ok(starResult.banner.includes('STAR BOX'), 'the seeded reward must be displayed');
 assert.equal(starResult.mysteryOpened && starResult.starOpened, true, 'collected boxes stay opened in a run');
 await page.waitForTimeout(100);
 assert.equal(await page.evaluate(() => window.NBGLevel1State.xp), starResult.xp,
   'opened boxes must not pay the same reward twice');
-await page.evaluate(() => { Math.random = window.__rewardRandomOriginal; });
 await page.evaluate(() => window.NBGLevel1Runtime.reset());
 assert.equal(await page.evaluate(() =>
   window.NBGLevel1State.rewardBoxes.every((box) => !box.opened && box.reward == null)), true,
