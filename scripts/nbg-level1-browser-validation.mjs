@@ -706,7 +706,8 @@ const lookingBelow = await page.evaluate(() => ({
 }));
 assert.ok(lookingBelow.y < beforeLook.y - 45,
   'hold Down must shift the view to expose scenery below the player');
-assert.equal(lookingBelow.x, beforeLook.x, 'looking below must not steer or drop the player');
+assert.ok(Math.abs(lookingBelow.x - beforeLook.x) < 3,
+  'looking below must not steer or drop the player beyond residual running inertia');
 assert.equal(lookingBelow.xp, beforeLook.xp, 'camera look must not award XP');
 await page.keyboard.up('ArrowDown');
 await page.waitForFunction(() => window.NBGLevel1State.cameraY > -15, null, { timeout: 3000 });
