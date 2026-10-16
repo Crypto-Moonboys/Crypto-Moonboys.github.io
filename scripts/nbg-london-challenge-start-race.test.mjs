@@ -135,6 +135,12 @@ test('reset serializes the old issued challenge before the new server start',asy
   assert.equal(finishes[0].replay.version,1);
   assert.equal(Object.hasOwn(finishes[0],'xp'),false,
     'browser-declared XP is never trusted even on legacy compatibility path');
+  listeners.get('nbg-level-started')({detail:{
+    level:'london-level-1',replay_version:1,
+  }});
+  await flush();
+  assert.equal(starts.length,3,
+    'new-engine practice after an unavailable challenge cannot silently create a second ranked v1 start');
 });
 
 test('v2 challenge release stays disabled in production source',()=>{
