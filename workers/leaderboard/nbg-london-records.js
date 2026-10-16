@@ -16,7 +16,7 @@ const MAX_FINISH_MS = 30 * 60_000;
 const SERVER_CLOCK_TOLERANCE_MS = 20_000;
 
 export function efficiencyRate(xp, timeMs) {
-  return Math.round(xp * 6_000_000 / timeMs) / 100;
+  return xp * 60_000 / timeMs;
 }
 
 export function validFinish(body, elapsedServerMs) {
