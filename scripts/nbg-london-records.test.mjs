@@ -61,7 +61,10 @@ const DB = {
     }
   }
 };
-const env = { DB, LEADERBOARD: { get: async () => null } };
+const kvBans = new Set();
+const env = { DB, LEADERBOARD: {
+  get: async key => kvBans.has(key) ? 'lifetime' : null
+} };
 const verify = async body => {
   const id = String(body?.telegram_auth?.id || '');
   if (!['100', '200'].includes(id)) return { ok: false, status: 403, error: 'telegram_sync_required' };
@@ -297,9 +300,10 @@ try {
   assert.equal(sqlite.prepare('SELECT COUNT(*) AS n FROM nbg_london_prize_awards').get().n, 5,
     'no extra prizes may be minted for unverified older runs');
 
-  // Fifty blocked, frozen unpaid periods must NOT occupy the retry batch and
-  // starve one newer unblocked prize. Blocked receipts remain intact for retry.
-  sqlite.prepare('UPDATE telegram_anticheat_state SET is_blocked=1 WHERE telegram_id=?').run('500');
+  // Fifty KV-only banned, frozen unpaid periods must NOT occupy the retry
+  // batch even when the D1 block write failed. The shared KV is authoritative.
+  sqlite.prepare('UPDATE telegram_anticheat_state SET is_blocked=0 WHERE telegram_id=?').run('500');
+  kvBans.add('anticheat:blocked:500');
   const freeze = sqlite.prepare(`INSERT INTO nbg_london_prize_periods
     (period_kind,period_start_ms,period_end_ms,frozen_at_ms,freeze_token)
     VALUES ('daily',?,?,?,?)`);
@@ -327,6 +331,46 @@ try {
   ).get().arcade_xp_total, 130, 'eligible award credits the existing shared Arcade XP wallet once');
   assert.deepEqual((await settleNbgLondonDue(env, fakeNow)).flatMap(report => report.payouts), [],
     'retrying the recovered period cannot credit it twice');
+  kvBans.delete('anticheat:blocked:500');
+
+  // KV-only bans must affect initial winner selection BEFORE assigning ranks.
+  const kvPeriodStart = oldPracticeStart - 3 * 86400000;
+  for (const [id, points] of [['500', 90000], ['300', 70000], ['400', 60000]]) {
+    sqlite.prepare(`INSERT INTO nbg_london_period_scores
+      (period_kind,period_start_ms,telegram_id,display_name,total_xp,trusted_xp,
+       verified_run_count,run_count,best_time_ms,updated_at_ms)
+      VALUES('daily',?,?,?,?,?,1,1,100000,?)`
+    ).run(kvPeriodStart, id, '@' + id, points, points, fakeNow);
+  }
+  kvBans.add('anticheat:blocked:500');
+  const kvFreezePayouts = await settleNbgLondonPeriod(env, {
+    kind: 'daily', start: kvPeriodStart, end: kvPeriodStart + 86400000
+  }, fakeNow);
+  assert.deepEqual(kvFreezePayouts.map(prize => [prize.telegram_id, prize.arcade_xp]),
+    [['300', 100], ['400', 60]],
+    'KV-only banned player must not steal first rank when D1 block is absent');
+  assert.equal(sqlite.prepare(
+    'SELECT COUNT(*) AS n FROM nbg_london_prize_awards WHERE period_kind=? AND period_start_ms=? AND telegram_id=?'
+  ).get('daily', kvPeriodStart, '500').n, 0,
+  'KV-only banned player cannot enter frozen winner roster');
+  kvBans.delete('anticheat:blocked:500');
+
+  // A winner frozen while clean but banned in KV before retry cannot be paid.
+  const frozenKvStart = oldPracticeStart - 4 * 86400000;
+  freeze.run(frozenKvStart, frozenKvStart + 86400000, fakeNow, 'frozen-kv-only');
+  award.run('frozen-kv-award', frozenKvStart, '500', fakeNow);
+  kvBans.add('anticheat:blocked:500');
+  assert.deepEqual(await settleNbgLondonPeriod(env, {
+    kind: 'daily', start: frozenKvStart, end: frozenKvStart + 86400000
+  }, fakeNow), [], 'KV-only blocked frozen winner receives no shared Arcade XP');
+  assert.equal(sqlite.prepare(
+    "SELECT paid_at_ms FROM nbg_london_prize_awards WHERE event_id='frozen-kv-award'"
+  ).get().paid_at_ms, null);
+  kvBans.delete('anticheat:blocked:500');
+  assert.deepEqual(await settleNbgLondonPeriod(env, {
+    kind: 'daily', start: frozenKvStart, end: frozenKvStart + 86400000
+  }, fakeNow), [{ rank: 1, telegram_id: '500', arcade_xp: 100 }],
+  'KV-only ban removal may resume the same frozen award exactly once');
 
   const shortRun = await api('/nbg-london/run/start', { telegram_auth: { id: '100' } });
   fakeNow += 2000;
