@@ -1383,7 +1383,7 @@
     function tick(time, sequence) {
       if (sequence !== runSequence) return;
       if (!lastTime) lastTime = time;
-      var frameElapsedMs = Math.max(0, time - lastTime);
+      var frameElapsedMs = Math.round(Math.max(0, time - lastTime) * 10) / 10;
       var dt = Math.min(33, frameElapsedMs);
       lastTime = time;
 
