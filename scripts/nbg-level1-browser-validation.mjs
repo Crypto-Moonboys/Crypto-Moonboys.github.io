@@ -1815,6 +1815,14 @@ for (const mode of ['keyboard', 'touch']) {
       // drawer is open; isolate this test with the drawer closed.
       const drawer = document.getElementById('nbg-record-drawer');
       if (drawer) drawer.hidden = true;
+      // This is a SIGNED-player preplay regression. With guest identity the
+      // runtime correctly cancels an owner-bound wait on every new input.
+      // Supply one stable mock owner so presses exercise the real queue.
+      window.MOONBOYS_IDENTITY = {
+        ...window.MOONBOYS_IDENTITY,
+        getTelegramId: () => 'nbg-queued-jump-test-owner',
+        isTelegramLinked: () => true,
+      };
       window.__nbgOriginalQueuedStart = window.NBGLondonBeforeQueuedRun;
       window.NBGLondonBeforeQueuedRun = () => new Promise(resolve => {
         window.__nbgReleaseQueuedStart = resolve;
