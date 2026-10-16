@@ -1569,6 +1569,29 @@ assert.deepEqual(await page.evaluate(() => ({
   enemies: window.NBGLevel1State.enemies.length
 })), { active: 0, spawns: 0, enemies: 57 }, 'reset must clear parachutes and restore original enemy roster');
 
+// Parachute encounters must happen in the second half too, not merely when
+// the runner waits near the original London opening.
+await page.keyboard.down('KeyD');
+await page.waitForFunction(() => window.NBGLevel1State.running, null, { timeout: 3000 });
+await page.keyboard.up('KeyD');
+await page.evaluate(() => {
+  const state = window.NBGLevel1State;
+  state.player.x = 14500;
+  state.player.y = 214 - state.player.h;
+  state.player.vx = 0;
+  state.player.vy = 0;
+  state.player.invuln = 20000;
+});
+await page.waitForFunction(() => window.NBGLevel1State.parachuteSpawnCount >= 1,
+  null, { timeout: 12000 });
+const laterParachute = await page.evaluate(() => ({
+  x: window.NBGLevel1State.parachuteRats[0]?.x,
+  count: window.NBGLevel1State.parachuteSpawnCount
+}));
+assert.ok(laterParachute.count >= 1 && laterParachute.x > 14000,
+  'parachute encounters must spawn near the player after x=14,500');
+await page.evaluate(() => window.NBGLevel1Runtime.reset());
+
 // The three new monochrome rat sheets belong only to the turquoise parachute.
 const turquoiseSources = await page.evaluate(() =>
   Object.fromEntries(['turquoiseRatWalk','turquoiseRatKick','turquoiseRatPunch'].map(key =>
