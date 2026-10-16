@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS championship_clout_effects (
   verification_kind TEXT NOT NULL
     CHECK(verification_kind IN ('server_receipt','server_replay','server_settlement')),
   earned_at_ms INTEGER NOT NULL CHECK(earned_at_ms >= 1704067200000),
-  verified_at_ms INTEGER NOT NULL CHECK(verified_at_ms >= 1704067200000),
+  verified_at_ms INTEGER NOT NULL CHECK(verified_at_ms >= 1704067200000 AND verified_at_ms >= earned_at_ms),
   day_key TEXT NOT NULL CHECK(length(day_key)=10),
   game_key TEXT CHECK(game_key IS NULL OR length(game_key) BETWEEN 1 AND 64),
   source_pet_id TEXT,
