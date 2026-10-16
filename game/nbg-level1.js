@@ -497,7 +497,7 @@
       if (pendingJumpPresses > 0 || (replay && replay.control === 'jump')) mask |= 4;
       if (keys.KeyS || keys.KeyX || touch.spray || (replay && replay.control === 'spray')) mask |= 8;
       var tenth = Math.round(dt * 10);
-      var elapsed = Math.round(frameElapsedMs);
+      var elapsed = Math.round(frameElapsedMs * 10);
       runReplayFrames.push(tenth & 255, (tenth >> 8) & 255,
         elapsed & 255, (elapsed >> 8) & 255, mask);
     }
