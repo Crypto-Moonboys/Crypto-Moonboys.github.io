@@ -15,8 +15,8 @@ Base: merged PR3A #1537 on main (089b2c950ca6d548cc567e87527458c08bbb5f2a). Coor
 
 Migration file: workers/moonboys-api/migrations/101_nbg_london_verified_run_receipts.sql.
 
-- Add a UNIQUE composite source (run_id,telegram_id) index, then a new nbg_london_verified_runs table with composite parent FK, original UTC finish day and timestamp, server-verified game score XP and time, replay version 1, SHA-256 of decoded replay bytes, SHA-256 of input-mask sequence ignoring timing, and server_replay authority label.
-- A UNIQUE raw hash prevents submitting the same encoded gameplay under a different run ID or account. UNIQUE input-mask hash also prevents trivial timing-only edits of the same controls. Both constraints are enforced inside the same D1 transaction as the source run claim and competition writes. No full replay or GPS coordinates are retained.
+- Add a UNIQUE composite source (run_id,telegram_id) index, then a new nbg_london_verified_runs table with composite parent FK, original UTC finish day and timestamp, server-verified game score XP and time, replay version 1, SHA-256 of decoded replay bytes, SHA-256 of the effective action stream computed by server physics (ignoring timing and ignored cooldown/extra-air-jump bits), and server_replay authority label.
+- A UNIQUE raw hash prevents submitting the same encoded gameplay under a different run ID or account. UNIQUE effective-action hash also rejects timing-only edits and semantically ignored button changes such as redundant spray presses during cooldown. Both constraints are enforced inside the same D1 transaction as the source run claim and competition writes. No full replay or GPS coordinates are retained.
 - No existing score/account/wallet rows are deleted, rewritten or backfilled. The canonical schema is mirrored. The required D1 migration verification contract, synthetic CI fixture, production manifest required list and request list include 101. Production applied/verified evidence remains explicitly PENDING.
 - Applying 101 requires a separate GK-approved backup, remote preflight and migration operation. This PR has NOT applied D1 migrations.
 
@@ -26,7 +26,7 @@ Migration file: workers/moonboys-api/migrations/101_nbg_london_verified_run_rece
 
 Only when BOTH code release constant NBG_VERIFIED_RUN_RECEIPTS_RELEASED and Wrangler NBG_VERIFIED_RUN_RECEIPTS_ENABLED are true, plus the trusted server physics replay passes, the source handles a verified run:
 
-- Compute both SHA-256 digests from server-validated decoded inputs (never browser-submitted digests). Reject prior accepted replay byte hash or same input-mask hash with HTTP 409. A race is still blocked by the D1 UNIQUE constraints.
+- Compute two SHA-256 digests: decoded raw bytes and the **server-applied effective action stream**, with redundant cooldown spray taps and unavailable jump taps omitted. Neither digest is browser-supplied. Reject a repeated raw replay or effective action digest with HTTP 409. Trusted mode fails closed if the real physics verifier does not supply the effective-action trace. A race is still blocked by the D1 UNIQUE constraints.
 - Atomically commit finished original run token, newly immutable receipt, original all-time best and all three NBG period rows. New verified entries increase trusted_xp and verified_run_count in exactly the same batch/amount as their legacy total_xp and run_count. Historical practice totals are never promoted.
 - If migration 101 is missing with feature flag ON, the new path fails closed before scoring; with feature OFF the old game continues normally without querying the missing table. Failed secondary period writes must roll back the finished run and new proof.
 - The old NBG public specialist board, normal replay physics and Telegram auth contract are not rewritten. No payouts, spendable Arcade XP, Community XP, Pet XP, Moon Gold or prizes are created.
