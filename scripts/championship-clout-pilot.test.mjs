@@ -584,6 +584,77 @@ test('finish day, not session start day, controls Clout; yesterday is never back
   } finally {f.close();}
 });
 
+test('waitUntil after UTC midnight preserves the signed source finish day and real verification time', async () => {
+  const finishAt = DAY+'T23:59:58.000Z';
+  const nextDayNow = new Date('2026-10-18T00:00:04.000Z');
+  const f = fixture();
+  try {
+    addDeadRun(f, {
+      startedAt: DAY+'T23:30:00.000Z', endedAt: finishAt,
+    });
+    addDaily(f);
+    assert.equal((await sync(f, OWNER, { deadRunEnabled:true, now:nextDayNow })).state,
+      'no_qualifying_receipts',
+      'ordinary /daily and Moonpet reconciliation still use the present UTC day');
+    assert.equal(CLOUT_DEAD_RUN_MIDNIGHT_GRACE_MS,15*60_000);
+    const projected = await sync(f, OWNER, {
+      deadRunEnabled:true, now:nextDayNow, deadRunFinishAt:finishAt,
+    });
+    assert.equal(projected.state,'recorded');
+    assert.equal(projected.day_key,DAY);
+    const row = f.sql.prepare(
+      "SELECT day_key,earned_at_ms,verified_at_ms,recorded_at_ms,verification_kind FROM championship_clout_sources WHERE source_system='dead_run'"
+    ).get();
+    assert.equal(row.day_key,DAY, 'finish day, not background execution day');
+    assert.equal(row.earned_at_ms,Date.parse(finishAt));
+    assert.equal(row.verified_at_ms,nextDayNow.getTime(),
+      'verification timestamp must remain actual next-day execution time');
+    assert.equal(row.recorded_at_ms,nextDayNow.getTime());
+    assert.equal(row.verification_kind,'server_settlement');
+    const daily = f.sql.prepare(
+      'SELECT day_key,community_points,skill_points,recalculated_at_ms FROM championship_clout_daily'
+    ).get();
+    assert.equal(daily.day_key,DAY);
+    assert.equal(daily.community_points,0,
+      'only authenticated Dead Run finish receives the narrow prior-day exception');
+    assert.equal(daily.recalculated_at_ms,nextDayNow.getTime());
+    assert.equal((await sync(f, OWNER, {
+      deadRunEnabled:true, now:nextDayNow, deadRunFinishAt:finishAt,
+    })).total_points, projected.total_points, 'cross-midnight retries must not duplicate Clout');
+    assert.equal(count(f,'championship_clout_sources'),1);
+    assert.equal(count(f,'championship_clout_effects'),2);
+  } finally { f.close(); }
+});
+
+test('cross-day recovery is bounded, never backfills old, unsigned or future finishes', async () => {
+  const finishAt = DAY+'T23:59:58.000Z';
+  const f = fixture();
+  try {
+    addDeadRun(f,{startedAt:DAY+'T23:30:00.000Z',endedAt:finishAt});
+    const expired = await sync(f, OWNER, {
+      now:new Date('2026-10-18T00:16:00.000Z'),
+      deadRunEnabled:true,deadRunFinishAt:finishAt,
+    });
+    assert.deepEqual(expired,{state:'stale_finished_run',day_key:DAY});
+    assert.equal(count(f,'championship_clout_sources'),0);
+    await assert.rejects(sync(f, OWNER, {
+      now:new Date('2026-10-18T00:00:01.000Z'),
+      deadRunEnabled:true,deadRunFinishAt:'2026-10-18T00:00:05.000Z',
+    }),/clout_dead_run_invalid_finish_clock/,'a future finish cannot select attribution');
+    await assert.rejects(sync(f, OWNER, {
+      now:new Date('2026-10-18T00:00:01.000Z'),
+      deadRunEnabled:false,deadRunFinishAt:finishAt,
+    }),/clout_dead_run_invalid_finish_clock/,
+    'independent Dead Run source gate must be enabled for any finish-day override');
+    await assert.rejects(sync(f, OWNER, {
+      now:new Date('2026-10-18T00:00:01.000Z'),
+      deadRunEnabled:true,deadRunFinishAt:DAY,
+    }),/clout_dead_run_invalid_finish_clock/,
+    'a date-only or client-style timestamp is not valid stored UTC evidence');
+    assert.equal(count(f,'championship_clout_sources'),0);
+  } finally { f.close(); }
+});
+
 test('failed second Clout effect must roll back parent and all earlier writes', async () => {
   const f=fixture();
   try {
@@ -613,6 +684,12 @@ test('Dead Run Clout only reads signed accepted finishes and runs off the respon
   assert.match(worker,/verifyTelegramMiniAppInitData\(signed, env\.TELEGRAM_BOT_TOKEN/);
   assert.match(worker,/max_age_seconds: DEAD_RUN_MAX_SESSION_SECONDS \+ 900/);
   assert.match(worker,/session_id=\? AND telegram_id=\? AND status='finished' AND ranked=1/);
+  assert.match(worker,/const sessionId = String\(body\?\.session_id \|\| ''\)\.trim\(\)/,
+    'Clout must accept the same normalized session ID as the source handler');
+  assert.match(worker,/SELECT telegram_id, ended_at FROM dead_run_sessions/,
+    'the saved server finish timestamp must be reloaded from D1');
+  assert.match(worker,/deadRunFinishAt: settled\.ended_at/,
+    'post-midnight reconciliation must never use an inferred browser finish time');
   assert.match(worker,/ctx\.waitUntil\(projectCloutForAcceptedDeadRunFinish/);
   assert.doesNotMatch(worker,/await\s+projectCloutForAcceptedDeadRunFinish\(/);
   assert.doesNotMatch(source,/JOIN arcade_progression_events/);
