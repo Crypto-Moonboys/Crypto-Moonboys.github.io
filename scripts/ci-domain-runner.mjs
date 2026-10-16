@@ -114,6 +114,7 @@ const GROUPS = {
     ['node', 'scripts/moonpet-public-sync.test.mjs'],
     ['node', 'scripts/community-xp-sync.test.mjs'],
     ['node', 'scripts/community-xp-awards.test.mjs'],
+    ['node', '--test', 'scripts/championship-clout-foundation.test.mjs'],
     ['node', 'scripts/moonpet-community-season-boundaries.test.mjs'],
     ['node', 'scripts/moonpet-quest-public-sync.test.mjs'],
     ['node', 'scripts/moonpet-live-ending-recovery.test.mjs'],
