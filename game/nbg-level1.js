@@ -982,8 +982,11 @@
       hud.state.textContent = rankedChallengeVersion === 2 && running ?
         rankedChallengeGateFailed ? 'TAG MISSED - NOT RANKED' :
         rankedChallengeGateIndex < 32 ?
-          'TAG ' + (rankedChallengeGateIndex + 1) + '/32: ' +
-            (((rankedChallengeSeed >>> rankedChallengeGateIndex) & 1) ? 'RIGHT' : 'LEFT') :
+          'TAG ' + (rankedChallengeGateIndex + 1) + '/32: HOLD ' +
+            (((rankedChallengeSeed >>> rankedChallengeGateIndex) & 1) ? 'RIGHT' : 'LEFT') +
+            ' AT MARK (' +
+            Math.max(0, Math.ceil(1900 + rankedChallengeGateIndex * 600 - player.x)) +
+            'PX)' :
           'ALL 32 TAGS COMPLETE' :
         complete ? 'LEVEL COMPLETE' : gameOver ? 'GAME OVER' : running ?
           ((checkpoint.active || courseCheckpoints.some(function (marker) { return marker.active; })) ? 'CHECKPOINT' : 'RUNNING') :
