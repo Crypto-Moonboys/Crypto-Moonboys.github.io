@@ -1647,6 +1647,9 @@
             challengeHandshakeComplete = true;
             return beginGameplay();
           }).catch(function(){
+            // A network/auth failure from a pre-reset request must NOT start
+            // the game after reset or clear a newer in-flight challenge.
+            if (runSequence !== expectedSequence) return window.NBGLevel1State;
             pendingChallengeStart = null;
             challengeHandshakeComplete = true;
             // Failed challenge means no ranked v2 source; guest practice
