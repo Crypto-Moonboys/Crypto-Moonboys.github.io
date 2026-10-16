@@ -3,6 +3,11 @@
 -- No Community XP, Arcade XP, Moonpet XP or prize payout authority.
 -- Do NOT deploy the gated trusted writer before this migration is explicitly
 -- backed up, remotely applied and verified by the owner.
+-- The challenge is generated and saved at authenticated /run/start, before
+-- the first ranked physics tick. It changes actual server-replayed gameplay.
+ALTER TABLE nbg_london_runs ADD COLUMN challenge_seed INTEGER;
+ALTER TABLE nbg_london_runs ADD COLUMN challenge_version INTEGER NOT NULL DEFAULT 1
+  CHECK(challenge_version IN (1,2));
 CREATE UNIQUE INDEX IF NOT EXISTS idx_nbg_london_runs_id_owner
   ON nbg_london_runs(run_id,telegram_id);
 
