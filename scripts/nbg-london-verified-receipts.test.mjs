@@ -80,17 +80,19 @@ function fixture({ migrated = true, codeGate = true } = {}) {
   };
   // Only a deterministic test hook. The REAL production call always injects
   // verifyNbgLondonReplay; never use HTTP body xp as a trusted scorer.
-  const mockPhysicsVerifier=async({replay})=>({
-    valid:true,complete:true,time_ms:120000,xp:600,coins:10,secret_coins:1,
-    // The independent real simulator populates this trace from actions
-    // which actually changed the game. This mock only stands in for the
-    // physics engine for source-storage/transaction tests; the REAL replay
-    // canonicalization has separate physics regressions.
-    effective_input_masks: Uint8Array.from(
-      Array.from({length:Buffer.from(replay.frames,'base64').length/5},
-        (_,i)=>Buffer.from(replay.frames,'base64')[i*5+4]),
-    ),
-  });
+  const mockPhysicsVerifier=async({replay})=>{
+    // Legacy gated-off NBG tests intentionally submit without a replay. The
+    // verifier must tolerate that fixture; trusted mode explicitly requires
+    // a real server-produced canonical action trace before writing receipt 101.
+    const bytes=typeof replay?.frames === 'string'
+      ? Buffer.from(replay.frames,'base64') : Buffer.alloc(0);
+    return {
+      valid:true,complete:true,time_ms:120000,xp:600,coins:10,secret_coins:1,
+      effective_input_masks:Uint8Array.from(
+        {length:bytes.length/5},(_,i)=>bytes[i*5+4]
+      ),
+    };
+  };
   const deferred=[];
   const options={
     verifiedReceiptsReleased:codeGate,
@@ -325,7 +327,7 @@ test('release switches are independent; no prize payment, source-money mutation,
   assert.match(entry,/const NBG_LONDON_PRIZES_RELEASED = false/);
   assert.match(records,/trustedReceiptsEnabled = hasScoreAuthority/);
   assert.match(records,/options\.verifiedReceiptsReleased === true/);
-  assert.match(records,/fingerprintNbgLondonReplay\(body\?\.replay\)/);
+  assert.match(records,/fingerprintNbgLondonReplay\(\s*body\?\.replay,\s*verified\.effective_input_masks\s*\)/, 'the canonical server action trace is mandatory');
   assert.match(records,/INSERT INTO nbg_london_verified_runs/);
   assert.match(records,/run_already_submitted/);
   assert.match(records,/options\.waitUntil\(Promise\.resolve\(\)/);
