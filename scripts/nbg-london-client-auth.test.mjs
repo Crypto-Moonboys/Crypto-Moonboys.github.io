@@ -111,4 +111,17 @@ await flush();
 assert.equal(requests('/run/finish').length, 0,
   'logout or account change during finish authentication blocks submission');
 
+// Renewing the same Telegram account must NOT invalidate the current run.
+telegramId = '100';
+linked = true;
+const sameAccountResolvers = [];
+nextAuth = () => new Promise(resolve => { sameAccountResolvers.push(resolve); });
+const startsBeforeRenewal = requests('/run/start').length;
+await emit('nbg-level-started');
+await emit('moonboys:identity-change');
+for (const resolve of sameAccountResolvers) resolve(auth('100'));
+await flush();
+assert.equal(requests('/run/start').length, startsBeforeRenewal + 1,
+  'reauthenticating the same Telegram ID must preserve a ranked session');
+
 console.log('[PASS] NBG London start/finish Telegram account-race protection');
