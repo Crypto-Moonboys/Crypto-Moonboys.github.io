@@ -25,29 +25,42 @@ const spoof = await verifyNbgLondonReplay({
 assert.equal(spoof.valid, false,
   'browser-reported million XP and a simple held-right script cannot skip crates');
 
-// Find a simulated input sequence that actually finishes the 22,000 px
-// level. Use the server's completion frame, not a browser-computed position.
+// Generate a physically driven course completion against the SAME replay
+// physics, then replay those recorded bytes independently with no callbacks.
 let legitimate = null;
 const diagnostics = [];
-for (const period of [8,10,12,14,16,18,20,24,30]) {
-  const frames = Array.from({length:5100}, (_,i) =>
-    [33,33,10 | (i % period === 0 ? 4 : 0)]);
+for (const approach of [80,95,110,125,140,160]) {
+  const frames = Array.from({length:5100}, () => [33,33,0]);
+  const masks=[];
+  let lastJump=-1000;
   const inspected = await verifyNbgLondonReplay({
     runId:id, replay:frameStream(frames),
-    startedAtMs:1000000, now:1000000+5100*33, debug:true
+    startedAtMs:1000000, now:1000000+5100*33, debug:true,
+    testInputOverride(state) {
+      const obstacle = state.obstacles.filter(o =>
+        o.x + o.w > state.x && o.x < state.x + 190)
+        .sort((a,b)=>a.x-b.x)[0];
+      const distance=obstacle ? obstacle.x-state.x : Infinity;
+      const canJump=state.elapsed-lastJump>180;
+      let mask=10; // move right + spray
+      if(canJump && state.grounded && distance < approach && distance > -35) {
+        mask|=4;lastJump=state.elapsed;
+      } else if(canJump && !state.grounded && state.jumps===1 &&
+          state.vy>1 && distance<55 && distance>-35) {
+        mask|=4;lastJump=state.elapsed;
+      }
+      masks.push(mask);
+      return mask;
+    }
   });
-  diagnostics.push({period, ...(inspected.debug || {}), valid:inspected.valid});
+  diagnostics.push({approach, ...(inspected.debug || {}), valid:inspected.valid});
   if(!inspected.debug?.complete) continue;
   const count=inspected.debug.consumedFrames;
-  const completedReplay=frameStream(frames.slice(0,count));
-  const calculated = await verifyNbgLondonReplay({
-    runId:id, replay:completedReplay,
-    startedAtMs:1000000, now:1000000+count*33
+  const replay=frameStream(masks.slice(0,count).map(mask=>[33,33,mask]));
+  const calculated=await verifyNbgLondonReplay({
+    runId:id, replay, startedAtMs:1000000, now:1000000+count*33
   });
-  if(calculated.valid) {
-    legitimate={replay:completedReplay, count, result:calculated};
-    break;
-  }
+  if(calculated.valid){legitimate={replay,count,result:calculated};break;}
 }
 assert.ok(legitimate, 'at least one physically completed replay must save: ' +
   JSON.stringify(diagnostics));
