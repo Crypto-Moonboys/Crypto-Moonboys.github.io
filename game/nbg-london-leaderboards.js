@@ -316,6 +316,11 @@
     overlay.appendChild(drawer);
 
     function setOpen(visible) {
+      if (visible && window.NBGLevel1Runtime &&
+          typeof window.NBGLevel1Runtime.suspendInput === 'function') {
+        // Release held movement/jump/spray before focus enters the drawer.
+        window.NBGLevel1Runtime.suspendInput();
+      }
       drawer.hidden = !visible;
       open.setAttribute('aria-expanded', String(visible));
       if (visible) {
