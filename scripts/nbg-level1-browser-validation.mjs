@@ -1621,6 +1621,43 @@ assert.deepEqual(guestRecords.tabs, ['fastest', 'speed_xp', 'xp'], 'three London
 assert.ok(guestRecords.account.includes('Guest') && guestRecords.hud === 'GUEST',
   'guest players must be shown as unranked, not as permanently scored Telegram users');
 
+// Actual fullscreen UX regression: records must be inside the overlay and
+// reachable via keyboard/pointer, not merely present behind an opaque modal.
+await page.waitForSelector('#game-overlay.active', { state: 'visible', timeout: 5000 });
+const scoreToggle = page.locator('#nbg-open-records');
+await scoreToggle.waitFor({ state: 'visible', timeout: 5000 });
+assert.equal(await page.locator('#nbg-record-drawer').isVisible(), false,
+  'the records drawer should not cover the game by default');
+await scoreToggle.click();
+await page.locator('#nbg-record-drawer').waitFor({ state: 'visible', timeout: 3000 });
+assert.equal(await scoreToggle.getAttribute('aria-expanded'), 'true');
+assert.equal(await page.locator('#nbg-record-board').evaluate(element =>
+  element.closest('#game-overlay') !== null), true,
+'leaderboard must live within the fullscreen overlay');
+assert.equal(await page.locator('#nbg-record-status').isVisible(), true,
+  'Telegram score save/errors must be visible in fullscreen');
+assert.equal(await page.locator('#nbg-record-personal').isVisible(), true,
+  'personal bests must be readable inside fullscreen');
+assert.equal(await page.locator('#nbg-record-drawer').evaluate(element =>
+  getComputedStyle(element).overflowY === 'auto' && element.scrollHeight > element.clientHeight),
+  true, 'records panel must scroll independently on a normal viewport');
+await page.locator('[data-nbg-metric="xp"]').click();
+assert.equal(await page.locator('[data-nbg-metric="xp"]').getAttribute('aria-pressed'), 'true',
+  'all-time score tabs must work inside the fullscreen drawer');
+await page.locator('[data-nbg-period="weekly"]').click();
+assert.equal(await page.locator('[data-nbg-period="weekly"]').getAttribute('aria-pressed'), 'true',
+  'weekly/daily/seasonal tabs must remain interactive');
+await page.keyboard.press('Escape');
+assert.equal(await page.locator('#nbg-record-drawer').isVisible(), false,
+  'Escape should close scores rather than exit fullscreen game');
+assert.equal(new URL(page.url()).pathname, '/games/nbg-london/',
+  'closing scores must not navigate away from the game');
+await scoreToggle.click();
+await page.locator('#nbg-close-records').click();
+assert.equal(await scoreToggle.getAttribute('aria-expanded'), 'false',
+  'close button must return to gameplay');
+assert.equal(await page.locator('#game').isVisible(), true, 'closing scores must restore the game');
+  
 const pixelEnergy = await page.evaluate(() => {
   const canvas = document.getElementById('game');
   const data = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data;
