@@ -53,6 +53,16 @@ Browser and Worker both use the saved challenge seed for gameplay reward/hazard 
 
 **Security qualification:** a public seeded physics challenge prevents straightforward reuse of an old completed input stream but is not cryptographic proof of human input. Some materially modified scripts could still finish a new challenge, and a sufficiently insensitive challenge variant might permit a replay copy. Before any release lock changes, require independently demonstrated cross-challenge rejection across many saved successful v2 runs, a real browser signed challenge-to-finish canary, and #1513 human review. The v2 code remains **unreleased and unverified in production**; do not claim this security issue is fully closed on static tests alone.
 
+### P1 remediation candidate: actual per-run movement checkpoints (NOT released)
+
+Codex found a v2 seed-modulo collision: a completed seed `12345` replay, modified by a 0.1ms Spray prefix, also finished under seed `12382` (same acceleration variant) while independently computed rewards differed. **Acceleration/RNG changes and normalized replay hashes are not sufficient** to guarantee the old stream is invalid.
+
+The draft now adds 32 mandatory **actual in-game LEFT/RIGHT direction checkpoints** along the 22,000px NBG course (first at world X=1,900; step 600px; last at X=20,500). Every one of the 32 saved D1 seed bits maps to exactly one required direction; at the player's **first physics crossing** of that world X, the browser records the real active control mask and the Worker **independently requires** exactly LEFT (1) or RIGHT (2), never both. A missed checkpoint fails trusted replay verification even if the player finishes with high XP; the browser HUD shows the next direction and distance and warns of missed tags. No extra XP or spendable credit is awarded by tags, and v1 legacy physics/HUD is unchanged. The real seed is persisted before simulation and never trusted from client replay JSON.
+
+Proposed **unapplied** migration 101 additionally creates a partial UNIQUE index on `challenge_seed` for v2 sessions, ensuring an identical 32-bit direction pattern is not issued for another account/run. A random seed collision fails at signed start rather than minting a reused trust proof. Tests check every required bit, the concrete 12345/12382 collision, simultaneous-direction rejection, complete 32-gate progress and a physically completed v2 replay submitted under a different saved seed.
+
+**Limits and human acceptance:** 32 direction tags are a substantial v2 ranked gameplay trial and may be overly demanding in practice. A replay author who can script **different** controls for a new public seed may still earn an apparently valid source receipt; this is an anti-copy requirement, **not a human-play certification**. Input timing can also be shifted across gate locations by changed acceleration, so deterministic cross-seed rejection of all imaginable independently authored input streams is not mathematically established merely by the gate-sequence model. **Never claim the P1 is fully resolved until real browser playability, copied replay mutation tests, independent Codex/security review, and explicit GK challenge-gameplay approval have passed.** The entire v2 experience, Clout and prize gates remain code-locked OFF.
+
 ## 5. Test and deployment gates
 
 Targeted tests:
