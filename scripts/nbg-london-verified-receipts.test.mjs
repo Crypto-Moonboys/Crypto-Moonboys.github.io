@@ -124,8 +124,9 @@ function fixture({ migrated = true, codeGate = true } = {}) {
   }
   return {
     sql,db,env,blocked,deferred,call,
-    async start(owner='100'){
-      const response=await call('/run/start',{}, {owner});
+    async start(owner='100',capability=codeGate?'challenge_v2':null){
+      const response=await call('/run/start',
+        capability ? {replay_capability:capability} : {}, {owner});
       assert.equal(response.status,200);
       assert.match(response.run_id,/^[0-9a-f-]{36}$/);
       return response.run_id;
@@ -193,7 +194,7 @@ test('enabled but unmigrated code path fails CLOSED at signed run start and roll
     f.sql.prepare(
       'INSERT INTO nbg_london_runs(run_id,telegram_id,started_at_ms,expires_at_ms) VALUES(?,?,?,?)'
     ).run(id,'100',now,now+1800000);
-    const response=await f.call('/run/start',{});
+    const response=await f.call('/run/start',{replay_capability:'challenge_v2'});
     assert.equal(response.status,503);
     assert.equal(response.ok,false);
     assert.equal(response.error,'records_unavailable',
@@ -237,6 +238,49 @@ test('challenge v2 is issued before play and legacy replay cannot create trusted
     assert.equal(count(f,'nbg_london_verified_runs'),1);
     assert.equal(f.sql.prepare('SELECT replay_version FROM nbg_london_verified_runs')
       .get().replay_version,2);
+  }finally{f.close();}
+});
+
+test('cached v1 client can save ordinary specialist scores while trusted v2 release is enabled',async()=>{
+  const f=fixture({codeGate:true});
+  try{
+    const start=await f.call('/run/start',{}, {owner:'100'});
+    assert.equal(start.status,200);
+    assert.equal(start.ranked,true);
+    assert.equal(start.replay_version,undefined);
+    assert.equal(start.challenge_seed,undefined);
+    const session=f.sql.prepare(
+      'SELECT challenge_version,challenge_seed FROM nbg_london_runs WHERE run_id=?'
+    ).get(start.run_id);
+    assert.equal(session.challenge_version,1);
+    assert.equal(session.challenge_seed,null);
+    now+=120000;
+    const legacy=await f.finish(start.run_id,{...replayA,version:1});
+    assert.equal(legacy.status,200,'cached legacy replay remains valid');
+    assert.equal(legacy.saved,true);
+    assert.equal(legacy.verified_source_receipt,undefined);
+    assert.equal(count(f,'nbg_london_verified_runs'),0,'legacy outcome cannot mint Clout proof');
+    const daily=f.sql.prepare(
+      "SELECT total_xp,run_count,trusted_xp,verified_run_count FROM nbg_london_period_scores WHERE period_kind='daily' AND telegram_id='100'"
+    ).get();
+    assert.deepEqual({...daily},{
+      total_xp:600,run_count:1,trusted_xp:0,verified_run_count:0,
+    },'practice/specialist counters continue; trusted award remains zero');
+    const v2start=await f.call('/run/start',{replay_capability:'challenge_v2'});
+    assert.equal(v2start.status,200);
+    assert.equal(v2start.replay_version,2);
+    assert.ok(Number.isSafeInteger(v2start.challenge_seed));
+    now+=120000;
+    const v2outcome=await f.finish(v2start.run_id,replayB);
+    assert.equal(v2outcome.status,200);
+    assert.equal(v2outcome.verified_source_receipt,true);
+    assert.equal(count(f,'nbg_london_verified_runs'),1);
+    const combined=f.sql.prepare(
+      "SELECT total_xp,run_count,trusted_xp,verified_run_count FROM nbg_london_period_scores WHERE period_kind='daily' AND telegram_id='100'"
+    ).get();
+    assert.deepEqual({...combined},{
+      total_xp:1200,run_count:2,trusted_xp:600,verified_run_count:1,
+    },'only specifically negotiated v2 contributed trusted XP');
   }finally{f.close();}
 });
 
