@@ -34,7 +34,7 @@ function fixture() {
     'CREATE TABLE telegram_pet_weekly_crests(crest_id TEXT PRIMARY KEY,pet_id TEXT,telegram_id TEXT,season_key TEXT,qualification_week INTEGER,objective_id TEXT,evidence_key TEXT,earned_at TEXT);',
     'CREATE TABLE telegram_pet_weekly_journey_receipts(receipt_id TEXT PRIMARY KEY,crest_id TEXT,telegram_id TEXT,pet_id TEXT,season_key TEXT,qualification_week INTEGER,status TEXT,reason TEXT,completed_objectives INTEGER);',
     "INSERT INTO telegram_users VALUES ('100',25),('200',75);",
-    'CREATE TABLE arcade_progression_events(id TEXT PRIMARY KEY,telegram_id TEXT,client_run_id TEXT,game TEXT,raw_score INTEGER,xp_awarded INTEGER,status TEXT,reason TEXT);',
+    'CREATE TABLE arcade_progression_events(id TEXT PRIMARY KEY,telegram_id TEXT,client_run_id TEXT,game TEXT,raw_score INTEGER,xp_awarded INTEGER,status TEXT,reason TEXT,UNIQUE(telegram_id,client_run_id));',
   ].join('\n'));
   sql.exec(readFileSync('workers/moonboys-api/migrations/075_dead_run_gps_survival.sql', 'utf8'));
   sql.exec(readFileSync('workers/moonboys-api/migrations/100_championship_clout_foundation.sql', 'utf8'));
@@ -107,8 +107,9 @@ const DEAD_RUN_IDS = Object.freeze({
   c: '5a7c8f22-3011-4c8a-92ab-7a71ac11ff00',
 });
 
-// Populate one existing, post-settlement source + its independently saved
-// Arcade receipt, exactly as real Dead Run finish writes these fields.
+// Populate a genuine server-owned terminal Dead Run record. The separate
+// Arcade receipt may be absent if UNIQUE(owner,client_run_id) was occupied by
+// an earlier client-side sync. That collision must not invalidate a settled run.
 function addDeadRun(f, options = {}) {
   const {
     owner = OWNER, id = DEAD_RUN_IDS.a, startedAt = DEAD_RUN_START,
@@ -359,7 +360,7 @@ test('Dead Run source gate is separate from /daily and OFF by default', async ()
   } finally {f.close();}
 });
 
-test('one exact ranked and settled Dead Run receipt produces immutable Skill and Variety', async () => {
+test('one source-owned finished and ranked Dead Run settlement produces immutable Skill and Variety', async () => {
   const f=fixture();
   try {
     const {score}=addDeadRun(f);
@@ -386,21 +387,49 @@ test('one exact ranked and settled Dead Run receipt produces immutable Skill and
   } finally {f.close();}
 });
 
-test('same title uses the best settled score once; Moonpet adds distinct variety', async () => {
+test('same title selects the best ranked result and upgrades on a better signed finish', async () => {
   const f=fixture();
   try {
-    addDeadRun(f,{id:DEAD_RUN_IDS.a,distance:1200,survival:300});
-    const better=addDeadRun(f,{id:DEAD_RUN_IDS.b,startedAt:DAY+'T12:00:00.000Z',
+    const first=addDeadRun(f,{id:DEAD_RUN_IDS.a,distance:1200,survival:300});
+    const firstAward=await sync(f,OWNER,{deadRunEnabled:true});
+    assert.equal(firstAward.total_points,Math.floor(normalizeDeadRunSkill(first.score)*0.4)+5);
+    assert.equal(count(f,'championship_clout_sources'),1);
+    const improvedScore=addDeadRun(f,{id:DEAD_RUN_IDS.b,startedAt:DAY+'T12:00:00.000Z',
       endedAt:DAY+'T12:50:00.000Z',distance:2200,survival:800});
-    const out=await sync(f,OWNER,{deadRunEnabled:true});
-    assert.equal(out.total_points,Math.floor(normalizeDeadRunSkill(better.score)*0.4)+5);
+    const second=await sync(f,OWNER,{deadRunEnabled:true});
+    assert.equal(second.total_points,Math.floor(normalizeDeadRunSkill(improvedScore.score)*0.4)+5);
+    assert.ok(second.total_points>=firstAward.total_points,'better run cannot subtract earned Clout');
     assert.equal(count(f,'championship_clout_sources'),2);
     assert.equal(count(f,'championship_clout_effects'),4);
     assert.equal(f.sql.prepare("SELECT variety_points FROM championship_clout_daily WHERE telegram_id=?").get(OWNER).variety_points,5);
+    assert.equal((await sync(f,OWNER,{deadRunEnabled:true})).total_points,second.total_points,
+      'latest best is idempotent');
     addPet(f);addMark(f);
     const mixed=await sync(f,OWNER,{deadRunEnabled:true});
-    assert.equal(mixed.total_points,out.total_points+10);
+    assert.equal(mixed.total_points,second.total_points+10,
+      'Moonpet adds mission and distinct variety rather than repeating Dead Run');
     assert.deepEqual(JSON.parse(f.sql.prepare("SELECT game_keys_json FROM championship_clout_daily WHERE telegram_id=?").get(OWNER).game_keys_json),['dead-run','moonpet']);
+  } finally {f.close();}
+});
+
+test('twenty ranked runs never exceed source projection budget; best alone is selected', async () => {
+  const f=fixture();
+  try {
+    let best=0;
+    let bestId='';
+    for(let i=0;i<20;i++){
+      const id='ae46c5ad-c113-4b12-8c55-'+i.toString(16).padStart(12,'0');
+      const endedAt=new Date(Date.parse(NOON)+i*30_000).toISOString();
+      const scored=addDeadRun(f,{id,startedAt:DEAD_RUN_START,endedAt,
+        distance:1000+i*25,survival:200+i*15});
+      if(scored.score>best){best=scored.score;bestId=id;}
+    }
+    const outcome=await sync(f,OWNER,{deadRunEnabled:true});
+    assert.equal(outcome.qualifying_receipts,1,'bounded best-only query, not 11/20 rows');
+    assert.equal(outcome.total_points,Math.floor(normalizeDeadRunSkill(best)*0.4)+5);
+    assert.equal(count(f,'championship_clout_sources'),1);
+    assert.equal(f.sql.prepare("SELECT source_event_id FROM championship_clout_sources").get().source_event_id,bestId);
+    assert.equal((await sync(f,OWNER,{deadRunEnabled:true})).total_points,outcome.total_points);
   } finally {f.close();}
 });
 
@@ -408,9 +437,7 @@ test('cross-owner, unfinished, unranked, rejected and incomplete receipts cannot
   const permutations=[
     {status:'active'},{status:'settling'},{ranked:0},{suspicious:6},
     {distance:39},{survival:19},{statsApplied:0},{arcadeApplied:0},
-    {hordeApplied:0},{arcadeReceipt:false},{receiptOwner:'200'},
-    {receiptRunId:DEAD_RUN_IDS.b},{receiptScore:17},{receiptXp:2},
-    {arcadeReason:'client_score'},
+    {hordeApplied:0},
   ];
   for (const mode of permutations) {
     const f=fixture();
@@ -428,6 +455,50 @@ test('cross-owner, unfinished, unranked, rejected and incomplete receipts cannot
     assert.equal((await sync(f,'200',{deadRunEnabled:true})).state,'recorded');
     assert.equal(f.sql.prepare("SELECT DISTINCT telegram_id FROM championship_clout_effects").get().telegram_id,'200');
   } finally {f.close();}
+});
+
+test('real Arcade client_run_id collision does not hide a trusted server-finished run', async () => {
+  const f=fixture();
+  try {
+    const score=addDeadRun(f,{arcadeReceipt:false});
+    // Existing schema prevents the canonical Arcade receipt being inserted
+    // after this untrusted client-supplied claim consumed the unique run key.
+    f.sql.prepare("INSERT INTO arcade_progression_events VALUES(?,?,?,?,?,?,?,?)")
+      .run('untrusted-submission','100',DEAD_RUN_IDS.a,'snake',1_000_000,0,'accepted','client_score');
+    assert.throws(()=>f.sql.prepare("INSERT INTO arcade_progression_events VALUES(?,?,?,?,?,?,?,?)")
+      .run('dead_run:'+DEAD_RUN_IDS.a,'100',DEAD_RUN_IDS.a,'dead-run',score.score,score.xp,
+        'accepted','verified_gps_run'),/UNIQUE constraint failed/,
+      'fixture must enforce real UNIQUE(telegram_id,client_run_id) collision');
+    const projected=await sync(f,OWNER,{deadRunEnabled:true});
+    assert.equal(projected.total_points,Math.floor(normalizeDeadRunSkill(score.score)*0.4)+5);
+    assert.equal(count(f,'championship_clout_sources'),1,
+      'the independent Dead Run server settlement, not the colliding browser row, is authority');
+    assert.equal((await sync(f,OWNER,{deadRunEnabled:true})).total_points,projected.total_points);
+    assert.equal(count(f,'arcade_progression_events'),1,'Clout must not repair/change existing XP receipts');
+  } finally {f.close();}
+  const fake=fixture();
+  try {
+    fake.sql.prepare("INSERT INTO arcade_progression_events VALUES(?,?,?,?,?,?,?,?)")
+      .run('dead_run:'+DEAD_RUN_IDS.a,OWNER,DEAD_RUN_IDS.a,'dead-run',1_000_000,275,
+        'accepted','verified_gps_run');
+    assert.equal((await sync(fake,OWNER,{deadRunEnabled:true})).state,
+      'no_qualifying_receipts','forged Arcade event without Dead Run server finish earns no Clout');
+  } finally {fake.close();}
+});
+
+test('whether a secondary Arcade receipt exists never confers or denies verified Dead Run status', async () => {
+  for(const state of [
+    {arcadeReceipt:false},{receiptOwner:'200'},{receiptRunId:DEAD_RUN_IDS.b},
+    {receiptScore:17},{receiptXp:2},{arcadeReason:'client_score'},
+  ]){
+    const f=fixture();
+    try{
+      const score=addDeadRun(f,state);
+      assert.equal((await sync(f,OWNER,{deadRunEnabled:true})).total_points,
+        Math.floor(normalizeDeadRunSkill(score.score)*0.4)+5,JSON.stringify(state));
+      assert.equal(f.sql.prepare("SELECT COUNT(*) AS n FROM championship_clout_effects WHERE source_system='dead_run'").get().n,2);
+    }finally{f.close();}
+  }
 });
 
 test('independent scoreRun recomputation rejects forged score, XP and unsafe ranges', async () => {
@@ -488,7 +559,11 @@ test('Dead Run Clout only reads signed accepted finishes and runs off the respon
   assert.match(worker,/session_id=\? AND telegram_id=\? AND status='finished' AND ranked=1/);
   assert.match(worker,/ctx\.waitUntil\(projectCloutForAcceptedDeadRunFinish/);
   assert.doesNotMatch(worker,/await\s+projectCloutForAcceptedDeadRunFinish\(/);
-  assert.match(source,/a\.client_run_id=s\.session_id/);
-  assert.match(source,/a\.raw_score=s\.score AND a\.xp_awarded=s\.xp_awarded/);
+  assert.doesNotMatch(source,/JOIN arcade_progression_events/);
+  assert.match(source,/s\.status='finished' AND s\.ranked=1/);
+  assert.match(source,/s\.player_stats_applied=1 AND s\.arcade_xp_applied=1/);
+  assert.match(source,/s\.horde_applied=1/);
+  assert.match(source,/ORDER BY s\.score DESC,s\.ended_at ASC,s\.session_id ASC LIMIT 1/);
+  assert.match(source,/scoreRun\(\{/);
   assert.doesNotMatch(source,/UPDATE\s+arcade_xp_wallets|UPDATE\s+telegram_users\s+SET\s+xp/i);
 });
