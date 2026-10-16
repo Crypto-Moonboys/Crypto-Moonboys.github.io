@@ -91,7 +91,7 @@ function levelData() {
 }
 
 function decodeFrames(replay) {
-  if (!replay || replay.version !== NBG_REPLAY_VERSION ||
+  if (!replay || ![NBG_REPLAY_VERSION,2].includes(replay.version) ||
       typeof replay.frames !== 'string' || replay.frames.length > 850000 ||
       !/^[A-Za-z0-9+/]+={0,2}$/.test(replay.frames)) return null;
   let bytes;
@@ -184,15 +184,21 @@ export async function fingerprintNbgLondonReplay(replay, effectiveInputMasks = n
     replay_sha256: hex(rawHash),
     input_sha256: hex(controlsHash),
     frame_count: canonical.length,
-    replay_version: NBG_REPLAY_VERSION,
+    replay_version: replay.version,
   };
 }
 
-export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, debug = false, testInputOverride = null }) {
+export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, debug = false, testInputOverride = null, challengeSeed = null }) {
   if (typeof runId !== 'string' || !Number.isFinite(startedAtMs) ||
       !Number.isFinite(now)) return { valid: false };
   const bytes = decodeFrames(replay);
-  if (!bytes) return { valid: false };
+  if (!bytes || (replay.version===2 &&
+    (!Number.isSafeInteger(challengeSeed) || challengeSeed<0 || challengeSeed>0xffffffff)) ||
+    (replay.version===1 && challengeSeed!==null)) return { valid: false };
+  const challengeV2=replay.version===2;
+  // Challenge-dependent acceleration is part of real gameplay physics, not
+  // replay metadata. The saved server-issued seed is the sole authority.
+  const accelerationFactor=challengeV2 ? 0.80 + (challengeSeed%37)/100 : 1;
   const effectiveInputMasks = new Uint8Array(bytes.length / 5);
 
   const level = levelData();
@@ -205,7 +211,7 @@ export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, d
   let maximumX=64;
   // The browser resets the same LCG seed at every run start; no client
   // reward or random-spawn claim is trusted by the Worker.
-  let runRandomState = 0x9e3779b9;
+  let runRandomState = challengeV2 ? challengeSeed >>> 0 : 0x9e3779b9;
   const nextRunRandom = () => {
     runRandomState = (Math.imul(runRandomState,1664525)+1013904223) >>> 0;
     return runRandomState / 4294967296;
@@ -252,8 +258,8 @@ export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, d
     const step=dt/STEP;
     const left=!!(mask&1), right=!!(mask&2), jump=!!(mask&4), spray=!!(mask&8);
     const beforeInputVx=p.vx;
-    if (left) {p.vx-=0.74*step;p.facing=-1;}
-    if (right) {p.vx+=0.74*step;p.facing=1;}
+    if (left) {p.vx-=0.74*accelerationFactor*step;p.facing=-1;}
+    if (right) {p.vx+=0.74*accelerationFactor*step;p.facing=1;}
     if (!left && !right) p.vx*=Math.pow(0.78,step);
     p.vx=clamp(p.vx,-MAX_SPEED,MAX_SPEED);
     // Treat the output of the physics update as authoritative, NOT the raw
