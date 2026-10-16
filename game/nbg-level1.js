@@ -15,6 +15,8 @@
   var MAX_SPEED = 4.2;
   var JUMP_VELOCITY = -11.4;
   var DOUBLE_JUMP_VELOCITY = -12.8;
+  var TRIPLE_JUMP_VELOCITY = -12.8;
+  var COURSE_LAYOUT_VERSION = 2; // Replay v1 format, updated course content.
   var DOUBLE_JUMP_SIDE_SPEED = 5.4;
   var BOT_SHEET_COLUMNS = 5;
   var BOT_SHEET_ROWS = 5;
@@ -36,7 +38,7 @@
   var PARACHUTE_LANDED_LIFETIME_MS = 22000;
   var SPRAY_ENEMY_RANGE = 86;
   var ENEMY_STOMP_BOUNCE = -9;
-  var PARACHUTE_GLIDE_SPEED = 0.68;
+  var PARACHUTE_GLIDE_SPEED = 2.8; // Descend into view before the runner passes.
   var PARACHUTE_STEER_SPEED = 0.028;
   var PARACHUTE_RENDER_WIDTH = 64;
   var PARACHUTE_RENDER_HEIGHT = 64;
@@ -372,6 +374,12 @@
             tier: 'small', size: 16, r: 6, xp: 100, taken: false });
         }
       });
+      // Hidden rewards continue through every course section, not only the
+      // original 0–2,200px opening. Three jumps can reach these heights.
+      secretCoins.push({ x: startX + 405, y: -94 - section % 3 * 9,
+        r: 8, xp: 500, taken: false, secret: true });
+      secretCoins.push({ x: startX + 865, y: -102 - section % 2 * 10,
+        r: 8, xp: 500, taken: false, secret: true });
       [45, 520, 980].forEach(function (dx) {
         coins.push({ x: startX + dx, y: 176, tier: 'small', size: 16, r: 6, xp: 100, taken: false });
       });
@@ -401,14 +409,12 @@
       }
       enemies.push({ type: 'rat', x: startX + 435, y: FLOOR_Y - 42,
         w: 28, h: 42, vx: 1.1 + section * 0.025, min: startX + 395, max: startX + 535 });
-      if (section % 2 === 1) {
-        enemies.push({ type: 'bot', x: startX + 870, y: FLOOR_Y - 38,
-          w: 30, h: 38, vx: 0.85 + section * 0.035, min: startX + 800, max: startX + 960 });
-      }
-      if (section % 3 === 2) {
-        enemies.push({ type: 'pigeon', x: startX + 615, y: 110,
-          w: 28, h: 22, vx: 1.35, min: startX + 575, max: startX + 720, bob: 0 });
-      }
+      // Every section has all three existing enemy classes, with the original
+      // patrol bounds. This expands coverage without inventing new mechanics.
+      enemies.push({ type: 'bot', x: startX + 870, y: FLOOR_Y - 38,
+        w: 30, h: 38, vx: 0.85 + section * 0.035, min: startX + 800, max: startX + 960 });
+      enemies.push({ type: 'pigeon', x: startX + 615, y: 110,
+        w: 28, h: 22, vx: 1.35, min: startX + 575, max: startX + 720, bob: 0 });
       if (section === 3 || section === 7 || section === 11 || section === 15) {
         courseCheckpoints.push({ x: startX + 965, y: FLOOR_Y - 48, w: 30, h: 48, active: false });
       }
@@ -519,7 +525,7 @@
       for (var i = 0; i < runReplayFrames.length; i += 16384) {
         segments.push(String.fromCharCode.apply(null, runReplayFrames.slice(i, i + 16384)));
       }
-      return { version: 1, frames: btoa(segments.join('')) };
+      return { version: 1, course_version: COURSE_LAYOUT_VERSION, frames: btoa(segments.join('')) };
     }
 
     function handleInput(step) {
@@ -554,6 +560,15 @@
           player.facing = left ? -1 : 1;
         }
         jumpsUsed = 2;
+      } else if (jumpPressed && !player.grounded && jumpsUsed === 2) {
+        // Third distinct mid-air press; landing, respawn and reset still
+        // restore the full three-jump sequence.
+        player.vy = TRIPLE_JUMP_VELOCITY;
+        if (left !== right) {
+          player.vx = left ? -DOUBLE_JUMP_SIDE_SPEED : DOUBLE_JUMP_SIDE_SPEED;
+          player.facing = left ? -1 : 1;
+        }
+        jumpsUsed = 3;
       }
 
       if (spray && sprayTimer <= 0) {
@@ -777,9 +792,11 @@
         var variants = ['parachuteRatA', 'parachuteRatB', 'parachuteRatC'];
         var variant = variants[Math.floor(nextRunRandom() * variants.length)];
         var drift = (nextRunRandom() * 2 - 1) * 90;
+        // Spawn ahead and descend quickly enough for a moving player to
+        // actually encounter parachutes across the full 22,000px course.
         parachuteRats.push({
-          x: clamp(player.x + drift, 28, WORLD_WIDTH - 60),
-          y: -110, w: 28, h: 42, variant: variant,
+          x: clamp(player.x + 240 + drift * 0.25, 28, WORLD_WIDTH - 60),
+          y: 55, w: 28, h: 42, variant: variant,
           swayPhase: nextRunRandom() * Math.PI * 2, vx: 0, age: 0
         });
         parachuteSpawnCount += 1;
