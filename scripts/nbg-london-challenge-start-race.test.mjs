@@ -37,7 +37,7 @@ test('reset serializes the old issued challenge before the new server start',asy
     isTelegramLinked(){return true;},
     async getFreshTelegramAuth(){return {id:who,hash:'valid',auth_date:'1900000000'};},
   };
-  const starts=[];
+  const starts=[],finishes=[];
   const window={
     MOONBOYS_IDENTITY:gate,
     MOONBOYS_API:{getLeaderboardUrl:()=> 'https://leaderboard.test'},
@@ -48,8 +48,13 @@ test('reset serializes the old issued challenge before the new server start',asy
     const path=new URL(url).pathname;
     if(path.endsWith('/run/start')){
       return new Promise(resolve=>starts.push({
-        auth:JSON.parse(opts.body).telegram_auth.id,resolve,
+        auth:JSON.parse(opts.body).telegram_auth.id,
+        capability:JSON.parse(opts.body).replay_capability||null,resolve,
       }));
+    }
+    if(path.endsWith('/run/finish')){
+      finishes.push(JSON.parse(opts.body));
+      return ok({ok:true,saved:true,player:'@alpha',time_ms:120000,xp:600});
     }
     if(path.endsWith('/leaderboard'))return ok({ok:true,records:[]});
     if(path.endsWith('/me'))return ok({ok:true,player:'@alpha',records:null});
@@ -78,6 +83,8 @@ test('reset serializes the old issued challenge before the new server start',asy
   await flush();
   assert.equal(starts.length,1,'first server challenge has been requested');
   assert.equal(starts[0].auth,'100');
+  assert.equal(starts[0].capability,'challenge_v2',
+    'only explicit preplay v2 requests may receive a trusted challenge');
   // In production, server-side start invalidates older still-live sessions.
   // If the older response commits after the fresh one, the new run expires.
   listeners.get('nbg-level-reset')({});
@@ -101,6 +108,33 @@ test('reset serializes the old issued challenge before the new server start',asy
   assert.equal(fresh.challenge_seed,98765);
   assert.equal(fresh.telegram_id,'100');
   assert.equal(starts.length,2);
+
+  // A mixed browser cache may load the new leaderboard JS alongside an
+  // earlier game that emits `nbg-level-started` with NO v2 marker. Even if
+  // this client code is unlocked, that old game must receive a v1 session
+  // (and still finish its ordinary specialist run) rather than a v2-only
+  // challenge that it cannot simulate.
+  assert.equal(typeof listeners.get('nbg-level-started'),'function');
+  listeners.get('nbg-level-started')({detail:{level:'london-level-1'}});
+  await flush();
+  assert.equal(starts.length,3,'new client must start old cached v1 game');
+  assert.equal(starts[2].capability,null,
+    'legacy ranked start never advertises v2 before-play capability');
+  starts[2].resolve(ok({
+    ok:true,ranked:true,run_id:'33333333-3333-4333-8333-333333333333',
+    player:'@alpha',
+  }));
+  await flush();
+  listeners.get('nbg-level-complete')({
+    detail:{replay:{version:1,frames:'AQIDBAU='},timeMs:120000,xp:1000000}
+  });
+  await flush();
+  assert.equal(finishes.length,1,
+    'legacy cached-game finish must still be forwarded for server v1 scoring');
+  assert.equal(finishes[0].run_id,'33333333-3333-4333-8333-333333333333');
+  assert.equal(finishes[0].replay.version,1);
+  assert.equal(Object.hasOwn(finishes[0],'xp'),false,
+    'browser-declared XP is never trusted even on legacy compatibility path');
 });
 
 test('v2 challenge release stays disabled in production source',()=>{
