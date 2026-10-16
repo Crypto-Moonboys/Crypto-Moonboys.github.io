@@ -80,8 +80,16 @@ function fixture({ migrated = true, codeGate = true } = {}) {
   };
   // Only a deterministic test hook. The REAL production call always injects
   // verifyNbgLondonReplay; never use HTTP body xp as a trusted scorer.
-  const mockPhysicsVerifier=async()=>({
+  const mockPhysicsVerifier=async({replay})=>({
     valid:true,complete:true,time_ms:120000,xp:600,coins:10,secret_coins:1,
+    // The independent real simulator populates this trace from actions
+    // which actually changed the game. This mock only stands in for the
+    // physics engine for source-storage/transaction tests; the REAL replay
+    // canonicalization has separate physics regressions.
+    effective_input_masks: Uint8Array.from(
+      Array.from({length:Buffer.from(replay.frames,'base64').length/5},
+        (_,i)=>Buffer.from(replay.frames,'base64')[i*5+4]),
+    ),
   });
   const deferred=[];
   const options={
