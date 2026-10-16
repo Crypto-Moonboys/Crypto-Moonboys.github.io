@@ -234,26 +234,71 @@ export function projectCloutLeaderboard(dailyRows, kind, atMs, limit = 100) {
 }
 
 /**
- * Bounded read-only D1 query. NOT routed to HTTP in PR1.
- * A later guarded adapter creates verified effects and daily snapshots.
+ * Read-side only SQL aggregation across the *daily* D1 materialization.
+ * The annual board cannot be limited to 50,000 input daily rows: >137
+ * daily-active players exceed that threshold during a leap year.
+ *
+ * D1/SQLite groups and sorts BEFORE applying LIMIT, so even an annual
+ * period with hundreds of thousands of daily snapshots returns at most
+ * 100 ranked accounts. This module is not exposed over HTTP in PR1.
  */
 export async function readCloutLeaderboard(db, kind, atMs, limit = 100) {
   if (!db || typeof db.prepare !== 'function') fail('database_unavailable');
+  integer(limit, 1, 100, 'leaderboard_limit');
   const period = getCloutPeriod(kind, atMs);
   const firstDay = new Date(period.start_ms).toISOString().slice(0, 10);
   const lastDay = new Date(period.end_ms).toISOString().slice(0, 10);
+  const daysInPeriod = (period.end_ms - period.start_ms) / MS_DAY;
+
+  // DISTINCT json_each unifies games across different days of the same
+  // player's period, rather than summing per-day distinct_game counts.
+  // The left join on bans excludes blocked accounts before accumulation.
   const sql = [
-    'SELECT d.telegram_id,d.day_key,d.policy_version,d.skill_points,d.mission_points,',
-    'd.variety_points,d.community_points,d.streak_points,d.total_points,',
-    'd.game_keys_json,d.first_earned_at_ms',
+    'WITH eligible AS (',
+    'SELECT d.telegram_id,d.total_points,d.first_earned_at_ms,d.game_keys_json',
     'FROM championship_clout_daily d',
     'LEFT JOIN telegram_anticheat_state a ON a.telegram_id=d.telegram_id',
     'WHERE d.policy_version=? AND d.day_key>=? AND d.day_key<?',
     'AND COALESCE(a.is_blocked,0)=0',
-    'ORDER BY d.day_key,d.telegram_id LIMIT 50001',
+    '), totals AS (',
+    'SELECT telegram_id,SUM(total_points) AS total_points,COUNT(*) AS active_days,',
+    'MIN(first_earned_at_ms) AS first_earned_at_ms',
+    'FROM eligible GROUP BY telegram_id',
+    '), game_counts AS (',
+    'SELECT e.telegram_id,COUNT(DISTINCT j.value) AS distinct_games',
+    'FROM eligible e JOIN json_each(e.game_keys_json) j GROUP BY e.telegram_id',
+    ')',
+    'SELECT t.telegram_id,t.total_points,t.active_days,',
+    'COALESCE(g.distinct_games,0) AS distinct_games,t.first_earned_at_ms',
+    'FROM totals t LEFT JOIN game_counts g ON g.telegram_id=t.telegram_id',
+    'ORDER BY t.total_points DESC,distinct_games DESC,t.active_days DESC,',
+    't.first_earned_at_ms ASC,LENGTH(t.telegram_id) ASC,t.telegram_id ASC',
+    'LIMIT ?',
   ].join(' ');
-  const result = await db.prepare(sql).bind(CLOUT_POLICY_VERSION, firstDay, lastDay).all();
-  if (result?.success === false || !Array.isArray(result?.results) || result.results.length > 50_000)
-    fail('daily_read_unavailable');
-  return projectCloutLeaderboard(result.results, kind, atMs, limit);
+
+  const result = await db.prepare(sql)
+    .bind(CLOUT_POLICY_VERSION, firstDay, lastDay, limit).all();
+  if (result?.success === false || !Array.isArray(result?.results) ||
+      result.results.length > limit) fail('daily_read_unavailable');
+
+  const rows = result.results.map((row, index) => {
+    const telegramId = String(row.telegram_id || '');
+    if (!OWNER.test(telegramId)) fail('invalid_snapshot_owner');
+    integer(row.total_points, 0, daysInPeriod * CLOUT_DAILY_MAX,
+      'period_total');
+    integer(row.active_days, 1, daysInPeriod, 'period_active_days');
+    integer(row.distinct_games, 0, 200 * row.active_days, 'period_games');
+    integer(row.first_earned_at_ms, period.start_ms,
+      period.end_ms - 1, 'period_earned_at');
+    return {
+      telegram_id: telegramId,
+      total_points: row.total_points,
+      active_days: row.active_days,
+      distinct_games: row.distinct_games,
+      first_earned_at_ms: row.first_earned_at_ms,
+      rank: index + 1,
+    };
+  });
+
+  return { period, policy_version: CLOUT_POLICY_VERSION, rows };
 }
