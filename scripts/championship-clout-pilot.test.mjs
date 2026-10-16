@@ -726,3 +726,116 @@ test('Dead Run Clout only reads signed accepted finishes and runs off the respon
   assert.match(source,/scoreRun\(\{/);
   assert.doesNotMatch(source,/UPDATE\s+arcade_xp_wallets|UPDATE\s+telegram_users\s+SET\s+xp/i);
 });
+
+
+test('NBG verified game result remains off until its independent source flag is enabled',async()=>{
+  const f=fixture();
+  try{
+    addNbgProof(f);
+    assert.equal((await sync(f)).state,'no_qualifying_receipts');
+    assert.equal(count(f,'championship_clout_sources'),0);
+    assert.equal(normalizeNbgLondonSkill(0),0);
+    assert.equal(normalizeNbgLondonSkill(20000),50);
+    assert.ok(normalizeNbgLondonSkill(100000)>normalizeNbgLondonSkill(20000));
+    assert.throws(()=>normalizeNbgLondonSkill(-1),/clout_nbg_score_out_of_range/);
+    assert.throws(()=>normalizeNbgLondonSkill(1_000_001),/clout_nbg_score_out_of_range/);
+  }finally{f.close();}
+});
+
+test('only immutable server-replay NBG proof earns one Skill+Variety, never currency',async()=>{
+  const f=fixture();
+  try{
+    addNbgProof(f,{verifiedXp:20000});
+    const before=f.sql.prepare('SELECT xp FROM telegram_users WHERE telegram_id=?').get(OWNER).xp;
+    const result=await sync(f,OWNER,{nbgEnabled:true,coreSourcesEnabled:false,
+      nbgFinishAtMs:Date.parse(NOON)});
+    assert.equal(result.state,'recorded');
+    assert.equal(result.qualifying_receipts,1);
+    assert.equal(result.total_points,25,'50 skill rating earns 20 Skill plus one NBG Variety');
+    const rows=f.sql.prepare(
+      "SELECT source_system,effect_kind,game_key,normalized_skill,verification_kind FROM championship_clout_effects WHERE source_system='nbg_london' ORDER BY effect_kind"
+    ).all();
+    assert.deepEqual(rows.map(x=>x.effect_kind),['skill','variety']);
+    assert.equal(rows[0].normalized_skill,50);
+    assert.equal(rows[0].game_key,'nbg-london');
+    assert.ok(rows.every(x=>x.verification_kind==='server_replay'));
+    const day=f.sql.prepare('SELECT * FROM championship_clout_daily WHERE telegram_id=?').get(OWNER);
+    assert.equal(day.skill_points,20);
+    assert.equal(day.variety_points,5);
+    assert.deepEqual(JSON.parse(day.game_keys_json),['nbg-london']);
+    assert.equal((await sync(f,OWNER,{nbgEnabled:true,coreSourcesEnabled:false,
+      nbgFinishAtMs:Date.parse(NOON)})).total_points,25);
+    assert.equal(count(f,'championship_clout_sources'),1);
+    assert.equal(f.sql.prepare('SELECT xp FROM telegram_users WHERE telegram_id=?').get(OWNER).xp,before);
+    assert.equal(count(f,'nbg_london_verified_runs'),1);
+  }finally{f.close();}
+});
+
+test('old NBG leaderboard run without verified replay proof can NEVER enter Championship',async()=>{
+  const f=fixture();
+  try{
+    addNbgProof(f,{validProof:false});
+    assert.equal((await sync(f,OWNER,{nbgEnabled:true,coreSourcesEnabled:false,
+      nbgFinishAtMs:Date.parse(NOON)})).state,'no_qualifying_receipts');
+    assert.equal(count(f,'championship_clout_sources'),0);
+    f.sql.prepare('INSERT INTO nbg_london_records(telegram_id,display_name,fastest_ms,fastest_xp,speed_xp_rate,speed_xp_ms,speed_xp_xp,best_xp,best_xp_ms,updated_at_ms) VALUES(?,?,?,?,?,?,?,?,?,?)')
+      .run(OWNER,'@fixture',110000,700000,300000,110000,700000,700000,110000,Date.parse(NOON));
+    assert.equal((await sync(f,OWNER,{nbgEnabled:true,coreSourcesEnabled:false,
+      nbgFinishAtMs:Date.parse(NOON)})).state,'no_qualifying_receipts',
+      'client- or historic-game totals are never source evidence');
+    assert.equal(count(f,'championship_clout_effects'),0);
+  }finally{f.close();}
+});
+
+test('NBG only credits best replay, and mixes monotonically with independent Dead Run skill',async()=>{
+  const f=fixture();
+  try{
+    addNbgProof(f,{verifiedXp:3000});
+    const first=await sync(f,OWNER,{nbgEnabled:true,coreSourcesEnabled:false});
+    assert.ok(first.total_points>=5);
+    addNbgProof(f,{id:NBG_RUN_IDS.b,finishedAt:Date.parse(NOON)+300000,
+      verifiedXp:20000,replayHex:'c',inputHex:'d'});
+    const improved=await sync(f,OWNER,{nbgEnabled:true,coreSourcesEnabled:false});
+    assert.equal(improved.total_points,25);
+    assert.equal(count(f,'championship_clout_sources'),2,
+      'earlier accepted lower proof stays immutable');
+    assert.equal(f.sql.prepare('SELECT variety_points FROM championship_clout_daily').get().variety_points,5);
+    addDeadRun(f,{id:DEAD_RUN_IDS.a});
+    const combined=await sync(f,OWNER,{nbgEnabled:true,deadRunEnabled:true});
+    assert.ok(combined.total_points>improved.total_points);
+    assert.equal(count(f,'championship_clout_sources'),3);
+    assert.equal(f.sql.prepare('SELECT variety_points FROM championship_clout_daily').get().variety_points,10);
+    assert.deepEqual(JSON.parse(f.sql.prepare('SELECT game_keys_json FROM championship_clout_daily').get().game_keys_json),
+      ['dead-run','nbg-london']);
+    assert.equal((await sync(f,OWNER,{nbgEnabled:true,deadRunEnabled:true})).total_points,combined.total_points);
+  }finally{f.close();}
+});
+
+test('signed NBG finish crossing midnight keeps source UTC day with actual later verification',async()=>{
+  const f=fixture();
+  try{
+    const finish=Date.parse(DAY+'T23:59:58.000Z');
+    const later=new Date('2026-10-18T00:00:05.000Z');
+    addNbgProof(f,{finishedAt:finish});
+    addDaily(f);
+    const credited=await sync(f,OWNER,{now:later,nbgEnabled:true,coreSourcesEnabled:false,
+      nbgFinishAtMs:finish});
+    assert.equal(credited.state,'recorded');
+    assert.equal(credited.day_key,DAY);
+    const saved=f.sql.prepare(
+      "SELECT day_key,earned_at_ms,verified_at_ms,recorded_at_ms FROM championship_clout_sources WHERE source_system='nbg_london'"
+    ).get();
+    assert.equal(saved.day_key,DAY);
+    assert.equal(saved.earned_at_ms,finish);
+    assert.equal(saved.verified_at_ms,later.getTime());
+    assert.equal(saved.recorded_at_ms,later.getTime());
+    assert.equal(f.sql.prepare('SELECT community_points FROM championship_clout_daily').get().community_points,0);
+    const laterStale=await sync(f,OWNER,{now:new Date('2026-10-18T00:17:00.000Z'),
+      nbgEnabled:true,coreSourcesEnabled:false,nbgFinishAtMs:finish});
+    assert.deepEqual(laterStale,{state:'stale_finished_run',day_key:DAY});
+    await assert.rejects(sync(f,OWNER,{nbgEnabled:false,nbgFinishAtMs:finish}),
+      /clout_nbg_invalid_finish_clock/);
+    await assert.rejects(sync(f,OWNER,{nbgEnabled:true,nbgFinishAtMs:Date.parse(NOON),
+      deadRunEnabled:true,deadRunFinishAt:NOON}),/clout_conflicting_finish_sources/);
+  }finally{f.close();}
+});
