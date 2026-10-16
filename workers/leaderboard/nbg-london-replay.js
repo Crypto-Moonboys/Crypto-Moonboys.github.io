@@ -123,7 +123,6 @@ export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, d
     grounded:true, health:3, invuln:0 };
   let jumps=0, sprayTimer=0, combo=0, comboExpires=0, checkpointX=72;
   let elapsed=0, xp=0, coinCount=0, secretCount=0, complete=false;
-  let previousJumpAt=-1000;
   let consumedFrames=0;
   let maximumX=64;
   const invulnerableDamage = (sourceX) => {
@@ -138,7 +137,7 @@ export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, d
   for (let offset=0; offset<bytes.length; offset+=5) {
     const dec = pos => bytes.charCodeAt(offset+pos);
     const dt=(dec(0) + dec(1)*256)/10;
-    const frameElapsed=dec(2) + dec(3)*256;
+    const frameElapsed=(dec(2) + dec(3)*256)/10;
     // Only direct JavaScript unit tests can inject this callback; no HTTP JSON
     // value can become a function. Production always uses the encoded mask.
     const mask=typeof testInputOverride === 'function' ?
@@ -146,7 +145,7 @@ export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, d
         jumps,health:p.health,elapsed, frame:consumedFrames,
         obstacles:level.hazards.concat(level.crates) }) : dec(4);
     if (!Number.isInteger(mask) || mask<0 || mask>15 || dt<0 || dt>33.1 || frameElapsed>2000 ||
-        dt>frameElapsed+1.5) return { valid:false };
+        dt>frameElapsed+0.11) return { valid:false };
     elapsed += frameElapsed;
     if (elapsed>MAX_MS+20000) return { valid:false };
     consumedFrames++;
@@ -157,8 +156,6 @@ export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, d
     if (!left && !right) p.vx*=Math.pow(0.78,step);
     p.vx=clamp(p.vx,-MAX_SPEED,MAX_SPEED);
     if (jump) {
-      if (elapsed-previousJumpAt<55) return { valid:false };
-      previousJumpAt=elapsed;
       if (p.grounded) {p.vy=-11.4;p.grounded=false;jumps=1;}
       else if(jumps===1) {
         p.vy=-12.8;
