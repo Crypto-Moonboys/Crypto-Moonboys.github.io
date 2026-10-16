@@ -179,16 +179,19 @@ test('migration adds isolated tables, rejects duplicate/cross-owner source claim
     const anotherEffect=db.prepare(
       'INSERT INTO championship_clout_effects (source_system,source_event_id,effect_kind,policy_version,telegram_id,verification_kind,earned_at_ms,verified_at_ms,day_key,game_key,recorded_at_ms) VALUES (?,?,?,?,?,?,?,?,?,?,?)'
     );
-    anotherEffect.run('moonpet','event-100','variety',CLOUT_POLICY_VERSION,
-      '100','server_receipt',MID,MID+500,'2026-10-16','moonpet-contract',MID+600);
+    // These attempts must fail due to parent-source FK isolation, not a duplicate effect key.
     assert.throws(()=>anotherEffect.run('moonpet','event-100','variety',
       CLOUT_POLICY_VERSION,'200','server_receipt',MID,MID+500,
       '2026-10-16','moonpet-contract',MID+600),
-      /FOREIGN KEY|constraint/i,'another effect kind cannot move receipt to another owner');
+      /FOREIGN KEY constraint failed/i,'another effect kind cannot move receipt to another owner');
     assert.throws(()=>anotherEffect.run('moonpet','event-100','variety',
       CLOUT_POLICY_VERSION,'100','server_receipt',MID,MID+500,
       '2026-10-17','moonpet-contract',MID+600),
-      /FOREIGN KEY|constraint/i,'a reused source cannot be attributed to a new UTC day');
+      /FOREIGN KEY constraint failed/i,'a reused source cannot be attributed to a new UTC day');
+    anotherEffect.run('moonpet','event-100','variety',CLOUT_POLICY_VERSION,
+      '100','server_receipt',MID,MID+500,'2026-10-16','moonpet-contract',MID+600);
+    assert.equal(db.prepare("SELECT COUNT(*) AS n FROM championship_clout_effects WHERE effect_kind='variety'").get().n,1,
+      'the valid same-owner same-day second effect remains permitted');
     assert.throws(()=>addSource.run('moonpet','event-100',CLOUT_POLICY_VERSION,
       '200','2026-10-16',MID,MID+500,'server_receipt',MID+600),
       /UNIQUE|constraint/i,'the immutable source owner cannot be reassigned');
