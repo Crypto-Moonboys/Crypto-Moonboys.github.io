@@ -196,6 +196,12 @@
     var checkpointX = 72;
     var finishBonusAwarded = false;
     var runElapsedMs = 0;
+    // Compact authoritative replay: 5 bytes per rendered simulation tick.
+    // Tick duration (tenths of ms), elapsed wall-time (ms), and input bits.
+    // The Worker independently simulates these inputs; XP HUD values are
+    // never accepted as proof of a ranked score.
+    var runReplayFrames = [];
+    var replayInvalid = false;
     var speedrunBonusXp = 0;
     var comboCount = 0;
     var comboExpiresAt = 0;
@@ -475,6 +481,34 @@
       Array.prototype.forEach.call(document.querySelectorAll('[data-control]'), function (button) {
         button.classList.remove('is-pressed');
       });
+    }
+
+    function recordReplayTick(frameElapsedMs, dt) {
+      if (replayInvalid) return;
+      if (!Number.isFinite(frameElapsedMs) || frameElapsedMs > 2000 ||
+          runReplayFrames.length >= 600000) {
+        replayInvalid = true;
+        return;
+      }
+      var replay = initialInputReplay;
+      var mask = 0;
+      if (keys.ArrowLeft || keys.KeyA || touch.left || (replay && replay.control === 'left')) mask |= 1;
+      if (keys.ArrowRight || keys.KeyD || touch.right || (replay && replay.control === 'right')) mask |= 2;
+      if (pendingJumpPresses > 0 || (replay && replay.control === 'jump')) mask |= 4;
+      if (keys.KeyS || keys.KeyX || touch.spray || (replay && replay.control === 'spray')) mask |= 8;
+      var tenth = Math.round(dt * 10);
+      var elapsed = Math.round(frameElapsedMs);
+      runReplayFrames.push(tenth & 255, (tenth >> 8) & 255,
+        elapsed & 255, (elapsed >> 8) & 255, mask);
+    }
+
+    function encodedRunReplay() {
+      if (replayInvalid || !runReplayFrames.length) return null;
+      var segments = [];
+      for (var i = 0; i < runReplayFrames.length; i += 16384) {
+        segments.push(String.fromCharCode.apply(null, runReplayFrames.slice(i, i + 16384)));
+      }
+      return { version: 1, frames: btoa(segments.join('')) };
     }
 
     function handleInput(step) {
@@ -880,7 +914,8 @@
             speedrunBonusXp: speedrunBonusXp,
             bestTimeMs: Math.round(bestTimeMs),
             bestXp: bestXp,
-            leaderboardReady: true
+            leaderboardReady: true,
+            replay: encodedRunReplay()
           }
         }));
       }
@@ -1347,6 +1382,7 @@
 
       if (running) {
         runElapsedMs += frameElapsedMs;
+        recordReplayTick(frameElapsedMs, dt);
         updatePlayer(dt);
         if (gameOver) {
           updateHud();
@@ -1448,6 +1484,8 @@
       nextParachuteAt = 6000;
       parachuteSpawnCount = 0;
       runElapsedMs = 0;
+      runReplayFrames = [];
+      replayInvalid = false;
       speedrunBonusXp = 0;
       comboCount = 0;
       comboExpiresAt = 0;
@@ -1562,6 +1600,8 @@
       running = true;
       runSequence += 1;
       var sequence = runSequence;
+      runReplayFrames = [];
+      replayInvalid = false;
       lastTime = 0;
       updateHud();
       window.dispatchEvent(new CustomEvent('nbg-level-started', { detail: { level: 'london-level-1' } }));
