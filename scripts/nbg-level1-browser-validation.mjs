@@ -1811,6 +1811,10 @@ for (const mode of ['keyboard', 'touch']) {
     await queuedPage.waitForFunction(() => window.NBGLevel1State?.assetsLoaded,
       null, { timeout: 20000 });
     await queuedPage.evaluate(() => {
+      // Gameplay keyboard handlers intentionally ignore presses while Scores
+      // drawer is open; isolate this test with the drawer closed.
+      const drawer = document.getElementById('nbg-record-drawer');
+      if (drawer) drawer.hidden = true;
       window.__nbgOriginalQueuedStart = window.NBGLondonBeforeQueuedRun;
       window.NBGLondonBeforeQueuedRun = () => new Promise(resolve => {
         window.__nbgReleaseQueuedStart = resolve;
@@ -1833,9 +1837,13 @@ for (const mode of ['keyboard', 'touch']) {
       running: window.NBGLevel1State.running,
       pending: window.NBGLevel1State.pendingJumpPresses,
       waiting: window.NBGLevel1State.waitingForFirstInput,
+      scoresHidden: document.getElementById('nbg-record-drawer')?.hidden,
+      gameOver: window.NBGLevel1State.gameOver,
+      complete: window.NBGLevel1State.complete
     }));
     assert.equal(queued.running, false, mode + ' cannot start before server handshake');
-    assert.equal(queued.pending, 3, mode + ' stores three distinct Jump presses, not four');
+    assert.equal(queued.pending, 3,
+      mode + ' should store three distinct Jump presses: ' + JSON.stringify(queued));
     await queuedPage.evaluate(() => window.__nbgReleaseQueuedStart());
     await queuedPage.waitForFunction(() => window.NBGLevel1State.running &&
       window.NBGLevel1State.jumpsUsed === 3, null, { timeout: 1800 });
