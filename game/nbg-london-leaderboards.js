@@ -17,6 +17,11 @@
   var identityRequestNumber = 0;
   var generation = 0;
   var runPromise = null;
+  // Serialized network start operations survive local reset/identity-change.
+  // The server invalidates earlier unfinished runs on each /run/start. If
+  // an old HTTP request finishes *after* a fresh one, it could otherwise
+  // invalidate the fresh run while the browser ignores the stale response.
+  var serverStartQueue = Promise.resolve();
   var runIdentity = null;
   var status = null;
   var tableBody = null;
@@ -225,16 +230,24 @@
     }
     runIdentity=startingId;
     setStatus('Requesting unique ranked challenge before gameplay…');
-    runPromise=(async function(){
-      var auth=await signedAuth();
-      if(!auth||current!==generation||String(auth.id)!==startingId||
-          String(gate.getTelegramId()||'')!==startingId||!gate.isTelegramLinked())
-        return null;
-      var started=await callJson('/run/start',{telegram_auth:auth});
-      if(current!==generation||String(gate.getTelegramId()||'')!==startingId||
-          !gate.isTelegramLinked())return null;
-      return Object.assign({},started,{telegram_id:startingId});
-    }());
+    // Serialize the *whole* signed start operation across resets and account
+    // changes. A stale response can be ignored but cannot commit after a
+    // newer start and invalidate it in D1. Never reset serverStartQueue.
+    var startOperation=serverStartQueue.catch(function(){return null;})
+      .then(async function(){
+        if(current!==generation||String(gate.getTelegramId()||'')!==startingId||
+            !gate.isTelegramLinked())return null;
+        var auth=await signedAuth();
+        if(!auth||current!==generation||String(auth.id)!==startingId||
+            String(gate.getTelegramId()||'')!==startingId||
+            !gate.isTelegramLinked())return null;
+        var started=await callJson('/run/start',{telegram_auth:auth});
+        if(current!==generation||String(gate.getTelegramId()||'')!==startingId||
+            !gate.isTelegramLinked())return null;
+        return Object.assign({},started,{telegram_id:startingId});
+      });
+    serverStartQueue=startOperation.catch(function(){return null;});
+    runPromise=startOperation;
     try {
       var result=await runPromise;
       if(current!==generation)return null;
