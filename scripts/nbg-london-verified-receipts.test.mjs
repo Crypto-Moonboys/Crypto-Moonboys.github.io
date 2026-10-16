@@ -199,6 +199,34 @@ test('enabled but unmigrated code path fails CLOSED and does not consume a run o
   }finally{f.close();}
 });
 
+test('challenge v2 is issued before play and legacy replay cannot create trusted receipt',async()=>{
+  const f=fixture();
+  try {
+    const id=await f.start();
+    const row=f.sql.prepare(
+      'SELECT challenge_seed,challenge_version,telegram_id FROM nbg_london_runs WHERE run_id=?'
+    ).get(id);
+    assert.equal(row.challenge_version,2);
+    assert.ok(Number.isSafeInteger(row.challenge_seed) && row.challenge_seed>=0 &&
+      row.challenge_seed<=0xffffffff);
+    assert.equal(row.telegram_id,'100');
+    now+=120000;
+    const legacy={...replayA,version:1};
+    const rejected=await f.finish(id,legacy);
+    assert.equal(rejected.status,422);
+    assert.equal(rejected.error,'invalid_run_challenge');
+    assert.equal(f.sql.prepare('SELECT finished_at_ms FROM nbg_london_runs WHERE run_id=?')
+      .get(id).finished_at_ms,null);
+    assert.equal(count(f,'nbg_london_verified_runs'),0);
+    assert.equal(count(f,'nbg_london_period_scores'),0);
+    const accepted=await f.finish(id,replayA);
+    assert.equal(accepted.status,200);
+    assert.equal(count(f,'nbg_london_verified_runs'),1);
+    assert.equal(f.sql.prepare('SELECT replay_version FROM nbg_london_verified_runs')
+      .get().replay_version,2);
+  }finally{f.close();}
+});
+
 test('accepted signed, replay-scored run creates immutable unique proof and trusted/legacy parity',async()=>{
   const f=fixture();
   try{
