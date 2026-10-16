@@ -5,6 +5,7 @@ import { recoverPetRuntimeAwards } from './pets/runtime-recovery.js';
 import { handleDeadRunRequest, cleanupExpiredSessions } from './routes/dead-run.js';
 import { syncCloutPilotForVerifiedOwner } from './championship/clout-pilot.js';
 import { verifyTelegramMiniAppInitData } from './pets/mini-app-auth.js';
+import { DEAD_RUN_MAX_SESSION_SECONDS } from './routes/dead-run-core.js';
 
 const PROGRESSION_API_ACTIONS = Object.freeze({
   feed: 'feed',
@@ -279,6 +280,8 @@ async function projectCloutForAuthenticatedWebhook(env, update, response) {
   try {
     await syncCloutPilotForVerifiedOwner(env.DB, owner, {
       enabled: true, startAt: env.CHAMPIONSHIP_CLOUT_PILOT_START_AT,
+      deadRunEnabled: env.CHAMPIONSHIP_CLOUT_DEAD_RUN_ENABLED === 'true',
+      deadRunEnabled: env.CHAMPIONSHIP_CLOUT_DEAD_RUN_ENABLED === 'true',
     });
   } catch (error) {
     // Never turn a successful source award into a second XP/pet award or
@@ -310,6 +313,34 @@ async function projectCloutForAuthenticatedMiniApp(env, body, response) {
   }
 }
 
+// PR3A: /api/dead-run/session/finish is already HMAC-verified by Dead Run's
+// source handler. Check its accepted ranked result and reverify that signed
+// actor here. A body session_id alone, claimed score or GPS payload never
+// confers ownership; a separate D1 finished-session read binds actor and run.
+async function projectCloutForAcceptedDeadRunFinish(env, clonedRequest, response) {
+  const saved = await response.clone().json().catch(() => null);
+  if (!saved?.ok || saved?.result?.ranked !== true) return;
+  const body = await clonedRequest.json().catch(() => null);
+  const sessionId = String(body?.session_id || '');
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(sessionId))
+    return;
+  if (!env?.TELEGRAM_BOT_TOKEN || !env?.DB) return;
+  const signed = String(body?.init_data || body?.telegram_init_data || '').trim();
+  const verified = await verifyTelegramMiniAppInitData(signed, env.TELEGRAM_BOT_TOKEN, {
+    max_age_seconds: DEAD_RUN_MAX_SESSION_SECONDS + 900,
+  });
+  if (!verified.ok) return;
+  const settled = await env.DB.prepare([
+    'SELECT telegram_id FROM dead_run_sessions',
+    "WHERE session_id=? AND telegram_id=? AND status='finished' AND ranked=1 LIMIT 1",
+  ].join(' ')).bind(sessionId, verified.telegramId).first();
+  if (!settled || String(settled.telegram_id) !== verified.telegramId) return;
+  await syncCloutPilotForVerifiedOwner(env.DB, verified.telegramId, {
+    enabled: true, deadRunEnabled: true,
+    startAt: env.CHAMPIONSHIP_CLOUT_PILOT_START_AT,
+  });
+}
+
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
@@ -321,8 +352,24 @@ export default {
       const verification = await verifyTelegramWebhookSecret(request, env);
       if (!verification.ok) return jsonError(request, verification.error, verification.status);
     }
+    // Clone before Dead Run's trusted handler consumes the stream. The clone
+    // is used only when both Clout and its independently gated game source
+    // are enabled. Never hold the existing gameplay response for Clout work.
+    const cloutDeadRunFinish = path === '/api/dead-run/session/finish' &&
+      request.method === 'POST' && env?.CHAMPIONSHIP_CLOUT_PILOT_ENABLED === 'true' &&
+      env?.CHAMPIONSHIP_CLOUT_DEAD_RUN_ENABLED === 'true' &&
+      typeof ctx?.waitUntil === 'function' ? request.clone() : null;
     const deadRunResponse = await handleDeadRunRequest(request, env, ctx);
-    if (deadRunResponse) return deadRunResponse;
+    if (deadRunResponse) {
+      if (cloutDeadRunFinish && deadRunResponse.ok) {
+        ctx.waitUntil(projectCloutForAcceptedDeadRunFinish(env, cloutDeadRunFinish, deadRunResponse)
+          .catch((error) => console.log('[moonboys-api]', JSON.stringify({
+            event: 'clout_dead_run_projection_failed',
+            reason: String(error?.message || error),
+          }))));
+      }
+      return deadRunResponse;
+    }
 
     const isPetAction = url.pathname === '/telegram-pets/action' && request.method === 'POST';
     const isMiniAppPetAction = path === '/telegram-pets/app/action' && request.method === 'POST';
