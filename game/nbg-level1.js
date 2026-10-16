@@ -186,6 +186,8 @@
     var waitingForFirstInput = false;
     var running = false;
     var initPromise = null;
+    var pendingRunStartPromise = null;
+    var pendingRunOwner = null;
     var pendingInitialInput = null;
     var initialInputReplay = null;
     var completionAnimationActive = false;
@@ -474,7 +476,7 @@
         e.preventDefault();
         if (down) {
           queueInitialInput(getControlForCode(e.code));
-          beginGameplay();
+          beginGameplay(getControlForCode(e.code));
         }
       }
     }
@@ -1476,6 +1478,8 @@
 
     function resetRun() {
       runSequence += 1;
+      pendingRunStartPromise = null;
+      pendingRunOwner = null;
       running = false;
       gameOver = false;
       waitingForFirstInput = true;
@@ -1598,11 +1602,12 @@
       return initPromise;
     }
 
-    function beginGameplay() {
-      if (running) return Promise.resolve(window.NBGLevel1State);
-      if (!assetsLoaded) return init().then(beginGameplay);
-      if (complete || gameOver) return Promise.resolve(window.NBGLevel1State);
-      initialInputReplay = pendingInitialInput;
+    function startSimulation() {
+      // A Jump press is already in pendingJumpPresses (keyboard and touch).
+      // Replaying the same press as an initial control would create a second
+      // Jump on the following tick without a second user action.
+      initialInputReplay = pendingInitialInput && pendingInitialInput.control === 'jump' &&
+        pendingJumpPresses > 0 ? null : pendingInitialInput;
       pendingInitialInput = null;
       waitingForFirstInput = false;
       running = true;
@@ -1618,6 +1623,71 @@
       return Promise.resolve(window.NBGLevel1State);
     }
 
+    function cancelQueuedStartIfOwnerChanged() {
+      if (!pendingRunStartPromise) return;
+      var gate = window.MOONBOYS_IDENTITY;
+      var currentOwner = String(gate && gate.getTelegramId ? gate.getTelegramId() || '' : '');
+      var sameOwner = pendingRunOwner && currentOwner === pendingRunOwner &&
+        gate && typeof gate.isTelegramLinked === 'function' && gate.isTelegramLinked();
+      if (sameOwner) return;
+      // Abandon only this level's pending gameplay wait, not the old Worker's
+      // HTTP request; the latter is still serialized by its captured owner.
+      // A new owner's controls must never wait for the old account's network.
+      runSequence += 1;
+      pendingRunStartPromise = null;
+      pendingRunOwner = null;
+      pendingInitialInput = null;
+      initialInputReplay = null;
+      clearInput();
+      waitingForFirstInput = true;
+      updateHud();
+    }
+
+    function beginGameplay(control) {
+      if (running) return Promise.resolve(window.NBGLevel1State);
+      if (!assetsLoaded) return init().then(function () { return beginGameplay(control); });
+      if (complete || gameOver) return Promise.resolve(window.NBGLevel1State);
+      if (pendingRunStartPromise) {
+        cancelQueuedStartIfOwnerChanged();
+        if (pendingRunStartPromise) return pendingRunStartPromise;
+      }
+      // A fast reset can queue a new /run/start behind a still-unsettled
+      // request for this SAME Telegram owner. Hold simulation at elapsed 0
+      // until its actual signed server session exists. Guest/ordinary starts
+      // retain the original immediate play path.
+      var beforePlay = window.NBGLondonBeforeQueuedRun;
+      var preparation = typeof beforePlay === 'function' ? beforePlay() : null;
+      if (!preparation || typeof preparation.then !== 'function')
+        return startSimulation();
+      // The jump press is held by pendingJumpPresses already, including if
+      // released while awaiting the signed session. Do not replay it twice.
+      if (control && control !== 'jump' && !pendingInitialInput)
+        pendingInitialInput = { control: control };
+      var ownerGate = window.MOONBOYS_IDENTITY;
+      var capturedOwner = String(ownerGate && ownerGate.getTelegramId ?
+        ownerGate.getTelegramId() || '' : '');
+      var capturedSequence = runSequence;
+      var wait = Promise.resolve(preparation).catch(function () {
+        // Auth/network failure leaves gameplay playable as practice, without
+        // claiming an official score. Client displays the ranked error.
+      }).then(function () {
+        var gate = window.MOONBOYS_IDENTITY;
+        var currentOwner = String(gate && gate.getTelegramId ? gate.getTelegramId() || '' : '');
+        if (capturedSequence !== runSequence || complete || gameOver ||
+            currentOwner !== capturedOwner)
+          return window.NBGLevel1State;
+        if (pendingRunStartPromise === wait) {
+          pendingRunStartPromise = null;
+          pendingRunOwner = null;
+        }
+        return startSimulation();
+      });
+      pendingRunOwner = capturedOwner;
+      pendingRunStartPromise = wait;
+      return wait;
+    }
+
+    window.addEventListener('moonboys:identity-change', cancelQueuedStartIfOwnerChanged);
     window.addEventListener('keydown', function (e) { onKey(e, true); });
     window.addEventListener('keyup', function (e) { onKey(e, false); });
     window.addEventListener('blur', clearInput);
@@ -1641,7 +1711,7 @@
           if (active) {
             if (control === 'jump') pendingJumpPresses = Math.min(2, pendingJumpPresses + 1);
             queueInitialInput(control);
-            beginGameplay();
+            beginGameplay(control);
           }
         }
       }

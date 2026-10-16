@@ -1615,6 +1615,123 @@ const afterRestart = await page.evaluate(() => window.NBGLevel1State.runElapsedM
 assert.ok(afterRestart < 2500, 'new run must restart with a fresh clock');
 await page.evaluate(() => window.NBGLevel1Runtime.reset());
 
+// When a same-owner ranked start is queued behind an earlier HTTP request,
+// simulation must remain at elapsed 0 until the replacement session exists.
+// Exercise an actual short key press that is released during the handshake.
+await page.evaluate(() => {
+  window.__nbgOriginalQueuedStart = window.NBGLondonBeforeQueuedRun;
+  window.NBGLondonBeforeQueuedRun = () => new Promise(resolve => {
+    window.__nbgReleaseQueuedStart = resolve;
+  });
+});
+await page.keyboard.press('s');
+await page.waitForFunction(() => typeof window.__nbgReleaseQueuedStart === 'function');
+await page.waitForTimeout(300);
+assert.deepEqual(await page.evaluate(() => ({
+  running: window.NBGLevel1State.running,
+  elapsed: window.NBGLevel1State.runElapsedMs,
+  control: window.NBGLevel1State.pendingInitialInput?.control,
+})), { running: false, elapsed: 0, control: 'spray' },
+'queued ranked session must freeze physics and preserve initiating key press');
+await page.evaluate(() => window.__nbgReleaseQueuedStart());
+await page.waitForFunction(() => window.NBGLevel1State.running &&
+  window.NBGLevel1State.runElapsedMs > 0);
+await page.evaluate(() => {
+  window.NBGLevel1Runtime.reset();
+  window.NBGLondonBeforeQueuedRun = window.__nbgOriginalQueuedStart;
+  delete window.__nbgOriginalQueuedStart;
+  delete window.__nbgReleaseQueuedStart;
+});
+
+// A single queued Jump press (keyboard or touch) must not consume the
+// second jump. The input layer already stores it in pendingJumpPresses; the
+// queued-start replay must not duplicate it on the first positive-time tick.
+for (const mode of ['keyboard', 'touch']) {
+  await page.evaluate(() => {
+    window.__nbgOriginalQueuedStart = window.NBGLondonBeforeQueuedRun;
+    window.NBGLondonBeforeQueuedRun = () => new Promise(resolve => {
+      window.__nbgReleaseQueuedStart = resolve;
+    });
+  });
+  if (mode === 'keyboard') {
+    await page.keyboard.press('w');
+  } else {
+    await page.evaluate(() => {
+      window.NBGLevel1Runtime.setTouchControl('jump', true);
+      window.NBGLevel1Runtime.setTouchControl('jump', false);
+    });
+  }
+  await page.waitForFunction(() => typeof window.__nbgReleaseQueuedStart === 'function');
+  assert.deepEqual(await page.evaluate(() => ({
+    running: window.NBGLevel1State.running,
+    elapsed: window.NBGLevel1State.runElapsedMs,
+  })), { running: false, elapsed: 0 },
+  mode + ' Jump must not advance physics during queued start');
+  await page.evaluate(() => window.__nbgReleaseQueuedStart());
+  await page.waitForFunction(() => window.NBGLevel1State.running &&
+    window.NBGLevel1State.runElapsedMs > 50 && window.NBGLevel1State.jumpsUsed > 0);
+  await page.waitForTimeout(100);
+  assert.equal(await page.evaluate(() => window.NBGLevel1State.jumpsUsed), 1,
+    mode + ' single queued Jump must consume only first jump, not double jump');
+  await page.evaluate(() => {
+    window.NBGLevel1Runtime.reset();
+    window.NBGLondonBeforeQueuedRun = window.__nbgOriginalQueuedStart;
+    delete window.__nbgOriginalQueuedStart;
+    delete window.__nbgReleaseQueuedStart;
+  });
+}
+
+// Resetting while a signed handshake is pending must not revive a stale run.
+await page.evaluate(() => {
+  window.__nbgOriginalQueuedStart = window.NBGLondonBeforeQueuedRun;
+  window.NBGLondonBeforeQueuedRun = () => new Promise(resolve => {
+    window.__nbgReleaseQueuedStart = resolve;
+  });
+});
+await page.keyboard.press('s');
+await page.waitForFunction(() => typeof window.__nbgReleaseQueuedStart === 'function');
+await page.evaluate(() => window.NBGLevel1Runtime.reset());
+await page.evaluate(() => window.__nbgReleaseQueuedStart());
+await page.waitForTimeout(150);
+assert.deepEqual(await page.evaluate(() => ({
+  running: window.NBGLevel1State.running,
+  elapsed: window.NBGLevel1State.runElapsedMs
+})), { running: false, elapsed: 0 },
+'reset must prevent a stale queued session from starting gameplay');
+await page.evaluate(() => {
+  window.NBGLondonBeforeQueuedRun = window.__nbgOriginalQueuedStart;
+  delete window.__nbgOriginalQueuedStart;
+  delete window.__nbgReleaseQueuedStart;
+});
+
+// A linked account change during an unresolved pre-play handshake must let
+// the new player's controls start immediately, even if old HTTP never settles.
+await page.evaluate(() => {
+  window.__nbgOriginalQueuedStart = window.NBGLondonBeforeQueuedRun;
+  window.NBGLondonBeforeQueuedRun = () => new Promise(resolve => {
+    window.__nbgReleaseQueuedStart = resolve;
+  });
+});
+await page.keyboard.press('s');
+await page.waitForFunction(() => typeof window.__nbgReleaseQueuedStart === 'function');
+await page.evaluate(() => {
+  // A genuine identity-change signal invalidates old owner gameplay waits.
+  window.NBGLondonBeforeQueuedRun = null;
+  window.dispatchEvent(new Event('moonboys:identity-change'));
+});
+await page.keyboard.press('d');
+await page.waitForFunction(() => window.NBGLevel1State.running === true, null, { timeout: 2500 });
+await page.evaluate(() => window.__nbgReleaseQueuedStart());
+await page.waitForTimeout(150);
+assert.equal(await page.evaluate(() => window.NBGLevel1State.running), true,
+  'stale owner handshake must neither freeze nor restart new gameplay');
+await page.evaluate(() => {
+  window.NBGLevel1Runtime.reset();
+  window.NBGLondonBeforeQueuedRun = window.__nbgOriginalQueuedStart;
+  delete window.__nbgOriginalQueuedStart;
+  delete window.__nbgReleaseQueuedStart;
+});
+
 // Guest runs cannot leave permanent device-local best scores, even after finishing.
 const guestRecords = await page.evaluate(() => ({
   bestXp: localStorage.getItem('nbg-london-best-xp'),

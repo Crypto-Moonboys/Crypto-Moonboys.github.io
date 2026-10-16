@@ -14,7 +14,19 @@
   var identityRequestNumber = 0;
   var generation = 0;
   var runPromise = null;
+  // The Worker invalidates unfinished sessions per Telegram owner, so only
+  // starts for the SAME owner need ordering. Do not stall a newly linked owner.
+  var serverStartQueues = new Map();
+  // An incomplete start POST can still commit after navigation or reload.
+  // Persist an owner-scoped marker BEFORE each HTTP start. Only a confirmed
+  // Worker response clears it; indeterminate outcomes stay practice-only.
+  var uncertainStartOwners = new Set();
+  var activeStartTokens = new Map();
+  var startTokenSequence = 0;
   var runIdentity = null;
+  var practiceOnlyReason = null;
+  var PRACTICE_START_MESSAGE = 'Practice only (Telegram-linked): a previous ranked start may still be processing. Scores are not saved; refreshing does not clear the pending-start safety hold.';
+  var preparedStartGeneration = -1;
   var status = null;
   var tableBody = null;
   var account = null;
@@ -38,6 +50,61 @@
     if (status) status.textContent = message;
   }
 
+  function pendingStartKey(id) {
+    return 'nbg-london:pending-ranked-start:v1:' + id;
+  }
+
+  function uncertainOwner(id) {
+    if (!id || uncertainStartOwners.has(id)) return !!id;
+    try {
+      // Without durable storage we cannot safely distinguish a page reload
+      // from an older server POST whose outcome is still unknown.
+      if (!window.localStorage) throw new Error('storage_unavailable');
+      var stored = window.localStorage.getItem(pendingStartKey(id));
+      if (stored && stored !== activeStartTokens.get(id)) {
+        uncertainStartOwners.add(id);
+        return true;
+      }
+    } catch (error) {
+      uncertainStartOwners.add(id);
+      return true;
+    }
+    return false;
+  }
+
+  function reserveStart(id) {
+    if (uncertainOwner(id)) return null;
+    var token = String(Date.now()) + ':' + String(++startTokenSequence);
+    try {
+      // Write first; the HTTP POST must never precede the durable marker.
+      window.localStorage.setItem(pendingStartKey(id), token);
+      activeStartTokens.set(id, token);
+      return token;
+    } catch (error) {
+      uncertainStartOwners.add(id);
+      return null;
+    }
+  }
+
+  function settleStart(id, token, confirmed) {
+    if (activeStartTokens.get(id) === token) activeStartTokens.delete(id);
+    if (!confirmed) {
+      uncertainStartOwners.add(id);
+      return; // Keep the durable marker across refresh and browser restarts.
+    }
+    try {
+      var key = pendingStartKey(id);
+      if (window.localStorage.getItem(key) === token) {
+        window.localStorage.removeItem(key);
+      } else {
+        // Another tab has changed this owner's in-flight marker.
+        uncertainStartOwners.add(id);
+      }
+    } catch (error) {
+      uncertainStartOwners.add(id);
+    }
+  }
+
   function displayIdentity() {
     var gate = window.MOONBOYS_IDENTITY;
     var linked = !!(gate && typeof gate.isTelegramLinked === 'function' && gate.isTelegramLinked());
@@ -58,13 +125,42 @@
   async function callJson(path, data) {
     var base = apiBase();
     if (!base) throw new Error('Leaderboard API unavailable in this environment');
-    var response = await fetch(base + '/nbg-london' + path, {
-      method: data ? 'POST' : 'GET',
-      headers: data ? { 'Content-Type': 'application/json' } : {},
-      body: data ? JSON.stringify(data) : undefined,
-      cache: 'no-store'
-    });
+    var response;
+    try {
+      response = await fetch(base + '/nbg-london' + path, {
+        method: data ? 'POST' : 'GET',
+        headers: data ? { 'Content-Type': 'application/json' } : {},
+        body: data ? JSON.stringify(data) : undefined,
+        cache: 'no-store'
+      });
+    } catch (error) {
+      // HTTP error responses prove that processing has returned, but a fetch
+      // rejection does NOT prove a start POST was never committed by the Worker.
+      if (path === '/run/start') {
+        var uncertain = new Error('start_request_outcome_unknown');
+        uncertain.uncertainStart = true;
+        throw uncertain;
+      }
+      throw error;
+    }
     var result = await response.json().catch(function () { return null; });
+    if (path === '/run/start') {
+      // Gateway 5xx / HTML timeouts do NOT prove the Worker stopped its D1
+      // write. Only a valid successful Worker start or an explicit 4xx
+      // application rejection safely settles the pending-start marker.
+      var acknowledged = response.ok && result && result.ok === true &&
+        (result.ranked === false ||
+          (typeof result.run_id === 'string' &&
+            /^[0-9a-f-]{36}$/i.test(result.run_id)));
+      var rejected = !response.ok && Number(response.status) >= 400 &&
+        Number(response.status) < 500 && result && result.ok === false &&
+        typeof result.error === 'string' && result.error.length > 0;
+      if (!acknowledged && !rejected) {
+        var uncertainResponse = new Error('start_request_outcome_unknown');
+        uncertainResponse.uncertainStart = true;
+        throw uncertainResponse;
+      }
+    }
     if (!response.ok || !result || !result.ok)
       throw new Error(result && result.error ? result.error : 'Leaderboard request failed');
     return result;
@@ -212,6 +308,7 @@
   async function beginRankedRun() {
     var current = ++generation;
     runPromise = null;
+    practiceOnlyReason = null;
     // Capture the identity at the exact beginning of play, before an await.
     // Website credential renewal can adopt another tab's Telegram account.
     var gate = window.MOONBOYS_IDENTITY;
@@ -222,6 +319,11 @@
       return;
     }
     runIdentity = startingId;
+    if (uncertainOwner(startingId)) {
+      practiceOnlyReason = PRACTICE_START_MESSAGE;
+      setStatus(practiceOnlyReason);
+      return;
+    }
     setStatus('Verifying Telegram account for this run…');
     runPromise = (async function () {
       var auth = await signedAuth();
@@ -229,9 +331,41 @@
           String(auth.id) !== startingId ||
           String(gate.getTelegramId() || '') !== startingId ||
           !gate.isTelegramLinked()) return null;
-      var started = await callJson('/run/start', { telegram_auth: auth });
-      if (current !== generation || String(gate.getTelegramId() || '') !== startingId) return null;
-      return Object.assign({}, started, { telegram_id: startingId });
+      // Each /run/start invalidates unfinished D1 sessions for its own owner.
+      // Serialize the full HTTP request per owner so a late old request cannot
+      // revoke a newer run. Other Telegram owners must not be blocked by it.
+      var previousStart = serverStartQueues.get(startingId) || Promise.resolve();
+      var queuedStart = previousStart.then(async function () {
+        if (current !== generation || uncertainOwner(startingId) ||
+            String(gate.getTelegramId() || '') !== startingId ||
+            !gate.isTelegramLinked()) return null;
+        var token = reserveStart(startingId);
+        if (!token) {
+          practiceOnlyReason = PRACTICE_START_MESSAGE;
+          return null;
+        }
+        var started;
+        try {
+          started = await callJson('/run/start', { telegram_auth: auth });
+          settleStart(startingId, token, true);
+        } catch (error) {
+          settleStart(startingId, token, !(error && error.uncertainStart));
+          throw error;
+        }
+        if (current !== generation ||
+            String(gate.getTelegramId() || '') !== startingId ||
+            !gate.isTelegramLinked()) return null;
+        return Object.assign({}, started, { telegram_id: startingId });
+      });
+      // A failed request must not poison later same-owner starts. Remove idle
+      // entries only when no newer run has replaced that owner's queue tail.
+      var tail = queuedStart.then(function () {}, function () {});
+      serverStartQueues.set(startingId, tail);
+      tail.then(function () {
+        if (serverStartQueues.get(startingId) === tail)
+          serverStartQueues.delete(startingId);
+      });
+      return queuedStart;
     }());
     try {
       var result = await runPromise;
@@ -247,26 +381,55 @@
         if (account) account.textContent = 'Playing as ' + result.player;
         setStatus('Ranked run active — completed results are saved to your Telegram name.');
       } else {
-        setStatus('Run not ranked: Telegram account changed during login verification.');
+        if (uncertainOwner(startingId)) practiceOnlyReason = PRACTICE_START_MESSAGE;
+        setStatus(practiceOnlyReason ||
+          'Run not ranked: Telegram account changed during login verification.');
       }
     } catch (error) {
-      if (current === generation) setStatus('Ranked run unavailable: ' + error.message + '. No score will be saved.');
+      if (current === generation) {
+        if (uncertainOwner(startingId)) practiceOnlyReason = PRACTICE_START_MESSAGE;
+        setStatus(practiceOnlyReason ||
+          'Ranked run unavailable: ' + error.message + '. No score will be saved.');
+      }
     }
+  }
+
+  function beforeQueuedRun() {
+    var gate = window.MOONBOYS_IDENTITY;
+    var id = String(gate && gate.getTelegramId ? gate.getTelegramId() || '' : '');
+    if (!id || !gate.isTelegramLinked || !gate.isTelegramLinked() ||
+        uncertainOwner(id) || !serverStartQueues.has(id)) return null;
+    // A same-owner HTTP start is still pending: create the replacement session
+    // BEFORE simulation begins so its real elapsed-time checks stay accurate.
+    // The later nbg-level-started event must not issue another /run/start.
+    var preparation = beginRankedRun();
+    preparedStartGeneration = generation;
+    setStatus('Waiting for previous ranked start before gameplay begins…');
+    return preparation;
   }
 
   async function finishRankedRun(detail) {
     var current = generation;
     var sessionPromise = runPromise;
     if (!sessionPromise) {
-      setStatus('Run complete. Guest scores are not stored permanently.');
+      setStatus(practiceOnlyReason ?
+        'Practice run completed. ' + practiceOnlyReason :
+        runIdentity ?
+          'Run complete. Telegram verification unavailable; no official score was saved.' :
+          'Run complete. Guest scores are not stored permanently.');
       return;
     }
     try {
       var session = await sessionPromise;
       if (current !== generation || !session || !session.run_id) {
-        if (current === generation) setStatus(session && session.ranked === false ?
-          'Practice run completed. Official XP and records were not saved during beta.' :
-          'Run not ranked: no verified Telegram start session.');
+        if (current === generation) {
+          if (uncertainOwner(runIdentity)) practiceOnlyReason = PRACTICE_START_MESSAGE;
+          setStatus(practiceOnlyReason ?
+            'Practice run completed. ' + practiceOnlyReason :
+            session && session.ranked === false ?
+              'Practice run completed. Official XP and records were not saved during beta.' :
+              'Run not ranked: no verified Telegram start session.');
+        }
         return;
       }
       var gate = window.MOONBOYS_IDENTITY;
@@ -402,7 +565,14 @@
       displayIdentity();
       loadPersonal();
     });
-    window.addEventListener('nbg-level-started', beginRankedRun);
+    window.NBGLondonBeforeQueuedRun = beforeQueuedRun;
+    window.addEventListener('nbg-level-started', function () {
+      if (preparedStartGeneration === generation) {
+        preparedStartGeneration = -1;
+        return;
+      }
+      beginRankedRun();
+    });
     window.addEventListener('nbg-level-complete', function (event) {
       finishRankedRun(event.detail || {});
     });
@@ -410,8 +580,12 @@
       generation += 1;
       runPromise = null;
       runIdentity = null;
+      practiceOnlyReason = null;
       displayIdentity();
-      setStatus('Fresh run ready. Verified Telegram gameplay can now save official leaderboard XP.');
+      var gate = window.MOONBOYS_IDENTITY;
+      var owner = String(gate && gate.getTelegramId ? gate.getTelegramId() || '' : '');
+      setStatus(uncertainOwner(owner) ? PRACTICE_START_MESSAGE :
+        'Fresh run ready. Verified Telegram gameplay can now save official leaderboard XP.');
     });
     window.addEventListener('nbg-game-over', function () {
       setStatus('Game over. Finish a complete run to submit replay-verified leaderboard XP.');

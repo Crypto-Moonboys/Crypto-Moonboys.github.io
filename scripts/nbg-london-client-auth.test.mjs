@@ -37,15 +37,37 @@ const gate = {
   isTelegramLinked() { return linked; },
   async getFreshTelegramAuth() { return nextAuth(); },
 };
+const stored = new Map();
+const localStorage = {
+  getItem(key) { return stored.has(key) ? stored.get(key) : null; },
+  setItem(key, value) { stored.set(String(key), String(value)); },
+  removeItem(key) { stored.delete(key); },
+};
 const window = {
   MOONBOYS_IDENTITY: gate,
   MOONBOYS_API: { getLeaderboardUrl: () => 'https://leaderboard.test' },
+  localStorage,
   addEventListener(type, fn) { listeners.set(type, fn); },
 };
+let heldStartResponse = null;
+let nextRunSequence = 0;
+let nextStartHttpResponse = null;
 async function fetch(url, options = {}) {
   const pathname = new URL(url).pathname;
   const body = options.body ? JSON.parse(options.body) : null;
-  calls.push({ pathname, body });
+  const call = { pathname, body };
+  calls.push(call);
+  // Simulate a Worker request that has reached the server but not committed.
+  if (pathname.endsWith('/run/start') && heldStartResponse) {
+    const responseBarrier = heldStartResponse;
+    heldStartResponse = null;
+    await responseBarrier;
+  }
+  if (pathname.endsWith('/run/start') && nextStartHttpResponse) {
+    const reply = nextStartHttpResponse;
+    nextStartHttpResponse = null;
+    return reply;
+  }
   const data = pathname.endsWith('/leaderboard')
     ? { ok: true, records: [] }
     : pathname.endsWith('/competition')
@@ -53,8 +75,10 @@ async function fetch(url, options = {}) {
       : pathname.endsWith('/me')
         ? { ok: true, player: '@server', records: null }
         : pathname.endsWith('/run/start')
-          ? { ok: true, run_id: '00000000-0000-0000-0000-000000000001', player: '@server' }
+          ? { ok: true, run_id: '00000000-0000-4000-8000-' +
+              String(++nextRunSequence).padStart(12, '0'), player: '@server' }
           : { ok: true, player: '@server', time_ms: 120000, xp: 200 };
+  call.response = data;
   return { ok: true, async json() { return data; } };
 }
 const source = readFileSync('game/nbg-london-leaderboards.js', 'utf8');
@@ -139,5 +163,225 @@ assert.equal(Object.hasOwn(officialPayload, 'xp'), false,
   'raw browser XP is not forwarded to the ranking API');
 assert.equal(Object.hasOwn(officialPayload, 'time_ms'), false,
   'raw browser time is not forwarded to the ranking API');
+
+// Regression: /run/start for the same Telegram player invalidates their prior
+// unfinished D1 session. If a reset's older POST finishes after the new POST,
+// the game could lose its otherwise valid official score. Serialise the POSTs.
+telegramId = '100';
+linked = true;
+nextAuth = async () => auth('100');
+await emit('nbg-level-reset');
+const startsBeforeRace = requests('/run/start').length;
+const finishesBeforeRace = requests('/run/finish').length;
+let releaseStaleStart;
+heldStartResponse = new Promise(resolve => { releaseStaleStart = resolve; });
+await emit('nbg-level-started');
+assert.equal(requests('/run/start').length, startsBeforeRace + 1,
+  'older start must already be in flight');
+
+await emit('nbg-level-reset');
+const pendingNewSession = window.NBGLondonBeforeQueuedRun();
+assert.equal(typeof pendingNewSession?.then, 'function',
+  'the game must await a queued same-owner session BEFORE starting physics');
+assert.equal(requests('/run/start').length, startsBeforeRace + 1,
+  'reset must not POST a new same-owner start before the stale POST settles');
+releaseStaleStart();
+await pendingNewSession;
+await flush();
+assert.equal(requests('/run/start').length, startsBeforeRace + 2,
+  'new same-owner session starts only after stale server start completes');
+await emit('nbg-level-started');
+assert.equal(requests('/run/start').length, startsBeforeRace + 2,
+  'the game started event must not duplicate a prepared server session');
+const activeStart = requests('/run/start').at(-1);
+assert.equal(activeStart.body.telegram_auth.id, '100');
+nextAuth = async () => auth('100');
+await emit('nbg-level-complete', {
+  replay: { version: 1, frames: 'AQIDBAU=' },
+});
+assert.equal(requests('/run/finish').length, finishesBeforeRace + 1,
+  'the new reset run must still be eligible to submit a v1 replay');
+assert.equal(requests('/run/finish').at(-1).body.run_id, activeStart.response.run_id,
+  'finish must use the latest D1 run, never the stale server session');
+
+// An unrelated Telegram player MUST start and finish while owner A's request
+// is still stalled. The Worker invalidates D1 sessions by telegram_id only;
+// a shared global queue could block B forever or exhaust elapsed-time tolerance.
+const startsBeforeSwap = requests('/run/start').length;
+const finishesBeforeSwap = requests('/run/finish').length;
+let releaseOldOwner;
+heldStartResponse = new Promise(resolve => { releaseOldOwner = resolve; });
+await emit('nbg-level-reset');
+await emit('nbg-level-started');
+assert.equal(requests('/run/start').length, startsBeforeSwap + 1,
+  'A must have an unresolved server start before the identity change');
+assert.equal(requests('/run/start').at(-1).body.telegram_auth.id, '100');
+
+telegramId = '200';
+nextAuth = async () => auth('200');
+await emit('moonboys:identity-change');
+await emit('nbg-level-reset');
+await emit('nbg-level-started');
+assert.equal(requests('/run/start').length, startsBeforeSwap + 2,
+  'B should POST without waiting for A\'s indefinitely pending response');
+const ownerBStart = requests('/run/start').at(-1);
+assert.equal(ownerBStart.body.telegram_auth.id, '200');
+assert.ok(ownerBStart.response?.run_id,
+  'B should already receive a session while A is still pending');
+await emit('nbg-level-complete', {
+  replay: { version: 1, frames: 'AQIDBAU=' },
+});
+assert.equal(requests('/run/finish').length, finishesBeforeSwap + 1,
+  'B can finish before A responds');
+assert.equal(requests('/run/finish').at(-1).body.run_id, ownerBStart.response.run_id,
+  'B must submit its own server run, not A\'s pending run');
+
+// The old A response resolves last; it must not touch B's active run or
+// start a duplicate session.
+releaseOldOwner();
+await flush();
+assert.equal(requests('/run/start').length, startsBeforeSwap + 2,
+  'stale A completion must not issue an additional request');
+assert.equal(requests('/run/finish').length, finishesBeforeSwap + 1);
+
+// A rejected fetch may still commit its D1 start on the Worker later.
+// The client must NOT issue a replacement same-owner start on that uncertain
+// session, even if it was already queued before the network failure.
+telegramId = '200';
+linked = true;
+nextAuth = async () => auth('200');
+await emit('nbg-level-reset');
+const beforeUncertain = requests('/run/start').length;
+let failPendingStart;
+heldStartResponse = new Promise((resolve, reject) => { failPendingStart = reject; });
+await emit('nbg-level-started');
+assert.equal(requests('/run/start').length, beforeUncertain + 1);
+const pendingKey = 'nbg-london:pending-ranked-start:v1:200';
+assert.ok(localStorage.getItem(pendingKey),
+  'durable in-flight marker must exist BEFORE an HTTP start response');
+
+// Emulate a complete browser reload while the old Worker may still commit.
+// Its fresh in-memory queue must see the persisted marker and refuse a new
+// ranked POST, despite having no knowledge of the old page's open request.
+let reloadReady;
+const reloadEvents = new Map();
+const reloadedDocument = {
+  ...document,
+  addEventListener(type, fn) { if (type === 'DOMContentLoaded') reloadReady = fn; },
+};
+const reloadedWindow = {
+  ...window,
+  addEventListener(type, fn) { reloadEvents.set(type, fn); },
+};
+vm.runInNewContext(source, {
+  window: reloadedWindow, document: reloadedDocument, fetch,
+  URL, Date, String, Number, Promise, Object, Array, console,
+});
+reloadReady();
+await flush();
+const startsBeforeReload = requests('/run/start').length;
+reloadEvents.get('nbg-level-started')({ detail: {} });
+await flush();
+assert.equal(requests('/run/start').length, startsBeforeReload,
+  'fresh page must not bypass unresolved start while old Worker request is active');
+reloadEvents.get('nbg-level-complete')({ detail: { replay: { version: 1, frames: 'AQIDBAU=' } } });
+await flush();
+assert.match(elements.get('nbg-record-status').textContent, /Practice run completed/);
+assert.doesNotMatch(elements.get('nbg-record-status').textContent, /Guest scores/,
+  'signed player with an unresolved start must be labelled practice, not guest');
+
+await emit('nbg-level-reset');
+const waitingAfterFailure = window.NBGLondonBeforeQueuedRun();
+assert.equal(typeof waitingAfterFailure?.then, 'function',
+  'same-owner replacement must initially wait for unresolved start');
+failPendingStart(new TypeError('transport disconnected after POST'));
+await waitingAfterFailure;
+await flush();
+assert.ok(localStorage.getItem(pendingKey),
+  'ambiguous transport error must keep the persisted marker across reload');
+assert.equal(requests('/run/start').length, beforeUncertain + 1,
+  'uncertain old start must block queued replacement POST before it reaches D1');
+assert.match(elements.get('nbg-record-status').textContent, /Practice only/,
+  'player must be told the next run remains practice after refresh');
+await emit('nbg-level-started');
+await emit('nbg-level-reset');
+await emit('nbg-level-started');
+assert.equal(requests('/run/start').length, beforeUncertain + 1,
+  'same owner must not resume ranked starts after indeterminate network failure');
+await emit('nbg-level-complete', { replay: { version: 1, frames: 'AQIDBAU=' } });
+assert.match(elements.get('nbg-record-status').textContent, /Practice run completed/);
+assert.doesNotMatch(elements.get('nbg-record-status').textContent, /Guest scores/,
+  'Telegram-linked unresolved player must not be announced as a guest');
+telegramId = '300';
+nextAuth = async () => auth('300');
+await emit('moonboys:identity-change');
+await emit('nbg-level-reset');
+await emit('nbg-level-started');
+assert.equal(requests('/run/start').length, beforeUncertain + 2,
+  'unrelated account remains free to start ranked while owner 200 is practice-only');
+assert.equal(requests('/run/start').at(-1).body.telegram_auth.id, '300');
+
+// An HTML gateway 504 may arrive while the upstream Worker is still writing.
+// It must NOT clear the durable marker or permit a queued same-owner POST.
+telegramId = '400';
+linked = true;
+nextAuth = async () => auth('400');
+await emit('nbg-level-reset');
+const beforeGateway = requests('/run/start').length;
+let releaseGateway;
+heldStartResponse = new Promise(resolve => { releaseGateway = resolve; });
+nextStartHttpResponse = {
+  ok: false, status: 504,
+  async json() { throw new SyntaxError('Gateway returned HTML'); },
+};
+await emit('nbg-level-started');
+assert.equal(requests('/run/start').length, beforeGateway + 1);
+const gatewayKey = 'nbg-london:pending-ranked-start:v1:400';
+assert.ok(localStorage.getItem(gatewayKey),
+  'gateway request must have durable marker before network start');
+await emit('nbg-level-reset');
+const pendingGatewayReplacement = window.NBGLondonBeforeQueuedRun();
+assert.equal(typeof pendingGatewayReplacement?.then, 'function');
+releaseGateway();
+await pendingGatewayReplacement;
+await flush();
+assert.ok(localStorage.getItem(gatewayKey),
+  'gateway 504 must retain durable marker after an ambiguous server outcome');
+assert.equal(requests('/run/start').length, beforeGateway + 1,
+  'gateway error cannot allow a queued same-owner replacement POST');
+await emit('nbg-level-started');
+await emit('nbg-level-reset');
+await emit('nbg-level-started');
+assert.equal(requests('/run/start').length, beforeGateway + 1,
+  'gateway 504 must keep later same-owner starts practice-only');
+
+// A new page cannot bypass the 504 hold either, even with an empty queue.
+reloadEvents.get('nbg-level-reset')({ detail: {} });
+const freshStartsBeforeGatewayReload = requests('/run/start').length;
+reloadEvents.get('nbg-level-started')({ detail: {} });
+await flush();
+assert.equal(requests('/run/start').length, freshStartsBeforeGatewayReload,
+  'a freshly initialized client must honor the marker after a gateway 504');
+
+// An explicit application 4xx is an acknowledged rejection, not a gateway
+// timeout. It must release the pending marker so the player is not stuck.
+telegramId = '500';
+nextAuth = async () => auth('500');
+await emit('moonboys:identity-change');
+await emit('nbg-level-reset');
+const appRejectionKey = 'nbg-london:pending-ranked-start:v1:500';
+nextStartHttpResponse = {
+  ok: false, status: 403,
+  async json() { return { ok: false, error: 'account_blocked' }; },
+};
+const beforeAppRejection = requests('/run/start').length;
+await emit('nbg-level-started');
+assert.equal(requests('/run/start').length, beforeAppRejection + 1);
+assert.equal(localStorage.getItem(appRejectionKey), null,
+  'definitive Worker 4xx must clear its pending-start marker');
+await emit('nbg-level-reset');
+await emit('nbg-level-started');
+assert.equal(requests('/run/start').length, beforeAppRejection + 2,
+  'confirmed application rejection must not lock future starts');
 
 console.log('[PASS] NBG London start/finish Telegram account-race protection');
