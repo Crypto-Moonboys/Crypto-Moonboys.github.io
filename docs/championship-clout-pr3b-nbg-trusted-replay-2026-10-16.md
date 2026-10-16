@@ -45,6 +45,14 @@ The shared championship/clout-pilot.js adds an nbg_london source adapter:
 
 The new NBG verified-receipt fixture is anchored to a **future UTC noon**, not `Date.now()+48h` preserving the runner's current hour: two accepted runs must aggregate in one daily period regardless of CI start time. A separate explicit 23:57→00:01 UTC regression verifies that trusted game XP splits correctly into two daily period rows. Neither test changes a production UTC time boundary.
 
+## #1539 challenge-bound replay v2 (review-only implementation)
+
+The existing PR3B branch now contains a **hard-disabled** v2 pre-play handshake and saved game seed. In trusted mode only, authenticated `/nbg-london/run/start` generates a fresh cryptographic 32-bit challenge seed, stores `challenge_seed` and `challenge_version=2` on the original owner-linked D1 run row, and returns the challenge before browser gameplay begins. The browser's pre-start callback awaits the signed session, checks identity/generation after asynchronous calls, then sets the saved challenge seed **before the first ranked simulation tick**. v2 startup initializes the animation clock without executing an active zero-duration frame, preserving held S/X/Spray, Jump, Left and touch inputs for the first positive-time tick. Guest/legacy v1 practice is not delayed or changed while the source-code flag is false.
+
+Browser and Worker both use the saved challenge seed for gameplay reward/hazard RNG and a seed-dependent horizontal acceleration factor, so the challenge changes the independently simulated game world and movement, rather than being a replay header or claimed client score. The Worker loads the seed from D1 and refuses v2 verification without it; migration 101 has been updated **before any application** to reserve the seed/version and accept only v2 for the immutable trusted receipt. Historical v1 source finishes never create new Championship Clout. New challenge-specific regressions are in Arcade CI.
+
+**Security qualification:** a public seeded physics challenge prevents straightforward reuse of an old completed input stream but is not cryptographic proof of human input. Some materially modified scripts could still finish a new challenge, and a sufficiently insensitive challenge variant might permit a replay copy. Before any release lock changes, require independently demonstrated cross-challenge rejection across many saved successful v2 runs, a real browser signed challenge-to-finish canary, and #1513 human review. The v2 code remains **unreleased and unverified in production**; do not claim this security issue is fully closed on static tests alone.
+
 ## 5. Test and deployment gates
 
 Targeted tests:
