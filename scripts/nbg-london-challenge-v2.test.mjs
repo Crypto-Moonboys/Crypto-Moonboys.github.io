@@ -28,7 +28,10 @@ test('v2 ranked handshake awaits signed challenge before any replay tick',()=>{
   }
   assert.match(game,/pendingJumpPresses/);
   assert.match(game,/touch\.spray/);
-  assert.match(game,/touch\.jump/);
+  // Touch controls are stored in the generic touch[control] map. The
+  // implementation counts jump presses separately, not as touch.jump.
+  assert.match(game,/touch\[control\] = active/);
+  assert.match(game,/if \(control === 'jump'\) pendingJumpPresses/);
 });
 test('server challenge is generated, saved, owner-checked and used for physics',()=>{
   assert.match(source,/crypto\.getRandomValues\(new Uint32Array\(1\)\)/);
@@ -46,7 +49,11 @@ test('legacy practice and v1 boards remain supported, v2 requires signed preplay
   assert.match(game,/rankedChallengeSeed = null/);
   assert.match(client,/Guest practice/);
   assert.match(client,/requestRankedChallengeBeforePlay/);
-  assert.match(client,/runPromise=\(async function\(\)/);
+  assert.match(client,/var startOperation=serverStartQueue\.catch/);
+  assert.match(client,/serverStartQueue=startOperation\.catch/);
+  assert.match(client,/runPromise=startOperation/);
+  assert.doesNotMatch(client,/serverStartQueue\s*=\s*null/,
+    'local resets and identity changes must never drop the server-start queue');
   assert.match(client,/current!==generation/);
   assert.match(client,/detail\.replay\.version !== 2/);
   assert.match(source,/trustedReceiptsEnabled \? 2 : 1/);
