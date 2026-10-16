@@ -110,7 +110,7 @@ function decodeFrames(replay) {
  * This does not prove human play or stop newly scripted input streams.
  * Proof rows are created only after the existing full physics replay passes.
  */
-export async function fingerprintNbgLondonReplay(replay) {
+export async function fingerprintNbgLondonReplay(replay, effectiveInputMasks = null) {
   const decoded = decodeFrames(replay);
   if (!decoded) return null;
   const raw = new Uint8Array(decoded.length);
@@ -119,6 +119,17 @@ export async function fingerprintNbgLondonReplay(replay) {
     for (let j = 0; j < 5; j++) raw[i + j] = decoded.charCodeAt(i + j);
     if (raw[i + 4] > 15) return null;
     controls[frame] = raw[i + 4];
+  }
+  // The trusted writer MUST supply this trace from the actual server physics
+  // verifier. A raw input mask does not prove the command affected gameplay:
+  // spray taps during cooldown and extra airborne jump taps can be changed in
+  // a copied stream without changing XP or completion.
+  if (effectiveInputMasks !== null) {
+    if (!(effectiveInputMasks instanceof Uint8Array) ||
+        effectiveInputMasks.length !== controls.length ||
+        effectiveInputMasks.some(mask => !Number.isInteger(mask) || mask < 0 || mask > 15))
+      throw new Error('nbg_replay_invalid_canonical_actions');
+    controls.set(effectiveInputMasks);
   }
   if (!globalThis.crypto?.subtle) throw new Error('nbg_replay_crypto_unavailable');
   const [rawHash, controlsHash] = await Promise.all([
@@ -140,6 +151,7 @@ export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, d
       !Number.isFinite(now)) return { valid: false };
   const bytes = decodeFrames(replay);
   if (!bytes) return { valid: false };
+  const effectiveInputMasks = new Uint8Array(bytes.length / 5);
 
   const level = levelData();
   const solids=[{x:0,y:FLOOR,w:WORLD,h:60},...level.platforms,...level.crates];
@@ -197,14 +209,16 @@ export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, d
     consumedFrames++;
     const step=dt/STEP;
     const left=!!(mask&1), right=!!(mask&2), jump=!!(mask&4), spray=!!(mask&8);
+    let effectiveMask = mask & 3; // directional inputs affect force/facing
     if (left) {p.vx-=0.74*step;p.facing=-1;}
     if (right) {p.vx+=0.74*step;p.facing=1;}
     if (!left && !right) p.vx*=Math.pow(0.78,step);
     p.vx=clamp(p.vx,-MAX_SPEED,MAX_SPEED);
     if (jump) {
-      if (p.grounded) {p.vy=-11.4;p.grounded=false;jumps=1;}
+      if (p.grounded) {p.vy=-11.4;p.grounded=false;jumps=1;effectiveMask|=4;}
       else if(jumps===1) {
         p.vy=-12.8;
+        effectiveMask|=4;
         if (left!==right) {
           p.vx=left ? -5.4:5.4;
           p.facing=left ? -1:1;
@@ -214,7 +228,8 @@ export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, d
     }
     if(sprayTimer>0) sprayTimer-=dt;
     if(p.invuln>0) p.invuln-=dt;
-    if(spray && sprayTimer<=0) sprayTimer=230;
+    if(spray && sprayTimer<=0) {sprayTimer=230;effectiveMask|=8;}
+    effectiveInputMasks[consumedFrames-1]=effectiveMask;
 
     const beforeX=p.x;
     p.x=clamp(p.x+p.vx*step,12,WORLD-p.w-12);
@@ -380,5 +395,8 @@ export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, d
     return {valid:false, ...(debug ? {debug:{reason:'finish',x:p.x,maximumX,elapsed,consumedFrames,complete,health:p.health}}:{})};
 
   return { valid:true, complete:true, time_ms:Math.round(elapsed),
-    xp, coins:coinCount, secret_coins:secretCount };
+    xp, coins:coinCount, secret_coins:secretCount,
+    // Internal Worker-only data for the immutable trusted receipt. The
+    // public records endpoint explicitly returns a separate whitelisted body.
+    effective_input_masks:effectiveInputMasks };
 }
