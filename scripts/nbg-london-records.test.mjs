@@ -28,7 +28,7 @@ CREATE TABLE telegram_xp_log (
 );
 INSERT INTO telegram_seasons(id,name,start_date,end_date,is_active)
  VALUES (1,'NBG-test-active','2020-01-01T00:00:00.000Z','2090-01-01T00:00:00.000Z',1);`);
-sqlite.exec("INSERT INTO telegram_users VALUES ('100'), ('200')");
+sqlite.exec("INSERT INTO telegram_users (telegram_id) VALUES ('100'), ('200')");
 sqlite.exec(readFileSync('workers/moonboys-api/migrations/098_nbg_london_records.sql', 'utf8'));
 sqlite.exec(readFileSync('workers/moonboys-api/migrations/099_nbg_london_competition_prizes.sql', 'utf8'));
 sqlite.exec(readFileSync('workers/moonboys-api/migrations/089_community_xp_award_receipts.sql', 'utf8'));
