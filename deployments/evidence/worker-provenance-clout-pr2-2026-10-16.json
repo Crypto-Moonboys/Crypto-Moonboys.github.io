@@ -1,11 +1,11 @@
 {
   "schema_version": 2,
-  "verified_at": "2026-10-16T13:15:41.328Z",
-  "capture_method": "owner-provided-Windows-CMD-health-and-deployment-info; GitHub live recapture required",
-  "verification_limitations": "Values for moonboys-api were supplied in owner terminal screenshot; other Workers copied from previously retained history. The required PR CI Worker Live Evidence Capture must independently compare the three production endpoints before merge. No Clout scoring activity was exercised.",
+  "verified_at": "2026-10-16T13:57:18.423Z",
+  "capture_method": "Owner-provided Windows CMD /deployment-info and /health responses, then mandatory independent GitHub Worker Live Evidence Capture for all three services",
+  "verification_limitations": "At evidence authoring time, moonboys-api and leaderboard deployment-info output was supplied by the owner; anti-cheat was last owner-observed and recorded from an earlier retained receipt. The GitHub Actions live-capture workflow must independently verify all 3 endpoints and timestamps before this PR merges. No live Championship Clout score was issued.",
   "expected_commits": {
     "moonboys-api": "ed03324dcfef0311a62ff3c31a36d8665a2d8421",
-    "moonboys-leaderboard": "2323ef3a07794411ff4d5788a02ff63995226cba",
+    "moonboys-leaderboard": "ed03324dcfef0311a62ff3c31a36d8665a2d8421",
     "moonboys-anti-cheat": "2323ef3a07794411ff4d5788a02ff63995226cba"
   },
   "workers": [
@@ -17,8 +17,8 @@
     },
     {
       "service": "moonboys-leaderboard",
-      "commit": "2323ef3a07794411ff4d5788a02ff63995226cba",
-      "deployed_at": "2026-08-10T12:55:41.171Z",
+      "commit": "ed03324dcfef0311a62ff3c31a36d8665a2d8421",
+      "deployed_at": "2026-10-16T13:54:53.321Z",
       "url": "https://moonboys-leaderboard.sercullen.workers.dev/deployment-info"
     },
     {
@@ -45,5 +45,24 @@
     "configured_clout_pilot_enabled": "false",
     "clout_start_at_binding_present_in_deploy_output": false,
     "notes": "Confirmed healthy HTTP and code provenance; neither confirms signed gameplay receipt writes or an active Championship."
+  },
+  "owner_reported_leaderboard": {
+    "source": "owner-supplied Windows CMD screenshot from 2026-10-16",
+    "url": "https://moonboys-leaderboard.sercullen.workers.dev/deployment-info",
+    "response": {
+      "service": "moonboys-leaderboard",
+      "commit": "ed03324dcfef0311a62ff3c31a36d8665a2d8421",
+      "deployed_at": "2026-10-16T13:54:53.321Z",
+      "environment": "production"
+    },
+    "health_url": "https://moonboys-leaderboard.sercullen.workers.dev/health",
+    "health_observation": {
+      "ok": true,
+      "telegram_auth_configured": true,
+      "database_configured": true,
+      "leaderboard_store_configured": true,
+      "nbg_london_prize_payouts_available": false
+    },
+    "note": "Telegram bot secret name was installed and health indicates binding present; presence is not proof of a successful signed score submission. The provenanced re-deployment used the GitHub wrapper and no database reset."
   }
 }
