@@ -26,6 +26,9 @@ DEAD_RUN_RANKED_ENABLED = "false"
 DEAD_RUN_DAILY_RANKED_LIMIT = "5"
 # #1530 PR2: no Clout writes until a separately authorized canary release.
 CHAMPIONSHIP_CLOUT_PILOT_ENABLED = "false"
+# #1530 PR3A: separate, hard-off game-source gate; does not enable Dead Run
+# gameplay or rank GPS by itself. No Clout effect without verified settlement.
+CHAMPIONSHIP_CLOUT_DEAD_RUN_ENABLED = "false"
 # Set CHAMPIONSHIP_CLOUT_PILOT_START_AT to an approved UTC midnight ISO timestamp
 # through the release configuration only; never turn on automatically.
 
