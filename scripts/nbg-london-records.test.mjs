@@ -401,6 +401,66 @@ try {
     "SELECT total_xp FROM nbg_london_period_scores WHERE period_kind='daily' AND period_start_ms=? AND telegram_id='100'"
   ).get(activeDaily).total_xp, afterConcurrent.total_xp,
     'late receipt must not change the already frozen daily total');
+  // Public boards must screen BOTH anti-cheat stores before selecting top 20
+  // and assigning ranks, including bans applied after records were saved.
+  fakeNow += 86400000;
+  const displayPeriod = periodStart(fakeNow, 'daily');
+  const insertUser = sqlite.prepare('INSERT INTO telegram_users (telegram_id) VALUES (?)');
+  const insertRecord = sqlite.prepare(`INSERT INTO nbg_london_records
+    (telegram_id,display_name,fastest_ms,fastest_xp,speed_xp_rate,speed_xp_ms,
+     speed_xp_xp,best_xp,best_xp_ms,updated_at_ms) VALUES (?,?,?,?,?,?,?,?,?,?)`);
+  const insertPeriod = sqlite.prepare(`INSERT INTO nbg_london_period_scores
+    (period_kind,period_start_ms,telegram_id,display_name,total_xp,trusted_xp,
+     verified_run_count,run_count,best_time_ms,updated_at_ms)
+    VALUES ('daily',?,?,?,?,?,1,1,?,?)`);
+  for (let i = 0; i < 25; i += 1) {
+    const id = String(700 + i);
+    const name = '@score' + id;
+    const time = 90000 + i * 1000;
+    insertUser.run(id);
+    insertRecord.run(id, name, time, 9000 - i, 800 - i * 2,
+      time, 9000 - i, 9000 - i, time, fakeNow);
+    insertPeriod.run(displayPeriod, id, name, 50000 - i * 100,
+      50000 - i * 100, time, fakeNow);
+  }
+  kvBans.add('anticheat:blocked:700');
+  sqlite.prepare('INSERT INTO telegram_anticheat_state (telegram_id,is_blocked) VALUES (?,1)').run('701');
+  env.NBG_LONDON_PRIZES_ENABLED = 'true';
+  env.NBG_LONDON_SCORE_AUTHORITY_ENABLED = 'true';
+  const publicContest = await api('/nbg-london/competition?period=daily');
+  assert.equal(publicContest.status, 200);
+  assert.equal(publicContest.ranking_basis, 'trusted_xp');
+  assert.equal(publicContest.standings.length, 20);
+  assert.equal(publicContest.standings[0].name, '@score702');
+  assert.equal(publicContest.standings[0].prize_rank, 1);
+  assert.equal(publicContest.standings[2].prize_rank, 3);
+  assert.ok(publicContest.standings.every(row =>
+    !['@score700', '@score701'].includes(row.name)),
+  'both KV-only and D1-only bans must be removed before assigning prize ranks');
+  assert.ok(publicContest.standings.some(row => row.name === '@score721'),
+    'the 22nd raw competitor should enter the top 20 after banned leaders are removed');
+  delete env.NBG_LONDON_PRIZES_ENABLED;
+  delete env.NBG_LONDON_SCORE_AUTHORITY_ENABLED;
+  const practiceContest = await api('/nbg-london/competition?period=daily');
+  assert.equal(practiceContest.standings[0].name, '@score702');
+  assert.equal(practiceContest.standings[0].prize_eligible, false);
+  for (const metric of ['fastest', 'speed_xp', 'xp']) {
+    const board = await api('/nbg-london/leaderboard?metric=' + metric);
+    assert.equal(board.status, 200);
+    assert.equal(board.records.length, 20);
+    assert.equal(board.records[0].name, '@score702');
+    assert.ok(board.records.some(row => row.name === '@score721'));
+    assert.ok(board.records.every(row => !['@score700', '@score701'].includes(row.name)),
+      'bans after submission must suppress stored all-time results publicly');
+  }
+  const originalKv = env.LEADERBOARD;
+  env.LEADERBOARD = null;
+  assert.equal((await api('/nbg-london/competition?period=daily')).status, 503,
+    'public contest cannot expose unsafe results when anti-cheat KV is unavailable');
+  assert.equal((await api('/nbg-london/leaderboard?metric=xp')).status, 503,
+    'public lifetime board must fail closed when anti-cheat KV is unavailable');
+  env.LEADERBOARD = originalKv;
+
 } finally {
   Date.now = nowOriginal;
   sqlite.close();
