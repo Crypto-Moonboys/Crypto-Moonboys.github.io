@@ -7,6 +7,8 @@ CREATE TABLE IF NOT EXISTS nbg_london_period_scores (
   telegram_id TEXT NOT NULL REFERENCES telegram_users(telegram_id) ON DELETE CASCADE,
   display_name TEXT NOT NULL,
   total_xp INTEGER NOT NULL DEFAULT 0 CHECK (total_xp >= 0),
+  trusted_xp INTEGER NOT NULL DEFAULT 0 CHECK (trusted_xp >= 0),
+  verified_run_count INTEGER NOT NULL DEFAULT 0 CHECK (verified_run_count >= 0),
   run_count INTEGER NOT NULL DEFAULT 0 CHECK (run_count >= 0),
   best_time_ms INTEGER NOT NULL CHECK (best_time_ms > 0),
   updated_at_ms INTEGER NOT NULL,
