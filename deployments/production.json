@@ -60,9 +60,9 @@
     },
     "workers/leaderboard": {
       "readiness": "live-deployable",
-      "deployment_status": "verified-live",
-      "deployed_commit": "2323ef3a07794411ff4d5788a02ff63995226cba",
-      "deployed_at": "2026-08-10T12:55:41.171Z",
+      "deployment_status": "verification-pending",
+      "deployed_commit": null,
+      "deployed_at": null,
       "verification_urls": [
         "https://moonboys-leaderboard.sercullen.workers.dev/deployment-info"
       ],
@@ -73,7 +73,7 @@
           "recorded_at": "2026-08-10T12:57:08.926Z"
         }
       ],
-      "notes": "The public deployment-info endpoint and retained provenance evidence confirm the production Worker is running commit 2323ef3a07794411ff4d5788a02ff63995226cba."
+      "notes": "2026-10-16 live GitHub Actions run 38906623163 observed GET /deployment-info HTTP 503 for moonboys-leaderboard, commit=null, deployed_at=2026-10-16T04:41:16.094Z. Previous Aug 10 provenance receipt is HISTORICAL ONLY. Current commit cannot be verified; does not prove gameplay service outage. Do not deploy or claim verified-live without separately approved repair and fresh provenance capture."
     },
     "workers/block-topia": {
       "readiness": "needs-binding-setup",
