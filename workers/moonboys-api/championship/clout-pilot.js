@@ -8,7 +8,7 @@
 import { CLOUT_POLICY_VERSION, cloutDayKey } from './clout-policy.js';
 
 const OWNER = /^\d{1,20}$/u;
-const START = /^\d{4}-\d{2}-\d{2}T00:00:00(?:\.000)?Z$/u;
+const START = /^\d{4}-\d{2}-\d{2}T00:00:00\.000Z$/u;
 
 export const PILOT_SOURCE_POLICY = Object.freeze({
   telegram_daily: Object.freeze([{ kind: 'community', fixed_points: 5 }]),
@@ -189,8 +189,7 @@ export async function syncCloutPilotForVerifiedOwner(db, telegramId, options = {
     throw new Error('clout_pilot_launch_boundary_required');
   }
   const startAtMs = Date.parse(options.startAt);
-  if (!Number.isSafeInteger(startAtMs) || new Date(startAtMs).toISOString() !==
-      new Date(Date.parse(options.startAt)).toISOString()) {
+  if (!Number.isSafeInteger(startAtMs) || new Date(startAtMs).toISOString() !== options.startAt) {
     throw new Error('clout_pilot_invalid_launch_boundary');
   }
   const nowMs = options.now instanceof Date ? options.now.getTime() : Date.now();
