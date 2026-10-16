@@ -704,6 +704,71 @@ await holdRunnerRight(touchStartPage);
 await touchStartPage.waitForFunction(() => window.NBGLevel1State?.running === true, null, { timeout: 5000 });
 await touchStartPage.close();
 
+// #1539 P1 browser regression: the v2 challenge is issued BEFORE gameplay,
+// and brief keyboard/touch S, Left or Jump inputs remain effective even if
+// released while the signed start request is still pending. This test uses a
+// deliberately deferred challenge ONLY inside isolated test pages: the
+// production NBG_CHALLENGE_CLIENT_RELEASED flag remains false.
+for (const entry of [
+  { control:'KeyS', kind:'keyboard', expected:'spray' },
+  { control:'ArrowLeft', kind:'keyboard', expected:'left' },
+  { control:'ArrowUp', kind:'keyboard', expected:'jump' },
+  { control:'spray', kind:'touch', expected:'spray' },
+  { control:'left', kind:'touch', expected:'left' },
+]) {
+  const pendingPage=await browser.newPage({
+    viewport:{width:960,height:540},
+  });
+  try {
+    await pendingPage.goto(url,{waitUntil:'networkidle'});
+    await pendingPage.waitForFunction(() =>
+      window.NBGLevel1State?.assetsLoaded===true && !window.NBGLevel1State.running,
+      null,{timeout:5000}
+    );
+    await pendingPage.evaluate(() => {
+      window.NBG_CHALLENGE_CLIENT_RELEASED=true;
+      window.NBG_REQUEST_RANKED_CHALLENGE=()=>new Promise(resolve=>{
+        window.__completeTestChallenge=resolve;
+      });
+    });
+    if (entry.kind==='keyboard') {
+      await pendingPage.keyboard.down(entry.control);
+      await pendingPage.keyboard.up(entry.control);
+    } else {
+      await pendingPage.evaluate(control=>{
+        window.NBGLevel1Runtime.setTouchControl(control,true);
+        window.NBGLevel1Runtime.setTouchControl(control,false);
+      },entry.control);
+    }
+    await pendingPage.waitForFunction(()=>typeof window.__completeTestChallenge==='function',
+      null,{timeout:3000});
+    const beforeChallenge=await pendingPage.evaluate(()=>({
+      running:window.NBGLevel1State.running,
+      pending:window.NBGLevel1State.pendingInitialInput?.control,
+    }));
+    assert.equal(beforeChallenge.running,false,
+      entry.control+' cannot begin ranked game before server challenge');
+    assert.equal(beforeChallenge.pending,entry.expected,
+      entry.control+' tap must survive while signed challenge is in flight');
+    await pendingPage.evaluate(()=>{
+      window.__completeTestChallenge({
+        ranked:true,replay_version:2,challenge_seed:12345,
+      });
+    });
+    await pendingPage.waitForFunction(expected=>{
+      const s=window.NBGLevel1State;
+      if(!s?.running)return false;
+      if(expected==='spray')return s.player.anim==='spray';
+      if(expected==='left')return s.player.facing===-1;
+      return s.jumpsUsed>0 || !s.player.grounded;
+    },entry.expected,{timeout:3000});
+    assert.equal(await pendingPage.evaluate(()=>window.NBGLevel1State.pendingInitialInput),
+      null,'initiating tap should be consumed only after game begins');
+  } finally {
+    await pendingPage.close();
+  }
+}
+
 await page.keyboard.down('ArrowRight');
 await page.waitForFunction(() => window.NBGLevel1State?.running === true, null, { timeout: 5000 });
 await page.waitForTimeout(450);
