@@ -3,6 +3,7 @@ import { verifyTelegramWebhookSecret } from './telegram-webhook-auth.js';
 import { applyPetRuntimeCommandAward } from './worker.js';
 import { recoverPetRuntimeAwards } from './pets/runtime-recovery.js';
 import { handleDeadRunRequest, cleanupExpiredSessions } from './routes/dead-run.js';
+import { syncCloutPilotForVerifiedOwner } from './championship/clout-pilot.js';
 
 const PROGRESSION_API_ACTIONS = Object.freeze({
   feed: 'feed',
@@ -262,6 +263,31 @@ async function repairTelegramRunRuntimeAward(env, update) {
   await applyRuntimeAward(env, context.telegramId, context.runtimeEventKey, context.runtimeAction, context.primaryEventKey);
 }
 
+// PR2: only an authenticated Telegram webhook may trigger this receipt-only
+// projection. The authenticated identity comes from the Telegram update after
+// verifyTelegramWebhookSecret, never from an arbitrary browser/HTTP owner field.
+// Off until a later separately approved release toggles both pilot settings.
+async function projectCloutForAuthenticatedWebhook(env, update, response) {
+  if (!response?.ok || env?.CHAMPIONSHIP_CLOUT_PILOT_ENABLED !== 'true' || !env?.DB) return;
+  const command = telegramCommandFromUpdate(update);
+  const callback = String(update?.callback_query?.data || '');
+  if (command !== 'daily' && !command.startsWith('pet') && !callback.startsWith('pet:')) return;
+  const owner = String(telegramMessageFromUpdate(update)?.from?.id ||
+    update?.callback_query?.from?.id || '').trim();
+  if (!/^\d{1,20}$/.test(owner)) return;
+  try {
+    await syncCloutPilotForVerifiedOwner(env.DB, owner, {
+      enabled: true, startAt: env.CHAMPIONSHIP_CLOUT_PILOT_START_AT,
+    });
+  } catch (error) {
+    // Never turn a successful source award into a second XP/pet award or
+    // reject an already accepted command due to a Clout-only outage.
+    console.log('[moonboys-api]', JSON.stringify({
+      event: 'clout_pilot_source_sync_failed', reason: String(error?.message || error),
+    }));
+  }
+}
+
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
@@ -300,6 +326,7 @@ export default {
     }
     if (isTelegramWebhook && body && response.ok) {
       await repairTelegramRunRuntimeAward(env, body);
+      await projectCloutForAuthenticatedWebhook(env, body, response);
     }
 
     return response;
