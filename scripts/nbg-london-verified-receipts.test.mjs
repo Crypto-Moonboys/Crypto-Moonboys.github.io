@@ -142,7 +142,7 @@ function makeReplay(masks=[2,6,10,2,10],clock=33){
     const value=Math.round(clock*10);
     bytes.push(value&255,(value>>8)&255,value&255,(value>>8)&255,mask);
   }
-  return {version:1,frames:Buffer.from(bytes).toString('base64')};
+  return {version:2,frames:Buffer.from(bytes).toString('base64')};
 }
 const replayA=makeReplay();
 const replayATiming=makeReplay([2,6,10,2,10],32);
@@ -223,7 +223,7 @@ test('accepted signed, replay-scored run creates immutable unique proof and trus
     assert.equal(proof.replay_sha256,digest.replay_sha256);
     assert.equal(proof.input_sha256,digest.input_sha256);
     assert.equal(proof.authority,'server_replay');
-    assert.equal(proof.replay_version,1);
+    assert.equal(proof.replay_version,2);
     assert.ok(proof.finished_at_ms>before);
     for(const kind of ['daily','weekly','seasonal']){
       const snap=f.sql.prepare(
