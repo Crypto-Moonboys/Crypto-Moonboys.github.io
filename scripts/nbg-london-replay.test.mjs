@@ -105,6 +105,36 @@ for (const approach of [80,95,110,125,140,160]) {
 assert.ok(legitimate, 'at least one physically completed replay must save: ' +
   JSON.stringify(diagnostics));
 
+// #1539: v2 replay physics is bound to the server-issued, D1-owned
+// challenge seed. Legacy v1 has no seed; neither mode may silently adopt a
+// challenge from a browser-provided header or skip a required challenge.
+const legacyReplay=legitimate.replay;
+const challengeReplay={...legacyReplay,version:2};
+const noChallenge=await verifyNbgLondonReplay({
+  runId:id,replay:challengeReplay,startedAtMs:1000000,
+  now:1000000+legitimate.count*33,
+});
+assert.equal(noChallenge.valid,false,'v2 cannot verify without saved challenge seed');
+const legacyWithSeed=await verifyNbgLondonReplay({
+  runId:id,replay:legacyReplay,startedAtMs:1000000,
+  now:1000000+legitimate.count*33,challengeSeed:12345,
+});
+assert.equal(legacyWithSeed.valid,false,'legacy replay cannot masquerade as v2');
+const challengedA=await verifyNbgLondonReplay({
+  runId:id,replay:challengeReplay,startedAtMs:1000000,
+  now:1000000+legitimate.count*33,challengeSeed:12345,
+});
+const challengedB=await verifyNbgLondonReplay({
+  runId:id,replay:challengeReplay,startedAtMs:1000000,
+  now:1000000+legitimate.count*33,challengeSeed:4294967295,
+});
+assert.ok(!challengedA.valid || !challengedB.valid ||
+  challengedA.xp!==challengedB.xp ||
+  challengedA.coins!==challengedB.coins ||
+  challengedA.secret_coins!==challengedB.secret_coins,
+  'copied v1 input must not produce an identical accepted score for two distinct v2 challenges');
+assert.equal((await fingerprintNbgLondonReplay(challengeReplay)).replay_version,2);
+
 const tampered = await verifyNbgLondonReplay({
   runId:id, startedAtMs:1000000, now:1000000+legitimate.count*33,
   replay: { ...legitimate.replay, xp:1000000, coins:312, complete:true }
