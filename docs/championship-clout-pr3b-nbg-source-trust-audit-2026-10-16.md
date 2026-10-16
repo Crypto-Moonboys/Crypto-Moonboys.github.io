@@ -6,9 +6,9 @@ Related: #1530 Community Clout Championship, #1513 Arcade score ownership, #1539
 
 ## Verified source facts
 
-NBG London already issues a signed Telegram-owner session at \`/nbg-london/run/start\` and independently replays recorded gameplay at \`/nbg-london/run/finish\` using \`workers/leaderboard/nbg-london-replay.js\`. The server computes game XP/time and does **not** accept a browser-declared score as its source. This protects the existing specialist leaderboard against simple client XP forgery, but **does not make a run replay-unique across sessions**.
+NBG London already issues a signed Telegram-owner session at `/nbg-london/run/start` and independently replays recorded gameplay at `/nbg-london/run/finish` using `workers/leaderboard/nbg-london-replay.js`. The server computes game XP/time and does **not** accept a browser-declared score as its source. This protects the existing specialist leaderboard against simple client XP forgery, but **does not make a run replay-unique across sessions**.
 
-Migration 098 stores the source run ID, owner, expiry and one finish token, without a durable per-run server-proof score and replay challenge. Migration 099 stores both \`total_xp/run_count\` for the existing gameplay ledger and independently defined \`trusted_xp/verified_run_count\`. A nonzero legacy total is **not equivalent** to source evidence for Championship Clout. The existing prize release remains locked at \`NBG_LONDON_PRIZES_RELEASED=false\`. Clout's verified source registry does not contain NBG.
+Migration 098 stores the source run ID, owner, expiry and one finish token, without a durable per-run server-proof score and replay challenge. Migration 099 stores both `total_xp/run_count` for the existing gameplay ledger and independently defined `trusted_xp/verified_run_count`. A nonzero legacy total is **not equivalent** to source evidence for Championship Clout. The existing prize release remains locked at `NBG_LONDON_PRIZES_RELEASED=false`. Clout's verified source registry does not contain NBG.
 
 The current v1 random seed is predictable and same across runs. A completed valid input sequence can be copied, its otherwise inconsequential frame timing/spray masks edited, and resubmitted under a newly signed run without creating genuinely fresh player gameplay. Signed Telegram identity and one-time finish tokens do not prevent that cross-session replay attack.
 
@@ -16,7 +16,7 @@ The current v1 random seed is predictable and same across runs. A completed vali
 
 This intentionally limited merge adds only an audit document and Arcade CI regressions confirming the existing trust boundary. It does **not** add a v2 gameplay challenge, receipt writer, D1 migration 101, NBG Clout adapter, trusted/period XP promotion, gameplay controls, UI changes, or any new Worker flag. It does not overwrite or backfill player source totals, Moonpet 365/240/44, Community XP, Arcade XP, Dead Run or faction economies.
 
-**PR #1538 history cleanup:** The previous 83-commit experimental patch stack was snapshotted at Git branch \`backup/issue-1538-pre-cleanup-20261016\` before replacing the review branch with one new main-based commit. That experimental branch contains proposed migration 101, replay fingerprints, a seed-based v2 game and a 32-direction-checkpoint experiment. **None of its v2 implementation or proposed migration is part of this audit merge.** Its known P1 vulnerabilities are retained as evidence for #1539, not hidden or treated as fixed.
+**PR #1538 history cleanup:** The previous 83-commit experimental patch stack was snapshotted at Git branch `backup/issue-1538-pre-cleanup-20261016` before replacing the review branch with one new main-based commit. That experimental branch contains proposed migration 101, replay fingerprints, a seed-based v2 game and a 32-direction-checkpoint experiment. **None of its v2 implementation or proposed migration is part of this audit merge.** Its known P1 vulnerabilities are retained as evidence for #1539, not hidden or treated as fixed.
 
 ## Security blocker — #1539 stays OPEN
 
@@ -26,10 +26,10 @@ A later independent PR must prove a physically playable challenge where replay A
 
 ## Test / operations checklist
 
-- \`node scripts/nbg-london-replay.test.mjs\` — existing real physics verification, tampered client XP and finish constraints.
-- \`node scripts/nbg-london-records.test.mjs\` — existing signed identity/run/period/prize restrictions.
-- \`node scripts/nbg-london-client-auth.test.mjs\` — unchanged linked-account start/finish ownership.
-- \`node --test scripts/nbg-london-source-trust-gate.test.mjs\` — migration 098/099 proof distinction; baseline source and Clout firewall.
-- \`npm run ci:arcade\` and all other required latest-head checks must pass.
+- `node scripts/nbg-london-replay.test.mjs` — existing real physics verification, tampered client XP and finish constraints.
+- `node scripts/nbg-london-records.test.mjs` — existing signed identity/run/period/prize restrictions.
+- `node scripts/nbg-london-client-auth.test.mjs` — unchanged linked-account start/finish ownership.
+- `node --test scripts/nbg-london-source-trust-gate.test.mjs` — migration 098/099 proof distinction; baseline source and Clout firewall.
+- `npm run ci:arcade` and all other required latest-head checks must pass.
 
 **GitHub merge is code-only.** No D1 migration should be applied, no Worker/Pages deployed, no runtime scoring toggles changed, and no NBG prizes/Clout activated by this audited PR. Master #1530 and challenge blocker #1539 remain open. PR4/PR5 are not delivered.
