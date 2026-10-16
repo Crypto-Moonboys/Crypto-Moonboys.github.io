@@ -265,6 +265,16 @@ try {
   assert.equal(sqlite.prepare('SELECT arcade_xp_total FROM arcade_progression_state WHERE telegram_id = ?').get('400'), undefined);
   assert.equal(sqlite.prepare('SELECT arcade_xp_total FROM arcade_progression_state WHERE telegram_id = ?').get('500'), undefined);
   assert.equal(sqlite.prepare('SELECT COUNT(*) AS n FROM arcade_progression_events').get().n, 3);
+  assert.equal(sqlite.prepare("SELECT xp FROM telegram_users WHERE telegram_id='100'").get().xp, 100,
+    'daily prize must credit shared Community XP alongside Arcade XP');
+  assert.equal(sqlite.prepare("SELECT level FROM telegram_users WHERE telegram_id='100'").get().level, 2,
+    'Community level must reflect the prize credited by the shared helper');
+  assert.equal(sqlite.prepare("SELECT xp FROM telegram_leaderboard WHERE telegram_id='100' AND season_id=1").get().xp, 100,
+    'active Community season receives the same credited XP');
+  assert.equal(sqlite.prepare("SELECT SUM(xp_change) AS xp FROM telegram_xp_log WHERE action='nbg_london_prize'").get().xp, 190,
+    'three prize receipts must have matching Community XP audit logs');
+  assert.equal(sqlite.prepare("SELECT COUNT(*) AS n FROM telegram_community_xp_awards").get().n, 3,
+    'shared Community award receipts must be exactly once');
   const previousRanks = await api('/nbg-london/competition?period=daily');
   assert.equal(previousRanks.status, 200, 'period board stays available after settlement');
   
@@ -298,6 +308,8 @@ try {
   assert.equal(weeklyResult[0]?.arcade_xp, 500, 'eligible frozen weekly winner gets exactly one prize after unblocking');
   assert.deepEqual(await settleNbgLondonPeriod(env, weekly, weekly.end + 86400000), [],
     'retry cannot pay the same frozen weekly winner twice');
+  assert.equal(sqlite.prepare("SELECT xp FROM telegram_users WHERE telegram_id='100'").get().xp, 600,
+    'retry of already paid weekly prize must not double-credit Community XP');
   const season = { kind: 'seasonal', start: periodStart(fakeNow, 'seasonal') - 7776000000,
     end: periodStart(fakeNow, 'seasonal') };
   sqlite.prepare(`INSERT INTO nbg_london_period_scores
@@ -307,6 +319,13 @@ try {
     '90-day season prizes require ended seasonal period');
   assert.equal(sqlite.prepare('SELECT arcade_xp_total FROM arcade_progression_state WHERE telegram_id = ?').get('100').arcade_xp_total, 3100,
     'daily, weekly and season winnings credit the shared Arcade XP lifetime total');
+  assert.equal(sqlite.prepare("SELECT xp FROM telegram_users WHERE telegram_id='100'").get().xp, 3100,
+    'Community lifetime XP must match the same winning Arcade XP receipts');
+  assert.equal(sqlite.prepare("SELECT xp FROM telegram_leaderboard WHERE telegram_id='100' AND season_id=1").get().xp, 3100,
+    'Community seasonal standing must include daily weekly and seasonal NBG payouts');
+  assert.equal(sqlite.prepare("SELECT SUM(xp_change) AS xp FROM telegram_xp_log WHERE telegram_id='100' AND action='nbg_london_prize'").get().xp, 3100);
+  assert.equal(sqlite.prepare("SELECT COUNT(*) AS n FROM telegram_community_xp_awards WHERE telegram_id='100'").get().n, 3,
+    'retries must not duplicate Community award receipts');
 
   // Existing unverified high-score snapshots stay excluded even if payout flags
   // are enabled after a future server-authoritative scoring cutover.
