@@ -42,10 +42,19 @@ const window = {
   MOONBOYS_API: { getLeaderboardUrl: () => 'https://leaderboard.test' },
   addEventListener(type, fn) { listeners.set(type, fn); },
 };
+let heldStartResponse = null;
+let nextRunSequence = 0;
 async function fetch(url, options = {}) {
   const pathname = new URL(url).pathname;
   const body = options.body ? JSON.parse(options.body) : null;
-  calls.push({ pathname, body });
+  const call = { pathname, body };
+  calls.push(call);
+  // Simulate a Worker request that has reached the server but not committed.
+  if (pathname.endsWith('/run/start') && heldStartResponse) {
+    const responseBarrier = heldStartResponse;
+    heldStartResponse = null;
+    await responseBarrier;
+  }
   const data = pathname.endsWith('/leaderboard')
     ? { ok: true, records: [] }
     : pathname.endsWith('/competition')
@@ -53,8 +62,10 @@ async function fetch(url, options = {}) {
       : pathname.endsWith('/me')
         ? { ok: true, player: '@server', records: null }
         : pathname.endsWith('/run/start')
-          ? { ok: true, run_id: '00000000-0000-0000-0000-000000000001', player: '@server' }
+          ? { ok: true, run_id: '00000000-0000-4000-8000-' +
+              String(++nextRunSequence).padStart(12, '0'), player: '@server' }
           : { ok: true, player: '@server', time_ms: 120000, xp: 200 };
+  call.response = data;
   return { ok: true, async json() { return data; } };
 }
 const source = readFileSync('game/nbg-london-leaderboards.js', 'utf8');
@@ -139,5 +150,45 @@ assert.equal(Object.hasOwn(officialPayload, 'xp'), false,
   'raw browser XP is not forwarded to the ranking API');
 assert.equal(Object.hasOwn(officialPayload, 'time_ms'), false,
   'raw browser time is not forwarded to the ranking API');
+
+// Regression: a reset/account switch while A's POST /run/start is in flight
+// must not allow that stale D1 transaction to invalidate B's newer session.
+// The live Worker closes previous unfinished sessions when inserting a start.
+telegramId = '100';
+linked = true;
+nextAuth = async () => auth('100');
+await emit('nbg-level-reset');
+const startsBeforeRace = requests('/run/start').length;
+const finishesBeforeRace = requests('/run/finish').length;
+let releaseStaleStart;
+heldStartResponse = new Promise(resolve => { releaseStaleStart = resolve; });
+await emit('nbg-level-started');
+assert.equal(requests('/run/start').length, startsBeforeRace + 1,
+  'A must have issued its in-flight start request');
+assert.equal(requests('/run/start').at(-1).body.telegram_auth.id, '100');
+
+telegramId = '200';
+nextAuth = async () => auth('200');
+await emit('moonboys:identity-change');
+await emit('nbg-level-reset');
+await emit('nbg-level-started');
+assert.equal(requests('/run/start').length, startsBeforeRace + 1,
+  'new run B must not POST until stale A finishes on the server');
+
+releaseStaleStart();
+await flush();
+assert.equal(requests('/run/start').length, startsBeforeRace + 2,
+  'B can open its server session after A has finished');
+const lastStart = requests('/run/start').at(-1);
+assert.equal(lastStart.body.telegram_auth.id, '200',
+  'new session must belong to the newly linked player');
+nextAuth = async () => auth('200');
+await emit('nbg-level-complete', {
+  replay: { version: 1, frames: 'AQIDBAU=' },
+});
+assert.equal(requests('/run/finish').length, finishesBeforeRace + 1,
+  'B must be able to submit a legitimate v1 replay after the reset race');
+assert.equal(requests('/run/finish').at(-1).body.run_id, lastStart.response.run_id,
+  'B must submit the new live server session, never A\'s stale session');
 
 console.log('[PASS] NBG London start/finish Telegram account-race protection');
