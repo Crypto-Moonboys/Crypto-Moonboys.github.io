@@ -1267,9 +1267,16 @@
       fullscreenPrompt.style.display = 'none';
       return;
     }
-    fullscreenPromptText.textContent = mode === 'blocked'
-      ? 'Fullscreen blocked by browser. Tap Enter Fullscreen to continue.'
-      : 'Tap Enter Fullscreen for full gameplay.';
+    // NBG London remains playable in the overlay even when browsers deny
+    // native fullscreen. Never tell its players gameplay is blocked.
+    var nbgWindowed = window.location && window.location.pathname === '/games/nbg-london/';
+    fullscreenPromptText.textContent = nbgWindowed
+      ? (mode === 'blocked'
+        ? 'Browser fullscreen unavailable. You can keep playing here, or select Enter Fullscreen to retry.'
+        : 'You can play here or select Enter Fullscreen for a larger view.')
+      : mode === 'blocked'
+        ? 'Fullscreen blocked by browser. Tap Enter Fullscreen to continue.'
+        : 'Tap Enter Fullscreen for full gameplay.';
     fullscreenPrompt.style.display = 'inline-flex';
   }
 

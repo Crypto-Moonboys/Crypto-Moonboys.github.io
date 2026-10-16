@@ -650,6 +650,41 @@ assert.deepEqual(
 assert.equal(typeof startVisibility.cameraY, 'number', 'cameraY must exist in the browser test state');
 assert.equal(startVisibility.cameraY, 0, 'cameraY must start clean after finishInit');
 
+// Reproduce the Chrome-denied fullscreen path from GK's real NBG beta run.
+// Native fullscreen refusal must not imply the windowed game is blocked.
+await page.evaluate(() => {
+  const overlay = document.getElementById('game-overlay');
+  window.__nbgFullscreenRetryCalls = 0;
+  overlay.requestFullscreen = () => {
+    window.__nbgFullscreenRetryCalls += 1;
+    return Promise.reject(new Error('fullscreen denied by browser'));
+  };
+  document.getElementById('overlay-fullscreen-prompt-btn').click();
+});
+await page.waitForFunction(() => {
+  const prompt = document.getElementById('overlay-fullscreen-prompt-text');
+  return window.__nbgFullscreenRetryCalls === 1 &&
+    prompt && /Browser fullscreen unavailable/.test(prompt.textContent);
+});
+assert.equal(await page.evaluate(() => window.__nbgFullscreenRetryCalls), 1,
+  'user-initiated retry must invoke requestFullscreen exactly once');
+const windowedFullscreenState = await page.evaluate(() => ({
+  message: document.getElementById('overlay-fullscreen-prompt-text').textContent,
+  promptVisible: getComputedStyle(document.getElementById('overlay-fullscreen-prompt')).display !== 'none',
+  ready: window.NBGLevel1State.waitingForFirstInput,
+  canvasVisible: Boolean(document.querySelector('#game')?.getClientRects().length)
+}));
+assert.match(windowedFullscreenState.message, /You can keep playing here/,
+  'fullscreen denial must explicitly allow NBG windowed gameplay');
+assert.doesNotMatch(windowedFullscreenState.message, /to continue/,
+  'fullscreen denial must not falsely state the playable NBG game is blocked');
+assert.equal(windowedFullscreenState.promptVisible, true,
+  'user-initiated retry control must remain available');
+assert.equal(windowedFullscreenState.ready, true,
+  'denied fullscreen must leave the level ready for input');
+assert.equal(windowedFullscreenState.canvasVisible, true,
+  'denied fullscreen must not hide the game canvas');
+
 const preInitMovePage = await openWithDelayedNbgInit(browser, url);
 await preInitMovePage.keyboard.down('ArrowRight');
 await preInitMovePage.keyboard.up('ArrowRight');
