@@ -383,6 +383,11 @@ try {
       VALUES('daily',?,?,?,?,?,1,1,100000,?)`
     ).run(kvPeriodStart, id, '@' + id, points, points, fakeNow);
   }
+  // Trusted ties must not be decided by a faster *unverified* practice
+  // finish. ID 400 has a better practice time but ID 300 wins the tie.
+  sqlite.prepare(`UPDATE nbg_london_period_scores
+    SET total_xp=70000, trusted_xp=70000, best_time_ms=65000
+    WHERE period_kind='daily' AND period_start_ms=? AND telegram_id='400'`).run(kvPeriodStart);
   kvBans.add('anticheat:blocked:500');
   const kvFreezePayouts = await settleNbgLondonPeriod(env, {
     kind: 'daily', start: kvPeriodStart, end: kvPeriodStart + 86400000
@@ -412,6 +417,40 @@ try {
     kind: 'daily', start: frozenKvStart, end: frozenKvStart + 86400000
   }, fakeNow), [{ rank: 1, telegram_id: '500', arcade_xp: 100 }],
   'KV-only ban removal may resume the same frozen award exactly once');
+
+  // D1 supports no more than 100 SQL bindings in this Worker environment.
+  // Eighty-eight KV-only bans used to push the freeze INSERT over that limit.
+  // JSON exclusions must leave the number of bindings constant.
+  const overflowStart = oldPracticeStart - 8 * 86400000;
+  const overflowPeriod = { kind: 'daily', start: overflowStart, end: overflowStart + 86400000 };
+  const overflowUser = sqlite.prepare('INSERT INTO telegram_users (telegram_id) VALUES (?)');
+  const overflowScore = sqlite.prepare(`INSERT INTO nbg_london_period_scores
+    (period_kind,period_start_ms,telegram_id,display_name,total_xp,trusted_xp,
+     verified_run_count,run_count,best_time_ms,updated_at_ms)
+    VALUES ('daily',?,?,?,?,?,1,1,100000,?)`);
+  const overflowBlocked = [];
+  for (let i = 0; i < 88; i++) {
+    const id = 'kv-only-' + i;
+    overflowUser.run(id);
+    overflowScore.run(overflowStart, id, '@' + id, 100000 - i, 100000 - i, fakeNow);
+    kvBans.add('anticheat:blocked:' + id);
+    overflowBlocked.push(id);
+  }
+  for (const [id, points] of [['100', 1000], ['200', 900], ['300', 800]]) {
+    overflowScore.run(overflowStart, id, '@' + id, points, points, fakeNow);
+  }
+  const overflowSqlStart = leaderboardSqlLog.length;
+  const overflowPaid = await settleNbgLondonPeriod(env, overflowPeriod, fakeNow);
+  assert.deepEqual(overflowPaid.map(row => [row.telegram_id, row.arcade_xp]),
+    [['100', 100], ['200', 60], ['300', 30]],
+    'eighty-eight KV-only bans cannot prevent freezing or paying eligible players');
+  const winnerSql = leaderboardSqlLog.slice(overflowSqlStart)
+    .find(sql => sql.includes('INSERT OR IGNORE INTO nbg_london_prize_awards'));
+  assert.ok(winnerSql && winnerSql.includes('json_each(?)'),
+    'blocked IDs must be bound through one JSON array parameter');
+  assert.ok((winnerSql.match(/\\?/g) || []).length <= 100,
+    'winner selection must remain within D1 binding limits');
+  for (const id of overflowBlocked) kvBans.delete('anticheat:blocked:' + id);
 
   const shortRun = await api('/nbg-london/run/start', { telegram_auth: { id: '100' } });
   fakeNow += 2000;
@@ -466,6 +505,12 @@ try {
   }
   kvBans.add('anticheat:blocked:700');
   sqlite.prepare('INSERT INTO telegram_anticheat_state (telegram_id,is_blocked) VALUES (?,1)').run('701');
+  // 703 has the faster unverified finish, but 702 has the lower stable
+  // ID and must rank first when their trusted XP is tied.
+  sqlite.prepare(`UPDATE nbg_london_period_scores SET trusted_xp=49700
+    WHERE period_kind='daily' AND period_start_ms=? AND telegram_id='702'`).run(displayPeriod);
+  sqlite.prepare(`UPDATE nbg_london_period_scores SET best_time_ms=65000
+    WHERE period_kind='daily' AND period_start_ms=? AND telegram_id='703'`).run(displayPeriod);
   env.NBG_LONDON_PRIZES_ENABLED = 'true';
   env.NBG_LONDON_SCORE_AUTHORITY_ENABLED = 'true';
   const publicContest = await api('/nbg-london/competition?period=daily');
