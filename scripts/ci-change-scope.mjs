@@ -58,6 +58,14 @@ const SCOPES = {
     'crypto-moonboy-pets-leaderboard.html',
     'how-to-play*.html',
     'workers/leaderboard-worker.js',
+    // NBG replay and Championship Clout security boundaries require Arcade
+    // regressions even when a PR changes ONLY a Worker or D1 source.
+    'workers/leaderboard/nbg-london-*.js',
+    'workers/leaderboard/deployment-entry.js',
+    'workers/moonboys-api/championship/**',
+    'workers/moonboys-api/migrations/*nbg_london*.sql',
+    'workers/moonboys-api/migrations/*championship_clout*.sql',
+    'workers/moonboys-api/schema.sql',
     'workers/moonboys-api/worker.js',
     'workers/moonboys-api/migrations/017_faction_season_lock.sql',
     'workers/moonboys-api/blocktopia/routes.js',
@@ -67,6 +75,8 @@ const SCOPES = {
     'scripts/*blocktopia*',
     'scripts/*invaders*',
     'scripts/*leaderboard*',
+    'scripts/nbg-london-*.test.mjs',
+    'scripts/ci-change-scope.mjs',
     'scripts/*faction*',
     'scripts/*avatar-builder*',
     'scripts/competitive-arcade-bootstrap-gate.test.mjs',
