@@ -19,6 +19,8 @@ test('v2 ranked handshake awaits signed challenge before any replay tick',()=>{
   assert.match(game,/return window\.NBG_REQUEST_RANKED_CHALLENGE\(\)/);
   assert.match(game,/if \(pendingChallengeStart\) return pendingChallengeStart/);
   assert.match(game,/if \(runSequence !== expectedSequence\)/);
+  assert.match(game,/\.catch\(function\(\)\{\s*\/\/ A network\/auth failure[\s\S]*?if \(runSequence !== expectedSequence\) return window\.NBGLevel1State;/,
+    'stale challenge failure must not restart gameplay after reset');
   assert.match(game,/challengeHandshakeComplete = true/);
   assert.match(game,/rankedChallengeVersion === 2 && !lastTime/);
   assert.match(game,/requestAnimationFrame\(function\(next\)\{tick\(next,sequence\);\}\)/);
