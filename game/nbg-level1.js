@@ -227,6 +227,7 @@
     var rankedChallengeSeed = null;
     var rankedChallengeVersion = 1;
     var pendingChallengeStart = null;
+    var challengeHandshakeComplete = false;
     function nextRunRandom() {
       runRandomState = (Math.imul(runRandomState, 1664525) + 1013904223) >>> 0;
       return runRandomState / 4294967296;
@@ -1510,6 +1511,7 @@
       rankedChallengeSeed = null;
       rankedChallengeVersion = 1;
       pendingChallengeStart = null;
+      challengeHandshakeComplete = false;
       speedrunBonusXp = 0;
       comboCount = 0;
       comboExpiresAt = 0;
@@ -1622,7 +1624,7 @@
       // handshake. Existing guest/legacy play stays synchronous and intact.
       if (window.NBG_CHALLENGE_CLIENT_RELEASED === true &&
           typeof window.NBG_REQUEST_RANKED_CHALLENGE === 'function' &&
-          !pendingChallengeStart) {
+          !pendingChallengeStart && !challengeHandshakeComplete) {
         var expectedSequence = runSequence;
         pendingChallengeStart = Promise.resolve()
           .then(function(){return window.NBG_REQUEST_RANKED_CHALLENGE();})
@@ -1641,9 +1643,11 @@
               rankedChallengeSeed = challenge.challenge_seed;
             }
             pendingChallengeStart = null;
+            challengeHandshakeComplete = true;
             return beginGameplay();
           }).catch(function(){
             pendingChallengeStart = null;
+            challengeHandshakeComplete = true;
             // Failed challenge means no ranked v2 source; guest practice
             // remains possible and the browser never blocks indefinitely.
             rankedChallengeVersion = 1;
