@@ -64,7 +64,8 @@ test('legacy practice and v1 boards remain supported, v2 requires signed preplay
   assert.doesNotMatch(client,/serverStartQueue\s*=\s*null/,
     'local resets and identity changes must never drop the server-start queue');
   assert.match(client,/current!==generation/);
-  assert.match(client,/detail\.replay\.version !== 2/);
+  assert.match(client,/detail\.replay\.version !== expectedVersion/,
+    'finish must validate the actual per-run v1/v2 response version');
   assert.match(source,/body\?\.replay_capability === 'challenge_v2'/,
     'server must require explicit v2 client negotiation');
   assert.match(source,/challengeVersion = challengedStart \? 2 : 1/);
