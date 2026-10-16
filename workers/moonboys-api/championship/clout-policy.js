@@ -135,11 +135,15 @@ export function projectCloutDay(effects) {
   const top = [...bestSkills.entries()]
     .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
     .slice(0, 3);
-  // One verified title can earn the full proportional 0-40 Skill share:
-  // no artificial denominator of 3 for new players.
-  const skillPoints = top.length
-    ? Math.floor(top.reduce((n, [, rating]) => n + rating, 0) * 40 / (top.length * 100))
+  // Non-decreasing: taking on a second, weaker game must NEVER subtract
+  // earned Clout. Best verified game is the baseline, with small additive
+  // rewards for up to two additional distinct, independently verified games.
+  // Cross-game variety already has its own separate daily bucket.
+  const adjustedRating = top.length
+    ? Math.min(100, top[0][1] + (top[1]?.[1] ?? 0) * 0.10 +
+      (top[2]?.[1] ?? 0) * 0.05)
     : 0;
+  const skillPoints = Math.floor(adjustedRating * 40 / 100);
   const score = {
     skill_points: skillPoints,
     mission_points: Math.min(CLOUT_DAILY_CEILINGS.mission, sum.mission),
