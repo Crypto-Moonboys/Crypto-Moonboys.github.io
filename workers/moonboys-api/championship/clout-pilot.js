@@ -94,19 +94,17 @@ const SOURCE_QUERIES = Object.freeze({
     "ORDER BY c.crest_id LIMIT 11",
   ].join(' '),
   dead_run: [
-    // Full source settlement plus exact matching accepted Arcade receipt.
+    // Dead Run's own server-settled session is the authority. Arcade's XP
+    // receipt cannot be required here: a signed player's client_run_id may
+    // collide with its UUID under UNIQUE(telegram_id,client_run_id), while
+    // the source handler still independently finishes a legitimate ranked
+    // session. No client-written Arcade score is promoted to Clout.
     "SELECT 'dead_run' AS source_system, s.session_id AS source_event_id,",
     " s.ended_at AS earned_at, NULL AS source_pet_id, s.started_at,",
     " s.score AS verified_score, s.xp_awarded AS awarded_game_xp,",
     " s.verified_distance_m, s.survival_seconds, s.kills, s.crates, s.shove_count,",
-    " s.difficulty_xp_basis, s.difficulty_best_basis, s.difficulty_runs_basis,",
-    " a.reason AS settlement_reason",
+    " s.difficulty_xp_basis, s.difficulty_best_basis, s.difficulty_runs_basis",
     "FROM dead_run_sessions s",
-    "JOIN arcade_progression_events a ON a.id='dead_run:' || s.session_id",
-    " AND a.telegram_id=s.telegram_id AND a.client_run_id=s.session_id",
-    " AND a.game='dead-run' AND a.status='accepted'",
-    " AND a.reason IN ('verified_gps_run','verified_gps_horde_event')",
-    " AND a.raw_score=s.score AND a.xp_awarded=s.xp_awarded",
     "WHERE s.telegram_id=? AND substr(s.ended_at,1,10)=?",
     " AND s.ended_at>=? AND s.ended_at>=s.started_at",
     " AND s.status='finished' AND s.ranked=1",
@@ -116,7 +114,11 @@ const SOURCE_QUERIES = Object.freeze({
     " AND s.horde_applied=1",
     " AND s.start_lat IS NULL AND s.start_lng IS NULL",
     " AND s.last_lat IS NULL AND s.last_lng IS NULL",
-    "ORDER BY s.ended_at,s.session_id LIMIT 11",
+    // Server rules support up to 20 ranked runs/day. We need only the
+    // best certified run for each title/day (v1 Skill is highest-per-game),
+    // not 20 effects on each bot command. A newly improved best becomes a
+    // new immutable source; prior lower effects remain idempotent.
+    "ORDER BY s.score DESC,s.ended_at ASC,s.session_id ASC LIMIT 1",
   ].join(' '),
 });
 
@@ -156,10 +158,14 @@ function verifiedDeadRunScore(row) {
     survival_seconds: row.survival_seconds,
     kills: row.kills, crates: row.crates, shove_count: row.shove_count,
   }, difficulty);
-  const multiplier = row.settlement_reason === 'verified_gps_horde_event' ? 1.1 : 1;
-  const expectedXp = Math.min(275, Math.floor(expected.xp * multiplier));
+  // The original source stores the accepted XP amount, not whether its
+  // completed horde was active. The only two authorized multipliers at finish
+  // are normal 1.0 and active horde 1.1; compare both bounded server results.
+  const baseXp = Math.min(275, Math.floor(expected.xp));
+  const hordeXp = Math.min(275, Math.floor(expected.xp * 1.1));
   if (expected.score !== row.verified_score ||
-      expectedXp !== row.awarded_game_xp || expected.score <= 0 || expectedXp <= 0)
+      (row.awarded_game_xp !== baseXp && row.awarded_game_xp !== hordeXp) ||
+      expected.score <= 0 || baseXp <= 0)
     throw new Error('clout_dead_run_settlement_mismatch');
   return normalizeDeadRunSkill(expected.score);
 }
