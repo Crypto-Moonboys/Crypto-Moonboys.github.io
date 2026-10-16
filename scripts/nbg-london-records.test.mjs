@@ -448,8 +448,10 @@ try {
     const board = await api('/nbg-london/leaderboard?metric=' + metric);
     assert.equal(board.status, 200);
     assert.equal(board.records.length, 20);
-    assert.equal(board.records[0].name, '@score702');
-    assert.ok(board.records.some(row => row.name === '@score721'));
+    assert.equal(board.records[0].name, metric === 'speed_xp' ? '@alpha' : '@score702',
+      'existing legitimate personal bests must keep their correct per-metric ranking');
+    assert.ok(board.records.some(row => row.name === '@score720'),
+      'the 21st raw competitor should backfill the 20-person board after both bans');
     assert.ok(board.records.every(row => !['@score700', '@score701'].includes(row.name)),
       'bans after submission must suppress stored all-time results publicly');
   }
