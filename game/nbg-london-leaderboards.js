@@ -2,6 +2,9 @@
 (function () {
   'use strict';
 
+  // Separate reviewed source-code unlock is required. Merely changing
+  // Wrangler vars cannot make an untested browser v2 ranked challenge live.
+  window.NBG_CHALLENGE_CLIENT_RELEASED = false;
   var METRICS = {
     fastest: { title: 'Fastest Time', value: function (row) { return formatTime(row.time_ms); } },
     speed_xp: { title: 'Fastest + XP', value: function (row) { return Number(row.value || 0).toLocaleString() + ' XP/min'; } },
@@ -209,6 +212,45 @@
     }
   }
 
+  async function requestRankedChallengeBeforePlay() {
+    // Called by the game BEFORE running=true and BEFORE any replay tick.
+    // A new generation invalidates a stale login/identity response.
+    var current=++generation;
+    var gate=window.MOONBOYS_IDENTITY;
+    var startingId=String(gate?.getTelegramId?.()||'');
+    runIdentity=null;
+    if(!displayIdentity()||!startingId) {
+      setStatus('Guest practice — no ranked session or trusted receipt.');
+      return {ranked:false};
+    }
+    runIdentity=startingId;
+    setStatus('Requesting unique ranked challenge before gameplay…');
+    runPromise=(async function(){
+      var auth=await signedAuth();
+      if(!auth||current!==generation||String(auth.id)!==startingId||
+          String(gate.getTelegramId()||'')!==startingId||!gate.isTelegramLinked())
+        return null;
+      var started=await callJson('/run/start',{telegram_auth:auth});
+      if(current!==generation||String(gate.getTelegramId()||'')!==startingId||
+          !gate.isTelegramLinked())return null;
+      return Object.assign({},started,{telegram_id:startingId});
+    }());
+    try {
+      var result=await runPromise;
+      if(current!==generation)return null;
+      if(!result||result.ranked!==true||result.replay_version!==2||
+          !Number.isSafeInteger(result.challenge_seed)) {
+        setStatus('Trusted ranked challenge unavailable. Practice only.');
+        return {ranked:false};
+      }
+      setStatus('Ranked challenge ready — starting verified gameplay.');
+      return result;
+    }catch(error){
+      if(current===generation)setStatus('Ranked challenge unavailable: '+error.message);
+      return {ranked:false};
+    }
+  }
+
   async function beginRankedRun() {
     var current = ++generation;
     runPromise = null;
@@ -280,7 +322,10 @@
         if (current === generation) setStatus('Run not saved: Telegram account changed or login expired.');
         return;
       }
-      if (!detail.replay || detail.replay.version !== 1) {
+      if (!detail.replay ||
+          (window.NBG_CHALLENGE_CLIENT_RELEASED === true
+            ? detail.replay.version !== 2
+            : detail.replay.version !== 1)) {
         setStatus('Run not saved: missing gameplay replay. Reset and play a fresh run.');
         return;
       }
@@ -402,7 +447,12 @@
       displayIdentity();
       loadPersonal();
     });
-    window.addEventListener('nbg-level-started', beginRankedRun);
+    window.NBG_REQUEST_RANKED_CHALLENGE=requestRankedChallengeBeforePlay;
+    window.addEventListener('nbg-level-started', function(){
+      // v2 already has the authenticated session from the pre-play handshake.
+      if(window.NBG_CHALLENGE_CLIENT_RELEASED === true) return;
+      beginRankedRun();
+    });
     window.addEventListener('nbg-level-complete', function (event) {
       finishRankedRun(event.detail || {});
     });
