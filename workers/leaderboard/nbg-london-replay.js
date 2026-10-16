@@ -111,7 +111,7 @@ function deterministicBoxXp(runId, box, index) {
   return box.kind === 'star' ? [500,750,1000,0][pick] : [100,250,500,0][pick];
 }
 
-export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, debug = false }) {
+export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, debug = false, testInputOverride = null }) {
   if (typeof runId !== 'string' || !Number.isFinite(startedAtMs) ||
       !Number.isFinite(now)) return { valid: false };
   const bytes = decodeFrames(replay);
@@ -138,8 +138,13 @@ export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, d
     const dec = pos => bytes.charCodeAt(offset+pos);
     const dt=(dec(0) + dec(1)*256)/10;
     const frameElapsed=dec(2) + dec(3)*256;
-    const mask=dec(4);
-    if (mask>15 || dt<0 || dt>33.1 || frameElapsed>2000 ||
+    // Only direct JavaScript unit tests can inject this callback; no HTTP JSON
+    // value can become a function. Production always uses the encoded mask.
+    const mask=typeof testInputOverride === 'function' ?
+      testInputOverride({ x:p.x,y:p.y,vx:p.vx,vy:p.vy,grounded:p.grounded,
+        jumps,health:p.health,elapsed, frame:consumedFrames,
+        obstacles:level.hazards.concat(level.crates) }) : dec(4);
+    if (!Number.isInteger(mask) || mask<0 || mask>15 || dt<0 || dt>33.1 || frameElapsed>2000 ||
         dt>frameElapsed+1.5) return { valid:false };
     elapsed += frameElapsed;
     if (elapsed>MAX_MS+20000) return { valid:false };
