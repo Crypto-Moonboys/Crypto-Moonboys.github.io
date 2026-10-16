@@ -654,13 +654,20 @@ assert.equal(startVisibility.cameraY, 0, 'cameraY must start clean after finishI
 // Native fullscreen refusal must not imply the windowed game is blocked.
 await page.evaluate(() => {
   const overlay = document.getElementById('game-overlay');
-  overlay.requestFullscreen = () => Promise.reject(new Error('fullscreen denied by browser'));
+  window.__nbgFullscreenRetryCalls = 0;
+  overlay.requestFullscreen = () => {
+    window.__nbgFullscreenRetryCalls += 1;
+    return Promise.reject(new Error('fullscreen denied by browser'));
+  };
   document.getElementById('overlay-fullscreen-prompt-btn').click();
 });
 await page.waitForFunction(() => {
   const prompt = document.getElementById('overlay-fullscreen-prompt-text');
-  return prompt && /Browser fullscreen unavailable/.test(prompt.textContent);
+  return window.__nbgFullscreenRetryCalls === 1 &&
+    prompt && /Browser fullscreen unavailable/.test(prompt.textContent);
 });
+assert.equal(await page.evaluate(() => window.__nbgFullscreenRetryCalls), 1,
+  'user-initiated retry must invoke requestFullscreen exactly once');
 const windowedFullscreenState = await page.evaluate(() => ({
   message: document.getElementById('overlay-fullscreen-prompt-text').textContent,
   promptVisible: getComputedStyle(document.getElementById('overlay-fullscreen-prompt')).display !== 'none',
