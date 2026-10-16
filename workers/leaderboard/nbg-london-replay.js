@@ -114,9 +114,12 @@ export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, d
   // Legacy cached v1 clients never sent a course_version: keep their exact
   // original level, random/parachute physics and two-jump rules. The new
   // browser keeps the v1 replay frame format but opts into course revision 2.
-  if (replay.course_version != null && replay.course_version !== 2)
+  // An omitted property is the only legacy v1 signal. Explicit null,
+  // undefined, strings and unknown revisions must never downgrade a replay.
+  const hasCourseVersion = Object.prototype.hasOwnProperty.call(replay, 'course_version');
+  if (hasCourseVersion && replay.course_version !== 2)
     return { valid:false };
-  const courseVersion = replay.course_version === 2 ? 2 : 1;
+  const courseVersion = hasCourseVersion ? 2 : 1;
   const level = levelData(courseVersion);
   const solids=[{x:0,y:FLOOR,w:WORLD,h:60},...level.platforms,...level.crates];
   const p = { x:64, y:FLOOR-34, w:24, h:34, vx:0, vy:0, facing:1,
