@@ -44,3 +44,13 @@ database_id   = "8a36e17a-18fa-4b98-90e1-3f269164b166"
 #                        https://cryptomoonboys.com,
 #                        https://www.cryptomoonboys.com,
 #                        https://crypto-moonboys.github.io
+
+# #1530 PR3B: all three requirements remain OFF until migration 101 has been
+# backed up and verified, and a separately approved signed-player canary passes.
+# Code also contains a distinct hard lock; changing vars alone does not ship.
+[vars]
+NBG_VERIFIED_RUN_RECEIPTS_ENABLED = "false"
+CHAMPIONSHIP_CLOUT_PILOT_ENABLED = "false"
+CHAMPIONSHIP_CLOUT_NBG_ENABLED = "false"
+# No CHAMPIONSHIP_CLOUT_PILOT_START_AT in this build. Add only with approved
+# UTC midnight launch boundary in the controlled beta release.
