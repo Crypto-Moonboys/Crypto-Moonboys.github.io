@@ -529,7 +529,7 @@ test('returning-player score uses saved original difficulty, not rookie or curre
     const saved = f.sql.prepare(
       'SELECT difficulty_xp_basis,difficulty_best_basis,difficulty_runs_basis FROM dead_run_sessions'
     ).get();
-    assert.deepEqual(saved, {
+    assert.deepEqual({ ...saved }, {
       difficulty_xp_basis: 1350, difficulty_best_basis: 270,
       difficulty_runs_basis: 6,
     }, 'fixture must persist original settlement inputs');
