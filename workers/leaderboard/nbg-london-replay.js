@@ -297,7 +297,9 @@ export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, d
       const sprayHit=sprayed(rat);
       const stompHit=stomped(rat);
       if(sprayHit||stompHit){
-        defeat({...rat,spawnedByParachute:true},!sprayHit && stompHit);
+        // Mid-air rats are not yet flagged as landed spawns by the game;
+        // defeatEnemy awards their base 75 XP, not the landed 100 XP.
+        defeat(rat,!sprayHit && stompHit);
         parachuteRats.splice(i,1);
         continue;
       }
