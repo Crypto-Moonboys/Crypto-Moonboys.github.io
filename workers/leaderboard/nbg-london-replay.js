@@ -157,7 +157,7 @@ export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, d
         jumps,health:p.health,elapsed, frame:consumedFrames,
         obstacles:level.hazards.concat(level.crates) }) : dec(4);
     if (!Number.isInteger(mask) || mask<0 || mask>15 || dt<0 || dt>33.1 || frameElapsed>2000 ||
-        dt>frameElapsed+0.11) return { valid:false };
+        dt>frameElapsed) return { valid:false };
     elapsed += frameElapsed;
     if (elapsed>MAX_MS+20000) return { valid:false };
     consumedFrames++;
