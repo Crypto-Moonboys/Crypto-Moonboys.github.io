@@ -79,6 +79,16 @@ test('100 non-spendable daily points; repeated games never farm Skill or Variety
 
   const onlyOneGame = projectCloutDay([effect('skill', 'solo', { normalized_skill: 100 })]);
   assert.equal(onlyOneGame.skill_points, 40, 'a newcomer has no three-game penalty');
+  const blended = projectCloutDay([
+    effect('skill', 'best', { normalized_skill: 80 }),
+    effect('skill', 'medium', { game_key:'snake', normalized_skill:60 }),
+    effect('skill', 'third', { game_key:'dead-run', normalized_skill:40 }),
+  ]);
+  assert.equal(blended.skill_points, 35,
+    'top three game ratings produce monotonic best + 10% second + 5% third');
+  assert.ok(blended.skill_points >= projectCloutDay([
+    effect('skill', 'best', { normalized_skill:80 })
+  ]).skill_points, 'extra verified titles never reduce Clout');
   assert.equal(onlyOneGame.total_points, 40);
   const repeatedLowerScore = projectCloutDay([
     effect('skill', 'solo', { normalized_skill: 100 }),
