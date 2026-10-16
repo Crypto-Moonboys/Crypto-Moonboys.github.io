@@ -14,6 +14,7 @@
   var identityRequestNumber = 0;
   var generation = 0;
   var runPromise = null;
+  var runIdentity = null;
   var status = null;
   var tableBody = null;
   var account = null;
@@ -207,10 +208,12 @@
     // Website credential renewal can adopt another tab's Telegram account.
     var gate = window.MOONBOYS_IDENTITY;
     var startingId = String(gate && gate.getTelegramId ? gate.getTelegramId() || '' : '');
+    runIdentity = null;
     if (!displayIdentity() || !startingId) {
       setStatus('Guest run: score is session-only, not permanently ranked.');
       return;
     }
+    runIdentity = startingId;
     setStatus('Verifying Telegram account for this run…');
     runPromise = (async function () {
       var auth = await signedAuth();
@@ -308,9 +311,13 @@
     });
     window.addEventListener('moonboys:identity-change', function () {
       // A started run can never migrate to a different linked Telegram account.
-      if (runPromise) {
+      var gate = window.MOONBOYS_IDENTITY;
+      var nowId = String(gate && gate.getTelegramId ? gate.getTelegramId() || '' : '');
+      if (runPromise && runIdentity &&
+          (nowId !== runIdentity || !gate.isTelegramLinked())) {
         generation += 1;
         runPromise = null;
+        runIdentity = null;
         setStatus('Telegram account changed. This run is no longer eligible for permanent scores.');
       }
       displayIdentity();
@@ -323,6 +330,7 @@
     window.addEventListener('nbg-level-reset', function () {
       generation += 1;
       runPromise = null;
+      runIdentity = null;
       displayIdentity();
       setStatus('Fresh run ready. Only completed, Telegram-verified runs are saved.');
     });
