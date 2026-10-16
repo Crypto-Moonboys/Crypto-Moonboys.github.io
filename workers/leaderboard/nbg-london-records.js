@@ -1,4 +1,5 @@
 import { periodsForFinish, periodStart, PRIZE_ARCADE_XP } from './nbg-london-prizes.js';
+import { fingerprintNbgLondonReplay } from './nbg-london-replay.js';
 
 // NBG London all-time bests. Score XP is a game metric, not awarded Arcade XP.
 const PREFIX = '/nbg-london';
@@ -86,12 +87,18 @@ function displayName(user) {
 // Production deliberately supplies NO replay authority until a deterministic
 // server-side verifier exists. A runtime flag or Telegram login is NOT proof
 // of an honest run. Only a trusted, code-wired verifier may unlock writes.
-export async function handleNbgLondonRecords(request, env, verifyIdentity, verifyRunReplay = null) {
+export async function handleNbgLondonRecords(request, env, verifyIdentity, verifyRunReplay = null, options = {}) {
   const url = new URL(request.url);
   if (!url.pathname.startsWith(PREFIX)) return null;
   if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors(request) });
   if (!env.DB) return json(request, { ok: false, error: 'records_database_unavailable' }, 503);
   const hasScoreAuthority = typeof verifyRunReplay === 'function';
+  // PR3B code gate AND runtime gate must both be enabled, after migration
+  // 101 is confirmed remotely. The published Worker wires the code gate off.
+  // Legacy replay-scored best/period boards continue working in the meantime.
+  const trustedReceiptsEnabled = hasScoreAuthority &&
+    options.verifiedReceiptsReleased === true &&
+    env.NBG_VERIFIED_RUN_RECEIPTS_ENABLED === 'true';
 
   try {
     if (request.method === 'GET' && url.pathname === PREFIX + '/competition') {
@@ -254,6 +261,19 @@ export async function handleNbgLondonRecords(request, env, verifyIdentity, verif
     const xp = verified.xp;
     const rate = efficiencyRate(xp, timeMs);
     const name = displayName(identity.linkedAccount);
+    let fingerprints = null;
+    if (trustedReceiptsEnabled) {
+      // Both cryptographic digests omit run_id; cheap cross-session/player
+      // replays must collide. This is an extra defense, not proof of a human.
+      fingerprints = await fingerprintNbgLondonReplay(body?.replay);
+      if (!fingerprints || fingerprints.replay_version !== 1)
+        return json(request, { ok: false, error: 'invalid_verified_replay_fingerprint' }, 422);
+      const prior = await env.DB.prepare([
+        'SELECT run_id FROM nbg_london_verified_runs',
+        'WHERE replay_sha256=? OR input_sha256=? LIMIT 1',
+      ].join(' ')).bind(fingerprints.replay_sha256, fingerprints.input_sha256).first();
+      if (prior) return json(request, { ok: false, error: 'replay_already_accepted' }, 409);
+    }
     const finishToken = crypto.randomUUID();
     const periods = periodsForFinish(now);
     // The receipt claim must succeed while ALL attributed periods remain open.
@@ -269,7 +289,27 @@ export async function handleNbgLondonRecords(request, env, verifyIdentity, verif
         'WHERE run_id = ? AND telegram_id = ? AND finished_at_ms IS NULL ' +
         'AND CAST(strftime(\'%s\', \'now\') AS INTEGER) * 1000 < ? ' + periodGuard
       ).bind(now, finishToken, runId, telegramId, periodStart(now, 'daily') + 86400000, ...guardParams),
-      env.DB.prepare(
+    ];
+    if (trustedReceiptsEnabled) {
+      // A replay-unique immutable proof and the original finish token must
+      // commit in the SAME D1 transaction. The unique indexes are the
+      // concurrency arbiter if two requests raced past the read-only probe.
+      writes.push(env.DB.prepare([
+        'INSERT INTO nbg_london_verified_runs',
+        '(run_id,telegram_id,day_key,finished_at_ms,time_ms,verified_xp,',
+        'replay_version,replay_sha256,input_sha256,authority,recorded_at_ms)',
+        "SELECT r.run_id,r.telegram_id,?,r.finished_at_ms,?,?,?,?,?,'server_replay',?",
+        'FROM nbg_london_runs r',
+        'WHERE r.run_id=? AND r.telegram_id=? AND r.finish_token=?',
+        'AND r.finished_at_ms=?',
+      ].join(' ')).bind(
+        new Date(now).toISOString().slice(0,10),timeMs,xp,
+        fingerprints.replay_version,fingerprints.replay_sha256,
+        fingerprints.input_sha256,now,
+        runId,telegramId,finishToken,now,
+      ));
+    }
+    writes.push(env.DB.prepare(
       'INSERT INTO nbg_london_records (telegram_id, display_name, fastest_ms, fastest_xp, speed_xp_rate, speed_xp_ms, speed_xp_xp, best_xp, best_xp_ms, updated_at_ms) ' +
       'SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ? WHERE EXISTS (SELECT 1 FROM nbg_london_runs WHERE run_id = ? AND finish_token = ?) ' +
       'ON CONFLICT(telegram_id) DO UPDATE SET ' +
@@ -282,25 +322,57 @@ export async function handleNbgLondonRecords(request, env, verifyIdentity, verif
       'best_xp_ms = CASE WHEN excluded.best_xp > best_xp OR (excluded.best_xp = best_xp AND excluded.best_xp_ms < best_xp_ms) THEN excluded.best_xp_ms ELSE best_xp_ms END, ' +
       'best_xp = MAX(best_xp, excluded.best_xp)'
     ).bind(telegramId, name, timeMs, xp, rate, timeMs, xp, xp, timeMs, now, runId, finishToken)
-    ];
+    );
     for (const period of periods) {
+      const columns = trustedReceiptsEnabled ?
+        'period_kind,period_start_ms,telegram_id,display_name,total_xp,' +
+        'trusted_xp,verified_run_count,run_count,best_time_ms,updated_at_ms' :
+        'period_kind,period_start_ms,telegram_id,display_name,total_xp,' +
+        'run_count,best_time_ms,updated_at_ms';
+      const values = trustedReceiptsEnabled ?
+        '?, ?, ?, ?, ?, ?, 1, 1, ?, ?' : '?, ?, ?, ?, ?, 1, ?, ?';
+      const trustedUpdates = trustedReceiptsEnabled ?
+        ', trusted_xp=nbg_london_period_scores.trusted_xp+excluded.trusted_xp' +
+        ', verified_run_count=nbg_london_period_scores.verified_run_count+1' : '';
       writes.push(env.DB.prepare(
-        `INSERT INTO nbg_london_period_scores
-           (period_kind, period_start_ms, telegram_id, display_name, total_xp, run_count, best_time_ms, updated_at_ms)
-         SELECT ?, ?, ?, ?, ?, 1, ?, ? WHERE EXISTS (SELECT 1 FROM nbg_london_runs WHERE run_id = ? AND finish_token = ?)
-         ON CONFLICT(period_kind, period_start_ms, telegram_id) DO UPDATE SET
-           display_name = excluded.display_name,
-           total_xp = nbg_london_period_scores.total_xp + excluded.total_xp,
-           run_count = nbg_london_period_scores.run_count + 1,
-           best_time_ms = MIN(nbg_london_period_scores.best_time_ms, excluded.best_time_ms),
-           updated_at_ms = excluded.updated_at_ms`
-      ).bind(period.kind, period.start, telegramId, name, xp, timeMs, now, runId, finishToken));
+        'INSERT INTO nbg_london_period_scores (' + columns + ') ' +
+        'SELECT ' + values +
+        ' WHERE EXISTS (SELECT 1 FROM nbg_london_runs WHERE run_id=? AND finish_token=?) ' +
+        'ON CONFLICT(period_kind,period_start_ms,telegram_id) DO UPDATE SET ' +
+        'display_name=excluded.display_name,' +
+        'total_xp=nbg_london_period_scores.total_xp+excluded.total_xp,' +
+        'run_count=nbg_london_period_scores.run_count+1,' +
+        'best_time_ms=MIN(nbg_london_period_scores.best_time_ms,excluded.best_time_ms),' +
+        'updated_at_ms=excluded.updated_at_ms' + trustedUpdates
+      ).bind(...(trustedReceiptsEnabled ?
+        [period.kind,period.start,telegramId,name,xp,xp,timeMs,now,runId,finishToken] :
+        [period.kind,period.start,telegramId,name,xp,timeMs,now,runId,finishToken])));
     }
-    // A run receipt, all-time best and all three active period results commit atomically.
-    const applied = await env.DB.batch(writes);
+    // A run claim, optional immutable replay proof, all-time best and each
+    // trusted/legacy period counter must succeed atomically or all roll back.
+    let applied;
+    try { applied = await env.DB.batch(writes); }
+    catch (error) {
+      const message = String(error?.message || '');
+      if (trustedReceiptsEnabled && /UNIQUE constraint failed.*nbg_london_verified_runs\.(replay_sha256|input_sha256)/i.test(message))
+        return json(request, { ok: false, error: 'replay_already_accepted' }, 409);
+      throw error;
+    }
     if (applied?.[0]?.meta?.changes !== 1)
       return json(request, { ok: false, error: 'run_already_submitted' }, 409);
-    return json(request, { ok: true, saved: true, player: name, time_ms: timeMs, xp, xp_per_minute: rate });
+    if (trustedReceiptsEnabled && typeof options.onVerifiedRun === 'function' &&
+        typeof options.waitUntil === 'function') {
+      // Caller is the deployment entrypoint, NOT a field from the request.
+      // Never delay a successfully saved game run for optional Clout.
+      options.waitUntil(Promise.resolve()
+        .then(() => options.onVerifiedRun({db:env.DB,telegramId,runId}))
+        .catch(error => console.error('[nbg-clout]', error?.message || 'projection_failed')));
+    }
+    return json(request, {
+      ok: true, saved: true, player: name,
+      time_ms: timeMs, xp, xp_per_minute: rate,
+      ...(trustedReceiptsEnabled ? { verified_source_receipt:true } : {}),
+    });
   } catch (error) {
     console.error('[nbg-london-records]', error?.message || 'database_error');
     return json(request, { ok: false, error: 'records_unavailable' }, 503);
