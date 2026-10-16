@@ -1603,7 +1603,11 @@
     }
 
     function startSimulation() {
-      initialInputReplay = pendingInitialInput;
+      // A Jump press is already in pendingJumpPresses (keyboard and touch).
+      // Replaying the same press as an initial control would create a second
+      // Jump on the following tick without a second user action.
+      initialInputReplay = pendingInitialInput && pendingInitialInput.control === 'jump' &&
+        pendingJumpPresses > 0 ? null : pendingInitialInput;
       pendingInitialInput = null;
       waitingForFirstInput = false;
       running = true;
@@ -1655,7 +1659,10 @@
       var preparation = typeof beforePlay === 'function' ? beforePlay() : null;
       if (!preparation || typeof preparation.then !== 'function')
         return startSimulation();
-      if (control && !pendingInitialInput) pendingInitialInput = { control: control };
+      // The jump press is held by pendingJumpPresses already, including if
+      // released while awaiting the signed session. Do not replay it twice.
+      if (control && control !== 'jump' && !pendingInitialInput)
+        pendingInitialInput = { control: control };
       var ownerGate = window.MOONBOYS_IDENTITY;
       var capturedOwner = String(ownerGate && ownerGate.getTelegramId ?
         ownerGate.getTelegramId() || '' : '');
