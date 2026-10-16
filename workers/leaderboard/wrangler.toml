@@ -25,7 +25,7 @@ preview_id = "a621c334d9ac439ebaf5f35dd31dddd5"
 # See docs/deployment-checklist.md for the deployment order requirement.
 
 [triggers]
-crons = ["0 0 * * *"]
+crons = ["0 0 * * *"] # Shared Arcade midnight UTC settlement/reset tick; no NBG-specific cron
 
 [[d1_databases]]
 binding       = "DB"

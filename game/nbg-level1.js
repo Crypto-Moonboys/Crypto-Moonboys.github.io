@@ -200,14 +200,14 @@
     var comboCount = 0;
     var comboExpiresAt = 0;
     var bestTimeMs = null;
+    // Browser bests are session-only; authenticated all-time records live in D1.
+    // Clear old guest/device-local bests from earlier game versions.
     var bestXp = 0;
     try {
-      var savedBestTime = Number(window.localStorage.getItem('nbg-london-best-run-ms'));
-      if (savedBestTime > 0 && Number.isFinite(savedBestTime)) bestTimeMs = savedBestTime;
-      var savedBestXp = Number(window.localStorage.getItem('nbg-london-best-xp'));
-      if (savedBestXp > 0 && Number.isFinite(savedBestXp)) bestXp = savedBestXp;
+      window.localStorage.removeItem('nbg-london-best-run-ms');
+      window.localStorage.removeItem('nbg-london-best-xp');
     } catch (error) {
-      // Private browsing may block local storage; speedrun remains playable.
+      // Storage may be blocked; no local competitive record is retained.
     }
     var sprayTimer = 0;
     var parachuteRats = [];
@@ -437,6 +437,21 @@
     }
 
     function onKey(e, down) {
+      // Scores drawer is a normal keyboard-accessible UI, not a game input.
+      // Keep key-up cleanup for keys pressed before opening the drawer.
+      var drawer = document.getElementById('nbg-record-drawer');
+      var scoresOpen = drawer && !drawer.hidden;
+      var scoresControl = e.target && e.target.closest &&
+        e.target.closest('#nbg-record-drawer, #nbg-open-records');
+      // Once Scores closes, focus returns to its toolbar button. Preserve
+      // native Enter/Space activation there, but allow gameplay movement,
+      // jump (ArrowUp/W) and spray even while that button retains focus.
+      if (down && (scoresOpen ||
+          (scoresControl && (e.code === 'Space' || e.code === 'Enter')))) return;
+      if (!down && (scoresOpen || scoresControl)) {
+        keys[e.code] = false;
+        return;
+      }
       var wasDown = !!keys[e.code];
       keys[e.code] = down;
       if (down && !wasDown && getControlForCode(e.code) === 'jump') {
@@ -852,22 +867,8 @@
           xp += 500 + coins.filter(function (coin) { return coin.taken; }).length * 25;
           speedrunBonusXp = Math.max(0, Math.ceil((SPEEDRUN_PAR_MS - runElapsedMs) / 1000)) * SPEEDRUN_TIME_BONUS_PER_SECOND;
           xp += speedrunBonusXp;
-          if (xp > bestXp) {
-            bestXp = xp;
-            try {
-              window.localStorage.setItem('nbg-london-best-xp', String(bestXp));
-            } catch (error) {
-              // Best score remains visible for this session if storage is disabled.
-            }
-          }
-          if (bestTimeMs === null || runElapsedMs < bestTimeMs) {
-            bestTimeMs = runElapsedMs;
-            try {
-              window.localStorage.setItem('nbg-london-best-run-ms', String(Math.round(bestTimeMs)));
-            } catch (error) {
-              // Best time still tracks within this page if storage is blocked.
-            }
-          }
+          if (xp > bestXp) bestXp = xp;
+          if (bestTimeMs === null || runElapsedMs < bestTimeMs) bestTimeMs = runElapsedMs;
         }
         window.dispatchEvent(new CustomEvent('nbg-level-complete', {
           detail: {
@@ -1584,6 +1585,7 @@
         return Promise.resolve(resetRun());
       },
       getState: function () { return window.NBGLevel1State; },
+      suspendInput: clearInput,
       setTouchControl: function (control, active) {
         if (Object.prototype.hasOwnProperty.call(touch, control)) {
           touch[control] = active;

@@ -1607,6 +1607,93 @@ const afterRestart = await page.evaluate(() => window.NBGLevel1State.runElapsedM
 assert.ok(afterRestart < 2500, 'new run must restart with a fresh clock');
 await page.evaluate(() => window.NBGLevel1Runtime.reset());
 
+// Guest runs cannot leave permanent device-local best scores, even after finishing.
+const guestRecords = await page.evaluate(() => ({
+  bestXp: localStorage.getItem('nbg-london-best-xp'),
+  bestTime: localStorage.getItem('nbg-london-best-run-ms'),
+  tabs: [...document.querySelectorAll('[data-nbg-metric]')].map(button => button.dataset.nbgMetric),
+  account: document.getElementById('nbg-record-account')?.textContent || '',
+  hud: document.getElementById('nbg-hud-player')?.textContent || ''
+}));
+assert.equal(guestRecords.bestXp, null, 'guest XP must not remain permanently in localStorage');
+assert.equal(guestRecords.bestTime, null, 'guest run time must not remain permanently in localStorage');
+assert.deepEqual(guestRecords.tabs, ['fastest', 'speed_xp', 'xp'], 'three London ranking views must be visible');
+assert.ok(guestRecords.account.includes('Guest') && guestRecords.hud === 'GUEST',
+  'guest players must be shown as unranked, not as permanently scored Telegram users');
+
+// Actual fullscreen UX regression: records must be inside the overlay and
+// reachable via keyboard/pointer, not merely present behind an opaque modal.
+await page.waitForSelector('#game-overlay.active', { state: 'visible', timeout: 5000 });
+const scoreToggle = page.locator('#nbg-open-records');
+await scoreToggle.waitFor({ state: 'visible', timeout: 5000 });
+assert.equal(await page.locator('#nbg-record-drawer').isVisible(), false,
+  'the records drawer should not cover the game by default');
+await scoreToggle.click();
+await page.locator('#nbg-record-drawer').waitFor({ state: 'visible', timeout: 3000 });
+assert.equal(await scoreToggle.getAttribute('aria-expanded'), 'true');
+assert.equal(await page.locator('#nbg-record-board').evaluate(element =>
+  element.closest('#game-overlay') !== null), true,
+'leaderboard must live within the fullscreen overlay');
+assert.equal(await page.locator('#nbg-record-status').isVisible(), true,
+  'Telegram score save/errors must be visible in fullscreen');
+assert.equal(await page.locator('#nbg-record-personal').isVisible(), true,
+  'personal bests must be readable inside fullscreen');
+assert.equal(await page.locator('#nbg-record-drawer').evaluate(element =>
+  getComputedStyle(element).overflowY === 'auto' && element.scrollHeight > element.clientHeight),
+  true, 'records panel must scroll independently on a normal viewport');
+await page.locator('[data-nbg-metric="xp"]').click();
+assert.equal(await page.locator('[data-nbg-metric="xp"]').getAttribute('aria-pressed'), 'true',
+  'all-time score tabs must work inside the fullscreen drawer');
+await page.locator('[data-nbg-period="weekly"]').click();
+assert.equal(await page.locator('[data-nbg-period="weekly"]').getAttribute('aria-pressed'), 'true',
+  'weekly/daily/seasonal tabs must remain interactive');
+const gameplayBeforeKeys = await page.evaluate(() => ({
+  running: window.NBGLevel1State.running,
+  x: window.NBGLevel1State.player.x
+}));
+await page.locator('[data-nbg-metric="fastest"]').focus();
+await page.keyboard.press('Space');
+assert.equal(await page.locator('[data-nbg-metric="fastest"]').getAttribute('aria-pressed'), 'true',
+  'Space must activate native Scores buttons rather than jumping or starting game');
+await page.keyboard.press('ArrowRight');
+assert.deepEqual(await page.evaluate(() => ({
+  running: window.NBGLevel1State.running,
+  x: window.NBGLevel1State.player.x
+})), gameplayBeforeKeys, 'arrow keys must not move the game behind the open Scores drawer');
+await page.keyboard.press('Escape');
+assert.equal(await page.locator('#nbg-record-drawer').isVisible(), false,
+  'Escape should close scores rather than exit fullscreen game');
+assert.equal(new URL(page.url()).pathname, '/games/nbg-london/',
+  'closing scores must not navigate away from the game');
+await scoreToggle.focus();
+await page.keyboard.press('Enter');
+await page.locator('#nbg-record-drawer').waitFor({ state: 'visible', timeout: 3000 });
+assert.equal(new URL(page.url()).pathname, '/games/nbg-london/',
+  'Enter on the Scores button must not trigger a game shell navigation or start');
+await page.locator('#nbg-close-records').focus();
+await page.keyboard.press('Space');
+assert.equal(await scoreToggle.getAttribute('aria-expanded'), 'false',
+  'Space on the native Close button must close the Scores drawer without a jump');
+assert.equal(await page.locator('#game').isVisible(), true, 'closing scores must restore the game');
+  
+// Closing Scores leaves focus on its toolbar control. Movement must
+// still reach the runner without a second click or Tab press.
+const resumedFrom = await page.evaluate(() => ({
+  running: window.NBGLevel1State.running,
+  x: window.NBGLevel1State.player.x
+}));
+await page.keyboard.down('ArrowRight');
+await page.waitForTimeout(300);
+await page.keyboard.up('ArrowRight');
+const resumedTo = await page.evaluate(() => ({
+  running: window.NBGLevel1State.running,
+  x: window.NBGLevel1State.player.x
+}));
+assert.equal(resumedTo.running, true,
+  'ArrowRight must start or resume gameplay when Scores is closed');
+assert.ok(resumedTo.x > resumedFrom.x,
+  'ArrowRight must move the player with focus left on the closed Scores button');
+
 const pixelEnergy = await page.evaluate(() => {
   const canvas = document.getElementById('game');
   const data = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data;

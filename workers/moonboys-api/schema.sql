@@ -2330,3 +2330,83 @@ CREATE TABLE IF NOT EXISTS telegram_website_credentials (
 );
 CREATE INDEX IF NOT EXISTS idx_telegram_credential_expiry ON telegram_website_credentials(expires_at);
 CREATE INDEX IF NOT EXISTS idx_telegram_credential_session ON telegram_website_credentials(session_hash);
+
+
+-- NBG London Telegram leaderboard tables (migrations 098 and 099).
+-- Permanent NBG London Level 1 leaderboard records.
+-- Only verified Telegram-linked users can be inserted by the Worker.
+-- Metrics: fastest run, XP per minute (speed + points), highest score XP.
+CREATE TABLE IF NOT EXISTS nbg_london_runs (
+  run_id TEXT PRIMARY KEY,
+  telegram_id TEXT NOT NULL REFERENCES telegram_users(telegram_id) ON DELETE CASCADE,
+  started_at_ms INTEGER NOT NULL,
+  expires_at_ms INTEGER NOT NULL,
+  finished_at_ms INTEGER,
+  finish_token TEXT UNIQUE,
+  CHECK (expires_at_ms > started_at_ms)
+);
+CREATE INDEX IF NOT EXISTS idx_nbg_london_runs_player ON nbg_london_runs(telegram_id, started_at_ms);
+
+CREATE TABLE IF NOT EXISTS nbg_london_records (
+  telegram_id TEXT PRIMARY KEY REFERENCES telegram_users(telegram_id) ON DELETE CASCADE,
+  display_name TEXT NOT NULL,
+  fastest_ms INTEGER NOT NULL CHECK (fastest_ms > 0),
+  fastest_xp INTEGER NOT NULL CHECK (fastest_xp >= 0),
+  speed_xp_rate REAL NOT NULL CHECK (speed_xp_rate >= 0),
+  speed_xp_ms INTEGER NOT NULL CHECK (speed_xp_ms > 0),
+  speed_xp_xp INTEGER NOT NULL CHECK (speed_xp_xp >= 0),
+  best_xp INTEGER NOT NULL CHECK (best_xp >= 0),
+  best_xp_ms INTEGER NOT NULL CHECK (best_xp_ms > 0),
+  updated_at_ms INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_nbg_london_fastest ON nbg_london_records(fastest_ms ASC, fastest_xp DESC);
+CREATE INDEX IF NOT EXISTS idx_nbg_london_speed_xp ON nbg_london_records(speed_xp_rate DESC, speed_xp_ms ASC);
+CREATE INDEX IF NOT EXISTS idx_nbg_london_xp ON nbg_london_records(best_xp DESC, best_xp_ms ASC);
+
+-- NBG London bounded prize competitions: daily, weekly and fixed 90-day seasonal.
+-- Periods are [start,end) and turn over at 01:00 UTC.
+-- A player appears once per period; competition rank is cumulative verified run XP.
+CREATE TABLE IF NOT EXISTS nbg_london_period_scores (
+  period_kind TEXT NOT NULL CHECK (period_kind IN ('daily', 'weekly', 'seasonal')),
+  period_start_ms INTEGER NOT NULL,
+  telegram_id TEXT NOT NULL REFERENCES telegram_users(telegram_id) ON DELETE CASCADE,
+  display_name TEXT NOT NULL,
+  total_xp INTEGER NOT NULL DEFAULT 0 CHECK (total_xp >= 0),
+  trusted_xp INTEGER NOT NULL DEFAULT 0 CHECK (trusted_xp >= 0),
+  verified_run_count INTEGER NOT NULL DEFAULT 0 CHECK (verified_run_count >= 0),
+  run_count INTEGER NOT NULL DEFAULT 0 CHECK (run_count >= 0),
+  best_time_ms INTEGER NOT NULL CHECK (best_time_ms > 0),
+  updated_at_ms INTEGER NOT NULL,
+  PRIMARY KEY (period_kind, period_start_ms, telegram_id)
+);
+CREATE INDEX IF NOT EXISTS idx_nbg_london_period_ranks
+  ON nbg_london_period_scores (period_kind, period_start_ms, total_xp DESC, best_time_ms ASC);
+
+-- The existing Arcade midnight-UTC Worker cron freezes winner rosters and
+-- settles rewards. Closed periods remain retryable until every prize is paid.
+CREATE TABLE IF NOT EXISTS nbg_london_prize_periods (
+  period_kind TEXT NOT NULL CHECK(period_kind IN ('daily','weekly','seasonal')),
+  period_start_ms INTEGER NOT NULL,
+  period_end_ms INTEGER NOT NULL,
+  frozen_at_ms INTEGER NOT NULL,
+  freeze_token TEXT NOT NULL UNIQUE,
+  PRIMARY KEY(period_kind, period_start_ms)
+);
+
+-- An immutable period/rank/player receipt prevents ranking changes across retries.
+CREATE TABLE IF NOT EXISTS nbg_london_prize_awards (
+  event_id TEXT PRIMARY KEY,
+  period_kind TEXT NOT NULL CHECK (period_kind IN ('daily', 'weekly', 'seasonal')),
+  period_start_ms INTEGER NOT NULL,
+  rank INTEGER NOT NULL CHECK (rank BETWEEN 1 AND 3),
+  telegram_id TEXT NOT NULL REFERENCES telegram_users(telegram_id) ON DELETE CASCADE,
+  prize_arcade_xp INTEGER NOT NULL CHECK (prize_arcade_xp > 0),
+  settled_at_ms INTEGER NOT NULL,
+  payout_token TEXT UNIQUE,
+  paid_at_ms INTEGER,
+  UNIQUE (period_kind, period_start_ms, rank),
+  UNIQUE (period_kind, period_start_ms, telegram_id)
+);
+CREATE INDEX IF NOT EXISTS idx_nbg_london_prizes_player ON nbg_london_prize_awards (telegram_id, settled_at_ms);
+
+CREATE INDEX IF NOT EXISTS idx_nbg_london_unpaid_prizes ON nbg_london_prize_awards(paid_at_ms, period_kind, period_start_ms);
