@@ -349,10 +349,21 @@ export default {
     }
     if (isTelegramWebhook && body && response.ok) {
       await repairTelegramRunRuntimeAward(env, body);
-      await projectCloutForAuthenticatedWebhook(env, body, response);
     }
-    if (isMiniAppPetAction && body && response.ok) {
-      await projectCloutForAuthenticatedMiniApp(env, body, response);
+    // Clout is an optional, non-economic projection. Do not hold up the
+    // accepted game /daily or Mini App response to reverify its actor, read D1,
+    // or reproject a daily leaderboard. Cloudflare keeps this task alive after
+    // the response via waitUntil; a missing execution context fails closed.
+    if (response.ok && env?.CHAMPIONSHIP_CLOUT_PILOT_ENABLED === 'true' &&
+        typeof ctx?.waitUntil === 'function') {
+      if (isTelegramWebhook && body) {
+        ctx.waitUntil(projectCloutForAuthenticatedWebhook(env, body, response));
+      } else if (isMiniAppPetAction && body) {
+        ctx.waitUntil(projectCloutForAuthenticatedMiniApp(env, body, response)
+          .catch((error) => console.log('[moonboys-api]', JSON.stringify({
+            event: 'clout_pilot_mini_app_sync_failed', reason: String(error?.message || error),
+          }))));
+      }
     }
 
     return response;
