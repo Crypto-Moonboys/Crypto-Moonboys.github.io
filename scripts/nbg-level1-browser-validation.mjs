@@ -1809,7 +1809,17 @@ for (const mode of ['keyboard', 'touch']) {
     });
   });
   if (mode === 'keyboard') {
-    for (let press = 0; press < 4; press++) await page.keyboard.press('w');
+    // Exercise the real window key handlers synchronously. Browser focus can
+    // move during the lengthy signed-session mock; genuine keyboard startup
+    // and single press behavior is separately tested above.
+    await page.evaluate(() => {
+      for (let press = 0; press < 4; press++) {
+        window.dispatchEvent(new KeyboardEvent('keydown',
+          { key: 'w', code: 'KeyW', bubbles: true, cancelable: true }));
+        window.dispatchEvent(new KeyboardEvent('keyup',
+          { key: 'w', code: 'KeyW', bubbles: true, cancelable: true }));
+      }
+    });
   } else {
     await page.evaluate(() => {
       for (let press = 0; press < 4; press++) {
