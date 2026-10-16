@@ -183,19 +183,32 @@ test('feature code gate OFF permits existing practice records even without migra
   }finally{f.close();}
 });
 
-test('enabled but unmigrated code path fails CLOSED and does not consume a run or award score',async()=>{
+test('enabled but unmigrated code path fails CLOSED at signed run start and rolls back prior session invalidation',async()=>{
   const f=fixture({migrated:false,codeGate:true});
   try{
-    const id=await f.start();
-    now+=120000;
-    const response=await f.finish(id,replayA);
+    const id='917caf90-f17a-45ed-94bc-4d0a17e50193';
+    // Source migration 098 exists; migration 101 does NOT. A previous
+    // unfinished v1 session must not be consumed by a failed v2 challenge
+    // creation, even though /run/start first attempts to invalidate it.
+    f.sql.prepare(
+      'INSERT INTO nbg_london_runs(run_id,telegram_id,started_at_ms,expires_at_ms) VALUES(?,?,?,?)'
+    ).run(id,'100',now,now+1800000);
+    const response=await f.call('/run/start',{});
     assert.equal(response.status,503);
     assert.equal(response.ok,false);
     assert.equal(response.error,'records_unavailable',
-      'missing schema must fail closed before consuming a run');
-    assert.equal(f.sql.prepare('SELECT finished_at_ms FROM nbg_london_runs WHERE run_id=?').get(id).finished_at_ms,null);
+      'missing challenge_seed column must fail closed at run start');
+    const intact=f.sql.prepare(
+      'SELECT run_id,telegram_id,finished_at_ms FROM nbg_london_runs WHERE telegram_id=?'
+    ).all('100');
+    assert.equal(intact.length,1,'transaction must not create a new untrusted session');
+    assert.equal(intact[0].run_id,id);
+    assert.equal(intact[0].telegram_id,'100');
+    assert.equal(intact[0].finished_at_ms,null,
+      'failed start cannot invalidate an existing source session');
     assert.equal(count(f,'nbg_london_records'),0);
     assert.equal(count(f,'nbg_london_period_scores'),0);
+    assert.equal(f.deferred.length,0);
   }finally{f.close();}
 });
 
