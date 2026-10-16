@@ -1,13 +1,15 @@
 import baseWorker, { resolveSubmissionIdentity } from '../leaderboard-worker.js';
 import { handleNbgLondonRecords } from './nbg-london-records.js';
+import { verifyNbgLondonReplay } from './nbg-london-replay.js';
 import { settleNbgLondonDue } from './nbg-london-prizes.js';
 import { withDeploymentProvenance } from '../shared/deployment-provenance.js';
 import { withRegisteredTelegramLinkFallback } from './registered-telegram-link-fallback.js';
 
-// No authoritative NBG gameplay simulator is installed yet. Keeping this
-// code-wired and null prevents administrators mistakenly enabling payouts
-// by flipping environment flags alone. Do not replace with an env boolean.
-const NBG_LONDON_REPLAY_VERIFIER = null;
+// Official XP is independently computed from physical movement replays.
+// Real-money-equivalent shared Arcade XP prizes stay separately code-locked
+// until the owner explicitly approves the beta competition reward release.
+const NBG_LONDON_REPLAY_VERIFIER = verifyNbgLondonReplay;
+const NBG_LONDON_PRIZES_RELEASED = false;
 
 const CANONICAL_GAMES = Object.freeze([
   'snake',
@@ -32,6 +34,7 @@ const leaderboardWorker = {
         database_configured: Boolean(env.DB),
         leaderboard_store_configured: Boolean(env.LEADERBOARD),
         nbg_london_ranked_scoring_available: typeof NBG_LONDON_REPLAY_VERIFIER === 'function',
+        nbg_london_prize_payouts_available: NBG_LONDON_PRIZES_RELEASED,
       }), {
         headers: {
           'Content-Type': 'application/json',
@@ -46,12 +49,18 @@ const leaderboardWorker = {
       DB: withRegisteredTelegramLinkFallback(env.DB),
     };
     if (url.pathname.startsWith('/nbg-london/')) {
-      return handleNbgLondonRecords(request, runtimeEnv, resolveSubmissionIdentity, NBG_LONDON_REPLAY_VERIFIER);
+      return handleNbgLondonRecords(request, {
+        ...runtimeEnv,
+        NBG_LONDON_PRIZES_ENABLED: NBG_LONDON_PRIZES_RELEASED ?
+          env.NBG_LONDON_PRIZES_ENABLED : 'false',
+        NBG_LONDON_SCORE_AUTHORITY_ENABLED: NBG_LONDON_PRIZES_RELEASED ?
+          env.NBG_LONDON_SCORE_AUTHORITY_ENABLED : 'false',
+      }, resolveSubmissionIdentity, NBG_LONDON_REPLAY_VERIFIER);
     }
     return baseWorker.fetch(request, runtimeEnv, context);
   },
   async scheduled(event, env, context) {
-    if (event.cron === '0 0 * * *' &&
+    if (event.cron === '0 0 * * *' && NBG_LONDON_PRIZES_RELEASED &&
         typeof NBG_LONDON_REPLAY_VERIFIER === 'function' &&
         env.NBG_LONDON_PRIZES_ENABLED === 'true' &&
         env.NBG_LONDON_SCORE_AUTHORITY_ENABLED === 'true') {

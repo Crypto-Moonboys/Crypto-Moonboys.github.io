@@ -275,7 +275,7 @@ assert.equal(
   'standalone Level 1 runtime must expose a render-only eased vertical jump camera'
 );
 assert.equal(
-  /function render\(time\)\s*\{\s*ctx\.clearRect\(0, 0, WIDTH, HEIGHT\);\s*ctx\.fillStyle = '#0076fc';\s*ctx\.fillRect\(0, 0, WIDTH, HEIGHT\);\s*ctx\.save\(\);\s*ctx\.translate\(0, Math\.round\(cameraY\)\);\s*drawWorld\(\);\s*drawCoins\(time\);\s*drawSecretCoins\(time\);\s*drawObjects\(\);\s*drawEnemies\(time\);\s*drawParachuteRats\(time\);\s*drawPlayer\(\);\s*ctx\.restore\(\);\s*drawSpeedrunHud\(time\);\s*drawSecretNotification\(time\);\s*drawRewardNotification\(time\);\s*drawOverlay\(\);/.test(runtimeSource),
+  /function render\(time\)\s*\{\s*ctx\.clearRect\(0, 0, WIDTH, HEIGHT\);\s*ctx\.fillStyle = '#0076fc';\s*ctx\.fillRect\(0, 0, WIDTH, HEIGHT\);\s*ctx\.save\(\);\s*ctx\.translate\(0, Math\.round\(cameraY\)\);\s*drawWorld\(\);\s*drawCoins\(time\);\s*drawSecretCoins\(time\);\s*drawObjects\(\);\s*drawEnemies\(time\);\s*drawParachuteRats\(time\);\s*drawPlayer\(\);\s*ctx\.restore\(\);\s*drawSpeedrunHud\(runElapsedMs\);\s*drawSecretNotification\(runElapsedMs\);\s*drawRewardNotification\(runElapsedMs\);\s*drawOverlay\(\);/.test(runtimeSource),
   true,
   'standalone Level 1 render must wrap gameplay drawing in a positive rounded cameraY transform while leaving the overlay unshifted'
 );
@@ -784,7 +784,7 @@ assert.ok(
   runtimeSource.includes('var RAT_SHEET_FRAMES = 25') &&
   runtimeSource.includes('var RAT_RENDER_WIDTH = 50') &&
   runtimeSource.includes('var RAT_RENDER_HEIGHT = 60') &&
-  runtimeSource.includes("Math.random() < 0.5 ? 'ratBladeFlurry' : 'ratViperPounce'") &&
+  runtimeSource.includes("nextRunRandom() < 0.5 ? 'ratBladeFlurry' : 'ratViperPounce'") &&
   runtimeSource.includes('var ratFrameWidth = image.naturalWidth / RAT_SHEET_COLUMNS') &&
   runtimeSource.includes('var ratFrameHeight = image.naturalHeight / RAT_SHEET_ROWS'),
   'rat must render at 70% runner size from 5x5 frames and choose random attacks'
@@ -1319,7 +1319,7 @@ assert.ok(
   runtimeSource.includes('var solids = [floor].concat(platforms, crates)') &&
   runtimeSource.includes('player.x = crate.x - player.w') &&
   runtimeSource.includes('player.x = crate.x + crate.w') &&
-  runtimeSource.includes('var roll = Math.min(pool.length - 1, Math.floor(Math.random() * pool.length))') &&
+  runtimeSource.includes('var roll = Math.min(pool.length - 1, Math.floor(nextRunRandom() * pool.length))') &&
   runtimeSource.includes("new CustomEvent('nbg-reward-found'"),
   'crates must have real solid collisions and each reward box must roll on collection'
 );
@@ -1356,8 +1356,7 @@ await page.waitForFunction(() => {
   return state.player.grounded && Math.abs(state.player.y - (state.crates[0].y - state.player.h)) < 2;
 }, null, { timeout: 2500 });
 
-// Exercise independent random payouts for a mystery and a star box.
-await page.evaluate(() => { window.__rewardRandomOriginal = Math.random; Math.random = () => 0; });
+// Exercise deterministic seeded reward pools; overriding Math.random must not change ranked gameplay.
 const beforeMystery = await page.evaluate(() => {
   const state = window.NBGLevel1State;
   const box = state.rewardBoxes.find((candidate) => candidate.type === 'mystery' && !candidate.opened);
@@ -1370,9 +1369,15 @@ const beforeMystery = await page.evaluate(() => {
 await page.waitForFunction((x) =>
   window.NBGLevel1State.rewardBoxes.some((box) => box.x === x && box.opened),
   beforeMystery.x, { timeout: 2500 });
-assert.equal(await page.evaluate(() => window.NBGLevel1State.xp), beforeMystery.xp + 100,
-  'mystery boxes must award randomly selected XP');
-await page.evaluate(() => { Math.random = () => 0.5; });
+const mysteryResult = await page.evaluate(() => ({
+  xp: window.NBGLevel1State.xp,
+  reward: window.NBGLevel1State.rewardBoxes.find(box =>
+    box.type === 'mystery' && box.opened)?.reward,
+}));
+assert.ok(mysteryResult.reward &&
+  [0, 100, 250, 500].includes(mysteryResult.reward.xp) &&
+  mysteryResult.xp === beforeMystery.xp + mysteryResult.reward.xp,
+  'mystery box must award exactly its seeded reward');
 const beforeStar = await page.evaluate(() => {
   const state = window.NBGLevel1State;
   const box = state.rewardBoxes.find((candidate) => candidate.type === 'star' && !candidate.opened);
@@ -1389,15 +1394,18 @@ const starResult = await page.evaluate(() => ({
   xp: window.NBGLevel1State.xp,
   banner: window.NBGLevel1State.rewardNotificationText,
   mysteryOpened: window.NBGLevel1State.rewardBoxes[0].opened,
-  starOpened: window.NBGLevel1State.rewardBoxes[1].opened
+  starOpened: window.NBGLevel1State.rewardBoxes[1].opened,
+  reward: window.NBGLevel1State.rewardBoxes[1].reward,
 }));
-assert.equal(starResult.xp, beforeStar.xp + 1000, 'star box must roll its own independent reward pool');
-assert.ok(starResult.banner.includes('STAR BOX +1000 XP'), 'the randomly selected reward must be displayed');
+assert.ok(starResult.reward &&
+  [0, 500, 750, 1000].includes(starResult.reward.xp) &&
+  starResult.xp === beforeStar.xp + starResult.reward.xp,
+  'star box must award exactly its seeded reward');
+assert.ok(starResult.banner.includes('STAR BOX'), 'the seeded reward must be displayed');
 assert.equal(starResult.mysteryOpened && starResult.starOpened, true, 'collected boxes stay opened in a run');
 await page.waitForTimeout(100);
 assert.equal(await page.evaluate(() => window.NBGLevel1State.xp), starResult.xp,
   'opened boxes must not pay the same reward twice');
-await page.evaluate(() => { Math.random = window.__rewardRandomOriginal; });
 await page.evaluate(() => window.NBGLevel1Runtime.reset());
 assert.equal(await page.evaluate(() =>
   window.NBGLevel1State.rewardBoxes.every((box) => !box.opened && box.reward == null)), true,

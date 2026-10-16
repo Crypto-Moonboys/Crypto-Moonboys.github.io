@@ -171,6 +171,27 @@ try {
   delete env.NBG_LONDON_PRIZES_ENABLED;
   delete env.NBG_LONDON_SCORE_AUTHORITY_ENABLED;
 
+  // A verified user cannot stockpile several unfinished sessions and use
+  // one captured replay to multiply competition XP across receipts.
+  const oldSession = await api('/nbg-london/run/start', { telegram_auth: { id: '100' } });
+  const activeSession = await api('/nbg-london/run/start', { telegram_auth: { id: '100' } });
+  assert.equal(oldSession.status, 200);
+  assert.equal(activeSession.status, 200);
+  fakeNow += 150000;
+  const oldFinish = await api('/nbg-london/run/finish', {
+    telegram_auth: { id: '100' }, run_id: oldSession.run_id,
+    complete: true, time_ms: 150000, xp: 0, coins: 0, secret_coins: 0
+  });
+  assert.equal(oldFinish.status, 409,
+    'new ranked start must cancel older unsubmitted receipts for this player');
+  const currentFinish = await api('/nbg-london/run/finish', {
+    telegram_auth: { id: '100' }, run_id: activeSession.run_id,
+    complete: true, time_ms: 150000, xp: 0, coins: 0, secret_coins: 0
+  });
+  assert.equal(currentFinish.status, 200,
+    'the latest session is allowed to finish after replacing the old one');
+  fakeNow += 1000;
+
   async function submit(id, timeMs, xp) {
     const started = await api('/nbg-london/run/start', { telegram_auth: { id } });
     assert.equal(started.status, 200, 'linked Telegram player may start');
