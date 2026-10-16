@@ -221,6 +221,13 @@
     var parachuteSpawnCount = 0;
     var gameOver = false;
     var runSequence = 0;
+    // Same seeded gameplay randomness as the Worker replay authority.
+    // Visual-only animation timing may differ, physics and rewards may not.
+    var runRandomState = 0x9e3779b9;
+    function nextRunRandom() {
+      runRandomState = (Math.imul(runRandomState, 1664525) + 1013904223) >>> 0;
+      return runRandomState / 4294967296;
+    }
 
     var player = {
       x: 64,
@@ -657,7 +664,7 @@
             { type: 'xp', amount: 1000 }, { type: 'health', amount: 2 }] :
           [{ type: 'xp', amount: 100 }, { type: 'xp', amount: 250 },
             { type: 'xp', amount: 500 }, { type: 'health', amount: 1 }];
-        var roll = Math.min(pool.length - 1, Math.floor(Math.random() * pool.length));
+        var roll = Math.min(pool.length - 1, Math.floor(nextRunRandom() * pool.length));
         var reward = pool[roll];
         var earnedXp = 0;
         var healed = 0;
@@ -764,16 +771,16 @@
           landedCount < PARACHUTE_MAX_LANDED &&
           player.x > 350 && player.x < WORLD_WIDTH - 250) {
         var variants = ['parachuteRatA', 'parachuteRatB', 'parachuteRatC'];
-        var variant = variants[Math.floor(Math.random() * variants.length)];
-        var drift = (Math.random() * 2 - 1) * 90;
+        var variant = variants[Math.floor(nextRunRandom() * variants.length)];
+        var drift = (nextRunRandom() * 2 - 1) * 90;
         parachuteRats.push({
           x: clamp(player.x + drift, 28, WORLD_WIDTH - 60),
           y: -110, w: 28, h: 42, variant: variant,
-          swayPhase: Math.random() * Math.PI * 2, vx: 0, age: 0
+          swayPhase: nextRunRandom() * Math.PI * 2, vx: 0, age: 0
         });
         parachuteSpawnCount += 1;
         nextParachuteAt = runElapsedMs + PARACHUTE_SPAWN_MIN_MS +
-          Math.random() * PARACHUTE_SPAWN_JITTER_MS;
+          nextRunRandom() * PARACHUTE_SPAWN_JITTER_MS;
       }
       for (var i = parachuteRats.length - 1; i >= 0; i -= 1) {
         var rat = parachuteRats[i];
@@ -800,7 +807,7 @@
             enemies.push({
               type: rat.variant === 'parachuteRatC' ? 'turquoiseRat' : 'brownRat',
               x: rat.x, y: FLOOR_Y - 42, w: 28, h: 42,
-              vx: Math.random() < 0.5 ? -1.1 : 1.1,
+              vx: nextRunRandom() < 0.5 ? -1.1 : 1.1,
               min: Math.max(0, rat.x - 65), max: Math.min(WORLD_WIDTH - 28, rat.x + 65),
               spawnedByParachute: true, spawnedAt: runElapsedMs
             });
@@ -851,9 +858,9 @@
           var ratClose = Math.abs(player.x - enemy.x) < RAT_ATTACK_RANGE && Math.abs(player.y - enemy.y) < 65;
           if (ratClose && time >= (enemy.nextAttackAt || 0) && time >= (enemy.attackUntil || 0)) {
             enemy.attackType = enemy.type === 'turquoiseRat' ?
-              (Math.random() < 0.5 ? 'turquoiseRatKick' : 'turquoiseRatPunch') :
+              (nextRunRandom() < 0.5 ? 'turquoiseRatKick' : 'turquoiseRatPunch') :
               enemy.type === 'brownRat' ? 'brownRatPunch' :
-              (Math.random() < 0.5 ? 'ratBladeFlurry' : 'ratViperPounce');
+              (nextRunRandom() < 0.5 ? 'ratBladeFlurry' : 'ratViperPounce');
             enemy.attackStartedAt = time;
             enemy.attackUntil = time + RAT_ATTACK_DURATION_MS;
             enemy.nextAttackAt = time + RAT_ATTACK_COOLDOWN_MS;
@@ -1367,9 +1374,9 @@
       drawParachuteRats(time);
       drawPlayer();
       ctx.restore();
-      drawSpeedrunHud(time);
-      drawSecretNotification(time);
-      drawRewardNotification(time);
+      drawSpeedrunHud(runElapsedMs);
+      drawSecretNotification(runElapsedMs);
+      drawRewardNotification(runElapsedMs);
       drawOverlay();
     }
 
@@ -1389,11 +1396,11 @@
           render(time);
           return;
         }
-        updateCoins(time);
-        updateSecretCoins(time);
-        updateRewardBoxes(time);
-        updateEnemies(time, dt);
-        updateParachuteRats(time, dt);
+        updateCoins(runElapsedMs);
+        updateSecretCoins(runElapsedMs);
+        updateRewardBoxes(runElapsedMs);
+        updateEnemies(runElapsedMs, dt);
+        updateParachuteRats(runElapsedMs, dt);
         updateHazards();
         updateLevel();
         updateCamera();
@@ -1486,6 +1493,7 @@
       runElapsedMs = 0;
       runReplayFrames = [];
       replayInvalid = false;
+      runRandomState = 0x9e3779b9;
       speedrunBonusXp = 0;
       comboCount = 0;
       comboExpiresAt = 0;
@@ -1602,6 +1610,7 @@
       var sequence = runSequence;
       runReplayFrames = [];
       replayInvalid = false;
+      runRandomState = 0x9e3779b9;
       lastTime = 0;
       updateHud();
       window.dispatchEvent(new CustomEvent('nbg-level-started', { detail: { level: 'london-level-1' } }));
