@@ -186,6 +186,7 @@
     var waitingForFirstInput = false;
     var running = false;
     var initPromise = null;
+    var pendingRunStartPromise = null;
     var pendingInitialInput = null;
     var initialInputReplay = null;
     var completionAnimationActive = false;
@@ -474,7 +475,7 @@
         e.preventDefault();
         if (down) {
           queueInitialInput(getControlForCode(e.code));
-          beginGameplay();
+          beginGameplay(getControlForCode(e.code));
         }
       }
     }
@@ -1476,6 +1477,7 @@
 
     function resetRun() {
       runSequence += 1;
+      pendingRunStartPromise = null;
       running = false;
       gameOver = false;
       waitingForFirstInput = true;
@@ -1598,10 +1600,7 @@
       return initPromise;
     }
 
-    function beginGameplay() {
-      if (running) return Promise.resolve(window.NBGLevel1State);
-      if (!assetsLoaded) return init().then(beginGameplay);
-      if (complete || gameOver) return Promise.resolve(window.NBGLevel1State);
+    function startSimulation() {
       initialInputReplay = pendingInitialInput;
       pendingInitialInput = null;
       waitingForFirstInput = false;
@@ -1616,6 +1615,34 @@
       window.dispatchEvent(new CustomEvent('nbg-level-started', { detail: { level: 'london-level-1' } }));
       requestAnimationFrame(function (time) { tick(time, sequence); });
       return Promise.resolve(window.NBGLevel1State);
+    }
+
+    function beginGameplay(control) {
+      if (running) return Promise.resolve(window.NBGLevel1State);
+      if (!assetsLoaded) return init().then(function () { return beginGameplay(control); });
+      if (complete || gameOver) return Promise.resolve(window.NBGLevel1State);
+      if (pendingRunStartPromise) return pendingRunStartPromise;
+      // A fast reset can queue a new /run/start behind a still-unsettled
+      // request for this SAME Telegram owner. Hold simulation at elapsed 0
+      // until its actual signed server session exists. Guest/ordinary starts
+      // retain the original immediate play path.
+      var beforePlay = window.NBGLondonBeforeQueuedRun;
+      var preparation = typeof beforePlay === 'function' ? beforePlay() : null;
+      if (!preparation || typeof preparation.then !== 'function')
+        return startSimulation();
+      if (control && !pendingInitialInput) pendingInitialInput = { control: control };
+      var capturedSequence = runSequence;
+      var wait = Promise.resolve(preparation).catch(function () {
+        // Auth/network failure leaves gameplay playable as practice, without
+        // claiming an official score. Client displays the ranked error.
+      }).then(function () {
+        if (capturedSequence !== runSequence || complete || gameOver)
+          return window.NBGLevel1State;
+        if (pendingRunStartPromise === wait) pendingRunStartPromise = null;
+        return startSimulation();
+      });
+      pendingRunStartPromise = wait;
+      return wait;
     }
 
     window.addEventListener('keydown', function (e) { onKey(e, true); });
@@ -1641,7 +1668,7 @@
           if (active) {
             if (control === 'jump') pendingJumpPresses = Math.min(2, pendingJumpPresses + 1);
             queueInitialInput(control);
-            beginGameplay();
+            beginGameplay(control);
           }
         }
       }
