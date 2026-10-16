@@ -127,7 +127,7 @@ export async function fingerprintNbgLondonReplay(replay, effectiveInputMasks = n
   if (effectiveInputMasks !== null) {
     if (!(effectiveInputMasks instanceof Uint8Array) ||
         effectiveInputMasks.length !== controls.length ||
-        effectiveInputMasks.some(mask => !Number.isInteger(mask) || mask < 0 || mask > 15))
+        effectiveInputMasks.some(mask => !Number.isInteger(mask) || mask < 0 || mask > 31))
       throw new Error('nbg_replay_invalid_canonical_actions');
     controls.set(effectiveInputMasks);
   }
@@ -209,11 +209,19 @@ export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, d
     consumedFrames++;
     const step=dt/STEP;
     const left=!!(mask&1), right=!!(mask&2), jump=!!(mask&4), spray=!!(mask&8);
-    let effectiveMask = mask & 3; // directional inputs affect force/facing
+    const beforeInputVx=p.vx;
     if (left) {p.vx-=0.74*step;p.facing=-1;}
     if (right) {p.vx+=0.74*step;p.facing=1;}
     if (!left && !right) p.vx*=Math.pow(0.78,step);
     p.vx=clamp(p.vx,-MAX_SPEED,MAX_SPEED);
+    // Treat the output of the physics update as authoritative, NOT the raw
+    // directional mask. Pressing Right at max speed and pressing Left+Right
+    // at max speed can cause identical motion/facing; they MUST hash alike.
+    // Bits 0/1 = net horizontal velocity change, bit 4 = actual facing.
+    // Other bits only encode a jump/spray that really executed.
+    let effectiveMask = p.vx>beforeInputVx+1e-9 ? 2 :
+      p.vx<beforeInputVx-1e-9 ? 1 : 0;
+    if(p.facing>0) effectiveMask|=16;
     if (jump) {
       if (p.grounded) {p.vy=-11.4;p.grounded=false;jumps=1;effectiveMask|=4;}
       else if(jumps===1) {
@@ -229,6 +237,9 @@ export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, d
     if(sprayTimer>0) sprayTimer-=dt;
     if(p.invuln>0) p.invuln-=dt;
     if(spray && sprayTimer<=0) {sprayTimer=230;effectiveMask|=8;}
+    // Jump can update facing on double-jump lateral impulse; capture the
+    // resulting facing after ALL input-triggered physics transitions.
+    effectiveMask=(effectiveMask & ~16) | (p.facing>0?16:0);
     effectiveInputMasks[consumedFrames-1]=effectiveMask;
 
     const beforeX=p.x;
