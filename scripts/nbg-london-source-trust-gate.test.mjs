@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
 import { DatabaseSync } from 'node:sqlite';
 import { test } from 'node:test';
 
@@ -23,8 +24,8 @@ test('NBG v1 source remains server replay-scored, not raw client XP', () => {
 
 test('prizes and Championship Clout remain independent and locked', () => {
   assert.match(entry, /const NBG_LONDON_PRIZES_RELEASED = false/);
-  assert.doesNotMatch(clout, /nbg_london_verified_runs|verified_nbg_replay_v1|verified_nbg_replay_v2|sourceKind === 'nbg_london'/,
-    'v1 replay finishes must not silently promote to Championship sources');
+  assert.doesNotMatch(clout, /\bnbg[_-]london\b/i,
+    'no NBG source may enter PILOT_SOURCE_POLICY, SOURCE_QUERIES or effects before an independently approved verifier');
   assert.doesNotMatch(source, /CHAMPIONSHIP_CLOUT_NBG_ENABLED|CHAMPIONSHIP_CLOUT_PILOT_ENABLED/,
     'an NBG game finish must not emit Clout without independently verified evidence');
   assert.doesNotMatch(source, /UPDATE\s+arcade_xp_wallets|UPDATE\s+telegram_users\s+SET\s+xp/i,
@@ -84,4 +85,33 @@ test('the rejected draft v2 schema is not an approved production migration', () 
   assert.doesNotMatch(contract, /101_nbg_london_verified_run_receipts\.sql/);
   assert.doesNotMatch(manifest, /101_nbg_london_verified_run_receipts\.sql/);
   assert.doesNotMatch(entry, /NBG_VERIFIED_RUN_RECEIPTS_RELEASED\s*=\s*true/);
+});
+
+
+test('Arcade scope runs source-trust regressions for every relevant Worker/D1/Clout change', () => {
+  // Exercise the actual changed-file scope matcher rather than merely
+  // trusting that this script happens to be registered in ci:arcade.
+  const watched = [
+    'workers/leaderboard/nbg-london-replay.js',
+    'workers/leaderboard/nbg-london-records.js',
+    'workers/leaderboard/nbg-london-run-challenge.js',
+    'workers/leaderboard/deployment-entry.js',
+    'workers/moonboys-api/championship/clout-pilot.js',
+    'workers/moonboys-api/migrations/098_nbg_london_records.sql',
+    'workers/moonboys-api/migrations/099_nbg_london_competition_prizes.sql',
+    'workers/moonboys-api/migrations/101_nbg_london_verified_run_receipts.sql',
+    'workers/moonboys-api/migrations/100_championship_clout_foundation.sql',
+    'workers/moonboys-api/schema.sql',
+    'scripts/nbg-london-source-trust-gate.test.mjs',
+    'scripts/ci-change-scope.mjs',
+  ];
+  for (const path of watched) {
+    const output = execFileSync(process.execPath,
+      ['scripts/ci-change-scope.mjs', 'arcade'], {
+        encoding: 'utf8',
+        env: { ...process.env, CHANGED_FILES: path, GITHUB_OUTPUT: '' },
+      });
+    assert.match(output, /should_run=true/,
+      'a PR changing only ' + path + ' must run source-trust and Arcade tests');
+  }
 });
