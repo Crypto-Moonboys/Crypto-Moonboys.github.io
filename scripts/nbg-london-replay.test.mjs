@@ -186,7 +186,7 @@ assert.equal(challengedPhysicalRun.result.valid,true);
 assert.ok(challengedPhysicalRun.result.xp>0);
 const replayUnderDifferentGate=await verifyNbgLondonReplay({
   runId:'aabbccdd-aabb-4aab-8aab-aabbccddaabb',
-  replay:challengedPhysicalRun.replay,challengeSeed:seedAllRight^1,
+  replay:challengedPhysicalRun.replay,challengeSeed:(seedAllRight^1)>>>0,
   startedAtMs:1000000,now:1000000+challengedPhysicalRun.count*33,
   debug:true,
 });
