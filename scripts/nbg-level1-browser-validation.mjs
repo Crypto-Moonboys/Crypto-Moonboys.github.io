@@ -1820,9 +1820,21 @@ for (const mode of ['keyboard', 'touch']) {
         window.__nbgReleaseQueuedStart = resolve;
       });
     });
+    let immediateQueued;
     if (mode === 'keyboard') {
-      for (let press = 0; press < 4; press++)
-        await queuedPage.keyboard.press('w');
+      // Read the actual window handler counter synchronously before blur
+      // or other browser lifecycle processing can clear held game inputs.
+      immediateQueued = await queuedPage.evaluate(() => {
+        const counts = [];
+        for (let press = 0; press < 4; press++) {
+          window.dispatchEvent(new KeyboardEvent('keydown',
+            { key: 'w', code: 'KeyW', bubbles: true, cancelable: true }));
+          counts.push(window.NBGLevel1State.pendingJumpPresses);
+          window.dispatchEvent(new KeyboardEvent('keyup',
+            { key: 'w', code: 'KeyW', bubbles: true, cancelable: true }));
+        }
+        return counts;
+      });
     } else {
       await queuedPage.evaluate(() => {
         for (let press = 0; press < 4; press++) {
@@ -1842,8 +1854,11 @@ for (const mode of ['keyboard', 'touch']) {
       complete: window.NBGLevel1State.complete
     }));
     assert.equal(queued.running, false, mode + ' cannot start before server handshake');
+    if (mode === 'keyboard') assert.deepEqual(immediateQueued, [1,2,3,3],
+      'keyboard handler must retain first three distinct press edges');
     assert.equal(queued.pending, 3,
-      mode + ' should store three distinct Jump presses: ' + JSON.stringify(queued));
+      mode + ' should store three distinct Jump presses: ' +
+      JSON.stringify({ ...queued, immediateQueued }));
     await queuedPage.evaluate(() => window.__nbgReleaseQueuedStart());
     await queuedPage.waitForFunction(() => window.NBGLevel1State.running &&
       window.NBGLevel1State.jumpsUsed === 3, null, { timeout: 1800 });
