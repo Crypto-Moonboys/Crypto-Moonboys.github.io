@@ -2,8 +2,8 @@
 //
 // This module runs in the Worker, not in the browser. It derives game XP from
 // physical replay inputs rather than trusting client-supplied counters.
-// Only deterministic course rewards count toward official XP. Cosmetic
-// animation and random parachute enemies do not award ranked XP.
+// Browser and Worker share the same seeded reward/parachute sequence so
+// official XP is computed from the same deterministic gameplay events.
 // Arcade prize settlement remains separately locked pending approval.
 
 const STEP = 1000 / 60;
