@@ -8,6 +8,14 @@
 ALTER TABLE nbg_london_runs ADD COLUMN challenge_seed INTEGER;
 ALTER TABLE nbg_london_runs ADD COLUMN challenge_version INTEGER NOT NULL DEFAULT 1
   CHECK(challenge_version IN (1,2));
+-- Each 32-bit challenge seed defines one unique ordered mandatory input
+-- signature across the real 32 course checkpoints. Never issue the same seed
+-- to two sessions (including across different Telegram owners). Collisions
+-- fail closed at the existing transactional signed /run/start; they do not
+-- authorize a second trusted receipt. This is NOT anti-bot attestation.
+CREATE UNIQUE INDEX IF NOT EXISTS idx_nbg_london_challenge_v2_seed
+  ON nbg_london_runs(challenge_seed)
+  WHERE challenge_version=2 AND challenge_seed IS NOT NULL;
 CREATE UNIQUE INDEX IF NOT EXISTS idx_nbg_london_runs_id_owner
   ON nbg_london_runs(run_id,telegram_id);
 
