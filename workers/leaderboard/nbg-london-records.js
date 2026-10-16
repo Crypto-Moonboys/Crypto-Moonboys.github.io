@@ -71,26 +71,46 @@ export async function handleNbgLondonRecords(request, env, verifyIdentity) {
       const start = periodStart(Date.now(), kind);
       const payoutEnabled = env.NBG_LONDON_PRIZES_ENABLED === 'true' &&
         env.NBG_LONDON_SCORE_AUTHORITY_ENABLED === 'true';
-      const result = await env.DB.prepare(
-        `SELECT s.display_name AS name, s.total_xp, s.trusted_xp,
-           s.verified_run_count, s.run_count, s.best_time_ms
-         FROM nbg_london_period_scores s
-         LEFT JOIN telegram_anticheat_state a ON a.telegram_id = s.telegram_id
-         WHERE s.period_kind = ? AND s.period_start_ms = ?
-           AND COALESCE(a.is_blocked, 0) = 0
-         ORDER BY s.total_xp DESC, s.best_time_ms ASC, s.telegram_id ASC LIMIT 20`
-      ).bind(kind, start).all();
+      // Practice/overall totals and verified prize standings are distinct:
+      // only the latter uses the identical filter and sort order as freezePeriod.
+      const [result, verified] = await Promise.all([
+        env.DB.prepare(
+          `SELECT s.display_name AS name, s.total_xp, s.run_count, s.best_time_ms
+           FROM nbg_london_period_scores s
+           LEFT JOIN telegram_anticheat_state a ON a.telegram_id = s.telegram_id
+           WHERE s.period_kind = ? AND s.period_start_ms = ?
+             AND COALESCE(a.is_blocked, 0) = 0
+           ORDER BY s.total_xp DESC, s.best_time_ms ASC, s.telegram_id ASC LIMIT 20`
+        ).bind(kind, start).all(),
+        env.DB.prepare(
+          `SELECT s.display_name AS name, s.trusted_xp AS total_xp,
+                  s.verified_run_count AS run_count, s.best_time_ms
+           FROM nbg_london_period_scores s
+           LEFT JOIN telegram_anticheat_state a ON a.telegram_id = s.telegram_id
+           WHERE s.period_kind = ? AND s.period_start_ms = ?
+             AND s.verified_run_count > 0 AND s.trusted_xp > 0
+             AND COALESCE(a.is_blocked, 0) = 0
+           ORDER BY s.trusted_xp DESC, s.best_time_ms ASC, s.telegram_id ASC LIMIT 20`
+        ).bind(kind, start).all(),
+      ]);
+      const practiceStandings = (result.results || []).map((row, index) => ({
+        rank: index + 1, name: row.name, total_xp: row.total_xp,
+        run_count: row.run_count, best_time_ms: row.best_time_ms,
+        prize_eligible: false, prize_rank: null,
+      }));
+      const verifiedStandings = (verified.results || []).map((row, index) => ({
+        rank: index + 1, name: row.name, total_xp: row.total_xp,
+        run_count: row.run_count, best_time_ms: row.best_time_ms,
+        prize_eligible: payoutEnabled && index < 3,
+        prize_rank: index < 3 ? index + 1 : null,
+      }));
       return json(request, {
         ok: true, period: kind, start_ms: start,
         end_ms: start + (kind === 'daily' ? 86400000 : kind === 'weekly' ? 604800000 : 7776000000),
         prizes: PRIZE_ARCADE_XP[kind],
         payout_enabled: payoutEnabled,
-        standings: (result.results || []).map((row, index) => ({
-          rank: index + 1, name: row.name, total_xp: row.total_xp,
-          run_count: row.run_count, best_time_ms: row.best_time_ms,
-          prize_eligible: payoutEnabled && index < 3 && row.trusted_xp > 0 &&
-            row.verified_run_count > 0,
-        })),
+        ranking_basis: payoutEnabled ? 'trusted_xp' : 'practice_xp',
+        standings: payoutEnabled ? verifiedStandings : practiceStandings,
       });
     }
     if (request.method === 'GET' && url.pathname === PREFIX + '/leaderboard') {
