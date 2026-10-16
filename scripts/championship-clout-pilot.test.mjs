@@ -7,6 +7,7 @@ import { readFileSync } from 'node:fs';
 import { DatabaseSync } from 'node:sqlite';
 import {
   PILOT_REPROJECT_SQL, syncCloutPilotForVerifiedOwner, normalizeDeadRunSkill,
+  CLOUT_DEAD_RUN_MIDNIGHT_GRACE_MS,
 } from '../workers/moonboys-api/championship/clout-pilot.js';
 import {
   CLOUT_POLICY_VERSION, projectCloutDay,
@@ -116,6 +117,7 @@ function addDeadRun(f, options = {}) {
     endedAt = NOON, ranked = 1, status = 'finished',
     suspicious = 0, distance = 2000, survival = 600, kills = 5,
     crates = 3, shoves = 1, scoreOverride = null, xpOverride = null,
+    difficultyXpBasis = 0, difficultyBestBasis = 0, difficultyRunsBasis = 0,
     arcadeReceipt = true, arcadeReason = 'verified_gps_run',
     statsApplied = 1, arcadeApplied = 1, hordeApplied = 1,
     receiptOwner = owner, receiptRunId = id, receiptScore = null,
@@ -124,7 +126,10 @@ function addDeadRun(f, options = {}) {
   const score = scoreRun({
     verified_distance_m: distance, survival_seconds: survival,
     kills, crates, shove_count: shoves,
-  }, difficultyForPlayer({ xp_total: 0, best_survival_seconds: 0, runs_total: 0 }));
+  }, difficultyForPlayer({
+    xp_total: difficultyXpBasis, best_survival_seconds: difficultyBestBasis,
+    runs_total: difficultyRunsBasis,
+  }));
   const finalScore = scoreOverride ?? score.score;
   const finalXp = xpOverride ?? Math.min(275, Math.floor(
     score.xp * (arcadeReason === 'verified_gps_horde_event' ? 1.1 : 1)
@@ -134,12 +139,16 @@ function addDeadRun(f, options = {}) {
     'INSERT INTO dead_run_sessions(',
     'session_id,telegram_id,day_key,status,ranked,seed,started_at,ended_at,',
     'last_sample_at_ms,verified_distance_m,suspicious_points,survival_seconds,',
-    'score,xp_awarded,kills,crates,shove_count,player_stats_applied,arcade_xp_applied,horde_applied',
-    ') VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)'
+    'score,xp_awarded,kills,crates,shove_count,',
+    'difficulty_xp_basis,difficulty_best_basis,difficulty_runs_basis,',
+    'player_stats_applied,arcade_xp_applied,horde_applied',
+    ') VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)'
   ].join(' ')).run(
     id,owner,startedAt.slice(0,10),status,ranked,123,startedAt,endedAt,
     Date.parse(endedAt) - 1000,distance,suspicious,survival,
-    finalScore,finalXp,kills,crates,shoves,statsApplied,arcadeApplied,hordeApplied,
+    finalScore,finalXp,kills,crates,shoves,
+    difficultyXpBasis,difficultyBestBasis,difficultyRunsBasis,
+    statsApplied,arcadeApplied,hordeApplied,
   );
   if (arcadeReceipt) f.sql.prepare([
     'INSERT INTO arcade_progression_events',
