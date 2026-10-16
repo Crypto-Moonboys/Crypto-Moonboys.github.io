@@ -449,8 +449,14 @@
     }
 
     function queueInitialInput(control) {
-      if (assetsLoaded || running || !control) return;
-      pendingInitialInput = { control: control };
+      if (running || !control) return;
+      // A v2 signed challenge request may outlive a brief S/X, Left, Right,
+      // Jump or touch press. Preserve the *initiating* input through the
+      // asynchronous pre-play handshake even when assets are already loaded,
+      // then replay it exactly once on the first positive-duration tick.
+      // Legacy gameplay retains its existing assets-loading behavior.
+      if (assetsLoaded && window.NBG_CHALLENGE_CLIENT_RELEASED !== true) return;
+      if (!pendingInitialInput) pendingInitialInput = { control: control };
     }
 
     function onKey(e, down) {
