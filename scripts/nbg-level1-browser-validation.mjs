@@ -685,6 +685,38 @@ assert.equal(windowedFullscreenState.ready, true,
 assert.equal(windowedFullscreenState.canvasVisible, true,
   'denied fullscreen must not hide the game canvas');
 
+// Hold Down to look below, then release to restore the ordinary framing.
+// This view-only input must not change physics, score, or start a waiting run.
+await page.keyboard.press('ArrowDown');
+assert.equal(await page.evaluate(() => window.NBGLevel1State.running), false,
+  'look-below alone must not start gameplay');
+await page.keyboard.down('ArrowRight');
+await page.waitForFunction(() => window.NBGLevel1State.running === true);
+await page.keyboard.up('ArrowRight');
+await page.waitForTimeout(170);
+const beforeLook = await page.evaluate(() => ({
+  y: window.NBGLevel1State.cameraY, x: window.NBGLevel1State.player.x,
+  xp: window.NBGLevel1State.xp
+}));
+await page.keyboard.down('ArrowDown');
+await page.waitForFunction(() => window.NBGLevel1State.cameraY < -50, null, { timeout: 3000 });
+const lookingBelow = await page.evaluate(() => ({
+  y: window.NBGLevel1State.cameraY, x: window.NBGLevel1State.player.x,
+  xp: window.NBGLevel1State.xp
+}));
+assert.ok(lookingBelow.y < beforeLook.y - 45,
+  'hold Down must shift the view to expose scenery below the player');
+assert.equal(lookingBelow.x, beforeLook.x, 'looking below must not steer or drop the player');
+assert.equal(lookingBelow.xp, beforeLook.xp, 'camera look must not award XP');
+await page.keyboard.up('ArrowDown');
+await page.waitForFunction(() => window.NBGLevel1State.cameraY > -15, null, { timeout: 3000 });
+// Touch look uses the same render-only control; release restores the camera.
+await page.evaluate(() => window.NBGLevel1Runtime.setTouchControl('look', true));
+await page.waitForFunction(() => window.NBGLevel1State.cameraY < -50, null, { timeout: 3000 });
+await page.evaluate(() => window.NBGLevel1Runtime.setTouchControl('look', false));
+await page.waitForFunction(() => window.NBGLevel1State.cameraY > -15, null, { timeout: 3000 });
+await page.evaluate(() => window.NBGLevel1Runtime.reset());
+
 const preInitMovePage = await openWithDelayedNbgInit(browser, url);
 await preInitMovePage.keyboard.down('ArrowRight');
 await preInitMovePage.keyboard.up('ArrowRight');
