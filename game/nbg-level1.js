@@ -1447,6 +1447,7 @@
       window.NBGLevel1State = {
         get player() { return player; },
         get jumpsUsed() { return jumpsUsed; },
+        get pendingJumpPresses() { return pendingJumpPresses; },
         get coins() { return coins; },
         get secretCoins() { return secretCoins; },
         get secretNotificationUntil() { return secretNotificationUntil; },
