@@ -226,6 +226,12 @@
     var runRandomState = 0x9e3779b9;
     var rankedChallengeSeed = null;
     var rankedChallengeVersion = 1;
+    // v2 ranked replay must satisfy all 32 visible left/right tag prompts.
+    // These are real in-game movement inputs sampled as the player crosses
+    // fixed world coordinates, NOT a detached client 'challenge passed' claim.
+    var rankedChallengeGateIndex = 0;
+    var rankedChallengeGateFailed = false;
+    var activeInputMask = 0;
     var pendingChallengeStart = null;
     var challengeHandshakeComplete = false;
     function nextRunRandom() {
@@ -535,6 +541,8 @@
       var jumpPressed = pendingJumpPresses > 0 || (replay && replay.control === 'jump');
       if (pendingJumpPresses > 0) pendingJumpPresses -= 1;
       var spray = keys.KeyS || keys.KeyX || touch.spray || (replay && replay.control === 'spray');
+      activeInputMask = (left ? 1 : 0) | (right ? 2 : 0) |
+        (jumpPressed ? 4 : 0) | (spray ? 8 : 0);
 
       if (left) {
         player.vx -= RUN_ACCEL * (rankedChallengeVersion === 2 ?
@@ -896,6 +904,21 @@
       }
     }
 
+    function updateChallengeGates() {
+      if (rankedChallengeVersion !== 2 || rankedChallengeGateFailed ||
+          rankedChallengeGateIndex >= 32) return;
+      var targetX = 1900 + rankedChallengeGateIndex * 600;
+      if (player.x < targetX) return;
+      // The FIRST physical crossing freezes the required direction. Press
+      // either LEFT or RIGHT (not both) at the tagged world coordinate.
+      // The Worker independently applies this same transition to saved
+      // seed + actual replay masks before a trusted result can finish.
+      var required = ((rankedChallengeSeed >>> rankedChallengeGateIndex) & 1) ?
+        2 : 1;
+      if ((activeInputMask & 3) !== required) rankedChallengeGateFailed = true;
+      rankedChallengeGateIndex += 1;
+    }
+
     function updateLevel() {
       var allCheckpoints = [checkpoint].concat(courseCheckpoints);
       for (var i = 0; i < allCheckpoints.length; i += 1) {
@@ -956,7 +979,15 @@
       hud.xp.textContent = 'XP ' + xp;
       hud.coins.textContent = 'COINS ' + collected + '/' + coins.length;
       hud.health.textContent = 'HEALTH ' + player.health;
-      hud.state.textContent = complete ? 'LEVEL COMPLETE' : gameOver ? 'GAME OVER' : running ? ((checkpoint.active || courseCheckpoints.some(function (marker) { return marker.active; })) ? 'CHECKPOINT' : 'RUNNING') : WAITING_HUD_TEXT;
+      hud.state.textContent = rankedChallengeVersion === 2 && running ?
+        rankedChallengeGateFailed ? 'TAG MISSED - NOT RANKED' :
+        rankedChallengeGateIndex < 32 ?
+          'TAG ' + (rankedChallengeGateIndex + 1) + '/32: ' +
+            (((rankedChallengeSeed >>> rankedChallengeGateIndex) & 1) ? 'RIGHT' : 'LEFT') :
+          'ALL 32 TAGS COMPLETE' :
+        complete ? 'LEVEL COMPLETE' : gameOver ? 'GAME OVER' : running ?
+          ((checkpoint.active || courseCheckpoints.some(function (marker) { return marker.active; })) ? 'CHECKPOINT' : 'RUNNING') :
+          WAITING_HUD_TEXT;
     }
 
     function drawImageLayer(image, parallax, y, h, fallbackColor) {
@@ -1411,6 +1442,7 @@
         runElapsedMs += frameElapsedMs;
         recordReplayTick(frameElapsedMs, dt);
         updatePlayer(dt);
+        updateChallengeGates();
         if (gameOver) {
           updateHud();
           render(time);
@@ -1464,6 +1496,9 @@
         get assetsLoaded() { return assetsLoaded; },
         get gameVisible() { return gameVisible; },
         get waitingForFirstInput() { return waitingForFirstInput; },
+        get rankedChallengeGateIndex() { return rankedChallengeGateIndex; },
+        get rankedChallengeGateFailed() { return rankedChallengeGateFailed; },
+        get rankedChallengeVersion() { return rankedChallengeVersion; },
         get pendingInitialInput() { return pendingInitialInput; },
         get running() { return running; },
         get completionAnimationActive() { return completionAnimationActive; },
@@ -1516,6 +1551,9 @@
       runRandomState = 0x9e3779b9;
       rankedChallengeSeed = null;
       rankedChallengeVersion = 1;
+      rankedChallengeGateIndex = 0;
+      rankedChallengeGateFailed = false;
+      activeInputMask = 0;
       pendingChallengeStart = null;
       challengeHandshakeComplete = false;
       speedrunBonusXp = 0;
