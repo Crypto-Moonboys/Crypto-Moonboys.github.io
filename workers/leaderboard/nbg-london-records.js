@@ -99,6 +99,7 @@ export async function handleNbgLondonRecords(request, env, verifyIdentity) {
         env.NBG_LONDON_SCORE_AUTHORITY_ENABLED === 'true';
       // Practice/overall totals and verified prize standings are distinct:
       // only the latter uses the identical filter and sort order as freezePeriod.
+      // Telegram ID breaks trusted-XP ties; client-reported practice time cannot.
       // Query only the visible competition basis, never both entire boards.
       const competitionSql = payoutEnabled ?
         `SELECT s.telegram_id, s.display_name AS name, s.trusted_xp AS total_xp,
@@ -107,7 +108,7 @@ export async function handleNbgLondonRecords(request, env, verifyIdentity) {
          LEFT JOIN telegram_anticheat_state a ON a.telegram_id=s.telegram_id
          WHERE s.period_kind=? AND s.period_start_ms=?
            AND s.verified_run_count>0 AND s.trusted_xp>0 AND COALESCE(a.is_blocked,0)=0
-         ORDER BY s.trusted_xp DESC, s.best_time_ms ASC, s.telegram_id ASC` :
+         ORDER BY s.trusted_xp DESC, s.telegram_id ASC` :
         `SELECT s.telegram_id, s.display_name AS name, s.total_xp, s.run_count, s.best_time_ms
          FROM nbg_london_period_scores s
          LEFT JOIN telegram_anticheat_state a ON a.telegram_id=s.telegram_id
