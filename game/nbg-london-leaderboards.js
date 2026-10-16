@@ -86,7 +86,7 @@
         requested.charAt(0).toUpperCase() + requested.slice(1) +
           ' VERIFIED XP prize standings close ' + new Date(result.end_ms).toUTCString() +
           '. Prizes use only verified XP, not practice totals.' :
-        'BETA PAYOUT HOLD — practice XP is not verified for Arcade XP prizes. ' +
+        'LIVE VERIFIED GAME XP — Arcade XP prizes remain disabled during beta. ' +
           'No rewards are scheduled or pending. Current period ends ' +
           new Date(result.end_ms).toUTCString() + '.';
       if (!result.standings.length) {
@@ -280,15 +280,19 @@
         if (current === generation) setStatus('Run not saved: Telegram account changed or login expired.');
         return;
       }
-      setStatus('Submitting completed run for verification…');
+      if (!detail.replay || detail.replay.version !== 1) {
+        setStatus('Run not saved: missing gameplay replay. Reset and play a fresh run.');
+        return;
+      }
+      setStatus('Verifying gameplay against server-side scoring rules…');
       var result = await callJson('/run/finish', {
-        telegram_auth: auth, run_id: session.run_id, complete: true,
-        time_ms: detail.timeMs, xp: detail.xp,
-        coins: detail.coins, secret_coins: detail.secretCoins
+        telegram_auth: auth, run_id: session.run_id,
+        replay: detail.replay
       });
       if (current !== generation) return;
-      setStatus('Saved permanently for ' + result.player + ': ' +
-        formatTime(result.time_ms) + ' · ' + result.xp.toLocaleString() + ' XP');
+      setStatus('Official replay-verified result saved for ' + result.player + ': ' +
+        formatTime(result.time_ms) + ' · ' + result.xp.toLocaleString() +
+        ' verified game XP (may differ from practice HUD XP).');
       loadLeaders();
       loadPersonal();
       loadPrizeStandings();
@@ -407,10 +411,10 @@
       runPromise = null;
       runIdentity = null;
       displayIdentity();
-      setStatus('Fresh beta run ready. Official score saving requires server replay verification.');
+      setStatus('Fresh run ready. Verified Telegram gameplay can now save official leaderboard XP.');
     });
     window.addEventListener('nbg-game-over', function () {
-      setStatus('Game over. Beta practice scores are not saved to official leaderboards.');
+      setStatus('Game over. Finish a complete run to submit replay-verified leaderboard XP.');
     });
     loadLeaders();
     loadPersonal();
