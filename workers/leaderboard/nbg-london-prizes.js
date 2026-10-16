@@ -37,34 +37,40 @@ function validatePeriod(period, now) {
 // the first snapshot if a blocked player's status changes during the attempt.
 async function freezePeriod(env, period, now) {
   const token = crypto.randomUUID();
-  const winners = (await env.DB.prepare(
-    `SELECT s.telegram_id, s.total_xp
-       FROM nbg_london_period_scores s
-       LEFT JOIN telegram_anticheat_state a ON a.telegram_id = s.telegram_id
-      WHERE s.period_kind = ? AND s.period_start_ms = ?
-        AND s.total_xp > 0 AND COALESCE(a.is_blocked,0) = 0
-      ORDER BY s.total_xp DESC, s.best_time_ms ASC, s.telegram_id ASC LIMIT 3`
-  ).bind(period.kind, period.start).all()).results || [];
+  // Both the closed-period marker and the winner SELECT execute in one D1 batch:
+  // no accepted finish can sneak into a period between ranking and freezing.
   const statements = [
     env.DB.prepare(
       `INSERT OR IGNORE INTO nbg_london_prize_periods
        (period_kind,period_start_ms,period_end_ms,frozen_at_ms,freeze_token)
        VALUES (?,?,?,?,?)`
     ).bind(period.kind, period.start, period.end, now, token),
-  ];
-  winners.forEach((winner, index) => {
-    const rank = index + 1;
-    statements.push(env.DB.prepare(
+    env.DB.prepare(
       `INSERT OR IGNORE INTO nbg_london_prize_awards
-       (event_id,period_kind,period_start_ms,rank,telegram_id,prize_arcade_xp,settled_at_ms)
-       SELECT ?,?,?,?,?,?,? WHERE EXISTS (
+       (event_id, period_kind, period_start_ms, rank, telegram_id, prize_arcade_xp, settled_at_ms)
+       SELECT 'nbg-london:' || ? || ':' || ? || ':' || r.rank,
+         ?, ?, r.rank, r.telegram_id,
+         CASE r.rank WHEN 1 THEN ? WHEN 2 THEN ? ELSE ? END, ?
+       FROM (
+         SELECT s.telegram_id,
+           ROW_NUMBER() OVER (
+             ORDER BY s.trusted_xp DESC, s.best_time_ms ASC, s.telegram_id ASC
+           ) AS rank
+         FROM nbg_london_period_scores s
+         LEFT JOIN telegram_anticheat_state a ON a.telegram_id = s.telegram_id
+         WHERE s.period_kind = ? AND s.period_start_ms = ?
+           AND s.verified_run_count > 0 AND s.trusted_xp > 0
+           AND COALESCE(a.is_blocked, 0) = 0
+       ) r
+       WHERE r.rank <= 3 AND EXISTS (
          SELECT 1 FROM nbg_london_prize_periods
          WHERE period_kind = ? AND period_start_ms = ? AND freeze_token = ?
        )`
-    ).bind(reference(period.kind, period.start, rank), period.kind, period.start, rank,
-      winner.telegram_id, PRIZE_ARCADE_XP[period.kind][index], now,
-      period.kind, period.start, token));
-  });
+    ).bind(period.kind, period.start, period.kind, period.start,
+      PRIZE_ARCADE_XP[period.kind][0], PRIZE_ARCADE_XP[period.kind][1],
+      PRIZE_ARCADE_XP[period.kind][2], now,
+      period.kind, period.start, period.kind, period.start, token),
+  ];
   await env.DB.batch(statements);
 }
 
@@ -74,11 +80,18 @@ async function payPrize(env, prize, now) {
   const id = prize.event_id;
   const telegramId = prize.telegram_id;
   const xp = prize.prize_arcade_xp;
-  const eligible = `EXISTS (SELECT 1 FROM nbg_london_prize_awards
-    WHERE event_id = ? AND payout_token = ? AND paid_at_ms IS NULL)`;
+  const eligible = `EXISTS (SELECT 1 FROM nbg_london_prize_awards p
+    LEFT JOIN telegram_anticheat_state a ON a.telegram_id = p.telegram_id
+    WHERE p.event_id = ? AND p.payout_token = ? AND p.paid_at_ms IS NULL
+      AND COALESCE(a.is_blocked, 0) = 0)`;
   const statements = [
     env.DB.prepare(
-      'UPDATE nbg_london_prize_awards SET payout_token = ? WHERE event_id = ? AND paid_at_ms IS NULL AND payout_token IS NULL'
+      `UPDATE nbg_london_prize_awards SET payout_token = ?
+       WHERE event_id = ? AND paid_at_ms IS NULL AND payout_token IS NULL
+         AND NOT EXISTS (
+           SELECT 1 FROM telegram_anticheat_state a
+           WHERE a.telegram_id = nbg_london_prize_awards.telegram_id AND a.is_blocked = 1
+         )`
     ).bind(token, id),
     env.DB.prepare(
       `INSERT INTO arcade_progression_state
