@@ -510,6 +510,53 @@ test('whether a secondary Arcade receipt exists never confers or denies verified
   }
 });
 
+test('returning-player score uses saved original difficulty, not rookie or current statistics', async () => {
+  const savedDifficulty = {
+    difficultyXpBasis: 1350, difficultyBestBasis: 270, difficultyRunsBasis: 6,
+  };
+  const gameOutcome = {
+    verified_distance_m: 2000, survival_seconds: 600, kills: 5,
+    crates: 3, shove_count: 1,
+  };
+  const rookieScore = scoreRun(gameOutcome, difficultyForPlayer({
+    xp_total: 0, best_survival_seconds: 0, runs_total: 0,
+  })).score;
+  const f = fixture();
+  try {
+    const recorded = addDeadRun(f, savedDifficulty);
+    assert.notEqual(recorded.score, rookieScore,
+      'returning-player tier must score differently than the rookie baseline');
+    const saved = f.sql.prepare(
+      'SELECT difficulty_xp_basis,difficulty_best_basis,difficulty_runs_basis FROM dead_run_sessions'
+    ).get();
+    assert.deepEqual(saved, {
+      difficulty_xp_basis: 1350, difficulty_best_basis: 270,
+      difficulty_runs_basis: 6,
+    }, 'fixture must persist original settlement inputs');
+    // Changed later player statistics must not mutate the difficulty which
+    // was snapshotted when this particular run was started.
+    f.sql.prepare(
+      'UPDATE dead_run_players SET xp_total=9000,best_survival_seconds=1800,runs_total=100 WHERE telegram_id=?'
+    ).run(OWNER);
+    const actual = await sync(f, OWNER, { deadRunEnabled: true });
+    assert.equal(actual.total_points,
+      Math.floor(normalizeDeadRunSkill(recorded.score)*0.4)+5,
+      'saved original difficulty must control trusted Championship Skill');
+    assert.equal(f.sql.prepare('SELECT xp_total FROM dead_run_players WHERE telegram_id=?').get(OWNER).xp_total,9000,
+      'recalculation must not overwrite current Dead Run player progress');
+  } finally { f.close(); }
+
+  const forged = fixture();
+  try {
+    addDeadRun(forged, { ...savedDifficulty, scoreOverride: rookieScore });
+    await assert.rejects(sync(forged, OWNER, { deadRunEnabled: true }),
+      /clout_dead_run_settlement_mismatch/,
+      'a rookie score cannot be substituted for a tiered settled run');
+    assert.equal(count(forged,'championship_clout_sources'),0);
+    assert.equal(count(forged,'championship_clout_effects'),0);
+  } finally { forged.close(); }
+});
+
 test('independent scoreRun recomputation rejects forged score, XP and unsafe ranges', async () => {
   for (const mode of [{scoreOverride:12345},{xpOverride:275,scoreOverride:4000},
     {scoreOverride:1_000_001},{xpOverride:1}]) {
