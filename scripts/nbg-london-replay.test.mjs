@@ -183,4 +183,40 @@ assert.notEqual(cancelledFingerprints.replay_sha256,originalFingerprints.replay_
 assert.equal(cancelledFingerprints.input_sha256,originalFingerprints.input_sha256,
   'the actual physics-effective direction and facing canonicalize the copy');
 
+
+// Copilot high: zero-physics frame padding must NOT mint a new trusted
+// receipt with distinct raw+effective digests. Real browser startup may
+// record a first 0ms tick, so canonicalize inert zero-time ticks rather
+// than changing the legacy physics verifier or rejecting valid gameplay.
+for (const paddedBytes of [
+  Buffer.concat([Buffer.alloc(5),acceptedBytes]),
+  Buffer.concat([acceptedBytes.subarray(0,5),Buffer.alloc(5),acceptedBytes.subarray(5)]),
+  Buffer.concat([Buffer.alloc(5),Buffer.alloc(5),acceptedBytes]),
+]) {
+  const padding={version:1,frames:paddedBytes.toString('base64')};
+  const checked=await verifyNbgLondonReplay({
+    runId:'dddddddd-dddd-4ddd-8ddd-dddddddddddd',
+    replay:padding,startedAtMs:1000000,now:1000000+legitimate.count*33,
+  });
+  assert.equal(checked.valid,true,'inert zero-time padding retains a valid gameplay finish');
+  assert.equal(checked.xp,legitimate.result.xp);
+  assert.equal(checked.time_ms,legitimate.result.time_ms);
+  assert.equal(checked.coins,legitimate.result.coins);
+  assert.equal(checked.secret_coins,legitimate.result.secret_coins);
+  const paddedDigest=await fingerprintNbgLondonReplay(
+    padding,checked.effective_input_masks
+  );
+  assert.ok(paddedDigest,'inert browser zero-tick is safe to canonicalize');
+  assert.notEqual(paddedDigest.replay_sha256,originalFingerprints.replay_sha256,
+    'the attacker did change the raw replay bytes');
+  assert.equal(paddedDigest.input_sha256,originalFingerprints.input_sha256,
+    'inert zero-time padding cannot evade the UNIQUE effective-action digest');
+  assert.equal(paddedDigest.frame_count,originalFingerprints.frame_count,
+    'canonical frame count excludes redundant 0ms ticks');
+}
+const zeroWithJump=frameStream([[33,33,2],[0,0,4],[33,33,2]]);
+assert.equal(await fingerprintNbgLondonReplay(
+  zeroWithJump,Uint8Array.from([18,20,18])
+),null,'an active zero-time jump inserted mid-replay must fail trusted receipt validation');
+
 console.log('[PASS] NBG London server-derived replay score protection');
