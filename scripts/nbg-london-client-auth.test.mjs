@@ -151,9 +151,9 @@ assert.equal(Object.hasOwn(officialPayload, 'xp'), false,
 assert.equal(Object.hasOwn(officialPayload, 'time_ms'), false,
   'raw browser time is not forwarded to the ranking API');
 
-// Regression: a reset/account switch while A's POST /run/start is in flight
-// must not allow that stale D1 transaction to invalidate B's newer session.
-// The live Worker closes previous unfinished sessions when inserting a start.
+// Regression: /run/start for the same Telegram player invalidates their prior
+// unfinished D1 session. If a reset's older POST finishes after the new POST,
+// the game could lose its otherwise valid official score. Serialise the POSTs.
 telegramId = '100';
 linked = true;
 nextAuth = async () => auth('100');
@@ -164,31 +164,45 @@ let releaseStaleStart;
 heldStartResponse = new Promise(resolve => { releaseStaleStart = resolve; });
 await emit('nbg-level-started');
 assert.equal(requests('/run/start').length, startsBeforeRace + 1,
-  'A must have issued its in-flight start request');
-assert.equal(requests('/run/start').at(-1).body.telegram_auth.id, '100');
+  'older start must already be in flight');
 
+await emit('nbg-level-reset');
+await emit('nbg-level-started');
+assert.equal(requests('/run/start').length, startsBeforeRace + 1,
+  'reset must not POST a new same-owner start before the stale POST settles');
+releaseStaleStart();
+await flush();
+assert.equal(requests('/run/start').length, startsBeforeRace + 2,
+  'new same-owner session starts only after stale server start completes');
+const activeStart = requests('/run/start').at(-1);
+assert.equal(activeStart.body.telegram_auth.id, '100');
+nextAuth = async () => auth('100');
+await emit('nbg-level-complete', {
+  replay: { version: 1, frames: 'AQIDBAU=' },
+});
+assert.equal(requests('/run/finish').length, finishesBeforeRace + 1,
+  'the new reset run must still be eligible to submit a v1 replay');
+assert.equal(requests('/run/finish').at(-1).body.run_id, activeStart.response.run_id,
+  'finish must use the latest D1 run, never the stale server session');
+
+// The same serialization also prevents a late old-account request from
+// overtaking a start for a newly linked Telegram account.
+const startsBeforeSwap = requests('/run/start').length;
+let releaseOldOwner;
+heldStartResponse = new Promise(resolve => { releaseOldOwner = resolve; });
+await emit('nbg-level-reset');
+await emit('nbg-level-started');
 telegramId = '200';
 nextAuth = async () => auth('200');
 await emit('moonboys:identity-change');
 await emit('nbg-level-reset');
 await emit('nbg-level-started');
-assert.equal(requests('/run/start').length, startsBeforeRace + 1,
-  'new run B must not POST until stale A finishes on the server');
-
-releaseStaleStart();
+assert.equal(requests('/run/start').length, startsBeforeSwap + 1,
+  'new account cannot overtake an earlier HTTP start');
+releaseOldOwner();
 await flush();
-assert.equal(requests('/run/start').length, startsBeforeRace + 2,
-  'B can open its server session after A has finished');
-const lastStart = requests('/run/start').at(-1);
-assert.equal(lastStart.body.telegram_auth.id, '200',
-  'new session must belong to the newly linked player');
-nextAuth = async () => auth('200');
-await emit('nbg-level-complete', {
-  replay: { version: 1, frames: 'AQIDBAU=' },
-});
-assert.equal(requests('/run/finish').length, finishesBeforeRace + 1,
-  'B must be able to submit a legitimate v1 replay after the reset race');
-assert.equal(requests('/run/finish').at(-1).body.run_id, lastStart.response.run_id,
-  'B must submit the new live server session, never A\'s stale session');
+assert.equal(requests('/run/start').length, startsBeforeSwap + 2);
+assert.equal(requests('/run/start').at(-1).body.telegram_auth.id, '200',
+  'queued start must retain the correct signed account');
 
 console.log('[PASS] NBG London start/finish Telegram account-race protection');
