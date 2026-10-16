@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "last_reviewed_at": "2026-10-16T13:15:41.328Z",
+  "last_reviewed_at": "2026-10-16T13:57:49.206Z",
   "repository_main_commit_at_review": "ed03324dcfef0311a62ff3c31a36d8665a2d8421",
   "surfaces": {
     "github-pages": {
@@ -60,20 +60,26 @@
     },
     "workers/leaderboard": {
       "readiness": "live-deployable",
-      "deployment_status": "verification-pending",
-      "deployed_commit": null,
-      "deployed_at": null,
+      "deployment_status": "verified-live",
+      "deployed_commit": "ed03324dcfef0311a62ff3c31a36d8665a2d8421",
+      "deployed_at": "2026-10-16T13:54:53.321Z",
       "verification_urls": [
-        "https://moonboys-leaderboard.sercullen.workers.dev/deployment-info"
+        "https://moonboys-leaderboard.sercullen.workers.dev/deployment-info",
+        "https://moonboys-leaderboard.sercullen.workers.dev/health"
       ],
       "evidence": [
+        {
+          "type": "retained-worker-provenance",
+          "url": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/blob/main/deployments/evidence/worker-provenance-clout-pr2-2026-10-16.json",
+          "recorded_at": "2026-10-16T13:57:49.206Z"
+        },
         {
           "type": "retained-worker-provenance",
           "url": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/blob/main/deployments/evidence/worker-provenance-2323ef3a07794411ff4d5788a02ff63995226cba.json",
           "recorded_at": "2026-08-10T12:57:08.926Z"
         }
       ],
-      "notes": "2026-10-16 live GitHub Actions run 38906623163 observed GET /deployment-info HTTP 503 for moonboys-leaderboard, commit=null, deployed_at=2026-10-16T04:41:16.094Z. Previous Aug 10 provenance receipt is HISTORICAL ONLY. Current commit cannot be verified; does not prove gameplay service outage. Do not deploy or claim verified-live without separately approved repair and fresh provenance capture."
+      "notes": "Owner supplied 2026-10-16 latest proof: /health ok=true with Telegram auth, DB and KV configured, NBG spendable prize payouts false. Tagged deployment via approved wrapper at 2026-10-16T13:54:53.321Z exposes commit ed03324dcfef0311a62ff3c31a36d8665a2d8421. GitHub Actions three-Worker live capture must independently verify the retained values before #1535 merges. Earlier Oct 16 untagged deployment was repaired; original Aug 10 provenance retained as history, not current. No authenticated score submission independently verified."
     },
     "workers/block-topia": {
       "readiness": "needs-binding-setup",
