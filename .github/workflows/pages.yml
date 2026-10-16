@@ -23,6 +23,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Verify NBG course scoring Worker before Pages rollout
+        # New Level 1 course physics must never publish ahead of its server.
+        # Failure leaves the existing GitHub Pages deployment untouched.
+        run: node scripts/verify-nbg-pages-worker-course.mjs
+
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
