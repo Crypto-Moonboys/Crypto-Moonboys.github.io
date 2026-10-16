@@ -91,6 +91,15 @@ assert.equal(validFinish({ complete: true, time_ms: 120000, xp: 600, coins: 25, 
 const nowOriginal = Date.now;
 let fakeNow = 1_800_000_000_000;
 Date.now = () => fakeNow;
+// Keep SQLite's authoritative UTC clock aligned with the simulated HTTP time.
+// Without this UDF, the finish claim reads the real UTC date, making a future
+// test fixture fail nondeterministically after its fixed 2027 cutoff.
+sqlite.function('strftime', { deterministic: false }, (format, time) => {
+  if (format === '%s' && time === 'now') return String(Math.floor(fakeNow / 1000));
+  throw new Error('Unexpected SQLite clock call in NBG fixture');
+});
+assert.equal(Number(sqlite.prepare("SELECT strftime('%s','now') AS epoch").get().epoch) * 1000,
+  fakeNow, 'D1 SQL cutoff and JavaScript period math must share the test clock');
 try {
   assert.equal((await api('/nbg-london/run/start', {})).status, 403, 'guests cannot create ranked runs');
 
@@ -141,6 +150,25 @@ try {
     'client-reported beta XP must not qualify for any future prize');
   assert.equal(sqlite.prepare('SELECT SUM(trusted_xp) AS trusted FROM nbg_london_period_scores').get().trusted, 0,
     'untrusted historic run totals cannot be upgraded to trusted Arcade XP later');
+
+  // Prize standings must use trusted-XP ranking, even when the practice
+  // leader has more total reported XP than the verified winner.
+  sqlite.prepare(`UPDATE nbg_london_period_scores
+    SET trusted_xp=300, verified_run_count=1
+    WHERE period_kind='daily' AND period_start_ms=? AND telegram_id='200'`)
+    .run(periodStart(fakeNow, 'daily'));
+  env.NBG_LONDON_PRIZES_ENABLED = 'true';
+  env.NBG_LONDON_SCORE_AUTHORITY_ENABLED = 'true';
+  const verifiedBoard = await api('/nbg-london/competition?period=daily');
+  assert.equal(verifiedBoard.payout_enabled, true);
+  assert.equal(verifiedBoard.ranking_basis, 'trusted_xp');
+  assert.deepEqual(verifiedBoard.standings.map(({ rank, name, prize_rank, prize_eligible }) =>
+    ({ rank, name, prize_rank, prize_eligible })),
+    [{ rank: 1, name: '@bravo', prize_rank: 1, prize_eligible: true }],
+    'the first verified prize winner must receive the first-place prize despite unverified leaders');
+  assert.equal(verifiedBoard.prizes[verifiedBoard.standings[0].prize_rank - 1], 100);
+  delete env.NBG_LONDON_PRIZES_ENABLED;
+  delete env.NBG_LONDON_SCORE_AUTHORITY_ENABLED;
 
   const fastest = await api('/nbg-london/leaderboard?metric=fastest');
   const speedXp = await api('/nbg-london/leaderboard?metric=speed_xp');
