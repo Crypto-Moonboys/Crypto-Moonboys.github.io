@@ -165,6 +165,26 @@ test('migration 101 has an immutable composite owner FK and two UNIQUE anti-repl
   }finally{f.close();}
 });
 
+test('migration 101 prohibits reissuing one challenge across two different owners',()=>{
+  const f=fixture();
+  try{
+    const first='aacda2e5-3d71-43cd-a21d-1a3b10e74321';
+    const second='bbcda2e5-3d71-43cd-a21d-1a3b10e74322';
+    const addRun=f.sql.prepare([
+      'INSERT INTO nbg_london_runs',
+      '(run_id,telegram_id,started_at_ms,expires_at_ms,challenge_seed,challenge_version)',
+      'VALUES(?,?,?,?,?,2)',
+    ].join(' '));
+    addRun.run(first,'100',now,now+1800000,12345);
+    assert.throws(()=>addRun.run(second,'200',now,now+1800000,12345),
+      /UNIQUE constraint failed.*nbg_london_runs\.challenge_seed/,
+      'duplicated 32-bit gate pattern must fail closed even for a new signed owner');
+    assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM nbg_london_runs').get().n,1);
+    addRun.run(second,'200',now,now+1800000,12382);
+    assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM nbg_london_runs').get().n,2);
+  }finally{f.close();}
+});
+
 test('feature code gate OFF permits existing practice records even without migration 101',async()=>{
   const f=fixture({migrated:false,codeGate:false});
   try{
