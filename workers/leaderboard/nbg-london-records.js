@@ -214,6 +214,11 @@ export async function handleNbgLondonRecords(request, env, verifyIdentity, verif
         reason: 'authoritative_scoring_unavailable',
       });
       const runId = crypto.randomUUID();
+      // The challenge is selected only by this authenticated server handler,
+      // persisted to D1, and returned before ranked v2 gameplay may begin.
+      const challengeSeed = trustedReceiptsEnabled
+        ? crypto.getRandomValues(new Uint32Array(1))[0] : null;
+      const challengeVersion = trustedReceiptsEnabled ? 2 : 1;
       // A player cannot stockpile concurrent server sessions and submit the
       // same physical replay under several receipts for inflated period XP.
       // Starting a new run atomically invalidates their older unfinished runs.
@@ -221,11 +226,15 @@ export async function handleNbgLondonRecords(request, env, verifyIdentity, verif
         env.DB.prepare(
           'UPDATE nbg_london_runs SET finished_at_ms = ? WHERE telegram_id = ? AND finished_at_ms IS NULL'
         ).bind(now, telegramId),
-        env.DB.prepare(
-          'INSERT INTO nbg_london_runs (run_id, telegram_id, started_at_ms, expires_at_ms) VALUES (?, ?, ?, ?)'
-        ).bind(runId, telegramId, now, now + MAX_FINISH_MS + SERVER_CLOCK_TOLERANCE_MS),
+        env.DB.prepare(trustedReceiptsEnabled
+          ? 'INSERT INTO nbg_london_runs (run_id, telegram_id, started_at_ms, expires_at_ms, challenge_seed, challenge_version) VALUES (?, ?, ?, ?, ?, ?)'
+          : 'INSERT INTO nbg_london_runs (run_id, telegram_id, started_at_ms, expires_at_ms) VALUES (?, ?, ?, ?)'
+        ).bind(runId, telegramId, now, now + MAX_FINISH_MS + SERVER_CLOCK_TOLERANCE_MS,
+          ...(trustedReceiptsEnabled ? [challengeSeed, challengeVersion] : [])),
       ]);
-      return json(request, { ok: true, run_id: runId, player: displayName(identity.linkedAccount), ranked: true });
+      return json(request, { ok: true, run_id: runId, player: displayName(identity.linkedAccount), ranked: true,
+        ...(trustedReceiptsEnabled ? { challenge_seed:challengeSeed, replay_version:2 } : {}),
+      });
     }
 
     // An unverified /run/finish must not consume receipts or write ANY best
@@ -236,11 +245,19 @@ export async function handleNbgLondonRecords(request, env, verifyIdentity, verif
     const runId = String(body?.run_id || '');
     if (!/^[0-9a-f-]{36}$/i.test(runId)) return json(request, { ok: false, error: 'invalid_run_id' }, 400);
     const session = await env.DB.prepare(
-      'SELECT telegram_id, started_at_ms, expires_at_ms, finished_at_ms FROM nbg_london_runs WHERE run_id = ?'
+      trustedReceiptsEnabled
+        ? 'SELECT telegram_id, started_at_ms, expires_at_ms, finished_at_ms, challenge_seed, challenge_version FROM nbg_london_runs WHERE run_id = ?'
+        : 'SELECT telegram_id, started_at_ms, expires_at_ms, finished_at_ms FROM nbg_london_runs WHERE run_id = ?'
     ).bind(runId).first();
     if (!session || session.telegram_id !== telegramId || session.finished_at_ms != null ||
         now > session.expires_at_ms)
       return json(request, { ok: false, error: 'run_expired_or_invalid' }, 409);
+    if (trustedReceiptsEnabled &&
+        (session.challenge_version !== 2 ||
+         !Number.isSafeInteger(session.challenge_seed) ||
+         session.challenge_seed < 0 || session.challenge_seed > 0xffffffff ||
+         body?.replay?.version !== 2))
+      return json(request, {ok:false,error:'invalid_run_challenge'},422);
     // Raw browser-reported XP, duration, coins and completion are NEVER
     // authoritative. The verifier receives a replay, not those counters.
     // It must independently simulate the level and return earned results.
@@ -249,6 +266,7 @@ export async function handleNbgLondonRecords(request, env, verifyIdentity, verif
       verified = await verifyRunReplay({
         runId, telegramId, replay: body?.replay,
         startedAtMs: session.started_at_ms, now,
+        ...(trustedReceiptsEnabled ? {challengeSeed:session.challenge_seed} : {}),
       });
     } catch (error) {
       console.error('[nbg-london-replay]', error?.message || 'replay_error');
@@ -272,7 +290,7 @@ export async function handleNbgLondonRecords(request, env, verifyIdentity, verif
       fingerprints = await fingerprintNbgLondonReplay(
         body?.replay, verified.effective_input_masks
       );
-      if (!fingerprints || fingerprints.replay_version !== 1)
+      if (!fingerprints || fingerprints.replay_version !== 2)
         return json(request, { ok: false, error: 'invalid_verified_replay_fingerprint' }, 422);
       const prior = await env.DB.prepare([
         'SELECT run_id FROM nbg_london_verified_runs',
