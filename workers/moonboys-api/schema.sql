@@ -2546,7 +2546,7 @@ CREATE TABLE IF NOT EXISTS nbg_london_verified_runs (
   finished_at_ms INTEGER NOT NULL CHECK(finished_at_ms>=1704067200000),
   time_ms INTEGER NOT NULL CHECK(time_ms BETWEEN 65000 AND 1800000),
   verified_xp INTEGER NOT NULL CHECK(verified_xp BETWEEN 0 AND 1000000),
-  replay_version INTEGER NOT NULL CHECK(replay_version=1),
+  replay_version INTEGER NOT NULL CHECK(replay_version=2),
   replay_sha256 TEXT NOT NULL UNIQUE
     CHECK(length(replay_sha256)=64 AND replay_sha256 NOT GLOB '*[^0-9a-f]*'),
   input_sha256 TEXT NOT NULL UNIQUE
