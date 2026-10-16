@@ -159,10 +159,16 @@ export async function fingerprintNbgLondonReplay(replay, effectiveInputMasks = n
       // proof must fail closed instead of minting a fresh action hash.
       return null;
     }
-    // The normalized action stream describes changes in applied control
-    // state, not client render-frame boundaries. Two adjacent identical
-    // effective transitions represent the same action run even if an
-    // attacker splits a 33ms capped-speed frame into 0.1ms+32.9ms.
+    // Fixed initial player state is vx=0, facing=right (bit 16). A copied
+    // completed run may be prefixed with a tiny *positive-time* no-input
+    // frame: it moves nothing yet produces a leading facing-only byte that
+    // evades both receipt hashes. Ignore a run of initial no-op states,
+    // regardless of nominal frame duration. Non-inert initial actions must
+    // still be retained and zero-time active actions still fail above.
+    if (effectiveInputMasks !== null &&
+        canonical.length === 0 && effectiveMask === 16) continue;
+    // Canonicalize identical server-applied actions independently of
+    // client render-frame subdivision, including a split speed-capped frame.
     if (canonical.at(-1) !== effectiveMask) canonical.push(effectiveMask);
     if (effectiveInputMasks !== null) previousFacing = effectiveMask & 16;
   }

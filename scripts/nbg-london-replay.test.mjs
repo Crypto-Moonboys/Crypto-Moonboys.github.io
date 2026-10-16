@@ -269,4 +269,38 @@ assert.notEqual(splitDigests.replay_sha256,originalFingerprints.replay_sha256);
 assert.equal(splitDigests.input_sha256,originalFingerprints.input_sha256,
   'canonical adjacent action runs must ignore attacker-created frame splits');
 
+
+// Codex P1: positive-duration startup idle padding (0.1ms) can preserve a
+// replay-verified game result while prepending the initial right-facing
+// only canonical action. This must not mint a second replay-unique receipt.
+for (const idleTicks of [1, 2]) {
+  const idlePrefix=Buffer.concat(Array.from(
+    {length:idleTicks},()=>Buffer.from([1,0,1,0,0])
+  ));
+  const positivePaddedReplay={
+    version:1,frames:Buffer.concat([idlePrefix,acceptedBytes]).toString('base64'),
+  };
+  const checked=await verifyNbgLondonReplay({
+    runId:'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaab',
+    replay:positivePaddedReplay,
+    startedAtMs:1000000,now:1000000+legitimate.count*33,
+  });
+  assert.equal(checked.valid,true,
+    'positive-time idle prefix must remain a legitimate legacy physics replay');
+  assert.equal(checked.xp,legitimate.result.xp);
+  assert.equal(checked.time_ms,legitimate.result.time_ms);
+  assert.equal(checked.coins,legitimate.result.coins);
+  assert.equal(checked.secret_coins,legitimate.result.secret_coins);
+  const proof=await fingerprintNbgLondonReplay(
+    positivePaddedReplay,checked.effective_input_masks
+  );
+  assert.ok(proof,'valid positive-time idle prefix retains trusted proof status');
+  assert.notEqual(proof.replay_sha256,originalFingerprints.replay_sha256,
+    'source replay bytes include attacker-added idle frames');
+  assert.equal(proof.input_sha256,originalFingerprints.input_sha256,
+    'initial facing-only idle run must not change the unique effective action hash');
+  assert.equal(proof.frame_count,originalFingerprints.frame_count,
+    'idle startup frames cannot increase canonical action count');
+}
+
 console.log('[PASS] NBG London server-derived replay score protection');
