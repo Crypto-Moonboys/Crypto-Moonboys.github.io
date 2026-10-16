@@ -2560,7 +2560,8 @@ CREATE INDEX IF NOT EXISTS idx_nbg_london_verified_owner_day_best
 
 -- UNIQUE replay_sha256 blocks a previously accepted identical byte stream
 -- across different sessions/accounts. UNIQUE input_sha256 additionally blocks
--- simple timing-only edits to the very same control sequence. Both are
+-- timing-only edits and semantically ignored spray/jump bits to the same
+-- SERVER-APPLIED effective action sequence. Both are
 -- atomic with the finished-session claim; a collision rolls back the run.
 -- These checks are replay-reuse defenses, NOT proof against newly generated
 -- automated input. Per-session game-state challenge binding remains a
