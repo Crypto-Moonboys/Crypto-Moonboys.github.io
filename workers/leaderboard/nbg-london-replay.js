@@ -131,17 +131,45 @@ export async function fingerprintNbgLondonReplay(replay, effectiveInputMasks = n
       throw new Error('nbg_replay_invalid_canonical_actions');
     controls.set(effectiveInputMasks);
   }
+  // Canonicalize zero-duration replay frames for the trusted receipt hash
+  // without changing the actual replay simulator or legacy gameplay.
+  // A browser may legitimately emit one zero-duration startup tick. Inert
+  // zero-time ticks (no actual jump/spray, movement change, or facing change)
+  // carry no scored gameplay information, so do NOT hash them as new actions.
+  // Non-inert zero-time ticks after startup are not eligible for trusted
+  // receipts; their effect cannot safely be collapsed into a neighboring
+  // tick without replaying different physics.
+  const canonical = [];
+  let previousFacing = 16; // authoritative player's initial facing is right
+  for (let frame = 0; frame < controls.length; frame++) {
+    const offset = frame * 5;
+    const dtTenths = raw[offset] + raw[offset + 1] * 256;
+    const elapsedTenths = raw[offset + 2] + raw[offset + 3] * 256;
+    const effectiveMask = controls[frame];
+    if (dtTenths === 0 || elapsedTenths === 0) {
+      if (dtTenths !== 0 || elapsedTenths !== 0) return null;
+      const inert = effectiveInputMasks === null
+        ? effectiveMask === 0
+        : (effectiveMask & 15) === 0 &&
+          (effectiveMask & 16) === previousFacing;
+      if (inert) continue;
+      if (frame !== 0) return null;
+    }
+    canonical.push(effectiveMask);
+    if (effectiveInputMasks !== null) previousFacing = effectiveMask & 16;
+  }
+  if (canonical.length === 0) return null;
   if (!globalThis.crypto?.subtle) throw new Error('nbg_replay_crypto_unavailable');
   const [rawHash, controlsHash] = await Promise.all([
     crypto.subtle.digest('SHA-256', raw),
-    crypto.subtle.digest('SHA-256', controls),
+    crypto.subtle.digest('SHA-256', Uint8Array.from(canonical)),
   ]);
   const hex = digest => Array.from(new Uint8Array(digest), byte =>
     byte.toString(16).padStart(2, '0')).join('');
   return {
     replay_sha256: hex(rawHash),
     input_sha256: hex(controlsHash),
-    frame_count: controls.length,
+    frame_count: canonical.length,
     replay_version: NBG_REPLAY_VERSION,
   };
 }
