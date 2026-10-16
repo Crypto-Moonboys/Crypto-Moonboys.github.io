@@ -159,9 +159,14 @@ export async function settleNbgLondonDue(env, now = Date.now()) {
         CASE s.period_kind WHEN 'daily' THEN ? WHEN 'weekly' THEN ? ELSE ? END <= ?
       ORDER BY s.period_start_ms ASC LIMIT 50`
   ).bind(DAY, DURATIONS.weekly, DURATIONS.seasonal, now).all()).results || [];
+  // Blocked frozen recipients keep their immutable receipts, but must not
+  // consume retry slots and starve newer periods with eligible unpaid prizes.
   const pending = (await env.DB.prepare(
-    `SELECT DISTINCT period_kind,period_start_ms
-       FROM nbg_london_prize_awards WHERE paid_at_ms IS NULL ORDER BY period_start_ms ASC LIMIT 50`
+    `SELECT DISTINCT p.period_kind,p.period_start_ms
+       FROM nbg_london_prize_awards p
+       LEFT JOIN telegram_anticheat_state a ON a.telegram_id=p.telegram_id
+      WHERE p.paid_at_ms IS NULL AND COALESCE(a.is_blocked,0)=0
+      ORDER BY p.period_start_ms ASC LIMIT 50`
   ).all()).results || [];
   const merged = new Map();
   for (const row of [...open, ...pending]) merged.set(row.period_kind + ':' + row.period_start_ms, row);
