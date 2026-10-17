@@ -66,6 +66,7 @@ const GROUPS = {
     ['node', 'scripts/telegram-group-event-announcements.test.mjs'],
     ['node', 'scripts/daily-wtf-timed-events.test.mjs'],
     ['node', 'scripts/daily-loop-state-contract.test.mjs'],
+    ['node', '--test', 'scripts/player-action-plan-contract.test.mjs'],
     ['node', 'scripts/daily-loop-frontend-state.test.mjs'],
     ['node', 'scripts/scheduled-task-isolation.test.mjs'],
     ['node', 'scripts/market-indexer-removal-guard.test.mjs'],
