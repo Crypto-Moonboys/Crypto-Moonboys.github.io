@@ -258,10 +258,14 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
     && sourceStatuses['moonpet.adoption-incubation'].state === 'migration_pending';
   const rosterUnavailable = Boolean(rosterFailure || rosterMigrationMissing);
   if (rosterUnavailable) {
-    for (const source of ACTION_PLAN_SOURCE_REGISTRY.filter((entry) =>
-      entry.group === 'moonpet' || entry.key === 'onboarding.pet-entry')) {
-      if (rosterFailure) failures.set(source.key, rosterFailure);
-      else sourceStatuses[source.key] = sourceStatus('migration_pending', {
+    // Only projections requiring the live roster fail closed. Account-level
+    // receipts, original-pet saved runs/contracts and historical payouts have
+    // independent D1 authorities and remain readable during roster outages.
+    for (const key of ['moonpet.adoption-incubation', 'moonpet.daily-journey',
+      'moonpet.weekly-journey', 'moonpet.care', 'moonpet.jobs',
+      'moonpet.garden-kitchen-gym', 'moonpet.evolution']) {
+      if (rosterFailure) failures.set(key, rosterFailure);
+      else sourceStatuses[key] = sourceStatus('migration_pending', {
         adapter: 'owned_roster_dependency', missing_tables: ['telegram_pet_instances'],
       });
     }
@@ -275,13 +279,35 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
     } catch {}
     return { ...row, ref: await opaqueRef(`${ownerId}:${row.pet_id}`), journeyWeek, journeyBounds };
   }));
-  const petEntryComplete = pets.length > 0;
+  // Existing telegram_pet_profiles ownership bypasses the first-adoption
+  // threshold even when a legacy account has no currently active instance.
+  const ownerProfileRows = await query(db,
+    'SELECT telegram_id FROM telegram_pet_profiles WHERE telegram_id=? LIMIT 1',
+    [ownerId], [], failures, ['onboarding.pet-entry']);
+  const existingOwner = ownerProfileRows.length > 0;
+  const petEntryComplete = existingOwner || pets.length > 0;
   if (sourceStatuses['moonpet.adoption-incubation'].state !== 'migration_pending') {
     sourceStatuses['moonpet.adoption-incubation'] = sourceStatus(pets.length ? 'live' : 'live_empty', { adapter: 'active_owned_roster' });
   }
-  tasks.push(genericTask(now, SOURCE_BY_KEY.get('onboarding.pet-entry'), petEntryComplete ? 'complete' : lifetimeXp >= PET_ENTRY_ARCADE_XP ? 'ready' : 'in_progress', 'live', {
-    title: petEntryComplete ? 'Moonpet entry complete' : lifetimeXp >= PET_ENTRY_ARCADE_XP ? 'Adopt your first Moonpet' : 'Earn lifetime Arcade XP for Moonpet entry',
-    priority: petEntryComplete ? 900 : 30, progress: { current: Math.min(PET_ENTRY_ARCADE_XP, lifetimeXp), target: PET_ENTRY_ARCADE_XP, unit: 'lifetime_arcade_xp' },
+  if (rosterUnavailable && !petEntryComplete) {
+    if (rosterFailure) failures.set('onboarding.pet-entry', rosterFailure);
+    else sourceStatuses['onboarding.pet-entry'] = sourceStatus('migration_pending', {
+      adapter: 'owned_roster_dependency', missing_tables: ['telegram_pet_instances'],
+    });
+  }
+  tasks.push(genericTask(now, SOURCE_BY_KEY.get('onboarding.pet-entry'),
+    petEntryComplete ? 'complete' : rosterUnavailable ? 'sync_unavailable'
+      : lifetimeXp >= PET_ENTRY_ARCADE_XP ? 'ready' : 'in_progress', 'live', {
+    title: existingOwner && !pets.length ? 'Moonpet owner recognised — restore existing pet'
+      : petEntryComplete ? 'Moonpet entry complete'
+        : rosterUnavailable ? 'Moonpet ownership unavailable'
+          : lifetimeXp >= PET_ENTRY_ARCADE_XP ? 'Adopt your first Moonpet' : 'Earn lifetime Arcade XP for Moonpet entry',
+    description: existingOwner && !pets.length
+      ? 'Existing ownership bypasses the first-pet Arcade XP gate; open Moonpet to restore your pet.'
+      : 'First-time adoption requires lifetime Arcade XP rather than spendable XP.',
+    priority: petEntryComplete ? 900 : 30,
+    blocking: rosterUnavailable && !petEntryComplete ? 'owned_roster_unavailable' : null,
+    progress: { current: Math.min(PET_ENTRY_ARCADE_XP, lifetimeXp), target: PET_ENTRY_ARCADE_XP, unit: 'lifetime_arcade_xp' },
   }));
 
   const dailyClaimRows = await query(db,
