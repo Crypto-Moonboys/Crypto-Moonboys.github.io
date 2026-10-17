@@ -236,14 +236,14 @@
     {
       "key": "moonpet.daily-journey",
       "group": "moonpet",
-      "source_file": "workers/moonboys-api/pets/weekly-journey.js",
-      "source_marker": "WEEKLY_JOURNEY_REQUIRED_OBJECTIVES",
+      "source_file": "workers/moonboys-api/pets/daily-moon-run.js",
+      "source_marker": "DAILY_JOURNEY_REQUIRED_OBJECTIVES = 3",
       "owner_scope": "pet",
-      "period": "pet_day",
+      "period": "utc_day",
       "evidence_class": "server_receipt",
       "adapter_gate": "readiness_adapter",
       "example_task": "Advance Daily Journey / Growth Mark",
-      "known_gap": "Verify its own per-pet day authority in Worker; do not borrow weekly clock",
+      "known_gap": "Daily Journey is a pet-scoped objective with UTC-day qualification; read accepted growth mark evidence, not the weekly Journey clock",
       "route_hint": "/moonpet-game.html",
       "requires_verified_identity": true
     },
@@ -418,14 +418,14 @@
     {
       "key": "games.nbg-london",
       "group": "external_game",
-      "source_file": "workers/moonboys-api/championship/clout-policy.js",
-      "source_marker": "CLOUT_POLICY_VERSION",
+      "source_file": "games/nbg-london/index.html",
+      "source_marker": "NBG London Graffiti Run",
       "owner_scope": "account",
       "period": "source_defined",
       "evidence_class": "schedule_preview",
       "adapter_gate": "deferred",
       "example_task": "Future verified NBG London task integration",
-      "known_gap": "Do not present client scores as verified; separate game-owned adapter required",
+      "known_gap": "Game is visible, but ranked/source-verified Championship adapter is independently gated by #1530/#1539; no unverified Clout task",
       "route_hint": "/games/",
       "requires_verified_identity": true
     }
