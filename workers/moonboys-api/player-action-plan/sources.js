@@ -1,0 +1,427 @@
+import {
+  actionPlanTask, cost, isoWeek, nextIsoWeek, nextUtcDay, reward,
+  sourceStatus, utcDay,
+} from './schema.js';
+import { getPetJourneyWeek, getPetJourneyWeekBounds, getPetOwnershipPeriod } from '../pets/ownership-period.js';
+
+export const ACTION_PLAN_SOURCE_REGISTRY = Object.freeze([
+  ['onboarding.telegram', 'onboarding', 'account', 'once', 'server_projection', '/gkniftyheads-incubator.html'],
+  ['onboarding.faction', 'onboarding', 'account', 'season_lock', 'server_projection', '/community.html#battle-join-faction'],
+  ['onboarding.pet-entry', 'onboarding', 'account', 'once', 'server_projection', '/games/'],
+  ['telegram.daily-claim', 'community', 'account', 'utc_day', 'server_receipt', '/gkniftyheads-incubator.html'],
+  ['faction.daily-missions', 'faction', 'faction_member', 'utc_day', 'client_mirror', '/community.html#tasks-quests-and-xp'],
+  ['faction.seasonal-mission', 'faction', 'faction_member', 'faction_season', 'client_mirror', '/community.html#tasks-quests-and-xp'],
+  ['faction.weekly-war', 'faction', 'faction_member', 'faction_week', 'server_projection', '/community.html#live-battle-chamber'],
+  ['battle.wtf-windows', 'battle', 'account', 'event_window', 'schedule_preview', '/community.html#tasks-quests-and-xp'],
+  ['battle.missed-opportunities', 'battle', 'account', 'history', 'server_projection', '/community.html#tasks-quests-and-xp'],
+  ['arcade.daily-opportunity', 'arcade', 'account', 'utc_day', 'server_projection', '/games/'],
+  ['arcade.roguelite-objectives', 'arcade', 'account', 'source_defined', 'client_mirror', '/games/'],
+  ['moonpet.adoption-incubation', 'moonpet', 'pet', 'pet_age', 'server_projection', '/moonpet-game.html'],
+  ['moonpet.daily-seven-missions', 'moonpet', 'pet', 'utc_day', 'server_projection', '/moonpet-game.html'],
+  ['moonpet.seven-of-seven-claim', 'moonpet', 'account', 'utc_day', 'server_receipt', '/moonpet-game.html'],
+  ['moonpet.daily-journey', 'moonpet', 'pet', 'utc_day', 'server_receipt', '/moonpet-game.html'],
+  ['moonpet.weekly-journey', 'moonpet', 'pet', 'pet_journey_week', 'server_receipt', '/moonpet-game.html'],
+  ['moonpet.care', 'moonpet', 'pet', 'cooldown', 'server_projection', '/moonpet-game.html'],
+  ['moonpet.claimable-rewards', 'moonpet', 'account', 'saved_claim', 'server_projection', '/moonpet-game.html'],
+  ['moonpet.saved-run', 'moonpet', 'original_pet', 'run_session', 'server_projection', '/moonpet-game.html'],
+  ['moonpet.contracts', 'moonpet', 'original_pet', 'saved_session', 'server_projection', '/moonpet-game.html'],
+  ['moonpet.jobs', 'moonpet', 'pet', 'saved_timer', 'server_projection', '/moonpet-game.html'],
+  ['moonpet.bosses-combat', 'moonpet', 'original_pet', 'source_defined', 'server_projection', '/moonpet-game.html'],
+  ['moonpet.garden-kitchen-gym', 'moonpet', 'pet', 'saved_timer', 'server_projection', '/moonpet-game.html'],
+  ['moonpet.evolution', 'moonpet', 'pet', 'permanent', 'server_receipt', '/moonpet-game.html'],
+  ['wiki.accepted-missions', 'wiki', 'account', 'utc_day', 'server_receipt', '/community.html'],
+  ['championship.verified-clout', 'championship', 'account', 'utc_competition', 'server_receipt', '/community.html'],
+  ['games.dead-run', 'external_game', 'account', 'source_defined', 'server_projection', '/games/'],
+  ['games.nbg-london', 'external_game', 'account', 'source_defined', 'schedule_preview', '/games/'],
+].map(([key, group, ownerScope, period, evidence, path]) => Object.freeze({ key, group, ownerScope, period, evidence, path })));
+
+const SOURCE_BY_KEY = new Map(ACTION_PLAN_SOURCE_REGISTRY.map((source) => [source.key, source]));
+function number(value) { return Math.max(0, Math.floor(Number(value) || 0)); }
+function parseJson(value) {
+  try { return JSON.parse(String(value || '{}')); }
+  catch { return {}; }
+}
+
+async function opaqueRef(value) {
+  const bytes = new TextEncoder().encode(`player-action-plan:v1:${String(value)}`);
+  const digest = await crypto.subtle.digest('SHA-256', bytes);
+  return `pap_${[...new Uint8Array(digest)].slice(0, 12).map((byte) => byte.toString(16).padStart(2, '0')).join('')}`;
+}
+
+async function query(db, sql, params, fallback, failures, sourceKeys) {
+  try { return await db.all(sql, params); }
+  catch (error) {
+    for (const sourceKey of sourceKeys) failures.set(sourceKey, error?.message || 'query_failed');
+    return fallback;
+  }
+}
+
+function task(now, input) {
+  const meta = SOURCE_BY_KEY.get(input.source_key);
+  return actionPlanTask({
+    source: meta.group,
+    owner_scope: meta.ownerScope,
+    category: meta.group,
+    period: { kind: meta.period, key: input.period_key || null, origin_timezone: 'UTC' },
+    destination: { kind: 'web', path: meta.path },
+    evidence: { kind: meta.evidence, ...(input.evidence || {}) },
+    cost: cost([]), reward: reward([], false), read_at: now.toISOString(),
+    ...input,
+  });
+}
+
+function genericTask(now, source, status, health, detail = {}) {
+  const label = source.key.split('.').map((part) => part.replaceAll('-', ' ')).join(' · ');
+  return task(now, {
+    task_id: `${source.key}:${detail.suffix || 'current'}`,
+    source_key: source.key,
+    title: detail.title || label.replace(/\b\w/gu, (value) => value.toUpperCase()),
+    description: detail.description || 'Review this source in its canonical experience.',
+    why: detail.why || 'This source is included in the unified player plan without inventing completion evidence.',
+    status, source_health: health, priority: detail.priority ?? 700,
+    progress: detail.progress || { current: null, target: null, unit: 'actions' },
+    blocking_reason_code: detail.blocking || null,
+    period_key: detail.periodKey || null,
+    expires_at: detail.expiresAt || null,
+    reward: detail.reward || reward([], false),
+    evidence: detail.evidence || {},
+  });
+}
+
+const SOURCE_TABLES = Object.freeze({
+  'battle.wtf-windows': 'daily_wtf_events',
+  'battle.missed-opportunities': 'daily_missed_perks',
+  'arcade.daily-opportunity': 'daily_opportunity_state',
+  'arcade.roguelite-objectives': 'arcade_progression_events',
+  'moonpet.adoption-incubation': 'telegram_pet_instances',
+  'moonpet.daily-seven-missions': 'telegram_pet_daily_completion',
+  'moonpet.seven-of-seven-claim': 'telegram_pet_daily_completion',
+  'moonpet.daily-journey': 'telegram_pet_daily_journey_objectives',
+  'moonpet.weekly-journey': 'telegram_pet_weekly_journey_objectives',
+  'moonpet.care': 'telegram_pet_instances',
+  'moonpet.claimable-rewards': 'telegram_pet_reward_claims',
+  'moonpet.saved-run': 'telegram_pet_runs',
+  'moonpet.contracts': 'telegram_pet_contracts',
+  'moonpet.jobs': 'telegram_pet_activity_sessions',
+  'moonpet.bosses-combat': 'telegram_pet_weekly_boss_victories_by_pet',
+  'moonpet.garden-kitchen-gym': 'telegram_pet_garden_plots',
+  'moonpet.evolution': 'telegram_pet_evolutions_by_pet',
+  'wiki.accepted-missions': 'wiki_mission_completions',
+  'championship.verified-clout': 'championship_clout_daily',
+  'games.dead-run': 'dead_run_sessions',
+  'games.nbg-london': 'nbg_london_records',
+});
+
+async function tableHealth(db, failures) {
+  const output = {};
+  const uniqueTables = [...new Set(Object.values(SOURCE_TABLES))];
+  const present = new Map();
+  for (const tableName of uniqueTables) {
+    try { present.set(tableName, await db.tableExists(tableName)); }
+    catch (error) { present.set(tableName, false); failures.set(tableName, error?.message || 'table_check_failed'); }
+  }
+  for (const source of ACTION_PLAN_SOURCE_REGISTRY) {
+    const table = SOURCE_TABLES[source.key];
+    output[source.key] = !table || present.get(table)
+      ? sourceStatus('live_empty', { adapter: 'read_only_projection' })
+      : sourceStatus('migration_pending', { missing_tables: [table] });
+  }
+  return output;
+}
+
+export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
+  const now = options.now ? new Date(options.now) : new Date();
+  const day = utcDay(now);
+  const week = isoWeek(now);
+  const failures = new Map();
+  const sourceStatuses = await tableHealth(db, failures);
+  const tasks = [];
+
+  const [identity] = await query(db,
+    'SELECT telegram_id FROM telegram_users WHERE telegram_id=? LIMIT 1', [ownerId], [], failures, ['onboarding.telegram']);
+  sourceStatuses['onboarding.telegram'] = sourceStatus(identity ? 'live' : 'live_empty', { adapter: 'verified_identity' });
+  tasks.push(genericTask(now, SOURCE_BY_KEY.get('onboarding.telegram'), identity ? 'complete' : 'blocked', 'live', {
+    title: identity ? 'Telegram identity verified' : 'Restore Telegram identity', priority: identity ? 900 : 10,
+    blocking: identity ? null : 'verified_identity_record_missing', progress: { current: identity ? 1 : 0, target: 1, unit: 'identity' },
+  }));
+
+  const factionRows = await query(db,
+    'SELECT m.faction_id, f.name FROM telegram_faction_members m LEFT JOIN telegram_factions f ON f.id=m.faction_id WHERE m.telegram_id=? LIMIT 1',
+    [ownerId], [], failures, ['onboarding.faction', 'faction.daily-missions', 'faction.seasonal-mission', 'faction.weekly-war']);
+  const faction = factionRows[0] || null;
+  for (const key of ['onboarding.faction', 'faction.daily-missions', 'faction.seasonal-mission', 'faction.weekly-war']) {
+    sourceStatuses[key] = sourceStatus(faction ? 'live' : 'live_empty', { adapter: key.startsWith('faction.') ? 'advisory_faction_projection' : 'membership_projection' });
+  }
+  tasks.push(genericTask(now, SOURCE_BY_KEY.get('onboarding.faction'), faction ? 'complete' : 'ready', 'live', {
+    title: faction ? 'Faction membership confirmed' : 'Choose your faction', priority: faction ? 900 : 20,
+    progress: { current: faction ? 1 : 0, target: 1, unit: 'membership' },
+  }));
+  for (const [key, title, periodKey] of [
+    ['faction.daily-missions', 'Review today’s faction missions', day],
+    ['faction.seasonal-mission', 'Advance the faction seasonal objective', null],
+    ['faction.weekly-war', 'Review your faction’s weekly war position', week],
+  ]) tasks.push(genericTask(now, SOURCE_BY_KEY.get(key), faction ? 'ready' : 'blocked', 'live', {
+    title, priority: faction ? 430 : 840, periodKey, expiresAt: key === 'faction.daily-missions' ? nextUtcDay(now) : key === 'faction.weekly-war' ? nextIsoWeek(now) : null,
+    blocking: faction ? null : 'faction_membership_required', evidence: { verified_completion: false },
+    description: key === 'faction.daily-missions' ? 'Progress is a client mirror and does not prove verified Clout.' : undefined,
+  }));
+
+  const arcadeRows = await query(db,
+    'SELECT arcade_xp_total FROM arcade_progression_state WHERE telegram_id=? LIMIT 1', [ownerId], [], failures,
+    ['onboarding.pet-entry', 'arcade.daily-opportunity', 'arcade.roguelite-objectives']);
+  const lifetimeXp = number(arcadeRows[0]?.arcade_xp_total);
+  sourceStatuses['onboarding.pet-entry'] = sourceStatus('live', { adapter: 'lifetime_arcade_xp' });
+
+  const petRows = sourceStatuses['moonpet.adoption-incubation'].state === 'migration_pending' ? [] : await query(db,
+    `SELECT i.pet_id,i.season_key,i.slot_number,i.stage,i.level,i.pet_xp,i.hunger,i.happiness,i.cleanliness,i.energy,i.health,i.status,i.created_at,s.journey_clock,
+            CASE WHEN a.pet_id=i.pet_id THEN 1 ELSE 0 END AS is_active
+       FROM telegram_pet_instances i
+       JOIN telegram_pet_season_slots s ON s.pet_id=i.pet_id AND s.telegram_id=i.telegram_id
+       LEFT JOIN telegram_pet_active_slots a ON a.telegram_id=i.telegram_id
+      WHERE i.telegram_id=? ORDER BY i.slot_number ASC LIMIT 3`, [ownerId], [], failures,
+    ACTION_PLAN_SOURCE_REGISTRY.filter((source) => source.group === 'moonpet').map((source) => source.key));
+  const pets = await Promise.all(petRows.map(async (row) => {
+    let journeyWeek = null; let journeyBounds = null;
+    try {
+      const period = getPetOwnershipPeriod(row.season_key, row.created_at, row.journey_clock);
+      journeyWeek = getPetJourneyWeek(period, now);
+      journeyBounds = getPetJourneyWeekBounds(period, journeyWeek);
+    } catch {}
+    return { ...row, ref: await opaqueRef(`${ownerId}:${row.pet_id}`), journeyWeek, journeyBounds };
+  }));
+  const petEntryComplete = pets.length > 0;
+  tasks.push(genericTask(now, SOURCE_BY_KEY.get('onboarding.pet-entry'), petEntryComplete ? 'complete' : lifetimeXp >= 1000 ? 'ready' : 'in_progress', 'live', {
+    title: petEntryComplete ? 'Moonpet entry complete' : lifetimeXp >= 1000 ? 'Adopt your first Moonpet' : 'Earn lifetime Arcade XP for Moonpet entry',
+    priority: petEntryComplete ? 900 : 30, progress: { current: Math.min(1000, lifetimeXp), target: 1000, unit: 'lifetime_arcade_xp' },
+  }));
+
+  const dailyClaimRows = await query(db,
+    "SELECT earned_at FROM telegram_community_xp_awards WHERE telegram_id=? AND action='daily_claim' AND claim_key=? LIMIT 1",
+    [ownerId, day], [], failures, ['telegram.daily-claim']);
+  const claimedDaily = Boolean(dailyClaimRows[0]);
+  sourceStatuses['telegram.daily-claim'] = sourceStatus(claimedDaily ? 'live' : 'live_empty', { adapter: 'immutable_award_receipt' });
+  tasks.push(genericTask(now, SOURCE_BY_KEY.get('telegram.daily-claim'), claimedDaily ? 'claimed' : 'ready', 'live', {
+    title: claimedDaily ? 'Daily Telegram check-in claimed' : 'Claim today’s Telegram check-in', priority: claimedDaily ? 800 : 100,
+    periodKey: day, expiresAt: nextUtcDay(now), progress: { current: claimedDaily ? 1 : 0, target: 1, unit: 'claim' },
+    reward: reward([{ type: 'community_xp', amount: 20 }], true), evidence: { verified_completion: claimedDaily, accepted_at: dailyClaimRows[0]?.earned_at },
+  }));
+
+  const dailyOpportunity = sourceStatuses['arcade.daily-opportunity'].state === 'migration_pending' ? [] : await query(db,
+    'SELECT chain_depth,updated_at FROM daily_opportunity_state WHERE telegram_id=? AND utc_day=? LIMIT 1', [ownerId, day], [], failures, ['arcade.daily-opportunity']);
+  if (sourceStatuses['arcade.daily-opportunity'].state !== 'migration_pending') {
+    sourceStatuses['arcade.daily-opportunity'] = sourceStatus(dailyOpportunity[0] ? 'live' : 'live_empty', { adapter: 'persisted_row_only' });
+  }
+  tasks.push(genericTask(now, SOURCE_BY_KEY.get('arcade.daily-opportunity'), dailyOpportunity[0] ? 'in_progress' : 'ready', 'live', {
+    title: 'Advance today’s Arcade opportunity', priority: 320, periodKey: day, expiresAt: nextUtcDay(now),
+    progress: { current: number(dailyOpportunity[0]?.chain_depth), target: null, unit: 'chain_depth' },
+  }));
+  sourceStatuses['arcade.roguelite-objectives'] = sourceStatus('preview', { adapter: 'client_mirror_advisory' });
+  tasks.push(genericTask(now, SOURCE_BY_KEY.get('arcade.roguelite-objectives'), 'preview', 'preview', {
+    title: 'Review Arcade roguelite objectives', priority: 760, blocking: 'client_mirror_not_completion_evidence',
+  }));
+
+  const wtfRows = sourceStatuses['battle.wtf-windows'].state === 'migration_pending' ? [] : await query(db,
+    'SELECT event_id,starts_at,ends_at FROM daily_wtf_events WHERE utc_day=? ORDER BY starts_at ASC LIMIT 12', [day], [], failures, ['battle.wtf-windows']);
+  if (sourceStatuses['battle.wtf-windows'].state !== 'migration_pending') {
+    sourceStatuses['battle.wtf-windows'] = sourceStatus(wtfRows.length ? 'live' : 'preview', { adapter: wtfRows.length ? 'persisted_windows' : 'schedule_preview_only' });
+  }
+  const activeWtf = wtfRows.some((row) => Date.parse(row.starts_at) <= now.getTime() && Date.parse(row.ends_at) > now.getTime());
+  tasks.push(genericTask(now, SOURCE_BY_KEY.get('battle.wtf-windows'), activeWtf ? 'active' : 'preview', wtfRows.length ? 'live' : 'preview', {
+    title: wtfRows.length ? 'Check today’s persisted WTF windows' : 'Preview the WTF schedule', priority: wtfRows.length ? 250 : 780,
+    periodKey: day, expiresAt: wtfRows.at(-1)?.ends_at || nextUtcDay(now), blocking: wtfRows.length ? null : 'persisted_window_unavailable',
+  }));
+  const missedRows = sourceStatuses['battle.missed-opportunities'].state === 'migration_pending' ? [] : await query(db,
+    'SELECT COUNT(*) AS total FROM daily_missed_perks WHERE telegram_id=?', [ownerId], [], failures, ['battle.missed-opportunities']);
+  tasks.push(genericTask(now, SOURCE_BY_KEY.get('battle.missed-opportunities'), number(missedRows[0]?.total) ? 'active' : 'complete', 'live', {
+    title: number(missedRows[0]?.total) ? 'Review missed battle opportunities' : 'No recorded missed battle opportunities', priority: 650,
+    progress: { current: number(missedRows[0]?.total), target: null, unit: 'records' },
+  }));
+
+  const completionRows = sourceStatuses['moonpet.daily-seven-missions'].state === 'migration_pending' ? [] : await query(db,
+    'SELECT progress_bits,claimed_at,pet_id FROM telegram_pet_daily_completion WHERE telegram_id=? AND utc_day=? LIMIT 1', [ownerId, day], [], failures,
+    ['moonpet.daily-seven-missions', 'moonpet.seven-of-seven-claim']);
+  const completion = completionRows[0] || {};
+  const bits = number(completion.progress_bits);
+  const sevenCurrent = [1, 8, 7, 16, 32, 64, 128].filter((mask) => (bits & mask) === mask).length;
+  const sevenDone = bits === 255;
+  tasks.push(genericTask(now, SOURCE_BY_KEY.get('moonpet.seven-of-seven-claim'), completion.claimed_at ? 'claimed' : sevenDone ? 'claim_ready' : pets.length ? 'waiting' : 'blocked', 'live', {
+    title: completion.claimed_at ? 'Moonpet 7/7 reward claimed' : sevenDone ? 'Claim the Moonpet 7/7 reward' : 'Complete all seven Moonpet mission groups',
+    priority: sevenDone && !completion.claimed_at ? 40 : 510, periodKey: day, expiresAt: nextUtcDay(now), blocking: pets.length ? null : 'moonpet_required',
+    progress: { current: sevenCurrent, target: 7, unit: 'daily_goals' }, reward: reward([{ type: 'pet_xp', amount: 25 }, { type: 'moon_gold', amount: 50 }, { type: 'style_tokens', amount: 1 }], true),
+    evidence: { verified_completion: Boolean(completion.claimed_at), accepted_at: completion.claimed_at },
+  }));
+
+  const perPetSources = ['moonpet.adoption-incubation', 'moonpet.daily-seven-missions', 'moonpet.daily-journey', 'moonpet.weekly-journey', 'moonpet.care', 'moonpet.jobs', 'moonpet.bosses-combat', 'moonpet.garden-kitchen-gym', 'moonpet.evolution'];
+  const byPet = (rows, value = 'total') => new Map(rows.map((row) => [String(row.pet_id), number(row[value])]));
+  const dailyJourney = !pets.length || sourceStatuses['moonpet.daily-journey'].state === 'migration_pending' ? [] : await query(db,
+    `SELECT pet_id,SUM(CASE
+       WHEN challenge_id='daily_combat' AND additive_progress>=3 THEN 1
+       WHEN challenge_id='daily_explorer' AND max_progress>=7 THEN 1
+       WHEN challenge_id IN ('daily_extraction','daily_boss') AND additive_progress>=1 THEN 1
+       WHEN challenge_id='daily_care' AND additive_progress>=3 THEN 1 ELSE 0 END) AS total
+       FROM (SELECT pet_id,challenge_id,SUM(progress_value) AS additive_progress,MAX(progress_value) AS max_progress
+         FROM telegram_pet_daily_journey_objectives
+        WHERE telegram_id=? AND utc_day=? AND status='accepted' GROUP BY pet_id,challenge_id)
+      GROUP BY pet_id`,
+    [ownerId, day], [], failures, ['moonpet.daily-journey']);
+  const dailyJourneyReceipts = !pets.length || sourceStatuses['moonpet.daily-journey'].state === 'migration_pending' ? [] : await query(db,
+    "SELECT pet_id,COUNT(*) AS total FROM telegram_pet_daily_journey_receipts WHERE telegram_id=? AND utc_day=? AND status='accepted' GROUP BY pet_id",
+    [ownerId, day], [], failures, ['moonpet.daily-journey']);
+  const weeklyClauses = pets.filter((pet) => pet.journeyWeek).map(() => '(pet_id=? AND qualification_week=?)');
+  const weeklyObjectiveClauses = pets.filter((pet) => pet.journeyWeek).map(() => '(o.pet_id=? AND o.qualification_week=?)');
+  const weeklyParams = pets.filter((pet) => pet.journeyWeek).flatMap((pet) => [pet.pet_id, pet.journeyWeek]);
+  const weeklyJourney = !weeklyClauses.length || sourceStatuses['moonpet.weekly-journey'].state === 'migration_pending' ? [] : await query(db,
+    `SELECT pet_id,SUM(CASE
+       WHEN objective_id='weekly_care' AND additive_progress>=5 THEN 1
+       WHEN objective_id IN ('weekly_training','weekly_run') AND additive_progress>=3 THEN 1
+       WHEN objective_id='weekly_boss_attempt' AND max_progress>=1 THEN 1
+       WHEN objective_id='weekly_check_in' AND additive_progress>=2 THEN 1 ELSE 0 END) AS total
+       FROM (SELECT o.pet_id,o.objective_id,
+          CASE WHEN o.objective_id='weekly_check_in' THEN COUNT(DISTINCT e.day_key) ELSE SUM(o.progress_value) END AS additive_progress,
+          MAX(o.progress_value) AS max_progress
+         FROM telegram_pet_weekly_journey_objectives o
+         LEFT JOIN telegram_pet_events e ON e.telegram_id=o.telegram_id AND e.pet_id=o.pet_id
+          AND e.season_key=o.season_key AND e.event_key=o.source_event_key AND e.status='accepted'
+        WHERE o.telegram_id=? AND o.status='accepted' AND (${weeklyObjectiveClauses.join(' OR ')})
+        GROUP BY o.pet_id,o.objective_id)
+      GROUP BY pet_id`,
+    [ownerId, ...weeklyParams], [], failures, ['moonpet.weekly-journey']);
+  const weeklyJourneyReceipts = !weeklyClauses.length || sourceStatuses['moonpet.weekly-journey'].state === 'migration_pending' ? [] : await query(db,
+    `SELECT pet_id,COUNT(*) AS total FROM telegram_pet_weekly_journey_receipts WHERE telegram_id=? AND status='accepted' AND (${weeklyClauses.join(' OR ')}) GROUP BY pet_id`,
+    [ownerId, ...weeklyParams], [], failures, ['moonpet.weekly-journey']);
+  const careEvents = !pets.length ? [] : await query(db,
+    "SELECT pet_id,MAX(created_at) AS last_action_at FROM telegram_pet_events WHERE telegram_id=? AND status='accepted' AND event_type IN ('feed','play','clean','train') GROUP BY pet_id",
+    [ownerId], [], failures, ['moonpet.care']);
+  const bossVictories = !pets.length || sourceStatuses['moonpet.bosses-combat'].state === 'migration_pending' ? [] : await query(db,
+    'SELECT pet_id,defeated_at FROM telegram_pet_weekly_boss_victories_by_pet WHERE telegram_id=? AND week_key=? AND defeated_at IS NOT NULL',
+    [ownerId, week], [], failures, ['moonpet.bosses-combat']);
+  const jobRows = !pets.length || sourceStatuses['moonpet.jobs'].state === 'migration_pending' ? [] : await query(db,
+    `SELECT status,started_at,ends_at,claimed_at,metadata FROM telegram_pet_activity_sessions
+      WHERE telegram_id=? AND (status='active' OR (status='completed' AND json_valid(metadata)=1
+        AND json_extract(metadata,'$.claim_state')='claiming'))
+      ORDER BY CASE status WHEN 'active' THEN 0 ELSE 1 END,started_at DESC LIMIT 1`,
+    [ownerId], [], failures, ['moonpet.jobs']);
+  const gardenRows = !pets.length || sourceStatuses['moonpet.garden-kitchen-gym'].state === 'migration_pending' ? [] : await query(db,
+    'SELECT pet_id,status,ready_at FROM telegram_pet_garden_plots WHERE telegram_id=?', [ownerId], [], failures, ['moonpet.garden-kitchen-gym']);
+  const evolutionRows = !pets.length || sourceStatuses['moonpet.evolution'].state === 'migration_pending' ? [] : await query(db,
+    'SELECT pet_id,MAX(stage) AS stage FROM telegram_pet_evolutions_by_pet WHERE telegram_id=? GROUP BY pet_id', [ownerId], [], failures, ['moonpet.evolution']);
+  const dailyProgress = byPet(dailyJourney);
+  const dailyReceipts = byPet(dailyJourneyReceipts);
+  const weeklyProgress = byPet(weeklyJourney);
+  const weeklyReceipts = byPet(weeklyJourneyReceipts);
+  const lastCare = new Map(careEvents.map((row) => [String(row.pet_id), row.last_action_at]));
+  const job = jobRows[0] || null;
+  const jobPetId = job ? String(parseJson(job.metadata).pet_id || pets.find((pet) => number(pet.is_active))?.pet_id || '') : '';
+  const bossVictoryPets = new Set(bossVictories.map((row) => String(row.pet_id)));
+  const gardens = new Map(gardenRows.map((row) => [String(row.pet_id), row]));
+  const evolutions = byPet(evolutionRows, 'stage');
+  for (const pet of pets) {
+    const careMin = Math.min(number(pet.hunger), number(pet.happiness), number(pet.cleanliness), number(pet.energy), number(pet.health));
+    for (const key of perPetSources) {
+      let title = 'Review Moonpet progress'; let status = 'ready'; let priority = 560; let progress = { current: null, target: null, unit: 'actions' }; let blocking = null; let nextReadyAt = null;
+      if (key === 'moonpet.adoption-incubation') { title = pet.stage === 'egg' ? 'Continue MoonEgg incubation' : 'Moonpet hatched'; status = pet.stage === 'egg' ? 'in_progress' : 'complete'; priority = 180; }
+      if (key === 'moonpet.daily-seven-missions') { title = 'Complete today’s seven Moonpet goals'; status = sevenDone ? 'complete' : 'in_progress'; priority = 210; progress = { current: sevenCurrent, target: 7, unit: 'daily_goals' }; }
+      if (key === 'moonpet.daily-journey') { const current = dailyProgress.get(String(pet.pet_id)) || 0; const settled = (dailyReceipts.get(String(pet.pet_id)) || 0) > 0; title = settled ? 'Daily Journey reward recorded' : 'Advance the Moonpet Daily Journey'; status = settled ? 'complete' : 'in_progress'; priority = settled ? 700 : 230; progress = { current, target: 3, unit: 'objectives' }; }
+      if (key === 'moonpet.weekly-journey') { const current = weeklyProgress.get(String(pet.pet_id)) || 0; const settled = (weeklyReceipts.get(String(pet.pet_id)) || 0) > 0; title = settled ? 'Ownership-week Journey recorded' : 'Advance this Moonpet’s ownership week'; status = settled ? 'complete' : 'in_progress'; priority = settled ? 710 : 390; progress = { current, target: 5, unit: 'objectives' }; }
+      if (key === 'moonpet.care') { const lastAt = Date.parse(lastCare.get(String(pet.pet_id)) || ''); const nextAt = Number.isFinite(lastAt) ? lastAt + 45_000 : null; const cooling = nextAt && nextAt > now.getTime(); title = cooling ? 'Moonpet care action is cooling down' : careMin < 35 ? 'Care for this Moonpet now' : 'Moonpet care is stable'; status = cooling ? 'waiting' : careMin < 35 ? 'ready' : 'complete'; priority = cooling ? 520 : careMin < 35 ? 50 : 670; progress = { current: careMin, target: 35, unit: 'minimum_care_stat' }; nextReadyAt = cooling ? new Date(nextAt).toISOString() : null; }
+      if (key === 'moonpet.jobs') { const ownsJob = job && jobPetId === String(pet.pet_id); const recovery = ownsJob && job.status === 'completed'; const startedAt = ownsJob ? Date.parse(job.started_at) : NaN; const readyAt = Number.isFinite(startedAt) ? startedAt + 300_000 : null; const ready = recovery || ownsJob && readyAt <= now.getTime(); title = recovery ? 'Recover this Moonpet’s saved job reward' : ready ? 'Claim this Moonpet’s completed job' : ownsJob ? 'Moonpet job is in progress' : 'No saved job for this Moonpet'; status = ready ? 'claim_ready' : ownsJob ? 'waiting' : 'complete'; priority = ready ? 90 : ownsJob ? 530 : 730; nextReadyAt = ownsJob && !ready && readyAt ? new Date(readyAt).toISOString() : null; }
+      if (key === 'moonpet.bosses-combat') { const won = bossVictoryPets.has(String(pet.pet_id)); title = won ? 'Weekly boss victory recorded for this Moonpet' : bossVictories.length ? 'Review this Moonpet’s post-victory participation' : 'Review eligible Moonpet combat'; priority = won ? 700 : 440; blocking = won ? null : number(pet.level) < 3 ? 'moonpet_level_required' : null; status = won ? 'complete' : blocking ? 'blocked' : 'ready'; }
+      if (key === 'moonpet.garden-kitchen-gym') { const garden = gardens.get(String(pet.pet_id)); const harvesting = garden?.status === 'harvesting'; const ready = garden && !harvesting && Date.parse(garden.ready_at) <= now.getTime(); title = harvesting ? 'Garden harvest is settling' : ready ? 'Harvest garden vegetables' : garden ? 'Garden crop is growing' : 'Plant the Moonpet garden'; status = ready ? 'ready' : garden ? 'waiting' : 'ready'; priority = ready ? 140 : 590; }
+      if (key === 'moonpet.evolution') { const stage = evolutions.get(String(pet.pet_id)) || 0; title = 'Review permanent evolution progress'; status = stage >= 5 ? 'complete' : 'in_progress'; priority = 620; progress = { current: stage, target: 5, unit: 'evolution_stage' }; }
+      tasks.push(task(now, {
+        task_id: `${key}:${pet.ref}:${day}`, source_key: key, source_pet_ref: pet.ref, scope_ref: pet.ref,
+        title, description: 'Read-only projection for an owned Moonpet. Open the Moonpet game to act.', why: 'Pet state is scoped to the verified owner and this original pet.',
+        status, source_health: sourceStatuses[key].state === 'migration_pending' ? 'unavailable' : 'live', priority, progress, blocking_reason_code: blocking,
+        period: { kind: SOURCE_BY_KEY.get(key).period, key: key.includes('weekly') ? week : key.includes('daily') ? day : null, origin_timezone: 'UTC' },
+        expires_at: key.includes('daily') ? nextUtcDay(now) : key.includes('weekly') ? nextIsoWeek(now) : null,
+        next_ready_at: nextReadyAt,
+        evidence: { kind: SOURCE_BY_KEY.get(key).evidence, verified_completion: status === 'complete' && SOURCE_BY_KEY.get(key).evidence === 'server_receipt' },
+      }));
+    }
+  }
+  if (!pets.length) {
+    for (const key of perPetSources) tasks.push(genericTask(now, SOURCE_BY_KEY.get(key), 'blocked', sourceStatuses[key].state === 'migration_pending' ? 'unavailable' : 'live', {
+      title: 'Adopt a Moonpet to unlock this action', priority: 850, blocking: 'moonpet_required', periodKey: key.includes('daily') ? day : key.includes('weekly') ? week : null,
+    }));
+  }
+
+  const claimRows = sourceStatuses['moonpet.claimable-rewards'].state === 'migration_pending' ? [] : await query(db,
+    "SELECT COUNT(*) AS total FROM telegram_pet_reward_claims WHERE telegram_id=? AND status='pending'",
+    [ownerId], [], failures, ['moonpet.claimable-rewards']);
+  const claimCount = number(claimRows[0]?.total);
+  tasks.push(genericTask(now, SOURCE_BY_KEY.get('moonpet.claimable-rewards'), claimCount ? 'claim_ready' : 'complete', sourceStatuses['moonpet.claimable-rewards'].state === 'migration_pending' ? 'unavailable' : 'live', {
+    title: claimCount ? 'Claim saved Moonpet rewards' : 'Claim saved Moonpet rewards: none pending', priority: claimCount ? 60 : 720,
+    progress: { current: claimCount, target: null, unit: 'saved_records' }, blocking: sourceStatuses['moonpet.claimable-rewards'].state === 'migration_pending' ? 'source_table_unavailable' : null,
+  }));
+
+  for (const [key, sql, activeTitle, emptyTitle] of [
+    ['moonpet.saved-run', "SELECT pet_id,status,updated_at FROM telegram_pet_runs WHERE telegram_id=? AND status IN ('active','extractable') ORDER BY updated_at DESC LIMIT 10", 'Resume this Moonpet’s saved run', 'No saved Moonpet run is pending'],
+    ['moonpet.contracts', "SELECT pet_id,status,updated_at FROM telegram_pet_contracts WHERE telegram_id=? AND status='active' ORDER BY updated_at DESC LIMIT 10", 'Continue this Moonpet’s active contract', 'No Moonpet contract is active'],
+  ]) {
+    const rows = sourceStatuses[key].state === 'migration_pending' ? [] : await query(db, sql, [ownerId], [], failures, [key]);
+    if (!rows.length) {
+      tasks.push(genericTask(now, SOURCE_BY_KEY.get(key), 'complete', sourceStatuses[key].state === 'migration_pending' ? 'unavailable' : 'live', {
+        title: emptyTitle, priority: 720, progress: { current: 0, target: null, unit: 'saved_records' },
+        blocking: sourceStatuses[key].state === 'migration_pending' ? 'source_table_unavailable' : null,
+      }));
+      continue;
+    }
+    for (const [index, row] of rows.entries()) {
+      const petRef = await opaqueRef(`${ownerId}:${row.pet_id}`);
+      const claimReady = key === 'moonpet.saved-run' && row.status === 'extractable';
+      tasks.push(task(now, {
+        task_id: `${key}:${petRef}:${index}`, source_key: key, source_pet_ref: petRef, scope_ref: petRef,
+        title: claimReady ? 'Extract this Moonpet’s saved run' : activeTitle,
+        description: 'This saved state remains attributed to the Moonpet that created it.',
+        why: 'The original pet remains authoritative even if the active slot has changed.',
+        status: claimReady ? 'claim_ready' : 'active', source_health: 'live', priority: claimReady ? 85 : 170,
+        progress: { current: 1, target: null, unit: 'saved_records' },
+        evidence: { kind: 'server_projection', verified_completion: false },
+      }));
+    }
+  }
+
+  const wikiRows = sourceStatuses['wiki.accepted-missions'].state === 'migration_pending' ? [] : await query(db,
+    'SELECT COUNT(*) AS total FROM wiki_mission_completions WHERE telegram_id=? AND substr(created_at,1,10)=?', [ownerId, day], [], failures, ['wiki.accepted-missions']);
+  tasks.push(genericTask(now, SOURCE_BY_KEY.get('wiki.accepted-missions'), number(wikiRows[0]?.total) ? 'complete' : 'ready', 'live', {
+    title: number(wikiRows[0]?.total) ? 'Accepted wiki mission recorded today' : 'Complete an accepted wiki mission', priority: 350, periodKey: day, expiresAt: nextUtcDay(now),
+    progress: { current: number(wikiRows[0]?.total), target: 1, unit: 'accepted_receipts' }, evidence: { verified_completion: number(wikiRows[0]?.total) > 0 },
+  }));
+  const cloutRows = sourceStatuses['championship.verified-clout'].state === 'migration_pending' ? [] : await query(db,
+    "SELECT total_points,recalculated_at_ms FROM championship_clout_daily WHERE telegram_id=? AND day_key=? AND policy_version='championship-v1' LIMIT 1", [ownerId, day], [], failures, ['championship.verified-clout']);
+  tasks.push(genericTask(now, SOURCE_BY_KEY.get('championship.verified-clout'), cloutRows[0] ? 'active' : 'waiting', sourceStatuses['championship.verified-clout'].state === 'migration_pending' ? 'unavailable' : 'live', {
+    title: 'Review today’s verified Championship Clout', priority: 460, periodKey: day, expiresAt: nextUtcDay(now),
+    progress: { current: number(cloutRows[0]?.total_points), target: 100, unit: 'championship_clout' },
+  }));
+  const deadRows = sourceStatuses['games.dead-run'].state === 'migration_pending' ? [] : await query(db,
+    "SELECT status,score,ended_at FROM dead_run_sessions WHERE telegram_id=? ORDER BY created_at DESC LIMIT 1", [ownerId], [], failures, ['games.dead-run']);
+  tasks.push(genericTask(now, SOURCE_BY_KEY.get('games.dead-run'), deadRows[0]?.status === 'active' ? 'active' : 'ready', sourceStatuses['games.dead-run'].state === 'migration_pending' ? 'unavailable' : 'live', {
+    title: deadRows[0]?.status === 'active' ? 'Continue your active Dead Run' : 'Start a verified Dead Run', priority: deadRows[0]?.status === 'active' ? 160 : 480,
+    progress: { current: number(deadRows[0]?.score), target: null, unit: 'verified_score' },
+  }));
+  const nbgRows = sourceStatuses['games.nbg-london'].state === 'migration_pending' ? [] : await query(db,
+    'SELECT fastest_ms,best_xp FROM nbg_london_records WHERE telegram_id=? LIMIT 1', [ownerId], [], failures, ['games.nbg-london']);
+  sourceStatuses['games.nbg-london'] = sourceStatuses['games.nbg-london'].state === 'migration_pending'
+    ? sourceStatuses['games.nbg-london'] : sourceStatus(nbgRows[0] ? 'live' : 'preview', { adapter: nbgRows[0] ? 'verified_record_projection' : 'competition_preview' });
+  tasks.push(genericTask(now, SOURCE_BY_KEY.get('games.nbg-london'), nbgRows[0] ? 'ready' : 'preview', sourceStatuses['games.nbg-london'].state === 'live' ? 'live' : 'preview', {
+    title: nbgRows[0] ? 'Improve your NBG London record' : 'Preview NBG London', priority: 610,
+    progress: { current: number(nbgRows[0]?.best_xp), target: null, unit: 'verified_arcade_xp' }, blocking: nbgRows[0] ? null : 'no_verified_record',
+  }));
+
+  for (const [key, message] of failures.entries()) {
+    if (sourceStatuses[key]) sourceStatuses[key] = sourceStatus('query_failed', { adapter: 'read_only_projection', error_code: String(message).slice(0, 80) });
+  }
+  for (const source of ACTION_PLAN_SOURCE_REGISTRY) {
+    if (!tasks.some((candidate) => candidate.source_key === source.key)) {
+      tasks.push(genericTask(now, source, 'sync_unavailable', sourceStatuses[source.key]?.state || 'unavailable', {
+        blocking: 'source_projection_unavailable', priority: 950,
+      }));
+    }
+  }
+  const normalizedTasks = tasks.map((entry) => {
+    const state = sourceStatuses[entry.source_key]?.state;
+    if (!['query_failed', 'migration_pending', 'unavailable'].includes(state)) return entry;
+    return Object.freeze({ ...entry, status: 'sync_unavailable', availability: 'sync_unavailable', source_health: state, blocking_reason_code: 'source_projection_unavailable' });
+  });
+  return { tasks: normalizedTasks, source_status: sourceStatuses, read_context: { utc_day: day, iso_week: week, pet_count: pets.length } };
+}

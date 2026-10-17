@@ -33,6 +33,7 @@ import { verifyTelegramIdentityFromBody } from './blocktopia/auth.js';
 import { getOrCreateBlockTopiaProgression, hasBlockTopiaFactionColumns } from './blocktopia/db.js';
 import { handleBlockTopiaProgressionRoute } from './blocktopia/routes.js';
 import { buildDailyLoopState, handleDailyLoopStateRoute } from './routes/daily-loop-state.js';
+import { handlePlayerActionPlanRoute } from './routes/player-action-plan.js';
 import { handleRogueliteDailyRoutes } from './routes/daily-digest.js';
 import { handleRadioStream } from './routes/radio-stream.js';
 import { getContractBoard, processContractAction } from './pets/continuing-contracts.js';
@@ -157,6 +158,7 @@ import { buildWtfIso, getWtfDailySchedule, getWtfEventStatus } from './shared/da
  *   POST /player/mastery/update
  *   GET  /daily-loop/state  (public anonymous UTC daily loop authority)
  *   POST /daily-loop/state  JSON { telegram_auth } (Telegram-linked UTC daily loop authority)
+ *   POST /player/action-plan  (authenticated, read-only unified action projection)
  *   GET  /roguelite/daily-state  (legacy query-auth compatibility; deprecated for linked state)
  *   POST /roguelite/daily-state  JSON { telegram_auth }
  *   GET  /roguelite/missed-history?limit=30  (legacy query-auth compatibility; deprecated for linked state)
@@ -11795,6 +11797,18 @@ export default {
         logApiFailure,
       });
       if (dailyLoopResponse) return dailyLoopResponse;
+    }
+
+    if (path === '/player/action-plan') {
+      const actionPlanResponse = await handlePlayerActionPlanRoute(request, env, {
+        json,
+        err,
+        verifyIdentity: (body, authEnv) => verifyTelegramIdentityFromBody(body, authEnv, verifyTelegramAuth),
+        logApiFailure,
+        enforceRateLimit: (rateRequest, rateEnv, routeKey, body, rateOptions) =>
+          enforcePublicRateLimit(rateRequest, rateEnv, routeKey, body, corsHeaders, rateOptions),
+      });
+      if (actionPlanResponse) return actionPlanResponse;
     }
 
     // ── POST /admin/blocktopia/access ─────────────────────────────────────

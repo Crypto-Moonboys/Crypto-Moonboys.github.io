@@ -1,0 +1,90 @@
+const READ_ONLY_SQL = /^\s*(?:SELECT|WITH)\b/iu;
+const MUTATING_SQL = /\b(?:INSERT|UPDATE|DELETE|REPLACE|CREATE|ALTER|DROP|VACUUM|REINDEX|ATTACH|DETACH)\b/iu;
+
+function assertReadOnlySql(sql) {
+  const text = String(sql || '');
+  if (!READ_ONLY_SQL.test(text) || MUTATING_SQL.test(text)) {
+    throw new Error('player_action_plan_mutating_sql_rejected');
+  }
+  return text;
+}
+
+function requireRows(result) {
+  if (result?.success === false || !Array.isArray(result?.results)) {
+    throw new Error('player_action_plan_query_failed');
+  }
+  return result.results;
+}
+
+function requireFirst(result) {
+  if (result?.success === false) throw new Error('player_action_plan_query_failed');
+  return result ?? null;
+}
+
+export function createReadOnlyActionPlanDb(db, options = {}) {
+  if (!db || typeof db.prepare !== 'function') throw new Error('player_action_plan_database_unavailable');
+  const maxStatements = Math.max(1, Math.min(200, Number(options.maxStatements) || 80));
+  const statementTimeoutMs = Math.max(10, Math.min(5000, Number(options.statementTimeoutMs) || 1500));
+  const tableCache = new Map();
+  const calls = [];
+
+  function reserve(sql, params, method) {
+    const text = assertReadOnlySql(sql);
+    if (calls.length >= maxStatements) throw new Error('player_action_plan_query_budget_exceeded');
+    calls.push({ method, sql: text, parameter_count: params.length });
+    return db.prepare(text).bind(...params);
+  }
+
+  async function settleWithin(promise) {
+    let timeoutId;
+    const timeout = new Promise((_, reject) => {
+      timeoutId = setTimeout(() => reject(new Error('player_action_plan_query_timeout')), statementTimeoutMs);
+    });
+    try { return await Promise.race([promise, timeout]); }
+    finally { clearTimeout(timeoutId); }
+  }
+
+  async function all(sql, params = []) {
+    return requireRows(await settleWithin(reserve(sql, params, 'all').all()));
+  }
+
+  async function first(sql, params = []) {
+    return requireFirst(await settleWithin(reserve(sql, params, 'first').first()));
+  }
+
+  async function tableExists(tableName) {
+    const table = String(tableName || '');
+    if (!/^[a-z][a-z0-9_]{0,80}$/u.test(table)) throw new Error('player_action_plan_invalid_table');
+    if (!tableCache.has(table)) {
+      tableCache.set(table, first(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name=? LIMIT 1",
+        [table],
+      ).then((row) => Boolean(row?.name)).catch((error) => {
+        tableCache.delete(table);
+        throw error;
+      }));
+    }
+    return tableCache.get(table);
+  }
+
+  return Object.freeze({
+    all,
+    first,
+    tableExists,
+    stats() {
+      return Object.freeze({ statement_count: calls.length, max_statements: maxStatements, statement_timeout_ms: statementTimeoutMs });
+    },
+    audit() {
+      return calls.map((entry) => ({ ...entry }));
+    },
+  });
+}
+
+export function isReadOnlyActionPlanSql(sql) {
+  try {
+    assertReadOnlySql(sql);
+    return true;
+  } catch {
+    return false;
+  }
+}
