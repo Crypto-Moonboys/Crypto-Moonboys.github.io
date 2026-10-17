@@ -386,7 +386,7 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
         title: `${hiddenPendingClaims} more saved Moonpet daily rewards`,
         description: 'Older earned bonuses are outside this limited API preview. Open the Moonpet reward inbox for the complete claim workflow.',
         why: 'Previous days\' unclaimed bonuses remain saved without an expiry.',
-        periodKey: 'historical_pending', suffix: 'overflow', priority: 48,
+        periodKey: 'historical_pending', suffix: 'overflow', priority: 34,
         progress: { current: historyRows.length, target: historicalPendingTotal, unit: 'historical_saved_claims' },
         evidence: { verified_completion: false },
       }));
