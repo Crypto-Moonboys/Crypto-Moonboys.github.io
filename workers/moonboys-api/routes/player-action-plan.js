@@ -92,7 +92,7 @@ export async function handlePlayerActionPlanRoute(request, env, options = {}) {
     generated_at: now.toISOString(),
     owner: { authenticated: true, pet_count: projection.read_context.pet_count },
     period: { utc_day: projection.read_context.utc_day, iso_week: projection.read_context.iso_week },
-    summary: summarizeActionPlan(ranked, projection.source_status),
+    summary: summarizeActionPlan(ranked, projection.source_status, now),
     top_actions: immediate,
     tasks: page.tasks,
     pagination: page.pagination,
