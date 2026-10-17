@@ -139,7 +139,7 @@ const expectedAnimations = {
   run: { spriteSheet: 'player/animations/run.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 17, frames: 6, columns: 3, frameMs: 88 },
   jump: { spriteSheet: 'player/animations/jump.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 23, frames: 6, columns: 3, frameMs: 145 },
   fall: { spriteSheet: 'player/animations/fall.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 20, frames: 6, columns: 3, frameMs: 145 },
-  spray: { spriteSheet: 'player/NBG Runner Final-spray.png', sourceFrameWidth: 256, sourceFrameHeight: 256, renderWidth: 176, renderHeight: 176, renderOffsetY: 45, frames: 25, columns: 5, frameMs: 8 },
+  spray: { spriteSheet: 'player/NBG Runner Final-spray.png', sourceFrameWidth: 256, sourceFrameHeight: 256, renderWidth: 164, renderHeight: 164, renderOffsetY: 57, frames: 25, columns: 5, frameMs: 8 },
   hurt: { spriteSheet: 'player/animations/hurt.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 6, frames: 6, columns: 3, frameMs: 120 },
   victory: { spriteSheet: 'player/animations/victory.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 13, frames: 6, columns: 3, frameMs: 145 }
 };
@@ -983,8 +983,8 @@ state = await page.evaluate(() => {
 });
 assert.equal(state.w, 24, 'left-boundary visual clamp must not change player hitbox width');
 assert.equal(state.h, 34, 'left-boundary visual clamp must not change player hitbox height');
-assert.equal(state.renderWidth, 176, 'left-boundary spray pose must retain its enlarged visual width');
-assert.equal(state.visualMarginX, 76, 'left-boundary visual clamp must account for the wider spray sheet');
+assert.equal(state.renderWidth, 164, 'left-boundary spray pose must retain its slightly reduced visual width');
+assert.equal(state.visualMarginX, 70, 'left-boundary visual clamp must account for the adjusted spray sheet');
 assert.equal(state.facing, -1, 'left-boundary regression must validate facing-left frames');
 assert.equal(state.anim, 'spray', 'left-boundary regression must validate spray animation frames');
 assert.ok(state.x >= 12 + state.visualMarginX, 'player world clamp must include the runner visual margin');
@@ -1920,7 +1920,7 @@ await page.waitForFunction(() => window.__sprayDefeats.some(
 // A single spray lasts 230ms. At 9ms/frame the entire 5x5 sheet reaches
 // its final row before sprayTimer clears, even at normal 60fps rendering.
 await page.waitForFunction(() => window.__finalSprayFrames.some(frame =>
-  frame.width === 176 && frame.height === 176 &&
+  frame.width === 164 && frame.height === 164 &&
   frame.sourceY === 1024 && frame.sourceX >= 768
 ), null, { timeout: 1500 });
 await page.keyboard.up('KeyS');
@@ -1939,6 +1939,10 @@ const standingSpray = await page.evaluate(() => {
   delete window.__sprayDefeatListener;
   return result;
 });
+assert.ok(expectedAnimations.spray.renderWidth < 176 &&
+  expectedAnimations.spray.renderHeight < 176 &&
+  expectedAnimations.spray.renderOffsetY > 45,
+  'final spray pose should be slightly smaller and drawn lower than the previous revision');
 assert.equal(standingSpray.grounded, true,
   'spray must kill from standing without requiring a jump or stomp');
 assert.equal(standingSpray.xp, sprayBaseline.xp + 100,
@@ -1949,7 +1953,7 @@ assert.ok(standingSpray.defeats.some(event => event.reason === 'spray' &&
   event.type === 'brownRat' && event.earnedXp === 100),
   'spray kill must emit the existing enemy-defeated event with the right reason');
 assert.ok(standingSpray.frames.length > 0 &&
-  standingSpray.frames.every(frame => frame.width === 176 && frame.height === 176),
+  standingSpray.frames.every(frame => frame.width === 164 && frame.height === 164),
   'the final spray sheet must draw enlarged frames while spraying');
 const sprayCells = new Set(standingSpray.frames.map(frame =>
   `${frame.sourceX},${frame.sourceY}`));
