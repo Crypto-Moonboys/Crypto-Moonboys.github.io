@@ -46,15 +46,15 @@
       "frameMs": 145
     },
     "spray": {
-      "spriteSheet": "player/animations/spray.png",
-      "sourceFrameWidth": 128,
-      "sourceFrameHeight": 128,
-      "renderWidth": 72,
-      "renderHeight": 86,
-      "renderOffsetY": 6,
-      "frames": 6,
-      "columns": 3,
-      "frameMs": 110
+      "spriteSheet": "player/NBG Runner Final-spray.png",
+      "sourceFrameWidth": 256,
+      "sourceFrameHeight": 256,
+      "renderWidth": 176,
+      "renderHeight": 176,
+      "renderOffsetY": 45,
+      "frames": 25,
+      "columns": 5,
+      "frameMs": 18
     },
     "hurt": {
       "spriteSheet": "player/animations/hurt.png",
