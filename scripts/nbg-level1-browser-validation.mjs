@@ -139,7 +139,7 @@ const expectedAnimations = {
   run: { spriteSheet: 'player/animations/run.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 17, frames: 6, columns: 3, frameMs: 88 },
   jump: { spriteSheet: 'player/animations/jump.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 23, frames: 6, columns: 3, frameMs: 145 },
   fall: { spriteSheet: 'player/animations/fall.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 20, frames: 6, columns: 3, frameMs: 145 },
-  spray: { spriteSheet: 'player/NBG Runner Final-spray.png', sourceFrameWidth: 256, sourceFrameHeight: 256, renderWidth: 164, renderHeight: 164, renderOffsetY: 57, frames: 25, columns: 5, frameMs: 8 },
+  spray: { spriteSheet: 'player/NBG Runner Final-spray.png', sourceFrameWidth: 256, sourceFrameHeight: 256, renderWidth: 164, renderHeight: 164, renderOffsetY: 46, frames: 25, columns: 5, frameMs: 8 },
   hurt: { spriteSheet: 'player/animations/hurt.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 6, frames: 6, columns: 3, frameMs: 120 },
   victory: { spriteSheet: 'player/animations/victory.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 13, frames: 6, columns: 3, frameMs: 145 }
 };
@@ -1941,8 +1941,8 @@ const standingSpray = await page.evaluate(() => {
 });
 assert.ok(expectedAnimations.spray.renderWidth < 176 &&
   expectedAnimations.spray.renderHeight < 176 &&
-  expectedAnimations.spray.renderOffsetY > 45,
-  'final spray pose should be slightly smaller and drawn lower than the previous revision');
+  expectedAnimations.spray.renderOffsetY === 46,
+  'final spray pose should stay 164px wide and be raised approximately 7 percent');
 assert.equal(standingSpray.grounded, true,
   'spray must kill from standing without requiring a jump or stomp');
 assert.equal(standingSpray.xp, sprayBaseline.xp + 100,
