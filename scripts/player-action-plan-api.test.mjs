@@ -76,7 +76,23 @@ function fakeDb(options = {}) {
                 return { success: true, results: [{ pet_id: 'pet-secret-123',
                   status: 'growing', planted_at: options.cropPlantedAt, ready_at: '2026-10-17T18:00:00Z' }] };
               }
-              if (/telegram_community_xp_awards/u.test(sql)) return { success: true, results: [] };
+              if (/telegram_community_xp_awards/u.test(sql)) {
+                if (options.failDailyAuthority === 'award') throw new Error('daily_receipt_source_unavailable');
+                return { success: true, results: options.claimAward ? [{
+                  telegram_id: '123456', action: 'daily_claim', claim_key: '2026-10-17',
+                  reference_id: options.claimAward === 'bad_reference' ? 'wrong-day' : '2026-10-17',
+                  xp_change: options.claimAward === 'zero' ? 0 : 20,
+                  season_id: null, earned_at: '2026-10-17T11:50:00Z',
+                  settlement_token: options.claimAward === 'missing_token' ? '' : 'settled-token',
+                }] : [] };
+              }
+              if (/FROM telegram_xp_log/u.test(sql)) {
+                if (options.failDailyAuthority === 'legacy') throw new Error('legacy_receipt_source_unavailable');
+                return { success: true, results: options.legacyDailyClaim ? [{
+                  id: 42, telegram_id: '123456', action: 'daily_claim',
+                  reference_id: '2026-10-17', xp_change: 20, created_at: '2026-10-17 11:50:00',
+                }] : [] };
+              }
               if (/daily_opportunity_state/u.test(sql)) return { success: true, results: [{ chain_depth: 2, updated_at: '2026-10-17T01:00:00Z' }] };
               if (/FROM daily_wtf_events e/u.test(sql)) return { success: true, results: [{
                 event_id: 'hidden-event', starts_at: '2026-10-17T11:00:00Z', ends_at: '2026-10-17T13:00:00Z',
@@ -99,14 +115,15 @@ function fakeDb(options = {}) {
                 }
                 return { success: true, results: [{ utc_day: '2026-10-17',
                   progress_bits: options.savedOldClaims || options.manyPending ? 137 : 255,
-                  claimed_at: null, pet_id: 'pet-secret-123' }] };
+                  claimed_at: null, pet_id: options.completionPetNull ? null : 'pet-secret-123' }] };
               }
               if (/FROM telegram_pet_activity_sessions/u.test(sql) && (options.savedStates || options.activityEndsAt || options.malformedMetadata)) return { success: true, results: [{
                 session_id: options.jobSessionMissing ? null : options.jobSessionId || 'job-source-123',
                 status: 'active', started_at: options.activityStartsAt || '2026-10-17T11:50:00Z',
                 ends_at: options.activityEndsAt || '2026-10-17T13:50:00Z',
                 claimed_at: null,
-                metadata: options.malformedMetadata ? '{bad-json' : '{"pet_id":"pet-secret-123"}',
+                metadata: options.malformedMetadata ? '{bad-json'
+                  : options.noJobPetId ? '{}' : '{"pet_id":"pet-secret-123"}',
               }] };
               if (/FROM telegram_pet_runs r/u.test(sql) && (options.savedStates || options.invalidRun)) return { success: true, results: [{
                 source_id: 'source-run-789',
@@ -116,9 +133,14 @@ function fakeDb(options = {}) {
                 owner_verified: options.invalidRun ? 0 : 1,
                 status: 'extractable', updated_at: '2026-10-17T11:55:00Z',
               }] };
-              if (/FROM telegram_pet_contracts/u.test(sql) && (options.savedStates || options.pendingContracts)) return { success: true, results: options.pendingContracts
-                ? [{ source_id: 'source-contract-456', pet_id: 'pet-secret-456', status: 'completed', reward_xp: 20, reward_settled: 0, updated_at: '2026-10-16T11:54:00Z' }]
-                : [{ source_id: 'source-contract-456', pet_id: 'pet-secret-456', status: 'active', updated_at: '2026-10-17T11:54:00Z' }] };
+              if (/FROM telegram_pet_contracts c/u.test(sql) && (options.savedStates || options.pendingContracts || options.invalidContract)) return { success: true, results: options.pendingContracts
+                ? [{ source_id: 'source-contract-456', pet_id: 'pet-secret-456',
+                  season_key: '2026-Q4', owner_verified: options.invalidContract ? 0 : 1,
+                  status: 'completed', reward_xp: 20, reward_settled: 0, updated_at: '2026-10-16T11:54:00Z' }]
+                : [{ source_id: 'source-contract-456', pet_id: options.invalidContract ? 'foreign-pet' : 'pet-secret-456',
+                  season_key: options.invalidContract ? 'foreign-season' : '2026-Q4',
+                  owner_verified: options.invalidContract ? 0 : 1,
+                  status: 'active', updated_at: '2026-10-17T11:54:00Z' }] };
               if (/FROM telegram_pet_weekly_boss_victories_by_pet v\s+LEFT JOIN telegram_pet_weekly_boss_events a/su.test(sql)
                   && options.bossVictoryBeforePetWeek) {
                 return { success: true, results: [{ pet_id: 'pet-secret-123', season_key: '2026-Q4',
@@ -605,6 +627,104 @@ test('untrusted or unassigned saved-run pets are never given original-pet refere
   }
 });
 
+test('daily claims consult and validate modern and legacy authorities', async () => {
+  for (const [scenario, expected] of [
+    [{ legacyDailyClaim: true }, 'claimed'],
+    [{ claimAward: 'valid' }, 'claimed'],
+    [{ claimAward: 'zero' }, 'sync_unavailable'],
+    [{ claimAward: 'bad_reference' }, 'sync_unavailable'],
+    [{ claimAward: 'missing_token' }, 'sync_unavailable'],
+    [{ failDailyAuthority: 'legacy', claimAward: 'valid' }, 'sync_unavailable'],
+    [{ failDailyAuthority: 'award', legacyDailyClaim: true }, 'sync_unavailable'],
+  ]) {
+    const db = fakeDb(scenario);
+    const result = await (await handlePlayerActionPlanRoute(request(auth({ limit: 100 })),
+      { DB: db, TELEGRAM_BOT_TOKEN: 'test' }, options())).json();
+    const claim = result.tasks.find(t => t.source_key === 'telegram.daily-claim');
+    assert.equal(claim.status, expected, JSON.stringify(scenario));
+    assert.equal(result.top_actions.some(t => t.source_key === 'telegram.daily-claim'), false,
+      'legacy and unverified claims must not be newly recommended');
+    const legacySql = db.calls.find(t => /FROM telegram_xp_log/u.test(t.sql));
+    assert.match(legacySql.sql, /DATE\(created_at\)=\?/u);
+    assert.equal(legacySql.params[0], '123456');
+    if (expected === 'sync_unavailable') {
+      assert.equal(result.source_status['telegram.daily-claim'].state, 'query_failed');
+    } else {
+      assert.equal(claim.evidence.verified_completion, true);
+    }
+  }
+});
+
+test('null-attribution earned completion requires an active valid source pet', async () => {
+  for (const [opts, status] of [
+    [{ completionPetNull: true, noPets: true }, 'blocked'],
+    [{ completionPetNull: true, tableErrors: new Set(['telegram_pet_instances']) }, 'sync_unavailable'],
+    [{ completionPetNull: true }, 'claim_ready'],
+  ]) {
+    const r = await (await handlePlayerActionPlanRoute(request(auth({ limit: 100 })),
+      { DB: fakeDb(opts), TELEGRAM_BOT_TOKEN: 'test' }, options())).json();
+    const task = r.tasks.find(t => t.source_key === 'moonpet.seven-of-seven-claim'
+      && t.period.key === '2026-10-17');
+    assert.equal(task.status, status, JSON.stringify([...Object.keys(opts)]));
+    if (status !== 'claim_ready') assert.ok(!r.top_actions.some(t => t.task_id === task.task_id));
+  }
+});
+
+test('boss claim SQL proves an accepted owner-specific source event or exact legacy proof', async () => {
+  const db = fakeDb({ pendingBossRewards: true });
+  await handlePlayerActionPlanRoute(request(auth({ limit: 100 })),
+    { DB: db, TELEGRAM_BOT_TOKEN: 'test' }, options());
+  const sql = db.calls.find(t => /SELECT DISTINCT v.pet_id,v.season_key,v.week_key,v.boss_id/u.test(t.sql))?.sql;
+  assert.ok(sql);
+  assert.match(sql, /e.status='accepted'/u);
+  assert.match(sql, /e.pet_id=v.pet_id/u);
+  assert.match(sql, /e.season_key=v.season_key/u);
+  assert.match(sql, /pet_weekly_boss_backfill/u);
+  assert.match(sql, /e.id IS NULL AND EXISTS/u);
+  assert.match(sql, /b.event_key=v.victory_event_key/u);
+});
+
+test('malformed saved session pet metadata never falls back to current active pet', async () => {
+  const r = await (await handlePlayerActionPlanRoute(request(auth({ limit: 100 })),
+    { DB: fakeDb({ savedStates: true, noJobPetId: true }), TELEGRAM_BOT_TOKEN: 'test' }, options())).json();
+  assert.equal(r.source_status['moonpet.jobs'].state, 'query_failed');
+  assert.equal(r.tasks.filter(t => t.source_key === 'moonpet.jobs'
+    && t.status === 'claim_ready').length, 0);
+});
+
+test('saved contracts without verified original-pet and season are unavailable', async () => {
+  const db = fakeDb({ invalidContract: true });
+  const r = await (await handlePlayerActionPlanRoute(request(auth({ limit: 100 })),
+    { DB: db, TELEGRAM_BOT_TOKEN: 'test' }, options())).json();
+  assert.equal(r.source_status['moonpet.contracts'].state, 'query_failed');
+  const c = r.tasks.filter(t => t.source_key === 'moonpet.contracts');
+  assert.ok(c.length && c.every(t => t.status === 'sync_unavailable' && !t.source_pet_ref));
+  const sql = db.calls.find(t => /FROM telegram_pet_contracts c/u.test(t.sql))?.sql;
+  assert.match(sql, /LEFT JOIN telegram_pet_instances i/u);
+  assert.match(sql, /LEFT JOIN telegram_pet_season_slots s/u);
+  assert.match(sql, /c.season_key=i.season_key/u);
+});
+
+test('active Moonpet activity prevents sleep from entering Top actions', async () => {
+  const r = await (await handlePlayerActionPlanRoute(request(auth({ limit: 100 })),
+    { DB: fakeDb({ savedStates: true, careEnergy: 15 }), TELEGRAM_BOT_TOKEN: 'test' }, options())).json();
+  const care = r.tasks.find(t => t.source_key === 'moonpet.care' && t.scope_ref);
+  assert.equal(care.status, 'waiting');
+  assert.equal(care.blocking_reason_code, 'pet_activity_active');
+  assert.ok(!r.top_actions.some(t => t.task_id === care.task_id));
+});
+
+test('roster and lifetime XP lookup errors do not taint unrelated source projections', async () => {
+  const db = fakeDb({ tableErrors: new Set(['telegram_pet_instances']),
+    lowXp: true, failArcadeXp: true, pendingClaimCount: 1 });
+  const r = await (await handlePlayerActionPlanRoute(request(auth({ limit: 100 })),
+    { DB: db, TELEGRAM_BOT_TOKEN: 'test' }, options())).json();
+  assert.equal(r.source_status['onboarding.pet-entry'].state, 'query_failed');
+  for (const key of ['arcade.daily-opportunity', 'arcade.roguelite-objectives',
+    'moonpet.seven-of-seven-claim', 'moonpet.claimable-rewards']) {
+    assert.notEqual(r.source_status[key].state, 'query_failed', key);
+  }
+});
 test('authentication, owner selectors, rate limits and pagination fail closed', async () => {
   const env = { DB: fakeDb(), TELEGRAM_BOT_TOKEN: 'test' };
   let response = await handlePlayerActionPlanRoute(request({}), env, options());
@@ -916,7 +1036,8 @@ test('WTF windows use owner event truth for active, checked in and completed sta
 test('malformed activity metadata is guarded by CASE and cannot fabricate recovery', async () => {
   const db = fakeDb({ malformedMetadata: true });
   const r = await (await handlePlayerActionPlanRoute(request(auth({ limit: 100 })), { DB: db, TELEGRAM_BOT_TOKEN: 'test' }, options())).json();
-  assert.notEqual(r.source_status['moonpet.jobs'].state, 'query_failed');
+  assert.equal(r.source_status['moonpet.jobs'].state, 'query_failed');
+  assert.equal(r.tasks.find(t => t.source_key === 'moonpet.jobs' && t.scope_ref)?.status, 'sync_unavailable');
   const sql = db.calls.find(call => /FROM telegram_pet_activity_sessions/u.test(call.sql)).sql;
   assert.match(sql, /json_extract\(CASE WHEN json_valid\(metadata\)/u);
   const sqlite = new DatabaseSync(':memory:');
