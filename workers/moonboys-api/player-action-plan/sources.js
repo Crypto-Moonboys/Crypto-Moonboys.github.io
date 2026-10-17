@@ -10,6 +10,7 @@ import { getPetVisibleLevel } from '../pets/progression-phase-2.js';
 import { DAILY_COMPLETION_REWARD } from '../pets/completion-policy.js';
 import { WEEKLY_JOURNEY_SOURCE_OBJECTIVES } from '../pets/weekly-journey.js';
 import { weeklyBossLegacySourceProofSql } from '../pets/weekly-boss-evidence.js';
+import { applyPetCareDecay } from '../pets/care-decay.js';
 
 export const ACTION_PLAN_SOURCE_REGISTRY = Object.freeze([
   ['onboarding.telegram', 'onboarding', 'account', 'once', 'server_projection', '/gkniftyheads-incubator.html'],
@@ -44,6 +45,12 @@ export const ACTION_PLAN_SOURCE_REGISTRY = Object.freeze([
 
 const SOURCE_BY_KEY = new Map(ACTION_PLAN_SOURCE_REGISTRY.map((source) => [source.key, source]));
 function number(value) { return Math.max(0, Math.floor(Number(value) || 0)); }
+const PET_ACTIVITY_GRACE_MS = 24 * 60 * 60 * 1000; // canonical worker.js PET_ACTIVITY_GRACE_SECONDS
+function sqliteUtcMillis(value) {
+  if (!value) return NaN;
+  const normalized = String(value).trim().replace(' ', 'T');
+  return Date.parse(/(?:Z|[+-]\d{2}:?\d{2})$/iu.test(normalized) ? normalized : normalized + 'Z');
+}
 function parseJson(value) {
   try { return JSON.parse(String(value || '{}')); }
   catch { return {}; }
@@ -214,7 +221,7 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
   sourceStatuses['onboarding.pet-entry'] = sourceStatus(arcadeRows.length ? 'live' : 'live_empty', { adapter: 'lifetime_arcade_xp' });
 
   const petRows = sourceStatuses['moonpet.adoption-incubation'].state === 'migration_pending' ? [] : await query(db,
-    `SELECT i.pet_id,i.season_key,i.slot_number,i.stage,i.level,i.pet_xp,i.hunger,i.happiness,i.cleanliness,i.energy,i.health,i.status,i.created_at,s.journey_clock,
+    `SELECT i.pet_id,i.season_key,i.slot_number,i.stage,i.level,i.pet_xp,i.hunger,i.happiness,i.cleanliness,i.energy,i.health,i.status,i.created_at,i.updated_at,i.last_decay_at,s.journey_clock,
             l.phase AS lifecycle_phase,
             CASE WHEN a.pet_id=i.pet_id THEN 1 ELSE 0 END AS is_active
        FROM telegram_pet_instances i
@@ -416,8 +423,8 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
     [ownerId, week, day], [], failures, ['moonpet.bosses-combat']);
   const jobRows = !pets.length || sourceStatuses['moonpet.jobs'].state === 'migration_pending' ? [] : await query(db,
     `SELECT status,started_at,ends_at,claimed_at,metadata FROM telegram_pet_activity_sessions
-      WHERE telegram_id=? AND (status='active' OR (status='completed' AND json_valid(metadata)=1
-        AND json_extract(metadata,'$.claim_state')='claiming'))
+      WHERE telegram_id=? AND (status='active' OR (status='completed'
+        AND json_extract(CASE WHEN json_valid(metadata) THEN metadata ELSE '{}' END,'$.claim_state')='claiming'))
       ORDER BY CASE status WHEN 'active' THEN 0 ELSE 1 END,started_at DESC LIMIT 1`,
     [ownerId], [], failures, ['moonpet.jobs']);
   const gardenRows = !pets.length || sourceStatuses['moonpet.garden-kitchen-gym'].state === 'migration_pending' ? [] : await query(db,
@@ -436,12 +443,14 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
   const gardens = new Map(gardenRows.map((row) => [String(row.pet_id), row]));
   const evolutions = byPet(evolutionRows, 'stage');
   for (const pet of pets) {
+    // Pure in-memory projection; do not mutate stored pet care state.
+    const decayedCare = applyPetCareDecay({ ...pet }, now);
     const careNeeds = [
-      number(pet.health) <= 45,
-      number(pet.hunger) >= 75,
-      number(pet.cleanliness) <= 35,
-      number(pet.energy) <= 25,
-      number(pet.happiness) <= 35,
+      number(decayedCare.health) <= 45,
+      number(decayedCare.hunger) >= 75,
+      number(decayedCare.cleanliness) <= 35,
+      number(decayedCare.energy) <= 25,
+      number(decayedCare.happiness) <= 35,
     ].filter(Boolean).length;
     for (const key of perPetSources) {
       let title = 'Review Moonpet progress'; let status = 'ready'; let priority = 560; let progress = { current: null, target: null, unit: 'actions' }; let blocking = null; let nextReadyAt = null;
@@ -449,7 +458,28 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
       if (key === 'moonpet.daily-journey') { const current = dailyProgress.get(String(pet.pet_id)) || 0; const settled = (dailyReceipts.get(String(pet.pet_id)) || 0) > 0; title = settled ? 'Daily Journey reward recorded' : 'Advance the Moonpet Daily Journey'; status = settled ? 'complete' : 'in_progress'; priority = settled ? 700 : 230; progress = { current, target: 3, unit: 'objectives' }; }
       if (key === 'moonpet.weekly-journey') { const current = weeklyProgress.get(String(pet.pet_id)) || 0; const settled = (weeklyReceipts.get(String(pet.pet_id)) || 0) > 0; title = settled ? 'Ownership-week Journey recorded' : 'Advance this Moonpet’s ownership week'; status = settled ? 'complete' : 'in_progress'; priority = settled ? 710 : 390; progress = { current, target: 5, unit: 'objectives' }; }
       if (key === 'moonpet.care') { const lastAt = Date.parse(lastCare.get(String(pet.pet_id)) || ''); const nextAt = Number.isFinite(lastAt) ? lastAt + 45_000 : null; const cooling = nextAt && nextAt > now.getTime(); title = cooling ? 'Moonpet care action is cooling down' : careNeeds ? 'Care for this Moonpet now' : 'Moonpet care is stable'; status = cooling ? 'waiting' : careNeeds ? 'ready' : 'complete'; priority = cooling ? 520 : careNeeds ? 50 : 670; progress = { current: careNeeds, target: 0, unit: 'care_needs' }; nextReadyAt = cooling ? new Date(nextAt).toISOString() : null; }
-      if (key === 'moonpet.jobs') { const ownsJob = job && jobPetId === String(pet.pet_id); const recovery = ownsJob && job.status === 'completed'; const startedAt = ownsJob ? Date.parse(job.started_at) : NaN; const readyAt = Number.isFinite(startedAt) ? startedAt + 300_000 : null; const ready = recovery || ownsJob && readyAt <= now.getTime(); title = recovery ? 'Recover this Moonpet’s saved job reward' : ready ? 'Claim this Moonpet’s completed job' : ownsJob ? 'Moonpet job is in progress' : 'No saved job for this Moonpet'; status = ready ? 'claim_ready' : ownsJob ? 'waiting' : 'complete'; priority = ready ? 90 : ownsJob ? 530 : 730; nextReadyAt = ownsJob && !ready && readyAt ? new Date(readyAt).toISOString() : null; }
+      if (key === 'moonpet.jobs') {
+        const ownsJob = job && jobPetId === String(pet.pet_id);
+        const recovery = ownsJob && job.status === 'completed';
+        const endsAt = ownsJob ? sqliteUtcMillis(job.ends_at) : NaN;
+        const nowSecond = Math.floor(now.getTime() / 1000) * 1000;
+        const expired = ownsJob && !recovery && Number.isFinite(endsAt)
+          && endsAt < nowSecond - PET_ACTIVITY_GRACE_MS;
+        const unknown = ownsJob && !recovery && !Number.isFinite(endsAt);
+        const ready = recovery || ownsJob && !expired && !unknown && endsAt <= nowSecond;
+        title = expired ? 'Moonpet activity claim window expired'
+          : unknown ? 'Moonpet activity end time unavailable'
+          : recovery ? 'Recover this Moonpet’s saved job reward'
+          : ready ? 'Claim this Moonpet’s completed job'
+          : ownsJob ? 'Moonpet job is in progress' : 'No saved job for this Moonpet';
+        status = expired ? 'expired' : unknown ? 'sync_unavailable'
+          : ready ? 'claim_ready' : 'waiting';
+        blocking = expired ? 'pet_activity_claim_window_expired'
+          : unknown ? 'pet_activity_end_time_unavailable' : null;
+        priority = ready ? 90 : ownsJob ? 530 : 730;
+        nextReadyAt = ownsJob && !ready && !expired && Number.isFinite(endsAt)
+          ? new Date(endsAt).toISOString() : null;
+      }
       if (key === 'moonpet.bosses-combat') {
         const won = bossVictoryPets.has(String(pet.pet_id));
         const active = number(pet.is_active) === 1;
@@ -464,7 +494,7 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
         blocking = won ? null
           : !active ? 'active_moonpet_required'
             : !eligibility.weekly_boss_unlocked ? 'moonpet_weekly_boss_not_eligible'
-              : number(pet.energy) < 12 ? 'moonpet_weekly_boss_energy_required'
+              : number(decayedCare.energy) < 12 ? 'moonpet_weekly_boss_energy_required'
                 : bossAttemptUsed ? 'moonpet_weekly_boss_daily_attempt_used' : null;
         status = won ? 'complete' : blocking ? 'blocked' : 'ready';
       }
