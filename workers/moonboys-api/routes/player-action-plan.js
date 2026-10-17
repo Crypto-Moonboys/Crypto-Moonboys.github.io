@@ -14,9 +14,9 @@ function isForbiddenOwnerSelector(field) {
   return OWNER_SELECTOR.test(normalized);
 }
 
-// The only credential-bearing subtree is the top-level telegram_auth value.
-// Check all other nested objects/arrays for caller-controlled selectors; cap
-// depth to fail closed on excessively nested request structures.
+// Check selector aliases throughout nested request data, including unexpected
+// properties inside telegram_auth (its genuine id/auth_date/hash are allowed).
+// Cap depth to fail closed on excessively nested request structures.
 function containsForbiddenSelector(value, depth = 0) {
   if (!value || typeof value !== 'object') return false;
   if (depth > 12) return true;
@@ -69,7 +69,7 @@ export async function handlePlayerActionPlanRoute(request, env, options = {}) {
   catch { return errorResponse(options, 'Invalid JSON', 400); }
   if (!body || typeof body !== 'object' || Array.isArray(body)) return errorResponse(options, 'JSON object required', 400);
   if (Object.entries(body).some(([field, value]) => isForbiddenOwnerSelector(field)
-    || field !== 'telegram_auth' && containsForbiddenSelector(value))) {
+    || containsForbiddenSelector(value))) {
     return errorResponse(options, 'Owner and pet selectors are derived from verified identity', 400);
   }
   if (body.view != null && !['summary', 'tasks', 'all', 'actionable', 'history'].includes(String(body.view))) {
