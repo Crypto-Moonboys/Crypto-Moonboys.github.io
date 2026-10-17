@@ -1408,7 +1408,9 @@
       drawCoins(time);
       drawSecretCoins(time);
       drawObjects();
-      drawEnemies(time);
+      // Attack start/end timestamps use runElapsedMs in updateEnemies();
+      // RAF performance.now() is a different clock and hid attack poses.
+      drawEnemies(runElapsedMs);
       drawParachuteRats(time);
       drawPlayer();
       ctx.restore();

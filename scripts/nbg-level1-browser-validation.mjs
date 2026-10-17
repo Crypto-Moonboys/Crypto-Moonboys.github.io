@@ -276,7 +276,7 @@ assert.equal(
   'standalone Level 1 runtime must expose a render-only eased vertical jump camera'
 );
 assert.equal(
-  /function render\(time\)\s*\{\s*ctx\.clearRect\(0, 0, WIDTH, HEIGHT\);\s*ctx\.fillStyle = '#0076fc';\s*ctx\.fillRect\(0, 0, WIDTH, HEIGHT\);\s*ctx\.save\(\);\s*ctx\.translate\(0, Math\.round\(cameraY\)\);\s*drawWorld\(\);\s*drawCoins\(time\);\s*drawSecretCoins\(time\);\s*drawObjects\(\);\s*drawEnemies\(time\);\s*drawParachuteRats\(time\);\s*drawPlayer\(\);\s*ctx\.restore\(\);\s*drawSpeedrunHud\(runElapsedMs\);\s*drawSecretNotification\(runElapsedMs\);\s*drawRewardNotification\(runElapsedMs\);\s*drawOverlay\(\);/.test(runtimeSource),
+  /function render\(time\)\s*\{\s*ctx\.clearRect\(0, 0, WIDTH, HEIGHT\);\s*ctx\.fillStyle = '#0076fc';\s*ctx\.fillRect\(0, 0, WIDTH, HEIGHT\);\s*ctx\.save\(\);\s*ctx\.translate\(0, Math\.round\(cameraY\)\);\s*drawWorld\(\);\s*drawCoins\(time\);\s*drawSecretCoins\(time\);\s*drawObjects\(\);[\s\S]*?drawEnemies\(runElapsedMs\);\s*drawParachuteRats\(time\);\s*drawPlayer\(\);\s*ctx\.restore\(\);\s*drawSpeedrunHud\(runElapsedMs\);\s*drawSecretNotification\(runElapsedMs\);\s*drawRewardNotification\(runElapsedMs\);\s*drawOverlay\(\);/.test(runtimeSource),
   true,
   'standalone Level 1 render must wrap gameplay drawing in a positive rounded cameraY transform while leaving the overlay unshifted'
 );
@@ -1703,6 +1703,74 @@ assert.ok(
   runtimeSource.includes("enemy.type === 'brownRat' ? 1.35 : 1"),
   'only the two non-turquoise parachutes use brown walk and enlarged lightning punch'
 );
+
+// Brown and turquoise landed parachute rats must actually DISPLAY their
+// attack sprites, not merely update their attack state. In particular, attack
+// time is runElapsedMs while requestAnimationFrame supplies performance.now().
+await page.evaluate(() => window.NBGLevel1Runtime.reset());
+await page.keyboard.down('KeyD');
+await page.waitForFunction(() => window.NBGLevel1State.running, null, { timeout: 2500 });
+await page.keyboard.up('KeyD');
+for (const variant of [
+  { type: 'brownRat', image: 'dfgdf-punch_fast_with_lightning_bolts.png' },
+  { type: 'turquoiseRat', image: 'ggdf-' }
+]) {
+  await page.evaluate(({ type }) => {
+    const state = window.NBGLevel1State;
+    state.player.x = 390;
+    state.player.y = 214 - state.player.h;
+    state.player.vx = 0;
+    state.player.vy = 0;
+    state.player.invuln = 5000;
+    state.enemies.push({
+      type, x: state.player.x + 48, y: 214 - 42,
+      w: 28, h: 42, vx: 0, min: state.player.x + 48,
+      max: state.player.x + 48, spawnedByParachute: true,
+      spawnedAt: state.runElapsedMs
+    });
+    const context = document.getElementById('game').getContext('2d');
+    if (!window.__nbgDrawImageOriginal) {
+      window.__nbgDrawImageOriginal = context.drawImage;
+      window.__nbgAttackDrawSources = [];
+      context.drawImage = function (image, ...args) {
+        if (image && image.src) window.__nbgAttackDrawSources.push(image.src);
+        return window.__nbgDrawImageOriginal.call(this, image, ...args);
+      };
+    }
+  }, variant);
+  await page.waitForFunction(({ type, image }) => {
+    const state = window.NBGLevel1State;
+    const rat = state.enemies.find(enemy => enemy.type === type &&
+      enemy.spawnedByParachute && !enemy.defeated);
+    return rat && rat.attackUntil > state.runElapsedMs &&
+      window.__nbgAttackDrawSources.some(src =>
+        image === 'ggdf-' ?
+          (src.includes('/ggdf-kick.png') || src.includes('/ggdf-punch.png')) :
+          src.includes(image));
+  }, variant, { timeout: 4000 });
+  const evidence = await page.evaluate(({ type }) => {
+    const state = window.NBGLevel1State;
+    const rat = state.enemies.find(enemy => enemy.type === type &&
+      enemy.spawnedByParachute && !enemy.defeated);
+    return {attackType:rat?.attackType, attacking:rat?.attackUntil > state.runElapsedMs};
+  }, variant);
+  assert.ok(evidence.attacking && evidence.attackType,
+    variant.type + ' must render its attack pose while the attack timer is active');
+  await page.evaluate(({ type }) => {
+    const state = window.NBGLevel1State;
+    const rat = state.enemies.find(enemy => enemy.type === type &&
+      enemy.spawnedByParachute && !enemy.defeated);
+    state.enemies.splice(state.enemies.indexOf(rat), 1);
+    window.__nbgAttackDrawSources.length = 0;
+  }, variant);
+}
+await page.evaluate(() => {
+  const context = document.getElementById('game').getContext('2d');
+  context.drawImage = window.__nbgDrawImageOriginal;
+  delete window.__nbgDrawImageOriginal;
+  delete window.__nbgAttackDrawSources;
+  window.NBGLevel1Runtime.reset();
+});
 
 // Long-running survival regression: enemies must be defeatable, limited, and resettable.
 assert.ok(
