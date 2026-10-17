@@ -4,6 +4,7 @@ import http from 'node:http';
 import path from 'node:path';
 import vm from 'node:vm';
 import { chromium } from 'playwright';
+import { verifyNbgLondonReplay } from '../workers/leaderboard/nbg-london-replay.js';
 
 const shouldServe = process.argv.includes('--serve');
 const port = Number(process.env.NBG_LEVEL1_PORT || 4175);
@@ -1025,7 +1026,8 @@ assert.ok(
   runtimeSource.includes('var DOUBLE_JUMP_SIDE_SPEED = 5.4') &&
   runtimeSource.includes('var pendingJumpPresses = 0') &&
   runtimeSource.includes("getControlForCode(e.code) === 'jump'") &&
-  runtimeSource.includes('var jumpPressed = pendingJumpPresses > 0') &&
+  runtimeSource.includes('var queuedJump = jumpTapReady()') &&
+  runtimeSource.includes('var jumpPressed = queuedJump ||') &&
   runtimeSource.includes('if (jumpPressed && player.grounded)') &&
   runtimeSource.includes('else if (jumpPressed && !player.grounded && jumpsUsed === 1)') &&
   runtimeSource.includes('player.vy = DOUBLE_JUMP_VELOCITY') &&
@@ -1382,13 +1384,39 @@ for (const mode of ['keyboard', 'touch']) {
       pending: window.NBGLevel1State.pendingJumpPresses,
       vertical: window.NBGLevel1State.player.vy,
       elapsed: window.NBGLevel1State.runElapsedMs,
-      replay: window.NBGLevel1State.replay
+      replay: window.NBGLevel1State.recordedReplay
     }));
     assert.equal(flight.used, 3, mode + ' must use three distinct boosts');
     assert.equal(flight.pending, 0, mode + ' fourth tap must not queue a phantom jump');
     assert.ok(flight.vertical < 0, mode + ' final boost must send the player upward');
     assert.ok(flight.elapsed >= 2 * 115,
       mode + ' successive boosts must be visually spaced instead of compressed');
+    assert.equal(flight.replay?.version, 1,
+      mode + ' should expose an encoded version-one input replay');
+    assert.equal(flight.replay?.course_version, 2,
+      mode + ' must retain the independently simulated Level 1 course');
+    const bytes = Buffer.from(flight.replay.frames, 'base64');
+    assert.equal(bytes.length % 5, 0, 'input replay frames must remain five bytes each');
+    const jumpTimes = [];
+    let elapsed = 0;
+    for (let i = 0; i < bytes.length; i += 5) {
+      elapsed += bytes.readUInt16LE(i + 2) / 10;
+      if (bytes[i + 4] & 4) jumpTimes.push(elapsed);
+    }
+    assert.equal(jumpTimes.length, 3,
+      mode + ' must emit exactly three Jump masks for three actual boosts');
+    assert.ok(jumpTimes[1] - jumpTimes[0] >= 100 &&
+      jumpTimes[2] - jumpTimes[1] >= 100,
+      mode + ' encoded replay Jump masks must preserve boost pacing');
+    const inspected = await verifyNbgLondonReplay({
+      runId: '00000000-0000-4000-8000-000000000001',
+      replay: flight.replay,
+      startedAtMs: 1000000,
+      now: 1000000 + Math.round(elapsed),
+      debug: true
+    });
+    assert.equal(inspected.debug?.jumps, 3,
+      mode + ' independently simulated Worker must consume all three Jump masks');
   } finally {
     await rapid.close();
   }
