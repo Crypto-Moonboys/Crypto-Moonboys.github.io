@@ -233,7 +233,7 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
 
   const arcadeRows = await query(db,
     'SELECT arcade_xp_total FROM arcade_progression_state WHERE telegram_id=? LIMIT 1', [ownerId], [], failures,
-    ['onboarding.pet-entry', 'arcade.daily-opportunity', 'arcade.roguelite-objectives']);
+    ['onboarding.pet-entry']);
   const lifetimeXp = number(arcadeRows[0]?.arcade_xp_total);
   sourceStatuses['onboarding.pet-entry'] = sourceStatus(arcadeRows.length ? 'live' : 'live_empty', { adapter: 'lifetime_arcade_xp' });
 
@@ -249,7 +249,9 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
        LEFT JOIN telegram_pet_lifecycle_by_pet l ON l.pet_id=s.pet_id AND l.telegram_id=s.telegram_id
       WHERE s.telegram_id=? AND s.status='active' AND i.status='active'
       ORDER BY s.created_at ASC,s.pet_id ASC`, [ownerId], [], failures,
-    ACTION_PLAN_SOURCE_REGISTRY.filter((source) => source.group === 'moonpet').map((source) => source.key));
+    ['moonpet.adoption-incubation', 'moonpet.daily-journey',
+      'moonpet.weekly-journey', 'moonpet.care', 'moonpet.jobs',
+      'moonpet.garden-kitchen-gym', 'moonpet.evolution']);
   // The owned roster is a shared authority for all Moonpet projections.
   // A failed roster read cannot be mistaken for a newly empty account. Also
   // distinguish a genuinely absent roster table from a failed table probe.
@@ -310,15 +312,43 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
     progress: { current: Math.min(PET_ENTRY_ARCADE_XP, lifetimeXp), target: PET_ENTRY_ARCADE_XP, unit: 'lifetime_arcade_xp' },
   }));
 
+  // Both authorities are consulted by awardCommunityXp. Legacy daily logs
+  // block a new award; a malformed receipt must never verify a completion.
   const dailyClaimRows = await query(db,
-    "SELECT earned_at FROM telegram_community_xp_awards WHERE telegram_id=? AND action='daily_claim' AND claim_key=? LIMIT 1",
+    "SELECT telegram_id,action,claim_key,reference_id,xp_change,season_id,earned_at,settlement_token FROM telegram_community_xp_awards WHERE telegram_id=? AND action='daily_claim' AND claim_key=? LIMIT 1",
     [ownerId, day], [], failures, ['telegram.daily-claim']);
-  const claimedDaily = Boolean(dailyClaimRows[0]);
-  sourceStatuses['telegram.daily-claim'] = sourceStatus(claimedDaily ? 'live' : 'live_empty', { adapter: 'immutable_award_receipt' });
-  tasks.push(genericTask(now, SOURCE_BY_KEY.get('telegram.daily-claim'), claimedDaily ? 'claimed' : 'ready', 'live', {
-    title: claimedDaily ? 'Daily Telegram check-in claimed' : 'Claim today’s Telegram check-in', priority: claimedDaily ? 800 : 100,
-    periodKey: day, expiresAt: nextUtcDay(now), progress: { current: claimedDaily ? 1 : 0, target: 1, unit: 'claim' },
-    reward: reward([{ type: 'community_xp', amount: 20 }], true), evidence: { verified_completion: claimedDaily, accepted_at: dailyClaimRows[0]?.earned_at },
+  const legacyDailyRows = await query(db,
+    "SELECT id,telegram_id,action,reference_id,xp_change,created_at FROM telegram_xp_log WHERE telegram_id=? AND action='daily_claim' AND DATE(created_at)=? ORDER BY id LIMIT 1",
+    [ownerId, day], [], failures, ['telegram.daily-claim']);
+  const receipt = dailyClaimRows[0];
+  const legacyReceipt = legacyDailyRows[0];
+  const receiptValid = !receipt || (receipt.telegram_id === ownerId
+    && receipt.action === 'daily_claim' && receipt.claim_key === day
+    && receipt.reference_id === day && Number.isSafeInteger(receipt.xp_change)
+    && receipt.xp_change > 0 && String(receipt.settlement_token || '').trim()
+    && Number.isFinite(Date.parse(receipt.earned_at))
+    && (receipt.season_id == null || Number.isSafeInteger(receipt.season_id) && receipt.season_id > 0));
+  const legacyValid = !legacyReceipt || (legacyReceipt.telegram_id === ownerId
+    && legacyReceipt.action === 'daily_claim' && Number.isSafeInteger(legacyReceipt.id)
+    && legacyReceipt.id > 0 && Number.isSafeInteger(legacyReceipt.xp_change)
+    && legacyReceipt.xp_change > 0 && Number.isFinite(sqliteUtcMillis(legacyReceipt.created_at)));
+  if (!receiptValid || !legacyValid) failures.set('telegram.daily-claim', 'daily_claim_receipt_invalid');
+  const claimedDaily = Boolean((receipt && receiptValid) || (legacyReceipt && legacyValid));
+  const dailyClaimUnavailable = failures.has('telegram.daily-claim');
+  sourceStatuses['telegram.daily-claim'] = sourceStatus(
+    dailyClaimUnavailable ? 'query_failed' : claimedDaily ? 'live' : 'live_empty',
+    { adapter: 'immutable_or_legacy_award_receipt' });
+  tasks.push(genericTask(now, SOURCE_BY_KEY.get('telegram.daily-claim'),
+    dailyClaimUnavailable ? 'sync_unavailable' : claimedDaily ? 'claimed' : 'ready',
+    dailyClaimUnavailable ? 'query_failed' : 'live', {
+    title: dailyClaimUnavailable ? 'Telegram daily check-in unavailable'
+      : claimedDaily ? 'Daily Telegram check-in claimed' : 'Claim today’s Telegram check-in',
+    priority: claimedDaily ? 800 : 100, blocking: dailyClaimUnavailable ? 'daily_claim_source_unavailable' : null,
+    periodKey: day, expiresAt: nextUtcDay(now),
+    progress: { current: claimedDaily && !dailyClaimUnavailable ? 1 : 0, target: 1, unit: 'claim' },
+    reward: reward([{ type: 'community_xp', amount: 20 }], true),
+    evidence: { verified_completion: claimedDaily && !dailyClaimUnavailable,
+      accepted_at: receipt?.earned_at || legacyReceipt?.created_at || null },
   }));
 
   const dailyOpportunity = sourceStatuses['arcade.daily-opportunity'].state === 'migration_pending' ? [] : await query(db,
@@ -440,11 +470,18 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
     if (row.utc_day !== day && (number(row.progress_bits) !== 255 || row.claimed_at)) continue;
     const claimed = Boolean(row.claimed_at);
     const completed = number(row.progress_bits) === 255;
+    const needsSourcePet = completed && !claimed && !row.pet_id;
+    const verifiedActivePet = pets.some((pet) => number(pet.is_active) === 1
+      && pet.lifecycle_phase && pet.lifecycle_phase !== 'egg');
+    const cannotClaim = needsSourcePet && !verifiedActivePet;
     tasks.push(genericTask(now, SOURCE_BY_KEY.get('moonpet.seven-of-seven-claim'),
-      claimed ? 'claimed' : completed ? 'claim_ready' : 'waiting', 'live', {
+      claimed ? 'claimed' : cannotClaim
+        ? rosterUnavailable ? 'sync_unavailable' : 'blocked'
+        : completed ? 'claim_ready' : 'waiting', 'live', {
         title: claimed ? 'Moonpet daily bonus claimed' : completed
           ? 'Collect saved Moonpet bonus' : 'Finish Moonpet completion conditions',
-        periodKey: row.utc_day, priority: completed && !claimed ? 35 : 520,
+        periodKey: row.utc_day, priority: completed && !claimed && !cannotClaim ? 35 : 520,
+        blocking: cannotClaim ? rosterUnavailable ? 'owned_roster_unavailable' : 'active_source_pet_required' : null,
         expiresAt: null,
         progress: { current: dailyFlags.filter(([flag]) => number(row.progress_bits) & flag).length,
           target: dailyFlags.length, unit: 'source_flags' },
@@ -464,7 +501,8 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
       historical_pending_not_listed: hiddenPendingClaims,
     });
     tasks.push(genericTask(now, SOURCE_BY_KEY.get('moonpet.seven-of-seven-claim'),
-      'claim_ready', 'live', {
+      pets.some((pet) => number(pet.is_active) === 1 && pet.lifecycle_phase !== 'egg')
+        ? 'claim_ready' : rosterUnavailable ? 'sync_unavailable' : 'waiting', 'live', {
         title: `${hiddenPendingClaims} more saved Moonpet daily rewards`,
         description: 'Older earned bonuses are outside this limited API preview. Open the Moonpet reward inbox for the complete claim workflow.',
         why: 'Previous days\' unclaimed bonuses remain saved without an expiry.',
@@ -619,7 +657,10 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
   const careNextReady = (action) => action === 'feed'
     ? mealCooldownUntil : (lastCare.get(action) || 0) + 45_000;
   const job = jobRows[0] || null;
-  const jobPetId = job ? String(parseJson(job.metadata).pet_id || pets.find((pet) => number(pet.is_active))?.pet_id || '') : '';
+  const jobPetId = job ? String(parseJson(job.metadata).pet_id || '') : '';
+  if (job && (!jobPetId || !pets.some((pet) => String(pet.pet_id) === jobPetId))) {
+    failures.set('moonpet.jobs', 'saved_activity_source_pet_unavailable');
+  }
   const bossAttemptUsed = bossAttempts.length > 0;
   const gardens = new Map(gardenRows.map((row) => [String(row.pet_id), row]));
   const evolutions = byPet(evolutionRows, 'stage');
@@ -651,14 +692,19 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
         if (visiblePetCare(decayedCare.health) <= 45 && !urgentActions.length) {
           urgentActions.push('feed', 'clean', 'play', 'sleep');
         }
-        const readyActions = urgentActions.filter(action => careNextReady(action) <= now.getTime());
+        const activityBlocksSleep = job?.status === 'active';
+        const eligibleActions = urgentActions.filter(action => action !== 'sleep' || !activityBlocksSleep);
+        const readyActions = eligibleActions.filter(action => careNextReady(action) <= now.getTime());
         const readyAction = readyActions[0] || null;
-        const nextAt = urgentActions.length && !readyAction
-          ? Math.min(...urgentActions.map(careNextReady)) : null;
+        const nextAt = eligibleActions.length && !readyAction
+          ? Math.min(...eligibleActions.map(careNextReady)) : null;
         title = !careNeeds ? 'Moonpet care is stable'
           : readyAction ? `Care for this Moonpet: ${readyAction} now`
-            : 'Moonpet needed care is cooling down';
+            : !eligibleActions.length && activityBlocksSleep
+              ? 'Finish active Moonpet activity before sleeping'
+              : 'Moonpet needed care is cooling down';
         status = !careNeeds ? 'complete' : readyAction ? 'ready' : 'waiting';
+        blocking = !eligibleActions.length && activityBlocksSleep ? 'pet_activity_active' : null;
         priority = readyAction ? 50 : careNeeds ? 520 : 670;
         progress = { current: careNeeds, target: 0, unit: 'care_needs' };
         nextReadyAt = Number.isFinite(nextAt) ? new Date(nextAt).toISOString() : null;
