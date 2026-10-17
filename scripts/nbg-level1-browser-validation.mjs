@@ -1772,10 +1772,10 @@ await page.evaluate(() => {
   state.parachuteRats[0].y = 214 - state.parachuteRats[0].h - 1;
   state.parachuteRats[0].x = state.player.x + 75;
 });
-const walkersBeforeLand = await page.evaluate(() => window.NBGLevel1State.enemies.length);
 await page.waitForFunction(() => window.NBGLevel1State.parachuteRats.length === 0, null, { timeout: 1500 });
-assert.equal(await page.evaluate(() => window.NBGLevel1State.enemies.length), walkersBeforeLand + 1,
-  'missed parachute rat must become a walking BRATTY rat on landing');
+assert.ok(await page.evaluate(() => window.NBGLevel1State.enemies.some(enemy =>
+  enemy.spawnedByParachute && !enemy.defeated)),
+  'missed parachute rat must become a live walking rat on landing, regardless of unrelated enemy cleanup');
 await page.evaluate(() => window.NBGLevel1Runtime.reset());
 assert.deepEqual(await page.evaluate(() => ({
   active: window.NBGLevel1State.parachuteRats.length,
