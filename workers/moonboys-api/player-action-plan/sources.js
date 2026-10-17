@@ -704,7 +704,7 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
   if (!pets.length && sourceStatuses['moonpet.care'].state === 'live') {
     sourceStatuses['moonpet.care'] = sourceStatus('live_empty', { adapter: 'no_owned_pet' });
   }
-  if (!pets.length && sourceStatuses['moonpet.bosses-combat'].state === 'live') {
+  if (!pets.length && !pendingBossRewards.length && sourceStatuses['moonpet.bosses-combat'].state === 'live') {
     sourceStatuses['moonpet.bosses-combat'] = sourceStatus('live_empty', { adapter: 'no_owned_pet' });
   }
   for (const [key, message] of failures.entries()) {
