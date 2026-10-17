@@ -13,7 +13,7 @@ function fakeDb(options = {}) {
   const ownedPets = [
     {
       pet_id: 'pet-secret-123', season_key: '2026-Q4', slot_number: 1, stage: 'hatched', level: 4,
-      pet_xp: options.bossReady ? 640 : 90, hunger: 20, happiness: 70, cleanliness: 60, energy: 55, health: 80,
+      pet_xp: options.bossReady ? 640 : 90, hunger: 20, happiness: 70, cleanliness: 60, energy: options.fractionalBossEnergy ? 11.5 : 55, health: 80,
       status: 'active', created_at: '2026-10-01T00:00:00.000Z', last_decay_at: options.idleCare ? '2026-10-16T12:00:00.000Z' : '2026-10-17T11:59:40.000Z', journey_clock: 'legacy_quarter', is_active: 1, lifecycle_phase: 'young',
     },
     {
@@ -92,7 +92,14 @@ function fakeDb(options = {}) {
                 claimed_at: null,
                 metadata: options.malformedMetadata ? '{bad-json' : '{"pet_id":"pet-secret-123"}',
               }] };
-              if (/FROM telegram_pet_runs/u.test(sql) && options.savedStates) return { success: true, results: [{ source_id: 'source-run-789', pet_id: 'pet-secret-789', status: 'extractable', updated_at: '2026-10-17T11:55:00Z' }] };
+              if (/FROM telegram_pet_runs r/u.test(sql) && (options.savedStates || options.invalidRun)) return { success: true, results: [{
+                source_id: 'source-run-789',
+                pet_id: options.invalidRun === 'null' ? null
+                  : options.invalidRun === 'foreign' ? 'foreign-pet' : 'pet-secret-789',
+                season_key: options.invalidRun ? 'foreign-season' : '2026-Q4',
+                owner_verified: options.invalidRun ? 0 : 1,
+                status: 'extractable', updated_at: '2026-10-17T11:55:00Z',
+              }] };
               if (/FROM telegram_pet_contracts/u.test(sql) && (options.savedStates || options.pendingContracts)) return { success: true, results: options.pendingContracts
                 ? [{ source_id: 'source-contract-456', pet_id: 'pet-secret-456', status: 'completed', reward_xp: 20, reward_settled: 0, updated_at: '2026-10-16T11:54:00Z' }]
                 : [{ source_id: 'source-contract-456', pet_id: 'pet-secret-456', status: 'active', updated_at: '2026-10-17T11:54:00Z' }] };
@@ -385,6 +392,71 @@ test('an actually missing table remains migration_pending rather than query_fail
   for (const key of ['moonpet.daily-seven-missions', 'moonpet.seven-of-seven-claim']) {
     assert.equal(payload.source_status[key].state, 'migration_pending');
     assert.equal(payload.tasks.find(t => t.source_key === key).status, 'sync_unavailable');
+  }
+});
+
+test('roster table probe failures never impersonate a zero-pet owner', async () => {
+  const db = fakeDb({ tableErrors: new Set(['telegram_pet_instances']) });
+  const response = await handlePlayerActionPlanRoute(request(auth({ limit: 100 })),
+    { DB: db, TELEGRAM_BOT_TOKEN: 'test' }, options());
+  assert.equal(response.status, 200);
+  const payload = await response.json();
+  assert.equal(payload.owner.pet_count, null, 'unknown roster is not zero pets');
+  for (const entry of ACTION_PLAN_SOURCE_REGISTRY.filter(source =>
+    source.group === 'moonpet' || source.key === 'onboarding.pet-entry')) {
+    assert.equal(payload.source_status[entry.key]?.state, 'query_failed', entry.key);
+    const tasks = payload.tasks.filter(task => task.source_key === entry.key);
+    assert.ok(tasks.length, entry.key + ' should remain represented');
+    assert.ok(tasks.every(task => task.status === 'sync_unavailable' && task.source_health === 'query_failed'),
+      entry.key + ' may not guess empty/missing pets after database outage');
+    assert.ok(!payload.top_actions.some(task => task.source_key === entry.key),
+      entry.key + ' may not become a recommended action during owner-roster outage');
+  }
+  assert.notEqual(payload.source_status['telegram.daily-claim'].state, 'query_failed');
+});
+
+test('actually missing pet roster table reports missing schema to dependent sources', async () => {
+  const present = new Set([
+    'daily_wtf_events','daily_missed_perks','daily_opportunity_state',
+    'arcade_progression_events','telegram_pet_daily_completion',
+    'telegram_pet_daily_journey_objectives','telegram_pet_weekly_journey_objectives',
+    'telegram_pet_reward_claims','telegram_pet_runs','telegram_pet_contracts',
+    'telegram_pet_activity_sessions','telegram_pet_weekly_boss_victories_by_pet',
+    'telegram_pet_garden_plots','telegram_pet_evolutions_by_pet',
+    'wiki_mission_completions','championship_clout_daily','dead_run_sessions',
+    'nbg_london_records','player_daily_mission_state',
+  ]);
+  const response = await handlePlayerActionPlanRoute(request(auth({ limit: 100 })),
+    { DB: fakeDb({ tables: present }), TELEGRAM_BOT_TOKEN: 'test' }, options());
+  assert.equal(response.status, 200);
+  const payload = await response.json();
+  assert.equal(payload.owner.pet_count, null);
+  assert.equal(payload.source_status['moonpet.daily-journey'].state, 'migration_pending');
+  assert.equal(payload.source_status['moonpet.contracts'].state, 'migration_pending');
+});
+
+test('weekly boss gate mirrors SQLite ROUND of fractional pet energy', async () => {
+  const response = await handlePlayerActionPlanRoute(request(auth({ limit: 100 })),
+    { DB: fakeDb({ bossReady: true, fractionalBossEnergy: true }), TELEGRAM_BOT_TOKEN: 'test' }, options());
+  assert.equal(response.status, 200);
+  const data = await response.json();
+  const boss = data.tasks.find(task => task.source_key === 'moonpet.bosses-combat' && task.scope_ref);
+  assert.equal(boss?.status, 'ready', '11.5 energy rounds up to the canonical 12');
+  assert.equal(boss?.blocking_reason_code, null);
+});
+
+test('untrusted or unassigned saved-run pets are never given original-pet references', async () => {
+  for (const invalidRun of ['null', 'foreign']) {
+    const response = await handlePlayerActionPlanRoute(request(auth({ limit: 100 })),
+      { DB: fakeDb({ invalidRun }), TELEGRAM_BOT_TOKEN: 'test' }, options());
+    assert.equal(response.status, 200);
+    const data = await response.json();
+    assert.equal(data.source_status['moonpet.saved-run'].state, 'query_failed');
+    const runs = data.tasks.filter(task => task.source_key === 'moonpet.saved-run');
+    assert.ok(runs.length);
+    assert.ok(runs.every(task => task.status === 'sync_unavailable'
+      && task.source_pet_ref === null && task.scope_ref === null));
+    assert.ok(!data.top_actions.some(task => task.source_key === 'moonpet.saved-run'));
   }
 });
 
