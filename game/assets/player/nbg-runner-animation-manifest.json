@@ -54,7 +54,7 @@
       "renderOffsetY": 45,
       "frames": 25,
       "columns": 5,
-      "frameMs": 18
+      "frameMs": 9
     },
     "hurt": {
       "spriteSheet": "player/animations/hurt.png",
