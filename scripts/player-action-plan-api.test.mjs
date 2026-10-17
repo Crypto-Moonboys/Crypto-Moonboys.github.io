@@ -59,9 +59,12 @@ function fakeDb(options = {}) {
             },
             async all() {
               calls.push({ method: 'all', ...statement });
+              if (options.delayedAllMs) await new Promise(resolve => setTimeout(resolve, options.delayedAllMs));
               if (/FROM telegram_users/u.test(sql)) return { success: true, results: [{ telegram_id: params[0] }] };
               if (/FROM telegram_faction_members/u.test(sql)) return { success: true, results: [{ faction_id: 2, name: 'graffpunks' }] };
-              if (/FROM arcade_progression_state/u.test(sql)) return { success: true, results: [{ arcade_xp_total: 1200 }] };
+              if (/FROM arcade_progression_state/u.test(sql)) return { success: true, results: [{ arcade_xp_total: options.lowXp ? 200 : 1200 }] };
+              if (/FROM telegram_pet_profiles/u.test(sql)) return { success: true, results:
+                options.legacyOwner ? [{ telegram_id: params[0] }] : [] };
               if (/FROM player_daily_mission_state/u.test(sql)) return { success: true, results: options.savedMissions
                 ? [{ mission_id: 'gp_chaos_3', progress: 2, completed: 0 },
                    { mission_id: 'gp_combo_x3', progress: 3, completed: 1 }] : [] };
@@ -134,6 +137,7 @@ function fakeDb(options = {}) {
               if (/FROM dead_run_sessions.*status='finished'.*ranked=1/su.test(sql)) return { success: true, results: options.deadRunVerified ? [{ score: 4321, ended_at: '2026-10-17T11:00:00Z' }] : [] };
               if (/championship_clout_daily/u.test(sql)) return { success: true, results: [{ total_points: 18, recalculated_at_ms: 1792195200000 }] };
               if (/nbg_london_records/u.test(sql)) return { success: true, results: [{ fastest_ms: 50000, best_xp: 30 }] };
+              if (/FROM telegram_pet_reward_claims/u.test(sql)) return { success: true, results: [{ total: options.pendingClaimCount || 0 }] };
               if (/COUNT\(\*\)/u.test(sql)) return { success: true, results: [{ total: 0 }] };
               return { success: true, results: [] };
             },
@@ -487,23 +491,32 @@ test('an actually missing table remains migration_pending rather than query_fail
   }
 });
 
-test('roster table probe failures never impersonate a zero-pet owner', async () => {
-  const db = fakeDb({ tableErrors: new Set(['telegram_pet_instances']) });
+test('roster probe failures fail only live-pet projections, not separately saved rewards', async () => {
+  const db = fakeDb({ tableErrors: new Set(['telegram_pet_instances']), savedStates: true,
+    pendingContracts: true, pendingBossRewards: true, pendingClaimCount: 2 });
   const response = await handlePlayerActionPlanRoute(request(auth({ limit: 100 })),
     { DB: db, TELEGRAM_BOT_TOKEN: 'test' }, options());
   assert.equal(response.status, 200);
   const payload = await response.json();
   assert.equal(payload.owner.pet_count, null, 'unknown roster is not zero pets');
-  for (const entry of ACTION_PLAN_SOURCE_REGISTRY.filter(source =>
-    source.group === 'moonpet' || source.key === 'onboarding.pet-entry')) {
-    assert.equal(payload.source_status[entry.key]?.state, 'query_failed', entry.key);
-    const tasks = payload.tasks.filter(task => task.source_key === entry.key);
-    assert.ok(tasks.length, entry.key + ' should remain represented');
-    assert.ok(tasks.every(task => task.status === 'sync_unavailable' && task.source_health === 'query_failed'),
-      entry.key + ' may not guess empty/missing pets after database outage');
-    assert.ok(!payload.top_actions.some(task => task.source_key === entry.key),
-      entry.key + ' may not become a recommended action during owner-roster outage');
+  for (const key of ['moonpet.adoption-incubation', 'moonpet.daily-journey',
+    'moonpet.weekly-journey', 'moonpet.care', 'moonpet.jobs',
+    'moonpet.garden-kitchen-gym', 'moonpet.evolution', 'onboarding.pet-entry']) {
+    assert.equal(payload.source_status[key]?.state, 'query_failed', key);
+    assert.ok(payload.tasks.filter(t => t.source_key === key).every(t =>
+      t.status === 'sync_unavailable' && t.source_health === 'query_failed'), key);
+    assert.ok(!payload.top_actions.some(t => t.source_key === key), key);
   }
+  for (const key of ['moonpet.seven-of-seven-claim', 'moonpet.claimable-rewards',
+    'moonpet.contracts', 'moonpet.saved-run', 'moonpet.bosses-combat']) {
+    assert.notEqual(payload.source_status[key]?.state, 'query_failed', key);
+    const saved = payload.tasks.filter(t => t.source_key === key && t.status === 'claim_ready');
+    assert.ok(saved.length, key + ' must preserve independently verified saved claims');
+    assert.ok(saved.some(t => payload.top_actions.some(a => a.task_id === t.task_id))
+      || saved.every(t => t.priority > payload.top_actions[payload.top_actions.length-1]?.priority),
+    key + ' should remain eligible for action ranking');
+  }
+  assert.equal(payload.source_status['moonpet.bosses-combat'].partial, true);
   assert.notEqual(payload.source_status['telegram.daily-claim'].state, 'query_failed');
 });
 
@@ -524,7 +537,47 @@ test('actually missing pet roster table reports missing schema to dependent sour
   const payload = await response.json();
   assert.equal(payload.owner.pet_count, null);
   assert.equal(payload.source_status['moonpet.daily-journey'].state, 'migration_pending');
-  assert.equal(payload.source_status['moonpet.contracts'].state, 'migration_pending');
+  assert.notEqual(payload.source_status['moonpet.contracts'].state, 'migration_pending',
+    'a missing active-roster table must not masquerade as a missing contract source');
+});
+
+test('legacy profile owners already satisfy pet entry without new arcade XP', async () => {
+  const response = await handlePlayerActionPlanRoute(request(auth({ limit: 100 })),
+    { DB: fakeDb({ noPets: true, lowXp: true, legacyOwner: true }), TELEGRAM_BOT_TOKEN: 'test' }, options());
+  assert.equal(response.status, 200);
+  const data = await response.json();
+  const entry = data.tasks.find(t => t.source_key === 'onboarding.pet-entry');
+  assert.equal(entry.status, 'complete', 'existing owner is eligible despite 200 lifetime Arcade XP');
+  assert.match(entry.title, /restore existing pet/u);
+  assert.equal(entry.progress.current, 200, 'do not inflate historical XP receipts');
+  assert.ok(!data.top_actions.some(t => t.source_key === 'onboarding.pet-entry'));
+});
+
+test('legacy ownership survives active roster lookup outages', async () => {
+  const response = await handlePlayerActionPlanRoute(request(auth({ limit: 100 })),
+    { DB: fakeDb({ tableErrors: new Set(['telegram_pet_instances']), lowXp: true,
+      legacyOwner: true }), TELEGRAM_BOT_TOKEN: 'test' }, options());
+  assert.equal(response.status, 200);
+  const data = await response.json();
+  assert.equal(data.owner.pet_count, null);
+  assert.equal(data.tasks.find(t => t.source_key === 'onboarding.pet-entry').status, 'complete');
+  assert.equal(data.source_status['onboarding.pet-entry'].state, 'live');
+});
+
+test('shared projection deadline prevents serial slow reads from accumulating', async () => {
+  const db = fakeDb({ delayedAllMs: 35 });
+  const before = Date.now();
+  const response = await handlePlayerActionPlanRoute(request(auth({ limit: 100 })),
+    { DB: db, TELEGRAM_BOT_TOKEN: 'test' },
+    options({ statementTimeoutMs: 1000, projectionTimeoutMs: 120 }));
+  const elapsed = Date.now() - before;
+  assert.equal(response.status, 200);
+  const payload = await response.json();
+  assert.ok(elapsed < 650, 'entire read must be bounded, not dozens of 1-second sequential timeouts');
+  assert.equal(payload.query_budget.projection_timeout_ms, 120);
+  assert.ok(payload.summary.unavailable_sources > 0, 'later reads must fail closed after budget runs out');
+  assert.ok(db.calls.filter(c => c.method === 'all').length < 20,
+    'deadline should stop starting new queries rather than queue many slow reads');
 });
 
 test('weekly boss gate mirrors SQLite ROUND of fractional pet energy', async () => {
