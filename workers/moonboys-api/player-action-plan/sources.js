@@ -93,6 +93,8 @@ function genericTask(now, source, status, health, detail = {}) {
     expires_at: detail.expiresAt || null,
     reward: detail.reward || reward([], false),
     evidence: { kind: source.evidence, ...(detail.evidence || {}) },
+    owner_scope: source.key === 'moonpet.daily-seven-missions' ? 'account' : source.ownerScope,
+    source_pet_ref: detail.sourcePetRef || null,
   });
 }
 
@@ -337,6 +339,7 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
           target: dailyFlags.length, unit: 'source_flags' },
         reward: reward(Object.entries(DAILY_COMPLETION_REWARD).map(([type, amount]) => ({ type, amount })), true),
         evidence: { verified_completion: claimed, accepted_at: row.claimed_at },
+        sourcePetRef: row.pet_id ? await opaqueRef(`${ownerId}:${row.pet_id}`) : null,
       }));
   }
   if (!completionRows.some((row) => row.utc_day === day)) {
