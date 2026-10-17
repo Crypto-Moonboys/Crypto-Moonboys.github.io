@@ -136,7 +136,16 @@ async function tableHealth(db, failures) {
   const present = new Map();
   for (const tableName of uniqueTables) {
     try { present.set(tableName, await db.tableExists(tableName)); }
-    catch (error) { present.set(tableName, false); failures.set(tableName, error?.message || 'table_check_failed'); }
+    catch (error) {
+      // Treat a failed sqlite_master probe as an unavailable read, not as
+      // evidence that the migration is missing. One table may back multiple
+      // task sources (e.g. daily completion and its separate claim).
+      present.set(tableName, false);
+      const message = error?.message || 'table_check_failed';
+      for (const [sourceKey, mappedTable] of Object.entries(SOURCE_TABLES)) {
+        if (mappedTable === tableName) failures.set(sourceKey, message);
+      }
+    }
   }
   for (const source of ACTION_PLAN_SOURCE_REGISTRY) {
     const table = SOURCE_TABLES[source.key];
