@@ -3,6 +3,8 @@
 **Owner:** #1552 · **Purpose:** shared private player plan + public faction operations.  
 **State:** draft schema for PR 2; this file defines *minimum invariants*, not a deployed endpoint.
 
+**UI destination:** `/my-moonboy.html` will be the owner-only player headquarters; existing faction pages remain public-first. This specification does not implement either UI. A `schedule_preview` is an advisory timetable, never accepted attendance or claim readiness. The final MoonPet progression horizon is **365-day** minimum lifetime ownership, not a recurring daily/quarterly reset.
+
 ## A. API and shared-read boundaries
 **Candidate:** `POST /player/action-plan`, JSON body `{"telegram_auth": "<signed structured evidence>", "view": "summary|tasks", "cursor": null}`. The actual proof payload is an object from the website identity gate; placeholder text is not an accepted credential. Validate with the existing Worker Telegram authentication path; account ID is **only** server-derived. No token, Telegram initData, hash or user ID in query strings. No `GET` alternative for private data. All responses `Cache-Control: no-store`. Auth-expired -> HTTP 401/403 with a client relink CTA; never anonymous tasks or cached cross-account data.
 
