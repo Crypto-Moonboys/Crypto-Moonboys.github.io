@@ -208,7 +208,7 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
     'SELECT arcade_xp_total FROM arcade_progression_state WHERE telegram_id=? LIMIT 1', [ownerId], [], failures,
     ['onboarding.pet-entry', 'arcade.daily-opportunity', 'arcade.roguelite-objectives']);
   const lifetimeXp = number(arcadeRows[0]?.arcade_xp_total);
-  sourceStatuses['onboarding.pet-entry'] = sourceStatus('live', { adapter: 'lifetime_arcade_xp' });
+  sourceStatuses['onboarding.pet-entry'] = sourceStatus(arcadeRows.length ? 'live' : 'live_empty', { adapter: 'lifetime_arcade_xp' });
 
   const petRows = sourceStatuses['moonpet.adoption-incubation'].state === 'migration_pending' ? [] : await query(db,
     `SELECT i.pet_id,i.season_key,i.slot_number,i.stage,i.level,i.pet_xp,i.hunger,i.happiness,i.cleanliness,i.energy,i.health,i.status,i.created_at,s.journey_clock,
@@ -233,6 +233,9 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
     return { ...row, ref: await opaqueRef(`${ownerId}:${row.pet_id}`), journeyWeek, journeyBounds };
   }));
   const petEntryComplete = pets.length > 0;
+  if (sourceStatuses['moonpet.adoption-incubation'].state !== 'migration_pending') {
+    sourceStatuses['moonpet.adoption-incubation'] = sourceStatus(pets.length ? 'live' : 'live_empty', { adapter: 'active_owned_roster' });
+  }
   tasks.push(genericTask(now, SOURCE_BY_KEY.get('onboarding.pet-entry'), petEntryComplete ? 'complete' : lifetimeXp >= PET_ENTRY_ARCADE_XP ? 'ready' : 'in_progress', 'live', {
     title: petEntryComplete ? 'Moonpet entry complete' : lifetimeXp >= PET_ENTRY_ARCADE_XP ? 'Adopt your first Moonpet' : 'Earn lifetime Arcade XP for Moonpet entry',
     priority: petEntryComplete ? 900 : 30, progress: { current: Math.min(PET_ENTRY_ARCADE_XP, lifetimeXp), target: PET_ENTRY_ARCADE_XP, unit: 'lifetime_arcade_xp' },
@@ -292,6 +295,9 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
   }
   const missedRows = sourceStatuses['battle.missed-opportunities'].state === 'migration_pending' ? [] : await query(db,
     'SELECT COUNT(*) AS total FROM daily_missed_perks WHERE telegram_id=?', [ownerId], [], failures, ['battle.missed-opportunities']);
+  if (sourceStatuses['battle.missed-opportunities'].state !== 'migration_pending') {
+    sourceStatuses['battle.missed-opportunities'] = sourceStatus(number(missedRows[0]?.total) ? 'live' : 'live_empty', { adapter: 'persisted_owner_history' });
+  }
   tasks.push(genericTask(now, SOURCE_BY_KEY.get('battle.missed-opportunities'), number(missedRows[0]?.total) ? 'active' : 'complete', 'live', {
     title: number(missedRows[0]?.total) ? 'Review missed battle opportunities' : 'No recorded missed battle opportunities', priority: 650,
     progress: { current: number(missedRows[0]?.total), target: null, unit: 'records' },
@@ -482,6 +488,9 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
     "SELECT COUNT(*) AS total FROM telegram_pet_reward_claims WHERE telegram_id=? AND status='pending'",
     [ownerId], [], failures, ['moonpet.claimable-rewards']);
   const claimCount = number(claimRows[0]?.total);
+  if (sourceStatuses['moonpet.claimable-rewards'].state !== 'migration_pending') {
+    sourceStatuses['moonpet.claimable-rewards'] = sourceStatus(claimCount ? 'live' : 'live_empty', { adapter: 'saved_claim_receipts' });
+  }
   tasks.push(genericTask(now, SOURCE_BY_KEY.get('moonpet.claimable-rewards'), claimCount ? 'claim_ready' : 'complete', sourceStatuses['moonpet.claimable-rewards'].state === 'migration_pending' ? 'unavailable' : 'live', {
     title: claimCount ? 'Claim saved Moonpet rewards' : 'Claim saved Moonpet rewards: none pending', priority: claimCount ? 60 : 720,
     progress: { current: claimCount, target: null, unit: 'saved_records' }, blocking: sourceStatuses['moonpet.claimable-rewards'].state === 'migration_pending' ? 'source_table_unavailable' : null,
@@ -518,12 +527,19 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
 
   const wikiRows = sourceStatuses['wiki.accepted-missions'].state === 'migration_pending' ? [] : await query(db,
     'SELECT COUNT(*) AS total FROM wiki_mission_completions WHERE telegram_id=? AND mission_window=?', [ownerId, day], [], failures, ['wiki.accepted-missions']);
-  tasks.push(genericTask(now, SOURCE_BY_KEY.get('wiki.accepted-missions'), number(wikiRows[0]?.total) ? 'complete' : 'ready', 'live', {
-    title: number(wikiRows[0]?.total) ? 'Accepted wiki mission recorded today' : 'Complete an accepted wiki mission', priority: 350, periodKey: day, expiresAt: nextUtcDay(now),
+  if (sourceStatuses['wiki.accepted-missions'].state !== 'migration_pending') {
+    sourceStatuses['wiki.accepted-missions'] = sourceStatus(number(wikiRows[0]?.total) ? 'live' : 'live_empty', { adapter: 'accepted_wiki_receipts' });
+  }
+  tasks.push(genericTask(now, SOURCE_BY_KEY.get('wiki.accepted-missions'), number(wikiRows[0]?.total) ? 'complete' : 'preview', number(wikiRows[0]?.total) ? 'live' : 'preview', {
+    title: number(wikiRows[0]?.total) ? 'Accepted wiki mission recorded today' : 'Review eligible Wiki missions', priority: 350, periodKey: day, expiresAt: nextUtcDay(now),
+    blocking: number(wikiRows[0]?.total) ? null : 'unconfirmed_wiki_mission_eligibility',
     progress: { current: number(wikiRows[0]?.total), target: 1, unit: 'accepted_receipts' }, evidence: { verified_completion: number(wikiRows[0]?.total) > 0 },
   }));
   const cloutRows = sourceStatuses['championship.verified-clout'].state === 'migration_pending' ? [] : await query(db,
     "SELECT total_points,recalculated_at_ms FROM championship_clout_daily WHERE telegram_id=? AND day_key=? AND policy_version='championship-v1' LIMIT 1", [ownerId, day], [], failures, ['championship.verified-clout']);
+  if (sourceStatuses['championship.verified-clout'].state !== 'migration_pending') {
+    sourceStatuses['championship.verified-clout'] = sourceStatus(cloutRows[0] ? 'live' : 'live_empty', { adapter: 'materialized_receipt_snapshot' });
+  }
   tasks.push(genericTask(now, SOURCE_BY_KEY.get('championship.verified-clout'), cloutRows[0] ? 'active' : 'waiting', sourceStatuses['championship.verified-clout'].state === 'migration_pending' ? 'unavailable' : 'live', {
     title: 'Review today’s verified Championship Clout', priority: 460, periodKey: day, expiresAt: nextUtcDay(now),
     progress: { current: number(cloutRows[0]?.total_points), target: 100, unit: 'championship_clout' },
@@ -538,6 +554,9 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
       AND start_lat IS NULL AND start_lng IS NULL AND last_lat IS NULL AND last_lng IS NULL
       ORDER BY ended_at DESC LIMIT 1`, [ownerId], [], failures, ['games.dead-run']);
   const deadActive = deadActiveRows.length > 0;
+  if (sourceStatuses['games.dead-run'].state !== 'migration_pending') {
+    sourceStatuses['games.dead-run'] = sourceStatus(deadActive || deadVerifiedRows.length ? 'live' : 'live_empty', { adapter: 'ranked_session_evidence' });
+  }
   tasks.push(genericTask(now, SOURCE_BY_KEY.get('games.dead-run'), deadActive ? 'active' : 'ready', sourceStatuses['games.dead-run'].state === 'migration_pending' ? 'unavailable' : 'live', {
     title: deadActive ? 'Continue your active Dead Run' : 'Start a verified Dead Run', priority: deadActive ? 160 : 480,
     progress: { current: number(deadVerifiedRows[0]?.score), target: null, unit: 'verified_score' },
