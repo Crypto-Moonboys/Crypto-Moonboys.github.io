@@ -25,10 +25,20 @@ export function createReadOnlyActionPlanDb(db, options = {}) {
   if (!db || typeof db.prepare !== 'function') throw new Error('player_action_plan_database_unavailable');
   const maxStatements = Math.max(1, Math.min(200, Number(options.maxStatements) || 80));
   const statementTimeoutMs = Math.max(10, Math.min(5000, Number(options.statementTimeoutMs) || 1500));
+  // A sequence of independently bounded D1 reads can otherwise stall for
+  // tens of seconds. All probes and projections share one absolute deadline.
+  const projectionTimeoutMs = Math.max(50, Math.min(15000, Number(options.projectionTimeoutMs) || 5000));
+  const projectionDeadline = Date.now() + projectionTimeoutMs;
+  function remainingBudget() {
+    const remaining = projectionDeadline - Date.now();
+    if (remaining <= 0) throw new Error('player_action_plan_projection_deadline_exceeded');
+    return remaining;
+  }
   const tableCache = new Map();
   const calls = [];
 
   function reserve(sql, params, method) {
+    remainingBudget();
     const text = assertReadOnlySql(sql);
     if (calls.length >= maxStatements) throw new Error('player_action_plan_query_budget_exceeded');
     calls.push({ method, sql: text, parameter_count: params.length });
@@ -36,9 +46,14 @@ export function createReadOnlyActionPlanDb(db, options = {}) {
   }
 
   async function settleWithin(promise) {
+    const remaining = remainingBudget();
     let timeoutId;
     const timeout = new Promise((_, reject) => {
-      timeoutId = setTimeout(() => reject(new Error('player_action_plan_query_timeout')), statementTimeoutMs);
+      timeoutId = setTimeout(() => reject(new Error(
+        projectionDeadline - Date.now() <= 0
+          ? 'player_action_plan_projection_deadline_exceeded'
+          : 'player_action_plan_query_timeout',
+      )), Math.min(statementTimeoutMs, remaining));
     });
     try { return await Promise.race([promise, timeout]); }
     finally { clearTimeout(timeoutId); }
@@ -72,7 +87,8 @@ export function createReadOnlyActionPlanDb(db, options = {}) {
     first,
     tableExists,
     stats() {
-      return Object.freeze({ statement_count: calls.length, max_statements: maxStatements, statement_timeout_ms: statementTimeoutMs });
+      return Object.freeze({ statement_count: calls.length, max_statements: maxStatements,
+        statement_timeout_ms: statementTimeoutMs, projection_timeout_ms: projectionTimeoutMs });
     },
     audit() {
       return calls.map((entry) => ({ ...entry }));
