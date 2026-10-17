@@ -697,7 +697,7 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
     ['moonpet.garden-kitchen-gym', gardenRows.length],
     ['moonpet.evolution', evolutionRows.length],
   ]) {
-    if (sourceStatuses[key]?.state === 'live') {
+    if (sourceStatuses[key]?.state === 'live' && !sourceStatuses[key]?.partial) {
       sourceStatuses[key] = sourceStatus(count ? 'live' : 'live_empty', { adapter: 'read_only_saved_rows' });
     }
   }
