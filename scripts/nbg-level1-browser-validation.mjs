@@ -139,7 +139,7 @@ const expectedAnimations = {
   run: { spriteSheet: 'player/animations/run.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 17, frames: 6, columns: 3, frameMs: 88 },
   jump: { spriteSheet: 'player/animations/jump.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 23, frames: 6, columns: 3, frameMs: 145 },
   fall: { spriteSheet: 'player/animations/fall.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 20, frames: 6, columns: 3, frameMs: 145 },
-  spray: { spriteSheet: 'player/NBG Runner Final-spray.png', sourceFrameWidth: 256, sourceFrameHeight: 256, renderWidth: 176, renderHeight: 176, renderOffsetY: 45, frames: 25, columns: 5, frameMs: 18 },
+  spray: { spriteSheet: 'player/NBG Runner Final-spray.png', sourceFrameWidth: 256, sourceFrameHeight: 256, renderWidth: 176, renderHeight: 176, renderOffsetY: 45, frames: 25, columns: 5, frameMs: 9 },
   hurt: { spriteSheet: 'player/animations/hurt.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 6, frames: 6, columns: 3, frameMs: 120 },
   victory: { spriteSheet: 'player/animations/victory.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 13, frames: 6, columns: 3, frameMs: 145 }
 };
@@ -938,8 +938,13 @@ for (const key of Object.keys(expectedAnimations)) {
     expectedPlayerAssetUrls[`player.${key}`],
     `browser runtime must load exact final-quality player ${key} sheet path`
   );
-  assert.equal(state.playerAnimations[key].naturalWidth, 384, `browser runtime must load 384px-wide player ${key} sheet`);
-  assert.equal(state.playerAnimations[key].naturalHeight, 256, `browser runtime must load 256px-tall player ${key} sheet`);
+  const loadedSheet = state.playerAnimations[key].image;
+  assert.equal(loadedSheet.width ?? loadedSheet.naturalWidth,
+    key === 'spray' ? 1280 : 384,
+    `browser runtime must load expected-width player ${key} sheet`);
+  assert.equal(loadedSheet.height ?? loadedSheet.naturalHeight,
+    key === 'spray' ? 1280 : 256,
+    `browser runtime must load expected-height player ${key} sheet`);
 }
 
 const beforeMoveX = state.x;
@@ -1874,7 +1879,7 @@ const sprayBaseline = await page.evaluate(() => {
   window.__finalSprayFrames = [];
   ctx.drawImage = function (image, ...args) {
     if (image && (image.__nbgSpraySource || image.src || '').includes('NBG%20Runner%20Final-spray.png')) {
-      window.__finalSprayFrames.push({ src: image.src, sourceX: args[0],
+      window.__finalSprayFrames.push({ sourceX: args[0],
         sourceY: args[1], width: args[6], height: args[7] });
     }
     return window.__finalSprayOriginalDraw.call(this, image, ...args);
@@ -1891,8 +1896,11 @@ await page.keyboard.down('KeyS');
 await page.waitForFunction(() => window.__sprayDefeats.some(
   event => event.type === 'brownRat' && event.reason === 'spray'
 ), null, { timeout: 1500 });
+// A single spray lasts 230ms. At 9ms/frame the entire 5x5 sheet reaches
+// its final row before sprayTimer clears, even at normal 60fps rendering.
 await page.waitForFunction(() => window.__finalSprayFrames.some(frame =>
-  frame.width === 176 && frame.height === 176 && frame.sourceX >= 0
+  frame.width === 176 && frame.height === 176 &&
+  frame.sourceY === 1024 && frame.sourceX >= 768
 ), null, { timeout: 1500 });
 await page.keyboard.up('KeyS');
 const standingSpray = await page.evaluate(() => {
@@ -1922,6 +1930,17 @@ assert.ok(standingSpray.defeats.some(event => event.reason === 'spray' &&
 assert.ok(standingSpray.frames.length > 0 &&
   standingSpray.frames.every(frame => frame.width === 176 && frame.height === 176),
   'the final spray sheet must draw enlarged frames while spraying');
+const sprayCells = new Set(standingSpray.frames.map(frame =>
+  `${frame.sourceX},${frame.sourceY}`));
+assert.ok(sprayCells.size >= 10,
+  'a single spray attack must traverse distinct source cells, not freeze at frame zero');
+for (const row of [0, 256, 512, 768, 1024]) {
+  assert.ok(standingSpray.frames.some(frame => frame.sourceY === row),
+    `the spray attack must reach row ${row} of the full 5x5 sprite sheet`);
+}
+assert.ok(standingSpray.frames.some(frame => frame.sourceY === 1024 &&
+  frame.sourceX >= 768),
+  'one grounded spray attack must reach the final artwork frames before expiring');
 await page.evaluate(() => window.NBGLevel1Runtime.reset());
 
 // Expired parachute walkers must not accumulate, even after dozens of spawns.
