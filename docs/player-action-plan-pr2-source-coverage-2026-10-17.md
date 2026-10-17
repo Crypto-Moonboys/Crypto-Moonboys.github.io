@@ -101,3 +101,18 @@ The runtime manifest and `data/player-action-plan-source-registry.v1.json` are a
 - Wiki completion is scoped by `mission_window` (not a timestamp substring). Without an eligible server mission listing, uncompleted Wiki work remains preview instead of a fabricated verified task.
 - Existing D1 `schema.sql` does not include every later migration-era table. The SQL fixture creates the required migration-added columns/tables for tests. It does not add a production migration.
 - Task statuses and source health now preserve verified receipts, true empty reads and failure states separately. Production signed-in verification remains outstanding.
+
+
+## October 17 late review follow-up — save/read parity and source boundaries
+
+The late Copilot + Codex review exposed additional read-only guidance edge cases. The PR now:
+
+- Uses `applyPetCareDecay({ ...savedPet }, now)` with `last_decay_at` from the roster query. Only an in-memory copy changes; no pet state/health settlement is performed by the action-plan endpoint.
+- Reads today's completion separately from a **bounded** 100-item historical unclaimed-reward preview and counts the whole unclaimed backlog. When history exceeds the preview, `source_status['moonpet.seven-of-seven-claim']` reports `partial`, `historical_pending_total`, `historical_pending_in_preview`, and `historical_pending_not_listed`. An explicit game-inbox task covers the extra saved rewards; no earned record is treated as expired or erased. Source-level historical pagination is a future UI/API improvement, not falsely claimed as available here.
+- Uses `json_extract(CASE WHEN json_valid(metadata) THEN metadata ELSE '{}' END, '$.claim_state')` so corrupt/legacy metadata cannot throw merely because SQLite evaluates predicates in a different order.
+- Uses actual `ends_at` and the canonical **24-hour grace period** (second-precision comparison) for unprocessed active activities; expired or invalid sessions must never enter recommended ready-to-claim actions. Interrupted completed claiming sessions are still recoverable.
+- Shows completed `telegram_pet_contracts` with `reward_xp=20 AND reward_settled=0`, including their original pet references. It never creates an unsettled reward by reading.
+- Shows defeated/unclaimed weekly-boss rewards from saved progress joined to the victory's original pet/season, even after the ISO week changes; pending rewards and post-victory participation are separate from active combat readiness.
+- Reads accepted boss participation within **each pet's ownership-Journey bounds**, not only an account-wide daily attempt. A completed participation cannot be recommended again in the same ownership week.
+
+The tests use fixed-clock mocks, SQLite malformed-JSON evaluation, and a 137-day outstanding-claim fixture; they are not a substitute for signed live owner verification. The number of new queries remains bounded under the existing action-plan request budget, and no changes to the gameplay economy or migrations were made.
