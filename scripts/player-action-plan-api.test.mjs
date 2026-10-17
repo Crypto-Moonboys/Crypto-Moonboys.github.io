@@ -66,7 +66,7 @@ function fakeDb(options = {}) {
                 ? [{ mission_id: 'gp_chaos_3', progress: 2, completed: 0 },
                    { mission_id: 'gp_combo_x3', progress: 3, completed: 1 }] : [] };
               if (/FROM telegram_pet_instances/u.test(sql)) return { success: true, results: options.noPets ? [] : options.threePets ? ownedPets : ownedPets.slice(0, 1) };
-              if (/FROM telegram_pet_events/u.test(sql) && /GROUP BY event_type/u.test(sql)) {
+              if (/FROM telegram_pet_events/u.test(sql) && /ROW_NUMBER\(\) OVER \(PARTITION BY event_type/u.test(sql)) {
                 return { success: true, results: options.careEvents || [] };
               }
               if (/FROM telegram_pet_garden_plots/u.test(sql) && options.cropPlantedAt) {
@@ -609,9 +609,57 @@ test('owner-wide cooldown blocks feed across pets without blocking other care ac
   const petTwo = care.find(t => t !== petOne && t.progress.current > 0);
   assert.equal(petTwo.status, 'waiting', 'owner feed cooldown also blocks another pet');
   assert.equal(petTwo.next_ready_at, '2026-10-17T12:00:25.000Z');
-  const sql = db.calls.find(t => /FROM telegram_pet_events/u.test(t.sql) && /GROUP BY event_type/u.test(t.sql));
+  const sql = db.calls.find(t => /FROM telegram_pet_events/u.test(t.sql) && /ROW_NUMBER\(\) OVER \(PARTITION BY event_type/u.test(t.sql));
   assert.ok(sql && /telegram_id=\?/u.test(sql.sql), 'cooldown query is owner scoped');
   assert.doesNotMatch(sql.sql, /GROUP BY pet_id/u);
+  assert.match(sql.sql, /ORDER BY julianday\(created_at\) DESC/u);
+});
+
+test('care evidence uses chronological SQLite ordering across ISO and D1 timestamps', async () => {
+  // An older T/ISO timestamp sorts *after* a newer space-form D1 timestamp
+  // under MAX(created_at), although the instant is earlier. Exercise the
+  // actual source SQL with mixed accepted receipts, not a mocked sorted list.
+  const db = fakeDb();
+  const response = await handlePlayerActionPlanRoute(request(auth({ limit: 100 })),
+    { DB: db, TELEGRAM_BOT_TOKEN: 'test' }, options());
+  assert.equal(response.status, 200);
+  const careQuery = db.calls.find(entry => /FROM telegram_pet_events/u.test(entry.sql)
+    && /ROW_NUMBER\(\) OVER \(PARTITION BY event_type/u.test(entry.sql));
+  assert.ok(careQuery, 'care read must select the latest event for each action by timestamp');
+  assert.match(careQuery.sql, /ORDER BY julianday\(created_at\) DESC/u);
+  const sqlite = new DatabaseSync(':memory:');
+  try {
+    sqlite.exec(`CREATE TABLE telegram_pet_events (
+        telegram_id TEXT, status TEXT, event_type TEXT, created_at TEXT, metadata TEXT
+      );
+      INSERT INTO telegram_pet_events VALUES
+        ('123456','accepted','feed','2026-10-17T11:59:00Z',NULL),
+        ('123456','accepted','feed','2026-10-17 11:59:40',NULL),
+        ('123456','accepted','play','2026-10-17T11:58:30Z',NULL),
+        ('other-owner','accepted','feed','2026-10-17 11:59:59',NULL),
+        ('123456','rejected','feed','2026-10-17 11:59:58',NULL),
+        ('123456','accepted','use_item','2026-10-17T11:58:00Z','{"consumed_item_key":"street_pizza"}'),
+        ('123456','accepted','use_item','2026-10-17 11:59:30','{"consumed_item_key":"moon_burger"}'),
+        ('123456','accepted','use_item','2026-10-17 11:59:55','{invalid}');`);
+    const rows = sqlite.prepare(careQuery.sql).all('123456');
+    const byAction = new Map(rows.map(row => [row.event_type, row.last_action_at]));
+    assert.equal(byAction.get('feed'), '2026-10-17 11:59:40',
+      'newer D1 space timestamp must win over older ISO/T timestamp');
+    assert.equal(byAction.get('play'), '2026-10-17T11:58:30Z',
+      'independent action must keep its own last receipt');
+    assert.equal(byAction.get('use_item'), '2026-10-17 11:59:30',
+      'safe metadata filter and shared meal window must use chronological time');
+    assert.equal(rows.length, 3, 'exclude another owner, rejected actions and invalid meals');
+    const derived = await handlePlayerActionPlanRoute(request(auth({ limit: 100 })),
+      { DB: fakeDb({ careHunger: 80, careEvents: rows }), TELEGRAM_BOT_TOKEN: 'test' }, options());
+    const payload = await derived.json();
+    const care = payload.tasks.find(t => t.source_key === 'moonpet.care' && t.scope_ref);
+    assert.equal(care.status, 'waiting',
+      'feed/meal cooldown must use the newest 11:59:40 receipt, not an older ISO row');
+    assert.equal(care.next_ready_at, '2026-10-17T12:00:25.000Z');
+  } finally {
+    sqlite.close();
+  }
 });
 
 test('account play cooldown never blocks a different feed or clean action', async () => {
