@@ -226,6 +226,18 @@ for (let i = 2; i < cloudBytes.length - 9;) {
 assert.deepEqual(cloudDimension, { width: 480, height: 270 },
   'uploaded sky JPEG must retain native 480x270 full-viewport dimensions');
 
+// The user-supplied flying pig is a 5-column x 4-row (20-frame) 700x560
+// sheet. The pigeon remains the same 28x22 collision/score entity; only its
+// animation is presented at twice the former on-screen size (56x44).
+assert.equal(assetManifest.enemies.pigeon, 'enemies/PIGFLY-iji.png',
+  'flying pig must replace only the former pigeon art path');
+const flyingPigFile = path.resolve(process.cwd(), 'game/assets/enemies/PIGFLY-iji.png');
+const flyingPigHeader = fs.readFileSync(flyingPigFile).subarray(16, 24);
+assert.equal(flyingPigHeader.readUInt32BE(0), 700,
+  'flying pig sprite sheet must retain its native 700px width');
+assert.equal(flyingPigHeader.readUInt32BE(4), 560,
+  'flying pig sprite sheet must retain its native 560px height');
+
 const runtimeSource = fs.readFileSync(path.resolve(process.cwd(), 'game/nbg-level1.js'), 'utf8');
 assert.ok(runtimeSource.includes('function drawSkyWallpaper()') &&
   runtimeSource.includes('var tileW = WIDTH') &&
@@ -237,6 +249,17 @@ assert.ok(runtimeSource.includes('function drawSkyWallpaper()') &&
   runtimeSource.includes('drawSkyWallpaper();') &&
   !runtimeSource.includes("drawImageLayer(images.sky, 0.08"),
   'sky wallpaper must use original viewport-sized tiles, alternate mirrored copies, and retain parallax');
+
+assert.ok(runtimeSource.includes('var FLYING_PIG_COLUMNS = 5') &&
+  runtimeSource.includes('var FLYING_PIG_ROWS = 4') &&
+  runtimeSource.includes('var FLYING_PIG_FRAMES = 20') &&
+  runtimeSource.includes('var FLYING_PIG_RENDER_WIDTH = 56') &&
+  runtimeSource.includes('var FLYING_PIG_RENDER_HEIGHT = 44') &&
+  runtimeSource.includes("} else if (enemy.type === 'pigeon') {") &&
+  runtimeSource.includes('function isolateFlyingPigFrames(image)') &&
+  runtimeSource.includes('var cullMargin = enemy.type') &&
+  runtimeSource.includes('ctx.scale(-1, 1)'),
+  'flying pigs must crop 5x4 frames and draw at double pigeon size, including mirrored flight');
 
 const gameCssSource = fs.readFileSync(path.resolve(process.cwd(), 'game/game.css'), 'utf8');
 const fullscreenShellSource = fs.readFileSync(path.resolve(process.cwd(), 'js/game-fullscreen.js'), 'utf8');
@@ -920,6 +943,78 @@ assert.deepEqual(
 assert.equal(state.running, true, 'ArrowRight must start the game loop');
 assert.equal(state.coinCount, 312, 'speedrun must spawn 312 XP coins across four sizes');
 assert.equal(state.enemyCount, 57, 'each of 18 course sections must include rat, bot and pigeon');
+ 
+// Assert actual flying-pig canvas output in both directions, including the
+// 14px sprite overhang beyond the unchanged 28px collision box.
+const pigPage = await browser.newPage({viewport:{width:960,height:540}});
+try {
+  await pigPage.goto(url, {waitUntil:'networkidle'});
+  await pigPage.waitForFunction(() => window.NBGLevel1State?.assetsLoaded, null, {timeout:10000});
+  await pigPage.keyboard.down('KeyD');
+  await pigPage.waitForFunction(() => window.NBGLevel1State.running, null, {timeout:3000});
+  await pigPage.keyboard.up('KeyD');
+  await pigPage.evaluate(() => {
+    const state = window.NBGLevel1State;
+    state.player.x = 64;
+    state.player.invuln = 120000;
+    const enemy = state.enemies.find(item => item.type === 'pigeon');
+    enemy.x = 180; enemy.y = 128; enemy.vx = 0.001;
+    enemy.min = -200; enemy.max = 1200;
+    const ctx = document.getElementById('game').getContext('2d');
+    window.__pigOriginalDraw = ctx.drawImage;
+    window.__pigDrawCalls = [];
+    window.__pigCanvasIds = new WeakMap();
+    window.__pigNextCanvasId = 1;
+    ctx.drawImage = function (img, ...args) {
+      if (img instanceof HTMLCanvasElement && img.width === 156 && img.height === 156) {
+        if (!window.__pigCanvasIds.has(img))
+          window.__pigCanvasIds.set(img, window.__pigNextCanvasId++);
+        const transform = this.getTransform();
+        window.__pigDrawCalls.push({
+          id:window.__pigCanvasIds.get(img),
+          x:transform.a < 0 ? transform.e - args[6] : args[4],
+          width:args[6], height:args[7], flipped:transform.a < 0,
+          srcWidth:args[2], srcHeight:args[3],
+          cornerAlpha:img.getContext('2d').getImageData(0,0,1,1).data[3]
+        });
+      }
+      return window.__pigOriginalDraw.call(this, img, ...args);
+    };
+  });
+  await pigPage.waitForFunction(() => window.__pigDrawCalls.length > 2, null, {timeout:2000});
+  await pigPage.waitForTimeout(260);
+  const initial = await pigPage.evaluate(() => window.__pigDrawCalls.slice());
+  assert.ok(initial.every(call => call.width === 56 && call.height === 44 &&
+    call.srcWidth === 156 && call.srcHeight === 156 && call.cornerAlpha === 0),
+    'pig frames must use isolated transparent padded canvases drawn at exactly 56x44');
+  assert.ok(new Set(initial.map(call=>call.id)).size >= 2,
+    'flying pig must actually animate through more than one isolated frame');
+  for (const scenario of [
+    {x:481,vx:0.001,flipped:false,expectedX:467},
+    {x:-29,vx:-0.001,flipped:true,expectedX:-43}
+  ]) {
+    await pigPage.evaluate(({x,vx}) => {
+      const enemy = window.NBGLevel1State.enemies.find(item=>item.type==='pigeon');
+      enemy.x=x;enemy.vx=vx;
+      window.__pigDrawCalls.length=0;
+    }, scenario);
+    await pigPage.waitForFunction(() => window.__pigDrawCalls.length>0, null, {timeout:1500});
+    const drawn = await pigPage.evaluate(() => window.__pigDrawCalls[0]);
+    assert.equal(drawn.flipped, scenario.flipped,
+      'left-facing flying pig must be horizontally mirrored');
+    assert.ok(Math.abs(drawn.x-scenario.expectedX)<=2,
+      'pig visual must stay centered and render smoothly beyond screen edges');
+    assert.equal(drawn.width,56,'enlarged pig draw must preserve double pigeon width');
+  }
+} finally {
+  await pigPage.close();
+}
+
+assert.equal(
+  new URL(state.assetStatus.pigeon?.src || '', url).pathname,
+  '/game/assets/enemies/PIGFLY-iji.png',
+  'loaded flying enemy must display the approved flying pig sheet'
+);
 assert.equal(state.platformCount, 76, 'speedrun must provide 76 playable jump platforms');
 assert.equal(state.hazardCount, 39, 'speedrun must provide 39 collidable obstacles');
 assert.equal(state.extraCheckpointCount, 4, 'extended course must have four additional checkpoints');
@@ -1677,10 +1772,10 @@ await page.evaluate(() => {
   state.parachuteRats[0].y = 214 - state.parachuteRats[0].h - 1;
   state.parachuteRats[0].x = state.player.x + 75;
 });
-const walkersBeforeLand = await page.evaluate(() => window.NBGLevel1State.enemies.length);
 await page.waitForFunction(() => window.NBGLevel1State.parachuteRats.length === 0, null, { timeout: 1500 });
-assert.equal(await page.evaluate(() => window.NBGLevel1State.enemies.length), walkersBeforeLand + 1,
-  'missed parachute rat must become a walking BRATTY rat on landing');
+assert.ok(await page.evaluate(() => window.NBGLevel1State.enemies.some(enemy =>
+  enemy.spawnedByParachute && !enemy.defeated)),
+  'missed parachute rat must become a live walking rat on landing, regardless of unrelated enemy cleanup');
 await page.evaluate(() => window.NBGLevel1Runtime.reset());
 assert.deepEqual(await page.evaluate(() => ({
   active: window.NBGLevel1State.parachuteRats.length,

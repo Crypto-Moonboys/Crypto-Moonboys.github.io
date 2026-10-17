@@ -19,6 +19,14 @@
   var JUMP_TAP_SPACING_MS = 115; // Make successive queued boosts visibly distinct.
   var COURSE_LAYOUT_VERSION = 2; // Replay v1 format, updated course content.
   var DOUBLE_JUMP_SIDE_SPEED = 5.4;
+  // Pig sheet is 700x560: five columns by four rows, 140px per frame.
+  // Display is twice the former 28x22 pigeon sprite; physics stays 28x22.
+  var FLYING_PIG_COLUMNS = 5;
+  var FLYING_PIG_ROWS = 4;
+  var FLYING_PIG_FRAMES = 20;
+  var FLYING_PIG_RENDER_WIDTH = 56;
+  var FLYING_PIG_RENDER_HEIGHT = 44;
+  var FLYING_PIG_FRAME_MS = 85;
   var BOT_SHEET_COLUMNS = 5;
   var BOT_SHEET_ROWS = 5;
   var BOT_SHEET_FRAMES = 25;
@@ -104,6 +112,39 @@
     context.putImageData(pixels, 0, 0);
     canvas.__nbgSpraySource = image.src;
     return canvas;
+  }
+
+  // The source flying-pig export clips many wings at its 140px cell edges.
+  // Extract isolated transparent, padded frames once; feather the cell edges
+  // to prevent hard-cut wing tips and leaked fragments from neighboring cells.
+  function isolateFlyingPigFrames(image) {
+    var frames = [];
+    var sourceW = image.naturalWidth / FLYING_PIG_COLUMNS;
+    var sourceH = image.naturalHeight / FLYING_PIG_ROWS;
+    var pad = 8;
+    for (var index = 0; index < FLYING_PIG_FRAMES; index++) {
+      var cell = document.createElement('canvas');
+      cell.width = sourceW + pad * 2;
+      cell.height = sourceH + pad * 2;
+      var brush = cell.getContext('2d', { willReadFrequently: true });
+      brush.drawImage(image, index % FLYING_PIG_COLUMNS * sourceW,
+        Math.floor(index / FLYING_PIG_COLUMNS) * sourceH,
+        sourceW, sourceH, pad, pad, sourceW, sourceH);
+      var pixels = brush.getImageData(0, 0, cell.width, cell.height);
+      for (var y = pad; y < pad + sourceH; y++) {
+        for (var x = pad; x < pad + sourceW; x++) {
+          var distance = Math.min(x - pad, pad + sourceW - 1 - x,
+            y - pad, pad + sourceH - 1 - y);
+          if (distance >= 7) continue;
+          var alphaIndex = (y * cell.width + x) * 4 + 3;
+          pixels.data[alphaIndex] = Math.round(pixels.data[alphaIndex] *
+            (distance + 1) / 8);
+        }
+      }
+      brush.putImageData(pixels, 0, 0);
+      frames.push(cell);
+    }
+    return frames;
   }
 
   function loadJson(src) {
@@ -250,6 +291,7 @@
     }
     var sprayTimer = 0;
     var parachuteRats = [];
+    var flyingPigFrames = null;
     var nextParachuteAt = 6000;
     var parachuteSpawnCount = 0;
     var gameOver = false;
@@ -1248,7 +1290,9 @@
           enemy.type === 'brownRat' ? 'brownRatWalk' : 'rat');
         var image = images[enemy.type === 'bot' ? botImageKey : isWalkingRat ? ratImageKey : enemy.type];
         var x = Math.round(enemy.x - cameraX);
-        if (x < -enemy.w || x > WIDTH) continue;
+        var cullMargin = enemy.type === 'pigeon' ?
+          Math.round((FLYING_PIG_RENDER_WIDTH - enemy.w) / 2) : 0;
+        if (x < -enemy.w - cullMargin || x > WIDTH + cullMargin) continue;
         var y = Math.round(enemy.y + (enemy.bob || 0) + FOREGROUND_VISUAL_OFFSET_Y);
         if (image) {
           ctx.save();
@@ -1286,6 +1330,24 @@
             } else {
               ctx.drawImage(image, ratSourceX, ratSourceY, ratFrameWidth, ratFrameHeight,
                 ratDrawX, ratDrawY, ratDrawWidth, ratDrawHeight);
+            }
+          } else if (enemy.type === 'pigeon') {
+            // These are presentation-only frames. Preserve the canonical
+            // 28x22 pigeon physics while drawing the pig at 56x44.
+            if (!flyingPigFrames) flyingPigFrames = isolateFlyingPigFrames(image);
+            var pigFrame = Math.floor((time + enemy.x * 3) /
+              FLYING_PIG_FRAME_MS) % FLYING_PIG_FRAMES;
+            var pigImage = flyingPigFrames[pigFrame];
+            var pigDrawX = x - Math.round((FLYING_PIG_RENDER_WIDTH - enemy.w) / 2);
+            var pigDrawY = y - Math.round((FLYING_PIG_RENDER_HEIGHT - enemy.h) / 2);
+            if (enemy.vx < 0) {
+              ctx.translate(pigDrawX + FLYING_PIG_RENDER_WIDTH, pigDrawY);
+              ctx.scale(-1, 1);
+              ctx.drawImage(pigImage, 0, 0, pigImage.width, pigImage.height,
+                0, 0, FLYING_PIG_RENDER_WIDTH, FLYING_PIG_RENDER_HEIGHT);
+            } else {
+              ctx.drawImage(pigImage, 0, 0, pigImage.width, pigImage.height,
+                pigDrawX, pigDrawY, FLYING_PIG_RENDER_WIDTH, FLYING_PIG_RENDER_HEIGHT);
             }
           } else if (enemy.type === 'bot') {
             var cellW = image.naturalWidth / BOT_SHEET_COLUMNS;
