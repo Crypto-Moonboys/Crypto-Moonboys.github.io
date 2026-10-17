@@ -221,7 +221,7 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
   sourceStatuses['onboarding.pet-entry'] = sourceStatus(arcadeRows.length ? 'live' : 'live_empty', { adapter: 'lifetime_arcade_xp' });
 
   const petRows = sourceStatuses['moonpet.adoption-incubation'].state === 'migration_pending' ? [] : await query(db,
-    `SELECT i.pet_id,i.season_key,i.slot_number,i.stage,i.level,i.pet_xp,i.hunger,i.happiness,i.cleanliness,i.energy,i.health,i.status,i.created_at,i.updated_at,i.last_decay_at,s.journey_clock,
+    `SELECT i.pet_id,i.season_key,i.slot_number,i.stage,i.level,i.pet_xp,i.hunger,i.happiness,i.cleanliness,i.energy,i.health,i.status,i.created_at,i.updated_at,i.last_decay_at,s.created_at AS ownership_created_at,s.journey_clock,
             l.phase AS lifecycle_phase,
             CASE WHEN a.pet_id=i.pet_id THEN 1 ELSE 0 END AS is_active
        FROM telegram_pet_instances i
@@ -236,7 +236,7 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
   const pets = await Promise.all(petRows.map(async (row) => {
     let journeyWeek = null; let journeyBounds = null;
     try {
-      const period = getPetOwnershipPeriod(row.season_key, row.created_at, row.journey_clock);
+      const period = getPetOwnershipPeriod(row.season_key, row.ownership_created_at, row.journey_clock);
       journeyWeek = getPetJourneyWeek(period, now);
       journeyBounds = getPetJourneyWeekBounds(period, journeyWeek);
     } catch {}
@@ -277,7 +277,13 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
   }));
 
   const wtfRows = sourceStatuses['battle.wtf-windows'].state === 'migration_pending' ? [] : await query(db,
-    'SELECT event_id,starts_at,ends_at FROM daily_wtf_events WHERE utc_day=? ORDER BY starts_at ASC LIMIT 12', [day], [], failures, ['battle.wtf-windows']);
+    `SELECT e.event_id,e.starts_at,e.ends_at,p.status AS player_status,
+       p.checked_in_at,p.completed_at,p.missed_at,p.reward_status
+       FROM daily_wtf_events e
+       LEFT JOIN daily_wtf_player_events p ON p.event_id=e.event_id
+         AND p.telegram_id=? AND p.utc_day=e.utc_day
+       WHERE e.utc_day=? ORDER BY e.starts_at ASC LIMIT 12`,
+    [ownerId, day], [], failures, ['battle.wtf-windows']);
   if (sourceStatuses['battle.wtf-windows'].state !== 'migration_pending') {
     sourceStatuses['battle.wtf-windows'] = sourceStatus(wtfRows.length ? 'live' : 'preview', { adapter: wtfRows.length ? 'persisted_windows' : 'schedule_preview_only' });
   }
@@ -289,18 +295,31 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
   } else for (const row of wtfRows) {
     const starts = Date.parse(row.starts_at), ends = Date.parse(row.ends_at);
     const clockValid = Number.isFinite(starts) && Number.isFinite(ends) && ends > starts;
-    const status = !clockValid ? 'sync_unavailable' : now.getTime() >= ends ? 'expired'
-      : now.getTime() >= starts ? 'active' : 'waiting';
+    const playerState = String(row.player_status || 'not_checked_in');
+    const completed = Boolean(row.completed_at) || playerState === 'completed';
+    const missed = Boolean(row.missed_at) || playerState === 'missed';
+    const checkedIn = Boolean(row.checked_in_at) || ['checked_in','in_progress','participating'].includes(playerState);
+    const knownState = ['not_checked_in','completed','missed','checked_in','in_progress','participating'].includes(playerState);
+    const status = !clockValid ? 'sync_unavailable' : completed ? 'complete'
+      : missed || now.getTime() >= ends ? 'expired'
+        : checkedIn ? 'in_progress'
+          : !knownState ? 'sync_unavailable'
+            : now.getTime() >= starts ? 'active' : 'waiting';
     tasks.push(task(now, {
       source_key: 'battle.wtf-windows',
       task_id: `battle.wtf-windows:${day}:${await opaqueRef(`${row.event_id}:${row.starts_at}`)}`,
-      title: 'WTF timed event window', description: 'A scheduled event is not proof of participation.',
+      title: completed ? 'WTF window completed' : checkedIn ? 'WTF window check-in saved' : 'WTF timed event window',
+      description: completed ? 'The Worker confirms a completed player event.'
+        : checkedIn ? 'A saved check-in is in progress; completion has not yet been confirmed.'
+          : 'A scheduled event is not proof of participation.',
       why: 'Complete a qualifying action within this persisted UTC window.',
       status, source_health: clockValid ? 'live' : 'unavailable', priority: status === 'active' ? 190 : 540,
       period: { kind: 'event_window', key: day, origin_timezone: 'UTC' },
       available_at: clockValid ? row.starts_at : null, expires_at: clockValid ? row.ends_at : null,
-      blocking_reason_code: clockValid ? null : 'invalid_event_window',
-      evidence: { kind: 'server_projection', verified_completion: false },
+      blocking_reason_code: !clockValid ? 'invalid_event_window'
+        : !knownState ? 'wtf_player_status_unknown' : null,
+      evidence: { kind: 'server_projection', verified_completion: false,
+        accepted_at: completed ? row.completed_at : null },
     }));
   }
   const missedRows = sourceStatuses['battle.missed-opportunities'].state === 'migration_pending' ? [] : await query(db,
@@ -448,7 +467,11 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
     "SELECT pet_id,MAX(created_at) AS last_action_at FROM telegram_pet_events WHERE telegram_id=? AND status='accepted' AND event_type IN ('feed','play','clean','sleep') GROUP BY pet_id",
     [ownerId], [], failures, ['moonpet.care']);
   const bossVictories = !pets.length || sourceStatuses['moonpet.bosses-combat'].state === 'migration_pending' ? [] : await query(db,
-    'SELECT pet_id,defeated_at FROM telegram_pet_weekly_boss_victories_by_pet WHERE telegram_id=? AND week_key=? AND defeated_at IS NOT NULL',
+    `SELECT v.pet_id,v.season_key,v.defeated_at,a.day_key AS victory_day
+       FROM telegram_pet_weekly_boss_victories_by_pet v
+       LEFT JOIN telegram_pet_weekly_boss_events a ON a.telegram_id=v.telegram_id
+         AND a.week_key=v.week_key AND a.boss_id=v.boss_id AND a.event_key=v.victory_event_key
+       WHERE v.telegram_id=? AND v.week_key=? AND v.defeated_at IS NOT NULL`,
     [ownerId, week], [], failures, ['moonpet.bosses-combat']);
   const bossAttempts = !pets.length || sourceStatuses['moonpet.bosses-combat'].state === 'migration_pending' ? [] : await query(db,
     `SELECT 1 AS present FROM telegram_pet_events WHERE telegram_id=? AND week_key=? AND day_key=?
@@ -499,7 +522,6 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
   const lastCare = new Map(careEvents.map((row) => [String(row.pet_id), row.last_action_at]));
   const job = jobRows[0] || null;
   const jobPetId = job ? String(parseJson(job.metadata).pet_id || pets.find((pet) => number(pet.is_active))?.pet_id || '') : '';
-  const bossVictoryPets = new Set(bossVictories.map((row) => String(row.pet_id)));
   const bossAttemptUsed = bossAttempts.length > 0;
   const gardens = new Map(gardenRows.map((row) => [String(row.pet_id), row]));
   const evolutions = byPet(evolutionRows, 'stage');
@@ -523,11 +545,16 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
         const ownsJob = job && jobPetId === String(pet.pet_id);
         const recovery = ownsJob && job.status === 'completed';
         const endsAt = ownsJob ? sqliteUtcMillis(job.ends_at) : NaN;
+        const startAt = ownsJob ? sqliteUtcMillis(job.started_at) : NaN;
+        // The canonical game permits claims after five elapsed minutes even
+        // though ends_at stores the much later maximum duration.
+        const minClaimAt = Number.isFinite(startAt) ? startAt + 5 * 60_000 : NaN;
         const nowSecond = Math.floor(now.getTime() / 1000) * 1000;
         const expired = ownsJob && !recovery && Number.isFinite(endsAt)
           && endsAt < nowSecond - PET_ACTIVITY_GRACE_MS;
-        const unknown = ownsJob && !recovery && !Number.isFinite(endsAt);
-        const ready = recovery || ownsJob && !expired && !unknown && endsAt <= nowSecond;
+        const unknown = ownsJob && !recovery
+          && (!Number.isFinite(endsAt) || !Number.isFinite(minClaimAt));
+        const ready = recovery || ownsJob && !expired && !unknown && minClaimAt <= nowSecond;
         title = expired ? 'Moonpet activity claim window expired'
           : unknown ? 'Moonpet activity end time unavailable'
           : recovery ? 'Recover this Moonpet’s saved job reward'
@@ -538,11 +565,17 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
         blocking = expired ? 'pet_activity_claim_window_expired'
           : unknown ? 'pet_activity_end_time_unavailable' : null;
         priority = ready ? 90 : ownsJob ? 530 : 730;
-        nextReadyAt = ownsJob && !ready && !expired && Number.isFinite(endsAt)
-          ? new Date(endsAt).toISOString() : null;
+        nextReadyAt = ownsJob && !ready && !expired && Number.isFinite(minClaimAt)
+          ? new Date(minClaimAt).toISOString() : null;
       }
       if (key === 'moonpet.bosses-combat') {
-        const won = bossVictoryPets.has(String(pet.pet_id));
+        // Victory counts for the CURRENT ownership week only when its saved
+        // source event day is inside this pet's Journey bounds. A shared
+        // ISO-week victory may predate an ownership-week rollover.
+        const won = bossVictories.some((v) => v.pet_id === pet.pet_id
+          && v.season_key === pet.season_key && pet.journeyBounds
+          && v.victory_day >= pet.journeyBounds.start_at.slice(0,10)
+          && v.victory_day < pet.journeyBounds.end_at.slice(0,10));
         const participated = won || bossParticipated.has(`${pet.pet_id}:${pet.season_key}`);
         const active = number(pet.is_active) === 1;
         const eligibility = getCombatEligibility({
