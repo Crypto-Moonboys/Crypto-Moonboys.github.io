@@ -315,11 +315,24 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
 
   // The game's historical "7/7" award uses eight distinct flags (0xFF).
   // Read saved, unclaimed awards from earlier days, not today's record alone.
-  const completionRows = sourceStatuses['moonpet.daily-seven-missions'].state === 'migration_pending' ? [] : await query(db,
+  const completionKeys = ['moonpet.daily-seven-missions', 'moonpet.seven-of-seven-claim'];
+  const completionUnavailable = sourceStatuses['moonpet.daily-seven-missions'].state === 'migration_pending';
+  // Current day is independent of the bounded historical inbox. Otherwise
+  // over 100 prior pending claims could displace the current day's progress.
+  const todayCompletionRows = completionUnavailable ? [] : await query(db,
+    'SELECT utc_day,progress_bits,claimed_at,pet_id FROM telegram_pet_daily_completion WHERE telegram_id=? AND utc_day=? LIMIT 1',
+    [ownerId, day], [], failures, completionKeys);
+  const historyRows = completionUnavailable ? [] : await query(db,
     `SELECT utc_day,progress_bits,claimed_at,pet_id FROM telegram_pet_daily_completion
-      WHERE telegram_id=? AND (utc_day=? OR (progress_bits=255 AND claimed_at IS NULL))
-      ORDER BY utc_day DESC LIMIT 100`, [ownerId, day], [], failures,
-    ['moonpet.daily-seven-missions', 'moonpet.seven-of-seven-claim']);
+      WHERE telegram_id=? AND utc_day<>? AND progress_bits=255 AND claimed_at IS NULL
+      ORDER BY utc_day DESC LIMIT 100`, [ownerId, day], [], failures, completionKeys);
+  const historyCountRows = completionUnavailable ? [] : await query(db,
+    `SELECT COUNT(*) AS total FROM telegram_pet_daily_completion
+      WHERE telegram_id=? AND utc_day<>? AND progress_bits=255 AND claimed_at IS NULL`,
+    [ownerId, day], [], failures, completionKeys);
+  const historicalPendingTotal = number(historyCountRows[0]?.total);
+  const hiddenPendingClaims = Math.max(0, historicalPendingTotal - historyRows.length);
+  const completionRows = [...todayCompletionRows, ...historyRows];
   const completion = completionRows.find((row) => row.utc_day === day) || {};
   const bits = number(completion.progress_bits);
   const dailyFlags = [[1,'Feed'],[2,'Play'],[4,'Clean'],[8,'Train'],[16,'Trade'],
@@ -356,6 +369,26 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
         reward: reward(Object.entries(DAILY_COMPLETION_REWARD).map(([type, amount]) => ({ type, amount })), true),
         evidence: { verified_completion: claimed, accepted_at: row.claimed_at },
         sourcePetRef: row.pet_id ? await opaqueRef(`${ownerId}:${row.pet_id}`) : null,
+      }));
+  }
+  if (hiddenPendingClaims > 0) {
+    // A bounded list must signal partial results instead of silently
+    // treating older permanent rewards as lost/absent.
+    sourceStatuses['moonpet.seven-of-seven-claim'] = sourceStatus('live', {
+      adapter: 'saved_completion_claims',
+      partial: true,
+      historical_pending_total: historicalPendingTotal,
+      historical_pending_in_preview: historyRows.length,
+      historical_pending_not_listed: hiddenPendingClaims,
+    });
+    tasks.push(genericTask(now, SOURCE_BY_KEY.get('moonpet.seven-of-seven-claim'),
+      'claim_ready', 'live', {
+        title: `${hiddenPendingClaims} more saved Moonpet daily rewards`,
+        description: 'Older earned bonuses are outside this limited API preview. Open the Moonpet reward inbox for the complete claim workflow.',
+        why: 'Previous days\' unclaimed bonuses remain saved without an expiry.',
+        periodKey: 'historical_pending', suffix: 'overflow', priority: 48,
+        progress: { current: historyRows.length, target: historicalPendingTotal, unit: 'historical_saved_claims' },
+        evidence: { verified_completion: false },
       }));
   }
   if (!completionRows.some((row) => row.utc_day === day)) {
