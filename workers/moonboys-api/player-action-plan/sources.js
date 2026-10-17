@@ -161,6 +161,8 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
     [ownerId], [], failures, ['onboarding.faction', 'faction.daily-missions', 'faction.seasonal-mission', 'faction.weekly-war']);
   const faction = factionRows[0] || null;
   for (const key of ['onboarding.faction', 'faction.daily-missions', 'faction.seasonal-mission', 'faction.weekly-war']) {
+    // An assigned member does not make a missing mission-state table live.
+    if (sourceStatuses[key]?.state === 'migration_pending') continue;
     sourceStatuses[key] = sourceStatus(faction ? 'live' : 'live_empty', { adapter: key.startsWith('faction.') ? 'advisory_faction_projection' : 'membership_projection' });
   }
   tasks.push(genericTask(now, SOURCE_BY_KEY.get('onboarding.faction'), faction ? 'complete' : 'ready', 'live', {
@@ -192,7 +194,8 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
         expiresAt: nextUtcDay(now),
         blocking: faction ? 'mission_catalogue_not_server_authoritative' : 'faction_membership_required',
       }));
-    if (faction) sourceStatuses['faction.daily-missions'] = sourceStatus('preview', { adapter: 'client_mirror_without_persisted_rows' });
+    if (faction && sourceStatuses['faction.daily-missions'].state !== 'migration_pending')
+      sourceStatuses['faction.daily-missions'] = sourceStatus('preview', { adapter: 'client_mirror_without_persisted_rows' });
   }
   for (const key of ['faction.seasonal-mission', 'faction.weekly-war']) {
     if (faction) sourceStatuses[key] = sourceStatus('preview', { adapter: 'client_or_public_only' });
