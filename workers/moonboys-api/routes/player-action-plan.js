@@ -60,6 +60,7 @@ export async function handlePlayerActionPlanRoute(request, env, options = {}) {
   const readDb = createReadOnlyActionPlanDb(env.DB, {
     maxStatements: 80,
     statementTimeoutMs: options.statementTimeoutMs || 1500,
+    projectionTimeoutMs: options.projectionTimeoutMs || 5000,
   });
   let projection;
   try {
