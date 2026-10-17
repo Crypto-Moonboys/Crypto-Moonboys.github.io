@@ -322,7 +322,7 @@ test('all targeted source queries compile against the current D1 schema', async 
     );
     CREATE TABLE telegram_pet_weekly_boss_events (
       telegram_id TEXT, week_key TEXT, boss_id TEXT, event_key TEXT, day_key TEXT,
-      action TEXT, damage INTEGER
+      action TEXT, damage INTEGER, created_at TEXT
     );
     CREATE TABLE telegram_pet_weekly_boss_victories_by_pet (
       telegram_id TEXT, week_key TEXT, boss_id TEXT, pet_id TEXT, season_key TEXT,
