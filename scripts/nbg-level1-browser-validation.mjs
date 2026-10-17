@@ -145,7 +145,7 @@ const expectedAnimations = {
 };
 const expectedPlayerAssetUrls = Object.fromEntries(Object.entries(expectedAnimations).map(([key, animation]) => [
   `player.${key}`,
-  `/game/assets/${animation.spriteSheet}`
+  encodeURI(`/game/assets/${animation.spriteSheet}`)
 ]));
 const assetManifest = readJson('game/assets/asset-manifest.json');
 const playerAnimationManifest = readJson('game/assets/player/nbg-runner-animation-manifest.json');
