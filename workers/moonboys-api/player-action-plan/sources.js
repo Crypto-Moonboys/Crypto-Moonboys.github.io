@@ -418,17 +418,21 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
   const bitsCurrent = dailyFlags.filter(([flag]) => bits & flag).length;
   const sevenDone = bits === 255;
   tasks.push(genericTask(now, SOURCE_BY_KEY.get('moonpet.daily-seven-missions'),
-    sevenDone ? 'complete' : pets.length ? 'in_progress' : 'blocked', 'live', {
+    sevenDone ? 'complete' : rosterUnavailable ? 'sync_unavailable'
+      : pets.length ? 'in_progress' : 'blocked', 'live', {
       title: 'Daily Moonpet completion conditions', periodKey: day, priority: 205,
       description: 'Eight source flags currently govern the legacy 7/7 bonus.',
-      expiresAt: nextUtcDay(now), blocking: pets.length ? null : 'moonpet_required',
+      expiresAt: nextUtcDay(now), blocking: sevenDone || pets.length ? null
+        : rosterUnavailable ? 'owned_roster_unavailable' : 'moonpet_required',
       progress: { current: bitsCurrent, target: dailyFlags.length, unit: 'source_flags' },
     }));
   for (const [flag, label] of dailyFlags) {
     tasks.push(genericTask(now, SOURCE_BY_KEY.get('moonpet.daily-seven-missions'),
-      bits & flag ? 'complete' : pets.length ? 'in_progress' : 'blocked', 'live', {
+      bits & flag ? 'complete' : rosterUnavailable ? 'sync_unavailable'
+        : pets.length ? 'in_progress' : 'blocked', 'live', {
         title: label, periodKey: day, suffix: `flag-${flag}`, priority: 265,
-        expiresAt: nextUtcDay(now), blocking: pets.length ? null : 'moonpet_required',
+        expiresAt: nextUtcDay(now), blocking: bits & flag || pets.length ? null
+          : rosterUnavailable ? 'owned_roster_unavailable' : 'moonpet_required',
         progress: { current: bits & flag ? 1 : 0, target: 1, unit: 'accepted_source_flag' },
       }));
   }
@@ -471,9 +475,10 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
   }
   if (!completionRows.some((row) => row.utc_day === day)) {
     tasks.push(genericTask(now, SOURCE_BY_KEY.get('moonpet.seven-of-seven-claim'),
-      pets.length ? 'waiting' : 'blocked', 'live', {
+      rosterUnavailable ? 'sync_unavailable' : pets.length ? 'waiting' : 'blocked', 'live', {
         title: 'Complete Moonpet conditions to earn the bonus',
-        periodKey: day, priority: 520, blocking: pets.length ? null : 'moonpet_required',
+        periodKey: day, priority: 520, blocking: pets.length ? null
+          : rosterUnavailable ? 'owned_roster_unavailable' : 'moonpet_required',
         progress: { current: 0, target: dailyFlags.length, unit: 'source_flags' },
       }));
   }
