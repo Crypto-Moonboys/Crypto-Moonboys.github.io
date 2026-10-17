@@ -5,9 +5,14 @@ import {
 } from '../player-action-plan/schema.js';
 import { ACTION_PLAN_SOURCE_REGISTRY, buildPlayerActionPlanSources } from '../player-action-plan/sources.js';
 
-const FORBIDDEN_OWNER_FIELDS = Object.freeze([
-  'telegram_id', 'owner_id', 'pet_id', 'source_pet_id', 'source_pet_ref',
-]);
+// Caller-selected owner/pet/scope is never an authority for this endpoint.
+// Normalise camelCase and reject selector aliases before authentication.
+const OWNER_SELECTOR = /^(?:(?:selected|source|original|active)_)?(?:telegram|owner|pet|scope|user)(?:_(?:id|ref|key))?$/u;
+function isForbiddenOwnerSelector(field) {
+  const normalized = String(field).replace(/([a-z0-9])([A-Z])/gu, '$1_$2')
+    .replace(/[- ]/gu, '_').toLowerCase();
+  return OWNER_SELECTOR.test(normalized);
+}
 
 function withPrivateHeaders(response) {
   const headers = new Headers(response.headers);
@@ -38,7 +43,7 @@ export async function handlePlayerActionPlanRoute(request, env, options = {}) {
   try { body = await request.json(); }
   catch { return errorResponse(options, 'Invalid JSON', 400); }
   if (!body || typeof body !== 'object' || Array.isArray(body)) return errorResponse(options, 'JSON object required', 400);
-  if (FORBIDDEN_OWNER_FIELDS.some((field) => Object.prototype.hasOwnProperty.call(body, field))) {
+  if (Object.keys(body).some(isForbiddenOwnerSelector)) {
     return errorResponse(options, 'Owner and pet selectors are derived from verified identity', 400);
   }
   if (body.view != null && !['summary', 'tasks', 'all', 'actionable', 'history'].includes(String(body.view))) {
