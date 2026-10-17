@@ -1700,8 +1700,11 @@ assert.ok(
   runtimeSource.includes("type: rat.variant === 'parachuteRatC' ? 'turquoiseRat' : 'brownRat'") &&
   runtimeSource.includes("enemy.type === 'brownRat' ? 'brownRatWalk' : 'rat'") &&
   runtimeSource.includes("enemy.type === 'brownRat' ? 'brownRatPunch'") &&
-  runtimeSource.includes("enemy.type === 'brownRat' ? 1.35 : 1"),
-  'only the two non-turquoise parachutes use brown walk and enlarged lightning punch'
+  runtimeSource.includes('(ratAttacking ? 2.45 : 1.55)') &&
+  runtimeSource.includes('var ratFootY = y + enemy.h') &&
+  runtimeSource.includes('(ratAttacking ? 34 : 18)') &&
+  runtimeSource.includes('var ratDrawY = ratFootY - ratDrawHeight + brownFootPadding'),
+  'brown parachute rats must use enlarged walk/punch poses with one grounded foot baseline'
 );
 
 // Brown and turquoise landed parachute rats must actually DISPLAY their
@@ -1726,14 +1729,23 @@ for (const variant of [
       type, x: state.player.x + 48, y: 214 - 42,
       w: 28, h: 42, vx: 0, min: state.player.x + 48,
       max: state.player.x + 48, spawnedByParachute: true,
-      spawnedAt: state.runElapsedMs
+      spawnedAt: state.runElapsedMs,
+      nextAttackAt: type === 'brownRat' ? state.runElapsedMs + 450 : 0
     });
     const context = document.getElementById('game').getContext('2d');
     if (!window.__nbgDrawImageOriginal) {
       window.__nbgDrawImageOriginal = context.drawImage;
       window.__nbgAttackDrawSources = [];
+      window.__nbgBrownDraws = [];
       context.drawImage = function (image, ...args) {
-        if (image && image.src) window.__nbgAttackDrawSources.push(image.src);
+        if (image && image.src) {
+          window.__nbgAttackDrawSources.push(image.src);
+          if (image.src.includes('/dfgdf-') && args.length === 8)
+            window.__nbgBrownDraws.push({
+              src: image.src, x: args[4], y: args[5],
+              w: args[6], h: args[7]
+            });
+        }
         return window.__nbgDrawImageOriginal.call(this, image, ...args);
       };
     }
@@ -1756,6 +1768,25 @@ for (const variant of [
   }, variant);
   assert.ok(evidence.attacking && evidence.attackType,
     variant.type + ' must render its attack pose while the attack timer is active');
+  if (variant.type === 'brownRat') {
+    const brownDraws = await page.evaluate(() => window.__nbgBrownDraws);
+    const walk = brownDraws.find(draw => draw.src.includes('/dfgdf-walk.png'));
+    const punch = brownDraws.find(draw => draw.src.includes('/dfgdf-punch_fast_with_lightning_bolts.png'));
+    assert.ok(walk && punch, 'both enlarged brown poses must actually render');
+    assert.ok(walk.w >= 75 && walk.h >= 90,
+      'brown walking artwork must be significantly larger than the original 50x60');
+    assert.ok(punch.w > walk.w && punch.h > walk.h,
+      'padded brown punch frames need a larger draw box than walk frames');
+    // Their transparent bottom padding is different. Align the visible
+    // artwork's feet rather than the bottoms of padded draw rectangles.
+    const walkVisibleFootY = walk.y + walk.h - 18;
+    const punchVisibleFootY = punch.y + punch.h - 34;
+    assert.equal(walkVisibleFootY, punchVisibleFootY,
+      'brown walk and punch visible feet must share the same ground baseline');
+    assert.equal(Math.round(walkVisibleFootY),
+      Math.round(214 + 38),
+      'brown rat visible feet should be grounded on the street, not floating');
+  }
   await page.evaluate(({ type }) => {
     const state = window.NBGLevel1State;
     const rat = state.enemies.find(enemy => enemy.type === type &&
@@ -1769,6 +1800,7 @@ await page.evaluate(() => {
   context.drawImage = window.__nbgDrawImageOriginal;
   delete window.__nbgDrawImageOriginal;
   delete window.__nbgAttackDrawSources;
+  delete window.__nbgBrownDraws;
   window.NBGLevel1Runtime.reset();
 });
 

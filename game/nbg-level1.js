@@ -1206,13 +1206,23 @@
             ratFrame = Math.max(0, ratFrame);
             var ratSourceX = ratFrame % RAT_SHEET_COLUMNS * ratFrameWidth;
             var ratSourceY = Math.floor(ratFrame / RAT_SHEET_COLUMNS) * ratFrameHeight;
-            // Attack sheets have much smaller artwork inside their 512px cells than
-            // the walk sheet has inside its 256px cells. Enlarge only attack frames.
-            var ratScale = ratAttacking ? (enemy.type === 'rat' ? 1.9 : enemy.type === 'brownRat' ? 1.35 : 1) : 1;
+            // Brown walk artwork is undersized, and the brown punch sheet has
+            // even more transparent padding per frame. Scale each pose
+            // independently, without altering any enemy hitbox or XP rules.
+            var ratScale = enemy.type === 'brownRat' ?
+              (ratAttacking ? 2.45 : 1.55) :
+              (ratAttacking && enemy.type === 'rat' ? 1.9 : 1);
             var ratDrawWidth = Math.round(RAT_RENDER_WIDTH * ratScale);
             var ratDrawHeight = Math.round(RAT_RENDER_HEIGHT * ratScale);
             var ratDrawX = x - Math.round((ratDrawWidth - enemy.w) / 2);
-            var ratDrawY = y + enemy.h - ratDrawHeight;
+            // Brown sprite frames contain transparent pixels *below* their
+            // feet: ~18 output pixels for walk, ~34 for the padded punch sheet.
+            // Anchor the visible feet (not the bottom of the transparent cell)
+            // to the same physics-ground line for both poses and directions.
+            var ratFootY = y + enemy.h;
+            var brownFootPadding = enemy.type === 'brownRat' ?
+              (ratAttacking ? 34 : 18) : 0;
+            var ratDrawY = ratFootY - ratDrawHeight + brownFootPadding;
             if (enemy.vx < 0) {
               ctx.translate(ratDrawX + ratDrawWidth, ratDrawY);
               ctx.scale(-1, 1);
