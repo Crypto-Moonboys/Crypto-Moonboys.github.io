@@ -424,14 +424,25 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
   // The game's historical "7/7" award uses eight distinct flags (0xFF).
   // Read saved, unclaimed awards from earlier days, not today's record alone.
   const completionKeys = ['moonpet.daily-seven-missions', 'moonpet.seven-of-seven-claim'];
+  // A saved pet ID alone cannot authorize a claim. Verify the exact retained
+  // pet/season tuple against the signed owner's instance and ownership slot.
+  const completionAuthority = `CASE WHEN EXISTS (
+    SELECT 1 FROM telegram_pet_instances i JOIN telegram_pet_season_slots s
+      ON s.pet_id=i.pet_id AND s.telegram_id=i.telegram_id
+        AND s.season_key=i.season_key AND s.slot_number=i.slot_number
+    WHERE i.pet_id=telegram_pet_daily_completion.pet_id
+      AND i.season_key=telegram_pet_daily_completion.season_key
+      AND i.telegram_id=telegram_pet_daily_completion.telegram_id
+  ) THEN 1 ELSE 0 END AS original_pet_verified`;
+  const completionSelect = `utc_day,progress_bits,claimed_at,pet_id,season_key,${completionAuthority}`;
   const completionUnavailable = sourceStatuses['moonpet.daily-seven-missions'].state === 'migration_pending';
   // Current day is independent of the bounded historical inbox. Otherwise
   // over 100 prior pending claims could displace the current day's progress.
   const todayCompletionRows = completionUnavailable ? [] : await query(db,
-    'SELECT utc_day,progress_bits,claimed_at,pet_id FROM telegram_pet_daily_completion WHERE telegram_id=? AND utc_day=? LIMIT 1',
+    `SELECT ${completionSelect} FROM telegram_pet_daily_completion WHERE telegram_id=? AND utc_day=? LIMIT 1`,
     [ownerId, day], [], failures, completionKeys);
   const historyRows = completionUnavailable ? [] : await query(db,
-    `SELECT utc_day,progress_bits,claimed_at,pet_id FROM telegram_pet_daily_completion
+    `SELECT ${completionSelect} FROM telegram_pet_daily_completion
       WHERE telegram_id=? AND utc_day<>? AND progress_bits=255 AND claimed_at IS NULL
       ORDER BY utc_day DESC LIMIT 100`, [ownerId, day], [], failures, completionKeys);
   const historyCountRows = completionUnavailable ? [] : await query(db,
@@ -473,7 +484,9 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
     const needsSourcePet = completed && !claimed && !row.pet_id;
     const verifiedActivePet = pets.some((pet) => number(pet.is_active) === 1
       && pet.lifecycle_phase && pet.lifecycle_phase !== 'egg');
-    const cannotClaim = needsSourcePet && !verifiedActivePet;
+    const badSavedAuthority = completed && !claimed && row.pet_id
+      && (!row.season_key || number(row.original_pet_verified) !== 1);
+    const cannotClaim = Boolean(badSavedAuthority || needsSourcePet && !verifiedActivePet);
     tasks.push(genericTask(now, SOURCE_BY_KEY.get('moonpet.seven-of-seven-claim'),
       claimed ? 'claimed' : cannotClaim
         ? rosterUnavailable ? 'sync_unavailable' : 'blocked'
@@ -481,7 +494,8 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
         title: claimed ? 'Moonpet daily bonus claimed' : completed
           ? 'Collect saved Moonpet bonus' : 'Finish Moonpet completion conditions',
         periodKey: row.utc_day, priority: completed && !claimed && !cannotClaim ? 35 : 520,
-        blocking: cannotClaim ? rosterUnavailable ? 'owned_roster_unavailable' : 'active_source_pet_required' : null,
+        blocking: cannotClaim ? badSavedAuthority ? 'saved_source_pet_season_unverified'
+          : rosterUnavailable ? 'owned_roster_unavailable' : 'active_source_pet_required' : null,
         expiresAt: null,
         progress: { current: dailyFlags.filter(([flag]) => number(row.progress_bits) & flag).length,
           target: dailyFlags.length, unit: 'source_flags' },
@@ -666,7 +680,7 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
       ORDER BY CASE status WHEN 'active' THEN 0 ELSE 1 END,started_at DESC LIMIT 1`,
     [ownerId], [], failures, ['moonpet.jobs']);
   const gardenRows = !pets.length || sourceStatuses['moonpet.garden-kitchen-gym'].state === 'migration_pending' ? [] : await query(db,
-    'SELECT pet_id,status,ready_at,planted_at FROM telegram_pet_garden_plots WHERE telegram_id=?', [ownerId], [], failures, ['moonpet.garden-kitchen-gym']);
+    'SELECT pet_id,crop_key,status,ready_at,planted_at FROM telegram_pet_garden_plots WHERE telegram_id=?', [ownerId], [], failures, ['moonpet.garden-kitchen-gym']);
   const evolutionRows = !pets.length || sourceStatuses['moonpet.evolution'].state === 'migration_pending' ? [] : await query(db,
     'SELECT pet_id,MAX(stage) AS stage FROM telegram_pet_evolutions_by_pet WHERE telegram_id=? GROUP BY pet_id', [ownerId], [], failures, ['moonpet.evolution']);
   const dailyProgress = byPet(dailyJourney);
@@ -707,11 +721,12 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
           ...(visiblePetCare(decayedCare.happiness) <= 35 ? ['play'] : []),
           ...(visiblePetCare(decayedCare.energy) <= 25 ? ['sleep'] : []),
         ];
-        // Low health warrants care even if no individual meter hit its own
-        // warning threshold; select an eligible action rather than invent
-        // a universal per-pet cooldown.
-        if (visiblePetCare(decayedCare.health) <= 45 && !urgentActions.length) {
-          urgentActions.push('feed', 'clean', 'play', 'sleep');
+        // Low health independently warrants general care. Keep feed, clean
+        // and play available even when low energy also adds a blocked sleep.
+        if (visiblePetCare(decayedCare.health) <= 45) {
+          for (const action of ['feed', 'clean', 'play', 'sleep']) {
+            if (!urgentActions.includes(action)) urgentActions.push(action);
+          }
         }
         const activityBlocksSleep = job?.status === 'active';
         const eligibleActions = urgentActions.filter(action => action !== 'sleep' || !activityBlocksSleep);
@@ -789,15 +804,19 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
       }
       if (key === 'moonpet.garden-kitchen-gym') {
         const garden = gardens.get(String(pet.pet_id));
-        const cropIdentified = !garden || Boolean(String(garden.planted_at || '').trim());
+        const planted = garden ? sqliteUtcMillis(garden.planted_at) : NaN;
+        const readyAt = garden ? sqliteUtcMillis(garden.ready_at) : NaN;
+        const validCrop = !garden || (garden.crop_key === 'garden_veggies'
+          && ['growing', 'harvesting'].includes(garden.status)
+          && Number.isFinite(planted) && Number.isFinite(readyAt) && readyAt > planted);
         const harvesting = garden?.status === 'harvesting';
-        const ready = garden && !harvesting && Date.parse(garden.ready_at) <= now.getTime();
-        title = !cropIdentified ? 'Garden planted-crop identity unavailable' : harvesting
+        const ready = validCrop && garden && !harvesting && readyAt <= now.getTime();
+        title = !validCrop ? 'Saved garden crop state unavailable' : harvesting
           ? 'Garden harvest is settling' : ready ? 'Harvest garden vegetables'
             : garden ? 'Garden crop is growing' : 'Plant the Moonpet garden';
-        status = !cropIdentified ? 'sync_unavailable' : ready ? 'ready' : garden ? 'waiting' : 'ready';
-        blocking = cropIdentified ? null : 'garden_crop_identity_unavailable';
-        priority = ready && cropIdentified ? 140 : 590;
+        status = !validCrop ? 'sync_unavailable' : ready ? 'ready' : garden ? 'waiting' : 'ready';
+        blocking = validCrop ? null : 'pet_garden_state_invalid';
+        priority = ready ? 140 : 590;
       }
       if (key === 'moonpet.evolution') { const stage = evolutions.get(String(pet.pet_id)) || 0; title = 'Review permanent evolution progress'; status = stage >= 5 ? 'complete' : 'in_progress'; priority = 620; progress = { current: stage, target: 5, unit: 'evolution_stage' }; }
       // Recurring tasks must not reuse a previous instance's identity.
