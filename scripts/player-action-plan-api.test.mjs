@@ -43,6 +43,10 @@ function fakeDb(options = {}) {
             async first() {
               calls.push({ method: 'first', ...statement });
               if (/sqlite_master/u.test(sql)) {
+                // Distinguish a missing D1 table from a failed sqlite_master read.
+                if (options.tableErrors?.has(String(params[0]))) {
+                  throw new Error('simulated_d1_table_probe_timeout');
+                }
                 const present = !tables || tables.has(String(params[0]));
                 return present ? { name: params[0] } : null;
               }
@@ -335,6 +339,53 @@ test('missing tables degrade per source without collapsing the plan', async () =
   assert.equal(affected.status, 'sync_unavailable');
   assert.equal(affected.source_health, 'migration_pending');
   assert.ok(payload.tasks.some((entry) => entry.source_key === 'telegram.daily-claim' && entry.status === 'ready'));
+});
+
+test('table probe failures propagate as query_failed to all mapped sources', async () => {
+  const db = fakeDb({ tableErrors: new Set(['telegram_pet_daily_completion']) });
+  const response = await handlePlayerActionPlanRoute(request(auth({ limit: 100 })),
+    { DB: db, TELEGRAM_BOT_TOKEN: 'test' }, options());
+  assert.equal(response.status, 200, 'unrelated sources still respond on a partial D1 outage');
+  const payload = await response.json();
+  for (const sourceKey of ['moonpet.daily-seven-missions', 'moonpet.seven-of-seven-claim']) {
+    const status = payload.source_status[sourceKey];
+    assert.equal(status.state, 'query_failed', sourceKey);
+    assert.equal(status.error_code, 'simulated_d1_table_probe_timeout');
+    const items = payload.tasks.filter(t => t.source_key === sourceKey);
+    assert.ok(items.length > 0, 'source remains represented');
+    assert.ok(items.every(t => t.status === 'sync_unavailable'
+      && t.source_health === 'query_failed'
+      && t.blocking_reason_code === 'source_projection_unavailable'),
+      'no task can pretend completion, claimability or migration absence after a failed probe');
+  }
+  assert.notEqual(payload.source_status['moonpet.daily-journey'].state, 'query_failed',
+    'other successfully queried tables must remain available');
+  assert.ok(payload.summary.unavailable_sources >= 2);
+  assert.ok(!payload.top_actions.some(t =>
+    ['moonpet.daily-seven-missions', 'moonpet.seven-of-seven-claim'].includes(t.source_key)));
+});
+
+test('an actually missing table remains migration_pending rather than query_failed', async () => {
+  const sourceTables = new Set([
+    'telegram_pet_daily_completion', 'telegram_pet_instances',
+    'telegram_pet_daily_journey_objectives', 'telegram_pet_weekly_journey_objectives',
+    'daily_wtf_events', 'daily_missed_perks', 'daily_opportunity_state',
+    'arcade_progression_events', 'telegram_pet_reward_claims', 'telegram_pet_runs',
+    'telegram_pet_contracts', 'telegram_pet_activity_sessions',
+    'telegram_pet_weekly_boss_victories_by_pet', 'telegram_pet_garden_plots',
+    'telegram_pet_evolutions_by_pet', 'wiki_mission_completions',
+    'championship_clout_daily', 'dead_run_sessions', 'nbg_london_records',
+    'player_daily_mission_state',
+  ]);
+  sourceTables.delete('telegram_pet_daily_completion');
+  const response = await handlePlayerActionPlanRoute(request(auth({ limit: 100 })),
+    { DB: fakeDb({ tables: sourceTables }), TELEGRAM_BOT_TOKEN: 'test' }, options());
+  assert.equal(response.status, 200);
+  const payload = await response.json();
+  for (const key of ['moonpet.daily-seven-missions', 'moonpet.seven-of-seven-claim']) {
+    assert.equal(payload.source_status[key].state, 'migration_pending');
+    assert.equal(payload.tasks.find(t => t.source_key === key).status, 'sync_unavailable');
+  }
 });
 
 test('authentication, owner selectors, rate limits and pagination fail closed', async () => {
