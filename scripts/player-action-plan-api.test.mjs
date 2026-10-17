@@ -62,7 +62,10 @@ function fakeDb(options = {}) {
               if (options.delayedAllMs) await new Promise(resolve => setTimeout(resolve, options.delayedAllMs));
               if (/FROM telegram_users/u.test(sql)) return { success: true, results: [{ telegram_id: params[0] }] };
               if (/FROM telegram_faction_members/u.test(sql)) return { success: true, results: [{ faction_id: 2, name: 'graffpunks' }] };
-              if (/FROM arcade_progression_state/u.test(sql)) return { success: true, results: [{ arcade_xp_total: options.lowXp ? 200 : 1200 }] };
+              if (/FROM arcade_progression_state/u.test(sql)) {
+                if (options.failArcadeXp) throw new Error('arcade_lifetime_xp_unavailable');
+                return { success: true, results: [{ arcade_xp_total: options.lowXp ? 200 : 1200 }] };
+              }
               if (/FROM telegram_pet_profiles/u.test(sql)) return { success: true, results:
                 options.legacyOwner ? [{ telegram_id: params[0] }] : [] };
               if (/FROM player_daily_mission_state/u.test(sql)) return { success: true, results: options.savedMissions
