@@ -705,7 +705,7 @@ test('saved contracts without verified original-pet and season are unavailable',
   const sql = db.calls.find(t => /FROM telegram_pet_contracts c/u.test(t.sql))?.sql;
   assert.match(sql, /LEFT JOIN telegram_pet_instances i/u);
   assert.match(sql, /LEFT JOIN telegram_pet_season_slots s/u);
-  assert.match(sql, /c.season_key=i.season_key/u);
+  assert.match(sql, /i.season_key=c.season_key/u);
 });
 
 test('active Moonpet activity prevents sleep from entering Top actions', async () => {
