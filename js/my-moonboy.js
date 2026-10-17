@@ -132,12 +132,14 @@
   }
 
   function timeStatus(task) {
-    if (task.next_ready_at && !READY.has(task.status))
-      return timedMarkup('Source next-ready estimate', task.next_ready_at);
-    if (task.expires_at) return timedMarkup('Expires / window ends', task.expires_at);
+    let times = '';
+    if (task.expires_at) times += timedMarkup('Expires / window ends', task.expires_at);
+    else times += '<p><strong>Deadline:</strong> No recorded expiry / long-term</p>';
     if (task.available_at && task.status === 'waiting')
-      return timedMarkup('Scheduled from', task.available_at);
-    return '<p><strong>Deadline:</strong> No recorded expiry / long-term</p>';
+      times += timedMarkup('Scheduled from', task.available_at);
+    if (task.next_ready_at && !READY.has(task.status))
+      times += timedMarkup('Source next-ready estimate', task.next_ready_at);
+    return times;
   }
 
   function rewardLabel(task) {
@@ -368,6 +370,7 @@
       if (state.plan) {
         state.stale = true;
         setSync('Refreshing saved plan — timestamps and readiness are not yet current.', 'stale');
+        render(); // Hide stale Top 3 immediately, never leave old readiness live.
       } else {
         showGate('Retrieving verified missions', 'Reading the authenticated source projection. No gameplay actions are being performed.');
       }
@@ -430,8 +433,12 @@
         applyPlan(payload, ownerId, true);
       } catch (error) {
         if (isRequestCurrent(epoch, ownerId, day)) {
-          state.lastFailure = 'More tasks unavailable: ' + (error.message || 'retry');
-          render();
+          if (error && (error.status === 401 || error.status === 403)) {
+            clearPrivate('Telegram login expired', 'Previous owner data cleared; log in again.');
+          } else {
+            state.lastFailure = 'More tasks unavailable: ' + (error.message || 'retry');
+            render();
+          }
         }
       } finally {
         state.controllers.delete(controller);
@@ -450,7 +457,8 @@
     const status = task.status;
     switch (state.tab) {
       case 'now': return isNow(task);
-      case 'today': return period === 'utc_day' || period === 'event_window';
+      case 'today': return (period === 'utc_day' || period === 'event_window') &&
+        task.period && state.plan && task.period.key === state.plan.period.utc_day;
       case 'claims': return ['claim_ready', 'claimed'].includes(status) ||
         key === 'moonpet.claimable-rewards' || key === 'moonpet.seven-of-seven-claim';
       case 'moonpet': return key.startsWith('moonpet.');
@@ -668,6 +676,7 @@
       render();
     });
     byId('mm-refresh').addEventListener('click', () => refresh({ force: true }));
+    byId('mm-gate-retry').addEventListener('click', () => refresh({ force: true }));
     byId('mm-load-more').addEventListener('click', loadMore);
     const hintedTab = new URLSearchParams(window.location.search).get('tab');
     if (TABS.has(hintedTab)) selectTab(hintedTab, false);
