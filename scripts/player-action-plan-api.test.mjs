@@ -7,6 +7,7 @@ import { ACTION_PLAN_SOURCE_REGISTRY, buildPlayerActionPlanSources } from '../wo
 import { handlePlayerActionPlanRoute } from '../workers/moonboys-api/routes/player-action-plan.js';
 import { isoWeek, nextUtcDay, paginateActionPlan } from '../workers/moonboys-api/player-action-plan/schema.js';
 import { getPetWeeklyBoss } from '../workers/moonboys-api/pets/player-expansion.js';
+import { getPetDailyBounties } from '../workers/moonboys-api/pets/economy-expansion.js';
 
 function fakeDb(options = {}) {
   const calls = [];
@@ -174,6 +175,13 @@ function fakeDb(options = {}) {
               if (/FROM dead_run_sessions.*status='finished'.*ranked=1/su.test(sql)) return { success: true, results: options.deadRunVerified ? [{ score: 4321, ended_at: '2026-10-17T11:00:00Z' }] : [] };
               if (/championship_clout_daily/u.test(sql)) return { success: true, results: [{ total_points: 18, recalculated_at_ms: 1792195200000 }] };
               if (/nbg_london_records/u.test(sql)) return { success: true, results: [{ fastest_ms: 50000, best_xp: 30 }] };
+              if (/SELECT 'event' AS record_type/u.test(sql)) return { success: true, results: [
+                ...(options.bountyAcceptedEvents || []).map(row => ({
+                  record_type: 'event', record_key: row.event_type, total: row.total,
+                })),
+                ...(options.bountyAwarded ? [{ record_type: 'receipt', record_key: 'awarded', total: options.bountyAwarded }] : []),
+                ...(options.bountyPending ? [{ record_type: 'receipt', record_key: 'pending', total: options.bountyPending }] : []),
+              ] };
               if (/FROM telegram_pet_reward_claims/u.test(sql)) return { success: true, results: [{ total: options.pendingClaimCount || 0 }] };
               if (/COUNT\(\*\)/u.test(sql)) return { success: true, results: [{ total: 0 }] };
               return { success: true, results: [] };
@@ -555,7 +563,12 @@ test('roster probe failures fail only live-pet projections, not separately saved
       t.status === 'sync_unavailable' && t.source_health === 'query_failed'), key);
     assert.ok(!payload.top_actions.some(t => t.source_key === key), key);
   }
-  for (const key of ['moonpet.seven-of-seven-claim', 'moonpet.claimable-rewards',
+  // Raw pending claim rows are not independently verified: they can be
+  // internal wallet-recovery reservations, not a player-facing claim.
+  const bounty = payload.tasks.find(t => t.source_key === 'moonpet.claimable-rewards');
+  assert.notEqual(bounty.status, 'claim_ready');
+  assert.ok(!payload.top_actions.some(t => t.source_key === 'moonpet.claimable-rewards'));
+  for (const key of ['moonpet.seven-of-seven-claim',
     'moonpet.contracts', 'moonpet.saved-run', 'moonpet.bosses-combat']) {
     assert.notEqual(payload.source_status[key]?.state, 'query_failed', key);
     const saved = payload.tasks.filter(t => t.source_key === key && t.status === 'claim_ready');
@@ -1227,6 +1240,37 @@ test('per-pet accepted boss participation prevents duplicate readiness', async (
   assert.ok(boss.some(t => t.status === 'complete'), 'recorded participation cannot be recommended again');
   assert.equal(boss.filter(t => t.status === 'ready').length, 0);
 });
+test('daily bounty claimability requires accepted progress and ignores unrelated recovery reservations', async () => {
+  const day = '2026-10-17';
+  const selected = getPetDailyBounties(day)[0];
+  const completeEvidence = [{ event_type: selected.event_types[0], total: selected.required }];
+  const scenarios = [
+    { config: { pendingClaimCount: 9 }, ready: false },
+    { config: { bountyAcceptedEvents: completeEvidence }, ready: true },
+    { config: { bountyAcceptedEvents: completeEvidence, pendingClaimCount: 9 }, ready: true },
+    { config: { bountyAcceptedEvents: completeEvidence, bountyAwarded: 7 }, ready: false },
+    { config: { bountyAcceptedEvents: completeEvidence, bountyPending: 7 }, ready: false },
+    { config: { bountyAcceptedEvents: completeEvidence, noPets: true }, ready: false },
+  ];
+  for (const { config, ready } of scenarios) {
+    const db = fakeDb(config);
+    const response = await handlePlayerActionPlanRoute(request(auth({ limit: 100 })),
+      { DB: db, TELEGRAM_BOT_TOKEN: 'test' }, options());
+    assert.equal(response.status, 200);
+    const plan = await response.json();
+    const bounty = plan.tasks.find(t => t.source_key === 'moonpet.claimable-rewards');
+    assert.equal(bounty.status === 'claim_ready', ready, JSON.stringify(config));
+    assert.equal(plan.top_actions.some(t => t.task_id === bounty.task_id), ready &&
+      plan.top_actions.some(t => t.source_key === 'moonpet.claimable-rewards'), JSON.stringify(config));
+    const sql = db.calls.find(call => /SELECT 'event' AS record_type/u.test(call.sql));
+    assert.ok(sql, 'bounty proof and settlement are read in one statement');
+    assert.match(sql.sql, /status='accepted'/u);
+    assert.match(sql.sql, /source='pet_bounty'/u);
+    assert.match(sql.sql, /status IN \('pending','awarded'\)/u);
+    assert.deepEqual(sql.params, ['123456', day, '123456', day]);
+  }
+});
+
 test('source-specific UTC clocks survive BST/GMT rollover and pagination is bounded', () => {
   assert.equal(nextUtcDay('2026-10-24T23:59:59Z'), '2026-10-25T00:00:00.000Z');
   assert.equal(nextUtcDay('2026-10-25T23:59:59Z'), '2026-10-26T00:00:00.000Z');
