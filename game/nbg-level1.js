@@ -684,7 +684,9 @@
         setPlayerAnimation('idle');
       }
 
-      advancePlayerAnimation(dt, true);
+      // Spray plays once and holds the last painted frame until the 230ms
+      // attack window expires; looping can skip the ending on 30–40Hz displays.
+      advancePlayerAnimation(dt, player.anim !== 'spray');
     }
 
     function updateCoins(time) {
