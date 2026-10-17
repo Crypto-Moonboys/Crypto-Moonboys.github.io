@@ -167,9 +167,9 @@ function fakeDb(options = {}) {
               if (/FROM telegram_pet_events\s+WHERE telegram_id=\? AND status='accepted'/su.test(sql) && options.bossParticipation) {
                 return { success: true, results: [{ pet_id: 'pet-secret-123', season_key: '2026-Q4' }] };
               }
-              if (/FROM telegram_pet_events WHERE telegram_id=\? AND week_key=\? AND day_key=\?/u.test(sql)
-                  && /event_type='weekly_boss'/u.test(sql) && options.bossAttempt)
-                return { success: true, results: [{ event_id: 'attempt-1' }] };
+              if (/FROM telegram_pet_weekly_boss_events\s+WHERE telegram_id=\? AND week_key=\? AND day_key=\?/su.test(sql))
+                return { success: true, results: options.bossAttempt
+                  ? [{ present: 1 }] : [] };
               if (/FROM dead_run_sessions.*status='active'/su.test(sql)) return { success: true, results: options.deadRunActive ? [{ session_id: options.deadRunSessionId || 'active-run' }] : [] };
               if (/FROM dead_run_sessions.*status='finished'.*ranked=1/su.test(sql)) return { success: true, results: options.deadRunVerified ? [{ score: 4321, ended_at: '2026-10-17T11:00:00Z' }] : [] };
               if (/championship_clout_daily/u.test(sql)) return { success: true, results: [{ total_points: 18, recalculated_at_ms: 1792195200000 }] };
@@ -1053,9 +1053,12 @@ test('historical pending claim backlog is explicit and never displaces current d
   assert.equal(health.partial, true);
   assert.equal(health.historical_pending_total, 137);
   assert.equal(health.historical_pending_not_listed, 37);
-  assert.ok(result.tasks.some(t => t.source_key === 'moonpet.seven-of-seven-claim' && t.status === 'claim_ready'
-    && /37 more/u.test(t.title)));
-  assert.equal(result.tasks.filter(t => t.source_key === 'moonpet.seven-of-seven-claim' && t.status === 'claim_ready').length, 100);
+  const overflow = result.tasks.find(t => t.source_key === 'moonpet.seven-of-seven-claim'
+    && /37 more/u.test(t.title));
+  assert.equal(overflow?.status, 'preview', 'unread rows have no verified pet/season authority');
+  assert.equal(overflow.blocking_reason_code, 'hidden_claim_authority_not_verified');
+  assert.equal(result.top_actions.some(t => t.task_id === overflow.task_id), false);
+  assert.equal(result.tasks.filter(t => t.source_key === 'moonpet.seven-of-seven-claim' && t.status === 'claim_ready').length, 99);
   let daily = result.tasks.find(t => t.source_key === 'moonpet.daily-seven-missions' && t.title === 'Daily Moonpet completion conditions');
   // The API deliberately pages at 100 tasks: the daily summary may be on a
   // later page when the member has 137 historic pending claim receipts.
@@ -1125,19 +1128,52 @@ test('earlier same-ISO-week boss win does not complete a new pet ownership week'
 
 test('WTF windows use owner event truth for active, checked in and completed status', async () => {
   for (const [playerState, expected] of [
-    [null, 'active'], ['checked_in', 'in_progress'], ['completed', 'complete'],
+    [null, 'active'], ['upcoming', 'active'], ['checked_in', 'in_progress'], ['completed', 'complete'],
   ]) {
     const db = fakeDb({ wtfState: playerState });
     const result = await (await handlePlayerActionPlanRoute(request(auth({ limit: 100 })),
       { DB: db, TELEGRAM_BOT_TOKEN: 'test' }, options())).json();
     const window = result.tasks.find(t => t.source_key === 'battle.wtf-windows');
     assert.equal(window.status, expected, String(playerState));
-    if (playerState) assert.ok(!result.top_actions.some(t => t.task_id === window.task_id));
+    if (playerState && playerState !== 'upcoming')
+      assert.ok(!result.top_actions.some(t => t.task_id === window.task_id));
     const wtfQuery = db.calls.find(t => /FROM daily_wtf_events e/u.test(t.sql));
     assert.match(wtfQuery.sql, /LEFT JOIN daily_wtf_player_events p/u);
     assert.equal(wtfQuery.params[0], '123456', 'signed owner must filter player participation');
     assert.equal(wtfQuery.params[1], '2026-10-17');
   }
+});
+
+test('persisted upcoming WTF state is waiting before its window and active during it', async () => {
+  const db = fakeDb({ wtfState: 'upcoming' });
+  for (const [at,expected] of [
+    ['2026-10-17T10:30:00.000Z','waiting'],
+    ['2026-10-17T12:00:00.000Z','active'],
+  ]) {
+    const response = await handlePlayerActionPlanRoute(request(auth({ limit: 100 })),
+      { DB: db, TELEGRAM_BOT_TOKEN: 'test' }, options({now:at}));
+    assert.equal(response.status,200);
+    const payload=await response.json();
+    const task=payload.tasks.find(t=>t.source_key==='battle.wtf-windows');
+    assert.equal(task.status,expected,at);
+    assert.equal(payload.source_status['battle.wtf-windows'].state,'live');
+  }
+});
+
+test('weekly boss daily-attempt read uses saved attack not optional generic event', async () => {
+  const db = fakeDb({bossReady:true,bossAttempt:true});
+  const response = await handlePlayerActionPlanRoute(request(auth({limit:100})),
+    {DB:db,TELEGRAM_BOT_TOKEN:'test'},options());
+  assert.equal(response.status,200);
+  const data=await response.json();
+  const boss=data.tasks.find(t=>t.source_key==='moonpet.bosses-combat'&&t.scope_ref);
+  assert.equal(boss.status,'blocked');
+  assert.equal(boss.blocking_reason_code,'moonpet_weekly_boss_daily_attempt_used');
+  const q=db.calls.find(t=>/SELECT 1 AS present FROM telegram_pet_weekly_boss_events/u.test(t.sql));
+  assert.ok(q);
+  assert.equal(q.params[0],'123456');
+  assert.equal(q.params[2],'2026-10-17');
+  assert.equal(db.calls.some(t=>/SELECT 1 AS present FROM telegram_pet_events/u.test(t.sql)),false);
 });
 
 test('malformed activity metadata is guarded by CASE and cannot fabricate recovery', async () => {
