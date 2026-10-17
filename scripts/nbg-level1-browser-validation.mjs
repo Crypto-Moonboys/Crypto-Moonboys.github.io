@@ -139,7 +139,7 @@ const expectedAnimations = {
   run: { spriteSheet: 'player/animations/run.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 17, frames: 6, columns: 3, frameMs: 88 },
   jump: { spriteSheet: 'player/animations/jump.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 23, frames: 6, columns: 3, frameMs: 145 },
   fall: { spriteSheet: 'player/animations/fall.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 20, frames: 6, columns: 3, frameMs: 145 },
-  spray: { spriteSheet: 'player/NBG Runner Final-spray.png', sourceFrameWidth: 256, sourceFrameHeight: 256, renderWidth: 176, renderHeight: 176, renderOffsetY: 45, frames: 25, columns: 5, frameMs: 9 },
+  spray: { spriteSheet: 'player/NBG Runner Final-spray.png', sourceFrameWidth: 256, sourceFrameHeight: 256, renderWidth: 176, renderHeight: 176, renderOffsetY: 45, frames: 25, columns: 5, frameMs: 8 },
   hurt: { spriteSheet: 'player/animations/hurt.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 6, frames: 6, columns: 3, frameMs: 120 },
   victory: { spriteSheet: 'player/animations/victory.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 13, frames: 6, columns: 3, frameMs: 145 }
 };
@@ -1854,6 +1854,26 @@ assert.equal(afterDefeat.health, beforeDefeat.health, 'spraying a rat must not h
 await page.waitForTimeout(120);
 assert.equal(await page.evaluate(() => window.NBGLevel1State.xp), afterDefeat.xp,
   'a defeated enemy must not award XP again');
+
+// The spray sequence is visual-only, but must complete within the existing
+// 230ms attack window at 30/40/60 Hz rather than wrapping away from the
+// final spray artwork. This simulates the real frame-time accumulation and
+// validates the non-looping runtime branch as a source-level guard.
+assert.ok(runtimeSource.includes("advancePlayerAnimation(dt, player.anim !== 'spray')"),
+  'spray must use non-looping frame progression while other poses keep looping');
+for (const frameDt of [1000 / 60, 25, 33]) {
+  let frame = 0, remainder = 0, hasRenderedLast = false;
+  for (let elapsed = frameDt; elapsed < 230; elapsed += frameDt) {
+    remainder += frameDt;
+    while (remainder >= expectedAnimations.spray.frameMs && frame < 24) {
+      frame++;
+      remainder -= expectedAnimations.spray.frameMs;
+    }
+    if (frame === 24) hasRenderedLast = true;
+  }
+  assert.ok(hasRenderedLast,
+    `one 230ms spray must render its final frame at ${frameDt}ms tick cadence`);
+}
 
 // The final 5x5 spray sheet must be visibly rendered during a grounded
 // player attack and must retain the existing server-simulated spray kill.
