@@ -13,18 +13,18 @@ function fakeDb(options = {}) {
   const ownedPets = [
     {
       pet_id: 'pet-secret-123', season_key: '2026-Q4', slot_number: 1, stage: 'hatched', level: 4,
-      pet_xp: 90, hunger: 20, happiness: 70, cleanliness: 60, energy: 55, health: 80,
-      status: 'active', created_at: '2026-10-01T00:00:00.000Z', journey_clock: 'legacy_quarter', is_active: 1,
+      pet_xp: options.bossReady ? 640 : 90, hunger: 20, happiness: 70, cleanliness: 60, energy: 55, health: 80,
+      status: 'active', created_at: '2026-10-01T00:00:00.000Z', journey_clock: 'legacy_quarter', is_active: 1, lifecycle_phase: 'young',
     },
     {
       pet_id: 'pet-secret-456', season_key: '2026-Q4', slot_number: 2, stage: 'hatched', level: 3,
       pet_xp: 50, hunger: 75, happiness: 70, cleanliness: 65, energy: 55, health: 80,
-      status: 'active', created_at: '2026-10-02T00:00:00.000Z', journey_clock: 'legacy_quarter', is_active: 0,
+      status: 'active', created_at: '2026-10-02T00:00:00.000Z', journey_clock: 'legacy_quarter', is_active: 0, lifecycle_phase: 'young',
     },
     {
       pet_id: 'pet-secret-789', season_key: '2026-Q4', slot_number: 3, stage: 'hatched', level: 5,
       pet_xp: 150, hunger: 60, happiness: 65, cleanliness: 70, energy: 75, health: 85,
-      status: 'active', created_at: '2026-10-03T00:00:00.000Z', journey_clock: 'legacy_quarter', is_active: 0,
+      status: 'active', created_at: '2026-10-03T00:00:00.000Z', journey_clock: 'legacy_quarter', is_active: 0, lifecycle_phase: 'young',
     },
   ];
   return {
@@ -56,6 +56,9 @@ function fakeDb(options = {}) {
               if (/FROM telegram_pet_activity_sessions/u.test(sql) && options.savedStates) return { success: true, results: [{ status: 'active', started_at: '2026-10-17T11:50:00Z', ends_at: '2026-10-17T13:50:00Z', claimed_at: null, metadata: '{"pet_id":"pet-secret-123"}' }] };
               if (/FROM telegram_pet_runs/u.test(sql) && options.savedStates) return { success: true, results: [{ pet_id: 'pet-secret-789', status: 'extractable', updated_at: '2026-10-17T11:55:00Z' }] };
               if (/FROM telegram_pet_contracts/u.test(sql) && options.savedStates) return { success: true, results: [{ pet_id: 'pet-secret-456', status: 'active', updated_at: '2026-10-17T11:54:00Z' }] };
+              if (/event_type='weekly_boss'.*reason='weekly_boss_attempt'/su.test(sql) && options.bossAttempt) return { success: true, results: [{ event_id: 'attempt-1' }] };
+              if (/FROM dead_run_sessions.*status='active'/su.test(sql)) return { success: true, results: options.deadRunActive ? [{ session_id: 'active-run' }] : [] };
+              if (/FROM dead_run_sessions.*status='finished'.*ranked=1/su.test(sql)) return { success: true, results: options.deadRunVerified ? [{ score: 4321, ended_at: '2026-10-17T11:00:00Z' }] : [] };
               if (/championship_clout_daily/u.test(sql)) return { success: true, results: [{ total_points: 18, recalculated_at_ms: 1792195200000 }] };
               if (/nbg_london_records/u.test(sql)) return { success: true, results: [{ fastest_ms: 50000, best_xp: 30 }] };
               if (/COUNT\(\*\)/u.test(sql)) return { success: true, results: [{ total: 0 }] };
@@ -146,10 +149,17 @@ test('all targeted source queries compile against the current D1 schema', async 
       VALUES ('schema-pet', 'schema-owner', '2026-Q4', 1, 'hatched', 4, '2026-10-01T00:00:00Z');
     INSERT INTO telegram_pet_active_slots (telegram_id, pet_id, season_key)
       VALUES ('schema-owner', 'schema-pet', '2026-Q4');
+    INSERT INTO telegram_pet_season_slots
+      (pet_id, telegram_id, season_key, slot_number, acquisition_type, journey_clock, status)
+      VALUES ('historical-pet', 'schema-owner', '2026-Q3', 1, 'free', 'legacy_quarter', 'archived');
+    INSERT INTO telegram_pet_instances
+      (pet_id, telegram_id, season_key, slot_number, stage, level, status, source_profile_updated_at)
+      VALUES ('historical-pet', 'schema-owner', '2026-Q3', 1, 'hatched', 9, 'archived', '2026-07-01T00:00:00Z');
   `);
   const db = createReadOnlyActionPlanDb(sqliteD1(database), { maxStatements: 80 });
   const projection = await buildPlayerActionPlanSources(db, 'schema-owner', { now: '2026-10-17T12:00:00Z' });
-  assert.equal(Object.values(projection.source_status).some((status) => status.state === 'query_failed'), false);
+  assert.equal(Object.values(projection.source_status).some((status) => status.state === 'query_failed'), false,
+    JSON.stringify(projection.source_status));
   assert.equal(projection.read_context.pet_count, 1);
   assert.ok(db.stats().statement_count <= 80);
   database.close();
@@ -201,6 +211,44 @@ test('three-pet saved state keeps jobs, runs, and contracts on opaque original-p
   }
   assert.equal(payload.tasks.find((entry) => entry.source_key === 'moonpet.saved-run' && entry.status === 'claim_ready')?.owner_scope, 'original_pet');
   assert.doesNotMatch(JSON.stringify(payload), /pet-secret-(123|456|789)/u);
+});
+
+test('canonical care and boss gates do not advertise unavailable actions', async () => {
+  let response = await handlePlayerActionPlanRoute(request(auth({ limit: 100 })), { DB: fakeDb({ threePets: true, bossReady: true }), TELEGRAM_BOT_TOKEN: 'test' }, options());
+  let payload = await response.json();
+  const careTasks = payload.tasks.filter((entry) => entry.source_key === 'moonpet.care');
+  assert.equal(careTasks.filter((entry) => entry.status === 'ready').length, 1, 'hunger at 75 must be an urgent care need');
+  const bossTasks = payload.tasks.filter((entry) => entry.source_key === 'moonpet.bosses-combat');
+  assert.equal(bossTasks.filter((entry) => entry.status === 'ready').length, 1, 'only the selected eligible pet may be boss-ready');
+  assert.equal(bossTasks.filter((entry) => entry.blocking_reason_code === 'active_moonpet_required').length, 2);
+
+  response = await handlePlayerActionPlanRoute(request(auth({ limit: 100 })), { DB: fakeDb({ threePets: true, bossReady: true, bossAttempt: true }), TELEGRAM_BOT_TOKEN: 'test' }, options());
+  payload = await response.json();
+  assert.equal(payload.tasks.filter((entry) => entry.source_key === 'moonpet.bosses-combat' && entry.status === 'ready').length, 0);
+  assert.ok(payload.tasks.some((entry) => entry.blocking_reason_code === 'moonpet_weekly_boss_daily_attempt_used'));
+});
+
+test('Journey care, care cooldown, and Dead Run projections use canonical evidence', async () => {
+  const db = fakeDb({ deadRunVerified: true });
+  const response = await handlePlayerActionPlanRoute(request(auth({ limit: 100 })), { DB: db, TELEGRAM_BOT_TOKEN: 'test' }, options());
+  const payload = await response.json();
+  const dailyJourneyQuery = db.calls.find((call) => /FROM telegram_pet_daily_journey_objectives o/u.test(call.sql));
+  assert.match(dailyJourneyQuery.sql, /o\.event_key=substr\('care:'\|\|care\.event_key,1,180\)/u);
+  const careCooldownQuery = db.calls.find((call) => /MAX\(created_at\) AS last_action_at/u.test(call.sql));
+  assert.match(careCooldownQuery.sql, /'sleep'/u);
+  assert.doesNotMatch(careCooldownQuery.sql, /'train'/u);
+  const deadRun = payload.tasks.find((entry) => entry.source_key === 'games.dead-run');
+  assert.deepEqual(deadRun.progress, { current: 4321, target: null, unit: 'verified_score' });
+  const verifiedQuery = db.calls.find((call) => /FROM dead_run_sessions.*status='finished'/su.test(call.sql));
+  assert.match(verifiedQuery.sql, /player_stats_applied=1 AND arcade_xp_applied=1 AND horde_applied=1/u);
+});
+
+test('contract view names remain accepted aliases', async () => {
+  const env = { DB: fakeDb(), TELEGRAM_BOT_TOKEN: 'test' };
+  for (const view of ['summary', 'tasks']) {
+    const response = await handlePlayerActionPlanRoute(request(auth({ view })), env, options());
+    assert.equal(response.status, 200, `${view} must remain contract-compatible`);
+  }
 });
 
 test('concurrent identical reads remain deterministic and do not mutate state', async () => {

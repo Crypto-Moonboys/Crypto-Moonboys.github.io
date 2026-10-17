@@ -41,8 +41,8 @@ export async function handlePlayerActionPlanRoute(request, env, options = {}) {
   if (FORBIDDEN_OWNER_FIELDS.some((field) => Object.prototype.hasOwnProperty.call(body, field))) {
     return errorResponse(options, 'Owner and pet selectors are derived from verified identity', 400);
   }
-  if (body.view != null && !['all', 'actionable', 'history'].includes(String(body.view))) {
-    return errorResponse(options, 'view must be all, actionable, or history', 400);
+  if (body.view != null && !['summary', 'tasks', 'all', 'actionable', 'history'].includes(String(body.view))) {
+    return errorResponse(options, 'view must be summary, tasks, all, actionable, or history', 400);
   }
   if (body.limit != null && (!Number.isInteger(Number(body.limit)) || Number(body.limit) < 1 || Number(body.limit) > 100)) {
     return errorResponse(options, 'limit must be an integer from 1 to 100', 400);
@@ -72,9 +72,10 @@ export async function handlePlayerActionPlanRoute(request, env, options = {}) {
     return errorResponse(options, 'Player action plan temporarily unavailable', 503);
   }
 
+  const view = ['summary', 'tasks'].includes(String(body.view)) ? 'all' : body.view;
   let ranked = rankActionPlanTasks(projection.tasks, now);
-  if (body.view === 'actionable') ranked = ranked.filter(isImmediateAction);
-  if (body.view === 'history') ranked = ranked.filter((entry) => ['complete', 'claimed', 'expired'].includes(entry.status));
+  if (view === 'actionable') ranked = ranked.filter(isImmediateAction);
+  if (view === 'history') ranked = ranked.filter((entry) => ['complete', 'claimed', 'expired'].includes(entry.status));
   let page;
   try { page = paginateActionPlan(ranked, body.cursor, body.limit); }
   catch { return errorResponse(options, 'Invalid pagination cursor', 400); }
