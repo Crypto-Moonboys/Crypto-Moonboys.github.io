@@ -983,8 +983,8 @@ state = await page.evaluate(() => {
 });
 assert.equal(state.w, 24, 'left-boundary visual clamp must not change player hitbox width');
 assert.equal(state.h, 34, 'left-boundary visual clamp must not change player hitbox height');
-assert.equal(state.renderWidth, 72, 'left-boundary visual clamp must preserve enlarged runner render width');
-assert.equal(state.visualMarginX, 24, 'left-boundary visual clamp must account for the enlarged runner visual margin');
+assert.equal(state.renderWidth, 176, 'left-boundary spray pose must retain its enlarged visual width');
+assert.equal(state.visualMarginX, 76, 'left-boundary visual clamp must account for the wider spray sheet');
 assert.equal(state.facing, -1, 'left-boundary regression must validate facing-left frames');
 assert.equal(state.anim, 'spray', 'left-boundary regression must validate spray animation frames');
 assert.ok(state.x >= 12 + state.visualMarginX, 'player world clamp must include the runner visual margin');
