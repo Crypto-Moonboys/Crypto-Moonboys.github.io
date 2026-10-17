@@ -16,6 +16,7 @@
   var JUMP_VELOCITY = -11.4;
   var DOUBLE_JUMP_VELOCITY = -12.8;
   var TRIPLE_JUMP_VELOCITY = -12.8;
+  var JUMP_TAP_SPACING_MS = 115; // Make successive queued boosts visibly distinct.
   var COURSE_LAYOUT_VERSION = 2; // Replay v1 format, updated course content.
   var DOUBLE_JUMP_SIDE_SPEED = 5.4;
   var BOT_SHEET_COLUMNS = 5;
@@ -178,6 +179,7 @@
 
     var keys = {};
     var pendingJumpPresses = 0;
+    var nextJumpBoostAtMs = 0;
     var jumpsUsed = 0;
     var touch = { left: false, right: false, jump: false, spray: false, look: false };
     var images = {};
@@ -477,7 +479,7 @@
       var wasDown = !!keys[e.code];
       keys[e.code] = down;
       if (down && !wasDown && getControlForCode(e.code) === 'jump') {
-        pendingJumpPresses = Math.min(3, pendingJumpPresses + 1);
+        pendingJumpPresses = Math.min(Math.max(0, 3 - jumpsUsed), pendingJumpPresses + 1);
       }
       if (e.code === 'ArrowDown') e.preventDefault();
       if (isStartInputCode(e.code)) {
@@ -500,6 +502,10 @@
       });
     }
 
+    function jumpTapReady() {
+      return pendingJumpPresses > 0 && jumpsUsed < 3 && runElapsedMs >= nextJumpBoostAtMs;
+    }
+
     function recordReplayTick(frameElapsedMs, dt) {
       if (replayInvalid) return;
       if (!Number.isFinite(frameElapsedMs) || frameElapsedMs > 2000 ||
@@ -511,7 +517,7 @@
       var mask = 0;
       if (keys.ArrowLeft || keys.KeyA || touch.left || (replay && replay.control === 'left')) mask |= 1;
       if (keys.ArrowRight || keys.KeyD || touch.right || (replay && replay.control === 'right')) mask |= 2;
-      if (pendingJumpPresses > 0 || (replay && replay.control === 'jump')) mask |= 4;
+      if (jumpTapReady() || (replay && replay.control === 'jump')) mask |= 4;
       if (keys.KeyS || keys.KeyX || touch.spray || (replay && replay.control === 'spray')) mask |= 8;
       var tenth = Math.round(dt * 10);
       var elapsed = Math.round(frameElapsedMs * 10);
@@ -532,8 +538,12 @@
       var replay = initialInputReplay;
       var left = keys.ArrowLeft || keys.KeyA || touch.left || (replay && replay.control === 'left');
       var right = keys.ArrowRight || keys.KeyD || touch.right || (replay && replay.control === 'right');
-      var jumpPressed = pendingJumpPresses > 0 || (replay && replay.control === 'jump');
-      if (pendingJumpPresses > 0) pendingJumpPresses -= 1;
+      var queuedJump = jumpTapReady();
+      var jumpPressed = queuedJump || (replay && replay.control === 'jump');
+      if (queuedJump) {
+        pendingJumpPresses -= 1;
+        nextJumpBoostAtMs = runElapsedMs + JUMP_TAP_SPACING_MS;
+      }
       var spray = keys.KeyS || keys.KeyX || touch.spray || (replay && replay.control === 'spray');
 
       if (left) {
@@ -1448,6 +1458,8 @@
         get player() { return player; },
         get jumpsUsed() { return jumpsUsed; },
         get pendingJumpPresses() { return pendingJumpPresses; },
+        get nextJumpBoostAtMs() { return nextJumpBoostAtMs; },
+        get recordedReplay() { return encodedRunReplay(); },
         get coins() { return coins; },
         get secretCoins() { return secretCoins; },
         get secretNotificationUntil() { return secretNotificationUntil; },
@@ -1524,6 +1536,7 @@
       nextParachuteAt = 6000;
       parachuteSpawnCount = 0;
       runElapsedMs = 0;
+      nextJumpBoostAtMs = 0;
       runReplayFrames = [];
       replayInvalid = false;
       runRandomState = 0x9e3779b9;
@@ -1738,7 +1751,7 @@
         if (Object.prototype.hasOwnProperty.call(touch, control)) {
           touch[control] = active;
           if (active) {
-            if (control === 'jump') pendingJumpPresses = Math.min(3, pendingJumpPresses + 1);
+            if (control === 'jump') pendingJumpPresses = Math.min(Math.max(0, 3 - jumpsUsed), pendingJumpPresses + 1);
             if (control !== 'look') {
               queueInitialInput(control);
               beginGameplay(control);
