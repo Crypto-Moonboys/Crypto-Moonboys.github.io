@@ -14,6 +14,31 @@ function isForbiddenOwnerSelector(field) {
   return OWNER_SELECTOR.test(normalized);
 }
 
+// The only credential-bearing subtree is the top-level telegram_auth value.
+// Check all other nested objects/arrays for caller-controlled selectors; cap
+// depth to fail closed on excessively nested request structures.
+function containsForbiddenSelector(value, depth = 0) {
+  if (!value || typeof value !== 'object') return false;
+  if (depth > 12) return true;
+  return Object.entries(value).some(([field, nested]) =>
+    isForbiddenOwnerSelector(field) || containsForbiddenSelector(nested, depth + 1));
+}
+
+// Adapt just the website credential verifier's D1 first() call to the same
+// read-only SQL gate, statement counter and absolute deadline as projection.
+// No run(), batch(), or unrestricted database access is exposed to auth.
+function boundedAuthDb(readDb) {
+  return Object.freeze({
+    prepare(sql) {
+      return Object.freeze({
+        bind(...params) {
+          return Object.freeze({ first: () => readDb.first(sql, params) });
+        },
+      });
+    },
+  });
+}
+
 function withPrivateHeaders(response) {
   const headers = new Headers(response.headers);
   headers.set('Cache-Control', 'no-store, private');
@@ -43,7 +68,8 @@ export async function handlePlayerActionPlanRoute(request, env, options = {}) {
   try { body = await request.json(); }
   catch { return errorResponse(options, 'Invalid JSON', 400); }
   if (!body || typeof body !== 'object' || Array.isArray(body)) return errorResponse(options, 'JSON object required', 400);
-  if (Object.keys(body).some(isForbiddenOwnerSelector)) {
+  if (Object.entries(body).some(([field, value]) => isForbiddenOwnerSelector(field)
+    || field !== 'telegram_auth' && containsForbiddenSelector(value))) {
     return errorResponse(options, 'Owner and pet selectors are derived from verified identity', 400);
   }
   if (body.view != null && !['summary', 'tasks', 'all', 'actionable', 'history'].includes(String(body.view))) {
@@ -53,8 +79,25 @@ export async function handlePlayerActionPlanRoute(request, env, options = {}) {
     return errorResponse(options, 'limit must be an integer from 1 to 100', 400);
   }
 
-  const verified = await options.verifyIdentity(body, env);
-  if (verified.error) return errorResponse(options, verified.error, verified.status || 401);
+  // Allocate the query and timeout budget before website-session
+  // authentication. Its one D1 lookup and all owner-scoped projections now
+  // consume the same read-only budget and wall-clock deadline.
+  const readDb = createReadOnlyActionPlanDb(env.DB, {
+    maxStatements: 80,
+    statementTimeoutMs: options.statementTimeoutMs || 1500,
+    projectionTimeoutMs: options.projectionTimeoutMs || 5000,
+  });
+  let verified;
+  try {
+    verified = await options.verifyIdentity(body, { ...env, DB: boundedAuthDb(readDb) });
+  } catch (error) {
+    options.logApiFailure?.('player_action_plan_auth_read_failed', {
+      error_code: error?.message || 'authentication_read_failed',
+      query_count: readDb.stats().statement_count,
+    });
+    return errorResponse(options, 'Player action plan authentication temporarily unavailable', 503);
+  }
+  if (!verified || verified.error) return errorResponse(options, verified?.error || 'Authentication failed', verified?.status || 401);
   const ownerId = String(verified.telegramId);
   const ownerLimit = await options.enforceRateLimit?.(request, env, '/player/action-plan', null, {
     includeIp: false, telegramId: ownerId, telegramLimit: 20,
@@ -62,11 +105,6 @@ export async function handlePlayerActionPlanRoute(request, env, options = {}) {
   if (ownerLimit) return withPrivateHeaders(ownerLimit);
 
   const now = options.now ? new Date(options.now) : new Date();
-  const readDb = createReadOnlyActionPlanDb(env.DB, {
-    maxStatements: 80,
-    statementTimeoutMs: options.statementTimeoutMs || 1500,
-    projectionTimeoutMs: options.projectionTimeoutMs || 5000,
-  });
   let projection;
   try {
     projection = await buildPlayerActionPlanSources(readDb, ownerId, { now });
