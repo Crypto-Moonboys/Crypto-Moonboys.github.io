@@ -500,13 +500,17 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
   // the 45-second meal-use window; play/clean/sleep remain independent.
   // Read only the most recent accepted time per action, never per pet.
   const careEvents = !pets.length ? [] : await query(db,
-    `SELECT event_type,MAX(created_at) AS last_action_at FROM telegram_pet_events
+    `SELECT event_type,created_at AS last_action_at FROM (
+       SELECT event_type,created_at,
+         ROW_NUMBER() OVER (PARTITION BY event_type
+           ORDER BY julianday(created_at) DESC,created_at DESC) AS action_rank
+       FROM telegram_pet_events
        WHERE telegram_id=? AND status='accepted'
          AND (event_type IN ('feed','play','clean','sleep')
            OR (event_type='use_item' AND json_extract(
              CASE WHEN json_valid(metadata) THEN metadata ELSE '{}' END,
              '$.consumed_item_key') IN ('street_pizza','moon_burger','garden_veggies')))
-       GROUP BY event_type`, [ownerId], [], failures, ['moonpet.care']);
+       ) WHERE action_rank=1`, [ownerId], [], failures, ['moonpet.care']);
   const bossVictories = !pets.length || sourceStatuses['moonpet.bosses-combat'].state === 'migration_pending' ? [] : await query(db,
     `SELECT v.pet_id,v.season_key,v.defeated_at,a.day_key AS victory_day
        FROM telegram_pet_weekly_boss_victories_by_pet v
