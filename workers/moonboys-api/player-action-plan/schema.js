@@ -182,11 +182,15 @@ export function isImmediateAction(task) {
   return !task.blocking_reason_code && (task.source_health === 'live' || validEmptyOpportunity);
 }
 
-export function summarizeActionPlan(tasks, sourceStatuses) {
+export function summarizeActionPlan(tasks, sourceStatuses, now = new Date()) {
   const count = (statuses) => tasks.filter((task) => statuses.includes(task.status)).length;
+  const today = utcDay(now);
+  const isToday = (task) => task.period?.kind === 'utc_day' && task.period.key === today;
   return {
-    eligible_today: tasks.filter((task) => task.period.kind === 'utc_day' && !['blocked', 'preview', 'sync_unavailable'].includes(task.status)).length,
-    completed_today: tasks.filter((task) => task.period.kind === 'utc_day' && ['complete', 'claimed'].includes(task.status)).length,
+    eligible_today: tasks.filter((task) => isToday(task)
+      && !['blocked', 'preview', 'sync_unavailable'].includes(task.status)).length,
+    completed_today: tasks.filter((task) => isToday(task)
+      && ['complete', 'claimed'].includes(task.status)).length,
     claims_ready: count(['claim_ready']),
     ready_count: count(['ready']),
     active_count: count(['active']),
