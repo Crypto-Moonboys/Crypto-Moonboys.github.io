@@ -1068,8 +1068,10 @@ assert.ok(state.vx < 0, 'second jump plus left must reverse horizontal momentum'
 await page.keyboard.down('Space');
 await page.waitForTimeout(50);
 await page.keyboard.up('Space');
+await page.waitForFunction(() => window.NBGLevel1State.jumpsUsed === 3,
+  null, { timeout: 1200 });
 assert.equal(await page.evaluate(() => window.NBGLevel1State.jumpsUsed), 3,
-  'third midair press must consume the newly allowed third jump');
+  'third tap must consume the final boost even when queued before its frame');
 await page.keyboard.down('Space');
 await page.waitForTimeout(50);
 await page.keyboard.up('Space');
@@ -1343,6 +1345,54 @@ assert.equal(state.xp, 0, 'reset must clear secret XP');
 assert.equal(state.taken, 0, 'reset must restore every secret coin');
 assert.equal(state.banner, '', 'reset must clear secret notification');
 assert.equal(state.bannerUntil, 0, 'reset must clear secret notification expiry');
+
+// Rapid keyboard/touch taps between animation frames must remain three
+// distinct boosts, not collapse into one or all fire on adjacent frames.
+// The recorded replay masks must match the same spaced browser physics.
+for (const mode of ['keyboard', 'touch']) {
+  const rapid = await browser.newPage({
+    viewport: { width: 480, height: 320 },
+    hasTouch: mode === 'touch'
+  });
+  try {
+    await rapid.goto(url, { waitUntil: 'domcontentloaded' });
+    await rapid.waitForFunction(() => window.NBGLevel1State?.assetsLoaded, null,
+      { timeout: 20000 });
+    if (mode === 'keyboard') {
+      await rapid.evaluate(() => {
+        for (let i = 0; i < 4; i++) {
+          window.dispatchEvent(new KeyboardEvent('keydown',
+            { key: 'w', code: 'KeyW', bubbles: true, cancelable: true }));
+          window.dispatchEvent(new KeyboardEvent('keyup',
+            { key: 'w', code: 'KeyW', bubbles: true, cancelable: true }));
+        }
+      });
+    } else {
+      await rapid.evaluate(() => {
+        for (let i = 0; i < 4; i++) {
+          window.NBGLevel1Runtime.setTouchControl('jump', true);
+          window.NBGLevel1Runtime.setTouchControl('jump', false);
+        }
+      });
+    }
+    await rapid.waitForFunction(() => window.NBGLevel1State.running &&
+      window.NBGLevel1State.jumpsUsed === 3, null, { timeout: 1800 });
+    const flight = await rapid.evaluate(() => ({
+      used: window.NBGLevel1State.jumpsUsed,
+      pending: window.NBGLevel1State.pendingJumpPresses,
+      vertical: window.NBGLevel1State.player.vy,
+      elapsed: window.NBGLevel1State.runElapsedMs,
+      replay: window.NBGLevel1State.replay
+    }));
+    assert.equal(flight.used, 3, mode + ' must use three distinct boosts');
+    assert.equal(flight.pending, 0, mode + ' fourth tap must not queue a phantom jump');
+    assert.ok(flight.vertical < 0, mode + ' final boost must send the player upward');
+    assert.ok(flight.elapsed >= 2 * 115,
+      mode + ' successive boosts must be visually spaced instead of compressed');
+  } finally {
+    await rapid.close();
+  }
+}
 
 // Four WAX CASH coin sizes have fixed XP tiers and scaled collision hitboxes.
 await page.evaluate(() => window.NBGLevel1Runtime.reset());
