@@ -7,6 +7,9 @@ import { PET_ENTRY_ARCADE_XP } from '../pets/entry-requirement.js';
 import { getCombatEligibility } from '../pets/combat-eligibility.js';
 import { DAILY_JOURNEY_CARE_SOURCE_PROOF_SQL } from '../pets/daily-moon-run.js';
 import { getPetVisibleLevel } from '../pets/progression-phase-2.js';
+import { DAILY_COMPLETION_REWARD } from '../pets/completion-policy.js';
+import { WEEKLY_JOURNEY_SOURCE_OBJECTIVES } from '../pets/weekly-journey.js';
+import { weeklyBossLegacySourceProofSql } from '../pets/weekly-boss-evidence.js';
 
 export const ACTION_PLAN_SOURCE_REGISTRY = Object.freeze([
   ['onboarding.telegram', 'onboarding', 'account', 'once', 'server_projection', '/gkniftyheads-incubator.html'],
@@ -71,6 +74,7 @@ function task(now, input) {
     evidence: { kind: meta.evidence, ...(input.evidence || {}) },
     cost: cost([]), reward: reward([], false), read_at: now.toISOString(),
     ...input,
+    evidence: { kind: meta.evidence, ...(input.evidence || {}) },
   });
 }
 
@@ -88,11 +92,12 @@ function genericTask(now, source, status, health, detail = {}) {
     period_key: detail.periodKey || null,
     expires_at: detail.expiresAt || null,
     reward: detail.reward || reward([], false),
-    evidence: detail.evidence || {},
+    evidence: { kind: source.evidence, ...(detail.evidence || {}) },
   });
 }
 
 const SOURCE_TABLES = Object.freeze({
+  'faction.daily-missions': 'player_daily_mission_state',
   'battle.wtf-windows': 'daily_wtf_events',
   'battle.missed-opportunities': 'daily_missed_perks',
   'arcade.daily-opportunity': 'daily_opportunity_state',
@@ -160,15 +165,42 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
     title: faction ? 'Faction membership confirmed' : 'Choose your faction', priority: faction ? 900 : 20,
     progress: { current: faction ? 1 : 0, target: 1, unit: 'membership' },
   }));
-  for (const [key, title, periodKey] of [
-    ['faction.daily-missions', 'Review today’s faction missions', day],
-    ['faction.seasonal-mission', 'Advance the faction seasonal objective', null],
-    ['faction.weekly-war', 'Review your faction’s weekly war position', week],
-  ]) tasks.push(genericTask(now, SOURCE_BY_KEY.get(key), faction ? 'ready' : 'blocked', 'live', {
-    title, priority: faction ? 430 : 840, periodKey, expiresAt: key === 'faction.daily-missions' ? nextUtcDay(now) : key === 'faction.weekly-war' ? nextIsoWeek(now) : null,
-    blocking: faction ? null : 'faction_membership_required', evidence: { verified_completion: false },
-    description: key === 'faction.daily-missions' ? 'Progress is a client mirror and does not prove verified Clout.' : undefined,
-  }));
+  const factionMissionRows = faction && sourceStatuses['faction.daily-missions'].state !== 'migration_pending'
+    ? await query(db, `SELECT mission_id,progress,completed FROM player_daily_mission_state
+        WHERE telegram_id=? AND mission_date=? ORDER BY mission_id ASC LIMIT 30`,
+      [ownerId, day], [], failures, ['faction.daily-missions']) : [];
+  if (faction && factionMissionRows.length) {
+    for (const row of factionMissionRows) {
+      const objective = String(row.mission_id || '').slice(0, 100);
+      if (!objective) continue;
+      tasks.push(genericTask(now, SOURCE_BY_KEY.get('faction.daily-missions'),
+        number(row.completed) === 1 ? 'complete' : 'in_progress', 'live', {
+          title: objective.replace(/[_-]+/gu, ' '), priority: 430, periodKey: day,
+          suffix: await opaqueRef(`${ownerId}:${day}:${objective}`),
+          expiresAt: nextUtcDay(now),
+          description: 'Saved advisory faction progress. This is not verified competitive Clout.',
+          progress: { current: number(row.progress), target: null, unit: 'source_progress' },
+          evidence: { verified_completion: false },
+        }));
+    }
+  } else {
+    tasks.push(genericTask(now, SOURCE_BY_KEY.get('faction.daily-missions'),
+      !faction ? 'blocked' : 'preview', faction ? 'preview' : 'live_empty', {
+        title: 'Review rotating daily faction missions', priority: 740, periodKey: day,
+        expiresAt: nextUtcDay(now),
+        blocking: faction ? 'mission_catalogue_not_server_authoritative' : 'faction_membership_required',
+      }));
+    if (faction) sourceStatuses['faction.daily-missions'] = sourceStatus('preview', { adapter: 'client_mirror_without_persisted_rows' });
+  }
+  for (const key of ['faction.seasonal-mission', 'faction.weekly-war']) {
+    if (faction) sourceStatuses[key] = sourceStatus('preview', { adapter: 'client_or_public_only' });
+    tasks.push(genericTask(now, SOURCE_BY_KEY.get(key), faction ? 'preview' : 'blocked',
+      faction ? 'preview' : 'live_empty', {
+        title: key === 'faction.weekly-war' ? 'Review faction weekly standings' : 'Review faction seasonal mission',
+        periodKey: key === 'faction.weekly-war' ? week : null, priority: 740,
+        blocking: faction ? 'no_verified_personal_objective' : 'faction_membership_required',
+      }));
+  }
 
   const arcadeRows = await query(db,
     'SELECT arcade_xp_total FROM arcade_progression_state WHERE telegram_id=? LIMIT 1', [ownerId], [], failures,
@@ -234,11 +266,28 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
   if (sourceStatuses['battle.wtf-windows'].state !== 'migration_pending') {
     sourceStatuses['battle.wtf-windows'] = sourceStatus(wtfRows.length ? 'live' : 'preview', { adapter: wtfRows.length ? 'persisted_windows' : 'schedule_preview_only' });
   }
-  const activeWtf = wtfRows.some((row) => Date.parse(row.starts_at) <= now.getTime() && Date.parse(row.ends_at) > now.getTime());
-  tasks.push(genericTask(now, SOURCE_BY_KEY.get('battle.wtf-windows'), activeWtf ? 'active' : 'preview', wtfRows.length ? 'live' : 'preview', {
-    title: wtfRows.length ? 'Check today’s persisted WTF windows' : 'Preview the WTF schedule', priority: wtfRows.length ? 250 : 780,
-    periodKey: day, expiresAt: wtfRows.at(-1)?.ends_at || nextUtcDay(now), blocking: wtfRows.length ? null : 'persisted_window_unavailable',
-  }));
+  if (!wtfRows.length) {
+    tasks.push(genericTask(now, SOURCE_BY_KEY.get('battle.wtf-windows'), 'preview', 'preview', {
+      title: 'Preview the WTF schedule', priority: 780, periodKey: day,
+      blocking: 'persisted_window_unavailable',
+    }));
+  } else for (const row of wtfRows) {
+    const starts = Date.parse(row.starts_at), ends = Date.parse(row.ends_at);
+    const clockValid = Number.isFinite(starts) && Number.isFinite(ends) && ends > starts;
+    const status = !clockValid ? 'sync_unavailable' : now.getTime() >= ends ? 'expired'
+      : now.getTime() >= starts ? 'active' : 'waiting';
+    tasks.push(task(now, {
+      source_key: 'battle.wtf-windows',
+      task_id: `battle.wtf-windows:${day}:${await opaqueRef(`${row.event_id}:${row.starts_at}`)}`,
+      title: 'WTF timed event window', description: 'A scheduled event is not proof of participation.',
+      why: 'Complete a qualifying action within this persisted UTC window.',
+      status, source_health: clockValid ? 'live' : 'unavailable', priority: status === 'active' ? 190 : 540,
+      period: { kind: 'event_window', key: day, origin_timezone: 'UTC' },
+      available_at: clockValid ? row.starts_at : null, expires_at: clockValid ? row.ends_at : null,
+      blocking_reason_code: clockValid ? null : 'invalid_event_window',
+      evidence: { kind: 'server_projection', verified_completion: false },
+    }));
+  }
   const missedRows = sourceStatuses['battle.missed-opportunities'].state === 'migration_pending' ? [] : await query(db,
     'SELECT COUNT(*) AS total FROM daily_missed_perks WHERE telegram_id=?', [ownerId], [], failures, ['battle.missed-opportunities']);
   tasks.push(genericTask(now, SOURCE_BY_KEY.get('battle.missed-opportunities'), number(missedRows[0]?.total) ? 'active' : 'complete', 'live', {
@@ -246,21 +295,60 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
     progress: { current: number(missedRows[0]?.total), target: null, unit: 'records' },
   }));
 
+  // The game's historical "7/7" award uses eight distinct flags (0xFF).
+  // Read saved, unclaimed awards from earlier days, not today's record alone.
   const completionRows = sourceStatuses['moonpet.daily-seven-missions'].state === 'migration_pending' ? [] : await query(db,
-    'SELECT progress_bits,claimed_at,pet_id FROM telegram_pet_daily_completion WHERE telegram_id=? AND utc_day=? LIMIT 1', [ownerId, day], [], failures,
+    `SELECT utc_day,progress_bits,claimed_at,pet_id FROM telegram_pet_daily_completion
+      WHERE telegram_id=? AND (utc_day=? OR (progress_bits=255 AND claimed_at IS NULL))
+      ORDER BY utc_day DESC LIMIT 100`, [ownerId, day], [], failures,
     ['moonpet.daily-seven-missions', 'moonpet.seven-of-seven-claim']);
-  const completion = completionRows[0] || {};
+  const completion = completionRows.find((row) => row.utc_day === day) || {};
   const bits = number(completion.progress_bits);
-  const sevenCurrent = [1, 8, 7, 16, 32, 64, 128].filter((mask) => (bits & mask) === mask).length;
+  const dailyFlags = [[1,'Feed'],[2,'Play'],[4,'Clean'],[8,'Train'],[16,'Trade'],
+    [32,'Buy or upgrade'],[64,'Adventure or qualifying run'],[128,'Meet Moon Gold requirement']];
+  const bitsCurrent = dailyFlags.filter(([flag]) => bits & flag).length;
   const sevenDone = bits === 255;
-  tasks.push(genericTask(now, SOURCE_BY_KEY.get('moonpet.seven-of-seven-claim'), completion.claimed_at ? 'claimed' : sevenDone ? 'claim_ready' : pets.length ? 'waiting' : 'blocked', 'live', {
-    title: completion.claimed_at ? 'Moonpet 7/7 reward claimed' : sevenDone ? 'Claim the Moonpet 7/7 reward' : 'Complete all seven Moonpet mission groups',
-    priority: sevenDone && !completion.claimed_at ? 40 : 510, periodKey: day, expiresAt: nextUtcDay(now), blocking: pets.length ? null : 'moonpet_required',
-    progress: { current: sevenCurrent, target: 7, unit: 'daily_goals' }, reward: reward([{ type: 'pet_xp', amount: 25 }, { type: 'moon_gold', amount: 50 }, { type: 'style_tokens', amount: 1 }], true),
-    evidence: { verified_completion: Boolean(completion.claimed_at), accepted_at: completion.claimed_at },
-  }));
+  tasks.push(genericTask(now, SOURCE_BY_KEY.get('moonpet.daily-seven-missions'),
+    sevenDone ? 'complete' : pets.length ? 'in_progress' : 'blocked', 'live', {
+      title: 'Daily Moonpet completion conditions', periodKey: day, priority: 205,
+      description: 'Eight source flags currently govern the legacy 7/7 bonus.',
+      expiresAt: nextUtcDay(now), blocking: pets.length ? null : 'moonpet_required',
+      progress: { current: bitsCurrent, target: dailyFlags.length, unit: 'source_flags' },
+    }));
+  for (const [flag, label] of dailyFlags) {
+    tasks.push(genericTask(now, SOURCE_BY_KEY.get('moonpet.daily-seven-missions'),
+      bits & flag ? 'complete' : pets.length ? 'in_progress' : 'blocked', 'live', {
+        title: label, periodKey: day, suffix: `flag-${flag}`, priority: 265,
+        expiresAt: nextUtcDay(now), blocking: pets.length ? null : 'moonpet_required',
+        progress: { current: bits & flag ? 1 : 0, target: 1, unit: 'accepted_source_flag' },
+      }));
+  }
+  for (const row of completionRows) {
+    if (row.utc_day !== day && (number(row.progress_bits) !== 255 || row.claimed_at)) continue;
+    const claimed = Boolean(row.claimed_at);
+    const completed = number(row.progress_bits) === 255;
+    tasks.push(genericTask(now, SOURCE_BY_KEY.get('moonpet.seven-of-seven-claim'),
+      claimed ? 'claimed' : completed ? 'claim_ready' : 'waiting', 'live', {
+        title: claimed ? 'Moonpet daily bonus claimed' : completed
+          ? 'Collect saved Moonpet bonus' : 'Finish Moonpet completion conditions',
+        periodKey: row.utc_day, priority: completed && !claimed ? 35 : 520,
+        expiresAt: null,
+        progress: { current: dailyFlags.filter(([flag]) => number(row.progress_bits) & flag).length,
+          target: dailyFlags.length, unit: 'source_flags' },
+        reward: reward(Object.entries(DAILY_COMPLETION_REWARD).map(([type, amount]) => ({ type, amount })), true),
+        evidence: { verified_completion: claimed, accepted_at: row.claimed_at },
+      }));
+  }
+  if (!completionRows.some((row) => row.utc_day === day)) {
+    tasks.push(genericTask(now, SOURCE_BY_KEY.get('moonpet.seven-of-seven-claim'),
+      pets.length ? 'waiting' : 'blocked', 'live', {
+        title: 'Complete Moonpet conditions to earn the bonus',
+        periodKey: day, priority: 520, blocking: pets.length ? null : 'moonpet_required',
+        progress: { current: 0, target: dailyFlags.length, unit: 'source_flags' },
+      }));
+  }
 
-  const perPetSources = ['moonpet.adoption-incubation', 'moonpet.daily-seven-missions', 'moonpet.daily-journey', 'moonpet.weekly-journey', 'moonpet.care', 'moonpet.jobs', 'moonpet.bosses-combat', 'moonpet.garden-kitchen-gym', 'moonpet.evolution'];
+  const perPetSources = ['moonpet.adoption-incubation', 'moonpet.daily-journey', 'moonpet.weekly-journey', 'moonpet.care', 'moonpet.jobs', 'moonpet.bosses-combat', 'moonpet.garden-kitchen-gym', 'moonpet.evolution'];
   const byPet = (rows, value = 'total') => new Map(rows.map((row) => [String(row.pet_id), number(row[value])]));
   const dailyJourney = !pets.length || sourceStatuses['moonpet.daily-journey'].state === 'migration_pending' ? [] : await query(db,
     `SELECT pet_id,SUM(CASE
@@ -278,9 +366,11 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
   const dailyJourneyReceipts = !pets.length || sourceStatuses['moonpet.daily-journey'].state === 'migration_pending' ? [] : await query(db,
     "SELECT pet_id,COUNT(*) AS total FROM telegram_pet_daily_journey_receipts WHERE telegram_id=? AND utc_day=? AND status='accepted' GROUP BY pet_id",
     [ownerId, day], [], failures, ['moonpet.daily-journey']);
-  const weeklyClauses = pets.filter((pet) => pet.journeyWeek).map(() => '(pet_id=? AND qualification_week=?)');
-  const weeklyObjectiveClauses = pets.filter((pet) => pet.journeyWeek).map(() => '(o.pet_id=? AND o.qualification_week=?)');
-  const weeklyParams = pets.filter((pet) => pet.journeyWeek).flatMap((pet) => [pet.pet_id, pet.journeyWeek]);
+  const weeklyClauses = pets.filter((pet) => pet.journeyWeek).map(() => '(pet_id=? AND season_key=? AND qualification_week=?)');
+  const weeklyObjectiveClauses = pets.filter((pet) => pet.journeyWeek).map(() => '(o.pet_id=? AND o.season_key=? AND o.qualification_week=?)');
+  const weeklyParams = pets.filter((pet) => pet.journeyWeek).flatMap((pet) => [pet.pet_id, pet.season_key, pet.journeyWeek]);
+  const weeklyEventMap = Object.entries(WEEKLY_JOURNEY_SOURCE_OBJECTIVES)
+    .map(([event, objective]) => `WHEN '${event}' THEN '${objective}'`).join(' ');
   const weeklyJourney = !weeklyClauses.length || sourceStatuses['moonpet.weekly-journey'].state === 'migration_pending' ? [] : await query(db,
     `SELECT pet_id,SUM(CASE
        WHEN objective_id='weekly_care' AND additive_progress>=5 THEN 1
@@ -291,9 +381,11 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
           CASE WHEN o.objective_id='weekly_check_in' THEN COUNT(DISTINCT e.day_key) ELSE SUM(o.progress_value) END AS additive_progress,
           MAX(o.progress_value) AS max_progress
          FROM telegram_pet_weekly_journey_objectives o
-         LEFT JOIN telegram_pet_events e ON e.telegram_id=o.telegram_id AND e.pet_id=o.pet_id
+         JOIN telegram_pet_events e ON e.telegram_id=o.telegram_id AND e.pet_id=o.pet_id
           AND e.season_key=o.season_key AND e.event_key=o.source_event_key AND e.status='accepted'
         WHERE o.telegram_id=? AND o.status='accepted' AND (${weeklyObjectiveClauses.join(' OR ')})
+          AND o.objective_id=CASE e.event_type ${weeklyEventMap} END
+          AND ${weeklyBossLegacySourceProofSql()}
         GROUP BY o.pet_id,o.objective_id)
       GROUP BY pet_id`,
     [ownerId, ...weeklyParams], [], failures, ['moonpet.weekly-journey']);
@@ -342,7 +434,6 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
     for (const key of perPetSources) {
       let title = 'Review Moonpet progress'; let status = 'ready'; let priority = 560; let progress = { current: null, target: null, unit: 'actions' }; let blocking = null; let nextReadyAt = null;
       if (key === 'moonpet.adoption-incubation') { title = pet.stage === 'egg' ? 'Continue MoonEgg incubation' : 'Moonpet hatched'; status = pet.stage === 'egg' ? 'in_progress' : 'complete'; priority = 180; }
-      if (key === 'moonpet.daily-seven-missions') { title = 'Complete today’s seven Moonpet goals'; status = sevenDone ? 'complete' : 'in_progress'; priority = 210; progress = { current: sevenCurrent, target: 7, unit: 'daily_goals' }; }
       if (key === 'moonpet.daily-journey') { const current = dailyProgress.get(String(pet.pet_id)) || 0; const settled = (dailyReceipts.get(String(pet.pet_id)) || 0) > 0; title = settled ? 'Daily Journey reward recorded' : 'Advance the Moonpet Daily Journey'; status = settled ? 'complete' : 'in_progress'; priority = settled ? 700 : 230; progress = { current, target: 3, unit: 'objectives' }; }
       if (key === 'moonpet.weekly-journey') { const current = weeklyProgress.get(String(pet.pet_id)) || 0; const settled = (weeklyReceipts.get(String(pet.pet_id)) || 0) > 0; title = settled ? 'Ownership-week Journey recorded' : 'Advance this Moonpet’s ownership week'; status = settled ? 'complete' : 'in_progress'; priority = settled ? 710 : 390; progress = { current, target: 5, unit: 'objectives' }; }
       if (key === 'moonpet.care') { const lastAt = Date.parse(lastCare.get(String(pet.pet_id)) || ''); const nextAt = Number.isFinite(lastAt) ? lastAt + 45_000 : null; const cooling = nextAt && nextAt > now.getTime(); title = cooling ? 'Moonpet care action is cooling down' : careNeeds ? 'Care for this Moonpet now' : 'Moonpet care is stable'; status = cooling ? 'waiting' : careNeeds ? 'ready' : 'complete'; priority = cooling ? 520 : careNeeds ? 50 : 670; progress = { current: careNeeds, target: 0, unit: 'care_needs' }; nextReadyAt = cooling ? new Date(nextAt).toISOString() : null; }
@@ -394,8 +485,8 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
   }));
 
   for (const [key, sql, activeTitle, emptyTitle] of [
-    ['moonpet.saved-run', "SELECT pet_id,status,updated_at FROM telegram_pet_runs WHERE telegram_id=? AND status IN ('active','extractable') ORDER BY updated_at DESC LIMIT 10", 'Resume this Moonpet’s saved run', 'No saved Moonpet run is pending'],
-    ['moonpet.contracts', "SELECT pet_id,status,updated_at FROM telegram_pet_contracts WHERE telegram_id=? AND status='active' ORDER BY updated_at DESC LIMIT 10", 'Continue this Moonpet’s active contract', 'No Moonpet contract is active'],
+    ['moonpet.saved-run', "SELECT run_id AS source_id,pet_id,status,updated_at FROM telegram_pet_runs WHERE telegram_id=? AND status IN ('active','extractable') ORDER BY updated_at DESC LIMIT 10", 'Resume this Moonpet’s saved run', 'No saved Moonpet run is pending'],
+    ['moonpet.contracts', "SELECT contract_id AS source_id,pet_id,status,updated_at FROM telegram_pet_contracts WHERE telegram_id=? AND status='active' ORDER BY updated_at DESC LIMIT 10", 'Continue this Moonpet’s active contract', 'No Moonpet contract is active'],
   ]) {
     const rows = sourceStatuses[key].state === 'migration_pending' ? [] : await query(db, sql, [ownerId], [], failures, [key]);
     if (!rows.length) {
@@ -405,11 +496,13 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
       }));
       continue;
     }
-    for (const [index, row] of rows.entries()) {
+    for (const row of rows) {
       const petRef = await opaqueRef(`${ownerId}:${row.pet_id}`);
+      const sourceId = String(row.source_id || '').trim();
+      if (!sourceId) { failures.set(key, 'saved_source_identifier_missing'); continue; }
       const claimReady = key === 'moonpet.saved-run' && row.status === 'extractable';
       tasks.push(task(now, {
-        task_id: `${key}:${petRef}:${index}`, source_key: key, source_pet_ref: petRef, scope_ref: petRef,
+        task_id: `${key}:${petRef}:${await opaqueRef(`${ownerId}:${key}:${sourceId}`)}`, source_key: key, source_pet_ref: petRef, scope_ref: petRef,
         title: claimReady ? 'Extract this Moonpet’s saved run' : activeTitle,
         description: 'This saved state remains attributed to the Moonpet that created it.',
         why: 'The original pet remains authoritative even if the active slot has changed.',
@@ -421,7 +514,7 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
   }
 
   const wikiRows = sourceStatuses['wiki.accepted-missions'].state === 'migration_pending' ? [] : await query(db,
-    'SELECT COUNT(*) AS total FROM wiki_mission_completions WHERE telegram_id=? AND substr(created_at,1,10)=?', [ownerId, day], [], failures, ['wiki.accepted-missions']);
+    'SELECT COUNT(*) AS total FROM wiki_mission_completions WHERE telegram_id=? AND mission_window=?', [ownerId, day], [], failures, ['wiki.accepted-missions']);
   tasks.push(genericTask(now, SOURCE_BY_KEY.get('wiki.accepted-missions'), number(wikiRows[0]?.total) ? 'complete' : 'ready', 'live', {
     title: number(wikiRows[0]?.total) ? 'Accepted wiki mission recorded today' : 'Complete an accepted wiki mission', priority: 350, periodKey: day, expiresAt: nextUtcDay(now),
     progress: { current: number(wikiRows[0]?.total), target: 1, unit: 'accepted_receipts' }, evidence: { verified_completion: number(wikiRows[0]?.total) > 0 },
@@ -465,16 +558,15 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
       }));
     }
   }
-  for (const source of ACTION_PLAN_SOURCE_REGISTRY) {
-    const sourceTasks = tasks.filter((entry) => entry.source_key === source.key);
-    if (sourceStatuses[source.key]?.state === 'live_empty' && sourceTasks.some((entry) => ['ready', 'active', 'claim_ready', 'in_progress', 'waiting'].includes(entry.status))) {
-      sourceStatuses[source.key] = sourceStatus('live', { adapter: 'read_only_projection' });
-    }
-  }
+  // Do not turn a successfully empty source into non-empty "live" solely
+  // because a user-facing opportunity has been generated.
   const normalizedTasks = tasks.map((entry) => {
     const state = sourceStatuses[entry.source_key]?.state;
-    if (!['query_failed', 'migration_pending', 'unavailable'].includes(state)) return entry;
-    return Object.freeze({ ...entry, status: 'sync_unavailable', availability: 'sync_unavailable', source_health: state, blocking_reason_code: 'source_projection_unavailable' });
+    if (!['query_failed', 'migration_pending', 'unavailable'].includes(state)) {
+      return Object.freeze({ ...entry, source_health: state });
+    }
+    return Object.freeze({ ...entry, status: 'sync_unavailable', availability: 'sync_unavailable',
+      source_health: state, blocking_reason_code: 'source_projection_unavailable' });
   });
   return { tasks: normalizedTasks, source_status: sourceStatuses, read_context: { utc_day: day, iso_week: week, pet_count: pets.length } };
 }
