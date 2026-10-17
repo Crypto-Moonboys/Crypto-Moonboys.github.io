@@ -1885,8 +1885,8 @@ const sprayBaseline = await page.evaluate(() => {
   return { xp: state.xp, health: player.health };
 });
 await page.keyboard.down('KeyS');
-await page.waitForFunction(() => window.NBGLevel1State.enemies.some(
-  enemy => enemy.type === 'brownRat' && enemy.spawnedByParachute && enemy.defeated
+await page.waitForFunction(() => window.__sprayDefeats.some(
+  event => event.type === 'brownRat' && event.reason === 'spray'
 ), null, { timeout: 1500 });
 await page.waitForFunction(() => window.__finalSprayFrames.some(frame =>
   frame.width === 176 && frame.height === 176 && frame.sourceX >= 0
