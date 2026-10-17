@@ -394,7 +394,10 @@ test('Journey care, care cooldown, and Dead Run projections use canonical eviden
   const payload = await response.json();
   const dailyJourneyQuery = db.calls.find((call) => /FROM telegram_pet_daily_journey_objectives o/u.test(call.sql));
   assert.match(dailyJourneyQuery.sql, /o\.event_key=substr\('care:'\|\|care\.event_key,1,180\)/u);
-  const careCooldownQuery = db.calls.find((call) => /MAX\(created_at\) AS last_action_at/u.test(call.sql));
+  const careCooldownQuery = db.calls.find((call) =>
+    /ROW_NUMBER\(\) OVER \(PARTITION BY event_type/u.test(call.sql));
+  assert.ok(careCooldownQuery, 'care source reads per-action latest accepted timestamp');
+  assert.match(careCooldownQuery.sql, /ORDER BY julianday\(created_at\) DESC/u);
   assert.match(careCooldownQuery.sql, /'sleep'/u);
   assert.doesNotMatch(careCooldownQuery.sql, /'train'/u);
   const deadRun = payload.tasks.find((entry) => entry.source_key === 'games.dead-run');
