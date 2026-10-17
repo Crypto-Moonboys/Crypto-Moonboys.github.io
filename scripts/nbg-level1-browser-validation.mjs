@@ -1943,6 +1943,9 @@ assert.ok(standingSpray.frames.some(frame => frame.sourceY === 1024 &&
   frame.sourceX >= 768),
   'one grounded spray attack must reach the final artwork frames before expiring');
 await page.evaluate(() => window.NBGLevel1Runtime.reset());
+await page.keyboard.down('KeyD');
+await page.waitForFunction(() => window.NBGLevel1State.running, null, { timeout: 3000 });
+await page.keyboard.up('KeyD');
 
 // Expired parachute walkers must not accumulate, even after dozens of spawns.
 await page.evaluate(() => {
