@@ -5,7 +5,7 @@ import { DatabaseSync } from 'node:sqlite';
 import { createReadOnlyActionPlanDb, isReadOnlyActionPlanSql } from '../workers/moonboys-api/player-action-plan/read-only-db.js';
 import { ACTION_PLAN_SOURCE_REGISTRY, buildPlayerActionPlanSources } from '../workers/moonboys-api/player-action-plan/sources.js';
 import { handlePlayerActionPlanRoute } from '../workers/moonboys-api/routes/player-action-plan.js';
-import { isoWeek, nextUtcDay, paginateActionPlan } from '../workers/moonboys-api/player-action-plan/schema.js';
+import { isImmediateAction, isoWeek, nextUtcDay, paginateActionPlan, rankActionPlanTasks } from '../workers/moonboys-api/player-action-plan/schema.js';
 import { getPetWeeklyBoss } from '../workers/moonboys-api/pets/player-expansion.js';
 import { getPetDailyBounties } from '../workers/moonboys-api/pets/economy-expansion.js';
 
@@ -573,10 +573,14 @@ test('roster probe failures fail only live-pet projections, not separately saved
     assert.notEqual(payload.source_status[key]?.state, 'query_failed', key);
     const saved = payload.tasks.filter(t => t.source_key === key && t.status === 'claim_ready');
     assert.ok(saved.length, key + ' must preserve independently verified saved claims');
-    assert.ok(saved.some(t => payload.top_actions.some(a => a.task_id === t.task_id))
-      || saved.every(t => t.priority > payload.top_actions[payload.top_actions.length-1]?.priority),
-    key + ' should remain eligible for action ranking');
+    assert.ok(saved.every(t => t.source_health === 'live'),
+      key + ' must retain saved original-pet claim evidence');
   }
+  // The Top 3 contains the globally ranked eligible subset. A fourth
+  // independent saved reward remains claim-ready without being in Top 3.
+  assert.deepEqual(payload.top_actions.map(t => t.task_id),
+    rankActionPlanTasks(payload.tasks, payload.generated_at).filter(isImmediateAction)
+      .slice(0, 3).map(t => t.task_id));
   assert.equal(payload.source_status['moonpet.bosses-combat'].partial, true);
   assert.notEqual(payload.source_status['telegram.daily-claim'].state, 'query_failed');
 });
