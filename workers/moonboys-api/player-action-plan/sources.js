@@ -45,6 +45,11 @@ export const ACTION_PLAN_SOURCE_REGISTRY = Object.freeze([
 
 const SOURCE_BY_KEY = new Map(ACTION_PLAN_SOURCE_REGISTRY.map((source) => [source.key, source]));
 function number(value) { return Math.max(0, Math.floor(Number(value) || 0)); }
+// Mirrors canonical visible 0–100 pet-care bars: ROUND, not FLOOR. Elapsed
+// decay is projected on a copy before these thresholds are evaluated.
+function visiblePetCare(value) {
+  return Math.round(Math.max(0, Math.min(100, Number(value) || 0)));
+}
 const PET_ACTIVITY_GRACE_MS = 24 * 60 * 60 * 1000; // canonical worker.js PET_ACTIVITY_GRACE_SECONDS
 function sqliteUtcMillis(value) {
   if (!value) return NaN;
@@ -134,19 +139,21 @@ async function tableHealth(db, failures) {
   const output = {};
   const uniqueTables = [...new Set(Object.values(SOURCE_TABLES))];
   const present = new Map();
-  for (const tableName of uniqueTables) {
+  // Dispatch all health probes in one bounded wall-clock window. A stalled D1
+  // lookup must not consume a full statement timeout for each table in series.
+  // Read-only facade enforces each timeout and the shared statement budget.
+  await Promise.all(uniqueTables.map(async (tableName) => {
     try { present.set(tableName, await db.tableExists(tableName)); }
     catch (error) {
-      // Treat a failed sqlite_master probe as an unavailable read, not as
-      // evidence that the migration is missing. One table may back multiple
-      // task sources (e.g. daily completion and its separate claim).
+      // Probe failure is NOT evidence of a missing migration. Every dependent
+      // source must fail closed as query_failed during final reconciliation.
       present.set(tableName, false);
       const message = error?.message || 'table_check_failed';
       for (const [sourceKey, mappedTable] of Object.entries(SOURCE_TABLES)) {
         if (mappedTable === tableName) failures.set(sourceKey, message);
       }
     }
-  }
+  }));
   for (const source of ACTION_PLAN_SOURCE_REGISTRY) {
     const table = SOURCE_TABLES[source.key];
     output[source.key] = !table || present.get(table)
@@ -531,7 +538,7 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
     [ownerId,...participationParams], [], failures, ['moonpet.bosses-combat']);
   const bossParticipated = new Set(bossParticipationRows.map((row) => `${row.pet_id}:${row.season_key}`));
   const jobRows = !pets.length || sourceStatuses['moonpet.jobs'].state === 'migration_pending' ? [] : await query(db,
-    `SELECT status,started_at,ends_at,claimed_at,metadata FROM telegram_pet_activity_sessions
+    `SELECT id AS session_id,status,started_at,ends_at,claimed_at,metadata FROM telegram_pet_activity_sessions
       WHERE telegram_id=? AND (status='active' OR (status='completed'
         AND json_extract(CASE WHEN json_valid(metadata) THEN metadata ELSE '{}' END,'$.claim_state')='claiming'))
       ORDER BY CASE status WHEN 'active' THEN 0 ELSE 1 END,started_at DESC LIMIT 1`,
@@ -554,11 +561,11 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
     // Pure in-memory projection; do not mutate stored pet care state.
     const decayedCare = applyPetCareDecay({ ...pet }, now);
     const careNeeds = [
-      number(decayedCare.health) <= 45,
-      number(decayedCare.hunger) >= 75,
-      number(decayedCare.cleanliness) <= 35,
-      number(decayedCare.energy) <= 25,
-      number(decayedCare.happiness) <= 35,
+      visiblePetCare(decayedCare.health) <= 45,
+      visiblePetCare(decayedCare.hunger) >= 75,
+      visiblePetCare(decayedCare.cleanliness) <= 35,
+      visiblePetCare(decayedCare.energy) <= 25,
+      visiblePetCare(decayedCare.happiness) <= 35,
     ].filter(Boolean).length;
     for (const key of perPetSources) {
       let title = 'Review Moonpet progress'; let status = 'ready'; let priority = 560; let progress = { current: null, target: null, unit: 'actions' }; let blocking = null; let nextReadyAt = null;
@@ -568,6 +575,9 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
       if (key === 'moonpet.care') { const lastAt = Date.parse(lastCare.get(String(pet.pet_id)) || ''); const nextAt = Number.isFinite(lastAt) ? lastAt + 45_000 : null; const cooling = nextAt && nextAt > now.getTime(); title = cooling ? 'Moonpet care action is cooling down' : careNeeds ? 'Care for this Moonpet now' : 'Moonpet care is stable'; status = cooling ? 'waiting' : careNeeds ? 'ready' : 'complete'; priority = cooling ? 520 : careNeeds ? 50 : 670; progress = { current: careNeeds, target: 0, unit: 'care_needs' }; nextReadyAt = cooling ? new Date(nextAt).toISOString() : null; }
       if (key === 'moonpet.jobs') {
         const ownsJob = job && jobPetId === String(pet.pet_id);
+        // An unidentifiable saved session must not be promoted as claimable;
+        // session identity is required for stable task ID across replacements.
+        const sessionIdentified = !ownsJob || Boolean(String(job.session_id || '').trim());
         const recovery = ownsJob && job.status === 'completed';
         const endsAt = ownsJob ? sqliteUtcMillis(job.ends_at) : NaN;
         const startAt = ownsJob ? sqliteUtcMillis(job.started_at) : NaN;
@@ -577,18 +587,18 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
         const nowSecond = Math.floor(now.getTime() / 1000) * 1000;
         const expired = ownsJob && !recovery && Number.isFinite(endsAt)
           && endsAt < nowSecond - PET_ACTIVITY_GRACE_MS;
-        const unknown = ownsJob && !recovery
-          && (!Number.isFinite(endsAt) || !Number.isFinite(minClaimAt));
-        const ready = recovery || ownsJob && !expired && !unknown && minClaimAt <= nowSecond;
+        const unknown = ownsJob && (!sessionIdentified
+          || !recovery && (!Number.isFinite(endsAt) || !Number.isFinite(minClaimAt)));
+        const ready = !unknown && (recovery || ownsJob && !expired && minClaimAt <= nowSecond);
         title = expired ? 'Moonpet activity claim window expired'
           : unknown ? 'Moonpet activity end time unavailable'
           : recovery ? 'Recover this Moonpet’s saved job reward'
           : ready ? 'Claim this Moonpet’s completed job'
           : ownsJob ? 'Moonpet job is in progress' : 'No saved job for this Moonpet';
-        status = expired ? 'expired' : unknown ? 'sync_unavailable'
+        status = unknown ? 'sync_unavailable' : expired ? 'expired'
           : ready ? 'claim_ready' : 'waiting';
-        blocking = expired ? 'pet_activity_claim_window_expired'
-          : unknown ? 'pet_activity_end_time_unavailable' : null;
+        blocking = unknown ? 'pet_activity_session_identity_or_time_unavailable'
+          : expired ? 'pet_activity_claim_window_expired' : null;
         priority = ready ? 90 : ownsJob ? 530 : 730;
         nextReadyAt = ownsJob && !ready && !expired && Number.isFinite(minClaimAt)
           ? new Date(minClaimAt).toISOString() : null;
@@ -622,8 +632,17 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
       }
       if (key === 'moonpet.garden-kitchen-gym') { const garden = gardens.get(String(pet.pet_id)); const harvesting = garden?.status === 'harvesting'; const ready = garden && !harvesting && Date.parse(garden.ready_at) <= now.getTime(); title = harvesting ? 'Garden harvest is settling' : ready ? 'Harvest garden vegetables' : garden ? 'Garden crop is growing' : 'Plant the Moonpet garden'; status = ready ? 'ready' : garden ? 'waiting' : 'ready'; priority = ready ? 140 : 590; }
       if (key === 'moonpet.evolution') { const stage = evolutions.get(String(pet.pet_id)) || 0; title = 'Review permanent evolution progress'; status = stage >= 5 ? 'complete' : 'in_progress'; priority = 620; progress = { current: stage, target: 5, unit: 'evolution_stage' }; }
+      // Recurring tasks must not reuse a previous instance's identity.
+      // Jobs use an opaque immutable session ID, while boss participation
+      // rotates at each pet's source-defined ownership-week boundary.
+      const occurrence = key === 'moonpet.jobs'
+        ? job && jobPetId === String(pet.pet_id) && job.session_id
+          ? await opaqueRef(`${ownerId}:${pet.pet_id}:${job.session_id}`) : 'no_saved_session'
+        : key === 'moonpet.bosses-combat' || key === 'moonpet.weekly-journey'
+          ? `journey-week-${pet.journeyWeek ?? 'unavailable'}`
+          : key.includes('daily') ? day : 'persistent';
       tasks.push(task(now, {
-        task_id: `${key}:${pet.ref}:${key === 'moonpet.weekly-journey' ? (pet.journeyWeek ?? 'unavailable') : key.includes('daily') ? day : 'persistent'}`, source_key: key, source_pet_ref: pet.ref, scope_ref: pet.ref,
+        task_id: `${key}:${pet.ref}:${occurrence}`, source_key: key, source_pet_ref: pet.ref, scope_ref: pet.ref,
         title, description: 'Read-only projection for an owned Moonpet. Open the Moonpet game to act.', why: 'Pet state is scoped to the verified owner and this original pet.',
         status, source_health: sourceStatuses[key].state === 'migration_pending' ? 'unavailable' : 'live', priority, progress, blocking_reason_code: blocking,
         period: { kind: SOURCE_BY_KEY.get(key).period, key: key === 'moonpet.weekly-journey' ? (pet.journeyWeek == null ? null : String(pet.journeyWeek)) : key.includes('daily') ? day : null, origin_timezone: 'UTC' },
