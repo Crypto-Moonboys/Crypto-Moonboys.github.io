@@ -48,14 +48,20 @@ function fakeDb(options = {}) {
               if (/FROM telegram_users/u.test(sql)) return { success: true, results: [{ telegram_id: params[0] }] };
               if (/FROM telegram_faction_members/u.test(sql)) return { success: true, results: [{ faction_id: 2, name: 'graffpunks' }] };
               if (/FROM arcade_progression_state/u.test(sql)) return { success: true, results: [{ arcade_xp_total: 1200 }] };
+              if (/FROM player_daily_mission_state/u.test(sql)) return { success: true, results: options.savedMissions
+                ? [{ mission_id: 'gp_chaos_3', progress: 2, completed: 0 },
+                   { mission_id: 'gp_combo_x3', progress: 3, completed: 1 }] : [] };
               if (/FROM telegram_pet_instances/u.test(sql)) return { success: true, results: options.noPets ? [] : options.threePets ? ownedPets : ownedPets.slice(0, 1) };
               if (/telegram_community_xp_awards/u.test(sql)) return { success: true, results: [] };
               if (/daily_opportunity_state/u.test(sql)) return { success: true, results: [{ chain_depth: 2, updated_at: '2026-10-17T01:00:00Z' }] };
               if (/daily_wtf_events/u.test(sql)) return { success: true, results: [{ event_id: 'hidden-event', starts_at: '2026-10-17T11:00:00Z', ends_at: '2026-10-17T13:00:00Z' }] };
-              if (/telegram_pet_daily_completion/u.test(sql)) return { success: true, results: [{ progress_bits: 255, claimed_at: null, pet_id: 'pet-secret-123' }] };
+              if (/telegram_pet_daily_completion/u.test(sql)) return { success: true, results: options.savedOldClaims
+                ? [{ utc_day: '2026-10-16', progress_bits: 255, claimed_at: null, pet_id: 'pet-secret-123' },
+                   { utc_day: '2026-10-17', progress_bits: 137, claimed_at: null, pet_id: null }]
+                : [{ utc_day: '2026-10-17', progress_bits: 255, claimed_at: null, pet_id: 'pet-secret-123' }] };
               if (/FROM telegram_pet_activity_sessions/u.test(sql) && options.savedStates) return { success: true, results: [{ status: 'active', started_at: '2026-10-17T11:50:00Z', ends_at: '2026-10-17T13:50:00Z', claimed_at: null, metadata: '{"pet_id":"pet-secret-123"}' }] };
-              if (/FROM telegram_pet_runs/u.test(sql) && options.savedStates) return { success: true, results: [{ pet_id: 'pet-secret-789', status: 'extractable', updated_at: '2026-10-17T11:55:00Z' }] };
-              if (/FROM telegram_pet_contracts/u.test(sql) && options.savedStates) return { success: true, results: [{ pet_id: 'pet-secret-456', status: 'active', updated_at: '2026-10-17T11:54:00Z' }] };
+              if (/FROM telegram_pet_runs/u.test(sql) && options.savedStates) return { success: true, results: [{ source_id: 'source-run-789', pet_id: 'pet-secret-789', status: 'extractable', updated_at: '2026-10-17T11:55:00Z' }] };
+              if (/FROM telegram_pet_contracts/u.test(sql) && options.savedStates) return { success: true, results: [{ source_id: 'source-contract-456', pet_id: 'pet-secret-456', status: 'active', updated_at: '2026-10-17T11:54:00Z' }] };
               if (/event_type='weekly_boss'.*reason='weekly_boss_attempt'/su.test(sql) && options.bossAttempt) return { success: true, results: [{ event_id: 'attempt-1' }] };
               if (/FROM dead_run_sessions.*status='active'/su.test(sql)) return { success: true, results: options.deadRunActive ? [{ session_id: 'active-run' }] : [] };
               if (/FROM dead_run_sessions.*status='finished'.*ranked=1/su.test(sql)) return { success: true, results: options.deadRunVerified ? [{ score: 4321, ended_at: '2026-10-17T11:00:00Z' }] : [] };
@@ -290,6 +296,67 @@ test('authentication, owner selectors, rate limits and pagination fail closed', 
   response = await handlePlayerActionPlanRoute(request(auth()), env, options({ enforceRateLimit: async () => json({ error: 'rate_limited' }, 429) }));
   assert.equal(response.status, 429);
   assert.equal(response.headers.get('Cache-Control'), 'no-store, private');
+});
+
+test('account-level source evidence survives generic projection and enters top actions', async () => {
+  const response = await handlePlayerActionPlanRoute(request(auth({ limit: 100 })), { DB: fakeDb(), TELEGRAM_BOT_TOKEN: 'test' }, options());
+  const result = await response.json();
+  const claim = result.tasks.find(t => t.source_key === 'moonpet.seven-of-seven-claim' && t.status === 'claim_ready');
+  assert.ok(claim, 'saved unclaimed award must be present');
+  assert.equal(claim.evidence.kind, 'server_receipt', 'genericTask must not overwrite registry evidence kind');
+  assert.ok(result.top_actions.some(t => t.task_id === claim.task_id), 'ready award should be prioritised');
+});
+
+test('the current daily eight source flags stay account-wide and partial progress remains exact', async () => {
+  const response = await handlePlayerActionPlanRoute(request(auth({ limit: 100 })), { DB: fakeDb({ threePets: true, savedOldClaims: true }), TELEGRAM_BOT_TOKEN: 'test' }, options());
+  const result = await response.json();
+  const tasks = result.tasks.filter(t => t.source_key === 'moonpet.daily-seven-missions');
+  const flags = tasks.filter(t => t.task_id.includes('flag-'));
+  assert.equal(flags.length, 8, 'readDailyCompletion uses eight flag bits');
+  assert.equal(flags.filter(t => t.status === 'complete').length, 3, '0x89 sets feed, train and gold');
+  assert.equal(result.tasks.filter(t => t.source_key === 'moonpet.seven-of-seven-claim' && t.status === 'claim_ready').length, 1,
+    'old earned unclaimed rewards must survive a new UTC day');
+  assert.ok(result.tasks.some(t => t.source_key === 'moonpet.seven-of-seven-claim' && t.period.key === '2026-10-16'));
+  assert.equal(tasks.filter(t => t.task_id.endsWith(':current')).length, 1, 'one account-wide summary, not one per pet');
+});
+
+test('persisted faction mission IDs remain separate advisory tasks', async () => {
+  const response = await handlePlayerActionPlanRoute(request(auth({ limit: 100 })), { DB: fakeDb({ savedMissions: true }), TELEGRAM_BOT_TOKEN: 'test' }, options());
+  const result = await response.json();
+  const missions = result.tasks.filter(t => t.source_key === 'faction.daily-missions');
+  assert.equal(missions.length, 2);
+  assert.ok(missions.every(t => t.evidence.kind === 'client_mirror'));
+  assert.ok(missions.every(t => t.evidence.verified_completion === false));
+});
+
+test('saved runs and contracts are keyed by immutable source IDs, not ordering', async () => {
+  const response = await handlePlayerActionPlanRoute(request(auth({ limit: 100 })), { DB: fakeDb({ threePets: true, savedStates: true }), TELEGRAM_BOT_TOKEN: 'test' }, options());
+  const result = await response.json();
+  const run = result.tasks.find(t => t.source_key === 'moonpet.saved-run' && t.status === 'claim_ready');
+  const contract = result.tasks.find(t => t.source_key === 'moonpet.contracts' && t.status === 'active');
+  assert.match(run.task_id, /pap_[a-f0-9]{24}$/u);
+  assert.match(contract.task_id, /pap_[a-f0-9]{24}$/u);
+  assert.doesNotMatch(run.task_id, /:0$/u);
+});
+
+test('weekly Journey requires event identity, accepted status and canonical legacy boss proof', async () => {
+  const db = fakeDb({ threePets: true });
+  const response = await handlePlayerActionPlanRoute(request(auth({ limit: 100 })), { DB: db, TELEGRAM_BOT_TOKEN: 'test' }, options());
+  assert.equal(response.status, 200);
+  const sql = db.calls.find(c => /FROM telegram_pet_weekly_journey_objectives o/u.test(c.sql))?.sql;
+  assert.ok(sql);
+  assert.match(sql, /JOIN telegram_pet_events e/u);
+  assert.doesNotMatch(sql, /LEFT JOIN telegram_pet_events/u);
+  assert.match(sql, /o.objective_id=CASE e.event_type/u);
+  assert.match(sql, /pet_weekly_boss_backfill/u);
+});
+
+test('wiki mission reads must use canonical mission_window and persisted WTF windows have distinct IDs', async () => {
+  const db = fakeDb();
+  await handlePlayerActionPlanRoute(request(auth({ limit: 100 })), { DB: db, TELEGRAM_BOT_TOKEN: 'test' }, options());
+  const wiki = db.calls.find(c => /FROM wiki_mission_completions/u.test(c.sql));
+  assert.match(wiki.sql, /mission_window=\?/u);
+  assert.doesNotMatch(wiki.sql, /substr\(created_at/u);
 });
 
 test('source-specific UTC clocks survive BST/GMT rollover and pagination is bounded', () => {
