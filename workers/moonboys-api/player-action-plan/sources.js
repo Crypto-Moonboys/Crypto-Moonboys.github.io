@@ -12,6 +12,7 @@ import { WEEKLY_JOURNEY_SOURCE_OBJECTIVES } from '../pets/weekly-journey.js';
 import { weeklyBossLegacySourceProofSql } from '../pets/weekly-boss-evidence.js';
 import { applyPetCareDecay } from '../pets/care-decay.js';
 import { getPetWeeklyBoss } from '../pets/player-expansion.js';
+import { getPetDailyBounties } from '../pets/economy-expansion.js';
 
 export const ACTION_PLAN_SOURCE_REGISTRY = Object.freeze([
   ['onboarding.telegram', 'onboarding', 'account', 'once', 'server_projection', '/gkniftyheads-incubator.html'],
@@ -891,17 +892,50 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
       }));
   }
 
-  const claimRows = sourceStatuses['moonpet.claimable-rewards'].state === 'migration_pending' ? [] : await query(db,
-    "SELECT COUNT(*) AS total FROM telegram_pet_reward_claims WHERE telegram_id=? AND status='pending'",
-    [ownerId], [], failures, ['moonpet.claimable-rewards']);
-  const claimCount = number(claimRows[0]?.total);
+  // Pending reward-claim rows are internal settlement reservations, not player
+  // claim opportunities (wallet reconciliation can create them too). Derive
+  // today's ordinary bounty availability from accepted activity and the
+  // canonical pet_bounty settlement receipts instead.
+  const bountyRows = sourceStatuses['moonpet.claimable-rewards'].state === 'migration_pending' ? [] : await query(db,
+    `SELECT 'event' AS record_type,event_type AS record_key,COUNT(*) AS total
+       FROM telegram_pet_events
+       WHERE telegram_id=? AND day_key=? AND status='accepted'
+       GROUP BY event_type
+       UNION ALL
+       SELECT 'receipt' AS record_type,status AS record_key,COUNT(*) AS total
+       FROM telegram_pet_reward_claims
+       WHERE telegram_id=? AND day_key=? AND source='pet_bounty'
+         AND status IN ('pending','awarded')
+       GROUP BY status`,
+    [ownerId, day, ownerId, day], [], failures, ['moonpet.claimable-rewards']);
+  const bountyEventTotals = new Map(bountyRows.filter(row => row.record_type === 'event')
+    .map(row => [String(row.record_key), number(row.total)]));
+  const completedBounties = getPetDailyBounties(day).filter(bounty =>
+    bounty.event_types.reduce((total, eventType) => total + (bountyEventTotals.get(eventType) || 0), 0) >= bounty.required);
+  const receiptCount = (status) => bountyRows.filter(row =>
+    row.record_type === 'receipt' && row.record_key === status)
+    .reduce((total, row) => total + number(row.total), 0);
+  // A receipt does not identify the claimable bounty to the UI; count only
+  // the guaranteed unclaimed remainder. In-flight reservations block rather
+  // than advertise a second claim, and unrelated sources never count.
+  const availableBounties = Math.max(0, completedBounties.length - receiptCount('awarded') - receiptCount('pending'));
+  const hasActiveBountyPet = pets.some(pet => number(pet.is_active) === 1 && pet.lifecycle_phase);
+  const bountyReady = availableBounties > 0 && hasActiveBountyPet && !rosterUnavailable;
   if (sourceStatuses['moonpet.claimable-rewards'].state !== 'migration_pending') {
-    sourceStatuses['moonpet.claimable-rewards'] = sourceStatus(claimCount ? 'live' : 'live_empty', { adapter: 'saved_claim_receipts' });
+    sourceStatuses['moonpet.claimable-rewards'] = sourceStatus(bountyRows.length ? 'live' : 'live_empty', { adapter: 'accepted_bounty_events_and_settlements' });
   }
-  tasks.push(genericTask(now, SOURCE_BY_KEY.get('moonpet.claimable-rewards'), claimCount ? 'claim_ready' : 'waiting', sourceStatuses['moonpet.claimable-rewards'].state === 'migration_pending' ? 'unavailable' : 'live', {
-    title: claimCount ? 'Claim saved Moonpet rewards' : 'Claim saved Moonpet rewards: none pending', priority: claimCount ? 60 : 720,
-    progress: { current: claimCount, target: null, unit: 'saved_records' }, blocking: sourceStatuses['moonpet.claimable-rewards'].state === 'migration_pending' ? 'source_table_unavailable' : null,
-  }));
+  tasks.push(genericTask(now, SOURCE_BY_KEY.get('moonpet.claimable-rewards'),
+    bountyReady ? 'claim_ready' : availableBounties > 0 ? 'blocked'
+      : completedBounties.length && receiptCount('awarded') >= completedBounties.length ? 'claimed' : 'waiting',
+    sourceStatuses['moonpet.claimable-rewards'].state === 'migration_pending' ? 'unavailable' : 'live', {
+      title: bountyReady ? 'Claim completed Moonpet daily bounty'
+        : completedBounties.length ? 'Review Moonpet daily bounty settlements' : 'Complete Moonpet daily bounties',
+      priority: bountyReady ? 60 : 720, periodKey: day, expiresAt: nextUtcDay(now),
+      description: 'Only current UTC-day accepted bounty actions and pet_bounty settlement receipts establish claim readiness. Internal pending recovery rows are not claimable rewards.',
+      progress: { current: availableBounties, target: null, unit: 'claimable_daily_bounties' },
+      blocking: sourceStatuses['moonpet.claimable-rewards'].state === 'migration_pending'
+        ? 'source_table_unavailable' : availableBounties && !bountyReady ? 'active_source_pet_required' : null,
+    }));
 
   for (const [key, sql, activeTitle, emptyTitle] of [
     ['moonpet.saved-run', `SELECT r.run_id AS source_id,r.pet_id,r.season_key,r.status,r.updated_at,
