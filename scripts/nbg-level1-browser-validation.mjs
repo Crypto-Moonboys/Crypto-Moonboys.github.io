@@ -1873,7 +1873,7 @@ const sprayBaseline = await page.evaluate(() => {
   window.__finalSprayOriginalDraw = ctx.drawImage;
   window.__finalSprayFrames = [];
   ctx.drawImage = function (image, ...args) {
-    if (image && image.src && image.src.includes('NBG%20Runner%20Final-spray.png')) {
+    if (image && (image.__nbgSpraySource || image.src || '').includes('NBG%20Runner%20Final-spray.png')) {
       window.__finalSprayFrames.push({ src: image.src, sourceX: args[0],
         sourceY: args[1], width: args[6], height: args[7] });
     }
@@ -1882,6 +1882,9 @@ const sprayBaseline = await page.evaluate(() => {
   window.__sprayDefeats = [];
   window.__sprayDefeatListener = (event) => window.__sprayDefeats.push(event.detail);
   window.addEventListener('nbg-enemy-defeated', window.__sprayDefeatListener);
+  const sprayImage = state.playerAnimations.spray.image;
+  const painted = sprayImage.getContext('2d').getImageData(0, 0, 1, 1).data;
+  if (painted[3] !== 0) throw new Error('final spray sheet white page border must be transparent');
   return { xp: state.xp, health: player.health };
 });
 await page.keyboard.down('KeyS');
