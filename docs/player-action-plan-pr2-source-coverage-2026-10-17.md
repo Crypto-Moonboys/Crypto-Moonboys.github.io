@@ -116,3 +116,12 @@ The late Copilot + Codex review exposed additional read-only guidance edge cases
 - Reads accepted boss participation within **each pet's ownership-Journey bounds**, not only an account-wide daily attempt. A completed participation cannot be recommended again in the same ownership week.
 
 The tests use fixed-clock mocks, SQLite malformed-JSON evaluation, and a 137-day outstanding-claim fixture; they are not a substitute for signed live owner verification. The number of new queries remains bounded under the existing action-plan request budget, and no changes to the gameplay economy or migrations were made.
+
+## Codex follow-up — 17 October: exact activity availability and owner state
+
+- **Activity claim start versus expiry:** A saved activity may be claimed after the canonical five-minute minimum from `started_at`; `ends_at` stores a longer two-to-eight-hour cap and, separately, anchors the 24-hour last-claim grace. Task `claim_ready` and `next_ready_at` now use the *start plus minimum*, while expired sessions still fail closed using the *end plus grace*. Both boundaries have regression tests.
+- **Per-pet Journey anchor:** `getPetOwnershipPeriod` now receives the actual `telegram_pet_season_slots.created_at` timestamp, independent of the instance's repaired/backfilled `created_at`. Saved care decay still uses the instance clock.
+- **Victory attribution at ownership-week rollover:** A current ISO-week boss victory is considered participation for a pet only when the accepted victory's original saved day belongs to that pet's current ownership-week bounds (or when the pet has a matching accepted participation event). A previous ownership week's victory cannot suppress a new participation objective.
+- **WTF player evidence:** Live event rows are scoped through a left join to the verified account's `daily_wtf_player_events` record. Completed windows show `complete`, check-ins show `in_progress` and neither is advertised as a fresh active Top-3 action. Public schedule alone does not prove attendance. Missing/failed owner-state queries fail closed rather than pretending participation was checked.
+
+These are source-side projections and automated tests only. The PR does not modify gameplay settlements, reward economics, pet ownership, D1 schema or deployment status.
