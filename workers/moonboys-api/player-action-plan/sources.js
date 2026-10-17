@@ -85,7 +85,6 @@ function task(now, input) {
     category: meta.group,
     period: { kind: meta.period, key: input.period_key || null, origin_timezone: 'UTC' },
     destination: { kind: 'web', path: meta.path },
-    evidence: { kind: meta.evidence, ...(input.evidence || {}) },
     cost: cost([]), reward: reward([], false), read_at: now.toISOString(),
     ...input,
     evidence: { kind: meta.evidence, ...(input.evidence || {}) },
@@ -1096,9 +1095,27 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
     return Object.freeze({ ...entry, status: 'sync_unavailable', availability: 'sync_unavailable',
       source_health: state, blocking_reason_code: 'source_projection_unavailable' });
   });
+  // An authenticated dashboard needs the active roster, but never raw D1
+  // pet IDs, Telegram IDs or private unrevealed Moonpet identities. This is
+  // derived exclusively from roster/evolution reads already performed above.
+  const petSummaries = rosterUnavailable ? null : pets.map((pet) => ({
+    pet_ref: pet.ref,
+    slot_number: number(pet.slot_number),
+    selected: number(pet.is_active) === 1,
+    life_stage: String(pet.stage || '').slice(0, 32) || null,
+    lifecycle_phase: String(pet.lifecycle_phase || '').slice(0, 32) || null,
+    evolution_stage: evolutions.has(String(pet.pet_id))
+      ? number(evolutions.get(String(pet.pet_id))) : null,
+    level: getPetVisibleLevel(pet.pet_xp),
+    pet_xp: number(pet.pet_xp),
+  }));
   return { tasks: normalizedTasks, source_status: sourceStatuses, read_context: {
     utc_day: day, iso_week: week,
-    // null means the authoritative roster could not be read, not zero pets.
+    // null means authoritative records could not be read, not "zero".
     pet_count: rosterUnavailable ? null : pets.length,
+    pets: petSummaries,
+    faction: failures.has('onboarding.faction') ? null
+      : { joined: Boolean(faction), name: faction ? String(faction.name || '').slice(0, 50) : null },
+    lifetime_arcade_xp: failures.has('onboarding.pet-entry') || !arcadeRows.length ? null : lifetimeXp,
   } };
 }
