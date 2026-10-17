@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Private, verified personal Moonboy tasks, saved MoonPet rewards and cross-game mission deadlines.">
+  <meta name="robots" content="noindex,nofollow">
+  <link rel="canonical" href="https://cryptomoonboys.com/my-moonboy.html">
+  <title>My Moonboy — Personal Mission Control | Crypto Moonboys</title>
+  <link rel="stylesheet" href="/css/wiki.css">
+  <link rel="stylesheet" href="/css/my-moonboy.css">
+  <link rel="icon" type="image/png" href="/favicon.png">
+</head>
+<body class="page-my-moonboy page-standard-shell">
+<main id="content" role="main">
+  <div class="mm-page" id="my-moonboy">
+    <header class="mm-heading">
+      <p class="mm-kicker">MY MOONBOY / PERSONAL MISSION CONTROL</p>
+      <h1>Know your next move.</h1>
+      <p>One private view of your source-backed tasks, active windows, saved claims and permanent MoonPets. Opening a task only navigates to the original game.</p>
+    </header>
+
+    <section class="mm-gate" id="mm-gate" aria-labelledby="mm-gate-title">
+      <h2 id="mm-gate-title">Checking Telegram identity</h2>
+      <p id="mm-gate-description" role="status">Checking your verified account session. No personal information is loaded anonymously.</p>
+      <p class="mm-actions">
+        <a class="mm-button mm-button-primary" href="/gkniftyheads-incubator.html#telegram-login-help" data-telegram-login>Log in with Telegram</a>
+        <a class="mm-button" href="/community.html">View public Battle Chamber</a>
+      </p>
+    </section>
+
+    <div id="mm-private" hidden>
+      <section class="mm-summary" aria-labelledby="mm-overview-title">
+        <div class="mm-summary-header">
+          <div>
+            <p class="mm-kicker">VERIFIED PERSONAL VIEW</p>
+            <h2 id="mm-overview-title">Mission overview</h2>
+            <p class="mm-muted">Player: <strong id="mm-player-name">Linked Moonboy</strong> · <span id="mm-link-state">Telegram credential required</span></p>
+          </div>
+          <button class="mm-button" type="button" id="mm-refresh">Refresh verified tasks</button>
+        </div>
+        <p class="mm-sync" id="mm-sync" role="status" aria-live="polite">No verified plan loaded.</p>
+        <div class="mm-stats" aria-label="Source-backed mission counts">
+          <div><strong id="mm-ready-count">—</strong><span>Ready</span></div>
+          <div><strong id="mm-claim-count">—</strong><span>Claims</span></div>
+          <div><strong id="mm-today-count">—</strong><span>Eligible today</span></div>
+          <div><strong id="mm-done-count">—</strong><span>Completed today</span></div>
+          <div><strong id="mm-unavailable-count">—</strong><span>Unavailable sources</span></div>
+        </div>
+        <div class="mm-units" aria-label="Separate progression measures">
+          <p><strong>Arcade XP (lifetime)</strong> <span id="mm-arcade-xp">Not confirmed</span></p>
+          <p><strong>Pet XP (selected MoonPet)</strong> <span id="mm-pet-xp">Not confirmed</span></p>
+          <p><strong>Community XP</strong> <span>Not supplied by this projection</span></p>
+          <p><strong>Championship Clout</strong> <span id="mm-clout">Not confirmed</span></p>
+        </div>
+        <p class="mm-muted" id="mm-faction">Faction: checking owner evidence</p>
+      </section>
+
+      <section class="mm-section" aria-labelledby="mm-next-title">
+        <div class="mm-section-heading">
+          <div>
+            <p class="mm-kicker">IMMEDIATE / SERVER PRIORITISED</p>
+            <h2 id="mm-next-title">Your next 3 actions</h2>
+          </div>
+        </div>
+        <p class="mm-muted" id="mm-next-note">A source must be verified as actionable before it can appear here.</p>
+        <div id="mm-next" class="mm-task-grid"></div>
+      </section>
+
+      <section class="mm-section" aria-labelledby="mm-pets-title">
+        <div class="mm-section-heading">
+          <div>
+            <p class="mm-kicker">OWNED / ORIGINAL PET ATTRIBUTION</p>
+            <h2 id="mm-pets-title">Your MoonPets</h2>
+          </div>
+          <a href="/moonpet-game.html" class="mm-button">Open MoonPet game</a>
+        </div>
+        <p class="mm-muted">Only the verified owner can see this panel. Archived original earners may appear for saved rewards; switching pets happens inside MoonPet.</p>
+        <div id="mm-pets" class="mm-pet-grid"></div>
+      </section>
+
+      <section class="mm-section" aria-labelledby="mm-all-title">
+        <div class="mm-section-heading">
+          <div>
+            <p class="mm-kicker">FULL SOURCE CATALOGUE</p>
+            <h2 id="mm-all-title">Mission ledger</h2>
+          </div>
+          <p class="mm-muted" id="mm-page-count">0 tasks loaded</p>
+        </div>
+        <div class="mm-tabs" role="tablist" aria-label="Mission categories">
+          <button type="button" role="tab" data-mm-tab="now" aria-selected="true" aria-controls="mm-results" tabindex="0">Now</button>
+          <button type="button" role="tab" data-mm-tab="today" aria-selected="false" aria-controls="mm-results" tabindex="-1">Today</button>
+          <button type="button" role="tab" data-mm-tab="claims" aria-selected="false" aria-controls="mm-results" tabindex="-1">Claims</button>
+          <button type="button" role="tab" data-mm-tab="moonpet" aria-selected="false" aria-controls="mm-results" tabindex="-1">MoonPet</button>
+          <button type="button" role="tab" data-mm-tab="faction" aria-selected="false" aria-controls="mm-results" tabindex="-1">Faction</button>
+          <button type="button" role="tab" data-mm-tab="games" aria-selected="false" aria-controls="mm-results" tabindex="-1">Arcade &amp; Games</button>
+          <button type="button" role="tab" data-mm-tab="weekly" aria-selected="false" aria-controls="mm-results" tabindex="-1">Weekly</button>
+          <button type="button" role="tab" data-mm-tab="long-term" aria-selected="false" aria-controls="mm-results" tabindex="-1">Long-term</button>
+          <button type="button" role="tab" data-mm-tab="history" aria-selected="false" aria-controls="mm-results" tabindex="-1">History</button>
+        </div>
+        <div class="mm-filters">
+          <label for="mm-status-filter">Availability
+            <select id="mm-status-filter">
+              <option value="all">All statuses</option>
+              <option value="actionable">Ready / active / claims</option>
+              <option value="waiting">Waiting / in progress</option>
+              <option value="blocked">Blocked / unavailable / preview</option>
+              <option value="completed">Completed / claimed</option>
+            </select>
+          </label>
+          <label for="mm-search">Find a task
+            <input id="mm-search" type="search" autocomplete="off" placeholder="Source, action or goal">
+          </label>
+        </div>
+        <p class="mm-muted" id="mm-ledger-note">Source status and verification are shown per task. An unknown reward does not mean zero reward.</p>
+        <div id="mm-results" class="mm-task-list" role="tabpanel" tabindex="0" aria-label="Filtered missions"></div>
+        <p class="mm-more"><button class="mm-button" id="mm-load-more" type="button" hidden>Load more verified tasks</button></p>
+      </section>
+    </div>
+  </div>
+</main>
+<script data-cfasync="false" src="/js/api-config.js"></script>
+<script data-cfasync="false" src="/js/arcade/core/global-event-bus.js"></script>
+<script data-cfasync="false" src="/js/identity-gate.js"></script>
+<script data-cfasync="false" src="/js/core/moonboys-state.js"></script>
+<script data-cfasync="false" src="/js/core/daily-loop-state.js"></script>
+<script data-cfasync="false" src="/js/site-shell.js"></script>
+<script data-cfasync="false" src="/js/components/connection-status-panel.js"></script>
+<script data-cfasync="false" src="/js/components/global-player-header.js"></script>
+<script data-cfasync="false" src="/js/components/live-activity-summary.js"></script>
+<script data-cfasync="false" src="/js/components/telegram-sync-cta.js"></script>
+<script data-cfasync="false" src="/js/my-moonboy.js"></script>
+</body>
+</html>
