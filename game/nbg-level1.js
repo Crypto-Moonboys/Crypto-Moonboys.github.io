@@ -19,6 +19,14 @@
   var JUMP_TAP_SPACING_MS = 115; // Make successive queued boosts visibly distinct.
   var COURSE_LAYOUT_VERSION = 2; // Replay v1 format, updated course content.
   var DOUBLE_JUMP_SIDE_SPEED = 5.4;
+  // Pig sheet is 700x560: five columns by four rows, 140px per frame.
+  // Display is twice the former 28x22 pigeon sprite; physics stays 28x22.
+  var FLYING_PIG_COLUMNS = 5;
+  var FLYING_PIG_ROWS = 4;
+  var FLYING_PIG_FRAMES = 20;
+  var FLYING_PIG_RENDER_WIDTH = 56;
+  var FLYING_PIG_RENDER_HEIGHT = 44;
+  var FLYING_PIG_FRAME_MS = 85;
   var BOT_SHEET_COLUMNS = 5;
   var BOT_SHEET_ROWS = 5;
   var BOT_SHEET_FRAMES = 25;
@@ -1286,6 +1294,26 @@
             } else {
               ctx.drawImage(image, ratSourceX, ratSourceY, ratFrameWidth, ratFrameHeight,
                 ratDrawX, ratDrawY, ratDrawWidth, ratDrawHeight);
+            }
+          } else if (enemy.type === 'pigeon') {
+            // The pigeon physics and score identity are unchanged; only its
+            // sprite becomes the animated 2x flying pig. Centre the artwork
+            // around the original collision box, including left/right flips.
+            var pigCellW = image.naturalWidth / FLYING_PIG_COLUMNS;
+            var pigCellH = image.naturalHeight / FLYING_PIG_ROWS;
+            var pigFrame = Math.floor((time + enemy.x * 3) / FLYING_PIG_FRAME_MS) % FLYING_PIG_FRAMES;
+            var pigSourceX = pigFrame % FLYING_PIG_COLUMNS * pigCellW;
+            var pigSourceY = Math.floor(pigFrame / FLYING_PIG_COLUMNS) * pigCellH;
+            var pigDrawX = x - Math.round((FLYING_PIG_RENDER_WIDTH - enemy.w) / 2);
+            var pigDrawY = y - Math.round((FLYING_PIG_RENDER_HEIGHT - enemy.h) / 2);
+            if (enemy.vx < 0) {
+              ctx.translate(pigDrawX + FLYING_PIG_RENDER_WIDTH, pigDrawY);
+              ctx.scale(-1, 1);
+              ctx.drawImage(image, pigSourceX, pigSourceY, pigCellW, pigCellH,
+                0, 0, FLYING_PIG_RENDER_WIDTH, FLYING_PIG_RENDER_HEIGHT);
+            } else {
+              ctx.drawImage(image, pigSourceX, pigSourceY, pigCellW, pigCellH,
+                pigDrawX, pigDrawY, FLYING_PIG_RENDER_WIDTH, FLYING_PIG_RENDER_HEIGHT);
             }
           } else if (enemy.type === 'bot') {
             var cellW = image.naturalWidth / BOT_SHEET_COLUMNS;
