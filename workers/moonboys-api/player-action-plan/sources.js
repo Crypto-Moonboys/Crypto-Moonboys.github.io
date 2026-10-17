@@ -594,14 +594,35 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
   // Original earning pet and week remain authoritative after the calendar
   // changes; never infer an unclaimed boss reward solely from current week.
   const pendingBossRewards = sourceStatuses['moonpet.bosses-combat'].state === 'migration_pending' ? [] : await query(db,
-    `SELECT v.pet_id,v.season_key,v.week_key,v.boss_id FROM telegram_pet_weekly_boss_victories_by_pet v
+    `SELECT DISTINCT v.pet_id,v.season_key,v.week_key,v.boss_id
+       FROM telegram_pet_weekly_boss_victories_by_pet v
        JOIN telegram_pet_weekly_boss_progress p ON p.telegram_id=v.telegram_id
          AND p.week_key=v.week_key AND p.boss_id=v.boss_id
        JOIN telegram_pet_instances i ON i.pet_id=v.pet_id AND i.telegram_id=v.telegram_id
          AND i.season_key=v.season_key
        JOIN telegram_pet_season_slots s ON s.pet_id=i.pet_id AND s.telegram_id=i.telegram_id
          AND s.season_key=i.season_key AND s.slot_number=i.slot_number
+       LEFT JOIN telegram_pet_events e ON e.telegram_id=v.telegram_id
+         AND e.pet_id=v.pet_id AND e.season_key=v.season_key
+         AND e.event_key=v.victory_event_key AND e.week_key=v.week_key
+         AND e.event_type='weekly_boss' AND e.status='accepted'
+         AND e.reason='weekly_boss_attempt'
       WHERE v.telegram_id=? AND p.defeated_at IS NOT NULL AND p.reward_claimed_at IS NULL
+        AND v.victory_event_key<>'' AND v.victory_event_key=trim(v.victory_event_key)
+        AND length(v.victory_event_key)<=180
+        AND ((e.id IS NOT NULL AND length(e.day_key)=10
+          AND date(e.day_key,'+0 days')=e.day_key
+          AND json_extract(CASE WHEN json_valid(e.metadata) THEN e.metadata ELSE '{}' END,'$.source')
+              IN ('pet_weekly_boss','pet_weekly_boss_backfill')
+          AND json_extract(CASE WHEN json_valid(e.metadata) THEN e.metadata ELSE '{}' END,'$.boss_id')=v.boss_id
+          AND ${weeklyBossLegacySourceProofSql('e')})
+         OR (e.id IS NULL AND EXISTS (
+          SELECT 1 FROM telegram_pet_weekly_boss_events b
+          WHERE b.telegram_id=v.telegram_id AND b.week_key=v.week_key AND b.boss_id=v.boss_id
+            AND b.event_key=v.victory_event_key AND b.event_key<>'' AND b.event_key=trim(b.event_key)
+            AND length(b.event_key)<=180
+            AND length(b.day_key)=10 AND date(b.day_key,'+0 days')=b.day_key
+            AND julianday(b.created_at) IS NOT NULL)))
       ORDER BY v.defeated_at ASC LIMIT 50`,
     [ownerId], [], failures, ['moonpet.bosses-combat']);
   const validPendingBossRewards = pendingBossRewards.filter((row) =>
@@ -850,7 +871,18 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
          AND s.season_key=i.season_key AND s.slot_number=i.slot_number
        WHERE r.telegram_id=? AND r.status IN ('active','extractable')
        ORDER BY r.updated_at DESC LIMIT 10`, 'Resume this Moonpet’s saved run', 'No saved Moonpet run is pending'],
-    ['moonpet.contracts', "SELECT contract_id AS source_id,pet_id,status,updated_at,reward_xp,reward_settled FROM telegram_pet_contracts WHERE telegram_id=? AND (status='active' OR (status='completed' AND reward_xp=20 AND reward_settled=0)) ORDER BY CASE WHEN status='completed' THEN 0 ELSE 1 END, updated_at DESC LIMIT 10", 'Continue this Moonpet’s active contract', 'No Moonpet contract or saved bonus is pending'],
+    ['moonpet.contracts', `SELECT c.contract_id AS source_id,c.pet_id,c.season_key,c.status,
+          c.updated_at,c.reward_xp,c.reward_settled,
+          CASE WHEN i.pet_id IS NOT NULL AND s.pet_id IS NOT NULL THEN 1 ELSE 0 END AS owner_verified
+        FROM telegram_pet_contracts c
+        LEFT JOIN telegram_pet_instances i ON i.pet_id=c.pet_id AND i.telegram_id=c.telegram_id
+          AND i.season_key=c.season_key
+        LEFT JOIN telegram_pet_season_slots s ON s.pet_id=i.pet_id AND s.telegram_id=i.telegram_id
+          AND s.season_key=i.season_key AND s.slot_number=i.slot_number
+        WHERE c.telegram_id=? AND (c.status='active'
+          OR (c.status='completed' AND c.reward_xp=20 AND c.reward_settled=0))
+        ORDER BY CASE WHEN c.status='completed' THEN 0 ELSE 1 END,c.updated_at DESC LIMIT 10`,
+        'Continue this Moonpet’s active contract', 'No Moonpet contract or saved bonus is pending'],
   ]) {
     const rows = sourceStatuses[key].state === 'migration_pending' ? [] : await query(db, sql, [ownerId], [], failures, [key]);
     if (sourceStatuses[key].state === 'live') {
@@ -867,7 +899,8 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
       // Legacy open runs may have NULL pet_id or broken pet/season references.
       // Do not derive an "original pet" fingerprint until both ownership joins
       // prove the original instance and retained slot belong to this owner.
-      if (key === 'moonpet.saved-run' && (!row.pet_id || number(row.owner_verified) !== 1)) {
+      if (['moonpet.saved-run', 'moonpet.contracts'].includes(key)
+        && (!row.pet_id || number(row.owner_verified) !== 1)) {
         failures.set(key, 'original_pet_attribution_unavailable');
         continue;
       }
