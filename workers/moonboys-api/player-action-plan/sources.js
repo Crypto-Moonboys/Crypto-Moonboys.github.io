@@ -301,7 +301,7 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
   if (sourceStatuses['battle.missed-opportunities'].state !== 'migration_pending') {
     sourceStatuses['battle.missed-opportunities'] = sourceStatus(number(missedRows[0]?.total) ? 'live' : 'live_empty', { adapter: 'persisted_owner_history' });
   }
-  tasks.push(genericTask(now, SOURCE_BY_KEY.get('battle.missed-opportunities'), number(missedRows[0]?.total) ? 'active' : 'complete', 'live', {
+  tasks.push(genericTask(now, SOURCE_BY_KEY.get('battle.missed-opportunities'), number(missedRows[0]?.total) ? 'active' : 'waiting', 'live', {
     title: number(missedRows[0]?.total) ? 'Review missed battle opportunities' : 'No recorded missed battle opportunities', priority: 650,
     progress: { current: number(missedRows[0]?.total), target: null, unit: 'records' },
   }));
@@ -494,7 +494,7 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
   if (sourceStatuses['moonpet.claimable-rewards'].state !== 'migration_pending') {
     sourceStatuses['moonpet.claimable-rewards'] = sourceStatus(claimCount ? 'live' : 'live_empty', { adapter: 'saved_claim_receipts' });
   }
-  tasks.push(genericTask(now, SOURCE_BY_KEY.get('moonpet.claimable-rewards'), claimCount ? 'claim_ready' : 'complete', sourceStatuses['moonpet.claimable-rewards'].state === 'migration_pending' ? 'unavailable' : 'live', {
+  tasks.push(genericTask(now, SOURCE_BY_KEY.get('moonpet.claimable-rewards'), claimCount ? 'claim_ready' : 'waiting', sourceStatuses['moonpet.claimable-rewards'].state === 'migration_pending' ? 'unavailable' : 'live', {
     title: claimCount ? 'Claim saved Moonpet rewards' : 'Claim saved Moonpet rewards: none pending', priority: claimCount ? 60 : 720,
     progress: { current: claimCount, target: null, unit: 'saved_records' }, blocking: sourceStatuses['moonpet.claimable-rewards'].state === 'migration_pending' ? 'source_table_unavailable' : null,
   }));
@@ -504,8 +504,11 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
     ['moonpet.contracts', "SELECT contract_id AS source_id,pet_id,status,updated_at FROM telegram_pet_contracts WHERE telegram_id=? AND status='active' ORDER BY updated_at DESC LIMIT 10", 'Continue this Moonpet’s active contract', 'No Moonpet contract is active'],
   ]) {
     const rows = sourceStatuses[key].state === 'migration_pending' ? [] : await query(db, sql, [ownerId], [], failures, [key]);
+    if (sourceStatuses[key].state === 'live') {
+      sourceStatuses[key] = sourceStatus(rows.length ? 'live' : 'live_empty', { adapter: 'saved_original_pet_records' });
+    }
     if (!rows.length) {
-      tasks.push(genericTask(now, SOURCE_BY_KEY.get(key), 'complete', sourceStatuses[key].state === 'migration_pending' ? 'unavailable' : 'live', {
+      tasks.push(genericTask(now, SOURCE_BY_KEY.get(key), 'waiting', sourceStatuses[key].state === 'migration_pending' ? 'unavailable' : 'live', {
         title: emptyTitle, priority: 720, progress: { current: 0, target: null, unit: 'saved_records' },
         blocking: sourceStatuses[key].state === 'migration_pending' ? 'source_table_unavailable' : null,
       }));
@@ -573,6 +576,27 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
     progress: { current: number(nbgRows[0]?.best_xp), target: null, unit: 'verified_arcade_xp' }, blocking: nbgRows[0] ? null : 'no_verified_record',
   }));
 
+  // Classify actual saved rows, not table existence, as live activity.
+  // Pet care and eligibility can still be read live from an owned pet instance.
+  for (const [key, count] of [
+    ['moonpet.daily-seven-missions', completionRows.length],
+    ['moonpet.seven-of-seven-claim', completionRows.length],
+    ['moonpet.daily-journey', dailyJourney.length + dailyJourneyReceipts.length],
+    ['moonpet.weekly-journey', weeklyJourney.length + weeklyJourneyReceipts.length],
+    ['moonpet.jobs', jobRows.length],
+    ['moonpet.garden-kitchen-gym', gardenRows.length],
+    ['moonpet.evolution', evolutionRows.length],
+  ]) {
+    if (sourceStatuses[key]?.state === 'live') {
+      sourceStatuses[key] = sourceStatus(count ? 'live' : 'live_empty', { adapter: 'read_only_saved_rows' });
+    }
+  }
+  if (!pets.length && sourceStatuses['moonpet.care'].state === 'live') {
+    sourceStatuses['moonpet.care'] = sourceStatus('live_empty', { adapter: 'no_owned_pet' });
+  }
+  if (!pets.length && sourceStatuses['moonpet.bosses-combat'].state === 'live') {
+    sourceStatuses['moonpet.bosses-combat'] = sourceStatus('live_empty', { adapter: 'no_owned_pet' });
+  }
   for (const [key, message] of failures.entries()) {
     if (sourceStatuses[key]) sourceStatuses[key] = sourceStatus('query_failed', { adapter: 'read_only_projection', error_code: String(message).slice(0, 80) });
   }
