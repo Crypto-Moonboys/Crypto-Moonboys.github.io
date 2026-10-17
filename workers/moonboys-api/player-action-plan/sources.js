@@ -685,15 +685,21 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
   // current *ownership* week. Use each pet's own saved week bounds.
   const participatingPets = pets.filter((pet) => pet.journeyBounds?.start_at && pet.journeyBounds?.end_at);
   const participationClauses = participatingPets.map(() =>
-    '(pet_id=? AND season_key=? AND day_key>=? AND day_key<?)');
+    '(e.pet_id=? AND e.season_key=? AND e.day_key>=? AND e.day_key<?)');
   const participationParams = participatingPets.flatMap((pet) => [
     pet.pet_id,pet.season_key,pet.journeyBounds.start_at.slice(0,10),pet.journeyBounds.end_at.slice(0,10),
   ]);
   const bossParticipationRows = !participationClauses.length ? [] : await query(db,
-    `SELECT pet_id,season_key FROM telegram_pet_events
-      WHERE telegram_id=? AND status='accepted' AND event_type IN ('weekly_boss','boss_fought')
-        AND length(day_key)=10 AND date(day_key,'+0 days')=day_key
-        AND (${participationClauses.join(' OR ')}) GROUP BY pet_id,season_key`,
+    `SELECT e.pet_id,e.season_key FROM telegram_pet_events e
+      WHERE e.telegram_id=? AND e.status='accepted' AND e.event_type IN ('weekly_boss','boss_fought')
+        AND e.event_key<>'' AND e.event_key=trim(e.event_key) AND length(e.event_key)<=180
+        AND length(e.day_key)=10 AND date(e.day_key,'+0 days')=e.day_key
+        AND (e.event_type='boss_fought' OR (
+          e.event_type='weekly_boss' AND e.reason IN ('weekly_boss_attempt','weekly_boss_participation')
+          AND json_extract(CASE WHEN json_valid(e.metadata) THEN e.metadata ELSE '{}' END,'$.source')
+            IN ('pet_weekly_boss','pet_weekly_boss_backfill')))
+        AND ${weeklyBossLegacySourceProofSql('e')}
+        AND (${participationClauses.join(' OR ')}) GROUP BY e.pet_id,e.season_key`,
     [ownerId,...participationParams], [], failures, ['moonpet.bosses-combat']);
   const bossParticipated = new Set(bossParticipationRows.map((row) => `${row.pet_id}:${row.season_key}`));
   const jobRows = !pets.length || sourceStatuses['moonpet.jobs'].state === 'migration_pending' ? [] : await query(db,
