@@ -140,7 +140,11 @@ test('all targeted source queries compile against the current D1 schema', async 
     CREATE TABLE daily_wtf_events (event_id TEXT, utc_day TEXT, starts_at TEXT, ends_at TEXT);
     CREATE TABLE daily_missed_perks (telegram_id TEXT);
     CREATE TABLE daily_opportunity_state (telegram_id TEXT, utc_day TEXT, chain_depth INTEGER, updated_at TEXT);
-    CREATE TABLE wiki_mission_completions (telegram_id TEXT, created_at TEXT);
+    CREATE TABLE wiki_mission_completions (telegram_id TEXT, mission_window TEXT, created_at TEXT);
+    CREATE TABLE telegram_pet_weekly_boss_events (
+      telegram_id TEXT, week_key TEXT, boss_id TEXT, event_key TEXT, day_key TEXT,
+      action TEXT, damage INTEGER
+    );
     CREATE TABLE telegram_pet_weekly_boss_victories_by_pet (
       telegram_id TEXT, week_key TEXT, boss_id TEXT, pet_id TEXT, season_key TEXT,
       victory_event_key TEXT, defeated_at TEXT
