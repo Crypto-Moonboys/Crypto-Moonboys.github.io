@@ -1326,7 +1326,7 @@ test('unproven legacy boss participation never suppresses a current action', asy
     assert.equal(rows.length, 0, 'untrimmed, wrong reason and unproven backfill are not accepted proof');
     addEvent(...makeEvent('valid-attack', 'pet_weekly_boss'));
     rows = sql.prepare(sqlCall.sql).all(...sqlCall.params);
-    assert.deepEqual(rows, [{pet_id:'pet-secret-123', season_key:'2026-Q4'}]);
+    assert.deepEqual(rows.map(row => ({...row})), [{pet_id:'pet-secret-123', season_key:'2026-Q4'}]);
     sql.prepare(`DELETE FROM telegram_pet_events WHERE event_key='valid-attack'`).run();
     sql.prepare(`INSERT INTO telegram_pet_weekly_boss_victories_by_pet
       VALUES ('123456','pet-secret-123','2026-Q4','2026-W42','unproven-backfill','neon_titan')`).run();
