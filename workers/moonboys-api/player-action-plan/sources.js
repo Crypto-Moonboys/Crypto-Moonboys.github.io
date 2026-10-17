@@ -388,7 +388,9 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
     const completed = Boolean(row.completed_at) || playerState === 'completed';
     const missed = Boolean(row.missed_at) || playerState === 'missed';
     const checkedIn = Boolean(row.checked_in_at) || ['checked_in','in_progress','participating'].includes(playerState);
-    const knownState = ['not_checked_in','completed','missed','checked_in','in_progress','participating'].includes(playerState);
+    // A persisted 'upcoming' player row is a valid not-checked-in state.
+    const knownState = ['upcoming','not_checked_in','completed','missed',
+      'checked_in','in_progress','participating'].includes(playerState);
     const status = !clockValid ? 'sync_unavailable' : completed ? 'complete'
       : missed || now.getTime() >= ends ? 'expired'
         : checkedIn ? 'in_progress'
@@ -514,13 +516,15 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
       historical_pending_in_preview: historyRows.length,
       historical_pending_not_listed: hiddenPendingClaims,
     });
+    // Hidden receipts are not individually validated for pet/season ownership.
+    // Do not rank an unverified backlog banner above actual claim-ready rows.
     tasks.push(genericTask(now, SOURCE_BY_KEY.get('moonpet.seven-of-seven-claim'),
-      pets.some((pet) => number(pet.is_active) === 1 && pet.lifecycle_phase !== 'egg')
-        ? 'claim_ready' : rosterUnavailable ? 'sync_unavailable' : 'waiting', 'live', {
-        title: `${hiddenPendingClaims} more saved Moonpet daily rewards`,
-        description: 'Older earned bonuses are outside this limited API preview. Open the Moonpet reward inbox for the complete claim workflow.',
-        why: 'Previous days\' unclaimed bonuses remain saved without an expiry.',
-        periodKey: 'historical_pending', suffix: 'overflow', priority: 34,
+      'preview', 'preview', {
+        title: `${hiddenPendingClaims} more saved Moonpet daily rewards to review`,
+        description: 'Older saved bonuses exceed this bounded preview. Their individual pet/season claim authority has not been checked.',
+        why: 'Saved rewards remain in history, but eligibility requires individual verification.',
+        periodKey: 'historical_pending', suffix: 'overflow', priority: 540,
+        blocking: 'hidden_claim_authority_not_verified',
         progress: { current: historyRows.length, target: historicalPendingTotal, unit: 'historical_saved_claims' },
         evidence: { verified_completion: false },
       }));
@@ -620,8 +624,8 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
              AND julianday(a.created_at) IS NOT NULL))`,
     [ownerId, week], [], failures, ['moonpet.bosses-combat']);
   const bossAttempts = !pets.length || sourceStatuses['moonpet.bosses-combat'].state === 'migration_pending' ? [] : await query(db,
-    `SELECT 1 AS present FROM telegram_pet_events WHERE telegram_id=? AND week_key=? AND day_key=?
-      AND event_type='weekly_boss' AND status='accepted' AND reason='weekly_boss_attempt' LIMIT 1`,
+    `SELECT 1 AS present FROM telegram_pet_weekly_boss_events
+      WHERE telegram_id=? AND week_key=? AND day_key=? LIMIT 1`,
     [ownerId, week, day], [], failures, ['moonpet.bosses-combat']);
   // Original earning pet and week remain authoritative after the calendar
   // changes; never infer an unclaimed boss reward solely from current week.
