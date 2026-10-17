@@ -71,7 +71,7 @@ function fakeDb(options = {}) {
               if (/FROM player_daily_mission_state/u.test(sql)) return { success: true, results: options.savedMissions
                 ? [{ mission_id: 'gp_chaos_3', progress: 2, completed: 0 },
                    { mission_id: 'gp_combo_x3', progress: 3, completed: 1 }] : [] };
-              if (/FROM telegram_pet_instances/u.test(sql)) return { success: true, results: options.noPets ? [] : options.threePets ? ownedPets : ownedPets.slice(0, 1) };
+              if (/SELECT i.pet_id,i.season_key,i.slot_number/u.test(sql)) return { success: true, results: options.noPets ? [] : options.threePets ? ownedPets : ownedPets.slice(0, 1) };
               if (/FROM telegram_pet_events/u.test(sql) && /ROW_NUMBER\(\) OVER \(PARTITION BY event_type/u.test(sql)) {
                 return { success: true, results: options.careEvents || [] };
               }
