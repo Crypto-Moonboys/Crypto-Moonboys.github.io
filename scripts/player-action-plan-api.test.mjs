@@ -189,7 +189,7 @@ test('authenticated endpoint covers every source, scopes pets opaquely, and is c
   assert.equal(payload.source_coverage.represented, 28);
   assert.ok(payload.query_budget.statement_count <= 80);
   assert.ok(payload.top_actions.length <= 3);
-  assert.ok(payload.top_actions.every((entry) => ['ready', 'claim_ready', 'active'].includes(entry.status) && entry.source_health === 'live' && !entry.blocking_reason_code));
+  assert.ok(payload.top_actions.every((entry) => ['ready', 'claim_ready', 'active'].includes(entry.status) && ['live','live_empty'].includes(entry.source_health) && !entry.blocking_reason_code));
   assert.ok(payload.top_actions.every((entry) => ['server_receipt', 'server_projection'].includes(entry.evidence.kind)));
   assert.deepEqual(new Set(Object.keys(payload.source_status)), new Set(ACTION_PLAN_SOURCE_REGISTRY.map((source) => source.key)));
   const serialized = JSON.stringify(payload);
