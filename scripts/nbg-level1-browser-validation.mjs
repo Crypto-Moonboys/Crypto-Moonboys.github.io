@@ -205,7 +205,39 @@ for (const animation of Object.values(expectedAnimations)) {
   assert.notEqual(animation.renderWidth, animation.sourceFrameWidth, `render width must be separate from source frame width: ${animation.spriteSheet}`);
   assert.notEqual(animation.renderHeight, animation.sourceFrameHeight, `render height must be separate from source frame height: ${animation.spriteSheet}`);
 }
+// The uploaded clouds.jpg is exactly one 480x270 game viewport. Its
+// opposite edges do not match, so ordinary same-direction repetition makes
+// the rectangular seam reported in the game screenshot.
+const cloudBytes = fs.readFileSync(path.resolve(process.cwd(), 'game/assets/world/clouds.jpg'));
+let cloudDimension = null;
+for (let i = 2; i < cloudBytes.length - 9;) {
+  if (cloudBytes[i] !== 0xff) { i++; continue; }
+  const marker = cloudBytes[i + 1];
+  if (marker === 0xc0 || marker === 0xc1 || marker === 0xc2) {
+    cloudDimension = { width: cloudBytes.readUInt16BE(i + 7),
+      height: cloudBytes.readUInt16BE(i + 5) };
+    break;
+  }
+  if (marker === 0xd8 || marker === 0xd9 || marker === 0x01) { i += 2; continue; }
+  const segmentLength = cloudBytes.readUInt16BE(i + 2);
+  if (segmentLength < 2) break;
+  i += 2 + segmentLength;
+}
+assert.deepEqual(cloudDimension, { width: 480, height: 270 },
+  'uploaded sky JPEG must retain native 480x270 full-viewport dimensions');
+
 const runtimeSource = fs.readFileSync(path.resolve(process.cwd(), 'game/nbg-level1.js'), 'utf8');
+assert.ok(runtimeSource.includes('function drawSkyWallpaper()') &&
+  runtimeSource.includes('var tileW = WIDTH') &&
+  runtimeSource.includes('var offset = -cameraX * 0.08') &&
+  runtimeSource.includes('if (tile % 2 !== 0)') &&
+  runtimeSource.includes('ctx.scale(-1, 1)') &&
+  runtimeSource.includes('ctx.drawImage(image, 0, 0, tileW, HEIGHT)') &&
+  runtimeSource.includes('ctx.drawImage(image, x, 0, tileW, HEIGHT)') &&
+  runtimeSource.includes('drawSkyWallpaper();') &&
+  !runtimeSource.includes("drawImageLayer(images.sky, 0.08"),
+  'sky wallpaper must use original viewport-sized tiles, alternate mirrored copies, and retain parallax');
+
 const gameCssSource = fs.readFileSync(path.resolve(process.cwd(), 'game/game.css'), 'utf8');
 const fullscreenShellSource = fs.readFileSync(path.resolve(process.cwd(), 'js/game-fullscreen.js'), 'utf8');
 const fullscreenCssSource = fs.readFileSync(path.resolve(process.cwd(), 'css/game-fullscreen.css'), 'utf8');
