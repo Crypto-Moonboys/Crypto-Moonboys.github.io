@@ -466,6 +466,15 @@ test('pending source-pet contract bonuses and historic boss rewards remain visib
   assert.match(boss.task_id, /pap_[a-f0-9]{24}/u);
 });
 
+test('a saved boss victory stays claimable after the active pet roster is empty', async () => {
+  const env = { DB: fakeDb({ noPets: true, pendingBossRewards: true }), TELEGRAM_BOT_TOKEN: 'test' };
+  const result = await (await handlePlayerActionPlanRoute(request(auth({ limit: 100 })), env, options())).json();
+  const boss = result.tasks.find(t => t.source_key === 'moonpet.bosses-combat' && t.status === 'claim_ready');
+  assert.ok(boss, 'original saved source pet reward must remain claimable');
+  assert.equal(boss.source_health, 'live');
+  assert.ok(result.top_actions.some(t => t.task_id === boss.task_id), 'historical payout is not gated on new roster');
+});
+
 test('per-pet accepted boss participation prevents duplicate readiness', async () => {
   const db = fakeDb({ threePets: true, bossReady: true, bossParticipation: true });
   const r = await (await handlePlayerActionPlanRoute(request(auth({ limit: 100 })), { DB: db, TELEGRAM_BOT_TOKEN: 'test' }, options())).json();
