@@ -10,7 +10,7 @@ const registry = JSON.parse(read('data/player-action-plan-source-registry.v1.jso
 const audit = read('docs/player-action-plan-pr1-source-audit-2026-10-17.md');
 const contract = read('docs/player-action-plan-v1-contract.md');
 
-test('PR1 design registry is complete, uniquely identified and is not a live task API', () => {
+test('PR1 design registry remains complete and uniquely identified', () => {
   assert.equal(registry.schema_version, 1);
   assert.equal(registry.issue, 1552);
   assert.match(registry.baseline_main_sha, /^[0-9a-f]{40}$/u);
@@ -100,6 +100,19 @@ test('documented API scope forbids unverified or mutating read-side shortcuts', 
     assert.ok(audit.includes(term), 'missing evidence/gap entry: ' + term);
   }
   assert.ok(!fs.existsSync(path.join(root, 'my-moonboy.html')), 'PR1 must not ship a UI before the API security contract');
-  assert.ok(!fs.existsSync(path.join(root, 'workers/moonboys-api/routes/player-action-plan.js')),
-    'PR1 must not pretend the Worker adapter has shipped');
+  const routePath = path.join(root, 'workers/moonboys-api/routes/player-action-plan.js');
+  assert.ok(fs.existsSync(routePath), 'PR2 must ship the authenticated player action-plan route');
+  const route = read('workers/moonboys-api/routes/player-action-plan.js');
+  const worker = read('workers/moonboys-api/worker.js');
+  assert.match(worker, /import\s*\{\s*handlePlayerActionPlanRoute\s*\}\s*from\s*['"]\.\/routes\/player-action-plan\.js['"]/u,
+    'Worker must import the actual action-plan route');
+  assert.match(worker, /if\s*\(path\s*===\s*['"]\/player\/action-plan['"]\)\s*\{\s*const\s+actionPlanResponse\s*=\s*await\s+handlePlayerActionPlanRoute\(request,\s*env,/su,
+    'Worker must dispatch authenticated action-plan requests');
+  assert.match(worker, /if\s*\(actionPlanResponse\)\s*return\s+actionPlanResponse/u,
+    'Worker must return the action-plan route response');
+  assert.match(worker, /verifyIdentity:\s*\(body, authEnv\)\s*=>\s*verifyTelegramIdentityFromBody/u);
+  assert.match(route, /export\s+async\s+function\s+handlePlayerActionPlanRoute/u);
+  assert.match(route, /request\.method\s*!==\s*['"]POST['"]/u);
+  assert.match(route, /createReadOnlyActionPlanDb/u);
+  assert.match(route, /no-store, private/u);
 });
