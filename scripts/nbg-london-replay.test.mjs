@@ -173,6 +173,26 @@ assert.ok(updatedCourse, 'updated course must remain physically finishable and s
 assert.ok(updatedCourse.result.xp>0 &&
   updatedCourse.result.secret_coins<=42,
   'revision-2 source XP and secret coins must be independently bounded');
+// Confirm actual five-byte recorded masks containing grounded spray inputs
+// are independently evaluated by the authoritative Worker. The browser-only
+// injected brown-rat fixture above is NOT a valid ranked replay source;
+// only Worker-created canonical enemies may contribute verified XP.
+const canonicalSprayFrames = Buffer.from(updatedCourse.replay.frames, 'base64');
+assert.ok(Array.from({length:canonicalSprayFrames.length / 5}, (_, i) => i * 5)
+  .some(offset => (canonicalSprayFrames[offset + 4] & 8) !== 0),
+  'successful revision-2 replay must contain genuine recorded spray inputs');
+const noSprayFrames = Buffer.from(canonicalSprayFrames);
+for (let offset = 4; offset < noSprayFrames.length; offset += 5)
+  noSprayFrames[offset] &= ~8;
+const noSprayReplay = {
+  ...updatedCourse.replay, frames: noSprayFrames.toString('base64')
+};
+const withoutSpray = await verifyNbgLondonReplay({
+  runId:id, replay:noSprayReplay,
+  startedAtMs:1000000, now:1000000+updatedCourse.count*33
+});
+assert.ok(!withoutSpray.valid || withoutSpray.xp < updatedCourse.result.xp,
+  'removing all spray from the same canonical complete input must invalidate the run or reduce authoritative Worker XP');
 const spoofedUpdated=await verifyNbgLondonReplay({
   runId:id, replay:{...updatedCourse.replay,xp:1000000,coins:999},
   startedAtMs:1000000, now:1000000+updatedCourse.count*33

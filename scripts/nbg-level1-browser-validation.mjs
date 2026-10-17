@@ -139,13 +139,13 @@ const expectedAnimations = {
   run: { spriteSheet: 'player/animations/run.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 17, frames: 6, columns: 3, frameMs: 88 },
   jump: { spriteSheet: 'player/animations/jump.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 23, frames: 6, columns: 3, frameMs: 145 },
   fall: { spriteSheet: 'player/animations/fall.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 20, frames: 6, columns: 3, frameMs: 145 },
-  spray: { spriteSheet: 'player/animations/spray.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 6, frames: 6, columns: 3, frameMs: 110 },
+  spray: { spriteSheet: 'player/NBG Runner Final-spray.png', sourceFrameWidth: 256, sourceFrameHeight: 256, renderWidth: 176, renderHeight: 176, renderOffsetY: 45, frames: 25, columns: 5, frameMs: 8 },
   hurt: { spriteSheet: 'player/animations/hurt.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 6, frames: 6, columns: 3, frameMs: 120 },
   victory: { spriteSheet: 'player/animations/victory.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 13, frames: 6, columns: 3, frameMs: 145 }
 };
 const expectedPlayerAssetUrls = Object.fromEntries(Object.entries(expectedAnimations).map(([key, animation]) => [
   `player.${key}`,
-  `/game/assets/${animation.spriteSheet}`
+  encodeURI(`/game/assets/${animation.spriteSheet}`)
 ]));
 const assetManifest = readJson('game/assets/asset-manifest.json');
 const playerAnimationManifest = readJson('game/assets/player/nbg-runner-animation-manifest.json');
@@ -197,8 +197,11 @@ for (const animation of Object.values(expectedAnimations)) {
   const assetPath = path.resolve(process.cwd(), 'game/assets', animation.spriteSheet);
   assert.equal(fs.existsSync(assetPath), true, `AutoSprite animation PNG must exist: ${animation.spriteSheet}`);
   const pngHeader = fs.readFileSync(assetPath).subarray(16, 24);
-  assert.equal(pngHeader.readUInt32BE(0), 384, `AutoSprite animation PNG width must remain committed grid export width: ${animation.spriteSheet}`);
-  assert.equal(pngHeader.readUInt32BE(4), 256, `AutoSprite animation PNG height must remain committed grid export height: ${animation.spriteSheet}`);
+  const isFinalSpray = animation.spriteSheet === 'player/NBG Runner Final-spray.png';
+  assert.equal(pngHeader.readUInt32BE(0), isFinalSpray ? 1280 : 384,
+    `animation PNG width must match the committed sheet grid: ${animation.spriteSheet}`);
+  assert.equal(pngHeader.readUInt32BE(4), isFinalSpray ? 1280 : 256,
+    `animation PNG height must match the committed sheet grid: ${animation.spriteSheet}`);
   assert.notEqual(animation.renderWidth, animation.sourceFrameWidth, `render width must be separate from source frame width: ${animation.spriteSheet}`);
   assert.notEqual(animation.renderHeight, animation.sourceFrameHeight, `render height must be separate from source frame height: ${animation.spriteSheet}`);
 }
@@ -935,8 +938,14 @@ for (const key of Object.keys(expectedAnimations)) {
     expectedPlayerAssetUrls[`player.${key}`],
     `browser runtime must load exact final-quality player ${key} sheet path`
   );
-  assert.equal(state.playerAnimations[key].naturalWidth, 384, `browser runtime must load 384px-wide player ${key} sheet`);
-  assert.equal(state.playerAnimations[key].naturalHeight, 256, `browser runtime must load 256px-tall player ${key} sheet`);
+  const loadedSheetSize = await page.evaluate(animationKey => {
+    const image = window.NBGLevel1State.playerAnimations[animationKey].image;
+    return {width: image.naturalWidth ?? image.width,
+      height: image.naturalHeight ?? image.height};
+  }, key);
+  assert.deepEqual(loadedSheetSize,
+    {width: key === 'spray' ? 1280 : 384, height: key === 'spray' ? 1280 : 256},
+    `browser runtime must load expected-size player ${key} image or canvas`);
 }
 
 const beforeMoveX = state.x;
@@ -974,8 +983,8 @@ state = await page.evaluate(() => {
 });
 assert.equal(state.w, 24, 'left-boundary visual clamp must not change player hitbox width');
 assert.equal(state.h, 34, 'left-boundary visual clamp must not change player hitbox height');
-assert.equal(state.renderWidth, 72, 'left-boundary visual clamp must preserve enlarged runner render width');
-assert.equal(state.visualMarginX, 24, 'left-boundary visual clamp must account for the enlarged runner visual margin');
+assert.equal(state.renderWidth, 176, 'left-boundary spray pose must retain its enlarged visual width');
+assert.equal(state.visualMarginX, 76, 'left-boundary visual clamp must account for the wider spray sheet');
 assert.equal(state.facing, -1, 'left-boundary regression must validate facing-left frames');
 assert.equal(state.anim, 'spray', 'left-boundary regression must validate spray animation frames');
 assert.ok(state.x >= 12 + state.visualMarginX, 'player world clamp must include the runner visual margin');
@@ -1845,6 +1854,118 @@ assert.equal(afterDefeat.health, beforeDefeat.health, 'spraying a rat must not h
 await page.waitForTimeout(120);
 assert.equal(await page.evaluate(() => window.NBGLevel1State.xp), afterDefeat.xp,
   'a defeated enemy must not award XP again');
+
+// The spray sequence is visual-only, but must complete within the existing
+// 230ms attack window at 30/40/60 Hz rather than wrapping away from the
+// final spray artwork. This simulates the real frame-time accumulation and
+// validates the non-looping runtime branch as a source-level guard.
+assert.ok(runtimeSource.includes("advancePlayerAnimation(dt, player.anim !== 'spray')"),
+  'spray must use non-looping frame progression while other poses keep looping');
+for (const frameDt of [1000 / 60, 25, 33]) {
+  let frame = 0, remainder = 0, hasRenderedLast = false;
+  for (let elapsed = frameDt; elapsed < 230; elapsed += frameDt) {
+    remainder += frameDt;
+    while (remainder >= expectedAnimations.spray.frameMs && frame < 24) {
+      frame++;
+      remainder -= expectedAnimations.spray.frameMs;
+    }
+    if (frame === 24) hasRenderedLast = true;
+  }
+  assert.ok(hasRenderedLast,
+    `one 230ms spray must render its final frame at ${frameDt}ms tick cadence`);
+}
+
+// The final 5x5 spray sheet must be visibly rendered during a grounded
+// player attack and must retain the existing server-simulated spray kill.
+await page.evaluate(() => window.NBGLevel1Runtime.reset());
+await page.keyboard.down('KeyD');
+await page.waitForFunction(() => window.NBGLevel1State.running, null, { timeout: 3000 });
+await page.keyboard.up('KeyD');
+const sprayBaseline = await page.evaluate(() => {
+  const state = window.NBGLevel1State;
+  const player = state.player;
+  player.x = 405;
+  player.y = 214 - player.h;
+  player.vx = 0;
+  player.vy = 0;
+  player.grounded = true;
+  player.facing = 1;
+  player.invuln = 5000;
+  const rat = { type: 'brownRat', x: 459, y: 214 - 42,
+    w: 28, h: 42, vx: 0, min: 459, max: 459,
+    spawnedByParachute: true, spawnedAt: state.runElapsedMs };
+  state.enemies.push(rat);
+  const ctx = document.getElementById('game').getContext('2d');
+  window.__finalSprayOriginalDraw = ctx.drawImage;
+  window.__finalSprayFrames = [];
+  ctx.drawImage = function (image, ...args) {
+    if (image && (image.__nbgSpraySource || image.src || '').includes('NBG%20Runner%20Final-spray.png')) {
+      window.__finalSprayFrames.push({ sourceX: args[0],
+        sourceY: args[1], width: args[6], height: args[7] });
+    }
+    return window.__finalSprayOriginalDraw.call(this, image, ...args);
+  };
+  window.__sprayDefeats = [];
+  window.__sprayDefeatListener = (event) => window.__sprayDefeats.push(event.detail);
+  window.addEventListener('nbg-enemy-defeated', window.__sprayDefeatListener);
+  const sprayImage = state.playerAnimations.spray.image;
+  const painted = sprayImage.getContext('2d').getImageData(0, 0, 1, 1).data;
+  if (painted[3] !== 0) throw new Error('final spray sheet white page border must be transparent');
+  return { xp: state.xp, health: player.health };
+});
+await page.keyboard.down('KeyS');
+await page.waitForFunction(() => window.__sprayDefeats.some(
+  event => event.type === 'brownRat' && event.reason === 'spray'
+), null, { timeout: 1500 });
+// A single spray lasts 230ms. At 9ms/frame the entire 5x5 sheet reaches
+// its final row before sprayTimer clears, even at normal 60fps rendering.
+await page.waitForFunction(() => window.__finalSprayFrames.some(frame =>
+  frame.width === 176 && frame.height === 176 &&
+  frame.sourceY === 1024 && frame.sourceX >= 768
+), null, { timeout: 1500 });
+await page.keyboard.up('KeyS');
+const standingSpray = await page.evaluate(() => {
+  const state = window.NBGLevel1State;
+  const result = { grounded: state.player.grounded,
+    xp: state.xp, health: state.player.health,
+    frames: window.__finalSprayFrames.slice(),
+    defeats: window.__sprayDefeats.slice() };
+  const ctx = document.getElementById('game').getContext('2d');
+  ctx.drawImage = window.__finalSprayOriginalDraw;
+  window.removeEventListener('nbg-enemy-defeated', window.__sprayDefeatListener);
+  delete window.__finalSprayOriginalDraw;
+  delete window.__finalSprayFrames;
+  delete window.__sprayDefeats;
+  delete window.__sprayDefeatListener;
+  return result;
+});
+assert.equal(standingSpray.grounded, true,
+  'spray must kill from standing without requiring a jump or stomp');
+assert.equal(standingSpray.xp, sprayBaseline.xp + 100,
+  'grounded spray kill on a parachute rat must award existing XP exactly once');
+assert.equal(standingSpray.health, sprayBaseline.health,
+  'spraying a rat while standing must not damage the player');
+assert.ok(standingSpray.defeats.some(event => event.reason === 'spray' &&
+  event.type === 'brownRat' && event.earnedXp === 100),
+  'spray kill must emit the existing enemy-defeated event with the right reason');
+assert.ok(standingSpray.frames.length > 0 &&
+  standingSpray.frames.every(frame => frame.width === 176 && frame.height === 176),
+  'the final spray sheet must draw enlarged frames while spraying');
+const sprayCells = new Set(standingSpray.frames.map(frame =>
+  `${frame.sourceX},${frame.sourceY}`));
+assert.ok(sprayCells.size >= 5,
+  'a single spray attack must traverse at least five distinct source cells, even under slow CI frame scheduling');
+assert.ok(standingSpray.frames.some(frame => frame.sourceY === 0) &&
+  standingSpray.frames.some(frame => frame.sourceY === 1024) &&
+  standingSpray.frames.some(frame => [256, 512, 768].includes(frame.sourceY)),
+  'the spray must start on row zero, advance through the sheet and reach the final row despite dropped browser frames');
+assert.ok(standingSpray.frames.some(frame => frame.sourceY === 1024 &&
+  frame.sourceX >= 768),
+  'one grounded spray attack must reach the final artwork frames before expiring');
+await page.evaluate(() => window.NBGLevel1Runtime.reset());
+await page.keyboard.down('KeyD');
+await page.waitForFunction(() => window.NBGLevel1State.running, null, { timeout: 3000 });
+await page.keyboard.up('KeyD');
 
 // Expired parachute walkers must not accumulate, even after dozens of spawns.
 await page.evaluate(() => {
