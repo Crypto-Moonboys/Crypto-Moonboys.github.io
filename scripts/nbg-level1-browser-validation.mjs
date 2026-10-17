@@ -1702,7 +1702,8 @@ assert.ok(
   runtimeSource.includes("enemy.type === 'brownRat' ? 'brownRatPunch'") &&
   runtimeSource.includes('(ratAttacking ? 2.45 : 1.55)') &&
   runtimeSource.includes('var ratFootY = y + enemy.h') &&
-  runtimeSource.includes('var ratDrawY = ratFootY - ratDrawHeight'),
+  runtimeSource.includes('(ratAttacking ? 34 : 18)') &&
+  runtimeSource.includes('var ratDrawY = ratFootY - ratDrawHeight + brownFootPadding'),
   'brown parachute rats must use enlarged walk/punch poses with one grounded foot baseline'
 );
 
@@ -1776,8 +1777,15 @@ for (const variant of [
       'brown walking artwork must be significantly larger than the original 50x60');
     assert.ok(punch.w > walk.w && punch.h > walk.h,
       'padded brown punch frames need a larger draw box than walk frames');
-    assert.equal(walk.y + walk.h, punch.y + punch.h,
-      'brown walk and punch must have the exact same ground-level foot anchor');
+    // Their transparent bottom padding is different. Align the visible
+    // artwork's feet rather than the bottoms of padded draw rectangles.
+    const walkVisibleFootY = walk.y + walk.h - 18;
+    const punchVisibleFootY = punch.y + punch.h - 34;
+    assert.equal(walkVisibleFootY, punchVisibleFootY,
+      'brown walk and punch visible feet must share the same ground baseline');
+    assert.equal(Math.round(walkVisibleFootY),
+      Math.round(214 + 38),
+      'brown rat visible feet should be grounded on the street, not floating');
   }
   await page.evaluate(({ type }) => {
     const state = window.NBGLevel1State;
