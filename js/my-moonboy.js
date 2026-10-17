@@ -268,6 +268,17 @@
     byId('mm-next').replaceChildren();
     byId('mm-results').replaceChildren();
     byId('mm-pets').replaceChildren();
+    ['mm-ready-count','mm-claim-count','mm-today-count','mm-done-count',
+      'mm-unavailable-count'].forEach(id => { byId(id).textContent = '—'; });
+    byId('mm-player-name').textContent = 'Linked Moonboy';
+    byId('mm-link-state').textContent = 'Telegram credential required';
+    byId('mm-arcade-xp').textContent = 'Not confirmed';
+    byId('mm-pet-xp').textContent = 'Not confirmed';
+    byId('mm-clout').textContent = 'Not confirmed';
+    byId('mm-faction').textContent = 'Faction: sign in to view';
+    byId('mm-sync').textContent = 'No verified plan loaded.';
+    byId('mm-page-count').textContent = '0 tasks loaded';
+    byId('mm-ledger-note').textContent = 'Sign in to view the source ledger.';
     showGate(title || 'Log in to My Moonboy',
       description || 'Verified Telegram login is required. No private plan is shown to visitors.');
   }
