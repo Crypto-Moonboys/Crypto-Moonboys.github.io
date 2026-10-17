@@ -13,8 +13,8 @@ function fakeDb(options = {}) {
   const ownedPets = [
     {
       pet_id: 'pet-secret-123', season_key: '2026-Q4', slot_number: 1, stage: 'hatched', level: 4,
-      pet_xp: options.bossReady ? 640 : 90, hunger: 20, happiness: 70, cleanliness: 60, energy: options.fractionalBossEnergy ? 11.5 : 55, health: 80,
-      status: 'active', created_at: '2026-10-01T00:00:00.000Z', last_decay_at: options.idleCare ? '2026-10-16T12:00:00.000Z' : '2026-10-17T11:59:40.000Z', journey_clock: 'legacy_quarter', is_active: 1, lifecycle_phase: 'young',
+      pet_xp: options.bossReady ? 640 : 90, hunger: options.careHunger ?? 20, happiness: 70, cleanliness: 60, energy: options.careEnergy ?? (options.fractionalBossEnergy ? 11.5 : 55), health: 80,
+      status: 'active', created_at: '2026-10-01T00:00:00.000Z', last_decay_at: options.idleCare ? '2026-10-16T12:00:00.000Z' : options.fractionalCare ? '2026-10-17T11:59:50.000Z' : '2026-10-17T11:59:40.000Z', journey_clock: 'legacy_quarter', is_active: 1, lifecycle_phase: 'young',
     },
     {
       pet_id: 'pet-secret-456', season_key: '2026-Q4', slot_number: 2, stage: 'hatched', level: 3,
@@ -43,6 +43,10 @@ function fakeDb(options = {}) {
             async first() {
               calls.push({ method: 'first', ...statement });
               if (/sqlite_master/u.test(sql)) {
+                if (options.probeGate) {
+                  options.probeOnStart?.(params[0]);
+                  await options.probeGate;
+                }
                 // Distinguish a missing D1 table from a failed sqlite_master read.
                 if (options.tableErrors?.has(String(params[0]))) {
                   throw new Error('simulated_d1_table_probe_timeout');
@@ -87,6 +91,7 @@ function fakeDb(options = {}) {
                   claimed_at: null, pet_id: 'pet-secret-123' }] };
               }
               if (/FROM telegram_pet_activity_sessions/u.test(sql) && (options.savedStates || options.activityEndsAt || options.malformedMetadata)) return { success: true, results: [{
+                session_id: options.jobSessionMissing ? null : options.jobSessionId || 'job-source-123',
                 status: 'active', started_at: options.activityStartsAt || '2026-10-17T11:50:00Z',
                 ends_at: options.activityEndsAt || '2026-10-17T13:50:00Z',
                 claimed_at: null,
@@ -180,6 +185,82 @@ test('read-only facade rejects mutation-shaped SQL and never exposes run or batc
   const hanging = { prepare: () => ({ bind: () => ({ all: () => new Promise(() => {}) }) }) };
   const timed = createReadOnlyActionPlanDb(hanging, { statementTimeoutMs: 10 });
   await assert.rejects(() => timed.all('SELECT 1'), /query_timeout/u);
+});
+
+test('table health checks dispatch concurrently instead of serial timeout per source', async () => {
+  let release;
+  const gate = new Promise(resolve => { release = resolve; });
+  const started = [];
+  const db = createReadOnlyActionPlanDb(fakeDb({
+    probeGate: gate,
+    probeOnStart(tableName) { started.push(tableName); },
+  }), { maxStatements: 80, statementTimeoutMs: 1000 });
+  const projectionPromise = buildPlayerActionPlanSources(db, '123456', { now: '2026-10-17T12:00:00.000Z' });
+  // Allow all concurrently dispatched calls to start before releasing D1.
+  await new Promise(resolve => setImmediate(resolve));
+  const concurrent = started.length;
+  release();
+  const projection = await projectionPromise;
+  assert.ok(concurrent >= 15, 'all source-table probes should start within one request window');
+  assert.equal(new Set(started).size, concurrent, 'each backing table is probed once');
+  assert.equal(projection.source_status['moonpet.adoption-incubation'].state, 'live');
+  assert.ok(db.stats().statement_count <= 80);
+});
+
+test('rounded care meters match the canonical player-facing bar thresholds', async () => {
+  for (const [metrics, state, message] of [
+    [{ careHunger: 74.5 }, 'ready', 'hunger 74.5 rounds to 75 (urgent)'],
+    [{ careEnergy: 25.9 }, 'complete', 'energy 25.9 rounds to 26 (stable)'],
+  ]) {
+    const response = await handlePlayerActionPlanRoute(request(auth({ limit: 100 })),
+      { DB: fakeDb({ ...metrics, fractionalCare: true }), TELEGRAM_BOT_TOKEN: 'test' }, options());
+    assert.equal(response.status, 200);
+    const payload = await response.json();
+    const care = payload.tasks.find(item => item.source_key === 'moonpet.care' && item.scope_ref);
+    assert.equal(care.status, state, message);
+  }
+});
+
+test('saved Moonpet activity task ID changes on new immutable session', async () => {
+  const getTask = async jobSessionId => {
+    const response = await handlePlayerActionPlanRoute(request(auth({ limit: 100 })),
+      { DB: fakeDb({ savedStates: true, jobSessionId }), TELEGRAM_BOT_TOKEN: 'test' }, options());
+    const payload = await response.json();
+    return payload.tasks.find(item => item.source_key === 'moonpet.jobs' && item.scope_ref);
+  };
+  const first = await getTask('job-A');
+  const again = await getTask('job-A');
+  const second = await getTask('job-B');
+  assert.equal(first.task_id, again.task_id);
+  assert.notEqual(first.task_id, second.task_id);
+  assert.match(first.task_id, /pap_[a-f0-9]{24}$/u);
+  assert.doesNotMatch(first.task_id, /job-A/u, 'raw session IDs must never escape');
+});
+
+test('recurring boss participation task ID rotates on pet ownership-week boundary', async () => {
+  const getBoss = async at => {
+    const response = await handlePlayerActionPlanRoute(request(auth({ limit: 100 })),
+      { DB: fakeDb({ ownershipClock: true, bossReady: true }), TELEGRAM_BOT_TOKEN: 'test' },
+      options({ now: at }));
+    const payload = await response.json();
+    return payload.tasks.find(item => item.source_key === 'moonpet.bosses-combat' && item.scope_ref);
+  };
+  const before = await getBoss('2026-10-21T12:00:00.000Z');
+  const after = await getBoss('2026-10-22T12:00:00.000Z');
+  assert.ok(before && after);
+  assert.notEqual(before.task_id, after.task_id);
+  assert.match(before.task_id, /journey-week-1$/u);
+  assert.match(after.task_id, /journey-week-2$/u);
+});
+
+test('unidentified job session is never advertised as a claimable new task', async () => {
+  const response = await handlePlayerActionPlanRoute(request(auth({ limit: 100 })),
+    { DB: fakeDb({ savedStates: true, jobSessionMissing: true }), TELEGRAM_BOT_TOKEN: 'test' }, options());
+  const payload = await response.json();
+  const task = payload.tasks.find(item => item.source_key === 'moonpet.jobs' && item.scope_ref);
+  assert.equal(task.status, 'sync_unavailable');
+  assert.ok(task.blocking_reason_code);
+  assert.ok(!payload.top_actions.some(item => item.task_id === task.task_id));
 });
 
 test('runtime source manifest exactly matches the reviewed 28-source registry', () => {
