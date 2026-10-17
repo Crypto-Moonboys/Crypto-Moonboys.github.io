@@ -10,7 +10,7 @@ const registry = JSON.parse(read('data/player-action-plan-source-registry.v1.jso
 const audit = read('docs/player-action-plan-pr1-source-audit-2026-10-17.md');
 const contract = read('docs/player-action-plan-v1-contract.md');
 
-test('PR1 design registry is complete, uniquely identified and is not a live task API', () => {
+test('PR1 design registry remains complete and uniquely identified', () => {
   assert.equal(registry.schema_version, 1);
   assert.equal(registry.issue, 1552);
   assert.match(registry.baseline_main_sha, /^[0-9a-f]{40}$/u);
@@ -100,6 +100,11 @@ test('documented API scope forbids unverified or mutating read-side shortcuts', 
     assert.ok(audit.includes(term), 'missing evidence/gap entry: ' + term);
   }
   assert.ok(!fs.existsSync(path.join(root, 'my-moonboy.html')), 'PR1 must not ship a UI before the API security contract');
-  assert.ok(!fs.existsSync(path.join(root, 'workers/moonboys-api/routes/player-action-plan.js')),
-    'PR1 must not pretend the Worker adapter has shipped');
+  const routePath = path.join(root, 'workers/moonboys-api/routes/player-action-plan.js');
+  if (fs.existsSync(routePath)) {
+    const route = read('workers/moonboys-api/routes/player-action-plan.js');
+    assert.match(read('workers/moonboys-api/worker.js'), /verifyIdentity: \(body, authEnv\) => verifyTelegramIdentityFromBody/u);
+    assert.match(route, /createReadOnlyActionPlanDb/u);
+    assert.match(route, /no-store, private/u);
+  }
 });
