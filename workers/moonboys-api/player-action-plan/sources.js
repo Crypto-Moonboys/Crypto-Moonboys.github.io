@@ -566,6 +566,25 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
       WHERE v.telegram_id=? AND p.defeated_at IS NOT NULL AND p.reward_claimed_at IS NULL
       ORDER BY v.defeated_at ASC LIMIT 50`,
     [ownerId], [], failures, ['moonpet.bosses-combat']);
+  const validPendingBossRewards = pendingBossRewards.filter((row) =>
+    /^\d{4}-W\d{2}$/u.test(String(row.week_key || ''))
+      && getPetWeeklyBoss(row.week_key).boss_id === row.boss_id);
+  // The live boss fight needs roster authority; already-earned payouts do not.
+  // Mark the source as partially projected rather than erasing verified
+  // historical claims when the unrelated active-roster read is unavailable.
+  if (rosterUnavailable && !failures.has('moonpet.bosses-combat')) {
+    if (validPendingBossRewards.length) {
+      sourceStatuses['moonpet.bosses-combat'] = sourceStatus('live', {
+        adapter: 'saved_original_pet_rewards', partial: true, roster_unavailable: true,
+      });
+    } else if (rosterFailure) {
+      failures.set('moonpet.bosses-combat', rosterFailure);
+    } else {
+      sourceStatuses['moonpet.bosses-combat'] = sourceStatus('migration_pending', {
+        adapter: 'owned_roster_dependency', missing_tables: ['telegram_pet_instances'],
+      });
+    }
+  }
   // A current ISO-week victory does not prove each pet took part in the
   // current *ownership* week. Use each pet's own saved week bounds.
   const participatingPets = pets.filter((pet) => pet.journeyBounds?.start_at && pet.journeyBounds?.end_at);
@@ -739,11 +758,7 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
       }));
     }
   }
-  for (const row of pendingBossRewards) {
-    // The canonical claim route rejects a boss identifier that does not
-    // match the deterministic weekly boss for the saved earning week.
-    if (!/^\d{4}-W\d{2}$/u.test(String(row.week_key || ''))
-      || getPetWeeklyBoss(row.week_key).boss_id !== row.boss_id) continue;
+  for (const row of validPendingBossRewards) {
     const petRef = await opaqueRef(`${ownerId}:${row.pet_id}`);
     const receiptRef = await opaqueRef(`${ownerId}:${row.pet_id}:${row.week_key}:${row.boss_id}`);
     tasks.push(task(now, {
@@ -758,9 +773,13 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
     }));
   }
   if (!pets.length) {
-    for (const key of perPetSources) tasks.push(genericTask(now, SOURCE_BY_KEY.get(key), 'blocked', sourceStatuses[key].state === 'migration_pending' ? 'unavailable' : 'live', {
-      title: 'Adopt a Moonpet to unlock this action', priority: 850, blocking: 'moonpet_required', periodKey: key.includes('daily') ? day : key.includes('weekly') ? week : null,
-    }));
+    for (const key of perPetSources) tasks.push(genericTask(now, SOURCE_BY_KEY.get(key),
+      rosterUnavailable ? 'sync_unavailable' : 'blocked',
+      sourceStatuses[key].state === 'migration_pending' ? 'unavailable' : 'live', {
+        title: rosterUnavailable ? 'Live Moonpet roster cannot be confirmed' : 'Adopt a Moonpet to unlock this action',
+        priority: 850, blocking: rosterUnavailable ? 'owned_roster_unavailable' : 'moonpet_required',
+        periodKey: key.includes('daily') ? day : key.includes('weekly') ? week : null,
+      }));
   }
 
   const claimRows = sourceStatuses['moonpet.claimable-rewards'].state === 'migration_pending' ? [] : await query(db,
@@ -892,7 +911,8 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
   if (!pets.length && sourceStatuses['moonpet.care'].state === 'live') {
     sourceStatuses['moonpet.care'] = sourceStatus('live_empty', { adapter: 'no_owned_pet' });
   }
-  if (!pets.length && !pendingBossRewards.length && sourceStatuses['moonpet.bosses-combat'].state === 'live') {
+  if (!pets.length && !validPendingBossRewards.length && !rosterUnavailable
+    && sourceStatuses['moonpet.bosses-combat'].state === 'live') {
     sourceStatuses['moonpet.bosses-combat'] = sourceStatus('live_empty', { adapter: 'no_owned_pet' });
   }
   for (const [key, message] of failures.entries()) {
