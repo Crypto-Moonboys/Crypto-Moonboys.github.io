@@ -1348,6 +1348,8 @@ test('nested selectors are rejected before authentication without rejecting veri
     { filters: [{ sort: 'new' }, { selectedPetRef: 'foreign' }] },
     { options: { nested: { sourcePetRef: 'foreign' } } },
     { other: { payload: { scope_ref: 'foreign' } } },
+    { telegram_auth: { id: '123456', auth_date: String(Math.floor(Date.now() / 1000)),
+      hash: '0'.repeat(64), selected_pet_id: 'foreign' } },
   ]) {
     const db = fakeDb();
     const response = await handlePlayerActionPlanRoute(request(auth(extra)),
