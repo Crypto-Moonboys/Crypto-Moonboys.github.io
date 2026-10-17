@@ -49,9 +49,9 @@
       "spriteSheet": "player/NBG Runner Final-spray.png",
       "sourceFrameWidth": 256,
       "sourceFrameHeight": 256,
-      "renderWidth": 176,
-      "renderHeight": 176,
-      "renderOffsetY": 45,
+      "renderWidth": 164,
+      "renderHeight": 164,
+      "renderOffsetY": 57,
       "frames": 25,
       "columns": 5,
       "frameMs": 8
