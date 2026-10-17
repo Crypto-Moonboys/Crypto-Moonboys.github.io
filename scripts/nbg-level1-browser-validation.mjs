@@ -938,13 +938,14 @@ for (const key of Object.keys(expectedAnimations)) {
     expectedPlayerAssetUrls[`player.${key}`],
     `browser runtime must load exact final-quality player ${key} sheet path`
   );
-  const loadedSheet = state.playerAnimations[key].image;
-  assert.equal(loadedSheet.width ?? loadedSheet.naturalWidth,
-    key === 'spray' ? 1280 : 384,
-    `browser runtime must load expected-width player ${key} sheet`);
-  assert.equal(loadedSheet.height ?? loadedSheet.naturalHeight,
-    key === 'spray' ? 1280 : 256,
-    `browser runtime must load expected-height player ${key} sheet`);
+  const loadedSheetSize = await page.evaluate(animationKey => {
+    const image = window.NBGLevel1State.playerAnimations[animationKey].image;
+    return {width: image.naturalWidth ?? image.width,
+      height: image.naturalHeight ?? image.height};
+  }, key);
+  assert.deepEqual(loadedSheetSize,
+    {width: key === 'spray' ? 1280 : 384, height: key === 'spray' ? 1280 : 256},
+    `browser runtime must load expected-size player ${key} image or canvas`);
 }
 
 const beforeMoveX = state.x;
