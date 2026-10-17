@@ -90,3 +90,14 @@ The runtime manifest and `data/player-action-plan-source-registry.v1.json` are a
 - The response is a projection, not a second authority. Canonical game routes remain responsible for mutations, cooldown enforcement, eligibility, claims, and settlement.
 - Production verification must cover real 0/1/3-pet accounts, an original historical pet with a saved run/contract, missing-table behavior on a staging binding, day/week rollover, and concurrent identical requests producing equivalent read-only output.
 - Block Topia is intentionally not added as a 29th source in this PR. It can use the generic external-source adapter pattern after a reviewed registry addition.
+
+## PR2 audit corrections (17 October 2026)
+
+- The initial projection omitted older pending completion bonuses. The read now follows the game's current-day + prior earned/unclaimed rule, with no read-side settlement.
+- The historical MoonPet UI calls the completion bonus **7/7**, but its live `progress_bits=255` authority represents **eight distinct flags**. This read model exposes the eight factual flags and preserves the original 7/7 reward name; it does not manufacture a seven-goal alternative.
+- Saved run and contract references are now keyed by immutable source IDs instead of result-list index. JWT/Telegram credentials and raw pet IDs remain private.
+- Weekly Journey progress now requires a matching accepted source event, proper objective event mapping and the legacy boss-proof predicate, not merely an accepted objective row.
+- Separate persisted faction mission rows and WTF windows are shown individually. Where daily faction rotation has not produced persisted server rows, a `preview` task remains; completing/crediting all three from browser-only state would be dishonest.
+- Wiki completion is scoped by `mission_window` (not a timestamp substring). Without an eligible server mission listing, uncompleted Wiki work remains preview instead of a fabricated verified task.
+- Existing D1 `schema.sql` does not include every later migration-era table. The SQL fixture creates the required migration-added columns/tables for tests. It does not add a production migration.
+- Task statuses and source health now preserve verified receipts, true empty reads and failure states separately. Production signed-in verification remains outstanding.
