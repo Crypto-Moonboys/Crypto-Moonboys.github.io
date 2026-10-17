@@ -176,7 +176,10 @@ export function isImmediateAction(task) {
   if (!task || task.optional && task.category === 'cosmetic') return false;
   if (!['ready', 'claim_ready', 'active'].includes(task.status)) return false;
   if (!['server_receipt', 'server_projection'].includes(task.evidence?.kind)) return false;
-  return !task.blocking_reason_code && task.source_health === 'live';
+  // A verified empty receipt read can prove an onboarding/check-in action remains.
+  const validEmptyOpportunity = task.source_health === 'live_empty' &&
+    ['telegram.daily-claim', 'onboarding.faction'].includes(task.source_key);
+  return !task.blocking_reason_code && (task.source_health === 'live' || validEmptyOpportunity);
 }
 
 export function summarizeActionPlan(tasks, sourceStatuses) {
