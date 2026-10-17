@@ -454,6 +454,34 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
     `SELECT 1 AS present FROM telegram_pet_events WHERE telegram_id=? AND week_key=? AND day_key=?
       AND event_type='weekly_boss' AND status='accepted' AND reason='weekly_boss_attempt' LIMIT 1`,
     [ownerId, week, day], [], failures, ['moonpet.bosses-combat']);
+  // Original earning pet and week remain authoritative after the calendar
+  // changes; never infer an unclaimed boss reward solely from current week.
+  const pendingBossRewards = sourceStatuses['moonpet.bosses-combat'].state === 'migration_pending' ? [] : await query(db,
+    `SELECT v.pet_id,v.season_key,v.week_key,v.boss_id FROM telegram_pet_weekly_boss_victories_by_pet v
+       JOIN telegram_pet_weekly_boss_progress p ON p.telegram_id=v.telegram_id
+         AND p.week_key=v.week_key AND p.boss_id=v.boss_id
+       JOIN telegram_pet_instances i ON i.pet_id=v.pet_id AND i.telegram_id=v.telegram_id
+         AND i.season_key=v.season_key
+       JOIN telegram_pet_season_slots s ON s.pet_id=i.pet_id AND s.telegram_id=i.telegram_id
+         AND s.season_key=i.season_key AND s.slot_number=i.slot_number
+      WHERE v.telegram_id=? AND p.defeated_at IS NOT NULL AND p.reward_claimed_at IS NULL
+      ORDER BY v.defeated_at ASC LIMIT 50`,
+    [ownerId], [], failures, ['moonpet.bosses-combat']);
+  // A current ISO-week victory does not prove each pet took part in the
+  // current *ownership* week. Use each pet's own saved week bounds.
+  const participatingPets = pets.filter((pet) => pet.journeyBounds?.start_at && pet.journeyBounds?.end_at);
+  const participationClauses = participatingPets.map(() =>
+    '(pet_id=? AND season_key=? AND day_key>=? AND day_key<?)');
+  const participationParams = participatingPets.flatMap((pet) => [
+    pet.pet_id,pet.season_key,pet.journeyBounds.start_at.slice(0,10),pet.journeyBounds.end_at.slice(0,10),
+  ]);
+  const bossParticipationRows = !participationClauses.length ? [] : await query(db,
+    `SELECT pet_id,season_key FROM telegram_pet_events
+      WHERE telegram_id=? AND status='accepted' AND event_type IN ('weekly_boss','boss_fought')
+        AND length(day_key)=10 AND date(day_key,'+0 days')=day_key
+        AND (${participationClauses.join(' OR ')}) GROUP BY pet_id,season_key`,
+    [ownerId,...participationParams], [], failures, ['moonpet.bosses-combat']);
+  const bossParticipated = new Set(bossParticipationRows.map((row) => `${row.pet_id}:${row.season_key}`));
   const jobRows = !pets.length || sourceStatuses['moonpet.jobs'].state === 'migration_pending' ? [] : await query(db,
     `SELECT status,started_at,ends_at,claimed_at,metadata FROM telegram_pet_activity_sessions
       WHERE telegram_id=? AND (status='active' OR (status='completed'
@@ -515,6 +543,7 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
       }
       if (key === 'moonpet.bosses-combat') {
         const won = bossVictoryPets.has(String(pet.pet_id));
+        const participated = won || bossParticipated.has(`${pet.pet_id}:${pet.season_key}`);
         const active = number(pet.is_active) === 1;
         const eligibility = getCombatEligibility({
           activePetExists: active,
@@ -522,14 +551,16 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
           hatched: Boolean(pet.lifecycle_phase && pet.lifecycle_phase !== 'egg'),
           level: getPetVisibleLevel(pet.pet_xp),
         });
-        title = won ? 'Weekly boss victory recorded for this Moonpet' : bossVictories.length ? 'Review this Moonpet’s post-victory participation' : 'Review eligible Moonpet combat';
+        title = won ? 'Weekly boss victory recorded for this Moonpet'
+          : participated ? 'Moonpet boss participation already recorded this ownership week'
+            : bossVictories.length ? 'Review this Moonpet’s post-victory participation' : 'Review eligible Moonpet combat';
         priority = won ? 700 : 440;
-        blocking = won ? null
+        blocking = participated ? null
           : !active ? 'active_moonpet_required'
             : !eligibility.weekly_boss_unlocked ? 'moonpet_weekly_boss_not_eligible'
               : number(decayedCare.energy) < 12 ? 'moonpet_weekly_boss_energy_required'
-                : bossAttemptUsed ? 'moonpet_weekly_boss_daily_attempt_used' : null;
-        status = won ? 'complete' : blocking ? 'blocked' : 'ready';
+                : !bossVictories.length && bossAttemptUsed ? 'moonpet_weekly_boss_daily_attempt_used' : null;
+        status = participated ? 'complete' : blocking ? 'blocked' : 'ready';
       }
       if (key === 'moonpet.garden-kitchen-gym') { const garden = gardens.get(String(pet.pet_id)); const harvesting = garden?.status === 'harvesting'; const ready = garden && !harvesting && Date.parse(garden.ready_at) <= now.getTime(); title = harvesting ? 'Garden harvest is settling' : ready ? 'Harvest garden vegetables' : garden ? 'Garden crop is growing' : 'Plant the Moonpet garden'; status = ready ? 'ready' : garden ? 'waiting' : 'ready'; priority = ready ? 140 : 590; }
       if (key === 'moonpet.evolution') { const stage = evolutions.get(String(pet.pet_id)) || 0; title = 'Review permanent evolution progress'; status = stage >= 5 ? 'complete' : 'in_progress'; priority = 620; progress = { current: stage, target: 5, unit: 'evolution_stage' }; }
@@ -543,6 +574,20 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
         evidence: { kind: SOURCE_BY_KEY.get(key).evidence, verified_completion: status === 'complete' && SOURCE_BY_KEY.get(key).evidence === 'server_receipt' },
       }));
     }
+  }
+  for (const row of pendingBossRewards) {
+    const petRef = await opaqueRef(`${ownerId}:${row.pet_id}`);
+    const receiptRef = await opaqueRef(`${ownerId}:${row.pet_id}:${row.week_key}:${row.boss_id}`);
+    tasks.push(task(now, {
+      source_key: 'moonpet.bosses-combat', task_id: `moonpet.bosses-combat:pending:${receiptRef}`,
+      source_pet_ref: petRef, scope_ref: petRef,
+      title: 'Claim saved Moonpet weekly boss victory reward',
+      description: 'Earned in an earlier or current ISO week; the original pet remains the owner.',
+      why: 'The saved boss payout is still unclaimed.',
+      status: 'claim_ready', source_health: 'live', priority: 38,
+      period: { kind: 'source_defined', key: String(row.week_key), origin_timezone: 'UTC' },
+      evidence: { kind: 'server_projection', verified_completion: false },
+    }));
   }
   if (!pets.length) {
     for (const key of perPetSources) tasks.push(genericTask(now, SOURCE_BY_KEY.get(key), 'blocked', sourceStatuses[key].state === 'migration_pending' ? 'unavailable' : 'live', {
@@ -564,7 +609,7 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
 
   for (const [key, sql, activeTitle, emptyTitle] of [
     ['moonpet.saved-run', "SELECT run_id AS source_id,pet_id,status,updated_at FROM telegram_pet_runs WHERE telegram_id=? AND status IN ('active','extractable') ORDER BY updated_at DESC LIMIT 10", 'Resume this Moonpet’s saved run', 'No saved Moonpet run is pending'],
-    ['moonpet.contracts', "SELECT contract_id AS source_id,pet_id,status,updated_at FROM telegram_pet_contracts WHERE telegram_id=? AND status='active' ORDER BY updated_at DESC LIMIT 10", 'Continue this Moonpet’s active contract', 'No Moonpet contract is active'],
+    ['moonpet.contracts', "SELECT contract_id AS source_id,pet_id,status,updated_at,reward_xp,reward_settled FROM telegram_pet_contracts WHERE telegram_id=? AND (status='active' OR (status='completed' AND reward_xp=20 AND reward_settled=0)) ORDER BY CASE WHEN status='completed' THEN 0 ELSE 1 END, updated_at DESC LIMIT 10", 'Continue this Moonpet’s active contract', 'No Moonpet contract or saved bonus is pending'],
   ]) {
     const rows = sourceStatuses[key].state === 'migration_pending' ? [] : await query(db, sql, [ownerId], [], failures, [key]);
     if (sourceStatuses[key].state === 'live') {
@@ -581,13 +626,15 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
       const petRef = await opaqueRef(`${ownerId}:${row.pet_id}`);
       const sourceId = String(row.source_id || '').trim();
       if (!sourceId) { failures.set(key, 'saved_source_identifier_missing'); continue; }
-      const claimReady = key === 'moonpet.saved-run' && row.status === 'extractable';
+      const claimReady = key === 'moonpet.saved-run' && row.status === 'extractable'
+        || key === 'moonpet.contracts' && row.status === 'completed' && number(row.reward_xp) === 20 && number(row.reward_settled) === 0;
       tasks.push(task(now, {
         task_id: `${key}:${petRef}:${await opaqueRef(`${ownerId}:${key}:${sourceId}`)}`, source_key: key, source_pet_ref: petRef, scope_ref: petRef,
-        title: claimReady ? 'Extract this Moonpet’s saved run' : activeTitle,
+        title: claimReady ? key === 'moonpet.contracts'
+          ? 'Collect saved Moonpet contract bonus (20 Pet XP)' : 'Extract this Moonpet’s saved run' : activeTitle,
         description: 'This saved state remains attributed to the Moonpet that created it.',
         why: 'The original pet remains authoritative even if the active slot has changed.',
-        status: claimReady ? 'claim_ready' : 'active', source_health: 'live', priority: claimReady ? 85 : 170,
+        status: claimReady ? 'claim_ready' : 'active', source_health: 'live', priority: claimReady ? 75 : 170,
         progress: { current: 1, target: null, unit: 'saved_records' },
         evidence: { kind: 'server_projection', verified_completion: false },
       }));
