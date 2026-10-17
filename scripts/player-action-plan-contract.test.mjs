@@ -62,7 +62,7 @@ test('lock UTC / source-specific clocks without constructing one fake global tim
 
 test('baseline real source proves identity, pet ownership and correct read-boundary risks', () => {
   const daily = read('workers/moonboys-api/routes/daily-loop-state.js');
-  assert.match(daily, /path !== '\\/daily-loop\\/state'/u);
+  assert.ok(daily.includes("path !== '/daily-loop/state'"));
   assert.match(daily, /verifyTelegramIdentityFromBody/u);
   assert.match(daily, /daily_wtf_status/u);
   assert.match(daily, /source_status/u);
@@ -70,22 +70,22 @@ test('baseline real source proves identity, pet ownership and correct read-bound
   assert.match(singleton, /getFreshAuth/u);
   assert.match(singleton, /linked:auth_required/u);
   const faction = read('js/arcade/systems/faction-missions.js');
-  assert.match(faction, /_pickMissions\\(pool, 3, seed\\)/u);
+  assert.ok(faction.includes('_pickMissions(pool, 3, seed)'));
   assert.match(faction, /localStorage/u);
-  assert.match(faction, /'\\/player\\/daily-missions\\/progress'/u);
+  assert.ok(faction.includes("'/player/daily-missions/progress'"));
   assert.match(faction, /clout_delta: 0/u);
   const bridge = read('js/battle-chamber-faction-bridge.js');
-  assert.match(bridge, /\\/roguelite\\/daily-state/u);
+  assert.ok(bridge.includes('/roguelite/daily-state'));
   const pet = read('workers/moonboys-api/worker.js');
-  assert.match(pet, /path === '\\/telegram-pets\\/app\\/state' && request.method === 'POST'/u);
-  assert.match(pet, /authenticatePetMiniApp\\(body, env\\)/u);
-  assert.match(pet, /preparePetMiniAppState\\(db, telegramId, now\\)/u);
-  assert.match(pet, /recoverPetStandardRunEndings\\(/u);
-  assert.match(pet, /path === '\\/telegram-pets\\/state' && request.method === 'GET'/u);
-  assert.match(pet, /url.searchParams.get\\('telegram_id'\\)/u);
+  assert.ok(pet.includes("path === '/telegram-pets/app/state' && request.method === 'POST'"));
+  assert.ok(pet.includes('authenticatePetMiniApp(body, env)'));
+  assert.ok(pet.includes('preparePetMiniAppState(db, telegramId, now)'));
+  assert.ok(pet.includes('recoverPetStandardRunEndings('));
+  assert.ok(pet.includes("path === '/telegram-pets/state' && request.method === 'GET'"));
+  assert.ok(pet.includes("url.searchParams.get('telegram_id')"));
   const source = read('js/moonpet-play-options.js');
-  assert.match(source, /function recommendations\\(snapshot, preferences\\)/u);
-  assert.match(read('workers/moonboys-api/pets/player-guidance.js'), /function choosePetNextAction\\(/u);
+  assert.ok(source.includes('function recommendations(snapshot, preferences)'));
+  assert.ok(read('workers/moonboys-api/pets/player-guidance.js').includes('function choosePetNextAction('));
 });
 
 test('documented API scope forbids unverified or mutating read-side shortcuts', () => {
