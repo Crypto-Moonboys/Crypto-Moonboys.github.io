@@ -1025,6 +1025,33 @@
       }
     }
 
+    // The 480x270 uploaded clouds.jpg fills the game viewport exactly, but
+    // its left and right edges are not seamless. Alternating mirrored tiles
+    // makes both joins match without stretching or changing the source art.
+    function drawSkyWallpaper() {
+      var image = images.sky;
+      if (!image) {
+        ctx.fillStyle = '#171730';
+        ctx.fillRect(0, 0, WIDTH, HEIGHT);
+        return;
+      }
+      var tileW = WIDTH;
+      var offset = -cameraX * 0.08;
+      var firstTile = Math.floor(-offset / tileW) - 1;
+      for (var tile = firstTile; offset + tile * tileW < WIDTH + tileW; tile++) {
+        var x = Math.round(offset + tile * tileW);
+        if (tile % 2 !== 0) {
+          ctx.save();
+          ctx.translate(x + tileW, 0);
+          ctx.scale(-1, 1);
+          ctx.drawImage(image, 0, 0, tileW, HEIGHT);
+          ctx.restore();
+        } else {
+          ctx.drawImage(image, x, 0, tileW, HEIGHT);
+        }
+      }
+    }
+
     function drawStreetLayer() {
       if (!images.street) {
         ctx.fillStyle = '#303238';
@@ -1119,7 +1146,7 @@
     }
 
     function drawWorld() {
-      drawImageLayer(images.sky, 0.08, 0, HEIGHT, '#171730');
+      drawSkyWallpaper();
       drawSkylineLayer();
       drawImageLayer(images.wall, 0.58, 154, 88, '#2d2033');
       drawStreetLayer();
