@@ -1053,8 +1053,18 @@ test('historical pending claim backlog is explicit and never displaces current d
   assert.equal(health.partial, true);
   assert.equal(health.historical_pending_total, 137);
   assert.equal(health.historical_pending_not_listed, 37);
-  const overflow = result.tasks.find(t => t.source_key === 'moonpet.seven-of-seven-claim'
+  // The API sorts verified claim-ready rows ahead of the advisory overflow.
+  // Page through the full response to prove it is represented but not promoted.
+  let overflow = result.tasks.find(t => t.source_key === 'moonpet.seven-of-seven-claim'
     && /37 more/u.test(t.title));
+  let overflowCursor = result.pagination.next_cursor;
+  while (!overflow && overflowCursor) {
+    const next = await (await handlePlayerActionPlanRoute(request(auth({limit:100,cursor:overflowCursor})),
+      {DB:fakeDb({manyPending:true}),TELEGRAM_BOT_TOKEN:'test'},options())).json();
+    overflow = next.tasks.find(t => t.source_key === 'moonpet.seven-of-seven-claim'
+      && /37 more/u.test(t.title));
+    overflowCursor = next.pagination.next_cursor;
+  }
   assert.equal(overflow?.status, 'preview', 'unread rows have no verified pet/season authority');
   assert.equal(overflow.blocking_reason_code, 'hidden_claim_authority_not_verified');
   assert.equal(result.top_actions.some(t => t.task_id === overflow.task_id), false);
