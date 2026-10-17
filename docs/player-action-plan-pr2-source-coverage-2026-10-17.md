@@ -27,7 +27,7 @@ Authentication is verified before owner-scoped reads. The request cannot choose 
 | `moonpet.daily-seven-missions` | Existing checklist bits; no completion row is created on read. |
 | `moonpet.seven-of-seven-claim` | Existing checklist/claim receipt; 25 Pet XP, 50 Moon Gold, 1 Style Token kept distinct. |
 | `moonpet.care` | Saved care snapshot plus accepted-action cooldown; decay is not settled on read. |
-| `moonpet.claimable-rewards` | Pending saved claims only; nothing is awarded. |
+| `moonpet.claimable-rewards` | Current UTC-day daily bounty board derived from accepted pet events and `pet_bounty` settlement receipts. Internal `pending` recovery reservations are not player claims; availability is a conservative lower bound, and read-only projection awards nothing. Bonus/weekly bounty claimability is not inferred without its separate canonical receipts. |
 | `moonpet.saved-run` | Owner-scoped open runs; task remains tied to its original opaque pet reference. |
 | `moonpet.contracts` | Owner-scoped active saved contracts; no state transition. |
 | `wiki.accepted-missions` | Accepted persisted owner/day completion count only. |
