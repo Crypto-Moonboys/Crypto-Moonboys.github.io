@@ -3,6 +3,8 @@ import {
   sourceStatus, utcDay,
 } from './schema.js';
 import { getPetJourneyWeek, getPetJourneyWeekBounds, getPetOwnershipPeriod } from '../pets/ownership-period.js';
+import { PET_ENTRY_ARCADE_XP } from '../pets/entry-requirement.js';
+import { getCombatEligibility } from '../pets/combat-eligibility.js';
 
 export const ACTION_PLAN_SOURCE_REGISTRY = Object.freeze([
   ['onboarding.telegram', 'onboarding', 'account', 'once', 'server_projection', '/gkniftyheads-incubator.html'],
@@ -73,7 +75,7 @@ function task(now, input) {
 function genericTask(now, source, status, health, detail = {}) {
   const label = source.key.split('.').map((part) => part.replaceAll('-', ' ')).join(' · ');
   return task(now, {
-    task_id: `${source.key}:${detail.suffix || 'current'}`,
+    task_id: `${source.key}:${detail.periodKey || 'lifetime'}:${detail.suffix || 'current'}`,
     source_key: source.key,
     title: detail.title || label.replace(/\b\w/gu, (value) => value.toUpperCase()),
     description: detail.description || 'Review this source in its canonical experience.',
@@ -123,7 +125,7 @@ async function tableHealth(db, failures) {
   for (const source of ACTION_PLAN_SOURCE_REGISTRY) {
     const table = SOURCE_TABLES[source.key];
     output[source.key] = !table || present.get(table)
-      ? sourceStatus('live_empty', { adapter: 'read_only_projection' })
+      ? sourceStatus('live', { adapter: 'read_only_projection' })
       : sourceStatus('migration_pending', { missing_tables: [table] });
   }
   return output;
@@ -190,9 +192,9 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
     return { ...row, ref: await opaqueRef(`${ownerId}:${row.pet_id}`), journeyWeek, journeyBounds };
   }));
   const petEntryComplete = pets.length > 0;
-  tasks.push(genericTask(now, SOURCE_BY_KEY.get('onboarding.pet-entry'), petEntryComplete ? 'complete' : lifetimeXp >= 1000 ? 'ready' : 'in_progress', 'live', {
-    title: petEntryComplete ? 'Moonpet entry complete' : lifetimeXp >= 1000 ? 'Adopt your first Moonpet' : 'Earn lifetime Arcade XP for Moonpet entry',
-    priority: petEntryComplete ? 900 : 30, progress: { current: Math.min(1000, lifetimeXp), target: 1000, unit: 'lifetime_arcade_xp' },
+  tasks.push(genericTask(now, SOURCE_BY_KEY.get('onboarding.pet-entry'), petEntryComplete ? 'complete' : lifetimeXp >= PET_ENTRY_ARCADE_XP ? 'ready' : 'in_progress', 'live', {
+    title: petEntryComplete ? 'Moonpet entry complete' : lifetimeXp >= PET_ENTRY_ARCADE_XP ? 'Adopt your first Moonpet' : 'Earn lifetime Arcade XP for Moonpet entry',
+    priority: petEntryComplete ? 900 : 30, progress: { current: Math.min(PET_ENTRY_ARCADE_XP, lifetimeXp), target: PET_ENTRY_ARCADE_XP, unit: 'lifetime_arcade_xp' },
   }));
 
   const dailyClaimRows = await query(db,
@@ -325,15 +327,15 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
       if (key === 'moonpet.weekly-journey') { const current = weeklyProgress.get(String(pet.pet_id)) || 0; const settled = (weeklyReceipts.get(String(pet.pet_id)) || 0) > 0; title = settled ? 'Ownership-week Journey recorded' : 'Advance this Moonpet’s ownership week'; status = settled ? 'complete' : 'in_progress'; priority = settled ? 710 : 390; progress = { current, target: 5, unit: 'objectives' }; }
       if (key === 'moonpet.care') { const lastAt = Date.parse(lastCare.get(String(pet.pet_id)) || ''); const nextAt = Number.isFinite(lastAt) ? lastAt + 45_000 : null; const cooling = nextAt && nextAt > now.getTime(); title = cooling ? 'Moonpet care action is cooling down' : careMin < 35 ? 'Care for this Moonpet now' : 'Moonpet care is stable'; status = cooling ? 'waiting' : careMin < 35 ? 'ready' : 'complete'; priority = cooling ? 520 : careMin < 35 ? 50 : 670; progress = { current: careMin, target: 35, unit: 'minimum_care_stat' }; nextReadyAt = cooling ? new Date(nextAt).toISOString() : null; }
       if (key === 'moonpet.jobs') { const ownsJob = job && jobPetId === String(pet.pet_id); const recovery = ownsJob && job.status === 'completed'; const startedAt = ownsJob ? Date.parse(job.started_at) : NaN; const readyAt = Number.isFinite(startedAt) ? startedAt + 300_000 : null; const ready = recovery || ownsJob && readyAt <= now.getTime(); title = recovery ? 'Recover this Moonpet’s saved job reward' : ready ? 'Claim this Moonpet’s completed job' : ownsJob ? 'Moonpet job is in progress' : 'No saved job for this Moonpet'; status = ready ? 'claim_ready' : ownsJob ? 'waiting' : 'complete'; priority = ready ? 90 : ownsJob ? 530 : 730; nextReadyAt = ownsJob && !ready && readyAt ? new Date(readyAt).toISOString() : null; }
-      if (key === 'moonpet.bosses-combat') { const won = bossVictoryPets.has(String(pet.pet_id)); title = won ? 'Weekly boss victory recorded for this Moonpet' : bossVictories.length ? 'Review this Moonpet’s post-victory participation' : 'Review eligible Moonpet combat'; priority = won ? 700 : 440; blocking = won ? null : number(pet.level) < 3 ? 'moonpet_level_required' : null; status = won ? 'complete' : blocking ? 'blocked' : 'ready'; }
+      if (key === 'moonpet.bosses-combat') { const won = bossVictoryPets.has(String(pet.pet_id)); title = won ? 'Weekly boss victory recorded for this Moonpet' : bossVictories.length ? 'Review this Moonpet’s post-victory participation' : 'Review eligible Moonpet combat'; priority = won ? 700 : 440; blocking = won ? null : getCombatEligibility({ activePetExists: true, lifecycleKnown: true, hatched: pet.stage !== 'egg', level: number(pet.level) }).weekly_boss_unlocked ? null : 'moonpet_weekly_boss_not_eligible'; status = won ? 'complete' : blocking ? 'blocked' : 'ready'; }
       if (key === 'moonpet.garden-kitchen-gym') { const garden = gardens.get(String(pet.pet_id)); const harvesting = garden?.status === 'harvesting'; const ready = garden && !harvesting && Date.parse(garden.ready_at) <= now.getTime(); title = harvesting ? 'Garden harvest is settling' : ready ? 'Harvest garden vegetables' : garden ? 'Garden crop is growing' : 'Plant the Moonpet garden'; status = ready ? 'ready' : garden ? 'waiting' : 'ready'; priority = ready ? 140 : 590; }
       if (key === 'moonpet.evolution') { const stage = evolutions.get(String(pet.pet_id)) || 0; title = 'Review permanent evolution progress'; status = stage >= 5 ? 'complete' : 'in_progress'; priority = 620; progress = { current: stage, target: 5, unit: 'evolution_stage' }; }
       tasks.push(task(now, {
-        task_id: `${key}:${pet.ref}:${day}`, source_key: key, source_pet_ref: pet.ref, scope_ref: pet.ref,
+        task_id: `${key}:${pet.ref}:${key === 'moonpet.weekly-journey' ? (pet.journeyWeek ?? 'unavailable') : key.includes('daily') ? day : 'persistent'}`, source_key: key, source_pet_ref: pet.ref, scope_ref: pet.ref,
         title, description: 'Read-only projection for an owned Moonpet. Open the Moonpet game to act.', why: 'Pet state is scoped to the verified owner and this original pet.',
         status, source_health: sourceStatuses[key].state === 'migration_pending' ? 'unavailable' : 'live', priority, progress, blocking_reason_code: blocking,
-        period: { kind: SOURCE_BY_KEY.get(key).period, key: key.includes('weekly') ? week : key.includes('daily') ? day : null, origin_timezone: 'UTC' },
-        expires_at: key.includes('daily') ? nextUtcDay(now) : key.includes('weekly') ? nextIsoWeek(now) : null,
+        period: { kind: SOURCE_BY_KEY.get(key).period, key: key === 'moonpet.weekly-journey' ? (pet.journeyWeek == null ? null : String(pet.journeyWeek)) : key.includes('daily') ? day : null, origin_timezone: 'UTC' },
+        expires_at: key.includes('daily') ? nextUtcDay(now) : key === 'moonpet.weekly-journey' ? pet.journeyBounds?.end_at || null : null,
         next_ready_at: nextReadyAt,
         evidence: { kind: SOURCE_BY_KEY.get(key).evidence, verified_completion: status === 'complete' && SOURCE_BY_KEY.get(key).evidence === 'server_receipt' },
       }));
@@ -416,6 +418,12 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
       tasks.push(genericTask(now, source, 'sync_unavailable', sourceStatuses[source.key]?.state || 'unavailable', {
         blocking: 'source_projection_unavailable', priority: 950,
       }));
+    }
+  }
+  for (const source of ACTION_PLAN_SOURCE_REGISTRY) {
+    const sourceTasks = tasks.filter((entry) => entry.source_key === source.key);
+    if (sourceStatuses[source.key]?.state === 'live_empty' && sourceTasks.some((entry) => ['ready', 'active', 'claim_ready', 'in_progress', 'waiting'].includes(entry.status))) {
+      sourceStatuses[source.key] = sourceStatus('live', { adapter: 'read_only_projection' });
     }
   }
   const normalizedTasks = tasks.map((entry) => {
