@@ -101,10 +101,18 @@ test('documented API scope forbids unverified or mutating read-side shortcuts', 
   }
   assert.ok(!fs.existsSync(path.join(root, 'my-moonboy.html')), 'PR1 must not ship a UI before the API security contract');
   const routePath = path.join(root, 'workers/moonboys-api/routes/player-action-plan.js');
-  if (fs.existsSync(routePath)) {
-    const route = read('workers/moonboys-api/routes/player-action-plan.js');
-    assert.match(read('workers/moonboys-api/worker.js'), /verifyIdentity: \(body, authEnv\) => verifyTelegramIdentityFromBody/u);
-    assert.match(route, /createReadOnlyActionPlanDb/u);
-    assert.match(route, /no-store, private/u);
-  }
+  assert.ok(fs.existsSync(routePath), 'PR2 must ship the authenticated player action-plan route');
+  const route = read('workers/moonboys-api/routes/player-action-plan.js');
+  const worker = read('workers/moonboys-api/worker.js');
+  assert.match(worker, /import\s*\{\s*handlePlayerActionPlanRoute\s*\}\s*from\s*['"]\.\/routes\/player-action-plan\.js['"]/u,
+    'Worker must import the actual action-plan route');
+  assert.match(worker, /if\s*\(path\s*===\s*['"]\/player\/action-plan['"]\)\s*\{\s*const\s+actionPlanResponse\s*=\s*await\s+handlePlayerActionPlanRoute\(request,\s*env,/su,
+    'Worker must dispatch authenticated action-plan requests');
+  assert.match(worker, /if\s*\(actionPlanResponse\)\s*return\s+actionPlanResponse/u,
+    'Worker must return the action-plan route response');
+  assert.match(worker, /verifyIdentity:\s*\(body, authEnv\)\s*=>\s*verifyTelegramIdentityFromBody/u);
+  assert.match(route, /export\s+async\s+function\s+handlePlayerActionPlanRoute/u);
+  assert.match(route, /request\.method\s*!==\s*['"]POST['"]/u);
+  assert.match(route, /createReadOnlyActionPlanDb/u);
+  assert.match(route, /no-store, private/u);
 });
