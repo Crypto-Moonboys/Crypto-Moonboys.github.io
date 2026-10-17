@@ -242,6 +242,22 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
       WHERE s.telegram_id=? AND s.status='active' AND i.status='active'
       ORDER BY s.created_at ASC,s.pet_id ASC`, [ownerId], [], failures,
     ACTION_PLAN_SOURCE_REGISTRY.filter((source) => source.group === 'moonpet').map((source) => source.key));
+  // The owned roster is a shared authority for all Moonpet projections.
+  // A failed roster read cannot be mistaken for a newly empty account. Also
+  // distinguish a genuinely absent roster table from a failed table probe.
+  const rosterFailure = failures.get('moonpet.adoption-incubation');
+  const rosterMigrationMissing = !rosterFailure
+    && sourceStatuses['moonpet.adoption-incubation'].state === 'migration_pending';
+  const rosterUnavailable = Boolean(rosterFailure || rosterMigrationMissing);
+  if (rosterUnavailable) {
+    for (const source of ACTION_PLAN_SOURCE_REGISTRY.filter((entry) =>
+      entry.group === 'moonpet' || entry.key === 'onboarding.pet-entry')) {
+      if (rosterFailure) failures.set(source.key, rosterFailure);
+      else sourceStatuses[source.key] = sourceStatus('migration_pending', {
+        adapter: 'owned_roster_dependency', missing_tables: ['telegram_pet_instances'],
+      });
+    }
+  }
   const pets = await Promise.all(petRows.map(async (row) => {
     let journeyWeek = null; let journeyBounds = null;
     try {
@@ -600,7 +616,7 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
         blocking = participated ? null
           : !active ? 'active_moonpet_required'
             : !eligibility.weekly_boss_unlocked ? 'moonpet_weekly_boss_not_eligible'
-              : number(decayedCare.energy) < 12 ? 'moonpet_weekly_boss_energy_required'
+              : Math.round(Number(decayedCare.energy) || 0) < 12 ? 'moonpet_weekly_boss_energy_required'
                 : !bossVictories.length && bossAttemptUsed ? 'moonpet_weekly_boss_daily_attempt_used' : null;
         status = participated ? 'complete' : blocking ? 'blocked' : 'ready';
       }
@@ -650,7 +666,15 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
   }));
 
   for (const [key, sql, activeTitle, emptyTitle] of [
-    ['moonpet.saved-run', "SELECT run_id AS source_id,pet_id,status,updated_at FROM telegram_pet_runs WHERE telegram_id=? AND status IN ('active','extractable') ORDER BY updated_at DESC LIMIT 10", 'Resume this Moonpet’s saved run', 'No saved Moonpet run is pending'],
+    ['moonpet.saved-run', `SELECT r.run_id AS source_id,r.pet_id,r.season_key,r.status,r.updated_at,
+         CASE WHEN i.pet_id IS NOT NULL AND s.pet_id IS NOT NULL THEN 1 ELSE 0 END AS owner_verified
+       FROM telegram_pet_runs r
+       LEFT JOIN telegram_pet_instances i ON i.pet_id=r.pet_id AND i.telegram_id=r.telegram_id
+         AND i.season_key=r.season_key
+       LEFT JOIN telegram_pet_season_slots s ON s.pet_id=i.pet_id AND s.telegram_id=i.telegram_id
+         AND s.season_key=i.season_key AND s.slot_number=i.slot_number
+       WHERE r.telegram_id=? AND r.status IN ('active','extractable')
+       ORDER BY r.updated_at DESC LIMIT 10`, 'Resume this Moonpet’s saved run', 'No saved Moonpet run is pending'],
     ['moonpet.contracts', "SELECT contract_id AS source_id,pet_id,status,updated_at,reward_xp,reward_settled FROM telegram_pet_contracts WHERE telegram_id=? AND (status='active' OR (status='completed' AND reward_xp=20 AND reward_settled=0)) ORDER BY CASE WHEN status='completed' THEN 0 ELSE 1 END, updated_at DESC LIMIT 10", 'Continue this Moonpet’s active contract', 'No Moonpet contract or saved bonus is pending'],
   ]) {
     const rows = sourceStatuses[key].state === 'migration_pending' ? [] : await query(db, sql, [ownerId], [], failures, [key]);
@@ -665,9 +689,16 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
       continue;
     }
     for (const row of rows) {
-      const petRef = await opaqueRef(`${ownerId}:${row.pet_id}`);
+      // Legacy open runs may have NULL pet_id or broken pet/season references.
+      // Do not derive an "original pet" fingerprint until both ownership joins
+      // prove the original instance and retained slot belong to this owner.
+      if (key === 'moonpet.saved-run' && (!row.pet_id || number(row.owner_verified) !== 1)) {
+        failures.set(key, 'original_pet_attribution_unavailable');
+        continue;
+      }
       const sourceId = String(row.source_id || '').trim();
       if (!sourceId) { failures.set(key, 'saved_source_identifier_missing'); continue; }
+      const petRef = await opaqueRef(`${ownerId}:${row.pet_id}`);
       const claimReady = key === 'moonpet.saved-run' && row.status === 'extractable'
         || key === 'moonpet.contracts' && row.status === 'completed' && number(row.reward_xp) === 20 && number(row.reward_settled) === 0;
       tasks.push(task(now, {
@@ -769,5 +800,9 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
     return Object.freeze({ ...entry, status: 'sync_unavailable', availability: 'sync_unavailable',
       source_health: state, blocking_reason_code: 'source_projection_unavailable' });
   });
-  return { tasks: normalizedTasks, source_status: sourceStatuses, read_context: { utc_day: day, iso_week: week, pet_count: pets.length } };
+  return { tasks: normalizedTasks, source_status: sourceStatuses, read_context: {
+    utc_day: day, iso_week: week,
+    // null means the authoritative roster could not be read, not zero pets.
+    pet_count: rosterUnavailable ? null : pets.length,
+  } };
 }
