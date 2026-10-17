@@ -1,9 +1,13 @@
 const READ_ONLY_SQL = /^\s*(?:SELECT|WITH)\b/iu;
-const MUTATING_SQL = /\b(?:INSERT|UPDATE|DELETE|REPLACE|CREATE|ALTER|DROP|VACUUM|REINDEX|ATTACH|DETACH)\b/iu;
+const MUTATING_SQL = /\b(?:INSERT|UPDATE|DELETE|REPLACE|CREATE|ALTER|DROP|VACUUM|REINDEX|ATTACH|DETACH|PRAGMA|BEGIN|COMMIT|ROLLBACK|SAVEPOINT|RELEASE|TRANSACTION|EXPLAIN|ANALYZE)\b/iu;
 
 function assertReadOnlySql(sql) {
   const text = String(sql || '');
-  if (!READ_ONLY_SQL.test(text) || MUTATING_SQL.test(text)) {
+  // Reject multi-statements and comment-bearing SQL even if the first token
+  // looks read-only. Query strings are authored by trusted source adapters;
+  // there is no need to accept statements hidden in comments or delimiters.
+  if (!READ_ONLY_SQL.test(text) || MUTATING_SQL.test(text)
+    || /;|--|\/\*|\*\//u.test(text) || /[\u0000-\u001f\u007f]/u.test(text.replace(/\s/g, ''))) {
     throw new Error('player_action_plan_mutating_sql_rejected');
   }
   return text;
