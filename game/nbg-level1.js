@@ -80,6 +80,32 @@
     });
   }
 
+  // The approved final spray export contains a flat green matte and white
+  // page border. Remove only these background colors once during asset load;
+  // keep original PNG committed and preserve coloured paint/character pixels.
+  function prepareFinalSpraySheet(image) {
+    if (!image) return null;
+    var canvas = document.createElement('canvas');
+    canvas.width = image.naturalWidth;
+    canvas.height = image.naturalHeight;
+    var context = canvas.getContext('2d', { willReadFrequently: true });
+    context.drawImage(image, 0, 0);
+    var pixels = context.getImageData(0, 0, canvas.width, canvas.height);
+    var rgba = pixels.data;
+    for (var i = 0; i < rgba.length; i += 4) {
+      var red = rgba[i];
+      var green = rgba[i + 1];
+      var blue = rgba[i + 2];
+      var matte = green > red + 12 && green > blue + 8 &&
+        red >= 45 && red <= 115 && green >= 75 && green <= 155 && blue >= 40 && blue <= 120;
+      var pageWhite = red >= 250 && green >= 250 && blue >= 250;
+      if (matte || pageWhite) rgba[i + 3] = 0;
+    }
+    context.putImageData(pixels, 0, 0);
+    canvas.__nbgSpraySource = image.src;
+    return canvas;
+  }
+
   function loadJson(src) {
     return fetch(src).then(function (response) {
       if (!response.ok) throw new Error('Unable to load JSON asset: ' + src);
@@ -1644,7 +1670,8 @@
               columns: animation.columns,
               frameMs: animation.frameMs,
               spriteSheet: animation.spriteSheet,
-              image: result.image
+              image: key === 'spray' && result.image ?
+                prepareFinalSpraySheet(result.image) : result.image
             };
             assetStatus['player.' + key] = {
               src: result.src,
