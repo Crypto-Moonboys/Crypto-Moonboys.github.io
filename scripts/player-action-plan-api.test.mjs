@@ -413,7 +413,18 @@ test('historical pending claim backlog is explicit and never displaces current d
   assert.ok(result.tasks.some(t => t.source_key === 'moonpet.seven-of-seven-claim' && t.status === 'claim_ready'
     && /37 more/u.test(t.title)));
   assert.equal(result.tasks.filter(t => t.source_key === 'moonpet.seven-of-seven-claim' && t.status === 'claim_ready').length, 100);
-  const daily = result.tasks.find(t => t.source_key === 'moonpet.daily-seven-missions' && t.title === 'Daily Moonpet completion conditions');
+  let daily = result.tasks.find(t => t.source_key === 'moonpet.daily-seven-missions' && t.title === 'Daily Moonpet completion conditions');
+  // The API deliberately pages at 100 tasks: the daily summary may be on a
+  // later page when the member has 137 historic pending claim receipts.
+  let cursor = result.pagination.next_cursor;
+  while (!daily && cursor) {
+    const next = await (await handlePlayerActionPlanRoute(request(auth({ limit: 100, cursor })),
+      { DB: fakeDb({ manyPending: true }), TELEGRAM_BOT_TOKEN: 'test' }, options())).json();
+    daily = next.tasks.find(t => t.source_key === 'moonpet.daily-seven-missions'
+      && t.title === 'Daily Moonpet completion conditions');
+    cursor = next.pagination.next_cursor;
+  }
+  assert.ok(daily, 'source summary must remain accessible by pagination');
   assert.equal(daily.progress.current, 3);
   assert.ok(db.calls.some(call => /COUNT\(\*\) AS total FROM telegram_pet_daily_completion/u.test(call.sql)));
 });
