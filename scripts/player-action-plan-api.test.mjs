@@ -418,6 +418,57 @@ test('authenticated endpoint covers every source, scopes pets opaquely, and is c
   assert.equal(db.calls.some((call) => !/^\s*(SELECT|WITH)\b/iu.test(call.sql)), false);
 });
 
+test('PR3 owner roster is redacted, stage-aware, selected, and read-only with no extra queries', async () => {
+  const db = fakeDb({ threePets: true, savedStates: true });
+  const response = await handlePlayerActionPlanRoute(request(auth({ limit: 100 })),
+    { DB: db, TELEGRAM_BOT_TOKEN: 'test' }, options());
+  assert.equal(response.status, 200);
+  const body = await response.json();
+  assert.equal(body.owner.pet_count, 3);
+  assert.equal(body.owner.pets.length, 3);
+  assert.equal(body.owner.pets.filter(pet => pet.selected).length, 1);
+  assert.deepEqual(body.owner.pets.map(pet => pet.slot_number), [1, 2, 3]);
+  assert.deepEqual(body.owner.pets.map(pet => pet.lifecycle_phase), ['young', 'young', 'young']);
+  assert.ok(body.owner.pets.every(pet => /^pap_[a-f0-9]{24}$/u.test(pet.pet_ref)));
+  assert.equal(new Set(body.owner.pets.map(pet => pet.pet_ref)).size, 3);
+  assert.equal(body.owner.pets[0].life_stage, 'hatched');
+  assert.equal(body.owner.pets[0].pet_xp, 640);
+  assert.equal(body.owner.pets[0].level > 0, true);
+  assert.equal(body.owner.pets[0].evolution_stage, null, 'unknown evolution stages stay unknown');
+  assert.equal(body.owner.faction.joined, true);
+  assert.equal(body.owner.faction.name, 'graffpunks');
+  assert.equal(body.owner.lifetime_arcade_xp, 1200);
+  assert.ok(db.calls.every(call => /^\s*(SELECT|WITH)\b/iu.test(call.sql)), 'projection remains strictly read-only');
+  assert.ok(body.query_budget.statement_count <= 80, 'roster reuse adds no D1 request budget');
+  const serialized = JSON.stringify(body);
+  for (const forbidden of ['123456','pet-secret-123','pet-secret-456','pet-secret-789',
+    '2026-Q4','telegram_auth','auth_date','hash']) {
+    assert.ok(!serialized.includes(forbidden), forbidden + ' must not leak');
+  }
+  const savedRun = body.tasks.find(item => item.source_key === 'moonpet.saved-run' && item.status === 'claim_ready');
+  assert.equal(savedRun.owner_scope, 'original_pet');
+  assert.ok(body.owner.pets.some(pet => pet.pet_ref === savedRun.source_pet_ref),
+    'source-pet attribution must not move to the selected pet');
+
+  const empty = await (await handlePlayerActionPlanRoute(request(auth({ limit: 100 })),
+    { DB: fakeDb({ noPets: true }), TELEGRAM_BOT_TOKEN: 'test' }, options())).json();
+  assert.deepEqual(empty.owner.pets, []);
+  assert.equal(empty.owner.pet_count, 0);
+  const failing = await (await handlePlayerActionPlanRoute(request(auth({ limit: 100 })),
+    { DB: fakeDb({ tableErrors: new Set(['telegram_pet_instances']) }),
+      TELEGRAM_BOT_TOKEN: 'test' }, options())).json();
+  assert.equal(failing.owner.pet_count, null);
+  assert.equal(failing.owner.pets, null, 'roster failure cannot become an empty roster');
+});
+
+test('PR3 source task helper contains exactly one evidence property after Wrangler warning cleanup', () => {
+  const source = fs.readFileSync(new URL('../workers/moonboys-api/player-action-plan/sources.js', import.meta.url), 'utf8');
+  const taskHelper = source.slice(source.indexOf('function task(now, input) {'),
+    source.indexOf('function genericTask(now, source, status, health, detail = {})'));
+  assert.equal((taskHelper.match(/\bevidence:\s*\{/gu) || []).length, 1);
+  assert.match(taskHelper, /evidence:\s*\{ kind: meta\.evidence, \.\.\.\(input\.evidence \|\| \{\}\) \}/u);
+});
+
 test('zero-pet response stays complete and blocks pet work without fabricating state', async () => {
   const response = await handlePlayerActionPlanRoute(request(auth({ limit: 100 })), { DB: fakeDb({ noPets: true }), TELEGRAM_BOT_TOKEN: 'test' }, options());
   const payload = await response.json();
