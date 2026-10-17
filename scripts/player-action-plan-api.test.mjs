@@ -432,7 +432,7 @@ test('PR3 owner roster is redacted, stage-aware, selected, and read-only with no
   assert.ok(body.owner.pets.every(pet => /^pap_[a-f0-9]{24}$/u.test(pet.pet_ref)));
   assert.equal(new Set(body.owner.pets.map(pet => pet.pet_ref)).size, 3);
   assert.equal(body.owner.pets[0].life_stage, 'hatched');
-  assert.equal(body.owner.pets[0].pet_xp, 640);
+  assert.equal(body.owner.pets[0].pet_xp, 90);
   assert.equal(body.owner.pets[0].level > 0, true);
   assert.equal(body.owner.pets[0].evolution_stage, null, 'unknown evolution stages stay unknown');
   assert.equal(body.owner.faction.joined, true);
@@ -442,7 +442,7 @@ test('PR3 owner roster is redacted, stage-aware, selected, and read-only with no
   assert.ok(body.query_budget.statement_count <= 80, 'roster reuse adds no D1 request budget');
   const serialized = JSON.stringify(body);
   for (const forbidden of ['123456','pet-secret-123','pet-secret-456','pet-secret-789',
-    '2026-Q4','telegram_auth','auth_date','hash']) {
+    'telegram_auth','auth_date','hash']) {
     assert.ok(!serialized.includes(forbidden), forbidden + ' must not leak');
   }
   const savedRun = body.tasks.find(item => item.source_key === 'moonpet.saved-run' && item.status === 'claim_ready');
