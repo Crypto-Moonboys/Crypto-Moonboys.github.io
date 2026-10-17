@@ -1459,6 +1459,7 @@
         get jumpsUsed() { return jumpsUsed; },
         get pendingJumpPresses() { return pendingJumpPresses; },
         get nextJumpBoostAtMs() { return nextJumpBoostAtMs; },
+        get recordedReplay() { return encodedRunReplay(); },
         get coins() { return coins; },
         get secretCoins() { return secretCoins; },
         get secretNotificationUntil() { return secretNotificationUntil; },
