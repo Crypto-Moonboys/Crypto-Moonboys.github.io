@@ -595,11 +595,29 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
              '$.consumed_item_key') IN ('street_pizza','moon_burger','garden_veggies')))
        ) WHERE action_rank=1`, [ownerId], [], failures, ['moonpet.care']);
   const bossVictories = !pets.length || sourceStatuses['moonpet.bosses-combat'].state === 'migration_pending' ? [] : await query(db,
-    `SELECT v.pet_id,v.season_key,v.defeated_at,a.day_key AS victory_day
+    `SELECT DISTINCT v.pet_id,v.season_key,v.boss_id,v.defeated_at,
+       COALESCE(e.day_key,a.day_key) AS victory_day
        FROM telegram_pet_weekly_boss_victories_by_pet v
        LEFT JOIN telegram_pet_weekly_boss_events a ON a.telegram_id=v.telegram_id
          AND a.week_key=v.week_key AND a.boss_id=v.boss_id AND a.event_key=v.victory_event_key
-       WHERE v.telegram_id=? AND v.week_key=? AND v.defeated_at IS NOT NULL`,
+       LEFT JOIN telegram_pet_events e ON e.telegram_id=v.telegram_id
+         AND e.pet_id=v.pet_id AND e.season_key=v.season_key
+         AND e.week_key=v.week_key AND e.event_key=v.victory_event_key
+         AND e.event_type='weekly_boss' AND e.status='accepted'
+         AND e.reason='weekly_boss_attempt'
+       WHERE v.telegram_id=? AND v.week_key=? AND v.defeated_at IS NOT NULL
+         AND v.victory_event_key<>'' AND v.victory_event_key=trim(v.victory_event_key)
+         AND length(v.victory_event_key)<=180
+         AND ((e.id IS NOT NULL AND length(e.day_key)=10
+           AND date(e.day_key,'+0 days')=e.day_key
+           AND json_extract(CASE WHEN json_valid(e.metadata) THEN e.metadata ELSE '{}' END,'$.source')
+             IN ('pet_weekly_boss','pet_weekly_boss_backfill')
+           AND json_extract(CASE WHEN json_valid(e.metadata) THEN e.metadata ELSE '{}' END,'$.boss_id')=v.boss_id
+           AND ${weeklyBossLegacySourceProofSql('e')})
+           OR (e.id IS NULL AND a.event_key<>'' AND a.event_key=trim(a.event_key)
+             AND length(a.event_key)<=180 AND length(a.day_key)=10
+             AND date(a.day_key,'+0 days')=a.day_key
+             AND julianday(a.created_at) IS NOT NULL))`,
     [ownerId, week], [], failures, ['moonpet.bosses-combat']);
   const bossAttempts = !pets.length || sourceStatuses['moonpet.bosses-combat'].state === 'migration_pending' ? [] : await query(db,
     `SELECT 1 AS present FROM telegram_pet_events WHERE telegram_id=? AND week_key=? AND day_key=?
@@ -780,7 +798,8 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
         // source event day is inside this pet's Journey bounds. A shared
         // ISO-week victory may predate an ownership-week rollover.
         const won = bossVictories.some((v) => v.pet_id === pet.pet_id
-          && v.season_key === pet.season_key && pet.journeyBounds
+          && v.season_key === pet.season_key
+          && v.boss_id === getPetWeeklyBoss(week).boss_id && pet.journeyBounds
           && v.victory_day >= pet.journeyBounds.start_at.slice(0,10)
           && v.victory_day < pet.journeyBounds.end_at.slice(0,10));
         const participated = won || bossParticipated.has(`${pet.pet_id}:${pet.season_key}`);
