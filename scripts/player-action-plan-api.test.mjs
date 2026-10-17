@@ -8,6 +8,7 @@ import { handlePlayerActionPlanRoute } from '../workers/moonboys-api/routes/play
 import { isImmediateAction, isoWeek, nextUtcDay, paginateActionPlan, rankActionPlanTasks } from '../workers/moonboys-api/player-action-plan/schema.js';
 import { getPetWeeklyBoss } from '../workers/moonboys-api/pets/player-expansion.js';
 import { getPetDailyBounties } from '../workers/moonboys-api/pets/economy-expansion.js';
+import { verifyTelegramIdentityFromBody } from '../workers/moonboys-api/blocktopia/auth.js';
 
 function fakeDb(options = {}) {
   const calls = [];
@@ -44,6 +45,14 @@ function fakeDb(options = {}) {
           return {
             async first() {
               calls.push({ method: 'first', ...statement });
+              if (/FROM telegram_website_credentials c/u.test(sql)) {
+                if (options.websiteSessionDelayMs) await new Promise(resolve => setTimeout(resolve, options.websiteSessionDelayMs));
+                if (options.websiteSessionQueryFails) throw new Error('simulated_website_session_read_failed');
+                return options.websiteSession ? {
+                  telegram_id: '123456', username: 'verified-owner', first_name: 'Owner',
+                  last_name: null, is_blocked: 0,
+                } : null;
+              }
               if (/sqlite_master/u.test(sql)) {
                 if (options.probeGate) {
                   options.probeOnStart?.(params[0]);
@@ -165,7 +174,7 @@ function fakeDb(options = {}) {
                 return { success: true, results: [{ pet_id: 'pet-secret-456', season_key: '2026-Q3',
                   week_key: '2026-W32', boss_id: options.invalidBossId ? 'not_this_week_boss' : getPetWeeklyBoss('2026-W32').boss_id }] };
               }
-              if (/FROM telegram_pet_events\s+WHERE telegram_id=\? AND status='accepted'/su.test(sql) && options.bossParticipation) {
+              if (/SELECT e.pet_id,e.season_key FROM telegram_pet_events e/u.test(sql) && options.bossParticipation) {
                 return { success: true, results: [{ pet_id: 'pet-secret-123', season_key: '2026-Q4' }] };
               }
               if (/FROM telegram_pet_weekly_boss_events\s+WHERE telegram_id=\? AND week_key=\? AND day_key=\?/su.test(sql))
@@ -1273,6 +1282,122 @@ test('daily bounty claimability requires accepted progress and ignores unrelated
     assert.match(sql.sql, /status IN \('pending','awarded'\)/u);
     assert.deepEqual(sql.params, ['123456', day, '123456', day]);
   }
+});
+
+test('unproven legacy boss participation never suppresses a current action', async () => {
+  const db = fakeDb({ bossReady: true });
+  const response = await handlePlayerActionPlanRoute(request(auth({ limit: 100 })),
+    { DB: db, TELEGRAM_BOT_TOKEN: 'test' }, options());
+  assert.equal(response.status, 200);
+  const sqlCall = db.calls.find(entry => /SELECT e.pet_id,e.season_key FROM telegram_pet_events e/u.test(entry.sql));
+  assert.ok(sqlCall, 'participation uses the source-event read');
+  assert.match(sqlCall.sql, /e.event_key<>'' AND e.event_key=trim\(e.event_key\) AND length\(e.event_key\)<=180/u);
+  assert.match(sqlCall.sql, /e.reason IN \('weekly_boss_attempt','weekly_boss_participation'\)/u);
+  assert.match(sqlCall.sql, /pet_weekly_boss_backfill/u);
+  assert.match(sqlCall.sql, /JOIN telegram_pet_weekly_boss_events legacy_b/u);
+  // Execute that exact production SQL against an actual SQLite fixture.
+  const sql = new DatabaseSync(':memory:');
+  try {
+    sql.exec(`
+      CREATE TABLE telegram_pet_events (
+        pet_id TEXT, telegram_id TEXT, season_key TEXT, status TEXT,
+        event_type TEXT, event_key TEXT, day_key TEXT, reason TEXT,
+        metadata TEXT, week_key TEXT
+      );
+      CREATE TABLE telegram_pet_weekly_boss_victories_by_pet (
+        telegram_id TEXT, pet_id TEXT, season_key TEXT, week_key TEXT,
+        victory_event_key TEXT, boss_id TEXT
+      );
+      CREATE TABLE telegram_pet_weekly_boss_events (
+        telegram_id TEXT, week_key TEXT, boss_id TEXT, event_key TEXT,
+        day_key TEXT, action TEXT, damage INTEGER
+      );
+    `);
+    const makeEvent = (key, source, reason = 'weekly_boss_attempt') =>
+      ['pet-secret-123','123456','2026-Q4','accepted','weekly_boss',key,'2026-10-17',reason,
+        JSON.stringify({source,boss_id:'neon_titan',action:'strike',damage:15}), '2026-W42'];
+    const addEvent = (...args) => sql.prepare(`INSERT INTO telegram_pet_events
+      (pet_id,telegram_id,season_key,status,event_type,event_key,day_key,reason,metadata,week_key)
+      VALUES (?,?,?,?,?,?,?,?,?,?)`).run(...args);
+    addEvent(...makeEvent(' untrimmed ', 'pet_weekly_boss'));
+    addEvent(...makeEvent('unproven-backfill', 'pet_weekly_boss_backfill'));
+    addEvent(...makeEvent('wrong-reason', 'pet_weekly_boss', 'random_event'));
+    let rows = sql.prepare(sqlCall.sql).all(...sqlCall.params);
+    assert.equal(rows.length, 0, 'untrimmed, wrong reason and unproven backfill are not accepted proof');
+    addEvent(...makeEvent('valid-attack', 'pet_weekly_boss'));
+    rows = sql.prepare(sqlCall.sql).all(...sqlCall.params);
+    assert.deepEqual(rows, [{pet_id:'pet-secret-123', season_key:'2026-Q4'}]);
+    sql.prepare(`DELETE FROM telegram_pet_events WHERE event_key='valid-attack'`).run();
+    sql.prepare(`INSERT INTO telegram_pet_weekly_boss_victories_by_pet
+      VALUES ('123456','pet-secret-123','2026-Q4','2026-W42','unproven-backfill','neon_titan')`).run();
+    sql.prepare(`INSERT INTO telegram_pet_weekly_boss_events
+      VALUES ('123456','2026-W42','neon_titan','unproven-backfill','2026-10-17','strike',15)`).run();
+    rows = sql.prepare(sqlCall.sql).all(...sqlCall.params);
+    assert.equal(rows.length, 1, 'exact legacy victory/attack proof is accepted');
+  } finally {
+    sql.close();
+  }
+});
+
+test('nested selectors are rejected before authentication without rejecting verified credential IDs', async () => {
+  let verifyCalls = 0;
+  const verifyIdentity = async () => { verifyCalls++; return { telegramId: '123456' }; };
+  for (const extra of [
+    { filters: { selected_pet_id: 'foreign' } },
+    { options: { owner_id: 'foreign' } },
+    { filters: [{ sort: 'new' }, { selectedPetRef: 'foreign' }] },
+    { options: { nested: { sourcePetRef: 'foreign' } } },
+    { other: { payload: { scope_ref: 'foreign' } } },
+  ]) {
+    const db = fakeDb();
+    const response = await handlePlayerActionPlanRoute(request(auth(extra)),
+      { DB: db, TELEGRAM_BOT_TOKEN: 'test' }, options({verifyIdentity}));
+    assert.equal(response.status, 400, JSON.stringify(extra));
+    assert.equal(db.calls.length, 0, 'no D1 read before selector validation');
+  }
+  assert.equal(verifyCalls, 0, 'reject selectors before verifying credentials');
+  const valid = await handlePlayerActionPlanRoute(request(auth({ filters: { group: 'all' } })),
+    { DB: fakeDb(), TELEGRAM_BOT_TOKEN: 'test' }, options({verifyIdentity}));
+  assert.equal(valid.status, 200);
+  assert.equal(verifyCalls, 1);
+});
+
+test('website credentials share read-only statement and timeout budgets with projection', async () => {
+  const realVerifier = (body, authEnv) =>
+    verifyTelegramIdentityFromBody(body, authEnv, async () => true);
+  const websiteAuth = auth({ telegram_auth: { id: '123456', hash: 's1_' + 'A'.repeat(43) } });
+  const websiteDb = fakeDb({ websiteSession: true });
+  const website = await handlePlayerActionPlanRoute(request(websiteAuth),
+    { DB: websiteDb, TELEGRAM_BOT_TOKEN: 'test' }, options({verifyIdentity: realVerifier}));
+  assert.equal(website.status, 200);
+  const websiteBody = await website.json();
+  const session = websiteDb.calls.find(call => /FROM telegram_website_credentials c/u.test(call.sql));
+  assert.ok(session && session.method === 'first');
+  assert.equal(session.params.length, 4);
+  assert.equal(websiteBody.query_budget.statement_count, websiteDb.calls.length);
+  const baselineDb = fakeDb();
+  const baseline = await handlePlayerActionPlanRoute(request(auth()),
+    { DB: baselineDb, TELEGRAM_BOT_TOKEN: 'test' }, options({verifyIdentity: realVerifier}));
+  assert.equal(baseline.status, 200);
+  const normalBody = await baseline.json();
+  assert.equal(websiteBody.query_budget.statement_count, normalBody.query_budget.statement_count + 1);
+  const slowDb = fakeDb({ websiteSession: true, websiteSessionDelayMs: 500 });
+  const slow = await handlePlayerActionPlanRoute(request(websiteAuth),
+    { DB: slowDb, TELEGRAM_BOT_TOKEN: 'test' },
+    options({verifyIdentity: realVerifier, statementTimeoutMs: 15, projectionTimeoutMs: 300}));
+  assert.equal(slow.status, 503, 'session read is capped by the same D1 statement timeout');
+  assert.equal(slowDb.calls.filter(call => /FROM telegram_website_credentials c/u.test(call.sql)).length, 1);
+  assert.equal(slowDb.calls.some(call => /FROM telegram_pet_instances i/u.test(call.sql)), false,
+    'a failed auth read never starts owner projection');
+  let sawUnsafePrepare = false;
+  const unsafe = await handlePlayerActionPlanRoute(request(auth()),
+    { DB: fakeDb(), TELEGRAM_BOT_TOKEN: 'test' }, options({verifyIdentity: async (_body, authEnv) => {
+      sawUnsafePrepare = true;
+      await authEnv.DB.prepare('UPDATE telegram_users SET xp=999').bind().first();
+      return {telegramId: '123456'};
+    }}));
+  assert.ok(sawUnsafePrepare);
+  assert.equal(unsafe.status, 503, 'auth cannot bypass the read-only SQL gate');
 });
 
 test('source-specific UTC clocks survive BST/GMT rollover and pagination is bounded', () => {
