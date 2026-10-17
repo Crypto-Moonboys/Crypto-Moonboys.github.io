@@ -1058,7 +1058,7 @@ test('historical pending claim backlog is explicit and never displaces current d
   assert.equal(overflow?.status, 'preview', 'unread rows have no verified pet/season authority');
   assert.equal(overflow.blocking_reason_code, 'hidden_claim_authority_not_verified');
   assert.equal(result.top_actions.some(t => t.task_id === overflow.task_id), false);
-  assert.equal(result.tasks.filter(t => t.source_key === 'moonpet.seven-of-seven-claim' && t.status === 'claim_ready').length, 99);
+  assert.equal(result.tasks.filter(t => t.source_key === 'moonpet.seven-of-seven-claim' && t.status === 'claim_ready').length, 100);
   let daily = result.tasks.find(t => t.source_key === 'moonpet.daily-seven-missions' && t.title === 'Daily Moonpet completion conditions');
   // The API deliberately pages at 100 tasks: the daily summary may be on a
   // later page when the member has 137 historic pending claim receipts.
