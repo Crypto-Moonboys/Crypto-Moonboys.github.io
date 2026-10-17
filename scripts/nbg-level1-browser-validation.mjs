@@ -226,6 +226,18 @@ for (let i = 2; i < cloudBytes.length - 9;) {
 assert.deepEqual(cloudDimension, { width: 480, height: 270 },
   'uploaded sky JPEG must retain native 480x270 full-viewport dimensions');
 
+// The user-supplied flying pig is a 5-column x 4-row (20-frame) 700x560
+// sheet. The pigeon remains the same 28x22 collision/score entity; only its
+// animation is presented at twice the former on-screen size (56x44).
+assert.equal(assetManifest.enemies.pigeon, 'enemies/PIGFLY-iji.png',
+  'flying pig must replace only the former pigeon art path');
+const flyingPigFile = path.resolve(process.cwd(), 'game/assets/enemies/PIGFLY-iji.png');
+const flyingPigHeader = fs.readFileSync(flyingPigFile).subarray(16, 24);
+assert.equal(flyingPigHeader.readUInt32BE(0), 700,
+  'flying pig sprite sheet must retain its native 700px width');
+assert.equal(flyingPigHeader.readUInt32BE(4), 560,
+  'flying pig sprite sheet must retain its native 560px height');
+
 const runtimeSource = fs.readFileSync(path.resolve(process.cwd(), 'game/nbg-level1.js'), 'utf8');
 assert.ok(runtimeSource.includes('function drawSkyWallpaper()') &&
   runtimeSource.includes('var tileW = WIDTH') &&
@@ -237,6 +249,17 @@ assert.ok(runtimeSource.includes('function drawSkyWallpaper()') &&
   runtimeSource.includes('drawSkyWallpaper();') &&
   !runtimeSource.includes("drawImageLayer(images.sky, 0.08"),
   'sky wallpaper must use original viewport-sized tiles, alternate mirrored copies, and retain parallax');
+
+assert.ok(runtimeSource.includes('var FLYING_PIG_COLUMNS = 5') &&
+  runtimeSource.includes('var FLYING_PIG_ROWS = 4') &&
+  runtimeSource.includes('var FLYING_PIG_FRAMES = 20') &&
+  runtimeSource.includes('var FLYING_PIG_RENDER_WIDTH = 56') &&
+  runtimeSource.includes('var FLYING_PIG_RENDER_HEIGHT = 44') &&
+  runtimeSource.includes("} else if (enemy.type === 'pigeon') {") &&
+  runtimeSource.includes('pigFrame % FLYING_PIG_COLUMNS * pigCellW') &&
+  runtimeSource.includes('Math.floor(pigFrame / FLYING_PIG_COLUMNS) * pigCellH') &&
+  runtimeSource.includes('ctx.scale(-1, 1)'),
+  'flying pigs must crop 5x4 frames and draw at double pigeon size, including mirrored flight');
 
 const gameCssSource = fs.readFileSync(path.resolve(process.cwd(), 'game/game.css'), 'utf8');
 const fullscreenShellSource = fs.readFileSync(path.resolve(process.cwd(), 'js/game-fullscreen.js'), 'utf8');
@@ -920,6 +943,11 @@ assert.deepEqual(
 assert.equal(state.running, true, 'ArrowRight must start the game loop');
 assert.equal(state.coinCount, 312, 'speedrun must spawn 312 XP coins across four sizes');
 assert.equal(state.enemyCount, 57, 'each of 18 course sections must include rat, bot and pigeon');
+assert.equal(
+  new URL(state.assetStatus.pigeon?.src || '', url).pathname,
+  '/game/assets/enemies/PIGFLY-iji.png',
+  'loaded flying enemy must display the approved flying pig sheet'
+);
 assert.equal(state.platformCount, 76, 'speedrun must provide 76 playable jump platforms');
 assert.equal(state.hazardCount, 39, 'speedrun must provide 39 collidable obstacles');
 assert.equal(state.extraCheckpointCount, 4, 'extended course must have four additional checkpoints');
