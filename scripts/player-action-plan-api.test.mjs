@@ -167,7 +167,9 @@ function fakeDb(options = {}) {
               if (/FROM telegram_pet_events\s+WHERE telegram_id=\? AND status='accepted'/su.test(sql) && options.bossParticipation) {
                 return { success: true, results: [{ pet_id: 'pet-secret-123', season_key: '2026-Q4' }] };
               }
-              if (/event_type='weekly_boss'.*reason='weekly_boss_attempt'/su.test(sql) && options.bossAttempt) return { success: true, results: [{ event_id: 'attempt-1' }] };
+              if (/FROM telegram_pet_events WHERE telegram_id=\? AND week_key=\? AND day_key=\?/u.test(sql)
+                  && /event_type='weekly_boss'/u.test(sql) && options.bossAttempt)
+                return { success: true, results: [{ event_id: 'attempt-1' }] };
               if (/FROM dead_run_sessions.*status='active'/su.test(sql)) return { success: true, results: options.deadRunActive ? [{ session_id: options.deadRunSessionId || 'active-run' }] : [] };
               if (/FROM dead_run_sessions.*status='finished'.*ranked=1/su.test(sql)) return { success: true, results: options.deadRunVerified ? [{ score: 4321, ended_at: '2026-10-17T11:00:00Z' }] : [] };
               if (/championship_clout_daily/u.test(sql)) return { success: true, results: [{ total_points: 18, recalculated_at_ms: 1792195200000 }] };
