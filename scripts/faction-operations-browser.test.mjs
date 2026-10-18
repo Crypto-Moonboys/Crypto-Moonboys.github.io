@@ -73,7 +73,11 @@ async function setup(width=390,options={}) {
     const order=config.order;
     window.__fopTest={id:config.id,linked:config.linked,state:config.initial,
       subscribers:[],writes:0,reads:0,refreshed:0,releasePending:null,
-      releaseQueuedRefresh:null};
+      queuedRefreshResolvers:[],
+      releaseNextQueuedRefresh(value) {
+        const resolve = this.queuedRefreshResolvers.shift();
+        if (resolve) resolve(value);
+      }};
     window.MOONBOYS_IDENTITY={
       isTelegramLinked:()=>window.__fopTest.linked,
       getTelegramId:()=>window.__fopTest.linked?window.__fopTest.id:null,
@@ -104,7 +108,7 @@ async function setup(width=390,options={}) {
       refreshAfterInflight() {
         window.__fopTest.refreshed++;
         if (config.holdQueuedRefresh) {
-          return new Promise(resolve => { window.__fopTest.releaseQueuedRefresh = resolve; });
+          return new Promise(resolve => { window.__fopTest.queuedRefreshResolvers.push(resolve); });
         }
         return Promise.resolve(window.__fopTest.state);
       },
@@ -699,7 +703,7 @@ test('PR5 faction view suppresses another component’s pre-action Daily Loop su
         detail:{source:'arcade',event:'moonboys:arcade-score-accepted',remote:true}
       }));
     });
-    await page.waitForFunction(()=>typeof window.__fopTest.releaseQueuedRefresh==='function');
+    await page.waitForFunction(()=>window.__fopTest.queuedRefreshResolvers.length===1);
     assert.doesNotMatch(await page.locator('[data-fop-private]').innerText(),
       /120 \(server-saved faction contribution/);
     // Emulate an older singleton request, owned by another component, publishing
@@ -710,7 +714,7 @@ test('PR5 faction view suppresses another component’s pre-action Daily Loop su
       'external pre-action subscriber delivery stays suppressed');
     await page.evaluate(value=>{
       window.__fopTest.state=value;
-      window.__fopTest.releaseQueuedRefresh(value);
+      window.__fopTest.releaseNextQueuedRefresh(value);
     },fresh);
     await page.waitForFunction(()=>document.querySelector('[data-fop-private]')?.textContent.includes(
       '9 (server-saved faction contribution'
@@ -718,6 +722,84 @@ test('PR5 faction view suppresses another component’s pre-action Daily Loop su
     assert.match(await page.locator('[data-fop-private]').innerText(),
       /9 \(server-saved faction contribution/);
     assert.equal(await page.evaluate(()=>window.__fopTest.refreshed),1);
+    assert.equal(f.errors.length,0,f.errors.join('\n'));
+  }finally{await f.browser.close();}
+});
+
+
+test('PR5 faction-status during accepted follow-up queues replacement read and never strands subscriber suppression',async()=>{
+  const old=fixture({dayValue:120});
+  const fresh=fixture({dayValue:9,rows:false});
+  const f=await setup(390,{pageKey:'graffpunks',state:old,holdQueuedRefresh:true});
+  try{
+    const {page}=f;
+    await page.waitForFunction(()=>document.querySelector('[data-fop-private]')?.textContent.includes(
+      '120 (server-saved faction contribution'
+    ));
+    await page.evaluate(()=>{
+      window.dispatchEvent(new CustomEvent('moonboys:player-action-accepted',{
+        detail:{source:'arcade',event:'moonboys:arcade-score-accepted',remote:true}
+      }));
+    });
+    await page.waitForFunction(()=>window.__fopTest.queuedRefreshResolvers.length===1);
+    await page.evaluate(()=>window.dispatchEvent(new CustomEvent('moonboys:faction-status')));
+    await page.evaluate(value=>window.__fopTest.push(value),old);
+    assert.doesNotMatch(await page.locator('[data-fop-private]').innerText(),
+      /120 \(server-saved faction contribution/,
+      'retired follow-up cannot let old subscriber state repaint');
+    await page.evaluate(value=>window.__fopTest.releaseNextQueuedRefresh(value),old);
+    await page.waitForFunction(()=>window.__fopTest.refreshed===2 &&
+      window.__fopTest.queuedRefreshResolvers.length===1);
+    await page.evaluate(value=>{
+      window.__fopTest.state=value;
+      window.__fopTest.releaseNextQueuedRefresh(value);
+    },fresh);
+    await page.waitForFunction(()=>document.querySelector('[data-fop-private]')?.textContent.includes(
+      '9 (server-saved faction contribution'
+    ),null,{timeout:5000});
+    assert.equal(await page.evaluate(()=>window.__fopTest.refreshed),2);
+    await page.evaluate(value=>window.__fopTest.push(value),fresh);
+    assert.match(await page.locator('[data-fop-private]').innerText(),
+      /9 \(server-saved faction contribution/,
+      'subscriber delivery resumes after replacement authoritative read');
+    assert.equal(f.errors.length,0,f.errors.join('\n'));
+  }finally{await f.browser.close();}
+});
+
+test('PR5 UTC rollover during accepted follow-up queues new-day replacement and releases suppression',async()=>{
+  const old=fixture({now:'2026-10-17',dayValue:120});
+  const fresh=fixture({now:'2026-10-18',dayValue:9,rows:false});
+  const f=await setup(390,{
+    pageKey:'graffpunks',state:old,holdQueuedRefresh:true,
+    clockTime:'2026-10-17T23:59:30.000Z',
+  });
+  try{
+    const {page}=f;
+    await page.waitForFunction(()=>document.querySelector('[data-fop-private]')?.textContent.includes(
+      '120 (server-saved faction contribution'
+    ));
+    await page.evaluate(()=>{
+      window.dispatchEvent(new CustomEvent('moonboys:player-action-accepted',{
+        detail:{source:'moonpet',event:'moonpet:action-accepted',remote:true}
+      }));
+    });
+    await page.waitForFunction(()=>window.__fopTest.queuedRefreshResolvers.length===1);
+    await page.evaluate(value=>{window.__fopTest.state=value;},fresh);
+    await page.clock.runFor(62000);
+    assert.equal(await page.evaluate(()=>new Date().toISOString().slice(0,10)),'2026-10-18');
+    await page.evaluate(value=>window.__fopTest.releaseNextQueuedRefresh(value),old);
+    await page.waitForFunction(()=>window.__fopTest.refreshed===2 &&
+      window.__fopTest.queuedRefreshResolvers.length===1);
+    await page.evaluate(value=>window.__fopTest.releaseNextQueuedRefresh(value),fresh);
+    await page.waitForFunction(()=>document.querySelector('[data-fop-private]')?.textContent.includes(
+      '9 (server-saved faction contribution'
+    ),null,{timeout:5000});
+    const text=await page.locator('[data-fop-private]').innerText();
+    assert.match(text,/UTC day 2026-10-18/);
+    assert.match(text,/9 \(server-saved faction contribution/);
+    assert.doesNotMatch(text,/120 \(server-saved faction contribution|UTC day 2026-10-17/);
+    await page.evaluate(value=>window.__fopTest.push(value),fresh);
+    assert.match(await page.locator('[data-fop-private]').innerText(),/9 \(server-saved faction contribution/);
     assert.equal(f.errors.length,0,f.errors.join('\n'));
   }finally{await f.browser.close();}
 });
