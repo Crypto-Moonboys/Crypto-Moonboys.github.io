@@ -5,7 +5,7 @@ import { DatabaseSync } from 'node:sqlite';
 import { createReadOnlyActionPlanDb, isReadOnlyActionPlanSql } from '../workers/moonboys-api/player-action-plan/read-only-db.js';
 import { ACTION_PLAN_SOURCE_REGISTRY, buildPlayerActionPlanSources } from '../workers/moonboys-api/player-action-plan/sources.js';
 import { handlePlayerActionPlanRoute } from '../workers/moonboys-api/routes/player-action-plan.js';
-import { isImmediateAction, isoWeek, nextUtcDay, paginateActionPlan, rankActionPlanTasks } from '../workers/moonboys-api/player-action-plan/schema.js';
+import { actionPlanSnapshotToken, isImmediateAction, isoWeek, nextUtcDay, paginateActionPlan, rankActionPlanTasks } from '../workers/moonboys-api/player-action-plan/schema.js';
 import { getPetWeeklyBoss } from '../workers/moonboys-api/pets/player-expansion.js';
 import { getPetDailyBounties } from '../workers/moonboys-api/pets/economy-expansion.js';
 import { verifyTelegramIdentityFromBody } from '../workers/moonboys-api/blocktopia/auth.js';
@@ -467,6 +467,73 @@ test('PR3 source task helper contains exactly one evidence property after Wrangl
     source.indexOf('function genericTask(now, source, status, health, detail = {})'));
   assert.equal((taskHelper.match(/\bevidence:\s*\{/gu) || []).length, 1);
   assert.match(taskHelper, /evidence:\s*\{ kind: meta\.evidence, \.\.\.\(input\.evidence \|\| \{\}\) \}/u);
+});
+
+test('signed action-plan pagination rejects stale ranking snapshot without skipping saved claims', async () => {
+  const ownerEnv = { DB: fakeDb({ manyPending: true }), TELEGRAM_BOT_TOKEN: 'test' };
+  const firstResponse = await handlePlayerActionPlanRoute(request(auth({ limit: 100 })), ownerEnv, options());
+  assert.equal(firstResponse.status, 200);
+  const first = await firstResponse.json();
+  assert.match(first.snapshot, /^pap2_[a-f0-9]{32}$/u);
+  assert.ok(first.pagination.next_cursor, 'large saved claim backlog must paginate');
+
+  const identical = await handlePlayerActionPlanRoute(request(auth({
+    limit: 100, cursor: first.pagination.next_cursor, snapshot: first.snapshot,
+  })), { DB: fakeDb({ manyPending: true }), TELEGRAM_BOT_TOKEN: 'test' }, options());
+  assert.equal(identical.status, 200);
+  const continued = await identical.json();
+  assert.equal(continued.snapshot, first.snapshot, 'repeated source read remains at same ranked revision');
+  assert.ok(continued.tasks.length > 0);
+  const originalIds = new Set(first.tasks.map(task => task.task_id));
+  assert.ok(continued.tasks.every(task => !originalIds.has(task.task_id)),
+    'continuation must not duplicate the first page');
+
+  // A newly claimable job or run can sort before an offset; a backend that
+  // accepts the old offset silently skips the displaced task. Force a
+  // different authoritative saved-state projection with the same owner/day.
+  const changed = await handlePlayerActionPlanRoute(request(auth({
+    limit: 100, cursor: first.pagination.next_cursor, snapshot: first.snapshot,
+  })), { DB: fakeDb({ manyPending: true, savedStates: true }), TELEGRAM_BOT_TOKEN: 'test' }, options());
+  assert.equal(changed.status, 409, 're-ranked source must restart rather than apply the stale offset');
+  assert.equal((await changed.json()).error, 'action_plan_snapshot_changed');
+  assert.equal(changed.headers.get('Cache-Control'), 'no-store, private');
+
+  const missing = await handlePlayerActionPlanRoute(request(auth({
+    limit: 100, cursor: first.pagination.next_cursor,
+  })), ownerEnv, options());
+  assert.equal(missing.status, 400, 'no unversioned offset bypass');
+  const wrongOwner = await handlePlayerActionPlanRoute(request(auth({
+    limit: 100, cursor: first.pagination.next_cursor, snapshot: first.snapshot,
+  })), { DB: fakeDb({ manyPending: true }), TELEGRAM_BOT_TOKEN: 'test' },
+  options({verifyIdentity: async () => ({telegramId: 'different-owner'})}));
+  assert.equal(wrongOwner.status, 409, 'fingerprint is bound to verified owner, not submitted selectors');
+  const resumed = await handlePlayerActionPlanRoute(request(auth({ limit: 100 })),
+    { DB: fakeDb({ manyPending: true, savedStates: true }), TELEGRAM_BOT_TOKEN: 'test' }, options());
+  assert.equal(resumed.status, 200);
+  assert.notEqual((await resumed.json()).snapshot, first.snapshot);
+});
+
+test('ranked snapshot excludes volatile read timestamps but detects authority changes', async () => {
+  const task = {
+    task_id: 'moonpet.jobs:opaque-session', source_pet_ref: 'pap_' + 'f'.repeat(24),
+    owner_scope: 'original_pet', status: 'waiting', priority: 510,
+    source_health: 'live', evidence: {kind:'server_projection'}, expires_at: null,
+    period: {kind:'saved_timer',key:'saved-session'},
+  };
+  const original = await actionPlanSnapshotToken([task], 'signed-owner', '2026-10-17:all');
+  assert.match(original, /^pap2_[a-f0-9]{32}$/u);
+  assert.equal(await actionPlanSnapshotToken([{...task,read_at:'2026-10-17T23:00:00Z'}],
+    'signed-owner','2026-10-17:all'), original,
+  'timestamp-only refresh must not invalidate stable pagination');
+  for (const patch of [
+    {status:'claim_ready'}, {priority:40}, {blocking_reason_code:'source_missing'},
+    {expires_at:'2026-10-17T23:40:00Z'}, {source_pet_ref:'pap_' + 'e'.repeat(24)},
+  ]) {
+    assert.notEqual(await actionPlanSnapshotToken([{...task,...patch}],
+      'signed-owner','2026-10-17:all'),original,JSON.stringify(patch));
+  }
+  assert.notEqual(await actionPlanSnapshotToken([task], 'different-owner','2026-10-17:all'),original);
+  assert.notEqual(await actionPlanSnapshotToken([task], 'signed-owner','2026-10-18:all'),original);
 });
 
 test('zero-pet response stays complete and blocks pet work without fabricating state', async () => {
@@ -1136,7 +1203,7 @@ test('historical pending claim backlog is explicit and never displaces current d
     && /37 more/u.test(t.title));
   let overflowCursor = result.pagination.next_cursor;
   while (!overflow && overflowCursor) {
-    const next = await (await handlePlayerActionPlanRoute(request(auth({limit:100,cursor:overflowCursor})),
+    const next = await (await handlePlayerActionPlanRoute(request(auth({limit:100,cursor:overflowCursor,snapshot:result.snapshot})),
       {DB:fakeDb({manyPending:true}),TELEGRAM_BOT_TOKEN:'test'},options())).json();
     overflow = next.tasks.find(t => t.source_key === 'moonpet.seven-of-seven-claim'
       && /37 more/u.test(t.title));
@@ -1151,7 +1218,7 @@ test('historical pending claim backlog is explicit and never displaces current d
   // later page when the member has 137 historic pending claim receipts.
   let cursor = result.pagination.next_cursor;
   while (!daily && cursor) {
-    const next = await (await handlePlayerActionPlanRoute(request(auth({ limit: 100, cursor })),
+    const next = await (await handlePlayerActionPlanRoute(request(auth({ limit: 100, cursor, snapshot: result.snapshot })),
       { DB: fakeDb({ manyPending: true }), TELEGRAM_BOT_TOKEN: 'test' }, options())).json();
     daily = next.tasks.find(t => t.source_key === 'moonpet.daily-seven-missions'
       && t.title === 'Daily Moonpet completion conditions');
