@@ -146,4 +146,18 @@
       return function () { subscribers.delete(callback); };
     },
   });
+
+  // BroadcastChannel does not retain messages for tabs that have not opened
+  // the channel yet. A page may therefore finish its initial private read while
+  // this deferred script is still downloading, miss an accepted action from
+  // another tab, and otherwise keep that stale projection marked current.
+  // Once reception becomes possible, force consumers to reconcile from source.
+  // Consumers that have not initialised yet will perform their normal initial
+  // read after this point, so missing this local readiness event is harmless.
+  if (channel) {
+    const detail = Object.freeze({ reason: 'action_sync_ready', utc_day: nowDay() });
+    try {
+      window.dispatchEvent(new CustomEvent('moonboys:player-reconcile-needed', { detail }));
+    } catch (_) {}
+  }
 }());
