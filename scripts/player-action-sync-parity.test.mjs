@@ -75,6 +75,17 @@ test('PR5 MoonPet emits invalidation only inside the server-accepted branch and 
   }
 });
 
+test('PR5 shell and standalone Arcade loaders install a bounded pre-bus accepted-event buffer', () => {
+  assert.match(siteShell, /__MOONBOYS_ACTION_SYNC_BUFFER__/u);
+  assert.match(siteShell, /events\.length > 32/u);
+  assert.match(siteShell, /ensurePlayerActionSync\(\);[\s\S]{0,180}document\.readyState/u,
+    'shell starts buffering/loading before DOMContentLoaded page producers');
+  assert.match(gameShell, /__MOONBOYS_ACTION_SYNC_BUFFER__/u);
+  assert.match(gameShell, /events\.length > 32/u);
+  assert.match(sync, /const buffered = window\.__MOONBOYS_ACTION_SYNC_BUFFER__/u);
+  assert.match(sync, /queued\.forEach\(item => broadcast/u);
+});
+
 test('PR5 action sync is globally loaded for shell pages and directly for standalone MoonPet', () => {
   assert.match(siteShell, /\/js\/player-action-sync\.js/u);
   assert.match(siteShell, /script\.dataset\.playerActionSync/u);
