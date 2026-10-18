@@ -129,6 +129,10 @@ test('Engage, Signal and Cite are distinct Wiki receipt-backed actions; other in
   }
   for (const flag of ['COMMENTS', 'LIKES', 'CITATION_VOTES'])
     assert.ok(new RegExp(flag + ':\\s+true').test(config), flag + ' runtime flag changed');
+  const publicGuide = read('how-to-play.html');
+  assert.match(publicGuide, /Wiki participation — comments, article likes and citation votes/u);
+  assert.match(publicGuide, /My Moonboy currently shows only the total accepted Wiki receipts for today/u);
+  assert.match(publicGuide, /href="\/my-moonboy\.html#mm-economy"/u);
   assert.match(read('js/comments.js'), /eligible server-accepted Engage, Signal and Cite/u);
   assert.doesNotMatch(read('js/comments.js'), /Comment = 10 XP|Like = 5 XP|Citation = 15 XP/u,
     'outdated fixed frontend reward promises contradict source receipts');
