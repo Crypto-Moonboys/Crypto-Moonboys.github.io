@@ -12526,7 +12526,7 @@ export default {
     }
 
     // ── GET /telegram/profile?telegram_id= ────────────────────────────────
-    // Reads from telegram_users; includes faction via telegram_faction_members.
+    // Reads from telegram_users; faction comes from canonical blocktopia_progression.
     if (path === '/telegram/profile' && request.method === 'GET') {
       const telegramId = url.searchParams.get('telegram_id');
       if (!telegramId) return err('telegram_id required');
