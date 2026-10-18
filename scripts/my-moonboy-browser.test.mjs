@@ -91,18 +91,18 @@ function plan(owner, cursor) {
   };
 }
 
-async function setup(viewport, initiallyLinked) {
+async function setup(viewport, initiallyLinked, apiPrefix = '') {
   const browser = await chromium.launch({
     executablePath: process.env.CHROMIUM_EXECUTABLE_PATH ||
       (existsSync('/usr/bin/chromium') ? '/usr/bin/chromium' : undefined),
     headless: true,
   });
   const context = await browser.newContext({ viewport });
-  await context.addInitScript(links => {
+  await context.addInitScript(([links, prefix]) => {
     window.__mmTest = { id:'111', linked:links };
-    window.MOONBOYS_API = { BASE_URL:'https://api.cryptomoonboys.com',
-      getApiBase:()=> 'https://api.cryptomoonboys.com' };
-  }, initiallyLinked);
+    window.MOONBOYS_API = { BASE_URL:'https://api.cryptomoonboys.com' + prefix,
+      getApiBase:()=> 'https://api.cryptomoonboys.com' + prefix };
+  }, [initiallyLinked, apiPrefix]);
   const requests = [];
   let failure = false;
   let delayOwner = '';
@@ -114,7 +114,7 @@ async function setup(viewport, initiallyLinked) {
         return route.fulfill({status:204,headers:{'access-control-allow-origin':SITE,
           'access-control-allow-methods':'POST,OPTIONS','access-control-allow-headers':'Content-Type'}});
       }
-      if (url.pathname === '/player/action-plan') {
+      if (url.pathname === apiPrefix + '/player/action-plan') {
         const body = request.postDataJSON();
         requests.push({url:request.url(),method:request.method(),body});
         if (delayOwner === body.telegram_auth.id) await new Promise(resolve => setTimeout(resolve, 250));
@@ -234,5 +234,17 @@ test('PR3 logout, account switch, expired auth and stale source never expose ano
     assert.doesNotMatch(await f.page.locator('#my-moonboy').innerText(),/Alpha|Beta/);
     assert.ok(f.requests.every(entry=>entry.body.telegram_auth.id==='111' || entry.body.telegram_auth.id==='222'));
     assert.equal(f.errors.length,0,f.errors.join('\n'));
+  } finally { await f.browser.close(); }
+});
+
+
+test('PR3 preserves configured API reverse-proxy prefixes', async () => {
+  const f = await setup({width:390,height:844}, true, '/v2-api');
+  try {
+    await f.page.goto(SITE + '/my-moonboy.html', {waitUntil:'domcontentloaded'});
+    await f.page.locator('#mm-next .mm-task').first().waitFor();
+    assert.ok(f.requests.length > 0);
+    assert.ok(f.requests.every(item => new URL(item.url).pathname === '/v2-api/player/action-plan'));
+    assert.equal(f.errors.length, 0, f.errors.join('\n'));
   } finally { await f.browser.close(); }
 });
