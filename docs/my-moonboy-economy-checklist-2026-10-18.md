@@ -27,6 +27,8 @@ The Worker stores `wiki_mission_completions` by **page, mission_id, UTC mission 
 
 The pre-existing Wiki comment information card was advertising unconditional fixed values (Comment = 10 XP, Like = 5 XP, Citation = 15 XP). That is not a reliable reflection of the Worker receipt path (its test fixture verifies a like can settle 10 XP). The PR replaces those hard-coded claims with **source-defined accepted-mission** copy, without changing payouts. Operational verification still needs the live Worker, migration 029 and a real signed session.
 
+The same comments panel also had hard-coded illustrative "Top Contributors" accounts and XP figures substituted whenever live contributor rows were absent. The page now reports **verified contributor rankings unavailable** on an absent/empty feed instead of fabricating competitive scores. This is a display-truth fix only; no leaderboard API or score ledger is changed.
+
 ### Source categories and money/points separation
 
 - **Arcade XP** is lifetime achievement and a separate spendable wallet. First-pet qualification requires 1,000 lifetime Arcade XP without debit; pet 2/pet 3 spend 500/1,000 spendable Arcade XP. Do not equate score, unaccepted attempts or tokens with XP.
