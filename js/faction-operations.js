@@ -478,7 +478,8 @@
     sharedDailyLoop(true, true).catch(function () {});
   }
 
-  function queueForcedRefresh() {
+  function queueForcedRefresh(options) {
+    const opts = options || {};
     const id = ownerId();
     // Retire the component generation immediately. The shared singleton may
     // still have a request in flight, so queue the authoritative follow-up
@@ -489,6 +490,7 @@
     suppressSubscriberUntilForcedResult = Boolean(id);
     snapshot = null;
     loading = Boolean(id);
+    if (opts.retireComponentInflight) inflight = null;
     personalRoot.replaceChildren();
     render();
     if (id) runQueuedForcedRefresh();
@@ -577,7 +579,7 @@
       // UTC rollover is another authoritative boundary. Reuse the same queued
       // follow-up contract so a concurrent accepted-action request cannot
       // strand subscriber suppression across the epoch transition.
-      queueForcedRefresh();
+      queueForcedRefresh({ retireComponentInflight: true });
     }, 60000);
   }
 
