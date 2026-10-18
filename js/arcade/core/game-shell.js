@@ -1,4 +1,3 @@
-import '/js/player-action-sync.js';
 import { bootstrapFromAdapter } from '/js/arcade/engine/game-adapter.js';
 import { mountArcadeRadio } from '/js/arcade/core/radio.js?v=meme-mobile-20261014';
 /**
@@ -29,6 +28,33 @@ import { mountArcadeRadio } from '/js/arcade/core/radio.js?v=meme-mobile-2026101
  */
 const LIFECYCLE_METHODS = ['init', 'start', 'pause', 'resume', 'reset', 'destroy', 'getScore'];
 
+function ensurePlayerActionSync() {
+  if (typeof window === 'undefined' || typeof document === 'undefined' || window.MOONBOYS_ACTION_SYNC) {
+    return Promise.resolve();
+  }
+  if (window.__MOONBOYS_ARCADE_ACTION_SYNC_LOADING__) return window.__MOONBOYS_ARCADE_ACTION_SYNC_LOADING__;
+  const existing = document.querySelector('script[data-player-action-sync]');
+  if (existing) {
+    window.__MOONBOYS_ARCADE_ACTION_SYNC_LOADING__ = new Promise(resolve => {
+      if (window.MOONBOYS_ACTION_SYNC) return resolve();
+      existing.addEventListener('load', resolve, { once: true });
+      existing.addEventListener('error', resolve, { once: true });
+      window.setTimeout(resolve, 2500);
+    });
+    return window.__MOONBOYS_ARCADE_ACTION_SYNC_LOADING__;
+  }
+  window.__MOONBOYS_ARCADE_ACTION_SYNC_LOADING__ = new Promise(resolve => {
+    const script = document.createElement('script');
+    script.src = '/js/player-action-sync.js';
+    script.async = false;
+    script.dataset.playerActionSync = '1';
+    script.addEventListener('load', resolve, { once: true });
+    script.addEventListener('error', resolve, { once: true });
+    document.head.appendChild(script);
+  });
+  return window.__MOONBOYS_ARCADE_ACTION_SYNC_LOADING__;
+}
+
 /**
  * Mount a game onto the page.
  *
@@ -38,6 +64,10 @@ const LIFECYCLE_METHODS = ['init', 'start', 'pause', 'resume', 'reset', 'destroy
  * @returns {Promise<object>}          - Resolves to the game lifecycle object.
  */
 export async function mountGame(options) {
+  // Standalone Arcade pages do not load site-shell.js. Ensure the sanitized
+  // accepted-action bus is available before any game bootstrap can emit an
+  // accepted score/progression event.
+  await ensurePlayerActionSync();
   var root      = options.root;
   var bootstrap = options.bootstrap;
   var adapter = options.adapter || null;
