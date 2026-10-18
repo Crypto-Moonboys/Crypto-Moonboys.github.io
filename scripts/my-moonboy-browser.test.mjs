@@ -260,6 +260,63 @@ test('PR3 logout, account switch, expired auth and stale source never expose ano
 });
 
 
+test('PR3 clears previous owner search query on account switch and logout', async () => {
+  const f = await setup({width:390,height:844}, true);
+  try {
+    await f.page.goto(SITE+'/my-moonboy.html', {waitUntil:'domcontentloaded'});
+    await f.page.locator('#mm-next .mm-task').first().waitFor();
+    await f.page.locator('#mm-search').fill('Alpha saved job claim');
+    assert.match(await f.page.locator('#mm-results').innerText(), /Alpha saved job claim/);
+
+    // Clearing owner data is synchronous with the identity transition, not
+    // delayed until the next private Worker response (which may be slow).
+    const switched = await f.page.evaluate(() => {
+      window.__mmTest.id = '222';
+      window.dispatchEvent(new CustomEvent('moonboys:identity-change'));
+      return {
+        input: document.getElementById('mm-search').value,
+        hidden: document.getElementById('mm-private').hidden,
+        visibleResults: document.getElementById('mm-results').textContent,
+      };
+    });
+    assert.deepEqual(switched, {input:'', hidden:true, visibleResults:''},
+      'old owner query and results must be purged before new auth completes');
+    await f.page.waitForFunction(() =>
+      document.getElementById('mm-player-name')?.textContent === 'Beta player');
+    assert.equal(await f.page.locator('#mm-search').inputValue(), '');
+    assert.match(await f.page.locator('#mm-results').innerText(),
+      /Beta saved job claim/, 'new owner must not inherit Alpha-only search filter');
+
+    await f.page.locator('#mm-search').fill('Beta saved job claim');
+    assert.match(await f.page.locator('#mm-results').innerText(), /Beta saved job claim/);
+    const loggedOut = await f.page.evaluate(() => {
+      window.__mmTest.linked = false;
+      window.dispatchEvent(new CustomEvent('moonboys:identity-change'));
+      return {
+        input: document.getElementById('mm-search').value,
+        hidden: document.getElementById('mm-private').hidden,
+        visibleResults: document.getElementById('mm-results').textContent,
+      };
+    });
+    assert.deepEqual(loggedOut, {input:'', hidden:true, visibleResults:''},
+      'logout must purge the current search and private task content');
+
+    await f.page.evaluate(() => {
+      window.__mmTest.linked = true;
+      window.__mmTest.id = '111';
+      window.dispatchEvent(new CustomEvent('moonboys:identity-change'));
+    });
+    await f.page.waitForFunction(() =>
+      document.getElementById('mm-player-name')?.textContent === 'Alpha player');
+    assert.equal(await f.page.locator('#mm-search').inputValue(), '');
+    assert.match(await f.page.locator('#mm-results').innerText(),
+      /Alpha saved job claim/, 'returning owner also starts with an unfiltered ledger');
+    assert.equal(f.errors.length, 0, f.errors.join('\n'));
+  } finally {
+    await f.browser.close();
+  }
+});
+
 test('PR3 preserves configured API reverse-proxy prefixes', async () => {
   const f = await setup({width:390,height:844}, true, '/v2-api');
   try {
