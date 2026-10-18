@@ -176,6 +176,18 @@ test('Wiki contributor XP rankings do not fall back to fictional scores', () => 
   assert.match(source, /list\.innerHTML = contributorListHTML\(rows\)/u);
 });
 
+test('empty contributor notice spans every rank/avatar/name/XP grid column even with compact row sizes', () => {
+  const comments = read('js/comments.js');
+  const wikiCss = read('css/wiki.css');
+  const compactCss = read('css/wiki-comments-compact.css');
+  assert.match(comments, /<li class="top-contributor-row top-contributor-row--empty"><span class="top-contributor-empty-notice">/u);
+  assert.match(wikiCss, /body\.page-wiki \.top-contributor-row--empty > \.top-contributor-empty-notice \{[^}]*grid-column:\s*1\s*\/\s*-1;/u);
+  assert.match(wikiCss, /body\.page-wiki \.top-contributor-row \{[^}]*grid-template-columns:\s*28px 44px minmax\(0, 1fr\) auto;/u);
+  assert.match(compactCss, /body\.page-wiki \.top-contributor-row \{[^}]*grid-template-columns:\s*22px 32px minmax\(0, 1fr\) auto;/u);
+  assert.ok(!/body\.page-wiki \.top-contributor-row--empty > \.top-contributor-empty-notice/.test(compactCss),
+    'compact overrides must not undo the full-column span');
+});
+
 test('Wiki fallback panel never invents Battle Heat or mixes comments with likes and citations', () => {
   const source = read('js/wiki-template-dashboard.js');
   assert.doesNotMatch(source, /Promise\.resolve\(25\)|return 25;|comments\.length \* 5/u);
