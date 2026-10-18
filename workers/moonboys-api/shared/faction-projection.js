@@ -23,3 +23,25 @@ export function canonicalFactionProjection(row) {
     source: 'blocktopia_progression',
   });
 }
+
+/**
+ * Read-only compatibility shape for existing Telegram profile/digest callers.
+ * A legacy community membership row must never override the account's
+ * current Battle Chamber faction. Numeric legacy metadata is optional.
+ */
+export async function readCanonicalFactionProfile(db, telegramId) {
+  const row = await db.prepare(CANONICAL_FACTION_READ_SQL).bind(telegramId).first();
+  const faction = canonicalFactionProjection(row);
+  if (!faction.joined) return null;
+  const meta = await db.prepare(
+    'SELECT id, name, description, icon FROM telegram_factions WHERE name=? LIMIT 1'
+  ).bind(faction.name).first().catch(() => null);
+  return Object.freeze({
+    id: meta?.id ?? null,
+    name: faction.name,
+    description: meta?.description ?? null,
+    icon: meta?.icon ?? null,
+    role: null,
+    faction_xp: faction.faction_xp,
+  });
+}
