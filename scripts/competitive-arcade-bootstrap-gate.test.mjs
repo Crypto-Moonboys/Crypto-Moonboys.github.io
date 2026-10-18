@@ -45,8 +45,13 @@ async function loadMountGame({ gateResult, stalledSync = false }) {
     addEventListener(type, handler) { this.listeners.set(type, handler); },
   };
   const documentObj = stalledSync ? {
+    listeners: new Map(),
     querySelector() { return null; },
     createElement() { return stalledScript; },
+    addEventListener(type, handler) { this.listeners.set(type, handler); },
+    removeEventListener(type, handler) {
+      if (this.listeners.get(type) === handler) this.listeners.delete(type);
+    },
     head: { appendChild() {} },
   } : undefined;
   const windowObj = {
