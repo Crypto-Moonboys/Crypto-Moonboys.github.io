@@ -638,3 +638,39 @@ test('PR4 same-day tick removes the final expired window without fabricating ano
     assert.equal(f.errors.length,0,f.errors.join('\n'));
   }finally{await f.browser.close();}
 });
+
+
+test('PR5 accepted action queues a forced Daily Loop read after a pending pre-action request',async()=>{
+  const old=fixture({dayValue:120});
+  const fresh=fixture({dayValue:9,rows:false});
+  const f=await setup(390,{pageKey:'graffpunks',holdFirstRead:true,state:old});
+  try{
+    const {page}=f;
+    await page.waitForFunction(()=>typeof window.__fopTest.releasePending==='function');
+    assert.match(await page.locator('[data-fop-private]').innerText(),/120 \(server-saved faction contribution/);
+    await page.evaluate(()=>{
+      window.dispatchEvent(new CustomEvent('moonboys:player-action-accepted',{
+        detail:{source:'moonpet',event:'moonpet:action-accepted',remote:true}
+      }));
+      window.dispatchEvent(new CustomEvent('moonboys:player-action-accepted',{
+        detail:{source:'moonpet',event:'moonpet:action-accepted',remote:true}
+      }));
+    });
+    assert.doesNotMatch(await page.locator('[data-fop-private]').innerText(),/120 \(server-saved faction contribution/);
+    // Simulate the shared singleton publishing its old in-flight snapshot.
+    await page.evaluate(value=>window.__fopTest.push(value),old);
+    assert.doesNotMatch(await page.locator('[data-fop-private]').innerText(),/120 \(server-saved faction contribution/,
+      'queued post-action refresh suppresses pre-action subscriber delivery');
+    await page.evaluate(value=>{window.__fopTest.state=value;},fresh);
+    await page.evaluate(value=>window.__fopTest.releasePending(value),old);
+    await page.waitForFunction(()=>document.querySelector('[data-fop-private]')?.textContent.includes(
+      '9 (server-saved faction contribution'
+    ),null,{timeout:5000});
+    assert.equal(await page.evaluate(()=>window.__fopTest.refreshed),1,
+      'multiple accepted invalidations while one read is pending collapse to one post-action forced read');
+    const current=await page.locator('[data-fop-private]').innerText();
+    assert.match(current,/9 \(server-saved faction contribution/);
+    assert.doesNotMatch(current,/120 \(server-saved faction contribution/);
+    assert.equal(f.errors.length,0,f.errors.join('\n'));
+  }finally{await f.browser.close();}
+});
