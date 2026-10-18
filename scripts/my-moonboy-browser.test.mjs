@@ -181,6 +181,9 @@ for (const width of [360, 390, 1280]) {
       assert.match(await f.page.locator('#mm-pets').innerText(),/Lifecycle phase: young/);
       assert.match(await f.page.locator('#mm-next').innerText(),/MoonPet slot 1/);
       assert.equal(await f.page.locator('#mm-claim-count').textContent(),'1');
+      assert.equal(await f.page.locator('#mm-claims-badge').textContent(),'1');
+      assert.equal(await f.page.locator('#mm-claims-badge').isHidden(),false);
+      assert.match(await f.page.locator('#mm-pets').innerText(),/1 claim ready/);
       assert.equal(await f.page.locator('progress[aria-label]').count()>0,true);
       assert.equal(await f.page.locator('#mm-next a.mm-button').first().getAttribute('href'),'/moonpet-game.html');
       assert.equal(await f.page.evaluate(() => document.querySelector('.mm-page').getBoundingClientRect().right <= window.innerWidth+1),true);
@@ -796,4 +799,89 @@ test('PR3 initial signed mission load recovers when its response crosses UTC mid
   } finally {
     await f.browser.close();
   }
+});
+
+
+test('PR5 accepted-action invalidation hides claim badges until a fresh source projection arrives', async () => {
+  const f=await setup({width:390,height:844},true);
+  let cleared=false;
+  f.setPlanFactory((owner,cursor)=>{
+    const value=plan(owner,cursor);
+    if(cleared && !cursor){
+      value.summary.claims_ready=0;
+      value.summary.ready_count=0;
+      value.tasks[0].status='claimed';
+      value.top_actions=[];
+    }
+    return value;
+  });
+  try{
+    await f.page.goto(SITE+'/my-moonboy.html',{waitUntil:'domcontentloaded'});
+    await f.page.locator('#mm-next .mm-task').first().waitFor();
+    assert.equal(await f.page.locator('#mm-claims-badge').textContent(),'1');
+    assert.match(await f.page.locator('#mm-pets').innerText(),/1 claim ready/);
+    const before=f.requests.length;
+    cleared=true;
+    const immediate=await f.page.evaluate(()=>{
+      window.dispatchEvent(new CustomEvent('moonboys:player-action-accepted',{
+        detail:{source:'moonpet',event:'moonpet:action-accepted',remote:true,utc_day:new Date().toISOString().slice(0,10)}
+      }));
+      return {
+        badgeHidden:document.getElementById('mm-claims-badge').hidden,
+        next:document.getElementById('mm-next').textContent,
+        sync:document.getElementById('mm-sync').textContent,
+      };
+    });
+    assert.equal(immediate.badgeHidden,true,'stale claim count cannot remain a ready badge');
+    assert.match(immediate.next,/Top recommendations temporarily unavailable/);
+    assert.match(immediate.sync,/STALE|refresh pending/i);
+    await f.page.waitForFunction(count=>window.performance &&
+      document.getElementById('mm-claim-count')?.textContent==='0',before,{timeout:5000});
+    assert.ok(f.requests.length>before);
+    assert.equal(await f.page.locator('#mm-claims-badge').isHidden(),true);
+    assert.doesNotMatch(await f.page.locator('#mm-pets').innerText(),/claim ready/);
+    assert.equal(f.errors.length,0,f.errors.join('\n'));
+  }finally{await f.browser.close();}
+});
+
+test('PR5 offline state removes current readiness badges and online reconciliation restores server truth',async()=>{
+  const f=await setup({width:390,height:844},true);
+  try{
+    await f.page.goto(SITE+'/my-moonboy.html',{waitUntil:'domcontentloaded'});
+    await f.page.locator('#mm-next .mm-task').first().waitFor();
+    const before=f.requests.length;
+    assert.equal(await f.page.locator('#mm-claims-badge').isHidden(),false);
+    const offline=await f.page.evaluate(()=>{
+      window.dispatchEvent(new Event('offline'));
+      return {
+        badgeHidden:document.getElementById('mm-claims-badge').hidden,
+        sync:document.getElementById('mm-sync').textContent,
+        next:document.getElementById('mm-next').textContent,
+      };
+    });
+    assert.equal(offline.badgeHidden,true);
+    assert.match(offline.sync,/OFFLINE/);
+    assert.match(offline.next,/Top recommendations temporarily unavailable/);
+    assert.equal(f.requests.length,before,'offline is display-only and cannot start a request');
+    await f.page.evaluate(()=>window.dispatchEvent(new Event('online')));
+    await f.page.waitForFunction(()=>document.getElementById('mm-sync')?.textContent.startsWith('Last verified read'));
+    assert.ok(f.requests.length>before);
+    assert.equal(await f.page.locator('#mm-claims-badge').textContent(),'1');
+    assert.equal(await f.page.locator('#mm-claims-badge').isHidden(),false);
+    assert.equal(f.errors.length,0,f.errors.join('\n'));
+  }finally{await f.browser.close();}
+});
+
+test('PR5 My Moonboy shell loads the global action sync before private dashboard code',async()=>{
+  const html=await readFile(path.join(ROOT,'my-moonboy.html'),'utf8');
+  const shell=await readFile(path.join(ROOT,'js/site-shell.js'),'utf8');
+  const moonpet=await readFile(path.join(ROOT,'moonpet-game.html'),'utf8');
+  assert.match(shell,/\/js\/player-action-sync\.js/u);
+  assert.match(shell,/data-player-action-sync/u);
+  assert.match(html,/src="\/js\/site-shell\.js"/u);
+  assert.ok(html.indexOf('src="/js/site-shell.js"')<html.indexOf('src="/js/my-moonboy.js"'));
+  assert.match(moonpet,/src="\/js\/player-action-sync\.js"/u,
+    'standalone Moonpet page cannot rely on site-shell loader');
+  assert.ok(moonpet.indexOf('src="/js/player-action-sync.js"')<
+    moonpet.indexOf('src="/js/moonpet-mini-app.js'));
 });
