@@ -109,6 +109,18 @@
 .page-my-moonboy .mm-tabs button[aria-selected="true"] {
   border-color: var(--mm-accent); color: #e0ffff; background: rgba(116, 226, 223, .13);
 }
+.page-my-moonboy .mm-tab-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 20px; height: 20px; margin-left: 5px; padding: 0 6px;
+  border-radius: 999px; border: 1px solid rgba(168,243,225,.5);
+  font: 800 .68rem/1 system-ui,sans-serif; color: #061b26; background: #a8f3e1;
+}
+.page-my-moonboy .mm-tab-badge[hidden] { display: none !important; }
+.page-my-moonboy .mm-pet-claim-badge {
+  display: inline-flex; margin: 6px 0; border-radius: 999px; padding: 4px 8px;
+  font: 800 .72rem/1.2 system-ui,sans-serif; color: #061b26; background: #a8f3e1;
+}
+
 .page-my-moonboy .mm-filters { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 10px 0; }
 .page-my-moonboy .mm-filters label { display: grid; gap: 6px; font: 700 .8rem/1.4 system-ui, sans-serif; color: var(--mm-muted); }
 .page-my-moonboy .mm-filters input, .page-my-moonboy .mm-filters select {
