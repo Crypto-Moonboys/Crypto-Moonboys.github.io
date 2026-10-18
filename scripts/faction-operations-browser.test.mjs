@@ -76,8 +76,8 @@ async function setup(width=390,options={}) {
       isTelegramLinked:()=>window.__fopTest.linked,
       getTelegramId:()=>window.__fopTest.linked?window.__fopTest.id:null,
     };
-    window.MOONBOYS_FACTION_PROFILES=Object.fromEntries(order.map(key=>
-      [key,{name:key.toUpperCase()}]));
+    window.MOONBOYS_FACTION_PROFILES=config.profiles === false ? {} :
+      Object.fromEntries(order.map(key=>[key,{name:key.toUpperCase()}]));
     window.MOONBOYS_MISSION_DATA=config.missionData;
     window.MOONBOYS_BATTLE_CHAMBER_STANDINGS={
       weekly:{source:'server',period:'weekly',period_key:'2026-W42',rows:[
@@ -108,7 +108,7 @@ async function setup(width=390,options={}) {
       window.dispatchEvent(new CustomEvent('moonboys:identity-change'));
     };
   },{order:FACTIONS,initial:options.state??fixture(),id:options.owner??'111',
-    linked:options.linked??true,missionData:missionData()});
+    linked:options.linked??true,missionData:missionData(),profiles:options.profiles});
   await page.addScriptTag({content:SCRIPT});
   await page.waitForFunction(()=>document.querySelector('[data-fop-crew]')?.textContent.length>25);
   return {browser,context,page,errors};
@@ -135,6 +135,10 @@ test('PR4 mounts exactly once in nine faction chambers and Community; preserves 
   assert.ok(community.indexOf('id="battle-my-contribution-today"') <
     community.indexOf('id="battle-active-missions"'));
   assert.match(community,/\/js\/faction-operations\.js/u);
+  assert.match(community,/\/js\/faction-profile-data\.js/u,
+    'Community must load the same canonical faction names as the chambers');
+  assert.ok(community.indexOf('src="/js/faction-profile-data.js"') <
+    community.indexOf('src="/js/faction-operations.js"'));
   const editorial=await readFile(path.join(ROOT,'dashboard.html'),'utf8');
   assert.doesNotMatch(editorial,/data-fop-(crew|private)|faction-operations\.js/u);
   assert.doesNotMatch(SCRIPT,/localStorage|sessionStorage|fetch\s*\(|XMLHttpRequest|sendBeacon/u,
@@ -279,6 +283,35 @@ test('PR4 stale UTC-day source cannot impersonate current day or claim saved pro
     assert.doesNotMatch(await f.page.locator('[data-fop-private]').innerText(),/120|Saved complete/);
     await f.page.evaluate(value=>window.__fopTest.push(value),fixture());
     assert.match(await f.page.locator('[data-fop-private]').innerText(),/120/);
+    assert.equal(f.errors.length,0,f.errors.join('\n'));
+  }finally{await f.browser.close();}
+});
+
+
+test('PR4 Community preserves canonical GraffPUNKS and The Blockstars names without profile metadata',async()=>{
+  const f=await setup(390,{linked:false,state:fixture({verified:false}),profiles:false});
+  try{
+    const directory=await f.page.locator('[data-fop-crew]').innerText();
+    assert.match(directory,/GraffPUNKS/);
+    assert.match(directory,/The Blockstars/);
+    assert.doesNotMatch(directory,/\bGraffpunks\b/);
+    assert.equal(await f.page.locator('[data-fop-crew] .fop-directory a').count(),9);
+    assert.equal(f.errors.length,0,f.errors.join('\n'));
+  }finally{await f.browser.close();}
+});
+
+test('PR4 stale old-owner callback cannot overwrite already accepted new-owner snapshot',async()=>{
+  const f=await setup(390,{pageKey:'graffpunks'});
+  try{
+    await f.page.evaluate(()=>window.__fopTest.change('222',true));
+    await f.page.evaluate(value=>window.__fopTest.push(value),fixture({owner:'222',rows:false,dayValue:9}));
+    assert.match(await f.page.locator('[data-fop-private]').innerText(),
+      /9 \(server-saved faction contribution/);
+    await f.page.evaluate(value=>window.__fopTest.push(value),fixture());
+    assert.match(await f.page.locator('[data-fop-private]').innerText(),
+      /9 \(server-saved faction contribution/);
+    assert.doesNotMatch(await f.page.locator('[data-fop-private]').innerText(),
+      /120|Saved complete \(advisory\)/);
     assert.equal(f.errors.length,0,f.errors.join('\n'));
   }finally{await f.browser.close();}
 });
