@@ -11,6 +11,14 @@
 - **Telegram website profile, bot `/profile`, signed player-state and daily digests:** their existing shared Worker `getUserFaction` now uses the same canonical progression read. The independent daily-digest route uses it too. A legacy numeric community faction ID is only optional profile metadata; normalization uses the canonical faction *name*, not its numeric ID. An unreadable source cannot be silently interpreted as unaligned.
 - **Other games:** separate faction-specific gameplay/rank records and legacy Telegram community membership tables remain intact. We do not overwrite records merely to force them to agree. Discordant legacy rows are reported in tests and ignored by the verified membership label, not migrated or deleted.
 
+## Follow-up review fixes
+
+1. **Alias-aware numeric metadata:** `telegram_factions` can still contain the original `diamond-hands` and `hodl-warriors` names. Canonical `hard-fork-rockers` and `rugpull-miners` membership remains sourced exclusively from `blocktopia_progression.faction`, but alias-aware, bounded metadata lookup preserves the legacy numeric ID used by `player_faction_signal_state` and existing icon/description. The same resolver is used by the Daily Loop and Telegram profile/digest.
+2. **Private profile access:** `GET /telegram/profile?telegram_id=...` was not owner-verified and previously returned community XP, wallet and faction details for any ID. It now returns `405`; `POST /telegram/profile` accepts only `{ telegram_auth }`, obtains the owner through the same verified Telegram auth as `/faction/status`, rejects client-supplied owner selectors, and responds `Cache-Control: private, no-store`. The website client uses refreshed signed auth in a POST body and drops a response after account-switch or logout.
+3. **Safe missed-opportunity writes:** The daily-loop read can generate daily opportunity and missed-day records. If canonical faction source lookup fails, that write path now exits as unavailable before doing either backfill or activation. A genuinely verified `unaligned` account remains permitted; a missing source must not create permanent unattributed records that cannot be repaired by later backfills.
+
+Test with real signed accounts after deployment. Never attempt faction switches or modify production membership rows to test these safeguards.
+
 ## Safety and acceptance
 
 - Nine canonical faction identifiers and recognized aliases tested.
