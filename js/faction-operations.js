@@ -579,10 +579,19 @@
         return;
       }
       lastDay = day;
-      // UTC rollover is another authoritative boundary. Reuse the same queued
-      // follow-up contract so a concurrent accepted-action request cannot
-      // strand subscriber suppression across the epoch transition.
-      queueForcedRefresh({ retireComponentInflight: true });
+      // UTC rollover is another authoritative boundary. Signed owners use the
+      // queued private reconciliation contract. Guests still need a fresh
+      // anonymous Daily Loop read for public reset/WTF schedule truth.
+      if (!ownerId()) {
+        epoch++;
+        snapshotRevision++;
+        snapshot = null;
+        inflight = null;
+        render();
+        sharedDailyLoop(true, true).catch(function () {});
+      } else {
+        queueForcedRefresh({ retireComponentInflight: true });
+      }
     }, 60000);
   }
 
