@@ -5,7 +5,7 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
-  CANONICAL_FACTION_READ_SQL, canonicalFactionProjection,
+  CANONICAL_FACTION_READ_SQL, canonicalFactionProjection, readCanonicalFactionProfile,
 } from '../workers/moonboys-api/shared/faction-projection.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -106,6 +106,44 @@ test('faction browser cache rejects anonymous, previous-owner and unscoped rows'
   assert.equal(api.getCachedStatus(), null, 'account switch invalidates old owner cache');
   activeId = null;
   assert.equal(api.getCachedStatus(), null, 'guest cannot inherit linked membership');
+});
+
+
+test('Telegram profile and digest use the same read-only saved faction without a legacy fallback', async () => {
+  const calls = [];
+  const database = {
+    prepare(sql) {
+      return { bind(...params) {
+        return { async first() {
+          calls.push({ sql, params });
+          if (sql.includes('FROM blocktopia_progression')) {
+            return params[0] === 'graff-owner'
+              ? { faction:'graffpunks', faction_xp:57 } : null;
+          }
+          if (sql.includes('FROM telegram_factions')) {
+            return { id:3, name:'graffpunks', description:'Graffiti crew', icon:'paint' };
+          }
+          throw new Error('unexpected query');
+        } };
+      } };
+    },
+  };
+  const result = await readCanonicalFactionProfile(database, 'graff-owner');
+  assert.equal(result.name, 'graffpunks');
+  assert.equal(result.faction_xp, 57);
+  assert.equal(result.id,3);
+  assert.equal(await readCanonicalFactionProfile(database,'different-owner'),null);
+  assert.ok(calls.every(call => /^\s*SELECT\b/u.test(call.sql)));
+  assert.ok(calls.every(call => !/telegram_faction_members/u.test(call.sql)));
+  assert.deepEqual(calls.filter(call => call.sql.includes('FROM blocktopia_progression'))
+    .map(call => call.params[0]), ['graff-owner','different-owner']);
+  const worker = read('workers/moonboys-api/worker.js');
+  const digest = read('workers/moonboys-api/routes/daily-digest.js');
+  assert.match(worker, /return readCanonicalFactionProfile\(db, telegramId\)/u);
+  assert.match(digest, /return readCanonicalFactionProfile\(db, telegramId\)/u);
+  assert.doesNotMatch(worker, /FROM telegram_faction_members/u);
+  assert.doesNotMatch(digest, /FROM telegram_faction_members/u);
+  assert.match(worker, /const normalizedFaction = normalizeFaction\(factionId\)/u);
 });
 
 console.log('Canonical faction authority parity: server and all private player pages guarded.');
