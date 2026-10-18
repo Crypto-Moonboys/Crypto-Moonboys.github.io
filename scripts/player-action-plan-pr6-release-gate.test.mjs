@@ -16,6 +16,21 @@ function releaseErrors(record) {
   if (record?.production_state !== 'verified') return errors;
   if (record.owner_approval !== 'approved') errors.push('GK approval is missing');
   if (record.automation_state !== 'ci_green') errors.push('all CI domains are not confirmed');
+  const sha = record.ci?.reviewed_head_sha;
+  const isSha = value => /^[0-9a-f]{40}$/u.test(value || '');
+  const githubEvidence = value => /^https:\/\/github\.com\/Crypto-Moonboys\/Crypto-Moonboys\.github\.io\/(?:actions\/runs\/\d+|pull\/1558(?:#.*)?)$/u.test(value || '');
+  if (!isSha(sha)) errors.push('reviewed CI head SHA is missing');
+  for (const domain of ['ci-wiki', 'ci-worker-api', 'ci-arcade', 'ci-wax', 'ci-visual']) {
+    const result = record.ci?.domains?.[domain];
+    if (!isSha(result?.head_sha) || result.head_sha !== sha ||
+        result.conclusion !== 'success' || !githubEvidence(result.run_url) ||
+        !/\/actions\/runs\/\d+$/u.test(result.run_url || ''))
+      errors.push(domain + ' success evidence missing or not tied to reviewed head SHA');
+  }
+  if (!isSha(record.gk_approval?.approved_head_sha) ||
+      record.gk_approval.approved_head_sha !== sha ||
+      !/^https:\/\/github\.com\/Crypto-Moonboys\/Crypto-Moonboys\.github\.io\/(?:pull\/1558|issues\/1552)#(?:issuecomment|pullrequestreview)-\d+$/u.test(record.gk_approval?.approval_url || ''))
+    errors.push('explicit GK approval link is missing or does not match reviewed head SHA');
   if (!Array.isArray(record.scenarios) || record.scenarios.length !== 15 ||
       record.scenarios.some(s => s.live_status !== 'pass' || !/^https:\/\//u.test(s.evidence_url || ''))) {
     errors.push('signed-account acceptance evidence is incomplete');
@@ -78,8 +93,25 @@ test('PR6 evidence cannot claim deployment or sign-off merely because tests exis
   falselyApproved.owner_approval = 'approved';
   falselyApproved.automation_state = 'ci_green';
   falselyApproved.scenarios.forEach(s => { s.live_status = 'pending'; s.evidence_url = null; });
-  assert.ok(releaseErrors(falselyApproved).length >= 4,
-    'fabricated green flag must not bypass absent signed evidence and deployment provenance');
+  falselyApproved.ci = { reviewed_head_sha: null, domains: {} };
+  falselyApproved.gk_approval = { approved_head_sha: null, approval_url: null };
+  falselyApproved.provenance = {
+    pages: { expected_merge_sha: null, deployed_sha: null, deployment_run_url: null, verified_at_utc: null },
+    worker: { deployment_info_sha: null, expected_sha: null, verification_url: null, verified_at_utc: null },
+    d1: { migration_required: 'no_new_migration_in_pr6', applied_migration_evidence_url: null, verified_at_utc: null },
+    rollback: { last_known_good_pages_sha: null, last_known_good_worker_sha: null, operator: null, exercise_evidence_url: null },
+  };
+  const negativeErrors = releaseErrors(falselyApproved);
+  for (const message of ['signed-account acceptance evidence is incomplete',
+    'Pages published SHA unverified', 'Worker provenance unverified',
+    'D1 applied migration evidence unverified', 'rollback proof incomplete',
+    'reviewed CI head SHA is missing', 'explicit GK approval link is missing or does not match reviewed head SHA']) {
+    assert.ok(negativeErrors.includes(message), 'negative fixture must expose missing: ' + message);
+  }
+  for (const domain of ['ci-wiki', 'ci-worker-api', 'ci-arcade', 'ci-wax', 'ci-visual'])
+    assert.ok(negativeErrors.some(message => message.startsWith(domain + ' success evidence')),
+      'negative fixture missing ' + domain);
+
 });
 
 test('PR6 deploy/rollback manual references and user instructions stay in place', () => {
