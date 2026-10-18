@@ -50,6 +50,9 @@ function ensurePlayerActionSync() {
     script.dataset.playerActionSync = '1';
     script.addEventListener('load', resolve, { once: true });
     script.addEventListener('error', resolve, { once: true });
+    // Reconciliation is auxiliary to gameplay. A stalled script request must
+    // never hold competitive gating or game initialization indefinitely.
+    window.setTimeout(resolve, 2500);
     document.head.appendChild(script);
   });
   return window.__MOONBOYS_ARCADE_ACTION_SYNC_LOADING__;
