@@ -216,9 +216,13 @@
     others.forEach(task => {
       const ref = String(task && task.source_pet_ref || '');
       if (!/^pap_[a-f0-9]{24}$/u.test(ref) || directory.has(ref)) return;
-      if (task.owner_scope !== 'pet' && task.owner_scope !== 'original_pet') return;
+      // Saved daily 7/7 bonuses are account-scoped for claim authority, but
+      // still carry the original earning-pet reference. Do not discard it
+      // simply because owner_scope === 'account'.
+      const originalEarner = task.owner_scope === 'original_pet' ||
+        task.source_key === 'moonpet.seven-of-seven-claim';
       const number = directory.size + 1;
-      const title = task.owner_scope === 'original_pet'
+      const title = originalEarner
         ? 'Original-earning MoonPet ' + number : 'Source MoonPet ' + number;
       directory.set(ref, { pet: null,
         label: title + (rosterKnown ? ' (not in active roster)' : ' (membership unknown)'),
@@ -228,9 +232,11 @@
   }
 
   function petScopeLabel(task, directory) {
-    if (!task || !['pet', 'original_pet'].includes(task.owner_scope)) return null;
-    const entry = directory.get(String(task.source_pet_ref || ''));
-    const category = task.owner_scope === 'original_pet' ? 'Original earning MoonPet' : 'MoonPet';
+    if (!task || !/^pap_[a-f0-9]{24}$/u.test(String(task.source_pet_ref || ''))) return null;
+    const entry = directory.get(String(task.source_pet_ref));
+    const originalEarner = task.owner_scope === 'original_pet' ||
+      task.source_key === 'moonpet.seven-of-seven-claim';
+    const category = originalEarner ? 'Original earning MoonPet' : 'MoonPet';
     return category + ': ' + (entry ? entry.label : 'source attribution unavailable');
   }
 
@@ -351,11 +357,16 @@
     return identity.getFreshTelegramAuth();
   }
 
-  async function postPlan(auth, cursor, controller) {
+  async function postPlan(auth, cursor, controller, snapshot) {
     const base = getApiBase();
     if (!base) throw new Error('Action-plan API not configured for this website');
     const body = { telegram_auth: auth, view: 'tasks', limit: PAGE_SIZE };
-    if (cursor) body.cursor = cursor;
+    if (cursor) {
+      if (!/^pap2_[a-f0-9]{32}$/u.test(String(snapshot || '')))
+        throw new Error('Missing verified pagination snapshot — refresh first page');
+      body.cursor = cursor;
+      body.snapshot = snapshot;
+    }
     const timer = window.setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
     try {
       const response = await fetch(base + '/player/action-plan', {
@@ -366,13 +377,18 @@
       });
       const data = await response.json().catch(() => null);
       if (!response.ok) {
-        const failure = new Error(response.status === 401 || response.status === 403
-          ? 'Telegram login expired. Log in again.'
-          : 'Action-plan source failed (HTTP ' + String(response.status) + ').');
+        const changed = response.status === 409 && data?.error === 'action_plan_snapshot_changed';
+        const failure = new Error(changed
+          ? 'The source task order changed; restarting the verified list.'
+          : response.status === 401 || response.status === 403
+            ? 'Telegram login expired. Log in again.'
+            : 'Action-plan source failed (HTTP ' + String(response.status) + ').');
         failure.status = response.status;
+        failure.code = changed ? 'action_plan_snapshot_changed' : null;
         throw failure;
       }
       if (!data || data.ok !== true || data.schema_version !== 1 ||
+        !/^pap2_[a-f0-9]{32}$/u.test(String(data.snapshot || '')) ||
         !data.owner || data.owner.authenticated !== true ||
         !Array.isArray(data.tasks) || !Array.isArray(data.top_actions) ||
         !data.source_status || !data.pagination)
@@ -388,6 +404,10 @@
     const seen = new Set(previous.map(task => task.task_id));
     const newTasks = payload.tasks.filter(task => task && typeof task.task_id === 'string' && !seen.has(task.task_id));
     state.tasks = previous.concat(newTasks);
+    if (append && payload.snapshot !== state.plan?.snapshot) {
+      invalidate('server_snapshot_changed');
+      return;
+    }
     if (!append) {
       state.plan = payload;
       state.lastSuccess = Date.now();
@@ -414,7 +434,8 @@
     }
     const day = new Date().toISOString().slice(0, 10);
     const key = ownerId + ':' + day + ':tasks';
-    if (state.ownerKey && state.ownerKey !== ownerId) {
+    if (state.ownerKey && state.ownerKey !== ownerId ||
+      state.pending && state.requestKey && state.requestKey !== key) {
       clearPrivate('Checking another account', 'Private tasks will reload for the newly verified owner.');
     }
     if (state.pending && state.requestKey === key) return state.pending;
@@ -427,6 +448,10 @@
       cancelPagination();
     }
     const epoch = state.epoch;
+    // Reserve the key BEFORE awaiting a possibly slow cookie discovery;
+    // Retry/focus must join this request rather than start a second response
+    // that can replace newer source evidence in the same epoch.
+    state.requestKey = key;
     const operation = (async () => {
       let auth;
       try { auth = await getFreshAuth(); }
@@ -439,7 +464,6 @@
       }
       const controller = new AbortController();
       state.controllers.add(controller);
-      state.requestKey = key;
       byId('mm-refresh').disabled = true;
       if (state.plan) {
         state.stale = true;
@@ -498,7 +522,7 @@
       state.pagingController = controller;
       byId('mm-load-more').disabled = true;
       try {
-        const payload = await postPlan(auth, cursor, controller);
+        const payload = await postPlan(auth, cursor, controller, firstPage.snapshot);
         if (!isRequestCurrent(epoch, ownerId, day) || state.nextCursor !== cursor ||
           state.plan !== firstPage) return;
         // A changed source period must restart the list, never append data
@@ -510,7 +534,12 @@
         applyPlan(payload, ownerId, true);
       } catch (error) {
         if (isRequestCurrent(epoch, ownerId, day)) {
-          if (error && (error.status === 401 || error.status === 403)) {
+          if (error?.code === 'action_plan_snapshot_changed') {
+            // A claim/job/event can re-rank tasks across the offset boundary.
+            // The only safe recovery is to discard the old list and fetch
+            // a new first page, never append mismatched source rows.
+            invalidate('server_snapshot_changed');
+          } else if (error && (error.status === 401 || error.status === 403)) {
             clearPrivate('Telegram login expired', 'Previous owner data cleared; log in again.');
           } else {
             state.lastFailure = 'More tasks unavailable: ' + (error.message || 'retry');
@@ -799,7 +828,21 @@
       render();
     });
     byId('mm-refresh').addEventListener('click', () => refresh({ force: true }));
-    byId('mm-gate-retry').addEventListener('click', () => refresh({ force: true }));
+    byId('mm-gate-retry').addEventListener('click', async () => {
+      const button = byId('mm-gate-retry');
+      button.disabled = true;
+      const epoch = state.epoch;
+      try {
+        // Identity can still be unknown after the startup website-session
+        // capability/cookie probe failed. Retry that gate FIRST: refresh()
+        // deliberately refuses to send anonymous/private API requests.
+        await getFreshAuth();
+        if (epoch === state.epoch) await refresh({ force: true });
+      } catch (_) {
+        if (epoch === state.epoch) showGate('Telegram session unavailable',
+          'Website-session discovery failed. Retry your account connection.');
+      } finally { button.disabled = false; }
+    });
     byId('mm-load-more').addEventListener('click', loadMore);
     const hintedTab = new URLSearchParams(window.location.search).get('tab');
     if (TABS.has(hintedTab)) selectTab(hintedTab, false);
