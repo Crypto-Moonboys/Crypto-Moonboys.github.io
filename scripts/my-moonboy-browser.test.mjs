@@ -87,7 +87,7 @@ function plan(owner, cursor) {
     },
     top_actions:[ready],
     tasks:[ready,awaiting,preview],
-    pagination:{limit:100,next_cursor:first?'pap1-100':null},
+    pagination:{limit:100,next_cursor:'pap1-100'},
   };
 }
 
@@ -106,6 +106,7 @@ async function setup(viewport, initiallyLinked, apiPrefix = '') {
   const requests = [];
   let failure = false;
   let delayOwner = '';
+  let currentPlan = plan;
   await context.route('**/*', async route => {
     const request = route.request();
     const url = new URL(request.url());
@@ -121,7 +122,7 @@ async function setup(viewport, initiallyLinked, apiPrefix = '') {
         return route.fulfill({status:failure?503:200,
           headers:{'access-control-allow-origin':SITE,'cache-control':'no-store, private',
             'content-type':'application/json'},
-          body:JSON.stringify(failure?{ok:false,error:'projection_unavailable'}:plan(body.telegram_auth.id,body.cursor))});
+          body:JSON.stringify(failure?{ok:false,error:'projection_unavailable'}:currentPlan(body.telegram_auth.id,body.cursor))});
       }
       return route.fulfill({status:404,headers:{'access-control-allow-origin':SITE},body:'{}'});
     }
@@ -145,7 +146,8 @@ async function setup(viewport, initiallyLinked, apiPrefix = '') {
   page.on('pageerror', error => errors.push(error.message));
   return {browser,context,page,requests,errors,
     setFailure(value) { failure=value; },
-    setSlowOwner(id) { delayOwner=id; }};
+    setSlowOwner(id) { delayOwner=id; },
+    setPlanFactory(factory) { currentPlan = factory; }};
 }
 
 for (const width of [360, 390, 1280]) {
@@ -163,6 +165,8 @@ for (const width of [360, 390, 1280]) {
       assert.match(await f.page.locator('#mm-pets').innerText(),/MoonPet slot 1/);
       assert.match(await f.page.locator('#mm-pets').innerText(),/Pet XP: 25/);
       assert.equal(await f.page.locator('#mm-arcade-xp').textContent(),'1200 Arcade XP');
+      assert.match(await f.page.locator('#mm-pets').innerText(),/Lifecycle phase: young/);
+      assert.match(await f.page.locator('#mm-next').innerText(),/MoonPet slot 1/);
       assert.equal(await f.page.locator('#mm-claim-count').textContent(),'1');
       assert.equal(await f.page.locator('progress[aria-label]').count()>0,true);
       assert.equal(await f.page.locator('#mm-next a.mm-button').first().getAttribute('href'),'/moonpet-game.html');
@@ -177,7 +181,7 @@ for (const width of [360, 390, 1280]) {
       assert.match(await f.page.locator('#mm-results').innerText(),/Alpha saved job claim/);
       await f.page.locator('#mm-load-more').click();
       await f.page.getByText('Alpha historic contract bonus').first().waitFor();
-      assert.match(await f.page.locator('#mm-pets').innerText(),/Historical original-earning MoonPet/);
+      assert.match(await f.page.locator('#mm-pets').innerText(),/Original-earning MoonPet/);
       assert.equal(await f.page.locator('#mm-load-more').isHidden(),true);
       assert.ok(f.requests.some(entry=>entry.body.cursor==='pap1-100'),'cursor paging must retain signed owner');
       assert.ok(f.requests.every(entry=>entry.method==='POST' &&
@@ -209,6 +213,9 @@ test('PR3 logout, account switch, expired auth and stale source never expose ano
     await f.page.waitForFunction(() => document.getElementById('mm-sync')?.textContent.includes('STALE'));
     assert.match(await f.page.locator('#mm-next').innerText(),/Top recommendations temporarily unavailable/);
     assert.equal(await f.page.locator('#mm-next a').count(),0,'stale readiness cannot remain a Top action');
+    assert.match(await f.page.locator('#mm-pets').innerText(),/Last-confirmed snapshot only/);
+    assert.match(await f.page.locator('#mm-pets').innerText(),/current availability unknown/);
+    assert.doesNotMatch(await f.page.locator('#mm-pets').innerText(),/verified action\(s\) currently available/);
     f.setFailure(false);
     await f.page.locator('#mm-refresh').click();
     await f.page.locator('#mm-next a.mm-button').first().waitFor();
