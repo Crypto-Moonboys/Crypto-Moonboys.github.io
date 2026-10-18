@@ -101,7 +101,10 @@
       typeof active.closest === 'function'
       ? active.closest('details[data-mm-checklist-key]') : null;
     const focusedKey = focusedDetail?.getAttribute('data-mm-checklist-key') || null;
-    const focusedHref = active?.tagName === 'A' ? active.getAttribute('href') : null;
+    // Href alone is ambiguous: every Saved Status action links to MoonPet,
+    // and Wiki action links also repeat. Stable row identities survive refresh.
+    const focusedLinkId = active?.tagName === 'A'
+      ? active.getAttribute('data-mm-focus-link') : null;
     const stale = Boolean(opts.stale || opts.offline);
     const all = currentTaskList(tasks, opts.topActions);
     const bySource = new Map(SOURCES.map(source => [source.key, []]));
@@ -122,8 +125,22 @@
             '<span class="mm-muted"> · ' + done + ' receipt-verified / ' + entries.length +
             ' loaded task' + (entries.length === 1 ? '' : 's') + '</span>';
           const rows = entries.length
-            ? '<ul class="mm-checklist-tasks">' + entries.map(task =>
-              '<li><span class="mm-checklist-mark" aria-hidden="true">' +
+            ? '<ul class="mm-checklist-tasks">' + entries.map(task => {
+              // petScopeLabel lives inside the signed controller, whose roster
+              // assigns safe human-readable labels. Never expose the opaque
+              // source_pet_ref in this read-only presentation.
+              const safePetLabel = typeof opts.petLabel === 'function'
+                ? opts.petLabel(task) : null;
+              const petLabel = typeof safePetLabel === 'string' && safePetLabel.trim()
+                ? safePetLabel : ['pet', 'original_pet'].includes(task.owner_scope)
+                  ? 'Pet attribution not supplied by this source' : null;
+              const period = task.period && typeof task.period === 'object' ? task.period : null;
+              const periodLabel = period?.kind
+                ? String(period.kind).replace(/[_-]+/gu, ' ') +
+                  (period.key ? ' · ' + String(period.key) : ' · no recorded period key') +
+                  (period.origin_timezone ? ' · ' + String(period.origin_timezone) : '')
+                : 'Not supplied by this source';
+              return '<li><span class="mm-checklist-mark" aria-hidden="true">' +
               (stale ? '–' : verifiedDone(task) ? '✓' : '○') + '</span><span>' +
               '<strong>' + escape(task.title || 'Unnamed source action') + '</strong> · ' +
               escape(simpleStatus(task, stale)) +
@@ -132,12 +149,18 @@
                   (task.progress.target != null ? ' / ' + escape(task.progress.target) : '') +
                   ' ' + escape(task.progress.unit || 'progress') : '') +
               (task.blocking_reason_code ? ' · Reason: ' + escape(task.blocking_reason_code.replace(/_/g, ' ')) : '') +
-              '</span></li>').join('') + '</ul>'
+              (petLabel ? '<span class="mm-checklist-context"><strong>MoonPet:</strong> ' +
+                escape(petLabel) + '</span>' : '') +
+              '<span class="mm-checklist-context"><strong>Source period:</strong> ' +
+                escape(periodLabel) + '</span>' +
+              '</span></li>';
+            }).join('') + '</ul>'
             : '<p class="mm-muted">No task in loaded results; status unknown, not completed.</p>';
           return '<details class="mm-checklist-source" data-mm-checklist-key="' + escape('source:' + source.key) +
             '"' + (openKeys.has('source:' + source.key) ? ' open' : '') +
             '><summary>' + sourceHeading +
             '</summary>' + rows + '<p><a href="' + escape(canonicalLink(source)) +
+            '" data-mm-focus-link="' + escape('source:' + source.key) +
             '">Open source</a> · See Mission Ledger for full what, why, reward, cost and expiry.</p></details>';
         }).join('') + '</div></details>';
     }).join('');
@@ -148,7 +171,8 @@
       '<ul class="mm-checklist-gaps">' + SAVED_ONLY.map(g =>
         '<li><strong>' + escape(g.label) + '</strong> — ' + escape(g.description) +
         ' <span class="mm-tag mm-tag--unknown">Unverified here</span>' +
-        ' <a href="/moonpet-game.html">Check Saved Status</a></li>').join('') + '</ul></details>';
+        ' <a href="/moonpet-game.html" data-mm-focus-link="' +
+          escape('saved:' + g.key) + '">Check Saved Status</a></li>').join('') + '</ul></details>';
     // This is a separate SOURCE CHECKLIST, not six fake actionable tasks.
     // The current API aggregates Wiki mission completions; even a verified
     // total of three cannot prove which page/action supplied the receipts.
@@ -168,16 +192,17 @@
       '<ul class="mm-checklist-gaps">' + WIKI_ENGAGEMENT.map(entry =>
         '<li><strong>' + escape(entry.label) + '</strong> — ' + escape(entry.action) +
         ' <span class="mm-tag mm-tag--unknown">Individual status not projected</span>' +
-        ' <a href="' + escape(entry.href) + '">Check original page</a></li>').join('') +
+        ' <a href="' + escape(entry.href) + '" data-mm-focus-link="' +
+          escape('wiki:' + entry.id) + '">Check original page</a></li>').join('') +
       '</ul></details>';
     const outro = '<p class="mm-muted">Block Topia Gems and XP, and some other-game rewards, are not personal balances in /player/action-plan. Check their original game screens. This checklist does not claim 100% completion or invent source records.</p>';
     target.innerHTML = heading + groups + gaps + wikiActions + outro;
     if (focusedKey) {
       const match = Array.from(target.querySelectorAll('details[data-mm-checklist-key]'))
         .find(node => node.getAttribute('data-mm-checklist-key') === focusedKey);
-      const matchingLink = focusedHref && match
-        ? Array.from(match.querySelectorAll('a[href]'))
-          .find(link => link.getAttribute('href') === focusedHref) : null;
+      const matchingLink = focusedLinkId && match
+        ? Array.from(match.querySelectorAll('a[data-mm-focus-link]'))
+          .find(link => link.getAttribute('data-mm-focus-link') === focusedLinkId) : null;
       (matchingLink || match?.querySelector(':scope > summary'))?.focus({ preventScroll: true });
     }
   }
