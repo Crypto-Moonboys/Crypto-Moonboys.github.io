@@ -56,6 +56,7 @@ async function setup(width=390,options={}) {
   });
   const context=await browser.newContext({viewport:{width,height:850}});
   const page=await context.newPage();
+  if (options.clockTime) await page.clock.install({time:new Date(options.clockTime)});
   const errors=[];
   page.on('pageerror',error=>errors.push(error.message));
   const chamber=options.pageKey||null;
@@ -71,7 +72,7 @@ async function setup(width=390,options={}) {
   await page.evaluate(config=>{
     const order=config.order;
     window.__fopTest={id:config.id,linked:config.linked,state:config.initial,
-      subscribers:[],writes:0,reads:0,refreshed:0};
+      subscribers:[],writes:0,reads:0,refreshed:0,releasePending:null};
     window.MOONBOYS_IDENTITY={
       isTelegramLinked:()=>window.__fopTest.linked,
       getTelegramId:()=>window.__fopTest.linked?window.__fopTest.id:null,
@@ -91,7 +92,13 @@ async function setup(width=390,options={}) {
         callback(window.__fopTest.state);
         return ()=>{};
       },
-      getState() {window.__fopTest.reads++;return Promise.resolve(window.__fopTest.state);},
+      getState() {
+        window.__fopTest.reads++;
+        if (config.holdFirstRead && window.__fopTest.reads === 1) {
+          return new Promise(resolve => { window.__fopTest.releasePending = resolve; });
+        }
+        return Promise.resolve(window.__fopTest.state);
+      },
       refresh() {window.__fopTest.refreshed++;return Promise.resolve(window.__fopTest.state);},
     };
     window.fetch=()=>{
@@ -107,8 +114,9 @@ async function setup(width=390,options={}) {
       window.__fopTest.linked=linked;
       window.dispatchEvent(new CustomEvent('moonboys:identity-change'));
     };
-  },{order:FACTIONS,initial:options.state??fixture(),id:options.owner??'111',
-    linked:options.linked??true,missionData:missionData(),profiles:options.profiles});
+  },{order:FACTIONS,initial:Object.hasOwn(options,'state')?options.state:fixture(),
+    id:options.owner??'111',linked:options.linked??true,missionData:missionData(),
+    profiles:options.profiles,holdFirstRead:Boolean(options.holdFirstRead)});
   await page.addScriptTag({content:SCRIPT});
   await page.waitForFunction(()=>document.querySelector('[data-fop-crew]')?.textContent.length>25);
   return {browser,context,page,errors};
@@ -141,8 +149,8 @@ test('PR4 mounts exactly once in nine faction chambers and Community; preserves 
     community.indexOf('src="/js/faction-operations.js"'));
   const editorial=await readFile(path.join(ROOT,'dashboard.html'),'utf8');
   assert.doesNotMatch(editorial,/data-fop-(crew|private)|faction-operations\.js/u);
-  assert.doesNotMatch(SCRIPT,/localStorage|sessionStorage|fetch\s*\(|XMLHttpRequest|sendBeacon/u,
-    'renderer must not fetch/cache owner state independently');
+  assert.doesNotMatch(SCRIPT,/\b(?:localStorage|sessionStorage)\.(?:getItem|setItem|removeItem|clear)\s*\(|\bfetch\s*\(|\bXMLHttpRequest\b|\bsendBeacon\s*\(/u,
+    'renderer must not read/write browser storage or fetch owner state independently');
   assert.doesNotMatch(SCRIPT,/\/faction\/signal\/contribute|\/player\/daily-missions\/progress|awardCommunityXp/u);
 });
 
@@ -345,6 +353,99 @@ test('PR4 absent bridge mission catalogue never implies a confirmed three-operat
     assert.match(t,/catalogue availability unconfirmed/);
     assert.match(t,/mission catalogue has not hydrated/);
     assert.doesNotMatch(t,/3 catalogue operations/);
+    assert.equal(f.errors.length,0,f.errors.join('\n'));
+  }finally{await f.browser.close();}
+});
+
+
+test('PR4 cross-tab Telegram storage changes and localStorage.clear() synchronously purge private contribution',async()=>{
+  const f=await setup(390,{pageKey:'graffpunks'});
+  try {
+    assert.match(await f.page.locator('[data-fop-private]').innerText(),
+      /120 \(server-saved faction contribution/);
+    const oldOwnerCleared=await f.page.evaluate(()=>{
+      window.__fopTest.id='222';
+      window.dispatchEvent(new StorageEvent('storage',{
+        key:'moonboys_tg_id',oldValue:'111',newValue:'222',
+      }));
+      return document.querySelector('[data-fop-private]').innerText;
+    });
+    assert.doesNotMatch(oldOwnerCleared,/120|Saved complete \(advisory\)/,
+      'cross-tab account switch must hide previous contribution before async refresh');
+    await f.page.evaluate(next=>window.__fopTest.push(next),fixture({
+      owner:'222',rows:false,dayValue:9,
+    }));
+    assert.match(await f.page.locator('[data-fop-private]').innerText(),
+      /9 \(server-saved faction contribution/);
+    const unrelated=await f.page.evaluate(()=>{
+      window.dispatchEvent(new StorageEvent('storage',{
+        key:'site-theme',oldValue:'light',newValue:'dark',
+      }));
+      return document.querySelector('[data-fop-private]').innerText;
+    });
+    assert.match(unrelated,/9 \(server-saved faction contribution/,
+      'unrelated UI storage keys must not disturb linked contribution');
+
+    // Another tab has cleared all localStorage. StorageEvent.key is null.
+    const loggedOut=await f.page.evaluate(()=>{
+      window.__fopTest.linked=false;
+      window.dispatchEvent(new StorageEvent('storage',{key:null}));
+      return document.querySelector('[data-fop-private]').innerText;
+    });
+    assert.match(loggedOut,/Link Telegram/);
+    assert.doesNotMatch(loggedOut,/9 \(server-saved faction contribution|120|Saved complete/,
+      'localStorage.clear() must fail closed before a delayed fetch completes');
+
+    // The older legacy auth key must also trigger the same privacy teardown.
+    await f.page.evaluate(()=>{
+      window.__fopTest.linked=true;
+      window.__fopTest.id='111';
+      window.__fopTest.push=window.__fopTest.push;
+      window.dispatchEvent(new StorageEvent('storage',{
+        key:'MOONBOYS_TELEGRAM_AUTH',oldValue:null,newValue:'changed',
+      }));
+    });
+    assert.doesNotMatch(await f.page.locator('[data-fop-private]').innerText(),
+      /9 \(server-saved faction contribution|120/);
+    assert.equal(await f.page.evaluate(()=>window.__fopTest.writes),0);
+    assert.equal(f.errors.length,0,f.errors.join('\n'));
+  }finally{await f.browser.close();}
+});
+
+test('PR4 a pre-midnight pending read cannot block the next UTC-day authenticated refresh',async()=>{
+  const f=await setup(390,{
+    pageKey:'graffpunks',holdFirstRead:true,state:null,
+    clockTime:'2026-10-17T23:59:30.000Z',
+  });
+  try {
+    assert.equal(await f.page.evaluate(()=>window.__fopTest.reads),1);
+    assert.equal(await f.page.evaluate(()=>typeof window.__fopTest.releasePending),'function');
+    assert.equal(await f.page.evaluate(()=>window.__fopTest.refreshed),0);
+    assert.doesNotMatch(await f.page.locator('[data-fop-private]').innerText(),
+      /120 \(server-saved faction contribution/,
+      'pending first page must not invent a contribution');
+    await f.page.evaluate(next=>{window.__fopTest.state=next;},fixture({
+      now:'2026-10-18',dayValue:9,rows:false,
+    }));
+    // Existing visible-page 60s interval crosses midnight while getState
+    // remains deliberately unsettled. The new-day refresh must bypass it.
+    await f.page.clock.runFor(62000);
+    await f.page.waitForFunction(() =>
+      document.querySelector('[data-fop-private]')?.innerText.includes(
+        '9 (server-saved faction contribution'
+      ),{timeout:10000});
+    assert.equal(await f.page.evaluate(()=>window.__fopTest.refreshed),1,
+      'rollover must issue a fresh singleton read rather than reuse yesterday’s promise');
+    assert.match(await f.page.locator('[data-fop-private]').innerText(),
+      /UTC day 2026-10-18/);
+    const stale=fixture({now:'2026-10-17',dayValue:120});
+    await f.page.evaluate(old=>window.__fopTest.releasePending(old),stale);
+    await f.page.waitForTimeout(75);
+    const current=await f.page.locator('[data-fop-private]').innerText();
+    assert.match(current,/9 \(server-saved faction contribution/);
+    assert.doesNotMatch(current,/120 \(server-saved faction contribution|UTC day 2026-10-17/,
+      'late old-day promise cannot repaint the next-day private state');
+    assert.equal(await f.page.evaluate(()=>window.__fopTest.writes),0);
     assert.equal(f.errors.length,0,f.errors.join('\n'));
   }finally{await f.browser.close();}
 });
