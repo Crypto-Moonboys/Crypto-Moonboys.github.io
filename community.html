@@ -14,6 +14,7 @@
   <title>Moonboy Identity Route & Battle Chamber | Crypto Moonboys</title>
   <link rel="stylesheet" href="/css/wiki.css">
   <link rel="stylesheet" href="/css/battle-layer.css">
+  <link rel="stylesheet" href="/css/faction-operations.css">
   <link rel="stylesheet" href="/css/action-page-cards.css">
   <style>
     .moonboy-outcome-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;margin-top:18px}
@@ -121,6 +122,15 @@
       <p>Complete current missions, play accepted Arcade runs and take part in live Battle Chamber opportunities. Score ranks individual game runs; server-accepted XP records connected progression; faction clout makes contribution visible.</p>
     </section>
 
+    <section class="section fop-community" id="battle-crew-operations-today" aria-labelledby="battle-crew-operations-title">
+      <h2 id="battle-crew-operations-title">CREW OPERATIONS TODAY</h2>
+      <p>Public faction mission definitions and independently sourced standings. Select a chamber to view a crew; private progress requires a signed member.</p>
+      <div data-fop-crew aria-live="polite"><p>Loading public faction operations…</p></div>
+    </section>
+    <section class="section fop-community" id="battle-my-contribution-today" aria-labelledby="battle-my-contribution-title">
+      <h2 id="battle-my-contribution-title">MY CONTRIBUTION TODAY</h2>
+      <div data-fop-private aria-live="polite"><p>Checking your verified faction status…</p></div>
+    </section>
     <details class="section bc-disclosure" open>
       <summary><span class="bc-disclosure-title" role="heading" aria-level="2">Active Faction Missions</span></summary>
       <div id="battle-active-missions"><div class="community-loading">Loading missions&#8230;</div></div>
@@ -265,5 +275,6 @@
 <script data-cfasync="false" type="module" src="/js/battle-chamber-faction-bridge.js"></script>
 <script data-cfasync="false" type="module" src="/js/arcade/systems/daily-wtf-event-system.js"></script>
 <script data-cfasync="false" src="/js/battle-chamber-factions.js"></script>
+<script data-cfasync="false" src="/js/faction-operations.js"></script>
 </body>
 </html>
