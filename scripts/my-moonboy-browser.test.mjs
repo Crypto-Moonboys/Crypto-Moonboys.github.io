@@ -949,7 +949,7 @@ test('My Moonboy signed checklist includes every source and saved-only claim cla
   const f = await setup({width:390,height:844}, true);
   try {
     await f.page.goto(SITE + '/my-moonboy.html', {waitUntil:'domcontentloaded'});
-    await f.page.locator('#mm-checklist .mm-checklist-source').first().waitFor();
+    await f.page.locator('#mm-checklist .mm-checklist-source').first().waitFor({state:'attached'});
     assert.equal(await f.page.locator('#mm-checklist .mm-checklist-source').count(), 28);
     assert.equal(await f.page.locator('#mm-checklist .mm-checklist-gaps li').count(), 5);
     assert.match(await f.page.locator('#mm-checklist').textContent(), /Alpha saved job claim/u);
