@@ -485,6 +485,8 @@ test('PR3 account-scoped saved 7/7 bonus retains original earning MoonPet in Nex
       source_key: 'moonpet.seven-of-seven-claim',
       task_id: 'moonpet.seven-of-seven-claim:saved-earner:2026-10-15',
       title: 'Collect saved Moonpet 7/7 bonus',
+      what: 'Collect saved Moonpet 7/7 bonus',
+      why: 'This verified completion remains claimable for the original earning MoonPet.',
       owner_scope: 'account',
       source_pet_ref: original,
       status: 'claim_ready', priority: 11,
