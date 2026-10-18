@@ -939,6 +939,8 @@ test('My Moonboy public guide separates Gems from Moon Crystals without exposing
       'personal checklist must remain behind verified auth');
     assert.equal(f.requests.length, 0, 'public resource guide never reads owner plan');
     assert.match(await f.page.locator('#mm-economy').textContent(), /Moon Crystals|Block Topia Gems/u);
+    assert.match(await f.page.locator('#mm-economy').textContent(), /Wiki likes, comments, citations/u);
+    assert.match(await f.page.locator('#mm-economy').textContent(), /Cite mission votes on an existing listed source|Cite — vote/u);
     assert.ok(await f.page.evaluate(() =>
       document.querySelector('#mm-economy').getBoundingClientRect().right <= innerWidth + 1));
     assert.equal(f.errors.length, 0, f.errors.join('\n'));
@@ -951,7 +953,10 @@ test('My Moonboy signed checklist includes every source and saved-only claim cla
     await f.page.goto(SITE + '/my-moonboy.html', {waitUntil:'domcontentloaded'});
     await f.page.locator('#mm-checklist .mm-checklist-source').first().waitFor({state:'attached'});
     assert.equal(await f.page.locator('#mm-checklist .mm-checklist-source').count(), 28);
-    assert.equal(await f.page.locator('#mm-checklist .mm-checklist-gaps li').count(), 5);
+    assert.equal(await f.page.locator('#mm-checklist [data-mm-checklist-key="gap:saved-status"] .mm-checklist-gaps li').count(), 5);
+    assert.equal(await f.page.locator('#mm-checklist [data-mm-checklist-key="gap:wiki-engagement"] .mm-checklist-gaps li').count(), 6);
+    assert.match(await f.page.locator('#mm-checklist [data-mm-checklist-key="gap:wiki-engagement"]').textContent(),
+      /Engage|Signal|Cite/u);
     assert.match(await f.page.locator('#mm-checklist').textContent(), /Alpha saved job claim/u);
     assert.match(await f.page.locator('#mm-checklist').textContent(), /Status unavailable|ready — read-only source status|No task in loaded results/u);
     assert.ok(await f.page.evaluate(() =>
