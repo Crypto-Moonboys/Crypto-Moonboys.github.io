@@ -168,9 +168,12 @@
     var live = window.MOONBOYS_TOP_CONTRIBUTORS || {};
     var week = Array.isArray(live.week) ? live.week : Array.isArray(live.this_week) ? live.this_week : null;
     var allTime = Array.isArray(live.all_time) ? live.all_time : Array.isArray(live.allTime) ? live.allTime : null;
+    // A source outage or empty leaderboard is NOT proof of an invented score.
+    // Legacy artwork examples remain in source for offline visual regression,
+    // but never substitute them for real contributor accounts or XP.
     return {
-      week: week && week.length ? week : FALLBACK_TOP_CONTRIBUTORS,
-      all_time: allTime && allTime.length ? allTime : FALLBACK_TOP_CONTRIBUTORS,
+      week: week && week.length ? week : [],
+      all_time: allTime && allTime.length ? allTime : [],
     };
   }
 
@@ -214,6 +217,11 @@
     }).join('');
   }
 
+  function contributorListHTML(rows) {
+    return rows && rows.length ? contributorRows(rows)
+      : '<li class="top-contributor-row"><span>Verified contributor rankings unavailable for this period. No XP scores inferred.</span></li>';
+  }
+
   function buildTopContributorsHTML() {
     var data = getContributorData();
     return '<aside class="comments-top-contributors" aria-labelledby="comments-top-contributors-title">' +
@@ -225,7 +233,7 @@
         '<button type="button" class="top-contributor-tab is-active" data-period="week" aria-pressed="true">This Week</button>' +
         '<button type="button" class="top-contributor-tab" data-period="all_time" aria-pressed="false">All Time</button>' +
       '</div>' +
-      '<ol class="top-contributor-list" data-period="week">' + contributorRows(data.week) + '</ol>' +
+      '<ol class="top-contributor-list" data-period="week">' + contributorListHTML(data.week) + '</ol>' +
     '</aside>';
   }
 
@@ -588,7 +596,7 @@
         });
         if (list) {
           list.setAttribute('data-period', period);
-          list.innerHTML = contributorRows(rows);
+          list.innerHTML = contributorListHTML(rows);
         }
       });
     });
