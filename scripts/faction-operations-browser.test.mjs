@@ -100,6 +100,10 @@ async function setup(width=390,options={}) {
         return Promise.resolve(window.__fopTest.state);
       },
       refresh() {window.__fopTest.refreshed++;return Promise.resolve(window.__fopTest.state);},
+      refreshAfterInflight() {
+        window.__fopTest.refreshed++;
+        return Promise.resolve(window.__fopTest.state);
+      },
     };
     window.fetch=()=>{
       window.__fopTest.writes++;
