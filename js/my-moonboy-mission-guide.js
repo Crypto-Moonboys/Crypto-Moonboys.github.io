@@ -10,6 +10,10 @@
     Object.freeze({ id, group, title, gain, spend, risk, href, sourceFile, sourceMarker })));
   const ROUTES = Object.freeze([["care","Care actions","earn","Pet XP, Gold and mission progress may apply only on accepted care actions; cooldowns and caps apply."],["jobs","Pet jobs","earn","Earn eligible Gold, Crystals or Style rewards after server settlement; level/stage gates."],["activities","Timed activities","earn","Claim saved timed jobs/activity rewards in MoonPet; use original pet and recovery rules."],["events","Random events","earn","Outcome-dependent rewards and costs; inspect risk preview."],["runs","Moon Runs","earn","Bank/extract saved loot when supported; failure can lose unbanked rewards and uses energy."],["boss","Weekly Boss","earn","Server-accepted original-pet victory/claim; one attack per day where applicable."],["season","Season rewards","earn","Claim eligible saved reward tiers in MoonPet Saved Status; dashboard cannot verify their claim state."],["bounties","Daily Bounty Board","earn","Ordinary daily bounty source is projected; extra/weekly bounties require Saved Status."],["expeditions","Crystal Expeditions","earn","Eligible expeditions can provide Gold/Crystals/materials; daily attempt cap."],["shop","Equipment shop","spend","Account resource costs and source-level purchase/upgrade gates."],["market","Moon Market","spend","Rotating server-defined offers; eligibility, balances, and limits checked in game."],["trade","Moon Gold trade","spend","Risk/reward; source outcome can increase or reduce committed Gold."],["evolution","Evolution","upgrade","Original pet's level/age/marks/crests/material gates; not a free daily claim."],["gear","Equipment mastery","upgrade","Equipment progression consumes exact source-owned Gold/material upgrade costs and respects equipment level gates."],["unlock","Level and stage unlocks","unlock","Progression grants access when server eligibility is satisfied, not cash credit."]].map(([key, label, loop, description]) =>
     Object.freeze({ key, label, loop, description })));
+  // Wiki engagement is a distinct per-page/per-UTC-day receipt authority.
+  // /player/action-plan currently returns only a daily Wiki receipt COUNT, not
+  // the individual page/mission IDs; no row below can be ticked from that sum.
+  const WIKI_ENGAGEMENT = Object.freeze([{"id":"engage","label":"Engage — comment on a Wiki article","action":"Open a Wiki article with Comments and submit a useful comment. Anonymous/email-only comments can be posted but do not establish a mission reward.","reward":"A signed, linked account may earn the source-defined Wiki Engage mission reward only after Worker acceptance and an eligible saved receipt. Comment visibility or moderation is a separate state.","status":"Individual comment/Engage completion for a particular page and UTC day is not projected here. Repeated comments do not automatically pay a second reward.","href":"/wiki/wuffi.html","missionId":"engage","sourceFile":"js/battle-layer.js","sourceMarker":"id: 'engage'"},{"id":"signal","label":"Signal — like a Wiki article","action":"Open a Wiki article and use the Like this article button while signed into the linked Telegram identity.","reward":"Only a server-accepted like linked to the eligible Signal mission can produce the source-defined Wiki XP receipt.","status":"One saved like per player/page and source-window deduplication prevent arbitrary repeat rewards. Per-page Signal receipt status is not projected here.","href":"/wiki/wuffi.html","missionId":"signal","sourceFile":"js/engagement.js","sourceMarker":"moonboys:page-liked"},{"id":"cite","label":"Cite — vote on a listed Wiki citation","action":"On a Wiki article with a citations/sources list, vote on an existing citation. The Cite mission refers to a citation vote, not automatically adding or editing source text.","reward":"Only a verified signed source action and an accepted Cite mission receipt can award the source-defined Wiki XP.","status":"Each page/citation/player vote is individually persisted. The Action Plan currently lacks per-citation and per-page Cite completion status.","href":"/wiki/wuffi.html","missionId":"cite","sourceFile":"js/engagement.js","sourceMarker":"moonboys:citation-voted"},{"id":"comment-vote","label":"Vote on a Wiki comment","action":"Upvote or downvote an existing Wiki comment where controls are enabled and the Telegram-linked gate permits the action.","reward":"Comment voting is a recorded engagement action; no separate XP-paying mission is proven for this click.","status":"A comment vote is not the same as Engage, Signal or Cite; do not count it as a verified task completion.","href":"/wiki/wuffi.html","missionId":null,"sourceFile":"js/comments.js","sourceMarker":"/comments/' + cid + '/vote"},{"id":"citation-submission","label":"Submit or correct a source citation","action":"Help improve factual sources through an authorized Wiki contribution workflow. The in-article Cite mission instead votes on citations already present.","reward":"No accepted XP award is established solely for submitting, opening or editing a citation.","status":"Editorial publishing and moderation are not equivalent to the per-page citation-vote receipt.","href":"/wiki/wuffi.html","missionId":null,"sourceFile":"js/battle-layer.js","sourceMarker":"id: 'cite'"},{"id":"reading-sharing","label":"Read, share or bookmark Wiki pages","action":"Read articles, follow links and share useful pages; these are navigation and community discovery actions.","reward":"No verified per-view, per-link, share or bookmark XP/Clout payout exists in this Action Plan.","status":"Do not call browser visits, local bookmarking or a citation link click a completed paid mission.","href":"/search.html","missionId":null,"sourceFile":"docs/community-clout-authority-audit-2026-10-16.md","sourceMarker":"Wiki Engage/Signal/Cite"}].map(item => Object.freeze(item)));
   const ALLOWED_GROUPS = Object.freeze(['Identity', 'Community', 'Faction', 'Battle Chamber', 'Arcade', 'MoonPet', 'Wiki', 'Championship', 'Other Games']);
   const resources = ['Arcade, Community & Clout', 'MoonPet resources', 'Block Topia (separate game)'];
   const exact = text => String(text == null ? '' : text);
@@ -70,7 +74,18 @@
         escape(route.label) + '</h3><p><strong>' + escape(route.loop) +
         ' / source rules:</strong> ' + escape(route.description) +
         '</p><p><a href="/moonpet-game.html">Check current source eligibility in MoonPet</a></p></article>').join('') +
-      '</div></details>';
+      '</div></details>' +
+    '<details class="mm-economy-group"><summary>Wiki likes, comments, citations and other engagement · ' +
+      WIKI_ENGAGEMENT.length + ' actions</summary>' +
+      '<p class="mm-muted">Only source-accepted, linked Wiki Engage / Signal / Cite receipts can support a Wiki mission reward. Amount and status must come from the actual Worker response, not a local page counter or old marketing copy.</p>' +
+      '<div class="mm-economy-grid">' +
+      WIKI_ENGAGEMENT.map(entry =>
+        '<article class="mm-economy-item"><h3>' + escape(entry.label) + '</h3>' +
+        '<p><strong>How:</strong> ' + escape(entry.action) + '</p>' +
+        '<p><strong>XP / proof:</strong> ' + escape(entry.reward) + '</p>' +
+        '<p><strong>Limits:</strong> ' + escape(entry.status) + '</p>' +
+        '<p><a href="' + escape(entry.href) + '">Open Wiki source</a></p></article>'
+      ).join('') + '</div></details>';
   }
   function renderChecklist(target, tasks, options) {
     if (!target) return;
@@ -134,8 +149,29 @@
         '<li><strong>' + escape(g.label) + '</strong> — ' + escape(g.description) +
         ' <span class="mm-tag mm-tag--unknown">Unverified here</span>' +
         ' <a href="/moonpet-game.html">Check Saved Status</a></li>').join('') + '</ul></details>';
+    // This is a separate SOURCE CHECKLIST, not six fake actionable tasks.
+    // The current API aggregates Wiki mission completions; even a verified
+    // total of three cannot prove which page/action supplied the receipts.
+    const wikiTask = (bySource.get('wiki.accepted-missions') || []).find(entry =>
+      entry?.source_health === 'live' && entry?.evidence?.kind === 'server_receipt' &&
+      entry?.evidence?.verified_completion === true);
+    const wikiCount = !stale && wikiTask && Number.isSafeInteger(Number(wikiTask.progress?.current))
+      ? Number(wikiTask.progress.current) : null;
+    const wikiStatus = wikiCount === null
+      ? 'Individual Wiki mission source receipts are not available in this personal read.'
+      : 'Signed API reports ' + wikiCount + ' accepted Wiki receipt(s) today in total. It does not identify which article, mission or citation was completed.';
+    const wikiActions = '<details class="mm-checklist-group" data-mm-checklist-key="gap:wiki-engagement"' +
+      (hadPrevious ? (openKeys.has('gap:wiki-engagement') ? ' open' : '') : ' open') +
+      '><summary>Wiki interactions · ' + WIKI_ENGAGEMENT.length +
+      ' individually unverified checks</summary><p class="mm-source-warning">' + escape(wikiStatus) +
+      ' All six checks below remain unverified here; no count is assigned to Engage, Signal or Cite without their own accepted source receipt.</p>' +
+      '<ul class="mm-checklist-gaps">' + WIKI_ENGAGEMENT.map(entry =>
+        '<li><strong>' + escape(entry.label) + '</strong> — ' + escape(entry.action) +
+        ' <span class="mm-tag mm-tag--unknown">Individual status not projected</span>' +
+        ' <a href="' + escape(entry.href) + '">Check original page</a></li>').join('') +
+      '</ul></details>';
     const outro = '<p class="mm-muted">Block Topia Gems and XP, and some other-game rewards, are not personal balances in /player/action-plan. Check their original game screens. This checklist does not claim 100% completion or invent source records.</p>';
-    target.innerHTML = heading + groups + gaps + outro;
+    target.innerHTML = heading + groups + gaps + wikiActions + outro;
     if (focusedKey) {
       const match = Array.from(target.querySelectorAll('details[data-mm-checklist-key]'))
         .find(node => node.getAttribute('data-mm-checklist-key') === focusedKey);
@@ -151,6 +187,7 @@
     savedOnly: SAVED_ONLY,
     economy: ECONOMY,
     routes: ROUTES,
+    wikiEngagement: WIKI_ENGAGEMENT,
     renderRules,
     renderChecklist,
   });
