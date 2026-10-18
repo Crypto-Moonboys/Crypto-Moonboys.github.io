@@ -5,7 +5,7 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
-  CANONICAL_FACTION_READ_SQL, canonicalFactionProjection, readCanonicalFactionProfile,
+  CANONICAL_FACTION_READ_SQL, canonicalFactionProjection, canonicalFactionMetadataLookup, readCanonicalFactionProfile,
 } from '../workers/moonboys-api/shared/faction-projection.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -109,6 +109,22 @@ test('faction browser cache rejects anonymous, previous-owner and unscoped rows'
 });
 
 
+test('metadata alias lookup covers original seeded rows without redefining membership', () => {
+  for (const [canonical, legacy] of [
+    ['hard-fork-rockers', 'diamond-hands'],
+    ['rugpull-miners', 'hodl-warriors'],
+    ['graffpunks', 'graff-punks'],
+  ]) {
+    const lookup = canonicalFactionMetadataLookup(canonical);
+    assert.ok(lookup.sql.includes('FROM telegram_factions WHERE name IN'));
+    assert.ok(lookup.params.includes(canonical));
+    assert.ok(lookup.params.includes(legacy));
+    assert.equal(lookup.params.at(-1), canonical);
+    assert.equal(lookup.sql.match(/\?/gu).length, lookup.params.length);
+  }
+  assert.equal(canonicalFactionMetadataLookup('unaligned'), null);
+});
+
 test('Telegram profile and digest use the same read-only saved faction without a legacy fallback', async () => {
   const calls = [];
   const database = {
@@ -139,6 +155,17 @@ test('Telegram profile and digest use the same read-only saved faction without a
     .map(call => call.params[0]), ['graff-owner','different-owner']);
   const worker = read('workers/moonboys-api/worker.js');
   const digest = read('workers/moonboys-api/routes/daily-digest.js');
+  assert.match(worker, /if \(path === '\/telegram\/profile'\)/u);
+  assert.match(worker, /Method not allowed; signed POST required/u);
+  assert.match(worker, /verifyTelegramIdentityFromBody\(profileBody, env, verifyTelegramAuth\)/u);
+  assert.match(worker, /const telegramId = verified.telegramId/u);
+  assert.doesNotMatch(worker, /url.searchParams.get\('telegram_id'\)[\s\S]{0,80}getUserFaction\(env.DB/u);
+  const communityClient = read('js/telegram-community.js');
+  assert.match(communityClient, /fetch\(BASE \+ '\/telegram\/profile'/u);
+  assert.match(communityClient, /method: 'POST'/u);
+  assert.match(communityClient, /getFreshTelegramAuth/u);
+  assert.doesNotMatch(communityClient, /\/telegram\/profile\?telegram_id=/u);
+  assert.match(communityClient, /String\(data.profile.telegram_id \|\| ''\) !== telegramId/u);
   assert.match(worker, /return readCanonicalFactionProfile\(db, telegramId\)/u);
   assert.match(digest, /return readCanonicalFactionProfile\(db, telegramId\)/u);
   assert.doesNotMatch(worker, /FROM telegram_faction_members/u);
