@@ -356,8 +356,7 @@
       (!id || String(state.identity.telegram_id ?? '') !== id)) return;
     // A late previous-day event must not erase a freshly accepted current-day
     // projection. A current-owner error still fails closed below.
-    if (snapshot && publicState(snapshot) && state?.utc_day &&
-      state.utc_day !== utcDay()) return;
+    if (state?.utc_day && state.utc_day !== utcDay()) return;
     snapshot = publicState(state) ? state : null;
     snapshotRevision++;
     loading = false;
@@ -422,6 +421,17 @@
     window.addEventListener('battle-chamber:activity-ready', render);
     window.addEventListener('moonboys:identity-change', onIdentityChange);
     window.addEventListener('moonboys:telegram-session', onIdentityChange);
+    // Other tabs update the shared Telegram/session/faction keys without
+    // dispatching this tab's identity CustomEvents. Fail closed immediately,
+    // including localStorage.clear() (StorageEvent.key === null).
+    window.addEventListener('storage', event => {
+      if (event.storageArea && event.storageArea !== window.localStorage) return;
+      const key = event.key;
+      if (key === null || /^moonboys_tg_/u.test(String(key)) ||
+        key === 'MOONBOYS_TELEGRAM_AUTH' || key === 'moonboys_faction_status_v1') {
+        onIdentityChange();
+      }
+    });
     window.addEventListener('moonboys:faction-status', () => {
       // The singleton already invalidates itself on this event. Clear the
       // personal panel now and await its server-verified update.
@@ -446,7 +456,13 @@
       if (day === lastDay) return;
       lastDay = day;
       epoch++;
+      snapshotRevision++;
       snapshot = null;
+      // A pending pre-midnight getState() cannot satisfy a new UTC-day read.
+      // Retire ONLY this component's handle; the Daily Loop singleton keys
+      // concurrent requests by owner + day and controls its own inflight work.
+      // Epoch/revision checks keep the superseded result from repainting.
+      inflight = null;
       personalRoot.replaceChildren();
       loading = Boolean(ownerId());
       render();
