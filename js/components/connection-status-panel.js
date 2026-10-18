@@ -728,9 +728,11 @@
 
     if (isSourceLiveish(loopState, 'missed_opportunities') && loopState.missed_opportunities) {
       shared.dailyLoopOwnsMissed = true;
-      shared.missedXp = loopState.missed_opportunities.xp_total_all_time != null
-        ? Math.max(0, Math.floor(Number(loopState.missed_opportunities.xp_total_all_time) || 0))
-        : (shared.missedXp != null ? shared.missedXp : null);
+      shared.missedXp = loopState.missed_opportunities.xp_source_status === 'verified' &&
+        Number.isFinite(Number(loopState.missed_opportunities.xp_total_all_time))
+        ? Math.max(0, Math.floor(Number(loopState.missed_opportunities.xp_total_all_time)))
+        : null;
+      shared.missedXpState = loopState.missed_opportunities.xp_source_status || 'worker_update_required';
       shared.dailyLoopMissed = loopState.missed_opportunities;
       shared.dailyCounts = shared.dailyCounts || {};
       if (loopState.missed_opportunities.total_today != null) {
@@ -1063,7 +1065,9 @@
       : (daily && (daily.missed_events_today != null || daily.missed_today != null)
         ? Math.max(0, Math.floor(Number(daily.missed_events_today != null ? daily.missed_events_today : daily.missed_today) || 0))
         : null);
-    var missedXpDisplay = shared.missedXp != null ? String(shared.missedXp) : 'syncing…';
+    var missedXpDisplay = shared.missedXp != null ? String(shared.missedXp)
+      : shared.missedXpState === 'migration_pending' ? 'source migration required'
+      : shared.dailyLoopOwnsMissed ? 'XP not supplied' : 'syncing…';
     var missedTodayDisplay = missedToday != null ? String(missedToday) : 'syncing…';
     var missedCountDisplay = missedCountAll != null ? String(missedCountAll) : 'syncing…';
     return '' +

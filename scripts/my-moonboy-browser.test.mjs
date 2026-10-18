@@ -1018,3 +1018,70 @@ test('signed checklist labels the source MoonPet/window and preserves the exact 
     assert.equal(f.errors.length, 0, f.errors.join('\n'));
   } finally { await f.browser.close(); }
 });
+
+
+test('missed XP refresh is owner scoped, recomputed per signed reconciliation and resists late stale responses', async () => {
+  const f = await setup({width:390,height:844}, true);
+  try {
+    await f.page.goto(SITE + '/my-moonboy.html', {waitUntil:'domcontentloaded'});
+    await f.page.locator('#mm-next .mm-task').first().waitFor();
+    await f.page.evaluate(() => {
+      window.__xpPending = [];
+      // Minimal My Moonboy fixture may omit the real daily-loop singleton.
+      // Install an owner-scoped mock to exercise the private renderer contract.
+      const api = window.MOONBOYS_DAILY_LOOP ||
+        (window.MOONBOYS_DAILY_LOOP = {});
+      api.refreshAfterInflight = options => new Promise(resolve => {
+        window.__xpPending.push({ options, resolve });
+      });
+    });
+    await f.page.locator('#mm-refresh').click();
+    await f.page.waitForFunction(() => window.__xpPending?.length === 1);
+    assert.equal(await f.page.locator('#mm-missed-xp').textContent(),
+      'Checking saved missed XP…');
+    await f.page.locator('#mm-search').fill('job');
+    assert.equal(await f.page.evaluate(() => window.__xpPending.length), 1,
+      'typing and rerendering must not cause a second missed-XP network read');
+    f.setSlowOwner('111');
+    await f.page.locator('#mm-refresh').click();
+    await f.page.waitForFunction(() =>
+      document.getElementById('mm-missed-xp')?.textContent?.includes('Previous snapshot'));
+    await f.page.evaluate(() => {
+      const p = window.__xpPending[0];
+      p.resolve({
+        fetch_status:'ok',fetched_at:new Date().toISOString(),
+        utc_day:new Date().toISOString().slice(0,10),
+        identity:{linked:true,telegram_id:'111'},
+        source_status:{missed_opportunities:{state:'live'}},
+        missed_opportunities:{xp_source_status:'verified',xp_total_all_time:45}
+      });
+    });
+    await f.page.waitForTimeout(40);
+    assert.match(await f.page.locator('#mm-missed-xp').textContent(),
+      /Previous snapshot/u,
+      'late accepted read cannot overwrite stale account status');
+    await f.page.waitForFunction(() => window.__xpPending?.length === 2,
+      null, {timeout:8000});
+    await f.page.evaluate(() => {
+      window.__xpPending[1].resolve({
+        fetch_status:'ok',fetched_at:new Date().toISOString(),
+        utc_day:new Date().toISOString().slice(0,10),
+        identity:{linked:true,telegram_id:'111'},
+        source_status:{missed_opportunities:{state:'live'}},
+        missed_opportunities:{xp_source_status:'verified',xp_total_all_time:57}
+      });
+    });
+    await f.page.waitForFunction(() =>
+      document.getElementById('mm-missed-xp')?.textContent?.startsWith('57 potential XP missed'));
+    await f.page.locator('#mm-search').fill('');
+    assert.equal(await f.page.evaluate(() => window.__xpPending.length), 2,
+      'filtered and unfiltered views reuse the last proven read');
+    await f.page.evaluate(() => {
+      window.__mmTest.id='222';
+      window.dispatchEvent(new CustomEvent('moonboys:identity-change'));
+    });
+    assert.doesNotMatch(await f.page.locator('#my-moonboy').textContent(),
+      /57 potential XP missed/u,'private XP must purge on identity switch');
+    assert.equal(f.errors.length, 0, f.errors.join('\n'));
+  } finally { await f.browser.close(); }
+});

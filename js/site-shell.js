@@ -353,45 +353,16 @@ window.__HUD_CONSOLIDATED__ = true;
     return header;
   }
 
+  // Personal progress belongs in My Moonboy, not a second set of account
+  // cards on Community, Games or their leaderboard. Preserve those pages'
+  // canonical public faction/game modules and the site-wide login badge.
   function ensureInlineLiveStats(content) {
-    if (!shouldShowInlineStats(window.location.pathname)) return;
-    if (content.querySelector('.inline-live-stats')) return;
-    const container = document.createElement('div');
-    container.className = 'inline-live-stats inline-live-stats--bottom';
-    container.setAttribute('aria-label', 'Live player stats');
-    container.setAttribute('data-live-stats-position', 'bottom');
-    container.innerHTML = `
-      <section class="hud-card hud-box hud-box--player" data-csp-panel>
-        <h2>PLAYER LIVE FEED</h2>
-        <div class="hud-player-card">
-          <div id="hud-player-avatar" aria-hidden="true"><span class="hud-avatar-icon">☾</span></div>
-          <div><div id="hud-player-name" class="hud-player-name">Telegram not linked</div><p>Link Telegram to see live faction and competitive stats.</p></div>
-        </div>
-      </section>
-      <section class="hud-card hud-box hud-box--actions" data-csp-faction-ops>
-        <h2>FACTION DAILY OPS</h2>
-        <p>Faction state loads here when competitive systems are online.</p>
-      </section>
-      <section class="hud-card hud-box hud-box--events" data-csp-wtf-signal>
-        <h2>DAILY WTF SIGNAL</h2>
-        <p>Daily WTF signal and live events stay isolated to action pages.</p>
-      </section>
-      <section class="hud-card hud-box hud-box--missed" data-csp-missed>
-        <h2>MISSED OPPORTUNITIES</h2>
-        <p>Missed rewards and activity notes render without touching wiki articles.</p>
-      </section>
-    `;
-    content.appendChild(container);
+    const legacy = content.querySelector('.inline-live-stats[data-live-stats-position="bottom"]');
+    if (legacy) legacy.remove();
   }
 
-  function shouldShowInlineStats(pathname) {
-    const p = normalizePathname(pathname || window.location.pathname);
-    return [
-      '/community.html',
-      '/games/',
-      '/games/index.html',
-      '/games/leaderboard.html',
-    ].includes(p);
+  function shouldShowInlineStats(_pathname) {
+    return false;
   }
 
   function ensureMainContent() {

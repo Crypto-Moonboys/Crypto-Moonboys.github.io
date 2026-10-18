@@ -104,7 +104,10 @@ function firstRowForSql(sql, params, rowsByTable) {
     return { events_total: countRows(rowsByTable, 'daily_missed_perks', params) };
   }
   if (String(sql).includes('COALESCE(SUM(missed_xp_value)')) {
-    return { xp_total: 0 };
+    const ownerRows = (rowsByTable.daily_missed_perks || []).filter((row) =>
+      String(row.telegram_id) === String(params[0]));
+    return { xp_total: ownerRows.reduce((sum, row) =>
+      sum + Math.max(0, Number(row.missed_xp_value) || 0), 0) };
   }
   if (String(sql).includes('FROM daily_opportunity_state') && String(sql).includes('utc_day < ?')) {
     return (rowsByTable.daily_opportunity_state_prior || [])[0] || null;
@@ -285,6 +288,43 @@ assert.ok(missedBackfillInsertIndex >= 0, 'linked daily-loop state must backfill
 assert.ok(todayActivationInsertIndex >= 0, 'linked daily-loop state must create or reuse today after backfill');
 assert.ok(priorLookupIndex < todayActivationInsertIndex, 'prior-day backfill lookup must happen before today activation insert');
 assert.ok(missedBackfillInsertIndex < todayActivationInsertIndex, 'missed-day backfill must run before today activation insert');
+
+// Missed count is independent of missed XP: migration 021 may be unavailable.
+// Never report a fake zero/lose another owner's accrued missed opportunity XP.
+const missedRows = [
+  { telegram_id: '12345', utc_day: '2026-06-28', missed_xp_value: 12 },
+  { telegram_id: '12345', utc_day: '2026-06-29', missed_xp_value: 18 },
+  { telegram_id: 'another-owner', utc_day: '2026-06-29', missed_xp_value: 500 },
+];
+const missedOwner = { telegramId: '12345', user: { username: 'mission-test' } };
+const validMissedDb = makeDb({
+  existingTables: ALL_TABLES,
+  rows: { daily_missed_perks: missedRows,
+    __daily_missed_perks_columns: [{ name: 'missed_xp_value' }] },
+});
+const withMissedXp = await buildDailyLoopState({ DB: validMissedDb },
+  { now: '2026-06-30T12:45:00.000Z', verified: missedOwner });
+assert.equal(withMissedXp.missed_opportunities.xp_total_all_time, 30,
+  'only authenticated owner missed XP is summed across UTC days');
+assert.equal(withMissedXp.missed_opportunities.xp_source_status, 'verified');
+assert.equal(withMissedXp.missed_opportunities.total_all_time, 2);
+assert.ok(validMissedDb._calls.some((call) =>
+  String(call.sql).includes('SUM(missed_xp_value)') && call.params[0] === '12345'),
+  'missed XP must be a bounded account-scoped read');
+
+const legacyMissedDb = makeDb({
+  existingTables: ALL_TABLES,
+  rows: { daily_missed_perks: missedRows,
+    __daily_missed_perks_columns: [{ name: 'other_column' }] },
+});
+const withoutMissedXp = await buildDailyLoopState({ DB: legacyMissedDb },
+  { now: '2026-06-30T12:45:00.000Z', verified: missedOwner });
+assert.equal(withoutMissedXp.missed_opportunities.total_all_time, 2);
+assert.equal(withoutMissedXp.missed_opportunities.xp_total_all_time, null,
+  'missing migration cannot be misrepresented as zero');
+assert.equal(withoutMissedXp.missed_opportunities.xp_source_status, 'migration_pending');
+assert.ok(!legacyMissedDb._calls.some((call) => String(call.sql).includes('SUM(missed_xp_value)')),
+  'no invalid aggregate SQL when legacy D1 column is missing');
 
 const failedArcadeDb = makeDb({
   existingTables: ALL_TABLES,

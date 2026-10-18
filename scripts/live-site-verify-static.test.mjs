@@ -10,10 +10,10 @@
  *   ✓ page list includes all critical routes
  *   ✓ stale selectors absent (data-las-panel, "Player Status", "Next Actions")
  *   ✓ BTQM live asset URL checks target .png, NOT .png.base64
- *   ✓ current right-rail section hooks present (data-csp-faction-ops, etc.)
+ *   ✓ retired global CSP section hooks rejected by the shell source verifier
  *   ✓ no Telegram credentials required (no real auth references in script)
- *   ✓ site-shell.js source MUST contain includes current hooks, not legacy ones
- *   ✓ SHELL_SOURCE_MUST_NOT_CONTAIN list includes data-las-panel
+ *   ✓ site-shell.js retains identity helpers but excludes the retired CSP hooks
+ *   ✓ standalone connection-status renderer retains its own supported hooks
  *   ✓ dashboard is in NO_RIGHT_PANEL_PAGES, not RIGHT_PANEL_PAGES
  *   ✓ arcade roster constant is present and complete
  */
@@ -84,19 +84,22 @@ for (const route of REQUIRED_ROUTES) {
   console.log(`PASS: route present: ${route}`);
 }
 
-// ── 3. Stale selectors must be absent ─────────────────────────────────────────
-// data-las-panel was removed from site-shell.js — it must not be a required check.
-// Extract only the SHELL_SOURCE_MUST_CONTAIN array literal (stops at first ];).
-{
-  const mustContainMatch = source.match(/const SHELL_SOURCE_MUST_CONTAIN\s*=\s*\[([\s\S]*?)\];/);
-  assert.ok(mustContainMatch, 'SHELL_SOURCE_MUST_CONTAIN constant must be present');
-  const mustContainBody = mustContainMatch[1];
-  assert.ok(
-    !mustContainBody.includes('data-las-panel'),
-    'live-site-verify.mjs must not require data-las-panel in SHELL_SOURCE_MUST_CONTAIN',
-  );
+// ── 3. Retired shell source hooks must not be required ───────────────────────
+const mustContainMatch = source.match(/const SHELL_SOURCE_MUST_CONTAIN\s*=\s*\[([\s\S]*?)\];/);
+assert.ok(mustContainMatch, 'SHELL_SOURCE_MUST_CONTAIN constant must be present');
+const retiredHooks = [
+  'data-las-panel', 'data-csp-panel', 'data-csp-faction-ops',
+  'data-csp-wtf-signal', 'data-csp-missed',
+];
+for (const marker of retiredHooks) {
+  assert.ok(!mustContainMatch[1].includes("'" + marker + "'"),
+    'live verifier must never require the retired site-shell hook ' + marker);
 }
-console.log('PASS: data-las-panel absent from SHELL_SOURCE_MUST_CONTAIN');
+for (const marker of ['shouldShowRightPanel', 'homepage-right-panel', 'hud-player-avatar']) {
+  assert.ok(mustContainMatch[1].includes("'" + marker + "'"),
+    'live verifier still needs the active shell marker ' + marker);
+}
+console.log('PASS: old player-card hooks absent from required shell markers');
 
 // "Player Status" and "Next Actions" were old right-rail copy — removed.
 assert.ok(
@@ -126,29 +129,25 @@ for (const p of btqmPaths) {
   console.log(`PASS: BTQM asset path targets .png: ${p}`);
 }
 
-// ── 5. Current right-rail section hooks present ───────────────────────────────
-const REQUIRED_CSP_HOOKS = [
-  'data-csp-panel',
-  'data-csp-faction-ops',
-  'data-csp-wtf-signal',
-  'data-csp-missed',
-];
-for (const hook of REQUIRED_CSP_HOOKS) {
-  assert.ok(
-    source.includes(`'${hook}'`),
-    `live-site-verify.mjs must reference current CSP hook: ${hook}`,
-  );
-  console.log(`PASS: current CSP hook referenced: ${hook}`);
+// ── 5. Live verifier must reject the retired panel hooks in site-shell.js ───
+const mustNotContainMatch = source.match(/const SHELL_SOURCE_MUST_NOT_CONTAIN\s*=\s*\[([\s\S]*?)\];/);
+assert.ok(mustNotContainMatch, 'SHELL_SOURCE_MUST_NOT_CONTAIN constant must be present');
+for (const marker of retiredHooks) {
+  assert.ok(mustNotContainMatch[1].includes("'" + marker + "'"),
+    'live verifier must forbid the removed shell hook ' + marker);
 }
+assert.ok(source.includes('for (const needle of SHELL_SOURCE_MUST_NOT_CONTAIN)') &&
+  source.includes('if (!result.body.includes(needle))'),
+  'negative shell source verification must actually inspect the deployed code');
+console.log('PASS: retired hooks are forbidden in deployed site-shell.js');
 
-// ── 6. SHELL_SOURCE_MUST_NOT_CONTAIN includes data-las-panel ─────────────────
-const mustNotContainBlock = source.match(/SHELL_SOURCE_MUST_NOT_CONTAIN\s*=\s*\[[\s\S]*?\];/);
-assert.ok(mustNotContainBlock, 'SHELL_SOURCE_MUST_NOT_CONTAIN constant must be present');
-assert.ok(
-  mustNotContainBlock[0].includes('data-las-panel'),
-  'SHELL_SOURCE_MUST_NOT_CONTAIN must include data-las-panel (legacy hook removed)',
-);
-console.log('PASS: SHELL_SOURCE_MUST_NOT_CONTAIN includes data-las-panel');
+// ── 6. Standalone CSP renderer still owns the supported hooks ──────────────
+const cspSource = readFileSync(path.join(ROOT, 'js/components/connection-status-panel.js'), 'utf8');
+for (const marker of retiredHooks.filter(hook => hook !== 'data-las-panel')) {
+  assert.ok(cspSource.includes(marker),
+    'legitimate standalone connection-status-panel.js hook missing: ' + marker);
+}
+console.log('PASS: standalone CSP component retains its supported markers');
 
 // ── 7. /dashboard.html in NO_RIGHT_PANEL_PAGES, not RIGHT_PANEL_PAGES ────────
 const noRightPanelBlock = source.match(/NO_RIGHT_PANEL_PAGES\s*=\s*\[[\s\S]*?\];/);

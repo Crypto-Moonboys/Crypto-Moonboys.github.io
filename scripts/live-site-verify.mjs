@@ -86,10 +86,11 @@
  *   ✓ all page-critical JS actually requested
  *
  * JS source assertions (fetched directly, not via browser):
- *   site-shell.js source must contain:
- *     shouldShowRightPanel, homepage-right-panel, hud-player-avatar,
- *     data-csp-panel, data-csp-faction-ops, data-csp-wtf-signal, data-csp-missed
- *     (data-las-panel must NOT appear — legacy hook removed)
+ *   site-shell.js must retain shell identity/layout helpers:
+ *     shouldShowRightPanel, homepage-right-panel, hud-player-avatar.
+ *   Removed global player cards must NOT be reinjected by site-shell.js:
+ *     data-csp-panel, data-csp-faction-ops, data-csp-wtf-signal, data-csp-missed,
+ *     data-las-panel. Standalone CSP renderers retain their own hooks.
  *
  * ── Critical JS request outcome matrix (per page) ─────────────────────────────
  *   requested + HTTP < 400  → pass
@@ -183,12 +184,14 @@ const SHELL_SOURCE_MUST_CONTAIN = [
   'shouldShowRightPanel',
   'homepage-right-panel',
   'hud-player-avatar',
+];
+const SHELL_SOURCE_MUST_NOT_CONTAIN = [
+  'data-las-panel',
   'data-csp-panel',
   'data-csp-faction-ops',
   'data-csp-wtf-signal',
   'data-csp-missed',
 ];
-const SHELL_SOURCE_MUST_NOT_CONTAIN = ['data-las-panel'];
 const BTQM_LIVE_ASSET_CHECKS = [
   { label: 'tileset (zone-0)', path: '/art/btqm/generated/tilesets/zone-0-hodl-or-fold-forest-ruins.png' },
   { label: 'enemy (zone-0)',   path: '/art/btqm/generated/enemies/zone-0-paper-hand-goblin.png' },
@@ -400,8 +403,8 @@ async function testPage(page, pathname) {
   if (diag.cspInsideRightPanel) fail('[data-csp-*] hook found inside #homepage-right-panel — CSP sections must not be mounted in global right panel', { url, selector: '#homepage-right-panel [data-csp-panel],[data-csp-faction-ops],[data-csp-wtf-signal],[data-csp-missed]', suggested: 'ensureRightPanel() must remain disabled; inline live-stats modules must render outside #homepage-right-panel' }); else pass('[data-csp-*] sections absent from #homepage-right-panel (inline-only contract satisfied)');
   if (!diag.lasPanel) pass('[data-las-panel] absent (legacy hook correctly removed)'); else fail('[data-las-panel] PRESENT — this legacy hook must not exist in the DOM', { url, selector: '[data-las-panel]', suggested: 'Stale site-shell.js or stale HTML still injecting the old data-las-panel hook' });
   if (isInlineStatsPage) {
-    if (diag.inlineStatsMount) pass('.inline-live-stats present — inline player/faction stats rendered in page content');
-    else fail('.inline-live-stats MISSING — inline live/player stats must be mounted on this page', { url, selector: '.inline-live-stats', suggested: 'ensureInlineLiveStats() must run for this page — check shouldShowInlineStats() in site-shell.js' });
+    if (!diag.inlineStatsMount) pass('.inline-live-stats absent — duplicated account cards consolidated into My Moonboy');
+    else fail('.inline-live-stats PRESENT — remove legacy duplicate personal panels; My Moonboy is the private account home', { url, selector: '.inline-live-stats', suggested: 'check site-shell.js no longer injects the legacy panel' });
   }
   if (diag.noLiveFeed) pass('no #live-feed-widget (LIVE_FEED=false — correctly absent)'); else fail('#live-feed-widget present — must be absent when LIVE_FEED=false', { url, selector: '#live-feed-widget' });
   if (diag.noLiveFeedText) pass('body text does not include removed "Live System Feed" section'); else fail('body text still contains "Live System Feed" — removed section reintroduced', { url });

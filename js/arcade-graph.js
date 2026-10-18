@@ -19,14 +19,16 @@ const C = {
 
 // ── Node definitions (default / overview state) ───────────────────────────
 function makeOverviewNodes(cx, cy, r) {
+  // IDs match the authoritative leaderboard Worker and its breakdown keys.
   const games = [
-    { id: 'snake',      label: '🐍 Snake',      color: C.cyan   },
-    { id: 'blocktopia', label: '🧱 BlockTopia', color: C.purple },
-    { id: 'invaders',   label: '👾 Meme Swarm 3008',   color: C.green  },
-    { id: 'pacchain',   label: '🟡 Chain Maze',  color: C.gold   },
-    { id: 'asteroids',  label: '🌑 Forkfield',  color: C.muted  },
-    { id: 'breakout',   label: '🧱 Bullrun Brick Smash',    color: '#ff6b35' },
-    { id: 'tetris',     label: '🟦 Block Topia Dropzone',     color: '#a78bfa' },
+    { id: 'snake',                label: '🐍 Snake',                color: C.cyan },
+    { id: 'blocktopia',           label: '🧱 BlockTopia',           color: C.purple },
+    { id: 'meme-swarm-3008',      label: '👾 Meme Swarm 3008',      color: C.green },
+    { id: 'chain-maze',           label: '🟡 Chain Maze',           color: C.gold },
+    { id: 'forkfield',            label: '🌑 Forkfield',            color: C.muted },
+    { id: 'bullrun-brick-smash',  label: '🧱 Bullrun Brick Smash',   color: '#ff6b35' },
+    { id: 'block-topia-dropzone', label: '🟦 Block Topia Dropzone', color: '#a78bfa' },
+    { id: 'kaiju',                label: 'K Kaiju',                 color: '#e8e8a3' },
   ];
   const out = [
     { id: 'global', label: '🏆 Arcade', color: C.gold, radius: 26, x: cx, y: cy, fixed: true },
@@ -44,13 +46,14 @@ function makeOverviewNodes(cx, cy, r) {
 }
 
 const OVERVIEW_EDGES = [
-  { source: 'global', target: 'snake'      },
+  { source: 'global', target: 'snake' },
   { source: 'global', target: 'blocktopia' },
-  { source: 'global', target: 'invaders'   },
-  { source: 'global', target: 'pacchain'   },
-  { source: 'global', target: 'asteroids'  },
-  { source: 'global', target: 'breakout'   },
-  { source: 'global', target: 'tetris'     },
+  { source: 'global', target: 'meme-swarm-3008' },
+  { source: 'global', target: 'chain-maze' },
+  { source: 'global', target: 'forkfield' },
+  { source: 'global', target: 'bullrun-brick-smash' },
+  { source: 'global', target: 'block-topia-dropzone' },
+  { source: 'global', target: 'kaiju' },
 ];
 
 // ── State ─────────────────────────────────────────────────────────────────
@@ -230,14 +233,15 @@ export function setPlayerState(entry) {
 
   const bd = entry.breakdown || {};
   const games = [
-    { id: 'snake',      label: '🐍 Snake',      color: C.cyan,   score: bd.snake      ?? null },
-    { id: 'blocktopia', label: '🧱 BlockTopia', color: C.purple, score: bd.blocktopia ?? null },
-    { id: 'invaders',   label: '👾 Meme Swarm 3008',   color: C.green,  score: bd.invaders   ?? null },
-    { id: 'pacchain',   label: '🟡 Chain Maze',  color: C.gold,   score: bd.pacchain   ?? null },
-    { id: 'asteroids',  label: '🌑 Forkfield',  color: C.muted,  score: bd.asteroids  ?? null },
-    { id: 'breakout',   label: '🧱 Bullrun Brick Smash',   color: '#ff6b35',  score: bd.breakout   ?? null },
-    { id: 'tetris',     label: '🟦 Block Topia Dropzone',     color: '#a78bfa',  score: bd.tetris     ?? null },
-    { id: 'bonus',      label: '⭐ Bonus',       color: C.green,  score: bd.variety_bonus ?? null },
+    { id: 'snake',                label: '🐍 Snake',                color: C.cyan,    score: bd.snake ?? null },
+    { id: 'blocktopia',           label: '🧱 BlockTopia',           color: C.purple,  score: bd.blocktopia ?? null },
+    { id: 'meme-swarm-3008',      label: '👾 Meme Swarm 3008',      color: C.green,   score: bd['meme-swarm-3008'] ?? bd.invaders ?? null },
+    { id: 'chain-maze',           label: '🟡 Chain Maze',           color: C.gold,    score: bd['chain-maze'] ?? bd.pacchain ?? null },
+    { id: 'forkfield',            label: '🌑 Forkfield',            color: C.muted,   score: bd.forkfield ?? bd.asteroids ?? null },
+    { id: 'bullrun-brick-smash',  label: '🧱 Bullrun Brick Smash',   color: '#ff6b35', score: bd['bullrun-brick-smash'] ?? bd.breakout ?? null },
+    { id: 'block-topia-dropzone', label: '🟦 Block Topia Dropzone', color: '#a78bfa', score: bd['block-topia-dropzone'] ?? bd.tetris ?? null },
+    { id: 'kaiju',                label: 'K Kaiju',                 color: '#e8e8a3', score: bd.kaiju ?? null },
+    { id: 'bonus',                label: '⭐ Bonus',                 color: C.green,   score: bd.variety_bonus ?? null },
   ];
 
   const maxScore = Math.max(1, ...games.map(g => g.score ?? 0));

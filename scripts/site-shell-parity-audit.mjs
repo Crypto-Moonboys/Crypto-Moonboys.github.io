@@ -497,7 +497,7 @@ if (!gamesHtml.includes('page-has-right-panel') && !runtimeAllowlist.includes('/
   fail('games/index.html — must not opt into right-rail allowlist/layout');
 }
 if (!leaderboardHtml.includes('page-has-right-panel') && !runtimeAllowlist.includes('/games/leaderboard.html')) {
-  pass('games/leaderboard.html: leaderboard uses inline live stats without right-rail allowlist/layout');
+  pass('games/leaderboard.html: leaderboard keeps public ranking without duplicating account panels');
 } else {
   fail('games/leaderboard.html — must not opt into right-rail allowlist/layout');
 }
@@ -510,37 +510,35 @@ if (dashboardHtml.includes('page-standard-shell')) {
   fail('dashboard.html — missing page-standard-shell (add to body class for left-nav retro sidebar parity with home page; this class does NOT enable right-rail injection)');
 }
 
-// 7. DOM marker check: site-shell.js must contain all right-panel element markers
-console.log('\n[7] site-shell.js DOM marker check (static string check)');
+// 7. Old shell-injected player panels have been retired. The shared
+// connection-status component still exposes hooks for legitimate standalone mounts.
+console.log('\n[7] legacy player panel removal and standalone hook support');
 if (shellJs) {
-  const MARKER_CHECKS = [
-    { needle: 'data-csp-panel',            label: '[data-csp-panel]' },
-    { needle: 'data-csp-faction-ops',      label: '[data-csp-faction-ops]' },
-    { needle: 'data-csp-wtf-signal',       label: '[data-csp-wtf-signal]' },
-    { needle: 'data-csp-missed',           label: '[data-csp-missed]' },
-    { needle: 'hud-player-avatar',         label: '#hud-player-avatar (player avatar box)' },
-    { needle: 'hud-player-name',           label: '.hud-player-name (player name)' },
-    { needle: 'FACTION DAILY OPS',         label: 'Faction Daily Ops section title' },
-    { needle: 'DAILY WTF SIGNAL',          label: 'Daily WTF Signal section title' },
-    { needle: 'MISSED OPPORTUNITIES',      label: 'Missed Opportunities section title' },
-    { needle: 'shouldShowRightPanel',      label: 'shouldShowRightPanel() helper' },
+  const REMOVED_MARKERS = [
+    'data-csp-panel', 'data-csp-faction-ops', 'data-csp-wtf-signal',
+    'data-csp-missed', 'FACTION DAILY OPS', 'DAILY WTF SIGNAL',
+    'MISSED OPPORTUNITIES', 'PLAYER LIVE FEED',
   ];
-  for (const { needle, label } of MARKER_CHECKS) {
-    if (shellJs.includes(needle)) {
-      pass(`site-shell.js marker: ${label} present`);
+  for (const marker of REMOVED_MARKERS) {
+    if (shellJs.includes(marker)) {
+      fail('site-shell.js retains removed duplicate player panel: ' + marker);
     } else {
-      fail(`site-shell.js marker: ${label} MISSING`);
+      pass('site-shell.js excludes obsolete player panel: ' + marker);
     }
   }
-  if (shellJs.includes('data-las-panel')) {
-    fail('site-shell.js marker: [data-las-panel] should be absent from runtime right rail');
-  } else {
-    pass('site-shell.js marker: [data-las-panel] absent from runtime right rail');
+  const standalone = read('js/components/connection-status-panel.js') || '';
+  for (const hook of ['data-csp-panel', 'data-csp-faction-ops',
+    'data-csp-wtf-signal', 'data-csp-missed']) {
+    if (standalone.includes(hook)) pass('standalone renderer retains: ' + hook);
+    else fail('standalone renderer missing supported hook: ' + hook);
   }
-  if (shellJs.includes('hud-actions-list')) {
-    fail('site-shell.js marker: .hud-actions-list should be absent from right rail shell');
-  } else {
-    pass('site-shell.js marker: .hud-actions-list absent from right rail shell');
+  for (const marker of ['hud-player-avatar', 'hud-player-name', 'shouldShowRightPanel']) {
+    if (shellJs.includes(marker)) pass('shell identity/layout helper retained: ' + marker);
+    else fail('shell identity/layout helper missing: ' + marker);
+  }
+  for (const forbidden of ['data-las-panel', 'hud-actions-list']) {
+    if (shellJs.includes(forbidden)) fail('site-shell.js contains obsolete marker: ' + forbidden);
+    else pass('site-shell.js excludes obsolete marker: ' + forbidden);
   }
 }
 

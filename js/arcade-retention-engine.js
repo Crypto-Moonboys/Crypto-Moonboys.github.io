@@ -295,18 +295,32 @@ function buildMission(now = nowMs()) {
 
 function maybeExpireMission(now = nowMs()) {
   const mission = state.comeback_mission;
-  if (!mission) return;
-  if (mission.completed) return;
-  if (Number(mission.expires_at) > now) return;
-  state.comeback_mission = null;
-  writeState();
-  pushUpdate();
+  if (!mission || mission.completed || Number(mission.expires_at) > now) return;
+  // Keep the expired mission as a tombstone of this inactivity spell.
+  // Clearing it would immediately generate another 10-minute countdown
+  // every 15 seconds while last_played_at remains unchanged.
+  // getLiveContext() and the chip already hide expired missions.
 }
 
 function maybeGenerateComebackMission(now = nowMs()) {
   maybeExpireMission(now);
   const mission = state.comeback_mission;
-  if (mission && !mission.completed && Number(mission.expires_at) > now) return mission;
+  if (mission) {
+    if (mission.completed) {
+      // One completed comeback mission belongs to the run that completed it.
+      // Another actual run AND a new inactivity window are required before
+      // offering a new challenge; never issue one solely from timer expiry.
+      const completedAt = Number(mission.completed_at) || Number(mission.created_at);
+      if (!state.last_played_at || Number(state.last_played_at) <= completedAt) return null;
+    } else if (Number(mission.expires_at) > now) {
+      return mission;
+    }
+    // Do not restart an expired mission for the same last accepted run.
+    // A new actual run advances last_played_at; only then may another
+    // inactivity window eventually generate a new, distinct mission.
+    if (!state.last_played_at ||
+        Number(state.last_played_at) <= Number(mission.created_at)) return null;
+  }
   const gap = Math.max(0, now - (Number(state.last_played_at) || 0));
   if (!state.last_played_at || gap < COMEBACK_THRESHOLD_MS) return null;
   const created = buildMission(now);
@@ -547,7 +561,7 @@ function updateMissionChip(context = getLiveContext()) {
   const link = document.createElement('a');
   link.className = 'art-chip-link';
   link.href = '/games/';
-  link.textContent = `MISSION • ${mission.label} • ${formatCountdown(remain)}`;
+  link.textContent = `LOCAL ARCADE CHALLENGE (not verified XP) • ${mission.label} • ${formatCountdown(remain)}`;
   link.addEventListener('click', () => {
     emitNotificationAction('mission-chip', 'Start Arcade', '/games/');
   });
@@ -888,7 +902,9 @@ const ArcadeRetentionEngine = {
 
 if (typeof window !== 'undefined') {
   window.ArcadeRetentionEngine = ArcadeRetentionEngine;
-  if (isGamePage() || (location.pathname || '').toLowerCase().includes('/games/leaderboard')) {
+  // A public leaderboard is for ranking, not local unsaved comeback prompts.
+  // Only actual Arcade gameplay mounts the optional client-local mission chip.
+  if (isGamePage()) {
     init();
   }
 }

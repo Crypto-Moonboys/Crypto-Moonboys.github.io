@@ -142,9 +142,9 @@ check(stateSubscribeBlock.includes("state.source === 'server'") && stateSubscrib
 check(stateSubscribeBlock.includes('blocktopiaAccessHTML(linked, state.xp, requiredXp, serverLinkedConfirmed, progressionConfirmed)'), 'live Block Topia row updater reuses initial access markup helper with confirmation flags');
 
 console.log('\n[4] Panel separation');
-check(siteShell.includes('PLAYER LIVE FEED') && siteShell.includes('FACTION DAILY OPS') && siteShell.includes('DAILY WTF SIGNAL') && siteShell.includes('MISSED OPPORTUNITIES'), 'right rail restores multi-section live ecosystem headings');
-check(!siteShell.includes('data-las-panel') && siteShell.includes('data-csp-panel') && siteShell.includes('data-csp-faction-ops') && siteShell.includes('data-csp-wtf-signal') && siteShell.includes('data-csp-missed'), 'right rail mounts only shared connection-status-panel section hooks (no data-las-panel hook)');
-check(siteShell.includes('hud-box--actions') && siteShell.includes('hud-box--events') && siteShell.includes('hud-box--missed'), 'right rail includes separate visual boxes for ops/signal/missed sections');
+check(!['PLAYER LIVE FEED', 'FACTION DAILY OPS', 'DAILY WTF SIGNAL', 'MISSED OPPORTUNITIES'].some(label => siteShell.includes(label)), 'global shell does not recreate old personal panel headings');
+check(!['data-las-panel', 'data-csp-panel', 'data-csp-faction-ops', 'data-csp-wtf-signal', 'data-csp-missed'].some(hook => siteShell.includes(hook)) && ['data-csp-panel', 'data-csp-faction-ops', 'data-csp-wtf-signal', 'data-csp-missed'].every(hook => csp.includes(hook)), 'standalone connection-status renderer keeps hooks without reinjecting global panels');
+check(!['hud-box--actions', 'hud-box--events', 'hud-box--missed'].some(marker => siteShell.includes(marker)), 'removed global personal dashboard boxes are not remounted');
 const liveFeedBlock = functionBlock(csp, 'buildPlayerLiveFeedHTML');
 const opsBlock = functionBlock(csp, 'buildFactionDailyOpsHTML');
 const wtfSectionBlock = functionBlock(csp, 'buildDailyWtfSignalHTML');
@@ -271,7 +271,7 @@ check(!functionBlock(csp, 'buildPlayerLiveFeedHTML').includes('csp-avatar-mini')
 check(siteShell.includes('getTelegramPhotoUrl') && siteShell.includes('hud-player-avatar'), 'shell portrait area is the single authority for player profile image');
 check(siteShell.includes('hud-avatar-icon'), 'shell portrait area preserves fallback pixel avatar when no Telegram photo is available');
 // Multi-section right rail structure intact
-check(siteShell.includes('data-csp-panel') && siteShell.includes('data-csp-faction-ops') && siteShell.includes('data-csp-wtf-signal') && siteShell.includes('data-csp-missed'), 'multi-section right rail remains intact with all four section hooks');
+check(['data-csp-panel', 'data-csp-faction-ops', 'data-csp-wtf-signal', 'data-csp-missed'].every(hook => csp.includes(hook)) && !['data-csp-panel', 'data-csp-faction-ops', 'data-csp-wtf-signal', 'data-csp-missed'].some(hook => siteShell.includes(hook)), 'standalone connection-status mounts remain supported without old inline site-shell hooks');
 // One shared state authority
 check(csp.includes('buildSharedRailState') && csp.includes('RIGHT_RAIL_SECTION_SELECTORS'), 'one shared state authority drives all right-rail section renders');
 
@@ -418,7 +418,7 @@ check(!rightPanelAllowlist.includes('/wiki/') && !shouldShowRightPanelBlock.incl
 check(!rightPanelAllowlist.includes('/categories/') && !shouldShowRightPanelBlock.includes("'/categories/'"), 'site-shell.js does not auto-enable right rail for /categories/ prefix');
 check(!rightPanelAllowlist.includes('/community.html') && !community.includes('page-has-right-panel'), 'community.html uses inline live stats without right-rail allowlist/layout opt-in');
 check(!rightPanelAllowlist.includes('/games/index.html') && !rightPanelAllowlist.includes('/games/') && !games.includes('page-has-right-panel'), 'games/index.html uses inline live stats without right-rail allowlist/layout opt-in');
-check(ensureInlineLiveStatsBlock.includes("container.className = 'inline-live-stats inline-live-stats--bottom'") && ensureInlineLiveStatsBlock.includes("data-live-stats-position', 'bottom'") && ensureInlineLiveStatsBlock.includes('content.appendChild(container)'), 'site-shell.js inserts inline live stats at the bottom immediately');
+check(ensureInlineLiveStatsBlock.includes("const legacy = content.querySelector('.inline-live-stats[data-live-stats-position=\"bottom\"]')") && ensureInlineLiveStatsBlock.includes('if (legacy) legacy.remove()') && !ensureInlineLiveStatsBlock.includes('content.appendChild(container)'), 'site-shell.js removes duplicate legacy player cards and does not inject new ones');
 check(!ensureInlineLiveStatsBlock.includes('content.insertBefore(container, content.firstChild)'), 'site-shell.js no longer inserts inline live stats at the top before later correction');
 check(community.includes('href="/css/action-page-cards.css"'), 'community.html loads action-page card CSS in the document head');
 check(games.includes('href="/css/action-page-cards.css"'), 'games/index.html loads action-page card CSS in the document head');
@@ -573,7 +573,9 @@ check(fetchDailyStateBlock.includes('} finally {') && fetchDailyStateBlock.inclu
 check(buildSharedRailStateBlock.includes('var patchGeneration = _dailyStateGeneration;') && buildSharedRailStateBlock.includes('if (patchGeneration !== _dailyStateGeneration) return;'), 'shared right-rail state guards Missed XP background patch by generation match');
 // Missed XP still must not default to hard 0 after fetch refactor
 check(!/return\s+0\s*;/.test(functionBlock(csp, 'missedXpAllTime')), 'missedXpAllTime still does not default to hard 0 after background-fetch refactor');
-check(functionBlock(csp, 'applyDailyLoopStateToRail').includes(': (shared.missedXp != null ? shared.missedXp : null);'), 'daily-loop missed-opportunity aggregate fallback keeps missedXp null when xp_total_all_time is absent');
+check(functionBlock(csp, 'applyDailyLoopStateToRail').includes("xp_source_status === 'verified'") &&
+  functionBlock(csp, 'applyDailyLoopStateToRail').includes(': null;') &&
+  csp.includes('shared.missedXpState'), 'daily-loop missed-XP stays unverified without a confirmed saved source total');
 const dailyCountsBlock = functionBlock(csp, 'getDailyCounts');
 check(dailyCountsBlock.includes('today_active') && dailyCountsBlock.includes('mission_opportunities') && dailyCountsBlock.includes('row.completed'), 'connection-status completed count derives from today_active.mission_opportunities[].completed');
 check(buildPanelHTMLBlock.includes("var completedDisplay = shared.dailyCounts && shared.dailyCounts.completed != null ? String(shared.dailyCounts.completed) : 'syncing…'") && buildPanelHTMLBlock.includes("var missedTodayDisplay = shared.dailyCounts && shared.dailyCounts.missed != null ? String(shared.dailyCounts.missed) : 'syncing…'"), 'connection-status shows syncing for missing completed/missed daily counts instead of fake 0');
