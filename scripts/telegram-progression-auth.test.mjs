@@ -107,6 +107,25 @@ test('failed auth preflight retains unsent updates and exposes a safe retry', as
   assert.equal(b.nodes.has('moonboys-progression-sync-notice'), false);
 });
 
+test('confirmed progression writes emit one sanitized accepted signal; failures emit none', async () => {
+  const b = browser();
+  const result = await sync.syncPlayerProgress('/faction/signal/contribute', {
+    contribution: 3, telegram_id: 'must-not-be-relayed', pet_id: 'must-not-be-relayed',
+  });
+  assert.equal(result.ok, true);
+  const accepted = b.events.filter(event => event.type === 'moonboys:server-action-accepted');
+  assert.equal(accepted.length, 1);
+  assert.deepEqual(accepted[0].detail, {
+    source: 'faction', route: '/faction/signal/contribute',
+  });
+  assert.doesNotMatch(JSON.stringify(accepted[0].detail), /telegram|pet_id|123456789|contribution/u);
+
+  const failed = browser({ fetchImpl: async () => Response.json({ error: 'rejected' }, { status: 409 }) });
+  const rejected = await sync.syncPlayerProgress('/player/daily-missions/progress', { amount: 1 });
+  assert.equal(rejected.ok, false);
+  assert.equal(failed.events.filter(event => event.type === 'moonboys:server-action-accepted').length, 0);
+});
+
 test('transient preflight recovery submits only once', async () => {
   const b = browser({ authImpl: attempt => attempt === 1 ? null : fresh });
   assert.equal((await sync.syncPlayerProgress('/faction/signal/contribute', { contribution: 3 })).ok, true);
