@@ -1027,7 +1027,10 @@ test('missed XP refresh is owner scoped, recomputed per signed reconciliation an
     await f.page.locator('#mm-next .mm-task').first().waitFor();
     await f.page.evaluate(() => {
       window.__xpPending = [];
-      const api = window.MOONBOYS_DAILY_LOOP;
+      // Minimal My Moonboy fixture may omit the real daily-loop singleton.
+      // Install an owner-scoped mock to exercise the private renderer contract.
+      const api = window.MOONBOYS_DAILY_LOOP ||
+        (window.MOONBOYS_DAILY_LOOP = {});
       api.refreshAfterInflight = options => new Promise(resolve => {
         window.__xpPending.push({ options, resolve });
       });
