@@ -147,3 +147,71 @@
   .page-my-moonboy .mm-page *, .page-my-moonboy .mm-page *::before,
   .page-my-moonboy .mm-page *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
 }
+
+
+/* Read-only economy manual and source registry checklist (#1552 follow-up).
+ * All controls are native disclosure elements, not claim/completion actions. */
+.page-my-moonboy .mm-economy-manual,
+.page-my-moonboy .mm-complete-checklist { scroll-margin-top: 84px; }
+.page-my-moonboy .mm-economy-manual > p,
+.page-my-moonboy .mm-complete-checklist > p {
+  color: var(--mm-muted); font-size: .87rem; line-height: 1.6;
+}
+.page-my-moonboy .mm-economy-group,
+.page-my-moonboy .mm-checklist-group,
+.page-my-moonboy .mm-checklist-source {
+  border: 1px solid var(--mm-line); border-radius: 9px;
+  margin: 9px 0; min-width: 0; background: rgba(255,255,255,.02);
+}
+.page-my-moonboy .mm-economy-group > summary,
+.page-my-moonboy .mm-checklist-group > summary,
+.page-my-moonboy .mm-checklist-source > summary {
+  cursor: pointer; font-weight: 700; line-height: 1.4;
+  min-height: 44px; padding: 12px 15px; color: var(--mm-ink);
+}
+.page-my-moonboy .mm-economy-group > summary:focus-visible,
+.page-my-moonboy .mm-checklist-group > summary:focus-visible,
+.page-my-moonboy .mm-checklist-source > summary:focus-visible {
+  outline: 3px solid var(--mm-accent); outline-offset: 2px;
+}
+.page-my-moonboy .mm-economy-grid {
+  display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,310px),1fr));
+  gap: 10px; padding: 11px;
+}
+.page-my-moonboy .mm-economy-item {
+  min-width: 0; border: 1px solid var(--mm-line); border-radius: 8px;
+  padding: 12px 14px; background: rgba(255,255,255,.025);
+}
+.page-my-moonboy .mm-economy-item h3 { color: var(--mm-ink); margin: 0 0 7px; font-size: .96rem; }
+.page-my-moonboy .mm-economy-item p,
+.page-my-moonboy .mm-checklist-source p,
+.page-my-moonboy .mm-checklist-tasks li,
+.page-my-moonboy .mm-checklist-gaps li {
+  color: var(--mm-muted); font-size: .84rem; line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+.page-my-moonboy .mm-economy-item p { margin: 7px 0; }
+.page-my-moonboy .mm-economy-item a,
+.page-my-moonboy .mm-checklist-source a,
+.page-my-moonboy .mm-checklist-gaps a,
+.page-my-moonboy .mm-economy-manual a { color: #a8f3e1; text-decoration: underline; }
+.page-my-moonboy .mm-checklist-sources { padding: 2px 11px 11px; }
+.page-my-moonboy .mm-checklist-source { margin: 6px 0; }
+.page-my-moonboy .mm-checklist-source > summary { font-weight: 500; }
+.page-my-moonboy .mm-checklist-source > summary strong { font-weight: 750; }
+.page-my-moonboy .mm-checklist-source > p { padding: 0 12px 10px; }
+.page-my-moonboy .mm-checklist-tasks { list-style: none; margin: 3px 12px; padding: 0; }
+.page-my-moonboy .mm-checklist-tasks li {
+  display: flex; align-items: flex-start; gap: 9px; padding: 7px 0;
+  border-bottom: 1px solid var(--mm-line);
+}
+.page-my-moonboy .mm-checklist-tasks li:last-child { border-bottom: 0; }
+.page-my-moonboy .mm-checklist-mark { flex: 0 0 18px; font-weight: 800; color: #a8f3e1; }
+.page-my-moonboy .mm-checklist-gaps { margin: 0; padding: 10px 24px 13px 32px; }
+.page-my-moonboy .mm-checklist-gaps li { margin-bottom: 9px; }
+.page-my-moonboy .mm-checklist-group > p { padding: 0 14px; }
+.page-my-moonboy .mm-checklist-source > p.mm-muted { padding: 0 12px; }
+@media (max-width: 640px) {
+  .page-my-moonboy .mm-economy-grid { grid-template-columns: minmax(0,1fr); }
+  .page-my-moonboy .mm-checklist-source > summary { padding: 12px 9px; }
+}
