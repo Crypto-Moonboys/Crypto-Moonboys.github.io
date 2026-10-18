@@ -219,7 +219,7 @@
 
   function contributorListHTML(rows) {
     return rows && rows.length ? contributorRows(rows)
-      : '<li class="top-contributor-row"><span>Verified contributor rankings unavailable for this period. No XP scores inferred.</span></li>';
+      : '<li class="top-contributor-row top-contributor-row--empty"><span class="top-contributor-empty-notice">Verified contributor rankings unavailable for this period. No XP scores inferred.</span></li>';
   }
 
   function buildTopContributorsHTML() {
