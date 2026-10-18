@@ -181,7 +181,11 @@
   // ── Telegram Profile Card ─────────────────────────────────────
 
   function initTgProfileCard(el) {
-    var telegramId = resolveTelegramId(el);
+    // Profile XP, wallet and faction are private. Never use the optional
+    // data-telegram-id attribute as owner authority for this view.
+    var gate = window.MOONBOYS_IDENTITY;
+    var telegramId = gate && typeof gate.getTelegramId === 'function'
+      ? String(gate.getTelegramId() || '') : '';
     if (!telegramId) {
       el.innerHTML = '<div class="community-empty">' + COPY.UNLINKED + '</div>';
       return;
@@ -190,11 +194,26 @@
       el.innerHTML = '<div class="community-empty">' + COPY.FEATURE_UNAVAILABLE + '</div>';
       return;
     }
-    el.innerHTML = '<div class="community-loading">Loading profile…</div>';
-
-    apiFetch('/telegram/profile?telegram_id=' + encodeURIComponent(telegramId)).then(function (data) {
-      if (!data || !data.profile) {
-        el.innerHTML = '<div class="community-empty">Profile not found. Use /start in the Telegram bot.</div>';
+    var requestId = (el._profileRequest || 0) + 1;
+    el._profileRequest = requestId;
+    el.innerHTML = '<div class="community-loading">Loading verified profile…</div>';
+    var fresh = typeof gate.getFreshTelegramAuth === 'function'
+      ? gate.getFreshTelegramAuth()
+      : typeof gate.getSignedTelegramAuth === 'function'
+        ? Promise.resolve(gate.getSignedTelegramAuth()) : Promise.resolve(null);
+    Promise.resolve(fresh).then(function (auth) {
+      if (!auth || !auth.hash || !auth.auth_date ||
+          String(auth.id) !== telegramId) return null;
+      return fetch(BASE + '/telegram/profile', {
+        method: 'POST', cache: 'no-store',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ telegram_auth: auth }),
+      }).then(function (response) { return response.ok ? response.json() : null; });
+    }).catch(function () { return null; }).then(function (data) {
+      if (requestId !== el._profileRequest ||
+          String(gate.getTelegramId() || '') !== telegramId) return;
+      if (!data || !data.profile || String(data.profile.telegram_id || '') !== telegramId) {
+        el.innerHTML = '<div class="community-empty">Verified profile unavailable. Sign in with Telegram and retry.</div>';
         return;
       }
       var p = data.profile;
