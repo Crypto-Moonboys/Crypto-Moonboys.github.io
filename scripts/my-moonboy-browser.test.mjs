@@ -255,3 +255,175 @@ test('PR3 preserves configured API reverse-proxy prefixes', async () => {
     assert.equal(f.errors.length, 0, f.errors.join('\n'));
   } finally { await f.browser.close(); }
 });
+
+
+// Deliberately ignore AbortSignal in the first cursor request. This simulates
+// a proxy/source that resolves a stale page AFTER the client has refreshed
+// its first-page snapshot, so epoch and snapshot guards must both hold.
+async function holdOneCursorResponse(page) {
+  await page.evaluate(() => {
+    const originalFetch = window.fetch.bind(window);
+    let held = false;
+    window.fetch = (url, options) => {
+      let cursor = null;
+      try { cursor = JSON.parse(options && options.body || '{}').cursor; }
+      catch (_) {}
+      if (!held && cursor) {
+        held = true;
+        return new Promise(resolve => {
+          window.__mmReleaseOldPage = payload => resolve(new Response(JSON.stringify(payload), {
+            status: 200, headers: { 'Content-Type': 'application/json' },
+          }));
+        });
+      }
+      return originalFetch(url, options);
+    };
+  });
+}
+
+test('PR3 rejects old cursor data after refresh and keeps Load more usable', async () => {
+  const f = await setup({width:390,height:844}, true);
+  try {
+    await f.page.goto(SITE + '/my-moonboy.html', {waitUntil:'domcontentloaded'});
+    await f.page.locator('#mm-next .mm-task').first().waitFor();
+    await f.page.waitForFunction(() => !document.getElementById('mm-refresh').disabled);
+    await holdOneCursorResponse(f.page);
+    await f.page.locator('#mm-load-more').click();
+    await f.page.waitForFunction(() => typeof window.__mmReleaseOldPage === 'function');
+    assert.equal(await f.page.locator('#mm-load-more').isDisabled(), true);
+
+    // Replace the first page while an old page is still pending. Both versions
+    // use the same cursor, so comparing cursor equality cannot protect data.
+    f.setPlanFactory((owner, cursor) => {
+      const payload = plan(owner, cursor);
+      if (!cursor) {
+        payload.tasks[0].title = 'Fresh first-page source status';
+        payload.top_actions[0].title = 'Fresh first-page source status';
+      }
+      return payload;
+    });
+    await f.page.locator('#mm-refresh').click();
+    await f.page.waitForFunction(() =>
+      document.getElementById('mm-next')?.textContent.includes('Fresh first-page source status'));
+    assert.equal(await f.page.locator('#mm-load-more').isEnabled(), true);
+    assert.equal(await f.page.locator('#mm-load-more').isHidden(), false);
+    assert.equal(await f.page.locator('#mm-page-count').textContent(),
+      '3 tasks loaded · 1 shown · more available');
+
+    const oldPayload = plan('111', 'pap1-100');
+    oldPayload.tasks[0].title = 'OBSOLETE cursor item';
+    await f.page.evaluate(value => window.__mmReleaseOldPage(value), oldPayload);
+    await f.page.waitForTimeout(50);
+    assert.doesNotMatch(await f.page.locator('#my-moonboy').innerText(), /OBSOLETE cursor item/u);
+    assert.equal(await f.page.locator('#mm-load-more').isEnabled(), true);
+    assert.equal(await f.page.locator('#mm-load-more').isHidden(), false);
+
+    await f.page.locator('#mm-load-more').click();
+    await f.page.getByText('Alpha historic contract bonus').first().waitFor();
+    assert.equal(await f.page.locator('#mm-load-more').isHidden(), true);
+    assert.equal(f.errors.length,0,f.errors.join('\n'));
+  } finally { await f.browser.close(); }
+});
+
+test('PR3 identity switch cancels pagination and enables new owner cursor', async () => {
+  const f = await setup({width:390,height:844}, true);
+  try {
+    await f.page.goto(SITE + '/my-moonboy.html', {waitUntil:'domcontentloaded'});
+    await f.page.locator('#mm-next .mm-task').first().waitFor();
+    await f.page.waitForFunction(() => !document.getElementById('mm-refresh').disabled);
+    await holdOneCursorResponse(f.page);
+    await f.page.locator('#mm-load-more').click();
+    await f.page.waitForFunction(() => typeof window.__mmReleaseOldPage === 'function');
+
+    await f.page.evaluate(() => {
+      window.__mmTest.id = '222';
+      window.dispatchEvent(new CustomEvent('moonboys:identity-change'));
+    });
+    assert.equal(await f.page.locator('#mm-private').isHidden(), true);
+    await f.page.waitForFunction(() =>
+      document.getElementById('mm-player-name')?.textContent === 'Beta player');
+    assert.equal(await f.page.locator('#mm-load-more').isHidden(), false);
+    assert.equal(await f.page.locator('#mm-load-more').isEnabled(), true);
+
+    const oldPayload = plan('111','pap1-100');
+    oldPayload.tasks[0].title = 'OBSOLETE Alpha claim';
+    await f.page.evaluate(payload => window.__mmReleaseOldPage(payload), oldPayload);
+    await f.page.waitForTimeout(50);
+    assert.doesNotMatch(await f.page.locator('#my-moonboy').innerText(), /Alpha|OBSOLETE/);
+    await f.page.locator('#mm-load-more').click();
+    await f.page.getByText('Beta historic contract bonus').first().waitFor();
+    assert.equal(await f.page.locator('#mm-load-more').isHidden(), true);
+    assert.equal(f.errors.length,0,f.errors.join('\n'));
+  } finally { await f.browser.close(); }
+});
+
+test('PR3 duplicate pet titles are attributed and pet buttons filter only one opaque source', async () => {
+  const f = await setup({width:390,height:844}, true);
+  f.setPlanFactory((owner, cursor) => {
+    const payload = plan(owner,cursor);
+    if (cursor) return payload;
+    const secondRef = 'pap_' + 'd'.repeat(24);
+    payload.owner.pet_count = 2;
+    payload.owner.pets.push({
+      ...payload.owner.pets[0], pet_ref: secondRef, slot_number: 2,
+      selected: false, life_stage: 'hatched', lifecycle_phase: 'adult',
+    });
+    const second = { ...payload.tasks[0],
+      task_id: 'moonpet.jobs:another-immutable-session', source_pet_ref: secondRef };
+    payload.tasks.push(second);
+    payload.top_actions.push(second);
+    return payload;
+  });
+  try {
+    await f.page.goto(SITE + '/my-moonboy.html', {waitUntil:'domcontentloaded'});
+    await f.page.locator('#mm-next .mm-task').first().waitFor();
+    assert.equal(await f.page.locator('#mm-next .mm-task').count(),2);
+    assert.match(await f.page.locator('#mm-next').innerText(), /MoonPet slot 1/);
+    assert.match(await f.page.locator('#mm-next').innerText(), /MoonPet slot 2/);
+    assert.match(await f.page.locator('#mm-pets').innerText(), /Lifecycle phase: adult/);
+    assert.doesNotMatch(await f.page.locator('#my-moonboy').getAttribute('data-pet-ref') || '', /pap_/);
+    assert.doesNotMatch(await f.page.locator('#my-moonboy').evaluate(node => node.innerHTML), /pap_[a-f0-9]{24}/);
+
+    await f.page.locator('#mm-pets [data-mm-pet-index="1"]').click();
+    assert.equal(await f.page.locator('[data-mm-tab="moonpet"]').getAttribute('aria-selected'),'true');
+    assert.match(await f.page.locator('#mm-pet-filter').innerText(), /Showing only MoonPet slot 2/);
+    assert.equal(await f.page.locator('#mm-results .mm-task').count(),1);
+    assert.match(await f.page.locator('#mm-results').innerText(), /MoonPet slot 2/);
+    assert.doesNotMatch(await f.page.locator('#mm-results').innerText(), /MoonPet slot 1/);
+    assert.equal(await f.page.locator('#mm-results a.mm-button').first().getAttribute('href'),
+      '/moonpet-game.html', 'no raw pet selectors in gameplay links');
+    await f.page.locator('#mm-clear-pet-filter').click();
+    assert.equal(await f.page.locator('#mm-pet-filter').isHidden(), true);
+    assert.equal(await f.page.locator('#mm-results .mm-task').count(),2);
+    assert.equal(f.errors.length,0,f.errors.join('\n'));
+  } finally { await f.browser.close(); }
+});
+
+test('PR3 unavailable roster retains saved original-pet claims without asserting archival', async () => {
+  const f = await setup({width:390,height:844}, true);
+  f.setPlanFactory((owner,cursor) => {
+    const payload = plan(owner,cursor);
+    if (cursor) return payload;
+    payload.owner.pet_count = null;
+    payload.owner.pets = null;
+    payload.source_status['moonpet.adoption-incubation'] = {state:'query_failed'};
+    const saved = plan(owner,'pap1-100').tasks[0];
+    payload.tasks.push(saved);
+    payload.top_actions.push(saved);
+    return payload;
+  });
+  try {
+    await f.page.goto(SITE + '/my-moonboy.html', {waitUntil:'domcontentloaded'});
+    await f.page.locator('#mm-next .mm-task').first().waitFor();
+    const petText = await f.page.locator('#mm-pets').innerText();
+    assert.match(petText,/Owned MoonPet roster unavailable/);
+    assert.match(petText,/Original-earning MoonPet/);
+    assert.match(petText,/Active membership unknown/);
+    assert.doesNotMatch(petText,/archived|historical record is not reassigned/i);
+    assert.match(await f.page.locator('#mm-next').innerText(),/membership unknown/);
+    await f.page.locator('#mm-pets [data-mm-pet-index="1"]').click();
+    assert.match(await f.page.locator('#mm-results').innerText(),/Alpha historic contract bonus/);
+    assert.doesNotMatch(await f.page.locator('#mm-results').innerText(),/Alpha saved job claim/);
+    assert.equal(f.errors.length,0,f.errors.join('\n'));
+  } finally { await f.browser.close(); }
+});
