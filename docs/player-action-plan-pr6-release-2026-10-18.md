@@ -34,7 +34,7 @@ Use disposable consenting owner-controlled accounts; never record real auth hash
 7. Telegram `/daily` completed outside the browser; return/focus to reconcile. Disconnect/offline while read pending, reconnect, expired signed auth, account switch, sign-out, partial D1 source outage and slow API. No old-owner content, false current claims, or duplicate action POST.
 8. Open Task and page navigation: correct destination, no claim/energy/purchase side effect. Compare separation of Arcade XP, Pet XP, Community XP, faction clout and verified Championship Clout. An unverified Championship source must remain preview/unavailable.
 
-Record each of the 15 case results individually in the evidence manifest and attach a redacted test artefact link. Do not use a green QA label for an untested variant. **This PR does not have authenticated production fixtures or consent to execute gameplay writes. All signed checks remain pending.**
+Record each of the 15 case results individually in the **external release attestation** on PR #1558 or issue #1552, with a redacted test artefact URL for every case and the frozen release-subject SHA H. **Do not edit the tracked evidence manifest:** its 15 entries must stay `pending` with null evidence URLs, as enforced by the PR6 CI gate. An external case may be marked pass only after its actual signed-account check succeeds; do not use a green QA label for an untested variant. **This PR does not have authenticated production fixtures or consent to execute gameplay writes. All signed checks remain pending.**
 
 ## Immutable release-subject attestation (no circular commits)
 
