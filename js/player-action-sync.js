@@ -24,7 +24,7 @@
   const trailingTimers = new Map();
   const subscribers = new Set();
   let channel = null;
-  let acceptedActivitySeen = false;
+  let acceptedActivityDay = null;
   let peerCatchupRequested = false;
 
   function nowDay() { return new Date().toISOString().slice(0, 10); }
@@ -61,7 +61,7 @@
   function publish(source, eventName) {
     source = safeSource(source);
     eventName = safeEvent(eventName);
-    acceptedActivitySeen = true;
+    acceptedActivityDay = nowDay();
     const key = fingerprint(source, eventName);
     lastPublishedAt.set(key, Date.now());
     const message = { v: 1, kind: 'accepted', source, event: eventName, utc_day: nowDay(), sender: instance };
@@ -106,7 +106,7 @@
     if (!message || message.v !== 1 || message.sender === instance ||
       message.utc_day !== nowDay()) return;
     if (message.kind === 'accepted') {
-      acceptedActivitySeen = true;
+      acceptedActivityDay = nowDay();
       notify({
         source: safeSource(message.source),
         event: safeEvent(message.event),
@@ -120,7 +120,7 @@
     // activity responds, so ordinary single-tab startup does not trigger an
     // extra auth/read cycle.
     if (message.kind === 'hello') {
-      if (!acceptedActivitySeen) return;
+      if (acceptedActivityDay !== nowDay()) return;
       try {
         channel?.postMessage({
           v: 1,
@@ -167,7 +167,7 @@
   // ask active peers whether accepted activity existed before this receiver
   // joined the channel. A positive reply closes the late-receiver gap without
   // imposing an unconditional second startup read on every page.
-  if (channel && !acceptedActivitySeen) {
+  if (channel && acceptedActivityDay !== nowDay()) {
     try {
       channel.postMessage({ v: 1, kind: 'hello', utc_day: nowDay(), sender: instance });
     } catch (_) {}
