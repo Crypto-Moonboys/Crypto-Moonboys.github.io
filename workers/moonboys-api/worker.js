@@ -108,6 +108,7 @@ import {
 import { issuePetMiniAppChallenge, verifyPetMiniAppChallenge, verifyTelegramMiniAppInitData } from './pets/mini-app-auth.js';
 import { resolvePetCallbackRoute } from './pets/mini-app-routing.js';
 import { CANONICAL_FACTION_KEYS, FACTION_UNALIGNED, normalizeFaction, getFactionXpMultiplier } from './shared/faction-canon.js';
+import { readCanonicalFactionProfile } from './shared/faction-projection.js';
 import { buildWtfIso, getWtfDailySchedule, getWtfEventStatus } from './shared/daily-wtf-schedule.js';
 
 /**
@@ -1457,17 +1458,13 @@ async function logTelegramActivity(db, telegramId, action, metadata = '') {
 }
 
 /**
- * Return the user's current faction by joining telegram_faction_members -> telegram_factions.
- * Returns null if the user is not in any faction.
+ * Read the current account faction from the same canonical progression row
+ * as POST /faction/status. The former community membership table is NOT the
+ * Battle Chamber season-lock authority; do not let it mislabel Telegram
+ * profiles, daily digests or saved-game player views.
  */
 async function getUserFaction(db, telegramId) {
-  const row = await db.prepare(`
-    SELECT f.id, f.name, f.description, f.icon, fm.role
-    FROM telegram_faction_members fm
-    JOIN telegram_factions f ON f.id = fm.faction_id
-    WHERE fm.telegram_id = ?
-  `).bind(telegramId).first().catch(() => null);
-  return row || null;
+  return readCanonicalFactionProfile(db, telegramId);
 }
 
 /**
