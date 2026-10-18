@@ -803,3 +803,46 @@ test('PR5 UTC rollover during accepted follow-up queues new-day replacement and 
     assert.equal(f.errors.length,0,f.errors.join('\n'));
   }finally{await f.browser.close();}
 });
+
+
+test('PR5 hidden-tab reconnect queues faction reconciliation until visibility returns',async()=>{
+  const old=fixture({dayValue:120});
+  const fresh=fixture({dayValue:9,rows:false});
+  const f=await setup(390,{pageKey:'graffpunks',state:old});
+  try{
+    const {page}=f;
+    await page.waitForFunction(()=>document.querySelector('[data-fop-private]')?.textContent.includes(
+      '120 (server-saved faction contribution'
+    ));
+    await page.evaluate(()=>{
+      Object.defineProperty(document,'hidden',{configurable:true,value:true});
+      window.dispatchEvent(new CustomEvent('moonboys:player-reconcile-needed',{
+        detail:{reason:'online',utc_day:new Date().toISOString().slice(0,10)}
+      }));
+    });
+    assert.equal(await page.evaluate(()=>window.__fopTest.refreshed),0,
+      'hidden reconnect queues invalidation without network work');
+    assert.doesNotMatch(await page.locator('[data-fop-private]').innerText(),
+      /120 \(server-saved faction contribution/,
+      'hidden tab immediately stops presenting old contribution as current');
+
+    await page.evaluate(value=>window.__fopTest.push(value),old);
+    assert.doesNotMatch(await page.locator('[data-fop-private]').innerText(),
+      /120 \(server-saved faction contribution/,
+      'cached subscriber updates remain suppressed while hidden reconciliation is queued');
+
+    await page.evaluate(value=>{
+      window.__fopTest.state=value;
+      Object.defineProperty(document,'hidden',{configurable:true,value:false});
+      document.dispatchEvent(new Event('visibilitychange'));
+    },fresh);
+    await page.waitForFunction(()=>document.querySelector('[data-fop-private]')?.textContent.includes(
+      '9 (server-saved faction contribution'
+    ),null,{timeout:5000});
+    assert.equal(await page.evaluate(()=>window.__fopTest.refreshed),1,
+      'becoming visible consumes the queued forced refresh exactly once');
+    assert.match(await page.locator('[data-fop-private]').innerText(),
+      /9 \(server-saved faction contribution/);
+    assert.equal(f.errors.length,0,f.errors.join('\n'));
+  }finally{await f.browser.close();}
+});
