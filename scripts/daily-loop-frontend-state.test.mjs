@@ -115,7 +115,7 @@ async function waitForCalls(calls, expectedCount) {
 }
 
 assert.ok(singletonSrc.includes('window.MOONBOYS_DAILY_LOOP = {'), 'singleton exposes MOONBOYS_DAILY_LOOP');
-for (const method of ['getState', 'refresh', 'subscribe', 'invalidate', 'isReady']) {
+for (const method of ['getState', 'refresh', 'refreshAfterInflight', 'subscribe', 'invalidate', 'isReady']) {
   assert.ok(singletonSrc.includes(`${method}: ${method}`), `singleton exposes ${method}()`);
 }
 
@@ -166,6 +166,39 @@ await Promise.resolve();
 resolveFetch();
 await Promise.all([first, second]);
 assert.equal(concurrentCallCount, 1);
+
+let resolveQueuedFetch;
+let queuedFetchCount = 0;
+const queuedRuntime = createRuntime({
+  fetchImpl() {
+    queuedFetchCount += 1;
+    if (queuedFetchCount === 1) {
+      return new Promise(resolve => {
+        resolveQueuedFetch = () => resolve(response(dailyPayload({
+          faction_state: { marker: 'before-action' },
+        })));
+      });
+    }
+    return response(dailyPayload({
+      faction_state: { marker: 'after-action' },
+    }));
+  },
+});
+const queuedFirst = queuedRuntime.window.MOONBOYS_DAILY_LOOP.refresh({ force: true });
+await waitForCalls({ get length() { return queuedFetchCount; } }, 1);
+const queuedAfter = queuedRuntime.window.MOONBOYS_DAILY_LOOP.refreshAfterInflight({
+  force: true, reason: 'accepted_action',
+});
+assert.notEqual(queuedFirst, queuedAfter,
+  'post-action refresh returns a queued follow-up promise, not the pre-action request');
+await Promise.resolve();
+assert.equal(queuedFetchCount, 1, 'follow-up cannot start before the old request settles');
+resolveQueuedFetch();
+await queuedFirst;
+const queuedResult = await queuedAfter;
+assert.equal(queuedFetchCount, 2, 'exactly one forced read runs after the pre-action request');
+assert.equal(queuedResult.faction_state.marker, 'after-action',
+  'queued caller receives post-action source state');
 
 let resolveAnonFetch;
 const authRaceCalls = [];
