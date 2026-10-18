@@ -356,7 +356,13 @@
       (!id || String(state.identity.telegram_id ?? '') !== id)) return;
     // A late previous-day event must not erase a freshly accepted current-day
     // projection. A current-owner error still fails closed below.
-    if (state?.utc_day && state.utc_day !== utcDay()) return;
+    if (state?.utc_day && state.utc_day !== utcDay()) {
+      // Ignore obsolete records without erasing newer private state.
+      // If nothing is loading, show unavailable rather than retaining an
+      // endless "Checking" message for a previous-day cached read.
+      if (!snapshot && !inflight) { loading = false; render(); }
+      return;
+    }
     snapshot = publicState(state) ? state : null;
     snapshotRevision++;
     loading = false;
@@ -386,7 +392,15 @@
       if (generation === epoch) { snapshot = null; loading = false; render(); }
       return null;
     }).finally(() => {
-      if (inflight === operation) inflight = null;
+      if (inflight !== operation) return;
+      inflight = null;
+      // A returned old-day or unusable snapshot is NOT current-day proof.
+      // Once the request has actually settled, stop the loading state while
+      // preserving the already-hidden private view and its retry control.
+      if (generation === epoch && !snapshot && loading) {
+        loading = false;
+        render();
+      }
     });
     inflight = operation;
     return operation;
