@@ -306,8 +306,15 @@ function maybeGenerateComebackMission(now = nowMs()) {
   maybeExpireMission(now);
   const mission = state.comeback_mission;
   if (mission) {
-    if (mission.completed) return null;
-    if (Number(mission.expires_at) > now) return mission;
+    if (mission.completed) {
+      // One completed comeback mission belongs to the run that completed it.
+      // Another actual run AND a new inactivity window are required before
+      // offering a new challenge; never issue one solely from timer expiry.
+      const completedAt = Number(mission.completed_at) || Number(mission.created_at);
+      if (!state.last_played_at || Number(state.last_played_at) <= completedAt) return null;
+    } else if (Number(mission.expires_at) > now) {
+      return mission;
+    }
     // Do not restart an expired mission for the same last accepted run.
     // A new actual run advances last_played_at; only then may another
     // inactivity window eventually generate a new, distinct mission.
