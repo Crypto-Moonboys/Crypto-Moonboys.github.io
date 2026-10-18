@@ -409,22 +409,23 @@ export async function submitScore(player, score, game = "global") {
       if (linked && hasSignedAuth) {
         try {
           const factionEarn = await callFactionEarn("score_accept", score);
-          // Faction settlement completes after the initial score acceptance.
-          // Emit a second sanitized invalidation so another tab re-reads the
-          // post-settlement contribution rather than treating its earlier read
-          // as final.
-          dispatchUiState("moonboys:arcade-score-accepted", {
-            source: "faction", game: gameKey, ts: Date.now()
-          });
-          dispatchUiState("moonboys:faction-boost", {
-            source: "score_accept",
-            faction: factionEarn && factionEarn.faction ? String(factionEarn.faction) : getCurrentFactionKey(),
-            amount: Number(factionEarn && (factionEarn.faction_xp_awarded ?? factionEarn.faction_xp_delta ?? factionEarn.base_xp) || 0),
-            ts: Date.now(),
-          });
-          emitMicroNotification("Faction influence increased.", "success");
-          if (typeof window !== "undefined" && window.MOONBOYS_FACTION && typeof window.MOONBOYS_FACTION.loadStatus === "function") {
-            window.MOONBOYS_FACTION.loadStatus().catch(() => null);
+          const factionSettled = factionEarn && factionEarn.ok === true && factionEarn.skipped !== true;
+          if (factionSettled) {
+            // Faction settlement completes after the initial score acceptance.
+            // Emit only when the settlement payload itself confirms success.
+            dispatchUiState("moonboys:arcade-score-accepted", {
+              source: "faction", game: gameKey, ts: Date.now()
+            });
+            dispatchUiState("moonboys:faction-boost", {
+              source: "score_accept",
+              faction: factionEarn.faction ? String(factionEarn.faction) : getCurrentFactionKey(),
+              amount: Number(factionEarn.faction_xp_awarded ?? factionEarn.faction_xp_delta ?? factionEarn.base_xp) || 0,
+              ts: Date.now(),
+            });
+            emitMicroNotification("Faction influence increased.", "success");
+            if (typeof window !== "undefined" && window.MOONBOYS_FACTION && typeof window.MOONBOYS_FACTION.loadStatus === "function") {
+              window.MOONBOYS_FACTION.loadStatus().catch(() => null);
+            }
           }
         } catch (error) {
           console.warn("[leaderboard-client] Faction earn sync failed:", error);
@@ -434,11 +435,14 @@ export async function submitScore(player, score, game = "global") {
         try {
           const progression = await ArcadeSync.syncBlockTopiaProgressionOnAcceptedScore(score, gameKey);
           // This is a later server settlement than leaderboard acceptance.
-          // Broadcast independently of the first hint, even when no XP is
-          // awarded, because the canonical progression projection has settled.
-          dispatchUiState("moonboys:arcade-score-accepted", {
-            source: "arcade_progression", game: gameKey, ts: Date.now()
-          });
+          // A resolved promise is not enough: unreadable HTTP-success responses
+          // return null, so require explicit server confirmation before
+          // announcing that the projection has settled.
+          if (progression && progression.ok === true) {
+            dispatchUiState("moonboys:arcade-score-accepted", {
+              source: "arcade_progression", game: gameKey, ts: Date.now()
+            });
+          }
           const serverProgress = progression && progression.progression ? progression.progression : {};
           const awardedXp = Number(progression && (progression.xp_awarded ?? progression.awarded_xp ?? serverProgress.xp_awarded)) || 0;
           const totalXp = Number(serverProgress.xp ?? progression?.xp_total ?? progression?.total_xp);
