@@ -295,7 +295,10 @@
       : '<strong>Source unavailable:</strong> daily mission rows were not verified. ' +
         'No completed/unfinished count is assumed.';
     const contributionStatus = sourceState(valid, 'faction_state');
-    const value = valid.faction_state?.today?.[faction];
+    // D1 player_faction_signal_state uses the numeric database faction ID.
+    // Canonical slugs identify UI panels, not keys in the persisted day map.
+    const tableId = valid.faction_state?.faction_table_id;
+    const value = tableId == null ? null : valid.faction_state?.today?.[String(tableId)];
     const amount = finiteNonnegative(value);
     const contribution = STATUS_OK.has(contributionStatus)
       ? '<p><strong>Today’s Faction Signal contribution:</strong> ' +
