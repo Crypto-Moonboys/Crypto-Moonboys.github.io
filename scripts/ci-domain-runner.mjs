@@ -44,6 +44,7 @@ const GROUPS = {
     ['node', 'scripts/audit-published-vs-index.js'],
   ],
   'worker-api': [
+    ['node', 'scripts/leaderboard-source-consolidation.test.mjs'],
     ['node', '--test', 'scripts/my-moonboy-mission-guide.test.mjs'],
     ['node', '--test', 'scripts/moonpet-mission-status.test.mjs'],
     ['node', '--test', 'scripts/telegram-website-auth.test.mjs'],
@@ -197,6 +198,7 @@ const GROUPS = {
     ['node', '--test', 'scripts/moonpet-beta-xp-quarantine.test.mjs'],
   ],
   arcade: [
+    ['node', 'scripts/leaderboard-source-consolidation.test.mjs'],
     // #1530 PR3B safe audit: v1 NBG gameplay must never become trusted Clout
     // until a separately reviewed, independently verifiable source exists.
     ['node', 'scripts/nbg-london-replay.test.mjs'],
@@ -251,6 +253,7 @@ const GROUPS = {
     ['node', 'scripts/wax-collection-page-fallback.test.mjs'],
   ],
   visual: [
+    ['node', 'scripts/leaderboard-source-consolidation.test.mjs'],
     ['node', '--test', 'scripts/my-moonboy-mission-guide.test.mjs'],
     ['node', '--test', 'scripts/player-action-sync-parity.test.mjs'],
     ['node', '--test', 'scripts/player-action-sync-browser.test.mjs'],
