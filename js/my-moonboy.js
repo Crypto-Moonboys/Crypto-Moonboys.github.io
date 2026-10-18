@@ -563,59 +563,73 @@
   function filteredTasks() {
     const search = state.search.trim().toLowerCase();
     return state.tasks.filter(task => matchesTab(task) && matchesStatus(task) &&
+      (state.tab !== 'moonpet' || !state.petFilterRef ||
+        task.source_pet_ref === state.petFilterRef) &&
       (!search || [task.title, task.source_key, task.why, task.what, task.description]
         .some(value => String(value || '').toLowerCase().includes(search))));
   }
 
-  function renderPets() {
+  function renderPets(directory) {
     const container = byId('mm-pets');
     const source = state.plan && state.plan.owner && state.plan.owner.pets;
-    const pets = Array.isArray(source) ? source : [];
-    const groups = new Map();
-    pets.forEach((pet, index) => {
-      if (/^pap_[a-f0-9]{24}$/u.test(String(pet.pet_ref || ''))) {
-        const label = 'MoonPet slot ' + (pet.slot_number || index + 1);
-        groups.set(pet.pet_ref, { pet, label });
-      }
-    });
-    // Saved original pet receipts may outlive the active roster. Never assign
-    // them to the currently selected pet or expose the underlying D1 pet ID.
-    state.tasks.forEach(task => {
-      const ref = String(task.source_pet_ref || '');
-      if (task.owner_scope === 'original_pet' && /^pap_[a-f0-9]{24}$/u.test(ref) &&
-        !groups.has(ref)) groups.set(ref, {
-        pet: null, label: 'Historical original-earning MoonPet ' + (groups.size + 1),
-      });
-    });
-    if (source === null && !groups.size) {
-      container.innerHTML = '<p class="mm-empty">Owned MoonPet roster is unavailable from the current source. Retry; a failed read does not mean you have no pets.</p>';
+    const rosterKnown = Array.isArray(source);
+    const warning = rosterKnown ? '' :
+      '<p class="mm-empty mm-source-warning" role="status">' +
+      'Owned MoonPet roster unavailable. Saved source-pet claim evidence below ' +
+      'does not establish current slot membership, deletion or archival; retry to verify.' +
+      '</p>';
+    if (!directory.size) {
+      container.innerHTML = warning || '<p class="mm-empty">No active MoonPets reported by the verified roster. ' +
+        'Any historic saved claims remain in the Claims tab. Open the game for adoption or restoration.</p>';
       return;
     }
-    if (!groups.size) {
-      container.innerHTML = '<p class="mm-empty">No active MoonPets reported by the verified roster. Any historic saved claims remain in the Claims tab. Open the game for adoption or restoration.</p>';
-      return;
-    }
-    container.innerHTML = Array.from(groups.entries()).map(([ref, entry]) => {
+    const cards = Array.from(directory.entries()).map(([ref, entry], index) => {
       const pet = entry.pet;
       const assigned = state.tasks.filter(task => task.source_pet_ref === ref);
-      const available = assigned.filter(taskActionable).length;
-      const stage = pet ? formatName(pet.life_stage || pet.lifecycle_phase || 'Not confirmed') : 'Saved original-pet award';
+      const verifiedAvailable = assigned.filter(taskActionable).length;
+      const stage = pet ? formatName(pet.life_stage || 'Not supplied') : null;
+      const phase = pet ? formatName(pet.lifecycle_phase || 'Not supplied') : null;
       const level = pet && pet.level != null ? ' · Level ' + niceCount(pet.level) : '';
-      const marks = pet ? (pet.selected ? '<span class="mm-tag mm-tag--action">Selected in game</span>' : '') : '<span class="mm-tag">Historical earning pet</span>';
+      const marks = pet ? (pet.selected
+        ? '<span class="mm-tag mm-tag--action">Selected in game</span>'
+        : '<span class="mm-tag">Owned MoonPet</span>')
+        : '<span class="mm-tag mm-tag--unknown">' +
+          (entry.membership === 'unknown'
+            ? 'Active membership unknown' : 'Not in active roster') + '</span>';
       const info = pet
         ? '<p>Life stage: ' + esc(stage) + esc(level) + '</p>' +
-          '<p>Evolution stage: ' + (pet.evolution_stage == null ? 'Not supplied' : esc(niceCount(pet.evolution_stage))) +
+          '<p>Lifecycle phase: ' + esc(phase) + '</p>' +
+          '<p>Evolution stage: ' + (pet.evolution_stage == null
+            ? 'Not supplied' : esc(niceCount(pet.evolution_stage))) +
           ' · Pet XP: ' + esc(niceCount(pet.pet_xp)) + '</p>' +
           '<p>Species identity is kept hidden until the MoonPet reveal stage.</p>'
-        : '<p>Original pet attribution is preserved on the claim. This archived/historical record is not reassigned to a current slot.</p>';
+        : '<p>Saved task attributed to this original MoonPet. ' +
+          (entry.membership === 'unknown'
+            ? 'The active roster could not be read; membership cannot be determined.'
+            : 'This original earning MoonPet is not present in the verified active roster.') +
+          ' No claim or pet switch happens here.</p>';
       const list = assigned.slice(0, 5).map(task =>
-        '<li>' + esc(task.title) + ' — ' + esc(formatName(task.status)) + '</li>').join('');
-      return '<article class="mm-pet"><h3>' + esc(entry.label) + '</h3>' + marks + info +
-        '<p>' + assigned.length + ' source task(s) · ' + available + ' verified action(s) currently available</p>' +
-        (list ? '<ul>' + list + '</ul>' : '<p>No per-pet source tasks currently loaded.</p>') +
-        (assigned.length > 5 ? '<p>+' + (assigned.length - 5) + ' more tasks in the MoonPet tab.</p>' : '') +
-        '<button type="button" class="mm-button" data-mm-open-moonpet>View MoonPet tasks</button></article>';
+        '<li>' + esc(task.title) + ' — ' +
+        esc(state.stale ? 'last confirmed: ' + formatName(task.status) : formatName(task.status)) +
+        '</li>').join('');
+      const availability = state.stale
+        ? '<p class="mm-source-warning">Last-confirmed snapshot only. ' + verifiedAvailable +
+          ' formerly actionable item(s); current availability unknown until refresh.</p>'
+        : '<p>' + verifiedAvailable + ' source-verified action(s) available at last sync</p>';
+      return '<article class="mm-pet"><h3>' + esc(entry.label) + '</h3>' +
+        marks + info + '<p>' + assigned.length + ' source task(s)</p>' +
+        availability +
+        (list ? '<ul>' + list + '</ul>' : '<p>No source tasks currently loaded for this MoonPet.</p>') +
+        (assigned.length > 5 ? '<p>+' + (assigned.length - 5) +
+          ' more tasks. Filter the MoonPet tab to view them all.</p>' : '') +
+        '<button type="button" class="mm-button" data-mm-open-moonpet ' +
+          'data-mm-pet-index="' + index + '" aria-label="' +
+          esc('View source tasks for ' + entry.label) +
+          '">View this MoonPet’s tasks</button></article>';
     }).join('');
+    // The warning must remain visible even when source-specific pending
+    // original-pet claims are independently verified and rendered below it.
+    container.innerHTML = warning + cards;
   }
 
   function renderSummary() {
@@ -661,16 +675,23 @@
     if (!state.plan || !privatePanel || privatePanel.hidden) return;
     renderSummary();
     const plan = state.plan;
+    const directory = petDirectory();
     const top = state.stale ? [] : plan.top_actions.filter(taskActionable).slice(0, 3);
     byId('mm-next-note').textContent = state.stale
       ? 'This snapshot is stale; Top 3 hidden until server refresh. Use Retry.'
       : 'Only live, owner-verified source projections are actionable. Preview tasks cannot enter this list.';
     byId('mm-next').innerHTML = top.length
-      ? top.map(task => taskMarkup(task, true)).join('')
+      ? top.map(task => taskMarkup(task, true, directory)).join('')
       : '<p class="mm-empty">' + (state.stale
         ? 'Top recommendations temporarily unavailable; refresh verified evidence.'
         : 'No immediately eligible verified actions. Check Today, Claims or source availability.') + '</p>';
-    renderPets();
+    renderPets(directory);
+    const filterEntry = state.petFilterRef && directory.get(state.petFilterRef);
+    const petFilterActive = state.tab === 'moonpet' && Boolean(state.petFilterRef);
+    byId('mm-pet-filter').hidden = !petFilterActive;
+    byId('mm-pet-filter-label').textContent = petFilterActive
+      ? 'Showing only ' + (filterEntry ? filterEntry.label : 'the chosen source MoonPet') + '.'
+      : '';
     tabs.forEach(button => {
       const selected = button.dataset.mmTab === state.tab;
       button.setAttribute('aria-selected', String(selected));
@@ -678,7 +699,7 @@
     });
     const filtered = filteredTasks();
     byId('mm-results').innerHTML = filtered.length
-      ? filtered.map(task => taskMarkup(task, false)).join('')
+      ? filtered.map(task => taskMarkup(task, false, directory)).join('')
       : '<p class="mm-empty">No tasks match this category and filter in the currently loaded source pages. ' +
         'A missing item does not mean completed.</p>';
     byId('mm-page-count').textContent = state.tasks.length +
@@ -745,7 +766,24 @@
       });
     });
     root.addEventListener('click', event => {
-      if (event.target.closest('[data-mm-open-moonpet]')) selectTab('moonpet', true);
+      const button = event.target.closest('[data-mm-open-moonpet]');
+      if (!button) return;
+      const index = Number(button.getAttribute('data-mm-pet-index'));
+      const refs = Array.from(petDirectory().keys());
+      if (!Number.isInteger(index) || index < 0 || index >= refs.length) return;
+      // Filter only local in-memory opaque refs; never send a pet selector or
+      // add any pet ID/ref to the URL or to a gameplay action.
+      state.petFilterRef = refs[index];
+      state.status = 'all';
+      state.search = '';
+      byId('mm-search').value = '';
+      byId('mm-status-filter').value = 'all';
+      selectTab('moonpet', true);
+      byId('mm-results').focus();
+    });
+    byId('mm-clear-pet-filter').addEventListener('click', () => {
+      state.petFilterRef = null;
+      render();
     });
     byId('mm-status-filter').addEventListener('change', event => {
       state.status = event.target.value;
