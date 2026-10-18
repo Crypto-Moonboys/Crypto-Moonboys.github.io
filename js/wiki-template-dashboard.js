@@ -128,17 +128,20 @@
 
   function engagementValue() {
     var cfg = window.MOONBOYS_API || {};
-    if (!cfg.BASE_URL || !(cfg.FEATURES || {}).COMMENTS) return Promise.resolve(25);
+    if (!cfg.BASE_URL || !(cfg.FEATURES || {}).COMMENTS) return Promise.resolve(null);
 
+    // This route reports approved COMMENTS only, not likes or citation votes.
+    // Do not invent a 25% "Battle Heat" when the API is unavailable, or a
+    // synthetic percentage from a fixed multiplier on the comment count.
     var request = fetch(cfg.BASE_URL + '/comments?page_id=' + encodeURIComponent(pageId()) + '&limit=50')
       .then(function (response) { return response.ok ? response.json() : null; })
       .then(function (data) {
-        return Math.min(100, ((data && data.comments) || []).length * 5);
+        return data && Array.isArray(data.comments) ? data.comments.length : null;
       })
-      .catch(function () { return 25; });
+      .catch(function () { return null; });
 
     var timeout = new Promise(function (resolve) {
-      window.setTimeout(function () { resolve(25); }, 1500);
+      window.setTimeout(function () { resolve(null); }, 1500);
     });
 
     return Promise.race([request, timeout]);
@@ -155,7 +158,11 @@
   function buildFallbackDashboard(engagement) {
     if (findDashboard()) return;
 
-    var level = engagement > 60 ? 'Hot' : engagement > 30 ? 'Warming Up' : 'Calm';
+    var commentCount = Number.isSafeInteger(engagement) && engagement >= 0 ? engagement : null;
+    var commentsLabel = commentCount === null ? 'Unavailable' : String(commentCount) + ' public comments';
+    var sourceLabel = commentCount === null
+      ? 'Comment source unavailable; no engagement count inferred'
+      : 'Approved comments only. Article likes and citation votes not counted here.';
     var title = article.dataset.battleTitle || textFrom('h1', 'Wiki Page');
     var kicker = article.dataset.battleKicker || 'About This Page';
     var subtitle = article.dataset.battleSubtitle || textFrom('.wiki-hero-breadcrumb, .eyebrow, .wiki-flagship-kicker', 'Crypto Moonboys Wiki');
@@ -181,10 +188,9 @@
         '</article>' +
         '<div class="battle-shell battle-shell--missions"><div class="battle-shell-inner">' +
           '<h3>Daily Missions</h3>' +
-          '<div class="battle-heat-summary" aria-label="Battle Heat">' +
-            '<div class="battle-heat-summary-head"><span>Battle Heat</span><strong>' + engagement + '%</strong></div>' +
-            '<div class="battle-meter-shell"><div class="battle-bar-fill" style="width:' + engagement + '%"></div></div>' +
-            '<div class="battle-meter-meta"><span>' + esc(level) + ' engagement</span><span>Comments / likes / citation votes</span></div>' +
+          '<div class="battle-heat-summary" aria-label="Verified wiki comment activity">' +
+            '<div class="battle-heat-summary-head"><span>Wiki comments</span><strong>' + esc(commentsLabel) + '</strong></div>' +
+            '<div class="battle-meter-meta"><span>' + esc(sourceLabel) + '</span></div>' +
           '</div>' +
           '<div class="mission-stack">' +
             '<div class="mission-row" data-mission-id="engage"><div><span class="mission-tag">Engage</span><div class="mission-text">Leave a strategic comment on this page to influence the narrative.</div></div>' + missionStatus('COMMENTS') + '</div>' +
