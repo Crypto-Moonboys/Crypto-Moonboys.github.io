@@ -862,6 +862,9 @@ test('PR5 offline state removes current readiness badges and online reconciliati
     assert.equal(offline.badgeHidden,true);
     assert.match(offline.sync,/OFFLINE/);
     assert.match(offline.next,/Top recommendations temporarily unavailable/);
+    assert.match(await f.page.locator('#mm-pets').innerText(),/1 formerly actionable item\(s\)/,
+      'offline stale snapshot preserves the last-confirmed historical availability count');
+    assert.doesNotMatch(await f.page.locator('#mm-pets').innerText(),/0 formerly actionable item\(s\)/);
     assert.equal(f.requests.length,before,'offline is display-only and cannot start a request');
     await f.page.evaluate(()=>window.dispatchEvent(new Event('online')));
     await f.page.waitForFunction(()=>document.getElementById('mm-sync')?.textContent.startsWith('Last verified read'));
@@ -893,6 +896,7 @@ test('PR5 offline transition retires pending reads and blocks refresh/pagination
     await f.page.goto(SITE+'/my-moonboy.html',{waitUntil:'domcontentloaded'});
     await f.page.locator('#mm-next .mm-task').first().waitFor();
     assert.equal(await f.page.locator('#mm-claims-badge').isHidden(),false);
+    assert.match(await f.page.locator('#mm-pets').innerText(),/1 source-verified action\(s\) available at last sync/);
     const before=f.requests.length;
     f.setSlowOwner('111');
     await f.page.locator('#mm-refresh').click();
