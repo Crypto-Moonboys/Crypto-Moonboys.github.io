@@ -86,10 +86,11 @@
  *   ✓ all page-critical JS actually requested
  *
  * JS source assertions (fetched directly, not via browser):
- *   site-shell.js source must contain:
- *     shouldShowRightPanel, homepage-right-panel, hud-player-avatar,
- *     data-csp-panel, data-csp-faction-ops, data-csp-wtf-signal, data-csp-missed
- *     (data-las-panel must NOT appear — legacy hook removed)
+ *   site-shell.js must retain shell identity/layout helpers:
+ *     shouldShowRightPanel, homepage-right-panel, hud-player-avatar.
+ *   Removed global player cards must NOT be reinjected by site-shell.js:
+ *     data-csp-panel, data-csp-faction-ops, data-csp-wtf-signal, data-csp-missed,
+ *     data-las-panel. Standalone CSP renderers retain their own hooks.
  *
  * ── Critical JS request outcome matrix (per page) ─────────────────────────────
  *   requested + HTTP < 400  → pass
@@ -183,12 +184,14 @@ const SHELL_SOURCE_MUST_CONTAIN = [
   'shouldShowRightPanel',
   'homepage-right-panel',
   'hud-player-avatar',
+];
+const SHELL_SOURCE_MUST_NOT_CONTAIN = [
+  'data-las-panel',
   'data-csp-panel',
   'data-csp-faction-ops',
   'data-csp-wtf-signal',
   'data-csp-missed',
 ];
-const SHELL_SOURCE_MUST_NOT_CONTAIN = ['data-las-panel'];
 const BTQM_LIVE_ASSET_CHECKS = [
   { label: 'tileset (zone-0)', path: '/art/btqm/generated/tilesets/zone-0-hodl-or-fold-forest-ruins.png' },
   { label: 'enemy (zone-0)',   path: '/art/btqm/generated/enemies/zone-0-paper-hand-goblin.png' },
