@@ -159,10 +159,10 @@
     if (findDashboard()) return;
 
     var commentCount = Number.isSafeInteger(engagement) && engagement >= 0 ? engagement : null;
-    var commentsLabel = commentCount === null ? 'Unavailable' : String(commentCount) + ' public comments';
+    var commentsLabel = commentCount === null ? 'Unavailable' : String(commentCount) + ' loaded public comments (max 50)';
     var sourceLabel = commentCount === null
       ? 'Comment source unavailable; no engagement count inferred'
-      : 'Approved comments only. Article likes and citation votes not counted here.';
+      : 'Loaded approved comments only (up to 50), not a complete total; likes and citation votes are excluded.';
     var title = article.dataset.battleTitle || textFrom('h1', 'Wiki Page');
     var kicker = article.dataset.battleKicker || 'About This Page';
     var subtitle = article.dataset.battleSubtitle || textFrom('.wiki-hero-breadcrumb, .eyebrow, .wiki-flagship-kicker', 'Crypto Moonboys Wiki');
