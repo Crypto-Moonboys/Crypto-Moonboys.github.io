@@ -600,3 +600,69 @@ test('PR3 reranking between pages returns 409 and restarts from newly verified f
     assert.equal(f.errors.length,0,f.errors.join('\n'));
   } finally {await f.browser.close();}
 });
+
+
+test('PR3 dashboard labels cross-season 1/2/1 pet ownership by permanent spaces 1/2/3', async () => {
+  const f = await setup({width:390,height:844}, true);
+  f.setPlanFactory((owner, cursor) => {
+    const result = plan(owner, cursor);
+    if (cursor) return result;
+    const slotOne = result.owner.pets[0];
+    const spaceTwo = 'pap_' + 'd'.repeat(24);
+    const spaceThree = 'pap_' + 'e'.repeat(24);
+    // Backend has already ranked across retained ownership rows, even
+    // though season-local source slots are 1,2,1 across quarters.
+    result.owner.pet_count = 3;
+    result.owner.pets = [
+      {...slotOne, slot_number:1, selected:false},
+      {...slotOne, pet_ref:spaceTwo, slot_number:2, selected:false},
+      {...slotOne, pet_ref:spaceThree, slot_number:3, selected:true},
+    ];
+    result.tasks.push({
+      ...result.tasks[0], task_id:'moonpet.jobs:season-q3:space2',
+      source_pet_ref:spaceTwo, title: 'Cross-season saved job',
+      what:'Cross-season saved job',
+    }, {
+      ...result.tasks[0], task_id:'moonpet.jobs:season-q4:space3',
+      source_pet_ref:spaceThree, title: 'Cross-season saved job',
+      what:'Cross-season saved job',
+    });
+    result.top_actions = result.tasks.filter(t => t.source_key === 'moonpet.jobs');
+    return result;
+  });
+  try {
+    await f.page.goto(SITE+'/my-moonboy.html',{waitUntil:'domcontentloaded'});
+    await f.page.locator('#mm-next .mm-task').first().waitFor();
+    const visibleLabels = await f.page.locator('#mm-pets .mm-pet h3').allTextContents();
+    assert.deepEqual(visibleLabels.slice(0,3),[
+      'MoonPet slot 1','MoonPet slot 2','MoonPet slot 3',
+    ], 'permanent position must not restart at the new quarter');
+    assert.equal(visibleLabels.filter(label => label === 'MoonPet slot 1').length,1);
+    assert.match(await f.page.locator('#mm-next').innerText(),/MoonPet slot 3/);
+    await f.page.locator('#mm-pets [data-mm-pet-index="2"]').click();
+    assert.match(await f.page.locator('#mm-pet-filter').innerText(),/MoonPet slot 3/);
+    assert.equal(await f.page.locator('#mm-results .mm-task').count(),1);
+    assert.match(await f.page.locator('#mm-results').innerText(),/Cross-season saved job/);
+    assert.doesNotMatch(await f.page.locator('#my-moonboy').evaluate(node=>node.innerHTML),
+      /pap_[a-f0-9]{24}/u, 'persistent pet identifiers never appear in the rendered HTML');
+    assert.equal(f.errors.length,0,f.errors.join('\n'));
+  } finally {await f.browser.close();}
+});
+
+test('PR3 does not invent permanent Moonpet slot number when the server omits it', async () => {
+  const f = await setup({width:390,height:844}, true);
+  f.setPlanFactory((owner, cursor) => {
+    const response = plan(owner, cursor);
+    if (!cursor) response.owner.pets[0].slot_number = null;
+    return response;
+  });
+  try {
+    await f.page.goto(SITE+'/my-moonboy.html',{waitUntil:'domcontentloaded'});
+    await f.page.locator('#mm-next .mm-task').first().waitFor();
+    assert.match(await f.page.locator('#mm-pets .mm-pet').first().innerText(),
+      /permanent slot unknown/);
+    assert.doesNotMatch(await f.page.locator('#mm-pets .mm-pet h3').first().innerText(),
+      /MoonPet slot 1/);
+    assert.equal(f.errors.length,0,f.errors.join('\n'));
+  } finally {await f.browser.close();}
+});
