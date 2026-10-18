@@ -646,7 +646,10 @@
     const cards = Array.from(directory.entries()).map(([ref, entry], index) => {
       const pet = entry.pet;
       const assigned = state.tasks.filter(task => task.source_pet_ref === ref);
-      const verifiedAvailable = state.offline ? 0 : assigned.filter(taskActionable).length;
+      // This is a historical last-confirmed count when state.stale is true.
+      // Going offline suppresses current readiness elsewhere; it must not
+      // rewrite previously verified history to zero without new source evidence.
+      const verifiedAvailable = assigned.filter(taskActionable).length;
       const stage = pet ? formatName(pet.life_stage || 'Not supplied') : null;
       const phase = pet ? formatName(pet.lifecycle_phase || 'Not supplied') : null;
       const level = pet && pet.level != null ? ' · Level ' + niceCount(pet.level) : '';
