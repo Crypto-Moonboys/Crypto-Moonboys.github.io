@@ -472,3 +472,129 @@ test('PR3 gameplay invalidation cancels old cursor and restores pagination', asy
     assert.equal(f.errors.length, 0, f.errors.join('\n'));
   } finally { await f.browser.close(); }
 });
+
+
+test('PR3 account-scoped saved 7/7 bonus retains original earning MoonPet in Next 3, Claims and pet filter', async () => {
+  const f = await setup({width:390,height:844}, true);
+  f.setPlanFactory((owner,cursor) => {
+    const projection = plan(owner,cursor);
+    if (cursor) return projection;
+    const original = 'pap_' + 'd'.repeat(24);
+    const bonus = {
+      ...projection.tasks[0],
+      source_key: 'moonpet.seven-of-seven-claim',
+      task_id: 'moonpet.seven-of-seven-claim:saved-earner:2026-10-15',
+      title: 'Collect saved Moonpet 7/7 bonus',
+      owner_scope: 'account',
+      source_pet_ref: original,
+      status: 'claim_ready', priority: 11,
+      period: {kind:'saved_claim',key:'2026-10-15',origin_timezone:'UTC'},
+      evidence: {kind:'server_receipt',verified_completion:false},
+    };
+    projection.tasks.push(bonus);
+    projection.top_actions.unshift(bonus);
+    return projection;
+  });
+  try {
+    await f.page.goto(SITE+'/my-moonboy.html',{waitUntil:'domcontentloaded'});
+    await f.page.getByText('Collect saved Moonpet 7/7 bonus').first().waitFor();
+    assert.match(await f.page.locator('#mm-next').innerText(),
+      /Original earning MoonPet: Original-earning MoonPet 2/);
+    assert.match(await f.page.locator('#mm-pets').innerText(),/Original-earning MoonPet 2/);
+    await f.page.locator('[data-mm-tab="claims"]').click();
+    assert.match(await f.page.locator('#mm-results').innerText(),/Collect saved Moonpet 7\/7 bonus/);
+    assert.match(await f.page.locator('#mm-results').innerText(),/Original earning MoonPet/);
+    await f.page.locator('#mm-pets [data-mm-pet-index="1"]').click();
+    assert.equal(await f.page.locator('[data-mm-tab="moonpet"]').getAttribute('aria-selected'),'true');
+    assert.equal(await f.page.locator('#mm-results .mm-task').count(),1);
+    assert.match(await f.page.locator('#mm-results').innerText(),/Collect saved Moonpet 7\/7 bonus/);
+    assert.doesNotMatch(await f.page.locator('#mm-results').innerText(),/Alpha saved job claim/);
+    assert.equal(await f.page.locator('#mm-results a.mm-button').first().getAttribute('href'),
+      '/moonpet-game.html', 'source-pet selectors must never reach gameplay URLs');
+    assert.doesNotMatch(await f.page.locator('#my-moonboy').evaluate(node=>node.innerHTML),
+      /pap_[a-f0-9]{24}/u, 'opaque refs are in memory only');
+    assert.equal(f.errors.length,0,f.errors.join('\n'));
+  } finally {await f.browser.close();}
+});
+
+test('PR3 reserves same-owner request key during delayed auth and dedupes Retry/focus', async () => {
+  const f=await setup({width:390,height:844},true,'',{authDelayMs:500});
+  try {
+    await f.page.goto(SITE+'/my-moonboy.html',{waitUntil:'domcontentloaded'});
+    await f.page.waitForFunction(()=>window.__mmTest.authReads===1);
+    await f.page.locator('#mm-gate-retry').click();
+    await f.page.evaluate(()=>window.dispatchEvent(new Event('focus')));
+    await f.page.locator('#mm-next .mm-task').first().waitFor();
+    await f.page.waitForTimeout(100);
+    const authCalls=await f.page.evaluate(()=>window.__mmTest.authReads);
+    assert.equal(authCalls,1,'initial fetch, Retry and focus must share one auth attempt');
+    assert.equal(f.requests.length,1,'no competing first-page writes after delayed auth');
+    assert.equal(f.requests[0].body.telegram_auth.id,'111');
+    assert.match(await f.page.locator('#mm-next').innerText(),/Alpha saved job claim/);
+    assert.equal(f.errors.length,0,f.errors.join('\n'));
+  } finally {await f.browser.close();}
+});
+
+test('PR3 retries failed initial website cookie discovery before any private plan request', async () => {
+  const f=await setup({width:390,height:844},false,'',
+    {cookieRestorable:true,bootstrapProbeFails:true});
+  try {
+    await f.page.goto(SITE+'/my-moonboy.html',{waitUntil:'domcontentloaded'});
+    await f.page.waitForFunction(() =>
+      document.getElementById('mm-gate-title')?.textContent==='Log in to My Moonboy');
+    assert.equal(f.requests.length,0,'failed cookie discovery cannot become an anonymous private request');
+    assert.equal(await f.page.locator('#mm-private').isHidden(),true);
+    await f.page.locator('#mm-gate-retry').click();
+    await f.page.locator('#mm-next .mm-task').first().waitFor();
+    assert.equal(await f.page.locator('#mm-private').isVisible(),true);
+    assert.equal(await f.page.locator('#mm-player-name').textContent(),'Alpha player');
+    assert.ok(f.requests.length>0);
+    assert.ok(f.requests.every(item => item.method==='POST' &&
+      item.body.telegram_auth && item.body.telegram_auth.id==='111' &&
+      !new URL(item.url).searchParams.has('telegram_auth')));
+    assert.equal(await f.page.locator('[data-shell-link="MY MOONBOY"]').count(),1);
+    assert.equal(f.errors.length,0,f.errors.join('\n'));
+  } finally {await f.browser.close();}
+});
+
+test('PR3 reranking between pages returns 409 and restarts from newly verified first page', async () => {
+  const f=await setup({width:390,height:844},true);
+  let reRank=false;
+  f.setPlanFactory((owner,cursor) => {
+    const projection=plan(owner,cursor);
+    if(reRank) {
+      projection.snapshot='pap2_'+'d'.repeat(32);
+      if(!cursor){
+        projection.tasks[0].title='Fresh ranking after saved claim changed';
+        projection.top_actions[0].title='Fresh ranking after saved claim changed';
+      }
+    }
+    return projection;
+  });
+  try {
+    await f.page.goto(SITE+'/my-moonboy.html',{waitUntil:'domcontentloaded'});
+    await f.page.locator('#mm-next .mm-task').first().waitFor();
+    const oldSnapshot=f.requests[0].body.snapshot;
+    assert.equal(oldSnapshot,undefined,'first page does not submit a snapshot');
+    reRank=true;
+    await f.page.locator('#mm-load-more').click();
+    await f.page.waitForFunction(() =>
+      document.getElementById('mm-next')?.textContent.includes('Fresh ranking after saved claim changed'));
+    assert.equal(await f.page.locator('#mm-load-more').isVisible(),true);
+    assert.equal(await f.page.locator('#mm-load-more').isEnabled(),true);
+    assert.equal(await f.page.locator('#mm-page-count').textContent(),
+      '3 tasks loaded · 1 shown · more available',
+      'old cursor page cannot append reordered tasks');
+    const cursorRequests=f.requests.filter(item => item.body.cursor==='pap1-100');
+    assert.equal(cursorRequests.length,1);
+    assert.equal(cursorRequests[0].body.snapshot,'pap2_'+'a'.repeat(32));
+    assert.doesNotMatch(await f.page.locator('#mm-next').innerText(),/Alpha saved job claim/);
+    await f.page.locator('#mm-load-more').click();
+    await f.page.getByText('Alpha historic contract bonus').first().waitFor();
+    const cursors=f.requests.filter(item=>item.body.cursor==='pap1-100');
+    assert.equal(cursors.length,2);
+    assert.equal(cursors[1].body.snapshot,'pap2_'+'d'.repeat(32));
+    assert.equal(await f.page.locator('#mm-load-more').isHidden(),true);
+    assert.equal(f.errors.length,0,f.errors.join('\n'));
+  } finally {await f.browser.close();}
+});
