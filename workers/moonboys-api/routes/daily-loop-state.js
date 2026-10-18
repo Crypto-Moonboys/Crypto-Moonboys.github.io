@@ -1,6 +1,6 @@
 import { verifyTelegramIdentityFromBody } from '../blocktopia/auth.js';
 import { CANONICAL_FACTION_KEYS, FACTION_UNALIGNED, normalizeFaction } from '../shared/faction-canon.js';
-import { CANONICAL_FACTION_READ_SQL, canonicalFactionProjection } from '../shared/faction-projection.js';
+import { CANONICAL_FACTION_READ_SQL, canonicalFactionProjection, canonicalFactionMetadataLookup } from '../shared/faction-projection.js';
 import { buildWtfPreviewSchedule, getWtfEventStatus } from '../shared/daily-wtf-schedule.js';
 import {
   backfillMissedPerkGapsFromLastActiveDay,
@@ -354,9 +354,10 @@ export async function buildDailyLoopState(env, options = {}) {
           { reason: 'invalid_canonical_faction', error: error?.message || 'invalid_faction' });
       }
     }
-    const factionRow = faction?.joined
+    const metadataLookup = faction?.joined ? canonicalFactionMetadataLookup(faction.name) : null;
+    const factionRow = metadataLookup
       ? await queryFirst(db, sourceStatus, 'faction_state',
-        'SELECT id, name FROM telegram_factions WHERE name=? LIMIT 1', [faction.name])
+        metadataLookup.sql, metadataLookup.params)
       : { ok: true, row: null };
     const todayRows = await queryAll(db, sourceStatus, 'faction_state', `
         SELECT faction_id, contribution
@@ -397,7 +398,16 @@ export async function buildDailyLoopState(env, options = {}) {
   if (canQuery(sourceStatus, 'arcade_daily_state')) {
     let row = null;
     try {
-      const factionId = normalizeBattleFaction(state.faction_state?.faction_id) || null;
+      // A failed canonical faction read must not write a missed-day event
+      // with null attribution. Existing backfill dedupe would make that
+      // irreversible even after the membership source recovers.
+      const canonicalId = state.faction_state?.faction_id;
+      if (!['live', 'live_empty'].includes(sourceStatus.faction_state?.state) ||
+          ![...CANONICAL_FACTION_KEYS, FACTION_UNALIGNED].includes(canonicalId)) {
+        throw new Error('canonical_faction_unavailable_for_arcade_activation');
+      }
+      // Verified unaligned is legitimate and may create today's state.
+      const factionId = canonicalId === FACTION_UNALIGNED ? null : canonicalId;
       const backfill = await backfillMissedPerkGapsFromLastActiveDay(db, telegramId, utcDay, factionId);
       row = await ensureDailyOpportunityStateForToday(db, telegramId, utcDay);
       sourceStatus.arcade_daily_state = row
