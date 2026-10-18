@@ -48,7 +48,7 @@ test('all resource rules have audited source markers and do not merge Gems, Crys
   assert.match(guide.economy.find(x=>x.id==='crystals').spend, /NOT Block Topia Gems/u);
   assert.match(guide.economy.find(x=>x.id==='bt-gems').risk, /not a guaranteed award/u);
   assert.match(guide.economy.find(x=>x.id==='bt-xp').risk, /loss/u);
-  assert.match(guide.economy.find(x=>x.id==='gold').risk, /no automatic 75 Gold/u);
+  assert.match(guide.economy.find(x=>x.id==='gold').risk, /No automatic 75 Gold/u);
 });
 
 test('all MoonPet economy routes are read from the authoritative game catalogue', () => {
@@ -57,7 +57,7 @@ test('all MoonPet economy routes are read from the authoritative game catalogue'
   const block = src.match(/export const PET_ECONOMY_ROUTES = freeze\(\[([\s\S]*?)\]\);/u)?.[1];
   assert.ok(block);
   const keys = [...block.matchAll(/\{ key: '([a-z_]+)'/gu)].map(x=>x[1]);
-  assert.equal(keys.length, 14);
+  assert.equal(keys.length, 15);
   assert.equal(guide.routes.map(x=>x.key).join('|'), keys.join('|'));
 });
 
