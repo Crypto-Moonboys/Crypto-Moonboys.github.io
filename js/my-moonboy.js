@@ -340,6 +340,9 @@
     byId('mm-next').replaceChildren();
     byId('mm-results').replaceChildren();
     byId('mm-pets').replaceChildren();
+    // Checklist includes private task titles and status: purge with the other
+    // owner-specific DOM synchronously on logout or identity transition.
+    byId('mm-checklist').replaceChildren();
     byId('mm-pet-filter').hidden = true;
     byId('mm-pet-filter-label').textContent = '';
     ['mm-ready-count','mm-claim-count','mm-today-count','mm-done-count',
@@ -765,6 +768,14 @@
         ? 'Top recommendations temporarily unavailable; refresh verified evidence.'
         : 'No immediately eligible verified actions. Check Today, Claims or source availability.') + '</p>';
     renderPets(directory);
+    // The immutable guide is public; only this private controller supplies
+    // verified owner task rows. Never cache them in a public global or storage.
+    window.MOONBOYS_MISSION_GUIDE?.renderChecklist(byId('mm-checklist'), state.tasks, {
+      topActions: plan.top_actions,
+      stale: state.stale,
+      offline: state.offline,
+      moreAvailable: Boolean(state.nextCursor),
+    });
     const filterEntry = state.petFilterRef && directory.get(state.petFilterRef);
     const petFilterActive = state.tab === 'moonpet' && Boolean(state.petFilterRef);
     byId('mm-pet-filter').hidden = !petFilterActive;
