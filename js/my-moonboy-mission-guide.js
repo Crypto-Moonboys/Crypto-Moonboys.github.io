@@ -1,0 +1,134 @@
+/* #1552 follow-up: public source-backed economy guidance, private read-only checklist UI.
+ * No account data is stored here; no gameplay, award, claim or wallet actions. */
+(function () {
+  'use strict';
+  const SOURCES = Object.freeze([["onboarding.telegram","Identity","Telegram account"],["onboarding.faction","Identity","Join a faction"],["onboarding.pet-entry","Identity","First MoonPet qualification"],["telegram.daily-claim","Community","Telegram daily claim"],["faction.daily-missions","Faction","Daily faction missions"],["faction.seasonal-mission","Faction","Seasonal faction mission"],["faction.weekly-war","Faction","Weekly faction competition"],["battle.wtf-windows","Battle Chamber","WTF event windows"],["battle.missed-opportunities","Battle Chamber","Missed opportunity history"],["arcade.daily-opportunity","Arcade","Daily Arcade opportunity"],["arcade.roguelite-objectives","Arcade","Roguelite objectives"],["moonpet.adoption-incubation","MoonPet","Adoption and incubation"],["moonpet.daily-seven-missions","MoonPet","Daily seven-mission checklist"],["moonpet.seven-of-seven-claim","MoonPet","Daily completion bonus"],["moonpet.daily-journey","MoonPet","Daily Journey"],["moonpet.weekly-journey","MoonPet","Weekly Journey"],["moonpet.care","MoonPet","Care and cooldowns"],["moonpet.claimable-rewards","MoonPet","Ordinary daily bounty rewards"],["moonpet.saved-run","MoonPet","Saved Moon Runs"],["moonpet.contracts","MoonPet","Saved contracts"],["moonpet.jobs","MoonPet","Jobs and timed activities"],["moonpet.bosses-combat","MoonPet","Bosses and saved combat rewards"],["moonpet.garden-kitchen-gym","MoonPet","Garden, Kitchen and Gym"],["moonpet.evolution","MoonPet","Permanent evolution"],["wiki.accepted-missions","Wiki","Accepted Wiki missions"],["championship.verified-clout","Championship","Verified Championship Clout"],["games.dead-run","Other Games","Dead Run"],["games.nbg-london","Other Games","NBG London"]].map(([key, group, label]) =>
+    Object.freeze({ key, group, label })));
+  const SAVED_ONLY = Object.freeze([["daily_cache","Daily Cache","Account-wide daily chest; check MoonPet Saved Status for source-confirmed availability."],["season_tier_claims","Season reward tiers","Season-tier reward claim state exists in MoonPet Saved Status, not the Action Plan."],["finale_claim","Finale rewards","Previously saved Finale claims require the MoonPet Saved Status source."],["extra_bounty_claim","Extra daily bounty","Extra challenge claims are separate from ordinary Daily Bounties."],["weekly_bounty_claim","Weekly bounty blocks","Weekly bounty claims are distinct from pet-specific Weekly Journey."]].map(([key, label, description]) =>
+    Object.freeze({ key, label, description })));
+  const ECONOMY = Object.freeze([["arcade-earned","Arcade, Community & Clout","Lifetime Arcade XP","Eligible linked, server-accepted Arcade play increases lifetime XP. 1,000 lifetime Arcade XP qualifies first-pet entry.","First-pet entry does not deduct lifetime Arcade XP. Pet 2 and Pet 3 use a separate spendable Arcade XP balance.","Rejected or unverified scores award no official XP; do not infer an XP debit merely from losing a game.","/games/","workers/moonboys-api/pets/entry-requirement.js","PET_ENTRY_ARCADE_XP = 1000"],["arcade-wallet","Arcade, Community & Clout","Spendable Arcade XP","Accumulates from eligible accepted Arcade progression, separately from lifetime earned XP.","Unlocking Pet 2 costs 500 spendable Arcade XP; Pet 3 costs 1,000. No cash purchase is involved.","Unlocking slots debits only the spendable wallet; the lifetime qualification counter is preserved.","/moonpet-game.html","docs/pet-game-seasonal-model.md","spending 500"],["scores","Arcade, Community & Clout","Game scores and ranked points","Play supported games; only validated server-accepted scores and source proof count for official rankings.","A raw score is not a spendable currency, Community XP or Championship Clout.","A loss or rejected submission can fail to earn points. No global score-to-XP conversion is guaranteed.","/games/leaderboard.html","js/leaderboard-client.js","submitScore"],["community","Arcade, Community & Clout","Community XP","Verified Telegram /daily grants 20 Community XP once per UTC day; other approved source events can award separately.","Community XP is distinct from Pet XP, Arcade XP, faction contribution and Championship Clout.","A missing claim or unconfirmed event earns nothing; this guide has no authority to claim a balance decreased.","/community.html","workers/moonboys-api/community-xp-awards.js","awardCommunityXp"],["faction","Arcade, Community & Clout","Faction contribution and faction clout","Signed, source-recorded faction signals and eligible crew activity support faction contribution; public weekly standings are separate.","These are competition/contribution measures, not a spendable player currency.","Advisory local mission progress is not a verified payout. A missed window does not automatically deduct clout.","/community.html","js/faction-operations.js","Today's Faction Signal contribution"],["championship","Arcade, Community & Clout","Championship Clout","Only explicitly enabled, receipt-verified source actions under the Championship pilot policy may count.","Non-spendable; cannot be bought or converted from ordinary Arcade, Pet or Community XP.","Do not count a browser click, speculative score or local mission as verified Clout. Unverified sources stay preview/unavailable.","/community.html","workers/moonboys-api/championship/clout-pilot.js","non-spendable Championship Clout pilot"],["petxp","MoonPet resources","Pet XP and level","Accepted MoonPet care, missions, saved rewards and eligible game actions award Pet XP to the original source MoonPet.","Pet XP supports levels and evolution eligibility. It is not the account's Moon Gold, Crystals or Arcade wallet.","Resource use and run failure may cost energy or loot; do not present unverified Pet XP loss or transfers.","/moonpet-game.html","workers/moonboys-api/pets/completion-policy.js","DAILY_COMPLETION_REWARD"],["seasonxp","MoonPet resources","Account Season XP","Aggregates eligible awarded Pet XP into the original earning competition quarter for shared season standings and tier rewards.","Not a spendable wallet; season tier claims occur in the MoonPet Saved Status flow.","A quarter rollover does not delete permanent pet XP or old earned/unclaimed rewards.","/moonpet-game.html","docs/moonpet-source-of-truth.md","Account Season XP"],["gold","MoonPet resources","Moon Gold","Source-settled care, jobs, timed activities, bounties, Daily Cache, runs, bosses and events can add Gold.","Shop/Market, equipment upgrades, housing and some trade/choices can spend Gold; verify each quoted source cost before confirming.","Risky trades and failed unbanked run outcomes can reduce the relevant stake or unbanked loot. No automatic 75 Gold Standard Run fee is live.","/moonpet-game.html","workers/moonboys-api/pets/economy-expansion.js","PET_ECONOMY_ROUTES"],["crystals","MoonPet resources","Moon Crystals","Eligible jobs, timed activities, bounties, expeditions, boss/event rewards and season claims may grant Moon Crystals.","Account-owned; some gear, market offers and cosmetics require them. They are NOT Block Topia Gems.","Never infer a Crystal deduction from a preview; confirm an accepted purchase/action and its actual cost.","/moonpet-game.html","workers/moonboys-api/pets/economy-expansion.js","gold/crystals/style"],["style","MoonPet resources","Style Tokens","Earned in specific daily completion bonuses, bounties, rewards and eligible consumable use.","Account-owned; certain permanent Style Lab/cosmetic purchases spend tokens. Equipping owned cosmetics can be free.","A blocked or failed purchase must not be shown as a successful token deduction.","/moonpet-game.html","workers/moonboys-api/pets/economy-phase-3.js","PET_COSMETIC_SINKS"],["materials","MoonPet resources","Crafting materials, relics and items","Accepted runs, battles, districts, expeditions, events and other source-defined drops can add materials.","Crafting and gear upgrades consume exact required materials; using consumables removes inventory.","Unbanked run loot may be lost on failure. Wrong original pet or season must not transfer saved drops.","/moonpet-game.html","workers/moonboys-api/pets/economy-phase-3.js","PET_CRAFTING_RECIPES"],["needs","MoonPet resources","Energy, health and care needs","Care, rest, items and permitted activities restore source-defined needs; play and care can also progress missions.","Runs, battles, jobs and other activities may use energy or consumables; needs can decay with elapsed time.","These are pet stats, not token balances. Availability and cooldowns must be checked in the live MoonPet game.","/moonpet-game.html","workers/moonboys-api/pets/economy-expansion.js","energy + bank risk"],["dailycompletion","MoonPet resources","Daily completion and saved claims","The game's legacy 7/7 bonus requires its canonical completion flags and an explicit server-accepted claim; the reward is 25 Pet XP, 50 Moon Gold and 1 Style Token.","Claims are settled in MoonPet, never by the My Moonboy checklist. Account bonuses must not duplicate for multiple pets.","Missing/preview claims must not be represented as claimed or forfeited. Use MoonPet Saved Status for unsupported classes.","/moonpet-game.html","workers/moonboys-api/pets/completion-policy.js","moon_gold: 50"],["bt-xp","Block Topia (separate game)","Block Topia game XP","Validated mini-game wins and accepted Block Topia progression can increase its own XP subject to source caps.","Entry, mini-game play, skip choices and active progression drain can use this XP.","A minigame loss can apply an additional XP penalty. Costs depend on tier and state; inspect the game before playing.","/games/block-topia/","workers/moonboys-api/blocktopia/routes.js","xpLossPenalty = action === 'mini_game_loss'"],["bt-gems","Block Topia (separate game)","Block Topia Gems","Eligible successful mini-games have a server-defined chance of a Gem drop; specific covert operations may have rewards.","Gems fund Block Topia upgrades and certain gated game actions. Gems are NOT Moon Crystals or Moon Gold.","Drop chance is not a guaranteed award; insufficient-gems and unsuccessful actions must never appear as earned.","/games/block-topia/","workers/moonboys-api/blocktopia/routes.js","Not enough gems for upgrade"],["bt-standings","Block Topia (separate game)","Tier, streak, pressure and progress","The source tracks tier and streak outcomes independently of wallet and lifetime Arcade XP.","Upgrades and attempted activities have source-defined requirements.","Streaks and source-specific pressure can worsen after losses; never display them as money or Championship Clout.","/games/block-topia/","workers/moonboys-api/blocktopia/routes.js","win_streak"]].map(([id, group, title, gain, spend, risk, href, sourceFile, sourceMarker]) =>
+    Object.freeze({ id, group, title, gain, spend, risk, href, sourceFile, sourceMarker })));
+  const ROUTES = Object.freeze([["care","Care actions","earn","Pet XP, Gold and mission progress may apply only on accepted care actions; cooldowns and caps apply."],["jobs","Pet jobs","earn","Earn eligible Gold, Crystals or Style rewards after server settlement; level/stage gates."],["activities","Timed activities","earn","Claim saved timed jobs/activity rewards in MoonPet; use original pet and recovery rules."],["events","Random events","earn","Outcome-dependent rewards and costs; inspect risk preview."],["runs","Moon Runs","earn","Bank/extract saved loot when supported; failure can lose unbanked rewards and uses energy."],["boss","Weekly Boss","earn","Server-accepted original-pet victory/claim; one attack per day where applicable."],["season","Season rewards","earn","Claim eligible saved reward tiers in MoonPet Saved Status; dashboard cannot verify their claim state."],["bounties","Daily Bounty Board","earn","Ordinary daily bounty source is projected; extra/weekly bounties require Saved Status."],["expeditions","Crystal Expeditions","earn","Eligible expeditions can provide Gold/Crystals/materials; daily attempt cap."],["shop","Equipment shop","spend","Account resource costs and source-level purchase/upgrade gates."],["market","Moon Market","spend","Rotating server-defined offers; eligibility, balances, and limits checked in game."],["trade","Moon Gold trade","spend","Risk/reward; source outcome can increase or reduce committed Gold."],["evolution","Evolution","upgrade","Original pet's level/age/marks/crests/material gates; not a free daily claim."],["unlock","Level and stage unlocks","unlock","Progression grants access when server eligibility is satisfied, not cash credit."]].map(([key, label, loop, description]) =>
+    Object.freeze({ key, label, loop, description })));
+  const ALLOWED_GROUPS = Object.freeze(['Identity', 'Community', 'Faction', 'Battle Chamber', 'Arcade', 'MoonPet', 'Wiki', 'Championship', 'Other Games']);
+  const resources = ['Arcade, Community & Clout', 'MoonPet resources', 'Block Topia (separate game)'];
+  const exact = text => String(text == null ? '' : text);
+  const escape = text => exact(text).replace(/[&<>"']/g, character => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+  })[character]);
+  const STATUS_DONE = new Set(['claimed', 'complete']);
+  const canonicalLink = source => source.key.startsWith('moonpet.') ? '/moonpet-game.html'
+    : source.key.startsWith('games.nbg-') ? '/games/nbg-london/'
+    : source.key === 'games.dead-run' ? '/games/dead-run/'
+    : source.key.startsWith('games.') || source.key.startsWith('arcade.') ? '/games/'
+    : source.key.startsWith('onboarding.telegram') ? '/gkniftyheads-incubator.html'
+    : source.key.startsWith('onboarding.pet-entry') ? '/games/'
+    : '/community.html';
+  function verifiedDone(task) {
+    return !!task && STATUS_DONE.has(task.status) &&
+      task.source_health === 'live' && task.evidence?.kind === 'server_receipt' &&
+      task.evidence.verified_completion === true;
+  }
+  function simpleStatus(task, stale) {
+    if (stale) return 'Previous snapshot — refresh';
+    if (!task || typeof task !== 'object') return 'Status unavailable';
+    if (verifiedDone(task)) return 'Verified ' + exact(task.status);
+    const name = exact(task.status || 'sync_unavailable').replace(/_/g, ' ');
+    if (task.source_health === 'preview' || task.evidence?.kind === 'client_mirror' ||
+        task.evidence?.kind === 'schedule_preview') return name + ' — advisory only';
+    if (['query_failed', 'migration_pending', 'unavailable'].includes(task.source_health))
+      return 'Source unavailable — not complete';
+    return name + ' — read-only source status';
+  }
+  function currentTaskList(tasks, top) {
+    const seen = new Set();
+    const results = [];
+    for (const entry of [].concat(Array.isArray(top) ? top : [], Array.isArray(tasks) ? tasks : [])) {
+      if (!entry || typeof entry.source_key !== 'string' ||
+          typeof entry.task_id !== 'string' || seen.has(entry.task_id)) continue;
+      seen.add(entry.task_id);
+      results.push(entry);
+    }
+    return results;
+  }
+  function renderRules(target) {
+    if (!target) return;
+    target.innerHTML = resources.map((group, index) => {
+      const cards = ECONOMY.filter(entry => entry.group === group).map(entry =>
+        '<article class="mm-economy-item"><h3>' + escape(entry.title) + '</h3>' +
+        '<p><strong>Gain / earn:</strong> ' + escape(entry.gain) + '</p>' +
+        '<p><strong>Spend / use:</strong> ' + escape(entry.spend) + '</p>' +
+        '<p><strong>Lose / risk / limits:</strong> ' + escape(entry.risk) + '</p>' +
+        '<p><a href="' + escape(entry.href) + '">Open original source</a></p></article>').join('');
+      return '<details class="mm-economy-group"' + (index === 0 ? ' open' : '') + '><summary>' +
+        escape(group) + ' · ' + ECONOMY.filter(x => x.group === group).length +
+        ' resource guides</summary><div class="mm-economy-grid">' + cards + '</div></details>';
+    }).join('') +
+    '<details class="mm-economy-group"><summary>MoonPet gameplay earning and spending routes · ' +
+      ROUTES.length + ' types</summary><div class="mm-economy-grid">' +
+      ROUTES.map(route => '<article class="mm-economy-item"><h3>' +
+        escape(route.label) + '</h3><p><strong>' + escape(route.loop) +
+        ' / source rules:</strong> ' + escape(route.description) +
+        '</p><p><a href="/moonpet-game.html">Check current source eligibility in MoonPet</a></p></article>').join('') +
+      '</div></details>';
+  }
+  function renderChecklist(target, tasks, options) {
+    if (!target) return;
+    const opts = options || {};
+    const stale = Boolean(opts.stale || opts.offline);
+    const all = currentTaskList(tasks, opts.topActions);
+    const bySource = new Map(SOURCES.map(source => [source.key, []]));
+    all.forEach(item => { if (bySource.has(item.source_key)) bySource.get(item.source_key).push(item); });
+    const heading = '<p class="mm-muted">Checklist statuses are read-only. A tick requires an accepted server receipt; there are no self-completion controls. Other source statuses never prove a task completed. Source details are read from the signed account only.</p>' +
+      (opts.moreAvailable ? '<p class="mm-source-warning">More tasks exist beyond this page. Expand the mission ledger and choose Load more until all source pages are loaded. Absence never means complete.</p>' : '') +
+      (stale ? '<p class="mm-source-warning">Offline or stale: the statuses below are historical only. No current claims are verified until the next signed read.</p>' : '');
+    const groups = ALLOWED_GROUPS.map(group => {
+      const items = SOURCES.filter(source => source.group === group);
+      return '<details class="mm-checklist-group"' + (group === 'MoonPet' ? ' open' : '') + '><summary>' +
+        escape(group) + ' · ' + items.length + ' tracked sources</summary>' +
+        '<div class="mm-checklist-sources">' + items.map(source => {
+          const entries = bySource.get(source.key) || [];
+          const done = !stale ? entries.filter(verifiedDone).length : 0;
+          const sourceHeading = '<strong>' + escape(source.label) + '</strong>' +
+            '<span class="mm-muted"> · ' + done + ' receipt-verified / ' + entries.length +
+            ' loaded task' + (entries.length === 1 ? '' : 's') + '</span>';
+          const rows = entries.length
+            ? '<ul class="mm-checklist-tasks">' + entries.map(task =>
+              '<li><span class="mm-checklist-mark" aria-hidden="true">' +
+              (stale ? '–' : verifiedDone(task) ? '✓' : '○') + '</span><span>' +
+              '<strong>' + escape(task.title || 'Unnamed source action') + '</strong> · ' +
+              escape(simpleStatus(task, stale)) +
+              (task.progress && task.progress.current != null
+                ? ' · ' + escape(task.progress.current) +
+                  (task.progress.target != null ? ' / ' + escape(task.progress.target) : '') +
+                  ' ' + escape(task.progress.unit || 'progress') : '') +
+              (task.blocking_reason_code ? ' · Reason: ' + escape(task.blocking_reason_code.replace(/_/g, ' ')) : '') +
+              '</span></li>').join('') + '</ul>'
+            : '<p class="mm-muted">No task in loaded results; status unknown, not completed.</p>';
+          return '<details class="mm-checklist-source"><summary>' + sourceHeading +
+            '</summary>' + rows + '<p><a href="' + escape(canonicalLink(source)) +
+            '">Open source</a> · See Mission Ledger for full what, why, reward, cost and expiry.</p></details>';
+        }).join('') + '</div></details>';
+    }).join('');
+    const gaps = '<details class="mm-checklist-group" open><summary>Saved Status-only claims · ' + SAVED_ONLY.length +
+      ' checks outside the Action Plan</summary><p class="mm-source-warning">These are real MoonPet claim classes but their per-owner readiness is not in this read API. Never assume unclaimed or already claimed; check the authoritative Saved Status inside MoonPet.</p>' +
+      '<ul class="mm-checklist-gaps">' + SAVED_ONLY.map(g =>
+        '<li><strong>' + escape(g.label) + '</strong> — ' + escape(g.description) +
+        ' <span class="mm-tag mm-tag--unknown">Unverified here</span>' +
+        ' <a href="/moonpet-game.html">Check Saved Status</a></li>').join('') + '</ul></details>';
+    const outro = '<p class="mm-muted">Block Topia Gems and XP, and some other-game rewards, are not personal balances in /player/action-plan. Check their original game screens. This checklist does not claim 100% completion or invent source records.</p>';
+    target.innerHTML = heading + groups + gaps + outro;
+  }
+  window.MOONBOYS_MISSION_GUIDE = Object.freeze({
+    version: 1,
+    sources: SOURCES,
+    savedOnly: SAVED_ONLY,
+    economy: ECONOMY,
+    routes: ROUTES,
+    renderRules,
+    renderChecklist,
+  });
+  const start = () => renderRules(document.getElementById('mm-economy-guide'));
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, { once: true });
+  else start();
+}());
