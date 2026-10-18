@@ -30,7 +30,18 @@ function fakeDb(options = {}) {
       status: 'active', created_at: '2026-10-03T00:00:00.000Z', last_decay_at: '2026-10-17T11:59:40.000Z', journey_clock: 'legacy_quarter', is_active: 0, lifecycle_phase: 'young',
     },
   ];
-  for (const pet of ownedPets) pet.ownership_created_at = pet.created_at;
+  for (const [index, pet] of ownedPets.entries()) {
+    pet.ownership_created_at = pet.created_at;
+    pet.permanent_slot_number = index + 1;
+  }
+  if (options.crossSeasonRoster) {
+    // Permanent spaces can span several creation seasons. Their stored slot
+    // numbers are 1,2,1, but the visible global positions must be 1,2,3.
+    ownedPets[0].season_key = 'pet-s2026-003';
+    ownedPets[1].season_key = 'pet-s2026-003';
+    ownedPets[2].season_key = 'pet-s2026-004';
+    ownedPets[2].slot_number = 1;
+  }
   if (options.ownershipClock) {
     ownedPets[0].journey_clock = 'created_at';
     ownedPets[0].ownership_created_at = '2026-10-15T00:00:00.000Z';
