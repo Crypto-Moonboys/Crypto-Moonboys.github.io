@@ -18,7 +18,7 @@
     'moonboys:wtf-event-complete': 'battle',
   });
   const DEDUPE_MS = 900;
-  const instance = (crypto && typeof crypto.randomUUID === 'function')
+  const instance = (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function')
     ? crypto.randomUUID() : Math.random().toString(36).slice(2);
   const recent = new Map();
   const subscribers = new Set();
@@ -93,7 +93,7 @@
   }
 
   Object.entries(ACCEPTED).forEach(([eventName, source]) => {
-    const listener = () => broadcast(source, eventName);
+    const listener = event => broadcast(event?.detail?.source || source, eventName);
     window.addEventListener(eventName, listener);
     // Wiki mission completion uses a non-bubbling document CustomEvent.
     if (eventName.startsWith('moonboys:wiki-')) document.addEventListener(eventName, listener);
