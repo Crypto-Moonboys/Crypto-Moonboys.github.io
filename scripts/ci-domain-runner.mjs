@@ -249,6 +249,7 @@ const GROUPS = {
     ['node', 'scripts/wax-collection-page-fallback.test.mjs'],
   ],
   visual: [
+    ['node', '--test', 'scripts/player-action-sync-browser.test.mjs'],
     ['node', '--test', 'scripts/faction-operations-browser.test.mjs'],
     ['node', '--test', 'scripts/my-moonboy-browser.test.mjs'],
     ['node', 'scripts/meme-swarm-mobile-browser.test.mjs'],
