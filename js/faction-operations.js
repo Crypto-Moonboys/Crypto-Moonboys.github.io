@@ -429,8 +429,10 @@
     const revision = snapshotRevision;
     loading = true;
     render();
-    const action = force && typeof api.refresh === 'function'
-      ? api.refresh({ force: true }) : api.getState();
+    const action = force && typeof api.refreshAfterInflight === 'function'
+      ? api.refreshAfterInflight({ force: true, reason: 'faction_operations_reconcile' })
+      : force && typeof api.refresh === 'function'
+        ? api.refresh({ force: true }) : api.getState();
     const operation = Promise.resolve(action).then(state => {
       // subscribe(receive) may have delivered a newer same-owner record while
       // the Promise resolves. Prefer that delivery to a late stale result.
