@@ -423,7 +423,7 @@
     window.addEventListener('moonboys:telegram-session', onIdentityChange);
     // Other tabs update the shared Telegram/session/faction keys without
     // dispatching this tab's identity CustomEvents. Fail closed immediately,
-    // including localStorage.clear() (StorageEvent.key === null).
+    // including a cross-tab clear-all (StorageEvent.key === null).
     window.addEventListener('storage', event => {
       if (event.storageArea && event.storageArea !== window.localStorage) return;
       const key = event.key;
