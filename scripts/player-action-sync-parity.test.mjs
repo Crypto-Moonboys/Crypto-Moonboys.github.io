@@ -10,6 +10,8 @@ const sync = await readFile(new URL('../js/player-action-sync.js', import.meta.u
 const siteShell = await readFile(new URL('../js/site-shell.js', import.meta.url), 'utf8');
 const moonpetPage = await readFile(new URL('../moonpet-game.html', import.meta.url), 'utf8');
 const playOptions = await readFile(new URL('../js/moonpet-play-options.js', import.meta.url), 'utf8');
+const leaderboardClient = await readFile(new URL('../js/leaderboard-client.js', import.meta.url), 'utf8');
+const arcadeLeaderboard = await readFile(new URL('../js/arcade-leaderboard.js', import.meta.url), 'utf8');
 
 test('PR5 MoonPet Saved Status parity matrix references real action-plan sources or explicit gaps', () => {
   assert.equal(parity.schema_version, 1);
@@ -79,6 +81,13 @@ test('PR5 action sync is globally loaded for shell pages and directly for standa
   assert.match(sync, /BroadcastChannel/u);
   assert.doesNotMatch(sync, /\bfetch\s*\(|XMLHttpRequest|sendBeacon|localStorage\.(?:setItem|getItem|removeItem|clear)/u,
     'sync channel is invalidation-only');
+});
+
+test('PR5 arcade invalidation uses confirmed submission signal, not public leaderboard display movement', () => {
+  assert.match(leaderboardClient, /data && data\.accepted === true[\s\S]{0,900}moonboys:arcade-score-accepted/u);
+  assert.match(arcadeLeaderboard, /moonboys:score-updated/u,
+    'public leaderboard still owns display-only score update events');
+  assert.doesNotMatch(sync, /['"]moonboys:score-updated['"]\s*:/u);
 });
 
 test('PR5 accepted-action channel does not subscribe to rejection/error notifications', () => {
