@@ -971,3 +971,50 @@ test('My Moonboy signed checklist includes every source and saved-only claim cla
     assert.equal(f.errors.length, 0, f.errors.join('\n'));
   } finally { await f.browser.close(); }
 });
+
+
+test('signed checklist labels the source MoonPet/window and preserves the exact focused Saved Status/Wiki link', async () => {
+  const f = await setup({width:390,height:844}, true);
+  try {
+    await f.page.goto(SITE + '/my-moonboy.html', {waitUntil:'domcontentloaded'});
+    await f.page.locator('#mm-checklist [data-mm-checklist-key="source:moonpet.jobs"]')
+      .waitFor({state:'attached'});
+    const job = await f.page.locator('#mm-checklist [data-mm-checklist-key="source:moonpet.jobs"]').textContent();
+    assert.match(job, /MoonPet slot 1/u, 'source pet label must be visible in checklist');
+    assert.match(job, /Source period: saved timer · saved-session · UTC/u);
+    assert.doesNotMatch(job, /pap_[a-f0-9]{24}/u, 'opaque source pet ID must not be disclosed');
+
+    // All five Saved Status actions point to the SAME MoonPet game URL.
+    // A source refresh must return keyboard focus to the original claim row.
+    const savedLink = f.page.locator('[data-mm-focus-link="saved:weekly_bounty_claim"]');
+    await savedLink.focus();
+    assert.equal(await f.page.evaluate(() => document.activeElement?.getAttribute('data-mm-focus-link')),
+      'saved:weekly_bounty_claim');
+    const focusedAfterRefresh = await f.page.evaluate(() => {
+      window.dispatchEvent(new CustomEvent('moonboys:player-reconcile-needed', {
+        detail: {reason:'test-source-refreshed'},
+      }));
+      return document.activeElement?.getAttribute('data-mm-focus-link');
+    });
+    assert.equal(focusedAfterRefresh, 'saved:weekly_bounty_claim',
+      'refresh must not move focus to the first identical /moonpet-game.html link');
+    await f.page.waitForFunction(() =>
+      document.getElementById('mm-sync')?.textContent?.startsWith('Last verified read'),
+      null, {timeout:8000});
+    assert.equal(await f.page.evaluate(() => document.activeElement?.getAttribute('data-mm-focus-link')),
+      'saved:weekly_bounty_claim');
+
+    // Multiple Wiki tasks likewise navigate to the same article URL.
+    const wikiLink = f.page.locator('[data-mm-focus-link="wiki:cite"]');
+    await wikiLink.focus();
+    const focusedWiki = await f.page.evaluate(() => {
+      window.dispatchEvent(new CustomEvent('moonboys:player-reconcile-needed', {
+        detail: {reason:'test-second-source-refresh'},
+      }));
+      return document.activeElement?.getAttribute('data-mm-focus-link');
+    });
+    assert.equal(focusedWiki, 'wiki:cite',
+      'citation link focus must not jump to Engage on an identical destination');
+    assert.equal(f.errors.length, 0, f.errors.join('\n'));
+  } finally { await f.browser.close(); }
+});
