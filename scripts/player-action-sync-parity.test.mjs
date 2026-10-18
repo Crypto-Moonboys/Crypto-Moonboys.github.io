@@ -12,6 +12,9 @@ const moonpetPage = await readFile(new URL('../moonpet-game.html', import.meta.u
 const playOptions = await readFile(new URL('../js/moonpet-play-options.js', import.meta.url), 'utf8');
 const leaderboardClient = await readFile(new URL('../js/leaderboard-client.js', import.meta.url), 'utf8');
 const arcadeLeaderboard = await readFile(new URL('../js/arcade-leaderboard.js', import.meta.url), 'utf8');
+const gameShell = await readFile(new URL('../js/arcade/core/game-shell.js', import.meta.url), 'utf8');
+const snakePage = await readFile(new URL('../games/snake-run/index.html', import.meta.url), 'utf8');
+const invadersPage = await readFile(new URL('../games/invaders-3008/index.html', import.meta.url), 'utf8');
 
 test('PR5 MoonPet Saved Status parity matrix references real action-plan sources or explicit gaps', () => {
   assert.equal(parity.schema_version, 1);
@@ -82,6 +85,17 @@ test('PR5 action sync is globally loaded for shell pages and directly for standa
   assert.match(sync, /BroadcastChannel/u);
   assert.doesNotMatch(sync, /\bfetch\s*\(|XMLHttpRequest|sendBeacon|localStorage\.(?:setItem|getItem|removeItem|clear)/u,
     'sync channel is invalidation-only');
+});
+
+test('PR5 standalone Arcade pages load action sync through the shared game shell before gameplay', () => {
+  assert.match(gameShell, /^import ['"]\/js\/player-action-sync\.js['"];/mu,
+    'shared Arcade game shell must side-effect load the sync bus');
+  for (const [name, html] of [['SnakeRun', snakePage], ['Invaders', invadersPage]]) {
+    assert.match(html, /\/js\/arcade\/core\/game-shell\.js/u,
+      name + ' must mount through the shared game shell');
+    assert.doesNotMatch(html, /\/js\/site-shell\.js/u,
+      name + ' remains a standalone Arcade page; game shell must provide sync');
+  }
 });
 
 test('PR5 arcade invalidation uses confirmed submission signal, not public leaderboard display movement', () => {
