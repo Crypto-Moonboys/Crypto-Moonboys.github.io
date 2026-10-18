@@ -106,7 +106,10 @@
       parsed.faction = normalizeFaction(parsed.faction);
       var cachedTelegramId = parsed.telegram_id == null ? null : String(parsed.telegram_id);
       var identityTelegramId = getIdentityTelegramId();
-      if (identityTelegramId && cachedTelegramId && cachedTelegramId !== identityTelegramId) {
+      // A cached faction without an explicitly matching signed account ID
+      // is not evidence of this visitor's membership (or seasonal lock).
+      // Reject both the previous owner's record and legacy unscoped caches.
+      if (!identityTelegramId || !cachedTelegramId || cachedTelegramId !== identityTelegramId) {
         return null;
       }
       return parsed;
