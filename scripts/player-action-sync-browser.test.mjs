@@ -7,6 +7,7 @@ import { chromium } from 'playwright';
 
 const ROOT = process.cwd();
 const SYNC = await readFile(path.join(ROOT, 'js/player-action-sync.js'), 'utf8');
+const SITE_SHELL = await readFile(path.join(ROOT, 'js/site-shell.js'), 'utf8');
 
 async function setup() {
   const browser = await chromium.launch({
@@ -355,4 +356,77 @@ test('PR5 unconfirmed faction and Block Topia settlements emit no follow-up inva
   });
   assert.ok(zeroXpBlock.some(item=>item.source==='arcade_progression'),
     'explicit ok:true zero-XP settlement is still confirmed and must reconcile');
+});
+
+
+test('PR5 shell buffers accepted write while deferred action-sync script is loading and replays it cross-tab', async () => {
+  const browser = await chromium.launch({
+    executablePath: process.env.CHROMIUM_EXECUTABLE_PATH ||
+      (existsSync('/usr/bin/chromium') ? '/usr/bin/chromium' : undefined),
+    headless: true,
+  });
+  const context = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  let releaseSyncScript = null;
+  await context.route('https://cryptomoonboys.com/shell-buffer-test*', route =>
+    route.fulfill({contentType:'text/html',
+      body:'<!doctype html><html><head></head><body><div id="layout"><main id="content"></main></div></body></html>'}));
+  await context.route('https://cryptomoonboys.com/js/player-action-sync.js', route =>
+    new Promise(resolve => {
+      releaseSyncScript = async () => {
+        await route.fulfill({contentType:'application/javascript',body:SYNC});
+        resolve();
+      };
+    }));
+
+  const source = await context.newPage();
+  const remote = await context.newPage();
+  try {
+    await Promise.all([
+      source.goto('https://cryptomoonboys.com/shell-buffer-test?source'),
+      remote.goto('https://cryptomoonboys.com/shell-buffer-test?remote'),
+    ]);
+    for (const page of [source,remote]) {
+      await page.evaluate(() => {
+        window.__accepted=[];
+        window.addEventListener('moonboys:player-action-accepted',event=>window.__accepted.push(event.detail));
+      });
+    }
+    await remote.addScriptTag({content:SYNC});
+    await source.addScriptTag({content:SITE_SHELL});
+
+    for (let i=0;i<100 && !releaseSyncScript;i++) await new Promise(resolve=>setTimeout(resolve,10));
+    assert.ok(releaseSyncScript,'site shell must start deferred action-sync request immediately');
+
+    const buffered = await source.evaluate(() => {
+      window.dispatchEvent(new CustomEvent('moonboys:server-action-accepted',{
+        detail:{
+          source:'faction',
+          route:'/private/route',
+          telegram_id:'secret-owner',
+          pet_id:'secret-pet',
+          reward:{xp:999},
+        },
+      }));
+      return window.__MOONBOYS_ACTION_SYNC_BUFFER__?.events?.map(item=>({...item})) || [];
+    });
+    assert.deepEqual(buffered,[{source:'faction',event:'moonboys:server-action-accepted'}],
+      'pre-bus capture stores only sanitized source/event metadata');
+    assert.doesNotMatch(JSON.stringify(buffered),/secret|telegram|pet_id|reward|route/u);
+    assert.equal(await remote.evaluate(()=>window.__accepted.length),0,
+      'remote tab cannot receive event before deferred bus actually loads');
+
+    await releaseSyncScript();
+    await source.waitForFunction(()=>Boolean(window.MOONBOYS_ACTION_SYNC));
+    await remote.waitForFunction(()=>window.__accepted.some(item=>
+      item.source==='faction' && item.event==='moonboys:server-action-accepted'
+    ),null,{timeout:5000});
+    assert.equal(await source.evaluate(()=>Boolean(window.__MOONBOYS_ACTION_SYNC_BUFFER__)),false,
+      'temporary buffer is removed after bus drains it');
+    const replayed=await remote.evaluate(()=>window.__accepted.filter(item=>
+      item.source==='faction' && item.event==='moonboys:server-action-accepted'
+    ));
+    assert.equal(replayed.length,1,'buffered accepted write is replayed exactly once across tabs');
+  } finally {
+    await browser.close();
+  }
 });
