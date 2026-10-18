@@ -72,7 +72,8 @@ async function setup(width=390,options={}) {
   await page.evaluate(config=>{
     const order=config.order;
     window.__fopTest={id:config.id,linked:config.linked,state:config.initial,
-      subscribers:[],writes:0,reads:0,refreshed:0,releasePending:null};
+      subscribers:[],writes:0,reads:0,refreshed:0,releasePending:null,
+      releaseQueuedRefresh:null};
     window.MOONBOYS_IDENTITY={
       isTelegramLinked:()=>window.__fopTest.linked,
       getTelegramId:()=>window.__fopTest.linked?window.__fopTest.id:null,
@@ -102,6 +103,9 @@ async function setup(width=390,options={}) {
       refresh() {window.__fopTest.refreshed++;return Promise.resolve(window.__fopTest.state);},
       refreshAfterInflight() {
         window.__fopTest.refreshed++;
+        if (config.holdQueuedRefresh) {
+          return new Promise(resolve => { window.__fopTest.releaseQueuedRefresh = resolve; });
+        }
         return Promise.resolve(window.__fopTest.state);
       },
     };
@@ -120,7 +124,8 @@ async function setup(width=390,options={}) {
     };
   },{order:FACTIONS,initial:Object.hasOwn(options,'state')?options.state:fixture(),
     id:options.owner??'111',linked:options.linked??true,missionData:missionData(),
-    profiles:options.profiles,holdFirstRead:Boolean(options.holdFirstRead)});
+    profiles:options.profiles,holdFirstRead:Boolean(options.holdFirstRead),
+    holdQueuedRefresh:Boolean(options.holdQueuedRefresh)});
   await page.addScriptTag({content:SCRIPT});
   await page.waitForFunction(()=>document.querySelector('[data-fop-crew]')?.textContent.length>25);
   return {browser,context,page,errors};
@@ -675,6 +680,44 @@ test('PR5 accepted action queues a forced Daily Loop read after a pending pre-ac
     const current=await page.locator('[data-fop-private]').innerText();
     assert.match(current,/9 \(server-saved faction contribution/);
     assert.doesNotMatch(current,/120 \(server-saved faction contribution/);
+    assert.equal(f.errors.length,0,f.errors.join('\n'));
+  }finally{await f.browser.close();}
+});
+
+
+test('PR5 faction view suppresses another component’s pre-action Daily Loop subscriber until queued refresh returns',async()=>{
+  const old=fixture({dayValue:120});
+  const fresh=fixture({dayValue:9,rows:false});
+  const f=await setup(390,{pageKey:'graffpunks',state:old,holdQueuedRefresh:true});
+  try{
+    const {page}=f;
+    await page.waitForFunction(()=>document.querySelector('[data-fop-private]')?.textContent.includes(
+      '120 (server-saved faction contribution'
+    ));
+    await page.evaluate(()=>{
+      window.dispatchEvent(new CustomEvent('moonboys:player-action-accepted',{
+        detail:{source:'arcade',event:'moonboys:arcade-score-accepted',remote:true}
+      }));
+    });
+    await page.waitForFunction(()=>typeof window.__fopTest.releaseQueuedRefresh==='function');
+    assert.doesNotMatch(await page.locator('[data-fop-private]').innerText(),
+      /120 \(server-saved faction contribution/);
+    // Emulate an older singleton request, owned by another component, publishing
+    // after this widget has already queued its post-action read.
+    await page.evaluate(value=>window.__fopTest.push(value),old);
+    assert.doesNotMatch(await page.locator('[data-fop-private]').innerText(),
+      /120 \(server-saved faction contribution/,
+      'external pre-action subscriber delivery stays suppressed');
+    await page.evaluate(value=>{
+      window.__fopTest.state=value;
+      window.__fopTest.releaseQueuedRefresh(value);
+    },fresh);
+    await page.waitForFunction(()=>document.querySelector('[data-fop-private]')?.textContent.includes(
+      '9 (server-saved faction contribution'
+    ),null,{timeout:5000});
+    assert.match(await page.locator('[data-fop-private]').innerText(),
+      /9 \(server-saved faction contribution/);
+    assert.equal(await page.evaluate(()=>window.__fopTest.refreshed),1);
     assert.equal(f.errors.length,0,f.errors.join('\n'));
   }finally{await f.browser.close();}
 });
