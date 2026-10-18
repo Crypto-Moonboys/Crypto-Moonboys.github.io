@@ -205,9 +205,14 @@
     (rosterKnown ? roster : []).forEach((pet, index) => {
       const ref = String(pet.pet_ref || '');
       if (!/^pap_[a-f0-9]{24}$/u.test(ref)) return;
-      const number = Number(pet.slot_number);
-      const slot = Number.isInteger(number) && number > 0 ? number : index + 1;
-      directory.set(ref, { pet, label: 'MoonPet slot ' + slot, membership: 'active' });
+      const number = pet.slot_number == null ? NaN : Number(pet.slot_number);
+      const slot = Number.isSafeInteger(number) && number > 0 ? number : null;
+      // Do not silently turn missing permanent slot authority into a
+      // plausible number from the array index or season-local ordering.
+      const label = slot === null
+        ? 'MoonPet (permanent slot unknown, roster entry ' + (index + 1) + ')'
+        : 'MoonPet slot ' + slot;
+      directory.set(ref, { pet, label, membership: 'active' });
     });
     // Preserve original earning pet identity without leaking the opaque ref
     // or claiming that it is archived when the live roster could not be read.
