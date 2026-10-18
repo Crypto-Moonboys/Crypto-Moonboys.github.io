@@ -207,7 +207,7 @@ test('duplicate pet titles show signed roster attribution and exact source perio
     petLabel: task => task.source_pet_ref === firstRef
       ? 'MoonPet: MoonPet slot 1' : 'Original earning MoonPet: MoonPet slot 3',
   });
-  assert.equal((el.innerHTML.match(/<strong>Weekly Journey<\/strong>/g) || []).length, 2);
+  assert.equal((el.innerHTML.match(/<strong>Weekly Journey<\/strong> · /g) || []).length, 2);
   for (const marker of ['MoonPet slot 1', 'MoonPet slot 3',
     'pet journey week · 2026-W42 · UTC', 'pet journey week · 2026-W43 · UTC',
     'utc day · 2026-10-16 · UTC', 'Original earning MoonPet']) {
