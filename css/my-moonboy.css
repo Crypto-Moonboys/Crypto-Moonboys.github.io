@@ -81,6 +81,10 @@
 .page-my-moonboy .mm-task p { margin: 5px 0; font-size: .84rem; line-height: 1.55; color: var(--mm-muted); }
 .page-my-moonboy .mm-task .mm-task-why { color: var(--mm-ink); }
 .page-my-moonboy .mm-task .mm-button { margin-top: 10px; }
+.page-my-moonboy .mm-task-scope { color: var(--mm-accent) !important; }
+.page-my-moonboy .mm-pet-filter { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.page-my-moonboy .mm-pet-filter > span { font-weight: 700; color: var(--mm-accent); }
+.page-my-moonboy .mm-source-warning[role="status"] { margin-bottom: 10px; }
 .page-my-moonboy .mm-task-tags { display: flex; flex-wrap: wrap; gap: 5px; }
 .page-my-moonboy .mm-tag {
   display: inline-flex; align-items: center; border: 1px solid var(--mm-line);
