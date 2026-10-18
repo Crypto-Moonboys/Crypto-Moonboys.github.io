@@ -7,7 +7,7 @@
 
 The My Moonboy page now presents two separately labelled experiences:
 
-1. **Public economy guide:** 19 auditable resource types explain how eligible source-accepted actions can increase, spend or risk score/XP/wallet resources. All text is guidance about existing source rules, never an actual signed balance, purchase quote or proof that a reward has been paid. The guide also lists all **14** current MoonPet economy routes from `PET_ECONOMY_ROUTES`.
+1. **Public economy guide:** 19 auditable resource types explain how eligible source-accepted actions can increase, spend or risk score/XP/wallet resources. All text is guidance about existing source rules, never an actual signed balance, purchase quote or proof that a reward has been paid. The guide also lists all **15** current MoonPet economy routes from `PET_ECONOMY_ROUTES`.
 2. **Private complete checklist:** a read-only view of all **28** registered `ACTION_PLAN_SOURCE_REGISTRY` source categories, with each currently loaded owner's task rows, source status and progress. A tick is allowed only where `status=complete|claimed`, `source_health=live`, `evidence.kind=server_receipt`, and `evidence.verified_completion=true`. A read-only projection, client mirror, absent source, partial pagination, stale cache, or preview **cannot** tick a goal. It never writes `completed` or triggers a game claim.
 
 Five **saved-only MoonPet claim classes** from `data/player-action-sync-claim-parity.v1.json` are explicitly included as **unknown** with a direct original-game Saved Status link: `daily_cache`, `season_tier_claims`, `finale_claim`, `extra_bounty_claim`, and `weekly_bounty_claim`. Their authenticated per-owner status has **not** been added to `POST /player/action-plan`; inventing their readiness or quietly treating no record as claimed would be worse than an explicit source fallback. The original MoonPet OS remains canonical. A later reviewed Worker adapter may bring each class into the same signed projection with source/receipt proof.
@@ -30,7 +30,7 @@ Five **saved-only MoonPet claim classes** from `data/player-action-sync-claim-pa
 
 ## CI and verification
 
-- `node --test scripts/my-moonboy-mission-guide.test.mjs`: exact 28-source parity, five claim gaps, 14 economy loops, source marker guards, unverified status, stale privacy and discovery.
+- `node --test scripts/my-moonboy-mission-guide.test.mjs`: exact 28-source parity, five claim gaps, 15 economy loops, source marker guards, unverified status, stale privacy and discovery.
 - Extended `scripts/my-moonboy-browser.test.mjs`: guest visibility with zero private requests, 360/390px layout, signed task/source coverage, and synchronous logout DOM purge.
 - Registered the new unit suite in `ci-visual` and `ci-worker-api` so both frontend and Worker source drift can fail review.
 
