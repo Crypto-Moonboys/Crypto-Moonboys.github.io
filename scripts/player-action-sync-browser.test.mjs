@@ -151,3 +151,99 @@ test('only server-accepted source events are subscribed; rejected/progression-er
     assert.equal(await f.b.evaluate(() => window.__accepted.length), 0);
   } finally { await f.browser.close(); }
 });
+
+test('PR5 real Arcade submit emits follow-up cross-tab invalidations after delayed settlements resolve', async () => {
+  const browser = await chromium.launch({
+    executablePath: process.env.CHROMIUM_EXECUTABLE_PATH ||
+      (existsSync('/usr/bin/chromium') ? '/usr/bin/chromium' : undefined),
+    headless: true,
+  });
+  const context = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  let releaseFaction;
+  let factionStarted = false;
+  await context.route('https://cryptomoonboys.com/**', async route => {
+    const url = new URL(route.request().url());
+    if (url.pathname === '/arcade-settlement-test') {
+      return route.fulfill({contentType:'text/html',body:'<!doctype html><html><body>arcade</body></html>'});
+    }
+    if (url.pathname === '/js/leaderboard-client.js') {
+      return route.fulfill({contentType:'application/javascript',
+        body:await readFile(path.join(ROOT,'js/leaderboard-client.js'),'utf8')});
+    }
+    if (url.pathname === '/js/arcade-meta-system.js') {
+      return route.fulfill({contentType:'application/javascript',body:
+        "export const ArcadeMeta={trackGameResult(x){return {tracked:false,game:x.game,meta_points:0,timestamp:x.timestamp};}};"});
+    }
+    if (url.pathname === '/js/arcade-sync.js') {
+      return route.fulfill({contentType:'application/javascript',body:
+        "export const ArcadeSync={"+
+        "getProjectedXpFromScore(){return 0;},"+
+        "getPendingCount(){return 0;},"+
+        "async getTelegramAuth(){return {id:'111',hash:'signed',auth_date:'1700000000'};},"+
+        "syncPendingArcadeProgress(){window.__progressStarted=true;return new Promise(resolve=>{window.__releaseProgress=resolve;});},"+
+        "async syncBlockTopiaProgressionOnAcceptedScore(){throw new Error('not blocktopia');}"+
+        "};"});
+    }
+    if (url.pathname === '/js/arcade-meta-ui.js' || url.pathname === '/js/arcade-retention-engine.js') {
+      return route.fulfill({contentType:'application/javascript',body:''});
+    }
+    if (url.pathname === '/api/leaderboard') {
+      return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({accepted:true})});
+    }
+    if (url.pathname === '/api/faction/earn') {
+      factionStarted = true;
+      await new Promise(resolve => { releaseFaction = resolve; });
+      return route.fulfill({status:200,contentType:'application/json',
+        body:JSON.stringify({ok:true,faction:'graffpunks',faction_xp_awarded:5})});
+    }
+    return route.fulfill({status:404,body:''});
+  });
+  const source = await context.newPage();
+  const remote = await context.newPage();
+  try {
+    for (const page of [source, remote]) {
+      await page.goto('https://cryptomoonboys.com/arcade-settlement-test');
+      await page.evaluate(() => {
+        window.__accepted=[];
+        window.addEventListener('moonboys:player-action-accepted',event=>window.__accepted.push(event.detail));
+      });
+      await page.addScriptTag({content:SYNC});
+    }
+    await source.evaluate(() => {
+      window.MOONBOYS_API={
+        STATUS:{},
+        getLeaderboardApiInfo(){return {url:'https://cryptomoonboys.com/api/leaderboard',state:'configured'};},
+        getApiBaseInfo(){return {url:'https://cryptomoonboys.com/api',state:'configured'};},
+      };
+      window.MOONBOYS_IDENTITY={
+        isTelegramLinked:()=>true,
+        getTelegramId:()=> '111',
+        getTelegramName:()=> 'Arcade Tester',
+        getTelegramAuth:()=>({id:'111',hash:'signed',auth_date:'1700000000'}),
+        setSyncHealth(){},
+      };
+      window.MOONBOYS_FACTION={
+        getCachedStatus:()=>({faction:'graffpunks'}),
+        loadStatus:()=>Promise.resolve(),
+      };
+      window.__submitPromise=import('/js/leaderboard-client.js')
+        .then(mod=>mod.submitScore('Arcade Tester',100,'snake-run'));
+    });
+    await remote.waitForFunction(()=>window.__accepted.length===1);
+    assert.equal(factionStarted,true,'faction settlement is held after initial score acceptance');
+    assert.equal((await remote.evaluate(()=>window.__accepted))[0].source,'arcade');
+    releaseFaction();
+    await remote.waitForFunction(()=>window.__accepted.some(item=>item.source==='faction'));
+    assert.equal(await remote.evaluate(()=>window.__accepted.filter(x=>x.source==='faction').length),1);
+    await source.waitForFunction(()=>window.__progressStarted===true);
+    assert.equal(await remote.evaluate(()=>window.__accepted.some(x=>x.source==='arcade_progression')),false,
+      'competitive progression remains unannounced while its settlement is pending');
+    await source.evaluate(()=>window.__releaseProgress({synced:1,rejected:1,remaining:0,skipped:false}));
+    await remote.waitForFunction(()=>window.__accepted.some(item=>item.source==='arcade_progression'));
+    assert.equal(await remote.evaluate(()=>window.__accepted.filter(x=>x.source==='arcade_progression').length),1,
+      'partial progression success emits one post-settlement invalidation');
+    await source.evaluate(()=>window.__submitPromise);
+  } finally {
+    await browser.close();
+  }
+});
