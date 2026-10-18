@@ -355,7 +355,10 @@ export async function handleRogueliteDailyRoutes(request, env, url, helpers) {
     try {
       await upsertTelegramUser(env.DB, verified.user);
       const utcDay = getTodayUtcDate();
-      const faction = await getUserFaction(env.DB, verified.telegramId).catch(() => null);
+      // An unreadable canonical faction is NOT proof of "unaligned".
+      // Fail the signed read instead of assigning today's opportunity to a
+      // different faction based on missing/legacy account data.
+      const faction = await getUserFaction(env.DB, verified.telegramId);
       const factionId = normalizeBattleChamberFaction(faction?.name) || null;
       const backfill = await backfillMissedPerkGapsFromLastActiveDay(env.DB, verified.telegramId, utcDay, factionId);
       const state = await ensureDailyOpportunityStateForToday(env.DB, verified.telegramId, utcDay);
