@@ -9443,7 +9443,7 @@ async function sendDailyDigestMessage(db, env, telegramId, utcDay) {
     `).bind(String(telegramId), getPreviousUtcDay(utcDay) || '').first().catch(() => ({ total: 0 })),
   ]);
 
-  const factionId = normalizeBattleChamberFaction(faction?.id || faction?.name) || null;
+  const factionId = normalizeBattleChamberFaction(faction?.name) || null;
   const factionLabel = factionId ? (BATTLE_CHAMBER_FACTION_LABELS[factionId] || factionId) : 'Unaligned';
   const factionLogData = await getFactionDailyLog(db, telegramId, factionId, utcDay);
   const missedTotal = Number(missedSnapshot?.total) || 0;
@@ -14313,7 +14313,7 @@ export default {
            WHERE telegram_id = ? AND mission_date = ?`
         ).bind(telegramId, todayKey).all().catch(() => ({ results: [] }));
 
-        const factionId = faction?.id || faction?.name || null;
+        const factionId = faction?.name || null;
         const normalizedFaction = normalizeFaction(factionId) || FACTION_UNALIGNED;
 
         const factionSignalRows = await env.DB.prepare(
