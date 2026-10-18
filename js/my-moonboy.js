@@ -701,8 +701,8 @@
     claimsBadge.hidden = !claimsVerified;
     claimsBadge.textContent = claimsVerified ? String(Math.floor(claimsReady)) : '';
     claimsBadge.setAttribute('aria-label', claimsVerified
-      ? Math.floor(claimsReady) + ' verified claim' + (Math.floor(claimsReady) === 1 ? '' : 's') + ' ready'
-      : 'No current verified claim count');
+      ? Math.floor(claimsReady) + ' Action Plan verified claim' + (Math.floor(claimsReady) === 1 ? '' : 's') + ' ready'
+      : 'No current Action Plan verified claim count');
     const identity = getIdentity();
     const displayName = identity && typeof identity.getTelegramName === 'function'
       ? identity.getTelegramName() : null;
