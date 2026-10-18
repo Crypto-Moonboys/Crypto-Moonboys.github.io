@@ -63,7 +63,8 @@
     try {
       const url = new URL(String(base));
       return /^https?:$/.test(url.protocol) && !url.username && !url.password
-        ? url.origin : null;
+        && !url.search && !url.hash
+        ? url.href.replace(/\/+$/u, '') : null;
     } catch (_) { return null; }
   }
 
