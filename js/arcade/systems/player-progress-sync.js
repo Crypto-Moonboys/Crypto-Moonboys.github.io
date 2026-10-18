@@ -106,8 +106,29 @@ async function submit(job) {
   } finally { clearTimeout(timer); }
 }
 
+function acceptedSource(route) {
+  route = String(route || '');
+  if (route.startsWith('/wtf/')) return 'battle';
+  if (route.startsWith('/faction/') || route.startsWith('/battle-chamber/') ||
+    route.startsWith('/player/daily-missions/')) return 'faction';
+  if (route.startsWith('/player/modifiers/')) return 'arcade';
+  return 'progression';
+}
+
+function emitAccepted(job) {
+  try {
+    window.dispatchEvent(new CustomEvent('moonboys:server-action-accepted', {
+      detail: Object.freeze({
+        source: acceptedSource(job.route),
+        route: String(job.route || '').slice(0, 96),
+      }),
+    }));
+  } catch (_) {}
+}
+
 function enqueue(job) {
   const result = writeQueue.then(() => submit(job)).then(async data => {
+    if (data.ok) emitAccepted(job);
     if (data.ok && job.onSuccess) {
       // Refresh/UI failure cannot authorize another already-acknowledged write.
       try { await job.onSuccess(data); } catch (_) { return { ...data, refresh_error: 'progression_refresh_unavailable' }; }
