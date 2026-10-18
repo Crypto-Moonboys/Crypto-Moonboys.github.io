@@ -335,11 +335,12 @@ test('PR3 identity switch cancels pagination and enables new owner cursor', asyn
     await f.page.locator('#mm-load-more').click();
     await f.page.waitForFunction(() => typeof window.__mmReleaseOldPage === 'function');
 
-    await f.page.evaluate(() => {
+    const hiddenAfterSwitch = await f.page.evaluate(() => {
       window.__mmTest.id = '222';
       window.dispatchEvent(new CustomEvent('moonboys:identity-change'));
+      return document.getElementById('mm-private').hidden;
     });
-    assert.equal(await f.page.locator('#mm-private').isHidden(), true);
+    assert.equal(hiddenAfterSwitch, true, 'identity-change synchronously clears owner content');
     await f.page.waitForFunction(() =>
       document.getElementById('mm-player-name')?.textContent === 'Beta player');
     assert.equal(await f.page.locator('#mm-load-more').isHidden(), false);
@@ -425,5 +426,34 @@ test('PR3 unavailable roster retains saved original-pet claims without asserting
     assert.match(await f.page.locator('#mm-results').innerText(),/Alpha historic contract bonus/);
     assert.doesNotMatch(await f.page.locator('#mm-results').innerText(),/Alpha saved job claim/);
     assert.equal(f.errors.length,0,f.errors.join('\n'));
+  } finally { await f.browser.close(); }
+});
+
+
+test('PR3 gameplay invalidation cancels old cursor and restores pagination', async () => {
+  const f = await setup({width:390,height:844}, true);
+  try {
+    await f.page.goto(SITE + '/my-moonboy.html', {waitUntil:'domcontentloaded'});
+    await f.page.locator('#mm-next .mm-task').first().waitFor();
+    await f.page.waitForFunction(() => !document.getElementById('mm-refresh').disabled);
+    await holdOneCursorResponse(f.page);
+    await f.page.locator('#mm-load-more').click();
+    await f.page.waitForFunction(() => typeof window.__mmReleaseOldPage === 'function');
+    await f.page.evaluate(() => window.dispatchEvent(new CustomEvent('moonboys:score-updated')));
+    await f.page.waitForFunction(() =>
+      document.getElementById('mm-load-more')?.disabled === false);
+    await f.page.waitForFunction(() =>
+      document.getElementById('mm-next')?.textContent.includes('Alpha saved job claim'));
+    // The old async result must not append, even if its abort was ignored.
+    const obsolete = plan('111', 'pap1-100');
+    obsolete.tasks[0].title = 'OBSOLETE before accepted gameplay refresh';
+    await f.page.evaluate(data => window.__mmReleaseOldPage(data), obsolete);
+    await f.page.waitForTimeout(75);
+    assert.doesNotMatch(await f.page.locator('#my-moonboy').innerText(),/OBSOLETE before accepted/);
+    assert.equal(await f.page.locator('#mm-load-more').isHidden(), false);
+    assert.equal(await f.page.locator('#mm-load-more').isEnabled(), true);
+    await f.page.locator('#mm-load-more').click();
+    await f.page.getByText('Alpha historic contract bonus').first().waitFor();
+    assert.equal(f.errors.length, 0, f.errors.join('\n'));
   } finally { await f.browser.close(); }
 });
