@@ -451,3 +451,130 @@ test('PR4 a pre-midnight pending read cannot block the next UTC-day authenticate
     assert.equal(f.errors.length,0,f.errors.join('\n'));
   }finally{await f.browser.close();}
 });
+
+
+test('PR4 keyboard focus stays with Refresh and matching links after changed data and window refocus',async()=>{
+  const f=await setup(390,{pageKey:'graffpunks'});
+  try {
+    const {page}=f;
+    const refresh=page.locator('[data-fop-private] [data-fop-retry]');
+    await refresh.waitFor();
+    await refresh.focus();
+    assert.equal(await page.evaluate(()=>document.activeElement?.hasAttribute('data-fop-retry')),true);
+    await page.evaluate(next=>{window.__fopTest.state=next;},fixture({dayValue:9}));
+    // Keyboard activation updates the private innerHTML twice: loading, then
+    // the refreshed saved value. Focus must follow the replacement button.
+    await refresh.press('Enter');
+    await page.waitForFunction(() =>
+      document.querySelector('[data-fop-private]')?.textContent.includes(
+        '9 (server-saved faction contribution'
+      ));
+    assert.equal(await page.evaluate(()=>
+      document.activeElement?.matches('[data-fop-private] button[data-fop-retry]')),true,
+    'keyboard focus remains on the replaced Refresh control after an accepted update');
+
+    const privateLink=page.locator('[data-fop-private] a[href="/my-moonboy.html?tab=faction"]');
+    await privateLink.focus();
+    await page.evaluate(next=>{
+      window.__fopTest.state=next;
+      window.dispatchEvent(new Event('focus'));
+    },fixture({dayValue:11}));
+    await page.waitForFunction(() =>
+      document.querySelector('[data-fop-private]')?.textContent.includes(
+        '11 (server-saved faction contribution'
+      ));
+    assert.equal(await page.evaluate(()=>
+      document.activeElement?.getAttribute('href')==='/my-moonboy.html?tab=faction'),true,
+    'window refocus cannot discard the focused personal navigation link');
+
+    const crewLink=page.locator('[data-fop-crew] a[href="/battle-chamber/factions/graffpunks.html"]');
+    await crewLink.focus();
+    await page.evaluate(()=>{
+      window.MOONBOYS_BATTLE_CHAMBER_STANDINGS.weekly.rows[0].clout_total=299;
+      window.dispatchEvent(new CustomEvent('battle-chamber:faction-data-ready'));
+    });
+    assert.match(await page.locator('[data-fop-crew]').innerText(),/299 faction clout/);
+    assert.equal(await page.evaluate(()=>
+      document.activeElement?.getAttribute('href')==='/battle-chamber/factions/graffpunks.html'),true,
+    'bridge refresh must restore the same public link after rerender');
+    assert.equal(await page.evaluate(()=>window.__fopTest.writes),0);
+    assert.equal(f.errors.length,0,f.errors.join('\n'));
+  }finally{await f.browser.close();}
+});
+
+test('PR4 intentional identity teardown does not restore the old member control',async()=>{
+  const f=await setup(390,{pageKey:'graffpunks'});
+  try{
+    const {page}=f;
+    await page.locator('[data-fop-private] [data-fop-retry]').focus();
+    const state=await page.evaluate(()=>{
+      window.__fopTest.change('222',true);
+      return {
+        oldFocused:document.activeElement?.matches('[data-fop-private] [data-fop-retry]'),
+        oldContents:document.querySelector('[data-fop-private]').textContent,
+      };
+    });
+    assert.equal(state.oldFocused,false,'old owner's button must not regain focus');
+    assert.doesNotMatch(state.oldContents,/120|Saved complete \(advisory\)/);
+    assert.equal(f.errors.length,0,f.errors.join('\n'));
+  }finally{await f.browser.close();}
+});
+
+test('PR4 same-day tick retires an expired active WTF event without rerendering the focused crew link',async()=>{
+  const start='2026-10-18T01:59:30.000Z';
+  const state=fixture({now:'2026-10-18'});
+  state.daily_wtf_status.events=[
+    {title:'Saved active window ending at 02:00',
+      starts_at:'2026-10-18T01:00:00.000Z',
+      ends_at:'2026-10-18T02:00:00.000Z',status:'active'},
+    {title:'Later source confirmed window',
+      starts_at:'2026-10-18T04:00:00.000Z',
+      ends_at:'2026-10-18T05:30:00.000Z',status:'upcoming'},
+  ];
+  const f=await setup(390,{pageKey:'graffpunks',clockTime:start,state});
+  try{
+    const {page}=f;
+    const label=page.locator('[data-fop-wtf]');
+    assert.match(await label.innerText(),/Saved active window ending at 02:00/);
+    assert.match(await label.innerText(),/Source reports active/);
+    const link=page.locator('[data-fop-crew] a[href="/battle-chamber/factions/graffpunks.html"]');
+    await link.focus();
+    const handle=await link.elementHandle();
+    // The existing once-per-minute visible timer crosses ends_at without
+    // moving to a new UTC day or requiring another server request.
+    await page.clock.runFor(62000);
+    const result=await label.innerText();
+    assert.doesNotMatch(result,/Saved active window ending at 02:00|Source reports active/);
+    assert.match(result,/Later source confirmed window/);
+    assert.match(result,/Source reports upcoming/);
+    assert.equal(await handle.evaluate(element=>document.activeElement===element),true,
+      'same-day presentation update must preserve the original focused DOM node');
+    assert.equal(await page.evaluate(()=>window.__fopTest.reads),1,
+      'window retirement needs no new Daily Loop API read');
+    assert.equal(await page.evaluate(()=>window.__fopTest.refreshed),0);
+    assert.equal(await page.evaluate(()=>window.__fopTest.writes),0);
+    assert.equal(f.errors.length,0,f.errors.join('\n'));
+  }finally{await f.browser.close();}
+});
+
+test('PR4 same-day tick removes the final expired window without fabricating another active event',async()=>{
+  const state=fixture({now:'2026-10-18'});
+  state.daily_wtf_status.events=[{
+    title:'Final persisted event',
+    starts_at:'2026-10-18T01:00:00.000Z',
+    ends_at:'2026-10-18T02:00:00.000Z',
+    status:'active',
+  }];
+  const f=await setup(390,{
+    pageKey:'graffpunks',clockTime:'2026-10-18T01:59:30.000Z',state,
+  });
+  try{
+    assert.match(await f.page.locator('[data-fop-wtf]').innerText(),/Final persisted event/);
+    await f.page.clock.runFor(62000);
+    const after=await f.page.locator('[data-fop-wtf]').innerText();
+    assert.match(after,/no remaining source-confirmed event for today/);
+    assert.doesNotMatch(after,/Final persisted event|Source reports active/);
+    assert.equal(await f.page.evaluate(()=>window.__fopTest.refreshed),0);
+    assert.equal(f.errors.length,0,f.errors.join('\n'));
+  }finally{await f.browser.close();}
+});
