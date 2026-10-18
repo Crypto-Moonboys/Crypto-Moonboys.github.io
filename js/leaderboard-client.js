@@ -396,6 +396,10 @@ export async function submitScore(player, score, game = "global") {
       result.accepted = true;
       result.state = "accepted_score";
       dispatchUiState("moonboys:score-updated", { game: gameKey, player: resolvedPlayer, score, ts: Date.now() });
+      // Dedicated accepted-submission signal for private read reconciliation.
+      // Public leaderboard display refreshes may also emit score-updated, so
+      // they must never masquerade as this confirmed owner action.
+      dispatchUiState("moonboys:arcade-score-accepted", { source: "arcade", game: gameKey, ts: Date.now() });
       emitMicroNotification(`${resolvedPlayer} score accepted (${score}).`, "success");
       emitArcadeSubmissionStatus({
         ...result,
