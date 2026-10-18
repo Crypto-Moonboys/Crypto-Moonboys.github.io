@@ -114,6 +114,19 @@
     if (eventName.startsWith('moonboys:wiki-')) document.addEventListener(eventName, listener);
   });
 
+  // Shell/standalone loaders capture accepted events synchronously while this
+  // deferred script is downloading. Remove those temporary listeners first,
+  // then replay only their sanitized source/event metadata through the normal
+  // dedupe + BroadcastChannel path.
+  const buffered = window.__MOONBOYS_ACTION_SYNC_BUFFER__;
+  if (buffered && Array.isArray(buffered.events)) {
+    try { buffered.cleanup?.(); } catch (_) {}
+    const queued = buffered.events.splice(0);
+    try { delete window.__MOONBOYS_ACTION_SYNC_BUFFER__; }
+    catch (_) { window.__MOONBOYS_ACTION_SYNC_BUFFER__ = null; }
+    queued.forEach(item => broadcast(item?.source, item?.event));
+  }
+
   window.addEventListener('online', () => {
     const detail = Object.freeze({ reason: 'online', utc_day: nowDay() });
     try { window.dispatchEvent(new CustomEvent('moonboys:player-reconcile-needed', { detail })); } catch (_) {}
