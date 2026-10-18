@@ -171,3 +171,13 @@ test('Wiki contributor XP rankings do not fall back to fictional scores', () => 
   assert.match(source, /Verified contributor rankings unavailable for this period/u);
   assert.match(source, /list\.innerHTML = contributorListHTML\(rows\)/u);
 });
+
+test('Wiki fallback panel never invents Battle Heat or mixes comments with likes and citations', () => {
+  const source = read('js/wiki-template-dashboard.js');
+  assert.doesNotMatch(source, /Promise\.resolve\(25\)|return 25;|comments\.length \* 5/u);
+  assert.match(source, /data\.comments\.length/u);
+  assert.match(source, /Approved comments only\. Article likes and citation votes not counted here\./u);
+  assert.match(source, /Comment source unavailable; no engagement count inferred/u);
+  assert.match(source, /<div class="battle-heat-summary"/u,
+    'keep original template structure while removing fictitious percentages');
+});
