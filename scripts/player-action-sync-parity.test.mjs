@@ -87,14 +87,16 @@ test('PR5 action sync is globally loaded for shell pages and directly for standa
     'sync channel is invalidation-only');
 });
 
-test('PR5 standalone Arcade pages load action sync through the shared game shell before gameplay', () => {
-  assert.match(gameShell, /^import ['"]\/js\/player-action-sync\.js['"];/mu,
-    'shared Arcade game shell must side-effect load the sync bus');
+test('PR5 standalone Arcade pages await action sync through the shared game shell before gameplay', () => {
+  assert.match(gameShell, /function ensurePlayerActionSync\(\)/u);
+  assert.match(gameShell, /script\.src = ['"]\/js\/player-action-sync\.js['"]/u);
+  assert.match(gameShell, /export async function mountGame\(options\) \{[\s\S]{0,260}await ensurePlayerActionSync\(\)/u,
+    'shared Arcade shell must await bus setup before bootstrap/gate work');
   for (const [name, html] of [['SnakeRun', snakePage], ['Invaders', invadersPage]]) {
     assert.match(html, /\/js\/arcade\/core\/game-shell\.js/u,
       name + ' must mount through the shared game shell');
     assert.doesNotMatch(html, /\/js\/site-shell\.js/u,
-      name + ' remains a standalone Arcade page; game shell must provide sync');
+      name + ' remains standalone; shared game shell must provide sync');
   }
 });
 
