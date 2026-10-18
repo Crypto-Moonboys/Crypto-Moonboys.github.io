@@ -82,8 +82,11 @@
     const openKeys = new Set(existingDetails.filter(node => node.open)
       .map(node => node.getAttribute('data-mm-checklist-key')));
     const active = document.activeElement;
-    const focusedKey = active?.tagName === 'SUMMARY' &&
-      target.contains(active) ? active.parentElement?.getAttribute('data-mm-checklist-key') : null;
+    const focusedDetail = active && target.contains(active) &&
+      typeof active.closest === 'function'
+      ? active.closest('details[data-mm-checklist-key]') : null;
+    const focusedKey = focusedDetail?.getAttribute('data-mm-checklist-key') || null;
+    const focusedHref = active?.tagName === 'A' ? active.getAttribute('href') : null;
     const stale = Boolean(opts.stale || opts.offline);
     const all = currentTaskList(tasks, opts.topActions);
     const bySource = new Map(SOURCES.map(source => [source.key, []]));
@@ -136,7 +139,10 @@
     if (focusedKey) {
       const match = Array.from(target.querySelectorAll('details[data-mm-checklist-key]'))
         .find(node => node.getAttribute('data-mm-checklist-key') === focusedKey);
-      match?.querySelector(':scope > summary')?.focus({ preventScroll: true });
+      const matchingLink = focusedHref && match
+        ? Array.from(match.querySelectorAll('a[href]'))
+          .find(link => link.getAttribute('href') === focusedHref) : null;
+      (matchingLink || match?.querySelector(':scope > summary'))?.focus({ preventScroll: true });
     }
   }
   window.MOONBOYS_MISSION_GUIDE = Object.freeze({
