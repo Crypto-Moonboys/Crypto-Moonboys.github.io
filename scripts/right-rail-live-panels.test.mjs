@@ -573,7 +573,9 @@ check(fetchDailyStateBlock.includes('} finally {') && fetchDailyStateBlock.inclu
 check(buildSharedRailStateBlock.includes('var patchGeneration = _dailyStateGeneration;') && buildSharedRailStateBlock.includes('if (patchGeneration !== _dailyStateGeneration) return;'), 'shared right-rail state guards Missed XP background patch by generation match');
 // Missed XP still must not default to hard 0 after fetch refactor
 check(!/return\s+0\s*;/.test(functionBlock(csp, 'missedXpAllTime')), 'missedXpAllTime still does not default to hard 0 after background-fetch refactor');
-check(functionBlock(csp, 'applyDailyLoopStateToRail').includes(': (shared.missedXp != null ? shared.missedXp : null);'), 'daily-loop missed-opportunity aggregate fallback keeps missedXp null when xp_total_all_time is absent');
+check(functionBlock(csp, 'applyDailyLoopStateToRail').includes("xp_source_status === 'verified'") &&
+  functionBlock(csp, 'applyDailyLoopStateToRail').includes(': null;') &&
+  csp.includes('shared.missedXpState'), 'daily-loop missed-XP stays unverified without a confirmed saved source total');
 const dailyCountsBlock = functionBlock(csp, 'getDailyCounts');
 check(dailyCountsBlock.includes('today_active') && dailyCountsBlock.includes('mission_opportunities') && dailyCountsBlock.includes('row.completed'), 'connection-status completed count derives from today_active.mission_opportunities[].completed');
 check(buildPanelHTMLBlock.includes("var completedDisplay = shared.dailyCounts && shared.dailyCounts.completed != null ? String(shared.dailyCounts.completed) : 'syncing…'") && buildPanelHTMLBlock.includes("var missedTodayDisplay = shared.dailyCounts && shared.dailyCounts.missed != null ? String(shared.dailyCounts.missed) : 'syncing…'"), 'connection-status shows syncing for missing completed/missed daily counts instead of fake 0');
