@@ -128,6 +128,11 @@ test('online/offline reconciliation is local read guidance only and creates no c
   const f = await setup();
   try {
     await f.a.evaluate(() => {
+      // Ignore the one-time action-sync-ready reconciliation emitted when the
+      // receiving channel first becomes available; this assertion isolates the
+      // offline/online transition itself.
+      window.__reconcile = [];
+      window.__offline = [];
       window.dispatchEvent(new Event('offline'));
       window.dispatchEvent(new Event('online'));
     });
@@ -137,6 +142,63 @@ test('online/offline reconciliation is local read guidance only and creates no c
     assert.equal(await f.a.evaluate(() => window.__writes), 0);
     assert.equal(await f.b.evaluate(() => window.__writes), 0);
   } finally { await f.browser.close(); }
+});
+
+test('late receiving BroadcastChannel initialization forces reconciliation after a missed accepted action', async () => {
+  const browser = await chromium.launch({
+    executablePath: process.env.CHROMIUM_EXECUTABLE_PATH ||
+      (existsSync('/usr/bin/chromium') ? '/usr/bin/chromium' : undefined),
+    headless: true,
+  });
+  const context = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  await context.route('https://cryptomoonboys.com/late-receiver-test*', route =>
+    route.fulfill({ contentType: 'text/html', body: '<!doctype html><html><body>late receiver</body></html>' }));
+  const source = await context.newPage();
+  const remote = await context.newPage();
+  try {
+    await Promise.all([
+      source.goto('https://cryptomoonboys.com/late-receiver-test?source'),
+      remote.goto('https://cryptomoonboys.com/late-receiver-test?remote'),
+    ]);
+    await remote.evaluate(() => {
+      window.__accepted = [];
+      window.__reconcile = [];
+      window.__reads = 1; // authoritative initial read already completed
+      window.addEventListener('moonboys:player-action-accepted', event => {
+        window.__accepted.push(event.detail);
+      });
+      window.addEventListener('moonboys:player-reconcile-needed', event => {
+        window.__reconcile.push(event.detail);
+        window.__reads++;
+      });
+    });
+    await source.addScriptTag({ content: SYNC });
+    await source.evaluate(() => {
+      window.dispatchEvent(new CustomEvent('moonpet:action-accepted', {
+        detail: { pet_id: 'private-pet', reward: { pet_xp: 25 } },
+      }));
+    });
+    await remote.waitForTimeout(150);
+    assert.equal(await remote.evaluate(() => window.__accepted.length), 0,
+      'BroadcastChannel cannot replay an action accepted before the receiving channel existed');
+    assert.equal(await remote.evaluate(() => window.__reads), 1,
+      'the receiving tab still shows its pre-action initial projection before its bus loads');
+
+    await remote.addScriptTag({ content: SYNC });
+    await remote.waitForFunction(() => window.__reconcile.some(item =>
+      item.reason === 'action_sync_ready'
+    ));
+    assert.equal(await remote.evaluate(() => window.__accepted.length), 0,
+      'bus readiness does not fabricate an accepted action payload');
+    assert.equal(await remote.evaluate(() => window.__reads), 2,
+      'bus readiness forces one new source reconciliation to cover the missed message window');
+    const ready = await remote.evaluate(() =>
+      window.__reconcile.find(item => item.reason === 'action_sync_ready')
+    );
+    assert.deepEqual(Object.keys(ready).sort(), ['reason', 'utc_day']);
+  } finally {
+    await browser.close();
+  }
 });
 
 test('only server-accepted source events are subscribed; rejected/progression-error signals do not invalidate', async () => {
