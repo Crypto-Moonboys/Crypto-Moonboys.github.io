@@ -947,3 +947,44 @@ test('PR5 guest cross-tab accepted action preserves public reset and WTF snapsho
     assert.equal(f.errors.length,0,f.errors.join('\n'));
   }finally{await f.browser.close();}
 });
+
+
+test('PR5 background accepted-action reconciliation preserves focused private control for same owner',async()=>{
+  const f=await setup(390,{pageKey:'graffpunks'});
+  try{
+    const {page}=f;
+    const link=page.locator('[data-fop-private] a[href="/my-moonboy.html?tab=faction"]');
+    await link.focus();
+    assert.equal(await page.evaluate(()=>document.activeElement?.getAttribute('href')==='/my-moonboy.html?tab=faction'),true);
+
+    await page.evaluate(next=>{
+      window.__fopTest.state=next;
+      window.dispatchEvent(new CustomEvent('moonboys:player-action-accepted',{
+        detail:{source:'arcade',event:'moonboys:arcade-score-accepted',remote:true}
+      }));
+    },fixture({dayValue:9}));
+
+    await page.waitForFunction(()=>document.querySelector('[data-fop-private]')?.textContent.includes(
+      '9 (server-saved faction contribution'
+    ));
+    assert.equal(await page.evaluate(()=>
+      document.activeElement?.getAttribute('href')==='/my-moonboy.html?tab=faction'),true,
+    'same-owner background reconciliation restores the matching focused private link');
+
+    const retry=page.locator('[data-fop-private] [data-fop-retry]');
+    await retry.focus();
+    await page.evaluate(next=>{
+      window.__fopTest.state=next;
+      window.dispatchEvent(new CustomEvent('moonboys:player-reconcile-needed',{
+        detail:{reason:'online',utc_day:new Date().toISOString().slice(0,10)}
+      }));
+    },fixture({dayValue:11}));
+    await page.waitForFunction(()=>document.querySelector('[data-fop-private]')?.textContent.includes(
+      '11 (server-saved faction contribution'
+    ));
+    assert.equal(await page.evaluate(()=>
+      document.activeElement?.matches('[data-fop-private] button[data-fop-retry]')),true,
+    'background reconnect reconciliation preserves focused Retry control');
+    assert.equal(f.errors.length,0,f.errors.join('\n'));
+  }finally{await f.browser.close();}
+});
