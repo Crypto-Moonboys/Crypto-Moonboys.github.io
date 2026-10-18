@@ -11,7 +11,7 @@
   const ACCEPTED = Object.freeze({
     'moonpet:action-accepted': 'moonpet',
     'moonboys:server-action-accepted': 'progression',
-    'moonboys:score-updated': 'arcade',
+    'moonboys:arcade-score-accepted': 'arcade',
     'moonboys:wiki-mission-complete': 'wiki',
     'moonboys:wiki-mission-completed': 'wiki',
     'moonboys:wtf-event-checkin': 'battle',
@@ -20,7 +20,8 @@
   const DEDUPE_MS = 900;
   const instance = (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function')
     ? crypto.randomUUID() : Math.random().toString(36).slice(2);
-  const recent = new Map();
+  const lastPublishedAt = new Map();
+  const trailingTimers = new Map();
   const subscribers = new Set();
   let channel = null;
 
@@ -40,17 +41,6 @@
     return safeSource(source) + '|' + safeEvent(eventName);
   }
 
-  function isDuplicate(source, eventName) {
-    const key = fingerprint(source, eventName);
-    const now = Date.now();
-    const last = recent.get(key) || 0;
-    recent.set(key, now);
-    for (const [candidate, time] of recent) {
-      if (now - time > 5000) recent.delete(candidate);
-    }
-    return now - last < DEDUPE_MS;
-  }
-
   function notify(detail) {
     const payload = Object.freeze({
       source: safeSource(detail?.source),
@@ -66,23 +56,48 @@
     });
   }
 
-  function broadcast(source, eventName) {
+  function publish(source, eventName) {
     source = safeSource(source);
     eventName = safeEvent(eventName);
-    if (isDuplicate(source, eventName)) return false;
+    const key = fingerprint(source, eventName);
+    lastPublishedAt.set(key, Date.now());
     const message = { v: 1, kind: 'accepted', source, event: eventName, utc_day: nowDay(), sender: instance };
     notify({ source, event: eventName, remote: false });
     try { channel?.postMessage(message); } catch (_) {}
-    return true;
+  }
+
+  function broadcast(source, eventName) {
+    source = safeSource(source);
+    eventName = safeEvent(eventName);
+    const key = fingerprint(source, eventName);
+    const now = Date.now();
+    const last = lastPublishedAt.get(key) || 0;
+    if (!last || now - last >= DEDUPE_MS) {
+      const pending = trailingTimers.get(key);
+      if (pending) { clearTimeout(pending); trailingTimers.delete(key); }
+      publish(source, eventName);
+      return true;
+    }
+    // Collapse burst noise but guarantee one trailing invalidation after the
+    // final accepted action, so a read started by the first event cannot stay
+    // current after a second accepted action inside the dedupe window.
+    const pending = trailingTimers.get(key);
+    if (pending) clearTimeout(pending);
+    trailingTimers.set(key, setTimeout(() => {
+      trailingTimers.delete(key);
+      publish(source, eventName);
+    }, DEDUPE_MS));
+    return false;
   }
 
   function receive(message) {
     if (!message || message.v !== 1 || message.kind !== 'accepted' ||
       message.sender === instance || message.utc_day !== nowDay()) return;
-    const source = safeSource(message.source);
-    const eventName = safeEvent(message.event);
-    if (isDuplicate(source, eventName)) return;
-    notify({ source, event: eventName, remote: true });
+    notify({
+      source: safeSource(message.source),
+      event: safeEvent(message.event),
+      remote: true,
+    });
   }
 
   if (typeof BroadcastChannel === 'function') {
