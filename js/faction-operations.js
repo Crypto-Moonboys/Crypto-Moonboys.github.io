@@ -482,7 +482,7 @@
     // The identity gate rewrites moonboys_tg_sync_health with Date.now()
     // after each auth result; reacting to that diagnostic marker causes
     // cross-tab refresh loops when an expired login repeatedly fails.
-    // A null key denotes localStorage.clear() and must still fail closed.
+    // A null key denotes a cross-tab clear-all and must still fail closed.
     const identityStorageKeys = new Set([
       'moonboys_tg_id', 'moonboys_tg_linked', 'moonboys_tg_auth',
       'moonboys_tg_session_mode', 'MOONBOYS_TELEGRAM_AUTH',
