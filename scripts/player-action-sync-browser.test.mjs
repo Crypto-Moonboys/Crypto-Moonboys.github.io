@@ -230,6 +230,7 @@ test('PR5 real Arcade submit emits follow-up cross-tab invalidations after delay
         .then(mod=>mod.submitScore('Arcade Tester',100,'snake-run'));
     });
     await remote.waitForFunction(()=>window.__accepted.length===1);
+    for (let i=0;i<100 && !factionStarted;i++) await new Promise(resolve=>setTimeout(resolve,10));
     assert.equal(factionStarted,true,'faction settlement is held after initial score acceptance');
     assert.equal((await remote.evaluate(()=>window.__accepted))[0].source,'arcade');
     releaseFaction();
