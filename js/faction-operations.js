@@ -491,7 +491,9 @@
     snapshot = null;
     loading = Boolean(id);
     if (opts.retireComponentInflight) inflight = null;
-    personalRoot.replaceChildren();
+    // Same-owner background reconciliation must let render() capture the
+    // focused private control before replacing panel markup. Identity changes
+    // still purge synchronously through onIdentityChange().
     render();
     if (id) runQueuedForcedRefresh();
   }
