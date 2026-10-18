@@ -228,7 +228,18 @@
       '</strong><a href="' + profileLink(key) + '">Faction chamber</a></div>' +
       sourceLabel + list + seasonalText + publicStanding(key) +
       '<p class="fop-note">' + esc(resetLabel(state)) + '</p>' +
-      nextWtf(state);
+      '<div data-fop-wtf>' + nextWtf(state) + '</div>';
+  }
+
+  // The clock only RETIRES source-confirmed windows after their saved
+  // ends_at. It never promotes a preview/upcoming event to 'active'.
+  // Update this one informational block on same-day ticks instead of
+  // replacing crew links, private buttons, or other focused controls.
+  function refreshWtfPresentation() {
+    const target = crewRoot.querySelector('[data-fop-wtf]');
+    if (!target) return;
+    const updated = nextWtf(snapshot);
+    if (target.innerHTML !== updated) target.innerHTML = updated;
   }
 
   function renderPrivate() {
@@ -327,11 +338,42 @@
       ' · <button type="button" data-fop-retry>Refresh verified status</button></p>';
   }
 
+  function focusedPanelControl() {
+    const active = document.activeElement;
+    if (!active || typeof active.matches !== 'function') return null;
+    const panel = crewRoot.contains(active) ? crewRoot
+      : personalRoot.contains(active) ? personalRoot : null;
+    if (!panel) return null;
+    if (active.matches('a[href]'))
+      return { panel, tag: 'A', attr: 'href', value: active.getAttribute('href') };
+    if (active.matches('button[data-fop-retry]'))
+      return { panel, tag: 'BUTTON', attr: 'data-fop-retry', value: '' };
+    return null;
+  }
+
+  function restorePanelFocus(saved) {
+    if (!saved || !saved.panel.isConnected) return;
+    const candidates = saved.panel.querySelectorAll('a[href],button[data-fop-retry]');
+    const replacement = Array.from(candidates).find(node =>
+      node.tagName === saved.tag &&
+      node.getAttribute(saved.attr) === saved.value);
+    if (replacement) {
+      replacement.focus({ preventScroll: true });
+    } else {
+      // If a routine data update removes a focused action entirely, keep
+      // the keyboard at this section rather than dropping to <body>.
+      saved.panel.tabIndex = -1;
+      saved.panel.focus({ preventScroll: true });
+    }
+  }
+
   function render() {
-    // Reset private content synchronously when identity changes, even before
-    // the singleton emits its next event. Re-evaluate identity on every render.
+    // Restore matching public/private controls on routine async updates;
+    // identity transitions deliberately purge the old private DOM first.
+    const focus = focusedPanelControl();
     const id = ownerId();
-    if (currentOwner !== id) {
+    const ownerChanged = currentOwner !== id;
+    if (ownerChanged) {
       currentOwner = id;
       snapshot = null;
       epoch++;
@@ -339,6 +381,7 @@
     }
     renderCrew();
     renderPrivate();
+    if (!ownerChanged) restorePanelFocus(focus);
   }
 
   function receive(state) {
@@ -467,7 +510,10 @@
     window.setInterval(() => {
       if (document.hidden) return;
       const day = utcDay();
-      if (day === lastDay) return;
+      if (day === lastDay) {
+        refreshWtfPresentation();
+        return;
+      }
       lastDay = day;
       epoch++;
       snapshotRevision++;
