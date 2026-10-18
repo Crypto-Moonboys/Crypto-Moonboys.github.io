@@ -101,3 +101,56 @@ test('public resource guide and private checklist are isolated, with logout purg
       page + ' must make the signed mission checklist discoverable');
   }
 });
+
+test('Engage, Signal and Cite are distinct Wiki receipt-backed actions; other interactions are not reward claims', () => {
+  const guide = load(), items = guide.wikiEngagement;
+  assert.deepEqual(items.map(item => item.id).join('|'),
+    'engage|signal|cite|comment-vote|citation-submission|reading-sharing');
+  assert.deepEqual(items.filter(item => item.missionId !== null).map(item => item.missionId).join('|'),
+    'engage|signal|cite');
+  assert.equal(new Set(items.map(item => item.id)).size, 6);
+  const missionSource = read('js/battle-layer.js');
+  const config = read('js/api-config.js');
+  const routeTests = read('scripts/wiki-engagement-api.test.mjs');
+  for (const item of items) {
+    assert.ok(item.label && item.action && item.reward && item.status && item.href);
+    assert.ok(fs.existsSync(path.join(ROOT, item.sourceFile)), item.id + ' source must exist');
+    assert.ok(read(item.sourceFile).includes(item.sourceMarker),
+      item.id + ' backing Wiki action has changed');
+    assert.match(item.href, /^\/(wiki\/|search\.html)/u);
+    if (item.missionId) {
+      assert.ok(missionSource.includes("id: '" + item.missionId + "'"),
+        'mission definition is missing for ' + item.id);
+      assert.match(routeTests, /reward_status.*xp_synced/u);
+    } else {
+      assert.match(item.reward, /no .*XP|No .*XP/iu,
+        item.id + ' must not be described as an automatically paid source');
+    }
+  }
+  for (const flag of ['COMMENTS', 'LIKES', 'CITATION_VOTES'])
+    assert.ok(new RegExp(flag + ':\\s+true').test(config), flag + ' runtime flag changed');
+  assert.match(read('js/comments.js'), /eligible server-accepted Engage, Signal and Cite/u);
+  assert.doesNotMatch(read('js/comments.js'), /Comment = 10 XP|Like = 5 XP|Citation = 15 XP/u,
+    'outdated fixed frontend reward promises contradict source receipts');
+});
+
+test('an accepted aggregate Wiki mission count never supplies individual Engage / Signal / Cite checks', () => {
+  const guide = load(), el = target();
+  guide.renderChecklist(el, [{
+    task_id: 'wiki:today', source_key: 'wiki.accepted-missions',
+    title: 'Accepted wiki mission recorded today',
+    status: 'complete', source_health: 'live',
+    evidence: { kind: 'server_receipt', verified_completion: true },
+    progress: { current: 3, target: 1, unit: 'accepted_receipts' },
+  }], {});
+  const wiki = el.innerHTML.split('data-mm-checklist-key="gap:wiki-engagement"')[1]
+    ?.split('</details>')[0] || '';
+  assert.match(wiki, /Signed API reports 3 accepted Wiki receipt\(s\) today in total/u);
+  assert.equal((wiki.match(/Individual status not projected/g) || []).length, 6,
+    'all six Wiki actions remain unverified individually, even when summary count is three');
+  assert.doesNotMatch(wiki, /✓|type="checkbox"/u);
+  assert.match(wiki, /Open Wiki|Check original page/u);
+  guide.renderChecklist(el, [], { stale: true, offline: true });
+  assert.match(el.innerHTML, /Individual Wiki mission source receipts are not available/u);
+  assert.doesNotMatch(el.innerHTML, /Signed API reports 3 accepted Wiki/u);
+});
