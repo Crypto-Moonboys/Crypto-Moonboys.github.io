@@ -46,7 +46,11 @@ test('all resource rules have audited source markers and do not merge Gems, Crys
       item.id+' drifted from source '+item.sourceFile+': '+item.sourceMarker);
   }
   assert.match(guide.economy.find(x=>x.id==='crystals').spend, /NOT Block Topia Gems/u);
-  assert.match(guide.economy.find(x=>x.id==='bt-gems').risk, /not a guaranteed award/u);
+  const gems = guide.economy.find(x => x.id === 'bt-gems');
+  assert.match(gems.risk, /not a guaranteed award/u);
+  assert.doesNotMatch(gems.gain, /covert operations?/iu,
+    'covert operations are not a supported Gem-earning source');
+  assert.match(gems.spend, /verified Block Topia upgrades/u);
   assert.match(guide.economy.find(x=>x.id==='bt-xp').risk, /loss/u);
   assert.match(guide.economy.find(x=>x.id==='gold').risk, /No automatic 75 Gold/u);
 });
@@ -243,4 +247,6 @@ test('saved claim and Wiki links have per-row stable focus keys despite sharing 
   assert.match(guideSource, /link\.getAttribute\('data-mm-focus-link'\) === focusedLinkId/u);
   assert.doesNotMatch(guideSource, /link\.getAttribute\('href'\) === focusedHref/u);
   assert.match(read('js/my-moonboy.js'), /petLabel: task => petScopeLabel\(task, directory\)/u);
+  assert.doesNotMatch(read('gkniftyheads-incubator.html'), /claim rewards for you/iu,
+    'onboarding copy must pass the public trust guard');
 });
