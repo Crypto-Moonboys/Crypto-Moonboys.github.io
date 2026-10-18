@@ -352,6 +352,7 @@
     byId('mm-arcade-xp').textContent = 'Not confirmed';
     byId('mm-pet-xp').textContent = 'Not confirmed';
     byId('mm-clout').textContent = 'Not confirmed';
+    byId('mm-missed-xp').textContent = 'Not confirmed';
     byId('mm-faction').textContent = 'Faction: sign in to view';
     byId('mm-sync').textContent = 'No verified plan loaded.';
     byId('mm-page-count').textContent = '0 tasks loaded';
@@ -704,6 +705,46 @@
     container.innerHTML = warning + cards;
   }
 
+  // One signed daily-loop singleton owns missed XP. Do not borrow the
+  // previous account's cached values or convert missed-count into invented XP.
+  function refreshMissedXp() {
+    const target = byId('mm-missed-xp');
+    if (!target || !state.plan || !identityKey()) return;
+    if (state.stale || state.offline) {
+      target.textContent = 'Previous snapshot only — refresh';
+      return;
+    }
+    const ownerId = identityKey();
+    const epoch = state.epoch;
+    const day = new Date().toISOString().slice(0, 10);
+    const api = window.MOONBOYS_DAILY_LOOP;
+    if (!api || typeof api.getState !== 'function') {
+      target.textContent = 'Source unavailable';
+      return;
+    }
+    target.textContent = 'Checking saved missed XP…';
+    Promise.resolve(api.getState()).then(loop => {
+      if (!isRequestCurrent(epoch, ownerId, day) || !state.plan || privatePanel.hidden) return;
+      const missed = loop?.missed_opportunities;
+      const source = loop?.source_status?.missed_opportunities?.state;
+      const sameOwner = loop?.identity?.linked === true &&
+        String(loop.identity.telegram_id || '') === ownerId;
+      if (!sameOwner || loop?.fetch_status !== 'ok' ||
+          !['live', 'live_empty'].includes(source)) {
+        target.textContent = 'Not confirmed';
+      } else if (missed?.xp_source_status === 'migration_pending') {
+        target.textContent = 'Source migration required';
+      } else if (missed?.xp_source_status === 'verified' &&
+          Number.isSafeInteger(missed.xp_total_all_time) && missed.xp_total_all_time >= 0) {
+        target.textContent = String(missed.xp_total_all_time) + ' potential XP missed (not a wallet debit)';
+      } else {
+        target.textContent = 'XP not supplied by deployed Worker';
+      }
+    }).catch(() => {
+      if (isRequestCurrent(epoch, ownerId, day)) target.textContent = 'Source unavailable';
+    });
+  }
+
   function renderSummary() {
     const plan = state.plan;
     const owner = plan.owner || {};
@@ -756,6 +797,7 @@
   function render() {
     if (!state.plan || !privatePanel || privatePanel.hidden) return;
     renderSummary();
+    refreshMissedXp();
     const plan = state.plan;
     const directory = petDirectory();
     const top = state.stale ? [] : plan.top_actions.filter(taskActionable).slice(0, 3);
