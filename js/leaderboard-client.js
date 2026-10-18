@@ -409,6 +409,13 @@ export async function submitScore(player, score, game = "global") {
       if (linked && hasSignedAuth) {
         try {
           const factionEarn = await callFactionEarn("score_accept", score);
+          // Faction settlement completes after the initial score acceptance.
+          // Emit a second sanitized invalidation so another tab re-reads the
+          // post-settlement contribution rather than treating its earlier read
+          // as final.
+          dispatchUiState("moonboys:arcade-score-accepted", {
+            source: "faction", game: gameKey, ts: Date.now()
+          });
           dispatchUiState("moonboys:faction-boost", {
             source: "score_accept",
             faction: factionEarn && factionEarn.faction ? String(factionEarn.faction) : getCurrentFactionKey(),
@@ -426,6 +433,12 @@ export async function submitScore(player, score, game = "global") {
       if (linked && hasSignedAuth && gameKey === "blocktopia") {
         try {
           const progression = await ArcadeSync.syncBlockTopiaProgressionOnAcceptedScore(score, gameKey);
+          // This is a later server settlement than leaderboard acceptance.
+          // Broadcast independently of the first hint, even when no XP is
+          // awarded, because the canonical progression projection has settled.
+          dispatchUiState("moonboys:arcade-score-accepted", {
+            source: "arcade_progression", game: gameKey, ts: Date.now()
+          });
           const serverProgress = progression && progression.progression ? progression.progression : {};
           const awardedXp = Number(progression && (progression.xp_awarded ?? progression.awarded_xp ?? serverProgress.xp_awarded)) || 0;
           const totalXp = Number(serverProgress.xp ?? progression?.xp_total ?? progression?.total_xp);
@@ -569,6 +582,13 @@ export async function submitScore(player, score, game = "global") {
         pendingBeforeSync,
       });
       const syncSummary = await ArcadeSync.syncPendingArcadeProgress({ entries: [competitiveProgressEntry] });
+      if (!syncSummary?.skipped && (Number(syncSummary?.synced) || 0) > 0) {
+        // Covers full and partial server success. A rejected companion entry
+        // does not erase the fact that at least one accepted run settled.
+        dispatchUiState("moonboys:arcade-score-accepted", {
+          source: "arcade_progression", game: gameKey, ts: Date.now()
+        });
+      }
       emitArcadeDebug("pending_sync_response", {
         game: gameKey,
         score,
