@@ -33,6 +33,7 @@
   let lastDay = new Date().toISOString().slice(0, 10);
   let inflight = null;
   let forcedRefreshQueued = false;
+  let suppressSubscriberUntilForcedResult = false;
   const isCommunity = !KEYS.has(String(document.body?.dataset?.factionPage || ''));
   const chamberKey = isCommunity ? null : document.body.dataset.factionPage;
 
@@ -385,7 +386,7 @@
     if (!ownerChanged) restorePanelFocus(focus);
   }
 
-  function receive(state) {
+  function receive(state, allowSuppressed) {
     // A subscriber or old in-flight read may resolve AFTER a new owner has
     // loaded. Reject foreign signed payloads without replacing the new plan
     // or erasing its public source snapshot.
@@ -401,7 +402,7 @@
     // An accepted action may arrive while the shared Daily Loop still owns a
     // pre-action read. Ignore all of that request's subscriber deliveries
     // until its promise settles and a fresh forced read begins.
-    if (forcedRefreshQueued) return;
+    if ((forcedRefreshQueued || suppressSubscriberUntilForcedResult) && !allowSuppressed) return;
     // A late previous-day event must not erase a freshly accepted current-day
     // projection. A current-owner error still fails closed below.
     if (state?.utc_day && state.utc_day !== utcDay()) {
@@ -417,7 +418,7 @@
     render();
   }
 
-  function sharedDailyLoop(force) {
+  function sharedDailyLoop(force, authoritativeFollowup) {
     const api = window.MOONBOYS_DAILY_LOOP;
     if (!api || typeof api.getState !== 'function') {
       loading = false;
@@ -435,11 +436,18 @@
         ? api.refresh({ force: true }) : api.getState();
     const operation = Promise.resolve(action).then(state => {
       // subscribe(receive) may have delivered a newer same-owner record while
-      // the Promise resolves. Prefer that delivery to a late stale result.
-      if (generation === epoch && revision === snapshotRevision) receive(state);
+      // the Promise resolves. A queued post-action read deliberately suppresses
+      // singleton subscriber output until THIS returned state is available.
+      if (generation === epoch && revision === snapshotRevision) {
+        if (authoritativeFollowup) suppressSubscriberUntilForcedResult = false;
+        receive(state, Boolean(authoritativeFollowup));
+      }
       return state;
     }).catch(() => {
-      if (generation === epoch) { snapshot = null; loading = false; render(); }
+      if (generation === epoch) {
+        if (authoritativeFollowup) suppressSubscriberUntilForcedResult = false;
+        snapshot = null; loading = false; render();
+      }
       return null;
     }).finally(() => {
       if (inflight !== operation) return;
@@ -460,7 +468,7 @@
   function runQueuedForcedRefresh() {
     if (!forcedRefreshQueued || inflight || document.hidden || !ownerId()) return;
     forcedRefreshQueued = false;
-    sharedDailyLoop(true).catch(function () {});
+    sharedDailyLoop(true, true).catch(function () {});
   }
 
   function queueForcedRefresh() {
@@ -471,6 +479,7 @@
     epoch++;
     snapshotRevision++;
     forcedRefreshQueued = true;
+    suppressSubscriberUntilForcedResult = true;
     snapshot = null;
     loading = true;
     personalRoot.replaceChildren();
@@ -487,6 +496,7 @@
     snapshot = null;
     inflight = null;
     forcedRefreshQueued = false;
+    suppressSubscriberUntilForcedResult = false;
     personalRoot.replaceChildren();
     loading = Boolean(currentOwner);
     render();
