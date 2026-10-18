@@ -21,11 +21,20 @@ const ignoredScripts = new Set([
 const identityScript = [
   '(function(){',
   'const identity = {',
-  'ready:Promise.resolve(),',
+  'ready:Promise.resolve().then(()=>{',
+  '  const s=window.__mmTest;',
+  '  if(s.cookieRestorable&&s.bootstrapProbeFails){s.bootstrapProbeFails=false;return null;}',
+  '  if(s.cookieRestorable&&!s.linked){s.linked=true;window.dispatchEvent(new CustomEvent("moonboys:identity-change"));}',
+  '}),',
   'isTelegramLinked:()=>!!window.__mmTest.linked,',
   'getTelegramId:()=>window.__mmTest.linked?window.__mmTest.id:null,',
   'getTelegramName:()=>window.__mmTest.id==="111"?"Alpha player":"Beta player",',
-  'getFreshTelegramAuth:async()=>window.__mmTest.linked?{id:window.__mmTest.id,hash:"fixture-signed",auth_date:String(Math.floor(Date.now()/1000))}:null',
+  'getFreshTelegramAuth:async()=>{',
+  '  const s=window.__mmTest;s.authReads=(s.authReads||0)+1;',
+  '  if(s.authDelayMs)await new Promise(resolve=>setTimeout(resolve,s.authDelayMs));',
+  '  if(!s.linked&&s.cookieRestorable){s.linked=true;window.dispatchEvent(new CustomEvent("moonboys:identity-change"));}',
+  '  return s.linked?{id:s.id,hash:"fixture-signed",auth_date:String(Math.floor(Date.now()/1000))}:null;',
+  '},',
   '};',
   'window.MOONBOYS_IDENTITY=identity;',
   '})();',
@@ -38,6 +47,7 @@ function plan(owner, cursor) {
   const historicalRef = 'pap_' + 'b'.repeat(24);
   const prefix = first ? 'Alpha' : 'Beta';
   const clock = Date.now();
+  const snapshot = 'pap2_' + (first ? 'a' : 'c').repeat(32);
   const task = (key, title, status, category, options = {}) => ({
     source_key: key, source: category, task_id: key + ':' + prefix + ':demo',
     title, what: title, why: 'Source-backed task from saved gameplay.',
@@ -64,7 +74,7 @@ function plan(owner, cursor) {
   const historical = task('moonpet.contracts', prefix + ' historic contract bonus', 'claim_ready',
     'moonpet', { original:true, ref:historicalRef, period:'saved_claim', expires:false });
   if (cursor) return {
-    ok:true,schema_version:1,generated_at:new Date(clock).toISOString(),period:{utc_day:day,iso_week:'2026-W42'},
+    ok:true,schema_version:1,snapshot,generated_at:new Date(clock).toISOString(),period:{utc_day:day,iso_week:'2026-W42'},
     owner:{authenticated:true,pet_count:first?1:0,pets:first?[{pet_ref:petRef,slot_number:1,selected:true,
       life_stage:'hatched',lifecycle_phase:'young',evolution_stage:null,pet_xp:25,level:2}]:[],
       faction:{joined:first,name:first?'graffpunks':null},lifetime_arcade_xp:first?1200:100},
@@ -74,7 +84,7 @@ function plan(owner, cursor) {
     pagination:{limit:100,next_cursor:null},
   };
   return {
-    ok:true,schema_version:1,generated_at:new Date(clock).toISOString(),
+    ok:true,schema_version:1,snapshot,generated_at:new Date(clock).toISOString(),
     owner:{authenticated:true,pet_count:first?1:0,
       pets:first?[{pet_ref:petRef,slot_number:1,selected:true,life_stage:'hatched',
         lifecycle_phase:'young',evolution_stage:null,pet_xp:25,level:2}]:[],
@@ -91,18 +101,18 @@ function plan(owner, cursor) {
   };
 }
 
-async function setup(viewport, initiallyLinked, apiPrefix = '') {
+async function setup(viewport, initiallyLinked, apiPrefix = '', identityOptions = {}) {
   const browser = await chromium.launch({
     executablePath: process.env.CHROMIUM_EXECUTABLE_PATH ||
       (existsSync('/usr/bin/chromium') ? '/usr/bin/chromium' : undefined),
     headless: true,
   });
   const context = await browser.newContext({ viewport });
-  await context.addInitScript(([links, prefix]) => {
-    window.__mmTest = { id:'111', linked:links };
+  await context.addInitScript(([links, prefix, settings]) => {
+    window.__mmTest = { id:'111', linked:links, ...settings };
     window.MOONBOYS_API = { BASE_URL:'https://api.cryptomoonboys.com' + prefix,
       getApiBase:()=> 'https://api.cryptomoonboys.com' + prefix };
-  }, [initiallyLinked, apiPrefix]);
+  }, [initiallyLinked, apiPrefix, identityOptions]);
   const requests = [];
   let failure = false;
   let delayOwner = '';
@@ -119,10 +129,13 @@ async function setup(viewport, initiallyLinked, apiPrefix = '') {
         const body = request.postDataJSON();
         requests.push({url:request.url(),method:request.method(),body});
         if (delayOwner === body.telegram_auth.id) await new Promise(resolve => setTimeout(resolve, 250));
-        return route.fulfill({status:failure?503:200,
+        const current = currentPlan(body.telegram_auth.id, body.cursor);
+        const changed = Boolean(body.cursor && body.snapshot !== current.snapshot);
+        return route.fulfill({status:failure?503:changed?409:200,
           headers:{'access-control-allow-origin':SITE,'cache-control':'no-store, private',
             'content-type':'application/json'},
-          body:JSON.stringify(failure?{ok:false,error:'projection_unavailable'}:currentPlan(body.telegram_auth.id,body.cursor))});
+          body:JSON.stringify(failure?{ok:false,error:'projection_unavailable'}
+            :changed?{ok:false,error:'action_plan_snapshot_changed'}:current)});
       }
       return route.fulfill({status:404,headers:{'access-control-allow-origin':SITE},body:'{}'});
     }
@@ -183,7 +196,9 @@ for (const width of [360, 390, 1280]) {
       await f.page.getByText('Alpha historic contract bonus').first().waitFor();
       assert.match(await f.page.locator('#mm-pets').innerText(),/Original-earning MoonPet/);
       assert.equal(await f.page.locator('#mm-load-more').isHidden(),true);
-      assert.ok(f.requests.some(entry=>entry.body.cursor==='pap1-100'),'cursor paging must retain signed owner');
+      assert.ok(f.requests.some(entry=>entry.body.cursor==='pap1-100' &&
+        /^pap2_[a-f0-9]{32}$/u.test(entry.body.snapshot)),
+        'cursor paging must echo the verified server snapshot');
       assert.ok(f.requests.every(entry=>entry.method==='POST' &&
         !/[?&](telegram_id|pet_id|telegram_auth|hash)=/u.test(entry.url) &&
         entry.body.telegram_auth && !Object.hasOwn(entry.body,'pet_id') &&
