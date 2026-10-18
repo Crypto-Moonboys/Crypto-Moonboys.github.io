@@ -64,6 +64,7 @@ const fakeWindow = {localStorage};
 const fakeDocument = {getElementById:()=>null,querySelector:()=>null};
 const src = retention.replace(/^import [^\n]+\n/gmu,'')
   .replace(/^export \{ ArcadeRetentionEngine \};/gmu,'') +
+  '\nfunction emitPrompt(){return true;} function pushUpdate(){}' +
   '\nglobalThis.__testRetention={maybeGenerateComebackMission,maybeExpireMission,getState:()=>state};';
 const context = {window:fakeWindow,document:fakeDocument,localStorage,
   location:{pathname:'/games/leaderboard.html'},
@@ -76,6 +77,24 @@ for(let i=0;i<10;i++){
   assert.equal(probe.getState().comeback_mission.id,expiredMission.id,
     'same inactivity episode retains one expired mission tombstone');
 }
+// A completed challenge must not permanently block future challenges.
+const completeAt = t + 7_800_000;
+probe.getState().comeback_mission = { ...expiredMission, completed: true,
+  completed_at: completeAt };
+probe.getState().last_played_at = completeAt;
+assert.equal(probe.maybeGenerateComebackMission(completeAt + 2_700_000), null,
+  'completion alone must not generate a new mission without a new accepted run');
+probe.getState().last_played_at = completeAt + 1000; // a subsequent accepted run
+const nextAt = completeAt + 1000 + 2_400_001; // new 40-minute absence
+const nextMission = probe.maybeGenerateComebackMission(nextAt);
+assert.ok(nextMission && nextMission.id !== expiredMission.id,
+  'a subsequent run and a new inactivity window unlock another mission');
+assert.equal(probe.maybeGenerateComebackMission(nextAt + 15_000).id, nextMission.id,
+  'current unexpired mission must not regenerate on ticks');
+probe.getState().last_played_at = nextAt + 30_000; // accepted run after a failed window
+assert.ok(probe.getState().comeback_mission,
+  'persisted completed/expired mission is not erased while checks are pending');
+
 assert.ok(!fakeWindow.__retentionInitialized, 'read-only leaderboard did not start retention timer');
 
 assert.match(worker, /SUM\(missed_xp_value\)/u);
@@ -84,6 +103,17 @@ assert.match(worker, /xp_source_status: hasXpColumn \? 'verified' : 'migration_p
 assert.match(myMoonboy, /id="mm-missed-xp"/u);
 assert.match(account, /String\(loop\.identity\.telegram_id \|\| ''\) === ownerId/u);
 assert.match(account, /isRequestCurrent\(epoch, ownerId, day\)/u);
+assert.match(account, /refreshAfterInflight\(\{ force: true \}\)/u,
+  'one authoritative read per accepted first-page reconciliation');
+assert.match(account, /const missedGeneration = \+\+state\.missedXpGeneration/u,
+  'every new refresh invalidates previous missed XP results');
+assert.match(account, /!state\.stale && !state\.offline/u,
+  'late daily-loop result must not overwrite a stale/offline plan');
+assert.match(account, /loop\?\.utc_day !== day|loop\.utc_day !== day/u,
+  'daily-loop result from the wrong day cannot be labeled live');
+assert.doesNotMatch(account.slice(account.indexOf('function render() {'),
+  account.indexOf('function renderCountdowns()')), /refreshMissedXp\(/u,
+  'search, filters, tabs and cached rerenders never re-fetch missed XP');
 assert.match(account, /xp_source_status === 'verified'/u);
 assert.match(account, /'mm-missed-xp'\)\.textContent = 'Not confirmed'/u);
 console.log('Leaderboard coverage, personal-panel consolidation, retention expiry and missed XP tests passed.');
