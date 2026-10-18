@@ -224,7 +224,8 @@
         esc(seasonal.label) + ' — ' + esc(seasonal.description || '') + '</p>'
       : '';
     crewRoot.innerHTML = '<div class="fop-row"><strong>' + esc(factionLabel(key)) +
-      ' · 3 listed operations</strong><a href="' + profileLink(key) + '">Faction chamber</a></div>' +
+      (missions.length === 3 ? ' · 3 catalogue operations' : ' · catalogue availability unconfirmed') +
+      '</strong><a href="' + profileLink(key) + '">Faction chamber</a></div>' +
       sourceLabel + list + seasonalText + publicStanding(key) +
       '<p class="fop-note">' + esc(resetLabel(state)) + '</p>' +
       nextWtf(state);
