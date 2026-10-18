@@ -9,6 +9,9 @@ const read = name => fs.readFileSync(path.join(root, name), 'utf8');
 
 const leaderboard = read('games/leaderboard.html');
 const rankings = read('js/arcade-leaderboard.js');
+assert.doesNotMatch(rankings, /You are linked as|getCurrentIdentityLabel\(/u,
+  'header owns account identity; leaderboard only offers ranking presence controls');
+assert.match(rankings, /Ranking presence/u);
 const shell = read('js/site-shell.js');
 const retention = read('js/arcade-retention-engine.js');
 const myMoonboy = read('my-moonboy.html');
