@@ -81,7 +81,11 @@
 
   function factionLabel(key) {
     const profile = getProfiles()[key];
-    return profile?.name || key.split('-').map(x => x[0].toUpperCase() + x.slice(1)).join(' ');
+    // Community loads the canonical faction profiles. Preserve proper-name
+    // exceptions even if that optional public data file is unavailable.
+    const exceptional = { graffpunks: 'GraffPUNKS', blockstars: 'The Blockstars' };
+    return profile?.name || exceptional[key] ||
+      key.split('-').map(x => x[0].toUpperCase() + x.slice(1)).join(' ');
   }
 
   function profileLink(key) {
