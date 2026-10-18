@@ -323,6 +323,10 @@
     state.pending = null;
     state.plan = null;
     state.petFilterRef = null;
+    // Search is owner-private UI state: neither its in-memory query nor the
+    // input value may survive logout, account changes or session expiry.
+    state.search = '';
+    byId('mm-search').value = '';
     state.tasks = [];
     state.nextCursor = null;
     state.ownerKey = null;
