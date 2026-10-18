@@ -478,14 +478,19 @@
     window.addEventListener('battle-chamber:activity-ready', render);
     window.addEventListener('moonboys:identity-change', onIdentityChange);
     window.addEventListener('moonboys:telegram-session', onIdentityChange);
-    // Other tabs update the shared Telegram/session/faction keys without
-    // dispatching this tab's identity CustomEvents. Fail closed immediately,
-    // including a cross-tab clear-all (StorageEvent.key === null).
+    // Only identity/auth *authority* keys trigger another signed read.
+    // The identity gate rewrites moonboys_tg_sync_health with Date.now()
+    // after each auth result; reacting to that diagnostic marker causes
+    // cross-tab refresh loops when an expired login repeatedly fails.
+    // A null key denotes localStorage.clear() and must still fail closed.
+    const identityStorageKeys = new Set([
+      'moonboys_tg_id', 'moonboys_tg_linked', 'moonboys_tg_auth',
+      'moonboys_tg_session_mode', 'MOONBOYS_TELEGRAM_AUTH',
+      'moonboys_faction_status_v1',
+    ]);
     window.addEventListener('storage', event => {
       if (event.storageArea && event.storageArea !== window.localStorage) return;
-      const key = event.key;
-      if (key === null || /^moonboys_tg_/u.test(String(key)) ||
-        key === 'MOONBOYS_TELEGRAM_AUTH' || key === 'moonboys_faction_status_v1') {
+      if (event.key === null || identityStorageKeys.has(event.key)) {
         onIdentityChange();
       }
     });
