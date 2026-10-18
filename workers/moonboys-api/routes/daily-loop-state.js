@@ -1,5 +1,6 @@
 import { verifyTelegramIdentityFromBody } from '../blocktopia/auth.js';
 import { CANONICAL_FACTION_KEYS, FACTION_UNALIGNED, normalizeFaction } from '../shared/faction-canon.js';
+import { CANONICAL_FACTION_READ_SQL, canonicalFactionProjection, canonicalFactionMetadataLookup } from '../shared/faction-projection.js';
 import { buildWtfPreviewSchedule, getWtfEventStatus } from '../shared/daily-wtf-schedule.js';
 import {
   backfillMissedPerkGapsFromLastActiveDay,
@@ -11,7 +12,7 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 const REQUIRED_TABLES = Object.freeze({
   identity: ['telegram_users'],
   sam_status: [],
-  faction_state: ['telegram_faction_members', 'telegram_factions', 'player_faction_signal_state'],
+  faction_state: ['blocktopia_progression', 'telegram_factions', 'player_faction_signal_state'],
   daily_missions: ['player_daily_mission_state'],
   wiki_missions: ['wiki_mission_completions'],
   arcade_daily_state: ['daily_opportunity_state'],
@@ -340,13 +341,24 @@ export async function buildDailyLoopState(env, options = {}) {
   }
 
   if (canQuery(sourceStatus, 'faction_state')) {
-    const factionResult = await queryFirst(db, sourceStatus, 'faction_state', `
-        SELECT f.id, f.name, f.description, f.icon, fm.role, fm.joined_at
-        FROM telegram_faction_members fm
-        JOIN telegram_factions f ON f.id = fm.faction_id
-        WHERE fm.telegram_id = ?
-        LIMIT 1
-      `, [telegramId]);
+    // Read precisely the faction authority returned by POST /faction/status.
+    // The old telegram_faction_members relationship is not the Battle Chamber
+    // season-locked selection and can disagree with blocktopia_progression.
+    const factionResult = await queryFirst(db, sourceStatus, 'faction_state',
+      CANONICAL_FACTION_READ_SQL, [telegramId]);
+    let faction = null;
+    if (factionResult.ok) {
+      try { faction = canonicalFactionProjection(factionResult.row); }
+      catch (error) {
+        sourceStatus.faction_state = statusQueryFailed('worker_d1',
+          { reason: 'invalid_canonical_faction', error: error?.message || 'invalid_faction' });
+      }
+    }
+    const metadataLookup = faction?.joined ? canonicalFactionMetadataLookup(faction.name) : null;
+    const factionRow = metadataLookup
+      ? await queryFirst(db, sourceStatus, 'faction_state',
+        metadataLookup.sql, metadataLookup.params)
+      : { ok: true, row: null };
     const todayRows = await queryAll(db, sourceStatus, 'faction_state', `
         SELECT faction_id, contribution
         FROM player_faction_signal_state
@@ -358,23 +370,25 @@ export async function buildDailyLoopState(env, options = {}) {
         WHERE telegram_id = ? AND week_key = ?
         GROUP BY faction_id
       `, [telegramId, getIsoWeekKey(now)]);
-    if (factionResult.ok && todayRows.ok && weekRows.ok) {
-    const faction = factionResult.row;
-    const canonicalFactionId = normalizeBattleFaction(faction?.name) || FACTION_UNALIGNED;
+    if (factionResult.ok && faction && factionRow.ok && todayRows.ok && weekRows.ok) {
+    const canonicalFactionId = faction.faction_id;
     const today = {};
     const week = {};
     for (const row of todayRows.rows) today[row.faction_id] = Number(row.contribution) || 0;
     for (const row of weekRows.rows) week[row.faction_id] = Number(row.contribution) || 0;
-    sourceStatus.faction_state = faction || todayRows.rows.length || weekRows.rows.length
-      ? statusLive('worker_d1', { telegram_id: telegramId })
-      : statusLiveEmpty('worker_d1', { telegram_id: telegramId, reason: 'no_faction_or_signal_for_utc_day' });
+    sourceStatus.faction_state = faction.joined || todayRows.rows.length || weekRows.rows.length
+      ? statusLive('worker_d1', { telegram_id: telegramId, adapter: 'canonical_faction_progression' })
+      : statusLiveEmpty('worker_d1', { telegram_id: telegramId, reason: 'no_faction_or_signal_for_utc_day',
+          adapter: 'canonical_faction_progression' });
     state.faction_state = {
       linked: true,
       faction_id: canonicalFactionId,
-      faction_table_id: faction?.id ?? null,
-      label: faction?.name || 'Unaligned',
-      role: faction?.role || null,
-      joined_at: faction?.joined_at || null,
+      faction_table_id: factionRow.row?.id ?? null,
+      // Use the same saved faction XP counter as POST /faction/status.
+      faction_xp: faction.faction_xp,
+      label: faction.name || 'Unaligned',
+      role: null,
+      joined_at: null,
       today,
       week,
     };
@@ -384,7 +398,16 @@ export async function buildDailyLoopState(env, options = {}) {
   if (canQuery(sourceStatus, 'arcade_daily_state')) {
     let row = null;
     try {
-      const factionId = normalizeBattleFaction(state.faction_state?.faction_id) || null;
+      // A failed canonical faction read must not write a missed-day event
+      // with null attribution. Existing backfill dedupe would make that
+      // irreversible even after the membership source recovers.
+      const canonicalId = state.faction_state?.faction_id;
+      if (!['live', 'live_empty'].includes(sourceStatus.faction_state?.state) ||
+          ![...CANONICAL_FACTION_KEYS, FACTION_UNALIGNED].includes(canonicalId)) {
+        throw new Error('canonical_faction_unavailable_for_arcade_activation');
+      }
+      // Verified unaligned is legitimate and may create today's state.
+      const factionId = canonicalId === FACTION_UNALIGNED ? null : canonicalId;
       const backfill = await backfillMissedPerkGapsFromLastActiveDay(db, telegramId, utcDay, factionId);
       row = await ensureDailyOpportunityStateForToday(db, telegramId, utcDay);
       sourceStatus.arcade_daily_state = row

@@ -77,6 +77,43 @@ test('faction status accepts website POST proof and preserves existing faction p
   assert.equal(preservationSnapshot(sqlite), snapshot);
 });
 
+test('Telegram profile only exposes the signed caller and rejects arbitrary owner selectors', async () => {
+  const { env, sqlite } = fixture();
+  const { data } = await loggedIn(env);
+  sqlite.prepare("UPDATE blocktopia_progression SET faction='graffpunks', faction_xp=57 WHERE telegram_id=?").run(ID);
+  const snapshot = preservationSnapshot(sqlite);
+  const noReads = { ...env, DB: { prepare() {
+    assert.fail('unauthenticated profile GET or owner selector must be rejected before database reads');
+  } } };
+  for (const path of ['/telegram/profile?telegram_id=' + ID,
+    '/telegram/profile?telegram_id=someone-else', '/telegram/profile']) {
+    const response = await apiWorker.fetch(new Request(API + path), noReads);
+    assert.equal(response.status, 405);
+  }
+  const invalid = await apiWorker.fetch(new Request(API + '/telegram/profile', {
+    method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ telegram_auth:{} }),
+  }), env);
+  assert.equal(invalid.status, 401, await invalid.clone().text());
+  for (const extra of ['telegram_id','owner_id','user_id']) {
+    const response = await apiWorker.fetch(new Request(API + '/telegram/profile', {
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ telegram_auth:data.telegram_auth, [extra]:'some-other-owner' }),
+    }), noReads);
+    assert.equal(response.status, 400);
+  }
+  const response = await apiWorker.fetch(new Request(API + '/telegram/profile', {
+    method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({ telegram_auth:data.telegram_auth }),
+  }), env);
+  assert.equal(response.status, 200, await response.clone().text());
+  assert.match(response.headers.get('Cache-Control') || '', /no-store/u);
+  const body = await response.json();
+  assert.equal(String(body.profile.telegram_id), String(ID));
+  assert.equal(body.profile.faction?.name, 'graffpunks');
+  assert.equal(body.profile.faction?.faction_xp, 57);
+  assert.equal(preservationSnapshot(sqlite), snapshot, 'verified profile lookup is read-only');
+});
+
 test('website proof in URL queries is rejected before any authentication database read', async () => {
   const { env } = fixture();
   const { data } = await loggedIn(env);

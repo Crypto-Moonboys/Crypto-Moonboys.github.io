@@ -108,6 +108,7 @@ import {
 import { issuePetMiniAppChallenge, verifyPetMiniAppChallenge, verifyTelegramMiniAppInitData } from './pets/mini-app-auth.js';
 import { resolvePetCallbackRoute } from './pets/mini-app-routing.js';
 import { CANONICAL_FACTION_KEYS, FACTION_UNALIGNED, normalizeFaction, getFactionXpMultiplier } from './shared/faction-canon.js';
+import { readCanonicalFactionProfile } from './shared/faction-projection.js';
 import { buildWtfIso, getWtfDailySchedule, getWtfEventStatus } from './shared/daily-wtf-schedule.js';
 
 /**
@@ -1457,17 +1458,13 @@ async function logTelegramActivity(db, telegramId, action, metadata = '') {
 }
 
 /**
- * Return the user's current faction by joining telegram_faction_members -> telegram_factions.
- * Returns null if the user is not in any faction.
+ * Read the current account faction from the same canonical progression row
+ * as POST /faction/status. The former community membership table is NOT the
+ * Battle Chamber season-lock authority; do not let it mislabel Telegram
+ * profiles, daily digests or saved-game player views.
  */
 async function getUserFaction(db, telegramId) {
-  const row = await db.prepare(`
-    SELECT f.id, f.name, f.description, f.icon, fm.role
-    FROM telegram_faction_members fm
-    JOIN telegram_factions f ON f.id = fm.faction_id
-    WHERE fm.telegram_id = ?
-  `).bind(telegramId).first().catch(() => null);
-  return row || null;
+  return readCanonicalFactionProfile(db, telegramId);
 }
 
 /**
@@ -9446,7 +9443,7 @@ async function sendDailyDigestMessage(db, env, telegramId, utcDay) {
     `).bind(String(telegramId), getPreviousUtcDay(utcDay) || '').first().catch(() => ({ total: 0 })),
   ]);
 
-  const factionId = normalizeBattleChamberFaction(faction?.id || faction?.name) || null;
+  const factionId = normalizeBattleChamberFaction(faction?.name) || null;
   const factionLabel = factionId ? (BATTLE_CHAMBER_FACTION_LABELS[factionId] || factionId) : 'Unaligned';
   const factionLogData = await getFactionDailyLog(db, telegramId, factionId, utcDay);
   const missedTotal = Number(missedSnapshot?.total) || 0;
@@ -12528,11 +12525,25 @@ export default {
       return json(responseResult, result.accepted ? 200 : 409);
     }
 
-    // ── GET /telegram/profile?telegram_id= ────────────────────────────────
-    // Reads from telegram_users; includes faction via telegram_faction_members.
-    if (path === '/telegram/profile' && request.method === 'GET') {
-      const telegramId = url.searchParams.get('telegram_id');
-      if (!telegramId) return err('telegram_id required');
+    // ── POST /telegram/profile — verified owner only ──────────────────────
+    // Never accept an arbitrary caller-supplied telegram_id for private wallet,
+    // Community XP or faction status. Legacy GET requests are disabled.
+    if (path === '/telegram/profile') {
+      if (request.method !== 'POST') {
+        const response = err('Method not allowed; signed POST required', 405);
+        response.headers.set('Allow', 'POST');
+        return response;
+      }
+      let profileBody;
+      try { profileBody = await request.json(); }
+      catch { return err('Invalid JSON', 400); }
+      if (!profileBody || typeof profileBody !== 'object' || Array.isArray(profileBody) ||
+          Object.keys(profileBody).some(key => key !== 'telegram_auth')) {
+        return err('Only verified Telegram authentication may select a profile', 400);
+      }
+      const verified = await verifyTelegramIdentityFromBody(profileBody, env, verifyTelegramAuth);
+      if (verified.error) return err(verified.error, verified.status || 401);
+      const telegramId = verified.telegramId;
       try {
         const [user, faction] = await Promise.all([
           env.DB.prepare(
@@ -12543,7 +12554,11 @@ export default {
           getUserFaction(env.DB, telegramId),
         ]);
         if (!user) return err('Profile not found', 404);
-        return json({ profile: { ...user, faction: faction || null } });
+        const response = json({ profile: { ...user, faction: faction || null } });
+        response.headers.set('Cache-Control', 'private, no-store');
+        response.headers.set('Pragma', 'no-cache');
+        response.headers.set('Vary', 'Origin');
+        return response;
       } catch {
         return err('Failed to load profile', 500);
       }
@@ -14316,7 +14331,7 @@ export default {
            WHERE telegram_id = ? AND mission_date = ?`
         ).bind(telegramId, todayKey).all().catch(() => ({ results: [] }));
 
-        const factionId = faction?.id || faction?.name || null;
+        const factionId = faction?.name || null;
         const normalizedFaction = normalizeFaction(factionId) || FACTION_UNALIGNED;
 
         const factionSignalRows = await env.DB.prepare(

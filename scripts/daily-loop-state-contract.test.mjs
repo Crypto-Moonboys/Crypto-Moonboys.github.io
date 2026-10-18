@@ -11,6 +11,7 @@ import {
 const ALL_TABLES = [
   'telegram_users',
   'telegram_faction_members',
+  'blocktopia_progression',
   'telegram_factions',
   'player_faction_signal_state',
   'player_daily_mission_state',
@@ -116,6 +117,17 @@ function firstRowForSql(sql, params, rowsByTable) {
     return (rowsByTable.daily_opportunity_state_today || rowsByTable.daily_opportunity_state || [])[0] || null;
   }
   const tableName = tableFromSql(sql);
+  if (tableName === 'blocktopia_progression') {
+    return (rowsByTable[tableName] || []).find(row =>
+      String(row.telegram_id) === String(params[0])) || null;
+  }
+  if (tableName === 'telegram_factions') {
+    const acceptedNames = params.slice(0, -1).map(String);
+    const canonical = String(params.at(-1) || '');
+    return (rowsByTable[tableName] || [])
+      .filter(row => acceptedNames.includes(String(row.name)))
+      .sort((a, b) => Number(b.name === canonical) - Number(a.name === canonical))[0] || null;
+  }
   return (rowsByTable[tableName] || [])[0] || null;
 }
 
@@ -242,14 +254,16 @@ for (const [key, status] of Object.entries(failedWtfState.source_status)) {
 const linkedDb = makeDb({
   existingTables: ALL_TABLES,
   rows: {
+    // Legacy community membership deliberately disagrees with the canonical
+    // /faction/status progression record; it must never control this view.
     telegram_faction_members: [{
-      id: 7,
-      name: 'hard-fork-rockers',
-      description: 'Hard Fork Rockers',
-      icon: 'bolt',
-      role: 'member',
+      id: 7, name: 'graffpunks', role: 'member',
       joined_at: '2026-06-01T00:00:00.000Z',
     }],
+    blocktopia_progression: [{
+      telegram_id: '12345', faction: 'hard-fork-rockers', faction_xp: 27,
+    }],
+    telegram_factions: [{ id: 7, name: 'diamond-hands' }],
     daily_opportunity_state_prior: [{ utc_day: '2026-06-27' }],
     daily_opportunity_state_today: [{
       telegram_id: '12345',
@@ -276,7 +290,77 @@ const linkedState = await buildDailyLoopState({
 
 assert.equal(linkedState.faction_state.faction_id, 'hard-fork-rockers');
 assert.equal(linkedState.faction_state.faction_table_id, 7);
+assert.ok(linkedDb._calls.some(call => String(call.sql).includes('FROM telegram_factions') &&
+  call.params.includes('diamond-hands')),
+  'legacy diamond-hands metadata must resolve the canonical hard-fork-rockers table ID');
+assert.equal(linkedState.faction_state.faction_id, 'hard-fork-rockers');
+assert.equal(linkedState.faction_state.faction_xp, 27,
+  'canonical faction XP must agree with signed /faction/status');
+assert.equal(linkedState.source_status.faction_state.state, 'live');
+assert.ok(!linkedDb._calls.some(call => String(call.sql).includes('FROM telegram_faction_members')),
+  'daily loop must ignore legacy membership when resolving the season-locked faction');
 assert.equal(linkedState.arcade_daily_state.label, 'live');
+
+// A missing progression schema or a failed lookup is unknown, not an
+// invitation to choose another faction; never fall back to legacy membership.
+const legacyOnlyState = await buildDailyLoopState({ DB: makeDb({
+  existingTables: ALL_TABLES.filter(table => table !== 'blocktopia_progression'),
+  rows: { telegram_faction_members: [{ telegram_id:'12345', name:'graffpunks' }] },
+}) }, { now:'2026-06-30T12:45:00.000Z', verified: {
+  telegramId:'12345', user:{ username:'owner' },
+} });
+assert.equal(legacyOnlyState.source_status.faction_state.state, 'migration_pending');
+assert.equal(legacyOnlyState.faction_state.faction_id, null);
+
+const brokenFaction = await buildDailyLoopState({ DB: makeDb({
+  existingTables: ALL_TABLES,
+  failPatterns: ['SELECT faction, faction_xp FROM blocktopia_progression'],
+}) }, { now:'2026-06-30T12:45:00.000Z', verified: {
+  telegramId:'12345', user:{ username:'owner' },
+} });
+assert.equal(brokenFaction.source_status.faction_state.state, 'query_failed');
+assert.equal(brokenFaction.faction_state.faction_id, null);
+// A missing canonical faction must block missed-day backfill and today's
+// activation even if an old activity gap would otherwise create records.
+const outageDb = makeDb({
+  existingTables: ALL_TABLES,
+  failPatterns: ['SELECT faction, faction_xp FROM blocktopia_progression'],
+  rows: { daily_opportunity_state_prior: [{ utc_day:'2026-06-27' }] },
+});
+const outageState = await buildDailyLoopState({ DB: outageDb }, {
+  now:'2026-06-30T12:45:00.000Z',
+  verified:{ telegramId:'12345', user:{ username:'owner' } },
+});
+assert.equal(outageState.source_status.arcade_daily_state.state, 'query_failed');
+assert.ok(!outageDb._calls.some(call => call.method === 'run' &&
+  /INSERT INTO (daily_missed_perks|daily_opportunity_state)/u.test(call.sql)),
+  'failed canonical read must not persist an unattributed missed opportunity');
+assert.ok(!outageDb._calls.some(call => call.sql.includes('utc_day < ?')),
+  'failed canonical read must stop before backfill lookup');
+
+// Real unaligned progression is an accepted state, not a source failure.
+const unalignedDb = makeDb({
+  existingTables: ALL_TABLES,
+  rows: { blocktopia_progression: [{ telegram_id:'12345', faction:'unaligned', faction_xp:0 }],
+    daily_opportunity_state_prior: [{ utc_day:'2026-06-27' }] },
+});
+const unalignedState = await buildDailyLoopState({ DB: unalignedDb }, {
+  now:'2026-06-30T12:45:00.000Z',
+  verified:{ telegramId:'12345', user:{ username:'owner' } },
+});
+assert.equal(unalignedState.source_status.faction_state.state, 'live_empty');
+assert.ok(unalignedDb._calls.some(call => String(call.sql).includes('utc_day < ?')),
+  'verified unaligned may still evaluate missed opportunities');
+
+
+// An unrelated owner record is not a fallback for a signed empty owner.
+const isolatedFaction = await buildDailyLoopState({ DB: makeDb({
+  existingTables: ALL_TABLES,
+  rows: { blocktopia_progression:[{ telegram_id:'other', faction:'graffpunks' }] },
+}) }, { now:'2026-06-30T12:45:00.000Z', verified: {
+  telegramId:'12345', user:{ username:'owner' },
+} });
+assert.equal(isolatedFaction.faction_state.faction_id, 'unaligned');
 
 const callIndex = (needle) => linkedDb._calls.findIndex((call) => String(call.sql).includes(needle));
 const priorLookupIndex = callIndex('utc_day < ?');

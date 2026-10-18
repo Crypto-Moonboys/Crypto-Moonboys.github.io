@@ -1,5 +1,6 @@
 import { CANONICAL_FACTION_KEYS, normalizeFaction } from '../shared/faction-canon.js';
 import { verifyTelegramIdentityFromBody } from '../blocktopia/auth.js';
+import { readCanonicalFactionProfile } from '../shared/faction-projection.js';
 
 const PLAYER_STATE_TABLES = [
   'player_modifier_state',
@@ -108,13 +109,9 @@ async function ensureDailyDigestTables(db) {
 }
 
 async function getUserFaction(db, telegramId) {
-  const row = await db.prepare(`
-    SELECT f.id, f.name, f.description, f.icon, fm.role
-    FROM telegram_faction_members fm
-    JOIN telegram_factions f ON f.id = fm.faction_id
-    WHERE fm.telegram_id = ?
-  `).bind(telegramId).first().catch(() => null);
-  return row || null;
+  // The daily missed-opportunity faction must match the signed Battle
+  // Chamber selection, not an independent Telegram community-member row.
+  return readCanonicalFactionProfile(db, telegramId);
 }
 
 async function hasDailyMissedXpValueColumn(db) {
@@ -358,7 +355,10 @@ export async function handleRogueliteDailyRoutes(request, env, url, helpers) {
     try {
       await upsertTelegramUser(env.DB, verified.user);
       const utcDay = getTodayUtcDate();
-      const faction = await getUserFaction(env.DB, verified.telegramId).catch(() => null);
+      // An unreadable canonical faction is NOT proof of "unaligned".
+      // Fail the signed read instead of assigning today's opportunity to a
+      // different faction based on missing/legacy account data.
+      const faction = await getUserFaction(env.DB, verified.telegramId);
       const factionId = normalizeBattleChamberFaction(faction?.name) || null;
       const backfill = await backfillMissedPerkGapsFromLastActiveDay(env.DB, verified.telegramId, utcDay, factionId);
       const state = await ensureDailyOpportunityStateForToday(env.DB, verified.telegramId, utcDay);
