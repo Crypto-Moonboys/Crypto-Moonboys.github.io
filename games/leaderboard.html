@@ -322,6 +322,14 @@
       .lb-bd-grid { grid-template-columns: repeat(2, 1fr); }
       .leaderboard-pills li { width: 100%; }
     }
+    .lb-games-coverage { border:1px solid rgba(86,220,255,.2);border-radius:16px;padding:clamp(18px,2vw,26px);background:rgba(6,10,18,.75);margin:18px 0 22px; }
+    .lb-games-coverage h2 { margin:0 0 12px;color:#dff;font-size:clamp(1rem,2vw,1.45rem); }
+    .lb-games-coverage p {line-height:1.65;color:var(--color-text-muted);margin:8px 0;}
+    .lb-games-coverage p strong {color:var(--color-text)}
+    .lb-other-game-links { display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:9px;margin:16px 0; }
+    .lb-other-game-links a {display:flex;align-items:center;min-height:44px;padding:11px 13px;border:1px solid rgba(86,220,255,.24);border-radius:9px;color:#a8f3e1;background:rgba(86,220,255,.035);line-height:1.4;}
+    .lb-other-game-links a:focus-visible {outline:3px solid #a8f3e1;outline-offset:2px;}
+    .lb-coverage-caution {font-size:.85rem;}
   </style>
   <link rel="icon" type="image/png" href="/favicon.png">
 </head>
@@ -337,7 +345,7 @@
           <span class="swarmsy-kicker wiki-alive-kicker">ARCADE LEADERBOARD / SCORE RANKING / XP SYNC</span>
           <h1 id="leaderboard-title" class="swarmsy-title wiki-living-title">ARCADE<br><span>LEADERBOARD</span></h1>
           <p class="swarmsy-lead">
-            Track rank across every active Moonboys Arcade game. The public roster contains eight active Arcade games. Score drives leaderboard position; linked, server-accepted runs can become Arcade XP after sync checks.
+            Rank verified competitive scores in the eight-game shared Arcade leaderboard below. MoonPet, Dead Run, NBG London and the wider Block Topia game have separate progression or ranking sources — all are linked below, never silently combined.
           </p>
           <div class="swarmsy-action-grid swarmsy-action-grid--compact" aria-label="Leaderboard actions">
             <a class="swarmsy-action-card swarmsy-action-card--gold" href="/games/"><strong>Play Arcade</strong><span>Start runs across the active arcade roster.</span></a>
@@ -353,36 +361,19 @@
       </section>
 
       <div class="lb-page">
-        <section class="lb-overview-grid" aria-label="Leaderboard overview">
-          <article class="lb-info-card">
-            <strong>Rank Every Run</strong>
-            <p>Track your place across Meme Swarm 3008, SnakeRun 3008, Block Topia Quest Maze, Chain Maze, Forkfield, Bullrun Brick Smash, and Block Topia Dropzone.</p>
-          </article>
-          <article class="lb-info-card">
-            <strong>Score Is Not XP</strong>
-            <p>Score is the public ranking layer. Accepted scores can convert into Arcade XP only after Telegram sync and server acceptance.</p>
-          </article>
-          <article class="lb-info-card">
-            <strong>Read The Route</strong>
-            <p>Need the full guide? Use the <a href="/how-to-play.html"><strong>How to Play Manual</strong></a> for Telegram sync, XP, and Block Topia entry requirements.</p>
-          </article>
-        </section>
-
-        <section class="lb-sync-zone" aria-label="Arcade sync">
-          <div data-tg-sync-cta></div>
-        </section>
-
-        <section class="notice info" role="note" aria-label="Arcade system explainer">
-          <span class="notice-icon" aria-hidden="true">&#9672;</span>
-          <div>
-            <strong>Arcade System:</strong>
-            <ul>
-              <li>Ranking uses score only.</li>
-              <li>Accepted scores can convert into Arcade XP after Telegram sync and server acceptance.</li>
-              <li>At least 5000 Arcade XP is required to enter the Block Topia server (exact value shown in the status panel above).</li>
-              <li>Telegram sync via /gklink is required to store Arcade XP and progression server-side; unlinked runs remain local/pending.</li>
-            </ul>
-          </div>
+        <section class="lb-games-coverage" aria-labelledby="lb-coverage-title">
+          <h2 id="lb-coverage-title">Which Moonboys games are covered?</h2>
+          <p><strong>Shared Arcade ranking (eight titles):</strong> Snake, Block Topia Quest Maze, Meme Swarm 3008, Chain Maze, Forkfield, Bullrun Brick Smash, Block Topia Dropzone and Kaiju. Select an individual tab for that title. Global aggregates the supported shared Arcade source only.</p>
+          <p><strong>Other playable games — separate sources:</strong> these do not automatically appear in the eight-game shared ranking. Their game XP, Pet XP, verified records and prizes cannot be combined into a public Arcade score without a verified server adapter.</p>
+          <nav class="lb-other-game-links" aria-label="Other games and independent progress">
+            <a href="/moonpet-game.html">MoonPet — pet progression and saved rewards</a>
+            <a href="/games/dead-run/">Dead Run — GPS game and verified sessions</a>
+            <a href="/games/nbg-london/">NBG London — runner records</a>
+            <a href="/games/block-topia/">Block Topia — independent RPG progression</a>
+            <a href="/games/">Full Games hub</a>
+            <a href="/my-moonboy.html">My Moonboy — personal XP, missions and claims</a>
+          </nav>
+          <p class="lb-coverage-caution">Rankings use server-accepted records. Scores, Arcade XP, Community XP, MoonPet XP, Block Topia XP, Gems and verified Championship Clout are separate measures. Sign in through the shared header to see your personal progress in My Moonboy.</p>
         </section>
 
         <div id="lb-status-panel"></div>
@@ -424,6 +415,7 @@
             <span class="lb-legend-item"><span class="lb-legend-dot" style="background:#8b949e"></span>Forkfield</span>
             <span class="lb-legend-item"><span class="lb-legend-dot" style="background:#ff6b35"></span>Bullrun Brick Smash</span>
             <span class="lb-legend-item"><span class="lb-legend-dot" style="background:#a78bfa"></span>Block Topia Dropzone</span>
+            <span class="lb-legend-item"><span class="lb-legend-dot" style="background:#e8e8a3"></span>Kaiju</span>
           </div>
         </section>
       </div>
