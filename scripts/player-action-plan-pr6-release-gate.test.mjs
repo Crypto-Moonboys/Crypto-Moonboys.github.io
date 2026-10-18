@@ -31,8 +31,13 @@ function releaseErrors(record) {
       record.gk_approval.approved_head_sha !== sha ||
       !/^https:\/\/github\.com\/Crypto-Moonboys\/Crypto-Moonboys\.github\.io\/(?:pull\/1558|issues\/1552)#(?:issuecomment|pullrequestreview)-\d+$/u.test(record.gk_approval?.approval_url || ''))
     errors.push('explicit GK approval link is missing or does not match reviewed head SHA');
-  if (!Array.isArray(record.scenarios) || record.scenarios.length !== 15 ||
-      record.scenarios.some(s => s.live_status !== 'pass' || !/^https:\/\//u.test(s.evidence_url || ''))) {
+  const requiredIds = Array.from({ length: 15 }, (_, i) =>
+    'AC-' + String(i + 1).padStart(2, '0'));
+  const scenarioIds = Array.isArray(record.scenarios) ? record.scenarios.map(s => s?.id) : [];
+  if (!Array.isArray(record.scenarios) || record.scenarios.length !== requiredIds.length ||
+      new Set(scenarioIds).size !== requiredIds.length ||
+      requiredIds.some(id => !scenarioIds.includes(id)) ||
+      record.scenarios.some(s => s?.live_status !== 'pass' || !/^https:\/\//u.test(s?.evidence_url || ''))) {
     errors.push('signed-account acceptance evidence is incomplete');
   }
   if (!/^[0-9a-f]{40}$/u.test(p.pages?.expected_merge_sha || '') ||
@@ -126,6 +131,68 @@ test('PR6 evidence cannot claim deployment or sign-off merely because tests exis
     assert.ok(negativeErrors.some(message => message.startsWith(domain + ' success evidence')),
       'negative fixture missing ' + domain);
 
+});
+
+test('verified release requires all fifteen distinct AC IDs, regardless of array order', () => {
+  const approved = structuredClone(evidence);
+  approved.production_state = 'verified';
+  approved.owner_approval = 'approved';
+  approved.automation_state = 'ci_green';
+  const sha = 'a'.repeat(40);
+  const otherSha = 'b'.repeat(40);
+  approved.ci.reviewed_head_sha = sha;
+  for (const domain of Object.keys(approved.ci.domains)) {
+    approved.ci.domains[domain] = {
+      head_sha: sha, conclusion: 'success',
+      run_url: 'https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/actions/runs/12345',
+    };
+  }
+  approved.gk_approval = {
+    approved_head_sha: sha,
+    approval_url: 'https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/pull/1558#issuecomment-12345',
+  };
+  approved.scenarios.forEach(item => {
+    item.live_status = 'pass';
+    item.evidence_url = 'https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/issues/1552#issuecomment-12345';
+  });
+  approved.provenance = {
+    pages: {
+      expected_merge_sha: sha, deployed_sha: sha,
+      deployment_run_url: 'https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/actions/runs/12345',
+      verified_at_utc: '2026-10-18T16:00:00Z',
+    },
+    worker: {
+      deployment_info_sha: otherSha, expected_sha: otherSha,
+      verification_url: 'https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/actions/runs/12345',
+      verified_at_utc: '2026-10-18T16:00:00Z',
+    },
+    d1: {
+      migration_required: 'no_new_migration_in_pr6',
+      applied_migration_evidence_url: 'https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/actions/runs/12345',
+      verified_at_utc: '2026-10-18T16:00:00Z',
+    },
+    rollback: {
+      last_known_good_pages_sha: sha, last_known_good_worker_sha: otherSha,
+      operator: 'fixture-only',
+      exercise_evidence_url: 'https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/issues/1552#issuecomment-12345',
+    },
+  };
+  assert.deepEqual(releaseErrors(approved), [], 'fully populated synthetic record passes structural checks');
+  const reordered = structuredClone(approved);
+  reordered.scenarios.reverse();
+  assert.deepEqual(releaseErrors(reordered), [], 'order is not an acceptance constraint');
+  const duplicated = structuredClone(approved);
+  duplicated.scenarios[1] = structuredClone(duplicated.scenarios[0]);
+  assert.ok(releaseErrors(duplicated).includes('signed-account acceptance evidence is incomplete'),
+    'duplicate AC-01 must not disguise missing AC-02');
+  const invalid = structuredClone(approved);
+  invalid.scenarios[14].id = 'AC-16';
+  assert.ok(releaseErrors(invalid).includes('signed-account acceptance evidence is incomplete'),
+    'an unexpected ID cannot replace required AC-15');
+  const missing = structuredClone(approved);
+  missing.scenarios.pop();
+  assert.ok(releaseErrors(missing).includes('signed-account acceptance evidence is incomplete'),
+    'missing AC-15 must block a verified release');
 });
 
 test('PR6 deploy/rollback manual references and user instructions stay in place', () => {
