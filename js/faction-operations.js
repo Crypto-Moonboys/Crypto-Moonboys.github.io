@@ -544,9 +544,11 @@
       }
     });
     window.addEventListener('moonboys:player-action-accepted', () => {
-      // Cross-tab accepted gameplay is only an invalidation hint. Hide current
-      // private interpretation and guarantee a read AFTER any pre-action read.
-      queueForcedRefresh();
+      // Accepted gameplay invalidates only private owner projections. Guests
+      // have no personal contribution to reconcile, and their verified public
+      // reset/WTF schedule must remain intact until its own source boundary
+      // (for example UTC rollover) requests an anonymous refresh.
+      if (ownerId()) queueForcedRefresh();
     });
     window.addEventListener('moonboys:player-reconcile-needed', () => {
       // Always preserve reconnect invalidation. queueForcedRefresh() hides
