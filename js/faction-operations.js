@@ -455,6 +455,13 @@
       // A returned old-day or unusable snapshot is NOT current-day proof.
       // Once the request has actually settled, stop the loading state while
       // preserving the already-hidden private view and its retry control.
+      if (authoritativeFollowup && generation !== epoch &&
+        suppressSubscriberUntilForcedResult && ownerId()) {
+        // Another authoritative transition retired this follow-up. Keep the
+        // panel fail-closed and guarantee a replacement read rather than
+        // leaving subscriber delivery suppressed forever.
+        forcedRefreshQueued = true;
+      }
       if (generation === epoch && !snapshot && loading && !forcedRefreshQueued) {
         loading = false;
         render();
@@ -472,19 +479,19 @@
   }
 
   function queueForcedRefresh() {
-    if (!ownerId()) return;
+    const id = ownerId();
     // Retire the component generation immediately. The shared singleton may
     // still have a request in flight, so queue the authoritative follow-up
     // instead of joining that pre-action promise.
     epoch++;
     snapshotRevision++;
-    forcedRefreshQueued = true;
-    suppressSubscriberUntilForcedResult = true;
+    forcedRefreshQueued = Boolean(id);
+    suppressSubscriberUntilForcedResult = Boolean(id);
     snapshot = null;
-    loading = true;
+    loading = Boolean(id);
     personalRoot.replaceChildren();
     render();
-    runQueuedForcedRefresh();
+    if (id) runQueuedForcedRefresh();
   }
 
   function onIdentityChange() {
@@ -543,13 +550,10 @@
       if (!document.hidden && ownerId()) queueForcedRefresh();
     });
     window.addEventListener('moonboys:faction-status', () => {
-      // The singleton already invalidates itself on this event. Clear the
-      // personal panel now and await its server-verified update.
-      epoch++;
-      snapshot = null;
-      loading = Boolean(ownerId());
-      personalRoot.replaceChildren();
-      render();
+      // Faction membership changes retire any accepted-action follow-up too.
+      // Always replace it with a new authoritative read so suppression cannot
+      // outlive the request generation that created it.
+      queueForcedRefresh();
     });
     personalRoot.addEventListener('click', event => {
       if (!event.target.closest('[data-fop-retry]')) return;
@@ -570,18 +574,10 @@
         return;
       }
       lastDay = day;
-      epoch++;
-      snapshotRevision++;
-      snapshot = null;
-      // A pending pre-midnight getState() cannot satisfy a new UTC-day read.
-      // Retire ONLY this component's handle; the Daily Loop singleton keys
-      // concurrent requests by owner + day and controls its own inflight work.
-      // Epoch/revision checks keep the superseded result from repainting.
-      inflight = null;
-      personalRoot.replaceChildren();
-      loading = Boolean(ownerId());
-      render();
-      sharedDailyLoop(true);
+      // UTC rollover is another authoritative boundary. Reuse the same queued
+      // follow-up contract so a concurrent accepted-action request cannot
+      // strand subscriber suppression across the epoch transition.
+      queueForcedRefresh();
     }, 60000);
   }
 
