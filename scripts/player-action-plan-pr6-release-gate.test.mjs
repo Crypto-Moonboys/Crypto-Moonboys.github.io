@@ -60,19 +60,26 @@ test('PR6 acceptance inventory preserves all fifteen issue #1552 scenarios and t
 });
 
 test('PR6 evidence cannot claim deployment or sign-off merely because tests exist', () => {
-  assert.equal(evidence.production_state, 'not_verified');
-  assert.equal(evidence.automation_state, 'requires_ci_execution');
-  assert.equal(evidence.owner_approval, 'pending');
-  assert.ok(evidence.scenarios.every(s => s.live_status === 'pending' && s.evidence_url === null));
+  assert.ok(['not_verified', 'verified'].includes(evidence.production_state));
+  assert.ok(['requires_ci_execution', 'ci_green'].includes(evidence.automation_state));
+  assert.ok(['pending', 'approved'].includes(evidence.owner_approval));
   assert.equal(evidence.provenance.d1.migration_required, 'no_new_migration_in_pr6');
+  for (const item of evidence.scenarios) {
+    assert.ok(['pending', 'pass', 'fail'].includes(item.live_status), item.id + ' has an invalid result');
+    if (item.live_status === 'pending') assert.equal(item.evidence_url, null,
+      item.id + ' must not attach a success reference to a pending test');
+    if (item.live_status === 'pass') assert.match(item.evidence_url || '', /^https:\/\//u,
+      item.id + ' cannot be passed without a reviewable redacted evidence link');
+  }
+  assert.deepEqual(releaseErrors(evidence), [],
+    'a verified release needs all actual CI, signed, deployment, D1 and rollback evidence');
   const falselyApproved = structuredClone(evidence);
   falselyApproved.production_state = 'verified';
   falselyApproved.owner_approval = 'approved';
   falselyApproved.automation_state = 'ci_green';
+  falselyApproved.scenarios.forEach(s => { s.live_status = 'pending'; s.evidence_url = null; });
   assert.ok(releaseErrors(falselyApproved).length >= 4,
     'fabricated green flag must not bypass absent signed evidence and deployment provenance');
-  assert.deepEqual(releaseErrors(evidence), [],
-    'pending state can be committed as a truthful release hold, not a verification claim');
 });
 
 test('PR6 deploy/rollback manual references and user instructions stay in place', () => {
