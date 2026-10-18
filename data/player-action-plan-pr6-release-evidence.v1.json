@@ -288,5 +288,39 @@
       "operator": null,
       "exercise_evidence_url": null
     }
+  },
+  "ci": {
+    "reviewed_head_sha": null,
+    "domains": {
+      "ci-wiki": {
+        "head_sha": null,
+        "conclusion": null,
+        "run_url": null
+      },
+      "ci-worker-api": {
+        "head_sha": null,
+        "conclusion": null,
+        "run_url": null
+      },
+      "ci-arcade": {
+        "head_sha": null,
+        "conclusion": null,
+        "run_url": null
+      },
+      "ci-wax": {
+        "head_sha": null,
+        "conclusion": null,
+        "run_url": null
+      },
+      "ci-visual": {
+        "head_sha": null,
+        "conclusion": null,
+        "run_url": null
+      }
+    }
+  },
+  "gk_approval": {
+    "approved_head_sha": null,
+    "approval_url": null
   }
 }
