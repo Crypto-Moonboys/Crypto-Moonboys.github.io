@@ -497,7 +497,7 @@ if (!gamesHtml.includes('page-has-right-panel') && !runtimeAllowlist.includes('/
   fail('games/index.html — must not opt into right-rail allowlist/layout');
 }
 if (!leaderboardHtml.includes('page-has-right-panel') && !runtimeAllowlist.includes('/games/leaderboard.html')) {
-  pass('games/leaderboard.html: leaderboard uses inline live stats without right-rail allowlist/layout');
+  pass('games/leaderboard.html: leaderboard keeps public ranking without duplicating account panels');
 } else {
   fail('games/leaderboard.html — must not opt into right-rail allowlist/layout');
 }
