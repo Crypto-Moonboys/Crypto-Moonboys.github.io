@@ -383,6 +383,8 @@ export async function buildDailyLoopState(env, options = {}) {
       linked: true,
       faction_id: canonicalFactionId,
       faction_table_id: factionRow.row?.id ?? null,
+      // Use the same saved faction XP counter as POST /faction/status.
+      faction_xp: faction.faction_xp,
       label: faction.name || 'Unaligned',
       role: null,
       joined_at: null,
