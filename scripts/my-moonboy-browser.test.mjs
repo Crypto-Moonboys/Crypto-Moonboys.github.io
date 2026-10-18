@@ -927,3 +927,42 @@ test('PR5 offline transition retires pending reads and blocks refresh/pagination
     assert.equal(f.errors.length,0,f.errors.join('\n'));
   } finally { await f.browser.close(); }
 });
+
+
+test('My Moonboy public guide separates Gems from Moon Crystals without exposing a guest checklist', async () => {
+  const f = await setup({width:360,height:800}, false);
+  try {
+    await f.page.goto(SITE + '/my-moonboy.html', {waitUntil:'domcontentloaded'});
+    await f.page.locator('#mm-economy-guide .mm-economy-item').first().waitFor();
+    assert.equal(await f.page.locator('#mm-private').isHidden(), true);
+    assert.equal(await f.page.locator('#mm-complete-checklist').isHidden(), true,
+      'personal checklist must remain behind verified auth');
+    assert.equal(f.requests.length, 0, 'public resource guide never reads owner plan');
+    assert.match(await f.page.locator('#mm-economy').textContent(), /Moon Crystals|Block Topia Gems/u);
+    assert.ok(await f.page.evaluate(() =>
+      document.querySelector('#mm-economy').getBoundingClientRect().right <= innerWidth + 1));
+    assert.equal(f.errors.length, 0, f.errors.join('\n'));
+  } finally { await f.browser.close(); }
+});
+
+test('My Moonboy signed checklist includes every source and saved-only claim class and clears on logout', async () => {
+  const f = await setup({width:390,height:844}, true);
+  try {
+    await f.page.goto(SITE + '/my-moonboy.html', {waitUntil:'domcontentloaded'});
+    await f.page.locator('#mm-checklist .mm-checklist-source').first().waitFor();
+    assert.equal(await f.page.locator('#mm-checklist .mm-checklist-source').count(), 28);
+    assert.equal(await f.page.locator('#mm-checklist .mm-checklist-gaps li').count(), 5);
+    assert.match(await f.page.locator('#mm-checklist').textContent(), /Alpha saved job claim/u);
+    assert.match(await f.page.locator('#mm-checklist').textContent(), /Status unavailable|ready — read-only source status|No task in loaded results/u);
+    assert.ok(await f.page.evaluate(() =>
+      document.querySelector('#mm-complete-checklist').getBoundingClientRect().right <= innerWidth + 1));
+    await f.page.evaluate(() => {
+      window.__mmTest.linked = false;
+      window.dispatchEvent(new CustomEvent('moonboys:identity-change'));
+    });
+    assert.equal(await f.page.locator('#mm-private').isHidden(), true);
+    assert.equal(await f.page.locator('#mm-checklist').textContent(), '',
+      'all private checklist rows must be removed synchronously on logout');
+    assert.equal(f.errors.length, 0, f.errors.join('\n'));
+  } finally { await f.browser.close(); }
+});
