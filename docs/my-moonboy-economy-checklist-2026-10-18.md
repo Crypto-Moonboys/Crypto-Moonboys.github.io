@@ -12,6 +12,21 @@ The My Moonboy page now presents two separately labelled experiences:
 
 Five **saved-only MoonPet claim classes** from `data/player-action-sync-claim-parity.v1.json` are explicitly included as **unknown** with a direct original-game Saved Status link: `daily_cache`, `season_tier_claims`, `finale_claim`, `extra_bounty_claim`, and `weekly_bounty_claim`. Their authenticated per-owner status has **not** been added to `POST /player/action-plan`; inventing their readiness or quietly treating no record as claimed would be worse than an explicit source fallback. The original MoonPet OS remains canonical. A later reviewed Worker adapter may bring each class into the same signed projection with source/receipt proof.
 
+### Wiki engagement coverage — Engage, Signal, Cite and related interactions
+
+The original API/mission system has three distinct Wiki missions on an eligible article, not one generic "Wiki XP" click:
+
+- **Engage** — submit a meaningful comment using `/comments`. A guest/email-only comment may be accepted for moderation without earning a linked-player reward. Only a signed/linked Telegram account with source-owned completion receipt is eligible for its defined Wiki XP; repeat comments do not automatically re-pay Engage. Comment moderation/publishing and XP receipt state are distinct.
+- **Signal** — like an article via `/likes` with authenticated, linked identity. Saved page likes are deduplicated; a visible Like counter does not prove personal daily mission or payout.
+- **Cite** — vote on an **existing** source/citation using `/citation-votes`, not merely add a new reference or click a citation link. Source-scoped votes and daily Wiki mission receipts are separate recorded facts.
+- **Comment up/down voting** — supported `POST /comments/:id/vote` action, but **not independently proven XP-earning** in the current Wiki mission contract.
+- **Citation submission/editing** — editorial action; does **not** independently demonstrate the Cite mission receipt or a paid reward.
+- **Reading, sharing and bookmarking** — useful participation, but no accepted per-click or per-view XP/Clout ledger is established in the audited Action Plan.
+
+The Worker stores `wiki_mission_completions` by **page, mission_id, UTC mission window and owner**, while `POST /player/action-plan` currently reads only `COUNT(*)` for that owner/day. The page therefore shows **all six** Wiki action categories with exact action instructions, but their per-page/per-mission statuses remain **"Individual status not projected"** even when an aggregate accepted receipt count exists. An aggregate count of three cannot confirm Engage, Signal and Cite each occurred. Source-proven Wiki rewards remain distinct from Championship Clout.
+
+The pre-existing Wiki comment information card was advertising unconditional fixed values (Comment = 10 XP, Like = 5 XP, Citation = 15 XP). That is not a reliable reflection of the Worker receipt path (its test fixture verifies a like can settle 10 XP). The PR replaces those hard-coded claims with **source-defined accepted-mission** copy, without changing payouts. Operational verification still needs the live Worker, migration 029 and a real signed session.
+
 ### Source categories and money/points separation
 
 - **Arcade XP** is lifetime achievement and a separate spendable wallet. First-pet qualification requires 1,000 lifetime Arcade XP without debit; pet 2/pet 3 spend 500/1,000 spendable Arcade XP. Do not equate score, unaccepted attempts or tokens with XP.
