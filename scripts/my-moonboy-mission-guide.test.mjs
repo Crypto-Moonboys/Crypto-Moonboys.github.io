@@ -154,3 +154,16 @@ test('an accepted aggregate Wiki mission count never supplies individual Engage 
   assert.match(el.innerHTML, /Individual Wiki mission source receipts are not available/u);
   assert.doesNotMatch(el.innerHTML, /Signed API reports 3 accepted Wiki/u);
 });
+
+test('Wiki contributor XP rankings do not fall back to fictional scores', () => {
+  const source = read('js/comments.js');
+  const section = source.slice(
+    source.indexOf('function getContributorData()'),
+    source.indexOf('function robotAvatar(')
+  );
+  assert.ok(section.includes('week && week.length ? week : []'));
+  assert.ok(section.includes('allTime && allTime.length ? allTime : []'));
+  assert.doesNotMatch(section, /:\s*FALLBACK_TOP_CONTRIBUTORS/u);
+  assert.match(source, /Verified contributor rankings unavailable for this period/u);
+  assert.match(source, /list\.innerHTML = contributorListHTML\(rows\)/u);
+});
