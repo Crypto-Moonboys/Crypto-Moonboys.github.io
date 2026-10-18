@@ -44,6 +44,7 @@ const GROUPS = {
     ['node', 'scripts/audit-published-vs-index.js'],
   ],
   'worker-api': [
+    ['node', '--test', 'scripts/faction-unified-authority.test.mjs'],
     ['node', 'scripts/leaderboard-source-consolidation.test.mjs'],
     ['node', '--test', 'scripts/my-moonboy-mission-guide.test.mjs'],
     ['node', '--test', 'scripts/moonpet-mission-status.test.mjs'],
@@ -254,6 +255,7 @@ const GROUPS = {
     ['node', 'scripts/wax-collection-page-fallback.test.mjs'],
   ],
   visual: [
+    ['node', '--test', 'scripts/faction-unified-authority.test.mjs'],
     ['node', 'scripts/arcade-graph-source-parity.test.mjs'],
     ['node', 'scripts/leaderboard-source-consolidation.test.mjs'],
     ['node', '--test', 'scripts/my-moonboy-mission-guide.test.mjs'],
