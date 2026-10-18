@@ -514,7 +514,7 @@ test('PR4 intentional identity teardown does not restore the old member control'
         oldContents:document.querySelector('[data-fop-private]').textContent,
       };
     });
-    assert.equal(state.oldFocused,false,'old owner's button must not regain focus');
+    assert.equal(state.oldFocused,false,"old owner's button must not regain focus");
     assert.doesNotMatch(state.oldContents,/120|Saved complete \(advisory\)/);
     assert.equal(f.errors.length,0,f.errors.join('\n'));
   }finally{await f.browser.close();}
