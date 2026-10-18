@@ -554,7 +554,7 @@ function updateMissionChip(context = getLiveContext()) {
   const link = document.createElement('a');
   link.className = 'art-chip-link';
   link.href = '/games/';
-  link.textContent = `MISSION • ${mission.label} • ${formatCountdown(remain)}`;
+  link.textContent = `LOCAL ARCADE CHALLENGE (not verified XP) • ${mission.label} • ${formatCountdown(remain)}`;
   link.addEventListener('click', () => {
     emitNotificationAction('mission-chip', 'Start Arcade', '/games/');
   });
