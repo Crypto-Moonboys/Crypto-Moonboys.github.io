@@ -288,6 +288,8 @@ const linkedState = await buildDailyLoopState({
 assert.equal(linkedState.faction_state.faction_id, 'hard-fork-rockers');
 assert.equal(linkedState.faction_state.faction_table_id, 7);
 assert.equal(linkedState.faction_state.faction_id, 'hard-fork-rockers');
+assert.equal(linkedState.faction_state.faction_xp, 27,
+  'canonical faction XP must agree with signed /faction/status');
 assert.equal(linkedState.source_status.faction_state.state, 'live');
 assert.ok(!linkedDb._calls.some(call => String(call.sql).includes('FROM telegram_faction_members')),
   'daily loop must ignore legacy membership when resolving the season-locked faction');
