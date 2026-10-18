@@ -29,6 +29,8 @@
   var _subscribers = [];
   var _inflight = null;
   var _inflightKey = null;
+  var _queuedRefresh = null;
+  var _queuedRefreshKey = null;
   var _cacheKey = null;
   var _invalidatedReason = null;
   var _lastFetchStatus = 'idle';
@@ -241,6 +243,31 @@
     return _inflight;
   }
 
+  async function refreshAfterInflight(options) {
+    var opts = Object.assign({}, options || {}, { force: true });
+    var context;
+    try {
+      context = await resolveRequestContext(opts);
+    } catch (error) {
+      return setState(errorState(error), 'daily-loop:error');
+    }
+    if (_inflight && _inflightKey === context.key) {
+      if (_queuedRefresh && _queuedRefreshKey === context.key) return _queuedRefresh;
+      var prior = _inflight;
+      _queuedRefreshKey = context.key;
+      _queuedRefresh = Promise.resolve(prior).catch(function () { return null; })
+        .then(function () { return refresh(opts); })
+        .finally(function () {
+          if (_queuedRefreshKey === context.key) {
+            _queuedRefresh = null;
+            _queuedRefreshKey = null;
+          }
+        });
+      return _queuedRefresh;
+    }
+    return refresh(opts);
+  }
+
   async function getState(options) {
     var opts = options || {};
     var context;
@@ -283,6 +310,7 @@
   window.MOONBOYS_DAILY_LOOP = {
     getState: getState,
     refresh: refresh,
+    refreshAfterInflight: refreshAfterInflight,
     subscribe: subscribe,
     invalidate: invalidate,
     isReady: isReady,
