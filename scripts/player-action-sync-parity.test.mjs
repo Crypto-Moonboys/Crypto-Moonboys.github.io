@@ -107,6 +107,30 @@ test('PR5 arcade invalidation uses confirmed submission signal, not public leade
   assert.doesNotMatch(sync, /['"]moonboys:score-updated['"]\s*:/u);
 });
 
+test('PR5 delayed Arcade settlements emit follow-up invalidations only after confirmed writes resolve', () => {
+  const acceptedBranch = leaderboardClient.indexOf('} else if (data && data.accepted === true) {');
+  const initialSignal = leaderboardClient.indexOf('moonboys:arcade-score-accepted', acceptedBranch);
+  const factionAwait = leaderboardClient.indexOf('await callFactionEarn("score_accept", score)', acceptedBranch);
+  const factionSignal = leaderboardClient.indexOf('source: "faction"', factionAwait);
+  assert.ok(acceptedBranch >= 0 && initialSignal > acceptedBranch);
+  assert.ok(factionAwait > initialSignal && factionSignal > factionAwait,
+    'faction invalidation must follow the awaited settlement, not only initial score acceptance');
+
+  const blockAwait = leaderboardClient.indexOf(
+    'await ArcadeSync.syncBlockTopiaProgressionOnAcceptedScore(score, gameKey)', factionSignal);
+  const blockSignal = leaderboardClient.indexOf('source: "arcade_progression"', blockAwait);
+  assert.ok(blockAwait > factionSignal && blockSignal > blockAwait,
+    'Block Topia progression invalidation must follow its awaited server settlement');
+
+  const pendingAwait = leaderboardClient.indexOf(
+    'await ArcadeSync.syncPendingArcadeProgress({ entries: [competitiveProgressEntry] })', blockSignal);
+  const pendingCondition = leaderboardClient.indexOf(
+    'if (!syncSummary?.skipped && (Number(syncSummary?.synced) || 0) > 0)', pendingAwait);
+  const pendingSignal = leaderboardClient.indexOf('source: "arcade_progression"', pendingCondition);
+  assert.ok(pendingAwait > blockSignal && pendingCondition > pendingAwait && pendingSignal > pendingCondition,
+    'shared Arcade progression emits a follow-up for full or partial confirmed success');
+});
+
 test('PR5 accepted-action channel does not subscribe to rejection/error notifications', () => {
   assert.doesNotMatch(sync, /moonboys:progression-sync-error/u);
   assert.doesNotMatch(sync, /moonpet:action-rejected/u);
