@@ -127,12 +127,10 @@ test('non-bubbling accepted Wiki mission events are normalized without carrying 
 test('online/offline reconciliation is local read guidance only and creates no cross-tab accepted event', async () => {
   const f = await setup();
   try {
+    await f.a.waitForTimeout(100);
+    assert.equal(await f.a.evaluate(() => window.__reconcile.length), 0,
+      'channel startup without prior accepted activity must not force a duplicate source read');
     await f.a.evaluate(() => {
-      // Ignore the one-time action-sync-ready reconciliation emitted when the
-      // receiving channel first becomes available; this assertion isolates the
-      // offline/online transition itself.
-      window.__reconcile = [];
-      window.__offline = [];
       window.dispatchEvent(new Event('offline'));
       window.dispatchEvent(new Event('online'));
     });
