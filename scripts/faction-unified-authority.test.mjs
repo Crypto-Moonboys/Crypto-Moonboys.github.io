@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+import vm from 'node:vm';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -75,6 +76,36 @@ test('all player pages either consume canonical status or reject stale identitie
   assert.match(daily, /dailyLoopOwnsFaction/u);
   assert.match(read('docs/LIVE_DAILY_LOOP_TRUTH_MAP.md'),
     /blocktopia_progression\.faction/u);
+});
+
+test('faction browser cache rejects anonymous, previous-owner and unscoped rows', () => {
+  const rows = new Map();
+  let activeId = '123456';
+  const storage = {
+    getItem(key) { return rows.get(key) || null; },
+    setItem(key, value) { rows.set(key, String(value)); },
+    removeItem(key) { rows.delete(key); },
+  };
+  const window = {
+    MOONBOYS_IDENTITY: { getTelegramId() { return activeId; } },
+    addEventListener() {},
+    dispatchEvent() {},
+  };
+  vm.runInNewContext(read('js/faction-alignment.js'), { window, localStorage:storage }, {
+    filename:'faction-alignment.js',
+  });
+  const api = window.MOONBOYS_FACTION;
+  const key = 'moonboys_faction_status_v1';
+  rows.set(key, JSON.stringify({ faction:'graffpunks', faction_xp:70 }));
+  assert.equal(api.getCachedStatus(), null, 'unscoped cache cannot authorize membership');
+  rows.set(key, JSON.stringify({ telegram_id:'another-owner', faction:'graffpunks' }));
+  assert.equal(api.getCachedStatus(), null, 'other owner must not leak membership');
+  rows.set(key, JSON.stringify({ telegram_id:'123456', faction:'graffpunks', faction_xp:70 }));
+  assert.equal(api.getCachedStatus().faction, 'graffpunks');
+  activeId = 'another-owner';
+  assert.equal(api.getCachedStatus(), null, 'account switch invalidates old owner cache');
+  activeId = null;
+  assert.equal(api.getCachedStatus(), null, 'guest cannot inherit linked membership');
 });
 
 console.log('Canonical faction authority parity: server and all private player pages guarded.');
