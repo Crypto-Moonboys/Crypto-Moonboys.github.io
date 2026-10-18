@@ -28,10 +28,54 @@ import { mountArcadeRadio } from '/js/arcade/core/radio.js?v=meme-mobile-2026101
  */
 const LIFECYCLE_METHODS = ['init', 'start', 'pause', 'resume', 'reset', 'destroy', 'getScore'];
 
+const ACTION_SYNC_BUFFER_EVENTS = Object.freeze({
+  'moonpet:action-accepted': 'moonpet',
+  'moonboys:server-action-accepted': 'progression',
+  'moonboys:arcade-score-accepted': 'arcade',
+  'moonboys:wiki-mission-complete': 'wiki',
+  'moonboys:wiki-mission-completed': 'wiki',
+  'moonboys:wtf-event-checkin': 'battle',
+  'moonboys:wtf-event-complete': 'battle',
+});
+
+function ensurePlayerActionSyncBuffer() {
+  if (window.MOONBOYS_ACTION_SYNC || window.__MOONBOYS_ACTION_SYNC_BUFFER__) return;
+  const events = [];
+  const listeners = [];
+  const safeSource = value => {
+    const source = String(value || 'progression').toLowerCase();
+    return /^[a-z][a-z0-9_-]{0,31}$/u.test(source) ? source : 'progression';
+  };
+  const bind = (target, eventName, fallbackSource) => {
+    const listener = event => {
+      if (window.MOONBOYS_ACTION_SYNC) return;
+      events.push(Object.freeze({
+        source: safeSource(event?.detail?.source || fallbackSource),
+        event: eventName,
+      }));
+      if (events.length > 32) events.splice(0, events.length - 32);
+    };
+    target.addEventListener(eventName, listener);
+    listeners.push([target, eventName, listener]);
+  };
+  Object.entries(ACTION_SYNC_BUFFER_EVENTS).forEach(([eventName, source]) => {
+    bind(window, eventName, source);
+    if (eventName.startsWith('moonboys:wiki-')) bind(document, eventName, source);
+  });
+  window.__MOONBOYS_ACTION_SYNC_BUFFER__ = {
+    events,
+    cleanup() {
+      listeners.splice(0).forEach(([target, eventName, listener]) => {
+        target.removeEventListener(eventName, listener);
+      });
+    },
+  };
+}
+
 function ensurePlayerActionSync() {
-  if (typeof window === 'undefined' || typeof document === 'undefined' || window.MOONBOYS_ACTION_SYNC) {
-    return Promise.resolve();
-  }
+  if (typeof window === 'undefined' || typeof document === 'undefined') return Promise.resolve();
+  ensurePlayerActionSyncBuffer();
+  if (window.MOONBOYS_ACTION_SYNC) return Promise.resolve();
   if (window.__MOONBOYS_ARCADE_ACTION_SYNC_LOADING__) return window.__MOONBOYS_ARCADE_ACTION_SYNC_LOADING__;
   const existing = document.querySelector('script[data-player-action-sync]');
   if (existing) {
