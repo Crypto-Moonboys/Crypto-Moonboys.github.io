@@ -12525,11 +12525,25 @@ export default {
       return json(responseResult, result.accepted ? 200 : 409);
     }
 
-    // ── GET /telegram/profile?telegram_id= ────────────────────────────────
-    // Reads from telegram_users; faction comes from canonical blocktopia_progression.
-    if (path === '/telegram/profile' && request.method === 'GET') {
-      const telegramId = url.searchParams.get('telegram_id');
-      if (!telegramId) return err('telegram_id required');
+    // ── POST /telegram/profile — verified owner only ──────────────────────
+    // Never accept an arbitrary caller-supplied telegram_id for private wallet,
+    // Community XP or faction status. Legacy GET requests are disabled.
+    if (path === '/telegram/profile') {
+      if (request.method !== 'POST') {
+        const response = err('Method not allowed; signed POST required', 405);
+        response.headers.set('Allow', 'POST');
+        return response;
+      }
+      let profileBody;
+      try { profileBody = await request.json(); }
+      catch { return err('Invalid JSON', 400); }
+      if (!profileBody || typeof profileBody !== 'object' || Array.isArray(profileBody) ||
+          Object.keys(profileBody).some(key => key !== 'telegram_auth')) {
+        return err('Only verified Telegram authentication may select a profile', 400);
+      }
+      const verified = await verifyTelegramIdentityFromBody(profileBody, env, verifyTelegramAuth);
+      if (verified.error) return err(verified.error, verified.status || 401);
+      const telegramId = verified.telegramId;
       try {
         const [user, faction] = await Promise.all([
           env.DB.prepare(
@@ -12540,7 +12554,11 @@ export default {
           getUserFaction(env.DB, telegramId),
         ]);
         if (!user) return err('Profile not found', 404);
-        return json({ profile: { ...user, faction: faction || null } });
+        const response = json({ profile: { ...user, faction: faction || null } });
+        response.headers.set('Cache-Control', 'private, no-store');
+        response.headers.set('Pragma', 'no-cache');
+        response.headers.set('Vary', 'Origin');
+        return response;
       } catch {
         return err('Failed to load profile', 500);
       }
