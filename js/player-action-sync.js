@@ -24,6 +24,8 @@
   const trailingTimers = new Map();
   const subscribers = new Set();
   let channel = null;
+  let acceptedActivitySeen = false;
+  let peerCatchupRequested = false;
 
   function nowDay() { return new Date().toISOString().slice(0, 10); }
 
@@ -59,6 +61,7 @@
   function publish(source, eventName) {
     source = safeSource(source);
     eventName = safeEvent(eventName);
+    acceptedActivitySeen = true;
     const key = fingerprint(source, eventName);
     lastPublishedAt.set(key, Date.now());
     const message = { v: 1, kind: 'accepted', source, event: eventName, utc_day: nowDay(), sender: instance };
@@ -90,14 +93,47 @@
     return false;
   }
 
+  function requestPeerCatchup() {
+    if (peerCatchupRequested) return;
+    peerCatchupRequested = true;
+    const detail = Object.freeze({ reason: 'action_sync_ready', utc_day: nowDay() });
+    try {
+      window.dispatchEvent(new CustomEvent('moonboys:player-reconcile-needed', { detail }));
+    } catch (_) {}
+  }
+
   function receive(message) {
-    if (!message || message.v !== 1 || message.kind !== 'accepted' ||
-      message.sender === instance || message.utc_day !== nowDay()) return;
-    notify({
-      source: safeSource(message.source),
-      event: safeEvent(message.event),
-      remote: true,
-    });
+    if (!message || message.v !== 1 || message.sender === instance ||
+      message.utc_day !== nowDay()) return;
+    if (message.kind === 'accepted') {
+      acceptedActivitySeen = true;
+      notify({
+        source: safeSource(message.source),
+        event: safeEvent(message.event),
+        remote: true,
+      });
+      return;
+    }
+    // BroadcastChannel does not retain accepted messages for tabs that open the
+    // channel later. A new receiver asks already-open peers whether they have
+    // observed any accepted activity today. Only a peer that actually has such
+    // activity responds, so ordinary single-tab startup does not trigger an
+    // extra auth/read cycle.
+    if (message.kind === 'hello') {
+      if (!acceptedActivitySeen) return;
+      try {
+        channel?.postMessage({
+          v: 1,
+          kind: 'accepted_seen',
+          utc_day: nowDay(),
+          sender: instance,
+          target: safeEvent(message.sender),
+        });
+      } catch (_) {}
+      return;
+    }
+    if (message.kind === 'accepted_seen' &&
+      safeEvent(message.target) === safeEvent(instance)) requestPeerCatchup();
   }
 
   if (typeof BroadcastChannel === 'function') {
@@ -127,6 +163,16 @@
     queued.forEach(item => broadcast(item?.source, item?.event));
   }
 
+  // If this page has not already reconciled because of its own buffered action,
+  // ask active peers whether accepted activity existed before this receiver
+  // joined the channel. A positive reply closes the late-receiver gap without
+  // imposing an unconditional second startup read on every page.
+  if (channel && !acceptedActivitySeen) {
+    try {
+      channel.postMessage({ v: 1, kind: 'hello', utc_day: nowDay(), sender: instance });
+    } catch (_) {}
+  }
+
   window.addEventListener('online', () => {
     const detail = Object.freeze({ reason: 'online', utc_day: nowDay() });
     try { window.dispatchEvent(new CustomEvent('moonboys:player-reconcile-needed', { detail })); } catch (_) {}
@@ -147,17 +193,4 @@
     },
   });
 
-  // BroadcastChannel does not retain messages for tabs that have not opened
-  // the channel yet. A page may therefore finish its initial private read while
-  // this deferred script is still downloading, miss an accepted action from
-  // another tab, and otherwise keep that stale projection marked current.
-  // Once reception becomes possible, force consumers to reconcile from source.
-  // Consumers that have not initialised yet will perform their normal initial
-  // read after this point, so missing this local readiness event is harmless.
-  if (channel) {
-    const detail = Object.freeze({ reason: 'action_sync_ready', utc_day: nowDay() });
-    try {
-      window.dispatchEvent(new CustomEvent('moonboys:player-reconcile-needed', { detail }));
-    } catch (_) {}
-  }
 }());
