@@ -360,6 +360,66 @@ test('PR4 absent bridge mission catalogue never implies a confirmed three-operat
 });
 
 
+test('PR4 sync-health-only cross-tab events never purge member data or restart signed reads',async()=>{
+  const f=await setup(390,{pageKey:'graffpunks'});
+  try{
+    const {page}=f;
+    const member=page.locator('[data-fop-private]');
+    assert.match(await member.innerText(),/120 \(server-saved faction contribution/);
+    const savedButton=await member.locator('[data-fop-retry]').elementHandle();
+    const before=await page.evaluate(()=>({
+      reads:window.__fopTest.reads,refreshes:window.__fopTest.refreshed,
+    }));
+    assert.equal(before.reads,1);
+    assert.equal(before.refreshes,0);
+    // An expired legacy auth attempt writes a fresh timestamp every time.
+    // Two tabs can continually exchange these storage events if the
+    // diagnostics accidentally call onIdentityChange() / refresh().
+    await page.evaluate(()=>{
+      for(let i=0;i<12;i++){
+        window.dispatchEvent(new StorageEvent('storage',{
+          key:'moonboys_tg_sync_health',
+          oldValue:JSON.stringify({state:'bad',reason:'auth_expired',updated_at:i}),
+          newValue:JSON.stringify({state:'bad',reason:'auth_expired',updated_at:i+1}),
+        }));
+      }
+      window.dispatchEvent(new StorageEvent('storage',{
+        key:'moonboys_tg_name',oldValue:'Old label',newValue:'Updated label',
+      }));
+    });
+    assert.deepEqual(await page.evaluate(()=>({
+      reads:window.__fopTest.reads,refreshes:window.__fopTest.refreshed,
+    })),before,'diagnostic/cosmetic changes cannot start another signed read');
+    assert.match(await member.innerText(),/120 \(server-saved faction contribution/,
+      'sync-health changes must not discard verified member progress');
+    assert.equal(await savedButton.evaluate(element=>element.isConnected),true,
+      'unchanged diagnostics must not rebuild the personal panel');
+
+    // An auth-expired page must not enter a retry loop either.
+    const failed=fixture({status:'error'});
+    await page.evaluate(next=>window.__fopTest.push(next),failed);
+    const failedText=await member.innerText();
+    assert.match(failedText,/unavailable or awaiting fresh signed authentication/);
+    const beforeFailure=await page.evaluate(()=>({
+      reads:window.__fopTest.reads,refreshes:window.__fopTest.refreshed,
+    }));
+    await page.evaluate(()=>{
+      for(let i=0;i<12;i++){
+        window.dispatchEvent(new StorageEvent('storage',{
+          key:'moonboys_tg_sync_health',
+          newValue:JSON.stringify({state:'bad',reason:'auth_restore_failed',updated_at:i+100}),
+        }));
+      }
+    });
+    assert.deepEqual(await page.evaluate(()=>({
+      reads:window.__fopTest.reads,refreshes:window.__fopTest.refreshed,
+    })),beforeFailure,'failed auth health diagnostics cannot trigger repeated refresh');
+    assert.equal(await member.innerText(),failedText,
+      'the unavailable state remains stable until an actual auth change or retry');
+    assert.equal(f.errors.length,0,f.errors.join('\n'));
+  }finally{await f.browser.close();}
+});
+
 test('PR4 cross-tab Telegram storage changes and localStorage.clear() synchronously purge private contribution',async()=>{
   const f=await setup(390,{pageKey:'graffpunks'});
   try {
