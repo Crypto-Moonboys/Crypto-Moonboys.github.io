@@ -868,9 +868,12 @@
     window.setInterval(() => {
       if (document.hidden) return;
       const utcDay = new Date().toISOString().slice(0, 10);
-      if (state.lastUtcDay !== utcDay && state.plan) {
-        invalidate('utc_day_rolled_over');
+      if (state.lastUtcDay !== utcDay) {
+        // Initial loading may straddle UTC midnight before state.plan exists.
+        // Its old-day response is deliberately discarded by isRequestCurrent();
+        // a linked player must still get a new signed request on this tick.
         state.lastUtcDay = utcDay;
+        if (identityKey()) invalidate('utc_day_rolled_over');
       } else if (state.plan && Date.now() - state.lastSuccess > VISIBLE_POLL_MS &&
         !state.pending && !state.paging) refresh({ force: true });
       renderCountdowns(); // cosmetic only; never changes availability or reward status.
