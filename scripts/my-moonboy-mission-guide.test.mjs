@@ -35,8 +35,8 @@ test('complete registry checklist exactly tracks every Action Plan source and Sa
 
 test('all resource rules have audited source markers and do not merge Gems, Crystals or XP types', () => {
   const guide = load();
-  assert.equal(guide.economy.length, 17);
-  assert.equal(new Set(guide.economy.map(x=>x.id)).size, 17);
+  assert.equal(guide.economy.length, 19);
+  assert.equal(new Set(guide.economy.map(x=>x.id)).size, 19);
   for (const item of guide.economy) {
     for (const key of ['group','title','gain','spend','risk','sourceFile','sourceMarker','href'])
       assert.ok(item[key], item.id+' missing '+key);
@@ -95,4 +95,9 @@ test('public resource guide and private checklist are isolated, with logout purg
   assert.match(client, /renderChecklist\(byId\('mm-checklist'\), state\.tasks/u);
   assert.ok(read('scripts/ci-domain-runner.mjs').includes(
     "['node', '--test', 'scripts/my-moonboy-mission-guide.test.mjs']"));
+  for (const page of ['index.html','community.html','games/index.html',
+    'gkniftyheads-incubator.html','how-to-play.html']) {
+    assert.match(read(page), /href="\/my-moonboy\.html"/u,
+      page + ' must make the signed mission checklist discoverable');
+  }
 });
