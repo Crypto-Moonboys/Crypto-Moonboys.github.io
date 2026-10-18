@@ -168,20 +168,6 @@ function getIdentityApi() {
   return (typeof window !== 'undefined' && window.MOONBOYS_IDENTITY) ? window.MOONBOYS_IDENTITY : null;
 }
 
-function getCurrentIdentityLabel() {
-  const gate = getIdentityApi();
-  if (!gate) return COPY.UNLINKED;
-  const sync = typeof gate.getSyncState === 'function' ? gate.getSyncState() : null;
-  if (!sync || !sync.linked) return COPY.UNLINKED;
-  const name = typeof gate.getTelegramName === 'function' ? gate.getTelegramName() : null;
-  const auth = typeof gate.getTelegramAuth === 'function' ? gate.getTelegramAuth() : null;
-  const username = auth && (auth.username || auth.user?.username) ? String(auth.username || auth.user.username).replace(/^@/, '') : '';
-  if (name && username) return `${name} (@${username})`;
-  if (name) return String(name);
-  if (username) return `@${username}`;
-  return 'Linked Telegram account';
-}
-
 function renderLinkedPresence() {
   const box = el('lb-linked-identity');
   if (!box) return;
@@ -189,12 +175,12 @@ function renderLinkedPresence() {
   const sync = gate && typeof gate.getSyncState === 'function' ? gate.getSyncState() : null;
   const linked = !!(sync && sync.linked);
   const online = !!(sync && sync.good && !isPresenceHidden());
-  const display = getCurrentIdentityLabel();
+  // Username and XP live in the shared header/My Moonboy; this control is only for public ranking presence.
   box.classList.remove('sync-state--good', 'sync-state--bad', 'sync-live', 'sync-error', 'presence-offline');
   box.classList.add(online ? 'sync-live' : 'sync-error');
   if (isPresenceHidden()) box.classList.add('presence-offline');
   box.innerHTML = linked
-    ? `<strong>You are linked as ${escHtml(display)}</strong><span class="lb-linked-meta">${online ? '● Online presence visible' : (isPresenceHidden() ? '○ Presence hidden' : '○ Sync attention required')}</span>`
+    ? `<strong>Ranking presence</strong><span class="lb-linked-meta">${online ? '● Online presence visible' : (isPresenceHidden() ? '○ Presence hidden' : '○ Sync attention required')}</span>`
     : `<strong>${escHtml(COPY.UNLINKED)}</strong><span class="lb-linked-meta">Link to store ranking and Arcade XP server-side.</span>`;
 
   const toggle = el('lb-presence-toggle');
