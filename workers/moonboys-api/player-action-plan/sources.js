@@ -14,6 +14,7 @@ import { applyPetCareDecay } from '../pets/care-decay.js';
 import { getPetWeeklyBoss } from '../pets/player-expansion.js';
 import { getPetDailyBounties } from '../pets/economy-expansion.js';
 import { petSpaceOrderSql } from '../pets/space-order.js';
+import { CANONICAL_FACTION_READ_SQL, canonicalFactionProjection } from '../shared/faction-projection.js';
 
 export const ACTION_PLAN_SOURCE_REGISTRY = Object.freeze([
   ['onboarding.telegram', 'onboarding', 'account', 'once', 'server_projection', '/gkniftyheads-incubator.html'],
@@ -113,6 +114,9 @@ function genericTask(now, source, status, health, detail = {}) {
 }
 
 const SOURCE_TABLES = Object.freeze({
+  'onboarding.faction': 'blocktopia_progression',
+  'faction.seasonal-mission': 'blocktopia_progression',
+  'faction.weekly-war': 'blocktopia_progression',
   'faction.daily-missions': 'player_daily_mission_state',
   'battle.wtf-windows': 'daily_wtf_events',
   'battle.missed-opportunities': 'daily_missed_perks',
@@ -181,19 +185,48 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
     blocking: identity ? null : 'verified_identity_record_missing', progress: { current: identity ? 1 : 0, target: 1, unit: 'identity' },
   }));
 
-  const factionRows = await query(db,
-    'SELECT m.faction_id, f.name FROM telegram_faction_members m LEFT JOIN telegram_factions f ON f.id=m.faction_id WHERE m.telegram_id=? LIMIT 1',
-    [ownerId], [], failures, ['onboarding.faction', 'faction.daily-missions', 'faction.seasonal-mission', 'faction.weekly-war']);
-  const faction = factionRows[0] || null;
-  for (const key of ['onboarding.faction', 'faction.daily-missions', 'faction.seasonal-mission', 'faction.weekly-war']) {
-    // An assigned member does not make a missing mission-state table live.
-    if (sourceStatuses[key]?.state === 'migration_pending') continue;
-    sourceStatuses[key] = sourceStatus(faction ? 'live' : 'live_empty', { adapter: key.startsWith('faction.') ? 'advisory_faction_projection' : 'membership_projection' });
+  // Match POST /faction/status exactly: legacy telegram_faction_members is NOT
+  // this account's locked Battle Chamber faction. Never mutate progression or
+  // infer that a failed/missing query means the user should join a new faction.
+  const factionKeys = ['onboarding.faction', 'faction.daily-missions',
+    'faction.seasonal-mission', 'faction.weekly-war'];
+  let factionProjection = null;
+  let factionKnown = false;
+  if (sourceStatuses['onboarding.faction']?.state !== 'migration_pending' &&
+      !failures.has('onboarding.faction')) {
+    try {
+      const [row] = await db.all(CANONICAL_FACTION_READ_SQL, [ownerId]);
+      factionProjection = canonicalFactionProjection(row || null);
+      factionKnown = true;
+    } catch (error) {
+      for (const key of factionKeys) failures.set(key, error?.message || 'faction_source_unavailable');
+    }
   }
-  tasks.push(genericTask(now, SOURCE_BY_KEY.get('onboarding.faction'), faction ? 'complete' : 'ready', 'live', {
-    title: faction ? 'Faction membership confirmed' : 'Choose your faction', priority: faction ? 900 : 20,
-    progress: { current: faction ? 1 : 0, target: 1, unit: 'membership' },
-  }));
+  const faction = factionKnown && factionProjection?.joined ? factionProjection : null;
+  for (const key of factionKeys) {
+    if (failures.has(key)) {
+      sourceStatuses[key] = sourceStatus('query_failed', { adapter: 'canonical_faction_projection' });
+    } else if (sourceStatuses[key]?.state === 'migration_pending' || !factionKnown) {
+      // Keep missing-schema warnings, not an invented "not joined" status.
+      if (sourceStatuses[key]?.state !== 'migration_pending')
+        sourceStatuses[key] = sourceStatus('unavailable', { adapter: 'canonical_faction_projection' });
+    } else {
+      sourceStatuses[key] = sourceStatus(faction ? 'live' : 'live_empty', {
+        adapter: key.startsWith('faction.') ? 'advisory_canonical_faction' : 'canonical_faction_membership',
+      });
+    }
+  }
+  const factionHealthy = factionKnown && !failures.has('onboarding.faction') &&
+    sourceStatuses['onboarding.faction']?.state !== 'migration_pending';
+  tasks.push(genericTask(now, SOURCE_BY_KEY.get('onboarding.faction'),
+    !factionHealthy ? 'sync_unavailable' : faction ? 'complete' : 'ready',
+    !factionHealthy ? 'unavailable' : 'live', {
+      title: !factionHealthy ? 'Faction status needs a verified source refresh'
+        : faction ? 'Faction membership confirmed' : 'Choose your faction',
+      priority: faction ? 900 : 20,
+      blocking: factionHealthy ? null : 'faction_source_unavailable',
+      progress: { current: !factionHealthy ? null : faction ? 1 : 0, target: 1, unit: 'membership' },
+    }));
   const factionMissionRows = faction && sourceStatuses['faction.daily-missions'].state !== 'migration_pending'
     ? await query(db, `SELECT mission_id,progress,completed FROM player_daily_mission_state
         WHERE telegram_id=? AND mission_date=? ORDER BY mission_id ASC LIMIT 30`,
@@ -214,21 +247,25 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
     }
   } else {
     tasks.push(genericTask(now, SOURCE_BY_KEY.get('faction.daily-missions'),
-      !faction ? 'blocked' : 'preview', faction ? 'preview' : 'live_empty', {
+      !factionHealthy ? 'sync_unavailable' : !faction ? 'blocked' : 'preview',
+      !factionHealthy ? 'unavailable' : faction ? 'preview' : 'live_empty', {
         title: 'Review rotating daily faction missions', priority: 740, periodKey: day,
         expiresAt: nextUtcDay(now),
-        blocking: faction ? 'mission_catalogue_not_server_authoritative' : 'faction_membership_required',
+        blocking: !factionHealthy ? 'faction_source_unavailable' :
+          faction ? 'mission_catalogue_not_server_authoritative' : 'faction_membership_required',
       }));
     if (faction && sourceStatuses['faction.daily-missions'].state !== 'migration_pending')
       sourceStatuses['faction.daily-missions'] = sourceStatus('preview', { adapter: 'client_mirror_without_persisted_rows' });
   }
   for (const key of ['faction.seasonal-mission', 'faction.weekly-war']) {
     if (faction) sourceStatuses[key] = sourceStatus('preview', { adapter: 'client_or_public_only' });
-    tasks.push(genericTask(now, SOURCE_BY_KEY.get(key), faction ? 'preview' : 'blocked',
-      faction ? 'preview' : 'live_empty', {
+    tasks.push(genericTask(now, SOURCE_BY_KEY.get(key),
+      !factionHealthy ? 'sync_unavailable' : faction ? 'preview' : 'blocked',
+      !factionHealthy ? 'unavailable' : faction ? 'preview' : 'live_empty', {
         title: key === 'faction.weekly-war' ? 'Review faction weekly standings' : 'Review faction seasonal mission',
         periodKey: key === 'faction.weekly-war' ? week : null, priority: 740,
-        blocking: faction ? 'no_verified_personal_objective' : 'faction_membership_required',
+        blocking: !factionHealthy ? 'faction_source_unavailable' :
+          faction ? 'no_verified_personal_objective' : 'faction_membership_required',
       }));
   }
 
@@ -1128,7 +1165,7 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
     // null means authoritative records could not be read, not "zero".
     pet_count: rosterUnavailable ? null : pets.length,
     pets: petSummaries,
-    faction: failures.has('onboarding.faction') ? null
+    faction: !factionHealthy ? null
       : { joined: Boolean(faction), name: faction ? String(faction.name || '').slice(0, 50) : null },
     lifetime_arcade_xp: failures.has('onboarding.pet-entry') || !arcadeRows.length ? null : lifetimeXp,
   } };
