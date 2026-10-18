@@ -885,3 +885,41 @@ test('PR5 My Moonboy shell loads the global action sync before private dashboard
   assert.ok(moonpet.indexOf('src="/js/player-action-sync.js"')<
     moonpet.indexOf('src="/js/moonpet-mini-app.js'));
 });
+
+
+test('PR5 offline transition retires pending reads and blocks refresh/pagination until reconnect', async () => {
+  const f=await setup({width:390,height:844},true);
+  try {
+    await f.page.goto(SITE+'/my-moonboy.html',{waitUntil:'domcontentloaded'});
+    await f.page.locator('#mm-next .mm-task').first().waitFor();
+    assert.equal(await f.page.locator('#mm-claims-badge').isHidden(),false);
+    const before=f.requests.length;
+    f.setSlowOwner('111');
+    await f.page.locator('#mm-refresh').click();
+    for(let i=0;i<40&&f.requests.length===before;i++) await new Promise(resolve=>setTimeout(resolve,10));
+    assert.ok(f.requests.length>before,'refresh must be in flight before offline transition');
+    await f.page.evaluate(()=>window.dispatchEvent(new Event('offline')));
+    assert.match(await f.page.locator('#mm-sync').innerText(),/OFFLINE/);
+    assert.equal(await f.page.locator('#mm-claims-badge').isHidden(),true);
+    assert.match(await f.page.locator('#mm-next').innerText(),/Top recommendations temporarily unavailable/);
+    const atOffline=f.requests.length;
+    await f.page.waitForTimeout(350);
+    assert.equal(await f.page.locator('#mm-claims-badge').isHidden(),true,
+      'late pre-offline response cannot restore claim readiness');
+    assert.match(await f.page.locator('#mm-sync').innerText(),/OFFLINE/);
+    assert.equal(await f.page.locator('#mm-next a.mm-button').count(),0);
+
+    await f.page.locator('#mm-refresh').click();
+    await f.page.locator('#mm-load-more').click();
+    await f.page.waitForTimeout(80);
+    assert.equal(f.requests.length,atOffline,'manual reads are guarded while offline');
+
+    await f.page.evaluate(()=>window.dispatchEvent(new Event('online')));
+    await f.page.waitForFunction(()=>document.getElementById('mm-sync')?.textContent.startsWith('Last verified read'),
+      null,{timeout:5000});
+    assert.ok(f.requests.length>atOffline,'reconnect starts a fresh signed read');
+    assert.equal(await f.page.locator('#mm-claims-badge').isHidden(),false);
+    assert.equal(await f.page.locator('#mm-claims-badge').textContent(),'1');
+    assert.equal(f.errors.length,0,f.errors.join('\n'));
+  } finally { await f.browser.close(); }
+});
