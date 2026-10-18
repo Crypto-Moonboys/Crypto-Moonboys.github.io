@@ -182,3 +182,65 @@ test('Wiki fallback panel never invents Battle Heat or mixes comments with likes
   assert.match(source, /<div class="battle-heat-summary"/u,
     'keep original template structure while removing fictitious percentages');
 });
+
+test('duplicate pet titles show signed roster attribution and exact source periods without exposing refs', () => {
+  const guide = load(), el = target();
+  const firstRef = 'pap_' + 'a'.repeat(24);
+  const secondRef = 'pap_' + 'b'.repeat(24);
+  const records = [
+    {task_id:'first',source_key:'moonpet.weekly-journey',title:'Weekly Journey',
+      owner_scope:'pet',source_pet_ref:firstRef,status:'in_progress',source_health:'live',
+      period:{kind:'pet_journey_week',key:'2026-W42',origin_timezone:'UTC'}},
+    {task_id:'second',source_key:'moonpet.weekly-journey',title:'Weekly Journey',
+      owner_scope:'pet',source_pet_ref:secondRef,status:'in_progress',source_health:'live',
+      period:{kind:'pet_journey_week',key:'2026-W43',origin_timezone:'UTC'}},
+    {task_id:'historic-claim',source_key:'moonpet.seven-of-seven-claim',
+      title:'Collect saved Moonpet bonus',status:'claim_ready',
+      source_health:'live',owner_scope:'account',source_pet_ref:secondRef,
+      period:{kind:'utc_day',key:'2026-10-16',origin_timezone:'UTC'}},
+  ];
+  guide.renderChecklist(el, records, {
+    petLabel: task => task.source_pet_ref === firstRef
+      ? 'MoonPet: MoonPet slot 1' : 'Original earning MoonPet: MoonPet slot 3',
+  });
+  assert.equal((el.innerHTML.match(/<strong>Weekly Journey<\/strong>/g) || []).length, 2);
+  for (const marker of ['MoonPet slot 1', 'MoonPet slot 3',
+    'pet journey week · 2026-W42 · UTC', 'pet journey week · 2026-W43 · UTC',
+    'utc day · 2026-10-16 · UTC', 'Original earning MoonPet']) {
+    assert.ok(el.innerHTML.includes(marker), 'missing signed context: ' + marker);
+  }
+  assert.doesNotMatch(el.innerHTML, /pap_[a-f0-9]{24}/u,
+    'source_pet_ref must not be rendered in DOM or query params');
+
+  guide.renderChecklist(el,[{...records[0],
+    period:{kind:'saved_timer',key:'<script>fake</script>',origin_timezone:'UTC'}}],
+    {petLabel:() => '<img src=x onerror=alert(1)>'});
+  assert.match(el.innerHTML, /&lt;script&gt;fake&lt;\/script&gt;/u);
+  assert.match(el.innerHTML, /&lt;img src=x onerror=alert\(1\)&gt;/u);
+  assert.doesNotMatch(el.innerHTML, /<script>|<img src=x onerror=/u);
+});
+
+test('saved claim and Wiki links have per-row stable focus keys despite sharing destinations', () => {
+  const guide = load(), el = target();
+  guide.renderChecklist(el, [], {});
+  const html = el.innerHTML;
+  const saved = [...html.matchAll(/data-mm-focus-link="saved:([a-z_]+)"/gu)]
+    .map(x => x[1]);
+  const wiki = [...html.matchAll(/data-mm-focus-link="wiki:([a-z-]+)"/gu)]
+    .map(x => x[1]);
+  const sources = [...html.matchAll(/data-mm-focus-link="source:([a-z0-9.-]+)"/gu)]
+    .map(x => x[1]);
+  assert.equal(saved.length, 5);
+  assert.equal(new Set(saved).size, 5);
+  assert.equal(wiki.length, 6);
+  assert.equal(new Set(wiki).size, 6);
+  assert.equal(sources.length, 28);
+  assert.equal(new Set(sources).size, 28);
+  assert.ok(saved.includes('weekly_bounty_claim'));
+  assert.ok(wiki.includes('cite'));
+  const guideSource = read('js/my-moonboy-mission-guide.js');
+  assert.match(guideSource, /getAttribute\('data-mm-focus-link'\)/u);
+  assert.match(guideSource, /link\.getAttribute\('data-mm-focus-link'\) === focusedLinkId/u);
+  assert.doesNotMatch(guideSource, /link\.getAttribute\('href'\) === focusedHref/u);
+  assert.match(read('js/my-moonboy.js'), /petLabel: task => petScopeLabel\(task, directory\)/u);
+});
