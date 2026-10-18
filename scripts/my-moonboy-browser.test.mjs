@@ -927,3 +927,94 @@ test('PR5 offline transition retires pending reads and blocks refresh/pagination
     assert.equal(f.errors.length,0,f.errors.join('\n'));
   } finally { await f.browser.close(); }
 });
+
+
+test('My Moonboy public guide separates Gems from Moon Crystals without exposing a guest checklist', async () => {
+  const f = await setup({width:360,height:800}, false);
+  try {
+    await f.page.goto(SITE + '/my-moonboy.html', {waitUntil:'domcontentloaded'});
+    await f.page.locator('#mm-economy-guide .mm-economy-item').first().waitFor();
+    assert.equal(await f.page.locator('#mm-private').isHidden(), true);
+    assert.equal(await f.page.locator('#mm-complete-checklist').isHidden(), true,
+      'personal checklist must remain behind verified auth');
+    assert.equal(f.requests.length, 0, 'public resource guide never reads owner plan');
+    assert.match(await f.page.locator('#mm-economy').textContent(), /Moon Crystals|Block Topia Gems/u);
+    assert.match(await f.page.locator('#mm-economy').textContent(), /Wiki likes, comments, citations/u);
+    assert.match(await f.page.locator('#mm-economy').textContent(), /Cite mission votes on an existing listed source|Cite — vote/u);
+    assert.ok(await f.page.evaluate(() =>
+      document.querySelector('#mm-economy').getBoundingClientRect().right <= innerWidth + 1));
+    assert.equal(f.errors.length, 0, f.errors.join('\n'));
+  } finally { await f.browser.close(); }
+});
+
+test('My Moonboy signed checklist includes every source and saved-only claim class and clears on logout', async () => {
+  const f = await setup({width:390,height:844}, true);
+  try {
+    await f.page.goto(SITE + '/my-moonboy.html', {waitUntil:'domcontentloaded'});
+    await f.page.locator('#mm-checklist .mm-checklist-source').first().waitFor({state:'attached'});
+    assert.equal(await f.page.locator('#mm-checklist .mm-checklist-source').count(), 28);
+    assert.equal(await f.page.locator('#mm-checklist [data-mm-checklist-key="gap:saved-status"] .mm-checklist-gaps li').count(), 5);
+    assert.equal(await f.page.locator('#mm-checklist [data-mm-checklist-key="gap:wiki-engagement"] .mm-checklist-gaps li').count(), 6);
+    assert.match(await f.page.locator('#mm-checklist [data-mm-checklist-key="gap:wiki-engagement"]').textContent(),
+      /Engage|Signal|Cite/u);
+    assert.match(await f.page.locator('#mm-checklist').textContent(), /Alpha saved job claim/u);
+    assert.match(await f.page.locator('#mm-checklist').textContent(), /Status unavailable|ready — read-only source status|No task in loaded results/u);
+    assert.ok(await f.page.evaluate(() =>
+      document.querySelector('#mm-complete-checklist').getBoundingClientRect().right <= innerWidth + 1));
+    await f.page.evaluate(() => {
+      window.__mmTest.linked = false;
+      window.dispatchEvent(new CustomEvent('moonboys:identity-change'));
+    });
+    assert.equal(await f.page.locator('#mm-private').isHidden(), true);
+    assert.equal(await f.page.locator('#mm-checklist').textContent(), '',
+      'all private checklist rows must be removed synchronously on logout');
+    assert.equal(f.errors.length, 0, f.errors.join('\n'));
+  } finally { await f.browser.close(); }
+});
+
+
+test('signed checklist labels the source MoonPet/window and preserves the exact focused Saved Status/Wiki link', async () => {
+  const f = await setup({width:390,height:844}, true);
+  try {
+    await f.page.goto(SITE + '/my-moonboy.html', {waitUntil:'domcontentloaded'});
+    await f.page.locator('#mm-checklist [data-mm-checklist-key="source:moonpet.jobs"]')
+      .waitFor({state:'attached'});
+    const job = await f.page.locator('#mm-checklist [data-mm-checklist-key="source:moonpet.jobs"]').textContent();
+    assert.match(job, /MoonPet slot 1/u, 'source pet label must be visible in checklist');
+    assert.match(job, /Source period: saved timer · saved-session · UTC/u);
+    assert.doesNotMatch(job, /pap_[a-f0-9]{24}/u, 'opaque source pet ID must not be disclosed');
+
+    // All five Saved Status actions point to the SAME MoonPet game URL.
+    // A source refresh must return keyboard focus to the original claim row.
+    const savedLink = f.page.locator('[data-mm-focus-link="saved:weekly_bounty_claim"]');
+    await savedLink.focus();
+    assert.equal(await f.page.evaluate(() => document.activeElement?.getAttribute('data-mm-focus-link')),
+      'saved:weekly_bounty_claim');
+    const focusedAfterRefresh = await f.page.evaluate(() => {
+      window.dispatchEvent(new CustomEvent('moonboys:player-reconcile-needed', {
+        detail: {reason:'test-source-refreshed'},
+      }));
+      return document.activeElement?.getAttribute('data-mm-focus-link');
+    });
+    assert.equal(focusedAfterRefresh, 'saved:weekly_bounty_claim',
+      'refresh must not move focus to the first identical /moonpet-game.html link');
+    await f.page.waitForFunction(() =>
+      document.getElementById('mm-sync')?.textContent?.startsWith('Last verified read'),
+      null, {timeout:8000});
+    assert.equal(await f.page.evaluate(() => document.activeElement?.getAttribute('data-mm-focus-link')),
+      'saved:weekly_bounty_claim');
+
+    // Multiple Wiki tasks likewise navigate to the same article URL.
+    const wikiLink = f.page.locator('[data-mm-focus-link="wiki:cite"]');
+    await wikiLink.focus();
+    const focusedWiki = await f.page.evaluate(() => {
+      window.dispatchEvent(new CustomEvent('moonboys:player-reconcile-needed', {
+        detail: {reason:'test-second-source-refresh'},
+      }));
+      return document.activeElement?.getAttribute('data-mm-focus-link');
+    });
+    assert.equal(focusedWiki, 'wiki:cite',
+      'citation link focus must not jump to Engage on an identical destination');
+    assert.equal(f.errors.length, 0, f.errors.join('\n'));
+  } finally { await f.browser.close(); }
+});

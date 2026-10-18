@@ -2796,6 +2796,15 @@ body.page-wiki .top-contributor-row {
   padding-bottom: 10px;
   border-bottom: 1px solid rgba(158, 190, 255, .1);
 }
+/* An unavailable contributor feed has one explanatory cell, not four
+ * rank/avatar/name/XP cells. Span the complete grid on desktop and mobile. */
+body.page-wiki .top-contributor-row--empty > .top-contributor-empty-notice {
+  grid-column: 1 / -1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  line-height: 1.5;
+  color: rgba(238, 247, 255, .82);
+}
 
 body.page-wiki .top-contributor-rank {
   color: rgba(238, 247, 255, .82);

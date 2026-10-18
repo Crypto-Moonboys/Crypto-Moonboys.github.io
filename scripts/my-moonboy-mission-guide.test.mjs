@@ -1,0 +1,264 @@
+import assert from 'node:assert/strict';
+import { test } from 'node:test';
+import fs from 'node:fs';
+import path from 'node:path';
+import vm from 'node:vm';
+import { fileURLToPath } from 'node:url';
+
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const read = name => fs.readFileSync(path.join(ROOT, name), 'utf8');
+const source = read('js/my-moonboy-mission-guide.js');
+const parity = JSON.parse(read('data/player-action-sync-claim-parity.v1.json'));
+function load() {
+  const window = {};
+  const document = { readyState: 'loading', activeElement: null, addEventListener() {} };
+  vm.runInNewContext(source, {window, document}, {filename:'my-moonboy-mission-guide.js'});
+  return window.MOONBOYS_MISSION_GUIDE;
+}
+function target() {
+  return { innerHTML: '', querySelectorAll() { return []; }, contains() { return false; } };
+}
+const ids = [...read('workers/moonboys-api/player-action-plan/sources.js')
+  .match(/export const ACTION_PLAN_SOURCE_REGISTRY = Object\.freeze\(\[([\s\S]*?)\]\.map\(/u)[1]
+  .matchAll(/^\s*\['([a-z0-9.-]+)'/gmu)].map(x=>x[1]);
+
+test('complete registry checklist exactly tracks every Action Plan source and Saved Status claim gap', () => {
+  const guide = load();
+  assert.equal(ids.length, 28);
+  assert.equal(new Set(ids).size, ids.length);
+  assert.equal(guide.sources.map(x=>x.key).join('|'), ids.join('|'));
+  const gaps = parity.mappings.filter(x=>x.parity === 'gap').map(x=>x.saved_status);
+  assert.equal(gaps.length, 5);
+  assert.equal(guide.savedOnly.map(x=>x.key).sort().join('|'), gaps.sort().join('|'));
+  assert.ok(guide.savedOnly.every(x=>x.description && x.label));
+});
+
+test('all resource rules have audited source markers and do not merge Gems, Crystals or XP types', () => {
+  const guide = load();
+  assert.equal(guide.economy.length, 19);
+  assert.equal(new Set(guide.economy.map(x=>x.id)).size, 19);
+  for (const item of guide.economy) {
+    for (const key of ['group','title','gain','spend','risk','sourceFile','sourceMarker','href'])
+      assert.ok(item[key], item.id+' missing '+key);
+    assert.match(item.href, /^\/(?!\/)/u);
+    assert.ok(fs.existsSync(path.join(ROOT, item.sourceFile)), item.sourceFile);
+    assert.ok(read(item.sourceFile).includes(item.sourceMarker),
+      item.id+' drifted from source '+item.sourceFile+': '+item.sourceMarker);
+  }
+  assert.match(guide.economy.find(x=>x.id==='crystals').spend, /NOT Block Topia Gems/u);
+  const gems = guide.economy.find(x => x.id === 'bt-gems');
+  assert.match(gems.risk, /not a guaranteed award/u);
+  assert.doesNotMatch(gems.gain, /covert operations?/iu,
+    'covert operations are not a supported Gem-earning source');
+  assert.match(gems.spend, /verified Block Topia upgrades/u);
+  assert.match(guide.economy.find(x=>x.id==='bt-xp').risk, /loss/u);
+  assert.match(guide.economy.find(x=>x.id==='gold').risk, /No automatic 75 Gold/u);
+});
+
+test('all MoonPet economy routes are read from the authoritative game catalogue', () => {
+  const guide = load();
+  const src = read('workers/moonboys-api/pets/economy-expansion.js');
+  const block = src.match(/export const PET_ECONOMY_ROUTES = freeze\(\[([\s\S]*?)\]\);/u)?.[1];
+  assert.ok(block);
+  const keys = [...block.matchAll(/\{ key: '([a-z_]+)'/gu)].map(x=>x[1]);
+  assert.equal(keys.length, 15);
+  assert.equal(guide.routes.map(x=>x.key).join('|'), keys.join('|'));
+});
+
+test('signed checklist verifies accepted receipts only; absence, preview and stale status stay unknown', () => {
+  const guide = load(), el = target();
+  const valid={task_id:'valid',source_key:'moonpet.seven-of-seven-claim',title:'Saved claim <script>alert(1)</script>',
+    status:'claimed',source_health:'live',evidence:{kind:'server_receipt',verified_completion:true}};
+  const advisory={task_id:'preview',source_key:'faction.daily-missions',title:'Browser mission',
+    status:'complete',source_health:'live',evidence:{kind:'client_mirror',verified_completion:false}};
+  guide.renderChecklist(el,[valid,advisory],{topActions:[valid],moreAvailable:true});
+  assert.match(el.innerHTML, /1 receipt-verified \/ 1 loaded task/u);
+  assert.match(el.innerHTML, /✓/u);
+  assert.match(el.innerHTML, /advisory only/u);
+  assert.match(el.innerHTML, /More tasks exist beyond this page/u);
+  assert.match(el.innerHTML, /No task in loaded results; status unknown, not completed/u);
+  assert.equal((el.innerHTML.match(/Check Saved Status/g) || []).length,5);
+  assert.doesNotMatch(el.innerHTML, /<script>|onclick=|type="checkbox"/u);
+  assert.match(el.innerHTML, /&lt;script&gt;alert\(1\)&lt;\/script&gt;/u);
+  guide.renderChecklist(el,[valid],{stale:true,offline:true});
+  assert.doesNotMatch(el.innerHTML, /✓/u);
+  assert.match(el.innerHTML, /historical only/u);
+});
+
+test('public resource guide and private checklist are isolated, with logout purge and CI registration', () => {
+  const guide=load(), el=target();
+  guide.renderRules(el);
+  for (const field of ['Gain / earn:','Spend / use:','Lose / risk / limits:','Block Topia Gems'])
+    assert.ok(el.innerHTML.includes(field),field);
+  const html=read('my-moonboy.html');
+  const client=read('js/my-moonboy.js');
+  assert.ok(html.indexOf('id="mm-complete-checklist"') > html.indexOf('id="mm-private"'));
+  assert.ok(html.indexOf('id="mm-economy"') > html.indexOf('id="mm-private"'));
+  assert.ok(html.indexOf('/js/my-moonboy-mission-guide.js') < html.indexOf('/js/my-moonboy.js'));
+  assert.match(client, /byId\('mm-checklist'\)\.replaceChildren\(\)/u);
+  assert.match(client, /renderChecklist\(byId\('mm-checklist'\), state\.tasks/u);
+  assert.ok(read('scripts/ci-domain-runner.mjs').includes(
+    "['node', '--test', 'scripts/my-moonboy-mission-guide.test.mjs']"));
+  for (const page of ['index.html','community.html','games/index.html',
+    'gkniftyheads-incubator.html','how-to-play.html']) {
+    assert.match(read(page), /href="\/my-moonboy\.html"/u,
+      page + ' must make the signed mission checklist discoverable');
+  }
+});
+
+test('Engage, Signal and Cite are distinct Wiki receipt-backed actions; other interactions are not reward claims', () => {
+  const guide = load(), items = guide.wikiEngagement;
+  assert.deepEqual(items.map(item => item.id).join('|'),
+    'engage|signal|cite|comment-vote|citation-submission|reading-sharing');
+  assert.deepEqual(items.filter(item => item.missionId !== null).map(item => item.missionId).join('|'),
+    'engage|signal|cite');
+  assert.equal(new Set(items.map(item => item.id)).size, 6);
+  const missionSource = read('js/battle-layer.js');
+  const config = read('js/api-config.js');
+  const routeTests = read('scripts/wiki-engagement-api.test.mjs');
+  for (const item of items) {
+    assert.ok(item.label && item.action && item.reward && item.status && item.href);
+    assert.ok(fs.existsSync(path.join(ROOT, item.sourceFile)), item.id + ' source must exist');
+    assert.ok(read(item.sourceFile).includes(item.sourceMarker),
+      item.id + ' backing Wiki action has changed');
+    assert.match(item.href, /^\/(wiki\/|search\.html)/u);
+    if (item.missionId) {
+      assert.ok(missionSource.includes("id: '" + item.missionId + "'"),
+        'mission definition is missing for ' + item.id);
+      assert.match(routeTests, /reward_status.*xp_synced/u);
+    } else {
+      assert.match(item.reward, /no .*XP|No .*XP/iu,
+        item.id + ' must not be described as an automatically paid source');
+    }
+  }
+  for (const flag of ['COMMENTS', 'LIKES', 'CITATION_VOTES'])
+    assert.ok(new RegExp(flag + ':\\s+true').test(config), flag + ' runtime flag changed');
+  const publicGuide = read('how-to-play.html');
+  assert.match(publicGuide, /Wiki participation — comments, article likes and citation votes/u);
+  assert.match(publicGuide, /My Moonboy currently shows only the total accepted Wiki receipts for today/u);
+  assert.match(publicGuide, /href="\/my-moonboy\.html#mm-economy"/u);
+  assert.match(read('js/comments.js'), /eligible server-accepted Engage, Signal and Cite/u);
+  assert.doesNotMatch(read('js/comments.js'), /Comment = 10 XP|Like = 5 XP|Citation = 15 XP/u,
+    'outdated fixed frontend reward promises contradict source receipts');
+});
+
+test('an accepted aggregate Wiki mission count never supplies individual Engage / Signal / Cite checks', () => {
+  const guide = load(), el = target();
+  guide.renderChecklist(el, [{
+    task_id: 'wiki:today', source_key: 'wiki.accepted-missions',
+    title: 'Accepted wiki mission recorded today',
+    status: 'complete', source_health: 'live',
+    evidence: { kind: 'server_receipt', verified_completion: true },
+    progress: { current: 3, target: 1, unit: 'accepted_receipts' },
+  }], {});
+  const wiki = el.innerHTML.split('data-mm-checklist-key="gap:wiki-engagement"')[1]
+    ?.split('</details>')[0] || '';
+  assert.match(wiki, /Signed API reports 3 accepted Wiki receipt\(s\) today in total/u);
+  assert.equal((wiki.match(/Individual status not projected/g) || []).length, 6,
+    'all six Wiki actions remain unverified individually, even when summary count is three');
+  assert.doesNotMatch(wiki, /✓|type="checkbox"/u);
+  assert.match(wiki, /Open Wiki|Check original page/u);
+  guide.renderChecklist(el, [], { stale: true, offline: true });
+  assert.match(el.innerHTML, /Individual Wiki mission source receipts are not available/u);
+  assert.doesNotMatch(el.innerHTML, /Signed API reports 3 accepted Wiki/u);
+});
+
+test('Wiki contributor XP rankings do not fall back to fictional scores', () => {
+  const source = read('js/comments.js');
+  const section = source.slice(
+    source.indexOf('function getContributorData()'),
+    source.indexOf('function robotAvatar(')
+  );
+  assert.ok(section.includes('week && week.length ? week : []'));
+  assert.ok(section.includes('allTime && allTime.length ? allTime : []'));
+  assert.doesNotMatch(section, /:\s*FALLBACK_TOP_CONTRIBUTORS/u);
+  assert.match(source, /Verified contributor rankings unavailable for this period/u);
+  assert.match(source, /list\.innerHTML = contributorListHTML\(rows\)/u);
+});
+
+test('empty contributor notice spans every rank/avatar/name/XP grid column even with compact row sizes', () => {
+  const comments = read('js/comments.js');
+  const wikiCss = read('css/wiki.css');
+  const compactCss = read('css/wiki-comments-compact.css');
+  assert.match(comments, /<li class="top-contributor-row top-contributor-row--empty"><span class="top-contributor-empty-notice">/u);
+  assert.match(wikiCss, /body\.page-wiki \.top-contributor-row--empty > \.top-contributor-empty-notice \{[^}]*grid-column:\s*1\s*\/\s*-1;/u);
+  assert.match(wikiCss, /body\.page-wiki \.top-contributor-row \{[^}]*grid-template-columns:\s*28px 44px minmax\(0, 1fr\) auto;/u);
+  assert.match(compactCss, /body\.page-wiki \.top-contributor-row \{[^}]*grid-template-columns:\s*22px 32px minmax\(0, 1fr\) auto;/u);
+  assert.ok(!/body\.page-wiki \.top-contributor-row--empty > \.top-contributor-empty-notice/.test(compactCss),
+    'compact overrides must not undo the full-column span');
+});
+
+test('Wiki fallback panel never invents Battle Heat or mixes comments with likes and citations', () => {
+  const source = read('js/wiki-template-dashboard.js');
+  assert.doesNotMatch(source, /Promise\.resolve\(25\)|return 25;|comments\.length \* 5/u);
+  assert.match(source, /data\.comments\.length/u);
+  assert.match(source, /Loaded approved comments only \(up to 50\)/u);
+  assert.match(source, /loaded public comments \(max 50\)/u);
+  assert.match(source, /Comment source unavailable; no engagement count inferred/u);
+  assert.match(source, /<div class="battle-heat-summary"/u,
+    'keep original template structure while removing fictitious percentages');
+});
+
+test('duplicate pet titles show signed roster attribution and exact source periods without exposing refs', () => {
+  const guide = load(), el = target();
+  const firstRef = 'pap_' + 'a'.repeat(24);
+  const secondRef = 'pap_' + 'b'.repeat(24);
+  const records = [
+    {task_id:'first',source_key:'moonpet.weekly-journey',title:'Weekly Journey',
+      owner_scope:'pet',source_pet_ref:firstRef,status:'in_progress',source_health:'live',
+      period:{kind:'pet_journey_week',key:'2026-W42',origin_timezone:'UTC'}},
+    {task_id:'second',source_key:'moonpet.weekly-journey',title:'Weekly Journey',
+      owner_scope:'pet',source_pet_ref:secondRef,status:'in_progress',source_health:'live',
+      period:{kind:'pet_journey_week',key:'2026-W43',origin_timezone:'UTC'}},
+    {task_id:'historic-claim',source_key:'moonpet.seven-of-seven-claim',
+      title:'Collect saved Moonpet bonus',status:'claim_ready',
+      source_health:'live',owner_scope:'account',source_pet_ref:secondRef,
+      period:{kind:'utc_day',key:'2026-10-16',origin_timezone:'UTC'}},
+  ];
+  guide.renderChecklist(el, records, {
+    petLabel: task => task.source_pet_ref === firstRef
+      ? 'MoonPet: MoonPet slot 1' : 'Original earning MoonPet: MoonPet slot 3',
+  });
+  assert.equal((el.innerHTML.match(/<strong>Weekly Journey<\/strong> · /g) || []).length, 2);
+  for (const marker of ['MoonPet slot 1', 'MoonPet slot 3',
+    'pet journey week · 2026-W42 · UTC', 'pet journey week · 2026-W43 · UTC',
+    'utc day · 2026-10-16 · UTC', 'Original earning MoonPet']) {
+    assert.ok(el.innerHTML.includes(marker), 'missing signed context: ' + marker);
+  }
+  assert.doesNotMatch(el.innerHTML, /pap_[a-f0-9]{24}/u,
+    'source_pet_ref must not be rendered in DOM or query params');
+
+  guide.renderChecklist(el,[{...records[0],
+    period:{kind:'saved_timer',key:'<script>fake</script>',origin_timezone:'UTC'}}],
+    {petLabel:() => '<img src=x onerror=alert(1)>'});
+  assert.match(el.innerHTML, /&lt;script&gt;fake&lt;\/script&gt;/u);
+  assert.match(el.innerHTML, /&lt;img src=x onerror=alert\(1\)&gt;/u);
+  assert.doesNotMatch(el.innerHTML, /<script>|<img src=x onerror=/u);
+});
+
+test('saved claim and Wiki links have per-row stable focus keys despite sharing destinations', () => {
+  const guide = load(), el = target();
+  guide.renderChecklist(el, [], {});
+  const html = el.innerHTML;
+  const saved = [...html.matchAll(/data-mm-focus-link="saved:([a-z_]+)"/gu)]
+    .map(x => x[1]);
+  const wiki = [...html.matchAll(/data-mm-focus-link="wiki:([a-z-]+)"/gu)]
+    .map(x => x[1]);
+  const sources = [...html.matchAll(/data-mm-focus-link="source:([a-z0-9.-]+)"/gu)]
+    .map(x => x[1]);
+  assert.equal(saved.length, 5);
+  assert.equal(new Set(saved).size, 5);
+  assert.equal(wiki.length, 6);
+  assert.equal(new Set(wiki).size, 6);
+  assert.equal(sources.length, 28);
+  assert.equal(new Set(sources).size, 28);
+  assert.ok(saved.includes('weekly_bounty_claim'));
+  assert.ok(wiki.includes('cite'));
+  const guideSource = read('js/my-moonboy-mission-guide.js');
+  assert.match(guideSource, /getAttribute\('data-mm-focus-link'\)/u);
+  assert.match(guideSource, /link\.getAttribute\('data-mm-focus-link'\) === focusedLinkId/u);
+  assert.doesNotMatch(guideSource, /link\.getAttribute\('href'\) === focusedHref/u);
+  assert.match(read('js/my-moonboy.js'), /petLabel: task => petScopeLabel\(task, directory\)/u);
+  assert.doesNotMatch(read('gkniftyheads-incubator.html'), /claim rewards for you/iu,
+    'onboarding copy must pass the public trust guard');
+});

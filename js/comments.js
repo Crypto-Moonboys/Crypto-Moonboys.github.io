@@ -168,9 +168,12 @@
     var live = window.MOONBOYS_TOP_CONTRIBUTORS || {};
     var week = Array.isArray(live.week) ? live.week : Array.isArray(live.this_week) ? live.this_week : null;
     var allTime = Array.isArray(live.all_time) ? live.all_time : Array.isArray(live.allTime) ? live.allTime : null;
+    // A source outage or empty leaderboard is NOT proof of an invented score.
+    // Legacy artwork examples remain in source for offline visual regression,
+    // but never substitute them for real contributor accounts or XP.
     return {
-      week: week && week.length ? week : FALLBACK_TOP_CONTRIBUTORS,
-      all_time: allTime && allTime.length ? allTime : FALLBACK_TOP_CONTRIBUTORS,
+      week: week && week.length ? week : [],
+      all_time: allTime && allTime.length ? allTime : [],
     };
   }
 
@@ -214,6 +217,11 @@
     }).join('');
   }
 
+  function contributorListHTML(rows) {
+    return rows && rows.length ? contributorRows(rows)
+      : '<li class="top-contributor-row top-contributor-row--empty"><span class="top-contributor-empty-notice">Verified contributor rankings unavailable for this period. No XP scores inferred.</span></li>';
+  }
+
   function buildTopContributorsHTML() {
     var data = getContributorData();
     return '<aside class="comments-top-contributors" aria-labelledby="comments-top-contributors-title">' +
@@ -225,7 +233,7 @@
         '<button type="button" class="top-contributor-tab is-active" data-period="week" aria-pressed="true">This Week</button>' +
         '<button type="button" class="top-contributor-tab" data-period="all_time" aria-pressed="false">All Time</button>' +
       '</div>' +
-      '<ol class="top-contributor-list" data-period="week">' + contributorRows(data.week) + '</ol>' +
+      '<ol class="top-contributor-list" data-period="week">' + contributorListHTML(data.week) + '</ol>' +
     '</aside>';
   }
 
@@ -257,8 +265,8 @@
 
   function buildInfoCards() {
     return '<div class="comments-info-grid" aria-label="Community engagement guide">' +
-      '<article class="comments-info-card comments-info-card--xp"><h3>XP For Engagement</h3><p>Comments, likes and citations earn you XP.</p><ul><li>Comment = 10 XP</li><li>Like = 5 XP</li><li>Citation = 15 XP</li></ul></article>' +
-      '<article class="comments-info-card comments-info-card--cite"><h3>Cite To Earn</h3><p>Cite facts and sources to boost credibility and XP.</p><ul><li>Add credible source</li><li>Help verify the archive</li><li>Earn more XP</li></ul></article>' +
+      '<article class="comments-info-card comments-info-card--xp"><h3>XP For Engagement</h3><p>Only eligible server-accepted Engage, Signal and Cite missions can award the source-defined Wiki XP. A click or unsynced comment is not proof of payment.</p><ul><li>Comment: Engage mission</li><li>Like: Signal mission</li><li>Citation vote: Cite mission</li></ul></article>' +
+      '<article class="comments-info-card comments-info-card--cite"><h3>Cite To Earn</h3><p>The Cite mission votes on an existing listed source; adding a new reference or clicking a citation link is not an XP receipt.</p><ul><li>Review listed sources</li><li>Vote where enabled</li><li>Check accepted mission proof</li></ul></article>' +
       '<article class="comments-info-card comments-info-card--quality"><h3>Quality Matters</h3><p>High quality comments rise to the top.</p><ul><li>Helpful</li><li>Accurate</li><li>Respectful</li></ul></article>' +
       '<article class="comments-info-card comments-info-card--community"><h3>Real Community</h3><p>Real GKniftyHEADS. Real knowledge. Real culture.</p><ul><li>Build the archive</li><li>Help others</li><li>Grow together</li></ul></article>' +
     '</div>';
@@ -588,7 +596,7 @@
         });
         if (list) {
           list.setAttribute('data-period', period);
-          list.innerHTML = contributorRows(rows);
+          list.innerHTML = contributorListHTML(rows);
         }
       });
     });

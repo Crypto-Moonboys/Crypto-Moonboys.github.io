@@ -44,6 +44,7 @@ const GROUPS = {
     ['node', 'scripts/audit-published-vs-index.js'],
   ],
   'worker-api': [
+    ['node', '--test', 'scripts/my-moonboy-mission-guide.test.mjs'],
     ['node', '--test', 'scripts/moonpet-mission-status.test.mjs'],
     ['node', '--test', 'scripts/telegram-website-auth.test.mjs'],
     ['node', '--test', 'scripts/telegram-website-auth-diagnostics.test.mjs'],
@@ -250,6 +251,7 @@ const GROUPS = {
     ['node', 'scripts/wax-collection-page-fallback.test.mjs'],
   ],
   visual: [
+    ['node', '--test', 'scripts/my-moonboy-mission-guide.test.mjs'],
     ['node', '--test', 'scripts/player-action-sync-parity.test.mjs'],
     ['node', '--test', 'scripts/player-action-sync-browser.test.mjs'],
     ['node', '--test', 'scripts/faction-operations-browser.test.mjs'],
