@@ -72,26 +72,38 @@ test('accepted Moonpet action broadcasts one sanitized invalidation to another t
   } finally { await f.browser.close(); }
 });
 
-test('accepted-event bursts are deduped and never rebroadcast in a loop', async () => {
+test('accepted-event bursts publish immediate plus trailing invalidation without rebroadcast loops', async () => {
   const f = await setup();
   try {
     await f.a.evaluate(() => {
       for (let i=0;i<8;i++) {
-        window.dispatchEvent(new CustomEvent('moonboys:score-updated', { detail: { score: 999+i, player: 'private' } }));
+        window.dispatchEvent(new CustomEvent('moonboys:arcade-score-accepted', {
+          detail: { source:'arcade', score:999+i, player:'private' }
+        }));
       }
     });
     await f.b.waitForFunction(() => window.__accepted.length === 1);
-    await f.b.waitForTimeout(1100);
-    assert.equal(await f.a.evaluate(() => window.__accepted.length), 1,
-      'local listener receives one standard event after dedupe');
-    assert.equal(await f.b.evaluate(() => window.__accepted.length), 1,
-      'remote tab receives one invalidation, not an echo loop');
+    await f.b.waitForFunction(() => window.__accepted.length === 2, null, { timeout: 3000 });
+    assert.equal(await f.a.evaluate(() => window.__accepted.length), 2,
+      'local tab gets immediate stale mark plus one trailing final-state invalidation');
+    assert.equal(await f.b.evaluate(() => window.__accepted.length), 2,
+      'remote tab gets immediate plus trailing invalidation, with no echo loop');
+    assert.ok((await f.b.evaluate(() => window.__accepted)).every(item =>
+      item.event === 'moonboys:arcade-score-accepted' && item.source === 'arcade'));
+  } finally { await f.browser.close(); }
+});
 
+test('public leaderboard score display updates are ignored by accepted-action sync', async () => {
+  const f = await setup();
+  try {
     await f.a.evaluate(() => {
-      window.dispatchEvent(new CustomEvent('moonboys:score-updated', { detail: { score: 1001 } }));
+      window.dispatchEvent(new CustomEvent('moonboys:score-updated', {
+        detail: { player:'another public player', score:999999 }
+      }));
     });
-    await f.b.waitForFunction(() => window.__accepted.length === 2);
-    assert.equal(await f.b.evaluate(() => window.__accepted.length), 2);
+    await f.a.waitForTimeout(1200);
+    assert.equal(await f.a.evaluate(() => window.__accepted.length), 0);
+    assert.equal(await f.b.evaluate(() => window.__accepted.length), 0);
   } finally { await f.browser.close(); }
 });
 
