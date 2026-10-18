@@ -21,7 +21,8 @@ assert.ok(
 
 assert.ok(
   leaderboardHtml.includes('class="lb-page"') &&
-    leaderboardHtml.includes('class="lb-overview-grid"') &&
+    leaderboardHtml.includes('class="lb-games-coverage"') &&
+    leaderboardHtml.includes('Other playable games — separate sources') &&
     leaderboardHtml.includes('class="lb-toolbar-card"'),
   'leaderboard page must keep the rearranged card/surface layout',
 );
