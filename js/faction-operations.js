@@ -549,7 +549,10 @@
       queueForcedRefresh();
     });
     window.addEventListener('moonboys:player-reconcile-needed', () => {
-      if (!document.hidden && ownerId()) queueForcedRefresh();
+      // Always preserve reconnect invalidation. queueForcedRefresh() hides
+      // stale private interpretation immediately, while runQueuedForcedRefresh()
+      // defers network work until this tab becomes visible.
+      if (ownerId()) queueForcedRefresh();
     });
     window.addEventListener('moonboys:faction-status', () => {
       // Faction membership changes retire any accepted-action follow-up too.
