@@ -142,9 +142,9 @@ check(stateSubscribeBlock.includes("state.source === 'server'") && stateSubscrib
 check(stateSubscribeBlock.includes('blocktopiaAccessHTML(linked, state.xp, requiredXp, serverLinkedConfirmed, progressionConfirmed)'), 'live Block Topia row updater reuses initial access markup helper with confirmation flags');
 
 console.log('\n[4] Panel separation');
-check(siteShell.includes('PLAYER LIVE FEED') && siteShell.includes('FACTION DAILY OPS') && siteShell.includes('DAILY WTF SIGNAL') && siteShell.includes('MISSED OPPORTUNITIES'), 'right rail restores multi-section live ecosystem headings');
-check(!siteShell.includes('data-las-panel') && siteShell.includes('data-csp-panel') && siteShell.includes('data-csp-faction-ops') && siteShell.includes('data-csp-wtf-signal') && siteShell.includes('data-csp-missed'), 'right rail mounts only shared connection-status-panel section hooks (no data-las-panel hook)');
-check(siteShell.includes('hud-box--actions') && siteShell.includes('hud-box--events') && siteShell.includes('hud-box--missed'), 'right rail includes separate visual boxes for ops/signal/missed sections');
+check(!['PLAYER LIVE FEED', 'FACTION DAILY OPS', 'DAILY WTF SIGNAL', 'MISSED OPPORTUNITIES'].some(label => siteShell.includes(label)), 'global shell does not recreate old personal panel headings');
+check(!['data-las-panel', 'data-csp-panel', 'data-csp-faction-ops', 'data-csp-wtf-signal', 'data-csp-missed'].some(hook => siteShell.includes(hook)) && ['data-csp-panel', 'data-csp-faction-ops', 'data-csp-wtf-signal', 'data-csp-missed'].every(hook => csp.includes(hook)), 'standalone connection-status renderer keeps hooks without reinjecting global panels');
+check(!['hud-box--actions', 'hud-box--events', 'hud-box--missed'].some(marker => siteShell.includes(marker)), 'removed global personal dashboard boxes are not remounted');
 const liveFeedBlock = functionBlock(csp, 'buildPlayerLiveFeedHTML');
 const opsBlock = functionBlock(csp, 'buildFactionDailyOpsHTML');
 const wtfSectionBlock = functionBlock(csp, 'buildDailyWtfSignalHTML');
@@ -271,7 +271,7 @@ check(!functionBlock(csp, 'buildPlayerLiveFeedHTML').includes('csp-avatar-mini')
 check(siteShell.includes('getTelegramPhotoUrl') && siteShell.includes('hud-player-avatar'), 'shell portrait area is the single authority for player profile image');
 check(siteShell.includes('hud-avatar-icon'), 'shell portrait area preserves fallback pixel avatar when no Telegram photo is available');
 // Multi-section right rail structure intact
-check(siteShell.includes('data-csp-panel') && siteShell.includes('data-csp-faction-ops') && siteShell.includes('data-csp-wtf-signal') && siteShell.includes('data-csp-missed'), 'multi-section right rail remains intact with all four section hooks');
+check(['data-csp-panel', 'data-csp-faction-ops', 'data-csp-wtf-signal', 'data-csp-missed'].every(hook => csp.includes(hook)) && !['data-csp-panel', 'data-csp-faction-ops', 'data-csp-wtf-signal', 'data-csp-missed'].some(hook => siteShell.includes(hook)), 'standalone connection-status mounts remain supported without old inline site-shell hooks');
 // One shared state authority
 check(csp.includes('buildSharedRailState') && csp.includes('RIGHT_RAIL_SECTION_SELECTORS'), 'one shared state authority drives all right-rail section renders');
 
