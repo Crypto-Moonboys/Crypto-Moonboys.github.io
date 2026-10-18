@@ -623,7 +623,17 @@ window.__HUD_CONSOLIDATED__ = true;
     observer.observe(document.body, { childList: true, subtree: true });
   }
 
+  function ensurePlayerActionSync() {
+    if (window.MOONBOYS_ACTION_SYNC || document.querySelector('script[data-player-action-sync]')) return;
+    const script = document.createElement('script');
+    script.src = '/js/player-action-sync.js';
+    script.async = false;
+    script.dataset.playerActionSync = '1';
+    document.head.appendChild(script);
+  }
+
   function bootShell() {
+    ensurePlayerActionSync();
     ensureNav();
     startRecoveryObserver();
     // Identity events update the private nav link without changing public
