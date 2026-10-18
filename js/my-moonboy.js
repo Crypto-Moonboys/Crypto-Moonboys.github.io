@@ -775,6 +775,9 @@
       stale: state.stale,
       offline: state.offline,
       moreAvailable: Boolean(state.nextCursor),
+      // Resolve original/source pets against the signed roster's safe labels,
+      // without sending opaque pet IDs into the rendered checklist or a URL.
+      petLabel: task => petScopeLabel(task, directory),
     });
     const filterEntry = state.petFilterRef && directory.get(state.petFilterRef);
     const petFilterActive = state.tab === 'moonpet' && Boolean(state.petFilterRef);
