@@ -26,6 +26,7 @@
 
   let snapshot = null;
   let epoch = 0;
+  let snapshotRevision = 0;
   let loading = false;
   let subscribed = false;
   let currentOwner = null;
@@ -340,8 +341,9 @@
   }
 
   function receive(state) {
-    // Singleton can notify with a previous owner's cached state. Never
-    // render that state's private data under a switched account.
+    // A subscriber or old in-flight read may resolve AFTER a new owner has
+    // loaded. Reject foreign signed payloads without replacing the new plan
+    // or erasing its public source snapshot.
     const id = ownerId();
     if (currentOwner !== id) {
       currentOwner = id;
@@ -349,7 +351,14 @@
       epoch++;
       personalRoot.replaceChildren();
     }
+    if (state?.identity?.linked === true &&
+      (!id || String(state.identity.telegram_id ?? '') !== id)) return;
+    // A late previous-day event must not erase a freshly accepted current-day
+    // projection. A current-owner error still fails closed below.
+    if (snapshot && publicState(snapshot) && state?.utc_day &&
+      state.utc_day !== utcDay()) return;
     snapshot = publicState(state) ? state : null;
+    snapshotRevision++;
     loading = false;
     render();
   }
@@ -363,12 +372,15 @@
     }
     if (inflight) return inflight;
     const generation = epoch;
+    const revision = snapshotRevision;
     loading = true;
     render();
     const action = force && typeof api.refresh === 'function'
       ? api.refresh({ force: true }) : api.getState();
     const operation = Promise.resolve(action).then(state => {
-      if (generation === epoch) receive(state);
+      // subscribe(receive) may have delivered a newer same-owner record while
+      // the Promise resolves. Prefer that delivery to a late stale result.
+      if (generation === epoch && revision === snapshotRevision) receive(state);
       return state;
     }).catch(() => {
       if (generation === epoch) { snapshot = null; loading = false; render(); }
@@ -384,6 +396,7 @@
     // Fail closed before a new auth read; never show the previous owner's
     // faction, progress, or old mission search state in a public chamber.
     epoch++;
+    snapshotRevision++;
     currentOwner = ownerId();
     snapshot = null;
     inflight = null;
