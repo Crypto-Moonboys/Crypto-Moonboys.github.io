@@ -76,8 +76,9 @@ test('PR5 action sync is globally loaded for shell pages and directly for standa
   assert.match(siteShell, /\/js\/player-action-sync\.js/u);
   assert.match(siteShell, /script\.dataset\.playerActionSync/u);
   assert.match(moonpetPage, /src="\/js\/player-action-sync\.js"/u);
-  assert.ok(moonpetPage.indexOf('src="/js/player-action-sync.js"') <
-    moonpetPage.indexOf('src="/js/moonpet-mini-app.js"'));
+  assert.ok(moonpetPage.indexOf('/js/player-action-sync.js') <
+    moonpetPage.indexOf('/js/moonpet-mini-app.js'),
+    'action sync must load before MoonPet Mini App regardless of HTML quote style');
   assert.match(sync, /BroadcastChannel/u);
   assert.doesNotMatch(sync, /\bfetch\s*\(|XMLHttpRequest|sendBeacon|localStorage\.(?:setItem|getItem|removeItem|clear)/u,
     'sync channel is invalidation-only');
