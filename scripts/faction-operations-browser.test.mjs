@@ -900,3 +900,50 @@ test('PR5 guest UTC rollover refreshes anonymous Daily Loop schedule instead of 
     assert.equal(f.errors.length,0,f.errors.join('\n'));
   }finally{await f.browser.close();}
 });
+
+
+test('PR5 guest cross-tab accepted action preserves public reset and WTF snapshot without private refresh',async()=>{
+  const guest=fixture({verified:false});
+  guest.next_utc_reset_at='2026-10-19T00:00:00.000Z';
+  guest.daily_wtf_status={
+    utc_day:guest.utc_day,
+    events:[{
+      title:'Guest confirmed public WTF window',
+      starts_at:new Date(Date.now()+3600000).toISOString(),
+      ends_at:new Date(Date.now()+7200000).toISOString(),
+      status:'upcoming',
+    }],
+  };
+  const f=await setup(390,{pageKey:'graffpunks',linked:false,state:guest});
+  try{
+    const {page}=f;
+    await page.waitForFunction(()=>document.querySelector('[data-fop-crew]')?.textContent.includes(
+      'Guest confirmed public WTF window'
+    ));
+    const before=await page.locator('[data-fop-crew]').innerText();
+    assert.match(before,/Guest confirmed public WTF window/);
+    assert.match(before,/Next UTC-day reset:/);
+    assert.match(await page.locator('[data-fop-private]').innerText(),/Link Telegram/);
+    assert.equal(await page.evaluate(()=>window.__fopTest.reads),1);
+    assert.equal(await page.evaluate(()=>window.__fopTest.refreshed),0);
+
+    await page.evaluate(()=>{
+      window.dispatchEvent(new CustomEvent('moonboys:player-action-accepted',{
+        detail:{source:'arcade',event:'moonboys:arcade-score-accepted',remote:true}
+      }));
+    });
+    await page.waitForTimeout(75);
+
+    const after=await page.locator('[data-fop-crew]').innerText();
+    assert.equal(after,before,
+      'guest accepted-action invalidation must not clear or replace public source snapshot');
+    assert.match(after,/Guest confirmed public WTF window/);
+    assert.match(after,/Next UTC-day reset:/);
+    assert.equal(await page.evaluate(()=>window.__fopTest.reads),1,
+      'guest cross-tab action does not request a private or anonymous replacement read');
+    assert.equal(await page.evaluate(()=>window.__fopTest.refreshed),0);
+    assert.match(await page.locator('[data-fop-private]').innerText(),/Link Telegram/);
+    assert.equal(await page.evaluate(()=>window.__fopTest.writes),0);
+    assert.equal(f.errors.length,0,f.errors.join('\n'));
+  }finally{await f.browser.close();}
+});
