@@ -413,6 +413,7 @@
   }
 
   function applyPlan(payload, ownerId, append) {
+    if (state.offline) return;
     const previous = append ? state.tasks : [];
     const seen = new Set(previous.map(task => task.task_id));
     const newTasks = payload.tasks.filter(task => task && typeof task.task_id === 'string' && !seen.has(task.task_id));
@@ -440,6 +441,14 @@
 
   async function refresh(options) {
     const opts = options || {};
+    if (state.offline) {
+      if (state.plan) {
+        state.stale = true;
+        state.lastFailure = 'Offline. Waiting for a fresh verified read after reconnect.';
+        render();
+      }
+      return;
+    }
     const ownerId = identityKey();
     if (!ownerId) {
       clearPrivate('Log in to My Moonboy', 'Connect a verified Telegram account to view your private missions.');
@@ -512,6 +521,12 @@
   }
 
   async function loadMore() {
+    if (state.offline) {
+      state.stale = Boolean(state.plan);
+      state.lastFailure = 'Offline. Pagination waits for a fresh verified read after reconnect.';
+      if (state.plan) render();
+      return;
+    }
     if (!state.plan || !state.nextCursor || state.paging || state.pending) return;
     const ownerId = identityKey();
     const day = new Date().toISOString().slice(0, 10);
@@ -574,7 +589,7 @@
     }
   }
 
-  function isNow(task) { return taskActionable(task) && !state.stale; }
+  function isNow(task) { return taskActionable(task) && !state.stale && !state.offline; }
   function matchesTab(task) {
     const key = String(task.source_key || '');
     const period = task.period && task.period.kind || '';
@@ -631,7 +646,7 @@
     const cards = Array.from(directory.entries()).map(([ref, entry], index) => {
       const pet = entry.pet;
       const assigned = state.tasks.filter(task => task.source_pet_ref === ref);
-      const verifiedAvailable = assigned.filter(taskActionable).length;
+      const verifiedAvailable = state.offline ? 0 : assigned.filter(taskActionable).length;
       const stage = pet ? formatName(pet.life_stage || 'Not supplied') : null;
       const phase = pet ? formatName(pet.lifecycle_phase || 'Not supplied') : null;
       const level = pet && pet.level != null ? ' · Level ' + niceCount(pet.level) : '';
@@ -657,7 +672,7 @@
         '<li>' + esc(task.title) + ' — ' +
         esc(state.stale ? 'last confirmed: ' + formatName(task.status) : formatName(task.status)) +
         '</li>').join('');
-      const claimReady = state.stale ? 0 : assigned.filter(task =>
+      const claimReady = state.stale || state.offline ? 0 : assigned.filter(task =>
         task.status === 'claim_ready' && task.source_health === 'live').length;
       const claimBadge = claimReady
         ? '<span class="mm-pet-claim-badge" aria-label="' + esc(claimReady + ' verified claim' +
@@ -883,8 +898,18 @@
     REFRESH_EVENTS.forEach(name => window.addEventListener(name, () => invalidate(name)));
     window.addEventListener('offline', () => {
       state.offline = true;
+      // Retire every read generation before displaying offline state. A late
+      // successful response must never restore readiness while disconnected.
+      state.epoch++;
+      window.clearTimeout(state.refreshTimer);
+      state.refreshTimer = 0;
+      cancelPagination();
+      state.controllers.forEach(controller => controller.abort());
+      state.controllers.clear();
+      state.pending = null;
       state.stale = Boolean(state.plan);
       state.lastFailure = 'Offline. Waiting for a fresh verified read after reconnect.';
+      byId('mm-refresh').disabled = false;
       if (state.plan) render();
     });
     window.addEventListener('online', () => {
