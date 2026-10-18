@@ -846,3 +846,57 @@ test('PR5 hidden-tab reconnect queues faction reconciliation until visibility re
     assert.equal(f.errors.length,0,f.errors.join('\n'));
   }finally{await f.browser.close();}
 });
+
+
+test('PR5 guest UTC rollover refreshes anonymous Daily Loop schedule instead of clearing public truth',async()=>{
+  const old=fixture({verified:false,now:'2026-10-17'});
+  old.next_utc_reset_at='2026-10-18T00:00:00.000Z';
+  old.daily_wtf_status={
+    utc_day:'2026-10-17',
+    events:[{
+      title:'Old anonymous WTF window',
+      starts_at:'2026-10-17T23:45:00.000Z',
+      ends_at:'2026-10-18T00:10:00.000Z',
+      status:'active',
+    }],
+  };
+  const fresh=fixture({verified:false,now:'2026-10-18'});
+  fresh.next_utc_reset_at='2026-10-19T00:00:00.000Z';
+  fresh.daily_wtf_status={
+    utc_day:'2026-10-18',
+    events:[{
+      title:'Fresh anonymous WTF window',
+      starts_at:'2026-10-18T00:30:00.000Z',
+      ends_at:'2026-10-18T01:30:00.000Z',
+      status:'upcoming',
+    }],
+  };
+  const f=await setup(390,{
+    pageKey:'graffpunks',linked:false,state:old,
+    clockTime:'2026-10-17T23:59:30.000Z',
+  });
+  try{
+    const {page}=f;
+    const before=await page.locator('[data-fop-crew]').innerText();
+    assert.match(before,/Old anonymous WTF window/);
+    assert.match(before,/Next UTC-day reset:/);
+    assert.match(await page.locator('[data-fop-private]').innerText(),/Link Telegram/);
+    assert.equal(await page.evaluate(()=>window.__fopTest.refreshed),0);
+
+    await page.evaluate(value=>{window.__fopTest.state=value;},fresh);
+    await page.clock.runFor(62000);
+    await page.waitForFunction(()=>document.querySelector('[data-fop-crew]')?.textContent.includes(
+      'Fresh anonymous WTF window'
+    ),null,{timeout:5000});
+
+    const after=await page.locator('[data-fop-crew]').innerText();
+    assert.match(after,/Fresh anonymous WTF window/);
+    assert.doesNotMatch(after,/Old anonymous WTF window/);
+    assert.match(after,/19 Oct 2026, 00:00 UTC/);
+    assert.equal(await page.evaluate(()=>window.__fopTest.refreshed),1,
+      'guest rollover must perform one anonymous forced Daily Loop refresh');
+    assert.match(await page.locator('[data-fop-private]').innerText(),/Link Telegram/);
+    assert.equal(await page.evaluate(()=>window.__fopTest.writes),0);
+    assert.equal(f.errors.length,0,f.errors.join('\n'));
+  }finally{await f.browser.close();}
+});
