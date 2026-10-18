@@ -9,11 +9,12 @@ const mini = await readFile(new URL('../js/moonpet-mini-app.js', import.meta.url
 const sync = await readFile(new URL('../js/player-action-sync.js', import.meta.url), 'utf8');
 const siteShell = await readFile(new URL('../js/site-shell.js', import.meta.url), 'utf8');
 const moonpetPage = await readFile(new URL('../moonpet-game.html', import.meta.url), 'utf8');
+const playOptions = await readFile(new URL('../js/moonpet-play-options.js', import.meta.url), 'utf8');
 
 test('PR5 MoonPet Saved Status parity matrix references real action-plan sources or explicit gaps', () => {
   assert.equal(parity.schema_version, 1);
   const sourceKeys = new Set(registry.sources.map(item => item.key));
-  assert.ok(parity.mappings.length >= 8);
+  assert.ok(parity.mappings.length >= 12);
   for (const mapping of parity.mappings) {
     assert.ok(mapping.saved_status);
     assert.ok(mapping.parity);
@@ -24,6 +25,22 @@ test('PR5 MoonPet Saved Status parity matrix references real action-plan sources
       assert.equal(mapping.parity, 'gap', mapping.saved_status + ' missing adapter must be explicit');
       assert.equal(mapping.claim_badge, false, mapping.saved_status + ' gap cannot inflate claim badge');
     }
+  }
+});
+
+test('PR5 parity inventory covers every live Saved Status claim class that lacks an action-plan adapter', () => {
+  const rows = new Map(parity.mappings.map(item => [item.saved_status, item]));
+  const liveGapMarkers = [
+    ['finale_claim', /finale_claim/u],
+    ['extra_bounty_claim', /extra_bounty_claim/u],
+    ['weekly_bounty_claim', /weekly_bounty_claim/u],
+  ];
+  for (const [key, marker] of liveGapMarkers) {
+    assert.match(playOptions, marker, key + ' must still exist in MoonPet Saved Status');
+    assert.ok(rows.has(key), key + ' missing from parity inventory');
+    assert.equal(rows.get(key).parity, 'gap');
+    assert.equal(rows.get(key).claim_badge, false);
+    assert.equal(rows.get(key).action_plan_source, null);
   }
 });
 
@@ -55,7 +72,7 @@ test('PR5 MoonPet emits invalidation only inside the server-accepted branch and 
 
 test('PR5 action sync is globally loaded for shell pages and directly for standalone MoonPet', () => {
   assert.match(siteShell, /\/js\/player-action-sync\.js/u);
-  assert.match(siteShell, /data\.playerActionSync/u);
+  assert.match(siteShell, /script\.dataset\.playerActionSync/u);
   assert.match(moonpetPage, /src="\/js\/player-action-sync\.js"/u);
   assert.ok(moonpetPage.indexOf('src="/js/player-action-sync.js"') <
     moonpetPage.indexOf('src="/js/moonpet-mini-app.js"'));
@@ -68,6 +85,8 @@ test('PR5 accepted-action channel does not subscribe to rejection/error notifica
   assert.doesNotMatch(sync, /moonboys:progression-sync-error/u);
   assert.doesNotMatch(sync, /moonpet:action-rejected/u);
   assert.match(sync, /moonboys:server-action-accepted/u);
-  assert.match(sync, /moonboys:score-updated/u);
+  assert.match(sync, /moonboys:arcade-score-accepted/u);
+  assert.doesNotMatch(sync, /['"]moonboys:score-updated['"]\s*:/u,
+    'public leaderboard display updates are not accepted-action authority');
   assert.match(sync, /moonboys:wiki-mission-complete/u);
 });
