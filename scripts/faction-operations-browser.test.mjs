@@ -315,3 +315,36 @@ test('PR4 stale old-owner callback cannot overwrite already accepted new-owner s
     assert.equal(f.errors.length,0,f.errors.join('\n'));
   }finally{await f.browser.close();}
 });
+
+
+test('PR4 all nine chamber keys render their own three public definitions for guests',async()=>{
+  for(const key of FACTIONS) {
+    const f=await setup(360,{pageKey:key,linked:false,state:fixture({verified:false})});
+    try {
+      const publicText=await f.page.locator('[data-fop-crew]').innerText();
+      assert.match(publicText,new RegExp(key.toUpperCase()),key+' faction heading');
+      assert.equal(await f.page.locator('[data-fop-crew] .fop-mission').count(),3,
+        key+' exactly three current mission definitions');
+      assert.equal(await f.page.locator('[data-fop-crew] .fop-mission h3').count(),3);
+      assert.match(await f.page.locator('[data-fop-private]').innerText(),/Link Telegram/);
+      assert.equal(await f.page.evaluate(()=>window.__fopTest.writes),0);
+      assert.equal(await f.page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth+1),true);
+      assert.equal(f.errors.length,0,key+': '+f.errors.join('\n'));
+    }finally{await f.browser.close();}
+  }
+});
+
+test('PR4 absent bridge mission catalogue never implies a confirmed three-operation result',async()=>{
+  const f=await setup(390,{pageKey:'graffpunks'});
+  try {
+    await f.page.evaluate(()=>{
+      delete window.MOONBOYS_MISSION_DATA.graffpunks;
+      window.dispatchEvent(new CustomEvent('battle-chamber:faction-data-ready'));
+    });
+    const t=await f.page.locator('[data-fop-crew]').innerText();
+    assert.match(t,/catalogue availability unconfirmed/);
+    assert.match(t,/mission catalogue has not hydrated/);
+    assert.doesNotMatch(t,/3 catalogue operations/);
+    assert.equal(f.errors.length,0,f.errors.join('\n'));
+  }finally{await f.browser.close();}
+});
