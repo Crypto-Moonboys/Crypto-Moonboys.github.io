@@ -1,3 +1,4 @@
+import '/js/player-action-sync.js';
 import { bootstrapFromAdapter } from '/js/arcade/engine/game-adapter.js';
 import { mountArcadeRadio } from '/js/arcade/core/radio.js?v=meme-mobile-20261014';
 /**
