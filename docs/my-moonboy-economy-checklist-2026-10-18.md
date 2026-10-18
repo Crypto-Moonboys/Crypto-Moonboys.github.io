@@ -29,7 +29,7 @@ The pre-existing Wiki comment information card was advertising unconditional fix
 
 The same comments panel also had hard-coded illustrative "Top Contributors" accounts and XP figures substituted whenever live contributor rows were absent. The page now reports **verified contributor rankings unavailable** on an absent/empty feed instead of fabricating competitive scores. This is a display-truth fix only; no leaderboard API or score ledger is changed.
 
-The legacy Wiki template fallback also used a hard-coded **25% Battle Heat** when comments were unavailable and a synthetic comments-count multiplier when they loaded, although it never fetched article likes or citation votes. That panel now shows only the confirmed **public comments count** (or unavailable), explicitly excluding likes and citation vote totals. It no longer labels an invented percentage as live engagement. No mission evidence, payout or Worker action was changed.
+The legacy Wiki template fallback also used a hard-coded **25% Battle Heat** when comments were unavailable and a synthetic comments-count multiplier when they loaded, although it never fetched article likes or citation votes. That panel now shows only the confirmed **loaded approved-comments count (up to 50)** (or unavailable), explicitly excluding likes and citation vote totals. It no longer labels an invented percentage as live engagement. No mission evidence, payout or Worker action was changed.
 
 ### Source categories and money/points separation
 
