@@ -666,3 +666,77 @@ test('PR3 does not invent permanent Moonpet slot number when the server omits it
     assert.equal(f.errors.length,0,f.errors.join('\n'));
   } finally {await f.browser.close();}
 });
+
+
+test('PR3 initial signed mission load recovers when its response crosses UTC midnight', async () => {
+  const f = await setup({width:390,height:844}, true);
+  // Hold only the very first signed POST at the browser boundary. Later
+  // attempts use the normal mocked API. No production debug hooks required.
+  await f.context.addInitScript(() => {
+    const originalFetch = window.fetch.bind(window);
+    let held = false;
+    window.fetch = (url, options) => {
+      if (!held && String(url).endsWith('/player/action-plan') &&
+        options && options.method === 'POST') {
+        held = true;
+        return new Promise(resolve => {
+          window.__mmReleaseInitial = payload => resolve(new Response(JSON.stringify(payload), {
+            status: 200, headers: { 'Content-Type': 'application/json' },
+          }));
+        });
+      }
+      return originalFetch(url, options);
+    };
+  });
+  f.setPlanFactory((owner, cursor) => {
+    const result = plan(owner, cursor);
+    result.period.utc_day = '2026-10-18';
+    result.generated_at = '2026-10-18T00:00:30.000Z';
+    result.tasks[0].title = 'New UTC day saved job';
+    result.top_actions[0].title = 'New UTC day saved job';
+    return result;
+  });
+  try {
+    await f.page.clock.install({time:new Date('2026-10-17T23:59:58.000Z')});
+    await f.page.goto(SITE + '/my-moonboy.html', {waitUntil:'domcontentloaded'});
+    // The initial auth/projection begins before midnight. Keep the request
+    // within its 12.5s timeout while advancing the virtual UTC date.
+    for (let i = 0; i < 8; i++) {
+      if (await f.page.evaluate(() => typeof window.__mmReleaseInitial === 'function')) break;
+      await f.page.clock.runFor(100);
+    }
+    assert.equal(await f.page.evaluate(() => typeof window.__mmReleaseInitial), 'function');
+    assert.equal(await f.page.evaluate(() => document.hidden), false, 'visible-page poll must run');
+    assert.equal(f.requests.length, 0, 'original signed POST is deliberately pending');
+
+    await f.page.clock.runFor(2500);
+    assert.equal(await f.page.evaluate(() => new Date().toISOString().slice(0,10)), '2026-10-18');
+    const old = plan('111');
+    old.period.utc_day = '2026-10-17';
+    old.generated_at = '2026-10-17T23:59:58.000Z';
+    old.top_actions[0].title = 'Old UTC day action must not appear';
+    old.tasks[0].title = 'Old UTC day action must not appear';
+    await f.page.evaluate(payload => window.__mmReleaseInitial(payload), old);
+    await f.page.clock.runFor(100);
+    assert.equal(await f.page.locator('#mm-private').isHidden(), true,
+      'the old-day initial response must not paint potentially expired tasks');
+    assert.equal(f.requests.length, 0, 'no new signed read before the visibility timer');
+
+    // The existing visible-page interval must recover even though state.plan
+    // is still NULL. Previously it required state.plan and stalled forever.
+    await f.page.clock.runFor(31000);
+    await f.page.locator('#mm-next .mm-task').first().waitFor({timeout:10000});
+    assert.equal(await f.page.locator('#mm-private').isVisible(), true);
+    assert.equal(f.requests.length, 1, 'visible-page rollover starts exactly one new signed API read');
+    assert.equal(f.requests[0].method, 'POST');
+    assert.equal(f.requests[0].body.telegram_auth.id, '111');
+    assert.equal(f.requests[0].body.cursor, undefined);
+    assert.equal(f.requests[0].body.snapshot, undefined);
+    assert.match(await f.page.locator('#mm-next').innerText(), /New UTC day saved job/);
+    assert.doesNotMatch(await f.page.locator('#my-moonboy').innerText(), /Old UTC day action must not appear/);
+    assert.equal(await f.page.locator('#mm-sync').getAttribute('data-state'), 'ok');
+    assert.equal(f.errors.length, 0, f.errors.join('\n'));
+  } finally {
+    await f.browser.close();
+  }
+});
