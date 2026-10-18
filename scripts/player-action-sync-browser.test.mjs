@@ -248,3 +248,111 @@ test('PR5 real Arcade submit emits follow-up cross-tab invalidations after delay
     await browser.close();
   }
 });
+
+async function runUnconfirmedArcadeSettlementScenario({ game, factionPayload, blockPayload }) {
+  const browser = await chromium.launch({
+    executablePath: process.env.CHROMIUM_EXECUTABLE_PATH ||
+      (existsSync('/usr/bin/chromium') ? '/usr/bin/chromium' : undefined),
+    headless: true,
+  });
+  const context = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  await context.route('https://cryptomoonboys.com/**', async route => {
+    const url = new URL(route.request().url());
+    if (url.pathname === '/arcade-unconfirmed-test') {
+      return route.fulfill({contentType:'text/html',body:'<!doctype html><html><body>arcade</body></html>'});
+    }
+    if (url.pathname === '/js/leaderboard-client.js') {
+      return route.fulfill({contentType:'application/javascript',
+        body:await readFile(path.join(ROOT,'js/leaderboard-client.js'),'utf8')});
+    }
+    if (url.pathname === '/js/arcade-meta-system.js') {
+      return route.fulfill({contentType:'application/javascript',body:
+        "export const ArcadeMeta={trackGameResult(x){return {tracked:false,game:x.game,meta_points:0,timestamp:x.timestamp};}};"});
+    }
+    if (url.pathname === '/js/arcade-sync.js') {
+      return route.fulfill({contentType:'application/javascript',body:
+        "export const ArcadeSync={"+
+        "getProjectedXpFromScore(){return 0;},"+
+        "getPendingCount(){return 0;},"+
+        "async getTelegramAuth(){return {id:'111',hash:'signed',auth_date:'1700000000'};},"+
+        "async syncPendingArcadeProgress(){return {skipped:true,reason:'fixture_skip'};},"+
+        "async syncBlockTopiaProgressionOnAcceptedScore(){return window.__blockPayload;}"+
+        "};"});
+    }
+    if (url.pathname === '/js/arcade-meta-ui.js' || url.pathname === '/js/arcade-retention-engine.js') {
+      return route.fulfill({contentType:'application/javascript',body:''});
+    }
+    if (url.pathname === '/api/leaderboard') {
+      return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({accepted:true})});
+    }
+    if (url.pathname === '/api/faction/earn') {
+      return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(factionPayload)});
+    }
+    return route.fulfill({status:404,body:''});
+  });
+  const source = await context.newPage();
+  const remote = await context.newPage();
+  try {
+    for (const page of [source, remote]) {
+      await page.goto('https://cryptomoonboys.com/arcade-unconfirmed-test');
+      await page.evaluate(() => {
+        window.__accepted=[];
+        window.addEventListener('moonboys:player-action-accepted',event=>window.__accepted.push(event.detail));
+      });
+      await page.addScriptTag({content:SYNC});
+    }
+    await source.evaluate(({game, blockPayload}) => {
+      window.__blockPayload=blockPayload;
+      window.MOONBOYS_API={
+        STATUS:{},
+        getLeaderboardApiInfo(){return {url:'https://cryptomoonboys.com/api/leaderboard',state:'configured'};},
+        getApiBaseInfo(){return {url:'https://cryptomoonboys.com/api',state:'configured'};},
+      };
+      window.MOONBOYS_IDENTITY={
+        isTelegramLinked:()=>true,
+        getTelegramId:()=> '111',
+        getTelegramName:()=> 'Arcade Tester',
+        getTelegramAuth:()=>({id:'111',hash:'signed',auth_date:'1700000000'}),
+        setSyncHealth(){},
+      };
+      window.MOONBOYS_FACTION={
+        getCachedStatus:()=>({faction:'graffpunks'}),
+        loadStatus:()=>Promise.resolve(),
+      };
+      window.__submitPromise=import('/js/leaderboard-client.js')
+        .then(mod=>mod.submitScore('Arcade Tester',100,game));
+    },{game,blockPayload});
+    await source.evaluate(()=>window.__submitPromise);
+    await remote.waitForFunction(()=>window.__accepted.length>=1);
+    await remote.waitForTimeout(1100);
+    return await remote.evaluate(()=>window.__accepted);
+  } finally {
+    await browser.close();
+  }
+}
+
+test('PR5 unconfirmed faction and Block Topia settlements emit no follow-up invalidation', async () => {
+  const skippedFaction = await runUnconfirmedArcadeSettlementScenario({
+    game:'snake-run',
+    factionPayload:{ok:true,skipped:true,reason:'schema_unavailable'},
+    blockPayload:{ok:true},
+  });
+  assert.deepEqual(skippedFaction.map(item=>item.source),['arcade'],
+    'skipped faction response must not masquerade as confirmed faction settlement');
+
+  const unreadableBlock = await runUnconfirmedArcadeSettlementScenario({
+    game:'blocktopia',
+    factionPayload:{ok:true,skipped:true,reason:'schema_unavailable'},
+    blockPayload:null,
+  });
+  assert.deepEqual(unreadableBlock.map(item=>item.source),['arcade'],
+    'null Block Topia response must not masquerade as confirmed progression settlement');
+
+  const zeroXpBlock = await runUnconfirmedArcadeSettlementScenario({
+    game:'blocktopia',
+    factionPayload:{ok:true,skipped:true,reason:'schema_unavailable'},
+    blockPayload:{ok:true,progression:{xp:0},xp_awarded:0},
+  });
+  assert.ok(zeroXpBlock.some(item=>item.source==='arcade_progression'),
+    'explicit ok:true zero-XP settlement is still confirmed and must reconcile');
+});
