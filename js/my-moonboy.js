@@ -291,13 +291,26 @@
     privatePanel.hidden = true;
   }
 
+  function cancelPagination() {
+    if (state.pagingController) {
+      state.pagingController.abort();
+      state.controllers.delete(state.pagingController);
+    }
+    state.pagingController = null;
+    state.paging = null;
+    // A new account or first-page snapshot must not inherit the previous
+    // request's disabled Load more control, even if its finally runs later.
+    byId('mm-load-more').disabled = false;
+  }
+
   function clearPrivate(title, description) {
     state.epoch++;
+    cancelPagination();
     state.controllers.forEach(controller => controller.abort());
     state.controllers.clear();
     state.pending = null;
-    state.paging = null;
     state.plan = null;
+    state.petFilterRef = null;
     state.tasks = [];
     state.nextCursor = null;
     state.ownerKey = null;
@@ -404,6 +417,12 @@
     if (state.pending && state.requestKey === key) return state.pending;
     if (!opts.force && state.plan && !state.stale && state.requestKey === key &&
       Date.now() - state.lastSuccess < STALE_AFTER_MS) return;
+    // A fresh first page owns a new immutable pagination snapshot. Quarantine
+    // any old cursor response, even if both snapshots use the same cursor.
+    if (state.paging) {
+      state.epoch++;
+      cancelPagination();
+    }
     const epoch = state.epoch;
     const operation = (async () => {
       let auth;
@@ -462,6 +481,7 @@
     }
     const epoch = state.epoch;
     const cursor = state.nextCursor;
+    const firstPage = state.plan;
     const operation = (async () => {
       let auth;
       try { auth = await getFreshAuth(); } catch (_) { auth = null; }
@@ -472,10 +492,12 @@
       }
       const controller = new AbortController();
       state.controllers.add(controller);
+      state.pagingController = controller;
       byId('mm-load-more').disabled = true;
       try {
         const payload = await postPlan(auth, cursor, controller);
-        if (!isRequestCurrent(epoch, ownerId, day) || state.nextCursor !== cursor) return;
+        if (!isRequestCurrent(epoch, ownerId, day) || state.nextCursor !== cursor ||
+          state.plan !== firstPage) return;
         // A changed source period must restart the list, never append data
         // from another period or a different authenticated account.
         if (payload.period && payload.period.utc_day !== state.plan.period.utc_day) {
@@ -494,12 +516,17 @@
         }
       } finally {
         state.controllers.delete(controller);
-        if (epoch === state.epoch) byId('mm-load-more').disabled = false;
+        if (state.pagingController === controller) state.pagingController = null;
       }
     })();
     state.paging = operation;
     try { return await operation; }
-    finally { if (state.paging === operation) state.paging = null; }
+    finally {
+      if (state.paging === operation) {
+        state.paging = null;
+        byId('mm-load-more').disabled = false;
+      }
+    }
   }
 
   function isNow(task) { return taskActionable(task) && !state.stale; }
@@ -660,6 +687,7 @@
       ? state.lastFailure + ' · Previously loaded tasks remain clearly marked as a past snapshot.'
       : 'Statuses, progress and deadlines come from the signed-in Worker; this page never marks a mission completed.';
     byId('mm-load-more').hidden = !state.nextCursor;
+    byId('mm-load-more').disabled = Boolean(state.paging);
     renderCountdowns();
   }
 
@@ -685,10 +713,10 @@
       return;
     }
     state.epoch++;
+    cancelPagination();
     state.controllers.forEach(controller => controller.abort());
     state.controllers.clear();
     state.pending = null;
-    state.paging = null;
     state.lastFailure = null;
     state.stale = Boolean(state.plan);
     if (state.stale) render();
