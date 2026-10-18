@@ -137,7 +137,7 @@ test('PR4 mounts exactly once in nine faction chambers and Community; preserves 
   assert.match(community,/\/js\/faction-operations\.js/u);
   const editorial=await readFile(path.join(ROOT,'dashboard.html'),'utf8');
   assert.doesNotMatch(editorial,/data-fop-(crew|private)|faction-operations\.js/u);
-  assert.doesNotMatch(SCRIPT,/localStorage|sessionStorage|\/player\/action-plan|\/daily-loop\/state|fetch\(/u,
+  assert.doesNotMatch(SCRIPT,/localStorage|sessionStorage|fetch\s*\(|XMLHttpRequest|sendBeacon/u,
     'renderer must not fetch/cache owner state independently');
   assert.doesNotMatch(SCRIPT,/\/faction\/signal\/contribute|\/player\/daily-missions\/progress|awardCommunityXp/u);
 });
