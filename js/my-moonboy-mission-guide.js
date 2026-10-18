@@ -149,7 +149,7 @@
                   (task.progress.target != null ? ' / ' + escape(task.progress.target) : '') +
                   ' ' + escape(task.progress.unit || 'progress') : '') +
               (task.blocking_reason_code ? ' · Reason: ' + escape(task.blocking_reason_code.replace(/_/g, ' ')) : '') +
-              (petLabel ? '<span class="mm-checklist-context"><strong>MoonPet:</strong> ' +
+              (petLabel ? '<span class="mm-checklist-context"><strong>Pet attribution:</strong> ' +
                 escape(petLabel) + '</span>' : '') +
               '<span class="mm-checklist-context"><strong>Source period:</strong> ' +
                 escape(periodLabel) + '</span>' +
