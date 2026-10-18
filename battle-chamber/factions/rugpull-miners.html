@@ -6,6 +6,7 @@
   <title>Rugpull Miners Faction Chamber | Crypto Moonboys</title>
   <link rel="stylesheet" href="/css/wiki.css">
 <link rel="stylesheet" href="/css/faction-chamber.css">
+<link rel="stylesheet" href="/css/faction-operations.css">
   <link rel="icon" type="image/png" href="/favicon.png">
 </head>
 <body class="page-community page-standard-shell" data-faction-page="rugpull-miners">
@@ -16,6 +17,14 @@
     <section class="section"><h2>Why Join This Faction?</h2><div id="fcp-why-join" class="fcp-panel"></div></section>
     <section class="section"><h2>Faction Lore</h2><div id="fcp-lore" class="fcp-panel"></div></section>
     <section class="section"><h2>Current Perks</h2><div id="fcp-perks" class="fcp-panel"></div></section>
+    <section class="section fop-section" id="fcp-crew-operations" aria-labelledby="fcp-crew-operations-title">
+      <h2 id="fcp-crew-operations-title">CREW OPERATIONS TODAY</h2>
+      <div data-fop-crew aria-live="polite"><p>Loading public faction operation definitions…</p></div>
+    </section>
+    <section class="section fop-section" id="fcp-my-contribution" aria-labelledby="fcp-my-contribution-title">
+      <h2 id="fcp-my-contribution-title">MY CONTRIBUTION TODAY</h2>
+      <div data-fop-private aria-live="polite"><p>Checking member access…</p></div>
+    </section>
     <section class="section"><h2>Active Missions</h2><div id="fcp-missions" class="fcp-panel"></div></section>
     <section class="section"><h2>Daily Digest Status</h2><div id="fcp-daily-digest" class="fcp-panel"><p>Loading daily digest status...</p></div></section>
     <section class="section"><h2>Missed Days / Missed Perks</h2><div id="fcp-missed-perks" class="fcp-panel"><p>The city kept moving while you were away. Daily WTF signals open every 4 hours across the UTC day. Daily active options reset; Missed Days / Missed Perks history does not reset.</p></div></section>
@@ -45,6 +54,7 @@
 <script data-cfasync="false" type="module" src="/js/battle-chamber-faction-bridge.js"></script>
 <script data-cfasync="false" src="/js/faction-profile-data.js"></script>
 <script data-cfasync="false" src="/js/faction-chamber-page.js"></script>
+<script data-cfasync="false" src="/js/faction-operations.js"></script>
 
 </body>
 </html>
