@@ -82,7 +82,19 @@ function fakeDb(options = {}) {
               calls.push({ method: 'all', ...statement });
               if (options.delayedAllMs) await new Promise(resolve => setTimeout(resolve, options.delayedAllMs));
               if (/FROM telegram_users/u.test(sql)) return { success: true, results: [{ telegram_id: params[0] }] };
-              if (/FROM telegram_faction_members/u.test(sql)) return { success: true, results: [{ faction_id: 2, name: 'graffpunks' }] };
+              // Legacy community membership is deliberately a conflicting source
+              // in this fixture. The signed Battle Chamber's faction/status
+              // authority is blocktopia_progression.faction.
+              if (/FROM telegram_faction_members/u.test(sql)) return { success: true, results: [
+                { faction_id: 2, name: 'hard-fork-rockers' },
+              ] };
+              if (/FROM blocktopia_progression/u.test(sql)) {
+                if (options.failFactionRead) throw new Error('simulated_canonical_faction_read_failure');
+                return { success: true, results: options.noFactionProgression ? [] : [{
+                  faction: options.canonicalFaction ?? 'graffpunks',
+                  faction_xp: options.canonicalFactionXp ?? 15,
+                }] };
+              }
               if (/FROM arcade_progression_state/u.test(sql)) {
                 if (options.failArcadeXp) throw new Error('arcade_lifetime_xp_unavailable');
                 return { success: true, results: [{ arcade_xp_total: options.lowXp ? 200 : 1200 }] };
@@ -455,6 +467,10 @@ test('PR3 owner roster is redacted, stage-aware, selected, and read-only with no
   assert.equal(body.owner.pets[0].evolution_stage, null, 'unknown evolution stages stay unknown');
   assert.equal(body.owner.faction.joined, true);
   assert.equal(body.owner.faction.name, 'graffpunks');
+  assert.ok(db.calls.some(call => /FROM blocktopia_progression/u.test(call.sql)),
+    'Action Plan faction must come from the same authority as /faction/status');
+  assert.ok(!db.calls.some(call => /FROM telegram_faction_members/u.test(call.sql)),
+    'old community membership table cannot overrule seasonal faction progression');
   assert.equal(body.owner.lifetime_arcade_xp, 1200);
   assert.ok(db.calls.every(call => /^\s*(SELECT|WITH)\b/iu.test(call.sql)), 'projection remains strictly read-only');
   assert.ok(body.query_budget.statement_count <= 80, 'roster reuse adds no D1 request budget');
