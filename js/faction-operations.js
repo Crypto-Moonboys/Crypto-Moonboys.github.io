@@ -494,6 +494,18 @@
         onIdentityChange();
       }
     });
+    window.addEventListener('moonboys:player-action-accepted', () => {
+      // Cross-tab accepted gameplay is only an invalidation hint. Hide any
+      // currently actionable private interpretation and re-read through the
+      // one authenticated Daily Loop singleton; never infer completion here.
+      snapshot = null;
+      loading = Boolean(ownerId());
+      render();
+      sharedDailyLoop(true);
+    });
+    window.addEventListener('moonboys:player-reconcile-needed', () => {
+      if (!document.hidden && ownerId()) sharedDailyLoop(true);
+    });
     window.addEventListener('moonboys:faction-status', () => {
       // The singleton already invalidates itself on this event. Clear the
       // personal panel now and await its server-verified update.
