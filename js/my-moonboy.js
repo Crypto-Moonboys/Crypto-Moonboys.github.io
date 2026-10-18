@@ -34,10 +34,10 @@
   // aborts old network requests and hides previous-owner DOM immediately.
   const state = {
     epoch: 0, plan: null, tasks: [], nextCursor: null, ownerKey: null,
-    requestKey: null, pending: null, paging: null, controllers: new Set(),
+    requestKey: null, pending: null, paging: null, pagingController: null, controllers: new Set(),
     lastSuccess: 0, lastFailure: null, stale: false,
     serverTime: NaN, clockStart: 0, tab: 'now', status: 'all', search: '',
-    refreshTimer: 0, lastUtcDay: new Date().toISOString().slice(0, 10),
+    refreshTimer: 0, petFilterRef: null, lastUtcDay: new Date().toISOString().slice(0, 10),
   };
 
   function esc(value) {
@@ -198,7 +198,43 @@
       (task.source_key === 'onboarding.faction' || task.source_key === 'telegram.daily-claim');
   }
 
-  function taskMarkup(task, compact) {
+  function petDirectory() {
+    const directory = new Map();
+    const roster = state.plan && state.plan.owner && state.plan.owner.pets;
+    const rosterKnown = Array.isArray(roster);
+    (rosterKnown ? roster : []).forEach((pet, index) => {
+      const ref = String(pet.pet_ref || '');
+      if (!/^pap_[a-f0-9]{24}$/u.test(ref)) return;
+      const number = Number(pet.slot_number);
+      const slot = Number.isInteger(number) && number > 0 ? number : index + 1;
+      directory.set(ref, { pet, label: 'MoonPet slot ' + slot, membership: 'active' });
+    });
+    // Preserve original earning pet identity without leaking the opaque ref
+    // or claiming that it is archived when the live roster could not be read.
+    const others = state.tasks.concat(state.plan && Array.isArray(state.plan.top_actions)
+      ? state.plan.top_actions : []);
+    others.forEach(task => {
+      const ref = String(task && task.source_pet_ref || '');
+      if (!/^pap_[a-f0-9]{24}$/u.test(ref) || directory.has(ref)) return;
+      if (task.owner_scope !== 'pet' && task.owner_scope !== 'original_pet') return;
+      const number = directory.size + 1;
+      const title = task.owner_scope === 'original_pet'
+        ? 'Original-earning MoonPet ' + number : 'Source MoonPet ' + number;
+      directory.set(ref, { pet: null,
+        label: title + (rosterKnown ? ' (not in active roster)' : ' (membership unknown)'),
+        membership: rosterKnown ? 'not_active' : 'unknown' });
+    });
+    return directory;
+  }
+
+  function petScopeLabel(task, directory) {
+    if (!task || !['pet', 'original_pet'].includes(task.owner_scope)) return null;
+    const entry = directory.get(String(task.source_pet_ref || ''));
+    const category = task.owner_scope === 'original_pet' ? 'Original earning MoonPet' : 'MoonPet';
+    return category + ': ' + (entry ? entry.label : 'source attribution unavailable');
+  }
+
+  function taskMarkup(task, compact, directory = petDirectory()) {
     const action = safeDestination(task);
     const status = String(task.status || 'sync_unavailable');
     const reason = task.blocking_reason_code
@@ -207,13 +243,15 @@
       ? ' · ' + formatName(task.period.kind) + ': ' + String(task.period.key)
       : task.period && task.period.kind ? ' · ' + formatName(task.period.kind) : '';
     const sourceState = String(task.source_health || 'unavailable');
+    const scopeLabel = petScopeLabel(task, directory);
     const unavailable = FAILURE.has(sourceState) || status === 'sync_unavailable' ||
       sourceState === 'preview' || status === 'preview';
     const tag = taskActionable(task) ? ' mm-tag--action' : unavailable ? ' mm-tag--unknown' : '';
     const readiness = state.stale ? 'Saved at last successful sync; refresh required' : formatName(status);
     const open = action
       ? '<a class="mm-button" href="' + esc(action) + '" aria-label="' +
-        esc('Open source for ' + (task.title || 'task')) + '">OPEN TASK</a>'
+        esc('Open source for ' + (task.title || 'task') +
+          (scopeLabel ? ' — ' + scopeLabel : '')) + '">OPEN TASK</a>'
       : '<p class="mm-source-warning">Verified destination unavailable — cannot open task</p>';
     return '<article class="mm-task">' +
       '<div class="mm-task-tags"><span class="mm-tag' + tag + '">' + esc(readiness) + '</span>' +
@@ -221,6 +259,8 @@
       '<span class="mm-tag">' + esc(sourceState) + '</span>' +
       (task.optional ? '<span class="mm-tag">Optional</span>' : '') +
       '</div><h3>' + esc(task.title || 'Unknown task') + '</h3>' +
+      (scopeLabel ? '<p class="mm-task-scope"><strong>' + esc(scopeLabel) +
+        '</strong> · Open Task navigates only; confirm the original pet inside the game.</p>' : '') +
       '<p class="mm-task-why"><strong>Why:</strong> ' + esc(task.why || 'No reason supplied') + '</p>' +
       (compact ? '' : '<p><strong>What:</strong> ' + esc(task.what || task.description || 'Open the original source') + '</p>') +
       progressMarkup(task) +
