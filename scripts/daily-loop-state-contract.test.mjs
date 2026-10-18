@@ -11,6 +11,7 @@ import {
 const ALL_TABLES = [
   'telegram_users',
   'telegram_faction_members',
+  'blocktopia_progression',
   'telegram_factions',
   'player_faction_signal_state',
   'player_daily_mission_state',
@@ -116,6 +117,14 @@ function firstRowForSql(sql, params, rowsByTable) {
     return (rowsByTable.daily_opportunity_state_today || rowsByTable.daily_opportunity_state || [])[0] || null;
   }
   const tableName = tableFromSql(sql);
+  if (tableName === 'blocktopia_progression') {
+    return (rowsByTable[tableName] || []).find(row =>
+      String(row.telegram_id) === String(params[0])) || null;
+  }
+  if (tableName === 'telegram_factions') {
+    return (rowsByTable[tableName] || []).find(row =>
+      String(row.name) === String(params[0])) || null;
+  }
   return (rowsByTable[tableName] || [])[0] || null;
 }
 
@@ -242,14 +251,16 @@ for (const [key, status] of Object.entries(failedWtfState.source_status)) {
 const linkedDb = makeDb({
   existingTables: ALL_TABLES,
   rows: {
+    // Legacy community membership deliberately disagrees with the canonical
+    // /faction/status progression record; it must never control this view.
     telegram_faction_members: [{
-      id: 7,
-      name: 'hard-fork-rockers',
-      description: 'Hard Fork Rockers',
-      icon: 'bolt',
-      role: 'member',
+      id: 7, name: 'graffpunks', role: 'member',
       joined_at: '2026-06-01T00:00:00.000Z',
     }],
+    blocktopia_progression: [{
+      telegram_id: '12345', faction: 'hard-fork-rockers', faction_xp: 27,
+    }],
+    telegram_factions: [{ id: 7, name: 'hard-fork-rockers' }],
     daily_opportunity_state_prior: [{ utc_day: '2026-06-27' }],
     daily_opportunity_state_today: [{
       telegram_id: '12345',
@@ -276,7 +287,40 @@ const linkedState = await buildDailyLoopState({
 
 assert.equal(linkedState.faction_state.faction_id, 'hard-fork-rockers');
 assert.equal(linkedState.faction_state.faction_table_id, 7);
+assert.equal(linkedState.faction_state.faction_id, 'hard-fork-rockers');
+assert.equal(linkedState.source_status.faction_state.state, 'live');
+assert.ok(!linkedDb._calls.some(call => String(call.sql).includes('FROM telegram_faction_members')),
+  'daily loop must ignore legacy membership when resolving the season-locked faction');
 assert.equal(linkedState.arcade_daily_state.label, 'live');
+
+// A missing progression schema or a failed lookup is unknown, not an
+// invitation to choose another faction; never fall back to legacy membership.
+const legacyOnlyState = await buildDailyLoopState({ DB: makeDb({
+  existingTables: ALL_TABLES.filter(table => table !== 'blocktopia_progression'),
+  rows: { telegram_faction_members: [{ telegram_id:'12345', name:'graffpunks' }] },
+}) }, { now:'2026-06-30T12:45:00.000Z', verified: {
+  telegramId:'12345', user:{ username:'owner' },
+} });
+assert.equal(legacyOnlyState.source_status.faction_state.state, 'migration_pending');
+assert.equal(legacyOnlyState.faction_state.faction_id, null);
+
+const brokenFaction = await buildDailyLoopState({ DB: makeDb({
+  existingTables: ALL_TABLES,
+  failPatterns: ['SELECT faction, faction_xp FROM blocktopia_progression'],
+}) }, { now:'2026-06-30T12:45:00.000Z', verified: {
+  telegramId:'12345', user:{ username:'owner' },
+} });
+assert.equal(brokenFaction.source_status.faction_state.state, 'query_failed');
+assert.equal(brokenFaction.faction_state.faction_id, null);
+
+// An unrelated owner record is not a fallback for a signed empty owner.
+const isolatedFaction = await buildDailyLoopState({ DB: makeDb({
+  existingTables: ALL_TABLES,
+  rows: { blocktopia_progression:[{ telegram_id:'other', faction:'graffpunks' }] },
+}) }, { now:'2026-06-30T12:45:00.000Z', verified: {
+  telegramId:'12345', user:{ username:'owner' },
+} });
+assert.equal(isolatedFaction.faction_state.faction_id, 'unaligned');
 
 const callIndex = (needle) => linkedDb._calls.findIndex((call) => String(call.sql).includes(needle));
 const priorLookupIndex = callIndex('utc_day < ?');
