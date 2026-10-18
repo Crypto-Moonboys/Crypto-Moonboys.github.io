@@ -99,7 +99,15 @@ test('documented API scope forbids unverified or mutating read-side shortcuts', 
     'clout_delta: 0','source_status','PARTIAL VERIFICATION','No personal gaming dashboard']) {
     assert.ok(audit.includes(term), 'missing evidence/gap entry: ' + term);
   }
-  assert.ok(!fs.existsSync(path.join(root, 'my-moonboy.html')), 'PR1 must not ship a UI before the API security contract');
+  // PR1 deliberately shipped no UI; PR3 intentionally does, but only after
+  // PR2's authenticated read-only API was implemented and merged.
+  const personalPage = read('my-moonboy.html');
+  if (personalPage) {
+    assert.match(personalPage, /src="\/js\/my-moonboy\.js"/u);
+    assert.match(personalPage, /src="\/js\/identity-gate\.js"/u);
+    assert.match(read('js/my-moonboy.js'), /getFreshTelegramAuth/u);
+    assert.match(read('js/my-moonboy.js'), /\/player\/action-plan/u);
+  }
   const routePath = path.join(root, 'workers/moonboys-api/routes/player-action-plan.js');
   assert.ok(fs.existsSync(routePath), 'PR2 must ship the authenticated player action-plan route');
   const route = read('workers/moonboys-api/routes/player-action-plan.js');

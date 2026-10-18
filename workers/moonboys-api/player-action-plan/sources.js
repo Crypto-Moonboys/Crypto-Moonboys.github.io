@@ -13,6 +13,7 @@ import { weeklyBossLegacySourceProofSql } from '../pets/weekly-boss-evidence.js'
 import { applyPetCareDecay } from '../pets/care-decay.js';
 import { getPetWeeklyBoss } from '../pets/player-expansion.js';
 import { getPetDailyBounties } from '../pets/economy-expansion.js';
+import { petSpaceOrderSql } from '../pets/space-order.js';
 
 export const ACTION_PLAN_SOURCE_REGISTRY = Object.freeze([
   ['onboarding.telegram', 'onboarding', 'account', 'once', 'server_projection', '/gkniftyheads-incubator.html'],
@@ -85,7 +86,6 @@ function task(now, input) {
     category: meta.group,
     period: { kind: meta.period, key: input.period_key || null, origin_timezone: 'UTC' },
     destination: { kind: 'web', path: meta.path },
-    evidence: { kind: meta.evidence, ...(input.evidence || {}) },
     cost: cost([]), reward: reward([], false), read_at: now.toISOString(),
     ...input,
     evidence: { kind: meta.evidence, ...(input.evidence || {}) },
@@ -238,18 +238,28 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
   const lifetimeXp = number(arcadeRows[0]?.arcade_xp_total);
   sourceStatuses['onboarding.pet-entry'] = sourceStatus(arcadeRows.length ? 'live' : 'live_empty', { adapter: 'lifetime_arcade_xp' });
 
+  // Permanent Moonpet spaces are ordered across all retained seasons. A
+  // season-local slot_number can be 1 in multiple quarters, and a replacement
+  // retains the deleted pet's space position via its saved deletion receipt.
+  // Rank the ownership rows BEFORE joining live instances: a missing instance
+  // must not silently renumber intact pets. Keep i.slot_number unchanged for
+  // season-specific joins and gameplay/source authority.
   const petRows = sourceStatuses['moonpet.adoption-incubation'].state === 'migration_pending' ? [] : await query(db,
-    `SELECT i.pet_id,i.season_key,i.slot_number,i.stage,i.level,i.pet_xp,i.hunger,i.happiness,i.cleanliness,i.energy,i.health,i.status,i.created_at,i.updated_at,i.last_decay_at,s.created_at AS ownership_created_at,s.journey_clock,
+    `SELECT i.pet_id,i.season_key,i.slot_number,i.stage,i.level,i.pet_xp,i.hunger,i.happiness,i.cleanliness,i.energy,i.health,i.status,i.created_at,i.updated_at,i.last_decay_at,s.created_at AS ownership_created_at,s.journey_clock,s.permanent_slot_number,
             l.phase AS lifecycle_phase,
             CASE WHEN a.pet_id=i.pet_id THEN 1 ELSE 0 END AS is_active
        FROM telegram_pet_instances i
-       JOIN telegram_pet_season_slots s ON s.pet_id=i.pet_id AND s.telegram_id=i.telegram_id
+       JOIN (SELECT s.pet_id,s.telegram_id,s.season_key,s.slot_number,s.created_at,s.journey_clock,
+               ROW_NUMBER() OVER (ORDER BY ${petSpaceOrderSql('s')}) AS permanent_slot_number
+             FROM telegram_pet_season_slots s
+             WHERE s.telegram_id=? AND s.status='active') s
+         ON s.pet_id=i.pet_id AND s.telegram_id=i.telegram_id
         AND s.season_key=i.season_key AND s.slot_number=i.slot_number
        LEFT JOIN telegram_pet_active_slots a ON a.telegram_id=s.telegram_id
         AND a.pet_id=s.pet_id AND a.season_key=s.season_key
        LEFT JOIN telegram_pet_lifecycle_by_pet l ON l.pet_id=s.pet_id AND l.telegram_id=s.telegram_id
-      WHERE s.telegram_id=? AND s.status='active' AND i.status='active'
-      ORDER BY s.created_at ASC,s.pet_id ASC`, [ownerId], [], failures,
+      WHERE i.status='active'
+      ORDER BY s.permanent_slot_number ASC`, [ownerId], [], failures,
     ['moonpet.adoption-incubation', 'moonpet.daily-journey',
       'moonpet.weekly-journey', 'moonpet.care', 'moonpet.jobs',
       'moonpet.garden-kitchen-gym', 'moonpet.evolution']);
@@ -1096,9 +1106,30 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
     return Object.freeze({ ...entry, status: 'sync_unavailable', availability: 'sync_unavailable',
       source_health: state, blocking_reason_code: 'source_projection_unavailable' });
   });
+  // An authenticated dashboard needs the active roster, but never raw D1
+  // pet IDs, Telegram IDs or private unrevealed Moonpet identities. This is
+  // derived exclusively from roster/evolution reads already performed above.
+  const petSummaries = rosterUnavailable ? null : pets.map((pet) => ({
+    pet_ref: pet.ref,
+    // Public-facing slot is the canonical permanent roster ordinal, NOT the
+    // stored season-local slot used for the instance/ownership join above.
+    slot_number: Number.isSafeInteger(Number(pet.permanent_slot_number)) &&
+      Number(pet.permanent_slot_number) > 0 ? Number(pet.permanent_slot_number) : null,
+    selected: number(pet.is_active) === 1,
+    life_stage: String(pet.stage || '').slice(0, 32) || null,
+    lifecycle_phase: String(pet.lifecycle_phase || '').slice(0, 32) || null,
+    evolution_stage: evolutions.has(String(pet.pet_id))
+      ? number(evolutions.get(String(pet.pet_id))) : null,
+    level: getPetVisibleLevel(pet.pet_xp),
+    pet_xp: number(pet.pet_xp),
+  }));
   return { tasks: normalizedTasks, source_status: sourceStatuses, read_context: {
     utc_day: day, iso_week: week,
-    // null means the authoritative roster could not be read, not zero pets.
+    // null means authoritative records could not be read, not "zero".
     pet_count: rosterUnavailable ? null : pets.length,
+    pets: petSummaries,
+    faction: failures.has('onboarding.faction') ? null
+      : { joined: Boolean(faction), name: faction ? String(faction.name || '').slice(0, 50) : null },
+    lifetime_arcade_xp: failures.has('onboarding.pet-entry') || !arcadeRows.length ? null : lifetimeXp,
   } };
 }

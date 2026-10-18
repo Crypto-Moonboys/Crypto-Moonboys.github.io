@@ -201,6 +201,30 @@ export function summarizeActionPlan(tasks, sourceStatuses, now = new Date()) {
   };
 }
 
+// Continuation offsets are safe only while the exact owner-scoped ordering
+// remains unchanged. Rebuild the same read-only plan on each request and hash
+// the fields that determine ranking, readiness and source authority; exclude
+// volatile read_at/generated_at and continuously decaying display meters.
+// The token is opaque, not an access credential. Every page still requires
+// fresh signed authentication before this comparison.
+export async function actionPlanSnapshotToken(tasks, ownerId, period) {
+  const stable = JSON.stringify({
+    version: 2,
+    owner: String(ownerId),
+    period: String(period),
+    entries: tasks.map((item) => [
+      item.task_id, item.priority, item.status, item.source_health,
+      item.blocking_reason_code, item.expires_at, item.available_at,
+      item.next_ready_at, item.period?.kind, item.period?.key,
+      item.source_pet_ref, item.owner_scope, item.evidence?.kind,
+      item.evidence?.verified_completion,
+    ]),
+  });
+  const hash = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(stable));
+  return 'pap2_' + [...new Uint8Array(hash)].slice(0, 16)
+    .map((byte) => byte.toString(16).padStart(2, '0')).join('');
+}
+
 function decodeCursor(cursor) {
   if (!cursor) return 0;
   const match = String(cursor).match(/^pap1-(\d{1,4})$/u);

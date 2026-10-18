@@ -22,10 +22,21 @@ window.__HUD_CONSOLIDATED__ = true;
     { label: 'HOME', href: '/index.html', icon: '⌂', title: 'Home' },
     { label: 'WIKI', href: '/search.html', icon: '◫', title: 'Wiki' },
     { label: 'GAMES', href: '/games/', icon: '◆', title: 'Games' },
+    { label: 'MY MOONBOY', href: '/my-moonboy.html', icon: '◇', title: 'My Moonboy personal mission control', linkedOnly: true },
     { label: 'BATTLE CHAMBER', href: '/community.html', icon: '⚔', title: 'Battle Chamber' },
     { label: 'SWARMSY', href: '/swarmsy.html', icon: '✦', title: 'SWARMSY' },
     { label: 'SYSTEM HUB', href: '/dashboard.html', icon: '◎', title: 'System Hub' }
   ];
+
+  // Private navigation appears only for a locally linked Telegram session.
+  // The route itself always demands fresh signed server proof before rendering
+  // data; this link is discovery, never authentication authority.
+  function visibleLinks() {
+    const identity = window.MOONBOYS_IDENTITY;
+    const linked = !!(identity && typeof identity.isTelegramLinked === 'function' &&
+      identity.isTelegramLinked());
+    return links.filter(item => !item.linkedOnly || linked);
+  }
 
   const sidebarGroups = [
     { heading: 'Navigation', items: links },
@@ -115,7 +126,10 @@ window.__HUD_CONSOLIDATED__ = true;
 
   function isGlobalNavComplete(nav) {
     if (!nav || nav.id !== 'global-nav') return false;
-    return links.every((item) => {
+    const active = visibleLinks();
+    const linkSelector = 'a[data-shell-link="MY MOONBOY"]';
+    if (!active.some(item => item.linkedOnly) && nav.querySelector(linkSelector)) return false;
+    return active.every((item) => {
       const expectedHref = normalizePathname(item.href);
       return Array.from(nav.querySelectorAll('a[href]')).some((anchor) => {
         const href = anchor.getAttribute('href') || '';
@@ -302,7 +316,7 @@ window.__HUD_CONSOLIDATED__ = true;
 
   function ensureHeader() {
     let header = document.getElementById('site-header');
-    const navHtml = links.map((item) => navLinkHtml(item, 'global-nav-link')).join('');
+    const navHtml = visibleLinks().map((item) => navLinkHtml(item, 'global-nav-link')).join('');
 
     if (!header) {
       header = document.createElement('header');
@@ -612,6 +626,16 @@ window.__HUD_CONSOLIDATED__ = true;
   function bootShell() {
     ensureNav();
     startRecoveryObserver();
+    // Identity events update the private nav link without changing public
+    // routes, nor keeping an old owner's link visible after logout.
+    if (!window.__MOONBOYS_PERSONAL_NAV_EVENTS_BOUND__) {
+      window.__MOONBOYS_PERSONAL_NAV_EVENTS_BOUND__ = true;
+      window.addEventListener('moonboys:identity-change', ensureNav);
+      window.addEventListener('moonboys:telegram-session', ensureNav);
+      window.addEventListener('storage', event => {
+        if (/^moonboys_tg_/u.test(String(event.key || ''))) ensureNav();
+      });
+    }
   }
 
   window.MOONBOYS_WIKI_SHELL = Object.freeze({

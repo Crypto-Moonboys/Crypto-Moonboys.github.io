@@ -5,7 +5,7 @@ import { DatabaseSync } from 'node:sqlite';
 import { createReadOnlyActionPlanDb, isReadOnlyActionPlanSql } from '../workers/moonboys-api/player-action-plan/read-only-db.js';
 import { ACTION_PLAN_SOURCE_REGISTRY, buildPlayerActionPlanSources } from '../workers/moonboys-api/player-action-plan/sources.js';
 import { handlePlayerActionPlanRoute } from '../workers/moonboys-api/routes/player-action-plan.js';
-import { isImmediateAction, isoWeek, nextUtcDay, paginateActionPlan, rankActionPlanTasks } from '../workers/moonboys-api/player-action-plan/schema.js';
+import { actionPlanSnapshotToken, isImmediateAction, isoWeek, nextUtcDay, paginateActionPlan, rankActionPlanTasks } from '../workers/moonboys-api/player-action-plan/schema.js';
 import { getPetWeeklyBoss } from '../workers/moonboys-api/pets/player-expansion.js';
 import { getPetDailyBounties } from '../workers/moonboys-api/pets/economy-expansion.js';
 import { verifyTelegramIdentityFromBody } from '../workers/moonboys-api/blocktopia/auth.js';
@@ -30,7 +30,18 @@ function fakeDb(options = {}) {
       status: 'active', created_at: '2026-10-03T00:00:00.000Z', last_decay_at: '2026-10-17T11:59:40.000Z', journey_clock: 'legacy_quarter', is_active: 0, lifecycle_phase: 'young',
     },
   ];
-  for (const pet of ownedPets) pet.ownership_created_at = pet.created_at;
+  for (const [index, pet] of ownedPets.entries()) {
+    pet.ownership_created_at = pet.created_at;
+    pet.permanent_slot_number = index + 1;
+  }
+  if (options.crossSeasonRoster) {
+    // Permanent spaces can span several creation seasons. Their stored slot
+    // numbers are 1,2,1, but the visible global positions must be 1,2,3.
+    ownedPets[0].season_key = 'pet-s2026-003';
+    ownedPets[1].season_key = 'pet-s2026-003';
+    ownedPets[2].season_key = 'pet-s2026-004';
+    ownedPets[2].slot_number = 1;
+  }
   if (options.ownershipClock) {
     ownedPets[0].journey_clock = 'created_at';
     ownedPets[0].ownership_created_at = '2026-10-15T00:00:00.000Z';
@@ -241,6 +252,10 @@ const request = (body) => new Request('https://api.example.test/player/action-pl
 test('read-only facade rejects mutation-shaped SQL and never exposes run or batch', async () => {
   assert.equal(isReadOnlyActionPlanSql('SELECT 1'), true);
   assert.equal(isReadOnlyActionPlanSql('WITH x AS (SELECT 1) SELECT * FROM x'), true);
+  // A canonical saved event-key literal is not a DELETE statement, including
+  // ordinary doubled-quote escaping. The SQL gate must remain read-only.
+  assert.equal(isReadOnlyActionPlanSql("SELECT 'pet:delete:' AS event_key"), true);
+  assert.equal(isReadOnlyActionPlanSql("SELECT 'pet:de''lete:' AS event_key"), true);
   assert.equal(isReadOnlyActionPlanSql('PRAGMA writable_schema=ON'), false);
   assert.equal(isReadOnlyActionPlanSql('UPDATE users SET x=1'), false);
   assert.equal(isReadOnlyActionPlanSql('WITH x AS (DELETE FROM users RETURNING *) SELECT * FROM x'), false);
@@ -250,6 +265,9 @@ test('read-only facade rejects mutation-shaped SQL and never exposes run or batc
     'SELECT 1 -- UPDATE forbidden', 'SELECT 1 /* ignored */',
     'PRAGMA table_info(users)', 'BEGIN TRANSACTION', 'EXPLAIN SELECT 1',
     'SELECT 1; COMMIT',
+    "SELECT 'pet:delete:' DELETE FROM users",
+    "SELECT 'pet:delete:'; DELETE FROM users",
+    "SELECT 'unterminated",
   ]) assert.equal(isReadOnlyActionPlanSql(sql), false, sql);
   const rejected = createReadOnlyActionPlanDb(fakeDb());
   await assert.rejects(() => rejected.all('SELECT 1; PRAGMA writable_schema=ON'),
@@ -416,6 +434,232 @@ test('authenticated endpoint covers every source, scopes pets opaquely, and is c
   assert.doesNotMatch(serialized, /pet-secret-123/u);
   assert.match(serialized, /pap_[a-f0-9]{24}/u);
   assert.equal(db.calls.some((call) => !/^\s*(SELECT|WITH)\b/iu.test(call.sql)), false);
+});
+
+test('PR3 owner roster is redacted, stage-aware, selected, and read-only with no extra queries', async () => {
+  const db = fakeDb({ threePets: true, savedStates: true });
+  const response = await handlePlayerActionPlanRoute(request(auth({ limit: 100 })),
+    { DB: db, TELEGRAM_BOT_TOKEN: 'test' }, options());
+  assert.equal(response.status, 200);
+  const body = await response.json();
+  assert.equal(body.owner.pet_count, 3);
+  assert.equal(body.owner.pets.length, 3);
+  assert.equal(body.owner.pets.filter(pet => pet.selected).length, 1);
+  assert.deepEqual(body.owner.pets.map(pet => pet.slot_number), [1, 2, 3]);
+  assert.deepEqual(body.owner.pets.map(pet => pet.lifecycle_phase), ['young', 'young', 'young']);
+  assert.ok(body.owner.pets.every(pet => /^pap_[a-f0-9]{24}$/u.test(pet.pet_ref)));
+  assert.equal(new Set(body.owner.pets.map(pet => pet.pet_ref)).size, 3);
+  assert.equal(body.owner.pets[0].life_stage, 'hatched');
+  assert.equal(body.owner.pets[0].pet_xp, 90);
+  assert.equal(body.owner.pets[0].level > 0, true);
+  assert.equal(body.owner.pets[0].evolution_stage, null, 'unknown evolution stages stay unknown');
+  assert.equal(body.owner.faction.joined, true);
+  assert.equal(body.owner.faction.name, 'graffpunks');
+  assert.equal(body.owner.lifetime_arcade_xp, 1200);
+  assert.ok(db.calls.every(call => /^\s*(SELECT|WITH)\b/iu.test(call.sql)), 'projection remains strictly read-only');
+  assert.ok(body.query_budget.statement_count <= 80, 'roster reuse adds no D1 request budget');
+  const serialized = JSON.stringify(body);
+  for (const forbidden of ['123456','pet-secret-123','pet-secret-456','pet-secret-789',
+    'telegram_auth','auth_date','hash']) {
+    assert.ok(!serialized.includes(forbidden), forbidden + ' must not leak');
+  }
+  const savedRun = body.tasks.find(item => item.source_key === 'moonpet.saved-run' && item.status === 'claim_ready');
+  assert.equal(savedRun.owner_scope, 'original_pet');
+  assert.ok(body.owner.pets.some(pet => pet.pet_ref === savedRun.source_pet_ref),
+    'source-pet attribution must not move to the selected pet');
+
+  const empty = await (await handlePlayerActionPlanRoute(request(auth({ limit: 100 })),
+    { DB: fakeDb({ noPets: true }), TELEGRAM_BOT_TOKEN: 'test' }, options())).json();
+  assert.deepEqual(empty.owner.pets, []);
+  assert.equal(empty.owner.pet_count, 0);
+  const failing = await (await handlePlayerActionPlanRoute(request(auth({ limit: 100 })),
+    { DB: fakeDb({ tableErrors: new Set(['telegram_pet_instances']) }),
+      TELEGRAM_BOT_TOKEN: 'test' }, options())).json();
+  assert.equal(failing.owner.pet_count, null);
+  assert.equal(failing.owner.pets, null, 'roster failure cannot become an empty roster');
+});
+
+test('PR3 cross-season permanent roster labels never reuse season-local slots', async () => {
+  const db = fakeDb({ threePets: true, crossSeasonRoster: true });
+  const response = await handlePlayerActionPlanRoute(request(auth({ limit: 100 })),
+    { DB: db, TELEGRAM_BOT_TOKEN: 'test' }, options());
+  assert.equal(response.status, 200);
+  const payload = await response.json();
+  assert.equal(payload.owner.pet_count, 3);
+  assert.deepEqual(payload.owner.pets.map(pet => pet.slot_number), [1, 2, 3],
+    'visible slot numbering must span permanent ownership, even across quarters');
+  const queryCall = db.calls.find(call => /s\.permanent_slot_number/u.test(call.sql)
+    && /FROM telegram_pet_instances i/u.test(call.sql));
+  assert.ok(queryCall, 'existing owned-roster read must generate the ordinals without extra D1 calls');
+  assert.match(queryCall.sql, /ROW_NUMBER\(\) OVER \(ORDER BY/u,
+    'permanent pet-space positions must be numbered in SQL');
+  assert.match(queryCall.sql, /FROM telegram_pet_identity_events d/u,
+    'replacement ordering must use canonical deletion receipt authority');
+  assert.match(queryCall.sql, /ORDER BY s\.permanent_slot_number ASC/u,
+    'returned roster order must match permanent positions');
+  assert.match(queryCall.sql, /s\.season_key=i\.season_key AND s\.slot_number=i\.slot_number/u,
+    'stored season-local slot remains the immutable ownership join');
+  assert.equal(db.calls.filter(call => /FROM telegram_pet_instances i/u.test(call.sql)
+    && /permanent_slot_number/u.test(call.sql)).length, 1,
+  'ordinal projection must reuse the one existing roster read');
+  assert.doesNotMatch(JSON.stringify(payload), /pet-secret-(123|456|789)/u);
+});
+
+test('PR3 permanent pet-space roster SQL preserves cross-season and replacement positions in SQLite', async () => {
+  const db = fakeDb({ threePets: true });
+  await handlePlayerActionPlanRoute(request(auth({ limit: 100 })),
+    { DB: db, TELEGRAM_BOT_TOKEN: 'test' }, options());
+  const rosterSql = db.calls.find(call => /FROM telegram_pet_instances i/u.test(call.sql)
+    && /s\.permanent_slot_number/u.test(call.sql))?.sql;
+  assert.ok(rosterSql, 'execute the actual production read, not an imitation of its ordering');
+  const sql = new DatabaseSync(':memory:');
+  try {
+    sql.exec([
+      'CREATE TABLE telegram_pet_season_slots (pet_id TEXT PRIMARY KEY, telegram_id TEXT NOT NULL,',
+      'season_key TEXT NOT NULL, slot_number INTEGER NOT NULL, status TEXT NOT NULL,',
+      'created_at TEXT NOT NULL, journey_clock TEXT, source_event_key TEXT);',
+      'CREATE TABLE telegram_pet_instances (pet_id TEXT PRIMARY KEY, telegram_id TEXT NOT NULL,',
+      'season_key TEXT NOT NULL, slot_number INTEGER NOT NULL, stage TEXT, level INTEGER, pet_xp INTEGER,',
+      'hunger INTEGER, happiness INTEGER, cleanliness INTEGER, energy INTEGER,',
+      'health INTEGER, status TEXT NOT NULL, created_at TEXT, updated_at TEXT, last_decay_at TEXT);',
+      'CREATE TABLE telegram_pet_active_slots (telegram_id TEXT NOT NULL, pet_id TEXT NOT NULL, season_key TEXT NOT NULL);',
+      'CREATE TABLE telegram_pet_lifecycle_by_pet (pet_id TEXT NOT NULL, telegram_id TEXT NOT NULL, phase TEXT);',
+      'CREATE TABLE telegram_pet_identity_events (pet_id TEXT NOT NULL, telegram_id TEXT NOT NULL,',
+      'event_key TEXT NOT NULL, event_kind TEXT NOT NULL, applied_at TEXT, payload TEXT);',
+    ].join(' '));
+    const owner = '123456';
+    const slotInsert = sql.prepare('INSERT INTO telegram_pet_season_slots ' +
+      '(pet_id,telegram_id,season_key,slot_number,status,created_at,journey_clock,source_event_key) ' +
+      "VALUES (?,?,?,?,'active',?,'legacy_quarter',?)");
+    const instanceInsert = sql.prepare('INSERT INTO telegram_pet_instances ' +
+      '(pet_id,telegram_id,season_key,slot_number,stage,level,pet_xp,status,created_at) ' +
+      "VALUES (?,?,?,?,'hatched',4,100,'active',?)");
+    const addPet = (pet, season, seasonSlot, created, sourceKey = null, petOwner = owner) => {
+      slotInsert.run(pet, petOwner, season, seasonSlot, created, sourceKey);
+      instanceInsert.run(pet, petOwner, season, seasonSlot, created);
+      sql.prepare('INSERT INTO telegram_pet_lifecycle_by_pet VALUES (?, ?, ?)').run(pet, petOwner, 'young');
+    };
+    addPet('space-1', 'pet-s2026-003', 1, '2026-07-01T00:00:00Z');
+    addPet('space-2', 'pet-s2026-003', 2, '2026-08-15T00:00:00Z');
+    addPet('space-3', 'pet-s2026-004', 1, '2026-10-01T00:00:00Z');
+    // An unrelated owner must not influence the signed owner's ordinal.
+    addPet('other-owner-pet', 'pet-s2026-001', 1, '2026-01-01T00:00:00Z', null, 'another-owner');
+    sql.prepare('INSERT INTO telegram_pet_active_slots VALUES (?,?,?)')
+      .run(owner, 'space-3', 'pet-s2026-004');
+    const read = () => sql.prepare(rosterSql).all(owner).map(row => ({
+      pet_id: row.pet_id, season_key: row.season_key,
+      season_slot: row.slot_number, permanent_slot: row.permanent_slot_number,
+      selected: row.is_active,
+    }));
+    assert.deepEqual(read().map(row => [row.pet_id, row.season_slot, row.permanent_slot]), [
+      ['space-1', 1, 1], ['space-2', 2, 2], ['space-3', 1, 3],
+    ], 'season slots 1,2,1 must display permanent spaces 1,2,3');
+    assert.equal(read().find(row => row.selected === 1)?.pet_id, 'space-3',
+      'permanent numbering must preserve selected pet');
+
+    // The original deletion receipt carries the replacement's earlier
+    // permanent space position even though the new pet was born later.
+    sql.prepare("UPDATE telegram_pet_season_slots SET status='archived' WHERE pet_id='space-2'").run();
+    sql.prepare("UPDATE telegram_pet_instances SET status='archived' WHERE pet_id='space-2'").run();
+    addPet('replacement-space-2', 'pet-s2026-004', 2, '2026-10-14T00:00:00Z',
+      'pet:delete:space-2');
+    sql.prepare('INSERT INTO telegram_pet_identity_events ' +
+      "(pet_id,telegram_id,event_key,event_kind,applied_at,payload) VALUES (?, ?, ?, 'memory', ?, ?)")
+      .run('space-2', owner, 'pet:delete:space-2', '2026-10-14T00:00:00Z',
+        JSON.stringify({
+          replacement_pet_id: 'replacement-space-2',
+          space_created_at: '2026-08-15T00:00:00Z',
+          space_pet_id: 'space-2',
+        }));
+    assert.deepEqual(read().map(row => [row.pet_id, row.season_slot, row.permanent_slot]), [
+      ['space-1', 1, 1], ['replacement-space-2', 2, 2], ['space-3', 1, 3],
+    ], 'replacement inherits saved space order, not its new creation date');
+
+    // Rank active ownership before filtering missing instances so no intact
+    // pet is silently compacted into an incorrect permanent position.
+    slotInsert.run('missing-earlier', owner, 'pet-s2026-002', 1,
+      '2026-04-01T00:00:00Z', null);
+    assert.deepEqual(read().map(row => row.permanent_slot), [2, 3, 4],
+      'missing active instance must not compact permanent spaces');
+    assert.equal(read().length, 3, 'a missing instance must not be fabricated');
+  } finally {
+    sql.close();
+  }
+});
+
+test('PR3 source task helper contains exactly one evidence property after Wrangler warning cleanup', () => {
+  const source = fs.readFileSync(new URL('../workers/moonboys-api/player-action-plan/sources.js', import.meta.url), 'utf8');
+  const taskHelper = source.slice(source.indexOf('function task(now, input) {'),
+    source.indexOf('function genericTask(now, source, status, health, detail = {})'));
+  assert.equal((taskHelper.match(/\bevidence:\s*\{/gu) || []).length, 1);
+  assert.match(taskHelper, /evidence:\s*\{ kind: meta\.evidence, \.\.\.\(input\.evidence \|\| \{\}\) \}/u);
+});
+
+test('signed action-plan pagination rejects stale ranking snapshot without skipping saved claims', async () => {
+  const ownerEnv = { DB: fakeDb({ manyPending: true }), TELEGRAM_BOT_TOKEN: 'test' };
+  const firstResponse = await handlePlayerActionPlanRoute(request(auth({ limit: 100 })), ownerEnv, options());
+  assert.equal(firstResponse.status, 200);
+  const first = await firstResponse.json();
+  assert.match(first.snapshot, /^pap2_[a-f0-9]{32}$/u);
+  assert.ok(first.pagination.next_cursor, 'large saved claim backlog must paginate');
+
+  const identical = await handlePlayerActionPlanRoute(request(auth({
+    limit: 100, cursor: first.pagination.next_cursor, snapshot: first.snapshot,
+  })), { DB: fakeDb({ manyPending: true }), TELEGRAM_BOT_TOKEN: 'test' }, options());
+  assert.equal(identical.status, 200);
+  const continued = await identical.json();
+  assert.equal(continued.snapshot, first.snapshot, 'repeated source read remains at same ranked revision');
+  assert.ok(continued.tasks.length > 0);
+  const originalIds = new Set(first.tasks.map(task => task.task_id));
+  assert.ok(continued.tasks.every(task => !originalIds.has(task.task_id)),
+    'continuation must not duplicate the first page');
+
+  // A newly claimable job or run can sort before an offset; a backend that
+  // accepts the old offset silently skips the displaced task. Force a
+  // different authoritative saved-state projection with the same owner/day.
+  const changed = await handlePlayerActionPlanRoute(request(auth({
+    limit: 100, cursor: first.pagination.next_cursor, snapshot: first.snapshot,
+  })), { DB: fakeDb({ manyPending: true, savedStates: true }), TELEGRAM_BOT_TOKEN: 'test' }, options());
+  assert.equal(changed.status, 409, 're-ranked source must restart rather than apply the stale offset');
+  assert.equal((await changed.json()).error, 'action_plan_snapshot_changed');
+  assert.equal(changed.headers.get('Cache-Control'), 'no-store, private');
+
+  const missing = await handlePlayerActionPlanRoute(request(auth({
+    limit: 100, cursor: first.pagination.next_cursor,
+  })), ownerEnv, options());
+  assert.equal(missing.status, 400, 'no unversioned offset bypass');
+  const wrongOwner = await handlePlayerActionPlanRoute(request(auth({
+    limit: 100, cursor: first.pagination.next_cursor, snapshot: first.snapshot,
+  })), { DB: fakeDb({ manyPending: true }), TELEGRAM_BOT_TOKEN: 'test' },
+  options({verifyIdentity: async () => ({telegramId: 'different-owner'})}));
+  assert.equal(wrongOwner.status, 409, 'fingerprint is bound to verified owner, not submitted selectors');
+  const resumed = await handlePlayerActionPlanRoute(request(auth({ limit: 100 })),
+    { DB: fakeDb({ manyPending: true, savedStates: true }), TELEGRAM_BOT_TOKEN: 'test' }, options());
+  assert.equal(resumed.status, 200);
+  assert.notEqual((await resumed.json()).snapshot, first.snapshot);
+});
+
+test('ranked snapshot excludes volatile read timestamps but detects authority changes', async () => {
+  const task = {
+    task_id: 'moonpet.jobs:opaque-session', source_pet_ref: 'pap_' + 'f'.repeat(24),
+    owner_scope: 'original_pet', status: 'waiting', priority: 510,
+    source_health: 'live', evidence: {kind:'server_projection'}, expires_at: null,
+    period: {kind:'saved_timer',key:'saved-session'},
+  };
+  const original = await actionPlanSnapshotToken([task], 'signed-owner', '2026-10-17:all');
+  assert.match(original, /^pap2_[a-f0-9]{32}$/u);
+  assert.equal(await actionPlanSnapshotToken([{...task,read_at:'2026-10-17T23:00:00Z'}],
+    'signed-owner','2026-10-17:all'), original,
+  'timestamp-only refresh must not invalidate stable pagination');
+  for (const patch of [
+    {status:'claim_ready'}, {priority:40}, {blocking_reason_code:'source_missing'},
+    {expires_at:'2026-10-17T23:40:00Z'}, {source_pet_ref:'pap_' + 'e'.repeat(24)},
+  ]) {
+    assert.notEqual(await actionPlanSnapshotToken([{...task,...patch}],
+      'signed-owner','2026-10-17:all'),original,JSON.stringify(patch));
+  }
+  assert.notEqual(await actionPlanSnapshotToken([task], 'different-owner','2026-10-17:all'),original);
+  assert.notEqual(await actionPlanSnapshotToken([task], 'signed-owner','2026-10-18:all'),original);
 });
 
 test('zero-pet response stays complete and blocks pet work without fabricating state', async () => {
@@ -1085,7 +1329,7 @@ test('historical pending claim backlog is explicit and never displaces current d
     && /37 more/u.test(t.title));
   let overflowCursor = result.pagination.next_cursor;
   while (!overflow && overflowCursor) {
-    const next = await (await handlePlayerActionPlanRoute(request(auth({limit:100,cursor:overflowCursor})),
+    const next = await (await handlePlayerActionPlanRoute(request(auth({limit:100,cursor:overflowCursor,snapshot:result.snapshot})),
       {DB:fakeDb({manyPending:true}),TELEGRAM_BOT_TOKEN:'test'},options())).json();
     overflow = next.tasks.find(t => t.source_key === 'moonpet.seven-of-seven-claim'
       && /37 more/u.test(t.title));
@@ -1100,7 +1344,7 @@ test('historical pending claim backlog is explicit and never displaces current d
   // later page when the member has 137 historic pending claim receipts.
   let cursor = result.pagination.next_cursor;
   while (!daily && cursor) {
-    const next = await (await handlePlayerActionPlanRoute(request(auth({ limit: 100, cursor })),
+    const next = await (await handlePlayerActionPlanRoute(request(auth({ limit: 100, cursor, snapshot: result.snapshot })),
       { DB: fakeDb({ manyPending: true }), TELEGRAM_BOT_TOKEN: 'test' }, options())).json();
     daily = next.tasks.find(t => t.source_key === 'moonpet.daily-seven-missions'
       && t.title === 'Daily Moonpet completion conditions');

@@ -1,7 +1,7 @@
 import { createReadOnlyActionPlanDb } from '../player-action-plan/read-only-db.js';
 import {
-  ACTION_PLAN_SCHEMA_VERSION, isImmediateAction, paginateActionPlan,
-  rankActionPlanTasks, summarizeActionPlan,
+  ACTION_PLAN_SCHEMA_VERSION, actionPlanSnapshotToken, isImmediateAction,
+  paginateActionPlan, rankActionPlanTasks, summarizeActionPlan,
 } from '../player-action-plan/schema.js';
 import { ACTION_PLAN_SOURCE_REGISTRY, buildPlayerActionPlanSources } from '../player-action-plan/sources.js';
 
@@ -78,6 +78,11 @@ export async function handlePlayerActionPlanRoute(request, env, options = {}) {
   if (body.limit != null && (!Number.isInteger(Number(body.limit)) || Number(body.limit) < 1 || Number(body.limit) > 100)) {
     return errorResponse(options, 'limit must be an integer from 1 to 100', 400);
   }
+  // The client must echo the first page's opaque ranked-list version on
+  // continuation. A plain offset must not cross a mutation or rank change.
+  if (body.cursor && !/^pap2_[a-f0-9]{32}$/u.test(String(body.snapshot || ''))) {
+    return errorResponse(options, 'A valid action plan snapshot is required for pagination', 400);
+  }
 
   // Allocate the query and timeout budget before website-session
   // authentication. Its one D1 lookup and all owner-scoped projections now
@@ -120,6 +125,19 @@ export async function handlePlayerActionPlanRoute(request, env, options = {}) {
   let ranked = rankActionPlanTasks(projection.tasks, now);
   if (view === 'actionable') ranked = ranked.filter(isImmediateAction);
   if (view === 'history') ranked = ranked.filter((entry) => ['complete', 'claimed', 'expired'].includes(entry.status));
+  let snapshot;
+  try {
+    snapshot = await actionPlanSnapshotToken(ranked, ownerId,
+      `${projection.read_context.utc_day}:${view}`);
+  } catch {
+    return errorResponse(options, 'Player action plan snapshot unavailable', 503);
+  }
+  // The server has just projected and sorted the current saved sources, so
+  // comparing snapshots BEFORE slicing prevents omissions/duplicates when a
+  // claim, job, or other task changes rank between page requests.
+  if (body.cursor && body.snapshot !== snapshot) {
+    return errorResponse(options, 'action_plan_snapshot_changed', 409);
+  }
   let page;
   try { page = paginateActionPlan(ranked, body.cursor, body.limit); }
   catch { return errorResponse(options, 'Invalid pagination cursor', 400); }
@@ -128,7 +146,14 @@ export async function handlePlayerActionPlanRoute(request, env, options = {}) {
     ok: true,
     schema_version: ACTION_PLAN_SCHEMA_VERSION,
     generated_at: now.toISOString(),
-    owner: { authenticated: true, pet_count: projection.read_context.pet_count },
+    snapshot,
+    owner: {
+      authenticated: true,
+      pet_count: projection.read_context.pet_count,
+      pets: projection.read_context.pets,
+      faction: projection.read_context.faction,
+      lifetime_arcade_xp: projection.read_context.lifetime_arcade_xp,
+    },
     period: { utc_day: projection.read_context.utc_day, iso_week: projection.read_context.iso_week },
     summary: summarizeActionPlan(ranked, projection.source_status, now),
     top_actions: immediate,
