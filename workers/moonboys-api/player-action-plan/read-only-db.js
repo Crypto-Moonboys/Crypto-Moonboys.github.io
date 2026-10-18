@@ -1,12 +1,40 @@
 const READ_ONLY_SQL = /^\s*(?:SELECT|WITH)\b/iu;
 const MUTATING_SQL = /\b(?:INSERT|UPDATE|DELETE|REPLACE|CREATE|ALTER|DROP|VACUUM|REINDEX|ATTACH|DETACH|PRAGMA|BEGIN|COMMIT|ROLLBACK|SAVEPOINT|RELEASE|TRANSACTION|EXPLAIN|ANALYZE)\b/iu;
 
+// Ignore reserved words inside correctly quoted SQL string literals when
+// checking for mutating statements. The canonical permanent Moonpet space
+// query contains the immutable event key 'pet:delete:'; it is data, not a
+// DELETE statement. Reject malformed/unclosed quoting rather than guessing.
+function withoutSqlStringLiterals(text) {
+  let output = '';
+  for (let index = 0; index < text.length;) {
+    if (text[index] !== "'") {
+      output += text[index++];
+      continue;
+    }
+    index++;
+    let closed = false;
+    while (index < text.length) {
+      if (text[index] === "'") {
+        if (text[index + 1] === "'") { index += 2; continue; }
+        index++;
+        closed = true;
+        break;
+      }
+      index++;
+    }
+    if (!closed) throw new Error('player_action_plan_invalid_sql_literal');
+    output += "''";
+  }
+  return output;
+}
+
 function assertReadOnlySql(sql) {
   const text = String(sql || '');
   // Reject multi-statements and comment-bearing SQL even if the first token
   // looks read-only. Query strings are authored by trusted source adapters;
   // there is no need to accept statements hidden in comments or delimiters.
-  if (!READ_ONLY_SQL.test(text) || MUTATING_SQL.test(text)
+  if (!READ_ONLY_SQL.test(text) || MUTATING_SQL.test(withoutSqlStringLiterals(text))
     || /;|--|\/\*|\*\//u.test(text) || /[\u0000-\u001f\u007f]/u.test(text.replace(/\s/g, ''))) {
     throw new Error('player_action_plan_mutating_sql_rejected');
   }
