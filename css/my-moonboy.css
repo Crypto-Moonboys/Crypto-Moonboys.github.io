@@ -206,6 +206,11 @@
   border-bottom: 1px solid var(--mm-line);
 }
 .page-my-moonboy .mm-checklist-tasks li:last-child { border-bottom: 0; }
+.page-my-moonboy .mm-checklist-context {
+  display: block; margin-top: 3px; color: var(--mm-muted);
+  font-size: .82rem; overflow-wrap: anywhere;
+}
+.page-my-moonboy .mm-checklist-context strong { color: var(--mm-ink); }
 .page-my-moonboy .mm-checklist-mark { flex: 0 0 18px; font-weight: 800; color: #a8f3e1; }
 .page-my-moonboy .mm-checklist-gaps { margin: 0; padding: 10px 24px 13px 32px; }
 .page-my-moonboy .mm-checklist-gaps li { margin-bottom: 9px; }
