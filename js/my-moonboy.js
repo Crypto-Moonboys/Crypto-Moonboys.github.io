@@ -246,7 +246,8 @@
     const scopeLabel = petScopeLabel(task, directory);
     const unavailable = FAILURE.has(sourceState) || status === 'sync_unavailable' ||
       sourceState === 'preview' || status === 'preview';
-    const tag = taskActionable(task) ? ' mm-tag--action' : unavailable ? ' mm-tag--unknown' : '';
+    const tag = !state.stale && taskActionable(task) ? ' mm-tag--action' :
+      state.stale || unavailable ? ' mm-tag--unknown' : '';
     const readiness = state.stale ? 'Saved at last successful sync; refresh required' : formatName(status);
     const open = action
       ? '<a class="mm-button" href="' + esc(action) + '" aria-label="' +
@@ -322,6 +323,8 @@
     byId('mm-next').replaceChildren();
     byId('mm-results').replaceChildren();
     byId('mm-pets').replaceChildren();
+    byId('mm-pet-filter').hidden = true;
+    byId('mm-pet-filter-label').textContent = '';
     ['mm-ready-count','mm-claim-count','mm-today-count','mm-done-count',
       'mm-unavailable-count'].forEach(id => { byId(id).textContent = '—'; });
     byId('mm-player-name').textContent = 'Linked Moonboy';
@@ -714,7 +717,9 @@
 
   function renderCountdowns() {
     root.querySelectorAll('[data-mm-until]').forEach(node => {
-      node.textContent = '· ' + remainingText(node.getAttribute('data-mm-until'));
+      node.textContent = state.stale
+        ? '· Last-confirmed time only — refresh for current source status'
+        : '· ' + remainingText(node.getAttribute('data-mm-until'));
     });
   }
 
