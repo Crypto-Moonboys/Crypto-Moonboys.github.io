@@ -252,6 +252,10 @@ const request = (body) => new Request('https://api.example.test/player/action-pl
 test('read-only facade rejects mutation-shaped SQL and never exposes run or batch', async () => {
   assert.equal(isReadOnlyActionPlanSql('SELECT 1'), true);
   assert.equal(isReadOnlyActionPlanSql('WITH x AS (SELECT 1) SELECT * FROM x'), true);
+  // A canonical saved event-key literal is not a DELETE statement, including
+  // ordinary doubled-quote escaping. The SQL gate must remain read-only.
+  assert.equal(isReadOnlyActionPlanSql("SELECT 'pet:delete:' AS event_key"), true);
+  assert.equal(isReadOnlyActionPlanSql("SELECT 'pet:de''lete:' AS event_key"), true);
   assert.equal(isReadOnlyActionPlanSql('PRAGMA writable_schema=ON'), false);
   assert.equal(isReadOnlyActionPlanSql('UPDATE users SET x=1'), false);
   assert.equal(isReadOnlyActionPlanSql('WITH x AS (DELETE FROM users RETURNING *) SELECT * FROM x'), false);
@@ -261,6 +265,9 @@ test('read-only facade rejects mutation-shaped SQL and never exposes run or batc
     'SELECT 1 -- UPDATE forbidden', 'SELECT 1 /* ignored */',
     'PRAGMA table_info(users)', 'BEGIN TRANSACTION', 'EXPLAIN SELECT 1',
     'SELECT 1; COMMIT',
+    "SELECT 'pet:delete:' DELETE FROM users",
+    "SELECT 'pet:delete:'; DELETE FROM users",
+    "SELECT 'unterminated",
   ]) assert.equal(isReadOnlyActionPlanSql(sql), false, sql);
   const rejected = createReadOnlyActionPlanDb(fakeDb());
   await assert.rejects(() => rejected.all('SELECT 1; PRAGMA writable_schema=ON'),
