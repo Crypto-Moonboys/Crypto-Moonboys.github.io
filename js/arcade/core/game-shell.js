@@ -47,6 +47,7 @@ function ensurePlayerActionSyncBuffer() {
     return /^[a-z][a-z0-9_-]{0,31}$/u.test(source) ? source : 'progression';
   };
   const bind = (target, eventName, fallbackSource) => {
+    if (!target || typeof target.addEventListener !== 'function') return;
     const listener = event => {
       if (window.MOONBOYS_ACTION_SYNC) return;
       events.push(Object.freeze({
@@ -66,7 +67,8 @@ function ensurePlayerActionSyncBuffer() {
     events,
     cleanup() {
       listeners.splice(0).forEach(([target, eventName, listener]) => {
-        target.removeEventListener(eventName, listener);
+        if (typeof target.removeEventListener === 'function')
+          target.removeEventListener(eventName, listener);
       });
     },
   };
