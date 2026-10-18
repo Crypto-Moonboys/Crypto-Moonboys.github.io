@@ -28,6 +28,82 @@ import { mountArcadeRadio } from '/js/arcade/core/radio.js?v=meme-mobile-2026101
  */
 const LIFECYCLE_METHODS = ['init', 'start', 'pause', 'resume', 'reset', 'destroy', 'getScore'];
 
+const ACTION_SYNC_BUFFER_EVENTS = Object.freeze({
+  'moonpet:action-accepted': 'moonpet',
+  'moonboys:server-action-accepted': 'progression',
+  'moonboys:arcade-score-accepted': 'arcade',
+  'moonboys:wiki-mission-complete': 'wiki',
+  'moonboys:wiki-mission-completed': 'wiki',
+  'moonboys:wtf-event-checkin': 'battle',
+  'moonboys:wtf-event-complete': 'battle',
+});
+
+function ensurePlayerActionSyncBuffer() {
+  if (window.MOONBOYS_ACTION_SYNC || window.__MOONBOYS_ACTION_SYNC_BUFFER__) return;
+  const events = [];
+  const listeners = [];
+  const safeSource = value => {
+    const source = String(value || 'progression').toLowerCase();
+    return /^[a-z][a-z0-9_-]{0,31}$/u.test(source) ? source : 'progression';
+  };
+  const bind = (target, eventName, fallbackSource) => {
+    if (!target || typeof target.addEventListener !== 'function') return;
+    const listener = event => {
+      if (window.MOONBOYS_ACTION_SYNC) return;
+      events.push(Object.freeze({
+        source: safeSource(event?.detail?.source || fallbackSource),
+        event: eventName,
+      }));
+      if (events.length > 32) events.splice(0, events.length - 32);
+    };
+    target.addEventListener(eventName, listener);
+    listeners.push([target, eventName, listener]);
+  };
+  Object.entries(ACTION_SYNC_BUFFER_EVENTS).forEach(([eventName, source]) => {
+    bind(window, eventName, source);
+    if (eventName.startsWith('moonboys:wiki-')) bind(document, eventName, source);
+  });
+  window.__MOONBOYS_ACTION_SYNC_BUFFER__ = {
+    events,
+    cleanup() {
+      listeners.splice(0).forEach(([target, eventName, listener]) => {
+        if (typeof target.removeEventListener === 'function')
+          target.removeEventListener(eventName, listener);
+      });
+    },
+  };
+}
+
+function ensurePlayerActionSync() {
+  if (typeof window === 'undefined' || typeof document === 'undefined') return Promise.resolve();
+  ensurePlayerActionSyncBuffer();
+  if (window.MOONBOYS_ACTION_SYNC) return Promise.resolve();
+  if (window.__MOONBOYS_ARCADE_ACTION_SYNC_LOADING__) return window.__MOONBOYS_ARCADE_ACTION_SYNC_LOADING__;
+  const existing = document.querySelector('script[data-player-action-sync]');
+  if (existing) {
+    window.__MOONBOYS_ARCADE_ACTION_SYNC_LOADING__ = new Promise(resolve => {
+      if (window.MOONBOYS_ACTION_SYNC) return resolve();
+      existing.addEventListener('load', resolve, { once: true });
+      existing.addEventListener('error', resolve, { once: true });
+      window.setTimeout(resolve, 2500);
+    });
+    return window.__MOONBOYS_ARCADE_ACTION_SYNC_LOADING__;
+  }
+  window.__MOONBOYS_ARCADE_ACTION_SYNC_LOADING__ = new Promise(resolve => {
+    const script = document.createElement('script');
+    script.src = '/js/player-action-sync.js';
+    script.async = false;
+    script.dataset.playerActionSync = '1';
+    script.addEventListener('load', resolve, { once: true });
+    script.addEventListener('error', resolve, { once: true });
+    // Reconciliation is auxiliary to gameplay. A stalled script request must
+    // never hold competitive gating or game initialization indefinitely.
+    window.setTimeout(resolve, 2500);
+    document.head.appendChild(script);
+  });
+  return window.__MOONBOYS_ARCADE_ACTION_SYNC_LOADING__;
+}
+
 /**
  * Mount a game onto the page.
  *
@@ -37,6 +113,10 @@ const LIFECYCLE_METHODS = ['init', 'start', 'pause', 'resume', 'reset', 'destroy
  * @returns {Promise<object>}          - Resolves to the game lifecycle object.
  */
 export async function mountGame(options) {
+  // Standalone Arcade pages do not load site-shell.js. Ensure the sanitized
+  // accepted-action bus is available before any game bootstrap can emit an
+  // accepted score/progression event.
+  await ensurePlayerActionSync();
   var root      = options.root;
   var bootstrap = options.bootstrap;
   var adapter = options.adapter || null;

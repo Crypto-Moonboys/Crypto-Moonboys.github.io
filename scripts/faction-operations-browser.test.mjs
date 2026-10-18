@@ -72,7 +72,12 @@ async function setup(width=390,options={}) {
   await page.evaluate(config=>{
     const order=config.order;
     window.__fopTest={id:config.id,linked:config.linked,state:config.initial,
-      subscribers:[],writes:0,reads:0,refreshed:0,releasePending:null};
+      subscribers:[],writes:0,reads:0,refreshed:0,releasePending:null,
+      queuedRefreshResolvers:[],
+      releaseNextQueuedRefresh(value) {
+        const resolve = this.queuedRefreshResolvers.shift();
+        if (resolve) resolve(value);
+      }};
     window.MOONBOYS_IDENTITY={
       isTelegramLinked:()=>window.__fopTest.linked,
       getTelegramId:()=>window.__fopTest.linked?window.__fopTest.id:null,
@@ -100,6 +105,13 @@ async function setup(width=390,options={}) {
         return Promise.resolve(window.__fopTest.state);
       },
       refresh() {window.__fopTest.refreshed++;return Promise.resolve(window.__fopTest.state);},
+      refreshAfterInflight() {
+        window.__fopTest.refreshed++;
+        if (config.holdQueuedRefresh) {
+          return new Promise(resolve => { window.__fopTest.queuedRefreshResolvers.push(resolve); });
+        }
+        return Promise.resolve(window.__fopTest.state);
+      },
     };
     window.fetch=()=>{
       window.__fopTest.writes++;
@@ -116,7 +128,8 @@ async function setup(width=390,options={}) {
     };
   },{order:FACTIONS,initial:Object.hasOwn(options,'state')?options.state:fixture(),
     id:options.owner??'111',linked:options.linked??true,missionData:missionData(),
-    profiles:options.profiles,holdFirstRead:Boolean(options.holdFirstRead)});
+    profiles:options.profiles,holdFirstRead:Boolean(options.holdFirstRead),
+    holdQueuedRefresh:Boolean(options.holdQueuedRefresh)});
   await page.addScriptTag({content:SCRIPT});
   await page.waitForFunction(()=>document.querySelector('[data-fop-crew]')?.textContent.length>25);
   return {browser,context,page,errors};
@@ -635,6 +648,343 @@ test('PR4 same-day tick removes the final expired window without fabricating ano
     assert.match(after,/no remaining source-confirmed event for today/);
     assert.doesNotMatch(after,/Final persisted event|Source reports active/);
     assert.equal(await f.page.evaluate(()=>window.__fopTest.refreshed),0);
+    assert.equal(f.errors.length,0,f.errors.join('\n'));
+  }finally{await f.browser.close();}
+});
+
+
+test('PR5 accepted action queues a forced Daily Loop read after a pending pre-action request',async()=>{
+  const old=fixture({dayValue:120});
+  const fresh=fixture({dayValue:9,rows:false});
+  const f=await setup(390,{pageKey:'graffpunks',holdFirstRead:true,state:old});
+  try{
+    const {page}=f;
+    await page.waitForFunction(()=>typeof window.__fopTest.releasePending==='function');
+    assert.match(await page.locator('[data-fop-private]').innerText(),/120 \(server-saved faction contribution/);
+    await page.evaluate(()=>{
+      window.dispatchEvent(new CustomEvent('moonboys:player-action-accepted',{
+        detail:{source:'moonpet',event:'moonpet:action-accepted',remote:true}
+      }));
+      window.dispatchEvent(new CustomEvent('moonboys:player-action-accepted',{
+        detail:{source:'moonpet',event:'moonpet:action-accepted',remote:true}
+      }));
+    });
+    assert.doesNotMatch(await page.locator('[data-fop-private]').innerText(),/120 \(server-saved faction contribution/);
+    // Simulate the shared singleton publishing its old in-flight snapshot.
+    await page.evaluate(value=>window.__fopTest.push(value),old);
+    assert.doesNotMatch(await page.locator('[data-fop-private]').innerText(),/120 \(server-saved faction contribution/,
+      'queued post-action refresh suppresses pre-action subscriber delivery');
+    await page.evaluate(value=>{window.__fopTest.state=value;},fresh);
+    await page.evaluate(value=>window.__fopTest.releasePending(value),old);
+    await page.waitForFunction(()=>document.querySelector('[data-fop-private]')?.textContent.includes(
+      '9 (server-saved faction contribution'
+    ),null,{timeout:5000});
+    assert.equal(await page.evaluate(()=>window.__fopTest.refreshed),1,
+      'multiple accepted invalidations while one read is pending collapse to one post-action forced read');
+    const current=await page.locator('[data-fop-private]').innerText();
+    assert.match(current,/9 \(server-saved faction contribution/);
+    assert.doesNotMatch(current,/120 \(server-saved faction contribution/);
+    assert.equal(f.errors.length,0,f.errors.join('\n'));
+  }finally{await f.browser.close();}
+});
+
+
+test('PR5 faction view suppresses another component’s pre-action Daily Loop subscriber until queued refresh returns',async()=>{
+  const old=fixture({dayValue:120});
+  const fresh=fixture({dayValue:9,rows:false});
+  const f=await setup(390,{pageKey:'graffpunks',state:old,holdQueuedRefresh:true});
+  try{
+    const {page}=f;
+    await page.waitForFunction(()=>document.querySelector('[data-fop-private]')?.textContent.includes(
+      '120 (server-saved faction contribution'
+    ));
+    await page.evaluate(()=>{
+      window.dispatchEvent(new CustomEvent('moonboys:player-action-accepted',{
+        detail:{source:'arcade',event:'moonboys:arcade-score-accepted',remote:true}
+      }));
+    });
+    await page.waitForFunction(()=>window.__fopTest.queuedRefreshResolvers.length===1);
+    assert.doesNotMatch(await page.locator('[data-fop-private]').innerText(),
+      /120 \(server-saved faction contribution/);
+    // Emulate an older singleton request, owned by another component, publishing
+    // after this widget has already queued its post-action read.
+    await page.evaluate(value=>window.__fopTest.push(value),old);
+    assert.doesNotMatch(await page.locator('[data-fop-private]').innerText(),
+      /120 \(server-saved faction contribution/,
+      'external pre-action subscriber delivery stays suppressed');
+    await page.evaluate(value=>{
+      window.__fopTest.state=value;
+      window.__fopTest.releaseNextQueuedRefresh(value);
+    },fresh);
+    await page.waitForFunction(()=>document.querySelector('[data-fop-private]')?.textContent.includes(
+      '9 (server-saved faction contribution'
+    ),null,{timeout:5000});
+    assert.match(await page.locator('[data-fop-private]').innerText(),
+      /9 \(server-saved faction contribution/);
+    assert.equal(await page.evaluate(()=>window.__fopTest.refreshed),1);
+    assert.equal(f.errors.length,0,f.errors.join('\n'));
+  }finally{await f.browser.close();}
+});
+
+
+test('PR5 faction-status during accepted follow-up queues replacement read and never strands subscriber suppression',async()=>{
+  const old=fixture({dayValue:120});
+  const fresh=fixture({dayValue:9,rows:false});
+  const f=await setup(390,{pageKey:'graffpunks',state:old,holdQueuedRefresh:true});
+  try{
+    const {page}=f;
+    await page.waitForFunction(()=>document.querySelector('[data-fop-private]')?.textContent.includes(
+      '120 (server-saved faction contribution'
+    ));
+    await page.evaluate(()=>{
+      window.dispatchEvent(new CustomEvent('moonboys:player-action-accepted',{
+        detail:{source:'arcade',event:'moonboys:arcade-score-accepted',remote:true}
+      }));
+    });
+    await page.waitForFunction(()=>window.__fopTest.queuedRefreshResolvers.length===1);
+    await page.evaluate(()=>window.dispatchEvent(new CustomEvent('moonboys:faction-status')));
+    await page.evaluate(value=>window.__fopTest.push(value),old);
+    assert.doesNotMatch(await page.locator('[data-fop-private]').innerText(),
+      /120 \(server-saved faction contribution/,
+      'retired follow-up cannot let old subscriber state repaint');
+    await page.evaluate(value=>window.__fopTest.releaseNextQueuedRefresh(value),old);
+    await page.waitForFunction(()=>window.__fopTest.refreshed===2 &&
+      window.__fopTest.queuedRefreshResolvers.length===1);
+    await page.evaluate(value=>{
+      window.__fopTest.state=value;
+      window.__fopTest.releaseNextQueuedRefresh(value);
+    },fresh);
+    await page.waitForFunction(()=>document.querySelector('[data-fop-private]')?.textContent.includes(
+      '9 (server-saved faction contribution'
+    ),null,{timeout:5000});
+    assert.equal(await page.evaluate(()=>window.__fopTest.refreshed),2);
+    await page.evaluate(value=>window.__fopTest.push(value),fresh);
+    assert.match(await page.locator('[data-fop-private]').innerText(),
+      /9 \(server-saved faction contribution/,
+      'subscriber delivery resumes after replacement authoritative read');
+    assert.equal(f.errors.length,0,f.errors.join('\n'));
+  }finally{await f.browser.close();}
+});
+
+test('PR5 UTC rollover during accepted follow-up queues new-day replacement and releases suppression',async()=>{
+  const old=fixture({now:'2026-10-17',dayValue:120});
+  const fresh=fixture({now:'2026-10-18',dayValue:9,rows:false});
+  const f=await setup(390,{
+    pageKey:'graffpunks',state:old,holdQueuedRefresh:true,
+    clockTime:'2026-10-17T23:59:30.000Z',
+  });
+  try{
+    const {page}=f;
+    await page.waitForFunction(()=>document.querySelector('[data-fop-private]')?.textContent.includes(
+      '120 (server-saved faction contribution'
+    ));
+    await page.evaluate(()=>{
+      window.dispatchEvent(new CustomEvent('moonboys:player-action-accepted',{
+        detail:{source:'moonpet',event:'moonpet:action-accepted',remote:true}
+      }));
+    });
+    await page.waitForFunction(()=>window.__fopTest.queuedRefreshResolvers.length===1);
+    await page.evaluate(value=>{window.__fopTest.state=value;},fresh);
+    await page.clock.runFor(62000);
+    assert.equal(await page.evaluate(()=>new Date().toISOString().slice(0,10)),'2026-10-18');
+    await page.evaluate(value=>window.__fopTest.releaseNextQueuedRefresh(value),old);
+    await page.waitForFunction(()=>window.__fopTest.refreshed===2 &&
+      window.__fopTest.queuedRefreshResolvers.length===1);
+    await page.evaluate(value=>window.__fopTest.releaseNextQueuedRefresh(value),fresh);
+    await page.waitForFunction(()=>document.querySelector('[data-fop-private]')?.textContent.includes(
+      '9 (server-saved faction contribution'
+    ),null,{timeout:5000});
+    const text=await page.locator('[data-fop-private]').innerText();
+    assert.match(text,/UTC day 2026-10-18/);
+    assert.match(text,/9 \(server-saved faction contribution/);
+    assert.doesNotMatch(text,/120 \(server-saved faction contribution|UTC day 2026-10-17/);
+    await page.evaluate(value=>window.__fopTest.push(value),fresh);
+    assert.match(await page.locator('[data-fop-private]').innerText(),/9 \(server-saved faction contribution/);
+    assert.equal(f.errors.length,0,f.errors.join('\n'));
+  }finally{await f.browser.close();}
+});
+
+
+test('PR5 hidden-tab reconnect queues faction reconciliation until visibility returns',async()=>{
+  const old=fixture({dayValue:120});
+  const fresh=fixture({dayValue:9,rows:false});
+  const f=await setup(390,{pageKey:'graffpunks',state:old});
+  try{
+    const {page}=f;
+    await page.waitForFunction(()=>document.querySelector('[data-fop-private]')?.textContent.includes(
+      '120 (server-saved faction contribution'
+    ));
+    await page.evaluate(()=>{
+      Object.defineProperty(document,'hidden',{configurable:true,value:true});
+      window.dispatchEvent(new CustomEvent('moonboys:player-reconcile-needed',{
+        detail:{reason:'online',utc_day:new Date().toISOString().slice(0,10)}
+      }));
+    });
+    assert.equal(await page.evaluate(()=>window.__fopTest.refreshed),0,
+      'hidden reconnect queues invalidation without network work');
+    assert.doesNotMatch(await page.locator('[data-fop-private]').innerText(),
+      /120 \(server-saved faction contribution/,
+      'hidden tab immediately stops presenting old contribution as current');
+
+    await page.evaluate(value=>window.__fopTest.push(value),old);
+    assert.doesNotMatch(await page.locator('[data-fop-private]').innerText(),
+      /120 \(server-saved faction contribution/,
+      'cached subscriber updates remain suppressed while hidden reconciliation is queued');
+
+    await page.evaluate(value=>{
+      window.__fopTest.state=value;
+      Object.defineProperty(document,'hidden',{configurable:true,value:false});
+      document.dispatchEvent(new Event('visibilitychange'));
+    },fresh);
+    await page.waitForFunction(()=>document.querySelector('[data-fop-private]')?.textContent.includes(
+      '9 (server-saved faction contribution'
+    ),null,{timeout:5000});
+    assert.equal(await page.evaluate(()=>window.__fopTest.refreshed),1,
+      'becoming visible consumes the queued forced refresh exactly once');
+    assert.match(await page.locator('[data-fop-private]').innerText(),
+      /9 \(server-saved faction contribution/);
+    assert.equal(f.errors.length,0,f.errors.join('\n'));
+  }finally{await f.browser.close();}
+});
+
+
+test('PR5 guest UTC rollover refreshes anonymous Daily Loop schedule instead of clearing public truth',async()=>{
+  const old=fixture({verified:false,now:'2026-10-17'});
+  old.next_utc_reset_at='2026-10-18T00:00:00.000Z';
+  old.daily_wtf_status={
+    utc_day:'2026-10-17',
+    events:[{
+      title:'Old anonymous WTF window',
+      starts_at:'2026-10-17T23:45:00.000Z',
+      ends_at:'2026-10-18T00:10:00.000Z',
+      status:'active',
+    }],
+  };
+  const fresh=fixture({verified:false,now:'2026-10-18'});
+  fresh.next_utc_reset_at='2026-10-19T00:00:00.000Z';
+  fresh.daily_wtf_status={
+    utc_day:'2026-10-18',
+    events:[{
+      title:'Fresh anonymous WTF window',
+      starts_at:'2026-10-18T00:30:00.000Z',
+      ends_at:'2026-10-18T01:30:00.000Z',
+      status:'upcoming',
+    }],
+  };
+  const f=await setup(390,{
+    pageKey:'graffpunks',linked:false,state:old,
+    clockTime:'2026-10-17T23:59:30.000Z',
+  });
+  try{
+    const {page}=f;
+    const before=await page.locator('[data-fop-crew]').innerText();
+    assert.match(before,/Old anonymous WTF window/);
+    assert.match(before,/Next UTC-day reset:/);
+    assert.match(await page.locator('[data-fop-private]').innerText(),/Link Telegram/);
+    assert.equal(await page.evaluate(()=>window.__fopTest.refreshed),0);
+
+    await page.evaluate(value=>{window.__fopTest.state=value;},fresh);
+    await page.clock.runFor(62000);
+    await page.waitForFunction(()=>document.querySelector('[data-fop-crew]')?.textContent.includes(
+      'Fresh anonymous WTF window'
+    ),null,{timeout:5000});
+
+    const after=await page.locator('[data-fop-crew]').innerText();
+    assert.match(after,/Fresh anonymous WTF window/);
+    assert.doesNotMatch(after,/Old anonymous WTF window/);
+    assert.match(after,/19 Oct 2026, 00:00 UTC/);
+    assert.equal(await page.evaluate(()=>window.__fopTest.refreshed),1,
+      'guest rollover must perform one anonymous forced Daily Loop refresh');
+    assert.match(await page.locator('[data-fop-private]').innerText(),/Link Telegram/);
+    assert.equal(await page.evaluate(()=>window.__fopTest.writes),0);
+    assert.equal(f.errors.length,0,f.errors.join('\n'));
+  }finally{await f.browser.close();}
+});
+
+
+test('PR5 guest cross-tab accepted action preserves public reset and WTF snapshot without private refresh',async()=>{
+  const guest=fixture({verified:false});
+  guest.next_utc_reset_at='2026-10-19T00:00:00.000Z';
+  guest.daily_wtf_status={
+    utc_day:guest.utc_day,
+    events:[{
+      title:'Guest confirmed public WTF window',
+      starts_at:new Date(Date.now()+3600000).toISOString(),
+      ends_at:new Date(Date.now()+7200000).toISOString(),
+      status:'upcoming',
+    }],
+  };
+  const f=await setup(390,{pageKey:'graffpunks',linked:false,state:guest});
+  try{
+    const {page}=f;
+    await page.waitForFunction(()=>document.querySelector('[data-fop-crew]')?.textContent.includes(
+      'Guest confirmed public WTF window'
+    ));
+    const before=await page.locator('[data-fop-crew]').innerText();
+    assert.match(before,/Guest confirmed public WTF window/);
+    assert.match(before,/Next UTC-day reset:/);
+    assert.match(await page.locator('[data-fop-private]').innerText(),/Link Telegram/);
+    assert.equal(await page.evaluate(()=>window.__fopTest.reads),1);
+    assert.equal(await page.evaluate(()=>window.__fopTest.refreshed),0);
+
+    await page.evaluate(()=>{
+      window.dispatchEvent(new CustomEvent('moonboys:player-action-accepted',{
+        detail:{source:'arcade',event:'moonboys:arcade-score-accepted',remote:true}
+      }));
+    });
+    await page.waitForTimeout(75);
+
+    const after=await page.locator('[data-fop-crew]').innerText();
+    assert.equal(after,before,
+      'guest accepted-action invalidation must not clear or replace public source snapshot');
+    assert.match(after,/Guest confirmed public WTF window/);
+    assert.match(after,/Next UTC-day reset:/);
+    assert.equal(await page.evaluate(()=>window.__fopTest.reads),1,
+      'guest cross-tab action does not request a private or anonymous replacement read');
+    assert.equal(await page.evaluate(()=>window.__fopTest.refreshed),0);
+    assert.match(await page.locator('[data-fop-private]').innerText(),/Link Telegram/);
+    assert.equal(await page.evaluate(()=>window.__fopTest.writes),0);
+    assert.equal(f.errors.length,0,f.errors.join('\n'));
+  }finally{await f.browser.close();}
+});
+
+
+test('PR5 background accepted-action reconciliation preserves focused private control for same owner',async()=>{
+  const f=await setup(390,{pageKey:'graffpunks'});
+  try{
+    const {page}=f;
+    const link=page.locator('[data-fop-private] a[href="/my-moonboy.html?tab=faction"]');
+    await link.focus();
+    assert.equal(await page.evaluate(()=>document.activeElement?.getAttribute('href')==='/my-moonboy.html?tab=faction'),true);
+
+    await page.evaluate(next=>{
+      window.__fopTest.state=next;
+      window.dispatchEvent(new CustomEvent('moonboys:player-action-accepted',{
+        detail:{source:'arcade',event:'moonboys:arcade-score-accepted',remote:true}
+      }));
+    },fixture({dayValue:9}));
+
+    await page.waitForFunction(()=>document.querySelector('[data-fop-private]')?.textContent.includes(
+      '9 (server-saved faction contribution'
+    ));
+    assert.equal(await page.evaluate(()=>
+      document.activeElement?.getAttribute('href')==='/my-moonboy.html?tab=faction'),true,
+    'same-owner background reconciliation restores the matching focused private link');
+
+    const retry=page.locator('[data-fop-private] [data-fop-retry]');
+    await retry.focus();
+    await page.evaluate(next=>{
+      window.__fopTest.state=next;
+      window.dispatchEvent(new CustomEvent('moonboys:player-reconcile-needed',{
+        detail:{reason:'online',utc_day:new Date().toISOString().slice(0,10)}
+      }));
+    },fixture({dayValue:11}));
+    await page.waitForFunction(()=>document.querySelector('[data-fop-private]')?.textContent.includes(
+      '11 (server-saved faction contribution'
+    ));
+    assert.equal(await page.evaluate(()=>
+      document.activeElement?.matches('[data-fop-private] button[data-fop-retry]')),true,
+    'background reconnect reconciliation preserves focused Retry control');
     assert.equal(f.errors.length,0,f.errors.join('\n'));
   }finally{await f.browser.close();}
 });

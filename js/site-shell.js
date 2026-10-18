@@ -623,7 +623,64 @@ window.__HUD_CONSOLIDATED__ = true;
     observer.observe(document.body, { childList: true, subtree: true });
   }
 
+  const ACTION_SYNC_BUFFER_EVENTS = Object.freeze({
+    'moonpet:action-accepted': 'moonpet',
+    'moonboys:server-action-accepted': 'progression',
+    'moonboys:arcade-score-accepted': 'arcade',
+    'moonboys:wiki-mission-complete': 'wiki',
+    'moonboys:wiki-mission-completed': 'wiki',
+    'moonboys:wtf-event-checkin': 'battle',
+    'moonboys:wtf-event-complete': 'battle',
+  });
+
+  function ensurePlayerActionSyncBuffer() {
+    if (window.MOONBOYS_ACTION_SYNC || window.__MOONBOYS_ACTION_SYNC_BUFFER__) return;
+    const events = [];
+    const listeners = [];
+    const safeSource = value => {
+      const source = String(value || 'progression').toLowerCase();
+      return /^[a-z][a-z0-9_-]{0,31}$/u.test(source) ? source : 'progression';
+    };
+    const bind = (target, eventName, fallbackSource) => {
+      if (!target || typeof target.addEventListener !== 'function') return;
+      const listener = event => {
+        if (window.MOONBOYS_ACTION_SYNC) return;
+        events.push(Object.freeze({
+          source: safeSource(event?.detail?.source || fallbackSource),
+          event: eventName,
+        }));
+        if (events.length > 32) events.splice(0, events.length - 32);
+      };
+      target.addEventListener(eventName, listener);
+      listeners.push([target, eventName, listener]);
+    };
+    Object.entries(ACTION_SYNC_BUFFER_EVENTS).forEach(([eventName, source]) => {
+      bind(window, eventName, source);
+      if (eventName.startsWith('moonboys:wiki-')) bind(document, eventName, source);
+    });
+    window.__MOONBOYS_ACTION_SYNC_BUFFER__ = {
+      events,
+      cleanup() {
+        listeners.splice(0).forEach(([target, eventName, listener]) => {
+          if (typeof target.removeEventListener === 'function')
+            target.removeEventListener(eventName, listener);
+        });
+      },
+    };
+  }
+
+  function ensurePlayerActionSync() {
+    ensurePlayerActionSyncBuffer();
+    if (window.MOONBOYS_ACTION_SYNC || document.querySelector('script[data-player-action-sync]')) return;
+    const script = document.createElement('script');
+    script.src = '/js/player-action-sync.js';
+    script.async = false;
+    script.dataset.playerActionSync = '1';
+    document.head.appendChild(script);
+  }
+
   function bootShell() {
+    ensurePlayerActionSync();
     ensureNav();
     startRecoveryObserver();
     // Identity events update the private nav link without changing public
@@ -649,6 +706,10 @@ window.__HUD_CONSOLIDATED__ = true;
     shouldShowRightPanel,
     getSiteStats,
   });
+
+  // Install capture and begin loading immediately, before later page scripts
+  // can complete an accepted write during this deferred bus download.
+  ensurePlayerActionSync();
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', bootShell);

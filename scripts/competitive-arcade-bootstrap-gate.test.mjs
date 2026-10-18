@@ -28,7 +28,7 @@ function createElementClass() {
   };
 }
 
-async function loadMountGame({ gateResult }) {
+async function loadMountGame({ gateResult, stalledSync = false }) {
   const src = await fs.readFile(path.join(ROOT, 'js/arcade/core/game-shell.js'), 'utf8');
   const transformed = `${src
     .replace("import { bootstrapFromAdapter } from '/js/arcade/engine/game-adapter.js';", 'const bootstrapFromAdapter = __deps.bootstrapFromAdapter;')
@@ -38,6 +38,37 @@ async function loadMountGame({ gateResult }) {
 
   const Element = createElementClass();
   const module = { exports: {} };
+  let syncTimeoutMs = null;
+  const stalledScript = {
+    dataset: {},
+    listeners: new Map(),
+    addEventListener(type, handler) { this.listeners.set(type, handler); },
+  };
+  const documentObj = stalledSync ? {
+    listeners: new Map(),
+    querySelector() { return null; },
+    createElement() { return stalledScript; },
+    addEventListener(type, handler) { this.listeners.set(type, handler); },
+    removeEventListener(type, handler) {
+      if (this.listeners.get(type) === handler) this.listeners.delete(type);
+    },
+    head: { appendChild() {} },
+  } : undefined;
+  const windowObj = {
+    addEventListener() {},
+    MOONBOYS_IDENTITY: {
+      async enforceCompetitiveArcadePageGate() {
+        return gateResult;
+      },
+    },
+  };
+  if (stalledSync) {
+    windowObj.setTimeout = (callback, ms) => {
+      syncTimeoutMs = ms;
+      Promise.resolve().then(callback);
+      return 1;
+    };
+  }
   const context = {
     __deps: {
       bootstrapFromAdapter() {
@@ -48,19 +79,48 @@ async function loadMountGame({ gateResult }) {
     module,
     exports: module.exports,
     Element,
-    window: {
-      addEventListener() {},
-      MOONBOYS_IDENTITY: {
-        async enforceCompetitiveArcadePageGate() {
-          return gateResult;
-        },
-      },
-    },
+    window: windowObj,
+    document: documentObj,
     console: { error() {}, warn() {}, log() {} },
   };
   context.globalThis = context;
   vm.runInNewContext(transformed, context, { filename: 'js/arcade/core/game-shell.js' });
-  return { mountGame: module.exports.mountGame, Element };
+  return {
+    mountGame: module.exports.mountGame,
+    Element,
+    getSyncTimeoutMs() { return syncTimeoutMs; },
+  };
+}
+
+{
+  const { mountGame, Element, getSyncTimeoutMs } = await loadMountGame({
+    gateResult: { ok: true, game_id: 'snake-run', telegram_auth: { id: '123', hash: 'signed', auth_date: '1700000000' } },
+    stalledSync: true,
+  });
+  let bootstrapped = 0;
+  const root = new Element();
+  const result = await mountGame({
+    root,
+    requireCompetitiveGate: true,
+    gameId: 'snake-run',
+    bootstrap() {
+      bootstrapped += 1;
+      return {
+        async init() {},
+        start() {},
+        pause() {},
+        resume() {},
+        reset() {},
+        destroy() {},
+        getScore() { return 0; },
+      };
+    },
+  });
+  assert.equal(getSyncTimeoutMs(), 2500,
+    'cold standalone sync loader must use the bounded 2.5s fallback');
+  assert.equal(bootstrapped, 1,
+    'stalled action-sync request must not indefinitely block Arcade bootstrap');
+  assert.equal(typeof result.getScore, 'function');
 }
 
 {

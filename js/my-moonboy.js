@@ -24,6 +24,7 @@
     'moonboys:wiki-mission-complete', 'moonboys:wiki-mission-completed',
     'moonboys:roguelite-options-unlocked', 'battle-chamber:activity-ready',
     'moonpet:action-accepted', 'moonboys:pet-changed',
+    'moonboys:player-action-accepted', 'moonboys:player-reconcile-needed',
   ];
   const REQUEST_TIMEOUT_MS = 12500;
   const STALE_AFTER_MS = 45000;
@@ -38,6 +39,7 @@
     lastSuccess: 0, lastFailure: null, stale: false,
     serverTime: NaN, clockStart: 0, tab: 'now', status: 'all', search: '',
     refreshTimer: 0, petFilterRef: null, lastUtcDay: new Date().toISOString().slice(0, 10),
+    offline: typeof navigator !== 'undefined' && navigator.onLine === false,
   };
 
   function esc(value) {
@@ -351,6 +353,8 @@
     byId('mm-sync').textContent = 'No verified plan loaded.';
     byId('mm-page-count').textContent = '0 tasks loaded';
     byId('mm-ledger-note').textContent = 'Sign in to view the source ledger.';
+    byId('mm-claims-badge').hidden = true;
+    byId('mm-claims-badge').textContent = '';
     showGate(title || 'Log in to My Moonboy',
       description || 'Verified Telegram login is required. No private plan is shown to visitors.');
   }
@@ -409,6 +413,7 @@
   }
 
   function applyPlan(payload, ownerId, append) {
+    if (state.offline) return;
     const previous = append ? state.tasks : [];
     const seen = new Set(previous.map(task => task.task_id));
     const newTasks = payload.tasks.filter(task => task && typeof task.task_id === 'string' && !seen.has(task.task_id));
@@ -436,6 +441,14 @@
 
   async function refresh(options) {
     const opts = options || {};
+    if (state.offline) {
+      if (state.plan) {
+        state.stale = true;
+        state.lastFailure = 'Offline. Waiting for a fresh verified read after reconnect.';
+        render();
+      }
+      return;
+    }
     const ownerId = identityKey();
     if (!ownerId) {
       clearPrivate('Log in to My Moonboy', 'Connect a verified Telegram account to view your private missions.');
@@ -508,6 +521,12 @@
   }
 
   async function loadMore() {
+    if (state.offline) {
+      state.stale = Boolean(state.plan);
+      state.lastFailure = 'Offline. Pagination waits for a fresh verified read after reconnect.';
+      if (state.plan) render();
+      return;
+    }
     if (!state.plan || !state.nextCursor || state.paging || state.pending) return;
     const ownerId = identityKey();
     const day = new Date().toISOString().slice(0, 10);
@@ -570,7 +589,7 @@
     }
   }
 
-  function isNow(task) { return taskActionable(task) && !state.stale; }
+  function isNow(task) { return taskActionable(task) && !state.stale && !state.offline; }
   function matchesTab(task) {
     const key = String(task.source_key || '');
     const period = task.period && task.period.kind || '';
@@ -627,6 +646,9 @@
     const cards = Array.from(directory.entries()).map(([ref, entry], index) => {
       const pet = entry.pet;
       const assigned = state.tasks.filter(task => task.source_pet_ref === ref);
+      // This is a historical last-confirmed count when state.stale is true.
+      // Going offline suppresses current readiness elsewhere; it must not
+      // rewrite previously verified history to zero without new source evidence.
       const verifiedAvailable = assigned.filter(taskActionable).length;
       const stage = pet ? formatName(pet.life_stage || 'Not supplied') : null;
       const phase = pet ? formatName(pet.lifecycle_phase || 'Not supplied') : null;
@@ -653,12 +675,18 @@
         '<li>' + esc(task.title) + ' — ' +
         esc(state.stale ? 'last confirmed: ' + formatName(task.status) : formatName(task.status)) +
         '</li>').join('');
+      const claimReady = state.stale || state.offline ? 0 : assigned.filter(task =>
+        task.status === 'claim_ready' && task.source_health === 'live').length;
+      const claimBadge = claimReady
+        ? '<span class="mm-pet-claim-badge" aria-label="' + esc(claimReady + ' verified claim' +
+          (claimReady === 1 ? '' : 's') + ' ready for ' + entry.label) + '">' +
+          esc(claimReady + ' claim' + (claimReady === 1 ? '' : 's') + ' ready') + '</span>' : '';
       const availability = state.stale
         ? '<p class="mm-source-warning">Last-confirmed snapshot only. ' + verifiedAvailable +
           ' formerly actionable item(s); current availability unknown until refresh.</p>'
         : '<p>' + verifiedAvailable + ' source-verified action(s) available at last sync</p>';
       return '<article class="mm-pet"><h3>' + esc(entry.label) + '</h3>' +
-        marks + info + '<p>' + assigned.length + ' source task(s)</p>' +
+        marks + claimBadge + info + '<p>' + assigned.length + ' source task(s)</p>' +
         availability +
         (list ? '<ul>' + list + '</ul>' : '<p>No source tasks currently loaded for this MoonPet.</p>') +
         (assigned.length > 5 ? '<p>+' + (assigned.length - 5) +
@@ -685,6 +713,14 @@
       'mm-unavailable-count': summary.unavailable_sources,
     };
     Object.entries(ids).forEach(([id, value]) => { byId(id).textContent = niceCount(value); });
+    const claimsBadge = byId('mm-claims-badge');
+    const claimsReady = Number(summary.claims_ready);
+    const claimsVerified = !state.stale && !state.offline && Number.isFinite(claimsReady) && claimsReady > 0;
+    claimsBadge.hidden = !claimsVerified;
+    claimsBadge.textContent = claimsVerified ? String(Math.floor(claimsReady)) : '';
+    claimsBadge.setAttribute('aria-label', claimsVerified
+      ? Math.floor(claimsReady) + ' Action Plan verified claim' + (Math.floor(claimsReady) === 1 ? '' : 's') + ' ready'
+      : 'No current Action Plan verified claim count');
     const identity = getIdentity();
     const displayName = identity && typeof identity.getTelegramName === 'function'
       ? identity.getTelegramName() : null;
@@ -707,7 +743,9 @@
     else factionNote.textContent = 'Faction: ' + (faction.name || 'joined, name not supplied') + '. View faction tasks below.';
     const warnings = sourceWarnings(plan);
     const timestamp = sourceTime(plan.generated_at);
-    if (state.stale) setSync('STALE / LAST CONFIRMED ' + timestamp +
+    if (state.offline) setSync('OFFLINE / LAST CONFIRMED ' + timestamp +
+      '. Ready/claim badges are hidden until a fresh server read after reconnect.', 'stale');
+    else if (state.stale) setSync('STALE / LAST CONFIRMED ' + timestamp +
       '. Server readiness must refresh before trusting a countdown. ' + (state.lastFailure || ''), 'stale');
     else setSync('Last verified read: ' + timestamp + (warnings ? ' · ' + warnings : ''), warnings ? 'error' : 'ok');
   }
@@ -784,7 +822,7 @@
     state.lastFailure = null;
     state.stale = Boolean(state.plan);
     if (state.stale) render();
-    if (document.hidden) return;
+    if (state.offline || document.hidden) return;
     window.clearTimeout(state.refreshTimer);
     state.refreshTimer = window.setTimeout(() => refresh({ force: true }), 650);
   }
@@ -861,11 +899,33 @@
       if (/^moonboys_tg_/u.test(String(event.key || ''))) onIdentityChanged();
     });
     REFRESH_EVENTS.forEach(name => window.addEventListener(name, () => invalidate(name)));
+    window.addEventListener('offline', () => {
+      state.offline = true;
+      // Retire every read generation before displaying offline state. A late
+      // successful response must never restore readiness while disconnected.
+      state.epoch++;
+      window.clearTimeout(state.refreshTimer);
+      state.refreshTimer = 0;
+      cancelPagination();
+      state.controllers.forEach(controller => controller.abort());
+      state.controllers.clear();
+      state.pending = null;
+      state.stale = Boolean(state.plan);
+      state.lastFailure = 'Offline. Waiting for a fresh verified read after reconnect.';
+      byId('mm-refresh').disabled = false;
+      if (state.plan) render();
+    });
+    window.addEventListener('online', () => {
+      state.offline = false;
+      if (identityKey()) invalidate('network_reconnected');
+    });
     window.addEventListener('focus', () => {
-      if (Date.now() - state.lastSuccess > STALE_AFTER_MS) refresh({ force: true });
+      if (!state.offline && (state.stale || Date.now() - state.lastSuccess > STALE_AFTER_MS))
+        refresh({ force: true });
     });
     document.addEventListener('visibilitychange', () => {
-      if (!document.hidden && Date.now() - state.lastSuccess > STALE_AFTER_MS)
+      if (!document.hidden && !state.offline &&
+        (state.stale || Date.now() - state.lastSuccess > STALE_AFTER_MS))
         refresh({ force: true });
     });
     window.addEventListener('pagehide', () => clearPrivate('Session closed', 'Private data cleared.'));

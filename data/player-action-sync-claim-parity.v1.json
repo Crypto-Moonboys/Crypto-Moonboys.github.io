@@ -1,0 +1,102 @@
+{
+  "schema_version": 1,
+  "purpose": "Audit overlapping MoonPet Saved Status claim authorities against /player/action-plan. Gaps are explicit and must not inflate My Moonboy claim badges.",
+  "mappings": [
+    {
+      "saved_status": "daily_completion_bonus",
+      "saved_scope": "original_pet+utc_day",
+      "action_plan_source": "moonpet.seven-of-seven-claim",
+      "parity": "direct",
+      "claim_badge": true,
+      "notes": "Account claim authority preserves original earning pet/day through source_pet_ref; only verified claim_ready rows count."
+    },
+    {
+      "saved_status": "contract_saved_reward",
+      "saved_scope": "original_pet+contract",
+      "action_plan_source": "moonpet.contracts",
+      "parity": "direct",
+      "claim_badge": true,
+      "notes": "Original pet/session remains authoritative after selected-pet changes."
+    },
+    {
+      "saved_status": "timed_activity_claim_or_recovery",
+      "saved_scope": "original_pet+session",
+      "action_plan_source": "moonpet.jobs",
+      "parity": "partial",
+      "claim_badge": true,
+      "notes": "Dashboard uses saved activity source/read status; recovery rows remain source-bound and do not replay writes."
+    },
+    {
+      "saved_status": "daily_bounty_claims",
+      "saved_scope": "account+utc_day",
+      "action_plan_source": "moonpet.claimable-rewards",
+      "parity": "direct",
+      "claim_badge": true,
+      "notes": "Only canonical completed unpaid bounty authority can become claim_ready; internal recovery reservations are excluded."
+    },
+    {
+      "saved_status": "weekly_boss_or_raid_saved_rewards",
+      "saved_scope": "original_pet+source_period",
+      "action_plan_source": "moonpet.bosses-combat",
+      "parity": "partial",
+      "claim_badge": true,
+      "notes": "Verified source-pet reward rows are represented; action-plan projection remains bounded and source-status aware."
+    },
+    {
+      "saved_status": "daily_cache",
+      "saved_scope": "account+utc_day",
+      "action_plan_source": null,
+      "parity": "gap",
+      "claim_badge": false,
+      "notes": "No dedicated action-plan cache adapter exists on this baseline. My Moonboy must not invent a cache claim badge."
+    },
+    {
+      "saved_status": "season_tier_claims",
+      "saved_scope": "account+season+tier",
+      "action_plan_source": null,
+      "parity": "gap",
+      "claim_badge": false,
+      "notes": "No dedicated season-tier claim adapter exists on this baseline. Saved Status remains canonical for this claim class."
+    },
+    {
+      "saved_status": "automatic_journey_awards",
+      "saved_scope": "pet+source_period",
+      "action_plan_source": "moonpet.daily-journey",
+      "parity": "not_manual_claim",
+      "claim_badge": false,
+      "notes": "Daily/Weekly Journey awards settle automatically; readiness is progress/settlement state, not an extra claim badge."
+    },
+    {
+      "saved_status": "evolution_ready",
+      "saved_scope": "pet+permanent",
+      "action_plan_source": "moonpet.evolution",
+      "parity": "review_only",
+      "claim_badge": false,
+      "notes": "Evolution is an upgrade/review path, not a payout claim."
+    },
+    {
+      "saved_status": "finale_claim",
+      "saved_scope": "original_pet+competition_season",
+      "action_plan_source": null,
+      "parity": "gap",
+      "claim_badge": false,
+      "notes": "MoonPet Saved Status exposes unclaimed Finale rewards, but the current action-plan registry has no dedicated Finale claim adapter. Do not add these to My Moonboy claim badges."
+    },
+    {
+      "saved_status": "extra_bounty_claim",
+      "saved_scope": "account+utc_day+bonus_board",
+      "action_plan_source": null,
+      "parity": "gap",
+      "claim_badge": false,
+      "notes": "Extra daily challenge claims are distinct from ordinary daily bounties. The current moonpet.claimable-rewards adapter does not project this bonus board."
+    },
+    {
+      "saved_status": "weekly_bounty_claim",
+      "saved_scope": "account+weekly_bounty_period",
+      "action_plan_source": null,
+      "parity": "gap",
+      "claim_badge": false,
+      "notes": "Weekly bounty block claims have their own Saved Status authority and are not represented by the ordinary daily bounty action-plan adapter."
+    }
+  ]
+}

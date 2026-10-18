@@ -32,6 +32,8 @@
   let currentOwner = null;
   let lastDay = new Date().toISOString().slice(0, 10);
   let inflight = null;
+  let forcedRefreshQueued = false;
+  let suppressSubscriberUntilForcedResult = false;
   const isCommunity = !KEYS.has(String(document.body?.dataset?.factionPage || ''));
   const chamberKey = isCommunity ? null : document.body.dataset.factionPage;
 
@@ -384,7 +386,7 @@
     if (!ownerChanged) restorePanelFocus(focus);
   }
 
-  function receive(state) {
+  function receive(state, allowSuppressed) {
     // A subscriber or old in-flight read may resolve AFTER a new owner has
     // loaded. Reject foreign signed payloads without replacing the new plan
     // or erasing its public source snapshot.
@@ -397,6 +399,10 @@
     }
     if (state?.identity?.linked === true &&
       (!id || String(state.identity.telegram_id ?? '') !== id)) return;
+    // An accepted action may arrive while the shared Daily Loop still owns a
+    // pre-action read. Ignore all of that request's subscriber deliveries
+    // until its promise settles and a fresh forced read begins.
+    if ((forcedRefreshQueued || suppressSubscriberUntilForcedResult) && !allowSuppressed) return;
     // A late previous-day event must not erase a freshly accepted current-day
     // projection. A current-owner error still fails closed below.
     if (state?.utc_day && state.utc_day !== utcDay()) {
@@ -412,7 +418,7 @@
     render();
   }
 
-  function sharedDailyLoop(force) {
+  function sharedDailyLoop(force, authoritativeFollowup) {
     const api = window.MOONBOYS_DAILY_LOOP;
     if (!api || typeof api.getState !== 'function') {
       loading = false;
@@ -424,15 +430,24 @@
     const revision = snapshotRevision;
     loading = true;
     render();
-    const action = force && typeof api.refresh === 'function'
-      ? api.refresh({ force: true }) : api.getState();
+    const action = force && typeof api.refreshAfterInflight === 'function'
+      ? api.refreshAfterInflight({ force: true, reason: 'faction_operations_reconcile' })
+      : force && typeof api.refresh === 'function'
+        ? api.refresh({ force: true }) : api.getState();
     const operation = Promise.resolve(action).then(state => {
       // subscribe(receive) may have delivered a newer same-owner record while
-      // the Promise resolves. Prefer that delivery to a late stale result.
-      if (generation === epoch && revision === snapshotRevision) receive(state);
+      // the Promise resolves. A queued post-action read deliberately suppresses
+      // singleton subscriber output until THIS returned state is available.
+      if (generation === epoch && revision === snapshotRevision) {
+        if (authoritativeFollowup) suppressSubscriberUntilForcedResult = false;
+        receive(state, Boolean(authoritativeFollowup));
+      }
       return state;
     }).catch(() => {
-      if (generation === epoch) { snapshot = null; loading = false; render(); }
+      if (generation === epoch) {
+        if (authoritativeFollowup) suppressSubscriberUntilForcedResult = false;
+        snapshot = null; loading = false; render();
+      }
       return null;
     }).finally(() => {
       if (inflight !== operation) return;
@@ -440,13 +455,47 @@
       // A returned old-day or unusable snapshot is NOT current-day proof.
       // Once the request has actually settled, stop the loading state while
       // preserving the already-hidden private view and its retry control.
-      if (generation === epoch && !snapshot && loading) {
+      if (authoritativeFollowup && generation !== epoch &&
+        suppressSubscriberUntilForcedResult && ownerId()) {
+        // Another authoritative transition retired this follow-up. Keep the
+        // panel fail-closed and guarantee a replacement read rather than
+        // leaving subscriber delivery suppressed forever.
+        forcedRefreshQueued = true;
+      }
+      if (generation === epoch && !snapshot && loading && !forcedRefreshQueued) {
         loading = false;
         render();
       }
+      if (forcedRefreshQueued) Promise.resolve().then(runQueuedForcedRefresh);
     });
     inflight = operation;
     return operation;
+  }
+
+  function runQueuedForcedRefresh() {
+    if (!forcedRefreshQueued || inflight || document.hidden || !ownerId()) return;
+    forcedRefreshQueued = false;
+    sharedDailyLoop(true, true).catch(function () {});
+  }
+
+  function queueForcedRefresh(options) {
+    const opts = options || {};
+    const id = ownerId();
+    // Retire the component generation immediately. The shared singleton may
+    // still have a request in flight, so queue the authoritative follow-up
+    // instead of joining that pre-action promise.
+    epoch++;
+    snapshotRevision++;
+    forcedRefreshQueued = Boolean(id);
+    suppressSubscriberUntilForcedResult = Boolean(id);
+    snapshot = null;
+    loading = Boolean(id);
+    if (opts.retireComponentInflight) inflight = null;
+    // Same-owner background reconciliation must let render() capture the
+    // focused private control before replacing panel markup. Identity changes
+    // still purge synchronously through onIdentityChange().
+    render();
+    if (id) runQueuedForcedRefresh();
   }
 
   function onIdentityChange() {
@@ -457,6 +506,8 @@
     currentOwner = ownerId();
     snapshot = null;
     inflight = null;
+    forcedRefreshQueued = false;
+    suppressSubscriberUntilForcedResult = false;
     personalRoot.replaceChildren();
     loading = Boolean(currentOwner);
     render();
@@ -494,21 +545,33 @@
         onIdentityChange();
       }
     });
+    window.addEventListener('moonboys:player-action-accepted', () => {
+      // Accepted gameplay invalidates only private owner projections. Guests
+      // have no personal contribution to reconcile, and their verified public
+      // reset/WTF schedule must remain intact until its own source boundary
+      // (for example UTC rollover) requests an anonymous refresh.
+      if (ownerId()) queueForcedRefresh();
+    });
+    window.addEventListener('moonboys:player-reconcile-needed', () => {
+      // Always preserve reconnect invalidation. queueForcedRefresh() hides
+      // stale private interpretation immediately, while runQueuedForcedRefresh()
+      // defers network work until this tab becomes visible.
+      if (ownerId()) queueForcedRefresh();
+    });
     window.addEventListener('moonboys:faction-status', () => {
-      // The singleton already invalidates itself on this event. Clear the
-      // personal panel now and await its server-verified update.
-      epoch++;
-      snapshot = null;
-      loading = Boolean(ownerId());
-      personalRoot.replaceChildren();
-      render();
+      // Faction membership changes retire any accepted-action follow-up too.
+      // Always replace it with a new authoritative read so suppression cannot
+      // outlive the request generation that created it.
+      queueForcedRefresh();
     });
     personalRoot.addEventListener('click', event => {
       if (!event.target.closest('[data-fop-retry]')) return;
       sharedDailyLoop(true);
     });
     const refreshIfVisible = () => {
-      if (!document.hidden) sharedDailyLoop(false);
+      if (document.hidden) return;
+      if (forcedRefreshQueued) runQueuedForcedRefresh();
+      else sharedDailyLoop(false);
     };
     window.addEventListener('focus', refreshIfVisible);
     document.addEventListener('visibilitychange', refreshIfVisible);
@@ -520,18 +583,19 @@
         return;
       }
       lastDay = day;
-      epoch++;
-      snapshotRevision++;
-      snapshot = null;
-      // A pending pre-midnight getState() cannot satisfy a new UTC-day read.
-      // Retire ONLY this component's handle; the Daily Loop singleton keys
-      // concurrent requests by owner + day and controls its own inflight work.
-      // Epoch/revision checks keep the superseded result from repainting.
-      inflight = null;
-      personalRoot.replaceChildren();
-      loading = Boolean(ownerId());
-      render();
-      sharedDailyLoop(true);
+      // UTC rollover is another authoritative boundary. Signed owners use the
+      // queued private reconciliation contract. Guests still need a fresh
+      // anonymous Daily Loop read for public reset/WTF schedule truth.
+      if (!ownerId()) {
+        epoch++;
+        snapshotRevision++;
+        snapshot = null;
+        inflight = null;
+        render();
+        sharedDailyLoop(true, true).catch(function () {});
+      } else {
+        queueForcedRefresh({ retireComponentInflight: true });
+      }
     }, 60000);
   }
 

@@ -4316,6 +4316,16 @@
       var data = await post('/telegram-pets/app/action', requestPayload);
       if (!data || !data.result || typeof data.result.accepted !== 'boolean') throw new Error('ACTION RESPONSE UNCONFIRMED');
       var actionAccepted = Boolean(data.result && data.result.accepted);
+      if (actionAccepted) {
+        // Cross-tab invalidation only: do not expose pet_id, request_id,
+        // auth, reward or receipt data. The original action endpoint remains
+        // the sole mutation/settlement authority.
+        try {
+          window.dispatchEvent(new CustomEvent('moonpet:action-accepted', {
+            detail: Object.freeze({ source: 'moonpet', action: String(action || '').slice(0, 64) })
+          }));
+        } catch (_) {}
+      }
       if (['adventure', 'random_event', 'event_recover'].includes(action)) rememberChoiceResult(action, data.result, stateBeforeAction, requestPayload);
       // Record a confirmed sleep/wake preference on the pet that took the
       // action, before a newer projection can select a different companion.
