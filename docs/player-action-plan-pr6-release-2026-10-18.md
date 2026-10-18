@@ -36,6 +36,12 @@ Use disposable consenting owner-controlled accounts; never record real auth hash
 
 Record each of the 15 case results individually in the evidence manifest and attach a redacted test artefact link. Do not use a green QA label for an untested variant. **This PR does not have authenticated production fixtures or consent to execute gameplay writes. All signed checks remain pending.**
 
+## Machine-enforced CI and owner approval evidence
+
+Before setting `production_state: "verified"`, populate `ci.reviewed_head_sha` with the **40-character tested PR head SHA**. Each of `ci-wiki`, `ci-worker-api`, `ci-arcade`, `ci-wax`, and `ci-visual` must separately record `head_sha` matching that reviewed head, `conclusion: "success"` and its actual GitHub Actions `https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/actions/runs/<run-id>` link. This must be the final reviewed commit; after an evidence-only change that alters the branch SHA, rerun/review the updated head before attesting.
+
+The `gk_approval.approved_head_sha` must match `ci.reviewed_head_sha`, and `gk_approval.approval_url` must link to GK's explicit approval comment/review on PR #1558 or issue #1552, naming the approved SHA. Mere `owner_approval: "approved"` and `automation_state: "ci_green"` labels are insufficient. The release gate enforces these manifest references and consistency; an operator must still verify the linked GitHub evidence is genuine and current. Keep the manifest pending until that proof exists.
+
 ## Deployment/provenance proof — after explicit GK approval
 
 **Do not merge or deploy just to manufacture an attestation.** First record the approved commit and review in PR discussion. PR6 modifies static user guidance, CI audit and documentation only; **no new Worker or D1 change**, so PR6 itself requires **no Worker deployment, no migration and no VPS restart**. The already-merged PR2 Worker endpoint must nevertheless be independently confirmed present in production.
