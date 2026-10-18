@@ -32,6 +32,7 @@
   let currentOwner = null;
   let lastDay = new Date().toISOString().slice(0, 10);
   let inflight = null;
+  let forcedRefreshQueued = false;
   const isCommunity = !KEYS.has(String(document.body?.dataset?.factionPage || ''));
   const chamberKey = isCommunity ? null : document.body.dataset.factionPage;
 
@@ -397,6 +398,10 @@
     }
     if (state?.identity?.linked === true &&
       (!id || String(state.identity.telegram_id ?? '') !== id)) return;
+    // An accepted action may arrive while the shared Daily Loop still owns a
+    // pre-action read. Ignore all of that request's subscriber deliveries
+    // until its promise settles and a fresh forced read begins.
+    if (forcedRefreshQueued) return;
     // A late previous-day event must not erase a freshly accepted current-day
     // projection. A current-owner error still fails closed below.
     if (state?.utc_day && state.utc_day !== utcDay()) {
@@ -440,13 +445,35 @@
       // A returned old-day or unusable snapshot is NOT current-day proof.
       // Once the request has actually settled, stop the loading state while
       // preserving the already-hidden private view and its retry control.
-      if (generation === epoch && !snapshot && loading) {
+      if (generation === epoch && !snapshot && loading && !forcedRefreshQueued) {
         loading = false;
         render();
       }
+      if (forcedRefreshQueued) Promise.resolve().then(runQueuedForcedRefresh);
     });
     inflight = operation;
     return operation;
+  }
+
+  function runQueuedForcedRefresh() {
+    if (!forcedRefreshQueued || inflight || document.hidden || !ownerId()) return;
+    forcedRefreshQueued = false;
+    sharedDailyLoop(true).catch(function () {});
+  }
+
+  function queueForcedRefresh() {
+    if (!ownerId()) return;
+    // Retire the component generation immediately. The shared singleton may
+    // still have a request in flight, so queue the authoritative follow-up
+    // instead of joining that pre-action promise.
+    epoch++;
+    snapshotRevision++;
+    forcedRefreshQueued = true;
+    snapshot = null;
+    loading = true;
+    personalRoot.replaceChildren();
+    render();
+    runQueuedForcedRefresh();
   }
 
   function onIdentityChange() {
@@ -457,6 +484,7 @@
     currentOwner = ownerId();
     snapshot = null;
     inflight = null;
+    forcedRefreshQueued = false;
     personalRoot.replaceChildren();
     loading = Boolean(currentOwner);
     render();
@@ -495,16 +523,12 @@
       }
     });
     window.addEventListener('moonboys:player-action-accepted', () => {
-      // Cross-tab accepted gameplay is only an invalidation hint. Hide any
-      // currently actionable private interpretation and re-read through the
-      // one authenticated Daily Loop singleton; never infer completion here.
-      snapshot = null;
-      loading = Boolean(ownerId());
-      render();
-      sharedDailyLoop(true);
+      // Cross-tab accepted gameplay is only an invalidation hint. Hide current
+      // private interpretation and guarantee a read AFTER any pre-action read.
+      queueForcedRefresh();
     });
     window.addEventListener('moonboys:player-reconcile-needed', () => {
-      if (!document.hidden && ownerId()) sharedDailyLoop(true);
+      if (!document.hidden && ownerId()) queueForcedRefresh();
     });
     window.addEventListener('moonboys:faction-status', () => {
       // The singleton already invalidates itself on this event. Clear the
@@ -520,7 +544,9 @@
       sharedDailyLoop(true);
     });
     const refreshIfVisible = () => {
-      if (!document.hidden) sharedDailyLoop(false);
+      if (document.hidden) return;
+      if (forcedRefreshQueued) runQueuedForcedRefresh();
+      else sharedDailyLoop(false);
     };
     window.addEventListener('focus', refreshIfVisible);
     document.addEventListener('visibilitychange', refreshIfVisible);
