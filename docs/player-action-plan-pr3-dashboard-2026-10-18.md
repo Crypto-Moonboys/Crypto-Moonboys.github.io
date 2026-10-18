@@ -6,7 +6,7 @@
 
 - The client uses the existing **MOONBOYS_IDENTITY.getFreshTelegramAuth()** gate. It will never place auth proofs, hash, raw Telegram ID, raw pet ID or initData into a URL, localStorage, DOM data attribute or public global.
 - Private action data comes only from authenticated POST /player/action-plan with signed body credentials, no-store, no URL selectors and credentials omitted. The response must have a supported schema version and authenticated owner.
-- Up to 100 ranked tasks are read per page. The server's pagination cursor appears as **Load more**, rather than silently hiding claims. Top 3 uses server-verified immediate actions only, with checks against preview and unavailable data.
+- Up to 100 ranked tasks are read per page. The server's pagination cursor appears as **Load more**, rather than silently hiding claims. Continuations also require an opaque SHA-256-derived `pap2_` ranked-list snapshot returned by the first authenticated read; the Worker recalculates it from owner, UTC period, ordering and readiness (excluding volatile `read_at`) and rejects mismatches with HTTP 409 `action_plan_snapshot_changed`. The client discards old cursor data, marks prior readiness stale, and restarts at page one. No persistent task cache or new D1 table is used. Top 3 uses server-verified immediate actions only, with checks against preview and unavailable data.
 - No new D1 queries are introduced by PR 3's additive owner response fields; they reuse the PR 2 roster, evolution, faction and Arcade XP reads. Each active MoonPet has an opaque pet reference, active slot, stage/phase, level and Pet XP. Failed roster read yields null, not fabricated zero.
 - Original pet attribution of saved runs, contracts and boss rewards stays opaque. Historical earners are separate, not assigned to whichever pet is currently selected.
 - Species identity is not revealed in this API; the canonical Mini App still owns stage-3 reveal. No guessed names or undocumented Telegram Mini App deep links.
@@ -31,7 +31,7 @@ The deployed PR 2 Wrangler build warned of a duplicate object key in **workers/m
 ## Testing and release gates
 
 - **scripts/player-action-plan-api.test.mjs**: 0/3-pet owner projection, no ID leaks, original-pet mapping, failed roster, read-only 80-query budget and duplicate-key guard.
-- **scripts/my-moonboy-browser.test.mjs**: 360/390/1280 Chromium, signed projection fixtures, browse-only task links, pagination, keyboard tabs, guest protection, account switching, logout and stale-API suppression.
+- **scripts/my-moonboy-browser.test.mjs**: 360/390/1280 Chromium, signed projection fixtures, browse-only task links, versioned pagination including 409 rank changes, delayed identity probe and retry, preserved 7/7 original earner, keyboard tabs, guest protection, account switching, logout and stale-API suppression.
 - **scripts/ci-domain-runner.mjs**: registers browser tests in the Visual domain.
 
 **Production signoff:** Real signed OIDC/Telegram test accounts and genuine 0/1/3 pets, egg, historical claims, DST/day rollover, missing sources and slow API must still be checked. Browser fixtures are automated regression evidence, not production verification.
