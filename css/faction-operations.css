@@ -1,0 +1,123 @@
+/* PR 4 / #1552 — scoped public crew and private aligned-member operations.
+ * Existing faction lore, standings, reward tracks and editorial pages unchanged. */
+.fop-section, .fop-community {
+  --fop-line: rgba(151, 206, 234, .28);
+  --fop-ink: #eff9ff;
+  --fop-muted: #c2d2dd;
+  --fop-accent: #94e9e2;
+}
+.fop-section [data-fop-crew], .fop-section [data-fop-private],
+.fop-community [data-fop-crew], .fop-community [data-fop-private] {
+  color: var(--fop-ink);
+  border: 1px solid var(--fop-line);
+  border-radius: 10px;
+  padding: clamp(12px, 2vw, 20px);
+  background: rgba(9, 21, 36, .7);
+}
+.fop-section [data-fop-crew] *, .fop-section [data-fop-private] *,
+.fop-community [data-fop-crew] *, .fop-community [data-fop-private] * {
+  box-sizing: border-box;
+}
+.fop-section [data-fop-crew] p, .fop-section [data-fop-private] p,
+.fop-community [data-fop-crew] p, .fop-community [data-fop-private] p {
+  font-size: .93rem;
+  line-height: 1.58;
+  margin: 9px 0;
+}
+.fop-section .fop-note, .fop-community .fop-note {
+  color: var(--fop-muted);
+  font-size: .86rem;
+}
+.fop-section .fop-unavailable, .fop-community .fop-unavailable {
+  color: #ffdea8;
+  font-weight: 650;
+}
+.fop-section .fop-row, .fop-community .fop-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 9px;
+}
+.fop-section .fop-mission-list, .fop-community .fop-mission-list {
+  list-style: none;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  padding: 0;
+  margin: 10px 0 16px;
+}
+.fop-section .fop-mission, .fop-community .fop-mission {
+  min-width: 0;
+  border: 1px solid var(--fop-line);
+  border-radius: 8px;
+  padding: 12px;
+  background: rgba(255, 255, 255, .035);
+}
+.fop-section .fop-mission h3, .fop-community .fop-mission h3 {
+  font-size: .96rem;
+  line-height: 1.4;
+  margin: 0 0 7px;
+  color: var(--fop-ink);
+}
+.fop-section .fop-personal-list, .fop-community .fop-personal-list {
+  padding-left: 21px;
+  display: grid;
+  gap: 8px;
+  margin: 12px 0;
+  color: var(--fop-ink);
+}
+.fop-section .fop-personal-task, .fop-community .fop-personal-task {
+  line-height: 1.5;
+  font-size: .9rem;
+}
+.fop-section .fop-directory, .fop-community .fop-directory {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 195px), 1fr));
+  gap: 9px;
+}
+.fop-section .fop-directory a, .fop-community .fop-directory a {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  border: 1px solid var(--fop-line);
+  border-radius: 7px;
+  padding: 9px 10px;
+}
+.fop-section [data-fop-crew] a, .fop-section [data-fop-private] a,
+.fop-community [data-fop-crew] a, .fop-community [data-fop-private] a {
+  color: var(--fop-accent);
+}
+.fop-section [data-fop-private] button, .fop-community [data-fop-private] button {
+  min-height: 44px;
+  border: 1px solid var(--fop-accent);
+  border-radius: 7px;
+  background: rgba(148,233,226,.09);
+  color: var(--fop-ink);
+  cursor: pointer;
+  padding: 9px 12px;
+  font: 650 .85rem/1.35 system-ui,sans-serif;
+}
+.fop-section a:focus-visible, .fop-section button:focus-visible,
+.fop-community a:focus-visible, .fop-community button:focus-visible {
+  outline: 3px solid #ffd577;
+  outline-offset: 3px;
+}
+.fop-section .fop-actions, .fop-community .fop-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+@media (max-width: 780px) {
+  .fop-section .fop-mission-list, .fop-community .fop-mission-list {
+    grid-template-columns: minmax(0,1fr);
+  }
+}
+@media (prefers-reduced-motion:reduce) {
+  .fop-section *, .fop-community * {
+    animation-duration: .01ms !important;
+    transition-duration: .01ms !important;
+  }
+}
