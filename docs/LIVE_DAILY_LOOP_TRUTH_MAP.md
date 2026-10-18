@@ -31,7 +31,7 @@ The response always includes `source_status` for every subsystem. `live` is rese
 | --- | --- | --- | --- | --- |
 | `identity` | `telegram_users` plus verified `telegram_auth` for linked requests | Returns `linked: false` | Returns verified Telegram identity and stored profile when present | `unavailable` when D1 table is missing |
 | `sam_status` | Worker-confirmed `/sam/status` equivalent | Returns current Worker SAM status | Same | N/A |
-| `faction_state` | `telegram_faction_members`, `telegram_factions`, `player_faction_signal_state` | Aggregate shell only, no personal faction | Current faction plus UTC-day/week contribution state | `unavailable` for missing tables |
+| `faction_state` | `blocktopia_progression.faction` (same as `/faction/status`), `telegram_factions`, `player_faction_signal_state` | Aggregate shell only, no personal faction | Current faction plus UTC-day/week contribution state | `unavailable` for missing tables |
 | `daily_missions` | `player_daily_mission_state` | Empty anonymous list | Player mission progress for `utc_day` | `unavailable` for missing table |
 | `wiki_missions` | `wiki_mission_completions` | Empty anonymous list | Player completions for `mission_window = utc_day` | `unavailable` for missing table |
 | `arcade_daily_state` | `daily_opportunity_state` | No linked seed or chain depth | Reuses the same D1 daily opportunity row used by `/roguelite/daily-state` | `unavailable` for missing table |
