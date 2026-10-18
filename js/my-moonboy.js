@@ -836,7 +836,7 @@
         // Identity can still be unknown after the startup website-session
         // capability/cookie probe failed. Retry that gate FIRST: refresh()
         // deliberately refuses to send anonymous/private API requests.
-        await getFreshAuth();
+        if (!identityKey()) await getFreshAuth();
         if (epoch === state.epoch) await refresh({ force: true });
       } catch (_) {
         if (epoch === state.epoch) showGate('Telegram session unavailable',
