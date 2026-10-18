@@ -1,0 +1,326 @@
+{
+  "schema_version": 1,
+  "issue": 1552,
+  "phase": "PR6",
+  "baseline_main_sha": "a7779559325a406223725893bbda64995df66a47",
+  "automation_state": "requires_ci_execution",
+  "production_state": "not_verified",
+  "owner_approval": "pending",
+  "note": "Automation links are coverage pointers, not claims that CI or signed-account production tests passed. Every live check remains pending.",
+  "scenarios": [
+    {
+      "id": "AC-01",
+      "title": "Public visitor privacy",
+      "automated": [
+        {
+          "suite": "scripts/faction-operations-browser.test.mjs",
+          "marker": "public guest cannot see or request private member progress"
+        },
+        {
+          "suite": "scripts/my-moonboy-browser.test.mjs",
+          "marker": "logout, account switch, expired auth"
+        }
+      ],
+      "live_check": "Signed-out visitor on all public/private surfaces; capture network and DOM redaction.",
+      "live_status": "pending",
+      "evidence_url": null
+    },
+    {
+      "id": "AC-02",
+      "title": "Linked without faction",
+      "automated": [
+        {
+          "suite": "scripts/faction-operations-browser.test.mjs",
+          "marker": "unaligned account has a join action"
+        },
+        {
+          "suite": "scripts/player-action-plan-api.test.mjs",
+          "marker": "zero-pet response stays complete"
+        }
+      ],
+      "live_check": "Linked no-faction account has join route, not a fictitious 0/3.",
+      "live_status": "pending",
+      "evidence_url": null
+    },
+    {
+      "id": "AC-03",
+      "title": "Faction member consistency",
+      "automated": [
+        {
+          "suite": "scripts/faction-operations-browser.test.mjs",
+          "marker": "source-aware public crew and aligned private member"
+        },
+        {
+          "suite": "scripts/player-action-plan-api.test.mjs",
+          "marker": "persisted faction mission IDs remain separate advisory tasks"
+        }
+      ],
+      "live_check": "Check today's three faction missions and owner contribution on chamber, Community, dashboard.",
+      "live_status": "pending",
+      "evidence_url": null
+    },
+    {
+      "id": "AC-04",
+      "title": "Three permanent pets and account claims",
+      "automated": [
+        {
+          "suite": "scripts/player-action-plan-api.test.mjs",
+          "marker": "three-pet saved state keeps jobs, runs, and contracts"
+        },
+        {
+          "suite": "scripts/my-moonboy-browser.test.mjs",
+          "marker": "cross-season 1/2/1 pet ownership"
+        }
+      ],
+      "live_check": "Inspect three saved slots, selected pet, original pet, one account-wide claim.",
+      "live_status": "pending",
+      "evidence_url": null
+    },
+    {
+      "id": "AC-05",
+      "title": "Egg and new player entry",
+      "automated": [
+        {
+          "suite": "scripts/player-action-plan-api.test.mjs",
+          "marker": "zero-pet response stays complete"
+        },
+        {
+          "suite": "scripts/player-action-plan-api.test.mjs",
+          "marker": "canonical care and boss gates do not advertise unavailable actions"
+        }
+      ],
+      "live_check": "Inspect egg/qualification and 1,000 lifetime Arcade XP entry guidance.",
+      "live_status": "pending",
+      "evidence_url": null
+    },
+    {
+      "id": "AC-06",
+      "title": "Seven-of-seven saved bonus",
+      "automated": [
+        {
+          "suite": "scripts/my-moonboy-browser.test.mjs",
+          "marker": "saved 7/7 bonus retains original earning MoonPet"
+        },
+        {
+          "suite": "scripts/player-action-plan-api.test.mjs",
+          "marker": "daily claims consult and validate modern and legacy authorities"
+        }
+      ],
+      "live_check": "Confirm 7/7 complete, unclaimed bonus ready, then one accepted claim and subsequent claimed state.",
+      "live_status": "pending",
+      "evidence_url": null
+    },
+    {
+      "id": "AC-07",
+      "title": "Saved contract and original pet across period",
+      "automated": [
+        {
+          "suite": "scripts/player-action-plan-api.test.mjs",
+          "marker": "saved runs and contracts are keyed by immutable source IDs"
+        },
+        {
+          "suite": "scripts/player-action-plan-api.test.mjs",
+          "marker": "historical boss claims require canonical boss"
+        }
+      ],
+      "live_check": "Switch pets and cross season boundary; preserved original source attribution and receipt.",
+      "live_status": "pending",
+      "evidence_url": null
+    },
+    {
+      "id": "AC-08",
+      "title": "WTF event window truth",
+      "automated": [
+        {
+          "suite": "scripts/player-action-plan-api.test.mjs",
+          "marker": "WTF windows use owner event truth"
+        },
+        {
+          "suite": "scripts/faction-operations-browser.test.mjs",
+          "marker": "same-day tick retires an expired active WTF event"
+        }
+      ],
+      "live_check": "Compare D1-confirmed UTC window with local time; preview is not persisted check-in.",
+      "live_status": "pending",
+      "evidence_url": null
+    },
+    {
+      "id": "AC-09",
+      "title": "Daily vs pet-week rollover",
+      "automated": [
+        {
+          "suite": "scripts/player-action-plan-api.test.mjs",
+          "marker": "source-specific UTC clocks survive BST/GMT rollover"
+        },
+        {
+          "suite": "scripts/player-action-plan-api.test.mjs",
+          "marker": "created_at pet Journey comes from ownership slot"
+        }
+      ],
+      "live_check": "Cross UTC midnight and pet adoption-week boundary without retiring permanent pets/claims.",
+      "live_status": "pending",
+      "evidence_url": null
+    },
+    {
+      "id": "AC-10",
+      "title": "Offline and partial failure",
+      "automated": [
+        {
+          "suite": "scripts/my-moonboy-browser.test.mjs",
+          "marker": "offline state removes current readiness badges"
+        },
+        {
+          "suite": "scripts/player-action-plan-api.test.mjs",
+          "marker": "table probe failures propagate as query_failed"
+        }
+      ],
+      "live_check": "Throttle/interrupt signed read; stale actions hidden; one reconnect read without a write.",
+      "live_status": "pending",
+      "evidence_url": null
+    },
+    {
+      "id": "AC-11",
+      "title": "Championship Clout not fabricated",
+      "automated": [
+        {
+          "suite": "scripts/my-moonboy-browser.test.mjs",
+          "marker": "responsive signed view, safe links"
+        },
+        {
+          "suite": "scripts/player-action-plan-api.test.mjs",
+          "marker": "authenticated endpoint covers every source"
+        }
+      ],
+      "live_check": "Unverified sources must be preview/unavailable, never official verified Clout.",
+      "live_status": "pending",
+      "evidence_url": null
+    },
+    {
+      "id": "AC-12",
+      "title": "Cross-source single settlement",
+      "automated": [
+        {
+          "suite": "scripts/player-action-sync-browser.test.mjs",
+          "marker": "accepted-event bursts publish immediate plus trailing invalidation"
+        },
+        {
+          "suite": "scripts/player-action-plan-api.test.mjs",
+          "marker": "concurrent identical reads remain deterministic and do not mutate state"
+        }
+      ],
+      "live_check": "Accepted cross-game action refreshes views; no duplicate reward, payout or follow-up mutation.",
+      "live_status": "pending",
+      "evidence_url": null
+    },
+    {
+      "id": "AC-13",
+      "title": "Nine faction chambers",
+      "automated": [
+        {
+          "suite": "scripts/faction-operations-browser.test.mjs",
+          "marker": "mounts exactly once in nine faction chambers"
+        },
+        {
+          "suite": "scripts/faction-operations-browser.test.mjs",
+          "marker": "all nine chamber keys render their own three public definitions"
+        }
+      ],
+      "live_check": "Check each chamber at 360/390/1280, guest and aligned owner; keyboard focus.",
+      "live_status": "pending",
+      "evidence_url": null
+    },
+    {
+      "id": "AC-14",
+      "title": "Source-specific why and deadline",
+      "automated": [
+        {
+          "suite": "scripts/player-action-plan-api.test.mjs",
+          "marker": "source-specific UTC clocks survive BST/GMT rollover"
+        },
+        {
+          "suite": "scripts/my-moonboy-browser.test.mjs",
+          "marker": "responsive signed view, safe links"
+        }
+      ],
+      "live_check": "Confirm what/why/reward/status, no expiry for permanent tasks and local+UTC reset labels.",
+      "live_status": "pending",
+      "evidence_url": null
+    },
+    {
+      "id": "AC-15",
+      "title": "Open Task never writes",
+      "automated": [
+        {
+          "suite": "scripts/my-moonboy-browser.test.mjs",
+          "marker": "responsive signed view, safe links"
+        },
+        {
+          "suite": "scripts/player-action-plan-api.test.mjs",
+          "marker": "read-only facade rejects mutation-shaped SQL"
+        }
+      ],
+      "live_check": "Click Open Task and inspect network: navigation only, no claim/pay/gameplay POST.",
+      "live_status": "pending",
+      "evidence_url": null
+    }
+  ],
+  "provenance": {
+    "pages": {
+      "expected_merge_sha": null,
+      "deployed_sha": null,
+      "deployment_run_url": null,
+      "verified_at_utc": null
+    },
+    "worker": {
+      "deployment_info_sha": null,
+      "expected_sha": null,
+      "verification_url": null,
+      "verified_at_utc": null
+    },
+    "d1": {
+      "migration_required": "no_new_migration_in_pr6",
+      "applied_migration_evidence_url": null,
+      "verified_at_utc": null
+    },
+    "rollback": {
+      "last_known_good_pages_sha": null,
+      "last_known_good_worker_sha": null,
+      "operator": null,
+      "exercise_evidence_url": null
+    }
+  },
+  "ci": {
+    "reviewed_head_sha": null,
+    "domains": {
+      "ci-wiki": {
+        "head_sha": null,
+        "conclusion": null,
+        "run_url": null
+      },
+      "ci-worker-api": {
+        "head_sha": null,
+        "conclusion": null,
+        "run_url": null
+      },
+      "ci-arcade": {
+        "head_sha": null,
+        "conclusion": null,
+        "run_url": null
+      },
+      "ci-wax": {
+        "head_sha": null,
+        "conclusion": null,
+        "run_url": null
+      },
+      "ci-visual": {
+        "head_sha": null,
+        "conclusion": null,
+        "run_url": null
+      }
+    }
+  },
+  "gk_approval": {
+    "approved_head_sha": null,
+    "approval_url": null
+  }
+}
