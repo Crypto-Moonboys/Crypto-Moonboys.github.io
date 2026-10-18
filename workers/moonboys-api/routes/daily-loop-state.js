@@ -474,7 +474,7 @@ export async function buildDailyLoopState(env, options = {}) {
       String(col?.name || '') === 'missed_xp_value');
     const xpTotal = hasXpColumn
       ? await queryFirst(db, sourceStatus, 'missed_opportunities',
-          'SELECT COALESCE(SUM(missed_xp_value), 0) AS total FROM daily_missed_perks WHERE telegram_id = ?',
+          'SELECT COALESCE(SUM(missed_xp_value), 0) AS xp_total FROM daily_missed_perks WHERE telegram_id = ?',
           [telegramId])
       : { ok: true, row: null };
     if (todayTotal.ok && allTimeTotal.ok && rows.ok && xpColumns.ok && xpTotal.ok) {
@@ -486,7 +486,7 @@ export async function buildDailyLoopState(env, options = {}) {
       utc_day: utcDay,
       total_today: Number(todayTotal.row?.total) || 0,
       total_all_time: Number(allTimeTotal.row?.total) || 0,
-      xp_total_all_time: hasXpColumn ? Math.max(0, Math.floor(Number(xpTotal.row?.total) || 0)) : null,
+      xp_total_all_time: hasXpColumn ? Math.max(0, Math.floor(Number(xpTotal.row?.xp_total) || 0)) : null,
       xp_source_status: hasXpColumn ? 'verified' : 'migration_pending',
       items: rows.rows.map((row) => ({
         id: row.id,
