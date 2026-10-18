@@ -495,6 +495,49 @@ test('PR3 owner roster is redacted, stage-aware, selected, and read-only with no
   assert.equal(failing.owner.pets, null, 'roster failure cannot become an empty roster');
 });
 
+test('faction projection uses Battle Chamber progression even with conflicting or missing legacy membership', async () => {
+  for (const [raw, joined, name] of [
+    ['graffpunks', true, 'graffpunks'],
+    ['hard-fork-rockers', true, 'hard-fork-rockers'],
+    ['unaligned', false, null],
+  ]) {
+    const db = fakeDb({ canonicalFaction: raw });
+    const response = await handlePlayerActionPlanRoute(request(auth({ limit: 100 })),
+      { DB: db, TELEGRAM_BOT_TOKEN: 'test' }, options());
+    assert.equal(response.status, 200);
+    const body = await response.json();
+    assert.deepEqual(body.owner.faction, { joined, name });
+    const onboarding = body.tasks.find(task => task.source_key === 'onboarding.faction');
+    assert.equal(onboarding.status, joined ? 'complete' : 'ready');
+    assert.ok(db.calls.some(call => /FROM blocktopia_progression/u.test(call.sql)));
+    assert.ok(!db.calls.some(call => /FROM telegram_faction_members/u.test(call.sql)),
+      'legacy community membership may not override a seasonal faction');
+    assert.ok(db.calls.every(call => /^\s*(SELECT|WITH)\b/iu.test(call.sql)));
+  }
+});
+
+test('faction read errors and missing progression never claim unassigned or prompt rejoin', async () => {
+  for (const [dbOptions, status] of [
+    [{ failFactionRead: true }, 'query_failed'],
+    [{ tables: new Set(['telegram_faction_members', 'telegram_factions', 'telegram_users']) }, 'migration_pending'],
+  ]) {
+    const db = fakeDb(dbOptions);
+    const response = await handlePlayerActionPlanRoute(request(auth({ limit: 100 })),
+      { DB: db, TELEGRAM_BOT_TOKEN: 'test' }, options());
+    assert.equal(response.status, 200);
+    const body = await response.json();
+    assert.equal(body.owner.faction, null, 'missing faction authority is unknown, not no membership');
+    assert.equal(body.source_status['onboarding.faction'].state, status);
+    const onboarding = body.tasks.find(task => task.source_key === 'onboarding.faction');
+    assert.ok(onboarding);
+    assert.equal(onboarding.status, 'sync_unavailable');
+    assert.ok(!/Choose your faction/u.test(onboarding.title),
+      'never invite a locked user to join again on a source outage');
+    assert.ok(!body.top_actions.some(task => task.source_key === 'onboarding.faction'),
+      'failed membership proof cannot become a ready action');
+  }
+});
+
 test('PR3 cross-season permanent roster labels never reuse season-local slots', async () => {
   const db = fakeDb({ threePets: true, crossSeasonRoster: true });
   const response = await handlePlayerActionPlanRoute(request(auth({ limit: 100 })),
