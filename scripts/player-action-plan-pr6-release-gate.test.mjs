@@ -74,6 +74,20 @@ test('PR6 acceptance inventory preserves all fifteen issue #1552 scenarios and t
   }
 });
 
+test('tracked PR6 manifest stays a pre-release inventory; final attestation is external to its subject commit', () => {
+  assert.equal(evidence.production_state, 'not_verified',
+    'do not commit final verification into the code whose SHA is being certified');
+  assert.equal(evidence.automation_state, 'requires_ci_execution');
+  assert.equal(evidence.owner_approval, 'pending');
+  assert.equal(evidence.ci.reviewed_head_sha, null);
+  assert.equal(evidence.gk_approval.approved_head_sha, null);
+  assert.ok(Object.values(evidence.ci.domains).every(item =>
+    item.head_sha === null && item.conclusion === null && item.run_url === null));
+  assert.ok(evidence.scenarios.every(item =>
+    item.live_status === 'pending' && item.evidence_url === null));
+  assert.deepEqual(releaseErrors(evidence), []);
+});
+
 test('PR6 evidence cannot claim deployment or sign-off merely because tests exist', () => {
   assert.ok(['not_verified', 'verified'].includes(evidence.production_state));
   assert.ok(['requires_ci_execution', 'ci_green'].includes(evidence.automation_state));
