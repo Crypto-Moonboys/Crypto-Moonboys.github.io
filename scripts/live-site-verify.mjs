@@ -400,8 +400,8 @@ async function testPage(page, pathname) {
   if (diag.cspInsideRightPanel) fail('[data-csp-*] hook found inside #homepage-right-panel — CSP sections must not be mounted in global right panel', { url, selector: '#homepage-right-panel [data-csp-panel],[data-csp-faction-ops],[data-csp-wtf-signal],[data-csp-missed]', suggested: 'ensureRightPanel() must remain disabled; inline live-stats modules must render outside #homepage-right-panel' }); else pass('[data-csp-*] sections absent from #homepage-right-panel (inline-only contract satisfied)');
   if (!diag.lasPanel) pass('[data-las-panel] absent (legacy hook correctly removed)'); else fail('[data-las-panel] PRESENT — this legacy hook must not exist in the DOM', { url, selector: '[data-las-panel]', suggested: 'Stale site-shell.js or stale HTML still injecting the old data-las-panel hook' });
   if (isInlineStatsPage) {
-    if (diag.inlineStatsMount) pass('.inline-live-stats present — inline player/faction stats rendered in page content');
-    else fail('.inline-live-stats MISSING — inline live/player stats must be mounted on this page', { url, selector: '.inline-live-stats', suggested: 'ensureInlineLiveStats() must run for this page — check shouldShowInlineStats() in site-shell.js' });
+    if (!diag.inlineStatsMount) pass('.inline-live-stats absent — duplicated account cards consolidated into My Moonboy');
+    else fail('.inline-live-stats PRESENT — remove legacy duplicate personal panels; My Moonboy is the private account home', { url, selector: '.inline-live-stats', suggested: 'check site-shell.js no longer injects the legacy panel' });
   }
   if (diag.noLiveFeed) pass('no #live-feed-widget (LIVE_FEED=false — correctly absent)'); else fail('#live-feed-widget present — must be absent when LIVE_FEED=false', { url, selector: '#live-feed-widget' });
   if (diag.noLiveFeedText) pass('body text does not include removed "Live System Feed" section'); else fail('body text still contains "Live System Feed" — removed section reintroduced', { url });
