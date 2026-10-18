@@ -131,6 +131,23 @@ test('PR5 delayed Arcade settlements emit follow-up invalidations only after con
     'shared Arcade progression emits a follow-up for full or partial confirmed success');
 });
 
+test('PR5 faction and Block Topia follow-ups require explicit confirmed settlement payloads', () => {
+  const factionAwait = leaderboardClient.indexOf('await callFactionEarn("score_accept", score)');
+  const factionGuard = leaderboardClient.indexOf(
+    'factionEarn && factionEarn.ok === true && factionEarn.skipped !== true', factionAwait);
+  const factionSignal = leaderboardClient.indexOf('source: "faction"', factionGuard);
+  assert.ok(factionAwait >= 0 && factionGuard > factionAwait && factionSignal > factionGuard,
+    'faction follow-up invalidation must be inside explicit ok/non-skipped settlement guard');
+
+  const blockAwait = leaderboardClient.indexOf(
+    'await ArcadeSync.syncBlockTopiaProgressionOnAcceptedScore(score, gameKey)');
+  const blockGuard = leaderboardClient.indexOf(
+    'if (progression && progression.ok === true)', blockAwait);
+  const blockSignal = leaderboardClient.indexOf('source: "arcade_progression"', blockGuard);
+  assert.ok(blockAwait >= 0 && blockGuard > blockAwait && blockSignal > blockGuard,
+    'Block Topia follow-up invalidation must require progression.ok === true');
+});
+
 test('PR5 accepted-action channel does not subscribe to rejection/error notifications', () => {
   assert.doesNotMatch(sync, /moonboys:progression-sync-error/u);
   assert.doesNotMatch(sync, /moonpet:action-rejected/u);
