@@ -466,7 +466,18 @@ export async function buildDailyLoopState(env, options = {}) {
         ORDER BY missed_at DESC, id DESC
         LIMIT 10
       `, [telegramId]);
-    if (todayTotal.ok && allTimeTotal.ok && rows.ok) {
+    // Migration 021 added missed_xp_value. Older D1 databases can have real
+    // missed-event counts without that column; do not invent zero XP.
+    const xpColumns = await queryAll(db, sourceStatus, 'missed_opportunities',
+      'PRAGMA table_info(daily_missed_perks)');
+    const hasXpColumn = xpColumns.ok && xpColumns.rows.some((col) =>
+      String(col?.name || '') === 'missed_xp_value');
+    const xpTotal = hasXpColumn
+      ? await queryFirst(db, sourceStatus, 'missed_opportunities',
+          'SELECT COALESCE(SUM(missed_xp_value), 0) AS total FROM daily_missed_perks WHERE telegram_id = ?',
+          [telegramId])
+      : { ok: true, row: null };
+    if (todayTotal.ok && allTimeTotal.ok && rows.ok && xpColumns.ok && xpTotal.ok) {
     sourceStatus.missed_opportunities = rows.rows.length || Number(todayTotal.row?.total) || Number(allTimeTotal.row?.total)
       ? statusLive('worker_d1', { utc_day: utcDay })
       : statusLiveEmpty('worker_d1', { utc_day: utcDay, reason: 'no_missed_opportunities_for_player' });
@@ -475,6 +486,8 @@ export async function buildDailyLoopState(env, options = {}) {
       utc_day: utcDay,
       total_today: Number(todayTotal.row?.total) || 0,
       total_all_time: Number(allTimeTotal.row?.total) || 0,
+      xp_total_all_time: hasXpColumn ? Math.max(0, Math.floor(Number(xpTotal.row?.total) || 0)) : null,
+      xp_source_status: hasXpColumn ? 'verified' : 'migration_pending',
       items: rows.rows.map((row) => ({
         id: row.id,
         utc_day: row.utc_day,
