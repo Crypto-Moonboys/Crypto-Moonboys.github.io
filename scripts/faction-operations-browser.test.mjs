@@ -287,6 +287,8 @@ test('PR4 Community guest lists nine chambers; signed aligned member uses same s
 test('PR4 stale UTC-day source cannot impersonate current day or claim saved progress',async()=>{
   const f=await setup(390,{pageKey:'graffpunks',state:fixture({now:'2001-01-01'})});
   try{
+    await f.page.waitForFunction(() => document.querySelector('[data-fop-private]')
+      ?.textContent.includes('awaiting fresh signed authentication'));
     assert.match(await f.page.locator('[data-fop-private]').innerText(),/awaiting fresh signed authentication/);
     assert.doesNotMatch(await f.page.locator('[data-fop-private]').innerText(),/120|Saved complete/);
     await f.page.evaluate(value=>window.__fopTest.push(value),fixture());
