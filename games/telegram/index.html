@@ -237,10 +237,22 @@
               body: JSON.stringify({ init_data: cachedInitData })
             })
           : requestWithDeadline('/telegram/website/session');
-        task.then(function (session) {
-          if (!session || !session.linked || !session.telegram_id || !session.telegram_auth ||
-              typeof session.csrf_token !== 'string' || !session.csrf_token) {
+        task.then(function (verified) {
+          if (!verified || !verified.linked || !verified.telegram_id || !verified.telegram_auth) {
             throw new Error('Website session not verified.');
+          }
+          // A successful Set-Cookie header does not prove that Telegram WebView
+          // persisted the cookie. Verify a subsequent independent cookie read.
+          if (!cachedInitData) return verified;
+          return requestWithDeadline('/telegram/website/session').then(function (restored) {
+            if (!restored || restored.telegram_id !== verified.telegram_id) {
+              throw new Error('Account verification did not persist. Retry login.');
+            }
+            return restored;
+          });
+        }).then(function (session) {
+          if (typeof session.csrf_token !== 'string' || !session.csrf_token) {
+            throw new Error('Website session lacks logout authorization.');
           }
           accountReady = true;
           sessionCsrf = session.csrf_token;
@@ -255,6 +267,16 @@
             ? 'Another Telegram account is connected. Log out before switching accounts.'
             : (error.message || 'Could not connect. Retry.');
           setDisconnected(message);
+          if (error.status === 409) {
+            // The signed Mini App identity differs from the existing session.
+            // Allow explicit CSRF-protected logout without trusting either ID.
+            requestWithDeadline('/telegram/website/logout').then(function (data) {
+              if (data && data.csrf_token) {
+                sessionCsrf = data.csrf_token;
+                logoutButton.hidden = false;
+              }
+            }).catch(function () {});
+          }
           if (!cachedInitData) {
             connectButton.textContent = 'Log in with Telegram';
           } else {
@@ -303,7 +325,7 @@
       setLinksEnabled(false);
       setBusy(true);
       setStatus('Checking Telegram account...');
-      if (cachedInitData) connectAccount();
+      connectAccount();
 
       try {
         if (telegramApp) telegramApp.onEvent('viewportChanged', onViewportChanged);
