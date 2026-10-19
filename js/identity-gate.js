@@ -197,24 +197,7 @@
     return websitePromise;
   }
 
-  function isTelegramInAppBrowser() {
-    // Telegram's embedded Android/iOS browser may reopen its own OAuth
-    // confirmation URL repeatedly. The signed bot-link route avoids that loop.
-    var ua = (window.navigator && window.navigator.userAgent) || '';
-    var app = window.Telegram && window.Telegram.WebApp;
-    // On iOS Telegram may expose Safari's normal UA and no Mini App bridge.
-    // Prefer signed bot linking on mobile rather than starting an OAuth loop.
-    return /Telegram|Android|iPhone|iPad|iPod|Mobile/i.test(ua) || !!(app && app.initData);
-  }
-
   function loginWithTelegram() {
-    if (isTelegramInAppBrowser()) {
-      // Never treat presence inside Telegram as proof of account ownership.
-      // The existing /gklink callback verifies the bot-issued signed evidence.
-      window.alert('To connect your existing account, open @WIKICOMSBOT, send /gkstart then /gklink, and open the signed website link the bot sends. Telegram login confirmation can loop inside its own browser.');
-      window.location.assign(getBotUrl());
-      return Promise.resolve();
-    }
     var waitedForBootstrap = websitePending;
     return websiteReady.then(function () {
       if (!waitedForBootstrap && canProbeWebsiteSession() && (!websiteCapabilityKnown || (websiteAvailable && !websiteRequestHealthy))) return probeWebsiteSession();
@@ -1171,7 +1154,7 @@
         loginButton.textContent = 'Log in with Telegram';
         loginButton.removeAttribute('target');
         loginButton.setAttribute('data-telegram-login', '');
-        loginButton.href = isTelegramInAppBrowser() ? getBotUrl() : getApiBase() + '/telegram/website/start?return_to=' + encodeURIComponent(window.location.href.split('#')[0]);
+        loginButton.href = getApiBase() + '/telegram/website/start?return_to=' + encodeURIComponent(window.location.href.split('#')[0]);
       }
       var fallback = document.getElementById('tg-gate-secondary');
       if (fallback) { fallback.href = '/gkniftyheads-incubator.html#telegram-login-help'; fallback.textContent = 'Need help signing in?'; }
