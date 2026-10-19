@@ -202,7 +202,9 @@
     // confirmation URL repeatedly. The signed bot-link route avoids that loop.
     var ua = (window.navigator && window.navigator.userAgent) || '';
     var app = window.Telegram && window.Telegram.WebApp;
-    return /Telegram/i.test(ua) || !!(app && app.initData);
+    // On iOS Telegram may expose Safari's normal UA and no Mini App bridge.
+    // Prefer signed bot linking on mobile rather than starting an OAuth loop.
+    return /Telegram|Android|iPhone|iPad|iPod|Mobile/i.test(ua) || !!(app && app.initData);
   }
 
   function loginWithTelegram() {
@@ -1168,7 +1170,8 @@
       if (loginButton) {
         loginButton.textContent = 'Log in with Telegram';
         loginButton.removeAttribute('target');
-        loginButton.href = getApiBase() + '/telegram/website/start?return_to=' + encodeURIComponent(window.location.href.split('#')[0]);
+        loginButton.setAttribute('data-telegram-login', '');
+        loginButton.href = isTelegramInAppBrowser() ? getBotUrl() : getApiBase() + '/telegram/website/start?return_to=' + encodeURIComponent(window.location.href.split('#')[0]);
       }
       var fallback = document.getElementById('tg-gate-secondary');
       if (fallback) { fallback.href = '/gkniftyheads-incubator.html#telegram-login-help'; fallback.textContent = 'Need help signing in?'; }
