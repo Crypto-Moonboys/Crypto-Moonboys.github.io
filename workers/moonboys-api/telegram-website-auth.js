@@ -188,29 +188,50 @@ export async function handleTelegramWebsiteAuth(request, env, fetchImpl = fetch)
       if (Number(request.headers.get('Content-Length') || 0) > 10000) fail('invalid_request', 400);
       let payload;
       try { payload = await request.json(); } catch { fail('invalid_request', 400); }
-      if (typeof payload?.init_data !== 'string') fail('mini_app_auth_required');
+      if (typeof payload?.init_data !== 'string' || payload.init_data.length > 8192) fail('mini_app_auth_required');
+      // The Telegram HMAC, timestamp and identity must be verified on EVERY
+      // exchange, including when an already-valid website cookie exists.
       const verified = await verifyTelegramMiniAppInitData(payload.init_data, env.TELEGRAM_BOT_TOKEN, { max_age_seconds: 300 });
       if (!verified.ok) fail(verified.reason);
       const current = await readSession(request, env);
       if (current && String(current.telegram_id) !== verified.telegramId) fail('logout_before_switching_accounts', 409);
       const blocked = await env.DB.prepare('SELECT is_blocked FROM telegram_anticheat_state WHERE telegram_id = ?').bind(verified.telegramId).first();
       if (Number(blocked?.is_blocked) === 1) fail('account_blocked', 403);
+      if (current) {
+        // Idempotent same-account restore: do not consume a previously used
+        // signature or rotate a working cookie. Return server-verified proof.
+        const csrf = await authDigest('csrf:' + cookie(request, SESSION_COOKIE));
+        return issueCredential(env, current, csrf, headers);
+      }
       const now = nowSeconds(), secret = randomToken(), sessionHash = await authDigest(secret), csrf = await authDigest('csrf:' + secret);
-      const replayKey = await authDigest('miniapp:' + new URLSearchParams(payload.init_data).get('hash'));
-      // Unique insert aborts the atomic batch on replay, issuing no second session.
+      // The verifier accepts uppercase hex, so the replay key MUST be canonical.
+      const normalizedHash = new URLSearchParams(payload.init_data).get('hash').toLowerCase();
+      const replayKey = await authDigest('miniapp:' + normalizedHash);
+      // A signature remains acceptable at auth_date+300 (inclusive), even
+      // when auth_date was issued up to 300 seconds in the future.
+      const expiresAt = verified.authDate + 301;
+      // D1 batch is atomic: duplicate proof or any write failure aborts
+      // issuance. Do not set a cookie before confirmed writes.
       const results = await env.DB.batch([
         env.DB.prepare('DELETE FROM telegram_mini_app_login_replay WHERE expires_at <= ?').bind(now),
-        env.DB.prepare('INSERT INTO telegram_mini_app_login_replay (proof_hash, expires_at) VALUES (?, ?)').bind(replayKey, now + 300),
+        env.DB.prepare('INSERT INTO telegram_mini_app_login_replay (proof_hash, expires_at) VALUES (?, ?)').bind(replayKey, expiresAt),
         env.DB.prepare(`INSERT INTO telegram_users (telegram_id, username, first_name, last_name) VALUES (?, ?, ?, ?)
           ON CONFLICT(telegram_id) DO UPDATE SET username = excluded.username, first_name = excluded.first_name, last_name = excluded.last_name, updated_at = CURRENT_TIMESTAMP`)
           .bind(verified.telegramId, verified.user.username, verified.user.first_name, verified.user.last_name),
         env.DB.prepare(`INSERT INTO telegram_website_sessions (session_hash, telegram_id, csrf_hash, created_at, last_seen_at, expires_at)
-          VALUES (?, ?, ?, ?, ?, ?)`).bind(sessionHash, verified.telegramId, await authDigest(csrf), now, now, now + WEBSITE_SESSION_SECONDS),
+          VALUES (?, ?, ?, ?, ?, ?)`)
+          .bind(sessionHash, verified.telegramId, await authDigest(csrf), now, now, now + WEBSITE_SESSION_SECONDS),
       ]);
       requireWrites(results, 4);
       headers.append('Set-Cookie', setCookie(SESSION_COOKIE, secret, WEBSITE_SESSION_SECONDS));
-      return reply(headers, { ok: true, linked: true, telegram_id: verified.telegramId,
-        display_name: verified.user.first_name || verified.user.username || 'Telegram player' });
+      // The same five-minute credential shape as /session, so the launch can
+      // be recognised as a genuine website session without another round trip.
+      return issueCredential(env, {
+        session_hash: sessionHash, telegram_id: verified.telegramId,
+        username: verified.user.username, first_name: verified.user.first_name,
+        last_name: verified.user.last_name, last_seen_at: now,
+        expires_at: now + WEBSITE_SESSION_SECONDS,
+      }, csrf, headers);
     }
     if (action === 'start' && request.method === 'GET') {
       stage = 'return_url_validation';
