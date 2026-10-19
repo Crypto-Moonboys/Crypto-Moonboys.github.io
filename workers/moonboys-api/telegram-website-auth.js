@@ -223,15 +223,16 @@ export async function handleTelegramWebsiteAuth(request, env, fetchImpl = fetch)
           .bind(sessionHash, verified.telegramId, await authDigest(csrf), now, now, now + WEBSITE_SESSION_SECONDS),
       ]);
       requireWrites(results, 4);
-      headers.append('Set-Cookie', setCookie(SESSION_COOKIE, secret, WEBSITE_SESSION_SECONDS));
       // The same five-minute credential shape as /session, so the launch can
       // be recognised as a genuine website session without another round trip.
-      return issueCredential(env, {
+      const response = await issueCredential(env, {
         session_hash: sessionHash, telegram_id: verified.telegramId,
         username: verified.user.username, first_name: verified.user.first_name,
         last_name: verified.user.last_name, last_seen_at: now,
         expires_at: now + WEBSITE_SESSION_SECONDS,
       }, csrf, headers);
+      response.headers.append('Set-Cookie', setCookie(SESSION_COOKIE, secret, WEBSITE_SESSION_SECONDS));
+      return response;
     }
     if (action === 'start' && request.method === 'GET') {
       stage = 'return_url_validation';
