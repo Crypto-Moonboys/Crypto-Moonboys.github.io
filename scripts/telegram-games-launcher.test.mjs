@@ -50,7 +50,7 @@ assert.match(html, /background:\s*#000\s*;/, 'Launcher must have a solid black b
 assert.doesNotMatch(html, /gradient\(|box-shadow|text-shadow|<canvas|<img\b|class="marquee"|class="control-deck"/i, 'Launcher must have no decorative effects or heavyweight visual components');
 assert.equal((html.match(/<nav\b/g) || []).length, 1, 'Launcher must have a single plain links menu');
 assert.equal((html.match(/<nav[\s\S]*?<\/nav>/g) || [])[0]?.match(/<a\s/g)?.length, 5, 'Launcher must show five text links');
-assert.match(html, /body\.is-initializing nav a[\s\S]*pointer-events:none/, 'Launcher links must disable pointer events while initializing');
+assert.match(html, /body\.is-initializing nav a[\s\S]*pointer-events:\s*none/, 'Launcher links must disable pointer events while initializing');
 assert.match(html, /FALLBACK_READY_MS\s*=\s*1200/, 'Games launcher must include a 1200ms viewport fallback');
 assert.match(html, /window\.location\.assign\(buildDestination\(link\)\)/, 'Games launcher must navigate once through window.location.assign()');
 assert.match(html, /window\.addEventListener\('pageshow'/, 'Games launcher must restore navigation state on pageshow');
