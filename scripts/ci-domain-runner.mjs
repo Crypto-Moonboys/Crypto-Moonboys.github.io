@@ -49,6 +49,7 @@ const GROUPS = {
     ['node', '--test', 'scripts/my-moonboy-mission-guide.test.mjs'],
     ['node', '--test', 'scripts/moonpet-mission-status.test.mjs'],
     ['node', '--test', 'scripts/telegram-website-auth.test.mjs'],
+    ['node', '--test', 'scripts/telegram-mini-app-website-session.test.mjs'],
     ['node', '--test', 'scripts/telegram-website-auth-diagnostics.test.mjs'],
     ['node', '--test', 'scripts/telegram-website-session-client.test.mjs'],
     ['node', '--test', 'scripts/moonpet-guide.test.mjs'],
