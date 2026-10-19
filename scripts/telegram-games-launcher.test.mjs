@@ -316,7 +316,6 @@ async function runLauncher({ initData = 'user=%7B%22id%22%3A123%7D', hash = '', 
 async function settle() {
   for (let i = 0; i < 48; i++) await Promise.resolve();
 }
-}
 
 {
   const harness = await runLauncher();
