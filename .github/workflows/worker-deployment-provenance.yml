@@ -48,7 +48,9 @@ jobs:
         run: node scripts/production-deployment-truth-audit.mjs
 
   verify-windows-command-line:
-    runs-on: windows-latest
+    # Pin the stable Windows runner image: windows-latest failed during runner
+    # initialization (no steps or downloadable logs), not during the test.
+    runs-on: windows-2022
     timeout-minutes: 10
     steps:
       - name: Checkout
