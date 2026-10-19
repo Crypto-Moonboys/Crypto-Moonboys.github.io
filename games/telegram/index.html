@@ -186,6 +186,7 @@
 
       function connectAccount() {
         if (connecting) return;
+        cachedInitData = readTelegramInitData();
         if (!cachedInitData) {
           setStatus('Please open this page from the Moonboys Telegram Mini App.');
           return;
