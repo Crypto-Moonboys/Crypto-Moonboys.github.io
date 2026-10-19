@@ -1,4 +1,5 @@
 import { createRemoteJWKSet, customFetch, jwtVerify } from 'jose';
+import { verifyTelegramMiniAppInitData } from './pets/mini-app-auth.js';
 
 const ISSUER = 'https://oauth.telegram.org';
 const PREFIX = '/telegram/website/';
@@ -180,6 +181,37 @@ export async function handleTelegramWebsiteAuth(request, env, fetchImpl = fetch)
       return reply(headers, { ok: true, enabled: cfg.enabled });
     }
     if ((!cfg.enabled && !logoutRequest) || !env.DB) { event('failed', 'website_login_not_configured'); return reply(headers, { error: 'website_login_not_configured' }, 503); }
+    if (action === 'mini-app-session' && request.method === 'POST') {
+      if (!cfg.origins.includes(request.headers.get('Origin'))) fail('website_origin_required', 403);
+      if (!env.TELEGRAM_BOT_TOKEN) fail('website_login_not_configured', 503);
+      if (!/^application\/json(?:\s*;|$)/i.test(request.headers.get('Content-Type') || '')) fail('invalid_request', 400);
+      if (Number(request.headers.get('Content-Length') || 0) > 10000) fail('invalid_request', 400);
+      let payload;
+      try { payload = await request.json(); } catch { fail('invalid_request', 400); }
+      if (typeof payload?.init_data !== 'string') fail('mini_app_auth_required');
+      const verified = await verifyTelegramMiniAppInitData(payload.init_data, env.TELEGRAM_BOT_TOKEN, { max_age_seconds: 300 });
+      if (!verified.ok) fail(verified.reason);
+      const current = await readSession(request, env);
+      if (current && String(current.telegram_id) !== verified.telegramId) fail('logout_before_switching_accounts', 409);
+      const blocked = await env.DB.prepare('SELECT is_blocked FROM telegram_anticheat_state WHERE telegram_id = ?').bind(verified.telegramId).first();
+      if (Number(blocked?.is_blocked) === 1) fail('account_blocked', 403);
+      const now = nowSeconds(), secret = randomToken(), sessionHash = await authDigest(secret), csrf = await authDigest('csrf:' + secret);
+      const replayKey = await authDigest('miniapp:' + new URLSearchParams(payload.init_data).get('hash'));
+      // Unique insert aborts the atomic batch on replay, issuing no second session.
+      const results = await env.DB.batch([
+        env.DB.prepare('DELETE FROM telegram_mini_app_login_replay WHERE expires_at <= ?').bind(now),
+        env.DB.prepare('INSERT INTO telegram_mini_app_login_replay (proof_hash, expires_at) VALUES (?, ?)').bind(replayKey, now + 300),
+        env.DB.prepare(`INSERT INTO telegram_users (telegram_id, username, first_name, last_name) VALUES (?, ?, ?, ?)
+          ON CONFLICT(telegram_id) DO UPDATE SET username = excluded.username, first_name = excluded.first_name, last_name = excluded.last_name, updated_at = CURRENT_TIMESTAMP`)
+          .bind(verified.telegramId, verified.user.username, verified.user.first_name, verified.user.last_name),
+        env.DB.prepare(`INSERT INTO telegram_website_sessions (session_hash, telegram_id, csrf_hash, created_at, last_seen_at, expires_at)
+          VALUES (?, ?, ?, ?, ?, ?)`).bind(sessionHash, verified.telegramId, await authDigest(csrf), now, now, now + WEBSITE_SESSION_SECONDS),
+      ]);
+      requireWrites(results, 4);
+      headers.append('Set-Cookie', setCookie(SESSION_COOKIE, secret, WEBSITE_SESSION_SECONDS));
+      return reply(headers, { ok: true, linked: true, telegram_id: verified.telegramId,
+        display_name: verified.user.first_name || verified.user.username || 'Telegram player' });
+    }
     if (action === 'start' && request.method === 'GET') {
       stage = 'return_url_validation';
       let returnUrl;
