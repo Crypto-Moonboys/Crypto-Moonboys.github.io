@@ -143,8 +143,8 @@ test('failed credential INSERT rolls back replay, account metadata and session, 
   const injectedDb = {
     prepare(sql) { return env.DB.prepare(sql); },
     batch(statements) {
-      assert.equal(statements.length, 5, 'Replay, user, website session, credential and cleanup must be one batch');
-      const sabotaged = statements.map((statement, index) => index === 4
+      assert.equal(statements.length, 6, 'Session cleanup, replay cleanup, proof, user, website session and credential must be one batch');
+      const sabotaged = statements.map((statement, index) => index === 5
         ? { run: async () => { throw new Error('credential insert temporarily failed'); } }
         : statement);
       return env.DB.batch(sabotaged);
@@ -163,4 +163,27 @@ test('failed credential INSERT rolls back replay, account metadata and session, 
   assert.ok(sessionCookie(recovered), 'Original signed proof can recover after an aborted batch');
   assert.deepEqual(counts(sqlite), [1, 1]);
   assert.equal(sqlite.prepare('SELECT COUNT(*) AS n FROM telegram_website_credentials').get().n, 1);
+});
+
+
+test('Mini App session issuance prunes expired and idle cookies without deleting active sessions', async () => {
+  const { env, sqlite } = fixture();
+  const at = now();
+  const insert = sqlite.prepare('INSERT INTO telegram_website_sessions (session_hash, telegram_id, csrf_hash, created_at, last_seen_at, expires_at) VALUES (?, ?, ?, ?, ?, ?)');
+  insert.run('old-expired', ID, 'expired-csrf', at - 5000, at - 60, at - 1);
+  insert.run('old-idle', ID, 'idle-csrf', at - 5000, at - 1801, at + 3600);
+  insert.run('still-active', ID, 'active-csrf', at - 600, at - 60, at + 3600);
+  const credential = sqlite.prepare('INSERT INTO telegram_website_credentials (token_hash, session_hash, expires_at) VALUES (?, ?, ?)');
+  credential.run('expired-token', 'old-expired', at + 120);
+  credential.run('idle-token', 'old-idle', at + 120);
+  credential.run('active-token', 'still-active', at + 120);
+  const response = await request(env, proof());
+  assert.equal(response.status, 200, await response.clone().text());
+  const remaining = sqlite.prepare('SELECT session_hash FROM telegram_website_sessions ORDER BY session_hash').all().map(row => row.session_hash);
+  assert.equal(remaining.length, 2, 'Only active preexisting session and newly issued session remain');
+  assert.ok(remaining.includes('still-active'), 'Live website sessions must survive Mini App login');
+  assert.ok(!remaining.includes('old-idle'));
+  assert.ok(!remaining.includes('old-expired'));
+  assert.equal(sqlite.prepare('SELECT COUNT(*) AS n FROM telegram_website_credentials WHERE token_hash IN (?, ?)').get('expired-token', 'idle-token').n, 0, 'Deleting abandoned sessions cascades their credentials');
+  assert.equal(sqlite.prepare("SELECT COUNT(*) AS n FROM telegram_website_credentials WHERE token_hash='active-token'").get().n, 1);
 });
