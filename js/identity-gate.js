@@ -197,7 +197,22 @@
     return websitePromise;
   }
 
+  function isTelegramInAppBrowser() {
+    // Telegram's embedded Android/iOS browser may reopen its own OAuth
+    // confirmation URL repeatedly. The signed bot-link route avoids that loop.
+    var ua = (window.navigator && window.navigator.userAgent) || '';
+    var app = window.Telegram && window.Telegram.WebApp;
+    return /Telegram/i.test(ua) || !!(app && app.initData);
+  }
+
   function loginWithTelegram() {
+    if (isTelegramInAppBrowser()) {
+      // Never treat presence inside Telegram as proof of account ownership.
+      // The existing /gklink callback verifies the bot-issued signed evidence.
+      window.alert('To connect your existing account, open @WIKICOMSBOT, send /gkstart then /gklink, and open the signed website link the bot sends. Telegram login confirmation can loop inside its own browser.');
+      window.location.assign(getBotUrl());
+      return Promise.resolve();
+    }
     var waitedForBootstrap = websitePending;
     return websiteReady.then(function () {
       if (!waitedForBootstrap && canProbeWebsiteSession() && (!websiteCapabilityKnown || (websiteAvailable && !websiteRequestHealthy))) return probeWebsiteSession();
