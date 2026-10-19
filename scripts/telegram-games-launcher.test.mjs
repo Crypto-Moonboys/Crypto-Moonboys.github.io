@@ -171,7 +171,7 @@ class FakeElement {
   }
 }
 
-async function runLauncher({ initData = 'user=%7B%22id%22%3A123%7D', hash = '', search = '?v=20260902-games-shell-v6&startapp=arcade', storedInitData = '' } = {}) {
+async function runLauncher({ initData = 'user=%7B%22id%22%3A123%7D', hash = '', search = '?v=20260902-games-shell-v6&startapp=arcade', storedInitData = '', existingSessionId = '', rejectLogin = false, lostCookie = false, stalled = false } = {}) {
   const calls = [];
   const timers = [];
   const viewportHandlers = [];
@@ -181,6 +181,8 @@ async function runLauncher({ initData = 'user=%7B%22id%22%3A123%7D', hash = '', 
   const status = new FakeElement({ id: 'launchStatus' });
   const connectButton = new FakeElement({ id: 'connectTelegram' });
   const accountLabel = new FakeElement({ id: 'connectedAccount' });
+  const logoutButton = new FakeElement({ id: 'logoutTelegram' });
+  const requests = [];
   const links = launcherDestinations.map(([, href]) => new FakeElement({ href, 'aria-disabled': 'true', tabindex: '-1' }));
   const assigned = [];
   const storage = new Map(storedInitData ? [['moonboys.telegram.initData', storedInitData]] : []);
@@ -200,6 +202,7 @@ async function runLauncher({ initData = 'user=%7B%22id%22%3A123%7D', hash = '', 
       if (id === 'launchStatus') return status;
       if (id === 'connectTelegram') return connectButton;
       if (id === 'connectedAccount') return accountLabel;
+      if (id === 'logoutTelegram') return logoutButton;
       return null;
     },
     querySelectorAll(selector) {
@@ -248,11 +251,51 @@ async function runLauncher({ initData = 'user=%7B%22id%22%3A123%7D', hash = '', 
     },
   };
 
-  let sessionCreated = false;
-  const fetch = async (url) => {
-    if (url.endsWith('/mini-app-session')) { sessionCreated = true; return { ok: true, status: 200 }; }
-    if (url.endsWith('/session')) return { ok: sessionCreated, status: sessionCreated ? 200 : 401, json: async () => ({ linked: true, telegram_id: '123', display_name: 'Test', telegram_auth: { hash: 's1_test' } }) };
-    throw new Error('Unexpected URL: ' + url);
+  let sessionId = existingSessionId;
+  const jsonResponse = (status, data) => ({ ok: status >= 200 && status < 300, status, json: async () => data });
+  const fetch = (url, options = {}) => {
+    requests.push({ url, options });
+    assert.equal(options.credentials, 'include', 'Website session requests always include cookies');
+    assert.equal(options.cache, 'no-store', 'Website session credentials must not be cached');
+    assert.ok(options.signal, 'Every credential request has an abort signal');
+    if (stalled) return new Promise((resolve, reject) => {
+      options.signal.addEventListener('abort', () => {
+        const error = new Error('Aborted');
+        error.name = 'AbortError';
+        reject(error);
+      });
+    });
+    if (url.endsWith('/mini-app-session')) {
+      assert.equal(options.method, 'POST');
+      assert.equal(options.headers['Content-Type'], 'application/json');
+      const signed = JSON.parse(options.body).init_data;
+      const params = new URLSearchParams(signed);
+      let id = '123';
+      try { id = String(JSON.parse(params.get('user')).id); } catch {}
+      if (rejectLogin) return Promise.resolve(jsonResponse(401, { error: 'mini_app_auth_rejected' }));
+      if (sessionId && sessionId !== id) return Promise.resolve(jsonResponse(409, { error: 'logout_before_switching_accounts' }));
+      sessionId = id;
+      return Promise.resolve(jsonResponse(200, {
+        linked: true, telegram_id: id, display_name: 'Test', csrf_token: 'signed-csrf',
+        telegram_auth: { id, hash: 's1_signed' },
+      }));
+    }
+    if (url.endsWith('/session')) {
+      if (!sessionId || lostCookie) return Promise.resolve(jsonResponse(401, { error: 'website_session_expired' }));
+      return Promise.resolve(jsonResponse(200, {
+        linked: true, telegram_id: sessionId, display_name: 'Test', csrf_token: 'signed-csrf',
+        telegram_auth: { id: sessionId, hash: 's1_signed' },
+      }));
+    }
+    if (url.endsWith('/logout')) {
+      if (options.method === 'POST') {
+        assert.equal(options.headers['X-Moonboys-CSRF'], 'signed-csrf');
+        sessionId = '';
+        return Promise.resolve(jsonResponse(200, { ok: true }));
+      }
+      return Promise.resolve(jsonResponse(200, { ok: true, csrf_token: 'signed-csrf' }));
+    }
+    throw new Error('Unexpected auth route: ' + url);
   };
   vm.runInNewContext(inlineLauncherScript, {
     window,
@@ -263,10 +306,16 @@ async function runLauncher({ initData = 'user=%7B%22id%22%3A123%7D', hash = '', 
     Boolean,
     String,
     fetch,
+    AbortController,
   });
-  for (let i = 0; i < 12; i++) await Promise.resolve();
+  for (let i = 0; i < 48; i++) await Promise.resolve();
 
-  return { assigned, body, calls, links, pageHandlers, root, status, storage, timers, viewportHandlers };
+  return { assigned, body, calls, links, pageHandlers, root, status, storage, timers, viewportHandlers, requests, connectButton, logoutButton, accountLabel };
+}
+
+async function settle() {
+  for (let i = 0; i < 48; i++) await Promise.resolve();
+}
 }
 
 {
@@ -379,7 +428,60 @@ for (const storedInitData of [
   harness.links[4].dispatch('click');
   assert.equal(harness.links[4].getAttribute('aria-disabled'), 'true', 'Navigation start must disable links');
   harness.pageHandlers.get('pageshow')();
+  await settle();
   assert.equal(harness.links[4].getAttribute('aria-disabled'), null, 'pageshow must restore enabled links after browser history return');
+}
+
+
+{
+  const harness = await runLauncher({ existingSessionId: '999' });
+  assert.equal(harness.links[0].getAttribute('aria-disabled'), 'true', 'Different cookie account never unlocks a Mini App');
+  assert.match(harness.status.textContent, /Another Telegram account/);
+  await settle();
+  assert.equal(harness.logoutButton.hidden, false, 'Account mismatch exposes a CSRF-protected logout');
+  harness.logoutButton.dispatch('click');
+  await settle();
+  assert.equal(harness.links[0].getAttribute('aria-disabled'), 'true', 'Logout does not unlock games');
+  assert.ok(harness.requests.some(x => x.url.endsWith('/logout') && x.options.method === 'POST'));
+}
+
+{
+  const harness = await runLauncher({ rejectLogin: true });
+  assert.equal(harness.links[0].getAttribute('aria-disabled'), 'true', 'Denied signature cannot unlock games');
+  assert.equal(harness.connectButton.hidden, false, 'Denied sign-in shows Retry');
+}
+
+{
+  const harness = await runLauncher({ lostCookie: true });
+  assert.equal(harness.links[0].getAttribute('aria-disabled'), 'true', 'Ignored Set-Cookie must not count as a website session');
+  assert.match(harness.status.textContent, /website_session_expired|persist/i);
+  assert.equal(harness.accountLabel.hidden, true);
+}
+
+{
+  const harness = await runLauncher({ initData: '', existingSessionId: '123' });
+  harness.viewportHandlers[0]({ isStateStable: true });
+  assert.equal(harness.links[0].getAttribute('aria-disabled'), null, 'Ordinary browser can restore a valid cookie session');
+  assert.equal(harness.requests.filter(x => x.url.endsWith('/mini-app-session')).length, 0);
+}
+
+{
+  const harness = await runLauncher({ initData: '' });
+  harness.connectButton.dispatch('click');
+  assert.match(harness.assigned[0], /^https:\/\/api\.cryptomoonboys\.com\/telegram\/website\/start\?/);
+}
+
+{
+  const harness = await runLauncher({ stalled: true });
+  harness.viewportHandlers[0]({ isStateStable: true });
+  assert.equal(harness.links[0].getAttribute('aria-disabled'), 'true');
+  const deadline = harness.timers.find(t => t.ms === 8000);
+  assert.ok(deadline, 'Login has an eight-second abort deadline');
+  deadline.handler();
+  await settle();
+  assert.equal(harness.connectButton.disabled, false, 'Timeout releases retry button');
+  assert.equal(harness.links[0].getAttribute('aria-disabled'), 'true');
+  assert.match(harness.status.textContent, /timed out/i);
 }
 
 console.log('telegram-games-launcher.test.mjs passed');
