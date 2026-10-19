@@ -110,3 +110,57 @@ test('Mini App D1 write failures never issue an unconfirmed website cookie', asy
   assert.equal(failed.headers.get('Set-Cookie'), null);
   assert.deepEqual(counts(sqlite), [0, 0]);
 });
+
+
+test('same-account website cookie restores after fresh-launch expiry without trusting a different account', async () => {
+  const { env, sqlite } = fixture();
+  const freshProof = proof();
+  const first = await request(env, freshProof);
+  assert.equal(first.status, 200, await first.clone().text());
+  const cookie = sessionCookie(first);
+  assert.ok(cookie);
+  const olderProof = proof(undefined, now() - 600);
+  const existing = await request(env, olderProof, { cookie });
+  assert.equal(existing.status, 200, await existing.clone().text());
+  assert.equal((await existing.json()).telegram_id, ID);
+  assert.equal(existing.headers.get('Set-Cookie'), null, 'Already valid session does not rotate cookie');
+  assert.deepEqual(counts(sqlite), [1, 1], 'Existing cookie restoration consumes no extra launch replay');
+
+  const unbound = await request(env, olderProof);
+  assert.equal(unbound.status, 401, 'Old signature never issues a new cookie session');
+  assert.equal(unbound.headers.get('Set-Cookie'), null);
+  const switched = await request(env, proof({ id: 987654321, first_name: 'Other' }, now() - 600), { cookie });
+  assert.equal(switched.status, 409, 'Old signed proof cannot swap an active website session');
+  const tooOld = await request(env, proof(undefined, now() - 3601), { cookie });
+  assert.equal(tooOld.status, 401, 'Cookie-bound signature still has a maximum validation age');
+  assert.deepEqual(counts(sqlite), [1, 1]);
+});
+
+test('failed credential INSERT rolls back replay, account metadata and session, allowing identical proof retry', async () => {
+  const { env, sqlite } = fixture();
+  const signed = proof();
+  const before = sqlite.prepare('SELECT username, first_name FROM telegram_users WHERE telegram_id=?').get(ID);
+  const injectedDb = {
+    prepare(sql) { return env.DB.prepare(sql); },
+    batch(statements) {
+      assert.equal(statements.length, 5, 'Replay, user, website session, credential and cleanup must be one batch');
+      const sabotaged = statements.map((statement, index) => index === 4
+        ? { run: async () => { throw new Error('credential insert temporarily failed'); } }
+        : statement);
+      return env.DB.batch(sabotaged);
+    },
+  };
+  const failed = await request(env, signed, { db: injectedDb });
+  assert.equal(failed.status, 503);
+  assert.equal(failed.headers.get('Set-Cookie'), null);
+  assert.deepEqual(counts(sqlite), [0, 0], 'Transaction rollback leaves no replay or orphan session');
+  assert.equal(sqlite.prepare('SELECT COUNT(*) AS n FROM telegram_website_credentials').get().n, 0);
+  assert.deepEqual(sqlite.prepare('SELECT username, first_name FROM telegram_users WHERE telegram_id=?').get(ID), before,
+    'Failed issuance does not alter returning account metadata');
+
+  const recovered = await request(env, signed);
+  assert.equal(recovered.status, 200, await recovered.clone().text());
+  assert.ok(sessionCookie(recovered), 'Original signed proof can recover after an aborted batch');
+  assert.deepEqual(counts(sqlite), [1, 1]);
+  assert.equal(sqlite.prepare('SELECT COUNT(*) AS n FROM telegram_website_credentials').get().n, 1);
+});
