@@ -17,12 +17,16 @@
     nav a:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
     body.is-initializing nav a, body.is-navigating nav a { pointer-events: none; }
     #launchStatus { font-size: 14px; }
+    #connectTelegram { background: #000; border: 1px solid #fff; color: #fff; font: inherit; padding: 6px; }
+    [hidden] { display: none !important; }
   </style>
 </head>
 <body class="page-standalone-tool is-initializing" aria-busy="true">
   <main id="launcherRoot" aria-busy="true">
     <h1>Crypto Moonboys Games</h1>
-    <p id="launchStatus" role="status" aria-live="polite">Preparing games...</p>
+    <p id="launchStatus" role="status" aria-live="polite">Checking Telegram account...</p>
+    <p id="connectedAccount" hidden></p>
+    <button id="connectTelegram" type="button">Connect with Telegram</button>
     <nav aria-label="Crypto Moonboys games">
       <a href="/moonpet-game.html?v=20261012-home-e4-rooms-v1" aria-disabled="true" tabindex="-1">Moonpet OS</a>
       <a href="/games/dead-run/?v=20260902-dead-run-v5" aria-disabled="true" tabindex="-1">Dead Run</a>
@@ -45,6 +49,11 @@
       var navigationStarted = false;
       var fallbackTimer = null;
       var cachedInitData = readTelegramInitData();
+      var accountReady = false;
+      var connecting = false;
+      var connectButton = document.getElementById('connectTelegram');
+      var accountLabel = document.getElementById('connectedAccount');
+      var apiBase = 'https://api.cryptomoonboys.com';
 
       function setBusy(isBusy) {
         document.body.classList.toggle('is-initializing', isBusy);
@@ -77,8 +86,8 @@
           fallbackTimer = null;
         }
         setBusy(false);
-        setLinksEnabled(true);
-        setStatus('Launcher loaded.');
+        setLinksEnabled(accountReady);
+        if (!accountReady) setStatus(cachedInitData ? 'Connect to unlock games.' : 'Open in Telegram to connect your account.');
       }
 
       function readHashInitData() {
@@ -151,7 +160,7 @@
       function handleLaunch(event) {
         var link = event.currentTarget;
         event.preventDefault();
-        if (!navigationEnabled || !viewportStable || navigationStarted) return;
+        if (!navigationEnabled || !viewportStable || navigationStarted || !accountReady) return;
         navigationStarted = true;
         document.body.classList.add('is-navigating');
         setLinksEnabled(false);
@@ -172,14 +181,63 @@
           navigationEnabled = false;
           enableNavigation();
         }
+        if (cachedInitData) connectAccount();
       });
 
+      function connectAccount() {
+        if (connecting) return;
+        if (!cachedInitData) {
+          setStatus('Please open this page from the Moonboys Telegram Mini App.');
+          return;
+        }
+        connecting = true;
+        connectButton.disabled = true;
+        setStatus('Verifying Telegram account...');
+        // First attempt to restore an already-issued same-site cookie, which
+        // avoids replaying the one-use signed launch data on navigation back.
+        fetch(apiBase + '/telegram/website/session', { credentials: 'include', cache: 'no-store' })
+          .then(function (response) {
+            if (response.ok) return response.json();
+            return fetch(apiBase + '/telegram/website/mini-app-session', {
+              method: 'POST',
+              credentials: 'include',
+              cache: 'no-store',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ init_data: cachedInitData })
+            }).then(function (loginResponse) {
+              if (!loginResponse.ok) throw new Error('Telegram verification failed (' + loginResponse.status + '). Reopen the Mini App for fresh verification.');
+              return fetch(apiBase + '/telegram/website/session', { credentials: 'include', cache: 'no-store' })
+                .then(function (sessionResponse) {
+                  if (!sessionResponse.ok) throw new Error('Login could not be restored in this browser. Please retry.');
+                  return sessionResponse.json();
+                });
+            });
+          }).then(function (session) {
+            if (!session || !session.linked || !session.telegram_id || !session.telegram_auth) throw new Error('Website session not verified.');
+            accountReady = true;
+            accountLabel.textContent = 'Connected: ' + (session.display_name || 'Telegram player');
+            accountLabel.hidden = false;
+            connectButton.hidden = true;
+            if (navigationEnabled) setLinksEnabled(true);
+            setStatus('Account verified. Select a game.');
+          }).catch(function (error) {
+            accountReady = false;
+            setLinksEnabled(false);
+            setStatus(error.message || 'Could not connect. Retry.');
+          }).finally(function () {
+            connecting = false;
+            connectButton.disabled = false;
+          });
+      }
+
+      connectButton.addEventListener('click', connectAccount);
       links.forEach(function (link) {
         link.addEventListener('click', handleLaunch);
       });
       setLinksEnabled(false);
       setBusy(true);
-      setStatus('Preparing games...');
+      setStatus('Checking Telegram account...');
+      if (cachedInitData) connectAccount();
 
       try {
         if (telegramApp) telegramApp.onEvent('viewportChanged', onViewportChanged);
