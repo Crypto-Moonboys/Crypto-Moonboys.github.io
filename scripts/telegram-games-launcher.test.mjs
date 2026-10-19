@@ -171,7 +171,7 @@ class FakeElement {
   }
 }
 
-function runLauncher({ initData = 'user=%7B%22id%22%3A123%7D', hash = '', search = '?v=20260902-games-shell-v6&startapp=arcade', storedInitData = '' } = {}) {
+async function runLauncher({ initData = 'user=%7B%22id%22%3A123%7D', hash = '', search = '?v=20260902-games-shell-v6&startapp=arcade', storedInitData = '' } = {}) {
   const calls = [];
   const timers = [];
   const viewportHandlers = [];
@@ -179,6 +179,8 @@ function runLauncher({ initData = 'user=%7B%22id%22%3A123%7D', hash = '', search
   const body = new FakeElement({ class: 'page-standalone-tool is-initializing', 'aria-busy': 'true' });
   const root = new FakeElement({ id: 'launcherRoot', 'aria-busy': 'true' });
   const status = new FakeElement({ id: 'launchStatus' });
+  const connectButton = new FakeElement({ id: 'connectTelegram' });
+  const accountLabel = new FakeElement({ id: 'connectedAccount' });
   const links = launcherDestinations.map(([, href]) => new FakeElement({ href, 'aria-disabled': 'true', tabindex: '-1' }));
   const assigned = [];
   const storage = new Map(storedInitData ? [['moonboys.telegram.initData', storedInitData]] : []);
@@ -196,6 +198,8 @@ function runLauncher({ initData = 'user=%7B%22id%22%3A123%7D', hash = '', search
       calls.push(`getElementById:${id}`);
       if (id === 'launcherRoot') return root;
       if (id === 'launchStatus') return status;
+      if (id === 'connectTelegram') return connectButton;
+      if (id === 'connectedAccount') return accountLabel;
       return null;
     },
     querySelectorAll(selector) {
@@ -244,6 +248,12 @@ function runLauncher({ initData = 'user=%7B%22id%22%3A123%7D', hash = '', search
     },
   };
 
+  let sessionCreated = false;
+  const fetch = async (url) => {
+    if (url.endsWith('/mini-app-session')) { sessionCreated = true; return { ok: true, status: 200 }; }
+    if (url.endsWith('/session')) return { ok: sessionCreated, status: sessionCreated ? 200 : 401, json: async () => ({ linked: true, telegram_id: '123', display_name: 'Test', telegram_auth: { hash: 's1_test' } }) };
+    throw new Error('Unexpected URL: ' + url);
+  };
   vm.runInNewContext(inlineLauncherScript, {
     window,
     document,
@@ -252,13 +262,15 @@ function runLauncher({ initData = 'user=%7B%22id%22%3A123%7D', hash = '', search
     Array,
     Boolean,
     String,
+    fetch,
   });
+  for (let i = 0; i < 12; i++) await Promise.resolve();
 
   return { assigned, body, calls, links, pageHandlers, root, status, storage, timers, viewportHandlers };
 }
 
 {
-  const harness = runLauncher();
+  const harness = await runLauncher();
   assert.ok(harness.calls.indexOf('querySelectorAll:nav a[href]') < harness.calls.indexOf('ready'), 'ready() must not be called before launcher links are discovered');
   assert.deepEqual(harness.calls.slice(harness.calls.indexOf('onEvent:viewportChanged'), harness.calls.indexOf('expand') + 1), ['onEvent:viewportChanged', 'ready', 'expand'], 'Telegram setup must register viewportChanged before ready() and expand()');
   for (const link of harness.links) {
@@ -270,10 +282,10 @@ function runLauncher({ initData = 'user=%7B%22id%22%3A123%7D', hash = '', search
 }
 
 {
-  const harness = runLauncher();
+  const harness = await runLauncher();
   harness.viewportHandlers[0]({ isStateStable: true });
   assert.equal(harness.body.getAttribute('aria-busy'), 'false', 'Stable viewport must clear busy state');
-  assert.equal(harness.status.textContent, 'Launcher loaded.', 'Stable viewport must show loaded copy');
+  assert.equal(harness.status.textContent, 'Account verified. Select a game.', 'Stable viewport shows verified account after successful session check');
   assert.equal(harness.timers[0].cleared, true, 'Stable viewport must clear fallback timer id 0 via an explicit null check');
   assert.equal(harness.links[1].getAttribute('aria-disabled'), null, 'isStateStable=true must enable navigation links');
   harness.links[1].dispatch('click');
@@ -290,7 +302,7 @@ function runLauncher({ initData = 'user=%7B%22id%22%3A123%7D', hash = '', search
 
 {
   const hashInitData = 'query_id=hash-only&user=%7B%22id%22%3A456%7D&auth_date=' + Math.floor(Date.now() / 1000);
-  const harness = runLauncher({ initData: '', hash: `#tgWebAppData=${encodeURIComponent(hashInitData)}` });
+  const harness = await runLauncher({ initData: '', hash: `#tgWebAppData=${encodeURIComponent(hashInitData)}` });
   assert.equal(harness.storage.get('moonboys.telegram.initData'), hashInitData, 'Hash tgWebAppData fallback must be stored in sessionStorage');
   harness.timers[0].handler();
   assert.equal(harness.links[0].getAttribute('aria-disabled'), null, 'Fallback timeout must enable navigation when no viewport event arrives');
@@ -301,8 +313,8 @@ function runLauncher({ initData = 'user=%7B%22id%22%3A123%7D', hash = '', search
 
 {
   const leakedQueryInitData = 'query_id=legacy-query&user=%7B%22id%22%3A789%7D';
-  const harness = runLauncher({
-    initData: '',
+  const harness = await runLauncher({
+    initData: 'user=%7B%22id%22%3A123%7D',
     search: `?v=20260902-games-shell-v6&tgWebAppData=${encodeURIComponent(leakedQueryInitData)}&startapp=arcade`,
   });
   harness.viewportHandlers[0]({ isStateStable: true });
@@ -317,16 +329,16 @@ for (const storedInitData of [
   'auth_date=' + (Math.floor(Date.now() / 1000) + 600),
   'user=%7B%22id%22%3A123%7D',
 ]) {
-  const harness = runLauncher({ initData: '', storedInitData });
+  const harness = await runLauncher({ initData: '', storedInitData });
   harness.viewportHandlers[0]({ isStateStable: true });
   harness.links[0].dispatch('click');
-  assert.equal(new URL(harness.assigned[0]).hash, '', 'Stale or undated inherited session data must not override website authentication');
+  assert.equal(harness.assigned.length, 0, 'Stale or undated data cannot unlock navigation');
   assert.equal(harness.storage.has('moonboys.telegram.initData'), false, 'Unusable inherited data must be removed from session storage');
 }
 
 {
   const storedInitData = 'auth_date=' + Math.floor(Date.now() / 1000) + '&user=%7B%22id%22%3A123%7D';
-  const harness = runLauncher({ initData: '', storedInitData });
+  const harness = await runLauncher({ initData: '', storedInitData });
   harness.viewportHandlers[0]({ isStateStable: true });
   harness.links[0].dispatch('click');
   assert.equal(new URL(harness.assigned[0]).hash, '#tgWebAppData=' + encodeURIComponent(storedInitData), 'Fresh session data remains available for Worker verification');
@@ -334,16 +346,16 @@ for (const storedInitData of [
 
 {
   const staleData = 'auth_date=' + (Math.floor(Date.now() / 1000) - 3700);
-  const harness = runLauncher({ initData: '', hash: '#tgWebAppData=' + encodeURIComponent(staleData), storedInitData: staleData });
+  const harness = await runLauncher({ initData: '', hash: '#tgWebAppData=' + encodeURIComponent(staleData), storedInitData: staleData });
   harness.viewportHandlers[0]({ isStateStable: true });
   harness.links[0].dispatch('click');
-  assert.equal(new URL(harness.assigned[0]).hash, '', 'Stale inherited hash data must not be forwarded');
+  assert.equal(harness.assigned.length, 0, 'Stale inherited hash data cannot unlock navigation');
 }
 
 {
   const currentSdkData = 'auth_date=' + Math.floor(Date.now() / 1000) + '&user=%7B%22id%22%3A456%7D';
   const staleData = 'auth_date=' + (Math.floor(Date.now() / 1000) - 3700);
-  const harness = runLauncher({ initData: currentSdkData, hash: '#tgWebAppData=' + encodeURIComponent(staleData), storedInitData: staleData });
+  const harness = await runLauncher({ initData: currentSdkData, hash: '#tgWebAppData=' + encodeURIComponent(staleData), storedInitData: staleData });
   harness.viewportHandlers[0]({ isStateStable: true });
   harness.links[0].dispatch('click');
   assert.equal(new URL(harness.assigned[0]).hash, '#tgWebAppData=' + encodeURIComponent(currentSdkData), 'Current Telegram SDK identity takes priority over inherited browser data');
@@ -351,7 +363,7 @@ for (const storedInitData of [
 
 {
   const contaminatedDestinationInitData = 'query_id=destination-query&user=%7B%22id%22%3A987%7D';
-  const harness = runLauncher();
+  const harness = await runLauncher();
   harness.links[3].setAttribute('href', `/games/nbg-london/?v=${launcherRelease}&tgWebAppData=${encodeURIComponent(contaminatedDestinationInitData)}`);
   harness.viewportHandlers[0]({ isStateStable: true });
   harness.links[3].dispatch('click');
@@ -362,7 +374,7 @@ for (const storedInitData of [
 }
 
 {
-  const harness = runLauncher();
+  const harness = await runLauncher();
   harness.viewportHandlers[0]({ isStateStable: true });
   harness.links[4].dispatch('click');
   assert.equal(harness.links[4].getAttribute('aria-disabled'), 'true', 'Navigation start must disable links');
