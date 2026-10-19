@@ -222,6 +222,11 @@ export async function handleTelegramWebsiteAuth(request, env, fetchImpl = fetch)
       // D1 batch is atomic: duplicate proof or any write failure aborts
       // issuance. Do not set a cookie before confirmed writes.
       const results = await env.DB.batch([
+        // The Mini App login path may never visit /website/start (OAuth).
+        // Reclaim expired/idle sessions here too, in the same atomic batch.
+        // Foreign-key cascades also retire their website credentials.
+        env.DB.prepare('DELETE FROM telegram_website_sessions WHERE expires_at <= ? OR last_seen_at <= ?')
+          .bind(now, now - WEBSITE_IDLE_SECONDS),
         env.DB.prepare('DELETE FROM telegram_mini_app_login_replay WHERE expires_at <= ?').bind(now),
         env.DB.prepare('INSERT INTO telegram_mini_app_login_replay (proof_hash, expires_at) VALUES (?, ?)').bind(replayKey, expiresAt),
         env.DB.prepare(`INSERT INTO telegram_users (telegram_id, username, first_name, last_name) VALUES (?, ?, ?, ?)
@@ -236,8 +241,8 @@ export async function handleTelegramWebsiteAuth(request, env, fetchImpl = fetch)
         env.DB.prepare('INSERT INTO telegram_website_credentials (token_hash, session_hash, expires_at) VALUES (?, ?, ?)')
           .bind(await authDigest(accessHash), sessionHash, now + WEBSITE_ACCESS_SECONDS),
       ]);
-      requireWrites(results, 5);
-      if (results[1]?.meta?.changes !== 1 || results[3]?.meta?.changes !== 1 || results[4]?.meta?.changes !== 1) {
+      requireWrites(results, 6);
+      if (results[2]?.meta?.changes !== 1 || results[4]?.meta?.changes !== 1 || results[5]?.meta?.changes !== 1) {
         fail('website_login_unavailable', 503, 'd1_batch_unconfirmed');
       }
       headers.append('Set-Cookie', setCookie(SESSION_COOKIE, secret, WEBSITE_SESSION_SECONDS));
