@@ -252,6 +252,7 @@ async function runLauncher({ initData = 'user=%7B%22id%22%3A123%7D', hash = '', 
   };
 
   let sessionId = existingSessionId;
+  let denyNextLogin = rejectLogin;
   const jsonResponse = (status, data) => ({ ok: status >= 200 && status < 300, status, json: async () => data });
   const fetch = (url, options = {}) => {
     requests.push({ url, options });
@@ -272,7 +273,7 @@ async function runLauncher({ initData = 'user=%7B%22id%22%3A123%7D', hash = '', 
       const params = new URLSearchParams(signed);
       let id = '123';
       try { id = String(JSON.parse(params.get('user')).id); } catch {}
-      if (rejectLogin) return Promise.resolve(jsonResponse(401, { error: 'mini_app_auth_rejected' }));
+      if (denyNextLogin) return Promise.resolve(jsonResponse(401, { error: 'mini_app_auth_rejected' }));
       if (sessionId && sessionId !== id) return Promise.resolve(jsonResponse(409, { error: 'logout_before_switching_accounts' }));
       sessionId = id;
       return Promise.resolve(jsonResponse(200, {
@@ -310,7 +311,7 @@ async function runLauncher({ initData = 'user=%7B%22id%22%3A123%7D', hash = '', 
   });
   for (let i = 0; i < 48; i++) await Promise.resolve();
 
-  return { assigned, body, calls, links, pageHandlers, root, status, storage, timers, viewportHandlers, requests, connectButton, logoutButton, accountLabel };
+  return { assigned, body, calls, links, pageHandlers, root, status, storage, timers, viewportHandlers, requests, connectButton, logoutButton, accountLabel, setLoginDenied: value => { denyNextLogin = value; } };
 }
 
 async function settle() {
@@ -468,6 +469,22 @@ for (const storedInitData of [
   const harness = await runLauncher({ initData: '' });
   harness.connectButton.dispatch('click');
   assert.match(harness.assigned[0], /^https:\/\/api\.cryptomoonboys\.com\/telegram\/website\/start\?/);
+}
+
+{
+  const harness = await runLauncher();
+  harness.viewportHandlers[0]({ isStateStable: true });
+  assert.equal(harness.accountLabel.hidden, false, 'Initial verified account is visible');
+  harness.setLoginDenied(true);
+  harness.pageHandlers.get('pageshow')();
+  await settle();
+  assert.equal(harness.links[0].getAttribute('aria-disabled'), 'true', 'Revalidation failure revokes game navigation');
+  assert.equal(harness.accountLabel.hidden, true, 'Revalidation failure clears stale connected identity');
+  assert.equal(harness.connectButton.hidden, false, 'Revalidation failure restores Retry');
+  harness.setLoginDenied(false);
+  harness.connectButton.dispatch('click');
+  await settle();
+  assert.equal(harness.links[0].getAttribute('aria-disabled'), null, 'Retry restores navigation only after verified recovery');
 }
 
 {
