@@ -45,8 +45,11 @@ assert.ok(
 assert.ok(html.includes('class="page-standalone-tool is-initializing"'), 'Games launcher must start in an initializing state');
 assert.ok(html.includes('aria-busy="true"'), 'Games launcher must expose initial busy state');
 assert.ok(html.includes('Preparing games...'), 'Games launcher must show initialization copy');
-assert.ok(html.includes('28 BIT ARCADE'), 'Games launcher must show the arcade shell marquee');
-assert.ok(html.includes('Select game cartridge'), 'Games launcher must show arcade game-selection copy');
+assert.ok(html.includes('<h1>Crypto Moonboys Games</h1>'), 'Games launcher must show a plain text title');
+assert.match(html, /background:\s*#000\s*;/, 'Launcher must have a solid black background');
+assert.doesNotMatch(html, /gradient\(|box-shadow|text-shadow|<canvas|<img\\b|class="marquee"|class="control-deck"/i, 'Launcher must have no decorative effects or heavyweight visual components');
+assert.equal((html.match(/<nav\\b/g) || []).length, 1, 'Launcher must have a single plain links menu');
+assert.equal((html.match(/<nav[\\s\\S]*?<\\/nav>/g) || [])[0]?.match(/<a\\s/g)?.length, 5, 'Launcher must show five text links');
 assert.match(html, /body\.is-initializing nav a[\s\S]*pointer-events:none/, 'Launcher links must disable pointer events while initializing');
 assert.match(html, /FALLBACK_READY_MS\s*=\s*1200/, 'Games launcher must include a 1200ms viewport fallback');
 assert.match(html, /window\.location\.assign\(buildDestination\(link\)\)/, 'Games launcher must navigate once through window.location.assign()');
