@@ -44,7 +44,7 @@ assert.ok(
 
 assert.ok(html.includes('class="page-standalone-tool is-initializing"'), 'Games launcher must start in an initializing state');
 assert.ok(html.includes('aria-busy="true"'), 'Games launcher must expose initial busy state');
-assert.ok(html.includes('Preparing games...'), 'Games launcher must show initialization copy');
+assert.ok(html.includes('Checking Telegram account...'), 'Games launcher must show account verification copy');
 assert.ok(html.includes('<h1>Crypto Moonboys Games</h1>'), 'Games launcher must show a plain text title');
 assert.match(html, /background:\s*#000\s*;/, 'Launcher must have a solid black background');
 assert.doesNotMatch(html, /gradient\(|box-shadow|text-shadow|<canvas|<img\b|class="marquee"|class="control-deck"/i, 'Launcher must have no decorative effects or heavyweight visual components');
