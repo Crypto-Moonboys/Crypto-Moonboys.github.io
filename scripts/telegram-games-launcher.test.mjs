@@ -334,7 +334,7 @@ async function settle() {
   harness.viewportHandlers[0]({ isStateStable: true });
   assert.equal(harness.body.getAttribute('aria-busy'), 'false', 'Stable viewport must clear busy state');
   assert.equal(harness.status.textContent, 'Account verified. Select a game.', 'Stable viewport shows verified account after successful session check');
-  assert.equal(harness.timers[0].cleared, true, 'Stable viewport must clear fallback timer id 0 via an explicit null check');
+  assert.equal(harness.timers.find(timer => timer.ms === 1200).cleared, true, 'Stable viewport must clear its own fallback timer');
   assert.equal(harness.links[1].getAttribute('aria-disabled'), null, 'isStateStable=true must enable navigation links');
   harness.links[1].dispatch('click');
   harness.links[2].dispatch('click');
@@ -352,11 +352,11 @@ async function settle() {
   const hashInitData = 'query_id=hash-only&user=%7B%22id%22%3A456%7D&auth_date=' + Math.floor(Date.now() / 1000);
   const harness = await runLauncher({ initData: '', hash: `#tgWebAppData=${encodeURIComponent(hashInitData)}` });
   assert.equal(harness.storage.get('moonboys.telegram.initData'), hashInitData, 'Hash tgWebAppData fallback must be stored in sessionStorage');
-  harness.timers[0].handler();
+  harness.timers.find(timer => timer.ms === 1200).handler();
   assert.equal(harness.links[0].getAttribute('aria-disabled'), null, 'Fallback timeout must enable navigation when no viewport event arrives');
   harness.links[0].dispatch('click');
   assert.equal(new URL(harness.assigned[0]).hash, `#tgWebAppData=${encodeURIComponent(hashInitData)}`, 'Hash tgWebAppData fallback must be retained in the destination fragment');
-  assert.equal(harness.timers[0].ms, 1200, 'Fallback timeout must wait 1200ms');
+  assert.ok(harness.timers.some(timer => timer.ms === 1200), 'Fallback timeout must wait 1200ms');
 }
 
 {
