@@ -6,11 +6,12 @@ const html = fs.readFileSync(new URL('../games/telegram/index.html', import.meta
 const deadRunHtml = fs.readFileSync(new URL('../games/dead-run/index.html', import.meta.url), 'utf8');
 const workerSource = fs.readFileSync(new URL('../workers/moonboys-api/worker.js', import.meta.url), 'utf8');
 const deadRunRelease = html.match(/href="\/games\/dead-run\/\?v=([^"]+)"/)?.[1];
+const gameDestinationRelease = '20260903-games-shell-v8';
 const launcherRelease = html.match(/<meta name="moonboys-mini-app-version" content="([^"]+)">/)?.[1];
 const inlineLauncherScript = [...html.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/gi)].at(-1)?.[1];
 
 assert.ok(deadRunRelease, 'Games launcher must link Dead Run with a cache-busting release token');
-assert.equal(launcherRelease, '20260903-games-shell-v8', 'Games launcher must publish the v8 arcade shell release token');
+assert.equal(launcherRelease, '20261019-miniapp-login-v1', 'Games launcher must publish the one-tap Mini App login release token');
 assert.ok(inlineLauncherScript, 'Games launcher must include a body-end inline launcher controller');
 
 const forbiddenScripts = [
@@ -82,9 +83,9 @@ assert.ok(!/dead-run[^"']*(?:bootstrap|runtime|logic)\.js/i.test(html), 'Games l
 const launcherDestinations = [
   ['Moonpet OS', '/moonpet-game.html?v=20261012-home-e4-rooms-v1'],
   ['Dead Run', `/games/dead-run/?v=${deadRunRelease}`],
-  ['Battle Chamber', `/community.html?v=${launcherRelease}`],
-  ['NBG London Runner', `/games/nbg-london/?v=${launcherRelease}`],
-  ['Full Arcade', `/games/?v=${launcherRelease}`],
+  ['Battle Chamber', `/community.html?v=${gameDestinationRelease}`],
+  ['NBG London Runner', `/games/nbg-london/?v=${gameDestinationRelease}`],
+  ['Full Arcade', `/games/?v=${gameDestinationRelease}`],
 ];
 
 for (const [label, href] of launcherDestinations) {
@@ -413,7 +414,7 @@ for (const storedInitData of [
 {
   const contaminatedDestinationInitData = 'query_id=destination-query&user=%7B%22id%22%3A987%7D';
   const harness = await runLauncher();
-  harness.links[3].setAttribute('href', `/games/nbg-london/?v=${launcherRelease}&tgWebAppData=${encodeURIComponent(contaminatedDestinationInitData)}`);
+  harness.links[3].setAttribute('href', `/games/nbg-london/?v=${gameDestinationRelease}&tgWebAppData=${encodeURIComponent(contaminatedDestinationInitData)}`);
   harness.viewportHandlers[0]({ isStateStable: true });
   harness.links[3].dispatch('click');
   const assignedUrl = new URL(harness.assigned[0]);
