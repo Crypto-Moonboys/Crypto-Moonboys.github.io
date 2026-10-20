@@ -47,6 +47,7 @@ export async function resetLegacyTelegramChatMenu(botToken, telegramId, fetchImp
 export async function runTelegramChatMenuCleanup(env, {
   fetchImpl = fetch,
   now = Math.floor(Date.now() / 1000),
+  clock = () => Math.floor(Date.now() / 1000),
   limit = CHAT_MENU_CLEANUP_RUN_LIMIT,
 } = {}) {
   if (!env?.DB || !env?.TELEGRAM_BOT_TOKEN) {
@@ -80,10 +81,13 @@ export async function runTelegramChatMenuCleanup(env, {
     const state = result.ok ? 'cleared'
       : !result.retryable ? 'unavailable'
       : nextAttempt >= CHAT_MENU_CLEANUP_MAX_ATTEMPTS ? 'exhausted' : 'retry';
-    // Do not retry before Telegram's documented flood-control window ends.
+    // Telegram's retry_after begins when Telegram returns the response,
+    // not when the scheduled batch started. Slow requests and later parallel
+    // chunks must never shorten the server's minimum wait period.
+    const completedAt = Math.max(now, Math.floor(clock()));
     const backoffSeconds = 300 * (2 ** attempts);
     const dueAt = state === 'retry'
-      ? now + Math.max(backoffSeconds, result.retryAfterSeconds || 0)
+      ? completedAt + Math.max(backoffSeconds, result.retryAfterSeconds || 0)
       : 0;
     const terminal = ['cleared', 'unavailable', 'exhausted'].includes(state);
     try {
@@ -91,7 +95,7 @@ export async function runTelegramChatMenuCleanup(env, {
         SET state = ?, attempts = attempts + 1, next_attempt_at = ?,
             last_error_code = ?, finished_at = ?
         WHERE user_id = ? AND attempts = ? AND state IN ('pending', 'retry')`)
-        .bind(state, dueAt, result.ok ? null : result.category, terminal ? now : null,
+        .bind(state, dueAt, result.ok ? null : result.category, terminal ? completedAt : null,
           job.user_id, attempts).run();
       if (saved?.success !== true || Number(saved?.meta?.changes) !== 1) {
         stats.persist_failed++;
