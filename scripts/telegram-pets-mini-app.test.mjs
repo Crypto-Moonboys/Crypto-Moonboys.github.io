@@ -1474,7 +1474,7 @@ assert.match(worker, /path === '\/telegram-pets\/app\/state'.*request\.method ==
 assert.match(worker, /path === '\/telegram-pets\/app\/action'.*request\.method === 'POST'/s);
 assert.match(worker, /verifyTelegramMiniAppInitData\(body\.init_data/);
 assert.match(worker, /const MOONPET_MINI_APP_URL = `\$\{SITE_URL\}\/moonpet-game\.html\?v=20261012-home-e4-rooms-v1`/);
-assert.match(worker, /const TELEGRAM_GAMES_MENU_URL = `\$\{SITE_URL\}\/games\/telegram\/\?v=20261019-miniapp-login-v1`/,
+assert.match(worker, /const TELEGRAM_GAMES_MENU_URL = `\$\{SITE_URL\}\/games\/telegram\/\?v=20261020-games-six-links-v1`/,
   'in-chat Games button must keep the verified Telegram launcher URL');
 assert.match(worker, /const TELEGRAM_GAMES_MENU_TEXT = 'OPEN GAMES'/);
 assert.match(worker, /function petMiniAppLaunchUrl/);

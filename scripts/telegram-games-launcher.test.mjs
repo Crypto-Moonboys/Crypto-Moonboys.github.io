@@ -11,7 +11,7 @@ const launcherRelease = html.match(/<meta name="moonboys-mini-app-version" conte
 const inlineLauncherScript = [...html.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/gi)].at(-1)?.[1];
 
 assert.ok(deadRunRelease, 'Games launcher must link Dead Run with a cache-busting release token');
-assert.equal(launcherRelease, '20261019-miniapp-login-v1', 'Games launcher must publish the one-tap Mini App login release token');
+assert.equal(launcherRelease, '20261020-games-six-links-v1', 'Games launcher must publish the one-tap Mini App login release token');
 assert.ok(inlineLauncherScript, 'Games launcher must include a body-end inline launcher controller');
 
 const forbiddenScripts = [
@@ -65,7 +65,7 @@ for (const declaration of [
   assert.ok(cardRule.includes(declaration), `Launcher black HD card must include ${declaration}`);
 }
 assert.match(navigationRule, /text-align:\s*center;/,
-  'All five Games links must be centred');
+  'All six Games links must be centred');
 assert.match(html, /nav\s*\{\s*width:\s*100%;\s*\}/,
   'Games link list must fit the available Telegram viewport');
 for (const edge of ['top', 'right', 'bottom', 'left']) {
@@ -80,7 +80,7 @@ assert.match(html, /#connectedAccount\s*\{\s*max-width:\s*100%;\s*overflow-wrap:
   'Long Telegram display names must wrap without horizontal overflow');
 assert.doesNotMatch(html, /gradient\(|box-shadow|text-shadow|<canvas|<img\b|class="marquee"|class="control-deck"/i, 'Launcher must have no decorative effects or heavyweight visual components');
 assert.equal((html.match(/<nav\b/g) || []).length, 1, 'Launcher must have a single plain links menu');
-assert.equal((html.match(/<nav[\s\S]*?<\/nav>/g) || [])[0]?.match(/<a\s/g)?.length, 5, 'Launcher must show five text links');
+assert.equal((html.match(/<nav[\s\S]*?<\/nav>/g) || [])[0]?.match(/<a\s/g)?.length, 6, 'Launcher must show six text links');
 assert.match(html, /body\.is-initializing nav a[\s\S]*pointer-events:\s*none/, 'Launcher links must disable pointer events while initializing');
 assert.match(html, /FALLBACK_READY_MS\s*=\s*1200/, 'Games launcher must include a 1200ms viewport fallback');
 assert.match(html, /window\.location\.assign\(buildDestination\(link\)\)/, 'Games launcher must navigate once through window.location.assign()');
@@ -111,17 +111,18 @@ assert.ok(!/geolocation|getCurrentPosition|watchPosition/i.test(html), 'Games la
 assert.ok(!/dead-run[^"']*(?:bootstrap|runtime|logic)\.js/i.test(html), 'Games launcher must not start Dead Run logic');
 
 const launcherDestinations = [
+  ['MOONBOY HOME', '/my-moonboy.html'],
   ['Moonpet OS', '/moonpet-game.html?v=20261012-home-e4-rooms-v1'],
-  ['Dead Run', `/games/dead-run/?v=${deadRunRelease}`],
-  ['Battle Chamber', `/community.html?v=${gameDestinationRelease}`],
-  ['My Moonboy', '/my-moonboy.html'],
-  ['Full Arcade', `/games/?v=${gameDestinationRelease}`],
+  ['DEAD RUN', `/games/dead-run/?v=${deadRunRelease}`],
+  ['ALLCITY RUNNER', '/games/nbg-london/'],
+  ['FULL ARCADE', `/games/?v=${gameDestinationRelease}`],
+  ['BATTLE CHAMBER', `/community.html?v=${gameDestinationRelease}`],
 ];
 
 for (const [label, href] of launcherDestinations) {
   assert.ok(html.includes(label), `Games launcher must contain ${label} text link`);
   assert.ok(html.includes(`href="${href}`), `Games launcher must link ${label} to ${href}`);
-  if (label !== 'My Moonboy') assert.ok(new URL(href, 'https://cryptomoonboys.com').searchParams.has('v'), `${label} game destination must be cache-busted`);
+  if (!['MOONBOY HOME', 'ALLCITY RUNNER'].includes(label)) assert.ok(new URL(href, 'https://cryptomoonboys.com').searchParams.has('v'), `${label} game destination must be cache-busted`);
 }
 
 assert.ok(
@@ -151,10 +152,10 @@ for (const url of deadRunAssetUrls) {
 assert.match(html, /window\.Telegram\s*&&\s*window\.Telegram\.WebApp/, 'Games launcher must read Telegram.WebApp safely');
 assert.doesNotMatch(html, /<p>\s*<small>\/games\/telegram\//i,
   'Games launcher must not display its own Mini App URL at the bottom');
-assert.doesNotMatch(html, /NBG London Runner|href="\/games\/nbg-london\//i,
-  'Games launcher must not show NBG London Runner');
-assert.match(html, /href="\/my-moonboy\.html"[^>]*>My Moonboy<\/a>/,
-  'Games launcher must link directly to My Moonboy');
+assert.match(html, /href="\/games\/nbg-london\/"[^>]*>ALLCITY RUNNER<\/a>/,
+  'Games launcher must link directly to ALLCITY RUNNER');
+assert.match(html, /href="\/my-moonboy\.html"[^>]*>MOONBOY HOME<\/a>/,
+  'Games launcher must link directly to MOONBOY HOME');
 assert.ok(
   workerSource.includes(`const TELEGRAM_GAMES_MENU_URL = \`\${SITE_URL}/games/telegram/?v=${launcherRelease}\`;`),
   'Worker Telegram menu URL must publish the same launcher release token shown by the launcher',
@@ -386,9 +387,9 @@ async function settle() {
   assert.equal(harness.body.getAttribute('aria-busy'), 'false', 'Stable viewport must clear busy state');
   assert.equal(harness.status.textContent, 'Account verified. Select a game.', 'Stable viewport shows verified account after successful session check');
   assert.equal(harness.timers.find(timer => timer.ms === 1200).cleared, true, 'Stable viewport must clear its own fallback timer');
-  assert.equal(harness.links[1].getAttribute('aria-disabled'), null, 'isStateStable=true must enable navigation links');
-  harness.links[1].dispatch('click');
+  assert.equal(harness.links[2].getAttribute('aria-disabled'), null, 'isStateStable=true must enable navigation links');
   harness.links[2].dispatch('click');
+  harness.links[3].dispatch('click');
   assert.equal(harness.assigned.length, 1, 'Multiple rapid taps must trigger exactly one navigation');
   const assignedUrl = new URL(harness.assigned[0]);
   assert.equal(assignedUrl.origin, 'https://cryptomoonboys.com', 'Launcher navigation must resolve to same-origin HTTPS');
@@ -463,9 +464,9 @@ for (const storedInitData of [
 {
   const contaminatedDestinationInitData = 'query_id=destination-query&user=%7B%22id%22%3A987%7D';
   const harness = await runLauncher();
-  harness.links[3].setAttribute('href', `/my-moonboy.html?tgWebAppData=${encodeURIComponent(contaminatedDestinationInitData)}`);
+  harness.links[0].setAttribute('href', `/my-moonboy.html?tgWebAppData=${encodeURIComponent(contaminatedDestinationInitData)}`);
   harness.viewportHandlers[0]({ isStateStable: true });
-  harness.links[3].dispatch('click');
+  harness.links[0].dispatch('click');
   const assignedUrl = new URL(harness.assigned[0]);
   assert.equal(assignedUrl.pathname, '/my-moonboy.html', 'Contaminated destination test must still open My Moonboy');
   assert.equal(assignedUrl.searchParams.has('tgWebAppData'), false, 'Destination-owned tgWebAppData must be stripped from query parameters');
@@ -475,11 +476,11 @@ for (const storedInitData of [
 {
   const harness = await runLauncher();
   harness.viewportHandlers[0]({ isStateStable: true });
-  harness.links[4].dispatch('click');
-  assert.equal(harness.links[4].getAttribute('aria-disabled'), 'true', 'Navigation start must disable links');
+  harness.links[5].dispatch('click');
+  assert.equal(harness.links[5].getAttribute('aria-disabled'), 'true', 'Navigation start must disable links');
   harness.pageHandlers.get('pageshow')();
   await settle();
-  assert.equal(harness.links[4].getAttribute('aria-disabled'), null, 'pageshow must restore enabled links after browser history return');
+  assert.equal(harness.links[5].getAttribute('aria-disabled'), null, 'pageshow must restore enabled links after browser history return');
 }
 
 
