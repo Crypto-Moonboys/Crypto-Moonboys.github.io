@@ -190,8 +190,32 @@ export async function handleTelegramWebsiteAuth(request, env, fetchImpl = fetch)
       if (!env.TELEGRAM_BOT_TOKEN) fail('website_login_not_configured', 503);
       if (!/^application\/json(?:\s*;|$)/i.test(request.headers.get('Content-Type') || '')) fail('invalid_request', 400);
       if (Number(request.headers.get('Content-Length') || 0) > 10000) fail('invalid_request', 400);
+      // Enforce the actual bytes consumed, even when Content-Length is absent
+      // or forged. Reject oversized bodies before parsing JSON.
       let payload;
-      try { payload = await request.json(); } catch { fail('invalid_request', 400); }
+      try {
+        if (!request.body) fail('invalid_request', 400);
+        const reader = request.body.getReader();
+        const chunks = [];
+        let total = 0;
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          total += value.byteLength;
+          if (total > 10000) {
+            await reader.cancel().catch(() => {});
+            fail('invalid_request', 400);
+          }
+          chunks.push(value);
+        }
+        const bytes = new Uint8Array(total);
+        let offset = 0;
+        for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.byteLength; }
+        payload = JSON.parse(new TextDecoder().decode(bytes));
+      } catch (error) {
+        if (error?.status) throw error;
+        fail('invalid_request', 400);
+      }
       if (typeof payload?.init_data !== 'string' || payload.init_data.length > 8192) fail('mini_app_auth_required');
       // Always verify Telegram's HMAC and signed identity before trusting a
       // cookie. An existing valid cookie can revalidate the SAME identity for
@@ -209,7 +233,7 @@ export async function handleTelegramWebsiteAuth(request, env, fetchImpl = fetch)
         // Idempotent same-account restore: do not consume a previously used
         // signature or rotate a working cookie. Return server-verified proof.
         const csrf = await authDigest('csrf:' + cookie(request, SESSION_COOKIE));
-        return issueCredential(env, current, csrf, headers);
+        return await issueCredential(env, current, csrf, headers);
       }
       const now = nowSeconds(), secret = randomToken(), sessionHash = await authDigest(secret), csrf = await authDigest('csrf:' + secret);
       const accessHash = 's1_' + randomToken();
@@ -232,6 +256,8 @@ export async function handleTelegramWebsiteAuth(request, env, fetchImpl = fetch)
         env.DB.prepare(`INSERT INTO telegram_users (telegram_id, username, first_name, last_name) VALUES (?, ?, ?, ?)
           ON CONFLICT(telegram_id) DO UPDATE SET username = excluded.username, first_name = excluded.first_name, last_name = excluded.last_name, updated_at = CURRENT_TIMESTAMP`)
           .bind(verified.telegramId, verified.user.username, verified.user.first_name, verified.user.last_name),
+        env.DB.prepare("INSERT INTO telegram_activity_log (telegram_id, action, metadata) VALUES (?, 'link_confirmed', ?)")
+          .bind(verified.telegramId, JSON.stringify({ source: 'telegram_mini_app' })),
         env.DB.prepare(`INSERT INTO telegram_website_sessions (session_hash, telegram_id, csrf_hash, created_at, last_seen_at, expires_at)
           VALUES (?, ?, ?, ?, ?, ?)`)
           .bind(sessionHash, verified.telegramId, await authDigest(csrf), now, now, now + WEBSITE_SESSION_SECONDS),
@@ -241,8 +267,8 @@ export async function handleTelegramWebsiteAuth(request, env, fetchImpl = fetch)
         env.DB.prepare('INSERT INTO telegram_website_credentials (token_hash, session_hash, expires_at) VALUES (?, ?, ?)')
           .bind(await authDigest(accessHash), sessionHash, now + WEBSITE_ACCESS_SECONDS),
       ]);
-      requireWrites(results, 6);
-      if (results[2]?.meta?.changes !== 1 || results[4]?.meta?.changes !== 1 || results[5]?.meta?.changes !== 1) {
+      requireWrites(results, 7);
+      if (results[2]?.meta?.changes !== 1 || results[4]?.meta?.changes !== 1 || results[5]?.meta?.changes !== 1 || results[6]?.meta?.changes !== 1) {
         fail('website_login_unavailable', 503, 'd1_batch_unconfirmed');
       }
       headers.append('Set-Cookie', setCookie(SESSION_COOKIE, secret, WEBSITE_SESSION_SECONDS));
