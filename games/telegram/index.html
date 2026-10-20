@@ -40,6 +40,8 @@
     nav { width: 100%; }
     nav a { display: block; color: #fff; padding: 9px 0; text-decoration: underline; text-align: center; }
     nav a:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+    #gkniftyheadsGroupLink { color: #fff; text-decoration: underline; }
+    #gkniftyheadsGroupLink:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
     body.is-initializing nav a, body.is-navigating nav a { pointer-events: none; }
     #launchStatus { font-size: 14px; }
 #connectTelegram, #logoutTelegram { background: #000; border: 1px solid #fff; color: #fff; font: inherit; padding: 6px; }
@@ -53,6 +55,7 @@
     <p id="connectedAccount" hidden></p>
     <button id="connectTelegram" type="button">Connect with Telegram</button>
     <button id="logoutTelegram" type="button" hidden>Log out / switch account</button>
+    <p><a id="gkniftyheadsGroupLink" href="https://t.me/gkniftyheads" target="_blank" rel="noopener noreferrer">Join GKniftyHEADS on Telegram</a></p>
     <nav aria-label="Crypto Moonboys games">
       <a href="/moonpet-game.html?v=20261012-home-e4-rooms-v1" aria-disabled="true" tabindex="-1">Moonpet OS</a>
       <a href="/games/dead-run/?v=20260902-dead-run-v5" aria-disabled="true" tabindex="-1">Dead Run</a>

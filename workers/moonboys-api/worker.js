@@ -16914,19 +16914,6 @@ function telegramChatLinkButton(text, url, chatType = 'private') {
     : { text, url };
 }
 
-function buildGkStartReplyMarkup(chatType = 'private') {
-  return {
-    inline_keyboard: [
-      [
-        telegramChatLinkButton('🚀 Open Incubator Guide', `${SITE_URL}/gkniftyheads-incubator.html`, chatType),
-        telegramChatLinkButton('⚔️ Open Battle Chamber', `${SITE_URL}/community.html`, chatType),
-      ],
-      [{ text: '🌐 Open in Browser', url: `${SITE_URL}/gkniftyheads-incubator.html` }],
-      [telegramGamesChatButton(chatType)],
-    ],
-  };
-}
-
 function buildGkHelpReplyMarkup(chatType = 'private') {
   return {
     inline_keyboard: [
@@ -17000,19 +16987,14 @@ async function cmdGkStart(db, tok, chatId, telegramId, fromUser, chatType = 'pri
   });
 
   const name = escapeHtml(getTelegramDisplayName(fromUser));
-  const replyMarkup = buildGkStartReplyMarkup(chatType);
   await sendTelegramMessage(tok, chatId,
-    `🚀 <b>Welcome to Crypto Moonboys GK, ${name}!</b>\n\n` +
-    `You've entered the Battle Chamber.\n\n` +
-    `<b>What to do next:</b>\n` +
-    `🔗 /gklink — Link or refresh Telegram sync with the website\n` +
-    `📊 /gkstatus — View your XP, level, and faction\n` +
-    `🏆 /gkleaderboard — Community XP leaderboard\n` +
-    `🗺️ /gkquests — Active missions\n` +
-    `⚔️ /gkfaction — View faction status or choose on the website\n` +
-    `🎮 /games — Open Games inside this chat\n` +
-    `❓ /gkhelp — Full command list${xpMsg}`,
-    { reply_markup: replyMarkup },
+    `🚀 <b>Welcome to Crypto Moonboys Universe, ${name} 🤘</b>\n\n` +
+    `You've entered the GK Battle Chamber. ⚡️⚡️⚡️\n\n` +
+    `🎮 <a href="${TELEGRAM_GAMES_MENU_URL}">OPEN GAMES</a>\n\n` +
+    `🐝 Join <a href="https://t.me/gkniftyheads">GKniftyHEADS</a> for daily NEWS &amp; WTF Signals!\n\n` +
+    `🎯 Join a <a href="https://cryptomoonboys.com/battle-chamber/factions/index.html">GK Faction</a>\n\n` +
+    `⚡ Play games. Grind XP &amp; Clout. Earn rewards.\n\n` +
+    `🔗 Login problems? Try /gklink or /gkunlink.${xpMsg}`
   );
   await pinGamesForPrivateChat(tok, chatId, chatType);
 }
