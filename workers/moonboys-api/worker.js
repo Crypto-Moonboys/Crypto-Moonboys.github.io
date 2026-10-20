@@ -16685,9 +16685,9 @@ async function handleTelegramUpdate(update, env) {
   switch (cmdBase) {
     // ── GK command set ────────────────────────────────────────────────────
     case 'gkstart':
-    case 'start':        await cmdGkStart(db, tok, chatId, telegramId, fromUser);     break;
+    case 'start':        await cmdGkStart(db, tok, chatId, telegramId, fromUser, chatType); break;
     case 'gkhelp':
-    case 'help':         await cmdGkHelp(tok, chatId);                                break;
+    case 'help':         await cmdGkHelp(tok, chatId, chatType);                      break;
     case 'gkgames':
     case 'games':        await cmdGamesLauncher(tok, chatId, chatType);               break;
     case 'gklink':
@@ -16905,6 +16905,37 @@ function telegramGamesChatButton(chatType = 'private') {
     : { text: TELEGRAM_GAMES_MENU_TEXT, url: TELEGRAM_GAMES_MENU_URL };
 }
 
+// Group/supergroup Telegram inline keyboards must use URL buttons; Telegram
+// permits Web App buttons only in the bot's private chat with the user.
+function telegramChatLinkButton(text, url, chatType = 'private') {
+  return String(chatType) === 'private'
+    ? { text, web_app: { url } }
+    : { text, url };
+}
+
+function buildGkStartReplyMarkup(chatType = 'private') {
+  return {
+    inline_keyboard: [
+      [
+        telegramChatLinkButton('🚀 Open Incubator Guide', `${SITE_URL}/gkniftyheads-incubator.html`, chatType),
+        telegramChatLinkButton('⚔️ Open Battle Chamber', `${SITE_URL}/community.html`, chatType),
+      ],
+      [{ text: '🌐 Open in Browser', url: `${SITE_URL}/gkniftyheads-incubator.html` }],
+      [telegramGamesChatButton(chatType)],
+    ],
+  };
+}
+
+function buildGkHelpReplyMarkup(chatType = 'private') {
+  return {
+    inline_keyboard: [
+      [telegramChatLinkButton('🚀 Open Incubator Guide', `${SITE_URL}/gkniftyheads-incubator.html`, chatType)],
+      [{ text: '🌐 Open in Browser', url: `${SITE_URL}/gkniftyheads-incubator.html` }],
+      [telegramGamesChatButton(chatType)],
+    ],
+  };
+}
+
 async function cmdGamesLauncher(botToken, chatId, chatType = 'private') {
   await sendTelegramMessage(botToken, chatId,
     '<b>Crypto Moonboys Games</b>\nOpen the games launcher from this chat.',
@@ -16938,7 +16969,7 @@ async function cmdPetMiniAppLauncher(botToken, chatId, telegramId, chatType = 'p
 
 // ── GK command implementations ────────────────────────────────────────────────
 
-async function cmdGkStart(db, tok, chatId, telegramId, fromUser) {
+async function cmdGkStart(db, tok, chatId, telegramId, fromUser, chatType = 'private') {
   let xpMsg = '';
   try {
     const award = await awardXp(db, telegramId, XP_FIRST_START, 'first_start');
@@ -16959,21 +16990,7 @@ async function cmdGkStart(db, tok, chatId, telegramId, fromUser) {
   });
 
   const name = escapeHtml(getTelegramDisplayName(fromUser));
-  // Inline keyboard: web_app buttons open the site as a fullscreen Telegram
-  // WebApp on mobile/iPad.  A plain url fallback row is also included for
-  // desktop clients that do not support web_app (graceful degradation).
-  const replyMarkup = {
-    inline_keyboard: [
-      [
-        { text: '🚀 Open Incubator Guide', web_app: { url: `${SITE_URL}/gkniftyheads-incubator.html` } },
-        { text: '⚔️ Open Battle Chamber',  web_app: { url: `${SITE_URL}/community.html` } },
-      ],
-      [
-        { text: '🌐 Open in Browser',      url: `${SITE_URL}/gkniftyheads-incubator.html` },
-      ],
-      [telegramGamesChatButton()],
-    ],
-  };
+  const replyMarkup = buildGkStartReplyMarkup(chatType);
   await sendTelegramMessage(tok, chatId,
     `🚀 <b>Welcome to Crypto Moonboys GK, ${name}!</b>\n\n` +
     `You've entered the Battle Chamber.\n\n` +
@@ -16989,18 +17006,8 @@ async function cmdGkStart(db, tok, chatId, telegramId, fromUser) {
   );
 }
 
-async function cmdGkHelp(tok, chatId) {
-  const replyMarkup = {
-    inline_keyboard: [
-      [
-        { text: '🚀 Open Incubator Guide', web_app: { url: `${SITE_URL}/gkniftyheads-incubator.html` } },
-      ],
-      [
-        { text: '🌐 Open in Browser', url: `${SITE_URL}/gkniftyheads-incubator.html` },
-      ],
-      [telegramGamesChatButton()],
-    ],
-  };
+async function cmdGkHelp(tok, chatId, chatType = 'private') {
+  const replyMarkup = buildGkHelpReplyMarkup(chatType);
   await sendTelegramMessage(tok, chatId,
     `📖 <b>Moonboys GK Commands</b>\n\n` +
     `/gkstart — Start and register\n` +
