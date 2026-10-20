@@ -224,11 +224,15 @@ assert.ok(
   'public arcade pages must not use outdated seven-game wording',
 );
 assert.ok(
-  arcadeHubHtml.includes('eight active Arcade games') &&
-    leaderboardHtml.includes('eight active Arcade games'),
-  'public arcade pages must state "eight active Arcade games"',
+  canonicalGames.every(name => arcadeHubHtml.includes(name)) &&
+    arcadeHubHtml.includes('id="arcade-games"'),
+  'Arcade hub must keep all eight canonical game titles and its playable roster',
 );
-console.log('PASS: public arcade pages enforce eight-game copy and no Crystal Quest references');
+assert.ok(
+  leaderboardHtml.includes('eight active Arcade games'),
+  'Leaderboard coverage must still accurately identify the eight-game competitive roster',
+);
+console.log('PASS: Arcade/leaderboard roster remains complete without repeated homepage count copy');
 
 // Local Node TLS inspection errors should not make the post-deploy verifier
 // report a broken site when browser-backed checks can still load the same
