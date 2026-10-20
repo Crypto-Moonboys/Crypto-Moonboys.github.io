@@ -2331,6 +2331,22 @@ CREATE TABLE IF NOT EXISTS telegram_website_credentials (
 CREATE INDEX IF NOT EXISTS idx_telegram_credential_expiry ON telegram_website_credentials(expires_at);
 CREATE INDEX IF NOT EXISTS idx_telegram_credential_session ON telegram_website_credentials(session_hash);
 
+-- One-time Telegram per-chat Web App menu cleanup (migration 102).
+-- The five-minute Worker cron scans registered users incrementally and
+-- tracks successful, permanently unavailable and retryable menu resets.
+CREATE TABLE IF NOT EXISTS telegram_chat_menu_cleanup (
+  user_id INTEGER PRIMARY KEY,
+  telegram_id TEXT NOT NULL UNIQUE,
+  state TEXT NOT NULL DEFAULT 'pending'
+    CHECK (state IN ('pending', 'retry', 'cleared', 'unavailable', 'exhausted')),
+  attempts INTEGER NOT NULL DEFAULT 0 CHECK (attempts >= 0),
+  next_attempt_at INTEGER NOT NULL DEFAULT 0,
+  last_error_code TEXT,
+  finished_at INTEGER
+);
+CREATE INDEX IF NOT EXISTS idx_telegram_chat_menu_cleanup_due
+  ON telegram_chat_menu_cleanup(state, next_attempt_at, user_id);
+
 -- Website session proof consumption for Telegram Mini App sign-in (migration 101).
 CREATE TABLE IF NOT EXISTS telegram_mini_app_login_replay (
   proof_hash TEXT PRIMARY KEY NOT NULL,
