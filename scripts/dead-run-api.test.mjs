@@ -132,9 +132,12 @@ console.log('Dead Run API/core contract: baseline checks OK (continuing)');
     );
   }
 
-  assert.ok(
-    launcherHtmlSource.includes(`/games/telegram/?v=${launcherReleaseMatch[1]}`),
-    'Telegram launcher guidance must use the current launcher release token',
+  // The launcher is intentionally text-only: its own URL is not displayed
+  // as footer guidance. Keep the release token in the meta tag and bot menu.
+  assert.doesNotMatch(
+    launcherHtmlSource,
+    /<p>\s*<small>\/games\/telegram\//i,
+    'Telegram launcher must not display its own URL as footer guidance',
   );
   assert.ok(
     workerSource.includes(`const TELEGRAM_GAMES_MENU_URL = \`\${SITE_URL}/games/telegram/?v=${launcherReleaseMatch[1]}\`;`),
