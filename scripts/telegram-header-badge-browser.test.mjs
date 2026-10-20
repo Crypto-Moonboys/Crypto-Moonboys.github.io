@@ -15,7 +15,7 @@ const OTHER_ID = '987654321';
 const types = { '.html': 'text/html', '.js': 'application/javascript', '.mjs': 'application/javascript', '.css': 'text/css', '.json': 'application/json', '.svg': 'image/svg+xml' };
 const cors = { 'Access-Control-Allow-Origin': SITE, 'Access-Control-Allow-Credentials': 'true',
   'Access-Control-Allow-Headers': 'Content-Type, X-Moonboys-CSRF', 'Access-Control-Allow-Methods': 'GET, POST, OPTIONS' };
-const SHARED_SHELL_PAGES = ['/gkniftyheads-incubator.html', '/games/index.html', '/community.html', '/wiki/1m-free-nfts-program.html', '/index.html'];
+const SHARED_SHELL_PAGES = ['/my-moonboy.html', '/gkniftyheads-incubator.html', '/games/index.html', '/community.html', '/wiki/1m-free-nfts-program.html', '/index.html'];
 
 function session(id, name) {
   const now = Math.floor(Date.now() / 1000);
@@ -72,28 +72,36 @@ for (const [name, viewport] of [['desktop', { width: 1440, height: 900 }], ['mob
       const page = await context.newPage();
       page.on('pageerror', error => errors.push(error.message));
 
-      // 1. Initial guest: no cookie session → sync is genuinely required.
-      await page.goto(SITE + '/gkniftyheads-incubator.html', { waitUntil: 'domcontentloaded' });
+      // 1. Guests see My Moonboy's central login and account controls.
+      await page.goto(SITE + '/my-moonboy.html', { waitUntil: 'domcontentloaded' });
       await page.evaluate(() => window.MOONBOYS_IDENTITY.ready);
       await expectBadge(page, 'Log in with Telegram');
       assert.equal(await page.evaluate(() => window.MOONBOYS_IDENTITY.getIdentityTier()), 'guest');
 
-      const loginCard = page.locator('[data-tg-sync-cta]');
-      assert.equal(await loginCard.count(), 1, 'Incubator offers one shared login card');
-      const groupLink = loginCard.locator('[data-telegram-group]');
-      assert.equal(await groupLink.getAttribute('href'), 'https://t.me/gkniftyheads');
-      assert.equal(await groupLink.isVisible(), true);
+      const loginButton = page.locator('#mm-gate [data-telegram-login]');
+      const logoutButton = page.locator('[data-telegram-session-controls] [data-telegram-logout]');
+      assert.equal(await loginButton.isVisible(), true, 'guests can sign in on My Moonboy');
+      assert.equal(await logoutButton.isVisible(), false, 'guests are not offered logout');
+      assert.equal(await page.locator('#mm-private').isVisible(), false, 'private tasks are gated');
+      assert.equal(await page.locator('#mm-start-here').isVisible(), true, 'public route links remain accessible');
+
+      await page.goto(SITE + '/gkniftyheads-incubator.html', { waitUntil: 'domcontentloaded' });
+      await page.evaluate(() => window.MOONBOYS_IDENTITY.ready);
+      const groupLink = page.locator('a[href="https://t.me/gkniftyheads"]').first();
+      assert.equal(await groupLink.isVisible(), true, 'GKniftyHEADS group link stays visible');
       assert.equal(await groupLink.getAttribute('target'), '_blank');
-      assert.equal(await loginCard.locator('[data-telegram-login]').isVisible(), true);
-      assert.equal(await loginCard.locator('[data-telegram-logout]').isVisible(), false, 'guests are not offered logout');
-      assert.equal(await loginCard.locator('details').evaluate(node => node.open), false, 'bot commands stay in optional help');
+      assert.equal(await page.locator('#telegram-login-help').evaluate(node => node.open), false, 'bot recovery stays in optional help');
 
       await page.goto(SITE + '/community.html', { waitUntil: 'domcontentloaded' });
       await page.evaluate(() => window.MOONBOYS_IDENTITY.ready);
-      await page.waitForSelector('[data-telegram-account][data-telegram-login]');
-      assert.equal(await page.locator('[data-telegram-account] strong').textContent(), 'Log in with Telegram', 'guests retain direct Community login');
-      await page.goto(SITE + '/gkniftyheads-incubator.html', { waitUntil: 'domcontentloaded' });
+      const moonboyCta = page.locator('.bc-hero-ctas a[href="/my-moonboy.html"]');
+      assert.equal(await moonboyCta.isVisible(), true, 'Battle Chamber routes account help to My Moonboy');
+      await Promise.all([
+        page.waitForURL(SITE + '/my-moonboy.html'),
+        moonboyCta.click(),
+      ]);
       await page.evaluate(() => window.MOONBOYS_IDENTITY.ready);
+      await expectBadge(page, 'Log in with Telegram');
 
       // 2. Pending authentication: while the cookie session is unresolved the
       //    badge must not claim a sync is required.
@@ -103,8 +111,8 @@ for (const [name, viewport] of [['desktop', { width: 1440, height: 900 }], ['mob
       await page.reload({ waitUntil: 'domcontentloaded' });
       await expectBadge(page, 'Checking Telegram');
       assert.equal((await badge(page).textContent()).includes('Log in with Telegram'), false);
-      assert.equal(await loginCard.locator('[data-telegram-login]').isVisible(), false, 'login waits for session restoration');
-      assert.match(await loginCard.locator('[data-tg-login-status]').textContent(), /Checking/);
+      assert.equal(await loginButton.isVisible(), false, 'login waits for session restoration');
+      assert.equal(await logoutButton.isVisible(), false, 'logout waits for session restoration');
 
       // 3. Successful OIDC restoration updates the header without a reload.
       release();
@@ -115,11 +123,9 @@ for (const [name, viewport] of [['desktop', { width: 1440, height: 900 }], ['mob
       assert.equal((await badge(page).textContent()).includes('Log in with Telegram'), false);
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth), false);
 
-      await page.waitForFunction(() => document.querySelector('[data-tg-login-status]')?.textContent === 'Telegram connected.');
-      assert.equal(await loginCard.locator('[data-telegram-login]').isVisible(), false, 'connected players are not asked to log in again');
-      assert.equal(await loginCard.locator('[data-telegram-logout]').isVisible(), true);
-
-      assert.equal(await groupLink.isVisible(), true, 'joining the group remains available after login');
+      await page.waitForFunction(() => document.querySelector('[data-telegram-session-controls] [data-telegram-logout]')?.hidden === false);
+      assert.equal(await loginButton.isVisible(), false, 'connected players are not asked to log in again');
+      assert.equal(await logoutButton.isVisible(), true, 'linked accounts have an accessible logout');
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth), false);
 
       // 4. Navigation across shared-shell pages (Incubator, Games, Battle
@@ -142,14 +148,18 @@ for (const [name, viewport] of [['desktop', { width: 1440, height: 900 }], ['mob
       await page.evaluate(() => window.MOONBOYS_IDENTITY.getFreshTelegramAuth({ force: true }));
       await expectBadge(page, 'Log in with Telegram');
       assert.equal(await page.evaluate(() => window.MOONBOYS_IDENTITY.getIdentityTier()), 'guest');
+      await page.goto(SITE + '/my-moonboy.html', { waitUntil: 'domcontentloaded' });
+      await page.evaluate(() => window.MOONBOYS_IDENTITY.ready);
+      assert.equal(await logoutButton.isVisible(), false, 'expired sessions do not advertise logout');
 
       // 7. Logout after a fresh login returns the header to the guest state.
       current = session(ID, 'Returning');
       await page.reload({ waitUntil: 'domcontentloaded' });
       await expectBadge(page, 'Telegram Connected');
+      await logoutButton.waitFor({ state: 'visible' });
       await Promise.all([
         page.waitForNavigation({ waitUntil: 'domcontentloaded' }),
-        page.evaluate(() => window.MOONBOYS_IDENTITY.logout()),
+        logoutButton.click(),
       ]);
       await page.evaluate(() => window.MOONBOYS_IDENTITY.ready);
       await expectBadge(page, 'Log in with Telegram');
