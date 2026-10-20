@@ -60,5 +60,7 @@ assert.match(manual, /Score and XP are different/);
 assert.doesNotMatch(manual, /Step 1: Link Telegram Before Competitive Play|data-tg-sync-cta/);
 
 assert.match(wiki, /<!-- CANONICAL_CONTENT:BEGIN -->[\s\S]*<!-- CANONICAL_CONTENT:END -->/);
-assert.match(wiki, /<details class="cm-more-wiki">[\s\S]*<!-- RELATED_WIKI_PATHS:BEGIN -->[\s\S]*<!-- RELATED_WIKI_PATHS:END -->[\s\S]*<\/details>/, 'Extra wiki links collapse without deleting canonical content');
+assert.match(wiki, /<!-- RELATED_WIKI_PATHS:BEGIN -->[\s\S]*<!-- RELATED_WIKI_PATHS:END -->/, 'Reference wiki retains full generated related paths');
+const wikiCss = read('css/wiki.css');
+assert.match(wikiCss, /body\.page-wiki\[data-entity-hash="a4b462cb5857"\] \.related-wiki-paths[\s\S]*?max-height:/, 'Reference wiki directory is height limited without editing protected markup');
 console.log('website-onboarding-entry.test.mjs passed');
