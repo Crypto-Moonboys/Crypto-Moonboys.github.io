@@ -1476,7 +1476,7 @@ assert.match(worker, /verifyTelegramMiniAppInitData\(body\.init_data/);
 assert.match(worker, /const MOONPET_MINI_APP_URL = `\$\{SITE_URL\}\/moonpet-game\.html\?v=20261012-home-e4-rooms-v1`/);
 assert.match(worker, /const TELEGRAM_GAMES_MENU_URL = `\$\{SITE_URL\}\/games\/telegram\/\?v=20261019-miniapp-login-v1`/,
   'in-chat Games button must keep the verified Telegram launcher URL');
-assert.match(worker, /const TELEGRAM_GAMES_MENU_TEXT = 'Games'/);
+assert.match(worker, /const TELEGRAM_GAMES_MENU_TEXT = 'OPEN GAMES'/);
 assert.match(worker, /function petMiniAppLaunchUrl/);
 assert.match(worker, /const url = petMiniAppLaunchUrl\(screen, normalizedFocus\)/);
 const menuButtonSource = worker.slice(worker.indexOf('async function clearTelegramGamesChatMenuButton'), worker.indexOf('function petMiniAppLaunchUrl'));
@@ -1530,7 +1530,7 @@ const { buildGkStartReplyMarkup, buildGkHelpReplyMarkup } = vm.runInNewContext(
   builderSource + '\n({ buildGkStartReplyMarkup, buildGkHelpReplyMarkup })',
   {
     SITE_URL: 'https://cryptomoonboys.com',
-    TELEGRAM_GAMES_MENU_TEXT: 'Games',
+    TELEGRAM_GAMES_MENU_TEXT: 'OPEN GAMES',
     TELEGRAM_GAMES_MENU_URL: 'https://cryptomoonboys.com/games/telegram/',
   },
 );
@@ -1539,14 +1539,14 @@ for (const [name, build] of [['start', buildGkStartReplyMarkup], ['help', buildG
   assert.equal(privateButtons.filter(button => button.web_app).length,
     name === 'start' ? 3 : 2,
     `/${name} private keyboard must retain Web App buttons`);
-  assert.ok(privateButtons.some(button => button.text === 'Games' && button.web_app?.url),
+  assert.ok(privateButtons.some(button => button.text === 'OPEN GAMES' && button.web_app?.url),
     `/${name} private chat must launch Games as a Web App`);
   for (const chatType of ['group', 'supergroup']) {
     const groupButtons = JSON.parse(JSON.stringify(build(chatType))).inline_keyboard.flat();
     assert.equal(groupButtons.length, privateButtons.length);
     assert.ok(groupButtons.every(button => !button.web_app && /^https:\/\//.test(button.url)),
       `/${name} ${chatType} keyboard must contain URL buttons only`);
-    assert.ok(groupButtons.some(button => button.text === 'Games' && button.url?.includes('/games/telegram/')),
+    assert.ok(groupButtons.some(button => button.text === 'OPEN GAMES' && button.url?.includes('/games/telegram/')),
       `/${name} ${chatType} reply must still provide the Games launcher`);
   }
 }
