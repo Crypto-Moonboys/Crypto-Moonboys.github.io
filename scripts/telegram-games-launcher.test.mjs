@@ -172,7 +172,7 @@ class FakeElement {
   }
 }
 
-async function runLauncher({ initData = 'user=%7B%22id%22%3A123%7D', hash = '', search = '?v=20260902-games-shell-v6&startapp=arcade', storedInitData = '', existingSessionId = '', rejectLogin = false, lostCookie = false, stalled = false } = {}) {
+async function runLauncher({ initData = 'user=%7B%22id%22%3A123%7D', hash = '', search = '?v=20260902-games-shell-v6&startapp=arcade', storedInitData = '', existingSessionId = '', rejectLogin = false, loginFailureStatus = 401, lostCookie = false, stalled = false, holdLogout = false } = {}) {
   const calls = [];
   const timers = [];
   const viewportHandlers = [];
@@ -254,6 +254,7 @@ async function runLauncher({ initData = 'user=%7B%22id%22%3A123%7D', hash = '', 
 
   let sessionId = existingSessionId;
   let denyNextLogin = rejectLogin;
+  let finishPendingLogout = null;
   const jsonResponse = (status, data) => ({ ok: status >= 200 && status < 300, status, json: async () => data });
   const fetch = (url, options = {}) => {
     requests.push({ url, options });
@@ -274,7 +275,7 @@ async function runLauncher({ initData = 'user=%7B%22id%22%3A123%7D', hash = '', 
       const params = new URLSearchParams(signed);
       let id = '123';
       try { id = String(JSON.parse(params.get('user')).id); } catch {}
-      if (denyNextLogin) return Promise.resolve(jsonResponse(401, { error: 'mini_app_auth_rejected' }));
+      if (denyNextLogin) return Promise.resolve(jsonResponse(loginFailureStatus, { error: loginFailureStatus === 503 ? 'website_login_unavailable' : 'mini_app_auth_rejected' }));
       if (sessionId && sessionId !== id) return Promise.resolve(jsonResponse(409, { error: 'logout_before_switching_accounts' }));
       sessionId = id;
       return Promise.resolve(jsonResponse(200, {
@@ -292,10 +293,13 @@ async function runLauncher({ initData = 'user=%7B%22id%22%3A123%7D', hash = '', 
     if (url.endsWith('/logout')) {
       if (options.method === 'POST') {
         assert.equal(options.headers['X-Moonboys-CSRF'], 'signed-csrf');
+        if (holdLogout) return new Promise(resolve => {
+          finishPendingLogout = () => { sessionId = ''; resolve(jsonResponse(200, { ok: true })); };
+        });
         sessionId = '';
         return Promise.resolve(jsonResponse(200, { ok: true }));
       }
-      return Promise.resolve(jsonResponse(200, { ok: true, csrf_token: 'signed-csrf' }));
+      return Promise.resolve(jsonResponse(200, { ok: true, csrf_token: sessionId ? 'signed-csrf' : null }));
     }
     throw new Error('Unexpected auth route: ' + url);
   };
@@ -312,7 +316,7 @@ async function runLauncher({ initData = 'user=%7B%22id%22%3A123%7D', hash = '', 
   });
   for (let i = 0; i < 48; i++) await Promise.resolve();
 
-  return { assigned, body, calls, links, pageHandlers, root, status, storage, timers, viewportHandlers, requests, connectButton, logoutButton, accountLabel, setLoginDenied: value => { denyNextLogin = value; } };
+  return { assigned, body, calls, links, pageHandlers, root, status, storage, timers, viewportHandlers, requests, connectButton, logoutButton, accountLabel, setLoginDenied: value => { denyNextLogin = value; }, finishLogout: () => { assert.ok(finishPendingLogout, 'Logout must have an in-flight request'); finishPendingLogout(); } };
 }
 
 async function settle() {
@@ -499,6 +503,53 @@ for (const storedInitData of [
   assert.equal(harness.connectButton.disabled, false, 'Timeout releases retry button');
   assert.equal(harness.links[0].getAttribute('aria-disabled'), 'true');
   assert.match(harness.status.textContent, /timed out/i);
+}
+
+
+{
+  const harness = await runLauncher({ rejectLogin: true });
+  const failureCopy = harness.status.textContent;
+  assert.match(failureCopy, /mini_app_auth_rejected/, 'Original authentication error is visible');
+  harness.timers.find(timer => timer.ms === 1200).handler();
+  assert.equal(harness.status.textContent, failureCopy, 'Viewport fallback must not overwrite authentication failure');
+  assert.equal(harness.links[0].getAttribute('aria-disabled'), 'true');
+  assert.equal(harness.connectButton.hidden, false, 'Retry remains visible after fallback');
+}
+
+for (const loginFailureStatus of [401, 503]) {
+  const harness = await runLauncher({ existingSessionId: '123', rejectLogin: true, loginFailureStatus });
+  assert.equal(harness.links[0].getAttribute('aria-disabled'), 'true');
+  assert.equal(harness.connectButton.hidden, false, 'Login retry remains available');
+  assert.equal(harness.logoutButton.hidden, false, 'Website cookie allows logout after any authentication failure');
+  assert.ok(harness.requests.some(x => x.url.endsWith('/logout') && !x.options.method), 'Failure probes cookie-bound logout CSRF');
+  assert.match(harness.status.textContent, loginFailureStatus === 503 ? /website_login_unavailable/ : /mini_app_auth_rejected/,
+    'Logout recovery must preserve the actual login failure message');
+  harness.logoutButton.dispatch('click');
+  await settle();
+  assert.equal(harness.links[0].getAttribute('aria-disabled'), 'true', 'Recovery logout never unlocks games');
+}
+
+{
+  const harness = await runLauncher({ holdLogout: true });
+  harness.viewportHandlers[0]({ isStateStable: true });
+  assert.equal(harness.links[0].getAttribute('aria-disabled'), null, 'Confirmed sign-in initially unlocks games');
+  harness.logoutButton.dispatch('click');
+  await settle();
+  assert.equal(harness.status.textContent, 'Signing out...');
+  assert.equal(harness.links[0].getAttribute('aria-disabled'), 'true', 'Logout locks links immediately');
+  harness.links[0].dispatch('click');
+  assert.equal(harness.assigned.length, 0, 'Click during pending logout must not navigate');
+  harness.pageHandlers.get('pageshow')();
+  await settle();
+  assert.equal(harness.links[0].getAttribute('aria-disabled'), 'true', 'pageshow cannot re-enable links mid-logout');
+  harness.viewportHandlers[0]({ isStateStable: true });
+  harness.links[1].dispatch('click');
+  assert.equal(harness.assigned.length, 0, 'Viewport stabilization cannot navigate mid-logout');
+  harness.finishLogout();
+  await settle();
+  assert.equal(harness.links[0].getAttribute('aria-disabled'), 'true');
+  assert.equal(harness.accountLabel.hidden, true, 'Successful logout removes old connected account');
+  assert.equal(harness.connectButton.hidden, false, 'Successful logout restores login control');
 }
 
 console.log('telegram-games-launcher.test.mjs passed');
