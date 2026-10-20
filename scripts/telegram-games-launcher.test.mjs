@@ -84,14 +84,14 @@ const launcherDestinations = [
   ['Moonpet OS', '/moonpet-game.html?v=20261012-home-e4-rooms-v1'],
   ['Dead Run', `/games/dead-run/?v=${deadRunRelease}`],
   ['Battle Chamber', `/community.html?v=${gameDestinationRelease}`],
-  ['NBG London Runner', `/games/nbg-london/?v=${gameDestinationRelease}`],
+  ['My Moonboy', '/my-moonboy.html'],
   ['Full Arcade', `/games/?v=${gameDestinationRelease}`],
 ];
 
 for (const [label, href] of launcherDestinations) {
-  assert.ok(html.includes(label), `Games launcher must contain ${label} card copy`);
+  assert.ok(html.includes(label), `Games launcher must contain ${label} text link`);
   assert.ok(html.includes(`href="${href}`), `Games launcher must link ${label} to ${href}`);
-  assert.ok(new URL(href, 'https://cryptomoonboys.com').searchParams.has('v'), `${label} destination must be cache-busted`);
+  if (label !== 'My Moonboy') assert.ok(new URL(href, 'https://cryptomoonboys.com').searchParams.has('v'), `${label} game destination must be cache-busted`);
 }
 
 assert.ok(
@@ -119,10 +119,12 @@ for (const url of deadRunAssetUrls) {
 }
 
 assert.match(html, /window\.Telegram\s*&&\s*window\.Telegram\.WebApp/, 'Games launcher must read Telegram.WebApp safely');
-assert.ok(
-  html.includes(`/games/telegram/?v=${launcherRelease}`),
-  'Games launcher must include cache-busting deployment guidance',
-);
+assert.doesNotMatch(html, /<p>\s*<small>\/games\/telegram\//i,
+  'Games launcher must not display its own Mini App URL at the bottom');
+assert.doesNotMatch(html, /NBG London Runner|href="\/games\/nbg-london\//i,
+  'Games launcher must not show NBG London Runner');
+assert.match(html, /href="\/my-moonboy\.html"[^>]*>My Moonboy<\/a>/,
+  'Games launcher must link directly to My Moonboy');
 assert.ok(
   workerSource.includes(`const TELEGRAM_GAMES_MENU_URL = \`\${SITE_URL}/games/telegram/?v=${launcherRelease}\`;`),
   'Worker Telegram menu URL must publish the same launcher release token shown by the launcher',
@@ -421,11 +423,11 @@ for (const storedInitData of [
 {
   const contaminatedDestinationInitData = 'query_id=destination-query&user=%7B%22id%22%3A987%7D';
   const harness = await runLauncher();
-  harness.links[3].setAttribute('href', `/games/nbg-london/?v=${gameDestinationRelease}&tgWebAppData=${encodeURIComponent(contaminatedDestinationInitData)}`);
+  harness.links[3].setAttribute('href', `/my-moonboy.html?tgWebAppData=${encodeURIComponent(contaminatedDestinationInitData)}`);
   harness.viewportHandlers[0]({ isStateStable: true });
   harness.links[3].dispatch('click');
   const assignedUrl = new URL(harness.assigned[0]);
-  assert.equal(assignedUrl.pathname, '/games/nbg-london/', 'Contaminated destination test must still open the selected game');
+  assert.equal(assignedUrl.pathname, '/my-moonboy.html', 'Contaminated destination test must still open My Moonboy');
   assert.equal(assignedUrl.searchParams.has('tgWebAppData'), false, 'Destination-owned tgWebAppData must be stripped from query parameters');
   assert.equal(assignedUrl.hash, `#tgWebAppData=${encodeURIComponent('user=%7B%22id%22%3A123%7D')}`, 'Sanitized destinations must still receive current initData in the fragment');
 }
