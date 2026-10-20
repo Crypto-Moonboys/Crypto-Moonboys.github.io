@@ -89,8 +89,9 @@
           fallbackTimer = null;
         }
         setBusy(false);
-        setLinksEnabled(accountReady);
-        if (!accountReady && !connecting) setStatus('Connect to unlock games.');
+        // Viewport readiness must not overwrite a failed authentication error,
+        // or re-enable links while logout or session verification is pending.
+        setLinksEnabled(accountReady && !connecting && !navigationStarted);
       }
 
       function readHashInitData() {
@@ -163,7 +164,7 @@
       function handleLaunch(event) {
         var link = event.currentTarget;
         event.preventDefault();
-        if (!navigationEnabled || !viewportStable || navigationStarted || !accountReady) return;
+        if (!navigationEnabled || !viewportStable || navigationStarted || connecting || !accountReady) return;
         navigationStarted = true;
         document.body.classList.add('is-navigating');
         setLinksEnabled(false);
@@ -267,16 +268,20 @@
             ? 'Another Telegram account is connected. Log out before switching accounts.'
             : (error.message || 'Could not connect. Retry.');
           setDisconnected(message);
-          if (error.status === 409) {
-            // The signed Mini App identity differs from the existing session.
-            // Allow explicit CSRF-protected logout without trusting either ID.
-            requestWithDeadline('/telegram/website/logout').then(function (data) {
-              if (data && data.csrf_token) {
-                sessionCsrf = data.csrf_token;
-                logoutButton.hidden = false;
-              }
-            }).catch(function () {});
-          }
+          // Any authentication error may leave a valid website cookie in this
+          // browser (including a transient network failure or rejected launch).
+          // Offer verified-cookie logout, without claiming the login succeeded.
+          // Do not replace the actionable login error with fallback copy.
+          requestWithDeadline('/telegram/website/logout').then(function (data) {
+            if (data && typeof data.csrf_token === 'string' && data.csrf_token &&
+                !accountReady && !sessionCsrf) {
+              sessionCsrf = data.csrf_token;
+              logoutButton.hidden = false;
+            }
+          }).catch(function () {
+            // CSRF preparation can fail offline; keep the original login error
+            // and visible Retry control rather than masking either.
+          });
           if (!cachedInitData) {
             connectButton.textContent = 'Log in with Telegram';
           } else {
