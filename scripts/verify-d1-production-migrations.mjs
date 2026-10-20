@@ -68,6 +68,7 @@ export const REQUIRED_D1_MIGRATIONS = Object.freeze([
   '099_nbg_london_competition_prizes.sql',
   '100_championship_clout_foundation.sql',
   '101_telegram_mini_app_login_replay.sql',
+  '102_telegram_chat_menu_cleanup.sql',
 ]);
 
 function readJson(filePath, label) {
