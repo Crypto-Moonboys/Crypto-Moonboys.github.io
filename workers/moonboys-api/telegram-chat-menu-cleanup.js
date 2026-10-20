@@ -29,7 +29,14 @@ export async function resetLegacyTelegramChatMenu(botToken, telegramId, fetchImp
     // API response descriptions, credentials, chat identities or raw payloads.
     if (status === 400) return { ok: false, retryable: false, category: 'chat_not_found' };
     if (status === 403) return { ok: false, retryable: false, category: 'bot_blocked' };
-    if (status === 429) return { ok: false, retryable: true, category: 'rate_limited' };
+    if (status === 429) {
+      // Telegram's ResponseParameters.retry_after is an exact server-side
+      // flood-control minimum in seconds, never a text description or secret.
+      // Preserve it so a long flood window cannot exhaust all retries early.
+      const seconds = result?.parameters?.retry_after;
+      const retryAfterSeconds = Number.isSafeInteger(seconds) && seconds > 0 ? seconds : 0;
+      return { ok: false, retryable: true, category: 'rate_limited', retryAfterSeconds };
+    }
     if (status === 401) return { ok: false, retryable: true, category: 'bot_auth_failed' };
     return { ok: false, retryable: true, category: 'telegram_unavailable' };
   } catch {
@@ -73,7 +80,11 @@ export async function runTelegramChatMenuCleanup(env, {
     const state = result.ok ? 'cleared'
       : !result.retryable ? 'unavailable'
       : nextAttempt >= CHAT_MENU_CLEANUP_MAX_ATTEMPTS ? 'exhausted' : 'retry';
-    const dueAt = state === 'retry' ? now + 300 * (2 ** attempts) : 0;
+    // Do not retry before Telegram's documented flood-control window ends.
+    const backoffSeconds = 300 * (2 ** attempts);
+    const dueAt = state === 'retry'
+      ? now + Math.max(backoffSeconds, result.retryAfterSeconds || 0)
+      : 0;
     const terminal = ['cleared', 'unavailable', 'exhausted'].includes(state);
     try {
       const saved = await db.prepare(`UPDATE telegram_chat_menu_cleanup
