@@ -659,41 +659,35 @@ for (const loginFailureCode of ['mini_app_auth_expired', 'mini_app_auth_replayed
 }
 
 
+
 {
+  // Telegram Desktop can position fullscreen Mini Apps in a visually clipped
+  // right-hand pane even on one monitor. Do not request fullscreen on load.
   const desktop = await runLauncher({ telegramPlatform: 'tdesktop' });
   assert.equal(desktop.body.classList.contains('is-desktop-telegram'), true,
-    'Telegram Desktop gains the responsive centred content rule');
-  assert.equal(desktop.calls.filter(item => item === 'requestFullscreen').length, 1,
-    'Supported Telegram Desktop must request fullscreen exactly once');
-  assert.ok(desktop.calls.indexOf('requestFullscreen') > desktop.calls.indexOf('expand'),
-    'Fullscreen must be requested after the normal Telegram ready and expand sequence');
+    'Telegram Desktop retains the centred layout and safe-area padding');
+  assert.ok(!desktop.calls.includes('requestFullscreen'),
+    'Desktop bootstrap must not trigger host fullscreen');
+  assert.equal(desktop.calls.filter(item => item === 'expand').length, 1,
+    'Telegram normal expand operation remains available');
   assert.equal(desktop.status.textContent, 'Account verified. Select a game.',
-    'Fullscreen request must preserve verified Telegram login');
+    'Removing forced fullscreen must not affect verified login');
   desktop.viewportHandlers[0]({ isStateStable: true });
   desktop.links[0].dispatch('click');
-  assert.equal(desktop.assigned.length, 1, 'Fullscreen must retain game navigation');
+  assert.equal(desktop.assigned.length, 1, 'Game navigation continues to work');
 
   const mac = await runLauncher({ telegramPlatform: 'macos' });
-  assert.ok(mac.calls.includes('requestFullscreen'), 'Supported Telegram macOS Mini App requests fullscreen');
-  assert.ok(mac.body.classList.contains('is-desktop-telegram'), 'macOS launcher also receives centred layout');
-  const unsupported = await runLauncher({ telegramPlatform: 'tdesktop', fullscreenSupported: false });
-  assert.ok(!unsupported.calls.includes('requestFullscreen'),
-    'Old desktop SDK must fall back to centred webview layout');
-  assert.ok(unsupported.body.classList.contains('is-desktop-telegram'), 'Old desktop SDK retains centred layout');
-  const denied = await runLauncher({ telegramPlatform: 'tdesktop', fullscreenThrows: true });
-  assert.ok(denied.calls.includes('requestFullscreen'));
-  assert.equal(denied.status.textContent, 'Account verified. Select a game.',
-    'Host rejection of fullscreen must not break login');
-  const fullscreen = await runLauncher({ telegramPlatform: 'tdesktop', alreadyFullscreen: true });
-  assert.ok(!fullscreen.calls.includes('requestFullscreen'), 'Already fullscreen must not make redundant requests');
+  assert.ok(mac.body.classList.contains('is-desktop-telegram'), 'macOS keeps centred layout');
+  assert.ok(!mac.calls.includes('requestFullscreen'), 'macOS also avoids fullscreen on load');
+  const alreadyFullscreen = await runLauncher({ telegramPlatform: 'tdesktop', alreadyFullscreen: true });
+  assert.ok(!alreadyFullscreen.calls.includes('requestFullscreen'),
+    'An already-fullscreen window must not receive another fullscreen request');
   const mobile = await runLauncher({ telegramPlatform: 'android' });
-  assert.ok(!mobile.calls.includes('requestFullscreen'), 'Existing Android Mini App behaviour must remain unchanged');
+  assert.ok(!mobile.calls.includes('requestFullscreen'), 'Android presentation stays unchanged');
   assert.ok(!mobile.body.classList.contains('is-desktop-telegram'), 'Android keeps full-width layout');
   const ios = await runLauncher({ telegramPlatform: 'ios' });
-  assert.ok(!ios.calls.includes('requestFullscreen'), 'Existing iOS Mini App behaviour must remain unchanged');
-  assert.ok(!ios.body.classList.contains('is-desktop-telegram'), 'iOS and iPad keep full-width layout');
-  const tablet = await runLauncher({ telegramPlatform: 'weba' });
-  assert.ok(!tablet.body.classList.contains('is-desktop-telegram'), 'Wide web/tablet host must not inherit desktop cap');
+  assert.ok(!ios.calls.includes('requestFullscreen'), 'iOS presentation stays unchanged');
+  assert.ok(!ios.body.classList.contains('is-desktop-telegram'), 'iOS keeps full-width layout');
 }
 
 console.log('telegram-games-launcher.test.mjs passed');
