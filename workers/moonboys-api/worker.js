@@ -9,6 +9,7 @@ import { readPetFurnitureState, buyPetFurniture, placePetFurniture, removePetFur
 import { readPetGardenState, plantPetGarden, harvestPetGarden } from './pets/home-garden.js';
 import { verifyTelegramWebhookSecret } from './telegram-webhook-auth.js';
 import { handleTelegramWebsiteAuth, isWebsiteCredential, verifyWebsiteCredential } from './telegram-website-auth.js';
+import { ensureTelegramGamesPinned } from './telegram-games-pin.js';
 import { runTelegramChatMenuCleanup } from './telegram-chat-menu-cleanup.js';
 import { createDisplayedPetScope, isDisplayedPetScopeStaleError } from './pets/displayed-pet-scope.js';
 import { projectCommittedPetResult } from './pets/committed-result.js';
@@ -16936,11 +16937,20 @@ function buildGkHelpReplyMarkup(chatType = 'private') {
   };
 }
 
+async function pinGamesForPrivateChat(botToken, chatId, chatType) {
+  if (String(chatType) !== 'private') return;
+  // Best effort only: welcome and /games replies must still work if Telegram
+  // disallows pinning, or if the user already has other pinned messages.
+  await ensureTelegramGamesPinned(botToken, chatId, TELEGRAM_GAMES_MENU_URL)
+    .catch(() => ({ ok: false, status: 'pin_unavailable' }));
+}
+
 async function cmdGamesLauncher(botToken, chatId, chatType = 'private') {
   await sendTelegramMessage(botToken, chatId,
     '<b>Crypto Moonboys Games</b>\nOpen the games launcher from this chat.',
     { reply_markup: { inline_keyboard: [[telegramGamesChatButton(chatType)]] } },
   );
+  await pinGamesForPrivateChat(botToken, chatId, chatType);
 }
 
 function petMiniAppLaunchUrl(destination = 'home', requestedFocus = '') {
@@ -17004,6 +17014,7 @@ async function cmdGkStart(db, tok, chatId, telegramId, fromUser, chatType = 'pri
     `❓ /gkhelp — Full command list${xpMsg}`,
     { reply_markup: replyMarkup },
   );
+  await pinGamesForPrivateChat(tok, chatId, chatType);
 }
 
 async function cmdGkHelp(tok, chatId, chatType = 'private') {
