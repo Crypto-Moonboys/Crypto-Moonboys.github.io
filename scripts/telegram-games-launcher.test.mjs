@@ -172,7 +172,7 @@ class FakeElement {
   }
 }
 
-async function runLauncher({ initData = 'user=%7B%22id%22%3A123%7D', hash = '', search = '?v=20260902-games-shell-v6&startapp=arcade', storedInitData = '', existingSessionId = '', rejectLogin = false, loginFailureStatus = 401, lostCookie = false, stalled = false, holdLogout = false } = {}) {
+async function runLauncher({ initData = 'user=%7B%22id%22%3A123%7D', hash = '', search = '?v=20260902-games-shell-v6&startapp=arcade', storedInitData = '', existingSessionId = '', rejectLogin = false, loginFailureStatus = 503, loginFailureCode = '', lostCookie = false, stalled = false, holdLogout = false } = {}) {
   const calls = [];
   const timers = [];
   const viewportHandlers = [];
@@ -278,7 +278,7 @@ async function runLauncher({ initData = 'user=%7B%22id%22%3A123%7D', hash = '', 
       const params = new URLSearchParams(signed);
       let id = '123';
       try { id = String(JSON.parse(params.get('user')).id); } catch {}
-      if (denyNextLogin) return Promise.resolve(jsonResponse(loginFailureStatus, { error: loginFailureStatus === 503 ? 'website_login_unavailable' : 'mini_app_auth_rejected' }));
+      if (denyNextLogin) return Promise.resolve(jsonResponse(loginFailureStatus, { error: loginFailureCode || (loginFailureStatus === 503 ? 'website_login_unavailable' : 'mini_app_auth_expired') }));
       if (sessionId && sessionId !== id) return Promise.resolve(jsonResponse(409, { error: 'logout_before_switching_accounts' }));
       sessionId = id;
       return Promise.resolve(jsonResponse(200, {
@@ -525,7 +525,7 @@ for (const storedInitData of [
 {
   const harness = await runLauncher({ rejectLogin: true });
   const failureCopy = harness.status.textContent;
-  assert.match(failureCopy, /mini_app_auth_rejected/, 'Original authentication error is visible');
+  assert.match(failureCopy, /website_login_unavailable/, 'Original transient authentication error is visible');
   harness.timers.find(timer => timer.ms === 1200).handler();
   assert.equal(harness.status.textContent, failureCopy, 'Viewport fallback must not overwrite authentication failure');
   assert.equal(harness.links[0].getAttribute('aria-disabled'), 'true');
@@ -538,8 +538,10 @@ for (const loginFailureStatus of [401, 503]) {
   assert.equal(harness.connectButton.hidden, false, 'Login retry remains available');
   assert.equal(harness.logoutButton.hidden, false, 'Website cookie allows logout after any authentication failure');
   assert.ok(harness.requests.some(x => x.url.endsWith('/logout') && !x.options.method), 'Failure probes cookie-bound logout CSRF');
-  assert.match(harness.status.textContent, loginFailureStatus === 503 ? /website_login_unavailable/ : /mini_app_auth_rejected/,
-    'Logout recovery must preserve the actual login failure message');
+  assert.match(harness.status.textContent, loginFailureStatus === 503 ? /website_login_unavailable/ : /close and reopen/i,
+    'Logout recovery must preserve the actionable login failure message');
+  assert.equal(harness.connectButton.textContent, loginFailureStatus === 503 ? 'Retry connection' : 'Close Mini App',
+    'Transient errors permit Retry; terminal proof errors require a new launch');
   harness.logoutButton.dispatch('click');
   await settle();
   assert.equal(harness.links[0].getAttribute('aria-disabled'), 'true', 'Recovery logout never unlocks games');
@@ -566,6 +568,52 @@ for (const loginFailureStatus of [401, 503]) {
   assert.equal(harness.links[0].getAttribute('aria-disabled'), 'true');
   assert.equal(harness.accountLabel.hidden, true, 'Successful logout removes old connected account');
   assert.equal(harness.connectButton.hidden, false, 'Successful logout restores login control');
+}
+
+
+for (const loginFailureCode of ['mini_app_auth_expired', 'mini_app_auth_replayed', 'mini_app_auth_rejected', 'mini_app_auth_duplicate_field']) {
+  const harness = await runLauncher({ rejectLogin: true, loginFailureStatus: 401, loginFailureCode });
+  harness.viewportHandlers[0]({ isStateStable: true });
+  assert.match(harness.status.textContent, /close and reopen/i, 'Unusable signed evidence must require reopening Telegram');
+  assert.equal(harness.connectButton.textContent, 'Close Mini App');
+  assert.equal(harness.links[0].getAttribute('aria-disabled'), 'true');
+  const before = harness.requests.filter(request => request.url.endsWith('/mini-app-session')).length;
+  harness.pageHandlers.get('pageshow')();
+  await settle();
+  harness.connectButton.dispatch('click');
+  await settle();
+  assert.equal(harness.requests.filter(request => request.url.endsWith('/mini-app-session')).length, before,
+    'Terminal signed launch must never be resent after restore or recovery click');
+  assert.ok(harness.calls.includes('close'), 'Terminal proof recovery closes the Mini App');
+}
+
+{
+  const harness = await runLauncher();
+  harness.viewportHandlers[0]({ isStateStable: true });
+  const originalExchanges = harness.requests.filter(request => request.url.endsWith('/mini-app-session')).length;
+  assert.equal(originalExchanges, 1);
+  harness.logoutButton.dispatch('click');
+  await settle();
+  assert.match(harness.status.textContent, /Signed out.*Close and reopen/i);
+  assert.equal(harness.connectButton.textContent, 'Close Mini App', 'Logout cannot reuse the consumed signed launch proof');
+  assert.equal(harness.links[0].getAttribute('aria-disabled'), 'true');
+  harness.pageHandlers.get('pageshow')();
+  await settle();
+  harness.connectButton.dispatch('click');
+  await settle();
+  assert.equal(harness.requests.filter(request => request.url.endsWith('/mini-app-session')).length, originalExchanges,
+    'Confirmed logout must not automatically resubmit the consumed login proof');
+  assert.ok(harness.calls.includes('close'), 'Signed-out Mini App prompts a fresh Telegram launch');
+}
+
+{
+  const harness = await runLauncher({ initData: '', existingSessionId: '123' });
+  harness.logoutButton.dispatch('click');
+  await settle();
+  assert.equal(harness.connectButton.textContent, 'Log in with Telegram',
+    'Ordinary browser can use standard website login after logout');
+  harness.connectButton.dispatch('click');
+  assert.match(harness.assigned[0], /\/telegram\/website\/start\?/);
 }
 
 console.log('telegram-games-launcher.test.mjs passed');
