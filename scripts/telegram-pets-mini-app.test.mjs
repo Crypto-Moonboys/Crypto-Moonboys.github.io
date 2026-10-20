@@ -1512,10 +1512,44 @@ assert.match(worker, /case 'games':[\s\S]*cmdGamesLauncher\(tok, chatId, chatTyp
   'the /games command must be routed to the in-chat launcher');
 const startSource = worker.slice(worker.indexOf('async function cmdGkStart'), worker.indexOf('async function cmdGkHelp'));
 const helpSource = worker.slice(worker.indexOf('async function cmdGkHelp'), worker.indexOf('function formatPetActivityLine'));
-assert.match(startSource, /\[telegramGamesChatButton\(\)\]/,
-  '/start must include a Games button in the bot message');
-assert.match(helpSource, /\[telegramGamesChatButton\(\)\]/,
-  '/help must include a Games button in the bot message');
+assert.match(startSource, /const replyMarkup = buildGkStartReplyMarkup\(chatType\)/,
+  '/start must select a chat-type-aware inline keyboard');
+assert.match(helpSource, /const replyMarkup = buildGkHelpReplyMarkup\(chatType\)/,
+  '/help must select a chat-type-aware inline keyboard');
+assert.match(worker, /case 'start':[^\n]*cmdGkStart\(db, tok, chatId, telegramId, fromUser, chatType\)/,
+  '/start dispatch must pass the real Telegram chat type');
+assert.match(worker, /case 'help':[^\n]*cmdGkHelp\(tok, chatId, chatType\)/,
+  '/help dispatch must pass the real Telegram chat type');
+const builderSource = worker.slice(
+  worker.indexOf('function telegramGamesChatButton('),
+  worker.indexOf('async function cmdGamesLauncher')
+);
+assert.ok(builderSource.includes('function buildGkStartReplyMarkup'), 'Start keyboard builder must exist');
+assert.ok(builderSource.includes('function buildGkHelpReplyMarkup'), 'Help keyboard builder must exist');
+const { buildGkStartReplyMarkup, buildGkHelpReplyMarkup } = vm.runInNewContext(
+  builderSource + '\n({ buildGkStartReplyMarkup, buildGkHelpReplyMarkup })',
+  {
+    SITE_URL: 'https://cryptomoonboys.com',
+    TELEGRAM_GAMES_MENU_TEXT: 'Games',
+    TELEGRAM_GAMES_MENU_URL: 'https://cryptomoonboys.com/games/telegram/',
+  },
+);
+for (const [name, build] of [['start', buildGkStartReplyMarkup], ['help', buildGkHelpReplyMarkup]]) {
+  const privateButtons = JSON.parse(JSON.stringify(build('private'))).inline_keyboard.flat();
+  assert.equal(privateButtons.filter(button => button.web_app).length,
+    name === 'start' ? 3 : 2,
+    `/${name} private keyboard must retain Web App buttons`);
+  assert.ok(privateButtons.some(button => button.text === 'Games' && button.web_app?.url),
+    `/${name} private chat must launch Games as a Web App`);
+  for (const chatType of ['group', 'supergroup']) {
+    const groupButtons = JSON.parse(JSON.stringify(build(chatType))).inline_keyboard.flat();
+    assert.equal(groupButtons.length, privateButtons.length);
+    assert.ok(groupButtons.every(button => !button.web_app && /^https:\/\//.test(button.url)),
+      `/${name} ${chatType} keyboard must contain URL buttons only`);
+    assert.ok(groupButtons.some(button => button.text === 'Games' && button.url?.includes('/games/telegram/')),
+      `/${name} ${chatType} reply must still provide the Games launcher`);
+  }
+}
 assert.match(worker, /Chat gameplay controls are retired/);
 assert.equal(resolvePetCallbackRoute('pet:feed', true), 'mini_app', 'enabled callbacks must open only the Mini App launcher');
 assert.equal(resolvePetCallbackRoute('pet:feed', false), 'legacy', 'disabled callbacks must reach legacy gameplay routing');
