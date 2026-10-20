@@ -215,9 +215,9 @@ check(bridgeJs.length > 0 && hubJs.length > 0 && factionPageJs.length > 0, 'batt
 check(workerJs.includes('WTF timed signal') && workerJs.includes('Check in when the signal opens.'), 'digest includes WTF timed signal preview');
 check(digestTestJs.includes("path === '/telegram/daily-digest/run'"), 'daily digest test suite still covers once-per-day route');
 
-check(howToPlayHtml.includes('Daily WTF signals open every 4 hours') && howToPlayHtml.includes('00:00, 04:00, 08:00, 12:00, 16:00, and 20:00 UTC'), 'how-to-play.html documents every-4-hour Daily WTF signals');
+check(howToPlayHtml.includes('href="/my-moonboy.html"') && !howToPlayHtml.includes('Daily WTF signals open every 4 hours'), 'Arcade manual routes users to the personal hub instead of repeating live signal schedule');
 check(communityHtml.includes('Daily WTF signals open every 4 hours') && communityHtml.includes('Missed history does not reset'), 'community/right-rail copy documents every-4-hour signals and persistent missed history');
-check(gamesHtml.includes('Daily WTF signals open every 4 hours') && gamesHtml.includes('does not reset'), 'games hub explains Daily WTF signal cadence and missed history persistence');
+check(gamesHtml.includes('href="/my-moonboy.html"') && !gamesHtml.includes('Daily WTF signals open every 4 hours'), 'Games hub links to personal account instead of duplicating live Battle Chamber schedule');
 check(factionPageJs.includes('Daily WTF') || read('battle-chamber/factions/index.html').includes('Daily WTF signals open every 4 hours'), 'faction pages/shared renderer mention Daily WTF timed signals');
 check(workerJs.includes('const ARCADE_XP_PER_POINT = 0.02;'), 'arcade xp formula unchanged');
 check(workerJs.includes("reward_status='previewed'") && !workerJs.includes("reward_status='awarded'"), 'reward status is truthful preview-only unless persisted award exists');
