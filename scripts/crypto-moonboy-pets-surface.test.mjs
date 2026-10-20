@@ -8,6 +8,7 @@ const howTo = fs.readFileSync(new URL('../how-to-play-crypto-moonboy-pets.html',
 const leaderboard = fs.readFileSync(new URL('../crypto-moonboy-pets-leaderboard.html', import.meta.url), 'utf8');
 const community = fs.readFileSync(new URL('../community.html', import.meta.url), 'utf8');
 const games = fs.readFileSync(new URL('../games/index.html', import.meta.url), 'utf8');
+const leaderboardClient = fs.readFileSync(new URL('../js/leaderboard-client.js', import.meta.url), 'utf8');
 const petSurfaceScript = fs.readFileSync(new URL('../js/crypto-moonboy-pets.js', import.meta.url), 'utf8');
 const miniAppScript = fs.readFileSync(new URL('../js/moonpet-mini-app.js', import.meta.url), 'utf8');
 const miniAppHtml = fs.readFileSync(new URL('../moonpet-game.html', import.meta.url), 'utf8');
@@ -92,8 +93,8 @@ for (const period of ['seasonal', 'daily', 'weekly', 'all_time']) assert.ok(lead
 assert.ok(community.includes('data-crypto-pets-summary'), 'community page must have compact pet summary only');
 assert.ok(!community.includes('data-crypto-pets-leaderboard'), 'community page must not dump full pet leaderboard');
 assert.ok(games.includes('Crypto Moonboy Pets — Telegram Game'), 'games index must list Pets as a Telegram Game');
-assert.ok(games.includes('All eight active Arcade games feed the shared submitScore path.'), 'games index must preserve shared submitScore copy');
-assert.ok(games.includes('Score ranks runs; server-accepted XP does not affect rank.'), 'games index must preserve rank/XP copy');
+assert.ok(leaderboardClient.includes('export async function submitScore'), 'shared Arcade score submission remains available');
+assert.ok(games.includes('Score and XP are separate.'), 'games index keeps the essential score/XP distinction without redundant copy');
 const telegramGamesSection = games.slice(games.indexOf('<section id="telegram-games"'), games.indexOf('<section id="arcade-games"'));
 assert.ok(telegramGamesSection.includes('/wiki/crypto-moonboy-pets.html'), 'Games hub must keep the Pets card');
 assert.ok(telegramGamesSection.includes('/games/dead-run/'), 'Games hub must keep the Dead Run card');

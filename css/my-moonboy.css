@@ -220,3 +220,35 @@
   .page-my-moonboy .mm-economy-grid { grid-template-columns: minmax(0,1fr); }
   .page-my-moonboy .mm-checklist-source > summary { padding: 12px 9px; }
 }
+
+
+/* Compact route directory stays public while private account panels remain gated. */
+.page-my-moonboy .mm-entry { margin-bottom: 16px; }
+.page-my-moonboy .mm-entry-grid {
+  display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px;
+}
+.page-my-moonboy .mm-entry-route {
+  min-width: 0; border: 1px solid var(--mm-line); border-radius: 8px;
+  padding: 14px; background: rgba(255,255,255,.025);
+}
+.page-my-moonboy .mm-entry-route h3 {
+  margin: 0 0 10px; color: var(--mm-accent);
+  font: 800 .86rem/1.45 system-ui,sans-serif; letter-spacing: .04em;
+}
+.page-my-moonboy .mm-entry-links { display: flex; flex-wrap: wrap; gap: 8px; }
+.page-my-moonboy .mm-entry-links a {
+  display: inline-flex; align-items: center; min-height: 44px; padding: 9px 12px;
+  border-radius: 7px; border: 1px solid var(--mm-line);
+  color: var(--mm-ink); background: rgba(116,226,223,.07);
+  text-decoration: none; font: 700 .84rem/1.3 system-ui,sans-serif;
+}
+.page-my-moonboy .mm-entry-links a:hover { border-color: var(--mm-accent); }
+.page-my-moonboy .mm-entry-more { margin: 14px 0 0; color: var(--mm-muted); font-size: .88rem; }
+.page-my-moonboy .mm-entry-more a { color: #a8f3e1; }
+@media (max-width: 640px) {
+  .page-my-moonboy .mm-entry-grid { grid-template-columns: minmax(0,1fr); }
+}
+
+/* A session-aware logout action lives outside the private mission gate. */
+.page-my-moonboy .mm-session-controls { margin-top: 12px; }
+.page-my-moonboy .mm-session-controls [hidden] { display: none !important; }

@@ -85,10 +85,10 @@ for (const [name, viewport] of [['desktop', { width: 1440, height: 900 }], ['mob
         }
         return route.abort();
       });
-      await page.goto(SITE + '/gkniftyheads-incubator.html', { waitUntil: 'domcontentloaded' });
+      await page.goto(SITE + '/my-moonboy.html', { waitUntil: 'domcontentloaded' });
       const failedFirstProbe = page.waitForResponse(response => response.url().endsWith('/telegram/website/session') && response.status() === 503);
-      await page.locator('[data-telegram-login]').first().click();
-      await page.waitForURL(SITE + '/gkniftyheads-incubator.html', { waitUntil: 'domcontentloaded', timeout: 8000 }).catch(async error => {
+      await page.locator('#mm-gate [data-telegram-login]').click();
+      await page.waitForURL(SITE + '/my-moonboy.html', { waitUntil: 'domcontentloaded', timeout: 8000 }).catch(async error => {
         throw new Error(new URL(page.url()).pathname + ': ' + (await page.locator('body').innerText()).slice(0, 160) + '\n' + error.message);
       });
       await failedFirstProbe;
@@ -183,17 +183,19 @@ for (const [name, viewport] of [['desktop', { width: 1440, height: 900 }], ['mob
       const sessionCount = sqlite.prepare('SELECT COUNT(*) AS n FROM telegram_website_sessions').get().n;
       await page.goto(SITE + '/community.html', { waitUntil: 'domcontentloaded' });
       await page.evaluate(() => window.MOONBOYS_IDENTITY.ready);
-      await page.waitForFunction(() => document.querySelector('[data-telegram-account] strong')?.textContent === 'Telegram account');
-      assert.equal(await page.locator('[data-telegram-account]').getAttribute('data-telegram-login'), null);
+      const accountLink = page.locator('.bc-hero-ctas a[href="/my-moonboy.html"]');
+      assert.equal(await accountLink.isVisible(), true, 'connected Community navigation leads to My Moonboy');
       await Promise.all([
-        page.waitForURL(SITE + '/gkniftyheads-incubator.html'),
-        page.locator('[data-telegram-account]').click(),
+        page.waitForURL(SITE + '/my-moonboy.html'),
+        accountLink.click(),
       ]);
       await page.evaluate(() => window.MOONBOYS_IDENTITY.ready);
-      assert.equal(sqlite.prepare('SELECT COUNT(*) AS n FROM telegram_website_sessions').get().n, sessionCount, 'opening account information does not create another session');
+      assert.equal(sqlite.prepare('SELECT COUNT(*) AS n FROM telegram_website_sessions').get().n, sessionCount, 'opening My Moonboy does not create another session');
       assert.equal(callbackSessionCookies.length, 1, 'connected Community navigation does not authorize again');
       assert.equal((await verifyWebsiteCredential(priorProof, env)).telegramId, ID, 'other tabs retain a valid credential');
-      assert.equal(await page.locator('[data-tg-sync-cta] [data-telegram-login]').isVisible(), false, 'connected players are not offered redundant login');
+      const compactLogout = page.locator('[data-telegram-session-controls] [data-telegram-logout]');
+      await compactLogout.waitFor({ state: 'visible' });
+      assert.equal(await page.locator('#mm-gate [data-telegram-login]').isVisible(), false, 'connected players are not offered redundant login');
       // Deliberately reauthenticate to exercise session rotation and old-tab
       // recovery; the ordinary connected UI now offers logout instead.
       await Promise.all([
@@ -228,7 +230,7 @@ for (const [name, viewport] of [['desktop', { width: 1440, height: 900 }], ['mob
       assert.equal((await verifyWebsiteCredential(rollbackProof, env)).telegramId, ID);
       await Promise.all([
         page.waitForNavigation({ waitUntil: 'domcontentloaded' }),
-        page.locator('[data-telegram-logout]').click(),
+        compactLogout.click(),
       ]);
       await page.waitForFunction(() => window.MOONBOYS_IDENTITY?.getIdentityTier() === 'guest');
       assert.equal((await verifyWebsiteCredential(rollbackProof, env)).status, 401, 'rollback logout must revoke proof after a reload without OIDC secrets');
@@ -236,14 +238,14 @@ for (const [name, viewport] of [['desktop', { width: 1440, height: 900 }], ['mob
       env.TELEGRAM_WEBSITE_LOGIN_ENABLED = 'true';
       env.TELEGRAM_OIDC_CLIENT_SECRET = clientSecret;
       await page.reload({ waitUntil: 'domcontentloaded' });
-      await page.locator('[data-telegram-login]').first().click();
+      await page.locator('#mm-gate [data-telegram-login]').click();
       await page.waitForFunction(() => window.MOONBOYS_IDENTITY?.getIdentityTier() === 'telegram_linked');
       // Maintenance cleanup models a settled tab retaining its cached session.
       // Drain bootstrap reads first: an in-flight renewal that sees the removed
       // session can correctly hide Logout between pointer-down and pointer-up.
       await page.evaluate(() => window.MOONBOYS_IDENTITY.ready);
       await page.waitForLoadState('networkidle');
-      await page.locator('[data-telegram-logout]').waitFor({ state: 'visible' });
+      await compactLogout.waitFor({ state: 'visible' });
       const cleanedProof = await page.evaluate(() => window.MOONBOYS_IDENTITY.getSignedTelegramAuth());
       sqlite.exec('UPDATE telegram_website_sessions SET last_seen_at = 1');
       await start(env);
@@ -251,7 +253,7 @@ for (const [name, viewport] of [['desktop', { width: 1440, height: 900 }], ['mob
       const cleanedLogout = page.waitForResponse(response => response.url().endsWith('/telegram/website/logout') && response.request().method() === 'POST');
       await Promise.all([
         page.waitForNavigation({ waitUntil: 'domcontentloaded' }),
-        page.locator('[data-telegram-logout]').click(),
+        compactLogout.click(),
       ]);
       assert.equal((await cleanedLogout).status(), 200, 'logout confirms a previously cleaned session');
       await page.waitForFunction(() => window.MOONBOYS_IDENTITY?.getIdentityTier() === 'guest');

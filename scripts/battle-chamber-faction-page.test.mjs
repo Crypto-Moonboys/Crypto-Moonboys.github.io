@@ -80,7 +80,7 @@ const actionCardsCss = fs.existsSync(ACTION_CARDS_CSS_FILE) ? read(ACTION_CARDS_
 // ── community.html: required headline ─────────────────────────────────────────
 
 console.log('\n[1] community.html — required headline');
-check(communityHtml.includes('Battle Chamber: Faction Wars'), 'community.html includes "Battle Chamber: Faction Wars"');
+check(communityHtml.includes('FACTIONS. MISSIONS. CLOUT.'), 'community.html identifies the live Battle Chamber rather than duplicating onboarding');
 
 // ── community.html: all 9 live faction names ──────────────────────────────────
 
@@ -140,7 +140,8 @@ console.log('\n[5] community.html — Telegram containers preserved');
 check(communityHtml.includes('tg-community-leaderboard'), 'community.html includes tg-community-leaderboard');
 check(communityHtml.includes('tg-activity-feed'), 'community.html includes tg-activity-feed');
 check(communityHtml.includes('gklink-status'), 'community.html includes gklink-status');
-check(communityHtml.includes('data-tg-sync-cta'), 'community.html includes data-tg-sync-cta');
+check(!communityHtml.includes('data-tg-sync-cta'), 'community.html links to My Moonboy rather than rendering a second login banner');
+check(communityHtml.includes('href="/my-moonboy.html"'), 'community.html retains the central account entry point');
 
 console.log('\n[5b] community.html - Battle Chamber card polish CSS');
 check(/body\.page-community \.bc-why-list li\s*\{[\s\S]*?padding:\s*14px 16px 14px 48px;/.test(actionCardsCss), 'why-join list cards keep inner padding and icon gutter');

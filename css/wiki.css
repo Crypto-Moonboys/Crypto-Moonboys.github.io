@@ -4451,3 +4451,19 @@ body.page-home .article-card-cat {
 .tg-sync-cta-account, .tg-sync-cta-help { grid-column: 2 / -1; overflow-wrap: anywhere; }
 .tg-sync-cta-help summary { cursor: pointer; padding: 12px 0; }
 @media (max-width: 720px) { .tg-sync-cta { grid-template-columns: minmax(0, 1fr); } .tg-sync-cta-account, .tg-sync-cta-help { grid-column: 1 / -1; } }
+
+/* Crypto Moonboys reference: keep the complete generated links accessible
+   without showing a screenful of directory cards on first arrival.
+   The canonical wiki HTML stays unchanged for signed content provenance. */
+body.page-wiki[data-entity-hash="a4b462cb5857"] .related-wiki-paths {
+  max-height: min(400px, 65dvh);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  border: 1px solid rgba(255,255,255,.16);
+  border-radius: 12px;
+}
+body.page-wiki[data-entity-hash="a4b462cb5857"] .related-wiki-paths:focus-within {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
