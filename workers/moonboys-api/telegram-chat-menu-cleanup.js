@@ -47,7 +47,9 @@ export async function resetLegacyTelegramChatMenu(botToken, telegramId, fetchImp
 export async function runTelegramChatMenuCleanup(env, {
   fetchImpl = fetch,
   now = Math.floor(Date.now() / 1000),
-  clock = () => Math.floor(Date.now() / 1000),
+  // Round completion up to the next whole second so a 429 retry cannot
+  // fall short of Telegram's relative retry_after by fractional seconds.
+  clock = () => Math.ceil(Date.now() / 1000),
   limit = CHAT_MENU_CLEANUP_RUN_LIMIT,
 } = {}) {
   if (!env?.DB || !env?.TELEGRAM_BOT_TOKEN) {
