@@ -22,6 +22,10 @@ const hub = account.indexOf('id="mm-start-here"');
 const gate = account.indexOf('id="mm-gate"');
 const privatePanel = account.indexOf('id="mm-private" hidden');
 assert.ok(hub > 0 && hub < gate && gate < privatePanel, 'Route directory is public, private data remains behind sign-in gate');
+assert.match(account, /data-telegram-session-controls[^>]*>[\s\S]*data-telegram-logout hidden/, 'My Moonboy keeps compact logout outside private account panel');
+const accountControls = read('js/components/telegram-sync-cta.js');
+assert.match(accountControls, /rememberedWebsite[\s\S]*data-telegram-session-controls/, 'Compact logout remains available for remembered website sessions after rollback');
+assert.match(accountControls, /pending \|\| \(!linked && !rememberedWebsite\)/, 'Guest/pending logout remains hidden');
 for (const route of [
   '/#build-moonboy', '/games/', '/battle-chamber/factions/index.html',
   '/gkniftyheads-incubator.html', '/community.html#live-battle-chamber',
