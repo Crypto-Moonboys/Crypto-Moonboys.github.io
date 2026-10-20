@@ -37,8 +37,6 @@ const heroImages = [
 
 const forbiddenBuilderCopy = [
   'Build a Crypto Moonboy',
-  'Build a Moonboy',
-  'BUILD A MOONBOY',
   'Build a Moonboy or Girl',
   'Create a new Crypto Moonboy identity',
   'Create a Crypto Moonboy',
@@ -71,8 +69,8 @@ const heroPositions = heroImages.map(({ sectionLabel, publicPath }) => ({
 const lastHeroEnd = heroPositions.length
   ? html.indexOf('</section>', heroPositions[heroPositions.length - 1].start)
   : -1;
-const builderStart = html.indexOf('<section class="homepage-avatar-builder avatar-builder-host"');
-const introStart = html.indexOf('<section class="hero-intro"');
+const builderStart = html.search(/<section\b(?=[^>]*\bclass="[^"]*\bhomepage-avatar-builder\b)[^>]*>/);
+const introStart = html.search(/<section\b(?=[^>]*\bclass="[^"]*\bhero-intro\b)[^>]*>/);
 const introEnd = html.indexOf('</section>', introStart);
 const introMarkup = introStart !== -1 && introEnd !== -1
   ? html.slice(introStart, introEnd + '</section>'.length)
@@ -119,8 +117,8 @@ check(
   'Homepage runtime moves the CTA into its own section immediately before the builder'
 );
 check(
-  /<p\b[^>]*>✊ Crypto Moonboys helps you build a memorable HODL Warrior identity,[\s\S]*?<\/p>/i.test(introMarkup),
-  'Remaining mission supporting copy uses HODL Warrior identity language'
+  introMarkup.includes('Build a Moonboy. Play games, join a faction'),
+  'Homepage supports the approved concise Moonboy and community route'
 );
 check(
   html.includes('aria-label="Build a HODL Warrior"'),
