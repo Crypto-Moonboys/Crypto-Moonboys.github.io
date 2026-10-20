@@ -1475,30 +1475,81 @@ assert.match(worker, /path === '\/telegram-pets\/app\/action'.*request\.method =
 assert.match(worker, /verifyTelegramMiniAppInitData\(body\.init_data/);
 assert.match(worker, /const MOONPET_MINI_APP_URL = `\$\{SITE_URL\}\/moonpet-game\.html\?v=20261012-home-e4-rooms-v1`/);
 assert.match(worker, /const TELEGRAM_GAMES_MENU_URL = `\$\{SITE_URL\}\/games\/telegram\/\?v=20261019-miniapp-login-v1`/,
-  'default Telegram games menu must point at the current shell release');
+  'in-chat Games button must keep the verified Telegram launcher URL');
 assert.match(worker, /const TELEGRAM_GAMES_MENU_TEXT = 'Games'/);
 assert.match(worker, /function petMiniAppLaunchUrl/);
 assert.match(worker, /const url = petMiniAppLaunchUrl\(screen, normalizedFocus\)/);
-assert.match(worker, /setChatMenuButton/);
-const menuButtonSource = worker.slice(worker.indexOf('async function setDefaultTelegramGamesMenuButton'), worker.indexOf('function petMiniAppLaunchUrl'));
-assert.match(menuButtonSource, /menu_button: \{ type: 'web_app', text: TELEGRAM_GAMES_MENU_TEXT, web_app: \{ url: TELEGRAM_GAMES_MENU_URL \} \}/,
-  'default Telegram chat menu must open the shared Games hub');
-assert.doesNotMatch(menuButtonSource, /Moonpet OS|MOONPET_MINI_APP_URL/,
-  'default Telegram chat menu must not be overwritten back to Moonpet OS');
-assert.doesNotMatch(menuButtonSource, /`\$\{SITE_URL\}\/games\/`/,
-  'default Telegram chat menu must not point at the public full web arcade page');
+const menuButtonSource = worker.slice(worker.indexOf('async function clearTelegramGamesChatMenuButton'), worker.indexOf('function petMiniAppLaunchUrl'));
+assert.match(menuButtonSource, /setChatMenuButton/,
+  'the bot must reset previously installed per-chat Web App menu buttons');
+assert.match(menuButtonSource, /menu_button: \{ type: 'commands' \}/,
+  'the persistent bottom Games Web App button must be replaced with Telegram commands');
+assert.doesNotMatch(menuButtonSource, /menu_button: \{ type: 'web_app'/,
+  'the bot must not reinstall the persistent Games menu');
+assert.match(menuButtonSource, /function telegramGamesChatButton\(chatType = 'private'\)/,
+  'in-chat Games buttons must be available for private and group chats');
+assert.match(menuButtonSource, /\{ text: TELEGRAM_GAMES_MENU_TEXT, web_app: \{ url: TELEGRAM_GAMES_MENU_URL \} \}/,
+  'private bot messages must launch Games with an inline Web App button');
+assert.match(menuButtonSource, /\{ text: TELEGRAM_GAMES_MENU_TEXT, url: TELEGRAM_GAMES_MENU_URL \}/,
+  'group messages must have a safe ordinary URL fallback');
+assert.match(menuButtonSource, /async function cmdGamesLauncher[\s\S]*inline_keyboard: \[\[telegramGamesChatButton\(chatType\)\]\]/,
+  '/games must send a clickable Games button inside the bot conversation');
 const petLauncherSource = worker.slice(worker.indexOf('async function cmdPetMiniAppLauncher'), worker.indexOf('// ── GK command implementations'));
-assert.match(petLauncherSource, /setDefaultTelegramGamesMenuButton\(botToken, telegramId\)/,
-  'Moonpet-specific launches must keep the global Telegram menu on Games');
+assert.match(petLauncherSource, /clearTelegramGamesChatMenuButton\(botToken, telegramId\)/,
+  'Moonpet-specific launch must also clear the old per-chat Games menu');
+assert.match(petLauncherSource, /inline_keyboard: \[\[launchButton\], \[telegramGamesChatButton\(chatType\)\]\]/,
+  'Moonpet bot messages must keep Games accessible inside chat');
 const commandDispatchSource = worker.slice(worker.indexOf('const cmdBase  = rawCmd'), worker.indexOf('switch (cmdBase)'));
 const rolloutRefreshIndex = commandDispatchSource.indexOf("if (String(chatType) === 'private' && telegramId)");
-assert.ok(rolloutRefreshIndex !== -1, 'private Telegram commands must refresh the default Games menu before dispatch');
-assert.match(commandDispatchSource, /await setDefaultTelegramGamesMenuButton\(tok, telegramId\);/,
-  'private Telegram command menu refresh must use the shared Games menu helper');
+assert.ok(rolloutRefreshIndex !== -1, 'private commands must clear previously installed Games menu');
+assert.match(commandDispatchSource, /await clearTelegramGamesChatMenuButton\(tok, telegramId\);/,
+  'private Telegram command handling must reset the per-chat menu');
 assert.ok(
   rolloutRefreshIndex < commandDispatchSource.indexOf("if (env.PET_MINI_APP_ENABLED === 'true'"),
-  'private Telegram command menu refresh must not depend on Moonpet-specific launcher commands',
+  'menu cleanup must not depend on Moonpet-specific commands',
 );
+assert.match(worker, /case 'games':[\s\S]*cmdGamesLauncher\(tok, chatId, chatType\)/,
+  'the /games command must be routed to the in-chat launcher');
+const startSource = worker.slice(worker.indexOf('async function cmdGkStart'), worker.indexOf('async function cmdGkHelp'));
+const helpSource = worker.slice(worker.indexOf('async function cmdGkHelp'), worker.indexOf('function formatPetActivityLine'));
+assert.match(startSource, /const replyMarkup = buildGkStartReplyMarkup\(chatType\)/,
+  '/start must select a chat-type-aware inline keyboard');
+assert.match(helpSource, /const replyMarkup = buildGkHelpReplyMarkup\(chatType\)/,
+  '/help must select a chat-type-aware inline keyboard');
+assert.match(worker, /case 'start':[^\n]*cmdGkStart\(db, tok, chatId, telegramId, fromUser, chatType\)/,
+  '/start dispatch must pass the real Telegram chat type');
+assert.match(worker, /case 'help':[^\n]*cmdGkHelp\(tok, chatId, chatType\)/,
+  '/help dispatch must pass the real Telegram chat type');
+const builderSource = worker.slice(
+  worker.indexOf('function telegramGamesChatButton('),
+  worker.indexOf('async function cmdGamesLauncher')
+);
+assert.ok(builderSource.includes('function buildGkStartReplyMarkup'), 'Start keyboard builder must exist');
+assert.ok(builderSource.includes('function buildGkHelpReplyMarkup'), 'Help keyboard builder must exist');
+const { buildGkStartReplyMarkup, buildGkHelpReplyMarkup } = vm.runInNewContext(
+  builderSource + '\n({ buildGkStartReplyMarkup, buildGkHelpReplyMarkup })',
+  {
+    SITE_URL: 'https://cryptomoonboys.com',
+    TELEGRAM_GAMES_MENU_TEXT: 'Games',
+    TELEGRAM_GAMES_MENU_URL: 'https://cryptomoonboys.com/games/telegram/',
+  },
+);
+for (const [name, build] of [['start', buildGkStartReplyMarkup], ['help', buildGkHelpReplyMarkup]]) {
+  const privateButtons = JSON.parse(JSON.stringify(build('private'))).inline_keyboard.flat();
+  assert.equal(privateButtons.filter(button => button.web_app).length,
+    name === 'start' ? 3 : 2,
+    `/${name} private keyboard must retain Web App buttons`);
+  assert.ok(privateButtons.some(button => button.text === 'Games' && button.web_app?.url),
+    `/${name} private chat must launch Games as a Web App`);
+  for (const chatType of ['group', 'supergroup']) {
+    const groupButtons = JSON.parse(JSON.stringify(build(chatType))).inline_keyboard.flat();
+    assert.equal(groupButtons.length, privateButtons.length);
+    assert.ok(groupButtons.every(button => !button.web_app && /^https:\/\//.test(button.url)),
+      `/${name} ${chatType} keyboard must contain URL buttons only`);
+    assert.ok(groupButtons.some(button => button.text === 'Games' && button.url?.includes('/games/telegram/')),
+      `/${name} ${chatType} reply must still provide the Games launcher`);
+  }
+}
 assert.match(worker, /Chat gameplay controls are retired/);
 assert.equal(resolvePetCallbackRoute('pet:feed', true), 'mini_app', 'enabled callbacks must open only the Mini App launcher');
 assert.equal(resolvePetCallbackRoute('pet:feed', false), 'legacy', 'disabled callbacks must reach legacy gameplay routing');

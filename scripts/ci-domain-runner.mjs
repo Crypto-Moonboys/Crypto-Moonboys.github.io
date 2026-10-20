@@ -159,6 +159,7 @@ const GROUPS = {
     ['node', 'scripts/moonpet-write-sanity.test.mjs'],
     ['node', 'scripts/moonpet-shop-catalog.test.mjs'],
     ['node', 'scripts/moonpet-read-sanity.test.mjs'],
+    ['node', '--test', 'scripts/telegram-chat-menu-cleanup.test.mjs'],
     ['node', 'scripts/telegram-pets-mini-app.test.mjs'],
     ['node', 'scripts/telegram-pets-mini-app-parity.test.mjs'],
     ['node', 'scripts/moonpet-player-loop.test.mjs'],

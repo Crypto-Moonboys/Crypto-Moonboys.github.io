@@ -48,6 +48,15 @@ for (const name of [
   assert.ok(remoteQueryStep.includes(name));
 }
 
+const chatMenuMigration = '102_telegram_chat_menu_cleanup.sql';
+for (const source of [REQUIRED_D1_MIGRATIONS, request.required_migrations,
+  production.d1_databases.wikicoms.required_migrations]) {
+  assert.ok(source.includes(chatMenuMigration), 'Telegram menu cleanup must be registered in each D1 release authority');
+}
+assert.ok(pullRequestPaths.includes('workers/moonboys-api/migrations/' + chatMenuMigration));
+assert.ok(remoteQueryStep.includes(chatMenuMigration));
+assert.match(schema, /CREATE TABLE IF NOT EXISTS telegram_chat_menu_cleanup/);
+
 const cloutMigration = '100_championship_clout_foundation.sql';
 for (const source of [REQUIRED_D1_MIGRATIONS, request.required_migrations,
   production.d1_databases.wikicoms.required_migrations]) {
