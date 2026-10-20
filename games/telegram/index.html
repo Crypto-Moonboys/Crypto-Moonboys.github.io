@@ -7,7 +7,7 @@
   <meta name="theme-color" content="#000000">
   <title>Crypto Moonboys Games</title>
   <link rel="icon" type="image/png" href="/favicon.png">
-  <meta name="moonboys-mini-app-version" content="20260903-games-shell-v8">
+  <meta name="moonboys-mini-app-version" content="20261019-miniapp-login-v1">
   <script data-cfasync="false" src="https://telegram.org/js/telegram-web-app.js?63"></script>
   <style>
     html, body { margin: 0; min-height: 100%; background: #000; color: #fff; font: 18px/1.6 Arial, sans-serif; }
@@ -17,12 +17,17 @@
     nav a:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
     body.is-initializing nav a, body.is-navigating nav a { pointer-events: none; }
     #launchStatus { font-size: 14px; }
+#connectTelegram, #logoutTelegram { background: #000; border: 1px solid #fff; color: #fff; font: inherit; padding: 6px; }
+    [hidden] { display: none !important; }
   </style>
 </head>
 <body class="page-standalone-tool is-initializing" aria-busy="true">
   <main id="launcherRoot" aria-busy="true">
     <h1>Crypto Moonboys Games</h1>
-    <p id="launchStatus" role="status" aria-live="polite">Preparing games...</p>
+    <p id="launchStatus" role="status" aria-live="polite">Checking Telegram account...</p>
+    <p id="connectedAccount" hidden></p>
+    <button id="connectTelegram" type="button">Connect with Telegram</button>
+    <button id="logoutTelegram" type="button" hidden>Log out / switch account</button>
     <nav aria-label="Crypto Moonboys games">
       <a href="/moonpet-game.html?v=20261012-home-e4-rooms-v1" aria-disabled="true" tabindex="-1">Moonpet OS</a>
       <a href="/games/dead-run/?v=20260902-dead-run-v5" aria-disabled="true" tabindex="-1">Dead Run</a>
@@ -30,7 +35,7 @@
       <a href="/games/nbg-london/?v=20260903-games-shell-v8" aria-disabled="true" tabindex="-1">NBG London Runner</a>
       <a href="/games/?v=20260903-games-shell-v8" aria-disabled="true" tabindex="-1">Full Arcade</a>
     </nav>
-    <p><small>/games/telegram/?v=20260903-games-shell-v8</small></p>
+    <p><small>/games/telegram/?v=20261019-miniapp-login-v1</small></p>
   </main>
   <script>
     (function () {
@@ -45,6 +50,17 @@
       var navigationStarted = false;
       var fallbackTimer = null;
       var cachedInitData = readTelegramInitData();
+      // A consumed launch cannot issue another cookie if its first Set-Cookie
+      // was lost. Only a fresh Telegram launch yields new signed evidence.
+      var relaunchRequiredForProof = '';
+      var freshLaunchReason = '';
+      var accountReady = false;
+      var connecting = false;
+      var connectButton = document.getElementById('connectTelegram');
+      var logoutButton = document.getElementById('logoutTelegram');
+      var sessionCsrf = '';
+      var accountLabel = document.getElementById('connectedAccount');
+      var apiBase = 'https://api.cryptomoonboys.com';
 
       function setBusy(isBusy) {
         document.body.classList.toggle('is-initializing', isBusy);
@@ -77,8 +93,9 @@
           fallbackTimer = null;
         }
         setBusy(false);
-        setLinksEnabled(true);
-        setStatus('Launcher loaded.');
+        // Viewport readiness must not overwrite a failed authentication error,
+        // or re-enable links while logout or session verification is pending.
+        setLinksEnabled(accountReady && !connecting && !navigationStarted);
       }
 
       function readHashInitData() {
@@ -151,7 +168,7 @@
       function handleLaunch(event) {
         var link = event.currentTarget;
         event.preventDefault();
-        if (!navigationEnabled || !viewportStable || navigationStarted) return;
+        if (!navigationEnabled || !viewportStable || navigationStarted || connecting || !accountReady) return;
         navigationStarted = true;
         document.body.classList.add('is-navigating');
         setLinksEnabled(false);
@@ -172,14 +189,206 @@
           navigationEnabled = false;
           enableNavigation();
         }
+        connectAccount();
       });
 
+      function setDisconnected(message) {
+        accountReady = false;
+        sessionCsrf = '';
+        accountLabel.textContent = '';
+        accountLabel.hidden = true;
+        connectButton.hidden = false;
+        logoutButton.hidden = true;
+        setLinksEnabled(false);
+        setStatus(message);
+      }
+
+      function requestWithDeadline(path, options) {
+        // Covers both fetch and response JSON parsing; aborting also bounds
+        // page restoration when network access stalls in the embedded WebView.
+        var controller = new AbortController();
+        var timer = window.setTimeout(function () { controller.abort(); }, 8000);
+        var opts = Object.assign({ credentials: 'include', cache: 'no-store', signal: controller.signal }, options || {});
+        return fetch(apiBase + path, opts).then(function (response) {
+          return response.json().catch(function () { return {}; }).then(function (data) {
+            if (!response.ok) {
+              var err = new Error(data.error || ('Login failed (HTTP ' + response.status + ').'));
+              err.status = response.status;
+              throw err;
+            }
+            return data;
+          });
+        }).catch(function (error) {
+          if (error.name === 'AbortError') throw new Error('Connection timed out. Retry.');
+          throw error;
+        }).finally(function () { window.clearTimeout(timer); });
+      }
+
+      function connectAccount() {
+        if (connecting) return;
+        cachedInitData = readTelegramInitData();
+        if (relaunchRequiredForProof && cachedInitData === relaunchRequiredForProof) {
+          setDisconnected(freshLaunchReason || 'Close and reopen this Mini App in Telegram for a fresh login.');
+          connectButton.textContent = 'Close Mini App';
+          return;
+        }
+        if (cachedInitData !== relaunchRequiredForProof) {
+          relaunchRequiredForProof = '';
+          freshLaunchReason = '';
+        }
+        connecting = true;
+        accountReady = false;
+        setLinksEnabled(false);
+        connectButton.disabled = true;
+        logoutButton.disabled = true;
+        setStatus('Verifying Telegram account...');
+        // Mini App: ALWAYS verify signed launch evidence against any existing
+        // cookie on the Worker. Never accept account A's cookie for launch B.
+        // Ordinary browser: restore cookie or use optional standard WebAuth.
+        var task = cachedInitData
+          ? requestWithDeadline('/telegram/website/mini-app-session', {
+              method: 'POST', headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ init_data: cachedInitData })
+            })
+          : requestWithDeadline('/telegram/website/session');
+        task.then(function (verified) {
+          if (!verified || !verified.linked || !verified.telegram_id || !verified.telegram_auth) {
+            throw new Error('Website session not verified.');
+          }
+          // A successful Set-Cookie header does not prove that Telegram WebView
+          // persisted the cookie. Verify a subsequent independent cookie read.
+          if (!cachedInitData) return verified;
+          return requestWithDeadline('/telegram/website/session').then(function (restored) {
+            if (!restored || restored.telegram_id !== verified.telegram_id) {
+              // This is not a missing-cookie case: the browser has returned
+              // an identity mismatch and the player must switch explicitly.
+              var mismatch = new Error('The website session belongs to a different Telegram account. Log out before switching.');
+              mismatch.status = 409;
+              throw mismatch;
+            }
+            return restored;
+          }).catch(function (error) {
+            if (verified.source === 'telegram_mini_app' &&
+                (error.status === 401 || error.status === 403)) {
+              // The Worker already consumed this signature and committed a
+              // session. Reposting identical initData cannot recreate it.
+              error.requiresFreshLaunch = true;
+              error.message = 'Telegram could not save your login. Close and reopen this Mini App in Telegram for a fresh session.';
+            }
+            throw error;
+          });
+        }).then(function (session) {
+          if (typeof session.csrf_token !== 'string' || !session.csrf_token) {
+            throw new Error('Website session lacks logout authorization.');
+          }
+          accountReady = true;
+          relaunchRequiredForProof = '';
+          freshLaunchReason = '';
+          sessionCsrf = session.csrf_token;
+          accountLabel.textContent = 'Connected: ' + (session.display_name || 'Telegram player');
+          accountLabel.hidden = false;
+          connectButton.hidden = true;
+          logoutButton.hidden = false;
+          if (navigationEnabled) setLinksEnabled(true);
+          setStatus('Account verified. Select a game.');
+        }).catch(function (error) {
+          // An expired or invalid signed launch cannot become valid by retrying
+          // the same initData. Only Telegram can provide fresh launch evidence.
+          var terminalProofFailure = cachedInitData && /^mini_app_(?:auth_(?:expired|replayed|rejected|invalid|duplicate_field|required)|user_invalid)$/.test(error.message || '');
+          if (terminalProofFailure) {
+            error.requiresFreshLaunch = true;
+            error.message = 'Telegram login evidence has expired or cannot be verified. Close and reopen this Mini App in Telegram for a fresh login.';
+          }
+          var message = error.status === 409
+            ? 'Another Telegram account is connected. Log out before switching accounts.'
+            : (error.message || 'Could not connect. Retry.');
+          if (error.requiresFreshLaunch) {
+            relaunchRequiredForProof = cachedInitData;
+            freshLaunchReason = message;
+          }
+          setDisconnected(message);
+          // Any authentication error may leave a valid website cookie in this
+          // browser (including a transient network failure or rejected launch).
+          // Offer verified-cookie logout, without claiming the login succeeded.
+          // Do not replace the actionable login error with fallback copy.
+          requestWithDeadline('/telegram/website/logout').then(function (data) {
+            if (data && typeof data.csrf_token === 'string' && data.csrf_token &&
+                !accountReady && !sessionCsrf) {
+              sessionCsrf = data.csrf_token;
+              logoutButton.hidden = false;
+            }
+          }).catch(function () {
+            // CSRF preparation can fail offline; keep the original login error
+            // and visible Retry control rather than masking either.
+          });
+          if (error.requiresFreshLaunch) {
+            connectButton.textContent = 'Close Mini App';
+          } else if (!cachedInitData) {
+            connectButton.textContent = 'Log in with Telegram';
+          } else {
+            connectButton.textContent = 'Retry connection';
+          }
+        }).finally(function () {
+          connecting = false;
+          connectButton.disabled = false;
+          logoutButton.disabled = false;
+        });
+      }
+
+      function logoutAccount() {
+        if (connecting || !sessionCsrf) return;
+        connecting = true;
+        logoutButton.disabled = true;
+        setLinksEnabled(false);
+        setStatus('Signing out...');
+        requestWithDeadline('/telegram/website/logout', {
+          method: 'POST', headers: { 'X-Moonboys-CSRF': sessionCsrf }
+        }).then(function () {
+          if (cachedInitData) {
+            // This proof may already have been consumed by a successful login.
+            // Logging out revokes the cookie, so reusing it cannot reconnect.
+            relaunchRequiredForProof = cachedInitData;
+            freshLaunchReason = 'Signed out. Close and reopen this Mini App in Telegram for a fresh login.';
+            setDisconnected(freshLaunchReason);
+            connectButton.textContent = 'Close Mini App';
+          } else {
+            relaunchRequiredForProof = '';
+            freshLaunchReason = '';
+            setDisconnected('Signed out. Log in with Telegram to reconnect.');
+            connectButton.textContent = 'Log in with Telegram';
+          }
+        }).catch(function (error) {
+          // A failed revocation must never be presented as a successful logout.
+          setStatus(error.message || 'Logout could not be confirmed. Retry.');
+          if (accountReady && navigationEnabled) setLinksEnabled(true);
+        }).finally(function () {
+          connecting = false;
+          logoutButton.disabled = false;
+        });
+      }
+
+      connectButton.addEventListener('click', function () {
+        cachedInitData = readTelegramInitData();
+        if (relaunchRequiredForProof && cachedInitData === relaunchRequiredForProof) {
+          setStatus('Close and reopen this Mini App in Telegram to get a fresh signed login.');
+          if (telegramApp && typeof telegramApp.close === 'function') telegramApp.close();
+          return;
+        }
+        if (!cachedInitData) {
+          var returnTo = window.location.origin + window.location.pathname + window.location.search;
+          window.location.assign(apiBase + '/telegram/website/start?return_to=' + encodeURIComponent(returnTo));
+        } else {
+          connectAccount();
+        }
+      });
+      logoutButton.addEventListener('click', logoutAccount);
       links.forEach(function (link) {
         link.addEventListener('click', handleLaunch);
       });
       setLinksEnabled(false);
       setBusy(true);
-      setStatus('Preparing games...');
+      setStatus('Checking Telegram account...');
+      connectAccount();
 
       try {
         if (telegramApp) telegramApp.onEvent('viewportChanged', onViewportChanged);

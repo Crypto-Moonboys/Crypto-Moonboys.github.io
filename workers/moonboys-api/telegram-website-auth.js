@@ -1,4 +1,5 @@
 import { createRemoteJWKSet, customFetch, jwtVerify } from 'jose';
+import { verifyTelegramMiniAppInitData } from './pets/mini-app-auth.js';
 
 const ISSUER = 'https://oauth.telegram.org';
 const PREFIX = '/telegram/website/';
@@ -146,7 +147,11 @@ async function issueCredential(env, session, csrf, headers, renew = false) {
   ]);
   requireWrites(results, 3);
   if (results[2]?.meta?.changes !== 1) fail('website_session_expired');
-  return reply(headers, { ok: true, linked: true, source: 'telegram_oidc', telegram_id: session.telegram_id,
+  return websiteCredentialReply(session, csrf, headers, hash, now);
+}
+
+function websiteCredentialReply(session, csrf, headers, hash, now, source = 'telegram_oidc') {
+  return reply(headers, { ok: true, linked: true, source, telegram_id: session.telegram_id,
     display_name: session.first_name || session.username || 'Telegram player', csrf_token: csrf,
     telegram_auth: { id: session.telegram_id, first_name: session.first_name, last_name: session.last_name, username: session.username,
       auth_date: now, hash, expires_at: Math.min(now + WEBSITE_ACCESS_SECONDS, session.expires_at) },
@@ -180,6 +185,120 @@ export async function handleTelegramWebsiteAuth(request, env, fetchImpl = fetch)
       return reply(headers, { ok: true, enabled: cfg.enabled });
     }
     if ((!cfg.enabled && !logoutRequest) || !env.DB) { event('failed', 'website_login_not_configured'); return reply(headers, { error: 'website_login_not_configured' }, 503); }
+    if (action === 'mini-app-session' && request.method === 'POST') {
+      if (!cfg.origins.includes(request.headers.get('Origin'))) fail('website_origin_required', 403);
+      if (!env.TELEGRAM_BOT_TOKEN) fail('website_login_not_configured', 503);
+      if (!/^application\/json(?:\s*;|$)/i.test(request.headers.get('Content-Type') || '')) fail('invalid_request', 400);
+      if (Number(request.headers.get('Content-Length') || 0) > 10000) fail('invalid_request', 400);
+      // Enforce the actual bytes consumed, even when Content-Length is absent
+      // or forged. Reject oversized bodies before parsing JSON.
+      let payload;
+      try {
+        if (!request.body) fail('invalid_request', 400);
+        const reader = request.body.getReader();
+        const chunks = [];
+        let total = 0;
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          total += value.byteLength;
+          if (total > 10000) {
+            await reader.cancel().catch(() => {});
+            fail('invalid_request', 400);
+          }
+          chunks.push(value);
+        }
+        const bytes = new Uint8Array(total);
+        let offset = 0;
+        for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.byteLength; }
+        payload = JSON.parse(new TextDecoder().decode(bytes));
+      } catch (error) {
+        if (error?.status) throw error;
+        fail('invalid_request', 400);
+      }
+      if (typeof payload?.init_data !== 'string' || payload.init_data.length > 8192) fail('mini_app_auth_required');
+      // Always verify Telegram's HMAC and signed identity before trusting a
+      // cookie. An existing valid cookie can revalidate the SAME identity for
+      // the inherited Mini App launch's one-hour lifetime, but a NEW session
+      // can only be issued from a fresh five-minute proof.
+      const current = await readSession(request, env);
+      const verified = await verifyTelegramMiniAppInitData(payload.init_data, env.TELEGRAM_BOT_TOKEN, {
+        max_age_seconds: current ? 3600 : 300,
+      });
+      if (!verified.ok) fail(verified.reason);
+      if (current && String(current.telegram_id) !== verified.telegramId) fail('logout_before_switching_accounts', 409);
+      const blocked = await env.DB.prepare('SELECT is_blocked FROM telegram_anticheat_state WHERE telegram_id = ?').bind(verified.telegramId).first();
+      if (Number(blocked?.is_blocked) === 1) fail('account_blocked', 403);
+      if (current) {
+        // Idempotent same-account restore: do not consume a previously used
+        // signature or rotate a working cookie. Return server-verified proof.
+        const csrf = await authDigest('csrf:' + cookie(request, SESSION_COOKIE));
+        return await issueCredential(env, current, csrf, headers);
+      }
+      const now = nowSeconds(), secret = randomToken(), sessionHash = await authDigest(secret), csrf = await authDigest('csrf:' + secret);
+      const accessHash = 's1_' + randomToken();
+      // The verifier accepts uppercase hex, so the replay key MUST be canonical.
+      const normalizedHash = new URLSearchParams(payload.init_data).get('hash').toLowerCase();
+      const replayKey = await authDigest('miniapp:' + normalizedHash);
+      // A signature remains acceptable at auth_date+300 (inclusive), even
+      // when auth_date was issued up to 300 seconds in the future.
+      const expiresAt = verified.authDate + 301;
+      // D1 batch is atomic: duplicate proof or any write failure aborts
+      // issuance. Do not set a cookie before confirmed writes.
+      //
+      // On a replay, the batch rolls back. Inspect only the canonical proof
+      // hash after failure so clients receive a *terminal* response instead
+      // of retrying identical immutable initData forever after a reload.
+      // Unrelated database failures must still return the sanitized 503.
+      try {
+        const results = await env.DB.batch([
+        // The Mini App login path may never visit /website/start (OAuth).
+        // Reclaim expired/idle sessions here too, in the same atomic batch.
+        // Foreign-key cascades also retire their website credentials.
+        env.DB.prepare('DELETE FROM telegram_website_sessions WHERE expires_at <= ? OR last_seen_at <= ?')
+          .bind(now, now - WEBSITE_IDLE_SECONDS),
+        env.DB.prepare('DELETE FROM telegram_mini_app_login_replay WHERE expires_at <= ?').bind(now),
+        env.DB.prepare('INSERT INTO telegram_mini_app_login_replay (proof_hash, expires_at) VALUES (?, ?)').bind(replayKey, expiresAt),
+        env.DB.prepare(`INSERT INTO telegram_users (telegram_id, username, first_name, last_name) VALUES (?, ?, ?, ?)
+          ON CONFLICT(telegram_id) DO UPDATE SET username = excluded.username, first_name = excluded.first_name, last_name = excluded.last_name, updated_at = CURRENT_TIMESTAMP`)
+          .bind(verified.telegramId, verified.user.username, verified.user.first_name, verified.user.last_name),
+        env.DB.prepare("INSERT INTO telegram_activity_log (telegram_id, action, metadata) VALUES (?, 'link_confirmed', ?)")
+          .bind(verified.telegramId, JSON.stringify({ source: 'telegram_mini_app' })),
+        env.DB.prepare(`INSERT INTO telegram_website_sessions (session_hash, telegram_id, csrf_hash, created_at, last_seen_at, expires_at)
+          VALUES (?, ?, ?, ?, ?, ?)`)
+          .bind(sessionHash, verified.telegramId, await authDigest(csrf), now, now, now + WEBSITE_SESSION_SECONDS),
+        // The five-minute credential is committed in the SAME atomic D1
+        // batch as replay consumption and session issuance. If any step
+        // fails, retrying the signed launch is still possible.
+        env.DB.prepare('INSERT INTO telegram_website_credentials (token_hash, session_hash, expires_at) VALUES (?, ?, ?)')
+          .bind(await authDigest(accessHash), sessionHash, now + WEBSITE_ACCESS_SECONDS),
+      ]);
+        requireWrites(results, 7);
+        if (results[2]?.meta?.changes !== 1 || results[4]?.meta?.changes !== 1 || results[5]?.meta?.changes !== 1 || results[6]?.meta?.changes !== 1) {
+          fail('website_login_unavailable', 503, 'd1_batch_unconfirmed');
+        }
+      } catch (error) {
+        let alreadyConsumed = false;
+        try {
+          const existing = await env.DB.prepare('SELECT 1 FROM telegram_mini_app_login_replay WHERE proof_hash = ? AND expires_at > ?')
+            .bind(replayKey, now).first();
+          alreadyConsumed = !!existing;
+        } catch {
+          // If replay lookup itself fails, preserve the original sanitized
+          // database error rather than guessing that the proof was consumed.
+        }
+        if (alreadyConsumed) fail('mini_app_auth_replayed');
+        throw error;
+      }
+      headers.append('Set-Cookie', setCookie(SESSION_COOKIE, secret, WEBSITE_SESSION_SECONDS));
+      // Returning the credential does NOT execute a second DB batch.
+      return websiteCredentialReply({
+        session_hash: sessionHash, telegram_id: verified.telegramId,
+        username: verified.user.username, first_name: verified.user.first_name,
+        last_name: verified.user.last_name, last_seen_at: now,
+        expires_at: now + WEBSITE_SESSION_SECONDS,
+      }, csrf, headers, accessHash, now, 'telegram_mini_app');
+    }
     if (action === 'start' && request.method === 'GET') {
       stage = 'return_url_validation';
       let returnUrl;

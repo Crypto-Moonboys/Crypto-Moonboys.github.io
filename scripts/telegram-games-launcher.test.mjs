@@ -6,11 +6,12 @@ const html = fs.readFileSync(new URL('../games/telegram/index.html', import.meta
 const deadRunHtml = fs.readFileSync(new URL('../games/dead-run/index.html', import.meta.url), 'utf8');
 const workerSource = fs.readFileSync(new URL('../workers/moonboys-api/worker.js', import.meta.url), 'utf8');
 const deadRunRelease = html.match(/href="\/games\/dead-run\/\?v=([^"]+)"/)?.[1];
+const gameDestinationRelease = '20260903-games-shell-v8';
 const launcherRelease = html.match(/<meta name="moonboys-mini-app-version" content="([^"]+)">/)?.[1];
 const inlineLauncherScript = [...html.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/gi)].at(-1)?.[1];
 
 assert.ok(deadRunRelease, 'Games launcher must link Dead Run with a cache-busting release token');
-assert.equal(launcherRelease, '20260903-games-shell-v8', 'Games launcher must publish the v8 arcade shell release token');
+assert.equal(launcherRelease, '20261019-miniapp-login-v1', 'Games launcher must publish the one-tap Mini App login release token');
 assert.ok(inlineLauncherScript, 'Games launcher must include a body-end inline launcher controller');
 
 const forbiddenScripts = [
@@ -44,7 +45,7 @@ assert.ok(
 
 assert.ok(html.includes('class="page-standalone-tool is-initializing"'), 'Games launcher must start in an initializing state');
 assert.ok(html.includes('aria-busy="true"'), 'Games launcher must expose initial busy state');
-assert.ok(html.includes('Preparing games...'), 'Games launcher must show initialization copy');
+assert.ok(html.includes('Checking Telegram account...'), 'Games launcher must show account verification copy');
 assert.ok(html.includes('<h1>Crypto Moonboys Games</h1>'), 'Games launcher must show a plain text title');
 assert.match(html, /background:\s*#000\s*;/, 'Launcher must have a solid black background');
 assert.doesNotMatch(html, /gradient\(|box-shadow|text-shadow|<canvas|<img\b|class="marquee"|class="control-deck"/i, 'Launcher must have no decorative effects or heavyweight visual components');
@@ -82,9 +83,9 @@ assert.ok(!/dead-run[^"']*(?:bootstrap|runtime|logic)\.js/i.test(html), 'Games l
 const launcherDestinations = [
   ['Moonpet OS', '/moonpet-game.html?v=20261012-home-e4-rooms-v1'],
   ['Dead Run', `/games/dead-run/?v=${deadRunRelease}`],
-  ['Battle Chamber', `/community.html?v=${launcherRelease}`],
-  ['NBG London Runner', `/games/nbg-london/?v=${launcherRelease}`],
-  ['Full Arcade', `/games/?v=${launcherRelease}`],
+  ['Battle Chamber', `/community.html?v=${gameDestinationRelease}`],
+  ['NBG London Runner', `/games/nbg-london/?v=${gameDestinationRelease}`],
+  ['Full Arcade', `/games/?v=${gameDestinationRelease}`],
 ];
 
 for (const [label, href] of launcherDestinations) {
@@ -171,7 +172,7 @@ class FakeElement {
   }
 }
 
-function runLauncher({ initData = 'user=%7B%22id%22%3A123%7D', hash = '', search = '?v=20260902-games-shell-v6&startapp=arcade', storedInitData = '' } = {}) {
+async function runLauncher({ initData = 'user=%7B%22id%22%3A123%7D', hash = '', search = '?v=20260902-games-shell-v6&startapp=arcade', storedInitData = '', existingSessionId = '', rejectLogin = false, loginFailureStatus = 503, loginFailureCode = '', lostCookie = false, stalled = false, holdLogout = false } = {}) {
   const calls = [];
   const timers = [];
   const viewportHandlers = [];
@@ -179,6 +180,10 @@ function runLauncher({ initData = 'user=%7B%22id%22%3A123%7D', hash = '', search
   const body = new FakeElement({ class: 'page-standalone-tool is-initializing', 'aria-busy': 'true' });
   const root = new FakeElement({ id: 'launcherRoot', 'aria-busy': 'true' });
   const status = new FakeElement({ id: 'launchStatus' });
+  const connectButton = new FakeElement({ id: 'connectTelegram' });
+  const accountLabel = new FakeElement({ id: 'connectedAccount' });
+  const logoutButton = new FakeElement({ id: 'logoutTelegram' });
+  const requests = [];
   const links = launcherDestinations.map(([, href]) => new FakeElement({ href, 'aria-disabled': 'true', tabindex: '-1' }));
   const assigned = [];
   const storage = new Map(storedInitData ? [['moonboys.telegram.initData', storedInitData]] : []);
@@ -196,6 +201,9 @@ function runLauncher({ initData = 'user=%7B%22id%22%3A123%7D', hash = '', search
       calls.push(`getElementById:${id}`);
       if (id === 'launcherRoot') return root;
       if (id === 'launchStatus') return status;
+      if (id === 'connectTelegram') return connectButton;
+      if (id === 'connectedAccount') return accountLabel;
+      if (id === 'logoutTelegram') return logoutButton;
       return null;
     },
     querySelectorAll(selector) {
@@ -217,6 +225,9 @@ function runLauncher({ initData = 'user=%7B%22id%22%3A123%7D', hash = '', search
         },
         expand() {
           calls.push('expand');
+        },
+        close() {
+          calls.push('close');
         },
       },
     },
@@ -244,6 +255,57 @@ function runLauncher({ initData = 'user=%7B%22id%22%3A123%7D', hash = '', search
     },
   };
 
+  let sessionId = existingSessionId;
+  let denyNextLogin = rejectLogin;
+  let finishPendingLogout = null;
+  const jsonResponse = (status, data) => ({ ok: status >= 200 && status < 300, status, json: async () => data });
+  const fetch = (url, options = {}) => {
+    requests.push({ url, options });
+    assert.equal(options.credentials, 'include', 'Website session requests always include cookies');
+    assert.equal(options.cache, 'no-store', 'Website session credentials must not be cached');
+    assert.ok(options.signal, 'Every credential request has an abort signal');
+    if (stalled) return new Promise((resolve, reject) => {
+      options.signal.addEventListener('abort', () => {
+        const error = new Error('Aborted');
+        error.name = 'AbortError';
+        reject(error);
+      });
+    });
+    if (url.endsWith('/mini-app-session')) {
+      assert.equal(options.method, 'POST');
+      assert.equal(options.headers['Content-Type'], 'application/json');
+      const signed = JSON.parse(options.body).init_data;
+      const params = new URLSearchParams(signed);
+      let id = '123';
+      try { id = String(JSON.parse(params.get('user')).id); } catch {}
+      if (denyNextLogin) return Promise.resolve(jsonResponse(loginFailureStatus, { error: loginFailureCode || (loginFailureStatus === 503 ? 'website_login_unavailable' : 'mini_app_auth_expired') }));
+      if (sessionId && sessionId !== id) return Promise.resolve(jsonResponse(409, { error: 'logout_before_switching_accounts' }));
+      sessionId = id;
+      return Promise.resolve(jsonResponse(200, {
+        linked: true, source: 'telegram_mini_app', telegram_id: id, display_name: 'Test', csrf_token: 'signed-csrf',
+        telegram_auth: { id, hash: 's1_signed' },
+      }));
+    }
+    if (url.endsWith('/session')) {
+      if (!sessionId || lostCookie) return Promise.resolve(jsonResponse(401, { error: 'website_session_expired' }));
+      return Promise.resolve(jsonResponse(200, {
+        linked: true, telegram_id: sessionId, display_name: 'Test', csrf_token: 'signed-csrf',
+        telegram_auth: { id: sessionId, hash: 's1_signed' },
+      }));
+    }
+    if (url.endsWith('/logout')) {
+      if (options.method === 'POST') {
+        assert.equal(options.headers['X-Moonboys-CSRF'], 'signed-csrf');
+        if (holdLogout) return new Promise(resolve => {
+          finishPendingLogout = () => { sessionId = ''; resolve(jsonResponse(200, { ok: true })); };
+        });
+        sessionId = '';
+        return Promise.resolve(jsonResponse(200, { ok: true }));
+      }
+      return Promise.resolve(jsonResponse(200, { ok: true, csrf_token: sessionId ? 'signed-csrf' : null }));
+    }
+    throw new Error('Unexpected auth route: ' + url);
+  };
   vm.runInNewContext(inlineLauncherScript, {
     window,
     document,
@@ -252,13 +314,20 @@ function runLauncher({ initData = 'user=%7B%22id%22%3A123%7D', hash = '', search
     Array,
     Boolean,
     String,
+    fetch,
+    AbortController,
   });
+  for (let i = 0; i < 48; i++) await Promise.resolve();
 
-  return { assigned, body, calls, links, pageHandlers, root, status, storage, timers, viewportHandlers };
+  return { assigned, body, calls, links, pageHandlers, root, status, storage, timers, viewportHandlers, requests, connectButton, logoutButton, accountLabel, setLoginDenied: value => { denyNextLogin = value; }, finishLogout: () => { assert.ok(finishPendingLogout, 'Logout must have an in-flight request'); finishPendingLogout(); } };
+}
+
+async function settle() {
+  for (let i = 0; i < 48; i++) await Promise.resolve();
 }
 
 {
-  const harness = runLauncher();
+  const harness = await runLauncher();
   assert.ok(harness.calls.indexOf('querySelectorAll:nav a[href]') < harness.calls.indexOf('ready'), 'ready() must not be called before launcher links are discovered');
   assert.deepEqual(harness.calls.slice(harness.calls.indexOf('onEvent:viewportChanged'), harness.calls.indexOf('expand') + 1), ['onEvent:viewportChanged', 'ready', 'expand'], 'Telegram setup must register viewportChanged before ready() and expand()');
   for (const link of harness.links) {
@@ -270,11 +339,11 @@ function runLauncher({ initData = 'user=%7B%22id%22%3A123%7D', hash = '', search
 }
 
 {
-  const harness = runLauncher();
+  const harness = await runLauncher();
   harness.viewportHandlers[0]({ isStateStable: true });
   assert.equal(harness.body.getAttribute('aria-busy'), 'false', 'Stable viewport must clear busy state');
-  assert.equal(harness.status.textContent, 'Launcher loaded.', 'Stable viewport must show loaded copy');
-  assert.equal(harness.timers[0].cleared, true, 'Stable viewport must clear fallback timer id 0 via an explicit null check');
+  assert.equal(harness.status.textContent, 'Account verified. Select a game.', 'Stable viewport shows verified account after successful session check');
+  assert.equal(harness.timers.find(timer => timer.ms === 1200).cleared, true, 'Stable viewport must clear its own fallback timer');
   assert.equal(harness.links[1].getAttribute('aria-disabled'), null, 'isStateStable=true must enable navigation links');
   harness.links[1].dispatch('click');
   harness.links[2].dispatch('click');
@@ -290,19 +359,19 @@ function runLauncher({ initData = 'user=%7B%22id%22%3A123%7D', hash = '', search
 
 {
   const hashInitData = 'query_id=hash-only&user=%7B%22id%22%3A456%7D&auth_date=' + Math.floor(Date.now() / 1000);
-  const harness = runLauncher({ initData: '', hash: `#tgWebAppData=${encodeURIComponent(hashInitData)}` });
+  const harness = await runLauncher({ initData: '', hash: `#tgWebAppData=${encodeURIComponent(hashInitData)}` });
   assert.equal(harness.storage.get('moonboys.telegram.initData'), hashInitData, 'Hash tgWebAppData fallback must be stored in sessionStorage');
-  harness.timers[0].handler();
+  harness.timers.find(timer => timer.ms === 1200).handler();
   assert.equal(harness.links[0].getAttribute('aria-disabled'), null, 'Fallback timeout must enable navigation when no viewport event arrives');
   harness.links[0].dispatch('click');
   assert.equal(new URL(harness.assigned[0]).hash, `#tgWebAppData=${encodeURIComponent(hashInitData)}`, 'Hash tgWebAppData fallback must be retained in the destination fragment');
-  assert.equal(harness.timers[0].ms, 1200, 'Fallback timeout must wait 1200ms');
+  assert.ok(harness.timers.some(timer => timer.ms === 1200), 'Fallback timeout must wait 1200ms');
 }
 
 {
   const leakedQueryInitData = 'query_id=legacy-query&user=%7B%22id%22%3A789%7D';
-  const harness = runLauncher({
-    initData: '',
+  const harness = await runLauncher({
+    initData: 'user=%7B%22id%22%3A123%7D',
     search: `?v=20260902-games-shell-v6&tgWebAppData=${encodeURIComponent(leakedQueryInitData)}&startapp=arcade`,
   });
   harness.viewportHandlers[0]({ isStateStable: true });
@@ -317,16 +386,16 @@ for (const storedInitData of [
   'auth_date=' + (Math.floor(Date.now() / 1000) + 600),
   'user=%7B%22id%22%3A123%7D',
 ]) {
-  const harness = runLauncher({ initData: '', storedInitData });
+  const harness = await runLauncher({ initData: '', storedInitData });
   harness.viewportHandlers[0]({ isStateStable: true });
   harness.links[0].dispatch('click');
-  assert.equal(new URL(harness.assigned[0]).hash, '', 'Stale or undated inherited session data must not override website authentication');
+  assert.equal(harness.assigned.length, 0, 'Stale or undated data cannot unlock navigation');
   assert.equal(harness.storage.has('moonboys.telegram.initData'), false, 'Unusable inherited data must be removed from session storage');
 }
 
 {
   const storedInitData = 'auth_date=' + Math.floor(Date.now() / 1000) + '&user=%7B%22id%22%3A123%7D';
-  const harness = runLauncher({ initData: '', storedInitData });
+  const harness = await runLauncher({ initData: '', storedInitData });
   harness.viewportHandlers[0]({ isStateStable: true });
   harness.links[0].dispatch('click');
   assert.equal(new URL(harness.assigned[0]).hash, '#tgWebAppData=' + encodeURIComponent(storedInitData), 'Fresh session data remains available for Worker verification');
@@ -334,16 +403,16 @@ for (const storedInitData of [
 
 {
   const staleData = 'auth_date=' + (Math.floor(Date.now() / 1000) - 3700);
-  const harness = runLauncher({ initData: '', hash: '#tgWebAppData=' + encodeURIComponent(staleData), storedInitData: staleData });
+  const harness = await runLauncher({ initData: '', hash: '#tgWebAppData=' + encodeURIComponent(staleData), storedInitData: staleData });
   harness.viewportHandlers[0]({ isStateStable: true });
   harness.links[0].dispatch('click');
-  assert.equal(new URL(harness.assigned[0]).hash, '', 'Stale inherited hash data must not be forwarded');
+  assert.equal(harness.assigned.length, 0, 'Stale inherited hash data cannot unlock navigation');
 }
 
 {
   const currentSdkData = 'auth_date=' + Math.floor(Date.now() / 1000) + '&user=%7B%22id%22%3A456%7D';
   const staleData = 'auth_date=' + (Math.floor(Date.now() / 1000) - 3700);
-  const harness = runLauncher({ initData: currentSdkData, hash: '#tgWebAppData=' + encodeURIComponent(staleData), storedInitData: staleData });
+  const harness = await runLauncher({ initData: currentSdkData, hash: '#tgWebAppData=' + encodeURIComponent(staleData), storedInitData: staleData });
   harness.viewportHandlers[0]({ isStateStable: true });
   harness.links[0].dispatch('click');
   assert.equal(new URL(harness.assigned[0]).hash, '#tgWebAppData=' + encodeURIComponent(currentSdkData), 'Current Telegram SDK identity takes priority over inherited browser data');
@@ -351,8 +420,8 @@ for (const storedInitData of [
 
 {
   const contaminatedDestinationInitData = 'query_id=destination-query&user=%7B%22id%22%3A987%7D';
-  const harness = runLauncher();
-  harness.links[3].setAttribute('href', `/games/nbg-london/?v=${launcherRelease}&tgWebAppData=${encodeURIComponent(contaminatedDestinationInitData)}`);
+  const harness = await runLauncher();
+  harness.links[3].setAttribute('href', `/games/nbg-london/?v=${gameDestinationRelease}&tgWebAppData=${encodeURIComponent(contaminatedDestinationInitData)}`);
   harness.viewportHandlers[0]({ isStateStable: true });
   harness.links[3].dispatch('click');
   const assignedUrl = new URL(harness.assigned[0]);
@@ -362,12 +431,189 @@ for (const storedInitData of [
 }
 
 {
-  const harness = runLauncher();
+  const harness = await runLauncher();
   harness.viewportHandlers[0]({ isStateStable: true });
   harness.links[4].dispatch('click');
   assert.equal(harness.links[4].getAttribute('aria-disabled'), 'true', 'Navigation start must disable links');
   harness.pageHandlers.get('pageshow')();
+  await settle();
   assert.equal(harness.links[4].getAttribute('aria-disabled'), null, 'pageshow must restore enabled links after browser history return');
+}
+
+
+{
+  const harness = await runLauncher({ existingSessionId: '999' });
+  assert.equal(harness.links[0].getAttribute('aria-disabled'), 'true', 'Different cookie account never unlocks a Mini App');
+  assert.match(harness.status.textContent, /Another Telegram account/);
+  await settle();
+  assert.equal(harness.logoutButton.hidden, false, 'Account mismatch exposes a CSRF-protected logout');
+  harness.logoutButton.dispatch('click');
+  await settle();
+  assert.equal(harness.links[0].getAttribute('aria-disabled'), 'true', 'Logout does not unlock games');
+  assert.ok(harness.requests.some(x => x.url.endsWith('/logout') && x.options.method === 'POST'));
+}
+
+{
+  const harness = await runLauncher({ rejectLogin: true });
+  assert.equal(harness.links[0].getAttribute('aria-disabled'), 'true', 'Denied signature cannot unlock games');
+  assert.equal(harness.connectButton.hidden, false, 'Denied sign-in shows Retry');
+}
+
+{
+  const harness = await runLauncher({ lostCookie: true });
+  assert.equal(harness.links[0].getAttribute('aria-disabled'), 'true', 'Ignored Set-Cookie must not count as a website session');
+  assert.match(harness.status.textContent, /close and reopen/i,
+    'Consumed proof with lost website cookie requires a fresh Telegram launch');
+  assert.equal(harness.accountLabel.hidden, true);
+  assert.equal(harness.connectButton.textContent, 'Close Mini App',
+    'Never offer a retry that reposts an already-consumed signature');
+  const initialExchanges = harness.requests.filter(x => x.url.endsWith('/mini-app-session')).length;
+  assert.equal(initialExchanges, 1);
+  harness.pageHandlers.get('pageshow')();
+  await settle();
+  harness.connectButton.dispatch('click');
+  await settle();
+  assert.equal(harness.requests.filter(x => x.url.endsWith('/mini-app-session')).length, initialExchanges,
+    'History restore or clicking recovery cannot replay consumed initData');
+  assert.ok(harness.calls.includes('close'), 'Recovery closes Telegram Mini App for fresh signed launch');
+  assert.equal(harness.links[0].getAttribute('aria-disabled'), 'true');
+}
+
+{
+  const harness = await runLauncher({ initData: '', existingSessionId: '123' });
+  harness.viewportHandlers[0]({ isStateStable: true });
+  assert.equal(harness.links[0].getAttribute('aria-disabled'), null, 'Ordinary browser can restore a valid cookie session');
+  assert.equal(harness.requests.filter(x => x.url.endsWith('/mini-app-session')).length, 0);
+}
+
+{
+  const harness = await runLauncher({ initData: '' });
+  harness.connectButton.dispatch('click');
+  assert.match(harness.assigned[0], /^https:\/\/api\.cryptomoonboys\.com\/telegram\/website\/start\?/);
+}
+
+{
+  const harness = await runLauncher();
+  harness.viewportHandlers[0]({ isStateStable: true });
+  assert.equal(harness.accountLabel.hidden, false, 'Initial verified account is visible');
+  harness.setLoginDenied(true);
+  harness.pageHandlers.get('pageshow')();
+  await settle();
+  assert.equal(harness.links[0].getAttribute('aria-disabled'), 'true', 'Revalidation failure revokes game navigation');
+  assert.equal(harness.accountLabel.hidden, true, 'Revalidation failure clears stale connected identity');
+  assert.equal(harness.connectButton.hidden, false, 'Revalidation failure restores Retry');
+  harness.setLoginDenied(false);
+  harness.connectButton.dispatch('click');
+  await settle();
+  assert.equal(harness.links[0].getAttribute('aria-disabled'), null, 'Retry restores navigation only after verified recovery');
+}
+
+{
+  const harness = await runLauncher({ stalled: true });
+  harness.viewportHandlers[0]({ isStateStable: true });
+  assert.equal(harness.links[0].getAttribute('aria-disabled'), 'true');
+  const deadline = harness.timers.find(t => t.ms === 8000);
+  assert.ok(deadline, 'Login has an eight-second abort deadline');
+  deadline.handler();
+  await settle();
+  assert.equal(harness.connectButton.disabled, false, 'Timeout releases retry button');
+  assert.equal(harness.links[0].getAttribute('aria-disabled'), 'true');
+  assert.match(harness.status.textContent, /timed out/i);
+}
+
+
+{
+  const harness = await runLauncher({ rejectLogin: true });
+  const failureCopy = harness.status.textContent;
+  assert.match(failureCopy, /website_login_unavailable/, 'Original transient authentication error is visible');
+  harness.timers.find(timer => timer.ms === 1200).handler();
+  assert.equal(harness.status.textContent, failureCopy, 'Viewport fallback must not overwrite authentication failure');
+  assert.equal(harness.links[0].getAttribute('aria-disabled'), 'true');
+  assert.equal(harness.connectButton.hidden, false, 'Retry remains visible after fallback');
+}
+
+for (const loginFailureStatus of [401, 503]) {
+  const harness = await runLauncher({ existingSessionId: '123', rejectLogin: true, loginFailureStatus });
+  assert.equal(harness.links[0].getAttribute('aria-disabled'), 'true');
+  assert.equal(harness.connectButton.hidden, false, 'Login retry remains available');
+  assert.equal(harness.logoutButton.hidden, false, 'Website cookie allows logout after any authentication failure');
+  assert.ok(harness.requests.some(x => x.url.endsWith('/logout') && !x.options.method), 'Failure probes cookie-bound logout CSRF');
+  assert.match(harness.status.textContent, loginFailureStatus === 503 ? /website_login_unavailable/ : /close and reopen/i,
+    'Logout recovery must preserve the actionable login failure message');
+  assert.equal(harness.connectButton.textContent, loginFailureStatus === 503 ? 'Retry connection' : 'Close Mini App',
+    'Transient errors permit Retry; terminal proof errors require a new launch');
+  harness.logoutButton.dispatch('click');
+  await settle();
+  assert.equal(harness.links[0].getAttribute('aria-disabled'), 'true', 'Recovery logout never unlocks games');
+}
+
+{
+  const harness = await runLauncher({ holdLogout: true });
+  harness.viewportHandlers[0]({ isStateStable: true });
+  assert.equal(harness.links[0].getAttribute('aria-disabled'), null, 'Confirmed sign-in initially unlocks games');
+  harness.logoutButton.dispatch('click');
+  await settle();
+  assert.equal(harness.status.textContent, 'Signing out...');
+  assert.equal(harness.links[0].getAttribute('aria-disabled'), 'true', 'Logout locks links immediately');
+  harness.links[0].dispatch('click');
+  assert.equal(harness.assigned.length, 0, 'Click during pending logout must not navigate');
+  harness.pageHandlers.get('pageshow')();
+  await settle();
+  assert.equal(harness.links[0].getAttribute('aria-disabled'), 'true', 'pageshow cannot re-enable links mid-logout');
+  harness.viewportHandlers[0]({ isStateStable: true });
+  harness.links[1].dispatch('click');
+  assert.equal(harness.assigned.length, 0, 'Viewport stabilization cannot navigate mid-logout');
+  harness.finishLogout();
+  await settle();
+  assert.equal(harness.links[0].getAttribute('aria-disabled'), 'true');
+  assert.equal(harness.accountLabel.hidden, true, 'Successful logout removes old connected account');
+  assert.equal(harness.connectButton.hidden, false, 'Successful logout restores login control');
+}
+
+
+for (const loginFailureCode of ['mini_app_auth_expired', 'mini_app_auth_replayed', 'mini_app_auth_rejected', 'mini_app_auth_duplicate_field']) {
+  const harness = await runLauncher({ rejectLogin: true, loginFailureStatus: 401, loginFailureCode });
+  harness.viewportHandlers[0]({ isStateStable: true });
+  assert.match(harness.status.textContent, /close and reopen/i, 'Unusable signed evidence must require reopening Telegram');
+  assert.equal(harness.connectButton.textContent, 'Close Mini App');
+  assert.equal(harness.links[0].getAttribute('aria-disabled'), 'true');
+  const before = harness.requests.filter(request => request.url.endsWith('/mini-app-session')).length;
+  harness.pageHandlers.get('pageshow')();
+  await settle();
+  harness.connectButton.dispatch('click');
+  await settle();
+  assert.equal(harness.requests.filter(request => request.url.endsWith('/mini-app-session')).length, before,
+    'Terminal signed launch must never be resent after restore or recovery click');
+  assert.ok(harness.calls.includes('close'), 'Terminal proof recovery closes the Mini App');
+}
+
+{
+  const harness = await runLauncher();
+  harness.viewportHandlers[0]({ isStateStable: true });
+  const originalExchanges = harness.requests.filter(request => request.url.endsWith('/mini-app-session')).length;
+  assert.equal(originalExchanges, 1);
+  harness.logoutButton.dispatch('click');
+  await settle();
+  assert.match(harness.status.textContent, /Signed out.*Close and reopen/i);
+  assert.equal(harness.connectButton.textContent, 'Close Mini App', 'Logout cannot reuse the consumed signed launch proof');
+  assert.equal(harness.links[0].getAttribute('aria-disabled'), 'true');
+  harness.pageHandlers.get('pageshow')();
+  await settle();
+  harness.connectButton.dispatch('click');
+  await settle();
+  assert.equal(harness.requests.filter(request => request.url.endsWith('/mini-app-session')).length, originalExchanges,
+    'Confirmed logout must not automatically resubmit the consumed login proof');
+  assert.ok(harness.calls.includes('close'), 'Signed-out Mini App prompts a fresh Telegram launch');
+}
+
+{
+  const harness = await runLauncher({ initData: '', existingSessionId: '123' });
+  harness.logoutButton.dispatch('click');
+  await settle();
+  assert.equal(harness.connectButton.textContent, 'Log in with Telegram',
+    'Ordinary browser can use standard website login after logout');
+  harness.connectButton.dispatch('click');
+  assert.match(harness.assigned[0], /\/telegram\/website\/start\?/);
 }
 
 console.log('telegram-games-launcher.test.mjs passed');

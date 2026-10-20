@@ -2331,6 +2331,13 @@ CREATE TABLE IF NOT EXISTS telegram_website_credentials (
 CREATE INDEX IF NOT EXISTS idx_telegram_credential_expiry ON telegram_website_credentials(expires_at);
 CREATE INDEX IF NOT EXISTS idx_telegram_credential_session ON telegram_website_credentials(session_hash);
 
+-- Website session proof consumption for Telegram Mini App sign-in (migration 101).
+CREATE TABLE IF NOT EXISTS telegram_mini_app_login_replay (
+  proof_hash TEXT PRIMARY KEY NOT NULL,
+  expires_at INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_telegram_mini_app_login_replay_expiry ON telegram_mini_app_login_replay(expires_at);
+
 
 -- NBG London Telegram leaderboard tables (migrations 098 and 099).
 -- Permanent NBG London Level 1 leaderboard records.
