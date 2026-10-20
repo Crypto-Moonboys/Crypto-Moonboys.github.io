@@ -50,6 +50,9 @@
       var navigationStarted = false;
       var fallbackTimer = null;
       var cachedInitData = readTelegramInitData();
+      // A consumed launch cannot issue another cookie if its first Set-Cookie
+      // was lost. Only a fresh Telegram launch yields new signed evidence.
+      var relaunchRequiredForProof = '';
       var accountReady = false;
       var connecting = false;
       var connectButton = document.getElementById('connectTelegram');
@@ -223,6 +226,12 @@
       function connectAccount() {
         if (connecting) return;
         cachedInitData = readTelegramInitData();
+        if (relaunchRequiredForProof && cachedInitData === relaunchRequiredForProof) {
+          setDisconnected('Telegram could not save your login. Close and reopen this Mini App in Telegram for a fresh session.');
+          connectButton.textContent = 'Close Mini App';
+          return;
+        }
+        if (cachedInitData !== relaunchRequiredForProof) relaunchRequiredForProof = '';
         connecting = true;
         accountReady = false;
         setLinksEnabled(false);
@@ -247,15 +256,29 @@
           if (!cachedInitData) return verified;
           return requestWithDeadline('/telegram/website/session').then(function (restored) {
             if (!restored || restored.telegram_id !== verified.telegram_id) {
-              throw new Error('Account verification did not persist. Retry login.');
+              // This is not a missing-cookie case: the browser has returned
+              // an identity mismatch and the player must switch explicitly.
+              var mismatch = new Error('The website session belongs to a different Telegram account. Log out before switching.');
+              mismatch.status = 409;
+              throw mismatch;
             }
             return restored;
+          }).catch(function (error) {
+            if (verified.source === 'telegram_mini_app' &&
+                (error.status === 401 || error.status === 403)) {
+              // The Worker already consumed this signature and committed a
+              // session. Reposting identical initData cannot recreate it.
+              error.requiresFreshLaunch = true;
+              error.message = 'Telegram could not save your login. Close and reopen this Mini App in Telegram for a fresh session.';
+            }
+            throw error;
           });
         }).then(function (session) {
           if (typeof session.csrf_token !== 'string' || !session.csrf_token) {
             throw new Error('Website session lacks logout authorization.');
           }
           accountReady = true;
+          relaunchRequiredForProof = '';
           sessionCsrf = session.csrf_token;
           accountLabel.textContent = 'Connected: ' + (session.display_name || 'Telegram player');
           accountLabel.hidden = false;
@@ -267,6 +290,7 @@
           var message = error.status === 409
             ? 'Another Telegram account is connected. Log out before switching accounts.'
             : (error.message || 'Could not connect. Retry.');
+          if (error.requiresFreshLaunch) relaunchRequiredForProof = cachedInitData;
           setDisconnected(message);
           // Any authentication error may leave a valid website cookie in this
           // browser (including a transient network failure or rejected launch).
@@ -282,7 +306,9 @@
             // CSRF preparation can fail offline; keep the original login error
             // and visible Retry control rather than masking either.
           });
-          if (!cachedInitData) {
+          if (error.requiresFreshLaunch) {
+            connectButton.textContent = 'Close Mini App';
+          } else if (!cachedInitData) {
             connectButton.textContent = 'Log in with Telegram';
           } else {
             connectButton.textContent = 'Retry connection';
@@ -316,6 +342,11 @@
 
       connectButton.addEventListener('click', function () {
         cachedInitData = readTelegramInitData();
+        if (relaunchRequiredForProof && cachedInitData === relaunchRequiredForProof) {
+          setStatus('Close and reopen this Mini App in Telegram to get a fresh signed login.');
+          if (telegramApp && typeof telegramApp.close === 'function') telegramApp.close();
+          return;
+        }
         if (!cachedInitData) {
           var returnTo = window.location.origin + window.location.pathname + window.location.search;
           window.location.assign(apiBase + '/telegram/website/start?return_to=' + encodeURIComponent(returnTo));
