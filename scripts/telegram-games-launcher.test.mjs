@@ -226,6 +226,9 @@ async function runLauncher({ initData = 'user=%7B%22id%22%3A123%7D', hash = '', 
         expand() {
           calls.push('expand');
         },
+        close() {
+          calls.push('close');
+        },
       },
     },
     location,
@@ -279,7 +282,7 @@ async function runLauncher({ initData = 'user=%7B%22id%22%3A123%7D', hash = '', 
       if (sessionId && sessionId !== id) return Promise.resolve(jsonResponse(409, { error: 'logout_before_switching_accounts' }));
       sessionId = id;
       return Promise.resolve(jsonResponse(200, {
-        linked: true, telegram_id: id, display_name: 'Test', csrf_token: 'signed-csrf',
+        linked: true, source: 'telegram_mini_app', telegram_id: id, display_name: 'Test', csrf_token: 'signed-csrf',
         telegram_auth: { id, hash: 's1_signed' },
       }));
     }
@@ -459,8 +462,21 @@ for (const storedInitData of [
 {
   const harness = await runLauncher({ lostCookie: true });
   assert.equal(harness.links[0].getAttribute('aria-disabled'), 'true', 'Ignored Set-Cookie must not count as a website session');
-  assert.match(harness.status.textContent, /website_session_expired|persist/i);
+  assert.match(harness.status.textContent, /close and reopen/i,
+    'Consumed proof with lost website cookie requires a fresh Telegram launch');
   assert.equal(harness.accountLabel.hidden, true);
+  assert.equal(harness.connectButton.textContent, 'Close Mini App',
+    'Never offer a retry that reposts an already-consumed signature');
+  const initialExchanges = harness.requests.filter(x => x.url.endsWith('/mini-app-session')).length;
+  assert.equal(initialExchanges, 1);
+  harness.pageHandlers.get('pageshow')();
+  await settle();
+  harness.connectButton.dispatch('click');
+  await settle();
+  assert.equal(harness.requests.filter(x => x.url.endsWith('/mini-app-session')).length, initialExchanges,
+    'History restore or clicking recovery cannot replay consumed initData');
+  assert.ok(harness.calls.includes('close'), 'Recovery closes Telegram Mini App for fresh signed launch');
+  assert.equal(harness.links[0].getAttribute('aria-disabled'), 'true');
 }
 
 {
