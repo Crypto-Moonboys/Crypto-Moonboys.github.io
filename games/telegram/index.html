@@ -426,17 +426,10 @@
       try {
         if (telegramApp) telegramApp.expand();
       } catch (_) {}
-      // Fullscreen is controlled by the Telegram host, not CSS. Ask supported
-      // Desktop clients once; unsupported/older clients retain the centred
-      // page in their normal panel. Do not alter mobile Mini App behaviour.
-      try {
-        if (isDesktopTelegram &&
-            typeof telegramApp.requestFullscreen === 'function' &&
-            typeof telegramApp.isVersionAtLeast === 'function' &&
-            telegramApp.isVersionAtLeast('8.0') && !telegramApp.isFullscreen) {
-          telegramApp.requestFullscreen();
-        }
-      } catch (_) {}
+      // Do not force Desktop fullscreen during bootstrap. Telegram Desktop
+      // may render that mode inside a right-hand pane with a viewport wider
+      // than the visible area, clipping content on a normal single monitor.
+      // Retain the ordinary Mini App panel and centre content within it.
 
       fallbackTimer = window.setTimeout(enableNavigation, FALLBACK_READY_MS);
     }());
