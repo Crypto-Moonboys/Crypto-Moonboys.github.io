@@ -53,6 +53,7 @@
       // A consumed launch cannot issue another cookie if its first Set-Cookie
       // was lost. Only a fresh Telegram launch yields new signed evidence.
       var relaunchRequiredForProof = '';
+      var freshLaunchReason = '';
       var accountReady = false;
       var connecting = false;
       var connectButton = document.getElementById('connectTelegram');
@@ -227,11 +228,14 @@
         if (connecting) return;
         cachedInitData = readTelegramInitData();
         if (relaunchRequiredForProof && cachedInitData === relaunchRequiredForProof) {
-          setDisconnected('Telegram could not save your login. Close and reopen this Mini App in Telegram for a fresh session.');
+          setDisconnected(freshLaunchReason || 'Close and reopen this Mini App in Telegram for a fresh login.');
           connectButton.textContent = 'Close Mini App';
           return;
         }
-        if (cachedInitData !== relaunchRequiredForProof) relaunchRequiredForProof = '';
+        if (cachedInitData !== relaunchRequiredForProof) {
+          relaunchRequiredForProof = '';
+          freshLaunchReason = '';
+        }
         connecting = true;
         accountReady = false;
         setLinksEnabled(false);
@@ -279,6 +283,7 @@
           }
           accountReady = true;
           relaunchRequiredForProof = '';
+          freshLaunchReason = '';
           sessionCsrf = session.csrf_token;
           accountLabel.textContent = 'Connected: ' + (session.display_name || 'Telegram player');
           accountLabel.hidden = false;
@@ -287,10 +292,20 @@
           if (navigationEnabled) setLinksEnabled(true);
           setStatus('Account verified. Select a game.');
         }).catch(function (error) {
+          // An expired or invalid signed launch cannot become valid by retrying
+          // the same initData. Only Telegram can provide fresh launch evidence.
+          var terminalProofFailure = cachedInitData && /^mini_app_(?:auth_(?:expired|replayed|rejected|invalid|duplicate_field|required)|user_invalid)$/.test(error.message || '');
+          if (terminalProofFailure) {
+            error.requiresFreshLaunch = true;
+            error.message = 'Telegram login evidence has expired or cannot be verified. Close and reopen this Mini App in Telegram for a fresh login.';
+          }
           var message = error.status === 409
             ? 'Another Telegram account is connected. Log out before switching accounts.'
             : (error.message || 'Could not connect. Retry.');
-          if (error.requiresFreshLaunch) relaunchRequiredForProof = cachedInitData;
+          if (error.requiresFreshLaunch) {
+            relaunchRequiredForProof = cachedInitData;
+            freshLaunchReason = message;
+          }
           setDisconnected(message);
           // Any authentication error may leave a valid website cookie in this
           // browser (including a transient network failure or rejected launch).
@@ -329,7 +344,19 @@
         requestWithDeadline('/telegram/website/logout', {
           method: 'POST', headers: { 'X-Moonboys-CSRF': sessionCsrf }
         }).then(function () {
-          setDisconnected('Signed out. Reopen the Mini App to sign in with a different account.');
+          if (cachedInitData) {
+            // This proof may already have been consumed by a successful login.
+            // Logging out revokes the cookie, so reusing it cannot reconnect.
+            relaunchRequiredForProof = cachedInitData;
+            freshLaunchReason = 'Signed out. Close and reopen this Mini App in Telegram for a fresh login.';
+            setDisconnected(freshLaunchReason);
+            connectButton.textContent = 'Close Mini App';
+          } else {
+            relaunchRequiredForProof = '';
+            freshLaunchReason = '';
+            setDisconnected('Signed out. Log in with Telegram to reconnect.');
+            connectButton.textContent = 'Log in with Telegram';
+          }
         }).catch(function (error) {
           // A failed revocation must never be presented as a successful logout.
           setStatus(error.message || 'Logout could not be confirmed. Retry.');
