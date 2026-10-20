@@ -16994,7 +16994,7 @@ async function cmdGkStart(db, tok, chatId, telegramId, fromUser, chatType = 'pri
     `🎮 <a href="${TELEGRAM_GAMES_MENU_URL}">OPEN GAMES</a> — Sign in and start playing.\n\n` +
     `LOG-IN &amp; join the <a href="https://t.me/gkniftyheads">GKniftyHEADS</a> Telegram group for daily NEWS &amp; WTF Signals 🐝🐝🐝\n\n` +
     `Join a <a href="https://cryptomoonboys.com/battle-chamber/factions/index.html">GK Faction</a> 🎯\n\n` +
-    `Grind in all games for XP Clout, receive rewards to claim your own HODL WARRIOR ⚡️⚡️⚡️\n\n` +
+    `Play eligible games to earn server-backed XP and Clout where supported. Rewards depend on active qualifying routes; becoming a HODL WARRIOR requires a qualifying 1/1. ⚡️⚡️⚡️\n\n` +
     `<b>Any sign-in problems?</b>\n` +
     `🔗 /gklink — Link or refresh Telegram sync. Open the newest unique signup code. If that fails, run /gkunlink then /gklink.${xpMsg}\n\n` +
     `________________________`
