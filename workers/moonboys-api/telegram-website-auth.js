@@ -245,7 +245,13 @@ export async function handleTelegramWebsiteAuth(request, env, fetchImpl = fetch)
       const expiresAt = verified.authDate + 301;
       // D1 batch is atomic: duplicate proof or any write failure aborts
       // issuance. Do not set a cookie before confirmed writes.
-      const results = await env.DB.batch([
+      //
+      // On a replay, the batch rolls back. Inspect only the canonical proof
+      // hash after failure so clients receive a *terminal* response instead
+      // of retrying identical immutable initData forever after a reload.
+      // Unrelated database failures must still return the sanitized 503.
+      try {
+        const results = await env.DB.batch([
         // The Mini App login path may never visit /website/start (OAuth).
         // Reclaim expired/idle sessions here too, in the same atomic batch.
         // Foreign-key cascades also retire their website credentials.
@@ -267,9 +273,22 @@ export async function handleTelegramWebsiteAuth(request, env, fetchImpl = fetch)
         env.DB.prepare('INSERT INTO telegram_website_credentials (token_hash, session_hash, expires_at) VALUES (?, ?, ?)')
           .bind(await authDigest(accessHash), sessionHash, now + WEBSITE_ACCESS_SECONDS),
       ]);
-      requireWrites(results, 7);
-      if (results[2]?.meta?.changes !== 1 || results[4]?.meta?.changes !== 1 || results[5]?.meta?.changes !== 1 || results[6]?.meta?.changes !== 1) {
-        fail('website_login_unavailable', 503, 'd1_batch_unconfirmed');
+        requireWrites(results, 7);
+        if (results[2]?.meta?.changes !== 1 || results[4]?.meta?.changes !== 1 || results[5]?.meta?.changes !== 1 || results[6]?.meta?.changes !== 1) {
+          fail('website_login_unavailable', 503, 'd1_batch_unconfirmed');
+        }
+      } catch (error) {
+        let alreadyConsumed = false;
+        try {
+          const existing = await env.DB.prepare('SELECT 1 FROM telegram_mini_app_login_replay WHERE proof_hash = ? AND expires_at > ?')
+            .bind(replayKey, now).first();
+          alreadyConsumed = !!existing;
+        } catch {
+          // If replay lookup itself fails, preserve the original sanitized
+          // database error rather than guessing that the proof was consumed.
+        }
+        if (alreadyConsumed) fail('mini_app_auth_replayed');
+        throw error;
       }
       headers.append('Set-Cookie', setCookie(SESSION_COOKIE, secret, WEBSITE_SESSION_SECONDS));
       // Returning the credential does NOT execute a second DB batch.
