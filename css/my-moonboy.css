@@ -248,3 +248,7 @@
 @media (max-width: 640px) {
   .page-my-moonboy .mm-entry-grid { grid-template-columns: minmax(0,1fr); }
 }
+
+/* A session-aware logout action lives outside the private mission gate. */
+.page-my-moonboy .mm-session-controls { margin-top: 12px; }
+.page-my-moonboy .mm-session-controls [hidden] { display: none !important; }
