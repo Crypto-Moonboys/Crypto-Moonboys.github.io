@@ -9,6 +9,7 @@ import { readPetFurnitureState, buyPetFurniture, placePetFurniture, removePetFur
 import { readPetGardenState, plantPetGarden, harvestPetGarden } from './pets/home-garden.js';
 import { verifyTelegramWebhookSecret } from './telegram-webhook-auth.js';
 import { handleTelegramWebsiteAuth, isWebsiteCredential, verifyWebsiteCredential } from './telegram-website-auth.js';
+import { runTelegramChatMenuCleanup } from './telegram-chat-menu-cleanup.js';
 import { createDisplayedPetScope, isDisplayedPetScopeStaleError } from './pets/displayed-pet-scope.js';
 import { projectCommittedPetResult } from './pets/committed-result.js';
 import { RELIC_ROUTE_DETAILS } from './pets/relic-passives.js';
@@ -15185,6 +15186,7 @@ export default {
     const shouldRunDigest = !cron || cron === '0 9 * * *';
     const shouldRunDailySummary = !cron || cron === '0 9 * * *';
     const shouldRunPetNotifications = !cron || cron === '*/5 * * * *';
+    const shouldRunChatMenuCleanup = !cron || cron === '*/5 * * * *';
     const shouldRunTimedEvents = !cron || cron === '*/5 * * * *';
     const scheduledResults = [];
 
@@ -15213,6 +15215,28 @@ export default {
           skipped_already_sent: summary.skipped_already_sent,
           skipped_pending_recent: summary.skipped_pending_recent,
           failed: summary.failed,
+        });
+      }
+    }
+
+    if (shouldRunChatMenuCleanup) {
+      const menuCleanup = await runTelegramChatMenuCleanup(env).catch(() => ({
+        ok: false, error: 'chat_menu_cleanup_failed',
+      }));
+      scheduledResults.push({
+        task: 'telegram_chat_menu_cleanup',
+        ok: !!menuCleanup.ok,
+        error: menuCleanup.ok ? null : (menuCleanup.error || 'chat_menu_cleanup_failed'),
+      });
+      if (!menuCleanup.ok) {
+        logApiFailure('telegram_chat_menu_cleanup_failed', {
+          error: menuCleanup.error || 'chat_menu_cleanup_failed',
+        });
+      } else if (menuCleanup.considered || menuCleanup.seeded) {
+        logApiEvent('telegram_chat_menu_cleanup_progress', {
+          seeded: menuCleanup.seeded, considered: menuCleanup.considered,
+          cleared: menuCleanup.cleared, unavailable: menuCleanup.unavailable,
+          retry: menuCleanup.retry, exhausted: menuCleanup.exhausted,
         });
       }
     }
