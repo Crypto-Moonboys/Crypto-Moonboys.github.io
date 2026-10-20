@@ -55,13 +55,23 @@ test('Mini App signatures cannot be replayed, including case-variant hex or lost
   const { env, sqlite } = fixture();
   const signed = proof();
   assert.equal((await request(env, signed)).status, 200);
-  assert.equal((await request(env, signed)).status, 503); // UNIQUE constraint caught as unavailable, no cookie
+  // Simulate a fresh page load with no previously issued session cookie.
+  // A consumed proof must be terminal, not a retryable D1 503.
+  const duplicate = await request(env, signed);
+  assert.equal(duplicate.status, 401);
+  assert.equal((await duplicate.json()).error, 'mini_app_auth_replayed');
+  assert.equal(duplicate.headers.get('Set-Cookie'), null);
   const upper = new URLSearchParams(signed);
   upper.set('hash', upper.get('hash').toUpperCase());
   const reused = await request(env, upper.toString());
-  assert.equal(reused.status, 503);
+  assert.equal(reused.status, 401, 'Canonicalized signature case cannot evade replay protection');
+  assert.equal((await reused.json()).error, 'mini_app_auth_replayed');
   assert.equal(reused.headers.get('Set-Cookie'), null);
-  assert.deepEqual(counts(sqlite), [1, 1]);
+  assert.deepEqual(counts(sqlite), [1, 1], 'Replays do not create a second session');
+  assert.equal(sqlite.prepare('SELECT COUNT(*) AS n FROM telegram_website_credentials').get().n, 1,
+    'Replays do not issue additional website access credentials');
+  assert.equal(sqlite.prepare("SELECT COUNT(*) AS n FROM telegram_activity_log WHERE telegram_id = ? AND action = 'link_confirmed' AND metadata LIKE '%telegram_mini_app%'").get(ID).n, 1,
+    'Replays do not issue additional link confirmations');
   const expiresAt = sqlite.prepare('SELECT expires_at FROM telegram_mini_app_login_replay').get().expires_at;
   assert.equal(expiresAt, Number(new URLSearchParams(signed).get('auth_date')) + 301);
 });
@@ -108,6 +118,8 @@ test('Mini App D1 write failures never issue an unconfirmed website cookie', asy
     db: { ...env.DB, prepare: sql => env.DB.prepare(sql), batch: async () => { throw new Error('simulated database failure'); } },
   });
   assert.equal(failed.status, 503);
+  assert.equal((await failed.json()).error, 'website_login_unavailable',
+    'Unrelated D1 failures remain non-terminal 503 instead of false replay errors');
   assert.equal(failed.headers.get('Set-Cookie'), null);
   assert.deepEqual(counts(sqlite), [0, 0]);
 });
