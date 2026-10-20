@@ -48,6 +48,24 @@ assert.ok(html.includes('aria-busy="true"'), 'Games launcher must expose initial
 assert.ok(html.includes('Checking Telegram account...'), 'Games launcher must show account verification copy');
 assert.ok(html.includes('<h1>Crypto Moonboys Games</h1>'), 'Games launcher must show a plain text title');
 assert.match(html, /background:\s*#000\s*;/, 'Launcher must have a solid black background');
+const mobileMainRule = html.match(/(?:^|\n)\s*main\s*\{([^}]*)\}/)?.[1] || '';
+const desktopMainRule = html.match(/body\.is-desktop-telegram main\s*\{([^}]*)\}/)?.[1] || '';
+assert.match(mobileMainRule, /box-sizing:\s*border-box;\s*width:\s*100%;\s*padding:\s*20px 16px;/,
+  'Mobile/tablet launcher must retain the original full-width presentation');
+assert.doesNotMatch(mobileMainRule, /max-width|margin:\s*0 auto/,
+  'Mobile iOS/Android launcher must not receive desktop width caps');
+assert.match(desktopMainRule, /max-width:\s*560px;\s*margin:\s*0 auto;/,
+  'Only Telegram Desktop/macOS launcher must centre its content');
+for (const edge of ['top', 'right', 'bottom', 'left']) {
+  assert.ok(desktopMainRule.includes(`padding-${edge}: calc(`),
+    `Fullscreen desktop must reserve ${edge} padding`);
+  assert.ok(desktopMainRule.includes(`var(--tg-safe-area-inset-${edge}, 0px)`),
+    `Fullscreen desktop must honour Telegram's ${edge} safe area`);
+  assert.ok(desktopMainRule.includes(`var(--tg-content-safe-area-inset-${edge}, 0px)`),
+    `Fullscreen desktop must honour Telegram's ${edge} content safe area`);
+}
+assert.match(html, /#connectedAccount\s*\{\s*overflow-wrap:\s*anywhere;\s*\}/,
+  'Long Telegram display names must not cause horizontal overflow');
 assert.doesNotMatch(html, /gradient\(|box-shadow|text-shadow|<canvas|<img\b|class="marquee"|class="control-deck"/i, 'Launcher must have no decorative effects or heavyweight visual components');
 assert.equal((html.match(/<nav\b/g) || []).length, 1, 'Launcher must have a single plain links menu');
 assert.equal((html.match(/<nav[\s\S]*?<\/nav>/g) || [])[0]?.match(/<a\s/g)?.length, 5, 'Launcher must show five text links');
@@ -174,7 +192,7 @@ class FakeElement {
   }
 }
 
-async function runLauncher({ initData = 'user=%7B%22id%22%3A123%7D', hash = '', search = '?v=20260902-games-shell-v6&startapp=arcade', storedInitData = '', existingSessionId = '', rejectLogin = false, loginFailureStatus = 503, loginFailureCode = '', lostCookie = false, stalled = false, holdLogout = false } = {}) {
+async function runLauncher({ initData = 'user=%7B%22id%22%3A123%7D', hash = '', search = '?v=20260902-games-shell-v6&startapp=arcade', storedInitData = '', existingSessionId = '', rejectLogin = false, loginFailureStatus = 503, loginFailureCode = '', lostCookie = false, stalled = false, holdLogout = false, telegramPlatform = 'android', fullscreenSupported = true, fullscreenThrows = false, alreadyFullscreen = false } = {}) {
   const calls = [];
   const timers = [];
   const viewportHandlers = [];
@@ -218,6 +236,16 @@ async function runLauncher({ initData = 'user=%7B%22id%22%3A123%7D', hash = '', 
     Telegram: {
       WebApp: {
         initData,
+        platform: telegramPlatform,
+        isFullscreen: alreadyFullscreen,
+        isVersionAtLeast(version) {
+          calls.push('isVersionAtLeast:' + version);
+          return fullscreenSupported;
+        },
+        requestFullscreen() {
+          calls.push('requestFullscreen');
+          if (fullscreenThrows) throw new Error('UNSUPPORTED');
+        },
         onEvent(name, handler) {
           calls.push(`onEvent:${name}`);
           if (name === 'viewportChanged') viewportHandlers.push(handler);
@@ -616,6 +644,44 @@ for (const loginFailureCode of ['mini_app_auth_expired', 'mini_app_auth_replayed
     'Ordinary browser can use standard website login after logout');
   harness.connectButton.dispatch('click');
   assert.match(harness.assigned[0], /\/telegram\/website\/start\?/);
+}
+
+
+{
+  const desktop = await runLauncher({ telegramPlatform: 'tdesktop' });
+  assert.equal(desktop.body.classList.contains('is-desktop-telegram'), true,
+    'Telegram Desktop gains the responsive centred content rule');
+  assert.equal(desktop.calls.filter(item => item === 'requestFullscreen').length, 1,
+    'Supported Telegram Desktop must request fullscreen exactly once');
+  assert.ok(desktop.calls.indexOf('requestFullscreen') > desktop.calls.indexOf('expand'),
+    'Fullscreen must be requested after the normal Telegram ready and expand sequence');
+  assert.equal(desktop.status.textContent, 'Account verified. Select a game.',
+    'Fullscreen request must preserve verified Telegram login');
+  desktop.viewportHandlers[0]({ isStateStable: true });
+  desktop.links[0].dispatch('click');
+  assert.equal(desktop.assigned.length, 1, 'Fullscreen must retain game navigation');
+
+  const mac = await runLauncher({ telegramPlatform: 'macos' });
+  assert.ok(mac.calls.includes('requestFullscreen'), 'Supported Telegram macOS Mini App requests fullscreen');
+  assert.ok(mac.body.classList.contains('is-desktop-telegram'), 'macOS launcher also receives centred layout');
+  const unsupported = await runLauncher({ telegramPlatform: 'tdesktop', fullscreenSupported: false });
+  assert.ok(!unsupported.calls.includes('requestFullscreen'),
+    'Old desktop SDK must fall back to centred webview layout');
+  assert.ok(unsupported.body.classList.contains('is-desktop-telegram'), 'Old desktop SDK retains centred layout');
+  const denied = await runLauncher({ telegramPlatform: 'tdesktop', fullscreenThrows: true });
+  assert.ok(denied.calls.includes('requestFullscreen'));
+  assert.equal(denied.status.textContent, 'Account verified. Select a game.',
+    'Host rejection of fullscreen must not break login');
+  const fullscreen = await runLauncher({ telegramPlatform: 'tdesktop', alreadyFullscreen: true });
+  assert.ok(!fullscreen.calls.includes('requestFullscreen'), 'Already fullscreen must not make redundant requests');
+  const mobile = await runLauncher({ telegramPlatform: 'android' });
+  assert.ok(!mobile.calls.includes('requestFullscreen'), 'Existing Android Mini App behaviour must remain unchanged');
+  assert.ok(!mobile.body.classList.contains('is-desktop-telegram'), 'Android keeps full-width layout');
+  const ios = await runLauncher({ telegramPlatform: 'ios' });
+  assert.ok(!ios.calls.includes('requestFullscreen'), 'Existing iOS Mini App behaviour must remain unchanged');
+  assert.ok(!ios.body.classList.contains('is-desktop-telegram'), 'iOS and iPad keep full-width layout');
+  const tablet = await runLauncher({ telegramPlatform: 'weba' });
+  assert.ok(!tablet.body.classList.contains('is-desktop-telegram'), 'Wide web/tablet host must not inherit desktop cap');
 }
 
 console.log('telegram-games-launcher.test.mjs passed');
