@@ -66,6 +66,24 @@ export async function runTelegramChatMenuCleanup(env, {
     ORDER BY id ASC LIMIT ?`).bind(CHAT_MENU_CLEANUP_SEED_LIMIT).run();
   if (seed?.success !== true) throw new Error('chat_menu_cleanup_seed_failed');
 
+  const seeded = Number(seed?.meta?.changes || 0);
+  const readCooldown = async () => {
+    const record = await db.prepare(
+      'SELECT cooldown_until FROM telegram_chat_menu_cleanup_control WHERE id = 1'
+    ).bind().first();
+    if (!record || !Number.isSafeInteger(record.cooldown_until)) {
+      throw new Error('chat_menu_cleanup_cooldown_unavailable');
+    }
+    return record.cooldown_until;
+  };
+  // A 429 may be bot-wide, not scoped to the row that received it.
+  // Skip the entire run while Telegram's shared cooldown is active.
+  const cooldownUntil = await readCooldown();
+  if (now < cooldownUntil) {
+    return { ok: true, seeded, considered: 0, cleared: 0, unavailable: 0,
+      retry: 0, exhausted: 0, persist_failed: 0, paused: true, cooldown_until: cooldownUntil };
+  }
+
   const due = await db.prepare(`SELECT user_id, telegram_id, attempts
     FROM telegram_chat_menu_cleanup
     WHERE state IN ('pending', 'retry') AND next_attempt_at <= ?
@@ -74,8 +92,9 @@ export async function runTelegramChatMenuCleanup(env, {
     .bind(now, CHAT_MENU_CLEANUP_MAX_ATTEMPTS, runLimit).all();
   if (due?.success !== true || !Array.isArray(due.results)) throw new Error('chat_menu_cleanup_query_failed');
 
-  const stats = { ok: true, seeded: Number(seed?.meta?.changes || 0),
-    considered: due.results.length, cleared: 0, unavailable: 0, retry: 0, exhausted: 0, persist_failed: 0 };
+  const stats = { ok: true, seeded, considered: 0, cleared: 0, unavailable: 0,
+    retry: 0, exhausted: 0, persist_failed: 0, paused: false };
+  let pausedForFlood = false;
   async function handle(job) {
     const attempts = Number(job.attempts || 0);
     const result = await resetLegacyTelegramChatMenu(env.TELEGRAM_BOT_TOKEN, job.telegram_id, fetchImpl);
@@ -88,9 +107,25 @@ export async function runTelegramChatMenuCleanup(env, {
     // chunks must never shorten the server's minimum wait period.
     const completedAt = Math.max(now, Math.floor(clock()));
     const backoffSeconds = 300 * (2 ** attempts);
-    const dueAt = state === 'retry'
-      ? completedAt + Math.max(backoffSeconds, result.retryAfterSeconds || 0)
-      : 0;
+    const floodDelay = Math.max(backoffSeconds, result.retryAfterSeconds || 0);
+    const dueAt = state === 'retry' ? completedAt + floodDelay : 0;
+    if (result.category === 'rate_limited') {
+      // Persist before continuing to another target. MAX guarantees that
+      // separate cron executions and simultaneous 429s cannot shorten an
+      // already-advised Telegram cooldown.
+      pausedForFlood = true;
+      const floodUntil = completedAt + floodDelay;
+      try {
+        const hold = await db.prepare(`UPDATE telegram_chat_menu_cleanup_control
+          SET cooldown_until = MAX(cooldown_until, ?) WHERE id = 1`)
+          .bind(floodUntil).run();
+        if (hold?.success !== true || Number(hold?.meta?.changes) !== 1) {
+          stats.persist_failed++;
+        }
+      } catch {
+        stats.persist_failed++;
+      }
+    }
     const terminal = ['cleared', 'unavailable', 'exhausted'].includes(state);
     try {
       const saved = await db.prepare(`UPDATE telegram_chat_menu_cleanup
@@ -111,7 +146,19 @@ export async function runTelegramChatMenuCleanup(env, {
     }
   }
   for (let index = 0; index < due.results.length; index += PARALLEL_TELEGRAM_REQUESTS) {
-    await Promise.all(due.results.slice(index, index + PARALLEL_TELEGRAM_REQUESTS).map(handle));
+    // Check again between chunks in case another scheduled invocation saw a
+    // rate limit while this run was processing its previous three requests.
+    if (pausedForFlood || Math.max(now, Math.floor(clock())) < await readCooldown()) {
+      stats.paused = true;
+      break;
+    }
+    const chunk = due.results.slice(index, index + PARALLEL_TELEGRAM_REQUESTS);
+    stats.considered += chunk.length;
+    await Promise.all(chunk.map(handle));
+    if (pausedForFlood) {
+      stats.paused = true;
+      break;
+    }
   }
   stats.ok = stats.persist_failed === 0;
   if (!stats.ok) stats.error = 'chat_menu_cleanup_write_failed';
