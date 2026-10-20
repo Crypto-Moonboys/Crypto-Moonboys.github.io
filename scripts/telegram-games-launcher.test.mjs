@@ -48,24 +48,36 @@ assert.ok(html.includes('aria-busy="true"'), 'Games launcher must expose initial
 assert.ok(html.includes('Checking Telegram account...'), 'Games launcher must show account verification copy');
 assert.ok(html.includes('<h1>Crypto Moonboys Games</h1>'), 'Games launcher must show a plain text title');
 assert.match(html, /background:\s*#000\s*;/, 'Launcher must have a solid black background');
-const mobileMainRule = html.match(/(?:^|\n)\s*main\s*\{([^}]*)\}/)?.[1] || '';
+const bodyRule = html.match(/(?:^|\n)\s*body\s*\{([^}]*)\}/)?.[1] || '';
+const cardRule = html.match(/(?:^|\n)\s*main\s*\{([^}]*)\}/)?.[1] || '';
 const desktopMainRule = html.match(/body\.is-desktop-telegram main\s*\{([^}]*)\}/)?.[1] || '';
-assert.match(mobileMainRule, /box-sizing:\s*border-box;\s*width:\s*100%;\s*padding:\s*20px 16px;/,
-  'Mobile/tablet launcher must retain the original full-width presentation');
-assert.doesNotMatch(mobileMainRule, /max-width|margin:\s*0 auto/,
-  'Mobile iOS/Android launcher must not receive desktop width caps');
-assert.match(desktopMainRule, /max-width:\s*560px;\s*margin:\s*0 auto;/,
-  'Only Telegram Desktop/macOS launcher must centre its content');
+const navigationRule = html.match(/(?:^|\n)\s*nav a\s*\{([^}]*)\}/)?.[1] || '';
+assert.match(bodyRule, /display:\s*flex;[\s\S]*align-items:\s*center;[\s\S]*justify-content:\s*center;/,
+  'All Telegram platforms must centre the black card in the available viewport');
+assert.match(bodyRule, /min-height:\s*100dvh;/,
+  'The black canvas must use the visible viewport height in Telegram');
+for (const declaration of [
+  'box-sizing: border-box;', 'width: 100%;', 'max-width: 1280px;',
+  'min-height: min(100dvh, 720px);', 'margin: 0 auto;', 'background: #000;',
+  'display: flex;', 'flex-direction: column;', 'align-items: center;',
+  'justify-content: center;', 'text-align: center;',
+]) {
+  assert.ok(cardRule.includes(declaration), `Launcher black HD card must include ${declaration}`);
+}
+assert.match(navigationRule, /text-align:\s*center;/,
+  'All five Games links must be centred');
+assert.match(html, /nav\s*\{\s*width:\s*100%;\s*\}/,
+  'Games link list must fit the available Telegram viewport');
 for (const edge of ['top', 'right', 'bottom', 'left']) {
   assert.ok(desktopMainRule.includes(`padding-${edge}: calc(`),
-    `Fullscreen desktop must reserve ${edge} padding`);
+    `Desktop fullscreen must reserve ${edge} padding`);
   assert.ok(desktopMainRule.includes(`var(--tg-safe-area-inset-${edge}, 0px)`),
-    `Fullscreen desktop must honour Telegram's ${edge} safe area`);
+    `Desktop fullscreen must honour Telegram's ${edge} safe area`);
   assert.ok(desktopMainRule.includes(`var(--tg-content-safe-area-inset-${edge}, 0px)`),
-    `Fullscreen desktop must honour Telegram's ${edge} content safe area`);
+    `Desktop fullscreen must honour Telegram's ${edge} content safe area`);
 }
-assert.match(html, /#connectedAccount\s*\{\s*overflow-wrap:\s*anywhere;\s*\}/,
-  'Long Telegram display names must not cause horizontal overflow');
+assert.match(html, /#connectedAccount\s*\{\s*max-width:\s*100%;\s*overflow-wrap:\s*anywhere;\s*\}/,
+  'Long Telegram display names must wrap without horizontal overflow');
 assert.doesNotMatch(html, /gradient\(|box-shadow|text-shadow|<canvas|<img\b|class="marquee"|class="control-deck"/i, 'Launcher must have no decorative effects or heavyweight visual components');
 assert.equal((html.match(/<nav\b/g) || []).length, 1, 'Launcher must have a single plain links menu');
 assert.equal((html.match(/<nav[\s\S]*?<\/nav>/g) || [])[0]?.match(/<a\s/g)?.length, 5, 'Launcher must show five text links');
