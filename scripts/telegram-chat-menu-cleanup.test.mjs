@@ -94,22 +94,40 @@ test('Telegram rate limiting uses bounded durable backoff; permanent failures do
     const id = JSON.parse(options.body).chat_id;
     calls.push(id);
     if (id === '7001' && calls.filter(x => x === id).length === 1)
-      return { ok: false, status: 429, json: async () => ({ ok: false, error_code: 429, description: 'secret upstream data' }) };
+      return { ok: false, status: 429, json: async () => ({
+        ok: false, error_code: 429, description: 'secret upstream data',
+        parameters: { retry_after: 7200 },
+      }) };
     if (id === '7002') return { ok: false, status: 403, json: async () => ({ ok: false, error_code: 403 }) };
     return { ok: true, status: 200, json: async () => ({ ok: true }) };
   };
   const now = 1800000000;
   const first = await runTelegramChatMenuCleanup(env, { fetchImpl, now });
   assert.deepEqual({ retry: first.retry, unavailable: first.unavailable, cleared: first.cleared }, { retry: 1, unavailable: 1, cleared: 1 });
-  assert.equal(status(sqlite, '7001').next_attempt_at, now + 300);
+  assert.equal(status(sqlite, '7001').next_attempt_at, now + 7200,
+    'Server-requested flood-control delay must override shorter local exponential backoff');
   assert.equal(status(sqlite, '7002').last_error_code, 'bot_blocked');
   assert.equal(status(sqlite, '7002').finished_at, now);
   assert.doesNotMatch(JSON.stringify(sqlite.prepare('SELECT * FROM telegram_chat_menu_cleanup').all()), /secret upstream data/);
   const early = await runTelegramChatMenuCleanup(env, { fetchImpl, now: now + 20 });
   assert.equal(early.considered, 0, 'Retries must wait for durable backoff');
-  const later = await runTelegramChatMenuCleanup(env, { fetchImpl, now: now + 300 });
+  const stillLimited = await runTelegramChatMenuCleanup(env, { fetchImpl, now: now + 7199 });
+  assert.equal(stillLimited.considered, 0, 'The chat must not be retried a second before Telegram allows it');
+  const later = await runTelegramChatMenuCleanup(env, { fetchImpl, now: now + 7200 });
   assert.equal(later.cleared, 1);
   assert.equal(status(sqlite, '7001').attempts, 2);
+});
+
+test('429 with missing or malformed retry_after uses ordinary bounded backoff', async () => {
+  const { env, sqlite } = fixture(['99112233']);
+  const r = await runTelegramChatMenuCleanup(env, {
+    now: 1800000000,
+    fetchImpl: async () => ({ ok: false, status: 429, json: async () => ({
+      ok: false, error_code: 429, parameters: { retry_after: -40 },
+    }) }),
+  });
+  assert.equal(r.retry, 1);
+  assert.equal(status(sqlite, '99112233').next_attempt_at, 1800000300);
 });
 
 test('failed Telegram requests exhaust retries and do not spin forever or requeue after restarts', async () => {
