@@ -7,15 +7,11 @@ const validPrivateChatId = id => /^[1-9]\d{0,19}$/.test(String(id || ''));
 
 export async function ensureTelegramGamesPinned(botToken, chatId, gamesUrl, {
   fetchImpl = fetch,
-  db,
 } = {}) {
   if (!botToken || !validPrivateChatId(chatId) ||
       typeof gamesUrl !== 'string' || !gamesUrl.startsWith('https://')) {
     return { ok: false, status: 'invalid_input' };
   }
-  // A durable per-chat claim is required: getChat only exposes the newest pin.
-  // Fail closed when storage is missing or unavailable rather than duplicating pins.
-  if (!db?.prepare) return { ok: false, status: 'storage_unavailable' };
   const base = `https://api.telegram.org/bot${botToken}/`;
   async function call(method, args) {
     const res = await fetchImpl(base + method, {
@@ -40,21 +36,12 @@ export async function ensureTelegramGamesPinned(botToken, chatId, gamesUrl, {
   if (pinned?.text === PIN_TEXT && pinned.reply_markup?.inline_keyboard?.some(row =>
     row.some(button => button.text === 'OPEN GAMES' &&
       (button.web_app?.url === gamesUrl || button.url === gamesUrl)))) {
-    try {
-      await db.prepare('INSERT OR IGNORE INTO telegram_games_pins (chat_id, message_id) VALUES (?, ?)')
-        .bind(String(chatId), pinned.message_id || 0).run();
-    } catch { return { ok: false, status: 'storage_unavailable' }; }
     return { ok: true, status: 'already_pinned' };
   }
 
-  // Atomic claim prevents concurrent /start and /games calls creating duplicates.
-  // An incomplete claim intentionally blocks retries until reconciled manually;
-  // blindly retrying could create another pin after an ambiguous Telegram response.
-  try {
-    const claim = await db.prepare('INSERT OR IGNORE INTO telegram_games_pins (chat_id, message_id) VALUES (?, 0)')
-      .bind(String(chatId)).run();
-    if (claim?.meta?.changes !== 1) return { ok: true, status: 'already_recorded' };
-  } catch { return { ok: false, status: 'storage_unavailable' }; }
+  // Telegram exposes only the most recent pin; a different pin could be
+  // above an existing Games pin. Do not create duplicates or override it.
+  if (pinned) return { ok: true, status: 'other_pin_present' };
 
   let sent;
   try {
@@ -74,13 +61,7 @@ export async function ensureTelegramGamesPinned(botToken, chatId, gamesUrl, {
     const pinnedResult = await call('pinChatMessage', {
       chat_id: chatId, message_id: messageId, disable_notification: true,
     });
-    if (pinnedResult === true) {
-      try {
-        await db.prepare('UPDATE telegram_games_pins SET message_id = ? WHERE chat_id = ?')
-          .bind(messageId, String(chatId)).run();
-      } catch { /* Keep the durable claim to prevent duplicates. */ }
-      return { ok: true, status: 'pinned' };
-    }
+    if (pinnedResult === true) return { ok: true, status: 'pinned' };
   } catch {
     // Pinning can fail for users or clients that restrict bot pins.
   }
