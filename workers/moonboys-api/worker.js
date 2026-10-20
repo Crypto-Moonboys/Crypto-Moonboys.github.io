@@ -16636,7 +16636,7 @@ async function handleTelegramUpdate(update, env) {
   const stableEventKey = buildTelegramMessagePetEventKey(msg, telegramId, cmdBase, argStr);
 
   if (String(chatType) === 'private' && telegramId) {
-    await setDefaultTelegramGamesMenuButton(tok, telegramId);
+    await clearTelegramGamesChatMenuButton(tok, telegramId);
   }
 
   if (env.PET_MINI_APP_ENABLED === 'true' && (isPetMiniAppCommand(cmdBase) || (cmdBase === 'start' && isPetMiniAppStartArgument(argStr)))) {
@@ -16664,6 +16664,8 @@ async function handleTelegramUpdate(update, env) {
     case 'start':        await cmdGkStart(db, tok, chatId, telegramId, fromUser);     break;
     case 'gkhelp':
     case 'help':         await cmdGkHelp(tok, chatId);                                break;
+    case 'gkgames':
+    case 'games':        await cmdGamesLauncher(tok, chatId, chatType);               break;
     case 'gklink':
     case 'link':         await cmdGkLink(db, tok, chatId, telegramId);               break;
     case 'gkstatus':     await cmdGkStatus(env, tok, chatId, telegramId, fromUser);  break;
@@ -16858,16 +16860,32 @@ function petMiniAppFocusForCallback(data) {
   return '';
 }
 
-async function setDefaultTelegramGamesMenuButton(botToken, telegramId) {
+async function clearTelegramGamesChatMenuButton(botToken, telegramId) {
   if (!botToken || !telegramId) return;
+  // Restore the Telegram command menu for this private chat. The former
+  // persistent web_app Games button opens a mispositioned desktop popup.
+  // Games is instead available as an in-message inline Web App button.
   await fetch(`https://api.telegram.org/bot${botToken}/setChatMenuButton`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       chat_id: telegramId,
-      menu_button: { type: 'web_app', text: TELEGRAM_GAMES_MENU_TEXT, web_app: { url: TELEGRAM_GAMES_MENU_URL } },
+      menu_button: { type: 'commands' },
     }),
   }).catch(() => null);
+}
+
+function telegramGamesChatButton(chatType = 'private') {
+  return String(chatType) === 'private'
+    ? { text: TELEGRAM_GAMES_MENU_TEXT, web_app: { url: TELEGRAM_GAMES_MENU_URL } }
+    : { text: TELEGRAM_GAMES_MENU_TEXT, url: TELEGRAM_GAMES_MENU_URL };
+}
+
+async function cmdGamesLauncher(botToken, chatId, chatType = 'private') {
+  await sendTelegramMessage(botToken, chatId,
+    '<b>Crypto Moonboys Games</b>\nOpen the games launcher from this chat.',
+    { reply_markup: { inline_keyboard: [[telegramGamesChatButton(chatType)]] } },
+  );
 }
 
 function petMiniAppLaunchUrl(destination = 'home', requestedFocus = '') {
@@ -16884,13 +16902,13 @@ async function cmdPetMiniAppLauncher(botToken, chatId, telegramId, chatType = 'p
   const screen = normalizePetMiniAppDestination(destination);
   const normalizedFocus = PET_MINI_APP_FOCUSES.has(String(focus || '')) ? String(focus) : '';
   const url = petMiniAppLaunchUrl(screen, normalizedFocus);
-  if (String(chatType) === 'private') await setDefaultTelegramGamesMenuButton(botToken, telegramId);
+  if (String(chatType) === 'private') await clearTelegramGamesChatMenuButton(botToken, telegramId);
   const launchButton = String(chatType) === 'private'
     ? { text: 'OPEN MOONPET OS', web_app: { url } }
     : { text: 'OPEN MOONPET OS', url: `https://t.me/WIKICOMSBOT?start=moonpet_${screen}${normalizedFocus ? `_${normalizedFocus}` : ''}` };
   await sendTelegramMessage(botToken, chatId,
     `<b>MOONPET OS</b>\nThe pet game now runs inside its HTML5 Mini App. Chat gameplay controls are retired.`,
-    { reply_markup: { inline_keyboard: [[launchButton]] } },
+    { reply_markup: { inline_keyboard: [[launchButton], [telegramGamesChatButton(chatType)]] } },
   );
 }
 
@@ -16929,6 +16947,7 @@ async function cmdGkStart(db, tok, chatId, telegramId, fromUser) {
       [
         { text: '🌐 Open in Browser',      url: `${SITE_URL}/gkniftyheads-incubator.html` },
       ],
+      [telegramGamesChatButton()],
     ],
   };
   await sendTelegramMessage(tok, chatId,
@@ -16940,6 +16959,7 @@ async function cmdGkStart(db, tok, chatId, telegramId, fromUser) {
     `🏆 /gkleaderboard — Community XP leaderboard\n` +
     `🗺️ /gkquests — Active missions\n` +
     `⚔️ /gkfaction — View faction status or choose on the website\n` +
+    `🎮 /games — Open Games inside this chat\n` +
     `❓ /gkhelp — Full command list${xpMsg}`,
     { reply_markup: replyMarkup },
   );
@@ -16954,11 +16974,13 @@ async function cmdGkHelp(tok, chatId) {
       [
         { text: '🌐 Open in Browser', url: `${SITE_URL}/gkniftyheads-incubator.html` },
       ],
+      [telegramGamesChatButton()],
     ],
   };
   await sendTelegramMessage(tok, chatId,
     `📖 <b>Moonboys GK Commands</b>\n\n` +
     `/gkstart — Start and register\n` +
+    `/games — Open Games from a button in this chat\n` +
     `/gklink — Link/refresh Telegram sync (required for Block Topia)\n` +
     `/gkstatus — XP and faction stats\n` +
     `/gkseason — Current season info\n` +
