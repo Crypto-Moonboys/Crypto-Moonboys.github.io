@@ -118,6 +118,47 @@ test('Telegram rate limiting uses bounded durable backoff; permanent failures do
   assert.equal(status(sqlite, '7001').attempts, 2);
 });
 
+test('Telegram retry_after starts after delayed response, not cron start', async () => {
+  const startedAt = 1800000000;
+  let responseClock = startedAt;
+  const { env, sqlite } = fixture(['99112234']);
+  let requests = 0;
+  const fetchImpl = async () => {
+    requests++;
+    // Simulate later Telegram response after slow network/chunk processing.
+    responseClock += 23;
+    if (requests === 1) {
+      return { ok: false, status: 429, json: async () => ({
+        ok: false, error_code: 429, parameters: { retry_after: 7200 },
+      }) };
+    }
+    return { ok: true, status: 200, json: async () => ({ ok: true }) };
+  };
+  const options = { fetchImpl, clock: () => responseClock };
+  const result = await runTelegramChatMenuCleanup(env, { ...options, now: startedAt });
+  assert.equal(result.retry, 1);
+  assert.equal(status(sqlite, '99112234').next_attempt_at, startedAt + 23 + 7200,
+    'The full flood-control window starts after the response arrives');
+  assert.equal(status(sqlite, '99112234').attempts, 1);
+  const premature = await runTelegramChatMenuCleanup(env, {
+    ...options, now: startedAt + 7200,
+  });
+  assert.equal(premature.considered, 0,
+    'Cron must not spend another attempt at the old start-relative deadline');
+  const justBefore = await runTelegramChatMenuCleanup(env, {
+    ...options, now: startedAt + 7222,
+  });
+  assert.equal(justBefore.considered, 0);
+  assert.equal(requests, 1, 'Not a single early Telegram retry');
+  const recovered = await runTelegramChatMenuCleanup(env, {
+    ...options, now: startedAt + 7223,
+  });
+  assert.equal(recovered.cleared, 1);
+  assert.equal(requests, 2);
+  assert.equal(status(sqlite, '99112234').finished_at, startedAt + 7223,
+    'Completion timestamps also represent response completion rather than cron start');
+});
+
 test('429 with missing or malformed retry_after uses ordinary bounded backoff', async () => {
   const { env, sqlite } = fixture(['99112233']);
   const r = await runTelegramChatMenuCleanup(env, {
