@@ -16914,19 +16914,6 @@ function telegramChatLinkButton(text, url, chatType = 'private') {
     : { text, url };
 }
 
-function buildGkStartReplyMarkup(chatType = 'private') {
-  return {
-    inline_keyboard: [
-      [
-        telegramChatLinkButton('🚀 Open Incubator Guide', `${SITE_URL}/gkniftyheads-incubator.html`, chatType),
-        telegramChatLinkButton('⚔️ Open Battle Chamber', `${SITE_URL}/community.html`, chatType),
-      ],
-      [{ text: '🌐 Open in Browser', url: `${SITE_URL}/gkniftyheads-incubator.html` }],
-      [telegramGamesChatButton(chatType)],
-    ],
-  };
-}
-
 function buildGkHelpReplyMarkup(chatType = 'private') {
   return {
     inline_keyboard: [
@@ -17000,19 +16987,17 @@ async function cmdGkStart(db, tok, chatId, telegramId, fromUser, chatType = 'pri
   });
 
   const name = escapeHtml(getTelegramDisplayName(fromUser));
-  const replyMarkup = buildGkStartReplyMarkup(chatType);
   await sendTelegramMessage(tok, chatId,
-    `🚀 <b>Welcome to Crypto Moonboys GK, ${name}!</b>\n\n` +
-    `You've entered the Battle Chamber.\n\n` +
-    `<b>What to do next:</b>\n` +
-    `🔗 /gklink — Link or refresh Telegram sync with the website\n` +
-    `📊 /gkstatus — View your XP, level, and faction\n` +
-    `🏆 /gkleaderboard — Community XP leaderboard\n` +
-    `🗺️ /gkquests — Active missions\n` +
-    `⚔️ /gkfaction — View faction status or choose on the website\n` +
-    `🎮 /games — Open Games inside this chat\n` +
-    `❓ /gkhelp — Full command list${xpMsg}`,
-    { reply_markup: replyMarkup },
+    `🚀 <b>Welcome to Crypto Moonboys Universe, ${name} 🤘</b>\n\n` +
+    `You've entered the GK Battle Chamber. ⚡️⚡️⚡️\n\n` +
+    `<b>What to do next:</b>\n\n` +
+    `🎮 <a href="${TELEGRAM_GAMES_MENU_URL}">OPEN GAMES</a> — Sign in and start playing.\n\n` +
+    `LOG-IN &amp; join the <a href="https://t.me/gkniftyheads">GKniftyHEADS</a> Telegram group for daily NEWS &amp; WTF Signals 🐝🐝🐝\n\n` +
+    `Join a <a href="https://cryptomoonboys.com/battle-chamber/factions/index.html">GK Faction</a> 🎯\n\n` +
+    `Grind in all games for XP Clout, receive rewards to claim your own HODL WARRIOR ⚡️⚡️⚡️\n\n` +
+    `<b>Any sign-in problems?</b>\n` +
+    `🔗 /gklink — Link or refresh Telegram sync. Open the newest unique signup code. If that fails, run /gkunlink then /gklink.${xpMsg}\n\n` +
+    `________________________`
   );
   await pinGamesForPrivateChat(tok, chatId, chatType);
 }
