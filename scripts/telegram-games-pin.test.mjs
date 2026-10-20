@@ -40,11 +40,18 @@ function mockTelegram({ existingPin = null, errors = {}, pinSucceeded = true } =
   return { calls, fetchImpl };
 }
 
-test('first /start creates one quiet Games shortcut and pins it without deleting any prior pin', async () => {
-  const mock = mockTelegram({ existingPin: { text: 'User saved message' } });
+test('first /start creates one quiet Games shortcut when no message is pinned', async () => {
+  const mock = mockTelegram();
   const result = await ensureTelegramGamesPinned('bot:test', '123456789', GAMES, mock);
   assert.deepEqual(result, { ok: true, status: 'pinned' });
   assert.deepEqual(mock.calls.map(c => c.method), ['getChat', 'sendMessage', 'pinChatMessage']);
+});
+
+test('newer user pin prevents duplicate Games shortcut even if an older Games pin exists', async () => {
+  const mock = mockTelegram({ existingPin: { text: 'Newer pinned message' } });
+  assert.deepEqual(await ensureTelegramGamesPinned('bot:test', '123456789', GAMES, mock),
+    { ok: true, status: 'other_pin_present' });
+  assert.deepEqual(mock.calls.map(c => c.method), ['getChat']);
 });
 
 test('returning /start or /games with Games already pinned never sends a duplicate', async () => {
@@ -64,8 +71,8 @@ test('failed getChat avoids spamming the player with an untracked shortcut', asy
   assert.deepEqual(mock.calls.map(c => c.method), ['getChat']);
 });
 
-test('rejected pin removes only the newly sent shortcut, leaving other pins alone', async () => {
-  const mock = mockTelegram({ existingPin: { text: 'Existing important message' }, pinSucceeded: false });
+test('rejected pin removes only the newly sent shortcut, without touching other pins', async () => {
+  const mock = mockTelegram({ pinSucceeded: false });
   assert.equal((await ensureTelegramGamesPinned('bot:test', '123456789', GAMES, mock)).status,
     'pin_failed');
   assert.deepEqual(mock.calls.map(c => c.method),
