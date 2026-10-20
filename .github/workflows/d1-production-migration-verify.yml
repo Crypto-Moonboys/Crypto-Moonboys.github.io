@@ -72,6 +72,7 @@ on:
       - workers/moonboys-api/migrations/099_nbg_london_competition_prizes.sql
       - workers/moonboys-api/migrations/100_championship_clout_foundation.sql
       - workers/moonboys-api/migrations/101_telegram_mini_app_login_replay.sql
+      - workers/moonboys-api/migrations/102_telegram_chat_menu_cleanup.sql
       - .github/workflows/d1-production-migration-verify.yml
   workflow_dispatch:
 
