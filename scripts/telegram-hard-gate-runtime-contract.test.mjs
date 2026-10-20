@@ -14,6 +14,8 @@ const identityGate = read('js/identity-gate.js');
 const leaderboardClient = read('js/leaderboard-client.js');
 const gamesIndex = read('games/index.html');
 const leaderboardPage = read('games/leaderboard.html');
+const blockTopiaPage = read('games/block-topia/index.html');
+const myMoonboyPage = read('my-moonboy.html');
 
 console.log('\n--- Telegram Hard-Gate Runtime Contract ---\n');
 
@@ -26,8 +28,8 @@ check(
 check(leaderboardClient.includes('Fresh Telegram auth is required to save scores and earn XP.'), 'score submission rejects missing or expired signed auth');
 check(!gamesIndex.includes('browser-local/pending'), 'Arcade hub rejects browser-local pending-run copy');
 check(!gamesIndex.includes('Local runs stay pending'), 'Arcade hub rejects local pending-run copy');
-check(gamesIndex.includes('Telegram identity is required before competitive Arcade access'), 'Arcade hub states the hard identity gate');
-check(gamesIndex.includes('5000 server-accepted Arcade XP'), 'Arcade hub keeps the 5000 XP Block Topia gate');
+check(gamesIndex.includes('href="/my-moonboy.html"') && myMoonboyPage.includes('data-telegram-login'), 'Arcade directs new users to the central verified login; hard gating remains in runtime');
+check(blockTopiaPage.includes('BLOCKTOPIA_MULTIPLAYER_REQUIRED_XP') && blockTopiaPage.includes('ARCADE XP REQUIRED'), 'Block Topia continues showing the live configured XP entry gate');
 check(!/Guest-|anonymous leaderboard|hidden leaderboard/i.test(leaderboardPage), 'leaderboard page does not advertise guest or hidden competition');
 
 // These markers must be implemented by the runtime follow-up before merge.
