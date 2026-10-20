@@ -4,6 +4,7 @@ import { DatabaseSync } from 'node:sqlite';
 import { test } from 'node:test';
 import {
   CHAT_MENU_CLEANUP_RUN_LIMIT,
+  CHAT_MENU_CLEANUP_SEED_LIMIT,
   CHAT_MENU_CLEANUP_MAX_ATTEMPTS,
   resetLegacyTelegramChatMenu,
   runTelegramChatMenuCleanup,
@@ -59,18 +60,18 @@ test('migration 102 is present in the canonical schema and the Worker scheduled 
 });
 
 test('scheduled rollout resets every previously registered private chat without a new user command', async () => {
-  const ids = Array.from({ length: 37 }, (_, i) => String(70000001 + i));
+  const ids = Array.from({ length: 95 }, (_, i) => String(70000001 + i));
   const { env, sqlite } = fixture(ids);
   const calls = [];
   const reset = telegramOk(null, calls);
   const time = 1800000000;
   const first = await runTelegramChatMenuCleanup(env, { now: time, fetchImpl: reset });
   assert.equal(first.ok, true);
-  assert.equal(first.seeded, ids.length);
+  assert.equal(first.seeded, CHAT_MENU_CLEANUP_SEED_LIMIT, 'Migration must not enqueue the entire user table in one cron');
   assert.equal(first.considered, CHAT_MENU_CLEANUP_RUN_LIMIT);
   assert.equal(first.cleared, CHAT_MENU_CLEANUP_RUN_LIMIT);
   let more = true, rounds = 1;
-  while (more && rounds < 10) {
+  while (more && rounds < 16) {
     const result = await runTelegramChatMenuCleanup(env, { now: time, fetchImpl: reset });
     rounds++;
     more = result.considered > 0;
