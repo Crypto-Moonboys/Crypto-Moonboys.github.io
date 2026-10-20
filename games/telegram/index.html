@@ -11,10 +11,18 @@
   <script data-cfasync="false" src="https://telegram.org/js/telegram-web-app.js?63"></script>
   <style>
     html, body { margin: 0; min-height: 100%; background: #000; color: #fff; font: 18px/1.6 Arial, sans-serif; }
-    /* Telegram Desktop may host Mini Apps in a wide right-side webview.
-       Centre our launcher inside the provided viewport, not the native
-       Telegram window; keep the existing full-width mobile presentation. */
-    main { box-sizing: border-box; width: 100%; max-width: 560px; margin: 0 auto; padding: 20px 16px; }
+    /* Default mobile/tablet layout stays full width. Telegram Desktop's
+       own WebView may be very wide, so only detected desktop hosts use
+       a centred content column and Telegram's fullscreen safe areas. */
+    main { box-sizing: border-box; width: 100%; padding: 20px 16px; }
+    body.is-desktop-telegram main {
+      max-width: 560px;
+      margin: 0 auto;
+      padding-top: calc(20px + var(--tg-safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px));
+      padding-right: calc(16px + var(--tg-safe-area-inset-right, 0px) + var(--tg-content-safe-area-inset-right, 0px));
+      padding-bottom: calc(20px + var(--tg-safe-area-inset-bottom, 0px) + var(--tg-content-safe-area-inset-bottom, 0px));
+      padding-left: calc(16px + var(--tg-safe-area-inset-left, 0px) + var(--tg-content-safe-area-inset-left, 0px));
+    }
     #connectedAccount { overflow-wrap: anywhere; }
     h1 { font-size: 24px; margin: 0 0 16px; }
     nav a { display: block; color: #fff; padding: 9px 0; text-decoration: underline; }
@@ -48,6 +56,9 @@
       var status = document.getElementById('launchStatus');
       var links = Array.prototype.slice.call(document.querySelectorAll('nav a[href]'));
       var telegramApp = window.Telegram && window.Telegram.WebApp;
+      var isDesktopTelegram = !!telegramApp &&
+        (telegramApp.platform === 'tdesktop' || telegramApp.platform === 'macos');
+      if (isDesktopTelegram) document.body.classList.add('is-desktop-telegram');
       var viewportStable = false;
       var navigationEnabled = false;
       var navigationStarted = false;
@@ -406,7 +417,7 @@
       // Desktop clients once; unsupported/older clients retain the centred
       // page in their normal panel. Do not alter mobile Mini App behaviour.
       try {
-        if (telegramApp && (telegramApp.platform === 'tdesktop' || telegramApp.platform === 'macos') &&
+        if (isDesktopTelegram &&
             typeof telegramApp.requestFullscreen === 'function' &&
             typeof telegramApp.isVersionAtLeast === 'function' &&
             telegramApp.isVersionAtLeast('8.0') && !telegramApp.isFullscreen) {
