@@ -69,8 +69,8 @@ export async function runTelegramChatMenuCleanup(env, {
   const seeded = Number(seed?.meta?.changes || 0);
   const readCooldown = async () => {
     const record = await db.prepare(
-      'SELECT cooldown_until FROM telegram_chat_menu_cleanup_control WHERE id = 1'
-    ).bind().first();
+      'SELECT cooldown_until FROM telegram_chat_menu_cleanup_control WHERE id = ?'
+    ).bind(1).first();
     if (!record || !Number.isSafeInteger(record.cooldown_until)) {
       throw new Error('chat_menu_cleanup_cooldown_unavailable');
     }
