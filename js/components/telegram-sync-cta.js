@@ -68,6 +68,15 @@
     var gate = window.MOONBOYS_IDENTITY;
     var pending = Boolean(gate && gate.isSessionPending && gate.isSessionPending());
     var linked = !pending && Boolean(gate && gate.isTelegramLinked && gate.isTelegramLinked());
+    var rememberedWebsite = !pending && Boolean(gate && gate.isWebsiteSession && gate.isWebsiteSession());
+    // Compact control for My Moonboy; no large sign-in card is needed.
+    // Remembered website sessions must remain clearable during a rollback.
+    document.querySelectorAll('[data-telegram-session-controls] [data-telegram-logout]').forEach(function (button) {
+      button.hidden = pending || (!linked && !rememberedWebsite);
+    });
+    document.querySelectorAll('#mm-gate [data-telegram-login]').forEach(function (link) {
+      link.hidden = pending || linked;
+    });
     document.querySelectorAll('[data-telegram-account]').forEach(function (link) {
       // Connected players open account information without rotating their session.
       if (pending || linked) link.removeAttribute('data-telegram-login');
