@@ -43,6 +43,7 @@ test('Mini App creates the existing website credential and preserves player prog
   assert.equal((await session(env, cookie)).status, 200);
   assert.equal(sqlite.prepare('SELECT arcade_xp_total FROM arcade_progression_state WHERE telegram_id=?').get(ID).arcade_xp_total, before);
   assert.deepEqual(counts(sqlite), [1, 1]);
+  assert.equal(sqlite.prepare("SELECT COUNT(*) AS n FROM telegram_activity_log WHERE telegram_id = ? AND action = 'link_confirmed' AND metadata LIKE '%telegram_mini_app%'").get(ID).n, 1);
   // The same verified identity is idempotent even though the proof was consumed.
   const second = await request(env, proof(), { cookie });
   assert.equal(second.status, 200, await second.clone().text());
@@ -143,8 +144,8 @@ test('failed credential INSERT rolls back replay, account metadata and session, 
   const injectedDb = {
     prepare(sql) { return env.DB.prepare(sql); },
     batch(statements) {
-      assert.equal(statements.length, 6, 'Session cleanup, replay cleanup, proof, user, website session and credential must be one batch');
-      const sabotaged = statements.map((statement, index) => index === 5
+      assert.equal(statements.length, 7, 'Session cleanup, replay cleanup, proof, user, link evidence, website session and credential must be one batch');
+      const sabotaged = statements.map((statement, index) => index === 6
         ? { run: async () => { throw new Error('credential insert temporarily failed'); } }
         : statement);
       return env.DB.batch(sabotaged);
@@ -186,4 +187,31 @@ test('Mini App session issuance prunes expired and idle cookies without deleting
   assert.ok(!remaining.includes('old-expired'));
   assert.equal(sqlite.prepare('SELECT COUNT(*) AS n FROM telegram_website_credentials WHERE token_hash IN (?, ?)').get('expired-token', 'idle-token').n, 0, 'Deleting abandoned sessions cascades their credentials');
   assert.equal(sqlite.prepare("SELECT COUNT(*) AS n FROM telegram_website_credentials WHERE token_hash='active-token'").get().n, 1);
+});
+
+test('Mini App limits actual request body bytes even without Content-Length', async () => {
+  const { env, sqlite } = fixture();
+  const response = await handleTelegramWebsiteAuth(new Request(API + '/telegram/website/mini-app-session', {
+    method: 'POST', headers: { Origin: SITE, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ init_data: proof(), padding: 'x'.repeat(11000) }),
+  }), env);
+  assert.equal(response.status, 400);
+  assert.deepEqual(counts(sqlite), [0, 0]);
+});
+
+test('existing-cookie credential failure returns sanitized JSON error instead of rejecting handler', async () => {
+  const { env } = fixture();
+  const signed = proof();
+  const first = await request(env, signed);
+  assert.equal(first.status, 200);
+  const cookie = sessionCookie(first);
+  let batches = 0;
+  const response = await request(env, signed, {
+    cookie,
+    db: { prepare: sql => env.DB.prepare(sql), batch: async () => { batches++; throw new Error('private database failure'); } },
+  });
+  assert.equal(batches, 1);
+  assert.equal(response.status, 503);
+  assert.equal(response.headers.get('Access-Control-Allow-Origin'), SITE);
+  assert.doesNotMatch(await response.text(), /private database failure/);
 });
