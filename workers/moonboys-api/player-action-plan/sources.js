@@ -14,7 +14,7 @@ import { applyPetCareDecay } from '../pets/care-decay.js';
 import { getPetWeeklyBoss } from '../pets/player-expansion.js';
 import { getPetDailyBounties } from '../pets/economy-expansion.js';
 import { petSpaceOrderSql } from '../pets/space-order.js';
-import { canonicalFactionProjection } from '../shared/faction-projection.js';
+import { CANONICAL_FACTION_READ_SQL, canonicalFactionProjection } from '../shared/faction-projection.js';
 import { projectSavedMoonpetClaims } from './moonpet-saved-claims.js';
 
 export const ACTION_PLAN_SOURCE_REGISTRY = Object.freeze([
@@ -211,7 +211,7 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
       // extended with the adjacent BlockTopia balances. This replaces,
       // rather than adds to, the existing bounded owner read.
       const [row] = await db.all(
-        'SELECT faction,faction_xp,xp,gems FROM blocktopia_progression WHERE telegram_id=? LIMIT 1',
+        CANONICAL_FACTION_READ_SQL.replace('faction_xp FROM', 'faction_xp, xp, gems FROM'),
         [ownerId]);
       factionProgressionRow = row || null;
       factionProjection = canonicalFactionProjection(row || null);
