@@ -69,6 +69,13 @@ assert.match(comments, /if \(!email && !telegramAuth\)/,
   'Email-only commenting remains supported independently of Telegram');
 assert.match(read('js/faction-operations.js'), /const LOGIN_URL = '\/my-moonboy\.html';/,
   'Faction private account entry routes to My Moonboy');
+const factionOps = read('js/faction-operations.js');
+const guestHelp = factionOps.slice(factionOps.indexOf('function renderPrivate()'),
+  factionOps.indexOf('const valid = verifiedOwnerState(snapshot)',factionOps.indexOf('function renderPrivate()')));
+assert.match(guestHelp, /Open My Moonboy<\/a>/,
+  'Faction guest account entry must clearly identify My Moonboy');
+assert.doesNotMatch(guestHelp, /data-telegram-login/,
+  'Faction guest link must navigate, not be caught by the delegated OIDC click handler');
 assert.match(read('js/faction-chamber-page.js'), /href="\/my-moonboy\.html"/,
   'Faction chambers route optional account setup through My Moonboy');
 console.log('arcade-account-entry-cleanup.test.mjs passed');
