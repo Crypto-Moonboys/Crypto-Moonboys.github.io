@@ -141,6 +141,73 @@ test('canonical and legacy Finale reward keys permit genuine claims; arbitrary o
     'malformed reward keys must not create claim-ready OR confirmed claimed badges');
 });
 
+test('rejected season receipt never promotes earned tiers or receipt-only history to claim_ready', async () => {
+  const current = await fixture({ seasonXp: 500, tierReceipt: 'rejected' }).project();
+  const tier = get(current, 'tiers').find(t => t.task_id.endsWith(':street'));
+  assert.equal(tier.status, 'blocked');
+  assert.equal(tier.blocking_reason_code, 'season_reward_settlement_rejected');
+  assert.equal(tier.evidence.verified_completion, false);
+  const historical = await fixture({ tierReceipt: 'rejected', receiptSeason: 'pet-s2026-003' }).project();
+  const saved = get(historical, 'tiers').find(t =>
+    t.period.key === 'pet-s2026-003' && t.task_id.endsWith(':street'));
+  assert.ok(saved, 'receipt-only rejected historical season must remain visible');
+  assert.equal(saved.status, 'blocked');
+  assert.equal(saved.blocking_reason_code, 'season_reward_settlement_rejected');
+  assert.notEqual(saved.status, 'claimed');
+});
+
+test('rejected Finale receipts stay blocked and are not represented as awarded', async () => {
+  const tasks = await fixture({ finale: true, finaleReceipt: 'rejected' }).project();
+  const finale = get(tasks, 'finale')[0];
+  assert.equal(finale.status, 'blocked');
+  assert.equal(finale.blocking_reason_code, 'finale_settlement_rejected');
+  assert.equal(finale.evidence.verified_completion, false);
+  assert.equal(finale.reward.confirmed, false);
+});
+
+test('separate malformed Finale wins retain unique opaque task IDs with no pet attribution', async () => {
+  const finaleRows = ['pet-1','pet-2','pet-3'].map(pet_id => ({
+    pet_id, season_key: SEASON, competition_season_key: SEASON,
+    reward_key: 'bad-key', status: 'won', owner_verified: 0,
+    defeated_at: NOW.toISOString(), claimed_at: null, receipt_status: null,
+  }));
+  const tasks = await fixture({ finaleRows }).project();
+  const finales = get(tasks, 'finale');
+  assert.equal(finales.length, 3);
+  assert.equal(new Set(finales.map(t => t.task_id)).size, 3,
+    'history and pagination must not deduplicate invalid rows');
+  assert.ok(finales.every(t => t.status === 'blocked' && t.source_pet_ref === null));
+  assert.ok(finales.every(t => t.task_id.startsWith('moonpet.finale-claim:') &&
+    !t.task_id.includes('pet-') && !t.task_id.includes('bad-key')));
+});
+
+test('Saved Status destinations preserve supported MoonPet screen and focus in the navigable URL', async () => {
+  const tasks = await fixture({ cache: true, seasonXp: 500, finale: true }).project();
+  const expected = {
+    cache: ['home','care'],
+    tiers: ['profile','season'],
+    finale: ['missions','season-finale'],
+    bonus: ['economy','bonus-bounties'],
+    weekly: ['economy','weekly-bounties'],
+  };
+  for (const [key,[screen,focus]] of Object.entries(expected)) {
+    const rows = get(tasks,key);
+    assert.ok(rows.length > 0, key);
+    for (const task of rows) {
+      assert.equal(task.destination.path,
+        '/moonpet-game.html?screen=' + screen + '&focus=' + focus, key);
+    }
+  }
+});
+
+test('Finale nominal reward is unconfirmed even for an awarded receipt because caps can reduce Pet XP', async () => {
+  const paid = await fixture({ finale: true, finaleReceipt: 'awarded', finaleClaimed: true }).project();
+  const finale = get(paid, 'finale')[0];
+  assert.equal(finale.status, 'claimed');
+  assert.equal(finale.reward.confirmed, false);
+  assert.ok(finale.reward.items.some(item => item.type === 'pet_xp' && item.amount === 100));
+});
+
 test('truncated Finale victory history advertises partial source and an explicit overflow, never 61 complete rows', async () => {
   const finaleRows = Array.from({ length: 61 }, (_, index) => ({
     pet_id: 'secret-pet-' + index, season_key: SEASON,
