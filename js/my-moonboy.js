@@ -352,6 +352,9 @@
     byId('mm-link-state').textContent = 'Telegram credential required';
     byId('mm-arcade-xp').textContent = 'Not confirmed';
     byId('mm-community-xp').textContent = 'Not confirmed';
+    for (const id of ['mm-arcade-earned','mm-arcade-spent','mm-blocktopia-xp',
+      'mm-blocktopia-gems','mm-faction-xp','mm-wiki-today'])
+      byId(id).textContent = 'Not confirmed';
     for (const id of ['mm-arcade-spendable','mm-moon-gold','mm-moon-crystals','mm-style-tokens'])
       byId(id).textContent = 'Not confirmed';
     byId('mm-pet-xp').textContent = 'Not confirmed';
@@ -797,9 +800,24 @@
     byId('mm-community-xp').textContent = !state.stale && !state.offline &&
       Number.isSafeInteger(owner.community_xp) && owner.community_xp >= 0
       ? niceCount(owner.community_xp) + ' Community XP' : 'Not confirmed';
+    // Read-only progression metrics must be fresh and owner-verified.
+    // Different games and wallets are separate units, never additive.
+    const current = !state.stale && !state.offline;
+    const progression = owner.progression || {};
+    for (const [id, value, unit] of [
+      ['mm-blocktopia-xp', progression.blocktopia_xp, 'BlockTopia XP'],
+      ['mm-blocktopia-gems', progression.blocktopia_gems, 'BlockTopia Gems'],
+      ['mm-faction-xp', progression.faction_xp, 'Faction XP'],
+      ['mm-wiki-today', owner.wiki_accepted_today, 'accepted Wiki missions'],
+    ]) {
+      byId(id).textContent = current && Number.isSafeInteger(value) && value >= 0
+        ? niceCount(value) + ' ' + unit : 'Not confirmed';
+    }
     const economy = owner.economy || {};
     for (const [id, value, health, unit] of [
       ['mm-arcade-spendable', economy.arcade_spendable_xp, economy.arcade_wallet_health, 'Arcade XP'],
+      ['mm-arcade-earned', economy.arcade_earned_xp, economy.arcade_wallet_health, 'Arcade XP earned'],
+      ['mm-arcade-spent', economy.arcade_spent_xp, economy.arcade_wallet_health, 'Arcade XP spent'],
       ['mm-moon-gold', economy.moon_gold, economy.moonpet_wallet_health, 'Moon Gold'],
       ['mm-moon-crystals', economy.moon_crystals, economy.moonpet_wallet_health, 'Moon Crystals'],
       ['mm-style-tokens', economy.style_tokens, economy.moonpet_wallet_health, 'Style Tokens'],
