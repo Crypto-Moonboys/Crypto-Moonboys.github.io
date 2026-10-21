@@ -3,9 +3,9 @@ name: Propose Verified Graph Refresh
 on:
   workflow_dispatch:
   schedule:
-    # Reviewers get roughly four hours from the 20h generator threshold
-    # to the 24h live freshness limit, rather than a 12h scheduling gap.
-    - cron: '17 * * * *'
+    # Run once per day at 02:17 UTC. Generated updates still require review
+    # and merge; a daily cadence does not guarantee the 24h live freshness SLA.
+    - cron: '17 2 * * *'
 
 permissions:
   contents: write
