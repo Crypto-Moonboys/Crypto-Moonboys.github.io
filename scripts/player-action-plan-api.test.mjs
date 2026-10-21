@@ -95,6 +95,21 @@ function fakeDb(options = {}) {
                   faction_xp: options.canonicalFactionXp ?? 15,
                 }] };
               }
+              if (/FROM arcade_xp_wallets/u.test(sql)) {
+                if (options.failSpendableWallet) throw new Error('arcade_wallet_read_failed');
+                return { success: true, results: options.noSpendableWallet ? [] : [{
+                  arcade_xp_earned: options.invalidSpendableWallet ? 100 : 1200,
+                  arcade_xp_spendable: 700, arcade_xp_spent: 500,
+                }] };
+              }
+              if (/SELECT p.moon_gold,p.moon_crystals,p.style_tokens/u.test(sql)) {
+                if (options.failPetWallet) throw new Error('moonpet_wallet_read_failed');
+                return { success: true, results: options.noPetWallet ? [] : [{
+                  moon_gold: 350, moon_crystals: 12, style_tokens: 9,
+                  wallet_reconciled: options.unreconciledPetWallet ? 0 : 1,
+                  recovery_pending: options.pendingPetWalletRecovery ? 1 : 0,
+                }] };
+              }
               if (/FROM arcade_progression_state/u.test(sql)) {
                 if (options.failArcadeXp) throw new Error('arcade_lifetime_xp_unavailable');
                 return { success: true, results: [{ arcade_xp_total: options.lowXp ? 200 : 1200 }] };
@@ -425,6 +440,68 @@ test('all targeted source queries compile against the current D1 schema', async 
   assert.equal(projection.read_context.pet_count, 1);
   assert.ok(db.stats().statement_count <= 80);
   database.close();
+});
+
+test('signed account wallet keeps lifetime, spendable Arcade XP and MoonPet currencies separate', async () => {
+  const db = fakeDb();
+  const response = await handlePlayerActionPlanRoute(request(auth({ limit: 100 })),
+    { DB: db, TELEGRAM_BOT_TOKEN: 'test' }, options());
+  assert.equal(response.status, 200);
+  const body = await response.json();
+  assert.equal(body.owner.lifetime_arcade_xp, 1200);
+  assert.deepEqual(body.owner.economy, {
+    arcade_spendable_xp: 700, moon_gold: 350, moon_crystals: 12,
+    style_tokens: 9, arcade_wallet_health: 'live', moonpet_wallet_health: 'live',
+  });
+  assert.ok(db.calls.some(call => /FROM arcade_xp_wallets/u.test(call.sql) && call.params[0] === '123456'));
+  assert.ok(db.calls.some(call => /SELECT p.moon_gold,p.moon_crystals,p.style_tokens/u.test(call.sql) &&
+    call.params[0] === '123456'));
+  assert.ok(db.calls.every(call => /^(SELECT|WITH)\b/iu.test(call.sql.trimStart())));
+  assert.ok(body.query_budget.statement_count <= 80);
+});
+
+test('missing, failed or inconsistent signed wallets remain unknown, never numeric zero', async () => {
+  for (const variation of [
+    {noSpendableWallet:true,noPetWallet:true},
+    {failSpendableWallet:true,failPetWallet:true},
+    {invalidSpendableWallet:true},
+    {unreconciledPetWallet:true},
+    {pendingPetWalletRecovery:true,unreconciledPetWallet:true},
+  ]) {
+    const response = await handlePlayerActionPlanRoute(request(auth({ limit: 100 })),
+      {DB:fakeDb(variation),TELEGRAM_BOT_TOKEN:'test'},options());
+    assert.equal(response.status, 200);
+    const owner = (await response.json()).owner;
+    // Wallet authorities fail independently: unresolved MoonPet recovery
+    // must not erase an otherwise verified spendable Arcade XP wallet.
+    if (variation.noSpendableWallet || variation.failSpendableWallet ||
+        variation.invalidSpendableWallet) {
+      assert.equal(owner.economy.arcade_spendable_xp, null);
+    } else {
+      assert.equal(owner.economy.arcade_spendable_xp, 700);
+    }
+    if (variation.noPetWallet || variation.failPetWallet ||
+        variation.unreconciledPetWallet) {
+      assert.equal(owner.economy.moon_gold, null);
+      assert.equal(owner.economy.moon_crystals, null);
+      assert.equal(owner.economy.style_tokens, null);
+    } else {
+      assert.equal(owner.economy.moon_gold, 350);
+      assert.equal(owner.economy.moon_crystals, 12);
+      assert.equal(owner.economy.style_tokens, 9);
+    }
+  }
+});
+
+test('awarded wallet reconciliation supersedes retained pending recovery marker', async () => {
+  const response = await handlePlayerActionPlanRoute(request(auth({ limit: 100 })),
+    {DB:fakeDb({pendingPetWalletRecovery:true}),TELEGRAM_BOT_TOKEN:'test'},options());
+  assert.equal(response.status, 200);
+  const wallet = (await response.json()).owner.economy;
+  assert.equal(wallet.moonpet_wallet_health,'live');
+  assert.equal(wallet.moon_gold,350);
+  assert.equal(wallet.moon_crystals,12);
+  assert.equal(wallet.style_tokens,9);
 });
 
 test('authenticated endpoint covers every source, scopes pets opaquely, and is cache-proof', async () => {

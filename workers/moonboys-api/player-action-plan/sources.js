@@ -347,6 +347,59 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
     [ownerId], [], failures, ['onboarding.pet-entry']);
   const existingOwner = ownerProfileRows.length > 0;
   const petEntryComplete = existingOwner || pets.length > 0;
+  // PR2: signed account wallet snapshots are separate authorities. Lifetime
+  // Arcade XP is not the spendable balance, and MoonPet currency lives in
+  // the ACCOUNT profile, not in any currently selected/archived pet.
+  // Missing rows, missing migrations and transient D1 failures stay unknown.
+  const economy = {
+    arcade_spendable_xp: null, moon_gold: null,
+    moon_crystals: null, style_tokens: null,
+    arcade_wallet_health: 'unavailable', moonpet_wallet_health: 'unavailable',
+  };
+  try {
+    const rows = await db.all(
+      'SELECT arcade_xp_earned,arcade_xp_spendable,arcade_xp_spent FROM arcade_xp_wallets WHERE telegram_id=? LIMIT 1',
+      [ownerId]);
+    const row = rows[0];
+    const values = row && [row.arcade_xp_earned, row.arcade_xp_spendable, row.arcade_xp_spent];
+    if (values && values.every(value => value != null && Number.isSafeInteger(value) && value >= 0) &&
+        Number(row.arcade_xp_earned) === Number(row.arcade_xp_spendable) + Number(row.arcade_xp_spent)) {
+      economy.arcade_spendable_xp = Number(row.arcade_xp_spendable);
+      economy.arcade_wallet_health = 'live';
+    } else economy.arcade_wallet_health = row ? 'unavailable' : 'live_empty';
+  } catch {
+    economy.arcade_wallet_health = 'unavailable';
+  }
+  try {
+    // A profile balance can be stale until the canonical one-time account
+    // wallet reconciliation has committed. A committed awarded marker
+    // supersedes a historical pending recovery marker; neither the canonical
+    // read guard nor mutation guard requires the pending row to be deleted.
+    // Never mutate from Action Plan.
+    const rows = await db.all(
+      `SELECT p.moon_gold,p.moon_crystals,p.style_tokens,
+        EXISTS(SELECT 1 FROM telegram_pet_reward_claims marker
+          WHERE marker.telegram_id=p.telegram_id AND marker.source='wallet_reconciliation'
+            AND marker.idempotency_key='moonpet_wallet_reconcile:v1'
+            AND marker.status='awarded') AS wallet_reconciled,
+        EXISTS(SELECT 1 FROM telegram_pet_reward_claims recovery
+          WHERE recovery.telegram_id=p.telegram_id
+            AND recovery.source='wallet_reconciliation_recovery_required'
+            AND recovery.idempotency_key='moonpet_wallet_reconcile_recovery_required:v1'
+            AND recovery.status='pending') AS recovery_pending
+       FROM telegram_pet_profiles p WHERE p.telegram_id=? LIMIT 1`,
+      [ownerId]);
+    const row = rows[0];
+    const fields = ['moon_gold', 'moon_crystals', 'style_tokens'];
+    if (row && Number(row.wallet_reconciled) === 1 &&
+        fields.every(key => Number.isSafeInteger(row[key]) && row[key] >= 0)) {
+      for (const key of fields) economy[key] = Number(row[key]);
+      economy.moonpet_wallet_health = 'live';
+    } else economy.moonpet_wallet_health = row ? 'unavailable' : 'live_empty';
+  } catch {
+    economy.moonpet_wallet_health = 'unavailable';
+  }
+
   if (sourceStatuses['moonpet.adoption-incubation'].state !== 'migration_pending') {
     sourceStatuses['moonpet.adoption-incubation'] = sourceStatus(pets.length ? 'live' : 'live_empty', { adapter: 'active_owned_roster' });
   }
@@ -1185,5 +1238,6 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
     faction: !factionHealthy ? null
       : { joined: Boolean(faction), name: faction ? String(faction.name || '').slice(0, 50) : null },
     lifetime_arcade_xp: failures.has('onboarding.pet-entry') || !arcadeRows.length ? null : lifetimeXp,
+    economy,
   } };
 }
