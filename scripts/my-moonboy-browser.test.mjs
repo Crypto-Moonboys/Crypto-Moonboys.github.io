@@ -949,13 +949,13 @@ test('My Moonboy public guide separates Gems from Moon Crystals without exposing
   } finally { await f.browser.close(); }
 });
 
-test('My Moonboy signed checklist includes every source and saved-only claim class and clears on logout', async () => {
+test('My Moonboy signed checklist includes all registered sources and remaining source limitations and clears on logout', async () => {
   const f = await setup({width:390,height:844}, true);
   try {
     await f.page.goto(SITE + '/my-moonboy.html', {waitUntil:'domcontentloaded'});
     await f.page.locator('#mm-checklist .mm-checklist-source').first().waitFor({state:'attached'});
-    assert.equal(await f.page.locator('#mm-checklist .mm-checklist-source').count(), 28);
-    assert.equal(await f.page.locator('#mm-checklist [data-mm-checklist-key="gap:saved-status"] .mm-checklist-gaps li').count(), 5);
+    assert.equal(await f.page.locator('#mm-checklist .mm-checklist-source').count(), 33);
+    assert.equal(await f.page.locator('#mm-checklist [data-mm-checklist-key="gap:saved-status"] .mm-checklist-gaps li').count(), 3);
     assert.equal(await f.page.locator('#mm-checklist [data-mm-checklist-key="gap:wiki-engagement"] .mm-checklist-gaps li').count(), 6);
     assert.match(await f.page.locator('#mm-checklist [data-mm-checklist-key="gap:wiki-engagement"]').textContent(),
       /Engage|Signal|Cite/u);
@@ -986,7 +986,7 @@ test('signed checklist labels the source MoonPet/window and preserves the exact 
     assert.match(job, /Source period: saved timer · saved-session · UTC/u);
     assert.doesNotMatch(job, /pap_[a-f0-9]{24}/u, 'opaque source pet ID must not be disclosed');
 
-    // All five Saved Status actions point to the SAME MoonPet game URL.
+    // Remaining Saved Status follow-up actions point to the SAME MoonPet game URL.
     // A source refresh must return keyboard focus to the original claim row.
     const savedLink = f.page.locator('[data-mm-focus-link="saved:weekly_bounty_claim"]');
     await savedLink.focus();
