@@ -202,11 +202,18 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
   const factionKeys = ['onboarding.faction', 'faction.daily-missions',
     'faction.seasonal-mission', 'faction.weekly-war'];
   let factionProjection = null;
+  let factionProgressionRow = null;
   let factionKnown = false;
   if (sourceStatuses['onboarding.faction']?.state !== 'migration_pending' &&
       !failures.has('onboarding.faction')) {
     try {
-      const [row] = await db.all(CANONICAL_FACTION_READ_SQL, [ownerId]);
+      // Same D1 account authority as the canonical faction/status read,
+      // extended with the adjacent BlockTopia balances. This replaces,
+      // rather than adds to, the existing bounded owner read.
+      const [row] = await db.all(
+        CANONICAL_FACTION_READ_SQL.replace('faction_xp FROM', 'faction_xp, xp, gems FROM'),
+        [ownerId]);
+      factionProgressionRow = row || null;
       factionProjection = canonicalFactionProjection(row || null);
       factionKnown = true;
     } catch (error) {
@@ -352,7 +359,8 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
   // the ACCOUNT profile, not in any currently selected/archived pet.
   // Missing rows, missing migrations and transient D1 failures stay unknown.
   const economy = {
-    arcade_spendable_xp: null, moon_gold: null,
+    arcade_spendable_xp: null, arcade_earned_xp: null, arcade_spent_xp: null,
+    moon_gold: null,
     moon_crystals: null, style_tokens: null,
     arcade_wallet_health: 'unavailable', moonpet_wallet_health: 'unavailable',
   };
@@ -364,7 +372,9 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
     const values = row && [row.arcade_xp_earned, row.arcade_xp_spendable, row.arcade_xp_spent];
     if (values && values.every(value => value != null && Number.isSafeInteger(value) && value >= 0) &&
         Number(row.arcade_xp_earned) === Number(row.arcade_xp_spendable) + Number(row.arcade_xp_spent)) {
-      economy.arcade_spendable_xp = Number(row.arcade_xp_spendable);
+      economy.arcade_spendable_xp = row.arcade_xp_spendable;
+      economy.arcade_earned_xp = row.arcade_xp_earned;
+      economy.arcade_spent_xp = row.arcade_xp_spent;
       economy.arcade_wallet_health = 'live';
     } else economy.arcade_wallet_health = row ? 'unavailable' : 'live_empty';
   } catch {
@@ -1123,6 +1133,12 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
 
   const wikiRows = sourceStatuses['wiki.accepted-missions'].state === 'migration_pending' ? [] : await query(db,
     'SELECT COUNT(*) AS total FROM wiki_mission_completions WHERE telegram_id=? AND mission_window=?', [ownerId, day], [], failures, ['wiki.accepted-missions']);
+  // A zero COUNT(*) is valid only if the real owner-scoped source read
+  // succeeded. Missing schema, failed reads and invalid counts are unknown.
+  const wikiAcceptedToday = !failures.has('wiki.accepted-missions') &&
+    sourceStatuses['wiki.accepted-missions'].state !== 'migration_pending' &&
+    Number.isSafeInteger(wikiRows[0]?.total) && wikiRows[0].total >= 0
+    ? wikiRows[0].total : null;
   if (sourceStatuses['wiki.accepted-missions'].state !== 'migration_pending') {
     sourceStatuses['wiki.accepted-missions'] = sourceStatus(number(wikiRows[0]?.total) ? 'live' : 'live_empty', { adapter: 'accepted_wiki_receipts' });
   }
@@ -1237,6 +1253,20 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
     pets: petSummaries,
     faction: !factionHealthy ? null
       : { joined: Boolean(faction), name: faction ? String(faction.name || '').slice(0, 50) : null },
+    // BlockTopia and faction XP use saved progression, not community,
+    // lifetime Arcade or selected-pet XP. A missing owner record is unknown.
+    progression: {
+      blocktopia_xp: factionHealthy && factionProgressionRow &&
+        Number.isSafeInteger(factionProgressionRow.xp) && factionProgressionRow.xp >= 0
+        ? factionProgressionRow.xp : null,
+      blocktopia_gems: factionHealthy && factionProgressionRow &&
+        Number.isSafeInteger(factionProgressionRow.gems) && factionProgressionRow.gems >= 0
+        ? factionProgressionRow.gems : null,
+      faction_xp: factionHealthy && faction?.joined && factionProgressionRow &&
+        Number.isSafeInteger(factionProgressionRow.faction_xp) && factionProgressionRow.faction_xp >= 0
+        ? factionProgressionRow.faction_xp : null,
+    },
+    wiki_accepted_today: wikiAcceptedToday,
     // Atomic Community XP settlement credits telegram_users.xp. Reuse the
     // signed owner's identity read, never sum duplicate receipt/legacy logs.
     community_xp: failures.has('onboarding.telegram') || !identity ||
