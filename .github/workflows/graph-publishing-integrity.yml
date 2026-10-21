@@ -1,6 +1,12 @@
 name: Graph Publishing Integrity
 
 on:
+  workflow_dispatch:
+    inputs:
+      base_sha:
+        description: 'Base main SHA for explicitly dispatched graph checks'
+        required: true
+        type: string
   pull_request:
     types: [opened, synchronize, reopened, labeled, unlabeled]
     paths:
@@ -91,8 +97,8 @@ jobs:
 
       - name: Validate regenerated wiki surfaces
         env:
-          BASE_SHA: ${{ github.event_name == 'push' && github.event.before || github.event.pull_request.base.sha }}
-          HEAD_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+          BASE_SHA: ${{ github.event_name == 'push' && github.event.before || github.event.pull_request.base.sha || inputs.base_sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
           CANON_PROSE_CHANGE_APPROVED: ${{ steps.canon_approval.outputs.approved || '0' }}
         run: npm run ci:wiki
 
