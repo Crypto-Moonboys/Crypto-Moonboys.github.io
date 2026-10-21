@@ -67,7 +67,7 @@ check(comments.includes("fillIfEmpty(form, 'name'") && comments.includes("fillIf
 check(!comments.includes('telegram-widget.js') && !comments.includes('data-telegram-login') && !comments.includes('Bot domain invalid'), 'Linked/comment form path avoids the broken Telegram widget');
 check(comments.includes('Telegram linked:') && comments.includes('Email optional — Telegram identity will be used.'), 'Linked Telegram users see email-optional Telegram identity copy');
 check(comments.includes('if (!email && !telegramAuth)') && comments.includes('if (email)   payload.email = email;'), 'Comment submit requires email only when signed Telegram auth is unavailable');
-check(comments.includes('For a verified Telegram account, open My Moonboy. Email comments remain available without Telegram.'), 'Wiki comments direct optional Telegram sign-in to the central hub and preserve email commenting');
+check(comments.includes('Email comments work without Telegram. Verified rewards require Telegram sign-in via My Moonboy.'), 'Wiki comment identity hint is concise, preserves email-only commenting, and routes verified rewards to My Moonboy');
 const telegramIdentityHelper = section(comments, 'function injectTelegramWidget(container)', '// ── Vote button delegation');
 check(telegramIdentityHelper.includes('updateCommentIdentityCopy(form)') && telegramIdentityHelper.includes('applyLinkedTelegramIdentity(form)'),
   'Initial comment widget reuses form identity status without overwriting My Moonboy guidance');
@@ -81,18 +81,16 @@ check(compactCommentForm.includes('buildTelegramIdentityCard(pageId)') && !['bui
 check(comments.includes('name="discord_username"') && comments.includes('Gravatar used for avatar. Email never displayed.'), 'Comment form includes Discord and clear Gravatar privacy copy');
 check(comments.includes('maxlength="2000"') && comments.includes('comment-character-counter') && comments.includes("textEl.addEventListener('input', updateCounter)"), 'Comment form includes a 2000-character counter wired to textarea input');
 check(!/<span class="comment-character-counter"[^>]*aria-live/.test(comments), 'Comment character counter is not live-announced on every keystroke');
-for (const name of ['Swarmsy', 'Alfie Blaze', 'CrypticYuna', 'Boneidol INK', 'P-Fly']) {
-  check(comments.includes(name), `Fallback top contributors include ${name}`);
-}
-check(comments.includes('window.MOONBOYS_TOP_CONTRIBUTORS') && comments.includes('top-contributor-tab') && comments.includes('contributorRows(rows)') && comments.includes('aria-pressed') && !comments.includes('data-top-contributor-leader'), 'Top Contributors card is data-driven with week/all-time toggles and no duplicate leader summary');
-check(comments.includes('function normalizeContributorColor(color)') && comments.includes("String(color || '').trim().toLowerCase()") && comments.includes('top-contributor-row--') && comments.includes('robotAvatar(color'), 'Top contributor colors are normalized before classes and avatars are rendered');
-for (const color of ['gold', 'cyan', 'purple', 'green', 'orange']) {
-  check(comments.includes("color: '" + color + "'") && comments.includes('comment-robot-avatar--'), `Top contributor fallback includes ${color} robot avatar variant`);
-}
-check(comments.includes('XP For Engagement') && comments.includes('Cite To Earn') && comments.includes('Quality Matters') && comments.includes('Real Community'), 'Comment dashboard includes four bottom guidance cards');
-check(wikiCss.includes('.comments-battle-dashboard') && wikiCss.includes('.comments-top-contributors') && wikiCss.includes('.comments-info-card--xp') && wikiCss.includes('commentsDashboardGlow'), 'Comment dashboard cyberpunk layout styles are present');
-check(wikiCss.includes('.comments-info-card--cite') && wikiCss.includes('.comments-info-card--quality') && wikiCss.includes('.comments-info-card--community'), 'Comment dashboard info cards have distinct color-family styles');
-check(wikiCss.includes('@media (max-width: 1180px)') && wikiCss.includes('@media (max-width: 720px)') && wikiCss.includes('prefers-reduced-motion: reduce'), 'Comment dashboard supports responsive and reduced-motion layouts');
+check(!/FALLBACK_TOP_CONTRIBUTORS|function getContributorData\(|function robotAvatar\(|function buildTopContributorsHTML\(|function wireTopContributors\(|function buildTelegramBenefitsCard\(|function buildInfoCards\(/.test(comments),
+  'Shared Wiki comments have no mocked contributor XP rankings or unused onboarding info builders');
+check(compactCommentForm.includes('buildTelegramIdentityCard(pageId)') && compactCommentForm.includes('comments-dashboard-grid--compact'),
+  'Comment form retains contextual account state without a competing contributor sidebar');
+check(comments.includes('cm-comment-account') && comments.includes('cm-comment-account-link') && comments.includes('href="/my-moonboy.html"'),
+  'The article identity row provides the central account route, not another signup card');
+check(wikiCss.includes('body.page-wiki .cm-comment-account') && wikiCss.includes('.cm-comment-account-link:focus-visible'),
+  'Wiki inline identity row has responsive width and visible keyboard focus');
+check(wikiCss.includes('@media (max-width: 1180px)') && wikiCss.includes('@media (max-width: 720px)') && wikiCss.includes('prefers-reduced-motion: reduce'),
+  'Existing Wiki comment layout retains responsive and reduced-motion support');
 const profileSave = section(comments, 'function saveCommentProfile(profile)', 'function cleanTelegramUsername');
 check(profileSave.includes("'name'") && profileSave.includes("'email'") && profileSave.includes("'telegram_username'") && profileSave.includes("'discord_username'") && profileSave.includes("'avatar_url'"), 'Saved commenter profile includes only expected identity fields');
 check(!profileSave.includes('telegram_auth') && !profileSave.includes('text'), 'Saved commenter profile excludes raw Telegram auth and comment text');
