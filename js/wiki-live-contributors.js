@@ -5,6 +5,9 @@
   var BASE = cfg.BASE_URL || null;
   var FEATURES = cfg.FEATURES || {};
   var MAX_ROWS = 5;
+  // The public comments API returns at most the newest 50 approved records.
+  // These are sampled comment counts, never complete period totals or XP.
+  var COMMENT_SAMPLE_LIMIT = 50;
   var WEEK_MS = 7 * 24 * 60 * 60 * 1000;
   var palette = ['gold', 'cyan', 'purple', 'green', 'orange'];
 
@@ -92,7 +95,9 @@
       ? contributors.map(rowHTML).join('')
       : '<li class="top-contributor-row top-contributor-row--empty">' +
           '<span class="top-contributor-empty-notice">' +
-            (failed ? 'Approved commenter records are unavailable.' : 'No approved commenters for this period.') +
+            (failed ? 'Approved commenter records are unavailable.' :
+              period === 'week' ? 'No approved comments from the past 7 days in this sample.' :
+                'No approved commenters in the latest records sample.') +
           '</span></li>';
   }
 
@@ -104,10 +109,11 @@
     card = document.createElement('details');
     card.className = 'comments-top-contributors comments-top-contributors--opt-in';
     card.innerHTML =
-      '<summary>Article commenters (approved comments only)</summary>' +
+      '<summary>Recent article commenters (sample of up to 50 approved comments)</summary>' +
+      '<p class="top-contributor-sample-note">Based only on up to the 50 newest approved comments for this article. Counts are not complete weekly or all-time totals.</p>' +
       '<div class="top-contributor-tabs" role="group" aria-label="Commenter time period">' +
-        '<button class="top-contributor-tab is-active" type="button" data-period="week" aria-pressed="true">This Week</button>' +
-        '<button class="top-contributor-tab" type="button" data-period="all_time" aria-pressed="false">All Time</button>' +
+        '<button class="top-contributor-tab is-active" type="button" data-period="week" aria-pressed="true">Past 7 days in sample</button>' +
+        '<button class="top-contributor-tab" type="button" data-period="all_time" aria-pressed="false">All loaded comments</button>' +
       '</div>' +
       '<ol class="top-contributor-list" aria-live="polite"></ol>';
     container.appendChild(card);
@@ -147,7 +153,7 @@
     });
 
     function refresh() {
-      return fetch(BASE + '/comments?page_id=' + encodeURIComponent(pageId) + '&limit=50')
+      return fetch(BASE + '/comments?page_id=' + encodeURIComponent(pageId) + '&limit=' + COMMENT_SAMPLE_LIMIT)
         .then(function (response) { return response.ok ? response.json() : null; })
         .then(function (data) {
           fetchFailed = !data || !Array.isArray(data.comments);
