@@ -103,7 +103,7 @@ jobs:
           CANON_PROSE_CHANGE_APPROVED: ${{ steps.canon_approval.outputs.approved || '0' }}
         run: npm run ci:wiki
 
-      - name: Validate regenerated wiki surfaces (explicit generated PR dispatch)
+      - name: Validate regenerated wiki surfaces explicitly dispatched
         if: github.event_name == 'workflow_dispatch'
         env:
           BASE_SHA: ${{ inputs.base_sha }}
