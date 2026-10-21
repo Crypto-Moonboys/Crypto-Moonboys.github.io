@@ -81,7 +81,7 @@ function fakeDb(options = {}) {
             async all() {
               calls.push({ method: 'all', ...statement });
               if (options.delayedAllMs) await new Promise(resolve => setTimeout(resolve, options.delayedAllMs));
-              if (/FROM telegram_users/u.test(sql)) return { success: true, results: [{ telegram_id: params[0] }] };
+              if (/FROM telegram_users/u.test(sql)) return { success: true, results: [{ telegram_id: params[0], xp: options.badCommunityXp ? -1 : 275 }] };
               // Legacy community membership is deliberately a conflicting source
               // in this fixture. The signed Battle Chamber's faction/status
               // authority is blocktopia_progression.faction.
@@ -502,6 +502,20 @@ test('awarded wallet reconciliation supersedes retained pending recovery marker'
   assert.equal(wallet.moon_gold,350);
   assert.equal(wallet.moon_crystals,12);
   assert.equal(wallet.style_tokens,9);
+});
+
+test('canonical signed Community XP comes from Telegram account, not duplicated logs', async () => {
+  for (const variation of [{}, {badCommunityXp:true}]) {
+    const db = fakeDb(variation);
+    const response = await handlePlayerActionPlanRoute(request(auth({limit:100})),
+      {DB:db,TELEGRAM_BOT_TOKEN:'test'},options());
+    assert.equal(response.status,200);
+    const body = await response.json();
+    assert.equal(body.owner.community_xp,variation.badCommunityXp ? null : 275);
+    assert.ok(db.calls.some(call => /SELECT telegram_id,xp FROM telegram_users/u.test(call.sql) &&
+      call.params[0] === '123456'));
+    assert.ok(body.query_budget.statement_count <= 80);
+  }
 });
 
 test('authenticated endpoint covers every source, scopes pets opaquely, and is cache-proof', async () => {

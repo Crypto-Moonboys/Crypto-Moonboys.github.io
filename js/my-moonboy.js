@@ -351,6 +351,7 @@
     byId('mm-player-name').textContent = 'Linked Moonboy';
     byId('mm-link-state').textContent = 'Telegram credential required';
     byId('mm-arcade-xp').textContent = 'Not confirmed';
+    byId('mm-community-xp').textContent = 'Not confirmed';
     for (const id of ['mm-arcade-spendable','mm-moon-gold','mm-moon-crystals','mm-style-tokens'])
       byId(id).textContent = 'Not confirmed';
     byId('mm-pet-xp').textContent = 'Not confirmed';
@@ -793,6 +794,9 @@
       ? 'Not confirmed' : niceCount(owner.lifetime_arcade_xp) + ' Arcade XP';
     // Only fresh owner-scoped wallet records may show numeric balances.
     // Missing profiles/migrations and failed reads must not become zero.
+    byId('mm-community-xp').textContent = !state.stale && !state.offline &&
+      Number.isSafeInteger(owner.community_xp) && owner.community_xp >= 0
+      ? niceCount(owner.community_xp) + ' Community XP' : 'Not confirmed';
     const economy = owner.economy || {};
     for (const [id, value, health, unit] of [
       ['mm-arcade-spendable', economy.arcade_spendable_xp, economy.arcade_wallet_health, 'Arcade XP'],

@@ -189,7 +189,7 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
   const tasks = [];
 
   const [identity] = await query(db,
-    'SELECT telegram_id FROM telegram_users WHERE telegram_id=? LIMIT 1', [ownerId], [], failures, ['onboarding.telegram']);
+    'SELECT telegram_id,xp FROM telegram_users WHERE telegram_id=? LIMIT 1', [ownerId], [], failures, ['onboarding.telegram']);
   sourceStatuses['onboarding.telegram'] = sourceStatus(identity ? 'live' : 'live_empty', { adapter: 'verified_identity' });
   tasks.push(genericTask(now, SOURCE_BY_KEY.get('onboarding.telegram'), identity ? 'complete' : 'blocked', 'live', {
     title: identity ? 'Telegram identity verified' : 'Restore Telegram identity', priority: identity ? 900 : 10,
@@ -1237,6 +1237,10 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
     pets: petSummaries,
     faction: !factionHealthy ? null
       : { joined: Boolean(faction), name: faction ? String(faction.name || '').slice(0, 50) : null },
+    // Atomic Community XP settlement credits telegram_users.xp. Reuse the
+    // signed owner's identity read, never sum duplicate receipt/legacy logs.
+    community_xp: failures.has('onboarding.telegram') || !identity ||
+      !Number.isSafeInteger(identity.xp) || identity.xp < 0 ? null : identity.xp,
     lifetime_arcade_xp: failures.has('onboarding.pet-entry') || !arcadeRows.length ? null : lifetimeXp,
     economy,
   } };

@@ -278,6 +278,27 @@ test('Claims tab retains blocked saved season-tier and Finale payouts without pr
   } finally { await f.browser.close(); }
 });
 
+test('PR3 Community XP hides stale/offline values and clears on logout', async () => {
+  const f = await setup({width:390,height:844},true);
+  f.setPlanFactory((owner,cursor) => {
+    const base = plan(owner,cursor);
+    return {...base,owner:{...base.owner,community_xp:275}};
+  });
+  try {
+    await f.page.goto(SITE+'/my-moonboy.html',{waitUntil:'domcontentloaded'});
+    await f.page.locator('#mm-next .mm-task').first().waitFor();
+    assert.equal(await f.page.locator('#mm-community-xp').textContent(),'275 Community XP');
+    await f.page.evaluate(() => window.dispatchEvent(new Event('offline')));
+    assert.equal(await f.page.locator('#mm-community-xp').textContent(),'Not confirmed');
+    await f.page.evaluate(() => window.dispatchEvent(new Event('online')));
+    await f.page.locator('#mm-community-xp').getByText('275 Community XP').waitFor();
+    await f.page.evaluate(() => {window.__mmTest.linked=false;
+      window.dispatchEvent(new CustomEvent('moonboys:identity-change'));});
+    assert.equal(await f.page.locator('#mm-community-xp').textContent(),'Not confirmed');
+    assert.equal(f.errors.length,0,f.errors.join('\\n'));
+  } finally { await f.browser.close(); }
+});
+
 test('PR2 signed balances preserve units and disappear immediately on logout', async () => {
   const f = await setup({width:390,height:844},true);
   f.setPlanFactory((owner,cursor) => {

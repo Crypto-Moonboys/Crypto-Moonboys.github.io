@@ -153,6 +153,7 @@ export async function handlePlayerActionPlanRoute(request, env, options = {}) {
       pets: projection.read_context.pets,
       faction: projection.read_context.faction,
       lifetime_arcade_xp: projection.read_context.lifetime_arcade_xp,
+      community_xp: projection.read_context.community_xp,
       economy: projection.read_context.economy,
     },
     period: { utc_day: projection.read_context.utc_day, iso_week: projection.read_context.iso_week },
