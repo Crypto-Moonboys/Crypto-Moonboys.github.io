@@ -28,7 +28,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           EVENT_NAME: ${{ github.event_name }}
         run: |
-          if [ "$EVENT_NAME" = 'schedule' ] && [ "$(gh pr list --state open --head automation/verified-graph-refresh --json number --jq 'length')" -gt 0 ]; then
+          if [ "$EVENT_NAME" = 'schedule' ] && [ "$(gh pr list --repo "$GITHUB_REPOSITORY" --state open --head automation/verified-graph-refresh --json number --jq 'length')" -gt 0 ]; then
             echo 'An existing verified graph PR awaits review; keep its exact head stable.'
             echo 'skip=true' >> "$GITHUB_OUTPUT"
           else
