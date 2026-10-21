@@ -1,7 +1,7 @@
 // Read-only MoonPet Saved Status adapters. Source-only previews are not claim badges.
 import { reward, sourceStatus, nextUtcDay, nextIsoWeek } from './schema.js';
 import { PET_SEASON_REWARD_TIERS } from '../pets/player-expansion.js';
-import { SEASON_FINALE_REWARD } from '../pets/completion-policy.js';
+import { SEASON_FINALE_REWARD, seasonFinaleKey } from '../pets/completion-policy.js';
 import { getPetDailyBonusBounties, getPetWeeklyBounties } from '../pets/economy-expansion.js';
 import { getMoonpetSeasonKey } from '../pets/season-authority.js';
 
@@ -179,7 +179,13 @@ export async function projectSavedMoonpetClaims({
     });
   }
   if (finales?.length) for (const f of finales.slice(0, 60)) {
-    const valid = count(f.owner_verified) === 1 && Boolean(f.defeated_at && f.reward_key);
+    // The write path only authorizes the current quarter-scoped reward key or
+    // a legacy original-pet/creation-season key. A nonempty arbitrary key is
+    // not a valid saved payout, even if a migrated victory row exists.
+    const canonicalRewardKey = Boolean(f.pet_id && f.season_key && f.competition_season_key &&
+      [seasonFinaleKey(f.pet_id, f.competition_season_key),
+        'season-finale:' + f.pet_id + ':' + f.season_key].includes(String(f.reward_key || '')));
+    const valid = count(f.owner_verified) === 1 && Boolean(f.defeated_at) && canonicalRewardKey;
     const awarded = f.receipt_status === 'awarded';
     const pending = f.receipt_status === 'pending';
     const confirmed = valid && awarded;
@@ -189,7 +195,8 @@ export async function projectSavedMoonpetClaims({
       title: 'Saved Signal Sovereign Finale reward', period: f.competition_season_key,
       suffix: valid ? await opaqueRef(ownerId + ':' + f.pet_id + ':' + f.competition_season_key) : 'unverified',
       petRef, priority: ready ? 36 : 740, receipt: confirmed, acceptedAt: confirmed ? f.claimed_at : null,
-      blocking: !valid ? 'original_pet_season_unverified' : pending ? 'finale_settlement_pending'
+      blocking: !canonicalRewardKey ? 'finale_reward_key_unverified'
+        : !valid ? 'original_pet_season_unverified' : pending ? 'finale_settlement_pending'
         : f.claimed_at && !awarded ? 'finale_acknowledgement_unverified' : null,
       reward: payout(SEASON_FINALE_REWARD),
     });
