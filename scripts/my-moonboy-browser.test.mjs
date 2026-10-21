@@ -278,6 +278,58 @@ test('Claims tab retains blocked saved season-tier and Finale payouts without pr
   } finally { await f.browser.close(); }
 });
 
+test('PR4 final progression shows separate signed sources and hides stale/logout data on mobile', async () => {
+  const f = await setup({width:390,height:844},true);
+  f.setPlanFactory((owner,cursor) => {
+    const base=plan(owner,cursor);
+    return {...base,owner:{...base.owner,
+      progression:{blocktopia_xp:400,blocktopia_gems:80,faction_xp:15},
+      wiki_accepted_today:3,
+      economy:{arcade_earned_xp:1200,arcade_spent_xp:500,
+        arcade_spendable_xp:700,arcade_wallet_health:'live',
+        moonpet_wallet_health:'unavailable'}}};
+  });
+  const amounts={
+    'mm-blocktopia-xp':'400 BlockTopia XP',
+    'mm-blocktopia-gems':'80 BlockTopia Gems',
+    'mm-faction-xp':'15 Faction XP',
+    'mm-wiki-today':'3 accepted Wiki missions',
+    'mm-arcade-earned':'1200 Arcade XP earned',
+    'mm-arcade-spent':'500 Arcade XP spent',
+  };
+  try {
+    await f.page.goto(SITE+'/my-moonboy.html',{waitUntil:'domcontentloaded'});
+    await f.page.locator('#mm-next .mm-task').first().waitFor();
+    for(const [id,expected] of Object.entries(amounts))
+      assert.equal(await f.page.locator('#'+id).textContent(),expected,id);
+    await f.page.evaluate(() => window.dispatchEvent(new Event('offline')));
+    for(const id of Object.keys(amounts))
+      assert.equal(await f.page.locator('#'+id).textContent(),'Not confirmed',id+' offline');
+    await f.page.evaluate(() => window.dispatchEvent(new Event('online')));
+    await f.page.locator('#mm-blocktopia-xp').getByText(amounts['mm-blocktopia-xp']).waitFor();
+    await f.page.evaluate(() => {
+      window.__mmTest.linked=false;
+      window.dispatchEvent(new CustomEvent('moonboys:identity-change'));
+    });
+    assert.equal(await f.page.locator('#mm-private').isHidden(),true);
+    for(const id of Object.keys(amounts))
+      assert.equal(await f.page.locator('#'+id).textContent(),'Not confirmed',id+' logout');
+    assert.equal(f.errors.length,0,f.errors.join('\\n'));
+  } finally { await f.browser.close(); }
+});
+
+test('PR4 missing progression and accounting authorities do not invent zero balances', async () => {
+  const f=await setup({width:390,height:844},true);
+  try {
+    await f.page.goto(SITE+'/my-moonboy.html',{waitUntil:'domcontentloaded'});
+    await f.page.locator('#mm-next .mm-task').first().waitFor();
+    for(const id of ['mm-blocktopia-xp','mm-blocktopia-gems','mm-faction-xp',
+      'mm-wiki-today','mm-arcade-earned','mm-arcade-spent'])
+      assert.equal(await f.page.locator('#'+id).textContent(),'Not confirmed',id);
+    assert.equal(f.errors.length,0,f.errors.join('\\n'));
+  } finally { await f.browser.close(); }
+});
+
 test('PR3 Community XP hides stale/offline values and clears on logout', async () => {
   const f = await setup({width:390,height:844},true);
   f.setPlanFactory((owner,cursor) => {
