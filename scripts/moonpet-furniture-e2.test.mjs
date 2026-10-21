@@ -156,8 +156,8 @@ test('wrong owner, stale selected pet and missing unlocks fail closed',async()=>
 });
 
 test('furniture UI and main-canvas draw use existing pet render, no new timer or canvas',()=>{
-  assert.match(worker,/readFurnitureWithRooms\(lifecycleScope\.db/);
-  assert.match(worker,/readFurnitureWithRooms\(identityScope\.db/);
+  assert.match(worker,/readFurnitureWithRooms\(lifecycleScope\.singleReads/);
+  assert.match(worker,/readFurnitureWithRooms\(identityScope\.singleReads/);
   assert.match(worker,/createDisplayedPetScope\(db, telegramId, pet\.pet_id, pet\.season_key\)/);
   assert.match(client,/function renderFurnitureShop\(/);
   assert.match(client,/function drawPurchasedFurniture\(/);

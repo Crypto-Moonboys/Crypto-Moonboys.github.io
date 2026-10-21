@@ -357,12 +357,12 @@ for (const duplicateField of ['has_completed_season_pet', 'combat_unlocked', 'co
 const stateRoute = routeBlock('/telegram-pets/app/state');
 assert.match(
   stateRoute,
-  /return\s+json\(\s*\{\s*ok\s*:\s*true\s*,\s*state\s*\}\s*\)/,
+  /const response = await timings\.measure\('response_serialization', \(\) => json\(\{ ok: true, state \}\)\);[\s\S]*return response;/,
   '/telegram-pets/app/state must return the canonical Mini App state envelope',
 );
 assert.match(
   stateRoute,
-  /body\.mode === 'core'[\s\S]*buildPetMiniAppCoreState\(env\.DB, verified\.telegramId\)[\s\S]*buildPetMiniAppState/,
+  /body\.mode === 'core'[\s\S]*buildPetMiniAppCoreState\(env\.DB, verified\.telegramId, \{ timings \}\)[\s\S]*buildPetMiniAppState/,
   '/telegram-pets/app/state must support a lightweight core bootstrap while retaining full state hydration',
 );
 const actionRoute = routeBlock('/telegram-pets/app/action');

@@ -74,7 +74,7 @@ assert.match(
 );
 assert.match(
   miniAppStateSource,
-  /const identityScope = createDisplayedPetScope\(db, telegramId, petRaw\.pet_id, petRaw\.season_key\);[\s\S]*const identityPromise = getMoonpetIdentityWithLifecycle\(identityScope\.db, telegramId, \{ required: true \}\)[\s\S]*catch\(error => \{ throw normalizePetProjectionError\(error\); \}\);[\s\S]*const lifecyclePromise = identityPromise\.then\([\s\S]*buildPetGuidanceState\(db, telegramId, petRaw, \{ identity: identityPromise, runtime: runtimePromise, combatEligibility: combatEligibilityPromise, projectionScope: identityScope, economy, now \}\)/,
+  /const identityScope = createDisplayedPetScope\(db, telegramId, petRaw\.pet_id, petRaw\.season_key, \{ coalesceReads: true \}\);[\s\S]*const identityPromise = getMoonpetIdentityWithLifecycle\(identityScope\.db, telegramId, \{ required: true \}\)[\s\S]*catch\(error => \{ throw normalizePetProjectionError\(error\); \}\);[\s\S]*const lifecyclePromise = identityPromise\.then\([\s\S]*buildPetGuidanceState\(db, telegramId, petRaw, \{ identity: identityPromise, runtime: runtimePromise, combatEligibility: combatEligibilityPromise, projectionScope: identityScope, economy, now \}\)/,
   'Mini App state must share one source-guarded identity/lifecycle authority result with guidance and combat eligibility',
 );
 assert.match(miniAppStateSource, /await assertPetProjectionSource\(db, telegramId, petRaw, seasonSlots, identityScope, guidance\)/,
@@ -116,7 +116,7 @@ assert.match(client, /var staleDisplayedPet =[\s\S]*await post\('\/telegram-pets
   'a stale fast action must replace the whole snapshot before local result patching or another click');
 assert.match(client, /if \(fastActionStateDirty\) scheduleFastActionStateRefresh\(0\);/,
   'screen navigation must force reconciliation when a fast action left deferred state work');
-assert.match(worker, /body\.mode === 'core'[\s\S]*buildPetMiniAppCoreState\(env\.DB, verified\.telegramId\)[\s\S]*buildPetMiniAppState/,
+assert.match(worker, /body\.mode === 'core'[\s\S]*buildPetMiniAppCoreState\(env\.DB, verified\.telegramId, \{ timings \}\)[\s\S]*buildPetMiniAppState/,
   'state endpoint must expose lightweight core bootstrap without removing the legacy full projection');
 assert.match(client, /function stateNeedsFullHydration\(snapshot\)[\s\S]*snapshot\.hydration\.full === false/,
   'client must distinguish lightweight HOME state from fully hydrated module state');
