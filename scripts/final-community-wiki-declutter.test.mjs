@@ -71,8 +71,13 @@ assert.match(contributor, /function ensureOptInCard\(container\)/,
   'Opt-in specialist owns its own markup instead of relying on the removed global Wiki dashboard');
 assert.match(contributor, /document.createElement\('details'\)/,
   'Article-local commenter ranking is collapsed by default');
-assert.match(contributor, /No approved commenters for this period\./,
-  'Empty real comment counts are distinguished from fabricated XP scores');
+assert.match(contributor, /No approved commenters in the latest records sample\./,
+  'Empty sampled contributor counts do not imply a complete all-time absence');
+assert.match(contributor, /Counts are not complete weekly or all-time totals\./,
+  'Sampled comment counts must not present themselves as full-period rankings');
+const migrator = read('js/wiki-flagship-migrator.js');
+assert.doesNotMatch(migrator, /addScript\('\/js\/wiki-live-contributors\.js'/,
+  'Generic Wiki bootstrap cannot auto-load the article-specific commenter panel');
 assert.match(account, /id="mm-private" hidden/,
   'My Moonboy personal data remains behind its existing login gate');
 
