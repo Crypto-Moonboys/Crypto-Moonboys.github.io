@@ -61,9 +61,9 @@ check(!gamesIndex.includes('browser-local/pending'), 'Arcade rejects browser-loc
 check(!gamesIndex.includes('Unlinked runs'), 'Arcade rejects local-run messaging');
 check(!gamesIndex.includes('play freely before'), 'Arcade rejects play-before-link copy');
 
-check(leaderboard.includes('Score = leaderboard ranking only.'), 'leaderboard keeps score ranking language');
+check(leaderboard.includes('Rankings use verified, server-accepted scores.'), 'leaderboard retains verified ranking explanation');
 check(leaderboard.includes('only after Telegram sync and server acceptance'), 'leaderboard requires server acceptance for Arcade XP');
-check(leaderboard.includes('unsynced runs stay local/pending'), 'leaderboard documents local/pending unlinked runs');
+check(!leaderboard.includes('unsynced runs stay local/pending'), 'leaderboard rejects obsolete pending-run copy; unlinked competitive runs are not queued');
 
 check(blockTopia.includes('ARCADE XP REQUIRED'), 'Block Topia gate renders dynamic XP required text');
 check(blockTopia.includes('BLOCKTOPIA_MULTIPLAYER_REQUIRED_XP'), 'Block Topia gate uses live required-XP constant');
