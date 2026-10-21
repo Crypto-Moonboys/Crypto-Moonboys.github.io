@@ -98,3 +98,18 @@ response/persisted reward parity and a measured call reduction before removing
 any eligibility/source/final-account check. If statements are few but elapsed
 high, investigate D1 execution/query plans via approved private diagnostics;
 do not add a cache or parallelise settlement writes based on elapsed time alone.
+
+## PR review correction
+
+The original twenty-feed tests prove source repair and retry stability only:
+they do not qualify for a daily/weekly award. Added two timing-enabled signed
+HTTP cases with three accepted daily objectives, all five qualifying weekly
+objectives (including distinct check-in dates), and an unfinished historical
+boss victory. Both start with no mark, Journey crest or boss finish marker,
+assert creation and original pet/season/day/week attribution after one request,
+and compare reward/receipt/memory/specialist records plus wallet values after
+two retries. Cases cover an active original pet and an archived original pet
+on a three-pet account with a different selected pet. No automatic currency
+claim is introduced. Five profiling tests pass. Existing source-contract test
+now requires delegation through the measured DB wrapper, fixing Worker/API CI's
+stale `projectPetMiniAppState(db, ...)` assertion.
