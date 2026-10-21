@@ -230,6 +230,7 @@ const GROUPS = {
     ['node', 'scripts/telegram-hard-gate-runtime-contract.test.mjs'],
     ['node', 'scripts/how-to-play-xp-copy.test.mjs'],
     ['node', 'scripts/website-onboarding-entry.test.mjs'],
+    ['node', 'scripts/live-player-surface-cleanup.test.mjs'],
     ['node', 'scripts/ui-timer-ownership.test.mjs'],
     ['node', 'scripts/faction-canon-protection.test.mjs'],
     ['node', 'scripts/battle-chamber-faction-page.test.mjs'],
