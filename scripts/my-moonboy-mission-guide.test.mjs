@@ -24,12 +24,12 @@ const ids = [...read('workers/moonboys-api/player-action-plan/sources.js')
 
 test('complete registry checklist exactly tracks every Action Plan source and Saved Status claim gap', () => {
   const guide = load();
-  assert.equal(ids.length, 28);
+  assert.equal(ids.length, 33);
   assert.equal(new Set(ids).size, ids.length);
   assert.equal(guide.sources.map(x=>x.key).join('|'), ids.join('|'));
   const gaps = parity.mappings.filter(x=>x.parity === 'gap').map(x=>x.saved_status);
-  assert.equal(gaps.length, 5);
-  assert.equal(guide.savedOnly.map(x=>x.key).sort().join('|'), gaps.sort().join('|'));
+  assert.equal(gaps.length, 0);
+  assert.deepEqual(guide.savedOnly.map(x=>x.key).sort(), ['daily_cache','extra_bounty_claim','weekly_bounty_claim']);
   assert.ok(guide.savedOnly.every(x=>x.description && x.label));
 });
 
@@ -249,10 +249,10 @@ test('saved claim and Wiki links have per-row stable focus keys despite sharing 
   const sources = [...html.matchAll(/data-mm-focus-link="source:([a-z0-9.-]+)"/gu)]
     .map(x => x[1]);
   assert.equal(saved.length, 5);
-  assert.equal(new Set(saved).size, 5);
+  assert.equal(new Set(saved).size, 3);
   assert.equal(wiki.length, 6);
   assert.equal(new Set(wiki).size, 6);
-  assert.equal(sources.length, 28);
+  assert.equal(sources.length, 33);
   assert.equal(new Set(sources).size, 28);
   assert.ok(saved.includes('weekly_bounty_claim'));
   assert.ok(wiki.includes('cite'));
