@@ -371,12 +371,26 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
     economy.arcade_wallet_health = 'unavailable';
   }
   try {
+    // A profile balance can be stale until the canonical one-time account
+    // wallet reconciliation has committed. Require its awarded receipt and
+    // absence of an unresolved recovery marker; never mutate from Action Plan.
     const rows = await db.all(
-      'SELECT moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles WHERE telegram_id=? LIMIT 1',
+      `SELECT p.moon_gold,p.moon_crystals,p.style_tokens,
+        EXISTS(SELECT 1 FROM telegram_pet_reward_claims marker
+          WHERE marker.telegram_id=p.telegram_id AND marker.source='wallet_reconciliation'
+            AND marker.idempotency_key='moonpet_wallet_reconcile:v1'
+            AND marker.status='awarded') AS wallet_reconciled,
+        EXISTS(SELECT 1 FROM telegram_pet_reward_claims recovery
+          WHERE recovery.telegram_id=p.telegram_id
+            AND recovery.source='wallet_reconciliation_recovery_required'
+            AND recovery.idempotency_key='moonpet_wallet_reconcile_recovery_required:v1'
+            AND recovery.status='pending') AS recovery_pending
+       FROM telegram_pet_profiles p WHERE p.telegram_id=? LIMIT 1`,
       [ownerId]);
     const row = rows[0];
     const fields = ['moon_gold', 'moon_crystals', 'style_tokens'];
-    if (row && fields.every(key => Number.isSafeInteger(row[key]) && row[key] >= 0)) {
+    if (row && Number(row.wallet_reconciled) === 1 && Number(row.recovery_pending) === 0 &&
+        fields.every(key => Number.isSafeInteger(row[key]) && row[key] >= 0)) {
       for (const key of fields) economy[key] = Number(row[key]);
       economy.moonpet_wallet_health = 'live';
     } else economy.moonpet_wallet_health = row ? 'unavailable' : 'live_empty';
