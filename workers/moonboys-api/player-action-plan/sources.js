@@ -362,7 +362,7 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
       [ownerId]);
     const row = rows[0];
     const values = row && [row.arcade_xp_earned, row.arcade_xp_spendable, row.arcade_xp_spent];
-    if (values && values.every(value => Number.isSafeInteger(Number(value)) && Number(value) >= 0) &&
+    if (values && values.every(value => value != null && Number.isSafeInteger(value) && value >= 0) &&
         Number(row.arcade_xp_earned) === Number(row.arcade_xp_spendable) + Number(row.arcade_xp_spent)) {
       economy.arcade_spendable_xp = Number(row.arcade_xp_spendable);
       economy.arcade_wallet_health = 'live';
@@ -376,7 +376,7 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
       [ownerId]);
     const row = rows[0];
     const fields = ['moon_gold', 'moon_crystals', 'style_tokens'];
-    if (row && fields.every(key => Number.isSafeInteger(Number(row[key])) && Number(row[key]) >= 0)) {
+    if (row && fields.every(key => Number.isSafeInteger(row[key]) && row[key] >= 0)) {
       for (const key of fields) economy[key] = Number(row[key]);
       economy.moonpet_wallet_health = 'live';
     } else economy.moonpet_wallet_health = row ? 'unavailable' : 'live_empty';
