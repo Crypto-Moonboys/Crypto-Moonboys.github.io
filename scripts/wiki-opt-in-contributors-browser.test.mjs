@@ -55,10 +55,10 @@ test('opt-in Wiki contributors display only source-backed article comment counts
     assert.doesNotMatch(await card.textContent(), /9540|7420|XP\b/,
       'article comment counts must never masquerade as XP rankings');
 
-    await card.locator('[data-period="all_time"]').click();
+    await card.locator('button[data-period="all_time"]').click();
     await page.waitForFunction(() => document.querySelector('.top-contributor-list')?.textContent.includes('2 comments'));
-    assert.equal(await card.locator('[data-period="all_time"]').getAttribute('aria-pressed'), 'true');
-    assert.equal(await card.locator('[data-period="week"]').getAttribute('aria-pressed'), 'false');
+    assert.equal(await card.locator('button[data-period="all_time"]').getAttribute('aria-pressed'), 'true');
+    assert.equal(await card.locator('button[data-period="week"]').getAttribute('aria-pressed'), 'false');
     assert.ok(await page.evaluate(() => window.__commentFetches >= 2),
       'both article comments and optional contributor views read actual comment source');
     assert.deepEqual(errors, []);
