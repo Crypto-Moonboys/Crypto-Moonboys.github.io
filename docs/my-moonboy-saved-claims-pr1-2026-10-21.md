@@ -20,7 +20,7 @@ This is **not** a claim that all five have exact payout parity. The last three r
 - Only SELECT statements are issued through the existing read-only D1 facade, with shared query count and deadline. No claim/award action is invoked.
 - Finale tasks use opaque original-pet refs; no Telegram ID, raw pet ID, reward claim key or authentication proof is returned.
 - Missing or failed source reads must not be interpreted as zero/claimed. Source failure is reconciled to `sync_unavailable` by the existing action-plan normalizer.
-- Historical season-tier claims are bounded; a full page of season/acknowledgement/receipt rows blocks readiness rather than treating unseen payouts as absent.
+- Historical season-tier claims are bounded: fetch a 17th sentinel season row to detect older omitted earned/unclaimed tiers beyond the 16-season preview. Also detect full 100-row acknowledgement/receipt pages. Any of these gaps sets `source_status.partial=true`, displays a read-only historical-overflow task linking to MoonPet Saved Status and blocks positive claim readiness; unseen payouts are never treated as absent.
 - Historical Finale results are likewise bounded: when the 61st row exists, the source is explicitly marked partial and a non-claimable overflow row directs users to Saved Status.
 - Selected-pet lifecycle absence prevents marking unlocked season tiers as ready. Tier reward previews do not claim exact payout amounts without the source’s evolution-stage bonus.
 - All five keys are registered in the runtime registry, reviewed design inventory, parity map and private checklist. The checklist retains three **readiness limitations** rather than five false missing-source rows.
