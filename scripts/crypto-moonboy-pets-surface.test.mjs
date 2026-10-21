@@ -90,7 +90,7 @@ assert.ok(howTo.indexOf('/js/core/daily-loop-state.js') < howTo.indexOf('/js/com
 
 assert.ok(leaderboard.includes('data-crypto-pets-leaderboard'), 'pet leaderboard page must use pet leaderboard data hook');
 for (const period of ['seasonal', 'daily', 'weekly', 'all_time']) assert.ok(leaderboard.includes(`data-period="${period}"`), `pet leaderboard must show ${period} period`);
-assert.ok(community.includes('data-crypto-pets-summary'), 'community page must have compact pet summary only');
+assert.ok(!community.includes('data-crypto-pets-summary'), 'Battle Chamber defers private pet state to My Moonboy or MoonPet');
 assert.ok(!community.includes('data-crypto-pets-leaderboard'), 'community page must not dump full pet leaderboard');
 assert.ok(games.includes('Crypto Moonboy Pets — Telegram Game'), 'games index must list Pets as a Telegram Game');
 assert.ok(leaderboardClient.includes('export async function submitScore'), 'shared Arcade score submission remains available');
