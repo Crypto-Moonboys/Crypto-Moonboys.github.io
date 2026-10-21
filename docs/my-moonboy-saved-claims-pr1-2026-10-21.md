@@ -7,8 +7,8 @@
 | Saved Status class | New source key | Signed Action Plan truth | Claim badge? |
 | --- | --- | --- | --- |
 | Daily Cache | `moonpet.daily-cache` | An accepted `daily_chest` event proves the cache was opened. No event is **not** evidence that today's cache is eligible. | No readiness badge |
-| Season-tier reward | `moonpet.season-tier-claims` | Account season XP, tier acknowledgement, source-specific pending/awarded receipt, current/historical season and owned pet roster are read together. Unlocked, unclaimed tiers can be claim-ready only when evidence is complete. | Yes, when fully proven |
-| Finale reward | `moonpet.finale-claim` | Won + defeated saved Finale, original pet and retained season slot, and unique payout receipt. Pending or inconsistent acknowledgement is blocked. | Yes, when fully proven |
+| Season-tier reward | `moonpet.season-tier-claims` | Account season XP, tier acknowledgement, source-specific pending/awarded receipt, current/historical season, **selected-pet lifecycle authority** and owned pet roster are read together. A tier is claim-ready only with proven eligibility. The base reward is explicitly **not an exact confirmed payout** because current evolution stage can add Style Tokens. | Yes, when eligibility is proven; amount remains unconfirmed |
+| Finale reward | `moonpet.finale-claim` | Won + defeated saved Finale, original pet and retained season slot, and unique payout receipt. Pending or inconsistent acknowledgement is blocked. **61 rows are read to detect a truncated 60-row preview; overflow exposes partial history and a Saved Status follow-up.** | Yes, for individually proven claims |
 | Extra daily bounty | `moonpet.extra-bounty-claims` | Accepted event counts for the rotating bonus board are **advisory progress only**. The source economy board still owns exact claim eligibility, payout identity and pending recovery. | No |
 | Weekly bounty block | `moonpet.weekly-bounty-claims` | Accepted event counts for the rotating ISO-week board are **advisory progress only**. Seasonal boss-attempt source proof and settlement are not reconstructed. | No |
 
@@ -21,6 +21,8 @@ This is **not** a claim that all five have exact payout parity. The last three r
 - Finale tasks use opaque original-pet refs; no Telegram ID, raw pet ID, reward claim key or authentication proof is returned.
 - Missing or failed source reads must not be interpreted as zero/claimed. Source failure is reconciled to `sync_unavailable` by the existing action-plan normalizer.
 - Historical season-tier claims are bounded; a full page of season/acknowledgement/receipt rows blocks readiness rather than treating unseen payouts as absent.
+- Historical Finale results are likewise bounded: when the 61st row exists, the source is explicitly marked partial and a non-claimable overflow row directs users to Saved Status.
+- Selected-pet lifecycle absence prevents marking unlocked season tiers as ready. Tier reward previews do not claim exact payout amounts without the source’s evolution-stage bonus.
 - All five keys are registered in the runtime registry, reviewed design inventory, parity map and private checklist. The checklist retains three **readiness limitations** rather than five false missing-source rows.
 
 ## Test/QA requirements
