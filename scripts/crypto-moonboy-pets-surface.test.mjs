@@ -81,10 +81,10 @@ for (const script of [
   '/js/components/global-player-header.js',
   '/js/components/live-activity-summary.js',
   '/js/wiki.js',
-  '/js/crypto-moonboy-pets.js?v=20260929-personal-read-retry-v2',
 ]) {
   assert.ok(howTo.includes(`src="${script}"`), `How To Play must load canonical boot script ${script}`);
 }
+assert.ok(!howTo.includes('data-crypto-pets-missions') && !howTo.includes('src="/js/crypto-moonboy-pets.js'), 'MoonPet reference guide does not mount or fetch personal mission state');
 assert.ok(howTo.indexOf('/js/core/moonboys-state.js') < howTo.indexOf('/js/components/connection-status-panel.js'), 'state must load before the connection status panel');
 assert.ok(howTo.indexOf('/js/core/daily-loop-state.js') < howTo.indexOf('/js/components/connection-status-panel.js'), 'daily loop state must load before the connection status panel');
 
