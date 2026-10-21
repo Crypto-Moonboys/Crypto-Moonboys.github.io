@@ -88,7 +88,7 @@
       "action_plan_source": "moonpet.extra-bounty-claims",
       "parity": "partial",
       "claim_badge": false,
-      "notes": "Signed accepted event progress is a lower bound, not the canonical extra-board settlement; no claim badge until source receipt parity is proven."
+      "notes": "Signed accepted event progress is advisory only, not the canonical extra-board settlement; no claim badge until source receipt parity is proven."
     },
     {
       "saved_status": "weekly_bounty_claim",
@@ -96,7 +96,7 @@
       "action_plan_source": "moonpet.weekly-bounty-claims",
       "parity": "partial",
       "claim_badge": false,
-      "notes": "Signed accepted event progress is a lower bound and excludes some boss-attempt proof; no claim badge until source receipt parity is proven."
+      "notes": "Signed accepted event progress is advisory only and excludes some boss-attempt proof; no claim badge until source receipt parity is proven."
     }
   ]
 }
