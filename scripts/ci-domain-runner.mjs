@@ -45,6 +45,7 @@ const GROUPS = {
     ['node', 'scripts/audit-published-vs-index.js'],
   ],
   'worker-api': [
+    ['node', '--test', 'scripts/verify-graph-dispatch-pr.test.mjs'],
     ['node', '--test', 'scripts/faction-unified-authority.test.mjs'],
     ['node', 'scripts/leaderboard-source-consolidation.test.mjs'],
     ['node', '--test', 'scripts/my-moonboy-mission-guide.test.mjs'],

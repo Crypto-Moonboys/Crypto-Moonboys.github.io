@@ -1,6 +1,12 @@
 name: CI
 
 on:
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'Generated graph PR number; GitHub verifies the real base and exact head'
+        required: true
+        type: string
   pull_request:
     branches: [main]
     types: [opened, synchronize, reopened, labeled, unlabeled]
@@ -25,10 +31,20 @@ jobs:
         with:
           node-version: 22
 
+      - name: Validate generated graph PR dispatch
+        id: graph_dispatch
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          PR_NUMBER: ${{ inputs.pr_number }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          node --test scripts/verify-graph-dispatch-pr.test.mjs
+          node scripts/verify-graph-dispatch-pr.mjs
+
       - name: Check wiki/static changes
         id: wiki_changes
         env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before || steps.graph_dispatch.outputs.base_sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: node scripts/ci-change-scope.mjs wiki
 
@@ -49,10 +65,18 @@ jobs:
         run: node scripts/resolve-canon-prose-approval.mjs
 
       - name: Run wiki tests
-        if: steps.wiki_changes.outputs.should_run == 'true'
+        if: steps.wiki_changes.outputs.should_run == 'true' && github.event_name != 'workflow_dispatch'
         env:
           BASE_SHA: ${{ github.event_name == 'push' && github.event.before || github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+          CANON_PROSE_CHANGE_APPROVED: ${{ steps.canon_approval.outputs.approved || '0' }}
+        run: npm run ci:wiki
+
+      - name: Run wiki tests explicitly dispatched
+        if: steps.wiki_changes.outputs.should_run == 'true' && github.event_name == 'workflow_dispatch'
+        env:
+          BASE_SHA: ${{ steps.graph_dispatch.outputs.base_sha }}
+          HEAD_SHA: ${{ github.sha }}
           CANON_PROSE_CHANGE_APPROVED: ${{ steps.canon_approval.outputs.approved || '0' }}
         run: npm run ci:wiki
 
@@ -66,6 +90,16 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
+
+      - name: Validate generated graph PR dispatch
+        id: graph_dispatch
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          PR_NUMBER: ${{ inputs.pr_number }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          node --test scripts/verify-graph-dispatch-pr.test.mjs
+          node scripts/verify-graph-dispatch-pr.mjs
 
       - name: Install dependencies
         run: |
@@ -91,10 +125,20 @@ jobs:
         with:
           node-version: 22
 
+      - name: Validate generated graph PR dispatch
+        id: graph_dispatch
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          PR_NUMBER: ${{ inputs.pr_number }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          node --test scripts/verify-graph-dispatch-pr.test.mjs
+          node scripts/verify-graph-dispatch-pr.mjs
+
       - name: Check arcade/frontend changes
         id: arcade_changes
         env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before || steps.graph_dispatch.outputs.base_sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: node scripts/ci-change-scope.mjs arcade
 
@@ -128,10 +172,20 @@ jobs:
         with:
           node-version: 22
 
+      - name: Validate generated graph PR dispatch
+        id: graph_dispatch
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          PR_NUMBER: ${{ inputs.pr_number }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          node --test scripts/verify-graph-dispatch-pr.test.mjs
+          node scripts/verify-graph-dispatch-pr.mjs
+
       - name: Check WAX/static changes
         id: wax_changes
         env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before || steps.graph_dispatch.outputs.base_sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: node scripts/ci-change-scope.mjs wax
 
@@ -162,10 +216,20 @@ jobs:
         with:
           node-version: 22
 
+      - name: Validate generated graph PR dispatch
+        id: graph_dispatch
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          PR_NUMBER: ${{ inputs.pr_number }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          node --test scripts/verify-graph-dispatch-pr.test.mjs
+          node scripts/verify-graph-dispatch-pr.mjs
+
       - name: Check visual/runtime frontend changes
         id: visual_changes
         env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before || steps.graph_dispatch.outputs.base_sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: node scripts/ci-change-scope.mjs visual
 
