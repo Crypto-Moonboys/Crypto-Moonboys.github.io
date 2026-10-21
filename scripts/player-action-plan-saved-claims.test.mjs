@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import { test } from 'node:test';
 import { projectSavedMoonpetClaims, SAVED_CLAIM_KEYS } from '../workers/moonboys-api/player-action-plan/moonpet-saved-claims.js';
 import { getMoonpetSeasonKey } from '../workers/moonboys-api/pets/season-authority.js';
@@ -52,7 +53,9 @@ function fixture(options = {}) {
       rosterUnavailable: Boolean(options.rosterUnavailable),
       sourceStatuses: statuses, failures, query,
       makeTask: input => input,
-      opaqueRef: async value => 'opaque:' + (value.includes('secret-pet') ? 'pet' : 'owner'),
+      // Mirror stable opaque identity, not an identical stub for every pet.
+      opaqueRef: async value => value === OWNER + ':secret-pet' ? 'opaque:pet' :
+        'opaque:' + createHash('sha256').update(String(value)).digest('hex').slice(0, 24),
     }),
   };
 }
