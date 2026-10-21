@@ -105,8 +105,10 @@ test('Completed tick requires genuine source evidence across receipts and verifi
     assert.equal(guide.verifiedDone(entry),entry===accepted || entry===projection,entry.task_id);
   }
   guide.renderChecklist(el,[accepted,projection,unverified,preview,claimReady,failed],{});
-  assert.equal((el.innerHTML.match(/✅ Completed/g)||[]).length,4,
-    'verified rows each show a tick in mark and completion text');
+  assert.equal((el.innerHTML.match(/✅ Completed/g)||[]).length,2,
+    'both verified rows show the completed text');
+  assert.equal((el.innerHTML.match(/class="mm-checklist-mark" aria-hidden="true">✅/g)||[]).length,2,
+    'both verified rows also show the separate checklist tick');
   assert.match(el.innerHTML,/2 verified complete \/ 6 loaded tasks/u);
   assert.doesNotMatch(el.innerHTML,/✅ Completed[^<]*claim ready/u);
   guide.renderChecklist(el,[accepted,projection],{stale:true});
