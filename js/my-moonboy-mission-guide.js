@@ -113,7 +113,7 @@
     const all = currentTaskList(tasks, opts.topActions);
     const bySource = new Map(SOURCES.map(source => [source.key, []]));
     all.forEach(item => { if (bySource.has(item.source_key)) bySource.get(item.source_key).push(item); });
-    const heading = '<p class="mm-muted">Checklist statuses are read-only. ✅ Completed requires verified server completion evidence; no self-completion controls exist. Claim-ready, previews and local progress do not count as completed. Source details are read from the signed account only.</p>' +
+    const heading = '<p class="mm-muted">Checklist statuses are read-only. A Completed tick requires verified server completion evidence; no self-completion controls exist. Claim-ready, previews and local progress do not count as completed. Source details are read from the signed account only.</p>' +
       (opts.moreAvailable ? '<p class="mm-source-warning">More tasks exist beyond this page. Expand the mission ledger and choose Load more until all source pages are loaded. Absence never means complete.</p>' : '') +
       (stale ? '<p class="mm-source-warning">Offline or stale: the statuses below are historical only. No current claims are verified until the next signed read.</p>' : '');
     const groups = ALLOWED_GROUPS.map(group => {
