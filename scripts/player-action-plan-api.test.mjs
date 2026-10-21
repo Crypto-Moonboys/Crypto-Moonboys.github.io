@@ -544,7 +544,7 @@ test('final My Moonboy tracker uses owner-bound BlockTopia, faction, Arcade ledg
     && call.params[0]==='123456'));
   assert.ok(db.calls.some(call=>/FROM wiki_mission_completions/u.test(call.sql)
     && call.params[0]==='123456'));
-  assert.ok(db.calls.every(call => /^(SELECT|WITH)\\b/iu.test(call.sql.trimStart())));
+  assert.ok(db.calls.every(call => /^(SELECT|WITH)\b/iu.test(call.sql.trimStart())));
   assert.ok(body.query_budget.statement_count<=80);
 });
 
@@ -665,8 +665,7 @@ test('faction projection uses Battle Chamber progression even with conflicting o
     assert.ok(db.calls.some(call => /FROM blocktopia_progression/u.test(call.sql)));
     assert.ok(!db.calls.some(call => /FROM telegram_faction_members/u.test(call.sql)),
       'legacy community membership may not override a seasonal faction');
-    assert.ok(db.calls.every(call => call.sql.trimStart().startsWith('SELECT') ||
-      call.sql.trimStart().startsWith('WITH')));
+    assert.ok(db.calls.every(call => /^\s*(SELECT|WITH)\b/iu.test(call.sql)));
   }
 });
 
