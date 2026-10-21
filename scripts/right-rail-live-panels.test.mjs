@@ -131,12 +131,12 @@ check(!/wtf\/events\/(today|check-in|complete|choose-option)[^`'"\n]*telegram_au
 check(!xpBurst.includes('innerHTML'), 'XP burst animation avoids unsafe dynamic innerHTML rendering');
 
 console.log('\n[3] Top notice');
-check(csp.includes('Telegram Connected') && csp.includes('Log in with Telegram') && csp.includes('Checking Telegram'), 'compact Telegram/XP live notice supports linked, pending and unlinked states');
-check(csp.includes('csp-badge-stack') && csp.includes('csp-badge-chip'), 'top notice is compact and chip-based');
+check(csp.includes('Telegram Connected') && csp.includes('Log in with Telegram') && csp.includes('Checking Telegram'), 'compact global Telegram identity badge supports linked, pending and unlinked states');
+check(csp.includes('csp-badge-stack') && csp.includes('csp-badge--linked'), 'top notice is a compact identity indicator, not an XP dashboard');
 check(csp.indexOf('LIVE SYNC') < csp.indexOf('async function buildPanelHTML') || csp.includes('async function buildBadgeHTML'), 'top notice is rendered by badge path, not the full panel');
-check(csp.includes('blocktopiaBadgeLabel(blocktopiaStatus)') && csp.includes("return 'BT OPEN'") && csp.includes("return 'BT LOCK'") && csp.includes("return 'BT SYNC'"), 'initial badge uses shared BT OPEN / BT LOCK / BT SYNC labels');
+check(!csp.includes('data-csp-badge-xp') && !csp.includes('data-csp-badge-bt'), 'global identity badge no longer repeats Arcade XP or Block Topia gate chips');
 const stateSubscribeBlock = csp.slice(csp.indexOf('MOONBOYS_STATE.subscribe'), csp.indexOf('// ── Bootstrap'));
-check(stateSubscribeBlock.includes('blocktopiaBadgeLabel(blocktopiaStatus)'), 'live XP subscription path reuses shared BT status labels');
+check(stateSubscribeBlock.includes('blocktopiaAccessHTML(linked, state.xp, requiredXp, serverLinkedConfirmed, progressionConfirmed)'), 'live XP subscription still updates authoritative Block Topia panel when explicitly mounted');
 check(!stateSubscribeBlock.includes("btNode.textContent = unlocked ? 'unlocked' : 'locked'"), 'live badge updater does not flip back to old unlocked / locked labels');
 check(stateSubscribeBlock.includes("state.source === 'server'") && stateSubscribeBlock.includes('_progressionCache && _progressionCache.confirmed === true'), 'live Block Topia updater requires server-confirmed link/progression before confirmed unlock labels');
 check(stateSubscribeBlock.includes('blocktopiaAccessHTML(linked, state.xp, requiredXp, serverLinkedConfirmed, progressionConfirmed)'), 'live Block Topia row updater reuses initial access markup helper with confirmation flags');
@@ -294,7 +294,7 @@ check(!opsBlock.includes('csp-live-cta') && !wtfSectionBlock.includes('csp-live-
 // Player Live Feed keeps the main Link/RELINK CTA
 check(liveFeedBlock.includes('csp-live-cta') && liveFeedBlock.includes('Link Telegram') && liveFeedBlock.includes('RELINK Telegram'), 'Player Live Feed retains the main Link Telegram / RELINK CTA for unlinked/relink states');
 // Standalone pages still mount data-csp-panel outside the right-rail shell
-check(incubator.includes('data-csp-panel') && !incubator.includes('homepage-right-panel'), 'gkniftyheads-incubator standalone data-csp-panel mount remains outside homepage-right-panel shell');
+check(!incubator.includes('data-csp-panel') && incubator.includes('incubator-sync-state'), 'Incubator keeps callback and account status but omits duplicate full Player Live Feed');
 check(blockTopiaPage.includes('data-csp-panel') && blockTopiaPage.includes('bt-gate__status-compat-mount') && blockTopiaPage.includes('hidden') && blockTopiaPage.includes('aria-hidden="true"'), 'games/block-topia retains a hidden compatibility data-csp-panel mount');
 check(blockTopiaPage.includes('data-csp-panel') && !blockTopiaPage.includes('homepage-right-panel'), 'games/block-topia standalone data-csp-panel mount remains outside homepage-right-panel shell');
 check(normalizeEol(read('games/block-topia/styles.css')).includes('.bt-gate__status-compat-mount {\n  display: none !important;\n}'), 'compatibility mount is forced non-visual in CSS');
@@ -482,7 +482,7 @@ check(csp.includes('csp-badge--relink'), 'RELINK badge has its own CSS class');
 check(csp.includes('Auth expired'), 'RELINK badge copy includes "Auth expired" to explain the state');
 const buildBadgeBlock = functionBlock(csp, 'buildBadgeHTML');
 check(buildBadgeBlock.includes('restoreLinkedTelegramAuth'), 'buildBadgeHTML attempts restoreLinkedTelegramAuth before rendering RELINK badge');
-check(buildBadgeBlock.includes('csp-badge--pending') && buildBadgeBlock.includes('SYNC PENDING'), 'buildBadgeHTML uses a dedicated pending badge class when API writes are unavailable');
+check(!buildBadgeBlock.includes('checkApiOnline()') && !buildBadgeBlock.includes('fetchRequiredXp()') && buildBadgeBlock.includes('getDisplayName()'), 'buildBadgeHTML shows verified identity without probing game data or repeating XP');
 check(csp.includes('Signed Telegram auth expired — relink required.') && csp.includes('RELINK Telegram'), 'player live feed shows explicit relink state + CTA when signed auth is unavailable');
 check(csp.includes('Sync pending') && csp.includes('Local cached only') && csp.includes('getSyncPendingLabel(shared.apiInfo)'), 'connection-status-panel labels local/dev no-config state as sync pending/local cached only');
 check(functionBlock(csp, 'buildSharedRailState').includes('getSignedTelegramAuthWithRestore'), 'shared rail state checks signed/restorable auth before activating live mode');
