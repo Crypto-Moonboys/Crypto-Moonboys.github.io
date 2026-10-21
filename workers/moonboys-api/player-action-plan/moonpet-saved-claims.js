@@ -58,7 +58,7 @@ export async function projectSavedMoonpetClaims({
   // Season tiers require persisted season XP and independent payout receipts.
   const currentSeason = getMoonpetSeasonKey(now);
   const seasons = await read('tiers',
-    'SELECT season_key,season_xp FROM telegram_pet_season_state WHERE telegram_id=? ORDER BY season_key DESC LIMIT 16', [ownerId]);
+    'SELECT season_key,season_xp FROM telegram_pet_season_state WHERE telegram_id=? ORDER BY season_key DESC LIMIT 17', [ownerId]);
   const claims = seasons === null ? null : await read('tiers',
     'SELECT season_key,tier_id,claimed_at FROM telegram_pet_season_reward_claims WHERE telegram_id=? ORDER BY season_key DESC LIMIT 100', [ownerId]);
   const receipts = claims === null ? null : await read('tiers',
@@ -66,8 +66,13 @@ export async function projectSavedMoonpetClaims({
     [ownerId]);
   status('tiers', seasons, 'season_xp_claims_and_receipts');
   if (seasons && claims && receipts) {
-    // A bounded receipt read cannot prove an absent payout when truncated.
-    const truncated = seasons.length >= 16 || claims.length >= 100 || receipts.length >= 100;
+    // One sentinel season row proves whether the 16-season preview omitted
+    // older account-owned seasons, including unclaimed tiers with no receipt.
+    // A full acknowledgement/receipt page is also insufficient to prove that
+    // a missing payout does not exist. Neither case can establish readiness.
+    const seasonOverflow = seasons.length > 16;
+    const truncated = seasonOverflow || claims.length >= 100 || receipts.length >= 100;
+    const visibleSeasons = seasons.slice(0, 16);
     // The canonical claim path needs the selected original pet and its saved
     // lifecycle. Any owned roster row is insufficient if the selected pet's
     // lifecycle record was missing from the outer-joined source projection.
@@ -75,7 +80,7 @@ export async function projectSavedMoonpetClaims({
     const selectedLifecycleVerified = Boolean(selectedPet?.lifecycle_phase);
     const saved = new Map(claims.map(x => [x.season_key + ':' + x.tier_id, x]));
     const paid = new Map(receipts.map(x => [x.idempotency_key, x]));
-    const periods = new Map(seasons.map(x => [String(x.season_key), count(x.season_xp)]));
+    const periods = new Map(visibleSeasons.map(x => [String(x.season_key), count(x.season_xp)]));
     // Canonical season state retains paid tiers even if an imported account
     // lost its historical season XP aggregate. The unique awarded receipt
     // proves that historical tier; it must remain visible as claimed.
@@ -86,7 +91,22 @@ export async function projectSavedMoonpetClaims({
         .match(/^(pet-s\d{4}-00[1-4]):(street|neon|cyber|guardian)$/u);
       if (match && !periods.has(match[1])) periods.set(match[1], 0);
     }
-    if (receipts.length) status('tiers', [...seasons, ...receipts], 'season_xp_claims_and_receipts');
+    if (receipts.length) status('tiers', [...visibleSeasons, ...receipts], 'season_xp_claims_and_receipts');
+    if (truncated && !failures.has(SAVED_CLAIM_KEYS.tiers)) {
+      sourceStatuses[SAVED_CLAIM_KEYS.tiers] = sourceStatus('live', {
+        adapter: 'season_xp_claims_and_receipts',
+        partial: true,
+        historical_seasons_in_preview: visibleSeasons.length,
+        historical_seasons_beyond_preview: seasonOverflow ? 'at_least_one' : 'unknown',
+      });
+      add('tiers', 'preview', {
+        title: 'Additional saved season-tier rewards need review',
+        description: 'The saved season and/or payout history exceeds the verified Action Plan preview. Older unclaimed tiers may remain; inspect MoonPet Saved Status.',
+        period: 'historical_overflow', suffix: 'overflow', health: 'preview',
+        blocking: 'season_tier_history_partial', priority: 825,
+        progress: { current: visibleSeasons.length, target: null, unit: 'verified_season_preview_rows' },
+      });
+    }
     if (!periods.has(currentSeason)) periods.set(currentSeason, 0);
     for (const [period, xp] of periods) {
       if (!/^pet-s\d{4}-00[1-4]$/u.test(period) || period > currentSeason) continue;
