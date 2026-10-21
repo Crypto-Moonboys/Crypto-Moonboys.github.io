@@ -55,9 +55,6 @@ jobs:
         with:
           ref: main
           persist-credentials: true
-      - name: Record exact main baseline for dispatched CI
-        id: baseline
-        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -149,10 +146,9 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           GRAPH_PR_REF: ${{ steps.graph_pr.outputs.pull-request-branch }}
           GRAPH_PR_NUMBER: ${{ steps.graph_pr.outputs.pull-request-number }}
-          BASE_SHA: ${{ steps.baseline.outputs.sha }}
         run: |
-          gh workflow run ci.yml --ref "$GRAPH_PR_REF" -f base_sha="$BASE_SHA"
-          gh workflow run graph-publishing-integrity.yml --ref "$GRAPH_PR_REF" -f base_sha="$BASE_SHA"
+          gh workflow run ci.yml --ref "$GRAPH_PR_REF" -f pr_number="$GRAPH_PR_NUMBER"
+          gh workflow run graph-publishing-integrity.yml --ref "$GRAPH_PR_REF" -f pr_number="$GRAPH_PR_NUMBER"
           gh workflow run pr-template-check.yml --ref "$GRAPH_PR_REF" -f pr_number="$GRAPH_PR_NUMBER"
           echo "Dispatched CI, Graph Publishing Integrity and PR template verification."
           echo "These jobs must pass on the generated PR head before review/merge."
