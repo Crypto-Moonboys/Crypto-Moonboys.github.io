@@ -81,16 +81,16 @@ for (const script of [
   '/js/components/global-player-header.js',
   '/js/components/live-activity-summary.js',
   '/js/wiki.js',
-  '/js/crypto-moonboy-pets.js?v=20260929-personal-read-retry-v2',
 ]) {
   assert.ok(howTo.includes(`src="${script}"`), `How To Play must load canonical boot script ${script}`);
 }
+assert.ok(!howTo.includes('data-crypto-pets-missions') && !howTo.includes('src="/js/crypto-moonboy-pets.js'), 'MoonPet reference guide does not mount or fetch personal mission state');
 assert.ok(howTo.indexOf('/js/core/moonboys-state.js') < howTo.indexOf('/js/components/connection-status-panel.js'), 'state must load before the connection status panel');
 assert.ok(howTo.indexOf('/js/core/daily-loop-state.js') < howTo.indexOf('/js/components/connection-status-panel.js'), 'daily loop state must load before the connection status panel');
 
 assert.ok(leaderboard.includes('data-crypto-pets-leaderboard'), 'pet leaderboard page must use pet leaderboard data hook');
 for (const period of ['seasonal', 'daily', 'weekly', 'all_time']) assert.ok(leaderboard.includes(`data-period="${period}"`), `pet leaderboard must show ${period} period`);
-assert.ok(community.includes('data-crypto-pets-summary'), 'community page must have compact pet summary only');
+assert.ok(!community.includes('data-crypto-pets-summary'), 'Battle Chamber defers private pet state to My Moonboy or MoonPet');
 assert.ok(!community.includes('data-crypto-pets-leaderboard'), 'community page must not dump full pet leaderboard');
 assert.ok(games.includes('Crypto Moonboy Pets — Telegram Game'), 'games index must list Pets as a Telegram Game');
 assert.ok(leaderboardClient.includes('export async function submitScore'), 'shared Arcade score submission remains available');

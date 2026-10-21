@@ -39,10 +39,10 @@ for (const guard of ['data-telegram-login', 'id="mm-results"', 'id="mm-checklist
 
 assert.match(community, /href="https:\/\/t\.me\/gkniftyheads"/, 'Community leads to live Telegram group');
 assert.match(community, /id="telegram-login-help"/, 'Existing sign-in recovery hash remains valid');
-for (const hook of ['incubator-sync-state', 'incubator-sync-identity', 'incubator-sync-message', 'incubator-status-panel']) {
+for (const hook of ['incubator-sync-state', 'incubator-sync-identity', 'incubator-sync-message']) {
   assert.ok(community.includes(`id="${hook}"`), `Community retains existing sync hook: ${hook}`);
 }
-assert.doesNotMatch(community, /<h2>Why Link Telegram\?<\/h2>/);
+assert.doesNotMatch(community, /<h2>Why Link Telegram\?<\/h2>|data-csp-panel/, 'Incubator keeps account callback status without another full player feed');
 
 for (const hook of [
   'gklink-status', 'battle-join-faction', 'battle-active-missions',
@@ -56,10 +56,15 @@ for (const hook of [
 assert.match(chamber, /FACTIONS\. MISSIONS\. CLOUT\./);
 assert.doesNotMatch(chamber, /<h2>Choose the Correct Path<\/h2>/);
 
-for (const hook of ['arcade-games', 'telegram-games', 'roguelite-loop-board', 'roguelite-daily-digest-summary', 'arcade-status-panel']) {
+for (const hook of ['arcade-games', 'telegram-games']) {
   assert.ok(games.includes(`id="${hook}"`), `Arcade must retain ${hook}`);
 }
-assert.doesNotMatch(games, /Bot menu setup\.|data-tg-sync-cta/, 'Arcade does not repeat outdated BotFather/login instructions');
+assert.doesNotMatch(games, /Bot menu setup\.|data-tg-sync-cta|roguelite-loop-board|roguelite-daily-digest-summary|arcade-status-panel/, 'Arcade focuses on playable games without duplicating player progression');
+const navSource = read('js/site-shell.js');
+assert.match(navSource, /label: 'MY MOONBOY', href: '\/my-moonboy\.html'/, 'Global navigation includes My Moonboy for all visitors');
+assert.doesNotMatch(navSource, /MY MOONBOY'[^\n]*linkedOnly:\s*true/, 'My Moonboy link is public, verified personal data stays gated');
+assert.doesNotMatch(chamber, /data-crypto-pets-summary/, 'Battle Chamber omits redundant private MoonPet display');
+assert.doesNotMatch(manual, /data-crypto-pets-missions/, 'MoonPet reference guide must not show personal missions');
 assert.match(manual, /Score and XP are different/);
 assert.doesNotMatch(manual, /Step 1: Link Telegram Before Competitive Play|data-tg-sync-cta/);
 

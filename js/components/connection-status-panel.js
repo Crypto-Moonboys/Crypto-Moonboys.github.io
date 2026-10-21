@@ -1137,7 +1137,7 @@
       if (!linked && isWebsiteSessionMode()) return pendingIdentityBadgeHTML('Checking Telegram', 'Verifying your session…');
     }
     if (!linked) {
-      return '<a href="/gkniftyheads-incubator.html" class="csp-badge csp-badge--unlinked" data-telegram-login aria-label="Log in with Telegram" data-csp-badge-state="unlinked"><span class="csp-pulse csp-pulse--warn"></span><span><strong>Log in with Telegram</strong><small>Restore your saved account</small></span></a>';
+      return '<a href="/my-moonboy.html" class="csp-badge csp-badge--unlinked" data-telegram-login aria-label="Log in with Telegram" data-csp-badge-state="unlinked"><span class="csp-pulse csp-pulse--warn"></span><span><strong>Log in with Telegram</strong><small>Restore your saved account</small></span></a>';
     }
     // Check for fresh signed auth — LIVE SYNC requires confirmed auth, not just localStorage linked state.
     var gate = getIdentity();
@@ -1160,31 +1160,15 @@
     if (!freshAuth) {
       // Linked in localStorage but auth is expired or missing — show RELINK state.
       var relinkName = getDisplayName() || 'Player';
-      return '<a href="/gkniftyheads-incubator.html" class="csp-badge csp-badge--relink" aria-label="Re-link required"><span class="csp-pulse csp-pulse--warn"></span><span class="csp-badge-stack"><strong>RELINK</strong><small>' + esc(relinkName) + ' · Auth expired</small></span></a>';
+      return '<a href="/my-moonboy.html" class="csp-badge csp-badge--relink" aria-label="Re-link required"><span class="csp-pulse csp-pulse--warn"></span><span class="csp-badge-stack"><strong>RELINK</strong><small>' + esc(relinkName) + ' · Auth expired</small></span></a>';
     }
-    var apiOnline = await checkApiOnline();
-    if (!apiOnline || apiOnline.ok !== true) {
-      return '' +
-        '<span class="csp-badge csp-badge--pending" aria-label="Telegram Connected — sync pending" data-csp-badge-state="connected-pending">' +
-          '<span class="csp-pulse csp-pulse--warn"></span>' +
-          '<span class="csp-badge-stack"><strong>Telegram Connected</strong><small>SYNC PENDING · ' + esc(getApiSummary(apiOnline)) + '</small></span>' +
-          '<span class="csp-badge-chip csp-badge-chip--warn">API?</span>' +
-        '</span>';
-    }
-    var name = getDisplayName();
-    var progression = await fetchRequiredXp();
-    var arcadeXp = getArcadeXp();
-    var requiredXp = progression.requiredXp;
-    var progressionConfirmed = progression.confirmed === true;
-    var serverLinkedConfirmed = isServerLinkedConfirmed();
-    var blocktopiaStatus = resolveBlocktopiaAccessState(linked, arcadeXp, requiredXp, serverLinkedConfirmed, progressionConfirmed);
-    return '' +
-      '<span class="csp-badge csp-badge--linked" aria-label="Telegram Connected — live sync active" data-csp-badge-state="connected">' +
-        '<span class="csp-pulse"></span>' +
-        '<span class="csp-badge-stack"><strong>Telegram Connected</strong><small>' + esc(name || 'Player') + ' · XP <span data-csp-badge-xp>' + arcadeXp + '</span></small></span>' +
-        '<span class="csp-badge-chip" data-csp-badge-bt>' + blocktopiaBadgeLabel(blocktopiaStatus) + '</span>' +
-        '<span class="csp-badge-chip csp-badge-chip--good">API</span>' +
-      '</span>';
+    // This global badge confirms account identity only. Verified XP, game
+    // eligibility and API health belong on their own authoritative pages.
+    return '<a href="/my-moonboy.html" class="csp-badge csp-badge--linked" ' +
+      'aria-label="Telegram Connected — open My Moonboy" data-csp-badge-state="connected">' +
+      '<span class="csp-pulse"></span>' +
+      '<span class="csp-badge-stack"><strong>Telegram Connected</strong><small>' +
+      esc(getDisplayName() || 'Player') + '</small></span></a>';
   }
 
   // ── CSS injection ──────────────────────────────────────────────────────
@@ -1509,12 +1493,6 @@
         document.querySelectorAll('[data-csp-xp]').forEach(function (el) {
           el.textContent = linked ? String(state.xp) : '—';
         });
-        var badge = document.getElementById('moonboys-global-status-badge');
-        if (badge) {
-          var xpNode = badge.querySelector('[data-csp-badge-xp]');
-          if (xpNode) xpNode.textContent = String(state.xp);
-        }
-
         // ── Block Topia access state ──────────────────────────────────────────
         var requiredXp = (_progressionCache && _progressionCache.requiredXp) || FALLBACK_REQUIRED_XP;
         var progressionConfirmed = !!(_progressionCache && _progressionCache.confirmed === true);
@@ -1525,10 +1503,6 @@
           el.innerHTML = blocktopiaAccessHTML(linked, state.xp, requiredXp, serverLinkedConfirmed, progressionConfirmed);
         });
 
-        if (badge) {
-          var btNode = badge.querySelector('[data-csp-badge-bt]');
-          if (btNode) btNode.textContent = blocktopiaBadgeLabel(blocktopiaStatus);
-        }
       });
     }
 

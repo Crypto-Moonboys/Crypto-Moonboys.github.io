@@ -96,19 +96,16 @@ for (const cloutKey of ['daily', 'weekly', 'monthly', 'seasonal', 'streak', 'fac
 
 const hub = await read('games/index.html');
 const actionCardsCss = await read('css/action-page-cards.css');
-assertContains(hub, 'id="roguelite-loop-board"', 'games/index.html must render roguelite-loop-board');
+assertContains(hub, 'id="arcade-games"', 'games/index.html retains playable arcade catalogue');
+assertContains(hub, 'href="/my-moonboy.html"', 'games/index.html links to the central account and progression hub');
 assertContains(hub, 'class="arcade-hero swarmsy-hero"', 'games/index.html must use SWARMSY-style arcade hero');
 assertContains(hub, 'class="swarmsy-title"', 'games/index.html must use SWARMSY title typography');
 assertContains(hub, '&#10022; MOONBOYS ARCADE / XP SYSTEM', 'games hero kicker must render the SWARMSY sparkle marker via a safe entity');
 assert.doesNotMatch(hub, /âœ¦|Ã¢Å“Â¦/, 'games hero kicker must not contain mojibake sparkle text');
-assertContains(hub, "if (!Number.isFinite(timestamp) || timestamp <= 0) return 'pending';", 'formatReset() must guard invalid reset timestamps');
-assertContains(hub, 'Current missions and progression are shown below.', 'games/index.html must give a brief public explanation of the live loop');
-assertContains(hub, 'id="roguelite-daily-digest-summary"', 'games/index.html must preserve live daily digest hook');
+assert.doesNotMatch(hub, /roguelite-loop-board|roguelite-daily-digest-summary|arcade-status-panel/, 'Arcade hub no longer presents browser-local previews as verified personal progression');
 assert.doesNotMatch(hub, /CRYPTO%20MOONBOYS%20ARCADE%20GAME\.jpg/i, 'games/index.html must not render the old full-width arcade JPEG');
 assert.doesNotMatch(hub, /CRYPTO%20MOONBOYS%20Roguelite%20Infinite%20Loop%20ARCADE%20GAME\.jpg/i, 'games/index.html must not render the full-width roguelite JPEG');
-for (const label of ['Active daily cycle', 'Weekly faction target', 'Monthly clout target', 'Seasonal preview target', 'Next best action']) {
-  assertContains(hub, label, `roguelite-loop-board must show ${label}`);
-}
+assert.doesNotMatch(hub, /ArcadeMeta\.getState\(\)/, 'Arcade hub does not read local meta for a server-accepted XP label');
 
 // ── No HexGL references in active game files or manifest ──────────────────────
 

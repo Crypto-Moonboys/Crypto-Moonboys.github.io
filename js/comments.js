@@ -339,11 +339,10 @@
         '</div>' +
       '</div>' +
       '<input type="hidden" name="avatar_url" value="">' +
-      '<div class="comments-dashboard-grid">' +
+      '<div class="comments-dashboard-grid comments-dashboard-grid--compact">' +
         '<div class="comments-main-stack">' +
-          '<div class="comments-link-grid">' +
+          '<div class="comments-link-grid comments-link-grid--compact">' +
             buildTelegramIdentityCard(pageId) +
-            buildTelegramBenefitsCard() +
           '</div>' +
           '<div class="comment-form-field comment-form-field--take">' +
             '<label for="cm-text-' + pageId + '">Your Take <span class="cm-required">*</span></label>' +
@@ -355,10 +354,8 @@
             '<button type="submit" class="swarmsy-form-button">Post Comment</button>' +
           '</div>' +
         '</div>' +
-        buildTopContributorsHTML() +
       '</div>' +
       '<div class="comment-form-status" role="status" aria-live="polite"></div>' +
-      buildInfoCards() +
     '</form>';
   }
 
@@ -614,7 +611,7 @@
         '<header class="comments-battle-header">' +
           '<div>' +
             '<h2 id="comments-battle-title" class="comments-heading">Comments &amp; Battle Layer</h2>' +
-            '<p class="comments-battle-subtitle">Share knowledge. Earn XP. Build the archive.</p>' +
+            '<p class="comments-battle-subtitle">Discuss sources and share useful knowledge.</p>' +
           '</div>' +
         '</header>' +
         buildForm(pageId) +

@@ -51,7 +51,7 @@ check(!/50 Arcade XP/i.test(howToPlay), 'manual never references obsolete 50 XP 
 
 check(gamesIndex.includes('href="/my-moonboy.html"'), 'Arcade links to single Moonboy onboarding hub');
 check(gamesIndex.includes('id="arcade-games"') && gamesIndex.includes('id="telegram-games"'), 'Arcade preserves playable game catalogues');
-check(gamesIndex.includes('id="roguelite-loop-board"') && gamesIndex.includes('id="arcade-status-panel"'), 'Arcade preserves live status and game loops');
+check(!gamesIndex.includes('roguelite-loop-board') && !gamesIndex.includes('arcade-status-panel'), 'Arcade no longer duplicates personal status and meta previews');
 check(!gamesIndex.includes('Bot menu setup.'), 'Arcade removes outdated operator-facing BotFather instructions');
 check(!gamesIndex.includes('data-tg-sync-cta'), 'Arcade removes duplicate sign-in banner');
 check(!gamesIndex.includes('Telegram identity is required before competitive Arcade access'), 'Arcade does not repeat hard-gate copy from account login');
@@ -61,9 +61,9 @@ check(!gamesIndex.includes('browser-local/pending'), 'Arcade rejects browser-loc
 check(!gamesIndex.includes('Unlinked runs'), 'Arcade rejects local-run messaging');
 check(!gamesIndex.includes('play freely before'), 'Arcade rejects play-before-link copy');
 
-check(leaderboard.includes('Score = leaderboard ranking only.'), 'leaderboard keeps score ranking language');
+check(leaderboard.includes('Rankings use verified, server-accepted scores.'), 'leaderboard retains verified ranking explanation');
 check(leaderboard.includes('only after Telegram sync and server acceptance'), 'leaderboard requires server acceptance for Arcade XP');
-check(leaderboard.includes('unsynced runs stay local/pending'), 'leaderboard documents local/pending unlinked runs');
+check(!leaderboard.includes('unsynced runs stay local/pending'), 'leaderboard rejects obsolete pending-run copy; unlinked competitive runs are not queued');
 
 check(blockTopia.includes('ARCADE XP REQUIRED'), 'Block Topia gate renders dynamic XP required text');
 check(blockTopia.includes('BLOCKTOPIA_MULTIPLAYER_REQUIRED_XP'), 'Block Topia gate uses live required-XP constant');

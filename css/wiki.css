@@ -4467,3 +4467,8 @@ body.page-wiki[data-entity-hash="a4b462cb5857"] .related-wiki-paths:focus-within
   outline: 2px solid currentColor;
   outline-offset: 2px;
 }
+
+/* Wiki comments: keep article interaction focused; the shared account and
+   contributor dashboards live at My Moonboy and Battle Chamber instead. */
+.wiki-comments .comments-dashboard-grid.comments-dashboard-grid--compact { grid-template-columns: minmax(0, 1fr); }
+.wiki-comments .comments-link-grid.comments-link-grid--compact { grid-template-columns: minmax(0, 1fr); }

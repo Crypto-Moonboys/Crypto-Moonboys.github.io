@@ -28,10 +28,10 @@ assert.ok(
 );
 
 assert.ok(
-  leaderboardHtml.includes('Score = leaderboard ranking only') &&
-    leaderboardHtml.includes('Arcade XP needs Telegram sync and server acceptance') &&
-    leaderboardHtml.includes('unsynced runs stay local/pending'),
-  'leaderboard hero must explain score, server-accepted Arcade XP, and local/pending runs',
+  leaderboardHtml.includes('Rankings use verified, server-accepted scores.') &&
+    leaderboardHtml.includes('Eligible Arcade scores can become Arcade XP only after Telegram sync and server acceptance.') &&
+    !leaderboardHtml.includes('unsynced runs stay local/pending'),
+  'leaderboard must accurately separate score and awarded XP without obsolete local-pending or repeated login copy',
 );
 
 // ── Empty/missing/unaligned faction badge ────────────────────────────────────
