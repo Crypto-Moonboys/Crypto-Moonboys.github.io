@@ -33,7 +33,7 @@ test('hub generation preserves reviewed hubs and maintains unowned hubs', () => 
       repositoryRoot, 'scripts', 'generate-wiki-content-state.mjs'))).href;
     fs.writeFileSync(
       path.join(fixtureRoot, 'scripts', 'generate-wiki-content-state.mjs'),
-      'export { countCanonicalContentBlocks } from ' + JSON.stringify(canonicalModule) + ';\\n',
+      'export { countCanonicalContentBlocks } from ' + JSON.stringify(canonicalModule) + ';\n',
     );
 
     // Two separate qualifying clusters exercise the supported-hub write path.
