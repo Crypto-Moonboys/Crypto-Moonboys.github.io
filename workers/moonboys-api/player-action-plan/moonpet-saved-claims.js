@@ -125,7 +125,7 @@ export async function projectSavedMoonpetClaims({
     });
   } else unknown('finale', 'Review saved Finale rewards in MoonPet', currentSeason, 'no_verified_finale_claim');
 
-  // Event counts are only lower-bound progress: bonus/weekly payout identity
+  // Event counts are advisory progress: bonus/weekly payout identity
   // and boss attempts still require the canonical Saved Status economy board.
   for (const [key, period, field, definitions, expiresAt] of [
     ['bonus', day, 'day_key', getPetDailyBonusBounties(day), nextUtcDay(now)],
@@ -137,13 +137,13 @@ export async function projectSavedMoonpetClaims({
     if (rows === null) { unknown(key, 'Check MoonPet bonus/weekly claims', period, 'source_events_unavailable'); continue; }
     const totals = new Map(rows.map(x => [String(x.event_type), count(x.total)]));
     for (const definition of definitions) {
-      const progress = Math.min(definition.required, definition.event_types.reduce((sum, type) =>
-        sum + (totals.get(type) || 0), 0));
+      const progress = definition.key === 'week_boss' ? null : Math.min(definition.required,
+        definition.event_types.reduce((sum, type) => sum + (totals.get(type) || 0), 0));
       add(key, 'preview', {
         title: definition.title + ' — check claim in MoonPet', period, suffix: definition.key,
         periodKind: key === 'bonus' ? 'utc_day' : 'source_defined',
         expiresAt, blocking: 'source_bounty_claim_receipt_not_verified', health: 'preview',
-        progress: { current: progress, target: definition.required, unit: 'accepted_events_lower_bound' },
+        progress: { current: progress, target: definition.required, unit: 'advisory_accepted_events' },
         reward: payout(definition.reward), priority: 810,
       });
     }
