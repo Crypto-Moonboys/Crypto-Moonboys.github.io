@@ -146,6 +146,62 @@ test('an awarded historical tier survives when its old season XP aggregate is mi
   assert.equal(f.statuses[SAVED_CLAIM_KEYS.tiers].state, 'live');
 });
 
+test('pending historical tier payout remains blocked when old season XP aggregate is missing', async () => {
+  const old = 'pet-s2026-003';
+  const f = fixture({ tierReceipt: 'pending', receiptSeason: old });
+  const tasks = await f.project();
+  const pending = get(tasks, 'tiers').find(row =>
+    row.period.key === old && row.task_id.endsWith(':street'));
+  assert.ok(pending, 'pending receipt-only historical season must not silently disappear');
+  assert.equal(pending.status, 'blocked');
+  assert.equal(pending.blocking_reason_code, 'season_reward_settlement_pending');
+  assert.equal(pending.evidence.verified_completion, false);
+  assert.ok(!get(tasks, 'tiers').some(row =>
+    row.period.key === old && row.status === 'claim_ready'));
+});
+
+test('unopened Daily Cache has UTC-day preview for Today with unknown claim readiness', async () => {
+  const f = fixture();
+  const tasks = await f.project();
+  const cache = get(tasks, 'cache')[0];
+  assert.equal(cache.status, 'preview');
+  assert.equal(cache.period.kind, 'utc_day');
+  assert.equal(cache.period.key, '2026-10-21');
+  assert.equal(cache.source_health, 'preview');
+  assert.equal(cache.progress.current, null);
+  assert.equal(cache.blocking_reason_code, 'daily_cache_eligibility_unverified');
+  assert.notEqual(cache.status, 'claim_ready');
+});
+
+test('failed bonus and weekly D1 reads preserve unknown progress instead of fabricated zeroes', async () => {
+  for (const key of ['bonus', 'weekly']) {
+    const sourceKey = SAVED_CLAIM_KEYS[key];
+    const f = fixture({ failKey: sourceKey });
+    const tasks = await f.project();
+    const entries = get(tasks, key);
+    assert.equal(f.failures.get(sourceKey), 'simulated_source_failure');
+    assert.equal(entries.length, 1, 'failed event read must not emit individual zero-progress objectives');
+    assert.equal(entries[0].status, 'preview');
+    assert.equal(entries[0].source_health, 'preview');
+    assert.equal(entries[0].progress.current, null);
+    assert.equal(entries[0].progress.target, null);
+    assert.equal(entries[0].blocking_reason_code, 'source_events_unavailable');
+    assert.equal(entries[0].period.kind, key === 'bonus' ? 'utc_day' : 'source_defined');
+  }
+});
+
+test('failed Daily Cache read stays unknown and does not imply unclaimed eligibility', async () => {
+  const f = fixture({ failKey: SAVED_CLAIM_KEYS.cache });
+  const tasks = await f.project();
+  const entries = get(tasks, 'cache');
+  assert.equal(f.failures.has(SAVED_CLAIM_KEYS.cache), true);
+  assert.equal(entries.length, 1);
+  assert.equal(entries[0].period.kind, 'utc_day');
+  assert.equal(entries[0].status, 'preview');
+  assert.equal(entries[0].progress.current, null);
+  assert.equal(entries[0].source_health, 'preview');
+});
+
 test('17th saved season proves truncated history, advertises older unclaimed tiers and blocks premature readiness', async () => {
   const seasonRows = Array.from({ length: 17 }, (_, index) => {
     const quarterIndex = (2026 * 4 + 3) - index;
