@@ -330,6 +330,37 @@ test('PR4 missing progression and accounting authorities do not invent zero bala
   } finally { await f.browser.close(); }
 });
 
+test('accepted MoonPet action refreshes signed status before showing ✅ Completed', async () => {
+  const f=await setup({width:390,height:844},true);
+  let accepted=false;
+  f.setPlanFactory((owner,cursor) => {
+    const base=plan(owner,cursor);
+    if (cursor) return base;
+    const task={...base.tasks[0],
+      task_id:'pet-action-accepted',title:'Daily accepted MoonPet action',
+      status:accepted?'complete':'claim_ready',
+      source_health:'live',
+      evidence:{kind:'server_receipt',verified_completion:accepted}};
+    return {...base,tasks:base.tasks.concat(task)};
+  });
+  try {
+    await f.page.goto(SITE+'/my-moonboy.html',{waitUntil:'domcontentloaded'});
+    await f.page.locator('#mm-next .mm-task').first().waitFor();
+    await f.page.locator('[data-mm-tab="moonpet"]').click();
+    const title='Daily accepted MoonPet action';
+    const row=f.page.locator('#mm-results .mm-task').filter({hasText:title});
+    assert.doesNotMatch(await row.textContent(),/✅ Completed/u,
+      'claim-ready does not count as completed');
+    accepted=true;
+    await f.page.evaluate(() => window.dispatchEvent(new Event('moonpet:action-accepted')));
+    await f.page.locator('#mm-results .mm-task').filter({hasText:title})
+      .locator('.mm-tag--completed').getByText('✅ Completed').waitFor({timeout:10000});
+    assert.match(await f.page.locator('#mm-checklist .mm-checklist-tasks li')
+      .filter({hasText:title}).first().textContent(),/✅ Completed/u);
+    assert.equal(f.errors.length,0,f.errors.join('\\n'));
+  } finally { await f.browser.close(); }
+});
+
 test('verified finished actions show ✅ Completed in ledger, checklist and MoonPet; other states do not', async () => {
   const f=await setup({width:390,height:844},true);
   f.setPlanFactory((owner,cursor) => {
