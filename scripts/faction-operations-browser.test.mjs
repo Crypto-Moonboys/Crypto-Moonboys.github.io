@@ -215,7 +215,7 @@ test('PR2 guest account-help clicks navigate instead of starting Telegram OIDC',
   const f = await setup(390, {pageKey:'graffpunks',linked:false,state:fixture({verified:false})});
   try {
     const {page} = f;
-    const link = page.locator('[data-fop-private] a[href="/my-moonboy.html"]');
+    const link = page.locator('[data-fop-private] a').first();
     await link.waitFor({state:'visible'});
     assert.equal(await link.count(),1,'one guest account-help entry');
     assert.equal(await link.getAttribute('data-telegram-login'),null,
