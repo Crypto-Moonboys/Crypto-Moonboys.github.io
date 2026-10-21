@@ -278,6 +278,44 @@ test('Claims tab retains blocked saved season-tier and Finale payouts without pr
   } finally { await f.browser.close(); }
 });
 
+test('PR2 signed balances preserve units and disappear immediately on logout', async () => {
+  const f = await setup({width:390,height:844},true);
+  f.setPlanFactory((owner,cursor) => {
+    const base = plan(owner,cursor);
+    return {...base,owner:{...base.owner,economy:{
+      arcade_spendable_xp:700,moon_gold:350,moon_crystals:12,style_tokens:9,
+      arcade_wallet_health:'live',moonpet_wallet_health:'live',
+    }}};
+  });
+  try {
+    await f.page.goto(SITE + '/my-moonboy.html',{waitUntil:'domcontentloaded'});
+    await f.page.locator('#mm-next .mm-task').first().waitFor();
+    assert.match(await f.page.locator('#mm-arcade-xp').textContent(),/1200 Arcade XP/);
+    assert.match(await f.page.locator('#mm-arcade-spendable').textContent(),/700 Arcade XP/);
+    assert.match(await f.page.locator('#mm-moon-gold').textContent(),/350 Moon Gold/);
+    assert.match(await f.page.locator('#mm-moon-crystals').textContent(),/12 Moon Crystals/);
+    assert.match(await f.page.locator('#mm-style-tokens').textContent(),/9 Style Tokens/);
+    await f.page.evaluate(() => {
+      window.__mmTest.linked=false;
+      window.dispatchEvent(new CustomEvent('moonboys:identity-change'));
+    });
+    assert.equal(await f.page.locator('#mm-private').isHidden(),true);
+    for(const id of ['mm-arcade-spendable','mm-moon-gold','mm-moon-crystals','mm-style-tokens'])
+      assert.equal(await f.page.locator('#'+id).textContent(),'Not confirmed');
+    assert.equal(f.errors.length,0,f.errors.join('\\n'));
+  } finally { await f.browser.close(); }
+});
+
+test('PR2 missing or unverified wallet data never becomes a zero balance', async () => {
+  const f = await setup({width:390,height:844},true);
+  try {
+    await f.page.goto(SITE + '/my-moonboy.html',{waitUntil:'domcontentloaded'});
+    await f.page.locator('#mm-next .mm-task').first().waitFor();
+    for(const id of ['mm-arcade-spendable','mm-moon-gold','mm-moon-crystals','mm-style-tokens'])
+      assert.equal(await f.page.locator('#'+id).textContent(),'Not confirmed');
+  } finally { await f.browser.close(); }
+});
+
 test('PR3 logout, account switch, expired auth and stale source never expose another player', async () => {
   const f = await setup({width:390,height:844}, false);
   try {
