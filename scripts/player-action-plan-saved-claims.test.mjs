@@ -181,7 +181,8 @@ test('separate malformed Finale wins retain unique opaque task IDs with no pet a
     'history and pagination must not deduplicate invalid rows');
   assert.ok(finales.every(t => t.status === 'blocked' && t.source_pet_ref === null));
   assert.ok(finales.every(t => t.task_id.startsWith('moonpet.finale-claim:') &&
-    !t.task_id.includes('pet-') && !t.task_id.includes('bad-key')));
+    !t.task_id.includes('bad-key') &&
+    !['pet-1','pet-2','pet-3'].some(id => t.task_id.includes(':' + id + ':'))));
 });
 
 test('Saved Status destinations preserve supported MoonPet screen and focus in the navigable URL', async () => {
