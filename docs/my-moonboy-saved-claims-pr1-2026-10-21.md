@@ -14,6 +14,14 @@
 
 This is **not** a claim that all five have exact payout parity. The last three remain explicit source limitations until the original source can expose reliable, signed eligibility and receipt keys. Do not promote their preview rows into claim-ready states.
 
+## Latest payout, identity and destination correctness
+
+- A pre-existing **rejected** season-tier or Finale payout receipt occupies a unique claim key but is not a successful award. Both are shown as **blocked** settlement states; they cannot become `claim_ready` from source progress alone, including receipt-only historic tiers. No read route clears or retries rejected writes.
+- Every saved Finale record gets a stable **opaque task ID**, even when the original pet/season authority is malformed. Distinct bad rows no longer collapse together in the checklist or pagination; `source_pet_ref` remains null and the task remains blocked if original-pet authority is invalid.
+- Finale reward displays nominal source definitions with `reward.confirmed=false`, including claimed receipts, because the actual credited Pet XP can be capped by the daily XP allowance. This adapter does not invent the applied payout without reading `applied_rewards`.
+- Original MoonPet deep links use supported URL launch parameters, rather than separate `destination.screen` and `destination.focus` fields that My Moonboy ignores: Daily Cache → `?screen=home&focus=care`, season tiers → `?screen=profile&focus=season`, Finale → `?screen=missions&focus=season-finale`, extra daily bounty → `?screen=economy&focus=bonus-bounties`, weekly bounty → `?screen=economy&focus=weekly-bounties`.
+- Regression tests cover rejected/pending/awarded payout state, unique opaque malformed Finale IDs, supported panel navigation URLs, and nominal vs confirmed reward amounts.
+
 ## Read/identity guarantees
 
 - The existing `POST /player/action-plan` verifies the website session before the projection; client-supplied owner/pet selectors are rejected. All added queries bind the verified owner.
