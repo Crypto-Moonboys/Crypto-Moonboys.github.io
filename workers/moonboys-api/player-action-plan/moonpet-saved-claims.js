@@ -18,8 +18,15 @@ export async function projectSavedMoonpetClaims({
   query, makeTask, opaqueRef,
 }) {
   const tasks = [];
-  const read = (key, sql, args) => sourceStatuses[SAVED_CLAIM_KEYS[key]]?.state === 'migration_pending'
-    ? Promise.resolve(null) : query(db, sql, args, [], failures, [SAVED_CLAIM_KEYS[key]]);
+  // query() deliberately substitutes [] on failure for other callers. Here
+  // that would fabricate zero bounty progress and hide unverified saved claims.
+  // Use the already recorded per-source failure to keep unavailable reads null.
+  const read = async (key, sql, args) => {
+    const sourceKey = SAVED_CLAIM_KEYS[key];
+    if (sourceStatuses[sourceKey]?.state === 'migration_pending' || failures.has(sourceKey)) return null;
+    const rows = await query(db, sql, args, [], failures, [sourceKey]);
+    return failures.has(sourceKey) ? null : rows;
+  };
   const status = (key, rows, adapter, preview = false) => {
     const id = SAVED_CLAIM_KEYS[key];
     if (sourceStatuses[id]?.state === 'migration_pending' || failures.has(id)) return;
@@ -42,8 +49,8 @@ export async function projectSavedMoonpetClaims({
       destination: { kind: 'web', path: '/moonpet-game.html', screen: 'missions', focus: 'saved-status' },
     }));
   }
-  const unknown = (key, title, period, blocking) => add(key, 'preview',
-    { title, period, blocking, health: 'preview', priority: 880 });
+  const unknown = (key, title, period, blocking, periodKind = 'saved_claim') => add(key, 'preview',
+    { title, period, periodKind, blocking, health: 'preview', priority: 880 });
 
   // An accepted daily_chest event proves a past opening, not current eligibility.
   const cache = await read('cache',
@@ -53,7 +60,8 @@ export async function projectSavedMoonpetClaims({
   if (cache?.length) add('cache', 'claimed', { title: 'Daily Cache opened', period: day,
     periodKind: 'utc_day', receipt: true, acceptedAt: cache[0].created_at,
     progress: { current: 1, target: 1, unit: 'accepted_chest_events' } });
-  else unknown('cache', 'Check today’s Daily Cache in MoonPet', day, 'daily_cache_eligibility_unverified');
+  else unknown('cache', 'Check today’s Daily Cache in MoonPet', day,
+    'daily_cache_eligibility_unverified', 'utc_day');
 
   // Season tiers require persisted season XP and independent payout receipts.
   const currentSeason = getMoonpetSeasonKey(now);
@@ -81,12 +89,14 @@ export async function projectSavedMoonpetClaims({
     const saved = new Map(claims.map(x => [x.season_key + ':' + x.tier_id, x]));
     const paid = new Map(receipts.map(x => [x.idempotency_key, x]));
     const periods = new Map(visibleSeasons.map(x => [String(x.season_key), count(x.season_xp)]));
-    // Canonical season state retains paid tiers even if an imported account
-    // lost its historical season XP aggregate. The unique awarded receipt
-    // proves that historical tier; it must remain visible as claimed.
+    // Canonical season state also exposes receipt-only historical seasons.
+    // An awarded receipt proves a paid tier; a pending receipt is a settlement
+    // reservation, not a new claim opportunity. Both must remain visible even
+    // when an imported account lost its old XP aggregate.
     const prefix = 'season_reward:' + ownerId + ':';
     for (const row of receipts) {
-      if (row.status !== 'awarded' || !String(row.idempotency_key).startsWith(prefix)) continue;
+      if (!['awarded', 'pending'].includes(row.status) ||
+        !String(row.idempotency_key).startsWith(prefix)) continue;
       const match = String(row.idempotency_key).slice(prefix.length)
         .match(/^(pet-s\d{4}-00[1-4]):(street|neon|cyber|guardian)$/u);
       if (match && !periods.has(match[1])) periods.set(match[1], 0);
@@ -194,7 +204,11 @@ export async function projectSavedMoonpetClaims({
     const rows = await read(key, 'SELECT event_type,COUNT(*) AS total FROM telegram_pet_events WHERE telegram_id=? AND ' +
       field + "=? AND status='accepted' GROUP BY event_type", [ownerId, period]);
     status(key, rows, 'accepted_event_progress_only', true);
-    if (rows === null) { unknown(key, 'Check MoonPet bonus/weekly claims', period, 'source_events_unavailable'); continue; }
+    if (rows === null) {
+      unknown(key, 'Check MoonPet bonus/weekly claims', period,
+        'source_events_unavailable', key === 'bonus' ? 'utc_day' : 'source_defined');
+      continue;
+    }
     const totals = new Map(rows.map(x => [String(x.event_type), count(x.total)]));
     for (const definition of definitions) {
       const progress = definition.key === 'week_boss' ? null : Math.min(definition.required,
