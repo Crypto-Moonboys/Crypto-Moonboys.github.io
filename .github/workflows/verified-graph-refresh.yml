@@ -3,12 +3,14 @@ name: Propose Verified Graph Refresh
 on:
   workflow_dispatch:
   schedule:
-    # Refresh opportunity twice daily; publishing still requires reviewed PR merge.
-    - cron: '17 2,14 * * *'
+    # Reviewers get roughly four hours from the 20h generator threshold
+    # to the 24h live freshness limit, rather than a 12h scheduling gap.
+    - cron: '17 * * * *'
 
 permissions:
   contents: write
   pull-requests: write
+  actions: write
 
 concurrency:
   group: verified-graph-refresh
@@ -17,13 +19,16 @@ concurrency:
 jobs:
   propose:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 30
     steps:
       - name: Checkout current main
         uses: actions/checkout@v4
         with:
           ref: main
           persist-credentials: true
+      - name: Record exact main baseline for dispatched CI
+        id: baseline
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -38,13 +43,22 @@ jobs:
         run: node scripts/graph-publishing-integrity.test.mjs
       - name: Verify canonical graph generation is reproducible
         run: |
-          cp js/graph-data.json "${RUNNER_TEMP}/verified-graph-data.json"
-          cp js/entity-graph-lite.json "${RUNNER_TEMP}/verified-lite-graph.json"
+          cp js/graph-data.json "$RUNNER_TEMP/verified-graph-data.json"
+          cp js/entity-graph-lite.json "$RUNNER_TEMP/verified-lite-graph.json"
           GRAPH_PUBLISHING_CHECK=1 node scripts/generate-publishing-surfaces.mjs
-          cmp js/graph-data.json "${RUNNER_TEMP}/verified-graph-data.json"
-          cmp js/entity-graph-lite.json "${RUNNER_TEMP}/verified-lite-graph.json"
+          cmp js/graph-data.json "$RUNNER_TEMP/verified-graph-data.json"
+          cmp js/entity-graph-lite.json "$RUNNER_TEMP/verified-lite-graph.json"
           node scripts/graph-publishing-integrity.test.mjs
+      - name: Fail closed if other publishing surfaces need updates
+        shell: bash
+        run: |
+          if git diff --name-only | grep -Ev '^(js/graph-data.json|js/entity-graph-lite.json)$'; then
+            echo "Publishing sources beyond the two graph artifacts changed."
+            echo "Do not publish an incomplete subset: review a full publishing PR instead."
+            exit 1
+          fi
       - name: Propose only verified graph artifact changes
+        id: graph_pr
         uses: peter-evans/create-pull-request@v7
         with:
           branch: automation/verified-graph-refresh
@@ -55,12 +69,61 @@ jobs:
           commit-message: 'chore(graph): refresh source-verified graph artifacts'
           title: 'chore: publish verified graph freshness'
           body: |
-            The canonical graph generator was executed and verified against
-            the Wiki index, relationship source, full graph and lite graph.
-            Reproducibility was checked with GRAPH_PUBLISHING_CHECK=1.
+            # Summary
+            Republish source-verified full and mobile Wiki graph artifacts without changing gameplay or rewards.
 
-            This PR is *not* an automatic release. Review diff and CI before
-            merging. It does not modify gameplay, Worker/D1, rewards or identity.
-            After merge verify Pages publication and rerun Live Site Verify.
-          labels: |
-            maintenance
+            # Scope lock
+            Only js/graph-data.json and js/entity-graph-lite.json are changed. Canonical Wiki input and unrelated publishing surfaces must not drift. The graph data is computed, not hand-edited.
+
+            # Files changed
+            - js/graph-data.json — canonical full graph
+            - js/entity-graph-lite.json — derived mobile graph
+
+            # Runtime impact
+            - [x] GitHub Pages/workflow/docs only
+            - [ ] Static frontend only
+            - [ ] Worker/API change
+            - [ ] D1 migration
+            - [ ] VPS/server change
+
+            # Deploy notes
+            Worker deploy required: No
+            D1 migration required: No
+            VPS restart required: No
+            GitHub Pages only: Yes
+            Do not publish until this PR's generated-head checks are green and GK approves.
+
+            # Tests run
+            - node scripts/graph-publishing-integrity.test.mjs — passed in the verified-graph-refresh producing workflow; full/mobile and source/index parity
+            - GRAPH_PUBLISHING_CHECK=1 node scripts/generate-publishing-surfaces.mjs — reproducibility and file byte-comparison passed in producing workflow
+            - npm test not required — this is a generated-data-only refresh; dispatched CI domain jobs and Graph Publishing Integrity must separately pass on this exact PR head before merge.
+
+            # Live verification needed
+            After Pages deploy, confirm full and lite graph verified_at are recent and identical; rerun Live Site Verify including Pets.
+
+            # Anti-drift checklist
+            - [x] Canonical source graph integrity checked before PR creation.
+            - [x] Reproducibility checked with frozen verification timestamp.
+            - [ ] Exact generated PR head has successful CI, Graph Publishing Integrity and template checks.
+            - [ ] Source-verified live Pages release evidence recorded.
+
+            # Merge decision
+            - [ ] Ready to merge
+            - [x] Hold merge
+            Require completed checks and explicit GK approval, not a generated timestamp alone.
+      # GitHub's own GITHUB_TOKEN does not trigger push/pull_request workflows
+      # for an action-created PR. Explicit workflow_dispatch DOES trigger and
+      # produces checks associated with this generated branch's exact head.
+      - name: Trigger all required workflow checks on generated PR head
+        if: steps.graph_pr.outputs.pull-request-number != ''
+        env:
+          GH_TOKEN: ${ github.token }}
+          GRAPH_PR_REF: ${ steps.graph_pr.outputs.pull-request-branch }}
+          GRAPH_PR_NUMBER: ${ steps.graph_pr.outputs.pull-request-number }}
+          BASE_SHA: ${ steps.baseline.outputs.sha }}
+        run: |
+          gh workflow run ci.yml --ref "$GRAPH_PR_REF" -f base_sha="$BASE_SHA"
+          gh workflow run graph-publishing-integrity.yml --ref "$GRAPH_PR_REF" -f base_sha="$BASE_SHA"
+          gh workflow run pr-template-check.yml --ref "$GRAPH_PR_REF" -f pr_number="$GRAPH_PR_NUMBER"
+          echo "Dispatched CI, Graph Publishing Integrity and PR template verification."
+          echo "These jobs must pass on the generated PR head before review/merge."
