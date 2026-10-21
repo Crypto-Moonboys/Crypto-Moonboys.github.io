@@ -456,7 +456,8 @@ test('signed account wallet keeps lifetime, spendable Arcade XP and MoonPet curr
   const body = await response.json();
   assert.equal(body.owner.lifetime_arcade_xp, 1200);
   assert.deepEqual(body.owner.economy, {
-    arcade_spendable_xp: 700, moon_gold: 350, moon_crystals: 12,
+    arcade_spendable_xp: 700, arcade_earned_xp: 1200, arcade_spent_xp: 500,
+    moon_gold: 350, moon_crystals: 12,
     style_tokens: 9, arcade_wallet_health: 'live', moonpet_wallet_health: 'live',
   });
   assert.ok(db.calls.some(call => /FROM arcade_xp_wallets/u.test(call.sql) && call.params[0] === '123456'));
@@ -664,7 +665,8 @@ test('faction projection uses Battle Chamber progression even with conflicting o
     assert.ok(db.calls.some(call => /FROM blocktopia_progression/u.test(call.sql)));
     assert.ok(!db.calls.some(call => /FROM telegram_faction_members/u.test(call.sql)),
       'legacy community membership may not override a seasonal faction');
-    assert.ok(db.calls.every(call => /^\s*(SELECT|WITH)\b/iu.test(call.sql)));
+    assert.ok(db.calls.every(call => call.sql.trimStart().startsWith('SELECT') ||
+      call.sql.trimStart().startsWith('WITH')));
   }
 });
 
