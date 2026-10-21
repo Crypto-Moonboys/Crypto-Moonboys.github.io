@@ -16,36 +16,31 @@ const gameShell = await readFile(new URL('../js/arcade/core/game-shell.js', impo
 const snakePage = await readFile(new URL('../games/snake-run/index.html', import.meta.url), 'utf8');
 const invadersPage = await readFile(new URL('../games/invaders-3008/index.html', import.meta.url), 'utf8');
 
-test('PR5 MoonPet Saved Status parity matrix references real action-plan sources or explicit gaps', () => {
+test('saved claim parity maps all five classes to real sources without inflating partial badges', () => {
   assert.equal(parity.schema_version, 1);
   const sourceKeys = new Set(registry.sources.map(item => item.key));
-  assert.ok(parity.mappings.length >= 12);
+  const expected = {
+    daily_cache: ['moonpet.daily-cache','partial',false],
+    season_tier_claims: ['moonpet.season-tier-claims','direct',true],
+    finale_claim: ['moonpet.finale-claim','direct',true],
+    extra_bounty_claim: ['moonpet.extra-bounty-claims','partial',false],
+    weekly_bounty_claim: ['moonpet.weekly-bounty-claims','partial',false],
+  };
   for (const mapping of parity.mappings) {
-    assert.ok(mapping.saved_status);
-    assert.ok(mapping.parity);
-    assert.ok(mapping.notes);
-    if (mapping.action_plan_source) {
-      assert.ok(sourceKeys.has(mapping.action_plan_source), mapping.action_plan_source);
-    } else {
-      assert.equal(mapping.parity, 'gap', mapping.saved_status + ' missing adapter must be explicit');
-      assert.equal(mapping.claim_badge, false, mapping.saved_status + ' gap cannot inflate claim badge');
+    assert.ok(mapping.saved_status && mapping.parity && mapping.notes);
+    if (mapping.action_plan_source) assert.ok(sourceKeys.has(mapping.action_plan_source), mapping.action_plan_source);
+    else {
+      assert.equal(mapping.parity, 'gap');
+      assert.equal(mapping.claim_badge, false);
     }
   }
-});
-
-test('PR5 parity inventory covers every live Saved Status claim class that lacks an action-plan adapter', () => {
-  const rows = new Map(parity.mappings.map(item => [item.saved_status, item]));
-  const liveGapMarkers = [
-    ['finale_claim', /finale_claim/u],
-    ['extra_bounty_claim', /extra_bounty_claim/u],
-    ['weekly_bounty_claim', /weekly_bounty_claim/u],
-  ];
-  for (const [key, marker] of liveGapMarkers) {
-    assert.match(playOptions, marker, key + ' must still exist in MoonPet Saved Status');
-    assert.ok(rows.has(key), key + ' missing from parity inventory');
-    assert.equal(rows.get(key).parity, 'gap');
-    assert.equal(rows.get(key).claim_badge, false);
-    assert.equal(rows.get(key).action_plan_source, null);
+  for (const [savedStatus, [source, kind, badge]] of Object.entries(expected)) {
+    const row = parity.mappings.find(entry => entry.saved_status === savedStatus);
+    assert.ok(row, savedStatus);
+    assert.deepEqual([row.action_plan_source,row.parity,row.claim_badge], [source,kind,badge]);
+  }
+  for (const key of ['finale_claim','extra_bounty_claim','weekly_bounty_claim']) {
+    assert.match(playOptions, new RegExp(key, 'u'), key + ' remains an original-game action');
   }
 });
 
