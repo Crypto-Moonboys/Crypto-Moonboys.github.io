@@ -12,7 +12,11 @@ for (const [file, marker, content] of blocks) {
   const before = await fs.readFile(url, 'utf8');
   const pattern = new RegExp('<!-- MOONPET_' + marker + ':BEGIN -->[\\s\\S]*?<!-- MOONPET_' + marker + ':END -->');
   if (!pattern.test(before)) throw new Error('Missing Moonpet guidance marker: ' + file + ':' + marker);
-  const after = before.replace(pattern, '<!-- MOONPET_' + marker + ':BEGIN -->\n' + content + '\n<!-- MOONPET_' + marker + ':END -->');
+  // Preserve the checkout's newline convention. Windows autocrlf can make
+  // otherwise identical generated guide blocks appear stale on each run.
+  const eol = before.includes('\r\n') ? '\r\n' : '\n';
+  const block = ('<!-- MOONPET_' + marker + ':BEGIN -->\n' + content + '\n<!-- MOONPET_' + marker + ':END -->').replace(/\n/g, eol);
+  const after = before.replace(pattern, block);
   if (check && after !== before) throw new Error('Stale Moonpet guidance: run node scripts/sync-moonpet-guide.mjs');
   if (!check && after !== before) await fs.writeFile(url, after);
 }

@@ -12,6 +12,7 @@ import { readDailyCompletion } from '../workers/moonboys-api/pets/completion-fea
 
 const guide = createRequire(import.meta.url)('../js/moonpet-guide.js');
 const read = file => fs.readFileSync(new URL('../' + file, import.meta.url), 'utf8');
+const normalizedNewlines = value => value.replace(/\r\n/g, '\n');
 const section = id => guide.sections.find(s => s.id === id).body;
 const plain = value => value.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ');
 const source = read('workers/moonboys-api/worker.js');
@@ -21,8 +22,8 @@ const constant = (text, key) => Number(text.match(new RegExp('const ' + key + ' 
 test('website guide and About blocks are exactly the shared in-game copy', () => {
   const howTo = read('how-to-play-crypto-moonboy-pets.html');
   const wiki = read('wiki/crypto-moonboy-pets.html');
-  assert.ok(howTo.includes(guide.website(guide.sections, 'section')));
-  assert.ok(wiki.includes(guide.website(guide.about, 'wiki-section')));
+  assert.ok(normalizedNewlines(howTo).includes(normalizedNewlines(guide.website(guide.sections, 'section'))));
+  assert.ok(normalizedNewlines(wiki).includes(normalizedNewlines(guide.website(guide.about, 'wiki-section'))));
   const unsharedWiki = wiki.replace(/<!-- MOONPET_(?:ABOUT|START):BEGIN -->[\s\S]*?<!-- MOONPET_(?:ABOUT|START):END -->/g, '');
   assert.doesNotMatch(unsharedWiki, /choose Delete|Deletion archives|Delete And Start A New Pet/i, 'deletion instructions must stay in the shared guide block');
   const client = read('js/moonpet-mini-app.js');
