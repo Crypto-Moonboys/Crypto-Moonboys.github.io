@@ -454,7 +454,7 @@ test('signed account wallet keeps lifetime, spendable Arcade XP and MoonPet curr
   assert.ok(db.calls.some(call => /FROM arcade_xp_wallets/u.test(call.sql) && call.params[0] === '123456'));
   assert.ok(db.calls.some(call => /SELECT moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles/u.test(call.sql) &&
     call.params[0] === '123456'));
-  assert.ok(db.calls.every(call => /^\\s*(?:SELECT|WITH)\\b/iu.test(call.sql)));
+  assert.ok(db.calls.every(call => /^(SELECT|WITH)\b/iu.test(call.sql.trimStart())));
   assert.ok(body.query_budget.statement_count <= 80);
 });
 
