@@ -71,7 +71,7 @@ assert.ok(dispatchedWiki.includes('BASE_SHA: ${{ steps.graph_dispatch.outputs.ba
 for (const [name, source] of [['CI', workflow], ['Graph', graphWorkflow]]) {
   assert.ok(source.includes('pr_number:') && !source.includes('inputs.base_sha'),
     name + ' must accept a PR number, not an untrusted caller-supplied comparison baseline');
-  assert.ok(source.includes('run: node scripts/verify-graph-dispatch-pr.mjs') &&
+  assert.ok(source.includes('node scripts/verify-graph-dispatch-pr.mjs') &&
     source.includes('node --test scripts/verify-graph-dispatch-pr.test.mjs'),
     name + ' must validate GitHub PR/HEAD/base before dispatched checks');
 }
