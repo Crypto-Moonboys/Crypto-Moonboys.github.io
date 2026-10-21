@@ -4472,3 +4472,34 @@ body.page-wiki[data-entity-hash="a4b462cb5857"] .related-wiki-paths:focus-within
    contributor dashboards live at My Moonboy and Battle Chamber instead. */
 .wiki-comments .comments-dashboard-grid.comments-dashboard-grid--compact { grid-template-columns: minmax(0, 1fr); }
 .wiki-comments .comments-link-grid.comments-link-grid--compact { grid-template-columns: minmax(0, 1fr); }
+
+
+/* Wiki comment identity: a single contextual status row rather than a second
+   onboarding dashboard. Source actions (comments, votes, citations) remain. */
+body.page-wiki .cm-comment-account {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+  padding: 10px 12px;
+  margin: 0 0 14px;
+  border: 1px solid rgba(86, 220, 255, 0.2);
+  border-radius: 8px;
+  background: rgba(86, 220, 255, 0.035);
+}
+body.page-wiki .cm-comment-account .cm-tg-login:empty { display: none; }
+body.page-wiki .cm-comment-account .cm-tg-status {
+  flex: 1 1 250px;
+  min-width: 0;
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+body.page-wiki .cm-comment-account .cm-comment-account-link {
+  color: #a8f3e1;
+  font-weight: 700;
+  text-underline-offset: 3px;
+}
+body.page-wiki .cm-comment-account .cm-comment-account-link:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}
