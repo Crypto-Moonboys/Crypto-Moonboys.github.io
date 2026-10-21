@@ -68,8 +68,15 @@ try {
     offline=false;await refresh.click();
     await page.waitForFunction(()=>document.querySelectorAll('.pets-leaderboard-table').length===4&&!document.querySelector('[data-crypto-pets-refresh]').disabled);
 
+    // Test the reusable personal MoonPet widgets in an isolated temporary mount,
+    // not on public Battle Chamber or reference-guide pages.
     personalOffline=true;
-    await page.goto(`http://127.0.0.1:${server.address().port}/community.html`);
+    await page.evaluate(() => {
+      const host = document.createElement('div');
+      host.innerHTML = '<div data-crypto-pets-summary></div><div data-crypto-pets-missions></div>';
+      document.querySelector('main').appendChild(host);
+      window.dispatchEvent(new Event('focus'));
+    });
     await page.waitForSelector('[data-crypto-pets-summary] .pets-personal-sync-warning', { state: 'attached' });
     assert.ok(!(await page.locator('[data-crypto-pets-summary]').textContent()).includes('No Crypto Moonboy Pet yet'), 'profile outage must not look like an unadopted account');
     personalOffline=false;
@@ -80,7 +87,6 @@ try {
     await page.waitForSelector('[data-crypto-pets-summary] .pets-personal-sync-warning', { state: 'attached' });
     assert.ok((await page.locator('[data-crypto-pets-summary]').textContent()).includes('BITTY'), 'failed profile refresh must preserve the last successful pet');
 
-    await page.goto(`http://127.0.0.1:${server.address().port}/how-to-play-crypto-moonboy-pets.html`);
     await page.waitForSelector('[data-crypto-pets-missions] .pets-personal-sync-warning');
     assert.ok(!(await page.locator('[data-crypto-pets-missions]').textContent()).includes('No pet missions available'), 'mission outage must not look like an empty checklist');
     personalOffline=false;
@@ -91,7 +97,7 @@ try {
     await page.waitForSelector('[data-crypto-pets-missions] .pets-personal-sync-warning');
     assert.ok((await page.locator('[data-crypto-pets-missions]').textContent()).includes('Feed your Moonpet'), 'failed mission refresh must preserve the last successful checklist');
     assert.deepEqual(errors,[]);
-    console.log(`Public Moonpet surfaces passed at ${width}px: ranks, profile, missions, retained state, retry and outage recovery`);
+    console.log(`MoonPet ranking page and isolated personal-widget tests passed at ${width}px: live ranks, private-state retry and outage recovery`);
     await page.close();
   }
 } finally {await browser.close();await new Promise(resolve=>server.close(resolve));}
