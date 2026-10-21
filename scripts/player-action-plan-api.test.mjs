@@ -102,10 +102,12 @@ function fakeDb(options = {}) {
                   arcade_xp_spendable: 700, arcade_xp_spent: 500,
                 }] };
               }
-              if (/SELECT moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles/u.test(sql)) {
+              if (/SELECT p.moon_gold,p.moon_crystals,p.style_tokens/u.test(sql)) {
                 if (options.failPetWallet) throw new Error('moonpet_wallet_read_failed');
                 return { success: true, results: options.noPetWallet ? [] : [{
                   moon_gold: 350, moon_crystals: 12, style_tokens: 9,
+                  wallet_reconciled: options.unreconciledPetWallet ? 0 : 1,
+                  recovery_pending: options.pendingPetWalletRecovery ? 1 : 0,
                 }] };
               }
               if (/FROM arcade_progression_state/u.test(sql)) {
@@ -452,7 +454,7 @@ test('signed account wallet keeps lifetime, spendable Arcade XP and MoonPet curr
     style_tokens: 9, arcade_wallet_health: 'live', moonpet_wallet_health: 'live',
   });
   assert.ok(db.calls.some(call => /FROM arcade_xp_wallets/u.test(call.sql) && call.params[0] === '123456'));
-  assert.ok(db.calls.some(call => /SELECT moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles/u.test(call.sql) &&
+  assert.ok(db.calls.some(call => /SELECT p.moon_gold,p.moon_crystals,p.style_tokens/u.test(call.sql) &&
     call.params[0] === '123456'));
   assert.ok(db.calls.every(call => /^(SELECT|WITH)\b/iu.test(call.sql.trimStart())));
   assert.ok(body.query_budget.statement_count <= 80);
@@ -463,13 +465,16 @@ test('missing, failed or inconsistent signed wallets remain unknown, never numer
     {noSpendableWallet:true,noPetWallet:true},
     {failSpendableWallet:true,failPetWallet:true},
     {invalidSpendableWallet:true},
+    {unreconciledPetWallet:true},
+    {pendingPetWalletRecovery:true},
   ]) {
     const response = await handlePlayerActionPlanRoute(request(auth({ limit: 100 })),
       {DB:fakeDb(variation),TELEGRAM_BOT_TOKEN:'test'},options());
     assert.equal(response.status, 200);
     const owner = (await response.json()).owner;
     assert.equal(owner.economy.arcade_spendable_xp, null);
-    if (variation.noPetWallet || variation.failPetWallet) {
+    if (variation.noPetWallet || variation.failPetWallet ||
+        variation.unreconciledPetWallet || variation.pendingPetWalletRecovery) {
       assert.equal(owner.economy.moon_gold, null);
       assert.equal(owner.economy.style_tokens, null);
     }
