@@ -71,6 +71,17 @@ export async function projectSavedMoonpetClaims({
     const saved = new Map(claims.map(x => [x.season_key + ':' + x.tier_id, x]));
     const paid = new Map(receipts.map(x => [x.idempotency_key, x]));
     const periods = new Map(seasons.map(x => [String(x.season_key), count(x.season_xp)]));
+    // Canonical season state retains paid tiers even if an imported account
+    // lost its historical season XP aggregate. The unique awarded receipt
+    // proves that historical tier; it must remain visible as claimed.
+    const prefix = 'season_reward:' + ownerId + ':';
+    for (const row of receipts) {
+      if (row.status !== 'awarded' || !String(row.idempotency_key).startsWith(prefix)) continue;
+      const match = String(row.idempotency_key).slice(prefix.length)
+        .match(/^(pet-s\d{4}-00[1-4]):(street|neon|cyber|guardian)$/u);
+      if (match && !periods.has(match[1])) periods.set(match[1], 0);
+    }
+    if (receipts.length) status('tiers', [...seasons, ...receipts], 'season_xp_claims_and_receipts');
     if (!periods.has(currentSeason)) periods.set(currentSeason, 0);
     for (const [period, xp] of periods) {
       if (!/^pet-s\d{4}-00[1-4]$/u.test(period) || period > currentSeason) continue;
