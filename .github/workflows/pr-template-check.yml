@@ -29,6 +29,15 @@ jobs:
             echo 'PR number must be numeric'
             exit 1
           fi
+          # Bind the checked PR body to the exact dispatched branch HEAD.
+          # Another PR's valid body must never green-light this commit.
+          PR_HEAD=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER" --jq '.head.sha')
+          PR_BASE=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER" --jq '.base.ref')
+          PR_REPO=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER" --jq '.head.repo.full_name')
+          if [ "$PR_HEAD" != "$GITHUB_SHA" ] || [ "$PR_BASE" != 'main' ] || [ "$PR_REPO" != "$GITHUB_REPOSITORY" ]; then
+            echo 'Dispatched PR and workflow head/base/repository mismatch.'
+            exit 1
+          fi
           gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER" --jq .body > "$RUNNER_TEMP/graph-pr-body.md"
       - name: Validate PR template sections
         env:
