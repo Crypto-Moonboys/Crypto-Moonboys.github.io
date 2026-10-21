@@ -55,10 +55,18 @@ jobs:
         run: node scripts/resolve-canon-prose-approval.mjs
 
       - name: Run wiki tests
-        if: steps.wiki_changes.outputs.should_run == 'true'
+        if: steps.wiki_changes.outputs.should_run == 'true' && github.event_name != 'workflow_dispatch'
         env:
-          BASE_SHA: ${{ github.event_name == 'push' && github.event.before || github.event.pull_request.base.sha || inputs.base_sha }}
+          BASE_SHA: ${{ github.event_name == 'push' && github.event.before || github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+          CANON_PROSE_CHANGE_APPROVED: ${{ steps.canon_approval.outputs.approved || '0' }}
+        run: npm run ci:wiki
+
+      - name: Run wiki tests (explicit generated PR dispatch)
+        if: steps.wiki_changes.outputs.should_run == 'true' && github.event_name == 'workflow_dispatch'
+        env:
+          BASE_SHA: ${{ inputs.base_sha }}
+          HEAD_SHA: ${{ github.sha }}
           CANON_PROSE_CHANGE_APPROVED: ${{ steps.canon_approval.outputs.approved || '0' }}
         run: npm run ci:wiki
 
