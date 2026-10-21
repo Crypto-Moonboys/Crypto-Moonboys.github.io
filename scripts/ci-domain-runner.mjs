@@ -75,6 +75,7 @@ const GROUPS = {
     ['node', '--test', 'scripts/player-action-plan-contract.test.mjs'],
     ['node', '--test', 'scripts/player-action-plan-pr6-release-gate.test.mjs'],
     ['node', '--test', 'scripts/player-action-plan-api.test.mjs'],
+    ['node', '--test', 'scripts/player-action-plan-saved-claims.test.mjs'],
     ['node', 'scripts/daily-loop-frontend-state.test.mjs'],
     ['node', 'scripts/scheduled-task-isolation.test.mjs'],
     ['node', 'scripts/market-indexer-removal-guard.test.mjs'],
