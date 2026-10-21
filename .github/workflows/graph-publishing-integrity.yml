@@ -96,9 +96,18 @@ jobs:
         run: node scripts/resolve-canon-prose-approval.mjs
 
       - name: Validate regenerated wiki surfaces
+        if: github.event_name != 'workflow_dispatch'
         env:
-          BASE_SHA: ${{ github.event_name == 'push' && github.event.before || github.event.pull_request.base.sha || inputs.base_sha }}
+          BASE_SHA: ${{ github.event_name == 'push' && github.event.before || github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          CANON_PROSE_CHANGE_APPROVED: ${{ steps.canon_approval.outputs.approved || '0' }}
+        run: npm run ci:wiki
+
+      - name: Validate regenerated wiki surfaces (explicit generated PR dispatch)
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          BASE_SHA: ${{ inputs.base_sha }}
+          HEAD_SHA: ${{ github.sha }}
           CANON_PROSE_CHANGE_APPROVED: ${{ steps.canon_approval.outputs.approved || '0' }}
         run: npm run ci:wiki
 
