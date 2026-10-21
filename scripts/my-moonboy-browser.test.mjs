@@ -217,7 +217,8 @@ test('PR3 logout, account switch, expired auth and stale source never expose ano
     await f.page.goto(SITE + '/my-moonboy.html', {waitUntil:'domcontentloaded'});
     await f.page.waitForFunction(() => document.getElementById('mm-gate-title')?.textContent === 'Log in to My Moonboy');
     assert.equal(await f.page.locator('#mm-private').isHidden(),true);
-    assert.equal(await f.page.locator('[data-shell-link="MY MOONBOY"]').count(),0);
+    assert.equal(await f.page.locator('[data-shell-link="MY MOONBOY"][href="/my-moonboy.html"]').count(),1,
+      'My Moonboy onboarding navigation stays public without granting access to private data');
     assert.equal(f.requests.length,0,'guest must not fetch private tasks');
 
     await f.page.evaluate(() => {
