@@ -295,6 +295,12 @@ test('PR2 signed balances preserve units and disappear immediately on logout', a
     assert.match(await f.page.locator('#mm-moon-gold').textContent(),/350 Moon Gold/);
     assert.match(await f.page.locator('#mm-moon-crystals').textContent(),/12 Moon Crystals/);
     assert.match(await f.page.locator('#mm-style-tokens').textContent(),/9 Style Tokens/);
+    await f.page.evaluate(() => window.dispatchEvent(new Event('offline')));
+    for (const id of ['mm-arcade-spendable','mm-moon-gold','mm-moon-crystals','mm-style-tokens'])
+      assert.equal(await f.page.locator('#'+id).textContent(),'Not confirmed',
+        'offline state must conceal previously confirmed balances');
+    await f.page.evaluate(() => window.dispatchEvent(new Event('online')));
+    await f.page.locator('#mm-moon-gold').getByText('350 Moon Gold').waitFor();
     await f.page.evaluate(() => {
       window.__mmTest.linked=false;
       window.dispatchEvent(new CustomEvent('moonboys:identity-change'));
