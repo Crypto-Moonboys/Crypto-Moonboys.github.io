@@ -93,7 +93,13 @@ function fakeDb(options = {}) {
                 return { success: true, results: options.noFactionProgression ? [] : [{
                   faction: options.canonicalFaction ?? 'graffpunks',
                   faction_xp: options.canonicalFactionXp ?? 15,
+                  xp: options.blocktopiaInvalidXp ? -3 : 400,
+                  gems: options.blocktopiaInvalidGems ? null : 80,
                 }] };
+              }
+              if (/FROM wiki_mission_completions/u.test(sql)) {
+                if (options.failWikiRead) throw new Error('wiki_mission_source_unavailable');
+                return { success: true, results: [{ total: options.invalidWikiCount ? -1 : options.wikiToday ?? 0 }] };
               }
               if (/FROM arcade_xp_wallets/u.test(sql)) {
                 if (options.failSpendableWallet) throw new Error('arcade_wallet_read_failed');
@@ -515,6 +521,58 @@ test('canonical signed Community XP comes from Telegram account, not duplicated 
     assert.ok(db.calls.some(call => /SELECT telegram_id,xp FROM telegram_users/u.test(call.sql) &&
       call.params[0] === '123456'));
     assert.ok(body.query_budget.statement_count <= 80);
+  }
+});
+
+test('final My Moonboy tracker uses owner-bound BlockTopia, faction, Arcade ledger and Wiki receipts', async () => {
+  const db = fakeDb({wikiToday:3});
+  const response = await handlePlayerActionPlanRoute(request(auth({limit:100})),
+    { DB:db,TELEGRAM_BOT_TOKEN:'test' }, options());
+  assert.equal(response.status,200);
+  assert.equal(response.headers.get('Cache-Control'),'no-store, private');
+  const body = await response.json();
+  assert.deepEqual(body.owner.progression,{
+    blocktopia_xp:400,blocktopia_gems:80,faction_xp:15,
+  });
+  assert.equal(body.owner.wiki_accepted_today,3);
+  assert.equal(body.owner.lifetime_arcade_xp,1200);
+  assert.equal(body.owner.economy.arcade_spendable_xp,700);
+  assert.equal(body.owner.economy.arcade_earned_xp,1200);
+  assert.equal(body.owner.economy.arcade_spent_xp,500);
+  assert.ok(db.calls.some(call=>/SELECT faction,faction_xp,xp,gems FROM blocktopia_progression/u.test(call.sql)
+    && call.params[0]==='123456'));
+  assert.ok(db.calls.some(call=>/FROM wiki_mission_completions/u.test(call.sql)
+    && call.params[0]==='123456'));
+  assert.ok(db.calls.every(call => /^(SELECT|WITH)\\b/iu.test(call.sql.trimStart())));
+  assert.ok(body.query_budget.statement_count<=80);
+});
+
+test('final My Moonboy tracker marks missing, failed and invalid owner sources unknown', async () => {
+  for (const variation of [
+    {noFactionProgression:true, wikiToday:0},
+    {failFactionRead:true, failWikiRead:true},
+    {blocktopiaInvalidXp:true,blocktopiaInvalidGems:true,invalidWikiCount:true},
+    {canonicalFaction:'unaligned'},
+    {invalidSpendableWallet:true},
+  ]) {
+    const response = await handlePlayerActionPlanRoute(request(auth({limit:100})),
+      { DB:fakeDb(variation),TELEGRAM_BOT_TOKEN:'test' }, options());
+    assert.equal(response.status,200);
+    const {owner}=await response.json();
+    if (variation.noFactionProgression || variation.failFactionRead) {
+      assert.deepEqual(owner.progression,{blocktopia_xp:null,blocktopia_gems:null,faction_xp:null});
+    }
+    if (variation.blocktopiaInvalidXp) {
+      assert.equal(owner.progression.blocktopia_xp,null);
+      assert.equal(owner.progression.blocktopia_gems,null);
+    }
+    if (variation.canonicalFaction==='unaligned') assert.equal(owner.progression.faction_xp,null);
+    if (variation.failWikiRead || variation.invalidWikiCount) assert.equal(owner.wiki_accepted_today,null);
+    if (variation.invalidSpendableWallet) {
+      assert.equal(owner.economy.arcade_earned_xp,null);
+      assert.equal(owner.economy.arcade_spent_xp,null);
+    }
+    if (variation.wikiToday===0) assert.equal(owner.wiki_accepted_today,0);
   }
 });
 
