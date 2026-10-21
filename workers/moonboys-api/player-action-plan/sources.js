@@ -590,6 +590,10 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
       expiresAt: nextUtcDay(now), blocking: sevenDone || pets.length ? null
         : rosterUnavailable ? 'owned_roster_unavailable' : 'moonpet_required',
       progress: { current: bitsCurrent, target: dailyFlags.length, unit: 'source_flags' },
+      // Source flags are saved by the canonical Worker into this owner's
+      // UTC-day completion record; do not infer accepted flags from UI state.
+      evidence: { verified_completion: sevenDone && todayCompletionRows.length > 0 &&
+        !failures.has('moonpet.daily-seven-missions') },
     }));
   for (const [flag, label] of dailyFlags) {
     tasks.push(genericTask(now, SOURCE_BY_KEY.get('moonpet.daily-seven-missions'),
@@ -599,6 +603,8 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
         expiresAt: nextUtcDay(now), blocking: bits & flag || pets.length ? null
           : rosterUnavailable ? 'owned_roster_unavailable' : 'moonpet_required',
         progress: { current: bits & flag ? 1 : 0, target: 1, unit: 'accepted_source_flag' },
+        evidence: { verified_completion: Boolean(bits & flag) &&
+          todayCompletionRows.length > 0 && !failures.has('moonpet.daily-seven-missions') },
       }));
   }
   for (const row of completionRows) {
