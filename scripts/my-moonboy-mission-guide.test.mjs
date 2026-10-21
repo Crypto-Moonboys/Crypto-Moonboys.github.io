@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { isVerifiedCompletion } from '../workers/moonboys-api/player-action-plan/schema.js';
 import { test } from 'node:test';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -83,6 +84,22 @@ test('signed checklist verifies accepted receipts only; absence, preview and sta
   guide.renderChecklist(el,[valid],{stale:true,offline:true});
   assert.doesNotMatch(el.innerHTML, /✅ Completed/u);
   assert.match(el.innerHTML, /historical only/u);
+});
+
+test('browser completion predicate matches the Worker source authority exactly', () => {
+  const guide=load();
+  for(const status of ['ready','active','in_progress','waiting','blocked','complete','claim_ready',
+    'claimed','expired','sync_unavailable','preview']) {
+    for(const kind of ['server_receipt','server_projection','client_mirror','schedule_preview']) {
+      for(const health of ['live','live_empty','query_failed','preview']) {
+        for(const verified_completion of [true,false]) {
+          const row={status,source_health:health,evidence:{kind,verified_completion}};
+          assert.equal(guide.verifiedDone(row),isVerifiedCompletion(row),
+            status+'/'+kind+'/'+health+'/'+verified_completion);
+        }
+      }
+    }
+  }
 });
 
 test('Completed tick requires genuine source evidence across receipts and verified projections', () => {
