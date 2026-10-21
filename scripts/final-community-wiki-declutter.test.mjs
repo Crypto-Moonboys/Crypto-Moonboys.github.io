@@ -36,8 +36,10 @@ assert.match(chamber, /<details class="section bc-disclosure" open>[\s\S]*?Activ
 assert.match(chamber, /<details class="section bc-disclosure" open>[\s\S]*?Faction War Standings/, 'Live standings remain initially visible');
 assert.match(chamber, /href="\/my-moonboy\.html\?tab=faction"/, 'Personal faction claims link to central account');
 assert.match(chamber, /Top Contributors &amp; XP Chart/, 'Actual Battle Chamber contributor chart remains');
-const factionLinks = [...chamber.matchAll(/href="\/battle-chamber\/factions\/[^"]+\.html"/g)];
-assert.equal(factionLinks.length, 9, 'All nine published faction chamber links remain');
+const factionLinks = [...chamber.matchAll(/href="(\/battle-chamber\/factions\/[^"]+\.html)"/g)]
+  .map(match => match[1])
+  .filter(href => !href.endsWith('/index.html'));
+assert.equal(new Set(factionLinks).size, 9, 'All nine published faction chambers remain alongside the directory link');
 
 // Article comment widgets keep direct, optional interaction and one tiny
 // contextual account state. No legacy mock top-five scores or signup cards.
