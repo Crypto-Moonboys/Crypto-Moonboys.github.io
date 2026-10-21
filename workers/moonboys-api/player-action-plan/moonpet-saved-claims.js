@@ -110,7 +110,21 @@ export async function projectSavedMoonpetClaims({
         .match(/^(pet-s\d{4}-00[1-4]):(street|neon|cyber|guardian)$/u);
       if (match && !periods.has(match[1])) periods.set(match[1], 0);
     }
-    if (receipts.length) status('tiers', [...visibleSeasons, ...receipts], 'season_xp_claims_and_receipts');
+    // A saved tier acknowledgement is independent durable source evidence.
+    // Imported history can retain the acknowledged season+tier even when both
+    // its XP aggregate and payout receipt are absent. Include that period for
+    // a blocked reconciliation row, never as earned, paid or ready.
+    const validTierIds = new Set(PET_SEASON_REWARD_TIERS.map(tier => tier.tier_id));
+    for (const row of claims) {
+      const season = String(row.season_key || '');
+      const tierId = String(row.tier_id || '');
+      if (!/^pet-s\d{4}-00[1-4]$/u.test(season) ||
+          season > currentSeason || !validTierIds.has(tierId)) continue;
+      if (!periods.has(season)) periods.set(season, 0);
+    }
+    // Health represents all three authoritative sources; absence of season XP
+    // does not make a real acknowledgement-only account 'live_empty'.
+    status('tiers', [...visibleSeasons, ...claims, ...receipts], 'season_xp_claims_and_receipts');
     if (truncated && !failures.has(SAVED_CLAIM_KEYS.tiers)) {
       sourceStatuses[SAVED_CLAIM_KEYS.tiers] = sourceStatus('live', {
         adapter: 'season_xp_claims_and_receipts',
