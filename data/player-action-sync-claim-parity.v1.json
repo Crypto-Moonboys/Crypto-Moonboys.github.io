@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "purpose": "Audit overlapping MoonPet Saved Status claim authorities against /player/action-plan. Gaps are explicit and must not inflate My Moonboy claim badges.",
+  "purpose": "Read-only MoonPet Saved Status claim parity against signed Action Plan. Direct sources may show verified badges; partial sources must retain explicit eligibility limits.",
   "mappings": [
     {
       "saved_status": "daily_completion_bonus",
@@ -45,18 +45,18 @@
     {
       "saved_status": "daily_cache",
       "saved_scope": "account+utc_day",
-      "action_plan_source": null,
-      "parity": "gap",
+      "action_plan_source": "moonpet.daily-cache",
+      "parity": "partial",
       "claim_badge": false,
-      "notes": "No dedicated action-plan cache adapter exists on this baseline. My Moonboy must not invent a cache claim badge."
+      "notes": "Signed Action Plan proves accepted Daily Cache opening; readiness remains source-only because pet XP allowance and active pet eligibility are not projected."
     },
     {
       "saved_status": "season_tier_claims",
       "saved_scope": "account+season+tier",
-      "action_plan_source": null,
-      "parity": "gap",
-      "claim_badge": false,
-      "notes": "No dedicated season-tier claim adapter exists on this baseline. Saved Status remains canonical for this claim class."
+      "action_plan_source": "moonpet.season-tier-claims",
+      "parity": "direct",
+      "claim_badge": true,
+      "notes": "Signed season XP and reward receipts verify claim readiness; pending settlement and absent owner roster block rather than claim."
     },
     {
       "saved_status": "automatic_journey_awards",
@@ -77,26 +77,26 @@
     {
       "saved_status": "finale_claim",
       "saved_scope": "original_pet+competition_season",
-      "action_plan_source": null,
-      "parity": "gap",
-      "claim_badge": false,
-      "notes": "MoonPet Saved Status exposes unclaimed Finale rewards, but the current action-plan registry has no dedicated Finale claim adapter. Do not add these to My Moonboy claim badges."
+      "action_plan_source": "moonpet.finale-claim",
+      "parity": "direct",
+      "claim_badge": true,
+      "notes": "Original pet/season and defeated Finale are joined to the signed owner; pending/awarded payout receipt prevents double claims."
     },
     {
       "saved_status": "extra_bounty_claim",
       "saved_scope": "account+utc_day+bonus_board",
-      "action_plan_source": null,
-      "parity": "gap",
+      "action_plan_source": "moonpet.extra-bounty-claims",
+      "parity": "partial",
       "claim_badge": false,
-      "notes": "Extra daily challenge claims are distinct from ordinary daily bounties. The current moonpet.claimable-rewards adapter does not project this bonus board."
+      "notes": "Signed accepted event progress is a lower bound, not the canonical extra-board settlement; no claim badge until source receipt parity is proven."
     },
     {
       "saved_status": "weekly_bounty_claim",
       "saved_scope": "account+weekly_bounty_period",
-      "action_plan_source": null,
-      "parity": "gap",
+      "action_plan_source": "moonpet.weekly-bounty-claims",
+      "parity": "partial",
       "claim_badge": false,
-      "notes": "Weekly bounty block claims have their own Saved Status authority and are not represented by the ordinary daily bounty action-plan adapter."
+      "notes": "Signed accepted event progress is a lower bound and excludes some boss-attempt proof; no claim badge until source receipt parity is proven."
     }
   ]
 }
