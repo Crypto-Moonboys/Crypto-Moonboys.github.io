@@ -250,7 +250,7 @@
     if (!id) {
       personalRoot.innerHTML = '<p>Link Telegram to view your own saved contribution. ' +
         'No private missions are loaded for visitors.</p><p><a href="' + LOGIN_URL +
-        '" data-telegram-login>Log in with Telegram</a> · <a href="' + JOIN_URL + '">Choose a faction</a></p>';
+        '">Open My Moonboy</a> · <a href="' + JOIN_URL + '">Choose a faction</a></p>';
       return;
     }
     const valid = verifiedOwnerState(snapshot) ? snapshot : null;
