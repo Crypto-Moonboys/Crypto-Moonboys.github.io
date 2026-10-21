@@ -35,7 +35,13 @@ export async function projectSavedMoonpetClaims({
   function add(key, state, info) {
     const sourceKey = SAVED_CLAIM_KEYS[key];
     tasks.push(makeTask({
-      source_key: sourceKey, task_id: sourceKey + ':' + (info.period || 'current') + ':' + (info.suffix || 'summary'),
+      // Finale IDs are generated from a bounded opaque source hash. Keep it
+      // before (and independent of) untrusted period text: schema.js caps
+      // task_id to 220 characters, which could otherwise discard the only
+      // differentiating identifier and collapse distinct saved rewards.
+      source_key: sourceKey, task_id: info.opaqueTaskId
+        ? sourceKey + ':' + info.suffix
+        : sourceKey + ':' + (info.period || 'current') + ':' + (info.suffix || 'summary'),
       title: info.title, description: info.description || 'Open MoonPet Saved Status for the original action.',
       why: 'Only source-accepted MoonPet evidence can establish a claim.',
       status: state, source_health: info.health || sourceStatuses[sourceKey]?.state || 'unavailable',
@@ -221,6 +227,7 @@ export async function projectSavedMoonpetClaims({
       suffix: await opaqueRef(ownerId + ':' + String(f.pet_id || '') + ':' +
         String(f.season_key || '') + ':' + String(f.competition_season_key || '') + ':' +
         String(f.reward_key || '')),
+      opaqueTaskId: true,
       petRef, priority: ready ? 36 : 740, receipt: confirmed, acceptedAt: confirmed ? f.claimed_at : null,
       blocking: !canonicalRewardKey ? 'finale_reward_key_unverified'
         : rejected ? 'finale_settlement_rejected'
