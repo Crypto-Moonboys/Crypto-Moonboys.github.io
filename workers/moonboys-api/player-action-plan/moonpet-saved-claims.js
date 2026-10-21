@@ -46,7 +46,16 @@ export async function projectSavedMoonpetClaims({
       source_pet_ref: info.petRef || null,
       evidence: { kind: info.receipt ? 'server_receipt' : 'server_projection',
         verified_completion: Boolean(info.receipt), accepted_at: info.acceptedAt || null },
-      destination: { kind: 'web', path: '/moonpet-game.html', screen: 'missions', focus: 'saved-status' },
+      // MoonPet reads screen/focus from URL query parameters on first load.
+      // destination.screen and destination.focus alone are not followed by
+      // My Moonboy's safeDestination(), so encode only source-controlled routes.
+      destination: { kind: 'web', path: {
+        cache: '/moonpet-game.html?screen=home&focus=care',
+        tiers: '/moonpet-game.html?screen=profile&focus=season',
+        finale: '/moonpet-game.html?screen=missions&focus=season-finale',
+        bonus: '/moonpet-game.html?screen=economy&focus=bonus-bounties',
+        weekly: '/moonpet-game.html?screen=economy&focus=weekly-bounties',
+      }[key] },
     }));
   }
   const unknown = (key, title, period, blocking, periodKind = 'saved_claim') => add(key, 'preview',
@@ -70,7 +79,7 @@ export async function projectSavedMoonpetClaims({
   const claims = seasons === null ? null : await read('tiers',
     'SELECT season_key,tier_id,claimed_at FROM telegram_pet_season_reward_claims WHERE telegram_id=? ORDER BY season_key DESC LIMIT 100', [ownerId]);
   const receipts = claims === null ? null : await read('tiers',
-    "SELECT idempotency_key,status,awarded_at FROM telegram_pet_reward_claims WHERE telegram_id=? AND source='pet_season_reward' AND status IN ('pending','awarded') ORDER BY created_at DESC LIMIT 100",
+    "SELECT idempotency_key,status,awarded_at FROM telegram_pet_reward_claims WHERE telegram_id=? AND source='pet_season_reward' AND status IN ('pending','awarded','rejected') ORDER BY created_at DESC LIMIT 100",
     [ownerId]);
   status('tiers', seasons, 'season_xp_claims_and_receipts');
   if (seasons && claims && receipts) {
@@ -95,7 +104,7 @@ export async function projectSavedMoonpetClaims({
     // when an imported account lost its old XP aggregate.
     const prefix = 'season_reward:' + ownerId + ':';
     for (const row of receipts) {
-      if (!['awarded', 'pending'].includes(row.status) ||
+      if (!['awarded', 'pending', 'rejected'].includes(row.status) ||
         !String(row.idempotency_key).startsWith(prefix)) continue;
       const match = String(row.idempotency_key).slice(prefix.length)
         .match(/^(pet-s\d{4}-00[1-4]):(street|neon|cyber|guardian)$/u);
@@ -128,13 +137,14 @@ export async function projectSavedMoonpetClaims({
         if (!earned && !receipt && !ack && period !== currentSeason) continue;
         const awarded = receipt?.status === 'awarded';
         const pending = receipt?.status === 'pending';
-        const blocked = truncated || (ack && !awarded) || pending ||
+        const rejected = receipt?.status === 'rejected';
+        const blocked = truncated || (ack && !awarded) || pending || rejected ||
           rosterUnavailable || !selectedLifecycleVerified;
         const ready = earned && !receipt && !ack && !blocked;
         add('tiers', awarded ? 'claimed' : ready ? 'claim_ready' : blocked ? 'blocked' : 'in_progress', {
           title: tier.title + ' — ' + period, period, suffix: tier.tier_id, priority: ready ? 42 : 760,
           description: 'Listed tier amounts are base rewards only. Actual Style Tokens may include the selected pet’s evolution-stage bonus; MoonPet confirms the final amount.',
-          blocking: truncated ? 'season_receipt_history_partial' : pending ? 'season_reward_settlement_pending' : ack && !awarded
+          blocking: truncated ? 'season_receipt_history_partial' : rejected ? 'season_reward_settlement_rejected' : pending ? 'season_reward_settlement_pending' : ack && !awarded
             ? 'season_reward_receipt_unverified' : rosterUnavailable ? 'owned_roster_unavailable'
               : !selectedPet ? 'selected_moonpet_required'
                 : !selectedLifecycleVerified ? 'selected_pet_lifecycle_unverified' : null,
@@ -188,17 +198,24 @@ export async function projectSavedMoonpetClaims({
     const valid = count(f.owner_verified) === 1 && Boolean(f.defeated_at) && canonicalRewardKey;
     const awarded = f.receipt_status === 'awarded';
     const pending = f.receipt_status === 'pending';
+    const rejected = f.receipt_status === 'rejected';
     const confirmed = valid && awarded;
-    const ready = valid && !awarded && !pending && !f.claimed_at;
+    const ready = valid && !awarded && !pending && !rejected && !f.claimed_at;
     const petRef = valid ? await opaqueRef(ownerId + ':' + f.pet_id) : null;
     add('finale', confirmed ? 'claimed' : ready ? 'claim_ready' : 'blocked', {
       title: 'Saved Signal Sovereign Finale reward', period: f.competition_season_key,
-      suffix: valid ? await opaqueRef(ownerId + ':' + f.pet_id + ':' + f.competition_season_key) : 'unverified',
+      suffix: await opaqueRef(ownerId + ':' + String(f.pet_id || '') + ':' +
+        String(f.season_key || '') + ':' + String(f.competition_season_key || '') + ':' +
+        String(f.reward_key || '')),
       petRef, priority: ready ? 36 : 740, receipt: confirmed, acceptedAt: confirmed ? f.claimed_at : null,
       blocking: !canonicalRewardKey ? 'finale_reward_key_unverified'
+        : rejected ? 'finale_settlement_rejected'
         : !valid ? 'original_pet_season_unverified' : pending ? 'finale_settlement_pending'
         : f.claimed_at && !awarded ? 'finale_acknowledgement_unverified' : null,
-      reward: payout(SEASON_FINALE_REWARD),
+      // The actual amount can be capped by daily Pet XP allowance. These
+      // are nominal source rewards, not confirmed applied amounts.
+      reward: reward(Object.entries(SEASON_FINALE_REWARD).map(([type, amount]) =>
+        ({ type, amount })), false),
     });
   } else unknown('finale', 'Review saved Finale rewards in MoonPet', currentSeason, 'no_verified_finale_claim');
 
