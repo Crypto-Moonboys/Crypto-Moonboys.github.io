@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { projectSavedMoonpetClaims, SAVED_CLAIM_KEYS } from '../workers/moonboys-api/player-action-plan/moonpet-saved-claims.js';
 import { getMoonpetSeasonKey } from '../workers/moonboys-api/pets/season-authority.js';
+import { seasonFinaleKey } from '../workers/moonboys-api/pets/completion-policy.js';
 
 const NOW = new Date('2026-10-21T12:00:00Z');
 const OWNER = 'signed-owner';
@@ -19,7 +20,7 @@ function fixture(options = {}) {
     finale: options.finaleRows || (options.finale ? [{
       pet_id: 'secret-pet', season_key: 'pet-s2026-004', competition_season_key: SEASON,
       status: 'won', defeated_at: NOW.toISOString(), claimed_at: options.finaleClaimed ? NOW.toISOString() : null,
-      reward_key: 'finale-key', owner_verified: options.wrongPet ? 0 : 1,
+      reward_key: options.finaleRewardKey ?? seasonFinaleKey('secret-pet', SEASON), owner_verified: options.wrongPet ? 0 : 1,
       receipt_status: options.finaleReceipt || null,
     }] : []),
     events: options.events || [],
@@ -113,12 +114,39 @@ test('tier reward base is explicitly unconfirmed because evolution stage changes
     'even an awarded tier must not claim the base style token amount is the exact payout');
 });
 
+test('canonical and legacy Finale reward keys permit genuine claims; arbitrary or mismatched keys are blocked', async () => {
+  const validCurrent = await fixture({ finale: true }).project();
+  assert.equal(get(validCurrent, 'finale')[0].status, 'claim_ready');
+  const legacy = await fixture({ finale: true,
+    finaleRewardKey: 'season-finale:secret-pet:pet-s2026-004' }).project();
+  assert.equal(get(legacy, 'finale')[0].status, 'claim_ready');
+  for (const bad of [
+    'unrelated-final-reward',
+    seasonFinaleKey('another-pet', SEASON),
+    seasonFinaleKey('secret-pet', 'pet-s2026-003'),
+    'season-finale:secret-pet:pet-s2026-003',
+    '',
+  ]) {
+    const f = fixture({ finale: true, finaleRewardKey: bad });
+    const tasks = await f.project();
+    const finale = get(tasks, 'finale')[0];
+    assert.equal(finale.status, 'blocked', bad);
+    assert.equal(finale.blocking_reason_code, 'finale_reward_key_unverified', bad);
+    assert.equal(finale.evidence.verified_completion, false);
+    assert.equal(finale.source_pet_ref, null, 'invalid reward keys must not assert verified original-pet attribution');
+  }
+  const badPaid = await fixture({ finale: true,
+    finaleRewardKey: 'unrelated-final-reward', finaleReceipt: 'awarded' }).project();
+  assert.equal(get(badPaid, 'finale')[0].status, 'blocked',
+    'malformed reward keys must not create claim-ready OR confirmed claimed badges');
+});
+
 test('truncated Finale victory history advertises partial source and an explicit overflow, never 61 complete rows', async () => {
   const finaleRows = Array.from({ length: 61 }, (_, index) => ({
     pet_id: 'secret-pet-' + index, season_key: SEASON,
     competition_season_key: SEASON, status: 'won',
     defeated_at: NOW.toISOString(), claimed_at: null,
-    reward_key: 'finale-' + index, owner_verified: 1, receipt_status: null,
+    reward_key: seasonFinaleKey('secret-pet-' + index, SEASON), owner_verified: 1, receipt_status: null,
   }));
   const f = fixture({ finaleRows });
   const tasks = await f.project();
