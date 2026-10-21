@@ -372,8 +372,10 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
   }
   try {
     // A profile balance can be stale until the canonical one-time account
-    // wallet reconciliation has committed. Require its awarded receipt and
-    // absence of an unresolved recovery marker; never mutate from Action Plan.
+    // wallet reconciliation has committed. A committed awarded marker
+    // supersedes a historical pending recovery marker; neither the canonical
+    // read guard nor mutation guard requires the pending row to be deleted.
+    // Never mutate from Action Plan.
     const rows = await db.all(
       `SELECT p.moon_gold,p.moon_crystals,p.style_tokens,
         EXISTS(SELECT 1 FROM telegram_pet_reward_claims marker
@@ -389,7 +391,7 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
       [ownerId]);
     const row = rows[0];
     const fields = ['moon_gold', 'moon_crystals', 'style_tokens'];
-    if (row && Number(row.wallet_reconciled) === 1 && Number(row.recovery_pending) === 0 &&
+    if (row && Number(row.wallet_reconciled) === 1 &&
         fields.every(key => Number.isSafeInteger(row[key]) && row[key] >= 0)) {
       for (const key of fields) economy[key] = Number(row[key]);
       economy.moonpet_wallet_health = 'live';
