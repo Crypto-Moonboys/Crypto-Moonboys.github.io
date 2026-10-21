@@ -22,20 +22,16 @@ window.__HUD_CONSOLIDATED__ = true;
     { label: 'HOME', href: '/index.html', icon: '⌂', title: 'Home' },
     { label: 'WIKI', href: '/search.html', icon: '◫', title: 'Wiki' },
     { label: 'GAMES', href: '/games/', icon: '◆', title: 'Games' },
-    { label: 'MY MOONBOY', href: '/my-moonboy.html', icon: '◇', title: 'My Moonboy personal mission control', linkedOnly: true },
+    { label: 'MY MOONBOY', href: '/my-moonboy.html', icon: '◇', title: 'My Moonboy — public start and personal account' },
     { label: 'BATTLE CHAMBER', href: '/community.html', icon: '⚔', title: 'Battle Chamber' },
     { label: 'SWARMSY', href: '/swarmsy.html', icon: '✦', title: 'SWARMSY' },
     { label: 'SYSTEM HUB', href: '/dashboard.html', icon: '◎', title: 'System Hub' }
   ];
 
-  // Private navigation appears only for a locally linked Telegram session.
-  // The route itself always demands fresh signed server proof before rendering
-  // data; this link is discovery, never authentication authority.
+  // Public route discovery never authenticates a player: My Moonboy itself
+  // gates its private account data using fresh signed server proof.
   function visibleLinks() {
-    const identity = window.MOONBOYS_IDENTITY;
-    const linked = !!(identity && typeof identity.isTelegramLinked === 'function' &&
-      identity.isTelegramLinked());
-    return links.filter(item => !item.linkedOnly || linked);
+    return links;
   }
 
   const sidebarGroups = [
@@ -127,8 +123,6 @@ window.__HUD_CONSOLIDATED__ = true;
   function isGlobalNavComplete(nav) {
     if (!nav || nav.id !== 'global-nav') return false;
     const active = visibleLinks();
-    const linkSelector = 'a[data-shell-link="MY MOONBOY"]';
-    if (!active.some(item => item.linkedOnly) && nav.querySelector(linkSelector)) return false;
     return active.every((item) => {
       const expectedHref = normalizePathname(item.href);
       return Array.from(nav.querySelectorAll('a[href]')).some((anchor) => {
