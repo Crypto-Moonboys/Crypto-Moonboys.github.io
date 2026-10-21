@@ -133,7 +133,7 @@
         tgStatus.textContent = 'Log in with Telegram to access eligible rewards.';
         tgStatus.className = 'cm-tg-status cm-warning';
       } else {
-        tgStatus.textContent = 'Optional for comments. Required for rewards. Telegram quick-fill unavailable. Log in through the Incubator Hub; /gklink remains a fallback.';
+        tgStatus.textContent = 'Optional for comments. Required for rewards. For a verified Telegram account, open My Moonboy. Email comments remain available without Telegram.';
         tgStatus.className = 'cm-tg-status';
       }
     }
