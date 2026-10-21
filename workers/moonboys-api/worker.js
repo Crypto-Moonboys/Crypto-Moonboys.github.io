@@ -1,4 +1,4 @@
-import { createPetStateTimings, NO_PET_STATE_TIMINGS } from './pets/state-timings.js';
+import { createPetStateTimings, NO_PET_STATE_TIMINGS, measurePetDatabaseStage } from './pets/state-timings.js';
 import { capturePetEconomy, assertPetEconomy, assertPetEconomySource } from './pets/economic-projection.js';
 import { submitMoonpetRadioRequest } from './pets/radio-requests.js';
 import { forwardRadioRequestsToGroup } from './pets/radio-group-delivery.js';
@@ -10646,7 +10646,7 @@ async function buildPetMiniAppState(db, telegramId, botToken, options = {}) {
   const timings = options.timings || NO_PET_STATE_TIMINGS;
   await timings.measure('d1_bootstrap', () => preparePetMiniAppState(db, telegramId, now));
   await timings.measure('state_recovery', () => recoverPetMiniAppState(db, telegramId, now, timings));
-  return timings.measure('pet_state_projection', () => projectPetMiniAppState(db, telegramId, botToken, options, now, timings));
+  return measurePetDatabaseStage(timings, 'pet_state_projection', db, measuredDb => projectPetMiniAppState(measuredDb, telegramId, botToken, options, now, timings));
 }
 
 async function recoverPetMiniAppState(db, telegramId, now, timings) {
@@ -10673,10 +10673,10 @@ async function recoverPetMiniAppState(db, telegramId, now, timings) {
     logApiFailure('pet_runtime_recovery_failed', { message: error?.message || String(error) });
   });
   await timings.measure('weekly_settlement', async () => {
-    await recoverPetWeeklyBossVictories(db, telegramId, finishPetWeeklyBossVictory, PET_STATE_RECOVERY_LIMITS.weekly_bosses).catch((error) => {
+    await measurePetDatabaseStage(timings, 'boss_victory_recovery', db, measuredDb => recoverPetWeeklyBossVictories(measuredDb, telegramId, finishPetWeeklyBossVictory, PET_STATE_RECOVERY_LIMITS.weekly_bosses)).catch((error) => {
       logApiFailure('pet_weekly_boss_recovery_failed', { message: error?.message || String(error) });
     });
-    await recoverPetJourneyAwards(db, telegramId, { source_limit: PET_STATE_RECOVERY_LIMITS.journey_sources, award_limit: PET_STATE_RECOVERY_LIMITS.journey_awards }).catch((error) => {
+    await recoverPetJourneyAwards(db, telegramId, { source_limit: PET_STATE_RECOVERY_LIMITS.journey_sources, award_limit: PET_STATE_RECOVERY_LIMITS.journey_awards, timings }).catch((error) => {
       logApiFailure('pet_journey_recovery_failed', { message: error?.message || String(error) });
     });
   });

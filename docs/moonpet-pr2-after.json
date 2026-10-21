@@ -1,0 +1,545 @@
+{
+  "fixture": "SQLite/fixed-2026-10-21",
+  "modeled_call_delay_ms": 10,
+  "note": "Stages are inclusive: settlement is inside recovery; verification is inside projection. Not production latency.",
+  "results": [
+    {
+      "path": "builder",
+      "scenario": "warm",
+      "mode": "full",
+      "duration_ms": 813,
+      "statements": 167,
+      "calls": 138,
+      "guarded_batches": 14,
+      "ownership_assertions": 14,
+      "stages": [
+        {
+          "stage": "d1_bootstrap",
+          "duration_ms": 108.73,
+          "statements": 7,
+          "calls": 7
+        },
+        {
+          "stage": "daily_settlement",
+          "duration_ms": 31.02,
+          "statements": 2,
+          "calls": 2
+        },
+        {
+          "stage": "boss_victory_recovery",
+          "duration_ms": 13.42,
+          "statements": 1,
+          "calls": 1
+        },
+        {
+          "stage": "journey_source_recovery",
+          "duration_ms": 16.12,
+          "statements": 1,
+          "calls": 1
+        },
+        {
+          "stage": "daily_journey_award_recovery",
+          "duration_ms": 14.69,
+          "statements": 1,
+          "calls": 1
+        },
+        {
+          "stage": "weekly_journey_award_recovery",
+          "duration_ms": 16.96,
+          "statements": 1,
+          "calls": 1
+        },
+        {
+          "stage": "weekly_settlement",
+          "duration_ms": 61.4,
+          "statements": 4,
+          "calls": 4
+        },
+        {
+          "stage": "state_recovery",
+          "duration_ms": 199.06,
+          "statements": 13,
+          "calls": 13
+        },
+        {
+          "stage": "ownership_verification",
+          "duration_ms": 29.98,
+          "statements": 3,
+          "calls": 2
+        },
+        {
+          "stage": "pet_state_projection",
+          "duration_ms": 504.72,
+          "statements": 147,
+          "calls": 118
+        }
+      ]
+    },
+    {
+      "path": "builder",
+      "scenario": "three_pets",
+      "mode": "full",
+      "duration_ms": 821,
+      "statements": 175,
+      "calls": 146,
+      "guarded_batches": 14,
+      "ownership_assertions": 14,
+      "stages": [
+        {
+          "stage": "d1_bootstrap",
+          "duration_ms": 109.81,
+          "statements": 7,
+          "calls": 7
+        },
+        {
+          "stage": "daily_settlement",
+          "duration_ms": 30.61,
+          "statements": 2,
+          "calls": 2
+        },
+        {
+          "stage": "boss_victory_recovery",
+          "duration_ms": 14.44,
+          "statements": 1,
+          "calls": 1
+        },
+        {
+          "stage": "journey_source_recovery",
+          "duration_ms": 15.58,
+          "statements": 1,
+          "calls": 1
+        },
+        {
+          "stage": "daily_journey_award_recovery",
+          "duration_ms": 13.97,
+          "statements": 1,
+          "calls": 1
+        },
+        {
+          "stage": "weekly_journey_award_recovery",
+          "duration_ms": 17.8,
+          "statements": 1,
+          "calls": 1
+        },
+        {
+          "stage": "weekly_settlement",
+          "duration_ms": 61.88,
+          "statements": 4,
+          "calls": 4
+        },
+        {
+          "stage": "state_recovery",
+          "duration_ms": 205.42,
+          "statements": 13,
+          "calls": 13
+        },
+        {
+          "stage": "ownership_verification",
+          "duration_ms": 31.47,
+          "statements": 3,
+          "calls": 2
+        },
+        {
+          "stage": "pet_state_projection",
+          "duration_ms": 505.62,
+          "statements": 155,
+          "calls": 126
+        }
+      ]
+    },
+    {
+      "path": "builder",
+      "scenario": "recovery",
+      "mode": "full",
+      "duration_ms": 1632,
+      "statements": 264,
+      "calls": 190,
+      "guarded_batches": 14,
+      "ownership_assertions": 14,
+      "stages": [
+        {
+          "stage": "d1_bootstrap",
+          "duration_ms": 109.63,
+          "statements": 7,
+          "calls": 7
+        },
+        {
+          "stage": "daily_settlement",
+          "duration_ms": 32.06,
+          "statements": 2,
+          "calls": 2
+        },
+        {
+          "stage": "boss_victory_recovery",
+          "duration_ms": 14.07,
+          "statements": 1,
+          "calls": 1
+        },
+        {
+          "stage": "journey_source_recovery",
+          "duration_ms": 570.15,
+          "statements": 67,
+          "calls": 37
+        },
+        {
+          "stage": "daily_journey_award_recovery",
+          "duration_ms": 16.53,
+          "statements": 1,
+          "calls": 1
+        },
+        {
+          "stage": "weekly_journey_award_recovery",
+          "duration_ms": 19.38,
+          "statements": 1,
+          "calls": 1
+        },
+        {
+          "stage": "weekly_settlement",
+          "duration_ms": 620.26,
+          "statements": 70,
+          "calls": 40
+        },
+        {
+          "stage": "state_recovery",
+          "duration_ms": 1009.6,
+          "statements": 110,
+          "calls": 65
+        },
+        {
+          "stage": "ownership_verification",
+          "duration_ms": 30.79,
+          "statements": 3,
+          "calls": 2
+        },
+        {
+          "stage": "pet_state_projection",
+          "duration_ms": 512.77,
+          "statements": 147,
+          "calls": 118
+        }
+      ]
+    },
+    {
+      "path": "builder",
+      "scenario": "core",
+      "mode": "core",
+      "duration_ms": 340,
+      "statements": 42,
+      "calls": 33,
+      "guarded_batches": 9,
+      "ownership_assertions": 9,
+      "stages": [
+        {
+          "stage": "d1_bootstrap",
+          "duration_ms": 109.15,
+          "statements": 7,
+          "calls": 7
+        },
+        {
+          "stage": "ownership_verification",
+          "duration_ms": 29.71,
+          "statements": 3,
+          "calls": 2
+        },
+        {
+          "stage": "pet_state_projection",
+          "duration_ms": 230.43,
+          "statements": 35,
+          "calls": 26
+        }
+      ]
+    },
+    {
+      "path": "authenticated_http",
+      "scenario": "warm",
+      "mode": "full",
+      "duration_ms": 874,
+      "statements": 168,
+      "calls": 139,
+      "guarded_batches": 14,
+      "ownership_assertions": 14,
+      "stages": [
+        {
+          "stage": "request_parse",
+          "duration_ms": 0.75
+        },
+        {
+          "stage": "rate_limit",
+          "duration_ms": 0.34
+        },
+        {
+          "stage": "authentication",
+          "duration_ms": 0.71
+        },
+        {
+          "stage": "rate_limit",
+          "duration_ms": 0.04
+        },
+        {
+          "stage": "user_bootstrap",
+          "duration_ms": 22.53
+        },
+        {
+          "stage": "d1_bootstrap",
+          "duration_ms": 107.91
+        },
+        {
+          "stage": "daily_settlement",
+          "duration_ms": 31.25
+        },
+        {
+          "stage": "boss_victory_recovery",
+          "duration_ms": 14.45
+        },
+        {
+          "stage": "journey_source_recovery",
+          "duration_ms": 16.89
+        },
+        {
+          "stage": "daily_journey_award_recovery",
+          "duration_ms": 13.57
+        },
+        {
+          "stage": "weekly_journey_award_recovery",
+          "duration_ms": 17.69
+        },
+        {
+          "stage": "weekly_settlement",
+          "duration_ms": 62.81
+        },
+        {
+          "stage": "state_recovery",
+          "duration_ms": 202.89
+        },
+        {
+          "stage": "ownership_verification",
+          "duration_ms": 30.85
+        },
+        {
+          "stage": "pet_state_projection",
+          "duration_ms": 511.6
+        },
+        {
+          "stage": "response_serialization",
+          "duration_ms": 1.95
+        },
+        {
+          "stage": "total",
+          "duration_ms": 848.96
+        }
+      ]
+    },
+    {
+      "path": "authenticated_http",
+      "scenario": "three_pets",
+      "mode": "full",
+      "duration_ms": 855,
+      "statements": 176,
+      "calls": 147,
+      "guarded_batches": 14,
+      "ownership_assertions": 14,
+      "stages": [
+        {
+          "stage": "request_parse",
+          "duration_ms": 0.06
+        },
+        {
+          "stage": "rate_limit",
+          "duration_ms": 0.04
+        },
+        {
+          "stage": "authentication",
+          "duration_ms": 4.09
+        },
+        {
+          "stage": "rate_limit",
+          "duration_ms": 0.03
+        },
+        {
+          "stage": "user_bootstrap",
+          "duration_ms": 25.48
+        },
+        {
+          "stage": "d1_bootstrap",
+          "duration_ms": 107.84
+        },
+        {
+          "stage": "daily_settlement",
+          "duration_ms": 30.75
+        },
+        {
+          "stage": "boss_victory_recovery",
+          "duration_ms": 14.54
+        },
+        {
+          "stage": "journey_source_recovery",
+          "duration_ms": 16.61
+        },
+        {
+          "stage": "daily_journey_award_recovery",
+          "duration_ms": 13.55
+        },
+        {
+          "stage": "weekly_journey_award_recovery",
+          "duration_ms": 17.83
+        },
+        {
+          "stage": "weekly_settlement",
+          "duration_ms": 62.69
+        },
+        {
+          "stage": "state_recovery",
+          "duration_ms": 203.35
+        },
+        {
+          "stage": "ownership_verification",
+          "duration_ms": 30.14
+        },
+        {
+          "stage": "pet_state_projection",
+          "duration_ms": 510.82
+        },
+        {
+          "stage": "response_serialization",
+          "duration_ms": 1.52
+        },
+        {
+          "stage": "total",
+          "duration_ms": 853.47
+        }
+      ]
+    },
+    {
+      "path": "authenticated_http",
+      "scenario": "recovery",
+      "mode": "full",
+      "duration_ms": 1648,
+      "statements": 265,
+      "calls": 191,
+      "guarded_batches": 14,
+      "ownership_assertions": 14,
+      "stages": [
+        {
+          "stage": "request_parse",
+          "duration_ms": 0.07
+        },
+        {
+          "stage": "rate_limit",
+          "duration_ms": 0.03
+        },
+        {
+          "stage": "authentication",
+          "duration_ms": 0.29
+        },
+        {
+          "stage": "rate_limit",
+          "duration_ms": 0.02
+        },
+        {
+          "stage": "user_bootstrap",
+          "duration_ms": 14.73
+        },
+        {
+          "stage": "d1_bootstrap",
+          "duration_ms": 110.74
+        },
+        {
+          "stage": "daily_settlement",
+          "duration_ms": 30.98
+        },
+        {
+          "stage": "boss_victory_recovery",
+          "duration_ms": 14.45
+        },
+        {
+          "stage": "journey_source_recovery",
+          "duration_ms": 574.84
+        },
+        {
+          "stage": "daily_journey_award_recovery",
+          "duration_ms": 15.51
+        },
+        {
+          "stage": "weekly_journey_award_recovery",
+          "duration_ms": 20.33
+        },
+        {
+          "stage": "weekly_settlement",
+          "duration_ms": 625.27
+        },
+        {
+          "stage": "state_recovery",
+          "duration_ms": 1014.95
+        },
+        {
+          "stage": "ownership_verification",
+          "duration_ms": 30.95
+        },
+        {
+          "stage": "pet_state_projection",
+          "duration_ms": 504.59
+        },
+        {
+          "stage": "response_serialization",
+          "duration_ms": 1.48
+        },
+        {
+          "stage": "total",
+          "duration_ms": 1647.08
+        }
+      ]
+    },
+    {
+      "path": "authenticated_http",
+      "scenario": "core",
+      "mode": "core",
+      "duration_ms": 359,
+      "statements": 43,
+      "calls": 34,
+      "guarded_batches": 9,
+      "ownership_assertions": 9,
+      "stages": [
+        {
+          "stage": "request_parse",
+          "duration_ms": 0.06
+        },
+        {
+          "stage": "rate_limit",
+          "duration_ms": 0.03
+        },
+        {
+          "stage": "authentication",
+          "duration_ms": 0.32
+        },
+        {
+          "stage": "rate_limit",
+          "duration_ms": 0.04
+        },
+        {
+          "stage": "user_bootstrap",
+          "duration_ms": 19.95
+        },
+        {
+          "stage": "d1_bootstrap",
+          "duration_ms": 106.52
+        },
+        {
+          "stage": "ownership_verification",
+          "duration_ms": 29.36
+        },
+        {
+          "stage": "pet_state_projection",
+          "duration_ms": 230.75
+        },
+        {
+          "stage": "response_serialization",
+          "duration_ms": 0.25
+        },
+        {
+          "stage": "total",
+          "duration_ms": 358.1
+        }
+      ]
+    }
+  ]
+}
