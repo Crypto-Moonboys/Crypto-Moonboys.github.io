@@ -794,6 +794,9 @@
       ? 'Not confirmed' : niceCount(owner.lifetime_arcade_xp) + ' Arcade XP';
     // Only fresh owner-scoped wallet records may show numeric balances.
     // Missing profiles/migrations and failed reads must not become zero.
+    byId('mm-community-xp').textContent = !state.stale && !state.offline &&
+      Number.isSafeInteger(owner.community_xp) && owner.community_xp >= 0
+      ? niceCount(owner.community_xp) + ' Community XP' : 'Not confirmed';
     const economy = owner.economy || {};
     for (const [id, value, health, unit] of [
       ['mm-arcade-spendable', economy.arcade_spendable_xp, economy.arcade_wallet_health, 'Arcade XP'],
