@@ -9,8 +9,8 @@
 | Daily Cache | `moonpet.daily-cache` | An accepted `daily_chest` event proves the cache was opened. No event is **not** evidence that today's cache is eligible. | No readiness badge |
 | Season-tier reward | `moonpet.season-tier-claims` | Account season XP, tier acknowledgement, source-specific pending/awarded receipt, current/historical season and owned pet roster are read together. Unlocked, unclaimed tiers can be claim-ready only when evidence is complete. | Yes, when fully proven |
 | Finale reward | `moonpet.finale-claim` | Won + defeated saved Finale, original pet and retained season slot, and unique payout receipt. Pending or inconsistent acknowledgement is blocked. | Yes, when fully proven |
-| Extra daily bounty | `moonpet.extra-bounty-claims` | Accepted event counts for the rotating bonus board are **lower-bound progress only**. The source economy board still owns exact claim eligibility, payout identity and pending recovery. | No |
-| Weekly bounty block | `moonpet.weekly-bounty-claims` | Accepted event counts for the rotating ISO-week board are **lower-bound progress only**. Seasonal boss-attempt source proof and settlement are not reconstructed. | No |
+| Extra daily bounty | `moonpet.extra-bounty-claims` | Accepted event counts for the rotating bonus board are **advisory progress only**. The source economy board still owns exact claim eligibility, payout identity and pending recovery. | No |
+| Weekly bounty block | `moonpet.weekly-bounty-claims` | Accepted event counts for the rotating ISO-week board are **advisory progress only**. Seasonal boss-attempt source proof and settlement are not reconstructed. | No |
 
 This is **not** a claim that all five have exact payout parity. The last three remain explicit source limitations until the original source can expose reliable, signed eligibility and receipt keys. Do not promote their preview rows into claim-ready states.
 
