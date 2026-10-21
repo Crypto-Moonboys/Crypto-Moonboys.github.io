@@ -63,8 +63,10 @@ assert.match(community, /id="telegram-login-help"/,
   'Legacy signed bot-link callback and recovery remain available');
 
 const comments = read('js/comments.js');
-assert.match(comments, /For a verified Telegram account, open My Moonboy\./,
-  'Article comment identity guidance uses central website entry');
+assert.match(comments, /Email comments work without Telegram\. Verified rewards require Telegram sign-in via My Moonboy\./,
+  'Article comment identity guidance stays concise, separates optional email comments and verified rewards');
+assert.match(comments, /href="\/my-moonboy\.html"/,
+  'Inline article account help still opens the canonical website entry');
 assert.match(comments, /if \(!email && !telegramAuth\)/,
   'Email-only commenting remains supported independently of Telegram');
 assert.match(read('js/faction-operations.js'), /const LOGIN_URL = '\/my-moonboy\.html';/,

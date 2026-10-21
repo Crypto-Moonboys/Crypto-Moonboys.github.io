@@ -5,6 +5,9 @@
   var BASE = cfg.BASE_URL || null;
   var FEATURES = cfg.FEATURES || {};
   var MAX_ROWS = 5;
+  // The public comments API returns at most the newest 50 approved records.
+  // These are sampled comment counts, never complete period totals or XP.
+  var COMMENT_SAMPLE_LIMIT = 50;
   var WEEK_MS = 7 * 24 * 60 * 60 * 1000;
   var palette = ['gold', 'cyan', 'purple', 'green', 'orange'];
 
@@ -83,20 +86,38 @@
     '</li>';
   }
 
-  function emptyRows(count) {
-    var rows = '';
-    for (var i = 0; i < count; i += 1) {
-      rows += '<li class="top-contributor-row top-contributor-row--empty" aria-hidden="true"></li>';
-    }
-    return rows;
-  }
-
-  function render(card, comments, period) {
+  function render(card, comments, period, failed) {
     var list = card.querySelector('.top-contributor-list');
     if (!list) return;
     var contributors = aggregate(comments, period);
     list.setAttribute('data-period', period);
-    list.innerHTML = contributors.map(rowHTML).join('') + emptyRows(MAX_ROWS - contributors.length);
+    list.innerHTML = contributors.length
+      ? contributors.map(rowHTML).join('')
+      : '<li class="top-contributor-row top-contributor-row--empty">' +
+          '<span class="top-contributor-empty-notice">' +
+            (failed ? 'Approved commenter records are unavailable.' :
+              period === 'week' ? 'No approved comments from the past 7 days in this sample.' :
+                'No approved commenters in the latest records sample.') +
+          '</span></li>';
+  }
+
+  // Only Wiki pages that deliberately load this module get this component.
+  // The ordinary shared comment form must not create a global contributor board.
+  function ensureOptInCard(container) {
+    var card = container.querySelector('.comments-top-contributors');
+    if (card) return card;
+    card = document.createElement('details');
+    card.className = 'comments-top-contributors comments-top-contributors--opt-in';
+    card.innerHTML =
+      '<summary>Recent article commenters (sample of up to 50 approved comments)</summary>' +
+      '<p class="top-contributor-sample-note">Based only on up to the 50 newest approved comments for this article. Counts are not complete weekly or all-time totals.</p>' +
+      '<div class="top-contributor-tabs" role="group" aria-label="Commenter time period">' +
+        '<button class="top-contributor-tab is-active" type="button" data-period="week" aria-pressed="true">Past 7 days in sample</button>' +
+        '<button class="top-contributor-tab" type="button" data-period="all_time" aria-pressed="false">All loaded comments</button>' +
+      '</div>' +
+      '<ol class="top-contributor-list" aria-live="polite"></ol>';
+    container.appendChild(card);
+    return card;
   }
 
   function install(container) {
@@ -105,12 +126,13 @@
     card.dataset.liveContributorsReady = '1';
 
     var list = card.querySelector('.top-contributor-list');
-    if (list) list.innerHTML = emptyRows(MAX_ROWS);
+    if (list) list.textContent = 'Checking approved commenters…';
 
     if (!BASE || !FEATURES.COMMENTS) return;
 
     var pageId = pageIdFor(container);
     var comments = [];
+    var fetchFailed = false;
     var activePeriod = 'week';
     var tabs = Array.prototype.slice.call(card.querySelectorAll('.top-contributor-tab'));
 
@@ -121,7 +143,7 @@
         tab.classList.toggle('is-active', active);
         tab.setAttribute('aria-pressed', active ? 'true' : 'false');
       });
-      render(card, comments, activePeriod);
+      render(card, comments, activePeriod, fetchFailed);
     }
 
     tabs.forEach(function (tab) {
@@ -131,15 +153,17 @@
     });
 
     function refresh() {
-      return fetch(BASE + '/comments?page_id=' + encodeURIComponent(pageId) + '&limit=50')
+      return fetch(BASE + '/comments?page_id=' + encodeURIComponent(pageId) + '&limit=' + COMMENT_SAMPLE_LIMIT)
         .then(function (response) { return response.ok ? response.json() : null; })
         .then(function (data) {
-          comments = data && Array.isArray(data.comments) ? data.comments : [];
-          render(card, comments, activePeriod);
+          fetchFailed = !data || !Array.isArray(data.comments);
+          comments = !fetchFailed ? data.comments : [];
+          render(card, comments, activePeriod, fetchFailed);
         })
         .catch(function () {
           comments = [];
-          render(card, comments, activePeriod);
+          fetchFailed = true;
+          render(card, comments, activePeriod, true);
         });
     }
 
@@ -152,15 +176,17 @@
   }
 
   function init() {
+    if (!BASE || !FEATURES.COMMENTS) return;
     Array.prototype.forEach.call(document.querySelectorAll('.wiki-comments'), function (container) {
-      if (container.querySelector('.comments-top-contributors')) {
+      function mountWhenReady() {
+        if (!container.querySelector('.comment-form')) return false;
+        ensureOptInCard(container);
         install(container);
-        return;
+        return true;
       }
+      if (mountWhenReady()) return;
       var observer = new MutationObserver(function () {
-        if (!container.querySelector('.comments-top-contributors')) return;
-        observer.disconnect();
-        install(container);
+        if (mountWhenReady()) observer.disconnect();
       });
       observer.observe(container, { childList: true, subtree: true });
     });

@@ -42,16 +42,25 @@ test('Wiki comment identity copy survives initial mount, edits and all account s
         await status.waitFor({ state: 'visible' });
         const expected = account.linked ? 'Telegram linked: Test Player' :
           account.hasId ? 'Log in with Telegram to access eligible rewards.' :
-            'For a verified Telegram account, open My Moonboy.';
+            'Email comments work without Telegram. Verified rewards require Telegram sign-in via My Moonboy.';
         assert.match(await status.textContent(), new RegExp(expected.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')),
           account.name + ' initial comment identity status');
         const initial = await status.textContent();
         assert.doesNotMatch(initial, /Incubator Hub|\/gklink|quick-fill unavailable/i,
           account.name + ' does not restore old onboarding instructions');
         if (!account.linked && !account.hasId) {
-          assert.match(initial, /Email comments remain available without Telegram/,
+          assert.match(initial, /Email comments work without Telegram/,
             'guest commenting remains optional and Gravatar/email capable');
         }
+        const compactRow = page.locator('.wiki-comments .cm-comment-account');
+        assert.equal(await compactRow.count(), 1,
+          'comment identity remains one inline row, not a second onboarding panel');
+        assert.equal(await page.locator('.wiki-comments .comments-top-contributors').count(), 0,
+          'article comment area does not inject global contributor rankings');
+        assert.equal(await page.locator('.wiki-comments .comments-link-card--benefits').count(), 0,
+          'article comment area does not inject a repeated Telegram pitch');
+        assert.equal(await compactRow.locator('a[href="/my-moonboy.html"]').count(), 1,
+          'account help points directly to My Moonboy');
         await page.locator('.comment-form [name="name"]').fill('Comment Author');
         assert.equal(await status.textContent(), initial,
           account.name + ' input refresh does not replace initial account guidance');

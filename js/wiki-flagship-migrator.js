@@ -213,7 +213,8 @@
 
     article.dataset.pageType = 'nft_collection';
     addScript('/js/wiki-template-dashboard.js', 'data-wiki-template-dashboard-runtime');
-    addScript('/js/wiki-live-contributors.js', 'data-wiki-live-contributors-runtime');
+    // Article commenter rankings are opt-in, loaded only by article-authored
+    // script tags. Do not globally inject an extra feed/request on every Wiki page.
   }
 
   function removeLegacyPanels(article) {

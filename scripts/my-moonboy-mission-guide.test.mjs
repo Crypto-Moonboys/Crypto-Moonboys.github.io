@@ -137,7 +137,8 @@ test('Engage, Signal and Cite are distinct Wiki receipt-backed actions; other in
   assert.match(publicGuide, /Wiki participation — comments, article likes and citation votes/u);
   assert.match(publicGuide, /My Moonboy currently shows only the total accepted Wiki receipts for today/u);
   assert.match(publicGuide, /href="\/my-moonboy\.html#mm-economy"/u);
-  assert.match(read('js/comments.js'), /eligible server-accepted Engage, Signal and Cite/u);
+  assert.match(publicGuide, /Only accepted receipts count/u, 'Wiki reward guidance remains explicitly receipt-backed rather than promised by an unmounted card');
+  assert.match(read('js/comments.js'), /CustomEvent\('moonboys:comment-posted'/u, 'The actual Engage submission event is preserved');
   assert.doesNotMatch(read('js/comments.js'), /Comment = 10 XP|Like = 5 XP|Citation = 15 XP/u,
     'outdated fixed frontend reward promises contradict source receipts');
 });
@@ -163,29 +164,30 @@ test('an accepted aggregate Wiki mission count never supplies individual Engage 
   assert.doesNotMatch(el.innerHTML, /Signed API reports 3 accepted Wiki/u);
 });
 
-test('Wiki contributor XP rankings do not fall back to fictional scores', () => {
-  const source = read('js/comments.js');
-  const section = source.slice(
-    source.indexOf('function getContributorData()'),
-    source.indexOf('function robotAvatar(')
-  );
-  assert.ok(section.includes('week && week.length ? week : []'));
-  assert.ok(section.includes('allTime && allTime.length ? allTime : []'));
-  assert.doesNotMatch(section, /:\s*FALLBACK_TOP_CONTRIBUTORS/u);
-  assert.match(source, /Verified contributor rankings unavailable for this period/u);
-  assert.match(source, /list\.innerHTML = contributorListHTML\(rows\)/u);
+test('Wiki article comments omit unused contributor score mocks and still support a separate real comment leaderboard', () => {
+  const comments = read('js/comments.js');
+  const specialist = read('js/wiki-live-contributors.js');
+  assert.doesNotMatch(comments, /FALLBACK_TOP_CONTRIBUTORS|function getContributorData\(|function robotAvatar\(|buildTopContributorsHTML\(/u);
+  assert.match(comments, /cm-comment-account/u);
+  assert.match(comments, /href="\/my-moonboy.html"/u);
+  assert.match(specialist, /function aggregate\(comments, period\)/u,
+    'optional specialized contributor module still aggregates actual fetched comments');
+  assert.match(specialist, /function ensureOptInCard\(container\)/u,
+    'opt-in article commenter ranking owns its own mount when the generic Wiki form is compact');
+  assert.match(specialist, /fetch\(BASE \+ '\/comments\?page_id='/u);
+  assert.doesNotMatch(specialist, /FALLBACK_TOP_CONTRIBUTORS|xp:\s*9540/u,
+    'specialist public contributor module does not invent XP balances');
 });
 
-test('empty contributor notice spans every rank/avatar/name/XP grid column even with compact row sizes', () => {
+test('optional specialist contributor component retains truthful source-specific ranks without global article clutter', () => {
   const comments = read('js/comments.js');
+  const specialist = read('js/wiki-live-contributors.js');
   const wikiCss = read('css/wiki.css');
-  const compactCss = read('css/wiki-comments-compact.css');
-  assert.match(comments, /<li class="top-contributor-row top-contributor-row--empty"><span class="top-contributor-empty-notice">/u);
-  assert.match(wikiCss, /body\.page-wiki \.top-contributor-row--empty > \.top-contributor-empty-notice \{[^}]*grid-column:\s*1\s*\/\s*-1;/u);
-  assert.match(wikiCss, /body\.page-wiki \.top-contributor-row \{[^}]*grid-template-columns:\s*28px 44px minmax\(0, 1fr\) auto;/u);
-  assert.match(compactCss, /body\.page-wiki \.top-contributor-row \{[^}]*grid-template-columns:\s*22px 32px minmax\(0, 1fr\) auto;/u);
-  assert.ok(!/body\.page-wiki \.top-contributor-row--empty > \.top-contributor-empty-notice/.test(compactCss),
-    'compact overrides must not undo the full-column span');
+  assert.doesNotMatch(comments, /comments-top-contributors|top-contributor-empty-notice/u);
+  assert.match(specialist, /if \(!card \|\| card.dataset.liveContributorsReady === '1'\) return/u);
+  assert.match(specialist, /item.comments === 1 \? '1 comment' : item.comments \+ ' comments'/u);
+  assert.match(wikiCss, /body\.page-wiki \.top-contributor-row \{/u,
+    'opt-in legacy Wiki template cards keep their styling until those templates migrate');
 });
 
 test('Wiki fallback panel never invents Battle Heat or mixes comments with likes and citations', () => {
