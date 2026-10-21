@@ -14,7 +14,7 @@ import { applyPetCareDecay } from '../pets/care-decay.js';
 import { getPetWeeklyBoss } from '../pets/player-expansion.js';
 import { getPetDailyBounties } from '../pets/economy-expansion.js';
 import { petSpaceOrderSql } from '../pets/space-order.js';
-import { CANONICAL_FACTION_READ_SQL, canonicalFactionProjection } from '../shared/faction-projection.js';
+import { canonicalFactionProjection } from '../shared/faction-projection.js';
 import { projectSavedMoonpetClaims } from './moonpet-saved-claims.js';
 
 export const ACTION_PLAN_SOURCE_REGISTRY = Object.freeze([
