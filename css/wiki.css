@@ -4470,5 +4470,5 @@ body.page-wiki[data-entity-hash="a4b462cb5857"] .related-wiki-paths:focus-within
 
 /* Wiki comments: keep article interaction focused; the shared account and
    contributor dashboards live at My Moonboy and Battle Chamber instead. */
-.comments-dashboard-grid--compact { grid-template-columns: minmax(0, 1fr) !important; }
-.comments-link-grid--compact { grid-template-columns: minmax(0, 1fr) !important; }
+.wiki-comments .comments-dashboard-grid.comments-dashboard-grid--compact { grid-template-columns: minmax(0, 1fr); }
+.wiki-comments .comments-link-grid.comments-link-grid--compact { grid-template-columns: minmax(0, 1fr); }
