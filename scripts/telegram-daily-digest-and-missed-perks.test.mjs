@@ -137,11 +137,10 @@ check(communityHtml.includes('Missed perks history builds over time.'), 'Missed 
 check(!communityHtml.toLowerCase().includes('missed history clears daily'), 'no copy contains "missed history clears daily" (case-insensitive)');
 check(factionPageJs.includes('fcp-daily-digest') && factionPageJs.includes('fcp-missed-perks'), 'faction chamber renderer includes missed/digest hooks');
 check(bridgeJs.includes('MOONBOYS_ROGUELITE_DAILY_STATE') && bridgeJs.includes('MOONBOYS_ROGUELITE_MISSED_HISTORY'), 'bridge wires roguelite daily/missed caches');
-check(gamesHtml.includes('roguelite-daily-digest-summary'), 'arcade hub includes daily signal summary hook');
-check(gamesHtml.includes('DAILY_DIGEST_SUMMARY_POLL_MS') && gamesHtml.includes('5 * 60 * 1000') && !gamesHtml.includes('setInterval(renderDailyDigestSummary, 30000)'), 'arcade hub daily digest polling reduced to at least 5 minutes');
-check(gamesHtml.includes("document.addEventListener('visibilitychange'"), 'arcade hub pauses digest polling while hidden');
-check(gamesHtml.includes('scheduleDailyDigestSummaryRefresh') && gamesHtml.includes('DAILY_DIGEST_SUMMARY_DEBOUNCE_MS'), 'arcade hub uses debounced digest summary refresh scheduler');
-check(gamesHtml.includes('digestSummaryRequestInFlight') && gamesHtml.includes('digestSummaryRefreshQueued'), 'arcade hub guards digest refresh requests with in-flight/queued state');
+check(!gamesHtml.includes('roguelite-daily-digest-summary') && !gamesHtml.includes('renderDailyDigestSummary'), 'Games hub does not duplicate private daily digest and browser-local counts');
+check(!gamesHtml.includes('DAILY_DIGEST_SUMMARY_POLL_MS') && !gamesHtml.includes('digestSummaryRequestInFlight'), 'Games hub has no unnecessary daily digest timers or concurrent personal-state polling');
+check(gamesHtml.includes('href="/my-moonboy.html"'), 'Games hub links to verified personal mission and daily-state ownership');
+check(communityHtml.includes('battle-missed-perks-history'), 'Battle Chamber retains actual missed history and Daily WTF activity');
 
 console.log('\n[7] Safety checks');
 const FORBIDDEN = [
