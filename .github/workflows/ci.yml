@@ -62,7 +62,7 @@ jobs:
           CANON_PROSE_CHANGE_APPROVED: ${{ steps.canon_approval.outputs.approved || '0' }}
         run: npm run ci:wiki
 
-      - name: Run wiki tests (explicit generated PR dispatch)
+      - name: Run wiki tests explicitly dispatched
         if: steps.wiki_changes.outputs.should_run == 'true' && github.event_name == 'workflow_dispatch'
         env:
           BASE_SHA: ${{ inputs.base_sha }}
