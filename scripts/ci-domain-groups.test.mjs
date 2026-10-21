@@ -48,7 +48,32 @@ const ciRunLines = workflow
   .map((line) => line.trim())
   .filter((line) => line.startsWith('run:'));
 const domainRunLines = ciRunLines.filter((line) => line.startsWith('run: npm run ci:'));
-assert.equal(domainRunLines.length, expectedScripts.length, 'workflow must run one grouped command per CI domain job');
+// Generated-PR dispatch uses a separate, mutually exclusive Wiki step so the
+// original push/PR provenance expression stays unchanged.
+assert.equal(domainRunLines.length, expectedScripts.length + 1,
+  'five CI domains plus a mutually exclusive dispatch Wiki command are required');
+for (const scriptName of expectedScripts.filter(name => name !== 'ci:wiki')) {
+  assert.equal(domainRunLines.filter(line => line === 'run: npm run ' + scriptName).length, 1,
+    scriptName + ' must be declared exactly once');
+}
+assert.equal(domainRunLines.filter(line => line === 'run: npm run ci:wiki').length, 2,
+  'Wiki requires one normal and one mutually exclusive dispatch command');
+const ordinaryWiki = getStepBlock(workflow, 'Run wiki tests');
+const dispatchedWiki = getStepBlock(workflow, 'Run wiki tests (explicit generated PR dispatch)');
+assert.ok(ordinaryWiki.includes("github.event_name != 'workflow_dispatch'") &&
+  dispatchedWiki.includes("github.event_name == 'workflow_dispatch'"),
+  'normal and dispatched Wiki test steps cannot run on the same event');
+assert.ok(dispatchedWiki.includes('BASE_SHA: ${{ inputs.base_sha }}') &&
+  dispatchedWiki.includes('HEAD_SHA: ${{ github.sha }}') &&
+  dispatchedWiki.includes("CANON_PROSE_CHANGE_APPROVED: ${{ steps.canon_approval.outputs.approved || '0' }}"),
+  'dispatch Wiki verification must use exact base/head SHA and the existing canon-approval gate');
+const normalGraphWiki = getStepBlock(graphWorkflow, 'Validate regenerated wiki surfaces');
+const dispatchedGraphWiki = getStepBlock(graphWorkflow, 'Validate regenerated wiki surfaces (explicit generated PR dispatch)');
+assert.ok(normalGraphWiki.includes("github.event_name != 'workflow_dispatch'") &&
+  dispatchedGraphWiki.includes("github.event_name == 'workflow_dispatch'") &&
+  dispatchedGraphWiki.includes('BASE_SHA: ${{ inputs.base_sha }}') &&
+  dispatchedGraphWiki.includes('HEAD_SHA: ${{ github.sha }}'),
+  'graph Wiki verification must retain normal authority and precise dispatch heads');
 assert.equal(
   ciRunLines.some((line) => /^run:\s+npm run test:/.test(line) || /^run:\s+node scripts\/(?!(?:ci-change-scope|resolve-canon-prose-approval)\.mjs\b)/.test(line)),
   false,
