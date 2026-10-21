@@ -146,7 +146,10 @@ export function actionPlanTask(input) {
     },
     evidence: {
       kind: evidenceKind,
-      verified_completion: evidenceKind === 'server_receipt' && input.evidence?.verified_completion === true,
+      // Only an explicit server-backed true survives normalization. Never
+      // infer completion from a status, progress flag or client/advisory kind.
+      verified_completion: ['server_receipt', 'server_projection'].includes(evidenceKind) &&
+        input.evidence?.verified_completion === true,
       source_event_ref: input.evidence?.source_event_ref ? safeText(input.evidence.source_event_ref, 100) : null,
       accepted_at: isoOrNull(input.evidence?.accepted_at),
     },
