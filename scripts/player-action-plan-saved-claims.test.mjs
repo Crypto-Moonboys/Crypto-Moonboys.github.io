@@ -4,6 +4,7 @@ import { test } from 'node:test';
 import { projectSavedMoonpetClaims, SAVED_CLAIM_KEYS } from '../workers/moonboys-api/player-action-plan/moonpet-saved-claims.js';
 import { getMoonpetSeasonKey } from '../workers/moonboys-api/pets/season-authority.js';
 import { seasonFinaleKey } from '../workers/moonboys-api/pets/completion-policy.js';
+import { actionPlanTask } from '../workers/moonboys-api/player-action-plan/schema.js';
 
 const NOW = new Date('2026-10-21T12:00:00Z');
 const OWNER = 'signed-owner';
@@ -184,6 +185,31 @@ test('separate malformed Finale wins retain unique opaque task IDs with no pet a
   assert.ok(finales.every(t => t.task_id.startsWith('moonpet.finale-claim:') &&
     !t.task_id.includes('bad-key') &&
     !['pet-1','pet-2','pet-3'].some(id => t.task_id.includes(':' + id + ':'))));
+});
+
+test('long malformed competition periods cannot truncate away distinct opaque Finale IDs', async () => {
+  const veryLongPeriod = 'unverified-quarter-' + 'x'.repeat(300);
+  const finaleRows = ['first-pet', 'second-pet'].map(pet_id => ({
+    pet_id, season_key: SEASON, competition_season_key: veryLongPeriod,
+    reward_key: 'unverified-key', status: 'won', owner_verified: 0,
+    defeated_at: NOW.toISOString(), claimed_at: null, receipt_status: null,
+  }));
+  const a = await fixture({ finaleRows }).project();
+  const b = await fixture({ finaleRows }).project();
+  const first = get(a, 'finale').map(actionPlanTask);
+  const second = get(b, 'finale').map(actionPlanTask);
+  assert.equal(first.length, 2);
+  assert.equal(new Set(first.map(row => row.task_id)).size, 2,
+    'schema truncation must never collapse distinct malformed Finale claims');
+  assert.deepEqual(first.map(row => row.task_id), second.map(row => row.task_id),
+    'opaque identities must be stable across signed refreshes');
+  assert.ok(first.every(row => row.task_id.length < 220 &&
+    /^moonpet[.]finale-claim:opaque:[a-f0-9]{24}$/u.test(row.task_id)),
+    'the task ID is source-key + bounded opaque hash, never raw period or pet ID');
+  assert.ok(first.every(row => row.status === 'blocked' &&
+    row.source_pet_ref === null && row.evidence.verified_completion === false));
+  assert.ok(first.every(row => row.period.kind === 'saved_claim'),
+    'the source period must remain available as separate bounded metadata');
 });
 
 test('Saved Status destinations preserve supported MoonPet screen and focus in the navigable URL', async () => {
