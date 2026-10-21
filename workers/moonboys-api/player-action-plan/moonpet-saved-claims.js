@@ -68,6 +68,11 @@ export async function projectSavedMoonpetClaims({
   if (seasons && claims && receipts) {
     // A bounded receipt read cannot prove an absent payout when truncated.
     const truncated = seasons.length >= 16 || claims.length >= 100 || receipts.length >= 100;
+    // The canonical claim path needs the selected original pet and its saved
+    // lifecycle. Any owned roster row is insufficient if the selected pet's
+    // lifecycle record was missing from the outer-joined source projection.
+    const selectedPet = !rosterUnavailable ? pets.find(pet => count(pet.is_active) === 1) : null;
+    const selectedLifecycleVerified = Boolean(selectedPet?.lifecycle_phase);
     const saved = new Map(claims.map(x => [x.season_key + ':' + x.tier_id, x]));
     const paid = new Map(receipts.map(x => [x.idempotency_key, x]));
     const periods = new Map(seasons.map(x => [String(x.season_key), count(x.season_xp)]));
@@ -93,15 +98,22 @@ export async function projectSavedMoonpetClaims({
         if (!earned && !receipt && !ack && period !== currentSeason) continue;
         const awarded = receipt?.status === 'awarded';
         const pending = receipt?.status === 'pending';
-        const blocked = truncated || (ack && !awarded) || pending || rosterUnavailable || !pets.length;
+        const blocked = truncated || (ack && !awarded) || pending ||
+          rosterUnavailable || !selectedLifecycleVerified;
         const ready = earned && !receipt && !ack && !blocked;
         add('tiers', awarded ? 'claimed' : ready ? 'claim_ready' : blocked ? 'blocked' : 'in_progress', {
           title: tier.title + ' — ' + period, period, suffix: tier.tier_id, priority: ready ? 42 : 760,
+          description: 'Listed tier amounts are base rewards only. Actual Style Tokens may include the selected pet’s evolution-stage bonus; MoonPet confirms the final amount.',
           blocking: truncated ? 'season_receipt_history_partial' : pending ? 'season_reward_settlement_pending' : ack && !awarded
             ? 'season_reward_receipt_unverified' : rosterUnavailable ? 'owned_roster_unavailable'
-              : !pets.length ? 'moonpet_required' : null,
+              : !selectedPet ? 'selected_moonpet_required'
+                : !selectedLifecycleVerified ? 'selected_pet_lifecycle_unverified' : null,
           progress: { current: xp, target: tier.required_xp, unit: 'season_xp' },
-          reward: payout(tier.reward), receipt: awarded, acceptedAt: awarded ? receipt.awarded_at : null,
+          // The canonical payout adds current evolution stage to Style Tokens.
+          // Without reading that live source here, the base reward is not an
+          // exact confirmed payout, even when the tier itself is claim-ready.
+          reward: reward(Object.entries(tier.reward).map(([type, amount]) => ({ type, amount })), false),
+          receipt: awarded, acceptedAt: awarded ? receipt.awarded_at : null,
         });
       }
     }
@@ -117,9 +129,26 @@ export async function projectSavedMoonpetClaims({
     " LEFT JOIN telegram_pet_instances i ON i.pet_id=f.pet_id AND i.telegram_id=f.telegram_id AND i.season_key=f.season_key" +
     " LEFT JOIN telegram_pet_season_slots s ON s.pet_id=i.pet_id AND s.telegram_id=i.telegram_id" +
     " AND s.season_key=i.season_key AND s.slot_number=i.slot_number" +
-    " WHERE f.telegram_id=? AND f.status='won' ORDER BY f.competition_season_key DESC LIMIT 60", [ownerId]);
+    " WHERE f.telegram_id=? AND f.status='won' ORDER BY f.competition_season_key DESC LIMIT 61", [ownerId]);
+  // Fetch one extra row to detect a truncated source history. Older saved
+  // winnings must not silently disappear behind a fully-live claim source.
+  const finalePartial = Boolean(finales && finales.length > 60);
   status('finale', finales, 'original_pet_finale_and_reward_receipt');
-  if (finales?.length) for (const f of finales) {
+  if (finalePartial && !failures.has(SAVED_CLAIM_KEYS.finale)) {
+    sourceStatuses[SAVED_CLAIM_KEYS.finale] = sourceStatus('live', {
+      adapter: 'original_pet_finale_and_reward_receipt',
+      partial: true,
+      historical_pending_not_listed: 'unknown',
+      historical_rows_in_preview: 60,
+    });
+    add('finale', 'preview', {
+      title: 'Additional saved Finale victories need review',
+      description: 'More than 60 saved victories exist. Older payouts are not individually checked in this bounded Action Plan read. Review MoonPet Saved Status.',
+      period: 'historical_overflow', suffix: 'overflow', health: 'preview',
+      blocking: 'saved_finale_history_partial', priority: 820,
+    });
+  }
+  if (finales?.length) for (const f of finales.slice(0, 60)) {
     const valid = count(f.owner_verified) === 1 && Boolean(f.defeated_at && f.reward_key);
     const awarded = f.receipt_status === 'awarded';
     const pending = f.receipt_status === 'pending';
