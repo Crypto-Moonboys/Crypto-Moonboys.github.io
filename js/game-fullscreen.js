@@ -1074,7 +1074,7 @@
     var gate = getIdentityApi();
     var sync = gate && typeof gate.getSyncState === 'function' ? gate.getSyncState() : null;
     var linked = !!(sync ? sync.linked : isLinkedReady());
-    var baseIdentity = linked ? ('Linked as: ' + (d.identityLabel || getLinkedIdentityLabel())) : 'Telegram not linked \u2014 run /gklink';
+    var baseIdentity = linked ? ('Linked as: ' + (d.identityLabel || getLinkedIdentityLabel())) : 'Telegram sign-in required for saved scores';
     setSyncIdentityText(baseIdentity);
     lastSubmissionState = state;
     switch (state) {
@@ -1084,7 +1084,7 @@
         if (!suppressDispatch) {
           dispatchUiState('moonboys:sync-state', { state: 'good', reason: state, source: 'game-fullscreen' });
         }
-        setActionHtml('<a class="sync-action-link" href="/gkniftyheads-incubator.html">Open sync instructions</a>');
+        setActionHtml('');
         return;
       case 'auto_submitting':
         setSyncVisualState(true);
@@ -1115,27 +1115,27 @@
         return;
       case 'auth_expired':
         setSyncVisualState(false);
-        setSyncStatusText('Sync expired — run /gklink again.');
+        setSyncStatusText('Telegram session expired. Sign in again before submitting a score.');
         if (!suppressDispatch) {
           dispatchUiState('moonboys:sync-state', { state: 'bad', reason: state, source: 'game-fullscreen' });
         }
-        setActionHtml('<a class="sync-action-link sync-action-link--danger" href="/gkniftyheads-incubator.html">Run /gklink</a>');
+        setActionHtml('<a class="sync-action-link sync-action-link--danger" href="/my-moonboy.html">Open My Moonboy</a>');
         return;
       case 'relink_required':
         setSyncVisualState(false);
-        setSyncStatusText('Re-link required — run /gklink again to refresh sync.');
-        setActionHtml('<a class="sync-action-link sync-action-link--danger" href="/gkniftyheads-incubator.html">Run /gklink</a>');
+        setSyncStatusText('Telegram account connection needs refreshing before competitive play.');
+        setActionHtml('<a class="sync-action-link sync-action-link--danger" href="/my-moonboy.html">Open My Moonboy</a>');
         return;
       case 'sync_error':
         setSyncVisualState(false);
-        setSyncStatusText('Sync failed. Retry, then run /gklink again if needed.');
-        setActionHtml('<a class="sync-action-link" href="/games/">Retry Sync</a> <a class="sync-action-link" href="/gkniftyheads-incubator.html">Open sync instructions</a>');
+        setSyncStatusText('Score sync failed. Check your account, then try a new run.');
+        setActionHtml('<a class="sync-action-link" href="/my-moonboy.html">Check My Moonboy account</a>');
         return;
       case 'local_only':
       default:
         setSyncVisualState(false);
-        setSyncStatusText('Unsynced play stays local to this browser. Run /gklink in Telegram to store Arcade XP and Block Topia progression server-side.');
-        setActionHtml('<a class="sync-action-link sync-action-link--danger" href="/gkniftyheads-incubator.html">Run /gklink</a>');
+        setSyncStatusText('Competitive scores and Arcade XP require verified Telegram sign-in and server acceptance. Unverified runs are not queued for later rewards.');
+        setActionHtml('<a class="sync-action-link sync-action-link--danger" href="/my-moonboy.html">Open My Moonboy</a>');
     }
   }
 
