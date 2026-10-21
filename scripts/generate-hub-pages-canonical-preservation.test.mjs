@@ -6,7 +6,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 // In scripts/, run with no argument. An optional repository root also permits
 // running this test before installing the test file into the repository.
@@ -25,12 +25,15 @@ test('hub generation preserves reviewed hubs and maintains unowned hubs', () => 
     // changes through its existing __dirname-based path resolution.
     const generator = path.join(fixtureRoot, 'scripts', 'generate-hub-pages.js');
     fs.copyFileSync(path.join(repositoryRoot, 'scripts', 'generate-hub-pages.js'), generator);
-    // Node resolves this symlink to the production module, so its imports and
-    // brand-canon reads use the real dependency tree without copying/stubbing it.
-    fs.symlinkSync(
-      fs.realpathSync(path.join(repositoryRoot, 'scripts', 'generate-wiki-content-state.mjs')),
+    // The generator imports its canonical-content parser as a sibling.
+    // Forward that import to the REAL module (and its real dependency tree)
+    // through a tiny ESM re-export rather than a Windows-restricted symlink.
+    // This is not a stub: the production parser is still exercised unchanged.
+    const canonicalModule = pathToFileURL(fs.realpathSync(path.join(
+      repositoryRoot, 'scripts', 'generate-wiki-content-state.mjs'))).href;
+    fs.writeFileSync(
       path.join(fixtureRoot, 'scripts', 'generate-wiki-content-state.mjs'),
-      'file',
+      'export { countCanonicalContentBlocks } from ' + JSON.stringify(canonicalModule) + ';\\n',
     );
 
     // Two separate qualifying clusters exercise the supported-hub write path.
