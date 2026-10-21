@@ -211,6 +211,73 @@ for (const width of [360, 390, 1280]) {
   });
 }
 
+test('Claims tab retains blocked saved season-tier and Finale payouts without presenting them as claim-ready', async () => {
+  const f = await setup({width:390,height:844}, true);
+  f.setPlanFactory((owner, cursor) => {
+    const result = plan(owner, cursor);
+    if (cursor) return result;
+    const blockedTier = {
+      ...result.tasks[0],
+      source_key: 'moonpet.season-tier-claims',
+      task_id: 'moonpet.season-tier-claims:pet-s2026-003:street',
+      title: 'Historical season tier payout pending',
+      status: 'blocked', availability: 'blocked',
+      blocking_reason_code: 'season_reward_settlement_pending',
+      owner_scope: 'account', source_pet_ref: null,
+      period: {kind:'saved_claim',key:'pet-s2026-003',origin_timezone:'UTC'},
+      reward: {confirmed:false,items:[]},
+      evidence: {kind:'server_projection',verified_completion:false},
+    };
+    const blockedFinale = {
+      ...result.tasks[0],
+      source_key: 'moonpet.finale-claim',
+      task_id: 'moonpet.finale-claim:pet-s2026-003:original',
+      title: 'Historical Finale settlement awaiting proof',
+      status: 'blocked', availability: 'blocked',
+      blocking_reason_code: 'finale_settlement_pending',
+      owner_scope: 'original_pet',
+      period: {kind:'saved_claim',key:'pet-s2026-003',origin_timezone:'UTC'},
+      reward: {confirmed:false,items:[]},
+      evidence: {kind:'server_projection',verified_completion:false},
+    };
+    const unrelated = {
+      ...result.tasks[0],
+      source_key: 'faction.daily-missions',
+      task_id: 'faction.daily-missions:blocked',
+      title: 'Not a claim source',
+      status: 'blocked', availability: 'blocked',
+      blocking_reason_code: 'not_eligible',
+    };
+    return {...result,
+      tasks:[...result.tasks,blockedTier,blockedFinale,unrelated],
+      pagination:{...result.pagination,next_cursor:null},
+      source_status:{...result.source_status,
+        'moonpet.season-tier-claims':{state:'live'},
+        'moonpet.finale-claim':{state:'live'}},
+    };
+  });
+  try {
+    await f.page.goto(SITE + '/my-moonboy.html', {waitUntil:'domcontentloaded'});
+    await f.page.locator('#mm-next .mm-task').first().waitFor();
+    await f.page.locator('[data-mm-tab="claims"]').click();
+    const results = f.page.locator('#mm-results');
+    await results.getByText('Historical season tier payout pending').waitFor();
+    assert.match(await results.innerText(), /Historical Finale settlement awaiting proof/u);
+    assert.match(await results.innerText(), /season reward settlement pending|season_reward_settlement_pending/iu);
+    assert.doesNotMatch(await results.innerText(), /Not a claim source/u);
+    assert.equal(await results.getByText('Historical season tier payout pending').count(),1);
+    assert.equal(await f.page.locator('#mm-claim-count').textContent(),'1',
+      'a blocked settlement is discoverable, not an extra verified ready claim');
+    await f.page.evaluate(() => {
+      window.__mmTest.linked = false;
+      window.dispatchEvent(new CustomEvent('moonboys:identity-change'));
+    });
+    assert.equal(await f.page.locator('#mm-private').isHidden(),true);
+    assert.equal(await f.page.locator('#mm-results').textContent(),'');
+    assert.equal(f.errors.length,0,f.errors.join('\n'));
+  } finally { await f.browser.close(); }
+});
+
 test('PR3 logout, account switch, expired auth and stale source never expose another player', async () => {
   const f = await setup({width:390,height:844}, false);
   try {
@@ -949,13 +1016,13 @@ test('My Moonboy public guide separates Gems from Moon Crystals without exposing
   } finally { await f.browser.close(); }
 });
 
-test('My Moonboy signed checklist includes every source and saved-only claim class and clears on logout', async () => {
+test('My Moonboy signed checklist includes all registered sources and remaining source limitations and clears on logout', async () => {
   const f = await setup({width:390,height:844}, true);
   try {
     await f.page.goto(SITE + '/my-moonboy.html', {waitUntil:'domcontentloaded'});
     await f.page.locator('#mm-checklist .mm-checklist-source').first().waitFor({state:'attached'});
-    assert.equal(await f.page.locator('#mm-checklist .mm-checklist-source').count(), 28);
-    assert.equal(await f.page.locator('#mm-checklist [data-mm-checklist-key="gap:saved-status"] .mm-checklist-gaps li').count(), 5);
+    assert.equal(await f.page.locator('#mm-checklist .mm-checklist-source').count(), 33);
+    assert.equal(await f.page.locator('#mm-checklist [data-mm-checklist-key="gap:saved-status"] .mm-checklist-gaps li').count(), 3);
     assert.equal(await f.page.locator('#mm-checklist [data-mm-checklist-key="gap:wiki-engagement"] .mm-checklist-gaps li').count(), 6);
     assert.match(await f.page.locator('#mm-checklist [data-mm-checklist-key="gap:wiki-engagement"]').textContent(),
       /Engage|Signal|Cite/u);
@@ -986,7 +1053,7 @@ test('signed checklist labels the source MoonPet/window and preserves the exact 
     assert.match(job, /Source period: saved timer · saved-session · UTC/u);
     assert.doesNotMatch(job, /pap_[a-f0-9]{24}/u, 'opaque source pet ID must not be disclosed');
 
-    // All five Saved Status actions point to the SAME MoonPet game URL.
+    // Remaining Saved Status follow-up actions point to the SAME MoonPet game URL.
     // A source refresh must return keyboard focus to the original claim row.
     const savedLink = f.page.locator('[data-mm-focus-link="saved:weekly_bounty_claim"]');
     await savedLink.focus();

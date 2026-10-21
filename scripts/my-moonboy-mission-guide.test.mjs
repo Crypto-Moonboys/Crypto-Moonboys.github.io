@@ -22,14 +22,14 @@ const ids = [...read('workers/moonboys-api/player-action-plan/sources.js')
   .match(/export const ACTION_PLAN_SOURCE_REGISTRY = Object\.freeze\(\[([\s\S]*?)\]\.map\(/u)[1]
   .matchAll(/^\s*\['([a-z0-9.-]+)'/gmu)].map(x=>x[1]);
 
-test('complete registry checklist exactly tracks every Action Plan source and Saved Status claim gap', () => {
+test('complete registry checklist exactly tracks every Action Plan source and remaining Saved Status limitation', () => {
   const guide = load();
-  assert.equal(ids.length, 28);
+  assert.equal(ids.length, 33);
   assert.equal(new Set(ids).size, ids.length);
   assert.equal(guide.sources.map(x=>x.key).join('|'), ids.join('|'));
   const gaps = parity.mappings.filter(x=>x.parity === 'gap').map(x=>x.saved_status);
-  assert.equal(gaps.length, 5);
-  assert.equal(guide.savedOnly.map(x=>x.key).sort().join('|'), gaps.sort().join('|'));
+  assert.equal(gaps.length, 0);
+  assert.equal(guide.savedOnly.map(x=>x.key).sort().join('|'), 'daily_cache|extra_bounty_claim|weekly_bounty_claim');
   assert.ok(guide.savedOnly.every(x=>x.description && x.label));
 });
 
@@ -77,7 +77,7 @@ test('signed checklist verifies accepted receipts only; absence, preview and sta
   assert.match(el.innerHTML, /advisory only/u);
   assert.match(el.innerHTML, /More tasks exist beyond this page/u);
   assert.match(el.innerHTML, /No task in loaded results; status unknown, not completed/u);
-  assert.equal((el.innerHTML.match(/Check Saved Status/g) || []).length,5);
+  assert.equal((el.innerHTML.match(/Check Saved Status/g) || []).length,3);
   assert.doesNotMatch(el.innerHTML, /<script>|onclick=|type="checkbox"/u);
   assert.match(el.innerHTML, /&lt;script&gt;alert\(1\)&lt;\/script&gt;/u);
   guide.renderChecklist(el,[valid],{stale:true,offline:true});
@@ -248,12 +248,12 @@ test('saved claim and Wiki links have per-row stable focus keys despite sharing 
     .map(x => x[1]);
   const sources = [...html.matchAll(/data-mm-focus-link="source:([a-z0-9.-]+)"/gu)]
     .map(x => x[1]);
-  assert.equal(saved.length, 5);
-  assert.equal(new Set(saved).size, 5);
+  assert.equal(saved.length, 3);
+  assert.equal(new Set(saved).size, 3);
   assert.equal(wiki.length, 6);
   assert.equal(new Set(wiki).size, 6);
-  assert.equal(sources.length, 28);
-  assert.equal(new Set(sources).size, 28);
+  assert.equal(sources.length, 33);
+  assert.equal(new Set(sources).size, 33);
   assert.ok(saved.includes('weekly_bounty_claim'));
   assert.ok(wiki.includes('cite'));
   const guideSource = read('js/my-moonboy-mission-guide.js');
