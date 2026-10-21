@@ -23,7 +23,7 @@ test('website guide and About blocks are exactly the shared in-game copy', () =>
   const howTo = read('how-to-play-crypto-moonboy-pets.html');
   const wiki = read('wiki/crypto-moonboy-pets.html');
   assert.ok(normalizedNewlines(howTo).includes(normalizedNewlines(guide.website(guide.sections, 'section'))));
-  assert.ok(normalizedNewlines(wiki).includes(normalizedNewlines(guide.website(guide.about, 'wiki-section')));
+  assert.ok(normalizedNewlines(wiki).includes(normalizedNewlines(guide.website(guide.about, 'wiki-section'))));
   const unsharedWiki = wiki.replace(/<!-- MOONPET_(?:ABOUT|START):BEGIN -->[\s\S]*?<!-- MOONPET_(?:ABOUT|START):END -->/g, '');
   assert.doesNotMatch(unsharedWiki, /choose Delete|Deletion archives|Delete And Start A New Pet/i, 'deletion instructions must stay in the shared guide block');
   const client = read('js/moonpet-mini-app.js');
