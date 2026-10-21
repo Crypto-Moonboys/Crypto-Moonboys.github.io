@@ -182,6 +182,16 @@ export function isImmediateAction(task) {
   return !task.blocking_reason_code && (task.source_health === 'live' || validEmptyOpportunity);
 }
 
+// Keep the signed API's completion totals consistent with My Moonboy's
+// ✅ Completed labels. A claimed/complete status alone (e.g. a client mirror)
+// is not proof of accepted completion.
+export function isVerifiedCompletion(task) {
+  return !!task && ['complete', 'claimed'].includes(task.status) &&
+    task.source_health === 'live' &&
+    ['server_receipt', 'server_projection'].includes(task.evidence?.kind) &&
+    task.evidence.verified_completion === true;
+}
+
 export function summarizeActionPlan(tasks, sourceStatuses, now = new Date()) {
   const count = (statuses) => tasks.filter((task) => statuses.includes(task.status)).length;
   const today = utcDay(now);
@@ -189,13 +199,12 @@ export function summarizeActionPlan(tasks, sourceStatuses, now = new Date()) {
   return {
     eligible_today: tasks.filter((task) => isToday(task)
       && !['blocked', 'preview', 'sync_unavailable'].includes(task.status)).length,
-    completed_today: tasks.filter((task) => isToday(task)
-      && ['complete', 'claimed'].includes(task.status)).length,
+    completed_today: tasks.filter((task) => isToday(task) && isVerifiedCompletion(task)).length,
     claims_ready: count(['claim_ready']),
     ready_count: count(['ready']),
     active_count: count(['active']),
     urgent: tasks.filter((task) => task.priority < 300 && isImmediateAction(task)).length,
-    completed_count: count(['complete', 'claimed']),
+    completed_count: tasks.filter(isVerifiedCompletion).length,
     available_count: tasks.filter((task) => !['blocked', 'expired', 'sync_unavailable', 'preview'].includes(task.status)).length,
     unavailable_sources: Object.values(sourceStatuses).filter((status) => ['migration_pending', 'query_failed', 'unavailable'].includes(status?.state)).length,
   };
