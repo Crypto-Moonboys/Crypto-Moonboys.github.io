@@ -347,6 +347,43 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
     [ownerId], [], failures, ['onboarding.pet-entry']);
   const existingOwner = ownerProfileRows.length > 0;
   const petEntryComplete = existingOwner || pets.length > 0;
+  // PR2: signed account wallet snapshots are separate authorities. Lifetime
+  // Arcade XP is not the spendable balance, and MoonPet currency lives in
+  // the ACCOUNT profile, not in any currently selected/archived pet.
+  // Missing rows, missing migrations and transient D1 failures stay unknown.
+  const economy = {
+    arcade_spendable_xp: null, moon_gold: null,
+    moon_crystals: null, style_tokens: null,
+    arcade_wallet_health: 'unavailable', moonpet_wallet_health: 'unavailable',
+  };
+  try {
+    const rows = await db.all(
+      'SELECT arcade_xp_earned,arcade_xp_spendable,arcade_xp_spent FROM arcade_xp_wallets WHERE telegram_id=? LIMIT 1',
+      [ownerId]);
+    const row = rows[0];
+    const values = row && [row.arcade_xp_earned, row.arcade_xp_spendable, row.arcade_xp_spent];
+    if (values && values.every(value => Number.isSafeInteger(Number(value)) && Number(value) >= 0) &&
+        Number(row.arcade_xp_earned) === Number(row.arcade_xp_spendable) + Number(row.arcade_xp_spent)) {
+      economy.arcade_spendable_xp = Number(row.arcade_xp_spendable);
+      economy.arcade_wallet_health = 'live';
+    } else economy.arcade_wallet_health = row ? 'unavailable' : 'live_empty';
+  } catch {
+    economy.arcade_wallet_health = 'unavailable';
+  }
+  try {
+    const rows = await db.all(
+      'SELECT moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles WHERE telegram_id=? LIMIT 1',
+      [ownerId]);
+    const row = rows[0];
+    const fields = ['moon_gold', 'moon_crystals', 'style_tokens'];
+    if (row && fields.every(key => Number.isSafeInteger(Number(row[key])) && Number(row[key]) >= 0)) {
+      for (const key of fields) economy[key] = Number(row[key]);
+      economy.moonpet_wallet_health = 'live';
+    } else economy.moonpet_wallet_health = row ? 'unavailable' : 'live_empty';
+  } catch {
+    economy.moonpet_wallet_health = 'unavailable';
+  }
+
   if (sourceStatuses['moonpet.adoption-incubation'].state !== 'migration_pending') {
     sourceStatuses['moonpet.adoption-incubation'] = sourceStatus(pets.length ? 'live' : 'live_empty', { adapter: 'active_owned_roster' });
   }
@@ -1185,5 +1222,6 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
     faction: !factionHealthy ? null
       : { joined: Boolean(faction), name: faction ? String(faction.name || '').slice(0, 50) : null },
     lifetime_arcade_xp: failures.has('onboarding.pet-entry') || !arcadeRows.length ? null : lifetimeXp,
+    economy,
   } };
 }
