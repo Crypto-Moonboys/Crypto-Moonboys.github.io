@@ -22,7 +22,7 @@ const ids = [...read('workers/moonboys-api/player-action-plan/sources.js')
   .match(/export const ACTION_PLAN_SOURCE_REGISTRY = Object\.freeze\(\[([\s\S]*?)\]\.map\(/u)[1]
   .matchAll(/^\s*\['([a-z0-9.-]+)'/gmu)].map(x=>x[1]);
 
-test('complete registry checklist exactly tracks every Action Plan source and Saved Status claim gap', () => {
+test('complete registry checklist exactly tracks every Action Plan source and remaining Saved Status limitation', () => {
   const guide = load();
   assert.equal(ids.length, 33);
   assert.equal(new Set(ids).size, ids.length);
@@ -77,7 +77,7 @@ test('signed checklist verifies accepted receipts only; absence, preview and sta
   assert.match(el.innerHTML, /advisory only/u);
   assert.match(el.innerHTML, /More tasks exist beyond this page/u);
   assert.match(el.innerHTML, /No task in loaded results; status unknown, not completed/u);
-  assert.equal((el.innerHTML.match(/Check Saved Status/g) || []).length,5);
+  assert.equal((el.innerHTML.match(/Check Saved Status/g) || []).length,3);
   assert.doesNotMatch(el.innerHTML, /<script>|onclick=|type="checkbox"/u);
   assert.match(el.innerHTML, /&lt;script&gt;alert\(1\)&lt;\/script&gt;/u);
   guide.renderChecklist(el,[valid],{stale:true,offline:true});
