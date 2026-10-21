@@ -14,7 +14,7 @@ function fixture(options = {}) {
     cache: options.cache ? [{ event_key: 'chest-accepted', created_at: NOW.toISOString() }] : [],
     season: options.seasonXp == null ? [] : [{ season_key: SEASON, season_xp: options.seasonXp }],
     claim: options.tierAcknowledged ? [{ season_key: SEASON, tier_id: 'street', claimed_at: NOW.toISOString() }] : [],
-    receipt: options.tierReceipt ? [{ idempotency_key: 'season_reward:' + OWNER + ':' + SEASON + ':street',
+    receipt: options.tierReceipt ? [{ idempotency_key: 'season_reward:' + OWNER + ':' + (options.receiptSeason || SEASON) + ':street',
       status: options.tierReceipt, awarded_at: NOW.toISOString() }] : [],
     finale: options.finale ? [{
       pet_id: 'secret-pet', season_key: 'pet-s2026-004', competition_season_key: SEASON,
@@ -87,6 +87,17 @@ test('only awarded receipts are claimed; missing roster blocks fresh season-tier
   assert.equal(get(awarded, 'finale')[0].status, 'claimed');
   const missing = await fixture({ seasonXp: 500, noPets: true }).project();
   assert.equal(get(missing, 'tiers').find(x => x.task_id.endsWith(':street')).status, 'blocked');
+});
+
+test('an awarded historical tier survives when its old season XP aggregate is missing', async () => {
+  const old = 'pet-s2026-003';
+  const f = fixture({ tierReceipt: 'awarded', receiptSeason: old });
+  const tasks = await f.project();
+  const claimed = get(tasks, 'tiers').find(x => x.period.key === old && x.task_id.endsWith(':street'));
+  assert.ok(claimed, 'receipt-only historical season must not disappear');
+  assert.equal(claimed.status, 'claimed');
+  assert.equal(claimed.evidence.verified_completion, true);
+  assert.equal(f.statuses[SAVED_CLAIM_KEYS.tiers].state, 'live');
 });
 
 test('source failures and unverified bounty progress cannot produce badges or claimed receipts', async () => {
