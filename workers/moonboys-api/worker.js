@@ -1,3 +1,4 @@
+import { createPetStateTimings, NO_PET_STATE_TIMINGS } from './pets/state-timings.js';
 import { capturePetEconomy, assertPetEconomy, assertPetEconomySource } from './pets/economic-projection.js';
 import { submitMoonpetRadioRequest } from './pets/radio-requests.js';
 import { forwardRadioRequestsToGroup } from './pets/radio-group-delivery.js';
@@ -10395,7 +10396,12 @@ function assertPetProjectionPeriods(now, { guidance, missions, slots, journey, f
 
 async function buildPetMiniAppCoreState(db, telegramId, options = {}) {
   const now = options.now || new Date();
-  if (!options.prepared) await preparePetMiniAppState(db, telegramId, now);
+  const timings = options.timings || NO_PET_STATE_TIMINGS;
+  if (!options.prepared) await timings.measure('d1_bootstrap', () => preparePetMiniAppState(db, telegramId, now));
+  return timings.measure('pet_state_projection', () => projectPetMiniAppCoreState(db, telegramId, options, now, timings));
+}
+
+async function projectPetMiniAppCoreState(db, telegramId, options, now, timings) {
   const economy = options.economy ?? await capturePetEconomy(db, telegramId);
   const petRaw = options.petRaw || await getPetProfile(db, telegramId, false, now);
   if (!petRaw) {
@@ -10472,8 +10478,10 @@ async function buildPetMiniAppCoreState(db, telegramId, options = {}) {
   const careCooldowns = buildPetCareCooldowns(recentCare.results || [], now);
   const specialCooldowns = getPetSpecialActionCooldownEntriesFromState(specialActions);
   assertPetProjectionPeriods(now, { slots: seasonSlots });
-  await assertPetProjectionSource(db, telegramId, petRaw, seasonSlots, lifecycleScope);
-  if (!options.economy) await assertPetEconomy(db, telegramId, economy);
+  await timings.measure('ownership_verification', async () => {
+    await assertPetProjectionSource(db, telegramId, petRaw, seasonSlots, lifecycleScope);
+    if (!options.economy) await assertPetEconomy(db, telegramId, economy);
+  });
   const guidance = {
     pet: canonicalPet,
     identity: identityProxy,
@@ -10532,7 +10540,7 @@ async function buildPetMiniAppCoreState(db, telegramId, options = {}) {
 
 // Missions reuses HOME authority and only projects the systems its panels need.
 // The caller has already run the same ordered recovery passes as full state.
-async function buildPetMiniAppMissionsState(db, telegramId, petRaw, now, economy) {
+async function buildPetMiniAppMissionsState(db, telegramId, petRaw, now, economy, timings = NO_PET_STATE_TIMINGS) {
   const achievementScope = createDisplayedPetScope(db, telegramId, petRaw.pet_id, petRaw.season_key);
   const corePromise = buildPetMiniAppCoreState(db, telegramId, { prepared: true, petRaw, now, economy, skipHouse: true });
   const [core, missions, achievements, contracts, seasonFinales, progression] = await Promise.all([
@@ -10565,8 +10573,10 @@ async function buildPetMiniAppMissionsState(db, telegramId, petRaw, now, economy
     identity, missions: missions.daily || [], daily_completion: missions.completion || null, achievements,
     achievement_scope: { pet_id: petRaw.pet_id, season_key: petRaw.season_key } };
   assertPetProjectionPeriods(now, { guidance, missions, slots: seasonSlots, journey, finales: seasonFinales });
-  await assertPetProjectionSource(db, telegramId, petRaw, seasonSlots, achievementScope, guidance);
-  await assertPetEconomy(db, telegramId, economy);
+  await timings.measure('ownership_verification', async () => {
+    await assertPetProjectionSource(db, telegramId, petRaw, seasonSlots, achievementScope, guidance);
+    await assertPetEconomy(db, telegramId, economy);
+  });
   return {
     ...core,
     hydration: { mode: 'missions', full: false, modules: ['missions'] },
@@ -10589,7 +10599,7 @@ async function buildPetMiniAppMissionsState(db, telegramId, petRaw, now, economy
 // Passive combat/activity polling is a read projection, not a full recovery,
 // roster, economy or mission refresh. Terminal transitions request full state
 // before the client publishes any reward or wallet changes.
-async function buildPetMiniAppLiveState(db, telegramId, now = new Date()) {
+async function buildPetMiniAppLiveState(db, telegramId, now = new Date(), options = {}) {
   const selected = await findActivePetSlot(db, telegramId);
   if (!selected) return { adopted: false, pet_id: null, hydration: { mode: 'live', full: false }, server_time: now.toISOString() };
   const [arena, arenaQueue, recentArena, kaiju, kaijuQueue, recentKaiju, activity] = await Promise.all([
@@ -10613,7 +10623,7 @@ async function buildPetMiniAppLiveState(db, telegramId, now = new Date()) {
     && (arena.player2_move_locked || String(arena.player2_telegram_id) === 'app')
     || hydratedKaiju?.status === 'selecting' && hydratedKaiju.player1_card_key
       && (hydratedKaiju.mode === 'solo' ? hydratedKaiju.cpu_card_key : hydratedKaiju.player2_card_key));
-  await assertPetProjectionSource(db, telegramId, selected);
+  await (options.timings || NO_PET_STATE_TIMINGS).measure('ownership_verification', () => assertPetProjectionSource(db, telegramId, selected));
   return {
     adopted: true, pet_id: selected.pet_id, season_key: selected.season_key,
     hydration: { mode: 'live', full: false }, recovery_needed: recoveryNeeded,
@@ -10633,14 +10643,22 @@ async function buildPetMiniAppState(db, telegramId, botToken, options = {}) {
   const now = new Date();
   // State preparation owns current-season initialization. Roster projection
   // remains read-only and assumes this authoritative bootstrap already ran.
-  await preparePetMiniAppState(db, telegramId, now);
+  const timings = options.timings || NO_PET_STATE_TIMINGS;
+  await timings.measure('d1_bootstrap', () => preparePetMiniAppState(db, telegramId, now));
+  await timings.measure('state_recovery', () => recoverPetMiniAppState(db, telegramId, now, timings));
+  return timings.measure('pet_state_projection', () => projectPetMiniAppState(db, telegramId, botToken, options, now, timings));
+}
+
+async function recoverPetMiniAppState(db, telegramId, now, timings) {
   await recoverPetStandardRunEndings(db, telegramId, '', PET_STATE_RECOVERY_LIMITS.standard_endings).catch((error) => {
     logApiFailure('pet_standard_run_recovery_failed', { message: error?.message || String(error) });
   });
-  const recoveredEndings = await recoverDailyMoonRunEndings(db, telegramId, now, { endings: PET_STATE_RECOVERY_LIMITS.daily_endings, records: PET_STATE_RECOVERY_LIMITS.daily_records });
-  for (const ending of recoveredEndings) if (ending.accepted) {
-    await recordWeeklyJourneyFromDailyMoonRunTerminal(db, telegramId, ending.daily_run.run_id, ending.daily_run.status);
-  }
+  await timings.measure('daily_settlement', async () => {
+    const recoveredEndings = await recoverDailyMoonRunEndings(db, telegramId, now, { endings: PET_STATE_RECOVERY_LIMITS.daily_endings, records: PET_STATE_RECOVERY_LIMITS.daily_records });
+    for (const ending of recoveredEndings) if (ending.accepted) {
+      await recordWeeklyJourneyFromDailyMoonRunTerminal(db, telegramId, ending.daily_run.run_id, ending.daily_run.status);
+    }
+  });
   await recoverPetEquipmentRows(db, telegramId).catch(error => {
     logApiFailure('equipment_ownership_recovery_pending', { telegramId, message: error?.message || String(error) });
   });
@@ -10654,12 +10672,17 @@ async function buildPetMiniAppState(db, telegramId, botToken, options = {}) {
   await recoverPetRuntimeAwards(db, telegramId, applyPetRuntimeCommandAward, { limit: combatRecovery ? PET_STATE_RECOVERY_LIMITS.runtime_after_combat : PET_STATE_RECOVERY_LIMITS.runtime }).catch((error) => {
     logApiFailure('pet_runtime_recovery_failed', { message: error?.message || String(error) });
   });
-  await recoverPetWeeklyBossVictories(db, telegramId, finishPetWeeklyBossVictory, PET_STATE_RECOVERY_LIMITS.weekly_bosses).catch((error) => {
-    logApiFailure('pet_weekly_boss_recovery_failed', { message: error?.message || String(error) });
+  await timings.measure('weekly_settlement', async () => {
+    await recoverPetWeeklyBossVictories(db, telegramId, finishPetWeeklyBossVictory, PET_STATE_RECOVERY_LIMITS.weekly_bosses).catch((error) => {
+      logApiFailure('pet_weekly_boss_recovery_failed', { message: error?.message || String(error) });
+    });
+    await recoverPetJourneyAwards(db, telegramId, { source_limit: PET_STATE_RECOVERY_LIMITS.journey_sources, award_limit: PET_STATE_RECOVERY_LIMITS.journey_awards }).catch((error) => {
+      logApiFailure('pet_journey_recovery_failed', { message: error?.message || String(error) });
+    });
   });
-  await recoverPetJourneyAwards(db, telegramId, { source_limit: PET_STATE_RECOVERY_LIMITS.journey_sources, award_limit: PET_STATE_RECOVERY_LIMITS.journey_awards }).catch((error) => {
-    logApiFailure('pet_journey_recovery_failed', { message: error?.message || String(error) });
-  });
+}
+
+async function projectPetMiniAppState(db, telegramId, botToken, options, now, timings) {
   const economy = await capturePetEconomy(db, telegramId);
   const petRaw = await getPetProfile(db, telegramId, true, now);
   if (!petRaw) {
@@ -10679,7 +10702,7 @@ async function buildPetMiniAppState(db, telegramId, botToken, options = {}) {
     };
   }
 
-  if (options.mode === 'missions') return buildPetMiniAppMissionsState(db, telegramId, petRaw, now, economy);
+  if (options.mode === 'missions') return buildPetMiniAppMissionsState(db, telegramId, petRaw, now, economy, timings);
 
   const pet = serializePet(petRaw);
   const identityScope = createDisplayedPetScope(db, telegramId, petRaw.pet_id, petRaw.season_key);
@@ -10875,8 +10898,10 @@ async function buildPetMiniAppState(db, telegramId, botToken, options = {}) {
     : [];
   const specialActionCooldowns = getPetSpecialActionCooldownEntriesFromState(guidance?.special_actions);
   assertPetProjectionPeriods(now, { guidance, slots: seasonSlots, journey: journeySummary, finales: seasonFinales, leaderboard });
-  await assertPetProjectionSource(db, telegramId, petRaw, seasonSlots, identityScope, guidance);
-  await assertPetEconomy(db, telegramId, economy);
+  await timings.measure('ownership_verification', async () => {
+    await assertPetProjectionSource(db, telegramId, petRaw, seasonSlots, identityScope, guidance);
+    await assertPetEconomy(db, telegramId, economy);
+  });
   return {
     adopted: true,
     hydration: { mode: 'full', full: true, modules: options.mode === 'profile' ? ['profile'] : [] },
@@ -12100,27 +12125,30 @@ export default {
     // Auth is accepted only in the POST body. Telegram Mini App initData is
     // verified against the bot token on every request and never echoed back.
     if (path === '/telegram-pets/app/state' && request.method === 'POST') {
-      let body;
-      try { body = await request.json(); } catch { return err('invalid json', 400); }
-      { const limited = await enforcePublicRateLimit(request, env, '/telegram-pets/app/state', body, corsHeaders, { ipLimit: 90 }); if (limited) return limited; }
-      const verified = await authenticatePetMiniApp(body, env);
-      if (verified.error || !verified.ok) return err(verified.error || 'mini app auth required', verified.status || 401);
-      { const limited = await enforcePublicRateLimit(request, env, '/telegram-pets/app/state', null, corsHeaders, { includeIp: false, telegramId: verified.telegramId }); if (limited) return limited; }
-      await upsertTelegramUser(env.DB, verified.user).catch(() => {});
+      const timings = createPetStateTimings();
+      let outcome = 'failed';
       try {
-        const state = body.mode === 'core'
-          ? await buildPetMiniAppCoreState(env.DB, verified.telegramId)
-          : body.mode === 'live' ? await buildPetMiniAppLiveState(env.DB, verified.telegramId)
-          : await buildPetMiniAppState(env.DB, verified.telegramId, env.TELEGRAM_BOT_TOKEN, { mode: body.mode });
-        return json({ ok: true, state });
-      } catch (error) {
-        logApiFailure('pet_mini_app_state_failed', {
-          telegramId: verified.telegramId,
-          message: error?.message || String(error),
-          cause: error?.cause?.message || null,
-        });
-        return err('mini_app_state_failed', 503);
-      }
+        let body;
+        try { body = await timings.measure('request_parse', () => request.json()); } catch { outcome = 'rejected'; return err('invalid json', 400); }
+        timings.setMode(body?.mode);
+        { const limited = await timings.measure('rate_limit', () => enforcePublicRateLimit(request, env, '/telegram-pets/app/state', body, corsHeaders, { ipLimit: 90 })); if (limited) { outcome = 'rejected'; return limited; } }
+        const verified = await timings.measure('authentication', () => authenticatePetMiniApp(body, env));
+        if (verified.error || !verified.ok) { outcome = 'rejected'; return err(verified.error || 'mini app auth required', verified.status || 401); }
+        { const limited = await timings.measure('rate_limit', () => enforcePublicRateLimit(request, env, '/telegram-pets/app/state', null, corsHeaders, { includeIp: false, telegramId: verified.telegramId })); if (limited) { outcome = 'rejected'; return limited; } }
+        await timings.measure('user_bootstrap', () => upsertTelegramUser(env.DB, verified.user)).catch(() => {});
+        try {
+          const state = body.mode === 'core'
+            ? await buildPetMiniAppCoreState(env.DB, verified.telegramId, { timings })
+            : body.mode === 'live' ? await timings.measure('pet_state_projection', () => buildPetMiniAppLiveState(env.DB, verified.telegramId, new Date(), { timings }))
+            : await buildPetMiniAppState(env.DB, verified.telegramId, env.TELEGRAM_BOT_TOKEN, { mode: body.mode, timings });
+          const response = await timings.measure('response_serialization', () => json({ ok: true, state }));
+          outcome = 'completed';
+          return response;
+        } catch (error) {
+          logApiFailure('pet_mini_app_state_failed', { category: 'state_unavailable' });
+          return err('mini_app_state_failed', 503);
+        }
+      } finally { timings.finish(outcome); }
     }
 
     if (path === '/telegram-pets/app/leaderboard' && request.method === 'POST') {
