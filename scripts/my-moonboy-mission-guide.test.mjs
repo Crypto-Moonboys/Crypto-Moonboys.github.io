@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { isVerifiedCompletion } from '../workers/moonboys-api/player-action-plan/schema.js';
 import { test } from 'node:test';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -72,8 +73,8 @@ test('signed checklist verifies accepted receipts only; absence, preview and sta
   const advisory={task_id:'preview',source_key:'faction.daily-missions',title:'Browser mission',
     status:'complete',source_health:'live',evidence:{kind:'client_mirror',verified_completion:false}};
   guide.renderChecklist(el,[valid,advisory],{topActions:[valid],moreAvailable:true});
-  assert.match(el.innerHTML, /1 receipt-verified \/ 1 loaded task/u);
-  assert.match(el.innerHTML, /✓/u);
+  assert.match(el.innerHTML, /1 verified complete \/ 1 loaded task/u);
+  assert.match(el.innerHTML, /✅ Completed/u);
   assert.match(el.innerHTML, /advisory only/u);
   assert.match(el.innerHTML, /More tasks exist beyond this page/u);
   assert.match(el.innerHTML, /No task in loaded results; status unknown, not completed/u);
@@ -81,8 +82,54 @@ test('signed checklist verifies accepted receipts only; absence, preview and sta
   assert.doesNotMatch(el.innerHTML, /<script>|onclick=|type="checkbox"/u);
   assert.match(el.innerHTML, /&lt;script&gt;alert\(1\)&lt;\/script&gt;/u);
   guide.renderChecklist(el,[valid],{stale:true,offline:true});
-  assert.doesNotMatch(el.innerHTML, /✓/u);
+  assert.doesNotMatch(el.innerHTML, /✅ Completed/u);
   assert.match(el.innerHTML, /historical only/u);
+});
+
+test('browser completion predicate matches the Worker source authority exactly', () => {
+  const guide=load();
+  for(const status of ['ready','active','in_progress','waiting','blocked','complete','claim_ready',
+    'claimed','expired','sync_unavailable','preview']) {
+    for(const kind of ['server_receipt','server_projection','client_mirror','schedule_preview']) {
+      for(const health of ['live','live_empty','query_failed','preview']) {
+        for(const verified_completion of [true,false]) {
+          const row={status,source_health:health,evidence:{kind,verified_completion}};
+          assert.equal(guide.verifiedDone(row),isVerifiedCompletion(row),
+            status+'/'+kind+'/'+health+'/'+verified_completion);
+        }
+      }
+    }
+  }
+});
+
+test('Completed tick requires genuine source evidence across receipts and verified projections', () => {
+  const guide = load(), el = target();
+  const common = {source_key:'moonpet.seven-of-seven-claim',title:'An action',
+    source_health:'live'};
+  const accepted = { ...common, task_id:'accepted',status:'claimed',
+    evidence:{kind:'server_receipt',verified_completion:true}};
+  const projection = { ...common, task_id:'projection',status:'complete',
+    evidence:{kind:'server_projection',verified_completion:true}};
+  const unverified = { ...common, task_id:'unverified',status:'complete',
+    evidence:{kind:'server_projection',verified_completion:false}};
+  const preview = { ...common, task_id:'preview',status:'complete',
+    evidence:{kind:'client_mirror',verified_completion:true}};
+  const claimReady = { ...common, task_id:'ready',status:'claim_ready',
+    evidence:{kind:'server_receipt',verified_completion:true}};
+  const failed = { ...common, task_id:'failed',status:'complete',source_health:'query_failed',
+    evidence:{kind:'server_receipt',verified_completion:true}};
+  for (const entry of [accepted,projection,unverified,preview,claimReady,failed]) {
+    assert.equal(guide.verifiedDone(entry),entry===accepted || entry===projection,entry.task_id);
+  }
+  guide.renderChecklist(el,[accepted,projection,unverified,preview,claimReady,failed],{});
+  assert.equal((el.innerHTML.match(/✅ Completed/g)||[]).length,2,
+    'both verified rows show the completed text');
+  assert.equal((el.innerHTML.match(/class="mm-checklist-mark" aria-hidden="true">✅/g)||[]).length,2,
+    'both verified rows also show the separate checklist tick');
+  assert.match(el.innerHTML,/2 verified complete \/ 6 loaded tasks/u);
+  assert.doesNotMatch(el.innerHTML,/✅ Completed[^<]*claim ready/u);
+  guide.renderChecklist(el,[accepted,projection],{stale:true});
+  assert.doesNotMatch(el.innerHTML,/✅ Completed/u,'stale pages cannot claim current completion');
 });
 
 test('public resource guide and private checklist are isolated, with logout purge and CI registration', () => {

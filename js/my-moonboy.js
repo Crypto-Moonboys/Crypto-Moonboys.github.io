@@ -14,6 +14,11 @@
   const TABS = new Set(tabs.map(button => button.dataset.mmTab));
   const READY = new Set(['ready', 'active', 'claim_ready']);
   const DONE = new Set(['complete', 'claimed']);
+  // The Mission Guide owns the same verified-completion rule used by its
+  // checklist. Never infer a tick from client mirrors or status strings alone.
+  function verifiedDone(task) {
+    return window.MOONBOYS_MISSION_GUIDE?.verifiedDone?.(task) === true;
+  }
   const FAILURE = new Set(['query_failed', 'migration_pending', 'unavailable']);
   const PERIOD_WEEKLY = new Set(['faction_week', 'pet_journey_week']);
   const PERIOD_LONG = new Set(['once', 'permanent', 'pet_age', 'season_lock', 'faction_season', 'utc_competition']);
@@ -259,9 +264,13 @@
     const scopeLabel = petScopeLabel(task, directory);
     const unavailable = FAILURE.has(sourceState) || status === 'sync_unavailable' ||
       sourceState === 'preview' || status === 'preview';
-    const tag = !state.stale && taskActionable(task) ? ' mm-tag--action' :
-      state.stale || unavailable ? ' mm-tag--unknown' : '';
-    const readiness = state.stale ? 'Saved at last successful sync; refresh required' : formatName(status);
+    const completed = !state.stale && !state.offline && verifiedDone(task);
+    const tag = completed ? ' mm-tag--completed' :
+      !state.stale && !state.offline && taskActionable(task) ? ' mm-tag--action' :
+      state.stale || state.offline || unavailable ? ' mm-tag--unknown' : '';
+    const readiness = state.stale || state.offline
+      ? 'Saved at last successful sync; refresh required'
+      : completed ? '✅ Completed' : formatName(status);
     const open = action
       ? '<a class="mm-button" href="' + esc(action) + '" aria-label="' +
         esc('Open source for ' + (task.title || 'task') +
@@ -633,7 +642,7 @@
       case 'actionable': return isNow(task);
       case 'waiting': return task.status === 'waiting' || task.status === 'in_progress';
       case 'blocked': return ['blocked', 'sync_unavailable', 'preview', 'expired'].includes(task.status);
-      case 'completed': return DONE.has(task.status);
+      case 'completed': return verifiedDone(task);
       default: return true;
     }
   }
@@ -691,7 +700,9 @@
           ' No claim or pet switch happens here.</p>';
       const list = assigned.slice(0, 5).map(task =>
         '<li>' + esc(task.title) + ' — ' +
-        esc(state.stale ? 'last confirmed: ' + formatName(task.status) : formatName(task.status)) +
+        esc(state.stale || state.offline
+          ? 'last confirmed: ' + formatName(task.status)
+          : verifiedDone(task) ? '✅ Completed' : formatName(task.status)) +
         '</li>').join('');
       const claimReady = state.stale || state.offline ? 0 : assigned.filter(task =>
         task.status === 'claim_ready' && task.source_health === 'live').length;
