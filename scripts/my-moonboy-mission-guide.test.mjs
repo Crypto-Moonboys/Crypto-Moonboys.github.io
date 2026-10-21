@@ -172,6 +172,8 @@ test('Wiki article comments omit unused contributor score mocks and still suppor
   assert.match(comments, /href="\/my-moonboy.html"/u);
   assert.match(specialist, /function aggregate\(comments, period\)/u,
     'optional specialized contributor module still aggregates actual fetched comments');
+  assert.match(specialist, /function ensureOptInCard\(container\)/u,
+    'opt-in article commenter ranking owns its own mount when the generic Wiki form is compact');
   assert.match(specialist, /fetch\(BASE \+ '\/comments\?page_id='/u);
   assert.doesNotMatch(specialist, /FALLBACK_TOP_CONTRIBUTORS|xp:\s*9540/u,
     'specialist public contributor module does not invent XP balances');
