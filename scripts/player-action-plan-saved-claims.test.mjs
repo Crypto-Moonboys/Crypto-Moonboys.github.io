@@ -15,7 +15,8 @@ function fixture(options = {}) {
   const rows = {
     cache: options.cache ? [{ event_key: 'chest-accepted', created_at: NOW.toISOString() }] : [],
     season: options.seasonRows || (options.seasonXp == null ? [] : [{ season_key: SEASON, season_xp: options.seasonXp }]),
-    claim: options.tierAcknowledged ? [{ season_key: SEASON, tier_id: 'street', claimed_at: NOW.toISOString() }] : [],
+    claim: options.claimRows || (options.tierAcknowledged ?
+      [{ season_key: SEASON, tier_id: 'street', claimed_at: NOW.toISOString() }] : []),
     receipt: options.receiptRows || (options.tierReceipt ? [{ idempotency_key: 'season_reward:' + OWNER + ':' + (options.receiptSeason || SEASON) + ':street',
       status: options.tierReceipt, awarded_at: NOW.toISOString() }] : []),
     finale: options.finaleRows || (options.finale ? [{
@@ -299,6 +300,41 @@ test('failed Daily Cache read stays unknown and does not imply unclaimed eligibi
   assert.equal(entries[0].status, 'preview');
   assert.equal(entries[0].progress.current, null);
   assert.equal(entries[0].source_health, 'preview');
+});
+
+test('historical acknowledgement without season XP or payout receipt remains blocked, not omitted', async () => {
+  const old = 'pet-s2026-003';
+  const f = fixture({ claimRows: [{ season_key: old, tier_id: 'street',
+    claimed_at: NOW.toISOString() }] });
+  const tasks = await f.project();
+  const oldTier = get(tasks, 'tiers').find(row =>
+    row.period.key === old && row.task_id.endsWith(':street'));
+  assert.ok(oldTier, 'persisted acknowledgement-only history must not disappear');
+  assert.equal(oldTier.status, 'blocked');
+  assert.equal(oldTier.blocking_reason_code, 'season_reward_receipt_unverified');
+  assert.equal(oldTier.evidence.verified_completion, false);
+  assert.equal(oldTier.reward.confirmed, false);
+  assert.equal(oldTier.progress.current, 0, 'no source season XP may be inferred');
+  assert.notEqual(oldTier.status, 'claim_ready');
+  assert.notEqual(oldTier.status, 'claimed');
+  assert.equal(f.statuses[SAVED_CLAIM_KEYS.tiers].state, 'live',
+    'acknowledgement-only source is not empty');
+  assert.equal(f.statuses[SAVED_CLAIM_KEYS.tiers].adapter, 'season_xp_claims_and_receipts');
+});
+
+test('malformed, unknown or future acknowledgement-only seasons never fabricate an old tier', async () => {
+  const f = fixture({ claimRows: [
+    { season_key: 'pet-s2026-003', tier_id: 'unlisted_tier' },
+    { season_key: 'invalid-season', tier_id: 'street' },
+    { season_key: 'pet-s2027-001', tier_id: 'street' },
+  ] });
+  const tasks = await f.project();
+  assert.ok(!get(tasks, 'tiers').some(row =>
+    row.period.key === 'pet-s2026-003' ||
+    row.period.key === 'invalid-season' ||
+    row.period.key === 'pet-s2027-001'));
+  assert.equal(f.statuses[SAVED_CLAIM_KEYS.tiers].state, 'live',
+    'a real acknowledgement row is still evidence of a nonempty source');
 });
 
 test('17th saved season proves truncated history, advertises older unclaimed tiers and blocks premature readiness', async () => {
