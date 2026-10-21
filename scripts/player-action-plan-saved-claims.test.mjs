@@ -16,12 +16,12 @@ function fixture(options = {}) {
     claim: options.tierAcknowledged ? [{ season_key: SEASON, tier_id: 'street', claimed_at: NOW.toISOString() }] : [],
     receipt: options.tierReceipt ? [{ idempotency_key: 'season_reward:' + OWNER + ':' + (options.receiptSeason || SEASON) + ':street',
       status: options.tierReceipt, awarded_at: NOW.toISOString() }] : [],
-    finale: options.finale ? [{
+    finale: options.finaleRows || (options.finale ? [{
       pet_id: 'secret-pet', season_key: 'pet-s2026-004', competition_season_key: SEASON,
       status: 'won', defeated_at: NOW.toISOString(), claimed_at: options.finaleClaimed ? NOW.toISOString() : null,
       reward_key: 'finale-key', owner_verified: options.wrongPet ? 0 : 1,
       receipt_status: options.finaleReceipt || null,
-    }] : [],
+    }] : []),
     events: options.events || [],
   };
   async function query(db, sql, args, fallback, failureMap, keys) {
@@ -45,7 +45,9 @@ function fixture(options = {}) {
     calls, statuses, failures,
     project: () => projectSavedMoonpetClaims({
       db: {}, ownerId: OWNER, now: NOW, day: '2026-10-21', week: '2026-W43',
-      pets: options.noPets ? [] : [{ pet_id: 'secret-pet', is_active: 1 }],
+      pets: options.noPets ? [] : [{ pet_id: 'secret-pet',
+        is_active: options.noSelectedPet ? 0 : 1,
+        lifecycle_phase: options.missingLifecycle ? null : 'young' }],
       rosterUnavailable: Boolean(options.rosterUnavailable),
       sourceStatuses: statuses, failures, query,
       makeTask: input => input,
@@ -87,6 +89,50 @@ test('only awarded receipts are claimed; missing roster blocks fresh season-tier
   assert.equal(get(awarded, 'finale')[0].status, 'claimed');
   const missing = await fixture({ seasonXp: 500, noPets: true }).project();
   assert.equal(get(missing, 'tiers').find(x => x.task_id.endsWith(':street')).status, 'blocked');
+});
+
+test('tier readiness requires selected pet lifecycle, not merely any owned roster row', async () => {
+  for (const option of [{ missingLifecycle: true }, { noSelectedPet: true }]) {
+    const tasks = await fixture({ seasonXp: 500, ...option }).project();
+    const tier = get(tasks, 'tiers').find(x => x.task_id.endsWith(':street'));
+    assert.equal(tier.status, 'blocked');
+    assert.ok(['selected_moonpet_required', 'selected_pet_lifecycle_unverified'].includes(tier.blocking_reason_code));
+  }
+  const ready = await fixture({ seasonXp: 500 }).project();
+  assert.equal(get(ready, 'tiers').find(x => x.task_id.endsWith(':street')).status, 'claim_ready');
+});
+
+test('tier reward base is explicitly unconfirmed because evolution stage changes Style Tokens', async () => {
+  const ready = await fixture({ seasonXp: 500 }).project();
+  const tier = get(ready, 'tiers').find(x => x.task_id.endsWith(':street'));
+  assert.equal(tier.status, 'claim_ready');
+  assert.equal(tier.reward.confirmed, false);
+  assert.match(tier.description, /evolution-stage bonus/u);
+  const claimed = await fixture({ seasonXp: 500, tierReceipt: 'awarded' }).project();
+  assert.equal(get(claimed, 'tiers').find(x => x.task_id.endsWith(':street')).reward.confirmed, false,
+    'even an awarded tier must not claim the base style token amount is the exact payout');
+});
+
+test('truncated Finale victory history advertises partial source and an explicit overflow, never 61 complete rows', async () => {
+  const finaleRows = Array.from({ length: 61 }, (_, index) => ({
+    pet_id: 'secret-pet-' + index, season_key: SEASON,
+    competition_season_key: SEASON, status: 'won',
+    defeated_at: NOW.toISOString(), claimed_at: null,
+    reward_key: 'finale-' + index, owner_verified: 1, receipt_status: null,
+  }));
+  const f = fixture({ finaleRows });
+  const tasks = await f.project();
+  const finales = get(tasks, 'finale');
+  assert.equal(finales.filter(x => x.status === 'claim_ready').length, 60);
+  const warning = finales.find(x => x.blocking_reason_code === 'saved_finale_history_partial');
+  assert.ok(warning, 'older saved rewards must remain explicitly discoverable');
+  assert.equal(warning.status, 'preview');
+  assert.equal(warning.source_health, 'preview');
+  assert.equal(f.statuses[SAVED_CLAIM_KEYS.finale].partial, true);
+  assert.equal(f.statuses[SAVED_CLAIM_KEYS.finale].historical_rows_in_preview, 60);
+  assert.ok(f.calls.some(call => call.sql.includes('LIMIT 61')),
+    'fetch one extra Finale row as truncation evidence');
+  assert.ok(!JSON.stringify(finales).includes('secret-pet-60'));
 });
 
 test('an awarded historical tier survives when its old season XP aggregate is missing', async () => {
