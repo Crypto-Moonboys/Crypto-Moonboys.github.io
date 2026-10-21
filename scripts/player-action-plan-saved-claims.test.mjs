@@ -12,10 +12,10 @@ function fixture(options = {}) {
   const failures = new Map();
   const rows = {
     cache: options.cache ? [{ event_key: 'chest-accepted', created_at: NOW.toISOString() }] : [],
-    season: options.seasonXp == null ? [] : [{ season_key: SEASON, season_xp: options.seasonXp }],
+    season: options.seasonRows || (options.seasonXp == null ? [] : [{ season_key: SEASON, season_xp: options.seasonXp }]),
     claim: options.tierAcknowledged ? [{ season_key: SEASON, tier_id: 'street', claimed_at: NOW.toISOString() }] : [],
-    receipt: options.tierReceipt ? [{ idempotency_key: 'season_reward:' + OWNER + ':' + (options.receiptSeason || SEASON) + ':street',
-      status: options.tierReceipt, awarded_at: NOW.toISOString() }] : [],
+    receipt: options.receiptRows || (options.tierReceipt ? [{ idempotency_key: 'season_reward:' + OWNER + ':' + (options.receiptSeason || SEASON) + ':street',
+      status: options.tierReceipt, awarded_at: NOW.toISOString() }] : []),
     finale: options.finaleRows || (options.finale ? [{
       pet_id: 'secret-pet', season_key: 'pet-s2026-004', competition_season_key: SEASON,
       status: 'won', defeated_at: NOW.toISOString(), claimed_at: options.finaleClaimed ? NOW.toISOString() : null,
@@ -144,6 +144,57 @@ test('an awarded historical tier survives when its old season XP aggregate is mi
   assert.equal(claimed.status, 'claimed');
   assert.equal(claimed.evidence.verified_completion, true);
   assert.equal(f.statuses[SAVED_CLAIM_KEYS.tiers].state, 'live');
+});
+
+test('17th saved season proves truncated history, advertises older unclaimed tiers and blocks premature readiness', async () => {
+  const seasonRows = Array.from({ length: 17 }, (_, index) => {
+    const quarterIndex = (2026 * 4 + 3) - index;
+    return {
+      season_key: 'pet-s' + Math.floor(quarterIndex / 4) +
+        '-' + String((quarterIndex % 4) + 1).padStart(3, '0'),
+      season_xp: 500,
+    };
+  });
+  const f = fixture({ seasonRows });
+  const tasks = await f.project();
+  const tiers = get(tasks, 'tiers');
+  assert.equal(f.statuses[SAVED_CLAIM_KEYS.tiers].state, 'live');
+  assert.equal(f.statuses[SAVED_CLAIM_KEYS.tiers].partial, true);
+  assert.equal(f.statuses[SAVED_CLAIM_KEYS.tiers].historical_seasons_in_preview, 16);
+  assert.equal(f.statuses[SAVED_CLAIM_KEYS.tiers].historical_seasons_beyond_preview, 'at_least_one');
+  const warning = tiers.find(t => t.blocking_reason_code === 'season_tier_history_partial');
+  assert.ok(warning, 'older earned/unclaimed season must be called out as an unverified overflow');
+  assert.equal(warning.status, 'preview');
+  assert.equal(warning.source_health, 'preview');
+  assert.match(warning.description, /Older unclaimed tiers may remain/u);
+  assert.ok(tiers.every(t => t.status !== 'claim_ready'));
+  assert.ok(!tiers.some(t => t.period.key === seasonRows[16].season_key),
+    'the sentinel proves omitted history but does not invent the older tier receipt state');
+  assert.ok(f.calls.some(call => call.sql.includes('LIMIT 17')));
+});
+
+test('exactly 16 season rows do not assert an overflow without a sentinel', async () => {
+  const seasonRows = Array.from({ length: 16 }, (_, index) => ({
+    season_key: 'pet-s' + (2026 - Math.floor(index / 4)) +
+      '-' + String(4 - (index % 4)).padStart(3, '0'),
+    season_xp: 100,
+  }));
+  const f = fixture({ seasonRows });
+  const tasks = await f.project();
+  assert.notEqual(f.statuses[SAVED_CLAIM_KEYS.tiers].partial, true);
+  assert.ok(!get(tasks, 'tiers').some(t => t.blocking_reason_code === 'season_tier_history_partial'));
+});
+
+test('a full receipt page is also surfaced as partial rather than treating unseen payouts as absent', async () => {
+  const receiptRows = Array.from({ length: 100 }, (_, index) => ({
+    idempotency_key: 'season_reward:' + OWNER + ':pet-s2026-004:receipt-' + index,
+    status: 'awarded', awarded_at: NOW.toISOString(),
+  }));
+  const f = fixture({ seasonXp: 500, receiptRows });
+  const tasks = await f.project();
+  assert.equal(f.statuses[SAVED_CLAIM_KEYS.tiers].partial, true);
+  assert.ok(get(tasks, 'tiers').some(t => t.blocking_reason_code === 'season_tier_history_partial'));
+  assert.notEqual(get(tasks, 'tiers').find(t => t.task_id.endsWith(':street')).status, 'claim_ready');
 });
 
 test('source failures and unverified bounty progress cannot produce badges or claimed receipts', async () => {
