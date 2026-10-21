@@ -69,7 +69,9 @@ check(comments.includes('Telegram linked:') && comments.includes('Email optional
 check(comments.includes('if (!email && !telegramAuth)') && comments.includes('if (email)   payload.email = email;'), 'Comment submit requires email only when signed Telegram auth is unavailable');
 check(comments.includes('Telegram quick-fill unavailable. Log in through the Incubator Hub; /gklink remains a fallback.'), 'Unlinked users see website login and the compatible bot fallback');
 check(comments.includes('Gravatar avatar ready from saved email.') && comments.includes('Email required for Gravatar avatar, never displayed.'), 'Gravatar copy reflects saved-email reality without fake account detection');
-check(comments.includes('Comments &amp; Battle Layer') && comments.includes('Share knowledge. Earn XP. Build the archive.'), 'Comment section renders the redesigned battle-layer dashboard header');
+check(comments.includes('Comments &amp; Battle Layer') && comments.includes('Discuss sources and share useful knowledge.'), 'Wiki comment form keeps engagement functionality without a repeated XP pitch');
+const compactCommentForm = section(comments, 'function buildForm(pageId)', 'function wireForm(');
+check(compactCommentForm.includes('buildTelegramIdentityCard(pageId)') && !['buildTelegramBenefitsCard()', 'buildTopContributorsHTML()', 'buildInfoCards()'].some(fn => compactCommentForm.includes(fn)), 'Article comment forms retain relevant identity controls without global contributor and onboarding dashboards');
 check(comments.includes('name="discord_username"') && comments.includes('Gravatar used for avatar. Email never displayed.'), 'Comment form includes Discord and clear Gravatar privacy copy');
 check(comments.includes('maxlength="2000"') && comments.includes('comment-character-counter') && comments.includes("textEl.addEventListener('input', updateCounter)"), 'Comment form includes a 2000-character counter wired to textarea input');
 check(!/<span class="comment-character-counter"[^>]*aria-live/.test(comments), 'Comment character counter is not live-announced on every keystroke');
