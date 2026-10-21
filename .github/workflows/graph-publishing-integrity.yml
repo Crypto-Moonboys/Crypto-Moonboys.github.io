@@ -3,8 +3,8 @@ name: Graph Publishing Integrity
 on:
   workflow_dispatch:
     inputs:
-      base_sha:
-        description: 'Base main SHA for explicitly dispatched graph checks'
+      pr_number:
+        description: 'Generated graph PR number; GitHub verifies the real base and exact head'
         required: true
         type: string
   pull_request:
@@ -77,6 +77,16 @@ jobs:
         with:
           node-version: 22
 
+      - name: Validate generated graph PR dispatch
+        id: graph_dispatch
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          PR_NUMBER: ${{ inputs.pr_number }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          node --test scripts/verify-graph-dispatch-pr.test.mjs
+          node scripts/verify-graph-dispatch-pr.mjs
+
       - name: Install dependencies
         run: npm ci
 
@@ -106,7 +116,7 @@ jobs:
       - name: Validate regenerated wiki surfaces explicitly dispatched
         if: github.event_name == 'workflow_dispatch'
         env:
-          BASE_SHA: ${{ inputs.base_sha }}
+          BASE_SHA: ${{ steps.graph_dispatch.outputs.base_sha }}
           HEAD_SHA: ${{ github.sha }}
           CANON_PROSE_CHANGE_APPROVED: ${{ steps.canon_approval.outputs.approved || '0' }}
         run: npm run ci:wiki
