@@ -511,6 +511,32 @@ test('awarded wallet reconciliation supersedes retained pending recovery marker'
   assert.equal(wallet.style_tokens,9);
 });
 
+test('persisted MoonPet daily flags survive normalization as verified projections', async () => {
+  for (const [variant, flags] of [
+    [{}, 8],
+    [{ savedOldClaims: true }, 3],
+  ]) {
+    const response = await handlePlayerActionPlanRoute(request(auth({ limit: 100 })),
+      { DB: fakeDb(variant), TELEGRAM_BOT_TOKEN: 'test' }, options());
+    assert.equal(response.status, 200);
+    const body = await response.json();
+    // These tasks passed through the source adapter, genericTask and the
+    // production actionPlanTask normalizer before reaching the signed route.
+    const daily = body.tasks.filter(task => task.source_key === 'moonpet.daily-seven-missions'
+      && task.period.key === '2026-10-17');
+    const accepted = daily.filter(task => task.status === 'complete');
+    assert.equal(accepted.length, flags + (flags === 8 ? 1 : 0));
+    assert.ok(accepted.every(task => task.source_health === 'live' &&
+      task.evidence.kind === 'server_projection' &&
+      task.evidence.verified_completion === true && isVerifiedCompletion(task)));
+    assert.ok(daily.filter(task => task.status !== 'complete')
+      .every(task => !isVerifiedCompletion(task)));
+    assert.ok(body.summary.completed_today >= accepted.length,
+      'server completion count includes confirmed daily flags');
+    assert.ok(body.query_budget.statement_count <= 80);
+  }
+});
+
 test('signed summary Completed today equals evidence-verified tasks, not advisory status strings', () => {
   const now = new Date('2026-10-17T12:00:00Z');
   const today = {kind:'utc_day',key:'2026-10-17'};
