@@ -59,7 +59,7 @@ for (const scriptName of expectedScripts.filter(name => name !== 'ci:wiki')) {
 assert.equal(domainRunLines.filter(line => line === 'run: npm run ci:wiki').length, 2,
   'Wiki requires one normal and one mutually exclusive dispatch command');
 const ordinaryWiki = getStepBlock(workflow, 'Run wiki tests');
-const dispatchedWiki = getStepBlock(workflow, 'Run wiki tests (explicit generated PR dispatch)');
+const dispatchedWiki = getStepBlock(workflow, 'Run wiki tests explicitly dispatched');
 assert.ok(ordinaryWiki.includes("github.event_name != 'workflow_dispatch'") &&
   dispatchedWiki.includes("github.event_name == 'workflow_dispatch'"),
   'normal and dispatched Wiki test steps cannot run on the same event');
@@ -68,7 +68,7 @@ assert.ok(dispatchedWiki.includes('BASE_SHA: ${{ inputs.base_sha }}') &&
   dispatchedWiki.includes("CANON_PROSE_CHANGE_APPROVED: ${{ steps.canon_approval.outputs.approved || '0' }}"),
   'dispatch Wiki verification must use exact base/head SHA and the existing canon-approval gate');
 const normalGraphWiki = getStepBlock(graphWorkflow, 'Validate regenerated wiki surfaces');
-const dispatchedGraphWiki = getStepBlock(graphWorkflow, 'Validate regenerated wiki surfaces (explicit generated PR dispatch)');
+const dispatchedGraphWiki = getStepBlock(graphWorkflow, 'Validate regenerated wiki surfaces explicitly dispatched');
 assert.ok(normalGraphWiki.includes("github.event_name != 'workflow_dispatch'") &&
   dispatchedGraphWiki.includes("github.event_name == 'workflow_dispatch'") &&
   dispatchedGraphWiki.includes('BASE_SHA: ${{ inputs.base_sha }}') &&
