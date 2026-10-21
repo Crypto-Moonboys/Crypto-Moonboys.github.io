@@ -117,10 +117,10 @@ jobs:
       - name: Trigger all required workflow checks on generated PR head
         if: steps.graph_pr.outputs.pull-request-number != ''
         env:
-          GH_TOKEN: ${ github.token }}
-          GRAPH_PR_REF: ${ steps.graph_pr.outputs.pull-request-branch }}
-          GRAPH_PR_NUMBER: ${ steps.graph_pr.outputs.pull-request-number }}
-          BASE_SHA: ${ steps.baseline.outputs.sha }}
+          GH_TOKEN: ${{ github.token }}
+          GRAPH_PR_REF: ${{ steps.graph_pr.outputs.pull-request-branch }}
+          GRAPH_PR_NUMBER: ${{ steps.graph_pr.outputs.pull-request-number }}
+          BASE_SHA: ${{ steps.baseline.outputs.sha }}
         run: |
           gh workflow run ci.yml --ref "$GRAPH_PR_REF" -f base_sha="$BASE_SHA"
           gh workflow run graph-publishing-integrity.yml --ref "$GRAPH_PR_REF" -f base_sha="$BASE_SHA"
