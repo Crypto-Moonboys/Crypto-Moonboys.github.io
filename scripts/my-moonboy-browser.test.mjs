@@ -256,7 +256,8 @@ test('PR3 logout, account switch, expired auth and stale source never expose ano
     });
     await f.page.waitForFunction(() => document.getElementById('mm-gate-title')?.textContent === 'Log in to My Moonboy');
     assert.equal(await f.page.locator('#mm-private').isHidden(),true);
-    assert.equal(await f.page.locator('[data-shell-link="MY MOONBOY"]').count(),0);
+    assert.equal(await f.page.locator('[data-shell-link="MY MOONBOY"][href="/my-moonboy.html"]').count(),1,
+      'My Moonboy stays navigable after logout while the private account view remains hidden');
     assert.doesNotMatch(await f.page.locator('#my-moonboy').innerText(),/Alpha|Beta/);
     assert.ok(f.requests.every(entry=>entry.body.telegram_auth.id==='111' || entry.body.telegram_auth.id==='222'));
     assert.equal(f.errors.length,0,f.errors.join('\n'));
