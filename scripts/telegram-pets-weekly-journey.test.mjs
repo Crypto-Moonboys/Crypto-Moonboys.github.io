@@ -225,7 +225,7 @@ function seedBossCombatStats(db, telegramId, xp, level) {
   for (const table of ['telegram_pet_profiles','telegram_pet_instances']) {
     db.database.prepare(`UPDATE ${table}
       SET pet_xp=?, level=?, energy=100, health=100, happiness=100, cleanliness=100
-      WHERE telegram_id=?`).run(xp,level,telegramId);
+      WHERE telegram_id=? ${table==='telegram_pet_instances' ? 'AND pet_id=(SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id=telegram_pet_instances.telegram_id)' : ''}`).run(xp,level,telegramId);
   }
 }
 
