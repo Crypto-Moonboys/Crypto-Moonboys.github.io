@@ -800,7 +800,8 @@
       ['mm-moon-crystals', economy.moon_crystals, economy.moonpet_wallet_health, 'Moon Crystals'],
       ['mm-style-tokens', economy.style_tokens, economy.moonpet_wallet_health, 'Style Tokens'],
     ]) {
-      byId(id).textContent = health === 'live' && Number.isSafeInteger(value) && value >= 0
+      byId(id).textContent = !state.stale && !state.offline && health === 'live' &&
+        Number.isSafeInteger(value) && value >= 0
         ? niceCount(value) + ' ' + unit : 'Not confirmed';
     }
     const active = Array.isArray(owner.pets) ? owner.pets.find(pet => pet.selected) : null;
