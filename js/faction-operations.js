@@ -20,7 +20,7 @@
   const DAY_MS = 86400000;
   const CHAMBER_PREFIX = '/battle-chamber/factions/';
   const MY_FACTION_URL = '/my-moonboy.html?tab=faction';
-  const LOGIN_URL = '/gkniftyheads-incubator.html';
+  const LOGIN_URL = '/my-moonboy.html';
   const JOIN_URL = '/community.html#battle-join-faction';
   const STATUS_OK = new Set(['live', 'live_empty']);
 
