@@ -67,6 +67,12 @@ assert.match(wikiStyles, /cm-comment-account-link:focus-visible/,
   'The link remains keyboard-accessible');
 assert.match(contributor, /function aggregate\(comments, period\)/,
   'Specialized opt-in contributor page still uses actual comment data, not mocks');
+assert.match(contributor, /function ensureOptInCard\(container\)/,
+  'Opt-in specialist owns its own markup instead of relying on the removed global Wiki dashboard');
+assert.match(contributor, /document.createElement\('details'\)/,
+  'Article-local commenter ranking is collapsed by default');
+assert.match(contributor, /No approved commenters for this period\./,
+  'Empty real comment counts are distinguished from fabricated XP scores');
 assert.match(account, /id="mm-private" hidden/,
   'My Moonboy personal data remains behind its existing login gate');
 
