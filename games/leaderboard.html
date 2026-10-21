@@ -91,7 +91,6 @@
 
     .lb-info-card,
     .lb-toolbar-card,
-    #lb-status-panel,
     #lb-breakdown-panel,
     #lb-table-wrap,
     .lb-graph-section,
@@ -350,13 +349,9 @@
           <div class="swarmsy-action-grid swarmsy-action-grid--compact" aria-label="Leaderboard actions">
             <a class="swarmsy-action-card swarmsy-action-card--gold" href="/games/"><strong>Play Arcade</strong><span>Start runs across the active arcade roster.</span></a>
             <a class="swarmsy-action-card" href="/how-to-play.html"><strong>How to Play</strong><span>Read the XP, sync, and Block Topia guide.</span></a>
-            <a class="swarmsy-action-card swarmsy-action-card--magenta" href="/gkniftyheads-incubator.html"><strong>Link Telegram</strong><span>Use /gklink before server-side XP sync.</span></a>
+            <a class="swarmsy-action-card swarmsy-action-card--magenta" href="/my-moonboy.html"><strong>MY MOONBOY</strong><span>View your verified account and progression.</span></a>
           </div>
-          <ul class="leaderboard-pills" aria-label="Arcade leaderboard rules">
-            <li>Score = leaderboard ranking only.</li>
-            <li>Arcade XP needs Telegram sync and server acceptance</li>
-            <li>unsynced runs stay local/pending</li>
-          </ul>
+
         </div>
       </section>
 
@@ -373,10 +368,9 @@
             <a href="/games/">Full Games hub</a>
             <a href="/my-moonboy.html">My Moonboy — personal XP, missions and claims</a>
           </nav>
-          <p class="lb-coverage-caution">Rankings use server-accepted records. Eligible Arcade scores can become Arcade XP only after Telegram sync and server acceptance. Scores, Arcade XP, Community XP, MoonPet XP, Block Topia XP, Gems and verified Championship Clout are separate measures. Sign in through the shared header to see your personal progress in My Moonboy.</p>
+          <p class="lb-coverage-caution">Rankings use server-accepted records. Eligible Arcade scores can become Arcade XP only after Telegram sync and server acceptance. Scores, Arcade XP, Community XP, MoonPet XP, Block Topia XP, Gems and verified Championship Clout are separate measures. Open My Moonboy for your verified account and personal progress.</p>
         </section>
 
-        <div id="lb-status-panel"></div>
 
         <section class="lb-toolbar-card" aria-label="Leaderboard filters and controls">
           <div id="lb-mode-toggle" role="group" aria-label="Leaderboard mode"></div>
@@ -384,14 +378,14 @@
 
           <div class="lb-linked-shell">
             <div id="lb-linked-identity" class="lb-linked-identity sync-state--bad" aria-live="polite">
-              <strong>Telegram not linked - run /gklink</strong>
-              <span class="lb-linked-meta">Run /gklink to store ranking and Arcade XP server-side.</span>
+              <strong>Checking Telegram account</strong>
+              <span class="lb-linked-meta">Accepted rankings load below. For personal progress, open My Moonboy.</span>
             </div>
             <button id="lb-presence-toggle" class="lb-presence-btn" type="button" aria-pressed="false">Hide presence</button>
           </div>
           <div class="lb-controls">
             <button id="lb-refresh-btn" aria-label="Refresh leaderboard">Refresh</button>
-            <span class="lb-hint">Score = ranking. Arcade XP = Block Topia gate progress (requires Telegram sync).</span>
+            <span class="lb-hint">Rankings use verified, server-accepted scores.</span>
           </div>
         </section>
 
