@@ -330,6 +330,57 @@ test('PR4 missing progression and accounting authorities do not invent zero bala
   } finally { await f.browser.close(); }
 });
 
+test('verified finished actions show ✅ Completed in ledger, checklist and MoonPet; other states do not', async () => {
+  const f=await setup({width:390,height:844},true);
+  f.setPlanFactory((owner,cursor) => {
+    const base=plan(owner,cursor);
+    if (cursor) return base;
+    const original=base.tasks[0];
+    const accepted={...original,task_id:'accepted-complete',title:'Accepted MoonPet task',
+      status:'claimed',source_health:'live',
+      evidence:{kind:'server_receipt',verified_completion:true}};
+    const projected={...original,task_id:'projected-complete',title:'Verified projected task',
+      status:'complete',source_health:'live',
+      evidence:{kind:'server_projection',verified_completion:true}};
+    const advisory={...original,task_id:'advisory-complete',source_key:'faction.daily-missions',
+      title:'Unverified browser task',status:'complete',source_health:'live',
+      evidence:{kind:'client_mirror',verified_completion:true}};
+    const unclaimed={...original,task_id:'unclaimed-bonus',title:'Unclaimed saved bonus',
+      status:'claim_ready',source_health:'live',
+      evidence:{kind:'server_receipt',verified_completion:true}};
+    return {...base,tasks:base.tasks.concat(accepted,projected,advisory,unclaimed)};
+  });
+  try {
+    await f.page.goto(SITE+'/my-moonboy.html',{waitUntil:'domcontentloaded'});
+    await f.page.locator('#mm-next .mm-task').first().waitFor();
+    for(const title of ['Accepted MoonPet task','Verified projected task']) {
+      const item=f.page.locator('#mm-checklist .mm-checklist-tasks li').filter({hasText:title});
+      assert.match(await item.first().textContent(),/✅ Completed/u,title+' checklist');
+    }
+    for(const title of ['Unverified browser task','Unclaimed saved bonus']) {
+      const item=f.page.locator('#mm-checklist .mm-checklist-tasks li').filter({hasText:title});
+      assert.doesNotMatch(await item.first().textContent(),/✅ Completed/u,title+' must not be complete');
+    }
+    assert.match(await f.page.locator('#mm-pets').textContent(),/✅ Completed/u);
+    await f.page.locator('[data-mm-tab="history"]').click();
+    await f.page.locator('#mm-status-filter').selectOption('completed');
+    assert.equal(await f.page.locator('#mm-results .mm-task').count(),2);
+    assert.equal(await f.page.locator('#mm-results .mm-tag--completed').count(),2);
+    assert.equal(await f.page.locator('#mm-results .mm-tag--completed').allTextContents()
+      .then(items=>items.every(item=>item==='✅ Completed')),true);
+    await f.page.evaluate(() => window.dispatchEvent(new Event('offline')));
+    assert.doesNotMatch(await f.page.locator('#mm-results').textContent(),/✅ Completed/u);
+    assert.doesNotMatch(await f.page.locator('#mm-checklist').textContent(),/✅ Completed/u);
+    await f.page.evaluate(() => {
+      window.__mmTest.linked=false;
+      window.dispatchEvent(new CustomEvent('moonboys:identity-change'));
+    });
+    assert.equal(await f.page.locator('#mm-private').isHidden(),true);
+    assert.equal(await f.page.locator('#mm-checklist').textContent(),'');
+    assert.equal(f.errors.length,0,f.errors.join('\\n'));
+  } finally { await f.browser.close(); }
+});
+
 test('PR3 Community XP hides stale/offline values and clears on logout', async () => {
   const f = await setup({width:390,height:844},true);
   f.setPlanFactory((owner,cursor) => {
