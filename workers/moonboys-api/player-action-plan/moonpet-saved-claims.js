@@ -66,6 +66,8 @@ export async function projectSavedMoonpetClaims({
     [ownerId]);
   status('tiers', seasons, 'season_xp_claims_and_receipts');
   if (seasons && claims && receipts) {
+    // A bounded receipt read cannot prove an absent payout when truncated.
+    const truncated = seasons.length >= 16 || claims.length >= 100 || receipts.length >= 100;
     const saved = new Map(claims.map(x => [x.season_key + ':' + x.tier_id, x]));
     const paid = new Map(receipts.map(x => [x.idempotency_key, x]));
     const periods = new Map(seasons.map(x => [String(x.season_key), count(x.season_xp)]));
@@ -80,11 +82,11 @@ export async function projectSavedMoonpetClaims({
         if (!earned && !receipt && !ack && period !== currentSeason) continue;
         const awarded = receipt?.status === 'awarded';
         const pending = receipt?.status === 'pending';
-        const blocked = (ack && !awarded) || pending || rosterUnavailable || !pets.length;
+        const blocked = truncated || (ack && !awarded) || pending || rosterUnavailable || !pets.length;
         const ready = earned && !receipt && !ack && !blocked;
         add('tiers', awarded ? 'claimed' : ready ? 'claim_ready' : blocked ? 'blocked' : 'in_progress', {
           title: tier.title + ' — ' + period, period, suffix: tier.tier_id, priority: ready ? 42 : 760,
-          blocking: pending ? 'season_reward_settlement_pending' : ack && !awarded
+          blocking: truncated ? 'season_receipt_history_partial' : pending ? 'season_reward_settlement_pending' : ack && !awarded
             ? 'season_reward_receipt_unverified' : rosterUnavailable ? 'owned_roster_unavailable'
               : !pets.length ? 'moonpet_required' : null,
           progress: { current: xp, target: tier.required_xp, unit: 'season_xp' },
