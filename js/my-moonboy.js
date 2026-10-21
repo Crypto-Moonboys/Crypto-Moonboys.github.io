@@ -610,7 +610,8 @@
       case 'today': return (period === 'utc_day' || period === 'event_window') &&
         task.period && state.plan && task.period.key === state.plan.period.utc_day;
       case 'claims': return ['claim_ready', 'claimed'].includes(status) ||
-        key === 'moonpet.claimable-rewards' || key === 'moonpet.seven-of-seven-claim';
+        ['moonpet.claimable-rewards', 'moonpet.seven-of-seven-claim',
+          'moonpet.season-tier-claims', 'moonpet.finale-claim'].includes(key);
       case 'moonpet': return key.startsWith('moonpet.');
       case 'faction': return key.startsWith('faction.') || key === 'onboarding.faction';
       case 'games': return key.startsWith('games.') || key.startsWith('arcade.');
