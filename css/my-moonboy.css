@@ -91,6 +91,7 @@
   border-radius: 20px; padding: 3px 7px; font-size: .7rem; line-height: 1.25; color: var(--mm-muted);
 }
 .page-my-moonboy .mm-tag--action { color: #a8f3e1; border-color: rgba(168,243,225,.4); }
+.page-my-moonboy .mm-tag--completed { color: #a8f3e1; border-color: rgba(168,243,225,.4); font-weight: 700; }
 .page-my-moonboy .mm-tag--unknown { color: #ffdca8; border-color: rgba(255,220,168,.35); }
 .page-my-moonboy .mm-pet-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: 10px; }
 .page-my-moonboy .mm-pet { border: 1px solid var(--mm-line); border-radius: 9px; padding: 14px; min-width: 0; }
