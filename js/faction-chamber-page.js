@@ -313,7 +313,7 @@
       } else {
         missionsEl.innerHTML +=
           '<p><strong>Faction daily mission digest preview:</strong> Link Telegram to load your live daily mission digest.</p>' +
-          '<p><a href="/gkniftyheads-incubator.html">Link Telegram</a></p>';
+          '<p><a href="/my-moonboy.html">Link Telegram</a></p>';
       }
     }
 
@@ -327,7 +327,7 @@
       } else {
         digestEl.innerHTML =
           '<p>Link Telegram to activate daily digest delivery.</p>' +
-          '<p><a href="/gkniftyheads-incubator.html">Link Telegram</a></p>';
+          '<p><a href="/my-moonboy.html">Link Telegram</a></p>';
       }
     }
 
@@ -490,7 +490,7 @@
           '<a class="fcp-btn" href="/community.html">Open Battle Chamber</a>' +
           '<a class="fcp-btn fcp-btn-secondary" href="/games/">Play Arcade</a>' +
           '<a class="fcp-btn" href="/community.html#battle-join-faction">Join this faction</a>' +
-          '<a class="fcp-btn fcp-btn-secondary" href="/gkniftyheads-incubator.html">Link Telegram</a>' +
+          '<a class="fcp-btn fcp-btn-secondary" href="/my-moonboy.html">Link Telegram</a>' +
         '</div>';
     }
   }

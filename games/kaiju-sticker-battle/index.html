@@ -12,7 +12,7 @@
     :root{--kaiju-gold:#f7ab1a;--kaiju-gold-2:#ffe08a;--kaiju-ink:#050812;--kaiju-panel:#0b0d14;--kaiju-line:rgba(247,171,26,.58);--kaiju-blue:#20c7ff;--kaiju-green:#64ff35}
     html,body{min-height:100%;overflow:hidden;background:#050812;color:#fff}
     body.page-standalone-tool{margin:0;background:radial-gradient(circle at 24% -10%,rgba(247,171,26,.18),transparent 28rem),radial-gradient(circle at 86% 10%,rgba(32,199,255,.12),transparent 28rem),linear-gradient(180deg,#090d18 0,#050812 100%)}
-    #site-header,.breadcrumb,.category-header,.page-title-line,#site-footer,#back-to-top,[data-tg-sync-cta]{display:none!important}
+    #site-header,.breadcrumb,.category-header,.page-title-line,#site-footer,#back-to-top{display:none!important}
     #layout,#main-wrapper,#content{width:100%;max-width:none!important;margin:0!important;padding:0!important}
     #content{min-height:100vh;display:grid;place-items:center;padding:8px!important;box-sizing:border-box}
     .game-card{width:min(1840px,calc(100vw - 16px));height:min(1000px,calc(100vh - 16px));position:relative;overflow:hidden;box-sizing:border-box;border:1px solid rgba(247,171,26,.44);border-radius:12px;background:linear-gradient(135deg,rgba(247,171,26,.12),transparent 20%),linear-gradient(180deg,rgba(13,15,24,.98),rgba(5,8,18,.98));box-shadow:0 18px 58px rgba(0,0,0,.58),0 0 0 1px rgba(255,255,255,.06) inset;display:grid;grid-template-rows:auto auto minmax(0,1fr);gap:10px;padding:12px}
@@ -53,10 +53,10 @@
       <aside class="kaiju-side" aria-label="Kaiju deck"><div class="kaiju-side-head"><img class="kaiju-deck-badge" src="/img/game/kong3008/grimey22.png" alt=""><h2>Your Deck</h2><span>7 / 7</span></div><p class="kaiju-side-prompt">Pick the sticker you want to send into the next round. Stats show on every card, then the dice chooses the battle category.</p><div id="kaijuCardGrid" class="kaiju-card-grid" aria-label="Choose your Kaiju sticker card"></div><div class="kaiju-legend" aria-hidden="true"><span>PWR</span><span>SIZE</span><span>ATK</span><span>DEF</span><span>SPD</span><span>LGCY</span></div></aside>
     </div>
   </div>
-  <div data-tg-sync-cta></div>
+  
 </main><footer id="site-footer"><div class="footer-bottom"><p>Crypto Moonboys GK Wiki</p></div></footer></div></div>
 <button id="back-to-top" aria-label="Back to top">↑</button>
-<script data-cfasync="false" src="/js/wiki.js"></script><script src="/js/identity-gate.js"></script><script src="/js/scroll-shell.js"></script><script src="/js/game-fullscreen.js"></script><script src="/js/api-config.js"></script><script src="/js/components/ui-status-copy.js"></script><script src="/js/arcade/core/global-event-bus.js"></script><script src="/js/core/moonboys-state.js"></script><script src="/js/faction-alignment.js"></script><script src="/js/components/connection-status-panel.js"></script><script src="/js/components/global-player-header.js"></script><script src="/js/components/live-activity-summary.js"></script><script data-cfasync="false" src="/js/components/telegram-sync-cta.js"></script>
+<script data-cfasync="false" src="/js/wiki.js"></script><script src="/js/identity-gate.js"></script><script src="/js/scroll-shell.js"></script><script src="/js/game-fullscreen.js"></script><script src="/js/api-config.js"></script><script src="/js/components/ui-status-copy.js"></script><script src="/js/arcade/core/global-event-bus.js"></script><script src="/js/core/moonboys-state.js"></script><script src="/js/faction-alignment.js"></script><script src="/js/components/connection-status-panel.js"></script><script src="/js/components/global-player-header.js"></script><script src="/js/components/live-activity-summary.js"></script>
 <script type="module">
 import { mountGame } from '/js/arcade/core/game-shell.js';
 import { bootstrapKaijuStickerBattle } from '/js/arcade/games/kaiju-sticker-battle/bootstrap.js';

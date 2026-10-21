@@ -211,6 +211,48 @@ test('PR4 public guest cannot see or request private member progress',async()=>{
   }finally{await f.browser.close();}
 });
 
+test('PR2 guest account-help clicks navigate instead of starting Telegram OIDC', async()=> {
+  const f = await setup(390, {pageKey:'graffpunks',linked:false,state:fixture({verified:false})});
+  try {
+    const {page} = f;
+    const link = page.locator('[data-fop-private] a').first();
+    await link.waitFor({state:'visible'});
+    assert.equal(await link.count(),1,'one guest account-help entry');
+    assert.equal(await link.getAttribute('data-telegram-login'),null,
+      'account navigation must not opt into the delegated OIDC login handler');
+
+    // Exercise a real browser click against the exact delegated selector used
+    // by identity-gate. A temporary hash href keeps this isolated fixture on
+    // the same document while proving the default navigation is not prevented.
+    await page.evaluate(() => {
+      window.__fopTest.interceptedLoginClicks = 0;
+      document.addEventListener('click', event => {
+        if (!event.target.closest('[data-telegram-login], [data-telegram-logout]')) return;
+        event.preventDefault();
+        window.__fopTest.interceptedLoginClicks++;
+      });
+      const anchor = document.querySelector('[data-fop-private] a[href="/my-moonboy.html"]');
+      anchor.dataset.originalHref = anchor.getAttribute('href');
+      anchor.setAttribute('href','#pr2-account-navigation-test');
+      const target = document.createElement('div');
+      target.id = 'pr2-account-navigation-test';
+      document.body.appendChild(target);
+    });
+    await link.click();
+    await page.waitForFunction(() => window.location.hash === '#pr2-account-navigation-test');
+    assert.equal(await link.getAttribute('data-original-href'),'/my-moonboy.html',
+      'original account destination must be My Moonboy');
+    assert.equal(await page.evaluate(() => window.__fopTest.interceptedLoginClicks),0,
+      'normal My Moonboy navigation must not invoke Telegram OIDC');
+    assert.equal(await page.evaluate(() => window.__fopTest.writes),0,
+      'public navigation cannot cause private account or reward writes');
+    assert.doesNotMatch(await page.locator('[data-fop-private]').innerText(),
+      /saved complete|Verified member faction|120 \(server-saved/u,
+      'guest still cannot view personal faction state');
+    assert.equal(f.errors.length,0,f.errors.join('\n'));
+  } finally { await f.browser.close(); }
+});
+
 test('PR4 wrong-faction chamber shows only public operations',async()=>{
   const f=await setup(390,{pageKey:'hard-fork-rockers'});
   try{

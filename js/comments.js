@@ -133,7 +133,7 @@
         tgStatus.textContent = 'Log in with Telegram to access eligible rewards.';
         tgStatus.className = 'cm-tg-status cm-warning';
       } else {
-        tgStatus.textContent = 'Optional for comments. Required for rewards. Telegram quick-fill unavailable. Log in through the Incubator Hub; /gklink remains a fallback.';
+        tgStatus.textContent = 'Optional for comments. Required for rewards. For a verified Telegram account, open My Moonboy. Email comments remain available without Telegram.';
         tgStatus.className = 'cm-tg-status';
       }
     }
@@ -483,29 +483,17 @@
   // Login Widget because domain errors can leak a broken widget message into
   // the page. Rewards use the shared verified Telegram identity gate.
 
+  // The form owns the only Telegram status copy. Reuse it here instead of
+  // rendering a competing guest fallback over the just-initialized form.
   function injectTelegramWidget(container) {
     var widgetSlot = container.querySelector('.cm-tg-login');
     var form = container.querySelector('.comment-form');
-    var statusEl = container.querySelector('.cm-tg-status');
     if (!widgetSlot) return;
-    var linked = form ? applyLinkedTelegramIdentity(form) : getLinkedTelegramProfile();
-    if (linked) {
-      widgetSlot.innerHTML = '';
-      if (statusEl) {
-        statusEl.textContent = 'Telegram linked: ' + (linked.name || linked.telegram_username || 'connected') + '. Email optional — Telegram identity will be used.';
-        statusEl.className = 'cm-tg-status cm-success';
-      }
-      return;
-    }
-    if (statusEl) {
-      var gate = getIdentityGate();
-      var hasTelegramId = !!(gate && typeof gate.getTelegramId === 'function' && gate.getTelegramId());
-      statusEl.textContent = hasTelegramId
-        ? 'Log in with Telegram to access eligible rewards.'
-        : 'Telegram quick-fill unavailable. Log in through the Incubator Hub; /gklink remains a fallback.';
-      statusEl.className = hasTelegramId ? 'cm-tg-status cm-warning' : 'cm-tg-status';
-    }
     widgetSlot.innerHTML = '';
+    if (form) {
+      applyLinkedTelegramIdentity(form);
+      updateCommentIdentityCopy(form);
+    }
   }
 
   // ── Vote button delegation ───────────────────────────────────

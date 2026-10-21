@@ -67,7 +67,13 @@ check(comments.includes("fillIfEmpty(form, 'name'") && comments.includes("fillIf
 check(!comments.includes('telegram-widget.js') && !comments.includes('data-telegram-login') && !comments.includes('Bot domain invalid'), 'Linked/comment form path avoids the broken Telegram widget');
 check(comments.includes('Telegram linked:') && comments.includes('Email optional — Telegram identity will be used.'), 'Linked Telegram users see email-optional Telegram identity copy');
 check(comments.includes('if (!email && !telegramAuth)') && comments.includes('if (email)   payload.email = email;'), 'Comment submit requires email only when signed Telegram auth is unavailable');
-check(comments.includes('Telegram quick-fill unavailable. Log in through the Incubator Hub; /gklink remains a fallback.'), 'Unlinked users see website login and the compatible bot fallback');
+check(comments.includes('For a verified Telegram account, open My Moonboy. Email comments remain available without Telegram.'), 'Wiki comments direct optional Telegram sign-in to the central hub and preserve email commenting');
+const telegramIdentityHelper = section(comments, 'function injectTelegramWidget(container)', '// ── Vote button delegation');
+check(telegramIdentityHelper.includes('updateCommentIdentityCopy(form)') && telegramIdentityHelper.includes('applyLinkedTelegramIdentity(form)'),
+  'Initial comment widget reuses form identity status without overwriting My Moonboy guidance');
+check(!telegramIdentityHelper.includes('statusEl.textContent') && !comments.includes('Telegram quick-fill unavailable. Log in through the Incubator Hub'),
+  'Guest comment setup does not write stale Incubator Hub directions');
+
 check(comments.includes('Gravatar avatar ready from saved email.') && comments.includes('Email required for Gravatar avatar, never displayed.'), 'Gravatar copy reflects saved-email reality without fake account detection');
 check(comments.includes('Comments &amp; Battle Layer') && comments.includes('Discuss sources and share useful knowledge.'), 'Wiki comment form keeps engagement functionality without a repeated XP pitch');
 const compactCommentForm = section(comments, 'function buildForm(pageId)', 'function wireForm(');

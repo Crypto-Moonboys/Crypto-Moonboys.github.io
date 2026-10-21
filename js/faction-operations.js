@@ -20,7 +20,7 @@
   const DAY_MS = 86400000;
   const CHAMBER_PREFIX = '/battle-chamber/factions/';
   const MY_FACTION_URL = '/my-moonboy.html?tab=faction';
-  const LOGIN_URL = '/gkniftyheads-incubator.html';
+  const LOGIN_URL = '/my-moonboy.html';
   const JOIN_URL = '/community.html#battle-join-faction';
   const STATUS_OK = new Set(['live', 'live_empty']);
 
@@ -250,7 +250,7 @@
     if (!id) {
       personalRoot.innerHTML = '<p>Link Telegram to view your own saved contribution. ' +
         'No private missions are loaded for visitors.</p><p><a href="' + LOGIN_URL +
-        '" data-telegram-login>Log in with Telegram</a> · <a href="' + JOIN_URL + '">Choose a faction</a></p>';
+        '">Open My Moonboy</a> · <a href="' + JOIN_URL + '">Choose a faction</a></p>';
       return;
     }
     const valid = verifiedOwnerState(snapshot) ? snapshot : null;
