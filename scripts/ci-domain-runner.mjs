@@ -268,6 +268,7 @@ const GROUPS = {
     ['node', '--test', 'scripts/player-action-sync-parity.test.mjs'],
     ['node', '--test', 'scripts/player-action-sync-browser.test.mjs'],
     ['node', '--test', 'scripts/faction-operations-browser.test.mjs'],
+    ['node', '--test', 'scripts/wiki-comment-account-guidance-browser.test.mjs'],
     ['node', '--test', 'scripts/my-moonboy-browser.test.mjs'],
     ['node', 'scripts/meme-swarm-mobile-browser.test.mjs'],
     ['node', 'scripts/sparky-goal-navigation-browser.test.mjs'],
