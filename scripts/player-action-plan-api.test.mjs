@@ -370,7 +370,7 @@ test('unidentified job session is never advertised as a claimable new task', asy
   assert.ok(!payload.top_actions.some(item => item.task_id === task.task_id));
 });
 
-test('runtime source manifest exactly matches the reviewed 28-source registry', () => {
+test('runtime source manifest exactly matches the reviewed 33-source registry', () => {
   const registry = JSON.parse(fs.readFileSync(new URL('../data/player-action-plan-source-registry.v1.json', import.meta.url), 'utf8'));
   assert.deepEqual(ACTION_PLAN_SOURCE_REGISTRY.map((source) => source.key), registry.sources.map((source) => source.key));
 });
@@ -434,8 +434,8 @@ test('authenticated endpoint covers every source, scopes pets opaquely, and is c
   const payload = await response.json();
   assert.equal(payload.ok, true);
   assert.equal(payload.read_only, true);
-  assert.equal(payload.source_coverage.registered, 28);
-  assert.equal(payload.source_coverage.represented, 28);
+  assert.equal(payload.source_coverage.registered, 33);
+  assert.equal(payload.source_coverage.represented, 33);
   assert.ok(payload.query_budget.statement_count <= 80);
   assert.ok(payload.top_actions.length <= 3);
   assert.ok(payload.top_actions.every((entry) => ['ready', 'claim_ready', 'active'].includes(entry.status) && ['live','live_empty'].includes(entry.source_health) && !entry.blocking_reason_code));
@@ -725,7 +725,7 @@ test('zero-pet response stays complete and blocks pet work without fabricating s
   const response = await handlePlayerActionPlanRoute(request(auth({ limit: 100 })), { DB: fakeDb({ noPets: true }), TELEGRAM_BOT_TOKEN: 'test' }, options());
   const payload = await response.json();
   assert.equal(payload.owner.pet_count, 0);
-  assert.equal(payload.source_coverage.represented, 28);
+  assert.equal(payload.source_coverage.represented, 33);
   assert.ok(payload.tasks.filter((entry) => entry.source_key.startsWith('moonpet.') && entry.source_key !== 'moonpet.seven-of-seven-claim')
     .some((entry) => entry.blocking_reason_code === 'moonpet_required'));
 });
