@@ -5,7 +5,7 @@ import { DatabaseSync } from 'node:sqlite';
 import { createReadOnlyActionPlanDb, isReadOnlyActionPlanSql } from '../workers/moonboys-api/player-action-plan/read-only-db.js';
 import { ACTION_PLAN_SOURCE_REGISTRY, buildPlayerActionPlanSources } from '../workers/moonboys-api/player-action-plan/sources.js';
 import { handlePlayerActionPlanRoute } from '../workers/moonboys-api/routes/player-action-plan.js';
-import { actionPlanSnapshotToken, isImmediateAction, isoWeek, nextUtcDay, paginateActionPlan, rankActionPlanTasks } from '../workers/moonboys-api/player-action-plan/schema.js';
+import { actionPlanSnapshotToken, isImmediateAction, isVerifiedCompletion, isoWeek, nextUtcDay, paginateActionPlan, rankActionPlanTasks, summarizeActionPlan } from '../workers/moonboys-api/player-action-plan/schema.js';
 import { getPetWeeklyBoss } from '../workers/moonboys-api/pets/player-expansion.js';
 import { getPetDailyBounties } from '../workers/moonboys-api/pets/economy-expansion.js';
 import { verifyTelegramIdentityFromBody } from '../workers/moonboys-api/blocktopia/auth.js';
@@ -509,6 +509,28 @@ test('awarded wallet reconciliation supersedes retained pending recovery marker'
   assert.equal(wallet.moon_gold,350);
   assert.equal(wallet.moon_crystals,12);
   assert.equal(wallet.style_tokens,9);
+});
+
+test('signed summary Completed today equals evidence-verified tasks, not advisory status strings', () => {
+  const now = new Date('2026-10-17T12:00:00Z');
+  const today = {kind:'utc_day',key:'2026-10-17'};
+  const make = (status,kind,verified,health='live',period=today) => ({
+    status,source_health:health,period,
+    evidence:{kind,verified_completion:verified},
+  });
+  const verifiedClaim=make('claimed','server_receipt',true);
+  const verifiedProjection=make('complete','server_projection',true);
+  const advisory=make('complete','client_mirror',true);
+  const unconfirmed=make('complete','server_projection',false);
+  const claimReady=make('claim_ready','server_receipt',true);
+  const stale=make('complete','server_receipt',true,'query_failed');
+  const yesterday=make('complete','server_receipt',true,'live',{kind:'utc_day',key:'2026-10-16'});
+  const tasks=[verifiedClaim,verifiedProjection,advisory,unconfirmed,claimReady,stale,yesterday];
+  assert.deepEqual(tasks.map(isVerifiedCompletion),[true,true,false,false,false,false,true]);
+  const summary=summarizeActionPlan(tasks,{},now);
+  assert.equal(summary.completed_today,2);
+  assert.equal(summary.completed_count,3);
+  assert.equal(summary.claims_ready,1);
 });
 
 test('canonical signed Community XP comes from Telegram account, not duplicated logs', async () => {
