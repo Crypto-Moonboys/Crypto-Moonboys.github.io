@@ -22,6 +22,12 @@ This is **not** a claim that all five have exact payout parity. The last three r
 - Original MoonPet deep links use supported URL launch parameters, rather than separate `destination.screen` and `destination.focus` fields that My Moonboy ignores: Daily Cache → `?screen=home&focus=care`, season tiers → `?screen=profile&focus=season`, Finale → `?screen=missions&focus=season-finale`, extra daily bounty → `?screen=economy&focus=bonus-bounties`, weekly bounty → `?screen=economy&focus=weekly-bounties`.
 - Regression tests cover rejected/pending/awarded payout state, unique opaque malformed Finale IDs, supported panel navigation URLs, and nominal vs confirmed reward amounts.
 
+### Historical acknowledgement-only tiers
+
+- Imported or legacy owners may retain a saved `telegram_pet_season_reward_claims` acknowledgement for a historical season even when both `telegram_pet_season_state` and a matching awarded/pending/rejected `telegram_pet_reward_claims` receipt are absent. The Action Plan now includes valid owner-scoped acknowledgement seasons in its saved period set, **without inventing season XP or a paid reward**.
+- Such tiers are surfaced as **blocked** with `season_reward_receipt_unverified`, never `claim_ready` or `claimed`; source health reflects the nonempty acknowledgement history as `live`, not `live_empty`.
+- Canonical season syntax, time range and tier IDs are validated. Invalid, future and unknown-tier acknowledgements do not create fake historical rewards. Regression tests cover the acknowledgement-only case and malformed record variants.
+
 ## Read/identity guarantees
 
 - The existing `POST /player/action-plan` verifies the website session before the projection; client-supplied owner/pet selectors are rejected. All added queries bind the verified owner.
