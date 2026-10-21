@@ -51,7 +51,7 @@ check(!/50 Arcade XP/i.test(howToPlay), 'manual never references obsolete 50 XP 
 
 check(gamesIndex.includes('href="/my-moonboy.html"'), 'Arcade links to single Moonboy onboarding hub');
 check(gamesIndex.includes('id="arcade-games"') && gamesIndex.includes('id="telegram-games"'), 'Arcade preserves playable game catalogues');
-check(gamesIndex.includes('id="roguelite-loop-board"') && gamesIndex.includes('id="arcade-status-panel"'), 'Arcade preserves live status and game loops');
+check(!gamesIndex.includes('roguelite-loop-board') && !gamesIndex.includes('arcade-status-panel'), 'Arcade no longer duplicates personal status and meta previews');
 check(!gamesIndex.includes('Bot menu setup.'), 'Arcade removes outdated operator-facing BotFather instructions');
 check(!gamesIndex.includes('data-tg-sync-cta'), 'Arcade removes duplicate sign-in banner');
 check(!gamesIndex.includes('Telegram identity is required before competitive Arcade access'), 'Arcade does not repeat hard-gate copy from account login');
