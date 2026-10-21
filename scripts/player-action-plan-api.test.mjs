@@ -466,7 +466,7 @@ test('missing, failed or inconsistent signed wallets remain unknown, never numer
     {failSpendableWallet:true,failPetWallet:true},
     {invalidSpendableWallet:true},
     {unreconciledPetWallet:true},
-    {pendingPetWalletRecovery:true},
+    {pendingPetWalletRecovery:true,unreconciledPetWallet:true},
   ]) {
     const response = await handlePlayerActionPlanRoute(request(auth({ limit: 100 })),
       {DB:fakeDb(variation),TELEGRAM_BOT_TOKEN:'test'},options());
@@ -481,7 +481,7 @@ test('missing, failed or inconsistent signed wallets remain unknown, never numer
       assert.equal(owner.economy.arcade_spendable_xp, 700);
     }
     if (variation.noPetWallet || variation.failPetWallet ||
-        variation.unreconciledPetWallet || variation.pendingPetWalletRecovery) {
+        variation.unreconciledPetWallet) {
       assert.equal(owner.economy.moon_gold, null);
       assert.equal(owner.economy.moon_crystals, null);
       assert.equal(owner.economy.style_tokens, null);
@@ -491,6 +491,17 @@ test('missing, failed or inconsistent signed wallets remain unknown, never numer
       assert.equal(owner.economy.style_tokens, 9);
     }
   }
+});
+
+test('awarded wallet reconciliation supersedes retained pending recovery marker', async () => {
+  const response = await handlePlayerActionPlanRoute(request(auth({ limit: 100 })),
+    {DB:fakeDb({pendingPetWalletRecovery:true}),TELEGRAM_BOT_TOKEN:'test'},options());
+  assert.equal(response.status, 200);
+  const wallet = (await response.json()).owner.economy;
+  assert.equal(wallet.moonpet_wallet_health,'live');
+  assert.equal(wallet.moon_gold,350);
+  assert.equal(wallet.moon_crystals,12);
+  assert.equal(wallet.style_tokens,9);
 });
 
 test('authenticated endpoint covers every source, scopes pets opaquely, and is cache-proof', async () => {
