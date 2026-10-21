@@ -539,7 +539,7 @@ test('final My Moonboy tracker uses owner-bound BlockTopia, faction, Arcade ledg
   assert.equal(body.owner.economy.arcade_spendable_xp,700);
   assert.equal(body.owner.economy.arcade_earned_xp,1200);
   assert.equal(body.owner.economy.arcade_spent_xp,500);
-  assert.ok(db.calls.some(call=>/SELECT faction,faction_xp,xp,gems FROM blocktopia_progression/u.test(call.sql)
+  assert.ok(db.calls.some(call=>/SELECT faction, faction_xp, xp, gems FROM blocktopia_progression/u.test(call.sql)
     && call.params[0]==='123456'));
   assert.ok(db.calls.some(call=>/FROM wiki_mission_completions/u.test(call.sql)
     && call.params[0]==='123456'));
