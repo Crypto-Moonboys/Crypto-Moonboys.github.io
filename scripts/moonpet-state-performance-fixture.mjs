@@ -2,6 +2,7 @@
 // these numbers are not measurements of Cloudflare production latency.
 import { pathToFileURL } from 'node:url';
 import path from 'node:path';
+import { createHmac } from 'node:crypto';
 
 export async function performanceFixture({ root = process.cwd(), pets = 1, delayMs = 0 } = {}) {
   const { fixture, clockFixture, hooks, worker } = await import(pathToFileURL(path.join(root, 'scripts/moonpet-audit-regression-fixture.mjs')));
@@ -47,7 +48,32 @@ export async function performanceFixture({ root = process.cwd(), pets = 1, delay
     return { state, events, report: { mode, duration_ms: Math.round(performance.now() - started),
       statements: f.db.statementCount, ...metrics, stages } };
   }
-  return { ...f, hooks, worker, measure, close() { clock.restore(); f.sql.close(); } };
+  async function measureHttp(mode = 'full') {
+    Object.keys(metrics).forEach(key => { metrics[key] = 0; });
+    f.db.statementCount = 0;
+    const events = [], originalInfo = console.info;
+    console.info = value => {
+      if (typeof value === 'string' && value.includes('moonpet_state_timing')) events.push(JSON.parse(value));
+    };
+    const token = '123456:performance-fixture-secret';
+    const fields = new URLSearchParams({ auth_date: String(Math.floor(Date.now() / 1000)),
+      user: JSON.stringify({ id: Number(f.owner), first_name: 'Fixture player' }) });
+    const check = [...fields].sort(([a],[b]) => a.localeCompare(b)).map(([key,value]) => key + '=' + value).join('\n');
+    fields.set('hash', createHmac('sha256', createHmac('sha256','WebAppData').update(token).digest()).update(check).digest('hex'));
+    const started = performance.now();
+    try {
+      const response = await worker.fetch(new Request('https://fixture.test/telegram-pets/app/state', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mode, init_data: fields.toString() }),
+      }), { DB: f.db, TELEGRAM_BOT_TOKEN: token });
+      if (response.status !== 200) throw Error('performance_fixture_http_' + response.status);
+      const { state } = await response.json();
+      return { state, events, report: { mode, duration_ms: Math.round(performance.now() - started),
+        statements: f.db.statementCount, ...metrics,
+        stages: events.map(({ stage, duration_ms }) => ({ stage, duration_ms })) } };
+    } finally { console.info = originalInfo; }
+  }
+  return { ...f, hooks, worker, measure, measureHttp, close() { clock.restore(); f.sql.close(); } };
 }
 
 export function seedRecoveryEvidence(f, count = 5) {

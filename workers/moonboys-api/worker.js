@@ -10421,7 +10421,7 @@ async function projectPetMiniAppCoreState(db, telegramId, options, now, timings)
   }
 
   const dayKey = getPetDayKey(now);
-  const lifecycleScope = createDisplayedPetScope(db, telegramId, petRaw.pet_id, petRaw.season_key);
+  const lifecycleScope = createDisplayedPetScope(db, telegramId, petRaw.pet_id, petRaw.season_key, { coalesceReads: true });
   const lifecyclePromise = getExistingMoonpetLifecycle(lifecycleScope.db, telegramId)
     .then((lifecycle) => lifecycle || getMoonpetLifecycle(lifecycleScope.db, telegramId))
     .catch(error => { throw normalizePetProjectionError(error); });
@@ -10445,11 +10445,11 @@ async function projectPetMiniAppCoreState(db, telegramId, options, now, timings)
       WHERE telegram_id=? AND day_key=? AND status='accepted'`)
       .bind(String(telegramId), dayKey).first().then(requirePetFirstReadResult),
     // Home appearance uses the existing bounded, selected-pet read; live polling stays unchanged.
-    options.skipHouse ? Promise.resolve(undefined) : readPetHouseLayout(lifecycleScope.db, telegramId, petRaw)
+    options.skipHouse ? Promise.resolve(undefined) : readPetHouseLayout(lifecycleScope.singleReads, telegramId, petRaw)
       .catch(() => ({ available: false, pet_id: petRaw.pet_id })),
-    options.skipHouse ? Promise.resolve(undefined) : readFurnitureWithRooms(lifecycleScope.db, telegramId, petRaw)
+    options.skipHouse ? Promise.resolve(undefined) : readFurnitureWithRooms(lifecycleScope.singleReads, telegramId, petRaw)
       .catch(() => ({ available: false, pet_id: petRaw.pet_id })),
-    options.skipHouse ? Promise.resolve(undefined) : readPetGardenState(lifecycleScope.db, telegramId, petRaw, now)
+    options.skipHouse ? Promise.resolve(undefined) : readPetGardenState(lifecycleScope.singleReads, telegramId, petRaw, now)
       .catch(() => ({ available: false, pet_id: petRaw.pet_id })),
   ]);
   // Match the full-state privacy contract: stage-1 identity stays hidden, while
@@ -10541,7 +10541,7 @@ async function projectPetMiniAppCoreState(db, telegramId, options, now, timings)
 // Missions reuses HOME authority and only projects the systems its panels need.
 // The caller has already run the same ordered recovery passes as full state.
 async function buildPetMiniAppMissionsState(db, telegramId, petRaw, now, economy, timings = NO_PET_STATE_TIMINGS) {
-  const achievementScope = createDisplayedPetScope(db, telegramId, petRaw.pet_id, petRaw.season_key);
+  const achievementScope = createDisplayedPetScope(db, telegramId, petRaw.pet_id, petRaw.season_key, { coalesceReads: true });
   const corePromise = buildPetMiniAppCoreState(db, telegramId, { prepared: true, petRaw, now, economy, skipHouse: true });
   const [core, missions, achievements, contracts, seasonFinales, progression] = await Promise.all([
     corePromise,
@@ -10705,7 +10705,7 @@ async function projectPetMiniAppState(db, telegramId, botToken, options, now, ti
   if (options.mode === 'missions') return buildPetMiniAppMissionsState(db, telegramId, petRaw, now, economy, timings);
 
   const pet = serializePet(petRaw);
-  const identityScope = createDisplayedPetScope(db, telegramId, petRaw.pet_id, petRaw.season_key);
+  const identityScope = createDisplayedPetScope(db, telegramId, petRaw.pet_id, petRaw.season_key, { coalesceReads: true });
   const identityPromise = getMoonpetIdentityWithLifecycle(identityScope.db, telegramId, { required: true })
     .catch(error => { throw normalizePetProjectionError(error); });
   const lifecyclePromise = identityPromise.then((identity) => identity?.lifecycle || null);
@@ -10828,9 +10828,9 @@ async function projectPetMiniAppState(db, telegramId, botToken, options, now, ti
       ? Promise.resolve(petRaw)
       : getPetInstanceWithAtomicDecay(db, activeRun.pet_id),
     getStyleLoadout(db, telegramId, petRaw.pet_id),
-    readPetHouseLayout(identityScope.db, telegramId, petRaw).catch(() => ({ available: false, pet_id: petRaw.pet_id })),
-    readFurnitureWithRooms(identityScope.db, telegramId, petRaw).catch(() => ({ available: false, pet_id: petRaw.pet_id })),
-    readPetGardenState(identityScope.db, telegramId, petRaw, now).catch(() => ({ available: false, pet_id: petRaw.pet_id })),
+    readPetHouseLayout(identityScope.singleReads, telegramId, petRaw).catch(() => ({ available: false, pet_id: petRaw.pet_id })),
+    readFurnitureWithRooms(identityScope.singleReads, telegramId, petRaw).catch(() => ({ available: false, pet_id: petRaw.pet_id })),
+    readPetGardenState(identityScope.singleReads, telegramId, petRaw, now).catch(() => ({ available: false, pet_id: petRaw.pet_id })),
     getContractBoard(db, telegramId, petRaw, now),
     activeRun
       ? getDailyMoonRunReservation(db, { telegram_id: telegramId, run_id: activeRun.run_id })

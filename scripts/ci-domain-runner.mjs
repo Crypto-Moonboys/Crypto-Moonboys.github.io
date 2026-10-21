@@ -60,6 +60,7 @@ const GROUPS = {
     ['node', 'scripts/moonpet-consolidated-endings.test.mjs'],
     ['node', 'scripts/moonpet-consolidated-proofs.test.mjs'],
     ['node', 'scripts/moonpet-consolidated-projections.test.mjs'],
+    ['node', '--test', 'scripts/moonpet-state-performance.test.mjs'],
     ['node', '--test', 'scripts/radio-stream.test.mjs'],
     ['node', 'scripts/module-type-boundaries.test.mjs'],
     ['node', 'scripts/telegram-link-token-security.test.mjs'],

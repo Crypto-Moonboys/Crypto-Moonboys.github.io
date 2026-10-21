@@ -9,10 +9,12 @@ export function isDisplayedPetScopeStaleError(error) {
   return String(error?.message || error).includes(STALE_PATH);
 }
 
-export function createDisplayedPetScope(database, owner, petId, seasonKey = null) {
+export function createDisplayedPetScope(database, owner, petId, seasonKey = null, { coalesceReads = false } = {}) {
   let changed = false;
   let pending = Promise.resolve();
+  let reads = null;
   const statements = new WeakMap();
+  const readOnly = new WeakSet();
   const stale = () => new Error(STALE_PATH);
   const guard = () => database.prepare(`SELECT json_extract('{}', CASE WHEN EXISTS (
     SELECT 1 FROM telegram_pet_active_slots a
@@ -48,7 +50,7 @@ export function createDisplayedPetScope(database, owner, petId, seasonKey = null
     }
   }
 
-  function batch(entries) {
+  function enqueue(entries) {
     const result = pending.then(() => execute(entries));
     // Requests often read several projections in parallel. D1 transactions
     // execute sequentially; preserve that ordering within this request too.
@@ -56,24 +58,59 @@ export function createDisplayedPetScope(database, owner, petId, seasonKey = null
     return result;
   }
 
-  function wrap(native) {
+  function flushReads(group = reads) {
+    if (!group || group !== reads) return;
+    reads = null;
+    enqueue(group.entries).then(
+      results => group.waiters.forEach((waiter, index) => waiter.resolve(results[index])),
+      error => group.waiters.forEach(waiter => waiter.reject(error)),
+    );
+  }
+
+  function batch(entries) {
+    // Explicit batches and mutations are ordering barriers, never coalesced.
+    flushReads();
+    return enqueue(entries);
+  }
+
+  function read(statement) {
+    if (!readOnly.has(statement)) return batch([statement]).then(results => results[0]);
+    if (!reads) {
+      reads = { entries: [], waiters: [] };
+      const group = reads;
+      Promise.resolve().then(() => flushReads(group));
+    }
+    reads.entries.push(statement);
+    const result = new Promise((resolve, reject) => reads.waiters.push({ resolve, reject }));
+    if (reads.entries.length >= 16) flushReads();
+    return result;
+  }
+
+  function wrap(native, isReadOnly) {
     const statement = {
-      bind(...args) { return wrap(native.bind(...args)); },
+      bind(...args) { return wrap(native.bind(...args), isReadOnly); },
       async first(column) {
-        const result = (await batch([statement]))[0];
+        const result = await read(statement);
         if (!Array.isArray(result?.results)) throw new Error('pet_state_read_unavailable');
         const row = result.results[0] || null;
         return column === undefined ? row : row?.[column] ?? null;
       },
-      async all() { return (await batch([statement]))[0]; },
+      async all() { return read(statement); },
       async run() { return (await batch([statement]))[0]; },
     };
     statements.set(statement, native);
+    if (isReadOnly) readOnly.add(statement);
     return statement;
   }
 
   return {
-    db: { prepare(query) { return wrap(database.prepare(query)); }, batch },
+    // Only plain SELECTs qualify. CTEs, RETURNING and .run() retain their old
+    // transaction boundaries. A single final assertion guards all reads in the
+    // same D1 transaction, so switching ownership aborts the entire group.
+    db: { prepare(query) { return wrap(database.prepare(query), coalesceReads && /^\s*SELECT\b/i.test(query)); }, batch },
+    // Optional modules can fail independently while sharing the same sticky
+    // ownership failure and ordering queue with the mandatory projection.
+    singleReads: { prepare(query) { return wrap(database.prepare(query), false); }, batch },
     get changed() { return changed; },
   };
 }

@@ -426,7 +426,8 @@ assert.match(worker, /import \{ readPetLeaderboard, readPetActivity \}/, 'public
 assert.match(worker, /pet_mini_app_state_failed/, 'Mini App state failures must return a controlled JSON error instead of an uncaught fetch failure');
 assert.doesNotMatch(petRecoverySqlSources, /\btelegram_settings\b/, 'Moonpet recovery must not depend on the legacy production telegram_settings schema');
 assert.match(schema, /CREATE TABLE IF NOT EXISTS telegram_pet_recovery_cursors[\s\S]*PRIMARY KEY \(telegram_id, setting_key\)/, 'schema must define the dedicated per-player Moonpet cursor table');
-const miniAppStateBuilder = asyncBlock('buildPetMiniAppState');
+assert.match(asyncBlock('buildPetMiniAppState'), /projectPetMiniAppState\(db, telegramId, botToken, options, now, timings\)/, 'state requests delegate to the timed authoritative projection');
+const miniAppStateBuilder = asyncBlock('projectPetMiniAppState');
 assert.match(miniAppStateBuilder, /readPetLeaderboard\(db, \{ period: 'seasonal', limit: 10, now \}\)/, 'initial Mini App ranks must use the shared current-season query');
 assert.match(miniAppStateBuilder, /pet_mini_app_initial_leaderboard_failed[\s\S]*throw error/, 'Mini App state must propagate ranking query errors');
 assert.match(miniAppStateBuilder, /season_slots: seasonSlots/, 'Mini App state must expose current-season pet slots');
