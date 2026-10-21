@@ -216,8 +216,8 @@ test('Home E4 switches dedicated rooms on the existing canvas and garden is not 
   assert.doesNotMatch(client, /data-home-room/);
   assert.match(client, /\['room','floor','furniture'\]/);
   assert.doesNotMatch(client, /HOME_STATION_HOTSPOTS|homeStationAt\(/);
-  assert.match(worker, /readPetGardenState\(lifecycleScope\.db, telegramId, petRaw, now\)/);
-  assert.match(worker, /readPetGardenState\(identityScope\.db, telegramId, petRaw, now\)/);
+  assert.match(worker, /readPetGardenState\(lifecycleScope\.singleReads, telegramId, petRaw, now\)/);
+  assert.match(worker, /readPetGardenState\(identityScope\.singleReads, telegramId, petRaw, now\)/);
   assert.match(worker, /action === 'garden_plant' \|\| action === 'garden_harvest'/);
   const f = fixture('home-e3-live-read');
   await f.act({ action:'garden_plant', request_id:'plant' });
