@@ -472,11 +472,23 @@ test('missing, failed or inconsistent signed wallets remain unknown, never numer
       {DB:fakeDb(variation),TELEGRAM_BOT_TOKEN:'test'},options());
     assert.equal(response.status, 200);
     const owner = (await response.json()).owner;
-    assert.equal(owner.economy.arcade_spendable_xp, null);
+    // Wallet authorities fail independently: unresolved MoonPet recovery
+    // must not erase an otherwise verified spendable Arcade XP wallet.
+    if (variation.noSpendableWallet || variation.failSpendableWallet ||
+        variation.invalidSpendableWallet) {
+      assert.equal(owner.economy.arcade_spendable_xp, null);
+    } else {
+      assert.equal(owner.economy.arcade_spendable_xp, 700);
+    }
     if (variation.noPetWallet || variation.failPetWallet ||
         variation.unreconciledPetWallet || variation.pendingPetWalletRecovery) {
       assert.equal(owner.economy.moon_gold, null);
+      assert.equal(owner.economy.moon_crystals, null);
       assert.equal(owner.economy.style_tokens, null);
+    } else {
+      assert.equal(owner.economy.moon_gold, 350);
+      assert.equal(owner.economy.moon_crystals, 12);
+      assert.equal(owner.economy.style_tokens, 9);
     }
   }
 });
