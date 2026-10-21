@@ -29,7 +29,7 @@ test('complete registry checklist exactly tracks every Action Plan source and re
   assert.equal(guide.sources.map(x=>x.key).join('|'), ids.join('|'));
   const gaps = parity.mappings.filter(x=>x.parity === 'gap').map(x=>x.saved_status);
   assert.equal(gaps.length, 0);
-  assert.deepEqual(guide.savedOnly.map(x=>x.key).sort(), ['daily_cache','extra_bounty_claim','weekly_bounty_claim']);
+  assert.equal(guide.savedOnly.map(x=>x.key).sort().join('|'), 'daily_cache|extra_bounty_claim|weekly_bounty_claim');
   assert.ok(guide.savedOnly.every(x=>x.description && x.label));
 });
 
@@ -248,12 +248,12 @@ test('saved claim and Wiki links have per-row stable focus keys despite sharing 
     .map(x => x[1]);
   const sources = [...html.matchAll(/data-mm-focus-link="source:([a-z0-9.-]+)"/gu)]
     .map(x => x[1]);
-  assert.equal(saved.length, 5);
+  assert.equal(saved.length, 3);
   assert.equal(new Set(saved).size, 3);
   assert.equal(wiki.length, 6);
   assert.equal(new Set(wiki).size, 6);
   assert.equal(sources.length, 33);
-  assert.equal(new Set(sources).size, 28);
+  assert.equal(new Set(sources).size, 33);
   assert.ok(saved.includes('weekly_bounty_claim'));
   assert.ok(wiki.includes('cite'));
   const guideSource = read('js/my-moonboy-mission-guide.js');
