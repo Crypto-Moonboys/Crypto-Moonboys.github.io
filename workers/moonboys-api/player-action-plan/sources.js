@@ -15,6 +15,7 @@ import { getPetWeeklyBoss } from '../pets/player-expansion.js';
 import { getPetDailyBounties } from '../pets/economy-expansion.js';
 import { petSpaceOrderSql } from '../pets/space-order.js';
 import { CANONICAL_FACTION_READ_SQL, canonicalFactionProjection } from '../shared/faction-projection.js';
+import { projectSavedMoonpetClaims } from './moonpet-saved-claims.js';
 
 export const ACTION_PLAN_SOURCE_REGISTRY = Object.freeze([
   ['onboarding.telegram', 'onboarding', 'account', 'once', 'server_projection', '/gkniftyheads-incubator.html'],
@@ -35,6 +36,11 @@ export const ACTION_PLAN_SOURCE_REGISTRY = Object.freeze([
   ['moonpet.weekly-journey', 'moonpet', 'pet', 'pet_journey_week', 'server_receipt', '/moonpet-game.html'],
   ['moonpet.care', 'moonpet', 'pet', 'cooldown', 'server_projection', '/moonpet-game.html'],
   ['moonpet.claimable-rewards', 'moonpet', 'account', 'saved_claim', 'server_projection', '/moonpet-game.html'],
+  ['moonpet.daily-cache', 'moonpet', 'account', 'utc_day', 'server_receipt', '/moonpet-game.html'],
+  ['moonpet.season-tier-claims', 'moonpet', 'account', 'saved_claim', 'server_receipt', '/moonpet-game.html'],
+  ['moonpet.finale-claim', 'moonpet', 'original_pet', 'saved_claim', 'server_receipt', '/moonpet-game.html'],
+  ['moonpet.extra-bounty-claims', 'moonpet', 'account', 'utc_day', 'server_projection', '/moonpet-game.html'],
+  ['moonpet.weekly-bounty-claims', 'moonpet', 'account', 'source_defined', 'server_projection', '/moonpet-game.html'],
   ['moonpet.saved-run', 'moonpet', 'original_pet', 'run_session', 'server_projection', '/moonpet-game.html'],
   ['moonpet.contracts', 'moonpet', 'original_pet', 'saved_session', 'server_projection', '/moonpet-game.html'],
   ['moonpet.jobs', 'moonpet', 'pet', 'saved_timer', 'server_projection', '/moonpet-game.html'],
@@ -129,6 +135,11 @@ const SOURCE_TABLES = Object.freeze({
   'moonpet.weekly-journey': 'telegram_pet_weekly_journey_objectives',
   'moonpet.care': 'telegram_pet_instances',
   'moonpet.claimable-rewards': 'telegram_pet_reward_claims',
+  'moonpet.daily-cache': 'telegram_pet_events',
+  'moonpet.season-tier-claims': 'telegram_pet_season_state',
+  'moonpet.finale-claim': 'telegram_pet_season_finales',
+  'moonpet.extra-bounty-claims': 'telegram_pet_events',
+  'moonpet.weekly-bounty-claims': 'telegram_pet_events',
   'moonpet.saved-run': 'telegram_pet_runs',
   'moonpet.contracts': 'telegram_pet_contracts',
   'moonpet.jobs': 'telegram_pet_activity_sessions',
@@ -587,6 +598,12 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
       }));
   }
 
+  // Saved Status claim classes remain source-owned. The adapter reads only
+  // owner-bound D1 evidence; uncertain boards never inflate claim badges.
+  tasks.push(...await projectSavedMoonpetClaims({
+    db, ownerId, now, day, week, pets, rosterUnavailable, sourceStatuses, failures,
+    query, makeTask: (input) => task(now, input), opaqueRef,
+  }));
   const perPetSources = ['moonpet.adoption-incubation', 'moonpet.daily-journey', 'moonpet.weekly-journey', 'moonpet.care', 'moonpet.jobs', 'moonpet.bosses-combat', 'moonpet.garden-kitchen-gym', 'moonpet.evolution'];
   const byPet = (rows, value = 'total') => new Map(rows.map((row) => [String(row.pet_id), number(row[value])]));
   const dailyJourney = !pets.length || sourceStatuses['moonpet.daily-journey'].state === 'migration_pending' ? [] : await query(db,
