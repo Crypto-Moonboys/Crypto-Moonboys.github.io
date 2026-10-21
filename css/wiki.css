@@ -4503,3 +4503,31 @@ body.page-wiki .cm-comment-account .cm-comment-account-link:focus-visible {
   outline: 2px solid currentColor;
   outline-offset: 3px;
 }
+
+
+/* Only the specialist opt-in script creates this article-local list. Its data
+   is approved comment counts, not Community or Arcade XP. Keep it collapsed. */
+body.page-wiki .comments-top-contributors--opt-in {
+  display: block;
+  width: 100%;
+  margin: 12px 0 0;
+  padding: 10px 14px;
+}
+body.page-wiki .comments-top-contributors--opt-in > summary {
+  display: list-item;
+  cursor: pointer;
+  font-weight: 700;
+  line-height: 1.5;
+  color: #e5f5ff;
+  padding: 7px 0;
+}
+body.page-wiki .comments-top-contributors--opt-in > summary:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}
+body.page-wiki .comments-top-contributors--opt-in[open] > .top-contributor-tabs {
+  margin-top: 12px;
+}
+body.page-wiki .comments-top-contributors--opt-in .top-contributor-row--empty {
+  grid-template-columns: minmax(0, 1fr);
+}
