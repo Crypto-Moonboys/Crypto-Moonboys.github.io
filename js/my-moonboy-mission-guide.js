@@ -28,15 +28,19 @@
     : source.key.startsWith('onboarding.telegram') ? '/gkniftyheads-incubator.html'
     : source.key.startsWith('onboarding.pet-entry') ? '/games/'
     : '/community.html';
+  // Completion is display-only and must come from a fresh, accepted
+  // server receipt or an explicitly verified server projection. A browser
+  // mirror, preview, progress counter or claim-ready reward is NOT completed.
   function verifiedDone(task) {
     return !!task && STATUS_DONE.has(task.status) &&
-      task.source_health === 'live' && task.evidence?.kind === 'server_receipt' &&
+      task.source_health === 'live' &&
+      ['server_receipt', 'server_projection'].includes(task.evidence?.kind) &&
       task.evidence.verified_completion === true;
   }
   function simpleStatus(task, stale) {
     if (stale) return 'Previous snapshot — refresh';
     if (!task || typeof task !== 'object') return 'Status unavailable';
-    if (verifiedDone(task)) return 'Verified ' + exact(task.status);
+    if (verifiedDone(task)) return '✅ Completed';
     const name = exact(task.status || 'sync_unavailable').replace(/_/g, ' ');
     if (task.source_health === 'preview' || task.evidence?.kind === 'client_mirror' ||
         task.evidence?.kind === 'schedule_preview') return name + ' — advisory only';
@@ -109,7 +113,7 @@
     const all = currentTaskList(tasks, opts.topActions);
     const bySource = new Map(SOURCES.map(source => [source.key, []]));
     all.forEach(item => { if (bySource.has(item.source_key)) bySource.get(item.source_key).push(item); });
-    const heading = '<p class="mm-muted">Checklist statuses are read-only. A tick requires an accepted server receipt; there are no self-completion controls. Other source statuses never prove a task completed. Source details are read from the signed account only.</p>' +
+    const heading = '<p class="mm-muted">Checklist statuses are read-only. ✅ Completed requires verified server completion evidence; no self-completion controls exist. Claim-ready, previews and local progress do not count as completed. Source details are read from the signed account only.</p>' +
       (opts.moreAvailable ? '<p class="mm-source-warning">More tasks exist beyond this page. Expand the mission ledger and choose Load more until all source pages are loaded. Absence never means complete.</p>' : '') +
       (stale ? '<p class="mm-source-warning">Offline or stale: the statuses below are historical only. No current claims are verified until the next signed read.</p>' : '');
     const groups = ALLOWED_GROUPS.map(group => {
@@ -122,7 +126,7 @@
           const entries = bySource.get(source.key) || [];
           const done = !stale ? entries.filter(verifiedDone).length : 0;
           const sourceHeading = '<strong>' + escape(source.label) + '</strong>' +
-            '<span class="mm-muted"> · ' + done + ' receipt-verified / ' + entries.length +
+            '<span class="mm-muted"> · ' + done + ' verified complete / ' + entries.length +
             ' loaded task' + (entries.length === 1 ? '' : 's') + '</span>';
           const rows = entries.length
             ? '<ul class="mm-checklist-tasks">' + entries.map(task => {
@@ -141,7 +145,7 @@
                   (period.origin_timezone ? ' · ' + String(period.origin_timezone) : '')
                 : 'Not supplied by this source';
               return '<li><span class="mm-checklist-mark" aria-hidden="true">' +
-              (stale ? '–' : verifiedDone(task) ? '✓' : '○') + '</span><span>' +
+              (stale ? '–' : verifiedDone(task) ? '✅' : '○') + '</span><span>' +
               '<strong>' + escape(task.title || 'Unnamed source action') + '</strong> · ' +
               escape(simpleStatus(task, stale)) +
               (task.progress && task.progress.current != null
@@ -215,6 +219,7 @@
     wikiEngagement: WIKI_ENGAGEMENT,
     renderRules,
     renderChecklist,
+    verifiedDone,
   });
   const start = () => renderRules(document.getElementById('mm-economy-guide'));
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, { once: true });
