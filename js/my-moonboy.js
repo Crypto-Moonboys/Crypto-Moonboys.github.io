@@ -351,6 +351,7 @@
     byId('mm-player-name').textContent = 'Linked Moonboy';
     byId('mm-link-state').textContent = 'Telegram credential required';
     byId('mm-arcade-xp').textContent = 'Not confirmed';
+    byId('mm-community-xp').textContent = 'Not confirmed';
     for (const id of ['mm-arcade-spendable','mm-moon-gold','mm-moon-crystals','mm-style-tokens'])
       byId(id).textContent = 'Not confirmed';
     byId('mm-pet-xp').textContent = 'Not confirmed';
