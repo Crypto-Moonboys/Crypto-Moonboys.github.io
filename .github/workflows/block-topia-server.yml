@@ -28,8 +28,8 @@ jobs:
       run:
         working-directory: server/block-topia
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm
@@ -37,6 +37,9 @@ jobs:
       - run: npm ci
       - run: npm audit --audit-level=low
       - run: npm test
+      - name: Validate patched dependency lockfiles
+        run: node scripts/security-dependency-check.mjs
+        working-directory: .
       - run: npm ci
         working-directory: .
       - run: npx playwright install --with-deps chromium
