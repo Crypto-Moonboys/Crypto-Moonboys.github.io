@@ -46,11 +46,11 @@ async function setup({pets=1,recovery=false,website=false,delayMs=0,clock=false,
   const context=await browser.newContext({viewport,reducedMotion:'no-preference',serviceWorkers:'block'}),page=await context.newPage();
   if(clock)await page.clock.install();
   if(initScript)await page.addInitScript(initScript);
-  const errors=[],requests=[],inFlight=new Set();let blockFull=false,releaseFull,fullStarted,firstFull=true,failFull=false,invalid=false,fullValue=null;
+  const errors=[],requests=[],blockedBrowserRequests=[],inFlight=new Set();let blockFull=false,releaseFull,fullStarted,firstFull=true,failFull=false,invalid=false,fullValue=null;
   let fullGate=new Promise(resolve=>releaseFull=resolve),started=new Promise(resolve=>fullStarted=resolve);
   page.on('pageerror',e=>errors.push(e.message));
   await page.addInitScript(base=>{window.MOONBOYS_API={BASE_URL:base};localStorage.setItem('moonpet-radio-preference','off');},origin);
-  await page.route('**/*',async route=>{
+  await context.route('**/*',async route=>{
     const req=route.request(),url=new URL(req.url());
     if(url.hostname==='telegram.org')return route.fulfill({contentType:'text/javascript',body:'window.Telegram={WebApp:{initData:'+JSON.stringify(website||telegramDelay?'':fields.toString())+',platform:'+JSON.stringify(telegramDelay?'android':'unknown')+',ready(){},expand(){},onEvent(){},setHeaderColor(){},setBackgroundColor(){}}};'+(telegramDelay?'setTimeout(()=>{window.Telegram.WebApp.initData='+JSON.stringify(fields.toString())+';},'+telegramDelay+');':'' )});
     if(website&&url.pathname==='/js/identity-gate.js')return route.fulfill({contentType:'text/javascript',body:'window.fixtureAuth='+JSON.stringify(auth)+';window.fixtureWebsiteRestored=false;window.MOONBOYS_IDENTITY={restoreLinkedTelegramAuth:async()=>{await new Promise(resolve=>setTimeout(resolve,'+websiteDelay+'));window.fixtureWebsiteRestored=true;return {ok:true,telegram_auth:window.fixtureAuth};},getFreshTelegramAuth:async()=>window.fixtureAuth,getTelegramAuth:()=>window.fixtureAuth};'});
@@ -72,6 +72,7 @@ async function setup({pets=1,recovery=false,website=false,delayMs=0,clock=false,
       }finally{inFlight.delete(pending);finish();}
     }
     if(url.origin===origin)return route.continue();
+    blockedBrowserRequests.push(req.url());
     return route.abort();
   });
   const open=async()=>{await page.goto(origin+'/moonpet-game.html');await page.waitForFunction(()=>document.getElementById('boot-layer').classList.contains('is-hidden'));await page.waitForFunction(()=>window.MoonpetBetaAppearance.isBotArtReady());};
@@ -83,7 +84,7 @@ async function setup({pets=1,recovery=false,website=false,delayMs=0,clock=false,
     if(!await panel.evaluate(n=>n.open))await panel.locator('summary').click();
     await panel.locator('[data-action="'+action+'"]').waitFor({state:'visible'});
     const accepted=page.waitForResponse(r=>r.url().endsWith('/app/action'),{timeout:10000});accepted.catch(()=>{});await page.locator('[data-panel="care"] [data-action="'+action+'"]').click();const response=await accepted;const json=await response.json();assert.equal(json.result.accepted,true);await page.waitForFunction(()=>document.getElementById('terminal-output').textContent.includes('SAVE CONFIRMED'));return json;};
-  return {f,page,context,errors,requests,open,care,started,release:()=>releaseFull(),block:()=>{blockFull=true;},fail:value=>{failFull=value;},invalid:()=>{invalid=true;},full:()=>fullValue,
+  return {f,page,context,errors,requests,blockedBrowserRequests,open,care,started,release:()=>releaseFull(),block:()=>{blockFull=true;},fail:value=>{failFull=value;},invalid:()=>{invalid=true;},full:()=>fullValue,
     switchOwner:async()=>{
       const owner='980302',pet='pr7-other-owner';
       f.sql.prepare('INSERT INTO telegram_users(telegram_id) VALUES(?)').run(owner);

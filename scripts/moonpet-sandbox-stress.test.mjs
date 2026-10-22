@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {performanceFixture} from './moonpet-state-performance-fixture.mjs';
 import {httpAction} from './moonpet-audit-regression-fixture.mjs';
+import {startSandboxClock} from './moonpet-sandbox-clock.mjs';
 import {savedProgress} from './moonpet-sandbox-players.mjs';
 
 for(const longSession of [false,true])test('1,000 signed replays: '+(longSession?'40-minute session':'rate-limited burst'),async()=>{
@@ -30,4 +31,19 @@ for(const longSession of [false,true])test('1,000 signed replays: '+(longSession
   assert.equal(full.state.hydration.full,true);
   console.log('SANDBOX_STRESS '+JSON.stringify({longSession,requests:1000,duplicates,throttled,parallel:5,duration_ms:Math.round(performance.now()-started),sqlite_pages:pages,progression_unchanged:true}));
  }finally{globalThis.fetch=originalFetch;await f.drain();f.close();}
+});
+
+test('interactive elapsed time advances Node and SQLite cooldowns and stops before disposal',async()=>{
+ const f=await performanceFixture({owner:'980903'});
+ let elapsed=0,tick,cancelled=false;
+ try{
+  const before=Date.now();
+  const deadline=new Date(before+60000).toISOString();
+  const ready=()=>f.sql.prepare("SELECT julianday(?) <= julianday('now') AS ready").get(deadline).ready;
+  assert.equal(ready(),0);
+  const stop=startSandboxClock(f,{now:()=>elapsed,schedule:fn=>{tick=fn;return 123;},cancel:id=>{assert.equal(id,123);cancelled=true;}});
+  elapsed=61000;tick();assert.equal(Date.now()-before,61000);assert.equal(ready(),1);
+  elapsed=61500;tick();assert.equal(Date.now()-before,61500);
+  stop();elapsed=100000;tick();assert.equal(Date.now()-before,61500);assert.equal(cancelled,true);
+ }finally{f.close();}
 });

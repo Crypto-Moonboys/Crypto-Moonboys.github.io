@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
+import http from 'node:http';
 import {createMoonpetBrowserHarness} from './moonpet-browser-fixture.mjs';
 import {sandboxPlayers} from './moonpet-sandbox-players.mjs';
 const harness=await createMoonpetBrowserHarness();
@@ -50,6 +51,24 @@ try{
   },target);
   assert.equal(isolation.requests.length,requests);assert.equal(isolation.f.db.statementCount,statements);
   assert.deepEqual(isolation.errors,['sandbox_nonlocal_api_origin:https://api.cryptomoonboys.com','sandbox_nonlocal_api_origin:http://127.0.0.1:1']);
+  // A separate loopback origin is a safe external-network tripwire even on broken code.
+  let escaped=0;const sink=http.createServer((_req,res)=>{escaped++;res.end('escaped');});
+  await new Promise(resolve=>sink.listen(0,'127.0.0.1',resolve));
+  const target='http://127.0.0.1:'+sink.address().port+'/external-guide';
+  try{
+   for(const method of ['open','link']){
+    const failed=isolation.context.waitForEvent('requestfailed',{predicate:r=>r.url()===target});
+    const popup=isolation.page.waitForEvent('popup');
+    await isolation.page.evaluate(({method,target})=>{
+     if(method==='open')window.open(target,'_blank');
+     else{const a=document.createElement('a');a.href=target;a.target='_blank';document.body.appendChild(a);a.click();a.remove();}
+    },{method,target});
+    const tab=await popup;await failed;await tab.close();
+   }
+   assert.equal(escaped,0,'popup initial navigation must never leave the sandbox context');
+   assert.equal(isolation.blockedBrowserRequests.filter(url=>url===target).length,2);
+  }finally{await new Promise(resolve=>sink.close(resolve));}
+
  }finally{await isolation.close();}
  assert.deepEqual(harness.blockedWorkerRequests,[],'these read-only journeys require no outbound Worker requests');
  if(process.env.MOONPET_AUDIT_OUTPUT)await fs.writeFile(process.env.MOONPET_AUDIT_OUTPUT,JSON.stringify({model:'signed Worker/SQLite; no production traffic; local transport 20ms',results},null,2)+'\n');
