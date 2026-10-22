@@ -10717,16 +10717,26 @@ async function projectPetMiniAppState(db, telegramId, botToken, options, now, ti
   // combat await. Observe the derived rejection immediately so fail-closed
   // propagation never creates an unhandled sibling promise.
   combatEligibilityPromise.catch(() => {});
-  const [lifecycle, guidance, inventory, runtime, gear, materials, relics, arena, arenaQueue, recentArena, kaiju, kaijuQueue, recentKaiju, leaderboard, notifications, seasonSlots, recentActions, pendingStreetEvents, seasonFinales] = await Promise.all([
+  // Start read-only presentation and roster branches after authoritative recovery,
+  // without waiting for unrelated guidance queries. Live systems need identity,
+  // runtime, gear and materials, but not the rest of guidance.
+  const seasonSlotsPromise = buildPetSeasonSlotSummary(db, telegramId, now);
+  const gearPromise = identityScope.db.prepare(`SELECT item_key, slot, item_level, item_xp, mastery_xp, mastery_tier
+      FROM telegram_pet_equipment_progression WHERE telegram_id = ?
+      ORDER BY slot, item_level DESC, item_key`).bind(telegramId).all().then(requirePetReadResult);
+  const materialsPromise = identityScope.db.prepare(`SELECT material_key, quantity FROM telegram_pet_material_balances
+      WHERE telegram_id = ? AND quantity > 0 ORDER BY material_key`).bind(telegramId).all().then(requirePetReadResult);
+  const liveSystemsPromise = Promise.all([identityPromise, runtimePromise, gearPromise, materialsPromise])
+    .then(([identity, runtime, gear, materials]) => buildPetLiveSystemsState(db, telegramId,
+      serializePet(petRaw, identity, { include_art_identity: true, include_callsign: true, now }),
+      runtime, gear.results || [], materials.results || [], now, { projectionReads: identityScope.db }));
+  const [lifecycle, guidance, inventory, runtime, gear, materials, relics, arena, arenaQueue, recentArena, kaiju, kaijuQueue, recentKaiju, leaderboard, notifications, seasonSlots, recentActions, pendingStreetEvents, seasonFinales, journeySummary, liveSystems, styleLoadout, petHouse, petFurniture, petGarden, contracts] = await Promise.all([
     lifecyclePromise,
     buildPetGuidanceState(db, telegramId, petRaw, { identity: identityPromise, runtime: runtimePromise, combatEligibility: combatEligibilityPromise, projectionScope: identityScope, projectionReads: identityScope.db, economy, now }),
     getPetInventory(db, telegramId),
     runtimePromise,
-    identityScope.db.prepare(`SELECT item_key, slot, item_level, item_xp, mastery_xp, mastery_tier
-      FROM telegram_pet_equipment_progression WHERE telegram_id = ?
-      ORDER BY slot, item_level DESC, item_key`).bind(telegramId).all().then(requirePetReadResult),
-    identityScope.db.prepare(`SELECT material_key, quantity FROM telegram_pet_material_balances
-      WHERE telegram_id = ? AND quantity > 0 ORDER BY material_key`).bind(telegramId).all().then(requirePetReadResult),
+    gearPromise,
+    materialsPromise,
     db.prepare(`SELECT relic_id, unlocked_at AS acquired_at FROM telegram_pet_relics
       WHERE telegram_id = ? ORDER BY unlocked_at DESC, relic_id`).bind(telegramId).all().then(requirePetReadResult).catch((error) => {
         logApiFailure('pet_relic_vault_unavailable', { message: error?.message || String(error) });
@@ -10751,7 +10761,7 @@ async function projectPetMiniAppState(db, telegramId, botToken, options, now, ti
       throw error;
     }),
     getPetNotificationPreference(db, telegramId),
-    buildPetSeasonSlotSummary(db, telegramId, now),
+    seasonSlotsPromise,
     identityScope.db.prepare(`SELECT event_type, created_at FROM (
       SELECT event_type, created_at,
         ROW_NUMBER() OVER (PARTITION BY event_type ORDER BY julianday(created_at) DESC, created_at DESC) AS event_rank
@@ -10761,12 +10771,16 @@ async function projectPetMiniAppState(db, telegramId, botToken, options, now, ti
     ) WHERE event_rank=1`).bind(telegramId).all().then(requirePetReadResult),
     readPendingStreetEvents(db, telegramId),
     getSeasonFinales(db, telegramId, petRaw.pet_id, now),
+    seasonSlotsPromise.then(slots => buildPetMiniAppJourneySummary(db, telegramId, slots, now)),
+    liveSystemsPromise,
+    getStyleLoadout(db, telegramId, petRaw.pet_id),
+    readPetHouseLayout(identityScope.singleReads, telegramId, petRaw).catch(() => ({ available: false, pet_id: petRaw.pet_id })),
+    readFurnitureWithRooms(identityScope.singleReads, telegramId, petRaw).catch(() => ({ available: false, pet_id: petRaw.pet_id })),
+    readPetGardenState(identityScope.singleReads, telegramId, petRaw, now).catch(() => ({ available: false, pet_id: petRaw.pet_id })),
+    getContractBoard(db, telegramId, petRaw, now),
   ]);
   const leaderboardRows = leaderboard.rows;
-  const [journeySummary, hydratedKaiju] = await Promise.all([
-    buildPetMiniAppJourneySummary(db, telegramId, seasonSlots, now),
-    ensurePetKaijuMatchCategory(db, kaiju),
-  ]);
+  const hydratedKaiju = await ensurePetKaijuMatchCategory(db, kaiju);
   const finaleAchievement = seasonFinales.pets.find(entry => entry.pet_id === petRaw.pet_id && entry.season_key === petRaw.season_key && entry.status === 'won')
     || seasonFinales.pets.find(entry => entry.pet_id === petRaw.pet_id && entry.season_key === petRaw.season_key);
   if (guidance && finaleAchievement) guidance.achievements.push({ pet_id: petRaw.pet_id, season_key: petRaw.season_key, achievement_id: 'finale_victor', title: 'Finale Victor', description: 'Defeat Signal Sovereign with this pet.', target: 1, progress: finaleAchievement.status === 'won' ? 1 : 0, unlocked_at: finaleAchievement.defeated_at || null });
@@ -10802,7 +10816,6 @@ async function projectPetMiniAppState(db, telegramId, botToken, options, now, ti
     guidance.pet = canonicalPet;
     if (guidance.identity) guidance.identity.lifecycle = serializedLifecycle;
   }
-  const liveSystems = await buildPetLiveSystemsState(db, telegramId, canonicalPet, runtime, gear.results || [], materials.results || [], now, { projectionReads: identityScope.db });
   const guidedNext = guidance ? choosePetNextAction(guidance) : null;
   const affordableUpgrade = liveSystems.upgrades.find((item) => item.affordable && !item.maxed);
   const availableDistrict = liveSystems.regions.find((region) => region.available && !region.completed);
@@ -10825,15 +10838,10 @@ async function projectPetMiniAppState(db, telegramId, botToken, options, now, ti
       ? { key: 'rare_morph', title: 'Answer the hidden signal', detail: 'Your companion history has opened a one-of-one morph path.', action: 'rare_morph', destination: 'profile' }
       : guidedNext?.key && guidedNext.key !== 'maintain' ? guidedNext : liveNext || guidedNext;
   const activeRun = guidance?.active_run || null;
-  const [runPet, styleLoadout, petHouse, petFurniture, petGarden, contracts, dailyReservation] = await Promise.all([
+  const [runPet, dailyReservation] = await Promise.all([
     !activeRun || activeRun.pet_id === petRaw.pet_id
       ? Promise.resolve(petRaw)
       : getPetInstanceWithAtomicDecay(db, activeRun.pet_id),
-    getStyleLoadout(db, telegramId, petRaw.pet_id),
-    readPetHouseLayout(identityScope.singleReads, telegramId, petRaw).catch(() => ({ available: false, pet_id: petRaw.pet_id })),
-    readFurnitureWithRooms(identityScope.singleReads, telegramId, petRaw).catch(() => ({ available: false, pet_id: petRaw.pet_id })),
-    readPetGardenState(identityScope.singleReads, telegramId, petRaw, now).catch(() => ({ available: false, pet_id: petRaw.pet_id })),
-    getContractBoard(db, telegramId, petRaw, now),
     activeRun
       ? getDailyMoonRunReservation(db, { telegram_id: telegramId, run_id: activeRun.run_id })
       : Promise.resolve(null),

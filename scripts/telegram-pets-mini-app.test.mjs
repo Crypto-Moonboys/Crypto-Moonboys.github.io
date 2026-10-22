@@ -86,8 +86,8 @@ assert.equal(
 );
 assert.match(
   miniAppStateSource,
-  /const \[runPet, styleLoadout, petHouse, petFurniture, petGarden, contracts, dailyReservation\] = await Promise\.all\(\[/,
-  'independent Style, Contract and Daily reservation reads must execute concurrently',
+  /seasonSlotsPromise\.then\(slots => buildPetMiniAppJourneySummary[\s\S]*liveSystemsPromise,[\s\S]*getStyleLoadout[\s\S]*getContractBoard[\s\S]*const \[runPet, dailyReservation\] = await Promise\.all\(\[/,
+  'independent presentation must start before reservation-dependent room repair',
 );
 assert.match(
   miniAppStateSource,
@@ -1470,7 +1470,7 @@ assert.match(worker, /WHERE match_id=\? AND chat_id LIKE 'mini:kaiju:%' AND mode
 const kaijuCancelSource = worker.slice(worker.indexOf('async function cancelPetKaijuMiniAppMatch'), worker.indexOf('async function awardPetKaijuPlayerResult'));
 assert.doesNotMatch(kaijuCancelSource, /getPetMiniAppCombatEligibility|combat_unlocked|kaiju_match_cancel_unavailable/,
   'Kaiju stale match cleanup authority must depend on owned solo match state, not combat eligibility');
-assert.match(worker, /const \[journeySummary, hydratedKaiju\] = await Promise\.all\(\[[\s\S]*buildPetMiniAppJourneySummary[\s\S]*ensurePetKaijuMatchCategory/, 'Mini App state loading must hydrate journey summary and Kaiju category in parallel');
+assert.match(miniAppStateSource, /seasonSlotsPromise\.then\(slots => buildPetMiniAppJourneySummary[\s\S]*const hydratedKaiju = await ensurePetKaijuMatchCategory/, 'journey projection must start as soon as the roster is ready');
 
 assert.match(worker, /path === '\/telegram-pets\/app\/state'.*request\.method === 'POST'/s);
 assert.match(worker, /path === '\/telegram-pets\/app\/action'.*request\.method === 'POST'/s);

@@ -4,7 +4,7 @@ import { pathToFileURL } from 'node:url';
 import path from 'node:path';
 import { createHmac } from 'node:crypto';
 
-export async function performanceFixture({ root = process.cwd(), pets = 1, delayMs = 0, warm = true, owner = '980301' } = {}) {
+export async function performanceFixture({ root = process.cwd(), pets = 1, delayMs = 0, warm = true, owner = '980301', serializedWrites = false } = {}) {
   const { fixture, clockFixture, hooks, worker } = await import(pathToFileURL(path.join(root, 'scripts/moonpet-audit-regression-fixture.mjs')));
   const { createPetStateTimings } = await import(pathToFileURL(path.join(root, 'workers/moonboys-api/pets/state-timings.js')));
   const f = fixture(owner, 'pet-s2026-004');
@@ -14,7 +14,7 @@ export async function performanceFixture({ root = process.cwd(), pets = 1, delay
   // Pin every seed timestamp before any warm-up: these values drive lifecycle
   // age and ownership/reconciliation projections, not just hash metadata.
   const seedAt = clock.now().replace('T', ' ').slice(0, 19);
-  for (const table of ['telegram_users', 'telegram_pet_profiles', 'telegram_pet_instances',
+  for (const table of ['telegram_factions', 'telegram_seasons', 'telegram_users', 'telegram_pet_profiles', 'telegram_pet_instances',
     'telegram_pet_lifecycle_by_pet', 'telegram_pet_season_slots', 'telegram_pet_active_slots']) {
     const columns = f.sql.prepare('PRAGMA table_info(' + table + ')').all().map(column => column.name);
     const timestamps = ['created_at', 'updated_at', 'last_decay_at'].filter(name => columns.includes(name));
@@ -24,10 +24,24 @@ export async function performanceFixture({ root = process.cwd(), pets = 1, delay
   if (warm) await f.state();
   const metrics = { calls: 0, guarded_batches: 0, ownership_assertions: 0 };
   const pause = () => delayMs ? new Promise(resolve => setTimeout(resolve, delayMs)) : Promise.resolve();
+  // Optional conservative D1 model: each write occupies one queue slot for
+  // its complete simulated round trip. Independent reads can overlap; writes
+  // never receive an artificial parallel latency discount.
+  let writeTail = Promise.resolve();
+  const pending = new Set();
+  const execute = (write, operation) => {
+    const invoke = async () => { await pause(); return operation(); };
+    const result = serializedWrites && write ? writeTail.then(invoke) : invoke();
+    if (serializedWrites && write) writeTail = result.catch(() => {});
+    pending.add(result);
+    result.then(() => pending.delete(result), () => pending.delete(result));
+    return result;
+  };
+  const isWrite = statement => !/^\s*SELECT\b/i.test(statement.query);
   const proto = Object.getPrototypeOf(f.db.prepare('SELECT 1'));
   for (const method of ['first', 'all', 'run']) {
     const original = proto[method];
-    proto[method] = async function (...args) { metrics.calls++; await pause(); return original.apply(this, args); };
+    proto[method] = async function (...args) { metrics.calls++; return execute(isWrite(this), () => original.apply(this, args)); };
   }
   const originalBatch = f.db.batch.bind(f.db);
   f.db.batch = async statements => {
@@ -35,8 +49,7 @@ export async function performanceFixture({ root = process.cwd(), pets = 1, delay
     const guards = statements.filter(s => s.query.includes('AS displayed_pet_authority')).length;
     metrics.ownership_assertions += guards;
     if (guards) metrics.guarded_batches++;
-    await pause();
-    return originalBatch(statements);
+    return execute(statements.some(isWrite), () => originalBatch(statements));
   };
   async function measure(mode = 'full') {
     Object.keys(metrics).forEach(key => { metrics[key] = 0; });
@@ -58,11 +71,10 @@ export async function performanceFixture({ root = process.cwd(), pets = 1, delay
     return { state, events, report: { mode, duration_ms: Math.round(performance.now() - started),
       statements: f.db.statementCount, ...metrics, stages } };
   }
-  async function measureHttp(mode = 'full') {
-    Object.keys(metrics).forEach(key => { metrics[key] = 0; });
-    f.db.statementCount = 0;
+  async function measureHttp(mode = 'full', { reset = true, captureTimings = true, status = 200 } = {}) {
+    if (reset) { Object.keys(metrics).forEach(key => { metrics[key] = 0; }); f.db.statementCount = 0; }
     const events = [], originalInfo = console.info;
-    console.info = value => {
+    if (captureTimings) console.info = value => {
       if (typeof value === 'string' && value.includes('moonpet_state_timing')) events.push(JSON.parse(value));
     };
     const token = '123456:performance-fixture-secret';
@@ -76,14 +88,17 @@ export async function performanceFixture({ root = process.cwd(), pets = 1, delay
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ mode, init_data: fields.toString() }),
       }), { DB: f.db, TELEGRAM_BOT_TOKEN: token });
-      if (response.status !== 200) throw Error('performance_fixture_http_' + response.status);
-      const { state } = await response.json();
+      if (response.status !== status) throw Error('performance_fixture_http_' + response.status);
+      const body = await response.json();
+      const state = status === 200 ? body.state : body;
       return { state, events, report: { mode, duration_ms: Math.round(performance.now() - started),
         statements: f.db.statementCount, ...metrics,
         stages: events.map(({ stage, duration_ms, sql_statements, d1_calls }) => ({ stage, duration_ms, ...(sql_statements === undefined ? {} : { sql_statements, d1_calls }) })) } };
-    } finally { console.info = originalInfo; }
+    } finally { if (captureTimings) console.info = originalInfo; }
   }
-  return { ...f, hooks, worker, measure, measureHttp, advance: clock.advance, close() { clock.restore(); f.sql.close(); } };
+  return { ...f, hooks, worker, measure, measureHttp, async drain() {
+    do { await Promise.allSettled([...pending]); await new Promise(resolve => setImmediate(resolve)); } while (pending.size);
+  }, advance: clock.advance, close() { clock.restore(); f.sql.close(); } };
 }
 
 export function seedRecoveryEvidence(f, count = 5) {
