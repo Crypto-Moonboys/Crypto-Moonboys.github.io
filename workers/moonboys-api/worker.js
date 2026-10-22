@@ -1,3 +1,4 @@
+import { settlePetProjectionBranches } from './pets/projection-branches.js';
 import { createPetStateTimings, NO_PET_STATE_TIMINGS, measurePetDatabaseStage } from './pets/state-timings.js';
 import { capturePetEconomy, assertPetEconomy, assertPetEconomySource } from './pets/economic-projection.js';
 import { submitMoonpetRadioRequest } from './pets/radio-requests.js';
@@ -10730,7 +10731,7 @@ async function projectPetMiniAppState(db, telegramId, botToken, options, now, ti
     .then(([identity, runtime, gear, materials]) => buildPetLiveSystemsState(db, telegramId,
       serializePet(petRaw, identity, { include_art_identity: true, include_callsign: true, now }),
       runtime, gear.results || [], materials.results || [], now, { projectionReads: identityScope.db }));
-  const [lifecycle, guidance, inventory, runtime, gear, materials, relics, arena, arenaQueue, recentArena, kaiju, kaijuQueue, recentKaiju, leaderboard, notifications, seasonSlots, recentActions, pendingStreetEvents, seasonFinales, journeySummary, liveSystems, styleLoadout, petHouse, petFurniture, petGarden, contracts] = await Promise.all([
+  const [lifecycle, guidance, inventory, runtime, gear, materials, relics, arena, arenaQueue, recentArena, kaiju, kaijuQueue, recentKaiju, leaderboard, notifications, seasonSlots, recentActions, pendingStreetEvents, seasonFinales, journeySummary, liveSystems, styleLoadout, petHouse, petFurniture, petGarden, contracts] = await settlePetProjectionBranches([
     lifecyclePromise,
     buildPetGuidanceState(db, telegramId, petRaw, { identity: identityPromise, runtime: runtimePromise, combatEligibility: combatEligibilityPromise, projectionScope: identityScope, projectionReads: identityScope.db, economy, now }),
     getPetInventory(db, telegramId),
@@ -17674,7 +17675,7 @@ async function buildPetGuidanceState(db, telegramId, petRaw = null, options = {}
   const runtimePromise = Object.hasOwn(options, 'runtime')
     ? Promise.resolve(options.runtime)
     : getOrCreatePetRuntimeState(db, telegramId, dayKey, activePetRewardAuthority(sourcePet));
-  const [identity, activity, activeRun, missions, seasonState, achievements, weeklyProgress, weeklyAttempt, runtime, specialActions, weeklyPending, dailyCache, dailyTotals, weeklyRecoveryHistory] = await Promise.all([
+  const [identity, activity, activeRun, missions, seasonState, achievements, weeklyProgress, weeklyAttempt, runtime, specialActions, weeklyPending, dailyCache, dailyTotals, weeklyRecoveryHistory] = await settlePetProjectionBranches([
     identityPromise,
     getActivePetActivitySession(db, telegramId, now).then((active) => active || getRecoverablePetActivitySession(db, telegramId)),
     getActivePetRun(db, telegramId),
@@ -17700,7 +17701,7 @@ async function buildPetGuidanceState(db, telegramId, petRaw = null, options = {}
       .bind(telegramId, sourcePet.pet_id, sourcePet.season_key).all().then(requirePetReadResult),
   ]);
   Object.assign(pet, serializePet(sourcePet, identity, { now }));
-  const [evolution, economy] = await Promise.all([
+  const [evolution, economy] = await settlePetProjectionBranches([
     getPetEvolutionGuidance(db, telegramId, pet, identity),
     getPetEconomyState(db, telegramId, pet, now, projectionReads),
   ]);

@@ -51,8 +51,8 @@ for(const failure of ['throw','resolved'])test('PR8 mandatory early contract fai
     const before=f.sql.prepare('SELECT pet_xp,moon_gold FROM telegram_pet_profiles').get();
     f.db.beforeAll=async s=>{if(s.query.includes('SELECT c.contract_id,c.pet_id,c.season_key,c.reward_day')){if(failure==='throw')throw Error('fixture unavailable');return {success:false};}};
     await assert.rejects(f.measureHttp(),/performance_fixture_http_503/);
-    // Drain sibling projections before the retry; no reward is fabricated.
-    await f.drain(); f.db.beforeAll=null;
+    // Production has already settled sibling mutations before returning 503.
+    f.db.beforeAll=null;
     const result=await f.measureHttp();assert.equal(result.state.hydration.full,true);
     assert.deepEqual(f.sql.prepare('SELECT pet_xp,moon_gold FROM telegram_pet_profiles').get(),before);
   }finally{f.close();}
@@ -90,4 +90,32 @@ test('PR8 latency model serializes complete writes while allowing independent re
     release.resolve();await Promise.all([one,two]);
     assert.equal(f.sql.prepare('SELECT moon_gold FROM telegram_pet_profiles').get().moon_gold,1002);
   }finally{release.resolve();await f.drain();f.close();}
+});
+
+for(const held of ['runtime','achievement','live'])test('PR8 failed signed request settles '+held+' writes before returning 503',{timeout:5000},async()=>{
+  const f=await performanceFixture();const blocked=deferred(),release=deferred();let settled=false;
+  const query={runtime:'INSERT OR IGNORE INTO telegram_pet_specialist_progression',achievement:'INSERT INTO telegram_pet_achievements',live:'INSERT OR IGNORE INTO telegram_pet_live_progression_state'}[held];
+  f.db.beforeRun=async s=>{if(s.query.includes(query)){blocked.resolve();await release.promise;}};
+  f.db.beforeAll=async s=>{if(s.query.includes('SELECT c.contract_id,c.pet_id,c.season_key,c.reward_day'))throw Error('mandatory contract unavailable');};
+  const request=f.measureHttp();const rejection=assert.rejects(request,/performance_fixture_http_503/).then(()=>{settled=true;});
+  try {
+    await blocked.promise;await turn();
+    assert.equal(settled,false,'503 must wait for mutation-bearing sibling, without a fixture drain');
+    release.resolve();await rejection;
+    f.db.beforeRun=null;f.db.beforeAll=null;
+    assert.equal((await f.measureHttp()).state.hydration.full,true,'immediate retry is safe');
+  }finally{release.resolve();await rejection;f.close();}
+});
+
+test('PR8 live read failure waits for its in-flight progression initialization',{timeout:5000},async()=>{
+  const f=await performanceFixture();const blocked=deferred(),release=deferred();let settled=false;
+  try {
+    const state=await f.state();
+    f.db.beforeRun=async s=>{if(s.query.includes('INSERT OR IGNORE INTO telegram_pet_live_progression_state')){blocked.resolve();await release.promise;}};
+    f.db.beforeAll=async s=>{if(s.query.includes('FROM telegram_pet_event_chain_progress'))throw Error('chains unavailable');};
+    const request=buildPetLiveSystemsState(f.db,f.owner,state.pet,state.progress,state.gear,[],new Date());
+    const rejection=assert.rejects(request,/chains unavailable/).then(()=>{settled=true;});
+    try{await blocked.promise;await turn();assert.equal(settled,false);}
+    finally{release.resolve();await rejection;}
+  }finally{release.resolve();f.close();}
 });

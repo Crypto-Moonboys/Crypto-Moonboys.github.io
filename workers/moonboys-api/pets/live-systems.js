@@ -1,3 +1,4 @@
+import { settlePetProjectionBranches } from './projection-branches.js';
 import { atomicPetBatch } from './atomic-mutations.js';
 import { petRecoverableLiveDecisionSql } from './live-system-recovery-proof.js';
 import { requirePetFirstReadResult, requirePetReadResult, requirePetMutationResult } from './read-result.js';
@@ -173,7 +174,7 @@ export async function buildPetLiveSystemsState(db, telegramId, pet, runtime, gea
   const dailyCooldown = cooldownWindow(dailyResetAt, now);
   // Progression initialization only touches its own pet-owned table. These
   // source reads depend on verified ownership, not on that initialization.
-  const [liveProgression, chains, bossProgress, cosmetics, factionRow, dailyEvents, pendingBossRewards] = await Promise.all([
+  const [liveProgression, chains, bossProgress, cosmetics, factionRow, dailyEvents, pendingBossRewards] = await settlePetProjectionBranches([
     getPetLiveProgressionState(db, telegramId, pet, runtime, authority),
     authority
       ? projectionReads.prepare('SELECT chain_key, step_index, completed_cycles FROM telegram_pet_event_chain_progress WHERE pet_id=? AND telegram_id=? AND season_key=?').bind(authority.pet_id, telegramId, authority.season_key).all().then(requirePetReadResult)

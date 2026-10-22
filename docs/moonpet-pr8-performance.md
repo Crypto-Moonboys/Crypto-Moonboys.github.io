@@ -106,3 +106,7 @@ Heavy recovery p50 increased **18.96 ms**, while its complete response decreased
 - Final exact-head Codex review status is recorded in the PR conversation so this document does not require a new commit after review.
 
 The first Worker/API attempt identified obsolete source-layout assertions, which were updated to the new dependency scheduling; the complete suite was rerun successfully. No production, database, bot, Wiki, reward amount or frontend changes were made. GK approval is still required before merge or deployment.
+
+## Review correction: failure settlement
+
+Codex identified that an early mandatory read failure could return 503 while runtime, achievement or live progression initialization was still running. Mutation-bearing projection groups now use `settlePetProjectionBranches`: all siblings settle before any error propagates. The full group, guidance's mutation-bearing groups and live initialization group all retain concurrent success execution. Four new gated regressions require production error responses to wait for held writes and permit immediate retry **without** a fixture drain. The benchmark still drains the unmodified baseline after errors solely to compare fully settled saved-state hashes.
