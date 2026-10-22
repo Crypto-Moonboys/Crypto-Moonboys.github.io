@@ -699,3 +699,18 @@ test('hidden cooldown and queued module hydration do not schedule network work',
  f.ctx.state.hydration={full:false};f.ctx.activeScreen='work';f.ctx.queueActiveScreenHydration(0);
  assert.equal(f.timers.length,0);
 });
+
+for(const outcome of ['success','failure','superseded'])test('foreground core '+outcome+' only requeues warmup after a current signed snapshot',async()=>{
+ const f=context({activeScreen:'home',fullStateHydrationRetryTimer:0,fullStateHydrationFailures:0});
+ vm.runInContext(block('coreStateHydration'),f.ctx);
+ f.ctx.state.hydration={mode:'core',full:false};
+ const read=f.ctx.refreshSeasonSnapshot(true);
+ assert.equal(f.calls[0].body.mode,'core');assert.equal(f.timers.length,0);
+ if(outcome==='failure')f.pending[0].reject(Error('offline'));
+ else{if(outcome==='superseded')f.advance();f.pending[0].resolve({state:f.ctx.state});}
+ await read;assert.equal(f.timers.length,outcome==='success'?1:0);
+ if(outcome==='success'){
+  assert.equal(f.timers[0].delay,250);let options;f.ctx.hydrateFullState=(_screen,value)=>{options=value;};
+  f.timers[0].fn();assert.equal(options.background,true);assert.equal(f.calls.length,1);
+ }
+});

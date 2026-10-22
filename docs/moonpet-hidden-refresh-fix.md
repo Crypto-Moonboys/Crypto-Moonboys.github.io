@@ -2,13 +2,13 @@
 
 Reproduced on main 3dedb1725 in the isolated signed Worker/SQLite Chromium sandbox. The visibility handler stopped speculative hydration, but the independent live, season, cooldown and care-reconciliation paths continued to start requests. The thirty-second Home tick also rebuilt its DOM while hidden.
 
-The fix guards passive refresh entry points and pending module retries, cancels the three queued refresh timers when hidden, and preserves dirty/pending state. Returning to visibility uses the existing signed authoritative refresh. In-flight mutations are not aborted or replayed; Worker recovery, ownership, final economy checks and response contracts are unchanged.
+The fix guards passive refresh entry points and pending module retries, cancels the three queued refresh timers when hidden, and preserves dirty/pending state. Returning to visibility uses the existing signed authoritative refresh and requeues cancelled Home warmup only after a current core snapshot succeeds. Failed or superseded foreground reads do not start it. In-flight mutations are not aborted or replayed; Worker recovery, ownership, final economy checks and response contracts are unchanged.
 
 ## Evidence
 
 The same 330,000ms virtual hidden-Home workload on main started one full HTTP read and emitted 24 screen child-list mutation records. A continuous-clock run observed two reads. The fixed Chromium regression reports zero reads and zero mutations, then verifies successful signed refresh and care after visibility returns. XP, Gold, Crystals and Style snapshots are identical throughout the hidden interval. Existing one/three/recovery signed-care progression hashes are unchanged from main.
 
-Five new behavioural tests fail against main (53 existing tests pass, 5 new tests fail) and all 58 pass with the fix. They cover hidden Home, Work and Explore, queued module/cooldown work, dirty care state and authoritative resume. The existing PR7 Chromium suite includes the hidden-Home before/after regression. No timeout was increased and no assertion was bypassed.
+Five new behavioural tests fail against main (53 existing tests pass, 5 new tests fail) and all 61 pass with the fix (including three foreground-warmup review regressions). They cover hidden Home, Work and Explore, queued module/cooldown work, dirty care state and authoritative resume. The existing PR7 Chromium suite includes the hidden-Home before/after regression. No timeout was increased and no assertion was bypassed.
 
 Reproduce:
 

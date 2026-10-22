@@ -4877,6 +4877,8 @@
       if (!setStateSnapshot(data.state, requestGeneration)) return;
       seasonRefreshPending = false;
       seasonRefreshRetryAt = 0;
+      // Resume the Home warmup only after authoritative foreground reconciliation.
+      if (payload.mode === 'core') queueBackgroundStateHydration();
       var scrollTop = screen.scrollTop;
       render();
       screen.scrollTop = scrollTop;

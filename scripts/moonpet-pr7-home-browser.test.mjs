@@ -138,8 +138,10 @@ try {
       await hidden.page.evaluate(()=>{Object.defineProperty(document,'hidden',{configurable:true,value:true});document.dispatchEvent(new Event('visibilitychange'));});
       hidden.release();await pause(60);
       const resumed=hidden.page.waitForResponse(r=>r.url().endsWith('/app/state')&&r.request().postDataJSON().mode==='core');
+      const rewarmed=hidden.page.waitForResponse(r=>r.url().endsWith('/app/state')&&!r.request().postDataJSON().mode);
       await hidden.page.evaluate(()=>{Object.defineProperty(document,'hidden',{configurable:true,value:false});document.dispatchEvent(new Event('visibilitychange'));});
       await (await resumed).finished();
+      const warmed=await(await rewarmed).json();assert.equal(warmed.state.hydration.full,true,'foreground core restarts the cancelled Home warmup');
       await hidden.care('clean');assert.deepEqual(hidden.errors,[]);
     }finally{await hidden.close();}
     const delayedTelegram=await setup({website:true,telegramDelay:150,websiteDelay:8000,viewport});
