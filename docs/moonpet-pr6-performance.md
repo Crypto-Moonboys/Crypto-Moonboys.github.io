@@ -38,6 +38,6 @@ Repeat both commands for a second sample. The harness also reports builder-only 
 - Deterministic deferred-binding tests prove concurrent reads start together, mutations and explicit batches drain every prior reader, subsequent reads wait, and sticky stale ownership blocks writes.
 - Existing failure tests cover thrown/resolved/malformed mandatory reads, missing optional tables, invalid saved rooms, signed auth/expired sessions, separate accounts, selected-pet switching, simultaneous heavy refresh/settlement, archived attribution and receipt idempotency.
 - Mobile browser player loop passed at 360x640, including all six screens, saved three-space roster, historical reward recovery, daily/weekly completion, and source-pet attribution.
-- Full Worker/API CI: pending final completion.
+- Full Worker/API CI command: `npm run ci:worker-api`. Final completion status is recorded in the PR validation comment.
 
 No merge, deployment or migration is authorized by this PR. Hold for GK approval.
