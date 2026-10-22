@@ -64,6 +64,7 @@ const GROUPS = {
     ['node', '--test', 'scripts/moonpet-recovery-profiling.test.mjs'],
     ['node', '--test', 'scripts/moonpet-pr3-optimisation.test.mjs'],
     ['node', '--test', 'scripts/moonpet-pr4-optimisation.test.mjs'],
+    ['node', '--test', 'scripts/moonpet-pr5-diagnostics.test.mjs'],
     ['node', '--test', 'scripts/radio-stream.test.mjs'],
     ['node', 'scripts/module-type-boundaries.test.mjs'],
     ['node', 'scripts/telegram-link-token-security.test.mjs'],

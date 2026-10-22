@@ -1,0 +1,56 @@
+{
+  "baseline_commit": "82748b8755e8177c146bda5bacba6aa76e923e2a",
+  "source_file_sha256": "6bad5a891bc56e47c1d57a5264a05995187b045853ef52d0fba2f050ec0930e0",
+  "successful_full_state": {
+    "wall_ms": 9246,
+    "worker_cpu_ms": 110,
+    "ingress_country": "US",
+    "ingress_colo": "PDX",
+    "application_total_ms": 9215,
+    "projection_ms": 5654,
+    "projection_d1_calls": 100,
+    "projection_sql_statements": 157,
+    "state_recovery_ms": 2079,
+    "d1_bootstrap_ms": 1242,
+    "user_bootstrap_ms": 240,
+    "ownership_verification_ms": 290,
+    "weekly_journey_award_recovery_ms": 165
+  },
+  "coverage": {
+    "production_full_requests": 1,
+    "per_call_binding_timings": false,
+    "per_query_sql_timings": false,
+    "worker_execution_colo": false,
+    "d1_running_region": "WEUR",
+    "read_replication": "disabled",
+    "placement_override": false,
+    "traces_enabled": false,
+    "diagnostic_channel_events": 0
+  },
+  "claims": {
+    "worker_cpu_cannot_dominate": true,
+    "sql_vs_network_separation": "unavailable",
+    "regional_latency": "plausible but unconfirmed",
+    "normal_uk_comparison": "not captured"
+  },
+  "readonly_catalog_observation": {
+    "query_kind": "sqlite_master index metadata only",
+    "served_by_region": "WEUR",
+    "served_by_colo": "LHR",
+    "served_by_primary": true,
+    "sql_duration_ms": 0.2846,
+    "rows_written": 0,
+    "application_query_measurement": false,
+    "event_index_names": [
+      "idx_telegram_pet_events_owner_event_key_unique",
+      "idx_telegram_pet_events_pet_day",
+      "idx_telegram_pet_events_season_xp",
+      "idx_telegram_pet_events_user_created",
+      "idx_telegram_pet_events_user_day",
+      "idx_telegram_pet_events_user_type_status_created",
+      "idx_telegram_pet_events_user_week",
+      "sqlite_autoindex_telegram_pet_events_1",
+      "sqlite_autoindex_telegram_pet_events_2"
+    ]
+  }
+}
