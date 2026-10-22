@@ -626,8 +626,8 @@
     if (initData || !window.MOONBOYS_IDENTITY || typeof window.MOONBOYS_IDENTITY.restoreLinkedTelegramAuth !== 'function') return;
     try {
       var restored = await window.MOONBOYS_IDENTITY.restoreLinkedTelegramAuth();
-      telegramAuth = restored && restored.ok ? restored.telegram_auth : null;
-    } catch (_) { telegramAuth = null; }
+      if (!initData) telegramAuth = restored && restored.ok ? restored.telegram_auth : null;
+    } catch (_) { if (!initData) telegramAuth = null; }
   }
 
   // TEST-EXPORT: apiRequest:start
@@ -5437,7 +5437,11 @@
   async function start() {
     // Website session restoration and Telegram discovery are independent.
     // A restored signed website proof ends the discovery wait on its next tick.
-    await Promise.all([waitForTelegramContext(), restoreBrowserAuth()]);
+    var telegramContextReady = waitForTelegramContext();
+    var websiteAuthReady = restoreBrowserAuth();
+    await telegramContextReady;
+    // Native Telegram must not wait for unrelated website-auth deadlines.
+    if (!initData) await websiteAuthReady;
     bindViewportSizing();
     if (tg) {
       try { tg.ready(); tg.expand(); tg.setHeaderColor('#070707'); tg.setBackgroundColor('#070707'); if (tg.disableVerticalSwipes) tg.disableVerticalSwipes(); } catch (_) {}

@@ -23,7 +23,7 @@ const launch={headless:true,args:['--no-sandbox','--disable-gpu','--disable-dev-
 if(process.env.CHROMIUM_EXECUTABLE_PATH)launch.executablePath=process.env.CHROMIUM_EXECUTABLE_PATH;
 const browser=await chromium.launch(launch), results=[];
 let account=980400;
-async function setup({pets=1,recovery=false,website=false,delayMs=0,clock=false,telegramDelay=0,viewport={width:360,height:640}}={}){
+async function setup({pets=1,recovery=false,website=false,delayMs=0,clock=false,telegramDelay=0,websiteDelay=0,viewport={width:360,height:640}}={}){
   const f=await performanceFixture({pets,delayMs,owner:String(++account)});
   if(recovery)seedRecoveryEvidence(f);
   const token='123456:pr7-local-fixture';
@@ -43,7 +43,7 @@ async function setup({pets=1,recovery=false,website=false,delayMs=0,clock=false,
   await page.route('**/*',async route=>{
     const req=route.request(),url=new URL(req.url());
     if(url.hostname==='telegram.org')return route.fulfill({contentType:'text/javascript',body:'window.Telegram={WebApp:{initData:'+JSON.stringify(website||telegramDelay?'':fields.toString())+',platform:'+JSON.stringify(telegramDelay?'android':'unknown')+',ready(){},expand(){},onEvent(){},setHeaderColor(){},setBackgroundColor(){}}};'+(telegramDelay?'setTimeout(()=>{window.Telegram.WebApp.initData='+JSON.stringify(fields.toString())+';},'+telegramDelay+');':'' )});
-    if(website&&url.pathname==='/js/identity-gate.js')return route.fulfill({contentType:'text/javascript',body:'window.fixtureAuth='+JSON.stringify(auth)+';window.MOONBOYS_IDENTITY={restoreLinkedTelegramAuth:async()=>({ok:true,telegram_auth:window.fixtureAuth}),getFreshTelegramAuth:async()=>window.fixtureAuth,getTelegramAuth:()=>window.fixtureAuth};'});
+    if(website&&url.pathname==='/js/identity-gate.js')return route.fulfill({contentType:'text/javascript',body:'window.fixtureAuth='+JSON.stringify(auth)+';window.fixtureWebsiteRestored=false;window.MOONBOYS_IDENTITY={restoreLinkedTelegramAuth:async()=>{await new Promise(resolve=>setTimeout(resolve,'+websiteDelay+'));window.fixtureWebsiteRestored=true;return {ok:true,telegram_auth:window.fixtureAuth};},getFreshTelegramAuth:async()=>window.fixtureAuth,getTelegramAuth:()=>window.fixtureAuth};'});
     if(url.pathname.startsWith('/telegram-pets/app/')){
       const body=req.postDataJSON();requests.push({path:url.pathname,body});
       if(url.pathname.endsWith('/performance'))return route.fulfill({json:{ok:true}});
@@ -134,11 +134,12 @@ try {
       await hidden.page.waitForResponse(r=>r.url().endsWith('/app/state')&&r.request().postDataJSON().mode==='core');
       await hidden.care('clean');assert.deepEqual(hidden.errors,[]);
     }finally{await hidden.close();}
-    const delayedTelegram=await setup({website:true,telegramDelay:150,viewport});
+    const delayedTelegram=await setup({website:true,telegramDelay:150,websiteDelay:8000,viewport});
     try{
       await delayedTelegram.open();
       const initial=delayedTelegram.requests.find(r=>r.body.mode==='core');
       assert.ok(initial.body.init_data,'a delayed native Telegram launch retains priority over website credentials');
+      assert.equal(await delayedTelegram.page.evaluate(()=>window.fixtureWebsiteRestored),false,'native Home must be usable before stalled website restoration completes');
       assert.equal(initial.body.telegram_auth,undefined);assert.deepEqual(delayedTelegram.errors,[]);
     }finally{await delayedTelegram.close();}
     const changedOwner=await setup({website:true,viewport});

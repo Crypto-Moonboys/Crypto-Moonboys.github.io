@@ -1972,7 +1972,7 @@ assert.match(client, /phase === 'egg'[\s\S]{1,3000}renderSeasonSlots\(\)/, 'seas
 // Arcade XP zero must not be treated as missing — nullish checks are required.
 assert.match(client, /arcade_xp_available != null/, 'arcade_xp_available zero must not fall back via || operator');
 assert.match(client, /launchParameter\('tgWebAppData'\)/);
-assert.match(client, /await Promise\.all\(\[waitForTelegramContext\(\), restoreBrowserAuth\(\)\]\)/);
+assert.match(client, /var telegramContextReady = waitForTelegramContext\(\);[\s\S]*var websiteAuthReady = restoreBrowserAuth\(\);[\s\S]*await telegramContextReady;[\s\S]*if \(!initData\) await websiteAuthReady;/);
 assert.match(worker, /Object\.prototype\.hasOwnProperty\.call\(PET_ARENA_MOVES, move\)/);
 assert.match(worker, /FROM telegram_pet_run_rooms/);
 assert.match(worker, /key: choice\.choice_id/);

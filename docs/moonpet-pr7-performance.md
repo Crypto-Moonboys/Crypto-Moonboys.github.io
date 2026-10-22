@@ -4,7 +4,7 @@ Base: main 80a77cb2fc1e2aed65f45843d323ec788d15c9bf (merged PR6). References #16
 
 ## Runtime change
 
-Existing core-first loading is retained. Telegram discovery and website auth restoration now overlap; discovery can finish on the next 50 ms tick once a website proof is restored. Native Telegram launches retain priority over website credentials while their signed context arrives. The Worker still authenticates every request. Verified core state immediately dismisses decorative boot typing instead of waiting for its animation or covering the companion with another success animation. Art initialization stays asynchronous.
+Existing core-first loading is retained. Telegram discovery and website auth restoration now overlap; discovery can finish on the next 50 ms tick once a website proof is restored. Native Telegram launches retain priority over website credentials while their signed context arrives, and can proceed without awaiting a stalled website-auth backend. The Worker still authenticates every request. Verified core state immediately dismisses decorative boot typing instead of waiting for its animation or covering the companion with another success animation. Art initialization stays asynchronous.
 
 The full warmup is queued after two animation frames following the verified render. Speculative reads have one attempt and a 20-second deadline; foreground requests retain their existing retry/deadline policy. New foreground reads and actions cancel only the speculative read transport and advance the request generation. They immediately release its bookkeeping, and old cleanup cannot clear a newer request. No gameplay action or settlement is automatically retried or canceled.
 
@@ -46,10 +46,10 @@ Compare the six PR7_BROWSER_RESULT rows by auth/scenario; progression_hash must 
 
 ## Verification
 
-- Signed browser regressions at 360x640 and 1280x900: slow full state, confirmed care during warmup, late/out-of-order full responses, all six sections, in-flight pet switching, website account switching, hidden/visible, 20-second timeout, bounded 503 failures/manual retry, invalid startup auth and expired session. Passed.
+- Signed browser regressions at 360x640 and 1280x900: slow full state, confirmed care during warmup, late/out-of-order full responses, all six sections, in-flight pet switching, website account switching, hidden/visible, 20-second timeout, bounded 503 failures/manual retry, invalid startup auth, expired session, and delayed native Telegram context with website restoration stalled for eight seconds. Passed.
 - Unit hydration/request tests cover owner/pet/period changes, cancellation ignored by fetch/body reads, old finally versus a newer request, foreground preemption and confirmed care refresh. Passed.
 - Existing mobile player-loop tests cover archived-source recovery, completed versus claimable outcomes, idempotent receipts and the complete gameplay loop.
-- Complete Worker/API and visual CI commands: node scripts/ci-domain-runner.mjs worker-api and node scripts/ci-domain-runner.mjs visual. Final status and latest-head review are recorded in the PR validation comment.
+- Complete Worker/API and visual CI commands: node scripts/ci-domain-runner.mjs worker-api and node scripts/ci-domain-runner.mjs visual. Final status and latest-head review are recorded in the PR validation comment. The workflow-step test parser normalizes CRLF before matching; its Windows failure was reproduced on unchanged main before this test-only portability fix.
 
 ## Release
 
