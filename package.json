@@ -61,6 +61,7 @@
     "jose": "^6.2.12"
   },
   "overrides": {
-    "sharp": "$sharp"
+    "sharp": "$sharp",
+    "ip-address": "^10.7.4"
   }
 }
