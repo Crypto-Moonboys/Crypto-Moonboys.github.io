@@ -218,6 +218,17 @@ function seedBossPlayer(db, telegramId, seasonKey) {
   return petId;
 }
 
+// Seed both saved authorities together. A profile-only fixture edit can be
+// overwritten when SQLite timestamps cross a second during setup; these tests
+// exercise boss attribution, not legacy profile reconciliation.
+function seedBossCombatStats(db, telegramId, xp, level) {
+  for (const table of ['telegram_pet_profiles','telegram_pet_instances']) {
+    db.database.prepare(`UPDATE ${table}
+      SET pet_xp=?, level=?, energy=100, health=100, happiness=100, cleanliness=100
+      WHERE telegram_id=? ${table==='telegram_pet_instances' ? 'AND pet_id=(SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id=telegram_pet_instances.telegram_id)' : ''}`).run(xp,level,telegramId);
+  }
+}
+
 function switchActivePet(db, telegramId, petId, seasonKey) {
   db.database.prepare(`UPDATE telegram_pet_active_slots
     SET pet_id=?, season_key=?
@@ -930,9 +941,7 @@ const bossMemorySwitchSeasonKey = getPetSeasonInfo(new Date()).key;
 const bossMemoryPetA = seedBossPlayer(bossMemorySwitchDb, bossMemorySwitchTelegramId, bossMemorySwitchSeasonKey);
 const bossMemoryPetB = 'pet-weekly-boss-memory-switch-b';
 seedAdditionalPet(bossMemorySwitchDb, bossMemorySwitchTelegramId, bossMemoryPetB, 2, bossMemorySwitchSeasonKey);
-bossMemorySwitchDb.database.prepare(`UPDATE telegram_pet_profiles
-  SET pet_xp=392040, level=100, energy=100, health=100, happiness=100, cleanliness=100
-  WHERE telegram_id=?`).run(bossMemorySwitchTelegramId);
+seedBossCombatStats(bossMemorySwitchDb, bossMemorySwitchTelegramId, 392040, 100);
 {
   const weekKey = getPetWeekKey(new Date());
   const boss = getPetWeeklyBoss(weekKey);
@@ -957,9 +966,7 @@ assert.equal(bossMemorySwitchDb.database.prepare(`SELECT COUNT(*) AS count FROM 
 const bossMissingAuthorityDb = createDb();
 const bossMissingAuthorityTelegramId = 'weekly-boss-missing-authority';
 const bossMissingAuthorityPet = seedBossPlayer(bossMissingAuthorityDb, bossMissingAuthorityTelegramId, getPetSeasonInfo(new Date()).key);
-bossMissingAuthorityDb.database.prepare(`UPDATE telegram_pet_profiles
-  SET pet_xp=392040, level=100, energy=100, health=100, happiness=100, cleanliness=100
-  WHERE telegram_id=?`).run(bossMissingAuthorityTelegramId);
+seedBossCombatStats(bossMissingAuthorityDb, bossMissingAuthorityTelegramId, 392040, 100);
 bossMissingAuthorityDb.database.prepare(`DELETE FROM telegram_pet_active_slots WHERE telegram_id=?`).run(bossMissingAuthorityTelegramId);
 const bossMissingAuthority = await processPetWeeklyBoss(bossMissingAuthorityDb, bossMissingAuthorityTelegramId, 'strike', 'weekly-boss-missing-authority');
 assert.equal(bossMissingAuthority.accepted, false, 'Test 5l: weekly boss victory without pet authority must fail explicitly');
@@ -984,9 +991,7 @@ const bossDuplicateSeasonKey = getPetSeasonInfo(new Date()).key;
 const bossDuplicatePet = seedBossPlayer(bossDuplicateDb, bossDuplicateTelegramId, bossDuplicateSeasonKey);
 const bossDuplicatePetB = 'pet-weekly-boss-duplicate-b';
 seedAdditionalPet(bossDuplicateDb, bossDuplicateTelegramId, bossDuplicatePetB, 2, bossDuplicateSeasonKey);
-bossDuplicateDb.database.prepare(`UPDATE telegram_pet_profiles
-  SET pet_xp=2500, level=20, energy=100, health=100, happiness=100, cleanliness=100
-  WHERE telegram_id=?`).run(bossDuplicateTelegramId);
+seedBossCombatStats(bossDuplicateDb, bossDuplicateTelegramId, 2500, 20);
 const bossFirst = await processPetWeeklyBoss(bossDuplicateDb, bossDuplicateTelegramId, 'strike', 'weekly-boss-original-key');
 assert.equal(bossFirst.accepted, true, 'Test 5g: first weekly boss attempt is accepted');
 const bossOriginalEvent = bossDuplicateDb.database.prepare(`SELECT day_key, week_key, metadata FROM telegram_pet_events
@@ -1048,9 +1053,7 @@ const bossUnattributedSeasonKey = getPetSeasonInfo(new Date()).key;
 const bossUnattributedPet = seedBossPlayer(bossUnattributedDuplicateDb, bossUnattributedTelegramId, bossUnattributedSeasonKey);
 const bossUnattributedPetB = 'pet-weekly-boss-unattributed-b';
 seedAdditionalPet(bossUnattributedDuplicateDb, bossUnattributedTelegramId, bossUnattributedPetB, 2, bossUnattributedSeasonKey);
-bossUnattributedDuplicateDb.database.prepare(`UPDATE telegram_pet_profiles
-  SET pet_xp=2500, level=20, energy=100, health=100, happiness=100, cleanliness=100
-  WHERE telegram_id=?`).run(bossUnattributedTelegramId);
+seedBossCombatStats(bossUnattributedDuplicateDb, bossUnattributedTelegramId, 2500, 20);
 const bossUnattributedFirst = await processPetWeeklyBoss(bossUnattributedDuplicateDb, bossUnattributedTelegramId, 'strike', 'weekly-boss-unattributed-original-key');
 assert.equal(bossUnattributedFirst.accepted, true, 'Test 5h: unattributed weekly boss fixture creates an accepted attempt');
 bossUnattributedDuplicateDb.database.prepare(`UPDATE telegram_pet_weekly_boss_progress
@@ -1076,9 +1079,7 @@ const bossDefeatedBackfillDb = createDb();
 const bossDefeatedTelegramId = 'weekly-boss-defeated-backfill';
 const bossDefeatedSeasonKey = getPetSeasonInfo(new Date()).key;
 const bossDefeatedPet = seedBossPlayer(bossDefeatedBackfillDb, bossDefeatedTelegramId, bossDefeatedSeasonKey);
-bossDefeatedBackfillDb.database.prepare(`UPDATE telegram_pet_profiles
-  SET pet_xp=2500, level=20, energy=100, health=100, happiness=100, cleanliness=100
-  WHERE telegram_id=?`).run(bossDefeatedTelegramId);
+seedBossCombatStats(bossDefeatedBackfillDb, bossDefeatedTelegramId, 2500, 20);
 const bossDefeatedFirst = await processPetWeeklyBoss(bossDefeatedBackfillDb, bossDefeatedTelegramId, 'strike', 'weekly-boss-defeated-original-key');
 assert.equal(bossDefeatedFirst.accepted, true, 'Test 5i: defeated-boss backfill fixture creates a first accepted attempt');
 const bossDefeatedOriginalEvent = bossDefeatedBackfillDb.database.prepare(`SELECT day_key, week_key, metadata FROM telegram_pet_events

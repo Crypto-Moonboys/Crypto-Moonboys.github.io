@@ -34,9 +34,9 @@ export async function performanceFixture({ root = process.cwd(), pets = 1, delay
     const stages = [];
     const events = [];
     const trace = createPetStateTimings({ mode, emit: event => events.push(event) });
-    const timings = { async measure(stage, run) {
+    const timings = { async measure(stage, run, counts) {
       const statements = f.db.statementCount, calls = metrics.calls;
-      try { return await trace.measure(stage, run); }
+      try { return await trace.measure(stage, run, counts); }
       finally {
         const event = events.filter(e => e.stage === stage).at(-1);
         stages.push({ stage, duration_ms: event.duration_ms, statements: f.db.statementCount - statements, calls: metrics.calls - calls });
@@ -70,7 +70,7 @@ export async function performanceFixture({ root = process.cwd(), pets = 1, delay
       const { state } = await response.json();
       return { state, events, report: { mode, duration_ms: Math.round(performance.now() - started),
         statements: f.db.statementCount, ...metrics,
-        stages: events.map(({ stage, duration_ms }) => ({ stage, duration_ms })) } };
+        stages: events.map(({ stage, duration_ms, sql_statements, d1_calls }) => ({ stage, duration_ms, ...(sql_statements === undefined ? {} : { sql_statements, d1_calls }) })) } };
     } finally { console.info = originalInfo; }
   }
   return { ...f, hooks, worker, measure, measureHttp, close() { clock.restore(); f.sql.close(); } };

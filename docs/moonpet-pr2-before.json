@@ -1,0 +1,425 @@
+{
+  "fixture": "SQLite/fixed-2026-10-21",
+  "modeled_call_delay_ms": 10,
+  "note": "Stages are inclusive: settlement is inside recovery; verification is inside projection. Not production latency.",
+  "results": [
+    {
+      "path": "builder",
+      "scenario": "warm",
+      "mode": "full",
+      "duration_ms": 831,
+      "statements": 167,
+      "calls": 138,
+      "guarded_batches": 14,
+      "ownership_assertions": 14,
+      "stages": [
+        {
+          "stage": "d1_bootstrap",
+          "duration_ms": 119.63,
+          "statements": 7,
+          "calls": 7
+        },
+        {
+          "stage": "daily_settlement",
+          "duration_ms": 30.6,
+          "statements": 2,
+          "calls": 2
+        },
+        {
+          "stage": "weekly_settlement",
+          "duration_ms": 61.48,
+          "statements": 4,
+          "calls": 4
+        },
+        {
+          "stage": "state_recovery",
+          "duration_ms": 203.18,
+          "statements": 13,
+          "calls": 13
+        },
+        {
+          "stage": "ownership_verification",
+          "duration_ms": 30.51,
+          "statements": 3,
+          "calls": 2
+        },
+        {
+          "stage": "pet_state_projection",
+          "duration_ms": 508.42,
+          "statements": 147,
+          "calls": 118
+        }
+      ]
+    },
+    {
+      "path": "builder",
+      "scenario": "three_pets",
+      "mode": "full",
+      "duration_ms": 821,
+      "statements": 175,
+      "calls": 146,
+      "guarded_batches": 14,
+      "ownership_assertions": 14,
+      "stages": [
+        {
+          "stage": "d1_bootstrap",
+          "duration_ms": 108.93,
+          "statements": 7,
+          "calls": 7
+        },
+        {
+          "stage": "daily_settlement",
+          "duration_ms": 31.44,
+          "statements": 2,
+          "calls": 2
+        },
+        {
+          "stage": "weekly_settlement",
+          "duration_ms": 61.92,
+          "statements": 4,
+          "calls": 4
+        },
+        {
+          "stage": "state_recovery",
+          "duration_ms": 203.86,
+          "statements": 13,
+          "calls": 13
+        },
+        {
+          "stage": "ownership_verification",
+          "duration_ms": 29.01,
+          "statements": 3,
+          "calls": 2
+        },
+        {
+          "stage": "pet_state_projection",
+          "duration_ms": 508.34,
+          "statements": 155,
+          "calls": 126
+        }
+      ]
+    },
+    {
+      "path": "builder",
+      "scenario": "recovery",
+      "mode": "full",
+      "duration_ms": 1627,
+      "statements": 264,
+      "calls": 190,
+      "guarded_batches": 14,
+      "ownership_assertions": 14,
+      "stages": [
+        {
+          "stage": "d1_bootstrap",
+          "duration_ms": 108.55,
+          "statements": 7,
+          "calls": 7
+        },
+        {
+          "stage": "daily_settlement",
+          "duration_ms": 30.97,
+          "statements": 2,
+          "calls": 2
+        },
+        {
+          "stage": "weekly_settlement",
+          "duration_ms": 623.28,
+          "statements": 70,
+          "calls": 40
+        },
+        {
+          "stage": "state_recovery",
+          "duration_ms": 1012.09,
+          "statements": 110,
+          "calls": 65
+        },
+        {
+          "stage": "ownership_verification",
+          "duration_ms": 29.72,
+          "statements": 3,
+          "calls": 2
+        },
+        {
+          "stage": "pet_state_projection",
+          "duration_ms": 506.54,
+          "statements": 147,
+          "calls": 118
+        }
+      ]
+    },
+    {
+      "path": "builder",
+      "scenario": "core",
+      "mode": "core",
+      "duration_ms": 349,
+      "statements": 42,
+      "calls": 33,
+      "guarded_batches": 9,
+      "ownership_assertions": 9,
+      "stages": [
+        {
+          "stage": "d1_bootstrap",
+          "duration_ms": 116.01,
+          "statements": 7,
+          "calls": 7
+        },
+        {
+          "stage": "ownership_verification",
+          "duration_ms": 30.96,
+          "statements": 3,
+          "calls": 2
+        },
+        {
+          "stage": "pet_state_projection",
+          "duration_ms": 233.13,
+          "statements": 35,
+          "calls": 26
+        }
+      ]
+    },
+    {
+      "path": "authenticated_http",
+      "scenario": "warm",
+      "mode": "full",
+      "duration_ms": 869,
+      "statements": 168,
+      "calls": 139,
+      "guarded_batches": 14,
+      "ownership_assertions": 14,
+      "stages": [
+        {
+          "stage": "request_parse",
+          "duration_ms": 0.7
+        },
+        {
+          "stage": "rate_limit",
+          "duration_ms": 0.32
+        },
+        {
+          "stage": "authentication",
+          "duration_ms": 0.74
+        },
+        {
+          "stage": "rate_limit",
+          "duration_ms": 0.04
+        },
+        {
+          "stage": "user_bootstrap",
+          "duration_ms": 21.56
+        },
+        {
+          "stage": "d1_bootstrap",
+          "duration_ms": 106.9
+        },
+        {
+          "stage": "daily_settlement",
+          "duration_ms": 30.97
+        },
+        {
+          "stage": "weekly_settlement",
+          "duration_ms": 62.9
+        },
+        {
+          "stage": "state_recovery",
+          "duration_ms": 203.06
+        },
+        {
+          "stage": "ownership_verification",
+          "duration_ms": 31
+        },
+        {
+          "stage": "pet_state_projection",
+          "duration_ms": 510
+        },
+        {
+          "stage": "response_serialization",
+          "duration_ms": 1.87
+        },
+        {
+          "stage": "total",
+          "duration_ms": 845.4
+        }
+      ]
+    },
+    {
+      "path": "authenticated_http",
+      "scenario": "three_pets",
+      "mode": "full",
+      "duration_ms": 861,
+      "statements": 176,
+      "calls": 147,
+      "guarded_batches": 14,
+      "ownership_assertions": 14,
+      "stages": [
+        {
+          "stage": "request_parse",
+          "duration_ms": 0.07
+        },
+        {
+          "stage": "rate_limit",
+          "duration_ms": 0.04
+        },
+        {
+          "stage": "authentication",
+          "duration_ms": 0.4
+        },
+        {
+          "stage": "rate_limit",
+          "duration_ms": 0.02
+        },
+        {
+          "stage": "user_bootstrap",
+          "duration_ms": 24.73
+        },
+        {
+          "stage": "d1_bootstrap",
+          "duration_ms": 110.42
+        },
+        {
+          "stage": "daily_settlement",
+          "duration_ms": 30.01
+        },
+        {
+          "stage": "weekly_settlement",
+          "duration_ms": 62.17
+        },
+        {
+          "stage": "state_recovery",
+          "duration_ms": 205.53
+        },
+        {
+          "stage": "ownership_verification",
+          "duration_ms": 30.79
+        },
+        {
+          "stage": "pet_state_projection",
+          "duration_ms": 516.31
+        },
+        {
+          "stage": "response_serialization",
+          "duration_ms": 1.47
+        },
+        {
+          "stage": "total",
+          "duration_ms": 859.17
+        }
+      ]
+    },
+    {
+      "path": "authenticated_http",
+      "scenario": "recovery",
+      "mode": "full",
+      "duration_ms": 1659,
+      "statements": 265,
+      "calls": 191,
+      "guarded_batches": 14,
+      "ownership_assertions": 14,
+      "stages": [
+        {
+          "stage": "request_parse",
+          "duration_ms": 0.07
+        },
+        {
+          "stage": "rate_limit",
+          "duration_ms": 0.04
+        },
+        {
+          "stage": "authentication",
+          "duration_ms": 0.3
+        },
+        {
+          "stage": "rate_limit",
+          "duration_ms": 0.04
+        },
+        {
+          "stage": "user_bootstrap",
+          "duration_ms": 17.6
+        },
+        {
+          "stage": "d1_bootstrap",
+          "duration_ms": 110.65
+        },
+        {
+          "stage": "daily_settlement",
+          "duration_ms": 32.01
+        },
+        {
+          "stage": "weekly_settlement",
+          "duration_ms": 625.15
+        },
+        {
+          "stage": "state_recovery",
+          "duration_ms": 1018.45
+        },
+        {
+          "stage": "ownership_verification",
+          "duration_ms": 31.68
+        },
+        {
+          "stage": "pet_state_projection",
+          "duration_ms": 509.29
+        },
+        {
+          "stage": "response_serialization",
+          "duration_ms": 1.53
+        },
+        {
+          "stage": "total",
+          "duration_ms": 1658.13
+        }
+      ]
+    },
+    {
+      "path": "authenticated_http",
+      "scenario": "core",
+      "mode": "core",
+      "duration_ms": 358,
+      "statements": 43,
+      "calls": 34,
+      "guarded_batches": 9,
+      "ownership_assertions": 9,
+      "stages": [
+        {
+          "stage": "request_parse",
+          "duration_ms": 0.06
+        },
+        {
+          "stage": "rate_limit",
+          "duration_ms": 0.03
+        },
+        {
+          "stage": "authentication",
+          "duration_ms": 0.24
+        },
+        {
+          "stage": "rate_limit",
+          "duration_ms": 0.02
+        },
+        {
+          "stage": "user_bootstrap",
+          "duration_ms": 16.72
+        },
+        {
+          "stage": "d1_bootstrap",
+          "duration_ms": 108.3
+        },
+        {
+          "stage": "ownership_verification",
+          "duration_ms": 30.38
+        },
+        {
+          "stage": "pet_state_projection",
+          "duration_ms": 232.08
+        },
+        {
+          "stage": "response_serialization",
+          "duration_ms": 0.23
+        },
+        {
+          "stage": "total",
+          "duration_ms": 357.84
+        }
+      ]
+    }
+  ]
+}
