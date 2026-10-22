@@ -1,0 +1,55 @@
+{
+  "commit": "0ef7b80ec3f07043d02f435527e98943f1764ec6",
+  "normalization": "creation/update fixture metadata and presentation challenge tokens only",
+  "cases": [
+    {
+      "scenario": "new",
+      "response_hash": "6d847464c8b267b15262fdd7c93ef2ef6eabb05e2ac4bc88b1991c9285d03990",
+      "persisted_hash": "129a96c9e543b73b65823e450fec1e2626efdb887e71cc192b603eeb6a647912",
+      "calls": 144,
+      "statements": 174
+    },
+    {
+      "scenario": "warm",
+      "response_hash": "6d847464c8b267b15262fdd7c93ef2ef6eabb05e2ac4bc88b1991c9285d03990",
+      "persisted_hash": "2a72310efe17001dc181c762f06d10340eed0c4524d9acb064d22fab59421b7a",
+      "calls": 139,
+      "statements": 168
+    },
+    {
+      "scenario": "three",
+      "response_hash": "17c7ab0c7f99f9f65e27740dfd17d7bab7e75742b846517c5041a66177ecdb53",
+      "persisted_hash": "068c5410bdb584772723ee056b2342245a36dd2014feae815bc73ec7fca735e7",
+      "calls": 147,
+      "statements": 176
+    },
+    {
+      "scenario": "heavy",
+      "response_hash": "267a41ccb547c5d3755c01b7298ab7ca36ac947eacd9b54e27bfe4c55557cccf",
+      "persisted_hash": "6e1e014f8a3ec8bd3d1acdcd213db026596d09b6cf55a69cf9e86a7ae0dd177b",
+      "calls": 226,
+      "statements": 298
+    },
+    {
+      "scenario": "archived",
+      "response_hash": "10faaeeb8ac6eee33eb3303d7e0fb465426ff4d63f0e601d0c1eef14c94bafdd",
+      "persisted_hash": "f592a9db4ce396247567d386e902acdce38a65ab702b94c78fccc6a83aa18b10",
+      "calls": 230,
+      "statements": 302
+    },
+    {
+      "scenario": "day_rollover",
+      "response_hash": "110dea10fbcae7c8e795c1f14ae6a2a3e62a3ce6cad053eaf3a3d7c2778d0ec8",
+      "persisted_hash": "2a72310efe17001dc181c762f06d10340eed0c4524d9acb064d22fab59421b7a",
+      "calls": 141,
+      "statements": 170
+    },
+    {
+      "scenario": "week_rollover",
+      "response_hash": "47ec0b8834657bf9dce942b8a21019ceacbe0590bbdb3655c63e9809550f5459",
+      "persisted_hash": "2a72310efe17001dc181c762f06d10340eed0c4524d9acb064d22fab59421b7a",
+      "calls": 141,
+      "statements": 170
+    }
+  ]
+}

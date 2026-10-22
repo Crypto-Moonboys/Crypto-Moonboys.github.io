@@ -1,0 +1,4060 @@
+{
+  "baseline_commit": "0ef7b80ec3f07043d02f435527e98943f1764ec6",
+  "production_measurements": false,
+  "runtime": "Node 24.14.0 / local SQLite",
+  "state_before": {
+    "fixture": "SQLite/fixed-2026-10-21",
+    "modeled_call_delay_ms": 10,
+    "note": "Stages are inclusive: settlement is inside recovery; verification is inside projection. Not production latency.",
+    "results": [
+      {
+        "path": "builder",
+        "scenario": "warm",
+        "mode": "full",
+        "duration_ms": 830,
+        "statements": 167,
+        "calls": 138,
+        "guarded_batches": 14,
+        "ownership_assertions": 14,
+        "stages": [
+          {
+            "stage": "d1_bootstrap",
+            "duration_ms": 114.42,
+            "statements": 7,
+            "calls": 7
+          },
+          {
+            "stage": "daily_settlement",
+            "duration_ms": 30.47,
+            "statements": 2,
+            "calls": 2
+          },
+          {
+            "stage": "boss_victory_recovery",
+            "duration_ms": 15.09,
+            "statements": 1,
+            "calls": 1
+          },
+          {
+            "stage": "journey_source_recovery",
+            "duration_ms": 15.99,
+            "statements": 1,
+            "calls": 1
+          },
+          {
+            "stage": "daily_journey_award_recovery",
+            "duration_ms": 14.72,
+            "statements": 1,
+            "calls": 1
+          },
+          {
+            "stage": "weekly_journey_award_recovery",
+            "duration_ms": 17.35,
+            "statements": 1,
+            "calls": 1
+          },
+          {
+            "stage": "weekly_settlement",
+            "duration_ms": 63.28,
+            "statements": 4,
+            "calls": 4
+          },
+          {
+            "stage": "state_recovery",
+            "duration_ms": 202.86,
+            "statements": 13,
+            "calls": 13
+          },
+          {
+            "stage": "ownership_verification",
+            "duration_ms": 31.43,
+            "statements": 3,
+            "calls": 2
+          },
+          {
+            "stage": "pet_state_projection",
+            "duration_ms": 512.67,
+            "statements": 147,
+            "calls": 118
+          }
+        ]
+      },
+      {
+        "path": "builder",
+        "scenario": "three_pets",
+        "mode": "full",
+        "duration_ms": 820,
+        "statements": 175,
+        "calls": 146,
+        "guarded_batches": 14,
+        "ownership_assertions": 14,
+        "stages": [
+          {
+            "stage": "d1_bootstrap",
+            "duration_ms": 109.36,
+            "statements": 7,
+            "calls": 7
+          },
+          {
+            "stage": "daily_settlement",
+            "duration_ms": 30.92,
+            "statements": 2,
+            "calls": 2
+          },
+          {
+            "stage": "boss_victory_recovery",
+            "duration_ms": 13.4,
+            "statements": 1,
+            "calls": 1
+          },
+          {
+            "stage": "journey_source_recovery",
+            "duration_ms": 16.28,
+            "statements": 1,
+            "calls": 1
+          },
+          {
+            "stage": "daily_journey_award_recovery",
+            "duration_ms": 14.38,
+            "statements": 1,
+            "calls": 1
+          },
+          {
+            "stage": "weekly_journey_award_recovery",
+            "duration_ms": 17.56,
+            "statements": 1,
+            "calls": 1
+          },
+          {
+            "stage": "weekly_settlement",
+            "duration_ms": 61.71,
+            "statements": 4,
+            "calls": 4
+          },
+          {
+            "stage": "state_recovery",
+            "duration_ms": 202.37,
+            "statements": 13,
+            "calls": 13
+          },
+          {
+            "stage": "ownership_verification",
+            "duration_ms": 30.74,
+            "statements": 3,
+            "calls": 2
+          },
+          {
+            "stage": "pet_state_projection",
+            "duration_ms": 507.9,
+            "statements": 155,
+            "calls": 126
+          }
+        ]
+      },
+      {
+        "path": "builder",
+        "scenario": "recovery",
+        "mode": "full",
+        "duration_ms": 1632,
+        "statements": 264,
+        "calls": 190,
+        "guarded_batches": 14,
+        "ownership_assertions": 14,
+        "stages": [
+          {
+            "stage": "d1_bootstrap",
+            "duration_ms": 109.64,
+            "statements": 7,
+            "calls": 7
+          },
+          {
+            "stage": "daily_settlement",
+            "duration_ms": 29.62,
+            "statements": 2,
+            "calls": 2
+          },
+          {
+            "stage": "boss_victory_recovery",
+            "duration_ms": 15.06,
+            "statements": 1,
+            "calls": 1
+          },
+          {
+            "stage": "journey_source_recovery",
+            "duration_ms": 570.45,
+            "statements": 67,
+            "calls": 37
+          },
+          {
+            "stage": "daily_journey_award_recovery",
+            "duration_ms": 16.45,
+            "statements": 1,
+            "calls": 1
+          },
+          {
+            "stage": "weekly_journey_award_recovery",
+            "duration_ms": 20.51,
+            "statements": 1,
+            "calls": 1
+          },
+          {
+            "stage": "weekly_settlement",
+            "duration_ms": 622.56,
+            "statements": 70,
+            "calls": 40
+          },
+          {
+            "stage": "state_recovery",
+            "duration_ms": 1010.57,
+            "statements": 110,
+            "calls": 65
+          },
+          {
+            "stage": "ownership_verification",
+            "duration_ms": 30.33,
+            "statements": 3,
+            "calls": 2
+          },
+          {
+            "stage": "pet_state_projection",
+            "duration_ms": 511.39,
+            "statements": 147,
+            "calls": 118
+          }
+        ]
+      },
+      {
+        "path": "builder",
+        "scenario": "core",
+        "mode": "core",
+        "duration_ms": 349,
+        "statements": 42,
+        "calls": 33,
+        "guarded_batches": 9,
+        "ownership_assertions": 9,
+        "stages": [
+          {
+            "stage": "d1_bootstrap",
+            "duration_ms": 115.06,
+            "statements": 7,
+            "calls": 7
+          },
+          {
+            "stage": "ownership_verification",
+            "duration_ms": 31.77,
+            "statements": 3,
+            "calls": 2
+          },
+          {
+            "stage": "pet_state_projection",
+            "duration_ms": 233.79,
+            "statements": 35,
+            "calls": 26
+          }
+        ]
+      },
+      {
+        "path": "authenticated_http",
+        "scenario": "warm",
+        "mode": "full",
+        "duration_ms": 877,
+        "statements": 168,
+        "calls": 139,
+        "guarded_batches": 14,
+        "ownership_assertions": 14,
+        "stages": [
+          {
+            "stage": "request_parse",
+            "duration_ms": 0.74
+          },
+          {
+            "stage": "rate_limit",
+            "duration_ms": 0.34
+          },
+          {
+            "stage": "authentication",
+            "duration_ms": 0.72
+          },
+          {
+            "stage": "rate_limit",
+            "duration_ms": 0.05
+          },
+          {
+            "stage": "user_bootstrap",
+            "duration_ms": 22.85
+          },
+          {
+            "stage": "d1_bootstrap",
+            "duration_ms": 109.02
+          },
+          {
+            "stage": "daily_settlement",
+            "duration_ms": 31.43
+          },
+          {
+            "stage": "boss_victory_recovery",
+            "duration_ms": 14.3,
+            "sql_statements": 1,
+            "d1_calls": 1
+          },
+          {
+            "stage": "journey_source_recovery",
+            "duration_ms": 17.09,
+            "sql_statements": 1,
+            "d1_calls": 1
+          },
+          {
+            "stage": "daily_journey_award_recovery",
+            "duration_ms": 14.54,
+            "sql_statements": 1,
+            "d1_calls": 1
+          },
+          {
+            "stage": "weekly_journey_award_recovery",
+            "duration_ms": 17.93,
+            "sql_statements": 1,
+            "d1_calls": 1
+          },
+          {
+            "stage": "weekly_settlement",
+            "duration_ms": 63.96
+          },
+          {
+            "stage": "state_recovery",
+            "duration_ms": 205.2
+          },
+          {
+            "stage": "ownership_verification",
+            "duration_ms": 31.03
+          },
+          {
+            "stage": "pet_state_projection",
+            "duration_ms": 511.45,
+            "sql_statements": 147,
+            "d1_calls": 118
+          },
+          {
+            "stage": "response_serialization",
+            "duration_ms": 2.08
+          },
+          {
+            "stage": "total",
+            "duration_ms": 852.69
+          }
+        ]
+      },
+      {
+        "path": "authenticated_http",
+        "scenario": "three_pets",
+        "mode": "full",
+        "duration_ms": 835,
+        "statements": 176,
+        "calls": 147,
+        "guarded_batches": 14,
+        "ownership_assertions": 14,
+        "stages": [
+          {
+            "stage": "request_parse",
+            "duration_ms": 0.08
+          },
+          {
+            "stage": "rate_limit",
+            "duration_ms": 0.05
+          },
+          {
+            "stage": "authentication",
+            "duration_ms": 0.3
+          },
+          {
+            "stage": "rate_limit",
+            "duration_ms": 0.02
+          },
+          {
+            "stage": "user_bootstrap",
+            "duration_ms": 10.83
+          },
+          {
+            "stage": "d1_bootstrap",
+            "duration_ms": 109.84
+          },
+          {
+            "stage": "daily_settlement",
+            "duration_ms": 31.49
+          },
+          {
+            "stage": "boss_victory_recovery",
+            "duration_ms": 14.49,
+            "sql_statements": 1,
+            "d1_calls": 1
+          },
+          {
+            "stage": "journey_source_recovery",
+            "duration_ms": 16.74,
+            "sql_statements": 1,
+            "d1_calls": 1
+          },
+          {
+            "stage": "daily_journey_award_recovery",
+            "duration_ms": 13.84,
+            "sql_statements": 1,
+            "d1_calls": 1
+          },
+          {
+            "stage": "weekly_journey_award_recovery",
+            "duration_ms": 17.23,
+            "sql_statements": 1,
+            "d1_calls": 1
+          },
+          {
+            "stage": "weekly_settlement",
+            "duration_ms": 62.44
+          },
+          {
+            "stage": "state_recovery",
+            "duration_ms": 204.5
+          },
+          {
+            "stage": "ownership_verification",
+            "duration_ms": 30.64
+          },
+          {
+            "stage": "pet_state_projection",
+            "duration_ms": 506.27,
+            "sql_statements": 155,
+            "d1_calls": 126
+          },
+          {
+            "stage": "response_serialization",
+            "duration_ms": 1.57
+          },
+          {
+            "stage": "total",
+            "duration_ms": 833.61
+          }
+        ]
+      },
+      {
+        "path": "authenticated_http",
+        "scenario": "recovery",
+        "mode": "full",
+        "duration_ms": 1667,
+        "statements": 265,
+        "calls": 191,
+        "guarded_batches": 14,
+        "ownership_assertions": 14,
+        "stages": [
+          {
+            "stage": "request_parse",
+            "duration_ms": 0.07
+          },
+          {
+            "stage": "rate_limit",
+            "duration_ms": 0.03
+          },
+          {
+            "stage": "authentication",
+            "duration_ms": 0.3
+          },
+          {
+            "stage": "rate_limit",
+            "duration_ms": 0.04
+          },
+          {
+            "stage": "user_bootstrap",
+            "duration_ms": 17.41
+          },
+          {
+            "stage": "d1_bootstrap",
+            "duration_ms": 109.43
+          },
+          {
+            "stage": "daily_settlement",
+            "duration_ms": 30.84
+          },
+          {
+            "stage": "boss_victory_recovery",
+            "duration_ms": 14.33,
+            "sql_statements": 1,
+            "d1_calls": 1
+          },
+          {
+            "stage": "journey_source_recovery",
+            "duration_ms": 576.45,
+            "sql_statements": 67,
+            "d1_calls": 37
+          },
+          {
+            "stage": "daily_journey_award_recovery",
+            "duration_ms": 16.52,
+            "sql_statements": 1,
+            "d1_calls": 1
+          },
+          {
+            "stage": "weekly_journey_award_recovery",
+            "duration_ms": 20.29,
+            "sql_statements": 1,
+            "d1_calls": 1
+          },
+          {
+            "stage": "weekly_settlement",
+            "duration_ms": 627.71
+          },
+          {
+            "stage": "state_recovery",
+            "duration_ms": 1016.26
+          },
+          {
+            "stage": "ownership_verification",
+            "duration_ms": 30.77
+          },
+          {
+            "stage": "pet_state_projection",
+            "duration_ms": 520.69,
+            "sql_statements": 147,
+            "d1_calls": 118
+          },
+          {
+            "stage": "response_serialization",
+            "duration_ms": 1.52
+          },
+          {
+            "stage": "total",
+            "duration_ms": 1665.89
+          }
+        ]
+      },
+      {
+        "path": "authenticated_http",
+        "scenario": "core",
+        "mode": "core",
+        "duration_ms": 354,
+        "statements": 43,
+        "calls": 34,
+        "guarded_batches": 9,
+        "ownership_assertions": 9,
+        "stages": [
+          {
+            "stage": "request_parse",
+            "duration_ms": 0.06
+          },
+          {
+            "stage": "rate_limit",
+            "duration_ms": 0.03
+          },
+          {
+            "stage": "authentication",
+            "duration_ms": 0.29
+          },
+          {
+            "stage": "rate_limit",
+            "duration_ms": 0.04
+          },
+          {
+            "stage": "user_bootstrap",
+            "duration_ms": 16.71
+          },
+          {
+            "stage": "d1_bootstrap",
+            "duration_ms": 107.92
+          },
+          {
+            "stage": "ownership_verification",
+            "duration_ms": 29.99
+          },
+          {
+            "stage": "pet_state_projection",
+            "duration_ms": 227.88
+          },
+          {
+            "stage": "response_serialization",
+            "duration_ms": 0.27
+          },
+          {
+            "stage": "total",
+            "duration_ms": 353.35
+          }
+        ]
+      }
+    ]
+  },
+  "state_after": {
+    "fixture": "SQLite/fixed-2026-10-21",
+    "modeled_call_delay_ms": 10,
+    "note": "Stages are inclusive: settlement is inside recovery; verification is inside projection. Not production latency.",
+    "results": [
+      {
+        "path": "builder",
+        "scenario": "warm",
+        "mode": "full",
+        "duration_ms": 831,
+        "statements": 167,
+        "calls": 127,
+        "guarded_batches": 15,
+        "ownership_assertions": 15,
+        "stages": [
+          {
+            "stage": "d1_bootstrap",
+            "duration_ms": 115.47,
+            "statements": 7,
+            "calls": 7
+          },
+          {
+            "stage": "daily_settlement",
+            "duration_ms": 31.6,
+            "statements": 2,
+            "calls": 2
+          },
+          {
+            "stage": "boss_victory_recovery",
+            "duration_ms": 14.15,
+            "statements": 1,
+            "calls": 1
+          },
+          {
+            "stage": "journey_source_recovery",
+            "duration_ms": 16.48,
+            "statements": 1,
+            "calls": 1
+          },
+          {
+            "stage": "daily_journey_award_recovery",
+            "duration_ms": 14.55,
+            "statements": 1,
+            "calls": 1
+          },
+          {
+            "stage": "weekly_journey_award_recovery",
+            "duration_ms": 16.96,
+            "statements": 1,
+            "calls": 1
+          },
+          {
+            "stage": "weekly_settlement",
+            "duration_ms": 62.26,
+            "statements": 4,
+            "calls": 4
+          },
+          {
+            "stage": "state_recovery",
+            "duration_ms": 203.99,
+            "statements": 13,
+            "calls": 13
+          },
+          {
+            "stage": "ownership_verification",
+            "duration_ms": 29.89,
+            "statements": 3,
+            "calls": 2
+          },
+          {
+            "stage": "pet_state_projection",
+            "duration_ms": 511.64,
+            "statements": 147,
+            "calls": 107
+          }
+        ]
+      },
+      {
+        "path": "builder",
+        "scenario": "three_pets",
+        "mode": "full",
+        "duration_ms": 827,
+        "statements": 175,
+        "calls": 135,
+        "guarded_batches": 15,
+        "ownership_assertions": 15,
+        "stages": [
+          {
+            "stage": "d1_bootstrap",
+            "duration_ms": 110.77,
+            "statements": 7,
+            "calls": 7
+          },
+          {
+            "stage": "daily_settlement",
+            "duration_ms": 30.16,
+            "statements": 2,
+            "calls": 2
+          },
+          {
+            "stage": "boss_victory_recovery",
+            "duration_ms": 13.51,
+            "statements": 1,
+            "calls": 1
+          },
+          {
+            "stage": "journey_source_recovery",
+            "duration_ms": 16.14,
+            "statements": 1,
+            "calls": 1
+          },
+          {
+            "stage": "daily_journey_award_recovery",
+            "duration_ms": 14.65,
+            "statements": 1,
+            "calls": 1
+          },
+          {
+            "stage": "weekly_journey_award_recovery",
+            "duration_ms": 17.63,
+            "statements": 1,
+            "calls": 1
+          },
+          {
+            "stage": "weekly_settlement",
+            "duration_ms": 62.03,
+            "statements": 4,
+            "calls": 4
+          },
+          {
+            "stage": "state_recovery",
+            "duration_ms": 201.6,
+            "statements": 13,
+            "calls": 13
+          },
+          {
+            "stage": "ownership_verification",
+            "duration_ms": 31.56,
+            "statements": 3,
+            "calls": 2
+          },
+          {
+            "stage": "pet_state_projection",
+            "duration_ms": 515.02,
+            "statements": 155,
+            "calls": 115
+          }
+        ]
+      },
+      {
+        "path": "builder",
+        "scenario": "recovery",
+        "mode": "full",
+        "duration_ms": 1636,
+        "statements": 264,
+        "calls": 179,
+        "guarded_batches": 15,
+        "ownership_assertions": 15,
+        "stages": [
+          {
+            "stage": "d1_bootstrap",
+            "duration_ms": 111.23,
+            "statements": 7,
+            "calls": 7
+          },
+          {
+            "stage": "daily_settlement",
+            "duration_ms": 31.84,
+            "statements": 2,
+            "calls": 2
+          },
+          {
+            "stage": "boss_victory_recovery",
+            "duration_ms": 15.11,
+            "statements": 1,
+            "calls": 1
+          },
+          {
+            "stage": "journey_source_recovery",
+            "duration_ms": 576.12,
+            "statements": 67,
+            "calls": 37
+          },
+          {
+            "stage": "daily_journey_award_recovery",
+            "duration_ms": 15.6,
+            "statements": 1,
+            "calls": 1
+          },
+          {
+            "stage": "weekly_journey_award_recovery",
+            "duration_ms": 16.59,
+            "statements": 1,
+            "calls": 1
+          },
+          {
+            "stage": "weekly_settlement",
+            "duration_ms": 623.49,
+            "statements": 70,
+            "calls": 40
+          },
+          {
+            "stage": "state_recovery",
+            "duration_ms": 1015.9,
+            "statements": 110,
+            "calls": 65
+          },
+          {
+            "stage": "ownership_verification",
+            "duration_ms": 31.14,
+            "statements": 3,
+            "calls": 2
+          },
+          {
+            "stage": "pet_state_projection",
+            "duration_ms": 508.46,
+            "statements": 147,
+            "calls": 107
+          }
+        ]
+      },
+      {
+        "path": "builder",
+        "scenario": "core",
+        "mode": "core",
+        "duration_ms": 349,
+        "statements": 42,
+        "calls": 33,
+        "guarded_batches": 9,
+        "ownership_assertions": 9,
+        "stages": [
+          {
+            "stage": "d1_bootstrap",
+            "duration_ms": 114.24,
+            "statements": 7,
+            "calls": 7
+          },
+          {
+            "stage": "ownership_verification",
+            "duration_ms": 31.62,
+            "statements": 3,
+            "calls": 2
+          },
+          {
+            "stage": "pet_state_projection",
+            "duration_ms": 234.18,
+            "statements": 35,
+            "calls": 26
+          }
+        ]
+      },
+      {
+        "path": "authenticated_http",
+        "scenario": "warm",
+        "mode": "full",
+        "duration_ms": 869,
+        "statements": 168,
+        "calls": 128,
+        "guarded_batches": 15,
+        "ownership_assertions": 15,
+        "stages": [
+          {
+            "stage": "request_parse",
+            "duration_ms": 0.71
+          },
+          {
+            "stage": "rate_limit",
+            "duration_ms": 0.33
+          },
+          {
+            "stage": "authentication",
+            "duration_ms": 0.74
+          },
+          {
+            "stage": "rate_limit",
+            "duration_ms": 0.04
+          },
+          {
+            "stage": "user_bootstrap",
+            "duration_ms": 13.56
+          },
+          {
+            "stage": "d1_bootstrap",
+            "duration_ms": 110.04
+          },
+          {
+            "stage": "daily_settlement",
+            "duration_ms": 31.71
+          },
+          {
+            "stage": "boss_victory_recovery",
+            "duration_ms": 13.52,
+            "sql_statements": 1,
+            "d1_calls": 1
+          },
+          {
+            "stage": "journey_source_recovery",
+            "duration_ms": 16.25,
+            "sql_statements": 1,
+            "d1_calls": 1
+          },
+          {
+            "stage": "daily_journey_award_recovery",
+            "duration_ms": 14.18,
+            "sql_statements": 1,
+            "d1_calls": 1
+          },
+          {
+            "stage": "weekly_journey_award_recovery",
+            "duration_ms": 16.31,
+            "sql_statements": 1,
+            "d1_calls": 1
+          },
+          {
+            "stage": "weekly_settlement",
+            "duration_ms": 60.43
+          },
+          {
+            "stage": "state_recovery",
+            "duration_ms": 202.98
+          },
+          {
+            "stage": "ownership_verification",
+            "duration_ms": 31.76
+          },
+          {
+            "stage": "pet_state_projection",
+            "duration_ms": 513.57,
+            "sql_statements": 147,
+            "d1_calls": 107
+          },
+          {
+            "stage": "response_serialization",
+            "duration_ms": 1.92
+          },
+          {
+            "stage": "total",
+            "duration_ms": 844.08
+          }
+        ]
+      },
+      {
+        "path": "authenticated_http",
+        "scenario": "three_pets",
+        "mode": "full",
+        "duration_ms": 839,
+        "statements": 176,
+        "calls": 136,
+        "guarded_batches": 15,
+        "ownership_assertions": 15,
+        "stages": [
+          {
+            "stage": "request_parse",
+            "duration_ms": 0.05
+          },
+          {
+            "stage": "rate_limit",
+            "duration_ms": 0.04
+          },
+          {
+            "stage": "authentication",
+            "duration_ms": 0.25
+          },
+          {
+            "stage": "rate_limit",
+            "duration_ms": 0.02
+          },
+          {
+            "stage": "user_bootstrap",
+            "duration_ms": 15.79
+          },
+          {
+            "stage": "d1_bootstrap",
+            "duration_ms": 107.78
+          },
+          {
+            "stage": "daily_settlement",
+            "duration_ms": 31.19
+          },
+          {
+            "stage": "boss_victory_recovery",
+            "duration_ms": 14.28,
+            "sql_statements": 1,
+            "d1_calls": 1
+          },
+          {
+            "stage": "journey_source_recovery",
+            "duration_ms": 16.03,
+            "sql_statements": 1,
+            "d1_calls": 1
+          },
+          {
+            "stage": "daily_journey_award_recovery",
+            "duration_ms": 13.94,
+            "sql_statements": 1,
+            "d1_calls": 1
+          },
+          {
+            "stage": "weekly_journey_award_recovery",
+            "duration_ms": 17.44,
+            "sql_statements": 1,
+            "d1_calls": 1
+          },
+          {
+            "stage": "weekly_settlement",
+            "duration_ms": 61.82
+          },
+          {
+            "stage": "state_recovery",
+            "duration_ms": 201.9
+          },
+          {
+            "stage": "ownership_verification",
+            "duration_ms": 31.18
+          },
+          {
+            "stage": "pet_state_projection",
+            "duration_ms": 510.19,
+            "sql_statements": 155,
+            "d1_calls": 115
+          },
+          {
+            "stage": "response_serialization",
+            "duration_ms": 1.38
+          },
+          {
+            "stage": "total",
+            "duration_ms": 837.54
+          }
+        ]
+      },
+      {
+        "path": "authenticated_http",
+        "scenario": "recovery",
+        "mode": "full",
+        "duration_ms": 1643,
+        "statements": 265,
+        "calls": 180,
+        "guarded_batches": 15,
+        "ownership_assertions": 15,
+        "stages": [
+          {
+            "stage": "request_parse",
+            "duration_ms": 0.07
+          },
+          {
+            "stage": "rate_limit",
+            "duration_ms": 0.04
+          },
+          {
+            "stage": "authentication",
+            "duration_ms": 0.24
+          },
+          {
+            "stage": "rate_limit",
+            "duration_ms": 0.02
+          },
+          {
+            "stage": "user_bootstrap",
+            "duration_ms": 13.71
+          },
+          {
+            "stage": "d1_bootstrap",
+            "duration_ms": 109.88
+          },
+          {
+            "stage": "daily_settlement",
+            "duration_ms": 31.63
+          },
+          {
+            "stage": "boss_victory_recovery",
+            "duration_ms": 14.93,
+            "sql_statements": 1,
+            "d1_calls": 1
+          },
+          {
+            "stage": "journey_source_recovery",
+            "duration_ms": 575.12,
+            "sql_statements": 67,
+            "d1_calls": 37
+          },
+          {
+            "stage": "daily_journey_award_recovery",
+            "duration_ms": 15.95,
+            "sql_statements": 1,
+            "d1_calls": 1
+          },
+          {
+            "stage": "weekly_journey_award_recovery",
+            "duration_ms": 17.31,
+            "sql_statements": 1,
+            "d1_calls": 1
+          },
+          {
+            "stage": "weekly_settlement",
+            "duration_ms": 623.43
+          },
+          {
+            "stage": "state_recovery",
+            "duration_ms": 1010.09
+          },
+          {
+            "stage": "ownership_verification",
+            "duration_ms": 30.58
+          },
+          {
+            "stage": "pet_state_projection",
+            "duration_ms": 506.36,
+            "sql_statements": 147,
+            "d1_calls": 107
+          },
+          {
+            "stage": "response_serialization",
+            "duration_ms": 1.48
+          },
+          {
+            "stage": "total",
+            "duration_ms": 1642.03
+          }
+        ]
+      },
+      {
+        "path": "authenticated_http",
+        "scenario": "core",
+        "mode": "core",
+        "duration_ms": 359,
+        "statements": 43,
+        "calls": 34,
+        "guarded_batches": 9,
+        "ownership_assertions": 9,
+        "stages": [
+          {
+            "stage": "request_parse",
+            "duration_ms": 0.06
+          },
+          {
+            "stage": "rate_limit",
+            "duration_ms": 0.03
+          },
+          {
+            "stage": "authentication",
+            "duration_ms": 0.27
+          },
+          {
+            "stage": "rate_limit",
+            "duration_ms": 0.02
+          },
+          {
+            "stage": "user_bootstrap",
+            "duration_ms": 15.26
+          },
+          {
+            "stage": "d1_bootstrap",
+            "duration_ms": 108.19
+          },
+          {
+            "stage": "ownership_verification",
+            "duration_ms": 30.92
+          },
+          {
+            "stage": "pet_state_projection",
+            "duration_ms": 234.27
+          },
+          {
+            "stage": "response_serialization",
+            "duration_ms": 0.24
+          },
+          {
+            "stage": "total",
+            "duration_ms": 358.45
+          }
+        ]
+      }
+    ]
+  },
+  "query_before": {
+    "fixture": "3 pets, 12 ownership weeks, 504 accepted sources, 3 incomplete periods",
+    "production": false,
+    "samples_ms": [
+      2937.9585,
+      2899.0837999999994,
+      2976.386200000001
+    ],
+    "median_ms": 2937.9585,
+    "parity": "4f6ab06822e9293f61cc50e334023846948a602ef36678c6dd71c3d202606920",
+    "rows": [
+      {
+        "pet_id": "current-980301",
+        "season_key": "pet-s2026-004",
+        "qualification_week": 1,
+        "recovery_key": "pet-s2026-004:01:current-980301",
+        "recovery_cursor": null
+      },
+      {
+        "pet_id": "fixture-space-2",
+        "season_key": "pet-s2026-004",
+        "qualification_week": 1,
+        "recovery_key": "pet-s2026-004:01:fixture-space-2",
+        "recovery_cursor": null
+      },
+      {
+        "pet_id": "fixture-space-3",
+        "season_key": "pet-s2026-004",
+        "qualification_week": 1,
+        "recovery_key": "pet-s2026-004:01:fixture-space-3",
+        "recovery_cursor": null
+      },
+      {
+        "pet_id": "current-980301",
+        "season_key": "pet-s2026-004",
+        "qualification_week": 2,
+        "recovery_key": "pet-s2026-004:02:current-980301",
+        "recovery_cursor": null
+      },
+      {
+        "pet_id": "fixture-space-2",
+        "season_key": "pet-s2026-004",
+        "qualification_week": 2,
+        "recovery_key": "pet-s2026-004:02:fixture-space-2",
+        "recovery_cursor": null
+      },
+      {
+        "pet_id": "fixture-space-3",
+        "season_key": "pet-s2026-004",
+        "qualification_week": 2,
+        "recovery_key": "pet-s2026-004:02:fixture-space-3",
+        "recovery_cursor": null
+      },
+      {
+        "pet_id": "current-980301",
+        "season_key": "pet-s2026-004",
+        "qualification_week": 3,
+        "recovery_key": "pet-s2026-004:03:current-980301",
+        "recovery_cursor": null
+      },
+      {
+        "pet_id": "fixture-space-2",
+        "season_key": "pet-s2026-004",
+        "qualification_week": 3,
+        "recovery_key": "pet-s2026-004:03:fixture-space-2",
+        "recovery_cursor": null
+      },
+      {
+        "pet_id": "fixture-space-3",
+        "season_key": "pet-s2026-004",
+        "qualification_week": 3,
+        "recovery_key": "pet-s2026-004:03:fixture-space-3",
+        "recovery_cursor": null
+      },
+      {
+        "pet_id": "current-980301",
+        "season_key": "pet-s2026-004",
+        "qualification_week": 4,
+        "recovery_key": "pet-s2026-004:04:current-980301",
+        "recovery_cursor": null
+      },
+      {
+        "pet_id": "fixture-space-2",
+        "season_key": "pet-s2026-004",
+        "qualification_week": 4,
+        "recovery_key": "pet-s2026-004:04:fixture-space-2",
+        "recovery_cursor": null
+      },
+      {
+        "pet_id": "fixture-space-3",
+        "season_key": "pet-s2026-004",
+        "qualification_week": 4,
+        "recovery_key": "pet-s2026-004:04:fixture-space-3",
+        "recovery_cursor": null
+      },
+      {
+        "pet_id": "current-980301",
+        "season_key": "pet-s2026-004",
+        "qualification_week": 5,
+        "recovery_key": "pet-s2026-004:05:current-980301",
+        "recovery_cursor": null
+      },
+      {
+        "pet_id": "fixture-space-2",
+        "season_key": "pet-s2026-004",
+        "qualification_week": 5,
+        "recovery_key": "pet-s2026-004:05:fixture-space-2",
+        "recovery_cursor": null
+      },
+      {
+        "pet_id": "fixture-space-3",
+        "season_key": "pet-s2026-004",
+        "qualification_week": 5,
+        "recovery_key": "pet-s2026-004:05:fixture-space-3",
+        "recovery_cursor": null
+      },
+      {
+        "pet_id": "current-980301",
+        "season_key": "pet-s2026-004",
+        "qualification_week": 6,
+        "recovery_key": "pet-s2026-004:06:current-980301",
+        "recovery_cursor": null
+      },
+      {
+        "pet_id": "fixture-space-2",
+        "season_key": "pet-s2026-004",
+        "qualification_week": 6,
+        "recovery_key": "pet-s2026-004:06:fixture-space-2",
+        "recovery_cursor": null
+      },
+      {
+        "pet_id": "fixture-space-3",
+        "season_key": "pet-s2026-004",
+        "qualification_week": 6,
+        "recovery_key": "pet-s2026-004:06:fixture-space-3",
+        "recovery_cursor": null
+      },
+      {
+        "pet_id": "current-980301",
+        "season_key": "pet-s2026-004",
+        "qualification_week": 7,
+        "recovery_key": "pet-s2026-004:07:current-980301",
+        "recovery_cursor": null
+      },
+      {
+        "pet_id": "fixture-space-2",
+        "season_key": "pet-s2026-004",
+        "qualification_week": 7,
+        "recovery_key": "pet-s2026-004:07:fixture-space-2",
+        "recovery_cursor": null
+      },
+      {
+        "pet_id": "fixture-space-3",
+        "season_key": "pet-s2026-004",
+        "qualification_week": 7,
+        "recovery_key": "pet-s2026-004:07:fixture-space-3",
+        "recovery_cursor": null
+      },
+      {
+        "pet_id": "current-980301",
+        "season_key": "pet-s2026-004",
+        "qualification_week": 8,
+        "recovery_key": "pet-s2026-004:08:current-980301",
+        "recovery_cursor": null
+      },
+      {
+        "pet_id": "fixture-space-2",
+        "season_key": "pet-s2026-004",
+        "qualification_week": 8,
+        "recovery_key": "pet-s2026-004:08:fixture-space-2",
+        "recovery_cursor": null
+      },
+      {
+        "pet_id": "fixture-space-3",
+        "season_key": "pet-s2026-004",
+        "qualification_week": 8,
+        "recovery_key": "pet-s2026-004:08:fixture-space-3",
+        "recovery_cursor": null
+      },
+      {
+        "pet_id": "current-980301",
+        "season_key": "pet-s2026-004",
+        "qualification_week": 9,
+        "recovery_key": "pet-s2026-004:09:current-980301",
+        "recovery_cursor": null
+      },
+      {
+        "pet_id": "fixture-space-2",
+        "season_key": "pet-s2026-004",
+        "qualification_week": 9,
+        "recovery_key": "pet-s2026-004:09:fixture-space-2",
+        "recovery_cursor": null
+      },
+      {
+        "pet_id": "fixture-space-3",
+        "season_key": "pet-s2026-004",
+        "qualification_week": 9,
+        "recovery_key": "pet-s2026-004:09:fixture-space-3",
+        "recovery_cursor": null
+      },
+      {
+        "pet_id": "current-980301",
+        "season_key": "pet-s2026-004",
+        "qualification_week": 10,
+        "recovery_key": "pet-s2026-004:10:current-980301",
+        "recovery_cursor": null
+      },
+      {
+        "pet_id": "fixture-space-2",
+        "season_key": "pet-s2026-004",
+        "qualification_week": 10,
+        "recovery_key": "pet-s2026-004:10:fixture-space-2",
+        "recovery_cursor": null
+      },
+      {
+        "pet_id": "fixture-space-3",
+        "season_key": "pet-s2026-004",
+        "qualification_week": 10,
+        "recovery_key": "pet-s2026-004:10:fixture-space-3",
+        "recovery_cursor": null
+      },
+      {
+        "pet_id": "current-980301",
+        "season_key": "pet-s2026-004",
+        "qualification_week": 12,
+        "recovery_key": "pet-s2026-004:12:current-980301",
+        "recovery_cursor": null
+      },
+      {
+        "pet_id": "fixture-space-2",
+        "season_key": "pet-s2026-004",
+        "qualification_week": 12,
+        "recovery_key": "pet-s2026-004:12:fixture-space-2",
+        "recovery_cursor": null
+      },
+      {
+        "pet_id": "fixture-space-3",
+        "season_key": "pet-s2026-004",
+        "qualification_week": 12,
+        "recovery_key": "pet-s2026-004:12:fixture-space-3",
+        "recovery_cursor": null
+      }
+    ],
+    "plan": [
+      "CO-ROUTINE eligible",
+      "CO-ROUTINE (subquery-6)",
+      "SEARCH e USING INDEX idx_telegram_pet_events_user_created (telegram_id=?)",
+      "CORRELATED SCALAR SUBQUERY 1",
+      "SEARCH legacy_v USING INDEX sqlite_autoindex_telegram_pet_weekly_boss_victories_by_pet_1 (telegram_id=? AND week_key=? AND boss_id=?)",
+      "SEARCH legacy_b USING INDEX sqlite_autoindex_telegram_pet_weekly_boss_events_3 (telegram_id=? AND event_key=?)",
+      "SEARCH i USING INDEX sqlite_autoindex_telegram_pet_instances_1 (pet_id=?)",
+      "SEARCH s USING COVERING INDEX idx_telegram_pet_season_slots_pet_owner_tuple (pet_id=? AND telegram_id=? AND season_key=? AND slot_number=?)",
+      "SEARCH o USING INDEX idx_telegram_pet_weekly_journey_objectives_source (source_event_key=? AND pet_id=? AND season_key=?)",
+      "CORRELATED SCALAR SUBQUERY 4",
+      "SEARCH i USING INDEX sqlite_autoindex_telegram_pet_instances_1 (pet_id=?)",
+      "SEARCH s USING INDEX sqlite_autoindex_telegram_pet_season_slots_1 (pet_id=?)",
+      "SEARCH e USING INDEX idx_telegram_pet_events_pet_day (pet_id=? AND day_key>?)",
+      "CORRELATED SCALAR SUBQUERY 2",
+      "SEARCH legacy_v USING INDEX sqlite_autoindex_telegram_pet_weekly_boss_victories_by_pet_1 (telegram_id=? AND week_key=? AND boss_id=?)",
+      "SEARCH legacy_b USING INDEX sqlite_autoindex_telegram_pet_weekly_boss_events_3 (telegram_id=? AND event_key=?)",
+      "CORRELATED SCALAR SUBQUERY 3",
+      "SEARCH o USING INDEX sqlite_autoindex_telegram_pet_weekly_journey_objectives_2 (pet_id=? AND season_key=? AND qualification_week=? AND objective_id=? AND source_event_key=?)",
+      "CORRELATED SCALAR SUBQUERY 5",
+      "SEARCH r USING INDEX idx_telegram_pet_weekly_journey_receipts_pet_week (pet_id=? AND season_key=? AND qualification_week=?)",
+      "USE TEMP B-TREE FOR GROUP BY",
+      "USE TEMP B-TREE FOR count(DISTINCT)",
+      "SCAN (subquery-6)",
+      "USE TEMP B-TREE FOR GROUP BY",
+      "SCAN eligible",
+      "SEARCH recovery_state USING INDEX sqlite_autoindex_telegram_pet_recovery_cursors_1 (telegram_id=? AND setting_key=?) LEFT-JOIN",
+      "USE TEMP B-TREE FOR ORDER BY"
+    ]
+  },
+  "query_after": {
+    "fixture": "3 pets, 12 ownership weeks, 504 accepted sources, 3 incomplete periods",
+    "production": false,
+    "samples_ms": [
+      196.5562,
+      186.7563,
+      192.88310000000013
+    ],
+    "median_ms": 192.88310000000013,
+    "parity": "4f6ab06822e9293f61cc50e334023846948a602ef36678c6dd71c3d202606920",
+    "rows": [
+      {
+        "pet_id": "current-980301",
+        "season_key": "pet-s2026-004",
+        "qualification_week": 1,
+        "recovery_key": "pet-s2026-004:01:current-980301",
+        "recovery_cursor": null
+      },
+      {
+        "pet_id": "fixture-space-2",
+        "season_key": "pet-s2026-004",
+        "qualification_week": 1,
+        "recovery_key": "pet-s2026-004:01:fixture-space-2",
+        "recovery_cursor": null
+      },
+      {
+        "pet_id": "fixture-space-3",
+        "season_key": "pet-s2026-004",
+        "qualification_week": 1,
+        "recovery_key": "pet-s2026-004:01:fixture-space-3",
+        "recovery_cursor": null
+      },
+      {
+        "pet_id": "current-980301",
+        "season_key": "pet-s2026-004",
+        "qualification_week": 2,
+        "recovery_key": "pet-s2026-004:02:current-980301",
+        "recovery_cursor": null
+      },
+      {
+        "pet_id": "fixture-space-2",
+        "season_key": "pet-s2026-004",
+        "qualification_week": 2,
+        "recovery_key": "pet-s2026-004:02:fixture-space-2",
+        "recovery_cursor": null
+      },
+      {
+        "pet_id": "fixture-space-3",
+        "season_key": "pet-s2026-004",
+        "qualification_week": 2,
+        "recovery_key": "pet-s2026-004:02:fixture-space-3",
+        "recovery_cursor": null
+      },
+      {
+        "pet_id": "current-980301",
+        "season_key": "pet-s2026-004",
+        "qualification_week": 3,
+        "recovery_key": "pet-s2026-004:03:current-980301",
+        "recovery_cursor": null
+      },
+      {
+        "pet_id": "fixture-space-2",
+        "season_key": "pet-s2026-004",
+        "qualification_week": 3,
+        "recovery_key": "pet-s2026-004:03:fixture-space-2",
+        "recovery_cursor": null
+      },
+      {
+        "pet_id": "fixture-space-3",
+        "season_key": "pet-s2026-004",
+        "qualification_week": 3,
+        "recovery_key": "pet-s2026-004:03:fixture-space-3",
+        "recovery_cursor": null
+      },
+      {
+        "pet_id": "current-980301",
+        "season_key": "pet-s2026-004",
+        "qualification_week": 4,
+        "recovery_key": "pet-s2026-004:04:current-980301",
+        "recovery_cursor": null
+      },
+      {
+        "pet_id": "fixture-space-2",
+        "season_key": "pet-s2026-004",
+        "qualification_week": 4,
+        "recovery_key": "pet-s2026-004:04:fixture-space-2",
+        "recovery_cursor": null
+      },
+      {
+        "pet_id": "fixture-space-3",
+        "season_key": "pet-s2026-004",
+        "qualification_week": 4,
+        "recovery_key": "pet-s2026-004:04:fixture-space-3",
+        "recovery_cursor": null
+      },
+      {
+        "pet_id": "current-980301",
+        "season_key": "pet-s2026-004",
+        "qualification_week": 5,
+        "recovery_key": "pet-s2026-004:05:current-980301",
+        "recovery_cursor": null
+      },
+      {
+        "pet_id": "fixture-space-2",
+        "season_key": "pet-s2026-004",
+        "qualification_week": 5,
+        "recovery_key": "pet-s2026-004:05:fixture-space-2",
+        "recovery_cursor": null
+      },
+      {
+        "pet_id": "fixture-space-3",
+        "season_key": "pet-s2026-004",
+        "qualification_week": 5,
+        "recovery_key": "pet-s2026-004:05:fixture-space-3",
+        "recovery_cursor": null
+      },
+      {
+        "pet_id": "current-980301",
+        "season_key": "pet-s2026-004",
+        "qualification_week": 6,
+        "recovery_key": "pet-s2026-004:06:current-980301",
+        "recovery_cursor": null
+      },
+      {
+        "pet_id": "fixture-space-2",
+        "season_key": "pet-s2026-004",
+        "qualification_week": 6,
+        "recovery_key": "pet-s2026-004:06:fixture-space-2",
+        "recovery_cursor": null
+      },
+      {
+        "pet_id": "fixture-space-3",
+        "season_key": "pet-s2026-004",
+        "qualification_week": 6,
+        "recovery_key": "pet-s2026-004:06:fixture-space-3",
+        "recovery_cursor": null
+      },
+      {
+        "pet_id": "current-980301",
+        "season_key": "pet-s2026-004",
+        "qualification_week": 7,
+        "recovery_key": "pet-s2026-004:07:current-980301",
+        "recovery_cursor": null
+      },
+      {
+        "pet_id": "fixture-space-2",
+        "season_key": "pet-s2026-004",
+        "qualification_week": 7,
+        "recovery_key": "pet-s2026-004:07:fixture-space-2",
+        "recovery_cursor": null
+      },
+      {
+        "pet_id": "fixture-space-3",
+        "season_key": "pet-s2026-004",
+        "qualification_week": 7,
+        "recovery_key": "pet-s2026-004:07:fixture-space-3",
+        "recovery_cursor": null
+      },
+      {
+        "pet_id": "current-980301",
+        "season_key": "pet-s2026-004",
+        "qualification_week": 8,
+        "recovery_key": "pet-s2026-004:08:current-980301",
+        "recovery_cursor": null
+      },
+      {
+        "pet_id": "fixture-space-2",
+        "season_key": "pet-s2026-004",
+        "qualification_week": 8,
+        "recovery_key": "pet-s2026-004:08:fixture-space-2",
+        "recovery_cursor": null
+      },
+      {
+        "pet_id": "fixture-space-3",
+        "season_key": "pet-s2026-004",
+        "qualification_week": 8,
+        "recovery_key": "pet-s2026-004:08:fixture-space-3",
+        "recovery_cursor": null
+      },
+      {
+        "pet_id": "current-980301",
+        "season_key": "pet-s2026-004",
+        "qualification_week": 9,
+        "recovery_key": "pet-s2026-004:09:current-980301",
+        "recovery_cursor": null
+      },
+      {
+        "pet_id": "fixture-space-2",
+        "season_key": "pet-s2026-004",
+        "qualification_week": 9,
+        "recovery_key": "pet-s2026-004:09:fixture-space-2",
+        "recovery_cursor": null
+      },
+      {
+        "pet_id": "fixture-space-3",
+        "season_key": "pet-s2026-004",
+        "qualification_week": 9,
+        "recovery_key": "pet-s2026-004:09:fixture-space-3",
+        "recovery_cursor": null
+      },
+      {
+        "pet_id": "current-980301",
+        "season_key": "pet-s2026-004",
+        "qualification_week": 10,
+        "recovery_key": "pet-s2026-004:10:current-980301",
+        "recovery_cursor": null
+      },
+      {
+        "pet_id": "fixture-space-2",
+        "season_key": "pet-s2026-004",
+        "qualification_week": 10,
+        "recovery_key": "pet-s2026-004:10:fixture-space-2",
+        "recovery_cursor": null
+      },
+      {
+        "pet_id": "fixture-space-3",
+        "season_key": "pet-s2026-004",
+        "qualification_week": 10,
+        "recovery_key": "pet-s2026-004:10:fixture-space-3",
+        "recovery_cursor": null
+      },
+      {
+        "pet_id": "current-980301",
+        "season_key": "pet-s2026-004",
+        "qualification_week": 12,
+        "recovery_key": "pet-s2026-004:12:current-980301",
+        "recovery_cursor": null
+      },
+      {
+        "pet_id": "fixture-space-2",
+        "season_key": "pet-s2026-004",
+        "qualification_week": 12,
+        "recovery_key": "pet-s2026-004:12:fixture-space-2",
+        "recovery_cursor": null
+      },
+      {
+        "pet_id": "fixture-space-3",
+        "season_key": "pet-s2026-004",
+        "qualification_week": 12,
+        "recovery_key": "pet-s2026-004:12:fixture-space-3",
+        "recovery_cursor": null
+      }
+    ],
+    "plan": [
+      "CO-ROUTINE eligible",
+      "CO-ROUTINE o",
+      "SEARCH e USING INDEX idx_telegram_pet_events_user_created (telegram_id=?)",
+      "CORRELATED SCALAR SUBQUERY 1",
+      "SEARCH legacy_v USING INDEX sqlite_autoindex_telegram_pet_weekly_boss_victories_by_pet_1 (telegram_id=? AND week_key=? AND boss_id=?)",
+      "SEARCH legacy_b USING INDEX sqlite_autoindex_telegram_pet_weekly_boss_events_3 (telegram_id=? AND event_key=?)",
+      "SEARCH i USING INDEX sqlite_autoindex_telegram_pet_instances_1 (pet_id=?)",
+      "SEARCH s USING COVERING INDEX idx_telegram_pet_season_slots_pet_owner_tuple (pet_id=? AND telegram_id=? AND season_key=? AND slot_number=?)",
+      "SEARCH o USING INDEX idx_telegram_pet_weekly_journey_objectives_source (source_event_key=? AND pet_id=? AND season_key=?)",
+      "CORRELATED SCALAR SUBQUERY 2",
+      "SEARCH r USING INDEX idx_telegram_pet_weekly_journey_receipts_pet_week (pet_id=? AND season_key=? AND qualification_week=?)",
+      "USE TEMP B-TREE FOR GROUP BY",
+      "USE TEMP B-TREE FOR count(DISTINCT)",
+      "SCAN o",
+      "USE TEMP B-TREE FOR GROUP BY",
+      "CORRELATED SCALAR SUBQUERY 6",
+      "SEARCH i USING INDEX sqlite_autoindex_telegram_pet_instances_1 (pet_id=?)",
+      "SEARCH s USING INDEX idx_telegram_pet_season_slots_pet_owner_tuple (pet_id=? AND telegram_id=? AND season_key=? AND slot_number=?)",
+      "SEARCH e USING INDEX idx_telegram_pet_events_pet_day (pet_id=? AND day_key>?)",
+      "CORRELATED SCALAR SUBQUERY 4",
+      "SEARCH legacy_v USING INDEX sqlite_autoindex_telegram_pet_weekly_boss_victories_by_pet_1 (telegram_id=? AND week_key=? AND boss_id=?)",
+      "SEARCH legacy_b USING INDEX sqlite_autoindex_telegram_pet_weekly_boss_events_3 (telegram_id=? AND event_key=?)",
+      "CORRELATED SCALAR SUBQUERY 5",
+      "SEARCH o USING INDEX sqlite_autoindex_telegram_pet_weekly_journey_objectives_2 (pet_id=? AND season_key=? AND qualification_week=? AND objective_id=? AND source_event_key=?)",
+      "SCAN eligible",
+      "SEARCH recovery_state USING INDEX sqlite_autoindex_telegram_pet_recovery_cursors_1 (telegram_id=? AND setting_key=?) LEFT-JOIN",
+      "USE TEMP B-TREE FOR ORDER BY"
+    ]
+  },
+  "parity": [
+    {
+      "scenario": "new",
+      "response_parity": true,
+      "persisted_parity": true,
+      "before": {
+        "mode": "full",
+        "duration_ms": 91,
+        "statements": 174,
+        "calls": 144,
+        "guarded_batches": 14,
+        "ownership_assertions": 14,
+        "stages": [
+          {
+            "stage": "request_parse",
+            "duration_ms": 0.75
+          },
+          {
+            "stage": "rate_limit",
+            "duration_ms": 0.33
+          },
+          {
+            "stage": "authentication",
+            "duration_ms": 3.73
+          },
+          {
+            "stage": "rate_limit",
+            "duration_ms": 0.06
+          },
+          {
+            "stage": "user_bootstrap",
+            "duration_ms": 0.38
+          },
+          {
+            "stage": "d1_bootstrap",
+            "duration_ms": 3.76
+          },
+          {
+            "stage": "daily_settlement",
+            "duration_ms": 1.86
+          },
+          {
+            "stage": "boss_victory_recovery",
+            "duration_ms": 0.9,
+            "sql_statements": 1,
+            "d1_calls": 1
+          },
+          {
+            "stage": "journey_source_recovery",
+            "duration_ms": 1.52,
+            "sql_statements": 1,
+            "d1_calls": 1
+          },
+          {
+            "stage": "daily_journey_award_recovery",
+            "duration_ms": 0.61,
+            "sql_statements": 1,
+            "d1_calls": 1
+          },
+          {
+            "stage": "weekly_journey_award_recovery",
+            "duration_ms": 2.09,
+            "sql_statements": 1,
+            "d1_calls": 1
+          },
+          {
+            "stage": "weekly_settlement",
+            "duration_ms": 5.45
+          },
+          {
+            "stage": "state_recovery",
+            "duration_ms": 14
+          },
+          {
+            "stage": "ownership_verification",
+            "duration_ms": 0.58
+          },
+          {
+            "stage": "pet_state_projection",
+            "duration_ms": 38.39,
+            "sql_statements": 147,
+            "d1_calls": 118
+          },
+          {
+            "stage": "response_serialization",
+            "duration_ms": 1.87
+          },
+          {
+            "stage": "total",
+            "duration_ms": 63.64
+          }
+        ]
+      },
+      "after": {
+        "mode": "full",
+        "duration_ms": 88,
+        "statements": 174,
+        "calls": 133,
+        "guarded_batches": 15,
+        "ownership_assertions": 15,
+        "stages": [
+          {
+            "stage": "request_parse",
+            "duration_ms": 0.75
+          },
+          {
+            "stage": "rate_limit",
+            "duration_ms": 0.32
+          },
+          {
+            "stage": "authentication",
+            "duration_ms": 3.75
+          },
+          {
+            "stage": "rate_limit",
+            "duration_ms": 0.05
+          },
+          {
+            "stage": "user_bootstrap",
+            "duration_ms": 0.35
+          },
+          {
+            "stage": "d1_bootstrap",
+            "duration_ms": 3.49
+          },
+          {
+            "stage": "daily_settlement",
+            "duration_ms": 1.84
+          },
+          {
+            "stage": "boss_victory_recovery",
+            "duration_ms": 0.89,
+            "sql_statements": 1,
+            "d1_calls": 1
+          },
+          {
+            "stage": "journey_source_recovery",
+            "duration_ms": 1.47,
+            "sql_statements": 1,
+            "d1_calls": 1
+          },
+          {
+            "stage": "daily_journey_award_recovery",
+            "duration_ms": 0.62,
+            "sql_statements": 1,
+            "d1_calls": 1
+          },
+          {
+            "stage": "weekly_journey_award_recovery",
+            "duration_ms": 1.86,
+            "sql_statements": 1,
+            "d1_calls": 1
+          },
+          {
+            "stage": "weekly_settlement",
+            "duration_ms": 5.16
+          },
+          {
+            "stage": "state_recovery",
+            "duration_ms": 13.31
+          },
+          {
+            "stage": "ownership_verification",
+            "duration_ms": 0.57
+          },
+          {
+            "stage": "pet_state_projection",
+            "duration_ms": 39.31,
+            "sql_statements": 147,
+            "d1_calls": 107
+          },
+          {
+            "stage": "response_serialization",
+            "duration_ms": 1.92
+          },
+          {
+            "stage": "total",
+            "duration_ms": 63.57
+          }
+        ]
+      },
+      "response_hash": "6d847464c8b267b15262fdd7c93ef2ef6eabb05e2ac4bc88b1991c9285d03990",
+      "persisted_hash": "129a96c9e543b73b65823e450fec1e2626efdb887e71cc192b603eeb6a647912"
+    },
+    {
+      "scenario": "warm",
+      "response_parity": true,
+      "persisted_parity": true,
+      "before": {
+        "mode": "full",
+        "duration_ms": 57,
+        "statements": 168,
+        "calls": 139,
+        "guarded_batches": 14,
+        "ownership_assertions": 14,
+        "stages": [
+          {
+            "stage": "request_parse",
+            "duration_ms": 0.73
+          },
+          {
+            "stage": "rate_limit",
+            "duration_ms": 0.37
+          },
+          {
+            "stage": "authentication",
+            "duration_ms": 0.77
+          },
+          {
+            "stage": "rate_limit",
+            "duration_ms": 0.04
+          },
+          {
+            "stage": "user_bootstrap",
+            "duration_ms": 0.2
+          },
+          {
+            "stage": "d1_bootstrap",
+            "duration_ms": 0.49
+          },
+          {
+            "stage": "daily_settlement",
+            "duration_ms": 1.66
+          },
+          {
+            "stage": "boss_victory_recovery",
+            "duration_ms": 0.77,
+            "sql_statements": 1,
+            "d1_calls": 1
+          },
+          {
+            "stage": "journey_source_recovery",
+            "duration_ms": 1.32,
+            "sql_statements": 1,
+            "d1_calls": 1
+          },
+          {
+            "stage": "daily_journey_award_recovery",
+            "duration_ms": 0.4,
+            "sql_statements": 1,
+            "d1_calls": 1
+          },
+          {
+            "stage": "weekly_journey_award_recovery",
+            "duration_ms": 2,
+            "sql_statements": 1,
+            "d1_calls": 1
+          },
+          {
+            "stage": "weekly_settlement",
+            "duration_ms": 4.57
+          },
+          {
+            "stage": "state_recovery",
+            "duration_ms": 10.97
+          },
+          {
+            "stage": "ownership_verification",
+            "duration_ms": 0.49
+          },
+          {
+            "stage": "pet_state_projection",
+            "duration_ms": 16.88,
+            "sql_statements": 147,
+            "d1_calls": 118
+          },
+          {
+            "stage": "response_serialization",
+            "duration_ms": 1.91
+          },
+          {
+            "stage": "total",
+            "duration_ms": 32.56
+          }
+        ]
+      },
+      "after": {
+        "mode": "full",
+        "duration_ms": 69,
+        "statements": 168,
+        "calls": 128,
+        "guarded_batches": 15,
+        "ownership_assertions": 15,
+        "stages": [
+          {
+            "stage": "request_parse",
+            "duration_ms": 0.77
+          },
+          {
+            "stage": "rate_limit",
+            "duration_ms": 0.36
+          },
+          {
+            "stage": "authentication",
+            "duration_ms": 4.83
+          },
+          {
+            "stage": "rate_limit",
+            "duration_ms": 0.05
+          },
+          {
+            "stage": "user_bootstrap",
+            "duration_ms": 0.23
+          },
+          {
+            "stage": "d1_bootstrap",
+            "duration_ms": 0.47
+          },
+          {
+            "stage": "daily_settlement",
+            "duration_ms": 1.74
+          },
+          {
+            "stage": "boss_victory_recovery",
+            "duration_ms": 0.91,
+            "sql_statements": 1,
+            "d1_calls": 1
+          },
+          {
+            "stage": "journey_source_recovery",
+            "duration_ms": 1.45,
+            "sql_statements": 1,
+            "d1_calls": 1
+          },
+          {
+            "stage": "daily_journey_award_recovery",
+            "duration_ms": 0.78,
+            "sql_statements": 1,
+            "d1_calls": 1
+          },
+          {
+            "stage": "weekly_journey_award_recovery",
+            "duration_ms": 2.57,
+            "sql_statements": 1,
+            "d1_calls": 1
+          },
+          {
+            "stage": "weekly_settlement",
+            "duration_ms": 5.87
+          },
+          {
+            "stage": "state_recovery",
+            "duration_ms": 12.8
+          },
+          {
+            "stage": "ownership_verification",
+            "duration_ms": 0.57
+          },
+          {
+            "stage": "pet_state_projection",
+            "duration_ms": 19.87,
+            "sql_statements": 147,
+            "d1_calls": 107
+          },
+          {
+            "stage": "response_serialization",
+            "duration_ms": 2.06
+          },
+          {
+            "stage": "total",
+            "duration_ms": 41.68
+          }
+        ]
+      },
+      "response_hash": "6d847464c8b267b15262fdd7c93ef2ef6eabb05e2ac4bc88b1991c9285d03990",
+      "persisted_hash": "2a72310efe17001dc181c762f06d10340eed0c4524d9acb064d22fab59421b7a"
+    },
+    {
+      "scenario": "three",
+      "response_parity": true,
+      "persisted_parity": true,
+      "before": {
+        "mode": "full",
+        "duration_ms": 57,
+        "statements": 176,
+        "calls": 147,
+        "guarded_batches": 14,
+        "ownership_assertions": 14,
+        "stages": [
+          {
+            "stage": "request_parse",
+            "duration_ms": 0.72
+          },
+          {
+            "stage": "rate_limit",
+            "duration_ms": 0.34
+          },
+          {
+            "stage": "authentication",
+            "duration_ms": 0.74
+          },
+          {
+            "stage": "rate_limit",
+            "duration_ms": 0.04
+          },
+          {
+            "stage": "user_bootstrap",
+            "duration_ms": 0.2
+          },
+          {
+            "stage": "d1_bootstrap",
+            "duration_ms": 0.49
+          },
+          {
+            "stage": "daily_settlement",
+            "duration_ms": 1.62
+          },
+          {
+            "stage": "boss_victory_recovery",
+            "duration_ms": 0.92,
+            "sql_statements": 1,
+            "d1_calls": 1
+          },
+          {
+            "stage": "journey_source_recovery",
+            "duration_ms": 1.37,
+            "sql_statements": 1,
+            "d1_calls": 1
+          },
+          {
+            "stage": "daily_journey_award_recovery",
+            "duration_ms": 0.39,
+            "sql_statements": 1,
+            "d1_calls": 1
+          },
+          {
+            "stage": "weekly_journey_award_recovery",
+            "duration_ms": 1.98,
+            "sql_statements": 1,
+            "d1_calls": 1
+          },
+          {
+            "stage": "weekly_settlement",
+            "duration_ms": 4.76
+          },
+          {
+            "stage": "state_recovery",
+            "duration_ms": 11.09
+          },
+          {
+            "stage": "ownership_verification",
+            "duration_ms": 0.49
+          },
+          {
+            "stage": "pet_state_projection",
+            "duration_ms": 17.27,
+            "sql_statements": 155,
+            "d1_calls": 126
+          },
+          {
+            "stage": "response_serialization",
+            "duration_ms": 1.83
+          },
+          {
+            "stage": "total",
+            "duration_ms": 32.93
+          }
+        ]
+      },
+      "after": {
+        "mode": "full",
+        "duration_ms": 62,
+        "statements": 176,
+        "calls": 136,
+        "guarded_batches": 15,
+        "ownership_assertions": 15,
+        "stages": [
+          {
+            "stage": "request_parse",
+            "duration_ms": 0.71
+          },
+          {
+            "stage": "rate_limit",
+            "duration_ms": 0.35
+          },
+          {
+            "stage": "authentication",
+            "duration_ms": 2.87
+          },
+          {
+            "stage": "rate_limit",
+            "duration_ms": 0.04
+          },
+          {
+            "stage": "user_bootstrap",
+            "duration_ms": 0.18
+          },
+          {
+            "stage": "d1_bootstrap",
+            "duration_ms": 0.46
+          },
+          {
+            "stage": "daily_settlement",
+            "duration_ms": 1.79
+          },
+          {
+            "stage": "boss_victory_recovery",
+            "duration_ms": 0.75,
+            "sql_statements": 1,
+            "d1_calls": 1
+          },
+          {
+            "stage": "journey_source_recovery",
+            "duration_ms": 1.26,
+            "sql_statements": 1,
+            "d1_calls": 1
+          },
+          {
+            "stage": "daily_journey_award_recovery",
+            "duration_ms": 0.39,
+            "sql_statements": 1,
+            "d1_calls": 1
+          },
+          {
+            "stage": "weekly_journey_award_recovery",
+            "duration_ms": 1.82,
+            "sql_statements": 1,
+            "d1_calls": 1
+          },
+          {
+            "stage": "weekly_settlement",
+            "duration_ms": 4.3
+          },
+          {
+            "stage": "state_recovery",
+            "duration_ms": 10.91
+          },
+          {
+            "stage": "ownership_verification",
+            "duration_ms": 0.51
+          },
+          {
+            "stage": "pet_state_projection",
+            "duration_ms": 17.83,
+            "sql_statements": 155,
+            "d1_calls": 115
+          },
+          {
+            "stage": "response_serialization",
+            "duration_ms": 1.96
+          },
+          {
+            "stage": "total",
+            "duration_ms": 35.52
+          }
+        ]
+      },
+      "response_hash": "17c7ab0c7f99f9f65e27740dfd17d7bab7e75742b846517c5041a66177ecdb53",
+      "persisted_hash": "068c5410bdb584772723ee056b2342245a36dd2014feae815bc73ec7fca735e7"
+    },
+    {
+      "scenario": "heavy",
+      "response_parity": true,
+      "persisted_parity": true,
+      "before": {
+        "mode": "full",
+        "duration_ms": 86,
+        "statements": 298,
+        "calls": 226,
+        "guarded_batches": 14,
+        "ownership_assertions": 14,
+        "stages": [
+          {
+            "stage": "request_parse",
+            "duration_ms": 0.69
+          },
+          {
+            "stage": "rate_limit",
+            "duration_ms": 0.33
+          },
+          {
+            "stage": "authentication",
+            "duration_ms": 0.74
+          },
+          {
+            "stage": "rate_limit",
+            "duration_ms": 0.04
+          },
+          {
+            "stage": "user_bootstrap",
+            "duration_ms": 0.16
+          },
+          {
+            "stage": "d1_bootstrap",
+            "duration_ms": 0.52
+          },
+          {
+            "stage": "daily_settlement",
+            "duration_ms": 1.67
+          },
+          {
+            "stage": "boss_victory_recovery",
+            "duration_ms": 9.93,
+            "sql_statements": 46,
+            "d1_calls": 33
+          },
+          {
+            "stage": "journey_source_recovery",
+            "duration_ms": 5.48,
+            "sql_statements": 52,
+            "d1_calls": 22
+          },
+          {
+            "stage": "daily_journey_award_recovery",
+            "duration_ms": 1.98,
+            "sql_statements": 16,
+            "d1_calls": 16
+          },
+          {
+            "stage": "weekly_journey_award_recovery",
+            "duration_ms": 16.06,
+            "sql_statements": 20,
+            "d1_calls": 20
+          },
+          {
+            "stage": "weekly_settlement",
+            "duration_ms": 33.56
+          },
+          {
+            "stage": "state_recovery",
+            "duration_ms": 40.03
+          },
+          {
+            "stage": "ownership_verification",
+            "duration_ms": 0.57
+          },
+          {
+            "stage": "pet_state_projection",
+            "duration_ms": 17.85,
+            "sql_statements": 147,
+            "d1_calls": 118
+          },
+          {
+            "stage": "response_serialization",
+            "duration_ms": 1.75
+          },
+          {
+            "stage": "total",
+            "duration_ms": 62.33
+          }
+        ]
+      },
+      "after": {
+        "mode": "full",
+        "duration_ms": 80,
+        "statements": 298,
+        "calls": 215,
+        "guarded_batches": 15,
+        "ownership_assertions": 15,
+        "stages": [
+          {
+            "stage": "request_parse",
+            "duration_ms": 0.71
+          },
+          {
+            "stage": "rate_limit",
+            "duration_ms": 0.33
+          },
+          {
+            "stage": "authentication",
+            "duration_ms": 1.19
+          },
+          {
+            "stage": "rate_limit",
+            "duration_ms": 0.05
+          },
+          {
+            "stage": "user_bootstrap",
+            "duration_ms": 0.16
+          },
+          {
+            "stage": "d1_bootstrap",
+            "duration_ms": 0.53
+          },
+          {
+            "stage": "daily_settlement",
+            "duration_ms": 1.64
+          },
+          {
+            "stage": "boss_victory_recovery",
+            "duration_ms": 13.04,
+            "sql_statements": 46,
+            "d1_calls": 33
+          },
+          {
+            "stage": "journey_source_recovery",
+            "duration_ms": 5.24,
+            "sql_statements": 52,
+            "d1_calls": 22
+          },
+          {
+            "stage": "daily_journey_award_recovery",
+            "duration_ms": 2.03,
+            "sql_statements": 16,
+            "d1_calls": 16
+          },
+          {
+            "stage": "weekly_journey_award_recovery",
+            "duration_ms": 5.14,
+            "sql_statements": 20,
+            "d1_calls": 20
+          },
+          {
+            "stage": "weekly_settlement",
+            "duration_ms": 25.56
+          },
+          {
+            "stage": "state_recovery",
+            "duration_ms": 32.1
+          },
+          {
+            "stage": "ownership_verification",
+            "duration_ms": 0.56
+          },
+          {
+            "stage": "pet_state_projection",
+            "duration_ms": 18.92,
+            "sql_statements": 147,
+            "d1_calls": 107
+          },
+          {
+            "stage": "response_serialization",
+            "duration_ms": 1.75
+          },
+          {
+            "stage": "total",
+            "duration_ms": 55.96
+          }
+        ]
+      },
+      "response_hash": "267a41ccb547c5d3755c01b7298ab7ca36ac947eacd9b54e27bfe4c55557cccf",
+      "persisted_hash": "6e1e014f8a3ec8bd3d1acdcd213db026596d09b6cf55a69cf9e86a7ae0dd177b"
+    },
+    {
+      "scenario": "archived",
+      "response_parity": true,
+      "persisted_parity": true,
+      "before": {
+        "mode": "full",
+        "duration_ms": 87,
+        "statements": 302,
+        "calls": 230,
+        "guarded_batches": 14,
+        "ownership_assertions": 14,
+        "stages": [
+          {
+            "stage": "request_parse",
+            "duration_ms": 0.68
+          },
+          {
+            "stage": "rate_limit",
+            "duration_ms": 0.33
+          },
+          {
+            "stage": "authentication",
+            "duration_ms": 0.75
+          },
+          {
+            "stage": "rate_limit",
+            "duration_ms": 0.04
+          },
+          {
+            "stage": "user_bootstrap",
+            "duration_ms": 0.16
+          },
+          {
+            "stage": "d1_bootstrap",
+            "duration_ms": 0.47
+          },
+          {
+            "stage": "daily_settlement",
+            "duration_ms": 1.6
+          },
+          {
+            "stage": "boss_victory_recovery",
+            "duration_ms": 10.32,
+            "sql_statements": 46,
+            "d1_calls": 33
+          },
+          {
+            "stage": "journey_source_recovery",
+            "duration_ms": 5.51,
+            "sql_statements": 52,
+            "d1_calls": 22
+          },
+          {
+            "stage": "daily_journey_award_recovery",
+            "duration_ms": 2.18,
+            "sql_statements": 16,
+            "d1_calls": 16
+          },
+          {
+            "stage": "weekly_journey_award_recovery",
+            "duration_ms": 16.63,
+            "sql_statements": 20,
+            "d1_calls": 20
+          },
+          {
+            "stage": "weekly_settlement",
+            "duration_ms": 34.75
+          },
+          {
+            "stage": "state_recovery",
+            "duration_ms": 41.21
+          },
+          {
+            "stage": "ownership_verification",
+            "duration_ms": 0.52
+          },
+          {
+            "stage": "pet_state_projection",
+            "duration_ms": 18.1,
+            "sql_statements": 151,
+            "d1_calls": 122
+          },
+          {
+            "stage": "response_serialization",
+            "duration_ms": 1.75
+          },
+          {
+            "stage": "total",
+            "duration_ms": 63.68
+          }
+        ]
+      },
+      "after": {
+        "mode": "full",
+        "duration_ms": 84,
+        "statements": 302,
+        "calls": 219,
+        "guarded_batches": 15,
+        "ownership_assertions": 15,
+        "stages": [
+          {
+            "stage": "request_parse",
+            "duration_ms": 0.83
+          },
+          {
+            "stage": "rate_limit",
+            "duration_ms": 0.43
+          },
+          {
+            "stage": "authentication",
+            "duration_ms": 5.02
+          },
+          {
+            "stage": "rate_limit",
+            "duration_ms": 0.05
+          },
+          {
+            "stage": "user_bootstrap",
+            "duration_ms": 0.18
+          },
+          {
+            "stage": "d1_bootstrap",
+            "duration_ms": 0.48
+          },
+          {
+            "stage": "daily_settlement",
+            "duration_ms": 1.74
+          },
+          {
+            "stage": "boss_victory_recovery",
+            "duration_ms": 10.06,
+            "sql_statements": 46,
+            "d1_calls": 33
+          },
+          {
+            "stage": "journey_source_recovery",
+            "duration_ms": 5.66,
+            "sql_statements": 52,
+            "d1_calls": 22
+          },
+          {
+            "stage": "daily_journey_award_recovery",
+            "duration_ms": 2.01,
+            "sql_statements": 16,
+            "d1_calls": 16
+          },
+          {
+            "stage": "weekly_journey_award_recovery",
+            "duration_ms": 5.16,
+            "sql_statements": 20,
+            "d1_calls": 20
+          },
+          {
+            "stage": "weekly_settlement",
+            "duration_ms": 22.99
+          },
+          {
+            "stage": "state_recovery",
+            "duration_ms": 29.81
+          },
+          {
+            "stage": "ownership_verification",
+            "duration_ms": 0.54
+          },
+          {
+            "stage": "pet_state_projection",
+            "duration_ms": 17.91,
+            "sql_statements": 151,
+            "d1_calls": 111
+          },
+          {
+            "stage": "response_serialization",
+            "duration_ms": 1.72
+          },
+          {
+            "stage": "total",
+            "duration_ms": 56.67
+          }
+        ]
+      },
+      "response_hash": "10faaeeb8ac6eee33eb3303d7e0fb465426ff4d63f0e601d0c1eef14c94bafdd",
+      "persisted_hash": "f592a9db4ce396247567d386e902acdce38a65ab702b94c78fccc6a83aa18b10"
+    },
+    {
+      "scenario": "day_rollover",
+      "response_parity": true,
+      "persisted_parity": true,
+      "before": {
+        "mode": "full",
+        "duration_ms": 62,
+        "statements": 170,
+        "calls": 141,
+        "guarded_batches": 14,
+        "ownership_assertions": 14,
+        "stages": [
+          {
+            "stage": "request_parse",
+            "duration_ms": 0.84
+          },
+          {
+            "stage": "rate_limit",
+            "duration_ms": 0.4
+          },
+          {
+            "stage": "authentication",
+            "duration_ms": 1.07
+          },
+          {
+            "stage": "rate_limit",
+            "duration_ms": 0.05
+          },
+          {
+            "stage": "user_bootstrap",
+            "duration_ms": 0.25
+          },
+          {
+            "stage": "d1_bootstrap",
+            "duration_ms": 0.59
+          },
+          {
+            "stage": "daily_settlement",
+            "duration_ms": 1.61
+          },
+          {
+            "stage": "boss_victory_recovery",
+            "duration_ms": 0.88,
+            "sql_statements": 1,
+            "d1_calls": 1
+          },
+          {
+            "stage": "journey_source_recovery",
+            "duration_ms": 1.39,
+            "sql_statements": 1,
+            "d1_calls": 1
+          },
+          {
+            "stage": "daily_journey_award_recovery",
+            "duration_ms": 0.42,
+            "sql_statements": 1,
+            "d1_calls": 1
+          },
+          {
+            "stage": "weekly_journey_award_recovery",
+            "duration_ms": 2.34,
+            "sql_statements": 1,
+            "d1_calls": 1
+          },
+          {
+            "stage": "weekly_settlement",
+            "duration_ms": 5.17
+          },
+          {
+            "stage": "state_recovery",
+            "duration_ms": 11.47
+          },
+          {
+            "stage": "ownership_verification",
+            "duration_ms": 0.53
+          },
+          {
+            "stage": "pet_state_projection",
+            "duration_ms": 19.73,
+            "sql_statements": 149,
+            "d1_calls": 120
+          },
+          {
+            "stage": "response_serialization",
+            "duration_ms": 1.81
+          },
+          {
+            "stage": "total",
+            "duration_ms": 36.51
+          }
+        ]
+      },
+      "after": {
+        "mode": "full",
+        "duration_ms": 62,
+        "statements": 170,
+        "calls": 130,
+        "guarded_batches": 15,
+        "ownership_assertions": 15,
+        "stages": [
+          {
+            "stage": "request_parse",
+            "duration_ms": 0.72
+          },
+          {
+            "stage": "rate_limit",
+            "duration_ms": 0.34
+          },
+          {
+            "stage": "authentication",
+            "duration_ms": 3.28
+          },
+          {
+            "stage": "rate_limit",
+            "duration_ms": 0.05
+          },
+          {
+            "stage": "user_bootstrap",
+            "duration_ms": 0.22
+          },
+          {
+            "stage": "d1_bootstrap",
+            "duration_ms": 0.54
+          },
+          {
+            "stage": "daily_settlement",
+            "duration_ms": 1.81
+          },
+          {
+            "stage": "boss_victory_recovery",
+            "duration_ms": 0.78,
+            "sql_statements": 1,
+            "d1_calls": 1
+          },
+          {
+            "stage": "journey_source_recovery",
+            "duration_ms": 1.3,
+            "sql_statements": 1,
+            "d1_calls": 1
+          },
+          {
+            "stage": "daily_journey_award_recovery",
+            "duration_ms": 0.39,
+            "sql_statements": 1,
+            "d1_calls": 1
+          },
+          {
+            "stage": "weekly_journey_award_recovery",
+            "duration_ms": 1.85,
+            "sql_statements": 1,
+            "d1_calls": 1
+          },
+          {
+            "stage": "weekly_settlement",
+            "duration_ms": 4.43
+          },
+          {
+            "stage": "state_recovery",
+            "duration_ms": 11.29
+          },
+          {
+            "stage": "ownership_verification",
+            "duration_ms": 0.48
+          },
+          {
+            "stage": "pet_state_projection",
+            "duration_ms": 17.46,
+            "sql_statements": 149,
+            "d1_calls": 109
+          },
+          {
+            "stage": "response_serialization",
+            "duration_ms": 1.88
+          },
+          {
+            "stage": "total",
+            "duration_ms": 36.01
+          }
+        ]
+      },
+      "response_hash": "110dea10fbcae7c8e795c1f14ae6a2a3e62a3ce6cad053eaf3a3d7c2778d0ec8",
+      "persisted_hash": "2a72310efe17001dc181c762f06d10340eed0c4524d9acb064d22fab59421b7a"
+    },
+    {
+      "scenario": "week_rollover",
+      "response_parity": true,
+      "persisted_parity": true,
+      "before": {
+        "mode": "full",
+        "duration_ms": 57,
+        "statements": 170,
+        "calls": 141,
+        "guarded_batches": 14,
+        "ownership_assertions": 14,
+        "stages": [
+          {
+            "stage": "request_parse",
+            "duration_ms": 0.73
+          },
+          {
+            "stage": "rate_limit",
+            "duration_ms": 0.34
+          },
+          {
+            "stage": "authentication",
+            "duration_ms": 0.77
+          },
+          {
+            "stage": "rate_limit",
+            "duration_ms": 0.04
+          },
+          {
+            "stage": "user_bootstrap",
+            "duration_ms": 0.19
+          },
+          {
+            "stage": "d1_bootstrap",
+            "duration_ms": 0.58
+          },
+          {
+            "stage": "daily_settlement",
+            "duration_ms": 1.66
+          },
+          {
+            "stage": "boss_victory_recovery",
+            "duration_ms": 0.82,
+            "sql_statements": 1,
+            "d1_calls": 1
+          },
+          {
+            "stage": "journey_source_recovery",
+            "duration_ms": 1.39,
+            "sql_statements": 1,
+            "d1_calls": 1
+          },
+          {
+            "stage": "daily_journey_award_recovery",
+            "duration_ms": 0.42,
+            "sql_statements": 1,
+            "d1_calls": 1
+          },
+          {
+            "stage": "weekly_journey_award_recovery",
+            "duration_ms": 2.03,
+            "sql_statements": 1,
+            "d1_calls": 1
+          },
+          {
+            "stage": "weekly_settlement",
+            "duration_ms": 4.77
+          },
+          {
+            "stage": "state_recovery",
+            "duration_ms": 11.24
+          },
+          {
+            "stage": "ownership_verification",
+            "duration_ms": 0.5
+          },
+          {
+            "stage": "pet_state_projection",
+            "duration_ms": 17.18,
+            "sql_statements": 149,
+            "d1_calls": 120
+          },
+          {
+            "stage": "response_serialization",
+            "duration_ms": 1.81
+          },
+          {
+            "stage": "total",
+            "duration_ms": 33.08
+          }
+        ]
+      },
+      "after": {
+        "mode": "full",
+        "duration_ms": 64,
+        "statements": 170,
+        "calls": 130,
+        "guarded_batches": 15,
+        "ownership_assertions": 15,
+        "stages": [
+          {
+            "stage": "request_parse",
+            "duration_ms": 0.71
+          },
+          {
+            "stage": "rate_limit",
+            "duration_ms": 0.33
+          },
+          {
+            "stage": "authentication",
+            "duration_ms": 1.12
+          },
+          {
+            "stage": "rate_limit",
+            "duration_ms": 0.05
+          },
+          {
+            "stage": "user_bootstrap",
+            "duration_ms": 0.19
+          },
+          {
+            "stage": "d1_bootstrap",
+            "duration_ms": 0.54
+          },
+          {
+            "stage": "daily_settlement",
+            "duration_ms": 1.7
+          },
+          {
+            "stage": "boss_victory_recovery",
+            "duration_ms": 0.81,
+            "sql_statements": 1,
+            "d1_calls": 1
+          },
+          {
+            "stage": "journey_source_recovery",
+            "duration_ms": 1.29,
+            "sql_statements": 1,
+            "d1_calls": 1
+          },
+          {
+            "stage": "daily_journey_award_recovery",
+            "duration_ms": 0.4,
+            "sql_statements": 1,
+            "d1_calls": 1
+          },
+          {
+            "stage": "weekly_journey_award_recovery",
+            "duration_ms": 1.85,
+            "sql_statements": 1,
+            "d1_calls": 1
+          },
+          {
+            "stage": "weekly_settlement",
+            "duration_ms": 4.51
+          },
+          {
+            "stage": "state_recovery",
+            "duration_ms": 11.07
+          },
+          {
+            "stage": "ownership_verification",
+            "duration_ms": 0.53
+          },
+          {
+            "stage": "pet_state_projection",
+            "duration_ms": 21.66,
+            "sql_statements": 149,
+            "d1_calls": 109
+          },
+          {
+            "stage": "response_serialization",
+            "duration_ms": 1.85
+          },
+          {
+            "stage": "total",
+            "duration_ms": 37.72
+          }
+        ]
+      },
+      "response_hash": "47ec0b8834657bf9dce942b8a21019ceacbe0590bbdb3655c63e9809550f5459",
+      "persisted_hash": "2a72310efe17001dc181c762f06d10340eed0c4524d9acb064d22fab59421b7a"
+    }
+  ],
+  "profile_before": {
+    "stages": [
+      {
+        "stage": "d1_bootstrap",
+        "statements": 7
+      },
+      {
+        "stage": "daily_settlement",
+        "statements": 2
+      },
+      {
+        "stage": "boss_victory_recovery",
+        "statements": 1
+      },
+      {
+        "stage": "journey_source_recovery",
+        "statements": 1
+      },
+      {
+        "stage": "daily_journey_award_recovery",
+        "statements": 1
+      },
+      {
+        "stage": "weekly_journey_award_recovery",
+        "statements": 1
+      },
+      {
+        "stage": "weekly_settlement",
+        "statements": 4
+      },
+      {
+        "stage": "state_recovery",
+        "statements": 13
+      },
+      {
+        "stage": "ownership_verification",
+        "statements": 3
+      },
+      {
+        "stage": "pet_state_projection",
+        "statements": 155
+      }
+    ],
+    "statements_by_caller": [
+      [
+        "displayed_pet_authority_guard",
+        14
+      ],
+      [
+        "at findActivePetSlot (workers/moonboys-api/worker.js:4524:21)",
+        3
+      ],
+      [
+        "at ownedPet (workers/moonboys-api/pets/season-completion.js:49:13)",
+        3
+      ],
+      [
+        "at evaluatePetSeasonCompletion (workers/moonboys-api/pets/season-completion.js:243:29)",
+        3
+      ],
+      [
+        "at workers/moonboys-api/pets/season-completion.js:189:20",
+        3
+      ],
+      [
+        "at buildPetLifecycleProgress (workers/moonboys-api/pets/season-completion.js:198:10)",
+        3
+      ],
+      [
+        "at capturePetEconomy (workers/moonboys-api/pets/economic-projection.js:7:24)",
+        2
+      ],
+      [
+        "at prepareLegacyPetInventoryReconciliation (workers/moonboys-api/pets/inventory-cutover.js:8:8)",
+        2
+      ],
+      [
+        "at prepareLegacyPetInventoryReconciliation (workers/moonboys-api/pets/inventory-cutover.js:12:8)",
+        2
+      ],
+      [
+        "at prepareLegacyPetInventoryReconciliation (workers/moonboys-api/pets/inventory-cutover.js:16:8)",
+        2
+      ],
+      [
+        "at prepareLegacyPetInventoryReconciliation (workers/moonboys-api/pets/inventory-cutover.js:29:8)",
+        2
+      ],
+      [
+        "at expirePetArenaBattles (workers/moonboys-api/worker.js:6188:12)",
+        2
+      ],
+      [
+        "at readActivePetIdentityScope (workers/moonboys-api/pets/moonpet-identity.js:47:24)",
+        2
+      ],
+      [
+        "at getPetArenaBattleForPlayer (workers/moonboys-api/worker.js:6199:27)",
+        2
+      ],
+      [
+        "at readWeeklyJourneyObjectiveProgress (workers/moonboys-api/pets/weekly-journey.js:135:13)",
+        2
+      ],
+      [
+        "at hasPetAccountWalletReconciliationMarker (workers/moonboys-api/pets/wallet-reconciliation.js:263:27)",
+        1
+      ],
+      [
+        "at ensureActivePetInstance (workers/moonboys-api/worker.js:4557:25)",
+        1
+      ],
+      [
+        "at getPetProfile (workers/moonboys-api/worker.js:4076:30)",
+        1
+      ],
+      [
+        "at withPetEquipmentProgression (workers/moonboys-api/pets/equipment-progression.js:105:25)",
+        1
+      ],
+      [
+        "at getActivePetRun (workers/moonboys-api/worker.js:2776:24)",
+        1
+      ],
+      [
+        "at buildPetMissions (workers/moonboys-api/worker.js:7896:8)",
+        1
+      ],
+      [
+        "at buildPetMissions (workers/moonboys-api/worker.js:7902:8)",
+        1
+      ],
+      [
+        "at getPetSeasonRewardState (workers/moonboys-api/worker.js:18354:8)",
+        1
+      ],
+      [
+        "at getPetSeasonRewardState (workers/moonboys-api/worker.js:18355:8)",
+        1
+      ],
+      [
+        "at getPetSeasonRewardState (workers/moonboys-api/worker.js:18357:8)",
+        1
+      ],
+      [
+        "at buildPetGuidanceState (workers/moonboys-api/worker.js:17672:8)",
+        1
+      ],
+      [
+        "at buildPetGuidanceState (workers/moonboys-api/worker.js:17674:8)",
+        1
+      ],
+      [
+        "at getPetSpecialActionGuidanceState (workers/moonboys-api/worker.js:10294:25)",
+        1
+      ],
+      [
+        "at getPendingPetWeeklyBossRewards (workers/moonboys-api/worker.js:17632:25)",
+        1
+      ],
+      [
+        "at readAcceptedDailyChestPetEventForDay (workers/moonboys-api/worker.js:4204:13)",
+        1
+      ],
+      [
+        "at getPetWindowTotals (workers/moonboys-api/worker.js:5410:24)",
+        1
+      ],
+      [
+        "at buildPetGuidanceState (workers/moonboys-api/worker.js:17681:8)",
+        1
+      ],
+      [
+        "at projectPetMiniAppState (workers/moonboys-api/worker.js:10723:8)",
+        1
+      ],
+      [
+        "at projectPetMiniAppState (workers/moonboys-api/worker.js:10726:8)",
+        1
+      ],
+      [
+        "at projectPetMiniAppState (workers/moonboys-api/worker.js:10728:8)",
+        1
+      ],
+      [
+        "at projectPetMiniAppState (workers/moonboys-api/worker.js:10736:8)",
+        1
+      ],
+      [
+        "at projectPetMiniAppState (workers/moonboys-api/worker.js:10741:8)",
+        1
+      ],
+      [
+        "at readPetLeaderboard (workers/moonboys-api/pets/leaderboard.js:53:25)",
+        1
+      ],
+      [
+        "at getPetNotificationPreference (workers/moonboys-api/worker.js:7969:52)",
+        1
+      ],
+      [
+        "at buildPetSeasonSlotSummary (workers/moonboys-api/worker.js:4972:24)",
+        1
+      ],
+      [
+        "at projectPetMiniAppState (workers/moonboys-api/worker.js:10753:8)",
+        1
+      ],
+      [
+        "at getOrCreatePetRuntimeState (workers/moonboys-api/pets/runtime-phase-5a.js:259:14)",
+        1
+      ],
+      [
+        "at expireOldPetActivitySessions (workers/moonboys-api/worker.js:6690:52)",
+        1
+      ],
+      [
+        "at getPetArenaQueueState (workers/moonboys-api/worker.js:6205:12)",
+        1
+      ],
+      [
+        "at getPetKaijuMatchForPlayer (workers/moonboys-api/worker.js:5679:12)",
+        1
+      ],
+      [
+        "at getPetKaijuQueueState (workers/moonboys-api/worker.js:5692:12)",
+        1
+      ],
+      [
+        "at readLifecycle (workers/moonboys-api/pets/species-lifecycle.js:151:13)",
+        1
+      ],
+      [
+        "at syncPetAchievementsForPet (workers/moonboys-api/worker.js:17939:26)",
+        1
+      ],
+      [
+        "at getPetArenaQueueState (workers/moonboys-api/worker.js:6208:24)",
+        1
+      ],
+      [
+        "at getPetKaijuMatchForPlayer (workers/moonboys-api/worker.js:5684:24)",
+        1
+      ],
+      [
+        "at getPetKaijuQueueState (workers/moonboys-api/worker.js:5695:24)",
+        1
+      ],
+      [
+        "at getOrCreatePetRuntimeState (workers/moonboys-api/pets/runtime-phase-5a.js:262:26)",
+        1
+      ],
+      [
+        "at getActivePetActivitySession (workers/moonboys-api/worker.js:6708:29)",
+        1
+      ],
+      [
+        "at getPetWindowTotals (workers/moonboys-api/worker.js:5416:25)",
+        1
+      ],
+      [
+        "at getPetInventory (workers/moonboys-api/worker.js:3412:25)",
+        1
+      ],
+      [
+        "at buildPetSeasonSlotSummary (workers/moonboys-api/worker.js:4994:10)",
+        1
+      ],
+      [
+        "at buildPetSeasonSlotSummary (workers/moonboys-api/worker.js:5011:10)",
+        1
+      ],
+      [
+        "at buildPetSeasonSlotSummary (workers/moonboys-api/worker.js:5015:10)",
+        1
+      ],
+      [
+        "at buildPetSeasonSlotSummary (workers/moonboys-api/worker.js:5017:10)",
+        1
+      ],
+      [
+        "at readDailyCompletion (workers/moonboys-api/pets/completion-features.js:76:24)",
+        1
+      ],
+      [
+        "at getRecoverablePetActivitySession (workers/moonboys-api/worker.js:6729:13)",
+        1
+      ],
+      [
+        "at readDailyCompletion (workers/moonboys-api/pets/completion-features.js:79:27)",
+        1
+      ],
+      [
+        "at getActivePetKaijuMatch (workers/moonboys-api/worker.js:5526:12)",
+        1
+      ],
+      [
+        "at projectMoonpetLifecycle (workers/moonboys-api/pets/species-lifecycle.js:332:26)",
+        1
+      ],
+      [
+        "at getActivePetKaijuMatch (workers/moonboys-api/worker.js:5532:24)",
+        1
+      ],
+      [
+        "at syncPetAchievementsForPet (workers/moonboys-api/worker.js:17960:8)",
+        1
+      ],
+      [
+        "at syncPetAchievementsForPet (workers/moonboys-api/worker.js:17966:8)",
+        1
+      ],
+      [
+        "at syncPetAchievementsForPet (workers/moonboys-api/worker.js:17968:8)",
+        1
+      ],
+      [
+        "at syncPetAchievementsForPet (workers/moonboys-api/worker.js:17970:8)",
+        1
+      ],
+      [
+        "at getMoonpetIdentitySummary (workers/moonboys-api/pets/moonpet-identity.js:651:16)",
+        1
+      ],
+      [
+        "at readEvolutionStage (workers/moonboys-api/pets/species-lifecycle.js:173:28)",
+        1
+      ],
+      [
+        "at syncPetAchievementsForPet (workers/moonboys-api/worker.js:18002:36)",
+        1
+      ],
+      [
+        "at syncPetAchievementsForPet (workers/moonboys-api/worker.js:18017:6)",
+        1
+      ],
+      [
+        "at readDeletedPetHistory (workers/moonboys-api/pets/deletion.js:82:25)",
+        1
+      ],
+      [
+        "at getMoonpetIdentitySummary (workers/moonboys-api/pets/moonpet-identity.js:665:12)",
+        1
+      ],
+      [
+        "at getMoonpetIdentitySummary (workers/moonboys-api/pets/moonpet-identity.js:668:12)",
+        1
+      ],
+      [
+        "at getMoonpetIdentitySummary (workers/moonboys-api/pets/moonpet-identity.js:673:12)",
+        1
+      ],
+      [
+        "at getMoonpetIdentitySummary (workers/moonboys-api/pets/moonpet-identity.js:676:12)",
+        1
+      ],
+      [
+        "at readEvolutionStage (workers/moonboys-api/pets/species-lifecycle.js:176:27)",
+        1
+      ],
+      [
+        "at getPetEvolutionGuidance (workers/moonboys-api/worker.js:17217:8)",
+        1
+      ],
+      [
+        "at getPetEvolutionGuidance (workers/moonboys-api/worker.js:17219:8)",
+        1
+      ],
+      [
+        "at getPetEvolutionGuidance (workers/moonboys-api/worker.js:17222:12)",
+        1
+      ],
+      [
+        "at getPetEvolutionGuidance (workers/moonboys-api/worker.js:17226:8)",
+        1
+      ],
+      [
+        "at evaluateMoonpetEvolutionRequirements (workers/moonboys-api/pets/moonpet-identity.js:540:20)",
+        1
+      ],
+      [
+        "at getPetEconomyState (workers/moonboys-api/worker.js:17325:8)",
+        1
+      ],
+      [
+        "at getPetEconomyState (workers/moonboys-api/worker.js:17328:8)",
+        1
+      ],
+      [
+        "at getPetEconomyState (workers/moonboys-api/worker.js:17332:8)",
+        1
+      ],
+      [
+        "at getPetEconomyState (workers/moonboys-api/worker.js:17335:8)",
+        1
+      ],
+      [
+        "at getPetEconomyState (workers/moonboys-api/worker.js:17336:8)",
+        1
+      ],
+      [
+        "at getPetEconomyState (workers/moonboys-api/worker.js:17337:8)",
+        1
+      ],
+      [
+        "at getPetEconomyState (workers/moonboys-api/worker.js:17340:8)",
+        1
+      ],
+      [
+        "at getPetEconomyState (workers/moonboys-api/worker.js:17343:8)",
+        1
+      ],
+      [
+        "at readPendingStreetEvents (workers/moonboys-api/worker.js:3811:25)",
+        1
+      ],
+      [
+        "at readDailyCareRecoveryState (workers/moonboys-api/pets/daily-moon-run.js:906:25)",
+        1
+      ],
+      [
+        "at getSeasonFinales (workers/moonboys-api/pets/completion-features.js:139:25)",
+        1
+      ],
+      [
+        "at listPetMiniAppDailyJourneyObjectives (workers/moonboys-api/worker.js:9991:25)",
+        1
+      ],
+      [
+        "at buildPetMiniAppJourneySummary (workers/moonboys-api/worker.js:10065:8)",
+        1
+      ],
+      [
+        "at buildPetMiniAppJourneySummary (workers/moonboys-api/worker.js:10070:8)",
+        1
+      ],
+      [
+        "at buildPetMiniAppJourneySummary (workers/moonboys-api/worker.js:10085:8)",
+        1
+      ],
+      [
+        "at buildPetMiniAppJourneySummary (workers/moonboys-api/worker.js:10090:8)",
+        1
+      ],
+      [
+        "at resolveLivePetAuthority (workers/moonboys-api/pets/live-systems.js:98:24)",
+        1
+      ],
+      [
+        "at getPetLiveProgressionState (workers/moonboys-api/pets/live-systems.js:108:12)",
+        1
+      ],
+      [
+        "at getPetLiveProgressionState (workers/moonboys-api/pets/live-systems.js:120:24)",
+        1
+      ],
+      [
+        "at buildPetLiveSystemsState (workers/moonboys-api/pets/live-systems.js:179:12)",
+        1
+      ],
+      [
+        "at buildPetLiveSystemsState (workers/moonboys-api/pets/live-systems.js:182:12)",
+        1
+      ],
+      [
+        "at buildPetLiveSystemsState (workers/moonboys-api/pets/live-systems.js:184:8)",
+        1
+      ],
+      [
+        "at buildPetLiveSystemsState (workers/moonboys-api/pets/live-systems.js:185:8)",
+        1
+      ],
+      [
+        "at buildPetLiveSystemsState (workers/moonboys-api/pets/live-systems.js:186:8)",
+        1
+      ],
+      [
+        "at buildPetLiveSystemsState (workers/moonboys-api/pets/live-systems.js:192:8)",
+        1
+      ],
+      [
+        "at getStyleLoadout (workers/moonboys-api/pets/style-loadout.js:13:46)",
+        1
+      ],
+      [
+        "at getContractBoard (workers/moonboys-api/pets/continuing-contracts.js:324:49)",
+        1
+      ],
+      [
+        "at petHouseLayoutRead (workers/moonboys-api/pets/house-layout.js:40:13)",
+        1
+      ],
+      [
+        "at authority (workers/moonboys-api/pets/continuing-contracts.js:307:13)",
+        1
+      ],
+      [
+        "at ownedAndPlacedQuery (workers/moonboys-api/pets/home-furniture.js:23:13)",
+        1
+      ],
+      [
+        "at getContractBoard (workers/moonboys-api/pets/continuing-contracts.js:330:8)",
+        1
+      ],
+      [
+        "at getContractBoard (workers/moonboys-api/pets/continuing-contracts.js:332:8)",
+        1
+      ],
+      [
+        "at getContractBoard (workers/moonboys-api/pets/continuing-contracts.js:333:8)",
+        1
+      ],
+      [
+        "at getContractBoard (workers/moonboys-api/pets/continuing-contracts.js:334:8)",
+        1
+      ],
+      [
+        "at gardenRead (workers/moonboys-api/pets/home-garden.js:45:13)",
+        1
+      ],
+      [
+        "at readRoomFurniture (workers/moonboys-api/pets/room-furniture.js:20:44)",
+        1
+      ],
+      [
+        "at getDailyMoonRunSummary (workers/moonboys-api/pets/daily-moon-run.js:170:50)",
+        1
+      ],
+      [
+        "at persistPetGuidanceNotices (workers/moonboys-api/worker.js:17827:37)",
+        1
+      ],
+      [
+        "at persistPetGuidanceNotices (workers/moonboys-api/worker.js:17836:49)",
+        1
+      ]
+    ]
+  },
+  "profile_after": {
+    "stages": [
+      {
+        "stage": "d1_bootstrap",
+        "statements": 7
+      },
+      {
+        "stage": "daily_settlement",
+        "statements": 2
+      },
+      {
+        "stage": "boss_victory_recovery",
+        "statements": 1
+      },
+      {
+        "stage": "journey_source_recovery",
+        "statements": 1
+      },
+      {
+        "stage": "daily_journey_award_recovery",
+        "statements": 1
+      },
+      {
+        "stage": "weekly_journey_award_recovery",
+        "statements": 1
+      },
+      {
+        "stage": "weekly_settlement",
+        "statements": 4
+      },
+      {
+        "stage": "state_recovery",
+        "statements": 13
+      },
+      {
+        "stage": "ownership_verification",
+        "statements": 3
+      },
+      {
+        "stage": "pet_state_projection",
+        "statements": 155
+      }
+    ],
+    "statements_by_caller": [
+      [
+        "displayed_pet_authority_guard",
+        15
+      ],
+      [
+        "at findActivePetSlot (workers/moonboys-api/worker.js:4524:21)",
+        3
+      ],
+      [
+        "at ownedPet (workers/moonboys-api/pets/season-completion.js:49:13)",
+        3
+      ],
+      [
+        "at evaluatePetSeasonCompletion (workers/moonboys-api/pets/season-completion.js:243:29)",
+        3
+      ],
+      [
+        "at workers/moonboys-api/pets/season-completion.js:189:20",
+        3
+      ],
+      [
+        "at buildPetLifecycleProgress (workers/moonboys-api/pets/season-completion.js:198:10)",
+        3
+      ],
+      [
+        "at capturePetEconomy (workers/moonboys-api/pets/economic-projection.js:7:24)",
+        2
+      ],
+      [
+        "at prepareLegacyPetInventoryReconciliation (workers/moonboys-api/pets/inventory-cutover.js:8:8)",
+        2
+      ],
+      [
+        "at prepareLegacyPetInventoryReconciliation (workers/moonboys-api/pets/inventory-cutover.js:12:8)",
+        2
+      ],
+      [
+        "at prepareLegacyPetInventoryReconciliation (workers/moonboys-api/pets/inventory-cutover.js:16:8)",
+        2
+      ],
+      [
+        "at prepareLegacyPetInventoryReconciliation (workers/moonboys-api/pets/inventory-cutover.js:29:8)",
+        2
+      ],
+      [
+        "at expirePetArenaBattles (workers/moonboys-api/worker.js:6188:12)",
+        2
+      ],
+      [
+        "at readActivePetIdentityScope (workers/moonboys-api/pets/moonpet-identity.js:47:24)",
+        2
+      ],
+      [
+        "at getPetArenaBattleForPlayer (workers/moonboys-api/worker.js:6199:27)",
+        2
+      ],
+      [
+        "at hasPetAccountWalletReconciliationMarker (workers/moonboys-api/pets/wallet-reconciliation.js:263:27)",
+        1
+      ],
+      [
+        "at ensureActivePetInstance (workers/moonboys-api/worker.js:4557:25)",
+        1
+      ],
+      [
+        "at getPetProfile (workers/moonboys-api/worker.js:4076:30)",
+        1
+      ],
+      [
+        "at withPetEquipmentProgression (workers/moonboys-api/pets/equipment-progression.js:105:25)",
+        1
+      ],
+      [
+        "at getActivePetRun (workers/moonboys-api/worker.js:2776:24)",
+        1
+      ],
+      [
+        "at buildPetMissions (workers/moonboys-api/worker.js:7896:8)",
+        1
+      ],
+      [
+        "at buildPetMissions (workers/moonboys-api/worker.js:7902:8)",
+        1
+      ],
+      [
+        "at getPetSeasonRewardState (workers/moonboys-api/worker.js:18356:8)",
+        1
+      ],
+      [
+        "at getPetSeasonRewardState (workers/moonboys-api/worker.js:18357:8)",
+        1
+      ],
+      [
+        "at getPetSeasonRewardState (workers/moonboys-api/worker.js:18359:8)",
+        1
+      ],
+      [
+        "at buildPetGuidanceState (workers/moonboys-api/worker.js:17674:8)",
+        1
+      ],
+      [
+        "at buildPetGuidanceState (workers/moonboys-api/worker.js:17676:8)",
+        1
+      ],
+      [
+        "at getPetSpecialActionGuidanceState (workers/moonboys-api/worker.js:10295:25)",
+        1
+      ],
+      [
+        "at getPendingPetWeeklyBossRewards (workers/moonboys-api/worker.js:17634:25)",
+        1
+      ],
+      [
+        "at readAcceptedDailyChestPetEventForDay (workers/moonboys-api/worker.js:4204:13)",
+        1
+      ],
+      [
+        "at getPetWindowTotals (workers/moonboys-api/worker.js:5410:24)",
+        1
+      ],
+      [
+        "at buildPetGuidanceState (workers/moonboys-api/worker.js:17683:8)",
+        1
+      ],
+      [
+        "at projectPetMiniAppState (workers/moonboys-api/worker.js:10730:8)",
+        1
+      ],
+      [
+        "at readPetLeaderboard (workers/moonboys-api/pets/leaderboard.js:53:25)",
+        1
+      ],
+      [
+        "at getPetNotificationPreference (workers/moonboys-api/worker.js:7969:52)",
+        1
+      ],
+      [
+        "at buildPetSeasonSlotSummary (workers/moonboys-api/worker.js:4972:24)",
+        1
+      ],
+      [
+        "at getOrCreatePetRuntimeState (workers/moonboys-api/pets/runtime-phase-5a.js:259:14)",
+        1
+      ],
+      [
+        "at expireOldPetActivitySessions (workers/moonboys-api/worker.js:6690:52)",
+        1
+      ],
+      [
+        "at getPetArenaQueueState (workers/moonboys-api/worker.js:6205:12)",
+        1
+      ],
+      [
+        "at getPetKaijuMatchForPlayer (workers/moonboys-api/worker.js:5679:12)",
+        1
+      ],
+      [
+        "at getPetKaijuQueueState (workers/moonboys-api/worker.js:5692:12)",
+        1
+      ],
+      [
+        "at readLifecycle (workers/moonboys-api/pets/species-lifecycle.js:151:13)",
+        1
+      ],
+      [
+        "at syncPetAchievementsForPet (workers/moonboys-api/worker.js:17941:26)",
+        1
+      ],
+      [
+        "at projectPetMiniAppState (workers/moonboys-api/worker.js:10725:22)",
+        1
+      ],
+      [
+        "at projectPetMiniAppState (workers/moonboys-api/worker.js:10728:22)",
+        1
+      ],
+      [
+        "at projectPetMiniAppState (workers/moonboys-api/worker.js:10738:22)",
+        1
+      ],
+      [
+        "at projectPetMiniAppState (workers/moonboys-api/worker.js:10743:22)",
+        1
+      ],
+      [
+        "at projectPetMiniAppState (workers/moonboys-api/worker.js:10755:22)",
+        1
+      ],
+      [
+        "at getPetArenaQueueState (workers/moonboys-api/worker.js:6208:24)",
+        1
+      ],
+      [
+        "at getPetKaijuMatchForPlayer (workers/moonboys-api/worker.js:5684:24)",
+        1
+      ],
+      [
+        "at getPetKaijuQueueState (workers/moonboys-api/worker.js:5695:24)",
+        1
+      ],
+      [
+        "at getOrCreatePetRuntimeState (workers/moonboys-api/pets/runtime-phase-5a.js:262:26)",
+        1
+      ],
+      [
+        "at getActivePetActivitySession (workers/moonboys-api/worker.js:6708:29)",
+        1
+      ],
+      [
+        "at getPetWindowTotals (workers/moonboys-api/worker.js:5416:25)",
+        1
+      ],
+      [
+        "at getPetInventory (workers/moonboys-api/worker.js:3412:25)",
+        1
+      ],
+      [
+        "at buildPetSeasonSlotSummary (workers/moonboys-api/worker.js:4994:10)",
+        1
+      ],
+      [
+        "at buildPetSeasonSlotSummary (workers/moonboys-api/worker.js:5011:10)",
+        1
+      ],
+      [
+        "at buildPetSeasonSlotSummary (workers/moonboys-api/worker.js:5015:10)",
+        1
+      ],
+      [
+        "at buildPetSeasonSlotSummary (workers/moonboys-api/worker.js:5017:10)",
+        1
+      ],
+      [
+        "at readDailyCompletion (workers/moonboys-api/pets/completion-features.js:76:24)",
+        1
+      ],
+      [
+        "at getRecoverablePetActivitySession (workers/moonboys-api/worker.js:6729:13)",
+        1
+      ],
+      [
+        "at readDailyCompletion (workers/moonboys-api/pets/completion-features.js:79:27)",
+        1
+      ],
+      [
+        "at getActivePetKaijuMatch (workers/moonboys-api/worker.js:5526:12)",
+        1
+      ],
+      [
+        "at projectMoonpetLifecycle (workers/moonboys-api/pets/species-lifecycle.js:332:26)",
+        1
+      ],
+      [
+        "at getActivePetKaijuMatch (workers/moonboys-api/worker.js:5532:24)",
+        1
+      ],
+      [
+        "at syncPetAchievementsForPet (workers/moonboys-api/worker.js:17962:8)",
+        1
+      ],
+      [
+        "at syncPetAchievementsForPet (workers/moonboys-api/worker.js:17968:8)",
+        1
+      ],
+      [
+        "at syncPetAchievementsForPet (workers/moonboys-api/worker.js:17970:8)",
+        1
+      ],
+      [
+        "at syncPetAchievementsForPet (workers/moonboys-api/worker.js:17972:8)",
+        1
+      ],
+      [
+        "at getMoonpetIdentitySummary (workers/moonboys-api/pets/moonpet-identity.js:651:16)",
+        1
+      ],
+      [
+        "at readEvolutionStage (workers/moonboys-api/pets/species-lifecycle.js:173:28)",
+        1
+      ],
+      [
+        "at syncPetAchievementsForPet (workers/moonboys-api/worker.js:18004:36)",
+        1
+      ],
+      [
+        "at syncPetAchievementsForPet (workers/moonboys-api/worker.js:18019:6)",
+        1
+      ],
+      [
+        "at readDeletedPetHistory (workers/moonboys-api/pets/deletion.js:82:25)",
+        1
+      ],
+      [
+        "at getMoonpetIdentitySummary (workers/moonboys-api/pets/moonpet-identity.js:665:12)",
+        1
+      ],
+      [
+        "at getMoonpetIdentitySummary (workers/moonboys-api/pets/moonpet-identity.js:668:12)",
+        1
+      ],
+      [
+        "at getMoonpetIdentitySummary (workers/moonboys-api/pets/moonpet-identity.js:673:12)",
+        1
+      ],
+      [
+        "at getMoonpetIdentitySummary (workers/moonboys-api/pets/moonpet-identity.js:676:12)",
+        1
+      ],
+      [
+        "at readEvolutionStage (workers/moonboys-api/pets/species-lifecycle.js:176:27)",
+        1
+      ],
+      [
+        "at getPetEvolutionGuidance (workers/moonboys-api/worker.js:17219:8)",
+        1
+      ],
+      [
+        "at getPetEvolutionGuidance (workers/moonboys-api/worker.js:17221:8)",
+        1
+      ],
+      [
+        "at getPetEvolutionGuidance (workers/moonboys-api/worker.js:17224:12)",
+        1
+      ],
+      [
+        "at getPetEvolutionGuidance (workers/moonboys-api/worker.js:17228:8)",
+        1
+      ],
+      [
+        "at evaluateMoonpetEvolutionRequirements (workers/moonboys-api/pets/moonpet-identity.js:540:20)",
+        1
+      ],
+      [
+        "at getPetEconomyState (workers/moonboys-api/worker.js:17327:8)",
+        1
+      ],
+      [
+        "at getPetEconomyState (workers/moonboys-api/worker.js:17330:8)",
+        1
+      ],
+      [
+        "at getPetEconomyState (workers/moonboys-api/worker.js:17334:8)",
+        1
+      ],
+      [
+        "at getPetEconomyState (workers/moonboys-api/worker.js:17337:8)",
+        1
+      ],
+      [
+        "at getPetEconomyState (workers/moonboys-api/worker.js:17338:8)",
+        1
+      ],
+      [
+        "at getPetEconomyState (workers/moonboys-api/worker.js:17339:8)",
+        1
+      ],
+      [
+        "at getPetEconomyState (workers/moonboys-api/worker.js:17342:8)",
+        1
+      ],
+      [
+        "at getPetEconomyState (workers/moonboys-api/worker.js:17345:8)",
+        1
+      ],
+      [
+        "at readPendingStreetEvents (workers/moonboys-api/worker.js:3811:25)",
+        1
+      ],
+      [
+        "at readDailyCareRecoveryState (workers/moonboys-api/pets/daily-moon-run.js:906:25)",
+        1
+      ],
+      [
+        "at getSeasonFinales (workers/moonboys-api/pets/completion-features.js:139:25)",
+        1
+      ],
+      [
+        "at listPetMiniAppDailyJourneyObjectives (workers/moonboys-api/worker.js:9991:25)",
+        1
+      ],
+      [
+        "at buildPetMiniAppJourneySummary (workers/moonboys-api/worker.js:10065:8)",
+        1
+      ],
+      [
+        "at buildPetMiniAppJourneySummary (workers/moonboys-api/worker.js:10070:8)",
+        1
+      ],
+      [
+        "at readWeeklyJourneyObjectiveProgress (workers/moonboys-api/pets/weekly-journey.js:135:13)",
+        1
+      ],
+      [
+        "at buildPetMiniAppJourneySummary (workers/moonboys-api/worker.js:10086:8)",
+        1
+      ],
+      [
+        "at buildPetMiniAppJourneySummary (workers/moonboys-api/worker.js:10091:8)",
+        1
+      ],
+      [
+        "at resolveLivePetAuthority (workers/moonboys-api/pets/live-systems.js:98:24)",
+        1
+      ],
+      [
+        "at getPetLiveProgressionState (workers/moonboys-api/pets/live-systems.js:108:12)",
+        1
+      ],
+      [
+        "at getPetLiveProgressionState (workers/moonboys-api/pets/live-systems.js:120:24)",
+        1
+      ],
+      [
+        "at buildPetLiveSystemsState (workers/moonboys-api/pets/live-systems.js:179:25)",
+        1
+      ],
+      [
+        "at buildPetLiveSystemsState (workers/moonboys-api/pets/live-systems.js:182:25)",
+        1
+      ],
+      [
+        "at buildPetLiveSystemsState (workers/moonboys-api/pets/live-systems.js:184:21)",
+        1
+      ],
+      [
+        "at buildPetLiveSystemsState (workers/moonboys-api/pets/live-systems.js:185:21)",
+        1
+      ],
+      [
+        "at buildPetLiveSystemsState (workers/moonboys-api/pets/live-systems.js:186:21)",
+        1
+      ],
+      [
+        "at buildPetLiveSystemsState (workers/moonboys-api/pets/live-systems.js:192:21)",
+        1
+      ],
+      [
+        "at getStyleLoadout (workers/moonboys-api/pets/style-loadout.js:13:46)",
+        1
+      ],
+      [
+        "at getContractBoard (workers/moonboys-api/pets/continuing-contracts.js:324:49)",
+        1
+      ],
+      [
+        "at petHouseLayoutRead (workers/moonboys-api/pets/house-layout.js:40:13)",
+        1
+      ],
+      [
+        "at authority (workers/moonboys-api/pets/continuing-contracts.js:307:13)",
+        1
+      ],
+      [
+        "at ownedAndPlacedQuery (workers/moonboys-api/pets/home-furniture.js:23:13)",
+        1
+      ],
+      [
+        "at getContractBoard (workers/moonboys-api/pets/continuing-contracts.js:330:8)",
+        1
+      ],
+      [
+        "at getContractBoard (workers/moonboys-api/pets/continuing-contracts.js:332:8)",
+        1
+      ],
+      [
+        "at getContractBoard (workers/moonboys-api/pets/continuing-contracts.js:333:8)",
+        1
+      ],
+      [
+        "at getContractBoard (workers/moonboys-api/pets/continuing-contracts.js:334:8)",
+        1
+      ],
+      [
+        "at gardenRead (workers/moonboys-api/pets/home-garden.js:45:13)",
+        1
+      ],
+      [
+        "at readRoomFurniture (workers/moonboys-api/pets/room-furniture.js:20:44)",
+        1
+      ],
+      [
+        "at getDailyMoonRunSummary (workers/moonboys-api/pets/daily-moon-run.js:170:50)",
+        1
+      ],
+      [
+        "at persistPetGuidanceNotices (workers/moonboys-api/worker.js:17829:37)",
+        1
+      ],
+      [
+        "at persistPetGuidanceNotices (workers/moonboys-api/worker.js:17838:49)",
+        1
+      ]
+    ]
+  }
+}

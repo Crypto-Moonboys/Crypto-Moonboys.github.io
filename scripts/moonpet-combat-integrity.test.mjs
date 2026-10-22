@@ -27,15 +27,16 @@ function fixture(owner) {
     async run() { if (db.beforeRun) await db.beforeRun(this); return this.exec(); }
   }
   const db = { statementCount: 0, beforeBatch: null, beforeRun: null, prepare(query) { return new Statement(query); }, async batch(statements) {
+    const overrides = new Map();
     for (const statement of statements) {
       if (/^\s*SELECT\b/i.test(statement.query)) {
-        if (this.beforeFirst) { const reply = await this.beforeFirst(statement); if (reply?.success === false) throw Error('pet_state_read_unavailable'); }
-        if (this.beforeAll) { const reply = await this.beforeAll(statement); if (reply?.success === false) throw Error('pet_state_read_unavailable'); }
+        if (this.beforeFirst) { const reply = await this.beforeFirst(statement); if (reply?.success === false) throw Error('pet_state_read_unavailable'); if (reply !== undefined) overrides.set(statement, { results: reply === null ? [] : [reply] }); }
+        if (this.beforeAll) { const reply = await this.beforeAll(statement); if (reply?.success === false) throw Error('pet_state_read_unavailable'); if (reply !== undefined) overrides.set(statement, reply); }
       } else if (this.beforeRun) await this.beforeRun(statement);
     }
     if (this.beforeBatch) await this.beforeBatch(statements);
     sql.exec('BEGIN');
-    try { const results = []; for (const s of statements) results.push(s.exec()); sql.exec('COMMIT'); return results; }
+    try { const results = []; for (const s of statements) { const result = s.exec(); results.push(overrides.has(s) ? overrides.get(s) : result); } sql.exec('COMMIT'); return results; }
     catch (error) { sql.exec('ROLLBACK'); throw error; }
   } };
   sql.prepare('INSERT INTO telegram_users (telegram_id,first_name) VALUES (?,?)').run(owner, 'Test player');
