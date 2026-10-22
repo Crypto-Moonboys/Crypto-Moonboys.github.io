@@ -845,6 +845,72 @@ await holdRunnerRight(touchStartPage);
 await touchStartPage.waitForFunction(() => window.NBGLevel1State?.running === true, null, { timeout: 5000 });
 await touchStartPage.close();
 
+// Assert actual flying-pig canvas output in both directions, including the
+// 14px sprite overhang beyond the unchanged 28px collision box.
+const pigPage = await browser.newPage({viewport:{width:960,height:540}});
+try {
+  await pigPage.goto(url, {waitUntil:'networkidle'});
+  await pigPage.waitForFunction(() => window.NBGLevel1State?.assetsLoaded, null, {timeout:10000});
+  await pigPage.keyboard.down('KeyD');
+  await pigPage.waitForFunction(() => window.NBGLevel1State.running, null, {timeout:3000});
+  await pigPage.keyboard.up('KeyD');
+  await pigPage.evaluate(() => {
+    const state = window.NBGLevel1State;
+    state.player.x = 64;
+    state.player.invuln = 120000;
+    const enemy = state.enemies.find(item => item.type === 'pigeon');
+    enemy.x = 180; enemy.y = 128; enemy.vx = 0.001;
+    enemy.min = -200; enemy.max = 1200;
+    const ctx = document.getElementById('game').getContext('2d');
+    window.__pigOriginalDraw = ctx.drawImage;
+    window.__pigDrawCalls = [];
+    window.__pigCanvasIds = new WeakMap();
+    window.__pigNextCanvasId = 1;
+    ctx.drawImage = function (img, ...args) {
+      if (img instanceof HTMLCanvasElement && img.width === 156 && img.height === 156) {
+        if (!window.__pigCanvasIds.has(img))
+          window.__pigCanvasIds.set(img, window.__pigNextCanvasId++);
+        const transform = this.getTransform();
+        window.__pigDrawCalls.push({
+          id:window.__pigCanvasIds.get(img),
+          x:transform.a < 0 ? transform.e - args[6] : args[4],
+          width:args[6], height:args[7], flipped:transform.a < 0,
+          srcWidth:args[2], srcHeight:args[3],
+          cornerAlpha:img.getContext('2d').getImageData(0,0,1,1).data[3]
+        });
+      }
+      return window.__pigOriginalDraw.call(this, img, ...args);
+    };
+  });
+  await pigPage.waitForFunction(() => window.__pigDrawCalls.length > 2, null, {timeout:2000});
+  await pigPage.waitForTimeout(260);
+  const initial = await pigPage.evaluate(() => window.__pigDrawCalls.slice());
+  assert.ok(initial.every(call => call.width === 56 && call.height === 44 &&
+    call.srcWidth === 156 && call.srcHeight === 156 && call.cornerAlpha === 0),
+    'pig frames must use isolated transparent padded canvases drawn at exactly 56x44');
+  assert.ok(new Set(initial.map(call=>call.id)).size >= 2,
+    'flying pig must actually animate through more than one isolated frame');
+  for (const scenario of [
+    {x:481,vx:0.001,flipped:false,expectedX:467},
+    {x:-29,vx:-0.001,flipped:true,expectedX:-43}
+  ]) {
+    await pigPage.evaluate(({x,vx}) => {
+      const enemy = window.NBGLevel1State.enemies.find(item=>item.type==='pigeon');
+      enemy.x=x;enemy.vx=vx;
+      window.__pigDrawCalls.length=0;
+    }, scenario);
+    await pigPage.waitForFunction(() => window.__pigDrawCalls.length>0, null, {timeout:1500});
+    const drawn = await pigPage.evaluate(() => window.__pigDrawCalls[0]);
+    assert.equal(drawn.flipped, scenario.flipped,
+      'left-facing flying pig must be horizontally mirrored');
+    assert.ok(Math.abs(drawn.x-scenario.expectedX)<=2,
+      'pig visual must stay centered and render smoothly beyond screen edges');
+    assert.equal(drawn.width,56,'enlarged pig draw must preserve double pigeon width');
+  }
+} finally {
+  await pigPage.close();
+}
+
 await page.keyboard.down('ArrowRight');
 await page.waitForFunction(() => window.NBGLevel1State?.running === true, null, { timeout: 5000 });
 await page.waitForTimeout(450);
@@ -943,72 +1009,6 @@ assert.deepEqual(
 assert.equal(state.running, true, 'ArrowRight must start the game loop');
 assert.equal(state.coinCount, 312, 'speedrun must spawn 312 XP coins across four sizes');
 assert.equal(state.enemyCount, 57, 'each of 18 course sections must include rat, bot and pigeon');
- 
-// Assert actual flying-pig canvas output in both directions, including the
-// 14px sprite overhang beyond the unchanged 28px collision box.
-const pigPage = await browser.newPage({viewport:{width:960,height:540}});
-try {
-  await pigPage.goto(url, {waitUntil:'networkidle'});
-  await pigPage.waitForFunction(() => window.NBGLevel1State?.assetsLoaded, null, {timeout:10000});
-  await pigPage.keyboard.down('KeyD');
-  await pigPage.waitForFunction(() => window.NBGLevel1State.running, null, {timeout:3000});
-  await pigPage.keyboard.up('KeyD');
-  await pigPage.evaluate(() => {
-    const state = window.NBGLevel1State;
-    state.player.x = 64;
-    state.player.invuln = 120000;
-    const enemy = state.enemies.find(item => item.type === 'pigeon');
-    enemy.x = 180; enemy.y = 128; enemy.vx = 0.001;
-    enemy.min = -200; enemy.max = 1200;
-    const ctx = document.getElementById('game').getContext('2d');
-    window.__pigOriginalDraw = ctx.drawImage;
-    window.__pigDrawCalls = [];
-    window.__pigCanvasIds = new WeakMap();
-    window.__pigNextCanvasId = 1;
-    ctx.drawImage = function (img, ...args) {
-      if (img instanceof HTMLCanvasElement && img.width === 156 && img.height === 156) {
-        if (!window.__pigCanvasIds.has(img))
-          window.__pigCanvasIds.set(img, window.__pigNextCanvasId++);
-        const transform = this.getTransform();
-        window.__pigDrawCalls.push({
-          id:window.__pigCanvasIds.get(img),
-          x:transform.a < 0 ? transform.e - args[6] : args[4],
-          width:args[6], height:args[7], flipped:transform.a < 0,
-          srcWidth:args[2], srcHeight:args[3],
-          cornerAlpha:img.getContext('2d').getImageData(0,0,1,1).data[3]
-        });
-      }
-      return window.__pigOriginalDraw.call(this, img, ...args);
-    };
-  });
-  await pigPage.waitForFunction(() => window.__pigDrawCalls.length > 2, null, {timeout:2000});
-  await pigPage.waitForTimeout(260);
-  const initial = await pigPage.evaluate(() => window.__pigDrawCalls.slice());
-  assert.ok(initial.every(call => call.width === 56 && call.height === 44 &&
-    call.srcWidth === 156 && call.srcHeight === 156 && call.cornerAlpha === 0),
-    'pig frames must use isolated transparent padded canvases drawn at exactly 56x44');
-  assert.ok(new Set(initial.map(call=>call.id)).size >= 2,
-    'flying pig must actually animate through more than one isolated frame');
-  for (const scenario of [
-    {x:481,vx:0.001,flipped:false,expectedX:467},
-    {x:-29,vx:-0.001,flipped:true,expectedX:-43}
-  ]) {
-    await pigPage.evaluate(({x,vx}) => {
-      const enemy = window.NBGLevel1State.enemies.find(item=>item.type==='pigeon');
-      enemy.x=x;enemy.vx=vx;
-      window.__pigDrawCalls.length=0;
-    }, scenario);
-    await pigPage.waitForFunction(() => window.__pigDrawCalls.length>0, null, {timeout:1500});
-    const drawn = await pigPage.evaluate(() => window.__pigDrawCalls[0]);
-    assert.equal(drawn.flipped, scenario.flipped,
-      'left-facing flying pig must be horizontally mirrored');
-    assert.ok(Math.abs(drawn.x-scenario.expectedX)<=2,
-      'pig visual must stay centered and render smoothly beyond screen edges');
-    assert.equal(drawn.width,56,'enlarged pig draw must preserve double pigeon width');
-  }
-} finally {
-  await pigPage.close();
-}
 
 assert.equal(
   new URL(state.assetStatus.pigeon?.src || '', url).pathname,
@@ -1125,36 +1125,80 @@ state = await page.evaluate(() => ({
 }));
 assert.ok(state.x > beforeTouchMoveX + 5, 'touch right control must move player');
 
+// Movement and rendering checks must not supply a damaged checkpoint fixture.
+// Reset through the public runtime API and drive exact frames so wall-clock
+// delays cannot add enemy hits between setup, fall and respawn assertions.
+await page.evaluate(() => window.NBGLevel1Runtime.reset());
+await page.clock.install();
+await page.clock.pauseAt(await page.evaluate(() => Date.now() + 100));
+await page.evaluate(() => {
+  window.__checkpointHits = [];
+  window.__checkpointHitListener = event => window.__checkpointHits.push(event.detail);
+  window.addEventListener('nbg-player-hit', window.__checkpointHitListener);
+});
+assert.equal(await page.evaluate(() => window.NBGLevel1State.player.health), 3,
+  'fresh checkpoint run must start with full health');
+await page.keyboard.press('ArrowRight');
+await page.clock.runFor(32);
 await page.evaluate(() => {
   const player = window.NBGLevel1State.player;
-  player.invuln = 0;
   player.x = 1242;
   player.y = 166;
+  player.vx = 0;
+  player.vy = 0;
 });
-await page.waitForTimeout(140);
+await page.clock.runFor(144);
 state = await page.evaluate(() => ({
   checkpointActive: window.NBGLevel1State.checkpoint.active,
-  xp: window.NBGLevel1State.xp
+  xp: window.NBGLevel1State.xp,
+  health: window.NBGLevel1State.player.health,
+  hits: window.__checkpointHits
 }));
 assert.equal(state.checkpointActive, true, 'checkpoint must activate when player reaches it');
-assert.ok(state.xp >= 250, 'checkpoint must award XP');
+assert.equal(state.xp, 250, 'checkpoint must award exactly 250 XP in a fresh run');
+assert.equal(state.health, 3, 'checkpoint activation must preserve health');
+assert.deepEqual(state.hits, [], 'checkpoint fixture must have no earlier damage');
 
-await page.evaluate(() => {
-  const player = window.NBGLevel1State.player;
-  player.y = 380;
-});
-await page.waitForTimeout(120);
-state = await page.evaluate(() => ({
-  x: window.NBGLevel1State.player.x,
-  y: window.NBGLevel1State.player.y,
-  health: window.NBGLevel1State.player.health
-}));
-assert.ok(Math.abs(state.x - 1240) < 2, 'checkpoint respawn must restore player x to checkpoint');
-assert.ok(state.y < 190, 'checkpoint respawn must restore player to playable height');
+async function forceCheckpointFall() {
+  await page.evaluate(() => { window.NBGLevel1State.player.y = 380; });
+  await page.clock.runFor(128);
+  return page.evaluate(() => ({
+    x: window.NBGLevel1State.player.x,
+    y: window.NBGLevel1State.player.y,
+    health: window.NBGLevel1State.player.health,
+    xp: window.NBGLevel1State.xp,
+    hits: window.__checkpointHits,
+    gameOver: window.NBGLevel1State.gameOver,
+    running: window.NBGLevel1State.running
+  }));
+}
+state = await forceCheckpointFall();
+assert.equal(state.x, 1240, 'checkpoint respawn must restore player x to checkpoint');
+assert.equal(state.y, 180, 'checkpoint respawn must restore player to playable height');
 assert.equal(state.health, 2, 'checkpoint respawn fall damage must reduce health once');
+assert.deepEqual(state.hits, [{ health: 2, enemy: 'fall' }],
+  'one fall must dispatch exactly one damage event');
+assert.equal(state.xp, 250, 'respawning must not duplicate checkpoint XP');
+
+state = await forceCheckpointFall();
+assert.equal(state.health, 2, 'a fall during respawn protection must not cause more damage');
+assert.equal(state.hits.length, 1, 'respawn protection must suppress duplicate hit events');
+assert.equal(state.x, 1240, 'protected falls must still restore the checkpoint');
+await page.clock.runFor(1024);
+state = await forceCheckpointFall();
+assert.equal(state.health, 1, 'a later fall must deduct one health from an already damaged player');
+assert.deepEqual(state.hits, [{ health: 2, enemy: 'fall' }, { health: 1, enemy: 'fall' }],
+  'each unprotected fall must cause exactly one hit');
+assert.equal(state.xp, 250, 'repeated respawns must preserve checkpoint XP');
+assert.equal(state.gameOver, false, 'one remaining health must keep the run playable');
+assert.equal(state.running, true, 'nonlethal checkpoint falls must keep gameplay running');
 await page.evaluate(() => {
+  window.removeEventListener('nbg-player-hit', window.__checkpointHitListener);
+  delete window.__checkpointHitListener;
+  delete window.__checkpointHits;
   window.NBGLevel1State.player.invuln = 0;
 });
+await page.clock.resume();
 
 // Double jump is edge-triggered and resets on landing, respawn and restart.
 assert.ok(
