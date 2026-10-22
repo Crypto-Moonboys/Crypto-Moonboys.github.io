@@ -60,10 +60,42 @@ try {
       await hidden.page.evaluate(()=>{Object.defineProperty(document,'hidden',{configurable:true,value:true});document.dispatchEvent(new Event('visibilitychange'));});
       hidden.release();await pause(60);
       const resumed=hidden.page.waitForResponse(r=>r.url().endsWith('/app/state')&&r.request().postDataJSON().mode==='core');
+      const rewarmed=hidden.page.waitForResponse(r=>r.url().endsWith('/app/state')&&!r.request().postDataJSON().mode);
       await hidden.page.evaluate(()=>{Object.defineProperty(document,'hidden',{configurable:true,value:false});document.dispatchEvent(new Event('visibilitychange'));});
       await (await resumed).finished();
+      const warmed=await(await rewarmed).json();assert.equal(warmed.state.hydration.full,true,'foreground core restarts the cancelled Home warmup');
       await hidden.care('clean');assert.deepEqual(hidden.errors,[]);
     }finally{await hidden.close();}
+    const hiddenModule=await setup({viewport,blockAllFull:true});
+    try{
+      hiddenModule.block();await hiddenModule.open();await hiddenModule.started;
+      const deferredNotice=hiddenModule.full().state.notices[0];
+      assert.ok(deferredNotice, 'signed fixture must contain a genuinely pending notice');
+      assert.equal(hiddenModule.f.sql.prepare('SELECT shown_at FROM telegram_pet_guidance_notices WHERE telegram_id=? AND notice_key=?').get(hiddenModule.f.owner,deferredNotice.key).shown_at,null);
+      const moduleRequest=hiddenModule.page.waitForRequest(r=>r.url().endsWith('/app/state')&&!r.postDataJSON().mode);
+      await hiddenModule.page.locator('[data-screen="work"]').click();await moduleRequest;
+      await hiddenModule.page.locator('[data-panel="module-loading"]').waitFor();
+      await hiddenModule.page.evaluate(()=>{
+        window.hiddenModuleMutations=0;
+        window.hiddenModuleObserver=new MutationObserver(records=>window.hiddenModuleMutations+=records.length);
+        window.hiddenModuleObserver.observe(document.getElementById('screen'),{childList:true});
+        Object.defineProperty(document,'hidden',{configurable:true,value:true});document.dispatchEvent(new Event('visibilitychange'));
+      });
+      const completed=hiddenModule.page.waitForResponse(r=>r.url().endsWith('/app/state')&&!r.request().postDataJSON().mode);
+      hiddenModule.release();await(await completed).finished();await pause(100);
+      assert.equal(await hiddenModule.page.evaluate(()=>window.hiddenModuleMutations),0,'hidden foreground module response must not rebuild controls');
+      assert.equal(await hiddenModule.page.locator('[data-panel="module-loading"]').count(),1);
+      assert.equal(hiddenModule.requests.filter(r=>r.body.action==='guidance_ack').length,0,'hidden module cannot acknowledge unseen notices');
+      const resumed=hiddenModule.page.waitForResponse(r=>r.url().endsWith('/app/state'));
+      const noticeAck=hiddenModule.page.waitForResponse(r=>r.url().endsWith('/app/action')&&r.request().postDataJSON().action==='guidance_ack');noticeAck.catch(()=>{});
+      await hiddenModule.page.evaluate(()=>{window.hiddenModuleObserver.disconnect();Object.defineProperty(document,'hidden',{configurable:true,value:false});document.dispatchEvent(new Event('visibilitychange'));});
+      await(await resumed).finished();await hiddenModule.page.locator('[data-panel="timed-activity"]').waitFor();
+      const ack=await noticeAck;const acknowledged=await ack.json();assert.equal(acknowledged.result.accepted,true);
+      assert.equal(ack.request().postDataJSON().notices[0].key,deferredNotice.key);
+      assert.ok(hiddenModule.f.sql.prepare('SELECT shown_at FROM telegram_pet_guidance_notices WHERE telegram_id=? AND notice_key=?').get(hiddenModule.f.owner,deferredNotice.key).shown_at);
+      assert.ok((await hiddenModule.page.locator('#terminal-output').textContent()).includes(deferredNotice.title));
+      assert.deepEqual(hiddenModule.errors,[]);
+    }finally{await hiddenModule.close();}
     const delayedTelegram=await setup({website:true,telegramDelay:150,websiteDelay:8000,viewport});
     try{
       await delayedTelegram.open();
@@ -103,6 +135,27 @@ try {
       failed.fail(false);await failed.page.locator('[data-utility="module-retry"]').click();await failed.page.locator('[data-panel="districts"]').waitFor();
       assert.deepEqual(failed.errors,[]);
     }finally{await failed.close();}
+    const hiddenAuth=await setup({viewport});
+    try{
+      await hiddenAuth.open();await hiddenAuth.started;await pause(100);
+      let enter,release;const entered=new Promise(resolve=>enter=resolve),gate=new Promise(resolve=>release=resolve);
+      await hiddenAuth.page.route('**/telegram-pets/app/state',async route=>{enter();await gate;await route.fallback();});
+      await hiddenAuth.page.evaluate(()=>{Object.defineProperty(document,'hidden',{configurable:true,value:true});document.dispatchEvent(new Event('visibilitychange'));Object.defineProperty(document,'hidden',{configurable:true,value:false});document.dispatchEvent(new Event('visibilitychange'));});
+      await entered;
+      await hiddenAuth.page.evaluate(()=>{
+        window.hiddenAuthMutations=0;window.hiddenAuthObserver=new MutationObserver(records=>window.hiddenAuthMutations+=records.length);
+        window.hiddenAuthObserver.observe(document.getElementById('screen'),{childList:true});
+        Object.defineProperty(document,'hidden',{configurable:true,value:true});document.dispatchEvent(new Event('visibilitychange'));
+      });
+      hiddenAuth.invalid();const expiredResponse=hiddenAuth.page.waitForResponse(r=>r.url().endsWith('/app/state')&&r.status()===401);release();
+      await(await expiredResponse).finished();await pause(60);
+      assert.equal(await hiddenAuth.page.evaluate(()=>window.hiddenAuthMutations),0,'hidden 401 preserves authentication invalidation without rendering');
+      const requestCount=hiddenAuth.requests.length;
+      await hiddenAuth.page.evaluate(()=>{window.hiddenAuthObserver.disconnect();Object.defineProperty(document,'hidden',{configurable:true,value:false});document.dispatchEvent(new Event('visibilitychange'));});
+      await hiddenAuth.page.locator('[data-panel="telegram-auth"]').waitFor();
+      assert.equal(hiddenAuth.requests.length,requestCount,'foreground authentication display sends no request with expired proof');
+      assert.deepEqual(hiddenAuth.errors,[]);
+    }finally{await hiddenAuth.close();}
     const expired=await setup({viewport});
     try{
       await expired.open();expired.invalid();
@@ -113,6 +166,33 @@ try {
     }finally{await expired.close();}
     const invalid=await setup({viewport});
     try{invalid.invalid();await invalid.page.goto(origin+'/moonpet-game.html');await invalid.page.locator('.connection-fault').waitFor();assert.equal(await invalid.page.locator('[data-action="feed"]').count(),0);assert.deepEqual(invalid.errors,[]);}finally{await invalid.close();}
+  }
+
+  if(!benchmark){
+    const idle=await setup({clock:true});
+    try{
+      await idle.open();await idle.started;await pause(100);
+      const before=idle.requests.length;
+      const saved=idle.f.sql.prepare('SELECT pet_xp,moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles').get();
+      await idle.page.evaluate(()=>{
+        window.hiddenScreenMutations=0;
+        window.hiddenScreenObserver=new MutationObserver(records=>window.hiddenScreenMutations+=records.length);
+        window.hiddenScreenObserver.observe(document.getElementById('screen'),{childList:true});
+        Object.defineProperty(document,'hidden',{configurable:true,value:true});
+        document.dispatchEvent(new Event('visibilitychange'));
+      });
+      for(let tick=0;tick<11;tick++){await idle.page.clock.fastForward(30000);await pause(60);}
+      const hiddenReads=idle.requests.slice(before).filter(r=>r.path.endsWith('/state')).length;
+      const hiddenMutations=await idle.page.evaluate(()=>window.hiddenScreenMutations);
+      console.log('BACKGROUND_LIFECYCLE_RESULT '+JSON.stringify({hidden_ms:330000,hiddenReads,hiddenMutations}));
+      assert.equal(hiddenReads,0,'hidden Home starts no redundant state reads');
+      assert.equal(hiddenMutations,0,'hidden Home is not rebuilt by its thirty-second timer');
+      assert.deepEqual(idle.f.sql.prepare('SELECT pet_xp,moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles').get(),saved);
+      const resumed=idle.page.waitForResponse(r=>r.url().endsWith('/app/state'));
+      await idle.page.evaluate(()=>{window.hiddenScreenObserver.disconnect();Object.defineProperty(document,'hidden',{configurable:true,value:false});document.dispatchEvent(new Event('visibilitychange'));});
+      await(await resumed).finished();await idle.care('clean');
+      assert.deepEqual(idle.errors,[]);
+    }finally{await idle.close();}
   }
   console.log('PR7_BROWSER_RESULT '+JSON.stringify({client:clientRoot,model:benchmark?'25ms/D1 call + 100ms/API transport, real signed Worker/SQLite':'signed local regression fixture',results}));
 }finally{await harness.close();}

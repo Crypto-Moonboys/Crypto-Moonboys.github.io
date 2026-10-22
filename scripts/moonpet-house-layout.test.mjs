@@ -188,7 +188,7 @@ test('house is wired only through signed selected-pet state and actions',()=>{
   assert.match(worker,/getPetHouseLayout|readPetHouseLayout/);
   assert.match(worker,/action === 'house_place'/);
   assert.match(client,/function renderPetHouse\(/);
-  assert.match(entry,/moonpet-mini-app\.js\?v=20261022-pr7-home-loading-v1/);
+  assert.match(entry,/moonpet-mini-app\.js\?v=20261022-background-refresh-v1/);
   assert.doesNotMatch(client,/house_place[\s\S]{0,90}moon_gold/);
   assert.match(worker,/readPetHouseLayout\(lifecycleScope\.singleReads, telegramId, petRaw\)/);
   assert.match(worker,/readPetHouseLayout\(identityScope\.singleReads, telegramId, petRaw\)/);
@@ -205,7 +205,7 @@ test('notice acknowledgments preserve Profile hydration without adding requests'
       {key:'notice-1',scope:'pet',pet_id:'pet-1',season_key:'old-quarter',title:'Saved progress'},
     ]};
     const context={
-      state,activeScreen,noticesBusy:false,haptic(){},tell(){},crypto:{randomUUID:()=> 'test-notice'},
+      state,activeScreen,document:{hidden:false},noticesBusy:false,haptic(){},tell(){},crypto:{randomUUID:()=> 'test-notice'},
       beginStateRequest:()=>1,
       async post(path,body){
         requests.push(body);

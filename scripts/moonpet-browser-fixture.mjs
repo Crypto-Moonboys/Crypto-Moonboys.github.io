@@ -31,7 +31,7 @@ const originalFetch=globalThis.fetch;
 const blockedWorkerRequests=[];
 globalThis.fetch=async(input)=>{blockedWorkerRequests.push(String(input?.url || input));throw Error('sandbox_outbound_network_disabled');};
 let account=980400;
-async function setup({pets=1,recovery=false,website=false,delayMs=0,clock=false,telegramDelay=0,websiteDelay=0,viewport={width:360,height:640},prepare=null,initScript=null,warm=true}={}){
+async function setup({pets=1,recovery=false,website=false,delayMs=0,clock=false,blockAllFull=false,telegramDelay=0,websiteDelay=0,viewport={width:360,height:640},prepare=null,initScript=null,warm=true}={}){
   const f=await performanceFixture({pets,delayMs,warm,owner:String(++account)});
   if(recovery)seedRecoveryEvidence(f);
   if(prepare)await prepare(f);
@@ -66,7 +66,7 @@ async function setup({pets=1,recovery=false,website=false,delayMs=0,clock=false,
       await pause(benchmark?100:20);
       const response=await f.worker.fetch(new Request(origin+url.pathname,{method:'POST',headers:{'Content-Type':'application/json','CF-Connecting-IP':'192.0.2.'+(account%250+1)},body:JSON.stringify(body)}),{DB:f.db,TELEGRAM_BOT_TOKEN:token});
       const json=await response.json();
-      if(isFull&&firstFull){firstFull=false;fullValue=json;fullStarted();if(blockFull)await fullGate;}
+      if(isFull){const first=firstFull;if(first){firstFull=false;fullValue=json;fullStarted();}if(blockFull&&(first||blockAllFull))await fullGate;}
       await route.fulfill({status:response.status,json}).catch(()=>{});
       return;
       }finally{inFlight.delete(pending);finish();}

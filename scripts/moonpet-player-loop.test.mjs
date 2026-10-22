@@ -609,7 +609,7 @@ for (const changedDuringNotices of [true, false]) {
   const evolved = { ...original, pet: { ...original.pet, evolution_stage: 2, stage: 'Cyber Moonpet' }, lifecycle: { phase: 'adult' }, notices: [{ key: 'evolved', scope: 'pet', pet_id: 'evolving-pet', season_key: '2026-S4', title: 'New progress' }] };
   const selected = changedDuringNotices ? { adopted: true, pet: { pet_id: 'selected-egg', evolution_stage: 0 }, lifecycle: { phase: 'egg' } } : evolved;
   const actionContext = vm.createContext({
-    state: original, activeScreen: 'profile', busy: false, noticesBusy: false, petActionRefreshRequired: false, sleepLatched: false,
+    state: original, document: { hidden: false }, activeScreen: 'profile', busy: false, noticesBusy: false, petActionRefreshRequired: false, sleepLatched: false,
     stateNeedsScreenHydration: () => false,
     lifecycleCeremony: null, lifecycleCeremonyUntil: 0, lifecycleCeremonyTimer: 0, lifecycleCeremonyStartedAt: 0, reducedMotion: false,
     window: { clearTimeout: () => {} }, crypto: { randomUUID: () => 'evolve-source-pet' }, performance: { now: () => 1 },
@@ -804,7 +804,7 @@ for (const mode of ['foreign-only', 'mixed', 'account']) {
   const account = { key: 'account-notice', scope: 'account', pet_id: null, season_key: '2026-S2', title: 'Historical season reward' };
   const notices = mode === 'foreign-only' ? [other, legacy] : mode === 'account' ? [account] : [other, legacy, own, { ...own, key: 'later-owned-notice' }, account];
   const context = vm.createContext({
-    state: { pet: { pet_id: own.pet_id, season_key: own.season_key }, notices }, noticesBusy: false, activeScreen: 'home',
+    state: { pet: { pet_id: own.pet_id, season_key: own.season_key }, notices }, document: { hidden: false }, noticesBusy: false, activeScreen: 'home',
     haptic: () => {}, tell: text => displayed.push(text), render: () => {},
     beginStateRequest: () => 1, setStateSnapshot: () => true, crypto: { randomUUID: () => 'notice-request' },
     post: async (_path, body) => { requests.push(body); return { state: {} }; },
