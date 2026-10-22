@@ -2263,11 +2263,12 @@
   }
 
   function queueActiveScreenHydration(delayMs) {
+    if (document.hidden) return;
     if (!stateNeedsScreenHydration(state, activeScreen) || fullStateHydrationPromise || fullStateHydrationRetryTimer
       || fullStateHydrationFailures >= FULL_STATE_HYDRATION_MAX_AUTO_RETRIES) return;
     fullStateHydrationRetryTimer = window.setTimeout(function () {
       fullStateHydrationRetryTimer = 0;
-      if (authenticationFailure || !stateNeedsScreenHydration(state, activeScreen)) return;
+      if (document.hidden || authenticationFailure || !stateNeedsScreenHydration(state, activeScreen)) return;
       // The installing action/read must finish before the next generation starts.
       if (busy || noticesBusy || passiveRefreshInFlight || cooldownRefreshInFlight || seasonRefreshBusy || fastActionStateRefreshInFlight) {
         queueActiveScreenHydration(500);
@@ -2426,6 +2427,7 @@
   }
 
   function scheduleCooldownRefresh(delayOverrideMs) {
+    if (document.hidden) return;
     window.clearTimeout(cooldownRefreshTimer);
     cooldownRefreshTimer = 0;
     var override = Number(delayOverrideMs);
@@ -2439,6 +2441,7 @@
   }
 
   async function refreshExpiredCooldownState() {
+    if (document.hidden) return;
     if (!state || !state.adopted || cooldownRefreshFailures >= 3) return;
     if (busy || noticesBusy || cooldownRefreshInFlight || passiveRefreshInFlight || fastActionStateRefreshInFlight || seasonRefreshBusy || fullStateHydrationPromise && !fullStateHydrationPromise.background) {
       scheduleCooldownRefresh(1000);
@@ -2476,6 +2479,7 @@
   }
 
   function tickCooldownDom() {
+    if (document.hidden) return;
     var nodes = document.querySelectorAll('[data-cooldown-expires-at]');
     nodes.forEach(function (node) {
       var text = countdownText({ expires_at: node.getAttribute('data-cooldown-expires-at') }, node.getAttribute('data-cooldown-prefix') || 'Available in ');
@@ -2559,7 +2563,7 @@
   async function refreshFastActionState() {
     window.clearTimeout(fastActionStateRefreshTimer);
     fastActionStateRefreshTimer = 0;
-    if (!fastActionStateDirty || fastActionStateRefreshInFlight || fastActionStateRefreshFailures >= FAST_ACTION_STATE_MAX_AUTO_RETRIES) return;
+    if (document.hidden || !fastActionStateDirty || fastActionStateRefreshInFlight || fastActionStateRefreshFailures >= FAST_ACTION_STATE_MAX_AUTO_RETRIES) return;
     if (Date.now() < fastActionStateRefreshRetryAt) {
       scheduleFastActionStateRefresh(0);
       return;
@@ -4767,6 +4771,7 @@
   }
 
   async function refreshLiveState() {
+    if (document.hidden) return;
     if (stateNeedsFullHydration(state)) return;
     var multiplayerActive = state && (state.arena || state.arena_queue || state.kaiju && (state.kaiju.match || state.kaiju.queue));
     var activityActive = state && state.guidance && state.guidance.activity;
@@ -4856,6 +4861,7 @@
 
   // TEST-EXPORT: seasonalStateRefresh:start
   async function refreshSeasonSnapshot(force) {
+    if (document.hidden) return;
     var monotonicNow = performance.now();
     if (!state || !state.adopted) return;
     if (!force && !seasonSnapshotRefreshDue()) return;
@@ -4883,6 +4889,7 @@
   }
 
   function tickSeasonDisplay() {
+    if (document.hidden) return;
     if (!state || !state.adopted || busy || noticesBusy) return;
     if (activeScreen === 'home') {
       var scrollTop = screen.scrollTop;
@@ -5521,6 +5528,9 @@
   });
   document.addEventListener('visibilitychange', function () {
     if (document.hidden) {
+      window.clearTimeout(cooldownRefreshTimer); cooldownRefreshTimer = 0;
+      window.clearTimeout(fastActionStateRefreshTimer); fastActionStateRefreshTimer = 0;
+      window.clearTimeout(fullStateHydrationRetryTimer); fullStateHydrationRetryTimer = 0;
       if (fullStateHydrationPromise && fullStateHydrationPromise.background) beginStateRequest();
       return;
     }

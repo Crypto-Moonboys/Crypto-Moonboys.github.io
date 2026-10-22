@@ -192,5 +192,32 @@ try {
     const invalid=await setup({viewport});
     try{invalid.invalid();await invalid.page.goto(origin+'/moonpet-game.html');await invalid.page.locator('.connection-fault').waitFor();assert.equal(await invalid.page.locator('[data-action="feed"]').count(),0);assert.deepEqual(invalid.errors,[]);}finally{await invalid.close();}
   }
+
+  if(!benchmark){
+    const idle=await setup({clock:true});
+    try{
+      await idle.open();await idle.started;await pause(100);
+      const before=idle.requests.length;
+      const saved=idle.f.sql.prepare('SELECT pet_xp,moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles').get();
+      await idle.page.evaluate(()=>{
+        window.hiddenScreenMutations=0;
+        window.hiddenScreenObserver=new MutationObserver(records=>window.hiddenScreenMutations+=records.length);
+        window.hiddenScreenObserver.observe(document.getElementById('screen'),{childList:true});
+        Object.defineProperty(document,'hidden',{configurable:true,value:true});
+        document.dispatchEvent(new Event('visibilitychange'));
+      });
+      for(let tick=0;tick<11;tick++){await idle.page.clock.fastForward(30000);await pause(60);}
+      const hiddenReads=idle.requests.slice(before).filter(r=>r.path.endsWith('/state')).length;
+      const hiddenMutations=await idle.page.evaluate(()=>window.hiddenScreenMutations);
+      console.log('BACKGROUND_LIFECYCLE_RESULT '+JSON.stringify({hidden_ms:330000,hiddenReads,hiddenMutations}));
+      assert.equal(hiddenReads,0,'hidden Home starts no redundant state reads');
+      assert.equal(hiddenMutations,0,'hidden Home is not rebuilt by its thirty-second timer');
+      assert.deepEqual(idle.f.sql.prepare('SELECT pet_xp,moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles').get(),saved);
+      const resumed=idle.page.waitForResponse(r=>r.url().endsWith('/app/state'));
+      await idle.page.evaluate(()=>{window.hiddenScreenObserver.disconnect();Object.defineProperty(document,'hidden',{configurable:true,value:false});document.dispatchEvent(new Event('visibilitychange'));});
+      await(await resumed).finished();await idle.care('clean');
+      assert.deepEqual(idle.errors,[]);
+    }finally{await idle.close();}
+  }
   console.log('PR7_BROWSER_RESULT '+JSON.stringify({client:clientRoot,model:benchmark?'25ms/D1 call + 100ms/API transport, real signed Worker/SQLite':'signed local regression fixture',results}));
 }finally{await browser.close();await new Promise(resolve=>server.close(resolve));}

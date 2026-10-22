@@ -27,7 +27,7 @@ function context(overrides = {}) {
     fastActionStateRefreshInFlight: false, fastActionStateDirty: false, fastActionStateRefreshTimer: 0,
     fastActionStateRefreshFailures: 0, fastActionStateRefreshRetryAt: 0, FAST_ACTION_STATE_MAX_AUTO_RETRIES: 3,
     window: { clearTimeout: () => {}, setTimeout: (fn, delay) => { timers.push({ fn, delay }); return timers.length; } },
-    screen: { scrollTop: 0 },
+    screen: { scrollTop: 0 }, document: {hidden:false},
     fullStateHydrationPromise: null, authenticationFailure: false, serverClockOffsetMs: 0,
     stateNeedsFullHydration: s => Boolean(s && s.hydration && s.hydration.full === false), beginStateRequest: () => ++generation,
     stateRequestGate: { isCurrent: n => n === generation },
@@ -391,7 +391,7 @@ test('poll failure retains state, releases the in-flight guard and waits from co
 
 test('cooldown retries back off, honor Retry-After, stop and resume after manual state refresh', async () => {
   const timers = [], messages = []; let calls = 0, retryAfter = 0;
-  const ctx = { Date, Number, Array, Math: Object.assign(Object.create(Math), { random: () => 0 }),
+  const ctx = { Date, Number, Array, document:{hidden:false}, Math: Object.assign(Object.create(Math), { random: () => 0 }),
     state: { adopted: true, cooldowns: { next_expires_at: '2020-01-01T00:00:00Z', entries: [{ expires_at: '2020-01-01T00:00:00Z' }] } },
     busy: false, noticesBusy: false, cooldownRefreshInFlight: false, cooldownRefreshFailures: 0,
     passiveRefreshInFlight: false, fastActionStateRefreshInFlight: false, seasonRefreshBusy: false, fullStateHydrationPromise: null,
@@ -664,4 +664,38 @@ for (const scenario of [
   await read;
   assert.equal(screen.scrollTop,scenario.expected);
   assert.equal(f.calls.length,1,'scroll preservation adds no API request');
+});
+
+for(const screen of ['home','work','explore'])test('hidden '+screen+' starts no refresh or DOM render and resumes authoritatively',async()=>{
+ const f=context({activeScreen:screen,document:{hidden:true},fastActionStateDirty:true});
+ f.ctx.state.guidance.activity={id:'saved-job',status:'active'};
+ const saved=JSON.stringify(f.ctx.state);
+ for(let step=1;step<=132;step++){
+  f.at(10000+step*5000);const live=f.ctx.refreshLiveState();assert.equal(f.calls.length,0);await live;
+  if(step%6===0)f.ctx.tickSeasonDisplay();
+  const season=f.ctx.refreshSeasonSnapshot(false);assert.equal(f.calls.length,0);await season;
+ }
+ assert.equal(f.calls.length,0);assert.equal(f.ctx.renders,0);assert.equal(JSON.stringify(f.ctx.state),saved);
+ f.ctx.document.hidden=false;
+ const resume=f.ctx.refreshSeasonSnapshot(true);
+ assert.equal(f.calls.length,1);
+ const fresh=base();fresh.pet.pet_xp=250;
+ f.pending[0].resolve({state:fresh});await resume;
+ assert.equal(f.ctx.state.pet.pet_xp,250);
+});
+
+test('hidden care reconciliation retains dirty state without a request or retry loop',async()=>{
+ const f=context({document:{hidden:true},fastActionStateDirty:true});vm.runInContext(block('fastActionResponse'),f.ctx);
+ const read=f.ctx.refreshFastActionState();assert.equal(f.calls.length,0);await read;
+ assert.equal(f.ctx.fastActionStateDirty,true);assert.equal(f.timers.length,0);
+ f.ctx.document.hidden=false;const resumed=f.ctx.refreshFastActionState();
+ assert.equal(f.calls.length,1);f.pending[0].resolve({state:base()});await resumed;
+ assert.equal(f.ctx.fastActionStateDirty,false);
+});
+test('hidden cooldown and queued module hydration do not schedule network work',async()=>{
+ const f=context({document:{hidden:true},cooldownRefreshTimer:0,cooldownRefreshFailures:0,fullStateHydrationRetryTimer:0,fullStateHydrationFailures:0,FULL_STATE_HYDRATION_MAX_AUTO_RETRIES:3});
+ vm.runInContext(block('cooldownRefresh'),f.ctx);vm.runInContext(block('coreStateHydration'),f.ctx);
+ f.ctx.scheduleCooldownRefresh(1);const refresh=f.ctx.refreshExpiredCooldownState();assert.equal(f.calls.length,0);await refresh;
+ f.ctx.state.hydration={full:false};f.ctx.activeScreen='work';f.ctx.queueActiveScreenHydration(0);
+ assert.equal(f.timers.length,0);
 });
