@@ -112,6 +112,9 @@ export async function recoverPetJourneyAwards(db, telegramId, options = {}) {
         AND ${weeklyBossLegacySourceProofSql()}` : '';
       // A partial evidence batch must not freeze a later earning date while an
       // earlier action for this same week is still waiting. Other scopes proceed.
+      // Readiness is constant for the whole owned pet/week, independent of the
+      // objective or source row. Apply it after full-threshold grouping so the
+      // correlated history scan runs once per candidate period, before LIMIT.
       const evidenceReady = kind === 'weekly' ? `AND NOT EXISTS (
         SELECT 1 FROM telegram_pet_events e ${sourceJoins}
         WHERE e.telegram_id=o.telegram_id AND e.pet_id=o.pet_id AND e.season_key=o.season_key
@@ -119,19 +122,19 @@ export async function recoverPetJourneyAwards(db, telegramId, options = {}) {
       const recoveryKey = `eligible.season_key||':'||${kind === 'weekly' ? "printf('%02d',eligible.qualification_week)" : 'eligible.utc_day'}||':'||eligible.pet_id`;
       const pending = await db.prepare(`SELECT eligible.*,${recoveryKey} AS recovery_key,recovery_state.setting_value AS recovery_cursor FROM (
         SELECT pet_id, season_key, ${period} FROM (
-        SELECT o.pet_id, o.season_key, o.${period}, o.${objective}
+        SELECT o.telegram_id, o.pet_id, o.season_key, o.${period}, o.${objective}
         FROM telegram_pet_season_slots s
         JOIN telegram_pet_instances i ON i.pet_id=s.pet_id AND i.telegram_id=s.telegram_id AND i.season_key=s.season_key AND i.slot_number=s.slot_number
         JOIN telegram_pet_${kind}_journey_objectives o ON o.pet_id=s.pet_id AND o.telegram_id=s.telegram_id AND o.season_key=s.season_key
         ${sourceJoin}
-        WHERE s.telegram_id=? AND o.status='accepted' ${evidenceReady}
+        WHERE s.telegram_id=? AND o.status='accepted'
           ${kind === 'daily' ? `AND ${DAILY_JOURNEY_CARE_SOURCE_PROOF_SQL}` : ''} AND NOT EXISTS (
           SELECT 1 FROM telegram_pet_${kind}_journey_receipts r
           WHERE r.telegram_id=o.telegram_id AND r.pet_id=o.pet_id AND r.season_key=o.season_key AND r.${period}=o.${period}
             AND r.${reward} IS NOT NULL AND (r.status='accepted' OR r.reason='${kind}_journey_${kind === 'daily' ? 'growth_mark' : 'crest'}_duplicate'))
         GROUP BY o.pet_id, o.season_key, o.${period}, o.${objective}
         HAVING ${progressSql} >= CASE o.${objective} ${targetSql} END
-        ) GROUP BY pet_id, season_key, ${period} HAVING COUNT(*)>=?
+        ) o GROUP BY pet_id, season_key, ${period} HAVING COUNT(*)>=? ${evidenceReady}
       ) eligible LEFT JOIN telegram_pet_recovery_cursors recovery_state ON recovery_state.telegram_id=? AND recovery_state.setting_key=?
       ORDER BY CASE WHEN ${recoveryKey}>COALESCE(recovery_state.setting_value,'') THEN 0 ELSE 1 END,
         ${recoveryKey} LIMIT ?`).bind(owner, journey.required, owner, `moonpet:journey-recovery:${kind}`, boundedRecoveryLimit(options.award_limit, 5)).all();
