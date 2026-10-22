@@ -289,6 +289,7 @@ const GROUPS = {
     ['node', 'scripts/moonpet-guide-browser.test.mjs'],
     ['node', 'scripts/moonpet-radio-browser.test.mjs'],
     ['node', 'scripts/moonpet-player-loop-browser.test.mjs'],
+    ['node', 'scripts/moonpet-pr7-home-browser.test.mjs'],
     ['node', 'scripts/moonpet-home-canvas-browser.test.mjs'],
     ['node', 'scripts/moonpet-companion-wings-browser.test.mjs'],
     ['node', 'scripts/moonpet-public-sync-browser.test.mjs'],

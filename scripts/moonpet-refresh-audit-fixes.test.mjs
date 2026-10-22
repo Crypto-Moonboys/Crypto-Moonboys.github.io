@@ -11,7 +11,7 @@ function clientContext() {
   let now = 10000, sequence = 0;
   const requests = [], messages = [], timers = new Map();
   const ctx = {
-    selectedRouteScreen: '', selectedRoutePanel: '', state: full(), activeScreen: 'missions', busy: false, noticesBusy: false, authenticationFailure: false,
+    initData: 'signed-fixture', telegramAuth: null, selectedRouteScreen: '', selectedRoutePanel: '', state: full(), activeScreen: 'missions', busy: false, noticesBusy: false, authenticationFailure: false,
     petActionRefreshRequired: false, fastActionStateDirty: true, fastActionStateRefreshInFlight: false, fastActionStateRefreshTimer: 0,
     fastActionStateRefreshFailures: 0, fastActionStateRefreshRetryAt: 0, FAST_ACTION_STATE_MAX_AUTO_RETRIES: 3,
     passiveRefreshInFlight: false, cooldownRefreshInFlight: false, seasonRefreshBusy: false, fullStateHydrationPromise: null,
@@ -34,7 +34,7 @@ function clientContext() {
   vm.createContext(ctx);
   vm.runInContext(block('stateRequestGate'), ctx);
   ctx.stateRequestGate = ctx.createStateRequestGate();
-  ctx.beginStateRequest = () => ctx.stateRequestGate.begin();
+  vm.runInContext(between('  function beginStateRequest()', '  // TEST-EXPORT: coreStateHydration:start'), ctx);
   vm.runInContext(block('coreStateHydration') + block('cooldownRefresh') + block('fastActionResponse'), ctx);
   vm.runInContext(between('  function setStateSnapshot(', '  // TEST-EXPORT: cooldownRefresh:start'), ctx);
   vm.runInContext(between('  function render(options)', '  // TEST-EXPORT: actionResultFeedback:start'), ctx);
@@ -188,17 +188,19 @@ for (const path of ['manual', 'care', 'cooldown', 'action']) test(`${path}: Miss
   assert.equal(f.requests.length, 1, 'returning to loaded tabs starts no new state read');
 });
 
-test('Home warms all tabs with one shared full read while remaining usable', async () => {
-  const f = clientContext(); f.ctx.state = partial(); f.ctx.state.hydration.modules = []; f.ctx.activeScreen = 'home'; f.ctx.fastActionStateDirty = false;
-  f.ctx.queueBackgroundStateHydration(); f.ctx.queueBackgroundStateHydration();
-  assert.equal(f.timers.size, 1); assert.equal(f.requests.length, 0);
-  await f.tick(250);
-  assert.equal(f.requests.length, 1); assert.equal(f.requests[0].body.mode, undefined);
+test('foreground tab preempts speculative hydration without losing the newer request', async () => {
+  const f=clientContext();f.ctx.state=partial();f.ctx.state.hydration.modules=[];f.ctx.activeScreen='home';f.ctx.fastActionStateDirty=false;
+  f.ctx.queueBackgroundStateHydration();f.ctx.queueBackgroundStateHydration();
+  assert.equal(f.timers.size,1);await f.tick(250);
+  const old=f.ctx.fullStateHydrationPromise;
   f.ctx.switchScreen('missions');
-  assert.equal(f.requests.length, 1, 'a tab shares the already running full read');
-  const read = f.ctx.fullStateHydrationPromise; f.requests[0].resolve({ state: full() }); await read;
-  for (const tab of ['missions','work','explore','profile']) f.ctx.switchScreen(tab);
-  assert.equal(f.requests.length, 1); assert.match(f.ctx.screen.innerHTML, /READY/);
+  assert.equal(f.requests.length,2);assert.equal(f.requests[0].options.signal.aborted,true);
+  const foreground=f.ctx.fullStateHydrationPromise;
+  f.requests[0].resolve({state:full()});await old;
+  assert.equal(f.ctx.fullStateHydrationPromise,foreground,'old cleanup cannot erase a newer foreground request');
+  f.requests[1].resolve({state:full()});await foreground;
+  for(const tab of ['missions','work','explore','profile'])f.ctx.switchScreen(tab);
+  assert.equal(f.requests.length,2);assert.match(f.ctx.screen.innerHTML,/READY/);
 });
 
 for (const guard of ['busy','noticesBusy','passiveRefreshInFlight','cooldownRefreshInFlight','seasonRefreshBusy','fastActionStateRefreshInFlight','fastActionStateDirty']) test(`tab warmup yields to ${guard}`, async () => {
@@ -240,4 +242,29 @@ test('background warmup stops its idle wait when the player remains busy', async
   f.ctx.queueBackgroundStateHydration();
   for (let tick = 0; tick < 20; tick++) await f.tick(250);
   assert.equal(f.requests.length, 0); assert.equal(f.timers.size, 0);
+});
+
+for(const change of ['owner','pet','period'])test('background '+change+' change refreshes core without installing a different source',async()=>{
+  const f=clientContext();f.ctx.state=partial();f.ctx.activeScreen='home';f.ctx.fastActionStateDirty=false;
+  const old=f.ctx.state, read=f.ctx.hydrateFullState('home',{background:true}),next=full();
+  if(change==='owner')f.ctx.initData='new-signed-owner';
+  if(change==='pet')next.pet.pet_id='different-pet';
+  if(change==='period')next.season_slots={season:{key:'next-quarter'}};
+  f.requests[0].resolve({state:next});await read;
+  assert.equal(f.ctx.state,old);assert.equal(f.ctx.petActionRefreshRequired,true);
+  assert.equal(f.ctx.fastActionStateDirty,true);
+  await f.tick(1);assert.equal(f.requests[1].body.mode,'core');
+  f.requests[1].resolve({state:next});await new Promise(resolve=>setImmediate(resolve));
+  assert.equal(f.ctx.state.pet.pet_id,next.pet.pet_id);
+});
+
+test('background hydration never prevents a confirmed care refresh',async()=>{
+  const f=clientContext();f.ctx.state=partial();f.ctx.activeScreen='home';
+  const old=f.ctx.hydrateFullState('home',{background:true});
+  const fresh=f.ctx.refreshFastActionState();assert.equal(f.requests.length,2);
+  assert.equal(f.requests[0].options.signal.aborted,true);
+  const next=partial();next.pet.pet_xp=400;
+  f.requests[1].resolve({state:next});await fresh;
+  f.requests[0].resolve({state:full()});await old;
+  assert.equal(f.ctx.state.pet.pet_xp,400);
 });

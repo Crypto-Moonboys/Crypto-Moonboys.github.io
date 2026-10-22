@@ -677,6 +677,7 @@ for (const moduleScreen of ['missions', 'profile']) {
   const calls = [], timers = [];
   let failModule = true;
   const moduleContext = vm.createContext({
+    initData: 'signed-fixture', telegramAuth: null,
     state: { adopted: true, pet: { pet_id: 'shown-pet' }, lifecycle: { phase: 'young' }, hydration: { full: false, modules: ['home'] } },
     selectedRouteScreen: '', selectedRoutePanel: '', activeScreen: moduleScreen, nav: {}, screen: { appendChild() {}, scrollTop: 0, innerHTML: '' },
     fullStateHydrationPromise: null, fullStateHydrationRetryTimer: 0, fullStateHydrationFailures: 0,

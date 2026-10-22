@@ -25,7 +25,7 @@ function getScopeBlock(scope) {
 }
 
 function getStepBlock(workflowSource, stepName) {
-  const match = workflowSource.match(new RegExp(`\\n      - name: ${stepName}\\n([\\s\\S]*?)(?=\\n      - name:|\\n  [a-zA-Z0-9_-]+:|$)`, 'u'));
+  const match = workflowSource.replace(/\r\n/g, '\n').match(new RegExp(`\\n      - name: ${stepName}\\n([\\s\\S]*?)(?=\\n      - name:|\\n  [a-zA-Z0-9_-]+:|$)`, 'u'));
   assert.ok(match, `workflow must define the ${stepName} step`);
   return match[1];
 }
