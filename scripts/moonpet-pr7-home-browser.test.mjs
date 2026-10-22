@@ -64,7 +64,14 @@ async function setup({pets=1,recovery=false,website=false,delayMs=0,clock=false,
     return route.abort();
   });
   const open=async()=>{await page.goto(origin+'/moonpet-game.html');await page.locator('[data-panel="care"]').waitFor();await page.waitForFunction(()=>document.getElementById('boot-layer').classList.contains('is-hidden'));await page.waitForFunction(()=>window.MoonpetBetaAppearance.isBotArtReady());};
-  const care=async action=>{await page.locator('[data-panel="care"] summary').evaluate(n=>{n.parentElement.open=true;});const accepted=page.waitForResponse(r=>r.url().endsWith('/app/action'),{timeout:10000});accepted.catch(()=>{});await page.locator('[data-panel="care"] [data-action="'+action+'"]').click();const response=await accepted;const json=await response.json();assert.equal(json.result.accepted,true);await page.waitForFunction(()=>document.getElementById('terminal-output').textContent.includes('SAVE CONFIRMED'));return json;};
+  const care=async action=>{
+    // Use the player's disclosure control, and wait for its actual visible body.
+    // A response event can precede JSON application and replace the old node.
+    const panel=page.locator('[data-panel="care"]');
+    await panel.waitFor({state:'visible'});
+    if(!await panel.evaluate(n=>n.open))await panel.locator('summary').click();
+    await panel.locator('[data-action="'+action+'"]').waitFor({state:'visible'});
+    const accepted=page.waitForResponse(r=>r.url().endsWith('/app/action'),{timeout:10000});accepted.catch(()=>{});await page.locator('[data-panel="care"] [data-action="'+action+'"]').click();const response=await accepted;const json=await response.json();assert.equal(json.result.accepted,true);await page.waitForFunction(()=>document.getElementById('terminal-output').textContent.includes('SAVE CONFIRMED'));return json;};
   return {f,page,context,errors,requests,open,care,started,release:()=>releaseFull(),block:()=>{blockFull=true;},fail:value=>{failFull=value;},invalid:()=>{invalid=true;},full:()=>fullValue,
     switchOwner:async()=>{
       const owner='980302',pet='pr7-other-owner';
@@ -130,8 +137,9 @@ try {
       hidden.block();await hidden.open();await hidden.started;
       await hidden.page.evaluate(()=>{Object.defineProperty(document,'hidden',{configurable:true,value:true});document.dispatchEvent(new Event('visibilitychange'));});
       hidden.release();await pause(60);
+      const resumed=hidden.page.waitForResponse(r=>r.url().endsWith('/app/state')&&r.request().postDataJSON().mode==='core');
       await hidden.page.evaluate(()=>{Object.defineProperty(document,'hidden',{configurable:true,value:false});document.dispatchEvent(new Event('visibilitychange'));});
-      await hidden.page.waitForResponse(r=>r.url().endsWith('/app/state')&&r.request().postDataJSON().mode==='core');
+      await (await resumed).finished();
       await hidden.care('clean');assert.deepEqual(hidden.errors,[]);
     }finally{await hidden.close();}
     const delayedTelegram=await setup({website:true,telegramDelay:150,websiteDelay:8000,viewport});
