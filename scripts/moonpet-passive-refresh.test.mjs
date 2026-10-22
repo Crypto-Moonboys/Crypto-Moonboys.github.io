@@ -942,3 +942,24 @@ for (const kind of ['season', 'live', 'care', 'cooldown', 'module']) for (const 
   assert.equal(f.ctx.renders, 1, 'foreground immediately displays the expired-session state');
   assert.equal(net.requests.length, 1, 'expired proof is never retried');
 });
+
+for (const section of ['home', 'work', 'explore']) test('notice acknowledgement finishing after '+section+' rehides waits for authoritative foreground reconciliation', async () => {
+  const f = context({ activeScreen: section, crypto: { randomUUID: () => 'notice-ack' } });
+  vm.runInContext(client.slice(client.indexOf('  async function showPendingNotices()'), client.indexOf('  function actionAnimationFamily(')), f.ctx);
+  f.ctx.state.notices = [{ key: 'earned-notice', title: 'Saved achievement', scope: 'pet', pet_id: 'pet-one', season_key: 'lifetime-one' }];
+  const saved = JSON.stringify(f.ctx.state), acknowledgement = f.ctx.showPendingNotices();
+  assert.equal(f.calls.length, 1); assert.equal(f.calls[0].body.action, 'guidance_ack');
+  f.ctx.document.hidden = true;
+  f.pending[0].resolve({ state: { ...base(), notices: [] } }); await acknowledgement;
+  assert.equal(JSON.stringify(f.ctx.state), saved, 'hidden acknowledgement must not publish an old snapshot');
+  assert.equal(f.ctx.renders, 0); assert.equal(f.ctx.noticesBusy, false);
+  assert.equal(f.ctx.seasonRefreshPending, true);
+  f.ctx.document.hidden = false;
+  const refresh = f.ctx.refreshSeasonSnapshot(true), latest = base();
+  latest.notices = []; latest.pet.pet_xp = 250;
+  f.pending[1].resolve({ state: latest }); await refresh;
+  assert.equal(f.calls.length, 2, 'acknowledged notice must not be sent again');
+  assert.equal(f.calls[1].path, '/telegram-pets/app/state');
+  assert.equal(f.ctx.state.pet.pet_xp, 250); assert.equal(f.ctx.state.notices.length, 0);
+  assert.equal(f.ctx.renders, 1); assert.equal(f.ctx.noticesBusy, false);
+});
