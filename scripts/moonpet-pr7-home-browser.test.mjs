@@ -213,6 +213,27 @@ try {
       failed.fail(false);await failed.page.locator('[data-utility="module-retry"]').click();await failed.page.locator('[data-panel="districts"]').waitFor();
       assert.deepEqual(failed.errors,[]);
     }finally{await failed.close();}
+    const hiddenAuth=await setup({viewport});
+    try{
+      await hiddenAuth.open();await hiddenAuth.started;await pause(100);
+      let enter,release;const entered=new Promise(resolve=>enter=resolve),gate=new Promise(resolve=>release=resolve);
+      await hiddenAuth.page.route('**/telegram-pets/app/state',async route=>{enter();await gate;await route.fallback();});
+      await hiddenAuth.page.evaluate(()=>{Object.defineProperty(document,'hidden',{configurable:true,value:true});document.dispatchEvent(new Event('visibilitychange'));Object.defineProperty(document,'hidden',{configurable:true,value:false});document.dispatchEvent(new Event('visibilitychange'));});
+      await entered;
+      await hiddenAuth.page.evaluate(()=>{
+        window.hiddenAuthMutations=0;window.hiddenAuthObserver=new MutationObserver(records=>window.hiddenAuthMutations+=records.length);
+        window.hiddenAuthObserver.observe(document.getElementById('screen'),{childList:true});
+        Object.defineProperty(document,'hidden',{configurable:true,value:true});document.dispatchEvent(new Event('visibilitychange'));
+      });
+      hiddenAuth.invalid();const expiredResponse=hiddenAuth.page.waitForResponse(r=>r.url().endsWith('/app/state')&&r.status()===401);release();
+      await(await expiredResponse).finished();await pause(60);
+      assert.equal(await hiddenAuth.page.evaluate(()=>window.hiddenAuthMutations),0,'hidden 401 preserves authentication invalidation without rendering');
+      const requestCount=hiddenAuth.requests.length;
+      await hiddenAuth.page.evaluate(()=>{window.hiddenAuthObserver.disconnect();Object.defineProperty(document,'hidden',{configurable:true,value:false});document.dispatchEvent(new Event('visibilitychange'));});
+      await hiddenAuth.page.locator('[data-panel="telegram-auth"]').waitFor();
+      assert.equal(hiddenAuth.requests.length,requestCount,'foreground authentication display sends no request with expired proof');
+      assert.deepEqual(hiddenAuth.errors,[]);
+    }finally{await hiddenAuth.close();}
     const expired=await setup({viewport});
     try{
       await expired.open();expired.invalid();

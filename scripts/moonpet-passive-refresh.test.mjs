@@ -917,3 +917,28 @@ test('passive policy does not replay a failed mutation or mask an authentication
   assert.equal(f.ctx.authenticationFailure, true); assert.equal(f.ctx.petActionRefreshRequired, true);
   assert.equal(net.requests.length, 2); assert.equal(net.timers.size, 0);
 });
+
+for (const kind of ['season', 'live', 'care', 'cooldown', 'module']) for (const hide of [true, false]) test(kind+' '+(hide ? 'hidden' : 'visible')+' 401 invalidates authentication immediately and renders only while visible', async () => {
+  const handlers = {};
+  const f = context({ performanceSent: true, fastActionStateDirty: kind === 'care', fastActionStateRefreshFailures: kind === 'care' ? 2 : 0,
+    cooldownRefreshTimer: 0, cooldownRefreshFailures: kind === 'cooldown' ? 2 : 0, lastCooldownRefreshKey: '', serverNowMs: () => 10000,
+    initData: 'signed-fixture', fullStateHydrationRetryTimer: 0, fullStateHydrationFailures: kind === 'module' ? 2 : 0,
+    fullStateHydrationRetryDelayMs: 0, FULL_STATE_HYDRATION_MAX_AUTO_RETRIES: 3, words: value => value, applyRequestedFocus: () => {},
+    document: { hidden: false, addEventListener: (name, fn) => { handlers[name] = fn; } } });
+  vm.runInContext(block('fastActionResponse'), f.ctx); vm.runInContext(block('cooldownRefresh'), f.ctx);
+  vm.runInContext(block('coreStateHydration'), f.ctx);
+  vm.runInContext(client.slice(client.indexOf("  document.addEventListener('visibilitychange'"), client.indexOf('  window.MoonpetBetaAppearance')), f.ctx);
+  if (kind === 'module') { f.ctx.activeScreen = 'work'; f.ctx.state.hydration = { mode: 'core', full: false }; }
+  const saved = JSON.stringify(f.ctx.state), net = requestRuntime(f);
+  const read = kind === 'season' ? f.ctx.refreshSeasonSnapshot(true) : kind === 'care' ? f.ctx.refreshFastActionState()
+    : kind === 'cooldown' ? f.ctx.refreshExpiredCooldownState() : kind === 'module' ? f.ctx.hydrateFullState('work') : f.ctx.refreshLiveState();
+  f.messages.length = 0;
+  if (hide) { f.ctx.document.hidden = true; handlers.visibilitychange(); }
+  net.requests[0].respond({ error: 'mini_app_auth_expired' }, 401); await net.tick(0); await read;
+  assert.equal(f.ctx.authenticationFailure, true); assert.equal(f.ctx.petActionRefreshRequired, true);
+  assert.equal(JSON.stringify(f.ctx.state), saved); assert.equal(f.ctx.renders, hide ? 0 : 1); assert.equal(f.messages.length, 0);
+  assert.equal(f.timers.length, 0, 'terminal authentication never queues passive retry timers');
+  if (hide) { f.ctx.document.hidden = false; handlers.visibilitychange(); await net.tick(0); }
+  assert.equal(f.ctx.renders, 1, 'foreground immediately displays the expired-session state');
+  assert.equal(net.requests.length, 1, 'expired proof is never retried');
+});

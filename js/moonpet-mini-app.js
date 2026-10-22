@@ -719,7 +719,7 @@
             if (response.status === 401) {
               authenticationFailure = true;
               petActionRefreshRequired = true;
-              if (state) render();
+              if (state && !document.hidden) render();
             }
             throw requestError;
           }
@@ -2272,7 +2272,7 @@
   }
 
   function queueActiveScreenHydration(delayMs) {
-    if (document.hidden) return;
+    if (document.hidden || authenticationFailure) return;
     if (!stateNeedsScreenHydration(state, activeScreen) || fullStateHydrationPromise || fullStateHydrationRetryTimer
       || fullStateHydrationFailures >= FULL_STATE_HYDRATION_MAX_AUTO_RETRIES) return;
     fullStateHydrationRetryTimer = window.setTimeout(function () {
@@ -2335,7 +2335,7 @@
         applyRequestedFocus();
         return state;
       } catch (error) {
-        if (!stateRequestGate.isCurrent(requestGeneration) || owner !== hydrationOwnerKey() || error.code === 'request_superseded' || error.code === 'request_deferred') return null;
+        if (!stateRequestGate.isCurrent(requestGeneration) || owner !== hydrationOwnerKey() || error.code === 'request_superseded' || error.code === 'request_deferred' || error.status === 401) return null;
         fullStateHydrationFailures += 1;
         var retryAfter = Math.max(0, Number(error && error.retryAfterSeconds || 0) * 1000);
         fullStateHydrationRetryDelayMs = retryAfter || Math.min(8000, 750 * Math.pow(2, Math.max(0, fullStateHydrationFailures - 1)));
@@ -2350,7 +2350,7 @@
           var retryableScreen = stateNeedsScreenHydration(state, activeScreen);
           if (retryableScreen && fullStateHydrationFailures < FULL_STATE_HYDRATION_MAX_AUTO_RETRIES) {
             queueActiveScreenHydration(fullStateHydrationRetryDelayMs);
-          } else if (retryableScreen && !document.hidden) {
+          } else if (retryableScreen && !document.hidden && !authenticationFailure) {
             // The catch rendered while this request was still in flight. Show
             // the manual retry only after that request has finished and stopped.
             render();
@@ -2481,7 +2481,7 @@
       if (!stateNeedsFullHydration(state)) await showPendingNotices();
     } catch (error) {
       if (refreshKey && refreshKey === lastCooldownRefreshKey) lastCooldownRefreshKey = '';
-      if (error.code === 'request_deferred') return;
+      if (error.code === 'request_deferred' || error.status === 401) return;
       cooldownRefreshFailures += 1;
       if (cooldownRefreshFailures < 3) {
         var backoff = Math.min(30000, 2000 * Math.pow(2, cooldownRefreshFailures - 1));
@@ -2569,7 +2569,7 @@
     fastActionStateDirty = true;
     window.clearTimeout(fastActionStateRefreshTimer);
     fastActionStateRefreshTimer = 0;
-    if (document.hidden) return;
+    if (document.hidden || authenticationFailure) return;
     if (fastActionStateRefreshFailures >= FAST_ACTION_STATE_MAX_AUTO_RETRIES) {
       tell('CARE SYNC PAUSED. TAP REFRESH TO READ YOUR SAVE.', 'danger');
       return;
@@ -2609,7 +2609,7 @@
       screen.scrollTop = scrollTop;
       if (!stateNeedsFullHydration(state)) await showPendingNotices();
     } catch (error) {
-      if (!stateRequestGate.isCurrent(requestGeneration) || error.code === 'request_deferred') return;
+      if (!stateRequestGate.isCurrent(requestGeneration) || error.code === 'request_deferred' || error.status === 401) return;
       fastActionStateRefreshFailures += 1;
       var backoff = Math.min(30000, 2000 * Math.pow(2, fastActionStateRefreshFailures - 1));
       var retryAfter = Math.max(0, Number(error && error.retryAfterSeconds || 0) * 1000);
@@ -5560,6 +5560,7 @@
       if (fullStateHydrationPromise && fullStateHydrationPromise.background) beginStateRequest();
       return;
     }
+    if (authenticationFailure) { if (state) render(); return; }
     refreshSeasonSnapshot(true);
     if (performanceSent) return;
     performanceFrames = 0; performanceSlowFrames = 0; performanceStartedAt = 0; performanceLastFrameAt = 0;
