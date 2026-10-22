@@ -16,16 +16,16 @@ Only the static client changes. No Worker source, bot routing, XP economy, recov
 
 Windows / Node v24.14.0 / headless Chromium, 360x640, normal motion. Same real Worker and fixed-clock SQLite fixture, first one/three pets and then three pets with five historical accepted-event recovery sources. Each binding call has a 25 ms injected wait; each API route has a 100 ms injected transport delay. Static scripts/art are served locally. Both revisions use identical valid Telegram HMAC proofs; the website flow restores a valid signed fixture login through the existing identity-provider interface. It models client loading, not production OIDC/network performance.
 
-The Home timer runs from navigation to the verified care panel with the companion boot overlay dismissed. The test then expands care, clicks a real action, requires its signed Worker response to be accepted, and waits for SAVE CONFIRMED. No spinner, locally invented pet or optimistic reward counts as success. Feed is used normally; recovery uses Clean because the historical Feed evidence correctly retains its cooldown.
+The Home timer runs from navigation to the verified care panel with the companion boot overlay dismissed and the real pet renderer ready. The test then expands care, clicks a real action, requires its signed Worker response to be accepted, and waits for SAVE CONFIRMED. No spinner, locally invented pet or optimistic reward counts as success. Feed is used normally; recovery uses Clean because the historical Feed evidence correctly retains its cooldown.
 
 | Auth / fixture | Verified usable Home ms (before → after) | Care confirmed ms from navigation | Work ready ms after navigation to Work |
 |---|---:|---:|---:|
-| telegram / one | 1494 → 936 | 3606 → 3075 | 1888 → 1870 |
-| telegram / three | 1445 → 881 | 3532 → 2979 | 1882 → 1891 |
-| telegram / recovery | 1458 → 902 | 3547 → 2990 | 1853 → 3388 |
-| website / one | 2666 → 931 | 4755 → 3023 | 1876 → 1890 |
-| website / three | 2655 → 929 | 4763 → 2988 | 1871 → 1881 |
-| website / recovery | 2634 → 916 | 4738 → 3017 | 1883 → 3393 |
+| telegram / one | 1473 → 958 | 3584 → 3080 | 1873 → 1868 |
+| telegram / three | 1428 → 877 | 3512 → 2961 | 1878 → 1879 |
+| telegram / recovery | 1440 → 885 | 3529 → 2971 | 1889 → 3427 |
+| website / one | 2668 → 933 | 4736 → 3008 | 1882 → 1888 |
+| website / three | 2669 → 911 | 4738 → 2988 | 1875 → 1879 |
+| website / recovery | 2640 → 913 | 4723 → 2985 | 1897 → 3428 |
 
 Home improves by about 0.55 seconds in Telegram and 1.73 seconds in the website flow in this model. Repeated earlier runs showed the same direction (Telegram Home 1440–1577 → 880–946 ms; website Home 2638–2699 → 912–928 ms). These are controlled fixture measurements, not production claims.
 

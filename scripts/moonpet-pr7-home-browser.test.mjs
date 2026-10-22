@@ -11,7 +11,7 @@ const benchmark=process.argv.includes('--benchmark');
 const pause=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 const server=http.createServer(async(req,res)=>{
   try {
-    const target=path.resolve(clientRoot,'.'+new URL(req.url,'http://fixture').pathname);
+    const target=path.resolve(clientRoot,'.'+decodeURIComponent(new URL(req.url,'http://fixture').pathname));
     if(!target.startsWith(path.resolve(clientRoot)+path.sep))throw Error('outside fixture');
     const mime={'.html':'text/html','.js':'text/javascript','.css':'text/css','.json':'application/json','.png':'image/png','.jpg':'image/jpeg'};
     res.setHeader('Content-Type',mime[path.extname(target)]||'application/octet-stream');res.end(await fs.readFile(target));
@@ -63,7 +63,7 @@ async function setup({pets=1,recovery=false,website=false,delayMs=0,clock=false,
     if(url.hostname==='127.0.0.1')return route.continue();
     return route.abort();
   });
-  const open=async()=>{await page.goto(origin+'/moonpet-game.html');await page.locator('[data-panel="care"]').waitFor();await page.waitForFunction(()=>document.getElementById('boot-layer').classList.contains('is-hidden'));};
+  const open=async()=>{await page.goto(origin+'/moonpet-game.html');await page.locator('[data-panel="care"]').waitFor();await page.waitForFunction(()=>document.getElementById('boot-layer').classList.contains('is-hidden'));await page.waitForFunction(()=>window.MoonpetBetaAppearance.isBotArtReady());};
   const care=async action=>{await page.locator('[data-panel="care"] summary').evaluate(n=>{n.parentElement.open=true;});const accepted=page.waitForResponse(r=>r.url().endsWith('/app/action'),{timeout:10000});accepted.catch(()=>{});await page.locator('[data-panel="care"] [data-action="'+action+'"]').click();const response=await accepted;const json=await response.json();assert.equal(json.result.accepted,true);await page.waitForFunction(()=>document.getElementById('terminal-output').textContent.includes('SAVE CONFIRMED'));return json;};
   return {f,page,context,errors,requests,open,care,started,release:()=>releaseFull(),block:()=>{blockFull=true;},fail:value=>{failFull=value;},invalid:()=>{invalid=true;},full:()=>fullValue,
     switchOwner:async()=>{
