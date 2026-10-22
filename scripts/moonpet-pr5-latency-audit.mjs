@@ -3,6 +3,8 @@ import { performanceFixture } from './moonpet-state-performance-fixture.mjs';
 import { seedPr3Recovery } from './moonpet-pr3-fixture.mjs';
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
+import assert from 'node:assert/strict';
+import { nativeBenchmarkSnapshot, freezeBenchmarkTime } from './moonpet-pr5-native-benchmark.mjs';
 const root=process.argv[2]||process.cwd(),scenario=process.argv[3]||'three';
 const f=await performanceFixture({root,pets:3});
 try {
@@ -25,17 +27,24 @@ try {
  f.db.batch=entries=>record(entries.map(s=>tags.get(s)||{id:'unknown',module:'remaining',caller:'unknown'}),()=>batch(entries.map(s=>tags.get(s)?.raw||s)));
  await f.hooks.buildPetMiniAppState(f.db,f.owner,'fixture-token',{timings:{async measure(stage,execute){if(stage!=='pet_state_projection')return execute();origin=performance.now();cpuStart=process.cpuUsage();active=true;try{return await execute();}finally{active=false;const cpu=process.cpuUsage(cpuStart);projection={wall_ms:performance.now()-origin,local_process_cpu_ms:(cpu.user+cpu.system)/1000};}}}});
  const union=spans=>{let total=0,end=0;for(const [a,b]of spans.slice().sort((x,y)=>x[0]-y[0])){total+=Math.max(0,b-Math.max(a,end));end=Math.max(end,b);}return total;};
- const plans=[];for(const family of families.values()){
+ const snapshot=await nativeBenchmarkSnapshot(f.sql);
+ const frozenTime=new Date().toISOString();
+ const plans=[];try { for(const family of families.values()){
   const q=queries.get(family.id);if(!family.executions||!q)continue;
   if(/^\s*(SELECT|WITH)\b/i.test(q.sql)&&! /\b(INSERT|UPDATE|DELETE|REPLACE)\b/i.test(q.sql)){
-   const plan=nativePrepare('EXPLAIN QUERY PLAN '+q.sql).all(...q.args).map(({detail})=>detail);
-   const stmt=nativePrepare(q.sql);const samples=[];for(let i=0;i<7;i++){const start=performance.now();stmt.all(...q.args);samples.push(performance.now()-start);}samples.sort((a,b)=>a-b);
-   plans.push({family:family.id,module:family.module,caller:family.caller,plan,local_select_ms:{min:samples[0],median:samples[3],max:samples[6]}});
+   const sql=freezeBenchmarkTime(q.sql,frozenTime);
+   const expected=nativePrepare(q.sql).all(...q.args);
+   const actual=snapshot.db.prepare(sql).all(...q.args);
+   assert.deepEqual(actual,expected,'native date function result parity: '+family.id);
+   const plan=snapshot.db.prepare('EXPLAIN QUERY PLAN '+sql).all(...q.args).map(({detail})=>detail);
+   const stmt=snapshot.db.prepare(sql);const samples=[];for(let i=0;i<7;i++){const start=performance.now();stmt.all(...q.args);samples.push(performance.now()-start);}samples.sort((a,b)=>a-b);
+   plans.push({family:family.id,module:family.module,caller:family.caller,plan,clock:'native_sqlite_frozen_literals',result_parity:true,local_select_ms:{min:samples[0],median:samples[3],max:samples[6]}});
   }
  }
+ } finally {snapshot.close();}
  const modules={};for(const call of calls)for(const module of call.modules){const row=modules[module]||={sql_statements:0,participating_calls:0};row.sql_statements++;}for(const call of calls)for(const module of new Set(call.modules))modules[module].participating_calls++;
  const guarded=calls.filter(c=>c.families.some(id=>families.get(id)?.module==='atomic_guard'));
  let frontier=0,depth=0;for(const call of calls.slice().sort((a,b)=>a.end_ms-b.end_ms))if(call.start_ms>=frontier){depth++;frontier=call.end_ms;}
  const worker=readFileSync(root+'/workers/moonboys-api/worker.js');
- console.log(JSON.stringify({diagnostic_only:true,scenario,fixture_rows:{history_events:scenario==='history'?10000:0,pets:3},provenance:{node:process.version,sqlite:process.versions.sqlite,platform:process.platform,worker_sha256:createHash('sha256').update(worker).digest('hex')},projection:{...projection,d1_calls:calls.length,sql_statements:calls.reduce((n,c)=>n+c.sql_statements,0),binding_interval_union_ms:union(calls.map(c=>[c.start_ms,c.end_ms])),sqlite_execution_union_ms:union(sqlSpans),guarded_batches:guarded.length,observed_nonoverlap_call_depth:depth},modules,calls,families:[...families.values()].filter(f=>f.executions),plans},null,2));
+ console.log(JSON.stringify({diagnostic_only:true,scenario,fixture_rows:{history_events:scenario==='history'?10000:0,pets:3},provenance:{node:process.version,sqlite:process.versions.sqlite,platform:process.platform,worker_sha256:createHash('sha256').update(worker).digest('hex')},query_benchmark:{clock:'native_sqlite_frozen_literals',frozen_time:frozenTime,snapshot:'sqlite_backup_after_projection',all_results_match_clock_shim:true},projection:{clock:'fixture_js_date_callbacks',includes_clock_shim_overhead:true,...projection,d1_calls:calls.length,sql_statements:calls.reduce((n,c)=>n+c.sql_statements,0),binding_interval_union_ms:union(calls.map(c=>[c.start_ms,c.end_ms])),sqlite_execution_union_ms:union(sqlSpans),guarded_batches:guarded.length,observed_nonoverlap_call_depth:depth},modules,calls,families:[...families.values()].filter(f=>f.executions),plans},null,2));
 }finally{f.close();}

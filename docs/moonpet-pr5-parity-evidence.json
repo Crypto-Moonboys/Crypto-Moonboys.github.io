@@ -3,11 +3,12 @@
     "baseline_commit": "82748b8755e8177c146bda5bacba6aa76e923e2a",
     "runtime_change": false,
     "fixtures": {
-      "scripts/moonpet-pr5-latency-audit.mjs": "6ca00bea3a67b817efa4cf3b5c7e6b56059e5d06c024aac314105241b63012a9",
+      "scripts/moonpet-pr5-latency-audit.mjs": "41677a8dd939eedb2d8234bdf3d694ce41e9d8fefb7aceb00c43c022046de6e8",
       "scripts/moonpet-pr4-parity-case.mjs": "ad4b9b84a32e74e561906deb057057270a4c5850e2740154ba2cb7bc84dfa2f9",
       "scripts/moonpet-state-performance-fixture.mjs": "be02c0e1e5f871e3248bf75e2305dbcaf6e251a8f215b46ef6a3a43b2fa04c2f",
       "scripts/moonpet-pr3-fixture.mjs": "34972392c31a26278129c6cb80354d99d33a22cea520e511a5c7b262e5e9867f",
-      "scripts/moonpet-audit-regression-fixture.mjs": "c80627894ebea8f88d2b1480b8293cccf1a61e213004d1d4bdb39c6449ec80fd"
+      "scripts/moonpet-audit-regression-fixture.mjs": "c80627894ebea8f88d2b1480b8293cccf1a61e213004d1d4bdb39c6449ec80fd",
+      "scripts/moonpet-pr5-native-benchmark.mjs": "7f0f202d5f2b0549d520ce1315a1d1a937b66880d1729b98d724b04ee1436e7a"
     }
   },
   "cases": [
