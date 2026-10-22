@@ -609,7 +609,7 @@ for (const changedDuringNotices of [true, false]) {
   const evolved = { ...original, pet: { ...original.pet, evolution_stage: 2, stage: 'Cyber Moonpet' }, lifecycle: { phase: 'adult' }, notices: [{ key: 'evolved', scope: 'pet', pet_id: 'evolving-pet', season_key: '2026-S4', title: 'New progress' }] };
   const selected = changedDuringNotices ? { adopted: true, pet: { pet_id: 'selected-egg', evolution_stage: 0 }, lifecycle: { phase: 'egg' } } : evolved;
   const actionContext = vm.createContext({
-    state: original, activeScreen: 'profile', busy: false, noticesBusy: false, petActionRefreshRequired: false, sleepLatched: false,
+    state: original, document: { hidden: false }, activeScreen: 'profile', busy: false, noticesBusy: false, petActionRefreshRequired: false, sleepLatched: false,
     stateNeedsScreenHydration: () => false,
     lifecycleCeremony: null, lifecycleCeremonyUntil: 0, lifecycleCeremonyTimer: 0, lifecycleCeremonyStartedAt: 0, reducedMotion: false,
     window: { clearTimeout: () => {} }, crypto: { randomUUID: () => 'evolve-source-pet' }, performance: { now: () => 1 },
