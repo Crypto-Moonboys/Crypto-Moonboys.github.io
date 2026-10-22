@@ -7887,19 +7887,19 @@ function serializePet(pet, identity = null, options = {}) {
   };
 }
 
-async function buildPetMissions(db, telegramId, petRaw = null, now = new Date()) {
+async function buildPetMissions(db, telegramId, petRaw = null, now = new Date(), projectionReads = db) {
   const dayKey = getPetDayKey(now);
   const weekKey = getPetWeekKey(now);
   const season = getPetSeasonInfo(now);
   const nextDayKey = getPetDayKey(new Date(now.getTime() + 86400000));
   const [events, equipmentUpgradeEvents, pet] = await Promise.all([
-    db.prepare(`
+    projectionReads.prepare(`
       SELECT event_type, COUNT(*) AS count
       FROM telegram_pet_events
       WHERE telegram_id = ? AND day_key = ? AND status = 'accepted'
       GROUP BY event_type
     `).bind(telegramId, dayKey).all().then(requirePetReadResult),
-    db.prepare(`
+    projectionReads.prepare(`
       SELECT COUNT(*) AS count
       FROM telegram_pet_system_events
       WHERE telegram_id = ? AND system_key = 'equipment_upgrade' AND status = 'completed'
@@ -10719,7 +10719,7 @@ async function projectPetMiniAppState(db, telegramId, botToken, options, now, ti
   combatEligibilityPromise.catch(() => {});
   const [lifecycle, guidance, inventory, runtime, gear, materials, relics, arena, arenaQueue, recentArena, kaiju, kaijuQueue, recentKaiju, leaderboard, notifications, seasonSlots, recentActions] = await Promise.all([
     lifecyclePromise,
-    buildPetGuidanceState(db, telegramId, petRaw, { identity: identityPromise, runtime: runtimePromise, combatEligibility: combatEligibilityPromise, projectionScope: identityScope, economy, now }),
+    buildPetGuidanceState(db, telegramId, petRaw, { identity: identityPromise, runtime: runtimePromise, combatEligibility: combatEligibilityPromise, projectionScope: identityScope, projectionReads: identityScope.db, economy, now }),
     getPetInventory(db, telegramId),
     runtimePromise,
     identityScope.db.prepare(`SELECT item_key, slot, item_level, item_xp, mastery_xp, mastery_tier
@@ -17317,32 +17317,32 @@ function canAffordPetWallet(pet, cost = {}) {
     Math.max(0, Number(pet?.[key]) || 0) >= Math.max(0, Number(cost?.[key]) || 0));
 }
 
-async function getPetEconomyState(db, telegramId, petRaw = null, now = new Date()) {
+async function getPetEconomyState(db, telegramId, petRaw = null, now = new Date(), projectionReads = db) {
   const pet = serializePet(petRaw || await getPetProfile(db, telegramId, false, now), null, { now });
   if (!pet) return null;
   const dayKey = getPetDayKey(now);
   const level = getPetLevel(pet.pet_xp);
   await reconcileLegacyPetInventory(db, telegramId);
   const [eventRows, claimRows, sourcePet, itemRows, materialRows, weeklyEventRows, weeklyClaims, seasonalAttemptRows] = await Promise.all([
-    db.prepare(`SELECT event_type, COUNT(*) AS total FROM telegram_pet_events
+    projectionReads.prepare(`SELECT event_type, COUNT(*) AS total FROM telegram_pet_events
       WHERE telegram_id = ? AND day_key = ? AND status = 'accepted' GROUP BY event_type`)
       .bind(telegramId, dayKey).all().then(requirePetReadResult),
-    db.prepare(`SELECT source, idempotency_key, pet_id, metadata, applied_rewards FROM telegram_pet_reward_claims
+    projectionReads.prepare(`SELECT source, idempotency_key, pet_id, metadata, applied_rewards FROM telegram_pet_reward_claims
       WHERE telegram_id = ? AND day_key = ? AND status = 'awarded'
         AND source IN ('pet_bounty', 'pet_expedition', 'pet_market')`)
       .bind(telegramId, dayKey).all().then(requirePetReadResult),
-    db.prepare(`SELECT p.status,l.phase FROM telegram_pet_instances p JOIN telegram_pet_lifecycle_by_pet l
+    projectionReads.prepare(`SELECT p.status,l.phase FROM telegram_pet_instances p JOIN telegram_pet_lifecycle_by_pet l
       ON l.pet_id=p.pet_id AND l.telegram_id=p.telegram_id WHERE p.pet_id=? AND p.telegram_id=?`)
       .bind(pet.pet_id, telegramId).first().then(requirePetFirstReadResult),
-    db.prepare("SELECT asset_key,quantity FROM telegram_pet_inventory WHERE telegram_id=? AND asset_type='item'").bind(telegramId).all().then(requirePetReadResult),
-    db.prepare('SELECT material_key,quantity FROM telegram_pet_material_balances WHERE telegram_id=?').bind(telegramId).all().then(requirePetReadResult),
-    db.prepare(`SELECT event_type,COUNT(*) AS total FROM telegram_pet_events
+    projectionReads.prepare("SELECT asset_key,quantity FROM telegram_pet_inventory WHERE telegram_id=? AND asset_type='item'").bind(telegramId).all().then(requirePetReadResult),
+    projectionReads.prepare('SELECT material_key,quantity FROM telegram_pet_material_balances WHERE telegram_id=?').bind(telegramId).all().then(requirePetReadResult),
+    projectionReads.prepare(`SELECT event_type,COUNT(*) AS total FROM telegram_pet_events
       WHERE telegram_id=? AND week_key=? AND status='accepted' GROUP BY event_type`)
       .bind(telegramId,getPetWeekKey(now)).all().then(requirePetReadResult),
-    db.prepare(`SELECT idempotency_key FROM telegram_pet_reward_claims
+    projectionReads.prepare(`SELECT idempotency_key FROM telegram_pet_reward_claims
       WHERE telegram_id=? AND source='pet_bounty' AND status='awarded' AND idempotency_key LIKE ?`)
       .bind(telegramId,`weekly:${getPetWeekKey(now)}:%`).all().then(requirePetReadResult),
-    db.prepare(`SELECT COUNT(*) AS total FROM telegram_pet_system_events
+    projectionReads.prepare(`SELECT COUNT(*) AS total FROM telegram_pet_system_events
       WHERE telegram_id=? AND system_key='seasonal_boss' AND status='completed'
       AND substr(period_key,-10)>=? AND substr(period_key,-10)<=?`)
       .bind(telegramId, (() => { const monday = new Date(Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),now.getUTCDate())); monday.setUTCDate(monday.getUTCDate() - ((monday.getUTCDay()+6)%7)); return monday.toISOString().slice(0,10); })(), getPetDayKey(now))
@@ -17653,6 +17653,9 @@ async function buildPetGuidanceState(db, telegramId, petRaw = null, options = {}
   const pet = serializePet(sourcePet, null, { now });
   if (!pet) return null;
   const projectionScope = options.projectionScope || createDisplayedPetScope(db, telegramId, sourcePet.pet_id, sourcePet.season_key);
+  // Full-state presentation SELECTs share its guarded read queue. Writes and
+  // final source/economy assertions keep the original database and barriers.
+  const projectionReads = options.projectionReads || db;
   const achievementProvenance = { pet_id: sourcePet.pet_id, season_key: sourcePet.season_key };
   const dayKey = getPetDayKey(now);
   const weekKey = getPetWeekKey(now);
@@ -17667,20 +17670,20 @@ async function buildPetGuidanceState(db, telegramId, petRaw = null, options = {}
     identityPromise,
     getActivePetActivitySession(db, telegramId, now).then((active) => active || getRecoverablePetActivitySession(db, telegramId)),
     getActivePetRun(db, telegramId),
-    buildPetMissions(db, telegramId, sourcePet, now),
-    getPetSeasonRewardState(db, telegramId, { identity: identityPromise, now }),
+    buildPetMissions(db, telegramId, sourcePet, now, projectionReads),
+    getPetSeasonRewardState(db, telegramId, { identity: identityPromise, now, projectionReads }),
     syncPetAchievementsForPet(projectionScope.db, telegramId, sourcePet.pet_id, sourcePet.season_key, false, true)
       .catch(error => { throw normalizePetProjectionError(error); }),
-    db.prepare(`SELECT boss_id, attempts, damage, defeated_at, reward_claimed_at FROM telegram_pet_weekly_boss_progress WHERE telegram_id = ? AND week_key = ?`)
+    projectionReads.prepare(`SELECT boss_id, attempts, damage, defeated_at, reward_claimed_at FROM telegram_pet_weekly_boss_progress WHERE telegram_id = ? AND week_key = ?`)
       .bind(telegramId, weekKey).first().then(requirePetFirstReadResult),
-    db.prepare(`SELECT action, damage, event_key FROM telegram_pet_weekly_boss_events WHERE telegram_id = ? AND week_key = ? AND day_key = ?`)
+    projectionReads.prepare(`SELECT action, damage, event_key FROM telegram_pet_weekly_boss_events WHERE telegram_id = ? AND week_key = ? AND day_key = ?`)
       .bind(telegramId, weekKey, dayKey).first().then(requirePetFirstReadResult),
     runtimePromise,
     getPetSpecialActionGuidanceState(db, telegramId, now),
     getPendingPetWeeklyBossRewards(db, telegramId),
     readAcceptedDailyChestPetEventForDay(db, telegramId, dayKey),
     getPetWindowTotals(db, telegramId, dayKey, weekKey),
-    db.prepare(`SELECT pet_id,season_key,period_key AS week_key,action_key AS source_event_key,
+    projectionReads.prepare(`SELECT pet_id,season_key,period_key AS week_key,action_key AS source_event_key,
         json_extract(payload_json,'$.equipment_evidence') AS equipment_evidence
       FROM telegram_pet_system_events WHERE telegram_id=? AND pet_id=? AND season_key=?
         AND system_key='weekly_boss_finish' AND status='completed' AND json_valid(payload_json)
@@ -17691,7 +17694,7 @@ async function buildPetGuidanceState(db, telegramId, petRaw = null, options = {}
   Object.assign(pet, serializePet(sourcePet, identity, { now }));
   const [evolution, economy] = await Promise.all([
     getPetEvolutionGuidance(db, telegramId, pet, identity),
-    getPetEconomyState(db, telegramId, pet, now),
+    getPetEconomyState(db, telegramId, pet, now, projectionReads),
   ]);
   const combatEligibility = Object.hasOwn(options, 'combatEligibility')
     ? await options.combatEligibility
@@ -18348,15 +18351,16 @@ async function processPetWeeklyBoss(db, telegramId, actionRaw, eventKeyRaw = '',
 }
 
 async function getPetSeasonRewardState(db, telegramId, options = {}) {
+  const projectionReads = options.projectionReads || db;
   const season = getPetSeasonInfo(options.now || new Date());
   const identityPromise = Object.hasOwn(options, 'identity')
     ? Promise.resolve(options.identity)
     : getMoonpetIdentityWithLifecycle(db, telegramId, { required: true });
   const [state, history, claims, identity] = await Promise.all([
-    db.prepare(`SELECT season_xp FROM telegram_pet_season_state WHERE telegram_id = ? AND season_key = ?`).bind(telegramId, season.key).first().then(requirePetFirstReadResult),
-    db.prepare(`SELECT season_key, season_xp FROM telegram_pet_season_state
+    projectionReads.prepare(`SELECT season_xp FROM telegram_pet_season_state WHERE telegram_id = ? AND season_key = ?`).bind(telegramId, season.key).first().then(requirePetFirstReadResult),
+    projectionReads.prepare(`SELECT season_key, season_xp FROM telegram_pet_season_state
       WHERE telegram_id=? AND season_key<? ORDER BY season_key DESC`).bind(telegramId, season.key).all().then(requirePetReadResult),
-    db.prepare(`SELECT idempotency_key, COALESCE(awarded_at,created_at) AS claimed_at FROM telegram_pet_reward_claims
+    projectionReads.prepare(`SELECT idempotency_key, COALESCE(awarded_at,created_at) AS claimed_at FROM telegram_pet_reward_claims
       WHERE telegram_id=? AND source='pet_season_reward' AND status='awarded'`).bind(telegramId).all().then(requirePetReadResult),
     identityPromise,
   ]);
