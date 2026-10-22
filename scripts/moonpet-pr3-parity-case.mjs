@@ -11,19 +11,23 @@ try {
  if(['heavy','archived'].includes(scenario))await seedPr3Recovery(f,{archived:scenario==='archived'});
  if(scenario==='day_rollover')f.advance(86400000);
  if(scenario==='week_rollover')f.advance(7*86400000);
- const first=await f.measureHttp();const second=await f.measureHttp();
- // Initial seed rows precede the fixed SQL clock. Normalize only fixture-created
- // creation/update metadata and signed presentation tokens; retain all periods,
- // earned dates, wallets, progression, ownership and response keys.
+ // Seed timestamps are pinned before warm-up. Retain all timestamps and derived
+ // values; only signed presentation tokens are normalized.
  function clean(value,key=''){
-  if(['created_at','updated_at','source_profile_updated_at','challenge_token'].includes(key))return '<fixture-metadata>';
+  if(key==='challenge_token')return '<fixture-metadata>';
   if(Array.isArray(value))return value.map(v=>clean(v));
   if(value && typeof value==='object')return Object.fromEntries(Object.entries(value).map(([k,v])=>[k,clean(v,k)]));
   return value;
  }
  const tables=['telegram_pet_instances','telegram_pet_active_slots','telegram_pet_season_slots','telegram_pet_growth_marks','telegram_pet_weekly_crests','telegram_pet_system_events','telegram_pet_reward_claims','telegram_pet_daily_journey_receipts','telegram_pet_weekly_journey_receipts','telegram_pet_material_balances','telegram_pet_profiles'];
- const persisted=Object.fromEntries(tables.map(t=>[t,clean(f.sql.prepare('SELECT * FROM '+t+' ORDER BY 1').all())]));
- const response=clean(second.state);
  const hash=value=>createHash('sha256').update(JSON.stringify(value)).digest('hex');
- console.log(JSON.stringify({scenario,first:first.report,second:second.report,response_hash:hash(response),persisted_hash:hash(persisted),response,persisted}));
+ const snapshot=state=>({response:clean(state),persisted:Object.fromEntries(tables.map(t=>[t,clean(f.sql.prepare('SELECT * FROM '+t+' ORDER BY 1').all())]))});
+ const first=await f.measureHttp();
+ const initial=snapshot(first.state); // Capture committed state BEFORE the retry.
+ const second=await f.measureHttp();
+ const retry=snapshot(second.state);
+ console.log(JSON.stringify({scenario,first:first.report,second:second.report,
+   first_response_hash:hash(initial.response),first_persisted_hash:hash(initial.persisted),
+   retry_response_hash:hash(retry.response),retry_persisted_hash:hash(retry.persisted),
+   initial,retry}));
 }finally{f.close();}

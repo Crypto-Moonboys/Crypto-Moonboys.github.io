@@ -37,14 +37,14 @@ No raw production account data or credentials were used.
 
 | Fixture / path | SQL before → after | D1 calls before → after | Modelled total ms before → after |
 | --- | --- | --- | --- |
-| warm / builder | 167 → 167 | 138 → 127 | 830 → 831 |
-| three_pets / builder | 175 → 175 | 146 → 135 | 820 → 827 |
-| recovery / builder | 264 → 264 | 190 → 179 | 1632 → 1636 |
-| core / builder | 42 → 42 | 33 → 33 | 349 → 349 |
-| warm / authenticated_http | 168 → 168 | 139 → 128 | 877 → 869 |
-| three_pets / authenticated_http | 176 → 176 | 147 → 136 | 835 → 839 |
-| recovery / authenticated_http | 265 → 265 | 191 → 180 | 1667 → 1643 |
-| core / authenticated_http | 43 → 43 | 34 → 34 | 354 → 359 |
+| warm / builder | 167 → 167 | 138 → 127 | 836 → 822 |
+| three_pets / builder | 175 → 175 | 146 → 135 | 829 → 823 |
+| recovery / builder | 264 → 264 | 190 → 179 | 1624 → 1625 |
+| core / builder | 42 → 42 | 33 → 33 | 347 → 345 |
+| warm / authenticated_http | 168 → 168 | 139 → 128 | 878 → 868 |
+| three_pets / authenticated_http | 176 → 176 | 147 → 136 | 839 → 838 |
+| recovery / authenticated_http | 265 → 265 | 191 → 180 | 1652 → 1654 |
+| core / authenticated_http | 43 → 43 | 34 → 34 | 360 → 358 |
 
 Three-pet projection alone: **155 statements / 126 calls → 155 / 115**.
 The production trace supplied by GK had 156 / 126; fixture and production SQL
@@ -72,9 +72,12 @@ Seven separate-process before/after cases pass: first adopted load, warm,
 three-pet, qualifying daily+weekly+historical boss recovery, archived original with
 another selected pet, UTC-day rollover and ownership-week rollover. Fixed application
 and SQLite time and deterministic randomness make business results comparable.
-Full response hashes and stored owner/pet/period/reward/material/wallet hashes
-match. Only fixture creation/update metadata and signed presentation challenge
-strings are normalized; response keys, earned dates and attribution are retained.
+Full response and stored owner/pet/period/reward/material/wallet hashes match
+separately at two checkpoints: immediately after the first request, before any
+retry, and again after the retry. All business-relevant seed timestamps are
+pinned before warm-up, so lifecycle age and ownership calculations cannot depend
+on the host date. Only signed presentation challenge strings are normalized;
+all timestamps, response keys, earned dates, lifecycle age and attribution remain.
 Baseline hashes and expanded pre-PR3 SQL are pinned as test fixtures with provenance.
 
 Candidate-query parity also checks cursor rotation/limits, archived instances,
@@ -87,7 +90,7 @@ boss progression, then compare saved records after retries.
 
 Validation:
 - Complete `npm run ci:worker-api` equivalent `node scripts/ci-domain-runner.mjs worker-api`: passed locally (all commands through moonpet-beta-xp-quarantine).
-- `node --test scripts/moonpet-pr3-optimisation.test.mjs`: 10 passed.
+- `node --test scripts/moonpet-pr3-optimisation.test.mjs`: 11 passed.
 - Existing profiling/performance: 19 passed; combat integrity: 33 passed;
   independent Community boundary suite: 35 passed.
 - Changed runtime JS syntax and `git diff --check`: passed.
@@ -130,3 +133,12 @@ must be assessed separately from normal accounts after approved deployment.
 
 Current Cloudflare D1 batching semantics were checked against the official
 [D1 Database documentation](https://developers.cloudflare.com/d1/worker-api/d1-database/).
+
+## Review corrections
+
+The original parity checks covered only the retry and could inherit a wall-clock
+lifecycle creation date. Both gaps are fixed: all six seeded authority tables
+have fixed creation/update/decay timestamps before warm-up, and snapshots are
+captured before retry as well as afterwards. Baseline hashes were regenerated
+from commit 0ef7b80ec with the same setup. The combined new optimisation and
+existing profiling/performance suite passes 30 tests. Runtime code is unchanged.

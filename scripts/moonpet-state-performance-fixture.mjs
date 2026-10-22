@@ -10,7 +10,17 @@ export async function performanceFixture({ root = process.cwd(), pets = 1, delay
   const f = fixture('980301', 'pet-s2026-004');
   const clock = clockFixture(f, '2026-10-21T12:00:00.000Z');
   for (let slot = 2; slot <= pets; slot++) f.pet('fixture-space-' + slot, 'pet-s2026-004', 10000, slot);
-  f.sql.prepare('UPDATE telegram_pet_instances SET last_decay_at=?').run(clock.now());
+  // The original pet is inserted before clockFixture installs SQLite's clock.
+  // Pin every seed timestamp before any warm-up: these values drive lifecycle
+  // age and ownership/reconciliation projections, not just hash metadata.
+  const seedAt = clock.now().replace('T', ' ').slice(0, 19);
+  for (const table of ['telegram_users', 'telegram_pet_profiles', 'telegram_pet_instances',
+    'telegram_pet_lifecycle_by_pet', 'telegram_pet_season_slots', 'telegram_pet_active_slots']) {
+    const columns = f.sql.prepare('PRAGMA table_info(' + table + ')').all().map(column => column.name);
+    const timestamps = ['created_at', 'updated_at', 'last_decay_at'].filter(name => columns.includes(name));
+    f.sql.prepare('UPDATE ' + table + ' SET ' + timestamps.map(name => name + '=?').join(','))
+      .run(...timestamps.map(() => seedAt));
+  }
   if (warm) await f.state();
   const metrics = { calls: 0, guarded_batches: 0, ownership_assertions: 0 };
   const pause = () => delayMs ? new Promise(resolve => setTimeout(resolve, delayMs)) : Promise.resolve();

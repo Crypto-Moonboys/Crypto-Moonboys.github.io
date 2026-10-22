@@ -32,6 +32,19 @@ const { execFileSync } = await import('node:child_process');
 const parityBaseline=JSON.parse(readFileSync(new URL('./fixtures/moonpet-pr3-baseline-parity.json',import.meta.url),'utf8'));
 for(const expected of parityBaseline.cases)test('baseline response and reward parity: '+expected.scenario,()=>{
  const actual=JSON.parse(execFileSync(process.execPath,['scripts/moonpet-pr3-parity-case.mjs',expected.scenario],{encoding:'utf8',env:{...process.env,MOONPET_PERF_SOURCE_ROOT:process.cwd()}}));
- assert.equal(actual.response_hash,expected.response_hash);assert.equal(actual.persisted_hash,expected.persisted_hash);
+ for(const key of ['first_response_hash','first_persisted_hash','retry_response_hash','retry_persisted_hash'])assert.equal(actual[key],expected[key],key);
+ assert.equal(actual.second.calls,expected.retry_calls-11);assert.equal(actual.second.statements,expected.retry_statements);
  assert.equal(actual.first.calls,expected.calls-11);assert.equal(actual.first.statements,expected.statements);
+});
+
+test('all business seed clocks are pinned before first warm-up and lifecycle age follows only the fixture clock',async()=>{
+ const f=await performanceFixture({pets:3,warm:false});try{
+  for(const table of ['telegram_users','telegram_pet_profiles','telegram_pet_instances','telegram_pet_lifecycle_by_pet','telegram_pet_season_slots','telegram_pet_active_slots']){
+   const columns=f.sql.prepare('PRAGMA table_info('+table+')').all().map(c=>c.name);
+   for(const key of ['created_at','updated_at','last_decay_at'].filter(key=>columns.includes(key)))
+    for(const row of f.sql.prepare('SELECT '+key+' FROM '+table).all())assert.equal(row[key],'2026-10-21 12:00:00',table+'.'+key);
+  }
+  f.advance(7*86400000);
+  const {state}=await f.measureHttp();assert.equal(state.lifecycle.incubation.age_days,7);
+ }finally{f.close();}
 });
