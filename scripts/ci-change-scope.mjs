@@ -113,6 +113,10 @@ const SCOPES = {
     'package-lock.json',
   ],
   visual: [
+    // Signed sandbox executes the Worker, its imported gameplay rules and SQL schema.
+    'workers/moonboys-api/**',
+    'workers/shared/**',
+    'scripts/moonpet-*-fixture.mjs',
     'scripts/moonpet-sandbox*.mjs',
     'scripts/moonpet-browser-fixture.mjs',
     'scripts/moonpet-state-performance-fixture.mjs',
