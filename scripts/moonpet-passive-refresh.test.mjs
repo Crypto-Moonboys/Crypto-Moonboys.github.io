@@ -963,3 +963,32 @@ for (const section of ['home', 'work', 'explore']) test('notice acknowledgement 
   assert.equal(f.ctx.state.pet.pet_xp, 250); assert.equal(f.ctx.state.notices.length, 0);
   assert.equal(f.ctx.renders, 1); assert.equal(f.ctx.noticesBusy, false);
 });
+
+for (const outcome of ['success', 'failure']) test('hide-resume before notice acknowledgement '+outcome+' retires the old snapshot and immediately reconciles', async () => {
+  const handlers = {};
+  const f = context({ activeScreen: 'work', initData: 'signed-fixture', performanceSent: true,
+    cooldownRefreshTimer: 0, fullStateHydrationRetryTimer: 0,
+    crypto: { randomUUID: () => 'notice-ack' },
+    document: { hidden: false, addEventListener: (name, fn) => { handlers[name] = fn; } } });
+  vm.runInContext(client.slice(client.indexOf('  async function showPendingNotices()'), client.indexOf('  function actionAnimationFamily(')), f.ctx);
+  vm.runInContext(client.slice(client.indexOf("  document.addEventListener('visibilitychange'"), client.indexOf('  window.MoonpetBetaAppearance')), f.ctx);
+  const full = base(); full.notices = [{ key: 'earned', title: 'Earned', scope: 'account' }];
+  const read = f.ctx.refreshSeasonSnapshot(true);
+  f.pending[0].resolve({ state: full }); await new Promise(resolve => setImmediate(resolve));
+  assert.equal(f.calls[1].body.action, 'guidance_ack');
+  const saved = JSON.stringify(f.ctx.state), renders = f.ctx.renders;
+  f.ctx.document.hidden = true; handlers.visibilitychange();
+  f.ctx.document.hidden = false; handlers.visibilitychange();
+  assert.equal(f.calls.length, 2, 'foreground read waits for the acknowledgement guard');
+  if (outcome === 'success') f.pending[1].resolve({ state: { ...base(), notices: [] } });
+  else f.pending[1].reject(Error('connection interrupted'));
+  await read;
+  assert.equal(JSON.stringify(f.ctx.state), saved); assert.equal(f.ctx.renders, renders);
+  assert.equal(f.ctx.noticesBusy, false); assert.equal(f.ctx.seasonRefreshBusy, false);
+  assert.equal(f.timers.length, 1); assert.equal(f.timers[0].delay, 0);
+  f.timers[0].fn(); assert.equal(f.calls.length, 3);
+  const latest = base(); latest.pet.pet_xp = 350; latest.notices = [];
+  f.pending[2].resolve({ state: latest }); await new Promise(resolve => setImmediate(resolve));
+  assert.equal(f.ctx.state.pet.pet_xp, 350); assert.equal(f.ctx.renders, renders + 1);
+  assert.equal(f.ctx.seasonRefreshPending, false);
+});

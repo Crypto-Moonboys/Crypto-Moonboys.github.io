@@ -78,6 +78,7 @@
   var radioRequestDraft = '';
   var radioRequestSubmittedDay = '';
   var noticesBusy = false;
+  var noticeVisibilityChanged = false;
   var lastPassiveRefreshAt = 0;
   var reducedMotion = Boolean(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   var audioContext = null;
@@ -4193,6 +4194,7 @@
     }) : [];
     if (!notices.length || noticesBusy) return;
     noticesBusy = true;
+    noticeVisibilityChanged = false;
     var visible = notices.slice(0, 1);
     haptic('success');
     tell(visible[0].title + (visible[0].detail ? ' - ' + visible[0].detail : ''));
@@ -4201,10 +4203,14 @@
       var acknowledged = await post('/telegram-pets/app/action', { action: 'guidance_ack', notices: visible.map(function (notice) {
         return { key: notice.key, scope: notice.scope, pet_id: notice.pet_id, season_key: notice.season_key };
       }), request_id: crypto.randomUUID(), state_mode: activeScreen === 'profile' ? 'profile' : undefined });
-      if (document.hidden) seasonRefreshPending = true;
+      if (document.hidden || noticeVisibilityChanged) seasonRefreshPending = true;
       else if (setStateSnapshot(acknowledged.state, requestGeneration)) render();
     } catch (_) {}
     noticesBusy = false;
+    if (noticeVisibilityChanged && !document.hidden) {
+      seasonRefreshPending = true;
+      window.setTimeout(function () { refreshSeasonSnapshot(true); }, 0);
+    }
   }
 
   function actionAnimationFamily(action, payload) {
@@ -5561,6 +5567,7 @@
   });
   document.addEventListener('visibilitychange', function () {
     if (document.hidden) {
+      if (noticesBusy) noticeVisibilityChanged = true;
       window.clearTimeout(cooldownRefreshTimer); cooldownRefreshTimer = 0;
       window.clearTimeout(fastActionStateRefreshTimer); fastActionStateRefreshTimer = 0;
       window.clearTimeout(fullStateHydrationRetryTimer); fullStateHydrationRetryTimer = 0;
