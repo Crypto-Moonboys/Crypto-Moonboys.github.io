@@ -4792,6 +4792,7 @@
       var requestGeneration = beginStateRequest();
       var data = await post('/telegram-pets/app/state', { mode: 'live' });
       if (!stateRequestGate.isCurrent(requestGeneration) || authenticationFailure) return;
+      if (document.hidden) { seasonRefreshPending = true; return; }
       // During a coordinated release an older Worker may still return its
       // complete snapshot for an unknown mode. Keep play working in that gap.
       var legacyFull = data.state && data.state.pet && (!data.state.hydration || data.state.hydration.full === true);
@@ -4804,6 +4805,7 @@
         // Another device can switch/delete a pet. Its partial data cannot be
         // merged into this pet; obtain the complete newly selected save.
         data = await post('/telegram-pets/app/state', {});
+        if (document.hidden) { seasonRefreshPending = true; return; }
         if (!data.state || stateNeedsFullHydration(data.state)) return;
         merged = data.state;
         legacyFull = true;
@@ -4826,6 +4828,7 @@
         // Interrupted combat and changed/claimed activities need ordered full
         // recovery before publishing their effects on wallet, care or XP.
         data = await post('/telegram-pets/app/state', {});
+        if (document.hidden) { seasonRefreshPending = true; return; }
         if (!data.state || stateNeedsFullHydration(data.state)) return;
         if (!setStateSnapshot(data.state, requestGeneration)) return;
       } else {

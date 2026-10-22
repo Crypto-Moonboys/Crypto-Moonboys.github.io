@@ -714,3 +714,36 @@ for(const outcome of ['success','failure','superseded'])test('foreground core '+
   f.timers[0].fn();assert.equal(options.background,true);assert.equal(f.calls.length,1);
  }
 });
+
+for(const scenario of ['combat','activity','pet','live','legacy'])for(const phase of ['live','recovery']){
+ if(phase==='recovery'&&['live','legacy'].includes(scenario))continue;
+ test('hiding during '+phase+' response retains saved '+scenario+' state until foreground reconciliation',async()=>{
+  const f=context();
+  if(scenario==='activity')f.ctx.state.guidance.activity={id:'old',status:'active'};
+  const saved=JSON.stringify(f.ctx.state),read=f.ctx.refreshLiveState();
+  let response=patch(2);
+  if(scenario==='combat')response.recovery_needed=true;
+  if(scenario==='activity')response.activity={id:'new',status:'active'};
+  if(scenario==='pet'){response.pet_id='new-pet';response.hydration={mode:'live',full:false};}
+  if(scenario==='legacy'){response=base();response.pet.pet_xp=999;}
+  if(phase==='live')f.ctx.document.hidden=true;
+  f.pending[0].resolve({state:response});
+  if(phase==='live'){
+   await new Promise(resolve=>setImmediate(resolve));
+   // Drain an unexpected recovery on the old implementation so it fails an assertion, not a hanging promise.
+   if(f.pending[1])f.pending[1].resolve({state:base()});
+  }
+  if(phase==='recovery'){
+   await new Promise(resolve=>setImmediate(resolve));assert.equal(f.calls.length,2);
+   f.ctx.document.hidden=true;const recovered=base();recovered.pet.pet_xp=999;f.pending[1].resolve({state:recovered});
+  }
+  await read;
+  assert.equal(f.calls.length,phase==='live'?1:2,'hidden response starts no subsequent request');
+  assert.equal(f.ctx.renders,0);assert.equal(JSON.stringify(f.ctx.state),saved);
+  assert.equal(f.ctx.seasonRefreshPending,true);assert.equal(f.ctx.passiveRefreshInFlight,false);
+  f.ctx.document.hidden=false;const resume=f.ctx.refreshSeasonSnapshot(true);
+  assert.deepEqual(JSON.parse(JSON.stringify(f.calls.at(-1).body)),{});
+  const fresh=base();fresh.pet.pet_xp=250;f.pending.at(-1).resolve({state:fresh});await resume;
+  assert.equal(f.ctx.state.pet.pet_xp,250);assert.equal(f.ctx.renders,1);assert.equal(f.ctx.seasonRefreshPending,false);
+ });
+}

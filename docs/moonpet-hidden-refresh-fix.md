@@ -22,3 +22,5 @@ node scripts/ci-domain-runner.mjs visual
 The sandbox audit register lives in the independent sandbox PR. This change fixes MP-A01; MP-A02 completion wording and MP-A03 full-response latency remain separate. This reduces unnecessary hidden-page work, not the latency of an individual active full-state response. Browser-native background throttling varies by platform; the test exercises the visibility boundary deterministically.
 
 Deployment: static frontend release only after GK approval. No Worker deployment, D1 migration or VPS restart. No production action performed. Hold merge.
+
+Copilot follow-up: a live poll already in flight could launch recovery after the tab became hidden. Visibility is now checked after the live response and after either recovery response; the last save is retained and foreground reconciliation remains pending. Eight regressions cover combat, activities, pet switching, ordinary live data and legacy full responses, including hiding during recovery itself.
