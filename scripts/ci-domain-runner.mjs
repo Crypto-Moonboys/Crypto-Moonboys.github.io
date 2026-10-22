@@ -61,6 +61,7 @@ const GROUPS = {
     ['node', 'scripts/moonpet-consolidated-proofs.test.mjs'],
     ['node', 'scripts/moonpet-consolidated-projections.test.mjs'],
     ['node', '--test', 'scripts/moonpet-state-performance.test.mjs'],
+    ['node', '--test', 'scripts/moonpet-pr6-concurrency.test.mjs'],
     ['node', '--test', 'scripts/moonpet-recovery-profiling.test.mjs'],
     ['node', '--test', 'scripts/moonpet-pr3-optimisation.test.mjs'],
     ['node', '--test', 'scripts/moonpet-pr4-optimisation.test.mjs'],
