@@ -814,3 +814,106 @@ for (const outcome of ['success', 'failure']) for (const failures of [0, 2]) tes
   f.pending[1].resolve({ state: base() }); await retry;
   assert.equal(f.ctx.state.hydration.full, true); assert.equal(f.ctx.renders, 1); assert.equal(notices, 1);
 });
+
+for (const section of ['work', 'explore']) test('visibility resume on idle '+section+' displays and acknowledges a deferred source-bound notice', async () => {
+  const handlers = {};
+  const f = context({ activeScreen: section, initData: 'signed-fixture', performanceSent: true,
+    cooldownRefreshTimer: 0, fullStateHydrationRetryTimer: 0, fullStateHydrationFailures: 0,
+    fullStateHydrationRetryDelayMs: 0, FULL_STATE_HYDRATION_MAX_AUTO_RETRIES: 3,
+    words: value => value, applyRequestedFocus: () => {}, crypto: { randomUUID: () => 'notice-ack' },
+    document: { hidden: false, addEventListener: (name, fn) => { handlers[name] = fn; } } });
+  vm.runInContext(block('coreStateHydration'), f.ctx);
+  vm.runInContext(client.slice(client.indexOf('  async function showPendingNotices()'), client.indexOf('  function actionAnimationFamily(')), f.ctx);
+  vm.runInContext(client.slice(client.indexOf("  document.addEventListener('visibilitychange'"), client.indexOf('  window.MoonpetBetaAppearance')), f.ctx);
+  f.ctx.state.hydration = { mode: 'core', full: false }; f.ctx.state.arena = null;
+  const notice = { key: 'earned-notice', title: 'Saved achievement', scope: 'pet', pet_id: 'pet-one', season_key: 'lifetime-one' };
+  const full = base(); full.arena = null; full.notices = [{ ...notice, key: 'other-pet', pet_id: 'pet-two' }, notice];
+  const read = f.ctx.hydrateFullState(section);
+  f.ctx.document.hidden = true; handlers.visibilitychange();
+  f.pending[0].resolve({ state: full }); await read;
+  assert.equal(f.calls.length, 1); assert.equal(f.ctx.renders, 0);
+  f.ctx.document.hidden = false; handlers.visibilitychange();
+  assert.equal(f.calls[1].path, '/telegram-pets/app/state');
+  f.pending[1].resolve({ state: full }); await new Promise(resolve => setImmediate(resolve));
+  assert.equal(f.calls.length, 3, 'visibility reconciliation must deliver the deferred notice without another player action');
+  assert.equal(f.calls[2].body.action, 'guidance_ack');
+  assert.equal(f.calls[2].body.notices.length, 1); assert.equal(f.calls[2].body.notices[0].key, notice.key);
+  assert.ok(f.messages.includes(notice.title));
+  f.pending[2].resolve({ state: { ...full, notices: [] } }); await new Promise(resolve => setImmediate(resolve));
+  assert.equal(f.ctx.noticesBusy, false); assert.equal(f.ctx.seasonRefreshBusy, false);
+  assert.equal(f.ctx.state.notices.length, 0);
+});
+
+for (const kind of ['season', 'live', 'terminal', 'pet', 'care', 'cooldown', 'module'])
+for (const phase of ['response', 'first-backoff', 'second-backoff']) test(kind+' passive transport defers hidden '+phase+' retries', async () => {
+  const f = context({ fastActionStateDirty: kind === 'care', cooldownRefreshFailures: 0,
+    cooldownRefreshTimer: 0, lastCooldownRefreshKey: '', serverNowMs: () => 10000,
+    initData: 'signed-fixture', fullStateHydrationRetryTimer: 0, fullStateHydrationFailures: 0,
+    fullStateHydrationRetryDelayMs: 0, FULL_STATE_HYDRATION_MAX_AUTO_RETRIES: 3,
+    words: value => value, applyRequestedFocus: () => {} });
+  vm.runInContext(block('fastActionResponse'), f.ctx); vm.runInContext(block('cooldownRefresh'), f.ctx);
+  vm.runInContext(block('coreStateHydration'), f.ctx);
+  if (kind === 'module') { f.ctx.activeScreen = 'work'; f.ctx.state.hydration = { mode: 'core', full: false }; }
+  const saved = JSON.stringify(f.ctx.state), net = requestRuntime(f);
+  const read = kind === 'season' ? f.ctx.refreshSeasonSnapshot(true)
+    : kind === 'care' ? f.ctx.refreshFastActionState() : kind === 'cooldown' ? f.ctx.refreshExpiredCooldownState()
+    : kind === 'module' ? f.ctx.hydrateFullState('work') : f.ctx.refreshLiveState();
+  if (kind === 'terminal' || kind === 'pet') {
+    const change = patch(2);
+    if (kind === 'terminal') change.recovery_needed = true;
+    else { change.pet_id = 'new-pet'; change.hydration = { mode: 'live', full: false }; }
+    net.requests[0].respond({ state: change }); await net.tick(0);
+    assert.equal(net.requests.length, 2);
+  }
+  const failure = { error: 'mini_app_state_failed' };
+  if (phase === 'second-backoff') { net.requests.at(-1).respond(failure, 503); await net.tick(0); await net.tick(250); }
+  const before = net.requests.length;
+  if (phase === 'response') f.ctx.document.hidden = true;
+  net.requests.at(-1).respond(failure, 503); await net.tick(0);
+  f.ctx.document.hidden = true; await net.tick(700);
+  // Drain the old implementation's unexpected retry so baseline assertions fail without hanging.
+  if (net.requests.length > before) { net.requests.at(-1).respond({ state: base() }); await net.tick(0); }
+  await read;
+  assert.equal(net.requests.length, before, 'no new transport request while hidden');
+  assert.equal(f.ctx.seasonRefreshPending, true); assert.equal(JSON.stringify(f.ctx.state), saved);
+  assert.equal(f.ctx.renders, 0); assert.equal(net.timers.size, 0); assert.equal(f.timers.length, 0);
+  assert.equal(f.ctx.fastActionStateRefreshFailures, 0); assert.equal(f.ctx.cooldownRefreshFailures, 0);
+  assert.equal(f.ctx.fullStateHydrationFailures, 0);
+  f.ctx.document.hidden = false;
+  const resume = f.ctx.refreshSeasonSnapshot(true);
+  const fresh = base(); fresh.pet.pet_xp = 250;
+  net.requests.at(-1).respond({ state: fresh }); await net.tick(0); await resume;
+  assert.equal(f.ctx.state.pet.pet_xp, 250); assert.equal(f.ctx.seasonRefreshPending, false);
+});
+
+for (const mode of ['startup', 'manual-state', 'manual-module']) test(mode+' read retains bounded retries if the page hides', async () => {
+  const f = context({ initData: 'signed-fixture', fullStateHydrationRetryTimer: 0, fullStateHydrationFailures: 0,
+    fullStateHydrationRetryDelayMs: 0, FULL_STATE_HYDRATION_MAX_AUTO_RETRIES: 3, words: value => value, applyRequestedFocus: () => {} });
+  vm.runInContext(block('coreStateHydration'), f.ctx);
+  f.ctx.state.hydration = { mode: 'core', full: false };
+  const net = requestRuntime(f);
+  const read = mode === 'manual-module' ? f.ctx.hydrateFullState('work', { manual: true })
+    : f.ctx.post('/telegram-pets/app/state', mode === 'startup' ? { mode: 'core' } : {});
+  f.ctx.document.hidden = true;
+  for (const delay of [250, 700]) {
+    net.requests.at(-1).respond({ error: 'mini_app_state_failed' }, 503); await net.tick(0); await net.tick(delay);
+  }
+  assert.equal(net.requests.length, 3);
+  net.requests[2].respond({ state: base() }); await net.tick(0); await read;
+  assert.equal(net.timers.size, 0); assert.equal(f.ctx.authenticationFailure, false);
+});
+
+test('passive policy does not replay a failed mutation or mask an authentication failure', async () => {
+  const f = context(), net = requestRuntime(f);
+  const mutation = f.ctx.post('/telegram-pets/app/action', { action: 'care' }, { passive: true });
+  const rejected = assert.rejects(mutation, error => error.status === 503);
+  f.ctx.document.hidden = true; net.requests[0].respond({ error: 'mini_app_state_failed' }, 503);
+  await net.tick(0); await rejected; await net.tick(700);
+  assert.equal(net.requests.length, 1); assert.equal(f.ctx.seasonRefreshPending, false);
+  f.ctx.document.hidden = false;
+  const read = f.ctx.refreshSeasonSnapshot(true);
+  f.ctx.document.hidden = true; net.requests[1].respond({ error: 'mini_app_auth_expired' }, 401);
+  await net.tick(0); await read;
+  assert.equal(f.ctx.authenticationFailure, true); assert.equal(f.ctx.petActionRefreshRequired, true);
+  assert.equal(net.requests.length, 2); assert.equal(net.timers.size, 0);
+});

@@ -147,6 +147,9 @@ try {
     const hiddenModule=await setup({viewport,blockAllFull:true});
     try{
       hiddenModule.block();await hiddenModule.open();await hiddenModule.started;
+      const deferredNotice=hiddenModule.full().state.notices[0];
+      assert.ok(deferredNotice, 'signed fixture must contain a genuinely pending notice');
+      assert.equal(hiddenModule.f.sql.prepare('SELECT shown_at FROM telegram_pet_guidance_notices WHERE telegram_id=? AND notice_key=?').get(hiddenModule.f.owner,deferredNotice.key).shown_at,null);
       const moduleRequest=hiddenModule.page.waitForRequest(r=>r.url().endsWith('/app/state')&&!r.postDataJSON().mode);
       await hiddenModule.page.locator('[data-screen="work"]').click();await moduleRequest;
       await hiddenModule.page.locator('[data-panel="module-loading"]').waitFor();
@@ -162,8 +165,13 @@ try {
       assert.equal(await hiddenModule.page.locator('[data-panel="module-loading"]').count(),1);
       assert.equal(hiddenModule.requests.filter(r=>r.body.action==='guidance_ack').length,0,'hidden module cannot acknowledge unseen notices');
       const resumed=hiddenModule.page.waitForResponse(r=>r.url().endsWith('/app/state'));
+      const noticeAck=hiddenModule.page.waitForResponse(r=>r.url().endsWith('/app/action')&&r.request().postDataJSON().action==='guidance_ack');noticeAck.catch(()=>{});
       await hiddenModule.page.evaluate(()=>{window.hiddenModuleObserver.disconnect();Object.defineProperty(document,'hidden',{configurable:true,value:false});document.dispatchEvent(new Event('visibilitychange'));});
       await(await resumed).finished();await hiddenModule.page.locator('[data-panel="timed-activity"]').waitFor();
+      const ack=await noticeAck;const acknowledged=await ack.json();assert.equal(acknowledged.result.accepted,true);
+      assert.equal(ack.request().postDataJSON().notices[0].key,deferredNotice.key);
+      assert.ok(hiddenModule.f.sql.prepare('SELECT shown_at FROM telegram_pet_guidance_notices WHERE telegram_id=? AND notice_key=?').get(hiddenModule.f.owner,deferredNotice.key).shown_at);
+      assert.ok((await hiddenModule.page.locator('#terminal-output').textContent()).includes(deferredNotice.title));
       assert.deepEqual(hiddenModule.errors,[]);
     }finally{await hiddenModule.close();}
     const delayedTelegram=await setup({website:true,telegramDelay:150,websiteDelay:8000,viewport});

@@ -638,6 +638,13 @@
       expiredError.status = 401;
       throw expiredError;
     }
+    function deferHiddenPassiveRead() {
+      if (path !== '/telegram-pets/app/state' || !(options && options.passive) || !document.hidden) return;
+      seasonRefreshPending = true;
+      var deferredError = new Error('PASSIVE STATE READ DEFERRED UNTIL FOREGROUND');
+      deferredError.code = 'request_deferred';
+      throw deferredError;
+    }
     var controller = new AbortController();
     var timeoutError = new Error('REQUEST TIMED OUT. TAP REFRESH TO READ YOUR SAVE.');
     timeoutError.code = 'request_timeout';
@@ -689,6 +696,7 @@
         var stateAttempts = path === '/telegram-pets/app/state' && !(options && options.background) ? 3 : 1;
         for (var attempt = 0; attempt < stateAttempts; attempt += 1) {
           if (controller.signal.aborted) throw timeoutError;
+          deferHiddenPassiveRead();
           var response = await fetch(apiBase + path, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -700,6 +708,7 @@
           if (controller.signal.aborted) throw timeoutError;
           var retryableStateFailure = response.status === 503 && data.error === 'mini_app_state_failed' && attempt + 1 < stateAttempts;
           if (retryableStateFailure) {
+            deferHiddenPassiveRead();
             await new Promise(function (resolve) { setTimeout(resolve, attempt ? 700 : 250); });
             continue;
           }
@@ -2299,7 +2308,7 @@
       if (warmupController) stateRequestGate.setBackgroundRequest(warmupController);
       try {
         var data = await post('/telegram-pets/app/state', background ? {} : stateRefreshPayload(state, reason || activeScreen),
-          warmupController ? { signal: warmupController.signal, background: true } : undefined);
+          warmupController ? { signal: warmupController.signal, background: true, passive: true } : { passive: !manualRetry });
         if (!stateRequestGate.isCurrent(requestGeneration)) return null;
         if (document.hidden) { seasonRefreshPending = true; return null; }
         if (owner !== hydrationOwnerKey()) {
@@ -2326,7 +2335,7 @@
         applyRequestedFocus();
         return state;
       } catch (error) {
-        if (!stateRequestGate.isCurrent(requestGeneration) || owner !== hydrationOwnerKey() || error.code === 'request_superseded') return null;
+        if (!stateRequestGate.isCurrent(requestGeneration) || owner !== hydrationOwnerKey() || error.code === 'request_superseded' || error.code === 'request_deferred') return null;
         fullStateHydrationFailures += 1;
         var retryAfter = Math.max(0, Number(error && error.retryAfterSeconds || 0) * 1000);
         fullStateHydrationRetryDelayMs = retryAfter || Math.min(8000, 750 * Math.pow(2, Math.max(0, fullStateHydrationFailures - 1)));
@@ -2458,7 +2467,7 @@
     if (refreshKey) lastCooldownRefreshKey = refreshKey;
     try {
       var requestGeneration = beginStateRequest();
-      var data = await post('/telegram-pets/app/state', stateRefreshPayload(state, activeScreen));
+      var data = await post('/telegram-pets/app/state', stateRefreshPayload(state, activeScreen), { passive: true });
       if (document.hidden) {
         seasonRefreshPending = true;
         if (refreshKey && refreshKey === lastCooldownRefreshKey) lastCooldownRefreshKey = '';
@@ -2472,6 +2481,7 @@
       if (!stateNeedsFullHydration(state)) await showPendingNotices();
     } catch (error) {
       if (refreshKey && refreshKey === lastCooldownRefreshKey) lastCooldownRefreshKey = '';
+      if (error.code === 'request_deferred') return;
       cooldownRefreshFailures += 1;
       if (cooldownRefreshFailures < 3) {
         var backoff = Math.min(30000, 2000 * Math.pow(2, cooldownRefreshFailures - 1));
@@ -2587,7 +2597,7 @@
     fastActionStateRefreshInFlight = true;
     try {
       var requestGeneration = beginStateRequest();
-      var data = await post('/telegram-pets/app/state', stateRefreshPayload(state, activeScreen));
+      var data = await post('/telegram-pets/app/state', stateRefreshPayload(state, activeScreen), { passive: true });
       if (document.hidden) { seasonRefreshPending = true; return; }
       if (!data.state) throw new Error('CARE STATE UNAVAILABLE');
       if (!setStateSnapshot(data.state, requestGeneration)) return;
@@ -2599,7 +2609,7 @@
       screen.scrollTop = scrollTop;
       if (!stateNeedsFullHydration(state)) await showPendingNotices();
     } catch (error) {
-      if (!stateRequestGate.isCurrent(requestGeneration)) return;
+      if (!stateRequestGate.isCurrent(requestGeneration) || error.code === 'request_deferred') return;
       fastActionStateRefreshFailures += 1;
       var backoff = Math.min(30000, 2000 * Math.pow(2, fastActionStateRefreshFailures - 1));
       var retryAfter = Math.max(0, Number(error && error.retryAfterSeconds || 0) * 1000);
@@ -4799,7 +4809,7 @@
     var beforeActivity = state.guidance && state.guidance.activity;
     try {
       var requestGeneration = beginStateRequest();
-      var data = await post('/telegram-pets/app/state', { mode: 'live' });
+      var data = await post('/telegram-pets/app/state', { mode: 'live' }, { passive: true });
       if (!stateRequestGate.isCurrent(requestGeneration) || authenticationFailure) return;
       if (document.hidden) { seasonRefreshPending = true; return; }
       // During a coordinated release an older Worker may still return its
@@ -4813,7 +4823,7 @@
       if (!merged && sourceChanged) {
         // Another device can switch/delete a pet. Its partial data cannot be
         // merged into this pet; obtain the complete newly selected save.
-        data = await post('/telegram-pets/app/state', {});
+        data = await post('/telegram-pets/app/state', {}, { passive: true });
         if (document.hidden) { seasonRefreshPending = true; return; }
         if (!data.state || stateNeedsFullHydration(data.state)) return;
         merged = data.state;
@@ -4836,7 +4846,7 @@
       } else if (terminal) {
         // Interrupted combat and changed/claimed activities need ordered full
         // recovery before publishing their effects on wallet, care or XP.
-        data = await post('/telegram-pets/app/state', {});
+        data = await post('/telegram-pets/app/state', {}, { passive: true });
         if (document.hidden) { seasonRefreshPending = true; return; }
         if (!data.state || stateNeedsFullHydration(data.state)) return;
         if (!setStateSnapshot(data.state, requestGeneration)) return;
@@ -4884,7 +4894,7 @@
     try {
       var requestGeneration = beginStateRequest();
       var payload = activeScreen === 'home' && stateNeedsFullHydration(state) ? { mode: 'core' } : {};
-      var data = await post('/telegram-pets/app/state', payload);
+      var data = await post('/telegram-pets/app/state', payload, { passive: true });
       if (document.hidden) return;
       if (!data.state || payload.mode !== 'core' && stateNeedsFullHydration(data.state)) return;
       if (!setStateSnapshot(data.state, requestGeneration)) return;
@@ -4895,6 +4905,7 @@
       var scrollTop = screen.scrollTop;
       render();
       screen.scrollTop = scrollTop;
+      if (!stateNeedsFullHydration(state)) await showPendingNotices();
     } catch (_) {
     } finally {
       seasonRefreshBusy = false;
