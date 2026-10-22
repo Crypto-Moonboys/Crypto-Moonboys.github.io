@@ -32,7 +32,7 @@ async function setup({pets=1,recovery=false,website=false,delayMs=0,clock=false,
   fields.set('hash',createHmac('sha256',createHmac('sha256','WebAppData').update(token).digest()).update(check).digest('hex'));
   const auth={id:Number(f.owner),first_name:'Fixture',auth_date:Math.floor(Date.now()/1000)};
   const loginCheck=Object.entries(auth).sort(([a],[b])=>a.localeCompare(b)).map(([k,v])=>k+'='+v).join('\n');
-  
+
   auth.hash=createHmac('sha256',createHash('sha256').update(token).digest()).update(loginCheck).digest('hex');
   const context=await browser.newContext({viewport,reducedMotion:'no-preference'}),page=await context.newPage();
   if(clock)await page.clock.install();
