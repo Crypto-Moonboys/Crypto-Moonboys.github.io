@@ -10422,7 +10422,7 @@ async function projectPetMiniAppCoreState(db, telegramId, options, now, timings)
   }
 
   const dayKey = getPetDayKey(now);
-  const lifecycleScope = createDisplayedPetScope(db, telegramId, petRaw.pet_id, petRaw.season_key, { coalesceReads: true });
+  const lifecycleScope = createDisplayedPetScope(db, telegramId, petRaw.pet_id, petRaw.season_key, { coalesceReads: true, concurrentReads: true });
   const lifecyclePromise = getExistingMoonpetLifecycle(lifecycleScope.db, telegramId)
     .then((lifecycle) => lifecycle || getMoonpetLifecycle(lifecycleScope.db, telegramId))
     .catch(error => { throw normalizePetProjectionError(error); });
@@ -10707,7 +10707,7 @@ async function projectPetMiniAppState(db, telegramId, botToken, options, now, ti
   if (options.mode === 'missions') return buildPetMiniAppMissionsState(db, telegramId, petRaw, now, economy, timings);
 
   const pet = serializePet(petRaw);
-  const identityScope = createDisplayedPetScope(db, telegramId, petRaw.pet_id, petRaw.season_key, { coalesceReads: true });
+  const identityScope = createDisplayedPetScope(db, telegramId, petRaw.pet_id, petRaw.season_key, { coalesceReads: true, concurrentReads: true });
   const identityPromise = getMoonpetIdentityWithLifecycle(identityScope.db, telegramId, { required: true })
     .catch(error => { throw normalizePetProjectionError(error); });
   const lifecyclePromise = identityPromise.then((identity) => identity?.lifecycle || null);
@@ -10717,7 +10717,7 @@ async function projectPetMiniAppState(db, telegramId, botToken, options, now, ti
   // combat await. Observe the derived rejection immediately so fail-closed
   // propagation never creates an unhandled sibling promise.
   combatEligibilityPromise.catch(() => {});
-  const [lifecycle, guidance, inventory, runtime, gear, materials, relics, arena, arenaQueue, recentArena, kaiju, kaijuQueue, recentKaiju, leaderboard, notifications, seasonSlots, recentActions] = await Promise.all([
+  const [lifecycle, guidance, inventory, runtime, gear, materials, relics, arena, arenaQueue, recentArena, kaiju, kaijuQueue, recentKaiju, leaderboard, notifications, seasonSlots, recentActions, pendingStreetEvents, seasonFinales] = await Promise.all([
     lifecyclePromise,
     buildPetGuidanceState(db, telegramId, petRaw, { identity: identityPromise, runtime: runtimePromise, combatEligibility: combatEligibilityPromise, projectionScope: identityScope, projectionReads: identityScope.db, economy, now }),
     getPetInventory(db, telegramId),
@@ -10759,13 +10759,13 @@ async function projectPetMiniAppState(db, telegramId, botToken, options, now, ti
       WHERE telegram_id=? AND status='accepted'
         AND (event_type IN ('adventure','work','trade','feed','play','clean','sleep','train') OR ${PET_MEAL_USE_EVENT_SQL})
     ) WHERE event_rank=1`).bind(telegramId).all().then(requirePetReadResult),
+    readPendingStreetEvents(db, telegramId),
+    getSeasonFinales(db, telegramId, petRaw.pet_id, now),
   ]);
-  const pendingStreetEvents = await readPendingStreetEvents(db, telegramId);
   const leaderboardRows = leaderboard.rows;
-  const [journeySummary, hydratedKaiju, seasonFinales] = await Promise.all([
+  const [journeySummary, hydratedKaiju] = await Promise.all([
     buildPetMiniAppJourneySummary(db, telegramId, seasonSlots, now),
     ensurePetKaijuMatchCategory(db, kaiju),
-    getSeasonFinales(db, telegramId, petRaw.pet_id, now),
   ]);
   const finaleAchievement = seasonFinales.pets.find(entry => entry.pet_id === petRaw.pet_id && entry.season_key === petRaw.season_key && entry.status === 'won')
     || seasonFinales.pets.find(entry => entry.pet_id === petRaw.pet_id && entry.season_key === petRaw.season_key);

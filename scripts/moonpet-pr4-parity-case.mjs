@@ -6,6 +6,7 @@ let sequence=0;Math.random=()=>0.25;
 Object.defineProperty(crypto,'randomUUID',{value:()=> '00000000-0000-4000-8000-'+String(++sequence).padStart(12,'0')});
 Object.defineProperty(crypto,'getRandomValues',{value:array=>{array.fill(64);return array;}});
 const scenario=process.argv[2]||'warm';
+const mode=process.argv[4]||'full';
 const f=await performanceFixture({root:process.argv[3]||process.env.MOONPET_PERF_SOURCE_ROOT||process.cwd(),pets:['three','archived'].includes(scenario)?3:1,warm:!['new','zero'].includes(scenario)});
 try {
  if(scenario==='zero')for(const table of ['telegram_pet_active_slots','telegram_pet_lifecycle_by_pet','telegram_pet_season_slots','telegram_pet_instances','telegram_pet_profiles'])f.sql.exec('DELETE FROM '+table);
@@ -23,9 +24,9 @@ try {
  const tables=['telegram_pet_instances','telegram_pet_active_slots','telegram_pet_season_slots','telegram_pet_growth_marks','telegram_pet_weekly_crests','telegram_pet_system_events','telegram_pet_reward_claims','telegram_pet_daily_journey_receipts','telegram_pet_weekly_journey_receipts','telegram_pet_material_balances','telegram_pet_profiles'];
  const hash=value=>createHash('sha256').update(JSON.stringify(value)).digest('hex');
  const snapshot=state=>({response:clean(state),persisted:Object.fromEntries(tables.map(t=>[t,clean(f.sql.prepare('SELECT * FROM '+t+' ORDER BY 1').all())]))});
- const first=await f.measureHttp();
+ const first=await f.measureHttp(mode);
  const initial=snapshot(first.state); // Capture committed state BEFORE the retry.
- const second=await f.measureHttp();
+ const second=await f.measureHttp(mode);
  const retry=snapshot(second.state);
  console.log(JSON.stringify({scenario,first:first.report,second:second.report,
    first_response_hash:hash(initial.response),first_persisted_hash:hash(initial.persisted),

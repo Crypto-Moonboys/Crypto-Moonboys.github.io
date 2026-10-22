@@ -9,12 +9,14 @@ export function isDisplayedPetScopeStaleError(error) {
   return String(error?.message || error).includes(STALE_PATH);
 }
 
-export function createDisplayedPetScope(database, owner, petId, seasonKey = null, { coalesceReads = false } = {}) {
+export function createDisplayedPetScope(database, owner, petId, seasonKey = null, { coalesceReads = false, concurrentReads = false } = {}) {
   let changed = false;
   let pending = Promise.resolve();
   let reads = null;
   const statements = new WeakMap();
   const readOnly = new WeakSet();
+  const selects = new WeakSet();
+  let inFlightReads = [];
   const stale = () => new Error(STALE_PATH);
   const guard = () => database.prepare(`SELECT json_extract('{}', CASE WHEN EXISTS (
     SELECT 1 FROM telegram_pet_active_slots a
@@ -50,10 +52,17 @@ export function createDisplayedPetScope(database, owner, petId, seasonKey = null
     }
   }
 
-  function enqueue(entries) {
-    const result = pending.then(() => execute(entries));
-    // Requests often read several projections in parallel. D1 transactions
-    // execute sequentially; preserve that ordering within this request too.
+  function enqueue(entries, allowConcurrent = true) {
+    // Independent SELECT transactions may overlap their network round trips.
+    // Each still carries its own atomic ownership assertion. Mutations and
+    // explicit batches drain prior reads and remain barriers for later reads.
+    if (concurrentReads && allowConcurrent && entries.every(entry => selects.has(entry))) {
+      const result = pending.then(() => execute(entries));
+      inFlightReads.push(result.catch(() => {}));
+      return result;
+    }
+    const result = Promise.all([pending, ...inFlightReads]).then(() => execute(entries));
+    inFlightReads = [];
     pending = result.catch(() => {});
     return result;
   }
@@ -70,11 +79,11 @@ export function createDisplayedPetScope(database, owner, petId, seasonKey = null
   function batch(entries) {
     // Explicit batches and mutations are ordering barriers, never coalesced.
     flushReads();
-    return enqueue(entries);
+    return enqueue(entries, false);
   }
 
   function read(statement) {
-    if (!readOnly.has(statement)) return batch([statement]).then(results => results[0]);
+    if (!readOnly.has(statement)) { flushReads(); return enqueue([statement]).then(results => results[0]); }
     if (!reads) {
       reads = { entries: [], waiters: [] };
       const group = reads;
@@ -86,9 +95,9 @@ export function createDisplayedPetScope(database, owner, petId, seasonKey = null
     return result;
   }
 
-  function wrap(native, isReadOnly) {
+  function wrap(native, isReadOnly, isSelect) {
     const statement = {
-      bind(...args) { return wrap(native.bind(...args), isReadOnly); },
+      bind(...args) { return wrap(native.bind(...args), isReadOnly, isSelect); },
       async first(column) {
         const result = await read(statement);
         if (!Array.isArray(result?.results)) throw new Error('pet_state_read_unavailable');
@@ -100,6 +109,7 @@ export function createDisplayedPetScope(database, owner, petId, seasonKey = null
     };
     statements.set(statement, native);
     if (isReadOnly) readOnly.add(statement);
+    if (isSelect) selects.add(statement);
     return statement;
   }
 
@@ -107,10 +117,10 @@ export function createDisplayedPetScope(database, owner, petId, seasonKey = null
     // Only plain SELECTs qualify. CTEs, RETURNING and .run() retain their old
     // transaction boundaries. A single final assertion guards all reads in the
     // same D1 transaction, so switching ownership aborts the entire group.
-    db: { prepare(query) { return wrap(database.prepare(query), coalesceReads && /^\s*SELECT\b/i.test(query)); }, batch },
-    // Optional modules can fail independently while sharing the same sticky
-    // ownership failure and ordering queue with the mandatory projection.
-    singleReads: { prepare(query) { return wrap(database.prepare(query), false); }, batch },
+    db: { prepare(query) { return wrap(database.prepare(query), coalesceReads && /^\s*SELECT\b/i.test(query), /^\s*SELECT\b/i.test(query)); }, batch },
+    // Optional modules keep separate transactions and share sticky ownership
+    // failure and mutation barriers with the mandatory projection.
+    singleReads: { prepare(query) { return wrap(database.prepare(query), false, /^\s*SELECT\b/i.test(query)); }, batch },
     get changed() { return changed; },
   };
 }
