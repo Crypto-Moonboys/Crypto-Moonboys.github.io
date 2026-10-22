@@ -3641,7 +3641,13 @@
     var badge = window.MoonpetPlayOptions.menuBadge(menu);
     function row(entry) {
       var count = entry.kind === 'claim' || entry.count > 1 || entry.countLowerBound ? ' // ' + number(entry.count) + (entry.countLowerBound ? '+' : '') : '';
-      return '<div class="menu-status-entry" data-status-key="' + escapeHtml(entry.key) + '" data-status-kind="' + escapeHtml(entry.kind) + '"><div class="line"><strong>' + escapeHtml(entry.title) + count + '</strong></div><div class="menu-status-label">' + (entry.kind === 'complete' ? '✅ Completed // ' : '') + escapeHtml(entry.status) + '</div>' +
+      // The inbox's terminal category also contains failed attempts.
+      var completed = entry.kind === 'complete' && (
+        entry.key === 'contract_session' && state.contracts && state.contracts.run && state.contracts.run.status === 'completed' ||
+        entry.key === 'daily_run_finished' && state.daily_run && ['completed', 'extracted'].includes(state.daily_run.status) ||
+        entry.key === 'raid_finished' && state.live_systems && state.live_systems.seasonal_boss && Boolean(state.live_systems.seasonal_boss.defeated_at) ||
+        entry.key === 'weekly_boss_finished' && state.guidance && state.guidance.weekly_boss && state.guidance.weekly_boss.defeated === true);
+      return '<div class="menu-status-entry" data-status-key="' + escapeHtml(entry.key) + '" data-status-kind="' + escapeHtml(entry.kind) + '"><div class="line"><strong>' + escapeHtml(entry.title) + count + '</strong></div><div class="menu-status-label">' + (completed ? '✅ Completed // ' : '') + escapeHtml(entry.status) + '</div>' +
         (entry.cooldown ? '<div class="line muted">' + countdownMarkup(entry.cooldown, entry.kind === 'waiting' ? 'Claim window in ' : 'Reset in ') + '</div>' : '') +
         '<div class="button-grid one">' + routeButton('REVIEW ' + entry.title + count, entry, entry.detail) + '</div></div>';
     }

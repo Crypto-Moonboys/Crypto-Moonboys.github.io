@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
 import test from 'node:test';
+import {createRequire} from 'node:module';
+const playOptions=createRequire(import.meta.url)('../js/moonpet-play-options.js');
 import {performanceFixture} from './moonpet-state-performance-fixture.mjs';
 const client=fs.readFileSync(new URL('../js/moonpet-mini-app.js',import.meta.url),'utf8');
 const fn=(start,end)=>client.slice(client.indexOf('  function '+start),client.indexOf('  function '+end));
@@ -29,12 +31,12 @@ test('signed saved mission evidence produces completion labels without changing 
  }finally{f.close();}
 });
 
-test('saved status labels completion only for complete entries, never claims, recovery or waiting',()=>{
+test('generic menu categories never establish success without saved outcome evidence',()=>{
  const kinds=['complete','claim','recovery','waiting','progress','ready','resume','review'];
  for(const kind of kinds){
   const c=context({state:{adopted:true,pet:{pet_id:'p'}},activeScreen:'home',panelOpenState:{},routeButton:()=>'',window:{MoonpetPlayOptions:{menuStatuses:()=>({home:{loaded:true,entries:[{key:'saved',title:'Saved activity',kind,status:'original status',count:1}]}}),menuBadge:()=>({count:0})}}});
   vm.runInContext(marker('menuStatus'),c);const html=c.renderMenuStatus();
-  assert.equal(html.includes('✅ Completed'),kind==='complete');assert.ok(html.includes('original status'));
+  assert.equal(html.includes('✅ Completed'),false,'generic terminal category alone is not success evidence');assert.ok(html.includes('original status'));
   c.petActionRefreshRequired=true;assert.equal(c.renderMenuStatus().includes('✅ Completed'),false);
  }
 });
@@ -45,5 +47,22 @@ test('7/7 completion wording preserves pending claims and does not mark partial 
  for(const [bonus,complete] of [[{claimed:true,pending:[]},true],[{ready:true,pending:[{utc_day:'2026-10-21',pet_id:'p'}]},true],[{ready:false,pending:[]},false],[{available:false},false]]){
   c.state.guidance={daily_completion:{rewards:{pet_xp:0},...bonus}};const html=c.renderDailyCompletion();assert.equal(html.includes('✅ Completed'),complete);
   if(bonus.ready)assert.ok(html.includes('<button>claim</button>'),'completed checklist must retain its unpaid reward action');
+ }
+});
+
+test('real menu projection distinguishes saved successful and failed contract/daily endings',()=>{
+ for(const system of ['contract','daily'])for(const status of ['active','failed','unknown','completed','extracted']){
+  const state={adopted:true,pet:{pet_id:'p'},lifecycle:{phase:'young'},hydration:{full:true}};
+  if(system==='contract')state.contracts={available:true,run:{status,title:'Saved contract'}};
+  else state.daily_run={attempted:true,status};
+  const c=context({state,activeScreen:system==='contract'?'missions':'explore',panelOpenState:{},routeButton:()=>'',window:{MoonpetPlayOptions:playOptions}});
+  vm.runInContext(marker('menuStatus'),c);const html=c.renderMenuStatus();
+  const success=system==='contract'?status==='completed':['completed','extracted'].includes(status);
+  assert.equal(html.includes('✅ Completed'),success,system+':'+status);
+  if(status==='failed')assert.ok(html.includes('FAILED'));
+ }
+ for(const system of ['raid','weekly']){
+  const state={adopted:true,pet:{pet_id:'p'},lifecycle:{phase:'young'},hydration:{full:true},live_systems:{seasonal_boss:system==='raid'?{defeated_at:'2026-10-21'}:{}},guidance:{weekly_boss:system==='weekly'?{defeated:true}:{}}};
+  const c=context({state,activeScreen:'explore',panelOpenState:{},routeButton:()=>'',window:{MoonpetPlayOptions:playOptions}});vm.runInContext(marker('menuStatus'),c);assert.ok(c.renderMenuStatus().includes('✅ Completed'));
  }
 });
