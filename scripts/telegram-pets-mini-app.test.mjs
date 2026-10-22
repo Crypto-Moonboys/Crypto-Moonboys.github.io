@@ -146,6 +146,7 @@ assert.match(client, /await showPendingNotices\(\);[\s\S]*applyRequestedFocus\(\
 const moduleRuntime = new Function(extractModuleSource() + `
 var state = { hydration: { full: false, mode: 'core' } };
 var activeScreen = 'missions';
+var document = {hidden:false};
 var initData='signed-fixture', telegramAuth=null;
 var stateRequestGate={isCurrent:()=>true};
 var fullStateHydrationPromise = null, fullStateHydrationRetryTimer = 0;
@@ -530,6 +531,7 @@ const cooldownRefreshRuntime = new Function(
 var state = null;
 var activeScreen = 'home';
 var cooldownRefreshTimer = 0;
+var document = {hidden:false};
 var cooldownRefreshInFlight = false;
 var cooldownRefreshFailures = 0;
 var passiveRefreshInFlight = false;
@@ -1619,7 +1621,7 @@ assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20261013-profile-rooms-v1/);
 assert.doesNotMatch(html, /moonpet-art-resolver\.js/, 'the game must not load the retired static background resolver');
 assert.match(html, /\/js\/moonpet-bot-art-loader\.js\?v=20261006-live-refresh-v5/);
 assert.match(html, /\/js\/moonpet-bot-art-renderer\.js\?v=20261002-audit-recovery-v2/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261022-completion-labels-v1/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261022-integration-v1/);
 assert.match(html, /role="button" aria-label="Interact with your animated Moonpet"/);
 assert.match(client, /data-utility="guide">HOW TO PLAY/);
 const guideMarkupSource = extractTestExport(client, 'guideMarkup');
@@ -1916,7 +1918,7 @@ for (const sdkInitData of [expired, tampered, 'auth_date=invalid&hash=' + 'a'.re
   assert.equal(entry.requests.length, 3, 'Read-only startup state requests retain their transient retry policy');
 }
 assert.match(html, /\/js\/api-config\.js\?v=20260813-first-party-api/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261022-completion-labels-v1/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261022-integration-v1/);
 // Season slot UI: timing, account/pet separation, unlock affordance, switching, and rejection copy.
 assert.match(client, /function renderSeasonSlots\(\)/, 'Mini App must render a focused season-slot summary');
 assert.match(client, /function render\(options\) \{\s*var editableState = options && options\.discardCallsignDraft \? null : captureEditableState\(\);[\s\S]*restoreEditableState\(editableState\);/, 'render must preserve only drafts that were not explicitly discarded');

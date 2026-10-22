@@ -75,4 +75,9 @@ jobs:
       - run: node --test scripts/nbg-london-replay.test.mjs
       - run: node --test scripts/nbg-london-client-auth.test.mjs
       - run: node --test scripts/verify-nbg-pages-worker-course.test.mjs
-      - run: npm run test:nbg-level1
+      - name: Validate complete Level 1 three consecutive times
+        run: |
+          for attempt in 1 2 3; do
+            echo "NBG Level 1 validation attempt $attempt/3"
+            npm run test:nbg-level1
+          done
