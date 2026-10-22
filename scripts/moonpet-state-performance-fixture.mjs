@@ -4,10 +4,10 @@ import { pathToFileURL } from 'node:url';
 import path from 'node:path';
 import { createHmac } from 'node:crypto';
 
-export async function performanceFixture({ root = process.cwd(), pets = 1, delayMs = 0, warm = true } = {}) {
+export async function performanceFixture({ root = process.cwd(), pets = 1, delayMs = 0, warm = true, owner = '980301' } = {}) {
   const { fixture, clockFixture, hooks, worker } = await import(pathToFileURL(path.join(root, 'scripts/moonpet-audit-regression-fixture.mjs')));
   const { createPetStateTimings } = await import(pathToFileURL(path.join(root, 'workers/moonboys-api/pets/state-timings.js')));
-  const f = fixture('980301', 'pet-s2026-004');
+  const f = fixture(owner, 'pet-s2026-004');
   const clock = clockFixture(f, '2026-10-21T12:00:00.000Z');
   for (let slot = 2; slot <= pets; slot++) f.pet('fixture-space-' + slot, 'pet-s2026-004', 10000, slot);
   // The original pet is inserted before clockFixture installs SQLite's clock.

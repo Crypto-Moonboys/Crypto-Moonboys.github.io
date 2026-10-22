@@ -146,6 +146,8 @@ assert.match(client, /await showPendingNotices\(\);[\s\S]*applyRequestedFocus\(\
 const moduleRuntime = new Function(extractModuleSource() + `
 var state = { hydration: { full: false, mode: 'core' } };
 var activeScreen = 'missions';
+var initData='signed-fixture', telegramAuth=null;
+var stateRequestGate={isCurrent:()=>true};
 var fullStateHydrationPromise = null, fullStateHydrationRetryTimer = 0;
 var fullStateHydrationFailures = 0, fullStateHydrationRetryDelayMs = 0;
 var FULL_STATE_HYDRATION_MAX_AUTO_RETRIES = 3;
@@ -211,8 +213,8 @@ assert.equal(moduleRuntime.timers.length, retryCount, 'Missions stops automatic 
 
 const startupStateRequestIndex = client.indexOf("var initialStateRequest = post('/telegram-pets/app/state', { mode: 'core' })");
 const startupBootAwaitIndex = client.indexOf('await startupBoot;', startupStateRequestIndex);
-assert.ok(startupStateRequestIndex !== -1 && startupBootAwaitIndex > startupStateRequestIndex,
-  'startup must begin the core authority request before waiting for the decorative boot sequence');
+assert.ok(startupStateRequestIndex !== -1 && startupBootAwaitIndex === -1,
+  'verified core Home must never wait for decorative boot typing');
 assert.doesNotMatch(client, /drawEmergencyMoonpetFallback|drawSpeciesSilhouette|drawEquipmentLayers|drawActionEffects|drawCompanionHabitEffects/,
   'retired procedural pet/equipment/action renderers must not return');
 assert.doesNotMatch(client, /WEARABLE_LOADOUT_STORAGE_KEY|WEARABLE_SLOT_ORDER|wearableTraitDebug/,
@@ -1617,7 +1619,7 @@ assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20261013-profile-rooms-v1/);
 assert.doesNotMatch(html, /moonpet-art-resolver\.js/, 'the game must not load the retired static background resolver');
 assert.match(html, /\/js\/moonpet-bot-art-loader\.js\?v=20261006-live-refresh-v5/);
 assert.match(html, /\/js\/moonpet-bot-art-renderer\.js\?v=20261002-audit-recovery-v2/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261015-pr3-home-delete-v1/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261022-pr7-home-loading-v1/);
 assert.match(html, /role="button" aria-label="Interact with your animated Moonpet"/);
 assert.match(client, /data-utility="guide">HOW TO PLAY/);
 const guideMarkupSource = extractTestExport(client, 'guideMarkup');
@@ -1914,7 +1916,7 @@ for (const sdkInitData of [expired, tampered, 'auth_date=invalid&hash=' + 'a'.re
   assert.equal(entry.requests.length, 3, 'Read-only startup state requests retain their transient retry policy');
 }
 assert.match(html, /\/js\/api-config\.js\?v=20260813-first-party-api/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261015-pr3-home-delete-v1/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261022-pr7-home-loading-v1/);
 // Season slot UI: timing, account/pet separation, unlock affordance, switching, and rejection copy.
 assert.match(client, /function renderSeasonSlots\(\)/, 'Mini App must render a focused season-slot summary');
 assert.match(client, /function render\(options\) \{\s*var editableState = options && options\.discardCallsignDraft \? null : captureEditableState\(\);[\s\S]*restoreEditableState\(editableState\);/, 'render must preserve only drafts that were not explicitly discarded');
@@ -1970,7 +1972,7 @@ assert.match(client, /phase === 'egg'[\s\S]{1,3000}renderSeasonSlots\(\)/, 'seas
 // Arcade XP zero must not be treated as missing — nullish checks are required.
 assert.match(client, /arcade_xp_available != null/, 'arcade_xp_available zero must not fall back via || operator');
 assert.match(client, /launchParameter\('tgWebAppData'\)/);
-assert.match(client, /await waitForTelegramContext\(\)/);
+assert.match(client, /await Promise\.all\(\[waitForTelegramContext\(\), restoreBrowserAuth\(\)\]\)/);
 assert.match(worker, /Object\.prototype\.hasOwnProperty\.call\(PET_ARENA_MOVES, move\)/);
 assert.match(worker, /FROM telegram_pet_run_rooms/);
 assert.match(worker, /key: choice\.choice_id/);
