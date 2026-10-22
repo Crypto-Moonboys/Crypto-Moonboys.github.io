@@ -1,3 +1,4 @@
+import { settlePetProjectionBranches } from './projection-branches.js';
 import { atomicPetBatch } from './atomic-mutations.js';
 import { petRecoverableLiveDecisionSql } from './live-system-recovery-proof.js';
 import { requirePetFirstReadResult, requirePetReadResult, requirePetMutationResult } from './read-result.js';
@@ -167,14 +168,14 @@ function getEventChainScene(chain, stepIndex) {
 
 export async function buildPetLiveSystemsState(db, telegramId, pet, runtime, gear = [], materials = [], now = new Date(), { projectionReads = db } = {}) {
   const authority = await resolveLivePetAuthority(db, telegramId, pet);
-  const liveProgression = await getPetLiveProgressionState(db, telegramId, pet, runtime, authority);
   const visibleLevel = getRuntimePetLevel(pet);
-  const mastery = parse(liveProgression?.region_mastery_json, {});
-  const completed = parse(liveProgression?.completed_regions_json, []);
   const today = dayKey(now);
   const dailyResetAt = nextUtcDayResetAt(now);
   const dailyCooldown = cooldownWindow(dailyResetAt, now);
-  const [chains, bossProgress, cosmetics, factionRow, dailyEvents, pendingBossRewards] = await Promise.all([
+  // Progression initialization only touches its own pet-owned table. These
+  // source reads depend on verified ownership, not on that initialization.
+  const [liveProgression, chains, bossProgress, cosmetics, factionRow, dailyEvents, pendingBossRewards] = await settlePetProjectionBranches([
+    getPetLiveProgressionState(db, telegramId, pet, runtime, authority),
     authority
       ? projectionReads.prepare('SELECT chain_key, step_index, completed_cycles FROM telegram_pet_event_chain_progress WHERE pet_id=? AND telegram_id=? AND season_key=?').bind(authority.pet_id, telegramId, authority.season_key).all().then(requirePetReadResult)
       : projectionReads.prepare("SELECT chain_key, step_index, completed_cycles FROM telegram_pet_event_chain_progress WHERE pet_id='' AND telegram_id = ? AND season_key=''").bind(telegramId).all().then(requirePetReadResult),
@@ -197,6 +198,8 @@ export async function buildPetLiveSystemsState(db, telegramId, pet, runtime, gea
       ORDER BY b.defeated_at,b.pet_id,b.season_key LIMIT 10`)
       .bind(telegramId,...Object.keys(PET_SEASONAL_BOSSES)).all().then(requirePetReadResult),
   ]);
+  const mastery = parse(liveProgression?.region_mastery_json, {});
+  const completed = parse(liveProgression?.completed_regions_json, []);
   const events = dailyEvents.results || [];
   const busyOrComplete = (row) => {
     const updated = Date.parse(String(row.updated_at || '').replace(' ', 'T').replace(/Z?$/, 'Z'));
