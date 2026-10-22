@@ -992,3 +992,24 @@ for (const outcome of ['success', 'failure']) test('hide-resume before notice ac
   assert.equal(f.ctx.state.pet.pet_xp, 350); assert.equal(f.ctx.renders, renders + 1);
   assert.equal(f.ctx.seasonRefreshPending, false);
 });
+
+for (const outcome of ['success', 'failure']) test('season hide-resume before '+outcome+' discards the stale read and reconciles immediately', async () => {
+  const handlers = {};
+  const f = context({ performanceSent: true, cooldownRefreshTimer: 0, fullStateHydrationRetryTimer: 0,
+    document: { hidden: false, addEventListener: (name, fn) => { handlers[name] = fn; } } });
+  vm.runInContext(client.slice(client.indexOf("  document.addEventListener('visibilitychange'"), client.indexOf('  window.MoonpetBetaAppearance')), f.ctx);
+  const saved = JSON.stringify(f.ctx.state), read = f.ctx.refreshSeasonSnapshot(true);
+  f.ctx.document.hidden = true; handlers.visibilitychange();
+  f.ctx.document.hidden = false; handlers.visibilitychange();
+  assert.equal(f.calls.length, 1);
+  if (outcome === 'success') { const stale = base(); stale.pet.pet_xp = 100; f.pending[0].resolve({ state: stale }); }
+  else f.pending[0].reject(Error('offline'));
+  await read;
+  assert.equal(JSON.stringify(f.ctx.state), saved); assert.equal(f.ctx.renders, 0);
+  assert.equal(f.ctx.seasonRefreshBusy, false); assert.equal(f.ctx.seasonRefreshPending, true);
+  assert.equal(f.timers.length, 1); assert.equal(f.timers[0].delay, 0);
+  f.timers[0].fn(); const latest = base(); latest.pet.pet_xp = 400;
+  f.pending[1].resolve({ state: latest }); await new Promise(resolve => setImmediate(resolve));
+  assert.equal(f.ctx.state.pet.pet_xp, 400); assert.equal(f.ctx.renders, 1);
+  assert.equal(f.ctx.seasonRefreshPending, false);
+});
