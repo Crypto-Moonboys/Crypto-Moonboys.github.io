@@ -43,7 +43,6 @@ try {
  const initial=snapshot(first.state); // Capture committed state BEFORE the retry.
  const second=await f.measureHttp(mode);
  const retry=snapshot(second.state);
- if(process.env.MOONPET_PERF_SNAPSHOT_PATH){const {writeFileSync}=await import('node:fs');writeFileSync(process.env.MOONPET_PERF_SNAPSHOT_PATH,JSON.stringify({initial,retry},null,2));}
  console.log(JSON.stringify({scenario,first:first.report,second:second.report,
    first_response_hash:hash(initial.response),first_persisted_hash:hash(initial.persisted),
    retry_response_hash:hash(retry.response),retry_persisted_hash:hash(retry.persisted)}));

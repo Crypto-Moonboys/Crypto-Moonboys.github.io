@@ -25,6 +25,7 @@ for (const scenario of scenarios) {
       pair[revision] = JSON.parse(stdout.trim().split('\n').find(line=>line.startsWith('{"scenario":')));
     }
     for (const key of keys) assert.equal(pair.changed[key],pair.baseline[key],scenario+' '+key);
+    if(runs.length)for(const key of keys)assert.equal(pair.baseline[key],runs[0].baseline[key],scenario+' repeated '+key);
     runs.push(pair);
   }
   const summary = {};
@@ -35,7 +36,8 @@ for (const scenario of scenarios) {
   results.push({scenario,summary,runs});
   console.error(scenario+': '+JSON.stringify(summary));
 }
-const evidence = {baseline,changed:process.cwd(),delay_ms:Number(delay),serialized_writes:true,repeats:3,
+const revision = async cwd => (await exec('git',['rev-parse','HEAD'],{cwd})).stdout.trim();
+const evidence = {baseline,changed:process.cwd(),baseline_commit:await revision(baseline),changed_commit:await revision(process.cwd()),node_version:process.version,delay_ms:Number(delay),serialized_writes:true,repeats:3,
   clock:'2026-10-21T12:00:00.000Z',description:'Local real SQLite, signed Worker fetch through complete response.json(); not production latency.',results};
 if(process.argv[3]) await writeFile(process.argv[3],JSON.stringify(evidence,null,2)+'\n');
 else console.log(JSON.stringify(evidence,null,2));
