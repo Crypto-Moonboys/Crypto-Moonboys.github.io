@@ -1702,7 +1702,7 @@
     }
     var dailyPercent = dailyRequired > 0 ? Math.round(Math.min(dailyRequired, dailyCompleted) / dailyRequired * 100) : 0;
     var dailyReset = dailyAuthority.cooldown ? ' // RESET ' + countdownMarkup(dailyAuthority.cooldown, 'in ') : '';
-    var dailyStatus = dailyAuthority.growth_mark_awarded ? 'GROWTH MARK ALREADY SETTLED'
+    var dailyStatus = dailyAuthority.growth_mark_awarded ? '✅ Completed // GROWTH MARK ALREADY SETTLED'
       : dailyAuthority.duplicate_blocked ? 'DUPLICATE GROWTH MARK BLOCKED'
         : dailyRequired > 0 && dailyCompleted >= dailyRequired ? 'GROWTH MARK ELIGIBLE' : 'COMPLETE DAILY OBJECTIVES TO QUALIFY';
     return dailyAuthorityReady
@@ -1811,7 +1811,7 @@
     var weeklyDuplicateBlocked = weeklyAuthority.duplicate_blocked != null
       ? Boolean(weeklyAuthority.duplicate_blocked)
       : Boolean(weeklyCapability.duplicate_blocked);
-    var crestStatus = weeklyCrestAwarded ? 'WEEKLY CREST ALREADY SETTLED'
+    var crestStatus = weeklyCrestAwarded ? '✅ Completed // WEEKLY CREST ALREADY SETTLED'
       : weeklyDuplicateBlocked ? 'DUPLICATE WEEKLY CREST BLOCKED'
         : weeklyCompleted >= weeklyRequired ? 'WEEKLY CREST READY FOR SERVER SETTLEMENT' : 'COMPLETE WEEKLY OBJECTIVES TO QUALIFY';
     var objectiveRows = objectives.map(function (objective) {
@@ -1819,7 +1819,7 @@
       var target = Math.max(1, Number(objective.target) || 1);
       var complete = objective.completed || progress >= target;
       var label = weeklyObjectiveLabel(objective);
-      return '<div class="line ' + (complete ? 'complete' : '') + '">' + (complete ? '[OK] ' : '[  ] ') +
+      return '<div class="line ' + (complete ? 'complete' : '') + '">' + (complete ? '✅ Completed // ' : '[  ] ') +
         escapeHtml(label) + ' // ' + number(Math.min(progress, target)) + '/' + number(target) + ' // ' + (complete ? 'COMPLETE' : 'INCOMPLETE') + '</div>' + (complete ? '' : objectiveRouteButton(objective.objective_id));
     }).join('') || '<div class="line muted">NO WEEKLY OBJECTIVE EVIDENCE YET.</div>';
     var remaining = weeklyRemainingLabels(objectives);
@@ -2178,7 +2178,7 @@
       panel('CARE CONSOLE', '<div class="button-grid">' +
         button('FEED', 'feed') + button('PLAY', 'play') + button('CLEAN', 'clean') + button('SLEEP', 'sleep') + button('TRAIN', 'train') +
         button('ENERGY DRINK', 'energy_drink') + button('DANCE', 'dance') + button('CUDDLES', 'cuddles') +
-        button('DAILY CACHE', 'daily_chest', {}, { disabled: dailyCache.available !== true, statusLabel: dailyCache.claimed ? 'CLAIMED TODAY' : dailyCache.available ? '' : 'SYNCING', cooldown: dailyCache.claimed ? dailyCache.cooldown : null,
+        button('DAILY CACHE', 'daily_chest', {}, { disabled: dailyCache.available !== true, statusLabel: dailyCache.claimed ? '✅ Completed // CLAIMED TODAY' : dailyCache.available ? '' : 'SYNCING', cooldown: dailyCache.claimed ? dailyCache.cooldown : null,
           detail: dailyCache.claimed ? number(dailyCache.receipt && dailyCache.receipt.pet_xp_awarded) + ' PET XP COLLECTED // One cache per account / UTC day.' : dailyCache.available ? '40 MOON GOLD + 2 STYLE // UP TO ' + number(dailyCache.available_pet_xp) + ' PET XP WITH TODAY’S CAP.' : 'Waiting for cache status.' }) + '<button class="terminal-button" type="button" data-pet-greet>SAY HELLO<span class="button-purpose">Wave to your pet. This is an animation, with no XP or stat change.</span></button>' +
       '</div>' + (state.guidance && state.guidance.activity && state.guidance.activity.status === 'active' ? '<div class="button-grid one">' + routeButton('REVIEW BACKGROUND ACTIVITY', { screen: 'work', focus: 'timed-activity' }, 'Sleep and Train unlock when the activity ends. Feed, Play, Clean and Contracts remain available.') + '</div>' : '') + (dailyCache.claimed && state.contracts && state.contracts.available ? '<div class="button-grid one">' + routeButton('CONTINUE WITH CONTRACTS', { screen: 'missions', focus: 'contracts' }, 'Your cache is collected. Saved quests keep going without energy or cooldowns.') + '</div>' : ''), 'care') +
       renderSeasonSlots() +
@@ -2750,7 +2750,7 @@
     var objectives = state && state.daily_journey && state.daily_journey.objectives;
     if (!Array.isArray(objectives) || !objectives.length) return '<div class="line muted">Objective details unavailable. Refresh after the Worker update.</div>';
     return '<div class="line muted">These are the server-tracked Growth Mark goals, separate from the seven daily missions. Official run goals do not count contracts or endless runs.</div>' + objectives.map(function (goal) {
-      return '<div class="line ' + (goal.completed ? 'complete' : '') + '">' + (goal.completed ? '[OK] ' : '[ ] ') + escapeHtml(goal.description || words(goal.challenge_id)) + ' // ' + number(goal.progress) + '/' + number(goal.target) + '</div>' + (goal.completed ? '' : objectiveRouteButton(goal.challenge_id));
+      return '<div class="line ' + (goal.completed ? 'complete' : '') + '">' + (goal.completed ? '✅ Completed // ' : '[ ] ') + escapeHtml(goal.description || words(goal.challenge_id)) + ' // ' + number(goal.progress) + '/' + number(goal.target) + '</div>' + (goal.completed ? '' : objectiveRouteButton(goal.challenge_id));
     }).join('');
   }
 
@@ -2891,7 +2891,7 @@
   }
 
   function contractSetupButton(label, record) {
-    return '<button class="terminal-button" type="button" data-contract-setup="' + escapeHtml(JSON.stringify({ build: record.build, tier: record.tier, goal: record.goal, format: record.format || 'standard' })) + '"' + (record.unlocked ? '' : ' disabled') + '>' + escapeHtml(label) + '<span class="button-purpose">Choose this saved setup, then tap a quest to start. Selecting a setup spends nothing.</span><small>' + escapeHtml(record.title + ' // ' + record.build_title + ' // TIER ' + record.tier + ' // ' + (record.format_title || 'STANDARD ROUTE')) + '<br>' + (record.unlocked ? number(record.completed) + ' CLEARS // BEST ' + number(record.best_rank_points) + ' RANK' : 'LOCKED // COMPLETE ' + (record.tier === 2 ? '5' : '15') + ' CONTRACTS') + '</small></button>';
+    return '<button class="terminal-button" type="button" data-contract-setup="' + escapeHtml(JSON.stringify({ build: record.build, tier: record.tier, goal: record.goal, format: record.format || 'standard' })) + '"' + (record.unlocked ? '' : ' disabled') + '>' + escapeHtml(label) + '<span class="button-purpose">Choose this saved setup, then tap a quest to start. Selecting a setup spends nothing.</span><small>' + escapeHtml(record.title + ' // ' + record.build_title + ' // TIER ' + record.tier + ' // ' + (record.format_title || 'STANDARD ROUTE')) + '<br>' + (record.unlocked ? (record.completed > 0 ? '✅ Completed // ' : '') + number(record.completed) + ' CLEARS // BEST ' + number(record.best_rank_points) + ' RANK' : 'LOCKED // COMPLETE ' + (record.tier === 2 ? '5' : '15') + ' CONTRACTS') + '</small></button>';
   }
 
   function renderDailyCompletion() {
@@ -2899,7 +2899,7 @@
     if (!bonus || bonus.available === false) return panel('DAILY 7/7 BONUS', '<div class="line muted">Daily bonuses are temporarily unavailable. Your existing checklist remains playable.</div>', 'daily-completion');
     var body = '<div class="line">Complete all seven daily missions: up to ' + number(bonus.rewards.pet_xp) + ' Pet XP, ' + number(bonus.rewards.moon_gold) + ' Gold and ' + number(bonus.rewards.style_tokens) + ' Style.</div>' +
       '<div class="line muted">One bonus per account / UTC day. Earned progress stays complete after spending gold. Unclaimed bonuses stay saved. Pet XP uses your normal daily cap.</div>';
-    body += '<div class="line ' + (bonus.claimed ? 'complete' : '') + '">' + (bonus.claimed ? 'TODAY’S BONUS CLAIMED' : bonus.ready ? 'TODAY // 7/7 COMPLETE' : 'TODAY // FINISH THE CHECKLIST BELOW') + '</div>';
+    body += '<div class="line ' + (bonus.claimed ? 'complete' : '') + '">' + (bonus.claimed ? '✅ Completed // TODAY’S BONUS CLAIMED' : bonus.ready ? '✅ Completed // TODAY // 7/7 COMPLETE' : 'TODAY // FINISH THE CHECKLIST BELOW') + '</div>';
     body += '<div class="button-grid one">' + (bonus.pending || []).map(function (claim) {
       var needsHatch = !claim.pet_id && (!state.lifecycle || state.lifecycle.phase === 'egg');
       return button('CLAIM 7/7 BONUS // ' + claim.utc_day, 'daily_completion_claim', { utc_day: claim.utc_day, pet_id: claim.pet_id || state.pet.pet_id }, {
@@ -2934,7 +2934,7 @@
       if (pet.state) section += '<div class="line">ATTEMPT ' + number(pet.attempt) + ' // ROUND ' + number(pet.state.round) + ' // ' + escapeHtml(words(pet.state.build)) + '</div>' +
         meter('BATTLE HP', pet.state.health / pet.state.max_health * 100) + meter('BOSS HP', pet.state.boss_health / pet.state.boss_max_health * 100) +
         '<div class="line">YOU ' + number(pet.state.health) + '/' + number(pet.state.max_health) + ' // BOSS ' + number(pet.state.boss_health) + '/' + number(pet.state.boss_max_health) + ' // CHARGE ' + number(pet.state.charge) + ' // KITS ' + number(pet.state.supplies) + '</div><div class="line">' + escapeHtml(pet.state.last) + '</div>';
-      if (pet.status === 'won') return section + '<div class="line complete">FINALE VICTOR // ACHIEVEMENT SAVED</div>' + (pet.claimed
+      if (pet.status === 'won') return section + '<div class="line complete">✅ Completed // FINALE VICTOR // ACHIEVEMENT SAVED</div>' + (pet.claimed
         ? '<div class="line complete">VICTORY REWARD CLAIMED</div>'
         : '<div class="button-grid one">' + button('CLAIM FINALE REWARD', 'finale_claim', payload, { detail: 'Your victory is saved. Retry this claim without fighting again.' }) + '</div>');
       if (pet.playable === false) return section + '<div class="line muted">DELETED PET // SAVED BATTLE HISTORY. This pet cannot resume play.</div>';
@@ -2957,14 +2957,14 @@
     var missionPercent = missions.length ? Math.round(completedMissions / missions.length * 100) : 0;
     var summary = window.MoonpetPlayOptions && window.MoonpetPlayOptions.missionStatus ? window.MoonpetPlayOptions.missionStatus(state) : null;
     var rows = missions.map(function (mission) {
-      var steps = (mission.steps || []).map(function (step) { return (step.completed ? '[OK] ' : '[ ] ') + step.title; }).join(' // ');
+      var steps = (mission.steps || []).map(function (step) { return (step.completed ? '✅ Completed // ' : '[ ] ') + step.title; }).join(' // ');
       var current = summary && summary.next && summary.next.key === mission.key;
-      return '<div class="mission-row' + (current ? ' mission-row-current' : '') + '"' + (current ? ' data-current-mission="' + escapeHtml(mission.key) + '"' : '') + '><div class="line ' + (mission.completed ? 'complete' : '') + '">' + (mission.completed ? '[OK] ' : current ? '[CURRENT] ' : '[  ] ') + escapeHtml(mission.title) + '</div>' + (mission.detail ? '<div class="line muted">' + escapeHtml(mission.detail) + '</div>' : '') + (steps ? '<div class="line muted">' + escapeHtml(steps) + '</div>' : '') + (mission.completed ? '' : objectiveRouteButton(mission.key)) + '</div>';
+      return '<div class="mission-row' + (current ? ' mission-row-current' : '') + '"' + (current ? ' data-current-mission="' + escapeHtml(mission.key) + '"' : '') + '><div class="line ' + (mission.completed ? 'complete' : '') + '">' + (mission.completed ? '✅ Completed // ' : current ? '[CURRENT] ' : '[  ] ') + escapeHtml(mission.title) + '</div>' + (mission.detail ? '<div class="line muted">' + escapeHtml(mission.detail) + '</div>' : '') + (steps ? '<div class="line muted">' + escapeHtml(steps) + '</div>' : '') + (mission.completed ? '' : objectiveRouteButton(mission.key)) + '</div>';
     }).join('') || '<div class="line muted">NO MISSION DATA.</div>';
     var achievements = state.guidance && state.guidance.achievements || [];
     var unlockedCount = achievements.filter(function (entry) { return entry.unlocked_at; }).length;
     var achievementRows = achievements.map(function (entry) {
-      return '<div class="line ' + (entry.unlocked_at ? 'complete' : '') + '">' + (entry.unlocked_at ? '[UNLOCKED] ' : '[LOCKED] ') + escapeHtml(entry.title) + ' ' + number(Math.min(entry.progress, entry.target)) + '/' + number(entry.target) + '</div><div class="line muted">' + escapeHtml(entry.description || '') + '</div>';
+      return '<div class="line ' + (entry.unlocked_at ? 'complete' : '') + '">' + (entry.unlocked_at ? '✅ Completed // [UNLOCKED] ' : '[LOCKED] ') + escapeHtml(entry.title) + ' ' + number(Math.min(entry.progress, entry.target)) + '/' + number(entry.target) + '</div><div class="line muted">' + escapeHtml(entry.description || '') + '</div>';
     }).join('');
     var progression = activePetProgression();
     var growth = progression.growth_marks || {};
@@ -3290,7 +3290,7 @@
     function renderBounty(bounty,weekly) {
       var routes = window.MoonpetPlayOptions && window.MoonpetPlayOptions.bountyRouteOptions ? window.MoonpetPlayOptions.bountyRouteOptions(bounty, state) : [];
       if (state.lifecycle && state.lifecycle.phase === 'egg') routes = [{ title: 'HATCH TO WORK ON BOUNTIES', screen: 'home', focus: 'incubation' }];
-      return '<div class="line ' + (bounty.complete ? 'complete' : '') + '">' + (bounty.difficulty ? escapeHtml(bounty.difficulty) + ' // ' : '') + escapeHtml(bounty.title) + ' ' + number(bounty.progress) + '/' + number(bounty.required) + (bounty.claimed ? ' // CLAIMED' : bounty.complete ? ' // READY TO CLAIM' : ' // IN PROGRESS') + '</div>' +
+      return '<div class="line ' + (bounty.complete ? 'complete' : '') + '">' + (bounty.difficulty ? escapeHtml(bounty.difficulty) + ' // ' : '') + escapeHtml(bounty.title) + ' ' + number(bounty.progress) + '/' + number(bounty.required) + (bounty.claimed ? ' // ✅ Completed // CLAIMED' : bounty.complete ? ' // ✅ Completed // READY TO CLAIM' : ' // IN PROGRESS') + '</div>' +
         '<div class="line muted">' + escapeHtml(bounty.detail || '') + ' // REWARD ' + escapeHtml(valueText(bounty.reward)) + '</div>' +
         (bounty.complete && !bounty.claimed ? '<div class="button-grid one">' + button('CLAIM ' + bounty.title, weekly ? 'weekly_bounty_claim' : 'bounty_claim', weekly ? { bounty_key: bounty.key, week_key: economy.week_key } : { bounty_key: bounty.key, day_key: economy.day_key }) + '</div>' : !bounty.claimed && !bounty.complete ? '<div class="button-grid">' + routes.map(function (route) { return routeButton(route.title, route, route.detail); }).join('') + '</div>' : '');
     }
@@ -3562,7 +3562,7 @@
       : '<div class="line complete">FINAL EVOLUTION ONLINE.</div><div class="line muted">' + escapeHtml(currentPerk.perk || '') + '</div>';
     var season = guidance.season || {};
     var tiers = (season.tiers || []).map(function (tier) {
-      return '<div class="line ' + (tier.claimed_at ? 'complete' : tier.unlocked ? '' : 'locked') + '">' + escapeHtml(tier.title) + ' // ' + number(tier.required_xp) + ' XP // ' + escapeHtml(tier.season_key || season.key) + ' // ' + (tier.claimed_at ? 'CLAIMED' : tier.unlocked ? 'CLAIM READY' : 'LOCKED') + '</div>' +
+      return '<div class="line ' + (tier.claimed_at ? 'complete' : tier.unlocked ? '' : 'locked') + '">' + escapeHtml(tier.title) + ' // ' + number(tier.required_xp) + ' XP // ' + escapeHtml(tier.season_key || season.key) + ' // ' + (tier.claimed_at ? '✅ Completed // CLAIMED' : tier.unlocked ? 'CLAIM READY' : 'LOCKED') + '</div>' +
         '<div class="line muted">REWARD ' + escapeHtml(valueText(tier.reward)) + ' // +' + number(season.evolution_bonus_style) + ' EVOLUTION STYLE</div>' +
         (tier.unlocked && !tier.claimed_at ? '<div class="button-grid one">' + button('CLAIM ' + tier.title, 'season_claim', { tier_id: tier.tier_id, season_key: tier.season_key || season.key }) + '</div>' : '');
     }).join('');
@@ -3641,7 +3641,7 @@
     var badge = window.MoonpetPlayOptions.menuBadge(menu);
     function row(entry) {
       var count = entry.kind === 'claim' || entry.count > 1 || entry.countLowerBound ? ' // ' + number(entry.count) + (entry.countLowerBound ? '+' : '') : '';
-      return '<div class="menu-status-entry" data-status-key="' + escapeHtml(entry.key) + '" data-status-kind="' + escapeHtml(entry.kind) + '"><div class="line"><strong>' + escapeHtml(entry.title) + count + '</strong></div><div class="menu-status-label">' + escapeHtml(entry.status) + '</div>' +
+      return '<div class="menu-status-entry" data-status-key="' + escapeHtml(entry.key) + '" data-status-kind="' + escapeHtml(entry.kind) + '"><div class="line"><strong>' + escapeHtml(entry.title) + count + '</strong></div><div class="menu-status-label">' + (entry.kind === 'complete' ? '✅ Completed // ' : '') + escapeHtml(entry.status) + '</div>' +
         (entry.cooldown ? '<div class="line muted">' + countdownMarkup(entry.cooldown, entry.kind === 'waiting' ? 'Claim window in ' : 'Reset in ') + '</div>' : '') +
         '<div class="button-grid one">' + routeButton('REVIEW ' + entry.title + count, entry, entry.detail) + '</div></div>';
     }

@@ -2519,6 +2519,8 @@ try {
     await page.reload();await page.waitForSelector('[data-panel="care"]');
     await page.locator('[data-panel="play-now"] [data-focus="daily-completion"]').click();
     assert.match(await page.locator('[data-panel="daily-completion"]').textContent(),/7\/7 COMPLETE/);
+    assert.match(await page.locator('[data-panel="daily-completion"]').textContent(),/✅ Completed/);
+    assert.equal(await page.locator('.mission-row > .line.complete').filter({hasText:'✅ Completed'}).count(),7);
     assert.match(await page.locator('[data-panel="missions"]').textContent(),/7\/7/);
     const missionNav = page.locator('#nav [data-screen="missions"]');
     assert.match(await missionNav.getAttribute('aria-label'), /1 saved reward ready to claim/);
@@ -2595,6 +2597,7 @@ try {
     assert.equal(actions.filter(action=>action==='finale_claim').length,claimsBeforeRefresh,'Refresh reads the saved result without replaying the claim');
     assert.equal(sqlite.prepare("SELECT COUNT(*) n FROM telegram_pet_events WHERE telegram_id=? AND event_type='season_finale'").get(currentUser).n,1);
     assert.match(await page.locator('[data-panel="achievements"]').textContent(),/UNLOCKED.*Finale Victor/);
+    assert.match(await page.locator('[data-panel="achievements"]').textContent(),/✅ Completed \/\/ \[UNLOCKED\] Finale Victor/);
     await page.locator('[data-screen="explore"]').click();
     await page.locator('[data-panel="play-now"] [data-focus="contracts"]').click();
     assert.equal(await page.locator('[data-panel="contracts"]').count(),1);
