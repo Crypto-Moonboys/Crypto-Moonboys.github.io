@@ -4631,6 +4631,19 @@
     "implementation_worker_sha256": "c221eec4c2271d4853bb5b6654cb591b90b95fb6ca77d1657e351e5e5a739a21",
     "time": "2026-10-21T12:00:00.000Z",
     "normalization": "Only challenge_token; all response values and seed timestamps retained",
-    "timing_kind": "Local SQLite and injected 10ms per D1 binding call; not production"
+    "timing_kind": "Local SQLite and injected 10ms per D1 binding call; not production",
+    "implementation_commit": "d0364591596373751ceb4e656dc995ca9d8f2c01",
+    "runtime_worker_blob": "6ad5ce0286d117728f489bab2b29a721d7bcf901",
+    "baseline_fixture_hashes": {
+      "scripts/moonpet-state-performance-fixture.mjs": "be02c0e1e5f871e3248bf75e2305dbcaf6e251a8f215b46ef6a3a43b2fa04c2f",
+      "scripts/moonpet-pr3-fixture.mjs": "34972392c31a26278129c6cb80354d99d33a22cea520e511a5c7b262e5e9867f",
+      "scripts/moonpet-audit-regression-fixture.mjs": "c80627894ebea8f88d2b1480b8293cccf1a61e213004d1d4bdb39c6449ec80fd"
+    },
+    "runtime": {
+      "node": "v24.14.0",
+      "platform": "win32",
+      "arch": "x64",
+      "sqlite": "3.51.2"
+    }
   }
 }
