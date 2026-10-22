@@ -79,6 +79,7 @@
   var radioRequestSubmittedDay = '';
   var noticesBusy = false;
   var noticeVisibilityChanged = false;
+  var seasonVisibilityChanged = false;
   var lastPassiveRefreshAt = 0;
   var reducedMotion = Boolean(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   var audioContext = null;
@@ -4207,7 +4208,7 @@
       else if (setStateSnapshot(acknowledged.state, requestGeneration)) render();
     } catch (_) {}
     noticesBusy = false;
-    if (noticeVisibilityChanged && !document.hidden) {
+    if (noticeVisibilityChanged && !document.hidden && !seasonRefreshBusy) {
       seasonRefreshPending = true;
       window.setTimeout(function () { refreshSeasonSnapshot(true); }, 0);
     }
@@ -4904,11 +4905,12 @@
     if (!force && monotonicNow < seasonRefreshRetryAt) return;
     if (busy || noticesBusy || seasonRefreshBusy || passiveRefreshInFlight || fastActionStateRefreshInFlight || cooldownRefreshInFlight || fullStateHydrationPromise && !fullStateHydrationPromise.background) return;
     seasonRefreshBusy = true;
+    seasonVisibilityChanged = false;
     try {
       var requestGeneration = beginStateRequest();
       var payload = activeScreen === 'home' && stateNeedsFullHydration(state) ? { mode: 'core' } : {};
       var data = await post('/telegram-pets/app/state', payload, { passive: true });
-      if (document.hidden) return;
+      if (document.hidden || seasonVisibilityChanged) return;
       if (!data.state || payload.mode !== 'core' && stateNeedsFullHydration(data.state)) return;
       if (!setStateSnapshot(data.state, requestGeneration)) return;
       seasonRefreshPending = false;
@@ -4922,6 +4924,10 @@
     } catch (_) {
     } finally {
       seasonRefreshBusy = false;
+      if (seasonVisibilityChanged) {
+        seasonRefreshPending = true;
+        if (!document.hidden) window.setTimeout(function () { refreshSeasonSnapshot(true); }, 0);
+      }
       // A failed or superseded full read stays queued, with bounded retries.
       if (seasonRefreshPending) seasonRefreshRetryAt = performance.now() + 30000;
     }
@@ -5568,6 +5574,7 @@
   document.addEventListener('visibilitychange', function () {
     if (document.hidden) {
       if (noticesBusy) noticeVisibilityChanged = true;
+      if (seasonRefreshBusy) seasonVisibilityChanged = true;
       window.clearTimeout(cooldownRefreshTimer); cooldownRefreshTimer = 0;
       window.clearTimeout(fastActionStateRefreshTimer); fastActionStateRefreshTimer = 0;
       window.clearTimeout(fullStateHydrationRetryTimer); fullStateHydrationRetryTimer = 0;
