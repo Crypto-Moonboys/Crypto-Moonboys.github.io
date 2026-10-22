@@ -24,3 +24,7 @@ The sandbox audit register lives in the independent sandbox PR. This change fixe
 Deployment: static frontend release only after GK approval. No Worker deployment, D1 migration or VPS restart. No production action performed. Hold merge.
 
 Copilot follow-up: a live poll already in flight could launch recovery after the tab became hidden. Visibility is now checked after the live response and after either recovery response; the last save is retained and foreground reconciliation remains pending. Eight regressions cover combat, activities, pet switching, ordinary live data and legacy full responses, including hiding during recovery itself.
+
+Latest-head review also reproduced a season response applying after visibility changed during its request. Core and full season responses now retain pending reconciliation without publishing hidden state or scheduling warmup. Both new tests fail before the fix and pass afterward; the passive suite now contains 71 passing tests.
+
+The same delayed-response reproduction confirmed care and cooldown reconciliation could publish hidden results. These reads now preserve pending/dirty work; discarded cooldown responses release their key for retry, and hidden care reconciliation does not recreate its cancelled timer. Both regressions fail before the fix; all 73 passive tests pass afterward.

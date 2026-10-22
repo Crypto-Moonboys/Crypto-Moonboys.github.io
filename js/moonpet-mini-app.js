@@ -2457,6 +2457,11 @@
     try {
       var requestGeneration = beginStateRequest();
       var data = await post('/telegram-pets/app/state', stateRefreshPayload(state, activeScreen));
+      if (document.hidden) {
+        seasonRefreshPending = true;
+        if (refreshKey && refreshKey === lastCooldownRefreshKey) lastCooldownRefreshKey = '';
+        return;
+      }
       if (!setStateSnapshot(data.state, requestGeneration)) return;
       var scrollTop = screen.scrollTop;
       render();
@@ -2552,6 +2557,7 @@
     fastActionStateDirty = true;
     window.clearTimeout(fastActionStateRefreshTimer);
     fastActionStateRefreshTimer = 0;
+    if (document.hidden) return;
     if (fastActionStateRefreshFailures >= FAST_ACTION_STATE_MAX_AUTO_RETRIES) {
       tell('CARE SYNC PAUSED. TAP REFRESH TO READ YOUR SAVE.', 'danger');
       return;
@@ -2580,6 +2586,7 @@
     try {
       var requestGeneration = beginStateRequest();
       var data = await post('/telegram-pets/app/state', stateRefreshPayload(state, activeScreen));
+      if (document.hidden) { seasonRefreshPending = true; return; }
       if (!data.state) throw new Error('CARE STATE UNAVAILABLE');
       if (!setStateSnapshot(data.state, requestGeneration)) return;
       fastActionStateDirty = false;
@@ -4876,6 +4883,7 @@
       var requestGeneration = beginStateRequest();
       var payload = activeScreen === 'home' && stateNeedsFullHydration(state) ? { mode: 'core' } : {};
       var data = await post('/telegram-pets/app/state', payload);
+      if (document.hidden) return;
       if (!data.state || payload.mode !== 'core' && stateNeedsFullHydration(data.state)) return;
       if (!setStateSnapshot(data.state, requestGeneration)) return;
       seasonRefreshPending = false;

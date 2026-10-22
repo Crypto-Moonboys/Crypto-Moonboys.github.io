@@ -747,3 +747,47 @@ for(const scenario of ['combat','activity','pet','live','legacy'])for(const phas
   assert.equal(f.ctx.state.pet.pet_xp,250);assert.equal(f.ctx.renders,1);assert.equal(f.ctx.seasonRefreshPending,false);
  });
 }
+
+for (const mode of ['core', 'full']) test('season '+mode+' response arriving while hidden waits for authoritative foreground reconciliation', async () => {
+  const f = context({ activeScreen: mode === 'core' ? 'home' : 'work' });
+  let warmups = 0;
+  f.ctx.queueBackgroundStateHydration = () => { warmups++; };
+  if (mode === 'core') f.ctx.state.hydration = { mode: 'core', full: false };
+  const saved = JSON.stringify(f.ctx.state), read = f.ctx.refreshSeasonSnapshot(true);
+  assert.equal(f.calls.length, 1);
+  f.ctx.document.hidden = true;
+  const stale = JSON.parse(saved); stale.pet.pet_xp = 999;
+  f.pending[0].resolve({ state: stale }); await read;
+  assert.equal(JSON.stringify(f.ctx.state), saved);
+  assert.equal(f.ctx.renders, 0); assert.equal(warmups, 0);
+  assert.equal(f.ctx.seasonRefreshPending, true); assert.equal(f.ctx.seasonRefreshBusy, false);
+  f.ctx.document.hidden = false;
+  const resume = f.ctx.refreshSeasonSnapshot(true);
+  assert.equal(f.calls.length, 2);
+  const fresh = JSON.parse(saved); fresh.pet.pet_xp = 250;
+  f.pending[1].resolve({ state: fresh }); await resume;
+  assert.equal(f.ctx.state.pet.pet_xp, 250); assert.equal(f.ctx.renders, 1);
+  assert.equal(warmups, mode === 'core' ? 1 : 0); assert.equal(f.ctx.seasonRefreshPending, false);
+});
+
+for (const kind of ['care', 'cooldown']) test(kind+' reconciliation arriving while hidden preserves work for foreground retry', async () => {
+  const f = context({ fastActionStateDirty: true, cooldownRefreshFailures: 0, cooldownRefreshTimer: 0, lastCooldownRefreshKey: '', serverNowMs: () => 10000 });
+  vm.runInContext(block('fastActionResponse'), f.ctx); vm.runInContext(block('cooldownRefresh'), f.ctx);
+  f.ctx.state.cooldowns.next_expires_at = '2026-10-06T00:00:00Z';
+  const saved = JSON.stringify(f.ctx.state);
+  const read = kind === 'care' ? f.ctx.refreshFastActionState() : f.ctx.refreshExpiredCooldownState();
+  f.ctx.document.hidden = true;
+  const stale = JSON.parse(saved); stale.pet.pet_xp = 999;
+  f.pending[0].resolve({ state: stale }); await read;
+  assert.equal(JSON.stringify(f.ctx.state), saved); assert.equal(f.ctx.renders, 0);
+  assert.equal(f.messages.length, 0); assert.equal(f.timers.length, 0);
+  assert.equal(f.ctx.seasonRefreshPending, true); assert.equal(f.ctx.fastActionStateDirty, true);
+  assert.equal(f.ctx.fastActionStateRefreshInFlight, false); assert.equal(f.ctx.cooldownRefreshInFlight, false);
+  f.ctx.document.hidden = false;
+  const resume = kind === 'care' ? f.ctx.refreshFastActionState() : f.ctx.refreshExpiredCooldownState();
+  assert.equal(f.calls.length, 2);
+  const fresh = JSON.parse(saved); fresh.pet.pet_xp = 250;
+  f.pending[1].resolve({ state: fresh }); await resume;
+  assert.equal(f.ctx.state.pet.pet_xp, 250); assert.equal(f.ctx.renders, 1);
+  if (kind === 'care') assert.equal(f.ctx.fastActionStateDirty, false);
+});
