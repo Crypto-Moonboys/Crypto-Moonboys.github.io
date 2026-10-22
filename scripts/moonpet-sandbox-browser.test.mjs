@@ -40,6 +40,17 @@ try{
    }finally{await f.close();}
   }
  }
+ const isolation=await harness.setup();
+ try{
+  await isolation.open();await isolation.started;await new Promise(resolve=>setTimeout(resolve,100));
+  const requests=isolation.requests.length,statements=isolation.f.db.statementCount;
+  for(const target of ['https://api.cryptomoonboys.com','http://127.0.0.1:1'])await isolation.page.evaluate(async base=>{
+    try{await fetch(base+'/telegram-pets/app/state',{method:'POST',body:'{}'});throw Error('foreign origin unexpectedly served');}
+    catch(error){if(error.message==='foreign origin unexpectedly served')throw error;}
+  },target);
+  assert.equal(isolation.requests.length,requests);assert.equal(isolation.f.db.statementCount,statements);
+  assert.deepEqual(isolation.errors,['sandbox_nonlocal_api_origin:https://api.cryptomoonboys.com','sandbox_nonlocal_api_origin:http://127.0.0.1:1']);
+ }finally{await isolation.close();}
  assert.deepEqual(harness.blockedWorkerRequests,[],'these read-only journeys require no outbound Worker requests');
  if(process.env.MOONPET_AUDIT_OUTPUT)await fs.writeFile(process.env.MOONPET_AUDIT_OUTPUT,JSON.stringify({model:'signed Worker/SQLite; no production traffic; local transport 20ms',results},null,2)+'\n');
 }finally{await harness.close();}

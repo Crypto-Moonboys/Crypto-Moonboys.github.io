@@ -12,7 +12,9 @@ for(const longSession of [false,true])test('1,000 signed replays: '+(longSession
   const action={action:'feed',request_id:'sandbox-fixed-feed'};
   const first=await httpAction(f,action);assert.equal(first.body.result.accepted,true);
   // Care naturally decays as the clock advances. Compare permanent progression exactly.
-  const progression=()=>{const save=savedProgress(f);if(!longSession)return save;for(const table of ['telegram_pet_instances','telegram_pet_profiles'])save[table]=save[table].map(row=>Object.fromEntries(Object.entries(row).filter(([key])=>!['hunger','energy','happiness','cleanliness','health','last_decay_at','updated_at'].includes(key))));return save;};
+  const progression=()=>{const save=savedProgress(f);if(!longSession)return save;
+   for(const user of save.telegram_users){assert.equal(user.updated_at,new Date().toISOString().replace('T',' ').slice(0,19));user.updated_at='<verified-auth-activity-time>';}
+   for(const table of ['telegram_pet_instances','telegram_pet_profiles'])save[table]=save[table].map(row=>Object.fromEntries(Object.entries(row).filter(([key])=>!['hunger','energy','happiness','cleanliness','health','last_decay_at','updated_at'].includes(key))));return save;};
   const before=progression(), pages=f.sql.prepare('PRAGMA page_count').get().page_count;
   const started=performance.now();let duplicates=0,throttled=0;
   for(let batch=0;batch<200;batch++){

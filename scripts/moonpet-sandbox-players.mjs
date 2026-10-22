@@ -18,6 +18,6 @@ for(const evolution of evolutions) sandboxPlayers['stage-'+evolution.stage]={pet
  for(const prior of evolutions.filter(e=>e.stage>0&&e.stage<=evolution.stage))f.sql.prepare('INSERT INTO telegram_pet_evolutions_by_pet(pet_id,telegram_id,evolution_id,stage,unlock_event_key) VALUES(?,?,?,?,?)').run(id,f.owner,prior.evolution_id,prior.stage,'sandbox-evolution-'+prior.stage);
 }};
 export function savedProgress(f) {
-  const tables=['telegram_pet_instances','telegram_pet_profiles','telegram_pet_active_slots','telegram_pet_season_slots','telegram_pet_growth_marks','telegram_pet_weekly_crests','telegram_pet_reward_claims','telegram_pet_daily_journey_receipts','telegram_pet_weekly_journey_receipts','telegram_pet_material_balances'];
-  return Object.fromEntries(tables.map(table=>[table,f.sql.prepare('SELECT * FROM '+table+' ORDER BY 1').all()]));
+  const tables=f.sql.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name").all().map(row=>row.name);
+  return Object.fromEntries(tables.map(table=>[table,f.sql.prepare('SELECT * FROM '+table+' ORDER BY 1').all().sort((a,b)=>JSON.stringify(a).localeCompare(JSON.stringify(b)))]));
 }
