@@ -50,14 +50,19 @@ class Statement {
   constructor(sql, args = []) { this.sql = sql; this.args = args; }
   bind(...args) { return new Statement(this.sql, args); }
   async first() { return sqlite.prepare(this.sql).get(...this.args) || null; }
-  async all() {
+  readFailure() {
     if (failRelicRead === 'resolved' && this.sql.includes('SELECT relic_id,')) return {success:false,results:[]};
     if (failLiveStateRead === 'resolved' && this.sql.startsWith('SELECT chain_key, step_index')) return {success:false,results:[]};
     if (failRelicRead && this.sql.includes('SELECT relic_id,')) throw Error('isolated_relic_read_failure');
     if (failLiveStateRead && this.sql.startsWith('SELECT chain_key, step_index')) throw Error('isolated_saved_state_read_failure');
-    return { results: sqlite.prepare(this.sql).all(...this.args) };
+    return null;
+  }
+  async all() {
+    return this.readFailure() || { results: sqlite.prepare(this.sql).all(...this.args) };
   }
   exec() {
+    const readFailure = this.readFailure();
+    if (readFailure) return readFailure;
     if (failDailyEnding && this.sql.includes('INSERT OR IGNORE INTO telegram_pet_run_analytics') && this.args.some((value) => String(value).endsWith(':alley_king:win'))) throw Error('interrupted_daily_ending');
     if (failActivitySettlement && this.sql.includes('UPDATE telegram_pet_activity_sessions') && this.sql.includes('SET metadata = ?')) {
       failActivitySettlement = false; throw Error('interrupted_activity_settlement');
