@@ -2301,6 +2301,7 @@
         var data = await post('/telegram-pets/app/state', background ? {} : stateRefreshPayload(state, reason || activeScreen),
           warmupController ? { signal: warmupController.signal, background: true } : undefined);
         if (!stateRequestGate.isCurrent(requestGeneration)) return null;
+        if (document.hidden) { seasonRefreshPending = true; return null; }
         if (owner !== hydrationOwnerKey()) {
           petActionRefreshRequired = true;
           scheduleFastActionStateRefresh(0);
@@ -2329,6 +2330,7 @@
         fullStateHydrationFailures += 1;
         var retryAfter = Math.max(0, Number(error && error.retryAfterSeconds || 0) * 1000);
         fullStateHydrationRetryDelayMs = retryAfter || Math.min(8000, 750 * Math.pow(2, Math.max(0, fullStateHydrationFailures - 1)));
+        if (document.hidden) { seasonRefreshPending = true; return null; }
         if (!background || activeScreen !== 'home') tell(error.message || 'MODULE STATE FAILED', 'danger');
         render();
         return null;
@@ -2339,7 +2341,7 @@
           var retryableScreen = stateNeedsScreenHydration(state, activeScreen);
           if (retryableScreen && fullStateHydrationFailures < FULL_STATE_HYDRATION_MAX_AUTO_RETRIES) {
             queueActiveScreenHydration(fullStateHydrationRetryDelayMs);
-          } else if (retryableScreen) {
+          } else if (retryableScreen && !document.hidden) {
             // The catch rendered while this request was still in flight. Show
             // the manual retry only after that request has finished and stopped.
             render();

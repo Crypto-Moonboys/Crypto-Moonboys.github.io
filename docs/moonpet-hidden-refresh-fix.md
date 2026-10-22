@@ -28,3 +28,7 @@ Copilot follow-up: a live poll already in flight could launch recovery after the
 Latest-head review also reproduced a season response applying after visibility changed during its request. Core and full season responses now retain pending reconciliation without publishing hidden state or scheduling warmup. Both new tests fail before the fix and pass afterward; the passive suite now contains 71 passing tests.
 
 The same delayed-response reproduction confirmed care and cooldown reconciliation could publish hidden results. These reads now preserve pending/dirty work; discarded cooldown responses release their key for retry, and hidden care reconciliation does not recreate its cancelled timer. Both regressions fail before the fix; all 73 passive tests pass afterward.
+
+A subsequent review reproduced foreground module hydration rendering and acknowledging unseen notices after hide. Successful and failed hidden results now retain foreground reconciliation, and exhausted retries do not render a hidden manual-retry panel. Four regressions cover success/failure with fresh/exhausted retry budgets, unchanged saved state, no notice acknowledgement and successful visible manual retry; all four fail before the fix.
+
+Desktop and mobile Chromium also hold a signed foreground Work response until hidden, verify zero screen rebuilds and notice acknowledgements, then complete authoritative foreground loading. All 77 passive tests, 39 refresh-audit tests, player-loop/API compatibility tests and the extended signed browser suite pass.

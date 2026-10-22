@@ -23,7 +23,7 @@ const launch={headless:true,args:['--no-sandbox','--disable-gpu','--disable-dev-
 if(process.env.CHROMIUM_EXECUTABLE_PATH)launch.executablePath=process.env.CHROMIUM_EXECUTABLE_PATH;
 const browser=await chromium.launch(launch), results=[];
 let account=980400;
-async function setup({pets=1,recovery=false,website=false,delayMs=0,clock=false,telegramDelay=0,websiteDelay=0,viewport={width:360,height:640}}={}){
+async function setup({pets=1,recovery=false,website=false,delayMs=0,clock=false,blockAllFull=false,telegramDelay=0,websiteDelay=0,viewport={width:360,height:640}}={}){
   const f=await performanceFixture({pets,delayMs,owner:String(++account)});
   if(recovery)seedRecoveryEvidence(f);
   const token='123456:pr7-local-fixture';
@@ -55,7 +55,7 @@ async function setup({pets=1,recovery=false,website=false,delayMs=0,clock=false,
       await pause(benchmark?100:20);
       const response=await f.worker.fetch(new Request(origin+url.pathname,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}),{DB:f.db,TELEGRAM_BOT_TOKEN:token});
       const json=await response.json();
-      if(isFull&&firstFull){firstFull=false;fullValue=json;fullStarted();if(blockFull)await fullGate;}
+      if(isFull){const first=firstFull;if(first){firstFull=false;fullValue=json;fullStarted();}if(blockFull&&(first||blockAllFull))await fullGate;}
       await route.fulfill({status:response.status,json}).catch(()=>{});
       return;
       }finally{inFlight.delete(pending);finish();}
@@ -144,6 +144,28 @@ try {
       const warmed=await(await rewarmed).json();assert.equal(warmed.state.hydration.full,true,'foreground core restarts the cancelled Home warmup');
       await hidden.care('clean');assert.deepEqual(hidden.errors,[]);
     }finally{await hidden.close();}
+    const hiddenModule=await setup({viewport,blockAllFull:true});
+    try{
+      hiddenModule.block();await hiddenModule.open();await hiddenModule.started;
+      const moduleRequest=hiddenModule.page.waitForRequest(r=>r.url().endsWith('/app/state')&&!r.postDataJSON().mode);
+      await hiddenModule.page.locator('[data-screen="work"]').click();await moduleRequest;
+      await hiddenModule.page.locator('[data-panel="module-loading"]').waitFor();
+      await hiddenModule.page.evaluate(()=>{
+        window.hiddenModuleMutations=0;
+        window.hiddenModuleObserver=new MutationObserver(records=>window.hiddenModuleMutations+=records.length);
+        window.hiddenModuleObserver.observe(document.getElementById('screen'),{childList:true});
+        Object.defineProperty(document,'hidden',{configurable:true,value:true});document.dispatchEvent(new Event('visibilitychange'));
+      });
+      const completed=hiddenModule.page.waitForResponse(r=>r.url().endsWith('/app/state')&&!r.request().postDataJSON().mode);
+      hiddenModule.release();await(await completed).finished();await pause(100);
+      assert.equal(await hiddenModule.page.evaluate(()=>window.hiddenModuleMutations),0,'hidden foreground module response must not rebuild controls');
+      assert.equal(await hiddenModule.page.locator('[data-panel="module-loading"]').count(),1);
+      assert.equal(hiddenModule.requests.filter(r=>r.body.action==='guidance_ack').length,0,'hidden module cannot acknowledge unseen notices');
+      const resumed=hiddenModule.page.waitForResponse(r=>r.url().endsWith('/app/state'));
+      await hiddenModule.page.evaluate(()=>{window.hiddenModuleObserver.disconnect();Object.defineProperty(document,'hidden',{configurable:true,value:false});document.dispatchEvent(new Event('visibilitychange'));});
+      await(await resumed).finished();await hiddenModule.page.locator('[data-panel="timed-activity"]').waitFor();
+      assert.deepEqual(hiddenModule.errors,[]);
+    }finally{await hiddenModule.close();}
     const delayedTelegram=await setup({website:true,telegramDelay:150,websiteDelay:8000,viewport});
     try{
       await delayedTelegram.open();

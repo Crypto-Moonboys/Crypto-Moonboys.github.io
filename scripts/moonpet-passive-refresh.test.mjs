@@ -791,3 +791,26 @@ for (const kind of ['care', 'cooldown']) test(kind+' reconciliation arriving whi
   assert.equal(f.ctx.state.pet.pet_xp, 250); assert.equal(f.ctx.renders, 1);
   if (kind === 'care') assert.equal(f.ctx.fastActionStateDirty, false);
 });
+
+for (const outcome of ['success', 'failure']) for (const failures of [0, 2]) test('hidden foreground module '+outcome+' after '+failures+' failures does not render or acknowledge notices', async () => {
+  let notices = 0;
+  const f = context({ activeScreen: 'work', initData: 'signed-fixture', fullStateHydrationRetryTimer: 0,
+    fullStateHydrationFailures: failures, fullStateHydrationRetryDelayMs: 0, FULL_STATE_HYDRATION_MAX_AUTO_RETRIES: 3,
+    words: value => value, applyRequestedFocus: () => {}, showPendingNotices: async () => { notices++; } });
+  vm.runInContext(block('coreStateHydration'), f.ctx);
+  f.ctx.state.hydration = { mode: 'core', full: false };
+  const saved = JSON.stringify(f.ctx.state), read = f.ctx.hydrateFullState('work');
+  assert.equal(f.calls.length, 1); f.messages.length = 0;
+  f.ctx.document.hidden = true;
+  if (outcome === 'failure') f.pending[0].reject(Error('offline'));
+  else f.pending[0].resolve({ state: base() });
+  await read;
+  assert.equal(JSON.stringify(f.ctx.state), saved); assert.equal(f.ctx.renders, 0);
+  assert.equal(notices, 0); assert.equal(f.messages.length, 0); assert.equal(f.timers.length, 0);
+  assert.equal(f.ctx.fullStateHydrationPromise, null); assert.equal(f.ctx.seasonRefreshPending, true);
+  f.ctx.document.hidden = false;
+  const retry = f.ctx.hydrateFullState('work', { manual: true });
+  assert.equal(f.calls.length, 2);
+  f.pending[1].resolve({ state: base() }); await retry;
+  assert.equal(f.ctx.state.hydration.full, true); assert.equal(f.ctx.renders, 1); assert.equal(notices, 1);
+});
