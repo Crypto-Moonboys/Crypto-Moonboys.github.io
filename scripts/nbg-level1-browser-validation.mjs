@@ -1266,17 +1266,16 @@ for (const mechanicMode of [
       window.addEventListener('nbg-enemy-defeated',event => {
         if(event.detail?.type==='balloon') window.__pr4DrawEvidence.defeats.push({...event.detail});
       });
-      const canvas=document.getElementById('game');
-      const context=canvas.getContext('2d');
-      const original=context.drawImage;
-      context.drawImage=function(image,...args){
+      const contextPrototype=CanvasRenderingContext2D.prototype;
+      const original=contextPrototype.drawImage;
+      contextPrototype.drawImage=function(image,...args){
         const state=window.NBGLevel1State;
         if(image===state.objectImages.speedBox) window.__pr4DrawEvidence.speedBoxDraws++;
         if(args.length===8 && image===state.objectImages.botFire){
           const sourceW=(image.naturalWidth||image.width)/4;
           const sourceH=(image.naturalHeight||image.height)/4;
           window.__pr4DrawEvidence.flameFrames.push(Math.round(args[0]/sourceW)+Math.round(args[1]/sourceH)*4);
-          window.__pr4DrawEvidence.flameFacings.push(context.getTransform().a<0?-1:1);
+          window.__pr4DrawEvidence.flameFacings.push(this.getTransform().a<0?-1:1);
         }
         if(args.length===8 && image===state.objectImages.balloonRelease){
           const sourceW=(image.naturalWidth||image.width)/4;
