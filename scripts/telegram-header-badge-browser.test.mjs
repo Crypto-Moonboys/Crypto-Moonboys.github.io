@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
-import { readFile } from 'node:fs/promises';
+import { readFile, mkdir } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { test } from 'node:test';
 import { chromium } from 'playwright';
@@ -23,10 +24,32 @@ function session(id, name) {
     telegram_auth: { id, first_name: name, auth_date: now, hash: 's1_' + (id === ID ? 'A' : 'B').repeat(43), expires_at: now + 300 } };
 }
 
+const screenshots = path.join(tmpdir(), 'telegram-nav-icon-verification');
+await mkdir(screenshots, { recursive: true });
+
 const badge = page => page.locator('#moonboys-global-status-badge');
 async function expectBadge(page, text) {
   await page.waitForFunction(expected => (document.getElementById('moonboys-global-status-badge')?.textContent || '').includes(expected), text, { timeout: 10000 })
     .catch(async error => { throw new Error('badge "' + await badge(page).textContent().catch(() => '') + '" never showed "' + text + '"\n' + error.message); });
+  const icon = badge(page).locator('.csp-telegram-icon');
+  await icon.evaluate(image => image.decode());
+  assert.equal(await icon.getAttribute('src'), '/art/telegram6uty.png');
+  assert.equal(await icon.isVisible(), true);
+  const style = await badge(page).locator('.csp-badge').evaluate(el => {
+    const css = getComputedStyle(el);
+    const image = el.querySelector('img');
+    const rect = image.getBoundingClientRect();
+    return { background: css.backgroundColor, border: css.borderWidth, shadow: css.boxShadow,
+      animation: getComputedStyle(image).animationName, width: el.getBoundingClientRect().width,
+      fits: rect.left >= 0 && rect.right <= innerWidth };
+  });
+  assert.equal(style.background, 'rgba(0, 0, 0, 0)', 'no login panel background');
+  assert.equal(style.border, '0px', 'no login panel border');
+  assert.equal(style.shadow, 'none', 'no login panel shadow');
+  assert.ok(style.width >= 44, 'icon retains an accessible touch target');
+  assert.equal(style.fits, true, 'icon stays inside the viewport');
+  assert.equal(style.animation, text === 'Log in with Telegram' ? 'cspTelegramLoginPulse' : 'none');
+
 }
 
 for (const [name, viewport] of [['desktop', { width: 1440, height: 900 }], ['mobile', { width: 390, height: 844 }]]) {
@@ -76,6 +99,22 @@ for (const [name, viewport] of [['desktop', { width: 1440, height: 900 }], ['mob
       await page.goto(SITE + '/my-moonboy.html', { waitUntil: 'domcontentloaded' });
       await page.evaluate(() => window.MOONBOYS_IDENTITY.ready);
       await expectBadge(page, 'Log in with Telegram');
+      await badge(page).screenshot({ path: path.join(screenshots, name + '-guest.png') });
+      await page.locator('#site-header').screenshot({ path: path.join(screenshots, name + '-header.png') });
+      const scales = await badge(page).locator('img').evaluate(image => {
+        const animation = image.getAnimations()[0];
+        animation.pause();
+        animation.currentTime = 0;
+        const small = getComputedStyle(image).transform;
+        animation.currentTime = 900;
+        const large = getComputedStyle(image).transform;
+        animation.play();
+        return [small, large];
+      });
+      assert.notEqual(scales[0], scales[1], 'logged-out icon grows and shrinks');
+      await page.emulateMedia({ reducedMotion: 'reduce' });
+      assert.equal(await badge(page).locator('img').evaluate(image => getComputedStyle(image).animationName), 'none');
+      await page.emulateMedia({ reducedMotion: 'no-preference' });
       assert.equal(await page.evaluate(() => window.MOONBOYS_IDENTITY.getIdentityTier()), 'guest');
 
       const loginButton = page.locator('#mm-gate [data-telegram-login]');
@@ -118,6 +157,7 @@ for (const [name, viewport] of [['desktop', { width: 1440, height: 900 }], ['mob
       release();
       hold = null;
       await expectBadge(page, 'Telegram Connected');
+      await badge(page).screenshot({ path: path.join(screenshots, name + '-connected.png') });
       const restored = await page.evaluate(() => ({ tier: window.MOONBOYS_IDENTITY.getIdentityTier(), linked: window.MOONBOYS_IDENTITY.isTelegramLinked() }));
       assert.deepEqual(restored, { tier: 'telegram_linked', linked: true });
       assert.equal((await badge(page).textContent()).includes('Log in with Telegram'), false);
