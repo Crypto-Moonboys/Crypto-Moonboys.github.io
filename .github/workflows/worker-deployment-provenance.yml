@@ -95,20 +95,6 @@ jobs:
         run: |
           echo "Static-only PR; unchanged deployment contract"
 
-
-      - name: Classify safe static PR changes
-        id: fast_edit
-        if: github.event_name == 'pull_request'
-        env:
-          GITHUB_EVENT_NAME: ${{ github.event_name }}
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
-          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-        run: node scripts/fast-edit-scope.mjs
-
-      - name: Fast Edit acknowledged
-        if: steps.fast_edit.outputs.fast_edit == 'true'
-        run: |
-          echo "Static-only PR; unchanged deployment contract"
       - name: Execute Windows cmd.exe quoting regression
         if: steps.fast_edit.outputs.fast_edit != 'true'
         run: node scripts/worker-deployment-windows.test.mjs
