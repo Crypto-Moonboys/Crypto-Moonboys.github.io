@@ -92,10 +92,24 @@ assert.ok(normalGraphWiki.includes("github.event_name != 'workflow_dispatch'") &
   dispatchedGraphWiki.includes('BASE_SHA: ${{ steps.graph_dispatch.outputs.base_sha }}') &&
   dispatchedGraphWiki.includes('HEAD_SHA: ${{ github.sha }}'),
   'graph Wiki verification must retain normal authority and precise dispatch heads');
+// Fast Edit owns its own classifier and unit tests; they must stay out of the
+// five domain jobs so the domain runner remains the only place listing suites.
+const ciJobsStart = workflow.indexOf('\n  ci-wiki:');
+assert.ok(ciJobsStart > 0, 'CI must retain its mandatory wiki domain job');
+const fastEditJob = workflow.slice(0, ciJobsStart);
+assert.match(fastEditJob, /run: node scripts\/fast-edit-scope\.mjs/u,
+  'Fast Edit classifier must execute in its dedicated prerequisite job');
+assert.match(fastEditJob, /run: node --test scripts\/fast-edit-scope\.test\.mjs/u,
+  'Fast Edit safety tests must execute before domain jobs');
+const domainOnlyRunLines = workflow.slice(ciJobsStart)
+  .split(/\r?\n/u)
+  .map(line => line.trim())
+  .filter(line => line.startsWith('run:'));
 assert.equal(
-  ciRunLines.some((line) => /^run:\s+npm run test:/.test(line) || /^run:\s+node scripts\/(?!(?:ci-change-scope|resolve-canon-prose-approval)\.mjs\b)/.test(line)),
+  domainOnlyRunLines.some(line => /^run:\s+npm run test:/.test(line) ||
+    /^run:\s+node scripts\/(?!(?:ci-change-scope|resolve-canon-prose-approval)\.mjs\b)/.test(line)),
   false,
-  'workflow must not inline individual test scripts in domain jobs; shared scope and approval setup are allowed',
+  'domain jobs must not inline individual tests or the Fast Edit classifier',
 );
 
 for (const group of ['wiki', 'worker-api', 'arcade', 'wax', 'visual']) {
