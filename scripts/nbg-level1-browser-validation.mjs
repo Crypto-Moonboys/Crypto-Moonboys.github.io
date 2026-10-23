@@ -1310,7 +1310,7 @@ for (const mechanicMode of [
       const state=window.NBGLevel1State;
       const box=state.speedBoxes[0];
       state.player.x=box.x;
-      state.player.y=box.y;
+      state.player.y=214-state.player.h;
       state.player.vx=0;
     });
     await mechanicPage.clock.runFor(120);
