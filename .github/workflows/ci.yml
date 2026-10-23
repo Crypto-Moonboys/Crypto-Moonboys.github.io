@@ -40,6 +40,12 @@ jobs:
           BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before || '' }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: node scripts/fast-edit-scope.mjs
+      - name: Fast Edit whitespace check
+        if: steps.detect.outputs.fast_edit == 'true'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: git diff --check "$BASE_SHA" "$HEAD_SHA"
 
   ci-wiki:
     needs: [fast-edit]
