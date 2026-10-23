@@ -1317,7 +1317,7 @@ for (const mechanicMode of [
         pointerId:7,pointerType:'touch',isPrimary:true,bubbles:true
       });
     } else await mechanicPage.keyboard.down('ArrowRight');
-    await mechanicPage.clock.runFor(700);
+    await mechanicPage.clock.runFor(350);
     const boosted=await mechanicPage.evaluate(() => ({
       vx:window.NBGLevel1State.player.vx,
       draws:window.__pr4DrawEvidence.speedBoxDraws,
