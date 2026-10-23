@@ -138,7 +138,7 @@ const expectedAnimations = {
   idle: { spriteSheet: 'player/animations/idle.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 6, frames: 6, columns: 3, frameMs: 145 },
   run: { spriteSheet: 'player/animations/run.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 12, frames: 6, columns: 3, frameMs: 88 },
   jump: { spriteSheet: 'player/animations/jump.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 17, frames: 6, columns: 3, frameMs: 145 },
-  backflip: { spriteSheet: 'player/animations/NBG Runner Final-backflip.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 86, renderHeight: 86, renderOffsetY: 12, frames: 16, columns: 4, frameMs: 42 },
+  backflip: { spriteSheet: 'player/animations/NBG Runner Final-backflip.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 12, frames: 16, columns: 4, frameMs: 42 },
   fall: { spriteSheet: 'player/animations/fall.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 15, frames: 6, columns: 3, frameMs: 145 },
   spray: { spriteSheet: 'player/NBG Runner Final-spray.png', sourceFrameWidth: 256, sourceFrameHeight: 256, renderWidth: 164, renderHeight: 164, renderOffsetY: 45, frames: 25, columns: 5, frameMs: 8 },
   hurt: { spriteSheet: 'player/animations/hurt.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 1, frames: 6, columns: 3, frameMs: 120 },
@@ -924,8 +924,8 @@ for (const flipCase of [
       flipCase.label + ' must render official backflip frames 0-15 once in row-major order');
     assert.ok(evidence.draws.every(draw =>
       draw.sourceWidth === 128 && draw.sourceHeight === 128 &&
-      draw.renderWidth === 86 && draw.renderHeight === 86),
-    flipCase.label + ' must crop one 128px cell and render one stable square frame');
+      draw.renderWidth === 72 && draw.renderHeight === 86),
+    flipCase.label + ' must crop one 128px cell and render with the established player footprint');
     assert.ok(evidence.draws.every(draw => draw.flipped === (flipCase.facing < 0)),
       flipCase.label + ' must preserve movement facing through the full flip');
     assert.ok(['jump', 'fall'].includes(evidence.anim) || evidence.grounded,
