@@ -7,11 +7,11 @@ This mode removes unrelated heavyweight CI work for **verified, low-risk static 
 A pull request or direct push to `main` can use Fast Edit Mode only if **all** changed files qualify:
 
 - Local JPG/PNG/WebP/GIF/AVIF artwork immediately within `art/`, `img/`, or `assets/` (not nested game-asset subdirectories; maximum 8 MiB each).
-- Presentation CSS immediately under `css/` (maximum 2 MiB per file), excluding game, faction, MoonPet, My Moonboy and wiki runtime migration styles.
+- Presentation CSS immediately under `css/` without imports or remote resources (maximum 2 MiB per file), excluding game, faction, MoonPet, My Moonboy and wiki runtime migration styles.
 - Existing **top-level** `*.html` pages changed exclusively by plain text in simple heading/paragraph/label elements, or by inert local image tags using a strict attribute allowlist. HTML script/style/template and all other markup must remain byte-identical (maximum 160 changed lines per HTML file).
 - A total of at most 15 changed files.
 
-Top-level admin, MoonPet, builder, canon-publishing or other explicitly protected pages are excluded even when only their literal copy changes. The classifier reads the actual Git base and head commits. It fails closed on deletions, renames, new HTML pages, unknown history, workflow/config/test changes, script edits, `wiki/**`, game pages, authentication, Worker, D1, canon or anything else not listed. Mixed PRs use **full CI**. An unsafe image tag (including event-handler attributes or remote image URLs) cannot qualify.
+Top-level admin, MoonPet, builder, canon-publishing or other explicitly protected pages are excluded even when only their literal copy changes. The CI workflows load the classifier and its authoritative unit tests from the **protected base commit** (`BASE_SHA`), never from PR-modified source. The new classifier is not eligible for the fast path until it already exists in the protected base; bootstrap and workflow edits therefore take full CI. All domain jobs explicitly fail when the classifier prerequisite fails, instead of silently skipping a required status. The classifier reads the actual Git base and head commits. It fails closed on deletions, renames, new HTML pages, unknown history, workflow/config/test changes, script edits, `wiki/**`, game pages, authentication, Worker, D1, canon or anything else not listed. Mixed PRs use **full CI**. An unsafe image tag (including event-handler attributes or remote image URLs) cannot qualify.
 
 Examples:
 - `art/New%20Banner.jpg`, `css/wiki.css`: fast.
