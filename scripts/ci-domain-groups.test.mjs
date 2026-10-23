@@ -106,8 +106,20 @@ assert.ok(
 );
 assert.ok(
   fastEditJob.includes('echo "fast_edit=false" >> "$GITHUB_OUTPUT"') &&
-  fastEditJob.includes('node --test scripts/fast-edit-scope.test.mjs'),
-  'bootstrap PR must fall back to full CI and validate candidate tests separately',
+  !fastEditJob.includes('node --test scripts/fast-edit-scope.test.mjs'),
+  'bootstrap PR must fail closed and never execute PR-controlled candidate tests on its trusted gate runner',
+);
+const wikiCandidate = getStepBlock(workflow, 'Validate candidate Fast Edit classifier outside gate runner');
+assert.ok(
+  wikiCandidate.includes('node --test scripts/fast-edit-scope.test.mjs') &&
+  wikiCandidate.includes("needs.fast-edit.outputs.fast_edit != 'true'") &&
+  wikiCandidate.includes("steps.wiki_changes.outputs.should_run == 'true'"),
+  'candidate classifier tests must run only in the separate full Wiki CI lane',
+);
+assert.ok(
+  fastEditJob.includes("PR_BASE_REF: ${{ github.event.pull_request.base.ref || '' }}") &&
+  fastEditJob.includes('git show "$BASE_SHA:scripts/fast-edit-scope.mjs"'),
+  'trusted PR target and protected classifier must be provided before classification',
 );
 assert.ok(
   fastEditJob.includes('github.event.pull_request.base.sha || github.event.before') &&
@@ -128,6 +140,7 @@ for (const filename of [
   const audit = await fs.readFile(path.join(ROOT, filename), 'utf8');
   assert.ok(audit.includes('git show "$BASE_SHA:scripts/fast-edit-scope.mjs"') &&
     audit.includes('node "$RUNNER_TEMP/trusted-fast-edit-scope.mjs"') &&
+    audit.includes("github.event.pull_request.base.ref == 'main'") &&
     !audit.includes('run: node scripts/fast-edit-scope.mjs'),
     filename + ' must never execute a PR-provided Fast Edit classifier');
 }
