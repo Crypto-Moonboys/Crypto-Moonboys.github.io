@@ -1297,7 +1297,6 @@ for (const mechanicMode of [
     else await mechanicPage.keyboard.press('KeyD');
     await mechanicPage.waitForFunction(() => window.NBGLevel1State.running === true);
     await mechanicPage.waitForFunction(() => window.__pr4DrawEvidence.speedBoxDraws>0);
-    await mechanicPage.clock.pauseAt(Date.now()+100);
 
     // Collect the in-world box and prove fixed speed, expiry and reset.
     assert.ok(await mechanicPage.evaluate(() => window.__pr4DrawEvidence.speedBoxDraws)>0,
@@ -1309,7 +1308,8 @@ for (const mechanicMode of [
       state.player.y=214-state.player.h;
       state.player.vx=0;
     });
-    await mechanicPage.clock.runFor(120);
+    await mechanicPage.waitForFunction(() => window.NBGLevel1State.speedBoostActive === true);
+    await mechanicPage.clock.pauseAt(Date.now()+100);
     assert.equal(await mechanicPage.evaluate(() => window.NBGLevel1State.speedBoostActive),true,
       mechanicMode.label+' speed box must activate in live gameplay');
     await mechanicPage.keyboard.down('ArrowRight');
