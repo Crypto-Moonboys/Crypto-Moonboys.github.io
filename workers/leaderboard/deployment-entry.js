@@ -34,7 +34,7 @@ const leaderboardWorker = {
         database_configured: Boolean(env.DB),
         leaderboard_store_configured: Boolean(env.LEADERBOARD),
         nbg_london_ranked_scoring_available: typeof NBG_LONDON_REPLAY_VERIFIER === 'function',
-        nbg_london_course_version_supported: 3, // Worker-first gate for Pages v3 collision rollout.
+        nbg_london_course_version_supported: 4, // Worker-first gate for the single-rat v4 rollout.
         nbg_london_prize_payouts_available: NBG_LONDON_PRIZES_RELEASED,
       }), {
         headers: {

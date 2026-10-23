@@ -126,9 +126,14 @@ const alignedTriple = await verifyNbgLondonReplay({
   ...base, replay: { ...tripleReplay, course_version: 3 }, debug: true
 });
 assert.equal(alignedTriple.debug?.courseVersion, 3,
-  'revision 3 must select aligned combat geometry without changing replay bytes');
+  'revision 3 must remain verifiable with its original recurring spawn rules');
+const singleRatTriple = await verifyNbgLondonReplay({
+  ...base, replay: { ...tripleReplay, course_version: 4 }, debug: true
+});
+assert.equal(singleRatTriple.debug?.courseVersion, 4,
+  'revision 4 must select the single start-area parachute rule');
 assert.equal((await verifyNbgLondonReplay({
-  ...base, replay: { ...tripleReplay, course_version: 4 }
+  ...base, replay: { ...tripleReplay, course_version: 5 }
 })).valid, false, 'unapproved course revisions must fail rather than silently downgrade');
 // Cached v1 replays omit the property completely. An explicitly present
 // null/undefined/invalid version is not equivalent and must be rejected.
@@ -146,11 +151,30 @@ for (const courseVersion of [null, undefined, 0, 1, '2', false, {}, []]) {
 assert.equal(oldDouble.debug?.courseVersion, 1,
   'omitting course_version retains the original legacy course');
 
-// Exercise an entire physically completed revision-3 course (with more
-// enemies, all eighteen sections of secrets and faster parachute encounters),
+// Revision 4 deterministically creates one visible start-area rat and never
+// replenishes it after the old recurring timer window has elapsed.
+let maxParachuteSpawns = 0;
+let firstParachuteX = null;
+await verifyNbgLondonReplay({
+  runId:id,
+  replay:{ ...frameStream(Array.from({length:420},()=>[33,33,0])), course_version:4 },
+  startedAtMs:1000000, now:1000000+420*33, debug:true,
+  testInputOverride(state) {
+    maxParachuteSpawns=Math.max(maxParachuteSpawns,state.parachuteSpawnCount);
+    if(firstParachuteX===null && state.parachuteRatX!==null) firstParachuteX=state.parachuteRatX;
+    return 0;
+  }
+});
+assert.equal(maxParachuteSpawns,1,
+  'authoritative v4 replay must spawn exactly one parachute rat in 13+ seconds');
+assert.ok(firstParachuteX>=350 && firstParachuteX<=430,
+  'authoritative v4 rat must share the browser start-area position');
+
+// Exercise an entire physically completed revision-4 course (with more
+// enemies, all eighteen sections of secrets and one start-area parachute rat),
 // then verify the recorded input bytes independently. No browser XP claims.
 let updatedCourse = null;
-const revision3Diagnostics = [];
+const revision4Diagnostics = [];
 for (const approach of [80,95,110,125,140,160,175]) {
   const frames = Array.from({length:5600}, () => [33,33,0]);
   const masks=[];
@@ -172,24 +196,24 @@ for (const approach of [80,95,110,125,140,160,175]) {
     return mask;
   };
   const inspected = await verifyNbgLondonReplay({
-    runId:id, replay:{ ...frameStream(frames), course_version:3 },
+    runId:id, replay:{ ...frameStream(frames), course_version:4 },
     startedAtMs:1000000, now:1000000+5600*33, debug:true,
     testInputOverride:input
   });
-  revision3Diagnostics.push({approach, ...(inspected.debug||{}), valid:inspected.valid});
+  revision4Diagnostics.push({approach, ...(inspected.debug||{}), valid:inspected.valid});
   if(!inspected.debug?.complete) continue;
   const count=inspected.debug.consumedFrames;
-  const replay={...frameStream(masks.slice(0,count).map(mask=>[33,33,mask])),course_version:3};
+  const replay={...frameStream(masks.slice(0,count).map(mask=>[33,33,mask])),course_version:4};
   const verified=await verifyNbgLondonReplay({
     runId:id, replay, startedAtMs:1000000, now:1000000+count*33
   });
   if(verified.valid){updatedCourse={replay,count,result:verified};break;}
 }
 assert.ok(updatedCourse, 'updated course must remain physically finishable and server-verifiable: '+
-  JSON.stringify(revision3Diagnostics));
+  JSON.stringify(revision4Diagnostics));
 assert.ok(updatedCourse.result.xp>0 &&
   updatedCourse.result.secret_coins<=42,
-  'revision-3 source XP and secret coins must be independently bounded');
+  'revision-4 source XP and secret coins must be independently bounded');
 // Confirm actual five-byte recorded masks containing grounded spray inputs
 // are independently evaluated by the authoritative Worker. The browser-only
 // injected brown-rat fixture above is NOT a valid ranked replay source;
@@ -197,7 +221,7 @@ assert.ok(updatedCourse.result.xp>0 &&
 const canonicalSprayFrames = Buffer.from(updatedCourse.replay.frames, 'base64');
 assert.ok(Array.from({length:canonicalSprayFrames.length / 5}, (_, i) => i * 5)
   .some(offset => (canonicalSprayFrames[offset + 4] & 8) !== 0),
-  'successful revision-3 replay must contain genuine recorded spray inputs');
+  'successful revision-4 replay must contain genuine recorded spray inputs');
 const noSprayFrames = Buffer.from(canonicalSprayFrames);
 for (let offset = 4; offset < noSprayFrames.length; offset += 5)
   noSprayFrames[offset] &= ~8;
@@ -215,6 +239,6 @@ const spoofedUpdated=await verifyNbgLondonReplay({
   startedAtMs:1000000, now:1000000+updatedCourse.count*33
 });
 assert.equal(spoofedUpdated.xp,updatedCourse.result.xp,
-  'untrusted 1-million browser XP must not affect revision-2 authoritative scoring');
+  'untrusted 1-million browser XP must not affect revision-4 authoritative scoring');
 
 console.log('[PASS] NBG London server-derived replay score protection');
