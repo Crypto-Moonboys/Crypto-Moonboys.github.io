@@ -138,6 +138,7 @@ const expectedAnimations = {
   idle: { spriteSheet: 'player/animations/idle.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 6, frames: 6, columns: 3, frameMs: 145 },
   run: { spriteSheet: 'player/animations/run.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 12, frames: 6, columns: 3, frameMs: 88 },
   jump: { spriteSheet: 'player/animations/jump.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 17, frames: 6, columns: 3, frameMs: 145 },
+  backflip: { spriteSheet: 'player/animations/NBG Runner Final-backflip.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 12, frames: 16, columns: 4, frameMs: 42 },
   fall: { spriteSheet: 'player/animations/fall.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 15, frames: 6, columns: 3, frameMs: 145 },
   spray: { spriteSheet: 'player/NBG Runner Final-spray.png', sourceFrameWidth: 256, sourceFrameHeight: 256, renderWidth: 164, renderHeight: 164, renderOffsetY: 45, frames: 25, columns: 5, frameMs: 8 },
   hurt: { spriteSheet: 'player/animations/hurt.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 1, frames: 6, columns: 3, frameMs: 120 },
@@ -197,10 +198,12 @@ for (const animation of Object.values(expectedAnimations)) {
   const assetPath = path.resolve(process.cwd(), 'game/assets', animation.spriteSheet);
   assert.equal(fs.existsSync(assetPath), true, `AutoSprite animation PNG must exist: ${animation.spriteSheet}`);
   const pngHeader = fs.readFileSync(assetPath).subarray(16, 24);
-  const isFinalSpray = animation.spriteSheet === 'player/NBG Runner Final-spray.png';
-  assert.equal(pngHeader.readUInt32BE(0), isFinalSpray ? 1280 : 384,
+  const expectedRows = Math.ceil(animation.frames / animation.columns);
+  assert.equal(pngHeader.readUInt32BE(0),
+    animation.columns * animation.sourceFrameWidth,
     `animation PNG width must match the committed sheet grid: ${animation.spriteSheet}`);
-  assert.equal(pngHeader.readUInt32BE(4), isFinalSpray ? 1280 : 256,
+  assert.equal(pngHeader.readUInt32BE(4),
+    expectedRows * animation.sourceFrameHeight,
     `animation PNG height must match the committed sheet grid: ${animation.spriteSheet}`);
   assert.notEqual(animation.renderWidth, animation.sourceFrameWidth, `render width must be separate from source frame width: ${animation.spriteSheet}`);
   assert.notEqual(animation.renderHeight, animation.sourceFrameHeight, `render height must be separate from source frame height: ${animation.spriteSheet}`);
@@ -845,6 +848,136 @@ await holdRunnerRight(touchStartPage);
 await touchStartPage.waitForFunction(() => window.NBGLevel1State?.running === true, null, { timeout: 5000 });
 await touchStartPage.close();
 
+// The third jump must use every official 4x4 backflip frame exactly once as
+// one row-major animation run. Exercise desktop/right and mobile-touch/left
+// against the real canvas renderer, not a mocked animation helper.
+for (const flipCase of [
+  { label: 'desktop-right', pageOptions: { viewport: { width: 960, height: 540 } }, facing: 1 },
+  { label: 'mobile-left', pageOptions: { viewport: { width: 390, height: 700 }, isMobile: true, hasTouch: true }, facing: -1 }
+]) {
+  const flipPage = await browser.newPage(flipCase.pageOptions);
+  try {
+    await flipPage.goto(url, { waitUntil: 'networkidle' });
+    await flipPage.waitForFunction(() => window.NBGLevel1State?.assetsLoaded, null,
+      { timeout: 10000 });
+    await flipPage.evaluate((facing) => {
+      const state = window.NBGLevel1State;
+      const ctx = document.getElementById('game').getContext('2d');
+      window.__backflipOriginalDraw = ctx.drawImage;
+      window.__backflipDraws = [];
+      state.player.facing = facing;
+      ctx.drawImage = function (image, ...args) {
+        if (image === state.playerAnimations.backflip.image && args.length === 8) {
+          const transform = this.getTransform();
+          window.__backflipDraws.push({
+            frame: Math.round(args[1] / 128) * 4 + Math.round(args[0] / 128),
+            sourceX: args[0], sourceY: args[1],
+            sourceWidth: args[2], sourceHeight: args[3],
+            renderWidth: args[6], renderHeight: args[7],
+            flipped: transform.a < 0
+          });
+        }
+        return window.__backflipOriginalDraw.call(this, image, ...args);
+      };
+    }, flipCase.facing);
+
+    const pressJump = async () => {
+      if (flipCase.pageOptions.hasTouch) {
+        await flipPage.evaluate(() => {
+          window.NBGLevel1Runtime.setTouchControl('jump', true);
+          window.NBGLevel1Runtime.setTouchControl('jump', false);
+        });
+      } else {
+        await flipPage.keyboard.press('KeyW');
+      }
+    };
+
+    await pressJump();
+    await flipPage.waitForFunction(() => window.NBGLevel1State.jumpsUsed === 1);
+    assert.equal(await flipPage.evaluate(() => window.NBGLevel1State.player.anim), 'jump',
+      flipCase.label + ' first jump must retain the normal jump animation');
+    await flipPage.waitForTimeout(125);
+    await pressJump();
+    await flipPage.waitForFunction(() => window.NBGLevel1State.jumpsUsed === 2);
+    assert.equal(await flipPage.evaluate(() => window.NBGLevel1State.player.anim), 'jump',
+      flipCase.label + ' second jump must retain the normal jump animation');
+    await flipPage.waitForTimeout(125);
+    await pressJump();
+    await flipPage.waitForFunction(() => window.NBGLevel1State.jumpsUsed === 3 &&
+      window.NBGLevel1State.backflipActive &&
+      window.NBGLevel1State.player.anim === 'backflip');
+    await flipPage.waitForFunction(() =>
+      window.__backflipDraws.some(draw => draw.frame === 15), null, { timeout: 1800 });
+    await flipPage.waitForFunction(() => !window.NBGLevel1State.backflipActive, null,
+      { timeout: 1800 });
+
+    const evidence = await flipPage.evaluate(() => ({
+      draws: window.__backflipDraws.slice(),
+      grounded: window.NBGLevel1State.player.grounded,
+      anim: window.NBGLevel1State.player.anim,
+      velocity: window.NBGLevel1State.player.vy
+    }));
+    const frameSequence = evidence.draws
+      .map(draw => draw.frame)
+      .filter((frame, index, frames) => index === 0 || frame !== frames[index - 1]);
+    assert.deepEqual(frameSequence, Array.from({ length: 16 }, (_, index) => index),
+      flipCase.label + ' must render official backflip frames 0-15 once in row-major order');
+    assert.ok(evidence.draws.every(draw =>
+      draw.sourceWidth === 128 && draw.sourceHeight === 128 &&
+      draw.renderWidth === 72 && draw.renderHeight === 86),
+    flipCase.label + ' must crop one 128px cell and render with the established player footprint');
+    assert.ok(evidence.draws.every(draw => draw.flipped === (flipCase.facing < 0)),
+      flipCase.label + ' must preserve movement facing through the full flip');
+    assert.ok(['jump', 'fall'].includes(evidence.anim) || evidence.grounded,
+      flipCase.label + ' must leave the final frame for an appropriate movement animation');
+
+    await flipPage.waitForFunction(() => window.NBGLevel1State.player.grounded, null,
+      { timeout: 2500 });
+    assert.ok(['idle', 'run'].includes(await flipPage.evaluate(() =>
+      window.NBGLevel1State.player.anim)),
+    flipCase.label + ' landing must restore a grounded animation');
+
+    await flipPage.evaluate(() => window.NBGLevel1Runtime.reset());
+    assert.deepEqual(await flipPage.evaluate(() => ({
+      active: window.NBGLevel1State.backflipActive,
+      anim: window.NBGLevel1State.player.anim,
+      frame: window.NBGLevel1State.player.frame
+    })), { active: false, anim: 'idle', frame: 0 },
+    flipCase.label + ' reset must clear all backflip state');
+  } finally {
+    await flipPage.close();
+  }
+}
+
+// Damage must immediately interrupt the one-shot flip rather than allowing
+// ordinary airborne selection to restart it later.
+const flipDamagePage = await browser.newPage({ viewport: { width: 960, height: 540 } });
+try {
+  await flipDamagePage.goto(url, { waitUntil: 'networkidle' });
+  await flipDamagePage.waitForFunction(() => window.NBGLevel1State?.assetsLoaded);
+  for (let press = 0; press < 3; press++) {
+    await flipDamagePage.keyboard.press('KeyW');
+    if (press < 2) await flipDamagePage.waitForTimeout(125);
+  }
+  await flipDamagePage.waitForFunction(() => window.NBGLevel1State.backflipActive);
+  await flipDamagePage.evaluate(() => {
+    const state = window.NBGLevel1State;
+    const hazard = state.hazards[0];
+    state.player.invuln = 0;
+    state.player.x = hazard.x;
+    state.player.y = hazard.y;
+    state.player.vx = 0;
+    state.player.vy = 0;
+  });
+  await flipDamagePage.waitForFunction(() =>
+    window.NBGLevel1State.player.anim === 'hurt');
+  assert.equal(await flipDamagePage.evaluate(() =>
+    window.NBGLevel1State.backflipActive), false,
+  'damage must interrupt and clear the backflip one-shot state');
+} finally {
+  await flipDamagePage.close();
+}
+
 // Assert actual flying-pig canvas output in both directions, including the
 // 14px sprite overhang beyond the unchanged 28px collision box.
 const pigPage = await browser.newPage({viewport:{width:960,height:540}});
@@ -1070,9 +1203,12 @@ for (const key of Object.keys(expectedAnimations)) {
     return {width: image.naturalWidth ?? image.width,
       height: image.naturalHeight ?? image.height};
   }, key);
-  assert.deepEqual(loadedSheetSize,
-    {width: key === 'spray' ? 1280 : 384, height: key === 'spray' ? 1280 : 256},
-    `browser runtime must load expected-size player ${key} image or canvas`);
+  const expectedAnimation = expectedAnimations[key];
+  assert.deepEqual(loadedSheetSize, {
+    width: expectedAnimation.columns * expectedAnimation.sourceFrameWidth,
+    height: Math.ceil(expectedAnimation.frames / expectedAnimation.columns) *
+      expectedAnimation.sourceFrameHeight
+  }, `browser runtime must load expected-size player ${key} image or canvas`);
 }
 
 const beforeMoveX = state.x;
@@ -2355,9 +2491,9 @@ assert.equal(await page.evaluate(() => window.NBGLevel1State.xp), afterDefeat.xp
 // The spray sequence is visual-only, but must complete within the existing
 // 230ms attack window at 30/40/60 Hz rather than wrapping away from the
 // final spray artwork. This simulates the real frame-time accumulation and
-// validates the non-looping runtime branch as a source-level guard.
-assert.ok(runtimeSource.includes("advancePlayerAnimation(dt, player.anim !== 'spray')"),
-  'spray must use non-looping frame progression while other poses keep looping');
+// validates both controlled one-shot runtime branches with a source-level guard.
+assert.ok(runtimeSource.includes("player.anim !== 'spray' && player.anim !== 'backflip'"),
+  'spray and backflip must use controlled non-looping progression while ordinary poses loop');
 for (const frameDt of [1000 / 60, 25, 33]) {
   let frame = 0, remainder = 0, hasRenderedLast = false;
   for (let elapsed = frameDt; elapsed < 230; elapsed += frameDt) {

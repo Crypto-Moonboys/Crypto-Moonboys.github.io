@@ -245,6 +245,8 @@
     var pendingJumpPresses = 0;
     var nextJumpBoostAtMs = 0;
     var jumpsUsed = 0;
+    // Visual-only one-shot state; jump physics and replay inputs remain authoritative and unchanged.
+    var backflipActive = false;
     var touch = { left: false, right: false, jump: false, spray: false, look: false };
     var images = {};
     var playerAnimations = {};
@@ -357,7 +359,9 @@
         player.frameTime -= frameMs;
       }
 
-      return !loop && player.frame >= frameCount - 1;
+      // A non-looping animation is complete only after its final frame has
+      // remained visible for a full frame interval.
+      return false;
     }
 
     var platforms = [
@@ -505,6 +509,7 @@
       player.vy = 0;
       jumpsUsed = 0;
       player.invuln = INVULN_TIME;
+      backflipActive = false;
       setPlayerAnimation('hurt');
       sprayTimer = 0;
     }
@@ -647,6 +652,8 @@
           player.facing = left ? -1 : 1;
         }
         jumpsUsed = 3;
+        backflipActive = true;
+        setPlayerAnimation('backflip');
       }
 
       if (spray && sprayTimer <= 0) {
@@ -671,6 +678,7 @@
           player.vy = 0;
           player.grounded = true;
           jumpsUsed = 0;
+          backflipActive = false;
         }
       }
     }
@@ -760,9 +768,15 @@
       }
 
       if (sprayTimer > 0) {
+        // Preserve the existing attack-animation priority. An explicit attack
+        // interrupts the visual flip and must not restart later in the jump.
+        backflipActive = false;
         setPlayerAnimation('spray');
       } else if (player.invuln > 0) {
+        backflipActive = false;
         setPlayerAnimation('hurt');
+      } else if (backflipActive && !player.grounded) {
+        setPlayerAnimation('backflip');
       } else if (!player.grounded) {
         setPlayerAnimation(player.vy > 0 ? 'fall' : 'jump');
       } else if (Math.abs(player.vx) > 0.42) {
@@ -771,9 +785,14 @@
         setPlayerAnimation('idle');
       }
 
-      // Spray plays once and holds the last painted frame until the 230ms
-      // attack window expires; looping can skip the ending on 30–40Hz displays.
-      advancePlayerAnimation(dt, player.anim !== 'spray');
+      // Spray holds its final painted frame for the attack window. Backflip
+      // is also one-shot, but returns to normal airborne art after frame 15.
+      var animationFinished = advancePlayerAnimation(dt,
+        player.anim !== 'spray' && player.anim !== 'backflip');
+      if (player.anim === 'backflip' && animationFinished) {
+        backflipActive = false;
+        setPlayerAnimation(player.vy > 0 ? 'fall' : 'jump');
+      }
     }
 
     function updateCoins(time) {
@@ -888,6 +907,7 @@
       player.invuln = INVULN_TIME;
       comboCount = 0;
       comboExpiresAt = 0;
+      backflipActive = false;
       setPlayerAnimation('hurt');
       window.dispatchEvent(new CustomEvent('nbg-player-hit', {
         detail: { health: player.health, enemy: type }
@@ -1634,6 +1654,7 @@
       window.NBGLevel1State = {
         get player() { return player; },
         get jumpsUsed() { return jumpsUsed; },
+        get backflipActive() { return backflipActive; },
         get pendingJumpPresses() { return pendingJumpPresses; },
         get nextJumpBoostAtMs() { return nextJumpBoostAtMs; },
         get recordedReplay() { return encodedRunReplay(); },
@@ -1742,6 +1763,7 @@
       player.facing = 1;
       player.grounded = true;
       jumpsUsed = 0;
+      backflipActive = false;
       player.health = 3;
       player.invuln = 0;
       setPlayerAnimation('idle');

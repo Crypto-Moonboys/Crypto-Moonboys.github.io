@@ -34,6 +34,17 @@
       "columns": 3,
       "frameMs": 145
     },
+    "backflip": {
+      "spriteSheet": "player/animations/NBG Runner Final-backflip.png",
+      "sourceFrameWidth": 128,
+      "sourceFrameHeight": 128,
+      "renderWidth": 72,
+      "renderHeight": 86,
+      "renderOffsetY": 12,
+      "frames": 16,
+      "columns": 4,
+      "frameMs": 42
+    },
     "fall": {
       "spriteSheet": "player/animations/fall.png",
       "sourceFrameWidth": 128,
