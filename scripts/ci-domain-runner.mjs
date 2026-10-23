@@ -288,6 +288,7 @@ const GROUPS = {
     ['node', 'scripts/bible-loader-swarmsy-browser.test.mjs'],
     ['node', '--test', 'scripts/telegram-website-login-browser.test.mjs'],
     ['node', '--test', 'scripts/telegram-header-badge-browser.test.mjs'],
+    ['node', '--test', 'scripts/admin-tools-page.test.mjs'],
     ['node', 'scripts/wiki-citation-preservation-browser.test.mjs'],
     ['node', 'scripts/moonpet-guide-browser.test.mjs'],
     ['node', 'scripts/moonpet-radio-browser.test.mjs'],
