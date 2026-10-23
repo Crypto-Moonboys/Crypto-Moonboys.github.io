@@ -1372,7 +1372,7 @@ for (const mechanicMode of [
     assert.deepEqual(leftFire.frames,Array.from({length:16},(_,index)=>index),
       mechanicMode.label+' flame must render all 16 frames in order');
     assert.ok(leftFire.facings.includes(1),
-      mechanicMode.label+' mirrored right-facing flame canvas draw must be observed');
+      mechanicMode.label+' source left-facing flame canvas draw must be observed');
 
     await mechanicPage.evaluate(() => {
       const state=window.NBGLevel1State;
@@ -1380,9 +1380,12 @@ for (const mechanicMode of [
       state.player.x=bot.x+62;
       state.player.y=214-state.player.h;
       state.player.vx=0;
-      state.player.invuln=0;
+      state.player.invuln=999999;
+      bot.vx=0;
+      bot.nextFireAt=0;
+      bot.fireUntil=0;
     });
-    await mechanicPage.clock.runFor(2500);
+    await mechanicPage.clock.runFor(920);
     assert.ok((await mechanicPage.evaluate(() =>
       [...new Set(window.__pr4DrawEvidence.flameFacings)])).includes(-1),
       mechanicMode.label+' opposite Graffbot direction must mirror the same sheet');
